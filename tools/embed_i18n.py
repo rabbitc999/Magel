@@ -34,7 +34,7 @@ def generate(rows=None):
     text=HEADER.read_text(encoding='utf-8')
     text=re.sub(r'(?<=// MAGEL_CATALOG_BEGIN\n)[\s\S]*?(?=// MAGEL_CATALOG_END)',lambda _:body,text)
     HEADER.write_text(text,encoding='utf-8')
-    (ROOT/'source/stackvm_mcu/magel_i18n.hpp').write_text(text,encoding='utf-8')
+    (ROOT/'library/stackvm_mcu/magel_i18n.hpp').write_text(text,encoding='utf-8')
     script=ROOT/'tools/mageldev.py'
     python=script.read_text(encoding='utf-8')
     table='_MESSAGES = '+json.dumps(rows,ensure_ascii=False,indent=2)+'\n'

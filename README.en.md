@@ -261,19 +261,24 @@ max_memory = 1048576                   # runtime memory ceiling (bytes)
 magel/
 ├── magel.gram / magel_token.gram   grammar: token declarations and productions
 ├── gen.sh / Makefile               build and self-checks
-├── std/lang.mgl            core library; collections and reflection live in std/
-├── magel_*.hpp / magel_*.cpp       compiler front end and driver
-├── glue/                           host-side C++ glue
-├── stackvm/                        StackVM interpreter
-├── magel-emit/                     tool that exports standalone C++ programs
-├── magel-generator/                entry point that generates standalone compiler projects
+├── source/                         compiler front end, exporter and glue
+│   ├── std/                        standard library modules (.mgl)
+│   ├── glue/                       host-side C++ glue
+│   ├── allocator/                  desktop allocator
+│   ├── lsp/ dap/                   editor integration
+│   ├── magel-emit/                 tool that exports standalone C++ programs
+│   └── magel-generator/            entry point that generates standalone compiler projects
+├── library/                        reusable C++ libraries and the board host
+│   ├── stackvm/                    VM core (shared by desktop and board)
+│   ├── stackvm_mcu/                board-oriented VM branch
+│   ├── bignum/ json/ toml/ sqlite/ console/ lztext/ …
+│   └── …
 ├── doc/                            user-facing documentation (00–20, 99)
 │   ├── en/                         English edition (index + 00–11, 13, 99; 15 files)
 │   └── library/                    library API reference (one page per module)
 ├── example/                        examples (samples, error samples, web-students, …)
 ├── tests/                          Python acceptance scripts
 ├── tools/                          helper scripts (icon, overview figure, …)
-├── stackvm_mcu/                         board-oriented VM branch
 ├── gui/                            cross-platform GUI example
 └── sql-magel/                      student information management sample project
 ```

@@ -690,7 +690,7 @@ int64 health() { return 200; }
 - `--no-reflection` 显式关闭，关闭后使用注解或反射会被拒绝。
 - 显式裁剪构建才覆盖两项宏为 0；不能用根目录默认值推断所有独立生成工程和 MCU 宿主的配置。
 
-反射产物要求目标 VM 编入反射；交付默认无反射的 `source/stackvm_mcu/` 时，编译源程序须显式使用
+反射产物要求目标 VM 编入反射；交付默认无反射的 `library/stackvm_mcu/` 时，编译源程序须显式使用
 `--no-reflection`。反射当前的签名及动态调用边界见[反射说明](19-reflection.md)。
 
 完整例子见 [`example/reflection/`](../example/reflection/)（`annotations.mgl`、`calls.mgl`、`dispatch.mgl`、`queries.mgl`）。

@@ -22,7 +22,7 @@
 | [标准库配套程序](#54-标准库配套程序) | [`doc/examples/library/`](examples/library/) | io / sqlite / watchdog / reflect 四段可跑程序 | 部分需反射 |
 | [C ABI 配套示例](#55-c-abi-配套示例) | [`doc/examples/abi_buffers/`](examples/abi_buffers/)、[`abi_dynamic/`](examples/abi_dynamic/) | 静态缓冲与动态库两种绑定方式 | C 编译器 |
 | [`.svmb` 证据包](#6-交付与逆向svmb-证据包) | [`doc/examples/svmb/`](examples/svmb/) | 字节码标本、逐节解剖、可复现的逆向成本数据 | 无 |
-| [板端虚拟机](#71-板端虚拟机-mcu_vm) | [`source/stackvm_mcu/`](../source/stackvm_mcu) | `-fno-exceptions` 口径下的 `.svmb` 运行时 | C++ 编译器 |
+| [板端虚拟机](#71-板端虚拟机-mcu_vm) | [`library/stackvm_mcu/`](../library/stackvm_mcu) | `-fno-exceptions` 口径下的 `.svmb` 运行时 | C++ 编译器 |
 | [胶水回调](../example/native-callbacks/README.md) | [`example/native-callbacks/`](../example/native-callbacks/) | 同一胶水在 VM/AOT 调用具名函数、闭包、引用及高阶回调 | C++ 编译器 |
 | [编辑器语言服务器](#72-编辑器语言服务器与-vs-code-插件) | [`source/lsp/`](../source/lsp)、[`vscode/`](../vscode/) | 宏配对检查、语义高亮、真诊断 | 无 / VS Code |
 
@@ -316,13 +316,13 @@ python doc/examples/svmb/collect.py --parser ./magel.exe
 **怎么跑**：
 
 ```sh
-make -C source/stackvm_mcu                 # 出 build/stackvm_mcu/mcu-host（桌面可跑的板端宿主）
+make -C library/stackvm_mcu                 # 出 build/stackvm_mcu/mcu-host（桌面可跑的板端宿主）
 build/stackvm_mcu/mcu-host program.svmb data.data.bin data.layout
-make -C source/stackvm_mcu show-flags      # 打印这次实际用的口径
+make -C library/stackvm_mcu show-flags      # 打印这次实际用的口径
 ```
 
 **怎么验证**：`python tests/mcu_vm.py --sweep`（已进 `ci.sh`）。
-完整口径表见 [`source/stackvm_mcu/README.md`](../source/stackvm_mcu/README.md)。
+完整口径表见 [`library/stackvm_mcu/README.md`](../library/stackvm_mcu/README.md)。
 
 FK-STM32H743XIH6 的实际板端工程位于
 [`example/mcu/FK-STM32H743XIH6/`](../example/mcu/FK-STM32H743XIH6/README.md)：

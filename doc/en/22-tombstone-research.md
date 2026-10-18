@@ -51,7 +51,7 @@ The host then resets the arena and heap before running the logic again. Tests in
 heap at this boundary: module initialization in the next run can legitimately create new
 tombstones before `main` begins.
 
-The embedded host in `source/stackvm_mcu/mcu_host.cpp` explicitly sweeps and resets its byte pool and
+The embedded host in `library/stackvm_mcu/mcu_host.cpp` explicitly sweeps and resets its byte pool and
 identity slots before resetting the arenas. Watermark restarts after normal execution use
 the same cleanup path.
 

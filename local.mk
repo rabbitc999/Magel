@@ -35,7 +35,7 @@ MAGEL_SOURCE_DIR  := source
 MAGEL_LIBRARY_DIR := library
 # 搬进 source/ 与 library/ 后，代码里的裸文件名 include 靠这组搜索路径解析。
 MAGEL_INCLUDES := -I$(MAGEL_SOURCE_DIR) -I$(MAGEL_LIBRARY_DIR) \
-    -I$(MAGEL_SOURCE_DIR)/allocator -I$(MAGEL_SOURCE_DIR)/lsp -I$(MAGEL_SOURCE_DIR)/stackvm_mcu \
+    -I$(MAGEL_SOURCE_DIR)/allocator -I$(MAGEL_SOURCE_DIR)/lsp -I$(MAGEL_LIBRARY_DIR)/stackvm_mcu \
     -I$(MAGEL_LIBRARY_DIR)/bignum -I$(MAGEL_LIBRARY_DIR)/json -I$(MAGEL_LIBRARY_DIR)/toml \
     -I$(MAGEL_LIBRARY_DIR)/sqlite -I$(MAGEL_LIBRARY_DIR)/console -I$(MAGEL_LIBRARY_DIR)/lztext
 override CXXFLAGS += -DMAGEL_CUSTOM_ALLOCATOR=1 -pthread $(MAGEL_INCLUDES) -I$(AST_DIR) -I$(VM_DIR) -I$(PP_DIR)

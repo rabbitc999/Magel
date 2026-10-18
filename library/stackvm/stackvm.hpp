@@ -97,7 +97,7 @@
  * （在求值循环里切换，不需要 OS 线程），板端照常可用 —— 这就是"板端不需要线程"的那条线。
  *
  * 关线程是**零成本裁剪**：桌面构建不用改代码，板端 `-DSTACKVM_WITH_THREADS=0` 即可
- * （`magel/source/stackvm_mcu/Makefile` 已经这么传）。默认字节堆同理走 `STACKVM_WITH_DEFAULT_HEAP`。
+ * （`magel/library/stackvm_mcu/Makefile` 已经这么传）。默认字节堆同理走 `STACKVM_WITH_DEFAULT_HEAP`。
  */
 #ifndef STACKVM_WITH_THREADS
 #define STACKVM_WITH_THREADS 1

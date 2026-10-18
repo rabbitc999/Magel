@@ -39,7 +39,7 @@
 - `Machine::run()` 的收尾位于 `library/stackvm/parts/execution.cpp`；所有执行上下文停止后，为可恢复终止清扫当前堆。
 - AOT 的对应收尾为 `library/stackvm/parts/aot_bridge.cpp` 的 `RuntimeBridge::end()`，在线程与协程收尾后处理重启信号并清扫。
 - 宿主随后销毁旧执行状态、重置 arena，并重新运行逻辑。完整 watchdog 重启在墓碑清理效果上等价于完整 sweep()。
-- 板端 `source/stackvm_mcu/mcu_host.cpp` 的重启收尾显式清扫并重置字节池和身份槽，再重置 arena；正常结束后的水位重启也经过该路径。
+- 板端 `library/stackvm_mcu/mcu_host.cpp` 的重启收尾显式清扫并重置字节池和身份槽，再重置 arena；正常结束后的水位重启也经过该路径。
 - 板端与桌面共用压缩身份索引，按宿主指针位宽选择编码；板端只保留 arena、输入输出和固定字节池适配。
 
 ## malloc/free 回退的移除范围

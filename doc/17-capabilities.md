@@ -76,12 +76,12 @@ TCP/基础 HTTP、SQL 驱动、协程、隔离线程、消息、显式共享值�
 HTTP 接口不包含 TLS；外部数据库需要相应客户端和服务。异步事件有独立的回调寿命契约，
 不能由同步函数包装获得任意异步调用能力。
 
-桌面与板端只维护一份 VM 核心，`source/stackvm_mcu/` 提供无异常/RTTI 宿主、内存池和外设适配。
+桌面与板端只维护一份 VM 核心，`library/stackvm_mcu/` 提供无异常/RTTI 宿主、内存池和外设适配。
 `[embedded]` 是前端的模块限制配置；独立 MCU VM 则按宏及实际胶水决定能力，两者不是同一配置。
 H743 工程已提供 SDRAM、FatFS、USART1、LCD 程序选择和按键，默认启动一次 benchmark。
 该工程池预算为 2/16/4 MiB，总计 22 MiB；不代表小 SRAM 芯片的占用。
 语言 panic 和正常退出可由宿主返回菜单，硬件 Fault、宿主越界和不可恢复耗尽另按平台处理。
-见[部署说明](06-deployment.md)、[MCU 宿主](../source/stackvm_mcu/README.md)和[板端工程](../example/mcu/FK-STM32H743XIH6/README.md)。
+见[部署说明](06-deployment.md)、[MCU 宿主](../library/stackvm_mcu/README.md)和[板端工程](../example/mcu/FK-STM32H743XIH6/README.md)。
 
 统一 CLI 提供工程、检查、格式化、测试、依赖锁定与缓存。LSP 提供诊断、补全、悬停、参数提示
 和跨文件跳转，并提供完整 `auto` 类型悬停、可选类型内联提示、多括号宏签名、展开来源导航、

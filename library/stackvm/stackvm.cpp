@@ -56,7 +56,7 @@
 /* 板端输入钩子（串口）。必须放在**第一个 namespace 之前**：下面的 parts 嵌在命名空间里，
  * 在那里 include 会各自造一份 mcuConsole，宿主装的钩子就看不见了。 */
 #if STACKVM_EMBEDDED
-#include "../../source/stackvm_mcu/mcu_console.hpp"
+#include "../stackvm_mcu/mcu_console.hpp"
 #endif
 
 namespace stackvm

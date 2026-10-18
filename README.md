@@ -215,19 +215,24 @@ max_memory = 1048576                   # 运行内存上限（字节）
 magel/
 ├── magel.gram / magel_token.gram   文法：词法声明与产生式
 ├── gen.sh / Makefile               构建与自测
-├── std/lang.mgl            核心库；集合与反射位于 std/
-├── magel_*.hpp / magel_*.cpp       编译器前端与驱动
-├── glue/                           宿主侧 C++ 胶水
-├── stackvm/                        StackVM 解释器
-├── magel-emit/                     导出独立 C++ 程序的工具
-├── magel-generator/                生成独立编译器工程的入口
+├── source/                         编译器前端、导出器与胶水
+│   ├── std/                        标准库模块（.mgl）
+│   ├── glue/                       宿主侧 C++ 胶水
+│   ├── allocator/                  桌面分配器
+│   ├── lsp/ dap/                   编辑器集成
+│   ├── magel-emit/                 导出独立 C++ 程序的工具
+│   └── magel-generator/            生成独立编译器工程的入口
+├── library/                        可复用 C++ 库与板端宿主
+│   ├── stackvm/                    VM 核心（桌面与板端共用）
+│   ├── stackvm_mcu/                面向板端的虚拟机分支
+│   ├── bignum/ json/ toml/ sqlite/ console/ lztext/ …
+│   └── …
 ├── doc/                            面向使用者的文档（00–20、99）
 │   ├── en/                         英文版（入口 + 00–11、13、99，共 15 篇）
 │   └── library/                    库函数 API 参考（按模块分页）
 ├── example/                        示例（samples、错误样例、web-students 等）
 ├── tests/                          Python 验收脚本
 ├── tools/                          图标与总览图等辅助脚本
-├── stackvm_mcu/                         面向板端的虚拟机分支
 ├── gui/                            跨平台 GUI 示例
 └── sql-magel/                      学生信息管理示例工程
 ```

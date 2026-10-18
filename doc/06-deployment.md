@@ -80,7 +80,7 @@ max_memory = 1048576                 # 运行内存上限（字节）
 该配置固定拒绝 std::net、std::process、std::sql、std::io、std::thread、std::coroutine 和
 std::concurrency，restrict_modules 只追加。它控制编译期导入与内存上限，命令行覆盖配置。
 
-独立 [`source/stackvm_mcu/`](../source/stackvm_mcu/README.md) 是共享核心的另一种构建消费者：
+独立 [`library/stackvm_mcu/`](../library/stackvm_mcu/README.md) 是共享核心的另一种构建消费者：
 以无异常、无 RTTI、无 OS 线程等宏配置编译，并注入内存池、文件系统和板级胶水。
 不能从 `[embedded]` 的禁用清单推断独立 VM 一定不支持文件系统或协作式协程，
 也不能认为缩小内存上限就自动补齐了所有板级后端。
@@ -165,4 +165,4 @@ Magel 自身就能当服务端跑：`std::net` 监听 HTTP、`std::sql` 访问�
 | 加固交付产物 | [交付安全](05-delivery-security.md) |
 | 与 C/C++ 互调 | [宿主集成与 C ABI](08-host-integration.md) |
 | 查全部命令行选项 | [工具链使用](09-toolchain.md) |
-| 看板端虚拟机宿主 | [`source/stackvm_mcu/`](../source/stackvm_mcu) |
+| 看板端虚拟机宿主 | [`library/stackvm_mcu/`](../library/stackvm_mcu) |

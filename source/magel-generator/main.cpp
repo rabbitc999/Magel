@@ -416,7 +416,7 @@ int runCli(int argc, char **argv)
         };
         for (const Fix &fix : fixes) {
             /* 只在 `#include "..."` 的引号里匹配：否则裸的 `allocator/magel_allocator.hpp`
-             * 会连带命中 `"../stackvm_mcu/allocator/magel_allocator.hpp"` 的尾巴。 */
+             * 会连带命中 `"../../library/stackvm_mcu/allocator/magel_allocator.hpp"` 的尾巴。 */
             const Memory::String needle = Memory::String("\"") + fix.from + "\"";
             const Memory::String value = Memory::String("\"") + relativeInclude(target, fix.to) + "\"";
             if (needle == value) continue;

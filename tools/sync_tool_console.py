@@ -2,7 +2,7 @@
 
 master 是本项目自己的 [`library/console/utf8.hpp`](../library/console/utf8.hpp)，逐字节复制到：
 
-  * `source/stackvm_mcu/console/utf8.hpp` —— 板端 MCU 工程（自包含，跟着 magel 一起分发）
+  * `library/stackvm_mcu/console/utf8.hpp` —— 板端 MCU 工程（自包含，跟着 magel 一起分发）
 
 这份头最早来自 ParseEngine 的 `library/console/utf8.hpp`；两个项目剥离之后各自独立，
 改这边不会自动同步过去（那边有它自己的一份与 `source/include/ParseEngine/tool_console.hpp`）。
@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 SOURCE = "library/console/utf8.hpp"
 
-TARGETS = ("source/stackvm_mcu/console/utf8.hpp",)
+TARGETS = ("library/stackvm_mcu/console/utf8.hpp",)
 
 
 def main():

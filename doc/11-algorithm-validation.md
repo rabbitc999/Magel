@@ -68,7 +68,7 @@ python tests/magel_algorithm_robustness.py --magel magel.exe --stress-size 30000
 
 `drop()` 和 `delete` 均为幂等终结操作：重复调用不再析构或释放，释放后读写仍拒绝。默认堆复用物理内存，同时为每次分配提供不复用的逻辑身份，防止旧引用删除新对象；这项约束同时适用于 VM 与 AOT。默认堆按物理块首保存最新代次和清扫边界，同址复用不追加墓碑存储；逻辑历史身份通过代次范围识别。`sweep()` 显式撤销已释放身份的幂等保证，此后旧引用再次 delete 报 MGL1205；调用者保证清扫时不再需要这些旧引用。完整 watchdog 重启清空墓碑和 arena。
 
-板端 `source/stackvm_mcu/` 使用共享 `library/stackvm/` 核心的生命周期、压缩分配身份及幂等释放。新增 VM/板端算法对照可通过 `--skip-aot --mcu-host build/stackvm_mcu/mcu-host.exe` 运行；桌面与板端的执行优化及内存预算见 [VM 执行优化](12-vm-performance.md)。
+板端 `library/stackvm_mcu/` 使用共享 `library/stackvm/` 核心的生命周期、压缩分配身份及幂等释放。新增 VM/板端算法对照可通过 `--skip-aot --mcu-host build/stackvm_mcu/mcu-host.exe` 运行；桌面与板端的执行优化及内存预算见 [VM 执行优化](12-vm-performance.md)。
 
 局部开发按模块运行门禁，复测保存固定随机种子及独立日志：
 

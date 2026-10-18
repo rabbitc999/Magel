@@ -135,7 +135,7 @@ inline constexpr const char *allocatorTypeName = "linear";
 
 /**
  * @def STACKVM_WITH_THREADS
- * @brief 是否编入 OS 线程 / 互斥（板端口径由 `magel/source/stackvm_mcu/Makefile` 传 0）。
+ * @brief 是否编入 OS 线程 / 互斥（板端口径由 `magel/library/stackvm_mcu/Makefile` 传 0）。
  *
  * 板端单线程，arena 的那把互斥锁是纯粹的死重（还会牵进 pthread）：
  * `0` 时把 `ArenaMutex` / `ArenaLock` 换成空操作替身，**同一份代码、零成本裁剪**。

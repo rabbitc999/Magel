@@ -31,9 +31,9 @@
    `@return` / `@retval`、`@note` 各占独立一行；无参数时不写空的 `@param`，
    无返回值及构造/析构函数不虚构返回值。注释必须解释实际功能、参数用途与返回含义，
    不能只复述函数名或填占位语句，不使用紧凑形式或 `///` 代替函数文档块。
-6. **一份 VM 按宏裁剪**：`library/stackvm/` 是桌面与板端唯一的 VM 核心；`source/stackvm_mcu/` 只保留
+6. **一份 VM 按宏裁剪**：`library/stackvm/` 是桌面与板端唯一的 VM 核心；`library/stackvm_mcu/` 只保留
    板端宿主、静态池和外设适配，不维护 VM 源码副本。修改共享核心时验证桌面口径与
-   板端 `-fno-exceptions -fno-rtti` 口径，宏和预算见 [`source/stackvm_mcu/README.md`](source/stackvm_mcu/README.md)。
+   板端 `-fno-exceptions -fno-rtti` 口径，宏和预算见 [`library/stackvm_mcu/README.md`](library/stackvm_mcu/README.md)。
    FK 板级库在 `example/mcu/FK-STM32H743XIH6/sdk/` 内维护副本，不依赖原工作区；修改导入文件
    时复核并更新 `sdk-snapshot.json` 的本地 LF 哈希，保留原哈希、编码及组件许可证。
 7. 文档索引用 [`doc/README.md`](doc/README.md)；改动完成后 `git add -A` → commit →

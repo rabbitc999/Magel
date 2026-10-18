@@ -32,7 +32,7 @@ NativeCallContext 已有字符串/容器读写及同步函数调用接口；本�
 在仓库根目录执行：
 
 ```sh
-make -C source/stackvm_mcu
+make -C library/stackvm_mcu
 ./magel svmb example/samples/hello.mgl --no-reflection --out build/mcu-hello
 ./build/stackvm_mcu/mcu-host build/mcu-hello.svmb build/mcu-hello.data.bin build/mcu-hello.layout
 python tests/mcu_vm.py --magel magel.exe

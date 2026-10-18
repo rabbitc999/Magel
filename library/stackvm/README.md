@@ -1,9 +1,9 @@
 # 栈式虚拟机（`magel/library/stackvm`）
 
-本目录是 Magel 桌面与板端共用的唯一 VM 核心。`source/stackvm_mcu/` 只保留固定池、控制台和板级适配，
+本目录是 Magel 桌面与板端共用的唯一 VM 核心。`library/stackvm_mcu/` 只保留固定池、控制台和板级适配，
 构建时直接编译这里的源码。`STACKVM_WITH_THREADS`、`STACKVM_WITH_DEFAULT_HEAP`、
 `STACKVM_WITH_HOST_IO`、`STACKVM_WITH_HOST_EXCEPTION_GUARD`、`STACKVM_WITH_AOT` 控制功能裁剪；
-`STACKVM_EMBEDDED` 选择板端适配。CMake 提供同名选项，板端组合见 [板端说明](../../source/stackvm_mcu/README.md)。
+`STACKVM_EMBEDDED` 选择板端适配。CMake 提供同名选项，板端组合见 [板端说明](../stackvm_mcu/README.md)。
 
 > **这份是 magel 自带的副本**：源在 `library/stackvm`，magel 与 `magel-emit` 用这里的
 > 一份（大整数走 `magel/library/bignum`）。两份是**独立维护**的 —— 改了一边不会自动同步，

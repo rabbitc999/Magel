@@ -18,7 +18,7 @@ list(FILTER BOARD_SOURCES EXCLUDE REGEX "(^|/)User/main\\.c$")
 set_property(TARGET stm32_lua_car PROPERTY SOURCES ${BOARD_SOURCES})
 set_target_properties(stm32_lua_car PROPERTIES OUTPUT_NAME magel-fk-h743)
 
-set(MCU "${MAGEL_ROOT}/source/stackvm_mcu")
+set(MCU "${MAGEL_ROOT}/library/stackvm_mcu")
 option(FK_AUTORUN_BENCHMARK "Run built-in benchmark once before opening the selector" ON)
 option(FK_BOARD_SELFTEST "Automatically run benchmark, panic and exit programs through the selector" OFF)
 if(FK_BOARD_SELFTEST)

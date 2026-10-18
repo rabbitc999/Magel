@@ -4,7 +4,7 @@
  *
  * 本文件是 **Magel 工程自己的 master**，[`tools/sync_tool_console.py`](../tools/sync_tool_console.py)
  * 把它逐字节复制到
- *   * `stackvm_mcu/console/utf8.hpp`（板端 MCU 工程，同一相对布局）
+ *   * `library/stackvm_mcu/console/utf8.hpp`（板端 MCU 工程，同一相对布局）
  * Magel 侧统一写 `#include "console/utf8.hpp"`；要改就改这里，再跑同步脚本
  * （`gen.sh` 会在构建时自动跑）。
  *

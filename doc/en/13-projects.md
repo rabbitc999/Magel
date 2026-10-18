@@ -24,7 +24,7 @@ is written `magel`).
 | [Standard library companions](#54-standard-library-companions) | [`doc/examples/library/`](../examples/library/) | Four runnable programs: io / sqlite / watchdog / reflect | some need reflection |
 | [C ABI companions](#55-c-abi-companions) | [`doc/examples/abi_buffers/`](../examples/abi_buffers/), [`abi_dynamic/`](../examples/abi_dynamic/) | Static buffers vs. dynamic library bindings | a C compiler |
 | [`.svmb` evidence pack](#6-delivery-and-reverse-engineering-the-svmb-evidence-pack) | [`doc/examples/svmb/`](../examples/svmb/) | A bytecode specimen, section-by-section anatomy, reproducible reversing-cost data | none |
-| [Board-side VM](#71-board-side-vm-mcu_vm) | [`source/stackvm_mcu/`](../../source/stackvm_mcu) | A `.svmb` runtime built with `-fno-exceptions` | a C++ compiler |
+| [Board-side VM](#71-board-side-vm-mcu_vm) | [`library/stackvm_mcu/`](../../library/stackvm_mcu) | A `.svmb` runtime built with `-fno-exceptions` | a C++ compiler |
 | [Glue callbacks](../../example/native-callbacks/README.md) | [`example/native-callbacks/`](../../example/native-callbacks/) | Shared VM/AOT glue calling named functions, closures, references and higher-order callbacks | a C++ compiler |
 | [Editor language servers](#72-editor-language-servers-and-the-vs-code-extension) | [`source/lsp/`](../../source/lsp), [`vscode/`](../../vscode/) | Macro pairing checks, semantic highlighting, real diagnostics | none / VS Code |
 
@@ -350,13 +350,13 @@ by the compiler, not by review.
 **How to run it**:
 
 ```sh
-make -C source/stackvm_mcu                 # 出 build/stackvm_mcu/mcu-host（桌面可跑的板端宿主）
+make -C library/stackvm_mcu                 # 出 build/stackvm_mcu/mcu-host（桌面可跑的板端宿主）
 build/stackvm_mcu/mcu-host program.svmb data.data.bin data.layout
-make -C source/stackvm_mcu show-flags      # 打印这次实际用的口径
+make -C library/stackvm_mcu show-flags      # 打印这次实际用的口径
 ```
 
 **How it is verified**: `python tests/mcu_vm.py --sweep` (already part of `ci.sh`).
-The full stance table is in [`source/stackvm_mcu/README.md`](../../source/stackvm_mcu/README.md).
+The full stance table is in [`library/stackvm_mcu/README.md`](../../library/stackvm_mcu/README.md).
 
 The physical FK-STM32H743XIH6 project is in
 [`example/mcu/FK-STM32H743XIH6/`](../../example/mcu/FK-STM32H743XIH6/README.md).

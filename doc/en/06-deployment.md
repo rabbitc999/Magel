@@ -88,7 +88,7 @@ This profile rejects std::net, std::process, std::sql, std::io, std::thread, std
 std::concurrency. Additional restrictions only extend the list. It controls compile-time imports
 and the memory ceiling, with command-line precedence.
 
-The standalone [MCU host](../../source/stackvm_mcu/README.md) is another consumer of the same VM core,
+The standalone [MCU host](../../library/stackvm_mcu/README.md) is another consumer of the same VM core,
 built without exceptions, RTTI and OS threads, with injected pools, filesystems and board glue.
 The front-end blocklist does not describe every standalone host's filesystem/coroutine support,
 and a smaller memory ceiling alone does not supply platform adapters.
@@ -181,4 +181,4 @@ scenarios.
 | Harden the artifact | [Delivery security](05-delivery-security.md) |
 | Interoperate with C/C++ | [Host integration and C ABI](08-host-integration.md) |
 | All command-line options | [Toolchain](09-toolchain.md) |
-| The board-oriented VM host | [`source/stackvm_mcu/`](../../source/stackvm_mcu) |
+| The board-oriented VM host | [`library/stackvm_mcu/`](../../library/stackvm_mcu) |

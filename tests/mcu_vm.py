@@ -1,14 +1,14 @@
 """mcu_vm 门禁：板端口径（`-fno-exceptions`）构建 + 异常符号检查 + 样例等价性 + footprint。
 
 判据分三层，任一层失败都返回非零：
-  1. **构建**：按 `magel/source/stackvm_mcu/Makefile` 的口径编出 `mcu-host`（这一条同时证明
+  1. **构建**：按 `magel/library/stackvm_mcu/Makefile` 的口径编出 `mcu-host`（这一条同时证明
      VM 源码里没有 `try/catch/throw`——否则 `-fno-exceptions` 直接编译失败）；
   2. **符号**：`mcu-host` 里不许出现 `__cxa_throw` / `__gxx_personality` 这类异常符号；
   3. **等价性**：`MUST_PASS` 里的样例，用工具链编成 `.svmb` 后在板端口径下跑，stdout
      必须与 `example/expected/<名字>.txt` 逐行一致。
 
 其余纯 VM 样例按"元数据 RAM 不够 / 缺原生函数 / 其它"分类报告——那是**已知边界**，
-不是失败（见 magel/source/stackvm_mcu/README.md 的实测与下一步）。
+不是失败（见 magel/library/stackvm_mcu/README.md 的实测与下一步）。
 """
 
 from pathlib import Path
@@ -107,7 +107,7 @@ def main():
     budget = ["-DMCU_VM_ARENA_BYTES=524288", "-DMCU_METADATA_BYTES=33554432",
               "-DMCU_RUNTIME_ARENA_BYTES=8388608",
               "-DEMBED_POOL_MAX_BLOCKS=16384"]
-    built = run([args.make, "-C", ROOT / "source/stackvm_mcu", "MCU_BUDGET=" + " ".join(budget)])
+    built = run([args.make, "-C", ROOT / "library/stackvm_mcu", "MCU_BUDGET=" + " ".join(budget)])
     if built.returncode != 0:
         raise SystemExit(f"mcu_vm 构建失败：\n{built.stdout}\n{built.stderr}")
     host = ROOT / "build/stackvm_mcu" / ("mcu-host" + EXE)
@@ -176,7 +176,7 @@ def main():
 
     # 4. 文件系统后端打开（`MCU_VM_FILE_BACKEND=1`，C stdio）：文件样例必须等价。
     #    证明 `stackvm::FileApi` 这层抽象在板端口径下真的接得上（换 FatFS 就是换后端）。
-    fs_build = run([args.make, "-C", ROOT / "source/stackvm_mcu", "MCU_VM_FILE_BACKEND=1",
+    fs_build = run([args.make, "-C", ROOT / "library/stackvm_mcu", "MCU_VM_FILE_BACKEND=1",
                     "MCU_TARGET_SUFFIX=-fs", "MCU_BUDGET=" + " ".join(budget)])
     assert fs_build.returncode == 0, fs_build.stdout + fs_build.stderr
     fs_host = ROOT / "build/stackvm_mcu" / ("mcu-host-fs" + EXE)

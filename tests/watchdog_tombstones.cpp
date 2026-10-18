@@ -3,7 +3,7 @@
  * @brief 在宿主收尾边界验证 VM 与 AOT 桥清空墓碑。
  */
 #include "stackvm.hpp"
-#include "../source/stackvm_mcu/embed_pool_allocator.hpp"
+#include "../library/stackvm_mcu/embed_pool_allocator.hpp"
 #include <iostream>
 
 /**

@@ -1,6 +1,6 @@
 /* 板端元数据 arena 是平台适配，VM 核心通过统一入口选择无异常分配后端。 */
 #if defined(STACKVM_EMBEDDED) && STACKVM_EMBEDDED
-#include "../stackvm_mcu/allocator/magel_allocator.hpp"
+#include "../../library/stackvm_mcu/allocator/magel_allocator.hpp"
 #else
 #ifndef MAGEL_CUSTOM_ALLOCATOR
 #define MAGEL_CUSTOM_ALLOCATOR 1
@@ -172,7 +172,7 @@ inline RuntimeAllocator *defaultRuntimeAllocatorIfCreated() { return defaultRunt
 /* ---------------------------------------------------------------------------
  *  软重启信号（桌面口径）
  *
- *  与板端 `magel/source/stackvm_mcu/allocator/magel_allocator.hpp` 里的同名实现**逐字对应**
+ *  与板端 `magel/library/stackvm_mcu/allocator/magel_allocator.hpp` 里的同名实现**逐字对应**
  *  （"同一改动各打两遍"），差别只在两边怎么收尾：
  *    * 桌面：分配失败记下标志后**照旧抛 `std::bad_alloc`**，宿主读信号决定这是不是
  *      "可恢复终止"；显式请求由 `__vm_request_restart()` 写，VM 在下一条指令边界停下。
@@ -311,7 +311,7 @@ public:
 };
 
 /**
- * @brief 进程级软重启信号位（桌面一份；板端那份在 `magel/source/stackvm_mcu/`）。
+ * @brief 进程级软重启信号位（桌面一份；板端那份在 `magel/library/stackvm_mcu/`）。
  */
 inline RestartSignal &restartSignal()
 {

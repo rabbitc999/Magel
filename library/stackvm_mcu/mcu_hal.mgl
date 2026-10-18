@@ -1,6 +1,6 @@
 /* mcu_hal.mgl —— 板端 HAL 在 Magel 侧的**形状**（模板；照抄进你自己的工程）。
  *
- * 这些名字**不是 VM 内建**，是宿主胶水：板端由 `magel/source/stackvm_mcu/mcu_glue.cpp` 注册
+ * 这些名字**不是 VM 内建**，是宿主胶水：板端由 `magel/library/stackvm_mcu/mcu_glue.cpp` 注册
  * （或你换成自己的实现），桌面由 `glue/std_*.hpp` 那套注册。
  *
  *   * `print` / `println` / `putChar` 是**语言内建**，已经会走 `Machine::setOutputSink()`
