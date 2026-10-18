@@ -21387,7 +21387,7 @@
     "owner": "TcpSocket",
     "signature": "std::lang::String lastError()",
     "documentation": "返回连接/网络操作最近的错误文本。\n\n**返回值**：std::lang::String。",
-    "comment": "/**\n     * @brief 最近一次出错说明。\n     *\n     * 返回值要**自己造一块新串**：Magel 的字符串赋值是别名语义（`String t = s.field;` 只是\n     * 借那块串），直接把字段交出去的话，字段所属的对象一释放调用方就悬空。\n     */",
+    "comment": "/**\n     * @brief 最近一次出错说明。\n     *\n     * 直接返回字段即可：String 是值语义，`return self.error;` 交出的是独立副本，\n     * 接收者释放后调用方手上的串仍然有效。\n     */",
     "parameters": [],
     "returns": {
       "type": "std::lang::String",
@@ -21429,7 +21429,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 87,
+    "line": 83,
     "page": "std-net.md",
     "anchor": "api-4"
   },
@@ -21456,7 +21456,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 90,
+    "line": 86,
     "page": "std-net.md",
     "anchor": "api-5"
   },
@@ -21490,7 +21490,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 99,
+    "line": 95,
     "page": "std-net.md",
     "anchor": "api-6"
   },
@@ -21522,7 +21522,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 113,
+    "line": 109,
     "page": "std-net.md",
     "anchor": "api-7"
   },
@@ -21556,7 +21556,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 120,
+    "line": 116,
     "page": "std-net.md",
     "anchor": "api-8"
   },
@@ -21602,7 +21602,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 133,
+    "line": 129,
     "page": "std-net.md",
     "anchor": "api-9"
   },
@@ -21642,7 +21642,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 143,
+    "line": 139,
     "page": "std-net.md",
     "anchor": "api-10"
   },
@@ -21669,7 +21669,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 147,
+    "line": 143,
     "page": "std-net.md",
     "anchor": "api-11"
   },
@@ -21679,7 +21679,7 @@
     "owner": "TcpListener",
     "signature": "std::lang::String lastError()",
     "documentation": "返回连接/网络操作最近的错误文本。\n\n**返回值**：std::lang::String。",
-    "comment": "",
+    "comment": "/** @brief 最近一次出错说明；String 为值语义，返回的是独立副本。 */",
     "parameters": [],
     "returns": {
       "type": "std::lang::String",
@@ -21694,7 +21694,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 148,
+    "line": 146,
     "page": "std-net.md",
     "anchor": "api-12"
   },
@@ -21721,7 +21721,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 151,
+    "line": 149,
     "page": "std-net.md",
     "anchor": "api-13"
   },
@@ -21755,7 +21755,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 154,
+    "line": 152,
     "page": "std-net.md",
     "anchor": "api-14"
   },
@@ -21782,7 +21782,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 164,
+    "line": 162,
     "page": "std-net.md",
     "anchor": "api-15"
   },
@@ -21809,7 +21809,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 166,
+    "line": 164,
     "page": "std-net.md",
     "anchor": "api-16"
   },
@@ -21834,7 +21834,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 193,
+    "line": 191,
     "page": "std-net.md",
     "anchor": "api-17"
   },
@@ -21868,7 +21868,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 196,
+    "line": 194,
     "page": "std-net.md",
     "anchor": "api-18"
   },
@@ -21893,7 +21893,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 217,
+    "line": 215,
     "page": "std-net.md",
     "anchor": "api-19"
   },
@@ -21927,7 +21927,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 219,
+    "line": 217,
     "page": "std-net.md",
     "anchor": "api-20"
   },
@@ -21979,7 +21979,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 259,
+    "line": 257,
     "page": "std-net.md",
     "anchor": "api-21"
   },
@@ -22013,7 +22013,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 285,
+    "line": 283,
     "page": "std-net.md",
     "anchor": "api-22"
   },
@@ -22059,7 +22059,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 333,
+    "line": 331,
     "page": "std-net.md",
     "anchor": "api-23"
   },
@@ -22084,7 +22084,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 340,
+    "line": 338,
     "page": "std-net.md",
     "anchor": "api-24"
   },
@@ -22134,7 +22134,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 352,
+    "line": 350,
     "page": "std-net.md",
     "anchor": "api-25"
   },
@@ -22161,7 +22161,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 374,
+    "line": 372,
     "page": "std-net.md",
     "anchor": "api-26"
   },
@@ -22193,7 +22193,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 380,
+    "line": 378,
     "page": "std-net.md",
     "anchor": "api-27"
   },
@@ -22237,7 +22237,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 405,
+    "line": 403,
     "page": "std-net.md",
     "anchor": "api-28"
   },

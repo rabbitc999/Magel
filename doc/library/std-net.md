@@ -298,7 +298,7 @@ std::lang::String lastError();
 
 返回连接/网络操作最近的错误文本。
 
-最近一次出错说明。 返回值要**自己造一块新串**：Magel 的字符串赋值是别名语义（`String t = s.field;` 只是 借那块串），直接把字段交出去的话，字段所属的对象一释放调用方就悬空。
+最近一次出错说明。 直接返回字段即可：String 是值语义，`return self.error;` 交出的是独立副本， 接收者释放后调用方手上的串仍然有效。
 
 **参数**
 
@@ -356,7 +356,7 @@ int64 status();
 obj.status();
 ```
 
-**源码**：[source/std/net.mgl:87](../../source/std/net.mgl#L87)。
+**源码**：[source/std/net.mgl:83](../../source/std/net.mgl#L83)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -394,7 +394,7 @@ void close();
 obj.close();
 ```
 
-**源码**：[source/std/net.mgl:90](../../source/std/net.mgl#L90)。
+**源码**：[source/std/net.mgl:86](../../source/std/net.mgl#L86)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -434,7 +434,7 @@ int64 send(std::lang::String data);
 obj.send(data);
 ```
 
-**源码**：[source/std/net.mgl:99](../../source/std/net.mgl#L99)。
+**源码**：[source/std/net.mgl:95](../../source/std/net.mgl#L95)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -474,7 +474,7 @@ std::lang::String receive(int32 maxBytes);
 obj.receive(maxBytes);
 ```
 
-**源码**：[source/std/net.mgl:113](../../source/std/net.mgl#L113)。
+**源码**：[source/std/net.mgl:109](../../source/std/net.mgl#L109)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -514,7 +514,7 @@ std::lang::String receiveLine(int32 timeoutMs);
 obj.receiveLine(timeoutMs);
 ```
 
-**源码**：[source/std/net.mgl:120](../../source/std/net.mgl#L120)。
+**源码**：[source/std/net.mgl:116](../../source/std/net.mgl#L116)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -554,7 +554,7 @@ static TcpListener listen(std::lang::String host, int32 port, int32 backlog);
 std::net::TcpListener::listen(host, port, backlog);
 ```
 
-**源码**：[source/std/net.mgl:133](../../source/std/net.mgl#L133)。
+**源码**：[source/std/net.mgl:129](../../source/std/net.mgl#L129)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -595,7 +595,7 @@ static TcpListener listen(std::lang::String host, int32 port);
 std::net::TcpListener::listen(host, port);
 ```
 
-**源码**：[source/std/net.mgl:143](../../source/std/net.mgl#L143)。
+**源码**：[source/std/net.mgl:139](../../source/std/net.mgl#L139)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -631,7 +631,7 @@ bool isOpen();
 obj.isOpen();
 ```
 
-**源码**：[source/std/net.mgl:147](../../source/std/net.mgl#L147)。
+**源码**：[source/std/net.mgl:143](../../source/std/net.mgl#L143)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -648,6 +648,8 @@ std::lang::String lastError();
 **行为**
 
 返回连接/网络操作最近的错误文本。
+
+最近一次出错说明；String 为值语义，返回的是独立副本。
 
 **参数**
 
@@ -667,7 +669,7 @@ std::lang::String lastError();
 obj.lastError();
 ```
 
-**源码**：[source/std/net.mgl:148](../../source/std/net.mgl#L148)。
+**源码**：[source/std/net.mgl:146](../../source/std/net.mgl#L146)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -705,7 +707,7 @@ int64 localPort();
 obj.localPort();
 ```
 
-**源码**：[source/std/net.mgl:151](../../source/std/net.mgl#L151)。
+**源码**：[source/std/net.mgl:149](../../source/std/net.mgl#L149)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -745,7 +747,7 @@ TcpSocket accept(int32 timeoutMs);
 obj.accept(timeoutMs);
 ```
 
-**源码**：[source/std/net.mgl:154](../../source/std/net.mgl#L154)。
+**源码**：[source/std/net.mgl:152](../../source/std/net.mgl#L152)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -783,7 +785,7 @@ TcpSocket accept();
 obj.accept();
 ```
 
-**源码**：[source/std/net.mgl:164](../../source/std/net.mgl#L164)。
+**源码**：[source/std/net.mgl:162](../../source/std/net.mgl#L162)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -819,7 +821,7 @@ void close();
 obj.close();
 ```
 
-**源码**：[source/std/net.mgl:166](../../source/std/net.mgl#L166)。
+**源码**：[source/std/net.mgl:164](../../source/std/net.mgl#L164)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -855,7 +857,7 @@ bool isSuccess();
 obj.isSuccess();
 ```
 
-**源码**：[source/std/net.mgl:193](../../source/std/net.mgl#L193)。
+**源码**：[source/std/net.mgl:191](../../source/std/net.mgl#L191)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -895,7 +897,7 @@ std::lang::String header(std::lang::String name);
 obj.header(name);
 ```
 
-**源码**：[source/std/net.mgl:196](../../source/std/net.mgl#L196)。
+**源码**：[source/std/net.mgl:194](../../source/std/net.mgl#L194)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -933,7 +935,7 @@ std::lang::String httpScheme();
 std::net::httpScheme();
 ```
 
-**源码**：[source/std/net.mgl:217](../../source/std/net.mgl#L217)。
+**源码**：[source/std/net.mgl:215](../../source/std/net.mgl#L215)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -971,7 +973,7 @@ Url parseUrl(std::lang::String url);
 std::net::parseUrl(url);
 ```
 
-**源码**：[source/std/net.mgl:219](../../source/std/net.mgl#L219)。
+**源码**：[source/std/net.mgl:217](../../source/std/net.mgl#L217)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -1014,7 +1016,7 @@ std::lang::String buildRequest(std::lang::String method, std::lang::String url, 
 std::net::buildRequest(method, url, body, contentType);
 ```
 
-**源码**：[source/std/net.mgl:259](../../source/std/net.mgl#L259)。
+**源码**：[source/std/net.mgl:257](../../source/std/net.mgl#L257)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -1054,7 +1056,7 @@ HttpResponse parseResponse(std::lang::String raw);
 std::net::parseResponse(raw);
 ```
 
-**源码**：[source/std/net.mgl:285](../../source/std/net.mgl#L285)。
+**源码**：[source/std/net.mgl:283](../../source/std/net.mgl#L283)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -1094,7 +1096,7 @@ bool connect(std::lang::String host, int32 port, int32 timeoutMs);
 obj.connect(host, port, timeoutMs);
 ```
 
-**源码**：[source/std/net.mgl:333](../../source/std/net.mgl#L333)。
+**源码**：[source/std/net.mgl:331](../../source/std/net.mgl#L331)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -1132,7 +1134,7 @@ std::lang::String readAll();
 obj.readAll();
 ```
 
-**源码**：[source/std/net.mgl:340](../../source/std/net.mgl#L340)。
+**源码**：[source/std/net.mgl:338](../../source/std/net.mgl#L338)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -1175,7 +1177,7 @@ HttpResponse exchange(std::lang::String method, std::lang::String url, std::lang
 obj.exchange(method, url, body, contentType);
 ```
 
-**源码**：[source/std/net.mgl:352](../../source/std/net.mgl#L352)。
+**源码**：[source/std/net.mgl:350](../../source/std/net.mgl#L350)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -1211,7 +1213,7 @@ void close();
 obj.close();
 ```
 
-**源码**：[source/std/net.mgl:374](../../source/std/net.mgl#L374)。
+**源码**：[source/std/net.mgl:372](../../source/std/net.mgl#L372)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -1251,7 +1253,7 @@ static HttpResponse fetch(std::lang::String url);
 std::net::HttpClient::fetch(url);
 ```
 
-**源码**：[source/std/net.mgl:380](../../source/std/net.mgl#L380)。
+**源码**：[source/std/net.mgl:378](../../source/std/net.mgl#L378)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -1293,6 +1295,6 @@ static HttpResponse submit(std::lang::String url, std::lang::String body, std::l
 std::net::HttpClient::submit(url, body, contentType);
 ```
 
-**源码**：[source/std/net.mgl:405](../../source/std/net.mgl#L405)。
+**源码**：[source/std/net.mgl:403](../../source/std/net.mgl#L403)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。

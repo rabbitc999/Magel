@@ -74,14 +74,10 @@ struct TcpSocket {
     /**
      * @brief 最近一次出错说明。
      *
-     * 返回值要**自己造一块新串**：Magel 的字符串赋值是别名语义（`String t = s.field;` 只是
-     * 借那块串），直接把字段交出去的话，字段所属的对象一释放调用方就悬空。
+     * 直接返回字段即可：String 是值语义，`return self.error;` 交出的是独立副本，
+     * 接收者释放后调用方手上的串仍然有效。
      */
-    std::lang::String lastError() {
-        std::lang::String out = "";
-        out = out + self.error;
-        return out;
-    }
+    std::lang::String lastError() { return self.error; }
 
     /** @brief 最近一次读的结果：NET_OK / NET_CLOSED / NET_TIMEOUT / NET_ERROR。 */
     int64 status() { return (int64)__netStatus(); }
@@ -145,6 +141,8 @@ struct TcpListener {
     }
 
     bool isOpen() { return self.opened; }
+
+    /** @brief 最近一次出错说明；String 为值语义，返回的是独立副本。 */
     std::lang::String lastError() { return self.error; }
 
     /** @brief 本端端口（监听器常用端口 0 让系统分配，再从这里读回来）。 */
