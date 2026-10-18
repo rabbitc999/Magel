@@ -1,0 +1,25 @@
+/* glue_members.mgl —— 成员函数各自带宿主符号（胶水层 `Declarations::memberFunctions`）
+ *
+ *   ./magel samples/glue_members.mgl
+ *
+ * 胶水里只写（见 `magel_driver.inc` 的 `InstallDemoGlue`）：
+ *
+ *   declarations.structType("GlueDemoRect", {{"int64", "width"}, {"int64", "height"}});
+ *   declarations.memberFunctions("GlueDemoRect",
+ *       {{"int64", "area", "glue_demo_rect_area", {}},
+ *        {"int64", "area", "glue_demo_rect_area_scaled", {{"int64", "factor"}}},
+ *        {"int64", "perimeter", "glue_demo_rect_perimeter", {}}});
+ *
+ * 编译器自动合成 `GlueDemoRect__glue__area` 这样的单方法接口 + impl，本文件里看不到
+ * `struct` / `interface` / `impl`，直接调成员即可。两条 `area` 同名不同参，靠各自的
+ * 宿主符号区分 —— 这是 `<impl 符号>.<方法名>` 约定做不到的。
+ */
+int64 main()
+{
+    GlueDemoRect rect;
+    rect.width = 3;
+    rect.height = 5;
+    println("rect area={} scaled={} perimeter={}", rect.area(), rect.area(2),
+    rect.perimeter());
+    return 0;
+}

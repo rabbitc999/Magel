@@ -1,0 +1,1 @@
+int64 main() { int64 data[3 / 0]; return 0; }

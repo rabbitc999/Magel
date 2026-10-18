@@ -1,0 +1,27 @@
+/* pointer.mgl —— 只读引用借用数组或结构体存储；address 只读出地址，
+ * 整数地址不能转回引用，局部存储的绝对地址由运行时决定。 */
+
+struct Point {
+    int64 x;
+    int64 y;
+};
+
+int64 main() {
+    int64 m[4];
+    m[0] = 10;
+    m[1] = 20;
+    m[2] = 30;
+    m[3] = 40;
+
+    int64 const& p = (int64 const&)m;                 /* 数组存储 → 只读元素引用 */
+    println("p[1]={}, p[3]={}, *p={}", p[1], p[3], *p);
+    println("same address={}", address(p) == address(&m[0]));
+
+    Point origin;
+    origin.x = 7;
+    origin.y = 8;
+    Point const& q = (Point const&)origin;   /* 借用原结构体的存储 */
+    println("q->x={} q->y={}", q->x, q->y);
+    println("origin.x={}", origin.x);
+    return 0;
+}

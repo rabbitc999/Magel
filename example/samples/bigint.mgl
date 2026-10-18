@@ -1,0 +1,77 @@
+/* bigint.mgl —— 任意精度整数 `BigInteger`：加 / 减 / 乘 / 除 / 取余。
+ *
+ *   ./magel samples/bigint.mgl
+ *   → 100 的阶乘、斐波那契第 200 项、整除与余数、比较与转换
+ *
+ * `BigInteger` 的值是**运行期对象表**里的句柄，真正的算术在 C++ 侧 —— 后端是仓库里的
+ * `library/big_number`（`bigint::BigInt`）：加 / 减 / 乘 / 除 / 取余都是任意的精度，
+ * `int64` 装不下的数也能算。写法上它和整数一样自然：
+ *
+ *   * 构造：`BigInteger("123456789012345678901234567890")` / `BigInteger(42)` / `BigInteger(3.14)`
+ *   * 运算：`+` `-` `*` `/` `%`（和 `int64` / `float64` 混着写也行，另一边自动转过来）
+ *   * 比较：`==` `!=` `<` `<=` `>` `>=`
+ *   * 转字符串：`a.str()`（拿到 `String`，可以拼接 / 打印 / 切片）
+ *   * 转回机器数：`(int64)a` / `(float64)a`（超出范围按低 64 位截断，和 C 一个脾气）
+ *   * 生命周期：和字符串一样**归声明它的块**，出块自动释放（要提前还就 `delete a;`）
+ */
+
+/** 阶乘：`n! = n × (n-1)!`（100! 有 158 位，早就超出 64 位整数了）。 */
+BigInteger factorial(int64 n) {
+    BigInteger result = BigInteger(1);
+    for (int64 i = 2; i <= n; i = i + 1) {
+        result = result * i;      /* `BigInteger * int64`：i 自动转成大整数 */
+    }
+    return result;                /* 返回出去的对象归调用方（本块不释放它） */
+}
+
+/** 斐波那契（迭代）：`f(k) = f(k-1) + f(k-2)`。 */
+BigInteger fibonacci(int64 n) {
+    BigInteger a = BigInteger(0);
+    BigInteger b = BigInteger(1);
+    for (int64 i = 0; i < n; i = i + 1) {
+        BigInteger next = a + b;
+        a = b;
+        b = next;
+    }
+    return a;
+}
+
+int64 main() {
+    /* 1) 阶乘：小的一眼能对，大的才是 BigInteger 的意义 */
+    println("5!  = {}", factorial(5).str());
+    println("20! = {}", factorial(20).str());
+    /* 先落进一个变量：这块串归 `hundred` 所有（省得白造一棵 158 位的串） */
+    String hundred = factorial(100).str();
+    println("100! = {}\n（共 {} 位数字）", hundred, len(hundred));
+
+    /* 2) 斐波那契第 200 项（约 4.2e41） */
+    println("fib(100) = {}", fibonacci(100).str());
+    println("fib(200) = {}", fibonacci(200).str());
+
+    /* 3) 除与取余：向零截断，`a == (a / b) * b + a % b` 恒成立 */
+    BigInteger a = BigInteger("1000000000000000000000000000000");   /* 10^30 */
+    BigInteger b = BigInteger(7);
+    println("10^30 / 7 = {}", (a / b).str());
+    println("10^30 % 7 = {}", (a % b).str());
+    println("验算：(a/b)*b + a%b == a ? {}", (a / b) * b + a % b == a);
+
+    /* 4) 比较与负数 */
+    BigInteger negative = BigInteger("-123456789012345678901234567890");
+    println("负数 = {}，它 < 0 ? {}，取负之后 > 0 ? {}",
+    negative.str(), negative < 0, -negative > 0);
+
+    /* 5) 转回机器数：放得下就给准确值 */
+    BigInteger small = BigInteger("9223372036854775807");            /* int64 的最大值 */
+    println("(int64)9223372036854775807 = {}", (int64)small);
+    println("(float64)10^30 ≈ {:3F}", (float64)a);
+
+    /* 7) 从输入读一个大整数：`inputBigInteger()`（check.sh 用 expected/bigint.in） */
+    BigInteger typed = BigInteger(0);
+    typed = inputBigInteger();
+    println("从输入读到：{}，它 + 1 = {}", typed.str(), (typed + 1).str());
+
+    /* 6) 和字符串配合：拼接、格式化都行 */
+    String text = "100! = " + hundred;
+    println("拼出来：{}（共 {} 字节）", text, len(text));
+    return 0;
+}

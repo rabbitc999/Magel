@@ -1,0 +1,44 @@
+/* structs.mgl —— 结构体数组（T arr[3]）与结构体引用。
+ *
+ *   ./magel samples/structs.mgl
+ *   → 逐个填、逐个读，用引用把整个数组走一遍，再看一眼结构体赋值是**值拷贝**
+ */
+
+struct Item {
+    int64 id;
+    int64 price;
+
+    int64 total() {
+        return id * price;
+    }
+};
+
+int64 main() {
+    Item items[3];       /* 结构体数组：每个元素占 2 个字段 = 16 字节 */
+
+    int64 i = 0;
+    while (i < 3) {
+        items[i].id = i + 1;
+        items[i].price = (i + 1) * 10;
+        i = i + 1;
+    }
+
+    i = 0;
+    while (i < 3) {
+        println("items[{}]: id={} price={} total={}", i, items[i].id, items[i].price,
+        items[i].total());
+        i = i + 1;
+    }
+
+    /* 结构体引用 + 引用下标：p[i] 走的是同一个 stride（每个元素 16 字节） */
+    Item const& p = (Item const&)items;
+    println("p[2].id={} p[2].price={} p->id={}", p[2].id, p[2].price, p->id);
+
+    /* 结构体赋值是**值拷贝**（深拷贝）：first 是独立的一份，
+     * 改 first.id 不会动到 items[0].id。要"共享同一份"就存引用（见 struct_value.mgl）。 */
+    Item first;
+    first = items[0];
+    first.id = 99;
+    println("first.id={} items[0].id={}（两份独立）", first.id, items[0].id);
+    return 0;
+}

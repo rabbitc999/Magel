@@ -1,0 +1,44 @@
+/** 使用 Option<Cell mut&> 表示链表尾部，引用本身始终绑定有效节点。 */
+struct Cell { int64 value; Option<Cell mut&> next; };
+Option<Cell mut&> push_front(Option<Cell mut&> head, int64 value) {
+    Cell mut& node = heap Cell;
+    node.value = value; node.next = head;
+    return Option<Cell mut&>::Value(node);
+}
+int64 sum_of(Option<Cell mut&> head) {
+    int64 total = 0;
+    Option<Cell mut&> cursor = head;
+    while (cursor.isValue()) {
+        Cell mut& node = cursor.unwrap();
+        total = total + node.value;
+        cursor = node.next;
+    }
+    return total;
+}
+void free_list(Option<Cell mut&> head) {
+    Option<Cell mut&> cursor = head;
+    while (cursor.isValue()) {
+        Cell mut& node = cursor.unwrap();
+        cursor = node.next;
+        delete node;
+    }
+}
+int64 main() {
+    Option<Cell mut&> head = Option<Cell mut&>::None;
+    head = push_front(head, 1); head = push_front(head, 2); head = push_front(head, 3);
+    print("链表：");
+    Option<Cell mut&> cursor = head;
+    while (cursor.isValue()) {
+        Cell mut& node = cursor.unwrap();
+        print("{} ", node.value);
+        cursor = node.next;
+    }
+    println("\n元素和 = {}", sum_of(head));
+    Cell mut& first = head.unwrap();
+    println("删掉头节点 {}", first.value);
+    head = first.next;
+    delete first;
+    println("剩下的元素和 = {}", sum_of(head));
+    free_list(head);
+    return 0;
+}

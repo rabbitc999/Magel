@@ -1,0 +1,38 @@
+/* branch_owned_temp.mgl —— 分支 / 循环体里"当场造出来的持有串"的归属。
+ *
+ * 这类串归**声明它的那一层块**所有：出块时自动还回去（循环里不会一路涨），
+ * 而且那条分支没走时，停机清理**不能**去还它 —— 它压根没定义过。
+ * 早期版本会在函数出口无条件还一遍，于是 `f(false)` 这种调用会报"读未定义的变量"。
+ */
+
+String stamp(int64 n) { return format("第 {} 号", n); }
+
+/* 分支没走时，块里那两个串都不该被动到。 */
+String maybe(bool take, int64 n) {
+    String result = "空";
+    if (take) {
+        String built = "拼" + format("{}", n);
+        result = built + "！";
+    }
+    return result;
+}
+
+int64 main() {
+    println("{} / {}", maybe(false, 1), maybe(true, 1));
+
+    /* 循环体里每轮的串都当场还回去：不管跑多少轮，占用都是常数。 */
+    int64 i = 0;
+    while (i < 3) {
+        String item = stamp(i);
+        println("{}", item);
+        i = i + 1;
+    }
+
+    /* 裸块 + 提前 return 的组合也走一遍。 */
+    {
+        String scoped = format("块内 {} ", 7);
+        println("{}", scoped);
+    }
+    println("结束");
+    return 0;
+}

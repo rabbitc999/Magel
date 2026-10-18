@@ -1,0 +1,1 @@
+magel：前处理：example/samples-error/macro_gensym_invalid.mgl 第 2 行：占位符 `$999999999999999999999999` 只能出现在 `$macro` / `$replace` 的宏体内

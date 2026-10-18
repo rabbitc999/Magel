@@ -1,0 +1,42 @@
+/* replace.mgl —— 单行宏 `$replace`
+ *
+ *   ./magel samples/replace.mgl
+ *
+ * `$replace` 把声明写在**一行**里：`$replace 宏名(形参) 宏体`，没有 `$end_macro`。
+ * 它支持 `$macro` 的所有"行内"规则——形参前反引号、宏名前 `!`、`$stringify(…)`、
+ * `$concat(…)`（`concat` 只拼标识符，所以拼接用的形参不能再加反引号）、`$line` / `$file` /
+ * `$module`；但宏体只有一行，装不下 `$for` 这类块（要它们请用 `$macro … $end_macro`）。
+ * 宏名、调用方式和 `$macro` 完全一样，两种声明混用也行。
+ * 无形参的对象宏可以省掉括号：`$replace 宏名 宏体`，调用处裸写宏名。
+ */
+
+$replace expr ADD((a), (b)) a + b
+$replace TIMES_TWO((x)) x * 2
+$replace SHOW(x) $stringify(x)
+$replace MAKE(pre, suffix) $concat(pre, suffix)
+$replace AT $line
+$replace LIMIT 100
+
+int64 var_x = 9;
+
+int64 main() {
+    /* `!` 整段包一层：((2) + (3)) * 10 = 50；不写 ! 就是 2 + 3 * 10 = 32。 */
+    println("{}", $ADD(2, 3) * 10);
+
+    /* 形参包一层：(1 + 2) * 2 = 6；不写反引号就是 1 + 2 * 2 = 5。 */
+    println("{}", $TIMES_TWO(1 + 2));
+
+    /* `$stringify` 拿原始拼写，打印 "1 + 2"。 */
+    println("{}", $SHOW(1 + 2));
+
+    /* `$concat` 拼出来的变量名照样可用。 */
+    println("{}", $MAKE(var, _x));
+
+    /* `$line` 取的是调用点所在行。 */
+    println("{}", $AT);
+
+    /* 省括号的对象宏：调用处写 `$LIMIT`，不带实参。 */
+    println("{}", $LIMIT + 1);
+
+    return 0;
+}

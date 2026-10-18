@@ -1,0 +1,55 @@
+/* 函数类型直接写 返回类型 fn(参数类型...)，可用于变量、字段、数组和回调参数。 */
+
+
+/* 返回类型也可以是结构体 */
+
+struct Point {
+    int64 x;
+    int64 y;
+};
+
+Point point_at(int64 x, int64 y) {
+    Point p;
+    p.x = x;
+    p.y = y;
+    return p;
+}
+
+int64 add(int64 a, int64 b) { return a + b; }
+int64 sub(int64 a, int64 b) { return a - b; }
+int64 mul(int64 a, int64 b) { return a * b; }
+
+/* 函数指针数组：按下标当"操作码"查表 */
+int64 fn(int64, int64) ops[4];
+
+/* 函数类型作为结构体字段 */
+struct Calculator {
+    int64 fn(int64, int64) op;
+};
+
+/* 函数类型作为形参（回调） */
+int64 apply(int64 fn(int64, int64) f, int64 a, int64 b) {
+    return f(a, b);
+}
+
+int64 main() {
+    ops[0] = add;
+    ops[1] = sub;
+    ops[2] = mul;
+    ops[3] = add;                             /* 表里留一个空位 */
+
+    println("6 + 7 = {}", ops[0](6, 7));
+    println("6 - 7 = {}", ops[1](6, 7));
+    println("6 * 7 = {}", apply(ops[2], 6, 7));
+    println("第 4 个函数是 add：{}", ops[3] == add);
+    println("同一个函数取址一样：{}", ops[0] == add);
+
+    Calculator calc;
+    calc.op = mul;
+    println("calc.op(3, 4) = {}", calc.op(3, 4));
+
+    Point fn(int64, int64) at = point_at;                   /* 返回结构体的函数指针 */
+    Point p = at(3, 4);
+    println("at(3, 4) = ({}, {})", p.x, p.y);
+    return 0;
+}

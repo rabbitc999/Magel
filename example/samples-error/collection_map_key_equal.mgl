@@ -1,0 +1,1 @@
+struct Key { int64 id; }; int64 main() { std::lang::Map<Key, int64> value; return 0; }

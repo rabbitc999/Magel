@@ -1,0 +1,212 @@
+\chapter{标准库速查}
+\label{ch:appB}
+
+Magel 的「标准库」不是一堆函数，而是一组模块：除核心 \texttt{std:\allowbreak{}:\allowbreak{}lang} 自动加载外，其余都得先 \texttt{import}。这份附录按能力域把它们列一遍，让你知道「想干这件事，该去 \texttt{import} 谁」；每个模块的完整签名与错误边界，去\href{https://github.com/rabbitc999/Magel/blob/master/doc/library/README.md}{库函数 API 参考}查。
+
+\begin{tip}{提示}
+模块名与方法对齐 Magel 1.0.0。终端中可以直接用 \texttt{magel man} 查模块，用\texttt{magel man 模块:\allowbreak{}:\allowbreak{}符号} 查签名、说明和示例；命令说明见 \href{https://github.com/rabbitc999/Magel/blob/master/doc/man/README.md}{doc/man}。
+\end{tip}
+
+\section{先看一个例子}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+import std::math;
+import std::text;
+import std::iter;
+
+int64 main()
+{
+    println("sqrt={}", std::math::sqrt(144.0));
+    println("upper={}", std::text::Text::toUpper("magel"));
+    int64 sum = 0;
+    for (int64 v in std::iter::range(1, 5))
+    {
+        sum += v;
+    }
+    println("sum={}", sum);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+sqrt=12
+upper=MAGEL
+sum=10
+\end{lstlisting}
+\par
+\medskip
+
+三行分别来自三个模块：数学、文本、迭代。注意 \texttt{range(\allowbreak{}1,\allowbreak{} 5)\allowbreak{}} 是左闭右开 （拿到 1、2、3、4），所以 \texttt{sum} 是 10——这是第 17 章的规矩，标准库里凡带「起点、终点」的地方都一样。
+
+\section{核心模块 \texttt{std:\allowbreak{}:\allowbreak{}lang}（不用 import）}
+
+这几样任何程序里都能直接用：
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+能力 & 用法 \\
+\midrule
+输出 & \texttt{println(\allowbreak{}fmt,\allowbreak{} …)\allowbreak{}}、\texttt{format(\allowbreak{}fmt,\allowbreak{} …)\allowbreak{}} \\
+断言 & \texttt{assert(\allowbreak{}cond)\allowbreak{}} \\
+取长度 & \texttt{len(\allowbreak{}x)\allowbreak{}}（字符串 / 容器） \\
+字符串 & \texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}String} \\
+容器 & \texttt{List<\allowbreak{}T>\allowbreak{}}、\texttt{Map<\allowbreak{}K,\allowbreak{}V>\allowbreak{}}、\texttt{Set<\allowbreak{}T>\allowbreak{}} \\
+类型擦除盒子 & \texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}Any}（第 13 章的运行期多态） \\
+数学常数 & \texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}Math:\allowbreak{}:\allowbreak{}PI}、\texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}Math:\allowbreak{}:\allowbreak{}E} \\
+大数 & \texttt{Big\allowbreak{}Integer}、\texttt{Big\allowbreak{}Decimal} \\
+输入 & \texttt{input(\allowbreak{}variable)\allowbreak{}} \\
+整行输入 & \texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}read\allowbreak{}Line(\allowbreak{})\allowbreak{}}，保留空格，不含 LF/CRLF \\
+多行输入 & \texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}read\allowbreak{}Lines(\allowbreak{}int32 N)\allowbreak{}}，LF 连接，EOF 提前结束 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{tip}{提示}
+早年间它们不在 \texttt{lang} 里也能用（靠 \texttt{source/\allowbreak{}std/\allowbreak{}lang.\allowbreak{}mgl} 注入正文）。现在除了上面这些，其它能力一律要显式 \texttt{import}——这是第 18 章「模块与工程」讲过的变化。
+\end{tip}
+
+\section{按能力域速查}
+
+\subsection{数学与数值}
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.108\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.872\linewidth-2\tabcolsep\relax}}
+\toprule
+模块 & 能干什么 \\
+\midrule
+\endhead
+\texttt{std:\allowbreak{}:\allowbreak{}math} & \texttt{sin} \texttt{cos} \texttt{sqrt} 等常用函数；\texttt{abs} \texttt{min} \texttt{max} 是泛型入口，\texttt{min}/\texttt{max} 可以给任意多个实参（常数见 \texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}Math}） \\
+\texttt{std:\allowbreak{}:\allowbreak{}numerics} & 标量数值方法：导数、辛普森积分、二分、RK4、牛顿迭代 \\
+\texttt{std:\allowbreak{}:\allowbreak{}numtheory} & 整数数论：模块级泛型 \texttt{gcd} \texttt{lcm}（任意多个实参）、\texttt{add\allowbreak{}Mod} \texttt{mul\allowbreak{}Mod} \texttt{pow\allowbreak{}Mod} \texttt{mod\allowbreak{}Inverse}，以及确定性的 \texttt{is\allowbreak{}Prime}（Miller-Rabin） \\
+\texttt{std:\allowbreak{}:\allowbreak{}complex} & 复数 \texttt{Complex<\allowbreak{}T>\allowbreak{}}，加减乘除都是一等公民 \\
+\texttt{std:\allowbreak{}:\allowbreak{}linalg} & 稠密向量与矩阵：\texttt{lu\allowbreak{}Decompose} \texttt{symmetric\allowbreak{}Eigen} \texttt{svd} \texttt{jordan2} \texttt{diagonalize2} \\
+\texttt{std:\allowbreak{}:\allowbreak{}random} & 确定性随机数（LCG）与熵播种；句柄型状态，实现 \texttt{Drop} \\
+\texttt{std:\allowbreak{}:\allowbreak{}signal} & DFT / FFT 与逆变换；基 2 的 FFT 只接受 2 的幂长度 \\
+\bottomrule
+\end{longtable}
+}
+
+\subsection{文本与数据格式}
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.140\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.840\linewidth-2\tabcolsep\relax}}
+\toprule
+模块 & 能干什么 \\
+\midrule
+\endhead
+\texttt{std:\allowbreak{}:\allowbreak{}text} & \texttt{Text:\allowbreak{}:\allowbreak{}find} \texttt{split} \texttt{join} \texttt{replace} \texttt{trim} \texttt{to\allowbreak{}Upper} \texttt{pad\allowbreak{}Start} …… \\
+\texttt{std:\allowbreak{}:\allowbreak{}json} & \texttt{parse} \ensuremath{\rightarrow} \texttt{Result<\allowbreak{}Json\allowbreak{}Value,\allowbreak{} String>\allowbreak{}}；再 \texttt{is\allowbreak{}Int} \texttt{is\allowbreak{}Object} \texttt{len} \texttt{as\allowbreak{}Int} \texttt{as\allowbreak{}String} 取值 \\
+\texttt{std:\allowbreak{}:\allowbreak{}toml} & 与 json 同构的 TOML 文档访问 \\
+\texttt{std:\allowbreak{}:\allowbreak{}regex} & 正则；模式缓存在宿主侧，Magel 侧只拿一个整数句柄 \\
+\texttt{std:\allowbreak{}:\allowbreak{}parse} & 字符串 \ensuremath{\rightarrow} 整数，失败给 \texttt{Parse\allowbreak{}Error} \\
+\texttt{std:\allowbreak{}:\allowbreak{}binary} & 定宽解码、字节序处理与边界检查 \\
+\texttt{std:\allowbreak{}:\allowbreak{}path} & 路径拼接、取文件名、取扩展名、规范化 \\
+\texttt{std:\allowbreak{}:\allowbreak{}compress} & 文本压缩 / 解压；压缩结果是二进制 \texttt{List<\allowbreak{}uint8>\allowbreak{}} \\
+\bottomrule
+\end{longtable}
+}
+
+\subsection{并发与协作}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+模块 & 能干什么 \\
+\midrule
+\texttt{std:\allowbreak{}:\allowbreak{}coroutine} & 共享协程 \\
+\texttt{std:\allowbreak{}:\allowbreak{}thread} & 隔离线程 \texttt{Isolated\allowbreak{}Thread} \\
+\texttt{std:\allowbreak{}:\allowbreak{}message} & 跨协程 / 跨线程的消息 \\
+\texttt{std:\allowbreak{}:\allowbreak{}concurrency} & 显式共享槽 \texttt{Shared<\allowbreak{}T>\allowbreak{}}（普通全局变量在线程间仍是隔离的） \\
+\texttt{std:\allowbreak{}:\allowbreak{}event} & 中断事件与软件定时器；\texttt{start(\allowbreak{})\allowbreak{}} 后按周期在指令边界触发 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{tip}{提示}
+\texttt{Shared\allowbreak{}Coroutine} / \texttt{Isolated\allowbreak{}Thread} / \texttt{Message} 是三个独立模块，不能合并——它们各自有同名的宿主函数 \texttt{create} / \texttt{wait} / \texttt{receive}。
+\end{tip}
+
+\subsection{系统与环境}
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.136\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.844\linewidth-2\tabcolsep\relax}}
+\toprule
+模块 & 能干什么 \\
+\midrule
+\endhead
+\texttt{std:\allowbreak{}:\allowbreak{}io} & 文件读写；错误类型 \texttt{Io\allowbreak{}Error}（\texttt{Open\allowbreak{}Failed} \texttt{Read\allowbreak{}Failed} \texttt{Write\allowbreak{}Failed} \texttt{Seek\allowbreak{}Failed} \texttt{Closed}） \\
+\texttt{std:\allowbreak{}:\allowbreak{}net} & TCP 与极简 HTTP 客户端；套接字在宿主胶水里，Magel 侧只拿 \texttt{int32} 句柄 \\
+\texttt{std:\allowbreak{}:\allowbreak{}sql} & 连 MySQL / SQLite / PostgreSQL / SQL Server；SQL 交给数据库引擎执行 \\
+\texttt{std:\allowbreak{}:\allowbreak{}process} & 进程与系统调用；命令管道由宿主管柄池持有 \\
+\texttt{std:\allowbreak{}:\allowbreak{}clock} & 单调时钟 \texttt{steady\_clock}，只用来做差值，别当挂钟用 \\
+\texttt{std:\allowbreak{}:\allowbreak{}memory} & \texttt{Span<\allowbreak{}T>\allowbreak{}}（指针 + 长度视图）；它的迭代器给的是元素指针，能直接写 \\
+\texttt{std:\allowbreak{}:\allowbreak{}watchdog} & 软重启看门狗（水位与超时两个维度都默认关闭），桌面与板端共用一份实现 \\
+\bottomrule
+\end{longtable}
+}
+
+\subsection{迭代}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+模块 & 能干什么 \\
+\midrule
+\texttt{std:\allowbreak{}:\allowbreak{}iter} & \texttt{range}、\texttt{map} / \texttt{filter} / \texttt{collect} 惰性链，以及 \texttt{Iter\allowbreak{}Next<\allowbreak{}T>\allowbreak{}} 接口 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{tip}{提示}
+\texttt{std:\allowbreak{}:\allowbreak{}probe} 是测试用的桩模块，不是给应用用的。
+\end{tip}
+
+\section{三条容易踩的约定}
+
+一、句柄型资源要显式关。 \texttt{std:\allowbreak{}:\allowbreak{}json}、\texttt{std:\allowbreak{}:\allowbreak{}regex}、\texttt{std:\allowbreak{}:\allowbreak{}sql} 这类持有宿主资源的值，用 \texttt{close(\allowbreak{})\allowbreak{}} 关，或者让它实现 \texttt{Closeable}、由作用域替你关（第 8 章）。重复关闭返回 \texttt{false}，不会崩。
+
+二、压缩结果是二进制，不是文本。 \texttt{std:\allowbreak{}:\allowbreak{}compress} 的输出含 \texttt{\textbackslash\{\}0} 字节，类型是\texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}List<\allowbreak{}uint8>\allowbreak{}}；别拿它当字符串打印，解压出来的才是 \texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}String}。
+
+三、前端嵌入式配置固定禁用部分模块。 \texttt{std:\allowbreak{}:\allowbreak{}net}、\texttt{std:\allowbreak{}:\allowbreak{}process}、\texttt{std:\allowbreak{}:\allowbreak{}sql}、\texttt{std:\allowbreak{}:\allowbreak{}io}、\texttt{std:\allowbreak{}:\allowbreak{}thread}、\texttt{std:\allowbreak{}:\allowbreak{}coroutine}、\texttt{std:\allowbreak{}:\allowbreak{}concurrency} 在 \texttt{[\allowbreak{}embedded]\allowbreak{}} 目标下\texttt{import} 就会编译报错——不是你的代码写错了，是那一端不提供这个能力。见第 22 章。
+
+\section{细节去哪儿查}
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.318\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.662\linewidth-2\tabcolsep\relax}}
+\toprule
+你想查 & 去哪 \\
+\midrule
+\endhead
+某个函数的确切签名、默认值、返回与错误 & \href{https://github.com/rabbitc999/Magel/blob/master/doc/library/README.md}{库函数 API 参考} 与\href{https://github.com/rabbitc999/Magel/blob/master/doc/library/symbols.md}{全部函数索引} \\
+按能力域通读一遍标准库 & \href{https://github.com/rabbitc999/Magel/blob/master/doc/07-stdlib-overview.md}{07 标准库概览} \\
+标准库源码（每个模块头部都有能力说明） & \href{https://github.com/rabbitc999/Magel/tree/master/source/std}{\texttt{source/\allowbreak{}std/\allowbreak{}}} 下的 \texttt{source/\allowbreak{}std/\allowbreak{}<\allowbreak{}名字>\allowbreak{}.\allowbreak{}mgl} \\
+宿主侧绑定（\texttt{std:\allowbreak{}:\allowbreak{}*} 的真正实现） & \href{https://github.com/rabbitc999/Magel/tree/master/source/glue}{\texttt{source/\allowbreak{}glue/\allowbreak{}}} 下的 \texttt{source/\allowbreak{}glue/\allowbreak{}std\_*.\allowbreak{}hpp} \\
+可直接运行的标准库样例 & \href{https://github.com/rabbitc999/Magel/tree/master/example/samples}{\texttt{example/\allowbreak{}samples/\allowbreak{}}} \\
+\bottomrule
+\end{longtable}
+}
+
+\begin{tip}{模块名怎么读}
+\texttt{std:\allowbreak{}:\allowbreak{}json} 对应源码 \texttt{source/\allowbreak{}std/\allowbreak{}json.\allowbreak{}mgl}、胶水 \texttt{source/\allowbreak{}glue/\allowbreak{}std\_json.\allowbreak{}hpp}，三处名字一对就找到了。
+\end{tip}
+
+\section{下一步}
+
+标准库认完了，前面二十几章也读完了——接下来该自己写点东西了。
+
+\begin{itemize}
+
+\item 想先复习报错怎么读：翻回\hyperref[ch:appA]{附录 A}；
+
+\item 想把整本书的东西拼成一个完整程序：\hyperref[ch:23]{第 23 章 综合项目}；
+
+\item 想把这门语言接到你自己的 C/C++ 代码上：\hyperref[ch:21]{第 21 章 与 C 互操作}。
+
+\end{itemize}

@@ -1,0 +1,68 @@
+/* interface_system_inherit.mgl —— 接口继承**系统接口**（运算符 / 下标 / 转换 / 迭代）
+ *
+ *   ./magel samples/interface_system_inherit.mgl
+ *
+ * 用户的接口可以继承内建协议接口：`interface Indexed : Index<int64,int64> { … };`
+ * 之后，实现 `Indexed` 的结构体一并获得下标能力；`Multiply` / `ExplicitConvert` /
+ * `Iterator` 同理。派生接口里自己的普通方法不受影响，只有那条协议方法被登记。
+ */
+
+interface Indexed : Index<int64, int64> {
+    int64 size();
+};
+
+/* 名字不能叫 `Multiply`：那已经是内建系统接口，会变成自己继承自己。 */
+interface Scalable : Multiply<int64, int64> {
+    int64 scale();
+};
+
+interface Castable : ExplicitConvert<int64> { };
+
+interface Series : Iterator<int64> { };
+
+/* 同一个接口同时继承左右两边：`x + n` 用 leftAdd，`n + x` 用 rightAdd。 */
+interface BothAdd : Add<int64, int64>, RightAdd<int64, int64> {
+    int64 tag();
+};
+
+struct Table : Indexed, Scalable, Castable {
+    int64 base;
+
+    int64 size() { return self.base; }
+    int64 index(int64 key) { return self.base + key; }
+    int64 scale() { return 10; }
+    int64 leftMul(int64 value) { return self.base * value; }
+    int64 explicitConvert() { return self.base * 100; }
+};
+
+struct Countdown : Series {
+    Option<int64> iterator(int64 position) {
+        if (position < 3) { return Option<int64>::Value(3 - position); }
+        return Option<int64>::None;
+    }
+};
+
+struct Adder : BothAdd {
+    int64 base;
+
+    int64 tag() { return 2; }
+    int64 leftAdd(int64 value) { return self.base + value; }
+    int64 rightAdd(int64 value) { return value + self.base; }
+};
+
+int64 main()
+{
+    Table table;
+    table.base = 7;
+    println("size={} at={} x={} scale={} cast={}", table.size(), table[2], table * 3,
+    table.scale(), cast<int64>(table));
+
+    Countdown countdown;
+    int64 total = 0;
+    for (int64 value in countdown) { total = total + value; }
+
+    Adder adder;
+    adder.base = 5;
+    println("sum={} both={} {} {}", total, adder.tag(), adder + 1, 4 + adder);
+    return 0;
+}

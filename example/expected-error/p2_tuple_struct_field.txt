@@ -1,0 +1,1 @@
+magel：example/samples-error/p2_tuple_struct_field.mgl 第 3 行第 1 列：元组元素是只读的；请构造新元组后给整个变量赋值

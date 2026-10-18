@@ -1,0 +1,6 @@
+静态：circle area=12 | square area=9
+多态：circle（面积 48）
+多态：square（面积 25）
+同一个函数：twice_area = 96 / 50
+类型匹配：circle=1 square=1
+取回具体类型：back->r=4 back->name()=Circle

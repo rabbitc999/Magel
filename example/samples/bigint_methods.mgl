@@ -1,0 +1,50 @@
+/* bigint_methods.mgl —— BigInteger / BigDecimal 的扩展方法。
+ *
+ *   ./magel samples/bigint_methods.mgl
+ *   → 幂 / 模幂 / 数论 / 素性 / 位运算 / 进制 / 开方（整数与十进制浮点）
+ *
+ * 这些方法在语言层直接落到 `library/bignum` 的 C++ 成员上：
+ *   * 幂与数论：`.pow(e)` `.powmod(e, m)` `.mod(m)` `.modInverse(m)` `.gcd(b)` `.lcm(b)`
+ *   * 素性：`.isProbablePrime(rounds)`（Miller-Rabin，固定种子可复现）`.nextProbablePrime()`
+ *   * 位运算：`.bitLength()` `.bitAnd(b)` `.bitOr(b)` `.bitXor(b)`（仅非负数）
+ *   * 进制与开方：`.strRadix(base)`（2..36）`.iroot(k)`（整数 k 次方根）
+ *   * BigDecimal：`.pow(e)` `.sqrt(digits)` `.root(k, digits)` `.abs()` `.isInteger()`
+ *     `.floor()` `.ceil()` `.trunc()`（取整返回 BigInteger）
+ */
+
+int64 main() {
+    /* 1) 幂与数论 */
+    BigInteger a = BigInteger("1000000000000000000000000000000");
+    BigInteger big = a.pow(3);
+    println("10^30 的 3 次方共 {} 位", len(big.str()));
+    println("gcd(10^30, 70) = {}", a.gcd(BigInteger(70)).str());
+    println("(-7) mod 3 = {}", BigInteger(-7).mod(BigInteger(3)).str());
+    println("3 的模 11 逆元 = {}", BigInteger(3).modInverse(BigInteger(11)).str());
+    println("7^300 mod 1000000007 = {}",
+            BigInteger(7).powmod(BigInteger(300), BigInteger("1000000007")).str());
+    println("lcm(12, 18) = {}", BigInteger(12).lcm(BigInteger(18)).str());
+
+    /* 2) 素性（固定种子的 Miller-Rabin，同一输入多轮完全确定） */
+    println("2^61 - 1 是素数？ {}", BigInteger("2305843009213693951").isProbablePrime(25));
+    println("2^67 - 1 是素数？ {}", BigInteger("147573952589676412927").isProbablePrime(25));
+    println("2^31 - 1 的下一个素数 = {}", BigInteger(2147483647).nextProbablePrime().str());
+
+    /* 3) 位运算（仅非负数） */
+    println("12 ^ 10 = {}", BigInteger(12).bitXor(BigInteger(10)).str());
+    println("12 | 10 = {}", BigInteger(12).bitOr(BigInteger(10)).str());
+    println("1024 的位长 = {}", BigInteger(1024).bitLength());
+
+    /* 4) 进制与整数开方 */
+    println("255 的十六进制 = {}", BigInteger(255).strRadix(16));
+    println("1000 的立方根 = {}", BigInteger(1000).iroot(3).str());
+
+    /* 5) BigDecimal：幂 / 开方 / 取整 */
+    println("2 的 10 次幂 = {}", BigDecimal("2").pow(10).str());
+    println("2 的平方根(12 位) = {}", BigDecimal("2").sqrt(12).str());
+    println("8 的立方根 = {}", BigDecimal("8").root(3, 10).str());
+    println("-2.7 向下取整 = {}，向零截断 = {}",
+            BigDecimal("-2.7").floor().str(), BigDecimal("-2.7").trunc().str());
+    println("-2.5 的绝对值 = {}，5.5 是整数？ {}", BigDecimal("-2.5").abs().str(),
+            BigDecimal("5.5").isInteger());
+    return 0;
+}

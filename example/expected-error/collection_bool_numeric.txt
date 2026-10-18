@@ -1,0 +1,1 @@
+magel：example/samples-error/collection_bool_numeric.mgl 第 1 行第 1 列：bool 与数值之间不能隐式转换：int64 -> bool（请显式强转）

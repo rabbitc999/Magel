@@ -1,0 +1,1 @@
+magel：example/samples-error/fptr_bool_argument.mgl 第 7 行第 5 列：bool 与数值之间不能隐式转换：bool -> int64（请显式强转）

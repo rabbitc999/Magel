@@ -1,0 +1,20 @@
+import std::algorithms;
+
+struct Metric { float64 amount; };
+
+Metric negateMetric(Metric item) {
+    Metric result;
+    result.amount = 0.0 - item.amount;
+    return result;
+}
+
+int64 main() {
+    List<Metric> measured;
+    Metric source;
+    source.amount = -2.5;
+    measured.push(source);
+    List<Metric> negated = std::algorithms::mapValue<Metric>(measured, negateMetric);
+    Metric first = negated[0];
+    println("{}", first.amount);
+    return 0;
+}

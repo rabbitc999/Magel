@@ -1,0 +1,65 @@
+/* bytes.mgl —— 字符串按字节读、`&x` 取地址、凯撒位移算法。
+ *
+ *   ./magel samples/bytes.mgl
+ *   → 字符串的每个字节（`text[i]`，0..255）、位移后的字节、
+ *     以及用 `&dst[0]` / `&src[0]` 做一次 memcpy
+ *
+ * 字符串按**字节**下标（步长 1）；`int8/uint8` 数组按数据区的每槽 8 字节布局。
+ */
+
+int64 main() {
+    String text = "Hello";
+
+    /* 1) 字符串按字节读：`text[i]` 得到 0..255 的字节值 */
+    int64 length = len(text);
+    println("text={} length={}", text, length);
+
+    int64 i = 0;
+    while (i < length) {
+        print("{} ", (int64)text[i] & 255);   /* char 与整数之间要显式转换 */
+        i = i + 1;
+    }
+    println("");
+
+    /* 2) 算法：凯撒位移 —— 读字节、变换、写回一个字节数组（每槽 8 字节） */
+    int64 shifted[16];
+    i = 0;
+    while (i < length) {
+        int64 code = (int64)text[i];
+        if (code >= 97 && code <= 122) {
+            code = (code - 97 + 3) % 26 + 97;    /* 小写字母往后挪 3 */
+        } elif (code >= 65 && code <= 90) {
+            code = (code - 65 + 3) % 26 + 65;    /* 大写字母也一样 */
+        } else {
+            code = code;                          /* 其它字节原样 */
+        }
+        shifted[i] = code & 255;       /* 存成一个字节 */
+        i = i + 1;
+    }
+    print("shifted bytes:");
+    i = 0;
+    while (i < length) {
+        print(" {}", shifted[i]);
+        i = i + 1;
+    }
+    println("");
+
+    /* 3) 按元素复制（每槽 8 字节） */
+    int64 copyOf[16];
+    i = 0;
+    while (i < length) {
+        copyOf[i] = shifted[i];
+        i = i + 1;
+    }
+    print("copy bytes:");
+    i = 0;
+    while (i < length) {
+        print(" {}", copyOf[i]);
+        i = i + 1;
+    }
+    println("");
+
+    /* 4) `&` 出来的是地址：相邻元素差 8（语言里每个槽位 8 字节） */
+    println("array stride={}", address(&shifted[1]) - address(&shifted[0]));
+    return 0;
+}

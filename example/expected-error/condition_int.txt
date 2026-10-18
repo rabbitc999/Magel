@@ -1,0 +1,1 @@
+magel：example/samples-error/condition_int.mgl 第 2 行第 5 列：if 条件必须是 bool，现在给的是 int64（数值条件请显式写成 `(bool)值` 或比较表达式）

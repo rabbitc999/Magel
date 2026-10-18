@@ -1,0 +1,5 @@
+items[0]: id=1 price=10 total=10
+items[1]: id=2 price=20 total=40
+items[2]: id=3 price=30 total=90
+p[2].id=3 p[2].price=30 p->id=1
+first.id=99 items[0].id=1（两份独立）

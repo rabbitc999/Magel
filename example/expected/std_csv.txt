@@ -1,0 +1,1 @@
+CSV quoting, delimiters and positions OK

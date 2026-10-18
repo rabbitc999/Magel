@@ -1,0 +1,30 @@
+import std::algorithms;
+
+struct Item { int64 value; };
+
+int64 main() {
+    List<int64> left;
+    left.push(2);
+    left.push(4);
+    left.push(6);
+    List<int64> right;
+    right.push(3);
+    right.push(5);
+    List<(int64, int64)> paired = std::algorithms::zipValue<int64, int64>(left, right);
+    println("{} {} {}", paired.len(), (paired[0]).0, (paired[1]).1);
+    List<String> words;
+    words.push("red");
+    List<(int64, String)> mixed = std::algorithms::zipValue<int64, String>(left, words);
+    words[0] = "blue";
+    println("{} {}:{}", mixed.len(), (mixed[0]).0, (mixed[0]).1);
+    List<Item> items;
+    Item original;
+    original.value = 17;
+    items.push(original);
+    List<(Item, String)> records = std::algorithms::zipValue<Item, String>(items, words);
+    original.value = 99;
+    items[0] = original;
+    words[0] = "green";
+    println("{} {}:{}", records.len(), ((records[0]).0).value, (records[0]).1);
+    return 0;
+}

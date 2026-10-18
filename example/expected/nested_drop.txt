@@ -1,0 +1,5 @@
+outer drop tag=1
+inner drop 7
+after outer block
+inner drop 9
+after wrapper block

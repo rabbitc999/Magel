@@ -1,0 +1,1 @@
+magel：example/samples-error/compound_assignment_chain_compound_parenthesized.mgl 第 2 行第 1 列：复合赋值不能参与链式赋值

@@ -1,0 +1,38 @@
+/* watchdog_timeout.mgl —— 时间维度：定时喂狗，看门狗不响。
+ *
+ *   ./magel run samples/watchdog_timeout.mgl
+ *
+ * `std::watchdog::enableTimeout(N)` 打开"超时未喂狗"这一维：**整整 N 个时间单位**
+ * （解释执行时没接时钟，按虚拟时钟算 —— 1 条指令 = 1 个时间单位）没有 `kick()`，
+ * 就把这一轮当成卡住了，转成"程序显式请求"的软重启。
+ *
+ * 这里每跑一小段就喂一口，所以看门狗一次都不响：输出与"根本没开看门狗"一模一样。
+ * 反过来说，这一维**默认不开** —— 不调 `enableTimeout*()` 就没有它，前两个触发
+ * （内存水位 / 显式请求）照旧。
+ *
+ * 它不是硬件看门狗：不喂狗只是"重跑一轮逻辑"，不复位芯片，也救不了死循环
+ * （那是 `--step-limit` 的活）与跑飞（那要宿主 / 芯片的硬件看门狗）。
+ */
+import std::watchdog;
+
+int64 main() {
+    match (std::watchdog::enableTimeout(1000)) {
+        Result<int64, std::watchdog::WatchdogError>::Ok(units) => { println("timeout on {}", units); }
+        Result<int64, std::watchdog::WatchdogError>::Err(reason) => {
+            match (reason) {
+                std::watchdog::WatchdogError::InvalidTimeout => { println("bad timeout"); }
+                std::watchdog::WatchdogError::InvalidWatermark => { println("bad watermark"); }
+                std::watchdog::WatchdogError::NotEnabled => { println("off"); }
+            }
+        }
+    }
+
+    /* 干一段活就喂一口：整个超时周期之内总有一次 kick()，看门狗不触发。 */
+    int64 done = 0;
+    while (done < 3000) {
+        std::watchdog::kick();
+        done = done + 1;
+    }
+    println("done {}", done);
+    return 0;
+}

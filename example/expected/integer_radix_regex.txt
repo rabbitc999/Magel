@@ -1,0 +1,2 @@
+hex=ff HEX=FF bin=100011
+radix regex OK

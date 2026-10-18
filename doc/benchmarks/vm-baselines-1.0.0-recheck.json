@@ -1,0 +1,1054 @@
+{
+  "measured_at_utc": "2026-10-16T14:56:24.386894+00:00",
+  "commit": "19f45dd9f24ab7bcaf53d93f7adeb9004ae379b3",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.3 (tags/v3.12.3:f6650f9, Apr  9 2024, 14:05:25) [MSC v.1938 64 bit (AMD64)]",
+  "java": "java 22.0.1 2024-04-16\nJava(TM) SE Runtime Environment (build 22.0.1+8-16)\nJava HotSpot(TM) 64-Bit Server VM (build 22.0.1+8-16, mixed mode, sharing)",
+  "benchmark_script_sha256": "572167ba151eaf1b7353cdfdd5dc1ba8bff9653d1ea272d3d48a6bd2330e78a6",
+  "compiler": "g++ (x86_64-posix-seh-rev3, Built by MinGW-W64 project) 11.2.0",
+  "lua": "Lua 5.5.1  Copyright (C) 1994-2026 Lua.org, PUC-Rio",
+  "lua_url": "https://www.lua.org/ftp/lua-5.5.1.tar.gz",
+  "lua_source_sha256": "1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce",
+  "repeats": 7,
+  "rounds": 2,
+  "warmups": {
+    "JVM JIT": 20,
+    "others": 1
+  },
+  "flags": {
+    "C++": "-std=c++17 -O2 -DNDEBUG; noinline calculation; volatile result sink; fresh stdin input after warmup",
+    "JVM JIT": "-Xbatch; 20 full warmups; volatile result sink; fresh stdin input per invocation",
+    "JVM interpreter": "-Xint; 1 full warmup",
+    "Magel": "each listed Magel version keeps reflection enabled and all default VM optimizations; runner built -O2 against that version static library",
+    "Magel AOT": "each listed version --opt-level=2 --unchecked --keep-intermediate; GCC -O2; isolated executable and cwd outside repository force version-specific embedded runtime; std::clock::nowNanos around calculate; fresh stdin input after warmup; compare warmup result after timing to retain it",
+    "Lua": "official mingw Makefile -O2; no JIT"
+  },
+  "timing": "all exclude startup, source compilation and loading; VM includes execution preparation and checksum output; other runtimes measure calculation only; one measured sample per process; rotate order each repeat; serial; all builds finish before measurements",
+  "binaries": {
+    "D:\\Desktop\\Workspace\\magel\\magel.exe": "d1ffe8ca1f13999b940d66ecaa4a3465391c497f964698ad74bedd70995acc0a",
+    "D:\\Desktop\\Workspace\\magel\\build\\vm-program-benchmark.exe": "971c4dbd0cb5410b30a36000c7841a8dcdb60546faaad2735de5bc1a5329e10b",
+    "D:\\Desktop\\Workspace\\magel\\build\\vm-lua-benchmark\\lua-5.5.1\\src\\lua.exe": "12e647a82e056aea5bf287b3b010e3896ed216c790964a2b0fb6e8d3b6460be0"
+  },
+  "results": {
+    "1": {
+      "integer_loop": {
+        "iterations": 10000000,
+        "configurations": {
+          "Magel 1.0.0": {
+            "samples_ms": [
+              99.9954,
+              94.3007,
+              90.3822,
+              90.3158,
+              95.7772,
+              92.2949,
+              94.8761
+            ],
+            "checksum": "49999995000000",
+            "logical_steps": 150000030,
+            "median_ms": 94.3007
+          },
+          "Magel 1.0.0 AOT": {
+            "samples_ms": [
+              1.83,
+              1.88,
+              1.85,
+              1.84,
+              1.82,
+              1.84,
+              2.41
+            ],
+            "checksum": "49999995000000",
+            "median_ms": 1.84
+          },
+          "JVM JIT": {
+            "samples_ms": [
+              1.9378,
+              1.9732,
+              1.9347,
+              2.0355,
+              1.9372,
+              1.9304,
+              2.2732
+            ],
+            "checksum": "49999995000000",
+            "median_ms": 1.9378
+          },
+          "JVM interpreter": {
+            "samples_ms": [
+              48.5709,
+              49.2383,
+              47.1091,
+              47.6895,
+              46.2363,
+              47.4611,
+              48.886
+            ],
+            "checksum": "49999995000000",
+            "median_ms": 47.6895
+          },
+          "Python": {
+            "samples_ms": [
+              304.9088,
+              288.486,
+              292.4593,
+              280.6017,
+              279.0819,
+              291.2164,
+              350.4452
+            ],
+            "checksum": "49999995000000",
+            "median_ms": 291.2164
+          },
+          "Lua": {
+            "samples_ms": [
+              36.0,
+              36.00000000000001,
+              35.99999999999999,
+              35.0,
+              36.99999999999999,
+              35.99999999999999,
+              39.0
+            ],
+            "checksum": "49999995000000",
+            "median_ms": 36.0
+          },
+          "C++": {
+            "samples_ms": [
+              1.8156,
+              1.8374,
+              1.9861,
+              1.8253,
+              1.8178,
+              1.8221,
+              1.8284
+            ],
+            "checksum": "49999995000000",
+            "median_ms": 1.8253
+          }
+        }
+      },
+      "branches": {
+        "iterations": 1000000,
+        "configurations": {
+          "Magel 1.0.0": {
+            "samples_ms": [
+              30.5311,
+              26.1954,
+              26.3953,
+              32.7744,
+              27.1647,
+              26.2375,
+              28.1465
+            ],
+            "checksum": "-500000",
+            "logical_steps": 25500030,
+            "median_ms": 27.1647
+          },
+          "Magel 1.0.0 AOT": {
+            "samples_ms": [
+              0.485,
+              0.375,
+              0.409,
+              0.408,
+              0.374,
+              0.38,
+              0.392
+            ],
+            "checksum": "-500000",
+            "median_ms": 0.392
+          },
+          "JVM JIT": {
+            "samples_ms": [
+              0.3749,
+              0.3262,
+              0.3176,
+              0.3405,
+              0.3283,
+              0.3201,
+              0.3339
+            ],
+            "checksum": "-500000",
+            "median_ms": 0.3283
+          },
+          "JVM interpreter": {
+            "samples_ms": [
+              8.9634,
+              9.9227,
+              9.051,
+              10.6229,
+              9.5075,
+              10.2874,
+              9.8242
+            ],
+            "checksum": "-500000",
+            "median_ms": 9.8242
+          },
+          "Python": {
+            "samples_ms": [
+              48.5656,
+              46.7362,
+              46.0129,
+              50.9516,
+              46.1332,
+              44.1047,
+              50.8509
+            ],
+            "checksum": "-500000",
+            "median_ms": 46.7362
+          },
+          "Lua": {
+            "samples_ms": [
+              8.0,
+              8.0,
+              8.0,
+              8.0,
+              6.0,
+              6.999999999999999,
+              7.0
+            ],
+            "checksum": "-500000",
+            "median_ms": 8.0
+          },
+          "C++": {
+            "samples_ms": [
+              0.3917,
+              0.3686,
+              0.387,
+              0.3747,
+              0.3649,
+              0.3651,
+              0.3704
+            ],
+            "checksum": "-500000",
+            "median_ms": 0.3704
+          }
+        }
+      },
+      "float64_loop": {
+        "iterations": 2000000,
+        "configurations": {
+          "Magel 1.0.0": {
+            "samples_ms": [
+              285.472,
+              298.827,
+              272.156,
+              268.642,
+              283.75,
+              267.042,
+              264.099
+            ],
+            "checksum": "1000000",
+            "logical_steps": 30000030,
+            "median_ms": 272.156
+          },
+          "Magel 1.0.0 AOT": {
+            "samples_ms": [
+              0.757,
+              0.855,
+              0.738,
+              0.736,
+              0.766,
+              0.736,
+              0.734
+            ],
+            "checksum": "1000000",
+            "median_ms": 0.738
+          },
+          "JVM JIT": {
+            "samples_ms": [
+              0.7688,
+              0.7354,
+              1.0446,
+              0.7287,
+              0.7268,
+              0.733,
+              0.7336
+            ],
+            "checksum": "1000000",
+            "median_ms": 0.7336
+          },
+          "JVM interpreter": {
+            "samples_ms": [
+              10.3083,
+              11.1033,
+              10.108,
+              9.9462,
+              10.3415,
+              10.7459,
+              9.3867
+            ],
+            "checksum": "1000000",
+            "median_ms": 10.3083
+          },
+          "Python": {
+            "samples_ms": [
+              55.0917,
+              55.1732,
+              51.336,
+              55.1039,
+              52.7364,
+              51.2154,
+              51.536
+            ],
+            "checksum": "1000000",
+            "median_ms": 52.7364
+          },
+          "Lua": {
+            "samples_ms": [
+              8.0,
+              9.000000000000002,
+              5.999999999999999,
+              7.000000000000001,
+              7.0,
+              6.999999999999999,
+              6.999999999999999
+            ],
+            "checksum": "1000000",
+            "median_ms": 7.0
+          },
+          "C++": {
+            "samples_ms": [
+              0.7462,
+              0.7516,
+              0.7315,
+              0.7399,
+              0.7276,
+              0.7332,
+              0.7319
+            ],
+            "checksum": "1000000",
+            "median_ms": 0.7332
+          }
+        }
+      },
+      "calls": {
+        "iterations": 1000000,
+        "configurations": {
+          "Magel 1.0.0": {
+            "samples_ms": [
+              396.808,
+              438.805,
+              443.276,
+              421.338,
+              406.471,
+              398.43,
+              412.131
+            ],
+            "checksum": "8499991500000",
+            "logical_steps": 27000030,
+            "median_ms": 412.131
+          },
+          "Magel 1.0.0 AOT": {
+            "samples_ms": [
+              0.187,
+              0.187,
+              0.19,
+              0.186,
+              0.186,
+              0.187,
+              0.187
+            ],
+            "checksum": "8499991500000",
+            "median_ms": 0.187
+          },
+          "JVM JIT": {
+            "samples_ms": [
+              0.1932,
+              0.1929,
+              0.196,
+              0.193,
+              0.1929,
+              0.1939,
+              0.1938
+            ],
+            "checksum": "8499991500000",
+            "median_ms": 0.1932
+          },
+          "JVM interpreter": {
+            "samples_ms": [
+              11.7794,
+              13.5205,
+              12.8274,
+              13.8778,
+              11.5373,
+              12.8155,
+              13.4553
+            ],
+            "checksum": "8499991500000",
+            "median_ms": 12.8274
+          },
+          "Python": {
+            "samples_ms": [
+              52.4158,
+              53.0684,
+              57.482,
+              56.8977,
+              51.2624,
+              54.7361,
+              54.1441
+            ],
+            "checksum": "8499991500000",
+            "median_ms": 54.1441
+          },
+          "Lua": {
+            "samples_ms": [
+              15.0,
+              13.0,
+              15.000000000000002,
+              15.000000000000002,
+              13.999999999999998,
+              12.000000000000002,
+              14.0
+            ],
+            "checksum": "8499991500000",
+            "median_ms": 14.0
+          },
+          "C++": {
+            "samples_ms": [
+              0.182,
+              0.1841,
+              0.2703,
+              0.1887,
+              0.1817,
+              0.1815,
+              0.1817
+            ],
+            "checksum": "8499991500000",
+            "median_ms": 0.182
+          }
+        }
+      },
+      "array_reads": {
+        "iterations": 1000000,
+        "configurations": {
+          "Magel 1.0.0": {
+            "samples_ms": [
+              68.7584,
+              59.1766,
+              58.0128,
+              59.9603,
+              59.3951,
+              59.7016,
+              59.6278
+            ],
+            "checksum": "2500000",
+            "logical_steps": 33000136,
+            "median_ms": 59.6278
+          },
+          "Magel 1.0.0 AOT": {
+            "samples_ms": [
+              6.81,
+              4.81,
+              4.7,
+              4.88,
+              4.69,
+              4.89,
+              4.79
+            ],
+            "checksum": "2500000",
+            "median_ms": 4.81
+          },
+          "JVM JIT": {
+            "samples_ms": [
+              0.3314,
+              0.3076,
+              0.3072,
+              0.3081,
+              0.3075,
+              0.3069,
+              0.3078
+            ],
+            "checksum": "2500000",
+            "median_ms": 0.3076
+          },
+          "JVM interpreter": {
+            "samples_ms": [
+              7.0912,
+              7.4193,
+              8.737,
+              6.5506,
+              7.4965,
+              6.5965,
+              7.9213
+            ],
+            "checksum": "2500000",
+            "median_ms": 7.4193
+          },
+          "Python": {
+            "samples_ms": [
+              37.9925,
+              37.9046,
+              37.8936,
+              37.4705,
+              37.651,
+              37.7079,
+              38.4351
+            ],
+            "checksum": "2500000",
+            "median_ms": 37.8936
+          },
+          "Lua": {
+            "samples_ms": [
+              9.0,
+              8.0,
+              8.0,
+              8.0,
+              8.0,
+              6.999999999999999,
+              6.999999999999999
+            ],
+            "checksum": "2500000",
+            "median_ms": 8.0
+          },
+          "C++": {
+            "samples_ms": [
+              0.1819,
+              0.1814,
+              0.1817,
+              0.2323,
+              0.182,
+              0.1818,
+              0.1816
+            ],
+            "checksum": "2500000",
+            "median_ms": 0.1818
+          }
+        }
+      }
+    },
+    "2": {
+      "integer_loop": {
+        "iterations": 10000000,
+        "configurations": {
+          "Magel 1.0.0": {
+            "samples_ms": [
+              94.6061,
+              93.1368,
+              97.132,
+              100.254,
+              97.3528,
+              93.2843,
+              94.609
+            ],
+            "checksum": "49999995000000",
+            "logical_steps": 150000030,
+            "median_ms": 94.609
+          },
+          "Magel 1.0.0 AOT": {
+            "samples_ms": [
+              1.84,
+              1.83,
+              1.87,
+              1.85,
+              2.02,
+              1.83,
+              2.18
+            ],
+            "checksum": "49999995000000",
+            "median_ms": 1.85
+          },
+          "JVM JIT": {
+            "samples_ms": [
+              1.9372,
+              2.0817,
+              1.9658,
+              1.9559,
+              1.9557,
+              1.9399,
+              1.9359
+            ],
+            "checksum": "49999995000000",
+            "median_ms": 1.9557
+          },
+          "JVM interpreter": {
+            "samples_ms": [
+              48.9618,
+              56.1801,
+              54.7515,
+              54.3562,
+              49.0562,
+              47.3185,
+              50.3042
+            ],
+            "checksum": "49999995000000",
+            "median_ms": 50.3042
+          },
+          "Python": {
+            "samples_ms": [
+              313.5516,
+              289.6647,
+              299.7829,
+              305.585,
+              289.84,
+              289.4354,
+              315.0117
+            ],
+            "checksum": "49999995000000",
+            "median_ms": 299.7829
+          },
+          "Lua": {
+            "samples_ms": [
+              37.0,
+              35.99999999999999,
+              38.0,
+              36.0,
+              36.0,
+              35.0,
+              37.0
+            ],
+            "checksum": "49999995000000",
+            "median_ms": 36.0
+          },
+          "C++": {
+            "samples_ms": [
+              1.8176,
+              1.8177,
+              1.8194,
+              2.0787,
+              1.8567,
+              1.8178,
+              1.8615
+            ],
+            "checksum": "49999995000000",
+            "median_ms": 1.8194
+          }
+        }
+      },
+      "branches": {
+        "iterations": 1000000,
+        "configurations": {
+          "Magel 1.0.0": {
+            "samples_ms": [
+              25.097,
+              26.1504,
+              26.5125,
+              26.1091,
+              25.9328,
+              24.4944,
+              25.0579
+            ],
+            "checksum": "-500000",
+            "logical_steps": 25500030,
+            "median_ms": 25.9328
+          },
+          "Magel 1.0.0 AOT": {
+            "samples_ms": [
+              0.375,
+              0.411,
+              0.375,
+              0.398,
+              0.369,
+              0.369,
+              0.369
+            ],
+            "checksum": "-500000",
+            "median_ms": 0.375
+          },
+          "JVM JIT": {
+            "samples_ms": [
+              0.3581,
+              0.3229,
+              0.3278,
+              0.3189,
+              0.3174,
+              0.3175,
+              0.3184
+            ],
+            "checksum": "-500000",
+            "median_ms": 0.3189
+          },
+          "JVM interpreter": {
+            "samples_ms": [
+              9.1541,
+              10.7334,
+              10.2475,
+              10.1718,
+              9.4374,
+              9.1316,
+              8.2286
+            ],
+            "checksum": "-500000",
+            "median_ms": 9.4374
+          },
+          "Python": {
+            "samples_ms": [
+              49.5683,
+              47.3264,
+              49.3775,
+              43.1429,
+              44.2099,
+              43.5846,
+              43.4896
+            ],
+            "checksum": "-500000",
+            "median_ms": 44.2099
+          },
+          "Lua": {
+            "samples_ms": [
+              5.999999999999999,
+              6.0,
+              8.0,
+              7.0,
+              6.0,
+              5.999999999999999,
+              6.999999999999999
+            ],
+            "checksum": "-500000",
+            "median_ms": 6.0
+          },
+          "C++": {
+            "samples_ms": [
+              0.3731,
+              0.3855,
+              0.3747,
+              0.3644,
+              0.3642,
+              0.3644,
+              0.3643
+            ],
+            "checksum": "-500000",
+            "median_ms": 0.3644
+          }
+        }
+      },
+      "float64_loop": {
+        "iterations": 2000000,
+        "configurations": {
+          "Magel 1.0.0": {
+            "samples_ms": [
+              263.274,
+              272.757,
+              272.296,
+              275.445,
+              272.678,
+              262.989,
+              269.482
+            ],
+            "checksum": "1000000",
+            "logical_steps": 30000030,
+            "median_ms": 272.296
+          },
+          "Magel 1.0.0 AOT": {
+            "samples_ms": [
+              0.738,
+              0.733,
+              0.751,
+              0.808,
+              0.737,
+              0.737,
+              0.737
+            ],
+            "checksum": "1000000",
+            "median_ms": 0.737
+          },
+          "JVM JIT": {
+            "samples_ms": [
+              0.734,
+              0.7866,
+              0.7294,
+              0.7293,
+              0.7264,
+              0.7271,
+              0.7262
+            ],
+            "checksum": "1000000",
+            "median_ms": 0.7293
+          },
+          "JVM interpreter": {
+            "samples_ms": [
+              9.8655,
+              10.1428,
+              10.2955,
+              10.6448,
+              10.6214,
+              10.4353,
+              10.5983
+            ],
+            "checksum": "1000000",
+            "median_ms": 10.4353
+          },
+          "Python": {
+            "samples_ms": [
+              51.582,
+              54.9576,
+              54.2908,
+              55.6123,
+              53.3574,
+              52.4939,
+              51.8777
+            ],
+            "checksum": "1000000",
+            "median_ms": 53.3574
+          },
+          "Lua": {
+            "samples_ms": [
+              8.0,
+              6.999999999999999,
+              8.0,
+              7.0,
+              7.0,
+              8.0,
+              7.0
+            ],
+            "checksum": "1000000",
+            "median_ms": 7.0
+          },
+          "C++": {
+            "samples_ms": [
+              0.7401,
+              0.7312,
+              0.7335,
+              0.7375,
+              0.7424,
+              0.7381,
+              0.7315
+            ],
+            "checksum": "1000000",
+            "median_ms": 0.7375
+          }
+        }
+      },
+      "calls": {
+        "iterations": 1000000,
+        "configurations": {
+          "Magel 1.0.0": {
+            "samples_ms": [
+              391.763,
+              406.291,
+              416.984,
+              398.872,
+              396.892,
+              401.9,
+              411.573
+            ],
+            "checksum": "8499991500000",
+            "logical_steps": 27000030,
+            "median_ms": 401.9
+          },
+          "Magel 1.0.0 AOT": {
+            "samples_ms": [
+              0.186,
+              0.186,
+              0.187,
+              0.187,
+              0.194,
+              0.186,
+              0.201
+            ],
+            "checksum": "8499991500000",
+            "median_ms": 0.187
+          },
+          "JVM JIT": {
+            "samples_ms": [
+              0.193,
+              0.1981,
+              0.1955,
+              0.193,
+              0.1938,
+              0.1936,
+              0.221
+            ],
+            "checksum": "8499991500000",
+            "median_ms": 0.1938
+          },
+          "JVM interpreter": {
+            "samples_ms": [
+              12.171,
+              13.5463,
+              12.2553,
+              11.916,
+              12.0326,
+              11.9931,
+              13.3388
+            ],
+            "checksum": "8499991500000",
+            "median_ms": 12.171
+          },
+          "Python": {
+            "samples_ms": [
+              52.1458,
+              53.8229,
+              53.4099,
+              53.5889,
+              51.8961,
+              51.3,
+              54.7937
+            ],
+            "checksum": "8499991500000",
+            "median_ms": 53.4099
+          },
+          "Lua": {
+            "samples_ms": [
+              13.0,
+              13.999999999999998,
+              13.0,
+              14.0,
+              12.000000000000002,
+              13.000000000000002,
+              13.0
+            ],
+            "checksum": "8499991500000",
+            "median_ms": 13.0
+          },
+          "C++": {
+            "samples_ms": [
+              0.1814,
+              0.1824,
+              0.1839,
+              0.1838,
+              0.1863,
+              0.1816,
+              0.1836
+            ],
+            "checksum": "8499991500000",
+            "median_ms": 0.1836
+          }
+        }
+      },
+      "array_reads": {
+        "iterations": 1000000,
+        "configurations": {
+          "Magel 1.0.0": {
+            "samples_ms": [
+              63.5193,
+              60.9021,
+              63.5839,
+              59.3039,
+              59.8799,
+              63.1167,
+              61.8737
+            ],
+            "checksum": "2500000",
+            "logical_steps": 33000136,
+            "median_ms": 61.8737
+          },
+          "Magel 1.0.0 AOT": {
+            "samples_ms": [
+              4.91,
+              4.89,
+              4.29,
+              4.74,
+              5.26,
+              4.73,
+              4.69
+            ],
+            "checksum": "2500000",
+            "median_ms": 4.74
+          },
+          "JVM JIT": {
+            "samples_ms": [
+              0.3075,
+              0.3103,
+              0.307,
+              0.3068,
+              0.3074,
+              0.3105,
+              0.3067
+            ],
+            "checksum": "2500000",
+            "median_ms": 0.3074
+          },
+          "JVM interpreter": {
+            "samples_ms": [
+              6.9795,
+              6.9598,
+              6.6225,
+              7.8903,
+              6.5167,
+              6.8086,
+              6.3828
+            ],
+            "checksum": "2500000",
+            "median_ms": 6.8086
+          },
+          "Python": {
+            "samples_ms": [
+              40.4143,
+              37.6944,
+              37.0767,
+              37.7315,
+              38.5955,
+              36.9231,
+              37.1319
+            ],
+            "checksum": "2500000",
+            "median_ms": 37.6944
+          },
+          "Lua": {
+            "samples_ms": [
+              6.999999999999999,
+              8.0,
+              8.0,
+              7.0,
+              8.0,
+              8.0,
+              8.0
+            ],
+            "checksum": "2500000",
+            "median_ms": 8.0
+          },
+          "C++": {
+            "samples_ms": [
+              0.1904,
+              0.1834,
+              0.1815,
+              0.1822,
+              0.1818,
+              0.2148,
+              0.1816
+            ],
+            "checksum": "2500000",
+            "median_ms": 0.1822
+          }
+        }
+      }
+    }
+  },
+  "generated_sources": {
+    "array_reads-aot.mgl": "f8d2120536e271b98b07087b005701cc055d6e0dc7f9d9478d2dfe42fa02700f",
+    "array_reads.cpp": "ffb880fc2f9a17f4f2521ea942541f8ccb6d1bbdbfd1032823b354ad24f13538",
+    "array_reads.lua": "e9379fcf34fa613881646db27fd0f03588a6cec95d162e6fabd065a1f79d5cb7",
+    "array_reads.mgl": "170cedf3578eb90e24c58513b5d7a23f6a920d040b69a88b5c257218fdb7b40e",
+    "array_reads.py": "6b34f0f04968c0bd4b9485341b2fad64fcb08f8919ff480d06cae8e40e6dc6c6",
+    "branches-aot.mgl": "cdf363a071e13029b67b982a63ff5427f901ee218da5f0d3b3944157d7aa2e81",
+    "branches.cpp": "5e94f20ca16fc1f3e92efb4dac0f2f2fd364384630a1572ef5fc3b3a57f7d31f",
+    "branches.lua": "19ac3ff6ce1a5a6c948455eff4f990862ef293ea9ef81906e74aa54156b3b89c",
+    "branches.mgl": "2519b4a1312277e5c8bb6b2be4b7c7e986880260023a09249e3d821f15683e68",
+    "branches.py": "10599a6736ccb1ccfeeb76f349b684df74e70e6ea1a01e386460305d9ff22522",
+    "calls-aot.mgl": "b386ba9c4ad5643964b25238f6e362d4ab4400b5315c90b92a4635179e841b10",
+    "calls.cpp": "886612ab33b5b4cd06734a131c3d705c72d95928b02a31c673e23193c696a4ed",
+    "calls.lua": "fa5172cf4665a7ff15945fd78c30538875bd2b9fddfe2087045e72ea33276e00",
+    "calls.mgl": "e2abec1034e0ab893ea81d94a5b283dc57e5eb1f3640975e2d18ecbe65e01d10",
+    "calls.py": "320a4b34e3b7953516a8c3af733a6924ad0a7dd8780c5d2660b3f2c2421d6d36",
+    "Case_array_reads.java": "e2465c3877cca859c9c33245b408f22d3b414cb36ef0c74efa52db6dc22dcbc0",
+    "Case_branches.java": "c3b723683bfeb102d2c6542563ba91cb7b12cfb4028d6b766490d931745a9179",
+    "Case_calls.java": "19da01bffda4b19f8fea0ea3075c72171b112a0f7f1e4f5bb49f95df4fbd5162",
+    "Case_float64_loop.java": "9bad0cc1ae393ee82a3ff0c8fb4c45fbca5d29d0ba1c4e4d65b4e55d75964a1f",
+    "Case_integer_loop.java": "ad8738042d1e361f19bce4a51f320c337b3255c6b7ca4f23c9ed17c6ca532e00",
+    "float64_loop-aot.mgl": "a2e7880d947552012796af40dce9ed5ae3dca3222d86c38632fc0c7704666039",
+    "float64_loop.cpp": "ac113ce796ae82cc4cd6d03a83b134989eb8bc4079a60b0a5c713bc198b32ec9",
+    "float64_loop.lua": "39d536c01220efffb7ebb8dff7d75ecc90d5719a1cde934e545caa4141e16b03",
+    "float64_loop.mgl": "be7cb8dfaf56fc3a655d6ff7d8b5ac8cde84dd88470d933ad4aecba503614930",
+    "float64_loop.py": "4b2d70e84482f9c7ce248dda07d7f0c2ff5c54d926de292b0aa2c8eff1dca124",
+    "integer_loop-aot.mgl": "a0eaa6f7a09a4745be4bf7f1b475b75d74cbd881255744bb5d587bd485e15086",
+    "integer_loop.cpp": "d8c8193cda4874784a562be9ba5640d597819c974d13886694822cf3862c9d0f",
+    "integer_loop.lua": "f584021db4534d3c545aad31fbc230a3309532c8a18f3617ff5f3acef6e26544",
+    "integer_loop.mgl": "e8a6908155c6314d2b005f2474dd09eb56fa8e72b3eeca2cf606d5f98c9e550a",
+    "integer_loop.py": "d64daf9f3808b584c57d0a59dcc9d7ac6ec7d11788eb474691daae04b6deaa14"
+  },
+  "aot_binaries": {
+    "103": {
+      "integer_loop": "c93279d44479ac767a5d2d4c198b435e564595bf48fa2427a18fd48221b176da",
+      "branches": "31916a76618a9f480a65040aa0b6c16c661f6fc8baf1b99db987014982cd6d72",
+      "float64_loop": "5d4c45f8a437c548856b57064a64d43d051327a0f7fe765a3b63ce3d2ade4439",
+      "calls": "9f17bc9f95f726c42a4fc2b11e4f75d8da3ddf5b910ae91eb023008406f65acb",
+      "array_reads": "d159e45eae6e8f0884fc44d1d456e03f68b4baffe9751c435fba7800a08c1e30"
+    }
+  },
+  "cpu": {
+    "Name": "AMD Ryzen 7 9700X 8-Core Processor             ",
+    "NumberOfCores": 8,
+    "NumberOfLogicalProcessors": 16
+  }
+}

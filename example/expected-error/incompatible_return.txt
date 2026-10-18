@@ -1,0 +1,1 @@
+magel：example/samples-error/incompatible_return.mgl 第 2 行第 5 列：不能隐式转换：std::lang::String -> int64（请显式强转）

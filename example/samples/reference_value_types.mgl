@@ -1,0 +1,145 @@
+// 堆值引用借用变量槽，替换值、重绑引用与自动清理保持一致。
+String globalText = "global";
+struct TextReference { String mut& value; };
+char readByte(String const& ref, int64 index) { return ref[index]; }
+void writeByte(String mut& ref, int64 index, char value) { ref[index] = value; }
+
+Set<int64> globalSet;
+String borrowText(String const& value) { return value; }
+Set<int64> borrowSet(Set<int64> const& value) { return value; }
+String localText() {
+    String value = "returned";
+    String mut& ref = &value;
+    ref = ref + "!";
+    return value;
+}
+Set<int64> localSet() {
+    Set<int64> value;
+    Set<int64> mut& ref = &value;
+    ref.add(42);
+    return value;
+}
+String parameterText(String value) {
+    String mut& ref = &value;
+    ref[0] = 'P';
+    ref = ref + "!";
+    return value;
+}
+Set<int64> parameterSet(Set<int64> value) {
+    Set<int64> mut& ref = &value;
+    ref.add(99);
+    return value;
+}
+BigInteger borrowInteger(BigInteger const& value) { return value; }
+BigDecimal borrowDecimal(BigDecimal const& value) { return value; }
+Map<String, int64> borrowMap(Map<String, int64> const& value) { return value; }
+void update(String mut& text, BigInteger mut& integer, BigDecimal mut& decimal,
+Set<int64> mut& set, Map<String, int64> mut& map,
+(int64, String) mut& tuple) {
+    text = "changed";
+    integer = integer + 1;
+    decimal = decimal + BigDecimal("1.0");
+    set.add(7);
+    map["seven"] = 7;
+    tuple = (7, "seven");
+}
+int64 main() {
+    for (int64 round = 0; round < 4; round = round + 1) {
+        String text = "hello";
+        String mut& ref = &text;
+        String const& read = ref;
+        assert(ref[0] == 'h');
+        writeByte(ref, 0, 'H');
+        assert(readByte(read, 0) == 'H' && readByte(read, 4) == 'o');
+        TextReference holder;
+        holder.value = &ref;
+        holder.value[4] = 'O';
+        assert(read[4] == 'O');
+        holder.value[4] = 'o';
+        assert(text == "Hello" && read[0] == 'H');
+        ref[0] = 'h';
+        assert(read[0] == 'h' && read[1:4] == "ell");
+        text = "new";
+        assert(ref == "new" && read == "new");
+        ref = ref;
+        String copy = borrowText(ref);
+        ref = "other";
+        assert(copy == "new");
+        String returned = localText();
+        assert(returned == "returned!");
+        String parameter = parameterText(text);
+        assert(parameter == "Pther!" && text == "other");
+        String another = "target";
+        ref = &another;
+        ref = "bound";
+        assert(another == "bound" && text == "other");
+        BigInteger integer = BigInteger("999999999999999999999999999999");
+        BigInteger mut& integerRef = &integer;
+        BigInteger const& integerRead = integerRef;
+        integerRef = integerRef + 1;
+        assert(integerRead == BigInteger("1000000000000000000000000000000"));
+        BigInteger integerCopy = borrowInteger(integerRef);
+        integerRef = integerRef + 1;
+        assert(integerCopy + 1 == integerRead);
+        BigDecimal decimal = BigDecimal("2.25");
+        BigDecimal mut& decimalRef = &decimal;
+        BigDecimal const& decimalRead = decimalRef;
+        decimalRef.setPrecision(40);
+        decimalRef = decimalRef + BigDecimal("0.5");
+        assert(decimalRead == BigDecimal("2.75"));
+        BigDecimal decimalCopy = borrowDecimal(decimalRef);
+        decimalRef = decimalRef + BigDecimal("0.25");
+        assert(decimalCopy == BigDecimal("2.75") && decimalRead == 3);
+        Set<int64> set;
+        Set<int64> mut& setRef = &set;
+        Set<int64> const& setRead = setRef;
+        setRef.add(3);
+        assert((setRead.has(3) != 0) && setRead.len() == 1);
+        Set<int64> setCopy = borrowSet(setRef);
+        setRef.clear();
+        assert((setCopy.has(3) != 0) && set.len() == 0);
+        Set<int64> fromLocal = localSet();
+        Set<int64> fromParameter = parameterSet(setCopy);
+        assert((fromLocal.has(42) != 0) && (fromParameter.has(99) != 0) && (setCopy.has(99) == 0));
+        setRef = fromLocal;
+        assert((setRead.has(42) != 0));
+        Map<String, int64> map;
+        Map<String, int64> mut& mapRef = &map;
+        Map<String, int64> const& mapRead = mapRef;
+        mapRef.put("three", 3);
+        mapRef["three"] = 4;
+        assert(mapRead["three"] == 4 && (map.has("three") != 0));
+        Map<String, int64> mapCopy = borrowMap(mapRef);
+        mapRef.clear();
+        assert(mapCopy["three"] == 4 && mapRead.len() == 0);
+        mapRef = mapCopy;
+        assert(mapRead["three"] == 4);
+        (int64, String) tuple = (1, "one");
+        (int64, String) mut& tupleRef = &tuple;
+        (int64, String) const& tupleRead = tupleRef;
+        tupleRef = (2, "two");
+        assert(tuple.0 == 2 && tupleRead.1 == "two");
+        tupleRef = tupleRef;
+        assert(tupleRead.0 == 2 && tupleRead.1 == "two");
+        tuple = (3, "source");
+        assert(tupleRef.0 == 3 && tupleRead.1 == "source");
+        update(&text, integerRef, decimalRef, setRef, mapRef, tupleRef);
+        assert(text == "changed" && (setRead.has(7) != 0) && mapRead["seven"] == 7);
+        assert(tupleRead.0 == 7 && tuple.1 == "seven");
+        List<String> list;
+        List<String> mut& listRef = &list;
+        listRef.push("list");
+        listRef[0] = "value";
+        assert(list[0] == "value" && listRef[0][0] == 'v');
+    }
+    String mut& globalRef = &globalText;
+    globalRef = "updated";
+    globalText = "final";
+    assert(globalRef == "final");
+    Set<int64> mut& globalSetRef = &globalSet;
+    globalSetRef.add(8);
+    assert((globalSet.has(8) != 0));
+    println("reference value types OK");
+    return 0;
+}
+

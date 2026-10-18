@@ -1,0 +1,4 @@
+$macro BAD((x))
+`x
+$end_macro
+int64 main() { return $BAD(1); }

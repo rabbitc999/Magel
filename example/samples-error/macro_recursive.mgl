@@ -1,0 +1,4 @@
+$macro LOOP(x)
+$LOOP(x)
+$end_macro
+int64 main() { return $LOOP(1); }

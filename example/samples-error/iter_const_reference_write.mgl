@@ -1,0 +1,2 @@
+import std::iter;
+int64 main() { std::lang::List<int64> values; values.push(1); auto cursor = values.iter(); int64 mut& value = cursor.next().unwrap(); return 0; }

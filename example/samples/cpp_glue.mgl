@@ -1,0 +1,23 @@
+type HostHandle<T> = uint64;
+impl uint64 : ExplicitConvert<HostHandle<int32>> = demo_counter_from_uint;
+impl HostHandle<int32> : ExplicitConvert<uint64> = demo_counter_to_uint;
+
+interface HostValue {
+    int64 hostValue();
+};
+impl HostHandle<int32> : HostValue = demo_counter_to_uint;
+
+HostHandle<int32> demo_cpp_add(HostHandle<int32> left, HostHandle<int32> right);
+int32 demo_cpp_text_size(String text);
+T demo_cpp_identity<T>(T value);
+
+int64 main()
+{
+    HostHandle<int32> total = demo_cpp_add(cast<HostHandle<int32>>((uint64)20),
+    cast<HostHandle<int32>>((uint64)22));
+    int32 size = demo_cpp_text_size("glue");
+    int32 generic_value = demo_cpp_identity((int32)7);
+    println("cpp={} text={} generic={} host={}",
+    cast<uint64>(total), size, generic_value, total.hostValue());
+    return 0;
+}

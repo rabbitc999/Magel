@@ -1,0 +1,10 @@
+greeting=hello target=world
+sentence=hello world
+greeting == target : 0
+greeting <  target : 1
+sentence >  greeting : 1
+sentence == "hello world" : 1
+space= （长度用   打不出来时看比较结果）
+empty is empty : 1
+!true=0 !false=1
+true && false = 0, true || false = 1

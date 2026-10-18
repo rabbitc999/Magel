@@ -1,0 +1,40 @@
+import names::left;
+import names::right;
+import std::math;
+int64 duplicate(int64 value) { return value + 1000; }
+int64 len(int64 value) { return value + 100; }
+int64 increment(int64 value) { return value + 1; }
+
+int64 main() {
+    List<int64> values; values.push(3);
+    Set<int64> unique = {1,2};
+    Map<String,int64> entries = {"one":1};
+    BigDecimal decimal = BigDecimal("7.5");
+    BigInteger integer = BigInteger("123");
+    Any object; object.set((int64)7);
+    Unique record; record.number = uniqueFunction(4);
+    names::left::Shared left; left.number = 11;
+    names::right::Shared right; right.number = 22;
+    assert(record.number == 5 && left.number == 11 && right.number == 22);
+    assert(names::left::duplicate(1) == 11 && names::right::duplicate(1) == 21);
+    assert(duplicate(1) == 1001);
+    int64 fn(int64) importedFunction = uniqueFunction; assert(importedFunction(5) == 6);
+    assert(len(2) == 102 && std::lang::len("abc") == 3);
+    { int64 fn(int64) println = increment; assert(println(8) == 9); }
+    int64 using = 4; assert(using == 4);
+    assert(values.len() == 1 && unique.len() == 2 && entries["one"] == 1);
+    assert((int64)decimal == 7 && (int64)integer == 123);
+    Option<String> option = Option<std::lang::String>::Value("ok");
+    assert(option.unwrap() == "ok");
+    String text = "reference";
+    Option<String const&> reference = Option<std::lang::String const&>::Value(&text);
+    Option<String const&> builtinReference = reference;
+    assert(builtinReference.unwrap() == "reference");
+    Option<(String,int64)> pair = Option<(std::lang::String,int64)>::Value(("tuple",(int64)2));
+    assert(pair.unwrap().0 == "tuple");
+
+    assert(UNIQUE_NUMBER == 17 && PI > 3.14 && PI < 3.15);
+    { int64 UNIQUE_NUMBER = 9; assert(UNIQUE_NUMBER == 9); }
+    println("implicit imports OK");
+    return 0;
+}

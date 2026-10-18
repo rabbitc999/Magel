@@ -1,0 +1,40 @@
+/* pointer_multi.mgl —— 多级引用（`T mut& mut&`）与泛型修饰叠加。
+ *
+ * 引用类型的修饰词可以叠：`T mut& mut&` 是"指向 `T mut&` 的可写引用"。
+ * 取址只能对**数据区里的东西**做（结构体变量 / 字段 / 数组元素 / 字符串字节），
+ * 所以二级引用要指向结构体的引用字段。
+ *
+ * 泛型实参本身带修饰时，body 里写的修饰会照常再叠一层：
+ * `Slot<int32 mut&>` 的 `T mut& link` 展开成 `int32 mut& mut& link`。
+ */
+
+struct Holder {
+    int32 mut& slot;
+};
+
+struct Slot<T> {
+    T value;
+    T mut& link;
+};
+
+int64 main() {
+    Holder holder;
+    int32 mut& block = heap int32;
+    *block = 3;
+    holder.slot = block;
+
+    /* 二级引用：指向结构体里的引用字段 */
+    int32 mut& mut& indirect = &holder.slot;
+    **indirect = 7;
+    std::lang::println("{} {}", *block, **indirect);
+
+    /* 泛型修饰叠加：`T mut& link` 在 `Slot<int32 mut&>` 上就是 `int32 mut& mut&` */
+    Slot<int32 mut&> nested;
+    nested.value = block;
+    nested.link = indirect;
+    *nested.value = 11;
+    std::lang::println("{} {}", *block, **nested.link);
+
+    delete block;
+    return 0;
+}

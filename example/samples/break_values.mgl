@@ -1,0 +1,119 @@
+// 带值退出穿透语句循环；无值退出只结束最近循环。
+int64 evaluations = 0;
+int64 cleanup = 0;
+int64 drops = 0;
+int64 next() { evaluations++; return evaluations; }
+void record(int64 digit) { cleanup = cleanup * 10 + digit; }
+int64 returned() { (if (true) { return 4; } else { return 5; }); }
+struct Tracked : Drop {
+    String text;
+    void drop() { assert(self.text == "owned"); drops++; }
+};
+
+int64 main() {
+    int64 a = {
+        int64 n = 1;
+        loop {
+            int64 iter = 1;
+            int64 k = n;
+            loop {
+                if (k % 2 == 0) { k = k / 2; }
+                else { k = 3 * k + 1; }
+                if (k == 1) { break; }
+                iter++;
+            };
+            if (iter >= 100) { yield (n); }
+            n++;
+        };
+    };
+    assert(a == 27);
+
+    (int32, String) pair = {
+        for (int32 i = 0; i < 4; i++) {
+            if (i == 2) { yield (i, "found"); }
+        }
+        yield (-1, "missing");
+    };
+    assert(pair.0 == 2 && pair.1 == "found");
+    auto owned = {
+        loop {
+            List<String> local; local.push("kept");
+            yield ("tuple", local);
+        };
+    };
+    assert(owned.0 == "tuple" && owned.1[0] == "kept");
+    auto (first, second, nested) = loop {
+        yield (next(), next(), (next(), "tuple"));
+    };
+    assert(first == 1 && second == 2 && nested.0 == 3 && nested.1 == "tuple" && evaluations == 3);
+
+    int64 nearest = {
+        int64 inner = loop { yield (7); };
+        assert(inner == 7);
+        loop { yield (inner + 1); };
+    };
+    assert(nearest == 8);
+    int64 outer = { int64 inner = { yield (1); }; assert(inner == 1); yield (2); };
+    assert(outer == 2);
+    int64 nestedResult = {
+        int64 y = loop { int64 z = loop { yield (5); }; yield (z + 1); };
+        yield (y + 1);
+    };
+    assert(nestedResult == 7);
+    int64 throughStatementBlock = { { loop { yield (8); }; }; };
+    assert(throughStatementBlock == 8);
+    assert(returned() == 4);
+    int64 continued = {
+        int64 i = 0;
+        while (i < 5) {
+            i++;
+            if (i < 3) { continue; }
+            yield (i);
+        }
+        yield (-1);
+    };
+    assert(continued == 3);
+    int64 once = { do { yield (9); } while (false); };
+    assert(once == 9);
+    int64 element = {
+        for (int64 item in [1,5]) {
+            if (item == 4) { yield (item); }
+        }
+        yield (-1);
+    };
+    assert(element == 4);
+    List<String> words; words.push("first"); words.push("second");
+    String word = {
+        for (String item in words) {
+            while (true) { yield (item); }
+        }
+        yield ("missing");
+    };
+    assert(word == "first" && words[0] == "first");
+
+    String saved = {
+        defer record(1);
+        loop {
+            Tracked resource; resource.text = "owned";
+            defer record(2);
+            String local = "saved";
+            while (true) {
+                scope(exit) { record(3); }
+                yield (local);
+            }
+        };
+    };
+    assert(saved == "saved" && cleanup == 321 && drops == 1);
+
+    auto branch = if (true) {
+        loop { yield (11, "if"); };
+    } else { (0, "else") };
+    assert(branch.0 == 11 && branch.1 == "if");
+    auto matched = match (1) {
+        1 => { loop { yield (12, "match"); }; }
+        _ => { (0, "other") }
+    };
+    assert(matched.0 == 12 && matched.1 == "match");
+    println("break values OK");
+    return 0;
+}

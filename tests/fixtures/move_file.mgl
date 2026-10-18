@@ -1,0 +1,30 @@
+import std::io;
+
+int64 main() {
+    File source = fileOpen("build/move-file.bin", "wb").unwrap();
+    int64 before; memcpy(&before, &source, 8);
+    File target = move(&source);
+    int64 after; memcpy(&after, &target, 8);
+    assert(before == after);
+    assert(fileWrite(target, "moved") == 5);
+    fileClose(target);
+    FileStream stream = FileStream::open("build/move-stream.bin", "wb").unwrap();
+    FileStream destination = move(&stream);
+    assert(destination.write("stream").unwrap() == 6);
+    destination.close();
+    File captured = fileOpen("build/move-closure-file.bin", "wb").unwrap();
+    int64 capturedIdentity; memcpy(&capturedIdentity, &captured, 8);
+    auto write = int64 fn move[captured](String text) {
+        int64 identity; memcpy(&identity, &captured, 8);
+        assert(identity == capturedIdentity);
+        return fileWrite(captured, text);
+    };
+    assert(write("closure") == 7);
+    FileStream capturedStream = FileStream::open("build/move-closure-stream.bin", "wb").unwrap();
+    auto writeStream = int64 fn move[capturedStream](String text) {
+        return capturedStream.write(text).unwrap();
+    };
+    assert(writeStream("owned") == 5);
+    println("file move ok");
+    return 0;
+}

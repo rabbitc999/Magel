@@ -1,0 +1,19 @@
+module std::thread;
+
+import std::concurrency;
+/* 注意：`SharedCoroutine` / `IsolatedThread` / `Message` 各自是**独立模块**，
+ * 不能合成一个 `std::concurrency` —— 它们都有 `create/wait/receive` 这些同名宿主函数，
+ * 塞进同一个模块会撞"宿主函数不能重名"。 */
+
+/* 隔离线程：`import std::thread;`。 */
+type IsolatedThreadHandle = int64;
+
+
+
+
+IsolatedThreadHandle create(void fn() task);
+void wait(IsolatedThreadHandle thread);
+void send(IsolatedThreadHandle thread, std::lang::String message);
+std::lang::String receive();
+IsolatedThreadHandle current();
+IsolatedThreadHandle parent();

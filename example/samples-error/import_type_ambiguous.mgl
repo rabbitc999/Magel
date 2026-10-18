@@ -1,0 +1,3 @@
+import names::left;
+import names::right;
+int64 main() { Shared value; return 0; }

@@ -1,0 +1,2 @@
+$replace BAD(x) $for v in x $end_for
+int64 main() { return $BAD(1); }

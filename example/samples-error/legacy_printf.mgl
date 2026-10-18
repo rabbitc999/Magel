@@ -1,0 +1,4 @@
+int64 main() {
+    printf("old output");
+    return 0;
+}

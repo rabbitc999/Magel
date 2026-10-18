@@ -1,0 +1,260 @@
+{
+  "iterations": 10000000,
+  "warmups": 1,
+  "repeats": 7,
+  "java": "java 22.0.1 2024-04-16\nJava(TM) SE Runtime Environment (build 22.0.1+8-16)\nJava HotSpot(TM) 64-Bit Server VM (build 22.0.1+8-16, mixed mode, sharing)",
+  "java_flags": "-Xbatch; 20 full-loop warmups; runtime long input; volatile result sink",
+  "java_interpreter_flags": "-Xint; JIT disabled; 1 full-loop warmup; runtime long input; volatile result sink",
+  "register_core_variants": {
+    "Magel register switch": [
+      "1",
+      "0",
+      "1",
+      "1",
+      "1"
+    ],
+    "Magel register labels": [
+      "1",
+      "1",
+      "1",
+      "1",
+      "1"
+    ],
+    "Magel register no jump folding": [
+      "1",
+      "0",
+      "0",
+      "1",
+      "1"
+    ],
+    "Magel register generic opcodes": [
+      "1",
+      "0",
+      "1",
+      "0",
+      "1"
+    ],
+    "Magel register per instruction": [
+      "1",
+      "0",
+      "1",
+      "1",
+      "0"
+    ],
+    "Magel register compact only": [
+      "1",
+      "0",
+      "0",
+      "0",
+      "0"
+    ]
+  },
+  "java_cold_single_run_process_ms": 108.95,
+  "java_cold_single_loop_ms": 2.97,
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.3 (tags/v3.12.3:f6650f9, Apr  9 2024, 14:05:25) [MSC v.1938 64 bit (AMD64)]",
+  "lua": "Lua 5.5.1  Copyright (C) 1994-2026 Lua.org, PUC-Rio",
+  "lua_url": "https://www.lua.org/ftp/lua-5.5.1.tar.gz",
+  "lua_sha256": "1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce",
+  "compiler": "gcc (x86_64-posix-seh-rev3, Built by MinGW-W64 project) 11.2.0",
+  "make": "mingw32-make",
+  "machine": "﻿CPU: AMD Ryzen 7 9700X 8-Core Processor             \nCores: 8 / Logical: 16 / MaxMHz: 3800\nOS:  Microsoft Windows 11 专业版 10.0.26200\nRAM_GB: 32",
+  "magel_version": "0.10.2",
+  "magel_commit": "1f3e7f8",
+  "compiler_flags": "Lua -O2; Magel -O2 -DNDEBUG MAGEL_CUSTOM_ALLOCATOR=1",
+  "aot_flags": "-O2 unchecked; fresh runtime input per sample prevents folding and cross-sample hoisting; generated source retained",
+  "timing": "Java System.nanoTime; AOT std::clock::nowNanos around calculate only; Python perf_counter_ns; Lua os.clock; Magel steady_clock; exclude parsing and file loading; Magel includes execution-plan setup and final checksum output",
+  "results": {
+    "Python": {
+      "median_ms": 287.8238,
+      "samples_ms": [
+        286.9746,
+        288.005,
+        299.3042,
+        287.8238,
+        292.1353,
+        287.0513,
+        285.1564
+      ],
+      "checksum": "49999995000000"
+    },
+    "Lua": {
+      "median_ms": 43.0,
+      "samples_ms": [
+        43.0,
+        43.0,
+        43.00000000000001,
+        45.999999999999986,
+        43.00000000000001,
+        42.999999999999986,
+        41.000000000000036
+      ],
+      "checksum": "49999995000000"
+    },
+    "Magel VM optimized": {
+      "median_ms": 84.225,
+      "samples_ms": [
+        88.4152,
+        85.1611,
+        83.7869,
+        84.0342,
+        84.225,
+        83.9217,
+        84.7998
+      ],
+      "checksum": "49999995000000",
+      "logical_steps": 150000035
+    },
+    "Magel register switch": {
+      "median_ms": 79.8329,
+      "samples_ms": [
+        80.9792,
+        79.486,
+        79.9987,
+        80.6587,
+        78.1769,
+        79.8329,
+        79.0446
+      ],
+      "checksum": "49999995000000",
+      "logical_steps": 150000035
+    },
+    "Magel register labels": {
+      "median_ms": 84.4785,
+      "samples_ms": [
+        85.9163,
+        84.5132,
+        83.6873,
+        83.5006,
+        83.2307,
+        84.5948,
+        84.4785
+      ],
+      "checksum": "49999995000000",
+      "logical_steps": 150000035
+    },
+    "Magel register no jump folding": {
+      "median_ms": 81.3689,
+      "samples_ms": [
+        86.8275,
+        80.9856,
+        81.2464,
+        81.4443,
+        81.3689,
+        80.7169,
+        89.208
+      ],
+      "checksum": "49999995000000",
+      "logical_steps": 150000035
+    },
+    "Magel register generic opcodes": {
+      "median_ms": 108.588,
+      "samples_ms": [
+        106.881,
+        107.522,
+        116.01,
+        134.387,
+        110.245,
+        108.588,
+        106.654
+      ],
+      "checksum": "49999995000000",
+      "logical_steps": 150000035
+    },
+    "Magel register per instruction": {
+      "median_ms": 103.511,
+      "samples_ms": [
+        103.389,
+        102.185,
+        102.601,
+        116.231,
+        103.511,
+        103.708,
+        103.766
+      ],
+      "checksum": "49999995000000",
+      "logical_steps": 150000035
+    },
+    "Magel register compact only": {
+      "median_ms": 156.795,
+      "samples_ms": [
+        170.513,
+        156.795,
+        160.11,
+        158.063,
+        156.4,
+        155.981,
+        156.133
+      ],
+      "checksum": "49999995000000",
+      "logical_steps": 150000035
+    },
+    "Magel VM legacy optimized": {
+      "median_ms": 1966.78,
+      "samples_ms": [
+        1911.43,
+        1997.75,
+        1937.24,
+        1975.43,
+        1994.1,
+        1966.78,
+        1918.09
+      ],
+      "checksum": "49999995000000",
+      "logical_steps": 150000035
+    },
+    "Magel VM reference": {
+      "median_ms": 6092.97,
+      "samples_ms": [
+        5904.37,
+        5793.76,
+        5741.01,
+        6120.06,
+        6376.92,
+        6092.97,
+        6144.88
+      ],
+      "checksum": "49999995000000",
+      "logical_steps": 150000035
+    },
+    "Magel AOT": {
+      "median_ms": 1.83,
+      "samples_ms": [
+        1.83,
+        1.84,
+        1.82,
+        1.82,
+        1.84,
+        1.82,
+        1.92
+      ],
+      "checksum": "49999995000000"
+    },
+    "Java HotSpot interpreter (-Xint)": {
+      "median_ms": 47.5381,
+      "samples_ms": [
+        47.326,
+        47.5381,
+        49.5099,
+        49.4889,
+        48.0034,
+        46.0946,
+        46.7576
+      ],
+      "checksum": "49999995000000"
+    },
+    "Java HotSpot JIT": {
+      "median_ms": 1.9367,
+      "samples_ms": [
+        1.9367,
+        1.9368,
+        1.949,
+        1.9324,
+        1.9332,
+        1.9872,
+        1.9325
+      ],
+      "checksum": "49999995000000"
+    }
+  }
+}

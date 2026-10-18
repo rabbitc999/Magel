@@ -1,0 +1,718 @@
+\chapter{控制流}
+\label{ch:05}
+
+程序光会「从上往下做」是干不了活的。它得会拐弯（条件）和转圈（循环）。
+
+第 2 章的猜数字已经把这两种都用上了，这一章把它们补全：Magel 一共有四种循环，还有一套对「同一个变量在一个表达式里被读写两次」管得很严的规则。
+
+\section{条件：\texttt{if} / \texttt{elif} / \texttt{else}}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+String classify(int64 value)
+{
+    if (value < 0)
+    {
+        return "负数";
+    }
+    elif (value == 0)
+    {
+        return "零";
+    }
+    else
+    {
+        return "正数";
+    }
+}
+
+int64 main()
+{
+    println("{} {} {}", classify(-3), classify(0), classify(8));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+负数 零 正数
+\end{lstlisting}
+\par
+\medskip
+
+形态就是这些：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+if (条件) { ... }
+elif (条件) { ... }
+else { ... }
+\end{lstlisting}
+\par
+\medskip
+
+三条要注意的：
+
+1. 条件必须真的能当条件。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    if (1)
+    {
+        println("x");
+    }
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：if 条件必须是 bool，现在给的是 int64（数值条件请显式写成 `(bool)值` 或比较表达式）
+\end{lstlisting}
+\par
+\medskip
+
+没有「非零即真」。想判断「\texttt{count} 是不是 0」，写 \texttt{if (\allowbreak{}count !=\allowbreak{} 0)\allowbreak{}}——把你想说的说出来。
+
+2. 拼写是 \texttt{elif}，不是 \texttt{else if}，也不是 \texttt{elsif}。少一个字母都编译不过。
+
+3. 花括号不能省。 只写一句 \texttt{if (\allowbreak{}x)\allowbreak{} y =\allowbreak{} 1;} 是编译错误。这条和 C 不一样，但换来的是「这个 \texttt{y =\allowbreak{} 1} 到底属于哪个 if」永远不会有歧义。
+
+\begin{tip}{提示}
+Magel 没有三目运算符。 \texttt{cond ? a :\allowbreak{} b} 是语法错误（第 3 章提过）。简单替换就用 \texttt{if /\allowbreak{} else} 赋值；分支多了，第 10 章的 \texttt{match} 更好读。可以使用 \texttt{if (\allowbreak{}条件)\allowbreak{} \{ 值一 \} else \{ 值二 \}} 条件表达式；只求值命中的分支。
+\end{tip}
+
+\subsection{条件也能产生值}
+
+\texttt{if} 可以出现在变量定义、赋值、函数实参和其他表达式里。只执行选中的分支，条件和分支都按短路规则求值。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int32 p = 5;
+    bool odd = if (p % 2 == 1)
+    {
+        true
+    }
+    else
+    {
+        false
+    };
+    int32 category = if (p % 3 == 1)
+    {
+        1
+    }
+    elif (p % 3 == 2)
+    {
+        2
+    }
+    else
+    {
+        3
+    };
+    odd = if (p % 2 == 0)
+    {
+        false
+    }
+    else
+    {
+        bool value = true;
+        yield value;
+    };
+    println("{} {}", odd, category);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+1 2
+\end{lstlisting}
+\par
+\medskip
+
+只有结果表达式时写 \texttt{\{ value \}}，块内不加分号；有声明、赋值等语句时用 \texttt{yield value;} 给出块的结果。各分支结果类型一致，并且必须有 \texttt{else}。外层变量定义和赋值仍以分号结束。
+
+条件选择使用 \texttt{if} 表达式。
+
+\section{\texttt{while}：先判断，再执行}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 countdown = 3;
+    while (countdown > 0)
+    {
+        println("{}", countdown);
+        countdown = countdown - 1;
+    }
+    println("起飞！");
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+3
+2
+1
+起飞！
+\end{lstlisting}
+\par
+\medskip
+
+条件写在括号里，先判后做。条件一开始就不成立，循环体一次都不执行。
+
+\section{\texttt{for}：三段式}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 total = 0;
+    for (int64 k = 0; k < 5; k = k + 1)
+    {
+        total = total + k;
+    }
+    println("{}", total);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+10
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{for} 的括号里是三段，用分号隔开：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+for ( 初始化 ; 条件 ; 每轮结束做什么 )
+       ↑         ↑        ↑
+      int64 k=0  k<5      k=k+1
+\end{lstlisting}
+\par
+\medskip
+
+顺序是：先跑一次初始化 \ensuremath{\rightarrow} 判条件 \ensuremath{\rightarrow} 执行循环体 \ensuremath{\rightarrow} 跑「每轮结束做什么」 \ensuremath{\rightarrow} 再判条件……
+
+\texttt{for} 里声明的变量（这里是 \texttt{k}）只在这个循环里存在，出了循环就没了。所以循环里可以放心用 \texttt{i}、\texttt{k} 这种短名字。
+
+遍历容器时不要用 \texttt{for}。 数下标容易数错，\texttt{for-in} 是专门干这个的（5.6 节）。
+
+\section{\texttt{do \{ \} while (\allowbreak{} )\allowbreak{}}：先执行一次}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 tries = 0;
+    do
+    {
+        tries = tries + 1;
+    }
+    while (tries < 3);
+    println("{}", tries);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+3
+\end{lstlisting}
+\par
+\medskip
+
+和 \texttt{while} 的唯一区别：循环体至少执行一次，条件在末尾判。
+
+什么时候需要它？「至少得做一次，做完再看要不要继续」——比如读一个输入、至少问用户一次。注意 \texttt{while (\allowbreak{}条件)\allowbreak{}} 后面那个分号不能省。
+
+\section{\texttt{loop}：会「带值跳出来」的循环}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 attempts = 0;
+    loop
+    {
+        attempts = attempts + 1;
+        if (attempts >= 3)
+        {
+            yield attempts * 10;
+        }
+    };
+    println("{}", attempts);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+3
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{loop \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} \}} 就是「一直转」，它自己不会停——出口全靠 \texttt{break}。
+
+它的特别之处在于：\texttt{break} 后面可以带一个值，这个值就是整个 \texttt{loop} 的「结果」：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 firstEven = loop
+{
+    int64 candidate = nextNumber();
+    if (candidate % 2 == 0)
+    {
+        yield candidate;
+        // 这个 candidate 就是 firstEven
+    }
+};
+\end{lstlisting}
+\par
+\medskip
+
+所以 \texttt{loop} 是表达式（能算出值），不是语句。这带来一个语法上的小尾巴：
+
+当 \texttt{loop} 出现在语句位置时，后面要补一个分号。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+loop
+{
+    done = work();
+    if (done)
+    {
+        break;
+    }
+};
+// ← 这个分号不能少
+\end{lstlisting}
+\par
+\medskip
+
+看到 \texttt{\};} 别以为是笔误，那是「一个表达式被当成语句用」的正常写法。（\texttt{while}、\texttt{for}、\texttt{if} 是语句，不需要。）
+
+\section{\texttt{for-in}：遍历一串东西}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    List<int64> scores;
+    scores.push(30);
+    scores.push(55);
+    scores.push(41);
+
+    int64 best = 0;
+    for (int64 score in scores)
+    {
+        if (score > best)
+        {
+            best = score;
+        }
+    }
+    println("最高分 {}", best);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+最高分 55
+\end{lstlisting}
+\par
+\medskip
+
+写法：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+for ( 元素类型 名字 in 容器 ) { ... }
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{List<\allowbreak{}int64>\allowbreak{}} 是一个「有序的整数表」，\texttt{push} 往末尾加一个。容器是第 11 章的主题，现在你把它当成「一串东西」就够了。
+
+三个要点：
+
+\begin{itemize}
+
+\item 元素类型可以显式写成 \texttt{for (\allowbreak{}int64 score in scores)\allowbreak{}}，也可以由迭代源推导成 \texttt{for (\allowbreak{}score in scores)\allowbreak{}}。
+
+\item 遍历出来的 \texttt{score} 是元素的副本（还记得第 4 章吗），改它不影响容器。想改容器里的元素得用引用（第 7 章）。
+
+\item \texttt{for-in} 能遍历的不只是容器，凡是「能一个个吐出来的东西」都行，比如第 4 章的变长参数、第 17 章的迭代器。
+
+\end{itemize}
+
+显式 \texttt{for(\allowbreak{}auto item in values)\allowbreak{}} 与省略类型的 \texttt{for(\allowbreak{}item in values)\allowbreak{}} 使用相同的元素类型推断；容器按元素类型，整数区间按端点类型推断。
+
+\section{\texttt{break} 与 \texttt{continue}}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    List<int64> scores;
+    scores.push(12);
+    scores.push(-5);
+    scores.push(0);
+    scores.push(99);
+
+    for (int64 score in scores)
+    {
+        if (score < 0)
+        {
+            continue;
+            // 负数不算，看下一个
+        }
+        if (score == 0)
+        {
+            break;
+            // 到此为止，后面的都别看了
+        }
+        println("分数 {}", score);
+    }
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+分数 12
+\end{lstlisting}
+\par
+\medskip
+
+（\texttt{0} 那一项触发了 \texttt{break}，所以 \texttt{99} 从没被打印。）
+
+\texttt{continue} = 「这一轮到此为止，直接进下一轮」；\texttt{break} = 「整个循环到此为止」。
+
+两个都只作用于最内层那一圈循环。想从两层里一次跳出来，得靠 \texttt{loop} 带值或者加个标志变量——Magel 没有「带标签的 break」。
+
+\subsection{指定退出哪一层循环}
+
+\texttt{break;} 退出最近一层循环。\texttt{break level 2;} 退出两层，\texttt{break all;} 退出当前函数里所有包围它的循环。\texttt{level} 与 \texttt{all} 只在这个语法位置识别，其他地方仍是普通变量名。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 visited = 0;
+    loop
+    {
+        loop
+        {
+            visited++;
+            break level 2;
+        };
+        visited += 100;
+    };
+
+    int64 total = 0;
+    List<int64> values;
+    values.push(2);
+    values.push(4);
+    values.push(6);
+    for (item in values)
+    {
+        total += item;
+    }
+    println("{} {}", visited, total);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+1 12
+\end{lstlisting}
+\par
+\medskip
+
+层数只计算 \texttt{while}、\texttt{do}、\texttt{for}、\texttt{for-in} 和 \texttt{loop}，普通块及 \texttt{if}、\texttt{match} 不增加层数。数字参数必须是正整数字面量，不能用变量代替层数。\texttt{all} 只在 \texttt{break} 后的层级参数位置表示「全部循环」，普通变量仍可命名为 \texttt{all}。
+
+层级退出不能携带结果，也不能跳出另一个函数的循环；离开路径上的清理照常执行。带值的 \texttt{yield value;} 则交给最近接收结果的值表达式，无值循环不会把这个值截走。返回表达式中禁止 \texttt{break level} / \texttt{break all}，详见第 4 章。
+
+\subsection{带值退出与层级写法小结}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+写法 & 含义 \\
+\midrule
+\texttt{yield 值;} & 从最近的值表达式（loop / match / 块）交出结果 \\
+\texttt{break level N;} & 跳出 N 层循环，N 必须是正整数字面量 \\
+\texttt{break all;} & 跳出当前函数内所有包围它的循环 \\
+\texttt{break level all;} & 同 \texttt{break all;} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main() {
+    // yield 值;（只能写在值表达式里）
+    int64 v = loop { yield 42; };
+    assert(v == 42);
+    // break level N;
+    int64 n = 0;
+    loop { loop { n++; break level 2; }; assert(false); };
+    assert(n == 1);
+    // break all;
+    int64 a = 0;
+    loop { loop { a++; break all; }; assert(false); };
+    assert(a == 1);
+    println("break 写法 ok");
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+break 写法 ok
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{yield} 只在带值退出里是关键字：作为普通标识符仍可用（例如 \texttt{std:\allowbreak{}:\allowbreak{}coroutine:\allowbreak{}:\allowbreak{}yield(\allowbreak{})\allowbreak{}} 不受影响），但不能写成 \texttt{yield(\allowbreak{}参数)\allowbreak{}} 这种调用形式。\texttt{break level} 后面必须跟正整数字面量层数或 \texttt{all}；\texttt{break level foo;}、\texttt{break level 0;}、\texttt{break level -1;} 都是错的。\texttt{all} 仍是普通变量名，只有在这里的层级参数位置才被识别为「全部循环」，所以你照样可以写 \texttt{int64 all =\allowbreak{} 0;}。
+
+\section{复合赋值与自增减}
+
+写累加的时候，\texttt{total =\allowbreak{} total + score;} 说三遍就烦了。可以缩短：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 value = 17;
+    value += 3;
+    // value = value + 3
+    value -= 1;
+    value *= 2;
+    println("{}", value);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+38
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{+=\allowbreak{}} \texttt{-=\allowbreak{}} \texttt{*=\allowbreak{}} \texttt{/\allowbreak{}=\allowbreak{}} \texttt{\%=\allowbreak{}} \texttt{\&=\allowbreak{}} \texttt{|=\allowbreak{}} \texttt{\textasciicircum{}=\allowbreak{}} \texttt{<\allowbreak{}<\allowbreak{}=\allowbreak{}} \texttt{>\allowbreak{}>\allowbreak{}=\allowbreak{}} 全都有，含义就是「把右边算出来，跟左边做这个运算，写回左边」。
+
+单独的自增自减也能写：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 i = 5;
+    i++;
+    println("{}", i);
+    i--;
+    ++i;
+    println("{}", i);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+6
+6
+\end{lstlisting}
+\par
+\medskip
+
+\subsection{但 Magel 对「一个表达式里读写同一个对象」管得很严}
+
+这是 Magel 和 C 差异最大的地方之一。同一个完整表达式里，一个自增减的目标不能再被别的操作读写：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 i = 0;
+    i = i++;
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：[MGL1301] 同一表达式中，自增减目标与其他读写冲突：i
+\end{lstlisting}
+\par
+\medskip
+
+C 程序员会心头一紧——\texttt{i =\allowbreak{} i++} 在 C 里是未定义行为（每个编译器给的结果可能不一样）。Magel 的做法是：干脆不让你写。你可能觉得它啰嗦，但它拦下的是一整类「换个编译器就换结果」的玄学 bug。
+
+那什么情况是合法的？目标互不影响就行，比如两个不同的变量：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 i = 0;
+    int64 j = 0;
+    int64 sum =(i++) +(j++);
+    println("{} {} {}", sum, i, j);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+0 1 1
+\end{lstlisting}
+\par
+\medskip
+
+还有一条顺便记住：下标自增只发生一次。\texttt{xs[\allowbreak{}i]\allowbreak{} +=\allowbreak{} 1} 里，\texttt{xs[\allowbreak{}i]\allowbreak{}} 这个「位置」只算一次，不会因为复合赋值就把 \texttt{i} 加两次。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    List<int64> store;
+    store.push(10);
+    store.push(20);
+    int64 i = 0;
+    store[i] += 1;
+    println("{} {}", store[0], i);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+11 0
+\end{lstlisting}
+\par
+\medskip
+
+\section{小结}
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.254\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.200\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.526\linewidth-2\tabcolsep\relax}}
+\toprule
+结构 & 什么时候用 & 备注 \\
+\midrule
+\endhead
+\texttt{if /\allowbreak{} elif /\allowbreak{} else} & 条件分支 & 条件必须是 \texttt{bool}；花括号不能省 \\
+\texttt{while (\allowbreak{}cond)\allowbreak{} \{ \}} & 先判断后执行 & 可能一次都不执行 \\
+\texttt{for (\allowbreak{}init; cond; step)\allowbreak{} \{ \}} & 已知次数的计数循环 & 循环变量只活在循环里 \\
+\texttt{do \{ \} while (\allowbreak{}cond)\allowbreak{};} & 至少执行一次 & 末尾分号不能省 \\
+\texttt{loop \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} yield v; \}} & 出口不确定、要给个结果 & 是表达式，语句位置要写 \texttt{\};} \\
+\texttt{for (\allowbreak{}T x in c)\allowbreak{} \{ \}} & 遍历一串东西 & 类型可显式写出或推导，遍历出来是副本 \\
+\texttt{break} / \texttt{continue} & 跳出 / 下一个 & 普通无值形式作用于最近循环；\texttt{break level N} 可指定退出层数 \\
+\bottomrule
+\end{longtable}
+}
+
+还有一套要记住的规则：同一个表达式里对同一个目标读写两次是被禁止的 （\texttt{MGL1301}），这是 Magel 用来消灭「未定义行为」的手段。
+
+三件本章没讲的事：
+
+\begin{itemize}
+
+\item \texttt{for-in} 遍历出来的元素是副本，怎么改到原来的——第 7 章；
+
+\item 分支多了 \texttt{if /\allowbreak{} elif} 会很难看，\texttt{match} 怎么救场——第 10 章；
+
+\item \texttt{loop} 里 \texttt{break} 出来的值，除了赋值还能怎么用——第 10 章的 \texttt{match}、第 16 章的 \texttt{?} 会陆续出现。
+
+\end{itemize}
+
+\section{下一步}
+
+到这里，「语言基础」这一部分就结束了。你现在会写变量、函数、判断、循环——用这些已经能写出完整的程序。
+
+但会写程序 \ensuremath{\neq} 会写对的程序。接下来三章是这本书最重要的一段：【第 6 章 值语义】【第 7 章 引用】【第 8 章 资源与作用域】。
+
+读懂了这三章，你会明白 Magel 为什么长成现在这样——以及为什么它愿意让你多写几个字。
+
+翻到\hyperref[ch:06]{第 6 章 值语义}。

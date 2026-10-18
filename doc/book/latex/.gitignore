@@ -1,0 +1,14 @@
+# LaTeX 构建中间产物：随时可重建，不进版本库。
+*.aux
+*.bcf
+*.blg
+*.bbl
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.pdf
+*.run.xml
+*.synctex.gz
+*.toc
+*.xdv

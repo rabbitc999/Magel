@@ -1,0 +1,1 @@
+magel：example/samples-error/assert_int.mgl 第 2 行第 5 列：调用 函数 std::lang::assert 找不到匹配的重载：(int64)；没有参数类型能对上的重载（候选：std::lang::assert$bool、std::lang::assert$bool$string、std::lang::assert$bool$int64、std::lang::assert$bool$string$int64）

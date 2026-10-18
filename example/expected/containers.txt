@@ -1,0 +1,23 @@
+vec: len=3 v[0]=30 v[2]=20
+改 v[1]=99；contains(20)=1 indexOf(99)=1
+insert 之后：v[0]=7 len=4
+pop=20 len=3
+remove(0) 之后：v[0]=30 len=2
+clear 之后：len=0
+set: len=2 has(5)=1 has(9)=0
+按升序看：at(0)=3 at(1)=5
+remove(5) 拿回 1，现在 len=1
+map: len=3 amy=11 has(bob)=1 cid=33
+没这个键：has(zoe)=0 下标读出来=0
+remove(bob) 拿回 1，现在 len=2
+std::lang::List<string> 遍历：ada bob cid （len=3，contains(bob)=1）
+map 按升序遍历：键 amy cid | 值 11 33 
+std::lang::List<Pair>：4,9 contains=1
+std::lang::Map<Pair,int64>：has=1 value=13
+std::lang::List<std::lang::Any>：77 contains=1
+std::lang::Set<std::lang::Any> 取出再查：has=1 remove=1
+std::lang::Map<std::lang::Any,int64> 取出再查：has=1 值=88 副本=88
+std::lang::Map<std::lang::Any,int64> 同内容新对象：has=0
+std::lang::Map<std::lang::Any,int64> remove=1
+块里的表：len=2
+值语义：a=1 b=2（a 没被 b 改动）

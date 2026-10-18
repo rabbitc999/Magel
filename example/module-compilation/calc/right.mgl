@@ -1,0 +1,6 @@
+module calc::right;
+import calc::left;
+int64 twice(int64 value) { return value * 2; }
+int64 viaInterface(Value mut& value) { return value.get(); }
+
+int64 useFunction(int64 fn(int64) function, int64 value) { return function(value); }

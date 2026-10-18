@@ -1,0 +1,4 @@
+bump
+makeA
+bump() + makeA() = 101
+steps = 2

@@ -1,0 +1,53 @@
+int64 globalValue = 30;
+interface Readable { int64 readValue(); };
+struct Counter : Readable {
+    int64 value;
+    int64 readValue() { return self.value; }
+};
+enum State { Ready(int64 value), Empty;
+    bool ready() { match (self) { State::Ready(value) => { return true; } _ => { return false; } } }
+};
+struct ReferenceBox { int64 mut& value; };
+struct Point { int64 x; int64 y; };
+int64 read(int64 const& p) { return p; }
+int64 main() {
+    int64 mut& globalRef = &globalValue;
+    globalRef = globalRef + 1;
+    assert(globalValue == 31);
+    int64 null = 7;
+    assert(null == 7); // null 已成为普通标识符。
+    int64 a = 10;
+    int64 mut& p = &a;
+    p = p + 1;
+    assert(a == 11 && p == 11);
+    int64 const& c = p;
+    assert(c == 11 && read(p) == 11);
+    int64 mut& q = (int64 mut&)c;
+    q = q + 1;
+    assert(a == 12 && p == 12);
+    assert(address(p) == address(q));
+    Option<int64 mut &> optional = Option<int64 mut &>::Value(&a);
+    int64 mut& optionalRef = optional.unwrap();
+    assert(optionalRef == 12);
+    ReferenceBox box;
+    box.value = &a;
+    assert(box.value == 12);
+    Point point;
+    point.x = 2;
+    Point mut& ptr = &point;
+    ptr.x = ptr.x + 1;
+    assert(point.x == 3 && ptr.x == 3);
+    Counter counter;
+    counter.value = 7;
+    Any boxed;
+    boxed.set(&counter);
+    Readable mut& readable = boxed.getReference();
+    assert(readable.readValue() == 7);
+    State state = State::Ready(2);
+    State mut& stateRef = &state;
+    assert(stateRef.ready());
+    stateRef = State::Empty;
+    assert(!state.ready());
+    println("reference OK {} {}", a, p);
+    return 0;
+}

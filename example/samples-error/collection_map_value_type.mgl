@@ -1,0 +1,1 @@
+int64 main() { std::lang::Map<String, int64> value = {"key": "text"}; return 0; }

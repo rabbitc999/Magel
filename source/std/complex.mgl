@@ -1,0 +1,36 @@
+module std::complex;
+
+/* 从 lang.mgl 原样迁出：符号名不变，只换了模块归属（现在必须 `import std::complex;` 才能用）。 */
+/* 复数的 T 必须支持普通数值加减乘除；FFT 使用 Complex<float64>。 */
+struct Complex<T>: Add<Complex<T>, Complex<T>>,
+                            Subtract<Complex<T>, Complex<T>>,
+                            Multiply<Complex<T>, Complex<T>>,
+                            Divide<Complex<T>, Complex<T>> {
+    T re;
+    T im;
+
+    static Complex<T> of(T real, T imaginary) {
+        Complex<T> result;
+        result.re=real; result.im=imaginary;
+        return result;
+    }
+    Complex<T> conjugate() { return Complex<T>::of(self.re, -self.im); }
+    T normSquared() { return self.re*self.re+self.im*self.im; }
+    Complex<T> scale(T factor) { return Complex<T>::of(self.re*factor,self.im*factor); }
+    Complex<T> leftAdd(Complex<T> right) {
+        return Complex<T>::of(self.re+right.re,self.im+right.im);
+    }
+    Complex<T> leftSub(Complex<T> right) {
+        return Complex<T>::of(self.re-right.re,self.im-right.im);
+    }
+    Complex<T> leftMul(Complex<T> right) {
+        return Complex<T>::of(self.re*right.re-self.im*right.im,
+                              self.re*right.im+self.im*right.re);
+    }
+    Complex<T> leftDiv(Complex<T> right) {
+        T denominator=right.normSquared();
+        std::lang::assert(denominator != (T)0, "Complex 除数不能为零");
+        return Complex<T>::of((self.re*right.re+self.im*right.im)/denominator,
+                              (self.im*right.re-self.re*right.im)/denominator);
+    }
+};

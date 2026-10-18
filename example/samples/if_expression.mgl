@@ -1,0 +1,21 @@
+int64 calls=0;
+int32 next(){calls=calls+1;return 2;}
+int32 select(bool good){return if(good){1}else{2};}
+int32 take(int32 x){return x;}
+int64 main(){
+    int32 p=1;
+    bool odd=if(p%2==1){true}else{false};
+    int32 x=if(p%3==1){1}elif(next()==2){2}else{3};
+    assert(odd);assert(x==1);assert(calls==0);
+    x=if(false){next()}else{int32 f=3;yield (f);};assert(x==3);assert(calls==0);
+    x=take(if(true){4}else{next()});assert(x==4);assert(calls==0);
+    x=if(false){1}elif(next()==2){5}elif(next()==2){6}else{7};assert(x==5);assert(calls==1);
+    x=10+(if(true){2}else{next()});assert(x==12);assert(calls==1);
+    assert(select(false)==2);
+    bool skipped=false && (if(true){next()==2}else{true});assert(!skipped);assert(calls==1);
+    String text=if(false){"bad"}else{String local="value";yield (local+"!");};assert(text=="value!");
+    int64 count=0;
+    while(count<3){int32 value=if(count==0){count=count+1;continue;}else{2};assert(value==2);break;}
+    assert(count==1);
+    println("if ok");return 0;
+}

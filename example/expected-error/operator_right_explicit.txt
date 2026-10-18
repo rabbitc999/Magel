@@ -1,0 +1,1 @@
+magel：example/samples-error/operator_right_explicit.mgl 第 14 行第 5 列：右向归 A 自己实现：它声明了 RightAdd，int64 + A 对不上它的形参，不再借用 Add 兜底（改成能接住左操作数的形参，或写成显式强转）

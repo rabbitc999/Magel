@@ -1,0 +1,57 @@
+/* overload.mgl —— 函数重载：同名函数按实参类型挑签名。
+ *   1) 先找"形参类型完全一致"的那一个；
+ *   2) 再放宽到 int64 → float64（只有整数能喂给 float64 形参）；
+ *   3) 同一档里有两个都能接住 → 不猜，直接报错。 */
+
+int64 twice(int64 value) {
+    return value * 2;
+}
+
+float64 twice(float64 value) {
+    return value * 2.0;
+}
+
+int64 max2(int64 a, int64 b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+float64 max2(float64 a, float64 b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+/* 方法也能重载：同一个 struct 里同名、参数类型不同 */
+struct Box {
+    int64 value;
+
+    int64 show(int64 extra) {
+        return value + extra;
+    }
+
+    float64 show(float64 extra) {
+        return (float64)value + extra;
+    }
+};
+
+int64 main() {
+    int64 i = 7;
+    Box rect;
+    rect.value = 10;
+
+    println("twice(21) = {}", twice(21));          /* twice$int64$int64 */
+    println("twice(i) = {}", twice(i));            /* 参数是 int64 变量，还是 int64 版 */
+    println("twice(1.25) = {:3F}", twice(1.25));      /* twice$float64$float64 */
+    println("max2(3, 9) = {}", max2(3, 9));
+    println("max2(2.5, 1.5) = {:3F}", max2(2.5, 1.5));
+    println("max2(i, 2.5) = {:3F}", max2(i, 2.5));    /* int64 加宽成 float64 后交给 float64 版 */
+    println("rect.show(5) = {}", rect.show(5));      /* 方法重载：选 show$int64 */
+    println("rect.show(0.5) = {:3F}", rect.show(0.5));  /* 方法重载：选 show$float64 */
+    return 0;
+}

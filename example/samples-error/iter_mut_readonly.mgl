@@ -1,0 +1,2 @@
+import std::iter;
+int64 main() { std::lang::List<int64> values; std::lang::List<int64> const& view = &values; auto cursor = view.iterMut(); return 0; }

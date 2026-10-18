@@ -1,0 +1,41 @@
+// 地址复用时默认构造不能误释放残留拥有地址；new 与运行时数组必须初始化。
+struct DefaultOwned {
+    int32 kind;
+    bool ready;
+    float32 scale;
+    String text;
+    List<String> values;
+    String fn() callback;
+};
+String fn() retained(String mut& text) { return fn() { text }; }
+int64 main() {
+    for (int64 i = 0; i < 20; i = i + 1) {
+        String parentCallback="parent callback";
+        DefaultOwned local;
+        local.kind = 7;
+        local.text = "parent";
+        local.values.push("owned");
+        local.callback = retained(&parentCallback);
+        DefaultOwned mut& owned = heap DefaultOwned;
+        assert(owned.kind == 0 && !owned.ready && owned.scale == 0.0);
+        assert(owned.values.len() == 0);
+        owned.text = "child";
+        owned.values.push("child value");
+        owned.callback = retained(&owned.text);
+        assert(owned.callback() == "child");
+        assert(local.kind == 7 && local.text == "parent" && local.values[0] == "owned");
+        assert(local.callback() == "parent callback");
+        delete owned;
+        assert(local.text == "parent" && local.callback() == "parent callback");
+        String words[] = new[3];
+        words[0] = format("{}", i);
+        words[1] = "first";
+        words[1] = "second";
+        assert(words[0] == format("{}", i) && words[1] == "second");
+        delete words;
+        int32 numbers[] = new[3];
+        assert(numbers[0] == 0 && numbers[2] == 0);
+    }
+    println("allocated default ownership OK");
+    return 0;
+}

@@ -1,0 +1,29 @@
+# Magel compiler
+
+This project was generated from `magel.gram`. It includes the matching StackVM,
+preprocessor, big-number runtime, the referenced `lang.mgl` template, and core host glue.
+Standard modules, including `std::collections` and `std::reflect`, are embedded in the compiler.
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release
+./build/magel program.mgl
+```
+
+## 构建裁剪
+
+CMake 提供 `NO_MAGEL_XXX` 布尔选项，默认 OFF。例如 `-DNO_MAGEL_BIG_INT=ON` 同时关闭大整数和大浮点，`-DNO_MAGEL_STD_REGEX=ON` 关闭正则宿主胶水。定义在运行时和前端之间统一传播。启用 `NO_MAGEL_DEFAULT_POOL` 后需要嵌入宿主显式提供区域，不适合直接运行默认命令行入口。
+
+旧版 MinGW 在低优化构建大型生成解析器时可能遇到 COFF 字符串表上限；推荐 Release 配置或更新工具链。
+
+## 注解与反射能力
+
+`MAGEL_WITH_REFLECTION` 与 `STACKVM_WITH_REFLECTION` 两个 CMake 选项均默认 OFF。构建时同时开启后，单次编译默认启用；`--reflection` 显式要求，`--no-reflection` 显式关闭。根目录工具链默认已开启，两类工程默认值分别以其构建文件为准。支持编译期用户注解、显式 @Reflect 元数据、import std::reflect 类型化查询，以及封闭 ReflectValue 的自由函数、实例/静态方法、构造、接口和运算符接口调用。--hard-realtime 禁止启用反射；引用和一般聚合动态签名仍不支持。
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DMAGEL_WITH_REFLECTION=ON -DSTACKVM_WITH_REFLECTION=ON
+cmake --build build --config Release
+./build/magel program.mgl --reflection
+```
+
+使用 `magel new hello-magel` 新建应用工程，再用 `magel hello-magel/src/main.mgl` 运行。新建指令无需 Python 或磁盘模板，目标目录必须不存在。完整的 test / aot 等开发命令由仓库统一工具链 magel 提供。

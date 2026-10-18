@@ -1,0 +1,1 @@
+magel：example/samples-error/extern_unbound.mgl 第 8 行第 5 列：宿主函数没有绑定：cpp_missing（宿主用 registry.bindTyped / bindTypedWithContext 注册）

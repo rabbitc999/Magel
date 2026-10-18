@@ -1,0 +1,1 @@
+magel：example/samples-error/logical_and_int.mgl 第 2 行第 26 列：逻辑运算 && 两侧都必须是 bool，现在是 bool 与 int64

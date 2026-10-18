@@ -1,0 +1,1 @@
+const int64 A=B; const int64 B=A; int64 main() { int64 data[A]; return 0; }

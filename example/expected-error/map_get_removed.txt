@@ -1,0 +1,1 @@
+magel：example/samples-error/map_get_removed.mgl 第 5 行第 5 列：容器 std::lang::Map<std::lang::String, int64> 没有方法 get（支持的方法见 README 的「容器」一节）

@@ -1,0 +1,31 @@
+int64 globals[4];
+int64 calls=0;
+int64 nextValue() { calls++;return calls*3; }
+enum Packet { Data(String text) }
+
+int64 main() {
+    Packet packet=Packet::Data("original");
+    String label=match(packet) {
+        Packet::Data(text)=>{text="copy";yield (text);}
+    };
+    assert(label=="copy");
+    match(packet){Packet::Data(text)=>{assert(text=="original");}}
+    int64 values[8];
+    int64 cursor=0;
+    values[cursor++]=nextValue();
+    values[cursor++]=nextValue();
+    assert(cursor==2 && calls==2 && values[0]==3 && values[1]==6);
+    int8 small[2];small[1]=-7;assert(small[1]==-7);
+    uint64 wide[2];wide[1]=18446744073709551615u;assert(wide[1]==18446744073709551615u);
+    float32 singles[2];singles[1]=1.25f;assert(singles[1]==1.25f);
+    float64 doubles[]=new[4];doubles[3]=2.5;assert(doubles[3]==2.5);
+    int64 pool[]=new[8];
+    for(int64 i=0;i<8;i++) { pool[i]=i*5;globals[i%4]=pool[i]; }
+    assert(pool[7]==35 && globals[3]==35);
+    int64 mut& p=&pool[0];p[2]=41;assert(p[2]==41);
+    List<String> words;
+    for(int64 i=0;i<30;i++) { words.push("value");assert(words[i]=="value"); }
+    assert(len(words)==30);
+    println("aot optimization OK");
+    return 0;
+}

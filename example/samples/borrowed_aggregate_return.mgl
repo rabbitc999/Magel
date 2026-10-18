@@ -1,0 +1,34 @@
+struct BorrowedItem { String text; List<int64> numbers; };
+BorrowedItem original;
+BorrowedItem const& borrowed() { return &original; }
+BorrowedItem copied() { return borrowed(); }
+struct BorrowedFactory {
+    static BorrowedItem const& borrowed() { return &original; }
+};
+BorrowedItem copiedStatic() { return BorrowedFactory::borrowed(); }
+enum BorrowedChoice { Empty, Text(String value); };
+BorrowedChoice choice;
+BorrowedChoice const& borrowedChoice() { return &choice; }
+BorrowedChoice copiedChoice() { return borrowedChoice(); }
+int64 main() {
+    original.text="source";
+    original.numbers.push(7);
+    for (int64 i=0; i<5; i++) {
+        {
+            BorrowedItem value=copied();
+            value.text="changed";
+            value.numbers.push(8);
+            assert(value.numbers.len()==2);
+        }
+        assert(original.text=="source" && original.numbers.len()==1);
+        { BorrowedItem value=copiedStatic(); assert(value.text=="source"); }
+        assert(original.text=="source");
+        choice=BorrowedChoice::Text("enum");
+        { BorrowedChoice value=copiedChoice(); match(value){Text(text)=>{assert(text=="enum");} Empty=>{assert(false);}} }
+        match(choice){Text(text)=>{assert(text=="enum");} Empty=>{assert(false);}}
+        match(borrowedChoice()){Text(text)=>{assert(text=="enum");} Empty=>{assert(false);}}
+        match(choice){Text(text)=>{assert(text=="enum");} Empty=>{assert(false);}}
+    }
+    println("borrowed aggregate return OK");
+    return 0;
+}

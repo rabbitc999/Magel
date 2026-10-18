@@ -1,0 +1,2 @@
+// 自增减表达式数量或可写性错误。
+int64 main() { auto value=(1,"text"); ++value.0; return 0; }

@@ -1,0 +1,8 @@
+fp(3, 4) = 7
+fp(3, 4) = -1
+apply(add, 20, 22) = 42
+apply(sub, 20, 22) = -2
+empty.isNone() = 1
+没有函数时不执行调用
+calc.op(1, 2) = 3
+maker(3, 4) = (3, 4)

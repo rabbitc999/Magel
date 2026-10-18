@@ -1,0 +1,7 @@
+int32 counter = 7;
+String label = "context";
+export int32 add(int32 left, int32 right) { counter += 1; return left + right + counter; }
+export float64 scale(float64 value) { return value * 2.0; }
+export void reset(int32 value) { counter = value; }
+export int32 labelSize() { return (int32)len(label); }
+export int32 fail() { panic("export failure"); return 0; }

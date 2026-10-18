@@ -1,0 +1,61 @@
+int64 builds = 0;
+
+struct Series : Index<int64, int64>, Iterator<int64>,
+ImplicitConvert<int64>, ExplicitConvert<float64> {
+    int64 first;
+    int64 second;
+    int64 third;
+
+    int64 index(int64 key) {
+        if (key == 0) { return first; }
+        if (key == 1) { return second; }
+        return third;
+    }
+
+    Option<int64> iterator(int64 position) {
+        if (position < 3) {
+            return Option<int64>::Value(self.index(position));
+        }
+        return Option<int64>::None;
+    }
+
+    int64 implicitConvert() { return first + second + third; }
+    float64 explicitConvert() { return (float64)(first + second + third) / 3.0; }
+};
+
+Series make_series() {
+    builds = builds + 1;
+    Series value;
+    value.first = 3;
+    value.second = 5;
+    value.third = 7;
+    return value;
+}
+
+int64 main() {
+    Series values = make_series();
+    int64 total = values;
+    float64 average = (float64)values;
+    println("index={} total={} average={:3F}", values[1], total, average);
+
+    int64 automatic = 0;
+    for (value in make_series()) {
+        if (value == 5) { continue; }
+        automatic = automatic + value;
+    }
+
+    int64 typed = 0;
+    for (int64 value in values) {
+        typed = typed + value;
+    }
+    int64 ascending = 0;
+    for (int64 number in range(1, 6)) { ascending = ascending + number; }
+    int64 descending = 0;
+    for (number in range(5, 0, -2)) { descending = descending + number; }
+    int64 mismatched = 0;
+    for (number in range(1, 5, -1)) { mismatched = mismatched + 1; }
+    for (number in range(5, 1, 1)) { mismatched = mismatched + 1; }
+    println("for={} typed={} builds={} range={}/{}/{}",
+    automatic, typed, builds, ascending, descending, mismatched);
+    return 0;
+}

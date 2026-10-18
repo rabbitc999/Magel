@@ -1,0 +1,6 @@
+threads=0 0 0
+started=1
+periodic=1 stop-running=0
+stopped=1
+queued=1 ordered=1 batch=1
+dropped=1

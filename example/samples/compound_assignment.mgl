@@ -1,0 +1,116 @@
+// 复合赋值先保存目标位置，左侧的容器和下标只求值一次。
+int64 drops = 0;
+struct Tracked : Drop { int64 value; void drop() { drops += 1; } };
+int64 calls = 0;
+int64 rightCalls = 0;
+int64 global = 1;
+int64 index() { calls += 1; return 0; }
+int64 amount() { rightCalls += 1; return 5; }
+struct Counter : Add<Counter, int64> {
+    int64 value;
+    String label;
+    Counter leftAdd(int64 amount) {
+        Counter result;
+        result.value = self.value + amount;
+        result.label = self.label;
+        return result;
+    }
+};
+int64 main() {
+    int64 expressionLeft = 1;
+    int64 expressionRight = 2;
+    expressionLeft += expressionRight * 3 + 4;
+    assert(expressionLeft == 11 && expressionRight == 2);
+    int64 value = 20;
+    value += 4; assert(value == 24);
+    value -= 3; assert(value == 21);
+    value *= 2; assert(value == 42);
+    value /= 4; assert(value == 10);
+    value %= 4; assert(value == 2);
+    value <<= 3; assert(value == 16);
+    value >>= 2; assert(value == 4);
+    value |= 3; assert(value == 7);
+    value &= 6; assert(value == 6);
+    value ^= 3; assert(value == 5);
+    value += 2 * 3; assert(value == 11);
+    value *= 1 + 2; assert(value == 33);
+    global += value; assert(global == 34);
+    float64 real = 1.5;
+    real += 0.5; real *= 3.0; real /= 2.0; real -= 1.0;
+    assert(real == 2.0);
+    uint64 unsignedValue = (uint64)8;
+    unsignedValue += (uint64)2; unsignedValue <<= 1; unsignedValue ^= (uint64)4;
+    assert(unsignedValue == (uint64)16);
+    int64 bits = 3;
+    bits <<= 1 + 1; assert(bits == 12);
+    bits >>= 1; bits |= 1; bits &= 7; bits ^= 2;
+    assert(bits == 5);
+    int64 data[2]; data[0] = 10; data[1] = 20;
+    data[index()] += amount();
+    assert(data[0] == 15 && calls == 1 && rightCalls == 1);
+    calls = 0; rightCalls = 0;
+    data[index()] = data[index()] + amount();
+    assert(data[0] == 20 && calls == 2 && rightCalls == 1);
+    int64 mut& ref = &data[1]; ref *= 2;
+    assert(data[1] == 40);
+    int64 dynamic[] = new [2]; dynamic[0] += 7;
+    assert(dynamic[0] == 7);
+    List<int64> list; list.push(2); list[0] *= 3;
+    for (int64 element in list) { element += 1; }
+    assert(list[0] == 7);
+    auto map = {"key": 2}; map["key"] <<= 2;
+    assert(map["key"] == 8);
+    Counter counter; counter.value = 10; counter.label = "kept";
+    counter.value += 2;
+    counter += 3;
+    assert(counter.value == 15 && counter.label == "kept");
+    Counter mut& counterRef = &counter; counterRef += 2;
+    assert(counter.value == 17 && counter.label == "kept");
+    for (int64 round = 0; round < 8; round += 1) {
+        String text = "left";
+        String copy = text;
+        text += "-right";
+        String mut& textRef = &text; textRef += "!";
+        assert(text == "left-right!" && copy == "left");
+        BigInteger big = BigInteger("100000000000000000000");
+        big += 5; big -= 3; big *= 2; big /= 2; big %= 7;
+        assert(big == BigInteger(4));
+        BigInteger mut& bigRef = &big; bigRef += 3;
+        assert(big == BigInteger(7));
+        BigDecimal decimal = BigDecimal("1.5");
+        decimal += BigDecimal("0.5"); decimal *= 3; decimal /= 2; decimal -= 1;
+        assert(decimal == BigDecimal(2));
+        BigDecimal mut& decimalRef = &decimal; decimalRef += 1;
+        assert(decimal == BigDecimal(3));
+    }
+    int64 a = 0; int64 b = 0; int64 c = 4;
+    a = b = c + 3;
+    assert(a == 7 && b == 7 && c == 4);
+    calls = 0;
+    a = data[index()] = 9;
+    assert(a == 9 && data[0] == 9 && calls == 1);
+    String left = "left"; String right = "right";
+    left = right = "value";
+    right += "!";
+    assert(left == "value" && right == "value!");
+    bool skipped = false && ((left = right = "skip") == "skip");
+    assert(!skipped && left == "value" && right == "value!");
+    BigInteger bigLeft = BigInteger(1);
+    BigInteger bigRight = BigInteger(2);
+    bigLeft = bigRight = BigInteger("12345678901234567890");
+    bigRight += 1;
+    assert(bigLeft == BigInteger("12345678901234567890"));
+    Counter other;
+    other = counter = counter + 1;
+    other.label += "!";
+    assert(counter.value == 18 && other.value == 18 && counter.label == "kept" && other.label == "kept!");
+    Tracked trackedLeft; Tracked trackedRight;
+    int64 beforeDrops = drops;
+    bool skipTracked = false && ((trackedLeft = trackedRight).value > 0);
+    assert(!skipTracked && drops == beforeDrops);
+    int64 total = 0;
+    for (int64 i = 0; i < 4; i += 1) { total += i; }
+    assert(total == 6);
+    println("compound assignment OK");
+    return 0;
+}

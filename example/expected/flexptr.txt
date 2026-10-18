@@ -1,0 +1,4 @@
+a = 0 99 20 99（len=4）
+box = 3 x 4, area = 12
+row: 1 2 3，row[1].height = 10
+bytes = 4

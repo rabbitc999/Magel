@@ -1,0 +1,1 @@
+int64 packageValue() { return 40; }

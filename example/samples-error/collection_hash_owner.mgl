@@ -1,0 +1,1 @@
+struct Key : Equal<bool, Key>, Hash<int64> { int64 id; bool leftEqual(Key value) { return self.id == value.id; } uint64 hash(int64 value) { return (uint64)value; } }; int64 main() { return 0; }

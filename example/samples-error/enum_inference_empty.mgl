@@ -1,0 +1,2 @@
+enum Choice<T> { None1, Value1(T value); };
+int64 main() { auto value = None1; return 0; }

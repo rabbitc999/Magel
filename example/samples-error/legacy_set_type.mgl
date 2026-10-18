@@ -1,0 +1,4 @@
+int64 main() {
+    set<int64> values;
+    return 0;
+}

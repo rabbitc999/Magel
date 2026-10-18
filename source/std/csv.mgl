@@ -1,0 +1,72 @@
+module std::csv;
+
+/** CSV 错误位置从一开始，column 是该行的字节列。 */
+struct CsvError { int64 line; int64 column; String message; };
+/** @brief 构造包含位置的解析错误。 */
+CsvError csvError(int64 line, int64 column, String message) {
+    CsvError result; result.line=line; result.column=column; result.message=message; return result;
+}
+/** 解析 CSV；支持字段内换行和双引号转义，保留空字段与空行。 */
+Result<List<List<String>>,CsvError> parseCsv(String text, char delimiter=',') {
+    if (delimiter=='"' || delimiter=='\r' || delimiter=='\n' || delimiter==(char)0 || (uint8)delimiter>127) {
+        return Result<List<List<String>>,CsvError>::Err(csvError(1,1,"invalid delimiter"));
+    }
+    List<uint8> input=stringBytes(text);
+    List<List<String>> rows; List<String> row; String field="";
+    bool quoted=false; bool afterQuote=false; bool started=false;
+    int64 line=1; int64 column=1; int64 quoteLine=1; int64 quoteColumn=1;
+    for (int64 i=0;i<input.len();i=i+1) {
+        char value=(char)input[i];
+        if (quoted) {
+            if (value=='"') {
+                if (i+1<input.len() && input[i+1]==(uint8)'"') { field=field+"\""; i=i+1; column=column+1; }
+                else { quoted=false; afterQuote=true; }
+            } else { field=field+format("{}",value); }
+        } else {
+            if (afterQuote && value!=delimiter && value!='\r' && value!='\n') {
+                return Result<List<List<String>>,CsvError>::Err(csvError(line,column,"unexpected character after quote"));
+            }
+            if (value==delimiter) { row.push(field); field=""; afterQuote=false; started=false; }
+            elif (value=='\r' || value=='\n') {
+                row.push(field); rows.push(row); row.clear(); field=""; afterQuote=false; started=false;
+                if (value=='\r') {
+                    if (i+1<input.len() && input[i+1]==(uint8)'\n') { i=i+1; }
+                    line=line+1; column=0;
+                }
+            }
+            elif (value=='"') {
+                if (started) { return Result<List<List<String>>,CsvError>::Err(csvError(line,column,"quote in unquoted field")); }
+                quoted=true; quoteLine=line; quoteColumn=column; started=true;
+            }
+            else { field=field+format("{}",value); started=true; }
+        }
+        if (value=='\n') { line=line+1; column=1; } else { column=column+1; }
+    }
+    if (quoted) { return Result<List<List<String>>,CsvError>::Err(csvError(quoteLine,quoteColumn,"unterminated quoted field")); }
+    if (started || afterQuote || row.len()>0) { row.push(field); rows.push(row); }
+    return Result<List<List<String>>,CsvError>::Ok(rows);
+}
+/** 输出 CSV，字段需要时加引号；每条记录以 LF 结束。 */
+Result<String,CsvError> writeCsv(List<List<String>> rows, char delimiter=',') {
+    if (delimiter=='"' || delimiter=='\r' || delimiter=='\n' || delimiter==(char)0 || (uint8)delimiter>127) {
+        return Result<String,CsvError>::Err(csvError(1,1,"invalid delimiter"));
+    }
+    String result="";
+    for (List<String> row in rows) {
+        if (row.len()==0) { return Result<String,CsvError>::Err(csvError(1,1,"record must contain a field")); }
+        for (int64 i=0;i<row.len();i=i+1) {
+            if (i>0) { result=result+format("{}",delimiter); }
+            String field=row[i]; List<uint8> bytes=stringBytes(field); bool quote=bytes.len()==0 && row.len()==1;
+            for (int64 j=0;j<bytes.len();j=j+1) {
+                if ((char)bytes[j]==delimiter || (char)bytes[j]=='"' || (char)bytes[j]=='\r' || (char)bytes[j]=='\n') { quote=true; }
+            }
+            if (quote) { result=result+"\""; }
+            for (int64 j=0;j<bytes.len();j=j+1) {
+                result=result+format("{}",(char)bytes[j]); if ((char)bytes[j]=='"') { result=result+"\""; }
+            }
+            if (quote) { result=result+"\""; }
+        }
+        result=result+"\n";
+    }
+    return Result<String,CsvError>::Ok(result);
+}

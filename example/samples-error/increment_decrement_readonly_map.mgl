@@ -1,0 +1,2 @@
+// 自增减表达式数量或可写性错误。
+int64 main() { auto map={"key":1}; std::lang::Map<String,int64> const& ref=&map; ref["key"]--; return 0; }

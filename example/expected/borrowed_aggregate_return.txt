@@ -1,0 +1,1 @@
+borrowed aggregate return OK

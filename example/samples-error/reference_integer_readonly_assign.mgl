@@ -1,0 +1,1 @@
+int64 main() { std::lang::BigInteger value = std::lang::BigInteger(1); std::lang::BigInteger const& ref = &value; ref = std::lang::BigInteger(2); return 0; }

@@ -1,0 +1,56 @@
+// 函数值、枚举载荷和接口分派跨递归调用保持当前帧的拥有值。
+interface FrameReader { String read(); };
+struct CallableFrame : FrameReader {
+    String label;
+    String fn() callback;
+    String read() { return self.callback(); }
+};
+enum CallableValue { Empty, Function(String fn() value), Functions(List<String fn()> values); };
+
+String fn() captured(String mut& text) { return fn() { text }; }
+CallableFrame frame(String mut& text) {
+    CallableFrame result;
+    result.label = text;
+    result.callback = captured(&text);
+    return result;
+}
+int64 recurse(int64 depth) {
+    String label = format("frame {}", depth);
+    CallableFrame local = frame(&label);
+    CallableValue value = CallableValue::Function(captured(&label));
+    List<String fn()> functions;
+    functions.push(local.callback);
+    CallableValue listValue = CallableValue::Functions(functions);
+    Map<String, CallableFrame> frames;
+    frames.put("frame", local);
+    CallableFrame mut& allocated = heap CallableFrame;
+    allocated.label = label;
+    allocated.callback = captured(&allocated.label);
+    Any boxed;
+    boxed.set(&allocated);
+    FrameReader const& reader = boxed.getReference();
+    int64 total = depth;
+    if (depth > 0) {
+        int64 fn(int64) next = recurse;
+        total = total + next(depth - 1);
+    }
+    assert(local.label == label && local.callback() == label);
+    assert(functions[0]() == label && frames["frame"].read() == label);
+    assert(reader.read() == label);
+    match (value) {
+        CallableValue::Function(callback) => { assert(callback() == label); }
+        _ => { assert(false); }
+    }
+    match (listValue) {
+        CallableValue::Functions(callbacks) => { assert(callbacks[0]() == label); }
+        _ => { assert(false); }
+    }
+    delete allocated;
+    return total;
+}
+int64 main() {
+    assert(recurse(5) == 15);
+    assert(recurse(3) == 6);
+    println("recursive callable ownership OK");
+    return 0;
+}

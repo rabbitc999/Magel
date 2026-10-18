@@ -1,0 +1,10 @@
+struct BigDecimal { int64 number; };
+int64 main() {
+    BigDecimal local; local.number = 8;
+    std::lang::BigDecimal decimal = std::lang::BigDecimal("7.5");
+    Option<BigDecimal> wrapped = Option<BigDecimal>::Value(local);
+    assert(wrapped.unwrap().number == 8);
+    assert(local.number == 8 && (int64)decimal == 7);
+    println("core name shadow OK");
+    return 0;
+}

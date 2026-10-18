@@ -1,0 +1,1 @@
+语法错误：example/samples-error/include/broken.mgl 第 3 行第 23 列：期望 标识符 / 常量(const) / 可变(mut) / 函数(fn) 等 9 个之一，实际是 右圆括号())

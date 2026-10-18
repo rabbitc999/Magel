@@ -1,0 +1,9 @@
+type HostId = uint64;
+impl uint64 : ExplicitConvert<HostId> = demo_counter_from_uint;
+
+int64 main()
+{
+    HostId id = cast<HostId>((uint64)1);
+    HostId other = id + id;
+    return 0;
+}

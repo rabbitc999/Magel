@@ -1,0 +1,115 @@
+{
+  "iterations": 10000000,
+  "warmups": 1,
+  "repeats": 7,
+  "java": "java 22.0.1 2024-04-16\nJava(TM) SE Runtime Environment (build 22.0.1+8-16)\nJava HotSpot(TM) 64-Bit Server VM (build 22.0.1+8-16, mixed mode, sharing)",
+  "java_flags": "-Xbatch; 20 full-loop warmups; runtime long input; volatile result sink",
+  "java_cold_single_run_process_ms": 138.4559,
+  "java_cold_single_loop_ms": 4.0126,
+  "platform": "Windows-10-10.0.19045-SP0",
+  "python": "3.12.3 (tags/v3.12.3:f6650f9, Apr  9 2024, 14:05:25) [MSC v.1938 64 bit (AMD64)]",
+  "lua": "Lua 5.5.1  Copyright (C) 1994-2026 Lua.org, PUC-Rio",
+  "lua_url": "https://www.lua.org/ftp/lua-5.5.1.tar.gz",
+  "lua_sha256": "1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce",
+  "compiler": "gcc (x86_64-posix-seh-rev3, Built by MinGW-W64 project) 11.2.0",
+  "compiler_flags": "Lua -O2; Magel -O2 -DNDEBUG MAGEL_CUSTOM_ALLOCATOR=1",
+  "aot_flags": "-O2 unchecked; fresh runtime input per sample prevents folding and cross-sample hoisting; original generated source and object retained",
+  "timing": "Java System.nanoTime; AOT std::clock::nowNanos around calculate only; Python perf_counter_ns; Lua os.clock; Magel steady_clock; exclude parsing and file loading; Magel includes execution-plan setup and final checksum output",
+  "results": {
+    "Python": {
+      "median_ms": 403.5347,
+      "samples_ms": [
+        402.2095,
+        402.9058,
+        405.0519,
+        405.0282,
+        403.5347,
+        403.0903,
+        403.8533
+      ],
+      "checksum": "49999995000000"
+    },
+    "Lua": {
+      "median_ms": 87.99999999999997,
+      "samples_ms": [
+        60.0,
+        73.00000000000001,
+        80.00000000000001,
+        88.99999999999997,
+        88.00000000000003,
+        89.00000000000003,
+        87.99999999999997
+      ],
+      "checksum": "49999995000000"
+    },
+    "Magel VM optimized": {
+      "median_ms": 4976.74,
+      "samples_ms": [
+        4985.92,
+        5166.45,
+        5117.28,
+        4971.15,
+        4965.44,
+        4976.74,
+        4959.55
+      ],
+      "checksum": "49999995000000",
+      "logical_steps": 200000034
+    },
+    "Magel VM reference": {
+      "median_ms": 11565.6,
+      "samples_ms": [
+        11538.8,
+        11534.3,
+        11595.9,
+        11505.6,
+        11565.6,
+        11607.4,
+        11628.4
+      ],
+      "checksum": "49999995000000",
+      "logical_steps": 200000034
+    },
+    "Magel VM before": {
+      "median_ms": 12094.2,
+      "samples_ms": [
+        12229.3,
+        12094.2,
+        12070.5,
+        12054.0,
+        12382.3,
+        12309.0,
+        12038.5
+      ],
+      "checksum": "49999995000000",
+      "logical_steps": 200000034
+    },
+    "Magel AOT": {
+      "median_ms": 2.3,
+      "samples_ms": [
+        2.17,
+        2.38,
+        2.37,
+        2.16,
+        2.16,
+        2.41,
+        2.3
+      ],
+      "checksum": "49999995000000"
+    },
+    "Java HotSpot JIT": {
+      "median_ms": 2.3701,
+      "samples_ms": [
+        2.2937,
+        2.3222,
+        2.5109,
+        2.3664,
+        2.3701,
+        2.3723,
+        2.4431
+      ],
+      "checksum": "49999995000000"
+    }
+  },
+  "cpu": "AMD Ryzen 5 5600X 6-Core Processor"
+}

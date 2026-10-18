@@ -1,0 +1,5 @@
+/* 宏名不能占用内部 DSL 关键字：`for` 已经是 `$for` 指令名。 */
+$macro for(x)
+x
+$end_macro
+int64 main() { return 0; }

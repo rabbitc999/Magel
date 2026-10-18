@@ -1,0 +1,3 @@
+$macro DOUBLE(x)
+((x) + (x))
+$end_macro

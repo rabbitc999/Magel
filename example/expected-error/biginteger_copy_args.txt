@@ -1,0 +1,1 @@
+magel：example/samples-error/biginteger_copy_args.mgl 第 3 行第 5 列：大整数的 `.copy()` 不带参数

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 268" width="680" height="268" role="img" font-family="-apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif">
+<title>执行核心开关分解：相对显式 switch 基线的耗时变化</title>
+<desc>横向条形图，线性刻度。关闭跳转折叠 +1.9%，标签分派 +5.8%，关闭基本块执行 +29.7%，关闭专用操作码 +36.0%，三项均关闭 +96.4%。基线为显式 switch 79.833 毫秒。</desc>
+
+<text x="0" y="18" font-size="14" font-weight="600" fill="#2C2C2A">图 2 · 执行核心开关分解：相对「显式 switch」基线（79.833 ms）的耗时变化</text>
+<text x="0" y="36" font-size="11" fill="#5F5E5A">同一份字节码、同一构建、同一轮内切换开关；1000 万次 while 累加，7 次中位</text>
+<text x="0" y="54" font-size="11" fill="#5F5E5A">灰色 = 噪声（|Δ| &lt; 5%）　琥珀 = 弱信号（5–10%，本轮不判定）　红 = 显著（≥ 10%）</text>
+
+<line x1="150" y1="62" x2="150" y2="220" stroke="#D3D1C7" stroke-width="1"/>
+<line x1="262.5" y1="62" x2="262.5" y2="220" stroke="#EDEBE4" stroke-width="1"/>
+<line x1="375" y1="62" x2="375" y2="220" stroke="#EDEBE4" stroke-width="1"/>
+<line x1="487.5" y1="62" x2="487.5" y2="220" stroke="#EDEBE4" stroke-width="1"/>
+<line x1="600" y1="62" x2="600" y2="220" stroke="#D3D1C7" stroke-width="1"/>
+<line x1="172.5" y1="62" x2="172.5" y2="220" stroke="#BA7517" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="176" y="216" font-size="10" fill="#854F0B">噪声阈 5%</text>
+
+<text x="0" y="82" font-size="12" fill="#2C2C2A">关闭跳转折叠</text>
+<rect x="150" y="70" width="8.6" height="20" rx="2" fill="#B4B2A9"/>
+<text x="164" y="85" font-size="11" fill="#5F5E5A">+1.9%</text>
+
+<text x="0" y="116" font-size="12" fill="#2C2C2A">标签分派（默认）</text>
+<rect x="150" y="104" width="26.1" height="20" rx="2" fill="#EF9F27"/>
+<text x="182" y="119" font-size="11" fill="#854F0B">+5.8%　方向与旧机相反</text>
+
+<text x="0" y="150" font-size="12" fill="#2C2C2A">关闭基本块执行</text>
+<rect x="150" y="138" width="133.7" height="20" rx="2" fill="#D85A30"/>
+<text x="290" y="153" font-size="11" font-weight="600" fill="#993C1D">+29.7%</text>
+
+<text x="0" y="184" font-size="12" fill="#2C2C2A">关闭专用操作码</text>
+<rect x="150" y="172" width="162.0" height="20" rx="2" fill="#D85A30"/>
+<text x="318" y="187" font-size="11" font-weight="600" fill="#993C1D">+36.0%</text>
+
+<text x="0" y="218" font-size="12" fill="#2C2C2A">三项均关闭</text>
+<rect x="150" y="206" width="433.8" height="20" rx="2" fill="#993C1D"/>
+<text x="590" y="221" font-size="11" font-weight="600" fill="#993C1D">+96.4%</text>
+
+<line x1="150" y1="228" x2="600" y2="228" stroke="#B4B2A9" stroke-width="1"/>
+<text x="150" y="243" font-size="11" fill="#5F5E5A" text-anchor="middle">0</text>
+<text x="262.5" y="243" font-size="11" fill="#5F5E5A" text-anchor="middle">25</text>
+<text x="375" y="243" font-size="11" fill="#5F5E5A" text-anchor="middle">50</text>
+<text x="487.5" y="243" font-size="11" fill="#5F5E5A" text-anchor="middle">75</text>
+<text x="600" y="243" font-size="11" fill="#5F5E5A" text-anchor="middle">100</text>
+<text x="375" y="262" font-size="11" fill="#5F5E5A" text-anchor="middle">相对基线的耗时变化（%，越高表示关掉该优化后越慢）</text>
+</svg>

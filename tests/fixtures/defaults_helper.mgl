@@ -1,0 +1,4 @@
+module defaults_helper;
+int64 moduleSeed=21;
+int64 moduleValue(){return moduleSeed;}
+int64 fromModule(int64 x=moduleValue()){return x;}

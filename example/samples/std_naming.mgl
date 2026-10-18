@@ -1,0 +1,34 @@
+import std::iter;
+import std::linalg;
+
+int64 main() {
+    List<int64> values;
+    values.push(3);
+    values.push(7);
+    assert(values.indexOf(7) == 1);
+    Map<int64, int64> table;
+    table.put(4, 9);
+    assert(table.keyAt(0) == 4 && table.valAt(0) == 9);
+    { auto cursor = values.iterMut(); assert(cursor.sizeHint().0 == 2); }
+    auto owned = values.intoIter();
+    assert(owned.count() == 2);
+    List<int64> seed;
+    seed.push(1); seed.push(2); seed.push(3);
+    auto pipeline = std::iter::fromList<int64>(seed).stepBy(2);
+    assert(pipeline.count() == 2);
+    assert(std::lang::add(3, 4) == 7);
+    assert(std::lang::sub(7, 4) == 3);
+    assert(std::lang::mul(3, 4) == 12);
+    assert(std::lang::div(12, 4) == 3);
+    assert(std::lang::mod(7, 4) == 3);
+    assert(std::lang::eq(3, 3) && std::lang::ne(3, 4));
+    assert(std::lang::lt(3, 4) && std::lang::le(3, 3));
+    assert(std::lang::gt(4, 3) && std::lang::ge(3, 3));
+    int64 data[2];
+    std::lang::index(data, 0) = 11;
+    assert(index(data, 0) == 11);
+    LuFactorization factorization;
+    std::lang::pause();
+    println("camelCase PascalCase");
+    return 0;
+}

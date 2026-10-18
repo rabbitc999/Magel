@@ -1,0 +1,77 @@
+/* interface_inherit.mgl —— 接口之间也可以继承
+ *
+ *   ./magel samples/interface_inherit.mgl
+ *
+ * `interface B : A { … }`：A 的抽象方法一样要实现，A 的默认方法一并继承；
+ * 派生接口自己写同名同签名的方法就**覆盖**基接口那一条；接口可以继承**多个**基接口。
+ * 结构体侧照旧：实现派生接口 = 满足整条继承链上的所有要求（同名同签名只算一条）。
+ */
+
+interface Shape {
+    int64 area();
+    String describe() { return "shape"; }   /* 默认方法，继承链上一路可用 */
+};
+
+interface Named {
+    String name();
+};
+
+/* 继承 Shape 与 Named，再添一个 weight()：实现 Combo 的结构体三条都要有 */
+interface Combo : Shape, Named {
+    int64 weight();
+};
+
+/* 菱形继承：Left / Right 都继承 Shape，Shape 的 describe 只算一条要求 */
+interface Left : Shape { int64 l(); };
+interface Right : Shape { int64 r(); };
+interface Both : Left, Right { String tag() { return "both"; } };
+
+/* 派生接口覆盖基接口的默认方法 */
+interface Bold : Shape {
+    String describe() { return "bold"; }
+};
+
+struct Box : Combo {
+    int64 w;
+    int64 h;
+    int64 area() { return self.w * self.h; }
+    String name() { return "Box"; }
+    int64 weight() { return 5; }
+};
+
+struct Stick : Bold {
+    int64 len;
+    int64 area() { return self.len; }   /* describe 继承 Bold 的默认实现 */
+};
+
+struct Two : Both {
+    int64 area() { return 1; }
+    int64 l() { return 2; }
+    int64 r() { return 3; }
+};
+
+int64 main()
+{
+    Box box;
+    box.w = 4;
+    box.h = 5;
+    println("box {} {} {} {}", box.area(), box.name(), box.weight(), box.describe());
+
+    Stick stick;
+    stick.len = 9;
+    println("stick {} {}（覆盖了默认方法）", stick.area(), stick.describe());
+
+    Two two;
+    println("two {} {} {} {}", two.area(), two.l(), two.r(), two.tag());
+
+    /* 接口引用也认继承关系：Box 实现了 Combo，而 Combo 继承 Shape */
+    Box mut& boxRef = heap Box;
+    boxRef->w = 6;
+    boxRef->h = 7;
+    Any boxed;
+    boxed.set(&boxRef);
+    Shape mut& view = boxed.getReference();
+    println("view {} {}", view.area(), view.describe());
+    delete boxRef;
+    return 0;
+}

@@ -1,0 +1,1 @@
+magel：example/samples-error/collection_nested_empty.mgl 第 1 行第 1 列：集合字面量的嵌套空值无法推导类型，请声明容器类型

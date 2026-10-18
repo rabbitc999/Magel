@@ -1,0 +1,21 @@
+// 多括号宏独立捕获每组原文，大括号体允许跨行和嵌套。
+$macro SHOW<..Types>[..Attrs](..Args){..Body}
+println("{}", $stringify(Types));
+println("{}", $stringify(Attrs));
+println("{}", $stringify(Args));
+Body
+$end_macro
+
+$macro EMPTY()()
+println("repeated empty groups");
+$end_macro
+
+void main() {
+    $SHOW<List<List<int64>>, String>[readonly](x, y){
+        int64 total = 2 + 3;
+        if (total > 0) {
+            println("{}", total);
+        }
+    }
+    $EMPTY()()
+}

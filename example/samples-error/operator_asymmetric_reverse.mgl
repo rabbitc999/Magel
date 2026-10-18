@@ -1,0 +1,15 @@
+// 减法不对称：只声明 Subtract（左减法）时，`4 - d` 不会自动交换操作数，
+// 必须显式实现 RightSubtract；不然编译器只会说"没有匹配的运算符接口实现"。
+struct Diff : Subtract<int64, int64> {
+    int64 v;
+
+    int64 leftSub(int64 other) { return self.v - other; }
+};
+
+int64 main() {
+    Diff d;
+    d.v = 10;
+    println("d - 4 = {}", d - 4);
+    println("4 - d = {}", 4 - d);
+    return 0;
+}

@@ -1,0 +1,1 @@
+magel：example/samples-error/logical_operator_overload.mgl 第 12 行第 5 列：`&&` 是短路运算符，不参与运算符重载：Vec && Vec（短路要先决定左边，与运算符重载「先求两个操作数再调方法」的模型对不上；要自定义请写成普通方法）

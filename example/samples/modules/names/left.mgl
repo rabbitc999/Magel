@@ -1,0 +1,6 @@
+module names::left;
+struct Shared { int64 number; };
+struct Unique { int64 number; };
+int64 duplicate(int64 value) { return value + 10; }
+int64 uniqueFunction(int64 value) { return value + 1; }
+const int64 UNIQUE_NUMBER = 17;

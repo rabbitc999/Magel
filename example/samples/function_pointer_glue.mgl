@@ -1,0 +1,28 @@
+
+
+int64 demo_cpp_apply(int64 fn(int64) function, int64 value);
+T demo_cpp_identity<T>(T value);
+int32 demo_cpp_enum_tag<T>(T value);
+int64 demo_cpp_enum_payload<T>(T value);
+
+enum Signal {
+    Idle, Value(int64 value);
+};
+
+int64 triple(int64 value) { return value * 3; }
+
+int64 main() {
+    int64 applied = demo_cpp_apply(triple, 7);
+    Signal idle = Signal::Idle();
+    Signal source = Signal::Value(9);
+    Signal copied = demo_cpp_identity(source);
+    int64 payload = 0;
+    match (copied) {
+        Signal::Idle => { payload = -1; }
+        Signal::Value(value) => { payload = value; }
+    }
+    println("{} {} {} {} {}", applied, demo_cpp_enum_tag(idle),
+    demo_cpp_enum_tag(copied),
+    demo_cpp_enum_payload(copied), payload);
+    return 0;
+}

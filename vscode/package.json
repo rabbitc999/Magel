@@ -1,0 +1,262 @@
+{
+  "name": "magel-editor",
+  "displayName": "Magel",
+  "description": "Magel（.mgl）语言支持：用编译器自带的 `magel lsp` 提供诊断、悬停、补全、跳转定义、文档大纲、格式化与宏块折叠。 支持在线模块依赖下载、共享缓存与离线校验。",
+  "version": "1.0.0",
+  "publisher": "rabbitc999",
+  "devDependencies": {
+    "vscode-textmate": "9.2.0",
+    "vscode-oniguruma": "2.0.1"
+  },
+  "author": {
+    "name": "小兔糖糖OvO",
+    "email": "rabbitc999@outlook.com"
+  },
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Formatters"
+  ],
+  "keywords": [
+    "magel",
+    "mgl",
+    "parseengine",
+    "stackvm"
+  ],
+  "main": "./extension.js",
+  "scripts": {
+    "embed": "node tools/embed-compiler.js",
+    "check": "node tools/check-manifest.js",
+    "test": "node test/smoke.js && node test/dependencies.js && node test/macros.js && node test/lspCancellation.js && node test/semanticProviders.js && node test/macroHighlighting.js",
+    "vscode:prepublish": "node tools/embed-compiler.js",
+    "package": "node tools/package.js"
+  },
+  "icon": "icon.png",
+  "activationEvents": [
+    "onLanguage:magel",
+    "onDebugResolve:magel",
+    "onCommand:magel.installDependencies",
+    "onCommand:magel.checkDependencies",
+    "onCommand:magel.openLibraries",
+    "onCommand:magel.previewMacroExpansion"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "magel",
+        "aliases": [
+          "Magel",
+          "magel"
+        ],
+        "extensions": [
+          ".mgl"
+        ],
+        "configuration": "./magel-language-configuration.json"
+      },
+      {
+        "id": "magel-svmb",
+        "aliases": [
+          "Magel 字节码",
+          "Magel Bytecode"
+        ],
+        "extensions": [
+          ".svmb"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "magel",
+        "scopeName": "source.magel",
+        "path": "./syntaxes/magel.tmLanguage.json"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "magel",
+        "label": "Magel",
+        "languages": [
+          "magel"
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "required": [
+              "program"
+            ],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "要调试的 .mgl 文件（缺省是当前打开的文件）。",
+                "default": "${file}"
+              },
+              "args": {
+                "type": "array",
+                "description": "传给被调试程序的命令行参数。",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              },
+              "cwd": {
+                "type": "string",
+                "description": "工作目录；缺省用源文件所在目录。",
+                "default": "${fileDirname}"
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "magel",
+            "request": "launch",
+            "name": "Magel：调试当前文件",
+            "program": "${file}",
+            "cwd": "${fileDirname}"
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "Magel：调试当前文件",
+            "description": "用编译器自带的调试器跑当前 .mgl。",
+            "body": {
+              "type": "magel",
+              "request": "launch",
+              "name": "Magel：调试当前文件",
+              "program": "^\"\\${file}\"",
+              "cwd": "^\"\\${fileDirname}\""
+            }
+          }
+        ]
+      }
+    ],
+    "configurationDefaults": {
+      "[magel]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "editor.detectIndentation": false,
+        "editor.suggest.showWords": false,
+        "editor.semanticHighlighting.enabled": true
+      }
+    },
+    "commands": [
+      {
+        "command": "magel.restartServer",
+        "title": "Magel: 重启语言服务器"
+      },
+      {
+        "command": "magel.showServerLog",
+        "title": "Magel: 显示语言服务器日志"
+      },
+      {
+        "command": "magel.openDoc",
+        "title": "Magel: 打开语言文档"
+      },
+      {
+        "command": "magel.run",
+        "title": "Magel: 运行当前文件",
+        "icon": "$(play)"
+      },
+      {
+        "command": "magel.installDependencies",
+        "title": "Magel: 下载并锁定模块依赖"
+      },
+      {
+        "command": "magel.checkDependencies",
+        "title": "Magel: 离线校验模块依赖"
+      },
+      {
+        "command": "magel.openLibraries",
+        "title": "Magel: 打开在线依赖缓存"
+      },
+      {
+        "command": "magel.previewMacroExpansion",
+        "title": "Magel: 预览宏展开"
+      }
+    ],
+    "configuration": {
+      "title": "Magel",
+      "properties": {
+        "magel.path": {
+          "type": "string",
+          "default": "",
+          "description": "magel 编译器路径（语言服务器内嵌在它里面：`magel lsp`）；留空时先用插件自带的 `bin/magel`（打包时内嵌），再在工作区与 PATH 里自动探测。"
+        },
+        "magel.traceServer": {
+          "type": "string",
+          "default": "off",
+          "enum": [
+            "off",
+            "messages"
+          ],
+          "description": "把与 magel lsp 的协议消息写进输出面板，排查问题时打开。"
+        },
+        "magel.inlayHints.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "显示 auto、for-in 元素与上下文匿名函数参数的推断类型；仍受编辑器内联提示设置控制。"
+        }
+      }
+    },
+    "menus": {
+      "editor/title/run": [
+        {
+          "command": "magel.run",
+          "when": "resourceLangId == magel",
+          "group": "navigation@1"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "magel.run",
+          "when": "resourceLangId == magel",
+          "group": "navigation@1"
+        },
+        {
+          "command": "magel.installDependencies",
+          "when": "resourceFilename == magel.toml",
+          "group": "magelDependencies"
+        },
+        {
+          "command": "magel.checkDependencies",
+          "when": "resourceFilename == magel.toml",
+          "group": "magelDependencies"
+        },
+        {
+          "command": "magel.openLibraries",
+          "when": "resourceFilename == magel.toml",
+          "group": "magelDependencies"
+        },
+        {
+          "command": "magel.previewMacroExpansion",
+          "when": "editorLangId == magel && resourceScheme == file",
+          "group": "magel@2"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "magel.installDependencies",
+          "when": "resourceFilename == magel.toml",
+          "group": "magelDependencies"
+        },
+        {
+          "command": "magel.checkDependencies",
+          "when": "resourceFilename == magel.toml",
+          "group": "magelDependencies"
+        },
+        {
+          "command": "magel.openLibraries",
+          "when": "resourceFilename == magel.toml",
+          "group": "magelDependencies"
+        }
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rabbitc999/Magel.git"
+  }
+}

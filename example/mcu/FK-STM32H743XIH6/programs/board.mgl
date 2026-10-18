@@ -1,0 +1,16 @@
+/* RGB565 颜色；坐标、宽高和键号均由胶水检查范围。 */
+void lcdClear(int64 color);
+void lcdFill(int64 x, int64 y, int64 width, int64 height, int64 color);
+void lcdText(int64 x, int64 y, String text, int64 foreground, int64 background);
+int64 lcdWidth();
+int64 lcdHeight();
+bool keyPressed(int64 key);
+bool keyClicked(int64 key);
+/* MODE/ENTER 实体消抖按下或虚拟点击、长按、双击、重复事件均可退出。 */
+bool boardExitRequested();
+void boardDelay(int64 milliseconds);
+int64 boardCycles();
+int64 boardMillis();
+int64 boardClockHz();
+int64 nativeIntegerLoop(int64 count, int64 seed);
+void benchRecord(int64 sample, int64 count, int64 vmCycles, int64 nativeCycles, int64 checksum);

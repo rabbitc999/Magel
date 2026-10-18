@@ -1,0 +1,14 @@
+/* 右向被 `NoRightAdd` 显式禁止：左向 `a + 5` 能用，右向 `5 + a` 报错。 */
+
+struct Vec : Add<int64,int64>, NoRightAdd {
+    int64 v;
+
+    int64 leftAdd(int64 other) { return self.v + other; }
+};
+
+int64 main() {
+    Vec a;
+    a.v = 10;
+    println("5 + a = {}", 5 + a);
+    return 0;
+}

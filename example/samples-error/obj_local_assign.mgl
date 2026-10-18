@@ -1,0 +1,8 @@
+struct Pair { int64 x; int64 y; };
+
+int64 main() {
+    Pair local;
+    std::lang::Any box;
+    box = local;
+    return 0;
+}

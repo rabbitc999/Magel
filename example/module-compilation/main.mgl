@@ -1,0 +1,19 @@
+import calc::left;
+import calc::right;
+int64 main() {
+    println("result:{}", twice(add(20)));
+    {
+        Box mut& box = heap Box; box.value = 7;
+        Any object; object.set(&box);
+        Value mut& view = object.getReference();
+        assert(viaInterface(view) == 7);
+        delete box;
+    }
+    { Tracker tracker; tracker.text = "box"; }
+    assert(identity((int64)9) == 9);
+    assert(useFunction(add, 5) == add(5));
+    List<String> texts; texts.push("a"); texts.push("b");
+    String original = "a"; String const& text = &original;
+    assert(text[0] == 'a' && texts.len() == 2);
+    return 0;
+}

@@ -1,0 +1,80 @@
+/* Any 与函数值、聚合地址及接口胖引用的类型和所有权组合。 */
+interface Readable { int64 read(); };
+struct Record : Readable {
+    String name;
+    List<int64> values;
+    int64 fn(int64) operation;
+    int64 read(){ return self.values[0]; }
+};
+enum Message { Empty, Text(String value), Data(Record value), Callback(int64 fn(int64) operation); };
+struct Envelope { Any value; };
+Record globalRecord;
+Message globalMessage;
+Envelope globalEnvelope;
+int64 fn(int64) globalCallback;
+int64 add(int64 value){return value+1;}
+int64 fn(int64) make(int64 mut& bias){return fn(int64 value){value+bias};}
+Any makeBox(int64 mut& bias){Any box;box.set(make(&bias));return box;}
+int64 bias1=1,bias10=10,bias20=20,bias30=30,bias40=40,bias50=50,bias60=60,bias70=70,bias80=80,bias90=90;
+Any duplicate(Any box){return box.copy();}
+int64 readBox<T>(Any box){T value=box.getValue();return value.read();}
+Record extractRecord(Any box){return box.getValue();}
+int64 main(){
+    Any box; assert(box.isEmpty());
+    {int64 local=5;Any localBox;localBox.set(&local);int64 mut& alias=localBox.getReference();alias=6;assert(local==6);}
+    box.set((int32)7);assert(isType<int32>(&box));int32 small=box.getValue();assert(small==(int32)7);
+    box.set("text");String text=box.getValue();box.set(9);assert(text=="text");
+    box.set(add);assert(isType<int64 fn(int64)>(&box));int64 fn(int64) staticValue=box.getValue();assert(staticValue(3)==4);
+    box=makeBox(&bias10);Any copied=box;Any explicitCopy=box.copy();
+    int64 fn(int64) saved=copied.getValue();box.set(make(&bias20));
+    int64 fn(int64) changed=box.getValue();int64 fn(int64) again=explicitCopy.getValue();
+    assert(saved(2)==12 && changed(2)==22 && again(2)==12);
+    List<Any> boxes;boxes.push(makeBox(&bias30));boxes.push(copied);
+    Any element=boxes[0];int64 fn(int64) listFunction=element.getValue();assert(listFunction(2)==32);
+    Option<Any> boxedOption=Option<Any>::Value(makeBox(&bias80));
+    Option<Any> transformed=boxedOption.transform(duplicate);Any optionValue=transformed.unwrap();
+    int64 fn(int64) optionFunction=optionValue.getValue();assert(optionFunction(2)==82);
+    List<int64 fn(int64)> callbacks;callbacks.push(make(&bias70));box.set(callbacks);
+    List<int64 fn(int64)> callbackCopy=box.getValue();callbacks[0]=add;
+    assert(callbackCopy[0](2)==72 && callbacks[0](2)==3);box.set(0);assert(callbackCopy[0](3)==73);
+    int64 index=0;while(index<12){Any loopBox;loopBox.set(make(&index));int64 fn(int64) loopValue=loopBox.getValue();assert(loopValue(3)==index+3);index=index+1;}
+
+    globalRecord.name="global";globalRecord.values.push(42);globalRecord.operation=make(&bias40);
+    box.set(globalRecord);Any addressCopy=box;
+    Record value=box.getValue();value.name="independent";value.values[0]=7;
+    assert(globalRecord.name=="global" && globalRecord.values[0]==42 && globalRecord.operation(2)==42);
+    assert(value.name=="independent" && value.values[0]==7 && value.operation(3)==43);
+    globalEnvelope.value=makeBox(&bias90);box.set(globalEnvelope);Envelope envelope=box.getValue();
+    globalEnvelope.value.set(0);int64 fn(int64) envelopeFunction=envelope.value.getValue();assert(envelopeFunction(2)==92);
+    assert(readBox<Record>(addressCopy)==42);
+    Record assigned;assigned.name="old";assigned.values.push(1);assigned.operation=make(&bias1);
+    assigned=addressCopy.getValue();assigned.values[0]=8;assert(globalRecord.values[0]==42);
+    Record returned=extractRecord(addressCopy);returned.name="returned";assert(globalRecord.name=="global");
+    globalRecord.name="updated";Record latest=addressCopy.getValue();assert(latest.name=="updated");
+
+    globalMessage=Message::Data(globalRecord);box.set(globalMessage);
+    Message message=box.getValue();Message second=message;
+    match(second){Message::Data(record)=>{assert(record.name=="updated" && record.values[0]==42 && record.operation(1)==41);} _=>{assert(false);}}
+    globalMessage=Message::Text("next");
+    match(message){Message::Data(record)=>{assert(record.name=="updated" && record.operation(2)==42);} _=>{assert(false);}}
+    Message switched=box.getValue();match(switched){Message::Text(value)=>{assert(value=="next");} _=>{assert(false);}}
+    message=box.getValue();globalMessage=Message::Empty;
+    match(message){Message::Text(value)=>{assert(value=="next");} _=>{assert(false);}}
+    globalMessage=Message::Callback(make(&bias50));Message callbackMessage=box.getValue();
+    match(callbackMessage){Message::Callback(operation)=>{assert(operation(2)==52);} _=>{assert(false);}}
+    globalMessage=Message::Empty;
+
+    Any reference;reference.set(&globalRecord);
+    Readable const& view=reference.getReference();Readable const& viewCopy=view;
+    reference.set(0);assert(view.read()==42 && viewCopy.read()==42);
+    Any optionalBox;Option<Record const&> absent=optionalBox.getOptional();assert(absent.isNone());
+    optionalBox.set(&globalRecord);Option<Record const&> present=optionalBox.getOptional();assert(present.unwrap().name=="updated");
+    optionalBox.set("wrong");Option<Record const&> mismatch=optionalBox.getOptional();assert(mismatch.isNone());
+    optionalBox.set(&globalMessage);Option<Message const&> enumReference=optionalBox.getOptional();
+    assert(enumReference.isValue());
+    globalCallback=make(&bias60);Any functionReference;functionReference.set(&globalCallback);
+    (int64 fn(int64)) const& borrowed=functionReference.getReference();assert(borrowed(2)==62);
+    globalCallback=add;assert(borrowed(2)==3);
+    Option<(int64 fn(int64)) const&> optionalFunction=functionReference.getOptional();assert(optionalFunction.unwrap()(3)==4);
+    println("object type combinations OK");return 0;
+}

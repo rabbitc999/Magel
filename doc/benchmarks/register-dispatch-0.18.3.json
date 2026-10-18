@@ -1,0 +1,298 @@
+{
+  "warmups_per_process": 1,
+  "repeats": 7,
+  "order": "alternate configuration order each round; one measured sample per process",
+  "timing": "sequential, loaded bytecode; input file read before timing; includes execution preparation and checksum output",
+  "services_comparison": false,
+  "baseline_compiler": null,
+  "results": {
+    "branches": {
+      "switch": {
+        "logical_steps": 25500030,
+        "checksum": "-500000",
+        "counters": "register dispatches=5000003 entries=1225",
+        "command": [
+          "G:\\Desktop\\magel\\tmp\\optimization103\\runner.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\branches",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\branches.in",
+          "1",
+          "0",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 35.1898,
+        "samples_ms": [
+          35.3489,
+          35.2371,
+          34.96,
+          35.2506,
+          35.1873,
+          35.1493,
+          35.1898
+        ]
+      },
+      "labels": {
+        "logical_steps": 25500030,
+        "checksum": "-500000",
+        "counters": "register dispatches=5000003 entries=1225",
+        "command": [
+          "G:\\Desktop\\magel\\tmp\\optimization103\\runner.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\branches",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\branches.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 33.1475,
+        "samples_ms": [
+          33.4577,
+          33.2457,
+          33.599,
+          33.1475,
+          32.7512,
+          32.8191,
+          32.7972
+        ]
+      }
+    },
+    "calls": {
+      "switch": {
+        "logical_steps": 270030,
+        "checksum": "849915000",
+        "counters": "register dispatches=50005 entries=20005",
+        "command": [
+          "G:\\Desktop\\magel\\tmp\\optimization103\\runner.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\calls",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\calls.in",
+          "1",
+          "0",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 15.615,
+        "samples_ms": [
+          18.5753,
+          15.599,
+          15.6663,
+          15.6319,
+          15.4967,
+          15.534,
+          15.615
+        ]
+      },
+      "labels": {
+        "logical_steps": 270030,
+        "checksum": "849915000",
+        "counters": "register dispatches=50005 entries=20005",
+        "command": [
+          "G:\\Desktop\\magel\\tmp\\optimization103\\runner.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\calls",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\calls.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 15.6842,
+        "samples_ms": [
+          21.5336,
+          19.7786,
+          15.5828,
+          15.6842,
+          15.5614,
+          15.5783,
+          15.8241
+        ]
+      }
+    },
+    "loop": {
+      "switch": {
+        "logical_steps": 150000030,
+        "checksum": "49999995000000",
+        "counters": "register dispatches=30000005 entries=7329",
+        "command": [
+          "G:\\Desktop\\magel\\tmp\\optimization103\\runner.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\loop",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\loop.in",
+          "1",
+          "0",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 146.77,
+        "samples_ms": [
+          144.598,
+          147.695,
+          147.576,
+          145.076,
+          147.218,
+          144.914,
+          146.77
+        ]
+      },
+      "labels": {
+        "logical_steps": 150000030,
+        "checksum": "49999995000000",
+        "counters": "register dispatches=30000005 entries=7329",
+        "command": [
+          "G:\\Desktop\\magel\\tmp\\optimization103\\runner.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\loop",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\loop.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 135.602,
+        "samples_ms": [
+          139.64,
+          134.918,
+          138.816,
+          135.602,
+          135.613,
+          134.664,
+          134.35
+        ]
+      }
+    },
+    "structures": {
+      "switch": {
+        "logical_steps": 895005,
+        "checksum": "18811 977069 32 31",
+        "counters": "register dispatches=200903 entries=79166",
+        "command": [
+          "G:\\Desktop\\magel\\tmp\\optimization103\\runner.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\structures",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\structures.in",
+          "1",
+          "0",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 71.0232,
+        "samples_ms": [
+          71.0384,
+          71.0232,
+          71.354,
+          70.763,
+          72.4624,
+          70.8975,
+          70.7144
+        ]
+      },
+      "labels": {
+        "logical_steps": 895005,
+        "checksum": "18811 977069 32 31",
+        "counters": "register dispatches=200903 entries=79166",
+        "command": [
+          "G:\\Desktop\\magel\\tmp\\optimization103\\runner.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\structures",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\structures.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 71.1259,
+        "samples_ms": [
+          71.1259,
+          71.6477,
+          70.8114,
+          71.053,
+          71.092,
+          72.4494,
+          72.1221
+        ]
+      }
+    },
+    "transport": {
+      "switch": {
+        "logical_steps": 1864563,
+        "checksum": "126000",
+        "counters": "register dispatches=438504 entries=128382",
+        "command": [
+          "G:\\Desktop\\magel\\tmp\\optimization103\\runner.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\transport",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\transport.in",
+          "1",
+          "0",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 98.6466,
+        "samples_ms": [
+          103.16,
+          98.7328,
+          97.0953,
+          98.8413,
+          98.6466,
+          96.0173,
+          96.4359
+        ]
+      },
+      "labels": {
+        "logical_steps": 1864563,
+        "checksum": "126000",
+        "counters": "register dispatches=438504 entries=128382",
+        "command": [
+          "G:\\Desktop\\magel\\tmp\\optimization103\\runner.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\transport",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\transport.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 97.1152,
+        "samples_ms": [
+          97.8528,
+          96.9393,
+          97.1152,
+          97.0059,
+          99.9302,
+          96.7508,
+          97.7881
+        ]
+      }
+    }
+  },
+  "magel_version": "0.18.3",
+  "compiler": "g++ (x86_64-posix-seh-rev3, Built by MinGW-W64 project) 11.2.0",
+  "cpu": {
+    "Name": "AMD Ryzen 5 5600X 6-Core Processor             ",
+    "NumberOfCores": 6,
+    "NumberOfLogicalProcessors": 12
+  },
+  "compiler_sha256": "f076b18b5e267bae2b49eaeab52f252a66cc65c19ce27d9ae351b127a5bcb3f3"
+}

@@ -1,0 +1,23 @@
+enum Choice<T> : Add<Choice<T>, Choice<T>> {
+    None, Value(T value);
+
+    Choice<T> leftAdd(Choice<T> other) {
+        return other;
+    }
+
+    int64 kind() {
+        return 7;
+    }
+};
+
+int64 main() {
+    Choice<int64> left = Choice<int64>::None;
+    Choice<int64> right = Choice<int64>::Value(9);
+    Choice<int64> result = left + right;
+    println("{}", result.kind());
+    match (result) {
+        Choice<int64>::Value(value) => { println("{}", value); }
+        Choice<int64>::None => { println("none"); }
+    }
+    return 0;
+}

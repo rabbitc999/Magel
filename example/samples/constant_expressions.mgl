@@ -1,0 +1,17 @@
+const int64 BASE = 3;
+const int64 WIDTH = BASE * 2 + 1;
+int64 main() {
+    int64 data[WIDTH]; data[6] = 42;
+    const int64 size = BASE + 1;
+    { const int64 BASE = 20; int64 local[size]; local[3] = 7; assert(local[3] == 7); }
+    const uint64 high = (uint64)-1;
+    int64 signs[(int64)(high >> 63) + 1]; signs[1] = 9;
+    int64 converted[(int64)3.8]; converted[2] = 5;
+    assert(data[6] == 42 && signs[1] == 9 && converted[2] == 5);
+    const float32 rounded = (float32)16777216;
+    int64 precise[(int64)(rounded + (float32)1) - 16777215];
+    assert(len(precise) == 1);
+    int64 comparison[(int64)(rounded < 16777217) + 1];
+    assert(len(comparison) == 1);
+    println("constant expressions OK"); return 0;
+}

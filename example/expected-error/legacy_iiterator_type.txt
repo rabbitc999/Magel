@@ -1,0 +1,1 @@
+语法错误：example/samples-error/legacy_iiterator_type.mgl 第 1 行第 26 列：期望 右圆括号()) / 左花括号({) / 逗号(,) 之一，实际是 小于(<)

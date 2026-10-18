@@ -1,0 +1,14 @@
+/* struct 没有定义 `+` 的重载，就不许偷偷按数值算。 */
+
+struct Money {
+    int64 cents;
+};
+
+int64 main() {
+    Money a;
+    Money b;
+    a.cents = 1;
+    b.cents = 2;
+    std::lang::println("{}", (a + b).cents);
+    return 0;
+}

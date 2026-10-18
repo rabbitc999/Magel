@@ -1,0 +1,39 @@
+/* pointer_deref_member.mgl —— `(*p).字段` 与 `p->字段` 是同一件事。
+ *
+ * 结构体的"值"本身就是地址，所以指向结构体的 `*p` 不去 load：它直接给出那个结构体的
+ * 地址，`.字段` 再在这个地址上加槽偏移。写回、整体拷贝、当实参传都走同一条路。
+ * 标量引用反过来 —— `*p` 就是那个标量的**值**（`int64 mut &` 那一段是这么用的）。
+ */
+
+struct Box {
+    int64 value;
+    int64 other;
+
+    int64 total() { return value + other; }
+};
+
+int64 main() {
+    Box box;
+    box.value = 9;
+    box.other = 4;
+
+    Box mut & p = &box;
+    println("箭头 {} / 解引用 {}", p->value, (*p).value);
+
+    (*p).value = 11;                                  /* 透过解引用写回原对象 */
+    println("写后 box.value={}，p->total()={}", box.value, p->total());
+
+    Box copy = *p;                                    /* 解引用结果当结构体整体拷一份 */
+    copy.other = 100;
+    println("副本 {} / 原对象 {}（值是拷贝）", copy.total(), box.total());
+
+    p->other = 7;
+    println("两种写法混合 {}", (*p).total());
+
+    int64 values[2];
+    values[0] = 5;
+    int64 mut & number = &values[0];
+    *number = 6;                                      /* 标量引用：*p 就是那个值 */
+    println("标量解引用 {}", *number);
+    return 0;
+}

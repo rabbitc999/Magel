@@ -1,0 +1,6 @@
+/* %include 找不到文件：前处理阶段就报错，不会进解析器 */
+%include "include/没有这个文件.mgl"
+
+int64 main() {
+    return 0;
+}

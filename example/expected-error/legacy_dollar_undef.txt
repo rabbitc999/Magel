@@ -1,0 +1,1 @@
+语法错误：example/samples-error/legacy_dollar_undef.mgl 第 5 行第 1 列：认不出来的字符

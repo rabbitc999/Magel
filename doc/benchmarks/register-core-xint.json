@@ -1,0 +1,72 @@
+{
+  "iterations": 10000000,
+  "warmups": 1,
+  "repeats": 7,
+  "java_mode": "java version \"22.0.1\" 2024-04-16\nJava(TM) SE Runtime Environment (build 22.0.1+8-16)\nJava HotSpot(TM) 64-Bit Server VM (build 22.0.1+8-16, interpreted mode, sharing)\n",
+  "timing": "sequential; loop timing excludes process startup; Magel includes execution preparation and checksum output; loaded program excludes disk reads",
+  "results": {
+    "Java -Xint": {
+      "samples_ms": [
+        123.9922,
+        146.1288,
+        152.7772,
+        115.4501,
+        157.228,
+        166.2026,
+        166.1809
+      ],
+      "median_ms": 152.7772,
+      "command": [
+        "java",
+        "-Xint",
+        "-cp",
+        "build/lua-benchmark",
+        "LoopBenchmark",
+        "10000000",
+        "7",
+        "1"
+      ],
+      "checksum": "49999995000000",
+      "stats": ""
+    },
+    "Python": {
+      "samples_ms": [
+        639.9994,
+        401.7432,
+        639.2696,
+        402.7996,
+        638.0971,
+        399.7832,
+        638.9188
+      ],
+      "median_ms": 638.0971,
+      "command": [
+        "G:\\Python312\\python.exe",
+        "build/lua-benchmark/loop.py"
+      ],
+      "checksum": "49999995000000",
+      "stats": ""
+    },
+    "Magel register VM": {
+      "samples_ms": [
+        243.84,
+        249.029,
+        246.192,
+        245.364,
+        324.856,
+        262.635,
+        247.386
+      ],
+      "median_ms": 247.386,
+      "command": [
+        "build/new-core-benchmark.exe",
+        "build/lua-benchmark/loop-program",
+        "7",
+        "1",
+        "10000000"
+      ],
+      "checksum": "49999995000000",
+      "stats": "register dispatches=70000000 entries=17092"
+    }
+  }
+}

@@ -1,0 +1,75 @@
+/* 参数按标识符替换；宏体可以跨行，调用可嵌套。
+ *
+ * 括号不能省：`$macro NAME()` 是对象宏（调用处写 `$NAME`），`$macro NAME(x)` 才是
+ * 带形参的函数式宏（调用处写 `$NAME(…)`）。
+ */
+%include "include/macros.mgl"
+
+$macro SQUARE(x)
+((x) * (x))
+$end_macro
+
+$macro ANSWER()
+42
+$end_macro
+
+$macro BUILD_NAME()
+"enhanced"
+$end_macro
+
+$macro REVISION()
+1
+$end_macro
+$delete_macro REVISION
+$macro REVISION()
+2
+$end_macro
+
+$macro PRINT(label, value)
+println(label, value);
+$end_macro
+
+$macro REPORT(a, b)
+int64 total = (a) + (b);
+$PRINT("total={}", total)
+$end_macro
+
+$macro PRINT_MANY(label, ...values)
+println(label, values);
+$end_macro
+
+$macro DECLARE(prefix, suffix, value)
+int64 $concat(prefix, suffix) = value;
+$end_macro
+
+$macro STRINGIFY(value)
+$stringify(value)
+$end_macro
+
+$macro APPLY_JOIN(left, right, value)
+$concat(left, right)(value)
+$end_macro
+
+/* `$concat` 拼出来的是**普通标识符**：这里拼出一个真实函数名去调用（宏调用必须带 `$`）。
+ * 所以函数 `SQUARE` 与宏 `$SQUARE` 可以同名共存，各走各的。 */
+int64 SQUARE(int64 x) { return x * x; }
+
+int64 main() {
+    int64 n = 4;
+    $DECLARE(local, Count, 11)
+    $PRINT("square={}", $SQUARE(n + 1))
+    $PRINT("float64={}", $DOUBLE(n))
+    $PRINT("nested={}", $SQUARE($SQUARE(2)))
+    $PRINT("answer={}", $ANSWER)
+    $PRINT("build={}", $BUILD_NAME)
+    $PRINT("revision={}", $REVISION)
+    $PRINT_MANY("many={}+{}", $SQUARE(2), $DOUBLE(3))
+    $PRINT("pasted={}", localCount)
+    $PRINT("expanded-paste={}", $APPLY_JOIN(SQU, ARE, 3))
+    $PRINT("source={}", $STRINGIFY($SQUARE(3 + 1)))
+    println("joined=" "{}", "x" "y");
+    $REPORT($SQUARE(2), 3)
+    println("SQUARE(9) is text");
+    // SQUARE(8) is a comment.
+    return 0;
+}

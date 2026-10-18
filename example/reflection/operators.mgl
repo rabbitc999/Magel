@@ -1,0 +1,27 @@
+import std::reflect;
+@Reflect struct Scalar : Add<int64,int64>, RightAdd<int64,int64>, Negate<int64,Scalar>, BitNot<int64,Scalar>, Positive<int64,Scalar> {
+    int64 value;
+    Scalar(int64 initial){self.value=initial;}
+    int64 leftAdd(int64 rhs){return self.value+rhs;}
+    int64 rightAdd(int64 lhs){return lhs+self.value+100;}
+    int64 negate(Scalar operand){return 0-operand.value;}
+    int64 bitNot(Scalar operand){return ~operand.value;}
+    int64 positive(Scalar operand){return operand.value;}
+};
+int64 main(){
+    List<std::reflect::ReflectValue> empty;List<std::reflect::ReflectValue> operand;operand.push(std::reflect::ReflectValue::I64(2));
+    Scalar mut& scalar=new Scalar(5);Any operatorBox;operatorBox.set(&scalar);
+    Add<int64,int64> mut& add=operatorBox.getReference();
+    RightAdd<int64,int64> mut& right=operatorBox.getReference();
+    Negate<int64,Scalar> mut& negative=operatorBox.getReference();
+    BitNot<int64,Scalar> mut& bit=operatorBox.getReference();
+    Positive<int64,Scalar> mut& positive=operatorBox.getReference();
+    assert(std::reflect::callInterface<Add<int64,int64>>(add,"leftAdd",operand).unwrap().asI64().unwrap()==7);
+    assert(std::reflect::callInterface<RightAdd<int64,int64>>(right,"rightAdd",operand).unwrap().asI64().unwrap()==107);
+    assert(std::reflect::callInterface<Negate<int64,Scalar>>(negative,"negate",empty).unwrap().asI64().unwrap()==-5);
+    assert(std::reflect::callInterfaceConst<BitNot<int64,Scalar>>(bit,"bitNot",empty).unwrap().asI64().unwrap()==~5);
+    assert(std::reflect::callInterfaceConst<Positive<int64,Scalar>>(positive,"positive",empty).unwrap().asI64().unwrap()==5);
+    assert(std::reflect::callMethodConst<Scalar>(scalar,"negate",empty).unwrap().asI64().unwrap()==-5);
+    assert(std::reflect::getInterfaceInfo<Negate<int64,Scalar>>().unwrap().methods[0].function.params.len()==0);
+    delete scalar;println("reflection operators OK");return 0;
+}

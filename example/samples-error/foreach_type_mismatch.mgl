@@ -1,0 +1,9 @@
+struct Values : Iterator<int64> {
+    Option<int64> iterator(int64 index) { return Option<int64>::None; }
+};
+
+int64 main() {
+    Values values;
+    for (String value in values) { std::lang::print("{}", value); }
+    return 0;
+}

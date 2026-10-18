@@ -1,0 +1,2 @@
+// 复合赋值沿用普通赋值的类型与可写性限制。
+int64 main() { int64 value = 3; int64 const& ref = &value; ref *= 2; return 0; }

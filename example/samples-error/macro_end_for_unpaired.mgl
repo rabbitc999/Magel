@@ -1,0 +1,5 @@
+/* 宏体里的 `$end_for` 没有配对的 `$for`。 */
+$macro BROKEN(...values)
+std::lang::println("{}", values);
+$end_for
+$end_macro

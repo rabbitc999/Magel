@@ -1,0 +1,42 @@
+struct DefaultBag { List<int64> values; Set<int64> keys; Map<int64,String> names; };
+struct NestedDefaultBag { DefaultBag bag; };
+DefaultBag globalBag;
+NestedDefaultBag nested;
+enum DefaultChoice { Empty, Values(List<int64> values); };
+DefaultChoice globalChoice;
+int64 resourceDrops=0;
+struct GlobalResource : Drop {
+    String text;
+    void drop() { if(self.text!=""){resourceDrops++;} }
+};
+GlobalResource resource;
+GlobalResource makeGlobalResource() { GlobalResource value; value.text="owned"; return value; }
+struct NestedResource : Drop {
+    int64 live; String text;
+    void drop() { if(self.live==1){assert(self.text=="owned");} }
+};
+struct NestedResourceOwner { NestedResource value; };
+NestedResourceOwner nestedResource;
+NestedResourceOwner makeNestedResource() {
+    NestedResourceOwner owner; owner.value.live=1; owner.value.text="owned"; return owner;
+}
+int64 main() {
+    assert(globalBag.values.len()==0 && globalBag.keys.len()==0 && globalBag.names.len()==0);
+    globalBag.values.push(7); globalBag.keys.add(8); globalBag.names.put(9,"name");
+    assert(globalBag.values[0]==7 && globalBag.keys.has(8)!=0 && globalBag.names[9]=="name");
+    nested.bag.values.push(10); assert(nested.bag.values[0]==10);
+    for (int64 i=0; i<10; i++) {
+        DefaultChoice empty;
+        Result<List<int64>,List<int64>> result;
+        result.unwrap().push(1);
+        assert(result.unwrap().len()==0);
+    }
+    for(int64 i=0;i<5;i++){resource=makeGlobalResource();}
+    assert(resourceDrops==4);
+    delete resource; assert(resourceDrops==5);
+    resource=makeGlobalResource(); assert(resourceDrops==5);
+    nestedResource=makeNestedResource();
+    delete nestedResource;
+    nestedResource=makeNestedResource();
+    println("global container defaults OK"); return 0;
+}

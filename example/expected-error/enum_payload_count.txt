@@ -1,0 +1,1 @@
+magel：example/samples-error/enum_payload_count.mgl 第 3 行第 28 列：enum 构造器 Option::Some 需要 1 个载荷，实际给了 0 个

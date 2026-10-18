@@ -1,0 +1,2 @@
+pause 之前
+pause 之后

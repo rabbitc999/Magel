@@ -1,0 +1,1 @@
+magel：前处理：example/samples-error/macro_end_for_orphan.mgl 第 2 行：多余的 $end_for（它只在 `$macro` 体内的 `$for` 后面配对）

@@ -1,0 +1,40 @@
+/* 有类型的变长参数：函数体内按 List<T> 使用。 */
+
+int64 sum(int64... values) {
+    int64 total = 0;
+    for (int64 value in values) {
+        total = total + value;
+    }
+    return total;
+}
+
+int64 addFrom(int64 base, int64... values) {
+    return base + sum(values[0], values[1]);
+}
+
+struct Counter {
+    int64 base;
+
+    int64 add(int64... values) {
+        int64 total = self.base;
+        for (int64 value in values) {
+            total = total + value;
+        }
+        return total;
+    }
+};
+
+int64 main() {
+    int64 empty = sum();
+    int64 many = sum(1, 2, 3, 4);
+    int64 prefixed = addFrom(10, 2, 3);
+
+    Counter counter;
+    counter.base = 5;
+    int64 method = counter.add(6, 7);
+
+    int64 fn(int64...) variadic = sum;
+    int64 pointer = variadic(8, 9);
+    println("{} {} {} {} {}", empty, many, prefixed, method, pointer);
+    return 0;
+}

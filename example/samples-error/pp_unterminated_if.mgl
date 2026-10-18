@@ -1,0 +1,5 @@
+/* %if 少了 %endif：前处理器在文件结束时报 unterminated-if */
+%if DEBUG
+int64 main() {
+    return 0;
+}

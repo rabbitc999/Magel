@@ -1,0 +1,13 @@
+module calc::left;
+interface Value { int64 get(); };
+struct Box : Value {
+    int64 value;
+    int64 get() { return self.value; }
+};
+struct Tracker : Drop {
+    String text;
+    void drop() { println("drop:{}", self.text); }
+};
+int64 add(int64 value) { return value + 1; }
+T identity<T>(T value) { return value; }
+Box makeBox() { Box box; box.value = 7; return box; }

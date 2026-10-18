@@ -1,0 +1,46 @@
+// 枚举载荷替换、容器复制、提前退出与 ? 传播的组合边界。
+enum Packet<T> {Empty, Value(T value);};
+Result<String,String> step(bool ok){
+    List<String> scratch;scratch.push("scratch");
+    if(!ok){return Result<String,String>::Err("failure");}
+    return Result<String,String>::Ok(scratch[0]+"!");
+}
+Result<String,String> propagate(bool ok){
+    List<String> owned;owned.push("local");
+    String value=step(ok)?;
+    return Result<String,String>::Ok(owned[0]+value);
+}
+int64 main(){
+    for(int64 iteration=0;iteration<64;iteration=iteration+1){
+        Packet<String> source=Packet<String>::Value("seed");
+        Packet<String> copy=source;
+        source=Packet<String>::Empty;
+        match(copy){
+            Packet<String>::Value(text)=>{assert(text=="seed");}
+            Packet<String>::Empty=>{assert(false);}
+        }
+        List<Packet<String>> values;values.push(copy);
+        copy=Packet<String>::Value("changed");
+        Packet<String> extracted=values[0];
+        values.clear();
+        match(extracted){
+            Packet<String>::Value(text)=>{assert(text=="seed");}
+            Packet<String>::Empty=>{assert(false);}
+        }
+        for(int64 i=0;i<8;i=i+1){
+            List<String> local;local.push("loop");
+            
+            if(i<3){continue;}
+            if(i==5){break;}
+            assert(local[0]=="loop");
+        }
+        auto success=propagate(true);assert(success.unwrap()=="localscratch!");
+        auto failure=propagate(false);assert(failure.isErr());
+        match(failure){
+            Result<String,String>::Err(error)=>{assert(error=="failure");}
+            Result<String,String>::Ok(value)=>{assert(false);}
+        }
+    }
+    println("ownership exit edges OK");
+    return 0;
+}

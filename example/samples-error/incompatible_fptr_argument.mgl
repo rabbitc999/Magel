@@ -1,0 +1,8 @@
+int64 identity(int64 value) {
+    return value;
+}
+
+int64 main() {
+    int64 fn(int64) callback = identity;
+    return callback("text");
+}

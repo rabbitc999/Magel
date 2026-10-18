@@ -1,0 +1,21 @@
+module std::coroutine;
+
+import std::concurrency;
+/* 注意：`SharedCoroutine` / `IsolatedThread` / `Message` 各自是**独立模块**，
+ * 不能合成一个 `std::concurrency` —— 它们都有 `create/wait/receive` 这些同名宿主函数，
+ * 塞进同一个模块会撞"宿主函数不能重名"。 */
+
+/* 共享协程（从编译器注入正文里搬出来）：`import std::coroutine;`。 */
+type SharedCoroutineHandle = int64;
+
+
+
+
+SharedCoroutineHandle create(void fn() task);
+void wait(SharedCoroutineHandle coroutine);
+void send(SharedCoroutineHandle coroutine, std::lang::String message);
+std::lang::String receive();
+SharedCoroutineHandle current();
+SharedCoroutineHandle parent();
+void yield();
+void yelid();

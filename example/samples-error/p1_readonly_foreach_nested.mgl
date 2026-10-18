@@ -1,0 +1,1 @@
+struct Holder{std::lang::List<int64> values;}; int64 main(){Holder holder; holder.values.push(1); Holder const& readonly=&holder; for(int64 item in readonly.values){item=9;} return 0;}

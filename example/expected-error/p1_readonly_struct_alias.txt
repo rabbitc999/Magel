@@ -1,0 +1,1 @@
+magel：example/samples-error/p1_readonly_struct_alias.mgl 第 1 行第 1 列：只读接收者不能调用修改方法：Counter.update

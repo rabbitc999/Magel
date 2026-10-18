@@ -1,0 +1,54 @@
+{
+  "iterations": 10000000,
+  "warmups": 1,
+  "repeats": 7,
+  "baseline_commit": "49bba79c076abded6bbff6cb50bc700405e6fb80",
+  "timing": "external steady_clock; excludes file loading; includes execution plan setup and checksum output; sequential idle runs",
+  "results": {
+    "before": {
+      "command": [
+        "build/vm-program-benchmark.exe",
+        "build/lua-benchmark/loop-program",
+        "7",
+        "1",
+        "10000000"
+      ],
+      "samples_ms": [
+        5319.97,
+        5220.8,
+        5418.91,
+        5147.15,
+        5145.76,
+        5317.5,
+        5525.99
+      ],
+      "logical_steps": 200000034,
+      "checksum": "49999995000000",
+      "svmb_bytes": 66830,
+      "median_ms": 5317.5
+    },
+    "after": {
+      "command": [
+        "build/vm-register-benchmark.exe",
+        "build/vm-register-loop",
+        "7",
+        "1",
+        "10000000"
+      ],
+      "samples_ms": [
+        5271.37,
+        4478.73,
+        4540.37,
+        4450.57,
+        5140.29,
+        4828.48,
+        4594.72
+      ],
+      "logical_steps": 200000034,
+      "checksum": "49999995000000",
+      "svmb_bytes": 68081,
+      "median_ms": 4594.72
+    }
+  },
+  "speedup": 1.1573066476303235
+}

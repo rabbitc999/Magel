@@ -1,0 +1,14 @@
+struct Plain {
+    int64 value;
+};
+
+T add<T>(T left, T right) {
+    return left + right;
+}
+
+int64 main() {
+    Plain a;
+    Plain b;
+    Plain c = add<Plain>(a, b);
+    return c.value;
+}

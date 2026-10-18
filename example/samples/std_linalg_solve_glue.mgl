@@ -1,0 +1,132 @@
+import std::linalg;
+import std::math;
+
+void checkSolve<T>() {
+    std::linalg::Matrix<T> a = std::linalg::Matrix<T>::zeros(3, 3);
+    a.set(0, 0, (T)0); a.set(0, 1, (T)2); a.set(0, 2, (T)1);
+    a.set(1, 0, (T)2); a.set(1, 1, (T)1); a.set(1, 2, (T)0);
+    a.set(2, 0, (T)1); a.set(2, 1, (T)0); a.set(2, 2, (T)3);
+    std::linalg::Vector<T> b = std::linalg::Vector<T>::zeros(3);
+    b.set(0, (T)7); b.set(1, (T)4); b.set(2, (T)10);
+    std::linalg::Vector<T> answer = a.solve(b);
+    assert(std::math::abs((float64)answer.at(0) - 1.0) < 0.00001);
+    assert(std::math::abs((float64)answer.at(1) - 2.0) < 0.00001);
+    assert(std::math::abs((float64)answer.at(2) - 3.0) < 0.00001);
+    assert(a.at(0, 0) == (T)0 && a.at(2, 2) == (T)3 && b.at(0) == (T)7);
+    std::linalg::Matrix<T> empty = std::linalg::Matrix<T>::zeros(0, 0);
+    std::linalg::Vector<T> emptyRhs = std::linalg::Vector<T>::zeros(0);
+    std::linalg::Vector<T> emptyAnswer = empty.solve(emptyRhs);
+    assert(emptyAnswer.len() == 0);
+    std::linalg::Matrix<T> one = std::linalg::Matrix<T>::identity(1);
+    std::linalg::Vector<T> rhs = std::linalg::Vector<T>::zeros(1);
+    rhs.set(0, (T)7);
+    std::linalg::Vector<T> single = one.solve(rhs);
+    assert(single.at(0) == (T)7);
+}
+void checkInteger<T>() {
+    std::linalg::Matrix<T> a = std::linalg::Matrix<T>::identity(1);
+    std::linalg::Vector<T> rhs = std::linalg::Vector<T>::zeros(1);
+    rhs.set(0, (T)7);
+    std::linalg::Vector<T> answer = a.solve(rhs);
+    assert(answer.at(0) == (T)7);
+}
+float64[] makeArray() {
+    float64 values[] = new[1];
+    values[0] = 4.0;
+    return values;
+}
+struct ArrayFactory {
+    static float64[] make() {
+        float64 values[] = new[1];
+        values[0] = 5.0;
+        return values;
+    }
+};
+std::linalg::Vector<float64> firstColumn() {
+    for (col in std::linalg::Matrix<float64>::identity(2)) { return col; }
+    return std::linalg::Vector<float64>::zeros(0);
+}
+struct ArrayItem { int64 x; int64 y; };
+void checkArrays() {
+    float64 first[] = makeArray();
+    float64 second[] = ArrayFactory::make();
+    assert(first[0] == 4.0 && second[0] == 5.0);
+    float64 raw[6];
+    raw[0] = 1.0; raw[1] = 2.0; raw[2] = 3.0;
+    raw[3] = 4.0; raw[4] = 5.0; raw[5] = 6.0;
+    std::linalg::Vector<float64> vector = std::linalg::Vector<float64>::fromArray(raw, len(raw));
+    assert(vector[2] == 3.0);
+    float64 vectorArray[] = vector.toArray();
+    vectorArray[0] = 99.0;
+    assert(vector[0] == 1.0);
+    std::linalg::Vector<float64> restored = std::linalg::Vector<float64>::fromArray(vectorArray);
+    assert(restored[0] == 99.0);
+    std::linalg::Matrix<float64> matrix = std::linalg::Matrix<float64>::fromArray(raw, len(raw), 2, 3);
+    std::linalg::Vector<float64> column = matrix[1];
+    assert(column.len() == 2 && column[0] == 2.0 && column[1] == 5.0);
+    float64 sum = 0.0;
+    for (col in matrix) {
+        for (number in col) { sum = sum + number; }
+    }
+    assert(sum == 21.0);
+    float64 arraySum = 0.0;
+    for (number in raw) { arraySum = arraySum + number; }
+    assert(arraySum == sum);
+    int64 visited = 0;
+    for (col in matrix) {
+        visited = visited + 1;
+        if (visited == 1) { continue; }
+        break;
+    }
+    assert(visited == 2);
+    std::linalg::Vector<float64> returned = firstColumn();
+    assert(returned[0] == 1.0 && returned[1] == 0.0);
+    float64 temporarySum = 0.0;
+    for (number in makeArray()) { temporarySum = temporarySum + number; }
+    assert(temporarySum == 4.0);
+    ArrayItem records[2];
+    records[0].x = 1; records[0].y = 2;
+    records[1].x = 3; records[1].y = 4;
+    int64 recordSum = 0;
+    for (entry in records) { recordSum = recordSum + entry.x + entry.y; }
+    assert(recordSum == 10);
+    int64 grid[2][2];
+    grid[0][0] = 1; grid[0][1] = 2; grid[1][0] = 3; grid[1][1] = 4;
+    int64 gridSum = 0;
+    for (number in grid) { gridSum = gridSum + number; }
+    assert(gridSum == 10);
+    column.set(0, 88.0);
+    assert(matrix.at(0, 1) == 2.0);
+    float64 flat[] = matrix.toArray();
+    assert(len(flat) == 6 && flat[4] == 5.0);
+    std::linalg::Matrix<float64> copy = std::linalg::Matrix<float64>::fromArray(flat, 2, 3);
+    flat[0] = 77.0;
+    assert(copy.at(0, 0) == 1.0 && raw[0] == 1.0);
+    std::linalg::Vector<float64> last = copy.column(2);
+    assert(last[0] == 3.0 && last[1] == 6.0);
+    std::linalg::Matrix<float64> empty = std::linalg::Matrix<float64>::zeros(0, 2);
+    std::linalg::Vector<float64> emptyColumn = empty[1];
+    float64 emptyArray[] = emptyColumn.toArray();
+    assert(len(emptyArray) == 0);
+}
+int64 main() {
+    checkArrays();
+    checkSolve<float32>();
+    checkSolve<float64>();
+    checkInteger<int8>();
+    checkInteger<int16>();
+    checkInteger<int32>();
+    checkInteger<int64>();
+    checkInteger<uint8>();
+    checkInteger<uint16>();
+    checkInteger<uint32>();
+    checkInteger<uint64>();
+
+    std::linalg::Matrix<int64> ints = std::linalg::Matrix<int64>::identity(2);
+    std::linalg::Vector<int64> rhs = std::linalg::Vector<int64>::zeros(2);
+    rhs.set(0, -5); rhs.set(1, 7);
+    std::linalg::Vector<int64> answer = ints.solve(rhs);
+    assert(answer.at(0) == -5 && answer.at(1) == 7);
+    println("LU glue solve OK");
+    return 0;
+}

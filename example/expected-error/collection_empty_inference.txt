@@ -1,0 +1,1 @@
+magel：example/samples-error/collection_empty_inference.mgl 第 1 行第 1 列：空集合字面量 `{}` 需要 std::lang::Set<T> 或 std::lang::Map<K,V> 上下文

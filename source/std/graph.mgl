@@ -1,0 +1,253 @@
+module std::graph;
+
+/* 图论标准库：有向 / 无向带权图与并查集，全部算法实现在宿主胶水（glue/std_graph.hpp）。
+ *
+ * 图采用"链式前向星"邻接存储：head[v] 是顶点 v 的第一条边下标（-1 表示没有），
+ * edgeTo[e] / edgeNext[e] / edgeWeight[e] 分别是边 e 的终点、同起点下一条边与边权。
+ * 顶点编号 0..n-1，键全部为 int64。
+ *
+ * BFS / DFS 输出可达顶点访问序；拓扑排序有环时输出空表；
+ * Dijkstra 要求边权非负，不可达顶点距离为 -1；
+ * 最小生成树（Kruskal）只对无向图有意义，图不连通返回 -1。
+ */
+
+/* ---- 胶水声明：实现见 glue/std_graph.hpp；槽布局与 GraphReply / DsuReply 一致 ---- */
+void __bfs(List<int64> head, List<int64> edgeTo, List<int64> edgeNext, int64 vertexCount,
+           int64 start, GraphReply mut& reply);
+void __dfs(List<int64> head, List<int64> edgeTo, List<int64> edgeNext, int64 vertexCount,
+           int64 start, GraphReply mut& reply);
+void __components(List<int64> head, List<int64> edgeTo, List<int64> edgeNext,
+                  int64 vertexCount, GraphReply mut& reply);
+void __topo(List<int64> head, List<int64> edgeTo, List<int64> edgeNext, int64 vertexCount,
+            GraphReply mut& reply);
+void __dijkstra(List<int64> head, List<int64> edgeTo, List<int64> edgeWeight,
+                List<int64> edgeNext, int64 vertexCount, int64 start, GraphReply mut& reply);
+void __hasCycle(List<int64> head, List<int64> edgeTo, List<int64> edgeNext, int64 vertexCount,
+                int64 directed, GraphReply mut& reply);
+void __mstWeight(List<int64> head, List<int64> edgeTo, List<int64> edgeWeight,
+                 List<int64> edgeNext, int64 vertexCount, GraphReply mut& reply);
+void __dsuFind(List<int64> parent, int64 x, DsuReply mut& reply);
+void __dsuUnion(List<int64> parent, List<int64> sizes, int64 a, int64 b, DsuReply mut& reply);
+
+/** 图算法胶水回执；槽布局必须与 glue/std_graph.hpp 的 GraphReply 一致。 */
+struct GraphReply {
+    String error; ///< 错误说明；成功时为空串。
+    int64 value; ///< 标量结果：分量个数或生成树总权值。
+    int64 flag; ///< 布尔结果：1 = 无环 / 有环（按入口语义）。
+    List<int64> order; ///< 访问序或拓扑序。
+    List<int64> dist; ///< Dijkstra 距离表，不可达为 -1。
+}
+
+/** 并查集胶水回执；槽布局必须与 glue/std_graph.hpp 的 DsuReply 一致。 */
+struct DsuReply {
+    List<int64> parent; ///< 更新后的父指针数组。
+    List<int64> sizes; ///< 更新后的集合大小数组。
+    int64 root; ///< 本次查找 / 合并后的根。
+    int64 flag; ///< 布尔结果：查找恒 1；合并 1 = 发生了合并。
+}
+
+/** 带权图：有向 / 无向由构造时的 directed 决定；重边与自环都允许。 */
+struct Graph : Drop {
+    int64 vertexCount; ///< 顶点数，编号 0..vertexCount-1。
+    bool directed; ///< 是否有向图。
+    List<int64> head; ///< 每个顶点的首条边下标，无出边为 -1。
+    List<int64> edgeTo; ///< 边终点表。
+    List<int64> edgeNext; ///< 同起点下一条边表。
+    List<int64> edgeWeight; ///< 边权表。
+    int64 edgeCount; ///< 当前边数（按 addEdge 调用次数计）。
+
+    void drop() { delete self.head; delete self.edgeTo; delete self.edgeNext; delete self.edgeWeight; }
+
+    /**
+     * @brief 创建 n 个顶点的空图。
+     * @param vertexCount 顶点数，必须非负。
+     * @param directed true 为有向图，false 为无向图。
+     */
+    static Graph create(int64 vertexCount, bool directed) {
+        std::lang::assert(vertexCount >= 0);
+        self.vertexCount = vertexCount;
+        self.directed = directed;
+        self.edgeCount = 0;
+        List<int64> heads;
+        for (int64 index = 0; index < vertexCount; index = index + 1) { heads.push(0 - 1); }
+        self.head = heads;
+        List<int64> edgeTos;
+        self.edgeTo = edgeTos;
+        List<int64> edgeNexts;
+        self.edgeNext = edgeNexts;
+        List<int64> edgeWeights;
+        self.edgeWeight = edgeWeights;
+    }
+
+    /**
+     * @brief 加一条边。
+     * @param u 起点下标。
+     * @param v 终点下标。
+     * @param weight 边权，要求非负（Dijkstra / MST 的前提）。
+     * @note 无向图会同时登记 u→v 与 v→u 两条邻接记录。
+     */
+    void addEdge(int64 u, int64 v, int64 weight) {
+        std::lang::assert(u >= 0 && u < self.vertexCount && v >= 0 && v < self.vertexCount);
+        self.edgeTo.push(v);
+        self.edgeNext.push(self.head[u]);
+        self.edgeWeight.push(weight);
+        self.head[u] = self.edgeTo.len() - 1;
+        if (!self.directed && u != v) {
+            self.edgeTo.push(u);
+            self.edgeNext.push(self.head[v]);
+            self.edgeWeight.push(weight);
+            self.head[v] = self.edgeTo.len() - 1;
+        }
+        self.edgeCount = self.edgeCount + 1;
+    }
+
+    /**
+     * @brief 广度优先搜索，输出从 start 可达顶点的访问序。
+     * @param start 起点下标。
+     * @retval 访问序列表，拥有独立存储。
+     */
+    List<int64> bfs(int64 start) {
+        GraphReply reply;
+        __bfs(self.head, self.edgeTo, self.edgeNext, self.vertexCount, start, &reply);
+        return reply.order;
+    }
+
+    /**
+     * @brief 深度优先搜索（显式栈，邻居按插入序访问）。
+     * @param start 起点下标。
+     * @retval 访问序列表。
+     */
+    List<int64> dfs(int64 start) {
+        GraphReply reply;
+        __dfs(self.head, self.edgeTo, self.edgeNext, self.vertexCount, start, &reply);
+        return reply.order;
+    }
+
+    /**
+     * @brief 连通分量个数（无向口径）。
+     */
+    int64 connectedComponents() {
+        GraphReply reply;
+        __components(self.head, self.edgeTo, self.edgeNext, self.vertexCount, &reply);
+        return reply.value;
+    }
+
+    /**
+     * @brief Kahn 拓扑排序。
+     * @retval 无环时输出一个合法序列；有环时输出空列表。
+     */
+    List<int64> topologicalSort() {
+        GraphReply reply;
+        __topo(self.head, self.edgeTo, self.edgeNext, self.vertexCount, &reply);
+        return reply.order;
+    }
+
+    /**
+     * @brief Dijkstra 单源最短路。
+     * @param start 源点下标。
+     * @retval 距离表，长度为顶点数；不可达顶点为 -1。
+     * @note 存在负边权时宿主报错停机。
+     */
+    List<int64> dijkstra(int64 start) {
+        GraphReply reply;
+        __dijkstra(self.head, self.edgeTo, self.edgeWeight, self.edgeNext, self.vertexCount, start, &reply);
+        return reply.dist;
+    }
+
+    /**
+     * @brief 环检测：有向图用 Kahn 计数，无向图用并查集。
+     * @retval 有环返回 true。
+     */
+    bool hasCycle() {
+        GraphReply reply;
+        if (self.directed) {
+            __hasCycle(self.head, self.edgeTo, self.edgeNext, self.vertexCount, 1, &reply);
+        } else {
+            __hasCycle(self.head, self.edgeTo, self.edgeNext, self.vertexCount, 0, &reply);
+        }
+        return reply.flag == 1;
+    }
+
+    /**
+     * @brief Kruskal 最小生成树总权值。
+     * @retval 无向连通图的总权值；图不连通时返回 -1。
+     */
+    int64 minimumSpanningTreeWeight() {
+        GraphReply reply;
+        __mstWeight(self.head, self.edgeTo, self.edgeWeight, self.edgeNext, self.vertexCount, &reply);
+        return reply.value;
+    }
+
+    /**
+     * @brief 当前边数（按 addEdge 调用次数计，不含无向图的镜像登记）。
+     */
+    int64 len() { return self.edgeCount; }
+};
+
+/** 并查集：路径压缩 + 按大小合并；find / union 返回后内部数组已更新。 */
+struct UnionFind : Drop {
+    List<int64> parent; ///< 父指针数组。
+    List<int64> sizes; ///< 各根对应的集合大小。
+    int64 components; ///< 当前集合（连通分量）个数。
+
+    void drop() { delete self.parent; delete self.sizes; }
+
+    /**
+     * @brief 创建 n 个单元素集合。
+     * @param n 元素个数，必须非负。
+     */
+    static UnionFind create(int64 n) {
+        std::lang::assert(n >= 0);
+        List<int64> parents;
+        List<int64> sizeList;
+        for (int64 index = 0; index < n; index = index + 1) {
+            parents.push(index);
+            sizeList.push(1);
+        }
+        self.parent = parents;
+        self.sizes = sizeList;
+        self.components = n;
+    }
+
+    /**
+     * @brief 查找元素所在集合的根（带路径压缩）。
+     * @param x 元素下标。
+     * @retval 根下标；越界由宿主报错停机。
+     */
+    int64 find(int64 x) {
+        DsuReply reply;
+        __dsuFind(self.parent, x, &reply);
+        self.parent = reply.parent;
+        return reply.root;
+    }
+
+    /**
+     * @brief 合并两个元素所在集合（按大小）。
+     * @param a 元素一下标。
+     * @param b 元素二下标。
+     * @retval 发生了合并返回 true；本就同集返回 false。
+     */
+    bool unionSets(int64 a, int64 b) {
+        DsuReply reply;
+        __dsuUnion(self.parent, self.sizes, a, b, &reply);
+        self.parent = reply.parent;
+        self.sizes = reply.sizes;
+        if (reply.flag == 1) { self.components = self.components - 1; }
+        return reply.flag == 1;
+    }
+
+    /**
+     * @brief 两个元素是否同集。
+     */
+    bool connected(int64 a, int64 b) { return self.find(a) == self.find(b); }
+
+    /**
+     * @brief x 所在集合的大小。
+     */
+    int64 sizeOf(int64 x) { return self.sizes[self.find(x)]; }
+
+    /**
+     * @brief 当前集合个数。
+     */
+    int64 count() { return self.components; }
+};

@@ -1,0 +1,37 @@
+@annotation Component
+@annotation Route(path: String, level: int32 = 2)
+@annotation Note(text: String = "ok")
+
+@Component
+interface Value {
+    @Note("contract")
+    int64 read();
+};
+@Component
+struct Service : Value {
+    @Note("field")
+    int64 value;
+    @Note("static field")
+    static int64 shared;
+    @Note("constructor")
+    Service(int64 value) { self.value = value; }
+    @Route("/read", level: 3)
+    int64 read() { return self.value; }
+    @Note("static method")
+    static int64 answer() { return 42; }
+};
+@Note("enum")
+enum State {
+    Ready, Busy;
+    @Note("enum method")
+    int64 code() { return 7; }
+    @Note("enum static")
+    static int64 answer() { return 7; }
+};
+@Route(path: "/main")
+int64 main() {
+    Service service = new Service(42);
+    State state = State::Ready;
+    println("annotations {} {}", service.read(), state.code());
+    return 0;
+}

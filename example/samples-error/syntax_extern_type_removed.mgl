@@ -1,0 +1,2 @@
+extern type Handle = uint64;
+int64 main() { return 0; }

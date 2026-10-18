@@ -1,0 +1,4 @@
+前序：ABDECFG
+中序：DBEAFCG
+重建后的中序：DBEAFCG
+后序：DEBFGCA

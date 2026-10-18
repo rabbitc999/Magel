@@ -1,0 +1,5 @@
+module generic_monomorphization_models;
+struct Fixed { int64 value; };
+struct Inner<T,V> { T first; V second; };
+struct Outer<T> { Inner<T,Fixed> value; };
+interface Value{int64 number();};struct Count<T>:Value{T value;int64 number(){return value;}};

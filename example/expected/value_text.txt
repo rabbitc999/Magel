@@ -1,0 +1,7 @@
+{"one", "two"}
+[1, "two", true]
+{1, 2, 3}
+{"count": 3, "name": "Magel"}
+(1, "two", [1, "two", true])
+{"one", "two"}
+done

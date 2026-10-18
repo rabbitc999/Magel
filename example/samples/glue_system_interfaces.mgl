@@ -1,0 +1,30 @@
+/* glue_system_interfaces.mgl —— 胶水层声明**系统接口继承**
+ *
+ *   ./magel samples/glue_system_interfaces.mgl
+ *
+ * 这个文件里没有任何 `interface` / `struct` / `impl`：`magel_driver.inc` 的
+ * `InstallDemoGlue` 用 C++ 写好了下面这一串（编译前追加到合并源码末尾）：
+ *
+ *   struct    GlueDemoBuffer { int64 base; };
+ *   interface GlueDemoBuffered : Index<int64,int64>, Multiply<int64,int64>,
+ *                                ExplicitConvert<int64> {
+ *       int64 size();
+ *   };
+ *   impl      GlueDemoBuffer : GlueDemoBuffered = glue_demo_buffer;
+ *
+ *   interface GlueDemoAddable : Add<int64,int64> { };   // 只继承系统接口
+ *   impl      GlueDemoBuffer : GlueDemoAddable = glue_demo_buffer_add;
+ *
+ * `GlueDemoBuffered` 继承的是**系统接口**：下标、乘号、显式转换三条协议能力一并带进来，
+ * 所以 `buffer[3]` / `buffer * 4` / `cast<int64>(buffer)` 都会落到宿主符号上 ——
+ * 宿主按 `<impl 符号>.<方法名>` 注册 `glue_demo_buffer.{size,index,leftMul,explicitConvert}`。
+ * `GlueDemoAddable` 是单方法接口（只有继承来的 `leftAdd`），按原符号名绑。
+ */
+int64 main()
+{
+    GlueDemoBuffer buffer;
+    buffer.base = 6;
+    println("size={} at={} mul={} cast={} add={}", buffer.size(), buffer[3], buffer * 4,
+    cast<int64>(buffer), buffer + 5);
+    return 0;
+}

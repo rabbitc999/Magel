@@ -1,0 +1,158 @@
+/* aot_basic.mgl —— AOT（基本块 + 局部变量 + goto）冒烟样例。
+ *
+ * 覆盖：整数循环 / 浮点 / 结构体按值 / 递归 / if-elif-else / while / for / match /
+ * Closeable 收尾 / List·Set·Map / 字符串拼接与比较 / 接口分派。
+ * 解释、`--target cpp`、`--target cpp-aot` 三种执行方式输出一致（浮点允许微小误差）。
+ */
+
+/* ---------------- 结构体按值 ---------------- */
+struct Point {
+    int64 x;
+    int64 y;
+};
+
+int64 sumPoint(Point p) { return p.x + p.y; }
+
+/* ---------------- 接口分派 ---------------- */
+interface Shape {
+    int64 area();
+    String name();
+};
+
+struct Rect : Shape {
+    int64 w;
+    int64 h;
+    int64 area() { return w * h; }
+    String name() { return "rect"; }
+};
+
+struct Square : Shape {
+    int64 side;
+    int64 area() { return side * side; }
+    String name() { return "square"; }
+};
+
+int64 twiceArea(Shape mut& shape) { return shape.area() * 2; }
+String tell(Shape mut& shape) {
+    return shape.name() + ":" + format("{}", shape.area());
+}
+
+/* ---------------- 递归 ---------------- */
+int64 fib(int64 n) {
+    if (n < 2) { return n; }
+    int64 left = fib(n - 1);
+    int64 right = fib(n - 2);
+    return left + right;
+}
+
+/* ---------------- Closeable 收尾 ---------------- */
+struct Res : Closeable {
+    int64 id;
+    void close() { println("close {}", self.id); }
+};
+
+/* ---------------- 控制流 ---------------- */
+int64 classify(int64 x) {
+    if (x < 0) {
+        return -1;
+    } elif (x == 0) {
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+int64 matchClassify(int64 x) {
+    match (x) {
+        [0, 10) => { return 1; }
+        [10, 20) => { return 2; }
+        _ => { return 0; }
+    }
+}
+
+int64 main() {
+    /* 1. 纯整数循环：1..5 求和 = 15 */
+    int64 sum = 0;
+    for (int64 i = 1; i <= 5; i = i + 1) {
+        sum = sum + i;
+    }
+    println("sum={}", sum);
+
+    /* 2. 浮点运算 */
+    float64 a = 1.5;
+    float64 b = 2.25;
+    println("float={:3F}", a * b + 0.25);
+
+    /* 3. 结构体按值 */
+    Point p;
+    p.x = 3;
+    p.y = 4;
+    println("point={}", sumPoint(p));
+
+    /* 4. 函数调用与递归 */
+    println("fib(10)={}", fib(10));
+
+    /* 5. if/elif/else、while、match */
+    int64 n = 0;
+    while (n < 4) {
+        n = n + 1;
+    }
+    println("control {} {} {}", classify(-2), classify(0), classify(7));
+    println("while={} match={}", n, matchClassify(15));
+
+    /* 6. Closeable 自动清理 */
+    {
+        Res r;
+        r.id = 42;
+    }
+    println("after-scope");
+
+    /* 7. 容器 List / Set / Map */
+    List<int64> xs;
+    xs.push(3);
+    xs.push(1);
+    xs.push(2);
+    Set<int64> s;
+    s.add(5);
+    s.add(3);
+    s.add(5);
+    Map<String, int64> ages;
+    ages.put("amy", 11);
+    ages["bob"] = 22;
+    println("list len={} first={} set len={} has5={} map amy={} bob={}",
+    len(xs), xs[0], len(s), s.has(5), ages["amy"], ages["bob"]);
+
+    /* 8. 字符串拼接与比较 */
+    String hello = "hello";
+    String space = " ";
+    String world = "world";
+    String greeting = hello + space + world;
+    println("string={} eq={} lt={}", greeting, greeting == "hello world", hello < world);
+
+    /* 9. 接口分派：静态调用 + 接口引用多态 */
+    Rect r;
+    r.w = 3;
+    r.h = 5;
+    Square q;
+    q.side = 4;
+    println("static {}:{} {}:{}", r.name(), r.area(), q.name(), q.area());
+
+    Any o1;
+    Any o2;
+    Rect mut& pr = heap Rect;
+    pr->w = 3;
+    pr->h = 5;
+    Square mut& pq = heap Square;
+    pq->side = 4;
+    o1.set(&pr);
+    o2.set(&pq);
+    Shape mut& s1 = o1.getReference();
+    Shape mut& s2 = o2.getReference();
+    println("iface {} {}", tell(s1), tell(s2));
+    println("twice {} {}", twiceArea(s1), twiceArea(s2));
+
+    delete pr;
+    delete pq;
+
+    return 0;
+}

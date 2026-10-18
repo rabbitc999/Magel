@@ -1,0 +1,19 @@
+module moduleDemo;
+import math::ops;
+
+int64 main() {
+    List<int64> values;
+    for (int64 value in range(1, 5)) {
+        values.push(twice(value));
+    }
+    bool first = true;
+    for (int64 value in values) {
+        if (!first) {
+            print(" ");
+        }
+        print("{}", value);
+        first = false;
+    }
+    println("");
+    return 0;
+}

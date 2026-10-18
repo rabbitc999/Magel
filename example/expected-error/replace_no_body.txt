@@ -1,0 +1,1 @@
+magel：前处理：example/samples-error/replace_no_body.mgl 第 1 行：`$replace` 是单行宏，宏名后面要写宏体；多行宏请用 `$macro … $end_macro`

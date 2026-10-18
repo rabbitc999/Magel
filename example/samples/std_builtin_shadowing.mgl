@@ -1,0 +1,14 @@
+int64 add(int64 a, int64 b) { return a + b + 10; }
+int64 index(int64 a, int64 b) { return a + b + 20; }
+int64 combine(int64 a, int64 b) { return a + b + 30; }
+int64 main() {
+    assert(add(1, 2) == 13);
+    assert(index(1, 2) == 23);
+    { int64 fn(int64, int64) index = combine; assert(index(1, 2) == 33); }
+    assert(std::lang::add(1, 2) == 3);
+    int64 data[2];
+    std::lang::index(data, 1) = 7;
+    assert(std::lang::index(data, 1) == 7);
+    println("builtin shadowing OK");
+    return 0;
+}

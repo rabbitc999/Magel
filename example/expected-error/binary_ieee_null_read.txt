@@ -1,0 +1,1 @@
+magel：example/samples-error/binary_ieee_null_read.mgl 第 2 行第 40 列：引用不能与整数地址互转；查看地址请使用 std::lang::address

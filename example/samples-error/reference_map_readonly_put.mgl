@@ -1,0 +1,1 @@
+int64 main() { std::lang::Map<String,int64> value; std::lang::Map<String,int64> const& ref = &value; ref.put("x",1); return 0; }

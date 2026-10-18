@@ -1,0 +1,49 @@
+Result<int64, String> parse_value(bool valid) {
+    if (valid) {
+        return Result<int64, String>::Ok(20);
+    }
+    return Result<int64, String>::Err("bad input");
+}
+
+Result<int64, String> double_value(bool valid) {
+    int64 value = parse_value(valid)?;
+    return Result<int64, String>::Ok(value * 2);
+}
+
+int64 main() {
+    int64 count = 0;
+    int64 answer = loop {
+        count = count + 1;
+        if (count < 3) {
+            continue;
+        }
+        yield (count + 4);
+    };
+    println("loop={}", answer);
+
+    int64 visits = 0;
+    loop {
+        visits = visits + 1;
+        if (visits == 1) { continue; }
+        break;
+    };
+    assert(visits == 2);
+
+    match (answer) {
+        7 => { println("match=seven"); }
+        _ => { println("match=other"); }
+    }
+
+    Result<int64, String> success = double_value(true);
+    match (success) {
+        Result<int64, String>::Ok(value) => { println("ok={}", value); }
+        Result<int64, String>::Err(error) => { println("err={}", error); }
+    }
+
+    Result<int64, String> failure = double_value(false);
+    match (failure) {
+        Result<int64, String>::Ok(value) => { println("unexpected={}", value); }
+        Result<int64, String>::Err(error) => { println("propagated={}", error); }
+    }
+    return 0;
+}

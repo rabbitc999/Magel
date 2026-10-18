@@ -1,0 +1,53 @@
+/* std_net.mgl —— `std::net`（TCP + 极简 HTTP 客户端）用法样例。
+ *
+ *   ./magel samples/std_net.mgl
+ *
+ * 全程不需要外网、不需要第二个进程：
+ *   1. 先在本进程里 listen（端口给 0 让系统分配）→ connect → accept，双向收发；
+ *   2. 再单独测三个纯函数：地址解析、请求拼装、响应解析。
+ *
+ * 因此输出是确定的（端口号不打印）。套接字实现见 `glue/std_net.hpp`
+ * （Windows 运行期加载 ws2_32.dll，POSIX 直接调用同名接口）。
+ */
+
+import std::net;
+
+int64 main() {
+    /* ---- 1. 回环 TCP：监听 / 连接 / 接受 / 收发 ---- */
+    std::net::TcpListener listener = std::net::TcpListener::listen("127.0.0.1", (int32)0, (int32)8);
+    println("listener open={} port>0={}", listener.isOpen(), listener.localPort() > 0);
+    int64 port = listener.localPort();
+
+    std::net::TcpSocket client = std::net::TcpSocket::connect("127.0.0.1", (int32)port, (int32)2000);
+    std::net::TcpSocket peer = listener.accept((int32)2000);
+    println("client open={} peer open={}", client.isOpen(), peer.isOpen());
+
+    client.send("ping\n");
+    String request = peer.receiveLine((int32)2000);
+    println("server got [{}] status={}", request, peer.status());
+
+    peer.send("pong\n");
+    String reply = client.receiveLine((int32)2000);
+    println("client got [{}] status={}", reply, client.status());
+
+    peer.close();
+    client.close();
+    listener.close();
+    println("closed client={} peer={} listener={}", client.isOpen(), peer.isOpen(), listener.isOpen());
+
+    /* ---- 2. 纯函数：地址解析 / 请求拼装 / 响应解析 ---- */
+    std::net::Url url = std::net::parseUrl("http://example.com:8080/a/b?c=1");
+    println("url ok={} host={} port={} path={}", url.ok, url.host, url.port, url.path);
+    std::net::Url bad = std::net::parseUrl("https://example.com/");
+    println("https rejected={} error=[{}]", !bad.ok, bad.error);
+
+    String get = std::net::buildRequest("GET", "http://example.com/x", "", "");
+    println("GET request len={}", len(get));
+
+    String raw = "HTTP/1.1 200 OK\r\nContent-Length: 5\r\nContent-Type: text/plain\r\n\r\nhello";
+    std::net::HttpResponse response = std::net::parseResponse(raw);
+    println("response ok={} status={} reason={} len={} type={} body={}",
+    response.ok, response.status, response.reason,
+    response.header("Content-Length"), response.header("content-type"), response.body);
+    return 0;
+}

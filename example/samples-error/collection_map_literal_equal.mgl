@@ -1,0 +1,1 @@
+struct Key { int64 id; }; int64 main() { Key key; auto value = {key: 1}; return 0; }

@@ -1,0 +1,20 @@
+import std::io;
+
+/** @brief 在调用者指定的测试文件中演示 FileStream 的 Result 错误处理。
+ * @param args 仅一个文件路径，该文件会被覆盖。 @return 成功为 0。 */
+int64 main(List<String> args) {
+    assert(args.len() == 1, "请提供允许覆盖的示例文件路径");
+    Result<FileStream,IoError> opened = FileStream::open(args[0],"w+");
+    FileStream stream = opened.expect("打开失败");
+    Result<int64,IoError> written = stream.write("alpha\nbeta\n");
+    assert(written.isOk());
+    Result<int64,IoError> flushed = stream.flush();
+    assert(flushed.isOk());
+    Result<int64,IoError> located = stream.seek(0,SeekOrigin::Begin);
+    assert(located.isOk());
+    Result<String,IoError> first = stream.read();
+    assert(first.isOk() && first.unwrap() == "alpha");
+    stream.close();
+    println("io API ok");
+    return 0;
+}

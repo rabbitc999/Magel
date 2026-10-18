@@ -1,0 +1,47 @@
+// T & 与 T const& 使用同一类型身份，适用于泛型、元组和回调。
+struct Cell { int64 value; };
+struct Box<T> { T value; };
+int64 read(Cell & cell) { return cell.value; }
+int64 & relay(int64 & value) { return value; }
+Cell & relayCell(Cell & value) { return value; }
+
+int64 main() {
+    int64 value = 7;
+    int64 & a = &value;
+    int64 const& b = a;
+    int64 & c = b;
+    assert(a == 7 && c == 7);
+    /* `T &` 与 `T const&` 是同一个类型：类型标签必须相等。 */
+    assert(__typeTag(int64 &)==__typeTag(int64 const&));
+    Cell cell; cell.value = 9;
+    Cell & borrowed = &cell;
+    Cell & firstCell = &cell, secondCell = &cell;
+    assert(read(firstCell) + read(secondCell) == 18);
+    assert(read(borrowed) == 9);
+    Cell & casted = (Cell &)(&cell);
+    assert(read(relayCell(casted)) == 9);
+    assert(__typeTag(Cell &)==__typeTag(Cell const&));
+    String text = "sugar";
+    String & name = &text;
+    assert(name[0] == 's');
+    (String &, Cell &) namedPair = (&text, &cell);
+    assert(namedPair.0 == "sugar" && (namedPair.1).value == 9);
+    Option<String &> optional = Option<String &>::Value(&text);
+    assert(optional.unwrap() == "sugar");
+    Box<int64 &> box; box.value = &value;
+    Box<int64 const&> same = box;
+    assert(same.value == 7);
+    List<int64 &> values; values.push(&value);
+    assert(values[0] == 7);
+    (int64 &, int64) pair = (&value, 2);
+    auto (first, second) = pair;
+    assert(first + second == 9);
+    int64 & fn(int64 &) callback = int64 & fn(int64 & x) { return x; };
+    int64 & result = callback(relay(&value));
+    assert(result == 7);
+    int64 bits = 15 & 6;
+    int64 other = bits & value;
+    assert(bits == 6 && other == 6);
+    println("reference sugar OK");
+    return 0;
+}

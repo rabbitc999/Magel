@@ -1,0 +1,2 @@
+import std::iter;
+int64 main() { auto cursor = std::iter::range(0,5).stepBy(0); return 0; }

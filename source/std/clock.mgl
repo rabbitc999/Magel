@@ -1,0 +1,11 @@
+module std::clock;
+
+/* 从编译器注入正文里搬出来：要 `import std::clock;` 才可见。
+ * 宿主绑定（chrono steady_clock）的键名在 glue/std_math.hpp 里，已改成 std::clock::*。 */
+
+/*
+ * 单调时钟：`steady_clock`，不受系统时间调整影响，测速 / 基准用。
+ * 基准点由平台定，只能拿两次读数做差（不要当成挂钟时间）。
+ */
+int64 nowMs();
+int64 nowNanos();

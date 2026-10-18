@@ -1,0 +1,1 @@
+magel：example/samples-error/array_partial_index.mgl 第 5 行第 5 列：多维数组必须把每一维都写下（不支持把一行当句柄用）

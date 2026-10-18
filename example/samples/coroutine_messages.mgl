@@ -1,0 +1,17 @@
+
+import std::coroutine;
+
+void worker() {
+    String message = std::coroutine::receive();
+    String reply = "ack:" + message;
+    std::coroutine::send(std::coroutine::parent(), reply);
+}
+
+int64 main() {
+    SharedCoroutineHandle task = std::coroutine::create(worker);
+    std::coroutine::send(task, "hello");
+    String reply = std::coroutine::receive();
+    std::coroutine::wait(task);
+    println("{}", reply);
+    return 0;
+}

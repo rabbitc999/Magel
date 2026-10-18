@@ -1,0 +1,20 @@
+Option<int64 mut&> demo_reference_optional(bool present, int64 mut& value);
+int64 demo_reference_read(Option<int64 const&> value);
+void demo_reference_write(Option<int64 mut&> value);
+
+int64 main() {
+    int64 value = 41;
+    Option<int64 mut&> present = demo_reference_optional(true, &value);
+    Option<int64 mut&> missing = demo_reference_optional(false, &value);
+    assert(present.isValue() && missing.isNone());
+    demo_reference_write(present);
+    demo_reference_write(missing);
+    assert(value == 42);
+    int64 mut& reference = present.unwrap();
+    assert(address(reference) == address(&value));
+    Option<int64 const&> readOnly = Option<int64 const&>::Value((int64 const&)&value);
+    assert(demo_reference_read(readOnly) == 42);
+    assert(demo_reference_read(Option<int64 const&>::None) == -1);
+    println("optional reference glue OK");
+    return 0;
+}

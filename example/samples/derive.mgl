@@ -1,0 +1,29 @@
+#derive(Equal, Hash, Clone)
+struct DerivedLeaf { int64 number; String text; }
+#derive(Equal, Hash, Clone)
+struct DerivedPair { DerivedLeaf leaf; bool active; }
+#derive(Equal, Hash, Clone)
+enum DerivedChoice { None, Value(DerivedLeaf leaf, String text) }
+#derive(Equal, Hash, Clone)
+struct DerivedFloat { float64 value; }
+#derive(Equal, Hash, Clone)
+struct DerivedBox<T> { T value; }
+void main() {
+    DerivedPair left; left.leaf.number = -4; left.leaf.text = "leaf"; left.active = true;
+    DerivedPair right = left.clone();
+    assert(left == right && left.hash(left) == right.hash(right));
+    right.leaf.text = "changed"; assert(!(left == right) && left.leaf.text == "leaf");
+    Map<DerivedPair, int64> values; values.put(left, 7);
+    assert(values.has(left) != 0 && values.has(right) == 0);
+    DerivedChoice first = DerivedChoice::Value(left.leaf, "payload");
+    DerivedChoice second = first.clone();
+    assert(first == second && first.hash(first) == second.hash(second));
+    assert(!(first == DerivedChoice::None));
+    DerivedFloat positive; positive.value = 0.0;
+    DerivedFloat negative; negative.value = -0.0;
+    assert(positive == negative && positive.hash(positive) == negative.hash(negative));
+    DerivedBox<DerivedLeaf> box; box.value = left.leaf;
+    auto boxCopy = box.clone();
+    assert(box == boxCopy && box.hash(box) == boxCopy.hash(boxCopy));
+    println("derive interfaces OK");
+}

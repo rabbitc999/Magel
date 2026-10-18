@@ -1,0 +1,643 @@
+\chapter{容器}
+\label{ch:11}
+
+前面几章你已经偷偷用过容器了——猜数字里没有，但从第 5 章的 \texttt{List<\allowbreak{}int64>\allowbreak{}} 开始就一直在用。这一章把它讲清楚。
+
+Magel 内建三种容器，不用 \texttt{import}：
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+容器 & 装什么 & 什么时候用 \\
+\midrule
+\texttt{List<\allowbreak{}T>\allowbreak{}} & 有序的一串，按位置访问 & 顺序重要、要按下标取 \\
+\texttt{Map<\allowbreak{}K,\allowbreak{} V>\allowbreak{}} & 键 \ensuremath{\rightarrow} 值 & 按名字查东西 \\
+\texttt{Set<\allowbreak{}T>\allowbreak{}} & 不重复的一堆，自动按升序 & 去重、判断「有没有」 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{\texttt{List<\allowbreak{}T>\allowbreak{}}：有序表}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    List<int64> scores;
+    scores.push(30);
+    scores.push(10);
+    scores.push(20);
+
+    println("len={} at1={} has10={} idx={}",
+        scores.len(), scores.at(1), scores.has(10), scores.indexOf(20));
+
+    scores.insert(0, 7);
+    println("insert 后：{} len={}", scores[0], scores.len());
+
+    int64 last = scores.pop();
+    println("pop={} len={}", last, scores.len());
+
+    scores.remove(0);
+    println("remove(0) 后：{} len={}", scores[0], scores.len());
+
+    scores.clear();
+    println("clear 后：len={}", scores.len());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+len=3 at1=10 has10=1 idx=2
+insert 后：7 len=4
+pop=20 len=3
+remove(0) 后：30 len=2
+clear 后：len=0
+\end{lstlisting}
+\par
+\medskip
+
+常用操作：
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+操作 & 作用 & 注意 \\
+\midrule
+\texttt{push(\allowbreak{}x)\allowbreak{}} & 在末尾加一个 & 最常用 \\
+\texttt{insert(\allowbreak{}i,\allowbreak{} x)\allowbreak{}} & 在位置 \texttt{i} 插入 & 后面的元素整体后移 \\
+\texttt{pop(\allowbreak{})\allowbreak{}} & 拿走末尾那个并返回 & 空表上调用会出错 \\
+\texttt{remove(\allowbreak{}i)\allowbreak{}} & 删除位置 \texttt{i} & 按下标删，不是按值 \\
+\texttt{clear(\allowbreak{})\allowbreak{}} & 清空 &  \\
+\texttt{len(\allowbreak{})\allowbreak{}} & 元素个数 &  \\
+\texttt{at(\allowbreak{}i)\allowbreak{}} / \texttt{list[\allowbreak{}i]\allowbreak{}} & 取位置 \texttt{i} & 两种写法等价 \\
+\texttt{has(\allowbreak{}x)\allowbreak{}} & 有没有这个值 & 返回 \texttt{bool}（打印是 1/0） \\
+\texttt{index\allowbreak{}Of(\allowbreak{}x)\allowbreak{}} & 第一次出现在哪 & 没有时返回什么见下 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\texttt{index\allowbreak{}Of} 找不到时返回 \texttt{-1}——这是惯例，用的时候要判断：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 position = scores.indexOf(99);
+if (position >= 0)
+{
+    println("在位置 {}", position);
+}
+else
+{
+    println("没有这个值");
+}
+\end{lstlisting}
+\par
+\medskip
+
+\subsection{越界会被抓到}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    List<int64> numbers;
+    numbers.push(1);
+    println("{}", numbers[5]);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：运行期错误：vec 下标越界：5（长度 1）
+出错位置：hello.mgl:4（main）
+调用栈（外 → 内）：
+  main  hello.mgl:4 [thread 0 coroutine 0 ip 25]
+\end{lstlisting}
+\par
+\medskip
+
+不是未定义行为，是明确的运行期错误，还告诉你「下标 5、长度 1」。比起读到一块随机的内存，这个错误至少能让你立刻定位。
+
+\section{\texttt{Map<\allowbreak{}K,\allowbreak{} V>\allowbreak{}}：键 \ensuremath{\rightarrow} 值}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    Map<String, int64> ages;
+    ages.put("amy", 11);
+    ages["cid"] = 33;
+
+    println("len={} amy={} hasBob={} cid={}",
+        ages.len(), ages["amy"], ages.has("bob"), ages["cid"]);
+
+    println("查一个没有的键：{}", ages["zoe"]);
+
+    for (int64 i = 0; i < ages.len(); i = i + 1)
+    {
+        println("{} -> {}", ages.keyAt(i), ages.valAt(i));
+    }
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+len=2 amy=11 hasBob=0 cid=33
+查一个没有的键：0
+amy -> 11
+cid -> 33
+\end{lstlisting}
+\par
+\medskip
+
+写法：
+
+\begin{itemize}
+
+\item \texttt{put(\allowbreak{}k,\allowbreak{} v)\allowbreak{}} 和 \texttt{m[\allowbreak{}k]\allowbreak{} =\allowbreak{} v} 是一回事，后者顺手一点；
+
+\item \texttt{m[\allowbreak{}k]\allowbreak{}} 读；\texttt{has(\allowbreak{}k)\allowbreak{}} 判断有没有；\texttt{remove(\allowbreak{}k)\allowbreak{}} 删掉并返回是否删到了；
+
+\item 遍历用 \texttt{key\allowbreak{}At(\allowbreak{}i)\allowbreak{}} / \texttt{val\allowbreak{}At(\allowbreak{}i)\allowbreak{}} 按下标走，\texttt{i} 从 0 到 \texttt{len(\allowbreak{})\allowbreak{} - 1}。Map 的遍历顺序是按升序键排列的，所以同一份数据每次遍历结果一致；
+
+\end{itemize}
+
+\begin{tip}{提示}
+小心「查不存在的键」。 上面 \texttt{ages[\allowbreak{}"zoe"]\allowbreak{}} 返回了 \texttt{0}，而不是报错。因为 \texttt{V} 是 \texttt{int64}，缺省值就是 0。这不是「没有这个键」的意思，而是「我按 0 处理了」——想知道键在不在，先用 \texttt{has(\allowbreak{}k)\allowbreak{}} 问一次。这是 Map 最容易埋 bug 的地方。
+\end{tip}
+
+\section{\texttt{Set<\allowbreak{}T>\allowbreak{}}：不重复，自动升序}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    Set<int64> unique;
+    unique.add(5);
+    unique.add(3);
+    unique.add(5);
+    // 重复的加不进去
+
+    println("len={} has5={} has9={}", unique.len(), unique.has(5), unique.has(9));
+    println("按升序看：at0={} at1={}", unique.at(0), unique.at(1));
+    println("remove(5) 拿回 {}，现在 len={}", unique.remove(5), unique.len());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+len=2 has5=1 has9=0
+按升序看：at0=3 at1=5
+remove(5) 拿回 1，现在 len=1
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{Set} 的两个特点：
+
+\begin{itemize}
+
+\item 自动去重：\texttt{add(\allowbreak{}5)\allowbreak{}} 两次，长度还是 1；
+
+\item 自动排序：遍历出来是升序（\texttt{at(\allowbreak{}0)\allowbreak{}} 是最小的）。
+
+\end{itemize}
+
+\texttt{remove} 返回的是「有没有删到」。所以「删一个可能不存在的元素」不用先查\texttt{has}，看返回值就知道。
+
+\section{集合字面量}
+
+不想一行行 \texttt{push} 的时候，可以直接写：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    List<int64> order =
+    {
+        3, 1, 2
+    };
+    println("{} {}", order.len(), order[0]);
+
+    Set<int64> numbers =
+    {
+        3, 1, 2
+    };
+    println("{}", numbers.len());
+
+    Map<String, int64> table =
+    {
+        "a": 1, "b": 2
+    };
+    println("{} {}", table.len(), table["b"]);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+3 3
+3
+2 2
+\end{lstlisting}
+\par
+\medskip
+
+同样一对花括号，左边的类型决定它是什么。
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+左边写的类型 & \texttt{\{.\allowbreak{}.\allowbreak{}.\allowbreak{}\}} 的含义 \\
+\midrule
+\texttt{List<\allowbreak{}T>\allowbreak{}} & 有序表，元素按写的顺序排 \\
+\texttt{Set<\allowbreak{}T>\allowbreak{}} & 去重的集合，自动升序 \\
+\texttt{Map<\allowbreak{}K,\allowbreak{}V>\allowbreak{}} & 键值对（括号里带冒号） \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+跨类型写会报错——\texttt{List<\allowbreak{}int64>\allowbreak{} v =\allowbreak{} \{"a":\allowbreak{} 1\};} 里带了冒号，那是 \texttt{Map} 的形态：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：集合字面量类型不匹配：map 不能初始化 List<int64>
+\end{lstlisting}
+\par
+\medskip
+
+空表也有讲究：\texttt{List<\allowbreak{}int64>\allowbreak{} v =\allowbreak{} \{\};} 是空表，\texttt{Set<\allowbreak{}int64>\allowbreak{} v =\allowbreak{} \{\};} 是空集，类型必须写清楚（\texttt{auto x =\allowbreak{} \{.\allowbreak{}.\allowbreak{}.\allowbreak{}\};} 这种不给上下文的老写法仍然当成 \texttt{Set}）。
+
+要 \texttt{List} 也可以继续 \texttt{push}（或者用第 17 章的 \texttt{collect(\allowbreak{})\allowbreak{}}），两条路都通。
+
+\section{数组：两种}
+
+除了容器，还有两种数组：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 fixed[3];
+    // 长度写在类型里
+    fixed[0] = 1;
+    fixed[1] = 2;
+    fixed[2] = 3;
+    println("{}", fixed[0] + fixed[1] + fixed[2]);
+
+    int64 runtime[] = new[4];
+    // 长度运行时决定
+    runtime[0] = 10;
+    println("{} {}", len(fixed), len(runtime));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+6
+3 4
+\end{lstlisting}
+\par
+\medskip
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+写法 & 长度 & 什么时候用 \\
+\midrule
+\texttt{T a[\allowbreak{}N]\allowbreak{}} & 编译期定死 & 大小你知道，要省内存、要对齐硬件 \\
+\texttt{T a[\allowbreak{}]\allowbreak{} =\allowbreak{} new[\allowbreak{}n]\allowbreak{}} & 运行时决定 & 大小要算出来或者读进来 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+数组和 \texttt{List} 的区别：数组长度不可变，\texttt{List} 可以 \texttt{push} / \texttt{pop}。 日常业务逻辑几乎都用 \texttt{List}；数组留给「缓冲区」「硬件寄存器映射」「性能敏感的定长表」这类场合。
+
+\texttt{len(\allowbreak{}a)\allowbreak{}} 对数组和容器都能用。越界同样会被检查到。
+
+\section{别忘了：容器也是值}
+
+第 6 章那条规则对容器照旧。这一点在容器上最容易踩：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    List<int64> original;
+    original.push(1);
+
+    List<int64> copy = original;
+    // 整表复制一份
+    copy.push(2);
+
+    println("original={} copy={}", original.len(), copy.len());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+original=1 copy=2
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{copy =\allowbreak{} original} 之后两张表毫无关系。 从 Java / Python 过来的人第一次写「把表传进函数想让它加元素」，会发现函数里加的东西外面看不到——
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+void addOne(List<int64> numbers)
+{
+    numbers.push(1);
+    // 改的是副本！
+}
+\end{lstlisting}
+\par
+\medskip
+
+要真的改到外面那张表，写引用：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+void addOne(List<int64> mut& numbers)
+{
+    numbers.push(1);
+}
+// 调用：addOne(&numbers);
+\end{lstlisting}
+\par
+\medskip
+
+这也是性能上的关键点：容器一般都有一份堆上的数据，按值传一次就是整份复制。容器参数默认写 \texttt{const\&} 或 \texttt{mut\&}，除非你确实想要一份独立副本。
+
+\subsection{容器里的东西也是副本}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Player
+{
+    String name;
+    int64 score;
+};
+
+int64 main()
+{
+    List<Player> players;
+    Player p;
+    p.name = "amy";
+    p.score = 30;
+    players.push(p);
+    // 存进去的是一份副本
+
+    p.score = 99;
+    // 改原来的 p
+    println("表里还是 {}", players[0].score);
+
+    Player back = players[0];
+    // 取出来的也是副本
+    back.score = 1;
+    println("表里还是 {}", players[0].score);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+表里还是 30
+表里还是 30
+\end{lstlisting}
+\par
+\medskip
+
+存进去是副本、取出来也是副本。 想原地改容器里的元素，得用引用（第 7 章）：\texttt{for (\allowbreak{}Player mut\& item in players)\allowbreak{}} 那类写法在讲完引用之后你就理解了。
+
+\begin{tip}{提示}
+字符串元素也一样：取出来的是新的一份，所以容器活得比某根字符串久也没关系。
+\end{tip}
+
+\subsection{容器归声明它的那一层}
+
+容器在离开作用域时自动释放（第 8 章）：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    {
+        List<int64> inner;
+        inner.push(1);
+        inner.push(2);
+        println("块里的表：len={}", inner.len());
+    }
+    // ← 这里把 inner 还回去了
+    println("done");
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+块里的表：len=2
+done
+\end{lstlisting}
+\par
+\medskip
+
+不用手动释放，也不用担心泄漏。要提前还就 \texttt{delete inner;}。
+
+\section{遍历}
+
+遍历用 \texttt{for-in}，不要数下标：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    List<int64> scores;
+    scores.push(12);
+    scores.push(55);
+    scores.push(41);
+
+    int64 total = 0;
+    int64 best = 0;
+    for (int64 score in scores)
+    {
+        total = total + score;
+        if (score > best)
+        {
+            best = score;
+        }
+    }
+    println("总和 {} 最高 {}", total, best);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+总和 108 最高 55
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{for-in} 遍历出来的是元素的副本，所以「边遍历边改」改不到容器。要用下标改，就用 \texttt{for}：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+for (int64 i = 0; i < scores.len(); i = i + 1)
+{
+    scores[i] = scores[i] + 10;
+    // 这样才改到表里
+}
+\end{lstlisting}
+\par
+\medskip
+
+\begin{tip}{提示}
+遍历时不要增删元素。 \texttt{for-in} 途中 \texttt{push} / \texttt{remove} 会让「下一个是谁」变得不可预测。要筛要删，用第 17 章的迭代器 \texttt{filter} / \texttt{collect} 造一张新表，或者先记下要删的下标再统一删。
+\end{tip}
+
+\subsection{用 \texttt{Any} 保存不同类型的元素}
+
+\texttt{List<\allowbreak{}Any>\allowbreak{}} 明确要求元素装箱；\texttt{Set<\allowbreak{}Any>\allowbreak{}} 和 \texttt{Map} 的键或值槽也可以明确写成 \texttt{Any}。普通的 \texttt{List<\allowbreak{}int64>\allowbreak{}} 仍只接受能转换为 \texttt{int64} 的值。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    List<Any> values = {1, "two", true};
+    values.push(1.5);
+    Any text = values[1];
+    println("{} {}", values.len(), tryGet<String>(&text).unwrap());
+
+    Set<Any> unique;
+    Any key = "key";
+    unique.add(key);
+    unique.add(key);
+    unique.add(2);
+    println("{}", unique.len());
+
+    Map<Any, Any> mixed;
+    mixed.put(key, "stored");
+    mixed.put(3, true);
+    Any saved = mixed[key];
+    println("{} {}", mixed.len(), tryGet<String>(&saved).unwrap());
+
+    Map<String, Any> record = {"count": 3, "name": "Magel"};
+    Any count = record["count"];
+    println("{}", tryGet<int64>(&count).unwrap());
+    saved.clear();
+    println("{}", saved.isEmpty());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+4 two
+2
+2 stored
+3
+1
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{Any} 保留精确类型，\texttt{try\allowbreak{}Get<\allowbreak{}T>\allowbreak{}} 返回拥有值的副本；类型不匹配时返回 \texttt{None}。\texttt{clear(\allowbreak{})\allowbreak{}} 释放盒子当前载荷并恢复空状态，不影响之前复制出的值。字符串、嵌套容器按值复制，盒子和容器在离开作用域时自动清理。
+
+\texttt{Any} 键比较身份，不比较装箱内容。 复制 \texttt{key} 保留身份，所以重复插入会去重，并且可以用它查询映射。两次独立装箱相同内容是不同键；需要按字符串内容查询时使用 \texttt{Map<\allowbreak{}String,\allowbreak{} Any>\allowbreak{}}。异构集合的排列也不要当成按载荷数值或文本排序。
+
+装箱不会延长引用寿命。局部结构体、数组等多槽值的地址不能被保存在更长寿命的盒子里；需要接口视图时可直接绑定实现类型的引用，无须经过 \texttt{Any}。
+
+\section{小结}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+容器 & 常用操作 \\
+\midrule
+\texttt{List<\allowbreak{}T>\allowbreak{}} & \texttt{push} \texttt{pop} \texttt{insert} \texttt{remove} \texttt{clear} \texttt{len} \texttt{at} \texttt{[\allowbreak{}]\allowbreak{}} \texttt{has} \texttt{index\allowbreak{}Of} \\
+\texttt{Map<\allowbreak{}K,\allowbreak{}V>\allowbreak{}} & \texttt{put} \texttt{[\allowbreak{}]\allowbreak{}} \texttt{has} \texttt{remove} \texttt{len} \texttt{key\allowbreak{}At} \texttt{val\allowbreak{}At} \\
+\texttt{Set<\allowbreak{}T>\allowbreak{}} & \texttt{add} \texttt{has} \texttt{remove} \texttt{len} \texttt{at} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+要记住的：
+
+\begin{itemize}
+
+\item 字面量：左边写 \texttt{List<\allowbreak{}T>\allowbreak{}} / \texttt{Set<\allowbreak{}T>\allowbreak{}} / \texttt{Map<\allowbreak{}K,\allowbreak{}V>\allowbreak{}} 决定 \texttt{\{.\allowbreak{}.\allowbreak{}.\allowbreak{}\}} 是什么，带冒号的是 \texttt{Map}；
+
+\item 越界是明确的运行期错误，不是未定义行为；
+
+\item \texttt{Map} 读不存在的键得到缺省值（不报错），先 \texttt{has} 再取；
+
+\item 容器是值：赋值、传参、存取元素都是复制；传参默认写 \texttt{const\&} / \texttt{mut\&}；
+
+\item 遍历用 \texttt{for-in}，遍历出来是副本；遍历时不要增删；
+
+\item 容器在出作用域时自动释放。
+
+\end{itemize}
+
+\section{下一步}
+
+现在你会用容器了，但要写「取分数前 3 名」「把所有名字变大写」这种活儿，用 \texttt{for-in} 加手工判断会很啰嗦。
+
+不过在那之前，先解决一个你已经在用的东西但没细讲过的：字符串。它的下标是按字节的——这跟中文直接相关，值得单独一章。
+
+翻到\hyperref[ch:12]{第 12 章 字符串与文本}。

@@ -1,0 +1,1 @@
+int64 main(){std::lang::List<int64> values; values.push(1); std::lang::List<int64> const& readonly=&values; for(int64 item in readonly){item=9;} return 0;}

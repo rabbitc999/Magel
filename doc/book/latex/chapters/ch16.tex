@@ -1,0 +1,662 @@
+\chapter{错误处理}
+\label{ch:16}
+
+前面十几章，代码都假定「一切顺利」：输入是合法的、列表不是空的、除法不会除以零。真实程序里这些假定经常不成立。这一章讲 Magel 怎么处理「事情没按预期走」。
+
+先说结论：Magel 没有异常。没有 \texttt{try} / \texttt{catch} / \texttt{throw}。出错有两条路——「可能空」用 \texttt{Option}、「可能失败」用 \texttt{Result}，两者都放在返回值里，由调用者显式处理。
+
+\section{为什么不用异常}
+
+多数语言用异常：调用一个函数，它可能半路 \texttt{throw}，控制流突然跳到别处。问题是你看不出一个函数会不会抛——签名里没写，得读文档或者读源码。
+
+Magel 把「可能失败」这件事写进类型里：返回 \texttt{Option<\allowbreak{}T>\allowbreak{}} 就表示「可能没有值」，返回 \texttt{Result<\allowbreak{}T,\allowbreak{} E>\allowbreak{}} 就表示「可能失败，且带一个原因 \texttt{E}」。失败变成了一种普通的返回值。
+
+好处是你不会忘。函数签名上写着 \texttt{Option<\allowbreak{}…>\allowbreak{}}，你就知道必须处理「没有」的情况，编译器会盯着你。
+
+\section{\texttt{Option<\allowbreak{}T>\allowbreak{}}：可能没有值}
+
+\texttt{Option<\allowbreak{}T>\allowbreak{}} 只有两种状态：\texttt{Value(\allowbreak{}v)\allowbreak{}}（有个值）或者 \texttt{None}（没有）。拿「找第一个等于目标的元素」举例——找到了有值，没找到就是「没有」：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+Option<int64> findFirst(List<int64> xs, int64 target)
+{
+    for (int64 x in xs)
+    {
+        if (x == target)
+        {
+            return Option<int64>::Value(x);
+        }
+    }
+    return Option<int64>::None;
+}
+
+int64 main()
+{
+    List<int64> xs;
+    xs.push(3);
+    xs.push(7);
+    println("{}", findFirst(xs, 7).isValue());
+    println("{}", findFirst(xs, 9).isNone());
+    println("{}", findFirst(xs, 7).unwrap());
+    println("{}", findFirst(xs, 9).unwrapOr(-1));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+1
+1
+7
+-1
+\end{lstlisting}
+\par
+\medskip
+
+\begin{itemize}
+
+\item 造值：\texttt{Option<\allowbreak{}int64>\allowbreak{}:\allowbreak{}:\allowbreak{}Value(\allowbreak{}x)\allowbreak{}}，空：\texttt{Option<\allowbreak{}int64>\allowbreak{}:\allowbreak{}:\allowbreak{}None}；
+
+\item \texttt{is\allowbreak{}Value(\allowbreak{})\allowbreak{}} / \texttt{is\allowbreak{}None(\allowbreak{})\allowbreak{}} 是 \texttt{bool}，问「有没有」；
+
+\item \texttt{unwrap(\allowbreak{})\allowbreak{}} 取值——空的时候它会 panic（见 16.4）；
+
+\item \texttt{unwrap\allowbreak{}Or(\allowbreak{}-1)\allowbreak{}} 取值，但空的时给个兜底值——这是最常用的一个。
+
+\end{itemize}
+
+\begin{tip}{提示}
+\texttt{Option} 和 \texttt{Result} 都属于核心模块 \texttt{lang}，不用 \texttt{import}，拿来就用。
+\end{tip}
+
+\subsection{简写：\texttt{Value(\allowbreak{}v)\allowbreak{}} / \texttt{None} 可以省掉 \texttt{Option<\allowbreak{}int64>\allowbreak{}:\allowbreak{}:\allowbreak{}}}
+
+上面的例子都写了全称 \texttt{Option<\allowbreak{}int64>\allowbreak{}:\allowbreak{}:\allowbreak{}Value(\allowbreak{}x)\allowbreak{}}——清楚，但啰嗦。上下文能看出类型时，简写也合法：返回类型是 \texttt{Option<\allowbreak{}int64>\allowbreak{}} 的函数体里，直接写 \texttt{Value(\allowbreak{}x)\allowbreak{}} 和 \texttt{None}；\texttt{match} 的分支模式里同样可以直接写 \texttt{Value(\allowbreak{}v)\allowbreak{}} / \texttt{None}，不用带类型前缀：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+Option<int64> findFirst(List<int64> xs, int64 target)
+{
+    for (int64 x in xs)
+    {
+        if (x == target)
+        {
+            return Value(x);
+        }
+    }
+    return None;
+}
+
+int64 main()
+{
+    List<int64> xs;
+    xs.push(3);
+    xs.push(7);
+    println("{}", findFirst(xs, 7).unwrap());
+    println("{}", findFirst(xs, 9).unwrapOr(-1));
+    match (findFirst(xs, 3))
+    {
+        Value(v) => { println("found = {}", v); }
+        None => { println("no"); }
+    }
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+7
+-1
+found = 3
+\end{lstlisting}
+\par
+\medskip
+
+什么时候必须写全称？编译器猜不出来的时候——比如把变体存进一个没有目标类型的局部变量、或者函数返回类型不是这个枚举。拿不准就写全称，它永远是对的。
+
+\section{\texttt{Result<\allowbreak{}T,\allowbreak{} E>\allowbreak{}}：可能失败，还带原因}
+
+\texttt{Option} 只说「有没有」，不说「为什么没有」。要带原因就用 \texttt{Result<\allowbreak{}T,\allowbreak{} E>\allowbreak{}}：\texttt{Ok(\allowbreak{}v)\allowbreak{}} 表示成功、带着结果；\texttt{Err(\allowbreak{}e)\allowbreak{}} 表示失败、带着原因 \texttt{e}（\texttt{e} 可以是任意类型）。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+Result<int64, String> safeDiv(int64 a, int64 b)
+{
+    if (b == 0)
+    {
+        return Result<int64, String>::Err("除以零");
+    }
+    return Result<int64, String>::Ok(a / b);
+}
+
+int64 main()
+{
+    println("{}", safeDiv(10, 2).isOk());
+    println("{}", safeDiv(10, 0).isErr());
+    println("{}", safeDiv(10, 2).unwrap());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+1
+1
+5
+\end{lstlisting}
+\par
+\medskip
+
+\begin{itemize}
+
+\item \texttt{Ok(\allowbreak{}v)\allowbreak{}} / \texttt{Err(\allowbreak{}e)\allowbreak{}} 造两个状态；
+
+\item \texttt{is\allowbreak{}Ok(\allowbreak{})\allowbreak{}} / \texttt{is\allowbreak{}Err(\allowbreak{})\allowbreak{}} 判断；\texttt{unwrap(\allowbreak{})\allowbreak{}} / \texttt{unwrap\allowbreak{}Or(\allowbreak{}…)\allowbreak{}} / \texttt{expect(\allowbreak{}…)\allowbreak{}} 取值；
+
+\item 出错原因 \texttt{E} 类型随便挑：字符串、错误码、甚至一个自己的枚举。
+
+\end{itemize}
+
+\texttt{Option} 与 \texttt{Result} 的关系：\texttt{Option<\allowbreak{}T>\allowbreak{}} 差不多就是 \texttt{Result<\allowbreak{}T,\allowbreak{} (\allowbreak{})\allowbreak{}>\allowbreak{}}——「失败了，但没什么可说的」。要带原因，就用 \texttt{Result}。
+
+把两个状态都处理干净，用第 10 章的 \texttt{match}：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    Result<int64, String> r = Result<int64, String>::Err("坏了");
+    match (r)
+    {
+        Result<int64, String>::Ok(v) =>
+        {
+            println("ok {}", v);
+        }
+        Result<int64, String>::Err(e) =>
+        {
+            println("err {}", e);
+        }
+    }
+    Option<int64> o = Option<int64>::Value(3);
+    match (o)
+    {
+        Option<int64>::Value(v) =>
+        {
+            println("v={}", v);
+        }
+        Option<int64>::None =>
+        {
+            println("none");
+        }
+    }
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+err 坏了
+v=3
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{match} 是唯一能安全取出载荷的办法——它逼你把两个分支都写全，不像 \texttt{unwrap} 那样偷偷 panic。
+
+\section{四个「取出来」的工具，别用错场合}
+
+拿到一个 \texttt{Option} / \texttt{Result}，想取出里面的值，有四种办法：
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+写法 & 空 / 失败时 & 什么时候用 \\
+\midrule
+\texttt{unwrap(\allowbreak{})\allowbreak{}} & panic，程序中止 & 你*确信*不可能是空（比如刚判过） \\
+\texttt{expect(\allowbreak{}"…")\allowbreak{}} & panic，带上你的话 & 同上，但想留一句解释 \\
+\texttt{unwrap\allowbreak{}Or(\allowbreak{}fallback)\allowbreak{}} & 返回 \texttt{fallback} & 空是正常情况，兜个默认值 \\
+\texttt{match} & 两个分支都走 & 想分别处理（最稳） \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\texttt{unwrap} 用错了，程序会在运行期直接崩：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    Option<int64> none = Option<int64>::None;
+    println("{}", none.unwrap());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：运行期错误：panic：called Option.unwrap() on None
+出错位置：<内建 lang>:122（__magel_match_next_59）
+调用栈（外 → 内）：
+  main  hello.mgl:3 [thread 0 coroutine 0 ip 40]
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{expect} 一样会 panic，只是消息换成你写的那句：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    Option<int64> none = Option<int64>::None;
+    println("{}", none.expect("必须要有值"));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：运行期错误：panic：必须要有值
+\end{lstlisting}
+\par
+\medskip
+
+一句话记法：\texttt{unwrap} / \texttt{expect} 是「你说它不可能是空」的赌注。只要那份自信的来源不是刚刚检查过，就用 \texttt{unwrap\allowbreak{}Or} 或 \texttt{match}。
+
+\section{\texttt{?}：失败就自动往上抛}
+
+一层层写 \texttt{match} 太啰嗦。假设你要算 \texttt{half(\allowbreak{}half(\allowbreak{}n)\allowbreak{})\allowbreak{}}，每次都要检查中间结果有没有值：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+Option<int64> quarter(int64 n)
+{
+    Option<int64> h = half(n);
+    if (h.isNone())
+    {
+        return Option<int64>::None;
+    }
+    // 手写传播
+    Option<int64> q = half(h.unwrap());
+    if (q.isNone())
+    {
+        return Option<int64>::None;
+    }
+    // 又来一遍
+    return q;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{?} 运算符把这个套路压成一行：「如果没值 / 失败了，就地返回同样的空」。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+Option<int64> half(int64 n)
+{
+    if (n % 2 == 0)
+    {
+        return Option<int64>::Value(n / 2);
+    }
+    return Option<int64>::None;
+}
+
+Option<int64> quarter(int64 n)
+{
+    int64 h = half(n)?;
+    return half(h);
+}
+
+int64 main()
+{
+    println("{}", quarter(8).unwrap());
+    println("{}", quarter(4).isNone());
+    println("{}", quarter(6).isNone());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+2
+0
+1
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{int64 h =\allowbreak{} half(\allowbreak{}n)\allowbreak{}?;} 读作：
+
+\begin{itemize}
+
+\item \texttt{half(\allowbreak{}n)\allowbreak{}} 有值 \ensuremath{\rightarrow} \texttt{?} 把值取出来赋给 \texttt{h}，继续往下；
+
+\item \texttt{half(\allowbreak{}n)\allowbreak{}} 是 \texttt{None} \ensuremath{\rightarrow} 整个 \texttt{quarter} 立刻返回 \texttt{None}，后面的代码不执行。
+
+\end{itemize}
+
+\texttt{?} 对 \texttt{Result} 一样管用，而且会把 \texttt{Err} 原样往上传：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+Result<int64, String> safeDiv(int64 a, int64 b)
+{
+    if (b == 0)
+    {
+        return Result<int64, String>::Err("除以零");
+    }
+    return Result<int64, String>::Ok(a / b);
+}
+
+Result<int64, String> chain(int64 a, int64 b, int64 c)
+{
+    int64 q = safeDiv(a, b)?;
+    return safeDiv(q, c);
+}
+
+int64 main()
+{
+    println("{}", chain(100, 5, 2).unwrap());
+    println("{}", chain(100, 0, 2).isErr());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+10
+1
+\end{lstlisting}
+\par
+\medskip
+
+用 \texttt{?} 有个硬条件：所在函数的返回类型必须接受操作数的失败载荷。 标准 Option/Result 按各自约定接收，错误类型不匹配时需显式映射。否则编译器拦下：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+Option<int64> half(int64 n)
+{
+    if (n % 2 == 0)
+    {
+        return Option<int64>::Value(n / 2);
+    }
+    return Option<int64>::None;
+}
+
+int64 quarter(int64 n)
+{
+    int64 h = half(n)?;
+    return h;
+}
+
+int64 main()
+{
+    println("{}", quarter(8));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：使用 `?` 的函数也必须返回同样的可空枚举，现在返回 int64
+\end{lstlisting}
+\par
+\medskip
+
+道理很简单：\texttt{?} 可能要把 \texttt{None} 往外抛，那外层函数必须接得住——它得也返回 \texttt{Option<\allowbreak{}int64>\allowbreak{}}。想用 \texttt{?} 又不想让 \texttt{quarter} 变成 \texttt{Option}，是行不通的。
+
+\section{\texttt{panic} 和 \texttt{assert}：什么时候该「直接崩」}
+
+上面都是「可恢复的错误」——调用者能处理。但有些情况属于程序写错了，不该继续跑：数组越界、不变量被破坏、参数是 null 级别的荒谬……这时候就该立刻中止，别带着坏状态往下走。
+
+\begin{itemize}
+
+\item \texttt{panic(\allowbreak{}"消息")\allowbreak{}} 无条件中止，打印消息；
+
+\item \texttt{assert(\allowbreak{}条件,\allowbreak{} "消息")\allowbreak{}} 条件不成立就 panic。消息可省。
+
+\end{itemize}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 mustPositive(int64 n)
+{
+    if (n <= 0)
+    {
+        panic("必须是正数");
+    }
+    return n;
+}
+
+int64 main()
+{
+    println("{}", mustPositive(5));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+5
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{assert} 失败的样子：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 x = -1;
+    assert(x > 0, "x 必须为正");
+    println("不会到这");
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：运行期错误：panic：x 必须为正
+出错位置：<内建 lang>:111（assert$bool$string）
+调用栈（外 → 内）：
+  main  hello.mgl:3 [thread 0 coroutine 0 ip 13]
+\end{lstlisting}
+\par
+\medskip
+
+怎么选？
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+情况 & 用什么 & 理由 \\
+\midrule
+输入不合法、文件打不开、找不到元素 & \texttt{Option} / \texttt{Result} & 调用者能处理，往上交 \\
+逻辑里「绝不该发生」的事 & \texttt{panic} / \texttt{assert} & 发生了就是 bug，早崩早发现 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\texttt{assert} 是开发期的工具：它帮你抓「我以为是这样，其实是那样」。上线时可以保留（成本很低），也可以视情况删掉——但别拿它处理正常业务错误。
+
+\subsection{用户自定义传播}
+
+\texttt{?} 不限于标准库的 \texttt{Option} 和 \texttt{Result}。自定义类型也可以规定“怎样取出成功值，怎样向调用者传播失败”。这需要两端配合：操作数类型实现 \texttt{Try<\allowbreak{}T,\allowbreak{} R>\allowbreak{}}，当前函数的返回类型实现匹配的 \texttt{From\allowbreak{}Residual<\allowbreak{}F,\allowbreak{} R>\allowbreak{}}。
+
+先看三个类型参数各自负责什么：
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+类型参数 & 含义 & 本例中的类型 \\
+\midrule
+\texttt{T} & 成功后，\texttt{?} 表达式产生的值的类型 & \texttt{int64} \\
+\texttt{R} & 失败时传递给返回类型的载荷类型 & \texttt{None\allowbreak{}Residual} \\
+\texttt{F} & 接住失败的函数返回类型，也是 \texttt{From\allowbreak{}Residual} 的实现类型自身 & \texttt{Option<\allowbreak{}int64>\allowbreak{}} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\texttt{Try<\allowbreak{}T,\allowbreak{} R>\allowbreak{}} 要求提供实例方法 \texttt{Try\allowbreak{}Branch<\allowbreak{}T,\allowbreak{} R>\allowbreak{} branch(\allowbreak{})\allowbreak{}}。它把操作数拆成两种情况：\texttt{Continue(\allowbreak{}T)\allowbreak{}} 表示继续执行，\texttt{Break(\allowbreak{}R)\allowbreak{}} 表示传播失败。这里的 \texttt{Continue} 和 \texttt{Break} 是枚举变体名；\texttt{Try\allowbreak{}Branch:\allowbreak{}:\allowbreak{}Break(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} 本身不会退出函数，也不是退出循环的 \texttt{break;} 语句。真正的提前返回由 \texttt{?} 的编译器降级逻辑完成。
+
+\texttt{From\allowbreak{}Residual<\allowbreak{}F,\allowbreak{} R>\allowbreak{}} 则要求提供静态方法 \texttt{F from\allowbreak{}Residual(\allowbreak{}R residual)\allowbreak{}}。它只负责把失败载荷变成完整的函数返回值。编译器依据包含 \texttt{?} 的函数的返回类型选择这个方法，而不是依据接收成功值的局部变量类型选择。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+enum Step: Try<int64, NoneResidual>
+{
+    Value(int64 value), Empty;
+    TryBranch<int64, NoneResidual> branch()
+    {
+        match (self)
+        {
+            Step::Value(value) =>
+            {
+                return TryBranch<int64, NoneResidual>::Continue(value);
+            }
+            Step::Empty =>
+            {
+                return TryBranch<int64, NoneResidual>::Break(NoneResidual::None);
+            }
+        }
+        panic("unreachable");
+    }
+};
+Option<int64> addOne(Step step)
+{
+    int64 value = step?;
+    return Option<int64>::Value(value + 1);
+}
+int64 main()
+{
+    println("{} {}", addOne(Step::Value(4)).unwrap(), addOne(Step::Empty).isNone());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+5 1
+\end{lstlisting}
+\par
+\medskip
+
+在 \texttt{Step} 的定义中，\texttt{Value(\allowbreak{}int64 value)\allowbreak{}} 保存成功值，\texttt{Empty} 表示没有值。\texttt{branch(\allowbreak{})\allowbreak{}} 将前者映射为 \texttt{Try\allowbreak{}Branch<\allowbreak{}int64,\allowbreak{} None\allowbreak{}Residual>\allowbreak{}:\allowbreak{}:\allowbreak{}Continue(\allowbreak{}value)\allowbreak{}}，将后者映射为 \texttt{Try\allowbreak{}Branch<\allowbreak{}int64,\allowbreak{} None\allowbreak{}Residual>\allowbreak{}:\allowbreak{}:\allowbreak{}Break(\allowbreak{}None\allowbreak{}Residual:\allowbreak{}:\allowbreak{}None)\allowbreak{}}。\texttt{None\allowbreak{}Residual} 是“没有值”这个失败情况的载荷类型；它本身不是 \texttt{Option<\allowbreak{}int64>\allowbreak{}}，也没有保存成功值。
+
+现在逐步看 \texttt{int64 value =\allowbreak{} step?;}：
+
+\begin{enumerate}
+
+\item 成功路径：调用 \texttt{add\allowbreak{}One(\allowbreak{}Step:\allowbreak{}:\allowbreak{}Value(\allowbreak{}4)\allowbreak{})\allowbreak{}}，\texttt{step.\allowbreak{}branch(\allowbreak{})\allowbreak{}} 得到 \texttt{Continue(\allowbreak{}4)\allowbreak{}}。\texttt{step?} 的结果是里面的 \texttt{4}，类型是 \texttt{int64}，所以局部变量 \texttt{value} 得到 \texttt{4}。函数继续执行下一句，返回 \texttt{Option<\allowbreak{}int64>\allowbreak{}:\allowbreak{}:\allowbreak{}Value(\allowbreak{}5)\allowbreak{}}。
+
+\item 失败路径：调用 \texttt{add\allowbreak{}One(\allowbreak{}Step:\allowbreak{}:\allowbreak{}Empty)\allowbreak{}}，\texttt{step.\allowbreak{}branch(\allowbreak{})\allowbreak{}} 得到 \texttt{Break(\allowbreak{}None\allowbreak{}Residual:\allowbreak{}:\allowbreak{}None)\allowbreak{}}。编译器取出失败载荷，交给当前返回类型 \texttt{Option<\allowbreak{}int64>\allowbreak{}} 的静态 \texttt{from\allowbreak{}Residual} 方法。该方法产生 \texttt{Option<\allowbreak{}int64>\allowbreak{}:\allowbreak{}:\allowbreak{}None}；编译器保存返回结果、执行离开函数所需的作用域清理，然后立即返回。局部变量 \texttt{value} 不会完成初始化，后面的 \texttt{value + 1} 也不会执行。
+
+\end{enumerate}
+
+标准库已经让 \texttt{Option<\allowbreak{}T>\allowbreak{}} 实现了 \texttt{From\allowbreak{}Residual<\allowbreak{}Option<\allowbreak{}T>\allowbreak{},\allowbreak{} None\allowbreak{}Residual>\allowbreak{}}，所以它能接住 \texttt{Step} 产生的失败载荷。这里不要求 \texttt{Step} 和 \texttt{Option<\allowbreak{}int64>\allowbreak{}} 是同一种类型；把两端连接起来的是完全匹配的 \texttt{None\allowbreak{}Residual}。
+
+下面用伪代码表示 \texttt{add\allowbreak{}One} 中传播的控制流；它只解释降级含义，不是另一套需要手写的 Magel 语法：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+拆分结果 = step.branch()              // 操作数和拆分调用各求值一次
+如果拆分结果是 Continue(成功值)：
+    value = 成功值
+    继续执行 return Option<int64>::Value(value + 1)
+如果拆分结果是 Break(失败载荷)：
+    返回结果 = Option<int64>::fromResidual(失败载荷)
+    执行当前函数退出路径上已登记的作用域清理
+    返回 返回结果
+\end{lstlisting}
+\par
+\medskip
+
+因此输出第一项是 \texttt{5}，第二项是 \texttt{1}：第一次调用的 \texttt{unwrap(\allowbreak{})\allowbreak{}} 取出 \texttt{5}，第二次调用返回 \texttt{None}，\texttt{is\allowbreak{}None(\allowbreak{})\allowbreak{}} 得到真。本书的布尔输出用 \texttt{1} 表示真、\texttt{0} 表示假。第二次调用没有执行 \texttt{unwrap(\allowbreak{})\allowbreak{}}，不会因为没有值而触发 panic。
+
+类型检查发生在编译期。 编译器检查来源类型的传播协议、\texttt{branch(\allowbreak{})\allowbreak{}} 的结果类型，以及当前函数返回类型是否具有匹配的 \texttt{From\allowbreak{}Residual<\allowbreak{}F,\allowbreak{} R>\allowbreak{}}。例如把 \texttt{add\allowbreak{}One} 的返回类型改成 \texttt{int64}，即使某次运行传入的肯定是 \texttt{Step:\allowbreak{}:\allowbreak{}Value(\allowbreak{}4)\allowbreak{}}，也不能省去失败路径的检查：\texttt{int64} 没有对应的接收协议，编译就会失败。自定义返回类型也可以实现这个协议，但 \texttt{F} 必须是该返回类型自身，\texttt{R} 必须匹配来源的失败载荷。
+
+清理和所有权仍按普通函数退出规则处理。 \texttt{?} 不是异常，不会跳到调用者中的某个捕获块。失败时先得到完整的返回结果，再执行当前函数退出路径上已登记的 \texttt{defer}、\texttt{Drop}、\texttt{Closeable} 等清理；成功时继续当前作用域，不会提前执行整条退出路径的清理。编译器保存必要的中间值，避免重复求值，也不会把即将失效的局部存储引用作为可安全逃逸的结果。
+
+本例的具名变量 \texttt{step} 使用只读的 \texttt{Try.\allowbreak{}branch} 协议，\texttt{?} 不等于无条件移动操作数。需要消费所有权的传播另有 \texttt{Try\allowbreak{}Move<\allowbreak{}T,\allowbreak{} R>\allowbreak{}.\allowbreak{}into\allowbreak{}Branch(\allowbreak{})\allowbreak{}} 协议；显式移动传播必须由来源类型提供对应实现，不能仅靠加一个 \texttt{?} 获得移动能力。
+
+不同 \texttt{Result} 错误类型不会只因为都表示失败就自动互转，可以先用 \texttt{map\allowbreak{}Err} 显式转换；\texttt{Option} 转 \texttt{Result} 可以用 \texttt{ok\allowbreak{}Or} 或 \texttt{ok\allowbreak{}Or\allowbreak{}Else} 补上错误信息。选择接收协议和转换方式时，应以实际失败载荷类型为准。
+
+\section{小结}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+你会了 & 关键点 \\
+\midrule
+没有异常 & 用返回值表达失败，签名上看得见 \\
+\texttt{Option<\allowbreak{}T>\allowbreak{}} & \texttt{Value(\allowbreak{}v)\allowbreak{}} / \texttt{None}，\texttt{is\allowbreak{}Value} / \texttt{is\allowbreak{}None} \\
+\texttt{Result<\allowbreak{}T,\allowbreak{} E>\allowbreak{}} & \texttt{Ok(\allowbreak{}v)\allowbreak{}} / \texttt{Err(\allowbreak{}e)\allowbreak{}}，\texttt{is\allowbreak{}Ok} / \texttt{is\allowbreak{}Err}，带原因 \\
+取值 & \texttt{unwrap} / \texttt{expect}（空则 panic）、\texttt{unwrap\allowbreak{}Or}（兜底）、\texttt{match}（最稳） \\
+\texttt{?} & 空 / 失败就地返回；操作数实现 Try，返回类型实现对应的 FromResidual \\
+\texttt{panic} & 无条件中止，用于「不该发生」 \\
+\texttt{assert} & 条件不成立就 panic，抓开发期的 bug \\
+选型 & 可恢复 \ensuremath{\rightarrow} \texttt{Option}/\texttt{Result}；不该发生 \ensuremath{\rightarrow} \texttt{panic}/\texttt{assert} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{下一步}
+
+第五部分讲完了：接口、泛型、函数值、错误处理——你有了写「通用」代码的全套家伙。
+
+接下来的第六部分转向工程与工具链：怎么把程序组织成模块、怎么用 \texttt{magel new} 起工程、怎么跑测试。第一个是迭代器——它会把你第 15 章手写的 \texttt{filter}，变成一条能随意拼的链。
+
+翻到\hyperref[ch:17]{第 17 章 迭代器}。

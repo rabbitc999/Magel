@@ -1,0 +1,19 @@
+import std::sql;
+
+/** @brief 使用内置 SQLite，在内存库中演示执行、转义、结果与错误处理。 */
+int64 main() {
+    Database db = Database::sqlite(":memory:");
+    if (!db.isOpen()) { panic(db.lastError()); }
+    assert(db.execOk("CREATE TABLE people(id INTEGER PRIMARY KEY, name TEXT)"));
+    String name = "中文 O'Reilly 😀";
+    ResultSet inserted = db.exec("INSERT INTO people VALUES(1," + db.quote(name) + ")");
+    if (!inserted.ok) { panic(inserted.error); }
+    ResultSet rows = db.exec("SELECT id,name FROM people");
+    assert(rows.ok && rows.rowCount() == 1);
+    assert(rows.intAt(0,0) == 1 && rows.textAt(0,1) == name);
+    ResultSet duplicate = db.exec("INSERT INTO people VALUES(1,'duplicate')");
+    assert(!duplicate.ok);
+    db.close();
+    println("sqlite API ok");
+    return 0;
+}

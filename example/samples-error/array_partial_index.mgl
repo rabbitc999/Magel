@@ -1,0 +1,8 @@
+/* 多维数组必须把每一维都写下，不能把一行当句柄。 */
+
+int64 main() {
+    int64 m[2][3];
+    int64 x = m[1];
+    std::lang::println("{}", x);
+    return 0;
+}

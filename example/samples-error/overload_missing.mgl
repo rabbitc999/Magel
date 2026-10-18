@@ -1,0 +1,16 @@
+/* 实参类型对不上任何重载。 */
+
+struct Point {
+    int64 x;
+};
+
+int64 size(int64 value) {
+    return value;
+}
+
+int64 main() {
+    Point p;
+    p.x = 1;
+    std::lang::println("{}", size(p));
+    return 0;
+}

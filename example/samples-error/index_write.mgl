@@ -1,0 +1,9 @@
+struct Values : Index<int64, int64> {
+    int64 index(int64 key) { return key; }
+};
+
+int64 main() {
+    Values values;
+    values[0] = 1;
+    return 0;
+}

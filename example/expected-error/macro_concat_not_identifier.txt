@@ -1,0 +1,1 @@
+magel：前处理：example/samples-error/macro_concat_not_identifier.mgl 第 5 行：宏 BAD 的 $concat 的实参必须是标识符，得到 `1`

@@ -1,0 +1,21 @@
+module stdPrint;
+
+struct Point {
+    int64 x;
+    int64 y;
+
+    String toString(String style) {
+        return "Point";
+    }
+};
+
+int64 main() {
+    Point point;
+    point.x = 2;
+    point.y = 3;
+    println("number={1:2F}, char={}, value={}", 3.14159, 'A', point);
+    print("UTF-8: {}", "中文");
+    putChar('!');
+    putChar('\n');
+    return 0;
+}

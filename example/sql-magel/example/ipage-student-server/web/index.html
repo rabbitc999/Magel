@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>学生成绩信息管理系统 · Magel 前后端分离版</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 登录页：只有用户名 / 密码两个字段，连续 3 次失败后停用表单。 -->
+  <section id="login-view">
+    <div class="card">
+      <h1>学生成绩信息管理系统</h1>
+      <div class="hint">Magel 后端（JSON API） + 静态前端（本页）</div>
+      <form id="login-form">
+        <label class="field">用户名
+          <input id="login-user" name="userName" autocomplete="username" required maxlength="18" autofocus>
+        </label>
+        <label class="field">密　码
+          <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+        </label>
+        <button id="login-submit" type="submit">登 录</button>
+      </form>
+      <div id="login-message" role="status" aria-live="polite"></div>
+      <div class="whoami">
+        后端接口：<code id="api-base"></code><br>
+        本页由静态服务器托管，跨源请求后端（详见 web/config.js）。
+      </div>
+    </div>
+  </section>
+
+  <!-- 应用外壳：顶栏 + 左侧模块导航 + 右侧数据面板。 -->
+  <div id="app-view">
+    <header class="topbar">
+      <h1>学生成绩信息管理系统</h1>
+      <div class="topbar-right">
+        <div class="who"><b id="who-name"></b> · <span id="who-role"></span></div>
+        <button id="logout" class="secondary" type="button">退出登录</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <nav class="side" id="nav" aria-label="模块导航"></nav>
+
+      <main class="panel">
+        <div class="toolbar">
+          <h2 id="panel-title"></h2>
+        </div>
+        <div id="app-message" role="status" aria-live="polite"></div>
+
+        <!-- 新增 / 编辑 / 专用动作的表单面板，由 app.js 填充。 -->
+        <section class="panel" id="form-panel"></section>
+
+        <div class="toolbar" id="toolbar"></div>
+        <div class="table-wrap">
+          <table>
+            <thead id="table-head"></thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+        <div id="empty" hidden>这里还没有数据。</div>
+        <p class="footer">
+          <small class="muted" id="count-note"></small><br>
+          <small class="muted" id="footer-note"></small>
+        </p>
+      </main>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

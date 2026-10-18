@@ -1,0 +1,13 @@
+square=25
+float64=8
+nested=16
+answer=42
+build=enhanced
+revision=2
+many=4+6
+pasted=11
+expanded-paste=9
+source=$SQUARE(3 + 1)
+joined=xy
+total=7
+SQUARE(9) is text

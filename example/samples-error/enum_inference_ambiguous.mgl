@@ -1,0 +1,3 @@
+enum First { Empty };
+enum Second { Empty };
+int64 main() { auto value = Empty; return 0; }

@@ -1,0 +1,5 @@
+/* `$stringify` 只接受一个表达式：两个实参在展开期报错。 */
+$macro BAD(a, b)
+std::lang::println($stringify(a, b));
+$end_macro
+int64 main() { $BAD(1, 2) return 0; }

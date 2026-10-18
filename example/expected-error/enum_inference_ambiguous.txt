@@ -1,0 +1,1 @@
+magel：example/samples-error/enum_inference_ambiguous.mgl 第 3 行第 1 列：枚举变体 Empty 存在歧义，请指定枚举类型

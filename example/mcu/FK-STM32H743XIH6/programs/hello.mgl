@@ -1,0 +1,8 @@
+%include "board.mgl"
+int64 main() {
+    lcdClear(0);
+    lcdText(8, 8, "Hello from Magel", 2016, 0);
+    println("LCD {}x{}; MODE pressed={}", lcdWidth(), lcdHeight(), keyPressed(0));
+    boardDelay(1000);
+    return 0;
+}

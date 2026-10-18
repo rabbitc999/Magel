@@ -1,0 +1,74 @@
+/* binary32 的已知位模式、大小端和长度验证。 */
+void checkWord(uint32 word, bool bigEndian) {
+    List<uint8> bytes;
+    int64 i = 0;
+    while (i < 4) {
+        int64 shift = i * 8;
+        if (bigEndian) { shift = (3 - i) * 8; }
+        bytes.push((uint8)(word >> shift));
+        i = i + 1;
+    }
+    Option<float32> decoded = bytesToFloat32(bytes, bigEndian);
+    assert(decoded.isValue());
+    float32 value = decoded.unwrap();
+    List<uint8> encoded = float32ToBytes(value, bigEndian);
+    assert(encoded.len() == 4);
+    for (int64 n = 0; n < 4; n = n + 1) { assert(encoded[n] == bytes[n]); }
+    uint8 fixed[6];
+    fixed[4] = (uint8)77; fixed[5] = (uint8)88;
+    assert(float32ToBytes(value, fixed, 6, bigEndian));
+    assert(fixed[4] == (uint8)77 && fixed[5] == (uint8)88);
+    List<uint8> fixedResult = float32ToBytes(bytesToFloat32(fixed, 6, bigEndian).unwrap(), bigEndian);
+    uint8 dynamic[] = new[6];
+    dynamic[4] = (uint8)99;
+    assert(float32ToBytes(value, dynamic, bigEndian));
+    assert(dynamic[4] == (uint8)99);
+    List<uint8> dynamicResult = float32ToBytes(bytesToFloat32(dynamic, bigEndian).unwrap(), bigEndian);
+    for (int64 n = 0; n < 4; n = n + 1) {
+        assert(fixedResult[n] == bytes[n] && dynamicResult[n] == bytes[n]);
+    }
+}
+
+int64 main() {
+    List<uint8> little = float32ToBytes((float32)1.5);
+    assert(little.len() == 4 && little[0] == (uint8)0 && little[1] == (uint8)0);
+    assert(little[2] == (uint8)192 && little[3] == (uint8)63);
+    assert(bytesToFloat32(little).unwrap() == (float32)1.5);
+    List<uint8> big = float32ToBytes((float32)-2.25, true);
+    assert(big[0] == (uint8)192 && big[1] == (uint8)16);
+    assert(big[2] == (uint8)0 && big[3] == (uint8)0);
+    assert(bytesToFloat32(big, true).unwrap() == (float32)-2.25);
+
+    uint32 words[9];
+    words[0] = (uint32)0;
+    words[1] = (uint32)2147483648; // -0
+    words[2] = (uint32)1;          // 最小正次正规数
+    words[3] = (uint32)8388608;    // 最小正规数
+    words[4] = (uint32)2139095039; // 最大有限数
+    words[5] = (uint32)2139095040; // +inf
+    words[6] = (uint32)4286578688; // -inf
+    words[7] = (uint32)2143289344; // quiet NaN
+    words[8] = (uint32)3212836864; // -1
+    for (int64 i = 0; i < 9; i = i + 1) {
+        checkWord(words[i], false);
+        checkWord(words[i], true);
+    }
+    List<uint8> invalid;
+    assert(bytesToFloat32(invalid).isNone());
+    for (int64 n = 0; n < 3; n = n + 1) { invalid.push((uint8)0); }
+    assert(bytesToFloat32(invalid, true).isNone());
+    invalid.push((uint8)0);
+    assert(bytesToFloat32(invalid).isValue());
+    invalid.push((uint8)0);
+    assert(bytesToFloat32(invalid).unwrap() == (float32)0);
+    uint8 shortArray[] = new[3];
+    shortArray[0] = (uint8)77;
+    assert(!float32ToBytes((float32)1.5, shortArray));
+    assert(shortArray[0] == (uint8)77 && bytesToFloat32(shortArray).isNone());
+    uint8 fixed[5];
+    assert(float32ToBytes((float32)1.5, fixed, 5));
+    assert(bytesToFloat32(fixed, 5).unwrap() == (float32)1.5);
+    assert(bytesToFloat32(fixed, -1).isNone());
+    println("float32 bytes OK");
+    return 0;
+}

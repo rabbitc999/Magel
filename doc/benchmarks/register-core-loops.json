@@ -1,0 +1,102 @@
+{
+  "iterations": 10000000,
+  "warmups": 1,
+  "repeats": 7,
+  "java": "java 22.0.1 2024-04-16\nJava(TM) SE Runtime Environment (build 22.0.1+8-16)\nJava HotSpot(TM) 64-Bit Server VM (build 22.0.1+8-16, mixed mode, sharing)",
+  "java_flags": "-Xbatch; 20 full-loop warmups; runtime long input; volatile result sink",
+  "java_cold_single_run_process_ms": 126.3698,
+  "java_cold_single_loop_ms": 4.0104,
+  "platform": "Windows-10-10.0.19045-SP0",
+  "python": "3.12.3 (tags/v3.12.3:f6650f9, Apr  9 2024, 14:05:25) [MSC v.1938 64 bit (AMD64)]",
+  "lua": "Lua 5.5.1  Copyright (C) 1994-2026 Lua.org, PUC-Rio",
+  "lua_url": "https://www.lua.org/ftp/lua-5.5.1.tar.gz",
+  "lua_sha256": "1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce",
+  "compiler": "gcc (x86_64-posix-seh-rev3, Built by MinGW-W64 project) 11.2.0",
+  "compiler_flags": "Lua -O2; Magel -O2 -DNDEBUG MAGEL_CUSTOM_ALLOCATOR=1",
+  "aot_flags": "-O2 unchecked; fresh runtime input per sample prevents folding and cross-sample hoisting; generated source retained",
+  "timing": "Java System.nanoTime; AOT std::clock::nowNanos around calculate only; Python perf_counter_ns; Lua os.clock; Magel steady_clock; exclude parsing and file loading; Magel includes execution-plan setup and final checksum output",
+  "results": {
+    "Python": {
+      "median_ms": 404.1519,
+      "samples_ms": [
+        404.6882,
+        402.1641,
+        404.1776,
+        402.6736,
+        404.1519,
+        401.853,
+        404.3992
+      ],
+      "checksum": "49999995000000"
+    },
+    "Lua": {
+      "median_ms": 73.00000000000001,
+      "samples_ms": [
+        72.00000000000001,
+        61.0,
+        73.00000000000001,
+        64.0,
+        80.99999999999996,
+        80.00000000000001,
+        79.99999999999996
+      ],
+      "checksum": "49999995000000"
+    },
+    "Magel VM optimized": {
+      "median_ms": 245.348,
+      "samples_ms": [
+        244.551,
+        251.899,
+        245.348,
+        244.696,
+        263.983,
+        250.474,
+        244.876
+      ],
+      "checksum": "49999995000000",
+      "logical_steps": 200000034
+    },
+    "Magel VM legacy optimized": {
+      "median_ms": 4560.46,
+      "samples_ms": [
+        4563.83,
+        4813.95,
+        4534.76,
+        4655.33,
+        4544.63,
+        4560.46,
+        4526.42
+      ],
+      "checksum": "49999995000000",
+      "logical_steps": 200000034
+    },
+    "Magel AOT": {
+      "median_ms": 2.16,
+      "samples_ms": [
+        2.16,
+        2.16,
+        2.4,
+        2.17,
+        2.17,
+        2.16,
+        2.16
+      ],
+      "checksum": "49999995000000"
+    },
+    "Java HotSpot JIT": {
+      "median_ms": 2.293,
+      "samples_ms": [
+        2.292,
+        2.3307,
+        2.3019,
+        2.5257,
+        2.2922,
+        2.293,
+        2.2919
+      ],
+      "checksum": "49999995000000"
+    }
+  },
+  "baseline_commit": "6f7b273bd0525fc0b1f12ab2cdc8af1af0824c18",
+  "vm_modes": "same build: default register core vs setRegisterExecution(false); legacy optimized retains dense slots and fusion"
+}

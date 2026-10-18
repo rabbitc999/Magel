@@ -1,0 +1,3 @@
+module names::right;
+struct Shared { int64 number; };
+int64 duplicate(int64 value) { return value + 20; }

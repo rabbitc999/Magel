@@ -1,0 +1,17 @@
+import std::csv;
+int64 main(){
+    String text="name,note,empty\r\n小兔,\"a,b\",\r\n糖糖,\"line1\nline2 \"\"quoted\"\"\",end\n";
+    List<List<String>> rows=parseCsv(text).unwrap();
+    assert(rows.len()==3 && rows[1][0]=="小兔" && rows[1][1]=="a,b" && rows[1][2]=="");
+    assert(rows[2][1]=="line1\nline2 \"quoted\"");
+    List<List<String>> copy=parseCsv(writeCsv(rows).unwrap()).unwrap();
+    assert(copy[2][1]==rows[2][1] && copy[1].len()==3);
+    assert(parseCsv("a;b\n\"c;d\";e",';').unwrap()[1][0]=="c;d");
+    assert(parseCsv("").unwrap().len()==0 && parseCsv("\n").unwrap().len()==1);
+    assert(parseCsv("a,").unwrap()[0].len()==2);
+    auto failure=parseCsv("a,b\n\"unfinished");assert(!failure.isOk());
+    CsvError error=failure.error();assert(error.line==2 && error.column==1);
+    assert(!parseCsv("\"x\"tail").isOk() && !parseCsv("x\"y").isOk());
+    assert(!parseCsv("a,b",'"').isOk());
+    println("CSV quoting, delimiters and positions OK");return 0;
+}

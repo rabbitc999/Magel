@@ -1,0 +1,1 @@
+magel：example/samples-error/lambda_missing_return.mgl 第 2 行第 6 列：auto lambda 必须返回值

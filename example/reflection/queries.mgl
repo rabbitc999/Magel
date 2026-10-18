@@ -1,0 +1,59 @@
+import std::reflect;
+@annotation Tag(text: String="hello", count: int32=2)
+@Reflect
+interface Reader { int64 read(); };
+@Reflect
+@Tag
+struct Counter : Reader {
+    @Tag("field") String label;
+    int64 value;
+    @Tag("static") static int64 total;
+    @Tag("ctor") Counter(int64 initial){self.value=initial;}
+    @Tag("method") int64 read(){return self.value;}
+    static int64 answer(){return 42;}
+};
+@Reflect
+enum Choice { Ready, Value(int64 value); int64 read(){return 7;} };
+@Reflect
+@Tag("function")
+int64 plus(int64 value){return value+1;}
+@Reflect int64 overloaded(int64 value){return value;}
+@Reflect float64 overloaded(float64 value){return value;}
+struct Box<T>{T value;};
+@Reflect String readBox(Box<String> value){return value.value;}
+struct Hidden{int64 value;};
+// 核对标准库内部完全限定泛型参数，不受根模块同名类型影响。
+struct StructInfo{int64 sentinel;};
+int64 main(){
+    auto info=std::reflect::getStructInfo<Counter>();assert(info.isValue());
+    auto snapshot=info.unwrap();assert(snapshot.name=="Counter" && snapshot.fields.len()==2);
+    assert(snapshot.typeId==std::reflect::getTypeId<Counter>());
+    assert(snapshot.fields[0].name=="label" && snapshot.fields[0].isOwned);
+    assert(snapshot.fields[1].offset==(uint32)8 && snapshot.fields[1].typeId==std::reflect::getTypeId<int64>());
+    assert(snapshot.methods.len()==3 && snapshot.staticMembers.len()==1);
+    snapshot.name="changed";assert(std::reflect::getStructInfo<Counter>().unwrap().name=="Counter");
+    assert(std::reflect::getStructInfo<Hidden>().isNone() && std::reflect::getStructInfo<int64>().isNone());
+    auto e=std::reflect::getEnumInfo<Choice>();assert(e.isValue() && e.unwrap().variants.len()==2);
+    assert(e.unwrap().variants[1].payloads[0].typeId==std::reflect::getTypeId<int64>());
+    auto i=std::reflect::getInterfaceInfo<Reader>();assert(i.isValue() && i.unwrap().implementedBy.len()==1);
+    assert(std::reflect::implementsInterface<Counter>(std::reflect::getInterfaceId<Reader>()));
+    assert(!std::reflect::implementsInterface<Choice>(std::reflect::getInterfaceId<Reader>()));
+    assert(std::reflect::getFuncInfo("plus").unwrap().params[0].typeId==std::reflect::getTypeId<int64>());
+    assert(std::reflect::getFuncInfo("missing").isNone() && std::reflect::getFuncInfo("overloaded").isNone());
+    auto tag=std::reflect::getAnnotationInfo("Tag");assert(tag.isValue());
+    assert(tag.unwrap().params[0].defaultValue.unwrap().asText().unwrap()=="hello");
+    assert(tag.unwrap().params[1].defaultValue.unwrap().asI32().unwrap()==(int32)2);
+    assert(std::reflect::getAnnotationInfo("missing").isNone());
+    assert(std::reflect::getAnnotations<Counter>().len()==2);
+    assert(std::reflect::getFieldAnnotations<Counter>("label")[0].args[0].asText().unwrap()=="field");
+    assert(std::reflect::getMethodAnnotations<Counter>("read")[0].args[0].asText().unwrap()=="method");
+    assert(std::reflect::getMethodAnnotations<Counter>("new")[0].args[0].asText().unwrap()=="ctor");
+    assert(std::reflect::getStaticMemberAnnotations<Counter>("total")[0].args[0].asText().unwrap()=="static");
+    assert(std::reflect::getFuncAnnotations("plus")[1].args[0].asText().unwrap()=="function");
+    assert(std::reflect::getFieldAnnotations<Counter>("missing").len()==0);
+    assert(std::reflect::getTypeId<Box<String>>()==std::reflect::getTypeId<Box<String>>());
+    assert(std::reflect::getTypeId<int32>()!=std::reflect::getTypeId<int64>());
+    assert(std::reflect::getTypeId<String>()==std::reflect::getTypeId<String>());
+    println("reflection queries OK");return 0;
+}
+

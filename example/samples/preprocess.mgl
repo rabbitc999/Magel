@@ -1,0 +1,43 @@
+/* 前处理器：源码进解析器之前先过一遍 library/preprocess（语言无关的那份通用预处理器）。
+ *
+ *   %include "路径"        把文件原地展开（先查当前文件目录，再按 -I 的顺序找）；
+ *                          同一个文件默认只展开一次，`%include_once` / `%import` 同义
+ *   %if / %elif / %else / %endif   条件编译，不活跃的分支整块丢掉
+ *   %define / %symbol / %undefine / %unsymbol   定义 / 取消符号
+ *   %error "…" / %warning "…"      在活跃分支里报错 / 报警告
+ *
+ * 指令行与被丢掉的行都用**空行占位**，所以预处理之后行号与源文件一一对应；
+ * `%include` 展开的地方按行号映射回去，报错会指向真正写错的那个文件。
+ *
+ * 命令行：./magel samples/preprocess.mgl [-D NAME[=值]] [-I 目录] [--raw] [--deps]
+ *         --raw 跳过前处理；--deps 只列出被 include 进来的文件。
+ */
+
+%include "include/shapes.mgl"        /* 形状结构体 + 函数 */
+%include_once "include/shapes.mgl"   /* 再写一次也不会重复展开（同一个文件只展开一次） */
+
+%define DETAIL 1                    /* 等价命令行 `-D DETAIL`；下面用它挑分支 */
+
+int64 main() {
+    Rect rect;
+    rect.width = 3;
+    rect.height = 4;
+    println("矩形 {} x {}，面积 = {}", rect.width, rect.height, rect.area());
+    println("边长 5 的正方形面积 = {}", square_area(5));
+
+%if DETAIL && !QUIET
+%warning "详细模式：会多打两行"
+    println("详细模式（源文件里定义了 DETAIL 符号）");
+    println("形状个数 = {}", 2);
+%else
+    println("简洁模式");
+%endif
+
+%ifndef QUIET
+    println("想安静点就加 -D QUIET");
+%endif
+
+    /* 打百分号要写 %%；指令只在**行首**才算，字符串里的 % 不是指令 */
+    println("源文件里写 %define 不会当成指令（行首才算）");
+    return 0;
+}

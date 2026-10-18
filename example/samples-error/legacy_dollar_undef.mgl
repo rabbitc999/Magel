@@ -1,0 +1,5 @@
+/* `$undef` 已改名：撤销正文宏现在写 `$delete_macro NAME`。 */
+$macro ADD(a, b)
+((a) + (b))
+$end_macro
+$undef ADD

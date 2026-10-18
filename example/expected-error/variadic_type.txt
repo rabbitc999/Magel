@@ -1,0 +1,1 @@
+magel：example/samples-error/variadic_type.mgl 第 2 行第 1 列：调用 函数 sum 找不到匹配的重载：(int64, std::lang::String)；没有参数类型能对上的重载（候选：sum）

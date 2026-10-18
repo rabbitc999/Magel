@@ -1,0 +1,42 @@
+$macro expr SUM(n)
+$if n == 0
+0
+$elif n > 0
+n + $SUM((n)-1)
+$else
+0
+$end_if
+$end_macro
+$macro expr SELECT(a, ...rest)
+$let total = $argc
+$if total == 1
+a
+$elif $count(rest) == 1
+$typecheck(int64, a + rest)
+$else
+0
+$end_if
+$end_macro
+$macro expr STYLE(T)
+$if $stringify(T) == "int64"
+4
+$else
+8
+$end_if
+$end_macro
+$macro POSITIVE(...rest)
+$if false
+$for item in missing
+invalid;
+$end_for
+$else
+$for item in rest
+$if item > 0
+total=total+item;
+$end_if
+$end_for
+$end_if
+$end_macro
+int64 main(){int64 sum=$SUM(5);assert(sum==15);assert($SELECT(3)==3);assert($SELECT(3,4)==7);
+    assert($SELECT(1,2,3)==0);assert($count(a,b)==2);assert($STYLE(int64)==4);assert($STYLE(String)==8);
+    int64 total=0;$POSITIVE(1,-2,3) assert(total==4);println("macros ok");return 0;}

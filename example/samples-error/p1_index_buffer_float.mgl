@@ -1,0 +1,1 @@
+int64 main(){int64 value[2]; int64 mut& ref=&value[0]; int64 result=index(ref,1.5); return 0;}

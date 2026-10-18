@@ -1,0 +1,9 @@
+listener open=1 port>0=1
+client open=1 peer open=1
+server got [ping] status=0
+client got [pong] status=0
+closed client=0 peer=0 listener=0
+url ok=1 host=example.com port=8080 path=/a/b?c=1
+https rejected=1 error=[只支持 http:// 开头的地址]
+GET request len=101
+response ok=1 status=200 reason=OK len=5 type=text/plain body=hello

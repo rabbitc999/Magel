@@ -1,0 +1,1 @@
+magel：example/samples-error/interface_inherit_unknown.mgl 第 2 行第 1 列：接口 A 继承的接口没有声明：Nope

@@ -1,0 +1,15 @@
+/* 两个重载在同一个"档位"里都能接住 `f(1, 1)`（各有一处要 int64 → float64），
+ * 编译器不猜，直接报"有多个重载同样匹配"。 */
+
+int64 pick(int64 a, float64 b) {
+    return 1;
+}
+
+int64 pick(float64 a, int64 b) {
+    return 2;
+}
+
+int64 main() {
+    std::lang::println("{}", pick(1, 1));
+    return 0;
+}

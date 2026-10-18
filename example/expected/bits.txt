@@ -1,0 +1,7 @@
+value=29 shift=3
+value<<shift=232  value>>shift=3
+value&7=5  value|7=31  value^7=26  ~value=-30
+popcount=4
+do-while: total=15 step=6
+branch: kind=1 -> 余一
+return: 3*7 = 307

@@ -1,0 +1,28 @@
+struct Packet { int32 value; float64 real; };
+abi "./native.dll" {
+    String text() = "owned_text" ["free_owned"];
+    int32[] numbers(int32 count) = "owned_numbers" [count, "free_owned"];
+    Packet const& packet() = "owned_packet" ["free_owned"];
+    int32 released() = "released_count";
+    int32 apply(int32 fn(int32) callback, int32 value) = "apply";
+    int32 applyTwo(int32 fn(int32) left, int32 fn(int32) right, int32 value) = "apply_two";
+    float64 applyDouble(float64 fn(float64) callback, float64 value) = "apply_double";
+}
+
+int64 main() {
+    String value = text();
+    int32 values[] = numbers((int32)3);
+    assert(value == "owned" && len(values) == 3 && values[2] == 12);
+    assert(packet().value == 42 && released() == 3);
+    int32 empty[] = numbers((int32)0);
+    assert(len(empty) == 0 && released() == 3);
+    int32 total = 0;
+    auto callback = int32 fn mut[total](int32 n) { total += n; return total; };
+    assert(apply(callback, (int32)3) == 10 && total == 7);
+    assert(applyTwo(int32 fn(int32 n) { n + 1 }, int32 fn(int32 n) { n * 2 }, (int32)4) == 13);
+    assert(applyDouble(float64 fn(float64 x) { x * 2.0 }, 1.25) == 2.5);
+    auto nested = int32 fn(int32 n) { return apply(int32 fn(int32 x) { x * 2 }, n); };
+    assert(apply(nested, (int32)1) == 16);
+    println("ABI contracts OK");
+    return 0;
+}

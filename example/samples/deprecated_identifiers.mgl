@@ -1,0 +1,16 @@
+$macro define(value)
+value
+$end_macro
+$macro match_if(value)
+value
+$end_macro
+int64 bfloat_precision(int64 value) { return value + 1; }
+int64 main() {
+    int64 extern = 3;
+    int64 using = 4;
+    int64 typedef = 5;
+    assert($define(extern) == 3 && $match_if(using) == 4 && typedef == 5);
+    assert(bfloat_precision(6) == 7);
+    println("ordinary identifiers OK");
+    return 0;
+}

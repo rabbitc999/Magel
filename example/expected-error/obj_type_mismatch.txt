@@ -1,0 +1,1 @@
+magel：运行期错误：obj.get：类型对不上 —— Any 中是 int64，期望 std::lang::String。请使用 isType<T> 或 tryGet<T>

@@ -1,0 +1,33 @@
+/* operator_result_choice.mgl —— 「同一对操作数、不同返回类型」靠目标类型挑。
+ *
+ * `Add<int64,int64>` 与 `Add<Vec,int64>` 共存时，两个 `leftAdd(int64)` 只在返回类型上
+ * 不同 —— 普通方法重载做不到这件事，运算符接口开了这个口子。挑哪条由**目标类型**定：
+ * `int64 x = a + 3;` 走返回 int64 的那条，`Vec y = a + 3;` 走返回 Vec 的那条。
+ * 没有目标类型（`auto`）会报错，见 samples-error/operator_result_ambiguous.mgl。
+ */
+
+struct Vec {
+    int64 v;
+};
+
+struct A : Add<int64,int64>, Add<Vec,int64> {
+    int64 v;
+
+    int64 leftAdd(int64 other) { return self.v + other; }
+
+    Vec leftAdd(int64 other) {
+        Vec r;
+        r.v = self.v * other;
+        return r;
+    }
+};
+
+int64 main() {
+    A a;
+    a.v = 5;
+    int64 x = a + 3;      /* 返回 int64 的那条：5 + 3 */
+    println("x = {}", x);
+    Vec y = a + 3;        /* 返回 Vec 的那条：5 * 3 */
+    println("y = {}", y.v);
+    return 0;
+}

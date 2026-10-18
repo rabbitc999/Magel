@@ -1,0 +1,4 @@
+int64 main() {
+    IOption<int64> value;
+    return 0;
+}

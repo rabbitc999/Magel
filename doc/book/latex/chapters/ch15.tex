@@ -1,0 +1,1502 @@
+\chapter{函数值与闭包}
+\label{ch:15}
+
+到目前为止，函数在你眼里还只是「一段有名字的代码」。可有时候，你并不关心那段代码叫什么，你只想把它本身当参数传出去——排序时告诉程序「怎么比」，遍历时告诉它「对每个元素做什么」。
+
+这一章讲的就是这件事：函数也是一种值。而且它可以记住定义它的地方的一些变量——那就是闭包。
+
+\section{问题：逻辑一样，只有「条件」不同}
+
+写一个「从列表里筛出满足条件的元素」的函数。筛偶数是一个条件，筛大于 10 的是另一个条件：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+List<int64> filter(List<int64> xs, bool fn(int64) keep)
+{
+    List<int64> out;
+    for (int64 x in xs)
+    {
+        if (keep(x))
+        {
+            out.push(x);
+        }
+    }
+    return out;
+}
+
+int64 main()
+{
+    List<int64> xs;
+    xs.push(3);
+    xs.push(8);
+    xs.push(15);
+    xs.push(42);
+    List<int64> evens = filter(xs, fn(int64 x)
+    {
+        x % 2 == 0
+    });
+    List<int64> big = filter(xs, fn(int64 x)
+    {
+        x > 10
+    });
+    println("{} {}", evens[0], evens[1]);
+    println("{}", big.len());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+8 42
+2
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{filter} 只管「遍历、判断、收集」，判断的标准由第二参数 \texttt{keep} 带进来。\texttt{keep} 的类型是 \texttt{bool fn(\allowbreak{}int64)\allowbreak{}}——「吃一个 \texttt{int64}、吐一个 \texttt{bool} 的函数」。传进去的两个 \texttt{fn(\allowbreak{}…)\allowbreak{}} 就是两个不同的条件。
+
+一个 \texttt{filter}，无数种条件。 这就是「把函数当值」的价值。
+
+\section{函数类型：\texttt{R fn(\allowbreak{}A,\allowbreak{} B)\allowbreak{}}}
+
+先认这个写法：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 fn(int64, int64)  // 吃两个 int64，返回 int64
+bool fn(int64)  // 吃一个 int64，返回 bool
+String fn()  // 不吃参数，返回 String
+\end{lstlisting}
+\par
+\medskip
+
+读法从左到右：返回类型 \texttt{fn(\allowbreak{}} 参数类型 \texttt{)\allowbreak{}}。函数类型也是类型，能写在变量、字段、参数、数组上——凡是你写 \texttt{int64}、\texttt{String} 的地方，都能写 \texttt{R fn(\allowbreak{}…)\allowbreak{}}。
+
+\section{函数可以当值用}
+
+把一个函数名赋给函数类型的变量，之后就能像调用原函数一样调它：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 add(int64 a, int64 b)
+{
+    return a + b;
+}
+int64 sub(int64 a, int64 b)
+{
+    return a - b;
+}
+
+int64 apply(int64 fn(int64, int64) f, int64 a, int64 b)
+{
+    return f(a, b);
+}
+
+int64 main()
+{
+    int64 fn(int64, int64) op = add;
+    println("{}", op(3, 4));
+    op = sub;
+    println("{}", op(3, 4));
+    println("{}", apply(add, 20, 22));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+7
+-1
+42
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{op} 这个变量里装的是一个函数：
+
+\begin{itemize}
+
+\item \texttt{op =\allowbreak{} add;} 把 \texttt{add} 装进去；
+
+\item \texttt{op =\allowbreak{} sub;} 换成 \texttt{sub}——同一个变量，指哪打哪；
+
+\item \texttt{apply(\allowbreak{}add,\allowbreak{} 20,\allowbreak{} 22)\allowbreak{}} 把函数当普通实参传进去。
+
+\end{itemize}
+
+函数值能放的地方和你想象的一样多——字段、数组都行：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Calculator
+{
+    int64 fn(int64, int64) op;
+};
+
+int64 add(int64 a, int64 b)
+{
+    return a + b;
+}
+int64 mul(int64 a, int64 b)
+{
+    return a * b;
+}
+
+int64 main()
+{
+    Calculator c;
+    c.op = mul;
+    println("{}", c.op(3, 4));
+
+    int64 fn(int64, int64) table[2];
+    table[0] = add;
+    table[1] = mul;
+    println("{} {}", table[0](6, 7), table[1](6, 7));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+12
+13 42
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{table} 是一张「操作表」，按下标取函数来调——这是实现「操作码分派」最朴素的写法。
+
+\section{\texttt{fn}：现场写一个小函数}
+
+\texttt{add} / \texttt{sub} 都是提前定义好、有名字的函数。可很多时候，你只想当场写一小段逻辑，懒得给它起名。这就是 \texttt{fn}：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 fn(int64) square = int64 fn(int64 x)
+    {
+        x * x
+    };
+    println("{}", square(6));
+
+    auto cube = fn(int64 x)
+    {
+        x * x * x
+    };
+    println("{}", cube(3));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+36
+27
+\end{lstlisting}
+\par
+\medskip
+
+写法拆开看：\texttt{返回类型 fn(\allowbreak{}参数)\allowbreak{} \{ 体 \}}。
+
+\begin{itemize}
+
+\item \texttt{fn} 是关键字；
+
+\item \texttt{(\allowbreak{}int64 x)\allowbreak{}} 跟普通函数的参数一模一样；
+
+\item \texttt{fn} 前面的 \texttt{int64} 是返回类型，可以省略（\texttt{cube} 那份就没写，编译器自己推）；
+
+\item \texttt{\{ … \}} 是函数体。
+
+\end{itemize}
+
+\texttt{auto cube =\allowbreak{} …} 让编译器根据右边推出 \texttt{cube} 的类型——省得手写一长串 \texttt{int64 fn(\allowbreak{}int64)\allowbreak{}}。
+
+\section{省略参数类型：靠上下文推}
+
+如果 \texttt{fn} 是要传给某个参数的，而那个参数的类型是已知的，那么连参数类型都能省——编译器按上下文补上：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 apply(int64 fn(int64, int64) f, int64 a, int64 b)
+{
+    return f(a, b);
+}
+
+int64 main()
+{
+    println("{}", apply(fn(x, y)
+    {
+        x + y
+    }, 3, 4));
+    println("{}", apply(fn(x, y)
+    {
+        x * y
+    }, 3, 4));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+7
+12
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{apply} 的第一参数类型是 \texttt{int64 fn(\allowbreak{}int64,\allowbreak{} int64)\allowbreak{}}，所以 \texttt{fn(\allowbreak{}x,\allowbreak{} y)\allowbreak{}} 里的\texttt{x} / \texttt{y} 自动就是 \texttt{int64}。这种「看上下文定类型」的能力，让 \texttt{fn} 写起来非常轻。
+
+\begin{tip}{提示}
+但别滥用。参数类型省掉后，读代码的人得自己回头找上下文。类型不是一眼能看出来的地方，就老老实实写上。
+\end{tip}
+
+\section{闭包：记住定义处的变量}
+
+\texttt{fn} 最厉害的地方，是它能看见外面的变量：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 base = 10;
+    auto addBase = fn(int64 x)
+    {
+        x + base
+    };
+    base = 100;
+    println("{}", addBase(5));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+105
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{add\allowbreak{}Base(\allowbreak{}5)\allowbreak{}} 读到的是调用那一刻 \texttt{base} 的值 100，所以输出 105。换句话说，闭包里那个 \texttt{base} 不是一份拷贝，而是一条指向外部变量的线。
+
+这条线就叫捕获（capture）：闭包把外部变量"抓"进来，从此你在闭包里读写它，读写的其实是外面那个变量本身。
+
+\begin{tip}{提示}
+默认捕获是只读借用。 不写任何修饰时，闭包按 \texttt{const\&} 抓住外部变量：能读、能看到外面的新值，但不能改。想改就得显式声明，见 15.7 节。
+\end{tip}
+
+\section{四种捕获方式}
+
+捕获方式写在 \texttt{fn} 关键字后面，一共四种：
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.294\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.185\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.152\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.196\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.152\linewidth-2\tabcolsep\relax}}
+\toprule
+写法 & 名称 & 闭包里能改？ & 外面那个变量 & 寿命限制 \\
+\midrule
+\endhead
+\texttt{fn const(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}}（也是默认） & 只读借用 \texttt{const\&} & 不能改 & 不受影响 & 来源要活过闭包 \\
+\texttt{fn mut(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} & 可变借用 \texttt{mut\&} & 能改 & 跟着变 & 来源要活过闭包 \\
+\texttt{fn copy(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} & 拥有副本 & 能改（改副本） & 不受影响 & 无，自己有一份 \\
+\texttt{fn move(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} & 转移所有权 & 能改（独占） & 被搬走，须重新声明 & 无，自己有一份 \\
+\bottomrule
+\end{longtable}
+}
+
+一句话区分：\texttt{const\&} / \texttt{mut\&} 是"借"，\texttt{copy} / \texttt{move} 是"拿"。 借来的东西要还，所以有寿命限制；拿了就是自己的，想活多久活多久。
+
+\subsection{\texttt{const\&}：默认，只读借用}
+
+不写修饰就是它，写 \texttt{const} 也是它——下面两种写法完全等价：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 n = 1;
+    auto implicit = int64 fn()
+    {
+        n
+    };
+    /* 默认：const& */
+    auto explicit = int64 fn const()
+    {
+        n
+    };
+    /* 写全，同一个意思 */
+    n = 2;
+    println("{} {}", implicit(), explicit());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+2 2
+\end{lstlisting}
+\par
+\medskip
+
+两者都跟着外面的新值走（\texttt{n} 改成 2 之后读出来就是 2）。想在闭包里改它，编译器直接拦下：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 base = 10;
+    auto bump = fn(int64 x)
+    {
+        base += x;
+        return base;
+    };
+    println("{}", bump(1));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：不可变变量（const）不能再赋值：base
+\end{lstlisting}
+\par
+\medskip
+
+\subsection{\texttt{mut\&}：写回来源}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 counter = 0;
+    auto tick = fn mut()
+    {
+        counter += 1;
+        return counter;
+    };
+    println("{} {}", tick(), tick());
+    println("outside {}", counter);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+1 2
+outside 2
+\end{lstlisting}
+\par
+\medskip
+
+闭包里的 \texttt{counter} 就是外面那个 \texttt{counter}：两次 \texttt{tick(\allowbreak{})\allowbreak{}} 累加到 2，外面读出来也是 2。这是写计数器、累加器最直接的写法。
+
+\subsection{\texttt{copy}：拿一份独立副本}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 n = 5;
+    auto independent = int64 fn copy(int64 x)
+    {
+        n += x;
+        return n;
+    };
+    n = 100;
+    println("{} {} {}", independent(2), independent(1), n);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+7 8 100
+\end{lstlisting}
+\par
+\medskip
+
+闭包从 \texttt{n =\allowbreak{} 5} 起家，之后外面把 \texttt{n} 改成 100 跟它没关系：它自己从 5 加到 7、再加到 8，外面始终是 100。
+
+副本对 \texttt{String}、\texttt{List} 这类带资源的值同样成立——闭包内部改的是自己那一份：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    String text = "old";
+    auto grow = String fn copy()
+    {
+        text = text + "!";
+        return text;
+    };
+    text = "outside";
+    println("{} / {} / {}", grow(), grow(), text);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+old! / old!! / outside
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    List<int64> values;
+    values.push(4);
+    auto bump = int64 fn copy()
+    {
+        values[0] += 1;
+        return values[0];
+    };
+    println("{} {} {}", bump(), bump(), values[0]);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+5 6 4
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{copy} 还有个额外好处：即使来源是 \texttt{const} 也能拷——拷出来的是一份新值，动不到原值：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    const int64 fixed = 7;
+    auto change = int64 fn copy()
+    {
+        fixed += 1;
+        return fixed;
+    };
+    println("{} / {}", change(), fixed);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+8 / 7
+\end{lstlisting}
+\par
+\medskip
+
+\subsection{\texttt{move}：把来源整个搬进闭包}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    String moved = "payload";
+    auto take = String fn move()
+    {
+        return moved + "-in";
+    };
+    String moved = "reset";
+    println("{} / {}", take(), moved);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+payload-in / reset
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{move} 之后，原来的 \texttt{moved} 已经被搬空，不能再用——除非重新声明同名变量。上面就是在 \texttt{move} 之后立刻 \texttt{String moved =\allowbreak{} "reset";} 创建一个新的同名绑定。
+
+没有重新声明就接着读写旧绑定，编译器会拦：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    String moved = "payload";
+    auto take = String fn move()
+    {
+        return moved;
+    };
+    println("{}", moved);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：[MGL1205] 借用来源已移动或销毁，不能继续访问（源对象已经销毁）：moved
+\end{lstlisting}
+\par
+\medskip
+
+\begin{tip}{提示}
+\texttt{copy} 还是 \texttt{move}？ 之后还要用原值 \ensuremath{\rightarrow} \texttt{copy}；原值从此归闭包 \ensuremath{\rightarrow} \texttt{move}。对 \texttt{String} / \texttt{List} / 带 \texttt{Drop} 的 struct，\texttt{move} 省一次拷贝，代价是来源作废。
+\end{tip}
+
+\section{捕获列表：逐个变量指定方式}
+
+\texttt{fn mut(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} 是"所有外部变量都按 \texttt{mut\&} 抓"。想给不同变量不同待遇，就在 \texttt{fn} 后面加一对方括号：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 a = 2;
+    int64 b = 3;
+    int64 c = 4;
+    int64 d = 5;
+    auto mixed = int64 fn copy[a] mut[b] const[c] move[d](int64 x)
+    {
+        a += x;
+        b += x;
+        d += x;
+        return a + b + c + d;
+    };
+    a = 100;
+    c = 10;
+    d = 200;
+    println("{} | a={} b={} c={} d={}", mixed(1), a, b, c, d);
+    println("{} | b={}", mixed(1), b);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+23 | a=100 b=4 c=10 d=200
+26 | b=5
+\end{lstlisting}
+\par
+\medskip
+
+逐个看：\texttt{a} 拷了一份（外面改 100 不影响它），\texttt{b} 借用（闭包加 1 后外面就是 4），\texttt{c} 只读借用（不能改，但能看到新值 10），\texttt{d} 被搬进闭包（外面重新赋成 200 是另一回事）。
+
+\subsection{列表后面还能写「其余变量的默认方式」}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+fn copy[a, b] mut(int64 x)
+{
+    ...
+}
+/*     ^^^^^^^^^^ ^^^                         */
+/*     a、b 按 copy 抓，其余变量按 mut& 抓     */
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 left = 1;
+    int64 right = 2;
+    int64 shared = 3;
+    auto f = int64 fn copy[left, right] mut(int64 x)
+    {
+        left += x;
+        right += x;
+        shared += x;
+        return left + right + shared;
+    };
+    println("{} | left={} right={} shared={}", f(1), left, right, shared);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+9 | left=1 right=2 shared=4
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{left} / \texttt{right} 是副本（外面不动），\texttt{shared} 没列出、按默认 \texttt{mut\&} 借用，所以闭包加完之后外面读到的 \texttt{shared} 变成了 4。
+
+不写默认方式时，没列出的变量一律按 \texttt{const\&} 抓——和全局默认一致。默认方式只能写一次，写两个会报错：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 a = 1;
+    auto f = int64 fn copy[a] mut const()
+    {
+        a
+    };
+    println("{}", f());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：lambda：lambda 默认捕获方式只能声明一次：mut 与 const
+\end{lstlisting}
+\par
+\medskip
+
+方括号也可以是空的——\texttt{fn copy[\allowbreak{}]\allowbreak{}(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} 表示"一个都不特殊对待"，其余变量仍按默认 \texttt{const\&}：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 bias = 9;
+    auto empty = int64 fn copy[]()
+    {
+        bias
+    };
+    bias = 10;
+    println("{}", empty());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+10
+\end{lstlisting}
+\par
+\medskip
+
+传给函数参数的 \texttt{fn} 同样能带捕获列表：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 apply(int64 fn(int64) f, int64 x)
+{
+    return f(x);
+}
+int64 main()
+{
+    int64 bias = 9;
+    println("{} / {}", apply(fn copy[bias](x)
+    {
+        bias += x;
+        return bias;
+    }, 2), bias);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+11 / 9
+\end{lstlisting}
+\par
+\medskip
+
+\section{复制闭包：拥有状态会复制，借用仍然共享}
+
+闭包是值，能赋给另一个变量。那复制过去的到底是什么？
+
+答案是：拥有的东西各复制一份，借的东西还是同一条线。
+
+\texttt{copy} 捕获的闭包复制后，两份副本互不相干：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 n = 5;
+    auto a = int64 fn copy(int64 x)
+    {
+        n += x;
+        return n;
+    };
+    auto b = a;
+    println("b={} a={} b={}", b(3), a(1), b(1));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+b=8 a=6 b=9
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{a}、\texttt{b} 各有一份从 5 开始的副本：\texttt{b} 先加到 8，\texttt{a} 加到 6，\texttt{b} 再加到 9——三笔独立的账。
+
+而 \texttt{mut\&} 捕获的闭包复制后，两个闭包仍指向同一个来源：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 n = 0;
+    auto a = int64 fn mut(int64 x)
+    {
+        n += x;
+        return n;
+    };
+    auto b = a;
+    println("a={} b={} outside={}", a(1), b(1), n);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+a=1 b=2 outside=2
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{a} 加完 \texttt{n} 是 1，\texttt{b} 接着加变成 2，外面读也是 2——同一个 \texttt{n}，同一条线。
+
+\section{生命周期：借来的，不能活过来源}
+
+\texttt{const\&} / \texttt{mut\&} 是借用，就有一条铁律：
+
+\begin{tip}{提示}
+闭包（以及它的任何副本）不能比它借的那个变量活得更久。
+\end{tip}
+
+最容易踩的地方是把闭包返回出去：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 fn() counter()
+{
+    int64 n = 4;
+    return int64 fn mut()
+    {
+        n += 1;
+        return n;
+    };
+}
+int64 main()
+{
+    auto c = counter();
+    println("{}", c());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：[MGL1204] 返回值中的引用不能超过局部来源的生命周期
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{n} 是 \texttt{counter} 的局部变量，函数一返回它就没了；闭包要是带走了它的引用，调用时访问的就是一块已经死掉的内存。编译器不放行（报错里还会附上那个来源的名字）。
+
+换成 \texttt{copy} 或 \texttt{move}，闭包自己拥有一份，就能安全返回：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 fn() counter()
+{
+    int64 n = 4;
+    return int64 fn copy()
+    {
+        n += 1;
+        return n;
+    };
+}
+int64 main()
+{
+    auto c = counter();
+    println("{} {}", c(), c());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+5 6
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{move} 同理——把 \texttt{n} 搬进闭包，闭包从此自带状态：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 fn() counter()
+{
+    int64 n = 8;
+    return int64 fn move()
+    {
+        n += 1;
+        return n;
+    };
+}
+int64 main()
+{
+    auto c = counter();
+    println("{} {}", c(), c());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+9 10
+\end{lstlisting}
+\par
+\medskip
+
+判断口诀：闭包要返回 \ensuremath{\rightarrow} 捕获只能是 \texttt{copy} / \texttt{move}，或者是借"调用方"的东西。
+
+最后半句正是 15.14 节"闭包当工厂"的做法：借用调用方传进来的指针，那个变量活在外面，闭包带回去才安全。
+
+\section{带 \texttt{Drop} 的类型：谁负责销毁}
+
+如果捕获的是带 \texttt{Drop} 的类型（有 \texttt{void drop(\allowbreak{})\allowbreak{}} 的 struct），所有权规则就直接体现为什么时候调用 \texttt{drop(\allowbreak{})\allowbreak{}}。
+
+\texttt{copy} 捕获 \ensuremath{\rightarrow} 外面那个值和闭包里的副本是两个对象，各销毁一次：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 drops = 0;
+struct Record: Drop
+{
+    String text;
+    List<int64> values;
+    void drop()
+    {
+        drops += 1;
+    }
+};
+int64 main()
+{
+    Record record;
+    record.text = "owned";
+    record.values.push(1);
+    {
+        auto own = int64 fn copy()
+        {
+            record.values[0] += 1;
+            return record.values[0];
+        };
+        println("own={}", own());
+        {
+            auto second = own;
+            println("second={} drops={}", second(), drops);
+        }
+        println("drops={}", drops);
+    }
+    println("drops={} outside={}", drops, record.values[0]);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+own=2
+second=3 drops=0
+drops=1
+drops=2 outside=1
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{second} 出作用域销毁一份副本（\texttt{drops=\allowbreak{}1}），\texttt{own} 出作用域再销毁一份（\texttt{drops=\allowbreak{}2}）。全程外面 \texttt{record.\allowbreak{}values[\allowbreak{}0]\allowbreak{}} 一直是 1——副本里加多少都影响不到它。
+
+\texttt{move} 捕获 \ensuremath{\rightarrow} 对象被搬进闭包，只有闭包销毁时才 \texttt{drop(\allowbreak{})\allowbreak{}}：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 drops = 0;
+struct Record: Drop
+{
+    String text;
+    List<int64> values;
+    void drop()
+    {
+        drops += 1;
+    }
+};
+int64 main()
+{
+    Record record;
+    record.text = "moved";
+    record.values.push(10);
+    {
+        auto own = int64 fn move()
+        {
+            record.values[0] += 1;
+            return record.values[0];
+        };
+        println("own={} drops={}", own(), drops);
+    }
+    println("drops={}", drops);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+own=11 drops=0
+drops=1
+\end{lstlisting}
+\par
+\medskip
+
+闭包出作用域 \ensuremath{\rightarrow} 它拥有的那个 \texttt{Record} 被销毁 \ensuremath{\rightarrow} \texttt{drops} 从 0 变 1，全程只有一次。
+
+\section{捕获方式速查}
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.446\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.142\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.131\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.131\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.131\linewidth-2\tabcolsep\relax}}
+\toprule
+写法 & 闭包内能改？ & 外面跟着变？ & 来源还能用？ & 能返回出去？ \\
+\midrule
+\endhead
+\texttt{fn(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} / \texttt{fn const(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} & 否 & — & 能 & 否（借用） \\
+\texttt{fn mut(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} & 是 & 是 & 能 & 否（借用） \\
+\texttt{fn copy(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} & 是 & 否 & 能 & 是 \\
+\texttt{fn move(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} & 是 & 否 & 需重新声明 & 是 \\
+\texttt{fn copy[\allowbreak{}a]\allowbreak{} mut[\allowbreak{}b]\allowbreak{} const[\allowbreak{}c]\allowbreak{} move[\allowbreak{}d]\allowbreak{}(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} & 各按各的 & 各按各的 & 各按各的 & 只要不含借用 \\
+\texttt{fn copy[\allowbreak{}a,\allowbreak{} b]\allowbreak{} mut(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} & 其余按 \texttt{mut\&} & — & — & 否（含借用） \\
+\bottomrule
+\end{longtable}
+}
+
+容易忘的几条：
+
+\begin{itemize}
+
+\item 默认就是 \texttt{const\&}——不写 \texttt{mut} 就改不了外面的变量。
+
+\item \texttt{mut} 改的是外面那个，不是副本；想各算各的用 \texttt{copy}。
+
+\item \texttt{move} 之后来源作废，须重新声明新绑定，普通赋值不能恢复。
+
+\item 借用的闭包不能返回；要返回就用 \texttt{copy} / \texttt{move}，或借调用方的指针。
+
+\item 复制闭包：拥有的状态各复制一份，借用的线仍指向同一来源。
+
+\end{itemize}
+
+\section{一个小坑：表达式体 vs 语句体}
+
+\texttt{fn} 的体有两种写法，差别就一个分号：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+auto f = fn(int64 x)
+{
+    x * 2
+};
+// 表达式体：没有分号
+auto g = fn(int64 x)
+{
+    return x * 2;
+};
+// 语句体：有分号 + return
+\end{lstlisting}
+\par
+\medskip
+
+表达式体是「一个表达式」，直接就是返回值——末尾不能带分号。一旦你手滑写成 \texttt{\{ x * 3; \}}（带分号），它就成了一「条语句」，编译器会要求你补 \texttt{return}：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    auto g = int64 fn(int64 x)
+    {
+        x * 3;
+    };
+    println("{}", g(5));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：返回类型为 int64 的函数 __magel_lambda_… 不是所有路径都有 return
+\end{lstlisting}
+\par
+\medskip
+
+记住一句话：体里想要「最后一行的值」当返回值 \ensuremath{\rightarrow} 别加分号；想用 \texttt{return} \ensuremath{\rightarrow} 加分号。
+
+\section{闭包当工厂：返回一个函数}
+
+15.10 节说过：借用的闭包不能返回。想让工厂函数产出一个闭包，捕获来源就得由调用方提供——让调用方把变量的地址传进来，那个变量活在外面，闭包把它带回去才安全：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 fn(int64) makeAdder(int64 mut& amount)
+{
+    return fn(int64 value)
+    {
+        value + amount
+    };
+}
+int64 main()
+{
+    int64 one = 1;
+    int64 ten = 10;
+    auto plus1 = makeAdder(&one);
+    auto plus10 = makeAdder(&ten);
+    println("{} {}", plus1(5), plus10(5));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+6 15
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{make\allowbreak{}Adder(\allowbreak{}\&one)\allowbreak{}} 和 \texttt{make\allowbreak{}Adder(\allowbreak{}\&ten)\allowbreak{}} 返回的 \texttt{plus1} / \texttt{plus10}，各自借着\texttt{one} / \texttt{ten}：只要这两个变量还在，两个闭包就一直能用；它们要是先没了，闭包也就跟着失效——这正是 15.10 那条铁律的另一面。
+
+函数值本身可以复制；复制闭包时到底复制了什么，见 15.9 节。
+
+\subsection{移动后访问诊断}
+
+下面的闭包将 a 的所有权搬进自身，创建之后读取源变量 a 会报 MGL1205：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    String a = "1";
+    String fn() b = fn move()
+    {
+        a
+    };
+    println("{}", a);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+如果还要保留 a，就按值复制捕获；如果使用 move，之后通过 b() 读取闭包拥有的值。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    String a = "1";
+    String fn() b = fn copy()
+    {
+        a
+    };
+    println("{} {}", a, b());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+1 1
+\end{lstlisting}
+\par
+\medskip
+
+编辑器对捕获位置的 move/copy/const/mut 显示对应说明，不套用普通 \texttt{move<\allowbreak{}T>\allowbreak{}} 函数签名；诊断红线标到后续读取的变量。
+
+\section{语句级具名闭包}
+
+如果你希望给局部闭包直接起名字，可以写成 \texttt{返回类型 名字(\allowbreak{}参数)\allowbreak{} \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} \}}。它仍是函数值，只在声明语句位置识别，不能塞进另一个表达式中间。返回类型是检查函数体的类型锚点。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 fn() makeNamedCounter()
+{
+    int64 current = 0;
+    int64 next() move
+    {
+        current++;
+        return current;
+    }
+    return next;
+}
+
+int64 main()
+{
+    int64 base = 10;
+    int64 read()
+    {
+        return base;
+    }
+    int64 increment() mut
+    {
+        base++;
+        return base;
+    }
+    int64 isolated() copy
+    {
+        base += 100;
+        return base;
+    }
+    int64 initial = read();
+    int64 changed = increment();
+    int64 snapshot = isolated();
+    println("{} {} {} {}", initial, changed, snapshot, base);
+
+    auto counter = makeNamedCounter();
+    int64 first = counter();
+    int64 second = counter();
+    println("{} {}", first, second);
+
+    int64 callback(int64 value);
+    callback = int64 fn(int64 value)
+    {
+        return value + 1;
+    };
+    println("{}", callback(5));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+10 11 110 11
+1 2
+6
+\end{lstlisting}
+\par
+\medskip
+
+默认捕获方式是 \texttt{const\&}，因此 \texttt{read} 能看到来源后续的变化，却不能修改来源。函数体前显式写 \texttt{mut} 是可写借用，\texttt{copy} 拥有独立状态，\texttt{move} 则接管捕获值的所有权。捕获状态在声明初始化时交给函数名绑定；普通后续赋值仍遵守值语义。
+
+局部 \texttt{int64 callback(\allowbreak{}int64 value)\allowbreak{};} 只声明一个有确定签名的函数变量，后面再赋函数值；它与模块层的宿主函数声明不是同一个语义入口。借用捕获的闭包不能逃出来源的生命周期。工厂函数中的 \texttt{next} 使用 move 拥有状态，所以可安全返回；把它改成默认借用并返回会报错。
+
+\section{多层高阶闭包：函数也可以接收函数}
+
+\texttt{R fn(\allowbreak{}A)\allowbreak{}} 表示“接收 \texttt{A}、返回 \texttt{R} 的函数值”。这里的 \texttt{A} 也可以是函数类型，因此 \texttt{fn} 可以继续嵌套。下面保留五层嵌套的完整写法，并通过参数名和换行区分两个实参：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 hello(
+    int64 fn(int64 fn(int64 fn(int64 fn(int64 fn(int64))))) pipeline,
+    int64 fn(int64) finish)
+{
+    return finish(pipeline(level4));
+}
+\end{lstlisting}
+\par
+\medskip
+
+这里是具名函数声明；有函数体时，模块层声明在右大括号结束，后面不加分号。形参要有名字，函数体才能调用它们。\texttt{fn} 后的小括号属于函数类型，不是一次函数调用。
+
+由内向外阅读第一项形参的类型：
+
+\begin{center}
+\begin{tabular}{llll}
+\toprule
+层次 & 接收什么 & 返回什么 & 下方程序中的值 \\
+\midrule
+第一层 & \texttt{int64} & \texttt{int64} & \texttt{level1} \\
+第二层 & 第一层函数 & \texttt{int64} & \texttt{level2} \\
+第三层 & 第二层函数 & \texttt{int64} & \texttt{level3} \\
+第四层 & 第三层函数 & \texttt{int64} & \texttt{level4} \\
+第五层 & 第四层函数 & \texttt{int64} & \texttt{level5} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+这些层次表示参数类型的嵌套深度，不表示连续调用五次后才得到一个返回函数；表中每一层的返回类型都是 \texttt{int64}。\texttt{hello} 的第一项实参是第五层函数，第二项实参是普通的一元闭包。
+
+完整程序如下。最后的 \texttt{finish} 捕获了 \texttt{main} 中的 \texttt{factor}，因此这同时展示了高阶函数参数与带状态的闭包：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 level1(int64 value)
+{
+    return value + 1;
+}
+
+int64 level2(int64 fn(int64) callback)
+{
+    return callback(10);
+}
+
+int64 level3(int64 fn(int64 fn(int64)) callback)
+{
+    return callback(level1);
+}
+
+int64 level4(int64 fn(int64 fn(int64 fn(int64))) callback)
+{
+    return callback(level2);
+}
+
+int64 level5(int64 fn(int64 fn(int64 fn(int64 fn(int64)))) callback)
+{
+    return callback(level3);
+}
+
+int64 hello(
+    int64 fn(int64 fn(int64 fn(int64 fn(int64 fn(int64))))) pipeline,
+    int64 fn(int64) finish)
+{
+    return finish(pipeline(level4));
+}
+
+int64 main()
+{
+    int64 factor = 2;
+    int64 finish(int64 value)
+    {
+        return value * factor;
+    }
+    println("{}", hello(level5, finish));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+22
+\end{lstlisting}
+\par
+\medskip
+
+调用顺序是 \texttt{pipeline(\allowbreak{}level4)\allowbreak{}} \ensuremath{\rightarrow} \texttt{level4(\allowbreak{}level3)\allowbreak{}} \ensuremath{\rightarrow} \texttt{level3(\allowbreak{}level2)\allowbreak{}} \ensuremath{\rightarrow} \texttt{level2(\allowbreak{}level1)\allowbreak{}} \ensuremath{\rightarrow} \texttt{level1(\allowbreak{}10)\allowbreak{}}，先得到 \texttt{11}；随后 \texttt{finish(\allowbreak{}11)\allowbreak{}} 读取捕获的 \texttt{factor}，得到 \texttt{22}。具名函数和闭包都按各自的完整函数类型检查，某一层参数类型不匹配就不能传入。
+
+\texttt{finish} 默认以 \texttt{const\&} 借用 \texttt{factor}。这次调用在 \texttt{main} 的作用域内同步完成，借用始终有效。若要把这样的闭包返回或存到更长寿命的对象中，仍须满足前面介绍的捕获与生命周期规则；嵌套 \texttt{fn} 类型不会延长被借用变量的寿命。
+
+\section{组合闭包：接收函数，再返回函数}
+
+高阶函数还可以把几个操作组合成新的函数值。下面的 \texttt{combine} 接收两个 \texttt{int64 fn(\allowbreak{}int64)\allowbreak{}}，返回的类型也是 \texttt{int64 fn(\allowbreak{}int64)\allowbreak{}}：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+auto combine = (int64 fn(int64)) fn(int64 fn(int64) a, int64 fn(int64) b)
+{
+    int64 fn copy(int64 x)
+    {
+        a(b(x))
+    }
+};
+\end{lstlisting}
+\par
+\medskip
+
+从左到右拆开这个声明：括号里的 \texttt{int64 fn(\allowbreak{}int64)\allowbreak{}} 是返回类型，接下来的 \texttt{fn(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} 才是创建组合器的匿名函数。它的函数体每次创建一个新闭包，先调用 \texttt{b}，再把结果交给 \texttt{a}。内层的 \texttt{a(\allowbreak{}b(\allowbreak{}x)\allowbreak{})\allowbreak{}} 与外层的闭包表达式都处在块末尾且不加分号，分别成为两层函数的返回值。
+
+返回函数类型外面的括号用于分组，不会增加一层函数类型；也可以直接写 \texttt{int64 fn(\allowbreak{}int64)\allowbreak{} fn(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}}。参数列表最后一个参数后面不加逗号。与上一节的具名函数定义不同，这里是变量初始化语句，最外层右大括号后面需要分号。
+
+完整程序如下：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    auto combine = (int64 fn(int64)) fn(int64 fn(int64) a, int64 fn(int64) b)
+    {
+        int64 fn copy(int64 x)
+        {
+            a(b(x))
+        }
+    };
+
+    auto f1 = int64 fn(int64 x) { x + 1 };
+    auto f2 = int64 fn(int64 x) { x * 2 };
+    auto c1 = combine(f1, f2);
+    auto c2 = combine(f2, f1);
+    println("{} {}", c1(5), c2(5));
+
+    auto c3 = combine(fn(x) { x * 5 }, fn(x) { x - 1 });
+    println("{}", c3(5));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+11 12
+20
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{c1(\allowbreak{}5)\allowbreak{}} 先执行 \texttt{f2(\allowbreak{}5)\allowbreak{}} 得到 \texttt{10}，再执行 \texttt{f1(\allowbreak{}10)\allowbreak{}} 得到 \texttt{11}；\texttt{c2(\allowbreak{}5)\allowbreak{}} 先执行 \texttt{f1(\allowbreak{}5)\allowbreak{}} 得到 \texttt{6}，再执行 \texttt{f2(\allowbreak{}6)\allowbreak{}} 得到 \texttt{12}。两次调用各自返回一个拥有 \texttt{a}、\texttt{b} 副本的组合闭包，交换实参会改变组合顺序。
+
+内层函数不能默认借用本次调用的局部形参 \texttt{a}、\texttt{b} 后直接返回；这些形参会随 \texttt{combine} 返回而离开作用域。\texttt{fn copy} 使返回闭包拥有这两个函数值的副本。本例的 \texttt{f1}、\texttt{f2} 都没有捕获外部变量；如果它们含有借用，复制函数值不会把被借用对象变成自有状态，其来源仍必须活得足够久。
+
+\texttt{c3} 直接把两个匿名函数作为实参传入。目标形参 \texttt{int64 fn(\allowbreak{}int64)\allowbreak{}} 为 \texttt{fn(\allowbreak{}x)\allowbreak{}} 提供参数类型与返回类型的上下文，因此两个 \texttt{x} 都推断为 \texttt{int64}，不必重复写类型。组合顺序仍然是先执行第二项实参，再执行第一项实参：\texttt{(\allowbreak{}5 - 1)\allowbreak{} * 5 =\allowbreak{} 20}。这些匿名函数没有捕获状态，传入后同样由组合闭包持有其副本。
+
+\section{小结}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+你会了 & 关键点 \\
+\midrule
+函数类型 & \texttt{R fn(\allowbreak{}A,\allowbreak{} B)\allowbreak{}}，和别的类型一样能当变量/字段/参数 \\
+函数当值 & \texttt{int64 fn(\allowbreak{}int64,\allowbreak{} int64)\allowbreak{} op =\allowbreak{} add;}，可重新指向 \\
+传函数 & 把函数名或 \texttt{fn} 当实参传，实现回调 \\
+\texttt{fn} & \texttt{返回类型 fn(\allowbreak{}参数)\allowbreak{} \{ 体 \}}，返回类型可省 \\
+上下文推断 & 目标类型已知时，参数类型也能省 \\
+闭包 & 记住定义处的变量；默认 \texttt{const\&} 只读借用 \\
+四种捕获 & \texttt{const\&} 只读、\texttt{mut\&} 写回、\texttt{copy} 独立副本、\texttt{move} 转移所有权 \\
+捕获列表 & \texttt{fn copy[\allowbreak{}a]\allowbreak{} mut[\allowbreak{}b]\allowbreak{} const[\allowbreak{}c]\allowbreak{} move[\allowbreak{}d]\allowbreak{}(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}}；列表后可加默认方式 \\
+复制闭包 & 拥有状态各复制一份，借用仍指向同一来源 \\
+生命周期 & 借用的闭包（及其副本）不能比来源活得更久 \\
+返回闭包 & 只有 \texttt{copy} / \texttt{move}、或借调用方的指针，才能安全带出函数 \\
+\texttt{Drop} & \texttt{copy} 两份各销毁一次，\texttt{move} 只在闭包销毁时销毁一次 \\
+体例坑 & 表达式体别加分号；用 \texttt{return} 就要加分号 \\
+工厂 & 返回闭包，配不同的「料」造出不同的函数 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{下一步}
+
+\texttt{filter}、\texttt{map} 这类「把函数当参数」的操作，写起来越来越顺手了。但你自己写 \texttt{filter} 还得手搓 \texttt{List}、手搓 \texttt{for-in}——一不小心就写出一堆模板代码。
+
+第 16 章讲错误处理，先把「出错了怎么办」这件事说清楚；之后第六部分的迭代器，会把 \texttt{map} / \texttt{filter} 这些套路做成一条能直接用的链。
+
+翻到\hyperref[ch:16]{第 16 章 错误处理}。

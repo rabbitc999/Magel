@@ -1,0 +1,1 @@
+magel：example/samples-error/compound_assignment_readonly_map.mgl 第 2 行第 1 列：只读引用（`T const&`）只能读，不能写入元素或成员

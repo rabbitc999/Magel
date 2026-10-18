@@ -1,0 +1,8 @@
+int64 demo_cpp_variadic_sum(int64 base, int64... values);
+
+int64 main() {
+    int64 empty = demo_cpp_variadic_sum(10);
+    int64 many = demo_cpp_variadic_sum(10, 1, 2, 3);
+    println("{} {}", empty, many);
+    return 0;
+}

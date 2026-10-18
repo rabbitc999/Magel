@@ -1,0 +1,54 @@
+module std::parse;
+
+/* 从 lang.mgl 原样迁出：符号名不变，只换了模块归属（现在必须 `import std::parse;` 才能用）。 */
+enum ParseError { Empty, Invalid, Overflow };
+
+int64 __parseInt64Error(std::lang::String text);
+int64 __parseInt64Value(std::lang::String text);
+int64 __parseUInt64Error(std::lang::String text);
+uint64 __parseUInt64Value(std::lang::String text);
+int64 __parseFloat64Error(std::lang::String text);
+float64 __parseFloat64Value(std::lang::String text);
+int64 __parseBoolError(std::lang::String text);
+bool __parseBoolValue(std::lang::String text);
+
+struct Parse {
+    static Result<int64, ParseError> parseInt64(std::lang::String text) {
+        int64 error = __parseInt64Error(text);
+        if (error == 0) {
+            return Result<int64, ParseError>::Ok(__parseInt64Value(text));
+        }
+        if (error == 1) { return Result<int64, ParseError>::Err(ParseError::Empty); }
+        if (error == 2) { return Result<int64, ParseError>::Err(ParseError::Overflow); }
+        return Result<int64, ParseError>::Err(ParseError::Invalid);
+    }
+
+    static Result<uint64, ParseError> parseUInt64(std::lang::String text) {
+        int64 error = __parseUInt64Error(text);
+        if (error == 0) {
+            return Result<uint64, ParseError>::Ok(__parseUInt64Value(text));
+        }
+        if (error == 1) { return Result<uint64, ParseError>::Err(ParseError::Empty); }
+        if (error == 2) { return Result<uint64, ParseError>::Err(ParseError::Overflow); }
+        return Result<uint64, ParseError>::Err(ParseError::Invalid);
+    }
+
+    static Result<float64, ParseError> parseFloat64(std::lang::String text) {
+        int64 error = __parseFloat64Error(text);
+        if (error == 0) {
+            return Result<float64, ParseError>::Ok(__parseFloat64Value(text));
+        }
+        if (error == 1) { return Result<float64, ParseError>::Err(ParseError::Empty); }
+        if (error == 2) { return Result<float64, ParseError>::Err(ParseError::Overflow); }
+        return Result<float64, ParseError>::Err(ParseError::Invalid);
+    }
+
+    static Result<bool, ParseError> parseBool(std::lang::String text) {
+        int64 error = __parseBoolError(text);
+        if (error == 0) {
+            return Result<bool, ParseError>::Ok(__parseBoolValue(text));
+        }
+        if (error == 1) { return Result<bool, ParseError>::Err(ParseError::Empty); }
+        return Result<bool, ParseError>::Err(ParseError::Invalid);
+    }
+};

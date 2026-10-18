@@ -1,0 +1,74 @@
+/* bits.mgl —— 位运算（`& | ^ ~ << >>`）+ if/elif 分支 / do-while / 嵌套循环。
+ *
+ * 语言里整数只有 `int64` / `uint64` 两种、都是 64 位：位运算直接作用在这 64 位上，
+ * 要"按字节看"就自己 `& 255`。
+ *
+ *   ./magel samples/bits.mgl --input "29 3"
+ *   → 29 = 0b11101：low5=29 popcount=4；29<<3=232；29&7=5；29|7=31；29^7=26；~29=-30
+ *     do-while 累计到 12；分支命中"余一"；嵌套循环里找到 3*7 就提前 return
+ */
+
+/* popcount：只用位运算算 1 的个数 */
+int64 popcount(uint64 value) {
+    int64 count = 0;
+    uint64 bits = value;
+    while (bits != 0) {
+        count = count + (int64)(bits & 1);
+        bits = bits >> 1;
+    }
+    return count;
+}
+
+/* 两层循环里找 `a*b == target`，找到就把 `a*100+b` 返回出去。
+ * 要从里层直接跳到外层，就把这段循环包成函数、用 return 提前结束。 */
+int64 findProduct(int64 target) {
+    int64 i = 0;
+    while (i < 10) {
+        int64 j = 0;
+        while (j < 10) {
+            if (i * j == target) { return i * 100 + j; }
+            j = j + 1;
+        }
+        i = i + 1;
+    }
+    return 0;
+}
+
+int64 main() {
+    int64 value = 0;
+    int64 shift = 0;
+    value = inputInt();
+    shift = inputInt();
+
+    println("value={} shift={}", value, shift);
+    println("value<<shift={}  value>>shift={}", value << shift, value >> shift);
+    println("value&7={}  value|7={}  value^7={}  ~value={}", value & 7, value | 7, value ^ 7,
+    ~value);
+    println("popcount={}", popcount((uint64)value));   /* 有符号 → 无符号要显式强转 */
+
+    /* do-while：先做一遍再判条件 */
+    int64 total = 0;
+    int64 step = 0;
+    do {
+        total = total + step;
+        step = step + 1;
+    } while (total < 12);
+    println("do-while: total={} step={}", total, step);
+
+    /* 分支：多路选择用 if / elif / else 或 `match`。 */
+    int64 kind = value % 4;
+    if (kind == 0) {
+        println("branch: kind=0 -> 四的倍数");
+    } elif (kind == 1) {
+        println("branch: kind=1 -> 余一");
+    } elif (kind == 2) {
+        println("branch: kind=2 -> 余二");
+    } else {
+        println("branch: kind={} -> 兜底", kind);
+    }
+
+    /* 要从两层循环里跳出来：把这段循环包成一个函数，找到就 return。 */
+    int64 found = findProduct(21);
+    println("return: 3*7 = {}", found);
+    return 0;
+}

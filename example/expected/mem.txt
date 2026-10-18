@@ -1,0 +1,3 @@
+memcpy: target[0]=65 target[1]=66
+memset: target[2]=67
+loop copy: 65 66

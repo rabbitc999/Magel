@@ -1,0 +1,34 @@
+// 重载运算可以返回字符串或容器，结果同普通函数返回值一样归调用方。
+struct Producer : Add<String,int64>, Subtract<List<String>,int64>, Negate<String,Producer>, Multiply<String const&,int64> {
+    String text;
+    String leftAdd(int64 value){return self.text+"!";}
+    List<String> leftSub(int64 value){List<String> result;result.push(self.text);return result;}
+    String const& leftMul(int64 value){return &self.text;}
+    String negate(Producer value){return self.text+"-";}
+};
+struct Borrower : Negate<String const&,Borrower> {
+    String text;
+    String const& negate(Borrower value){return &self.text;}
+};
+int64 main(){
+    Producer source;source.text="live";
+    Borrower owner;owner.text="borrow";
+    for(int64 i=0;i<64;i=i+1){
+        String text=source+1;assert(text=="live!");
+        List<String> items=source-1;
+        assert(items.len()==1 && items[0]=="live");
+        items[0]="changed";assert(source.text=="live");
+        source+1;
+        source-1;
+        String negative=-source;assert(negative=="live-");
+        -source;
+        String borrowed=source*1;assert(borrowed=="live");
+        borrowed="changed";assert(source.text=="live");
+        source*1;assert(source.text=="live");
+        String unaryBorrowed=-owner;assert(unaryBorrowed=="borrow");
+        unaryBorrowed="changed";assert(owner.text=="borrow");
+        -owner;assert(owner.text=="borrow");
+    }
+    println("ownership operator results OK");
+    return 0;
+}

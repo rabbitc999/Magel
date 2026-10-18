@@ -1,0 +1,2 @@
+int64 bad(int64... values, int64 tail) { return tail; }
+int64 main() { return 0; }

@@ -1,0 +1,12 @@
+int64 main() {
+    BigInteger number = BigInteger(12);
+    List<int64> values;
+    Set<int64> keys;
+    Map<int64, int64> table;
+    number.copy();
+    values.copy();
+    keys.copy();
+    table.copy();
+    println("discarded");
+    return 0;
+}

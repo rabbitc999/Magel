@@ -1,0 +1,383 @@
+module std::lang;
+
+String __readLine();
+String __readLines(int32 N);
+/** @brief 读取一行标准输入，保留空格，去掉 LF/CRLF；EOF 返回空串，空行也返回空串。
+ * @return 读取的行文本；String 不允许内嵌零字节。 */
+String readLine() { return __readLine(); }
+/** @brief 最多读取 N 行，以 LF 连接，结果不额外追加换行；EOF 提前结束。
+ * @param N 非负行数；零返回空串且不读取输入，负数触发 panic。
+ * @return 拼接后的文本，空行保留；显式 --input 的每个输入项视为一行。 */
+String readLines(int32 N) { assert(N>=0,"readLines requires a nonnegative line count"); return __readLines(N); }
+/** @brief 接受默认整数实参的多行输入重载，检查后转为 int32 行数。
+ * @param N 0 至 2147483647 的行数；超界触发 panic。
+ * @return 最多 N 行，以 LF 连接，EOF 提前结束。 */
+String readLines(int64 N) { assert(N>=0 && N<=2147483647,"readLines requires a nonnegative int32 line count"); return __readLines((int32)N); }
+
+/* 核心转换由胶水完成范围检查，float32 先精确提升至 float64。 */
+int64 __tryToInt32(float64 value);
+int64 __toInt64(float64 value);
+/** 向零截断为 int32；非有限数或截断后越界返回 None。 */
+Option<int32> toInt32(float64 value) {
+    int64 converted = __tryToInt32(value);
+    if (converted == 2147483648) { return Option<int32>::None; }
+    return Option<int32>::Value((int32)converted);
+}
+/** 向零截断为 int32；非有限数或截断后越界返回 None。 */
+Option<int32> toInt32(float32 value) { return toInt32((float64)value); }
+/** 向零截断为 int64，非有限数或截断后越界时报错。 */
+int64 toInt64(float64 value) { return __toInt64(value); }
+/** 向零截断为 int64，非有限数或截断后越界时报错。 */
+int64 toInt64(float32 value) { return __toInt64((float64)value); }
+
+std::lang::List<uint8> __float32ToBytes(float32 value, bool bigEndian);
+float32 __bytesToFloat32(std::lang::List<uint8> bytes, bool bigEndian);
+float32 __arrayToFloat32(uint8 const& bytes, bool bigEndian);
+bool __float32ToArray(float32 value, uint8 mut& bytes, bool bigEndian);
+/** 按 IEEE 754 binary32 输出 4 个字节。 */
+std::lang::List<uint8> float32ToBytes(float32 value, bool bigEndian) { return __float32ToBytes(value, bigEndian); }
+/** 默认小端编码。 */
+std::lang::List<uint8> float32ToBytes(float32 value) { return __float32ToBytes(value, false); }
+/** 读取列表前 4 字节，不足则返回 None。 */
+Option<float32> bytesToFloat32(std::lang::List<uint8> bytes, bool bigEndian) {
+    if (bytes.len() < 4) { return Option<float32>::None; }
+    return Option<float32>::Value(__bytesToFloat32(bytes, bigEndian));
+}
+/** 默认小端列表解码。 */
+Option<float32> bytesToFloat32(std::lang::List<uint8> bytes) { return bytesToFloat32(bytes, false); }
+/** 从固定数组或指针读取前 4 字节；调用者保证 count 为有效长度。 */
+Option<float32> bytesToFloat32(uint8 const& bytes, int64 count, bool bigEndian) {
+    if (count < 4) { return Option<float32>::None; }
+    return Option<float32>::Value(__arrayToFloat32(bytes, bigEndian));
+}
+/** 默认小端固定数组解码。 */
+Option<float32> bytesToFloat32(uint8 const& bytes, int64 count) { return bytesToFloat32(bytes, count, false); }
+/** 从运行时数组读取，自动获取长度。 */
+Option<float32> bytesToFloat32(uint8 bytes[], bool bigEndian) { return bytesToFloat32(bytes, std::lang::len(bytes), bigEndian); }
+/** 默认小端运行时数组解码。 */
+Option<float32> bytesToFloat32(uint8 bytes[]) { return bytesToFloat32(bytes, std::lang::len(bytes), false); }
+/** 写入数组前 4 项；容量不足返回 false，数组保持不变。 */
+bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count, bool bigEndian) {
+    if (count < 4) { return false; }
+    return __float32ToArray(value, bytes, bigEndian);
+}
+/** 默认小端固定数组编码。 */
+bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count) { return float32ToBytes(value, bytes, count, false); }
+/** 编码到运行时数组，自动获取容量。 */
+bool float32ToBytes(float32 value, uint8 bytes[], bool bigEndian) { return float32ToBytes(value, bytes, std::lang::len(bytes), bigEndian); }
+/** 默认小端运行时数组编码。 */
+bool float32ToBytes(float32 value, uint8 bytes[]) { return float32ToBytes(value, bytes, std::lang::len(bytes), false); }
+
+std::lang::List<uint8> __float64ToBytes(float64 value, bool bigEndian);
+float64 __bytesToFloat64(std::lang::List<uint8> bytes, bool bigEndian);
+float64 __arrayToFloat64(uint8 const& bytes, bool bigEndian);
+bool __float64ToArray(float64 value, uint8 mut& bytes, bool bigEndian);
+/** 按 IEEE 754 binary64 输出 8 个字节。 */
+std::lang::List<uint8> float64ToBytes(float64 value, bool bigEndian) { return __float64ToBytes(value, bigEndian); }
+/** 默认小端编码。 */
+std::lang::List<uint8> float64ToBytes(float64 value) { return __float64ToBytes(value, false); }
+/** 读取列表前 8 字节，不足则返回 None。 */
+Option<float64> bytesToFloat64(std::lang::List<uint8> bytes, bool bigEndian) {
+    if (bytes.len() < 8) { return Option<float64>::None; }
+    return Option<float64>::Value(__bytesToFloat64(bytes, bigEndian));
+}
+/** 默认小端列表解码。 */
+Option<float64> bytesToFloat64(std::lang::List<uint8> bytes) { return bytesToFloat64(bytes, false); }
+/** 从固定数组或指针读取前 8 字节；调用者保证 count 为有效长度。 */
+Option<float64> bytesToFloat64(uint8 const& bytes, int64 count, bool bigEndian) {
+    if (count < 8) { return Option<float64>::None; }
+    return Option<float64>::Value(__arrayToFloat64(bytes, bigEndian));
+}
+/** 默认小端固定数组解码。 */
+Option<float64> bytesToFloat64(uint8 const& bytes, int64 count) { return bytesToFloat64(bytes, count, false); }
+/** 从运行时数组读取，自动获取长度。 */
+Option<float64> bytesToFloat64(uint8 bytes[], bool bigEndian) { return bytesToFloat64(bytes, std::lang::len(bytes), bigEndian); }
+/** 默认小端运行时数组解码。 */
+Option<float64> bytesToFloat64(uint8 bytes[]) { return bytesToFloat64(bytes, std::lang::len(bytes), false); }
+/** 写入数组前 8 项；容量不足返回 false，数组保持不变。 */
+bool float64ToBytes(float64 value, uint8 mut& bytes, int64 count, bool bigEndian) {
+    if (count < 8) { return false; }
+    return __float64ToArray(value, bytes, bigEndian);
+}
+/** 默认小端固定数组编码。 */
+bool float64ToBytes(float64 value, uint8 mut& bytes, int64 count) { return float64ToBytes(value, bytes, count, false); }
+/** 编码到运行时数组，自动获取容量。 */
+bool float64ToBytes(float64 value, uint8 bytes[], bool bigEndian) { return float64ToBytes(value, bytes, std::lang::len(bytes), bigEndian); }
+/** 默认小端运行时数组编码。 */
+bool float64ToBytes(float64 value, uint8 bytes[]) { return float64ToBytes(value, bytes, std::lang::len(bytes), false); }
+
+/* Magel 标准库前导模块。这里放可由 Magel 自身表达的类型；算法由编译器签名接入 VM 胶水。 */
+
+/*
+ * 中止统一走 std::lang::panic：编译器与虚拟机里只有 `__vm_panic` 这一个停机原语，
+ * `exit(n)` 与内建 `assert(x)` 都已删除。需要断言时用下面这几个函数 —— 它们自己
+ * 调 `std::lang::panic`，所以停机清理只有一条入口；带消息的重载让标准库自己的前置检查
+ * 也能给出人话（例如 range 的步长）。
+ *
+ * 带 `int64 line` 的重载给文件末尾的系统宏 `$assert(...)` 用：宏把调用点的 `$line`
+ * 传进来，失败时就地报出**源码行号**，不必每处自己写文案。
+ */
+void assert(bool condition) {
+    if (!condition) { std::lang::panic("assert(x) 的 x 为假"); }
+}
+
+void assert(bool condition, std::lang::String message) {
+    if (!condition) { std::lang::panic(message); }
+}
+
+void assert(bool condition, int64 line) {
+    if (!condition) { std::lang::panic(std::lang::format("断言失败：源码第 {} 行", line)); }
+}
+
+void assert(bool condition, std::lang::String message, int64 line) {
+    if (!condition) { std::lang::panic(std::lang::format("{}（源码第 {} 行）", message, line)); }
+}
+
+/** 成功继续求值，失败携带传播载荷退出当前函数。 */
+enum TryBranch<T, R> { Continue(T value), Break(R residual); };
+/** Result 的错误载荷，保留错误与缺失两类传播的区别。 */
+struct ErrorResidual<E> { E error; };
+/** Option 的无值传播载荷。 */
+enum NoneResidual { None; };
+/** 只读拆分传播值。 */
+interface Try<T, R> { TryBranch<T, R> branch(); };
+/** 移动拥有值后拆分传播值。 */
+interface TryMove<T, R> { TryBranch<T, R> intoBranch(); };
+/** 编译期静态接收协议，F 必须是实现类型自身。 */
+interface FromResidual<F, R> { static F fromResidual(R residual); };
+
+enum Option<T> : Try<T, NoneResidual>, TryMove<T, NoneResidual>, FromResidual<Option<T>, NoneResidual> {
+    Value(T value), None;
+
+    TryBranch<T, NoneResidual> branch() {
+        match (self) {
+            Option<T>::Value(value) => { return TryBranch<T, NoneResidual>::Continue(value); }
+            Option<T>::None => { return TryBranch<T, NoneResidual>::Break(NoneResidual::None); }
+        }
+    }
+    TryBranch<T, NoneResidual> intoBranch() { return self.branch(); }
+    static Option<T> fromResidual(NoneResidual residual) { return Option<T>::None; }
+    bool isValue() {
+        bool result = false;
+        match (self) {
+            Option<T>::Value(value) => { result = true; }
+            Option<T>::None => { result = false; }
+        }
+        return result;
+    }
+
+    bool isNone() { return !self.isValue(); }
+
+    T unwrap() {
+        T result;
+        match (self) {
+            Option<T>::Value(value) => { result = value; }
+            Option<T>::None => { std::lang::panic("called Option.unwrap() on None"); }
+        }
+        return result;
+    }
+
+    T unwrapOr(T fallback) {
+        T result = fallback;
+        match (self) {
+            Option<T>::Value(value) => { result = value; }
+            Option<T>::None => { }
+        }
+        return result;
+    }
+
+    T expect(std::lang::String message) {
+        T result;
+        match (self) {
+            Option<T>::Value(value) => { result = value; }
+            Option<T>::None => { std::lang::panic(message); }
+        }
+        return result;
+    }
+
+    Option<T> transform(T fn(T) mapper) {
+        Option<T> result = Option<T>::None;
+        match (self) {
+            Option<T>::Value(value) => { result = Option<T>::Value(mapper(value)); }
+            Option<T>::None => { }
+        }
+        return result;
+    }
+
+    Option<T> andThen(Option<T> fn(T) mapper) {
+        Option<T> result = Option<T>::None;
+        match (self) {
+            Option<T>::Value(value) => { result = mapper(value); }
+            Option<T>::None => { }
+        }
+        return result;
+    }
+};
+
+enum Result<T, E> : Try<T, ErrorResidual<E>>, TryMove<T, ErrorResidual<E>>, FromResidual<Result<T, E>, ErrorResidual<E>> {
+    Ok(T value), Err(E error);
+
+    TryBranch<T, ErrorResidual<E>> branch() {
+        match (self) {
+            Result<T,E>::Ok(value) => { return TryBranch<T,ErrorResidual<E>>::Continue(value); }
+            Result<T,E>::Err(error) => {
+                ErrorResidual<E> residual;
+                residual.error = error;
+                return TryBranch<T,ErrorResidual<E>>::Break(residual);
+            }
+        }
+    }
+    TryBranch<T, ErrorResidual<E>> intoBranch() { return self.branch(); }
+    static Result<T,E> fromResidual(ErrorResidual<E> residual) { return Result<T,E>::Err(residual.error); }
+    Option<T> ok() {
+        match (self) {
+            Result<T,E>::Ok(value) => { return Option<T>::Value(value); }
+            Result<T,E>::Err(error) => { return Option<T>::None; }
+        }
+    }
+    bool isOk() {
+        bool result = false;
+        match (self) {
+            Result<T, E>::Ok(value) => { result = true; }
+            Result<T, E>::Err(error) => { result = false; }
+        }
+        return result;
+    }
+
+    bool isErr() { return !self.isOk(); }
+
+    T unwrap() {
+        T result;
+        match (self) {
+            Result<T, E>::Ok(value) => { result = value; }
+            Result<T, E>::Err(error) => { std::lang::panic("called Result.unwrap() on Err"); }
+        }
+        return result;
+    }
+
+    T unwrapOr(T fallback) {
+        T result = fallback;
+        match (self) {
+            Result<T, E>::Ok(value) => { result = value; }
+            Result<T, E>::Err(error) => { }
+        }
+        return result;
+    }
+
+    T expect(std::lang::String message) {
+        T result;
+        match (self) {
+            Result<T, E>::Ok(value) => { result = value; }
+            Result<T, E>::Err(error) => { std::lang::panic(message); }
+        }
+        return result;
+    }
+
+    E error() {
+        E result;
+        match (self) {
+            Result<T, E>::Ok(value) => { std::lang::panic("called Result.error() on Ok"); }
+            Result<T, E>::Err(error) => { result = error; }
+        }
+        return result;
+    }
+
+    Result<T, E> transform(T fn(T) mapper) {
+        Result<T, E> result;
+        match (self) {
+            Result<T, E>::Ok(value) => { result = Result<T, E>::Ok(mapper(value)); }
+            Result<T, E>::Err(error) => { result = Result<T, E>::Err(error); }
+        }
+        return result;
+    }
+
+    Result<T, E> andThen(Result<T, E> fn(T) mapper) {
+        Result<T, E> result;
+        match (self) {
+            Result<T, E>::Ok(value) => { result = mapper(value); }
+            Result<T, E>::Err(error) => { result = Result<T, E>::Err(error); }
+        }
+        return result;
+    }
+};
+
+struct Pair<K, V> {
+    K first;
+    V second;
+
+    static Pair<K, V> of(K first, V second) {
+        Pair<K, V> result;
+        result.first = first;
+        result.second = second;
+        return result;
+    }
+};
+
+/*
+ * 系统断言宏：`$assert(condition)` / `$assert(condition, message)` 把**调用点**的行号
+ * 喂给上面带 `int64 line` 的重载。`$line` 在宏展开的位置取值，所以拿到的是调用处那一
+ * 行；限定名 `std::lang::assert` 不会被这个同名宏吃掉（`.name` / `::name` 不当宏调用）。
+ *
+ * 宏体自带分号，调用处不再写 —— 和文件里其它语句宏一个用法。
+ * 定义放在文件末尾：它上面那几行是 `assert` 函数自己的**定义**，不能被动到。
+ */
+$macro assert(condition)
+std::lang::assert(condition, $line);
+$end_macro
+
+$macro assert(condition, message)
+std::lang::assert(condition, message, $line);
+$end_macro
+
+/** @brief 判断盒子是否保存精确的 T 类型，不比较公开整数编号。 */
+bool isType<T>(Any const& value) { return value.__isTypeTag(__typeTag(T)); }
+/** @brief 类型匹配时复制拥有值；不匹配或空盒子返回 None。 */
+Option<T> tryGet<T>(Any const& value) {
+    if (!isType<T>(&value)) { return Option<T>::None; }
+    T result = value.getValue();
+    return Option<T>::Value(result);
+}
+/** @brief 安全借用只读值或兼容接口，引用不得超过盒子的寿命。 */
+Option<T const&> tryGetReference<T>(Any const& value) {
+    Option<T const&> result = value.getOptional();
+    return result;
+}
+/** @brief 安全借用可写值或兼容接口，要求盒子可写。 */
+Option<T mut&> tryGetMut<T>(Any mut& value) {
+    Option<T mut&> result = value.getOptional();
+    return result;
+}
+
+List<uint8> __stringBytes(String text);
+/** 返回字符串的完整 UTF-8 字节副本，不执行字符边界索引。 */
+List<uint8> stringBytes(String text) { return __stringBytes(text); }
+
+
+
+
+
+/** 内部泛型方法标记，仅保留调用点显式给出的错误类型。 */
+interface __magelMapErr<F> {};
+interface __magelOkOr<E> {};
+interface __magelOkOrElse<E> {};
+/** 显式映射失败载荷；成功分支不调用 mapper。 */
+Result<T,F> __mapErrImpl<T,E,F>(Result<T,E> value, F fn(E) mapper) {
+    match(value) {
+        Result<T,E>::Ok(item) => { return Result<T,F>::Ok(item); }
+        Result<T,E>::Err(error) => { return Result<T,F>::Err(mapper(error)); }
+    }
+}
+/** 将缺失转换为指定错误，error 参数按普通调用规则求值。 */
+Result<T,E> __okOrImpl<T,E>(Option<T> value, E error) {
+    match(value) {
+        Option<T>::Value(item) => { return Result<T,E>::Ok(item); }
+        Option<T>::None => { return Result<T,E>::Err(error); }
+    }
+}
+/** 只在缺失时调用错误工厂。 */
+Result<T,E> __okOrElseImpl<T,E>(Option<T> value, E fn() factory) {
+    match(value) {
+        Option<T>::Value(item) => { return Result<T,E>::Ok(item); }
+        Option<T>::None => { return Result<T,E>::Err(factory()); }
+    }
+}

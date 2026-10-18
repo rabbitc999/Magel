@@ -1,0 +1,1 @@
+magel：前处理：example/samples-error/macro_old_call_annotation.mgl 第 2 行：旧宏调用标注 `$!` 已移除，请使用 `$NAME(...)` 并在定义中声明 expr

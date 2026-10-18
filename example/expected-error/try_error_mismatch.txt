@@ -1,0 +1,1 @@
+magel：example/samples-error/try_error_mismatch.mgl 第 6 行第 5 列：无法传播 std::lang::ErrorResidual<std::lang::String>：返回类型 std::lang::Result<int64,int64> 未实现匹配的 FromResidual<F,R>

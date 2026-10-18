@@ -1,0 +1,1 @@
+pixel(2,0)=0,0,255,255getPixel(4,0) err=1conv(3,1)=192,192,192pool=2x1:255,255gray=76,29,0,64argb(0,0)=ffff0000rgb565(0,0)=f800argbBack r=255 g=0 b=0 a=255otsu threshold=20binarized=0,0,255,255bmp bytes=78decoded g=255 a=255ppm r=255pgm gray=76

@@ -1,0 +1,34 @@
+/* operator_swap_eval_order.mgl —— 交换律换边不改变求值顺序。
+ *
+ * `bump() + makeA()` 里 `+` 对称，编译器会把它换成 `makeA().leftAdd(bump())`；但两个
+ * 操作数的**求值顺序仍按源码**：先 `bump()` 再 `makeA()`。这是靠把左操作数先钳到一个
+ * 临时量里做到的（否则实参顺序 `{接收者, 实参}` 会把副作用顺序也调过来）。
+ */
+
+int64 steps = 0;
+
+int64 bump() {
+    println("bump");
+    steps = steps + 1;
+    return 100;
+}
+
+struct A : Add<int64,int64> {
+    int64 v;
+
+    int64 leftAdd(int64 other) { return self.v + other; }
+};
+
+A makeA() {
+    println("makeA");
+    steps = steps + 1;
+    A x;
+    x.v = 1;
+    return x;
+}
+
+int64 main() {
+    println("bump() + makeA() = {}", bump() + makeA());
+    println("steps = {}", steps);
+    return 0;
+}

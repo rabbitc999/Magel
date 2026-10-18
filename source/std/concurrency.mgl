@@ -1,0 +1,14 @@
+module std::concurrency;
+
+/* 从 lang.mgl 原样迁出：符号名不变，只换了模块归属（现在必须 `import std::concurrency;` 才能用）。 */
+/* 显式共享槽：普通全局变量在线程之间仍然隔离。每次 get/set/swap 都是原子操作。 */
+struct Shared<T> {
+    int64 handle;
+
+    static Shared<T> create(T value) {
+        self.handle = std::lang::__sharedCreate<T>(value);
+    }
+    T get() { return std::lang::__sharedGet<T>(self.handle); }
+    void set(T value) { std::lang::__sharedSet<T>(self.handle, value); }
+    T swap(T value) { return std::lang::__sharedSwap<T>(self.handle, value); }
+};

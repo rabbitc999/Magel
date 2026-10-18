@@ -1,0 +1,90 @@
+module std::math;
+
+/* 从编译器的注入正文里搬出来：以前每次编译都会拼进来，现在要 `import std::math;` 才可见。
+ * 宿主绑定（基础数学调用、时钟，以及冗余的 std::math::abs）在 glue/std_math.hpp。
+ *
+ * 绝对值、极值与夹取原本下沉在同一个头文件里（`__absInt64` 等宿主私有名），现已改由本文件
+ * 用 Magel 表达。公开签名按泛型收敛：`abs<T>`、`min<T>`、`max<T>` 一份实现覆盖全部类型，
+ * `min` / `max` 接受任意数量实参；`clamp` 需要 `low > high` 的诊断与三参数语义，保留
+ * int64 / float64 两份重载。
+ *
+ * 数值语义逐条保持原状：
+ *   - 整数：`int64` 最小值取负按位宽回绕，结果仍是自身；
+ *   - 浮点：NaN 与任何值比较都为假，负数零不小于零；
+ *   - 折叠按成对原始顺序做（`min(a, b, c) = min(min(a, b), c)`），所以 `min(NaN, 2.0)` 仍是
+ *     `2.0`——先取更小值会把 NaN 留下来，与迁移前的重载行为不符。 */
+
+/* 编译器提供只读 float64 常数 std::lang::Math::PI 与 std::lang::Math::E。 */
+float64 sin(float64 value);
+float64 cos(float64 value);
+float64 tan(float64 value);
+float64 asin(float64 value);
+float64 acos(float64 value);
+float64 atan(float64 value);
+float64 exp(float64 value);
+float64 ln(float64 value);
+float64 log10(float64 value);
+float64 pow(float64 value, float64 exponent);
+float64 sqrt(float64 value);
+float64 floor(float64 value);
+float64 ceil(float64 value);
+float64 round(float64 value);
+float64 trunc(float64 value);
+float64 fmod(float64 value, float64 divisor);
+bool isNaN(float64 value);
+bool isInf(float64 value);
+
+/** 返回 `value` 的绝对值；整数最小值取负回绕后仍是自身，NaN 与负数零原样返回。 */
+T abs<T>(T value)
+{
+    if (value < 0) { return (T)0 - value; }
+    return value;
+}
+
+/** 任意数量实参中的最小值；单个实参给自身，相等时给后一个（与逐对比较的顺序一致）。 */
+T min<T>(T... values)
+{
+    T best = values[0];
+    int64 index = 1;
+    while (index < values.len()) {
+        if (!(best < values[index])) { best = values[index]; }
+        index = index + 1;
+    }
+    return best;
+}
+
+/** 任意数量实参中的最大值；单个实参给自身，相等时给后一个（与逐对比较的顺序一致）。 */
+T max<T>(T... values)
+{
+    T best = values[0];
+    int64 index = 1;
+    while (index < values.len()) {
+        if (!(best > values[index])) { best = values[index]; }
+        index = index + 1;
+    }
+    return best;
+}
+
+/** 把 `value` 夹进 `[low, high]`；`low > high` 直接停机（多半是写反了）。 */
+int64 clamp(int64 value, int64 low, int64 high)
+{
+    if (!(low <= high)) {
+        std::lang::panic("std::math::clamp 的 low 不能大于 high");
+        return value;
+    }
+    if (value < low) { return low; }
+    if (value > high) { return high; }
+    return value;
+}
+
+/** 把 `value` 夹进 `[low, high]`；`low > high` 直接停机（多半是写反了）。 */
+float64 clamp(float64 value, float64 low, float64 high)
+{
+    if (!(low <= high)) {
+        std::lang::panic("std::math::clamp 的 low 不能大于 high");
+        return value;
+    }
+    if (value < low) { return low; }
+    if (value > high) { return high; }
+    return value;
+}

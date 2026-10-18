@@ -1,0 +1,7 @@
+import std::binary;
+int64 main() {
+    uint8 data[1]; data[0] = (uint8)2;
+    std::binary::BinaryReader reader = std::binary::BinaryReader::fromArray(data, 1);
+    reader.readBool();
+    return 0;
+}

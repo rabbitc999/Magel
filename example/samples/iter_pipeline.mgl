@@ -1,0 +1,170 @@
+import std::iter;
+int64 observed = 0;
+int64 addRefs((int64 const&,int64 const&) value) { return value.0 + value.1; }
+bool smallRef(int64 const& value) { return value < 3; }
+Iter<int64 const&> reversedLocal() { List<int64> values; values.push(2); values.push(4); return values.iter().rev(); }
+Iter<int64 const&> prefixLocal() { List<int64> values; values.push(2); values.push(4); auto split = values.iter().peekingTakeWhile(smallRef); return split.0; }
+struct IterRecord { String text; int64 number; };
+void updateRecord(IterRecord mut& value) { value.text = value.text + "!"; value.number = value.number + 1; }
+void replaceText(String mut& value) { value = "changed"; }
+int64 textLength(String const& value) { return len(value); }
+List<int64> madeList() { List<int64> result; result.push(2); result.push(3); return result; }
+Iter<int64 const&> localBorrow() { List<int64> result; result.push(6); return result.iter(); }
+int64 squared(int64 value) { return value * value; }
+bool even(int64 value) { return value % 2 == 0; }
+bool positive(int64 value) { return value > 0; }
+bool belowFour(int64 value) { return value < 4; }
+void observe(int64 value) { observed = observed + value; }
+int64 sum(int64 acc, int64 value) { return acc + value; }
+String label(int64 value) { return format("n{}", value); }
+int64 read(int64 const& value) { return value; }
+void bump(int64 mut& value) { value = value + 10; }
+Option<int64> doubledEven(int64 value) {
+    if (value % 2 == 0) { return Option<int64>::Value(value * 2); }
+    return Option<int64>::None;
+}
+Option<int64> firstThree(int64 value) {
+    if (value < 4) { return Option<int64>::Value(value); }
+    return Option<int64>::None;
+}
+Option<int64> running(int64 mut& acc, int64 value) { acc = acc + value; return Option<int64>::Value(acc); }
+Result<int64,String> checkedSum(int64 acc, int64 value) {
+    if (value == 3) { return Result<int64,String>::Err("three"); }
+    return Result<int64,String>::Ok(acc + value);
+}
+struct Flaky : IterNext<int64> {
+    int64 calls;
+    Option<int64> next() {
+        self.calls = self.calls + 1;
+        if (self.calls == 2) { return Option<int64>::Value(9); }
+        return Option<int64>::None;
+    }
+    (int64,Option<int64>) sizeHint() { return (0,Option<int64>::None); }
+};
+int64 main() {
+    auto values = std::iter::range(1, 5);
+    auto hint = values.sizeHint();
+    assert((hint.0) == (4));
+    assert(((hint.1).unwrap()) == (4));
+    assert((values.next().unwrap()) == (1));
+    assert((values.nth(1).unwrap()) == (3));
+    assert((values.count()) == (1));
+    assert((values.next().isNone()) == (true));
+    assert((std::iter::range(1,5).last().unwrap()) == (4));
+    assert((std::iter::range(1,5).all(positive)) == (true));
+    assert((std::iter::range(1,5).any(even)) == (true));
+    assert((std::iter::range(1,5).find(even).unwrap()) == (2));
+    auto lazy = std::iter::range(1,6).inspect(observe).map(squared).filter(even).take(2);
+    assert((observed) == (0));
+    auto selected = lazy.collect();
+    assert((observed) == (10));
+    assert((selected.len()) == (2));
+    assert((selected[0]) == (4));
+    assert((selected[1]) == (16));
+    assert((std::iter::range(1,5).fold(0, sum)) == (10));
+    assert((std::iter::range(1,7).filterMap(doubledEven).count()) == (3));
+    assert((std::iter::range(1,7).findMap(doubledEven).unwrap()) == (4));
+    assert((std::iter::range(1,7).mapWhile(firstThree).count()) == (3));
+    assert((std::iter::range(1,7).takeWhile(belowFour).count()) == (3));
+    assert((std::iter::range(1,7).skipWhile(belowFour).next().unwrap()) == (4));
+    assert((std::iter::range(1,7).skip(2).take(2).fold(0,sum)) == (7));
+    assert((std::iter::range(0,10).stepBy(2).last().unwrap()) == (8));
+    assert((std::iter::range(1,4).rev().next().unwrap()) == (3));
+    assert((std::iter::range(1,3).cycle().take(7).fold(0,sum)) == (10));
+    assert((std::iter::repeat<int64>(3).take(4).fold(0,sum)) == (12));
+    assert((std::iter::range(1,3).chain(std::iter::range(3,5)).fold(0,sum)) == (10));
+    assert((std::iter::range(1,4).sameItems(std::iter::range(1,4))) == (true));
+    assert((std::iter::range(1,4).sameItems(std::iter::range(1,5))) == (false));
+    auto indexed = std::iter::range(5,7).enumerate().next().unwrap();
+    assert((indexed.0) == (0));
+    assert((indexed.1) == (5));
+    auto zipped = std::iter::range(1,4).zip("ab".chars()).collect();
+    assert((zipped.len()) == (2));
+    assert(((zipped[1]).0) == (2));
+    assert(((zipped[1]).1) == ('b'));
+    auto split = std::iter::range(1,7).peekingTakeWhile(belowFour);
+    auto first = split.0; auto rest = split.1;
+    assert((first.count()) == (3));
+    assert((rest.next().unwrap()) == (4));
+    assert((rest.next().unwrap()) == (5));
+    auto scanned = std::iter::range(1,5).scan(0,running).collect();
+    assert((scanned[3]) == (10));
+    auto failed = std::iter::range(1,5).tryFold(0,checkedSum);
+    assert((failed.isErr()) == (true));
+    assert((failed.error()) == ("three"));
+    Flaky state;
+    auto nonFused = std::iter::fromState<int64,Flaky>(state);
+    assert((nonFused.next().isNone()) == (true));
+    assert((nonFused.next().unwrap()) == (9));
+    auto fused = std::iter::fromState<int64,Flaky>(state).fuse();
+    assert((fused.next().isNone()) == (true));
+    assert((fused.next().isNone()) == (true));
+    List<int64> empty;
+    assert((empty.intoIter().count()) == (0));
+    for (int64 round = 0; round < 4; round = round + 1) {
+        List<int64> source; source.push(1); source.push(2); source.push(3);
+        {
+            auto readonly = source.iter();
+            assert((readonly.map(read).fold(0,sum)) == (6));
+            auto collectedRefs = readonly.collect();
+            assert((collectedRefs[0]) == (1));
+            assert((readonly.zip(source.iter()).map(addRefs).fold(0,sum)) == (12));
+            auto mutable = source.iterMut();
+            mutable.forEach(bump);
+            assert((source[0]) == (11));
+            assert((source[2]) == (13));
+            int64 const& saved = readonly.next().unwrap();
+            assert((saved) == (11));
+        }
+        source.push(4);
+        auto owned = source.intoIter();
+        assert((source.len()) == (0));
+        assert((owned.map(label).collect()[0]) == ("n11"));
+        assert((owned.count()) == (4));
+        auto set = {3,1,3};
+        assert((set.intoIter().fold(0,sum)) == (4));
+        assert((set.len()) == (0));
+        auto map = {"a":"one","b":"two"};
+        auto entries = map.intoIter().collect();
+        assert((map.len()) == (0));
+        assert(((entries[0]).0) == ("a"));
+        assert(((entries[0]).1) == ("one"));
+        List<String> words; words.push("one"); words.push("two");
+        {
+            auto textRefs = words.iterMut(); textRefs.forEach(replaceText);
+            assert((words[0]) == ("changed"));
+            assert((words.iter().map(textLength).fold(0,sum)) == (14));
+        }
+        List<IterRecord> records; IterRecord record; record.text = "record"; record.number = 4; records.push(record);
+        { auto refs = records.iterMut(); refs.forEach(updateRecord); }
+        assert(((records[0]).text) == ("record!"));
+        assert(((records[0]).number) == (5));
+        auto text = std::iter::range(1,4).map(label).collect();
+        assert((text[2]) == ("n3"));
+    }
+    int64 raw[3]; raw[0] = 7; raw[1] = 8; raw[2] = 9;
+    assert((std::iter::fromSpan<int64>(&raw[0],3).map(read).fold(0,sum)) == (24));
+    int64 total = 0;
+    for (int64 item in std::iter::range(1,4).map(squared)) { total = total + item; }
+    assert((total) == (14));
+    assert((std::lang::range(1,5).intoIter().fold(0,sum)) == (10));
+    assert((std::iter::range(5,1,-1).fold(0,sum)) == (14));
+    assert((madeList().intoIter().fold(0,sum)) == (5));
+    assert((madeList().iter().map(read).fold(0,sum)) == (5));
+    auto kept = localBorrow();
+    assert((kept.map(read).fold(0,sum)) == (6));
+    auto reversedRefs = reversedLocal();
+    assert((reversedRefs.map(read).fold(0,sum)) == (6));
+    auto prefixRefs = prefixLocal();
+    assert((prefixRefs.map(read).fold(0,sum)) == (2));
+    assert((std::iter::range(1,1).cycle().next().isNone()) == (true));
+    assert((std::iter::range(1,5).take(0).count()) == (0));
+    auto extreme = std::iter::range(-(int64)9223372036854775807 - (int64)1, 9223372036854775807);
+    auto extremeHint = extreme.sizeHint();
+    assert((extremeHint.0) == (0));
+    assert(((extremeHint.1).isNone()) == (true));
+    assert((std::iter::range(9223372036854775806, 9223372036854775807, 2).count()) == (1));
+    assert((std::iter::range(-(int64)9223372036854775807, -(int64)9223372036854775807 - (int64)1, -2).count()) == (1));
+    println("iterator pipelines OK");
+    return 0;
+}

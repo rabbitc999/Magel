@@ -1,0 +1,9 @@
+段数 4 首段 alpha 末段 gamma
+拼回 alpha|beta||gamma
+find 1 rfind 4 contains 1
+starts 1 ends 1 cmp -1
+charAt b
+MIXED mixed
+XcXc
+===007
+[ab...]

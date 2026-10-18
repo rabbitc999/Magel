@@ -1,0 +1,11 @@
+struct ReentrantSetKey : Equal<bool, ReentrantSetKey> {
+    int64 value;
+    bool leftEqual(ReentrantSetKey other) { return entries.len() == 0; }
+};
+Set<ReentrantSetKey> entries;
+int64 main() {
+    ReentrantSetKey first; first.value = 1;
+    ReentrantSetKey second; second.value = 2;
+    entries.add(first); entries.add(second);
+    return 0;
+}

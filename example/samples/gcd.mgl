@@ -1,0 +1,28 @@
+/* gcd.mgl —— 欧几里得算法（辗转相除）与最小公倍数。
+ *
+ *   ./magel samples/gcd.mgl --input "1071 462"
+ *   → gcd(1071, 462) = 21
+ *     lcm(1071, 462) = 23562
+ *
+ * `x = inputInt();` 从输入取一项写进变量（这里是两个整数）。
+ */
+
+int64 main() {
+    int64 a = 0;
+    int64 b = 0;
+    a = inputInt();
+    b = inputInt();
+
+    /* 辗转相除：x、y 一直往前滚，直到余数为 0 */
+    int64 x = a;
+    int64 y = b;
+    while (y != 0) {
+        int64 remainder = x % y;
+        x = y;
+        y = remainder;
+    }
+
+    println("gcd({}, {}) = {}", a, b, x);
+    println("lcm({}, {}) = {}", a, b, a / x * b);
+    return 0;
+}

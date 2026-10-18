@@ -1,0 +1,10 @@
+import std::lang;
+
+int64 main() {
+    std::lang::List<std::lang::String> words;
+    words.push("std::lang");
+    std::lang::Map<int64, std::lang::String> names;
+    names.put(1, words[0]);
+    std::lang::println("{} {}", names[1], (if (true) { 7 } else { 9 }));
+    return 0;
+}

@@ -1,0 +1,1 @@
+magel：前处理：example/samples-error/macro_old_parameter_annotation.mgl 第 1 行：形参表写法不对：`$macro NAME(a, b)` 或 `$macro NAME(x, ...rest)`

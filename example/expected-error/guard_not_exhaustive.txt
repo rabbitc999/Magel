@@ -1,0 +1,1 @@
+magel：example/samples-error/guard_not_exhaustive.mgl 第 1 行第 1 列：enum match 必须覆盖所有变体或提供 `_` 兜底分支；缺少：E::A

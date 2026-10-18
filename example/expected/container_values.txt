@@ -1,0 +1,6 @@
+7:first 7:first 7:first 7:first
+copy 7:first
+1 -2.5
+1 1 1
+-1
+42 1 8

@@ -1,0 +1,43 @@
+struct LoopItem : Drop {
+    String text;
+    void drop() { assert(self.text != ""); }
+};
+String loopText() { return "fresh"; }
+List<int64> loopList() { List<int64> value; value.push(7); return value; }
+LoopItem loopItem() { LoopItem value; value.text="item"; return value; }
+String returnLoopText() { return loop { String local="returned"; yield (local); }; }
+int64 main() {
+    for (int64 i=0; i<10; i++) {
+        String fresh=loop { yield (loopText()); };
+        String local=loop { String text="local"; yield (text); };
+        assert(fresh=="fresh" && local=="local");
+        List<int64> values=loop { yield (loopList()); };
+        assert(values.len()==1 && values[0]==7);
+        List<int64> copied=loop { List<int64> source; source.push(8); yield (source); };
+        assert(copied[0]==8);
+        LoopItem item=loop { LoopItem source; source.text="owned"; yield (source); };
+        assert(item.text=="owned");
+        LoopItem made=loop { yield (loopItem()); };
+        assert(made.text=="item");
+        auto nested=loop { yield (loop { String text="nested"; yield (text); }); };
+        assert(nested=="nested");
+        auto pair=loop { auto (text, number)=("tuple",7); yield (text); };
+        assert(pair=="tuple");
+        String matched=loop {
+            Option<String> option=Option<String>::Value("match");
+            match(option) { Value(text)=>{yield (text);} None=>{yield ("none");} }
+        };
+        assert(matched=="match");
+        loop { yield (loopText()); };
+        loop { yield (loopList()); };
+        loop { yield (loopItem()); };
+    }
+    assert(returnLoopText()=="returned");
+    auto narrow=loop { int32 local=7; yield (local); };
+    assert(narrow==7);
+    String source="unchanged";
+    String value=loop { String source="inner"; yield (source); };
+    assert(value=="inner" && source=="unchanged");
+    println("loop owned values OK");
+    return 0;
+}

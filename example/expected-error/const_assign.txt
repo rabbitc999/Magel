@@ -1,0 +1,1 @@
+magel：example/samples-error/const_assign.mgl 第 6 行第 5 列：不可变变量（const）不能再赋值：local

@@ -1,0 +1,1 @@
+magel：example/samples-error/legacy_format.mgl 第 4 行第 5 列：std::lang::format 的第 1 个参数没有被占位符用到

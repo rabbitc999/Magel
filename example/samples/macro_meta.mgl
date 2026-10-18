@@ -1,0 +1,24 @@
+/* macro_meta.mgl —— 预处理器变量 `$line` / `$file` / `$module`，以及系统断言宏 `assert`。
+ *
+ * 三个变量在 `$macro` 之外也能直接写；写在宏体里时取的是**调用点**那一行（和 C 的
+ * `__LINE__` / `__FILE__` 一个意思），所以 `$assert(...)` 报出来的行号总是你写断言的那一行。
+ * `$file` / `$module` 展开成**字符串字面量**，可以直接拼接或喂给 `format`。
+ * `$module` 取当前源文件声明的模块名；根文件没写 `module` 时是编译器注入的 `__root`。
+ */
+
+module meta;
+
+$macro HERE(tag)
+println("{} @ {}:{} ({})", tag, $file, $line, $module);
+$end_macro
+
+int64 main() {
+    println("行 {} 文件 {} 模块 {}", $line, $file, $module);
+    $HERE("宏内")
+    int64 n = 3;
+    $HERE("又一行")
+    $assert(n > 0)
+    $assert(n < 10, "n 得是个位数")
+    println("断言都过了，{}", format("拼一下 {} + {}", n, 1));
+    return 0;
+}

@@ -1,0 +1,6 @@
+int64 main()
+{
+    auto value = (1, 2);
+    std::lang::println("{}", value.2);
+    return 0;
+}

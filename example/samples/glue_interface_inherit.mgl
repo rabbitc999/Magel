@@ -1,0 +1,25 @@
+/* glue_interface_inherit.mgl —— 胶水层声明**接口继承**
+ *
+ *   ./magel samples/glue_interface_inherit.mgl
+ *
+ * 这个文件里没有任何 `interface` / `struct` / `impl`：`magel_driver.inc` 的
+ * `InstallDemoGlue` 用 C++ 写好了下面这一串（编译前追加到合并源码末尾）：
+ *
+ *   interface GlueDemoInspect  { int64 area(); int64 scaled(int64 factor); };
+ *   interface GlueDemoMeasured : GlueDemoInspect { int64 unit(); };   // 带基接口
+ *   interface GlueDemoTagged   : GlueDemoMeasured { };                // 只继承
+ *   struct    GlueDemoCube { int64 edge; int64 unitScale; };
+ *   impl      GlueDemoCube : GlueDemoTagged = glue_demo_cube;
+ *
+ * 于是 `GlueDemoCube` 要实现的是**整条继承链**上的三条方法：继承来的 `area` /
+ * `scaled` 和自己的 `unit`（宿主符号按 `glue_demo_cube.area` / `.scaled` / `.unit`
+ * 注册）。只要少实现一条，编译器就会照着继承来的要求报缺方法。
+ */
+int64 main()
+{
+    GlueDemoCube cube;
+    cube.edge = 3;
+    cube.unitScale = 7;
+    println("cube area={} scaled={} unit={}", cube.area(), cube.scaled(2), cube.unit());
+    return 0;
+}

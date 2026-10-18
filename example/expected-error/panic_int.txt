@@ -1,0 +1,1 @@
+magel：example/samples-error/panic_int.mgl 第 2 行第 5 列：panic 的参数必须是 std::lang::String，现在给的是 int64

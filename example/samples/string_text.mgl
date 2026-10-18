@@ -1,0 +1,27 @@
+/* string_text.mgl —— 字符串工具族 `std::text::Text::*`（纯胶水，不动文法）。 */
+
+import std::text;
+
+int64 main() {
+    String csv = "  alpha,beta,,gamma  ";
+
+    /* trim → split → join */
+    List<String> parts = std::text::Text::split(std::text::Text::trim(csv), ",");
+    println("段数 {} 首段 {} 末段 {}", parts.len(), parts[0], parts[parts.len() - 1]);
+    println("拼回 {}", std::text::Text::join(parts, "|"));
+
+    /* find / rfind / contains / startsWith / endsWith / compare / charAt */
+    String text = "abcabc";
+    println("find {} rfind {} contains {}", std::text::Text::find(text, "bc"),
+    std::text::Text::rfind(text, "bc"), std::text::Text::contains(text, "cab"));
+    println("starts {} ends {} cmp {}", std::text::Text::startsWith(text, "ab"),
+    std::text::Text::endsWith(text, "bc"), std::text::Text::compare("a", "b"));
+    println("charAt {}", std::text::Text::charAt(text, 1));
+
+    /* upper / lower / replace / repeat / pad */
+    println("{} {}", std::text::Text::toUpper("MiXeD"), std::text::Text::toLower("MiXeD"));
+    println("{}", std::text::Text::replace(text, "ab", "X"));
+    println("{}{}", std::text::Text::repeat("=", 3), std::text::Text::padStart("7", 3, '0'));
+    println("[{}]", std::text::Text::padEnd("ab", 5, '.'));
+    return 0;
+}

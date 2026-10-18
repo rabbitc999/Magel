@@ -1,0 +1,29 @@
+enum Choice { Value(String text), Empty };
+int64 calls = 0;
+(String, (int64, String)) makePair() { calls += 1; return ("hello", (7, "owned")); }
+auto inferred() { auto (text, (number, _)) = makePair(); return number; }
+String guardText() { return "guard"; }
+int64 classify(Choice value) {
+    match (value) {
+        Choice::Value(text) if len(guardText()) == 0 => { return 0; }
+        Choice::Value(text) if text == "good" => { return 1; }
+        Choice::Value(text) => { return 2; }
+        Choice::Empty => { return 3; }
+    }
+    return -1;
+}
+int64 main() {
+    auto (text, (number, _)) = makePair();
+    assert(text == "hello" && number == 7 && calls == 1);
+    assert(inferred() == 7 && calls == 2);
+    assert(classify(Choice::Value("good")) == 1);
+    assert(classify(Choice::Value("bad")) == 2);
+    assert(classify(Choice::Empty) == 3);
+    int64 result = 0;
+    match (3) { 3 if false => { result = 9; } 3 if true => { result = 4; } _ => { result = 2; } }
+    assert(result == 4);
+    match ("hello") { "hello" if false => { result = 8; } "hello" => { result = 5; } _ => { result = 0; } }
+    assert(result == 5);
+    for (int64 i=0; i<20; i++) { auto (a, (_, b)) = makePair(); assert(a == "hello" && b == "owned"); }
+    println("destructuring guards OK"); return 0;
+}

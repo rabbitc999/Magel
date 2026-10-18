@@ -1,0 +1,42 @@
+/* replace_variadic.mgl —— 单行宏 `$replace` 的变长尾参 `...rest` / `` ...`rest ``
+ *
+ *   ./magel samples/replace_variadic.mgl
+ *
+ * `$replace` 和 `$macro` 共用头解析：形参表末尾写 `...rest` 就收下"剩余的全部实参"。
+ * 宏体里裸写 `rest`（不写 `$for`）时按 `, ` 拼成一段文本替换 —— 直接把调用处的实参
+ * 原样摊开：`$SUM3(1, 2, 3)` → `sum3(1, 2, 3)`。
+ *
+ * 尾参名前面加反引号（`` ...`args ``）让**每个元素**各包一层括号：
+ * `args` → `(1), (2), (3)`，挡元素内部运算符的优先级问题。
+ * 宏名前的 `!`（整段再包一层）可以一起用：`` $replace expr PAIR(...(args)) args `` 让
+ * `$PAIR(1 + 1, 2 + 2)` 得 `((1 + 1), (2 + 2))`——一个元组实参。
+ *
+ * `$replace` 只有一行宏体，装不下 `$for`：写了会报错并提示改用
+ * `$macro … $end_macro`（对照样例：samples/macro_rest_paren.mgl、
+ * samples-error/replace_block_directive.mgl）。
+ */
+
+$replace SUM3(...rest) sum3(rest)
+$replace CALL(f, (first), ...rest) f(first, rest)
+$replace HEAD(...(args)) head(args)
+$replace expr PAIR(...(args)) args
+
+int64 sum3(int64 a, int64 b, int64 c) { return a + b + c; }
+int64 combine(int64 a, int64 b, int64 c) { return a * 100 + b * 10 + c; }
+int64 head(int64 a, int64 b, int64 c) { return a * 100 + b * 10 + c; }
+int64 pairCode((int64, int64) pair) { return (pair.0) * 10 + (pair.1); }
+
+int64 main() {
+    /* 尾参默认按 `, ` 摊开成三个实参。 */
+    println("{}", $SUM3(1, 2, 3));
+
+    /* 固定形参照常包一层括号，剩下的尾参接着摊开。 */
+    println("{}", $CALL(combine, 4, 5, 6));
+
+    /* `` ...`args ``：每个尾参元素各包一层括号，`1 + 1` 不会散开。 */
+    println("{}", $HEAD(1 + 1, 2 + 2, 3 + 3));
+
+    /* `!` 与 `` ` `` 叠加：整段那层括号让元素合成一个元组实参。 */
+    println("{}", pairCode($PAIR(1 + 1, 2 + 2)));
+    return 0;
+}

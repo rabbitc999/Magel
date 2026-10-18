@@ -1,0 +1,5 @@
+half = 2.000 fromInt = 2.000 slots = 2.000 2.000
+sum = 55
+avg = 5.500
+half = 2.750
+int64(avg) = 5

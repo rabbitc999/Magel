@@ -1,0 +1,4 @@
+/* 接口继承不能成环：A 继承 B、B 又继承 A */
+interface A : B { int64 a(); };
+interface B : A { int64 b(); };
+int64 main() { return 0; }

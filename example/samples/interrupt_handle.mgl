@@ -1,0 +1,69 @@
+/*
+ * interrupt_handle.mgl —— 中断句柄：函数指针 + 定时器 + 归属线程。
+ *
+ * `Interrupt` 把一次中断需要的三样东西打包：要调的函数指针、可选的定时器句柄、
+ * 以及**它归属哪个线程**。`Interrupt::of(timer, handler)` 默认把归属线程取成创建
+ * 该定时器的线程，所以"某一线程创建的中断就在这个线程的 VM 里执行"。
+ *
+ * 句柄自带函数指针，因此定时器**没 `onInterrupt` 绑过回调**也能交付；`timer` 只负责
+ * "释放过就丢弃"和线程归属。`raise()` 从 Magel 侧投递，宿主胶水则用
+ * `Machine::raiseInterrupt(InterruptHandle, source)`，两边是同一条指令边界交付的队列。
+ *
+ * 归属线程不是当前线程时 `raise()` 是空操作 —— 别的线程的中断不会跑到这里来。
+ */
+
+import std::event;
+
+Timer unbound = Timer::everyNanos(0);   /* 周期 0：只接受显式 raise；不绑回调。 */
+Timer bound = Timer::everyNanos(0);
+
+int64 unboundFires = 0;
+int64 boundFires = 0;
+
+void onUnbound(int64 source) {
+    unboundFires = unboundFires + 1;
+    println("unbound source={}", source);
+}
+
+void onBound(int64 source) {
+    boundFires = boundFires + 1;
+    println("bound source={}", source);
+}
+
+int64 main() {
+    /* 两参 of：归属线程默认就是创建 unbound 的线程（这里 = 入口线程 0）。 */
+    Interrupt plain = Interrupt::of(unbound.handle, onUnbound);
+    println("thread={} timer-thread={} bound={}", plain.thread, unbound.thread(),
+    plain.callback == onUnbound);
+
+    plain.raise(7);                       /* 队列投递，指令边界交付 */
+    int64 i = 0;
+    while (i < 40) { i = i + 1; }
+    println("unbound-fired={}", unboundFires);
+
+    /* 归属别的线程：投递是空操作，其他线程不受影响。 */
+    Interrupt foreign = Interrupt::of(unbound.handle, 999, onUnbound);
+    foreign.raise(1);
+    int64 j = 0;
+    while (j < 40) { j = j + 1; }
+    println("foreign-fired={}", unboundFires);
+
+    /* 句柄不带函数指针（callback 仍为 0）时退回定时器槽里 `onTick` 绑的那个。 */
+    bound.onTick(onBound);
+    Interrupt fallback;
+    fallback.timer = bound.handle;
+    fallback.thread = bound.thread();
+    println("fallback-own-callback={}", fallback.callback == onBound);
+    fallback.raise(3);
+    int64 k = 0;
+    while (k < 40) { k = k + 1; }
+    println("bound-fired={}", boundFires);
+
+    /* drop 之后定时器变墓碑：句柄再投也是空操作。 */
+    unbound.drop();
+    plain.raise(9);
+    int64 m = 0;
+    while (m < 40) { m = m + 1; }
+    println("dropped-fired={}", unboundFires);
+    return 0;
+}

@@ -1,0 +1,21 @@
+
+import std::thread;
+
+int64 isolated;
+
+void worker() {
+    String message = std::thread::receive();
+    isolated = 77;
+    String reply = "ack:" + message;
+    std::thread::send(std::thread::parent(), reply);
+}
+
+int64 main() {
+    isolated = 5;
+    IsolatedThreadHandle task = std::thread::create(worker);
+    std::thread::send(task, "hello");
+    String reply = std::thread::receive();
+    std::thread::wait(task);
+    println("{} {}", reply, isolated);
+    return 0;
+}

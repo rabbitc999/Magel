@@ -1,0 +1,41 @@
+int64 main() {
+    BigInteger number = BigInteger(12);
+    BigInteger number_copy = number.copy();
+    number = number + 1;
+    println("std::lang::BigInteger={}/{}", (int64)number_copy, (int64)number);
+    BigInteger from_existing = std::lang::BigInteger(number_copy);
+    number_copy = number_copy + 1;
+    println("BigInteger_ctor={}/{}", (int64)from_existing, (int64)number_copy);
+
+    List<int64> values;
+    values.push(3);
+    List<int64> values_copy = values.copy();
+    values.push(4);
+    println("vec={}/{}", len(values_copy), len(values));
+
+    Set<int64> keys;
+    keys.add(5);
+    Set<int64> keys_copy = keys.copy();
+    keys.add(6);
+    println("set={}/{}", len(keys_copy), len(keys));
+
+    Map<String, int64> table;
+    table.put("a", 7);
+    Map<String, int64> table_copy = table.copy();
+    table.put("a", 8);
+    println("map={}/{}", table_copy["a"], table["a"]);
+
+    Any boxed = 9;
+    List<Any> nested;
+    nested.push(boxed);
+    List<Any> nested_copy = nested.copy();
+    nested.clear();
+    Any retained = nested_copy.at(0);
+    println("nested={}", (int64)retained.getValue());
+
+    number.copy();
+    values.copy();
+    keys.copy();
+    table.copy();
+    return 0;
+}

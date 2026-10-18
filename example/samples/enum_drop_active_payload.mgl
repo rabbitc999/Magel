@@ -1,0 +1,17 @@
+int64 drops=0;
+struct Resource : Drop {
+    String text;
+    Resource(String text){self.text=text;}
+    void drop(){assert(self.text!="");drops++;}
+};
+Result<Resource,int64> makeResource(){Resource value = new Resource("returned");return Result<Resource,int64>::Ok(value);}
+enum Nested {Empty, Wrapped(Result<Resource,int64> value);};
+int64 main(){
+    {Result<Resource,int64> error=Result<Resource,int64>::Err(9);assert(error.isErr());}
+    {Option<Resource> none=Option<Resource>::None;assert(none.isNone());}
+    {Nested empty=Nested::Empty;Nested nested=Nested::Wrapped(Result<Resource,int64>::Err(1));}
+    assert(drops==0);
+    {Resource resource = new Resource("active");Result<Resource,int64> value=Result<Resource,int64>::Ok(resource);assert(value.isOk());}
+    {auto value=makeResource();assert(value.isOk());}
+    assert(drops>0);println("active payload Drop OK");return 0;
+}

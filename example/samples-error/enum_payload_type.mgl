@@ -1,0 +1,5 @@
+enum Option { None, Some(int64 value) };
+int64 main() {
+    Option value = Option::Some("text");
+    return 0;
+}

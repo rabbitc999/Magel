@@ -1,0 +1,1 @@
+magel：example/samples-error/glue_member_unbound.mgl 第 8 行第 5 列：宿主接口方法没有绑定：GlueDemoRect.missing → glue_demo_rect_missing（宿主用 registry.bindTypedImplementation / bindTypedMethod 注册）

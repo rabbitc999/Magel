@@ -1,0 +1,2 @@
+extern int64 oldFunction(int64 value);
+int64 main() { return 0; }

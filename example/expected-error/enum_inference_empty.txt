@@ -1,0 +1,1 @@
+magel：example/samples-error/enum_inference_empty.mgl 第 2 行第 1 列：无法推导无载荷枚举变体 None1 的类型参数，请提供目标类型

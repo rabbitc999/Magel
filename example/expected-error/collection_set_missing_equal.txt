@@ -1,0 +1,1 @@
+magel：example/samples-error/collection_set_missing_equal.mgl 第 2 行第 45 列：Set 自定义键 MissingSetEqual 必须实现 Equal<bool,T> 等于重载接口；Hash<T> 哈希接口可选

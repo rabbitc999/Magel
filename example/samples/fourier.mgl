@@ -1,0 +1,188 @@
+/* fourier.mgl —— 离散傅里叶变换（DFT），整份都在 magel 里写、算、打印：
+ *
+ *     X[k] = Σ_{n=0}^{N-1} x[n] · e^{-j2πkn/N}
+ *          = Σ x[n]·cos(2πkn/N)  −  j·Σ x[n]·sin(2πkn/N)
+ *
+ * 四件事都在这个文件里说清楚：
+ *
+ *   1. **复数自己定义**：语言没有内建复数，就写 `struct Complex { float64 re; float64 im; }`；
+ *   2. **float64 / float64 都用真的浮点**：数据区每个槽位 8 字节，`(load:float64 …)` /
+ *      `(store:float64 …)` 带上类型后缀，两个后端就按 IEEE-754 双精度读写；
+ *      输入信号用 `float64` 数组（float32 在槽位里同样按 8 字节浮点存），
+ *   3. **运算符接口**：Complex 实现 Add / Multiply，运算由接收者方法完成；
+ *   4. **字符串类型**：`String` 是数据区里一串以 \0 结尾的字节，`print("{}", s)` 打印。
+ *
+ * 三角函数不调数学库（没有），用泰勒级数自己推：先把角度归约到 [-π, π]，
+ * 再展开到 x^17/17!（sin）/ x^16/16!（cos），对 8 点 DFT 足够。
+ */
+
+int64 ORDER = 8;                       /* 点数 N */
+
+/* ---------------- 复数（float64 定义） ---------------- */
+
+struct Complex : Add<Complex, Complex>, Multiply<Complex, Complex> {
+    float64 re;
+    float64 im;
+
+    /* 方法：就地赋值 */
+    void assign(float64 real, float64 imag) {
+        re = real;
+        im = imag;
+    }
+
+    /* 方法：就地加上另一个复数（累加器用它） */
+    void add_in_place(Complex other) {
+        re = re + other.re;
+        im = im + other.im;
+    }
+    Complex leftAdd(Complex right) {
+        Complex result;
+        result.re = re + right.re;
+        result.im = im + right.im;
+        return result;
+    }
+    /* (a+bi)(c+di) = (ac−bd) + (ad+bc)i */
+    Complex leftMul(Complex right) {
+        Complex result;
+        result.re = re * right.re - im * right.im;
+        result.im = re * right.im + im * right.re;
+        return result;
+    }
+};
+
+/* 共轭：把虚部取反 */
+Complex conj(Complex value) {
+    Complex result;
+    result.re = value.re;
+    result.im = 0.0 - value.im;
+    return result;
+}
+
+/* ---------------- 三角函数（泰勒级数） ---------------- */
+
+float64 pi = 3.14159265358979;
+
+float64 my_sin(float64 x) {
+    while (x > pi) {
+        x = x - 2.0 * pi;
+    }
+    while (x < -pi) {
+        x = x + 2.0 * pi;
+    }
+    float64 term = x;
+    float64 sum = x;
+    int64 n = 1;
+    while (n < 9) {
+        term = -term * x * x / (float64)((2 * n) * (2 * n + 1));
+        sum = sum + term;
+        n = n + 1;
+    }
+    return sum;
+}
+
+float64 my_cos(float64 theta) {
+    while (theta > pi) {
+        theta = theta - 2.0 * pi;
+    }
+    while (theta < -pi) {
+        theta = theta + 2.0 * pi;
+    }
+    float64 term = 1.0;
+    float64 sum = 1.0;
+    int64 n = 1;
+    while (n < 9) {
+        term = -term * theta * theta / (float64)((2 * n - 1) * (2 * n));
+        sum = sum + term;
+        n = n + 1;
+    }
+    return sum;
+}
+
+/* e^{-j·angle} = cos − j·sin：DFT 的旋转因子 */
+Complex twiddle(float64 angle) {
+    Complex w;
+    w.re = my_cos(angle);
+    w.im = 0.0 - my_sin(angle);
+    return w;
+}
+
+/* 浮点累加会留下 ±1e-16 的尾巴（打出来是 -0.000）；小于 5e-4 就当 0，频谱好读 */
+float64 clean(float64 value) {
+    if (value < 0.0005 && value > -0.0005) {
+        return 0.0;
+    }
+    return value;
+}
+
+/* ---------------- DFT ---------------- */
+
+/* 打印 signal[0..ORDER-1] 的频谱。实输入的频谱前后共轭对称，看前 N/2+1 个就够。
+ * `title` 是 String（数据区里的字节串），用 %s 打出来。 */
+void dft(float64 const& signal, String title) {
+    println("{}", title);
+
+    int64 k = 0;
+    while (k <= ORDER / 2) {
+        Complex sum;              /* 累加器：就地加，避免结构体值互相顶替 */
+        sum.assign(0.0, 0.0);
+
+        int64 n = 0;
+        while (n < ORDER) {
+            Complex x;            /* 输入样本（float64 读出来也是浮点） */
+            x.assign((float64)signal[n], 0.0);
+
+            Complex w;            /* 旋转因子 e^{-j2πkn/N} */
+            w = twiddle(2.0 * pi * (float64)(k * n) / (float64)ORDER);
+
+            Complex term;         /* x[n] · w —— 立刻用掉 */
+            term = x * w;
+
+            sum.add_in_place(term);
+            n = n + 1;
+        }
+
+        float64 re = clean(sum.re);
+        float64 im = clean(sum.im);
+        println("  X[{}] = (re={:3F}, im={:3F}), power={:3F}", k, re, im, re * re + im * im);
+        k = k + 1;
+    }
+}
+
+int64 main() {
+    /* 1) 单位冲激：频谱是平的，每个 X[k] 都是 (1.000, 0.000) */
+    float64 impulse[8];
+    impulse[0] = 1.0;
+
+    /* 2) 交替序列 [1,-1,1,-1,…]：只有 k = 4（最高频）有分量，X[4] 应该是 (8.000, 0.000) */
+    float64 alternating[8];
+    int64 i = 0;
+    while (i < ORDER) {
+        if (i % 2 == 0) {
+            alternating[i] = 1.0;
+        } else {
+            alternating[i] = -1.0;
+        }
+        i = i + 1;
+    }
+
+    /* 3) 方波 [1,1,1,1,-1,-1,-1,-1]：只剩奇次谐波，偶数 k 都是 (0.000, 0.000) */
+    float64 square[8];
+    i = 0;
+    while (i < ORDER) {
+        if (i < 4) {
+            square[i] = 1.0;
+        } else {
+            square[i] = -1.0;
+        }
+        i = i + 1;
+    }
+
+    String impulse_title = "DFT of impulse     x = [1,0,0,0,0,0,0,0]";
+    String alternating_title = "DFT of alternating x = [1,-1,1,-1,1,-1,1,-1]";
+    String square_title = "DFT of square wave x = [1,1,1,1,-1,-1,-1,-1]";
+
+    dft(impulse, impulse_title);
+    dft(alternating, alternating_title);
+    dft(square, square_title);
+    return 0;
+}

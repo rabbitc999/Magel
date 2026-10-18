@@ -1,0 +1,4 @@
+行 16 文件 example/samples/macro_meta.mgl 模块 meta
+宏内 @ example/samples/macro_meta.mgl:17 (meta)
+又一行 @ example/samples/macro_meta.mgl:19 (meta)
+断言都过了，拼一下 3 + 1

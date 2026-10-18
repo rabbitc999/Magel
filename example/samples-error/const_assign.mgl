@@ -1,0 +1,8 @@
+/* 给不可变变量赋值：编译期就报错 */
+const int64 LIMIT = 10;
+
+int64 main() {
+    const int64 local = 3;
+    local = 4;            /* ← 这里会被拒绝 */
+    return 0;
+}

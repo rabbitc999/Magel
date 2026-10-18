@@ -1,0 +1,1 @@
+magel：example/samples-error/p1_const_set_method.mgl 第 1 行第 103 列：不可变变量（const）不能调用修改方法：frozen

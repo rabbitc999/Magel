@@ -1,0 +1,57 @@
+import std::complex;
+import std::signal;
+
+import std::math;
+
+/** @brief 浮点比较结果通过函数指针仍须保持布尔类型。 */
+bool lessFloat(float64 left, float64 right) { return left < right; }
+
+
+int64 main() {
+    bool fn(float64, float64) compare = lessFloat;
+    assert(compare(1.25, 1.75) && !compare(2.0, 1.0));
+    std::complex::Complex<float64> a=std::complex::Complex<float64>::of(3.0,4.0);
+    std::complex::Complex<float64> b=std::complex::Complex<float64>::of(1.0,-2.0);
+    std::complex::Complex<float64> sum=a+b, product=a*b, quotient=a/b;
+    std::complex::Complex<float64> difference=a-b, conjugate=a.conjugate();
+    assert(difference.re==2.0 && difference.im==6.0);
+    assert(conjugate.re==3.0 && conjugate.im==-4.0 && a.normSquared()==25.0);
+    std::complex::Complex<float32> small=std::complex::Complex<float32>::of((float32)1.0,(float32)2.0);
+    std::complex::Complex<float32> doubled=small+small;
+    assert(doubled.re==(float32)2.0 && doubled.im==(float32)4.0);
+    println("complex {} {} {} {} {} {}",sum.re,sum.im,product.re,product.im,
+    quotient.re,quotient.im);
+    List<std::complex::Complex<float64>> input;
+    input.push(std::complex::Complex<float64>::of(1.0,0.0));
+    input.push(std::complex::Complex<float64>::of(2.0,0.0));
+    input.push(std::complex::Complex<float64>::of(3.0,0.0));
+    input.push(std::complex::Complex<float64>::of(4.0,0.0));
+    List<std::complex::Complex<float64>> spectrum=std::signal::fft(input);
+    List<std::complex::Complex<float64>> restored=std::signal::ifft(spectrum);
+    List<std::complex::Complex<float64>> slow=std::signal::dft(input);
+    int64 i=0;
+    while (i<4) {
+        std::complex::Complex<float64> fastValue=spectrum.at(i), slowValue=slow.at(i);
+        std::complex::Complex<float64> back=restored.at(i), original=input.at(i);
+        assert(std::math::abs(fastValue.re-slowValue.re)<0.00000001 &&
+        std::math::abs(fastValue.im-slowValue.im)<0.00000001);
+        assert(std::math::abs(back.re-original.re)<0.00000001 &&
+        std::math::abs(back.im-original.im)<0.00000001);
+        i=i+1;
+    }
+    List<std::complex::Complex<float64>> oddLength;
+    oddLength.push(a); oddLength.push(b); oddLength.push(sum);
+    List<std::complex::Complex<float64>> oddSpectrum=std::signal::dft(oddLength);
+    List<std::complex::Complex<float64>> oddBack=std::signal::idft(oddSpectrum);
+    assert(std::math::abs(oddBack.at(0).re-a.re)<0.00000001 &&
+    std::math::abs(oddBack.at(2).im-sum.im)<0.00000001);
+    println("fft {} {} {} {}",spectrum.at(0).re,spectrum.at(1).re,
+    spectrum.at(2).re,spectrum.at(3).re);
+    println("inverse {} {} {} {}",restored.at(0).re,restored.at(1).re,
+    restored.at(2).re,restored.at(3).re);
+    println("dft {}",slow.at(0).re);
+    delete oddLength;
+    delete oddSpectrum;
+    delete oddBack;
+    return 0;
+}

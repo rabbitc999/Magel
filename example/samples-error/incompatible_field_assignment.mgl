@@ -1,0 +1,14 @@
+struct Box {
+    int64 value;
+
+    void write_bad() {
+        value = "text";
+        return;
+    }
+};
+
+int64 main() {
+    Box box;
+    box.write_bad();
+    return 0;
+}

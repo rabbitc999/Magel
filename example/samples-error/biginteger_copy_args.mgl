@@ -1,0 +1,5 @@
+int64 main() {
+    std::lang::BigInteger number = std::lang::BigInteger(12);
+    std::lang::BigInteger duplicate = number.copy(1);
+    return 0;
+}

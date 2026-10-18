@@ -1,0 +1,55 @@
+import std::memory;
+
+/** 当前值保存在迭代器内部，返回地址在下一次 iterator 调用前有效。 */
+struct Fibonacci : Iterator<int64 mut&> {
+    int64 previous;
+    int64 next;
+    int64 current;
+    int64 count;
+
+    Option<int64 mut&> iterator(int64 index) {
+        if (index < 0 || index >= self.count) { return Option<int64 mut&>::None; }
+        if (index == 0) { self.previous = 0; self.next = 1; }
+        self.current = self.previous;
+        int64 following = self.previous + self.next;
+        self.previous = self.next;
+        self.next = following;
+        return Option<int64 mut&>::Value((int64 mut&)&self.current);
+    }
+};
+
+int64 read(int64 const& value) { return *value; }
+int64 const& readOnly(int64 mut& value) { return value; }
+
+int64 main() {
+    Fibonacci sequence;
+    sequence.count = 10;
+    int64 sum = 0;
+    for (int64 value in sequence) {
+        println("{}", value);
+        sum = sum + value;
+    }
+    assert(sum == 88);
+    int32 values[3];
+    values[0] = 1; values[1] = 2; values[2] = 3;
+    for (int32 a in values) { a = (int32)(a + 10); }
+    assert(values[0] == 11 && values[2] == 13);
+    int64 data[] = new[3];
+    data[0] = 1; data[1] = 2; data[2] = 3;
+    std::memory::Span<int64> span = std::memory::Span<int64>::from(data, 3);
+    for (int64 a in span) { a = a * 2; }
+    assert(data[0] == 2 && data[2] == 6);
+    List<int64> list;
+    list.push(4); list.push(5);
+    for (int64 a in list) { a = a + 1; assert(list[0] == 5); }
+    assert(list[1] == 6);
+    int64 mut& writable = data;
+    int64 const& readonly = &writable;
+    readonly = &writable;
+    assert(read(writable) == 2 && *readOnly(writable) == 2);
+    int64 mut& explicitWrite = (int64 mut&)readonly;
+    explicitWrite = 9;
+    assert(data[0] == 9);
+    for (int64 value in sequence) { value = 100; assert(sequence.current == 100); break; }
+    return 0;
+}

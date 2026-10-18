@@ -1,0 +1,4 @@
+int64 main() {
+    std::lang::assert(2 < 1);
+    return 0;
+}

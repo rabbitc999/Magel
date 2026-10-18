@@ -1,0 +1,5 @@
+# 自检脚本的临时文件（正常结束时也会删掉）
+tests/.actual_*.txt
+tests/.actual_*.txt.n
+tests/.stderr_*.txt
+tests/expected_*.txt.n

@@ -1,0 +1,187 @@
+module std::reflect;
+
+/** 反射错误是普通枚举值，不保存目标地址或拥有资源。 */
+enum ReflectError { NotFound, Ambiguous, ArgumentCount, TypeMismatch, ReceiverMismatch, UnsupportedSignature, NotExposed, InvalidTarget };
+
+/** 封闭值集合：精确保存位宽、符号及字符串所有权。 */
+enum ReflectValue {
+    Empty,
+    Bool(bool value),
+    Char(char value),
+    I8(int8 value),
+    I16(int16 value),
+    I32(int32 value),
+    I64(int64 value),
+    U8(uint8 value),
+    U16(uint16 value),
+    U32(uint32 value),
+    U64(uint64 value),
+    F32(float32 value),
+    F64(float64 value),
+    Text(std::lang::String value);
+    uint64 typeId() {
+        uint64 id = getTypeId<void>();
+        match(self) {
+            Empty => {}
+            Bool(value) => { id = getTypeId<bool>(); }
+            Char(value) => { id = getTypeId<char>(); }
+            I8(value) => { id = getTypeId<int8>(); }
+            I16(value) => { id = getTypeId<int16>(); }
+            I32(value) => { id = getTypeId<int32>(); }
+            I64(value) => { id = getTypeId<int64>(); }
+            U8(value) => { id = getTypeId<uint8>(); }
+            U16(value) => { id = getTypeId<uint16>(); }
+            U32(value) => { id = getTypeId<uint32>(); }
+            U64(value) => { id = getTypeId<uint64>(); }
+            F32(value) => { id = getTypeId<float32>(); }
+            F64(value) => { id = getTypeId<float64>(); }
+            Text(value) => { id = getTypeId<std::lang::String>(); }
+        }
+        return id;
+    }
+    Result<bool,std::reflect::ReflectError> asBool() {
+        Result<bool,std::reflect::ReflectError> result = Result<bool,std::reflect::ReflectError>::Err(ReflectError::TypeMismatch);
+        match(self) { Bool(value) => {result = Result<bool,std::reflect::ReflectError>::Ok(value);} _ => {} }
+        return result;
+    }
+    Result<char,std::reflect::ReflectError> asChar() {
+        Result<char,std::reflect::ReflectError> result = Result<char,std::reflect::ReflectError>::Err(ReflectError::TypeMismatch);
+        match(self) { Char(value) => {result = Result<char,std::reflect::ReflectError>::Ok(value);} _ => {} }
+        return result;
+    }
+    Result<int8,std::reflect::ReflectError> asI8() {
+        Result<int8,std::reflect::ReflectError> result = Result<int8,std::reflect::ReflectError>::Err(ReflectError::TypeMismatch);
+        match(self) { I8(value) => {result = Result<int8,std::reflect::ReflectError>::Ok(value);} _ => {} }
+        return result;
+    }
+    Result<int16,std::reflect::ReflectError> asI16() {
+        Result<int16,std::reflect::ReflectError> result = Result<int16,std::reflect::ReflectError>::Err(ReflectError::TypeMismatch);
+        match(self) { I16(value) => {result = Result<int16,std::reflect::ReflectError>::Ok(value);} _ => {} }
+        return result;
+    }
+    Result<int32,std::reflect::ReflectError> asI32() {
+        Result<int32,std::reflect::ReflectError> result = Result<int32,std::reflect::ReflectError>::Err(ReflectError::TypeMismatch);
+        match(self) { I32(value) => {result = Result<int32,std::reflect::ReflectError>::Ok(value);} _ => {} }
+        return result;
+    }
+    Result<int64,std::reflect::ReflectError> asI64() {
+        Result<int64,std::reflect::ReflectError> result = Result<int64,std::reflect::ReflectError>::Err(ReflectError::TypeMismatch);
+        match(self) { I64(value) => {result = Result<int64,std::reflect::ReflectError>::Ok(value);} _ => {} }
+        return result;
+    }
+    Result<uint8,std::reflect::ReflectError> asU8() {
+        Result<uint8,std::reflect::ReflectError> result = Result<uint8,std::reflect::ReflectError>::Err(ReflectError::TypeMismatch);
+        match(self) { U8(value) => {result = Result<uint8,std::reflect::ReflectError>::Ok(value);} _ => {} }
+        return result;
+    }
+    Result<uint16,std::reflect::ReflectError> asU16() {
+        Result<uint16,std::reflect::ReflectError> result = Result<uint16,std::reflect::ReflectError>::Err(ReflectError::TypeMismatch);
+        match(self) { U16(value) => {result = Result<uint16,std::reflect::ReflectError>::Ok(value);} _ => {} }
+        return result;
+    }
+    Result<uint32,std::reflect::ReflectError> asU32() {
+        Result<uint32,std::reflect::ReflectError> result = Result<uint32,std::reflect::ReflectError>::Err(ReflectError::TypeMismatch);
+        match(self) { U32(value) => {result = Result<uint32,std::reflect::ReflectError>::Ok(value);} _ => {} }
+        return result;
+    }
+    Result<uint64,std::reflect::ReflectError> asU64() {
+        Result<uint64,std::reflect::ReflectError> result = Result<uint64,std::reflect::ReflectError>::Err(ReflectError::TypeMismatch);
+        match(self) { U64(value) => {result = Result<uint64,std::reflect::ReflectError>::Ok(value);} _ => {} }
+        return result;
+    }
+    Result<float32,std::reflect::ReflectError> asF32() {
+        Result<float32,std::reflect::ReflectError> result = Result<float32,std::reflect::ReflectError>::Err(ReflectError::TypeMismatch);
+        match(self) { F32(value) => {result = Result<float32,std::reflect::ReflectError>::Ok(value);} _ => {} }
+        return result;
+    }
+    Result<float64,std::reflect::ReflectError> asF64() {
+        Result<float64,std::reflect::ReflectError> result = Result<float64,std::reflect::ReflectError>::Err(ReflectError::TypeMismatch);
+        match(self) { F64(value) => {result = Result<float64,std::reflect::ReflectError>::Ok(value);} _ => {} }
+        return result;
+    }
+    Result<std::lang::String,std::reflect::ReflectError> asText() {
+        Result<std::lang::String,std::reflect::ReflectError> result = Result<std::lang::String,std::reflect::ReflectError>::Err(ReflectError::TypeMismatch);
+        match(self) { Text(value) => {result = Result<std::lang::String,std::reflect::ReflectError>::Ok(value);} _ => {} }
+        return result;
+    }
+};
+
+struct ParameterInfo { std::lang::String name; uint64 typeId; };
+struct AnnotationParameter { std::lang::String name; uint64 typeId; Option<std::reflect::ReflectValue> defaultValue; };
+struct AnnotationInfo { std::lang::String name; uint64 typeId; List<std::reflect::AnnotationParameter> params; };
+struct Annotation { uint64 annotationId; List<std::reflect::ReflectValue> args; };
+struct FuncInfo { std::lang::String name; uint64 typeId; List<std::reflect::ParameterInfo> params; uint64 returnTypeId; List<std::reflect::Annotation> annotations; };
+struct MethodInfo { FuncInfo function; bool isStatic; bool isConstructor; bool isConst; bool hasDefaultBody; };
+struct FieldInfo { std::lang::String name; uint32 offset; uint64 typeId; bool isOwned; List<std::reflect::Annotation> annotations; };
+struct StaticMemberInfo { std::lang::String name; uint64 typeId; bool isOwned; List<std::reflect::Annotation> annotations; };
+struct VariantInfo { std::lang::String name; uint32 tag; List<std::reflect::ParameterInfo> payloads; };
+struct StructInfo { std::lang::String name; uint64 typeId; List<std::reflect::FieldInfo> fields; List<std::reflect::MethodInfo> methods; List<std::reflect::StaticMemberInfo> staticMembers; List<uint64> implementedInterfaces; List<std::reflect::Annotation> annotations; };
+struct EnumInfo { std::lang::String name; uint64 typeId; List<std::reflect::VariantInfo> variants; List<std::reflect::MethodInfo> methods; List<std::reflect::StaticMemberInfo> staticMembers; List<uint64> implementedInterfaces; List<std::reflect::Annotation> annotations; };
+struct InterfaceInfo { std::lang::String name; uint64 typeId; List<std::reflect::MethodInfo> methods; List<uint64> implementedBy; List<std::reflect::Annotation> annotations; };
+
+// 下列内部声明由编译器在完整具体类型和布局确定后生成函数体。
+uint64 __reflect_typeId(int64 id);
+Option<std::reflect::StructInfo> __reflect_struct(uint64 id);
+Option<std::reflect::EnumInfo> __reflect_enum(uint64 id);
+Option<std::reflect::InterfaceInfo> __reflect_interface(uint64 id);
+Option<std::reflect::FuncInfo> getFuncInfo(std::lang::String name);
+Option<std::reflect::AnnotationInfo> getAnnotationInfo(std::lang::String name);
+
+uint64 getTypeId<T>() { return __reflect_typeId(__typeTag(T)); }
+uint64 getInterfaceId<I>() { return getTypeId<I>(); }
+Option<std::reflect::StructInfo> getStructInfo<T>() { return __reflect_struct(getTypeId<T>()); }
+Option<std::reflect::EnumInfo> getEnumInfo<T>() { return __reflect_enum(getTypeId<T>()); }
+Option<std::reflect::InterfaceInfo> getInterfaceInfo<I>() { return __reflect_interface(getTypeId<I>()); }
+bool implementsInterface<T>(uint64 interfaceId) {
+    Option<std::reflect::StructInfo> s = getStructInfo<T>();
+    if(s.isValue()) { for(uint64 id in s.unwrap().implementedInterfaces) { if(id==interfaceId) {return true;} } }
+    Option<std::reflect::EnumInfo> e = getEnumInfo<T>();
+    if(e.isValue()) { for(uint64 id in e.unwrap().implementedInterfaces) { if(id==interfaceId) {return true;} } }
+    return false;
+}
+List<std::reflect::Annotation> getAnnotations<T>() {
+    Option<std::reflect::StructInfo> s=getStructInfo<T>(); if(s.isValue()){return s.unwrap().annotations;}
+    Option<std::reflect::EnumInfo> e=getEnumInfo<T>(); if(e.isValue()){return e.unwrap().annotations;}
+    Option<std::reflect::InterfaceInfo> i=getInterfaceInfo<T>(); if(i.isValue()){return i.unwrap().annotations;}
+    List<std::reflect::Annotation> empty;return empty;
+}
+List<std::reflect::Annotation> getFieldAnnotations<T>(std::lang::String name) {
+    Option<std::reflect::StructInfo> s=getStructInfo<T>();
+    if(s.isValue()){for(FieldInfo f in s.unwrap().fields){if(f.name==name){return f.annotations;}}}
+    List<std::reflect::Annotation> empty;return empty;
+}
+List<std::reflect::Annotation> getFuncAnnotations(std::lang::String name) {
+    Option<std::reflect::FuncInfo> f=getFuncInfo(name);if(f.isValue()){return f.unwrap().annotations;}
+    List<std::reflect::Annotation> empty;return empty;
+}
+List<std::reflect::MethodInfo> __methods<T>() {
+    Option<std::reflect::StructInfo> s=getStructInfo<T>();if(s.isValue()){return s.unwrap().methods;}
+    Option<std::reflect::EnumInfo> e=getEnumInfo<T>();if(e.isValue()){return e.unwrap().methods;}
+    Option<std::reflect::InterfaceInfo> i=getInterfaceInfo<T>();if(i.isValue()){return i.unwrap().methods;}
+    List<std::reflect::MethodInfo> empty;return empty;
+}
+List<std::reflect::Annotation> getMethodAnnotations<T>(std::lang::String name) {
+    for(MethodInfo m in __methods<T>()){if(m.function.name==name){return m.function.annotations;}}
+    List<std::reflect::Annotation> empty;return empty;
+}
+List<std::reflect::Annotation> getStaticMemberAnnotations<T>(std::lang::String name) {
+    Option<std::reflect::StructInfo> s=getStructInfo<T>();
+    if(s.isValue()){for(StaticMemberInfo m in s.unwrap().staticMembers){if(m.name==name){return m.annotations;}}}
+    Option<std::reflect::EnumInfo> e=getEnumInfo<T>();
+    if(e.isValue()){for(StaticMemberInfo m in e.unwrap().staticMembers){if(m.name==name){return m.annotations;}}}
+    List<std::reflect::Annotation> empty;return empty;
+}
+
+// 编译器只为已使用的具体签名生成桥接；所有动态参数均须精确匹配。
+Result<std::reflect::ReflectValue,std::reflect::ReflectError> call(std::lang::String name, List<std::reflect::ReflectValue> args);
+Result<std::reflect::ReflectValue,std::reflect::ReflectError> callMethod<T>(T mut& obj, std::lang::String name, List<std::reflect::ReflectValue> args);
+Result<std::reflect::ReflectValue,std::reflect::ReflectError> callMethodConst<T>(T const& obj, std::lang::String name, List<std::reflect::ReflectValue> args);
+Result<std::reflect::ReflectValue,std::reflect::ReflectError> callStatic<T>(std::lang::String name, List<std::reflect::ReflectValue> args);
+Result<std::reflect::ReflectValue,std::reflect::ReflectError> callEnumMethod<T>(T mut& obj, std::lang::String name, List<std::reflect::ReflectValue> args);
+Result<std::reflect::ReflectValue,std::reflect::ReflectError> callEnumMethodConst<T>(T const& obj, std::lang::String name, List<std::reflect::ReflectValue> args);
+Result<std::reflect::ReflectValue,std::reflect::ReflectError> callEnumStatic<T>(std::lang::String name, List<std::reflect::ReflectValue> args);
+Result<T,std::reflect::ReflectError> construct<T>(List<std::reflect::ReflectValue> args);
+Result<std::reflect::ReflectValue,std::reflect::ReflectError> callInterface<I>(I mut& obj, std::lang::String name, List<std::reflect::ReflectValue> args);
+Result<std::reflect::ReflectValue,std::reflect::ReflectError> callInterfaceConst<I>(I const& obj, std::lang::String name, List<std::reflect::ReflectValue> args);
+int64 __reflect_actualType<I>(I const& obj);
+R __reflect_unary<I,R>(I const& obj, std::lang::String method);

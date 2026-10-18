@@ -1,0 +1,439 @@
+\chapter{猜数字}
+\label{ch:02}
+
+第 1 章的程序只会说一句话。这一章我们要写一个真的会跟你对话的东西：
+
+\begin{tip}{提示}
+程序想一个 1 到 100 之间的整数，你输入猜测，它告诉你「太大」还是「太小」，直到你猜中为止，然后告诉你一共猜了几次。
+\end{tip}
+
+这个程序只用四个最基础的积木：变量、输入、分支、循环。我们把它们一块一块拼起来——每一步都能单独跑，你随时可以停下来看。
+
+\begin{tip}{提示}
+本章的代码建议你真的敲一遍。后面所有章节都建立在这一章的四种积木上。
+\end{tip}
+
+\section{第一步：先让它说一句话}
+
+先别管猜数字，先让程序开口：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    println("我想好了一个 1 到 100 的数，你猜是多少？");
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+我想好了一个 1 到 100 的数，你猜是多少？
+\end{lstlisting}
+\par
+\medskip
+
+没有新东西。就一句 \texttt{println}。
+
+\section{第二步：读一个数进来}
+
+光说话不够，它得能听见你。改一下：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    println("我想好了一个 1 到 100 的数，你猜是多少？");
+    int64 guess = inputInt();
+    println("你猜的是 {}。", guess);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+运行（\texttt{--input} 后面的内容就是喂给程序的标准输入）：
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel run guess.mgl --input "42"
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+我想好了一个 1 到 100 的数，你猜是多少？
+你猜的是 42。
+\end{lstlisting}
+\par
+\medskip
+
+三件新东西，一个一个说。
+
+\texttt{int64 guess =\allowbreak{} input\allowbreak{}Int(\allowbreak{})\allowbreak{};} —— 读一个整数。
+
+\texttt{input\allowbreak{}Int} 会去读用户输入的一项（用空白分隔），按 \texttt{int64} 解析，然后把值交出来。如果输入的不是合法整数，程序会在那里停下来报错，不会给你一个莫名其妙的 0。这一点和第 3 章要讲的「不隐式转换」是同一种性格：宁可当场停下，不猜你的意思。
+
+核心模块 \texttt{lang} 会自动加载，\texttt{input\allowbreak{}Int} 和 \texttt{println} 都可以直接使用。示例优先写简短名称；只有同名符号发生冲突，或需要说明名称来源时，才使用 \texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}input\allowbreak{}Int}、\texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}println} 这样的完整名称。
+
+\texttt{"你猜的是 \{\}。"} —— \texttt{\{\}} 是位置占位符。
+
+\texttt{\{\}} 会按实参类型填入值，不需要额外写数值类型标记。占位符的格式与实参类型由编译器检查；本章示例统一使用 \texttt{\{\}}。
+
+\section{第三步：比一比，给个提示}
+
+现在让它知道答案是 42，并且判断你的猜测：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 secret = 42;
+    println("我想好了一个 1 到 100 的数，你猜是多少？");
+    int64 guess = inputInt();
+    if (guess < secret)
+    {
+        println("太小了。");
+    }
+    elif (guess > secret)
+    {
+        println("太大了。");
+    }
+    else
+    {
+        println("猜对了！");
+    }
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+输入 \texttt{50}：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+我想好了一个 1 到 100 的数，你猜是多少？
+太大了。
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{int64 secret =\allowbreak{} 42;} 定义了一个变量：类型 \texttt{int64}、名字 \texttt{secret}、初始值 \texttt{42}。这里的 \texttt{=\allowbreak{}} 是赋值，不是数学上的「相等」。第 6 章你会知道它到底做了什么。
+
+\texttt{if /\allowbreak{} elif /\allowbreak{} else} 就是分支。注意两点：
+
+\begin{itemize}
+
+\item 条件是写在括号里的，和 C 一样：\texttt{if (\allowbreak{}guess <\allowbreak{} secret)\allowbreak{}}；
+
+\item 「否则如果」在 Magel 里拼作 \texttt{elif}，不是 \texttt{else if}，也不是 \texttt{elsif}。
+
+\end{itemize}
+
+每个分支的主体都要用 \texttt{\{ \}} 包起来。哪怕只有一句，也要包——Magel 没有「不写花括号只作用一行」那套规矩，省下的这点字换来的是不会看错的结构。
+
+\section{第四步：让它一直问下去}
+
+一次猜不中就要再来一次。把「读 + 判断」塞进一个循环：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 secret = 42;
+    println("我想好了一个 1 到 100 的数，你猜是多少？");
+    while (true)
+    {
+        int64 guess = inputInt();
+        if (guess < secret)
+        {
+            println("太小了。");
+        }
+        elif (guess > secret)
+        {
+            println("太大了。");
+        }
+        else
+        {
+            println("猜对了！");
+            break;
+        }
+    }
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+输入 \texttt{50 30 42}：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+我想好了一个 1 到 100 的数，你猜是多少？
+太大了。
+太小了。
+猜对了！
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{while (\allowbreak{}true)\allowbreak{} \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} \}} 是「只要条件成立就一直做」。条件是 \texttt{true}，字面意思就是永远成立——所以这个循环本身不会自己停。
+
+\texttt{break;} 就是那个出口：猜对时跳出去。
+
+\begin{tip}{提示}
+有没有更贴切的写法？有。当循环的唯一出路是 \texttt{break} 时，Magel 允许你写\texttt{loop \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} \}}，意思和 \texttt{while (\allowbreak{}true)\allowbreak{}} 一样，但一眼就能看出「这是个靠 \texttt{break} 结束的循环」。第 5 章会讲 \texttt{loop} 的另一个用法：带着值跳出来。
+\end{tip}
+
+顺便说明一个容易踩的点：变量 \texttt{guess} 在每次循环里都是新的。写在 \texttt{while} 里面的声明，每转一圈都会重新做一次。所以它不是「上一轮的 \texttt{guess} 被改掉」，而是「新一轮又创了一个 \texttt{guess}」。第 8 章会讲清这种「出作用域就消失」的规则。
+
+\section{第五步：让答案真的随机}
+
+固定答案 42 只能骗自己。要随机数，得请标准库帮忙：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+import std::random;
+
+int64 main()
+{
+    Random gen = Random::withSeed((uint64)2026);
+    int64 secret = gen.nextInt(1, 100);
+    println("答案是 {}。", secret);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+答案是 62。
+\end{lstlisting}
+\par
+\medskip
+
+四件事：
+
+\texttt{import std:\allowbreak{}:\allowbreak{}random;} —— 把标准库的 \texttt{random} 模块引进来。除了核心模块 \texttt{lang} 之外的模块，都要显式 \texttt{import}（第 18 章）。
+
+\texttt{Random gen =\allowbreak{} .\allowbreak{}.\allowbreak{}.\allowbreak{}} —— \texttt{Random} 是一个结构体（struct），你可以先把它当成「一个装着随机数发生器的小盒子」。结构体在第 9 章细讲。
+
+\texttt{Random:\allowbreak{}:\allowbreak{}with\allowbreak{}Seed(\allowbreak{}(\allowbreak{}uint64)\allowbreak{}2026)\allowbreak{}} —— \texttt{:\allowbreak{}:\allowbreak{}} 表示调这个类型上的静态方法。\texttt{with\allowbreak{}Seed} 是「用指定种子造一个发生器」。
+
+那个 \texttt{(\allowbreak{}uint64)\allowbreak{}} 强转是必需的，不是装饰。 \texttt{2026} 这个字面量默认是 \texttt{int64}，而 \texttt{with\allowbreak{}Seed} 要的是 \texttt{uint64}；Magel 不做隐式转换，你不写它就编译不过：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：调用 static 函数 Random::withSeed 找不到匹配的重载：(int64)；没有参数类型能对上的重载（候选：Random.withSeed）
+\end{lstlisting}
+\par
+\medskip
+
+第一次遇到会觉得它死板。但换个角度：报错说「我找不到 \texttt{(\allowbreak{}int64)\allowbreak{}} 的重载」，它把它拿到了什么告诉你了。第 3 章会专门讲这套转换规则。
+
+为什么用种子，不用真随机？ 因为要能复现。
+
+\texttt{with\allowbreak{}Seed(\allowbreak{}2026)\allowbreak{}} 每跑一次都给你同一串数，所以本书能写死「答案是 62」，你照着敲也能得到 62。真实程序里想要每次都不一样，就用：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+Random gen = Random::fromEntropy();
+\end{lstlisting}
+\par
+\medskip
+
+\section{完整程序}
+
+把上面五步合起来：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+import std::random;
+
+int64 main()
+{
+    Random gen = Random::withSeed((uint64)2026);
+    int64 secret = gen.nextInt(1, 100);
+    int64 tries = 0;
+
+    println("我想好了一个 1 到 100 的数，你猜是多少？");
+    while (true)
+    {
+        int64 guess = inputInt();
+        tries = tries + 1;
+        if (guess < secret)
+        {
+            println("太小了。");
+        }
+        elif (guess > secret)
+        {
+            println("太大了。");
+        }
+        else
+        {
+            println("猜对了！答案是 {}，你用了 {} 次。", secret, tries);
+            break;
+        }
+    }
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel run guess.mgl --input "50 75 62"
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+我想好了一个 1 到 100 的数，你猜是多少？
+太小了。
+太大了。
+猜对了！答案是 62，你用了 3 次。
+\end{lstlisting}
+\par
+\medskip
+
+新东西只有一处：\texttt{tries =\allowbreak{} tries + 1;}
+
+这行读作「\texttt{tries} 变成它原来的值加一」。\texttt{=\allowbreak{}} 依然是赋值。Magel 也支持写成 \texttt{tries +=\allowbreak{} 1;}（第 5 章会讲这一串复合赋值），但本书前面会一直用 \texttt{tries =\allowbreak{} tries + 1} 这种最直白的写法——先写清楚，再写短。
+
+顺带一提：\texttt{++tries} 那种自增写法 Magel 也有，但它对「同一个变量在一个表达式里被读写两次」管得很严，用不好会直接报错。第 5 章再说。
+
+\section{出错的时候}
+
+这个程序很容易出错，两种错法都很典型。
+
+输入不够。 程序要两个数，你只给了一个：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 first = inputInt();
+    int64 second = inputInt();
+    println("{} {}", first, second);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：运行期错误：输入不够（第 2 项缺失）
+出错位置：guess.mgl:3（main）
+调用栈（外 → 内）：
+  main  guess.mgl:3 [thread 0 coroutine 0 ip 3]
+\end{lstlisting}
+\par
+\medskip
+
+输入不是整数。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 value = inputInt();
+    println("{}", value);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：运行期错误：std::lang::inputInt 读到的不是合法 int："abc"
+出错位置：guess.mgl:2（main）
+调用栈（外 → 内）：
+  main  guess.mgl:2 [thread 0 coroutine 0 ip 3]
+\end{lstlisting}
+\par
+\medskip
+
+注意这两条报错和上一章那条语法错误的区别：
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+ & 什么时候报 & 谁的问题 \\
+\midrule
+\texttt{语法错误：…} & 编译期，程序一个字符都没跑 & 代码写错了 \\
+\texttt{magel：运行期错误：…} & 运行期，跑到那一句才炸 & 数据不合法 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Magel 的立场是：代码的错误要尽量在编译期抓干净。所以「类型对不上」是编译期的事，而「用户输入了个 \texttt{abc}」只能运行期知道——这种事它只能诚实地停下来，并告诉你停在哪一行。
+
+程序停下来的位置写成了 \texttt{guess.\allowbreak{}mgl:\allowbreak{}9}，连调用栈都给了；写大程序时这东西能救你。
+
+\section{小结}
+
+这一章你认识了四种积木，还有几个语法细节：
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+你会了 & 关键点 \\
+\midrule
+变量 & \texttt{int64 secret =\allowbreak{} 42;} —— 类型写在名字前面 \\
+输入 & \texttt{input\allowbreak{}Int(\allowbreak{})\allowbreak{}} 读一个整数，读不合法就报错 \\
+分支 & \texttt{if (\allowbreak{}…)\allowbreak{} \{ \} elif (\allowbreak{}…)\allowbreak{} \{ \} else \{ \}}，主体必须带花括号 \\
+循环 & \texttt{while (\allowbreak{}true)\allowbreak{} \{ … break; \}} \\
+格式化 & \texttt{\{\}} 是位置占位符，类型由实参推导 \\
+模块 & \texttt{import std:\allowbreak{}:\allowbreak{}random;}；只有 \texttt{lang} 是自动加载的 \\
+静态方法 & \texttt{Random:\allowbreak{}:\allowbreak{}with\allowbreak{}Seed(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}}，\texttt{:\allowbreak{}:\allowbreak{}} 后面是类型级的东西 \\
+强转 & \texttt{(\allowbreak{}uint64)\allowbreak{}2026} —— Magel 不做隐式转换 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+还有一个习惯要开始养成：先 \texttt{check} 再 \texttt{run}。
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel check guess.mgl    # 只查语法和类型，不执行
+\end{lstlisting}
+\par
+\medskip
+
+\section{下一步}
+
+第 2 章里我们「先用后解释」了不少东西——变量到底是什么、为什么 \texttt{2026} 不能直接交给 \texttt{with\allowbreak{}Seed}、\texttt{\{\}} 是怎么知道该打印成整数的。
+
+下一章就来补上最基础的一块：变量与类型。
+
+翻到\hyperref[ch:03]{第 3 章 变量与类型}。

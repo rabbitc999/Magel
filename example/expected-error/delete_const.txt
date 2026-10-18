@@ -1,0 +1,1 @@
+magel：example/samples-error/delete_const.mgl 第 4 行第 5 列：不能 delete 只读（const）变量：block

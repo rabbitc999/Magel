@@ -1,0 +1,1 @@
+magel：example/samples-error/generic_inference_conflict.mgl 第 2 行第 1 列：泛型函数 same 的类型实参推导冲突，请显式指定类型实参

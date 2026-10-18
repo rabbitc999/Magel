@@ -1,0 +1,12 @@
+module std::process;
+
+/*
+ * 进程与系统调用（从编译器注入正文里搬出来）：要 `import std::process;` 才能用。
+ * 底层 `__processRun` / `__processRead` / `__processClose` / `__system` 是编译器内建的
+ * 宿主调用（按裸名识别），本体在 Registry 胶水 `glue/std_process.hpp` 里：
+ * 命令管道用宿主管柄池持有，VM 侧只看到 `proc`(int64)，所以导出程序也会内嵌同一份胶水。
+ */
+proc processRun(std::lang::String command) { return __processRun(command); }
+std::lang::String processRead(proc process) { return __processRead(process); }
+int64 processClose(proc process) { return __processClose(process); }
+int64 system(std::lang::String command) { return __system(command); }

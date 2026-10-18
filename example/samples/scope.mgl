@@ -1,0 +1,83 @@
+/* scope.mgl —— 名字遮蔽 + 生命周期（块作用域自动释放）。
+ *
+ *   ./magel samples/scope.mgl
+ *   → 遮蔽的效果、以及"离开块就还回去"的堆用量
+ *
+ * 两件事：
+ *
+ * 1. **遮蔽**：内层块里声明的同名变量把外层的遮住（`{ int64 x = 2; }`），块一结束外层
+ *    那个又回来了。同一个块里**不许**重名。
+ * 2. **生命周期**：运行时数组（`T a[] = new [n]`）与堆上的字符串（拼出来的、切出来的、
+ *    `format` 出来的）都归**声明它的块**所有，离开块时自动释放；
+ *    `T mut&` 是"手动所有"，自己 `delete`。
+ *
+ * 跑完**不会**出现"程序结束时堆上还有 … 字节没有 delete"那句提示 —— 说明这些
+ * 临时串、数组、结点都还给堆了。
+ */
+
+struct Node { int64 value; Option<Node mut&> next; };
+Option<Node mut&> chain(int64 n) {
+    Option<Node mut&> head = Option<Node mut&>::None;
+    for (int64 i = 0; i < n; i = i + 1) {
+        Node mut& node = heap Node;
+        node.value = i; node.next = head;
+        head = Option<Node mut&>::Value(node);
+    }
+    return head;
+}
+String show(Option<Node mut&> head) {
+    String text = "";
+    Option<Node mut&> cursor = head;
+    while (cursor.isValue()) {
+        Node mut& node = cursor.unwrap();
+        text = text + format("{} ", node.value);
+        cursor = node.next;
+    }
+    return text;
+}
+void release(Option<Node mut&> head) {
+    Option<Node mut&> cursor = head;
+    while (cursor.isValue()) {
+        Node mut& node = cursor.unwrap();
+        cursor = node.next;
+        delete node;
+    }
+}
+
+int64 main() {
+    int64 x = 1;
+    String tag = "外层";
+
+    {
+        /* 内层块：同名变量遮蔽外层 */
+        int64 x = 2;
+        String tag = "内层";
+        println("块里：x={} tag={}", x, tag);
+
+        /* 块里声明的运行时数组与堆字符串：离开这个块时自动释放 */
+        int64 a[] = new [4];
+        for (int64 i = 0; i < 4; i = i + 1) {
+            a[i] = i * i;
+        }
+        String joined = "";
+        for (int64 i = 0; i < 4; i = i + 1) {
+            joined = joined + format("{},", a[i]);
+        }
+        println("块里：a={} len(a)={}", joined, len(a));
+    }
+
+    println("块外：x={} tag={}", x, tag);
+
+    /* for 的初始化变量归**这一层循环**：外面看不见，同名可以遮蔽 */
+    for (int64 i = 0; i < 2; i = i + 1) {
+        println("循环里：i={}", i);
+    }
+    int64 i = 100;              /* 和上面那个 `i` 不冲突（那个已经出了作用域） */
+    println("循环外：i={}", i);
+
+    /* 手动所有：这条链自己 delete 回去 */
+    Option<Node mut&> head = chain(4);
+    println("链：{}", show(head));
+    release(head);
+    return 0;
+}

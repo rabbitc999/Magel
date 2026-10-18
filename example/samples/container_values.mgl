@@ -1,0 +1,84 @@
+import std::algorithms;
+
+struct Inner { int64 number; };
+struct Entry : Equal<bool, Entry>, Hash<Entry> {
+    Inner inner; String label;
+    bool leftEqual(Entry value) { return self.inner.number == value.inner.number && self.label == value.label; }
+    uint64 hash(Entry value) { return (uint64)self.inner.number; }
+};
+struct Metric : Equal<bool, Metric> {
+    float64 amount;
+    bool leftEqual(Metric other) { return self.amount == other.amount; }
+};
+struct Boxed : Equal<bool, Boxed> {
+    Any payload;
+    bool leftEqual(Boxed value) {
+        int64 left = self.payload.getValue(); int64 right = value.payload.getValue();
+        return left == right;
+    }
+};
+
+bool positiveMetric(Metric item) { return item.amount > 0.0; }
+
+int64 main() {
+    List<Entry> values;
+    Set<Entry> unique;
+    Map<Entry, Entry> lookup;
+    {
+        Entry local;
+        local.inner.number = 7;
+        local.label = "first";
+        values.push(local);
+        unique.add(local);
+        lookup.put(local, local);
+        local.inner.number = 9;
+        local.label = "changed";
+    }
+    Entry fromList = values[0];
+    Entry fromSet = unique.at(0);
+    Entry fromMap = lookup[fromList];
+    Entry key = lookup.keyAt(0);
+    println("{}:{} {}:{} {}:{} {}:{}", fromList.inner.number,
+    fromList.label, fromSet.inner.number, fromSet.label,
+    fromMap.inner.number, fromMap.label, key.inner.number, key.label);
+    Map<Entry, Entry> copiedLookup = lookup;
+    lookup.clear();
+    Entry copiedValue = copiedLookup[key];
+    println("copy {}:{}", copiedValue.inner.number, copiedValue.label);
+    Set<Metric> metrics;
+    Metric low;
+    low.amount = -2.5;
+    Metric high;
+    high.amount = 1.5;
+    metrics.add(high);
+    metrics.add(low);
+    Metric first = metrics.at(0);
+    println("{} {}", metrics.has(low), first.amount);
+    List<Metric> measured;
+    measured.push(low);
+    measured.push(high);
+    List<Metric> positive = std::algorithms::filterValue<Metric>(measured, positiveMetric);
+    println("{} {} {}", std::algorithms::findValue<Metric>(measured, high),
+    std::algorithms::countValue<Metric>(measured, low), positive.len());
+    float64 total = 0.0;
+    for (Metric item in measured) { total = total + item.amount; }
+    println("{}", total);
+    List<Boxed> boxed;
+    Set<Boxed> boxedSet;
+    Map<Boxed, int64> boxedMap;
+    {
+        Any payload;
+        payload.set(42);
+        Boxed item;
+        item.payload = payload;
+        boxed.push(item);
+        boxedSet.add(item);
+        boxedMap.put(item, 8);
+    }
+    Boxed restored = boxed[0];
+    int64 answer = restored.payload.getValue();
+    Boxed setKey = boxedSet.at(0);
+    Boxed mapKey = boxedMap.keyAt(0);
+    println("{} {} {}", answer, boxedSet.has(setKey), boxedMap[mapKey]);
+    return 0;
+}

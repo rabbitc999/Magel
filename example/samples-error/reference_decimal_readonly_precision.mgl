@@ -1,0 +1,1 @@
+int64 main() { std::lang::BigDecimal value = std::lang::BigDecimal(1); std::lang::BigDecimal const& ref = &value; ref.setPrecision(20); return 0; }

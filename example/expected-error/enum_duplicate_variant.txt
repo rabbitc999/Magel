@@ -1,0 +1,1 @@
+magel：example/samples-error/enum_duplicate_variant.mgl 第 1 行第 1 列：enum State 的变体重名：Ready

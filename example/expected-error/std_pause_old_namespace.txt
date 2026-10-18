@@ -1,0 +1,1 @@
+magel：example/samples-error/std_pause_old_namespace.mgl 第 1 行第 1 列：调用了没导入或没定义的模块函数：std::pause

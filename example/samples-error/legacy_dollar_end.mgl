@@ -1,0 +1,4 @@
+/* `$end` 已拆开：宏体用 `$end_macro`，`$for` 用 `$end_for`。 */
+$macro ADD(x, y)
+((x) + (y))
+$end

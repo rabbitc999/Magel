@@ -1,0 +1,1 @@
+int64 main() { String value = "one"; String const& ref = &value; ref = "two"; return 0; }

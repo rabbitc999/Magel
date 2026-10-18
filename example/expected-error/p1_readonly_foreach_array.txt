@@ -1,0 +1,1 @@
+magel：example/samples-error/p1_readonly_foreach_array.mgl 第 1 行第 1 列：不可变变量（const）不能再赋值：item

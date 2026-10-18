@@ -1,0 +1,1 @@
+magel：example/samples-error/operator_asymmetric_reverse.mgl 第 13 行第 5 列：没有匹配的运算符接口实现：int64 - Diff（由左操作数实现 Subtract<R,T> 这类左接口，或由右操作数实现 RightSubtract<R,T> 这类右接口）；不会偷偷按数值算

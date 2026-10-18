@@ -1,0 +1,1 @@
+语法错误：example/samples-error/collection_missing_value.mgl 第 1 行第 32 列：期望 字符串 / 数字 / 标识符 / 整数类型(int8) 等 46 个之一，实际是 右花括号(})

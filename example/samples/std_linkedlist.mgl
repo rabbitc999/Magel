@@ -1,0 +1,32 @@
+import std::linkedlist;
+int64 main(){
+    LinkedList list=LinkedList::create();
+    assert(list.isEmpty() && list.len()==0);
+    int64 c1=list.pushBack(10);
+    int64 c2=list.pushBack(20);
+    list.pushFront(5);
+    assert(list.len()==3 && list.front().unwrap()==5 && list.back().unwrap()==20);
+    list.insertBefore(c2,15);
+    list.insertAfter(c1,12);
+    println("array {} {} {} {} {}", list.toArray()[0], list.toArray()[1], list.toArray()[2],
+            list.toArray()[3], list.toArray()[4]);
+    int64 c15=list.find(15);
+    assert(c15!=0-1 && list.contains(15) && list.find(99)==0-1);
+    assert(list.removeAt(c15).unwrap()==15 && list.len()==4);
+    assert(list.popFront().unwrap()==5 && list.popBack().unwrap()==20);
+    assert(list.len()==2 && list.front().unwrap()==10 && list.back().unwrap()==12);
+    list.pushBack(99);
+    assert(list.removeAt(list.find(99)).unwrap()==99);
+    list.reverse();
+    println("reversed {} {}", list.toArray()[0], list.toArray()[1]);
+    assert(list.iterator(0).unwrap()==12 && list.iterator(1).unwrap()==10);
+    assert(list.iterator(2).isNone());
+    list.clear();
+    assert(list.isEmpty() && list.popFront().isNone());
+    List<int64> items;
+    items.push(7); items.push(8); items.push(9);
+    LinkedList copy=LinkedList::fromArray(items);
+    assert(copy.len()==3 && copy.contains(8) && copy.back().unwrap()==9);
+    println("linkedlist OK");
+    return 0;
+}

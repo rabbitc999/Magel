@@ -1,0 +1,7 @@
+int64 main() {
+    std::lang::Map<String, int64> scores;
+    scores.put("amy", 7);
+    /* `Map.get` 已移除：查存在性用 has(key)，取值用下标 map[key]（缺键给零值）。 */
+    int64 present = scores.get("amy");
+    return present;
+}

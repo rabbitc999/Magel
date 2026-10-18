@@ -1,0 +1,134 @@
+{
+  "iterations": 10000000,
+  "warmups": 1,
+  "repeats": 7,
+  "java": "java 22.0.1 2024-04-16\nJava(TM) SE Runtime Environment (build 22.0.1+8-16)\nJava HotSpot(TM) 64-Bit Server VM (build 22.0.1+8-16, mixed mode, sharing)",
+  "java_flags": "-Xbatch; 20 full-loop warmups; runtime long input; volatile result sink",
+  "java_interpreter_flags": "-Xint; JIT disabled; 1 full-loop warmup; runtime long input; volatile result sink",
+  "java_cold_single_run_process_ms": 141.3887,
+  "java_cold_single_loop_ms": 3.7344,
+  "platform": "Windows-10-10.0.19045-SP0",
+  "python": "3.12.3 (tags/v3.12.3:f6650f9, Apr  9 2024, 14:05:25) [MSC v.1938 64 bit (AMD64)]",
+  "lua": "Lua 5.5.1  Copyright (C) 1994-2026 Lua.org, PUC-Rio",
+  "lua_url": "https://www.lua.org/ftp/lua-5.5.1.tar.gz",
+  "lua_sha256": "1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce",
+  "compiler": "gcc (x86_64-posix-seh-rev3, Built by MinGW-W64 project) 11.2.0",
+  "compiler_flags": "Lua -O2; Magel -O2 -DNDEBUG MAGEL_CUSTOM_ALLOCATOR=1",
+  "aot_flags": "-O2 unchecked; fresh runtime input per sample prevents folding and cross-sample hoisting; generated source retained",
+  "timing": "Java System.nanoTime; AOT std::clock::nowNanos around calculate only; Python perf_counter_ns; Lua os.clock; Magel steady_clock; exclude parsing and file loading; Magel includes execution-plan setup and final checksum output",
+  "results": {
+    "Python": {
+      "median_ms": 404.1922,
+      "samples_ms": [
+        402.4128,
+        403.9353,
+        403.575,
+        414.1923,
+        404.2704,
+        404.1922,
+        404.5799
+      ],
+      "checksum": "49999995000000"
+    },
+    "Lua": {
+      "median_ms": 74.00000000000001,
+      "samples_ms": [
+        71.00000000000001,
+        80.99999999999999,
+        79.99999999999999,
+        67.0,
+        67.0,
+        74.00000000000001,
+        80.99999999999996
+      ],
+      "checksum": "49999995000000"
+    },
+    "Magel VM optimized": {
+      "median_ms": 174.186,
+      "samples_ms": [
+        177.709,
+        175.182,
+        171.15,
+        172.257,
+        172.872,
+        176.906,
+        174.186
+      ],
+      "checksum": "49999995000000",
+      "logical_steps": 200000034
+    },
+    "Magel VM legacy optimized": {
+      "median_ms": 4702.3,
+      "samples_ms": [
+        4703.77,
+        4680.94,
+        4695.1,
+        4702.3,
+        4707.04,
+        4690.47,
+        4775.07
+      ],
+      "checksum": "49999995000000",
+      "logical_steps": 200000034
+    },
+    "Magel VM before": {
+      "median_ms": 248.521,
+      "samples_ms": [
+        248.521,
+        246.042,
+        269.789,
+        262.988,
+        249.793,
+        246.781,
+        244.904
+      ],
+      "checksum": "49999995000000",
+      "logical_steps": 200000034
+    },
+    "Java HotSpot interpreter (-Xint)": {
+      "median_ms": 97.4007,
+      "samples_ms": [
+        113.7201,
+        93.6656,
+        97.4007,
+        117.8778,
+        93.3023,
+        89.7013,
+        123.6819
+      ],
+      "checksum": "49999995000000"
+    },
+    "Java HotSpot JIT": {
+      "median_ms": 2.3101,
+      "samples_ms": [
+        2.3149,
+        2.3023,
+        2.2978,
+        2.3118,
+        2.298,
+        2.3906,
+        2.3101
+      ],
+      "checksum": "49999995000000"
+    }
+  },
+  "baseline_commit": "51e3739",
+  "change": "Fuse arithmetic temporary store followed by load/store copy; preserve both stores and conversions",
+  "command": "python tests/benchmark_language_loops.py --runner build/copy-core-benchmark.exe --baseline-runner build/new-core-benchmark.exe --iterations 10000000 --repeats 7 --skip-reference --skip-aot",
+  "runner_build": "g++ -std=c++17 -O2 -DNDEBUG -DMAGEL_CUSTOM_ALLOCATOR=1 -Istackvm tests/benchmark_vm_program.cpp build/magel-stackvm/libstackvm.a -pthread -o build/copy-core-benchmark.exe",
+  "runner_sha256": {
+    "build/copy-core-benchmark.exe": "e8068efeab2c692e2a5a0eaf21654a0c6c69a7caa6962e9623b77d3e0c820b52",
+    "build/new-core-benchmark.exe": "939e6c3d5539565d8761c3d88d90f700ec71b8abfc1a9d3e8ee052d35ee3d140"
+  },
+  "dispatch_counts": {
+    "after": {
+      "dispatches": 50000002,
+      "entries": 12210
+    },
+    "before": {
+      "dispatches": 70000000,
+      "entries": 17092
+    }
+  },
+  "dispatch_count_note": "Counters from separate verification runs; their timings are excluded from seven-sample medians"
+}

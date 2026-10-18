@@ -1,0 +1,1 @@
+magel：example/samples-error/p1_slice_float.mgl 第 1 行第 1 列：切片终点 需要整数下标，实际是 float64

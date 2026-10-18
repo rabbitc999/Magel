@@ -1,0 +1,3 @@
+point 3:4 area=12 scaled=120
+signal code=1
+tone hz=440

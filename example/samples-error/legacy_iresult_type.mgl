@@ -1,0 +1,4 @@
+int64 main() {
+    IResult<int64, String> value;
+    return 0;
+}

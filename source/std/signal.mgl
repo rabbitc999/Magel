@@ -1,0 +1,16 @@
+module std::signal;
+
+import std::complex;
+import std::math;
+
+/* DFT/FFT 下沉到宿主 C++（glue/std_signal.hpp）。DFT 接受任意长度，基 2 FFT 只接受 2 的幂；
+ * 逆变换按 N 归一化；不修改输入，返回新列表。 */
+std::lang::List<Complex<float64>> signalDft(std::lang::List<Complex<float64>> input);
+std::lang::List<Complex<float64>> signalIdft(std::lang::List<Complex<float64>> input);
+std::lang::List<Complex<float64>> signalFft(std::lang::List<Complex<float64>> input);
+std::lang::List<Complex<float64>> signalIfft(std::lang::List<Complex<float64>> input);
+
+std::lang::List<Complex<float64>> dft(std::lang::List<Complex<float64>> input) { return signalDft(input); }
+std::lang::List<Complex<float64>> idft(std::lang::List<Complex<float64>> input) { return signalIdft(input); }
+std::lang::List<Complex<float64>> fft(std::lang::List<Complex<float64>> input) { return signalFft(input); }
+std::lang::List<Complex<float64>> ifft(std::lang::List<Complex<float64>> input) { return signalIfft(input); }

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Magel 编程"
+  short_description: "依据真实文法和标准库编写并验证 Magel 程序、宏、引用与错误处理"
+  default_prompt: "使用 $magel-programming 编写并运行一个符合当前 Magel 文法的程序。"

@@ -1,0 +1,3 @@
+interface Valued { int64 value(); };
+T only<T: Valued>(T value) { return value; }
+int64 main() { only(1); return 0; }

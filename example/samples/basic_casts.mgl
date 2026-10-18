@@ -1,0 +1,16 @@
+int64 main() {
+    bool zero = (bool)0;
+    bool nonzero = (bool)-3;
+    bool fraction = (bool)0.5;
+    int32 from_true = (int32)true;
+    uint8 wrapped = (uint8)258;
+    int8 signed_wrap = (int8)255;
+    int16 truncated = (int16)3.75;
+    float32 single = (float32)16777217;
+    float64 from_false = (float64)false;
+
+    println("bool={},{},{} int64={},{},{},{} float64={:3F},{:3F}",
+    zero, nonzero, fraction, from_true, wrapped, signed_wrap, truncated,
+    single, from_false);
+    return 0;
+}

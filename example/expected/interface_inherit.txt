@@ -1,0 +1,4 @@
+box 20 Box 5 shape
+stick 9 bold（覆盖了默认方法）
+two 1 2 3 both
+view 42 shape

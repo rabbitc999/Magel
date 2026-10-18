@@ -1,0 +1,39 @@
+// 元组元素及嵌套来源只读；整体替换和独立值副本保持可写。
+struct Record { int64 number; String text; };
+int64 readNumber(int64 const& value) { return value; }
+int64 main() {
+    (int64, String) pair = (1, "one");
+    (int64, String) mut& whole = &pair;
+    int64 const& number = &pair.0;
+    String const& text = &whole.1;
+    auto inferred = &whole.0;
+    assert(readNumber(inferred) == 1 && text[0] == 'o');
+    whole = (2, "two");
+    assert(number == 2 && text == "two" && inferred == 2);
+    String copy = pair.1;
+    copy[0] = 'T';
+    assert(copy == "Two" && pair.1 == "two");
+    ((int64, String), bool) nested = ((7, "seven"), true);
+    int64 const& inner = &(nested.0).0;
+    char const& character = &(nested.0).1[0];
+    assert(inner == 7 && character == 's');
+    Record record; record.number = 3; record.text = "record";
+    auto records = (record, 4);
+    Record const& borrowed = &records.0;
+    int64 const& field = &(records.0).number;
+    Record detached = records.0;
+    detached.number = 9;
+    assert(borrowed.number == 3 && field == 3 && detached.number == 9);
+    List<String> list; list.push("entry");
+    auto lists = (list, 5);
+    for (String item in lists.0) { assert(item == "entry"); }
+    List<String> listCopy = lists.0;
+    listCopy.push("copy");
+    assert((lists.0).len() == 1 && listCopy.len() == 2);
+    // 语言允许显式把 const& 转为 mut&；只有显式操作能提升权限。
+    int64 mut& explicitWrite = (int64 mut&)number;
+    explicitWrite = 6;
+    assert(pair.0 == 6);
+    println("tuple readonly references OK");
+    return 0;
+}

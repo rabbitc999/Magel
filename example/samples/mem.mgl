@@ -1,0 +1,36 @@
+/* mem.mgl —— 内存内建：memcpy / memset（配 `&x` 取地址用）。
+ *
+ *   ./magel samples/mem.mgl
+ *   → `&buf[0]` 取地址、memset 写一个字节、memcpy 搬一个字节
+ *
+ * 样例演示 `&buf[0]` 取地址 + 单字节的 memset / memcpy；大批量拷贝用元素循环。
+ * （整数只有 `int64` / `uint64` 两种：字节级操作用 `& 255`，这里量小、演示用。）
+ */
+
+int64 main() {
+    int64 source[16];
+    int64 target[16];
+
+    source[0] = 65;                 /* 'A' */
+    source[1] = 66;                 /* 'B' */
+    target[0] = 0;
+    target[1] = 0;
+
+    /* 一个字节一个字节地搬（count = 1） */
+    memcpy(&target[0], &source[0], 1);
+    memcpy(&target[1], &source[1], 1);
+    println("memcpy: target[0]={} target[1]={}", target[0], target[1]);
+
+    /* memset 写一个字节：把 target[2] 写成 'C' */
+    memset(&target[2], 67, 1);
+    println("memset: target[2]={}", target[2]);
+
+    /* 大批量拷贝用元素循环（memcpy 的 count 大了还不对） */
+    int64 i = 0;
+    while (i < 16) {
+        target[i] = source[i];
+        i = i + 1;
+    }
+    println("loop copy: {} {}", target[0], target[1]);
+    return 0;
+}

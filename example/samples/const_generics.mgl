@@ -1,0 +1,16 @@
+struct Buffer<T,N:int64> { T data[N]; int64 len(){return N;} };
+struct Matrix<T,rows:int64,cols:int64> { T data[rows][cols]; int64 size(){return rows*cols;} };
+struct DefaultBuffer<T,N:int64=2> { T data[N];int64 len(){return N;} };
+struct Defaults<A:int64=2,B:int64=A*3> { int64 len(){return B;} };
+int64 length<T,N:int64>(Buffer<T,N> value){return N;}
+const int64 size=2+2;
+int64 main(){Buffer<int64,4> a;a.data[0]=3;a.data[3]=7;
+    Buffer<int64,2+2> copy=a;copy.data[0]=9;assert(a.data[0]==3);assert(copy.data[0]==9);
+    assert(a.len()==4);assert(length<int64,4>(a)==4);assert(length(a)==4);
+    Buffer<int64,5> different;assert(different.len()==5);
+    Buffer<int64,size> named;assert(named.len()==4);
+    Defaults<2+2> derived;assert(derived.len()==12);assert(length(a)==4);
+    Matrix<int64,2,3> matrix;matrix.data[1][2]=8;assert(matrix.data[1][2]==8);assert(matrix.size()==6);
+    DefaultBuffer<String> texts;texts.data[0]="zero";texts.data[1]="one";auto other=texts;other.data[0]="changed";
+    assert(texts.data[0]=="zero");assert(other.data[0]=="changed");
+    println("const generics ok");return 0;}

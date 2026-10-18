@@ -1,0 +1,6 @@
+/* 两个不同基接口给了同名同签名的默认方法、派生接口没覆盖 → 冲突 */
+interface A { int64 m() { return 1; } };
+interface B { int64 m() { return 2; } };
+interface C : A, B { };
+struct S : C { };
+int64 main() { return 0; }

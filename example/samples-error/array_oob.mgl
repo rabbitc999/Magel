@@ -1,0 +1,11 @@
+/* 一维数组越界：声明是 int64 m[4]，写到 m[4] 就被抓住 */
+int64 main() {
+    int64 m[4];
+    int64 i = 0;
+    while (i <= 4) {        /* 故意写成 <=：i == 4 那一次越界 */
+        m[i] = i;
+        i = i + 1;
+    }
+    std::lang::println("{}", m[0]);
+    return 0;
+}

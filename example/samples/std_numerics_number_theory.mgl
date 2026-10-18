@@ -1,0 +1,55 @@
+import std::linalg;
+import std::numerics;
+import std::numtheory;
+
+import std::math;
+
+float64 square(float64 x) { return x*x; }
+float64 rootFunction(float64 x) { return x*x-2.0; }
+float64 exponentialRate(float64 time, float64 value) { return value; }
+
+int64 main() {
+    std::linalg::Vector<float32> left=std::linalg::Vector<float32>::zeros(2);
+    left.set(0,(float32)3.0); left.set(1,(float32)4.0);
+    std::linalg::Vector<float32> right=left+left;
+    std::linalg::Vector<float32> difference=right-left;
+    std::linalg::Vector<float32> scaled=left*(float32)2.0;
+    assert(difference.at(0)==(float32)3.0 && scaled.at(1)==(float32)8.0);
+    std::linalg::Matrix<float32> matrix=std::linalg::Matrix<float32>::identity(2);
+    std::linalg::Matrix<float32> doubled=matrix+matrix;
+    std::linalg::Matrix<float32> recovered=doubled-matrix;
+    std::linalg::Matrix<float32> scaledMatrix=matrix*(float32)3.0;
+    std::linalg::Vector<float32> mapped=doubled*left;
+    assert(mapped.at(0)==(float32)6.0 && mapped.at(1)==(float32)8.0);
+    assert(recovered.at(1,1)==(float32)1.0 && scaledMatrix.at(0,0)==(float32)3.0);
+    std::linalg::Matrix<float32> product=matrix*matrix;
+    assert(product.at(0,0)==(float32)1.0);
+
+    float64 integral=std::numerics::Numerics::integrateSimpson(square,0.0,1.0,20);
+    float64 slope=std::numerics::Numerics::derivative(square,2.0,0.0001);
+    float64 root=std::numerics::Numerics::bisect(rootFunction,1.0,2.0,0.00000001,100);
+    float64 newton=std::numerics::Numerics::newton(rootFunction,1.0,0.00000001,20);
+    List<float64> euler=std::numerics::Numerics::solveOdeEuler(exponentialRate,0.0,1.0,0.1,10);
+    List<float64> rk4=std::numerics::Numerics::solveOdeRK4(exponentialRate,0.0,1.0,0.1,10);
+    assert(std::math::abs(integral-1.0/3.0)<0.00001);
+    assert(std::math::abs(slope-4.0)<0.00001);
+    assert(std::math::abs(root-std::math::sqrt(2.0))<0.000001);
+    assert(std::math::abs(newton-std::math::sqrt(2.0))<0.000001);
+    assert(euler.len()==11 && rk4.len()==11);
+    assert(rk4.at(10)>euler.at(10) &&
+    std::math::abs(rk4.at(10)-std::math::E)<0.00001);
+
+    assert(std::numtheory::gcd((uint64)54,(uint64)24)==6);
+    assert(std::numtheory::lcm((uint64)6,(uint64)8)==24);
+    assert(std::numtheory::modInverse((int64)3,(int64)11)==4);
+    assert(std::numtheory::modInverse((int64)-3,(int64)11)==7);
+    assert(std::numtheory::powMod((uint64)7,(uint64)128,(uint64)97)==35);
+    assert(std::numtheory::isPrime((uint64)97));
+    assert(!std::numtheory::isPrime((uint64)561));
+    uint64 largePrime=(uint64)2305843009213693951;
+    assert(largePrime==(((uint64)1<<61)-1));
+    assert(std::numtheory::mulMod(largePrime-1,largePrime-1,largePrime)==1);
+    assert(std::numtheory::isPrime((uint64)65537));
+    println("generic matrix numerics number theory OK");
+    return 0;
+}

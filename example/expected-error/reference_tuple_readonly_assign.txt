@@ -1,0 +1,1 @@
+magel：example/samples-error/reference_tuple_readonly_assign.mgl 第 1 行第 1 列：只读引用（`T const&`）不能写入元素

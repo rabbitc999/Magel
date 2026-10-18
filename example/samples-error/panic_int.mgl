@@ -1,0 +1,4 @@
+int64 main() {
+    panic(1);
+    return 0;
+}

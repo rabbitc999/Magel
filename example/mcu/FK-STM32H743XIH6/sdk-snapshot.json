@@ -1,0 +1,3371 @@
+{
+  "sourceRepository": "STM32_LUA_CAR",
+  "sourceRevision": "04bdce42ec79ceb8eca980ab01074852ee9ed039",
+  "sourceSubdirectory": "STM32H743XIH6",
+  "snapshotDate": "2026-10-15",
+  "snapshotIncludesWorkingTree": true,
+  "note": "从原工作区拷贝构建所需库；本地整理 C/C++ 格式及中文函数文档注释、统一 UTF-8，并调整默认运行库与烧录路径。保留源文件哈希、原编码和本地 LF 哈希供追溯。",
+  "files": [
+    {
+      "path": "sdk/Board/Hardware/bsp_battery.c",
+      "sourceSha256": "951b4e86ba8ca9297de843edecbd8102f23dd6a7545475a5f6a00a44472f452d",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "209804e90f6a869b6b8a232fd66cabc2a88f73ea3b67aa1208d3016b15e944d4"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_battery.h",
+      "sourceSha256": "978cecd7435f953ab8a5038cc86c1fd22c000be9322e7194310f79cd89a60e1e",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "b19690d5504ececc248cca5ab10db281f2c4468c39f8e2165f1a93c8791bfc06"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_beep.c",
+      "sourceSha256": "03393a93da4a08caed59ab549670eb8d9e6481defdf145b3fda0926c58d26eb0",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "1754ee76dad53a62411ba21f5cdfa1731e9b5c28ba466779b4a11ceb9ff0f5d3"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_beep.h",
+      "sourceSha256": "1235bfcc34185218d7c88cc34062bd600f889298fa358d32f665b172ba389551",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "c97b9a223bbd00d80d49a7086d5e027ff951cc6380a665faf49a00f89b2201c0"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_cs100a.c",
+      "sourceSha256": "14f80bcc71b32941d1b7c5034b93a60125f3f9fcade33dd4b2b043c367a39113",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "48291e54a28b26d648713c8d2e1528c798e5ab429bf4eb57d68e663e7f6bab3d"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_cs100a.h",
+      "sourceSha256": "14ccf0d50275588a337a7354a698439064ad458f91778e35750a40ad08d6db1b",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "e1da9b45a57aec4a53d23604301a4b7569665d7de86e8be549fcc4e69920b1c3"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_encoder.c",
+      "sourceSha256": "97127068248ad58ae96acbad94a67baf75f39868ceba3937d18a39a17a674eff",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "9bbf43afeb45dfbfea3445ebdfff29b8e92c93609434631f540d3fda1fa8c955"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_encoder.h",
+      "sourceSha256": "adfb49a7221003104bc1baa43b869d7b223c104547d489a3f6a7d8f26f61cdeb",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "df4aabae1d7dda3d201452450baac184d15f7b308891b6b8546b1630fc684ed4"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_key.c",
+      "sourceSha256": "458b178cbd315fdfd68dfcb9427bba901a9b4e524d292be0c78e4bdbe8095ecf",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "565f674438f5d24bf7a831b81931270e704f2b000139d1069e5f742ed9d42148"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_key.h",
+      "sourceSha256": "61f6ec516158a81102848c887818d634eac78cf938cd3ce6a52bf3e551b1f55c",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "8cad67919c7938e87b0b7dfe3515773cd991b79ecebbd1b21d3b402e8649b5ba"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_lcd.c",
+      "sourceSha256": "9a9a3c8fa045e7b8928b33280650ba5ecd4eaf7bdd1e82f7d0cf9c1504e00e19",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "31e82c9e4ab5b5ae5c29add561be201c4b9dddd496d9d5e613b62274221f8845"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_lcd.h",
+      "sourceSha256": "ec658046264c91c386bff4c12298bc525ed63e95f85f9caed48e065ff3c96939",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "e68740b6644c0fa838b8faef606bf86a4174a472af5c37bb0b891e0bc68f886a"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_lcd_data.c",
+      "sourceSha256": "c334ad43c00650e67c7f270bbb335afb3743473342f2f75bf6aa3c4067118357",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "f1f25c5cf7563d8258197fce88b04b89716c513dc6e55fdabbb1ee8092c3817f"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_lcd_data.h",
+      "sourceSha256": "531e54d8543eec3bb4e0a7509d012c9295f7a10180077b13c4305a610b45056a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "515832bdefe27431b4b022cae87d9107734f3223439d9415a9ce776b762d035e"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_led.c",
+      "sourceSha256": "bb93fb25b2d2b565a04a59994ca1791d3631cfe6cc527485b258d4ea21a9d98e",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "1bcd95afcde09afe8c2c7a45d38b2a8b9d58dbd396b0a969c4de80f6fae2da11"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_led.h",
+      "sourceSha256": "b7898790cbc40470cd90f1c26ba89025d63b4e9582e21d1ef05388855e181a76",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "e3d75558ecd0d433dca80bac660e8252b97da6627a60935c45bc372ee02e723f"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_light.c",
+      "sourceSha256": "65cece7ef402c58700f79df3f4e0149a71723ad7f7babc83601852183c73cdd9",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "17aa9a663521e04ff8c30c26593d61e615006b0342d474d7f701508d5f1dbba5"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_light.h",
+      "sourceSha256": "5b1bcdd787c1493308d77815f99cef00e316c8c3db4669ae32d2db7469c71884",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "f0f24c713f7d4f0c79faa3bc718bd096e75bc2e122a9ae513d3ca86b93c287d5"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_motor.c",
+      "sourceSha256": "d14ac1bd8d5026611fe7d6795d4f2850b5f7fa11269562e25c4b9a9502815902",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "54d8fa13c3a24a78b7e6c181c59c603de394421e46e586e6b8789aaf51fb120d"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_motor.h",
+      "sourceSha256": "0c79df8df03cd7af7ba140df32e97e6f933f1bb1200048330f2a0b0131b1e2bd",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "e8bf76fd0d8759cbfc482c091427b38175a814d7ca78234f6b6e0398f7fcdade"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_nrf24l01.c",
+      "sourceSha256": "9a9035fccb2dd9c3766e16081822b657e9185a427e0e53ff4744fbb4d66591e2",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "2527be5ab07b52607156e2e1dc6a750c6b83abe9fe2ea69b02d9ac1bfafcbc0b"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_nrf24l01.h",
+      "sourceSha256": "e35bc9df4c1cd505c6e762fd40b4c65a589c0587ff7f148816d087137b7be718",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "0ef9d4db5285a6ace9e2f85cfd99f7294b767f190d7978f013438a148badba87"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_nrf24l01_define.h",
+      "sourceSha256": "d0c3f625816be59ce1ae6b632a47cd42197f974dde97f2f74ecb3594f02ac97f",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d5fe60520427275d91076a5d031e82d7d06bf565da57b6b742ccdc124a065f77"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_pca9685.c",
+      "sourceSha256": "afbeace934e98bf2903efabdbeee9a54a6c7f3e8e0a494ab3d50b2ed2d6461f2",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "7df71677a24f86d7c786f70804183707a412e158c3ee8bf98fd6d6c4edde2384"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_pca9685.h",
+      "sourceSha256": "00159f9e87c41c1afbbc04af0dcb14a25d6a756f3585baf051a0c65e7084f102",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "22e765811a26b9318ca9c988e16d1200da92301856693c37eab8926d85cddcfe"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_qspi_w25q64.c",
+      "sourceSha256": "8d7f408860bf0444c2ec99d9717e36aa6cc3737285b3d3a862cd2d7a75a6c3e5",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "d50b99707e6688a316e5916628e19e7f03c2b2506c140756e08eb868ad5d798a"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_qspi_w25q64.h",
+      "sourceSha256": "7aee6de4257f4b9ac371d88f2a12de09a2ce2705be7dba05768800882714bbd8",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "094f70b846910811d5f71af94942526c7a18ea454fcdb1c060f50b352c0a4746"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_sdram.c",
+      "sourceSha256": "dc097d1cc86978351c932d7515090052c83b73527726deb8702252a4dc7c3a63",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "e23b5cb64d3f52afa17da1183d093f2f98fa7559128674962b9127d4611203bd"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_sdram.h",
+      "sourceSha256": "024e89be2d25f4f597853114640a04d0d9866b6205e1a30acf392831c19708e2",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "6b0c1bff48d572d2a910191650cd1298beca96f152d02fddd6b34a6c943c2f8b"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_servo.c",
+      "sourceSha256": "fc93b775c516da67be0a0fe8ece15fc0a6b3077f06120445621304585932b444",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "0ffd93dd43fc77e21daff3d3feeca6d646972ad228c0c80b35df5459dd74b073"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_servo.h",
+      "sourceSha256": "29f87a8c5dffa9895fad3e09e46a5f592a837ae90c9659d5e2ce2ef69d76a167",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4bc2994c9f23c19067963614bb48a68a4854659c4271f2c4a18258fc7b91207c"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_soft_i2c.c",
+      "sourceSha256": "8614eabacab1e70d64835d7d856e292193607b00f5d50fbcb33b626d96d44a9b",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "f0edd178aac4955b3ad030fade5ceb8cc873cb00ada222afd0b2c850305faa61"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_soft_i2c.h",
+      "sourceSha256": "f90ed4aaa3656f2a27c413e815189ee276d3b3e3eb68368f5d05e09a39a90772",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "3d24fa13e12d60c7c3c618dfe62c97b22eba7079ce133d298a0640d03b605348"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_touch.c",
+      "sourceSha256": "d4b98a14f03bc5761f162f828c5b72c056cfdf725950cbd6aa49a08976aab61d",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "96e85bdd214d88d73a3df92e2fc743b8731a8d477691cceab40a66cba0509e82"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_touch.h",
+      "sourceSha256": "89bdc99eae524e4012f1699bc0eb752736034def345a7f820ced1eada4ec16f6",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "a1c787a9d15f569e4370911c74259a83f5179d69123f2350e7fc7b74f154a0d6"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_uart.c",
+      "sourceSha256": "32a0786fb96570d903938d4d07ee08d5c335cf884222f06a960eaeb4ee0cb285",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "cd768ea3529c7c9d7ec65deb8871e1f2563a85e41cbbb1f4564165425c35a3b5"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_uart.h",
+      "sourceSha256": "4ad0f9ff1ee0db4749509f862fcef4b93df15e5d94f2b35c22e9cff9769f9ceb",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "6b6e5ec6d44aa5a210cf01444bd8835c13dc28e93c9d42d44b3367c18045405d"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_usb.c",
+      "sourceSha256": "49601a79bbcf6179fe00074deaa9bebeee4c24b69d854fe4ad65b40561be65d5",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "1b9b0a017a71962f3fb8749f864987932b5ac73705bf543d4f39e860781da39a"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_usb.h",
+      "sourceSha256": "329f9146c9f415e3d0a06f180671f25d2fce8b0ac279c157344867bea0f0bb40",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "b452184318e848f8c91fa0d2644d0faaf4bda5ca719594b2e9092f60eb0a9325"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_ws2812.c",
+      "sourceSha256": "e7d65bab9b0d2a8718b7393c86b6ec35ec5b96ea6fc1ca708a2aa51d91964cf0",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "d0adaf65a82ac47013a414dd1c92e0ea4f14fedb43b6cd71fbe9751216d0482a"
+    },
+    {
+      "path": "sdk/Board/Hardware/bsp_ws2812.h",
+      "sourceSha256": "2604bd5c9f95ea3076e8a32eef84278057ddd327e59764c06335d9b55d701733",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "673c1c0be712a3c5f167f6a05473f2a237a4e84559b368f960e2aa6979c9cfc1"
+    },
+    {
+      "path": "sdk/Board/System/bsp_bluetooth.c",
+      "sourceSha256": "e9a3c384c863fdbef48745de929f801649cb2903a8ac931483376557bd85f2d1",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "2c0ca9201ea4641cab72d89ca6fa4be836dd4514a8980b4d1125b405ed8e46a1"
+    },
+    {
+      "path": "sdk/Board/System/bsp_bluetooth.h",
+      "sourceSha256": "c701b9e73ca27b4f5ac467c90f49ea6cb6b4b7b1087cab006b7080639e7e536a",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "e2a7c68989c4340e64e4fc8b54d76b24cca79735fcde0f22c8f5172337ec0c3c"
+    },
+    {
+      "path": "sdk/Board/System/bsp_dwt.c",
+      "sourceSha256": "8e0bff32544de396c58ddc578ce9e1ab8a0285f41b71c5d5cd0376931a7abe04",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "7289e1c76c79ca6b660080cc0ae11259bca4779d36335f81a2e42d98903bb9ef"
+    },
+    {
+      "path": "sdk/Board/System/bsp_dwt.h",
+      "sourceSha256": "02acc4137547703ee6d66465a7b0a6728ee52f509031a32d376840829ea463c4",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "d10b1abde505cc2000525189411bc8ab553cc448597739328360938a9f54e94e"
+    },
+    {
+      "path": "sdk/Board/System/bsp_esp8266.c",
+      "sourceSha256": "cc90b381934081104ae05d30dab429e2c21934b2ef6dd6e2ff2e82a0a3782c75",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "a613dca10bcbdbabe7b9b3bf2f58f5714c0758ef62e0460b66b48b56b565ffd0"
+    },
+    {
+      "path": "sdk/Board/System/bsp_esp8266.h",
+      "sourceSha256": "466fb1001c8ca16910601d8bafa47b666cae5b4cf046b60ad579d8afa7eac3e2",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "69cd5533eeb83431c223efa695bed9b8a6cf1146291cfeee2009123691dd5589"
+    },
+    {
+      "path": "sdk/Board/System/bsp_fifo.c",
+      "sourceSha256": "88b1aad0716ab37448a26f1e3e454d783d8c9d2a609d1d0d3a64bcd6a732b41e",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "890a0cd2b27df47bd0d1ace31e1655485796f3384fe57e1c065548c9f59e4101"
+    },
+    {
+      "path": "sdk/Board/System/bsp_fifo.h",
+      "sourceSha256": "29c5da20040b78b812420870bf07fd03480e2fadb4290124c3cf7a1036d16382",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "3f0e3aac4509e11a3fb61694ed6aa8532f91181c6804884b9b1c0cbddf905d22"
+    },
+    {
+      "path": "sdk/Board/System/bsp_imu_jy901.c",
+      "sourceSha256": "9bccdb4d2ad7e2f38d8204495a1ca6c7de5b09712d1ee56bf43a9434fc8e3873",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "106e075fd53fc3d13540f1dd6f3e183aeb60a2d23eeb65f12bc83ca7a275b382"
+    },
+    {
+      "path": "sdk/Board/System/bsp_imu_jy901.h",
+      "sourceSha256": "fe6c85522d3ca2d7300be39d060be21103b08e036d830458e9e824dbec5b1b2e",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "60015d5bb94fe08b2b06c0b3a04dad7f11f83b1b32c3396475dcdb2a14f3cdfa"
+    },
+    {
+      "path": "sdk/Board/System/bsp_jpeg_decode.c",
+      "sourceSha256": "ded7239f9b92df339be4dee0c4b938aa9e384acd9a2aa5f02880d1c5ab40de5b",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "56408af6540d13b51b640d1090631778daed1f7e8e41a92b759610d733a62b26"
+    },
+    {
+      "path": "sdk/Board/System/bsp_jpeg_decode.h",
+      "sourceSha256": "90ceb40173134fc90c3bd8cb1ad1070f87946af9e27e7da3da5fe2e40859d411",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "d7d16cfb644830eff93c224169c6f3b8bc463b8f69a08989b0274370c842f08a"
+    },
+    {
+      "path": "sdk/Board/System/bsp_key_sm.c",
+      "sourceSha256": "35bee306e9978c597fb6e28046681a1774462a14b49f267941c13fba74270e44",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "7090f1b56ee7e6038012f6ff2d43b33e7da27743479a542339db3ab254fb5a7c"
+    },
+    {
+      "path": "sdk/Board/System/bsp_key_sm.h",
+      "sourceSha256": "fcf3ab7a18fd956e28761dff5499f7e76fdc3447e8cba8c97c8197979a62598e",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "675b82ba5d255a58172fe2a13115fb00f8d943f0cbc391e9d07b6808ac6d6db2"
+    },
+    {
+      "path": "sdk/Board/System/bsp_lidar.c",
+      "sourceSha256": "b0246b1f72be4fba03592ea9c1c4fd4db286567d368a2a04f8aacdab6e127558",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "06096b7307d4d1acf95acdf5dc5d59854b0d4dbcb27722687713cff5b89d08a0"
+    },
+    {
+      "path": "sdk/Board/System/bsp_lidar.h",
+      "sourceSha256": "cd2c4e86d62432645d63e4fe39ada8c359ffadfa2e37b2f185c3f2d34d2e7af6",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "a65cb40d9b25d45f0636459979fbd62d69348f271024644cb8e85d1f9b723057"
+    },
+    {
+      "path": "sdk/Board/System/bsp_malloc.c",
+      "sourceSha256": "5b2dd6c7573a4da322a0c8d315975cbaf7eb34bdbb44f461c7f0d50e806e3a1b",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "4c917ca7d049b39c8bc0a3a1d8ea7877c17778b9c8ba9bc47ed972feb09af0aa"
+    },
+    {
+      "path": "sdk/Board/System/bsp_malloc.h",
+      "sourceSha256": "14d3ab2cd4db0b8ace50de23330b74824ef7c07bf56128f9fcffb6dea9f02a2f",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "17143bf29564a304a731c2fd85bb749d4e7a9914e73820d01bd412d4e034234a"
+    },
+    {
+      "path": "sdk/Board/System/bsp_memory.c",
+      "sourceSha256": "511e9e9093ef36a724a9794c9eaaf81785326a1a0b026302d53854722ed11446",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "d9d5fadf00839794cf652229b8d250b6c497deafc85f55808997cf2214d75f51"
+    },
+    {
+      "path": "sdk/Board/System/bsp_memory.h",
+      "sourceSha256": "5d87f5123439e7fd1166f8a2f97a48400507fa71f3caa18791d984b52ece46ee",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "bd5b449798f6d79e0408d435cb271bd5cb04aca2e5b93a11bb8f55a4398c85f6"
+    },
+    {
+      "path": "sdk/Board/System/bsp_periph.c",
+      "sourceSha256": "ce0f4c7d0649aa31d559f38c2ea61ab1449df58c7f81335074fb3fbb911d0cb0",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "75ead80a6d05ee2f1ff78a0290c40d0f05780294d0485e24cc3f552579396190"
+    },
+    {
+      "path": "sdk/Board/System/bsp_periph.h",
+      "sourceSha256": "e9b39bd4fc17c388f35196570ec0da0d5cf5c1ca3fb9f71ecd0dc13c6b6c58ca",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "943a773074c9b6e01c3e66bd617d402d36e9953fac08588b7ba8eb053376689d"
+    },
+    {
+      "path": "sdk/Board/System/bsp_pwr.c",
+      "sourceSha256": "667ad80c4e8dc884bfff5ac071d38ce3c4d762fe4e36288b96aedf50c513f331",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "7b3269eb70629852a6b4c0ffbb4976e4ab8133579b011f0733020b9e69c20ddb"
+    },
+    {
+      "path": "sdk/Board/System/bsp_pwr.h",
+      "sourceSha256": "3aa98c2e4e15cce1dd17138c6a2e111211cf5332dca3cc929db9d0010a8cd948",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "3aade302ca1540a1e00e2b17c22a49a32e1650e699bb9223df7105b8d077416e"
+    },
+    {
+      "path": "sdk/Board/System/bsp_retarget.c",
+      "sourceSha256": "79e646a36a2fbc6b0087a0681fea2c2ebc1c497cc8e95488f7ea8fa971d41d51",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "6fb79c55c51af07e2f2e61dc06dc85f35a21e1b84cf24dcc01516b0dc842feaf"
+    },
+    {
+      "path": "sdk/Board/System/bsp_retarget.h",
+      "sourceSha256": "7885c4b599cbf6f53ec1ca5a93ddd6dba5f8a1b9774a4c959be0fd891514c1ce",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "60cbd688b752c5868b4426441956a5e3bf1837d5d7e1d17ffd0d3d9ae81ecb8b"
+    },
+    {
+      "path": "sdk/Board/System/bsp_rtc.c",
+      "sourceSha256": "51273a852f785edfc4cc8e78ebf35ba2e0c07ea3ea72d70a3ce1aebdbc856063",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "bcfa3e2357e2890fb9a4e30864ad90817ded1b60c3e8e2deab47299d8f45065e"
+    },
+    {
+      "path": "sdk/Board/System/bsp_rtc.h",
+      "sourceSha256": "c12862ce789e59d829b374e28f1510403f1683664358f7b58820495bee5df74b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4e55337fba005e0d57df28ab516fe25220808a694eaa5a5447e0307f04015f86"
+    },
+    {
+      "path": "sdk/Board/System/bsp_system.c",
+      "sourceSha256": "586a107a9286f7be508d654a564e940e0b0f6de1ce54d93493c1de99cac91e0a",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "d3fe7707e14e741b5f98349960776f79d445f5b6e708f37ddc63f35c6ebf54e4"
+    },
+    {
+      "path": "sdk/Board/System/bsp_system.h",
+      "sourceSha256": "1249a9419d69b2942bdada3edb41d0e22596e3e5a044257107cf898f05760f97",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "5aee59b7fc4fa9f56b2dbb41c248240c3eb5bab9682da60e2c15fd9813a6e1b0"
+    },
+    {
+      "path": "sdk/Board/System/bsp_timer.c",
+      "sourceSha256": "d2e11f1292bdbf5b857569393a5c6103031ba6db0b294d3d1319e739c77ec233",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "bf287caf1b6d6f04e84f23439d624ba5e0f4e706e243b23351c71a291778cb22"
+    },
+    {
+      "path": "sdk/Board/System/bsp_timer.h",
+      "sourceSha256": "415cd4d6f33e65a3ec97344a9e2426534af3c94583f1c90cda236094dae0620a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "9ec5cdc8e13b961040810a002f037d50d3386c4f3d0c70670141e88afbce945e"
+    },
+    {
+      "path": "sdk/Board/System/bsp_wdg.c",
+      "sourceSha256": "4ee099cd3183223fdd7e848f366b6f5adf13a7302840e310c82aba3d4e850e80",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "f1c12b4fdc08cf25c77043f77714493eb125045ef2cc5de224eef32de52703bf"
+    },
+    {
+      "path": "sdk/Board/System/bsp_wdg.h",
+      "sourceSha256": "1019dfd9df45379e362f295880837bfdcb97463f1e866ddd1ea3a5542225675b",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "0890c90415c2052dd6bcb4819e2e4357ea171fa8ec9b9f04198918005576a7dc"
+    },
+    {
+      "path": "sdk/Board/System/stm32h7xx_hal_conf.h",
+      "sourceSha256": "4b4fc79a2cb606cbc692baf9f15e6c299abddfc94eabca87dfc894928ce2801b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "c0504461ce8275897781e70830988a368280cf9157fc328fa9b5fd4564a740a4"
+    },
+    {
+      "path": "sdk/Board/System/stm32h7xx_it.c",
+      "sourceSha256": "bbd4fa200e7f342812da61005446525417c96c68907d237e9524c44a130e3670",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "760d60356bd64d6624028066c3172503714bfaf040975110dcd72cfe3df8b02b"
+    },
+    {
+      "path": "sdk/Board/System/stm32h7xx_it.h",
+      "sourceSha256": "110d4c7c987dc90bd2f49ceb980ac269bd0b0282cffe375ffd3c7355cd67b845",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "6a1e49648c0f132ec36076fc8c23612c182030fecd2a69ac7fc9ba6d75652c20"
+    },
+    {
+      "path": "sdk/CMakeLists.txt",
+      "sourceSha256": "53bbd94c54eba37699e61f6edf3ccf8b773602e9e6947235ec3b222cb6e68549",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "93c465a8ad95d3b3da6a2d73017439cb8d7669a61a686a2d5da86cf789bc025f"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h",
+      "sourceSha256": "f8b59093216c56ab81772593d6ba88927b20656c3e96c000f560ba900a3b8dda",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "f90b0b6034b13e299a0ad699832ebabd3316b9c97f1b848c6a3b70e8e9dc5266"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Device/ST/STM32H7xx/Include/stm32h7xx.h",
+      "sourceSha256": "bcd1cc2d3154607269c1a467d6042064960d609cc57a7771e5813d8160a8cff7",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "94e920477255445b461c3a9a2fa76e32008de7341e2f72dd0bcca48eedebe05e"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Device/ST/STM32H7xx/Include/system_stm32h7xx.h",
+      "sourceSha256": "ca3830d49d0e26270807c81a97f20b79caf28c838b81ee03b7a16518b09f405d",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "cc40aad60df1dc19858262f1fa2b516963036815f93fa22559f11113d174b9e4"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Device/ST/STM32H7xx/LICENSE.txt",
+      "sourceSha256": "d65cad1327eb8dae95d0aeab71fb22505f99a3d7cd1ce2530d7d40c52aece002",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "e34e8df8d5ac83104dedd0416a055f731e1a3d4f36ed3c5168da67f3f0c5258e"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Device/ST/STM32H7xx/Source/Templates/gcc/startup_stm32h743xx.s",
+      "sourceSha256": "ea783d70f9bbe138bbfe989a4ad7a4a8b5347e308c40647717522f3681fade21",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "1195cbe387854b1e5b6ef809721691fe50a7ba8d4a224b8f6b5d0769fd593549"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Device/ST/STM32H7xx/Source/Templates/system_stm32h7xx.c",
+      "sourceSha256": "346b935238c0f9fbf484381c83ccbd266ef1ec86ddc23712804bf1ed4d2d69bb",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "8e00cd1b77c7f5fff67f0857d34cac8339e7d6fbe4cca5b9ef5dcc799c40cebc"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/arm_common_tables.h",
+      "sourceSha256": "361cfd423ad0d6e49372767708fc1dfd1d7035d8ac94d81cab9a7d7d232783cd",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "54c9f31f2975cc1305355dd968328de8a1c44e08f55e072bc8af170934e45e8e"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/arm_const_structs.h",
+      "sourceSha256": "7dec892e089bb12d2d5bc0cf1d78751390674768e41ff716c7de769fab32ecce",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "72a2826e6f9a859855ad671c6ecae1ee5c514c7b06e8346e43f6b06b3ab80af7"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/arm_math.h",
+      "sourceSha256": "0528708fb7182dc52146740db5857bcc56daebf489feb4a1b2039afa3e1fffa3",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "7a150be08ce1fd366669a056d17b8275809eb3e00d8371cfcf911509d36732d8"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/cmsis_armcc.h",
+      "sourceSha256": "e6ba28e21b5a3cd44d4e2d2981e37568f419e5df693c8b58e87674fbdf28deeb",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "baaf87f826591608a971f47444154e5613a9eb9b7e43ae033cda381d01dfbe8a"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/cmsis_armclang.h",
+      "sourceSha256": "99b25ab977f383840994cb456ae3f259a5c9b036cb6a0d8c003b7cbba4f6123a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "2d2ce14b2ced7328f7d9b3647e51bd5814b4b8822375b1dd7fb8ea110c607531"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/cmsis_armclang_ltm.h",
+      "sourceSha256": "31622280a8296b67bdace0539710a3cfbf828b71f88bd0d5ccc5d7d291ab3a9f",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "651fcddd66fbd88214b716449af3c9e08cac2aaa149e77692b38469c1433232a"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/cmsis_compiler.h",
+      "sourceSha256": "869640702d811c4c63abb52206715c891a93fd03be954df5ad40d378355af3d6",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "c2c500544f481935384efad1a9b5962f12616d5cb0d78d1443ee1f1bec25e55c"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/cmsis_gcc.h",
+      "sourceSha256": "0837f98e834d6a529854c8c86336e9d99eb8e379bf1deb964858d7863950f862",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "be5bf8329fcfd3d564fba57554fe0b988e060c5315381e9caffef595fbd92d06"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/cmsis_iccarm.h",
+      "sourceSha256": "a40c60d322903d410fe892c2eccb92d82d8876dce605fbb4cb563d52182aeb16",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "0b7b6705626089c26f660fdcebcad16c7ad3866ebda468b7abba459db82a3bb0"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/cmsis_version.h",
+      "sourceSha256": "dd03af200b23bdd8d091ffa7beb3d1a2c4fc5611557567bd57ec613205f6df1f",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "1ccb7629b7bab40a1d5abe5213c90983dd58dbe9b983b9572e66d487808c33e2"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/core_armv81mml.h",
+      "sourceSha256": "fb6ff226bc14b8730b3d5c5e49a32514de811b485dc3f0543045ffffd8787f85",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "5a5cd47e653963aa95f7960c3eb5881f69d89bd9a3a0f27fd5ab86a7bba0bf60"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/core_armv8mbl.h",
+      "sourceSha256": "319fd8c698098a16f2775fe292b734c91aaeec3feee418e515cc3a1761edec76",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "cb0c9e4c94e593c101deefbe83caaa3a0e894d5055028e3e4fa713f6c91f2545"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/core_armv8mml.h",
+      "sourceSha256": "1778fd691a0768dbee4fbe537b3cc4d03fcfab4ab9f60e31ec52605364f3dd36",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "9edf997c56a60113a2f69c8cd19567ec6778c778e7596f93e7b7f110936797c6"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/core_cm0.h",
+      "sourceSha256": "20300b57c02d5b7b34c7b58bf7009e81713a60f44ca2a338f67cb4b473f4f3c4",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "b568afbec704b8e87f2acc443717246760f03d17c1c37792c41c37df27d35e2c"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/core_cm0plus.h",
+      "sourceSha256": "4b79d5bf9f9165ddae727c9f035f82fb0ea85ceee2587b503d5d7bcd172d2df9",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "efe596378c9c50985146fa06389f9cd7d7655392e92e541d6e1243f3b9924bc2"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/core_cm1.h",
+      "sourceSha256": "c243c4afb291068fe7078d2911b2f0001e78a4d5466c26728611b06147d65c2b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "9581d2c15a232ddc69a07580b409f782eedded2a9d25de96bbf5167ba6e1d0a5"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/core_cm23.h",
+      "sourceSha256": "009f762a79b693f7f82efc9298a33a14765c06dbd4cb2bf5c9b4ffbb6f7e56ff",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "05144816a975a85e22ac564623a15f4caf628c15c7158c5a433f70544869e020"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/core_cm3.h",
+      "sourceSha256": "efefef85cd419652f5b7c1074ede2f5c24da943528c5156de8d2a194de1888dc",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "56d13672b812c122424db0d27fa3dae8c312f1c9892de62652dfa1ca497b9c0c"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/core_cm33.h",
+      "sourceSha256": "3e50058f0d08b8d8897fec65e636e2f96635d1f8bcef37d2dec289e834539548",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "609ef325bb4d80d07eadb0ac9a198e0f7f886ad3e4d302851cced18d60770ab1"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/core_cm35p.h",
+      "sourceSha256": "32dbde7edb75784b23411639fa8cb8ecd3a3da26f923530b9ae606e010fcae57",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "49d364709970e14dceb2d694c01a05ada8047d0b48f309fc03215cfc8e6ae31b"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/core_cm4.h",
+      "sourceSha256": "cdc0c5ab9ba0f24c065e891d26c3e686ed04106700ce6a572cc7e83e71965b59",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "384b13087e191b21fa4e598f73b8b1e2e866115765ac8bf5b8aacde890e5ce6e"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/core_cm7.h",
+      "sourceSha256": "ff629c5bf98a8caadf360d0bcc48e1042fefa19995f7b64855d5e81e4c2e81cb",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "00012aba314bc05eb8158ac199a84e9ef018aa649c56a1c0d31c6e618be94e57"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/core_sc000.h",
+      "sourceSha256": "e306205844323c8fe4cc3e5433c91ed34d9d5055ed11eceef03401fdfb0c3600",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "769dd70b2415e4263657bbf9950bd51839f29b3a230673e559369c1def06af85"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/core_sc300.h",
+      "sourceSha256": "cddd97bb6172b5cdad96a48445124a6d97a449546f5617e48f03847cbc4a09a4",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "f4a39ec12c17356d77c65ce4996de2530bfb1c11e97c56a0708fe77c29417dbd"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/mpu_armv7.h",
+      "sourceSha256": "e504a7d47dfdb3d61dfae3cf08d27ba9bc69aa4b2b81ca568efdafd65d6abdcc",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4d3205915acd8e662fd7322a45cc645b0c1169cece6bf735d5a3dafc6256010e"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/mpu_armv8.h",
+      "sourceSha256": "95a05e406c38cb770621f07ac066b8c89b90874a50559ec9b10c9587b6049503",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "bb789fff739a7a2d5ff4f19baf527e85f8d82194f8749352e3f50ba1d249494b"
+    },
+    {
+      "path": "sdk/Libraries/CMSIS/Include/tz_context.h",
+      "sourceSha256": "7fcc21fc190f6fd970390e9caaa6a86d72fd10f9edf4efab36f12aecf1a8baa0",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "42fde96b6263b149f6eb64c448838e5559184199d05e029277f270cfca2efe7a"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h",
+      "sourceSha256": "bb92b2e1da9f0e0bfdf1505387d42890ee3977ef5ff0e116f425a6be251b38e4",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4a6676bf2df4a5628a0fbbfb4206f2480386be2d751cfc3bf824bc439c544a22"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/Legacy/stm32h7xx_hal_eth_ex_legacy.h",
+      "sourceSha256": "56d5f2b7ff38e1496a3dc304e41871f02f7bc589bd827fdd84515199fd10b2eb",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "14f273d728d27c780d61ec06568fb95a4bd50c40849a52a0c27ec1e5a2888b89"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/Legacy/stm32h7xx_hal_eth_legacy.h",
+      "sourceSha256": "5ad05b058e17d82fb279e61d1d8952db305c5f8ae7295ef5a5d1c236a242a29f",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "c49460a0bf0113501cf27663af18c893f1d5e7d06a29de257e0892395b68047e"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32_assert_template.h",
+      "sourceSha256": "e51bc68a92486a3c2d615b09a1275a9463e226e07cbf92ceceeec743539801a2",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "19d82cb5f6ce3d2367e23093509579dd1cef1ed0d2d35a287f7482a3aced438d"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h",
+      "sourceSha256": "303bfb60d7fee809ccd5966647cc17b72293200fc68820f5ce6d6af1f0833a7c",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "11cdfdd4c750f4278bb7c1d89b91c303b11b16725aa1f278fbd993ad63ebe601"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_adc.h",
+      "sourceSha256": "b30c8b483e16d6c439fcd63b821e88ed6e0c64dbe11661b19801c9c4e2748123",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "66a404e7eefa19cda87cb6512fd3dce87ea43ddc8df1f64f5e8af73703ccbe44"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_adc_ex.h",
+      "sourceSha256": "6519465aba2038f34cb8b4cf670e4cd377c76743367683193b22975a4a6c9a2a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "2c79e934a48ff59a5d4425fd1e103b8bce10b5e75018445fb1e71a81e79f0d1c"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_cec.h",
+      "sourceSha256": "441101b393d23eab5230c4b0bb367b0d2e675ce7b00a9d518251a177bcd8d68c",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "e379e3340fde091a720a0d36609ebf471747599a40b6e1166c04ae722feb3581"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_comp.h",
+      "sourceSha256": "f550079abbb4f7e3bf9ee95fdbaacfd5947a63ac8f4a28bc543df15705913927",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "28cc221464d8e30eba7c00cd6b904a8198fc5c951ce8ece47262736ee9239815"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_conf_template.h",
+      "sourceSha256": "f943aa5eadfc0f1cdd60061a4b950687093d7cbacdbc75ce1915cd9c9692db70",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "061a755bfcfc4649ffda2a78b143cacf8e6343714856d6ec5b48dafe4eb3fff9"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_cordic.h",
+      "sourceSha256": "575381e6cd1daf2a68ea3e92b21ab2202e9ea50536471b08298580968770d9cb",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "22eae26f5aea1fbc95b7bb2645264ca9c3bf7670519a82c12aad66c15ffbd871"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_cortex.h",
+      "sourceSha256": "9288cd128198c0b0886b2a5af2e2107ae2fd561a8c285c60b694995feffb8cef",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "3d44bd1d5a1789259ef61554a18dc904cffa7a272639a23d320668d2c77af866"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_crc.h",
+      "sourceSha256": "ddf01cb472fde7fc25a4f345fec3eee98b41a217679bf2d2a30770eaac5330e7",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "883e47f4659208ff6fb142c584a4c62580058cc053a2f747e8b2bd6a62f06a69"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_crc_ex.h",
+      "sourceSha256": "cc3c73d9b28d896a11345684f91ab04b1c118fe4e405e21bfca360bad1cf210b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "508f7e05b04e734efa8f6bd2e165585158b9d3c6a3f7fa7a00b7f18458b60598"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_cryp.h",
+      "sourceSha256": "cb4846f5f4baa6296f7b52e43650cf37719d888ce0901c39ed18cc3d156390e5",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "055472c4d9d8a3231ce7af1df65863710c7001a924cb600f15081cc4b95ae376"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_cryp_ex.h",
+      "sourceSha256": "7b9087e0c207981e45d387ddb38cbdaf66c594879f38388f4a7941b48f6e0770",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "87dd3e99ef469deed7bd026bd077b8d28a81f7e8bbbe3a83fa0ed32c67ac0008"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dac.h",
+      "sourceSha256": "c2b6a00fc0b29dcd52fdc710dff861cc1303f983c9abbc25e3faffba826117fb",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4e73a0f31129b1dde959cca39218be76fa11c1a831a2179f534def9f9e890380"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dac_ex.h",
+      "sourceSha256": "e278a8f1e19f8b5b6fdb4377b8b49fafc526429cefcd154bbc78b06c7ab1c71a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "237da94a23482ae1280534665139450549df2b91f07f935b6026a51959d2353c"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dcmi.h",
+      "sourceSha256": "7dbed7676c70d382d63a00636032e12a37e91311c90cf7d4150a0142535542cf",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "5cd734f9f92e4abb0e42d0573fe7269f9476a1a53c746ac74b5931f64f3f44f6"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h",
+      "sourceSha256": "4ab8bd8d656f5b150891a0ba420fcca46aa7f6a8c7c1eca5db59be8c06abfc1c",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "e522dbed87c6738406d274fe940a459b88a6e25a2479c60177eaff69b11d839a"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dfsdm.h",
+      "sourceSha256": "0ff590aad141b042e9771103fb5e242cc9946042d1a33dbdec830b4d2dd7eed7",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "b6514d6d7eebc24cb871d60219c5d40dcff480bea93ef61187600cfd401692a6"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dfsdm_ex.h",
+      "sourceSha256": "01c9ddacd6dbea2c51629dba30ad1c5f6930e62c4eb0a0f485fde4665bb31c19",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "c87950668b68ef3f64ccd58299c4c6aa27d38b6d8f0ba144025a2760f3338271"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h",
+      "sourceSha256": "1f24d941e75d4eadb99b9af9db3e3b0080921efe0b67729bbfd10a5486913c26",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "23ac37bb4b4b7585bc85fab8c21fac9f0488d6e211cd834782b936b99826395d"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma2d.h",
+      "sourceSha256": "4d30772f2b022deb38bf7ebe5cb1c25b79085b8410768b6da3e0a5733f97730e",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "04cc5eb754973dfd5307e382c0d976d2bb170e688027f08573edc72f409d4380"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma_ex.h",
+      "sourceSha256": "fca0d4a25edbe4aa37b8a37abbd8d555435c66d0906f261de39d2b87cc5259f2",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "39f6a4a9da5fcd68e6c6221b6c3797312936a5a10a6b63288da1e1df790bd779"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dsi.h",
+      "sourceSha256": "04f9eea45881e5f0bb8f52694339a1593467a1e4e80686ad2ea32636b0109f92",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "61f25b1b0753ea882ebb6c922f103a603e8551fc4f43473b288543627cedf173"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dts.h",
+      "sourceSha256": "6e3ae5a2778d714cfaf656aef53ea17d591ee7fbbe0368ac057c25aebdf19a56",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "379c810776593823f8345a825aac572d223ef8f5ff379b5ac967b67ea6dc8c2c"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_eth.h",
+      "sourceSha256": "64990d7b407c3138be73b79b90c6f6f3771d922024954a990ee5e560ddd232dc",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "7457a262a40f3cce55974216bb45682b083c62e3bf1ac82fd29b4952e9a2260d"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_eth_ex.h",
+      "sourceSha256": "c442ad7820eafb3b77e024bde1ad40d18fff5f36511dcfc6e637c003cd20d5e9",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "faf4c0457c52587503646c9d3c36d88f4f23a879d8a3d77adc571c4de031e8d8"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_exti.h",
+      "sourceSha256": "9ef16dff48b96f9f380ffa65e3bf175e521daa66d251af4ef191c8ea4c3cf1f0",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "88e459ad9c8bddcb08d2c0d6193996807d75b357b50917f73ea3a57ecd051c00"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_fdcan.h",
+      "sourceSha256": "bf9560727c16d018e0faf1d3547f15e9a27fa191f5f15a0a82b8d3174018c938",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a6d4c8f5f300c346ed330632f89fe0d3f67b80b87ba1cd857a3b7ca0f6c97a36"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_flash.h",
+      "sourceSha256": "0597127dbd5f6d09ab8c26a922312ceeaaba90b6585a9d8bf49091f8fbe8e9f8",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d13646b814793951fd145ee2593f7fac093a67fbb1d51f53681fd5c95781c6a9"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_flash_ex.h",
+      "sourceSha256": "1c3ee87b9ad50de30983622378c0d41ff53b0044175eba48d07f01a88df31041",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "18fbfabc77abd90f4b44b12ee73de30998e7115537d2b9cb8faa69e2ef584b77"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_fmac.h",
+      "sourceSha256": "99a5ea4428f26fba043efb54ae28db5018fee26368071a582e2d3cac8f008859",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "e378b605bdd22982c53fd83eb5cbe1dd4e126f58c7363669964a17244bde0978"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gfxmmu.h",
+      "sourceSha256": "5beb26448b32746c37d1b6c78f2f966878b27abfcf6f0f0d1507235388946df4",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "72a73a4a79ffd66bb11054e06144199b5b22b322f97017466bc0b29a53e3d1b9"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h",
+      "sourceSha256": "b1055dc294e446ab9adbd82cf26e090b0646cdc2ecbb1207c6067be91fa4ac73",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "80c28cd102cac7801cb71e4eee74043584cedcbc0cefb8a0d326ebceb14a8fe1"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio_ex.h",
+      "sourceSha256": "e994a3d6b260a72c7a3d30417aa3659e226f3d9c2085cc04d5f1ab7294548bf9",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "38249f5643ff17648a711032b41ad3c13dd8de3a766ce17eecfd6c455d19fddf"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_hash.h",
+      "sourceSha256": "f7a71859c2150d3a1d71c547898d4dff5da6c2c51615fbe1c6327eae6a837a7d",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a630b61174fa102e15bf7be83f095ab56c0f36e216b910bf3e8356866af5b61c"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_hash_ex.h",
+      "sourceSha256": "f13e26339ac3cba480535c6ca434f128b2c79410cbd691e7ec26f89adaa07772",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4eb2392353dd16c23ef0dc6d69339c255e18c044b6fe21d0592d0abfa4469dcd"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_hcd.h",
+      "sourceSha256": "95bdd2b49f413ade06cb368cfb681619c68ce78b073ba7b134e7937c41761883",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "9bf7fbe90077b24a5ae1bb69a118b53601acdf1a4e89a607436158bd26c15075"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_hrtim.h",
+      "sourceSha256": "36248fc87f6ed5d5d358ed96c1c5051aff799475c5204d9419465e011c1584d5",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "c1184682cde70cac0e9bf6443ffe97357aecbdf7ae1881217be1664d6ec9f85b"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_hsem.h",
+      "sourceSha256": "0c02180fb151fc89d459343518207e8f7bab2dc2a1aa75286a5cef343203be90",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "86e294e27c303a33223bdb1134518bebd706294507cc9d9667834b892e8bfe59"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c.h",
+      "sourceSha256": "a3de3306d6a1e4924762ae8785d216132872bb86c264bf306c2412ebfc25e5f1",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "6e3c00b2b6f7c852af6a7596f5868f47093f8220049013eabd9457e382e6dcf2"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c_ex.h",
+      "sourceSha256": "ee7834ac6d09246c57d0c1519d98cf3893f5d9633fd14ff47f72a3bd95b62798",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "6c311e0337b50b321f429f38eefc1d44f0cf6c4e17e6ea9a2b6ba5aa441eeeb9"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2s.h",
+      "sourceSha256": "03455278e1c399d1cd788ef377a014157068cb510f8a423f7d0654206f00c2fa",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "10b1a03ca7d2fc5816d5bac2d28274c3b6cfe0a082e2e82908fc778b26a03fba"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2s_ex.h",
+      "sourceSha256": "f4f2b88dcc2444ee72af98ddc4ac0ae038858d8d3ac1219656526903e736f694",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "56c0069797554fd4cad4b79d15dd6333cbd9ed2993bab1742bce76c83b992093"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_irda.h",
+      "sourceSha256": "093059a80178243ce684e3ae45222f0b18295529a6f4870a41784aef65802040",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "452d6307bb9602cc958f8da9405b12785afaf803ccb3a6465e304cc6992efff1"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_irda_ex.h",
+      "sourceSha256": "2acb13c00aa8f0fb8cbaa1212fdda2770d8b9204ba4745a438a9042fc5a41e9f",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "73c19138a93530feb166dccb26d2a27a6cff5992cda3754215e21898610a2f40"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_iwdg.h",
+      "sourceSha256": "d0f7cf13de2da2ab8707affa05a3ce6fca487667fcc72ddd32941928b456c148",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "fba19353472fab2dfa746bee1ab2ef28ce7392c05367595f103cc5c026897c02"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_jpeg.h",
+      "sourceSha256": "54cc5b4e256d94ac57ff1d4ad60fa9821f25d9d92e36105c8f5f2b56b329d594",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "fcc419a0d4519c8c840e8a7a378f8e53586382d5df715325848e8423d3b44454"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_lptim.h",
+      "sourceSha256": "636449e3e04f3560d2f61f3a3ed86f8fe588e7154fcbe23d9e7025c145fd9f38",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "1ec42fff9e86349ec096091c5678b43e08411dc8a952cd57b1a11c1708414727"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_ltdc.h",
+      "sourceSha256": "82415f411aca8f803ed08f217e4ea33c21aaf4e5081be81b9fcb1d40a20a2f59",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "46dea31fc143e862b6869d60719f4f6b2466bfcb322bb026a353dc385d05d8a5"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_ltdc_ex.h",
+      "sourceSha256": "ee0abb6f612b2ee421905e8f6afa292f7613040bcb7e21ceaf3f9a65e74a1d28",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a609257243d89822a630036f3b5984c28eca6ef9fd694d8a93a98026152c312e"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_mdios.h",
+      "sourceSha256": "76c75aaf3064733adb863c4134a7fd7697f1037cb4bcd0cd3b0079d2c240c3d0",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "f076e32a8e2dec58317b73374613ed2b4e05e92fb363d2b3fd42ede5cb07ae32"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_mdma.h",
+      "sourceSha256": "6b98aa4b2a70878cd5a17dcf72561b7aa2412dc35acf79699c2d198dc72c9864",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "66feaa1a3aa7dec5e4bb9551d95c6083de33b32abe1d486aa49b434c1caffae4"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_mmc.h",
+      "sourceSha256": "a2a2d6a361095ff09922acc519efcc2b63e5e26b3befb1b9cb433e21e2ab734d",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "abeaf39cba4f5e313f5825fa7e59c6c16ef3ffbfce7960f2deb8cc92d00f2f9d"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_mmc_ex.h",
+      "sourceSha256": "223f530132dde081ddf32999b1d3e1534e175baa548178893323d0a0fdcb8e4d",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "142c993772b3020599b10047d5732bc1b2c3061a6cc3a58ec9e93f3dcc85ef60"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_nand.h",
+      "sourceSha256": "3ebe725728d5b1e2646152527617f8bb36066ef2532a05bb1c75637c755e8e16",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "cfb20250f59ca6321747a0f3c5e24443227d0eddc354083305a5f1ea3163e0f9"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_nor.h",
+      "sourceSha256": "11a380e4df3035f66e7e9086d8bdf32d91edbc331b3049cf582ff9f31560a62a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "bc55534b4a02e957013eb76a9469ecafbb90edb76d1e9bad10b8adf9d6f0bf4d"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_opamp.h",
+      "sourceSha256": "1f0b74a84a98f9366412eb357cacbcfb1f5a5b1a1439b1f8d888a40539fd49f0",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "7e24463ad93382e02b33922828c296b6b99a03d5cc11ca026461d13efa76d391"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_opamp_ex.h",
+      "sourceSha256": "72895219c13dd671aeebe8cd7bea4e760105601314bcfd299fb70b483cf95660",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "87b5db7d3626055d939cad21f63386c933def59e04f7f475a8f2fa11aeb78e48"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_ospi.h",
+      "sourceSha256": "b73ed40601332e498f4f7b3d15aec68f5b8b2ead52367a1df4eb3d59a5785c84",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "8d0de0f261324f21caf6104855d7ce15a6b8f3a589babd8f13e795684dacd472"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_otfdec.h",
+      "sourceSha256": "bd3d84fd41c3d8136c13f1bf3c1cb911aaf13648a11b88ac40640c8422364694",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "08723bd9aace5728f12a408d1373397e7c0b862551e8af6f3c38b10b233fa6f2"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pcd.h",
+      "sourceSha256": "1ab436f1ff5fa8756a96aa71469f24d68c8f1eab7f70b76e6f0d7345583c1a06",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d03d5a0f318476f758df27465b319decdd3dc75fc0228e475c72900704e350dd"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pcd_ex.h",
+      "sourceSha256": "50fce60b4f262299515267d14009c016254cac4adc36fdd600cba8547ba2580a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "79f44d21a8d240f952eaacf3f017645a7f6e3f680854c921df8f2a64ff61123c"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pssi.h",
+      "sourceSha256": "271a44ef4270b32f4ed50ebad68fdc08f846cbb8905fc0486dc1422dd42b78d9",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "2eca7073004631ea23d6500ed1f15b1e3726f6cd2507478e631e028f37ebc9b9"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h",
+      "sourceSha256": "52249d30b784b48ea24d8c65b4782141bda9b90ea0859a52bcb91af3dde4c294",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "355dd9c81e0b3275d040ad1b764ef221fea3150293b61bd5d92eaaaf20f40e33"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h",
+      "sourceSha256": "b905e4d63475833fbcef3a7f14419096e3e43e926415e0a6ea151cd07a4db074",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "c9c49a10ed1f3eaa62c819b300d68550841c9067b5f101c6c84ff684edd8993c"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_qspi.h",
+      "sourceSha256": "28585c1dd524597caa633ed388e5180121c90ac3e926b03bed8ad71ce441e6e3",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "efa64b4f29a26f01eee794d4dad571dc28e0eff7acf680ab5a346fa47b385d2b"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_ramecc.h",
+      "sourceSha256": "5a77fc15209d31110d3f0134321a216e2bd225193ba0cffadc07677ef9a32524",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "ee4e2e3565c47a7ac5fdf7981f915c3cb78cd620cd407d416b643aab08767639"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc.h",
+      "sourceSha256": "a1e19759e6b5c50a3cd5cc522fe8e12c606511384c5b8bbed9390a41fce3417f",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "eb89df1d723e31432f75c0b2d7b3132f22e8e563c880ae0e47625830246cadc6"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc_ex.h",
+      "sourceSha256": "f451450ad29edfce514a0bf0451b806529abec8a91aa9432a0316c5c2aa4a4f5",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "5623f8b70084d0cc0170cddeac3be29e8e14e59f50a285c943cee67d97d58400"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rng.h",
+      "sourceSha256": "0a8ca35762d1dddcdd887fdc416f532b24a9ec8d95bfeaf98fc7fb51c03f3ed5",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "bb8a06978651619c5e561c9e0cd3aa41f70f592ccebb89a5b182f3ad25f0905c"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rng_ex.h",
+      "sourceSha256": "795ea445296e07f4a262f95adde633dfa6001a3ede15ee083f30a7c92caa9145",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "00cf70fb370cbd353ee0bf6614ee1fc498b8219c5d477c452799a08dd5628678"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rtc.h",
+      "sourceSha256": "0000c9f81f92c6fb04656f3eea35854bd5a0f682a31bc60b25008c03dd397171",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4087fc23584a080ac71d1ac7504346a54f9b1174270b74e8b985008fca2d1d07"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rtc_ex.h",
+      "sourceSha256": "d1015cbe04e774e15d277fbfa126411bcc6af183dd7a7891c559c7d24788f7cb",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "0a02f0e55fda249afab47c0702f20d148568a75e515166bbad887989a39a1b8e"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_sai.h",
+      "sourceSha256": "54da9ac9dc893d3e9e70ec4c805734fabe8686815fc30d717d627ea308c8f961",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d3f07a9ec0d6bac8959e66b4d03489dfede3bc948b5f1968e2c81f431096c3eb"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_sai_ex.h",
+      "sourceSha256": "e02086aa4bc188fbe98b77c70f6db002391fd42b926c6967edc9c6e7488818ce",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "261b665b837072f66169eddac288748966a089e223e4e1677c5d1231372d60b3"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_sd.h",
+      "sourceSha256": "ce3c02e6ecce29fe9d70a4f9ea9dba701e962dbde9783487c0f7bd7504cd50fd",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d2c344e1abb4e1f1e8f806da39cb0b3bbedaa7677390be8690132f9cd1b354fc"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_sd_ex.h",
+      "sourceSha256": "d50e79e8d826a39c1820b49d7fd7d99b72078d3cec7715f75503a5c78df6293a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "fc60288f0f310ade3335d747fd4e3512468512d235af435ea3d23fbb69a85f34"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_sdio.h",
+      "sourceSha256": "937aacfb033ebe3ac15dce2841a36a530353a7ee38b8a01dc41d2b7fff23f3d0",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "51b1ba86afdb4337580938f89758e7cba5f9815ec23351b70e34c7c62fd5b202"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_sdram.h",
+      "sourceSha256": "e49a7f017529062edc7d652d136566665ccdcf2ad84291302199e00ce311db7e",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "62ca8d53ed938a3618771cdfb3a5e20e64d5214ed7a96a6cc7f7059c8437c125"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_smartcard.h",
+      "sourceSha256": "8b674836428250627861b59c3bdd82ba6a58315bfe0e6c75ff329440958571ec",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d45cef605befdbc9ab7eab43a9fb4ca6d3084b12de608320a7b457aaf6195b90"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_smartcard_ex.h",
+      "sourceSha256": "af2d2756e0d8240b884ecfc8025408419b5b1ef846987631c83cc9556618d84f",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "435ac9e53333a3e3f6b945a114010a7c9dc8e8d857cc0390aac4467d6229ecb8"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_smbus.h",
+      "sourceSha256": "096c750a91cf647dc376f3150a67a537477da62a96d3ae2c983e4cba16c94b9a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "49a81e090d1dbf60711b182c1dbbc6fab48ffce90f03419a2722e019f95210df"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_smbus_ex.h",
+      "sourceSha256": "0ea762a7501f5787b90e8dbdcc08a73fc465f00710ad750c4054182e4e0460f0",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "10683d44274c7f89447ee63796ed14b2305153af2132c415fafb946341fa437b"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spdifrx.h",
+      "sourceSha256": "9ffe6eabb44d1d49247d93f8a8f545d2ceca9d702e30224810e57b4d801bcc08",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "8489b5bd8317d894ba17d0bf9953721d47f4b8e3ea6456e4e4c271a564652808"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi.h",
+      "sourceSha256": "91a0d3ffc2895fbf6e5e1fc9ace44ca2c7963770b27a3666f6947c254a934834",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d1bfd1e5777af5571fc500b768413324837182b42dc24eb7c8118f0dab1fadca"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi_ex.h",
+      "sourceSha256": "90071b0706143e522ff687c7679d2565f4bbc46838b98148c7307880e1be342a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "18d2ddaddfb32e46dff1b1244afa3d6a084b30a16230e005a2de86102ad39093"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_sram.h",
+      "sourceSha256": "d70743bbc6f51019d656d6bb0f84a1a4f31791f86c254022010bde13367d959c",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "85e0f9ea58860858fd59ac28b1df48c489de8b3a6e2ccd3776671174e1217d3b"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_swpmi.h",
+      "sourceSha256": "7e4d18d9ef4e212a4ca6bd8cc425797ee4b32268a7a4348e7a3188492ba57665",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "dc766be0d7de0a3c966a29d887b6debd9d31af3d061b5637ce54e4412f98e14d"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim.h",
+      "sourceSha256": "57257ba362616cbc1bb5da26e733d674b79475a16301b7a88d10d919af5480f8",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "98618512cf0b901ff8ac566badc3d48843c8e164b259e863d51a280f39ba44ad"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim_ex.h",
+      "sourceSha256": "59efd96e50385da4807f2b03cd906f0ea5ca7facbb763663e26b798586f41beb",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "f56a783e4f737ded1413047c24bcfb38d9ab474fbd5e7a7cd6d923ec7333fb0d"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h",
+      "sourceSha256": "73a53b0a33d17e35097e514bef021bde64285f2c6688845e1aa2c2907eaa5384",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "274f5d222ad75aa3939d2e5b1c6d43c110bf3b3226378c7ee8ad9b508eb30687"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h",
+      "sourceSha256": "e52a9c58b45c24ab06dc50b28651e2b846c2aca1ce6921f8f104c8bb51ee5aa0",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "f1e7e55c920a44f708eb2f1fee9a2d5fa7d47bf2c4216b50cf1082ab0f996e37"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_usart.h",
+      "sourceSha256": "6fd39e0e78b71a7349ebf907c88220668ffefad331ce703903982139a3362811",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "2f2cb619cd5b44b1f88dd0e4741c729bd2ee0a17cbdef9c3769994d6a3420ff9"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_usart_ex.h",
+      "sourceSha256": "db8796f4ce59c4276e23822b5c1c242091d0df4893404e08e05ec0dc5eb97a49",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "296f6abab22e51e4e7bbd5cc35b807d64604b76aedaf79b291a3c21475a5d5ff"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_wwdg.h",
+      "sourceSha256": "66833f6a2cc33f41ad691eb809b360d6f7a72f3e1ea7764b3ed8c52045734a47",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4294a972fcc34270b0aee9da85bd334f6f3547f1b26108e961308aec66a586b2"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_adc.h",
+      "sourceSha256": "93075446b74dc14c3f822ff27a109d02d561d1cba9f29c3db33968ac784ebf8b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "005d500febfa655330f88b6adc7503d9c643088b84c6bd92f5d606d610e69851"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_bdma.h",
+      "sourceSha256": "ed85206179836225d33ef8e4df1760c55ab128c4b0f5aca210824513028127d1",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "e1abddc387f04dd588ff28e149c8949e95399b27300b165d683a17d4a10522ed"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_bus.h",
+      "sourceSha256": "e4e9a6473a10ad4f44fb8e4652618e7896884c851348220e4894460a13558c5c",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "1933b876fb5c111f03e5f1e5e3e03b02e292aae65786b91e64f25e1e28f18c46"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_comp.h",
+      "sourceSha256": "eb9cae57f40ea02ae2e612ceb7d23ec05ceddbb65bb035498189b62d5f853278",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "bfb57e663e207160f76ae2a94d7d15795132e0bf499b85ad3c9cb53c741cbb7a"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_cordic.h",
+      "sourceSha256": "f36d73308b97427461a2ef80d1c132ba69cae235d1a2c26457a94ce8714b154d",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "31787d7e7622b25258a1f88ecc928fe09260ed29526d5cdb8656fe5dd104b961"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_cortex.h",
+      "sourceSha256": "a878c8deffd36e18b993d94c62583c2e0f2df15bb073eed39a39551d878497cd",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "b642d3205c75e8e6edf33b4d186aed11ff48bd742f66221bd7a38b5375eaae7a"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_crc.h",
+      "sourceSha256": "211d2aaf206bb5b8eca6f2124082fc34a10627d74ebe6e24614f43c3b90c2e7d",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "50f1a0556fecabe68ad7b334f8e529133c46ce15d3ceef78fe581d045dcb6d17"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_crs.h",
+      "sourceSha256": "9abef8fea144b751d3ee44842b0f3cf39cf45101556dda21f4611e29a4bd42b7",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "5973191545549d89b38c04aa7b2febe8c7cb7c215d40471081b4526a1c00c198"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_dac.h",
+      "sourceSha256": "aff5b4f7f2f7dc9337a3ef945363e78ebdf6b79b2adced0481e4d0c578bf3547",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "6b2eebc6f1fa29f0b7052755857e96cc7047492323e82fc05539e6fcf03674bf"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_delayblock.h",
+      "sourceSha256": "4400602179ae6d14d391d42307004465d754bb90550d3252c5218ed2e6675698",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "e00d435d85300d1884693fe4f90fd498d221677e75e49fe915e89825e35e085a"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_dma.h",
+      "sourceSha256": "7ac57d078faf150f05aa0f783a947d8648ba5a42b4427207507c5f68c6a02dc2",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "b19200f6c4ba198f21fdec4e4dfa30feb07dbd3186ab93124dca136b9446f640"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_dma2d.h",
+      "sourceSha256": "a744cbe4b8221d268fa36225b2bd8e0156b92d9396fe35359c2ce63cf5323cad",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "3f37735deeea5f6b0d2ffb18fc1a9ff98335c70ba671b317b5b67059d82aba81"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_dmamux.h",
+      "sourceSha256": "3ed49ef447cff15aeb8a507b144580038651738d861be8e71918c6ce8a7f8ca0",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4a5015fd61423b563b87c87e91d434fa1449f86266edd4840bc7f6c1f042de24"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_exti.h",
+      "sourceSha256": "a5bf9843c7c529a47a9617910bde50072e3e474a10bebb97c73f2e8e2d0277be",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "55318cf708c5fb2ec7009c055d9a2f1b1c9394221b8b9b45729b5a173b3b2d79"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_fmac.h",
+      "sourceSha256": "64f45c9bb5c837a1115e9e05d7d9f6798c441e32693a545699ff65491461aa7b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a85be7b4c09b970a3569f9dd30207df704aede4c2371efde7089e50b2d70212a"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_fmc.h",
+      "sourceSha256": "b5ad20d260acd742c8648a416cb76dde71ada21156f40e87f5b9b11c73f6e357",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "640b338c53935abf86147ab8b0ee1b5f39983875a5c38b8e735c3a3ea3318fc4"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_gpio.h",
+      "sourceSha256": "27f76110ceb2bc1872f7dc29c804fdfecde023ca64392a95fe59965aa27bb73f",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "255c1daa29cccab4ceec8b25e593d293f41a6b6f80db4635006da0ac1084896d"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_hrtim.h",
+      "sourceSha256": "60475bdb8a0afa205a7fd9bc97ba8a7abf39cb177709388facfb75c38d9caa8e",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "76eadc27c5c427b6e30198f9960f2d6b413931be27244212b61c3f0858479fb7"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_hsem.h",
+      "sourceSha256": "b1da8170b4b6c0b8e8c3aca08be8987000b7a0b518a1ea0a399188ec748da1fc",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "beb6c432977c7ecf06175b0dfee4cdeeb3ae2da9d3224e87a7072bca20fc7da8"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_i2c.h",
+      "sourceSha256": "30c531aefad4190afa2bfe1357390275f23b819842c8ea41bca8cb60a9775d3d",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "b4bcbd0bbcf0cfee8476feb381388fd47533cb637470eb5ffb56a7244046cd07"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_iwdg.h",
+      "sourceSha256": "4f13e74bbffc17719439d0d213a81f4b56ef7c19f64705f5eb6937a070cf7da2",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "be4c27b6c040c854210aa209389a0c8eb505a73e2fc33633d25a9cbf27a5b2b2"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_lptim.h",
+      "sourceSha256": "84d6d54862967afbdef4fae2403549ffb2015becd31ccfaead66a9a5bfeafcfc",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "f5c531873b0a65607b6d32a8ac6e657fe967c141073cf8ce4507a04b89060289"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_lpuart.h",
+      "sourceSha256": "6c5175a8ddefc4fc811e7ba7d0bebd9af4951b609fbc347f9aac52e9a453831d",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "9aeec2a990cd621528480e024fa6e0b33afe017133145e67a0537837fc0f8c8f"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_mdma.h",
+      "sourceSha256": "4a099a3a93eadd9fe737198dddfa6ec54fc9a61839567f86b7353bd9c97e91ab",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a0e48b519bc56b559737be05604bd7ad894f21f0a8c79e01364f5433e151b426"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_opamp.h",
+      "sourceSha256": "af062f9964a1cb082ac390e025694e32c978307446c33e5e0ea08a32b28042bf",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "86a9304bd209fd2ee5165a659079bf7e79b37557939c7a8d0c426f5f7c15f787"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_pwr.h",
+      "sourceSha256": "c87a887e161c1d1e3ddb3200c63b4d74002147567e16ae4035c8ef07058df8e8",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "99f084f99ead6a16e664523bec30a83d521c6f826bc714514e2e71d151db9731"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_rcc.h",
+      "sourceSha256": "a8b566906f0105696c90e8af6eddb9ad936a6ac18e7a721247eab6b609f35d1a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "27810899b3cb51513184b9df8b0ce184d21bbef28b3a2633eeae423e6e8c6bb8"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_rng.h",
+      "sourceSha256": "657c8ccee8c0fa51f4267db5a30a4e39f70d1410e8abab69d957348039714d13",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "7641f444802edd639c95a220c8d8086704fb752a0256a4a9ecf228298372caf8"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_rtc.h",
+      "sourceSha256": "3ccc0765c6cfe136c1d6cf408ec2ae67b72c6da30bf0fcbba99a4dc3f7529297",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "c38143e7a43b1c4d5c6422406fdbc98722fd1486bd7e6a7d005c0c3c993fe28c"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_sdmmc.h",
+      "sourceSha256": "a45c93f48d5e84df863834a4659955c8237c9211a9639f0c1ee7d3e083a9f029",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a86679ae836634aaa910286095752b26f7f9b9c0786315576cda472f27177ac7"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_spi.h",
+      "sourceSha256": "cea9b75f4cf5c6b26d8bb952446d654d3f41109f830d746aea1fffb535b3a88c",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "66aadc1f64fa4654cbd2170f87b8206425c75dbd953d4e4b93843c7daa2f71c7"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_swpmi.h",
+      "sourceSha256": "2b225aac88f7edc6781164674ed6f186580573aa8d7f82006cf1c0e63b4630ca",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "c59e7c491c1911431a6eb80bfe9296594d11a8fc3ea1d70201df2ddd4afe8a5d"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_system.h",
+      "sourceSha256": "cf149c5d3b226108713953d681ad7e81803da78009a566b4628d8652b7596af4",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "26861e824afdd6b95fc1a49272545b9b475c26c419422cafe3e4940537653837"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_tim.h",
+      "sourceSha256": "4efd0cd51abf45341be6c962d139d5f72f23e69c16ba66b5bae31357a6329761",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a42e470bfa5fb4e07f88ae8a67aeec218738af310b329481781290a79b9a0e91"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_usart.h",
+      "sourceSha256": "49275ade9ff2203cf5f616b0cf7dd4a9e1e27fef89082cc15f87f253d257152a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "6d12802040a2ccf175454877a863e7591570647430dad5684ae567a9501b9b3c"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_usb.h",
+      "sourceSha256": "1a51589807912b9bf23c556b97df70245c1f38d5a6500ba2c6e257299b17169c",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "0af061b3eb7a4fe8240ea22b6f3ec08c324cb7982a771e09bc635ddfbcfb31f2"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_utils.h",
+      "sourceSha256": "d7adbe1433c6ea78433dc26baa20a61fe20e3baab94559e8efe8da123239be6b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "10d72afc03e0f6e5553f848cde56b14663b5e0efc2d6cc58de5cc37868fd005b"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_wwdg.h",
+      "sourceSha256": "65e4828e0ed1df94558db9598cd1ea76e73d0f2fbe849218d9046eddb4761cfe",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "52b7e885ab0c54e3b0dc6f7c86d72929509f13c266812b10beeee20420356e7f"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/LICENSE.txt",
+      "sourceSha256": "bdc7b0f98db4846279336431024c49a01d578a2ea1d19ec68797bbe33e718d2d",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "65541519480733dbac92b99c66743b855f811d8fd93268ccd337bc14c3397d8a"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/Legacy/stm32h7xx_hal_eth.c",
+      "sourceSha256": "f5f22c508fd828988669b0ca305b270ea428c3a0736b24d47778e6ae4be2dbe8",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a5781452afddd46b328539455c0078219cb4d9234e0556ae058e47d0e2c4bf8d"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/Legacy/stm32h7xx_hal_eth_ex.c",
+      "sourceSha256": "fb4a003870a8ed18af9df94bbf5076518f9e059a509afd1323391e7f1adebeac",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "036a2b751ef2ca297fa0412c77725c47aee5677f0458999229b6dbd84eca5f46"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal.c",
+      "sourceSha256": "e5dc7a87e2b8085454b87be9050a7b735432b576b229d54a2ac32952e865f185",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d6fc12e812a0557e904900cf0882685c8742afc51619605ead5c127fb6b0835a"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_adc.c",
+      "sourceSha256": "ee89b194371a6cbabdfd8df83b27fadec6ac692659318c10fd535d6fc3cc272e",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a670911552c42b288a05aefda532d59aeb0b8a3be11a9d1d26c1cf4400375168"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_adc_ex.c",
+      "sourceSha256": "acbe88d74ebb1d3acaea1189d5a0e38959c48ac6ab6dc69a6cbd2f226c2185d5",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "32add9b24cabec34d1cd539bdcd0dfd036a11c7332cc68c7c7c32e80ef1a7bba"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cec.c",
+      "sourceSha256": "056f5da4a57fb505e70f87cd0ac3479a6df5e7dcc50bdfcb960f97520d6b47a4",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "860aa3c01da2683752d1fbd9c5f2f546c562e594368e44733fa0d548f4c05b25"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_comp.c",
+      "sourceSha256": "2617b0bd0c9774b2c23c4330f7c8dfc7dca06300108cb7cece4c26325dee4b6e",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "0c53fa8bf4a017759cacdb2b18b9ea648861c7f1112992171bd72699b8de6d3f"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cordic.c",
+      "sourceSha256": "ef82a36ae8abe9bfa00dcc2aa568df068c676ddf4b69bd9bd7d6bb833ccdd7ae",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "c94bbfc1ec971ffd3f8ad98b462f653982ebb2dbb1aaf6baa41ad4babb20b0e8"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c",
+      "sourceSha256": "0de1cb8862f1894375f4b796b25fd2d093bc51af88cc72f72d47f68eb9794b84",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "963c1561084456a253f5098e3e7c2f55b423737aec4d3db352be5e397cee3081"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_crc.c",
+      "sourceSha256": "979a04636916fc4c5e8b88a72bd92b23564faaf8bd413438b637968a96a6fe3a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "ec1f4bbf4655b27b9ac17ebf94ff2a312b309d632214a9f5cc7962850af73323"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_crc_ex.c",
+      "sourceSha256": "7ac347e2f84624529541f644629c11e8d77943de20b8dbe037412cc945132850",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "17ce5cd49466f6df83b36732ce04a7806f38d292223ca6068dcb170ef8c2685b"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cryp.c",
+      "sourceSha256": "cbe1794f87a863d209f2eee98b397de514cec42c6feb64f3c368da97378d5d61",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "b168d505369de7ddfaacb6b99632e08991c3093f09c7dca01658e6f3d4eba031"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cryp_ex.c",
+      "sourceSha256": "29705c5aa416d5df988bc18df2813df2b68a010fcaa7ca2d1ffe647955846e41",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "880fac4806126e72ab31a10d7cb64751721bc4ccf60c27e845ea609931ab42de"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dac.c",
+      "sourceSha256": "94b0cb4892dd03ae6506ac82902d74a2138456d2c795d4da59909940c0f6b77f",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a4d045dc614711dda21e6d38fafee516bbc4e70b0922855e8d110b273dec666d"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dac_ex.c",
+      "sourceSha256": "3e027c2fdf07b1a262bc65d9bf63b156b9ef639d37f275326d2d121195c80f79",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d4820815649d467d9dc94c45eb002b833b7e246f2ca61658b819f9077f650ca1"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dcmi.c",
+      "sourceSha256": "cb222ba220df26a7d095225bd94831b46c1338d3641a82599b5c50a0d9b2cf13",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "8cf3e816085cccfdfd6e36ca968ab67a7272eb2fd4a33c55c1c54cd7639e8708"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dfsdm.c",
+      "sourceSha256": "18abef3162249f6809ac305e70e92939e049f8dd2ca9d2c3756b48922dfba3dd",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a9d4be28659916f5179f2fb621409c849ce9e25e19a94a9bdeda59c563edc495"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dfsdm_ex.c",
+      "sourceSha256": "3931771dac3ce2be0e47dc378b9de4e576e89cdaef4d932acf5c6ebcc8b30593",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d415e3be07fa059296d9aa635e30c956ff26d1b1ea9e17646a27a8eb39a039dc"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dma.c",
+      "sourceSha256": "2bf7de5eb37001f1d4637c832e60159d8e6fceb9b3c9e971ffba104fb6d3777c",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "8b0e48c227823d993ac6efd914b4985dca8f0d23fad69b5b4661fd2b7f73cef7"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dma2d.c",
+      "sourceSha256": "f0794af006790aae3ff5d0ace677d1ca938e2af4bae6d4e39728a2298bc37a4d",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "7ebccfc3aaef07a52eb81783c491e7f0c8fd213a0226e62f23f725ce49df63b6"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dma_ex.c",
+      "sourceSha256": "7aff9d494ce37e3374967d2e63848f48f27c841ee4a82bdf88020023d2816a18",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "96d6e179df566df9403acbf63e9a58f9e951a9afbd5dd1b201e6298e184b3e79"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dsi.c",
+      "sourceSha256": "135c556f0e8d7a4633989172d0c3e94679b86bf1282ccec9e4bdcd29c08a695d",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "e2e2d0b529cae594d4be0d151001a508887c899dbcfdf8455711f70d24a46807"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dts.c",
+      "sourceSha256": "f1874484f6975dced6e0b010f8eb3ea40afa7a919049de9243e7fcd54c73135e",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "82f5b065b994d0abb18479848b77c4d11f513212ccabf93c85c49af3f2c7f7ed"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_eth.c",
+      "sourceSha256": "35f56b9b8ea9907a1fa6ab6f28e7012a015e3ec43722f932c36f8ba503f3c7cb",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "0c3a9148bb428ee182a1c5c2e3c93323a2f557d66b8ccd6e228f785bd41f11ba"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_eth_ex.c",
+      "sourceSha256": "d2b0b1e9dd7ca5b9d45269de7859e2059fc055b9aa5fdb5fdab946cf071be721",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d75488fada10a76611518d2b91649bc880097adb10bb9bc0d1ddfc8a0b0af268"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_exti.c",
+      "sourceSha256": "47942200cc1e6705bd585250a7125d4b05ae1f9522562fdc45ad870e2cee197e",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a2739d4abe0ab5e6afbcd0c1b959ce7ef20f7749915fd7605a78eb610d7687e1"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_fdcan.c",
+      "sourceSha256": "dbb4ce81e954209e12dce425c08cbbefd8b2afd2bc4c7d6f15dd29dbe3c602f7",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a1b7187e7006e819e39bdb78fce6e3dfbb7906cb3bb631e9de9b5cd56db005d8"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_flash.c",
+      "sourceSha256": "e6c0711006a747c39e1a25c009f5a1974e2d5345acff9d92390b4e17d4cddeb2",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "43a30184eb2fb58da0bac8fd083b8c26919297675be8ef7a8be5982cb0c487c5"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_flash_ex.c",
+      "sourceSha256": "7ead8a934c645b5ad22e4ada45206990c3c6e7aea8228421a5d034bb25fafed5",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "bb78132d44af07ca24b1337e972e2afc56727c7a142015ca782a5cdc50af2bc4"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_fmac.c",
+      "sourceSha256": "7a41e117112388917ce61de02a909a2840cea89dc3b8ed1275dfc626d3df3993",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "37fe28e6c3cb083a60fd8cf2fc6f3c9a73c741c68f5a89df5e2a9abb7a42f739"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_gfxmmu.c",
+      "sourceSha256": "6bc10be137b74dca63d4f7f453064c603567e3840eb3a6e5c1818f31e701821b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "7ccd729d11e90c27e24913ce5590994da08f36d9a1dc598832c6d4990a45b8f8"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_gpio.c",
+      "sourceSha256": "bb189e77f4bed0fb00e45b3900cfe93271346738e459d28e18a9c124990bc8a1",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "738a7b12f96a1d60bd51c31a038c9ebd0340c341a2df676de17683ded05b5051"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hash.c",
+      "sourceSha256": "b3f24f813330bf735e43fca84568aa5475d77e829cd77ee370221c7b51dc6af2",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "6dd8bd66df3fa86161e07fa13b84b59c5ffe68906c0d039e1cbe81501d2083af"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hash_ex.c",
+      "sourceSha256": "047f70be89d8b933e34ac4baafe6972e953bf028bc4c06d0556c1c0492aef5c7",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "ff3a30676d0ed91c94fe3fe1e3613eae7b52f6c53118d740311e54c4a39fed92"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hcd.c",
+      "sourceSha256": "5152e9fe424bb57049acf5df632224efe227a2d8030bf77ecf8610370b4bdf66",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "8a430154e4cb918aa3587635b0287cc7b5f3442d398ed0f1f9edf1d465eaf0b0"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hrtim.c",
+      "sourceSha256": "8f639b6921735d63afc85b1cbe86e0257fd102108683db6d300c304011471b5a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "997aa497beb6a5d7598aeed2282e762e383da9634cb204c84e12cdfba9eebb21"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c",
+      "sourceSha256": "a6607c6a26d1782dfbfbfb55c463c14f3159a5a783e5723cf1becebb57c15537",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "48cbe7a87ac2f7f23ce8aabfd87377f93bb8fb9fe800f2b5b44c330109a625c4"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c.c",
+      "sourceSha256": "3ba60aae90e1185a4c01063e85f5618bc9db8b1df041ed21c484c476264f0372",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "6ef0485a3fc653e6cabfd1adf6038ae8b5451bc3fdce1685ac16526c7fd6568a"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c_ex.c",
+      "sourceSha256": "1da0b4070bf3146cb389f7b0aab80d9b5b9160e920177ae7344e05bc75636bed",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "0d9e8899abcad5b1026f297e0190c5e48163a30b54c7d2995b9273badeab7ea7"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2s.c",
+      "sourceSha256": "d25b6e1a86ec5847c8b79fb98d1549c74a15369c46f2af933332f3f2b80bc368",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "9797f89554a1b558856036f69b1c91c59fad289601a0e416992e405b289d9cf8"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2s_ex.c",
+      "sourceSha256": "4a7f231bb41ded71d812f7533d0036c6b3e5a78d27620d3b49a0b1369aaf73f5",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "7708f65a073d80b94412a337e30789bac031c8419d3449fb9c15fd4d375c9713"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_irda.c",
+      "sourceSha256": "49c6379babe8ff041b48eba10099c6a1b33a9f0b512949e39c1019a4cde21d49",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "3f727a1b90887394969bf5ecb82b296af6e5b8d94afce7ea82ffdf09cf565fdd"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_iwdg.c",
+      "sourceSha256": "d1888de61e2c808611905653738a3341eaad160eae46cc1a79a2e57ac00cde4a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "918e8a53d2896dfa503ef5e767b0200e69e0a16fac76a5dc9cdd80b05d113d5c"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_jpeg.c",
+      "sourceSha256": "d84f6cbcf7f51110356e2b07c2f4394d4b6aba1f6045b47992b4b1d33e03792a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "24a827026b66ae39090b808e48ef8f6525fccf480c2ec907bf23971e3e6808c6"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_lptim.c",
+      "sourceSha256": "09da6bb5b982ab9519f6a050ae0908defbc7c171012fda085a91a6657dbe9df6",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a4a8d3e3919c9a44825b0f133223e1d3253f36de1852625c1e43264e8887e094"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_ltdc.c",
+      "sourceSha256": "8872495cbe64755a8d29b8780c3f15973c469fe4e1435f2c1768d083f7be8c37",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d988eb7a7aef212aafc7219c720f146d4d996b59240dc2d6e7eb7744adf075a2"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_ltdc_ex.c",
+      "sourceSha256": "4f1c8e76db5bab4a4b755443927d402a1cec79d3cecb1a75b98c9d2f09a68976",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "5a06045c7ede940381d88fe9b6f414012a1c7a46270dc202ad9a0c7914812aaf"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_mdios.c",
+      "sourceSha256": "f53332674517c83fe6d21cca47b2a5aeea991543ac63cc46320a068f0811849a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "acdffa514ca8997d5130cdaa796548ac1b2286b2473c894a5b28070ea78ec310"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_mdma.c",
+      "sourceSha256": "48eca5a152c0f1b609ddc483c21008231c8c15a50842927b3e4aed2f8c7e10e6",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a5516da3edda240cc5c26209b7e45dcf06b714e943f3091d1c413a329d15464c"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_mmc.c",
+      "sourceSha256": "df2a10ad8be6c6632d30e4d6481cd489408dfc0eadcd362f063ef0f4c8dc129b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "b824ddb2195dfed69bd0c804413461ee692340ed38cf5090b4722a8380c039f6"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_mmc_ex.c",
+      "sourceSha256": "fa07861f5497dac37534937a57f0ca7b9e347fa425fd9690f3c76c51bd6fdcd1",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "01e61e79a1b947fd9c8e5447e690a2c32b6497d634ebd2662d184c79ba49ab79"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_msp_template.c",
+      "sourceSha256": "65b8a3e5f89a21fd8767d40511356ccb702233f2dbd24ec00219dad397086cda",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "2c69c240af10e55ec1c5258c1f58966facf9f233c4b81738dbb1fbdccd385bca"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_nand.c",
+      "sourceSha256": "1515fafe71732884b74dd1cf58471184c5e2289d46cec07bfb92cf7fcb2283b0",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "842303c99776dca1cf8774100a02419bb997c911cba49bed65b148955e643bc1"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_nor.c",
+      "sourceSha256": "8d9810577dacaf379699de879bb476640322b95c41085f5b2717ff1e19b17a41",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "8011a438019f36ad93351fa8111e2f17811a1ce58fedc608cb01689e5d8dbbde"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_opamp.c",
+      "sourceSha256": "26a65e02f43e35667ed71bd32df758b9e3e96f262ea4434f8a9312e066335722",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "aba62a888f823cd2002669e7d35d11c9eb5842ea3eaabff339495dc69486564d"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_opamp_ex.c",
+      "sourceSha256": "3e0ee05cf51554c0738d5105e667131b7fce221efe2d9f647bb87fcbb98f45ca",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "c45aec526653b7b48e3935297de8ac52ad1b7db2efa0bada648b7c9e5a17038d"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_ospi.c",
+      "sourceSha256": "52c1ce378a34729e0761e0997f13aa7a91c485a7200440adb9df20a102cebf5a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a415d865185e0ab9d686406c264a5e95481d59734992291498abb493b66df9d0"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_otfdec.c",
+      "sourceSha256": "a8f17d2b75fe6eccdd14b6e483dfe7867adbd4a3e9d021ac7a2c5416db999aea",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4b01a802e0932403b16399544194c0e40d915e4212c35096df522fdeb6ae1441"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd.c",
+      "sourceSha256": "2eaf69e2940ff470a5e63ace23bdb54e157a925336e0e3fc6c0d6bb30339224d",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "bf226e66136a8a782fd9094a72c5bae1d6cbc956abdd2a00ef78d15b70192c61"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd_ex.c",
+      "sourceSha256": "beb4e9a029ba57755453a1f99d0501c45151d6f2d5d853ebb4d8726e12b38136",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "9f02ec9b66e750a94c400fd2ff8c7da313612c98c524d49de742ea7cebe5a188"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pssi.c",
+      "sourceSha256": "2b3c2a66c425044cbf82dad0b323b86e7bf6a8e2113d4b899cb55d1568ef114a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "6aba4d3e3090743fbde3f36235f8bbe36bcc718f51d14ef36690677476d23d8b"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pwr.c",
+      "sourceSha256": "1af5993f07030234a8a391d65cd1f2ec7a4e457adb13f83011c28d02d6128bd5",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "bd4328569283e86af46eff0437958c637256f7300efbdf39bc837c85ba13eac4"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pwr_ex.c",
+      "sourceSha256": "840d9c98019bba4d855f17f9965d994b2e739e1bf2a31ddacae07da8c34b975f",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "56bd695bece72a64cfe4d37bd6178f0833f67149b551eaa859f2dbfbdf5145f0"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_qspi.c",
+      "sourceSha256": "62c5f65b9ab7139cc0fcbb5deacde52fa8ec5e61b65e03a0989f7d9e3d33cec5",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d5ecee0316ab8ec3c2238777c734493d7638c4f90084fbbe87a736acd49c829a"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_ramecc.c",
+      "sourceSha256": "b4015354da51a147a2631c952f6042c94a2d06c6047cfaa60bdc2a4d4aac874a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "3277ca719201f6d7176d61c5a44957c56fc647d43eb60b01ae20d337bde49657"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc.c",
+      "sourceSha256": "34533288769f07035fd863c6aae473b05858110182d224a933c63f41a08b9b37",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "deb86c904e9d3fd26ad3ff079ed6cffc1eecd134a39e89b19103b05ca83a9f29"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc_ex.c",
+      "sourceSha256": "4bbf7c00a8cb0687cce2cfadcf8ef0c91b6385de38047acf0ab002ad530ecc8e",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d64ab97de5e2c1528a10173c5eb3ffb63aa0c19fc8cb7cb28aa5077369a5a522"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rng.c",
+      "sourceSha256": "949e4196f662db7e68a20ee3cb33906f7bbee42baa954bfbbfd7dc81ee4cdb44",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "64900292babb38c0900031a1fe859c272ec10ce8e452a824009f362dd9998d53"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rng_ex.c",
+      "sourceSha256": "d356fc49a2e64a89ffaa5e0741317072a588a1af35ade0a95e780c1824ecfa6e",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "284637aa1a1d60468aa70f1c901e0d3dcf23c1f25c158ebee36cee4e3b1dbd85"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rtc.c",
+      "sourceSha256": "11371fc540f17ce2e6c36b1eabf2696d03133b421d9a16b6d1b9d97967550de6",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "0408052934e537139c45dd7cafabf9334066ac42ebb145ca02e59a01989245c5"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rtc_ex.c",
+      "sourceSha256": "185ee10498e9e22cf8bef46bdf1b11dcd2f963408765f14353ee2c1ab6f519d3",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "54ad2df12cb6b3bbb272028a8f7a7f8c8b55cfb644a7d5c4f2b2135728f2f49a"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sai.c",
+      "sourceSha256": "c049e45e8d6d87798e9965579ff07c3d9c4ce0f09b6673b5da76322adee377f9",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "bb836cf8a4e10f4a0266d3ca6e24921b11b4a6e024019ac58fdb7f03addf67bb"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sai_ex.c",
+      "sourceSha256": "d9a709da7f0030335fb896f50d2b8ceda4d858d6098ff6cb8d2f5ced04b97804",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "aafddf7ea7889ac183d0300823192ede7cdb2d96d38078fa0c55c9e2e1286342"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sd.c",
+      "sourceSha256": "d86ba188744c17729f2c06861e0aec5ec23f2cb309155b9c57329023b9a1c930",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "6d3077fb3906abb2030b1a795be760a05744af473606eac536a6d5ff029ab2d9"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sd_ex.c",
+      "sourceSha256": "6c1f198ca5ee71d15859e187a31e0b3069a468d978fe762effbb6cddc498a9fe",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "f12ee88772eeabc106b935254ab9b94986fac226891f90d1e089408909162c09"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sdio.c",
+      "sourceSha256": "64e28c17a9902929c5d878d96164994f0b0ab7049afe4368241f6d3885373ba7",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "5eb252572cfd49a91bbeebcfddba3c584b47f3f1a874bcdeb4f1841e3b0e8e12"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sdram.c",
+      "sourceSha256": "f6be33f75c9fbc8dce62141fcf34ab0aeee8c46f56c4660adfc7d1868b1eccd1",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "fc4d6363782147abc467251eb0341ab25539728283a22c5c313bc862f9477e13"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_smartcard.c",
+      "sourceSha256": "679c31fd6560d98b47d537f034d971b47358946adcf20b5da9395d4100b45e25",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "7c49396c1b8c43fb4aa0f85355d48428c4dec48696d573214da8853c5448ad02"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_smartcard_ex.c",
+      "sourceSha256": "929c817b9219e97af16b86008b48d1a67b35a14a7e992703a85e1e8dd2fa758c",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "c478d03cad660b151877a1dda01218c1b3a0472b787544685c989a2c240b49b8"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_smbus.c",
+      "sourceSha256": "c2e2bb4843c2998d3fea2255141805756930dc60be9dad990ba754f8cba9ad86",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "256b4fb8f6f0041d7da53dedc1707735eae1b28fe5c695047299f7710394e189"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_smbus_ex.c",
+      "sourceSha256": "65a9506dbe181b546cf1864531fa3361ca8918ddc51d37dd8f93348bca3013bc",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a48393892cd5b09e08aa5ffcd8092a8f1dcb5a5f3ca84f291ae66d9b78bcdb65"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spdifrx.c",
+      "sourceSha256": "253531b723afe7cb05d1944f609ff5b62626a79e55ae774cd5a24d02ea1ebb39",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "6e7b508ae9d9c0c85ce50af7ecd472db5facc6373f3e22a57f1495dd3a1f0f0c"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c",
+      "sourceSha256": "f798bb13a663a9eb8390374e923db2522dee30d72e1fe88943b06e7a21c9a0fd",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4030d3ea306165943703394e07b282f0be6e210370de0ceb710eb85739e2ec1c"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi_ex.c",
+      "sourceSha256": "3cd2d79b46c18fe2707753ae5001787ed985bf5af8550879a4b9696c71f22f81",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "fef68b4cd957529ecd8a736a445f6d17dfc30f17ad118d502546a6a204d9059f"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sram.c",
+      "sourceSha256": "d56dd179282cff8c15fbe23d72aeac224b0d04c591b7152de1eb8aa9d9a390c0",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "e29be17cc74cded29f87a1416e74ffdd292adbe93a2995224d9dd15fe048d1f3"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_swpmi.c",
+      "sourceSha256": "2e8d93a9134d85c72971f6583394cb91eb64afd93609979e78cda6761c6929d5",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "cd87d1d30510c4f3c3f8501a7caca7d810ed0cb8dbde2cf47e406b0fe0a9a380"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c",
+      "sourceSha256": "b68989d06ae1aadba94416b10cc06dd2a7f090b21140e610971cff8318029223",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "8d9d8f692b4b509d307fc72e21bdba0415152f85fc4850f8d843934e24ed10cf"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim_ex.c",
+      "sourceSha256": "e31db6efe09ee0ccfb14eb7d7a36085d1d8dc585b79fbc43c1637f37228dc9c3",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "b1b2a2cb9250c1b8e0286fc58970303f24a2b608d980e2079951cd019bde6af6"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_timebase_rtc_alarm_template.c",
+      "sourceSha256": "407f6b2f74dcc70532198d70813355c41752bb504bf09582387fe11b27fcf520",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "abe2e70f4fdaa56764f44b8d931f0fb0e9e9fb18a8e25de302652c623961465d"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_timebase_rtc_wakeup_template.c",
+      "sourceSha256": "9295d6442fb4291e7e65f262a95d5c07162b6e80c2ee8c44e7c4c35ed28a60ae",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "598370702c7c0d997e334917d1dfbc34cecb485e18abb9580ade6b65ccd21cd9"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_timebase_tim_template.c",
+      "sourceSha256": "4fe8a767e8c30fa5de425819ea6f15f6db603f7206e234a8b3666ff90075ccf6",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "91b0066732168c57328064f80834e75676ed0eb3947a4871db42774f98e50f35"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart.c",
+      "sourceSha256": "4b164a5200efe72d4f0a9903eab415195ce8740572c3f3f62dfb23deaef6e438",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4c3f687829eebce0bf80c158a76d0acbe88e4943d9dc81bf24a75a9fb7addf75"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart_ex.c",
+      "sourceSha256": "49716e9cfd838e474f28870307e4f24beb55d7f0a99cbb3e4a78c971349ff2ef",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "8e121dbd8c4479fbc77ed68587a16b9060e7610ef323cf5ff0635e54a1641401"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_usart.c",
+      "sourceSha256": "e5ab6913c2e8de8ba0a8a0d5df88ce9d85b3f520394f5cc74b6fb080b107fa2c",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d16264705eb8b5db6e3e174f7d86b908847fbccc8452dee48a459a94c20490db"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_usart_ex.c",
+      "sourceSha256": "a83bfcfc532f7c05ade4547e242c09d9939a0b7914399ec82384668ca559c17b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4de81b4f1fc7131e2b954927f3586bc2d2a3e79337d7011ce0fd05a206b04f41"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_wwdg.c",
+      "sourceSha256": "b28847064577dcbe7555ca9bc233421e942b4d737c8410989d08033bfa29c94c",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "c30a34cd8cc178c70b26a6bd4bedf8053bb9e7fbfb8c5bda1a08cc13c50eb6f8"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_adc.c",
+      "sourceSha256": "7df87e298409ca954bbc51acd9b4cded18ba466e6f4fee9639cd240fb8bff048",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "005ce1fe5cdf3ef7906b08426621d32d70287e8f98c9294b66b823758907b5cd"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_bdma.c",
+      "sourceSha256": "104168157b09cbb5b97179a4aabafec618c475b487972d702e25ca85997a42f5",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "2d18e09e4a87cedb16638724a3479eca65d2a6fe90d44a6944a1ebe7729684e8"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_comp.c",
+      "sourceSha256": "7ff696db87160491b8a4c3465283b47de8aafeb5b108281f2ae957e5e9e5b9a4",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "dc6267da878483c246e95df95bef04c77ca6b14ac7b0140f9b0d372f1eb2df0b"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_cordic.c",
+      "sourceSha256": "c455cf76407e4c7b2a4cdb068e2eb5dfa2557ec8a3f630fd52b3cc2b0d0080f3",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "e1a0204b832a57ddefa86f9ee0f5475956abe0ccc9979351c1b235d27d2ca105"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_crc.c",
+      "sourceSha256": "080924a5a7a019bb3975b7cc5b1ac96a9cff1ffcd2195e67df6c2fb3b5b4984f",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "ab4344cee71f9c1d36ac9c0a30250ca2f00c9fc60c56b37794328c7550b0d8ea"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_crs.c",
+      "sourceSha256": "e59c1c34d47b111256077843d488ee6d7567d4d21735e3ab52a0f9aa33d252ad",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "420094ffd3d3c4d286f7fb5dae0d17539e3c044429c94e743fed2ffdaec49aab"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_dac.c",
+      "sourceSha256": "7b970c25797c488a661bc53266208f137c39dd5e3381f79b335dbd6bd950a5d7",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "796f47aa60e41634f5ac1d6171ef38553007105d78d3ec60a5fd8ba09e0f02e8"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_delayblock.c",
+      "sourceSha256": "d41a367447c01d580657e9da33bfee335c1fc458ee69ae8b476ec90ec4b67d72",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "60a870eea4349e7239456df8170f12edac4e59f244bf476ea0b6cfcb383bd0fa"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_dma.c",
+      "sourceSha256": "59df367c2119fd0d5881543df466fa73850e3f91607f97842e4ec7c0144ac07d",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "3a9de05abaf10c1299bce4bd437ba160f6c9f522bf94edbaaa973c3eb10f1256"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_dma2d.c",
+      "sourceSha256": "8bcd0c5d7143507a5e1235f2e188fec7e6160182994c00bca420212a167bdb25",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "7710f4488b0ebabbd3e6d7dd77d7574dfb5d0edab9ffb2a3aa33c9c3929cb241"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_exti.c",
+      "sourceSha256": "4ec7dc7d641628120b7d8e266d921358b2e92d6b949bcccd493e55c9bbf8fe5e",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "0f1be8a7b22d6ea0eb843e519b1c76d1538c37bb2609ad1bd65564393818963f"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_fmac.c",
+      "sourceSha256": "1d8bc438929a85f81f2c77e8fb6282f0c5a03956dc80a1ef16d16df1817d8512",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "7e8d55e6a376cd7a57ee9e554092093da02bc4c12eeb6b940e6143beb28f1df9"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_fmc.c",
+      "sourceSha256": "2fbafb25e0e0c226123270cfc37704c6cef5fe47342a79aef18b077486c5c8ab",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4270a579d8334bf0a6146fe7e679740a0d42da3b6dd9c0cf0653a7930890194f"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_gpio.c",
+      "sourceSha256": "c601aaded8fad73b58afe57f4aef88bfaee18e11b27b31d94323697b1ce1748c",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "f20ff6ec75b9ef651a3ca0005d5f32a642545def94bb1b83cf48c6ca1088ac01"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_hrtim.c",
+      "sourceSha256": "9ea55daeeaaf7e88612ae6342b67ea814889d04f040722fce05dfdf3aee440f8",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d7e7b9bf86cb6caf58b56034d12dafd0aa36f854ad35d1e9ecb7f29f6804a98b"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_i2c.c",
+      "sourceSha256": "55fd9438e1c2e0b6805d9378be0f1db003b0aa378fc500cb06315d3242cc06b2",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "f76f4201d9d5d4f36974d6e350827ad39debaed94611aac35be49cc10434c550"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_lptim.c",
+      "sourceSha256": "ec8cc6ce6c3a98dd326323af6e6fadb674fd3b74493a19c055fc9ee5c98e7ef6",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "cf7f0c48e357c396986c8764dd3b9668f94150207170e058e876e6fe88aecd6e"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_lpuart.c",
+      "sourceSha256": "2454b4fcac559a6996c98f8b1a5a60b70dd1a06be5600cb7e2f16a9b0c231fba",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "fe470e063a3e8ebf4681641428b57c491121e30c3e7bd817b00d63fa7a3c3465"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_mdma.c",
+      "sourceSha256": "d16a02e797ae0267224a90d9adb4ed4ecb00fe19ea582d0fff7dc96bfb1a2e75",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "63fdd91775dfb2493fc59aa78a35b2808868dfa34f93f8887a6ba49ff59e90df"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_opamp.c",
+      "sourceSha256": "309c134eaf4d362d8285939d7a1ef881c703bf012f706635773b47c60ec0d009",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "0bed3e36670fab01f7b0259f5df84b86135230b0be50ff90f0385f333fa346f2"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_pwr.c",
+      "sourceSha256": "1a1c17368eb8791a3667e12cf1f02ae4fc392ea8559c52589db4e90d324b9b30",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "b38baf0f3b1ad1d1b34beafa66c2fd3a22b4ac666f26244df276647ecb78cd12"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_rcc.c",
+      "sourceSha256": "4e75e10c8476eda3b0d419a6754a749e96b96fc93df7cee8f7f1203a8750e9e3",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "bc665f232533d9b6cb7081891cec0757b22e736e0f4b10cd13de5bae288d10cd"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_rng.c",
+      "sourceSha256": "31f7b13e639eccee2ebc789222f86910c574553a935f465a5cdf72afe9dcf83c",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a5ce95c2d902b661938d5eff5ce7978b264a60ad69fb8bc53894664adff00a95"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_rtc.c",
+      "sourceSha256": "9251abc722d88273b50dbbd31717cfc9cc1cc1a5ff7c6892272075e42be982dd",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "47fc8a95c130b3892d90afd9b3909895730c9321f44edc5a626062a0ac84e2dc"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_sdmmc.c",
+      "sourceSha256": "77fe47967e6f935698d64e4ad705e55507006b7589493e23e3dd27a2ec445d7f",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "96e275f4d844044d014314f29ef604336289f63a3551f7695f87ef461fae0ba4"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_spi.c",
+      "sourceSha256": "5517b8132d9ed1184aa7d13a316b89f2049a861b687400805ffa4126e2c7e742",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "9cab96d423ec52148836ec37ed4274dbb48636da5cd416eb61a3c8ff9aa62607"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_swpmi.c",
+      "sourceSha256": "361dd61a4bae5c0f6e6243ec30b9de0e545be574fc90c8f47bd6e47a5e729439",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "328b44161ce9a32b1066c3e5e3589ff813896923f23dc66bb0cd645541644982"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_tim.c",
+      "sourceSha256": "71ea7c5df64a6142f267fec04084879e1f672ab2e19d78d34f97449224121959",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "00e3098f2c1f0c0e0332bd92771f00c7979ad5e5e59ec8fd4e6f40ce77e889a5"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_usart.c",
+      "sourceSha256": "a9d9987e4f0e70e23e9644f22efa90030918c60a0da6ec0f7a63ef15333950f1",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "76c0ab72e1a26db0f16ab498d4dfe349ed1f6a2da42397a854c1798a516b62e6"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_usb.c",
+      "sourceSha256": "464d592437c894813806d56fa6bf1df02bd1f1dbe76e42ddae0b57916af684f5",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "fb0675f41b5676260c617ea16c662ecaa896d9339bcb6f42e009f6172e5c90fe"
+    },
+    {
+      "path": "sdk/Libraries/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_utils.c",
+      "sourceSha256": "bd17c92d33f530b1f266a3a3f2c0db1559497b9a3ee98adbe891c199f8a17613",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4589c7d92f373240ae2a2b5f7a64372b5b94c704b28772f6a76e1b7d965b71e6"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/App/usbd_conf.c",
+      "sourceSha256": "29f4560335cd1e4c2301b666011e7f0f7996919b31d98745563762025eb394e9",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "89c22e02c2f04b0f06241b45f1108b78ac150130390410d197369753f4f435e4"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/App/usbd_conf.h",
+      "sourceSha256": "299fe94684506c7dcc60f17dc707ba26b282112de774f73178484d574b4650f7",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4744ba79f24051a20258318e66ca96e144ccae8ecf5088b6bfc5c66bf249c461"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/App/usbd_desc.c",
+      "sourceSha256": "abb677ae36b373861771b36fa1f0d5462eab39ba0c4b07833376d433f76974b5",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "502ccab67ee23bef366befd6d1754cbaeca3eec04aa495f55c88ded03145407b"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/App/usbd_desc.h",
+      "sourceSha256": "29ad45af47299e7da554dfea5f717f44705da09c6e870cc83abe7ada1e90d7b3",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "cc2010b41cd05dd7b1a8a3b762dfbe8cdfee8d21d020526128199c55b2c3b0c3"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/App/usbd_msc_storage.c",
+      "sourceSha256": "071656afead66cf79dfa44c9eb215026f14c71d3bdf44ef7bd040245922ec67e",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "fa878fac0f5ccd5d578f6489a3d6df9d38a7712eb9e5c0345b2bcfb1f13f4851"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/App/usbd_msc_storage.h",
+      "sourceSha256": "0d49734b262e003d2180d9c040172cf7ed719e75466c47c2c67b530ab85fb19c",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "caca7824482f262d663a625579d8d06fa2de4000d204cb99ceddc28272a96cc2"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Class/MSC/Inc/usbd_msc.h",
+      "sourceSha256": "2f26b05b2a63ef14f943c6844a24cd91c741e9fad6ce735de04152e11b5cc638",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "1eadb54beea1058f3fc2664cc7234f4efe86acf3a5635089cc5bce790bc5a6de"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Class/MSC/Inc/usbd_msc_bot.h",
+      "sourceSha256": "5d3a37b88308ca25b857c187389d4ecc76e2adc7e6bf16cbd3398b635819f511",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "36b36a5c7266feb3cf9dfd7a7153dd7823f01109b39e93c2b0437e40aa5ad987"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Class/MSC/Inc/usbd_msc_data.h",
+      "sourceSha256": "aef660ba1425b6c36412ce47809504e3c72224589c776bbc6b967cbba0391c93",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "3a3e9c74e01ed933b43ce57fa98d94608b9d413e8fcb7feac45b7484f8b97c1a"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Class/MSC/Inc/usbd_msc_scsi.h",
+      "sourceSha256": "b19d6e41c847923355a09f5840721064e3c7ed69ff4d2abc71d3e5bba83667dd",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "e1863abdd2d1140016e2e5f87200f4e526195db5cb9c2361f0d4cc8fc18d4913"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Class/MSC/Inc/usbd_msc_storage_template.h",
+      "sourceSha256": "9703619ed1bd913038392f99886072012cf4b043bbbdc5690135252a832f6c6b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "bb9ae075ec511c66b9bf25615aa8c7318cbf856f09c25c5325e8d43cda1fb23a"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc.c",
+      "sourceSha256": "9b6e9cf9a9064d0405f47c266ee03cf806867b583d533ada3049bccbbb988f77",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "f4489783dfa277926908b5af0133e40c82222a90991b78c123086b0429f6fc3f"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc_bot.c",
+      "sourceSha256": "20a92e43ca287f4f6b22ba5093187d5b2d9fb08c2664a2d5efcdc695b734bdc9",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "bd4a30003f03202389f112a1d12281acdda39d9c57a2ef4e3813afe484fad42b"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc_data.c",
+      "sourceSha256": "8b66658b0acfa2ed0d8c362d5b52632ef0ebf44b9d95ca597d9fe64fdf98e1c2",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "c7fe698142083e888f7bdf9eb910c985779a198b974ae2cc76085d59d224c5fe"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc_scsi.c",
+      "sourceSha256": "fd705465e44e09c52a28f59c6929e28916fb2642e893a83e9e7ab064b6de1174",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "df53f1cb44f0afcfb771419846b7577eb6a902d22110017029d034fcf7c89de6"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc_storage_template.c",
+      "sourceSha256": "6716cde7c08693f215542617d67e85a8ca5dd7411ee32c28ca5785f7de7f16b1",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "dfb61dc74bf4c1743561b80d3647a5e02547aaee3ac639423a2dbb328b028485"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Core/Inc/usbd_conf_template.h",
+      "sourceSha256": "f7468b43db051a1025fdc7af63e81437bb872ffb60ff55b0934fc582f7098cf5",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4c71808a7b7d695e9121133eeaf440459dd445d51971b594e8457e4110ec029e"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Core/Inc/usbd_core.h",
+      "sourceSha256": "28967f78c4d89437124ad90df076766236884acfedcc6e2c81943f0370fa0253",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "58e34fd0664a65f06c40aca28eda783f4695a318586e8dfa3d1b18ae84e62eaa"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h",
+      "sourceSha256": "0d766fe68a0f746b29caa7c6ea1e96c45c5fca50360e1d224c19935a76eb666f",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "e9f645a5ad1d33da2004fefa9afd4fe62376f4ed90812d89acb238fbac9db867"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Core/Inc/usbd_def.h",
+      "sourceSha256": "3221537af84a522d06999e244206ecb1ce5de3c18a4fc9808dc9df39e57e9b7d",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "234a47c6ecfaaebd2e345b973afe9fec8778d18bdb8bc1f7167470563d430217"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Core/Inc/usbd_desc_template.h",
+      "sourceSha256": "9d85caed061945147c877efab2e3685064815849dd317d7918d66732b833053c",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "1d1f7a7bdff7ea9d4b2c72687406ee0003279a0713267b7c9c2e8376d418733e"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h",
+      "sourceSha256": "fc7ffbed8ff7752453bb510493b43165ef29f4c5091e50fb6d0c4c8652d4f560",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "ae6a80c72046dc80627d0b273f6b5a651b0446bff34ecce5555b96f0055919d8"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Core/Src/usbd_conf_template.c",
+      "sourceSha256": "b87cd27f6c13f3b15abfe7137dafbb7b165dd1d5842639a10a1f496b33c01e54",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "684e54b6164ef3b1cb0510bedfcfc0b4d2d5651b382209fec503c993d408a771"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Core/Src/usbd_core.c",
+      "sourceSha256": "3511f708b14bfeddce29a36fcc6b90adfb48726764ea428de638f99f17f24d38",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "0dc3a28260a614c7cdf39ecbbf70651b9b50624a4e234efedc842114343eb435"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c",
+      "sourceSha256": "4a46c29ced0eec6e97ce1534f1c580350a027616925cb59ac54dc3d744bf84b5",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "7f689d5c40aa8c1a534d7a0f3ea312a4546c4928bd2717f2d92e365c4b552fc1"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Core/Src/usbd_desc_template.c",
+      "sourceSha256": "417b58a5a0a7e628700291c701b349115d1eb13df1cfee58afcedef570bf04c1",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "cc31bbcfcc363f9e76373ed41814fc12e65886f96313140efb67d0c236d25427"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c",
+      "sourceSha256": "047c63014d1242a8d4254495d019f710bead71de566897c6daaf97f496a019b4",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "efd622358d450e89bddc06fc75148cb4253744c8cde4e833753073a4df8dc819"
+    },
+    {
+      "path": "sdk/Libraries/STM32_USB_Device_Library/LICENSE.txt",
+      "sourceSha256": "5db16866e0d240442f8382ee5b76eac16ed02912fd51ef2be55817b7cadd703b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "f29216eb3eeec023dd8313495432d5f5886c1bd235c4dd9bcac62ee319db4287"
+    },
+    {
+      "path": "sdk/Middleware/Allocator/pool.c",
+      "sourceSha256": "c22cceec819f47e672f3f7ea1d53bd1197924008092b8acc24ff6d56fff7a9fb",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "a595bbdad453795e9f9daa4a049043f0f46bdd9747af40c1c14618203fadefc5"
+    },
+    {
+      "path": "sdk/Middleware/Allocator/pool.h",
+      "sourceSha256": "3d65ec8a963b6073b7f6c1ec13b1d5c9892a0bc5a30d7c4e9b71f4d937f96d3f",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "aaa384d9ba47337e980a2c82f37633def1309cbc347c667a5147b9e4303606b6"
+    },
+    {
+      "path": "sdk/Middleware/Command/README.txt",
+      "sourceSha256": "caa111c258da2a63f1187513e29a2939d356f1fbce087e1931d8ddba86f4617f",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "c431dfc67b7cd5bb54480f16912e57aa25493a52ad309f5b966eb84181ccf334"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd.c",
+      "sourceSha256": "49c3aef0502ca3b8da41a053dd3726f6c8d561690c0673b3fc08a25d088df777",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4160627c064ce89b88a7f3a0be83cdf64b05e15bc6e6dc654744e4f7d9ece882"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd.h",
+      "sourceSha256": "eea905d14566e9558a7d34b69d014cfe14dff3d971fdd4cc0ddd405cd24a238e",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "fc512c0d0e1ab21786a09de646cddfc20702cc3e0da3c4222baa46ceb0b66467"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_allocator.hpp",
+      "sourceSha256": "db65ddeffa0f865741a2be230c6e5eb0c026677c6f542ce49fef13c43851e788",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "e875e7c962ff97961bc0a34552c4ae3f83cb8d91de9709423b1b484b3ae9d857"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_config.h",
+      "sourceSha256": "25bad13d5fb435dfee394b597e1baffd22807396495b0336dd56a0877ca64db3",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "0277ebf1144e14c433a829c3428dd10eb97ef2f161673a6c9a8b89fa772fadbe"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_file_transfer.cpp",
+      "sourceSha256": "1ef8f51122e56b6207ad128d686f19882f5addaad156ac373ef27bf75be3fa79",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "ee11254a6053fcee4ede50dfece6177ca089c4342ca67e53ecb1f1ea4229a1d3"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_file_transfer.h",
+      "sourceSha256": "d92c0e8d72584ed3988ff5cd4dac5310a7b7dc8398724fccacc0280c3a2e265a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "2da7d93e26d6726614cad62424eba25913b52ce94fe72dbf557bb3b0961a6a7e"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_hex.c",
+      "sourceSha256": "91b70d67ecf93044e53967ec56b6ed74b3ca583a05221877219674f74521dedf",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "48310da5b0442bdb9dba532d48bd1339a313192b63b7b570a0d43c3f14238431"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_hex.h",
+      "sourceSha256": "05df6732c0d578e17ab2214980590eb994e80deab966d59bd842fe54cf89524d",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "3141aec292ee9a8690c962a90b68ac639fc88411fd3d45a89ca8ab4e50f41e40"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_hex_parser.cpp",
+      "sourceSha256": "c71735f32aadeaf071a1e9e217c3eea6381521e4daf31eaf1d7fb762f97b391b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "c123898daf8873a6de9fbbd4328add0b37150b134c6523cfe26e031364e44c48"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_hex_parser.hpp",
+      "sourceSha256": "ba78cf8741c10510cfae2b06a3d2e9e3103379af2c42f68d82e447b4691c8fd4",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "41bcb5a062a5eb2ccca046ec0f50392ac863f0c2bb4f43f2d3e910eaed8f0da3"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_port.c",
+      "sourceSha256": "0dfa7d06d495b32ce51a7e28ba9847d7632292c0c5e73c852f3c65473ce21b02",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "7eb183322c5b12b778366fb4b93c3cf0be23d4fae3a0457aff4d2d46ac3dbfd2"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_port.h",
+      "sourceSha256": "4da85c6da35bd1100c0fc14850981e2b0e95b654a2d532baa9fe8c80c7770c8c",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "0915fd7289ba45a3c248489a3c59ddd6f756cd8f54c3831ae881046ae2d85575"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_runtime.cpp",
+      "sourceSha256": "3b3fcc76dc4285055bb282db50261af879cb38f5395fb565d6f91784cf863851",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d81adb8b997d3a8530a9a0cf0e8d56cc749147d179b14158f6b947219306b565"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_runtime.h",
+      "sourceSha256": "79f9fd565fff502d431c4ff2efc004d7b325d47be0b96bbd52a91ce157aaae00",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "090c686965cc15501efc211f0aa0742efcec625781f46086387a7f8728c3c361"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_string.c",
+      "sourceSha256": "1dadfd543c6d810cfeaeca23d21212746c9fc9db404c8edb46658f738c981bef",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "4ba32a67b9938b72901e9126e3c5a7a9f2e1ed944a9679ec73080002e221c363"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_string.h",
+      "sourceSha256": "6f8e5cbb6464d226ba266b453168d0e346595bd5dfb5d5ea7f6d80144c44c300",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "9f8d395e6aad93e9bddb84a76aa037ce62df6cc9988e47e673ad9d08cfa09dd8"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_string_parser.cpp",
+      "sourceSha256": "84afa1429204716a85720531ef716d0ee26f95b2b8b7069f983a63d93172e33a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "8ffcca8675a0b2cf8303884384fffdf7ee05dcaeea40cc32c333e6daf0344168"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_string_parser.hpp",
+      "sourceSha256": "3c02224f89126499ea6f60807c5ad9d31d45788b33cb58d92e2b6f48138e3b5d",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "be365d9501b46df7f5bc7d895e2bea4a7ff3e37c9dc6ad7c4fc1074321020d1e"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_user_hex.c",
+      "sourceSha256": "75e3243b931e09b5414686567d388ddb5dde5297f4f75194ba8f22fdd0a9d099",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "b9e4dfbe79d68d3aaa1a461fc25f609cccf283751e2088dbc59ed9b6c38cb250"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_user_hex.h",
+      "sourceSha256": "e502ac897c748d27eed355dbe3c0052b76555b792ffc17c2a07414fd35ef376f",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "85d47970f872e93fc34b961e3de51b5dd7d8369547dd2a6ee16d24ebbbfbea35"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_user_string.c",
+      "sourceSha256": "89956889c1794f4b4e3fff92a5ed3e3efb04e328bce5ab39ebbb67400f033eb4",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "cafe9021cca2251c13000ea3c6e41aa50683ae0dfe30c6466021a1acd5069c05"
+    },
+    {
+      "path": "sdk/Middleware/Command/cmd_user_string.h",
+      "sourceSha256": "532e37a876dfd3f4166084ff883c7a29582228881e9f6f95d477f7415c8109e3",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "7174d59a258bc531840f279d59e36e5dabfb99cb20339ca1a6a7d8ee306205f9"
+    },
+    {
+      "path": "sdk/Middleware/Command/file_transfer_README.txt",
+      "sourceSha256": "8277b50030120ec3bcc0369032ece4a2d3acd2d55f2bda2d514d63fd5bece0f1",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "17f030c4dc8b6684d2e9206fba68fe21cf99ea6fcaa7aba3a207a0b441428e37"
+    },
+    {
+      "path": "sdk/Middleware/Expression/expression.c",
+      "sourceSha256": "494a49427ef57a80b69d6ab852782b1fee39abd15add398764930fb52aacbecd",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "8d73991f373b5590fa6fb99b82e7dd491c63a4e8632c673e1180e3c3c472552b"
+    },
+    {
+      "path": "sdk/Middleware/Expression/expression.h",
+      "sourceSha256": "7c2865d89b0884de5e39fe1ee252633f65850c218705d3670a9206b6eee6d29f",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "53caff96af038906de867f39844dbcca7752a4c0c87d2ad206bb46f4d34f4be0"
+    },
+    {
+      "path": "sdk/Middleware/Expression/expression_parse.c",
+      "sourceSha256": "57796d4c38229c83464909fa3eeb9dc1fe3059c57a9e53ddd19c282c2019737e",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "da27a4756ca189398d00cb98750bc37fc0f47fa128eb8932071279e6e4319898"
+    },
+    {
+      "path": "sdk/Middleware/Expression/expression_parse.h",
+      "sourceSha256": "446bb9902991b35da046ce933600e3df369191af9210f396d96404e957241c68",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "bfc126d159089735f19059fb86c246b2370be9d780e8300799fbe7a051f7d4d9"
+    },
+    {
+      "path": "sdk/Middleware/Expression/expression_var.c",
+      "sourceSha256": "fbf8cd10bf78a565521799eaa15603dc7819783ac2cb744f7528f93d2f6f35cd",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "cf1afd68fda3bbbb59ce3a2de521920edf9306c219d24fa7312e4ff614da9c12"
+    },
+    {
+      "path": "sdk/Middleware/Expression/expression_var.h",
+      "sourceSha256": "6e23da69cfc8a0f1cb6cabf65ccd575c3b5594908e86102f88f2a5f8d3ce0b34",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "de86bcc9d77ddecc0b931db9c6b49b7878ff42b1bff5db97f0a8adf24994f54c"
+    },
+    {
+      "path": "sdk/Middleware/FatFs/LICENSE.txt",
+      "sourceSha256": "2576183a3e1c2d2f4b3628a7ef93c2f937879698abdd6d554dd718e79062e079",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "b896e32fb2cdb3fc8b3b6fd854706fca4ac55619fbb6d5eb2429cb05ee338966"
+    },
+    {
+      "path": "sdk/Middleware/FatFs/source/00history.txt",
+      "sourceSha256": "f3645300ebcebcd7a7e0c35035133db697e325d0ad163a549b5ec943f6688883",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "bdd612eb26a326e55bc51488801a9d7ff7aad9f63557cdab445327714ac53239"
+    },
+    {
+      "path": "sdk/Middleware/FatFs/source/00readme.txt",
+      "sourceSha256": "f8e4cd3036f8ac35956dd8d105a519a388306b9190e121bb936b1599c6bda564",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "55ee13fe1d2abcf6c6a11aaa0a2eba5aeba511e54dddfde5e3ca4e987d1c4483"
+    },
+    {
+      "path": "sdk/Middleware/FatFs/source/diskio.c",
+      "sourceSha256": "c0cddd77117c2337789b43815d4c31ebbf1d14e2537a03c9848b234c9820d3ad",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "5f059731e29c8d65115d422f5530607ce84b6e177f18727c8a4a3066db2b756a"
+    },
+    {
+      "path": "sdk/Middleware/FatFs/source/diskio.h",
+      "sourceSha256": "480ba52c9549d3916ace17a9bdaa703542aaffca55e0d55f4f8ea4d2ca33732c",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "c9e00b315aa550622ad1b3a9a9c5bee8ff19f54a5bf6d4d2b05111b25ed04775"
+    },
+    {
+      "path": "sdk/Middleware/FatFs/source/ff.c",
+      "sourceSha256": "01f00ed967073e85c8419b9355bfc92c85b502ff6d2b3d744dd59afe208d52fd",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "db86797f5527318be9d2516725719e6977c91ff645dc0b61da30f96976c25827"
+    },
+    {
+      "path": "sdk/Middleware/FatFs/source/ff.h",
+      "sourceSha256": "f9794d4ab25efc2e383f23ca91321331a5a579f410903d41c1cdfec11aaf1136",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "65a9bf8a94a673601f4f8ef5e6db91339911abfc71bcfbcaa4d7b24872e60cb2"
+    },
+    {
+      "path": "sdk/Middleware/FatFs/source/ffconf.h",
+      "sourceSha256": "392faf0a45cf6d9f4448fc23e4d46c1d1e8b1c7795bc24f7eaa1e75c3e90f4f8",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "88148110b9d66fe2feb964266ee46035f744d6b6d5d0e0e14c1d2693ff1627dc"
+    },
+    {
+      "path": "sdk/Middleware/FatFs/source/ffsystem.c",
+      "sourceSha256": "2093de233c3ed0f210c1106871de437f0703abf14b84554b3e90572a541c4dfc",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "c3ed60fb1c6fc76d42a7e250ba02dc66a77600957451746e047cd79534ed8e3b"
+    },
+    {
+      "path": "sdk/Middleware/FatFs/source/ffunicode.c",
+      "sourceSha256": "86cd4710c0968f0335e631ad440f90f5d3e92aa10d9bac6981533a32fd8e87c2",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "9fbe3aee5ed238bcf99193d158c1d1571ae5d8112eaf44b356d83d1fb7bbccb4"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui.c",
+      "sourceSha256": "88264a2c27932b6b7ffa46c00f2b48f6d1577e3c95d0eee26e71d130f0dd0040",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "7933b41418f97d91e5558ef8fee86126f3023dc732da1c35c33b7c423beb12b1"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui.h",
+      "sourceSha256": "5956205fc2f3809bf78b9941ef10c87ef2fabe244ffae7518adb04c07f885511",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "9ac79dc4e1d229d923744cf1b359b700f3f7c8fdc45720d54330a5cc3aa0e270"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_capture.c",
+      "sourceSha256": "ac5089484b246608f3fb8ce36c0b1c36b1f65bd2235e199bbbc35aeee7d90ec9",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "0f775f54baa9f554b0685f1e60215e0f5954650f59fff599e39e78b169544df7"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_capture.h",
+      "sourceSha256": "9cd0dbb2ba54a2039218e8c161480aa91128214e886a90ff77348cbecc7dcc11",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "8025ea2d0accae45546c2af178259efb7ec26045ecd9d8afb711e1e88f26f0a1"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_coordinate_graph.c",
+      "sourceSha256": "0ef8af8530af0fb4ec483c56ca8568b3e10be7bd658741d1760f3d18c0fc6114",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "56a5bb44da44fcb174ae3485e46091a1f0696491431ca651c2371368e44fa637"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_coordinate_graph.h",
+      "sourceSha256": "48a04f72115654b993cf4da1023e260bfa14137f10e2e7d3b15dc5a130f24629",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "bc93b6cae02e2a2886b11ff2b5b90d9b0e322d255341b30b5dea261d0d0c1f56"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_font.c",
+      "sourceSha256": "11b8f003a0ff93520e7351089ea0b97f8f2f9f48e89f4969955b95b428b7d458",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "f4382a8479a20c58884c00c8f6c3c71936a804da390d0da937ac56464f0a46de"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_font.h",
+      "sourceSha256": "83440b55a3ac42615425f024942800c57d1fd1a1a7251b43761d25fdb2a49927",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "09eb12400479b7f2f21eed19d147ba90c2b01a7a3aa58171ae351683da9225d8"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_font_data.c",
+      "sourceSha256": "7320bb9b032bd174596e5d9f380ad743d87a106573eae40b6aa24a81f379a76f",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "a2452201fcb9eb103ef19d3d9cb6d508a4635f41d3ff21eab6cc2d1e65bde335"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_font_data.h",
+      "sourceSha256": "2150f44d8c3a9aeb623eb4fcafa991789bb060c1bc0c5cf5c60ed7cf3b3a3848",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "d27518c0c10a89a605b876d5cf3b0dbda719c36057037e418ba55ac1046b4100"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_memory_painter.c",
+      "sourceSha256": "8e1911751f04d1404feb12661d062336304cbaac2b44f37b9995b4a726d53740",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "527e0c3d57d5bec7a25410bc4f3a2a5e367b02ba8ea309a80e49b4a5a0830714"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_memory_painter.h",
+      "sourceSha256": "f216c8510716f15eb22a1591cf469a2b7c62aee467351e9ee6c0b74b1c9807a9",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "2cbd38cdc660aa58504c30dc2285f69be7534a404e3f6c410c3fed557c065c67"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_menu.c",
+      "sourceSha256": "2bf1d64566dc764481d9e8bc1864dad9279f7e0d6301aa33dbbd7a53b79e3cb4",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "4ea847f95fdcd60fcedfa27ad4efbc357031d08b90abad94131a38733f414d6c"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_menu.h",
+      "sourceSha256": "8bf8c77eaf63293537f32234f8c3ca23c17f13803ce386ac3589b87c4c2bf05f",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "0c12989a9f24ec3d2b5790504c090c26866d717b88293c4830f95e27376de374"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_menu_item.c",
+      "sourceSha256": "e7a6a2b54112ed74303e31e4f5a1313f83e0309ee73bb335eade4106513c3ae1",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "a6147db3ae9e867d305fa8501ead534682ee786cd01e61cf778876e58aaa8ce6"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_menu_item.h",
+      "sourceSha256": "a655189ca16b54424d65929c06ba1583bffc0665e83e96898c4258e9bf2444e0",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "b63449e64800deb3b3396508776eb46aa8738abc9321961c7e97d2eb1d89f847"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_painter_base.c",
+      "sourceSha256": "06c8969c6893bf10af2415e226ee21541d096a9d0c3e10295461c22be96acd97",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "9cd78ece01f3f83a0c1bfeff310f196bd6d8117b0797c0d893db65c350e7354b"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_painter_base.h",
+      "sourceSha256": "d9dc9e18d7ebe01be67e473bea65723485ea82a97ba3d65a702da0898407c3de",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "0de53204a6210f56e59d4af1beb08a6c5f8af9bd651c3843f0619a80fb0c1012"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_painter_lcd.c",
+      "sourceSha256": "3f5175c655cdd37d1c3b5c6006ce49dd5740d0c57693e6ccc75caf31aa8fe98e",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "b6c0d7792f18d32a8a057911a3d1da8cf6d48d33069b294d8de6a8818348966d"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_painter_lcd.h",
+      "sourceSha256": "1f76ebb649e2a4b61eb3dce29d9f52ab419861bfac8a91d84fda1e396309a5a8",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "6844b4c2b303af54cdf14d3ac7cc044ed79c182c569057e22660002b44afbfe3"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_polar_graph.c",
+      "sourceSha256": "32a30cf36dcf2605e12ee43fdda73117a0897c6186061e3ed52e5c5b386f028c",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "540ac4cf524ce53db8874cc7e472aac5b2b4f5a9be6dc61c1ff74cfa6d65a33b"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_polar_graph.h",
+      "sourceSha256": "aa1cba52d31c7eed3f5035c64423b4c73578d72edd2b3d0390cdec339dda5246",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "80716a4885254db6d9caf4cfcf46c63254133d956dff169c33a39fa1232ff108"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_port.c",
+      "sourceSha256": "1f92b359e97de1b934096ac6135722b7f5b6324134b5546152932589c4073324",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "18ddca04d3c326052be32829f39535ad55fe66e8819fb4c6d0d39a454f26301a"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_port.h",
+      "sourceSha256": "3a73424efce33e6ebc16ed261c51972d194763f11862e1f32f810f301165c5be",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "aa74ba2a9509b935ea248438fb80344c1d72618d1d041c1a536a2c2052d24c3c"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_runtime.cpp",
+      "sourceSha256": "2c2625f053f3d834f6c39ab769a5d17ac9f2a5366af44dde492b442d53b33769",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "7831bd21ea65c6994a0e328cf2fbbde21466c5dfb260660b6aac6d490e551c9d"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_runtime.h",
+      "sourceSha256": "5b904f62c7d07ebadbada30067b959434d14798eadd18f251fc11c99cf072430",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "9b8dee8c94c8b30d6e3356c861a55dc0367ff0a36a614f08279144ffb892d8f8"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_config.c",
+      "sourceSha256": "c3239eed42622db63b2e9480f61e43f553ddec2fe56c3413b942bdff4c74be8a",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "934f2bcff831743495f41bb399481052f746c586824147c529d44dce87808279"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_config.h",
+      "sourceSha256": "60133738d9aa1cc093c2810ac451e8bef45e0167a99ebc1b2e16681debf29c47",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "e1363bc4c406fbc14feb9cdd551e393555561d8a8378e70d8e78b43224171848"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_encoder.c",
+      "sourceSha256": "480f6a1c330aa42586d2f9eb4c98c751f91c5a72853244e73574132c79df47d1",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "2a0949bb53313a230518b3c1593c458335162f90a53a919539809d8f72e4c8f9"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_encoder.h",
+      "sourceSha256": "ab4e237744cfc405fb1da0a6b73395638f911715950ac4a189e0af11daadd5bd",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "e13076616e5b76c96a0b09c74772518fa4892121531ab082aa077d4a2e7b11be"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_file_browser.c",
+      "sourceSha256": "caa52523c9b85a35c6e81e785a2ce76af485bd2bfaa44ea163f8376f307e1eab",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "ec1cf5183567ebab01940b148a2d74d449f7da48b6a51f60485f819aed0067ce"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_file_browser.h",
+      "sourceSha256": "665f669d94f9a062461135f2f24bb3e861e379419ce812e3e0ce9854c3f78681",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "8063b71a3d4baf552696b2fa364bc0e952bd7e0e6a15c9aa6af1a5bb67fcd054"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_file_list.c",
+      "sourceSha256": "14fdd9f5d5bdac5502a698b99eeff8475e4e9b7a29d26bcf7dd0655e69999be1",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "bb9ee4db74df97a8b2cba57d26faa63b4b0c5e4069435378f030a786aabfca01"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_file_list.h",
+      "sourceSha256": "56b0a12769a1fb78082bc1adece608aa46cb7ec4856a0bdfbd93b98cdf2f8424",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "fc5e14684bd2d3964b9248b90f373a0a7559d92d69f5f214e3bbc7c0de33f2c7"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_image.c",
+      "sourceSha256": "fe72bf1626f35674578e3f74ec06e42b9e81adbb34cd7c9b1b1874435574db28",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "f60ecc19a2b1197a69fafb2ba89f3cbc88791579a804a6aefbd37d7f43dad6af"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_image.h",
+      "sourceSha256": "0d4008b47ede66b6d9af7170c965f64f0c518586ebc59cb2e4135e05489ccadc",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "214e6d60d275b5ed0b014ab1659d5dae1d30bceedf58deaa64a18683b8cbd950"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_main.c",
+      "sourceSha256": "e78c669ac07eca818ea834ade110064aa1766c669b946a4d4f3745a5fdeb9cb9",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "828cf7725bcdd49fd326bc5398d8bf603b9959d47f9f85bb2be789a32d40e950"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_main.h",
+      "sourceSha256": "446023442230a73d0a5f3195cfdf7c976f54a642432991d08a8cd4f7a0cacb7f",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "8f8d042724e15afa0bf756ba43bdfad17457d29c64cede6f361d3845d83ee753"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_main_define.h",
+      "sourceSha256": "4c104bd0b82c785185b6bc9010e237bc0b8565641ee32b2576644f202a0a3ed4",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "93dc9a0c5e9b9ba6e98968d7dd69d4bb900c8171bfa82eb4be989237866721d9"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_menu.c",
+      "sourceSha256": "1c9bb50509acdacfff8dc9e569d18cf6a1f064c7904f9c567e9a336bc896d834",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "da4a52987c26a51aa858c78acbf16be3188e7d593ef41fc8cceea83c7ac40877"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_menu.h",
+      "sourceSha256": "22b9ff7ef24f03139e1f169864d487063d6c3916e6793ba44e3e05eb01b4cea1",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "b220c381e57bca5a66c040ef108ae7fec90f44833a33093343676f46262d2874"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_menu_operator.h",
+      "sourceSha256": "245660f375fad2f23d1c47960ffbac068218efb1ca1562c413d6be98610a3b57",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "2e91bbe261ffaa81fee35ebeba5447c8e535136a3ffb91b0958f40f923e2f510"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_menu_value.h",
+      "sourceSha256": "839865d39a822f78a99f1e3e9ba164ecfa7fb8d91960421fcab3edde63077651",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "d2d960e1efd8467913d53be53e020d395e1f9d57f7c05672cc0fdcc5b6714f30"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_text_viewer.c",
+      "sourceSha256": "fbf7f112d31472b9d67e470c660bbf64c6ea1ed6703324bcb1f6928f169a2ea8",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "9253383d3810fd12cd96d6b2beac65609f616d1e58d0c015b255a8215e638fbb"
+    },
+    {
+      "path": "sdk/Middleware/GUI/gui_user_text_viewer.h",
+      "sourceSha256": "a339769355d9c5ecec69cd96f0ad2cb851db33a419ecbee54adf6a848d1d2518",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "1c8dacd26dd4488dbe802f669b01523faac153faa032cc72f5d726291061baf6"
+    },
+    {
+      "path": "sdk/Middleware/SEGGER/HardFaultHandlerMDK/HardFaultHandler.S",
+      "sourceSha256": "58c9f4176521d224846c93a659d037f47337b07a19018f51db53f98e7fe02caf",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "35b560a6a8dc889945a42409c0bf90fb99abef9975f576992a1398066e666fea"
+    },
+    {
+      "path": "sdk/Middleware/SEGGER/HardFaultHandlerMDK/SEGGER_HardFaultHandler.c",
+      "sourceSha256": "1eaa2c8c688ae7d60b75f5470683f07daddd33a5de2ca3aa3a66ea424fe34b6e",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "b5555df61992041eaf340d75e51beeff3e5884439b41a905ff10c51aec668baa"
+    },
+    {
+      "path": "sdk/Project/CMake/arm-clang.cmake",
+      "sourceSha256": "add3be60151134e4d61754a36114a0c608343eab44fca8eb979b231aa9877c07",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "5a7fd2930ed98e61287e3acbc3dd9012295da989a2d94774fe943c5de1918a83"
+    },
+    {
+      "path": "sdk/Project/CMake/hardfault.S",
+      "sourceSha256": "1da1404d3c606a144375d92dd751e00cccbca6c9abdba2fa993bc9cb3bef172a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "fc5ff6484774e61896d9e6c10228f821d87b3f85c18ea45033db04d6dd1f35ae"
+    },
+    {
+      "path": "sdk/Project/CMake/newlib_syscalls.c",
+      "sourceSha256": "1f75e6103c376a9a71973571814015e379567fe0f41406eb4390b0f8d0dea063",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "930987775f0b05fb15b4718a0147723092a6e9f78464fbb4ab7493dec9649977"
+    },
+    {
+      "path": "sdk/Project/CMake/sources.cmake",
+      "sourceSha256": "d9470a2c68693eacba5d846ea1d8cd65248dcc33f1f88e30a9c3e0e8dc1b7666",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "bb9bf91d845f772f43c1993d84a7a36b2ffb071e4416c2f31730d76684d44729"
+    },
+    {
+      "path": "sdk/Project/CMake/stm32h743xi.ld",
+      "sourceSha256": "c6bdbc9d43f2466fcfd57f6d80e5543def0592c74e88de2b48dff5a843b5279b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "652f80924090c4aedede7a0d5ec0a4af3c4e96051a10373c2ae5a82db248e252"
+    },
+    {
+      "path": "sdk/User/algorithm.c",
+      "sourceSha256": "dac813d85ac2603008c72de2eeeb1a7874893bd22fc010fe6c3660221715da6b",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "65c4f8a1468adcc440b10e6a343061f9b45ba7ba1db2e8d92ebbde18975f7a4f"
+    },
+    {
+      "path": "sdk/User/algorithm.h",
+      "sourceSha256": "3f32239e1bfa17baa311e4a3bf277fe862b25eab33a61cbbd7ade2342cc74078",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "83f6f5dbd116451fea29a05a9e6a56fd6d43755fbca0bf0d014151a1c056bac0"
+    },
+    {
+      "path": "sdk/User/app_system.h",
+      "sourceSha256": "515cc86c08df1804113b056a873e986bfc440ae6ce89b1570c943e20ea915d8b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "9fd9555d2e4af80f6f285e873bfee89d3f013277750891b4ac783455029cad19"
+    },
+    {
+      "path": "sdk/User/arm_control.c",
+      "sourceSha256": "1c4e27cc5efe048a96ba772ebb24f1aa0e2627f2a2a400abfbb774afc9805189",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "e5a966feff18e2c5819c38eabd2ad36949884e04ac5479ef7254902d4ebbe1c7"
+    },
+    {
+      "path": "sdk/User/arm_control.h",
+      "sourceSha256": "3176a02873f60c6723f649d889174c12eb8272ed19260aba83feb7ea2c6c01ae",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "365c041a4f56eb61a695e4b79adeca58a439da372a9e7901490caa0958c25be6"
+    },
+    {
+      "path": "sdk/User/arm_kinematics.c",
+      "sourceSha256": "7f124901fe22bc21baa72637bfa8abd5b39cd95708e5541628a20954a5e0d183",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "5750e5f62ad1fb4471f50d4597bfd7f4ca6320e03bb119d3ed07f7650d6a6031"
+    },
+    {
+      "path": "sdk/User/arm_kinematics.h",
+      "sourceSha256": "dd1440aae5fe0a1cb68f665a201589f215e42da5c6ec03e76348ba7fde0fd95b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "6fbd659590f92d1472d92cf5a855b2a5c59a09522fcce590bdb76e95c85a4411"
+    },
+    {
+      "path": "sdk/User/car.c",
+      "sourceSha256": "ae474cf0ad452af91aaa811395554fec92916713f3c3ab11a63f177459f13a05",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "b7650a2a416bb5174fa169a5f3716998f145b2942fee6f5d4d4fc55b2016ef7e"
+    },
+    {
+      "path": "sdk/User/car.h",
+      "sourceSha256": "b9acb1d8a62b50191acfa24b0248e6ae105e6bc02fdb020550ac94aaf71fd16a",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "a808331953c7abcb06131f8af29a6878b3670573648b163b5f02695b98de66b8"
+    },
+    {
+      "path": "sdk/User/car_map.c",
+      "sourceSha256": "04322a9642d9c3534fd437c2de356bd5f5f55fb0b1fd295edc114b7d828583a3",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "c9a36afeaeda4c9cb52a497909c5693b605dfaf49d3088fec819d1ef4c88e115"
+    },
+    {
+      "path": "sdk/User/car_map.h",
+      "sourceSha256": "5ee052c50404315c9de405aac946030c87956e895c69ac3088f920e70a11b937",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "9958eb4ee79fce6a5ad96c10c9a5b6d9124958195d6eb23005f9cf441ebcc3b9"
+    },
+    {
+      "path": "sdk/User/chassis_ekf.c",
+      "sourceSha256": "abfc565cec5a47609b287fb65a372782f5f881a14bf252deb951059b7274331a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "e90232e71d3b5689d932aabafeacf1709ed4388ed824966bcaf56ec4b739345d"
+    },
+    {
+      "path": "sdk/User/chassis_ekf.h",
+      "sourceSha256": "f8a6a306ff12377b5b7118a7699b912eb3598134c9c3b690a97477e01392f432",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "def7c69481ebc2f9b9551a764f959ad1557111ac42c2a131efe96c7325b3a99f"
+    },
+    {
+      "path": "sdk/User/chassis_ekf_runtime.c",
+      "sourceSha256": "751b33578b00b483c4eb3f822203856b9aeb712b9fb53c99741b6a316efe4701",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "8477ec4ef5da8dd48a84633ec61b2304a74626381b07d45eb7a323ba63ca1da4"
+    },
+    {
+      "path": "sdk/User/condition_task.c",
+      "sourceSha256": "f534edd407e700771901fc23c1fcd3b57b1e558687286faaf4f3c0e060a6a76e",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "e70bb729738e8c02288c8565c2c166925cd5b5e8f34e9314bad28a04a07e8dac"
+    },
+    {
+      "path": "sdk/User/condition_task.h",
+      "sourceSha256": "b817d8e81ce0bb93bb7d5f4902d1fdcdc2ed409cdecebb6e58f72ab8dc19db6e",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "d6e8fbeacf9bd9a29280352c42d89368481f9f6b265ee24fa9d0f2c01f92aaf9"
+    },
+    {
+      "path": "sdk/User/fast_math.c",
+      "sourceSha256": "702c5f2faca772a7c665c3ec4d0f1d4004e74271bb808117cd59aaa8dc31a042",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "0e6ffeb326c6f8d0fdc55e895d2b3ac114bcbc36b9dd0b9e776fd946e3891471"
+    },
+    {
+      "path": "sdk/User/fast_math.h",
+      "sourceSha256": "4ee7d5d9ed6a0780b2d38d1c1828c3ac6c6378d04092af416e31a187e94db971",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "a536b8af73d79b84bd436a4d402ec5cbab358c2ac4ed8563be87cbc98dd9a271"
+    },
+    {
+      "path": "sdk/User/file.c",
+      "sourceSha256": "c9a2835fa1f203677f20e1655054f753d56cf433b0439d908e133a3cda70e1f0",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "ae65835cdc7717f1207445d35fe6391c5cd8527bd35673bb89612652e75097d5"
+    },
+    {
+      "path": "sdk/User/file.h",
+      "sourceSha256": "861fc04cf2b3572be0e81a41ebe4ff20516791578760798ce21897364d2a72f9",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "2a22744e8fbc75faf30b31e8a1af99c1ff4e15b1b6b63a7426dd1a173cc78e89"
+    },
+    {
+      "path": "sdk/User/hardware_task.c",
+      "sourceSha256": "e4b919b6798fd6985ddf361daf60a0f8be68ded96d1a2bfb373dc3ec27d55b64",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "e0cbb64f948aaf9c9b6c955e69bdbf44eb5a8233718dca1d7b40656a661dc4ef"
+    },
+    {
+      "path": "sdk/User/hardware_task.h",
+      "sourceSha256": "c65c5fe4693e80de1bb1e05308e1e0a9ba0a36ebcf63e7a76e27b628dece3e37",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "549e26402c78977bc8945d64de8abcf781b6271cff91dc79fcc66321670c30ad"
+    },
+    {
+      "path": "sdk/User/imu.c",
+      "sourceSha256": "db349d90803add5c1366ef4df37090d6ebb363ef18d0e8e173d7a45f20c2a45b",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "ba684dc5dcd48096eb969e4a260ca97f10b3b14db26a63b062978f04b2afc406"
+    },
+    {
+      "path": "sdk/User/imu.h",
+      "sourceSha256": "b57cf15e9a4c06a2b822986832b2f381c57cb667a207c06b3d59aa544b1981ed",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "ffc3855305e1d580672a8bd7244e39eee4172326cb9b7baf3aeff01c0bd5bbe0"
+    },
+    {
+      "path": "sdk/User/kd_tree.c",
+      "sourceSha256": "f2a67316fbf1a641b7f16382fadf03a533a1d5638f9c71a9a8cf57f11e1ef1f0",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "c38f28e0a615d7b8cda49c92e7697063660cf3c25d539b71b29608536dc08fd7"
+    },
+    {
+      "path": "sdk/User/kd_tree.h",
+      "sourceSha256": "03a206bdf73c79923f7ec4295468b1d94642fdffe1aafdf72494bb0b0823a62d",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "6a515f58122b231e1b918a2526232b6820cdb866e928a34d14221e0f7a2f0523"
+    },
+    {
+      "path": "sdk/User/lidar_localization.c",
+      "sourceSha256": "a0767aba83ba3f05ac8ca90ba5052cb546e3d480c425f71bf5a62db1a0745fcc",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d1457b591931214319c42086c8769abf9ce62cb3ef0a1848b429be76035b05fd"
+    },
+    {
+      "path": "sdk/User/lidar_localization.h",
+      "sourceSha256": "750042721b95245d1181341098e51f6bf0bd9bda425f37a07a9f0e9b78b4f7d7",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "9cf906dcdff7a69ba296ac5611a5857c0a4330a4f16e26fdb9dabe6d20c9fbbd"
+    },
+    {
+      "path": "sdk/User/lidar_localization_runtime.c",
+      "sourceSha256": "b425623d9e22d74fa5f1633b2771cfbde5b71cad6501877381f9d6b4f78203be",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "6d165689b8008e59a6bd6906a90e5d01600c85b199b3fda952f11036b23365f5"
+    },
+    {
+      "path": "sdk/User/lidar_localization_runtime.h",
+      "sourceSha256": "ccc4a66145862855b992f76cc933dc9bcebacf8467fe5744505141e1c4070fab",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "8dca672b913cbb174c18258f70446b4cd702b55f2bfae7e42cd8f1a1b7f7c926"
+    },
+    {
+      "path": "sdk/User/logger.cpp",
+      "sourceSha256": "06498e7ce4bf03215cabe50c566ea89d5dc57a5f84f9b5ec7aa8cb5dfafaea00",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "41cfa14339956bf9eeb64890595170141bb65f5996fa891c3565be5bfe7478ad"
+    },
+    {
+      "path": "sdk/User/logger.h",
+      "sourceSha256": "5339af0a6e3a2649f532f8cc0fe5eb27c6bd244ceb7ae2099415fde1128b232b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "99c07dfd1f06899354aaf599ed7051c088e123025b30539c469a650dd43340ad"
+    },
+    {
+      "path": "sdk/User/logger_README.txt",
+      "sourceSha256": "0b113a2b4136fab58f8b12b34d262854dcbecd01a08db0055734831fe7e14382",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d4671c865a1afee8904edd69e105bcb5aaec29cbf963b7502b77c292169c0a18"
+    },
+    {
+      "path": "sdk/User/logger_config.h",
+      "sourceSha256": "76521679f6975a151bff33be3ac07d4a3dfaf711bb2f6466bb767311fa74717c",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "0f32aa75b58106387453b11d770842f7f6d25adda7687008d788ec6456573fb5"
+    },
+    {
+      "path": "sdk/User/logger_port.c",
+      "sourceSha256": "c1af8c42db3588db43be26693d741dd2d0f11ce1c49e02f8c6f5282109953f1b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "60cad5d6e1ce37e1efa82c78bdbe094160aae3a083ebbcc42f90300ccfad7ac2"
+    },
+    {
+      "path": "sdk/User/main.c",
+      "sourceSha256": "cb0997c4fa7002adcee375c2f873dc7457ce6582b316eb687052c56a0b497b20",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "3b9fcd99c0215b5264815d6d428add7bc9c0b2ed3812fbe22123fe7c9dc3c2fa"
+    },
+    {
+      "path": "sdk/User/main.h",
+      "sourceSha256": "05cb4b277b9ec1f016f06e726d8d00e11fc7795a7174e10d02ce7a09137e9c9d",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "2263e63c3bf0aa09c5bedccea2c16ec1a4fb4f17cded70a995bce5d5adf416dd"
+    },
+    {
+      "path": "sdk/User/path_planing.c",
+      "sourceSha256": "03b6d34f1aa7c7d067b6192b965e2d5b8b2e24e7e9582228c8e279276c6b6a37",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "8bc32e6b31ff756d9d5d1118ee0e813935d4f2922ca286c91d5caef49db46fcd"
+    },
+    {
+      "path": "sdk/User/path_planing.h",
+      "sourceSha256": "b26d1a0a8fcf4280d4f615277a72262488ed74e9be64849a0161fed81885eb3d",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "1fb08b27c1571e242c936c960c92ffa5103aeed354389f2d0c40fca03e14632f"
+    },
+    {
+      "path": "sdk/User/run_tasks.c",
+      "sourceSha256": "8f72f195230baf122efa51aad9e3de687d0f36569dca80d0d8da1b9f024e7600",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "44a3d39581849b837b5ef3a4c045058d9b76195505ac70076964847ffa01ac3a"
+    },
+    {
+      "path": "sdk/User/run_tasks.h",
+      "sourceSha256": "36341a040773f3e061b6e206e74dde77aab751f2dff9e6d389d15f24c70bdc68",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "4e67f15de8f6642c294cb036b215126cdf6ab3541facf3cf83d6051178a91147"
+    },
+    {
+      "path": "sdk/User/screenshot.c",
+      "sourceSha256": "60ddf75ff889b1eaebf05c57fa98201e2882b33d416cc4c77740fd5781feb123",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "9306d0315ae4572310bc5302aa9150372f5682760bc7472f414db7e207b6e74e"
+    },
+    {
+      "path": "sdk/User/screenshot.h",
+      "sourceSha256": "e57a187a550b47f6c2c874a4c425c9420321d635af9335a9565342150dcce001",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "468f274ba1771b38fbf4a836625425a90ab79e4f73546ba5766216279236fcdd"
+    },
+    {
+      "path": "sdk/User/simple_task.c",
+      "sourceSha256": "fcaf3c34f154089e394ec5d2b434c35f2f387a4b9d139737c599f8e1b46c529b",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "134eccfec21460a494aff1efeda5ef74a745f821a1a97ed77464f340324793e8"
+    },
+    {
+      "path": "sdk/User/simple_task.h",
+      "sourceSha256": "ab0002cfe07f8d9f8f27f004dfd9c5a12e8f8445bf134da5edf14772b362cc39",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "f7fa83ea03db05bd88982640f056fe34a40cc07bbbc5d21f77b644399f159e68"
+    },
+    {
+      "path": "sdk/User/simple_task_config.h",
+      "sourceSha256": "49e519c94f69db4a7897f469d076835e54ff0626a46812bdaa73f614ff8e0ad6",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "0ebab01b302ccd4c91d2fdaa5117a6c5abc57150c9be84dd2af8e699e4dd4238"
+    },
+    {
+      "path": "sdk/User/storage.c",
+      "sourceSha256": "2c2e260a870bc9ea03478ce779597bc09d628b9a736e5e74e1f64baf316bab30",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "2b2f2f29daaf37c14ecc5d0c4d628fa8e7da63e4ef7f24d274a5f5224115b717"
+    },
+    {
+      "path": "sdk/User/storage.h",
+      "sourceSha256": "72fb4bdec0b7bf1fef09bbacdb5c6c02af871e65f65e56ba2ee94b678790ed16",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "ce5780381c26c6b92186b5808ebbcef71b22e22d4915b3f4b48c1fb95939a795"
+    },
+    {
+      "path": "sdk/User/storage_README.txt",
+      "sourceSha256": "52ce5f4a9009c3ad44a67b1e7dd2ca7da1cb7e92e0ce777fded93bfc7088c352",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "103e0da74e50d942f82131916f9e4d90345f9a4b38314d029465973a2a2d5d59"
+    },
+    {
+      "path": "sdk/User/store.c",
+      "sourceSha256": "0e5ca51c101806a831c46a4aad1095407d426e85b5ed9b64b6cb4ae30c3be020",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "de5cbf7451556c8ce55f6aa93728c72735b539b4856c2fa1f04c4fcfc9c0aa54"
+    },
+    {
+      "path": "sdk/User/store.h",
+      "sourceSha256": "4e4dd6a7335aca4ab14d3c5bb2c61aa9bc8c45f7a466e67f2739a2d5fb6c62a5",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "7a32a70c3079507734fba950e40876de0741846ad322b2f86798a7616dc7dd39"
+    },
+    {
+      "path": "sdk/User/tiny_jpeg.h",
+      "sourceSha256": "857d009b4092d133f9d962c017c6375ccf5a9d2923694e0b6bf70ed20025a4ec",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d393fbc57e6ab31e8184e36933a50e4f3c137f25b4dd37e0122fad6d438e3781"
+    },
+    {
+      "path": "sdk/User/trajectory_tracker.c",
+      "sourceSha256": "895f147abbc5f9b505406ca7b3e2668385af642fb3ca38c6fc1f512efe627e9e",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "4d40b2d65f89b44b0b07956313777fa467fb7ac127c78be1c66635960d371462"
+    },
+    {
+      "path": "sdk/User/trajectory_tracker.h",
+      "sourceSha256": "46086a027006b5010e4090d8e3c73f6cea21b72cdc5e6333e0780031f97de2ae",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "d07ae3d5b35d7173e6855a0b3256d894b0b38e5134dca10513736691213b4719"
+    },
+    {
+      "path": "sdk/User/uart_task.c",
+      "sourceSha256": "ea7d97296b336fe111aee07da7fcb35da46eed4cd07abd244c757e2fb66dc95b",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "13a3973c9e7a58cf8e94fb7f3d749c32b7d891c6c5535245ca83a870b356e286"
+    },
+    {
+      "path": "sdk/User/uart_task.h",
+      "sourceSha256": "4a52cc40edbcc447376aeef560dfd293a7f18047a8c38280a7973ced1de3b0bb",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "112e157d45bddbef064365ae83b9b1e0c1382d0c67e8f045fbc8bd9de6f20f10"
+    },
+    {
+      "path": "sdk/User/wireless_task.c",
+      "sourceSha256": "60d4b6dfbd4cec6cbc0f5b74972dec6e29b39da7f626fb26b6e1cf3d911751c1",
+      "sourceEncoding": "GB18030",
+      "localSha256Lf": "dfa78ba8f1382a613db1a94db244900eb2de8f660d049035eb82a06e786a1c95"
+    },
+    {
+      "path": "sdk/User/wireless_task.h",
+      "sourceSha256": "f984b6514bfd2728ba807865cfc5e89c765183076e26050f30852f9ec0531a2b",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "0913ed8352a9b1c2ff4cb748746cd7b141994f71ce25b85a2bf567674831c80a"
+    },
+    {
+      "path": "sdk/LICENSE",
+      "sourceSha256": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    {
+      "path": "tools/h7tool/auto_flash.py",
+      "sourceSha256": "b06329461317845d4b07a077bcb91fa32e2a937e0fbbf578f578340df7ea61be",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "b73eaafc3eda9390007030bc79a39f1fc816002536165d078ee49f8b50767518"
+    },
+    {
+      "path": "tools/h7tool/h7tool_compat.py",
+      "sourceSha256": "b27c0ece012d912e4485fc5af9520e8b977ddb81e8720145473061acb903866a",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "15c7ac45e72cfd30bb4e7229fb0984682b8cd8fa7a4d2c6bee6818425ffbc5df"
+    },
+    {
+      "path": "tools/h7tool/LICENSE",
+      "sourceSha256": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
+      "sourceEncoding": "UTF-8",
+      "localSha256Lf": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    }
+  ],
+  "localHashNormalization": "SHA-256 after replacing CRLF with LF; sourceSha256 hashes original bytes."
+}

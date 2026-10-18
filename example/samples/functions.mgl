@@ -1,0 +1,28 @@
+/* 函数不用预先声明：`main` 调用的 later 和 twice 在它之后才定义；
+ * 两个函数互相递归调用也可以（编译器先登记全部签名，再降级函数体）。 */
+
+int64 is_odd(int64 n) {
+    if (n == 0) { return 0; }
+    return is_even(n - 1);      /* is_even 定义在下面 */
+}
+
+int64 is_even(int64 n) {
+    if (n == 0) { return 1; }
+    return is_odd(n - 1);       /* 回头调用上面那个，互相递归 */
+}
+
+int64 main() {
+    println("is_even(10) = {}, is_odd(7) = {}", is_even(10), is_odd(7));
+    println("later(5) = {}", later(5));     /* later 定义在 main 后面 */
+    return 0;
+}
+
+/* ---- 定义在 main 之后的函数 ---- */
+
+int64 later(int64 x) {
+    return twice(x) + 1;        /* twice 定义在更后面 */
+}
+
+int64 twice(int64 x) {
+    return x * 2;
+}

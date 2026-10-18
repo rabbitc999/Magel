@@ -1,0 +1,4 @@
+int64 main() {
+    auto pending = fn (x) { x };
+    return 0;
+}

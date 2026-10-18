@@ -1,0 +1,51 @@
+
+/* 函数类型直接写 返回类型 fn(参数类型...)，可用于变量、字段、数组和回调参数。 */
+
+struct Point {
+    int64 x;
+    int64 y;
+};
+
+int64 add(int64 a, int64 b) { return a + b; }
+int64 sub(int64 a, int64 b) { return a - b; }
+
+Point make_point(int64 x, int64 y) {
+    Point p;
+    p.x = x;
+    p.y = y;
+    return p;
+}
+
+/* 回调：函数指针当普通形参传下去 */
+int64 apply(int64 fn(int64, int64) f, int64 a, int64 b) {
+    return f(a, b);
+}
+
+/* 结构体字段也能是函数指针 */
+struct Calculator {
+    int64 fn(int64, int64) op;
+};
+
+int64 main() {
+    int64 fn(int64, int64) fp = add;         /* 声明 + 初始化 */
+    println("fp(3, 4) = {}", fp(3, 4));
+    fp = sub;                                   /* 换成另一个同签名的函数 */
+    println("fp(3, 4) = {}", fp(3, 4));
+
+    println("apply(add, 20, 22) = {}", apply(add, 20, 22));
+    println("apply(sub, 20, 22) = {}", apply(sub, 20, 22));
+
+    Option<int64 fn(int64, int64)> empty = Option<int64 fn(int64, int64)>::None;
+    println("empty.isNone() = {}", empty.isNone());
+    if (empty.isNone()) { println("没有函数时不执行调用"); }
+
+    Calculator calc;
+    calc.op = add;
+    println("calc.op(1, 2) = {}", calc.op(1, 2));
+
+    /* 返回结构体的函数指针 */
+    Point fn(int64, int64) maker = make_point;
+    Point p = maker(3, 4);
+    println("maker(3, 4) = ({}, {})", p.x, p.y);
+    return 0;
+}

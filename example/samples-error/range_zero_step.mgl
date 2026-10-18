@@ -1,0 +1,5 @@
+int64 main()
+{
+    for (value in std::lang::range(0, 10, 0)) { std::lang::print("{}", value); }
+    return 0;
+}

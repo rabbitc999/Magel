@@ -1,0 +1,84 @@
+/*
+ * interrupt.mgl —— 中断事件函数：软件定时器触发 + 队列交付 + 线程归属。
+ *
+ * `std::event::Timer` 是 VM 侧的软件定时器对象：`start()` 之后按周期在**指令边界**
+ * 触发绑定好的中断事件函数；`stop()` 只停周期触发，显式 `raise()` 仍可主动触发。
+ *
+ * 交付是**队列**语义：一次边界把队列排空、先入先出。
+ *   * `ticker` 周期触发，`stop()` 之后不再自动来；
+ *   * `producer.raise(1)` 之后，`producerTick` 在**处理器里**再 `consumer.raise(2)` ——
+ *     新事件追加到队尾，**同一轮**继续按顺序交付（不会套娃进处理器，也不推到下一条指令）。
+ *     `spin` 是主循环在推进的全局；处理器记录 `spin` 快照，若 2 被推到下一条指令才交付，
+ *     快照就会失效（`sameBatch != 0`）。
+ *
+ * 中断句柄带**线程 id**：中断只在创建它的那个线程的 VM 里交付，别的线程不受影响。
+ */
+
+import std::event;
+
+Timer ticker = Timer::everyNanos(4);
+Timer producer = Timer::everyNanos(0);   /* 周期 0：只接受显式 raise。 */
+Timer consumer = Timer::everyNanos(0);
+
+int64 fires = 0;      /* ticker 交付次数 */
+int64 consumed = 0;   /* consumer 交付次数 */
+int64 chain = 0;      /* 0 = 等 producer，1 = 等 consumer */
+int64 stamp = 0;      /* producer 交付时的 spin 快照 */
+int64 spin = 0;       /* 主循环推进的全局 */
+int64 wrong = 0;      /* 顺序不对的次数 */
+int64 sameBatch = 0;  /* 2 被推迟到下一批的次数（应为 0） */
+
+void countTick(int64 source) {
+    fires = fires + 1;
+}
+
+void producerTick(int64 source) {
+    if (chain != 0) { wrong = wrong + 1; }
+    chain = 1;
+    stamp = spin;
+    consumer.raise(2);   /* 处理器里再触发：追加队尾，同一轮接着跑 */
+}
+
+void consumerTick(int64 source) {
+    if (chain != 1) { wrong = wrong + 1; }
+    if (spin != stamp) { sameBatch = sameBatch + 1; }
+    chain = 0;
+    consumed = consumed + 1;
+}
+
+int64 main() {
+    /* 中断句柄：回调 + 定时器句柄 + 归属线程。 */
+    Interrupt binding = Interrupt::of(consumer.handle, consumer.thread(), consumerTick);
+    println("threads={} {} {}", ticker.thread(), producer.thread(), binding.thread);
+
+    /* 周期定时器：start 后按周期交付，stop 停掉。 */
+    ticker.onTick(countTick);
+    ticker.start();
+    println("started={}", ticker.running());
+
+    int64 i = 0;
+    while (i < 300) { spin = spin + 1; i = i + 1; }
+    ticker.stop();
+    int64 settled = fires;
+    println("periodic={} stop-running={}", fires > 0, ticker.running());
+
+    int64 j = 0;
+    while (j < 300) { spin = spin + 1; j = j + 1; }
+    println("stopped={}", fires == settled);
+
+    /* 显式触发 + 处理器里再触发：队列按 1、2 顺序、同一批交付。 */
+    producer.onTick(producerTick);
+    consumer.onTick(consumerTick);
+    producer.raise(1);
+    int64 k = 0;
+    while (k < 100) { spin = spin + 1; k = k + 1; }
+    println("queued={} ordered={} batch={}", chain == 0, wrong == 0, sameBatch == 0);
+
+    /* drop 之后触发是空操作（句柄不复用，也不会串到别的定时器）。 */
+    consumer.drop();
+    binding.raise(9);
+    int64 m = 0;
+    while (m < 100) { spin = spin + 1; m = m + 1; }
+    println("dropped={}", consumed == 1);
+    return 0;
+}

@@ -1,0 +1,6 @@
+int64 main() {
+    int64 values[1];
+    int64 const& readonly = values;
+    int64 mut& writable = readonly;
+    return 0;
+}

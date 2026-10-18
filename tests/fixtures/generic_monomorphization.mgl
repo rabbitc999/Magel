@@ -1,0 +1,117 @@
+import generic_monomorphization_models;
+// 外层模板保留未绑定类型，使用时展开内层模板和固定类型。
+interface AuditValue { int64 number(); };
+interface AuditDerived : AuditValue { };
+interface AuditMetric<R> { R metric(); };
+struct AuditMetricBox<T> : AuditMetric<T> { T value; T metric(){return value;} };
+int64 auditMetric<T:AuditMetric<int64>>(T value){return value.metric();}
+struct AuditFixed { int64 value; };
+struct AuditPair<T,V> { T first; V second; };
+struct AuditOuter<T> {
+    AuditPair<T,AuditFixed> item;
+    AuditPair<AuditPair<T,AuditFixed>,String> deep;
+    static AuditOuter<T> create(T value) { self.item.first=value; }
+    T get() { return item.first; }
+    void replace(AuditPair<T,AuditFixed> value) { item=value; }
+    AuditPair<T,AuditFixed> const& borrow() { return &item; }
+    String label() { return "T AuditOuter<T> \\\" T"; }
+};
+struct AuditReverse<T,V> { AuditPair<V,T> item; };
+struct AuditDefault<T,V=T,W=AuditPair<T,V>> { T first; V second; W nested; };
+struct AuditValueBox<T> : AuditDerived {
+    T value;
+    int64 number() { return value; }
+};
+struct AuditChecked<T:AuditValue> { T value; int64 read(){return value.number();} };
+struct AuditStore<T> { static int64 count; T value; };
+struct AuditBorrow<T> { T value; };
+struct AuditLayer<T> { int64 prefix; T value; int64 suffix; };
+T auditPeel<T>(AuditLayer<T> layer){return layer.value;}
+struct AuditNode<T> { T value; AuditNode<T> mut& next; };
+struct AuditTracked<T> : Drop {
+    static int64 drops;
+    T value;
+    void drop(){AuditTracked<T>::drops=AuditTracked<T>::drops+1;}
+};
+struct _int64_lang__String_ { int64 marker; };
+struct AuditCallback<T> { T fn(T) operation; };
+enum AuditChoice<T> { Empty, Value(AuditOuter<T> value); };
+AuditOuter<T> auditWrap<T>(T value) { AuditOuter<T> result;result.item.first=value;return result; }
+T auditRead<T>(AuditOuter<T> value) { return value.item.first; }
+T auditDeepRead<T>(AuditPair<AuditPair<T,AuditFixed>,String> value) { return value.first.first; }
+T auditListRead<T>(List<AuditOuter<T>> values){return values[0].item.first;}
+int64 auditNumber<T:AuditValue>(T value){return value.number();}
+V auditDefault<T,V=T>(T value){V result=value;return result;}
+V auditNestedDefault<T,V=AuditPair<T,AuditFixed>>(T value){V result;result.first=value;return result;}
+T auditIdentity<T>(T value){return value;}
+int64 auditIncrement(int64 value){return value+1;}
+int64 auditImported<T:generic_monomorphization_models::Value>(T value){return value.number();}
+T auditImportedInner<T>(generic_monomorphization_models::Inner<T,Fixed> value){return value.first;}
+T auditBareInner<T>(Inner<T,Fixed> value){return value.first;}
+
+int64 main(){
+    AuditOuter<int64> a;a.item.first=7;a.item.second.value=9;
+    assert(a.get()==7 && a.item.second.value==9 && a.borrow().first==7);
+    AuditPair<int64,AuditFixed> replacement;replacement.first=7;replacement.second.value=9;
+    a.replace(replacement);assert(a.get()==7 && a.item.second.value==9);
+    assert(a.label()=="T AuditOuter<T> \\\" T");
+    AuditOuter<String> text=AuditOuter<String>::create("original");
+    text.replace(text.item);assert(text.get()=="original");
+    text.deep.first.first="deep";text.deep.second="tail";
+    AuditOuter<String> copied=text;copied.item.first="copy";copied.deep.first.first="changed";
+    assert(text.item.first=="original" && text.deep.first.first=="deep");
+    assert(copied.item.first=="copy" && copied.deep.first.first=="changed");
+    assert(auditDeepRead(text.deep)=="deep" && auditRead(a)==7);
+    auto inferred=auditWrap("inferred");assert(inferred.item.first=="inferred");
+    AuditLayer<AuditLayer<AuditLayer<AuditLayer<AuditLayer<AuditLayer<AuditLayer<AuditLayer<String>>>>>>>> layers;layers.value.value.value.value.value.value.value.value="eight layers";
+    AuditLayer<AuditLayer<AuditLayer<AuditLayer<AuditLayer<AuditLayer<AuditLayer<AuditLayer<String>>>>>>>> layerCopy=layers;layerCopy.value.value.value.value.value.value.value.value="changed";
+    auto peeled=auditPeel(layers);
+    assert(layers.value.value.value.value.value.value.value.value=="eight layers" && layerCopy.value.value.value.value.value.value.value.value=="changed" && peeled.value.value.value.value.value.value.value=="eight layers");
+    AuditOuter<AuditPair<int64,String>> wider;wider.item.first.first=53;wider.item.first.second="wide";
+    assert(wider.item.first.first==53 && a.item.second.value==9 && wider.item.first.second=="wide");
+    AuditReverse<int64,String> reversed;reversed.item.first="reverse";reversed.item.second=8;
+    assert(reversed.item.first=="reverse" && reversed.item.second==8);
+    AuditDefault<String> defaults;defaults.first="one";defaults.second="two";
+    defaults.nested.first="three";defaults.nested.second="four";
+    assert(defaults.second=="two" && defaults.nested.first=="three" && defaults.nested.second=="four");
+    assert(auditDefault((int64)11)==11);
+    auto nestedDefault=auditNestedDefault("default");assert(nestedDefault.first=="default");
+    AuditValueBox<int64> valued;valued.value=13;
+    AuditChecked<AuditValueBox<int64>> checked;checked.value=valued;
+    assert(checked.read()==13 && auditNumber(valued)==13 && auditNumber<AuditValueBox<int64>>(valued)==13);
+    AuditMetricBox<int64> metric;metric.value=15;assert(auditMetric(metric)==15);
+    AuditStore<int64>::count=17;AuditStore<String>::count=19;
+    assert(AuditStore<int64>::count==17 && AuditStore<String>::count==19);
+    List<AuditOuter<String>> values;values.push(text);
+    assert(auditListRead(values)=="original");
+    Map<String,AuditOuter<int64>> table;table.put("a",a);assert(table["a"].item.first==7);
+    AuditOuter<int64> array[2];array[0]=a;assert(array[0].item.second.value==9);
+    Option<AuditOuter<String>> optional=Option<AuditOuter<String>>::Value(text);
+    assert(optional.unwrap().item.first=="original");
+    AuditChoice<int64> choice=AuditChoice<int64>::Value(a);
+    match(choice){AuditChoice<int64>::Value(value)=>{assert(value.item.first==7);} AuditChoice<int64>::Empty=>{assert(false);}}
+    AuditBorrow<int64 mut&> borrow;int64 local=21;borrow.value=&local;*borrow.value=22;assert(local==22);
+    AuditPair<int64,String> tupleCollision;
+    AuditBorrow<(int64,String)> tuple;tuple.value=((int64)23,"tuple");
+    AuditBorrow<_int64_lang__String_> nominal;nominal.value.marker=29;
+    assert(tuple.value.0==23 && tuple.value.1=="tuple" && nominal.value.marker==29);
+    AuditCallback<int64> callback;callback.operation=auditIncrement;assert(callback.operation(30)==31);
+    int64 fn(int64) specialized=auditIdentity<int64>;assert(specialized(32)==32);
+    AuditNode<int64> first;AuditNode<int64> second;first.next=&second;first.next.value=37;assert(second.value==37);
+    generic_monomorphization_models::Outer<String> moduleValue;moduleValue.value.first="module";moduleValue.value.second.value=41;
+    assert(moduleValue.value.first=="module" && moduleValue.value.second.value==41);
+    assert(auditImportedInner(moduleValue.value)=="module" && auditBareInner(moduleValue.value)=="module");
+    AuditBorrow<Fixed> imported;imported.value.value=43;
+    AuditBorrow<generic_monomorphization_models::Fixed> qualified=imported;
+    assert(qualified.value.value==43);
+    generic_monomorphization_models::Count<int64> count;count.value=47;
+    assert(auditImported(count)==47);
+    {
+        AuditOuter<AuditTracked<String>> tracked;tracked.item.first.value="owned";
+        AuditOuter<AuditTracked<String>> another=tracked;another.item.first.value="other";
+        assert(tracked.item.first.value=="owned");
+    }
+    // 每个 Outer 还含一个 deep.first.first，两个实例共析构四个载荷。
+    assert(AuditTracked<String>::drops==4);
+    println("generic monomorphization ok");return 0;
+}

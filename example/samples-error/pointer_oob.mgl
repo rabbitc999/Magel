@@ -1,0 +1,10 @@
+/* 裸引用越界：元素地址跑出这块分配之外 */
+int64 main() {
+    int64 n = 4;
+    int64 a[] = new[n];
+    int64 mut& p = &a[0];
+    p[0] = 1;
+    p[4] = 9;               /* 这块只有 4 个元素 */
+    std::lang::println("{}", p[0]);
+    return 0;
+}

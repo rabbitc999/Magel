@@ -1,0 +1,43 @@
+/* operator_right_direction.mgl —— 运算符右向的三个开关。
+ *
+ * 1) 什么都不写：交换律兜底 —— `5 + a` 借 `a + 5` 的 `Add` 实现。
+ * 2) 写了 `RightAdd`：右向归作者自己，`5 + m` 走 `rightAdd`，不再借 `Add`。
+ * 3) 写了 `NoRightAdd`：右向被显式禁止，`5 + f` 报错（见
+ *    samples-error/operator_right_forbidden.mgl）；左向 `f + 5` 照旧。
+ */
+
+struct Loose : Add<int64,int64> {
+    int64 v;
+
+    int64 leftAdd(int64 other) { return self.v + other; }
+};
+
+struct Money : Add<int64,int64>, RightAdd<int64,int64> {
+    int64 cents;
+
+    int64 leftAdd(int64 other) { return self.cents + other; }    /* m + 5 */
+    int64 rightAdd(int64 other) { return other - self.cents; }   /* 5 + m */
+};
+
+struct Forbid : Add<int64,int64>, NoRightAdd {
+    int64 v;
+
+    int64 leftAdd(int64 other) { return self.v + other; }
+};
+
+int64 main() {
+    Loose a;
+    a.v = 10;
+    println("a + 5 = {}", a + 5);
+    println("5 + a = {}", 5 + a);      /* 交换律兜底 */
+
+    Money m;
+    m.cents = 120;
+    println("m + 5 = {}", m + 5);
+    println("5 + m = {}", 5 + m);      /* 显式右接口 */
+
+    Forbid f;
+    f.v = 10;
+    println("f + 5 = {}", f + 5);      /* 左向不受 NoRightAdd 影响 */
+    return 0;
+}

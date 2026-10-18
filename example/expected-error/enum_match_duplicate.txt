@@ -1,0 +1,1 @@
+magel：example/samples-error/enum_match_duplicate.mgl 第 4 行第 5 列：match 中存在重复的 enum 变体：Option::None

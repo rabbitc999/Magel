@@ -1,0 +1,4 @@
+a=1 b=2 c=3
+bump=1 table[2]=7
+bump=2
+table[0]+table[1]=11

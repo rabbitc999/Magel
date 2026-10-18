@@ -1,0 +1,83 @@
+﻿{
+    "timestamp_utc":  "2026-10-01T13:40:32.8059335Z",
+    "cpu":  "AMD Ryzen 7 9700X 8-Core Processor",
+    "os":  "Microsoft Windows 11 专业版 10.0.26200",
+    "repeats":  7,
+    "compiler_msvc":  "MSVC 19.44.35228.0",
+    "compiler_gcc":  "GCC 11.2.0",
+    "optimization":  "MSVC Release /O2 /DNDEBUG; GCC Release -O3 -DNDEBUG; C++17",
+    "allocator":  "C malloc/free; peak unavailable",
+    "pool_capacity_bytes":  null,
+    "magel_program":  "magel/benchmarks/loop.mgl",
+    "svmb_sha256":  "E5352EE783026C351475227A368876D519B6CE9C0FC6CDA3F82CA82D39D38FF3",
+    "cross_bitness_svmb_sha256":  "9A9341030CD901F9F0CC0E845078BE5B9AAF4EDF957D8B12CE02A04AEEB5E80F",
+    "unit_assertions_each":  288,
+    "rows":  [
+                 {
+                     "build":  "MSVC Win32",
+                     "workload":  "mc",
+                     "compiler":  "MSVC 19.44.35228.0",
+                     "steps":  20000035,
+                     "median_ns":  767107400,
+                     "median_ms":  767.107,
+                     "mips":  26.072,
+                     "checksum":  "asserted",
+                     "pool_peak_bytes":  null
+                 },
+                 {
+                     "build":  "MSVC Win32",
+                     "workload":  "vm",
+                     "compiler":  "MSVC 19.44.35228.0",
+                     "steps":  18000007,
+                     "median_ns":  573978700,
+                     "median_ms":  573.979,
+                     "mips":  31.36,
+                     "checksum":  "499999500000",
+                     "pool_peak_bytes":  null
+                 },
+                 {
+                     "build":  "MSVC x64",
+                     "workload":  "mc",
+                     "compiler":  "MSVC 19.44.35228.0",
+                     "steps":  20000035,
+                     "median_ns":  751315000,
+                     "median_ms":  751.315,
+                     "mips":  26.62,
+                     "checksum":  "asserted",
+                     "pool_peak_bytes":  null
+                 },
+                 {
+                     "build":  "MSVC x64",
+                     "workload":  "vm",
+                     "compiler":  "MSVC 19.44.35228.0",
+                     "steps":  18000007,
+                     "median_ns":  502930200,
+                     "median_ms":  502.93,
+                     "mips":  35.79,
+                     "checksum":  "499999500000",
+                     "pool_peak_bytes":  null
+                 },
+                 {
+                     "build":  "GCC x64",
+                     "workload":  "mc",
+                     "compiler":  "GCC 11.2.0",
+                     "steps":  20000035,
+                     "median_ns":  700642900,
+                     "median_ms":  700.643,
+                     "mips":  28.545,
+                     "checksum":  "asserted",
+                     "pool_peak_bytes":  null
+                 },
+                 {
+                     "build":  "GCC x64",
+                     "workload":  "vm",
+                     "compiler":  "GCC 11.2.0",
+                     "steps":  18000007,
+                     "median_ns":  531687000,
+                     "median_ms":  531.687,
+                     "mips":  33.855,
+                     "checksum":  "499999500000",
+                     "pool_peak_bytes":  null
+                 }
+             ]
+}

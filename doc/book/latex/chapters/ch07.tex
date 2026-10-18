@@ -1,0 +1,422 @@
+\chapter{引用}
+\label{ch:07}
+
+第 6 章那条规则（赋值就是复制）解决了很多麻烦，但留下了两个：
+
+\begin{enumerate}
+
+\item 函数改不到外面。 一份副本改不了原对象，那「就地排序」「累加计数」怎么写？
+
+\item 大对象复制很贵。 几 MB 的结构体按值传一次，就是在搬内存。
+
+\end{enumerate}
+
+答案都是同一个东西：引用。
+
+这一章讲它，包括 Magel 引用最特别的一条规矩——引用不能活得比它指的东西久。
+
+\section{引用长什么样}
+
+三种写法，先认脸：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+T mut&      可变引用：能读，也能写
+T const&    只读引用：只能读
+T &         和 T const& 完全等价（简写）
+\end{lstlisting}
+\par
+\medskip
+
+实际用起来是这样：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 value = 7;
+    int64 mut& alias = &value;
+    // 造一个「指向 value」的可变引用
+    alias = 9;
+    // 写引用 = 写 value
+    println("{} {}", value, alias);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+9 9
+\end{lstlisting}
+\par
+\medskip
+
+三个要点：
+
+\texttt{\&value} 是「取地址」。 它造出一个指向 \texttt{value} 的引用。\texttt{\&} 这个符号表示「我不是要它的值，我要它本身」。
+
+写下引用就是写原对象。 \texttt{alias =\allowbreak{} 9;} 之后 \texttt{value} 也变成 9 了。从这一刻起，\texttt{value} 和 \texttt{alias} 是指向同一份数据的两个名字——这是本章 7.8 节要讲的代价。
+
+只读引用不能写。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 value = 7;
+    int64 const& view = &value;
+    view = 9;
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：只读引用（`T const&`）不能写入元素
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{T \&} 是 \texttt{T const\&} 的简写，写起来省一点。改不了的东西用 \texttt{const\&} 声明，本身就是一种文档：读代码的人一眼知道「这个函数不会动我的数据」。
+
+\section{用引用改到外面}
+
+第 6 章那个改不动调用方的 \texttt{bump}，加一个 \texttt{mut\&} 就改得动了：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+void bump(int64 mut& counter)
+{
+    counter = counter + 1;
+}
+
+int64 main()
+{
+    int64 number = 5;
+    bump(&number);
+    println("{}", number);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+6
+\end{lstlisting}
+\par
+\medskip
+
+两处变化：
+
+\begin{itemize}
+
+\item 形参从 \texttt{int64 counter} 变成 \texttt{int64 mut\& counter}（要改，所以是 \texttt{mut\&}）；
+
+\item 调用时写 \texttt{bump(\allowbreak{}\&number)\allowbreak{}} —— 多了一个 \texttt{\&}。
+
+\end{itemize}
+
+那个 \texttt{\&} 很关键，它是「签字」：我主动允许这个函数改我的 \texttt{number}。 看到 \texttt{bump(\allowbreak{}\&number)\allowbreak{}} 的人，不用跳进 \texttt{bump} 就知道 \texttt{number} 可能被改。
+
+\begin{tip}{提示}
+这也是 Magel 和「默认就是引用传递」的语言最大的差别：这里改到外面是显式的。一眼扫过去就能数出哪些调用会动数据。
+\end{tip}
+
+\section{用引用省掉复制}
+
+函数只是读一个对象，却不想复制它——用 \texttt{const\&}：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Player
+{
+    String name;
+    List<int64> scores;
+};
+
+int64 total(Player const& player)
+{
+    int64 sum = 0;
+    for (int64 score in player.scores)
+    {
+        sum = sum + score;
+    }
+    return sum;
+}
+
+int64 main()
+{
+    Player p;
+    p.name = "amy";
+    p.scores.push(10);
+    p.scores.push(20);
+    println("{} 的总分 {}", p.name, total(&p));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+amy 的总分 30
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{total(\allowbreak{}\&p)\allowbreak{}} 一次都没复制那个 \texttt{Player}。\texttt{const\&} 说了两件事：
+
+\begin{itemize}
+
+\item 不复制：性能上你知道发生了什么；
+
+\item 不修改：调用方可以放心把东西交出去。
+
+\end{itemize}
+
+什么时候该用 \texttt{const\&}？ 一个大致的门槛：
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+参数是 & 怎么写 \\
+\midrule
+标量（\texttt{int64}、\texttt{bool}、\texttt{char}） & 直接按值 —— 复制一个整数比传引用还快 \\
+小结构体（两三个字段） & 按值就行，简单 \\
+字符串、容器、大结构体 & \texttt{const\&}（只读）或 \texttt{mut\&}（要改） \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+记住一件事：这是你主动写的选择，编译器不会偷偷帮你优化掉复制。 好处就是——性能上发生了什么，读代码就能看出来。
+
+\section{引用必须当场绑定：没有「空引用」}
+
+Magel 没有 \texttt{null}。 没有 \texttt{nullptr}，没有 \texttt{nil}，没有「先声明一个空引用，以后再让它指向什么」：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：引用声明必须初始化，缺省值请使用 Option<T mut&>
+\end{lstlisting}
+\par
+\medskip
+
+引用只能当场绑定到一个确实存在的东西：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 first = 1;
+int64 mut& keep = &first;
+// 声明的同时必须绑定
+\end{lstlisting}
+\par
+\medskip
+
+而且 \texttt{\&} 只能取「有实体对象」的地址——变量、字段、数组元素、字符串的字节。表达式的结果取不了地址：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 value = 1;
+    int64 mut& bad = &(value + 1);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：`&` 只能取数据区里对象的地址（数组元素 / 结构体字段 / 字符串字节；栈上的标量变量取不了）
+\end{lstlisting}
+\par
+\medskip
+
+（这条报错的措辞有点绕，别被最后半句带偏：取变量的地址是没问题的，上面第一个例子里 \texttt{\&value} 就是。它真正拒绝的是临时算出来的值——\texttt{value + 1} 这个结果没有存放的地方，自然也没有地址可指。）
+
+这一条消灭了整类崩溃。 空指针解引用这种东西在 Magel 里不存在，因为没有那个「空」的状态。
+
+\section{引用不能活得比目标久}
+
+这是 Magel 引用最重要的规矩，也是它最容易被拒的地方。
+
+想清楚这件事：一个引用只是「指向某处的一个地址」。如果它指的那个对象已经没了，它还留着，那用它的那一刻就会读到一块不属于你的内存——这就是悬垂引用。
+
+Magel 的处理方式是：编译期跟踪每个引用的来源，来源活得不够久就拒绝编译。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 mut& bad()
+{
+    int64 local = 1;
+    return &local;
+    // local 在函数返回时就没了
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：[MGL1204] 返回值中的引用不能超过局部来源的生命周期（int64 mut&，所属类型 ，来源 local）
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{local} 是函数里的局部变量，函数一返回它就消失了，可你还要把指向它的引用交出去——编译期直接拒绝。
+
+包几层也逃不掉。 把引用装进结构体再返回，一样拦得住：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Holder
+{
+    int64 mut& slot;
+};
+
+Holder make()
+{
+    int64 local = 5;
+    Holder holder;
+    holder.slot = &local;
+    return holder;
+}
+
+int64 main()
+{
+    Holder h = make();
+    println("{}", h.slot);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：[MGL1204] 返回值中的引用不能超过局部来源的生命周期（Holder，所属类型 ，来源 holder）
+\end{lstlisting}
+\par
+\medskip
+
+这条规则覆盖的范围（记住大意就行）：引用别名、显式权限转换、\texttt{Option} / \texttt{Result} 里的载荷、元组、容器、结构体字段——包多少层都沿来源传播。
+
+\subsection{那什么时候是合法的？}
+
+来源比引用活得久就行。 最常见的合法情形是「来源是参数」：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 mut& larger(int64 mut& a, int64 mut& b)
+{
+    if (a >= b)
+    {
+        return a;
+    }
+    return b;
+}
+
+int64 main()
+{
+    int64 x = 3;
+    int64 y = 8;
+    larger(&x,&y) = 99;
+    // 把大的那个改成 99
+    println("{} {}", x, y);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+3 99
+\end{lstlisting}
+\par
+\medskip
+
+这里 \texttt{a}、\texttt{b} 指向的对象是调用方的，调用方活得比 \texttt{larger} 的返回值久，所以合法。
+
+注意最后一行 \texttt{larger(\allowbreak{}\&x,\allowbreak{} \&y)\allowbreak{} =\allowbreak{} 99;}——返回引用时，函数调用本身是个可写位置，可以直接给它赋值。这是「返回引用」最实用的地方。
+
+\section{借用检查与别名共享}
+
+Magel 有独立的借用检查器。它先追踪引用来源是否活得足够久，再在控制流中检查移动、析构和释放后的访问。分支合流、循环、字段和能够识别的别名都会参与分析。
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+检查内容 & 规则 \\
+\midrule
+来源寿命 & 引用不能超出来源，沿聚合传播；常见诊断 MGL1204 \\
+move 后访问 & 旧绑定禁止读写或重绑；完整移动后可以二次声明同名变量 \\
+drop/delete 后访问 & 已终结来源不能继续当有效值使用；常见诊断 MGL1205 \\
+多个别名 & 可以指向同一对象，通过一个修改，其他有效别名可以观察到 \\
+检查边界 & 不实行全局独占借用规则，不覆盖任意原始宿主内存行为 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+这要求同时考虑对象的作用域和生命周期状态。仅把来源移到外层，并不能使已经移动或释放的值重新有效；重新声明的同名变量也不会让旧引用改指向新变量。
+
+复制拥有值可以获得独立数据；复制引用仍共享来源。容器和大对象的深复制有成本，需要省复制时显式选择有效引用。详细边界见\href{https://github.com/rabbitc999/Magel/blob/master/doc/11-algorithm-validation.md}{借用控制流验证}。
+
+\section{小结}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+你会了 & 关键点 \\
+\midrule
+三种引用 & \texttt{T mut\&}（可写）、\texttt{T const\&}（只读）、\texttt{T \&}（\ensuremath{\equiv} \texttt{const\&}） \\
+取地址 & \texttt{\&value}；写引用就是写原对象 \\
+传引用 & 形参加 \texttt{mut\&} / \texttt{const\&}，调用时写 \texttt{\&x} \\
+省复制 & 大对象（字符串、容器、大结构体）用 \texttt{const\&} 传 \\
+非空 & 引用必须当场绑定，没有 \texttt{null}，没有空引用 \\
+取址边界 & \texttt{\&} 只对「有实体对象」的东西有效，临时值不行 \\
+生命周期 & 引用不能活得比来源久，违反是 \texttt{MGL1204} \\
+合法返回引用 & 来源是参数、是更外层作用域的对象时可以 \\
+别名 & 允许两个引用指向同一份数据，改一个另一个也变 \\
+借用检查器 & 来源寿命与控制流中的移动、析构和释放检查；允许别名共享 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+拥有值默认复制，引用显式共享，借用检查跟踪来源和生命周期状态。宿主内存、并发与无法静态建模的行为仍有各自边界。
+
+\section{下一步}
+
+引用解决了「改到外面」和「省复制」两个问题。但还有一个问题没碰：
+
+没有垃圾回收，那些资源（内存、文件句柄、连接）什么时候释放？
+
+已知的答案你已经猜到了：离开作用域的时候。但「离开作用域」这套机制怎么写的、怎么保证不出错、\texttt{Drop} 和 \texttt{Closeable} 有什么区别、堆对象又该怎么管——这些是下一章。
+
+翻到\hyperref[ch:08]{第 8 章 资源与作用域}。

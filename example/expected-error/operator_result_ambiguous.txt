@@ -1,0 +1,1 @@
+magel：example/samples-error/operator_result_ambiguous.mgl 第 23 行第 5 列：运算符 + 有多条声明匹配同一对操作数 A / int64，返回类型分别是 int64、Vec（先强转再算；若它们只是返回类型不同，给表达式一个目标类型就能定）

@@ -1,0 +1,103 @@
+
+==============================================================================
+$ magel-stackvm disasm magel\doc\examples\svmb\control.svmb
+==============================================================================
+; magel
+; export classify
+; export std::lang::Math::abs$double
+; export std::lang::Math::abs$int
+; export std::lang::Math::clamp$double$double$double
+; export std::lang::Math::clamp$int$int$int
+; export std::lang::Math::max$double$double
+; export std::lang::Math::max$int$int
+; export std::lang::Math::min$double$double
+; export std::lang::Math::min$int$int
+; export std::lang::assert$bool
+; export std::lang::assert$bool$int
+; export std::lang::assert$bool$string
+; export std::lang::assert$bool$string$int
+; export std::lang::dft
+; export std::lang::diagonalize2
+; export std::lang::fft
+; export std::lang::fileClose
+; export std::lang::fileEof
+; export std::lang::fileOpen
+; export std::lang::fileRead
+; export std::lang::fileWrite
+; export std::lang::idft
+; export std::lang::ifft
+; export std::lang::jordan2
+; export std::lang::luDecompose
+; export std::lang::lurDecompose
+; export std::lang::processClose
+; export std::lang::processRead
+; export std::lang::processRun
+; export std::lang::range$int$int
+; export std::lang::range$int$int$int
+; export std::lang::svd
+; export std::lang::symmetricEigen
+; export std::lang::system
+; export main
+0: CALL main
+1: HALT
+2: PUSH 3.1415926535897931
+3: STORE std::lang::Math::PI
+...（退出码 0）
+
+==============================================================================
+disasm 里与用户代码有关的位置
+==============================================================================
+  含 'CALL classify' 的前 3 行：['56: CALL classify -> t9', '79: CALL classify -> t14', '82: CALL classify -> t15']
+  含 'PARAM value$' 的前 3 行：['55: PARAM value$194', '78: PARAM value$194', '81: PARAM value$194']
+  含 'STORE sum$' 的前 3 行：['9: STORE sum$452', '25: STORE sum$452', '12470: STORE sum$759']
+  含 'DECLARE sum$' 的前 3 行：['7: DECLARE sum$452', '12468: DECLARE sum$759', '12616: DECLARE sum$764']
+
+==============================================================================
+$ magel-stackvm run magel\doc\examples\svmb\control.svmb --limit 12 --trace
+==============================================================================
+[0] CALL main
+[2] PUSH 3.1415926535897931
+[3] STORE std::lang::Math::PI
+[4] DECLARE i$451
+[5] PUSH 0
+[6] STORE i$451
+[7] DECLARE sum$452
+[8] PUSH 0
+[9] STORE sum$452
+[10] PUSH 1
+[11] STORE i$451
+[12] LOAD i$451
+
+==============================================================================
+$ magel-stackvm run magel\doc\examples\svmb\control.svmb --limit 12 --debug
+==============================================================================
+调试[0] tmp/svmb-study/control.quad:40
+调试[1] tmp/svmb-study/control.quad:44
+调试[3] tmp/svmb-study/control.quad:45
+调试[4] tmp/svmb-study/control.quad:46
+调试[6] tmp/svmb-study/control.quad:47
+调试[7] tmp/svmb-study/control.quad:48
+调试[9] tmp/svmb-study/control.quad:49
+调试[11] tmp/svmb-study/control.quad:51
+
+==============================================================================
+$ magel-stackvm run magel\doc\examples\svmb\control.svmb（完整输出）
+==============================================================================
+sum 1..5 = 15
+loop 0: classify(-0)=0
+loop 1: classify(-1)=-1
+loop 2: classify(-2)=-1
+loop 3: classify(-3)=-1
+classify(7) = 1, classify(0) = 0
+!false = 1, !true = 0
+
+; 执行 359 条指令，栈最深 2，堆峰值 0 字节
+
+==============================================================================
+完整性检查：损坏、截断、以及“改完重算校验和”
+==============================================================================
+  改掉 payload 第 100 字节 → check 退出码 1，输出：二进制程序校验和不匹配
+  截掉尾部 10 字节 → check 退出码 1，输出：二进制程序长度字段不匹配
+  把第 0 条指令的 op 从 48(Call) 改成 50(Halt) 并重算 FNV-1a → check 退出码 0，输出：可组装：16728 条栈指令，1263 个标签，1135 个变量声明，35 个公开入口
+    再运行它：退出码 0，stdout=; 执行 1 条指令，栈最深 0，堆峰值 0 字节
+    对照：原样运行会打印 “sum 1..5 = 15” 等 7 行。校验和只挡损坏，不挡改写。

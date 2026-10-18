@@ -1,0 +1,38 @@
+// u 后缀默认 uint64，并且保留无符号上下文的范围检查。
+uint8 narrowReturn() { return 7u; }
+uint8 narrowArgument(uint8 value) { return value; }
+const uint64 MAXIMUM = 18446744073709551615u;
+const uint64 WRAPPED = 0u - 1u;
+int64 main() {
+    auto one = 1u;
+    auto zero = 0u;
+    assert(~zero == MAXIMUM);
+    assert(one < MAXIMUM);
+    assert(MAXIMUM == 0xFFFFFFFFFFFFFFFFu);
+    assert(WRAPPED == MAXIMUM);
+    assert(0u - 1u == MAXIMUM);
+    assert(MAXIMUM / 2u == 9223372036854775807u);
+    assert(MAXIMUM % 2u == 1u);
+    assert(0xffu == 255u && b_1111u == 15u && b101u == 5u);
+    uint8 narrow = 255u;
+    assert(narrow + 1u == (uint8)0);
+    uint8 wrapped = 255u + 1u;
+    assert(wrapped == (uint8)0);
+    assert(narrowReturn() == (uint8)7);
+    assert(narrowArgument(9u) == (uint8)9);
+    int64 negative = -(int64)1u;
+    assert(negative == -1);
+    float64 widened = 18446744073709551615u;
+    assert(widened > 1.8e19);
+    assert((float64)MAXIMUM > 1.8e19);
+    BigInteger exact = BigInteger(18446744073709551615u);
+    assert(exact.str() == "18446744073709551615");
+    int64 proof[((int64)(WRAPPED > 0u)) + 1];
+    proof[1] = 42;
+    int64 dynamic[] = new[3u];
+    dynamic[2] = proof[1];
+    assert(dynamic.len() == 3 && dynamic[2] == 42);
+    delete dynamic;
+    println("unsigned suffix OK");
+    return 0;
+}

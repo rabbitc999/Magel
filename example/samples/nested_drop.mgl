@@ -1,0 +1,42 @@
+/* nested_drop.mgl —— 结构体字段的 `drop` 自动嵌套调用。
+ *
+ * 结构体析构 = 自己的 `drop()`（只清自己的直接资源）+ 编译器按字段**自动递归析构**：
+ * 字段实现 Drop 就调它的 `drop()`，且深到任意层（`Outer.inner`、`C.b.a` 都会到）。所以
+ * 结构体的 `drop()` **不要**再手写 `self.字段.drop()`，那样会双重析构。 */
+struct Inner : Drop {
+    int64 id;
+
+    void drop() {
+        println("inner drop {}", self.id);
+    }
+};
+
+struct Outer : Drop {
+    Inner inner;
+    int64 tag;
+
+    void drop() {
+        println("outer drop tag={}", self.tag);
+    }
+};
+
+struct Wrapper {
+    Inner inner;
+};
+
+int64 main() {
+    {
+        Outer item;
+        item.inner.id = 7;
+        item.tag = 1;
+    }
+    println("after outer block");
+
+    /* `Wrapper` 自己没实现 Drop，字段 `inner` 实现了 —— 编译器照样递归析构。 */
+    {
+        Wrapper wrapped;
+        wrapped.inner.id = 9;
+    }
+    println("after wrapper block");
+    return 0;
+}

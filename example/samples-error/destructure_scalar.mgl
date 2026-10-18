@@ -1,0 +1,1 @@
+int64 main() { auto (a,b) = 3; return 0; }

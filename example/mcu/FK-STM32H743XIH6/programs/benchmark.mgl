@@ -1,0 +1,48 @@
+%include "board.mgl"
+
+int64 integerLoop(int64 count, int64 seed) {
+    int64 value = seed;
+    for (int64 i = 0; i < count; i += 1) {
+        value = (value * 1664525 + 1013904223) & 2147483647;
+    }
+    return value;
+}
+
+int64 main() {
+    lcdClear(0);
+    lcdText(8, 8, "Magel VM on STM32H743", 65535, 0);
+    lcdText(8, 32, "Benchmark running...", 65504, 0);
+    println("BENCH_BEGIN clock_hz={}", boardClockHz());
+    int64 count = 10000;
+    int64 expected = nativeIntegerLoop(count, 123);
+    /* 预热执行路径；正式计时期间不刷新 LCD 或输出串口。 */
+    assert(integerLoop(count, 123) == expected);
+    for (int64 round = 0; round < 5; round += 1) {
+        int64 t0 = boardCycles();
+        int64 v = integerLoop(count, 123);
+        int64 t1 = boardCycles();
+        int64 n = nativeIntegerLoop(count, 123);
+        int64 t2 = boardCycles();
+        assert(v == n && v == expected);
+        benchRecord(round, count, (t1-t0)&4294967295, (t2-t1)&4294967295, v);
+        println("BENCH sample={} count={} vm_cycles={} native_cycles={} checksum={}",
+        round, count, (t1-t0)&4294967295, (t2-t1)&4294967295, v);
+    }
+    lcdFill(0, 28, lcdWidth(), 24, 0);
+    lcdText(8, 32, "OK: MODE/ENTER to exit", 2016, 0);
+    println("BENCH_END");
+    for (int64 i = 0; i < 3000; i += 1) {
+        if (boardExitRequested()) {
+            println("BENCH_EXIT key");
+            return 0;
+        }
+        for (int64 key = 2; key < 4; key += 1) {
+            if (keyClicked(key)) {
+                lcdText(8, 64, f"Key {key} clicked     ", 65535, 0);
+                println("KEY {} pressed={}", key, keyPressed(key));
+            }
+        }
+        boardDelay(10);
+    }
+    return 0;
+}

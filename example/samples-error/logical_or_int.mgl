@@ -1,0 +1,4 @@
+int64 main() {
+    bool value = 0 || false;
+    return 0;
+}

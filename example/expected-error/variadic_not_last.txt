@@ -1,0 +1,1 @@
+magel：example/samples-error/variadic_not_last.mgl 第 1 行第 1 列：函数 bad 的变长参数必须是最后一个形参

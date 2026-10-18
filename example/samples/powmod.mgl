@@ -1,0 +1,33 @@
+/* powmod.mgl —— 快速幂（二进制幂）：算 base^exp mod m。
+ *
+ *   ./magel samples/powmod.mgl --input "3 100 7"
+ *   → 3^100 mod 7 = 4
+ *
+ * 每一步都取模、指数每次折半：最多约 log2(exp) 次乘法。
+ */
+
+int64 mod_pow(int64 base, int64 exp, int64 mod) {
+    int64 result = 1;
+    int64 b = base % mod;
+    int64 e = exp;
+    while (e > 0) {
+        if (e % 2 == 1) {
+            result = (result * b) % mod;
+        }
+        b = (b * b) % mod;
+        e = e / 2;
+    }
+    return result;
+}
+
+int64 main() {
+    int64 base = 0;
+    int64 exp = 0;
+    int64 mod = 0;
+    base = inputInt();
+    exp = inputInt();
+    mod = inputInt();
+
+    println("{}^{} mod {} = {}", base, exp, mod, mod_pow(base, exp, mod));
+    return 0;
+}

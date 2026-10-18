@@ -1,0 +1,58 @@
+
+==============================================================================
+GCC x64：tmp/vm-9700x-pool/gcc64/magel-stackvm.exe
+==============================================================================
+  文件大小      1161112 字节
+  nm -C --defined-only 行数  3679
+  objdump -t 行数            4882
+  入口符号      000000014006cb40 T stackvm::Machine::run(stackvm::Program const&, std::vector<Memory::String, Memory::Allocator<Memory::String> > const&, unsigned long long)
+  .text 段      000c4f00 字节
+  助记符串      命中 67 处；最长连续段 57 项
+    连续段（顺序即操作码编号顺序）：
+      ['PUSH', 'PUSH', 'LOAD', 'STORE', 'DECLARE', 'ALLOC', 'FREE', 'DROP', 'CHECK', 'CHECKPTR', 'CALLPTR', 'CALLPTR', 'NEG', 'NOT', 'ADD', 'SUB', 'MUL', 'DIV', 'MOD', 'SHL', 'SAR', 'SHR', 'AND', 'OR', 'XOR', 'EQ', 'NE', 'LT', 'LE', 'GT', 'GE', 'LTU', 'LEU', 'GTU', 'GEU', 'I2F', 'F2I', 'MULWIDE', 'DIVWIDE', 'JMP', 'JZ', 'JNZ', 'PRINT', 'PRINT', 'PRINT', 'PRINT', 'PRINT', 'READ', 'GETC', 'PUTC', 'PARAM', 'CALL', 'RET', 'HALT', 'ADDR', 'LOADAT', 'STOREAT']
+
+==============================================================================
+MSVC x64：tmp/vm-9700x-pool/x64/Release/magel-stackvm.exe
+==============================================================================
+  文件大小      614912 字节
+  nm -C --defined-only 行数  1
+  objdump -t 行数            3
+  .text 段      00079a8b 字节
+  助记符串      命中 92 处；最长连续段 54 项
+    连续段（顺序即操作码编号顺序）：
+      ['PUSH', 'PUSH', 'LOAD', 'STORE', 'ALLOC', 'CHECK', 'CHECKPTR', 'CALLPTR', 'CALLPTR', 'NEG', 'NOT', 'ADD', 'SUB', 'MUL', 'DIV', 'MOD', 'SHL', 'SAR', 'SHR', 'AND', 'OR', 'XOR', 'EQ', 'NE', 'LT', 'LE', 'GT', 'GE', 'LTU', 'LEU', 'GTU', 'GEU', 'I2F', 'F2I', 'MULWIDE', 'DIVWIDE', 'JMP', 'JZ', 'JNZ', 'PRINT', 'PRINT', 'PRINT', 'PRINT', 'PRINT', 'READ', 'GETC', 'PUTC', 'PARAM', 'CALL', 'RET', 'HALT', 'ADDR', 'LOADAT', 'STOREAT']
+
+==============================================================================
+GCC 档 Machine::run 的原生反汇编开头（objdump -d）
+==============================================================================
+  符号地址 0x14006cb40
+   14006cb40:	41 57                	push   %r15
+   14006cb42:	41 56                	push   %r14
+   14006cb44:	41 55                	push   %r13
+   14006cb46:	41 54                	push   %r12
+   14006cb48:	55                   	push   %rbp
+   14006cb49:	57                   	push   %rdi
+   14006cb4a:	56                   	push   %rsi
+   14006cb4b:	53                   	push   %rbx
+   14006cb4c:	48 81 ec 98 05 00 00 	sub    $0x598,%rsp
+   14006cb53:	0f 29 b4 24 70 05 00 	movaps %xmm6,0x570(%rsp)
+   14006cb5a:	00 
+   14006cb5b:	0f 29 bc 24 80 05 00 	movaps %xmm7,0x580(%rsp)
+   14006cb62:	00 
+   14006cb63:	48 89 8c 24 e0 05 00 	mov    %rcx,0x5e0(%rsp)
+   14006cb6a:	00 
+   14006cb6b:	48 89 d3             	mov    %rdx,%rbx
+   14006cb6e:	4d 89 c7             	mov    %r8,%r15
+   14006cb71:	c6 01 00             	movb   $0x0,(%rcx)
+   14006cb74:	c7 41 04 00 00 00 00 	movl   $0x0,0x4(%rcx)
+   14006cb7b:	48 8d 0d 9e 96 05 00 	lea    0x5969e(%rip),%rcx        # 1400c6220 <__emutls_v._ZZN7magel23currentRuntimeAllocatorEvE9allocator>
+   14006cb82:	4c 89 8c 24 f8 05 00 	mov    %r9,0x5f8(%rsp)
+   14006cb89:	00 
+   14006cb8a:	e8 81 f5 02 00       	call   14009c110 <__emutls_get_address>
+   14006cb8f:	48 8b bc 24 e0 05 00 	mov    0x5e0(%rsp),%rdi
+   14006cb96:	00 
+   14006cb97:	49 89 c6             	mov    %rax,%r14
+   14006cb9a:	48 8b 00             	mov    (%rax),%rax
+   14006cb9d:	48 83 c7 08          	add    $0x8,%rdi
+   14006cba1:	48 89 bc 24 b0 00 00 	mov    %rdi,0xb0(%rsp)
+   14006cba8:	00 

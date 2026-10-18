@@ -1,0 +1,10 @@
+ok -> ok 42
+empty -> err syntax:empty(count)
+text -> err syntax:not-a-number(count=abc)
+negative -> err semantic:negative(count=-7)
+huge -> err semantic:too-large(count=999999)
+offline -> err transport:offline(api)
+timeout -> err transport:timeout(slow)
+layer3 ok 7
+require ok hello
+require err offline(api)

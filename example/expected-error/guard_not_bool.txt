@@ -1,0 +1,1 @@
+magel：example/samples-error/guard_not_bool.mgl 第 1 行第 1 列：match 守卫必须是 bool

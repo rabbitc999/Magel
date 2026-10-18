@@ -1,0 +1,6 @@
+list ok=1 event=42 count=3 digest=262
+variadic ok=1 event=1 count=2 digest=134
+empty ok=1 event=2 count=0
+invalid handle=0 null=0
+trampoline x=1.5 y=-2.25 yaw=0.75 fired=1
+unbound event=2 count=0

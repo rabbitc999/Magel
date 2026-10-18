@@ -1,0 +1,1 @@
+magel：example/samples-error/generic_inference_missing.mgl 第 2 行第 1 列：无法推导泛型函数 make 的全部类型实参，请显式指定

@@ -1,0 +1,1 @@
+struct Counter{std::lang::Set<int64> values; void update(){self.values.add(7);}}; int64 main(){Counter value; Counter const& readonly=&value; readonly.update(); return 0;}

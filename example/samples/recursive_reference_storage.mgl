@@ -1,0 +1,48 @@
+import std::iter;
+// 被取引用的标量、字符串、函数值及定长数组均使用当前递归调用自己的存储。
+String fn() callback(String mut& text) { return fn() { text }; }
+int64 recurseStorage(int64 depth) {
+    int64 marker = depth;
+    int64 mut& alias = &marker;
+    String text = format("level {}", depth);
+    String const& borrowed = &text;
+    String constant="constant";
+    String fn() function = callback(&text);
+    (String fn()) const& functionRef = &function;
+    String fn() functions[2];
+    functions[0] = callback(&text);
+    functions[1] = callback(&constant);
+    String words[2];
+    words[0] = text;
+    words[1] = "second";
+    float64 numbers[2];
+    numbers[0] = (float64)depth + 0.5;
+    int64 total = depth;
+    if (depth > 0) { total = total + recurseStorage(depth - 1); }
+    assert(alias == depth && marker == depth);
+    assert(borrowed == text && borrowed == format("level {}", depth));
+    assert(functionRef() == text && functions[0]() == text && functions[1]() == "constant");
+    assert(words[0] == text && words[1] == "second");
+    assert(numbers[0] == (float64)depth + 0.5);
+    alias = depth + 10;
+    assert(marker == depth + 10);
+    return total;
+}
+List<int64> madeValues(int64 depth) {
+    List<int64> values;
+    values.push(depth);
+    return values;
+}
+int64 recurseTemporary(int64 depth) {
+    auto cursor = madeValues(depth).iter();
+    if (depth > 0) { recurseTemporary(depth - 1); }
+    int64 value = cursor.next().unwrap();
+    assert(value == depth);
+    return value;
+}
+int64 main() {
+    assert(recurseStorage(6) == 21);
+    assert(recurseTemporary(6) == 6);
+    println("recursive reference storage OK");
+    return 0;
+}

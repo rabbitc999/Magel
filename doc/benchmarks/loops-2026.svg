@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 306" width="680" height="306" role="img" font-family="-apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif">
+<title>1000 万次 while 累加的跨语言基准（2026 重测）</title>
+<desc>横向条形图，对数刻度。Magel AOT 1.83 毫秒，Java HotSpot JIT 1.94 毫秒，Lua 5.5.1 43.0 毫秒，Java -Xint 47.54 毫秒，Magel VM 84.23 毫秒，CPython 3.12.3 287.82 毫秒。</desc>
+
+<text x="0" y="18" font-size="14" font-weight="600" fill="#2C2C2A">图 1 · 1000 万次 while 累加：7 次中位耗时（毫秒，对数刻度）</text>
+<text x="0" y="38" font-size="11" fill="#5F5E5A">Ryzen 7 9700X / Windows 11 10.0.26200 / GCC-MinGW 11.2.0；Magel 0.10.2（1f3e7f8）；校验和 49999995000000，逻辑步骤 150000035</text>
+
+<line x1="150" y1="56" x2="150" y2="264" stroke="#D3D1C7" stroke-width="1"/>
+<line x1="236.7" y1="56" x2="236.7" y2="264" stroke="#EDEBE4" stroke-width="1"/>
+<line x1="331.7" y1="56" x2="331.7" y2="264" stroke="#EDEBE4" stroke-width="1"/>
+<line x1="418.3" y1="56" x2="418.3" y2="264" stroke="#EDEBE4" stroke-width="1"/>
+<line x1="513.3" y1="56" x2="513.3" y2="264" stroke="#EDEBE4" stroke-width="1"/>
+<line x1="600" y1="56" x2="600" y2="264" stroke="#D3D1C7" stroke-width="1"/>
+
+<text x="0" y="80" font-size="12" fill="#2C2C2A">Magel AOT -O2</text>
+<rect x="150" y="68" width="49.8" height="20" rx="2" fill="#0F6E56"/>
+<text x="206" y="83" font-size="11" fill="#5F5E5A">1.83 ms</text>
+
+<text x="0" y="114" font-size="12" fill="#2C2C2A">Java HotSpot JIT</text>
+<rect x="150" y="102" width="54.5" height="20" rx="2" fill="#0F6E56"/>
+<text x="211" y="117" font-size="11" fill="#5F5E5A">1.94 ms</text>
+
+<text x="0" y="148" font-size="12" fill="#2C2C2A">Lua 5.5.1</text>
+<rect x="150" y="136" width="310.0" height="20" rx="2" fill="#378ADD"/>
+<text x="467" y="151" font-size="11" fill="#5F5E5A">43.0 ms</text>
+
+<text x="0" y="182" font-size="12" fill="#2C2C2A">Java -Xint</text>
+<rect x="150" y="170" width="318.2" height="20" rx="2" fill="#378ADD"/>
+<text x="475" y="185" font-size="11" fill="#5F5E5A">47.54 ms</text>
+
+<text x="0" y="216" font-size="12" font-weight="600" fill="#993C1D">Magel VM</text>
+<rect x="150" y="204" width="365.4" height="20" rx="2" fill="#D85A30"/>
+<text x="522" y="219" font-size="11" font-weight="600" fill="#993C1D">84.23 ms</text>
+
+<text x="0" y="250" font-size="12" fill="#2C2C2A">CPython 3.12.3</text>
+<rect x="150" y="238" width="446.7" height="20" rx="2" fill="#888780"/>
+<text x="603" y="253" font-size="11" fill="#5F5E5A">287.82 ms</text>
+
+<line x1="150" y1="264" x2="600" y2="264" stroke="#B4B2A9" stroke-width="1"/>
+<text x="150" y="280" font-size="11" fill="#5F5E5A" text-anchor="middle">1</text>
+<text x="236.7" y="280" font-size="11" fill="#5F5E5A" text-anchor="middle">3</text>
+<text x="331.7" y="280" font-size="11" fill="#5F5E5A" text-anchor="middle">10</text>
+<text x="418.3" y="280" font-size="11" fill="#5F5E5A" text-anchor="middle">30</text>
+<text x="513.3" y="280" font-size="11" fill="#5F5E5A" text-anchor="middle">100</text>
+<text x="600" y="280" font-size="11" fill="#5F5E5A" text-anchor="middle">300</text>
+<text x="375" y="300" font-size="11" fill="#5F5E5A" text-anchor="middle">中位耗时 ms（对数刻度，越低越快）</text>
+</svg>

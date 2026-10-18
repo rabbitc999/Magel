@@ -1,0 +1,6 @@
+import std::binary;
+int64 main() {
+    uint8 const& data = (uint8 const&)0;
+    std::binary::BinaryReader reader = std::binary::BinaryReader::fromArray(data, 1);
+    return 0;
+}

@@ -1,0 +1,48 @@
+/*
+ * interrupt_thread.mgl —— 中断归属线程：某一线程创建的中断只在该线程的 VM 里交付。
+ *
+ * 每个隔离线程有自己的 VM 求值循环、全局变量和**定时器表**；`Timer::thread()` 记的就是
+ * 创建它的线程 id。主线程在 `receive()` 等消息时中断照常交付（中断优先于线程等待），
+ * 工作线程自己的定时器只写它自己的全局副本，主线程的 `workerTicks` 一动不动。
+ */
+
+import std::thread;
+import std::event;
+
+Timer mainTimer = Timer::everyNanos(4);
+int64 mainTicks = 0;
+
+int64 workerTicks = 0;   /* 工作线程里是这个线程的隔离副本。 */
+
+void mainTick(int64 source) {
+    mainTicks = mainTicks + 1;
+}
+
+void workerTick(int64 source) {
+    workerTicks = workerTicks + 1;
+}
+
+void worker() {
+    Timer t = Timer::everyNanos(4);
+    t.onTick(workerTick);
+    t.start();
+    int64 spin = 0;
+    while (spin < 300) { spin = spin + 1; }
+    t.stop();
+    std::thread::send(std::thread::parent(),
+    format("{}:{}", workerTicks > 0, t.thread()));
+}
+
+int64 main() {
+    mainTimer.onTick(mainTick);
+    mainTimer.start();
+    IsolatedThreadHandle task = std::thread::create(worker);
+    int64 spin = 0;
+    while (spin < 300) { spin = spin + 1; }   /* 主线程的中断照常交付 */
+    String reply = std::thread::receive();    /* 等消息期间也中断优先，继续交付 */
+    std::thread::wait(task);
+    mainTimer.stop();
+    println("main-thread={} main-fired={} worker-fired:thread={} isolated={}",
+    mainTimer.thread(), mainTicks > 0, reply, workerTicks == 0);
+    return 0;
+}

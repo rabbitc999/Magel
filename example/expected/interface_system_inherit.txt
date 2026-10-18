@@ -1,0 +1,2 @@
+size=7 at=9 x=21 scale=10 cast=700
+sum=6 both=2 6 9

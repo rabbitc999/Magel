@@ -1,0 +1,95 @@
+import std::image;
+import std::text;
+
+/* std::image 冒烟样例：像素读写、卷积、池化、格式转换、大津法与 BMP 往返。 */
+int64 main() {
+    /* 1. 创建 4x2 图片，写入已知颜色。 */
+    Result<Image, String> created = Image::make(4, 2);
+    Image image = created.unwrap();
+    image.setPixel(0, 0, 255, 0, 0, 255);
+    image.setPixel(1, 0, 0, 255, 0, 255);
+    image.setPixel(2, 0, 0, 0, 255, 255);
+    image.setPixel(3, 0, 255, 255, 255, 255);
+    image.setPixel(0, 1, 0, 0, 0, 255);
+    image.setPixel(1, 1, 128, 128, 128, 255);
+    image.setPixel(2, 1, 64, 64, 64, 255);
+    image.setPixel(3, 1, 192, 192, 192, 255);
+    Pixel pixel = image.getPixel(2, 0).unwrap();
+    StringBuilder line = StringBuilder::create();
+    line.appendInt(pixel.r);
+    line.appendChar(',');
+    line.appendInt(pixel.g);
+    line.appendChar(',');
+    line.appendInt(pixel.b);
+    line.appendChar(',');
+    line.appendInt(pixel.a);
+    print("pixel(2,0)={}", line.toString());
+    Result<Pixel, String> missed = image.getPixel(4, 0);
+    print("getPixel(4,0) err={}", missed.isErr());
+
+    /* 2. 卷积：恒等核应还原原图。 */
+    List<float64> identity;
+    identity.push(0.0); identity.push(0.0); identity.push(0.0);
+    identity.push(0.0); identity.push(1.0); identity.push(0.0);
+    identity.push(0.0); identity.push(0.0); identity.push(0.0);
+    Image convolved = image.convolve(identity, 3, 3).unwrap();
+    Pixel convPixel = convolved.getPixel(3, 1).unwrap();
+    StringBuilder convLine = StringBuilder::create();
+    convLine.appendInt(convPixel.r);
+    convLine.appendChar(',');
+    convLine.appendInt(convPixel.g);
+    convLine.appendChar(',');
+    convLine.appendInt(convPixel.b);
+    print("conv(3,1)={}", convLine.toString());
+
+    /* 3. 池化：2x2 最大池化。 */
+    Image pooled = image.pool(0, 2, 2).unwrap();
+    StringBuilder poolLine = StringBuilder::create();
+    poolLine.appendInt(pooled.width);
+    poolLine.appendChar('x');
+    poolLine.appendInt(pooled.height);
+    poolLine.appendChar(':');
+    poolLine.appendInt(pooled.getPixel(0, 0).unwrap().r);
+    poolLine.appendChar(',');
+    poolLine.appendInt(pooled.getPixel(1, 0).unwrap().g);
+    print("pool={}", poolLine.toString());
+
+    /* 4. 格式转换。 */
+    List<uint8> gray = image.toGray().unwrap();
+    print("gray={},{},{},{}", gray[0], gray[2], gray[4], gray[6]);
+    List<uint32> argb = image.toARGB().unwrap();
+    print("argb(0,0)={:x}", argb[0]);
+    List<uint16> rgb565 = image.toRGB565().unwrap();
+    print("rgb565(0,0)={:x}", rgb565[0]);
+    Image argbBack = Image::fromARGB(4, 2, argb).unwrap();
+    Pixel backPixel = argbBack.getPixel(0, 0).unwrap();
+    print("argbBack r={} g={} b={} a={}", backPixel.r, backPixel.g, backPixel.b, backPixel.a);
+
+    /* 5. 大津法：左半黑右半白的图，阈值应落在中间。 */
+    Image binarySource = Image::make(4, 2).unwrap();
+    for (int64 y = 0; y < 2; y = y + 1) {
+        for (int64 x = 0; x < 4; x = x + 1) {
+            int64 value = 20;
+            if (x >= 2) { value = 230; }
+            binarySource.setPixel(x, y, value, value, value, 255);
+        }
+    }
+    int64 threshold = binarySource.otsuThreshold().unwrap();
+    print("otsu threshold={}", threshold);
+    List<uint8> binarized = binarySource.otsuBinarize().unwrap();
+    print("binarized={},{},{},{}", binarized[0], binarized[1], binarized[2], binarized[3]);
+
+    /* 6. BMP 编码 → 解码往返。 */
+    List<uint8> bmp = image.encodeBmp().unwrap();
+    print("bmp bytes={}", len(bmp));
+    Image decoded = Image::decode(bmp).unwrap();
+    Pixel decodedPixel = decoded.getPixel(1, 0).unwrap();
+    print("decoded g={} a={}", decodedPixel.g, decodedPixel.a);
+    List<uint8> ppm = image.encodePpm().unwrap();
+    Image ppmBack = Image::decode(ppm).unwrap();
+    print("ppm r={}", ppmBack.getPixel(0, 0).unwrap().r);
+    List<uint8> pgm = image.encodePgm().unwrap();
+    Image pgmBack = Image::decode(pgm).unwrap();
+    print("pgm gray={}", pgmBack.toGray().unwrap()[0]);
+    return 0;
+}

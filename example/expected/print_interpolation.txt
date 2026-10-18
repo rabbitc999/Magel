@@ -1,0 +1,4 @@
+value=3;next=1 2;literal={x};percent=100%
+nested=value 3
+saved=3
+interpolation print OK

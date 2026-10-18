@@ -1,0 +1,1 @@
+magel：example/samples-error/bool_arithmetic.mgl 第 2 行第 26 列：bool 只支持 &&、||、==、!= 与一元 !，不支持 +

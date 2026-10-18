@@ -1,0 +1,1 @@
+magel：example/samples-error/collection_map_value_type.mgl 第 1 行第 1 列：不能隐式转换：std::lang::String -> int64（请显式强转）

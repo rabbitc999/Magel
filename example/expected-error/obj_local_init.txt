@@ -1,0 +1,1 @@
+magel：example/samples-error/obj_local_init.mgl 第 5 行第 5 列：obj 初始化 不能保存局部或临时结构体/数组的地址：只允许全局对象；需要手动管理生命周期时请显式存引用

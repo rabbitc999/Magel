@@ -1,0 +1,1 @@
+magel：example/samples-error/collection_map_key_mixed.mgl 第 1 行第 1 列：集合字面量的键类型不一致：int64 与 std::lang::String

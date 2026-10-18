@@ -1,0 +1,42 @@
+// 聚合、重载运算、短路及重复构造使用独立中间存储。
+int64 calls = 0;
+struct ChainResult : Add<ChainResult,int64> {
+    int64 number; String text;
+    ChainResult leftAdd(int64 amount) { ChainResult result; result.number = self.number + amount; result.text = self.text + "!"; return result; }
+};
+struct ChainMiddle : Add<ChainMiddle,int64> {
+    int64 number; String text;
+    ChainMiddle leftAdd(int64 amount) { ChainMiddle result; result.number = self.number + amount; result.text = self.text + "+"; return result; }
+    ChainResult f2() { ChainResult result; result.number = self.number * 10; result.text = self.text + "end"; return result; }
+};
+struct ChainStart {
+    ChainMiddle f1() { calls = calls + 1; ChainMiddle result; result.number = calls; result.text = "begin"; return result; }
+};
+ChainMiddle mut& borrowed(ChainMiddle mut& value) { return &value; }
+int64 combined(ChainResult left, ChainResult right) { return left.number + right.number; }
+int64 main() {
+    ChainStart start;
+    for (int64 i = 0; i < 6; i = i + 1) {
+        int64 before = calls;
+        ChainResult first = start.f1().f2();
+        assert((first.number) == ((before + 1) * 10));
+        assert((first.text) == ("beginend"));
+        ChainResult second = (start.f1() + 1).f2() + 2;
+        assert((second.number) == ((before + 3) * 10 + 2));
+        assert((second.text) == ("begin+end!"));
+        int64 prior = calls;
+        assert((combined(start.f1().f2(), start.f1().f2())) == ((prior * 2 + 3) * 10));
+        prior = calls;
+        bool skipped = false && start.f1().f2().number > 0;
+        assert((calls) == (prior));
+        assert((skipped) == (false));
+    }
+    ChainMiddle source; source.number = 7; source.text = "source";
+    ChainMiddle mut& ref = &source;
+    assert((borrowed(&source).f2().text) == ("sourceend"));
+    assert(((*ref).f2().number) == (70));
+    assert((source.number) == (7));
+    assert((source.text) == ("source"));
+    println("chained temporaries OK");
+    return 0;
+}

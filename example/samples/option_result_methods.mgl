@@ -1,0 +1,31 @@
+int64 twice(int64 value) { return value * 2; }
+
+Option<int64> keepPositive(int64 value) {
+    if (value > 0) { return Option<int64>::Value(value + 1); }
+    return Option<int64>::None;
+}
+
+Result<int64, String> keepSmall(int64 value) {
+    if (value < 20) { return Result<int64, String>::Ok(value + 3); }
+    return Result<int64, String>::Err("too large");
+}
+
+int64 main() {
+    Option<int64> some = Option<int64>::Value(4);
+    Option<int64> none = Option<int64>::None;
+    println("{} {} {} {}", some.isValue(), none.isNone(),
+    some.transform(twice).unwrap(), none.unwrapOr(9));
+    println("{} {}", some.andThen(keepPositive).unwrap(),
+    none.unwrapOr(8));
+
+    Result<int64, String> ok = Result<int64, String>::Ok(5);
+    Result<int64, String> bad = Result<int64, String>::Err("broken");
+    Result<int64, String> doubled = ok.transform(twice);
+    println("{} {} {} {}", ok.isOk(), bad.isErr(),
+    doubled.unwrap(), bad.unwrapOr(11));
+    /* 持资源的临时值（这里是 Result<int64, String>，载荷带字符串）不许直接链式调用：
+     * 先落进变量，复制与释放都由它所在的块负责。 */
+    Result<int64, String> kept = ok.andThen(keepSmall);
+    println("{} {}", kept.expect("expected value"), bad.error());
+    return 0;
+}

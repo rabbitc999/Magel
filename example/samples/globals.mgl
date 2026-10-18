@@ -1,0 +1,22 @@
+/* globals.mgl —— 全局变量（含数组）、逗号多声明、函数读写全局。 */
+
+int64 counter = 0;
+int64 table[3];
+
+int64 bump() {
+    counter = counter + 1;
+    return counter;
+}
+
+int64 main() {
+    int64 a = 1, b = 2, c = 3;          /* 逗号多声明 */
+    table[0] = 5;
+    table[1] = 6;
+    table[2] = 7;
+
+    println("a={} b={} c={}", a, b, c);
+    println("bump={} table[2]={}", bump(), index(table, 2));
+    println("bump={}", bump());
+    println("table[0]+table[1]={}", table[0] + table[1]);
+    return 0;
+}

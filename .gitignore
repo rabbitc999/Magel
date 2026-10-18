@@ -1,0 +1,71 @@
+# `make` 的产物：随时可重建，不进版本库。
+#
+# 注意 1：`Makefile` 是手写的、纳入版本管理（gen.sh 用 --no-build-files 不覆盖它）。
+#
+# 注意 2：解析器生成物遵循 AGENTS.md，不入库；首次构建先执行 `sh gen.sh`。
+/magel_parser.cpp
+/magel_parser.hpp
+/magel_parser_user.h
+/magel_main.cpp
+/.parseengine-manifest
+#
+# 下面才是 make 的产物的忽略项：
+/CMakeLists.txt
+RESULT.md
+*.o
+libparser.a
+magel
+magel.exe
+magel-reflection
+magel-reflection.exe
+# 统一入口的旧名字：留着忽略，免得工作区里残留的旧二进制被误提交。
+parser_demo
+parser_demo.exe
+tmp/
+*.magel-cache/
+
+# 驱动默认的产物前缀（四元式 / 数据区 / 布局表 / ABI 源码 …）。
+# 用通配一次盖住：加一种新产物不用回来补一行。
+magel_out.*
+
+# Python 缓存：tools/ 下的脚本（make_overview.py 等）跑过就会生成。
+__pycache__/
+*.py[cod]
+
+# MAGEL 模块级 AOT 的默认本地目标文件缓存（原来挂在 ParseEngine 根 .gitignore 上）。
+*.magel-modules/
+
+# 构建产物：make / cmake 与测试都往这里写（原先落在父仓库的 build/）。
+# 驱动默认的产物前缀也在这里（build/magel_out.*），中间产物不混进源码目录。
+/build/
+
+# 测试与验证的输出（Python / C++ 结果文件），按约定落在这里备查，不进版本库。
+/Result/
+
+# 外部依赖：文法生成器可以直接放在项目根目录（gen.sh 默认先找它），不进版本库。
+/ParseEngine
+/ParseEngine.exe
+
+# VS Code 插件内嵌的编译器：只在打包（vsce package / npm run embed）时生成。
+/vscode/bin/
+/vscode/node_modules/
+
+# 发布归档和校验文件作为发布产物保留，不放入源码版本库。
+/dist/
+
+# VS Code 插件的打包产物（npm run package 的 .vsix）。
+/vscode/dist/
+
+# 生成器旁统一缓存在线模块依赖。
+/libraries/
+
+# 本机 AI 助手的工作区数据（记忆、会话草稿等），不进版本库。
+/.workbuddy/
+
+# source/ 下的解析器生成资产不入库。
+/source/magel_parser.cpp
+/source/magel_parser.hpp
+/source/magel_parser_user.h
+/source/magel_main.cpp
+/source/.parseengine-manifest
+/source/.magel-build.gram

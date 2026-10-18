@@ -1,0 +1,53 @@
+/* closeable.mgl —— `Closeable` 自动关闭 / 不重复关闭 / Drop+Closeable 顺序
+ *
+ *   ./magel samples/closeable.mgl
+ *
+ * 语义：
+ *   * 实现 `Closeable` 的值在生命周期结束时（出块 / return / `delete` / 停机清理）
+ *     自动调用 `close()`；
+ *   * 用户显式调用过 `close()` 的变量不会再自动关闭；
+ *   * 同时实现 `Drop` 与 `Closeable` 时，析构顺序固定为先 `close()` 再 `drop()`
+ *     （`drop()` 是终结操作，跑完系统不再自动回收这个值）；
+ *   * 显式 `x.drop()` 会先补一次 `close()`，然后 `drop()`，之后不再自动收尾；
+ *   * 显式 `x.close()` 只取消自动 `close()`，`drop()` 仍会在出块时补上。
+ */
+struct Handle : Closeable {
+    int64 id;
+    void close() { println("close {}", self.id); }
+};
+
+struct Both : Drop, Closeable {
+    int64 id;
+    void drop() { println("drop {}", self.id); }
+    void close() { println("close {}", self.id); }
+};
+
+Handle makeHandle(int64 id) {
+    Handle h;
+    h.id = id;
+    return h;
+}
+
+int64 main() {
+    {
+        Handle scoped;
+        scoped.id = 1;
+    }
+    println("after-scope");
+
+    Handle explicitClose;
+    explicitClose.id = 2;
+    explicitClose.close();
+
+    makeHandle(3);              /* 忽略返回值：句柄当场自动关闭 */
+
+    Both both;
+    both.id = 4;
+
+    Both explicitDrop;
+    explicitDrop.id = 5;
+    explicitDrop.drop();        /* 先补 close，再 drop；之后不再自动收尾 */
+
+    println("end");
+    return 0;
+}

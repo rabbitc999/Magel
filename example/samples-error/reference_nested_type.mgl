@@ -1,0 +1,1 @@
+struct Holder<T> { T mut& value; }; int64 main() { Holder<int64 mut&> nested; return 0; }

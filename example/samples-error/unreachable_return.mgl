@@ -1,0 +1,11 @@
+int64 choose(bool take) {
+    if (take) {
+        /* 缺 return：这一条路径走不到尽头 */
+    } else {
+        return 2;
+    }
+}
+
+int64 main() {
+    return choose(true);
+}

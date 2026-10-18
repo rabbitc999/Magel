@@ -1,0 +1,8 @@
+a = 1
+b = 2
+c = 3
+sum = 3
+scaled = 7
+more = 120
+wrapped = 251
+plain = 3

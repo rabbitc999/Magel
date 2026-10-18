@@ -1,0 +1,82 @@
+// 泛型元组、逗号返回与已有左值解构赋值。
+(int32, T) func<T>(T value) {
+    int32 a = 1;
+    return a, value;
+}
+(int64, T) contextual<T>() { T value; return 11, value; }
+T tupleSecond<T>((int32, T) pair) { return pair.1; }
+int64 calls;
+(int64, (String, int64)) nested() {
+    calls = calls + 1;
+    return 7, ("nested", 9);
+}
+struct TupleBox<T> { T value; };
+(TupleBox<T>, List<T>) boxed<T>(T value) {
+    TupleBox<T> box; box.value = value;
+    List<T> list; list.push(value);
+    return box, list;
+}
+auto inferred<T>(T value) { return value, value; }
+(int64, int64, int64) three() { return 1, 2, 3; }
+int64 main() {
+    String str1 = "aaa", str2;
+    int32 c;
+    c, str2 = func<String>(str1);
+    assert(c == 1 && str2 == "aaa" && str1 == "aaa");
+    c, str2 = func("inferred");
+    assert(c == 1 && str2 == "inferred");
+    (int32, String) saved = func<String>(str1);
+    assert(saved.0 == 1 && saved.1 == "aaa");
+    assert(tupleSecond(saved) == "aaa");
+    auto (declared, text) = func("declaration");
+    assert(declared == 1 && text == "declaration");
+    String left = "left", right = "right";
+    left, right = (right, left);
+    assert(left == "right" && right == "left");
+    int64 a, b, d;
+    a, str2 = contextual();
+    assert(a == 11 && str2 == "");
+    a, b, d = three();
+    assert(a == 1 && b == 2 && d == 3);
+    a, (text, b) = nested();
+    assert(a == 7 && text == "nested" && b == 9 && calls == 1);
+    TupleBox<String> box;
+    List<String> values;
+    box, values = boxed("owned");
+    assert(box.value == "owned" && values[0] == "owned");
+    box.value, values[0] = ("field", "element");
+    assert(box.value == "field" && values[0] == "element");
+    left, right = inferred("auto");
+    assert(left == "auto" && right == "auto");
+    int64 mut& reference = &a;
+    reference, b = (31, 32);
+    assert(a == 31 && b == 32);
+    int64 slots[2];
+    slots[0], slots[1] = (8, 9);
+    assert(slots[0] == 8 && slots[1] == 9);
+    a, a = (41, 42);
+    assert(a == 42);
+    auto loopValue = loop {
+        const int64 immutable = 5;
+        int64 writable;
+        writable, b = (6, 7);
+        yield (immutable);
+    };
+    assert(loopValue == 5 && b == 7);
+    auto capturedAssignment = int64 fn () {
+        int64 x, y;
+        x, y = (a, b);
+        return x + y;
+    };
+    assert(capturedAssignment() == 49 && a == 42);
+    for (int64 i = 0; i < 30; i = i + 1) {
+        box, values = boxed("iteration");
+        left, right = (right, left);
+    }
+    assert(box.value == "iteration" && values[0] == "iteration");
+    (int32, String) fn(String) operation = func<String>;
+    c, str2 = operation("callback");
+    assert(c == 1 && str2 == "callback");
+    println("tuple returns ok");
+    return 0;
+}

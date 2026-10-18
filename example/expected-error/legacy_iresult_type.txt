@@ -1,0 +1,1 @@
+语法错误：example/samples-error/legacy_iresult_type.mgl 第 2 行第 18 列：期望 常量(const) / 可变(mut) / 函数(fn) / 按位与(&) 之一，实际是 逗号(,)

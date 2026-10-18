@@ -1,0 +1,7 @@
+T sameContainer<T>(T left, T right) { return left; }
+int64 main() {
+    std::lang::List<int64> numbers;
+    std::lang::List<String> strings;
+    sameContainer(numbers, strings);
+    return 0;
+}

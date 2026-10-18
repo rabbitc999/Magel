@@ -1,0 +1,63 @@
+import std::sql;
+
+/** @brief 验证 SQLite 的真实执行、结果类型、事务、错误恢复和文件持久化。 */
+int64 main(List<String> arguments) {
+    assert(arguments.len() == 1);
+    Database db = Database::sqlite(":memory:");
+    if (!db.isOpen()) { panic(db.lastError()); }
+    assert(db.backendName() == "sqlite");
+    assert(db.execOk("CREATE TABLE items(id INTEGER PRIMARY KEY, name TEXT, amount REAL, note TEXT)"));
+    assert(db.hasTable("items") && !db.hasTable("missing"));
+    String name = "中文 O'Reilly\\目录";
+    ResultSet inserted = db.exec("INSERT INTO items VALUES(9223372036854775807, " + db.quote(name) + ", 1.25, NULL)");
+    assert(inserted.ok && inserted.affected == 1 && db.affectedRows() == 1);
+    ResultSet result = db.exec("SELECT id, name, amount, note, '123' AS numeric_text FROM items");
+    assert(result.ok && result.rowCount() == 1 && result.colCount() == 5);
+    assert(result.columnName(0) == "id" && result.columnIndex("numeric_text") == 4);
+    assert(result.intAt(0, 0) == 9223372036854775807);
+    assert(result.textAt(0, 1) == name && result.realAt(0, 2) == 1.25);
+    DataCell absent = result.at(0, 3);
+    DataCell textNumber = result.at(0, 4);
+    assert(absent.isNull() && result.textAt(0, 3) == "NULL");
+    assert(textNumber.kind == CELL_TEXT && textNumber.text() == "123");
+    assert(len(result.render()) > 0);
+    ResultSet empty = db.exec("SELECT id AS identifier FROM items WHERE 0");
+    assert(empty.ok && empty.rowCount() == 0 && empty.colCount() == 1 && empty.columnName(0) == "identifier");
+    assert(db.execOk("BEGIN; INSERT INTO items VALUES(2, 'rollback', 2.0, NULL); ROLLBACK"));
+    assert(db.count("SELECT COUNT(*) FROM items") == 1);
+    assert(db.execOk("BEGIN; INSERT INTO items VALUES(2, 'commit', 2.0, NULL); COMMIT"));
+    ResultSet updated = db.exec("UPDATE items SET amount = 3.5 WHERE id = 2");
+    assert(updated.ok && updated.affected == 1);
+    ResultSet ddl = db.exec("CREATE TABLE extra(value TEXT)");
+    assert(ddl.ok && ddl.affected == 0);
+    ResultSet multi = db.exec("UPDATE items SET amount = 4.5 WHERE id = 2; -- tail\n SELECT amount FROM items WHERE id = 2; /* done */");
+    assert(multi.ok && multi.realAt(0, 0) == 4.5 && multi.affected == 0);
+    ResultSet invalid = db.exec("SELECT FROM items");
+    assert(!invalid.ok && len(invalid.error) > 0);
+    ResultSet duplicate = db.exec("INSERT INTO items(id) VALUES(2)");
+    assert(!duplicate.ok);
+    ResultSet blob = db.exec("SELECT x'0001'");
+    assert(!blob.ok && len(blob.error) > 0);
+    ResultSet nulText = db.exec("SELECT 'a' || char(0) || 'b'");
+    String embedded = nulText.textAt(0, 0);
+    assert(nulText.ok && len(embedded) == 3 && embedded[2] == 'b');
+    for (int64 i = 0; i < 300; i = i + 1) {
+        assert(db.count("SELECT COUNT(*) FROM items") == 2);
+    }
+    ResultSet deleted = db.exec("DELETE FROM items WHERE id = 2");
+    assert(deleted.ok && deleted.affected == 1);
+    db.close();
+    db.close();
+    assert(!db.exec("SELECT 1").ok);
+
+    Database file = Database::sqlite(arguments[0]);
+    assert(file.isOpen() && file.execOk("CREATE TABLE persisted(value TEXT); INSERT INTO persisted VALUES('持久化')"));
+    file.close();
+    Database reopened = Database::sqlite(arguments[0]);
+    assert(reopened.isOpen() && reopened.scalar("SELECT value FROM persisted") == "持久化");
+    reopened.close();
+    Database badPath = Database::sqlite(arguments[0] + "/cannot.db");
+    assert(!badPath.isOpen() && len(badPath.lastError()) > 0);
+    println("sqlite database checks passed");
+    return 0;
+}

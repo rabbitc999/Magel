@@ -1,0 +1,1 @@
+magel：example/samples-error/struct_no_operator.mgl 第 12 行第 5 列：没有匹配的运算符接口实现：Money + Money（由左操作数实现 Add<R,T> 这类左接口，或由右操作数实现 RightAdd<R,T> 这类右接口）；不会偷偷按数值算

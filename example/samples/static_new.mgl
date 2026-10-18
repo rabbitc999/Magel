@@ -1,0 +1,98 @@
+// static T new 自动提供 self，并返回普通拥有值。
+struct Entry : Drop {
+    static int64 builds;
+    static int64 drops;
+    String name;
+    List<int64> values;
+
+    static Entry create(String name, int64 value) {
+        self.name = name;
+        self.values.push(value);
+        Entry::builds = Entry::builds + 1;
+    }
+
+    static Entry create() {
+        self.name = "zero";
+        Entry::builds = Entry::builds + 1;
+    }
+
+    void drop() { Entry::drops = Entry::drops + 1; }
+};
+
+struct Box<T> {
+    T value;
+    static Box<T> create(T value) {
+        self.value = value;
+    }
+};
+
+enum Message {
+    Empty, Text(String value);
+    static Message create(String value) { self = Message::Text(value); }
+};
+
+struct Port {
+    int64 value;
+    static Result<Port, String> tryCreate(int64 value) {
+        if (value < 1 || value > 65535) {
+            return Result<Port, String>::Err("invalid port");
+        }
+        Port result;
+        result.value = value;
+        return Result<Port, String>::Ok(result);
+    }
+};
+
+int64 main() {
+    {
+        Entry defaultValue;
+        assert(Entry::builds == 0 && defaultValue.values.len() == 0);
+    }
+    assert(Entry::drops == 1);
+    Entry::drops = 0;
+    String name = "first";
+    {
+        Entry first = Entry::create(name, 7);
+        Entry copy = first;
+        copy.name[0] = 'X';
+        copy.values.push(9);
+        assert(first.name == "first" && first.values.len() == 1);
+        assert(name == "first" && copy.name == "Xirst");
+        {
+            Entry temporary = Entry::create("temporary", 3);
+            assert(temporary.values[0] == 3);
+        }
+        assert(Entry::drops == 1);
+        first = Entry::create("replacement", 5);
+        assert(first.name == "replacement" && first.values[0] == 5);
+        assert(Entry::drops == 2);
+    }
+    assert(Entry::drops == 4);
+    assert(Entry::builds == 3 && Entry::drops == 4);
+
+    {
+        Entry contextual = Entry::create("context", 8);
+        assert(contextual.name == "context" && contextual.values[0] == 8);
+        Entry zero = Entry::create();
+        assert(zero.name == "zero" && zero.values.len() == 0);
+    }
+    assert(Entry::builds == 5 && Entry::drops == 6);
+    Box<String> boxed = Box<String>::create(name);
+    boxed.value[0] = 'B';
+    assert(name == "first" && boxed.value == "Birst");
+    Message message = Message::create(name);
+    match (message) {
+        Message::Text(value) => { assert(value == "first"); }
+        Message::Empty => { assert(false); }
+    }
+    match (Port::tryCreate(8080)) {
+        Result<Port, String>::Ok(port) => { assert(port.value == 8080); }
+        Result<Port, String>::Err(error) => { assert(false); }
+    }
+    match (Port::tryCreate(0)) {
+        Result<Port, String>::Ok(port) => { assert(false); }
+        Result<Port, String>::Err(error) => { assert(error == "invalid port"); }
+    }
+    println("static new: builds={} drops={} generic/enum/result=OK", Entry::builds, Entry::drops);
+    return 0;
+}

@@ -1,0 +1,450 @@
+module std::sql;
+
+/*
+ * std::sql —— Magel 语言连接**外部 SQL 数据库**的标准库模块（MySQL / SQLite / PostgreSQL / SQL Server）。
+ *
+ * 这个模块不自己实现 SQL：语句解析、执行、事务、索引全部交给所选数据库引擎，
+ * Magel 只负责把语句发过去、把结果搬回来。分层：
+ *
+ *   Magel 程序 (import std::sql;)
+ *      ↓  std::sql::Database / ResultSet      ← 本文件
+ *   C++ 胶水（glue/std_sql.hpp，随编译器一起编进来）
+ *      ↓  __sql* 句柄接口
+ *   外部 SQL 引擎（MySQL / SQLite / PostgreSQL libpq / SQL Server ODBC）
+ *
+ * 用法：
+ *   import std::sql;
+ *   std::sql::Database db = std::sql::Database::local("student_db");
+ *   db.exec("CREATE TABLE IF NOT EXISTS t (id INT PRIMARY KEY, name VARCHAR(32))");
+ *   db.exec("INSERT INTO t (id, name) VALUES (1, '张三')");
+ *   std::sql::ResultSet rs = db.exec("SELECT id, name FROM t ORDER BY id");
+ *   std::lang::println("{}", rs.render());
+ *   db.close();
+ *
+ * 客户端库在运行期动态加载，不需要在构建时链接；找不到时 `lastError()` 会说明原因，
+ * 也可以用环境变量 `MYSQL_LIBRARY` 指向具体的客户端库文件。
+ * SQLite 使用 Database::sqlite(":memory:") 或文件路径，静态内置，无需动态库。
+ * PostgreSQL 使用 postgres(options) 与 POSTGRES_LIBRARY；SQL Server 使用 sqlServer(options) 与 ODBC 驱动。
+ * 跨后端构造字符串字面量使用 db.quote(text)，按各自 SQL 方言处理反斜杠。
+ */
+
+/* ── 宿主签名（由 glue/std_sql.hpp 注册） ─────────────────────────────── */
+int32 __sqlConnect(std::lang::String host, std::lang::String user, std::lang::String password, std::lang::String database, int32 port);
+int32 __sqlOpenSqlite(std::lang::String path);
+int32 __sqlOpenPostgres(std::lang::String options);
+int32 __sqlOpenOdbc(std::lang::String options);
+int32 __sqlClose(int32 db);
+int32 __sqlExec(int32 db, std::lang::String sql);
+int64 __sqlAffected(int32 db);
+std::lang::String __sqlError(int32 db);
+int32 __sqlRowCount(int32 rs);
+int32 __sqlColCount(int32 rs);
+int64 __sqlResultAffected(int32 rs);
+std::lang::String __sqlColName(int32 rs, int32 col);
+std::lang::String __sqlCellText(int32 rs, int32 row, int32 col);
+int64 __sqlCellInt(int32 rs, int32 row, int32 col);
+float64 __sqlCellReal(int32 rs, int32 row, int32 col);
+int32 __sqlCellKind(int32 rs, int32 row, int32 col);
+int32 __sqlFree(int32 rs);
+
+/* ── 格子取值类型编号 ─────────────────────────────────────────────────── */
+const int64 CELL_NULL = 0;
+const int64 CELL_INT = 1;
+const int64 CELL_REAL = 2;
+const int64 CELL_TEXT = 3;
+
+/** @brief 结果集里的一个格子，保留类型与文本两种形态。 */
+struct DataCell {
+    int64 kind;        /**< CELL_NULL / CELL_INT / CELL_REAL / CELL_TEXT */
+    int64 intValue;
+    float64 realValue;
+    std::lang::String textValue;
+
+    bool isNull() { return self.kind == CELL_NULL; }
+    bool isNumber() { return self.kind == CELL_INT || self.kind == CELL_REAL; }
+
+    /** @brief 取文本形态；空值给 "NULL"。 */
+    std::lang::String text() {
+        if (self.kind == CELL_NULL) { return "NULL"; }
+        return self.textValue;
+    }
+
+    int64 asInt() {
+        if (self.kind == CELL_INT) { return self.intValue; }
+        if (self.kind == CELL_REAL) { return (int64)self.realValue; }
+        return 0;
+    }
+
+    float64 asReal() {
+        if (self.kind == CELL_REAL) { return self.realValue; }
+        if (self.kind == CELL_INT) { return (float64)self.intValue; }
+        return 0.0;
+    }
+};
+
+/** @brief 结果集的一行。 */
+struct DataRow {
+    std::lang::List<DataCell> cells;
+
+    int64 size() { return std::lang::len(self.cells); }
+    DataCell at(int64 index) { return self.cells[index]; }
+};
+
+/** @brief 一次 exec 的结果：状态、错误、影响行数、结果集。 */
+struct ResultSet {
+    bool ok;
+    std::lang::String error;
+    int64 affected;                    /**< 最近一次写的影响行数 */
+    std::lang::List<std::lang::String> columns;
+    std::lang::List<DataRow> rows;
+
+    int64 rowCount() { return std::lang::len(self.rows); }
+    int64 colCount() { return std::lang::len(self.columns); }
+    bool isEmpty() { return std::lang::len(self.rows) == 0; }
+    std::lang::String columnName(int64 index) { return self.columns[index]; }
+
+    /** @brief 按列名找下标，找不到给 -1。 */
+    int64 columnIndex(std::lang::String name) {
+        for (int64 i = 0; i < std::lang::len(self.columns); i = i + 1) {
+            if (self.columns[i] == name) { return i; }
+        }
+        return -1;
+    }
+
+    DataCell at(int64 row, int64 column) { return self.rows[row].cells[column]; }
+    std::lang::String textAt(int64 row, int64 column) { return self.rows[row].cells[column].text(); }
+    int64 intAt(int64 row, int64 column) { return self.rows[row].cells[column].asInt(); }
+    float64 realAt(int64 row, int64 column) { return self.rows[row].cells[column].asReal(); }
+
+    /** @brief 第一行第一列文本（常用作标量查询）。 */
+    std::lang::String scalar() {
+        if (std::lang::len(self.rows) == 0 || std::lang::len(self.columns) == 0) { return ""; }
+        return self.rows[0].cells[0].text();
+    }
+
+    /** @brief 第一行第一列整数。 */
+    int64 count() {
+        if (std::lang::len(self.rows) == 0 || std::lang::len(self.columns) == 0) { return 0; }
+        return self.rows[0].cells[0].asInt();
+    }
+
+    /** @brief 补空格到指定显示宽度。 */
+    std::lang::String pad(std::lang::String text, int64 width) {
+        /* 注意：不要写 `String out = text;`（用形参初始化局部串会让运行时漏堆），
+         * 先从空串拼接出副本，再逐格补空格。 */
+        std::lang::String out = "";
+        out = out + text;
+        int64 current = displayWidth(text);
+        while (current < width) {
+            out = out + " ";
+            current = current + 1;
+        }
+        return out;
+    }
+
+    /** @brief 把结果集渲染成等宽文本表格（方便命令行查看）。 */
+    std::lang::String render() {
+        if (!self.ok) { return "错误：" + self.error; }
+        if (self.colCount() == 0) { return std::lang::format("影响 {} 行", self.affected); }
+
+        std::lang::List<int64> widths;
+        for (int64 c = 0; c < self.colCount(); c = c + 1) {
+            int64 w = displayWidth(self.columnName(c));
+            widths.push(w);
+        }
+        for (int64 r = 0; r < self.rowCount(); r = r + 1) {
+            for (int64 c = 0; c < self.colCount(); c = c + 1) {
+                int64 w = displayWidth(self.textAt(r, c));
+                if (w > widths[c]) { widths[c] = w; }
+            }
+        }
+        std::lang::String bar = "+";
+        for (int64 c = 0; c < self.colCount(); c = c + 1) {
+            int64 limit = widths[c] + 2;
+            for (int64 k = 0; k < limit; k = k + 1) { bar = bar + "-"; }
+            bar = bar + "+";
+        }
+        std::lang::String out = bar + "\n";
+        for (int64 c = 0; c < self.colCount(); c = c + 1) {
+            std::lang::String raw = self.columnName(c);
+            std::lang::String cell = self.pad(raw, widths[c]);
+            out = out + "| " + cell + " ";
+        }
+        out = out + "|\n";
+        out = out + bar + "\n";
+        for (int64 r = 0; r < self.rowCount(); r = r + 1) {
+            for (int64 c = 0; c < self.colCount(); c = c + 1) {
+                std::lang::String raw = self.textAt(r, c);
+                std::lang::String cell = self.pad(raw, widths[c]);
+                out = out + "| " + cell + " ";
+            }
+            out = out + "|\n";
+            out = out + bar + "\n";
+        }
+        return out;
+    }
+};
+
+/** @brief std::sql 支持的数据库引擎。 */
+enum Driver { MySQL, SQLite, PostgreSQL, SqlServer, Odbc, MariaDB };
+
+/** @brief 一个 SQL 数据库连接（MySQL / SQLite / PostgreSQL / SQL Server / ODBC）。 */
+struct Database {
+    int32 handle;      /**< 宿主句柄；-1 表示没有连接 */
+    bool opened;
+    Driver driver;
+    std::lang::String error;
+    int64 affected;
+
+    /** @brief 连接指定主机与库；database 为空表示先不选库（用 `USE` 选）。 */
+    static Database mysql(std::lang::String host, std::lang::String user, std::lang::String password, std::lang::String database, int32 port) {
+        Database db;
+        db.handle = __sqlConnect(host, user, password, database, port);
+        db.opened = db.handle >= 0;
+        db.driver = Driver::MySQL;
+        db.affected = 0;
+        if (db.opened) { db.error = ""; }
+        else {
+            db.error = __sqlError(db.handle);
+        }
+        return db;
+    }
+
+    /** @brief 打开 SQLite 文件；:memory: 创建不落盘的内存库。 */
+    static Database sqlite(std::lang::String path) {
+        Database db;
+        db.handle = __sqlOpenSqlite(path);
+        db.opened = db.handle >= 0;
+        db.driver = Driver::SQLite;
+        db.affected = 0;
+        if (db.opened) { db.error = ""; }
+        else { db.error = __sqlError(db.handle); }
+        return db;
+    }
+
+    /** @brief 通过 libpq 连接串或 URI 连接 PostgreSQL。 */
+    static Database postgres(std::lang::String options) {
+        Database db;
+        db.handle = __sqlOpenPostgres(options);
+        db.opened = db.handle >= 0;
+        db.driver = Driver::PostgreSQL;
+        db.affected = 0;
+        if (db.opened) { db.error = ""; }
+        else { db.error = __sqlError(db.handle); }
+        return db;
+    }
+
+    /** @brief 通过 ODBC Unicode 连接串连接通用数据源。 */
+    static Database odbc(std::lang::String options) {
+        Database db;
+        db.handle = __sqlOpenOdbc(options);
+        db.opened = db.handle >= 0;
+        db.driver = Driver::Odbc;
+        db.affected = 0;
+        if (db.opened) { db.error = ""; }
+        else { db.error = __sqlError(db.handle); }
+        return db;
+    }
+
+    /** @brief 通过已安装的 Microsoft ODBC 驱动连接 SQL Server。 */
+    static Database sqlServer(std::lang::String options) {
+        Database db = Database::odbc(options);
+        db.driver = Driver::SqlServer;
+        return db;
+    }
+
+    /** @brief 按当前数据库规则生成字符串字面量。 */
+    std::lang::String quote(std::lang::String text) {
+        match (self.driver) {
+            Driver::MySQL => { return std::sql::quote(text, true); }
+            Driver::MariaDB => { return std::sql::quote(text, true); }
+            Driver::SqlServer => { return "N" + std::sql::quote(text, false); }
+            _ => { return std::sql::quote(text, false); }
+        }
+    }
+
+    /** @brief 返回当前数据库后端名称。 */
+    std::lang::String backendName() {
+        match (self.driver) {
+            Driver::MySQL => { return "mysql"; }
+            Driver::MariaDB => { return "mariadb"; }
+            Driver::SQLite => { return "sqlite"; }
+            Driver::PostgreSQL => { return "postgresql"; }
+            Driver::SqlServer => { return "sqlserver"; }
+            Driver::Odbc => { return "odbc"; }
+        }
+        return "";
+    }
+
+    /** @brief 默认端口 3306 的连接。 */
+    static Database mysql(std::lang::String host, std::lang::String user, std::lang::String password, std::lang::String database) {
+        return Database::mysql(host, user, password, database, (int32)3306);
+    }
+
+    /** @brief 使用兼容的 MySQL/MariaDB 客户端连接 MariaDB，默认端口 3306。 */
+    static Database maria(std::lang::String host, std::lang::String user, std::lang::String password, std::lang::String database, int32 port = (int32)3306) {
+        Database db = Database::mysql(host, user, password, database, port);
+        db.driver = Driver::MariaDB;
+        return db;
+    }
+
+    /** @brief 本机开发用的默认连接：127.0.0.1:3306，用户 root，口令 123456。 */
+    static Database local(std::lang::String database) {
+        return Database::mysql("127.0.0.1", "root", "123456", database, (int32)3306);
+    }
+
+    bool isOpen() { return self.opened; }
+    std::lang::String lastError() { return self.error; }
+    int64 affectedRows() { return self.affected; }
+
+    /** @brief 关闭连接；重复调用安全。 */
+    void close() {
+        if (self.opened) {
+            __sqlClose(self.handle);
+            self.opened = false;
+            self.handle = (int32)(0 - 1);
+        }
+    }
+
+    /**
+     * @brief 执行一条（或一段）SQL。
+     * @param sql SQL 文本；可以包含多条语句，用分号分隔。
+     * @return 结果集；`ok` 为假时 `error` 里是服务器给出的诊断。
+     */
+    ResultSet exec(std::lang::String sql) {
+        ResultSet result;
+        result.ok = false;
+        result.affected = 0;
+        if (!self.opened) {
+            result.error = "数据库未连接";
+            self.error = result.error;
+            return result;
+        }
+        int32 rs = __sqlExec(self.handle, sql);
+        if (rs < 0) {
+            result.error = __sqlError(self.handle);
+            self.error = result.error;
+            return result;
+        }
+        result.ok = true;
+        result.error = "";
+        self.error = "";
+        result.affected = (int64)__sqlResultAffected(rs);
+        self.affected = result.affected;
+
+        int64 columns = (int64)__sqlColCount(rs);
+        int64 rows = (int64)__sqlRowCount(rs);
+        for (int64 c = 0; c < columns; c = c + 1) {
+            result.columns.push(__sqlColName(rs, (int32)c));
+        }
+        for (int64 r = 0; r < rows; r = r + 1) {
+            DataRow row;
+            for (int64 c = 0; c < columns; c = c + 1) {
+                int32 kind = __sqlCellKind(rs, (int32)r, (int32)c);
+                DataCell cell;
+                cell.kind = (int64)kind;
+                if (kind != CELL_NULL) {
+                    cell.textValue = __sqlCellText(rs, (int32)r, (int32)c);
+                    cell.intValue = (int64)__sqlCellInt(rs, (int32)r, (int32)c);
+                    cell.realValue = __sqlCellReal(rs, (int32)r, (int32)c);
+                }
+                row.cells.push(cell);
+            }
+            result.rows.push(row);
+        }
+        __sqlFree(rs);
+        return result;
+    }
+
+    /** @brief 执行并只关心成败。 */
+    bool execOk(std::lang::String sql) {
+        ResultSet result = self.exec(sql);
+        return result.ok;
+    }
+
+    /** @brief 执行一个"取一行一列"的查询，返回文本。 */
+    std::lang::String scalar(std::lang::String sql) {
+        ResultSet result = self.exec(sql);
+        if (!result.ok) { return ""; }
+        return result.scalar();
+    }
+
+    /** @brief 执行一个 `SELECT COUNT(...)` 之类的查询，返回整数。 */
+    int64 count(std::lang::String sql) {
+        ResultSet result = self.exec(sql);
+        if (!result.ok) { return 0; }
+        return result.count();
+    }
+
+    /** @brief 当前所选库里表是否存在。 */
+    bool hasTable(std::lang::String tableName) {
+        std::lang::String name = self.quote(tableName);
+        match (self.driver) {
+            Driver::SQLite => {
+                return self.count("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = " + name) > 0;
+            }
+            Driver::PostgreSQL => {
+                return self.count("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = " + name) > 0;
+            }
+            Driver::SqlServer => {
+                return self.count("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = SCHEMA_NAME() AND table_name = " + name) > 0;
+            }
+            Driver::Odbc => {
+                self.error = "通用 ODBC 的表元数据随数据库而异，请执行对应的元数据查询";
+                return false;
+            }
+            _ => { }
+        }
+        std::lang::String sql = "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE()"
+                     " AND table_name = " + name;
+        return self.count(sql) > 0;
+    }
+};
+
+/* ── 辅助函数 ─────────────────────────────────────────────────────────── */
+
+/** @brief 把文本包成 SQL 字符串字面量，始终转义单引号，可选择转义反斜杠。 */
+std::lang::String quote(std::lang::String text, bool escapeBackslash) {
+    std::lang::String out = "'";
+    int64 start = 0, i = 0;
+    while (i < std::lang::len(text)) {
+        char c = text[i];
+        if (c == '\'' || (escapeBackslash && c == '\\')) {
+            out = out + text[start:i];
+            if (c == '\'') { out = out + "''"; }
+            else { out = out + "\\\\"; }
+            start = i + 1;
+        }
+        int64 byte = (int64)c;
+        if (byte >= 240) { i += 4; }
+        elif (byte >= 224) { i += 3; }
+        elif (byte >= 192) { i += 2; }
+        else { i += 1; }
+    }
+    out = out + text[start:std::lang::len(text)];
+    out = out + "'";
+    return out;
+}
+
+/** @brief 按 MySQL 规则转义；跨后端代码请调用 db.quote(text)。 */
+std::lang::String quote(std::lang::String text) { return quote(text, true); }
+
+/** @brief 把整数写成 SQL 字面量。 */
+std::lang::String intLiteral(int64 value) { return std::lang::format("{}", value); }
+
+/** @brief 把实数写成 SQL 字面量。 */
+std::lang::String realLiteral(float64 value) { return std::lang::format("{}", value); }
+
+/** @brief 按终端显示宽度算长度：ASCII 一列，中日韩等宽字符两列。 */
+int64 displayWidth(std::lang::String text) {
+    int64 width = 0;
+    int64 i = 0;
+    while (i < std::lang::len(text)) {
+        int64 byte = (int64)text[i];
+        if (byte >= 240) { width += 2; i += 4; }
+        elif (byte >= 224) { width += 2; i += 3; }
+        elif (byte >= 192) { width += 1; i += 2; }
+        else { width += 1; i += 1; }
+    }
+    return width;
+}

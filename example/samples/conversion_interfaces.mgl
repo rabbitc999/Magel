@@ -1,0 +1,47 @@
+struct Number : ImplicitConvert<int64>, ExplicitConvert<int64> {
+    int64 value;
+    int64 implicitConvert() { return self.value; }
+    int64 explicitConvert() { return self.value + 100; }
+};
+
+struct Box<T> : ImplicitConvert<T> {
+    T value;
+    T implicitConvert() { return self.value; }
+};
+
+interface Numeric : ImplicitConvert<int64> { };
+struct Inherited : Numeric {
+    int64 implicitConvert() { return 11; }
+};
+enum State : ImplicitConvert<int64>, ExplicitConvert<int64> {
+    Ready, Done;
+    int64 implicitConvert() { return 1; }
+    int64 explicitConvert() { return 2; }
+};
+
+int64 useNumber(int64 value) { return value; }
+int64 returnNumber(Number value) { return value; }
+
+int64 main() {
+    Number number;
+    number.value = 7;
+    int64 implicit = number;
+    int64 explicit = (int64)number;
+    assert(implicit == 7 && explicit == 107);
+    assert(cast<int64>(number) == 107);
+    implicit = number;
+    assert(useNumber(number) == 7 && returnNumber(number) == 7);
+    const Number readonly = number;
+    assert(useNumber(readonly) == 7 && (int64)readonly == 107);
+    Box<int64> boxed;
+    boxed.value = 9;
+    int64 generic = boxed;
+    assert(generic == 9 && cast<int64>(boxed) == 9);
+    Inherited inherited;
+    assert(useNumber(inherited) == 11);
+    State state = State::Ready;
+    int64 stateValue = state;
+    assert(stateValue == 1 && cast<int64>(state) == 2);
+    println("conversions: implicit={} explicit={} generic={}", implicit, explicit, generic);
+    return 0;
+}

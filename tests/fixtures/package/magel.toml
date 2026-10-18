@@ -1,0 +1,12 @@
+[package]
+name = "magel-demo"
+version = "0.1.0"
+author = "示例作者"
+
+[magel]
+include = ["include/shared.inc"]
+import_paths = ["modules"]
+import = ["tools::math"]
+commands = [
+    '%include "include/extra.inc"',
+]

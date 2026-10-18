@@ -1,0 +1,14 @@
+# 工程生成器与代码导出器保留各自格式。
+source/magel-generator/**
+source/magel-emit/**
+# 自动生成资产从生成源维护，不直接格式化。
+source/magel_parser.cpp
+source/magel_parser.hpp
+source/magel_parser_user.h
+source/magel_main.cpp
+source/magel_stdlib_embedded.cpp
+source/magel_i18n.hpp
+source/stackvm_mcu/magel_i18n.hpp
+# 这些 .inc 是前处理器输入夹具，并非 C/C++ 代码。
+library/preprocess/examples/*.inc
+tests/fixtures/package/include/*.inc

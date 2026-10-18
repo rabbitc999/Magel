@@ -1,0 +1,13 @@
+sum=15
+float=3.625
+point=7
+fib(10)=55
+control -1 0 1
+while=4 match=2
+close 42
+after-scope
+list len=3 first=3 set len=2 has5=1 map amy=11 bob=22
+string=hello world eq=1 lt=1
+static rect:15 square:16
+iface rect:15 square:16
+twice 30 32

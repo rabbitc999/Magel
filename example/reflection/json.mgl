@@ -1,0 +1,34 @@
+import std::reflect;
+import std::json;
+int64 constructed=0;int64 dropped=0;
+@Reflect struct User : Drop {
+    String name;int64 id;
+    User(String name,int64 id){self.name=name;self.id=id;constructed++;}
+    String describe(){return format("{}:{}",self.name,self.id);}
+    void rename(String name){self.name=name;}
+    void drop(){dropped++;}
+};
+int64 main(){
+    auto document=std::json::parse("{\"name\":\"alice\",\"id\":7}").unwrap();
+    List<std::reflect::ReflectValue> args;
+    args.push(std::reflect::ReflectValue::Text(document.find("name").unwrap().asString().unwrap()));
+    args.push(std::reflect::ReflectValue::I32((int32)7));
+    assert(std::reflect::construct<User>(args).isErr());assert(constructed==0 && dropped==0);
+    args[1]=std::reflect::ReflectValue::I64(document.find("id").unwrap().asInt().unwrap());
+    document.close();
+    List<std::reflect::ReflectValue> empty;
+    {
+        auto result=std::reflect::construct<User>(args);assert(result.isOk() && constructed==1);
+        User user=result.unwrap();
+        String before=std::reflect::callMethodConst<User>(&user,"describe",empty).unwrap().asText().unwrap();
+        assert(before=="alice:7" && user.name=="alice");
+        List<std::reflect::ReflectValue> names;names.push(std::reflect::ReflectValue::Text("bob"));
+        assert(std::reflect::callMethod<User>(&user,"rename",names).isOk());
+        assert(std::reflect::callMethodConst<User>(&user,"describe",empty).unwrap().asText().unwrap()=="bob:7");
+        assert(before=="alice:7" && names[0].asText().unwrap()=="bob" && args[0].asText().unwrap()=="alice");
+        int64 savedDrops=dropped;args[1]=std::reflect::ReflectValue::Bool(false);
+        assert(std::reflect::construct<User>(args).isErr());assert(constructed==1 && dropped==savedDrops);
+        assert(std::reflect::callMethod<User>(&user,"drop",empty).isErr());
+    }
+    assert(dropped>0);println("reflection json OK");return 0;
+}

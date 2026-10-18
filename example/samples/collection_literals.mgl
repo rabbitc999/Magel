@@ -1,0 +1,108 @@
+// Set / Map 字面量、上下文类型、值复制与 Equal / 可选 Hash 键协议。
+int64 evaluations = 0;
+int64 equalCalls = 0;
+int64 hashCalls = 0;
+int64 step() { evaluations = evaluations + 1; return evaluations; }
+struct HashedKey : Equal<bool, HashedKey>, Hash<HashedKey> {
+    int64 id; String label;
+    bool leftEqual(HashedKey value) { equalCalls = equalCalls + 1; return self.id == value.id; }
+    uint64 hash(HashedKey value) { hashCalls = hashCalls + 1; return (uint64)(self.id % 2); }
+};
+struct PlainKey : Equal<bool, PlainKey> {
+    int64 id;
+    bool leftEqual(PlainKey value) { return self.id % 10 == value.id % 10; }
+};
+interface KeyProtocol : Equal<bool, DerivedKey>, Hash<DerivedKey> {};
+struct DerivedKey : KeyProtocol {
+    int64 id;
+    bool leftEqual(DerivedKey value) { return self.id == value.id; }
+    uint64 hash(DerivedKey value) { return (uint64)self.id; }
+};
+struct Holder { Map<HashedKey, String> values; };
+HashedKey key(int64 id, String label) { HashedKey value; value.id = id; value.label = label; return value; }
+Set<int64> makeSet() { return {1, 2, 2, 3}; }
+Map<String, String> makeMap() { return {"first": "one", "second": "two"}; }
+Map<String, int64> emptyMap() { return {}; }
+int64 count(Set<int64> values) { return values.len(); }
+int64 mapCount(Map<String, int64> values) { return values.len(); }
+int64 main() {
+    auto set = {3, 1, 3, 2,};
+    assert(set.len() == 3 && set.has(1) != 0 && set.at(0) == 1);
+    auto map = {"a": 1, "b": 2, "a": 3,};
+    assert(map.len() == 2 && map["a"] == 3 && map["b"] == 2);
+    auto ordered = {step(): step(), step(): step()};
+    assert(evaluations == 4 && ordered[1] == 2 && ordered[3] == 4);
+    List<int64> emptyList = {};
+    List<int64> numbers = {3, 1, 3, 2};
+    List<String> words = {"one", "two"};
+    List<int64> fromEmpty = {};
+    assert(emptyList.len() == 0 && fromEmpty.len() == 0);
+    assert(numbers.len() == 4 && numbers[0] == 3 && numbers[3] == 2);
+    assert(words.len() == 2 && words[1] == "two");
+    numbers.push(9);
+    assert(numbers.len() == 5 && numbers[4] == 9);
+    Set<int64> emptySet = {};
+    Map<String, int64> empty = {};
+    assert(emptySet.len() == 0 && empty.len() == 0 && emptyMap().len() == 0);
+    assert(count({}) == 0 && count({1, 2}) == 2 && mapCount({}) == 0);
+    set = {}; map = {};
+    assert(set.len() == 0 && map.len() == 0);
+    Set<uint8> small = {1, 2, 3};
+    Set<float64> real = {1, 2.5};
+    auto inferredReal = {1, 2.5};
+    assert(small.len() == 3 && real.has(1.0) != 0 && inferredReal.has(2.5) != 0);
+    auto nested = {"filled": {1, 2}, "empty": {}};
+    Map<String, Set<int64> > typedNested = {"empty": {}, "filled": {3, 4}};
+    Set<int64> inner = nested["filled"];
+    Set<int64> innerCopy = typedNested["filled"];
+    inner.add(9);
+    assert(inner.len() == 3 && innerCopy.len() == 2 && nested["empty"].len() == 0);
+    Set<Set<int64> > sets;
+    sets.add({});
+    typedNested.put("another", {});
+    assert(sets.len() == 1 && typedNested["another"].len() == 0);
+    int64 before = evaluations;
+    bool skipped = false && ({step(): step()}).len() > 0;
+    assert(!skipped && evaluations == before);
+    auto tupleSet = {(1, "one"), (2, "two"), (1, "one")};
+    assert(tupleSet.len() == 2);
+    for (int64 round = 0; round < 8; round = round + 1) {
+        auto textSet = {"first", "sec" + "ond", "first"};
+        auto textMap = makeMap();
+        Map<String, String> copied = textMap;
+        textMap["first"] = "changed";
+        assert(textSet.len() == 2 && copied["first"] == "one");
+        assert(makeSet().len() == 3 && ({"x": "value"})["x"] == "value");
+        auto big = {1: BigInteger("12345678901234567890")};
+        BigInteger number = big[1];
+        assert(number == BigInteger("12345678901234567890"));
+        auto keyed = {key(1, "first"): "one", key(3, "collision"): "three", key(1, "duplicate"): "updated"};
+        assert(keyed.len() == 2 && keyed[key(1, "query")] == "updated" && keyed[key(3, "query")] == "three");
+        HashedKey saved = keyed.keyAt(0);
+        assert(saved.id == 1 && saved.label == "first");
+        keyed.put(key(2, "even"), "two");
+        equalCalls = 0; hashCalls = 0;
+        assert(keyed.has(key(2, "query")) != 0 && equalCalls == 1 && hashCalls == 1);
+        keyed[key(1, "replacement")] = "again";
+        Map<HashedKey, String> copy = keyed;
+        keyed.clear();
+        assert(copy[key(1, "query")] == "again" && copy.remove(key(3, "query")) != 0 && copy.len() == 2);
+        Holder holder;
+        holder.values.put(key(4, "field"), "four");
+        assert(holder.values[key(4, "query")] == "four");
+        PlainKey first; first.id = 1; PlainKey duplicate; duplicate.id = 11;
+        auto plain = {first: "first", duplicate: "last"};
+        assert(plain.len() == 1 && plain[first] == "last" && plain.has(duplicate) != 0);
+        auto plainCopy = plain.copy();
+        assert(plainCopy.remove(duplicate) != 0 && plainCopy.len() == 0 && plain.len() == 1);
+        DerivedKey inherited; inherited.id = 5;
+        auto derived = {inherited: 55};
+        assert(derived[inherited] == 55);
+    }
+    // 花括号语句块及 loop / if 保持正常解析。
+    {} { int64 local = 1; assert(local == 1); }
+    if (true) {} else {}
+    println("collection literals and key protocols OK");
+    return 0;
+}
+

@@ -1,0 +1,197 @@
+module std::binary;
+
+/* 定宽解码、字节序和边界检查由 glue/std_binary.hpp 完成。 */
+T __read<T>(std::lang::List<uint8> bytes, int64 offset, bool bigEndian);
+std::lang::List<T> __readArray<T>(std::lang::List<uint8> bytes, int64 offset, int64 count, bool bigEndian);
+std::lang::String __readString(std::lang::List<uint8> bytes, int64 offset, int64 length);
+std::lang::List<std::lang::String> __readStrings(std::lang::List<uint8> bytes, int64 offset, int64 count, int64 width);
+std::lang::List<uint8> __fromArray(uint8 const& bytes, int64 count);
+
+/** 二进制流读取器：拥有输入字节的副本，默认小端。 */
+struct BinaryReader : Drop {
+    std::lang::List<uint8> bytes;
+    int64 offset;
+    bool bigEndian;
+
+    void drop() { delete self.bytes; }
+    /** 从字节列表复制；不依赖原列表的生命周期。 */
+    static BinaryReader fromBytes(std::lang::List<uint8> bytes) {
+        BinaryReader reader;
+        reader.bytes = bytes.copy();
+        reader.offset = 0;
+        reader.bigEndian = false;
+        return reader;
+    }
+    /** 从固定数组或指针复制 count 个字节。 */
+    static BinaryReader fromArray(uint8 const& bytes, int64 count) {
+        BinaryReader reader;
+        reader.bytes = __fromArray(bytes, count);
+        reader.offset = 0;
+        reader.bigEndian = false;
+        return reader;
+    }
+    /** 从运行时数组复制全部字节。 */
+    static BinaryReader fromArray(uint8 bytes[]) { return BinaryReader::fromArray(bytes, std::lang::len(bytes)); }
+    int64 position() { return self.offset; }
+    int64 remaining() { return self.bytes.len() - self.offset; }
+    int64 size() { return self.bytes.len(); }
+    void setBigEndian(bool enabled) { self.bigEndian = enabled; }
+    /** 绝对定位，失败返回 false 并保留游标。 */
+    bool seek(int64 position) {
+        if (position < 0 || position > self.bytes.len()) { return false; }
+        self.offset = position;
+        return true;
+    }
+    /** 跳过字节，失败返回 false 并保留游标。 */
+    bool skip(int64 count) {
+        if (count < 0 || count > self.remaining()) { return false; }
+        self.offset = self.offset + count;
+        return true;
+    }
+    /** 读取一个 int8，成功后前进 1 字节。 */
+    int8 readInt8() {
+        int8 value = __read<int8>(self.bytes, self.offset, self.bigEndian);
+        self.offset = self.offset + 1;
+        return value;
+    }
+    /** 读取 count 个 int8，返回独立列表。 */
+    std::lang::List<int8> readInt8Array(int64 count) {
+        std::lang::List<int8> values = __readArray<int8>(self.bytes, self.offset, count, self.bigEndian);
+        self.offset = self.offset + count * 1;
+        return values;
+    }
+    /** 读取一个 uint8，成功后前进 1 字节。 */
+    uint8 readUint8() {
+        uint8 value = __read<uint8>(self.bytes, self.offset, self.bigEndian);
+        self.offset = self.offset + 1;
+        return value;
+    }
+    /** 读取 count 个 uint8，返回独立列表。 */
+    std::lang::List<uint8> readUint8Array(int64 count) {
+        std::lang::List<uint8> values = __readArray<uint8>(self.bytes, self.offset, count, self.bigEndian);
+        self.offset = self.offset + count * 1;
+        return values;
+    }
+    /** 读取一个 int16，成功后前进 2 字节。 */
+    int16 readInt16() {
+        int16 value = __read<int16>(self.bytes, self.offset, self.bigEndian);
+        self.offset = self.offset + 2;
+        return value;
+    }
+    /** 读取 count 个 int16，返回独立列表。 */
+    std::lang::List<int16> readInt16Array(int64 count) {
+        std::lang::List<int16> values = __readArray<int16>(self.bytes, self.offset, count, self.bigEndian);
+        self.offset = self.offset + count * 2;
+        return values;
+    }
+    /** 读取一个 uint16，成功后前进 2 字节。 */
+    uint16 readUint16() {
+        uint16 value = __read<uint16>(self.bytes, self.offset, self.bigEndian);
+        self.offset = self.offset + 2;
+        return value;
+    }
+    /** 读取 count 个 uint16，返回独立列表。 */
+    std::lang::List<uint16> readUint16Array(int64 count) {
+        std::lang::List<uint16> values = __readArray<uint16>(self.bytes, self.offset, count, self.bigEndian);
+        self.offset = self.offset + count * 2;
+        return values;
+    }
+    /** 读取一个 int32，成功后前进 4 字节。 */
+    int32 readInt32() {
+        int32 value = __read<int32>(self.bytes, self.offset, self.bigEndian);
+        self.offset = self.offset + 4;
+        return value;
+    }
+    /** 读取 count 个 int32，返回独立列表。 */
+    std::lang::List<int32> readInt32Array(int64 count) {
+        std::lang::List<int32> values = __readArray<int32>(self.bytes, self.offset, count, self.bigEndian);
+        self.offset = self.offset + count * 4;
+        return values;
+    }
+    /** 读取一个 uint32，成功后前进 4 字节。 */
+    uint32 readUint32() {
+        uint32 value = __read<uint32>(self.bytes, self.offset, self.bigEndian);
+        self.offset = self.offset + 4;
+        return value;
+    }
+    /** 读取 count 个 uint32，返回独立列表。 */
+    std::lang::List<uint32> readUint32Array(int64 count) {
+        std::lang::List<uint32> values = __readArray<uint32>(self.bytes, self.offset, count, self.bigEndian);
+        self.offset = self.offset + count * 4;
+        return values;
+    }
+    /** 读取一个 int64，成功后前进 8 字节。 */
+    int64 readInt64() {
+        int64 value = __read<int64>(self.bytes, self.offset, self.bigEndian);
+        self.offset = self.offset + 8;
+        return value;
+    }
+    /** 读取 count 个 int64，返回独立列表。 */
+    std::lang::List<int64> readInt64Array(int64 count) {
+        std::lang::List<int64> values = __readArray<int64>(self.bytes, self.offset, count, self.bigEndian);
+        self.offset = self.offset + count * 8;
+        return values;
+    }
+    /** 读取一个 uint64，成功后前进 8 字节。 */
+    uint64 readUint64() {
+        uint64 value = __read<uint64>(self.bytes, self.offset, self.bigEndian);
+        self.offset = self.offset + 8;
+        return value;
+    }
+    /** 读取 count 个 uint64，返回独立列表。 */
+    std::lang::List<uint64> readUint64Array(int64 count) {
+        std::lang::List<uint64> values = __readArray<uint64>(self.bytes, self.offset, count, self.bigEndian);
+        self.offset = self.offset + count * 8;
+        return values;
+    }
+    /** 读取一个 float32，成功后前进 4 字节。 */
+    float32 readFloat32() {
+        float32 value = __read<float32>(self.bytes, self.offset, self.bigEndian);
+        self.offset = self.offset + 4;
+        return value;
+    }
+    /** 读取 count 个 float32，返回独立列表。 */
+    std::lang::List<float32> readFloat32Array(int64 count) {
+        std::lang::List<float32> values = __readArray<float32>(self.bytes, self.offset, count, self.bigEndian);
+        self.offset = self.offset + count * 4;
+        return values;
+    }
+    /** 读取一个 float64，成功后前进 8 字节。 */
+    float64 readFloat64() {
+        float64 value = __read<float64>(self.bytes, self.offset, self.bigEndian);
+        self.offset = self.offset + 8;
+        return value;
+    }
+    /** 读取 count 个 float64，返回独立列表。 */
+    std::lang::List<float64> readFloat64Array(int64 count) {
+        std::lang::List<float64> values = __readArray<float64>(self.bytes, self.offset, count, self.bigEndian);
+        self.offset = self.offset + count * 8;
+        return values;
+    }
+    /** 读取一个 bool，成功后前进 1 字节。 */
+    bool readBool() {
+        bool value = __read<bool>(self.bytes, self.offset, self.bigEndian);
+        self.offset = self.offset + 1;
+        return value;
+    }
+    /** 读取 count 个 bool，返回独立列表。 */
+    std::lang::List<bool> readBoolArray(int64 count) {
+        std::lang::List<bool> values = __readArray<bool>(self.bytes, self.offset, count, self.bigEndian);
+        self.offset = self.offset + count * 1;
+        return values;
+    }
+    /** 读取原始字节，保留零字节。 */
+    std::lang::List<uint8> readBytes(int64 count) { return self.readUint8Array(count); }
+    /** 读取 length 字节文本字段，首个零字节终止文本，仍消费整个字段。 */
+    std::lang::String readString(int64 length) {
+        std::lang::String text = __readString(self.bytes, self.offset, length);
+        self.offset = self.offset + length;
+        return text;
+    }
+    /** 读取 count 个定宽字符串，每个字段占 width 字节。 */
+    std::lang::List<std::lang::String> readStringArray(int64 count, int64 width) {
+        std::lang::List<std::lang::String> values = __readStrings(self.bytes, self.offset, count, width);
+        self.offset = self.offset + count * width;
+        return values;
+    }
+};

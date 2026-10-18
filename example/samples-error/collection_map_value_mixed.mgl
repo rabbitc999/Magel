@@ -1,0 +1,1 @@
+int64 main() { auto value = {"one": 1, "two": "two"}; return 0; }

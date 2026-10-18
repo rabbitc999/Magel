@@ -1,0 +1,43 @@
+module counter;
+import gui;
+
+int64 main(List<String> arguments) {
+    if (gui::open((int32)420, (int32)220, "Magel GUI 示例") == 0) {
+        panic("GUI 窗口创建失败");
+    }
+    if (gui::label((int32)10, (int32)20, (int32)20, (int32)360, (int32)26,
+    "点击按钮开始计数") == 0 ||
+    gui::textBox((int32)11, (int32)20, (int32)58, (int32)240, (int32)28,
+    "Magel") == 0 ||
+    gui::button((int32)1, (int32)20, (int32)110, (int32)110, (int32)34,
+    "加一") == 0 ||
+    gui::button((int32)2, (int32)145, (int32)110, (int32)115, (int32)34,
+    "问候") == 0) {
+        gui::close();
+        panic("GUI 控件创建失败");
+    }
+
+    /* 参数 close 用于构建后的非交互验证：仍会创建控件并往返 UTF-8 文本。 */
+    if (arguments.len() > 0) {
+        gui::setText((int32)11, "你好，Magel");
+        println("{}", gui::getText((int32)11));
+        gui::close();
+        return 0;
+    }
+
+    int64 count = 0;
+    while (true) {
+        int32 event = gui::waitEvent();
+        if (event == -1) { break; }
+        if (event == 1) {
+            count = count + 1;
+            String caption = format("计数：{}", count);
+            gui::setText((int32)10, caption);
+        }
+        if (event == 2) {
+            gui::setText((int32)10, "你好，" + gui::getText((int32)11));
+        }
+    }
+    gui::close();
+    return 0;
+}

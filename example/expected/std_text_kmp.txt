@@ -1,0 +1,2 @@
+kmp hits 3 3 table 2
+KMP search OK

@@ -1,0 +1,1 @@
+语法错误：example/samples-error/reference_nested_type.mgl 第 1 行第 63 列：期望 标识符 / 函数(fn) / 拷贝(copy) / 移动(move) 等 10 个之一，实际是 可变(mut)

@@ -1,0 +1,8 @@
+/* 只读引用（`T const&`）不能通过引用写。 */
+
+int64 main() {
+    int64 m[4];
+    int64 const& p = (int64 const&)m;
+    p[0] = 1;
+    return 0;
+}

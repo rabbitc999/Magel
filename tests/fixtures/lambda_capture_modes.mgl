@@ -1,0 +1,86 @@
+/* 引用、独立副本和移动捕获的所有权与状态回归。 */
+int64 drops=0;
+int64 apply(int64 fn(int64) f,int64 x){return f(x);}
+struct Record:Drop { String text; List<int64> values; void drop(){drops+=1;} };
+int64 fn() counter(){int64 n=4;return int64 fn copy(){n+=1;return n;};}
+int64 fn() movedCounter(){int64 n=8;return int64 fn move(){n+=1;return n;};}
+int64 main(){
+    int64 n=1;
+    auto read=int64 fn(){n};
+    auto explicitRead=int64 fn const(){n};
+    n=2;assert(read()==2 && explicitRead()==2);
+    auto write=int64 fn mut(int64 x){n+=x;return n;};
+    assert(write(3)==5 && n==5);
+    auto independent=int64 fn copy(int64 x){n+=x;return n;};
+    n=100;assert(independent(2)==7 && independent(1)==8 && n==100);
+    auto cloned=independent;
+    assert(cloned(3)==11 && independent(1)==9 && cloned(1)==12);
+    const int64 fixed=7;
+    auto changeConst=int64 fn copy(){fixed+=1;return fixed;};
+    assert(changeConst()==8 && fixed==7);
+    auto fromReturn=counter();assert(fromReturn()==5 && fromReturn()==6);
+    auto fromMove=movedCounter();assert(fromMove()==9 && fromMove()==10);
+    String text="old";
+    auto copyText=String fn copy(){text=text+"!";return text;};
+    text="outside";assert(copyText()=="old!" && copyText()=="old!!" && text=="outside");
+    auto copyText2=copyText;assert(copyText2()=="old!!!" && copyText()=="old!!!");
+    List<int64> values;values.push(4);
+    auto copyList=int64 fn copy(){values[0]+=1;return values[0];};
+    assert(copyList()==5 && copyList()==6 && values[0]==4);
+    auto copyList2=copyList;assert(copyList2()==7 && copyList2()==8 && copyList()==7);
+    String moved="payload";int64 identity=0;memcpy(&identity,&moved,8);
+    auto takeText=int64 fn move(){int64 actual=0;memcpy(&actual,&moved,8);return actual;};
+    assert(takeText()==identity);
+    String moved="reset";assert(moved=="reset");
+    List<int64> transferred;transferred.push(40);
+    auto takeList=int64 fn move(){transferred[0]+=1;return transferred[0];};
+    List<int64> transferred;transferred.push(2);
+    assert(takeList()==41 && takeList()==42 && transferred[0]==2);
+    {Record record;record.text="owned";record.values.push(1);
+        {auto own=int64 fn copy(){record.values[0]+=1;return record.values[0];};
+         assert(own()==2);{auto second=own;assert(second()==3);}assert(drops==1);}
+        assert(drops==2 && record.values[0]==1);}
+    assert(drops==3);
+    {Record record;record.text="moved";record.values.push(10);
+        {auto own=int64 fn move(){record.values[0]+=1;return record.values[0];};
+         assert(own()==11 && drops==3);}
+        assert(drops==4);}
+    assert(drops==4);
+    int64 referenced=20;int64 mut& alias=&referenced;
+    auto privateRef=int64 fn copy[alias](){alias+=1;return alias;};
+    assert(privateRef()==21 && referenced==21);
+    int64 mut& movedAlias=&referenced;
+    auto ownRef=int64 fn move[movedAlias](){movedAlias+=1;return movedAlias;};
+    int64 mut& movedAlias=&referenced;assert(ownRef()==22 && movedAlias==22);
+    float64 real=1.5;auto realState=float64 fn copy(){real+=0.5;return real;};
+    assert(realState()==2.0 && realState()==2.5 && real==1.5);
+    int64 a=2;int64 b=3;int64 c=4;int64 d=5;
+    auto mixed=int64 fn copy[a] mut[b] const[c] move[d](int64 x){a+=x;b+=x;d+=x;return a+b+c+d;};
+    a=100;c=10;int64 d=200;
+    assert(mixed(1)==23 && a==100 && b==4 && c==10 && d==200);
+    assert(mixed(1)==26 && b==5);
+    auto mixedCopy=mixed;
+    assert(mixedCopy(1)==29 && b==6);
+    assert(mixed(1)==30 && b==7);
+    int64 bias=9;
+    assert(apply(fn copy[bias](x){bias+=x;return bias;},2)==11 && bias==9);
+    auto empty=int64 fn copy[](){bias};bias=10;assert(empty()==10);
+    int64 unused=7;auto ignores=int64 fn move[unused](){1};
+    int64 unused=8;assert(ignores()==1 && unused==8);
+    int64 left=1;int64 right=2;int64 shared=3;
+    auto fallback=int64 fn copy[left,right] mut(int64 x){left+=x;right+=x;shared+=x;return left+right+shared;};
+    assert(fallback(1)==9 && left==1 && right==2 && shared==4);
+    assert(apply(fn copy[left,right] mut(x){shared+=x;return left+right+shared;},2)==9 && shared==6);
+    int64 nestedSource=6;
+    auto outer=int64 fn copy(){auto inner=int64 fn move[nestedSource](){1};return inner();};
+    assert(outer()==1 && nestedSource==6);
+    {Record record;
+        {auto unusedCopy=int64 fn copy[record](){1};
+            {auto neverCalled=unusedCopy;}
+            assert(drops==5);
+        }
+        assert(drops==6);
+    }
+    assert(drops==7);
+    println("fn capture modes OK");return 0;
+}

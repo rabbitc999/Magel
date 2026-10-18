@@ -1,0 +1,7 @@
+a.cents=120 b.cents=34
+a.plus(b) = 154
+a + b = 154
+a + 5 = 125
+5 + a = 125
+add(a, 5) = 125
+add(5, a) = 125

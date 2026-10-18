@@ -1,0 +1,468 @@
+\chapter{接口与运行期多态}
+\label{ch:13}
+
+到第 12 章为止，你写的每个函数都只认一种具体类型：\texttt{int64} 也好，\texttt{Circle} 也好，参数的类型写死了，就只能吃那一种。
+
+可现实里常有这种事：一个函数想同时处理「圆」和「正方形」，因为它俩都需要「算面积」。你不会想给每个类型都抄一份逻辑。这一章讲 Magel 怎么解决它——\texttt{interface}。
+
+\section{问题：长得不一样，但都会做同一件事}
+
+先看一个真实场景。你有一个圆、一个正方形，都要算面积：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Circle
+{
+    int64 r;
+};
+struct Square
+{
+    int64 side;
+};
+
+int64 circleArea(Circle c)
+{
+    return 3 * c.r * c.r;
+}
+int64 squareArea(Square s)
+{
+    return s.side * s.side;
+}
+\end{lstlisting}
+\par
+\medskip
+
+两个函数，逻辑几乎一样，只是字段名不同。再加一个三角形呢？再抄一份。
+
+问题不在「代码重复」，而在没有共同的类型。\texttt{circle\allowbreak{}Area} 收不了 \texttt{Square}，\texttt{square\allowbreak{}Area} 收不了 \texttt{Circle}。你没法写「一个对所有图形都能算面积的函数」。
+
+接口就是来解决这件事的：把「会算面积」这件事本身，变成一个类型。
+
+\section{\texttt{interface}：给「能力」起个名字}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+interface Shape
+{
+    int64 area();
+    String describe();
+};
+\end{lstlisting}
+\par
+\medskip
+
+这段在读作：
+
+\begin{itemize}
+
+\item \texttt{interface Shape} 声明了一个叫 \texttt{Shape} 的接口；
+
+\item 里面两条方法声明（只有签名，没有函数体）：想要成为 \texttt{Shape}，就得有 \texttt{area(\allowbreak{})\allowbreak{}} 和 \texttt{describe(\allowbreak{})\allowbreak{}}；
+
+\item 接口里只能有方法，不能有字段——这是硬规矩。
+
+\end{itemize}
+
+换句话说，\texttt{Shape} 描述的不是「有什么数据」，而是「会做什么」。这种类型，学名就叫契约（contract）：谁签了它，谁就得履行这两条。
+
+\begin{tip}{提示}
+\texttt{interface}、\texttt{struct}、\texttt{enum} 的声明在 \texttt{\}} 处结束，末尾的 \texttt{;} 可省略。接口中的抽象方法声明仍需要分号。
+\end{tip}
+
+\section{结构体实现接口}
+
+写一个真的圆，让它「实现」\texttt{Shape}——写法是在结构体名字后面加 \texttt{:\allowbreak{} Shape}：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+interface Shape
+{
+    int64 area();
+    String describe();
+};
+
+struct Circle: Shape
+{
+    int64 r;
+
+    int64 area()
+    {
+        return 3 * r * r;
+    }
+    String describe()
+    {
+        return "圆";
+    }
+};
+
+int64 main()
+{
+    Circle c;
+    c.r = 2;
+    println("{}，面积 {}", c.describe(), c.area());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+圆，面积 12
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{struct Circle :\allowbreak{} Shape} 的意思就是「\texttt{Circle} 承诺自己是 \texttt{Shape}」。它把 \texttt{Shape} 要的两条方法都写了，于是契约生效。
+
+关键规矩：必须完全实现，一个都不能少。 少写一条，编译器直接拒绝：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+interface Shape
+{
+    int64 area();
+    String describe();
+};
+
+struct Bad: Shape
+{
+    int64 r;
+    int64 area()
+    {
+        return 3 * r * r;
+    }
+};
+
+int64 main()
+{
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+报错说得非常清楚：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：struct Bad 实现了接口 Shape，但没有完全实现：describe() -> std::lang::String
+（接口要求同名、同返回类型、同形参类型；一个都不能少）
+\end{lstlisting}
+\par
+\medskip
+
+注意「同名、同返回类型、同形参类型」这三点——返回类型写错也算没实现。把 \texttt{area(\allowbreak{})\allowbreak{}} 写成返回 \texttt{String}，一样通不过。
+
+\begin{tip}{提示}
+一个细节：在 \texttt{main} 里 \texttt{c.\allowbreak{}describe(\allowbreak{})\allowbreak{}} 是静态调用——编译器早知道 \texttt{c} 是\texttt{Circle}，直接找到 \texttt{Circle:\allowbreak{}:\allowbreak{}describe} 就行，根本不需要接口。接口的价值要等到13.7 节，类型在运行期才确定的时候才显出来。
+\end{tip}
+
+\section{默认方法：接口可以带实现}
+
+接口里的方法可以自带函数体，成为「默认实现」：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+interface Greeter
+{
+    String hello()
+    {
+        return "你好，我是";
+    }
+};
+
+struct Dog: Greeter
+{
+    String name()
+    {
+        return "旺财";
+    }
+};
+
+int64 main()
+{
+    Dog d;
+    println("{}{}", d.hello(), d.name());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+你好，我是旺财
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{Dog} 只写了 \texttt{name(\allowbreak{})\allowbreak{}}，\texttt{hello(\allowbreak{})\allowbreak{}} 直接用接口给的默认体。这在「大部分实现都一样、少数才特殊」时很省事——想让某个类改写默认行为，在结构体里重写一遍同名方法即可。
+
+\begin{tip}{提示}
+接口方法也可以有默认参数，但枚举载荷字段和接口方法声明这两处不支持默认参数（见语言参考第 6 节）。这一条初学阶段用不到，记个位置就行。
+\end{tip}
+
+\section{接口继承}
+
+接口之间也能继承。\texttt{Named :\allowbreak{} Shape} 读作「\texttt{Named} 是更具体的 \texttt{Shape}」：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+interface Shape
+{
+    int64 area();
+};
+
+interface Named: Shape
+{
+    String name();
+};
+
+struct Square: Named
+{
+    int64 side;
+
+    int64 area()
+    {
+        return side * side;
+    }
+    String name()
+    {
+        return "正方形";
+    }
+};
+
+int64 main()
+{
+    Square s;
+    s.side = 4;
+    println("{}，面积 {}", s.name(), s.area());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+正方形，面积 16
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{Square} 签名签的是 \texttt{Named}，但 \texttt{Named} 继承了 \texttt{Shape}，所以两个要求一起生效：\texttt{area(\allowbreak{})\allowbreak{}} 和 \texttt{name(\allowbreak{})\allowbreak{}} 都得有。
+
+\section{一个结构体实现多个接口}
+
+结构体可以同时签多个契约，用逗号隔开：\texttt{struct X :\allowbreak{} A,\allowbreak{} B}。如果两个接口要的是同一个签名的方法，只算一条要求——去重的：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+interface Shape
+{
+    String describe();
+};
+interface Named
+{
+    String describe();
+    String name();
+};
+
+struct Circle: Shape, Named
+{
+    int64 r;
+    String describe()
+    {
+        return "圆";
+    }
+    String name()
+    {
+        return "Circle";
+    }
+};
+
+int64 main()
+{
+    Circle c;
+    println("{} {}", c.describe(), c.name());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+圆 Circle
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{Shape} 和 \texttt{Named} 都要 \texttt{String describe(\allowbreak{})\allowbreak{}}，它们同名、同返回、同参数，所以 \texttt{Circle} 里只写一遍 \texttt{describe(\allowbreak{})\allowbreak{}} 就同时满足了两个接口。反过来，要是两个接口要的同名方法签名不一样，那就是冲突，写不出来。
+
+\section{接口引用：多态真正登场的地方}
+
+前面六节，接口看起来只是「一份要遵守的清单」——实现完就完了，调用还是静态的。这一节才是重点：接口名可以当引用的目标类型，而这时调用的具体实现，由运行期决定。
+
+先看它长什么样：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+Shape mut& view;
+// view 是「Shape 引用」
+view.area();
+// 调哪个 area()？运行期才知道
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{Shape mut\&} 不是普通引用。它是个「胖引用」——里面装了两样东西：对象的地址和对象的类型号。所以 \texttt{view.\allowbreak{}area(\allowbreak{})\allowbreak{}} 可以按类型号去挑对应的实现。这就是运行期多态：同一行代码，喂不同的对象，跑不同的函数。
+
+直接绑定实现类型的引用即可。编译器从具体类型取得类型号，与引用地址一起生成接口视图：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+Circle c;
+Shape const& view = &c;
+\end{lstlisting}
+\par
+\medskip
+
+这不是创建一个独立的 \texttt{Shape} 对象；视图继续借用 \texttt{c}。\texttt{const\&} 只允许只读方法，\texttt{mut\&} 可调用修改对象的方法，但必须来自可写对象。没有声明实现 \texttt{Shape} 的类型不能绑定，即使恰好存在同名方法也不行。
+
+下面的完整程序直接绑定两种实现，不需要 \texttt{Any}：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+interface Shape
+{
+    int64 area();
+    String describe();
+};
+
+struct Circle: Shape
+{
+    int64 r;
+    int64 area()
+    {
+        return 3 * r * r;
+    }
+    String describe()
+    {
+        return "圆";
+    }
+};
+
+struct Square: Shape
+{
+    int64 side;
+    int64 area()
+    {
+        return side * side;
+    }
+    String describe()
+    {
+        return "正方形";
+    }
+};
+
+String report(Shape const& shape)
+{
+    return shape.describe() + "：" + format("{}", shape.area());
+}
+
+int64 main()
+{
+    Circle c;
+    c.r = 2;
+    Square s;
+    s.side = 3;
+    Shape const& shape1 = &c;
+    Shape const& shape2 = &s;
+    println("{}", report(shape1));
+    println("{}", report(shape2));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+圆：12
+正方形：9
+\end{lstlisting}
+\par
+\medskip
+
+这里在编译期检查 \texttt{Circle} 和 \texttt{Square} 都实现了 \texttt{Shape}，生成视图时保存各自的具体类型号。\texttt{report} 只声明接收 \texttt{Shape const\&}，它通过视图在运行期选择 \texttt{Circle} 或 \texttt{Square} 的方法。实参也可直接写成 \texttt{report(\allowbreak{}\&c)\allowbreak{}}，转换规则相同。
+
+复制接口引用只复制视图句柄，不复制原对象，也不延长它的寿命。不能返回局部对象的接口视图，不能把内层对象的视图保存到外层；生命周期检查会拒绝这些写法。返回全局对象或来自调用者且寿命有效的引用仍可按现有规则检查。
+
+已经保存于 \texttt{Any} 的对象仍能按接口提取引用；只有运行期才知道盒子内容时才需要这种类型检查路径。具体类型在编译期已知时，直接绑定更清楚。
+
+同一个 \texttt{report}，一行代码，两段输出。 加第三种图形，\texttt{report} 一个字都不用改。
+
+\section{该用谁：静态调用还是接口？}
+
+刚学多态容易走极端，觉得「接口多高级，全用接口吧」。别。看这张表：
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.459\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.229\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.292\linewidth-2\tabcolsep\relax}}
+\toprule
+场景 & 用什么 & 为什么 \\
+\midrule
+\endhead
+你在编译期就知道具体类型 & 直接调用 & 快，清楚，别绕 \\
+一个函数要吃多种类型，且类型在运行期才定 & 接口引用 & 只有它能做 \\
+只是想让几个类型共享一段代码 & 先想想泛型（第 14 章） & 泛型在编译期展开，往往更合适 \\
+\bottomrule
+\end{longtable}
+}
+
+经验法则：只有「调用者不知道具体是谁」的时候，才需要接口引用。能静态调用就静态调用——这也是官方样例把静态和动态两条路摆在一起对比的原因。
+
+\section{小结}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+你会了 & 关键点 \\
+\midrule
+声明接口 & \texttt{interface Shape \{ int64 area(\allowbreak{})\allowbreak{}; \};} 可有方法与关联类型声明，不能有值字段 \\
+实现接口 & \texttt{struct Circle :\allowbreak{} Shape \{ … \}}，必须完全实现，签名一字不差 \\
+默认方法 & 接口里的方法可以自带函数体 \\
+接口继承 & \texttt{interface Named :\allowbreak{} Shape \{ … \}} \\
+多接口 & \texttt{struct X :\allowbreak{} A,\allowbreak{} B}，同名同签名的要求去重 \\
+接口引用 & \texttt{Shape mut\& view}，是「地址 + 类型号」的胖引用 \\
+怎么拿 & \texttt{Shape const\& v =\allowbreak{} \&obj;}；可写对象也可绑定 \texttt{mut\&} \\
+运行时多态 & 方法按对象类型号分派；调用者无需知道具体类型 \\
+别滥用 & 能静态调用就别上接口 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{下一步}
+
+接口解决了「一个函数吃多种类型」，但它需要维护接口视图，并在运行期按类型号分派。直接绑定省去了 \texttt{Any} 中转，仍保留动态分派的成本。
+
+第 14 章的泛型解决同一个问题，却是编译期付账：代码为你用到的每种类型分别展开一份，跑起来没有运行期开销。学会这两样，你就能在自己的代码里做正确的取舍了。
+
+翻到\hyperref[ch:14]{第 14 章 泛型}。

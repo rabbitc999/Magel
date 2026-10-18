@@ -1,0 +1,60 @@
+/* 使用两个 uint32 构造 binary64 位模式，覆盖边界及数组读写。 */
+void checkDouble(uint32 high, uint32 low, bool bigEndian) {
+    List<uint8> bytes;
+    for (int64 i = 0; i < 8; i = i + 1) {
+        int64 index = i;
+        if (bigEndian) { index = 7 - i; }
+        uint32 word = low;
+        if (index >= 4) { word = high; index = index - 4; }
+        bytes.push((uint8)(word >> (index * 8)));
+    }
+    bytes.push((uint8)123); // 尾部字节不参与解码
+    float64 value = bytesToFloat64(bytes, bigEndian).unwrap();
+    List<uint8> encoded = float64ToBytes(value, bigEndian);
+    assert(encoded.len() == 8);
+    uint8 fixed[10]; fixed[8] = (uint8)77; fixed[9] = (uint8)88;
+    assert(float64ToBytes(value, fixed, 10, bigEndian));
+    assert(fixed[8] == (uint8)77 && fixed[9] == (uint8)88);
+    List<uint8> fromFixed = float64ToBytes(bytesToFloat64(fixed, 10, bigEndian).unwrap(), bigEndian);
+    uint8 dynamic[] = new[10]; dynamic[8] = (uint8)99;
+    assert(float64ToBytes(value, dynamic, bigEndian));
+    assert(dynamic[8] == (uint8)99);
+    List<uint8> fromDynamic = float64ToBytes(bytesToFloat64(dynamic, bigEndian).unwrap(), bigEndian);
+    for (int64 i = 0; i < 8; i = i + 1) {
+        assert(encoded[i] == bytes[i] && fromFixed[i] == bytes[i] && fromDynamic[i] == bytes[i]);
+    }
+}
+
+int64 main() {
+    uint32 high[9]; uint32 low[9];
+    high[0] = (uint32)0; low[0] = (uint32)0;
+    high[1] = (uint32)2147483648; low[1] = (uint32)0; // -0
+    high[2] = (uint32)0; low[2] = (uint32)1;          // 最小次正规数
+    high[3] = (uint32)1048576; low[3] = (uint32)0;    // 最小正规数
+    high[4] = (uint32)2146435071; low[4] = (uint32)4294967295; // 最大有限数
+    high[5] = (uint32)2146435072; low[5] = (uint32)0; // +inf
+    high[6] = (uint32)4293918720; low[6] = (uint32)0; // -inf
+    high[7] = (uint32)2146959360; low[7] = (uint32)0; // quiet NaN
+    high[8] = (uint32)1073217536; low[8] = (uint32)0; // 1.5
+    for (int64 i = 0; i < 9; i = i + 1) {
+        checkDouble(high[i], low[i], false);
+        checkDouble(high[i], low[i], true);
+    }
+    List<uint8> little = float64ToBytes(1.5);
+    assert(little[6] == (uint8)248 && little[7] == (uint8)63);
+    assert(bytesToFloat64(little).unwrap() == 1.5);
+    List<uint8> invalid;
+    assert(bytesToFloat64(invalid).isNone());
+    for (int64 i = 0; i < 7; i = i + 1) { invalid.push((uint8)0); }
+    assert(bytesToFloat64(invalid, true).isNone());
+    uint8 shortArray[] = new[7]; shortArray[0] = (uint8)77;
+    assert(!float64ToBytes(1.5, shortArray));
+    assert(shortArray[0] == (uint8)77 && bytesToFloat64(shortArray).isNone());
+    uint8 fixed[9];
+    assert(float64ToBytes(1.5, fixed, 9));
+    assert(bytesToFloat64(fixed, 9).unwrap() == 1.5);
+    assert(!float64ToBytes(1.5, fixed, -1));
+    assert(bytesToFloat64(fixed, -1).isNone());
+    println("float64 bytes OK");
+    return 0;
+}

@@ -1,0 +1,31 @@
+标本            magel\doc\examples\svmb\control.svmb
+字节数          662750
+SHA-256         CF30A3C8718DFB2C564D347AD35DE2D991F64FB9B983228A5EDBEEE93A757ABE
+
+头部（24 字节）：
+  0x00  8  magic        b'PESVMB\r\n'
+  0x08  2  version      4
+  0x0A  2  flags        0
+  0x0C  8  payload_size 662726   （文件长度 - 24 = 662726）
+  0x14  4  checksum     0xF68ECE45（FNV-1a 32，实测重算 = 0xF68ECE45）
+
+原始前 32 字节：
+  50 45 53 56 4d 42 0d 0a 04 00 00 00 c6 1c 0a 00 00 00 00 00 45 ce 8e f6 07 00 00 00 6d 61 67 69
+
+用 magel\magel.exe 重新编译 magel/example/samples/control.mgl 的结果：
+  重新生成 933482 字节（标本 662750 字节），SHA-256 不一致
+  逐节条目数比对（程序名 / 指令 / 标签 / 类型 / 形参 / 导出 / 调试）：
+    程序名          1 →       1
+    指令       16728 →   16728
+    标签表       1263 →    1263
+    类型表       1135 →    1135
+    形参表        265 →     265
+    导出表         35 →      35
+    调试信息      8204 →    8204
+    结论：七节条目数完全一致
+  payload 里调试节之前的 249653 字节（程序名 + 指令 + 标签 + 类型 + 形参 + 导出）：逐字节一致
+  （头部前 24 字节里的 payload 长度与校验和必然不同——调试节长度变了；剩下的 payload 逐字节一致，说明程序本体没变）
+  调试节里的 file 字段：标本 ['tmp/svmb-study/control.quad']
+                       重编 ['C:\\Users\\rabbitc\\AppData\\Local\\Temp\\tmp6lw8rqw7\\control.quad']
+  体积差：实测 +270732 字节；按“路径长度差 (33) × 调试条数 (8204)”预测 +270732 字节——吻合
+  也就是说：**调试节给每条指令都存了一份编译时的 .quad 路径**，换个目录编译就能让产物变大几百 KB。

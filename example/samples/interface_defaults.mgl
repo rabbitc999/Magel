@@ -1,0 +1,49 @@
+interface Score {
+    int64 value();
+    int64 doubled() { return self.value() * 2; }
+};
+
+struct BaseScore : Score, Iterator<int64> {
+    int64 number;
+    int64 value() { return number; }
+    BaseScore next() {
+        BaseScore result;
+        result.number = number + 1;
+        return result;
+    }
+    Option<int64> iterator(int64 index) {
+        if (index == 0) { return Option<int64>::Value(number); }
+        return Option<int64>::None;
+    }
+};
+
+struct CustomScore : Score {
+    int64 number;
+    int64 value() { return number; }
+    int64 doubled() { return number * 3; }
+};
+
+int64 main() {
+    BaseScore base;
+    base.number = 3;
+    CustomScore custom;
+    custom.number = 4;
+    println("defaults={} override={}", base.doubled(), custom.doubled());
+    println("chain={} iterator={}", base.next().next().doubled(),
+    base.next().iterator(0).unwrap());
+
+    Any first;
+    Any second;
+    BaseScore mut& basePointer = heap BaseScore;
+    CustomScore mut& customPointer = heap CustomScore;
+    basePointer->number = 5;
+    customPointer->number = 6;
+    first.set(&basePointer);
+    second.set(&customPointer);
+    Score mut& a = first.getReference();
+    Score mut& b = second.getReference();
+    println("dispatch={}/{}", a.doubled(), b.doubled());
+    delete basePointer;
+    delete customPointer;
+    return 0;
+}

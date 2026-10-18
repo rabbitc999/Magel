@@ -1,0 +1,94 @@
+/* crt.mgl —— 中国剩余定理（模数两两互素）：
+ *
+ *   x ≡ r[0] (mod m[0])，x ≡ r[1] (mod m[1])，……
+ *   → 输出最小的非负解，以及所有模数的乘积
+ *
+ *   ./magel samples/crt.mgl --input "3 2 3 3 5 2 7"
+ *   → x = 23 (mod 105)
+ *
+ * 做法是"两个两个合"：已知 x ≡ r1 (mod m1)，再加一条 x ≡ r2 (mod m2)，
+ * 令 x' = x + m1·k，解 m1·k ≡ r2 − x (mod m2)，用扩展欧几里得求逆元。
+ */
+
+/* 全局：ext_gcd 的"输出参数"（语言里没有引用） */
+int64 g_x = 0;
+int64 g_y = 0;
+int64 g_mod = 1;
+
+/* 扩展欧几里得（迭代版，绕开递归 + 局部变量的坑）：a·g_x + b·g_y = gcd(a, b) */
+int64 ext_gcd(int64 a, int64 b) {
+    int64 old_r = a;
+    int64 r = b;
+    int64 old_s = 1;
+    int64 s = 0;
+    int64 old_t = 0;
+    int64 t = 1;
+    while (r != 0) {
+        int64 q = old_r / r;
+        int64 next = old_r - q * r;
+        old_r = r;
+        r = next;
+        next = old_s - q * s;
+        old_s = s;
+        s = next;
+        next = old_t - q * t;
+        old_t = t;
+        t = next;
+    }
+    g_x = old_s;
+    g_y = old_t;
+    return old_r;
+}
+
+/* 合并两条同余式：x ≡ x1 (mod m1) 与 x ≡ r2 (mod m2)，返回新 x，新模数写进 g_mod */
+int64 merge(int64 x, int64 m1, int64 r2, int64 m2) {
+    int64 d = ext_gcd(m1, m2);          /* m1·g_x + m2·g_y = d */
+    int64 diff = r2 - x;
+    if (diff % d != 0) {
+        println("这两条同余式没有解");
+        g_mod = 0;
+        return 0;
+    }
+    int64 m2d = m2 / d;
+    int64 k = ((diff / d) * g_x) % m2d;
+    if (k < 0) {
+        k = k + m2d;
+    }
+    int64 result = x + m1 * k;
+    g_mod = m1 * m2d;
+    result = result % g_mod;
+    if (result < 0) {
+        result = result + g_mod;
+    }
+    return result;
+}
+
+int64 main() {
+    int64 count = 0;
+    count = inputInt();
+
+    int64 residues[8];
+    int64 moduli[8];
+    int64 i = 0;
+    while (i < count) {
+        int64 residue = 0;
+        int64 modulus = 0;
+        residue = inputInt();
+        modulus = inputInt();
+        residues[i] = residue;
+        moduli[i] = modulus;
+        i = i + 1;
+    }
+
+    int64 x = residues[0];
+    int64 m = moduli[0];
+    i = 1;
+    while (i < count) {
+        x = merge(x, m, residues[i], moduli[i]);
+        m = g_mod;
+        i = i + 1;
+    }
+
+    println("x = {} (mod {})", x, m);
+    return 0;
+}

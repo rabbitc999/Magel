@@ -1,0 +1,1 @@
+collection literals and key protocols OK

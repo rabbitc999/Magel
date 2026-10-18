@@ -1,0 +1,2 @@
+// 复合赋值沿用普通赋值的类型与可写性限制。
+int64 main() { auto value = (1, "text"); value.0 += 1; return 0; }

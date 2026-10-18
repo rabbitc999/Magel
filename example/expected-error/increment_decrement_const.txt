@@ -1,0 +1,1 @@
+magel：example/samples-error/increment_decrement_const.mgl 第 2 行第 1 列：不可变变量（const）的内容不能改：i

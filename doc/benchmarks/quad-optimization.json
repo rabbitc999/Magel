@@ -1,0 +1,302 @@
+{
+  "warmups_per_process": 1,
+  "repeats": 7,
+  "order": "alternate configuration order each round; one measured sample per process",
+  "timing": "sequential, loaded bytecode; input file read before timing; includes execution preparation and checksum output",
+  "services_comparison": false,
+  "baseline_compiler": "build\\quad-opt-before-magel.exe",
+  "results": {
+    "branches": {
+      "current": {
+        "logical_steps": 25500030,
+        "checksum": "-500000",
+        "counters": "register dispatches=5000003 entries=1225",
+        "command": [
+          "G:\\Desktop\\magel\\build\\quad-opt-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\branches",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\branches.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 26.2847,
+        "samples_ms": [
+          26.252,
+          26.2847,
+          26.8754,
+          26.1609,
+          26.7386,
+          26.2263,
+          26.3263
+        ]
+      },
+      "baseline": {
+        "logical_steps": 42500029,
+        "checksum": "-500000",
+        "counters": "register dispatches=9000001 entries=4000002",
+        "command": [
+          "G:\\Desktop\\magel\\build\\quad-opt-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\branches-baseline",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\branches.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 473.229,
+        "samples_ms": [
+          469.219,
+          468.437,
+          480.619,
+          473.229,
+          472.284,
+          474.487,
+          473.615
+        ]
+      }
+    },
+    "calls": {
+      "current": {
+        "logical_steps": 270030,
+        "checksum": "849915000",
+        "counters": "register dispatches=50005 entries=20005",
+        "command": [
+          "G:\\Desktop\\magel\\build\\quad-opt-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\calls",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\calls.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 8.1617,
+        "samples_ms": [
+          8.6542,
+          8.1553,
+          8.1617,
+          8.2448,
+          8.2002,
+          8.1415,
+          8.116
+        ]
+      },
+      "baseline": {
+        "logical_steps": 440029,
+        "checksum": "849915000",
+        "counters": "register dispatches=90004 entries=60003",
+        "command": [
+          "G:\\Desktop\\magel\\build\\quad-opt-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\calls-baseline",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\calls.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 12.4449,
+        "samples_ms": [
+          13.3433,
+          12.4149,
+          12.4449,
+          12.5237,
+          12.442,
+          12.5624,
+          12.3358
+        ]
+      }
+    },
+    "loop": {
+      "current": {
+        "logical_steps": 150000030,
+        "checksum": "49999995000000",
+        "counters": "register dispatches=30000005 entries=7329",
+        "command": [
+          "G:\\Desktop\\magel\\build\\quad-opt-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\loop",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\loop.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 128.933,
+        "samples_ms": [
+          128.933,
+          128.486,
+          131.441,
+          128.851,
+          127.962,
+          138.929,
+          162.732
+        ]
+      },
+      "baseline": {
+        "logical_steps": 320000029,
+        "checksum": "49999995000000",
+        "counters": "register dispatches=70000004 entries=40000003",
+        "command": [
+          "G:\\Desktop\\magel\\build\\quad-opt-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\loop-baseline",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\loop.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 4436.81,
+        "samples_ms": [
+          4423.61,
+          4421.12,
+          4410.43,
+          4583.55,
+          4436.81,
+          4497.48,
+          4437.08
+        ]
+      }
+    },
+    "structures": {
+      "current": {
+        "logical_steps": 892576,
+        "checksum": "18811 977069 32 31",
+        "counters": "register dispatches=200036 entries=78692",
+        "command": [
+          "G:\\Desktop\\magel\\build\\quad-opt-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\structures",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\structures.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 50.1667,
+        "samples_ms": [
+          50.8677,
+          50.1667,
+          50.5848,
+          50.3475,
+          49.6115,
+          49.2819,
+          49.538
+        ]
+      },
+      "baseline": {
+        "logical_steps": 948158,
+        "checksum": "18811 977069 32 31",
+        "counters": "register dispatches=212001 entries=87616",
+        "command": [
+          "G:\\Desktop\\magel\\build\\quad-opt-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\structures-baseline",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\structures.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 53.6478,
+        "samples_ms": [
+          53.6478,
+          52.8162,
+          54.1177,
+          53.7276,
+          53.3372,
+          53.2727,
+          53.848
+        ]
+      }
+    },
+    "transport": {
+      "current": {
+        "logical_steps": 1862857,
+        "checksum": "126000",
+        "counters": "register dispatches=437749 entries=128350",
+        "command": [
+          "G:\\Desktop\\magel\\build\\quad-opt-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\transport",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\transport.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 71.0699,
+        "samples_ms": [
+          87.3499,
+          70.3882,
+          71.3919,
+          71.0699,
+          70.8894,
+          71.0328,
+          71.4553
+        ]
+      },
+      "baseline": {
+        "logical_steps": 1989479,
+        "checksum": "126000",
+        "counters": "register dispatches=458951 entries=150710",
+        "command": [
+          "G:\\Desktop\\magel\\build\\quad-opt-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\transport-baseline",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\transport.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 75.9144,
+        "samples_ms": [
+          75.5939,
+          76.6461,
+          76.264,
+          75.4487,
+          75.9144,
+          80.1101,
+          74.6812
+        ]
+      }
+    }
+  },
+  "baseline_commit": "4dc5a7e6b6387da59eb170dc84e38490159cd980",
+  "change": "四元式与表达式结果优化；新旧编译器分别生成字节码，同一运行器执行"
+}

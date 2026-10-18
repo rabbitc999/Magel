@@ -1,0 +1,231 @@
+\chapter{第一个程序}
+\label{ch:01}
+
+万事开头难，但这一章只干三件事：把工具装好、跑出一行字、看懂这行字是怎么来的。
+
+读完这一章，你会有第一个能跑的程序，也会知道「出错」在 Magel 里长什么样——后者比前者重要，因为接下来每一章你都会用到它。
+
+\section{把工具装好}
+
+Magel 只有一个命令行程序，叫 \texttt{magel}，解释、编译、建工程、跑测试全在它里面。装它有两条路。
+
+这条路最短：用发布包。 拿到 \texttt{dist/\allowbreak{}magel-<\allowbreak{}版本>\allowbreak{}-<\allowbreak{}平台>\allowbreak{}-<\allowbreak{}架构>\allowbreak{}.\allowbreak{}tar.\allowbreak{}gz}，解开，把里面的 \texttt{bin/\allowbreak{}} 加进 PATH，就完事了。
+
+这条路最全：从源码构建。 适合想改编译器的人，也适合想看清内部的人：
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+sh gen.sh      # 用 IELR 从 magel.gram 生成前端
+make           # 构建 magel 与 libparser.a
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{gen.\allowbreak{}sh} 需要一份 \href{https://github.com/rabbitc999/ParseEngine}{ParseEngine} 文法生成器，细节见\href{https://github.com/rabbitc999/Magel/blob/master/doc/01-quickstart.md#1-安装}{快速开始}，这里不展开。
+
+装完了，敲一句：
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel help
+\end{lstlisting}
+\par
+\medskip
+
+屏幕上滚出一大串用法，就说明装好了。先别急着读完那串帮助——那是给有经验的人查的，跟着这本书走，你会一个个认识里面的选项。
+
+\begin{tip}{Windows 用户注意}
+程序名是 \texttt{magel.\allowbreak{}exe}。在 Git Bash / MSYS 里写 \texttt{.\allowbreak{}/\allowbreak{}magel} 能自动找到 \texttt{magel.\allowbreak{}exe}；光写 \texttt{magel} 会去 PATH 里找，可能找到的不是你当前目录这一份。本书后文一律写 \texttt{magel}，你自己敲的时候按环境补上 \texttt{.\allowbreak{}/\allowbreak{}}。
+\end{tip}
+
+\section{Hello, Magel}
+
+新建一个文件 \texttt{hello.\allowbreak{}mgl}，内容如下：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    println("Hello, Magel!");
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+Hello, Magel!
+\end{lstlisting}
+\par
+\medskip
+
+然后运行它：
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel run hello.mgl
+\end{lstlisting}
+\par
+\medskip
+
+屏幕上出现 \texttt{Hello,\allowbreak{} Magel!}，第一个程序就成了。
+
+\texttt{magel run} 这个写法看着啰嗦，其实 \texttt{run} 是可以省的——直接
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel hello.mgl
+\end{lstlisting}
+\par
+\medskip
+
+效果一样。但本书会一直写 \texttt{magel run}，因为把场景写出来在人多的时候少很多误会：\texttt{magel hello.\allowbreak{}mgl Alice} 和 \texttt{magel run hello.\allowbreak{}mgl Alice} 是同一件事，但 \texttt{magel check hello.\allowbreak{}mgl} 完全是另一件事。
+
+\section{逐行看懂它}
+
+就三行，一行一行来。
+
+第一行：\texttt{int64 main(\allowbreak{})\allowbreak{} \{}
+
+程序从哪里开始跑？从 \texttt{main} 开始。这个名字是定死的，不能改成 \texttt{Main}、\texttt{start} 或者别的什么。前面的 \texttt{int64} 是它返回的东西的类型，\texttt{(\allowbreak{})\allowbreak{}} 里现在空着，意思是它不接收参数。
+
+\texttt{int64} 是一种整数类型：能装 64 位的有符号整数，大概正负九百多万亿。为什么入口要返回一个整数？因为操作系统想看它：返回 \texttt{0} 表示「正常结束」。你在终端里看到的 \texttt{echo \$?}，读的就是这个值。
+
+第二行：\texttt{println(\allowbreak{}"Hello,\allowbreak{} Magel!")\allowbreak{};}
+
+\texttt{println} 是「打印一行」的意思：把括号里的东西写到屏幕上，末尾自动换行。它是 Magel 核心库里最常用的函数，不用 \texttt{import} 就能用。
+
+行尾那个 \texttt{;} 是分号，表示这句话说完了。跟 C、Java 一样。
+
+第三行：\texttt{return 0;}
+
+告诉操作系统「我正常结束了」，然后交还控制权。
+
+最后的花括号 \texttt{\}} 是 \texttt{main} 的结尾。
+
+看出来了吗——花括号划范围，分号断句，这和 C 系语言一模一样。这是 Magel 刻意这么做的：你已经会的东西，它不想让你重学一遍。
+
+\section{\texttt{run} 和 \texttt{check}}
+
+现在故意把程序弄坏一次，看看会发生什么。把第二行末尾的分号删掉：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 x = 1
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+再跑：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+语法错误：hello.mgl 第 3 行第 5 列：期望 条件(if) / 自增(++) / 自减(--) / 加号(+) 等 44 个之一，实际是 返回(return)
+   |
+ 3 |     return 0;
+   |     ~~~~~~
+\end{lstlisting}
+\par
+\medskip
+
+三件事值得注意：
+
+\begin{itemize}
+
+\item 它告诉你第 3 行第 5 列，还把出问题的那段源码抄给你、底下画上波浪线。第 1 行少了个分号，报的却是第 3 行——这是解析器在往后看：它读完第 2 行还在等一个分号，结果等来了 \texttt{return}，于是「在 \texttt{return} 这里」断了。看到报错位置和你以为的不一致时，先看报错位置的前面。
+
+\item 内部记号名被翻译成了人话：\texttt{条件(\allowbreak{}if)\allowbreak{}}、\texttt{返回(\allowbreak{}return)\allowbreak{}}。你没看错，就是中文。报错语言跟着系统走，可以用 \texttt{magel lang en} 或环境变量 \texttt{MAGEL\_LANG} 换掉。
+
+\item 那句「等 44 个之一」说了它在等什么。这种话现在看不懂没关系，以后你写多了，一眼就知道是「这里少了个东西」。
+
+\end{itemize}
+
+重要：这个错误是编译期就报出来的，程序一个字符都没执行。这就是 Magel 和其他很多语言不同的地方——能编译期拦住的，绝不放到运行期。
+
+如果你只想检查代码写没写对、不想真的跑它，用：
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel check hello.mgl
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{check} 做前两步（预处理、解析与类型检查），不执行、也不产出文件。写代码的时候这个命令用得比 \texttt{run} 还多：先 check 再 run，能省掉很多「跑到一半才发现写错了」的时间。
+
+\begin{tip}{提示}
+还有个更细的用法：\texttt{magel check hello.\allowbreak{}mgl json}，输出机器可读的 JSON 诊断。这是给编辑器插件用的，平时不用管。
+\end{tip}
+
+\section{那行字背后发生了什么}
+
+\texttt{magel run} 看着像「执行脚本」，其实它在一个进程里做完了四件事：
+
+\begin{enumerate}
+
+\item 预处理 —— 处理 \texttt{\%include}、\texttt{\%define}、\texttt{\%if} 这类指令（第 19 章讲）；
+
+\item 解析与类型检查 —— 语法、类型、引用的生命周期都在这里查，不通过就不执行；
+
+\item 降级为四元式 —— 把程序翻译成虚拟机认识的中间表示；
+
+\item 解释执行 —— 在当前进程里跑起来。
+
+\end{enumerate}
+
+前三步就是「编译」，第四步才是「执行」。把 \texttt{run} 换成别的场景词，前三步是一样的，只是最后一步换了形态：
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+你想 & 命令 \\
+\midrule
+直接跑起来 & \texttt{magel run src/\allowbreak{}main.\allowbreak{}mgl} \\
+只检查、不跑 & \texttt{magel check src/\allowbreak{}main.\allowbreak{}mgl} \\
+导出字节码 \texttt{.\allowbreak{}svmb} & \texttt{magel svmb src/\allowbreak{}main.\allowbreak{}mgl out build/\allowbreak{}app} \\
+导出本地可执行程序 & \texttt{magel aot src/\allowbreak{}main.\allowbreak{}mgl out build/\allowbreak{}app.\allowbreak{}exe} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+第四种（AOT）会把程序真的编译成本地机器码，得到一个不依赖 \texttt{magel} 的可执行文件。这三条路的区别在第 22 章讲；现在你只要知道：同一份源码，可以有好几种走法。
+
+\section{小结}
+
+这一章你认识了：
+
+\begin{itemize}
+
+\item 入口函数固定叫 \texttt{main}，返回 \texttt{int64} 或 \texttt{void}；\texttt{void main} 正常完成时退出码为 0，panic 仍失败；
+
+\item \texttt{println(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} 打印一行，来自核心库，不用 import；
+
+\item 分号断句、花括号划范围，和 C 系语言一样；
+
+\item \texttt{magel run} 跑，\texttt{magel check} 只查；
+
+\item 报错会给出行列位置和画了波浪线的源码，而且大多在编译期就报出来了。
+
+\end{itemize}
+
+还有一件事本章没讲：\texttt{println} 为什么不用 \texttt{import}？因为它属于核心模块 \texttt{lang}，而 \texttt{lang} 是自动加载的。别的模块就没这个待遇了，第 18 章会讲清楚。
+
+\section{下一步}
+
+光看「Hello, Magel」是学不会编程的。下一章我们写一个真的有用的小程序：键盘猜数字。它会用到变量、输入、循环和分支——四个最基础的积木，而且你会看到它们是怎么串在一起的。
+
+翻到\hyperref[ch:02]{第 2 章 猜数字}。

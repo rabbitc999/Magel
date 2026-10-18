@@ -1,0 +1,627 @@
+\chapter{字符串与文本}
+\label{ch:12}
+
+\texttt{String} 你从第 1 章就在用了，但一直没细讲。这一章补上——而且有个坑必须早点讲：
+
+\begin{tip}{提示}
+\texttt{String} 的下标和切片是按「字节」算的，不是按「字」算的。 对英文没差别，对中文会出事。
+\end{tip}
+
+先讲基本操作，再讲这个坑，最后是 \texttt{std:\allowbreak{}:\allowbreak{}text} 里那堆好用的工具。
+
+\section{\texttt{String} 是什么}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+String name = "Magel";
+\end{lstlisting}
+\par
+\medskip
+
+\begin{itemize}
+
+\item 双引号括起来的是 \texttt{String}；
+
+\item \texttt{String} 是 \texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}String} 的简写，属于核心模块 \texttt{lang}，不用 import；
+
+\item 里面有转义：\texttt{"\textbackslash\{\}n"}（换行）、\texttt{"\textbackslash\{\}t"}（制表）、\texttt{"\textbackslash\{\}""}（一个双引号）、\texttt{"\textbackslash\{\}\textbackslash\{\}"}（一个反斜杠）。
+
+\end{itemize}
+
+一个重要区别：单引号是 \texttt{char}（一个字符），双引号是 \texttt{String}。这两者不能混：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+char letter = 'M';
+// 一个字符
+String word = "Magel";
+// 一串字符
+\end{lstlisting}
+\par
+\medskip
+
+\section{拼接、下标、切片、长度}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    String first = "Magel";
+    String second = " 2026";
+    String joined = first + second;
+
+    println("{}", joined);
+    println("len={} 首个字符={}", len(joined), joined[0]);
+
+    println("切片 [0:5] = {}", joined[0: 5]);
+    println("切片 [5:]  = {}", joined[5:]);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+Magel 2026
+len=10 首个字符=M
+切片 [0:5] = Magel
+切片 [5:]  =  2026
+\end{lstlisting}
+\par
+\medskip
+
+\begin{itemize}
+
+\item \texttt{+} 拼接两个字符串。和数字的 \texttt{+} 不是一回事——\texttt{1 + "a"} 是编译错误。
+
+\item \texttt{s[\allowbreak{}i]\allowbreak{}} 取第 \texttt{i} 个「字符」（先按这个理解，12.4 节纠正它）。
+
+\item 切片写 \texttt{s[\allowbreak{}from:\allowbreak{}to]\allowbreak{}}，左闭右开：\texttt{joined[\allowbreak{}0:\allowbreak{}5]\allowbreak{}} 是下标 0、1、2、3、4 这五个。
+
+\item \texttt{s[\allowbreak{}from:\allowbreak{}]\allowbreak{}} 从 \texttt{from} 一直到结尾，\texttt{s[\allowbreak{}:\allowbreak{}to]\allowbreak{}} 从开头到 \texttt{to}。
+
+\item \texttt{len(\allowbreak{}s)\allowbreak{}} 是长度。
+
+\end{itemize}
+
+改单个字符也可以，但要赋一个 \texttt{char} 给它：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    String word = "hello";
+    word[0] =(char)72;
+    // 72 就是 'H'
+    println("{}", word);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+Hello
+\end{lstlisting}
+\par
+\medskip
+
+字符串是值（第 6 章），所以赋值得到的是副本：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+String original = "hello";
+String copy = original;
+copy[0] = (char)72;      // 只改 copy
+\end{lstlisting}
+\par
+\medskip
+
+这一点和第 6 章讲的一模一样：\texttt{original} 还是 \texttt{hello}。
+
+\section{格式化：\texttt{format}}
+
+\texttt{println} 的 \texttt{\{\}} 你已经很熟了。光要字符串、不要打印，用 \texttt{format}：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 count = 42;
+
+    // {} 按实参顺序填
+    println("{}", format("值={}，下一个是 {}", count, count + 1));
+
+    // {:x} / {:X} / {:b}：整数专用的进制样式
+    println("{}", format("255 的十六进制是 {:x}，二进制是 {:b}", 255, 255));
+
+    // 浮点要写成 {索引:小数位数F}，索引从 1 数起
+    println("{}", format("圆周率约 {1:2F}", 3.14159));
+
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+值=42，下一个是 43
+255 的十六进制是 ff，二进制是 11111111
+圆周率约 3.14
+\end{lstlisting}
+\par
+\medskip
+
+占位符的要点：
+
+\begin{itemize}
+
+\item \texttt{\{\}} 是位置占位符，按实参顺序填，类型由实参推导，字符串 / 整数 / 浮点都能填；
+
+\item \texttt{\{:\allowbreak{}x\}} / \texttt{\{:\allowbreak{}X\}} / \texttt{\{:\allowbreak{}b\}} 把整数按十六进制 / 大写十六进制 / 二进制打印——只有整数和 \texttt{bool} 能用这几个样式。写别的样式（比如 \texttt{\{:\allowbreak{}5\}}、\texttt{\{:\allowbreak{}03\}}）会直接报「整数和 bool 的格式仅支持 \texttt{:\allowbreak{}b}、\texttt{:\allowbreak{}x}、\texttt{:\allowbreak{}X}」；
+
+\item 浮点用 \texttt{\{索引:\allowbreak{}小数位数F\}}，索引 从 1 数起：\texttt{\{1:\allowbreak{}2F\}} 表示「把第 1 个实参保留 2 位小数」；
+
+\item 补零 / 对齐没有单独的样式，要用 \texttt{std:\allowbreak{}:\allowbreak{}text:\allowbreak{}:\allowbreak{}Text:\allowbreak{}:\allowbreak{}pad\allowbreak{}Start}（见 12.6 节）——想知道 \texttt{序号 007} 怎么写，翻到 12.6 节的那个例子。
+
+\end{itemize}
+
+\begin{tip}{提示}
+输出函数使用 \texttt{\{\}} 填入参数。字符串里的 \texttt{\%d} / \texttt{\%s} 只是普通文本，没有参数替换含义；要填入变量，请使用前面介绍的占位符。
+\end{tip}
+
+\texttt{+} 拼字符串、\texttt{format} 拼带变量的字符串、\texttt{println} 直接打印——三种手段各有各的位置。短的两三个用 \texttt{+}，带变量的用 \texttt{\{\}} 更清楚。
+
+\subsection{每个值都有 \texttt{to\allowbreak{}String(\allowbreak{})\allowbreak{}}}
+
+无参 \texttt{to\allowbreak{}String(\allowbreak{})\allowbreak{}} 返回这个值的文本，结果是独立拥有的 \texttt{String}。例如整数 \texttt{42} 得到 \texttt{"42"}，布尔值得到 \texttt{"true"} 或 \texttt{"false"}，字符串得到自身的值。结构体按声明顺序展示字段值，不加字段名或类型名前缀。
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+值的种类 & 默认表示 \\
+\midrule
+结构体的两个字符串字段 & \texttt{\{"one",\allowbreak{} "two"\}} \\
+List 或数组 & \texttt{[\allowbreak{}1,\allowbreak{} "two",\allowbreak{} true]\allowbreak{}} \\
+Set & \texttt{\{1,\allowbreak{} 2,\allowbreak{} 3\}} \\
+Map & \texttt{\{"count":\allowbreak{} 3,\allowbreak{} "name":\allowbreak{} "Magel"\}} \\
+元组 & \texttt{(\allowbreak{}1,\allowbreak{} "two",\allowbreak{} [\allowbreak{}1,\allowbreak{} "two",\allowbreak{} true]\allowbreak{})\allowbreak{}} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+以下程序同时展示结构体、异构容器和元组。Set、Map 的顺序沿用容器的迭代顺序。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Pair
+{
+    String left;
+    String right;
+};
+
+int64 main()
+{
+    Pair pair;
+    pair.left = "one";
+    pair.right = "two";
+    List<Any> list = {1, "two", true};
+    Set<int64> set = {3, 1, 2};
+    Map<String, Any> map = {"name": "Magel", "count": 3};
+    auto tuple = (1, "two", list);
+
+    println("{}", pair.toString());
+    println("{}", list.toString());
+    println("{}", set.toString());
+    println("{}", map.toString());
+    println("{}", tuple.toString());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+{"one", "two"}
+[1, "two", true]
+{1, 2, 3}
+{"count": 3, "name": "Magel"}
+(1, "two", [1, "two", true])
+\end{lstlisting}
+\par
+\medskip
+
+复合值里的字符串加双引号，双引号、反斜杠、换行等字符会转义；直接对字符串调用 \texttt{to\allowbreak{}String(\allowbreak{})\allowbreak{}} 不额外加引号。空 List 是 \texttt{[\allowbreak{}]\allowbreak{}}，空 Set 和 Map 是 \texttt{\{\}}。\texttt{Any} 展示其中实际保存的值，未装入值时显示 \texttt{Any(\allowbreak{})\allowbreak{}}。枚举按变体及载荷展示，例如 \texttt{Text(\allowbreak{}"payload")\allowbreak{}}。引用、函数和不透明宿主句柄只显示 \texttt{<\allowbreak{}类型>\allowbreak{}}，不会为显示而解引用或获取所有权。
+
+\subsection{自定义方法与字符串转换共用一套协议}
+
+结构体提供 \texttt{String to\allowbreak{}String(\allowbreak{})\allowbreak{}} 后，\texttt{String text =\allowbreak{} value;} 和缺少专用显式转换时的 \texttt{cast<\allowbreak{}String>\allowbreak{}(\allowbreak{}value)\allowbreak{}} 可复用它，无须再手写一个重复的 \texttt{Implicit\allowbreak{}Convert<\allowbreak{}String>\allowbreak{}}。反过来，已实现 \texttt{Implicit\allowbreak{}Convert<\allowbreak{}String>\allowbreak{}} 的类型会自动获得转调该实现的无参 \texttt{to\allowbreak{}String(\allowbreak{})\allowbreak{}}。只提供 \texttt{String to\allowbreak{}String(\allowbreak{}String style)\allowbreak{}} 时，无参版本传入空样式。默认实现也可满足标准 \texttt{To\allowbreak{}String} 和 \texttt{Implicit\allowbreak{}Convert<\allowbreak{}String>\allowbreak{}} 泛型约束。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Named
+{
+    String name;
+    String toString() { return "name=" + self.name; }
+};
+
+int64 main()
+{
+    Named value;
+    value.name = "Magel";
+    String text = value;
+    println("{}", text);
+    println("{}", cast<String>(value));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+name=Magel
+name=Magel
+\end{lstlisting}
+\par
+\medskip
+
+若三个入口都由用户显式定义，各自实现优先：\texttt{value.\allowbreak{}to\allowbreak{}String(\allowbreak{})\allowbreak{}} 和结构体的 \texttt{\{\}} 格式化使用 \texttt{to\allowbreak{}String}；隐式字符串转换使用 \texttt{implicit\allowbreak{}Convert}；\texttt{cast<\allowbreak{}String>\allowbreak{}} 优先使用 \texttt{explicit\allowbreak{}Convert}。编译器只补缺失的桥接方法，避免互相调用形成递归。
+
+默认转换不消耗源值，也不依赖反射。临时源值在转换完成后正常清理。容器或聚合内部的自定义 \texttt{to\allowbreak{}String} 必须只读；容器遍历通过快照隔离用户回调的重入修改，错误仍保留原始诊断。默认递归展示有深度保护，重复对象路径显示 \texttt{<\allowbreak{}cycle>\allowbreak{}}。这套表示用于阅读和调试，不作为可逆序列化格式。完整验证例见仓库的 \texttt{example/\allowbreak{}samples/\allowbreak{}value\_text.\allowbreak{}mgl}。
+
+\section{下标是按字节算的}
+
+这一节是本章的重点。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    String s = "中文";
+    println("len(s) = {}", len(s));
+    println("第 0 个字节 = {}", (int64)s[0]);
+    println("第 3 个字节 = {}", (int64)s[3]);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+len(s) = 6
+第 0 个字节 = 228
+第 3 个字节 = 230
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{"中文"} 明明是两个字，\texttt{len} 却说 6。
+
+原因是 Magel 的字符串在内存里是 UTF-8 字节串，而 UTF-8 里一个汉字占 3 个字节。所以：
+
+\begin{itemize}
+
+\item \texttt{"中文"} = 6 个字节；
+
+\item \texttt{"Magel"} = 5 个字节（和字符数相同，因为都是 ASCII）；
+
+\item \texttt{len}、下标、切片，都按字节算。
+
+\end{itemize}
+
+\texttt{(\allowbreak{}int64)\allowbreak{}s[\allowbreak{}0]\allowbreak{}} 得到的 \texttt{228}（十六进制 \texttt{0x\allowbreak{}E4}）是「中」这个字的第一个字节，\texttt{(\allowbreak{}int64)\allowbreak{}s[\allowbreak{}3]\allowbreak{}} 得到的 \texttt{230}（\texttt{0x\allowbreak{}E6}）是「文」的第一个字节。
+
+\subsection{取到「半个字」会怎样}
+
+\texttt{s[\allowbreak{}1]\allowbreak{}}、\texttt{s[\allowbreak{}2]\allowbreak{}} 落在「中」这个字中间，语言不允许你这么读：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：运行期错误：字符串下标落在多字节字符中间（String 按字节算）
+出错位置：hello.mgl:2（main）
+调用栈（外 → 内）：
+  main  hello.mgl:2 [thread 0 coroutine 0 ip 41]
+\end{lstlisting}
+\par
+\medskip
+
+切片同理：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：运行期错误：切片端点落在多字节字符中间（String 的切片按字节算）
+\end{lstlisting}
+\par
+\medskip
+
+注意这不报「越界」而是报「落在了多字节字符中间」——说明它知道你在处理 UTF-8，只是拒绝给你半个字。这是个明确的设计：要么给你一个完整的字节序列边界，要么明确拒绝，不给你一段乱码。
+
+\subsection{所以中文怎么按字处理？}
+
+别用下标切中文。 三种办法：
+
+\begin{enumerate}
+
+\item 整个串用：\texttt{println(\allowbreak{}"\{\}",\allowbreak{} s)\allowbreak{}} 打印是对的——因为整串的边界永远合法；
+
+\item 按分隔符切：用 \texttt{std:\allowbreak{}:\allowbreak{}text:\allowbreak{}:\allowbreak{}Text:\allowbreak{}:\allowbreak{}split(\allowbreak{}s,\allowbreak{} "，")\allowbreak{}}（12.6 节）。分隔符本身是完整的字符，切出来的每一段边界也合法；
+
+\item 遍历要自己算：想知道 UTF-8 里每个字有几个字节，看首字节的高位就行：| 首字节范围 | 这个字占几字节 | | --- | --- | | \texttt{0x00}–\texttt{0x7F} | 1（ASCII） | | \texttt{0x\allowbreak{}C0}–\texttt{0x\allowbreak{}DF} | 2 | | \texttt{0x\allowbreak{}E0}–\texttt{0x\allowbreak{}EF} | 3（含常见汉字） | | \texttt{0x\allowbreak{}F0}–\texttt{0x\allowbreak{}F7} | 4 | 按这张表跳过续字节（\texttt{0x80}–\texttt{0x\allowbreak{}BF}），就能一个个字地走。
+
+\end{enumerate}
+
+简单说：处理中文文本，用 \texttt{std:\allowbreak{}:\allowbreak{}text} 那些按字符/子串工作的函数，不要自己拿下标去数。
+
+\section{比较}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    println("{} {} {}", "abc" == "abd", "abc" < "abd", "abc" > "abd");
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+0 1 0
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{=\allowbreak{}=\allowbreak{}} / \texttt{!=\allowbreak{}} / \texttt{<\allowbreak{}} / \texttt{<\allowbreak{}=\allowbreak{}} / \texttt{>\allowbreak{}} / \texttt{>\allowbreak{}=\allowbreak{}} 都能用在字符串上。比较用的是字典序（按字节比大小）。
+
+两个实用的写法（片段，\texttt{name} / \texttt{expected} 假定已存在）：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+if (name == "")
+{
+    println("名字是空的");
+}
+if (name != expected)
+{
+    println("不匹配");
+}
+\end{lstlisting}
+\par
+\medskip
+
+判空就用 \texttt{=\allowbreak{}=\allowbreak{} ""}，没有 \texttt{is\_empty} 之类的专用函数。
+
+\section{\texttt{std:\allowbreak{}:\allowbreak{}text}：文本工具箱}
+
+切分、查找、大小写、去空白这些活儿在 \texttt{std:\allowbreak{}:\allowbreak{}text:\allowbreak{}:\allowbreak{}Text} 里。要 \texttt{import}：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+import std::text;
+
+int64 main()
+{
+    String raw = "  Hello, Magel!  ";
+
+    println("[{}]", std::text::Text::trim(raw));
+    println("{} {}", std::text::Text::toUpper("abc"), std::text::Text::toLower("ABC"));
+    println("{} {}", std::text::Text::find("hello", "ll"), std::text::Text::contains("hello", "lo"));
+    println("{} {}", std::text::Text::startsWith("hello", "he"),
+        std::text::Text::endsWith("hello", "lo"));
+
+    List<String> parts = std::text::Text::split("a,b,c", ",");
+    println("{} -> {}", parts.len(), std::text::Text::join(parts, "-"));
+
+    println("[{}]", std::text::Text::replace("aaa", "a", "b"));
+    println("[{}][{}]", std::text::Text::padStart("7", 3, (char)48),
+        std::text::Text::repeat("ab", 3));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+[Hello, Magel!]
+ABC abc
+2 1
+1 1
+3 -> a-b-c
+[bbb]
+[007][ababab]
+\end{lstlisting}
+\par
+\medskip
+
+对照着记：
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+函数 & 作用 & 备注 \\
+\midrule
+\texttt{trim(\allowbreak{}s)\allowbreak{}} & 去掉两端空白 & 还有 \texttt{ltrim} / \texttt{rtrim} 只去一边 \\
+\texttt{to\allowbreak{}Upper} / \texttt{to\allowbreak{}Lower} & 大小写转换 & 只对 ASCII 字母有效 \\
+\texttt{find(\allowbreak{}s,\allowbreak{} needle)\allowbreak{}} & 找子串位置 & 找不到返回 \texttt{-1}；\texttt{rfind} 从右找 \\
+\texttt{contains(\allowbreak{}s,\allowbreak{} needle)\allowbreak{}} & 子串在不在 & 返回 \texttt{bool} \\
+\texttt{starts\allowbreak{}With} / \texttt{ends\allowbreak{}With} & 前后缀判断 &  \\
+\texttt{split(\allowbreak{}s,\allowbreak{} sep)\allowbreak{}} & 按分隔符切开 & 返回 \texttt{List<\allowbreak{}String>\allowbreak{}} \\
+\texttt{join(\allowbreak{}parts,\allowbreak{} sep)\allowbreak{}} & 用分隔符接起来 &  \\
+\texttt{replace(\allowbreak{}s,\allowbreak{} from,\allowbreak{} to)\allowbreak{}} & 替换所有出现 &  \\
+\texttt{pad\allowbreak{}Start(\allowbreak{}s,\allowbreak{} width,\allowbreak{} fill)\allowbreak{}} & 左边补到指定宽度 & 还有 \texttt{pad\allowbreak{}End} \\
+\texttt{repeat(\allowbreak{}s,\allowbreak{} count)\allowbreak{}} & 重复 &  \\
+\texttt{char\allowbreak{}At(\allowbreak{}s,\allowbreak{} i)\allowbreak{}} & 按字节取字符 & 和 \texttt{s[\allowbreak{}i]\allowbreak{}} 等价 \\
+\texttt{compare(\allowbreak{}a,\allowbreak{} b)\allowbreak{}} & 比大小 & 返回整数，不用管具体值 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{tip}{提示}
+\texttt{pad\allowbreak{}Start(\allowbreak{}"7",\allowbreak{} 3,\allowbreak{} (\allowbreak{}char)\allowbreak{}48)\allowbreak{}} 里那个 \texttt{(\allowbreak{}char)\allowbreak{}48} 是字符 \texttt{'0'}。补位字符要传 \texttt{char}，不是 \texttt{String}——这是类型严格带来的小麻烦，写一次就记住了。
+\end{tip}
+
+\section{字符串是值：别在循环里拼}
+
+\texttt{String} 是值，每次 \texttt{+} 都在造一根新字符串。所以这样写会很慢（片段，\texttt{lines} 假定已存在）：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+String text = "";
+for (String line in lines)
+{
+    text = text + line + "\n";
+    // 每轮都复制一遍已经拼好的部分
+}
+\end{lstlisting}
+\par
+\medskip
+
+数据量小的时候无所谓。上千行的时候，代价是平方级的。
+
+怎么办？Magel 没有 \texttt{String\allowbreak{}Builder} 这种类，但有更顺手的办法：把要拼的东西先塞进 \texttt{List<\allowbreak{}String>\allowbreak{}}，最后 \texttt{join} 一次。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+import std::text;
+
+int64 main()
+{
+    List<String> lines;
+    lines.push("第一行");
+    lines.push("第二行");
+    lines.push("第三行");
+
+    String text = std::text::Text::join(lines, "\n");
+    println("{}", text);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+第一行
+第二行
+第三行
+\end{lstlisting}
+\par
+\medskip
+
+一条经验：循环里拼字符串，先攒 \texttt{List}，出循环再 \texttt{join}。
+
+\subsection{插值字符串}
+
+插值字符串写成 \texttt{f".\allowbreak{}.\allowbreak{}.\allowbreak{}"}，只有 f 后紧跟双引号才识别为插值，单独的 f 仍是标识符。花括号里是完整表达式，每个实参按顺序求值一次，最终沿用 \texttt{format} 的语义。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 count = 3;
+    String text = f"count={count + 1}, {f"inner={count}"}, \{literal\}";
+    println("{}", text);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+count=4, inner=3, {literal}
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{\textbackslash\{\}\{} 和 \texttt{\textbackslash\{\}\}} 输出字面大括号。嵌套插值由内到外展开；没有花括号包围的文本不求值。
+
+\subsection{整行输入和文件文本}
+
+\texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}read\allowbreak{}Line(\allowbreak{})\allowbreak{}} 读取一行，保留空格和空行，去掉 LF/CRLF；EOF 返回空串。\texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}read\allowbreak{}Lines(\allowbreak{}int32 N)\allowbreak{}} 最多读 N 行，用 LF 连接，EOF 提前结束，不额外追加行末换行。另有 int64 重载接受普通整数实参，检查后转为 int32。N 为零时不读输入，负数或超出 int32 正范围触发错误。\texttt{String} 不能包含内嵌零字节。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    String name = std::lang::readLine();
+    String notes = std::lang::readLines(2);
+    println("name=[{}], notes=[{}]", name, notes);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{input\allowbreak{}Line(\allowbreak{})\allowbreak{}} 和 \texttt{input(\allowbreak{}variable)\allowbreak{}} 按空白取项。\texttt{--input} 已按空白切分，每项供新接口视为一行；要保留真实空格和空行，使用终端或标准输入管道。
+
+导入 \texttt{std:\allowbreak{}:\allowbreak{}io} 后，\texttt{File\allowbreak{}Stream.\allowbreak{}read\allowbreak{}String(\allowbreak{}count)\allowbreak{}} 从当前游标读至多 count 个字节，\texttt{read\allowbreak{}Line(\allowbreak{})\allowbreak{}} 读一行，\texttt{read\allowbreak{}All\allowbreak{}String(\allowbreak{}max\allowbreak{}Bytes)\allowbreak{}} 读到 EOF。三者返回 \texttt{Result<\allowbreak{}String,\allowbreak{}Io\allowbreak{}Error>\allowbreak{}}；全读默认预算 16 MiB，保留文件换行字节，零字节文本报错。已有按路径的 \texttt{read\allowbreak{}All\allowbreak{}Text(\allowbreak{}path)\allowbreak{}} 继续可用。直接持有 File 句柄时有 \texttt{file\allowbreak{}Read\allowbreak{}String}、\texttt{file\allowbreak{}Read\allowbreak{}Line}、\texttt{file\allowbreak{}Read\allowbreak{}All\allowbreak{}String} 包装，错误会 panic。
+
+完整验证程序见 \href{https://github.com/rabbitc999/Magel/blob/master/example/samples/std_read_lines.mgl}{行输入} 与 \href{https://github.com/rabbitc999/Magel/blob/master/example/samples/std_file_strings.mgl}{文件读取}。
+
+\section{小结}
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.110\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.870\linewidth-2\tabcolsep\relax}}
+\toprule
+你会了 & 关键点 \\
+\midrule
+\endhead
+字面量 & 双引号 \texttt{"…"}；单引号是 \texttt{char} \\
+拼接 & \texttt{+}；数字和字符串不能混着拼 \\
+下标 / 切片 & \texttt{s[\allowbreak{}i]\allowbreak{}}、\texttt{s[\allowbreak{}a:\allowbreak{}b]\allowbreak{}}（左闭右开）、\texttt{s[\allowbreak{}a:\allowbreak{}]\allowbreak{}}、\texttt{s[\allowbreak{}:\allowbreak{}b]\allowbreak{}} \\
+长度 & \texttt{len(\allowbreak{}s)\allowbreak{}} \\
+按字节 & \texttt{len} / 下标 / 切片都按字节算；中文一个字 3 字节 \\
+半个字 & 下标或切片落在多字节字符中间 \ensuremath{\rightarrow} 运行期错误 \\
+格式化 & \texttt{format}：\texttt{\{\}} 自动填、\texttt{\{:\allowbreak{}x\}} 整数进制、\texttt{\{1:\allowbreak{}2F\}} 浮点位数 \\
+比较 & \texttt{=\allowbreak{}=\allowbreak{}} \texttt{!=\allowbreak{}} \texttt{<\allowbreak{}} \texttt{>\allowbreak{}}，字典序 \\
+判空 & \texttt{s =\allowbreak{}=\allowbreak{} ""} \\
+工具箱 & \texttt{import std:\allowbreak{}:\allowbreak{}text;} —— \texttt{trim} \texttt{split} \texttt{join} \texttt{replace} \texttt{find} \texttt{to\allowbreak{}Upper} \texttt{pad\allowbreak{}Start} … \\
+性能 & 循环里别用 \texttt{+} 拼，攒 \texttt{List} 再 \texttt{join} \\
+\bottomrule
+\end{longtable}
+}
+
+\section{下一步}
+
+第四部分到这儿结束了：结构体、枚举、容器、字符串，你有了组织数据的所有工具。
+
+第五部分讲抽象——怎么写出「不关心具体类型」的代码。第一个是接口，它解决「一堆类型都有同一个动作」的问题。
+
+翻到\hyperref[ch:13]{第 13 章 接口与运行期多态}。

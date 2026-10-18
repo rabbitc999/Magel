@@ -1,0 +1,4 @@
+$macro CALL(first, ...rest)
+std::lang::println(first, rest);
+$end_macro
+int64 main() { $CALL() return 0; }

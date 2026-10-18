@@ -1,0 +1,1 @@
+int64 main() { int64 a = 1; int64 mut& view = &a; int64 mut& next = &view + 1; return 0; }

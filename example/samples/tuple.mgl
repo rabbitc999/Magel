@@ -1,0 +1,35 @@
+(int64, String) makePair(int64 value)
+{
+    return (value, "made");
+}
+
+int64 sum((int64, int64) value)
+{
+    return value.0 + value.1;
+}
+
+struct Envelope
+{
+    (int64, String) content;
+};
+
+int64 main()
+{
+    auto mixed = (7, 2.5, "hello");
+    println("{} {} {}", mixed.0, mixed.1, mixed.2);
+
+    (int64, String) pair = makePair(9);
+    println("{} {}", pair.0, pair.1);
+
+    auto nested = ((1, 2), false);
+    println("{} {} {}", (nested.0).0, (nested.0).1, nested.1);
+
+    (int64, int64) replaced = (3, 4);
+    replaced = (5, 6);
+    println("{} {}", replaced.0, replaced.1);
+
+    Envelope envelope;
+    envelope.content = pair;
+    println("{} {} {}", sum(replaced), envelope.content.0, envelope.content.1);
+    return 0;
+}

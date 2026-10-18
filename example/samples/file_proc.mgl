@@ -1,0 +1,20 @@
+int64 main()
+{
+    File out = fopen("tmp/magel_file_proc.txt", "w");
+    fwrite(out, "alpha\nbeta\n");
+    fclose(out);
+
+    File input_file = fopen("tmp/magel_file_proc.txt", "r");
+    String first = fread(input_file);
+    String second = fread(input_file);
+    println("{}|{}|{}", first, second, feof(input_file));
+    String tail = fread(input_file);
+    println("eof={} empty={}", feof(input_file), len(tail));
+    fclose(input_file);
+
+    Process child = prun("echo magel-proc");
+    String line = pread(child);
+    int64 code = pclose(child);
+    println("{}:{}", line, code);
+    return 0;
+}

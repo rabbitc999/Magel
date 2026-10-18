@@ -1,0 +1,9 @@
+int64 main() {
+    String first=std::lang::readLine();
+    String rest=std::lang::readLines(3);
+    println("[{}]",first);
+    println("[{}]",rest);
+    assert(std::lang::readLines(0)=="");
+    assert(std::lang::readLine()=="");
+    return 0;
+}

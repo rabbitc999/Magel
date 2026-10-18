@@ -1,0 +1,11 @@
+swap x=2 y=1 tmp=111
+pair=7
+pair=8
+outer=41
+inner=40
+one=3
+two=7
+sum=18
+replace p=20 q=10
+literal=$0 + $2
+show="$0"

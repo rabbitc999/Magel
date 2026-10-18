@@ -1,0 +1,94 @@
+module std::datetime;
+
+/** UTC 民用时间，使用公历；有效年份为 1 到 9999，不表示闰秒。 */
+struct DateTime { int64 year; int64 month; int64 day; int64 hour; int64 minute; int64 second; };
+enum DateTimeError { InvalidDate, InvalidTime, InvalidFormat, OutOfRange, ClockUnavailable };
+/** 公历闰年规则。 */
+bool isLeapYear(int64 year) { return year%4==0 && (year%100!=0 || year%400==0); }
+/** 返回月份天数；非法月份返回零。 */
+int64 daysInMonth(int64 year, int64 month) {
+    if (month<1 || month>12) { return 0; }
+    if (month==2) { if (isLeapYear(year)) { return 29; } return 28; }
+    if (month==4 || month==6 || month==9 || month==11) { return 30; }
+    return 31;
+}
+/** 将 UTC 日期转换为 Unix 秒；不依赖宿主时区。 */
+Result<int64,DateTimeError> toUnixSeconds(DateTime value) {
+    if (value.year<1 || value.year>9999 || value.day<1 || value.day>daysInMonth(value.year,value.month)) {
+        return Result<int64,DateTimeError>::Err(DateTimeError::InvalidDate);
+    }
+    if (value.hour<0 || value.hour>23 || value.minute<0 || value.minute>59 || value.second<0 || value.second>59) {
+        return Result<int64,DateTimeError>::Err(DateTimeError::InvalidTime);
+    }
+    // 400 年公历周期换算，依据 Howard Hinnant 的 civil calendar 算法。
+    int64 year=value.year; if (value.month<=2) { year=year-1; }
+    int64 era=year/400; int64 y=year-era*400;
+    int64 month=value.month-3; if (value.month<=2) { month=value.month+9; }
+    int64 days=era*146097+y*365+y/4-y/100+(153*month+2)/5+value.day-1-719468;
+    return Result<int64,DateTimeError>::Ok(days*86400+value.hour*3600+value.minute*60+value.second);
+}
+/** 将 Unix 秒转换为 UTC 日期，负数表示 1970 年之前。 */
+Result<DateTime,DateTimeError> fromUnixSeconds(int64 seconds) {
+    if (seconds< -62135596800 || seconds>253402300799) { return Result<DateTime,DateTimeError>::Err(DateTimeError::OutOfRange); }
+    int64 days=seconds/86400; int64 remainder=seconds%86400;
+    if (remainder<0) { days=days-1; remainder=remainder+86400; }
+    int64 z=days+719468; int64 era=z/146097; int64 doe=z-era*146097;
+    int64 y=(doe-doe/1460+doe/36524-doe/146096)/365;
+    int64 dayOfYear=doe-(365*y+y/4-y/100); int64 mp=(5*dayOfYear+2)/153;
+    DateTime result; result.day=dayOfYear-(153*mp+2)/5+1;
+    result.month=mp+3; if (mp>=10) { result.month=mp-9; }
+    result.year=y+era*400; if (result.month<=2) { result.year=result.year+1; }
+    result.hour=remainder/3600; result.minute=(remainder%3600)/60; result.second=remainder%60;
+    return Result<DateTime,DateTimeError>::Ok(result);
+}
+/** @brief 输出固定位数的非负十进制字段。 */
+String dateDigits(int64 value, int64 width) {
+    String result="";
+    for (int64 i=0;i<width;i=i+1) { result=format("{}",(char)(48+value%10))+result; value=value/10; }
+    return result;
+}
+/** 输出严格的 YYYY-MM-DDTHH:MM:SSZ 文本。 */
+Result<String,DateTimeError> formatUtc(DateTime value) {
+    int64 checked=toUnixSeconds(value)?;
+    return Result<String,DateTimeError>::Ok(dateDigits(value.year,4)+"-"+dateDigits(value.month,2)+"-"+
+        dateDigits(value.day,2)+"T"+dateDigits(value.hour,2)+":"+dateDigits(value.minute,2)+":"+dateDigits(value.second,2)+"Z");
+}
+/** 解析 UTC ISO 8601 秒精度文本，不接受时区偏移或隐式本地时区。 */
+Result<DateTime,DateTimeError> parseUtc(String text) {
+    List<uint8> input=stringBytes(text);
+    if (len(text)!=20) { return Result<DateTime,DateTimeError>::Err(DateTimeError::InvalidFormat); }
+    if ((char)input[4]!='-' || (char)input[7]!='-' || (char)input[10]!='T' || (char)input[13]!=':' || (char)input[16]!=':' || (char)input[19]!='Z') {
+        return Result<DateTime,DateTimeError>::Err(DateTimeError::InvalidFormat);
+    }
+    List<int64> fields; int64 current=0;
+    for (int64 i=0;i<20;i=i+1) {
+        if (i==4 || i==7 || i==10 || i==13 || i==16 || i==19) { fields.push(current); current=0; }
+        else {
+            if ((char)input[i]<'0' || (char)input[i]>'9') { return Result<DateTime,DateTimeError>::Err(DateTimeError::InvalidFormat); }
+            current=current*10+(int64)(char)input[i]-48;
+        }
+    }
+    DateTime value; value.year=fields[0]; value.month=fields[1]; value.day=fields[2];
+    value.hour=fields[3]; value.minute=fields[4]; value.second=fields[5];
+    int64 checked=toUnixSeconds(value)?;
+    return Result<DateTime,DateTimeError>::Ok(value);
+}
+/** 在 UTC 时间上增加秒数，越界返回错误，不发生整数回绕。 */
+Result<DateTime,DateTimeError> addSeconds(DateTime value, int64 delta) {
+    int64 seconds=toUnixSeconds(value)?;
+    if (delta< -62135596800-seconds || delta>253402300799-seconds) { return Result<DateTime,DateTimeError>::Err(DateTimeError::OutOfRange); }
+    return fromUnixSeconds(seconds+delta);
+}
+/** 增加固定 86400 秒的一天，适用于 UTC。 */
+Result<DateTime,DateTimeError> addDays(DateTime value, int64 days) {
+    if (days< -3652059 || days>3652059) { return Result<DateTime,DateTimeError>::Err(DateTimeError::OutOfRange); }
+    return addSeconds(value,days*86400);
+}
+/** @brief 宿主 UTC 时钟；返回有效 Unix 秒或超范围哨兵。 */
+int64 __utcNow();
+/** 读取宿主当前 UTC 时间；无时钟宿主应报告不可用。 */
+Result<DateTime,DateTimeError> nowUtc() {
+    int64 seconds=__utcNow();
+    if (seconds< -62135596800 || seconds>253402300799) { return Result<DateTime,DateTimeError>::Err(DateTimeError::ClockUnavailable); }
+    return fromUnixSeconds(seconds);
+}

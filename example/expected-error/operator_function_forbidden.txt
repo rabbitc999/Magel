@@ -1,0 +1,1 @@
+magel：example/samples-error/operator_function_forbidden.mgl 第 3 行第 1 列：`operator+(...)` 自由函数式运算符重载已禁用；请实现 Add<R,T> 这类左接口或 RightAdd<R,T> 这类右接口

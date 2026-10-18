@@ -1,0 +1,50 @@
+/*
+ * Minimal reproduction: a recursive function that keeps an owning local
+ * struct copy is corrupted across the recursive call.
+ *
+ * Expected (correct):  post idx=4 kind=3 cnt=2 text=+
+ * Actual on this toolchain: the local struct's fields read back as 0/"" after
+ * the recursive call returns, so the loop stops early and the node's opcode is
+ * never emitted.  Plain int64 locals are NOT affected.
+ */
+
+struct Node {
+    int64 kind;
+    float64 num;
+    String text;
+    int64 a;
+    int64 b;
+};
+
+void walk(List<Node> const& nodes, List<int64> const& kids, int64 idx) {
+    Node n = nodes[idx];
+    println("visit idx={} kind={} a={} b={}", idx, n.kind, n.a, n.b);
+    for (int64 i = 0; i < n.b; i = i + 1) {
+        walk(nodes, kids, kids[n.a + i]);
+    }
+    println("post idx={} kind={} b={} text={}", idx, n.kind, n.b, n.text);
+}
+
+Node mk(int64 kind, float64 num, String text, int64 a, int64 b) {
+    Node n;
+    n.kind = kind;
+    n.num = num;
+    n.text = text;
+    n.a = a;
+    n.b = b;
+    return n;
+}
+
+int64 main() {
+    List<Node> nodes;
+    List<int64> kids;
+    nodes.push(mk(0, 3.0, "", 0, 0));
+    nodes.push(mk(0, 4.0, "", 0, 0));
+    nodes.push(mk(0, 2.0, "", 0, 0));
+    int64 s1 = kids.len(); kids.push(1); kids.push(2);
+    nodes.push(mk(3, 0.0, "*", s1, 2));
+    int64 s2 = kids.len(); kids.push(0); kids.push(3);
+    nodes.push(mk(3, 0.0, "+", s2, 2));
+    walk(&nodes, &kids, 4);
+    return 0;
+}

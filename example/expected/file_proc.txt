@@ -1,0 +1,3 @@
+alpha|beta|0
+eof=1 empty=0
+magel-proc:0

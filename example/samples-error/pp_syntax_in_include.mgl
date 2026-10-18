@@ -1,0 +1,6 @@
+/* 被包含文件里的语法错误：报错指向 broken.mgl 的那一行（行号映射） */
+%include "include/broken.mgl"
+
+int64 main() {
+    return 0;
+}

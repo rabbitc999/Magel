@@ -1,0 +1,1 @@
+magel：example/samples-error/compound_assignment_tuple.mgl 第 2 行第 53 列：元组元素是只读的；请构造新元组后给整个变量赋值

@@ -1,0 +1,53 @@
+/* operator_symmetry.mgl —— 运算符重载的对称交换与比较对偶推导。
+ *
+ * 1) 交换律：只声明了 `Add` 的类型，`5 + a` 与 `a + 5` 一样能用（`+ * == != & | ^`）。
+ * 2) 对偶：只声明了 `Less` 时，`5 > a`（对偶）、`a >= 5`（取反）、`5 <= a`（对偶+取反）
+ *    都推得出来；`a > 5` 推不出来 —— 那要 `int64 < Vec`，得给 Vec 补 `Greater`。
+ * 3) 显式 `RightXxx` 优先：`5 + m` 走 `RightAdd`，不会被交换律顶掉。
+ * 4) 不对称的运算符（`-` / `/` / `%` / 移位）不参与交换，反向必须显式声明。
+ */
+
+struct Vec : Add<int64, int64>, Subtract<int64, int64>, Less<bool, int64> {
+    int64 v;
+
+    int64 leftAdd(int64 other) { return self.v + other; }
+    int64 leftSub(int64 other) { return self.v - other; }
+    bool leftLess(int64 other) { return self.v < other; }
+};
+
+struct Money : Add<int64, int64>, RightAdd<int64, int64> {
+    int64 cents;
+
+    int64 leftAdd(int64 other) { return self.cents + other; }    /* m + 5 */
+    int64 rightAdd(int64 other) { return other - self.cents; }   /* 5 + m：显式右接口 */
+};
+
+struct Key : Equal<bool, int64> {
+    int64 v;
+
+    bool leftEqual(int64 other) { return self.v == other; }
+};
+
+int64 main() {
+    Vec a;
+    a.v = 10;
+    println("a + 5 = {}", a + 5);
+    println("5 + a = {}", 5 + a);      /* 交换律推导 */
+    println("a - 5 = {}", a - 5);
+    println("a < 5 = {}", a < 5);
+    println("5 > a = {}", 5 > a);      /* 对偶：等价于 a < 5 */
+    println("a >= 5 = {}", a >= 5);    /* 取反：!(a < 5) */
+    println("5 <= a = {}", 5 <= a);    /* 对偶 + 取反：!(a < 5) */
+
+    Money m;
+    m.cents = 120;
+    println("m + 5 = {}", m + 5);
+    println("5 + m = {}", 5 + m);      /* 走显式 RightAdd，结果与交换律不同 */
+
+    Key k;
+    k.v = 7;
+    println("k == 7 = {}", k == 7);
+    println("k != 7 = {}", k != 7);    /* 取反：!(k == 7) */
+    println("k != 9 = {}", k != 9);
+    return 0;
+}

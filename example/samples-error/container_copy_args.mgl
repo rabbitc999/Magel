@@ -1,0 +1,5 @@
+int64 main() {
+    std::lang::List<int64> values;
+    std::lang::List<int64> copy = values.copy(1);
+    return 0;
+}

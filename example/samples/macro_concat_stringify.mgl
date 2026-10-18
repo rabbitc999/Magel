@@ -1,0 +1,41 @@
+/* `$concat` / `$stringify`：宏里拼名字与取源码文本的**唯一**写法
+ * （旧的 `##` 拼接与 `#形参` 字符串化已在 0.16.0 删除）。
+ *
+ * - `$concat(a, b)` 只拼标识符：两个实参都必须是标识符，结果是标识符，不重新参与宏展开；
+ *   实参类型在宏展开阶段就检查。
+ * - `$stringify(expr)` 捕获实参的源码文本，结果是字符串字面量，实参个数固定一个：
+ *   形参取调用点写下的原文，别的表达式取字面文本。
+ * - 两者都能在普通代码里用，和 `$line` / `$file` / `$module` 同属 `$` 前缀的元数据形式。
+ */
+%include "include/macros.mgl"
+
+$macro DECLARE(prefix, suffix, value)
+int64 $concat(prefix, suffix) = value;
+$end_macro
+
+$macro SOURCE(expr)
+$stringify(expr)
+$end_macro
+
+$macro CALL(prefix, value)
+$concat(prefix, _of)(value)
+$end_macro
+
+/* `$concat` 拼出的是普通标识符，能和真正的函数同名（宏调用必须带 `$`）。 */
+int64 double_of(int64 x) { return x * 2; }
+
+int64 triple_of(int64 x) { return x * 3; }
+
+int64 main() {
+    $DECLARE(local, Count, 11)
+    $DECLARE(part, Two, 7)
+    $DECLARE(triple, Two, 6)
+    println("concat={}", localCount + partTwo + tripleTwo);
+    println("literal-arg={}", $SOURCE($DOUBLE(3 + 1)));
+    println("stringify-expr={}", $stringify(1 + 2));
+    println("stringify-text={}", $stringify(plain text));
+    println("call={}", $CALL(double, 21));
+    println("call2={}", $CALL(triple, 5));
+    println("macro-call={}", $DOUBLE(4));
+    return 0;
+}

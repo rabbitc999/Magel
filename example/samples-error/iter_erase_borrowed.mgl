@@ -1,0 +1,2 @@
+import std::iter;
+int64 main() { std::lang::List<int64> values; values.push(1); auto borrowed = values.iter(); values.remove(0); return 0; }

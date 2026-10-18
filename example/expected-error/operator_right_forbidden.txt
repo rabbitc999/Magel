@@ -1,0 +1,1 @@
+magel：example/samples-error/operator_right_forbidden.mgl 第 12 行第 5 列：右向被显式禁止：Vec 实现了 NoRightAdd，int64 + Vec 不再推导；要去掉该标记接口，或改为实现 RightAdd<R,T>

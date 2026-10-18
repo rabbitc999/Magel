@@ -1,0 +1,4 @@
+$macro ADD(x, y)
+((x) + (y))
+$end_macro
+int64 main() { return $ADD(1); }

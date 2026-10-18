@@ -1,0 +1,99 @@
+// 带值退出移动内部可写局部变量，复制外部变量；临时值直接接管。
+int64 calls = 0;
+int64 drops = 0;
+int64 closes = 0;
+int64 trace = 0;
+String makeText() { calls++; return "made"; }
+int64 move(int64 value) { return value + 100; }
+struct Packet : Drop, Closeable {
+    String text;
+    List<int64> values;
+    void close() { assert(self.text != ""); closes++; trace = trace * 10 + 1; }
+    void drop() { assert(self.values[0] == 7); drops++; trace = trace * 10 + 2; }
+    Packet copy() { Packet value; value.text = self.text; value.values = self.values; return value; }
+};
+int64 main() {
+    String fresh = loop { yield (makeText()); };
+    assert(fresh == "made" && calls == 1);
+    int64 textHandle = 0;
+    String moved = loop {
+        String local = "string";
+        memcpy(&textHandle, &local, 8);
+        yield (local);
+    };
+    int64 received = 0; memcpy(&received, &moved, 8);
+    assert(received == textHandle && moved == "string");
+    int64 listHandle = 0;
+    List<int64> list = {
+        loop {
+            List<int64> local; local.push(7);
+            memcpy(&listHandle, &local, 8);
+            yield (local);
+        };
+    };
+    memcpy(&received, &list, 8);
+    assert(received == listHandle && list[0] == 7);
+    {
+        Packet result = {
+            loop {
+                Packet local; local.text = "packet"; local.values.push(7);
+                memcpy(&textHandle, &local.text, 8);
+                memcpy(&listHandle, &local.values, 8);
+                yield (local);
+            };
+        };
+        assert(drops == 0 && closes == 0);
+        memcpy(&received, &result.text, 8); assert(received == textHandle);
+        memcpy(&received, &result.values, 8); assert(received == listHandle);
+        assert(result.text == "packet" && result.values[0] == 7);
+    }
+    assert(drops == 1 && closes == 1 && trace == 12);
+    {
+        Packet original; original.text = "copy"; original.values.push(7);
+        Packet result = loop { yield (original); };
+        assert(original.text == "copy" && result.text == "copy");
+        memcpy(&textHandle, &original.text, 8); memcpy(&received, &result.text, 8);
+        assert(received != textHandle);
+        memcpy(&listHandle, &original.values, 8); memcpy(&received, &result.values, 8);
+        assert(received != listHandle);
+    }
+    assert(drops == 3 && closes == 3);
+    auto pair = {
+        String first = "first";
+        List<int64> second; second.push(7);
+        yield (first, second);
+    };
+    assert(pair.0 == "first" && pair.1[0] == 7);
+    String explicitMove = loop { String local = "explicit"; yield (std::lang::move(&local)); };
+    assert(explicitMove == "explicit");
+    assert(move(1) == 101);
+    String snapshot = {
+        String local = "before";
+        defer local = "after";
+        yield (local);
+    };
+    assert(snapshot == "before");
+    int64 cleanup = 0;
+    String ordered = {
+        defer cleanup = cleanup * 10 + 1;
+        loop {
+            scope(exit) { cleanup = cleanup * 10 + 2; }
+            yield (makeText());
+        };
+    };
+    assert(ordered == "made" && calls == 2 && cleanup == 21);
+    int64 outer = 9;
+    int64 scalar = loop { yield (outer); };
+    assert(scalar == 9 && outer == 9);
+    String external = "external";
+    String copied = loop { yield (external); };
+    memcpy(&textHandle, &external, 8); memcpy(&received, &copied, 8);
+    assert(external == "external" && copied == "external" && textHandle != received);
+    List<int64> externalList; externalList.push(5);
+    List<int64> copiedList = loop { yield (externalList); };
+    copiedList[0] = 6; assert(externalList[0] == 5);
+    int64 constant = loop { const int64 local = 4; yield (local); };
+    assert(constant == 4);
+    println("break move OK");
+    return 0;
+}

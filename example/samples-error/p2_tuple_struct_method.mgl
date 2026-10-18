@@ -1,0 +1,2 @@
+struct Record { int64 number; void increment() { self.number = self.number + 1; } };
+int64 main() { Record record; auto pair = (record, 2); (pair.0).increment(); return 0; }

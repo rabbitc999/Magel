@@ -1,0 +1,1 @@
+magel：example/samples-error/constant_call.mgl 第 1 行第 1 列：[MGL1300] 常量表达式禁止调用、赋值、自增减或运行时操作

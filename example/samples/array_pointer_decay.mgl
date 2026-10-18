@@ -1,0 +1,61 @@
+/* array_pointer_decay.mgl —— 数组自动退化成 `T mut&` 可写引用（不必写 `&a[0]`）
+ *
+ *   ./magel samples/array_pointer_decay.mgl
+ *
+ * 定长数组、运行时数组、结构体数组、字符串数组的**值**都是元素基址，能直接喂给
+ * `T mut&`（可写）或 `T const&`（只读）形参；只有想单独拿首元素地址时才写 `&a[0]`。
+ * 元素类型必须一致，数组本身不做引用算术（用下标 `a[i]` 或先取 `&a[0]`）。
+ */
+
+struct Pair {
+    int64 a;
+    int64 b;
+
+    int64 sum() { return a + b; }
+};
+
+int64 bump(int64 mut& p) { *p = *p + 1; return *p; }
+int64 readAt(int64 const& p, int64 i) { return p[i]; }
+void growAll(Pair mut& p, int64 count) {
+    int64 i = 0;
+    while (i < count) {
+        p[i].a = p[i].a + 1;
+        p[i].b = p[i].b + 10;
+        i = i + 1;
+    }
+}
+int64 textSize(String const& words, int64 i) { return len(index(words, i)); }
+
+int64 main() {
+    /* 定长标量数组 → int64 mut& / int64 const& */
+    int64 fixed[3];
+    fixed[0] = 1; fixed[1] = 2; fixed[2] = 3;
+    println("fixed bump: {} ({} {} {})", bump(fixed), fixed[0], fixed[1], fixed[2]);
+    println("readAt: {} {}", readAt(fixed, 1), readAt(fixed, 2));
+
+    /* 运行时数组 → int64 mut&（句柄也指向元素基址） */
+    int64 n = 4;
+    int64 runtime[] = new[n];
+    int64 i = 0;
+    while (i < n) { runtime[i] = i * 2; i = i + 1; }
+    int64 mut& first = runtime;
+    first[2] = 99;
+    println("runtime: {} {} {} {} (len={})", runtime[0], runtime[1], runtime[2],
+    runtime[3], len(runtime));
+    delete runtime;
+
+    /* 结构体数组 → Pair mut&：按元素步长下标 */
+    Pair pairs[2];
+    pairs[0].a = 1; pairs[0].b = 2;
+    pairs[1].a = 3; pairs[1].b = 4;
+    growAll(pairs, 2);
+    println("pairs: {} {} / sum={}", pairs[0].sum(), pairs[1].sum(),
+    pairs[0].a + pairs[1].b);
+
+    /* 字符串数组 → String const& */
+    String words[2];
+    words[0] = "hello"; words[1] = "hi";
+    println("sizes: {} {}", textSize(words, 0), textSize(words, 1));
+
+    return 0;
+}

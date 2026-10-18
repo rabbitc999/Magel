@@ -1,0 +1,44 @@
+import defaults_helper;
+int64 seed = 3;
+int64 count = 0;
+int64 read(int64 const& value=&seed){return value;}
+int64 next() { count=count+1; return seed; }
+int64 add(int64 a, int64 b=next()) {return a+b;}
+String text(String value="o"+"k") {return value;}
+T identity<T>(T value, int64 unused=7) {return value;}
+struct Box {
+ int64 value;
+ Box(int64 x=8){self.value=x;}
+ int64 plus(int64 x=2){return self.value+x;}
+ static int64 scale(int64 x=4){return x*2;}
+};
+int64 sum(int64 x=5, int64... values){for(int64 v in values){x=x+v;}return x;}
+struct Packed {int64 value;Packed(int64 x=4,int64... rest){self.value=x+rest.len();}};
+struct Made {int64 value;static Made create(int64 n=11){self.value=n;}};
+float64 widen(float64 n=2){return n;}
+int64 overloaded(int64 x,int64 y=3){return x+y;}
+int64 overloaded(String x){return 9;}
+T explicitDefault<T>(T value=7){return value;}
+int64 twice(int64 x){return x*2;}
+int64 apply(int64 x, int64 fn(int64) callback=twice){return callback(x);}
+int64 nested(int64 n=add(1)){return n;}
+struct StaticPack {static int64 count(int64 x=4,int64... rest){return x+rest.len();}};
+int64 main(){
+ int64 seed=100;
+ assert(add(1)==4 && count==1);
+ assert(add(1,9)==10 && count==1);
+ assert(add(1)==4 && count==2);
+ for(int64 i=0;i<10;i=i+1){assert(text()=="ok");}
+ assert(widen()==2.0 && overloaded(1)==4 && overloaded("x")==9);
+ assert(explicitDefault<int64>()==7);
+ Packed empty=new Packed();Packed packed=new Packed(3,1,2);assert(empty.value==4 && packed.value==5);
+ Made made=Made::create();assert(made.value==11);
+ assert(identity(6)==6);
+ Box box;assert(box.value==8 && box.plus()==10 && Box::scale()==8);
+ assert(sum()==5 && sum(1,2,3)==6);
+ assert(read()==3 && apply(3)==6 && nested()==4);
+ int64 moduleSeed=100;
+ assert(fromModule()==21 && fromModule(9)==9);
+ assert(StaticPack::count()==4 && StaticPack::count(7,1,2)==9);
+ println("defaults ok");return 0;
+}

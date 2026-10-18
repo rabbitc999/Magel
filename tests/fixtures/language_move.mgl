@@ -1,0 +1,54 @@
+int64 drops=0;int64 closes=0;int64 reads=0;
+struct Item:Drop,Closeable {
+ int64 value;String text;List<int64> values;
+ void drop(){drops=drops+1;}void close(){closes=closes+1;}
+};
+struct Outer:Drop{Item item;void drop(){drops=drops+10;}};
+int64 resourceDrops=0;
+struct Owner:Drop {int64 mut& value;void drop(){delete self.value;resourceDrops=resourceDrops+1;}};
+Item mut& sourceRef(Item mut& source){reads=reads+1;return source;}
+Item consume(Item mut& source){return move(source);}
+List<int64> takeList(List<int64> mut& source){return move(source);}
+int64 main(){
+ {Item source;source.value=7;source.text="original";source.values.push(3);
+  int64 textHandle;memcpy(&textHandle,&source.text,8);int64 listHandle;memcpy(&listHandle,&source.values,8);
+  Item result=consume(sourceRef(&source));assert(reads==1 && drops==0 && closes==0);
+  int64 movedText;memcpy(&movedText,&result.text,8);int64 movedList;memcpy(&movedList,&result.values,8);
+  assert(movedText==textHandle && movedList==listHandle && result.value==7);
+  Item replacement;replacement.value=9;source=move(&replacement);assert(source.value==9 && drops==0);
+ }
+ assert(drops==2 && closes==2);
+ {Outer source;source.item.value=12;source.item.text="nested";Item result=move(&source.item);assert(result.value==12 && drops==2);}
+ assert(drops==13 && closes==3);
+ {Outer source;source.item.text="whole";Outer result=move(&source);assert(result.item.text=="whole" && drops==13);}
+ assert(drops==24 && closes==4);
+ for(int64 i=0;i<3;i=i+1){Item items[1];items[0].value=i;Item result=move(&items[0]);assert(result.value==i);}
+ assert(drops==27 && closes==7);
+ {Item source;source.text="self";Item taken=move(&source);Item source=move(&taken);assert(source.text=="self" && drops==27);}
+ assert(drops==28 && closes==8);
+ {Item source;move(&source);}
+ assert(drops==29 && closes==9);
+ {String source="hello";int64 before;memcpy(&before,&source,8);String result=move(&source);
+  int64 after;memcpy(&after,&result,8);assert(before==after && result=="hello");
+  String source="again";assert(source=="again");}
+ {List<int64> source;source.push(4);int64 before;memcpy(&before,&source,8);
+  List<int64> result=takeList(&source);int64 after;memcpy(&after,&result,8);
+  assert(before==after && result[0]==4);List<int64> fresh;fresh.push(8);source=move(&fresh);assert(source[0]==8);}
+ {Any source=(int64)42;int64 before;memcpy(&before,&source,8);Any result=move(&source);
+  int64 after;memcpy(&after,&result,8);assert(before==after && tryGet<int64>(&result).unwrap()==42);}
+ {Item mut& heap = heap Item;heap.value=77;Item result=move(heap);delete heap;assert(result.value==77);}
+ assert(drops==30 && closes==10);
+ {Item source;Item result=move(&source);Item source;source.value=10;assert(source.value==10);}
+ assert(drops==32 && closes==12);
+ {int64 source=42;int64 result=move(&source);int64 source=7;assert(result==42 && source==7);}
+ {Map<String,int64> source;source["x"]=3;int64 before;memcpy(&before,&source,8);
+  Map<String,int64> result=move(&source);int64 after;memcpy(&after,&result,8);assert(before==after && result["x"]==3);}
+ {Set<int64> source;source.add(4);int64 before;memcpy(&before,&source,8);
+  Set<int64> result=move(&source);int64 after;memcpy(&after,&result,8);assert(before==after && result.has(4)!=0);}
+ {int64 bias=3;int64 fn(int64) source=fn(int64 x){return x+bias;};int64 before;memcpy(&before,&source,8);
+  int64 fn(int64) result=move(&source);int64 after;memcpy(&after,&result,8);assert(before==after && result(4)==7);}
+ {int64 mut& storage = heap int64;*storage=42;Owner source;source.value=&storage;Owner result=move(&source);
+  assert(resourceDrops==0 && *result.value==42);}
+ assert(resourceDrops==1);
+ println("move ok");return 0;
+}

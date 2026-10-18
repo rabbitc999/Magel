@@ -1,0 +1,1066 @@
+\chapter{预处理与宏}
+\label{ch:19}
+
+本章介绍以 \texttt{\%} 和 \texttt{\$} 开头的两类源码加工工具：Magel 的预处理和宏——在代码被正式编译之前，先对源码做一次「文本层面」的加工。
+
+这一章分两半：
+
+\begin{itemize}
+
+\item 预处理（\texttt{\%} 开头）：条件编译、文件包含——「这段代码要不要编进去」；
+
+\item 宏（\texttt{\$} 开头）：文本替换——「把这个缩写换成一长串代码」。
+
+\end{itemize}
+
+先说一句要紧的话：这两样都是"不得已才用"的工具。 平时用函数、泛型、常量就够了。但读别人的代码、或者做嵌入式多平台构建，绕不开它们，所以得会认、会写。
+
+\section{条件编译：\texttt{\%define} + \texttt{\%if}}
+
+同一个程序，调试时想多打日志、发布时想去掉——这是条件编译最典型的用途：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+%define DEBUG 1
+
+int64 main() {
+%if DEBUG
+    println("debug on");
+%else
+    println("debug off");
+%endif
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+debug on
+\end{lstlisting}
+\par
+\medskip
+
+把第一行改成 \texttt{\%define DEBUG 0}，同一份代码就输出另一个分支：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+%define DEBUG 0
+
+int64 main() {
+%if DEBUG
+    println("debug on");
+%else
+    println("debug off");
+%endif
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+debug off
+\end{lstlisting}
+\par
+\medskip
+
+几条要点：
+
+\begin{itemize}
+
+\item \texttt{\%define} 定义预处理符号；
+
+\item \texttt{\%if 符号} 看它的值：非 0 走 \texttt{\%if} 分支，0 走 \texttt{\%else}；
+
+\item 不活跃的分支整块丢弃——一个字都不会编进去；
+
+\item 指令行必须顶格写在行首（\texttt{\%} 前面不能有别的字符）；
+
+\item 被丢弃/指令占用的行用空行占位，所以预处理后行号和源文件一一对应，报错永远指回你真正写错的那一行。
+
+\end{itemize}
+
+\begin{tip}{提示}
+\texttt{\%if} 后面要写符号名，不能写 \texttt{\%if 1} 这种字面量——写了会报「这里要写一个符号名」。这是它和 C 的 \texttt{\#if} 最容易混的地方（见 19.6）。
+\end{tip}
+
+\section{按「有没有定义」分支：\texttt{\%ifdef} / \texttt{\%ifndef}}
+
+有时候你只关心「这个符号定义过没有」，不关心值：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main() {
+%ifdef FEATURE
+    println("有 FEATURE");
+%else
+    println("没有 FEATURE");
+%endif
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+没有 FEATURE
+\end{lstlisting}
+\par
+\medskip
+
+\begin{itemize}
+
+\item \texttt{\%ifdef 符号}：定义过就走；
+
+\item \texttt{\%ifndef 符号}：没定义才走（\texttt{\%ifdef} 的反面）。
+
+\end{itemize}
+
+\texttt{\%if} 和 \texttt{\%ifdef} 的分工记住一句话：\texttt{\%if} 看值，\texttt{\%ifdef} 看有没有。
+
+\section{从命令行传开关：\texttt{-D}}
+
+开关真正好用，是构建时才决定——同一份源码，编出不同版本：
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel run app.mgl -D FEATURE
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+有 FEATURE
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{-D FEATURE} 等价于在文件开头写了 \texttt{\%define FEATURE}。于是同一份代码：
+
+\begin{itemize}
+
+\item \texttt{magel run app.\allowbreak{}mgl} \ensuremath{\rightarrow} 「没有 FEATURE」；
+
+\item \texttt{magel run app.\allowbreak{}mgl -D FEATURE} \ensuremath{\rightarrow} 「有 FEATURE」。
+
+\end{itemize}
+
+发布版 / 调试版、不同硬件平台，就靠这个开关切。
+
+\section{\texttt{\%include}：把文件原地拼进来}
+
+\texttt{\%include} 在当前文件里原地展开另一个文件，像是把那边的文本复制过来：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+%include "util.mgl"
+
+int64 main() {
+    println("{}", twiceValue(21));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+如果 \texttt{util.\allowbreak{}mgl} 里定义了 \texttt{twice\allowbreak{}Value}，这段就能跑，输出 \texttt{42}。
+
+\texttt{\%include} 和 \texttt{import}（第 18 章）解决的不是一回事：
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+ & \texttt{import}（模块） & \texttt{\%include}（预处理） \\
+\midrule
+层次 & 语言层 & 预处理层，早于编译 \\
+效果 & 引入模块，按裸名调函数 & 文本原地展开 \\
+同一文件重复 & 只算一次 & 默认也只一次（\texttt{\%include\_once} 显式表达） \\
+适用 & 正常组织代码 & 常量表、平台片段、生成代码 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+优先用 \texttt{import}。 \texttt{\%include} 是给「同一份片段要拼进很多文件」这种场景留的。
+
+\section{宏：\texttt{\$macro} 文本替换}
+
+宏用 \texttt{\$macro 名字(\allowbreak{}参数)\allowbreak{} … \$end\_macro} 定义，调用时名字前加 \texttt{\$}：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro SQUARE(x)
+((x) * (x))
+$end_macro
+
+int64 main() {
+    println("{}", $SQUARE(5));
+    println("{}", $SQUARE(2 + 3));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+25
+25
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{\$SQUARE(\allowbreak{}5)\allowbreak{}} 在编译前被文本替换成 \texttt{(\allowbreak{}(\allowbreak{}5)\allowbreak{} * (\allowbreak{}5)\allowbreak{})\allowbreak{}}；\texttt{\$SQUARE(\allowbreak{}2 + 3)\allowbreak{}} 变成\texttt{(\allowbreak{}(\allowbreak{}2 + 3)\allowbreak{} * (\allowbreak{}2 + 3)\allowbreak{})\allowbreak{}}。
+
+不带参数的叫对象宏，调用时也不用括号：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro GREETING()
+"hello, magel"
+$end_macro
+
+int64 main() {
+    println("{}", $GREETING);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+hello, magel
+\end{lstlisting}
+\par
+\medskip
+
+宏还能拼出新名字。\texttt{\$concat(\allowbreak{}a,\allowbreak{} b)\allowbreak{}} 把两段拼成一个标识符：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro CAT(a, b)
+$concat(a, b)
+$end_macro
+
+int64 main() {
+    int64 $CAT(my, var) = 7;
+    println("{}", myvar);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+7
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{\$CAT(\allowbreak{}my,\allowbreak{} var)\allowbreak{}} 展开成 \texttt{myvar}——这在手写代码时基本没用，但代码生成器特别爱用它。
+
+\subsection{有序多括号分组}
+
+定义端可以按任意顺序组合 \texttt{<\allowbreak{} >\allowbreak{}}、\texttt{[\allowbreak{} ]\allowbreak{}}、\texttt{(\allowbreak{} )\allowbreak{}} 和 \texttt{\{ \}}，也可以重复同一种括号。调用必须照定义中的顺序写；每一组的 \texttt{.\allowbreak{}.\allowbreak{}参数} 只捕获本组当前层级的内容。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro SHOW<..Types>[..Attrs](..Args){..Body}
+println("{}", $stringify(Types));
+println("{}", $stringify(Attrs));
+println("{}", $stringify(Args));
+Body
+$end_macro
+
+$macro EMPTY()()
+println("repeated groups");
+$end_macro
+
+int64 main()
+{
+    $SHOW<List<List<int64>>, String>[readonly](x, y){
+        int64 total = 2 + 3;
+        if (total > 0)
+        {
+            println("{}", total);
+        }
+    }
+    $EMPTY()()
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+List<List<int64>>, String
+readonly
+x, y
+5
+repeated groups
+\end{lstlisting}
+\par
+\medskip
+
+这里的 \texttt{readonly}、\texttt{x}、\texttt{y} 只是被捕获和字符串化的原文，不需要是有效变量。宏仍位于词法分析前，不把参数解析成 AST，也不检查参数类型。尖括号里的 \texttt{>\allowbreak{}>\allowbreak{}} 按两个闭合字符分组，不会被宏阶段当作右移运算符。
+
+大括号参数可以跨多行。嵌套括号、字符串和注释中的逗号不会切开外层参数；不同括号组的变长捕获互相隔离。顺序、结构或绑定不匹配时报告“宏Token分组不匹配”。展开片段保留来源文件及行列映射，后续诊断仍定位原始源码。
+
+\texttt{\$macro EMPTY(\allowbreak{})\allowbreak{}(\allowbreak{})\allowbreak{}} 是两个连续空组，调用时也写 \texttt{\$EMPTY(\allowbreak{})\allowbreak{}(\allowbreak{})\allowbreak{}}。既有单组对象宏 \texttt{\$macro NAME(\allowbreak{})\allowbreak{}} 仍沿用 \texttt{\$NAME} 的对象宏调用方式。完整说明可直接执行 \texttt{magel man macro}，也支持 \texttt{--json}。
+
+\subsection{重复括号：两组独立的变长参数}
+
+同一种括号可以连续出现多次。下面的定义要求调用时也提供两组小括号；\texttt{A} 只收集第一组，\texttt{B} 只收集第二组，两个尾参互不串组。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro example(...A)(...B)
+{
+    print("A=[");
+    $for var in A
+    print("{} ", var);
+    $end_for
+    println("]");
+    print("B=[");
+    $for var in B
+    print("{} ", var);
+    $end_for
+    println("]");
+}
+$end_macro
+
+int64 main()
+{
+    $example(1, 2, 3, 4)(3, 2, 4, 1);
+    $example(1, 2, 3, 4, 5, 6)(3, 2, 4, 1);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+A=[1 2 3 4 ]
+B=[3 2 4 1 ]
+A=[1 2 3 4 5 6 ]
+B=[3 2 4 1 ]
+\end{lstlisting}
+\par
+\medskip
+
+每个 \texttt{\$for} 仅遍历对应分组绑定的原始文本。即使两组都用小括号，也不会合并成一个尾参；\texttt{\$example(\allowbreak{}1,\allowbreak{} 2,\allowbreak{} 3,\allowbreak{} 4,\allowbreak{} 3,\allowbreak{} 2,\allowbreak{} 4,\allowbreak{} 1)\allowbreak{}} 缺少第二组括号，会报告“宏Token分组不匹配”。这里同样可以把 \texttt{.\allowbreak{}.\allowbreak{}.\allowbreak{}A} / \texttt{.\allowbreak{}.\allowbreak{}.\allowbreak{}B} 写成 \texttt{.\allowbreak{}.\allowbreak{}A} / \texttt{.\allowbreak{}.\allowbreak{}B}。
+
+\subsection{将两组参数收集为异构列表}
+
+元素槽明确写成 \texttt{Any}，同一列表就可以保存整数、字符串等不同类型。宏仍只复制参数原文；自动装箱发生在展开后的 \texttt{push} 通过正常类型检查时。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro example(...A)(...B)
+{
+    List<Any> listA;
+    List<Any> listB;
+    $for var in A
+    listA.push(var);
+    $end_for
+    $for var in B
+    listB.push(var);
+    $end_for
+    yield (listA, listB);
+}
+$end_macro
+
+int64 main()
+{
+    auto li = $example(1, "2", 3, 4, 1, 1)(3, 2, 4, 1);
+    auto listA = li.0;
+    auto listB = li.1;
+    Any first = listA[0];
+    Any second = listA[1];
+    println("A={} B={}", listA.len(), listB.len());
+    println("{} {}", tryGet<int64>(&first).unwrap(), tryGet<String>(&second).unwrap());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+A=6 B=4
+1 2
+\end{lstlisting}
+\par
+\medskip
+
+两组 \texttt{\$for} 各自生成 \texttt{push}，\texttt{yield (\allowbreak{}list\allowbreak{}A,\allowbreak{} list\allowbreak{}B)\allowbreak{};} 将两个列表组成元组交给调用者。\texttt{auto li} 的具体类型是 \texttt{(\allowbreak{}List<\allowbreak{}Any>\allowbreak{},\allowbreak{} List<\allowbreak{}Any>\allowbreak{})\allowbreak{}}；\texttt{li.\allowbreak{}0} 与 \texttt{li.\allowbreak{}1} 是两个列表。\texttt{try\allowbreak{}Get<\allowbreak{}T>\allowbreak{}} 按精确的装箱类型取副本，类型不匹配时返回 \texttt{None}。离开作用域自动释放列表及其元素，无须手写 \texttt{Drop}。
+
+\section{宏的第一个坑：括号要自己加}
+
+宏是纯文本替换，它不懂运算优先级。看这个「反面教材」：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro BAD_SQUARE(x)
+x * x
+$end_macro
+
+int64 main() {
+    println("{}", $BAD_SQUARE(2 + 3));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+11
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{\$BAD\_SQUARE(\allowbreak{}2 + 3)\allowbreak{}} 被替换成 \texttt{2 + 3 * 2 + 3}——按优先级一算是 11，不是 25。\texttt{*} 只管到了紧挨着的数。
+
+所以写宏的铁律：参数、整个宏体、都要裹上括号。 19.5 里 \texttt{SQUARE} 写成\texttt{(\allowbreak{}(\allowbreak{}x)\allowbreak{} * (\allowbreak{}x)\allowbreak{})\allowbreak{}} 就是这个道理。对比一下：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro SQUARE(x)
+((x) * (x))
+$end_macro
+
+int64 main() {
+    int64 five = 5;
+    println("{} {}", $SQUARE(five), $SQUARE(five + 1));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+25 36
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{five + 1} 被裹进括号，先加后乘，结果才对。
+
+\section{第二个坑：\texttt{\%if} 只认符号名}
+
+想按一个字面量分支？不行：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main() {
+%if 1
+    println("ok");
+%endif
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：前处理：hello.mgl:2:4: error: 这里要写一个符号名 [bad-expression]
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{\%if} 后面必须是预处理符号（\texttt{\%define} 定义过的、或者 \texttt{-D} 传进来的）。要按数分支，先定义成符号：\texttt{\%define LEVEL 1}，再 \texttt{\%if LEVEL}。
+
+\texttt{\%error} 则是在活跃分支里主动报错——常用于「这种情况本不该编进来」：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+%define LEVEL 3
+
+int64 main() {
+%if LEVEL
+%error 不该编到这里
+%endif
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：前处理：hello.mgl:5:1: error: 不该编到这里 [error-directive]
+\end{lstlisting}
+\par
+\medskip
+
+配套还有 \texttt{\%warning}（报警告，不中断），用法一样。
+
+\section{括号形参：每次出现都包一层括号}
+
+19.6 说宏体是文本替换，\texttt{\$TIMES\_TWO(\allowbreak{}1 + 2)\allowbreak{}} 会散成 \texttt{1 + 2 * 2}。第一种挡法是用括号标注形参：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro TIMES_TWO((x))
+    x * 2
+$end_macro
+int64 main() {
+    println("{}", $TIMES_TWO(1 + 2));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+6
+\end{lstlisting}
+\par
+\medskip
+
+括号标注只写在 \texttt{\$macro} 头这一行（\texttt{(\allowbreak{}x)\allowbreak{}}），宏体里引用形参照旧写裸名字 \texttt{x}；效果是这个形参每次出现都换成 \texttt{(\allowbreak{}实参)\allowbreak{}}，于是 \texttt{(\allowbreak{}1 + 2)\allowbreak{} * 2 =\allowbreak{} 6}。
+
+\section{\texttt{expr} 宏：整段展开再包一层}
+
+第二种挡法是在宏名前面写 \texttt{expr} —— 它给整段展开结果再包一层括号：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro expr PLUS((a), (b))
+    a + b
+$end_macro
+int64 main() {
+    println("{}", 10 / $PLUS(2, 3));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+2
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{10 /\allowbreak{} (\allowbreak{}(\allowbreak{}2)\allowbreak{} + (\allowbreak{}3)\allowbreak{})\allowbreak{} =\allowbreak{} 2}；只包形参的话是 \texttt{10 /\allowbreak{} (\allowbreak{}2)\allowbreak{} + (\allowbreak{}3)\allowbreak{} =\allowbreak{} 8}。\texttt{expr} 只写在头这一行，同时默认给全部实参加括号；\texttt{a} 与 \texttt{(\allowbreak{}a)\allowbreak{}} 完全等价，宏名还是 \texttt{PLUS}，调用处写 \texttt{\$PLUS(\allowbreak{}2,\allowbreak{} 3)\allowbreak{}}；调用点统一使用普通宏调用形式；旧的感叹号与反引号标注均已废除。
+
+两种挡法怎么选：普通宏按需用 \texttt{(\allowbreak{}a)\allowbreak{}} 标注；整个宏作为表达式使用时声明为 \texttt{expr} 宏。
+
+\section{变长尾参 \texttt{.\allowbreak{}.\allowbreak{}.\allowbreak{}rest}}
+
+形参表末尾写 \texttt{.\allowbreak{}.\allowbreak{}.\allowbreak{}名字}，剩下的实参全归它：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro REPORT(...rest)
+println("{} {} {}", rest);
+$end_macro
+int64 main() {
+    $REPORT(1, 2, 3)
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+1 2 3
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{rest} 会按 \texttt{,\allowbreak{} } 拼成一段文本再替换，所以在调用位置就是"一串实参" （和 C 的 \texttt{\_\_VA\_ARGS\_\_} 一个意思）—— 上面正好当三个实参喂给 \texttt{println}。
+
+\section{按实参个数重载}
+
+同一个宏名可以按实参个数挂多种形态：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro REPORT(a)
+println("one {}", a);
+$end_macro
+$macro REPORT(a, b)
+println("two {} {}", a, b);
+$end_macro
+int64 main() {
+    $REPORT(7)
+    $REPORT(1, 2)
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+one 7
+two 1 2
+\end{lstlisting}
+\par
+\medskip
+
+挑形态的顺序：个数正好对上的固定形态 \ensuremath{\rightarrow} 变长形态。一个都对不上会报错并把候选列出来，不会悄悄挑一个不相干的形态。
+
+\section{\texttt{\$for}：按尾参重复一段}
+
+\texttt{\$for 变量 in 尾参名 … \$end\_for} 把宏体里那一段按尾参逐个重复：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro SUM_SQUARES(...values)
+int64 total = 0;
+$for v in values
+total = total + (v) * (v);
+$end_for
+println("平方和 = {}", total);
+$end_macro
+int64 main() {
+    $SUM_SQUARES(2, 3, 4)
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+平方和 = 29
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{\$for} 只能遍历变长尾参。每轮把循环变量整体换成该轮的实参文本，所以 \texttt{(\allowbreak{}v)\allowbreak{} * (\allowbreak{}v)\allowbreak{}} 这种"把变量包在中间"的写法是安全的。\texttt{\$for} 的结束符是 \texttt{\$end\_for}、宏体的结束符是 \texttt{\$end\_macro} —— 两个"结束"分开写，嵌套时不用数层数。\texttt{\$for} 里还能再嵌 \texttt{\$for}。
+
+\section{尾参逐元素加括号 \texttt{.\allowbreak{}.\allowbreak{}.\allowbreak{}(\allowbreak{}values)\allowbreak{}}}
+
+19.12 里靠手写 \texttt{(\allowbreak{}v)\allowbreak{}} 保平安。想让编译器代劳，就把尾参名放进括号，写成 \texttt{.\allowbreak{}.\allowbreak{}.\allowbreak{}(\allowbreak{}values)\allowbreak{}}：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro SUM_SQUARES(...(values))
+int64 total = 0;
+$for v in values
+total = total + v * v;
+$end_for
+println("平方和 = {}", total);
+$end_macro
+int64 main() {
+    $SUM_SQUARES(1 + 1, 2 + 1)
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+平方和 = 13
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{values} 仍按 \texttt{,\allowbreak{} } 摊开，但每个元素各包一层括号，所以 \texttt{\$for} 的循环变量变成 \texttt{(\allowbreak{}元素)\allowbreak{}}：\texttt{(\allowbreak{}1+1)\allowbreak{}² + (\allowbreak{}2+1)\allowbreak{}² =\allowbreak{} 13}。不作括号标注就是 \texttt{1+1*1+1 + 2+1*2+1 =\allowbreak{} 8}。\texttt{.\allowbreak{}.\allowbreak{}.\allowbreak{}} 必须放在括号外；\texttt{(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{}values)\allowbreak{}} 会报错。
+
+\section{\texttt{\$concat}：拼出一个标识符}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro DECLARE(prefix, suffix, value)
+int64 $concat(prefix, suffix) = value;
+$end_macro
+int64 main() {
+    $DECLARE(local, Count, 11)
+    println("{}", localCount);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+11
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{\$concat(\allowbreak{}a,\allowbreak{} b)\allowbreak{}} 的两个实参必须都是标识符，拼出来的结果也是标识符，而且不重新参与宏展开。拼出来的是普通名字，所以能和真正的函数同名共存（宏调用必须带 \texttt{\$}，裸名是普通标识符）。
+
+\begin{tip}{提示}
+\texttt{\$concat} 与 \texttt{\$stringify} 都读取原始实参，不受表达式参数括号保护影响。
+\end{tip}
+
+\section{\texttt{\$stringify}：取调用点写下的原文}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro SOURCE(expr)
+$stringify(expr)
+$end_macro
+int64 main() {
+    println("{}", $SOURCE(1 + 2));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+1 + 2
+\end{lstlisting}
+\par
+\medskip
+
+结果是字符串字面量：实参在宏体里是形参名时取调用点的原始实参文本（不加括号），否则就取写下的字面文本。写日志、断言信息时特别好用 —— 变量名和它的值能一起打出来。
+
+\section{\texttt{\$replace}：一行写完的宏}
+
+\texttt{\$replace} 把声明压进一行，头这一行剩下的内容就是宏体，没有 \texttt{\$end\_macro}：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$replace expr ADD((a), (b)) a + b
+int64 main() {
+    println("{}", $ADD(1, 3));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+4
+\end{lstlisting}
+\par
+\medskip
+
+它支持 \texttt{\$macro} 的所有"行内"规则（参数括号、\texttt{expr}、\texttt{\$concat} / \texttt{\$stringify}、\texttt{\$line} / \texttt{\$file} / \texttt{\$module}），但装不下 \texttt{\$for} 这种块 —— 要块请用 \texttt{\$macro}。宏名和调用方式与 \texttt{\$macro} 完全一样，两种声明混着写也行。
+
+\section{\texttt{\$delete\_macro}：撤掉再重新定义}
+
+同一名字、同一参数个数的宏不能重复定义。要"改"一个宏，先撤后立：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro REVISION()
+1
+$end_macro
+$delete_macro REVISION
+$macro REVISION()
+2
+$end_macro
+int64 main() {
+    println("{}", $REVISION);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+2
+\end{lstlisting}
+\par
+\medskip
+
+\section{\texttt{\$n} 整数编号：宏内的唯一临时名}
+
+宏是文本替换，宏体里起个临时变量很容易撞上调用点的同名变量。\texttt{\$n} 整数编号 由编译器在每次展开时换成一个全局唯一的名字：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro SWAP((a), (b))
+    int64 $0 = a;
+    a = b;
+    b = $0;
+$end_macro
+int64 main() {
+    int64 tmp = 111;
+    int64 x = 1;
+    int64 y = 2;
+    $SWAP(x, y)
+    println("x={} y={} tmp={}", x, y, tmp);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+x=2 y=1 tmp=111
+\end{lstlisting}
+\par
+\medskip
+
+宏内的临时名和调用点的 \texttt{tmp} 互不干扰。同一次展开里同一个 \texttt{\$n} 处处同名；不同展开、不同宏、嵌套调用各自独立。
+
+编号不限于一位数字：\texttt{\$10}、\texttt{\$123456789012345678901234567890} 和 \texttt{\$-1} 都合法。编号按十进制整数文本归一化，\texttt{\$0010} 与 \texttt{\$+10} 等同于 \texttt{\$10}，\texttt{\$-0} 等同于 \texttt{\$0}；不经过宿主整数转换，因此没有 int64 上限。字符串和注释里的 \texttt{\$0} 原样保留。这是变量级近似卫生 —— 解决的是"宏内临时变量被捕获"，不是完整卫生宏：宏体里引用的自由名字（比如外部函数名）仍然绑到调用点。
+
+\subsection{用多括号宏构造 List}
+
+下面把类型放进尖括号，把元素放进中括号；宏展开成带值块，最后通过 \texttt{yield \$0;} 把构造好的列表交给初始化表达式。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro vec<T>[...list]
+{
+    List<T> $0;
+    $for var in list
+    {
+        T $1 = var;
+        $0.push($1);
+    }
+    $end_for
+    yield $0;
+}
+$end_macro
+
+int64 main()
+{
+    List<int32> myList = $vec<int32>[1, 2, 3];
+    for(auto var in myList)
+    {
+        println("{}", var);
+    }
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+1
+2
+3
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{T} 捕获文本 \texttt{int32}，\texttt{.\allowbreak{}.\allowbreak{}.\allowbreak{}list} 捕获当前中括号组的三个片段；这里也可以写成 \texttt{.\allowbreak{}.\allowbreak{}list}。\texttt{\$for} 逐项生成初始化与 \texttt{push} 语句，宏阶段不解析元素类型；展开后的 \texttt{T \$1 =\allowbreak{} var;} 由正常类型检查验证每个元素。
+
+\texttt{\$0} 和 \texttt{\$1} 是当前宏调用专属的临时名字。一次展开内所有 \texttt{\$0} 都指向同一个列表；每次循环生成的 \texttt{\{ .\allowbreak{}.\allowbreak{}.\allowbreak{} \}} 是独立作用域，因此可以重复声明同一个 \texttt{\$1}。另一次调用会获得另一套名字。最后的 \texttt{break} 移交块内列表的所有权，离开作用域时仍正常清理其他局部值。
+
+\texttt{for(\allowbreak{}auto var in my\allowbreak{}List)\allowbreak{}} 从 \texttt{List<\allowbreak{}int32>\allowbreak{}} 推断 \texttt{var} 为 \texttt{int32}，不必重复写元素类型；也可以省略 \texttt{auto}，写成 \texttt{for(\allowbreak{}var in my\allowbreak{}List)\allowbreak{}}。这里的 \texttt{auto} 不会引入动态类型或运行时类型判断。
+
+\section{\texttt{\$line} / \texttt{\$file} / \texttt{\$module} 和 \texttt{\$assert}}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+module demo;
+
+$macro HERE(tag)
+println("{} 在第 {} 行，模块 {}", tag, $line, $module);
+$end_macro
+
+int64 main() {
+    $HERE("这里")
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+这里 在第 8 行，模块 demo
+\end{lstlisting}
+\par
+\medskip
+
+写在宏体里时，取的是调用点那一行（和 C 的 \texttt{\_\_LINE\_\_} 一个意思），所以基于它的报错总是指向你写宏调用的地方。\texttt{\$file} / \texttt{\$module} 展开成字符串字面量，可以直接拼接或喂给 \texttt{format}；根文件没写 \texttt{module} 时 \texttt{\$module} 是 \texttt{\_\_root}。\texttt{\$assert(\allowbreak{}条件)\allowbreak{}} / \texttt{\$assert(\allowbreak{}条件,\allowbreak{} "说明")\allowbreak{}} 是系统给的断言宏，用的就是这套机制。
+
+\subsection{宏内条件与局部绑定}
+
+\texttt{\$if} / \texttt{\$elif} / \texttt{\$else} / \texttt{\$end\_if} 在宏展开时选择分支，\texttt{\$let} 创建只属于当前宏调用的局部文本绑定。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+$macro expr PICK(value)
+$let selected = value
+$if selected > 0
+selected
+$else
+0
+$end_if
+$end_macro
+int64 main() {
+    println("{} {}",$PICK(7),$PICK(-2));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+7 0
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{\$argc} 取得当前调用的实参数量，\texttt{\$count(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} 计数变长尾参或局部文本列表，\texttt{\$typecheck(\allowbreak{}T,\allowbreak{} expr)\allowbreak{}} 将展开表达式送进指定类型检查。实参计数不匹配在展开期报错；递归最多 64 层，一次处理最多展开 100000 次。没有 \texttt{\$match} 迷你 DSL，\texttt{\#\#} 与 \texttt{\#形参} 均已移除，拼接和字符串化只用 \texttt{\$concat} / \texttt{\$stringify}。
+
+\texttt{\$macro expr ADD(\allowbreak{}a,\allowbreak{}b)\allowbreak{}} 中的参数自动括起来，定义里的 \texttt{(\allowbreak{}a)\allowbreak{}} 可作冗余标注；普通宏仍需 \texttt{(\allowbreak{}a)\allowbreak{}} 明确标记表达式实参。调用使用普通形式 \texttt{\$ADD(\allowbreak{}x+1,\allowbreak{}y*2)\allowbreak{}}，宏定义不接受反引号标注。
+
+\section{完整指令速查}
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.428\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.552\linewidth-2\tabcolsep\relax}}
+\toprule
+指令 & 作用 \\
+\midrule
+\endhead
+\texttt{\%define 名字 [\allowbreak{}值]\allowbreak{}} / \texttt{\%undefine 名字} & 定义 / 取消符号 \\
+\texttt{\%if} / \texttt{\%elif} / \texttt{\%else} / \texttt{\%endif} & 按值条件编译 \\
+\texttt{\%ifdef} / \texttt{\%ifndef} & 按是否定义条件编译 \\
+\texttt{\%include "路径"} & 原地展开文件（默认只一次） \\
+\texttt{\%error} / \texttt{\%warning} & 活跃分支里报错 / 报警告 \\
+\texttt{\$macro N(\allowbreak{}参数)\allowbreak{} … \$end\_macro} & 函数式宏，调用 \texttt{\$N(\allowbreak{}…)\allowbreak{}} \\
+\texttt{\$macro N(\allowbreak{})\allowbreak{} … \$end\_macro} & 对象宏，调用 \texttt{\$N} \\
+\texttt{\$concat(\allowbreak{}a,\allowbreak{} b)\allowbreak{}} & 拼标识符 \\
+\texttt{\$stringify(\allowbreak{}x)\allowbreak{}} / \texttt{\$line} & 把参数变成字符串 / 当前行号 \\
+\texttt{\$delete\_macro N} & 取消宏（先撤后立，好重定义一个同名宏） \\
+\texttt{ \$macro N(\allowbreak{}(\allowbreak{}a)\allowbreak{},\allowbreak{} (\allowbreak{}b)\allowbreak{})\allowbreak{} } & 显式形参括号：该形参每次出现都替换成 \texttt{(\allowbreak{}实参)\allowbreak{}} \\
+\texttt{\$macro expr N(\allowbreak{}…)\allowbreak{} … \$end\_macro} & 宏名前的 \texttt{expr}：整段展开再包一层括号 \\
+\texttt{\$replace N(\allowbreak{}参数)\allowbreak{} 宏体} & 单行宏，没有 \texttt{\$end\_macro} \\
+\texttt{\$macro N(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{}rest)\allowbreak{}} & 变长尾参；\texttt{rest} 按 \texttt{,\allowbreak{} } 摊成一段文本 \\
+\texttt{ \$macro N(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{}(\allowbreak{}rest)\allowbreak{})\allowbreak{} } & 变长尾参逐元素加括号 \\
+\texttt{\$for v in rest … \$end\_for} & 按变长尾参重复宏体里的这一段 \\
+\texttt{\$concat(\allowbreak{}a,\allowbreak{} b)\allowbreak{}} & 拼标识符（两个实参都必须是标识符） \\
+\texttt{\$stringify(\allowbreak{}x)\allowbreak{}} & 取实参的源码文本，结果是字符串字面量 \\
+\texttt{\$n} 整数编号 & 宏体内的唯一临时名（每次展开换一个新名字） \\
+\texttt{\$line} / \texttt{\$file} / \texttt{\$module} & 调用点行号 / 文件名 / 模块名（宏内外都能用） \\
+\bottomrule
+\end{longtable}
+}
+
+\begin{tip}{提示}
+字符串里的 \texttt{\%} 不是指令；真想打一个百分号，写 \texttt{\%\%}。
+\end{tip}
+
+\section{什么时候该用，什么时候别用}
+
+预处理和宏是"元编程的粗活"，能不用就别用：
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+你的想法 & 更好的选择 \\
+\midrule
+「一段逻辑重复了」 & 写成函数（第 4 章） \\
+「同一段逻辑要适配多种类型」 & 泛型（第 14 章） \\
+「想要一个常量」 & \texttt{const}（第 3 章） \\
+「给函数起个短别名」 & 想清楚——直接调原函数更清楚 \\
+「按平台/调试开关切代码」 & \textcolor{green!50!black}{\ding{51}} \texttt{\%define} + \texttt{\%if}，正解 \\
+「把常量表拼进多个文件」 & \textcolor{green!50!black}{\ding{51}} \texttt{\%include}，合理 \\
+「生成一大堆重复代码」 & \textcolor{green!50!black}{\ding{51}} \texttt{\$macro}，正当用途 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+宏的坏处：它在类型系统之外。写错了编译器不一定能帮你抓，报错也常指向展开后的乱码（虽然 Magel 会贴心地标 \texttt{[\allowbreak{}宏 MIN]\allowbreak{}} 告诉你出错在哪个宏里）。所以能上函数就上函数。
+
+\section{小结}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+你会了 & 关键点 \\
+\midrule
+\texttt{\%define} / \texttt{-D} & 定义预处理符号；\texttt{-D} 从命令行传 \\
+\texttt{\%if} / \texttt{\%else} / \texttt{\%endif} & 按值分支（\texttt{\%if} 后只能写符号名） \\
+\texttt{\%ifdef} / \texttt{\%ifndef} & 按是否定义分支 \\
+行号 & 指令/丢弃行用空行占位，报错指回真实位置 \\
+\texttt{\%include} & 文本原地展开；正常组织代码请用 \texttt{import} \\
+\texttt{\$macro} & \texttt{\$macro N(\allowbreak{}x)\allowbreak{} … \$end\_macro}，调用写 \texttt{\$N(\allowbreak{}…)\allowbreak{}} \\
+对象宏 & \texttt{\$macro N(\allowbreak{})\allowbreak{} … \$end\_macro}，调用写 \texttt{\$N} \\
+括号铁律 & 宏体、参数都要裹括号，否则优先级出错 \\
+\texttt{\$concat} & 拼标识符（代码生成用） \\
+选型 & 优先函数 / 泛型 / 常量；宏留给构建开关和代码生成 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{下一步}
+
+预处理和宏改的是源码文本。第 20 章讲一个再上一层的能力：注解——在声明上贴元数据，运行期还能反过来查。它是「框架式代码」的常见基础。
+
+翻到\hyperref[ch:20]{第 20 章 注解与反射}。

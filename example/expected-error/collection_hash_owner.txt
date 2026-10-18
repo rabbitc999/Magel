@@ -1,0 +1,1 @@
+magel：Hash<T> 必须声明 `uint64 hash(T value)`，T 必须是实现类型

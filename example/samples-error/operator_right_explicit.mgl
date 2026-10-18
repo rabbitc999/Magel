@@ -1,0 +1,16 @@
+/* 声明了 `RightAdd` 但形参接不住左操作数：右向归它自己，不再借 `Add` 兜底。
+ * 注意 `5` 是 int64，`RightAdd<int64,int32>` 声明的是 `int32 + A`。 */
+
+struct A : Add<int64,int64>, RightAdd<int64,int32> {
+    int64 v;
+
+    int64 leftAdd(int64 other) { return self.v + other; }
+    int64 rightAdd(int32 other) { return 99; }
+};
+
+int64 main() {
+    A a;
+    a.v = 5;
+    println("5 + a = {}", 5 + a);
+    return 0;
+}

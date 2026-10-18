@@ -1,0 +1,21 @@
+import std::io;
+
+int64 main(List<String> args) {
+    String path=args[0];
+    FileStream output=FileStream::open(path,"wb").unwrap();
+    output.write("abc\r\nline two\nlast").unwrap();
+    output.close();
+    FileStream input=FileStream::open(path,"rb").unwrap();
+    assert(input.readString(2).unwrap()=="ab");
+    assert(input.readLine().unwrap()=="c");
+    assert(input.readLine().unwrap()=="line two");
+    assert(input.readAllString().unwrap()=="last");
+    assert(input.readLine().unwrap()=="");
+    input.close();
+    File handle=fileOpen(path,"rb").unwrap();
+    assert(fileReadString(handle,3)=="abc");
+    assert(fileReadLine(handle)=="");
+    assert(fileReadAllString(handle)=="line two\nlast");
+    fileClose(handle);
+    println("file strings ok");return 0;
+}

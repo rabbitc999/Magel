@@ -1,0 +1,28 @@
+struct Resource : Drop {
+    static int64 alive;
+    int64 value;
+
+    Resource(int64 value) {
+        self.value = value;
+        Resource::alive = Resource::alive + 1;
+    }
+
+    void drop() {
+        println("drop {}", self.value);
+        Resource::alive = Resource::alive - 1;
+    }
+
+    static int64 count() {
+        return Resource::alive;
+    }
+};
+
+int64 main() {
+    int64 scalar = 3;
+    {
+        Resource value = new Resource(7);
+        println("inside {} {}", Resource::count(), scalar);
+    }
+    println("outside {}", Resource::count());
+    return 0;
+}

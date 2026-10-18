@@ -1,0 +1,4 @@
+complex 4 2 11 -2 -1 2
+fft 10 -2 -2 -2
+inverse 1 2 3 4
+dft 10

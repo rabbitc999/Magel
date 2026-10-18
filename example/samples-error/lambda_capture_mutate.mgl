@@ -1,0 +1,5 @@
+int64 main() {
+    const int64 value = 1;
+    auto callback = int64 fn() { value += 1; return value; };
+    return callback();
+}

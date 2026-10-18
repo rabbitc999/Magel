@@ -1,0 +1,11 @@
+/* delete 之后再访问：静态借用检查拒绝释放后的访问 */
+int64 main() {
+    int64 n = 4;
+    int64 a[] = new[n];
+    a[0] = 7;
+    a[1] = 8;
+    std::lang::println("before delete: {} {}", a[0], a[1]);
+    delete a;
+    std::lang::println("after delete: {}", a[0]);   /* ← 这里编译期失败 */
+    return 0;
+}

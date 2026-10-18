@@ -1,0 +1,9 @@
+import std::compress;
+int64 main() {
+    std::lang::List<uint8> broken;
+    broken.push((uint8)1);
+    broken.push((uint8)2);
+    broken.push((uint8)3);
+    std::compress::decompress(broken);
+    return 0;
+}

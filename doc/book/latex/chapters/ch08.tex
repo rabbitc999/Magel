@@ -1,0 +1,506 @@
+\chapter{资源与作用域}
+\label{ch:08}
+
+前面两章讲了「值」和「引用」，但一直没回答一个很现实的问题：
+
+\begin{tip}{提示}
+没有垃圾回收，那内存、文件句柄、网络连接这些东西，什么时候释放？谁负责？
+\end{tip}
+
+Magel 的答案很短：离开作用域的时候，自动释放。
+
+这一章讲这套机制怎么用、为什么它不出错，以及堆对象该怎么管。
+
+\section{作用域就是一对花括号}
+
+先说清「作用域」在这门语言里指什么。
+
+每一对 \texttt{\{ \}} 划出一个作用域。 在那个花括号里声明的东西，出了花括号就不存在了：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 outer = 1;
+    {
+        int64 inner = 2;
+        println("里面能看到 {} 和 {}", outer, inner);
+    }
+    println("外面只剩 {}", outer);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+里面能看到 1 和 2
+外面只剩 1
+\end{lstlisting}
+\par
+\medskip
+
+这里面 \texttt{inner} 只活在里层那对大括号里。出了它，\texttt{inner} 就没了——想在外面用 \texttt{inner} 是编译错误，不是「值是 0」。
+
+作用域有好几种来源：
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+来源 & 例子 \\
+\midrule
+一对花括号 & \texttt{\{ int64 x =\allowbreak{} 1; \}} \\
+函数体 & \texttt{int64 add(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{} \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} \}} —— 整个函数是一个作用域 \\
+\texttt{if} / \texttt{for} / \texttt{while} 的主体 & \texttt{for (\allowbreak{}int64 k =\allowbreak{} 0; .\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{} \{ \}} 里的 \texttt{k} 只活在循环里 \\
+块 & \texttt{main} 本身也是块 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+注意最后一条：\texttt{main} 也是个作用域。 所以 \texttt{main} 里声明的东西，程序结束时会被清理。
+
+\section{\texttt{Drop}：离开作用域时自动调用}
+
+给一个结构体实现 \texttt{Drop}，它的 \texttt{drop(\allowbreak{})\allowbreak{}} 就会在这个值离开作用域时被调用：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Resource: Drop
+{
+    String name;
+    void drop()
+    {
+        println("drop {}", self.name);
+    }
+};
+
+int64 main()
+{
+    {
+        Resource r;
+        r.name = "conn";
+        println("using");
+    }
+    println("after block");
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+using
+drop conn
+after block
+\end{lstlisting}
+\par
+\medskip
+
+注意 \texttt{drop conn} 出现的位置：在里层花括号结束的那一刻，而不是在程序末尾。这就是「确定性释放」——资源什么时候还，看代码结构就能读出来。
+
+这类拥有型资源由 \texttt{Drop} 自动收尾，不需要额外登记释放动作。结构就是释放点。 另有非所有权清理动作时可用本章的 \texttt{defer}。
+
+\texttt{drop(\allowbreak{})\allowbreak{}} 里拿自己用 \texttt{self}。第 9 章会专门讲 \texttt{self}，现在当成「这个对象自己」就行。
+
+\section{析构顺序：先自己的 \texttt{drop(\allowbreak{})\allowbreak{}}，再做字段}
+
+字段会被自动递归析构——一层层往下，直到最里面：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Inner: Drop
+{
+    String tag;
+    void drop()
+    {
+        println("drop inner {}", self.tag);
+    }
+};
+
+struct Outer: Drop
+{
+    Inner field;
+    void drop()
+    {
+        println("drop outer");
+    }
+};
+
+int64 main()
+{
+    Outer o;
+    o.field.tag = "x";
+    println("using");
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+using
+drop outer
+drop inner x
+\end{lstlisting}
+\par
+\medskip
+
+顺序是：先跑 \texttt{Outer} 自己的 \texttt{drop(\allowbreak{})\allowbreak{}}，再析构它的字段。
+
+\begin{tip}{提示}
+如果你写过 C++，注意这里和 C++ 是反的：C++ 先析构成员再跑析构体。Magel 先跑你自己的 \texttt{drop(\allowbreak{})\allowbreak{}}，之后字段自动清理。\par 这个顺序有个实际后果：\texttt{drop(\allowbreak{})\allowbreak{}} 里还能安全地用字段（\texttt{o.\allowbreak{}field} 那时还活着）。这在「关闭连接时要写日志」「释放前要刷缓冲」这类场景里很有用。
+\end{tip}
+
+\subsection{一个必须记住的禁忌}
+
+结构体的 \texttt{drop(\allowbreak{})\allowbreak{}} 里不要手写 \texttt{self.\allowbreak{}字段.\allowbreak{}drop(\allowbreak{})\allowbreak{}}。
+
+因为字段本来就会被自动析构，你再手动来一次就是析构两次。这条规则没有例外：只要字段实现了 \texttt{Drop}，Magel 就会负责到底，你插手就是添乱。
+
+\section{\texttt{Closeable}：用完立刻关，而且不会关两次}
+
+有些资源不能等到「出块」才放：文件句柄、数据库连接、锁。它们要的是「用完立刻放，别占着」。
+
+实现 \texttt{Closeable} 就是干这个的：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Handle: Closeable
+{
+    int64 id;
+    void close()
+    {
+        println("close {}", self.id);
+    }
+};
+
+int64 main()
+{
+    {
+        Handle h;
+        h.id = 1;
+        println("using");
+    }
+    println("after block");
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+using
+close 1
+after block
+\end{lstlisting}
+\par
+\medskip
+
+机制和 \texttt{Drop} 一样（离开作用域自动调 \texttt{close(\allowbreak{})\allowbreak{}}），但多了一条很实用的保证：
+
+\begin{tip}{提示}
+显式调用过 \texttt{close(\allowbreak{})\allowbreak{}} 的变量，不会再自动关闭。
+\end{tip}
+
+所以你可以放心地「提前关」：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Handle: Closeable
+{
+    void close()
+    {
+        println("close");
+    }
+};
+
+int64 main()
+{
+    {
+        Handle h;
+        h.close();
+        // 提前关
+        println("closed early");
+    }
+    // 这里不会再关一次
+    println("after");
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+close
+closed early
+after
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{close} 只出现了一次。 这条保证让「提前关闭」变成一件可以随手做的事——不用记「我关过了吗」，也不用写一堆标志位。
+
+\subsection{两个都实现的时候，顺序固定}
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+先 close()，再 drop()
+\end{lstlisting}
+\par
+\medskip
+
+不用记特例：关动作在前，销毁动作在后。
+
+\section{堆对象：\texttt{new} 和 \texttt{delete}}
+
+前面所有东西都活在栈上，跟着作用域走。要手动控制生命周期时，用堆：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Point
+{
+    int64 x;
+    int64 y;
+};
+
+int64 main()
+{
+    Point mut& p = heap Point;
+    p.x = 3;
+    p.y = 4;
+    println("{},{}", p.x, p.y);
+    delete p;
+    println("deleted");
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+3,4
+deleted
+\end{lstlisting}
+\par
+\medskip
+
+\begin{itemize}
+
+\item \texttt{Point mut\& p =\allowbreak{} heap Point;} —— 在堆上建一个 \texttt{Point}，\texttt{p} 是指向它的引用；
+
+\item \texttt{delete p;} —— 释放它。
+
+\end{itemize}
+
+\texttt{p} 的类型是引用（\texttt{Point mut\&}），因为堆上的东西没有名字，你只能拿着一个地址。
+
+\texttt{new T(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} 也可以带实参调构造器——左边的类型决定用谁构造，那是第 9 章的内容。
+
+\texttt{new} 还有几处等价的写法糖（语义完全一致，纯写法降级）：\texttt{heap T;} 与 \texttt{new;} 等价，\texttt{new T(\allowbreak{}实参)\allowbreak{};} 与 \texttt{new(\allowbreak{}实参)\allowbreak{};} 等价，\texttt{heap new T(\allowbreak{}实参)\allowbreak{};} 也与 \texttt{new(\allowbreak{}实参)\allowbreak{};} 等价。\texttt{heap} 是保留关键字，只在该分配位置有意义，不能用作变量名：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+Point mut& a = heap Point;             // 糖：heap T  ≡ new;
+Point mut& b = new Point(3, 4);        // new T(args) 栈/堆由左侧声明决定
+Point mut& c = heap new Point(5, 6);   // 糖：heap new T(args)  ≡ new(5, 6)
+\end{lstlisting}
+\par
+\medskip
+
+忘记 \texttt{delete} 会怎样？ 手动分配的对象不会因为引用变量离开作用域而自动释放。运行结束时会报告仍未释放的堆块；应显式 delete，或将分配封装进有明确 Drop/Closeable 契约的拥有类型。遗留分配会占用预算，长期运行可能耗尽内存。堆对象的最佳实践还是让它的生命周期和某层花括号对齐，别让 \texttt{new} 和 \texttt{delete} 离得太远。
+
+\subsection{\texttt{delete} 两次没事}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Box: Drop
+{
+    int64 id;
+    void drop()
+    {
+        println("drop {}", self.id);
+    }
+};
+
+int64 main()
+{
+    Box mut& b = heap Box;
+    b.id = 7;
+    delete b;
+    delete b;
+    println("twice ok");
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+drop 7
+twice ok
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{drop} 只出现了一次。同一对象只析构、释放一次——重复 \texttt{delete} 不会崩，也不会执行两遍清理。\texttt{drop(\allowbreak{})\allowbreak{}} 手动调用同理。
+
+但释放之后不能再读：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Point
+{
+    int64 x;
+    int64 y;
+};
+
+int64 main()
+{
+    Point mut& p = heap Point;
+    p.x = 1;
+    delete p;
+    p.x = 2;
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：[MGL1205] 借用来源已释放，不能继续访问：表达式
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{MGL1205} 也是第 6 章 \texttt{move} 之后读源值时报的码——同一个意思：「这东西已经不在了，别再碰」。
+
+\section{内存模型的边界}
+
+这一节讲 Magel 的「安全」到底覆盖到哪儿。
+
+会被检查的：
+
+\begin{itemize}
+
+\item 数组越界、整数运算溢出，都会被抓到并给出定位，不是未定义行为；
+
+\item 悬垂引用、释放后访问、移动后访问，编译期或运行期报 \texttt{MGL1204} / \texttt{MGL1205}。
+
+\end{itemize}
+
+资源在哪儿：
+
+\begin{itemize}
+
+\item PC 上默认内存池 512 MiB（可用 \texttt{--memory-size 字节} 调整，最小 64）；
+
+\item 嵌入式目标按板子配置，见第 22 章。
+
+\end{itemize}
+
+长时间运行的服务可以用 \texttt{std:\allowbreak{}:\allowbreak{}watchdog} 开「软重启」：内存申请失败、显式请求重启、越过内存水位、或开启超时后整整一个周期没 \texttt{kick(\allowbreak{})\allowbreak{}} 时，重启自身逻辑而不杀进程。
+
+最后说清它不做什么。 Magel 不试图消除所有错误。它针对性地消除三类：
+
+\begin{enumerate}
+
+\item 空指针解引用 —— 没有 \texttt{null}，引用必须绑定真实对象（第 7 章）；
+
+\item 悬垂引用 —— 来源作用域检查（第 7 章）；
+
+\item 忘记释放 —— 作用域 + \texttt{Drop} / \texttt{Closeable} 自动收尾（本章）。
+
+\end{enumerate}
+
+剩下的逻辑错误仍然是你自己的责任。 比如「算错了平均值」「把用户的年龄存成了负数」「该关的连接关了两次但业务上不允许」——这些语言帮不了你，只能靠第 16 章的错误处理和第 18 章的测试。
+
+\subsection{\texttt{defer} 和 \texttt{scope(\allowbreak{}exit)\allowbreak{}}}
+
+\texttt{defer stmt;} 登记当前作用域离开时执行的动作，\texttt{scope(\allowbreak{}exit)\allowbreak{} \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} \}} 是块形式。普通结束和 \texttt{return}、\texttt{panic}、\texttt{break}、\texttt{continue} 都执行已登记动作一次；同一作用域按登记的逆序执行。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    {
+        defer println("first");
+        scope (exit)
+        {
+            println("second");
+        }
+        println("body");
+    }
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+body
+second
+first
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{defer} 用于没有所有权关系的收尾，例如恢复状态或结束宿主操作。拥有型资源继续按 \texttt{Drop}、\texttt{Closeable} 的原规则清理。不要对同一资源再登记一份释放动作。
+
+\section{小结}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+你会了 & 关键点 \\
+\midrule
+作用域 & 每对 \texttt{\{ \}} 一层；函数体和 \texttt{main} 也是作用域 \\
+\texttt{Drop} & 实现它，\texttt{drop(\allowbreak{})\allowbreak{}} 在离开作用域时自动调用 \\
+析构顺序 & 先自己的 \texttt{drop(\allowbreak{})\allowbreak{}}，再自动析构字段（和 C++ 相反） \\
+禁忌 & 不要在 \texttt{drop(\allowbreak{})\allowbreak{}} 里手动析构字段，会双重析构 \\
+\texttt{Closeable} & 离开作用域或提前 \texttt{close(\allowbreak{})\allowbreak{}}；关过就不会再关 \\
+两者都有 & 顺序固定：先 \texttt{close(\allowbreak{})\allowbreak{}} 再 \texttt{drop(\allowbreak{})\allowbreak{}} \\
+堆对象 & \texttt{T mut\& p =\allowbreak{} heap T;} 建，\texttt{delete p;} 释放 \\
+幂等 & \texttt{delete} / \texttt{drop(\allowbreak{})\allowbreak{}} 重复调用只执行一次 \\
+释放后访问 & \texttt{MGL1205} \\
+被消除的三类错误 & 空指针、悬垂引用、忘记释放 \\
+不保证的 & 逻辑错误——那是你的活儿 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{下一步}
+
+到此为止，「Magel 的骨头」这一部分讲完了：值语义、引用、资源与作用域。你现在理解了这门语言所有的取舍——为什么复制、为什么不给 \texttt{null}、为什么不用 GC。
+
+接下来是组织代码的工具。第一个是结构体：把一堆字段和一堆方法收进同一个名字下面。
+
+翻到\hyperref[ch:09]{第 9 章 结构体}。

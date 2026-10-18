@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-15",
+  "firmware": "local SDK, autorun benchmark, selftest disabled",
+  "status": "partial",
+  "observations": [
+    {
+      "command": "key up",
+      "uart": "KEY_OK up click\r\nKEY 2 pressed=0\n"
+    },
+    {
+      "command": "key mode invalid",
+      "uart": "KEY_ERROR\r\n"
+    }
+  ],
+  "limits": "只完成两项 USART1 烟雾检查；八种退出事件仅有主机回归证据。自动实机检查未完成，已按用户要求停止，不据此宣称物理按键全部通过。"
+}

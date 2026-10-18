@@ -1,0 +1,9 @@
+abi "./native.dll" {
+    int32 native_add(int32 left, int32 right) = "abi_add";
+    String native_name() = "abi_name";
+}
+
+int64 main() {
+    println("{} {}", native_add((int32)20, (int32)22), native_name());
+    return 0;
+}

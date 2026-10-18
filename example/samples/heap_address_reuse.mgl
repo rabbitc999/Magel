@@ -1,0 +1,18 @@
+/* heap_address_reuse.mgl —— 释放过的堆块会被后续分配复用
+ *
+ * magel 的默认堆是链表式分配器（首次适配 + 切块 + 相邻空闲块合并）：
+ * `delete first;` 之后的空闲块会被下一个同样大小的 `new` 复用。
+ * 地址可以复用，但借用身份不会复活；释放前建立的旧别名禁止再解引用。
+ * 此处从新分配的引用读取 22；旧别名的拒绝场景见 samples-error/heap_stale_alias.mgl。
+ */
+int64 main() {
+    int64 mut& first = heap int64;
+    *first = 11;
+    delete first;
+
+    int64 mut& second = heap int64;
+    *second = 22;
+    println("{}", *second);
+    delete second;
+    return 0;
+}

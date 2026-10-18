@@ -1,0 +1,4 @@
+int64 main() {
+    map<int64, int64> values;
+    return 0;
+}

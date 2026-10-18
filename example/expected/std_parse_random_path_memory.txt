@@ -1,0 +1,12 @@
+int64=-42
+uint64=18446744073709551615
+float64=12.5
+bool=1
+empty=ok
+invalid=ok
+overflow=ok
+random=9098160460397411210,-5
+path=alpha/gamma.txt
+name=gamma.txt ext=.txt
+normalized=a/b/d
+memory=ok

@@ -1,0 +1,8 @@
+/* delete 只能用在可写引用（`T mut&`）或运行时数组（`T[]`）上：`T*` 是只读引用，不持有对象 */
+int64 main() {
+    int64 data[4];
+    data[0] = 1;
+    int64 const& view = (int64 const&)data;
+    delete view;          /* ← 这里会被拒绝 */
+    return 0;
+}

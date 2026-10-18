@@ -1,0 +1,15 @@
+/* 新输入 API 是返回值表达式；所有函数共享同一个输入游标。 */
+int64 main() {
+    String line = inputLine();
+    int64 signedValue = inputInt();
+    uint64 unsignedValue = inputUInt();
+    float64 floatValue = inputFloat();
+    bool boolValue = inputBool();
+    char charValue = inputChar();
+    BigInteger bigIntValue = inputBigInteger();
+    BigDecimal bigFloatValue = inputBigDecimal();
+
+    println("{} {} {} {4:2F}", line, signedValue, unsignedValue, floatValue);
+    println("{} {} {} {}", boolValue, charValue, bigIntValue.str(), bigFloatValue.str());
+    return 0;
+}

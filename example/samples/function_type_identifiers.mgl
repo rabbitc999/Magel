@@ -1,0 +1,21 @@
+/* 函数指针类型名和变量名分别按类型、值上下文解析。 */
+int32 T = (int32)1;
+
+int32 next(int32 x) { return x + (int32)1; }
+int32 incrementGlobal() {
+    T = T + (int32)1;
+    return T;
+}
+int64 main() {
+    int64 T = 1;
+    T = T + 1;
+    int32 fn(int32) callback = next;
+    println("{} {} {}", T, callback((int32)T), incrementGlobal());
+    {
+        int32 T = (int32)10;
+        int32 fn(int32) nestedCallback = next;
+        println("{} {}", T, nestedCallback(T));
+    }
+    println("{}", T);
+    return 0;
+}

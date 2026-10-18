@@ -1,0 +1,2 @@
+struct Box { int64 mut& value; };
+int64 main() { Box box; std::lang::println("{}", std::lang::address(box.value)); return 0; }

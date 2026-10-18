@@ -1,0 +1,22 @@
+int64 fn() makeCounter() {
+    int64 value = 7;
+    int64 next() move { value++; return value; }
+    return next;
+}
+void main() {
+    int64 value = 2;
+    int64 read(int64 amount) { return value + amount; }
+    assert(read(3) == 5); value = 4; assert(read(3) == 7);
+    int64 change(int64 amount) mut { value += amount; return value; }
+    assert(change(2) == 6 && value == 6);
+    int64 independent() copy { value++; return value; }
+    value = 100; assert(independent() == 7 && independent() == 8 && value == 100);
+    int64 forward(int64 number);
+    forward = int64 fn(int64 number) { return number * 2; };
+    assert(forward(9) == 18);
+    String text = "owned"; int64 identity = 0; memcpy(&identity, &text, 8);
+    int64 take() move { int64 actual = 0; memcpy(&actual, &text, 8); return actual; }
+    String text = "reset"; assert(take() == identity && text == "reset");
+    auto counter = makeCounter(); assert(counter() == 8 && counter() == 9);
+    println("named functions OK");
+}

@@ -1,0 +1,45 @@
+// 一元运算的拥有结果、临时接收者和按值操作数都应独立清理。
+struct UnaryValue : Drop, Negate<UnaryValue,UnaryValue>,
+Positive<UnaryValue,UnaryValue>, BitNot<UnaryValue,UnaryValue> {
+    static int64 drops;
+    int64 number;
+    String text;
+    List<int64> items;
+    static UnaryValue create(int64 number) {
+        self.number=number;self.text="owned";self.items.push(number);
+    }
+    UnaryValue negate(UnaryValue value) {
+        assert(self.text=="owned" && value.text=="owned");
+        value.items.push(99);
+        assert(self.items.len()==1);
+        return UnaryValue::create(0-self.number);
+    }
+    UnaryValue positive(UnaryValue value) {return UnaryValue::create(self.number);}
+    UnaryValue bitNot(UnaryValue value) {return UnaryValue::create(0-self.number-1);}
+    int64 read(){return self.number;}
+    void drop(){UnaryValue::drops=UnaryValue::drops+1;}
+};
+int64 main(){
+    for(int64 i=0;i<32;i=i+1){
+        int64 before=UnaryValue::drops;
+        {
+            UnaryValue result=-UnaryValue::create(7);
+            assert(result.number==-7 && result.text=="owned" && result.items[0]==-7);
+            assert(UnaryValue::drops==before+2);
+        }
+        assert(UnaryValue::drops==before+3);
+        -UnaryValue::create(7);
+        assert(UnaryValue::drops==before+6);
+        +UnaryValue::create(7);
+        assert(UnaryValue::drops==before+9);
+        ~UnaryValue::create(7);
+        assert(UnaryValue::drops==before+12);
+        int64 value=(-(-UnaryValue::create(7))).read();
+        // 两次一元调用各复制一个操作数，加上三个实际对象，共析构五次。
+        assert(value==7 && UnaryValue::drops==before+17);
+        bool skipped=false && (-UnaryValue::create(7)).read()>0;
+        assert(!skipped && UnaryValue::drops==before+17);
+    }
+    println("ownership unary edges OK");
+    return 0;
+}

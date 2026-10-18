@@ -1,0 +1,312 @@
+{
+  "magel_version": "0.18.3",
+  "measured_at_utc": "2026-10-15T03:44:24.056717+00:00",
+  "base_commit": "3eb732deade7583aa074a8821d4992c3f12f2fb2",
+  "source_diff_sha256": "2e970c33c993ecbcd6bbd1aeec871c9338c5457dccbff17ddbb6eb39315359b9",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "machine": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+  "compiler": "g++ (x86_64-posix-seh-rev3, Built by MinGW-W64 project) 11.2.0",
+  "lua_version": "Lua 5.5.1  Copyright (C) 1994-2026 Lua.org, PUC-Rio",
+  "lua_url": "https://www.lua.org/ftp/lua-5.5.1.tar.gz",
+  "lua_sha256": "1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce",
+  "flags": "Lua official mingw/linux Makefile -O2; Magel VM runner -O2 -DNDEBUG MAGEL_CUSTOM_ALLOCATOR=1; all VM optimizations enabled",
+  "warmups_per_process": 1,
+  "repeats": 7,
+  "timing": "one measured sample per process, alternate configuration order each round; VM steady_clock includes execution preparation and checksum output, excludes source compilation and bytecode loading; Lua os.clock includes loop function only; both exclude process startup",
+  "baseline": "v0.18.2 compiler and VM, each compiler generates its own bytecode",
+  "results": {
+    "integer_loop": {
+      "iterations": 10000000,
+      "configurations": {
+        "Magel 0.18.2": {
+          "samples_ms": [
+            134.534,
+            134.564,
+            134.124,
+            134.197,
+            139.477,
+            135.111,
+            133.22
+          ],
+          "checksum": "49999995000000",
+          "logical_steps": 150000030,
+          "median_ms": 134.534
+        },
+        "Magel 0.18.3": {
+          "samples_ms": [
+            134.418,
+            133.639,
+            135.686,
+            137.853,
+            135.329,
+            133.495,
+            134.404
+          ],
+          "checksum": "49999995000000",
+          "logical_steps": 150000030,
+          "median_ms": 134.418
+        },
+        "Lua 5.5.1": {
+          "samples_ms": [
+            62.0,
+            60.99999999999999,
+            63.0,
+            59.99999999999999,
+            60.99999999999999,
+            61.99999999999999,
+            63.0
+          ],
+          "checksum": "49999995000000",
+          "median_ms": 61.99999999999999
+        }
+      },
+      "compilation_observation": {
+        "Magel 0.18.3": {
+          "single_compile_ms": 543.9867000004597,
+          "bytecode_bytes": 235461
+        },
+        "Magel 0.18.2": {
+          "single_compile_ms": 508.1952000000456,
+          "bytecode_bytes": 236626
+        }
+      }
+    },
+    "branches": {
+      "iterations": 1000000,
+      "configurations": {
+        "Magel 0.18.2": {
+          "samples_ms": [
+            33.29,
+            32.535,
+            33.302,
+            33.4344,
+            33.1361,
+            32.7497,
+            32.6468
+          ],
+          "checksum": "-500000",
+          "logical_steps": 25500030,
+          "median_ms": 33.1361
+        },
+        "Magel 0.18.3": {
+          "samples_ms": [
+            36.021,
+            32.6975,
+            33.1919,
+            33.0323,
+            35.7092,
+            33.5288,
+            32.9919
+          ],
+          "checksum": "-500000",
+          "logical_steps": 25500030,
+          "median_ms": 33.1919
+        },
+        "Lua 5.5.1": {
+          "samples_ms": [
+            12.0,
+            12.0,
+            13.000000000000002,
+            11.999999999999998,
+            11.0,
+            12.000000000000002,
+            12.0
+          ],
+          "checksum": "-500000",
+          "median_ms": 12.0
+        }
+      },
+      "compilation_observation": {
+        "Magel 0.18.3": {
+          "single_compile_ms": 540.3411999996024,
+          "bytecode_bytes": 235615
+        },
+        "Magel 0.18.2": {
+          "single_compile_ms": 503.67279999954917,
+          "bytecode_bytes": 236780
+        }
+      }
+    },
+    "float64_loop": {
+      "iterations": 2000000,
+      "configurations": {
+        "Magel 0.18.2": {
+          "samples_ms": [
+            496.117,
+            489.775,
+            494.07,
+            492.43,
+            489.564,
+            497.323,
+            536.505
+          ],
+          "checksum": "1000000",
+          "logical_steps": 30000030,
+          "median_ms": 494.07
+        },
+        "Magel 0.18.3": {
+          "samples_ms": [
+            350.861,
+            354.286,
+            351.079,
+            352.724,
+            351.043,
+            357.893,
+            354.321
+          ],
+          "checksum": "1000000",
+          "logical_steps": 30000030,
+          "median_ms": 352.724
+        },
+        "Lua 5.5.1": {
+          "samples_ms": [
+            13.999999999999998,
+            13.999999999999998,
+            13.0,
+            13.000000000000002,
+            13.000000000000002,
+            13.000000000000002,
+            12.000000000000002
+          ],
+          "checksum": "1000000",
+          "median_ms": 13.000000000000002
+        }
+      },
+      "compilation_observation": {
+        "Magel 0.18.3": {
+          "single_compile_ms": 543.0175999990752,
+          "bytecode_bytes": 235459
+        },
+        "Magel 0.18.2": {
+          "single_compile_ms": 496.67829999998503,
+          "bytecode_bytes": 236624
+        }
+      }
+    },
+    "calls": {
+      "iterations": 1000000,
+      "configurations": {
+        "Magel 0.18.2": {
+          "samples_ms": [
+            628.905,
+            677.865,
+            638.139,
+            630.879,
+            630.368,
+            621.239,
+            626.053
+          ],
+          "checksum": "8499991500000",
+          "logical_steps": 27000030,
+          "median_ms": 630.368
+        },
+        "Magel 0.18.3": {
+          "samples_ms": [
+            610.742,
+            611.588,
+            611.794,
+            608.16,
+            611.333,
+            619.079,
+            610.408
+          ],
+          "checksum": "8499991500000",
+          "logical_steps": 27000030,
+          "median_ms": 611.333
+        },
+        "Lua 5.5.1": {
+          "samples_ms": [
+            19.0,
+            19.0,
+            19.0,
+            19.0,
+            19.0,
+            18.0,
+            18.0
+          ],
+          "checksum": "8499991500000",
+          "median_ms": 19.0
+        }
+      },
+      "compilation_observation": {
+        "Magel 0.18.3": {
+          "single_compile_ms": 549.2204000001948,
+          "bytecode_bytes": 235484
+        },
+        "Magel 0.18.2": {
+          "single_compile_ms": 507.62370000120427,
+          "bytecode_bytes": 236649
+        }
+      }
+    },
+    "array_reads": {
+      "iterations": 1000000,
+      "configurations": {
+        "Magel 0.18.2": {
+          "samples_ms": [
+            83.9955,
+            83.99,
+            92.2657,
+            84.1321,
+            84.1574,
+            84.3419,
+            84.5095
+          ],
+          "checksum": "2500000",
+          "logical_steps": 33000140,
+          "median_ms": 84.1574
+        },
+        "Magel 0.18.3": {
+          "samples_ms": [
+            89.3054,
+            86.6847,
+            85.2041,
+            86.0342,
+            130.929,
+            85.8369,
+            85.4951
+          ],
+          "checksum": "2500000",
+          "logical_steps": 33000136,
+          "median_ms": 86.0342
+        },
+        "Lua 5.5.1": {
+          "samples_ms": [
+            11.0,
+            11.999999999999998,
+            11.0,
+            12.0,
+            14.000000000000002,
+            12.0,
+            11.0
+          ],
+          "checksum": "2500000",
+          "median_ms": 11.999999999999998
+        }
+      },
+      "compilation_observation": {
+        "Magel 0.18.3": {
+          "single_compile_ms": 516.8555000000197,
+          "bytecode_bytes": 236393
+        },
+        "Magel 0.18.2": {
+          "single_compile_ms": 502.48240000109945,
+          "bytecode_bytes": 237570
+        }
+      }
+    }
+  },
+  "binaries": {
+    "magel.exe": "f076b18b5e267bae2b49eaeab52f252a66cc65c19ce27d9ae351b127a5bcb3f3",
+    "tmp\\optimization103\\runner.exe": "4fb1a098a548c7737e46f72c246cb3c25fc84cff30885285e41edab3942792e8",
+    "G:\\Desktop\\magel\\build\\vm-lua-benchmark\\lua-5.5.1\\src\\lua.exe": "d63d43f5c45e719621600ae7b3858b2d257534e4561a4a82ccc788aaceef705f",
+    "tmp\\optimization103\\magel-1.0.2.exe": "68ab33e51d6be37918890cc8244d3c25503429911db3b62ead45447f712cfa14",
+    "tmp\\optimization103\\baseline-runner.exe": "4764183a5a575d9758344f55d53b25d00436a34211eac98f7067175cecdbaf14"
+  },
+  "baseline_commit": "320108bfda7c0b7035ed019a0010a87b43fe0e71",
+  "cpu": {
+    "Name": "AMD Ryzen 5 5600X 6-Core Processor             ",
+    "NumberOfCores": 6,
+    "NumberOfLogicalProcessors": 12
+  }
+}

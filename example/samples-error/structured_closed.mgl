@@ -1,0 +1,11 @@
+import std::json;
+int64 main() {
+    /* 保存解析结果，便于后续验证已关闭资源的访问诊断。 */
+    Result<std::json::JsonValue, String> parsed = std::json::parse("[1]");
+    std::json::JsonValue root = parsed.unwrap();
+    Option<std::json::JsonValue> childOption = root.at(0);
+    std::json::JsonValue child = childOption.unwrap();
+    root.close();
+    child.asInt();
+    return 0;
+}

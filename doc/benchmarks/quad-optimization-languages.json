@@ -1,0 +1,101 @@
+{
+  "iterations": 10000000,
+  "warmups": 1,
+  "repeats": 7,
+  "java": "java 22.0.1 2024-04-16\nJava(TM) SE Runtime Environment (build 22.0.1+8-16)\nJava HotSpot(TM) 64-Bit Server VM (build 22.0.1+8-16, mixed mode, sharing)",
+  "java_flags": "-Xbatch; 20 full-loop warmups; runtime long input; volatile result sink",
+  "java_interpreter_flags": "-Xint; JIT disabled; 1 full-loop warmup; runtime long input; volatile result sink",
+  "register_core_variants": {},
+  "java_cold_single_run_process_ms": 139.8122,
+  "java_cold_single_loop_ms": 4.0353,
+  "platform": "Windows-10-10.0.19045-SP0",
+  "python": "3.12.3 (tags/v3.12.3:f6650f9, Apr  9 2024, 14:05:25) [MSC v.1938 64 bit (AMD64)]",
+  "lua": "Lua 5.5.1  Copyright (C) 1994-2026 Lua.org, PUC-Rio",
+  "lua_url": "https://www.lua.org/ftp/lua-5.5.1.tar.gz",
+  "lua_sha256": "1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce",
+  "compiler": "gcc (x86_64-posix-seh-rev3, Built by MinGW-W64 project) 11.2.0",
+  "compiler_flags": "Lua -O2; Magel -O2 -DNDEBUG MAGEL_CUSTOM_ALLOCATOR=1",
+  "aot_flags": "-O2 unchecked; fresh runtime input per sample prevents folding and cross-sample hoisting; generated source retained",
+  "timing": "Java System.nanoTime; AOT std::clock::nowNanos around calculate only; Python perf_counter_ns; Lua os.clock; Magel steady_clock; exclude parsing and file loading; Magel includes execution-plan setup and final checksum output",
+  "results": {
+    "Python": {
+      "median_ms": 408.2006,
+      "samples_ms": [
+        490.1922,
+        409.7257,
+        408.2006,
+        406.7264,
+        410.7495,
+        401.7199,
+        406.9914
+      ],
+      "checksum": "49999995000000"
+    },
+    "Lua": {
+      "median_ms": 79.99999999999999,
+      "samples_ms": [
+        66.0,
+        79.99999999999999,
+        79.99999999999999,
+        70.0,
+        81.00000000000001,
+        83.00000000000001,
+        74.99999999999996
+      ],
+      "checksum": "49999995000000"
+    },
+    "Magel VM optimized": {
+      "median_ms": 129.422,
+      "samples_ms": [
+        130.052,
+        128.917,
+        129.25,
+        129.319,
+        129.422,
+        129.524,
+        133.339
+      ],
+      "checksum": "49999995000000",
+      "logical_steps": 150000035
+    },
+    "Magel AOT": {
+      "median_ms": 2.16,
+      "samples_ms": [
+        2.17,
+        2.23,
+        2.17,
+        2.16,
+        2.16,
+        2.16,
+        2.16
+      ],
+      "checksum": "49999995000000"
+    },
+    "Java HotSpot interpreter (-Xint)": {
+      "median_ms": 158.5121,
+      "samples_ms": [
+        115.8985,
+        121.7378,
+        159.8529,
+        158.5121,
+        159.5528,
+        160.0196,
+        139.4493
+      ],
+      "checksum": "49999995000000"
+    },
+    "Java HotSpot JIT": {
+      "median_ms": 2.2928,
+      "samples_ms": [
+        2.3007,
+        2.2928,
+        2.292,
+        2.4631,
+        2.2921,
+        2.292,
+        2.293
+      ],
+      "checksum": "49999995000000"
+    }
+  }
+}

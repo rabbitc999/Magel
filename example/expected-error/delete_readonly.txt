@@ -1,0 +1,1 @@
+magel：example/samples-error/delete_readonly.mgl 第 6 行第 5 列：delete 只能用在可写引用（`T mut&`）或运行时数组（`T[]`）上；只读引用（`T const&`）不持有对象

@@ -1,0 +1,24 @@
+Any global_box = 11;
+
+int64 main() {
+    int64 a = 0;
+    Any b = a;
+    a = 5;
+    println("first={} global={}", (int64)b.getValue(), (int64)global_box.getValue());
+
+    b = 7;
+    b = (int64)b.getValue();            /* RHS must be read before the old box is released */
+    Any copy = b;
+    Any explicit_copy = b.copy();
+    Any assigned_copy;
+    assigned_copy = b.copy();
+    b = "hello";
+    println("copy={} text_type={}", (int64)copy.getValue(), isType<String>(&b));
+    println("explicit={} assigned={}", (int64)explicit_copy.getValue(),
+    (int64)assigned_copy.getValue());
+
+    b.set(9);
+    println("set={}", (int64)b.getValue());
+    delete global_box;
+    return 0;
+}

@@ -1,0 +1,17 @@
+/* macro_probe.mgl —— 干净样例：宏定义、`$for` 分支与调用都配对正确。 */
+
+$macro ADD(x, y)
+((x) + (y))
+$end_macro
+
+$macro DESCRIBE(...items)
+$for item in items
+std::lang::println("{}", item);
+$end_for
+$end_macro
+
+int64 main() {
+    int64 total = ADD(1, 2);
+    DESCRIBE(circle);
+    return total;
+}

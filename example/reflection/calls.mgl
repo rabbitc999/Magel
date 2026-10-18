@@ -1,0 +1,84 @@
+import std::reflect;
+@Reflect interface Reader { int64 read(); int64 bump(int64 by); };
+@Reflect struct Counter : Reader {
+    int64 value;
+    Counter(int64 initial){self.value=initial;}
+    int64 read(){return self.value;}
+    int64 bump(int64 by){self.value+=by;return self.value;}
+    static int64 answer(int64 by){return 40+by;}
+};
+@Reflect enum Choice { Ready, Value(int64 value);
+    int64 read(){int64 result=0;match(self){Ready=>{result=1;}Value(v)=>{result=v;}}return result;}
+    static int64 answer(){return 8;}
+};
+@Reflect int64 plus(int64 x){return x+1;}
+@Reflect String echo(String text){return text;}
+@Reflect void nothing(){}
+@Reflect int64 unsupported(int64 const& x){return x;}
+@Reflect int32 overloaded(int32 value){return (int32)(value+1);}
+@Reflect int64 overloaded(int64 value){return value+2;}
+@Reflect uint64 high(uint64 value){return value;}
+@Reflect float32 single(float32 value){return value;}
+@Reflect float64 doubleValue(float64 value){return value;}
+@Reflect int64 getFuncInfo(String value){assert(value=="alive");return 5;}
+@Reflect bool flag(bool value){return value;}
+@Reflect char character(char value){return value;}
+struct Hidden {int64 read(){return 99;}};
+int64 main(){
+    List<std::reflect::ReflectValue> args;List<std::reflect::ReflectValue> empty;
+    args.push(std::reflect::ReflectValue::I64(2));
+    assert(std::reflect::call("plus",args).unwrap().asI64().unwrap()==3);
+    assert(std::reflect::call("absent",args).isErr());
+    assert(std::reflect::call("unsupported",args).isErr());
+    Counter obj=std::reflect::construct<Counter>(args).unwrap();
+    assert(std::reflect::callMethod<Counter>(&obj,"bump",args).unwrap().asI64().unwrap()==4);
+    assert(std::reflect::callMethodConst<Counter>(&obj,"read",empty).unwrap().asI64().unwrap()==4);
+    assert(std::reflect::callMethodConst<Counter>(&obj,"bump",args).isErr());
+    assert(std::reflect::callStatic<Counter>("answer",args).unwrap().asI64().unwrap()==42);
+    Counter mut& interfaceObj=new Counter(4);Any boxed;boxed.set(&interfaceObj);Reader mut& reader=boxed.getReference();
+    assert(std::reflect::callInterface<Reader>(reader,"bump",args).unwrap().asI64().unwrap()==6);
+    assert(std::reflect::callInterfaceConst<Reader>(reader,"read",empty).unwrap().asI64().unwrap()==6);
+    assert(std::reflect::callInterfaceConst<Reader>(reader,"bump",args).isErr());
+    Choice choice=Choice::Ready;
+    assert(std::reflect::callEnumMethod<Choice>(&choice,"read",empty).unwrap().asI64().unwrap()==1);
+    choice=Choice::Value(9);
+    assert(std::reflect::callEnumMethodConst<Choice>(&choice,"read",empty).unwrap().asI64().unwrap()==9);
+    assert(std::reflect::callEnumStatic<Choice>("answer",empty).unwrap().asI64().unwrap()==8);
+    assert(std::reflect::call("nothing",empty).isOk());
+    List<std::reflect::ReflectValue> textArgs;textArgs.push(std::reflect::ReflectValue::Text("alive"));
+    assert(std::reflect::call("echo",textArgs).unwrap().asText().unwrap()=="alive");
+    assert(textArgs[0].asText().unwrap()=="alive");
+    assert(std::reflect::call("getFuncInfo",textArgs).unwrap().asI64().unwrap()==5);
+    args[0]=std::reflect::ReflectValue::I32((int32)2);
+    assert(std::reflect::call("plus",args).isErr());
+    assert(std::reflect::construct<Counter>(args).isErr());
+    assert(std::reflect::callMethod<Counter>(&obj,"bump",args).isErr());
+    assert(std::reflect::callStatic<Counter>("answer",empty).isErr());
+    List<std::reflect::ReflectValue> operand;operand.push(std::reflect::ReflectValue::I64(2));
+    operand[0]=std::reflect::ReflectValue::I32((int32)10);
+    assert(std::reflect::call("overloaded",operand).unwrap().asI32().unwrap()==(int32)11);
+    operand[0]=std::reflect::ReflectValue::I64(10);
+    assert(std::reflect::call("overloaded",operand).unwrap().asI64().unwrap()==12);
+    operand[0]=std::reflect::ReflectValue::U64((uint64)0xffffffffffffffff);
+    assert(std::reflect::call("high",operand).unwrap().asU64().unwrap()==(uint64)0xffffffffffffffff);
+    operand[0]=std::reflect::ReflectValue::F32((float32)1.25);
+    assert(std::reflect::call("single",operand).unwrap().asF32().unwrap()==(float32)1.25);
+    operand[0]=std::reflect::ReflectValue::F64(2.5);
+    assert(std::reflect::call("doubleValue",operand).unwrap().asF64().unwrap()==2.5);
+    operand[0]=std::reflect::ReflectValue::Bool(true);
+    assert(std::reflect::call("flag",operand).unwrap().asBool().unwrap());
+    operand[0]=std::reflect::ReflectValue::Char('x');
+    assert(std::reflect::call("character",operand).unwrap().asChar().unwrap()=='x');
+    Hidden hidden;assert(std::reflect::callMethod<Hidden>(&hidden,"read",empty).isErr());
+    // 缺失、个数、精确类型和接收者错误须保留可区分的错误码。
+    match(std::reflect::call("absent",empty).error()){std::reflect::ReflectError::NotFound=>{} _=>{assert(false);}}
+    match(std::reflect::call("plus",empty).error()){std::reflect::ReflectError::ArgumentCount=>{} _=>{assert(false);}}
+    match(std::reflect::call("plus",operand).error()){std::reflect::ReflectError::TypeMismatch=>{} _=>{assert(false);}}
+    match(std::reflect::callMethodConst<Counter>(&obj,"bump",args).error()){std::reflect::ReflectError::TypeMismatch=>{} _=>{assert(false);}}
+    match(std::reflect::call("unsupported",args).error()){std::reflect::ReflectError::UnsupportedSignature=>{} _=>{assert(false);}}
+    match(std::reflect::callMethod<Hidden>(&hidden,"read",empty).error()){std::reflect::ReflectError::NotExposed=>{} _=>{assert(false);}}
+
+    delete interfaceObj;
+    println("reflection calls OK");return 0;
+}
+

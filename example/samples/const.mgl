@@ -1,0 +1,40 @@
+/* 不可变变量：`const T x = …` 声明之后不能再赋值，整个对象都是只读的。
+ *
+ *   * `const` 变量必须有初值；
+ *   * 给它赋值、改它的字段 / 元素都是编译期错误（见 samples-error/const_assign.mgl）；
+ *   * 不可变变量照样能读、能当实参传、能取地址（拿到的是只读引用）。 */
+
+struct Point {
+    int64 x;
+    int64 y;
+};
+
+/* 全局的不可变常量 */
+const int64 LIMIT = 3;
+const float64 PI = 3.14159265358979;
+
+int64 main() {
+    const int64 step = 10;
+
+    int64 data[4];
+    data[0] = 1;
+    data[1] = 2;
+    data[2] = 3;
+    data[3] = 4;
+
+    const int64 const& view = (int64 const&)data;   /* 不可变变量 + 只读引用 */
+    int64 sum = 0;
+    int64 i = 0;
+    while (i < LIMIT) {
+        sum = sum + view[i] * step;
+        i = i + 1;
+    }
+    println("LIMIT={} step={} sum={}", LIMIT, step, sum);
+
+    Point origin;
+    origin.x = 3;
+    origin.y = 4;
+    const int64 total = origin.x * origin.x + origin.y * origin.y;
+    println("PI={:3F} total={}", PI, total);
+    return 0;
+}

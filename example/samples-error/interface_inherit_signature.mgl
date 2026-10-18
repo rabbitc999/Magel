@@ -1,0 +1,8 @@
+/* 派生接口里同名方法签名不同：接口不接受重载，直接报错 */
+interface A {
+    int64 m(int64 x);
+};
+interface B : A {
+    int64 m(String x);
+};
+int64 main() { return 0; }

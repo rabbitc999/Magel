@@ -1,0 +1,27 @@
+/* macro_overload.mgl —— 同名正文宏按**实参个数**重载：一个名字挂多种形态。
+ *
+ * 挑形态的顺序：个数正好对上的固定形态 → 变长形态（`...rest`）。个数对不上会给一条
+ * 带候选清单的错误，不会静默取一个不相干的形态。
+ *
+ * 注意变长尾参的语义：`rest` 会按 `, ` 拼成一段**文本**再做替换，所以在调用位置就是
+ * "一串实参"（和 C 的 `__VA_ARGS__` 一个意思）——这里正好当三个实参喂给 println。
+ */
+
+$macro REPORT(a)
+println("one {}", a);
+$end_macro
+
+$macro REPORT(a, b)
+println("two {} {}", a, b);
+$end_macro
+
+$macro REPORT(...rest)
+println("three {} {} {}", rest);
+$end_macro
+
+int64 main() {
+    $REPORT(7)
+    $REPORT(1, 2)
+    $REPORT(1, 2, 3)
+    return 0;
+}

@@ -1,0 +1,6 @@
+import std::algorithms;
+
+int64 main() {
+    std::lang::List<int64> values;
+    return std::algorithms::findValue<int64>(values, "text");
+}

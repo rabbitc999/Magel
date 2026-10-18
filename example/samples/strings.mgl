@@ -1,0 +1,33 @@
+/* strings.mgl —— 字符串比较（字典序）、bool / true / false / 空字符串。
+ *
+ *   ./magel samples/strings.mgl
+ *   → 比较结果与布尔字面量
+ *
+ * 样例演示字符串比较、布尔与空字符串。
+ */
+
+int64 main() {
+    String greeting = "hello";
+    String target = "world";
+    String space = " ";
+    String sentence = "hello world";
+
+    println("greeting={} target={}", greeting, target);
+    println("sentence={}", sentence);
+
+    /* 比较按字典序：== != < <= > >= */
+    bool same = (greeting == target);
+    bool smaller = (greeting < target);
+    println("greeting == target : {}", same);
+    println("greeting <  target : {}", smaller);
+    println("sentence >  greeting : {}", sentence > greeting);
+    println("sentence == \"hello world\" : {}", sentence == "hello world");
+    println("space={}（长度用 {} 打不出来时看比较结果）", space, space);
+
+    /* 空字符串使用双引号 */
+    String empty = "";
+    println("empty is empty : {}", empty == "");
+    println("!true={} !false={}", !true, !false);
+    println("true && false = {}, true || false = {}", true && false, true || false);
+    return 0;
+}

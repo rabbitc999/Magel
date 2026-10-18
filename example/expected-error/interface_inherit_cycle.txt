@@ -1,0 +1,1 @@
+magel：example/samples-error/interface_inherit_cycle.mgl 第 2 行第 1 列：接口继承成环：A（接口不能直接或间接继承自己）

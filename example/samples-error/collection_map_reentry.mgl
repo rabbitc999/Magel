@@ -1,0 +1,12 @@
+// 比较回调访问正在查找的同一个 Map 必须报告错误。
+struct Key : Equal<bool, Key> {
+    int64 id;
+    bool leftEqual(Key other) { return touches() == 1 && self.id == other.id; }
+};
+std::lang::Map<Key, int64> values;
+int64 touches() { return values.len(); }
+int64 main() {
+    Key key; key.id = 1;
+    values.put(key, 7);
+    return values.has(key);
+}

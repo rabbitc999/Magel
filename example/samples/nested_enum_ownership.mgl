@@ -1,0 +1,52 @@
+// 枚举的 List 载荷复制进 List/Map 后仍保持独立值语义。
+enum Tree {
+    Number(int64 value),
+    Branch(String label, List<Tree> children);
+};
+
+Tree branch(String label, Tree left, Tree right) {
+    List<Tree> children;
+    children.push(left);
+    children.push(right);
+    return Tree::Branch(label, children);
+}
+
+int64 sum(Tree value) {
+    match (value) {
+        Tree::Number(number) => { return number; }
+        Tree::Branch(label, children) => {
+            int64 total = 0;
+            for (int64 i = 0; i < children.len(); i = i + 1) {
+                total = total + sum(children[i]);
+                assert(label == "root" || label == "child");
+            }
+            return total;
+        }
+    }
+    return -1;
+}
+
+int64 main() {
+    for (int64 repeat = 0; repeat < 8; repeat = repeat + 1) {
+        Tree child = branch("child", Tree::Number(2), Tree::Number(3));
+        Tree root = branch("root", Tree::Number(1), child);
+        List<Tree> values;
+        values.push(root);
+        values.push(child);
+        List<Tree> copied = values;
+        Map<String, Tree> keyed;
+        keyed.put("tree", root);
+        Map<String, Tree> mapCopy = keyed;
+        root = Tree::Number(100);
+        child = Tree::Number(200);
+        assert(sum(values[0]) == 6 && sum(values[1]) == 5);
+        assert(sum(keyed["tree"]) == 6);
+        values.clear();
+        keyed.put("tree", Tree::Number(7));
+        assert(sum(copied[0]) == 6 && sum(mapCopy["tree"]) == 6);
+        assert(sum(keyed["tree"]) == 7);
+        keyed.remove("tree");
+    }
+    println("nested enum ownership OK");
+    return 0;
+}

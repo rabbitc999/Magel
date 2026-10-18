@@ -1,0 +1,1 @@
+static new: builds=5 drops=6 generic/enum/result=OK

@@ -1,0 +1,150 @@
+module std::collections;
+
+/* 标准集合模块：import std::collections; 后使用 std::collections::Deque 等类型。 */
+
+struct Deque<T>: Iterator<T>, Index<T, int64>, Drop {
+    std::lang::List<T> values;
+
+    static Deque<T> create() {
+        std::lang::List<T> values;
+        self.values = values.copy();
+    }
+
+    void pushBack(T value) { self.values.push(value); }
+    void pushFront(T value) { self.values.insert(0, value); }
+    Option<T> popBack() {
+        if (self.values.len() == 0) { return Option<T>::None; }
+        return Option<T>::Value(self.values.pop());
+    }
+    Option<T> popFront() {
+        if (self.values.len() == 0) { return Option<T>::None; }
+        T value = self.values.at(0);
+        self.values.remove(0);
+        return Option<T>::Value(value);
+    }
+    T index(int64 key) { return self.values.at(key); }
+    Option<T> iterator(int64 index) {
+        if (index < self.values.len()) { return Option<T>::Value(self.values.at(index)); }
+        return Option<T>::None;
+    }
+    int64 len() { return self.values.len(); }
+    bool isEmpty() { return self.values.len() == 0; }
+    void clear() { self.values.clear(); }
+    void drop() { delete self.values; }
+};
+
+struct Queue<T>: Iterator<T>, Drop {
+    std::lang::List<T> values;
+
+    static Queue<T> create() {
+        std::lang::List<T> values;
+        self.values = values.copy();
+    }
+
+    void push(T value) { self.values.push(value); }
+    Option<T> pop() {
+        if (self.values.len() == 0) { return Option<T>::None; }
+        T value = self.values.at(0);
+        self.values.remove(0);
+        return Option<T>::Value(value);
+    }
+    Option<T> peek() {
+        if (self.values.len() == 0) { return Option<T>::None; }
+        return Option<T>::Value(self.values.at(0));
+    }
+    Option<T> iterator(int64 index) {
+        if (index < self.values.len()) { return Option<T>::Value(self.values.at(index)); }
+        return Option<T>::None;
+    }
+    int64 len() { return self.values.len(); }
+    bool isEmpty() { return self.values.len() == 0; }
+    void drop() { delete self.values; }
+};
+
+struct RingBuffer<T>: Iterator<T>, Drop {
+    std::lang::List<T> values;
+    int64 capacity;
+
+    static RingBuffer<T> withCapacity(int64 capacity) {
+        std::lang::assert(capacity > 0);
+        RingBuffer<T> result;
+        std::lang::List<T> values;
+        result.values = values.copy();
+        result.capacity = capacity;
+        return result;
+    }
+
+    bool push(T value) {
+        if (self.values.len() >= self.capacity) { return false; }
+        self.values.push(value);
+        return true;
+    }
+    Option<T> pop() {
+        if (self.values.len() == 0) { return Option<T>::None; }
+        T value = self.values.at(0);
+        self.values.remove(0);
+        return Option<T>::Value(value);
+    }
+    Option<T> iterator(int64 index) {
+        if (index < self.values.len()) { return Option<T>::Value(self.values.at(index)); }
+        return Option<T>::None;
+    }
+    int64 len() { return self.values.len(); }
+    int64 available() { return self.capacity - self.values.len(); }
+    void drop() { delete self.values; }
+};
+
+struct FixedVector<T>: Iterator<T>, Index<T, int64>, Drop {
+    std::lang::List<T> values;
+    int64 capacity;
+
+    static FixedVector<T> withCapacity(int64 capacity) {
+        std::lang::assert(capacity >= 0);
+        FixedVector<T> result;
+        std::lang::List<T> values;
+        result.values = values.copy();
+        result.capacity = capacity;
+        return result;
+    }
+
+    bool push(T value) {
+        if (self.values.len() >= self.capacity) { return false; }
+        self.values.push(value);
+        return true;
+    }
+    Option<T> pop() {
+        if (self.values.len() == 0) { return Option<T>::None; }
+        return Option<T>::Value(self.values.pop());
+    }
+    T index(int64 key) { return self.values.at(key); }
+    Option<T> iterator(int64 index) {
+        if (index < self.values.len()) { return Option<T>::Value(self.values.at(index)); }
+        return Option<T>::None;
+    }
+    int64 len() { return self.values.len(); }
+    int64 capacityValue() { return self.capacity; }
+    void drop() { delete self.values; }
+};
+
+struct Channel<T>: Iterator<T>, Drop {
+    std::lang::List<T> pending;
+
+    static Channel<T> create() {
+        std::lang::List<T> pending;
+        self.pending = pending.copy();
+    }
+
+    void send(T value) { self.pending.push(value); }
+    Option<T> receive() {
+        if (self.pending.len() == 0) { return Option<T>::None; }
+        T value = self.pending.at(0);
+        self.pending.remove(0);
+        return Option<T>::Value(value);
+    }
+    Option<T> iterator(int64 index) {
+        if (index < self.pending.len()) { return Option<T>::Value(self.pending.at(index)); }
+        return Option<T>::None;
+    }
+    int64 len() { return self.pending.len(); }
+    void drop() { delete self.pending; }
+};

@@ -1,0 +1,7 @@
+
+import std::coroutine;
+
+int64 main() {
+    std::coroutine::wait(1);
+    return 0;
+}

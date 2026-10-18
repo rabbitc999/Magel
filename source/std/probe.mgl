@@ -1,0 +1,5 @@
+module std::probe;
+
+struct Probe { int64 value; };
+
+int64 twice(int64 x) { return x * 2; }

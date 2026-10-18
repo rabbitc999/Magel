@@ -1,0 +1,2 @@
+enum E { A(int64 value), B(int64 value) };
+int64 main() { E event = E::A(1); match (event) { E::A(x) | E::B(y) => { } } return 0; }

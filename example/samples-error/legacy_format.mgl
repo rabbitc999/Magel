@@ -1,0 +1,6 @@
+/* `format("…")` 的旧式百分号格式串已删除：现在统一是 `std::lang::format("…{}…", …)`。 */
+int64 main() {
+    int64 n = 7;
+    std::lang::println("{}", format("%d", n));
+    return 0;
+}

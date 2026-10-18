@@ -1,0 +1,12 @@
+interface Code {
+    int64 code();
+    String describe();
+};
+
+enum Status : Code {
+    Ready, Failed;
+
+    int64 code() { return 1; }
+};
+
+int64 main() { return 0; }

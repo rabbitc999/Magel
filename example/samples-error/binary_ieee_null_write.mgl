@@ -1,0 +1,5 @@
+int64 main() {
+    uint8 mut& bytes = (uint8 mut&)0;
+    std::lang::float32ToBytes((float32)1.5, bytes, 4);
+    return 0;
+}

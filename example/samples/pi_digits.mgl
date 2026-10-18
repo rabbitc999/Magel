@@ -1,0 +1,81 @@
+/* pi_digits.mgl —— 用 Chudnovsky 级数计算指定小数位数的圆周率。
+ *
+ * 默认 20 位；解释运行：./magel samples/pi_digits.mgl -- 100
+ * 所有级数和平方根计算都使用 BigInteger，没有浮点精度上限。
+ */
+
+import std::parse;
+
+BigInteger power10(int64 exponent) {
+    BigInteger result = BigInteger(1);
+    for (int64 i = 0; i < exponent; i = i + 1) { result = result * 10; }
+    return result;
+}
+
+/* 牛顿法求 floor(sqrt(value))。十进制位数给出一个不小于平方根的初值。 */
+BigInteger integerSqrt(BigInteger value) {
+    BigInteger current = power10((len(value.str()) + 1) / 2);
+    while (true) {
+        BigInteger next = (current + value / current) / 2;
+        if (next >= current) { return current; }
+        current = next;
+    }
+    return current;
+}
+
+/* 返回 floor(pi * 10^digits)。多算 10 位，最后再去掉保护位。 */
+BigInteger piScaled(int64 digits) {
+    int64 guard = 10;
+    int64 workingDigits = digits + guard;
+    BigInteger scale = power10(workingDigits);
+    BigInteger root = integerSqrt(BigInteger(10005) * scale * scale);
+
+    /* Chudnovsky: sum M_k * L_k / X_k，M_0=1、L_0=13591409、X_0=1。
+     * 用 numerator / denominator 保存整个有理数和，避免逐项浮点舍入。
+     * M_k/M_(k-1) = (K^3 - 16K)/k^3，其中 K=12k-6。
+     */
+    BigInteger m = BigInteger(1);
+    BigInteger l = BigInteger(13591409);
+    BigInteger numerator = l.copy();
+    BigInteger denominator = BigInteger(1);
+    BigInteger xFactor = BigInteger("-262537412640768000");
+    int64 terms = digits / 14 + 3;  /* 每项约增加 14 位，再留保护项。 */
+
+    for (int64 k = 1; k < terms; k = k + 1) {
+        BigInteger factor = BigInteger(k) * 12 - 6;
+        BigInteger cube = BigInteger(k) * k * k;
+        m = m * (factor * factor * factor - factor * 16) / cube;
+        l = l + 545140134;
+        denominator = denominator * xFactor;
+        numerator = numerator * xFactor + m * l;
+        delete factor;
+        delete cube;
+    }
+
+    BigInteger withGuard = 426880 * root * denominator / numerator;
+    return withGuard / power10(guard);
+}
+
+int64 main(List<String> arguments) {
+    int64 digits = 20;
+    if (arguments.len() > 1) { panic("用法：pi_digits [小数位数]"); }
+    if (arguments.len() == 1) {
+        Result<int64, std::parse::ParseError> parsed = std::parse::Parse::parseInt64(arguments[0]);
+        match (parsed) {
+            Result<int64, std::parse::ParseError>::Ok(value) => { digits = value; }
+            Result<int64, std::parse::ParseError>::Err(error) => {
+                panic("小数位数必须是非负整数");
+            }
+        }
+    }
+    if (digits < 0) { panic("小数位数必须是非负整数"); }
+
+    String text = piScaled(digits).str();
+    putChar(text[0]);
+    if (digits > 0) {
+        putChar('.');
+        for (int64 i = 1; i < len(text); i = i + 1) { putChar(text[i]); }
+    }
+    println("");
+    return 0;
+}

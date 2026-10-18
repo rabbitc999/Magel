@@ -1,0 +1,9 @@
+enum State { Ready, Failed(String message) };
+
+int64 main() {
+    State state = State::Ready;
+    match (state) {
+        State::Ready => { return 0; }
+    }
+    return 0;
+}

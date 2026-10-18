@@ -1,0 +1,9 @@
+/* 只声明、没绑定的宿主函数（`int32 cpp_missing(int32);`）：解释 / 内嵌路径在
+ * **编译期**就报错，而不是等到运行期"函数入口不存在"。
+ * （`--emit` / `--svmb` 只产出 .quad，绑定由目标程序的 bindMagelGlue 负责，那条路不查。） */
+int32 cpp_missing(int32 value);
+
+int64 main()
+{
+    return cpp_missing((int32)1);
+}

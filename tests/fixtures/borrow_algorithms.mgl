@@ -1,0 +1,123 @@
+// 实际堆节点的链表、二叉搜索树，以及带自环和重边的图。
+int64 listDrops=0, treeDrops=0, treeAllocations=0;
+struct Link : Drop {
+    int64 value;
+    Option<Link mut&> next;
+    void drop(){listDrops+=1;}
+};
+struct Tree : Drop {
+    int64 value; int64 copies;
+    Option<Tree mut&> left;
+    Option<Tree mut&> right;
+    void drop(){treeDrops+=1;}
+};
+struct Graph {
+    List<int64> head;
+    List<int64> to;
+    List<int64> next;
+};
+int64 random(int64 mut& seed){seed=(seed*48271)%2147483647;return seed;}
+Option<Link mut&> reverse(Option<Link mut&> head){
+    Option<Link mut&> previous=Option<Link mut&>::None;
+    Option<Link mut&> cursor=head;
+    while(cursor.isValue()){
+        Link mut& node=cursor.unwrap();
+        Option<Link mut&> rest=node.next;
+        node.next=previous;
+        previous=cursor;
+        cursor=rest;
+    }
+    return previous;
+}
+Tree mut& makeTree(int64 value){
+    Tree mut& node = heap Tree; node.left=Option<Tree mut&>::None; node.right=Option<Tree mut&>::None; node.value=value; node.copies=1; treeAllocations+=1; return node;
+}
+void insert(Tree mut& root,int64 value){
+    if(value==root.value){root.copies+=1;return;}
+    if(value<root.value){
+        if(root.left.isValue()){insert(root.left.unwrap(),value);}
+        else {Tree mut& node=makeTree(value);root.left=Option<Tree mut&>::Value(node);}
+    }else{
+        if(root.right.isValue()){insert(root.right.unwrap(),value);}
+        else {Tree mut& node=makeTree(value);root.right=Option<Tree mut&>::Value(node);}
+    }
+}
+void inorder(Option<Tree mut&> root,List<int64> mut& result){
+    if(root.isNone()){return;}
+    Tree mut& node=root.unwrap();
+    inorder(node.left,result);
+    for(int64 i=0;i<node.copies;i++){result.push(node.value);}
+    inorder(node.right,result);
+}
+void destroyTree(Option<Tree mut&> root){
+    if(root.isNone()){return;}
+    Tree mut& node=root.unwrap();
+    destroyTree(node.left);destroyTree(node.right);delete node;
+}
+void edge(Graph mut& graph,int64 from,int64 target){
+    graph.to.push(target);graph.next.push(graph.head[from]);graph.head[from]=graph.to.len()-1;
+}
+void dfs(Graph const& graph,int64 vertex,List<int64> mut& seen){
+    if(seen[vertex]!=0){return;}
+    seen[vertex]=1;
+    for(int64 e=graph.head[vertex];e!=-1;e=graph.next[e]){dfs(graph,graph.to[e],seen);}
+}
+List<int64> bfs(Graph const& graph,int64 start){
+    List<int64> distance,queue;
+    for(int64 i=0;i<graph.head.len();i++){distance.push(-1);}
+    queue.push(start);distance[start]=0;
+    for(int64 cursor=0;cursor<queue.len();cursor++){
+        int64 vertex=queue[cursor];
+        for(int64 e=graph.head[vertex];e!=-1;e=graph.next[e]){
+            int64 target=graph.to[e];
+            if(distance[target]==-1){distance[target]=distance[vertex]+1;queue.push(target);}
+        }
+    }
+    return distance;
+}
+int64 main(){
+    int64 n=std::lang::inputInt(),seed=std::lang::inputInt();
+    List<int64> values;Option<Link mut&> head=Option<Link mut&>::None;Option<Tree mut&> tree=Option<Tree mut&>::None;
+    for(int64 i=0;i<n;i++){
+        int64 value=random(&seed)%1000;values.push(value);
+        Link mut& node = heap Link;node.value=value;node.next=head;head=Option<Link mut&>::Value(node);
+        if(tree.isNone()){Tree mut& root=makeTree(value);tree=Option<Tree mut&>::Value(root);}
+        else {insert(tree.unwrap(),value);}
+    }
+    head=reverse(head);
+    Option<Link mut&> cursor=head;
+    for(int64 i=0;i<n;i++){
+        std::lang::assert(cursor.isValue());Link mut& node=cursor.unwrap();
+        std::lang::assert(node.value==values[i]);cursor=node.next;
+    }
+    std::lang::assert(cursor.isNone());
+    cursor=head;
+    while(cursor.isValue()){
+        Link mut& node=cursor.unwrap();Option<Link mut&> rest=node.next;delete node;cursor=rest;
+    }
+    List<int64> sorted;inorder(tree,&sorted);
+    std::lang::assert(sorted.len()==n);
+    int64 sum=0;
+    for(int64 i=0;i<n;i++){
+        if(i>0){std::lang::assert(sorted[i-1]<=sorted[i]);}
+        sum+=sorted[i];
+    }
+    destroyTree(tree);
+    std::lang::assert(listDrops==n && treeDrops==treeAllocations);
+    Graph graph;
+    for(int64 i=0;i<n;i++){graph.head.push(-1);}
+    for(int64 i=0;i<n*3;i++){
+        int64 from=random(&seed)%n,target=random(&seed)%n;
+        edge(&graph,from,target);
+    }
+    int64 checksum=0;
+    for(int64 start=0;start<n;start++){
+        List<int64> reached;for(int64 i=0;i<n;i++){reached.push(0);}
+        dfs(&graph,start,&reached);List<int64> distances=bfs(&graph,start);
+        for(int64 i=0;i<n;i++){
+            std::lang::assert((reached[i]!=0)==(distances[i]>=0));
+            checksum+=(distances[i]+1)*(start+1)*(i+1);
+        }
+    }
+    std::lang::println("{} {} {} {}",sum,checksum,listDrops,treeDrops);return 0;
+}

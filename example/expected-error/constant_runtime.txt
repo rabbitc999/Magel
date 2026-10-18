@@ -1,0 +1,1 @@
+magel：example/samples-error/constant_runtime.mgl 第 1 行第 1 列：[MGL1300] 常量表达式不能引用运行时变量：n

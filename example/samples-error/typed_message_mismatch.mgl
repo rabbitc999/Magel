@@ -1,0 +1,10 @@
+
+import std::coroutine;
+import std::message;
+
+int64 main() {
+    std::message::sendCoroutine<int64>(std::coroutine::current(), 4);
+    String value = std::message::receiveCoroutine<String>();
+    std::lang::println("{}", value);
+    return 0;
+}

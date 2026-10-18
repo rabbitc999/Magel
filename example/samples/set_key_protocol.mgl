@@ -1,0 +1,59 @@
+// 自定义 Set 元素必须使用 Equal，Hash 可选；冲突、复制、清空及默认字段均保留策略。
+struct SetKey : Equal<bool, SetKey>, Hash<SetKey> {
+    int64 id;
+    String text;
+    List<int64> data;
+    bool leftEqual(SetKey other) { return self.id == other.id; }
+    uint64 hash(SetKey other) { return (uint64)(self.id % 2); }
+};
+struct PlainSetKey : Equal<bool, PlainSetKey> {
+    int64 id;
+    String text;
+    bool leftEqual(PlainSetKey other) { return self.id % 10 == other.id % 10; }
+};
+struct SetHolder { Set<SetKey> items; };
+enum EnumSetKey : Equal<bool, EnumSetKey> {
+    Empty, Item(int64 number, String text);
+    int64 id() {
+        match (self) {
+            EnumSetKey::Empty => { return -1; }
+            EnumSetKey::Item(number, text) => { return number; }
+        }
+        return -2;
+    }
+    bool leftEqual(EnumSetKey other) { return self.id() == other.id(); }
+};
+SetKey key(int64 id, String text) {
+    SetKey result;
+    result.id = id; result.text = text; result.data.push(id);
+    return result;
+}
+int64 main() {
+    for (int64 i = 0; i < 8; i = i + 1) {
+        Set<SetKey> values = {key(1, "first"), key(3, "collision"), key(1, "different")};
+        assert(values.len() == 2 && values.has(key(1, "lookup")) != 0);
+        Set<SetKey> copy = values;
+        values.clear();
+        assert(copy.has(key(3, "after clear")) != 0);
+        SetKey stored = copy.at(0);
+        assert(stored.text == "first" && stored.data[0] == 1);
+        assert(copy.remove(key(1, "remove")) != 0 && copy.len() == 1);
+        assert(copy.has(key(3, "remaining")) != 0);
+        SetHolder holder;
+        holder.items.add(key(5, "field"));
+        assert(holder.items.has(key(5, "query")) != 0);
+        PlainSetKey first; first.id = 1; first.text = "one";
+        PlainSetKey duplicate; duplicate.id = 11; duplicate.text = "eleven";
+        Set<PlainSetKey> plain = {first, duplicate};
+        assert(plain.len() == 1 && plain.has(duplicate) != 0);
+        Map<PlainSetKey, String> mapped = {first: "old", duplicate: "new"};
+        assert(mapped.len() == 1 && mapped[first] == "new");
+        Set<EnumSetKey> enums = {EnumSetKey::Item(1, "first"), EnumSetKey::Item(1, "duplicate"), EnumSetKey::Empty};
+        assert(enums.len() == 2 && enums.has(EnumSetKey::Item(1, "query")) != 0);
+        Set<EnumSetKey> enumCopy = enums;
+        enums.clear();
+        assert(enumCopy.has(EnumSetKey::Item(1, "copied")) != 0);
+    }
+    println("set key protocol OK");
+    return 0;
+}

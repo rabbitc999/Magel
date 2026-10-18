@@ -1,0 +1,8 @@
+T auditHost<T>(T value);
+int64 auditIncrement(int64 value){return value+1;}
+int64 main(){
+    int64 fn(int64) operation=auditIncrement;
+    auto echoed=auditHost(operation);
+    assert(echoed(7)==8);
+    println("generic host symbols ok");return 0;
+}

@@ -1,0 +1,7 @@
+concat=24
+literal-arg=$DOUBLE(3 + 1)
+stringify-expr=1 + 2
+stringify-text=plain text
+call=42
+call2=15
+macro-call=8

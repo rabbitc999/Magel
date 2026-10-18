@@ -1,0 +1,4 @@
+/build*/
+/hardware-deps/
+/toolchain/
+__pycache__/

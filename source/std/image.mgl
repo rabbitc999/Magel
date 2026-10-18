@@ -1,0 +1,392 @@
+module std::image;
+
+import std::io;
+
+/*
+ * 图片处理标准库：加载/保存、像素读写、卷积、池化、格式转换与大津法二值化。
+ *
+ * 解码、编码与重活下沉在宿主胶水（glue/std_image.hpp）：
+ *   - 文件格式：BMP（无压缩 24/32 位）、Netpbm 二进制 P5/P6；
+ *   - 像素缓冲统一 RGBA8888，每像素 4 字节，行优先；
+ *   - 灰度用 ITU-R BT.601 亮度；(299R + 587G + 114B) / 1000。
+ *
+ * 像素读写是纯下标运算，直接在 Magel 侧完成，不走胶水调用。
+ * 所有可恢复错误（格式不识别、坐标越界、缓冲长度不符）都走 Result，不 panic。
+ */
+
+/* ---- 胶水声明：实现见 glue/std_image.hpp；槽布局与 ImageReply 一致 ---- */
+void __decode(List<uint8> bytes, ImageReply mut& reply);
+void __encodeBmp(int64 width, int64 height, List<uint8> pixels, ImageReply mut& reply);
+void __encodePpm(int64 width, int64 height, List<uint8> pixels, ImageReply mut& reply);
+void __encodePgm(int64 width, int64 height, List<uint8> pixels, ImageReply mut& reply);
+void __convolve(int64 width, int64 height, List<uint8> pixels, List<float64> kernel,
+                int64 kw, int64 kh, ImageReply mut& reply);
+void __pool(int64 width, int64 height, List<uint8> pixels, int64 mode,
+            int64 kw, int64 kh, ImageReply mut& reply);
+void __toGray(int64 width, int64 height, List<uint8> pixels, ImageReply mut& reply);
+void __fromGray(int64 width, int64 height, List<uint8> gray, ImageReply mut& reply);
+void __toARGB(int64 width, int64 height, List<uint8> pixels, ImageReply mut& reply);
+void __fromARGB(int64 width, int64 height, List<uint32> argb, ImageReply mut& reply);
+void __toRGB565(int64 width, int64 height, List<uint8> pixels, ImageReply mut& reply);
+void __fromRGB565(int64 width, int64 height, List<uint16> rgb565, ImageReply mut& reply);
+void __otsu(int64 width, int64 height, List<uint8> gray, ImageReply mut& reply);
+void __binarize(int64 width, int64 height, List<uint8> gray, int64 threshold, ImageReply mut& reply);
+
+/** 单个像素的颜色分量。 */
+struct Pixel {
+    int64 r; ///< 红色分量，0..255。
+    int64 g; ///< 绿色分量，0..255。
+    int64 b; ///< 蓝色分量，0..255。
+    int64 a; ///< 透明度分量，0..255，255 为不透明。
+}
+
+/** 胶水操作的统一回执；槽布局必须与 glue/std_image.hpp 的 Reply 一致。 */
+struct ImageReply {
+    String error; ///< 本次调用的错误说明；成功时为空串。
+    int64 width; ///< 结果图片宽。
+    int64 height; ///< 结果图片高。
+    List<uint8> pixels; ///< 结果 RGBA 像素缓冲。
+    List<uint8> bytes; ///< 编码得到的文件字节。
+    List<uint8> gray; ///< 灰度缓冲，长度 width*height。
+    List<uint32> argb; ///< ARGB8888 结果，每像素一个值。
+    List<uint16> rgb565; ///< RGB565 结果，每像素一个值。
+    int64 threshold; ///< 大津法阈值，0..255。
+    int64 r; ///< getPixel 请求的 x 坐标（入参槽）。
+    int64 g; ///< 保留槽，恒为 0。
+    int64 b; ///< 保留槽，恒为 0。
+    int64 a; ///< 保留槽，恒为 0。
+}
+
+/** RGBA 图片：width × height，像素缓冲长度恒为 width*height*4。 */
+struct Image : Drop {
+    int64 width; ///< 图片宽，单位像素。
+    int64 height; ///< 图片高，单位像素。
+    List<uint8> pixels; ///< RGBA8888 像素缓冲，行优先，长度 width*height*4。
+
+    void drop() { delete self.pixels; }
+
+    /**
+     * @brief 新建全透明黑图。
+     * @param width 图片宽，单位像素，必须为正。
+     * @param height 图片高，单位像素，必须为正。
+     * @return 新图片；宽高不合法时返回错误。
+     */
+    static Result<Image, String> make(int64 width, int64 height) {
+        if (width <= 0 || height <= 0) { return Result<Image, String>::Err("图片创建：宽高必须为正"); }
+        Image image;
+        image.width = width;
+        image.height = height;
+        List<uint8> empty;
+        image.pixels = empty;
+        int64 total = width * height * 4;
+        for (int64 index = 0; index < total; index = index + 1) { image.pixels.push((uint8)0); }
+        return Result<Image, String>::Ok(image);
+    }
+
+    /**
+     * @brief 从图片文件字节解码，按魔数自动识别格式。
+     * @param bytes 文件字节，支持无压缩 24/32 位 BMP 与二进制 P5/P6。
+     * @return 解码后的图片；格式不识别或数据不完整时返回错误。
+     */
+    static Result<Image, String> decode(List<uint8> bytes) {
+        ImageReply reply;
+        __decode(bytes, &reply);
+        if (len(reply.error) > 0) { return Result<Image, String>::Err(reply.error); }
+        Image image;
+        image.width = reply.width;
+        image.height = reply.height;
+        image.pixels = reply.pixels;
+        return Result<Image, String>::Ok(image);
+    }
+
+    /**
+     * @brief 打开图片文件并解码。
+     * @param path 图片文件路径。
+     * @return 解码后的图片；读取失败或格式不识别时返回错误。
+     * @note 内部整读文件字节，预算 64 MiB。
+     */
+    static Result<Image, String> open(String path) {
+        Result<List<uint8>, std::io::IoError> read = readAllBytes(path, 67108864);
+        if (read.isErr()) { return Result<Image, String>::Err("open：文件读取失败"); }
+        return Image::decode(read.unwrap());
+    }
+
+    /**
+     * @brief 编码为 24 位 BMP 文件字节。
+     * @return BMP 文件字节；缓冲长度不符时返回错误。
+     * @note 无压缩 BI_RGB，自底向上，行按 4 字节对齐；透明度丢弃。
+     */
+    Result<List<uint8>, String> encodeBmp() {
+        ImageReply reply;
+        __encodeBmp(self.width, self.height, self.pixels, &reply);
+        if (len(reply.error) > 0) { return Result<List<uint8>, String>::Err(reply.error); }
+        return Result<List<uint8>, String>::Ok(reply.bytes);
+    }
+
+    /**
+     * @brief 编码为二进制 PPM（P6）文件字节。
+     * @return PPM 文件字节；缓冲长度不符时返回错误。
+     */
+    Result<List<uint8>, String> encodePpm() {
+        ImageReply reply;
+        __encodePpm(self.width, self.height, self.pixels, &reply);
+        if (len(reply.error) > 0) { return Result<List<uint8>, String>::Err(reply.error); }
+        return Result<List<uint8>, String>::Ok(reply.bytes);
+    }
+
+    /**
+     * @brief 编码为二进制 PGM（P5）文件字节。
+     * @return PGM 文件字节；缓冲长度不符时返回错误。
+     * @note 每像素写入 BT.601 亮度。
+     */
+    Result<List<uint8>, String> encodePgm() {
+        ImageReply reply;
+        __encodePgm(self.width, self.height, self.pixels, &reply);
+        if (len(reply.error) > 0) { return Result<List<uint8>, String>::Err(reply.error); }
+        return Result<List<uint8>, String>::Ok(reply.bytes);
+    }
+
+    /**
+     * @brief 保存为 BMP 文件。
+     * @param path 目标文件路径，覆盖写入，不创建父目录。
+     * @return 写入的字节数；编码或写盘失败时返回错误。
+     */
+    Result<int64, String> saveBmp(String path) {
+        Result<List<uint8>, String> encoded = self.encodeBmp();
+        if (encoded.isErr()) { return Result<int64, String>::Err(encoded.error()); }
+        Result<int64, std::io::IoError> written = writeAllBytes(path, encoded.unwrap());
+        if (written.isErr()) { return Result<int64, String>::Err("save：文件写入失败"); }
+        return Result<int64, String>::Ok(written.unwrap());
+    }
+
+    /**
+     * @brief 保存为 PPM（P6）文件。
+     * @param path 目标文件路径，覆盖写入，不创建父目录。
+     * @return 写入的字节数；编码或写盘失败时返回错误。
+     */
+    Result<int64, String> savePpm(String path) {
+        Result<List<uint8>, String> encoded = self.encodePpm();
+        if (encoded.isErr()) { return Result<int64, String>::Err(encoded.error()); }
+        Result<int64, std::io::IoError> written = writeAllBytes(path, encoded.unwrap());
+        if (written.isErr()) { return Result<int64, String>::Err("save：文件写入失败"); }
+        return Result<int64, String>::Ok(written.unwrap());
+    }
+
+    /**
+     * @brief 保存为 PGM（P5）文件。
+     * @param path 目标文件路径，覆盖写入，不创建父目录。
+     * @return 写入的字节数；编码或写盘失败时返回错误。
+     */
+    Result<int64, String> savePgm(String path) {
+        Result<List<uint8>, String> encoded = self.encodePgm();
+        if (encoded.isErr()) { return Result<int64, String>::Err(encoded.error()); }
+        Result<int64, std::io::IoError> written = writeAllBytes(path, encoded.unwrap());
+        if (written.isErr()) { return Result<int64, String>::Err("save：文件写入失败"); }
+        return Result<int64, String>::Ok(written.unwrap());
+    }
+
+    /**
+     * @brief 读取一个像素。
+     * @param x 像素横坐标，从 0 开始。
+     * @param y 像素纵坐标，从 0 开始。
+     * @return 像素颜色分量；坐标越界时返回错误。
+     */
+    Result<Pixel, String> getPixel(int64 x, int64 y) {
+        if (x < 0 || y < 0 || x >= self.width || y >= self.height) {
+            return Result<Pixel, String>::Err("getPixel：坐标越界");
+        }
+        int64 base = (y * self.width + x) * 4;
+        Pixel pixel;
+        pixel.r = self.pixels[base];
+        pixel.g = self.pixels[base + 1];
+        pixel.b = self.pixels[base + 2];
+        pixel.a = self.pixels[base + 3];
+        return Result<Pixel, String>::Ok(pixel);
+    }
+
+    /**
+     * @brief 修改一个像素。
+     * @param x 像素横坐标，从 0 开始。
+     * @param y 像素纵坐标，从 0 开始。
+     * @param r 红色分量，0..255。
+     * @param g 绿色分量，0..255。
+     * @param b 蓝色分量，0..255。
+     * @param a 透明度分量，0..255。
+     * @return 成功时为 0；坐标越界或分量超范围时返回错误，不修改缓冲。
+     */
+    Result<int64, String> setPixel(int64 x, int64 y, int64 r, int64 g, int64 b, int64 a) {
+        if (x < 0 || y < 0 || x >= self.width || y >= self.height) {
+            return Result<int64, String>::Err("setPixel：坐标越界");
+        }
+        if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255 || a < 0 || a > 255) {
+            return Result<int64, String>::Err("setPixel：分量必须在 0..255");
+        }
+        int64 base = (y * self.width + x) * 4;
+        self.pixels[base] = (uint8)r;
+        self.pixels[base + 1] = (uint8)g;
+        self.pixels[base + 2] = (uint8)b;
+        self.pixels[base + 3] = (uint8)a;
+        return Result<int64, String>::Ok(0);
+    }
+
+    /**
+     * @brief 用浮点核对图片做卷积。
+     * @param kernel 卷积核元素，按行优先排列，长度必须为 kw*kh。
+     * @param kw 卷积核宽，不超过 15 的奇数。
+     * @param kh 卷积核高，不超过 15 的奇数。
+     * @return 卷积后的新图片；核形状或缓冲长度不符时返回错误。
+     * @note 边缘复制填充，透明度保持原值，结果分量四舍五入并截断到 0..255。
+     */
+    Result<Image, String> convolve(List<float64> kernel, int64 kw, int64 kh) {
+        ImageReply reply;
+        __convolve(self.width, self.height, self.pixels, kernel, kw, kh, &reply);
+        if (len(reply.error) > 0) { return Result<Image, String>::Err(reply.error); }
+        Image image;
+        image.width = reply.width;
+        image.height = reply.height;
+        image.pixels = reply.pixels;
+        return Result<Image, String>::Ok(image);
+    }
+
+    /**
+     * @brief 对图片做不重叠窗口池化。
+     * @param mode 池化模式：0 = 窗口最大值，1 = 窗口平均值（四舍五入）。
+     * @param kw 窗口宽，必须为正。
+     * @param kh 窗口高，必须为正。
+     * @return 池化后的新图片，尺寸为 (width/kw, height/kh) 向下取整；参数不合法时返回错误。
+     */
+    Result<Image, String> pool(int64 mode, int64 kw, int64 kh) {
+        ImageReply reply;
+        __pool(self.width, self.height, self.pixels, mode, kw, kh, &reply);
+        if (len(reply.error) > 0) { return Result<Image, String>::Err(reply.error); }
+        Image image;
+        image.width = reply.width;
+        image.height = reply.height;
+        image.pixels = reply.pixels;
+        return Result<Image, String>::Ok(image);
+    }
+
+    /**
+     * @brief 转为 8 位灰度。
+     * @return 长度 width*height 的灰度缓冲，每像素按 BT.601 亮度取值；缓冲长度不符时返回错误。
+     */
+    Result<List<uint8>, String> toGray() {
+        ImageReply reply;
+        __toGray(self.width, self.height, self.pixels, &reply);
+        if (len(reply.error) > 0) { return Result<List<uint8>, String>::Err(reply.error); }
+        return Result<List<uint8>, String>::Ok(reply.gray);
+    }
+
+    /**
+     * @brief 由灰度缓冲还原 RGB 图片。
+     * @param width 图片宽，单位像素，必须为正。
+     * @param height 图片高，单位像素，必须为正。
+     * @param gray 灰度缓冲，长度必须为 width*height。
+     * @return 三通道同值、透明度 255 的图片；缓冲长度不符时返回错误。
+     */
+    static Result<Image, String> fromGray(int64 width, int64 height, List<uint8> gray) {
+        ImageReply reply;
+        __fromGray(width, height, gray, &reply);
+        if (len(reply.error) > 0) { return Result<Image, String>::Err(reply.error); }
+        Image image;
+        image.width = reply.width;
+        image.height = reply.height;
+        image.pixels = reply.pixels;
+        return Result<Image, String>::Ok(image);
+    }
+
+    /**
+     * @brief 转为 ARGB8888。
+     * @return 每像素一个 uint32 的列表，布局 (A<<24)|(R<<16)|(G<<8)|B；缓冲长度不符时返回错误。
+     */
+    Result<List<uint32>, String> toARGB() {
+        ImageReply reply;
+        __toARGB(self.width, self.height, self.pixels, &reply);
+        if (len(reply.error) > 0) { return Result<List<uint32>, String>::Err(reply.error); }
+        return Result<List<uint32>, String>::Ok(reply.argb);
+    }
+
+    /**
+     * @brief 由 ARGB8888 缓冲还原图片。
+     * @param width 图片宽，单位像素，必须为正。
+     * @param height 图片高，单位像素，必须为正。
+     * @param argb 像素值列表，长度必须为 width*height。
+     * @return 还原后的图片；缓冲长度不符时返回错误。
+     */
+    static Result<Image, String> fromARGB(int64 width, int64 height, List<uint32> argb) {
+        ImageReply reply;
+        __fromARGB(width, height, argb, &reply);
+        if (len(reply.error) > 0) { return Result<Image, String>::Err(reply.error); }
+        Image image;
+        image.width = reply.width;
+        image.height = reply.height;
+        image.pixels = reply.pixels;
+        return Result<Image, String>::Ok(image);
+    }
+
+    /**
+     * @brief 转为 RGB565。
+     * @return 每像素一个 uint16 的列表，R 高 5 位、G 中 6 位、B 低 5 位；缓冲长度不符时返回错误。
+     */
+    Result<List<uint16>, String> toRGB565() {
+        ImageReply reply;
+        __toRGB565(self.width, self.height, self.pixels, &reply);
+        if (len(reply.error) > 0) { return Result<List<uint16>, String>::Err(reply.error); }
+        return Result<List<uint16>, String>::Ok(reply.rgb565);
+    }
+
+    /**
+     * @brief 由 RGB565 缓冲还原图片。
+     * @param width 图片宽，单位像素，必须为正。
+     * @param height 图片高，单位像素，必须为正。
+     * @param rgb565 像素值列表，长度必须为 width*height。
+     * @return 还原后的图片，5/6 位分量按高位复制扩展回 8 位；缓冲长度不符时返回错误。
+     */
+    static Result<Image, String> fromRGB565(int64 width, int64 height, List<uint16> rgb565) {
+        ImageReply reply;
+        __fromRGB565(width, height, rgb565, &reply);
+        if (len(reply.error) > 0) { return Result<Image, String>::Err(reply.error); }
+        Image image;
+        image.width = reply.width;
+        image.height = reply.height;
+        image.pixels = reply.pixels;
+        return Result<Image, String>::Ok(image);
+    }
+
+    /**
+     * @brief 用大津法求二值化阈值。
+     * @return 使类间方差最大的灰度阈值，0..255；图片无效时返回错误。
+     */
+    Result<int64, String> otsuThreshold() {
+        List<uint8> gray = self.toGray()?;
+        ImageReply reply;
+        __otsu(self.width, self.height, gray, &reply);
+        if (len(reply.error) > 0) { return Result<int64, String>::Err(reply.error); }
+        return Result<int64, String>::Ok(reply.threshold);
+    }
+
+    /**
+     * @brief 按阈值二值化灰度缓冲。
+     * @param width 图片宽，单位像素，必须为正。
+     * @param height 图片高，单位像素，必须为正。
+     * @param gray 灰度缓冲，长度必须为 width*height。
+     * @param threshold 阈值，0..255；大于阈值给 255，否则给 0。
+     * @return 二值化后的灰度缓冲；阈值越界或缓冲长度不符时返回错误。
+     */
+    static Result<List<uint8>, String> binarize(int64 width, int64 height, List<uint8> gray, int64 threshold) {
+        ImageReply reply;
+        __binarize(width, height, gray, threshold, &reply);
+        if (len(reply.error) > 0) { return Result<List<uint8>, String>::Err(reply.error); }
+        return Result<List<uint8>, String>::Ok(reply.gray);
+    }
+
+    /**
+     * @brief 转灰度、大津法求阈值并二值化。
+     * @return 0/255 灰度缓冲；任何一步失败时返回错误。
+     */
+    Result<List<uint8>, String> otsuBinarize() {
+        List<uint8> gray = self.toGray()?;
+        int64 threshold = self.otsuThreshold()?;
+        return Image::binarize(self.width, self.height, gray, threshold);
+    }
+}

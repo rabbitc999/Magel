@@ -1,0 +1,1 @@
+magel：前处理：example/samples-error/macro_group_order.mgl 第 4 行：宏Token分组不匹配：$APPLY；第 1 组期待 <>，实际遇到 [

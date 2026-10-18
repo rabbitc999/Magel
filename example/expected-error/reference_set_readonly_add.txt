@@ -1,0 +1,1 @@
+magel：example/samples-error/reference_set_readonly_add.mgl 第 1 行第 101 列：只读引用（`T const&`）只能读，不能写入元素或成员

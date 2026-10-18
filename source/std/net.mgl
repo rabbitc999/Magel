@@ -1,0 +1,427 @@
+module std::net;
+
+/*
+ * std::net —— Magel 语言连接**外部网络**的标准库模块（TCP + 极简 HTTP 客户端）。
+ *
+ * 套接字在宿主胶水（glue/std_net.hpp）里，Magel 一侧只拿到 int32 句柄：
+ * Windows 运行期加载 ws2_32.dll，POSIX 平台直接调用同名接口，两边都不用改链接参数。
+ *
+ * 用法：
+ *   import std::net;
+ *
+ *   // TCP 客户端
+ *   std::net::TcpSocket socket = std::net::TcpSocket::connect("127.0.0.1", 8000);
+ *   socket.send("ping\n");
+ *   String line = socket.receiveLine(3000);
+ *   socket.close();
+ *
+ *   // 监听 + 接受
+ *   std::net::TcpListener listener = std::net::TcpListener::listen("127.0.0.1", 0);
+ *   std::net::TcpSocket peer = listener.accept();
+ *
+ *   // HTTP 客户端（只支持 http://，不带 TLS）
+ *   std::net::HttpResponse response = std::net::HttpClient::fetch("http://127.0.0.1:8080/");
+ *
+ * 读数据的约定：`receive` / `receiveLine` 返回空串时用 `status()` 区分原因——
+ * `NET_CLOSED` 对端关闭、`NET_TIMEOUT` 超时、`NET_ERROR` 出错（细节看 `lastError()`）。
+ */
+
+import std::text;
+import std::parse;
+
+/* ── 宿主签名（由 glue/std_net.hpp 注册） ─────────────────────────────── */
+int32 __netInit();
+std::lang::String __netError();
+int32 __netStatus();
+int32 __netConnect(std::lang::String host, int32 port, int32 timeoutMs);
+int32 __netListen(std::lang::String host, int32 port, int32 backlog);
+int32 __netAccept(int32 listener, int32 timeoutMs);
+int32 __netSend(int32 sock, std::lang::String data);
+std::lang::String __netReceive(int32 sock, int32 maxBytes);
+std::lang::String __netReceiveLine(int32 sock, int32 timeoutMs);
+int32 __netClose(int32 handle);
+int32 __netLocalPort(int32 handle);
+
+/* ── 读结果编号 ───────────────────────────────────────────────────────── */
+const int64 NET_OK = 0;
+const int64 NET_CLOSED = 1;
+const int64 NET_TIMEOUT = 2;
+const int64 NET_ERROR = 3;
+
+/** @brief 一条 TCP 连接（`connect` 来的，或 `accept` 到的）。 */
+struct TcpSocket {
+    int32 handle;
+    bool opened;
+    std::lang::String error;
+
+    /** @brief 连接远端；`timeoutMs > 0` 时带连接超时。 */
+    static TcpSocket connect(std::lang::String host, int32 port, int32 timeoutMs) {
+        TcpSocket socket;
+        socket.handle = __netConnect(host, port, timeoutMs);
+        socket.opened = socket.handle >= 0;
+        socket.error = "";
+        if (!socket.opened) { socket.error = __netError(); }
+        return socket;
+    }
+
+    /** @brief 默认 5 秒连接超时。 */
+    static TcpSocket connect(std::lang::String host, int32 port) {
+        return TcpSocket::connect(host, port, (int32)5000);
+    }
+
+    bool isOpen() { return self.opened; }
+
+    /**
+     * @brief 最近一次出错说明。
+     *
+     * 返回值要**自己造一块新串**：Magel 的字符串赋值是别名语义（`String t = s.field;` 只是
+     * 借那块串），直接把字段交出去的话，字段所属的对象一释放调用方就悬空。
+     */
+    std::lang::String lastError() {
+        std::lang::String out = "";
+        out = out + self.error;
+        return out;
+    }
+
+    /** @brief 最近一次读的结果：NET_OK / NET_CLOSED / NET_TIMEOUT / NET_ERROR。 */
+    int64 status() { return (int64)__netStatus(); }
+
+    /** @brief 关闭连接；重复调用安全。 */
+    void close() {
+        if (self.opened) {
+            __netClose(self.handle);
+            self.opened = false;
+            self.handle = (int32)(0 - 1);
+        }
+    }
+
+    /** @brief 发送全部文本；返回发送的字节数，失败 -1。 */
+    int64 send(std::lang::String data) {
+        if (!self.opened) {
+            self.error = "连接未打开";
+            return 0 - 1;
+        }
+        int32 written = __netSend(self.handle, data);
+        if (written < 0) {
+            self.error = __netError();
+            return (int64)written;
+        }
+        return (int64)written;
+    }
+
+    /** @brief 收一段文本（最多 maxBytes 字节）。 */
+    std::lang::String receive(int32 maxBytes) {
+        std::lang::String text = __netReceive(self.handle, maxBytes);
+        if ((int64)__netStatus() == NET_ERROR) { self.error = __netError(); }
+        return text;
+    }
+
+    /** @brief 收一行（不含行尾换行）。 */
+    std::lang::String receiveLine(int32 timeoutMs) {
+        std::lang::String line = __netReceiveLine(self.handle, timeoutMs);
+        if ((int64)__netStatus() == NET_ERROR) { self.error = __netError(); }
+        return line;
+    }
+};
+
+/** @brief TCP 监听器；端口传 0 时由系统分配，用 `localPort()` 查询。 */
+struct TcpListener {
+    int32 handle;
+    bool opened;
+    std::lang::String error;
+
+    static TcpListener listen(std::lang::String host, int32 port, int32 backlog) {
+        TcpListener listener;
+        listener.handle = __netListen(host, port, backlog);
+        listener.opened = listener.handle >= 0;
+        listener.error = "";
+        if (!listener.opened) { listener.error = __netError(); }
+        return listener;
+    }
+
+    /** @brief 默认积压队列 8。 */
+    static TcpListener listen(std::lang::String host, int32 port) {
+        return TcpListener::listen(host, port, (int32)8);
+    }
+
+    bool isOpen() { return self.opened; }
+    std::lang::String lastError() { return self.error; }
+
+    /** @brief 本端端口（监听器常用端口 0 让系统分配，再从这里读回来）。 */
+    int64 localPort() { return (int64)__netLocalPort(self.handle); }
+
+    /** @brief 等一个连接；超时返回未打开的套接字。 */
+    TcpSocket accept(int32 timeoutMs) {
+        TcpSocket socket;
+        socket.handle = __netAccept(self.handle, timeoutMs);
+        socket.opened = socket.handle >= 0;
+        socket.error = "";
+        if (!socket.opened) { socket.error = __netError(); }
+        return socket;
+    }
+
+    /** @brief 默认 5 秒等待。 */
+    TcpSocket accept() { return self.accept((int32)5000); }
+
+    void close() {
+        if (self.opened) {
+            __netClose(self.handle);
+            self.opened = false;
+            self.handle = (int32)(0 - 1);
+        }
+    }
+};
+
+/** @brief 拆开的 HTTP 地址。 */
+struct Url {
+    bool ok;
+    std::lang::String host;
+    int64 port;
+    std::lang::String path;
+    std::lang::String error;
+};
+
+/** @brief HTTP 响应：状态码、原因、头部原文、正文。 */
+struct HttpResponse {
+    bool ok;
+    int64 status;
+    std::lang::String reason;
+    std::lang::String headers;
+    std::lang::String body;
+    std::lang::String error;
+
+    bool isSuccess() { return self.ok && self.status >= 200 && self.status < 300; }
+
+    /** @brief 按名字取响应头（不分大小写），没有给空串。 */
+    std::lang::String header(std::lang::String name) {
+        std::lang::List<std::lang::String> lines = std::text::Text::split(self.headers, "\r\n");
+        std::lang::String wanted = std::text::Text::toLower(name);
+        for (int64 i = 0; i < std::lang::len(lines); i = i + 1) {
+            std::lang::String line = "";
+            line = line + lines[i];
+            int64 colon = std::text::Text::find(line, ":");
+            if (colon < 0) { continue; }
+            std::lang::String key = std::text::Text::toLower(line[0:colon]);
+            if (key == wanted) {
+                std::lang::String value = line[(colon + 1):];
+                return std::text::Text::trim(value);
+            }
+        }
+        return "";
+    }
+};
+
+/* ── 纯函数部分：地址、请求、响应都能脱离套接字单独测 ─────────────────── */
+
+/** @brief 只支持 http:// 的极简地址解析。 */
+std::lang::String httpScheme() { return "http://"; }
+
+Url parseUrl(std::lang::String url) {
+    Url result;
+    result.ok = false;
+    result.host = "";
+    result.port = 80;
+    result.path = "/";
+    std::lang::String scheme = "http://";
+    if (!std::text::Text::startsWith(url, scheme)) {
+        result.error = "只支持 http:// 开头的地址";
+        return result;
+    }
+    std::lang::String rest = url[7:];
+    int64 slash = std::text::Text::find(rest, "/");
+    /* Magel 字符串不要直接复制（`String a = b;` 会留下悬垂别名），一律从空串拼出来 */
+    std::lang::String authority = "";
+    authority = authority + rest;
+    if (slash >= 0) {
+        authority = "";
+        authority = authority + rest[0:slash];
+        result.path = rest[slash:];
+    }
+    int64 colon = std::text::Text::find(authority, ":");
+    if (colon >= 0) {
+        result.host = "";
+        result.host = result.host + authority[0:colon];
+        std::lang::String portText = authority[(colon + 1):];
+        result.port = std::parse::Parse::parseInt64(portText).unwrapOr(80);
+    } else {
+        result.host = "";
+        result.host = result.host + authority;
+    }
+    if (std::lang::len(result.host) == 0) {
+        result.error = "地址里没有主机名";
+        return result;
+    }
+    result.ok = true;
+    return result;
+}
+
+/** @brief 拼一条 HTTP/1.1 请求文本；body 为空时按 GET 处理。 */
+std::lang::String buildRequest(std::lang::String method, std::lang::String url, std::lang::String body, std::lang::String contentType) {
+    Url target = parseUrl(url);
+    std::lang::String request = "";
+    if (!target.ok) { return request; }
+    std::lang::String requestLine = method + " " + target.path + " HTTP/1.1\r\n";
+    request = request + requestLine;
+    std::lang::String hostLine = "Host: " + target.host + "\r\n";
+    request = request + hostLine;
+    request = request + "User-Agent: magel-std-net/1.0\r\n";
+    request = request + "Accept: */*\r\n";
+    request = request + "Connection: close\r\n";
+    if (std::lang::len(body) > 0) {
+        std::lang::String mediaType = "";
+        mediaType = mediaType + contentType;
+        if (std::lang::len(mediaType) == 0) { mediaType = "text/plain; charset=utf-8"; }
+        std::lang::String typeLine = "Content-Type: " + mediaType + "\r\n";
+        request = request + typeLine;
+        std::lang::String lengthLine = std::lang::format("Content-Length: {}\r\n", std::lang::len(body));
+        request = request + lengthLine;
+    }
+    request = request + "\r\n";
+    request = request + body;
+    return request;
+}
+
+/** @brief 解析一段完整的 HTTP 响应文本。 */
+HttpResponse parseResponse(std::lang::String raw) {
+    HttpResponse response;
+    response.ok = false;
+    response.status = 0;
+    response.reason = "";
+    response.headers = "";
+    response.body = "";
+    response.error = "";
+
+    int64 split = std::text::Text::find(raw, "\r\n\r\n");
+    /* 同上：局部串不要用形参直接初始化 */
+    std::lang::String head = "";
+    head = head + raw;
+    if (split >= 0) {
+        head = raw[0:split];
+        /* 直接拿切片（新串）写进字段：`字段 = 局部串;` 是别名，局部串一释放字段就悬空。 */
+        response.body = raw[(split + 4):];
+    }
+    int64 lineEnd = std::text::Text::find(head, "\r\n");
+    std::lang::String statusLine = "";
+    statusLine = statusLine + head;
+    if (lineEnd >= 0) {
+        statusLine = head[0:lineEnd];
+        response.headers = head[(lineEnd + 2):];
+    }
+    int64 firstSpace = std::text::Text::find(statusLine, " ");
+    if (firstSpace < 0) {
+        response.error = "响应缺少状态行";
+        return response;
+    }
+    std::lang::String codeText = statusLine[(firstSpace + 1):];
+    int64 secondSpace = std::text::Text::find(codeText, " ");
+    if (secondSpace >= 0) {
+        response.reason = codeText[(secondSpace + 1):];
+        codeText = codeText[0:secondSpace];
+    }
+    response.status = std::parse::Parse::parseInt64(codeText).unwrapOr(0);
+    response.ok = true;
+    return response;
+}
+
+/* ── 带套接字的客户端 ─────────────────────────────────────────────────── */
+
+/** @brief 一条连接上的 HTTP 客户端；也提供一次性便捷方法 `fetch`/`submit`。 */
+struct HttpClient {
+    TcpSocket socket;
+    bool connected;
+
+    bool connect(std::lang::String host, int32 port, int32 timeoutMs) {
+        self.socket = TcpSocket::connect(host, port, timeoutMs);
+        self.connected = self.socket.isOpen();
+        return self.connected;
+    }
+
+    /** @brief 读到对端关闭或超时为止（`Connection: close` 时正好是一整个响应）。 */
+    std::lang::String readAll() {
+        std::lang::String out = "";
+        bool done = false;
+        while (!done) {
+            std::lang::String chunk = self.socket.receive((int32)4096);
+            if (std::lang::len(chunk) == 0) { done = true; }
+            else { out = out + chunk; }
+        }
+        return out;
+    }
+
+    /** @brief 在已连上的连接上发请求并读回响应。 */
+    HttpResponse exchange(std::lang::String method, std::lang::String url, std::lang::String body, std::lang::String contentType) {
+        HttpResponse response;
+        response.ok = false;
+        response.status = 0;
+        response.error = "";
+        if (!self.connected) {
+            response.error = "没有连上服务器";
+            return response;
+        }
+        std::lang::String request = buildRequest(method, url, body, contentType);
+        if (std::lang::len(request) == 0) {
+            response.error = "请求地址不合法";
+            return response;
+        }
+        if (self.socket.send(request) < 0) {
+            response.error = self.socket.lastError();
+            return response;
+        }
+        std::lang::String raw = self.readAll();
+        return parseResponse(raw);
+    }
+
+    void close() {
+        self.socket.close();
+        self.connected = false;
+    }
+
+    /** @brief 一次性 GET：连上、发请求、读响应、关闭。 */
+    static HttpResponse fetch(std::lang::String url) {
+        HttpResponse response;
+        response.ok = false;
+        response.status = 0;
+        response.error = "";
+        Url target = parseUrl(url);
+        if (!target.ok) {
+            /* `字段 = 别的字段;` 是别名，这里自己拼一块新串。 */
+            std::lang::String message = "";
+            message = message + target.error;
+            response.error = message;
+            return response;
+        }
+        HttpClient client;
+        client.connected = false;
+        if (!client.connect(target.host, (int32)target.port, (int32)5000)) {
+            response.error = client.socket.lastError();
+            return response;
+        }
+        response = client.exchange("GET", url, "", "");
+        client.close();
+        return response;
+    }
+
+    /** @brief 一次性 POST。 */
+    static HttpResponse submit(std::lang::String url, std::lang::String body, std::lang::String contentType) {
+        HttpResponse response;
+        response.ok = false;
+        response.status = 0;
+        response.error = "";
+        Url target = parseUrl(url);
+        if (!target.ok) {
+            std::lang::String message = "";
+            message = message + target.error;
+            response.error = message;
+            return response;
+        }
+        HttpClient client;
+        client.connected = false;
+        if (!client.connect(target.host, (int32)target.port, (int32)5000)) {
+            response.error = client.socket.lastError();
+            return response;
+        }
+        response = client.exchange("POST", url, body, contentType);
+        client.close();
+        return response;
+    }
+};

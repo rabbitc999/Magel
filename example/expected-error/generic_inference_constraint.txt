@@ -1,0 +1,1 @@
+magel：only 的类型实参 int64 未实现接口 Valued

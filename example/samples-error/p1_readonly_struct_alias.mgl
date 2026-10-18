@@ -1,0 +1,1 @@
+struct Counter{int64 value; void update(){int64 mut& alias=&self.value; alias=9;}}; int64 main(){Counter value; Counter const& readonly=&value; readonly.update(); return 0;}

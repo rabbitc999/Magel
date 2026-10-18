@@ -1,0 +1,20 @@
+import std::cli;
+int64 main(){
+    CliParser parser;parser.program="demo";parser.description="sample tool";
+    CliOption count;count.name="count";count.shortName='n';count.takesValue=true;count.defaultValue="3";count.description="number of items";
+    CliOption verbose;verbose.name="verbose";verbose.shortName='v';
+    CliOption output;output.name="output";output.shortName='o';output.takesValue=true;output.required=true;
+    assert(parser.add(count) && parser.add(verbose) && parser.add(output) && !parser.add(count));
+    List<String> args;args.push("-vn12");args.push("--output=result.txt");args.push("input.txt");args.push("--");args.push("-literal");
+    CliArguments result=parser.parse(args).unwrap();
+    assert(result.getInt("count").unwrap()==12 && result.get("verbose").unwrap()=="true");
+    assert(result.get("output").unwrap()=="result.txt" && result.positional.len()==2 && result.positional[1]=="-literal");
+    List<String> defaults;defaults.push("-o");defaults.push("out");assert(parser.parse(defaults).unwrap().getInt("count").unwrap()==3);
+    List<String> bad;bad.push("--unknown");assert(!parser.parse(bad).isOk());
+    List<String> missing;missing.push("-n");assert(!parser.parse(missing).isOk());
+    List<String> help;help.push("--help");assert(parser.parse(help).unwrap().helpRequested);
+    List<String> required;assert(!parser.parse(required).isOk());
+    List<String> invalid;invalid.push("-oout");invalid.push("-nabc");assert(!parser.parse(invalid).unwrap().getInt("count").isOk());
+    assert(len(parser.help())>40);
+    println("CLI options, defaults and validation OK");return 0;
+}

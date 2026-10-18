@@ -1,0 +1,4 @@
+import names::left;
+import names::right;
+int64 accept(names::left::Shared value) { return value.number; }
+int64 main() { names::right::Shared value; return accept(value); }

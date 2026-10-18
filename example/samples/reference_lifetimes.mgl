@@ -1,0 +1,55 @@
+int64 global = 10;
+int64 mut& identity(int64 mut& value) { return value; }
+int64 const& globalReference() { return &global; }
+Option<int64 mut&> optional(int64 mut& value) {
+    Option<int64 mut&> result = Option<int64 mut&>::Value(value);
+    return result;
+}
+int64 mut& unwrapBorrow(Option<int64 mut&> value) { return value.unwrap(); }
+List<int64 mut&> globalList() {
+    List<int64 mut&> values;
+    values.push(&global);
+    return values;
+}
+int64 mut& allocated() {
+    int64 mut& value = heap int64;
+    value = 42;
+    return value;
+}
+struct Counter {
+    int64 value;
+    int64 mut& reference() { return &self.value; }
+};
+struct ReferenceBox { int64 mut& value; };
+int64 mut& globalViaAlias() {
+    ReferenceBox box;
+    box.value = &global;
+    ReferenceBox mut& alias = &box;
+    return alias.value;
+}
+int64 main() {
+    int64 value = 7;
+    int64 mut& first = identity(&value);
+    first = 8;
+    Option<int64 mut&> result = optional(&value);
+    int64 mut& second = result.unwrap();
+    second = 9;
+    int64 mut& third = unwrapBorrow(result);
+    third = 11;
+    Counter counter;
+    counter.value = 20;
+    int64 mut& field = counter.reference();
+    field = 21;
+    assert(value == 11 && counter.value == 21 && globalReference() == 10);
+    assert(globalViaAlias() == 10);
+    List<int64 mut&> references = globalList();
+    assert(references[0] == 10);
+    int64 mut& allocatedValue = allocated();
+    assert(allocatedValue == 42);
+    delete allocatedValue;
+    Option<int64 mut&> saved;
+    { saved = Option<int64 mut&>::Value(&global); }
+    assert(saved.unwrap() == 10);
+    println("reference lifetimes OK");
+    return 0;
+}

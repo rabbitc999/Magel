@@ -1,0 +1,391 @@
+\chapter{值语义}
+\label{ch:06}
+
+从这一章开始，我们进入 Magel 与别的语言真正分岔的地方。
+
+前面五章你学的东西，在 C、Java、Go、Rust 里大都能找到对应的写法和直觉。但这一章讲的那条规则，会让你需要改掉一些习惯。
+
+先不改，先看一个现象。
+
+\section{一个让人愣一下的例子}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Point
+{
+    int64 x;
+    int64 y;
+};
+
+int64 main()
+{
+    Point a;
+    a.x = 1;
+    a.y = 2;
+
+    Point b = a;
+    // 把 a 赋给 b
+    b.x = 99;
+    // 改 b
+
+    println("a=({}, {}) b=({}, {})", a.x, a.y, b.x, b.y);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+a=(1, 2) b=(99, 2)
+\end{lstlisting}
+\par
+\medskip
+
+改了 \texttt{b}，\texttt{a} 没变。
+
+如果你从 Java、Python、JavaScript 或 C\# 过来，你刚才很可能在等 \texttt{a} 也跟着变成 99——那些语言里 \texttt{b =\allowbreak{} a} 之后，两个名字指的是同一块数据。
+
+如果你从 Rust 过来，你等的是编译器报错——那些语言里 \texttt{let b =\allowbreak{} a;} 之后 \texttt{a} 就废了。
+
+Magel 两个都不是。它给的是第三种：
+
+\begin{tip}{提示}
+\texttt{Point b =\allowbreak{} a;} 把 \texttt{a} 完整地复制了一份给 \texttt{b}。两个变量从此各过各的。
+\end{tip}
+
+这就是值语义。
+
+\section{复制是整套的}
+
+这不是「只复制了数字、里面的东西还是共享的」。是整套复制：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Bag
+{
+    List<int64> items;
+};
+
+int64 main()
+{
+    Bag original;
+    original.items.push(1);
+
+    Bag copy = original;
+    // 整只袋子复制一份，连同里面的表
+    copy.items.push(2);
+
+    println("original={} copy={}", original.items.len(), copy.items.len());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+original=1 copy=2
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{copy.\allowbreak{}items.\allowbreak{}push(\allowbreak{}2)\allowbreak{}} 只动了 \texttt{copy} 自己那份。\texttt{original} 里的表还是只有 1 个元素。
+
+字符串也一样：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    String original = "hello";
+    String copy = original;
+
+    copy[0] =(char)72;
+    // 72 就是 'H'
+
+    println("{} {}", original, copy);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+hello Hello
+\end{lstlisting}
+\par
+\medskip
+
+改 \texttt{copy} 的第一个字符，\texttt{original} 安然无恙。
+
+这里有个重要的推论：结构体的字段、容器的元素、嵌套了好几层的值……赋值时全都跟着复制。没有「浅复制 vs 深复制」的选择题，只有一种复制：深到底。
+
+\section{函数参数也是复制}
+
+第 4 章你已经见过这条规则，现在你知道它从哪来了：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Point
+{
+    int64 x;
+    int64 y;
+};
+
+void shift(Point point)
+{
+    point.x = point.x + 10;
+}
+
+int64 main()
+{
+    Point a;
+    a.x = 1;
+    a.y = 2;
+
+    shift(a);
+    println("a=({}, {})", a.x, a.y);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+a=(1, 2)
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{shift} 里改了 \texttt{point.\allowbreak{}x}，调用方的 \texttt{a} 一动不动。因为 \texttt{point} 是一份副本。
+
+函数改不到外面——这是 Magel 的默认行为，不是限制。想改到外面，是第 7 章 要学的显式引用（\texttt{Point mut\&}）。
+
+\section{和 Rust 的关键区别：没有「移动」}
+
+Rust 里 \texttt{let b =\allowbreak{} a;} 之后 \texttt{a} 就不能用了——值被移动走了。Magel 没有这回事：
+
+普通赋值、按值传参、\texttt{return} 返回值，都不会销毁源值。 \texttt{a} 照常可用。
+
+那「我要把值交给别人、自己不要了」怎么办？Magel 给了你一个显式的操作：\texttt{move}（6.6 节）。要点是——它是你主动写的，不是编译器默默做的。
+
+这个区别看起来小，但它决定了你读代码时的心智负担：
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+ & Rust & Magel \\
+\midrule
+看到 \texttt{let b =\allowbreak{} a;} & 得在脑子里算「\texttt{a} 还能用吗」 & 不用算，\texttt{a} 就是还能用 \\
+想省一次复制 & 靠移动语义自然发生 & 写 \texttt{move(\allowbreak{}\&a)\allowbreak{}}，一眼能看出来 \\
+读代码时 & 要跟着所有权走 & 赋值就是复制，没有隐藏状态 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{代价：复制是要花钱的}
+
+现在讲实话。值语义不是白拿的。
+
+每次赋值、每次传参、每次返回，都在复制。 一个装着一万条记录的容器、一个几兆的缓冲区，按值传来传去就是真的在搬内存。
+
+所以什么时候要小心？
+
+\begin{itemize}
+
+\item 大对象当参数：函数要读一个几 MB 的结构体，别按值传。
+
+\item 循环里赋值：\texttt{for-in} 里每轮都在复制元素（小元素无所谓，大结构体就很痛）。
+
+\item 深层嵌套的结构体：复制是递归到底的，层数越多越贵。
+
+\end{itemize}
+
+那怎么避免？答案是第 7 章：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+void inspect(BigData const& data)
+{
+    ...
+}
+// 只读，不复制
+void update(BigData mut& data)
+{
+    ...
+}
+// 要改，不复制
+\end{lstlisting}
+\par
+\medskip
+
+注意这是你主动的选择，不是编译器偷偷帮你优化掉复制。这一点很重要：
+
+\begin{itemize}
+
+\item 你写了 \texttt{const\&}，说明「我知道这里不复制」；
+
+\item 你写了按值，说明「我接受这次复制，我需要一份独立的副本」。
+
+\end{itemize}
+
+编译器不会在你背后做决定，所以性能上发生了什么，读代码就能看出来。
+
+\section{显式转移所有权：\texttt{move}}
+
+有时候你确实想要「把原有资源交给另一个值，原来的值不再使用」。Magel 把它写成一个函数：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Message
+{
+    String text;
+};
+
+int64 main()
+{
+    Message source;
+    source.text = "hello";
+
+    Message result = move(&source);
+    println("{}", result.text);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+hello
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{move(\allowbreak{}\&source)\allowbreak{}} 做的事情，按顺序是：
+
+\begin{enumerate}
+
+\item 把 \texttt{source} 原有的资源句柄交给结果，不深拷贝资源；
+
+\item 清空源存储并结束源值生命周期，不执行它的 \texttt{close} / \texttt{drop}；
+
+\item 接收方取得所有权，最终由接收方执行清理。
+
+\end{enumerate}
+
+三条规矩：
+
+\begin{itemize}
+
+\item 参数必须写 \texttt{\&source}，也就是传一个 \texttt{T mut\&}。传普通值或者只读引用会编译报错。
+
+\item 移动之后不能再读 \texttt{source}：
+
+\end{itemize}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Message
+{
+  String text;
+};
+
+int64 main()
+{
+  Message source;
+  source.text = "hello";
+  Message result = move(&source);
+  println("[{}] [{}]", source.text, result.text);
+  return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：[MGL1205] 借用来源已移动或销毁，不能继续访问（源对象已经销毁）：text
+\end{lstlisting}
+\par
+\medskip
+
+要再用这个名字，须重新声明（如 \texttt{Type source =\allowbreak{} something;}）建立新的绑定；旧绑定禁止读写。
+
+\begin{itemize}
+
+\item \texttt{move} 可以省去资源的深拷贝：接收方取得原有字符串和容器的句柄，源值不能再读。需要继续使用源值时保留普通复制，临时只读访问则使用 \texttt{const\&}。
+
+\end{itemize}
+
+\begin{tip}{提示}
+什么时候真的需要 \texttt{move}？把一份数据「转移到别的地方」的时候，比如从缓冲区里取出结果、把临时结构体的内容装进长期对象。那时候用 \texttt{move} 说清楚「源不要了」，比留在那里等它被析构更明确。
+\end{tip}
+
+\section{为什么值得这么设计}
+
+回过头看，Magel 为这条规则付出了什么、又买到了什么。
+
+付出的：多一些复制，大对象要自己记得写 \texttt{const\&}。
+
+买到的：
+
+\begin{enumerate}
+
+\item 没有别名共享，也就没有「谁改了它」。 一个函数拿到的是副本，它不可能在你不知情的时候改掉你的数据。调试「这个值怎么变了」的时间大幅减少。
+
+\item 不需要所有权标注、不需要生命周期参数。 复制出来的值跟源没有任何关系，所以不存在「它活得比源久」的问题——第 7 章你会看到，引用才需要关心这个。
+
+\item 容器、返回值、参数传递的行为完全一致。 一套规则走遍全语言，没有「这里共享那里复制」的记忆负担。
+
+\item 确定性释放变得自然。 每个值有明确的归属（哪个变量、哪一层作用域），离开作用域就能干净地清掉——这是第 8 章。
+
+\end{enumerate}
+
+一句话：Magel 用「多一点复制」换「少一点你可能想不通的事」。
+
+\section{小结}
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.152\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.828\linewidth-2\tabcolsep\relax}}
+\toprule
+你会了 & 关键点 \\
+\midrule
+\endhead
+赋值 & \texttt{b =\allowbreak{} a} 复制整个值，之后 \texttt{a}、\texttt{b} 互不影响 \\
+复制范围 & 深到底：字段、容器元素、字符串，全都复制 \\
+传参 & 形参是副本，函数改不到调用方 \\
+返回 & 返回值也是副本，源值照常可用 \\
+与 Rust & 没有隐式移动，普通赋值不动源值 \\
+与 Java/Python & 没有共享，\texttt{b =\allowbreak{} a} 不是「两个名字一块数据」 \\
+省复制的办法 & 显式写引用 \texttt{const\&} / \texttt{mut\&}（第 7 章） \\
+显式转移 & \texttt{move(\allowbreak{}\&x)\allowbreak{}} = 转移资源所有权；旧绑定禁止读写，二次声明建立新绑定（\texttt{MGL1205}） \\
+\bottomrule
+\end{longtable}
+}
+
+\section{下一步}
+
+拥有值默认复制，显式 move 转移；借用检查器继续跟踪引用来源、移动与释放，用户无需书写生命周期参数。但有一件事它没解决：如果要改到外面那个对象怎么办？
+
+一份副本改不了原对象，那函数怎么修改调用方的数据？容器怎么原地排序？大结构体怎么避免复制？
+
+答案都指向同一个东西：引用。下一章讲它——包括 Magel 引用最特别的一条规矩：它不能活得比它指的东西久。
+
+翻到\hyperref[ch:07]{第 7 章 引用}。

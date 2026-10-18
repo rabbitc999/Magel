@@ -1,0 +1,3 @@
+struct Value {};
+extern impl Value : Some = binding;
+int64 main() { return 0; }

@@ -1,0 +1,1 @@
+magel：example/samples-error/import_distinct_types.mgl 第 4 行第 1 列：调用 函数 accept 找不到匹配的重载：(names::right::Shared)；没有参数类型能对上的重载（候选：accept）

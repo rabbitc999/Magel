@@ -1,0 +1,1543 @@
+/*
+ * main.mgl —— 学生成绩信息管理系统（Magel 语言 + std::sql + MySQL `student` 库）
+ *
+ * 数据源与业务语义来自 ipage-student（Java + Spring MVC + MyBatis 的“Java 综合项目实训”）。
+ * 本程序用 Magel 重写它的登录与增删查改，**不依赖 ipage 框架**：
+ *   * 登录：`user` 表核对用户名 / 口令，按 user_permission 决定可见菜单；
+ *   * 学生 / 班级 / 课程 / 成绩 / 用户 五套子菜单，增删查改与聚合统计；
+ *   * 权限阈值照搬 Java 端 @ModelClass 的 look / edit / delete 三级门槛（见下文 makeRule）。
+ *
+ * 运行（在 magel 仓库根目录）：
+ *   ./magel.exe sql-magel/example/ipage-student/main.mgl -- --answers <回答脚本>
+ *
+ * 连接参数默认 127.0.0.1:3306 / root / 123456 / 库名 student，可用
+ * --host / --user / --password / --port / --db 覆盖；库不存在时用
+ * --init <student.sql 路径> 建库并灌入初始数据。
+ */
+module ipageStudent;
+
+import std::sql;
+import std::io;
+import std::text;
+import std::parse;
+
+/* ── 权限等级 ─────────────────────────────────────────────────────────── */
+
+/*
+ * 等级值与 Java 端 UserPermission 的 value 对齐：STUDENT=0、TEACHER=2、
+ * ADMINISTRATOR=3、SUPER_ADMINISTRATOR=4（NORMAL=1 不在数据库 enum 里）。
+ * 判定一律用 `用户等级 >= 门槛等级`，与 UserUtils.canUseOperator 同口径。
+ */
+const int64 LEVEL_STUDENT = 0;
+const int64 LEVEL_TEACHER = 2;
+const int64 LEVEL_ADMINISTRATOR = 3;
+const int64 LEVEL_SUPER_ADMINISTRATOR = 4;
+
+/** @brief 列表类查询默认最多显示多少行（成绩表有 1800+ 条）。 */
+const int64 LIST_LIMIT = 50;
+
+/** @brief `user`.`user_permission` 的四种取值。 */
+enum Permission { Student, Teacher, Administrator, SuperAdministrator };
+
+/** @brief 数据库 enum -> 代码枚举。前置 `isValidPermission` 校验，非法值落到 Student。 */
+Permission parsePermission(String text) {
+    if (text == "TEACHER") { return Permission::Teacher; }
+    if (text == "ADMINISTRATOR") { return Permission::Administrator; }
+    if (text == "SUPER_ADMINISTRATOR") { return Permission::SuperAdministrator; }
+    return Permission::Student;
+}
+
+/** @brief 是否是数据库认得的权限字面量。 */
+bool isValidPermission(String text) {
+    return text == "STUDENT" || text == "TEACHER"
+    || text == "ADMINISTRATOR" || text == "SUPER_ADMINISTRATOR";
+}
+
+/** @brief 代码枚举 -> 数据库 enum 字面量。 */
+String permissionToDb(Permission permission) {
+    match (permission) {
+        Permission::Student => { return "STUDENT"; }
+        Permission::Teacher => { return "TEACHER"; }
+        Permission::Administrator => { return "ADMINISTRATOR"; }
+        Permission::SuperAdministrator => { return "SUPER_ADMINISTRATOR"; }
+    }
+    return "STUDENT";
+}
+
+/** @brief 代码枚举 -> 中文显示名（与 Java 端 @ModelEnum 的 text 一致）。 */
+String permissionLabel(Permission permission) {
+    match (permission) {
+        Permission::Student => { return "学生"; }
+        Permission::Teacher => { return "教师"; }
+        Permission::Administrator => { return "管理员"; }
+        Permission::SuperAdministrator => { return "超级管理员"; }
+    }
+    return "未知";
+}
+
+/** @brief 代码枚举 -> 权限等级；顺序按 Java 的 value，不是声明顺序。 */
+int64 permissionLevel(Permission permission) {
+    match (permission) {
+        Permission::Student => { return LEVEL_STUDENT; }
+        Permission::Teacher => { return LEVEL_TEACHER; }
+        Permission::Administrator => { return LEVEL_ADMINISTRATOR; }
+        Permission::SuperAdministrator => { return LEVEL_SUPER_ADMINISTRATOR; }
+    }
+    return LEVEL_STUDENT;
+}
+
+/* ── 枚举列的字面量互转 ───────────────────────────────────────────────── */
+
+/** @brief 性别：接受“男 / 女 / MALE / FEMALE”，非法给空串。 */
+String sexToDb(String text) {
+    if (text == "男" || text == "MALE" || text == "male") { return "MALE"; }
+    if (text == "女" || text == "FEMALE" || text == "female") { return "FEMALE"; }
+    return "";
+}
+
+/** @brief 年级：接受“高一 / 高二 / 高三 / ONE / TWO / THREE”，非法给空串。 */
+String gradeToDb(String text) {
+    if (text == "高一" || text == "ONE") { return "ONE"; }
+    if (text == "高二" || text == "TWO") { return "TWO"; }
+    if (text == "高三" || text == "THREE") { return "THREE"; }
+    return "";
+}
+
+/** @brief 课程状态：接受“开课 / 结课 / START / COMPLETION”，非法给空串。 */
+String courseStateToDb(String text) {
+    if (text == "开课" || text == "START") { return "START"; }
+    if (text == "结课" || text == "COMPLETION") { return "COMPLETION"; }
+    return "";
+}
+
+/* ── 输入校验（对应 Java 端各 @Validator* 注解） ──────────────────────── */
+
+/*
+ * 注意：`len(String)` 与 `text[i]` 都按**字节**算，下标落在多字节字符
+ * 中间会运行期报错。下面这些函数要么只比较整串，要么按 UTF-8 首字节判断
+ * 字符长度后整字符前进（见 charCount），不会踩到多字节字符中间。
+ */
+
+/** @brief UTF-8 字符个数（不是字节数）。 */
+int64 charCount(String text) {
+    int64 count = 0;
+    int64 i = 0;
+    while (i < len(text)) {
+        int64 byte = (int64)text[i];
+        if (byte >= 240) { i = i + 4; }
+        elif (byte >= 224) { i = i + 3; }
+        elif (byte >= 192) { i = i + 2; }
+        else { i = i + 1; }
+        count = count + 1;
+    }
+    return count;
+}
+
+/** @brief 整串是否全是 ASCII 数字（空串不算）。 */
+bool isDigits(String text) {
+    if (len(text) == 0) { return false; }
+    for (int64 i = 0; i < len(text); i = i + 1) {
+        int64 byte = (int64)text[i];
+        /* 多字节字符的首字节 >= 192，第一个字节就判掉，不会读进续字节。 */
+        if (byte < 48 || byte > 57) { return false; }
+    }
+    return true;
+}
+
+/** @brief 用户名：非空、不超过 18 个字符（@ValidatorNotNull + @ValidatorLength(max = 18)）。 */
+bool validUserName(String text) {
+    return charCount(text) > 0 && charCount(text) <= 18;
+}
+
+/** @brief 口令：非空、至少 4 个 ASCII 字母或数字（@ValidatorPattern("^[A-Za-z\d]{4,}")）。 */
+bool validPassword(String text) {
+    int64 count = 0;
+    int64 i = 0;
+    while (i < len(text)) {
+        int64 byte = (int64)text[i];
+        bool alnum = (byte >= 48 && byte <= 57)
+        || (byte >= 65 && byte <= 90)
+        || (byte >= 97 && byte <= 122);
+        if (!alnum) { return false; }
+        if (byte >= 240) { i = i + 4; }
+        elif (byte >= 224) { i = i + 3; }
+        elif (byte >= 192) { i = i + 2; }
+        else { i = i + 1; }
+        count = count + 1;
+    }
+    return count >= 4;
+}
+
+/** @brief 日期：形如 YYYY-MM-DD，只做形状校验，具体合法性交给 MySQL。 */
+bool looksLikeDate(String text) {
+    if (len(text) != 10) { return false; }
+    int64 dash = 0;
+    for (int64 i = 0; i < len(text); i = i + 1) {
+        int64 byte = (int64)text[i];
+        if (byte == 45) { dash = dash + 1; }
+        elif (byte < 48 || byte > 57) { return false; }
+    }
+    return dash == 2;
+}
+
+/* ── 菜单动作与权限表 ─────────────────────────────────────────────────── */
+
+/** @brief 一个菜单项：内部键、显示名、可执行它所需的最低权限等级。 */
+struct Action {
+    String key;
+    String label;
+    int64 needLevel;
+};
+
+/** @brief 造一个菜单项。 */
+Action action(String key, String label, int64 needLevel) {
+    Action item;
+    item.key = key;
+    item.label = label;
+    item.needLevel = needLevel;
+    return item;
+}
+
+/** @brief 按当前用户等级过滤出可见菜单项（等价 UserUtils.canUseOperator 的 LOOK 判定）。 */
+List<Action> visibleActions(List<Action> all, int64 level) {
+    List<Action> out;
+    for (int64 i = 0; i < len(all); i = i + 1) {
+        if (level >= all[i].needLevel) { out.push(all[i]); }
+    }
+    return out;
+}
+
+/*
+ * 五个模块的门槛照搬 Java 端 @ModelClass 的 look / edit / delete：
+ *   学生 student    look = STUDENT(0)  edit = TEACHER(2)  delete = ADMINISTRATOR(3)
+ *   班级 sclass     look = TEACHER(2)  edit = TEACHER(2)  delete = ADMINISTRATOR(3)
+ *   课程 course     look = TEACHER(2)  edit = TEACHER(2)  delete = ADMINISTRATOR(3)
+ *   成绩 selection  look = STUDENT(0)  edit = TEACHER(2)  delete = ADMINISTRATOR(3)
+ *   用户 user       look = edit = delete = SUPER_ADMINISTRATOR(4)
+ */
+
+/** @brief 主菜单。 */
+List<Action> mainActions() {
+    List<Action> items;
+    items.push(action("student", "学生管理", LEVEL_STUDENT));
+    items.push(action("sclass", "班级管理", LEVEL_TEACHER));
+    items.push(action("course", "课程管理", LEVEL_TEACHER));
+    items.push(action("selection", "成绩管理", LEVEL_STUDENT));
+    items.push(action("user", "用户管理", LEVEL_SUPER_ADMINISTRATOR));
+    items.push(action("password", "修改我的密码", LEVEL_STUDENT));
+    return items;
+}
+
+/** @brief 学生模块菜单。 */
+List<Action> studentActions() {
+    List<Action> items;
+    items.push(action("add", "添加学生", LEVEL_TEACHER));
+    items.push(action("delete", "删除学生", LEVEL_ADMINISTRATOR));
+    items.push(action("update", "修改学生", LEVEL_TEACHER));
+    items.push(action("byName", "按姓名查询学生", LEVEL_STUDENT));
+    items.push(action("byClass", "按班级查询学生", LEVEL_STUDENT));
+    items.push(action("list", "显示全部学生（含课程数与平均分）", LEVEL_STUDENT));
+    return items;
+}
+
+/** @brief 班级模块菜单。 */
+List<Action> sclassActions() {
+    List<Action> items;
+    items.push(action("add", "添加班级", LEVEL_TEACHER));
+    items.push(action("delete", "删除班级", LEVEL_ADMINISTRATOR));
+    items.push(action("update", "修改班级", LEVEL_TEACHER));
+    items.push(action("byName", "按名称查询班级", LEVEL_TEACHER));
+    items.push(action("list", "显示全部班级（含学生数与平均分）", LEVEL_TEACHER));
+    return items;
+}
+
+/** @brief 课程模块菜单。 */
+List<Action> courseActions() {
+    List<Action> items;
+    items.push(action("add", "添加课程", LEVEL_TEACHER));
+    items.push(action("delete", "删除课程", LEVEL_ADMINISTRATOR));
+    items.push(action("update", "修改课程", LEVEL_TEACHER));
+    items.push(action("byName", "按名称查询课程", LEVEL_TEACHER));
+    items.push(action("list", "显示全部课程（含选课人数与平均分）", LEVEL_TEACHER));
+    return items;
+}
+
+/** @brief 成绩模块菜单。 */
+List<Action> selectionActions() {
+    List<Action> items;
+    items.push(action("add", "录入成绩", LEVEL_TEACHER));
+    items.push(action("update", "修改成绩", LEVEL_TEACHER));
+    items.push(action("delete", "删除成绩", LEVEL_ADMINISTRATOR));
+    items.push(action("byStudent", "按学生查询成绩", LEVEL_STUDENT));
+    items.push(action("byCourse", "按课程查询成绩", LEVEL_STUDENT));
+    items.push(action("list", "显示全部成绩（前 50 条）", LEVEL_STUDENT));
+    items.push(action("statCourse", "按课程统计", LEVEL_STUDENT));
+    items.push(action("statClass", "按班级统计", LEVEL_STUDENT));
+    return items;
+}
+
+/** @brief 用户模块菜单（仅超级管理员可见）。 */
+List<Action> userActions() {
+    List<Action> items;
+    items.push(action("add", "添加用户", LEVEL_SUPER_ADMINISTRATOR));
+    items.push(action("delete", "删除用户", LEVEL_SUPER_ADMINISTRATOR));
+    items.push(action("permission", "修改用户权限", LEVEL_SUPER_ADMINISTRATOR));
+    items.push(action("password", "重置用户密码", LEVEL_SUPER_ADMINISTRATOR));
+    items.push(action("list", "显示全部用户", LEVEL_SUPER_ADMINISTRATOR));
+    return items;
+}
+
+/* ── 应用程序 ─────────────────────────────────────────────────────────── */
+
+/** @brief 控制台信息管理系统的全部状态与操作。 */
+struct App {
+    std::sql::Database db;
+    bool ready;
+
+    List<String> answers;   /**< 脚本模式下的预置回答 */
+    int64 answerIndex;
+    bool scripted;
+    bool inputClosed;             /**< 脚本答案用尽：所有菜单循环都要退出 */
+
+    int64 userId;
+    String userName;
+    Permission permission;
+    int64 level;
+    bool signedIn;
+
+    /* -- 输入 ---------------------------------------------------------- */
+
+    /**
+     * @brief 打印提示并读一个回答。
+     *
+     * 脚本模式（`--answers 文件`）从 UTF-8 文件里按空白取词；否则交给
+     * `inputLine()`。答案用尽时返回空串并置 `inputClosed`，调用方的循环
+     * 据此退出——否则脚本模式下会死循环等待不存在的输入。
+     */
+    String ask(String prompt) {
+        print("{}", prompt);
+        if (self.scripted) {
+            if (self.answerIndex >= len(self.answers)) {
+                self.inputClosed = true;
+                return "";
+            }
+            String value = self.answers[self.answerIndex];
+            self.answerIndex = self.answerIndex + 1;
+            return value;
+        }
+        return inputLine();
+    }
+
+    /** @brief 读一个非负整数回答；不是数字时给 -1（调用方用它区分“没填”）。 */
+    int64 askId(String prompt) {
+        String text = self.ask(prompt);
+        if (!isDigits(text)) { return (int64)(0 - 1); }
+        return std::parse::Parse::parseInt64(text).unwrapOr((int64)(0 - 1));
+    }
+
+    /**
+     * @brief 读一个菜单序号。
+     *
+     * 与 `askId` 分开：`askId` 供“请输入某个ID”这类场合，菜单必须额外区分
+     * 「输入了 0（返回）」与「输入了非数字（输入无效）」——用 0 表示无效会把
+     * 乱输入静默当成返回。
+     */
+    int64 askMenu(String prompt) {
+        String text = std::text::Text::trim(self.ask(prompt));
+        if (!isDigits(text)) { return (int64)(0 - 1); }
+        return std::parse::Parse::parseInt64(text).unwrapOr((int64)(0 - 1));
+    }
+
+    /** @brief 读一个 UTF-8 回答脚本（按空白切词，逐词 trim 掉换行与回车）。 */
+    bool loadAnswers(String path) {
+        Result<File, String> opened = std::io::fileOpen(path, "rb");
+        bool found = false;
+        match (opened) {
+            Result<File, String>::Ok(handle) => {
+                while (std::io::fileEof(handle) == 0) {
+                    String line = std::io::fileRead(handle);
+                    List<String> parts = std::text::Text::split(line, " ");
+                    for (int64 i = 0; i < len(parts); i = i + 1) {
+                        String token = std::text::Text::trim(parts[i]);
+                        if (len(token) > 0) { self.answers.push(token); }
+                    }
+                }
+                std::io::fileClose(handle);
+                found = true;
+            }
+            Result<File, String>::Err(message) => { found = false; }
+        }
+        self.scripted = found;
+        self.answerIndex = 0;
+        return found;
+    }
+
+    /* -- 输出 ---------------------------------------------------------- */
+
+    /** @brief 打印一级标题。 */
+    void bar() { println("=========================================="); }
+
+    /** @brief 打印居中标题（按显示宽度粗略居中）。 */
+    void title(String text) {
+        self.bar();
+        println("              {}", text);
+        self.bar();
+    }
+
+    /** @brief 显示一个结果集：表格或影响行数；空结果给出提示。 */
+    void show(std::sql::ResultSet result) {
+        if (!result.ok) {
+            println(">> 操作失败：{}", result.error);
+            return;
+        }
+        if (result.colCount() == 0) {
+            println(">> 影响 {} 行", result.affected);
+            return;
+        }
+        if (result.rowCount() == 0) {
+            println(">> 没有匹配的记录");
+            return;
+        }
+        print("{}", result.render());
+        println(">> 共 {} 行", result.rowCount());
+    }
+
+    /** @brief 等待回车；脚本模式下跳过，避免自动化卡在按键上。 */
+    void waitReturn() {
+        if (self.scripted) { return; }
+        println("按回车键继续...");
+        pause();
+    }
+
+    /* -- 连接与初始化 -------------------------------------------------- */
+
+    /** @brief 连接 MySQL 并选中库；失败时打印原因。 */
+    bool connect(String host, String user, String password, String database, int32 port) {
+        self.db = std::sql::Database::mysql(host, user, password, "", port);
+        if (!self.db.isOpen()) {
+            println(">> 连接 MySQL 失败：{}", self.db.lastError());
+            return false;
+        }
+        if (len(database) == 0) { database = "student"; }
+        if (!self.db.execOk("CREATE DATABASE IF NOT EXISTS `" + database
+        + "` DEFAULT CHARACTER SET utf8mb4")) {
+            println(">> 建库失败：{}", self.db.lastError());
+            return false;
+        }
+        if (!self.db.execOk("USE `" + database + "`")) {
+            println(">> 选库失败：{}", self.db.lastError());
+            return false;
+        }
+        self.ready = true;
+        return true;
+    }
+
+    /**
+     * @brief 读取一个 .sql 文件并整段交给 MySQL 执行（`--init` 用）。
+     * @return 0 = 文件不存在、1 = 执行成功、2 = 执行报错（已打印原因）。
+     */
+    int64 applySqlFile(String path) {
+        Result<File, String> opened = std::io::fileOpen(path, "rb");
+        bool found = false;
+        String script = "";
+        match (opened) {
+            Result<File, String>::Ok(handle) => {
+                while (std::io::fileEof(handle) == 0) {
+                    String line = std::io::fileRead(handle);
+                    script = script + line + "\n";
+                }
+                std::io::fileClose(handle);
+                found = true;
+            }
+            Result<File, String>::Err(message) => { found = false; }
+        }
+        if (!found) { return 0; }
+        std::sql::ResultSet result = self.db.exec(script);
+        if (!result.ok) {
+            println(">> 执行 {} 出错：{}", path, result.error);
+            return 2;
+        }
+        return 1;
+    }
+
+    /**
+     * @brief 确认业务表在位；不在位且给了 --init 文件时就地建库。
+     * @param initPath 建库脚本路径；空串表示不自动导入。
+     * @param force 为真时无论表是否已存在都重新导入（自检用，保证夹具确定）。
+     */
+    bool ensureSchema(String initPath, bool force) {
+        if (!force && self.db.hasTable("user") && self.db.hasTable("student")) { return true; }
+        if (len(initPath) == 0) {
+            println(">> 库里还没有 user / student 表。");
+            println(">> 请先导入 ipage-student/student.sql，或用 --init <student.sql 路径> 再跑一次。");
+            return false;
+        }
+        println(">> 正在导入初始数据：{}", initPath);
+        int64 code = self.applySqlFile(initPath);
+        if (code == 0) {
+            println(">> 找不到文件：{}", initPath);
+            return false;
+        }
+        if (code == 2) { return false; }
+        if (!self.db.hasTable("student")) {
+            println(">> 导入脚本执行完了，但 student 表仍不存在，请检查脚本内容");
+            return false;
+        }
+        println(">> 初始数据导入完成");
+        return true;
+    }
+
+    /* -- 登录 ---------------------------------------------------------- */
+
+    /**
+     * @brief 登录：最多 3 次机会，成功后把用户与权限等级记进 self。
+     *
+     * 校验顺序照 Java 端 LoginController：先非空，再整行匹配
+     * `user_name` + `user_password`；命中就把 user_id / 权限取出。
+     */
+    bool signIn() {
+        int64 attempts = 0;
+        while (attempts < 3 && !self.inputClosed) {
+            self.bar();
+            println("        学生成绩信息管理系统");
+            self.bar();
+            String name = std::text::Text::trim(self.ask("用户名："));
+            if (len(name) == 0) {
+                println(">> 用户名不能为空");
+                continue;
+            }
+            String password = self.ask("密　码：");
+            if (len(password) == 0) {
+                println(">> 用户密码不能为空");
+                continue;
+            }
+            String sql = "SELECT user_id, user_name, user_permission FROM `user`"
+            " WHERE user_name = " + self.db.quote(name)
+            + " AND user_password = " + self.db.quote(password);
+            std::sql::ResultSet result = self.db.exec(sql);
+            if (!result.ok) {
+                println(">> 查询用户失败：{}", result.error);
+                return false;
+            }
+            if (result.rowCount() == 1) {
+                self.userId = result.intAt(0, 0);
+                self.userName = result.textAt(0, 1);
+                self.permission = parsePermission(result.textAt(0, 2));
+                self.level = permissionLevel(self.permission);
+                self.signedIn = true;
+                println(">> 登录成功：{}（{}）", self.userName,
+                permissionLabel(self.permission));
+                return true;
+            }
+            attempts = attempts + 1;
+            if (attempts < 3) {
+                println(">> 用户名或密码错误，请重新输入（剩余 {} 次机会）", 3 - attempts);
+            } else {
+                println(">> 用户名或密码错误，连续 3 次失败，程序退出");
+            }
+        }
+        return false;
+    }
+
+    /** @brief 退出登录状态（不关连接，主循环退出时统一关）。 */
+    void signOut() {
+        self.signedIn = false;
+        self.userId = 0;
+        self.userName = "";
+        self.permission = Permission::Student;
+        self.level = LEVEL_STUDENT;
+    }
+
+    /* -- 通用交互 ------------------------------------------------------ */
+
+    /**
+     * @brief 打印带权限过滤的菜单并读选择。
+     * @return -1 = 输入无效；0 = 返回上级；其余为 `actions` 里的下标 + 1。
+     */
+    int64 choose(String heading, List<Action> actions) {
+        self.bar();
+        println("              {}", heading);
+        self.bar();
+        for (int64 i = 0; i < len(actions); i = i + 1) {
+            println("          {}. {}", i + 1, actions[i].label);
+        }
+        println("          0. 返回");
+        self.bar();
+        int64 choice = self.askMenu(format("请输入您的选择(0-{})：", len(actions)));
+        if (self.inputClosed) { return 0; }
+        if (choice < 0 || choice > len(actions)) {
+            println(">> 输入无效，请重新选择");
+            return (int64)(0 - 1);
+        }
+        return choice;
+    }
+
+    /** @brief 分隔一行小标题。 */
+    void section(String text) {
+        println("------ {} ------", text);
+    }
+
+    /** @brief 拒绝越权操作（菜单已过滤，这里是二次兜底）。 */
+    bool deny(int64 needLevel) {
+        if (self.level >= needLevel) { return false; }
+        println(">> 权限不足：该操作需要「{}」及以上权限", self.levelLabel(needLevel));
+        return true;
+    }
+
+    /** @brief 等级数字 -> 中文权限名。 */
+    String levelLabel(int64 level) {
+        if (level >= LEVEL_SUPER_ADMINISTRATOR) { return "超级管理员"; }
+        if (level >= LEVEL_ADMINISTRATOR) { return "管理员"; }
+        if (level >= LEVEL_TEACHER) { return "教师"; }
+        return "学生";
+    }
+
+    /* -- 主循环 -------------------------------------------------------- */
+
+    /** @brief 登录 -> 主菜单循环。 */
+    void run() {
+        if (!self.signIn()) { return; }
+        List<Action> all = mainActions();
+        bool running = true;
+        while (running && !self.inputClosed) {
+            List<Action> items = visibleActions(all, self.level);
+            println("");
+            self.bar();
+            println("        学生成绩信息管理系统");
+            println("        当前用户：{}（{}）", self.userName,
+            permissionLabel(self.permission));
+            self.bar();
+            for (int64 i = 0; i < len(items); i = i + 1) {
+                println("          {}. {}", i + 1, items[i].label);
+            }
+            println("          0. 退出系统");
+            self.bar();
+            int64 choice = self.askMenu(format("请输入您的选择(0-{})：", len(items)));
+            if (self.inputClosed) { break; }
+            if (choice == 0) { running = false; }
+            elif (choice < 0 || choice > len(items)) {
+                println(">> 输入无效，请重新选择");
+            } else {
+                self.dispatch(items[choice - 1]);
+            }
+        }
+        self.bar();
+        println("        感谢使用学生成绩信息管理系统！");
+        self.bar();
+    }
+
+    /** @brief 主菜单动作分发。 */
+    void dispatch(Action item) {
+        String key = item.key;
+        if (key == "student") { self.moduleMenu("学生管理", studentActions(), "student"); }
+        elif (key == "sclass") { self.moduleMenu("班级管理", sclassActions(), "sclass"); }
+        elif (key == "course") { self.moduleMenu("课程管理", courseActions(), "course"); }
+        elif (key == "selection") { self.moduleMenu("成绩管理", selectionActions(), "selection"); }
+        elif (key == "user") { self.moduleMenu("用户管理", userActions(), "user"); }
+        elif (key == "password") { self.changeOwnPassword(); }
+    }
+
+    /** @brief 通用子模块循环：过滤菜单 -> 读选择 -> 分发。 */
+    void moduleMenu(String heading, List<Action> all, String tag) {
+        bool back = false;
+        while (!back && !self.inputClosed) {
+            List<Action> items = visibleActions(all, self.level);
+            int64 choice = self.choose(heading, items);
+            if (self.inputClosed) { return; }
+            if (choice == 0) { back = true; }
+            elif (choice > 0) {
+                Action picked = items[choice - 1];
+                if (!self.deny(picked.needLevel)) {
+                    if (tag == "student") { self.studentAction(picked.key); }
+                    elif (tag == "sclass") { self.sclassAction(picked.key); }
+                    elif (tag == "course") { self.courseAction(picked.key); }
+                    elif (tag == "selection") { self.selectionAction(picked.key); }
+                    elif (tag == "user") { self.userAction(picked.key); }
+                }
+            }
+        }
+    }
+
+    /* -- 学生管理 ------------------------------------------------------ */
+
+    /** @brief 学生模块动作分发。 */
+    void studentAction(String key) {
+        if (key == "add") { self.addStudent(); }
+        elif (key == "delete") { self.deleteStudent(); }
+        elif (key == "update") { self.updateStudent(); }
+        elif (key == "byName") { self.queryStudents("name"); }
+        elif (key == "byClass") { self.queryStudents("class"); }
+        elif (key == "list") { self.listStudents(); }
+    }
+
+    /** @brief 学生列表的公共 SELECT：连班级，带课程数与平均分（对应 Java 的 AGGREGATION 字段）。 */
+    String studentListSql() {
+        return "SELECT st.student_id AS 学生ID, st.student_name AS 学生姓名,"
+        " CASE st.student_sex WHEN 'MALE' THEN '男' ELSE '女' END AS 性别,"
+        " IFNULL(cl.sclass_name, '未分班') AS 班级,"
+        " CASE cl.sclass_grade WHEN 'ONE' THEN '高一' WHEN 'TWO' THEN '高二'"
+        "   WHEN 'THREE' THEN '高三' ELSE '-' END AS 年级,"
+        " COUNT(se.selection_id) AS 课程数,"
+        " IFNULL(ROUND(AVG(se.grade_number), 1), 0) AS 平均分"
+        " FROM student st"
+        " LEFT JOIN sclass cl ON cl.sclass_id = st.sclass_id"
+        " LEFT JOIN selection se ON se.student_id = st.student_id";
+    }
+
+    /** @brief 显示全部学生（默认前 LIST_LIMIT 条）。 */
+    void listStudents() {
+        self.section("学生列表");
+        self.show(self.db.exec(self.studentListSql()
+        + " GROUP BY st.student_id, st.student_name, st.student_sex,"
+        " cl.sclass_name, cl.sclass_grade"
+        " ORDER BY st.student_id"
+        + format(" LIMIT {}", LIST_LIMIT)));
+        self.waitReturn();
+    }
+
+    /** @brief 按姓名或班级查学生。 */
+    void queryStudents(String mode) {
+        self.section("查询学生");
+        String condition = "";
+        if (mode == "name") {
+            String name = self.ask("请输入学生姓名：");
+            condition = " WHERE st.student_name LIKE " + self.db.quote("%" + name + "%");
+        } else {
+            String className = self.ask("请输入班级名称（如 1班）：");
+            condition = " WHERE cl.sclass_name LIKE " + self.db.quote("%" + className + "%");
+        }
+        self.show(self.db.exec(self.studentListSql() + condition
+        + " GROUP BY st.student_id, st.student_name, st.student_sex,"
+        " cl.sclass_name, cl.sclass_grade"
+        " ORDER BY st.student_id"
+        + format(" LIMIT {}", LIST_LIMIT)));
+        self.waitReturn();
+    }
+
+    /** @brief 添加学生（@ValidatorNotNull：姓名、性别必填）。 */
+    void addStudent() {
+        self.section("添加学生");
+        String name = self.ask("请输入学生姓名：");
+        if (len(name) == 0) {
+            println(">> 学生姓名不能为空");
+            return;
+        }
+        String sex = sexToDb(self.ask("请输入性别（男/女）："));
+        if (len(sex) == 0) {
+            println(">> 性别只能是 男 或 女");
+            return;
+        }
+        String classText = self.ask("请输入班级ID（留空表示不分班）：");
+        String classValue = "NULL";
+        if (len(classText) > 0) {
+            if (!isDigits(classText)) {
+                println(">> 班级ID必须是数字");
+                return;
+            }
+            String exists = self.db.scalar("SELECT sclass_id FROM sclass WHERE sclass_id = " + classText);
+            if (len(exists) == 0) {
+                println(">> 班级 {} 不存在", classText);
+                return;
+            }
+            classValue = classText;
+        }
+        std::sql::ResultSet result = self.db.exec(
+        "INSERT INTO student (student_name, student_sex, sclass_id) VALUES ("
+        + self.db.quote(name) + ", " + self.db.quote(sex) + ", " + classValue + ")");
+        if (result.ok) {
+            println(">> 添加成功！新学生ID：{}", self.db.scalar("SELECT LAST_INSERT_ID()"));
+        } else {
+            println(">> 添加失败：{}", result.error);
+        }
+    }
+
+    /** @brief 删除学生（外键 ON DELETE CASCADE，会一并删掉选课成绩）。 */
+    void deleteStudent() {
+        self.section("删除学生");
+        int64 id = self.askId("请输入要删除的学生ID：");
+        if (id < 0) {
+            println(">> 学生ID必须是数字");
+            return;
+        }
+        String name = self.db.scalar("SELECT student_name FROM student WHERE student_id = "
+        + format("{}", id));
+        if (len(name) == 0) {
+            println(">> 学生 {} 不存在", id);
+            return;
+        }
+        int64 scores = self.db.count("SELECT COUNT(*) FROM selection WHERE student_id = "
+        + format("{}", id));
+        std::sql::ResultSet result = self.db.exec("DELETE FROM student WHERE student_id = "
+        + format("{}", id));
+        if (!result.ok) {
+            println(">> 删除失败：{}", result.error);
+            return;
+        }
+        println(">> 已删除学生 {}（{}），连带删除 {} 条成绩记录", id, name, scores);
+    }
+
+    /** @brief 修改学生（姓名 / 性别 / 班级，回车表示保留原值）。 */
+    void updateStudent() {
+        self.section("修改学生");
+        int64 id = self.askId("请输入要修改的学生ID：");
+        if (id < 0) {
+            println(">> 学生ID必须是数字");
+            return;
+        }
+        std::sql::ResultSet current = self.db.exec(
+        "SELECT student_name, student_sex, IFNULL(sclass_id, 0) FROM student WHERE student_id = "
+        + format("{}", id));
+        if (!current.ok || current.rowCount() == 0) {
+            println(">> 学生 {} 不存在", id);
+            return;
+        }
+        String name = self.ask("请输入新姓名（回车保留）：");
+        if (len(name) == 0) { name = current.textAt(0, 0); }
+        String sexText = self.ask("请输入新性别（男/女，回车保留）：");
+        String sex = current.textAt(0, 1);
+        if (len(sexText) > 0) {
+            sex = sexToDb(sexText);
+            if (len(sex) == 0) {
+                println(">> 性别只能是 男 或 女");
+                return;
+            }
+        }
+        String classText = self.ask("请输入新班级ID（回车保留，输入 0 表示不分班）：");
+        String classValue = format("{}", current.intAt(0, 2));
+        if (len(classText) > 0) {
+            if (!isDigits(classText)) {
+                println(">> 班级ID必须是数字");
+                return;
+            }
+            if (classText == "0") { classValue = "NULL"; }
+            else {
+                String exists = self.db.scalar("SELECT sclass_id FROM sclass WHERE sclass_id = " + classText);
+                if (len(exists) == 0) {
+                    println(">> 班级 {} 不存在", classText);
+                    return;
+                }
+                classValue = classText;
+            }
+        }
+        std::sql::ResultSet result = self.db.exec(
+        "UPDATE student SET student_name = " + self.db.quote(name)
+        + ", student_sex = " + self.db.quote(sex)
+        + ", sclass_id = " + classValue
+        + " WHERE student_id = " + format("{}", id));
+        if (result.ok) { println(">> 修改成功！"); }
+        else { println(">> 修改失败：{}", result.error); }
+    }
+
+    /* -- 班级管理 ------------------------------------------------------ */
+
+    /** @brief 班级模块动作分发。 */
+    void sclassAction(String key) {
+        if (key == "add") { self.addSclass(); }
+        elif (key == "delete") { self.deleteSclass(); }
+        elif (key == "update") { self.updateSclass(); }
+        elif (key == "byName") { self.querySclass(); }
+        elif (key == "list") { self.listSclass(); }
+    }
+
+    /** @brief 班级列表 SELECT：带学生数与班级平均分（对应 Java 的两个 AGGREGATION 字段）。 */
+    String sclassListSql() {
+        return "SELECT c.sclass_id AS 班级ID, c.sclass_name AS 班级名称,"
+        " c.sclass_administrator AS 班主任,"
+        " CASE c.sclass_grade WHEN 'ONE' THEN '高一' WHEN 'TWO' THEN '高二'"
+        "   WHEN 'THREE' THEN '高三' ELSE '未知' END AS 年级,"
+        " (SELECT COUNT(*) FROM student s WHERE s.sclass_id = c.sclass_id) AS 学生数,"
+        " IFNULL((SELECT ROUND(AVG(se.grade_number), 1) FROM student s"
+        "   JOIN selection se ON se.student_id = s.student_id"
+        "   WHERE s.sclass_id = c.sclass_id), 0) AS 平均分"
+        " FROM sclass c";
+    }
+
+    /** @brief 显示全部班级。 */
+    void listSclass() {
+        self.section("班级列表");
+        self.show(self.db.exec(self.sclassListSql() + " ORDER BY c.sclass_id"));
+        self.waitReturn();
+    }
+
+    /** @brief 按名称查询班级。 */
+    void querySclass() {
+        self.section("查询班级");
+        String name = self.ask("请输入班级名称：");
+        self.show(self.db.exec(self.sclassListSql()
+        + " WHERE c.sclass_name LIKE " + self.db.quote("%" + name + "%")
+        + " ORDER BY c.sclass_id"));
+        self.waitReturn();
+    }
+
+    /** @brief 添加班级（名称、负责人、年级必填）。 */
+    void addSclass() {
+        self.section("添加班级");
+        String name = self.ask("请输入班级名称：");
+        if (len(name) == 0) {
+            println(">> 班级名称不能为空");
+            return;
+        }
+        String administrator = self.ask("请输入班级负责人：");
+        if (len(administrator) == 0) {
+            println(">> 班级负责人不能为空");
+            return;
+        }
+        String grade = gradeToDb(self.ask("请输入所属年级（高一/高二/高三）："));
+        if (len(grade) == 0) {
+            println(">> 年级只能是 高一 / 高二 / 高三");
+            return;
+        }
+        std::sql::ResultSet result = self.db.exec(
+        "INSERT INTO sclass (sclass_name, sclass_administrator, sclass_grade) VALUES ("
+        + self.db.quote(name) + ", " + self.db.quote(administrator) + ", "
+        + self.db.quote(grade) + ")");
+        if (result.ok) {
+            println(">> 添加成功！新班级ID：{}", self.db.scalar("SELECT LAST_INSERT_ID()"));
+        } else {
+            println(">> 添加失败：{}", result.error);
+        }
+    }
+
+    /** @brief 删除班级（外键 ON DELETE SET NULL，班内学生会变成“未分班”）。 */
+    void deleteSclass() {
+        self.section("删除班级");
+        int64 id = self.askId("请输入要删除的班级ID：");
+        if (id < 0) {
+            println(">> 班级ID必须是数字");
+            return;
+        }
+        String name = self.db.scalar("SELECT sclass_name FROM sclass WHERE sclass_id = "
+        + format("{}", id));
+        if (len(name) == 0) {
+            println(">> 班级 {} 不存在", id);
+            return;
+        }
+        int64 members = self.db.count("SELECT COUNT(*) FROM student WHERE sclass_id = "
+        + format("{}", id));
+        std::sql::ResultSet result = self.db.exec("DELETE FROM sclass WHERE sclass_id = "
+        + format("{}", id));
+        if (!result.ok) {
+            println(">> 删除失败：{}", result.error);
+            return;
+        }
+        println(">> 已删除班级 {}（{}），{} 名学生转为未分班", id, name, members);
+    }
+
+    /** @brief 修改班级。 */
+    void updateSclass() {
+        self.section("修改班级");
+        int64 id = self.askId("请输入要修改的班级ID：");
+        if (id < 0) {
+            println(">> 班级ID必须是数字");
+            return;
+        }
+        std::sql::ResultSet current = self.db.exec(
+        "SELECT sclass_name, sclass_administrator, IFNULL(sclass_grade, '') FROM sclass"
+        " WHERE sclass_id = " + format("{}", id));
+        if (!current.ok || current.rowCount() == 0) {
+            println(">> 班级 {} 不存在", id);
+            return;
+        }
+        String name = self.ask("请输入新班级名称（回车保留）：");
+        if (len(name) == 0) { name = current.textAt(0, 0); }
+        String administrator = self.ask("请输入新负责人（回车保留）：");
+        if (len(administrator) == 0) { administrator = current.textAt(0, 1); }
+        String gradeText = self.ask("请输入新年级（高一/高二/高三，回车保留）：");
+        String grade = current.textAt(0, 2);
+        if (len(gradeText) > 0) {
+            grade = gradeToDb(gradeText);
+            if (len(grade) == 0) {
+                println(">> 年级只能是 高一 / 高二 / 高三");
+                return;
+            }
+        }
+        std::sql::ResultSet result = self.db.exec(
+        "UPDATE sclass SET sclass_name = " + self.db.quote(name)
+        + ", sclass_administrator = " + self.db.quote(administrator)
+        + ", sclass_grade = " + self.db.quote(grade)
+        + " WHERE sclass_id = " + format("{}", id));
+        if (result.ok) { println(">> 修改成功！"); }
+        else { println(">> 修改失败：{}", result.error); }
+    }
+
+    /* -- 课程管理 ------------------------------------------------------ */
+
+    /** @brief 课程模块动作分发。 */
+    void courseAction(String key) {
+        if (key == "add") { self.addCourse(); }
+        elif (key == "delete") { self.deleteCourse(); }
+        elif (key == "update") { self.updateCourse(); }
+        elif (key == "byName") { self.queryCourse(); }
+        elif (key == "list") { self.listCourse(); }
+    }
+
+    /** @brief 课程列表 SELECT：带选课人数与平均分。 */
+    String courseListSql() {
+        return "SELECT co.course_id AS 课程ID, co.course_name AS 课程名称,"
+        " CASE co.course_state WHEN 'START' THEN '开课' ELSE '结课' END AS 状态,"
+        " (SELECT COUNT(*) FROM selection se WHERE se.course_id = co.course_id) AS 选课人数,"
+        " IFNULL((SELECT ROUND(AVG(se.grade_number), 1) FROM selection se"
+        "   WHERE se.course_id = co.course_id), 0) AS 平均分"
+        " FROM course co";
+    }
+
+    /** @brief 显示全部课程。 */
+    void listCourse() {
+        self.section("课程列表");
+        self.show(self.db.exec(self.courseListSql() + " ORDER BY co.course_id"));
+        self.waitReturn();
+    }
+
+    /** @brief 按名称查询课程。 */
+    void queryCourse() {
+        self.section("查询课程");
+        String name = self.ask("请输入课程名称：");
+        self.show(self.db.exec(self.courseListSql()
+        + " WHERE co.course_name LIKE " + self.db.quote("%" + name + "%")
+        + " ORDER BY co.course_id"));
+        self.waitReturn();
+    }
+
+    /** @brief 添加课程。 */
+    void addCourse() {
+        self.section("添加课程");
+        String name = self.ask("请输入课程名称：");
+        if (len(name) == 0) {
+            println(">> 课程名称不能为空");
+            return;
+        }
+        String state = courseStateToDb(self.ask("请输入课程状态（开课/结课）："));
+        if (len(state) == 0) {
+            println(">> 课程状态只能是 开课 或 结课");
+            return;
+        }
+        std::sql::ResultSet result = self.db.exec(
+        "INSERT INTO course (course_name, course_state) VALUES ("
+        + self.db.quote(name) + ", " + self.db.quote(state) + ")");
+        if (result.ok) {
+            println(">> 添加成功！新课程ID：{}", self.db.scalar("SELECT LAST_INSERT_ID()"));
+        } else {
+            println(">> 添加失败：{}", result.error);
+        }
+    }
+
+    /** @brief 删除课程（外键 ON DELETE CASCADE，会一并删掉该课程的选课成绩）。 */
+    void deleteCourse() {
+        self.section("删除课程");
+        int64 id = self.askId("请输入要删除的课程ID：");
+        if (id < 0) {
+            println(">> 课程ID必须是数字");
+            return;
+        }
+        String name = self.db.scalar("SELECT course_name FROM course WHERE course_id = "
+        + format("{}", id));
+        if (len(name) == 0) {
+            println(">> 课程 {} 不存在", id);
+            return;
+        }
+        int64 scores = self.db.count("SELECT COUNT(*) FROM selection WHERE course_id = "
+        + format("{}", id));
+        std::sql::ResultSet result = self.db.exec("DELETE FROM course WHERE course_id = "
+        + format("{}", id));
+        if (!result.ok) {
+            println(">> 删除失败：{}", result.error);
+            return;
+        }
+        println(">> 已删除课程 {}（{}），连带删除 {} 条成绩记录", id, name, scores);
+    }
+
+    /** @brief 修改课程。 */
+    void updateCourse() {
+        self.section("修改课程");
+        int64 id = self.askId("请输入要修改的课程ID：");
+        if (id < 0) {
+            println(">> 课程ID必须是数字");
+            return;
+        }
+        std::sql::ResultSet current = self.db.exec(
+        "SELECT course_name, course_state FROM course WHERE course_id = "
+        + format("{}", id));
+        if (!current.ok || current.rowCount() == 0) {
+            println(">> 课程 {} 不存在", id);
+            return;
+        }
+        String name = self.ask("请输入新课程名称（回车保留）：");
+        if (len(name) == 0) { name = current.textAt(0, 0); }
+        String stateText = self.ask("请输入新状态（开课/结课，回车保留）：");
+        String state = current.textAt(0, 1);
+        if (len(stateText) > 0) {
+            state = courseStateToDb(stateText);
+            if (len(state) == 0) {
+                println(">> 课程状态只能是 开课 或 结课");
+                return;
+            }
+        }
+        std::sql::ResultSet result = self.db.exec(
+        "UPDATE course SET course_name = " + self.db.quote(name)
+        + ", course_state = " + self.db.quote(state)
+        + " WHERE course_id = " + format("{}", id));
+        if (result.ok) { println(">> 修改成功！"); }
+        else { println(">> 修改失败：{}", result.error); }
+    }
+
+    /* -- 成绩管理 ------------------------------------------------------ */
+
+    /** @brief 成绩模块动作分发。 */
+    void selectionAction(String key) {
+        if (key == "add") { self.addSelection(); }
+        elif (key == "update") { self.updateSelection(); }
+        elif (key == "delete") { self.deleteSelection(); }
+        elif (key == "byStudent") { self.querySelection("student"); }
+        elif (key == "byCourse") { self.querySelection("course"); }
+        elif (key == "list") { self.listSelection(); }
+        elif (key == "statCourse") { self.statByCourse(); }
+        elif (key == "statClass") { self.statByClass(); }
+    }
+
+    /** @brief 成绩列表 SELECT：连学生与课程，并算出等级。 */
+    String selectionListSql() {
+        return "SELECT se.selection_id AS 成绩ID, se.student_id AS 学号,"
+        " st.student_name AS 学生姓名, se.course_id AS 课程ID,"
+        " co.course_name AS 课程, se.test_date AS 考试日期,"
+        " se.grade_number AS 成绩,"
+        " CASE WHEN se.grade_number >= 90 THEN '优秀'"
+        "   WHEN se.grade_number >= 80 THEN '良好'"
+        "   WHEN se.grade_number >= 70 THEN '中等'"
+        "   WHEN se.grade_number >= 60 THEN '及格'"
+        "   ELSE '不及格' END AS 等级"
+        " FROM selection se"
+        " JOIN student st ON st.student_id = se.student_id"
+        " JOIN course co ON co.course_id = se.course_id";
+    }
+
+    /** @brief 显示全部成绩（默认前 LIST_LIMIT 条，避免一次刷 1800 行）。 */
+    void listSelection() {
+        self.section("成绩列表");
+        int64 total = self.db.count("SELECT COUNT(*) FROM selection");
+        println(">> 库中共 {} 条成绩，默认显示前 {} 条", total, LIST_LIMIT);
+        self.show(self.db.exec(self.selectionListSql()
+        + " ORDER BY se.selection_id"
+        + format(" LIMIT {}", LIST_LIMIT)));
+        self.waitReturn();
+    }
+
+    /** @brief 按学生或课程查成绩。 */
+    void querySelection(String mode) {
+        self.section("查询成绩");
+        String condition = "";
+        if (mode == "student") {
+            String name = self.ask("请输入学生姓名（或学号）：");
+            if (isDigits(name)) {
+                condition = " WHERE se.student_id = " + name;
+            } else {
+                condition = " WHERE st.student_name LIKE " + self.db.quote("%" + name + "%");
+            }
+        } else {
+            String course = self.ask("请输入课程名称：");
+            condition = " WHERE co.course_name LIKE " + self.db.quote("%" + course + "%");
+        }
+        self.show(self.db.exec(self.selectionListSql() + condition
+        + " ORDER BY se.student_id, se.course_id"
+        + format(" LIMIT {}", LIST_LIMIT)));
+        self.waitReturn();
+    }
+
+    /** @brief 录入成绩（学生、课程、日期必填；成绩 0~100）。 */
+    void addSelection() {
+        self.section("录入成绩");
+        String studentText = self.ask("请输入学号：");
+        if (!isDigits(studentText)) {
+            println(">> 学号必须是数字");
+            return;
+        }
+        String studentName = self.db.scalar("SELECT student_name FROM student WHERE student_id = "
+        + studentText);
+        if (len(studentName) == 0) {
+            println(">> 学号 {} 不存在", studentText);
+            return;
+        }
+        String courseText = self.ask("请输入课程ID：");
+        if (!isDigits(courseText)) {
+            println(">> 课程ID必须是数字");
+            return;
+        }
+        String courseName = self.db.scalar("SELECT course_name FROM course WHERE course_id = "
+        + courseText);
+        if (len(courseName) == 0) {
+            println(">> 课程 {} 不存在", courseText);
+            return;
+        }
+        String date = self.ask("请输入考试日期（YYYY-MM-DD）：");
+        if (!looksLikeDate(date)) {
+            println(">> 考试日期格式应为 YYYY-MM-DD");
+            return;
+        }
+        int64 grade = self.askId("请输入成绩（0-100）：");
+        if (grade < 0 || grade > 100) {
+            println(">> 成绩必须在 0 到 100 之间（@ValidatorRange(max = 100)）");
+            return;
+        }
+        int64 exists = self.db.count("SELECT COUNT(*) FROM selection WHERE student_id = "
+        + studentText + " AND course_id = " + courseText);
+        if (exists > 0) {
+            println(">> {} 的《{}》已有成绩，请改用「修改成绩」", studentName, courseName);
+            return;
+        }
+        std::sql::ResultSet result = self.db.exec(
+        "INSERT INTO selection (student_id, course_id, test_date, grade_number) VALUES ("
+        + studentText + ", " + courseText + ", " + self.db.quote(date) + ", "
+        + format("{}", grade) + ")");
+        if (result.ok) {
+            println(">> 录入成功！新成绩ID：{}", self.db.scalar("SELECT LAST_INSERT_ID()"));
+        } else {
+            println(">> 录入失败：{}", result.error);
+        }
+    }
+
+    /** @brief 修改成绩（按成绩ID定位，只改分数，回车保留）。 */
+    void updateSelection() {
+        self.section("修改成绩");
+        int64 id = self.askId("请输入要修改的成绩ID：");
+        if (id < 0) {
+            println(">> 成绩ID必须是数字");
+            return;
+        }
+        std::sql::ResultSet current = self.db.exec(
+        "SELECT se.student_id, st.student_name, co.course_name, se.grade_number"
+        " FROM selection se"
+        " JOIN student st ON st.student_id = se.student_id"
+        " JOIN course co ON co.course_id = se.course_id"
+        " WHERE se.selection_id = " + format("{}", id));
+        if (!current.ok || current.rowCount() == 0) {
+            println(">> 成绩 {} 不存在", id);
+            return;
+        }
+        println(">> 当前：{} 的《{}》= {}", current.textAt(0, 1),
+        current.textAt(0, 2), current.textAt(0, 3));
+        int64 grade = self.askId("请输入新成绩（0-100）：");
+        if (grade < 0 || grade > 100) {
+            println(">> 成绩必须在 0 到 100 之间（@ValidatorRange(max = 100)）");
+            return;
+        }
+        std::sql::ResultSet result = self.db.exec(
+        "UPDATE selection SET grade_number = " + format("{}", grade)
+        + " WHERE selection_id = " + format("{}", id));
+        if (result.ok) { println(">> 修改成功！"); }
+        else { println(">> 修改失败：{}", result.error); }
+    }
+
+    /** @brief 删除成绩（按成绩ID定位）。 */
+    void deleteSelection() {
+        self.section("删除成绩");
+        int64 id = self.askId("请输入要删除的成绩ID：");
+        if (id < 0) {
+            println(">> 成绩ID必须是数字");
+            return;
+        }
+        std::sql::ResultSet current = self.db.exec(
+        "SELECT st.student_name, co.course_name FROM selection se"
+        " JOIN student st ON st.student_id = se.student_id"
+        " JOIN course co ON co.course_id = se.course_id"
+        " WHERE se.selection_id = " + format("{}", id));
+        if (!current.ok || current.rowCount() == 0) {
+            println(">> 成绩 {} 不存在", id);
+            return;
+        }
+        std::sql::ResultSet result = self.db.exec("DELETE FROM selection WHERE selection_id = "
+        + format("{}", id));
+        if (!result.ok) {
+            println(">> 删除失败：{}", result.error);
+            return;
+        }
+        println(">> 已删除 {} 的《{}》成绩", current.textAt(0, 0), current.textAt(0, 1));
+    }
+
+    /** @brief 按课程统计：人数、平均分、最高分、最低分、及格率。 */
+    void statByCourse() {
+        self.section("按课程统计");
+        String text = self.ask("请输入课程ID（留空统计全部）：");
+        String condition = "";
+        if (len(text) > 0) {
+            if (!isDigits(text)) {
+                println(">> 课程ID必须是数字");
+                return;
+            }
+            condition = " WHERE course_id = " + text;
+        }
+        self.show(self.db.exec(
+        "SELECT COUNT(*) AS 人数, IFNULL(ROUND(AVG(grade_number), 1), 0) AS 平均分,"
+        " IFNULL(MAX(grade_number), 0) AS 最高分, IFNULL(MIN(grade_number), 0) AS 最低分,"
+        " SUM(CASE WHEN grade_number >= 60 THEN 1 ELSE 0 END) AS 及格人数,"
+        " ROUND(SUM(CASE WHEN grade_number >= 60 THEN 1 ELSE 0 END) * 100.0"
+        "   / IF(COUNT(*) = 0, 1, COUNT(*)), 1) AS 及格率百分比"
+        " FROM selection" + condition));
+        self.waitReturn();
+    }
+
+    /** @brief 按班级统计：每班人数与平均分。 */
+    void statByClass() {
+        self.section("按班级统计");
+        self.show(self.db.exec(
+        "SELECT c.sclass_id AS 班级ID, c.sclass_name AS 班级名称,"
+        " CASE c.sclass_grade WHEN 'ONE' THEN '高一' WHEN 'TWO' THEN '高二'"
+        "   WHEN 'THREE' THEN '高三' ELSE '未知' END AS 年级,"
+        " COUNT(DISTINCT st.student_id) AS 学生数,"
+        " COUNT(se.selection_id) AS 成绩记录数,"
+        " IFNULL(ROUND(AVG(se.grade_number), 1), 0) AS 平均分"
+        " FROM sclass c"
+        " LEFT JOIN student st ON st.sclass_id = c.sclass_id"
+        " LEFT JOIN selection se ON se.student_id = st.student_id"
+        " GROUP BY c.sclass_id, c.sclass_name, c.sclass_grade"
+        " ORDER BY c.sclass_id"));
+        self.waitReturn();
+    }
+
+    /* -- 用户管理（仅超级管理员） -------------------------------------- */
+
+    /** @brief 用户模块动作分发。 */
+    void userAction(String key) {
+        if (key == "add") { self.addUser(); }
+        elif (key == "delete") { self.deleteUser(); }
+        elif (key == "permission") { self.updateUserPermission(); }
+        elif (key == "password") { self.resetUserPassword(); }
+        elif (key == "list") { self.listUsers(); }
+    }
+
+    /** @brief 显示全部用户（口令列与 Java 端一致：look = false，不显示）。 */
+    void listUsers() {
+        self.section("用户列表");
+        self.show(self.db.exec(
+        "SELECT user_id AS 用户ID, user_name AS 用户名,"
+        " CASE user_permission WHEN 'STUDENT' THEN '学生'"
+        "   WHEN 'TEACHER' THEN '教师'"
+        "   WHEN 'ADMINISTRATOR' THEN '管理员'"
+        "   ELSE '超级管理员' END AS 权限"
+        " FROM `user` ORDER BY user_id"));
+        self.waitReturn();
+    }
+
+    /** @brief 添加用户（用户名 <= 18 字符，口令 >= 4 位字母数字）。 */
+    void addUser() {
+        self.section("添加用户");
+        String name = self.ask("请输入用户名：");
+        if (!validUserName(name)) {
+            println(">> 用户名不能为空且最长为 18 个字符");
+            return;
+        }
+        int64 exists = self.db.count("SELECT COUNT(*) FROM `user` WHERE user_name = "
+        + self.db.quote(name));
+        if (exists > 0) {
+            println(">> 用户名 {} 已被占用", name);
+            return;
+        }
+        String password = self.ask("请输入用户密码：");
+        if (!validPassword(password)) {
+            println(">> 用户密码不合法：需要长度至少 4 个字符的大小写字母或数字");
+            return;
+        }
+        String permissionText = self.ask("请输入用户权限（STUDENT/TEACHER/ADMINISTRATOR/SUPER_ADMINISTRATOR）：");
+        if (!isValidPermission(permissionText)) {
+            println(">> 用户权限只能是 STUDENT / TEACHER / ADMINISTRATOR / SUPER_ADMINISTRATOR");
+            return;
+        }
+        if (permissionText == "SUPER_ADMINISTRATOR") {
+            println(">> 除 admin 以外的成员不能是超级管理员");
+            return;
+        }
+        std::sql::ResultSet result = self.db.exec(
+        "INSERT INTO `user` (user_name, user_password, user_permission) VALUES ("
+        + self.db.quote(name) + ", " + self.db.quote(password) + ", "
+        + self.db.quote(permissionText) + ")");
+        if (result.ok) {
+            println(">> 添加成功！新用户ID：{}", self.db.scalar("SELECT LAST_INSERT_ID()"));
+        } else {
+            println(">> 添加失败：{}", result.error);
+        }
+    }
+
+    /** @brief 删除用户：admin 账号不允许删除（Java 端 User.checker 的 DELETE 分支）。 */
+    void deleteUser() {
+        self.section("删除用户");
+        int64 id = self.askId("请输入要删除的用户ID：");
+        if (id < 0) {
+            println(">> 用户ID必须是数字");
+            return;
+        }
+        String name = self.db.scalar("SELECT user_name FROM `user` WHERE user_id = "
+        + format("{}", id));
+        if (len(name) == 0) {
+            println(">> 用户 {} 不存在", id);
+            return;
+        }
+        if (name == "admin") {
+            println(">> admin 用户不允许删除");
+            return;
+        }
+        if (id == self.userId) {
+            println(">> 不能删除当前登录的用户");
+            return;
+        }
+        std::sql::ResultSet result = self.db.exec("DELETE FROM `user` WHERE user_id = "
+        + format("{}", id));
+        if (result.ok) { println(">> 已删除用户 {}（{}）", id, name); }
+        else { println(">> 删除失败：{}", result.error); }
+    }
+
+    /**
+     * @brief 修改用户权限。
+     *
+     * 两条业务规则来自 Java 端 User.checker 的 UPDATE 分支：
+     * admin 只能是超级管理员；非 admin 不能是超级管理员。
+     */
+    void updateUserPermission() {
+        self.section("修改用户权限");
+        int64 id = self.askId("请输入要修改的用户ID：");
+        if (id < 0) {
+            println(">> 用户ID必须是数字");
+            return;
+        }
+        std::sql::ResultSet current = self.db.exec(
+        "SELECT user_name, user_permission FROM `user` WHERE user_id = "
+        + format("{}", id));
+        if (!current.ok || current.rowCount() == 0) {
+            println(">> 用户 {} 不存在", id);
+            return;
+        }
+        String name = current.textAt(0, 0);
+        String permissionText = self.ask("请输入新权限（STUDENT/TEACHER/ADMINISTRATOR/SUPER_ADMINISTRATOR）：");
+        if (!isValidPermission(permissionText)) {
+            println(">> 用户权限只能是 STUDENT / TEACHER / ADMINISTRATOR / SUPER_ADMINISTRATOR");
+            return;
+        }
+        if (name == "admin" && permissionText != "SUPER_ADMINISTRATOR") {
+            println(">> admin 不允许为其他权限");
+            return;
+        }
+        if (name != "admin" && permissionText == "SUPER_ADMINISTRATOR") {
+            println(">> 其他成员不能为超级管理员");
+            return;
+        }
+        std::sql::ResultSet result = self.db.exec(
+        "UPDATE `user` SET user_permission = " + self.db.quote(permissionText)
+        + " WHERE user_id = " + format("{}", id));
+        if (!result.ok) {
+            println(">> 修改失败：{}", result.error);
+            return;
+        }
+        println(">> 用户 {}（{}）的权限已改为 {}", id, name,
+        permissionLabel(parsePermission(permissionText)));
+    }
+
+    /** @brief 重置某个用户的口令。 */
+    void resetUserPassword() {
+        self.section("重置用户密码");
+        int64 id = self.askId("请输入要重置密码的用户ID：");
+        if (id < 0) {
+            println(">> 用户ID必须是数字");
+            return;
+        }
+        String name = self.db.scalar("SELECT user_name FROM `user` WHERE user_id = "
+        + format("{}", id));
+        if (len(name) == 0) {
+            println(">> 用户 {} 不存在", id);
+            return;
+        }
+        String password = self.ask("请输入新密码：");
+        if (!validPassword(password)) {
+            println(">> 用户密码不合法：需要长度至少 4 个字符的大小写字母或数字");
+            return;
+        }
+        std::sql::ResultSet result = self.db.exec(
+        "UPDATE `user` SET user_password = " + self.db.quote(password)
+        + " WHERE user_id = " + format("{}", id));
+        if (result.ok) { println(">> 用户 {}（{}）的密码已重置", id, name); }
+        else { println(">> 重置失败：{}", result.error); }
+    }
+
+    /* -- 修改自己的密码 ------------------------------------------------ */
+
+    /** @brief 任何登录用户都可改自己的口令：先验旧口令，再校验新口令。 */
+    void changeOwnPassword() {
+        self.section("修改我的密码");
+        String oldPassword = self.ask("请输入当前密码：");
+        int64 matched = self.db.count(
+        "SELECT COUNT(*) FROM `user` WHERE user_id = " + format("{}", self.userId)
+        + " AND user_password = " + self.db.quote(oldPassword));
+        if (matched == 0) {
+            println(">> 当前密码不正确");
+            return;
+        }
+        String newPassword = self.ask("请输入新密码：");
+        if (!validPassword(newPassword)) {
+            println(">> 用户密码不合法：需要长度至少 4 个字符的大小写字母或数字");
+            return;
+        }
+        std::sql::ResultSet result = self.db.exec(
+        "UPDATE `user` SET user_password = " + self.db.quote(newPassword)
+        + " WHERE user_id = " + format("{}", self.userId));
+        if (result.ok) { println(">> 密码修改成功！"); }
+        else { println(">> 修改失败：{}", result.error); }
+    }
+
+    /** @brief 关闭连接。 */
+    void stop() { self.db.close(); }
+};
+
+/* ── 入口 ─────────────────────────────────────────────────────────────── */
+
+/**
+ * @brief 程序入口。
+ *
+ * 支持：`--answers 文件`（脚本化回答，自检用）、`--host/--user/--password/--port/--db`
+ * （连接参数）、`--init <student.sql>`（库为空时建库灌数据）。
+ */
+int64 main(List<String> arguments) {
+    String answersPath = "";
+    String host = "127.0.0.1";
+    String user = "root";
+    String password = "123456";
+    String database = "student";
+    String initPath = "";
+    bool forceInit = false;
+    int32 port = (int32)3306;
+
+    for (int64 i = 0; i < len(arguments); i = i + 1) {
+        String argument = arguments[i];
+        bool hasValue = i + 1 < len(arguments);
+        if (argument == "--answers" && hasValue) { answersPath = arguments[i + 1]; i = i + 1; }
+        elif (argument == "--host" && hasValue) { host = arguments[i + 1]; i = i + 1; }
+        elif (argument == "--user" && hasValue) { user = arguments[i + 1]; i = i + 1; }
+        elif (argument == "--password" && hasValue) { password = arguments[i + 1]; i = i + 1; }
+        elif (argument == "--db" && hasValue) { database = arguments[i + 1]; i = i + 1; }
+        elif (argument == "--init" && hasValue) { initPath = arguments[i + 1]; i = i + 1; }
+        elif (argument == "--reinit") { forceInit = true; }
+        elif (argument == "--port" && hasValue) {
+            port = (int32)std::parse::Parse::parseInt64(arguments[i + 1]).unwrapOr(3306);
+            i = i + 1;
+        }
+    }
+
+    App app;
+    app.ready = false;
+    app.level = LEVEL_STUDENT;
+    app.permission = Permission::Student;
+    app.signedIn = false;
+    app.inputClosed = false;
+    app.scripted = false;
+    app.answerIndex = 0;
+    app.userId = 0;
+    app.userName = "";
+
+    if (len(answersPath) > 0) { app.loadAnswers(answersPath); }
+    if (!app.connect(host, user, password, database, port)) {
+        app.stop();
+        return 1;
+    }
+    if (!app.ensureSchema(initPath, forceInit)) {
+        app.stop();
+        return 1;
+    }
+    app.run();
+    app.stop();
+    return 0;
+}

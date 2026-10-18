@@ -1,0 +1,36 @@
+/* struct_op.mgl —— struct 字段 + 方法 + 泛型运算符接口。
+ * 返回类型 R 就是整个表达式的类型：下面两个重载都返回 int64，所以 `a + 5` 是 int64，
+ * 可以直接写进 %d；`plus` 返回 Money，所以 `a.plus(b).cents` 还能接着取字段。
+ */
+
+struct Money : Add<int64, int64>, Add<Money, Money>, RightAdd<int64, int64> {
+    int64 cents;
+
+    /* 普通方法：形参、局部结构体变量、成员赋值、返回结构体句柄 */
+    void setCents(int64 value) { self.cents = value; }
+
+    Money plus(Money other) {
+        Money result;
+        result.cents = cents + other.cents;
+        return result;
+    }
+    int64 leftAdd(int64 right) { return self.cents + right; }
+    Money leftAdd(Money right) { return self.plus(right); }
+    int64 rightAdd(int64 left) { return left + self.cents; }
+};
+
+int64 main() {
+    Money a;
+    Money b;
+    a.setCents(120);
+    b.cents = 34;
+
+    println("a.cents={} b.cents={}", a.cents, b.cents);
+    println("a.plus(b) = {}", a.plus(b).cents);   /* 方法调用，返回 Money */
+    println("a + b = {}", (a + b).cents);         /* 选参数类型是 Money 的那个重载 */
+    println("a + 5 = {}", a + 5);                 /* Add<int64,int64> */
+    println("5 + a = {}", 5 + a);                 /* RightAdd<int64,int64> */
+    println("add(a, 5) = {}", add(a, 5));         /* 内置函数走同一条路 */
+    println("add(5, a) = {}", add(5, a));
+    return 0;
+}

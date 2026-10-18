@@ -1,0 +1,2 @@
+// 复合赋值沿用普通赋值的类型与可写性限制。
+int64 main() { auto map = {"key": 1}; std::lang::Map<String, int64> const& ref = &map; ref["key"] += 1; return 0; }

@@ -1,0 +1,1 @@
+magel：example/samples-error/match_nonexhaustive.mgl 第 5 行第 5 列：enum match 必须覆盖所有变体或提供 `_` 兜底分支；缺少：State::Failed

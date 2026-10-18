@@ -1,0 +1,44 @@
+/* enum_payload_pointer.mgl —— 枚举载荷是**可变引用**（`Value(T mut & value)`）。
+ *
+ * 值载荷 `Value(T value)` 存的是**副本**：匹配出来的绑定是只读副本，改它不影响原对象。
+ * 引用载荷 `Value(T mut & value)` 存的是**地址**：匹配出来的 `p` 可以透过它读、
+ * 也可以透过它写回原对象（`p->字段 = …` / `*p = …`），所以"给调用方一个可变引用"这类
+ * 语义能直接表达。`T const &` 载荷则仍然只能读，写会报 const 错误。
+ *
+ * 取地址只能取**在数据区里有位置**的东西：结构体变量、数组 / 引用的元素、结构体字段、
+ * 字符串的字节。标量局部变量的值在调用帧里，`&标量` 会被编译器拒绝。
+ */
+
+struct Box { int64 value; };
+
+enum Slot<T> {
+    Value(T mut & value),
+    Empty;
+};
+
+int64 main() {
+    Box box;
+    box.value = 9;
+
+    Slot<Box> s = Slot<Box>::Value(&box);
+    match (s) {
+        Slot<Box>::Value(p) => {
+            p->value = 11;                        /* 透过载荷引用改回原对象 */
+            println("载荷指到 {}", p->value);
+        }
+        Slot<Box>::Empty => { println("空槽"); }
+    }
+    println("原对象变成 {}", box.value);
+
+    int64 values[3];
+    values[0] = 42;
+    Slot<int64> number = Slot<int64>::Value(&values[0]);
+    match (number) {
+        Slot<int64>::Value(p) => {
+            *p = 99;                              /* 指向数组元素时直接解引用写 */
+            println("数组元素写成 {}", values[0]);
+        }
+        Slot<int64>::Empty => { println("空槽"); }
+    }
+    return 0;
+}

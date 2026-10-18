@@ -1,0 +1,13 @@
+Result<int64, String> source() {
+    return Result<int64, String>::Err("bad");
+}
+
+Result<int64, int64> target() {
+    int64 value = source()?;
+    return Result<int64, int64>::Ok(value);
+}
+
+int64 main() {
+    target();
+    return 0;
+}

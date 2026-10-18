@@ -1,0 +1,50 @@
+/* generic_qualified.mgl —— 模块里的泛型与静态成员：**裸名与限定名两种写法都要认**。
+ *
+ * 实例化体是按**裸名**登记的（`Box<int64>` → `Box__int`、`Point::origin`），所以
+ * `custom::Box<int64>` / `custom::Point::origin` 这类限定写法必须在查找时去掉模块前缀。
+ * 这条路径曾经静默失配：类型侧靠 FindStruct 兜底能"找到"，但候选签名按写出名去查
+ * `g_funcs` 落空，报出来的却是"候选非空但参数类型对不上"，很难定位。
+ */
+
+module custom;
+
+struct Box<T> {
+    T value;
+
+    static Box<T> of(T input) {
+        Box<T> result;
+        result.value = input;
+        return result;
+    }
+
+    T get() {
+        return self.value;
+    }
+
+    void set(T input) {
+        self.value = input;
+    }
+};
+
+struct Point {
+    static int64 origin;
+    int64 x;
+};
+
+int64 main() {
+    Box<int64> plain = Box<int64>::of(1);                    /* 裸名 + 静态方法 */
+    custom::Box<int64> qualified = custom::Box<int64>::of(2); /* 限定名 + 静态方法 */
+    custom::Box<int64>::of(28).set(9);                     /* 限定名调用实例方法 */
+
+    Box<float64> real = Box<float64>::of(2.5);                   /* 第二个实例化：签名必须换成 float64 */
+    Box<char> letter = Box<char>::of('A');               /* 第三个实例化：char */
+
+    Point point;
+    point.x = 3;
+    Point::origin = 5;                                   /* 裸名写静态字段 */
+    custom::Point::origin = custom::Point::origin + 2;   /* 限定名读 + 写 */
+
+    println("{} {} {} {}", plain.value, qualified.get(), real.value, letter.value);
+    println("{} {} {}", point.x, Point::origin, custom::Point::origin);
+    return 0;
+}

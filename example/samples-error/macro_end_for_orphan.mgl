@@ -1,0 +1,2 @@
+/* `$end_for` 只在 `$macro` 体内的 `$for` 后面配对；这里没有 `$for`。 */
+$end_for

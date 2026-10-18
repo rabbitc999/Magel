@@ -1,0 +1,5 @@
+module hidden::api;
+
+inline int64 secret(int64 value) {
+    return value * 2;
+}

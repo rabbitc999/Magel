@@ -1,0 +1,6 @@
+int64 main() {
+    while (true) {
+        yield (7);
+    }
+    return 0;
+}

@@ -1,0 +1,1 @@
+enum E { A, B }; int64 main() { E e=E::A; match(e) { E::A if true => { return 1; } E::B => { return 0; } } return 0; }

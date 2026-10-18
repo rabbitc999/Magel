@@ -1,0 +1,61 @@
+/* 后置类型参数、函数实参推导、泛型回调及无载荷枚举上下文。 */
+enum Choice<T> { None1, Value1(T value); };
+struct Box<T> { T value; };
+
+
+struct Handler {
+    int64 take(Choice<int64> value) { return tag(value); }
+};
+
+T identity<T>(T value) { return value; }
+T apply<T>(T fn(T) callback, T value) { return callback(value); }
+T readBox<T>(Box<T> box) { return box.value; }
+T first<T>(List<T> values) { return values[0]; }
+T fromChoice<T>(Choice<T> value, T fallback) {
+    match (value) {
+        None1 => { return fallback; }
+        Value1(item) => { return item; }
+    }
+    return fallback;
+}
+T fromCallback<T>(T fn(T) callback) { return callback((T)5); }
+T readReference<T>(T const& value) { return value; }
+T withDefault<T = int64>() { return (T)12; }
+int64 increment(int64 value) { return value + 1; }
+Choice<String> emptyText() { return None1; }
+int64 tag(Choice<int64> value) {
+    match (value) {
+        None1 => { return 0; }
+        Value1(item) => { return item; }
+    }
+    return -1;
+}
+int64 main() {
+    int64 generic = 7;
+    Box<int64> box;
+    box.value = identity(generic);
+    int64 fn(int64) callback = increment;
+    Choice<int64> absent = None1;
+    Choice<String> text = None1;
+    Choice<int64> present = Value1(identity(42));
+    absent = Value1(3);
+    absent = None1;
+    text = emptyText();
+    auto payload = Value1("text");
+    println("{} {} {} {} {}", identity(8), apply(callback, 9), readBox(box), tag(present), tag(None1));
+    match (payload) {
+        None1 => { println("empty"); }
+        Value1(item) => { println("{}", item); }
+    }
+    List<int64> values;
+    values.push(11);
+    println("{} {} {} {} {}", first(values), fromChoice(None1, 13), fromCallback(callback), readReference(&generic), withDefault());
+    Handler handler;
+    int64 fn(Choice<int64>) consumer = tag;
+    println("{} {} {}", handler.take(None1), consumer(None1), identity("hello"));
+    if (identity(2.5) != 2.5) { return 3; }
+    auto copiedCallback = identity(callback);
+    auto copiedFunction = identity(increment);
+    println("{} {}", copiedCallback(20), copiedFunction(30));
+    return 0;
+}

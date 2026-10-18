@@ -1,0 +1,11 @@
+/* std_pause.mgl —— `pause()`：调试用的"停一下"。
+ *
+ * 交互式终端里它会等到一行回车；标准输入不是终端（重定向、管道、CI）时立刻返回，
+ * 所以样例套件与自动化跑批不会被它挂住。提示写在 stderr，stdout 只有下面两行。
+ * 核心 prelude 的名字可以省 `std::lang::`：`println` 就是 `println`，`pause` 就是 `pause`。 */
+int64 main() {
+    println("pause 之前");
+    pause();
+    println("pause 之后");
+    return 0;
+}

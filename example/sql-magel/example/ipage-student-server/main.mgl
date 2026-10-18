@@ -1,0 +1,2174 @@
+/*
+ * main.mgl —— 学生成绩信息管理系统 · **后端 API 服务**（Magel + std::net + std::sql + MySQL）
+ *
+ * 这是 `example/ipage-student`（控制台版）的**前后端分离**改造：同一套业务语义
+ * （登录、五模块增删查改、权限门槛、校验规则、admin 约束）搬到 HTTP 之上，
+ * 只输出 JSON，不再打印菜单、不再读键盘。
+ *
+ * 分层：
+ *   * 本文件 = 后端：`/api/*` 的 JSON 接口，独占地持有 MySQL 连接与会话表；
+ *   * `web/` = 前端：静态 HTML/CSS/JS，用 fetch 调本服务的接口，由**独立的静态
+ *     服务器**托管（后端不提供页面），两边只靠 HTTP + JSON 通信。
+ *
+ * 与 web-students 示例的关系：HTTP 骨架（readRequest / route / sendResponse /
+ * jsonString）沿用该示例，改动的部分写在下面对应函数上方。
+ *
+ * 运行（在 magel 仓库根目录）：
+ *   ./magel.exe run sql-magel/example/ipage-student-server/main.mgl --out build/ipage-server.exe -- --listen-port 8080
+ *
+ * 连接参数默认 127.0.0.1:3306 / root / 123456 / 库名 student；库不存在时用
+ * `--init <student.sql 路径>` 建库并灌入初始数据。
+ */
+module ipageStudentServer;
+
+import std::net;
+import std::sql;
+import std::json;
+import std::text;
+import std::io;
+import std::random;
+
+/* ── 权限等级 ─────────────────────────────────────────────────────────── */
+
+/*
+ * 等级值与 Java 端 UserPermission 的 value 对齐：STUDENT=0、TEACHER=2、
+ * ADMINISTRATOR=3、SUPER_ADMINISTRATOR=4（NORMAL=1 不在数据库 enum 里）。
+ * 判定一律用 `用户等级 >= 门槛等级`，与控制台版 App::deny 同口径。
+ */
+const int64 LEVEL_STUDENT = 0;
+const int64 LEVEL_TEACHER = 2;
+const int64 LEVEL_ADMINISTRATOR = 3;
+const int64 LEVEL_SUPER_ADMINISTRATOR = 4;
+
+/** @brief 列表类接口一次最多返回多少行（成绩表有 1800+ 条）。 */
+const int64 LIST_LIMIT = 200;
+
+/** @brief 请求头上限（字节）；与 web-students 示例一致。 */
+const int64 HEADER_LIMIT = 8192;
+
+/** @brief 请求正文上限（字节）。本系统的表单都很小，64 KiB 足够。 */
+const int64 BODY_LIMIT = 65536;
+
+/** @brief 会话令牌的字节数（十六进制串长度是它的两倍）。 */
+const int64 TOKEN_BYTES = 32;
+
+/*
+ * 各文本列在 student.sql 里的 varchar 宽度（按**字符**计，不是字节）。
+ * 前端表单的 maxlength 与这张表一致，但接口是公开面：直接 POST 超过列宽的值
+ * 会撞上 MySQL 的 "Data too long"，那是 500 加一句英文 SQL 文本，对调用方没有意义。
+ * 这里按同一张表在写库前拦一道，换成 400 加中文说明。
+ */
+const int64 LIMIT_STUDENT_NAME = 24;
+const int64 LIMIT_SCLASS_NAME = 36;
+const int64 LIMIT_SCLASS_ADMINISTRATOR = 24;
+const int64 LIMIT_COURSE_NAME = 36;
+const int64 LIMIT_USER_NAME = 18;
+const int64 LIMIT_USER_PASSWORD = 18;
+
+/** @brief `user`.`user_permission` 的四种取值。 */
+enum Permission { Student, Teacher, Administrator, SuperAdministrator };
+
+/** @brief 数据库 enum -> 代码枚举。前置 `isValidPermission` 校验，非法值落到 Student。 */
+Permission parsePermission(String text) {
+    if (text == "TEACHER") { return Permission::Teacher; }
+    if (text == "ADMINISTRATOR") { return Permission::Administrator; }
+    if (text == "SUPER_ADMINISTRATOR") { return Permission::SuperAdministrator; }
+    return Permission::Student;
+}
+
+/** @brief 是否是数据库认得的权限字面量。 */
+bool isValidPermission(String text) {
+    return text == "STUDENT" || text == "TEACHER"
+    || text == "ADMINISTRATOR" || text == "SUPER_ADMINISTRATOR";
+}
+
+/** @brief 代码枚举 -> 中文显示名（与 Java 端 @ModelEnum 的 text 一致）。 */
+String permissionLabel(Permission permission) {
+    match (permission) {
+        Permission::Student => { return "学生"; }
+        Permission::Teacher => { return "教师"; }
+        Permission::Administrator => { return "管理员"; }
+        Permission::SuperAdministrator => { return "超级管理员"; }
+    }
+    return "未知";
+}
+
+/** @brief 代码枚举 -> 权限等级；顺序按 Java 的 value，不是声明顺序。 */
+int64 permissionLevel(Permission permission) {
+    match (permission) {
+        Permission::Student => { return LEVEL_STUDENT; }
+        Permission::Teacher => { return LEVEL_TEACHER; }
+        Permission::Administrator => { return LEVEL_ADMINISTRATOR; }
+        Permission::SuperAdministrator => { return LEVEL_SUPER_ADMINISTRATOR; }
+    }
+    return LEVEL_STUDENT;
+}
+
+/** @brief 等级数字 -> 中文权限名（用于「需要 XX 及以上权限」的提示）。 */
+String levelLabel(int64 level) {
+    if (level >= LEVEL_SUPER_ADMINISTRATOR) { return "超级管理员"; }
+    if (level >= LEVEL_ADMINISTRATOR) { return "管理员"; }
+    if (level >= LEVEL_TEACHER) { return "教师"; }
+    return "学生";
+}
+
+/* ── 枚举列的字面量互转 ───────────────────────────────────────────────── */
+
+/** @brief 性别：接受“男 / 女 / MALE / FEMALE”，非法给空串。 */
+String sexToDb(String text) {
+    if (text == "男" || text == "MALE" || text == "male") { return "MALE"; }
+    if (text == "女" || text == "FEMALE" || text == "female") { return "FEMALE"; }
+    return "";
+}
+
+/** @brief 性别枚举 -> 中文；未分性别（空值）给空串。 */
+String sexLabel(String raw) {
+    if (raw == "MALE") { return "男"; }
+    if (raw == "FEMALE") { return "女"; }
+    return "";
+}
+
+/** @brief 年级：接受“高一 / 高二 / 高三 / ONE / TWO / THREE”，非法给空串。 */
+String gradeToDb(String text) {
+    if (text == "高一" || text == "ONE") { return "ONE"; }
+    if (text == "高二" || text == "TWO") { return "TWO"; }
+    if (text == "高三" || text == "THREE") { return "THREE"; }
+    return "";
+}
+
+/** @brief 年级枚举 -> 中文；空值按控制台版的 `ELSE '-'` 给 `-`。 */
+String gradeLabel(String raw) {
+    if (raw == "ONE") { return "高一"; }
+    if (raw == "TWO") { return "高二"; }
+    if (raw == "THREE") { return "高三"; }
+    return "-";
+}
+
+/** @brief 课程状态：接受“开课 / 结课 / START / COMPLETION”，非法给空串。 */
+String courseStateToDb(String text) {
+    if (text == "开课" || text == "START") { return "START"; }
+    if (text == "结课" || text == "COMPLETION") { return "COMPLETION"; }
+    return "";
+}
+
+/** @brief 课程状态枚举 -> 中文。 */
+String courseStateLabel(String raw) {
+    if (raw == "START") { return "开课"; }
+    return "结课";
+}
+
+/** @brief 分数 -> 等级（与控制台版 SELECT 里的 CASE WHEN 完全一致）。 */
+String gradeLevelLabel(int64 grade) {
+    if (grade >= 90) { return "优秀"; }
+    if (grade >= 80) { return "良好"; }
+    if (grade >= 70) { return "中等"; }
+    if (grade >= 60) { return "及格"; }
+    return "不及格";
+}
+
+/* ── 输入校验（对应 Java 端各 @Validator* 注解） ──────────────────────── */
+
+/*
+ * 注意：`len(String)` 与 `text[i]` 都按**字节**算，下标落在多字节字符
+ * 中间会运行期报错。下面这些函数要么只比较整串，要么按 UTF-8 首字节判断
+ * 字符长度后整字符前进（见 charCount），不会踩到多字节字符中间。
+ */
+
+/** @brief UTF-8 字符个数（不是字节数）。 */
+int64 charCount(String text) {
+    int64 count = 0;
+    int64 i = 0;
+    while (i < len(text)) {
+        int64 byte = (int64)text[i];
+        if (byte >= 240) { i = i + 4; }
+        elif (byte >= 224) { i = i + 3; }
+        elif (byte >= 192) { i = i + 2; }
+        else { i = i + 1; }
+        count = count + 1;
+    }
+    return count;
+}
+
+/** @brief 整串是否全是 ASCII 数字（空串不算）。 */
+bool isDigits(String text) {
+    if (len(text) == 0) { return false; }
+    for (int64 i = 0; i < len(text); i = i + 1) {
+        int64 byte = (int64)text[i];
+        /* 多字节字符的首字节 >= 192，第一个字节就判掉，不会读进续字节。 */
+        if (byte < 48 || byte > 57) { return false; }
+    }
+    return true;
+}
+
+/** @brief 用户名：非空、不超过 18 个字符（@ValidatorNotNull + @ValidatorLength(max = 18)）。 */
+bool validUserName(String text) {
+    return charCount(text) > 0 && charCount(text) <= 18;
+}
+
+/** @brief 口令：非空、4~18 个 ASCII 字母或数字（@ValidatorPattern 的下限 + user_password 列宽）。 */
+bool validPassword(String text) {
+    int64 count = 0;
+    int64 i = 0;
+    while (i < len(text)) {
+        int64 byte = (int64)text[i];
+        bool alnum = (byte >= 48 && byte <= 57)
+        || (byte >= 65 && byte <= 90)
+        || (byte >= 97 && byte <= 122);
+        if (!alnum) { return false; }
+        if (byte >= 240) { i = i + 4; }
+        elif (byte >= 224) { i = i + 3; }
+        elif (byte >= 192) { i = i + 2; }
+        else { i = i + 1; }
+        count = count + 1;
+    }
+    return count >= 4 && count <= LIMIT_USER_PASSWORD;
+}
+
+/**
+ * @brief 文本是否超出所在列的字符宽度。
+ * @param label 字段的中文名，用于拼提示。 @param text 已 trim 的入参。
+ * @param maxChars 该列能放的字符数（见 LIMIT_* 常量）。
+ * @return 超长时给出可直接回给调用方的说明，未超长给 None。
+ */
+Option<String> overLimit(String label, String text, int64 maxChars) {
+    if (charCount(text) > maxChars) {
+        return Option<String>::Value(label + "不能超过 " + format("{}", maxChars) + " 个字符");
+    }
+    return Option<String>::None;
+}
+
+/** @brief 日期：形如 YYYY-MM-DD，只做形状校验，具体合法性交给 MySQL。 */
+bool looksLikeDate(String text) {
+    if (len(text) != 10) { return false; }
+    int64 dash = 0;
+    for (int64 i = 0; i < len(text); i = i + 1) {
+        int64 byte = (int64)text[i];
+        if (byte == 45) { dash = dash + 1; }
+        elif (byte < 48 || byte > 57) { return false; }
+    }
+    return dash == 2;
+}
+
+/* ── 模块与动作权限表 ─────────────────────────────────────────────────── */
+
+/*
+ * 完全照搬控制台版的 mainActions / 各模块 Actions：**这张表是权限的唯一来源**，
+ * 接口门槛不再另写一份常量，而是用 `actionNeedLevel()` 从这里查。改门限只改这一处。
+ *
+ * 门限来自 Java 端各模型 @ModelClass 的 look / edit / delete：
+ *   学生 student    look = STUDENT(0)  edit = TEACHER(2)  delete = ADMINISTRATOR(3)
+ *   班级 sclass     look = TEACHER(2)  edit = TEACHER(2)  delete = ADMINISTRATOR(3)
+ *   课程 course     look = TEACHER(2)  edit = TEACHER(2)  delete = ADMINISTRATOR(3)
+ *   成绩 selection  look = STUDENT(0)  edit = TEACHER(2)  delete = ADMINISTRATOR(3)
+ *   用户 user       look = edit = delete = SUPER_ADMINISTRATOR(4)
+ */
+
+/** @brief 一个菜单动作：内部键、显示名、可执行它所需的最低权限等级。 */
+struct Action {
+    String key;
+    String label;
+    int64 needLevel;
+};
+
+/** @brief 一个模块：内部键、显示名、可见它所需的最低权限等级、模块内动作。 */
+struct ModuleSpec {
+    String key;
+    String label;
+    int64 needLevel;
+    List<Action> actions;
+};
+
+/** @brief 造一个动作。 */
+Action action(String key, String label, int64 needLevel) {
+    Action item;
+    item.key = key;
+    item.label = label;
+    item.needLevel = needLevel;
+    return item;
+}
+
+/** @brief 造一个模块。 */
+ModuleSpec moduleSpec(String key, String label, int64 needLevel, List<Action> actions) {
+    ModuleSpec spec;
+    spec.key = key;
+    spec.label = label;
+    spec.needLevel = needLevel;
+    spec.actions = actions;
+    return spec;
+}
+
+/** @brief 学生模块动作。 */
+List<Action> studentActions() {
+    List<Action> items;
+    items.push(action("add", "添加学生", LEVEL_TEACHER));
+    items.push(action("delete", "删除学生", LEVEL_ADMINISTRATOR));
+    items.push(action("update", "修改学生", LEVEL_TEACHER));
+    items.push(action("list", "显示全部学生（含课程数与平均分）", LEVEL_STUDENT));
+    items.push(action("query", "按姓名 / 班级查询学生", LEVEL_STUDENT));
+    return items;
+}
+
+/** @brief 班级模块动作。 */
+List<Action> sclassActions() {
+    List<Action> items;
+    items.push(action("add", "添加班级", LEVEL_TEACHER));
+    items.push(action("delete", "删除班级", LEVEL_ADMINISTRATOR));
+    items.push(action("update", "修改班级", LEVEL_TEACHER));
+    items.push(action("list", "显示全部班级（含学生数与平均分）", LEVEL_TEACHER));
+    items.push(action("query", "按名称查询班级", LEVEL_TEACHER));
+    return items;
+}
+
+/** @brief 课程模块动作。 */
+List<Action> courseActions() {
+    List<Action> items;
+    items.push(action("add", "添加课程", LEVEL_TEACHER));
+    items.push(action("delete", "删除课程", LEVEL_ADMINISTRATOR));
+    items.push(action("update", "修改课程", LEVEL_TEACHER));
+    items.push(action("list", "显示全部课程（含选课人数与平均分）", LEVEL_TEACHER));
+    items.push(action("query", "按名称查询课程", LEVEL_TEACHER));
+    return items;
+}
+
+/** @brief 成绩模块动作。 */
+List<Action> selectionActions() {
+    List<Action> items;
+    items.push(action("add", "录入成绩", LEVEL_TEACHER));
+    items.push(action("update", "修改成绩", LEVEL_TEACHER));
+    items.push(action("delete", "删除成绩", LEVEL_ADMINISTRATOR));
+    items.push(action("list", "显示全部成绩（前 200 条）", LEVEL_STUDENT));
+    items.push(action("query", "按学生 / 课程查询成绩", LEVEL_STUDENT));
+    items.push(action("statCourse", "按课程统计", LEVEL_STUDENT));
+    items.push(action("statClass", "按班级统计", LEVEL_STUDENT));
+    return items;
+}
+
+/** @brief 用户模块动作（仅超级管理员）。 */
+List<Action> userActions() {
+    List<Action> items;
+    items.push(action("add", "添加用户", LEVEL_SUPER_ADMINISTRATOR));
+    items.push(action("delete", "删除用户", LEVEL_SUPER_ADMINISTRATOR));
+    items.push(action("permission", "修改用户权限", LEVEL_SUPER_ADMINISTRATOR));
+    items.push(action("password", "重置用户密码", LEVEL_SUPER_ADMINISTRATOR));
+    items.push(action("list", "显示全部用户", LEVEL_SUPER_ADMINISTRATOR));
+    return items;
+}
+
+/** @brief 「修改我的密码」模块：任何登录用户都可用。 */
+List<Action> passwordActions() {
+    List<Action> items;
+    items.push(action("change", "修改我的密码", LEVEL_STUDENT));
+    return items;
+}
+
+/** @brief 全部模块（含用户不可见的，顺序与控制台版主菜单一致）。 */
+List<ModuleSpec> allModules() {
+    List<ModuleSpec> items;
+    items.push(moduleSpec("student", "学生管理", LEVEL_STUDENT, studentActions()));
+    items.push(moduleSpec("sclass", "班级管理", LEVEL_TEACHER, sclassActions()));
+    items.push(moduleSpec("course", "课程管理", LEVEL_TEACHER, courseActions()));
+    items.push(moduleSpec("selection", "成绩管理", LEVEL_STUDENT, selectionActions()));
+    items.push(moduleSpec("user", "用户管理", LEVEL_SUPER_ADMINISTRATOR, userActions()));
+    items.push(moduleSpec("password", "修改我的密码", LEVEL_STUDENT, passwordActions()));
+    return items;
+}
+
+/** @brief 按当前等级过滤出可见模块（等价 UserUtils.canUseOperator 的 LOOK 判定）。 */
+List<ModuleSpec> visibleModules(int64 level) {
+    List<ModuleSpec> all = allModules();
+    List<ModuleSpec> out;
+    for (int64 i = 0; i < len(all); i = i + 1) {
+        if (level >= all[i].needLevel) { out.push(all[i]); }
+    }
+    return out;
+}
+
+/**
+ * @brief 查某个动作的门槛等级。
+ * @param moduleKey 模块键（student / sclass / course / selection / user / password）。
+ * @param actionKey 动作键（list / query / add / update / delete / ...）。
+ * @return 门槛等级；表中没有这个动作时给 -1（调用方按「内部配置错误」处理，**失败关闭**）。
+ */
+int64 actionNeedLevel(String moduleKey, String actionKey) {
+    List<ModuleSpec> all = allModules();
+    for (int64 i = 0; i < len(all); i = i + 1) {
+        if (all[i].key != moduleKey) { continue; }
+        for (int64 j = 0; j < len(all[i].actions); j = j + 1) {
+            if (all[i].actions[j].key == actionKey) { return all[i].actions[j].needLevel; }
+        }
+    }
+    return (int64)(0 - 1);
+}
+
+/* ── JSON 输出 ────────────────────────────────────────────────────────── */
+
+/** @brief 输出 JSON 字符串字面量，转义引号、反斜杠及控制字节。
+ * @param text UTF-8 文本。 @return 带双引号的 JSON 字符串。 */
+String jsonString(String text) {
+    String out = "\"";
+    String hex = "0123456789abcdef";
+    int64 i = 0;
+    while (i < len(text)) {
+        int64 byte = (int64)(uint8)text[i];
+        int64 width = 1;
+        if (byte >= 240) { width = 4; }
+        elif (byte >= 224) { width = 3; }
+        elif (byte >= 192) { width = 2; }
+        if (text[i] == '"') { out = out + "\\\""; }
+        elif (text[i] == '\\') { out = out + "\\\\"; }
+        elif (byte < 32) {
+            int64 high = byte / 16;
+            int64 low = byte % 16;
+            out = out + "\\u00" + hex[high:(high + 1)] + hex[low:(low + 1)];
+        }
+        else { out = out + text[i:(i + width)]; }
+        i = i + width;
+    }
+    return out + "\"";
+}
+
+/**
+ * @brief 输出 JSON 数字字面量。
+ *
+ * 聚合列一律在 SQL 里 `CAST(... AS CHAR)` 取回文本，避开浮点格式化；这里再校验
+ * 一遍：只要出现数字以外的字符（含任何多字节字符）就退回 `0`，绝不让文本混进数字位。
+ * @param text 数值文本（可为空）。 @return 合法数字字面量。
+ */
+String jsonNumber(String text) {
+    String value = Text::trim(text);
+    if (len(value) == 0) { return "0"; }
+    for (int64 i = 0; i < len(value); i = i + 1) {
+        char c = value[i];
+        bool accepted = (c >= '0' && c <= '9') || c == '.' || c == '-' || c == '+' || c == 'e' || c == 'E';
+        if (!accepted) { return "0"; }
+    }
+    return value;
+}
+
+/* ── 请求 / 响应 ──────────────────────────────────────────────────────── */
+
+/** @brief 一次 HTTP 请求；status 非零表示解析失败（值即应答状态码）。 */
+struct Request {
+    String method;
+    String path;           /**< 不含查询串 */
+    String query;          /**< `?` 之后的部分，不含 `?` */
+    String body;
+    String contentType;
+    String authorization;  /**< `Authorization` 头原文 */
+    int64 status;
+};
+
+/** @brief HTTP 响应的状态、内容类型与正文。 */
+struct Response {
+    int64 status;
+    String contentType;
+    String body;
+};
+
+/** @brief 一次登录会话。 */
+struct Session {
+    bool valid;         /**< false = 没这个令牌 */
+    String token;
+    int64 userId;
+    String userName;
+    String permission;  /**< 数据库 enum 字面量 */
+    int64 level;
+};
+
+/** @brief 有界十进制解析，不接受符号、空白或隐式数值转换。
+ * @param text 输入字节串。 @param maximum 允许的最大值。 @return 合法整数或 None。 */
+Option<int64> decimal(String text, int64 maximum) {
+    if (len(text) == 0) { return Option<int64>::None; }
+    int64 value = 0;
+    for (int64 i = 0; i < len(text); i = i + 1) {
+        if (text[i] < '0' || text[i] > '9') { return Option<int64>::None; }
+        int64 digit = (int64)text[i] - (int64)'0';
+        if (value > (maximum - digit) / 10) { return Option<int64>::None; }
+        value = value * 10 + digit;
+    }
+    return Option<int64>::Value(value);
+}
+
+/** @brief 从查询串里取一个参数（只按 `&` / `=` 切分，不做百分号解码）。
+ * @param query 查询串（不含 `?`）。 @param key 参数名。 @return 参数值，没有给空串。 */
+String queryParam(String query, String key) {
+    List<String> pairs = Text::split(query, "&");
+    for (int64 i = 0; i < len(pairs); i = i + 1) {
+        String pair = pairs[i];
+        int64 equal = Text::find(pair, "=");
+        if (equal < 0) {
+            if (pair == key) { return ""; }
+            continue;
+        }
+        if (pair[0:equal] == key) { return pair[(equal + 1):]; }
+    }
+    return "";
+}
+
+/** @brief 从 `Authorization: Bearer xxx` 里取令牌；格式不符给空串。 */
+String bearerToken(String authorization) {
+    if (!Text::startsWith(Text::toLower(authorization), "bearer ")) { return ""; }
+    return Text::trim(authorization[7:]);
+}
+
+/** @brief 状态码的 HTTP 原因短语。 @param status 状态码。 @return ASCII 短语。 */
+String reason(int64 status) {
+    if (status == 200) { return "OK"; }
+    if (status == 201) { return "Created"; }
+    if (status == 204) { return "No Content"; }
+    if (status == 400) { return "Bad Request"; }
+    if (status == 401) { return "Unauthorized"; }
+    if (status == 403) { return "Forbidden"; }
+    if (status == 404) { return "Not Found"; }
+    if (status == 405) { return "Method Not Allowed"; }
+    if (status == 409) { return "Conflict"; }
+    if (status == 411) { return "Length Required"; }
+    if (status == 413) { return "Content Too Large"; }
+    if (status == 415) { return "Unsupported Media Type"; }
+    if (status == 417) { return "Expectation Failed"; }
+    if (status == 431) { return "Request Header Fields Too Large"; }
+    if (status == 501) { return "Not Implemented"; }
+    if (status == 503) { return "Service Unavailable"; }
+    return "Internal Server Error";
+}
+
+/** @brief 生成 JSON 响应。 @param status HTTP 状态。 @param body JSON 正文。 @return 响应值。 */
+Response jsonResponse(int64 status, String body) {
+    Response response;
+    response.status = status;
+    response.contentType = "application/json; charset=utf-8";
+    response.body = body;
+    return response;
+}
+
+/** @brief 生成统一错误响应。 @param status HTTP 状态。 @param message 公开说明。 @return 响应值。 */
+Response errorResponse(int64 status, String message) {
+    return jsonResponse(status, "{\"error\":" + jsonString(message) + "}");
+}
+
+/** @brief 生成「权限不足」响应（与控制台版 App::deny 的措辞一致）。 */
+Response denyResponse(int64 needLevel) {
+    return errorResponse(403, "权限不足：该操作需要「" + levelLabel(needLevel) + "」及以上权限");
+}
+
+/** @brief 生成 204（CORS 预检用；没有正文，也不该有）。 */
+Response noContentResponse() {
+    Response response;
+    response.status = 204;
+    response.contentType = "text/plain; charset=utf-8";
+    response.body = "";
+    return response;
+}
+
+/** @brief 生成一句成功提示。 @param message 中文说明。 @return 响应值。 */
+Response messageResponse(String message) {
+    return jsonResponse(200, "{\"message\":" + jsonString(message) + "}");
+}
+
+/** @brief 包一层列表信封：``{"items":[...],"count":n,"total":m,"limit":200}``。
+ * @param items 已经拼好的 JSON 数组文本。 @param count 本次返回行数。 @param total 库中总行数。 */
+String listEnvelope(String items, int64 count, int64 total) {
+    return "{\"items\":" + items + ",\"count\":" + format("{}", count)
+    + ",\"total\":" + format("{}", total)
+    + ",\"limit\":" + format("{}", LIST_LIMIT) + "}";
+}
+
+/* ── JSON 入参读取 ────────────────────────────────────────────────────── */
+
+/** @brief 取 JSON 对象的字符串字段（自动 trim）；缺失或类型不符给空串。 */
+String textField(JsonValue const& root, String key) {
+    auto found = root.find(key);
+    if (found.isNone()) { return ""; }
+    auto text = found.unwrap().asString();
+    if (text.isNone()) { return ""; }
+    return Text::trim(text.unwrap());
+}
+
+/** @brief 取 JSON 对象的整数字段；缺失、不是整数或超出范围给 -1。 */
+int64 intField(JsonValue const& root, String key) {
+    auto found = root.find(key);
+    if (found.isNone()) { return (int64)(0 - 1); }
+    auto value = found.unwrap().asInt();
+    if (value.isNone()) { return (int64)(0 - 1); }
+    int64 result = value.unwrap();
+    if (result > 2147483647 || result < (int64)(0 - 2147483647)) { return (int64)(0 - 1); }
+    return result;
+}
+
+/**
+ * @brief 校验请求正文是 `application/json` 并解析成文档。
+ * @param request 请求引用。
+ * @param document 出参：解析成功时写入 JSON 根节点（调用方负责 close）。
+ * @param failure 出参：失败时的响应。
+ * @return true = 解析成功，可以读 document；false = 用 failure 直接应答。
+ */
+bool readJsonBody(Request const& request, JsonValue mut& document, Response mut& failure) {
+    List<String> media = Text::split(request.contentType, ";");
+    if (len(media) == 0 || Text::trim(media[0]) != "application/json") {
+        failure = errorResponse(415, "需要 application/json");
+        return false;
+    }
+    auto parsed = std::json::parse(request.body);
+    if (parsed.isErr()) {
+        failure = errorResponse(400, "无效 JSON：" + parsed.error());
+        return false;
+    }
+    document = parsed.unwrap();
+    return true;
+}
+
+/* ── 应用程序（后端服务） ─────────────────────────────────────────────── */
+
+/** @brief 后端服务的全部状态：数据库连接、会话表、令牌熵源、跨域配置。 */
+struct App {
+    std::sql::Database db;
+    List<Session> sessions;   /**< 内存会话表；服务重启即全部失效 */
+    uint64 entropy;
+    String allowOrigin;
+    bool ready;
+
+    /* -- 连接与初始化 -------------------------------------------------- */
+
+    /** @brief 连接 MySQL、固定字符集并选中库；失败时打印原因。 */
+    bool connect(String host, String user, String password, String database, int32 port) {
+        self.db = std::sql::Database::mysql(host, user, password, "", port);
+        if (!self.db.isOpen()) {
+            println(">> 连接 MySQL 失败：{}", self.db.lastError());
+            return false;
+        }
+        /* 显式固定连接字符集：本服务所有 SQL 里都有中文（枚举中文名、提示信息）。 */
+        if (!self.db.execOk("SET NAMES utf8mb4")) {
+            println(">> 设置字符集失败：{}", self.db.lastError());
+            return false;
+        }
+        if (len(database) == 0) { database = "student"; }
+        if (!self.db.execOk("CREATE DATABASE IF NOT EXISTS `" + database
+        + "` DEFAULT CHARACTER SET utf8mb4")) {
+            println(">> 建库失败：{}", self.db.lastError());
+            return false;
+        }
+        if (!self.db.execOk("USE `" + database + "`")) {
+            println(">> 选库失败：{}", self.db.lastError());
+            return false;
+        }
+        if (!self.db.execOk("SET NAMES utf8mb4")) {
+            println(">> 设置字符集失败：{}", self.db.lastError());
+            return false;
+        }
+        self.ready = true;
+        return true;
+    }
+
+    /**
+     * @brief 读取一个 .sql 文件并整段交给 MySQL 执行（`--init` 用）。
+     * @return 0 = 文件不存在、1 = 执行成功、2 = 执行报错（已打印原因）。
+     */
+    int64 applySqlFile(String path) {
+        auto opened = std::io::fileOpen(path, "rb");
+        bool found = false;
+        String script = "";
+        match (opened) {
+            Result<File, String>::Ok(handle) => {
+                while (std::io::fileEof(handle) == 0) {
+                    String line = std::io::fileRead(handle);
+                    script = script + line + "\n";
+                }
+                std::io::fileClose(handle);
+                found = true;
+            }
+            Result<File, String>::Err(message) => { found = false; }
+        }
+        if (!found) { return 0; }
+        std::sql::ResultSet result = self.db.exec(script);
+        if (!result.ok) {
+            println(">> 执行 {} 出错：{}", path, result.error);
+            return 2;
+        }
+        return 1;
+    }
+
+    /**
+     * @brief 确认业务表在位；不在位且给了 --init 文件时就地建库。
+     * @param initPath 建库脚本路径；空串表示不自动导入。
+     * @param force 为真时无论表是否已存在都重新导入（自检用，保证夹具确定）。
+     */
+    bool ensureSchema(String initPath, bool force) {
+        if (!force && self.db.hasTable("user") && self.db.hasTable("student")) { return true; }
+        if (len(initPath) == 0) {
+            println(">> 库里还没有 user / student 表。");
+            println(">> 请先导入 ipage-student/student.sql，或用 --init <student.sql 路径> 再跑一次。");
+            return false;
+        }
+        println(">> 正在导入初始数据：{}", initPath);
+        int64 code = self.applySqlFile(initPath);
+        if (code == 0) {
+            println(">> 找不到文件：{}", initPath);
+            return false;
+        }
+        if (code == 2) { return false; }
+        if (!self.db.hasTable("student")) {
+            println(">> 导入脚本执行完了，但 student 表仍不存在，请检查脚本内容");
+            return false;
+        }
+        println(">> 初始数据导入完成");
+        return true;
+    }
+
+    /** @brief 关闭连接。 */
+    void stop() { self.db.close(); }
+
+    /* -- 会话 ---------------------------------------------------------- */
+
+    /** @brief 生成一个 64 位十六进制令牌（32 字节熵）。 */
+    String issueToken() {
+        String hex = "0123456789abcdef";
+        String out = "";
+        for (int64 i = 0; i < TOKEN_BYTES; i = i + 1) {
+            uint64 value = std::random::randomNextUInt64(self.entropy);
+            for (int64 j = 0; j < 2; j = j + 1) {
+                int64 nibble = (int64)(value % 16);
+                out = out + hex[nibble:(nibble + 1)];
+                value = value / 16;
+            }
+        }
+        return out;
+    }
+
+    /** @brief 按令牌查会话；查不到时 `valid` 为 false。 */
+    Session findSession(String token) {
+        Session missing;
+        missing.valid = false;
+        missing.token = "";
+        missing.userId = 0;
+        missing.userName = "";
+        missing.permission = "STUDENT";
+        missing.level = LEVEL_STUDENT;
+        if (len(token) == 0) { return missing; }
+        for (int64 i = 0; i < len(self.sessions); i = i + 1) {
+            if (self.sessions[i].token == token) { return self.sessions[i]; }
+        }
+        return missing;
+    }
+
+    /** @brief 丢弃一个会话（注销）。 */
+    void dropSession(String token) {
+        for (int64 i = len(self.sessions) - 1; i >= 0; i = i - 1) {
+            if (self.sessions[i].token == token) { self.sessions.remove(i); }
+        }
+    }
+
+    /**
+     * @brief 登录：核对 `user_name` + `user_password`，成功则建会话并发令牌。
+     *
+     * 校验顺序照 Java 端 LoginController：先非空，再整行匹配；命中就把
+     * user_id / 权限取出。控制台版的「最多 3 次」是界面循环，在无状态 HTTP 上
+     * 改由前端计数（见 web/app.js），服务端只如实回答成功或失败。
+     */
+    Response login(Request const& request) {
+        JsonValue root;
+        Response failure;
+        if (!readJsonBody(&request, &root, &failure)) { return failure; }
+        String name = textField(&root, "userName");
+        String password = textField(&root, "password");
+        String permissionText = "";
+        int64 userId = 0;
+        String storedName = "";
+        bool matched = false;
+        /* 先非空、再整行匹配——与控制台版 signIn 的两条分支提示一致。 */
+        if (len(name) == 0) {
+            root.close();
+            return errorResponse(400, "用户名不能为空");
+        }
+        if (len(password) == 0) {
+            root.close();
+            return errorResponse(400, "用户密码不能为空");
+        }
+        {
+            ResultSet rows = self.db.exec(
+            "SELECT user_id, user_name, user_permission FROM `user`"
+            " WHERE user_name = " + self.db.quote(name)
+            + " AND user_password = " + self.db.quote(password));
+            if (!rows.ok) {
+                root.close();
+                return errorResponse(500, "数据库查询失败：" + rows.error);
+            }
+            if (rows.rowCount() > 0) {
+                userId = rows.intAt(0, 0);
+                storedName = rows.textAt(0, 1);
+                permissionText = rows.textAt(0, 2);
+                matched = true;
+            }
+        }
+        root.close();
+        if (!matched) { return errorResponse(401, "用户名或密码错误"); }
+
+        Session session;
+        session.valid = true;
+        session.token = self.issueToken();
+        session.userId = userId;
+        session.userName = storedName;
+        session.permission = permissionText;
+        session.level = permissionLevel(parsePermission(permissionText));
+        self.sessions.push(session);
+
+        return jsonResponse(200, "{\"token\":" + jsonString(session.token)
+        + ",\"user\":" + self.userJson(&session)
+        + ",\"modules\":" + self.modulesJson(session.level) + "}");
+    }
+
+    /** @brief 注销：丢掉令牌对应的会话。 */
+    Response logout(Session const& session) {
+        self.dropSession(session.token);
+        return messageResponse("已退出登录");
+    }
+
+    /** @brief 会话里的用户对象（不带令牌）。 */
+    String userJson(Session const& session) {
+        return "{\"id\":" + format("{}", session.userId)
+        + ",\"userName\":" + jsonString(session.userName)
+        + ",\"permission\":" + jsonString(session.permission)
+        + ",\"permissionLabel\":" + jsonString(permissionLabel(parsePermission(session.permission)))
+        + ",\"level\":" + format("{}", session.level) + "}";
+    }
+
+    /** @brief 当前等级可见的模块树（含每个动作的门槛），供前端渲染菜单与按钮。 */
+    String modulesJson(int64 level) {
+        List<ModuleSpec> modules = visibleModules(level);
+        String out = "[";
+        for (int64 i = 0; i < len(modules); i = i + 1) {
+            if (i > 0) { out = out + ","; }
+            ModuleSpec spec = modules[i];
+            out = out + "{\"key\":" + jsonString(spec.key)
+            + ",\"label\":" + jsonString(spec.label)
+            + ",\"needLevel\":" + format("{}", spec.needLevel)
+            + ",\"actions\":[";
+            for (int64 j = 0; j < len(spec.actions); j = j + 1) {
+                if (j > 0) { out = out + ","; }
+                out = out + "{\"key\":" + jsonString(spec.actions[j].key)
+                + ",\"label\":" + jsonString(spec.actions[j].label)
+                + ",\"needLevel\":" + format("{}", spec.actions[j].needLevel) + "}";
+            }
+            out = out + "]}";
+        }
+        return out + "]";
+    }
+
+    /** @brief `GET /api/session`：当前用户 + 可见模块。 */
+    Response sessionResponse(Session const& session) {
+        return jsonResponse(200, "{\"user\":" + self.userJson(&session)
+        + ",\"modules\":" + self.modulesJson(session.level) + "}");
+    }
+
+    /** @brief 修改自己的口令：先验旧口令，再校验新口令。 */
+    Response changeOwnPassword(Session const& session, Request const& request) {
+        JsonValue root;
+        Response failure;
+        if (!readJsonBody(&request, &root, &failure)) { return failure; }
+        String current = textField(&root, "currentPassword");
+        String next = textField(&root, "newPassword");
+        root.close();
+        int64 matched = self.db.count(
+        "SELECT COUNT(*) FROM `user` WHERE user_id = " + format("{}", session.userId)
+        + " AND user_password = " + self.db.quote(current));
+        if (matched == 0) { return errorResponse(400, "当前密码不正确"); }
+        if (!validPassword(next)) {
+            return errorResponse(400, "用户密码不合法：需要 4~18 位大小写字母或数字");
+        }
+        ResultSet updated = self.db.exec(
+        "UPDATE `user` SET user_password = " + self.db.quote(next)
+        + " WHERE user_id = " + format("{}", session.userId));
+        if (!updated.ok) { return errorResponse(500, "修改失败：" + updated.error); }
+        return messageResponse("密码修改成功！");
+    }
+
+    /* -- 学生管理 ------------------------------------------------------ */
+
+    /**
+     * 学生列表 SELECT：连班级，带课程数与平均分（对应 Java 的 AGGREGATION 字段）。
+     * 聚合列一律 `CAST(... AS CHAR)` 取回文本，避免浮点格式化差异。
+     */
+    String studentListSql() {
+        return "SELECT st.student_id, st.student_name, st.student_sex,"
+        " IFNULL(st.sclass_id, 0), IFNULL(cl.sclass_name, '未分班'), IFNULL(cl.sclass_grade, ''),"
+        " COUNT(se.selection_id),"
+        " CAST(IFNULL(ROUND(AVG(se.grade_number), 1), 0) AS CHAR)"
+        " FROM student st"
+        " LEFT JOIN sclass cl ON cl.sclass_id = st.sclass_id"
+        " LEFT JOIN selection se ON se.student_id = st.student_id";
+    }
+
+    /** @brief 学生列表分组的固定尾巴（去掉会让 ONLY_FULL_GROUP_BY 报错）。 */
+    String studentGroupSql() {
+        return " GROUP BY st.student_id, st.student_name, st.student_sex,"
+        " st.sclass_id, cl.sclass_name, cl.sclass_grade"
+        " ORDER BY st.student_id";
+    }
+
+    /** @brief 学生一行 -> JSON 对象。 */
+    String studentRow(ResultSet const& rows, int64 index) {
+        String sex = rows.textAt(index, 2);
+        String grade = rows.textAt(index, 5);
+        return "{\"id\":" + format("{}", rows.intAt(index, 0))
+        + ",\"name\":" + jsonString(rows.textAt(index, 1))
+        + ",\"sex\":" + jsonString(sex)
+        + ",\"sexLabel\":" + jsonString(sexLabel(sex))
+        + ",\"sclassId\":" + format("{}", rows.intAt(index, 3))
+        + ",\"sclassName\":" + jsonString(rows.textAt(index, 4))
+        + ",\"grade\":" + jsonString(grade)
+        + ",\"gradeLabel\":" + jsonString(gradeLabel(grade))
+        + ",\"courseCount\":" + format("{}", rows.intAt(index, 6))
+        + ",\"averageScore\":" + jsonNumber(rows.textAt(index, 7)) + "}";
+    }
+
+    /**
+     * @brief 学生列表 / 查询。
+     * @param mode `name` 按姓名、`class` 按班级名；其余视为「全部」。
+     * @param keyword 关键词（LIKE 模糊匹配）；为空时等同「全部」。
+     */
+    Response listStudents(String mode, String keyword) {
+        String condition = "";
+        if (len(keyword) > 0) {
+            if (mode == "class") {
+                condition = " WHERE cl.sclass_name LIKE " + self.db.quote("%" + keyword + "%");
+            } else {
+                condition = " WHERE st.student_name LIKE " + self.db.quote("%" + keyword + "%");
+            }
+        }
+        ResultSet rows = self.db.exec(self.studentListSql() + condition + self.studentGroupSql()
+        + format(" LIMIT {}", LIST_LIMIT));
+        if (!rows.ok) { return errorResponse(500, "数据库查询失败：" + rows.error); }
+        String items = "[";
+        for (int64 i = 0; i < rows.rowCount(); i = i + 1) {
+            if (i > 0) { items = items + ","; }
+            items = items + self.studentRow(&rows, i);
+        }
+        items = items + "]";
+        int64 total = self.db.count("SELECT COUNT(*) FROM student");
+        return jsonResponse(200, listEnvelope(items, rows.rowCount(), total));
+    }
+
+    /** @brief 添加学生（姓名、性别必填；班级ID 可选，必须已存在）。 */
+    Response createStudent(Request const& request) {
+        JsonValue root;
+        Response failure;
+        if (!readJsonBody(&request, &root, &failure)) { return failure; }
+        String name = textField(&root, "name");
+        String sex = sexToDb(textField(&root, "sex"));
+        int64 sclassId = intField(&root, "sclassId");
+        root.close();
+        if (len(name) == 0) { return errorResponse(400, "学生姓名不能为空"); }
+        if (len(sex) == 0) { return errorResponse(400, "性别只能是 男 或 女"); }
+        auto nameLimit = overLimit("学生姓名", name, LIMIT_STUDENT_NAME);
+        if (nameLimit.isValue()) { return errorResponse(400, nameLimit.unwrap()); }
+        String classValue = "NULL";
+        if (sclassId > 0) {
+            String exists = self.db.scalar("SELECT sclass_id FROM sclass WHERE sclass_id = "
+            + format("{}", sclassId));
+            if (len(exists) == 0) { return errorResponse(400, "班级 " + format("{}", sclassId) + " 不存在"); }
+            classValue = format("{}", sclassId);
+        }
+        ResultSet inserted = self.db.exec(
+        "INSERT INTO student (student_name, student_sex, sclass_id) VALUES ("
+        + self.db.quote(name) + ", " + self.db.quote(sex) + ", " + classValue + ")");
+        if (!inserted.ok) { return errorResponse(500, "添加失败：" + inserted.error); }
+        int64 newId = self.db.count("SELECT LAST_INSERT_ID()");
+        return jsonResponse(201, "{\"id\":" + format("{}", newId)
+        + ",\"message\":" + jsonString("添加成功！新学生ID：" + format("{}", newId)) + "}");
+    }
+
+    /** @brief 修改学生（PUT 是全量替换：没给班级就是不分班）。 */
+    Response updateStudent(int64 id, Request const& request) {
+        String exists = self.db.scalar("SELECT student_name FROM student WHERE student_id = "
+        + format("{}", id));
+        if (len(exists) == 0) { return errorResponse(404, "学生 " + format("{}", id) + " 不存在"); }
+        JsonValue root;
+        Response failure;
+        if (!readJsonBody(&request, &root, &failure)) { return failure; }
+        String name = textField(&root, "name");
+        String sex = sexToDb(textField(&root, "sex"));
+        int64 sclassId = intField(&root, "sclassId");
+        root.close();
+        if (len(name) == 0) { return errorResponse(400, "学生姓名不能为空"); }
+        if (len(sex) == 0) { return errorResponse(400, "性别只能是 男 或 女"); }
+        auto nameLimit = overLimit("学生姓名", name, LIMIT_STUDENT_NAME);
+        if (nameLimit.isValue()) { return errorResponse(400, nameLimit.unwrap()); }
+        String classValue = "NULL";
+        if (sclassId > 0) {
+            String found = self.db.scalar("SELECT sclass_id FROM sclass WHERE sclass_id = "
+            + format("{}", sclassId));
+            if (len(found) == 0) { return errorResponse(400, "班级 " + format("{}", sclassId) + " 不存在"); }
+            classValue = format("{}", sclassId);
+        }
+        ResultSet updated = self.db.exec(
+        "UPDATE student SET student_name = " + self.db.quote(name)
+        + ", student_sex = " + self.db.quote(sex)
+        + ", sclass_id = " + classValue
+        + " WHERE student_id = " + format("{}", id));
+        if (!updated.ok) { return errorResponse(500, "修改失败：" + updated.error); }
+        return jsonResponse(200, "{\"id\":" + format("{}", id) + ",\"message\":\"修改成功！\"}");
+    }
+
+    /** @brief 删除学生（外键 ON DELETE CASCADE，会一并删掉选课成绩）。 */
+    Response deleteStudent(int64 id) {
+        String name = self.db.scalar("SELECT student_name FROM student WHERE student_id = "
+        + format("{}", id));
+        if (len(name) == 0) { return errorResponse(404, "学生 " + format("{}", id) + " 不存在"); }
+        int64 scores = self.db.count("SELECT COUNT(*) FROM selection WHERE student_id = "
+        + format("{}", id));
+        ResultSet deleted = self.db.exec("DELETE FROM student WHERE student_id = "
+        + format("{}", id));
+        if (!deleted.ok) { return errorResponse(500, "删除失败：" + deleted.error); }
+        return jsonResponse(200, "{\"deleted\":true,\"cascade\":" + format("{}", scores)
+        + ",\"message\":" + jsonString(
+        "已删除学生 " + format("{}", id) + "（" + name
+        + "），连带删除 " + format("{}", scores) + " 条成绩记录") + "}");
+    }
+
+    /* -- 班级管理 ------------------------------------------------------ */
+
+    /** @brief 班级列表 SELECT：带学生数与班级平均分（对应 Java 的两个 AGGREGATION 字段）。 */
+    String sclassListSql() {
+        return "SELECT c.sclass_id, c.sclass_name, c.sclass_administrator, IFNULL(c.sclass_grade, ''),"
+        " (SELECT COUNT(*) FROM student s WHERE s.sclass_id = c.sclass_id),"
+        " CAST(IFNULL((SELECT ROUND(AVG(se.grade_number), 1) FROM student s"
+        "   JOIN selection se ON se.student_id = s.student_id"
+        "   WHERE s.sclass_id = c.sclass_id), 0) AS CHAR)"
+        " FROM sclass c";
+    }
+
+    /** @brief 班级一行 -> JSON 对象。 */
+    String sclassRow(ResultSet const& rows, int64 index) {
+        String grade = rows.textAt(index, 3);
+        return "{\"id\":" + format("{}", rows.intAt(index, 0))
+        + ",\"name\":" + jsonString(rows.textAt(index, 1))
+        + ",\"administrator\":" + jsonString(rows.textAt(index, 2))
+        + ",\"grade\":" + jsonString(grade)
+        + ",\"gradeLabel\":" + jsonString(gradeLabel(grade))
+        + ",\"studentCount\":" + format("{}", rows.intAt(index, 4))
+        + ",\"averageScore\":" + jsonNumber(rows.textAt(index, 5)) + "}";
+    }
+
+    /** @brief 班级列表 / 查询。 */
+    Response listSclasses(String keyword) {
+        String condition = "";
+        if (len(keyword) > 0) {
+            condition = " WHERE c.sclass_name LIKE " + self.db.quote("%" + keyword + "%");
+        }
+        ResultSet rows = self.db.exec(self.sclassListSql() + condition + " ORDER BY c.sclass_id");
+        if (!rows.ok) { return errorResponse(500, "数据库查询失败：" + rows.error); }
+        String items = "[";
+        for (int64 i = 0; i < rows.rowCount(); i = i + 1) {
+            if (i > 0) { items = items + ","; }
+            items = items + self.sclassRow(&rows, i);
+        }
+        items = items + "]";
+        int64 total = self.db.count("SELECT COUNT(*) FROM sclass");
+        return jsonResponse(200, listEnvelope(items, rows.rowCount(), total));
+    }
+
+    /** @brief 添加班级（名称、负责人、年级必填）。 */
+    Response createSclass(Request const& request) {
+        JsonValue root;
+        Response failure;
+        if (!readJsonBody(&request, &root, &failure)) { return failure; }
+        String name = textField(&root, "name");
+        String administrator = textField(&root, "administrator");
+        String grade = gradeToDb(textField(&root, "grade"));
+        root.close();
+        if (len(name) == 0) { return errorResponse(400, "班级名称不能为空"); }
+        if (len(administrator) == 0) { return errorResponse(400, "班级负责人不能为空"); }
+        auto nameLimit = overLimit("班级名称", name, LIMIT_SCLASS_NAME);
+        if (nameLimit.isValue()) { return errorResponse(400, nameLimit.unwrap()); }
+        auto adminLimit = overLimit("班级负责人", administrator, LIMIT_SCLASS_ADMINISTRATOR);
+        if (adminLimit.isValue()) { return errorResponse(400, adminLimit.unwrap()); }
+        if (len(grade) == 0) { return errorResponse(400, "年级只能是 高一 / 高二 / 高三"); }
+        ResultSet inserted = self.db.exec(
+        "INSERT INTO sclass (sclass_name, sclass_administrator, sclass_grade) VALUES ("
+        + self.db.quote(name) + ", " + self.db.quote(administrator) + ", "
+        + self.db.quote(grade) + ")");
+        if (!inserted.ok) { return errorResponse(500, "添加失败：" + inserted.error); }
+        int64 newId = self.db.count("SELECT LAST_INSERT_ID()");
+        return jsonResponse(201, "{\"id\":" + format("{}", newId)
+        + ",\"message\":" + jsonString("添加成功！新班级ID：" + format("{}", newId)) + "}");
+    }
+
+    /** @brief 修改班级（PUT 全量替换）。 */
+    Response updateSclass(int64 id, Request const& request) {
+        String exists = self.db.scalar("SELECT sclass_name FROM sclass WHERE sclass_id = "
+        + format("{}", id));
+        if (len(exists) == 0) { return errorResponse(404, "班级 " + format("{}", id) + " 不存在"); }
+        JsonValue root;
+        Response failure;
+        if (!readJsonBody(&request, &root, &failure)) { return failure; }
+        String name = textField(&root, "name");
+        String administrator = textField(&root, "administrator");
+        String grade = gradeToDb(textField(&root, "grade"));
+        root.close();
+        if (len(name) == 0) { return errorResponse(400, "班级名称不能为空"); }
+        if (len(administrator) == 0) { return errorResponse(400, "班级负责人不能为空"); }
+        auto nameLimit = overLimit("班级名称", name, LIMIT_SCLASS_NAME);
+        if (nameLimit.isValue()) { return errorResponse(400, nameLimit.unwrap()); }
+        auto adminLimit = overLimit("班级负责人", administrator, LIMIT_SCLASS_ADMINISTRATOR);
+        if (adminLimit.isValue()) { return errorResponse(400, adminLimit.unwrap()); }
+        if (len(grade) == 0) { return errorResponse(400, "年级只能是 高一 / 高二 / 高三"); }
+        ResultSet updated = self.db.exec(
+        "UPDATE sclass SET sclass_name = " + self.db.quote(name)
+        + ", sclass_administrator = " + self.db.quote(administrator)
+        + ", sclass_grade = " + self.db.quote(grade)
+        + " WHERE sclass_id = " + format("{}", id));
+        if (!updated.ok) { return errorResponse(500, "修改失败：" + updated.error); }
+        return jsonResponse(200, "{\"id\":" + format("{}", id) + ",\"message\":\"修改成功！\"}");
+    }
+
+    /** @brief 删除班级（外键 ON DELETE SET NULL，班内学生会变成「未分班」）。 */
+    Response deleteSclass(int64 id) {
+        String name = self.db.scalar("SELECT sclass_name FROM sclass WHERE sclass_id = "
+        + format("{}", id));
+        if (len(name) == 0) { return errorResponse(404, "班级 " + format("{}", id) + " 不存在"); }
+        int64 members = self.db.count("SELECT COUNT(*) FROM student WHERE sclass_id = "
+        + format("{}", id));
+        ResultSet deleted = self.db.exec("DELETE FROM sclass WHERE sclass_id = "
+        + format("{}", id));
+        if (!deleted.ok) { return errorResponse(500, "删除失败：" + deleted.error); }
+        return jsonResponse(200, "{\"deleted\":true,\"cascade\":0,\"detached\":" + format("{}", members)
+        + ",\"message\":" + jsonString(
+        "已删除班级 " + format("{}", id) + "（" + name + "），"
+        + format("{}", members) + " 名学生转为未分班") + "}");
+    }
+
+    /* -- 课程管理 ------------------------------------------------------ */
+
+    /** @brief 课程列表 SELECT：带选课人数与平均分。 */
+    String courseListSql() {
+        return "SELECT co.course_id, co.course_name, co.course_state,"
+        " (SELECT COUNT(*) FROM selection se WHERE se.course_id = co.course_id),"
+        " CAST(IFNULL((SELECT ROUND(AVG(se.grade_number), 1) FROM selection se"
+        "   WHERE se.course_id = co.course_id), 0) AS CHAR)"
+        " FROM course co";
+    }
+
+    /** @brief 课程一行 -> JSON 对象。 */
+    String courseRow(ResultSet const& rows, int64 index) {
+        String state = rows.textAt(index, 2);
+        return "{\"id\":" + format("{}", rows.intAt(index, 0))
+        + ",\"name\":" + jsonString(rows.textAt(index, 1))
+        + ",\"state\":" + jsonString(state)
+        + ",\"stateLabel\":" + jsonString(courseStateLabel(state))
+        + ",\"studentCount\":" + format("{}", rows.intAt(index, 3))
+        + ",\"averageScore\":" + jsonNumber(rows.textAt(index, 4)) + "}";
+    }
+
+    /** @brief 课程列表 / 查询。 */
+    Response listCourses(String keyword) {
+        String condition = "";
+        if (len(keyword) > 0) {
+            condition = " WHERE co.course_name LIKE " + self.db.quote("%" + keyword + "%");
+        }
+        ResultSet rows = self.db.exec(self.courseListSql() + condition + " ORDER BY co.course_id");
+        if (!rows.ok) { return errorResponse(500, "数据库查询失败：" + rows.error); }
+        String items = "[";
+        for (int64 i = 0; i < rows.rowCount(); i = i + 1) {
+            if (i > 0) { items = items + ","; }
+            items = items + self.courseRow(&rows, i);
+        }
+        items = items + "]";
+        int64 total = self.db.count("SELECT COUNT(*) FROM course");
+        return jsonResponse(200, listEnvelope(items, rows.rowCount(), total));
+    }
+
+    /** @brief 添加课程（名称、状态必填）。 */
+    Response createCourse(Request const& request) {
+        JsonValue root;
+        Response failure;
+        if (!readJsonBody(&request, &root, &failure)) { return failure; }
+        String name = textField(&root, "name");
+        String state = courseStateToDb(textField(&root, "state"));
+        root.close();
+        if (len(name) == 0) { return errorResponse(400, "课程名称不能为空"); }
+        if (len(state) == 0) { return errorResponse(400, "课程状态只能是 开课 或 结课"); }
+        auto nameLimit = overLimit("课程名称", name, LIMIT_COURSE_NAME);
+        if (nameLimit.isValue()) { return errorResponse(400, nameLimit.unwrap()); }
+        ResultSet inserted = self.db.exec(
+        "INSERT INTO course (course_name, course_state) VALUES ("
+        + self.db.quote(name) + ", " + self.db.quote(state) + ")");
+        if (!inserted.ok) { return errorResponse(500, "添加失败：" + inserted.error); }
+        int64 newId = self.db.count("SELECT LAST_INSERT_ID()");
+        return jsonResponse(201, "{\"id\":" + format("{}", newId)
+        + ",\"message\":" + jsonString("添加成功！新课程ID：" + format("{}", newId)) + "}");
+    }
+
+    /** @brief 修改课程（PUT 全量替换）。 */
+    Response updateCourse(int64 id, Request const& request) {
+        String exists = self.db.scalar("SELECT course_name FROM course WHERE course_id = "
+        + format("{}", id));
+        if (len(exists) == 0) { return errorResponse(404, "课程 " + format("{}", id) + " 不存在"); }
+        JsonValue root;
+        Response failure;
+        if (!readJsonBody(&request, &root, &failure)) { return failure; }
+        String name = textField(&root, "name");
+        String state = courseStateToDb(textField(&root, "state"));
+        root.close();
+        if (len(name) == 0) { return errorResponse(400, "课程名称不能为空"); }
+        if (len(state) == 0) { return errorResponse(400, "课程状态只能是 开课 或 结课"); }
+        auto nameLimit = overLimit("课程名称", name, LIMIT_COURSE_NAME);
+        if (nameLimit.isValue()) { return errorResponse(400, nameLimit.unwrap()); }
+        ResultSet updated = self.db.exec(
+        "UPDATE course SET course_name = " + self.db.quote(name)
+        + ", course_state = " + self.db.quote(state)
+        + " WHERE course_id = " + format("{}", id));
+        if (!updated.ok) { return errorResponse(500, "修改失败：" + updated.error); }
+        return jsonResponse(200, "{\"id\":" + format("{}", id) + ",\"message\":\"修改成功！\"}");
+    }
+
+    /** @brief 删除课程（外键 ON DELETE CASCADE，会一并删掉该课程的选课成绩）。 */
+    Response deleteCourse(int64 id) {
+        String name = self.db.scalar("SELECT course_name FROM course WHERE course_id = "
+        + format("{}", id));
+        if (len(name) == 0) { return errorResponse(404, "课程 " + format("{}", id) + " 不存在"); }
+        int64 scores = self.db.count("SELECT COUNT(*) FROM selection WHERE course_id = "
+        + format("{}", id));
+        ResultSet deleted = self.db.exec("DELETE FROM course WHERE course_id = "
+        + format("{}", id));
+        if (!deleted.ok) { return errorResponse(500, "删除失败：" + deleted.error); }
+        return jsonResponse(200, "{\"deleted\":true,\"cascade\":" + format("{}", scores)
+        + ",\"message\":" + jsonString(
+        "已删除课程 " + format("{}", id) + "（" + name
+        + "），连带删除 " + format("{}", scores) + " 条成绩记录") + "}");
+    }
+
+    /* -- 成绩管理 ------------------------------------------------------ */
+
+    /** @brief 成绩列表 SELECT：连学生与课程；等级在 Magel 侧算（gradeLevelLabel）。 */
+    String selectionListSql() {
+        return "SELECT se.selection_id, se.student_id, st.student_name, se.course_id,"
+        " co.course_name, se.test_date, se.grade_number"
+        " FROM selection se"
+        " JOIN student st ON st.student_id = se.student_id"
+        " JOIN course co ON co.course_id = se.course_id";
+    }
+
+    /** @brief 成绩一行 -> JSON 对象。 */
+    String selectionRow(ResultSet const& rows, int64 index) {
+        int64 grade = rows.intAt(index, 6);
+        return "{\"id\":" + format("{}", rows.intAt(index, 0))
+        + ",\"studentId\":" + format("{}", rows.intAt(index, 1))
+        + ",\"studentName\":" + jsonString(rows.textAt(index, 2))
+        + ",\"courseId\":" + format("{}", rows.intAt(index, 3))
+        + ",\"courseName\":" + jsonString(rows.textAt(index, 4))
+        + ",\"testDate\":" + jsonString(rows.textAt(index, 5))
+        + ",\"grade\":" + format("{}", grade)
+        + ",\"gradeLabel\":" + jsonString(gradeLevelLabel(grade)) + "}";
+    }
+
+    /**
+     * @brief 成绩列表 / 查询。
+     * @param mode `student` 按学号或姓名、`course` 按课程名；其余视为「全部」。
+     * @param keyword 关键词；为空时等同「全部」。
+     */
+    Response listSelections(String mode, String keyword) {
+        String condition = "";
+        if (len(keyword) > 0) {
+            if (mode == "student") {
+                if (isDigits(keyword)) {
+                    condition = " WHERE se.student_id = " + keyword;
+                } else {
+                    condition = " WHERE st.student_name LIKE " + self.db.quote("%" + keyword + "%");
+                }
+            } else {
+                condition = " WHERE co.course_name LIKE " + self.db.quote("%" + keyword + "%");
+            }
+        }
+        ResultSet rows = self.db.exec(self.selectionListSql() + condition
+        + " ORDER BY se.selection_id"
+        + format(" LIMIT {}", LIST_LIMIT));
+        if (!rows.ok) { return errorResponse(500, "数据库查询失败：" + rows.error); }
+        String items = "[";
+        for (int64 i = 0; i < rows.rowCount(); i = i + 1) {
+            if (i > 0) { items = items + ","; }
+            items = items + self.selectionRow(&rows, i);
+        }
+        items = items + "]";
+        int64 total = self.db.count("SELECT COUNT(*) FROM selection");
+        return jsonResponse(200, listEnvelope(items, rows.rowCount(), total));
+    }
+
+    /** @brief 录入成绩（学生、课程、日期必填；成绩 0~100；同一学生同一课程不重复）。 */
+    Response createSelection(Request const& request) {
+        JsonValue root;
+        Response failure;
+        if (!readJsonBody(&request, &root, &failure)) { return failure; }
+        int64 studentId = intField(&root, "studentId");
+        int64 courseId = intField(&root, "courseId");
+        String date = textField(&root, "testDate");
+        int64 grade = intField(&root, "grade");
+        root.close();
+        if (studentId <= 0) { return errorResponse(400, "学号必须是数字"); }
+        if (courseId <= 0) { return errorResponse(400, "课程ID必须是数字"); }
+        if (!looksLikeDate(date)) { return errorResponse(400, "考试日期格式应为 YYYY-MM-DD"); }
+        if (grade < 0 || grade > 100) {
+            return errorResponse(400, "成绩必须在 0 到 100 之间（@ValidatorRange(max = 100)）");
+        }
+        String studentName = self.db.scalar("SELECT student_name FROM student WHERE student_id = "
+        + format("{}", studentId));
+        if (len(studentName) == 0) { return errorResponse(400, "学号 " + format("{}", studentId) + " 不存在"); }
+        String courseName = self.db.scalar("SELECT course_name FROM course WHERE course_id = "
+        + format("{}", courseId));
+        if (len(courseName) == 0) { return errorResponse(400, "课程 " + format("{}", courseId) + " 不存在"); }
+        int64 exists = self.db.count("SELECT COUNT(*) FROM selection WHERE student_id = "
+        + format("{}", studentId)
+        + " AND course_id = " + format("{}", courseId));
+        if (exists > 0) {
+            return errorResponse(409, studentName + " 的《" + courseName + "》已有成绩，请改用「修改成绩」");
+        }
+        ResultSet inserted = self.db.exec(
+        "INSERT INTO selection (student_id, course_id, test_date, grade_number) VALUES ("
+        + format("{}", studentId) + ", " + format("{}", courseId) + ", "
+        + self.db.quote(date) + ", " + format("{}", grade) + ")");
+        if (!inserted.ok) { return errorResponse(500, "录入失败：" + inserted.error); }
+        int64 newId = self.db.count("SELECT LAST_INSERT_ID()");
+        return jsonResponse(201, "{\"id\":" + format("{}", newId)
+        + ",\"message\":" + jsonString("录入成功！新成绩ID：" + format("{}", newId)) + "}");
+    }
+
+    /** @brief 修改成绩（按成绩ID定位，只改分数）。 */
+    Response updateSelection(int64 id, Request const& request) {
+        ResultSet current = self.db.exec(
+        "SELECT st.student_name, co.course_name FROM selection se"
+        " JOIN student st ON st.student_id = se.student_id"
+        " JOIN course co ON co.course_id = se.course_id"
+        " WHERE se.selection_id = " + format("{}", id));
+        if (!current.ok) { return errorResponse(500, "数据库查询失败：" + current.error); }
+        if (current.rowCount() == 0) { return errorResponse(404, "成绩 " + format("{}", id) + " 不存在"); }
+        JsonValue root;
+        Response failure;
+        if (!readJsonBody(&request, &root, &failure)) { return failure; }
+        int64 grade = intField(&root, "grade");
+        root.close();
+        if (grade < 0 || grade > 100) {
+            return errorResponse(400, "成绩必须在 0 到 100 之间（@ValidatorRange(max = 100)）");
+        }
+        ResultSet updated = self.db.exec(
+        "UPDATE selection SET grade_number = " + format("{}", grade)
+        + " WHERE selection_id = " + format("{}", id));
+        if (!updated.ok) { return errorResponse(500, "修改失败：" + updated.error); }
+        return jsonResponse(200, "{\"id\":" + format("{}", id) + ",\"message\":\"修改成功！\"}");
+    }
+
+    /** @brief 删除成绩（按成绩ID定位）。 */
+    Response deleteSelection(int64 id) {
+        ResultSet current = self.db.exec(
+        "SELECT st.student_name, co.course_name FROM selection se"
+        " JOIN student st ON st.student_id = se.student_id"
+        " JOIN course co ON co.course_id = se.course_id"
+        " WHERE se.selection_id = " + format("{}", id));
+        if (!current.ok) { return errorResponse(500, "数据库查询失败：" + current.error); }
+        if (current.rowCount() == 0) { return errorResponse(404, "成绩 " + format("{}", id) + " 不存在"); }
+        String studentName = current.textAt(0, 0);
+        String courseName = current.textAt(0, 1);
+        ResultSet deleted = self.db.exec("DELETE FROM selection WHERE selection_id = "
+        + format("{}", id));
+        if (!deleted.ok) { return errorResponse(500, "删除失败：" + deleted.error); }
+        return jsonResponse(200, "{\"deleted\":true,\"message\":" + jsonString(
+        "已删除 " + studentName + " 的《" + courseName + "》成绩") + "}");
+    }
+
+    /** @brief 按课程统计：人数、平均分、最高分、最低分、及格率；courseId <= 0 表示统计全部。 */
+    Response statSelectionByCourse(int64 courseId) {
+        String condition = "";
+        if (courseId > 0) { condition = " WHERE course_id = " + format("{}", courseId); }
+        ResultSet rows = self.db.exec(
+        "SELECT COUNT(*), CAST(IFNULL(ROUND(AVG(grade_number), 1), 0) AS CHAR),"
+        " CAST(IFNULL(MAX(grade_number), 0) AS CHAR), CAST(IFNULL(MIN(grade_number), 0) AS CHAR),"
+        " SUM(CASE WHEN grade_number >= 60 THEN 1 ELSE 0 END),"
+        " CAST(ROUND(SUM(CASE WHEN grade_number >= 60 THEN 1 ELSE 0 END) * 100.0"
+        "   / IF(COUNT(*) = 0, 1, COUNT(*)), 1) AS CHAR)"
+        " FROM selection" + condition);
+        if (!rows.ok) { return errorResponse(500, "数据库查询失败：" + rows.error); }
+        String courseName = "全部课程";
+        if (courseId > 0) {
+            String found = self.db.scalar("SELECT course_name FROM course WHERE course_id = "
+            + format("{}", courseId));
+            if (len(found) > 0) { courseName = found; }
+        }
+        return jsonResponse(200, "{\"courseId\":" + format("{}", courseId)
+        + ",\"courseName\":" + jsonString(courseName)
+        + ",\"studentCount\":" + format("{}", rows.intAt(0, 0))
+        + ",\"averageScore\":" + jsonNumber(rows.textAt(0, 1))
+        + ",\"maxScore\":" + jsonNumber(rows.textAt(0, 2))
+        + ",\"minScore\":" + jsonNumber(rows.textAt(0, 3))
+        + ",\"passCount\":" + format("{}", rows.intAt(0, 4))
+        + ",\"passRate\":" + jsonNumber(rows.textAt(0, 5)) + "}");
+    }
+
+    /** @brief 按班级统计：每班人数与平均分。 */
+    Response statSelectionByClass() {
+        ResultSet rows = self.db.exec(
+        "SELECT c.sclass_id, c.sclass_name, IFNULL(c.sclass_grade, ''),"
+        " COUNT(DISTINCT st.student_id), COUNT(se.selection_id),"
+        " CAST(IFNULL(ROUND(AVG(se.grade_number), 1), 0) AS CHAR)"
+        " FROM sclass c"
+        " LEFT JOIN student st ON st.sclass_id = c.sclass_id"
+        " LEFT JOIN selection se ON se.student_id = st.student_id"
+        " GROUP BY c.sclass_id, c.sclass_name, c.sclass_grade"
+        " ORDER BY c.sclass_id");
+        if (!rows.ok) { return errorResponse(500, "数据库查询失败：" + rows.error); }
+        String items = "[";
+        for (int64 i = 0; i < rows.rowCount(); i = i + 1) {
+            if (i > 0) { items = items + ","; }
+            String grade = rows.textAt(i, 2);
+            items = items + "{\"id\":" + format("{}", rows.intAt(i, 0))
+            + ",\"name\":" + jsonString(rows.textAt(i, 1))
+            + ",\"grade\":" + jsonString(grade)
+            + ",\"gradeLabel\":" + jsonString(gradeLabel(grade))
+            + ",\"studentCount\":" + format("{}", rows.intAt(i, 3))
+            + ",\"selectionCount\":" + format("{}", rows.intAt(i, 4))
+            + ",\"averageScore\":" + jsonNumber(rows.textAt(i, 5)) + "}";
+        }
+        return jsonResponse(200, listEnvelope(items + "]", rows.rowCount(), rows.rowCount()));
+    }
+
+    /* -- 用户管理（仅超级管理员） -------------------------------------- */
+
+    /** @brief 用户列表 SELECT（口令列与 Java 端一致：look = false，不显示、不返回）。 */
+    String userListSql() {
+        return "SELECT user_id, user_name, user_permission FROM `user` ORDER BY user_id";
+    }
+
+    /** @brief 用户一行 -> JSON 对象。 */
+    String userRow(ResultSet const& rows, int64 index) {
+        String permission = rows.textAt(index, 2);
+        return "{\"id\":" + format("{}", rows.intAt(index, 0))
+        + ",\"userName\":" + jsonString(rows.textAt(index, 1))
+        + ",\"permission\":" + jsonString(permission)
+        + ",\"permissionLabel\":" + jsonString(permissionLabel(parsePermission(permission))) + "}";
+    }
+
+    /** @brief 用户列表。 */
+    Response listUsers() {
+        ResultSet rows = self.db.exec(self.userListSql());
+        if (!rows.ok) { return errorResponse(500, "数据库查询失败：" + rows.error); }
+        String items = "[";
+        for (int64 i = 0; i < rows.rowCount(); i = i + 1) {
+            if (i > 0) { items = items + ","; }
+            items = items + self.userRow(&rows, i);
+        }
+        items = items + "]";
+        return jsonResponse(200, listEnvelope(items, rows.rowCount(), rows.rowCount()));
+    }
+
+    /** @brief 添加用户（用户名 <= 18 字符、口令 >= 4 位字母数字、非 admin 不能是超级管理员）。 */
+    Response createUser(Request const& request) {
+        JsonValue root;
+        Response failure;
+        if (!readJsonBody(&request, &root, &failure)) { return failure; }
+        String name = textField(&root, "userName");
+        String password = textField(&root, "password");
+        String permission = textField(&root, "permission");
+        root.close();
+        if (!validUserName(name)) { return errorResponse(400, "用户名不能为空且最长为 18 个字符"); }
+        int64 exists = self.db.count("SELECT COUNT(*) FROM `user` WHERE user_name = "
+        + self.db.quote(name));
+        if (exists > 0) { return errorResponse(409, "用户名 " + name + " 已被占用"); }
+        if (!validPassword(password)) {
+            return errorResponse(400, "用户密码不合法：需要 4~18 位大小写字母或数字");
+        }
+        if (!isValidPermission(permission)) {
+            return errorResponse(400, "用户权限只能是 STUDENT / TEACHER / ADMINISTRATOR / SUPER_ADMINISTRATOR");
+        }
+        if (permission == "SUPER_ADMINISTRATOR") {
+            return errorResponse(400, "除 admin 以外的成员不能是超级管理员");
+        }
+        ResultSet inserted = self.db.exec(
+        "INSERT INTO `user` (user_name, user_password, user_permission) VALUES ("
+        + self.db.quote(name) + ", " + self.db.quote(password) + ", "
+        + self.db.quote(permission) + ")");
+        if (!inserted.ok) { return errorResponse(500, "添加失败：" + inserted.error); }
+        int64 newId = self.db.count("SELECT LAST_INSERT_ID()");
+        return jsonResponse(201, "{\"id\":" + format("{}", newId)
+        + ",\"message\":" + jsonString("添加成功！新用户ID：" + format("{}", newId)) + "}");
+    }
+
+    /** @brief 删除用户：admin 与当前登录用户不允许删除（Java 端 User.checker 的 DELETE 分支）。 */
+    Response deleteUser(Session const& session, int64 id) {
+        String name = self.db.scalar("SELECT user_name FROM `user` WHERE user_id = "
+        + format("{}", id));
+        if (len(name) == 0) { return errorResponse(404, "用户 " + format("{}", id) + " 不存在"); }
+        if (name == "admin") { return errorResponse(400, "admin 用户不允许删除"); }
+        if (id == session.userId) { return errorResponse(400, "不能删除当前登录的用户"); }
+        ResultSet deleted = self.db.exec("DELETE FROM `user` WHERE user_id = "
+        + format("{}", id));
+        if (!deleted.ok) { return errorResponse(500, "删除失败：" + deleted.error); }
+        return jsonResponse(200, "{\"deleted\":true,\"message\":" + jsonString(
+        "已删除用户 " + format("{}", id) + "（" + name + "）") + "}");
+    }
+
+    /**
+     * @brief 修改用户权限。
+     *
+     * 两条业务规则来自 Java 端 User.checker 的 UPDATE 分支：
+     * admin 只能是超级管理员；非 admin 不能是超级管理员。
+     */
+    Response updateUserPermission(int64 id, Request const& request) {
+        String name = self.db.scalar("SELECT user_name FROM `user` WHERE user_id = "
+        + format("{}", id));
+        if (len(name) == 0) { return errorResponse(404, "用户 " + format("{}", id) + " 不存在"); }
+        JsonValue root;
+        Response failure;
+        if (!readJsonBody(&request, &root, &failure)) { return failure; }
+        String permission = textField(&root, "permission");
+        root.close();
+        if (!isValidPermission(permission)) {
+            return errorResponse(400, "用户权限只能是 STUDENT / TEACHER / ADMINISTRATOR / SUPER_ADMINISTRATOR");
+        }
+        if (name == "admin" && permission != "SUPER_ADMINISTRATOR") {
+            return errorResponse(400, "admin 不允许为其他权限");
+        }
+        if (name != "admin" && permission == "SUPER_ADMINISTRATOR") {
+            return errorResponse(400, "其他成员不能为超级管理员");
+        }
+        ResultSet updated = self.db.exec(
+        "UPDATE `user` SET user_permission = " + self.db.quote(permission)
+        + " WHERE user_id = " + format("{}", id));
+        if (!updated.ok) { return errorResponse(500, "修改失败：" + updated.error); }
+        return jsonResponse(200, "{\"id\":" + format("{}", id) + ",\"message\":" + jsonString(
+        "用户 " + format("{}", id) + "（" + name + "）的权限已改为 "
+        + permissionLabel(parsePermission(permission))) + "}");
+    }
+
+    /** @brief 重置某个用户的口令。 */
+    Response resetUserPassword(int64 id, Request const& request) {
+        String name = self.db.scalar("SELECT user_name FROM `user` WHERE user_id = "
+        + format("{}", id));
+        if (len(name) == 0) { return errorResponse(404, "用户 " + format("{}", id) + " 不存在"); }
+        JsonValue root;
+        Response failure;
+        if (!readJsonBody(&request, &root, &failure)) { return failure; }
+        String password = textField(&root, "password");
+        root.close();
+        if (!validPassword(password)) {
+            return errorResponse(400, "用户密码不合法：需要 4~18 位大小写字母或数字");
+        }
+        ResultSet updated = self.db.exec(
+        "UPDATE `user` SET user_password = " + self.db.quote(password)
+        + " WHERE user_id = " + format("{}", id));
+        if (!updated.ok) { return errorResponse(500, "重置失败：" + updated.error); }
+        return jsonResponse(200, "{\"id\":" + format("{}", id) + ",\"message\":" + jsonString(
+        "用户 " + format("{}", id) + "（" + name + "）的密码已重置") + "}");
+    }
+
+    /* -- 下拉选项 ------------------------------------------------------ */
+
+    /** @brief 班级下拉选项（新增/编辑学生表单用）。 */
+    Response sclassOptions() {
+        ResultSet rows = self.db.exec("SELECT sclass_id, sclass_name, IFNULL(sclass_grade, '')"
+        " FROM sclass ORDER BY sclass_id");
+        if (!rows.ok) { return errorResponse(500, "数据库查询失败：" + rows.error); }
+        String items = "[";
+        for (int64 i = 0; i < rows.rowCount(); i = i + 1) {
+            if (i > 0) { items = items + ","; }
+            String grade = rows.textAt(i, 2);
+            items = items + "{\"id\":" + format("{}", rows.intAt(i, 0))
+            + ",\"name\":" + jsonString(rows.textAt(i, 1))
+            + ",\"grade\":" + jsonString(grade)
+            + ",\"gradeLabel\":" + jsonString(gradeLabel(grade)) + "}";
+        }
+        return jsonResponse(200, listEnvelope(items + "]", rows.rowCount(), rows.rowCount()));
+    }
+
+    /** @brief 课程下拉选项（录入成绩表单用）。 */
+    Response courseOptions() {
+        ResultSet rows = self.db.exec("SELECT course_id, course_name, course_state"
+        " FROM course ORDER BY course_id");
+        if (!rows.ok) { return errorResponse(500, "数据库查询失败：" + rows.error); }
+        String items = "[";
+        for (int64 i = 0; i < rows.rowCount(); i = i + 1) {
+            if (i > 0) { items = items + ","; }
+            String state = rows.textAt(i, 2);
+            items = items + "{\"id\":" + format("{}", rows.intAt(i, 0))
+            + ",\"name\":" + jsonString(rows.textAt(i, 1))
+            + ",\"state\":" + jsonString(state)
+            + ",\"stateLabel\":" + jsonString(courseStateLabel(state)) + "}";
+        }
+        return jsonResponse(200, listEnvelope(items + "]", rows.rowCount(), rows.rowCount()));
+    }
+};
+
+/* ── 资源分派 ─────────────────────────────────────────────────────────── */
+
+/** @brief `/api/<name>` 的拆分结果：matched = 路径属于该资源，rest = 余下部分（空串表示集合）。 */
+struct Route {
+    bool matched;
+    String rest;
+};
+
+/** @brief 把 `/api/<name>` 或 `/api/<name>/<rest>` 拆开。 */
+Route splitResource(String path, String name) {
+    Route route;
+    route.matched = false;
+    route.rest = "";
+    String prefix = "/api/" + name;
+    if (path == prefix) { route.matched = true; return route; }
+    if (Text::startsWith(path, prefix + "/")) {
+        route.matched = true;
+        route.rest = path[(len(prefix) + 1):];
+    }
+    return route;
+}
+
+/** @brief 解析路径尾部的正整数主键；不是正整数时给 -1。 */
+int64 resourceId(String rest) {
+    auto parsed = decimal(rest, 2147483647);
+    if (parsed.isNone()) { return (int64)(0 - 1); }
+    if (parsed.unwrap() == 0) { return (int64)(0 - 1); }
+    return parsed.unwrap();
+}
+
+/**
+ * @brief 统一的门槛检查。
+ *
+ * 门槛从 `actionNeedLevel()`（也就是可见菜单用的那张表）查，不另写常量；
+ * 查不到动作说明代码里写错了动作名，按 500 失败关闭，绝不默认放行。
+ * @return 通过检查给 true；否则写入 denial 并返回 false。
+ */
+bool allow(int64 level, String moduleKey, String actionKey, Response mut& denial) {
+    int64 need = actionNeedLevel(moduleKey, actionKey);
+    if (need < 0) {
+        denial = errorResponse(500, "内部权限表缺少动作：" + moduleKey + "." + actionKey);
+        return false;
+    }
+    if (level >= need) { return true; }
+    denial = denyResponse(need);
+    return false;
+}
+
+/**
+ * @brief 学生模块分派。
+ * @param app 服务引用。 @param session 当前会话。 @param request 请求。 @param rest `/api/students` 之后的部分。
+ */
+Response dispatchStudents(App mut& app, Session const& session, Request const& request, String rest) {
+    Response denial;
+    if (rest == "query") {
+        if (request.method != "POST") { return errorResponse(405, "该接口不支持此方法"); }
+        if (!allow(session.level, "student", "query", &denial)) { return denial; }
+        JsonValue root;
+        Response failure;
+        if (!readJsonBody(&request, &root, &failure)) { return failure; }
+        String mode = textField(&root, "mode");
+        String keyword = textField(&root, "keyword");
+        root.close();
+        return app.listStudents(mode, keyword);
+    }
+    if (rest == "") {
+        if (request.method == "GET") {
+            if (!allow(session.level, "student", "list", &denial)) { return denial; }
+            return app.listStudents("", "");
+        }
+        if (request.method == "POST") {
+            if (!allow(session.level, "student", "add", &denial)) { return denial; }
+            return app.createStudent(&request);
+        }
+        return errorResponse(405, "该接口不支持此方法");
+    }
+    int64 id = resourceId(rest);
+    if (id < 0) { return errorResponse(400, "学生 id 必须为正整数"); }
+    if (request.method == "PUT") {
+        if (!allow(session.level, "student", "update", &denial)) { return denial; }
+        return app.updateStudent(id, &request);
+    }
+    if (request.method == "DELETE") {
+        if (!allow(session.level, "student", "delete", &denial)) { return denial; }
+        return app.deleteStudent(id);
+    }
+    return errorResponse(405, "该接口不支持此方法");
+}
+
+/** @brief 班级模块分派。 */
+Response dispatchSclasses(App mut& app, Session const& session, Request const& request, String rest) {
+    Response denial;
+    if (rest == "query") {
+        if (request.method != "POST") { return errorResponse(405, "该接口不支持此方法"); }
+        if (!allow(session.level, "sclass", "query", &denial)) { return denial; }
+        JsonValue root;
+        Response failure;
+        if (!readJsonBody(&request, &root, &failure)) { return failure; }
+        String keyword = textField(&root, "keyword");
+        root.close();
+        return app.listSclasses(keyword);
+    }
+    if (rest == "") {
+        if (request.method == "GET") {
+            if (!allow(session.level, "sclass", "list", &denial)) { return denial; }
+            return app.listSclasses("");
+        }
+        if (request.method == "POST") {
+            if (!allow(session.level, "sclass", "add", &denial)) { return denial; }
+            return app.createSclass(&request);
+        }
+        return errorResponse(405, "该接口不支持此方法");
+    }
+    int64 id = resourceId(rest);
+    if (id < 0) { return errorResponse(400, "班级 id 必须为正整数"); }
+    if (request.method == "PUT") {
+        if (!allow(session.level, "sclass", "update", &denial)) { return denial; }
+        return app.updateSclass(id, &request);
+    }
+    if (request.method == "DELETE") {
+        if (!allow(session.level, "sclass", "delete", &denial)) { return denial; }
+        return app.deleteSclass(id);
+    }
+    return errorResponse(405, "该接口不支持此方法");
+}
+
+/** @brief 课程模块分派。 */
+Response dispatchCourses(App mut& app, Session const& session, Request const& request, String rest) {
+    Response denial;
+    if (rest == "query") {
+        if (request.method != "POST") { return errorResponse(405, "该接口不支持此方法"); }
+        if (!allow(session.level, "course", "query", &denial)) { return denial; }
+        JsonValue root;
+        Response failure;
+        if (!readJsonBody(&request, &root, &failure)) { return failure; }
+        String keyword = textField(&root, "keyword");
+        root.close();
+        return app.listCourses(keyword);
+    }
+    if (rest == "") {
+        if (request.method == "GET") {
+            if (!allow(session.level, "course", "list", &denial)) { return denial; }
+            return app.listCourses("");
+        }
+        if (request.method == "POST") {
+            if (!allow(session.level, "course", "add", &denial)) { return denial; }
+            return app.createCourse(&request);
+        }
+        return errorResponse(405, "该接口不支持此方法");
+    }
+    int64 id = resourceId(rest);
+    if (id < 0) { return errorResponse(400, "课程 id 必须为正整数"); }
+    if (request.method == "PUT") {
+        if (!allow(session.level, "course", "update", &denial)) { return denial; }
+        return app.updateCourse(id, &request);
+    }
+    if (request.method == "DELETE") {
+        if (!allow(session.level, "course", "delete", &denial)) { return denial; }
+        return app.deleteCourse(id);
+    }
+    return errorResponse(405, "该接口不支持此方法");
+}
+
+/** @brief 成绩模块分派（含两个统计子资源）。 */
+Response dispatchSelections(App mut& app, Session const& session, Request const& request, String rest) {
+    Response denial;
+    if (rest == "stats/course") {
+        if (request.method != "GET") { return errorResponse(405, "该接口不支持此方法"); }
+        if (!allow(session.level, "selection", "statCourse", &denial)) { return denial; }
+        String raw = queryParam(request.query, "courseId");
+        int64 courseId = 0;
+        if (len(raw) > 0) {
+            auto parsed = decimal(raw, 2147483647);
+            if (parsed.isNone()) { return errorResponse(400, "courseId 必须是非负整数"); }
+            courseId = parsed.unwrap();
+        }
+        return app.statSelectionByCourse(courseId);
+    }
+    if (rest == "stats/class") {
+        if (request.method != "GET") { return errorResponse(405, "该接口不支持此方法"); }
+        if (!allow(session.level, "selection", "statClass", &denial)) { return denial; }
+        return app.statSelectionByClass();
+    }
+    if (rest == "query") {
+        if (request.method != "POST") { return errorResponse(405, "该接口不支持此方法"); }
+        if (!allow(session.level, "selection", "query", &denial)) { return denial; }
+        JsonValue root;
+        Response failure;
+        if (!readJsonBody(&request, &root, &failure)) { return failure; }
+        String mode = textField(&root, "mode");
+        String keyword = textField(&root, "keyword");
+        root.close();
+        return app.listSelections(mode, keyword);
+    }
+    if (rest == "") {
+        if (request.method == "GET") {
+            if (!allow(session.level, "selection", "list", &denial)) { return denial; }
+            return app.listSelections("", "");
+        }
+        if (request.method == "POST") {
+            if (!allow(session.level, "selection", "add", &denial)) { return denial; }
+            return app.createSelection(&request);
+        }
+        return errorResponse(405, "该接口不支持此方法");
+    }
+    int64 id = resourceId(rest);
+    if (id < 0) { return errorResponse(400, "成绩 id 必须为正整数"); }
+    if (request.method == "PUT") {
+        if (!allow(session.level, "selection", "update", &denial)) { return denial; }
+        return app.updateSelection(id, &request);
+    }
+    if (request.method == "DELETE") {
+        if (!allow(session.level, "selection", "delete", &denial)) { return denial; }
+        return app.deleteSelection(id);
+    }
+    return errorResponse(405, "该接口不支持此方法");
+}
+
+/** @brief 用户模块分派（含 `{id}/permission` 与 `{id}/password` 子资源）。 */
+Response dispatchUsers(App mut& app, Session const& session, Request const& request, String rest) {
+    Response denial;
+    if (rest == "") {
+        if (request.method == "GET") {
+            if (!allow(session.level, "user", "list", &denial)) { return denial; }
+            return app.listUsers();
+        }
+        if (request.method == "POST") {
+            if (!allow(session.level, "user", "add", &denial)) { return denial; }
+            return app.createUser(&request);
+        }
+        return errorResponse(405, "该接口不支持此方法");
+    }
+    int64 slash = Text::find(rest, "/");
+    if (slash > 0) {
+        int64 id = resourceId(rest[0:slash]);
+        if (id < 0) { return errorResponse(400, "用户 id 必须为正整数"); }
+        String tail = rest[(slash + 1):];
+        if (request.method != "PUT") { return errorResponse(405, "该接口不支持此方法"); }
+        if (tail == "permission") {
+            if (!allow(session.level, "user", "permission", &denial)) { return denial; }
+            return app.updateUserPermission(id, &request);
+        }
+        if (tail == "password") {
+            if (!allow(session.level, "user", "password", &denial)) { return denial; }
+            return app.resetUserPassword(id, &request);
+        }
+        return errorResponse(404, "接口不存在");
+    }
+    int64 id = resourceId(rest);
+    if (id < 0) { return errorResponse(400, "用户 id 必须为正整数"); }
+    if (request.method == "DELETE") {
+        if (!allow(session.level, "user", "delete", &denial)) { return denial; }
+        return app.deleteUser(&session, id);
+    }
+    return errorResponse(405, "该接口不支持此方法");
+}
+
+/** @brief 下拉选项分派（门槛与该模块的「查看」一致）。 */
+Response dispatchOptions(App mut& app, Session const& session, Request const& request, String rest) {
+    Response denial;
+    if (request.method != "GET") { return errorResponse(405, "该接口不支持此方法"); }
+    if (rest == "sclasses") {
+        if (!allow(session.level, "sclass", "list", &denial)) { return denial; }
+        return app.sclassOptions();
+    }
+    if (rest == "courses") {
+        if (!allow(session.level, "course", "list", &denial)) { return denial; }
+        return app.courseOptions();
+    }
+    return errorResponse(404, "接口不存在");
+}
+
+/**
+ * @brief 路由总入口。
+ *
+ * 只有 `/api/health` 与 `/api/login` 是公开的；其余一律先要有效令牌。
+ * 权限判定分两层：这里先过滤模块/动作（`allow`），接口内部不再重复判定。
+ * @param app 服务引用。 @param request 请求引用。 @return HTTP 响应。
+ */
+Response route(App mut& app, Request const& request) {
+    if (request.status != 0) {
+        return errorResponse(request.status, "HTTP 请求格式或长度不受支持");
+    }
+    /* 跨域预检：浏览器在跨源发 JSON 请求前会先发 OPTIONS，这里直接放行。 */
+    if (request.method == "OPTIONS") { return noContentResponse(); }
+
+    if (request.path == "/api/health" && request.method == "GET") {
+        ResultSet health = app.db.exec("SELECT 1");
+        if (!health.ok) { return errorResponse(503, "数据库不可用"); }
+        return jsonResponse(200, "{\"status\":\"ok\",\"database\":\"mysql\"}");
+    }
+    if (request.path == "/api/login") {
+        if (request.method != "POST") { return errorResponse(405, "该接口不支持此方法"); }
+        return app.login(&request);
+    }
+    if (!Text::startsWith(request.path, "/api/")) {
+        return errorResponse(404, "接口不存在：本服务只提供 /api/* 接口，前端页面请用静态服务器托管");
+    }
+
+    Session session = app.findSession(bearerToken(request.authorization));
+    if (!session.valid) { return errorResponse(401, "未登录或会话已失效，请重新登录"); }
+
+    if (request.path == "/api/logout") {
+        if (request.method != "POST") { return errorResponse(405, "该接口不支持此方法"); }
+        return app.logout(&session);
+    }
+    if (request.path == "/api/session") {
+        if (request.method != "GET") { return errorResponse(405, "该接口不支持此方法"); }
+        return app.sessionResponse(&session);
+    }
+    if (request.path == "/api/password") {
+        if (request.method != "POST") { return errorResponse(405, "该接口不支持此方法"); }
+        return app.changeOwnPassword(&session, &request);
+    }
+
+    Route route = splitResource(request.path, "students");
+    if (route.matched) { return dispatchStudents(&app, &session, &request, route.rest); }
+    route = splitResource(request.path, "sclasses");
+    if (route.matched) { return dispatchSclasses(&app, &session, &request, route.rest); }
+    route = splitResource(request.path, "courses");
+    if (route.matched) { return dispatchCourses(&app, &session, &request, route.rest); }
+    route = splitResource(request.path, "selections");
+    if (route.matched) { return dispatchSelections(&app, &session, &request, route.rest); }
+    route = splitResource(request.path, "users");
+    if (route.matched) { return dispatchUsers(&app, &session, &request, route.rest); }
+    route = splitResource(request.path, "options");
+    if (route.matched) { return dispatchOptions(&app, &session, &request, route.rest); }
+    return errorResponse(404, "接口不存在");
+}
+
+/* ── HTTP 收发 ────────────────────────────────────────────────────────── */
+
+/**
+ * @brief 判断 `Host` 头是否指本服务。
+ *
+ * 比 web-students 示例放宽了一点：前端由独立静态服务器托管，用户可能用
+ * `127.0.0.1:端口` 也可能用 `localhost:端口` 访问后端，两种都接受；主机名或
+ * 端口对不上仍然拒绝（防 DNS 重绑定式的跨站直连）。
+ * @param value Host 头的值。 @param port 本服务实际监听端口。 @return 是否接受。
+ */
+bool hostAllowed(String value, int64 port) {
+    int64 colon = Text::find(value, ":");
+    if (colon <= 0) { return false; }
+    String host = Text::toLower(value[0:colon]);
+    if (host != "127.0.0.1" && host != "localhost") { return false; }
+    auto parsed = decimal(value[(colon + 1):], 65535);
+    if (parsed.isNone()) { return false; }
+    return parsed.unwrap() == port;
+}
+
+/** @brief 读取一个 Content-Length 请求；每条连接只处理一次。
+ * @param socket 可写连接引用。 @param port 本服务监听端口（校验 Host）。 @return 请求及解析状态。 */
+Request readRequest(TcpSocket mut& socket, int64 port) {
+    Request request;
+    request.status = 0;
+    request.method = "";
+    request.path = "";
+    request.query = "";
+    request.body = "";
+    request.contentType = "";
+    request.authorization = "";
+
+    String raw = "";
+    int64 split = -1;
+    while (split < 0) {
+        String chunk = socket.receive((int32)4096);
+        if (chunk == "") { request.status = 400; return request; }
+        raw = raw + chunk;
+        split = Text::find(raw, "\r\n\r\n");
+        if ((split < 0 && len(raw) > HEADER_LIMIT) || split > HEADER_LIMIT) {
+            request.status = 431;
+            return request;
+        }
+    }
+    if (split == 0) { request.status = 400; return request; }
+    List<String> lines = Text::split(raw[0:split], "\r\n");
+    List<String> start = Text::split(lines[0], " ");
+    if (len(start) != 3) { request.status = 400; return request; }
+    if ((start[2] != "HTTP/1.1" && start[2] != "HTTP/1.0") || !Text::startsWith(start[1], "/")) {
+        request.status = 400;
+        return request;
+    }
+    request.method = start[0];
+    String target = start[1];
+    int64 mark = Text::find(target, "?");
+    if (mark < 0) {
+        request.path = target;
+        request.query = "";
+    } else {
+        request.path = target[0:mark];
+        request.query = target[(mark + 1):];
+    }
+
+    int64 length = 0;
+    bool hasLength = false;
+    bool hasHost = false;
+    for (int64 i = 1; i < len(lines); i = i + 1) {
+        String line = lines[i];
+        int64 colon = Text::find(line, ":");
+        if (colon <= 0) { request.status = 400; return request; }
+        String key = Text::toLower(line[0:colon]);
+        String value = Text::trim(line[(colon + 1):]);
+        if (key == "content-length") {
+            if (hasLength) { request.status = 400; return request; }
+            auto parsed = decimal(value, BODY_LIMIT);
+            if (parsed.isNone()) { request.status = 413; return request; }
+            length = parsed.unwrap();
+            hasLength = true;
+        }
+        elif (key == "host") {
+            if (hasHost || !hostAllowed(value, port)) { request.status = 400; return request; }
+            hasHost = true;
+        }
+        elif (key == "transfer-encoding") { request.status = 501; return request; }
+        elif (key == "expect") { request.status = 417; return request; }
+        elif (key == "content-type") { request.contentType = Text::toLower(value); }
+        elif (key == "authorization") { request.authorization = value; }
+    }
+    if (start[2] == "HTTP/1.1" && !hasHost) { request.status = 400; return request; }
+    if ((request.method == "POST" || request.method == "PUT") && !hasLength) {
+        request.status = 411;
+        return request;
+    }
+    request.body = raw[(split + 4):];
+    while (len(request.body) < length) {
+        String chunk = socket.receive((int32)4096);
+        if (chunk == "") { request.status = 400; return request; }
+        request.body = request.body + chunk;
+    }
+    request.body = request.body[0:length];
+    return request;
+}
+
+/**
+ * @brief 发送 UTF-8 响应；Content-Length 按字节计数。
+ *
+ * 除 web-students 示例已有的头以外，这里**恒发**一组 CORS 头：前端跑在另一个
+ * 源上（独立静态服务器），跨源 `fetch` 必须靠它们才放行。`allowOrigin` 默认 `*`，
+ * 可用 `--allow-origin` 收紧到具体的静态站点地址。
+ * @param socket 连接引用。 @param response 响应引用。 @param allowOrigin 允许的源。 @return 是否完整发送。
+ */
+bool sendResponse(TcpSocket mut& socket, Response const& response, String allowOrigin) {
+    String text = "HTTP/1.1 " + format("{}", response.status) + " " + reason(response.status)
+    + "\r\nContent-Type: " + response.contentType
+    + "\r\nContent-Length: " + format("{}", len(response.body))
+    + "\r\nAccess-Control-Allow-Origin: " + allowOrigin
+    + "\r\nAccess-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS"
+    + "\r\nAccess-Control-Allow-Headers: Content-Type, Authorization"
+    + "\r\nAccess-Control-Max-Age: 600"
+    + "\r\nConnection: close"
+    + "\r\nCache-Control: no-store"
+    + "\r\nX-Content-Type-Options: nosniff"
+    + "\r\n\r\n" + response.body;
+    return socket.send(text) == len(text);
+}
+
+/* ── 入口 ─────────────────────────────────────────────────────────────── */
+
+/**
+ * @brief 程序入口。
+ *
+ * 支持的开关：
+ *   --listen-host / --listen-port    HTTP 监听地址与端口（端口 0 = 由系统分配）
+ *   --mysql-host / --mysql-user / --mysql-password / --mysql-port   MySQL 连接参数
+ *   --db / --init / --reinit         库名与建库脚本
+ *   --allow-origin                   跨域头里的允许源，默认 `*`
+ *   --ready FILE                     监听成功后把实际端口写进该文件（自检用）
+ *   --max-requests N                 处理 N 个请求后正常退出（0 = 不限，自检用）
+ */
+int64 main(List<String> arguments) {
+    String listenHost = "127.0.0.1";
+    String allowOrigin = "*";
+    String readyPath = "";
+    String database = "student";
+    String mysqlHost = "127.0.0.1";
+    String mysqlUser = "root";
+    String mysqlPassword = "123456";
+    String initPath = "";
+    bool forceInit = false;
+    int64 listenPort = 8080;
+    int64 mysqlPort = 3306;
+    int64 maximum = 0;
+
+    for (int64 i = 0; i < len(arguments); i = i + 1) {
+        String argument = arguments[i];
+        bool hasValue = i + 1 < len(arguments);
+        if (argument == "--listen-host" && hasValue) { listenHost = arguments[i + 1]; i = i + 1; }
+        elif (argument == "--listen-port" && hasValue) {
+            auto value = decimal(arguments[i + 1], 65535);
+            if (value.isNone()) { println("--listen-port 需要 0-65535 的整数"); return 1; }
+            listenPort = value.unwrap();
+            i = i + 1;
+        }
+        elif (argument == "--mysql-host" && hasValue) { mysqlHost = arguments[i + 1]; i = i + 1; }
+        elif (argument == "--mysql-user" && hasValue) { mysqlUser = arguments[i + 1]; i = i + 1; }
+        elif (argument == "--mysql-password" && hasValue) { mysqlPassword = arguments[i + 1]; i = i + 1; }
+        elif (argument == "--mysql-port" && hasValue) {
+            auto value = decimal(arguments[i + 1], 65535);
+            if (value.isNone()) { println("--mysql-port 需要 0-65535 的整数"); return 1; }
+            mysqlPort = value.unwrap();
+            i = i + 1;
+        }
+        elif (argument == "--db" && hasValue) { database = arguments[i + 1]; i = i + 1; }
+        elif (argument == "--init" && hasValue) { initPath = arguments[i + 1]; i = i + 1; }
+        elif (argument == "--reinit") { forceInit = true; }
+        elif (argument == "--allow-origin" && hasValue) { allowOrigin = arguments[i + 1]; i = i + 1; }
+        elif (argument == "--ready" && hasValue) { readyPath = arguments[i + 1]; i = i + 1; }
+        elif (argument == "--max-requests" && hasValue) {
+            auto value = decimal(arguments[i + 1], 1000000);
+            if (value.isNone()) { println("--max-requests 需要非负整数"); return 1; }
+            maximum = value.unwrap();
+            i = i + 1;
+        }
+        else {
+            println("未知参数：{}", argument);
+            return 1;
+        }
+    }
+
+    App app;
+    app.ready = false;
+    app.allowOrigin = allowOrigin;
+    app.entropy = std::random::randomFromEntropy();
+
+    if (!app.connect(mysqlHost, mysqlUser, mysqlPassword, database, (int32)mysqlPort)) {
+        app.stop();
+        return 1;
+    }
+    if (!app.ensureSchema(initPath, forceInit)) {
+        app.stop();
+        return 1;
+    }
+
+    TcpListener listener = TcpListener::listen(listenHost, (int32)listenPort, (int32)16);
+    if (!listener.isOpen()) {
+        println("监听失败：{}", listener.lastError());
+        app.stop();
+        return 1;
+    }
+    int64 actualPort = listener.localPort();
+    String authority = listenHost + ":" + format("{}", actualPort);
+
+    if (len(readyPath) > 0) {
+        auto ready = FileStream::open(readyPath, "wb");
+        if (ready.isErr()) {
+            println("无法写入就绪文件：{}", readyPath);
+            listener.close();
+            app.stop();
+            return 1;
+        }
+        FileStream marker = ready.unwrap();
+        auto written = marker.write(format("{}", actualPort));
+        marker.close();
+        if (written.isErr()) {
+            println("写入就绪文件失败");
+            listener.close();
+            app.stop();
+            return 1;
+        }
+    }
+
+    println("学生成绩信息管理系统 API：http://{}/api/health", authority);
+    println("前端页面请用独立静态服务器托管 web/ 目录（见 README）");
+
+    int64 handled = 0;
+    while (maximum == 0 || handled < maximum) {
+        TcpSocket socket = listener.accept((int32)1000);
+        if (!socket.isOpen()) { continue; }
+        Request request = readRequest(&socket, actualPort);
+        Response response = route(&app, &request);
+        bool sent = sendResponse(&socket, &response, app.allowOrigin);
+        socket.close();
+        handled = handled + 1;
+    }
+    listener.close();
+    app.stop();
+    println("服务器正常关闭：{} 个请求", handled);
+    return 0;
+}

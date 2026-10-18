@@ -1,0 +1,10 @@
+/* `std::lang::Any` 里装的是什么，运行期才知道 —— 取的时候类型号对不上就报错。
+ * 期望：运行期错误，说清盒子里装的是什么、这里要取的是什么。 */
+
+int64 main() {
+    std::lang::Any value;
+    value.set(42);
+    String text = value.getValue();
+    std::lang::println("{}", text);
+    return 0;
+}

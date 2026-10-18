@@ -1,0 +1,1 @@
+magel：example/samples-error/void_return_value.mgl 第 1 行第 1 列：void 函数不能返回值

@@ -1,0 +1,4 @@
+$macro BAD(`...items)
+items
+$end_macro
+int64 main() { return 0; }

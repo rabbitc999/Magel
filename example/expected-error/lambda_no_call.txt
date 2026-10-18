@@ -1,0 +1,1 @@
+magel：lambda：无法推导 lambda pending 的形参类型：至少调用一次

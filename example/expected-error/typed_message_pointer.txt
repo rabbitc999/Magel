@@ -1,0 +1,1 @@
+magel：example/samples-error/typed_message_pointer.mgl 第 7 行第 5 列：消息与 std::lang::Shared 不支持 int64 mut&：请改用标量、字符串、普通值结构体或容器；引用、数组、资源和 std::lang::Any 不能跨线程传递

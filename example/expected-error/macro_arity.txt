@@ -1,0 +1,1 @@
+magel：前处理：example/samples-error/macro_arity.mgl 第 4 行：宏 $ADD 没有匹配的形态：给了 1 个实参（候选：$ADD(x, y)）

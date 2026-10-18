@@ -1,0 +1,4 @@
+type Host = uint64;
+extern cast int64(Host) = host_to_int;
+
+int64 main() { return 0; }

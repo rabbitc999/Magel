@@ -1,0 +1,12 @@
+/* hello.mgl —— 最小样例：函数调用、内置函数与 println。 */
+
+int64 add(int64 a, int64 b) {
+    return a + b;
+}
+
+int64 main() {
+    println("hello, magel");
+    println("1 + 2 = {}", add(1, 2));
+    println("add(20, 22) = {}", add(20, 22));
+    return 0;
+}

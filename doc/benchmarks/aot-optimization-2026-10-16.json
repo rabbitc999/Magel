@@ -1,0 +1,2265 @@
+{
+  "date": "2026-10-16T12:05:23.174679+08:00",
+  "version": "1.0.0",
+  "baseline_commit": "12c4dc4",
+  "candidate_base": "12c4dc480b5b8027d7e617fe7f6f5e122b724b0a",
+  "candidate_dirty": [
+    " M AGENTS.md",
+    " M CHANGELOG.md",
+    " M README.md",
+    " M ci.sh",
+    " M doc/01-quickstart.md",
+    " M doc/04-language-reference.md",
+    " M doc/06-deployment.md",
+    " M doc/09-toolchain.md",
+    " M doc/14-grammar-ebnf.md",
+    " M doc/17-capabilities.md",
+    " M doc/21-semantics-frozen.md",
+    " M doc/99-magel-story.md",
+    " M doc/README.md",
+    " M \"doc/book/01-\\347\\254\\254\\344\\270\\200\\344\\270\\252\\347\\250\\213\\345\\272\\217.md\"",
+    " M \"doc/book/09-\\347\\273\\223\\346\\236\\204\\344\\275\\223.md\"",
+    " M \"doc/book/10-\\346\\236\\232\\344\\270\\276\\344\\270\\216\\346\\250\\241\\345\\274\\217\\345\\214\\271\\351\\205\\215.md\"",
+    " M \"doc/book/13-\\346\\216\\245\\345\\217\\243\\344\\270\\216\\350\\277\\220\\350\\241\\214\\346\\234\\237\\345\\244\\232\\346\\200\\201.md\"",
+    " M \"doc/book/18-\\346\\250\\241\\345\\235\\227\\344\\270\\216\\345\\267\\245\\347\\250\\213.md\"",
+    " M \"doc/book/22-\\344\\272\\244\\344\\273\\230\\344\\270\\216\\351\\203\\250\\347\\275\\262.md\"",
+    " M \"doc/book/23-\\347\\273\\274\\345\\220\\210\\351\\241\\271\\347\\233\\256.md\"",
+    " M doc/book/README.md",
+    " M doc/book/latex/book.tex",
+    " M doc/book/latex/chapters/appendix-a.tex",
+    " M doc/book/latex/chapters/appendix-b.tex",
+    " M doc/book/latex/chapters/ch01.tex",
+    " M doc/book/latex/chapters/ch02.tex",
+    " M doc/book/latex/chapters/ch03.tex",
+    " M doc/book/latex/chapters/ch04.tex",
+    " M doc/book/latex/chapters/ch05.tex",
+    " M doc/book/latex/chapters/ch06.tex",
+    " M doc/book/latex/chapters/ch07.tex",
+    " M doc/book/latex/chapters/ch08.tex",
+    " M doc/book/latex/chapters/ch09.tex",
+    " M doc/book/latex/chapters/ch10.tex",
+    " M doc/book/latex/chapters/ch11.tex",
+    " M doc/book/latex/chapters/ch12.tex",
+    " M doc/book/latex/chapters/ch13.tex",
+    " M doc/book/latex/chapters/ch14.tex",
+    " M doc/book/latex/chapters/ch15.tex",
+    " M doc/book/latex/chapters/ch16.tex",
+    " M doc/book/latex/chapters/ch17.tex",
+    " M doc/book/latex/chapters/ch18.tex",
+    " M doc/book/latex/chapters/ch19.tex",
+    " M doc/book/latex/chapters/ch20.tex",
+    " M doc/book/latex/chapters/ch21.tex",
+    " M doc/book/latex/chapters/ch22.tex",
+    " M doc/book/latex/chapters/ch23.tex",
+    " M doc/book/latex/chapters/preface.tex",
+    " M doc/book/latex/tools/md2tex.py",
+    " M doc/en/01-quickstart.md",
+    " M doc/en/04-language-reference.md",
+    " M doc/en/06-deployment.md",
+    " M doc/en/09-toolchain.md",
+    " M doc/en/17-capabilities.md",
+    " M doc/en/99-magel-story.md",
+    " M doc/library/README.md",
+    " M doc/library/api-index.json",
+    " M doc/library/std-algorithms.md",
+    " M doc/library/std-binary.md",
+    " M doc/library/std-cli.md",
+    " M doc/library/std-clock.md",
+    " M doc/library/std-collections.md",
+    " M doc/library/std-complex.md",
+    " M doc/library/std-compress.md",
+    " M doc/library/std-concurrency.md",
+    " M doc/library/std-coroutine.md",
+    " M doc/library/std-csv.md",
+    " M doc/library/std-datetime.md",
+    " M doc/library/std-encoding.md",
+    " M doc/library/std-event.md",
+    " M doc/library/std-io.md",
+    " M doc/library/std-iter.md",
+    " M doc/library/std-json.md",
+    " M doc/library/std-lang.md",
+    " M doc/library/std-linalg.md",
+    " M doc/library/std-math.md",
+    " M doc/library/std-memory.md",
+    " M doc/library/std-message.md",
+    " M doc/library/std-net.md",
+    " M doc/library/std-numerics.md",
+    " M doc/library/std-numtheory.md",
+    " M doc/library/std-parse.md",
+    " M doc/library/std-path.md",
+    " M doc/library/std-probe.md",
+    " M doc/library/std-process.md",
+    " M doc/library/std-random.md",
+    " M doc/library/std-reflect.md",
+    " M doc/library/std-regex.md",
+    " M doc/library/std-signal.md",
+    " M doc/library/std-sql.md",
+    " M doc/library/std-text.md",
+    " M doc/library/std-thread.md",
+    " M doc/library/std-toml.md",
+    " M doc/library/std-utf8.md",
+    " M doc/library/std-watchdog.md",
+    " M doc/library/symbol-index.json",
+    " M doc/library/symbols.md",
+    " M doc/man/README.md",
+    " M doc/man/en/README.md",
+    " M example/calculator/calc.mgl",
+    " M example/calculator/calc_nested.mgl",
+    " M example/expected-error/closeable_missing.txt",
+    " M example/expected-error/enum_interface_missing.txt",
+    " M example/expected-error/interface_field.txt",
+    " M example/expected-error/interface_inherit_signature.txt",
+    " M example/expected-error/interface_missing.txt",
+    " M example/expected-error/legacy_idrop_type.txt",
+    " M example/gui/examples/counter.mgl",
+    " M example/gui/examples/qt_interrupt.mgl",
+    " M example/mcu/FK-STM32H743XIH6/programs/benchmark.mgl",
+    " M example/native-callbacks/demo.mgl",
+    " M example/reflection/calls.mgl",
+    " M example/reflection/declarations.mgl",
+    " M example/reflection/defaults.mgl",
+    " M example/reflection/dispatch.mgl",
+    " M example/reflection/json.mgl",
+    " M example/reflection/operators.mgl",
+    " M example/samples-error/enum_match_duplicate.mgl",
+    " M example/samples-error/enum_match_nonexhaustive.mgl",
+    " M example/samples-error/enum_pattern_expression.mgl",
+    " M example/samples-error/macro_gensym_invalid.mgl",
+    " M example/samples/aot_basic.mgl",
+    " M example/samples/array_pointer_decay.mgl",
+    " M example/samples/associated_types.mgl",
+    " M example/samples/basic_casts.mgl",
+    " M example/samples/bigfloat.mgl",
+    " M example/samples/bigint.mgl",
+    " M example/samples/bits.mgl",
+    " M example/samples/break_values.mgl",
+    " M example/samples/const_generics.mgl",
+    " M example/samples/container_values.mgl",
+    " M example/samples/containers.mgl",
+    " M example/samples/coroutine_typed_messages.mgl",
+    " M example/samples/cpp_glue.mgl",
+    " M example/samples/defer_scope.mgl",
+    " M example/samples/enum_drop_active_payload.mgl",
+    " M example/samples/enums.mgl",
+    " M example/samples/error_adapters.mgl",
+    " M example/samples/flexptr.mgl",
+    " M example/samples/fn_auto.mgl",
+    " M example/samples/fn_capture_modes.mgl",
+    " M example/samples/function_pointer_glue.mgl",
+    " M example/samples/function_types.mgl",
+    " M example/samples/generics.mgl",
+    " M example/samples/glue_members.mgl",
+    " M example/samples/glue_system_interfaces.mgl",
+    " M example/samples/glue_types.mgl",
+    " M example/samples/if_expression.mgl",
+    " M example/samples/integer_radix_regex.mgl",
+    " M example/samples/interface_defaults.mgl",
+    " M example/samples/interface_protocols.mgl",
+    " M example/samples/interface_system_inherit.mgl",
+    " M example/samples/interface_view_ownership.mgl",
+    " M example/samples/interrupt_arguments.mgl",
+    " M example/samples/interrupt_handle.mgl",
+    " M example/samples/interrupt_thread.mgl",
+    " M example/samples/lambda_auto.mgl",
+    " M example/samples/lambda_callbacks.mgl",
+    " M example/samples/lambda_capture_modes.mgl",
+    " M example/samples/macro_controls.mgl",
+    " M example/samples/macro_expr.mgl",
+    " M example/samples/macro_gensym.mgl",
+    " M example/samples/macro_parenthesize.mgl",
+    " M example/samples/match_expression.mgl",
+    " M example/samples/match_range.mgl",
+    " M example/samples/nested_result.mgl",
+    " M example/samples/obj_assign.mgl",
+    " M example/samples/option_result_methods.mgl",
+    " M example/samples/ownership_unary_edges.mgl",
+    " M example/samples/pointer_glue.mgl",
+    " M example/samples/pointer_iterators.mgl",
+    " M example/samples/rarray.mgl",
+    " M example/samples/reference_value_types.mgl",
+    " M example/samples/regex_limits.mgl",
+    " M example/samples/std_algorithms_extra.mgl",
+    " M example/samples/std_collections_algorithms.mgl",
+    " M example/samples/std_complex_fft.mgl",
+    " M example/samples/std_compress.mgl",
+    " M example/samples/std_file_result.mgl",
+    " M example/samples/std_io.mgl",
+    " M example/samples/std_math_clock_random.mgl",
+    " M example/samples/std_net.mgl",
+    " M example/samples/std_numerics_number_theory.mgl",
+    " M example/samples/std_parse_random_path_memory.mgl",
+    " M example/samples/std_structured_data.mgl",
+    " M example/samples/string_interpolation.mgl",
+    " M example/samples/string_text.mgl",
+    " M example/samples/structs.mgl",
+    " M example/samples/tree.mgl",
+    " M example/samples/try_custom.mgl",
+    " M example/samples/typed_messages_shared.mgl",
+    " M example/sql-magel/example/ipage-student-server/main.mgl",
+    " M example/sql-magel/example/ipage-student/main.mgl",
+    " M example/sql-magel/example/sql_demo.mgl",
+    " M example/sql-magel/example/student/main.mgl",
+    " M example/web-students/main.mgl",
+    " M library/stackvm/parts/aot_bridge.cpp",
+    " M library/stackvm/stackvm.hpp",
+    " M skills/magel-programming/SKILL.md",
+    " M source/epilogue/borrow_flow.cpp",
+    " M source/epilogue/boxing.cpp",
+    " M source/epilogue/builtins.cpp",
+    " M source/epilogue/lowering.cpp",
+    " M source/epilogue/pass1_register.cpp",
+    " M source/epilogue/pass2_lower.cpp",
+    " M source/i18n/messages.tsv",
+    " M source/magel-emit/aot.cpp",
+    " M source/magel-emit/main.cpp",
+    " M source/magel.gram",
+    " M source/magel_diagnostics.hpp",
+    " M source/magel_driver.cpp",
+    " M source/magel_i18n.hpp",
+    " M source/magel_report.hpp",
+    " M source/magel_stdlib_embedded.cpp",
+    " M source/mcu_vm/magel_i18n.hpp",
+    " M tests/magel_block_expression.py",
+    " M tests/magel_book_updates.py",
+    " M tests/magel_entry_signature.py",
+    " M tests/magel_i18n.py",
+    " M tests/magel_i18n_test.cpp",
+    " M tests/magel_ipage_student_server_browser.py",
+    " M tests/magel_man.py",
+    " M tools/embed_i18n.py",
+    " M tools/embed_stdlib.py",
+    " M tools/magel_stdlib_api.json",
+    " M tools/mageldev.py",
+    " M tools/native_development.cpp",
+    " M tools/native_man.hpp",
+    " M tools/package_compiler.py",
+    " M vscode/tools/embed-compiler.js",
+    "?? doc/benchmarks/aot-msvc-probe-2026-10-16.json",
+    "?? doc/benchmarks/aot-optimization-2026-10-16.json",
+    "?? \"doc/book/24-\\345\\255\\246\\347\\224\\237\\344\\277\\241\\346\\201\\257\\347\\256\\241\\347\\220\\206\\347\\263\\273\\347\\273\\237.md\"",
+    "?? \"doc/book/25-\\345\\215\\225\\347\\211\\207\\346\\234\\272\\350\\247\\243\\351\\207\\212\\345\\231\\250.md\"",
+    "?? doc/book/images/",
+    "?? doc/book/latex/chapters/ch24.tex",
+    "?? doc/book/latex/chapters/ch25.tex",
+    "?? tests/benchmark_aot_optimization.py",
+    "?? tests/fixtures/AotOptimizationBenchmark.java",
+    "?? tests/fixtures/aot_optimization.mgl",
+    "?? tests/fixtures/aot_optimization_benchmark.mgl",
+    "?? tests/magel_aot_optimization.py",
+    "?? tests/magel_formatter_literals.py",
+    "?? tests/magel_type_decl_terminators.py",
+    "?? tests/magel_void_main.py",
+    "?? tools/embed_manual.py",
+    "?? tools/magel_manual.json",
+    "?? tools/make_book_diagrams.py",
+    "?? vscode/skills/"
+  ],
+  "platform": "Windows-10-10.0.19045-SP0",
+  "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+  "host_compiler": "g++ (x86_64-posix-seh-rev3, Built by MinGW-W64 project) 11.2.0",
+  "java_versions": {
+    "jdk8": "openjdk version \"1.8.0_504\"\nOpenJDK Runtime Environment (Temurin)(build 1.8.0_504-b01)\nOpenJDK 64-Bit Server VM (Temurin)(build 25.504-b01, mixed mode)",
+    "jdk22": "java version \"22.0.1\" 2024-04-16\nJava(TM) SE Runtime Environment (build 22.0.1+8-16)\nJava HotSpot(TM) 64-Bit Server VM (build 22.0.1+8-16, mixed mode, sharing)"
+  },
+  "iterations": 1000000,
+  "rounds": 3,
+  "repeats_per_round": 5,
+  "configuration": {
+    "aot": "-O3 --checked on both versions; default reflection enabled; full quad optimizer; no unsafe fast-math",
+    "java": "-Xms256m -Xmx256m -Xbatch; 20 warmup iterations per process",
+    "timing": "monotonic nanoseconds around each kernel only; excludes startup, compilation, parsing and printing; includes kernel array/list initialization and cleanup",
+    "aot_warmup": 1,
+    "java_array_note": "Java fixed_array and heap_array both use long[64]; ArrayList<Long> uses boxed elements, Magel uses List<int64>; results compare algorithms, not identical layouts"
+  },
+  "source_sha256": "7eb6dee911a1219cf17a0d938cb1bc85995b1406a2bfea48a8320716ee0684a4",
+  "java_source_sha256": "e6d8e3d26b0a75632a4b81103d789bd49f81dcac09b4c88533545c16833946d7",
+  "binary_sha256": {
+    "before": "43c26f2c609281146637b7c7281d259a9f4fc62c125ee04e58ef7d2d79ac171e",
+    "after": "23bd303010dcf4737b47599faaf280b6196fffb27de6684d4f267c41c7b2d578"
+  },
+  "binary_sizes": {
+    "before": 3104159,
+    "after": 2807316
+  },
+  "expected_checksums": {
+    "scalar": 497317640,
+    "fixed_array": 500000500000,
+    "heap_array": 500000500000,
+    "container": 500000500000,
+    "function_calls": 497317640
+  },
+  "samples_ms": {
+    "before": {
+      "scalar": [
+        387.5701,
+        386.9417,
+        387.802,
+        386.3535,
+        388.1196,
+        389.7615,
+        387.8156,
+        387.1976,
+        387.7581,
+        394.5734,
+        390.5512,
+        392.6142,
+        387.091,
+        391.5077,
+        388.556
+      ],
+      "fixed_array": [
+        1034.564,
+        1052.141,
+        1046.6111,
+        1046.6453,
+        1035.203,
+        1040.1686,
+        1034.0678,
+        1057.0149,
+        1048.4195,
+        1061.6216,
+        1056.9718,
+        1037.6282,
+        1036.5715,
+        1046.6466,
+        1039.1534
+      ],
+      "heap_array": [
+        1262.5818,
+        1304.6826,
+        1302.5896,
+        1301.1306,
+        1300.4737,
+        1260.3318,
+        1301.6102,
+        1297.3528,
+        1302.3046,
+        1317.6351,
+        1270.2088,
+        1313.5129,
+        1301.4154,
+        1298.7334,
+        1300.4738
+      ],
+      "container": [
+        2929.5209,
+        2952.5047,
+        2923.3856,
+        2915.5363,
+        2902.9268,
+        2912.2766,
+        2910.14,
+        2950.2771,
+        2950.7893,
+        2955.5011,
+        2916.7295,
+        2959.8639,
+        2974.9393,
+        2952.3806,
+        2941.7599
+      ],
+      "function_calls": [
+        883.2179,
+        916.084,
+        878.0672,
+        880.8639,
+        880.9971,
+        880.9243,
+        880.584,
+        882.0845,
+        893.4982,
+        893.7198,
+        885.5348,
+        883.4304,
+        892.705,
+        886.8992,
+        879.4729
+      ]
+    },
+    "after": {
+      "scalar": [
+        141.4488,
+        142.7263,
+        138.1866,
+        136.888,
+        138.235,
+        140.3446,
+        141.5293,
+        136.6879,
+        136.8253,
+        138.266,
+        138.2325,
+        139.7577,
+        139.7848,
+        138.196,
+        139.7542
+      ],
+      "fixed_array": [
+        361.2556,
+        361.8775,
+        359.4465,
+        349.6929,
+        353.9385,
+        345.2414,
+        358.5346,
+        339.2303,
+        345.5613,
+        353.6966,
+        353.7586,
+        357.2447,
+        357.3321,
+        353.8392,
+        357.3777
+      ],
+      "heap_array": [
+        438.7122,
+        439.3043,
+        426.1093,
+        421.6586,
+        430.0672,
+        473.1942,
+        412.9777,
+        422.4858,
+        422.3564,
+        415.231,
+        428.8107,
+        431.2464,
+        430.2081,
+        425.905,
+        430.0172
+      ],
+      "container": [
+        2128.2712,
+        2060.572,
+        2066.4352,
+        2179.1455,
+        2124.775,
+        2188.4668,
+        2087.906,
+        2059.5315,
+        2067.3711,
+        2155.1632,
+        2118.887,
+        2065.4505,
+        2080.4419,
+        2115.1724,
+        2119.4211
+      ],
+      "function_calls": [
+        396.7063,
+        387.9722,
+        384.384,
+        387.5125,
+        390.7504,
+        390.2794,
+        413.7391,
+        384.145,
+        388.0479,
+        374.5748,
+        390.9628,
+        387.8182,
+        387.8619,
+        383.3992,
+        393.9916
+      ]
+    },
+    "jdk8": {
+      "scalar": [
+        3.0198,
+        3.0204,
+        3.0201,
+        3.02,
+        3.02,
+        3.0208,
+        3.0202,
+        3.02,
+        3.0215,
+        3.0201,
+        3.0197,
+        3.022,
+        3.0223,
+        3.0263,
+        3.0219
+      ],
+      "fixed_array": [
+        0.7005,
+        0.7005,
+        0.7005,
+        0.7004,
+        0.7019,
+        0.7025,
+        0.7019,
+        0.7016,
+        0.7018,
+        0.702,
+        0.7005,
+        0.7067,
+        0.7067,
+        0.7059,
+        0.7062
+      ],
+      "heap_array": [
+        0.7087,
+        0.7007,
+        0.7017,
+        0.7093,
+        0.7004,
+        0.7005,
+        0.8977,
+        0.711,
+        0.7017,
+        0.7017,
+        0.7021,
+        0.7006,
+        0.7004,
+        0.7005,
+        0.7068
+      ],
+      "container": [
+        4.5388,
+        2.2626,
+        2.2701,
+        2.6274,
+        2.3144,
+        4.5409,
+        2.2578,
+        2.2619,
+        2.5887,
+        2.5675,
+        4.6469,
+        2.2886,
+        2.2754,
+        2.6974,
+        2.2754
+      ],
+      "function_calls": [
+        3.0204,
+        3.0332,
+        3.0214,
+        3.0205,
+        3.0293,
+        3.0303,
+        3.0205,
+        3.0204,
+        3.031,
+        3.0203,
+        3.0228,
+        3.0233,
+        3.023,
+        3.0224,
+        3.0226
+      ]
+    },
+    "jdk22": {
+      "scalar": [
+        3.4034,
+        3.424,
+        3.4061,
+        3.4304,
+        3.4201,
+        3.4046,
+        3.4047,
+        3.4024,
+        3.3997,
+        3.3972,
+        3.3979,
+        3.7315,
+        3.4007,
+        3.4095,
+        3.3971
+      ],
+      "fixed_array": [
+        0.4868,
+        0.5115,
+        0.5502,
+        0.4864,
+        0.4898,
+        0.493,
+        0.4879,
+        0.4863,
+        0.4863,
+        0.4889,
+        0.494,
+        0.4902,
+        0.4929,
+        0.4863,
+        0.5704
+      ],
+      "heap_array": [
+        0.4865,
+        0.5244,
+        0.493,
+        0.502,
+        0.5176,
+        0.4865,
+        0.4865,
+        0.4881,
+        0.4878,
+        0.5054,
+        0.4863,
+        0.4863,
+        0.4863,
+        0.4984,
+        0.5039
+      ],
+      "container": [
+        3.8421,
+        3.4235,
+        4.3335,
+        3.3679,
+        3.563,
+        3.6545,
+        3.4094,
+        4.3135,
+        3.5302,
+        3.3736,
+        3.3788,
+        3.636,
+        4.2219,
+        3.5823,
+        3.3876
+      ],
+      "function_calls": [
+        3.4214,
+        3.4291,
+        3.4214,
+        3.4014,
+        3.4232,
+        3.4036,
+        3.5779,
+        3.398,
+        3.4035,
+        3.4996,
+        3.5906,
+        3.5931,
+        3.4054,
+        3.3986,
+        3.5962
+      ]
+    }
+  },
+  "median_ms": {
+    "before": {
+      "scalar": 387.8156,
+      "fixed_array": 1046.6111,
+      "heap_array": 1301.1306,
+      "container": 2941.7599,
+      "function_calls": 883.2179
+    },
+    "after": {
+      "scalar": 138.266,
+      "fixed_array": 353.9385,
+      "heap_array": 428.8107,
+      "container": 2115.1724,
+      "function_calls": 387.9722
+    },
+    "jdk8": {
+      "scalar": 3.0202,
+      "fixed_array": 0.7019,
+      "heap_array": 0.7017,
+      "container": 2.3144,
+      "function_calls": 3.0226
+    },
+    "jdk22": {
+      "scalar": 3.4046,
+      "fixed_array": 0.4898,
+      "heap_array": 0.4881,
+      "container": 3.563,
+      "function_calls": 3.4214
+    }
+  },
+  "speedup_before_over_after": {
+    "scalar": 2.8048515180883227,
+    "fixed_array": 2.9570422545159687,
+    "heap_array": 3.034277362948266,
+    "container": 1.3907896585640018,
+    "function_calls": 2.2764979037157818
+  },
+  "raw": [
+    {
+      "round": 0,
+      "implementation": "before",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 387570100,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 1034564000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 1262581800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2929520900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 883217900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 386941700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 1052141000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 1304682600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2952504700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 916084000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 387802000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 1046611100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 1302589600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2923385600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 878067200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 386353500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 1046645300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 1301130600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2915536300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 880863900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 388119600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 1035203000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 1300473700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2902926800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 880997100,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 0,
+      "implementation": "after",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 141448800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 361255600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 438712200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2128271200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 396706300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 142726300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 361877500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 439304300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2060572000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 387972200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 138186600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 359446500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 426109300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2066435200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 384384000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 136888000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 349692900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 421658600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2179145500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 387512500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 138235000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 353938500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 430067200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2124775000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 390750400,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 0,
+      "implementation": "jdk8",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3019800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 700500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 708700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 4538800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3020400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3020400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 700500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 700700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2262600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3033200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3020100,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 700500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 701700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2270100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3021400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3020000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 700400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 709300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2627400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3020500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3020000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 701900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 700400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2314400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3029300,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 0,
+      "implementation": "jdk22",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3403400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 486800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 486500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 3842100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3421400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3424000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 511500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 524400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 3423500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3429100,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3406100,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 550200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 493000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 4333500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3421400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3430400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 486400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 502000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 3367900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3401400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3420100,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 489800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 517600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 3563000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3423200,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "implementation": "after",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 140344600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 345241400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 473194200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2188466800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 390279400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 141529300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 358534600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 412977700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2087906000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 413739100,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 136687900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 339230300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 422485800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2059531500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 384145000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 136825300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 345561300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 422356400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2067371100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 388047900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 138266000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 353696600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 415231000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2155163200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 374574800,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "implementation": "jdk8",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3020800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 702500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 700500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 4540900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3030300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3020200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 701900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 897700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2257800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3020500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3020000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 701600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 711000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2261900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3020400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3021500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 701800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 701700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2588700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3031000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3020100,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 702000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 701700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2567500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3020300,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "implementation": "jdk22",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3404600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 493000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 486500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 3654500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3403600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3404700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 487900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 486500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 3409400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3577900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3402400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 486300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 488100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 4313500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3398000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3399700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 486300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 487800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 3530200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3403500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3397200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 488900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 505400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 3373600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3499600,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "implementation": "before",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 389761500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 1040168600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 1260331800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2912276600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 880924300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 387815600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 1034067800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 1301610200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2910140000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 880584000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 387197600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 1057014900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 1297352800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2950277100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 882084500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 387758100,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 1048419500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 1302304600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2950789300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 893498200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 394573400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 1061621600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 1317635100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2955501100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 893719800,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "implementation": "jdk8",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3019700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 700500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 702100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 4646900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3022800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3022000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 706700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 700600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2288600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3023300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3022300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 706700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 700400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2275400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3023000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3026300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 705900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 700500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2697400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3022400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3021900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 706200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 706800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2275400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3022600,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "implementation": "jdk22",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3397900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 494000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 486300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 3378800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3590600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3731500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 490200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 486300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 3636000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3593100,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3400700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 492900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 486300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 4221900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3405400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3409500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 486300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 498400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 3582300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3398600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3397100,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 570400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 503900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 3387600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3596200,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "implementation": "before",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 390551200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 1056971800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 1270208800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2916729500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 885534800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 392614200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 1037628200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 1313512900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2959863900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 883430400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 387091000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 1036571500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 1301415400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2974939300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 892705000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 391507700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 1046646600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 1298733400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2952380600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 886899200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 388556000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 1039153400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 1300473800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2941759900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 879472900,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "implementation": "after",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 138232500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 353758600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 428810700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2118887000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 390962800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 139757700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 357244700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 431246400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2065450500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 387818200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 139784800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 357332100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 430208100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2080441900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 387861900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 138196000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 353839200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 425905000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2115172400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 383399200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 139754200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 357377700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 430017200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2119421100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 393991600,
+          "checksum": 497317640
+        }
+      ]
+    }
+  ],
+  "compiler_sha256": "011f4f2e3bdb4a95f920ddf79a32f33b6d03c415e7fb16572415f2d281993d6f",
+  "optimization_source_sha256": {
+    "source/magel-emit/aot.cpp": "5a5d0a1aeb679dad5304e8982f501af288818357fdd65bc31efd448178c70ba6",
+    "source/magel-emit/main.cpp": "1bd1e8fc365678d4a9cfa93f40d25faa06379bbfbba96f5399ba4c704894635e",
+    "library/stackvm/stackvm.hpp": "880e0d54d681b0c25ccccdc828b1daf8c660fc1b55964b8d417538f910ec66b6",
+    "library/stackvm/parts/aot_bridge.cpp": "8f77a8abee130a4cb9804b4fc35bc34cdb26ff506022b5755b4afdeb4df68d2c"
+  },
+  "jdk8_distribution": {
+    "release": "jdk8u504-b01",
+    "url": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u504-b01/OpenJDK8U-jdk_x64_windows_hotspot_8u504b01.zip",
+    "archive_sha256": "ea43d46ede95b51e44a12c66711706cddc762e0a766c54bccea18954e902b2aa",
+    "checksum_verified": true
+  }
+}

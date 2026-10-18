@@ -1,0 +1,24 @@
+
+import std::coroutine;
+
+void alpha() {
+    println("A1");
+    std::coroutine::yield();
+    println("A2");
+}
+
+void beta() {
+    println("B1");
+    std::coroutine::yelid();
+    println("B2");
+}
+
+int64 main() {
+    SharedCoroutineHandle first;
+    SharedCoroutineHandle second;
+    first = std::coroutine::create(alpha);
+    second = std::coroutine::create(beta);
+    std::coroutine::wait(first);
+    std::coroutine::wait(second);
+    return 0;
+}

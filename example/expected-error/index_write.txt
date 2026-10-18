@@ -1,0 +1,1 @@
+magel：example/samples-error/index_write.mgl 第 7 行第 5 列：Index<R,T> 只重载读取；索引写入需要显式方法

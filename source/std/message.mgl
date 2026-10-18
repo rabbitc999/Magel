@@ -1,0 +1,12 @@
+module std::message;
+
+import std::concurrency;
+/* 注意：`SharedCoroutine` / `IsolatedThread` / `Message` 各自是**独立模块**，
+ * 不能合成一个 `std::concurrency` —— 它们都有 `create/wait/receive` 这些同名宿主函数，
+ * 塞进同一个模块会撞"宿主函数不能重名"。 */
+
+/* 跨协程 / 跨线程的消息：`import std::message;`。 */
+void sendCoroutine<T>(SharedCoroutineHandle coroutine, T value);
+T receiveCoroutine<T>();
+void sendThread<T>(IsolatedThreadHandle thread, T value);
+T receiveThread<T>();

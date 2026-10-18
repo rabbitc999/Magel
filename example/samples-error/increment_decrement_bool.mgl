@@ -1,0 +1,2 @@
+// 自增减表达式数量或可写性错误。
+int64 main() { bool value=true; value++; return 0; }

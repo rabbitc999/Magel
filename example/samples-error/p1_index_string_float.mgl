@@ -1,0 +1,1 @@
+int64 main(){String value="abc"; String mut& ref=&value; char result=ref[1.5]; return 0;}

@@ -1,0 +1,42 @@
+/* 默认只读引用；显式 mut 修改外部变量；copy 拥有独立状态。 */
+import std::iter;
+struct Profile { String name; List<int64> scores; };
+struct Resource:Drop { int64 value; void drop() {} };
+int64 fn(int64) makeAdder(int64 mut& amount) {
+    return fn(int64 value) { value + amount };
+}
+int64 apply(int64 fn(int64) callback,int64 value){return callback(value);}
+int64 main(){
+    int64 amount=7;
+    auto add=fn(int64 value){value+amount};
+    amount=100; assert(add(3)==103);
+    auto copied=add;
+    auto tick=int64 fn mut(){amount+=1;return amount;};
+    assert(tick()==101 && copied(1)==102);
+    int64 other=2;
+    auto factory=makeAdder(&other);
+    other=4; assert(factory(3)==7);
+    String source="old"; auto readText=fn(){source};
+    source="new"; assert(readText()=="new");
+    auto writeText=void fn mut(){source="written";};
+    writeText();assert(source=="written");
+    List<int64> list;list.push(5);
+    auto read=fn(int64 index){list[index]};
+    list[0]=9;assert(read(0)==9);
+    auto append=void fn mut(){list.push(11);};append();assert(list.len()==2);
+    Profile profile;profile.name="before";profile.scores.push(8);
+    auto update=void fn mut(){profile.name="after";profile.scores[0]=99;};
+    update();assert(profile.name=="after" && profile.scores[0]==99);
+    auto pair=(1,2);auto updatePair=void fn mut(){pair=(3,4);};updatePair();
+    assert(pair.0==3 && pair.1==4);
+    int64 mut& alias=&amount;auto throughAlias=void fn mut(){alias+=1;};
+    throughAlias();assert(amount==102);
+    Resource resource;auto useResource=void fn mut(){resource.value=9;};
+    useResource();assert(resource.value==9);
+    auto mapped=std::iter::range(1,4).map(fn(value){value+amount}).collect();
+    assert(mapped[0]==103 && mapped[2]==105);
+    for(int64 i=0;i<20;i+=1){
+        auto local=int64 fn(){i+amount};assert(local()==i+102);
+    }
+    println("fn captures OK");return 0;
+}

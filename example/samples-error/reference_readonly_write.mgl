@@ -1,0 +1,1 @@
+int64 main() { int64 a = 1; int64 const& view = &a; view = 2; return 0; }

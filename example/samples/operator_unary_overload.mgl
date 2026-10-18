@@ -1,0 +1,48 @@
+/* operator_unary_overload.mgl —— 一元运算符重载：`-x` / `~x` / `+x`。
+ *
+ * 和二元运算符（`Add` / `RightAdd` …）同一套做法：**实现内建接口**，
+ * 不是写 `operator-` 声明（自由函数式的运算符声明在 magel 里是禁用的）。
+ * 一元与二元的区别只在接口形状：
+ *   * 二元 `Add<R, T>` 的方法带**另一个操作数**（`R leftAdd(T value)`）；
+ *   * 一元 `Negate<R, T>` 的方法那个唯一参数**就是操作数本身**（接收者）。
+ * 所以 `-m` 降级成一次方法调用，接收者当 `self` 传进去。
+ */
+
+struct Money : Negate<Money, Money>, BitNot<Money, Money>, Positive<Money, Money> {
+    int64 cents;
+
+    /** `-m`：换成欠款（负数）。 */
+    Money negate(Money value) {
+        Money result;
+        result.cents = 0 - self.cents;
+        return result;
+    }
+
+    /** `~m`：按位取反（这里用 `-x-1` 代替，表达"一元按位非"这条通路）。 */
+    Money bitNot(Money value) {
+        Money result;
+        result.cents = 0 - self.cents - 1;
+        return result;
+    }
+
+    /** `+m`：原样返回。 */
+    Money positive(Money value) {
+        Money result;
+        result.cents = self.cents;
+        return result;
+    }
+};
+
+int64 main() {
+    Money price;
+    price.cents = 250;
+
+    Money owed = -price;
+    Money flipped = ~price;
+    Money same = +price;
+    Money back = -(-price);   /* 连续取负要回到原值 */
+
+    println("{} {} {}", owed.cents, flipped.cents, same.cents);
+    println("{} {}", back.cents, price.cents);   /* 原值不变 */
+    return 0;
+}

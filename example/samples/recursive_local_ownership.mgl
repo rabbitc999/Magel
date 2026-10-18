@@ -1,0 +1,49 @@
+// 递归调用不能覆盖父帧中从 List 复制的拥有型局部聚合。
+struct RecursiveNode {
+    int64 kind;
+    float64 number;
+    String text;
+    int64 first;
+    int64 count;
+};
+
+RecursiveNode node(int64 kind, String text, int64 first, int64 count) {
+    RecursiveNode result;
+    result.kind = kind;
+    result.number = (float64)kind + 0.5;
+    result.text = text;
+    result.first = first;
+    result.count = count;
+    return result;
+}
+
+int64 visit(List<RecursiveNode> const& nodes, List<int64> const& children, int64 index) {
+    RecursiveNode current = nodes[index];
+    String saved = current.text;
+    int64 total = 1;
+    for (int64 i = 0; i < current.count; i = i + 1) {
+        total = total + visit(nodes, children, children[current.first + i]);
+        assert(current.kind == nodes[index].kind);
+        assert(current.number == nodes[index].number);
+        assert(current.text == saved);
+        assert(current.count == nodes[index].count);
+    }
+    return total;
+}
+
+int64 main() {
+    List<RecursiveNode> nodes;
+    List<int64> children;
+    children.push(1); children.push(2); children.push(0); children.push(3);
+    nodes.push(node(0, "left", 0, 0));
+    nodes.push(node(1, "middle", 0, 0));
+    nodes.push(node(2, "right", 0, 0));
+    nodes.push(node(3, "*", 0, 2));
+    nodes.push(node(4, "+", 2, 2));
+    for (int64 repeat = 0; repeat < 8; repeat = repeat + 1) {
+        assert(visit(&nodes, &children, 4) == 5);
+    }
+    assert(nodes[4].text == "+");
+    println("recursive local ownership OK");
+    return 0;
+}

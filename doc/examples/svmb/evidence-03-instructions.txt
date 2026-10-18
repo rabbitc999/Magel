@@ -1,0 +1,37 @@
+指令区起点 = 24（头部）+ 程序名长度 + 4（计数）
+程序名 b'magel'，指令记录从文件偏移 39 开始
+
+前 12 条记录的逐字段解码：
+    下标         偏移  解码
+     0    39..45     op=48(Call)  mask=0b00100000  name=b'main'
+     1    46..47     op=50(Halt)  mask=0b00000000
+     2    48..58     op=1(PushDouble)  mask=0b00001100  intValue=6  doubleBits=0x400921fb54442d18
+     3    59..75     op=4(Store)  mask=0b00100000  name=b'std::lang::Math::PI'
+     4    76..83     op=5(Declare)  mask=0b00100000  name=b'i$451'
+     5    84..85     op=0(PushInt)  mask=0b00000000
+     6    86..93     op=4(Store)  mask=0b00100000  name=b'i$451'
+     7    94..103    op=5(Declare)  mask=0b00100000  name=b'sum$452'
+     8   104..105    op=0(PushInt)  mask=0b00000000
+     9   106..115    op=4(Store)  mask=0b00100000  name=b'sum$452'
+    10   116..118    op=0(PushInt)  mask=0b00000100  intValue=2
+    11   119..126    op=4(Store)  mask=0b00100000  name=b'i$451'
+
+操作码直方图（出现次数，取前 15）：
+  op  3 = Load             5397
+  op  4 = Store            3212
+  op 47 = Param            1564
+  op  5 = Declare          1325
+  op  0 = PushInt          1199
+  op 48 = Call              753
+  op 14 = Add               492
+  op 39 = Jmp               451
+  op 52 = LoadAt            425
+  op 40 = Jz                367
+  op 49 = Ret               358
+  op 25 = Eq                232
+  op 51 = AddrOf            215
+  op 27 = Lt                108
+  op  1 = PushDouble         99
+
+指令里出现的用户变量名（带 $ 作用域编号）：
+  共 1002 个，样本：['__magel_new_v$516', '__magel_ret_v$1002', '__magel_ret_v$1003', '__magel_ret_v$1007', '__magel_ret_v$1011', '__magel_ret_v$1015', '__magel_ret_v$1019', '__magel_ret_v$1023', '__magel_ret_v$269', '__magel_ret_v$270', '__magel_ret_v$272', '__magel_ret_v$273', '__magel_ret_v$274', '__magel_ret_v$276', '__magel_ret_v$277', '__magel_ret_v$278', '__magel_ret_v$279', '__magel_ret_v$280', '__magel_ret_v$281', '__magel_ret_v$282']

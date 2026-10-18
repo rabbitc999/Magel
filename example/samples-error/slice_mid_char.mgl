@@ -1,0 +1,10 @@
+/* slice_mid_char.mgl —— 切片端点落在多字节字符中间：运行时报错，不产出半个字符。
+ *
+ *   String 的切片按**字节**算；"！" 占 3 字节，切 [0:2] 正好切在它中间。
+ */
+
+int64 main() {
+    String text = "1！x";
+    std::lang::println("{}", text[0:2]);
+    return 0;
+}

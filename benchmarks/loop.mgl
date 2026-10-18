@@ -1,0 +1,11 @@
+/* 同一份 Magel 程序用于比较 32 位与 64 位 StackVM 的执行性能。 */
+int64 main() {
+    int64 index = 1;
+    BigInteger sum = BigInteger(1);
+    while (index < 20000) {
+        sum = sum * index;
+        index = index + 1;
+    }
+    std::lang::println("sum={}", sum);
+    return 0;
+}

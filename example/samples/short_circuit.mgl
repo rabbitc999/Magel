@@ -1,0 +1,13 @@
+int64 calls = 0;
+
+bool touch() {
+    calls = calls + 1;
+    return true;
+}
+
+int64 main() {
+    bool left_false = false && touch();
+    bool left_true = true || touch();
+    println("calls={} values={},{}", calls, left_false, left_true);
+    return 0;
+}

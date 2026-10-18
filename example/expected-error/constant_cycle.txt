@@ -1,0 +1,1 @@
+magel：example/samples-error/constant_cycle.mgl 第 1 行第 1 列：[MGL1300] 常量定义存在循环引用

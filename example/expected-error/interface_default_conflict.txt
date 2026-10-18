@@ -1,0 +1,1 @@
+magel：example/samples-error/interface_default_conflict.mgl 第 7 行第 1 列：Both 的接口默认方法 answer() -> int64 同时来自 First 和 Second；请显式覆盖

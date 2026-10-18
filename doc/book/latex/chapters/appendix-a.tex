@@ -1,0 +1,407 @@
+\chapter{常见错误速查}
+\label{ch:appA}
+
+学一门语言，一半时间花在「看懂报错」上。这份附录把本书撰写过程中真跑出来的常见报错收在一起：每条都写清了它长什么样、你为什么踩到、怎么改。
+
+\begin{tip}{提示}
+这里的每一条消息都是 Magel 1.0.0 工具链的真实输出（中文本地化）。带 \texttt{<\allowbreak{}!-- fail -->\allowbreak{}} 标记的代码块会在本书的校验脚本里每次都被重跑一遍，所以它们不会随着工具链演进而失真。
+\end{tip}
+
+\section{报错的三种长相}
+
+Magel 的报错分三类，看开头几个字就能分清：
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.372\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.293\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.315\linewidth-2\tabcolsep\relax}}
+\toprule
+开头 & 是哪一类 & 什么时候出现 \\
+\midrule
+\endhead
+\texttt{magel：……} & 编译期错误（语义检查） & 运行之前，代码「含义不对」 \\
+\texttt{语法错误：文件 第 行第 列：……} & 语法错误 & 运行之前，代码「话都说不通」 \\
+\texttt{magel：运行期错误：……} & 运行期错误 & 程序跑到那一句才炸 \\
+\bottomrule
+\end{longtable}
+}
+
+编译期错误和语法错误都不会生成程序，改好再跑就行。运行期错误说明程序编过了、跑起来了，但执行到某一步出了事（除零、越界、\texttt{unwrap} 空值……），后面还会跟着\texttt{出错位置} 和一段 \texttt{调用栈（外 → 内）}，告诉你是哪一行、哪个函数出的事。
+
+一个真实例子，\texttt{1 /\allowbreak{} 0} 跑出来的样子：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 a = 1;
+    int64 b = 0;
+    println("{}", a / b);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：运行期错误：整数除零
+出错位置：hello.mgl:4（main）
+调用栈（外 → 内）：
+  main  hello.mgl:4 [thread 0 coroutine 0 ip 12]
+\end{lstlisting}
+\par
+\medskip
+
+从上往下读：先是「整数除零」，再是出错的行号，最后是一份调用栈——\texttt{调用栈（外 → 内）} 意思是从最外层往里读，最后一行是炸掉的那一层。
+
+诊断码。 一部分编译期错误带一个 \texttt{[\allowbreak{}MGLxxxx]\allowbreak{}} 编号（比如下一节的 \texttt{[\allowbreak{}MGL1204]\allowbreak{}}）。编号是稳定的，遇到没见过的错误可以把编号拿去官方文档里搜。
+
+\section{编译期错误速查}
+
+这是你会遇到最多的一类。按「你可能写下的东西」排序：
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.133\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.599\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.247\linewidth-2\tabcolsep\relax}}
+\toprule
+现象 & 真实消息 & 怎么办 \\
+\midrule
+\endhead
+用没声明的变量 & \texttt{magel：引用了没声明的变量：y} & 检查拼写；变量必须先声明再用 \\
+调没定义的函数 & \texttt{magel：调用了没定义的函数：nosuch} & 名字拼错，或者忘了 \texttt{import} \\
+同一个块里重名 & \texttt{magel：同一个块里不能重复声明：x（要遮蔽外层变量就在内层块里声明）} & 换名字；想遮蔽就用内层块 \\
+给 \texttt{const} 赋值 & \texttt{magel：不可变变量（const）不能再赋值：LIMIT} & 去掉 \texttt{const}，或不该在这里改 \\
+类型对不上（赋值/返回/传参） & \texttt{magel：不能隐式转换：String ->\allowbreak{} int64（请显式强转）} & 见下面 A.2.1 \\
+整数字面量超出目标范围 & \texttt{magel：整数字面量 200 超出 int8 的取值范围（-128.\allowbreak{}.\allowbreak{}127）} & 换类型，或换成范围内的值（见 A.2.2） \\
+\texttt{if} 条件不是布尔 & \texttt{magel：if 条件必须是 bool，现在给的是 int64（数值条件请显式写成 }(bool)值\texttt{ 或比较表达式）} & 写比较表达式，别拿数字当布尔 \\
+实参个数/类型对不上 & \texttt{magel：调用 函数 f 找不到匹配的重载：(\allowbreak{}int64,\allowbreak{} int64,\allowbreak{} int64)\allowbreak{}；没有参数类型能对上的重载（候选：f）} & 数实参个数；看类型是否精确对上 \\
+接口没实现完 & \texttt{magel：struct Circle 实现了接口 Shape，但没有完全实现：area(\allowbreak{})\allowbreak{} ->\allowbreak{} int64（接口要求同名、同返回类型、同形参类型；一个都不能少）} & 把接口里的方法补全，签名一字不差 \\
+\texttt{match} 漏了分支 & \texttt{magel：enum match 必须覆盖所有变体或提供 }\_\texttt{ 兜底分支；缺少：Color:\allowbreak{}:\allowbreak{}Green} & 补上缺的变体，或加 \texttt{\_ =\allowbreak{}>\allowbreak{}} 兜底 \\
+自定义泛型名撞了内置 & \texttt{magel:\allowbreak{} generics:\allowbreak{} 重复的泛型声明 Pair} & 换个名字（内置有 \texttt{Pair}，改叫 \texttt{Duo} / \texttt{Entry} 之类） \\
+找不到模块 & \texttt{magel：模块：找不到模块 no\_such\_module（需要 no\_such\_module.\allowbreak{}mgl）} & 检查 \texttt{import} 的名字与文件是否在同目录 \\
+引用声明没初始化 & \texttt{magel：引用声明必须初始化，缺省值请使用 Option<\allowbreak{}T mut\&>\allowbreak{}} & 引用必须当场绑定；可能为空就用 \texttt{Option<\allowbreak{}T mut\&>\allowbreak{}} \\
+只读引用被写入 & \texttt{magel：只读引用（}T const\&\texttt{）不能写入元素} & 改用 \texttt{T mut\&} \\
+悬垂引用（返回局部引用） & \texttt{magel：[\allowbreak{}MGL1204]\allowbreak{} 返回值中的引用不能超过局部来源的生命周期（int64 mut\&，所属类型 ，来源 local）} & 别把指向局部变量的引用交出去 \\
+引用已被释放还在用 & \texttt{magel：[\allowbreak{}MGL1205]\allowbreak{} 借用来源已释放，不能继续访问：表达式} & 检查 \texttt{Drop} / 作用域，别在对象没了以后还用它 \\
+\bottomrule
+\end{longtable}
+}
+
+\subsection{「不能隐式转换」——最高频的一条}
+
+九成的类型报错都是这一句。先记住第 3 章 3.8 节的规矩：Magel 只放行「装得下」的方向。下面这几种会自动放行（不用签字）：
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+方向 & 例子 \\
+\midrule
+同符号整型变宽 & \texttt{int8 → int64}、\texttt{int32 → int64}、\texttt{uint8 → uint32} \\
+无符号 \ensuremath{\rightarrow} 更宽的有符号 & \texttt{uint8 → int32}、\texttt{uint32 → int64} \\
+整型 \ensuremath{\rightarrow} 浮点 & \texttt{int64 → float64}、\texttt{int32 → float32} \\
+浮点变宽 & \texttt{float32 → float64} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+反方向一律要显式强转 \texttt{(\allowbreak{}目标类型)\allowbreak{}值}。最常见的四种：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 big = 70000;
+    int32 small = big;
+    // 缩窄：位宽变小
+    println("{}", small);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：不能隐式转换：int64 -> int32（请显式强转）
+\end{lstlisting}
+\par
+\medskip
+
+\begin{itemize}
+
+\item 缩窄（位宽变小）：\texttt{int64 → int32}、\texttt{float64 → float32}、\texttt{uint8 → int8} \ensuremath{\rightarrow} 写 \texttt{(\allowbreak{}int32)\allowbreak{}big}
+
+\item 有符号 \ensuremath{\rightarrow} 无符号：\texttt{int32 → uint32}、\texttt{int64 → uint64}（目标更宽也不行，负数塞不进去）\ensuremath{\rightarrow} 写 \texttt{(\allowbreak{}uint32)\allowbreak{}x}
+
+\item 跨大类：\texttt{float64 → int64}、\texttt{char}/\texttt{bool} \ensuremath{\leftrightarrow} \texttt{int64} \ensuremath{\rightarrow} 写 \texttt{(\allowbreak{}int64)\allowbreak{}f}
+
+\item 浮点字面量：\texttt{float32 f =\allowbreak{} 1.\allowbreak{}5;} 里的 \texttt{1.\allowbreak{}5} 是 \texttt{float64}，往更窄的 \texttt{float32} 放也要签字 \ensuremath{\rightarrow} \texttt{(\allowbreak{}float32)\allowbreak{}1.\allowbreak{}5}
+
+\end{itemize}
+
+\begin{tip}{提示}
+\texttt{+} 号在谁身上，谁就有错。 读这条报错只要看箭头两边：左边是「你给的」，右边是「它想要的」，改左边（强转）或者右边（换类型）都行。
+\end{tip}
+
+\subsection{「整数字面量超出取值范围」}
+
+这是「字面量落进槽位」时独立的一道检查——十进制字面量的值装不进目标整型就报错：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    uint8 b = 256;
+    // uint8 只到 255
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：整数字面量 256 超出 uint8 的取值范围（0..255）
+\end{lstlisting}
+\par
+\medskip
+
+规矩（第 3 章 3.10 节）：
+
+\begin{itemize}
+
+\item \texttt{uint8 b =\allowbreak{} 255;} \textcolor{green!50!black}{\ding{51}}（在 \texttt{0.\allowbreak{}.\allowbreak{}255} 里）、\texttt{int16 s =\allowbreak{} -300;} \textcolor{green!50!black}{\ding{51}}（在 \texttt{-32768.\allowbreak{}.\allowbreak{}32767} 里）；
+
+\item \texttt{uint8 b =\allowbreak{} 256;} \textcolor{red!80!black}{\ding{55}}、\texttt{int8 x =\allowbreak{} 200;} \textcolor{red!80!black}{\ding{55}} —— 不再静默回绕；
+
+\item \texttt{0x} / \texttt{b} 前缀的字面量按位模式放行（\texttt{int8 x =\allowbreak{} 0x\allowbreak{}FF;} 得到 \texttt{-1}），不做范围检查；
+
+\item 显式强转不走这条检查：\texttt{(\allowbreak{}uint8)\allowbreak{}256} 得到 \texttt{0}，是你签字的结果。
+
+\end{itemize}
+
+\subsection{引用相关的错，多在「生命周期」上}
+
+引用一共就两类错，认清就能改：
+
+第一类：引用没绑定就声明。 Magel 没有空引用：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 mut& r = 5;
+    // 引用要从对象身上取地址，不能绑字面量
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：不能隐式转换：int64 -> int64 mut&（请显式强转）
+\end{lstlisting}
+\par
+\medskip
+
+改成绑定一个确实存在的对象：\texttt{int64 x =\allowbreak{} 5; int64 mut\& r =\allowbreak{} \&x;}。
+
+第二类：引用活得比目标久。 编译期就会拦：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 mut& r;
+    println("{}", r);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：引用声明必须初始化，缺省值请使用 Option<T mut&>
+\end{lstlisting}
+\par
+\medskip
+
+把指向局部变量的引用返回出去，报的是 \texttt{[\allowbreak{}MGL1204]\allowbreak{}}：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：[MGL1204] 返回值中的引用不能超过局部来源的生命周期（int64 mut&，所属类型 ，来源 local）
+\end{lstlisting}
+\par
+\medskip
+
+规矩只有一条：来源必须比引用活得久。来源是参数、是调用方给的，就安全；来源是本函数的局部变量，就不行。详细展开见\hyperref[ch:07]{第 7 章}。
+
+\section{语法错误速查}
+
+语法错误长这样：\texttt{语法错误：文件 第 行第 列：期望 ……，实际是 ……}，并且会画出出错位置和一个小波浪线 \texttt{\textasciitilde{}\textasciitilde{}\textasciitilde{}\textasciitilde{}}。消息里的记号名（\texttt{条件(\allowbreak{}if)\allowbreak{}}、\texttt{分号(\allowbreak{};)\allowbreak{}} 之类）都是中文，照着它说的补就行，行列号也是准的。
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.079\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.743\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.158\linewidth-2\tabcolsep\relax}}
+\toprule
+现象 & 真实消息 & 怎么办 \\
+\midrule
+\endhead
+语句少写分号 & \texttt{语法错误：x.\allowbreak{}mgl 第 3 行第 5 列：期望 条件(\allowbreak{}if)\allowbreak{} /\allowbreak{} 自增(\allowbreak{}++)\allowbreak{} /\allowbreak{} 自减(\allowbreak{}--)\allowbreak{} /\allowbreak{} 加号(\allowbreak{}+)\allowbreak{} 等 44 个之一，实际是 返回(\allowbreak{}return)\allowbreak{}} & 看行号，上一句末尾补 \texttt{;} \\
+\bottomrule
+\end{longtable}
+}
+
+类型声明的尾部分号是可选的：\texttt{struct}、\texttt{enum}、\texttt{interface} 在 \texttt{\}} 结束，可以再写 \texttt{;}，也可以不写。不要把合法的省略分号误当成错误；普通声明、赋值、返回和 \texttt{do .\allowbreak{}.\allowbreak{}.\allowbreak{} while} 的分号仍然要保留。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Point
+{
+    int64 x;
+    int64 y;
+}
+
+int64 main()
+{
+    Point point;
+    println("{}", point.x);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+0
+\end{lstlisting}
+\par
+\medskip
+
+其它几条词法/语法坑（第 3 章 3.10 节实测过）：
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+你可能想写 & 实际会怎样 & 改成 \\
+\midrule
+\texttt{0b1010} & 词法错误（前缀是 \texttt{b}） & \texttt{b1010} \\
+\texttt{1\_000} & 语法错误（下划线分隔不认） & \texttt{1000} \\
+\texttt{1.\allowbreak{}0F} / \texttt{1U} & 后缀必须小写 & \texttt{1.\allowbreak{}0f} / \texttt{1u} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{运行期错误速查}
+
+运行期错误都带 \texttt{magel：运行期错误：} 前缀，后面跟具体原因、出错位置和调用栈。它们不是「未定义行为」，是明确被检查到的错误——出问题的那一下，程序会停下来告诉你，而不是悄悄读到垃圾数据。
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+现象 & 真实消息（首行） \\
+\midrule
+整数除以零 & \texttt{magel：运行期错误：整数除零} \\
+定长数组越界 & \texttt{magel：运行期错误：数组下标越界：fixed 的下标 5，长度 3} \\
+\texttt{List} 越界 & \texttt{magel：运行期错误：vec 下标越界：5（长度 1）} \\
+展开空的 \texttt{Option} & \texttt{magel：运行期错误：panic：called Option.\allowbreak{}unwrap(\allowbreak{})\allowbreak{} on None} \\
+展开 \texttt{Err} 的 \texttt{Result} & \texttt{magel：运行期错误：panic：called Result.\allowbreak{}unwrap(\allowbreak{})\allowbreak{} on Err} \\
+\texttt{expect} 落空 & \texttt{magel：运行期错误：panic：<\allowbreak{}你写的消息>\allowbreak{}} \\
+\texttt{assert} 失败 & \texttt{magel：运行期错误：panic：<\allowbreak{}你写的消息>\allowbreak{}} \\
+主动 \texttt{panic} & \texttt{magel：运行期错误：panic：<\allowbreak{}你写的消息>\allowbreak{}} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\texttt{unwrap} 空 \texttt{Option}，一次看清楚它长什么样：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    Option<int64> none = None;
+    println("{}", none.unwrap());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：运行期错误：panic：called Option.unwrap() on None
+\end{lstlisting}
+\par
+\medskip
+
+\begin{tip}{提示}
+注意区分两种「空」。 \texttt{Option<\allowbreak{}int64>\allowbreak{} none;}（默认构造）不是空——它的 \texttt{is\allowbreak{}None(\allowbreak{})\allowbreak{}} 是 \texttt{0}，里面装的是默认值 \texttt{0}。真正的空要显式写\texttt{Option<\allowbreak{}int64>\allowbreak{} none =\allowbreak{} None;}，这时 \texttt{is\allowbreak{}None(\allowbreak{})\allowbreak{}} 才是 \texttt{1}。第 16 章讲过这个区别。所以 \texttt{unwrap} 报错的是「\texttt{=\allowbreak{} None} 那种空」，不是随便一个 \texttt{Option} 变量。
+\end{tip}
+
+越界的两条消息措辞不同（一个是数组、一个是 \texttt{List}），别以为是两种错：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：运行期错误：数组下标越界：fixed 的下标 5，长度 3     <- 定长数组，带变量名
+magel：运行期错误：vec 下标越界：5（长度 1）                <- List
+\end{lstlisting}
+\par
+\medskip
+
+\section{工具链与工程错误}
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.156\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.530\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.294\linewidth-2\tabcolsep\relax}}
+\toprule
+现象 & 真实消息 & 怎么办 \\
+\midrule
+\endhead
+用了注解/反射但工具链不支持 & \texttt{magel：x.\allowbreak{}mgl 第 1 行第 1 列：注解与反射功能未开启，请使用支持该能力的工具链及 --reflection} & 用带反射的构建，运行时加 \texttt{--reflection}（第 20 章） \\
+调了不存在的方法 & \texttt{magel：方法只能调在 struct 上：foo\allowbreak{}Bar} & 方法名拼错，或那个类型上真没有这个方法 \\
+嵌入模式用了被禁的能力 & （编译期门禁） & 见\hyperref[ch:22]{第 22 章}的 \texttt{[\allowbreak{}embedded]\allowbreak{}} 一节 \\
+\bottomrule
+\end{longtable}
+}
+
+\texttt{方法只能调在 struct 上：xxx} 这条措辞有误导性：它不是说「你不能在 struct 上调方法」，而是说「你调的这个方法没找到」。看到它，先回去核对方法名。
+
+反射那条同理——不是你的代码错，是工具链没开那个功能。本书第 20 章的所有例子都得靠一个开了反射的工具链来跑，默认构建会直接拒绝。
+
+\section{排查五步法}
+
+卡住了，按这个顺序走，八成能自己解决：
+
+\begin{enumerate}
+
+\item 看开头几个字，定类别：\texttt{语法错误} \ensuremath{\rightarrow} 语法；\texttt{magel：} \ensuremath{\rightarrow} 编译期；\texttt{magel：运行期错误：} \ensuremath{\rightarrow} 运行期。三类改法完全不同。
+
+\item 语法/编译期：看行号，往上一行找。 报错行常常只是「被发现」的地方，真正的问题往往在上一行（典型的：少分号）。
+
+\item 类型报错：读箭头。 \texttt{不能隐式转换：A ->\allowbreak{} B} 就是「你给了 A，它要 B」。要么强转左边，要么把右边换成 A。
+
+\item 引用报错：问「来源是谁」。 来源是本函数的局部变量吗？是就错在这；来源是参数、是更长命的对象吗？那就是别的地方。
+
+\item 还是不懂：拿消息关键词去查。 消息里的中文（比如「只读引用」）和诊断码（\texttt{[\allowbreak{}MGL1204]\allowbreak{}}）都能拿去文档或代码里搜——这套消息是刻意写清楚给人看的。
+
+\end{enumerate}
+
+\section{下一步}
+
+错误看得懂，剩下就是写。翻到\hyperref[ch:appB]{附录 B}，按能力域认识一遍标准库；或者回到\hyperref[ch:23]{第 23 章}，拿一个完整项目把学到的东西串起来。

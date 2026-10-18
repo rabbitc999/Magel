@@ -1,0 +1,6 @@
+/* 作用域检测：`const` 变量不能 delete。 */
+int64 main() {
+    const int64 mut& block = heap int64;
+    delete block;
+    return 0;
+}

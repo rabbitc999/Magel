@@ -1,0 +1,79 @@
+module std::encoding;
+
+/** 编码错误包含首个非法输入的字节位置；位置从零开始。 */
+enum EncodingError { InvalidLength, InvalidCharacter(int64 offset), InvalidPadding, NonCanonical };
+
+/** 按 RFC 4648 输出十六进制文本。 */
+String encodeHex(List<uint8> bytes, bool uppercase=false) {
+    String alphabet="0123456789abcdef";
+    if (uppercase) { alphabet="0123456789ABCDEF"; }
+    String result="";
+    for (uint8 byte in bytes) {
+        result=result+format("{}{}",alphabet[(int64)(byte>>4)],alphabet[(int64)(byte&15)]);
+    }
+    return result;
+}
+/** @brief 将一个十六进制字符转换为数值；非法字符返回 -1。 */
+int64 hexDigit(char value) {
+    if (value>='0' && value<='9') { return (int64)value-(int64)'0'; }
+    if (value>='a' && value<='f') { return (int64)value-(int64)'a'+10; }
+    if (value>='A' && value<='F') { return (int64)value-(int64)'A'+10; }
+    return -1;
+}
+/** 严格解码偶数长度的十六进制文本，不忽略空白。 */
+Result<List<uint8>,EncodingError> decodeHex(String text) {
+    List<uint8> input=stringBytes(text);
+    if (len(text)%2!=0) { return Result<List<uint8>,EncodingError>::Err(EncodingError::InvalidLength); }
+    List<uint8> result;
+    for (int64 i=0;i<len(text);i=i+2) {
+        int64 high=hexDigit((char)input[i]); int64 low=hexDigit((char)input[i+1]);
+        if (high<0) { return Result<List<uint8>,EncodingError>::Err(EncodingError::InvalidCharacter(i)); }
+        if (low<0) { return Result<List<uint8>,EncodingError>::Err(EncodingError::InvalidCharacter(i+1)); }
+        result.push((uint8)(high*16+low));
+    }
+    return Result<List<uint8>,EncodingError>::Ok(result);
+}
+/** Base64 编码；URL 字母表可选，padding 控制尾部等号。 */
+String encodeBase64(List<uint8> bytes, bool url=false, bool padding=true) {
+    String alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    if (url) { alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"; }
+    String result="";
+    for (int64 i=0;i<bytes.len();i=i+3) {
+        int64 a=(int64)bytes[i]; int64 b=0; int64 c=0;
+        if (i+1<bytes.len()) { b=(int64)bytes[i+1]; }
+        if (i+2<bytes.len()) { c=(int64)bytes[i+2]; }
+        result=result+format("{}{}",alphabet[a>>2],alphabet[((a&3)<<4)|(b>>4)]);
+        if (i+1<bytes.len()) { result=result+format("{}",alphabet[((b&15)<<2)|(c>>6)]); }
+        elif (padding) { result=result+"="; }
+        if (i+2<bytes.len()) { result=result+format("{}",alphabet[c&63]); }
+        elif (padding) { result=result+"="; }
+    }
+    return result;
+}
+/** URL 安全 Base64，默认省略填充。 */
+String encodeBase64Url(List<uint8> bytes, bool padding=false) { return encodeBase64(bytes,true,padding); }
+/** 严格 Base64 解码；接受正确填充或无填充形式，拒绝非零尾部位。 */
+Result<List<uint8>,EncodingError> decodeBase64(String text, bool url=false) {
+    List<uint8> input=stringBytes(text);
+    String alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    if (url) { alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"; }
+    int64 size=len(text); int64 padding=0;
+    while (size>0 && (char)input[size-1]=='=') { size=size-1; padding=padding+1; }
+    if (padding>2 || (padding>0 && len(text)%4!=0) || size%4==1 ||
+        (padding==1 && size%4!=3) || (padding==2 && size%4!=2)) {
+        return Result<List<uint8>,EncodingError>::Err(EncodingError::InvalidPadding);
+    }
+    List<uint8> result; int64 buffer=0; int64 bits=0;
+    for (int64 i=0;i<size;i=i+1) {
+        int64 digit=-1;
+        for (int64 j=0;j<64;j=j+1) { if ((char)input[i]==alphabet[j]) { digit=j; break; } }
+        if (digit<0) { return Result<List<uint8>,EncodingError>::Err(EncodingError::InvalidCharacter(i)); }
+        buffer=(buffer<<6)|digit; bits=bits+6;
+        if (bits>=8) { bits=bits-8; result.push((uint8)((buffer>>bits)&255)); }
+        buffer=buffer&((1<<bits)-1);
+    }
+    if (buffer!=0) { return Result<List<uint8>,EncodingError>::Err(EncodingError::NonCanonical); }
+    return Result<List<uint8>,EncodingError>::Ok(result);
+}
+/** 解码 URL 字母表，不接受标准字母表的加号与斜杠。 */
+Result<List<uint8>,EncodingError> decodeBase64Url(String text) { return decodeBase64(text,true); }

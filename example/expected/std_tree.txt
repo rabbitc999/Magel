@@ -1,0 +1,8 @@
+inorder 20 30 40 50 60 70
+preorder 50 30 20
+postorder 60 80 70
+rbt inorder 10 50 90 100
+heap 1 1 4 5
+gt kids 2 3 preorder 1 6
+gt level 1 2
+tree conversion OK

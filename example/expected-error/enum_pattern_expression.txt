@@ -1,0 +1,1 @@
+magel：example/samples-error/enum_pattern_expression.mgl 第 4 行第 5 列：enum 分支的载荷位置只能写绑定变量名，不能写表达式

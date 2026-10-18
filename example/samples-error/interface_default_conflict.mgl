@@ -1,0 +1,8 @@
+interface First {
+    int64 answer() { return 1; }
+};
+interface Second {
+    int64 answer() { return 2; }
+};
+struct Both : First, Second { };
+int64 main() { return 0; }

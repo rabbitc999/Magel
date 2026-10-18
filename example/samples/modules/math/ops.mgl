@@ -1,0 +1,9 @@
+module math::ops;
+
+inline int64 doubleValue(int64 value) {
+    return value + value;
+}
+
+int64 twice(int64 value) {
+    return doubleValue(value);
+}

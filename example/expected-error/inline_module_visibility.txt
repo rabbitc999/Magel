@@ -1,0 +1,1 @@
+magel：example/samples-error/inline_module_visibility.mgl 第 5 行第 5 列：模块 hidden::api 的 inline 函数 secret 不能从模块 inlineVisibility 访问

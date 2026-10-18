@@ -1,0 +1,561 @@
+{
+  "warmups_per_process": 1,
+  "repeats": 7,
+  "order": "alternate configuration order each round; one measured sample per process",
+  "timing": "sequential, loaded bytecode; input file read before timing; includes execution preparation and checksum output",
+  "services_comparison": true,
+  "results": {
+    "branches": {
+      "services_off": {
+        "logical_steps": 42500029,
+        "checksum": "-500000",
+        "counters": "register dispatches=8999999 entries=4000001",
+        "command": [
+          "G:\\Desktop\\magel\\build\\tier-six-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\branches",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\branches.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "0"
+        ],
+        "median_ms": 488.711,
+        "samples_ms": [
+          519.403,
+          488.739,
+          472.771,
+          487.374,
+          475.827,
+          488.711,
+          505.068
+        ]
+      },
+      "services_on": {
+        "logical_steps": 42500029,
+        "checksum": "-500000",
+        "counters": "register dispatches=9000001 entries=4000002",
+        "command": [
+          "G:\\Desktop\\magel\\build\\tier-six-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\branches",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\branches.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 495.409,
+        "samples_ms": [
+          643.286,
+          473.855,
+          483.892,
+          475.141,
+          496.198,
+          514.282,
+          495.409
+        ]
+      },
+      "baseline": {
+        "logical_steps": 42500029,
+        "checksum": "-500000",
+        "counters": "register dispatches=8999999 entries=4000001",
+        "command": [
+          "G:\\Desktop\\magel\\build\\tier-six-before-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\branches",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\branches.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 510.569,
+        "samples_ms": [
+          515.551,
+          510.569,
+          502.761,
+          511.768,
+          503.47,
+          530.993,
+          502.801
+        ]
+      }
+    },
+    "calls": {
+      "services_off": {
+        "logical_steps": 440029,
+        "checksum": "849915000",
+        "counters": "register dispatches=80002 entries=50002",
+        "command": [
+          "G:\\Desktop\\magel\\build\\tier-six-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\calls",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\calls.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "0"
+        ],
+        "median_ms": 14.1984,
+        "samples_ms": [
+          14.6617,
+          14.6085,
+          14.1984,
+          13.9905,
+          14.1122,
+          14.1968,
+          14.2676
+        ]
+      },
+      "services_on": {
+        "logical_steps": 440029,
+        "checksum": "849915000",
+        "counters": "register dispatches=90004 entries=60003",
+        "command": [
+          "G:\\Desktop\\magel\\build\\tier-six-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\calls",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\calls.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 12.4132,
+        "samples_ms": [
+          12.2567,
+          12.351,
+          12.6276,
+          12.2537,
+          12.5777,
+          12.4132,
+          12.9487
+        ]
+      },
+      "baseline": {
+        "logical_steps": 440029,
+        "checksum": "849915000",
+        "counters": "register dispatches=80002 entries=50002",
+        "command": [
+          "G:\\Desktop\\magel\\build\\tier-six-before-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\calls",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\calls.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 14.6272,
+        "samples_ms": [
+          14.5609,
+          14.7265,
+          14.4658,
+          14.6217,
+          14.6826,
+          14.7143,
+          14.6272
+        ]
+      }
+    },
+    "loop": {
+      "services_off": {
+        "logical_steps": 320000029,
+        "checksum": "49999995000000",
+        "counters": "register dispatches=70000002 entries=40000002",
+        "command": [
+          "G:\\Desktop\\magel\\build\\tier-six-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\loop",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\loop.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "0"
+        ],
+        "median_ms": 4442.91,
+        "samples_ms": [
+          4349.99,
+          4386.99,
+          4760.48,
+          4474.44,
+          4396.43,
+          4442.91,
+          4517.65
+        ]
+      },
+      "services_on": {
+        "logical_steps": 320000029,
+        "checksum": "49999995000000",
+        "counters": "register dispatches=70000004 entries=40000003",
+        "command": [
+          "G:\\Desktop\\magel\\build\\tier-six-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\loop",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\loop.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 4384.58,
+        "samples_ms": [
+          5011.06,
+          4384.58,
+          4688.4,
+          4368.15,
+          4354.13,
+          4565.44,
+          4343.34
+        ]
+      },
+      "baseline": {
+        "logical_steps": 320000029,
+        "checksum": "49999995000000",
+        "counters": "register dispatches=70000002 entries=40000002",
+        "command": [
+          "G:\\Desktop\\magel\\build\\tier-six-before-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\loop",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\loop.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 4566.18,
+        "samples_ms": [
+          4554.81,
+          4553.69,
+          4747.09,
+          4581.95,
+          4566.18,
+          4591.21,
+          4566.06
+        ]
+      }
+    },
+    "structures": {
+      "services_off": {
+        "logical_steps": 948158,
+        "checksum": "18811 977069 32 31",
+        "counters": "register dispatches=91029 entries=62655",
+        "command": [
+          "G:\\Desktop\\magel\\build\\tier-six-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\structures",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\structures.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "0"
+        ],
+        "median_ms": 59.4336,
+        "samples_ms": [
+          59.2432,
+          65.1392,
+          58.9771,
+          60.0514,
+          59.4336,
+          59.2028,
+          63.2764
+        ]
+      },
+      "services_on": {
+        "logical_steps": 948158,
+        "checksum": "18811 977069 32 31",
+        "counters": "register dispatches=212001 entries=87616",
+        "command": [
+          "G:\\Desktop\\magel\\build\\tier-six-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\structures",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\structures.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 53.5527,
+        "samples_ms": [
+          58.9108,
+          53.8879,
+          53.2017,
+          53.5465,
+          53.8118,
+          53.429,
+          53.5527
+        ]
+      },
+      "baseline": {
+        "logical_steps": 948158,
+        "checksum": "18811 977069 32 31",
+        "counters": "register dispatches=91029 entries=62655",
+        "command": [
+          "G:\\Desktop\\magel\\build\\tier-six-before-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\structures",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\structures.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 62.3528,
+        "samples_ms": [
+          62.6183,
+          62.2959,
+          61.7747,
+          64.1071,
+          62.3528,
+          61.6651,
+          62.6745
+        ]
+      }
+    },
+    "transport": {
+      "services_off": {
+        "logical_steps": 1989479,
+        "checksum": "126000",
+        "counters": "register dispatches=219798 entries=140426",
+        "command": [
+          "G:\\Desktop\\magel\\build\\tier-six-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\transport",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\transport.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "0"
+        ],
+        "median_ms": 97.8319,
+        "samples_ms": [
+          97.9039,
+          97.8319,
+          97.0895,
+          97.6251,
+          97.3012,
+          98.2283,
+          99.0933
+        ]
+      },
+      "services_on": {
+        "logical_steps": 1989479,
+        "checksum": "126000",
+        "counters": "register dispatches=458951 entries=150710",
+        "command": [
+          "G:\\Desktop\\magel\\build\\tier-six-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\transport",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\transport.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 76.3592,
+        "samples_ms": [
+          76.2891,
+          77.1161,
+          76.3592,
+          75.8531,
+          92.9861,
+          76.1615,
+          77.134
+        ]
+      },
+      "baseline": {
+        "logical_steps": 1989479,
+        "checksum": "126000",
+        "counters": "register dispatches=219798 entries=140426",
+        "command": [
+          "G:\\Desktop\\magel\\build\\tier-six-before-benchmark.exe",
+          "G:\\Desktop\\magel\\build\\register-dispatch\\transport",
+          "1",
+          "1",
+          "@G:\\Desktop\\magel\\build\\register-dispatch\\transport.in",
+          "1",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "median_ms": 100.911,
+        "samples_ms": [
+          101.161,
+          107.398,
+          102.898,
+          100.433,
+          100.186,
+          100.454,
+          100.911
+        ]
+      }
+    }
+  },
+  "date": "2026-10-12T16:39:27",
+  "baseline_commit": "51f54eed4fa158f877d55ac4fd6695d6be8e2564",
+  "language_version": "0.9.1",
+  "binary_format": 5,
+  "platform": "Windows-10-10.0.19045-SP0",
+  "cpu": "AMD Ryzen 5 5600X",
+  "compiler": "GCC 11.2.0 -O2 -DNDEBUG MAGEL_CUSTOM_ALLOCATOR=1",
+  "external_languages_remeasured": false,
+  "while_loop": {
+    "services_off": {
+      "command": [
+        "build/tier-six-benchmark.exe",
+        "build/lua-benchmark/loop-program",
+        "1",
+        "1",
+        "10000000",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "0"
+      ],
+      "logical_steps": 200000034,
+      "checksum": "49999995000000",
+      "counters": "register dispatches=30000001 entries=7327",
+      "median_ms": 138.453,
+      "samples_ms": [
+        137.32,
+        138.561,
+        138.453,
+        142.195,
+        140.55,
+        137.249,
+        137.521
+      ]
+    },
+    "services_on": {
+      "command": [
+        "build/tier-six-benchmark.exe",
+        "build/lua-benchmark/loop-program",
+        "1",
+        "1",
+        "10000000",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "logical_steps": 200000034,
+      "checksum": "49999995000000",
+      "counters": "register dispatches=30000004 entries=7329",
+      "median_ms": 138.087,
+      "samples_ms": [
+        137.25,
+        137.147,
+        141.827,
+        135.88,
+        140.605,
+        146.29,
+        138.087
+      ]
+    },
+    "baseline": {
+      "command": [
+        "build/tier-six-before-benchmark.exe",
+        "build/lua-benchmark/loop-program",
+        "1",
+        "1",
+        "10000000",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "logical_steps": 200000034,
+      "checksum": "49999995000000",
+      "counters": "register dispatches=30000001 entries=7327",
+      "median_ms": 130.317,
+      "samples_ms": [
+        129.585,
+        129.65,
+        134.42,
+        130.561,
+        133.801,
+        130.317,
+        129.845
+      ]
+    }
+  },
+  "binaries": {
+    "build\\tier-six-benchmark.exe": "9d9b04d7d2ab15b3e7f0238e54308a534acdfef45fa3f5aa19b6c8122fd1fca3",
+    "build\\tier-six-before-benchmark.exe": "030981ff075e72be1eb9c4e8a7e883ca403190d89c9c6a52b05e3c0de73621ea"
+  },
+  "sources": {
+    "stackvm\\register_core.hpp": "7d3d1d86c58d72d7ab6303eb38489fd2b38c27dcae3053b2b295f04ef326ed5b",
+    "stackvm\\parts\\register_execution.inc": "ae2513f320d63ed84fecd07ddb0e45aa65b5947e207a76e243cf2810618e0b82",
+    "stackvm\\parts\\execution.cpp": "39df52dba2a0750d5ed83d14c01adec4a2afe404e1a114120f773fac318444ba",
+    "stackvm\\parts\\machine_natives.cpp": "1b40a6a9666cf4dace9337866fd9a3419075acaf372b3fafaa9a568167f8cae8",
+    "tests\\benchmark_register_dispatch.py": "1c046cdcbf163b0fdd9c9f13b34c2ef2efa6b5958e2e5be1276803a28aec86a4",
+    "tests\\benchmark_vm_program.cpp": "8f0201c5dda31acb49bd4a59a5cffa216bb991256576f0e345408e11238e0b5d",
+    "build\\register-dispatch\\branches.mgl": "fc17b5ab0fef30bd885fc0e3c45b486a93eb00d159d41774da49a3708e939293",
+    "build\\register-dispatch\\calls.mgl": "22db737b459ca3f1a1878c24dd2accee469341ae86e8f2467c8e177a3fc0813e",
+    "build\\register-dispatch\\loop.mgl": "851cf836c041d5db941edb2aff3974e2e982a75ff2322f1498451a1a1b673978",
+    "build\\lua-benchmark\\loop.mgl": "7e4e69bb07950c7ea1cd1eb45eb4b4fc84d230b7483d13f4e31611802129cf32",
+    "tests\\fixtures\\borrow_algorithms.mgl": "b0fb92651273b5ff986ede83df1dd25660575f73f808627b6d4efd9fad5c9d2a",
+    "tests\\fixtures\\noip2015_transport.mgl": "949381eb793462168e6f9c05f1cc745867f269b79c72c3ae737e12e4a88a13f9"
+  },
+  "validation": {
+    "execution_differential": 86698,
+    "portable_switch_differential": 86698,
+    "vm_unit": 318,
+    "normal_samples": 198,
+    "error_samples": 306,
+    "vm_aot_algorithms": 100,
+    "vm_mcu_algorithms": 60,
+    "mcu_required": 24,
+    "mcu_sweep_pass": 129,
+    "mcu_sweep_ram": 0,
+    "mcu_sweep_pending": 0,
+    "mcu_arena_peak_bytes": 574440,
+    "mcu_arena_previous_bytes": 573416,
+    "offline_aot": "idempotent destruction ok 7"
+  }
+}

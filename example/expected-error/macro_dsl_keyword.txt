@@ -1,0 +1,1 @@
+magel：前处理：example/samples-error/macro_dsl_keyword.mgl 第 2 行：宏名 for 是内部 DSL 关键字（`$macro` / `$replace` / `$for` / `$line` …），不能占用

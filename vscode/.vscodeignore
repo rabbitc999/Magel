@@ -1,0 +1,21 @@
+# 打包成 .vsix 时不带这些：源码测试、编辑器构建产物、示例截图等。
+test/**
+tests/**
+tools/**
+dist/**
+.vscodeignore
+obj/**
+node_modules/**
+package-lock.json
+*.vsix
+# 注意：bin/ 是**内嵌的编译器**（tools/embed-compiler.js 打包前放进去的），
+# 必须随包发出去，所以这里不再忽略它。
+.vscode/**
+
+# 别处的驱动产物要是落到这里，也别打进包里（magel_out.* 是运行样例时的默认输出前缀）。
+magel_out.*
+
+# 在线依赖缓存按需下载，不进入插件安装包。
+bin/libraries/**
+# 提示缓存属于安装后的运行数据，不进入发行包。
+**/build/**

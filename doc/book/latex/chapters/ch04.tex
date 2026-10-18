@@ -1,0 +1,561 @@
+\chapter{函数}
+\label{ch:04}
+
+第 2 章的猜数字程序全塞在 \texttt{main} 里。如果它再长三倍——比如加上「记录每次猜测」、「算平均猜几次」——\texttt{main} 就再也读不动了。
+
+函数就是解决这个的：给一段代码起个名字，需要的时候叫它。
+
+这一章讲清楚五件事：怎么定义、怎么传参、怎么返回、怎么重载、以及怎么一次返回好几个值。
+
+\section{定义与调用}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 add(int64 a, int64 b)
+{
+    return a + b;
+}
+
+void log(String message)
+{
+    println("[log] {}", message);
+}
+
+int64 main()
+{
+    log("start");
+    println("{}", add(1, 2));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+[log] start
+3
+\end{lstlisting}
+\par
+\medskip
+
+拆开看一个函数的脑袋：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+int64        add      ( int64 a , int64 b )   { ... }
+ ↑            ↑         ↑
+ 返回类型     名字      参数表：每个参数都要写类型
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{void} 表示「不返回东西」。 \texttt{log} 只做事、不交值，所以返回类型是 \texttt{void}。\texttt{void} 函数里不用写 \texttt{return}；想中途退出，写一个光秃秃的 \texttt{return;} 就行：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+void trace(int64 number)
+{
+    if (number < 0)
+    {
+        return;
+        // 负数不看，直接走
+    }
+    println("n={}", number);
+}
+\end{lstlisting}
+\par
+\medskip
+
+函数可以写在 \texttt{main} 前面或后面，Magel 不要求「先声明后使用」。这一点比 C 舒服——不用再维护一份头文件里的原型。
+
+函数的顺序也有讲究，但不是给编译器的，是给读代码的人的：把「先读的放前面」。一般先放小工具，再放用它的人，最后才是 \texttt{main}。
+
+\section{参数是副本}
+
+这是本章最重要的一条规则，也是第 6 章那条大规则的小预告：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+void shout(String text)
+{
+    text = text + "!";
+}
+
+int64 main()
+{
+    String word = "hi";
+    shout(word);
+    println("{}", word);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+hi
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{shout} 里改了 \texttt{text}，\texttt{main} 里的 \texttt{word} 一点没变。
+
+从 C++ / Java / Python 过来的人最容易在这里栽跟头：那些语言里字符串、对象传进去往往是「共享的引用」，函数里一改外面就变了。Magel 不是——传进去的是一份完整的副本。
+
+想真的改到外面那个，得显式要求传引用（\texttt{T mut\&}），这是第 7 章的内容。现在你只要记住：函数的参数表就是「我复制这些值过来用」。
+
+\begin{tip}{提示}
+那大对象传进去岂不是很贵？是的，会很贵。这正是 Magel 让你自己决定的地方：不想复制就写 \texttt{String const\&}——一次显式的选择，而不是编译器偷偷替你优化。第 7 章会给出这几条写法的完整对照。
+\end{tip}
+
+\section{返回值}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 clamp(int64 value)
+{
+    if (value < 0)
+    {
+        return 0;
+    }
+    return value;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{return} 后面跟的值的类型，必须和函数声明的返回类型一致，不允许隐式转换（还记得第 3 章那条规矩吧）。返回 \texttt{int64} 的函数不能 \texttt{return 3.\allowbreak{}5;}。
+
+一个函数可以有多个 \texttt{return}——只要每条路都返回了一样类型的值。上面那个 \texttt{clamp} 有两条出路，都返回 \texttt{int64}。
+
+如果一条路忘了返回呢？ 编译期就会报错，不会让你跑到一半发现「这个函数返回了垃圾」。
+
+\subsection{返回一个带值的控制表达式}
+
+\texttt{return} 后面既可以写普通值，也可以写块、\texttt{if}、\texttt{match} 或 \texttt{loop}。它们先给出一个结果，函数再返回这个结果。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 fromBlock()
+{
+    return
+    {
+        int64 local = 3;
+        yield local;
+    };
+}
+
+int64 choose(bool first)
+{
+    return if (first)
+    {
+        yield 5;
+    }
+    else
+    {
+        yield 6;
+    };
+}
+
+int64 fromMatch(int64 item)
+{
+    return match (item)
+    {
+        0 => { yield 7; }
+        _ => { yield 8; }
+    };
+}
+
+int64 fromLoop()
+{
+    return loop
+    {
+        yield 9;
+    };
+}
+
+int64 main()
+{
+    println("{} {} {} {}", fromBlock(), choose(false), fromMatch(0), fromLoop());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+3 6 7 9
+\end{lstlisting}
+\par
+\medskip
+
+这里的 \texttt{yield value;} 给出当前值表达式的结果，不是返回函数。只有表达式完成后，外层 \texttt{return} 才返回函数。所有可能给出结果的分支必须具有完全相同的类型；不能让一支是 \texttt{int32}、另一支是 \texttt{int64}，再指望编译器自动凑成同一种类型。
+
+在这个返回表达式内部，不能再嵌套当前函数的 \texttt{return}，也不能使用 \texttt{break level N} / \texttt{break all} 跨层跳转；会提前返回的 \texttt{?} 同样需要改成显式匹配。表达式里新定义的独立函数有自己的返回边界。只含一个结果的 \texttt{\{ value \}} 分支仍可沿用前面的简写。
+
+内部拥有值变量通过 \texttt{break} 交出结果时会隐式移动，外部变量仍按值复制。移动先保存结果，再执行离开作用域的清理；不会把已经交出去的值再析构一次。引用不能因此逃出来源的生命周期。第 8 章的清理规则和第 14 章的泛型返回会继续解释这些边界。
+
+\section{重载：同名不同参}
+
+同一个名字，可以按实参类型挑不同的实现：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 add(int64 a, int64 b)
+{
+    return a + b;
+}
+
+float64 add(float64 a, float64 b)
+{
+    return a + b;
+}
+
+int64 main()
+{
+    println("{} {}", add(1, 2), add(1.5, 2.5));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+3 4
+\end{lstlisting}
+\par
+\medskip
+
+选哪个是编译期定下来的，看实参类型：\texttt{add(\allowbreak{}1,\allowbreak{} 2)\allowbreak{}} 两个都是 \texttt{int64}，走第一份；\texttt{add(\allowbreak{}1.\allowbreak{}5,\allowbreak{} 2.\allowbreak{}5)\allowbreak{}} 两个都是 \texttt{float64}，走第二份。
+
+这和第 3 章那条「没有隐式转换」是配套的：因为不做隐式转换，重载的挑选才是准的。 如果 \texttt{int64} 能自动变 \texttt{float64}，\texttt{add(\allowbreak{}1,\allowbreak{} 2.\allowbreak{}5)\allowbreak{}} 到底该走哪一份就得靠一套复杂的「谁更优」规则去猜了。Magel 的选择是：不猜，让你把类型写对。
+
+找不到匹配的重载时，报错会把它拿到了什么类型和有哪些候选都列出来。比如只定义了 \texttt{int64} 的 \texttt{add}，却拿一个 \texttt{int64} 加一个 \texttt{float64} 去调：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 add(int64 a, int64 b)
+{
+    return a + b;
+}
+
+int64 main()
+{
+    println("{}", add(1, 2.5));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：调用 函数 add 找不到匹配的重载：(int64, float64)；没有参数类型能对上的重载（候选：add）
+\end{lstlisting}
+\par
+\medskip
+
+看到这种错，先看括号里它拿到了什么类型，再决定是改实参还是加一份重载。（顺便：\texttt{2.\allowbreak{}5} 是 \texttt{float64}，\texttt{add(\allowbreak{}1,\allowbreak{} 2.\allowbreak{}5)\allowbreak{}} 里的 \texttt{1} 也不会被「凑」成 \texttt{float64}——回想第 3 章：没有隐式转换。）
+
+\section{默认参数}
+
+参数可以带默认值，调用时从尾部省略：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 add(int64 a, int64 b = 10)
+{
+    return a + b;
+}
+
+int64 main()
+{
+    println("{} {}", add(2), add(2, 3));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+12 5
+\end{lstlisting}
+\par
+\medskip
+
+两条规矩：
+
+\begin{itemize}
+
+\item 带默认值的参数必须排在后面并且连续——不能「第 1 个有默认值、第 2 个没有」：
+
+\end{itemize}
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：函数 add 的默认参数后不能有必填参数
+\end{lstlisting}
+\par
+\medskip
+
+\begin{itemize}
+
+\item 省略时只能从尾部往前省。\texttt{add(\allowbreak{}2)\allowbreak{}} 省掉了 \texttt{b}，没问题；\texttt{add(\allowbreak{})\allowbreak{}} 不行，因为 \texttt{a} 没有默认值：
+
+\end{itemize}
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：调用 函数 add 找不到匹配的重载：()；没有参数类型能对上的重载（候选：add）
+\end{lstlisting}
+\par
+\medskip
+
+默认值在每次省略该参数时重新求值。所以别在默认值里写「记录调用次数」这种带副作用的表达式——每次都会算一遍。
+
+\begin{tip}{提示}
+什么时候用默认值？当一个参数大多数调用都会传同一个值，且传别的值不影响语义。比如 \texttt{add(\allowbreak{}a,\allowbreak{} b =\allowbreak{} 10)\allowbreak{}} 里的 \texttt{b} —— 它是「可选的微调」。反过来，一个「猜数字最大值」这种参数就别给默认值，因为给了等于偷偷替调用方做了决定。
+\end{tip}
+
+\section{变长参数}
+
+最后一项参数可以写成 \texttt{T.\allowbreak{}.\allowbreak{}.\allowbreak{}}，表示「这里可以给任意多个」：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 total(int64... items)
+{
+    int64 sum = 0;
+    for (int64 item in items)
+    {
+        sum = sum + item;
+    }
+    return sum;
+}
+
+int64 main()
+{
+    println("{} {}", total(1, 2, 3), total(5));
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+6 5
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{items} 在函数体里就是一个能遍历的容器。\texttt{for (\allowbreak{}int64 item in items)\allowbreak{}} 是「把 \texttt{items} 里的东西一个个拿出来，每轮叫它 \texttt{item}」——第 5 章细讲 \texttt{for-in}。
+
+变长参数只能放在最后一项，而且一个函数只能有一处。
+
+\section{一次返回多个值}
+
+Magel 的返回值可以是一个元组（tuple）——把几个值打包起来：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+(int64, String) describe(int64 id)
+{
+    return(id, "player");
+}
+
+int64 main()
+{
+    auto info = describe(7);
+    println("{} {}", info.0, info.1);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+7 player
+\end{lstlisting}
+\par
+\medskip
+
+\begin{itemize}
+
+\item 返回类型写成 \texttt{(\allowbreak{}int64,\allowbreak{} String)\allowbreak{}}，就是「一个 \texttt{int64} 加一个 \texttt{String}」；
+
+\item \texttt{return (\allowbreak{}id,\allowbreak{} "player")\allowbreak{};} 把两个值打包成元组；
+
+\item 取的时候用 \texttt{.\allowbreak{}0} / \texttt{.\allowbreak{}1} —— 这是位置，不是名字，从 0 开始数。
+
+\end{itemize}
+
+\texttt{return} 后面的括号可以省，\texttt{return id,\allowbreak{} "player";} 和上一种写法等价。
+
+如果你不想用 \texttt{.\allowbreak{}0} / \texttt{.\allowbreak{}1}，可以直接拆开接：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+(int32, String) pair(int32 key, String name)
+{
+    return key, name;
+}
+
+int64 main()
+{
+    int32 key;
+    String name;
+    key, name = pair((int32)7, "player");
+    println("{} {}", key, name);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+7 player
+\end{lstlisting}
+\par
+\medskip
+
+这行 \texttt{key,\allowbreak{} name =\allowbreak{} pair(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} 的意思是：把右边元组按位置拆给左边的每一个目标。左边必须是已经声明过的变量——声明新变量请写 \texttt{auto (\allowbreak{}key,\allowbreak{} name)\allowbreak{} =\allowbreak{} pair(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{};}。
+
+\begin{tip}{提示}
+元组还能用来交换两个变量，而且不用中间变量：\texttt{x,\allowbreak{} y =\allowbreak{} (\allowbreak{}y,\allowbreak{} x)\allowbreak{};} —— 右边先整个求值一次，再逐个写回去。注意右边那个括号不能省，\texttt{x,\allowbreak{} y =\allowbreak{} y,\allowbreak{} x;} 会报「多目标解构赋值必须使用 \texttt{=\allowbreak{}} 和一个元组来源」。
+\end{tip}
+
+\section{入口 \texttt{main} 的两种形态}
+
+到现在为止你写的都是不带参数的版本：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    ...
+}
+\end{lstlisting}
+\par
+\medskip
+
+要读命令行参数，换成另一种：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main(List<String> arguments)
+{
+    println("收到 {} 个参数", arguments.len());
+    for (String item in arguments)
+    {
+        println("  {}", item);
+    }
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+收到 2 个参数
+  Alice
+  two words
+\end{lstlisting}
+\par
+\medskip
+
+只有这两种入口是合法的，别自己发明第三种。
+
+传参的写法要注意：直接给文件时，文件后面的都算程序参数。
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel app.mgl Alice "two words"
+\end{lstlisting}
+\par
+\medskip
+
+但如果你把场景词 \texttt{run} 显式写出来，就得多一个 \texttt{--} 把「配置词」和「程序参数」隔开：
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel run app.mgl -- Alice "two words"
+\end{lstlisting}
+\par
+\medskip
+
+不写 \texttt{--} 的话，\texttt{Alice} 会被当成另一个源文件，报「一次只能编译一个源文件」。
+
+\section{小结}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+你会了 & 关键点 \\
+\midrule
+定义 & \texttt{int64 add(\allowbreak{}int64 a,\allowbreak{} int64 b)\allowbreak{} \{ return a + b; \}} \\
+不返回值 & 返回类型写 \texttt{void}，里面可以 \texttt{return;} 提前退出 \\
+调用 & 位置实参，从左往右一一对应 \\
+参数语义 & 按值传入，形参是副本，改形参不影响调用方 \\
+重载 & 同名不同参，编译期按实参类型选，报错会列出候选 \\
+默认参数 & \texttt{int64 b =\allowbreak{} 10}，只能从尾部连续省略 \\
+变长参数 & \texttt{int64.\allowbreak{}.\allowbreak{}.\allowbreak{} items}，放最后一项，用 \texttt{for-in} 遍历 \\
+多值返回 & 返回类型写元组 \texttt{(\allowbreak{}A,\allowbreak{} B)\allowbreak{}}，用 \texttt{.\allowbreak{}0} / \texttt{.\allowbreak{}1} 取或拆开接 \\
+入口 & \texttt{int64 main(\allowbreak{})\allowbreak{}} 或 \texttt{int64 main(\allowbreak{}std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}List<\allowbreak{}std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}String>\allowbreak{} arguments)\allowbreak{}} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+还有两处本章故意没讲透：
+
+\begin{itemize}
+
+\item \texttt{static} 方法（写在类型上、用 \texttt{Type:\allowbreak{}:\allowbreak{}method(\allowbreak{})\allowbreak{}} 调）和第 2 章那个\texttt{Random:\allowbreak{}:\allowbreak{}with\allowbreak{}Seed} —— 那是结构体的东西，第 9 章讲；
+
+\item 把函数当值传递（\texttt{int64 fn(\allowbreak{}int64)\allowbreak{}} 类型、\texttt{fn}）—— 第 15 章讲。
+
+\end{itemize}
+
+\section{下一步}
+
+现在你能把代码切成函数了，但函数里只能「从上往下一句句做」。真实程序还需要判断和重复——第 2 章你用过 \texttt{if} 和 \texttt{while}，但那是照着抄的。
+
+下一章把控制流完整讲一遍，包括 \texttt{loop} 那个能「带值跳出来」的用法。
+
+翻到\hyperref[ch:05]{第 5 章 控制流}。

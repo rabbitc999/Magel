@@ -1,0 +1,4 @@
+p[1]=20, p[3]=40, *p=10
+same address=1
+q->x=7 q->y=8
+origin.x=7

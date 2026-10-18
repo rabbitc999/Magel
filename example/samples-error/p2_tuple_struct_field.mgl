@@ -1,0 +1,3 @@
+struct Record { int64 number; };
+void update(int64 mut& value) { value = 3; }
+int64 main() { Record record; record.number = 1; auto pair = (record, 2); (pair.0).number = 3; return 0; }

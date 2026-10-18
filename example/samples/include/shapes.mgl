@@ -1,0 +1,17 @@
+/* 共享定义：被别的 .mgl `%include` 进来用（本身不是样例，所以放在子目录里）。
+ *
+ * 里面可以放心写结构体 / 函数 / 全局常量 —— 前处理器是**原地展开**，展开之后
+ * 就是同一个编译单元；同一个文件默认只展开一次（`%include_once` / `%import` 也一样）。 */
+
+struct Rect {
+    int64 width;
+    int64 height;
+
+    int64 area() {
+        return width * height;
+    }
+};
+
+int64 square_area(int64 side) {
+    return side * side;
+}

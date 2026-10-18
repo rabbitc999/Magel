@@ -1,0 +1,18 @@
+import std::utf8;
+int64 main(){
+    String text="A中文😀";
+    List<uint32> points=decodeUtf8(text).unwrap();
+    assert(points.len()==4 && points[0]==(uint32)65 && points[3]==(uint32)128512);
+    assert(encodeUtf8(points).unwrap()==text && codePointCount(text).unwrap()==4);
+    assert(sliceCodePoints(text,1,2).unwrap()=="中文");
+    assert(sliceCodePoints(text,4,0).unwrap()=="");
+    assert(!sliceCodePoints(text,5,0).isOk() && !sliceCodePoints(text,0,-1).isOk());
+    List<uint8> overlong;overlong.push((uint8)192);overlong.push((uint8)175);assert(!decodeUtf8Bytes(overlong).isOk());
+    List<uint8> surrogateBytes;surrogateBytes.push((uint8)237);surrogateBytes.push((uint8)160);surrogateBytes.push((uint8)128);assert(!decodeUtf8Bytes(surrogateBytes).isOk());
+    List<uint8> tooLarge;tooLarge.push((uint8)244);tooLarge.push((uint8)144);tooLarge.push((uint8)128);tooLarge.push((uint8)128);assert(!decodeUtf8Bytes(tooLarge).isOk());
+    List<uint8> truncated;truncated.push((uint8)228);truncated.push((uint8)184);assert(!decodeUtf8Bytes(truncated).isOk());
+    List<uint32> zero;zero.push((uint32)0);assert(encodeUtf8Bytes(zero).unwrap()[0]==(uint8)0 && !encodeUtf8(zero).isOk());
+    List<uint32> surrogate;surrogate.push((uint32)55296);assert(!encodeUtf8(surrogate).isOk());
+    assert(codePointCount("é").unwrap()==2);
+    println("UTF-8 validation and code points OK");return 0;
+}

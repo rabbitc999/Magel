@@ -1,0 +1,49 @@
+import std::tree;
+int64 main(){
+    BinarySearchTree bst=BinarySearchTree::create();
+    assert(bst.insert(50) && bst.insert(30) && bst.insert(70) && bst.insert(20));
+    assert(bst.insert(40) && bst.insert(60) && bst.insert(80));
+    assert(!bst.insert(30) && bst.len()==7);
+    assert(bst.contains(40) && !bst.contains(35));
+    assert(bst.min().unwrap()==20 && bst.max().unwrap()==80 && bst.height()==3);
+    println("inorder {} {} {} {} {} {}", bst.inorder()[0], bst.inorder()[1], bst.inorder()[2],
+            bst.inorder()[3], bst.inorder()[4], bst.inorder()[5]);
+    println("preorder {} {} {}", bst.preorder()[0], bst.preorder()[1], bst.preorder()[2]);
+    println("postorder {} {} {}", bst.postorder()[3], bst.postorder()[4], bst.postorder()[5]);
+    assert(bst.remove(20) && bst.remove(30) && !bst.remove(30));
+    assert(bst.len()==5 && bst.min().unwrap()==40 && !bst.contains(20));
+    RedBlackTree rbt=RedBlackTree::create();
+    for (int64 index=1; index<=10; index=index+1) { rbt.insert(index*10); }
+    assert(rbt.contains(70) && !rbt.contains(75));
+    assert(rbt.height()<=6 && rbt.len()==10);
+    println("rbt inorder {} {} {} {}", rbt.inorder()[0], rbt.inorder()[4],
+            rbt.inorder()[8], rbt.inorder()[9]);
+    MinHeap queue=MinHeap::create();
+    queue.push(5); queue.push(1); queue.push(4); queue.push(1);
+    assert(queue.len()==4 && queue.peek().unwrap()==1);
+    println("heap {} {} {} {}", queue.pop().unwrap(), queue.pop().unwrap(),
+            queue.pop().unwrap(), queue.pop().unwrap());
+    assert(queue.pop().isNone() && queue.isEmpty());
+    GeneralTree tree=GeneralTree::create();
+    int64 root=tree.addRoot(1);
+    int64 a=tree.addChild(root,2);
+    int64 b=tree.addChild(root,3);
+    tree.addChild(a,4);
+    tree.addChild(a,5);
+    tree.addChild(b,6);
+    assert(tree.len()==6 && tree.height()==3);
+    List<int64> kids=tree.children(root);
+    assert(kids.len()==2 && tree.valueAt(kids[0])==2 && tree.valueAt(kids[1])==3);
+    List<int64> walk=tree.preorder();
+    assert(walk.len()==6 && tree.valueAt(walk[0])==1 && tree.valueAt(walk[5])==6);
+    println("gt kids {} {} preorder {} {}", tree.valueAt(kids[0]), tree.valueAt(kids[1]),
+            tree.valueAt(walk[0]), tree.valueAt(walk[5]));
+    List<int64> levels=tree.levelOrder();
+    assert(levels.len()==6 && tree.valueAt(levels[0])==1 && tree.valueAt(levels[1])==2);
+    println("gt level {} {}", tree.valueAt(levels[0]), tree.valueAt(levels[1]));
+    BinarySearchTree binary=tree.toBinary();
+    GeneralTree back=GeneralTree::fromBinary(binary);
+    assert(back.len()==6 && back.height()==3 && back.valueAt(back.children(0)[0])==2);
+    println("tree conversion OK");
+    return 0;
+}

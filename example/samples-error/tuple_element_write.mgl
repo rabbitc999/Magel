@@ -1,0 +1,6 @@
+int64 main()
+{
+    auto value = (1, 2);
+    value.0 = 3;
+    return 0;
+}

@@ -1,0 +1,20 @@
+import std::io;
+
+int64 main() {
+    List<uint8> bytes;
+    bytes.push((uint8)0); bytes.push((uint8)10); bytes.push((uint8)255); bytes.push((uint8)13);
+    FileStream writer = FileStream::open("build/std-file-bytes.bin", "wb").unwrap();
+    assert(writer.writeBytes(bytes).unwrap() == 4);
+    writer.close();
+    FileStream reader = FileStream::open("build/std-file-bytes.bin", "rb").unwrap();
+    List<uint8> first = reader.readBytes(2).unwrap();
+    assert(first.len() == 2 && first[0] == (uint8)0 && first[1] == (uint8)10);
+    List<uint8> rest = reader.readBytes(8).unwrap();
+    assert(rest.len() == 2 && rest[0] == (uint8)255 && rest[1] == (uint8)13);
+    assert(reader.readBytes(1).unwrap().len() == 0);
+    assert(!reader.readBytes(-1).isOk());
+    reader.close();
+    assert(!reader.readBytes(1).isOk());
+    println("Binary FileStream bytes and EOF OK");
+    return 0;
+}

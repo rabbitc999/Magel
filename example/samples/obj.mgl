@@ -1,0 +1,28 @@
+/** Any 的显式类型擦除、安全提取与值复制，不读取内部类型编号。 */
+struct Record { String text; int64 number; };
+Record globalRecord;
+int64 increment(int64 value){return value+1;}
+int64 main(){
+    Any box;
+    assert(box.isEmpty() && !isType<int64>(&box));
+    assert(!tryGet<int64>(&box).isValue());
+    box.set((int64)42);
+    assert(isType<int64>(&box) && !isType<int32>(&box));
+    assert(tryGet<int64>(&box).unwrap()==42);
+    assert(!tryGet<String>(&box).isValue());
+    Any copy=box; box.set("hello");
+    assert(isType<String>(&box) && tryGet<int64>(&copy).unwrap()==42);
+    String text=tryGet<String>(&box).unwrap(); box.set(false); assert(text=="hello");
+    List<int64> values;values.push(7);box.set(values);
+    List<int64> extracted=tryGet<List<int64>>(&box).unwrap();extracted[0]=9;
+    assert(values[0]==7 && tryGet<List<int64>>(&box).unwrap()[0]==7);
+    box.set(increment);
+    int64 fn(int64) callback=tryGet<int64 fn(int64)>(&box).unwrap();assert(callback(8)==9);
+    globalRecord.text="record";globalRecord.number=10;box.set(&globalRecord);
+    assert(isType<Record mut&>(&box));
+    auto borrowed=tryGetMut<Record>(&box);assert(borrowed.isValue());
+    Record mut& view=borrowed.unwrap();view->number=11;assert(globalRecord.number==11);
+    assert(!tryGetReference<String>(&box).isValue());
+    println("Any type checks and safe extraction OK");
+    return 0;
+}

@@ -1,0 +1,2 @@
+is_even(10) = 1, is_odd(7) = 1
+later(5) = 11

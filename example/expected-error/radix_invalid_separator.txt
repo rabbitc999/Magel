@@ -1,0 +1,1 @@
+magel：example/samples-error/radix_invalid_separator.mgl 第 1 行第 30 列：整数进制字面量无效：b10__01

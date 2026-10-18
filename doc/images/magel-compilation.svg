@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1560" height="900" viewBox="0 0 1560 900">
+  <rect width="1560" height="900" fill="#f4f7fb"/>
+  <text x="40" y="58" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="33" font-weight="700" fill="#10233f">Magel 0.9.1 · 编译过程</text>
+  <text x="40" y="95" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="19" fill="#4a5b73">源码 → 文法生成的前端 → 检查与中间产物 → 内存执行 / 字节码 / AOT</text>
+  <rect x="40" y="145" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
+  <text x="260" y="175" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">1  源码输入</text>
+  <text x="260" y="205" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">.mgl 与导入模块</text>
+  <text x="260" y="235" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">内嵌标准库</text>
+  <rect x="560" y="145" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
+  <text x="780" y="175" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">2  预处理</text>
+  <text x="780" y="205" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">宏展开与条件编译</text>
+  <text x="780" y="235" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">保留源码位置</text>
+  <rect x="1080" y="145" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
+  <text x="1300" y="175" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">3  词法与语法解析</text>
+  <text x="1300" y="205" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">magel.gram → 生成的解析器</text>
+  <text x="1300" y="235" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">构造语法节点</text>
+  <rect x="1080" y="335" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
+  <text x="1300" y="365" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">4  语义降级与泛型</text>
+  <text x="1300" y="395" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">类型、重载与泛型单态化</text>
+  <text x="1300" y="425" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">嵌套类型与元组</text>
+  <rect x="560" y="335" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
+  <text x="780" y="365" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">5  独立借用检查</text>
+  <text x="780" y="395" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">控制流、引用来源与生命周期</text>
+  <text x="780" y="425" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">收集诊断</text>
+  <rect x="40" y="335" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
+  <text x="260" y="365" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">6  生成中间产物</text>
+  <text x="260" y="395" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">四元式与数据布局</text>
+  <text x="260" y="425" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">四元式不写入 .svmb</text>
+  <polyline points="480,205 560,205" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="560,205 549,210 549,200" fill="#8ea2bb"/>
+  <polyline points="1000,205 1080,205" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="1080,205 1069,210 1069,200" fill="#8ea2bb"/>
+  <polyline points="1300,265 1300,335" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="1300,335 1295,324 1305,324" fill="#8ea2bb"/>
+  <polyline points="1080,395 1000,395" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="1000,395 1011,390 1011,400" fill="#8ea2bb"/>
+  <polyline points="560,395 480,395" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="480,395 491,390 491,400" fill="#8ea2bb"/>
+  <polyline points="260,455 260,535" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="260,535 255,524 265,524" fill="#8ea2bb"/>
+  <rect x="40" y="535" width="1480" height="120" rx="15" fill="#eaf6ef" stroke="#bfe0cc" stroke-width="1"/>
+  <text x="780" y="565" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">7  组装 VM 指令</text>
+  <text x="780" y="595" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">建立基础 VM 指令、类型与标签；字节码路径预先降低整数运算与比较跳转</text>
+  <text x="780" y="625" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">保留源码与原始 PC 映射，用于诊断和精确执行</text>
+  <polyline points="260,655 260,720" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="260,720 255,709 265,709" fill="#8ea2bb"/>
+  <rect x="40" y="720" width="440" height="120" rx="15" fill="#eaf6ef" stroke="#bfe0cc" stroke-width="1"/>
+  <text x="260" y="750" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">内存执行</text>
+  <text x="260" y="780" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Program → 桌面 VM</text>
+  <text x="260" y="810" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">无需先写字节码文件</text>
+  <polyline points="780,655 780,720" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="780,720 775,709 785,709" fill="#8ea2bb"/>
+  <rect x="560" y="720" width="440" height="120" rx="15" fill="#eaf6ef" stroke="#bfe0cc" stroke-width="1"/>
+  <text x="780" y="750" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">.svmb · 格式 5</text>
+  <text x="780" y="780" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">VM 指令与内部执行序列</text>
+  <text x="780" y="810" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">桌面 / 嵌入式 VM</text>
+  <polyline points="1300,655 1300,720" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="1300,720 1295,709 1305,709" fill="#8ea2bb"/>
+  <rect x="1080" y="720" width="440" height="120" rx="15" fill="#eaf6ef" stroke="#bfe0cc" stroke-width="1"/>
+  <text x="1300" y="750" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">AOT 本地程序</text>
+  <text x="1300" y="780" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">生成 C++ → 本地编译器</text>
+  <text x="1300" y="810" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">可执行文件与运行时服务</text>
+</svg>

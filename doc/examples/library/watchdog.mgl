@@ -1,0 +1,26 @@
+import std::watchdog;
+
+/** @brief 验证看门狗默认关闭、启用结果，以及时间维度（超时未喂狗）同样默认关闭；不请求实际重启。 */
+int64 main() {
+    Result<bool,WatchdogError> disabled = std::watchdog::requestRestart();
+    assert(disabled.isErr());
+    Result<int64,WatchdogError> invalid = std::watchdog::enable(-1);
+    assert(invalid.isErr());
+    Result<int64,WatchdogError> enabled = std::watchdog::enable(0);
+    assert(enabled.isOk());
+
+    /* 时间维度默认关闭：没 enableTimeout*() 过时 kick() 报 NotEnabled，非正超时被拒。 */
+    Result<bool,WatchdogError> noTimer = std::watchdog::kick();
+    assert(noTimer.isErr());
+    Result<int64,WatchdogError> badTimeout = std::watchdog::enableTimeout(0);
+    assert(badTimeout.isErr());
+
+    /* 打开时间维度：超时给得足够长，本程序跑完之前不会触发；喂一口证明 kick() 生效。 */
+    Result<int64,WatchdogError> timer = std::watchdog::enableTimeout(1000000000);
+    assert(timer.isOk());
+    Result<bool,WatchdogError> fed = std::watchdog::kick();
+    assert(fed.isOk());
+
+    println("watchdog API ok");
+    return 0;
+}

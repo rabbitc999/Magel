@@ -1,0 +1,35 @@
+import std::sql;
+// 仅创建会话临时表，连接关闭后自动删除，不修改业务表。
+int64 main(){
+    String engine=std::lang::inputLine(), credential=std::lang::inputLine();
+    Database db;
+    if(engine=="mysql"){db=Database::mysql("127.0.0.1","root",credential,"mysql");}
+    else {db=Database::postgres(credential);}
+    if(!db.isOpen()){std::lang::panic(db.lastError());}
+    std::lang::assert(db.backendName()==engine);
+    ResultSet created=db.exec("CREATE TEMPORARY TABLE magel_session_probe(id BIGINT PRIMARY KEY, name VARCHAR(255), amount DOUBLE PRECISION, note VARCHAR(255))");
+    if(!created.ok){std::lang::panic(created.error);}
+    String name="中文 O'Reilly\\目录 😀";
+    ResultSet inserted=db.exec("INSERT INTO magel_session_probe VALUES(9223372036854775807,"+db.quote(name)+",1.25,NULL)");
+    if(!inserted.ok){std::lang::panic(inserted.error);}
+    std::lang::assert(inserted.affected==1);
+    ResultSet result=db.exec("SELECT id,name,amount,note,'123' AS numeric_text FROM magel_session_probe");
+    std::lang::assert(result.ok && result.rowCount()==1 && result.colCount()==5);
+    std::lang::assert(result.intAt(0,0)==9223372036854775807 && result.textAt(0,1)==name);
+    std::lang::assert(result.realAt(0,2)==1.25 && result.at(0,3).isNull());
+    std::lang::assert(result.at(0,4).kind==CELL_TEXT && result.textAt(0,4)=="123");
+    std::lang::assert(std::lang::len(result.render())>0);
+    std::lang::assert(db.execOk("BEGIN; INSERT INTO magel_session_probe VALUES(2,'rollback',2,NULL); ROLLBACK"));
+    std::lang::assert(db.count("SELECT COUNT(*) FROM magel_session_probe")==1);
+    std::lang::assert(db.execOk("BEGIN; INSERT INTO magel_session_probe VALUES(2,'commit',2,NULL); COMMIT"));
+    std::lang::assert(db.count("SELECT COUNT(*) FROM magel_session_probe")==2);
+    std::lang::assert(!db.exec("INSERT INTO magel_session_probe VALUES(2,'duplicate',0,NULL)").ok);
+    std::lang::assert(db.count("SELECT COUNT(*) FROM magel_session_probe")==2);
+    std::lang::assert(db.exec("UPDATE magel_session_probe SET amount=3.5 WHERE id=2").affected==1);
+    std::lang::assert(db.exec("DELETE FROM magel_session_probe WHERE id=2").affected==1);
+    std::lang::assert(db.count("SELECT COUNT(*) FROM magel_session_probe")==1);
+    String version=db.scalar("SELECT version()");
+    db.close();db.close();
+    std::lang::assert(!db.exec("SELECT 1").ok);
+    std::lang::println("{} live database checks passed: {}",engine,version);return 0;
+}

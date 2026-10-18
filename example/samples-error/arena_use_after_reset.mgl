@@ -1,0 +1,9 @@
+import std::memory;
+
+int64 main() {
+    std::memory::Arena arena = std::memory::Arena::create();
+    std::memory::Span<char> bytes = arena.allocate(4);
+    arena.reset();
+    std::lang::putChar(bytes[0]);
+    return 0;
+}

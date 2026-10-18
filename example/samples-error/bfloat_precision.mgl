@@ -1,0 +1,4 @@
+int64 main() {
+    bfloat_precision(0);
+    return 0;
+}

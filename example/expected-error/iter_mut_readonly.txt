@@ -1,0 +1,1 @@
+magel：example/samples-error/iter_mut_readonly.mgl 第 2 行第 125 列：泛型函数 listIterMut 的类型实参推导冲突，请显式指定类型实参

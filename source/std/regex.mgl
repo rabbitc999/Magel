@@ -1,0 +1,42 @@
+module std::regex;
+
+/* 从 lang.mgl 原样迁出：符号名不变，只换了模块归属（现在必须 `import std::regex;` 才能用）。 */
+/* 正则表达式在宿主注册表里按模式缓存；Magel 值只保存整数句柄，Result 的载荷不持有堆对象。 */
+enum RegexError { Invalid; };
+
+int64 __regexCompileHandle(std::lang::String pattern);
+bool __regexFullMatch(int64 handle, std::lang::String text);
+bool __regexContains(int64 handle, std::lang::String text);
+int64 __regexFindByteIndex(int64 handle, std::lang::String text);
+std::lang::String __regexCapture(int64 handle, std::lang::String text, int64 group);
+std::lang::String __regexReplaceFirst(int64 handle, std::lang::String text, std::lang::String replacement);
+std::lang::String __regexReplaceAll(int64 handle, std::lang::String text, std::lang::String replacement);
+
+struct Regex {
+    int64 handle;
+
+    static Result<Regex, RegexError> compile(std::lang::String pattern) {
+        int64 id = __regexCompileHandle(pattern);
+        if (id <= 0) { return Result<Regex, RegexError>::Err(RegexError::Invalid); }
+        Regex value;
+        value.handle = id;
+        return Result<Regex, RegexError>::Ok(value);
+    }
+
+    bool fullMatch(std::lang::String text) { return __regexFullMatch(self.handle, text); }
+    bool contains(std::lang::String text) { return __regexContains(self.handle, text); }
+    Option<int64> find(std::lang::String text) {
+        int64 index = __regexFindByteIndex(self.handle, text);
+        if (index < 0) { return Option<int64>::None; }
+        return Option<int64>::Value(index);
+    }
+    std::lang::String capture(std::lang::String text, int64 group) {
+        return __regexCapture(self.handle, text, group);
+    }
+    std::lang::String replaceFirst(std::lang::String text, std::lang::String replacement) {
+        return __regexReplaceFirst(self.handle, text, replacement);
+    }
+    std::lang::String replaceAll(std::lang::String text, std::lang::String replacement) {
+        return __regexReplaceAll(self.handle, text, replacement);
+    }
+};

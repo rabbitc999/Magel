@@ -1,0 +1,1 @@
+magel：example/samples-error/reference_string_index_type.mgl 第 1 行第 1 列：std::lang::String 下标只能写 char（整数请显式强转）：现在写的是 int64

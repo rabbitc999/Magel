@@ -1,0 +1,123 @@
+/*
+ * interrupt_arguments.mgl —— 事件回调的**自定义参数列表**。
+ *
+ * `std::event::InterruptHandler` 只带一个 `int64`；参数更多时用
+ * `std::event::EventCallback(int64 event, List<Any> arguments)`，
+ * 事件值 + 自定义参数列表一起交付：
+ *
+ *   * 现成列表：`std::event::bindEventArguments(handle, callback, args)`；
+ *   * 变长实参：`bindEventArguments(handle, callback, a, b, c)` —— 每个实参必须是
+ *     `Any`（编译期逐项校验），空变长实参表示"没有自定义参数"；
+ *   * 登记前校验：句柄已 `drop`（`__timerAlive` 为假）或回调是空函数指针时返回 0，
+ *     不登记、不打断程序。
+ *
+ * 参数不止 `List<Any>`：结构体、元组这类"其他自定义参数列表"用
+ * **用户蹦床**接 —— 参数放全局，写一个 `InterruptHandler` 转给真正的用户回调；
+ * 末尾的 `NavPose` 就是这一模式（自定义结构体参数）。
+ *
+ * 交付仍在**下一条指令边界**：`raise` 之后往前走几条指令回调才会跑。
+ */
+
+import std::event;
+
+/* ---- 自定义参数列表：事件值 + 任意长列表 ---- */
+int64 seenEvent = 0;
+int64 seenCount = 0;
+int64 seenDigest = 0;   /* 每个元素按类型折算成整数再累加，输出才稳定 */
+
+/* 一个参数折算成整数：通过类型判断接口分支。 */
+int64 argDigest(Any value) {
+    if (isType<int64>(&value)) { return (int64)value.getValue(); }
+    if (isType<float64>(&value)) { return (int64)((float64)value.getValue() * 100.0); }
+    if (isType<String>(&value)) {
+        String text = value.getValue();
+        return (int64)len(text);
+    }
+    return 0;
+}
+
+void onArguments(int64 event, List<Any> arguments) {
+    seenEvent = event;
+    seenCount = arguments.len();
+    seenDigest = 0;
+    int64 i = 0;
+    while (i < arguments.len()) {
+        Any value = arguments[i];
+        seenDigest = seenDigest + argDigest(value);
+        i = i + 1;
+    }
+}
+
+/* ---- 其他自定义参数（结构体）：用户蹦床转给真正的回调 ---- */
+struct NavPose { float64 x; float64 y; float64 yaw; };
+NavPose navPose;
+int64 navFires = 0;
+
+void onNav(int64 event) {
+    navFires = navFires + 1;
+    println("trampoline x={} y={} yaw={} fired={}",
+    navPose.x, navPose.y, navPose.yaw, navFires);
+}
+
+int64 main() {
+    Timer events = Timer::everyNanos(0);   /* 周期 0：只接显式 raise */
+
+    /* 现成列表：int64 + float64 + String，取的时候按类型还原。 */
+    List<Any> args;
+    Any number = 7;
+    Any real = 2.5;
+    Any word = "hello";
+    args.push(number);
+    args.push(real);
+    args.push(word);
+    int32 ok = std::event::bindEventArguments(events.handle, onArguments, args);
+    events.raise(42);
+    int64 i = 0;
+    while (i < 8) { i = i + 1; }
+    println("list ok={} event={} count={} digest={}", ok, seenEvent, seenCount, seenDigest);
+
+    /* 变长实参：直接列出来，编译器逐项校验每个实参是 Any。 */
+    Any nine = 9;
+    Any quarter = 1.25;
+    ok = std::event::bindEventArguments(events.handle, onArguments, nine, quarter);
+    events.raise(1);
+    i = 0;
+    while (i < 8) { i = i + 1; }
+    println("variadic ok={} event={} count={} digest={}", ok, seenEvent, seenCount, seenDigest);
+
+    /* 空变长实参：没有自定义参数。 */
+    ok = std::event::bindEventArguments(events.handle, onArguments);
+    events.raise(2);
+    i = 0;
+    while (i < 8) { i = i + 1; }
+    println("empty ok={} event={} count={}", ok, seenEvent, seenCount);
+
+    /* 登记校验：句柄已释放 / 回调是空函数指针，都返回 0。 */
+    Timer dead = Timer::everyNanos(0);
+    EventHandle stale = dead.handle;
+    dead.drop();
+    void fn(int64, List<Any>) none;
+    int32 deadOk = std::event::bindEventArguments(stale, onArguments, args);
+    int32 noneOk = std::event::bindEventArguments(events.handle, none, args);
+    println("invalid handle={} null={}", deadOk, noneOk);
+
+    /* 其他自定义参数：结构体走用户蹦床。 */
+    Timer pose = Timer::everyNanos(0);
+    pose.onInterrupt(onNav);
+    navPose.x = 1.5;
+    navPose.y = -2.25;
+    navPose.yaw = 0.75;
+    pose.raise(7);
+    i = 0;
+    while (i < 8) { i = i + 1; }
+
+    /* 取消登记后不再交付。 */
+    std::event::unbindEventArguments();
+    events.raise(3);
+    i = 0;
+    while (i < 8) { i = i + 1; }
+    println("unbound event={} count={}", seenEvent, seenCount);
+
+    delete args;
+    return 0;
+}

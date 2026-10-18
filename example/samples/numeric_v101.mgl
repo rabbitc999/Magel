@@ -1,0 +1,80 @@
+// v1.0.1：字面量类型、无符号转换、窄整数位运算与 loop 返回路径。
+int64 fromLoop() { loop { return 42; }; }
+int64 nestedLoop(bool stop) {
+    loop { if (stop) { return 7; } else { continue; } };
+}
+float32 identity32(float32 value) { return value; }
+uint64 maximumValue() { return 0xFFFFFFFFFFFFFFFF; }
+float64 identity64(float64 value) { return value; }
+int64 main() {
+    int64 x = 2147483647 + 1;
+    int64 y = 100000 * 100000;
+    assert(x == 2147483648);
+    assert(y == 10000000000);
+    uint64 wide = 0xFFFFFFFF + 1;
+    assert(wide == 4294967296);
+    uint64 maximum = 0xFFFFFFFFFFFFFFFF;
+    float64 converted = maximum;
+    assert(converted > 1.8e19);
+    assert((float64)maximum > 1.8e19);
+    assert((float64)maximumValue() > 1.8e19);
+    assert(identity64(maximum) > 1.8e19);
+    List<uint64> unsignedValues;
+    unsignedValues.push(maximum);
+    assert((float64)unsignedValues[0] > 1.8e19);
+    assert(maximum + 0.0 > 1.8e19);
+    assert(maximum > 0.0 && 0.0 < maximum);
+    float64 compound = 0.0;
+    compound += maximum;
+    assert(compound > 1.8e19);
+    BigInteger integer = BigInteger(maximum);
+    assert(integer.str() == "18446744073709551615");
+    assert(integer + maximum == BigInteger("36893488147419103230"));
+    BigDecimal decimal = BigDecimal(maximum);
+    assert(decimal > BigDecimal("18446744073709551614"));
+    assert(decimal + maximum > BigDecimal("36893488147419103229"));
+    uint8 zero = 0;
+    uint8 high = 128;
+    int8 signedHigh = 64;
+    assert((~zero) == (uint8)255);
+    assert((high << (uint8)1) == (uint8)0);
+    assert((signedHigh << (int8)1) == (int8)-128);
+    uint16 zero16 = 0;
+    uint32 zero32 = 0;
+    assert((~zero16) == (uint16)65535);
+    assert((~zero32) == (uint32)0xFFFFFFFF);
+    uint16 high16 = 32768;
+    uint32 high32 = 0x80000000;
+    assert((high16 << (uint16)1) == (uint16)0);
+    assert((high32 << (uint32)1) == (uint32)0);
+    assert((signedHigh >> (int8)1) == (int8)32);
+    assert(((int8)-128 >> (int8)1) == (int8)-64);
+    uint8 small = 250;
+    assert(small + 10 == (uint8)4);
+    assert(fromLoop() == 42);
+    assert(nestedLoop(true) == 7);
+    auto f = 1.25f;
+    assert(identity32(f) == 1.25f);
+    assert(1f == 1.0f);
+    assert(125e-2f == 1.25f);
+    assert(1.25E+2f == 125f);
+    float64 rounded = 16777217f;
+    assert(rounded == 16777216.0);
+    assert(16777217.0 == 16777217.0);
+    assert((16777216f + 1f) == 16777216f);
+    const float32 sum32 = 16777216f + 1f;
+    assert(sum32 == 16777216f);
+    const float32 folded = 16777217f;
+    int64 values[((int64)(folded == 16777216f)) + 1];
+    values[1] = 42;
+    int64 count = 3;
+    int64 dynamic[] = new[count];
+    dynamic[2] = values[1];
+    assert(dynamic.len() == 3 && dynamic[2] == 42);
+    delete dynamic;
+    int64 empty[] = new[0];
+    assert(empty.len() == 0);
+    delete empty;
+    println("numeric v1.0.1 OK");
+    return 0;
+}

@@ -1,0 +1,42 @@
+// 核心字符串可省略 std::lang::，所有组合保持同一类型与值复制语义。
+struct TextBox<T>{T value;};
+struct TextBorrow{
+    static String const& view(String const& value){return value;}
+};
+String const& borrowText(String const& value){return value;}
+
+String copyText(String value){return value;}
+int64 main(){
+    String original="abcd";
+    String copied=original;
+    String mut& writable=&copied;
+    String const& readable=writable;
+    writable[0]='X';
+    assert(readable=="Xbcd");
+    assert(original=="abcd" && copied=="Xbcd");
+    Option<String const&> borrowed=Option<String const&>::Value(&original);
+    assert(borrowed.unwrap()=="abcd");
+    assert(borrowText(&original)=="abcd");
+    assert(TextBorrow::view(&original)=="abcd");
+    assert(original=="abcd");
+    List<String> words; words.push(original);
+    List<String> copiedWords=words;
+    assert(copiedWords[0]=="abcd");
+    (String,int64) pair=(copied,(int64)7);
+    (String,int64) pairCopy=pair;
+    assert(pairCopy.0=="Xbcd" && pairCopy.1==7);
+    ((String,int64),String) nested=(pair,"nested");
+    assert((nested.0).0=="Xbcd" && nested.1=="nested");
+    TextBox<String> first;first.value=original;
+    TextBox<String> second=first;
+    assert(second.value=="abcd");
+    auto inferred=fn (value){value};
+    assert(inferred("inferred")=="inferred");
+    String fn(String) transform=copyText;
+    assert(transform(original)=="abcd");
+    assert(__typeTag(std::lang::String)==__typeTag(std::lang::String));
+    assert(__typeTag(String)==__typeTag(String));
+    int64 string=3;assert(string==3);
+    println("String type OK");
+    return 0;
+}

@@ -1,0 +1,1 @@
+magel：example/samples-error/printf_format.mgl 第 4 行第 5 列：整数和 bool 的格式仅支持 `:b`、`:x`、`:X`：收到 `:Q`

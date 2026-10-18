@@ -1,0 +1,50 @@
+/* macro_rest_paren.mgl —— 变长尾参的括号标注：每个元素各包一层括号
+ *
+ *   ./magel samples/macro_rest_paren.mgl
+ *
+ * 形参表末尾写 `...(values)`（括号包住尾参名）：宏体里 `values` 仍按 `, ` 摊开，
+ * 但**每个元素**各包一层括号 —— `values` → `(1), (2), (3)`。`$for v in values` 的
+ * 循环变量也跟着变成 `(元素)`，所以 `v * v` 遇到 `1 + 1` 不会散成 `1 + 1 * 1 + 1`。
+ * 不作括号标注就是原样替换（对照 `SUM_SQUARES_PLAIN`）。宏名前的 `expr` 仍然给整段展开包一层。
+ * 两个标记可以叠加：`` $macro expr PAIR(...(values)) `` 先给每个尾参元素各包一层，再给整段包一层，
+ * `$PAIR(1 + 1, 2 + 2)` 得 `((1 + 1), (2 + 2))`——整段那层括号让两个元素合成一个元组实参。
+ *
+ * 旧反引号标注已废除；省略括号仅在 expr 宏中默认保护每个元素。
+ */
+
+$macro SUM_SQUARES(...(values))
+int64 totalA = 0;
+$for v in values
+totalA = totalA + v * v;
+$end_for
+println("平方和 = {}", totalA);
+$end_macro
+
+$macro SUM_SQUARES_PLAIN(...values)
+int64 totalB = 0;
+$for v in values
+totalB = totalB + v * v;
+$end_for
+println("平方和 = {}", totalB);
+$end_macro
+
+$macro expr SUM3(...values)
+sum3(values)
+$end_macro
+
+/* `!` 与 `` ` `` 叠加：每个元素各包一层，整段再包一层。 */
+$macro expr PAIR(...(values))
+values
+$end_macro
+
+int64 sum3(int64 a, int64 b, int64 c) { return a + b + c; }
+int64 pairCode((int64, int64) pair) { return (pair.0) * 10 + (pair.1); }
+
+int64 main() {
+    $SUM_SQUARES(1 + 1, 2 + 1)        /* (1+1)^2 + (2+1)^2 = 13 */
+    $SUM_SQUARES_PLAIN(1 + 1, 2 + 1)  /* 1+1*1+1 + 2+1*2+1 = 8 */
+    println("{}", $SUM3(1, 2, 3) * 10);   /* `!` 整段加括号 = 60 */
+    /* 元素加括号 + 整段加括号：(2, 4) 是一个元组实参；少了外层的 `!` 就变成两个实参。 */
+    println("{}", pairCode($PAIR(1 + 1, 2 + 2)));
+    return 0;
+}

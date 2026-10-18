@@ -1,0 +1,1 @@
+magel：example/samples-error/pointer_write.mgl 第 6 行第 5 列：只读引用（`T const&`）只能读，不能写入元素或成员

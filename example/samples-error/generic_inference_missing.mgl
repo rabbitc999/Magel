@@ -1,0 +1,2 @@
+T make<T>() { T value; return value; }
+int64 main() { make(); return 0; }

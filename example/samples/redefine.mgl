@@ -1,0 +1,21 @@
+/* 函数**重复定义**：同名同签名时，**后面的覆盖前面的**（前面的那份函数体丢掉）。
+ * 编译器会在 stderr 上打一条提示，但不影响编译结果 —— 所以样例输出只看 stdout。
+ *
+ * 注意与**重载**的区别：签名不一样（形参类型不同）时两份都在，按实参类型挑。 */
+
+int64 banner() { return 1; }        /* 第一版：被下面的顶掉 */
+int64 banner() { return 2; }        /* 第二版：生效 */
+
+int64 twice(int64 x) { return x * 2; }
+int64 twice(int64 x) { return x + 100; }   /* 覆盖上一版 */
+
+/* 这两份签名不同 → 是重载，都会保留 */
+int64 pick(int64 x) { return x; }
+float64 pick(float64 x) { return x * 2.0; }
+
+int64 main() {
+    println("banner() = {}", banner());
+    println("twice(5) = {}", twice(5));
+    println("pick(21) = {}，pick(2.5) = {:3F}", pick(21), pick(2.5));
+    return 0;
+}

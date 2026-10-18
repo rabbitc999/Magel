@@ -1,0 +1,1 @@
+magel：example/samples-error/reference_uninitialized.mgl 第 1 行第 1 列：引用声明必须初始化，缺省值请使用 Option<T mut&>

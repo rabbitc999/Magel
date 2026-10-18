@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1560" height="900" viewBox="0 0 1560 900">
+  <rect width="1560" height="900" fill="#f4f7fb"/>
+  <text x="40" y="58" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="33" font-weight="700" fill="#10233f">Magel 0.9.1 · Compilation</text>
+  <text x="40" y="95" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="19" fill="#4a5b73">Source → generated front end → checked IR → execution / bytecode / AOT</text>
+  <rect x="40" y="145" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
+  <text x="260" y="175" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">1  Source</text>
+  <text x="260" y="205" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">.mgl + imports</text>
+  <text x="260" y="235" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Embedded standard library</text>
+  <rect x="560" y="145" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
+  <text x="780" y="175" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">2  Preprocessing</text>
+  <text x="780" y="205" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Macros and conditional compilation</text>
+  <text x="780" y="235" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Source locations retained</text>
+  <rect x="1080" y="145" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
+  <text x="1300" y="175" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">3  Parsing</text>
+  <text x="1300" y="205" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">magel.gram → generated parser</text>
+  <text x="1300" y="235" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Build syntax nodes</text>
+  <rect x="1080" y="335" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
+  <text x="1300" y="365" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">4  Semantic lowering</text>
+  <text x="1300" y="395" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Types, overloads, monomorphisation</text>
+  <text x="1300" y="425" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Nested types and tuples</text>
+  <rect x="560" y="335" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
+  <text x="780" y="365" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">5  Borrow checking</text>
+  <text x="780" y="395" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Control flow and reference origins</text>
+  <text x="780" y="425" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Collect diagnostics</text>
+  <rect x="40" y="335" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
+  <text x="260" y="365" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">6  Intermediate output</text>
+  <text x="260" y="395" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Quadruples and data layout</text>
+  <text x="260" y="425" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Compiler IR, absent from .svmb</text>
+  <polyline points="480,205 560,205" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="560,205 549,210 549,200" fill="#8ea2bb"/>
+  <polyline points="1000,205 1080,205" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="1080,205 1069,210 1069,200" fill="#8ea2bb"/>
+  <polyline points="1300,265 1300,335" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="1300,335 1295,324 1305,324" fill="#8ea2bb"/>
+  <polyline points="1080,395 1000,395" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="1000,395 1011,390 1011,400" fill="#8ea2bb"/>
+  <polyline points="560,395 480,395" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="480,395 491,390 491,400" fill="#8ea2bb"/>
+  <polyline points="260,455 260,535" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="260,535 255,524 265,524" fill="#8ea2bb"/>
+  <rect x="40" y="535" width="1480" height="120" rx="15" fill="#eaf6ef" stroke="#bfe0cc" stroke-width="1"/>
+  <text x="780" y="565" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">7  Assemble VM instructions</text>
+  <text x="780" y="595" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Bind types and labels; lower integer operations and comparison branches for bytecode</text>
+  <text x="780" y="625" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Keep source-PC mapping for diagnostics and precise execution</text>
+  <polyline points="260,655 260,720" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="260,720 255,709 265,709" fill="#8ea2bb"/>
+  <rect x="40" y="720" width="440" height="120" rx="15" fill="#eaf6ef" stroke="#bfe0cc" stroke-width="1"/>
+  <text x="260" y="750" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">In-memory execution</text>
+  <text x="260" y="780" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Program → desktop VM</text>
+  <text x="260" y="810" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">No bytecode file required</text>
+  <polyline points="780,655 780,720" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="780,720 775,709 785,709" fill="#8ea2bb"/>
+  <rect x="560" y="720" width="440" height="120" rx="15" fill="#eaf6ef" stroke="#bfe0cc" stroke-width="1"/>
+  <text x="780" y="750" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">.svmb · format 5</text>
+  <text x="780" y="780" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">VM code + internal execution sequence</text>
+  <text x="780" y="810" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Desktop / embedded VM</text>
+  <polyline points="1300,655 1300,720" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="1300,720 1295,709 1305,709" fill="#8ea2bb"/>
+  <rect x="1080" y="720" width="440" height="120" rx="15" fill="#eaf6ef" stroke="#bfe0cc" stroke-width="1"/>
+  <text x="1300" y="750" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">AOT native program</text>
+  <text x="1300" y="780" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Generated C++ → native compiler</text>
+  <text x="1300" y="810" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Executable + runtime services</text>
+</svg>

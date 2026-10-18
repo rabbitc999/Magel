@@ -1,0 +1,1 @@
+magel：example/samples-error/string_byte_bool.mgl 第 3 行第 5 列：std::lang::String 下标只能写 char（整数请显式强转）：现在写的是 bool

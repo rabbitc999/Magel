@@ -1,0 +1,8 @@
+thread=0 timer-thread=0 bound=1
+unbound source=7
+unbound-fired=1
+foreign-fired=1
+fallback-own-callback=0
+bound source=3
+bound-fired=1
+dropped-fired=1

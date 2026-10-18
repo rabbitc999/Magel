@@ -1,0 +1,20 @@
+import std::text;
+
+/* StringBuilder 冒烟样例：追加、清空与 toString。 */
+int64 main() {
+    StringBuilder builder = StringBuilder::create();
+    builder.append("hello");
+    builder.appendChar(' ');
+    builder.append("world");
+    builder.appendInt(42);
+    builder.appendBool(true);
+    builder.appendFloat(1.5);
+    builder.appendLine("!");
+    print("len={}", builder.len());
+    print(builder.toString());
+    builder.clear();
+    print("after clear len={} empty={}", builder.len(), builder.isEmpty());
+    builder.appendInt(7);
+    print("tail={}", builder.toString());
+    return 0;
+}

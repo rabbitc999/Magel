@@ -1,0 +1,88 @@
+import std::memory;
+import std::parse;
+import std::path;
+import std::random;
+
+int64 main() {
+    Result<int64, std::parse::ParseError> integer = std::parse::Parse::parseInt64("-42");
+    Result<uint64, std::parse::ParseError> natural = std::parse::Parse::parseUInt64("18446744073709551615");
+    Result<float64, std::parse::ParseError> real = std::parse::Parse::parseFloat64("12.5");
+    Result<bool, std::parse::ParseError> flag = std::parse::Parse::parseBool("true");
+    match (integer) {
+        Result<int64, std::parse::ParseError>::Ok(value) => { println("int64={}", value); }
+        Result<int64, std::parse::ParseError>::Err(error) => { println("int64=error"); }
+    }
+    match (natural) {
+        Result<uint64, std::parse::ParseError>::Ok(value) => { println("uint64={}", value); }
+        Result<uint64, std::parse::ParseError>::Err(error) => { println("uint64=error"); }
+    }
+    match (real) {
+        Result<float64, std::parse::ParseError>::Ok(value) => { println("float64={:1F}", value); }
+        Result<float64, std::parse::ParseError>::Err(error) => { println("float64=error"); }
+    }
+    match (flag) {
+        Result<bool, std::parse::ParseError>::Ok(value) => { println("bool={}", (int64)value); }
+        Result<bool, std::parse::ParseError>::Err(error) => { println("bool=error"); }
+    }
+
+    Result<int64, std::parse::ParseError> empty = std::parse::Parse::parseInt64("");
+    Result<int64, std::parse::ParseError> invalid = std::parse::Parse::parseInt64("4x");
+    Result<int64, std::parse::ParseError> overflow =
+    std::parse::Parse::parseInt64("999999999999999999999999");
+    match (empty) {
+        Result<int64, std::parse::ParseError>::Ok(value) => { println("empty=bad"); }
+        Result<int64, std::parse::ParseError>::Err(error) => {
+            match (error) {
+                std::parse::ParseError::Empty => { println("empty=ok"); }
+                _ => { println("empty=bad"); }
+            }
+        }
+    }
+    match (invalid) {
+        Result<int64, std::parse::ParseError>::Ok(value) => { println("invalid=bad"); }
+        Result<int64, std::parse::ParseError>::Err(error) => {
+            match (error) {
+                std::parse::ParseError::Invalid => { println("invalid=ok"); }
+                _ => { println("invalid=bad"); }
+            }
+        }
+    }
+    match (overflow) {
+        Result<int64, std::parse::ParseError>::Ok(value) => { println("overflow=bad"); }
+        Result<int64, std::parse::ParseError>::Err(error) => {
+            match (error) {
+                std::parse::ParseError::Overflow => { println("overflow=ok"); }
+                _ => { println("overflow=bad"); }
+            }
+        }
+    }
+
+    std::random::Random first = std::random::Random::withSeed((uint64)7);
+    std::random::Random second = std::random::Random::withSeed((uint64)7);
+    uint64 firstValue = first.nextUInt64();
+    uint64 secondValue = second.nextUInt64();
+    assert(firstValue == secondValue);
+    println("random={},{}", firstValue, first.nextInt(-10, 10));
+    std::random::Random entropy = std::random::Random::fromEntropy();
+    entropy.nextUInt64();
+
+    String joined = std::path::PathString::join("alpha/beta", "../gamma.txt");
+    String name = std::path::PathString::fileName("alpha/gamma.txt");
+    String extension = std::path::PathString::extension("alpha/gamma.txt");
+    String normalized = std::path::PathString::normalize("a\\b/./c/../d");
+    println("path={}", joined);
+    println("name={} ext={}", name, extension);
+    println("normalized={}", normalized);
+
+    int64 before = std::memory::Memory::stats().liveBytes;
+    std::memory::Arena arena = std::memory::Arena::create();
+    std::memory::Span<char> bytes = arena.allocate(16);
+    assert(bytes.len() == 16);
+    int64 during = std::memory::Memory::stats().liveBytes;
+    assert(during >= before + 16);
+    arena.reset();
+    int64 after = std::memory::Memory::stats().liveBytes;
+    assert(after <= during - 16);
+    println("memory=ok");
+    return 0;
+}

@@ -1,0 +1,7 @@
+struct Number { int64 value; };
+
+Number operator+(Number left, Number right) {
+    return left;
+}
+
+int64 main() { return 0; }

@@ -1,0 +1,26 @@
+/* 正则的"限制"已尽量放开：不再有 4096 字节模式串上限、也不再限定 256 条编译上限。
+ * 这里验证：超长模式能编、几百条不同模式也能编，而且宿主侧不泄漏（活块数不变）。 */
+import std::memory;
+import std::regex;
+
+int64 main() {
+    String oversized = "";
+    for (int64 i = 0; i < 4097; i = i + 1) { oversized = oversized + "a"; }
+    Result<std::regex::Regex, std::regex::RegexError> longRule = std::regex::Regex::compile(oversized);
+    assert(longRule.isOk());
+    assert(longRule.unwrap().fullMatch(oversized));
+
+    int64 before = std::memory::Memory::stats().liveBlocks;
+    for (int64 i = 0; i < 300; i = i + 1) {
+        Result<std::regex::Regex, std::regex::RegexError> item =
+        std::regex::Regex::compile(format("x{}y", i));
+        assert(item.isOk());
+    }
+    int64 after = std::memory::Memory::stats().liveBlocks;
+    assert(after == before);
+
+    Result<std::regex::Regex, std::regex::RegexError> bad = std::regex::Regex::compile("[");
+    assert(bad.isErr());
+    println("regex limits OK");
+    return 0;
+}

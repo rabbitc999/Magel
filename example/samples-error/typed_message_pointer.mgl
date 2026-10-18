@@ -1,0 +1,9 @@
+
+import std::coroutine;
+import std::message;
+
+int64 main() {
+    int64 value = 1;
+    std::message::sendCoroutine<int64 mut&>(std::coroutine::current(), &value);
+    return 0;
+}

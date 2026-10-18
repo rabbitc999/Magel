@@ -1,0 +1,6 @@
+[package]
+name = "module-compilation"
+version = "0.1.0"
+
+[magel]
+import_paths = ["."]

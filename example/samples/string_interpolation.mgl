@@ -1,0 +1,16 @@
+$replace ECHO(value) $stringify(value)
+$replace f "prefix"
+int64 counter=0;
+int64 next(){counter=counter+1;return counter;}
+int64 main(){
+    int64 f=7;String ordinary="{f}";assert(ordinary=="{f}");
+    String text=f"value {f+1} {next()} {next()} \{literal\} {f"inner {3}"}";
+    assert(text=="value 8 1 2 {literal} inner 3");assert(counter==2);
+    text=f"{if(false){next()}else{4}} {match(f){7=>{5}_=>{6}}}";assert(text=="4 5");assert(counter==2);
+    text=f"{format("{}", f)} {"quote"}";assert(text=="7 quote");
+    assert($ECHO(f"hello {3}")=="f\"hello {3}\"");assert($stringify(f"hello {3}")=="f\"hello {3}\"");
+    String plain=$f"suffix";assert(plain=="prefixsuffix");
+    String multiline=f"first
+second";assert(multiline=="first\nsecond");
+    println("interpolation ok");return 0;
+}

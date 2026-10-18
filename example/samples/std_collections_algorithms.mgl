@@ -1,0 +1,69 @@
+import std::collections;
+
+import std::memory;
+
+import std::algorithms;
+
+bool positive(int64 value) { return value > 0; }
+int64 addValues(int64 left, int64 right) { return left + right; }
+
+int64 main() {
+    List<int64> values;
+    values.push(4);
+    values.push(1);
+    values.push(3);
+    List<int64> sorted = std::algorithms::sortValue<int64>(values);
+    println("{} {} {} {} {}", sorted[0], sorted[1], sorted[2],
+    std::algorithms::binarySearchValue<int64>(sorted, 3),
+    std::algorithms::foldValue<int64>(sorted, 0, addValues));
+    println("{} {} {}", values[0], values[1], values[2]);
+
+    List<float64> stableValues;
+    stableValues.push(-0.0);
+    stableValues.push(2.0);
+    stableValues.push(0.0);
+    stableValues.push(1.0);
+    List<float64> stableSorted = std::algorithms::sortValue<float64>(stableValues);
+    println("{1:1F} {2:1F} {3:1F} {4:1F}", stableSorted[0], stableSorted[1],
+    stableSorted[2], stableSorted[3]);
+    println("{} {} {} {} {}", std::algorithms::findValue<int64>(sorted, 4),
+    std::algorithms::minValue<int64>(9, 2), std::algorithms::maxValue<int64>(9, 2),
+    std::algorithms::clampValue<int64>(12, 0, 10),
+    std::algorithms::allValue<int64>(sorted, positive));
+    println("{} {} {} {}", std::algorithms::minValue<int64>(9, 2, 7, -1),
+    std::algorithms::maxValue<int64>(9, 2, 12, 7),
+    std::algorithms::minValue<int64>(5), std::algorithms::maxValue<int64>(6));
+
+    std::collections::Deque<int64> deque = std::collections::Deque<int64>::create();
+    deque.pushBack(2);
+    deque.pushFront(1);
+    println("{} {} {}", deque.len(), deque.popFront().unwrap(),
+    deque.popBack().unwrap());
+
+    std::collections::Queue<int64> queue = std::collections::Queue<int64>::create();
+    queue.push(7);
+    queue.push(8);
+    println("{} {}", queue.peek().unwrap(), queue.pop().unwrap());
+
+    std::collections::RingBuffer<int64> ring = std::collections::RingBuffer<int64>::withCapacity(2);
+    println("{} {} {}", ring.push(5), ring.push(6), ring.push(7));
+    println("{} {}", ring.pop().unwrap(), ring.available());
+
+    std::collections::FixedVector<int64> fixed = std::collections::FixedVector<int64>::withCapacity(1);
+    println("{} {} {}", fixed.push(9), fixed.push(10), fixed[0]);
+
+    int64 raw[] = new[2];
+    raw[0] = 11;
+    raw[1] = 12;
+    std::memory::Span<int64> span = std::memory::Span<int64>::from(&raw[0], len(raw));
+    println("{} {} {}", span.len(), span[0], span[1]);
+
+    std::collections::Channel<int64> channel = std::collections::Channel<int64>::create();
+    channel.send(21);
+    println("{} {}", channel.len(), channel.receive().unwrap());
+
+    Pair<int64, String> pair = Pair<int64, String>::of(7, "seven");
+    println("{} {}", pair.first, pair.second);
+    delete raw;
+    return 0;
+}

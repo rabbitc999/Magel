@@ -1,0 +1,1 @@
+magel：example/samples-error/import_name_ambiguous.mgl 第 3 行第 1 列：名称 duplicate 有歧义：names::left::duplicate 与 names::right::duplicate；请使用作用域限定名

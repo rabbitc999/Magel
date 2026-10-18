@@ -1,0 +1,1 @@
+main-thread=0 main-fired=1 worker-fired:thread=1:1 isolated=1

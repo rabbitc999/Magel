@@ -1,0 +1,3 @@
+array 5 10 12 15 20
+reversed 12 10
+linkedlist OK

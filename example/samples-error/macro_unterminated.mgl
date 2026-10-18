@@ -1,0 +1,2 @@
+$macro ADD(x, y)
+((x) + (y))

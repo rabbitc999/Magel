@@ -1,0 +1,36 @@
+/* struct_container_field.mgl —— 结构体的容器字段默认就是空容器
+ *
+ * `Bag b;` 之后 `b.items` 不再是一个 0 句柄，而是当场建好的空列表：
+ * 可以直接 `push`；给字段重新赋值（`c.items = make(3)`）时旧值会被先释放，
+ * 不会把默认构造出来的那个空列表漏掉。
+ * 赋值按值语义：`d.items = other;` 复制一份，之后改 `other` 不影响 `d`；
+ * 自赋值 `c.items = c.items;` 也安全（先复制、再还旧句柄）。
+ */
+struct Bag {
+    List<int64> items;
+};
+
+List<int64> make(int64 value) {
+    List<int64> list;
+    list.push(value);
+    return list;
+}
+
+int64 main() {
+    Bag b;
+    b.items.push(7);
+    b.items.push(8);
+
+    Bag c;
+    c.items = make(3);
+    c.items = c.items;
+
+    List<int64> other;
+    other.push(5);
+    Bag d;
+    d.items = other;
+    other.push(6);
+
+    println("{} {} {} {}", b.items.len(), b.items[0], c.items[0], d.items.len());
+    return 0;
+}

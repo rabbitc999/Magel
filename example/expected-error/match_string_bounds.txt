@@ -1,0 +1,1 @@
+magel：example/samples-error/match_string_bounds.mgl 第 1 行第 1 列：字符串区间的两个端点必须是字符串常量

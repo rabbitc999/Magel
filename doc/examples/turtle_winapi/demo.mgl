@@ -1,0 +1,55 @@
+/* WinAPI 海龟绘图：DLL 通过 C ABI 提供绘图函数，Magel 只声明宿主签名。 */
+int32 turtle_open(int32 width, int32 height);
+void turtle_forward(float64 distance);
+void turtle_left(float64 degrees);
+void turtle_pen(int32 down);
+void turtle_color(uint32 rgb);
+void turtle_clear();
+int32 turtle_save_bmp(String path);
+void turtle_wait();
+void turtle_close();
+
+void koch(int64 depth, float64 distance) {
+    if (depth == 0) {
+        turtle_forward(distance);
+        return;
+    }
+    float64 third = distance / 3.0;
+    koch(depth - 1, third);
+    turtle_left(60.0);
+    koch(depth - 1, third);
+    turtle_left(-120.0);
+    koch(depth - 1, third);
+    turtle_left(60.0);
+    koch(depth - 1, third);
+}
+
+int64 main(List<String> arguments) {
+    if (turtle_open((int32)900, (int32)700) == 0) {
+        panic("无法打开 WinAPI 海龟窗口");
+    }
+    turtle_clear();
+    turtle_pen((int32)0);
+    turtle_left(180.0);
+    turtle_forward(150.0);
+    turtle_left(180.0);
+    turtle_pen((int32)1);
+
+    turtle_color((uint32)1920728);   // 蓝色 #1D4ED8
+    koch(4, 300.0);
+    turtle_left(-120.0);
+    turtle_color((uint32)14427686);  // 红色 #DC2626
+    koch(4, 300.0);
+    turtle_left(-120.0);
+    turtle_color((uint32)366185);    // 绿色 #059669
+    koch(4, 300.0);
+
+    if (turtle_save_bmp("turtle.bmp") == 0) {
+        turtle_close();
+        panic("保存 turtle.bmp 失败");
+    }
+    println("已保存 turtle.bmp；关闭窗口结束程序");
+    if (arguments.len() == 0) { turtle_wait(); }
+    else { turtle_close(); }  // 自动化验收：demo.exe close
+    return 0;
+}

@@ -1,0 +1,1 @@
+magel：example/samples-error/loop_mixed_break.mgl 第 2 行第 6 列：同一个 loop 不能混用 `break;` 与 `break value;`

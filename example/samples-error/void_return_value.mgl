@@ -1,0 +1,8 @@
+void wrong() {
+    return 7;
+}
+
+int64 main() {
+    wrong();
+    return 0;
+}

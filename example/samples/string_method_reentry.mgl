@@ -1,0 +1,52 @@
+import std::text;
+import std::net;
+import std::sql;
+
+/** @brief 验证局部字符串、循环和同一接收者重复调用的所有权。 */
+struct Headers {
+    String headers;
+    /** @brief 按忽略大小写的名字读取头部值。 */
+    String header(String name) {
+        List<String> lines = std::text::Text::split(self.headers, "\r\n");
+        String wanted = std::text::Text::toLower(name);
+        for (int64 i = 0; i < len(lines); i = i + 1) {
+            String line = "";
+            line = line + lines[i];
+            int64 colon = std::text::Text::find(line, ":");
+            if (colon < 0) { continue; }
+            String key = std::text::Text::toLower(line[0:colon]);
+            if (key == wanted) {
+                String value = line[(colon + 1):];
+                return std::text::Text::trim(value);
+            }
+        }
+        return "";
+    }
+};
+int64 main() {
+    /* 导出程序也必须注册网络与 SQL 宿主接口；无效句柄无需外部服务。 */
+    assert(std::sql::__sqlClose((int32)0) == (int32)-1);
+    assert(std::net::__netClose((int32)-1) == (int32)-1);
+    Headers r;
+    r.headers = "A: alpha\r\nB: beta\r\nC: gamma\r\n";
+    println("{} {}", r.header("A"), r.header("B"));
+    println("{} {}", r.header("C"), r.header("A"));
+    assert(r.headers == "A: alpha\r\nB: beta\r\nC: gamma\r\n");
+    std::net::HttpResponse response;
+    response.headers = "Content-Length: 5\r\ninvalid\r\nContent-Type: text/plain\r\n";
+    println("{} {}", response.header("Content-Length"), response.header("content-type"));
+    for (int64 i = 0; i < 12; i = i + 1) {
+        assert(response.header("content-type") == "text/plain");
+        assert(response.header("missing") == "");
+    }
+    assert(response.headers == "Content-Length: 5\r\ninvalid\r\nContent-Type: text/plain\r\n");
+    /* 第一轮的临时地址在第二轮分配给 guard，自动清理必须清掉旧槽。 */
+    for (int64 i = 0; i < 3; i = i + 1) {
+        String first = "";
+        String guard = "";
+        if (i > 0) { guard = "kept"; }
+        println("{}", std::text::Text::toLower("VALUE"));
+        if (i > 0) { assert(guard == "kept"); }
+    }
+    return 0;
+}

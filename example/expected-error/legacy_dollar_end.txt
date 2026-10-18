@@ -1,0 +1,1 @@
+magel：前处理：example/samples-error/legacy_dollar_end.mgl 第 2 行：缺少 $end_macro

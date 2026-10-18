@@ -1,0 +1,1 @@
+int64 main() { match ("a") { ["a", 3] => { } _ => { } } return 0; }

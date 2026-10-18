@@ -1,0 +1,16 @@
+struct Metric { int64 amount; };
+
+int64 sumMetrics(Metric... items) {
+    int64 total = 0;
+    for (Metric item in items) { total = total + item.amount; }
+    return total;
+}
+
+int64 main() {
+    Metric left;
+    left.amount = 3;
+    Metric right;
+    right.amount = 4;
+    println("{}", sumMetrics(left, right));
+    return 0;
+}

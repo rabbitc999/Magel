@@ -1,0 +1,4 @@
+loop=7
+match=seven
+ok=40
+propagated=bad input

@@ -1,0 +1,11 @@
+scale  40 10 30 10 50 20
+sort   10 10 20 30 40 50
+find   3 4
+miss   -1 -1
+minmax 10 7 117
+count  2 0
+rev    7 40 30 20 10 10
+shuf   30 40 7 10 20 10
+empty  1
+items  b c a
+first  102

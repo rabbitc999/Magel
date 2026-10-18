@@ -1,0 +1,1 @@
+magel：前处理：example/samples-error/macro_gensym_outside.mgl 第 3 行：占位符 `$1` 只能出现在 `$macro` / `$replace` 的宏体内

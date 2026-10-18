@@ -1,0 +1,356 @@
+\chapter{交付与部署}
+\label{ch:22}
+
+代码写完了，怎么把它交出去？交给同事、交给客户、交到一块板子上——这三种情况要的东西不一样。这一章讲 Magel 给的三种跑法和它们的加固手段。
+
+\section{三种跑法}
+
+同一份 Magel 逻辑，有三种执行方式：
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.144\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.207\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.126\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.324\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.180\linewidth-2\tabcolsep\relax}}
+\toprule
+方式 & 命令 & 启动速度 & 需要什么才能跑 & 适合 \\
+\midrule
+\endhead
+解释执行 & \texttt{magel run app.\allowbreak{}mgl} & 每次都要编译 & Magel 工具链 & 开发、脚本、工具 \\
+字节码 & \texttt{magel svmb app.\allowbreak{}mgl …} & 快 & StackVM + \texttt{.\allowbreak{}svmb} & 交付、嵌入式、热更新 \\
+AOT 本地程序 & \texttt{magel aot app.\allowbreak{}mgl …} & 不经过 VM 装载 & 运行时服务编入产物，外部依赖仍须准备 & 本地交付、性能敏感 \\
+\bottomrule
+\end{longtable}
+}
+
+一句话选型：开发用 \texttt{run}，要交给别人用 \texttt{.\allowbreak{}svmb}，要本地代码交付用 AOT。
+
+这一章下面都用同一个 hello 程序举例：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    println("hello, delivery");
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+hello, delivery
+\end{lstlisting}
+\par
+\medskip
+
+\section{解释执行：开发者的默认档}
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel run src/main.mgl
+\end{lstlisting}
+\par
+\medskip
+
+预处理 \ensuremath{\rightarrow} 解析检查 \ensuremath{\rightarrow} 降级成四元式 \ensuremath{\rightarrow} 在同一个进程里跑起来。改完立刻看结果，不用等任何构建。前面二十一章你一直用的是这个。
+
+它的问题也在这：每次运行都要重新编译一遍。给用户交付时，你不能要求对方装一整套工具链。
+
+\section{字节码：\texttt{.\allowbreak{}svmb}}
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel svmb src/main.mgl --out build/app
+\end{lstlisting}
+\par
+\medskip
+
+产物是一组文件，其中主角是 \texttt{build/\allowbreak{}app.\allowbreak{}svmb}——交给 StackVM 加载执行。这是交付的主推形态，原因有三：
+
+\begin{enumerate}
+
+\item 不需要编译器：只要一个 VM（几百 KB）就能跑；
+
+\item 跨平台：同一份 \texttt{.\allowbreak{}svmb} 在各平台的 VM 上都能跑，不用维护多份构建；
+
+\item 可加固：能压缩符号（见 22.5）。
+
+\end{enumerate}
+
+\texttt{--out} 决定产物前缀，同时会生成配套的 \texttt{.\allowbreak{}quad} / \texttt{.\allowbreak{}data.\allowbreak{}bin} / \texttt{.\allowbreak{}layout}。下发给客户默认只需要那个 \texttt{.\allowbreak{}svmb}。
+
+\begin{tip}{提示}
+\texttt{magel svmb} 默认不带调试节——它会明确告诉你「不带调试节（缺省）」。要留着调试信息，用 \texttt{--debug}。
+\end{tip}
+
+\section{AOT：编成本地可执行文件}
+
+需要库时，源码可省略 main，使用 export 声明公开函数，再按产物选择命令：
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel aot math.mgl --out math.dll  # Windows GCC 目标
+magel aot math.mgl --out math.so   # Linux GCC 目标
+magel aot math.mgl --out math.o    # 目标文件，供宿主链接
+\end{lstlisting}
+\par
+\medskip
+
+三者均附带 C 头文件，宿主创建上下文后调用导出函数。--shared / --object 可显式选择类型。.o 不能直接由动态加载器加载；最终链接需准备同一工具链的 C++ 运行时与系统库。不支持 .lib / .a 静态库输出，修改扩展名不能转换 Windows / Linux ABI。
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel aot src/main.mgl out build/native
+\end{lstlisting}
+\par
+\medskip
+
+生成的 \texttt{build/\allowbreak{}native} 就是一个独立的本地程序，不要求另装 Magel VM；所需运行时服务已编入产物，系统库和使用的外部依赖仍须准备：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+已生成可执行文件：build/native（运行方式：aot）
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+./build/native
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+hello, delivery
+\end{lstlisting}
+\par
+\medskip
+
+AOT 的做法是先生成 C++，再编成目标平台的本地程序，所以机器上要有 C++ 工具链。
+
+常用选项：
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.327\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.653\linewidth-2\tabcolsep\relax}}
+\toprule
+选项 & 作用 \\
+\midrule
+\endhead
+\texttt{out 路径} / \texttt{--out 路径} & 产物路径 \\
+\texttt{opt LEVEL} / \texttt{--opt-level=\allowbreak{}N} & 优化级别（默认保持数值语义的 \texttt{-O3}；对照调试时可显式降低） \\
+\texttt{checked} / \texttt{unchecked} & 是否保留运行时检查（默认 \texttt{checked}） \\
+\texttt{--separate-modules} & 按模块缓存目标文件，增量更快 \\
+\texttt{--module-cache DIR} & 指定模块缓存目录 \\
+\bottomrule
+\end{longtable}
+}
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel aot src/main.mgl out build/native checked
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+  优化级别：-O3
+\end{lstlisting}
+\par
+\medskip
+
+默认使用 \texttt{checked}，保留分配有效性检查和 panic 调用栈。显式使用 \texttt{unchecked} 可关闭这些可选检查；数组下标与基础地址检查仍然保留。性能对比应使用相同检查配置。
+
+\section{交付安全：符号压缩}
+
+普通 \texttt{.\allowbreak{}svmb} 保存可读符号名；对外交付时可以导出无名变长符号格式：
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel svmb src/main.mgl --out build/app --compress-symbols
+\end{lstlisting}
+\par
+\medskip
+
+映射表另存为 \texttt{<\allowbreak{}前缀>\allowbreak{}.\allowbreak{}symbol\_map.\allowbreak{}json}，用 \texttt{--symbol-map FILE} 可指定路径。映射表由开发方保存，用于离线定位问题。
+
+符号压缩减少体积并移除可读名字，但可执行逻辑仍可被分析。字节码加密功能已删除。交付形态及边界见\href{https://github.com/rabbitc999/Magel/blob/master/doc/05-delivery-security.md}{交付安全}。
+
+\section{嵌入式：同一份逻辑，压到板子上}
+
+板子跑不了桌面那套内存预算，也不想为了省内存换一套裁剪过的语言。Magel 的做法是共享 VM 核心，前端配置控制模块门禁与资源上限，独立 MCU 宿主还通过宏、内存池和胶水选择平台能力。配置写进 \texttt{magel.\allowbreak{}toml}：
+
+\par
+\medskip
+\begin{lstlisting}[style=cfg]
+[embedded]
+enabled = true
+restrict_modules = ["std::math"]     # 在内置禁用之外再追加
+max_memory = 1048576                 # 运行内存上限（字节）
+\end{lstlisting}
+\par
+\medskip
+
+门禁在编译期。 程序一 import 被禁的模块，直接编译报错、带源码位置，不会等到上板才发现：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+import std::net;
+
+int64 main()
+{
+    println("net 打开了");
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+在开了 \texttt{[\allowbreak{}embedded]\allowbreak{}} 的工程里跑，会得到：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel：模块：嵌入式模式不允许使用模块 std::net：它在嵌入式运行时里没有后端；
+诊断位置及具体文案以当前编译器为准；restrict_modules 只追加限制
+\end{lstlisting}
+\par
+\medskip
+
+前端配置固定禁用清单：\texttt{std:\allowbreak{}:\allowbreak{}net}、\texttt{std:\allowbreak{}:\allowbreak{}process}、\texttt{std:\allowbreak{}:\allowbreak{}sql}、\texttt{std:\allowbreak{}:\allowbreak{}io}、\texttt{std:\allowbreak{}:\allowbreak{}thread}、\texttt{std:\allowbreak{}:\allowbreak{}coroutine}、\texttt{std:\allowbreak{}:\allowbreak{}concurrency}。
+
+\texttt{restrict\_modules} 只能追加，不能解除内置禁用——这是故意的：这是前端配置的固定限制，不表示独立 MCU VM 的全部能力；后者可按实际配置接 FatFS 或协作式协程。
+
+去掉那行 \texttt{import std:\allowbreak{}:\allowbreak{}net;}，同一个工程照常跑：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+嵌入式也能跑普通程序
+\end{lstlisting}
+\par
+\medskip
+
+产物仍是普通的 \texttt{.\allowbreak{}svmb}，共同支持的功能遵循相同语义。目标 VM 的特征位、模块、胶水和内存预算须匹配，默认无反射的板端要求源程序显式 --no-reflection。
+
+\section{内存与看门狗}
+
+长期运行的设备最怕「跑着跑着崩了」。这组开关专治它：
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+选项 & 作用 \\
+\midrule
+\texttt{--memory-size 字节} & 运行时堆容量（缺省 512 MiB，最小 64） \\
+\texttt{--watchdog} & 打开软重启看门狗 \\
+\texttt{--no-watchdog} & 关闭（缺省） \\
+\texttt{--max-restarts N} & 最多软重启几次（缺省 3，隐含 \texttt{--watchdog}） \\
+\texttt{--watchdog-watermark N} & 内存水位（字节，隐含 \texttt{--watchdog}） \\
+\texttt{--step-limit N} & 本次执行的指令条数上限 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel run app.mgl --memory-size 1048576
+magel run app.mgl --watchdog --max-restarts 2
+\end{lstlisting}
+\par
+\medskip
+
+两行都照跑，输出 \texttt{hello,\allowbreak{} delivery}。
+
+看门狗的思路和「让进程崩掉」不一样：它在分配失败 / 显式请求 / 超过内存水位时重跑一遍程序，而不是让程序死在那里。这样一次偶发故障最多退化成「逻辑重启一次」，进程本身活着。配合 \texttt{--max-restarts} 限制次数，避免无脑重启。
+
+\texttt{--step-limit} 则是「这一趟最多跑多少条指令」——超了就停，防止某个死循环拖垮设备。
+
+\section{把 Magel 嵌进宿主程序}
+
+AOT 生成的 C++ 里带着一个可以直接调的入口：
+
+\par
+\medskip
+\begin{lstlisting}[style=cpp]
+static int runMagel(int argumentCount, const char *const *arguments,
+                    void *buffer, std::size_t memoryBytes);
+\end{lstlisting}
+\par
+\medskip
+
+生成的代码里，\texttt{int main(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} 被 \texttt{\#ifndef MAGEL\_NO\_MAIN} 包着——定义 \texttt{MAGEL\_NO\_MAIN} 再编译，就只剩 \texttt{run\allowbreak{}Magel} 给你的固件调用，不带自己的 \texttt{main}。
+
+典型用法：固件启动时划一块静态内存，反复调 \texttt{run\allowbreak{}Magel} 跑业务逻辑；该 static 入口供集成生成 C++ 的同一翻译单元调用。AOT 逻辑更新后须重编本地程序；要在 VM 中替换程序，加载新字节码映像，不承诺运行中栈、闭包和对象的迁移。
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+参数 & 含义 \\
+\midrule
+\texttt{argument\allowbreak{}Count} / \texttt{arguments} & 传给 Magel \texttt{main} 的参数（不含程序名） \\
+\texttt{buffer} & 运行内存缓冲区；传 \texttt{nullptr} 就让程序自己分配 \\
+\texttt{memory\allowbreak{}Bytes} & 缓冲区大小 = 运行内存上限 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+这是「C 调 Magel」的主线（第 21 章讲的三个方向之一）。
+
+\section{选型速查}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+场景 & 推荐 \\
+\midrule
+开发调试 & 解释执行 \texttt{magel run} \\
+桌面交付给最终用户 & AOT（\texttt{checked} / \texttt{unchecked} 按需） \\
+要给外部客户的交付件 & \texttt{.\allowbreak{}svmb} + \texttt{--compress-symbols} \\
+跨平台、不想维护多份构建 & \texttt{.\allowbreak{}svmb} \\
+嵌入式板端 & .svmb + 共享核心的 MCU 宿主，按需使用前端模块门禁 \\
+长期运行的设备 & 加 \texttt{--watchdog} / \texttt{--step-limit} \\
+需要替换业务程序 & VM 加载新 .svmb；宿主管理停止、清理与重新启动 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{小结}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+你会了 & 关键点 \\
+\midrule
+三种跑法 & 解释（开发）／\texttt{.\allowbreak{}svmb}（交付、嵌入式）／AOT（本地代码与编入的运行时服务） \\
+\texttt{magel svmb} & 产物前缀 \texttt{--out}；默认不带调试节 \\
+\texttt{magel aot} & 生成 C++ 再编本地程序；\texttt{checked}/\texttt{unchecked}、\texttt{opt} \\
+压缩符号 & \texttt{--compress-symbols}，另存 \texttt{<\allowbreak{}前缀>\allowbreak{}.\allowbreak{}symbol\_map.\allowbreak{}json}（要留好） \\
+嵌入式 & \texttt{magel.\allowbreak{}toml} 的 \texttt{[\allowbreak{}embedded]\allowbreak{}}；编译期门禁；不换 VM \\
+资源限制 & \texttt{--memory-size}、\texttt{--step-limit} \\
+看门狗 & \texttt{--watchdog} / \texttt{--max-restarts} / \texttt{--watchdog-watermark} \\
+嵌入宿主 & AOT + \texttt{MAGEL\_NO\_MAIN} + \texttt{run\allowbreak{}Magel}，静态内存反复调用 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{下一步}
+
+语言、工具链、交付，都讲完了。最后一章把前面二十一章的东西串起来，从零写一个真能用的程序：命令行待办清单。
+
+翻到\hyperref[ch:23]{第 23 章 综合项目}。

@@ -1,0 +1,2 @@
+# The preprocessor fixture preserves blank lines for source line mapping.
+examples/expected-debug.txt whitespace=-blank-at-eof

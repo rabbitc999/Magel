@@ -1,0 +1,3 @@
+/* 继承了一个没有声明的接口 */
+interface A : Nope { int64 a(); };
+int64 main() { return 0; }

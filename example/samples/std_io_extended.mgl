@@ -1,0 +1,22 @@
+import std::io;
+int64 main(){
+    String root="build/std-io-extended";assert(createDirectories(root).isOk());
+    String path=root+"/bytes.bin";List<uint8> bytes;bytes.push((uint8)0);bytes.push((uint8)10);bytes.push((uint8)255);bytes.push((uint8)13);
+    assert(writeAllBytes(path,bytes).unwrap()==4);
+    List<uint8> read=readAllBytes(path).unwrap();assert(read.len()==4 && read[0]==(uint8)0 && read[2]==(uint8)255);
+    assert(!readAllBytes(path,3).isOk() && !readAllText(path).isOk());
+    FileInfo info=fileInfo(path).unwrap();assert(info.isFile && !info.isDirectory && info.size==4);
+    assert(listDirectory(root).unwrap().len()>=1);
+    String renamed=root+"/renamed.bin";int64 serial=0;
+    while(fileInfo(renamed).isOk()){serial=serial+1;renamed=root+"/renamed-"+format("{}",serial)+".bin";}
+    assert(renamePath(path,renamed).isOk());
+    assert(!fileInfo(path).isOk() && fileInfo(renamed).unwrap().size==4);
+    FileStream stream=FileStream::open(renamed,"rb").unwrap();
+    assert(stream.readBytes(2).unwrap().len()==2 && stream.readBytes(9).unwrap()[0]==(uint8)255);
+    assert(stream.readBytes(1).unwrap().len()==0);stream.close();assert(!stream.readBytes(1).isOk());
+    String text=root+"/text.txt";assert(writeAllText(text,"中文\nsecond line").isOk());
+    assert(readAllText(text).unwrap()=="中文\nsecond line");
+    FileStream writer=FileStream::open(root+"/stream.bin","wb").unwrap();assert(writer.writeBytes(bytes).unwrap()==4);writer.close();
+    assert(readAllBytes(root+"/stream.bin").unwrap()[0]==(uint8)0);
+    println("File bytes, whole files and directories OK");return 0;
+}

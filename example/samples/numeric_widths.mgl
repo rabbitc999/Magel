@@ -1,0 +1,31 @@
+/* 固定位宽数值类型：窄整数按位宽回绕，float32 每步按单精度舍入。 */
+
+int64 main() {
+    int8 i8 = 127;
+    int16 i16 = 32767;
+    int32 i32 = 2147483647;
+    int64 i64 = 64;
+    uint8 u8 = 255;
+    uint16 u16 = 65535;
+    uint32 u32 = 4294967295;
+    uint64 u64 = 64;
+
+    i8 = (int8)(i8 + 1);
+    i16 = (int16)(i16 + 1);
+    i32 = (int32)(i32 + 1);
+    u8 = (uint8)(u8 + 1);
+    u16 = (uint16)(u16 + 1);
+    u32 = (uint32)(u32 + 1);
+    println("signed={},{},{},{}", i8, i16, i32, i64);
+    println("unsigned={},{},{},{}", u8, u16, u32, u64);
+
+    uint32 high = 4294967294;
+    println("u32-div={}", high / 2);
+
+    float32 single = (float32)16777216;
+    float64 wide = (float64)16777216;
+    single = single + (float32)1;
+    wide = wide + (float64)1;
+    println("float64={:3F},{:3F}", single, wide);
+    return 0;
+}

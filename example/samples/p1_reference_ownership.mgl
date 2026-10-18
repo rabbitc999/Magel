@@ -1,0 +1,162 @@
+// P1：字符引用、值形参、借用返回值与 for 元素生命周期。
+struct Value {
+    int64 number;
+    String text;
+    Set<int64> values;
+    int64 read() { return self.number; }
+    String readText() { return self.text; }
+    void increment() { self.number = self.number + 1; }
+};
+String globalText = "global";
+Set<int64> globalValues;
+Value globalValue;
+String globalCopy() { return globalText; }
+Set<int64> globalSetCopy() { return globalValues; }
+Value globalStructCopy() { return globalValue; }
+String identity(String input) { return input; }
+BigDecimal decimalIdentity(BigDecimal input) { return input; }
+int64 decimalToInt(BigDecimal input) { return (int64)input; }
+void changeText(String input) { input[0] = 'X'; input = "local"; }
+void changeSet(Set<int64> input) { input.add(7); }
+Value changeValue(Value input) {
+    input.number = 9;
+    input.text[0] = 'X';
+    input.values.add(7);
+    return input;
+}
+String borrowField(Value const& input) { return input.text; }
+Set<int64> borrowSetField(Value const& input) { return input.values; }
+String recurse(String input, int64 depth) {
+    if (depth == 0) { return input; }
+    String nested = recurse(input, depth - 1);
+    assert(input == "recursive");
+    return nested;
+}
+Value recurseValue(Value input, int64 depth) {
+    if (depth == 0) { return input; }
+    Value nested = recurseValue(input, depth - 1);
+    assert(input.number == 1 && input.text == "abc");
+    return nested;
+}
+void writeChar(char mut& value) { value = 'Z'; }
+void increment(int64 mut& value) { value = value + 1; }
+String first(List<String> mut& source) {
+    for (String item in source) { item[0] = 'R'; return item; }
+    return "";
+}
+
+struct Factory {
+    static String echo(String input) { return input; }
+    static Set<int64> echoSet(Set<int64> input) { return input; }
+};
+int64 main() {
+    for (int64 round = 0; round < 3; round = round + 1) {
+        String text = "abc";
+        char mut& head = &text[0];
+        char const& tail = &text[2];
+        assert(head == 'a' && tail == 'c');
+        head = 'X';
+        assert(text == "Xbc" && tail == 'c');
+        writeChar(&text[2]);
+        assert(text == "XbZ");
+        *head = 'a';
+        assert(*head == 'a' && text == "abZ");
+        char scalar = 'a';
+        writeChar(&scalar);
+        assert(scalar == 'Z');
+        char characters[2]; characters[0] = 'a'; characters[1] = 'b';
+        writeChar(&characters[1]);
+        assert(characters[0] == 'a' && characters[1] == 'Z');
+        String longText = "abcdefghi";
+        writeChar(&longText[0]);
+        assert(longText == "Zbcdefghi");
+
+        String caller = "alive";
+        changeText(caller);
+        { String copy = identity(caller); copy[0] = 'X'; }
+        assert(caller == "alive");
+        String recursive = recurse("recursive", 4);
+        assert(recursive == "recursive");
+        String fn(String) function = identity;
+        String indirect = function(caller + "!");
+        String fromStatic = Factory::echo(caller + "!");
+        assert(indirect == "alive!" && fromStatic == "alive!");
+        assert(decimalToInt(decimalIdentity(BigDecimal("7.9"))) == 7);
+
+        Set<int64> values;
+        values.add(1);
+        changeSet(values);
+        assert((values.has(1) != 0) && (values.has(7) == 0));
+        auto fromStaticSet = Factory::echoSet(values.copy());
+        fromStaticSet.add(2);
+        assert((values.has(2) == 0));
+        Value original;
+        original.number = 1; original.text = "abc"; original.values.add(1);
+        Value changed = changeValue(original);
+        assert(original.number == 1 && original.text == "abc" && (original.values.has(7) == 0));
+        assert(changed.number == 9 && changed.text == "Xbc" && (changed.values.has(7) != 0));
+        Value recursiveValue = recurseValue(original, 3);
+        assert(recursiveValue.text == "abc" && original.text == "abc");
+        { String copy = borrowField(&original); copy[0] = 'Q'; }
+        { auto copy = borrowSetField(&original); copy.add(9); }
+        assert(original.text == "abc" && (original.values.has(9) == 0));
+        Value const& readonly = &original;
+        assert(readonly.read() == 1 && readonly.readText() == "abc");
+        ((Value mut&)readonly).increment();
+        assert(original.number == 2);
+
+        List<String> words;
+        words.push("abc"); words.push("def");
+        for (String item in words) {
+            item[0] = 'X';
+            assert(words[0] == "Xbc" || words[1] == "Xef");
+            if (item == "Xbc") { continue; }
+            item = "last";
+            break;
+        }
+        assert(words[0] == "Xbc" && words[1] == "last");
+        String returned = first(&words);
+        assert(returned == "Rbc" && words[0] == "Rbc");
+        for (String item in words) {
+            words[0] = "replacement";
+            assert(item == "replacement");
+            String snapshot = words[0];
+            auto listSnapshot = words.copy();
+            item[0] = 'Q';
+            assert(snapshot == "replacement" && listSnapshot[0] == "replacement" && words[0] == "Qeplacement");
+            break;
+        }
+        List<Set<int64> > sets; sets.push(values);
+        for (Set<int64> item in sets) { item.add(7); auto copy = sets[0]; assert((copy.has(7) != 0)); }
+        assert((values.has(7) == 0));
+        List<Value> records; records.push(original);
+        for (Value item in records) { item.number = 42; item.text[0] = 'R'; item.values.add(7); }
+        Value record = records[0];
+        assert(record.number == 42 && record.text == "Rbc" && (record.values.has(7) != 0));
+        assert(original.number == 2 && original.text == "abc" && (original.values.has(7) == 0));
+        for (Value item in records) { item = original; item = item; }
+        Value replacedRecord = records[0];
+        assert(replacedRecord.number == 2 && replacedRecord.text == "abc");
+        List<int64> numbers; numbers.push(1);
+        for (int64 item in numbers) {
+            increment(&item);
+            for (int64 alias in numbers) { alias = alias + 1; }
+            assert(item == 3 && numbers[0] == 3);
+        }
+        List<float64> reals; reals.push(1.5);
+        for (float64 item in reals) { item = item + 0.5; }
+        assert(reals[0] == 2.0);
+        List<String> const& readWords = &words;
+        for (String item in readWords) { assert(len(item) > 0); }
+    }
+    globalValues.add(1);
+    globalValue.number = 1; globalValue.text = "abc"; globalValue.values = globalValues;
+    { String copy = globalCopy(); copy[0] = 'X'; }
+    { auto copy = globalSetCopy(); copy.add(7); }
+    { Value copy = globalStructCopy(); copy.text[0] = 'X'; copy.values.add(7); }
+    assert(globalText == "global" && (globalValues.has(7) == 0));
+    assert(globalValue.text == "abc" && (globalValue.values.has(7) == 0));
+    println("P1 regressions passed");
+    return 0;
+}
+

@@ -1,0 +1,2 @@
+number=3.14, char=A, value=Point
+UTF-8: 中文!

@@ -1,0 +1,52 @@
+cmake_minimum_required(VERSION 3.16)
+project(magel_compiler LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_library(magel_runtime STATIC
+    runtime/simple_ast.cpp runtime/preprocess.cpp runtime/stackvm.cpp
+    runtime/stackvm_glue.cpp runtime/bigint.cpp runtime/bigfloat.cpp)
+target_include_directories(magel_runtime PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/runtime)
+target_compile_definitions(magel_runtime PUBLIC MAGEL_CUSTOM_ALLOCATOR=1 PRIVATE STACKVM_WITH_BIGINT=1 STACKVM_WITH_BIGFLOAT=1)
+
+# 两个能力开关独立构建，单次编译通过 --reflection 显式启用。
+option(MAGEL_WITH_REFLECTION "启用注解与反射前端支持" OFF)
+option(STACKVM_WITH_REFLECTION "启用注解与反射运行时支持" OFF)
+target_compile_definitions(magel_runtime PUBLIC
+    MAGEL_WITH_REFLECTION=$<BOOL:${MAGEL_WITH_REFLECTION}>
+    STACKVM_WITH_REFLECTION=$<BOOL:${STACKVM_WITH_REFLECTION}>)
+
+# 裁剪定义 PUBLIC 传播到前端和运行时，避免配置不一致。
+foreach(feature NO_MAGEL_BIG_INT NO_MAGEL_BIG_FLOAT NO_MAGEL_DEFAULT_POOL NO_MAGEL_STD NO_MAGEL_STD_MATH NO_MAGEL_STD_RANDOM NO_MAGEL_STD_REGEX NO_MAGEL_STD_SIGNAL NO_MAGEL_STD_JSON NO_MAGEL_STD_TOML NO_MAGEL_STD_BINARY NO_MAGEL_STD_LINALG NO_MAGEL_STD_PARSE NO_MAGEL_STD_PROCESS)
+    option(${feature} "裁剪 ${feature} 对应功能" OFF)
+    if(${feature})
+        target_compile_definitions(magel_runtime PUBLIC ${feature})
+    endif()
+endforeach()
+
+add_library(magel_parser STATIC magel_parser.cpp)
+target_include_directories(magel_parser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(magel_parser PUBLIC magel_runtime)
+
+add_executable(magel magel_main.cpp)
+target_link_libraries(magel PRIVATE magel_parser magel_runtime)
+configure_file(std/lang.mgl ${CMAKE_CURRENT_BINARY_DIR}/std/lang.mgl COPYONLY)
+if(NOT WIN32)
+    target_link_libraries(magel PRIVATE m)
+endif()
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_link_libraries(magel PRIVATE dl)
+endif()
+if(MSVC)
+    target_compile_options(magel_runtime PRIVATE /utf-8)
+    target_compile_options(magel_parser PRIVATE /utf-8 /bigobj)
+    target_compile_options(magel PRIVATE /utf-8)
+endif()
+
+# MinGW 调试/低优化构建的解析器与驱动可能超过普通 COFF 节数量上限。
+if(MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # GCC 11 的 COFF 字符串表在大型 O0 单元中也会溢出；保留 -g，Debug 的两个生成目标使用 O1。
+    foreach(target magel_parser magel)
+        target_compile_options(${target} PRIVATE -Wa,-mbig-obj $<$<CONFIG:Debug>:-O1>)
+    endforeach()
+endif()

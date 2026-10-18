@@ -1,0 +1,1 @@
+int64 main(){std::lang::List<std::lang::Set<int64> > values; std::lang::Set<int64> source; values.push(source); std::lang::List<std::lang::Set<int64> > const& readonly=&values; for(std::lang::Set<int64> item in readonly){item.add(7);} return 0;}

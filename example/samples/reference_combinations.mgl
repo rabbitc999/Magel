@@ -1,0 +1,126 @@
+// 引用来源跨泛型、枚举、回调、迭代器、接口与拥有型构造链传播。
+import std::iter;
+
+struct BorrowBox<T> { T value; };
+T relay<T>(T value) { return value; }
+BorrowBox<int64 mut&> wrap(int64 mut& value) {
+    BorrowBox<int64 mut&> box;
+    box.value = &value;
+    return box;
+}
+enum BorrowChoice<T> { Empty, Found(T value); };
+Result<Option<int64 mut&>, String> checked(int64 mut& value) {
+    return Result<Option<int64 mut&>, String>::Ok(Option<int64 mut&>::Value(value));
+}
+
+int64 mut& throughCallback(int64 mut& fn(int64 mut&) callback, int64 mut& value) {
+    return callback(value);
+}
+
+int64 stableNumber = 90;
+struct Stable {
+    static int64 const& reference() { return &stableNumber; }
+};
+int64 const& staticMethodReference() { return Stable::reference(); }
+
+interface ReadNumber { int64 read(); };
+struct OwnedNumber : ReadNumber, Drop {
+    static int64 drops;
+    String text;
+    int64 number;
+    static OwnedNumber create(String text, int64 number) {
+        self.text = text;
+        self.number = number;
+    }
+    int64 read() { return self.number; }
+    String const& borrowText() { return &self.text; }
+    void drop() { OwnedNumber::drops = OwnedNumber::drops + 1; }
+};
+int64 dispatch(ReadNumber mut& value) { return value.read(); }
+
+// 租约持有局部 List 的存储；逆序适配器还须持有来源迭代器状态。
+std::iter::Iter<int64 const&> localLease() {
+    List<int64> values;
+    values.push(3);
+    values.push(7);
+    return values.iter().rev();
+}
+
+int64 main() {
+    assert(staticMethodReference() == 90);
+    int64 value = 5;
+    BorrowBox<int64 mut&> box = relay(wrap(&value));
+    box.value = 6;
+    assert(value == 6);
+    BorrowChoice<int64 mut&> choice = BorrowChoice<int64 mut&>::Found(box.value);
+    match (choice) {
+        BorrowChoice<int64 mut&>::Found(p) => { p = 8; }
+        BorrowChoice<int64 mut&>::Empty => { assert(false); }
+    }
+    assert(value == 8);
+    match (checked(&value)) {
+        Result<Option<int64 mut&>, String>::Ok(option) => {
+            match (option) {
+                Option<int64 mut&>::Value(p) => { assert(p == 8); }
+                Option<int64 mut&>::None => { assert(false); }
+            }
+        }
+        Result<Option<int64 mut&>, String>::Err(error) => { assert(false); }
+    }
+    int64 mut& fn(int64 mut&) callback = int64 mut& fn(int64 mut& p) { return p; };
+    int64 mut& borrowed = throughCallback(callback, &value);
+    borrowed = 11;
+    assert(value == 11);
+    (int64 const&, int64) pair = (&value, 2);
+    auto (first, second) = pair;
+    assert(first + second == 13);
+
+    List<int64> numbers;
+    numbers.push(2);
+    numbers.push(4);
+    auto mutableCursor = numbers.iterMut();
+    mutableCursor.forEach(void fn(int64 mut& p) { p = p + 1; });
+    assert(numbers[0] == 3 && numbers[1] == 5);
+    int64 sum = numbers.iter().map(fn(p) { p * 2 }).fold(0, fn(a, b) { a + b });
+    assert(sum == 16);
+    List<String> labels = numbers.iter().map(fn(p) { format("item:{}", p) }).collect();
+    List<String> copied = labels;
+    copied[0] = "changed";
+    assert(labels[0] == "item:3" && copied[0] == "changed");
+    auto lease = localLease();
+    assert(lease.next().unwrap() == 7);
+    assert(lease.next().unwrap() == 3);
+    assert(lease.next().isNone());
+
+    OwnedNumber::drops = 0;
+    {
+        String const& text = OwnedNumber::create("retained", 12).borrowText();
+        assert(text == "retained" && OwnedNumber::drops == 0);
+    }
+    assert(OwnedNumber::drops == 1);
+    int64 read = OwnedNumber::create("expression", 20).read() + value;
+    assert(read == 31 && OwnedNumber::drops == 2);
+    {
+        OwnedNumber original = OwnedNumber::create("copy", 30);
+        OwnedNumber copy = original;
+        copy.text[0] = 'C';
+        assert(original.text == "copy" && copy.text == "Copy");
+    }
+    assert(OwnedNumber::drops == 4);
+    for (int64 i = 0; i < 3; i = i + 1) {
+        int64 observed = OwnedNumber::create("loop", i).read();
+        assert(observed == i && OwnedNumber::drops == i + 5);
+    }
+    bool skipped = false && OwnedNumber::create("skipped", 0).read() > 0;
+    assert(!skipped && OwnedNumber::drops == 7);
+    OwnedNumber mut& allocated = heap OwnedNumber;
+    allocated.number = 40;
+    Any erased;
+    erased.set(&allocated);
+    ReadNumber mut& polymorphic = erased.getReference();
+    assert(dispatch(polymorphic) == 40);
+    delete allocated;
+    assert(OwnedNumber::drops == 8);
+    println("reference combinations OK");
+    return 0;
+}

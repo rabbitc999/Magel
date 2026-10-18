@@ -1,0 +1,101 @@
+int64 insideHandle = 0;
+String outside = "outside";
+int64 drops = 0;
+int64 closes = 0;
+struct ReturnOwner : Drop, Closeable {
+    String text;
+    void close() { assert(self.text == "owner"); closes++; }
+    void drop() { assert(self.text == "owner"); drops++; }
+};
+String internalValue() {
+    return {
+        String local = "inside";
+        memcpy(&insideHandle, &local, 8);
+        yield (local);
+    };
+}
+String externalValue() { return { yield (outside); }; }
+String constValue() { return { const String local = "constant"; yield (local); }; }
+ReturnOwner ownedValue() {
+    return {
+        ReturnOwner local; local.text = "owner";
+        yield (local);
+    };
+}
+int32 conditional(bool yes) { return if (yes) { 11 } else { 12 }; }
+int64 matched(int64 number) {
+    return match (number) { 1 => { yield (21); } _ => { yield (22); } };
+}
+int64 looped() { return loop { yield (31); }; }
+int64 callback() { return { auto work = int64 fn() { return 41; }; yield (work()); }; }
+String cleanup() { return { String local = "cleanup"; defer { closes++; } yield (local); }; }
+struct ReturnPayload { String text; }
+T genericBlock<T>(T value) { return { T local = value; yield (local); }; }
+T genericLoop<T>(T value) { return loop { T local = value; yield (local); }; }
+T genericIf<T>(bool yes, T left, T right) {
+    return if (yes) { T local = left; yield (local); } else { yield (right); };
+}
+T genericMatch<T>(int64 index, T value) {
+    return match (index) { 0 => { T local = value; yield (local); } _ => { yield (value); } };
+}
+String[] internalArray() {
+    return { String values[] = new[2]; values[0] = "first"; values[1] = "second"; yield (values); };
+}
+String[] returnedExternalArray() {
+    String original[] = new[1]; original[0] = "copied";
+    return { yield (original); };
+}
+int64[] conditionalArray(bool yes) {
+    return if (yes) { int64 values[] = new[1]; values[0] = 3; yield (values); }
+    else { int64 values[] = new[1]; values[0] = 4; yield (values); };
+}
+String[] matchedArray() {
+    return match (0) { 0 => { String values[] = new[1]; values[0] = "matched"; yield (values); }
+        _ => { String values[] = new[0]; yield (values); } };
+}
+T[] genericArray<T>(T value) { return { T values[] = new[1]; values[0] = value; yield (values); }; }
+String[] externalArray() {
+    String original[] = new[2]; original[0] = "left"; original[1] = "right";
+    auto copied = { yield (original); };
+    copied[0] = "changed";
+    assert(original[0] == "left" && original[1] == "right");
+    return copied;
+}
+ReturnOwner[] ownedArray() {
+    return { ReturnOwner values[] = new[1]; values[0].text = "owner"; yield (values); };
+}
+int64[] emptyArray() { return loop { int64 values[] = new[0]; yield (values); }; }
+void main() {
+    String value = internalValue(); int64 received = 0;
+    memcpy(&received, &value, 8); assert(received == insideHandle);
+    String copied = externalValue(); int64 original = 0;
+    memcpy(&original, &outside, 8); memcpy(&received, &copied, 8);
+    assert(received != original && copied == outside && outside == "outside");
+    assert(constValue() == "constant");
+    { ReturnOwner owner = ownedValue(); assert(owner.text == "owner" && drops == 0 && closes == 0); }
+    assert(drops == 1 && closes == 1);
+    assert(conditional(true) == 11 && conditional(false) == 12);
+    assert(matched(1) == 21 && matched(2) == 22 && looped() == 31 && callback() == 41);
+    assert(cleanup() == "cleanup" && closes == 2);
+    assert(genericBlock<int64>(51) == 51 && genericLoop<int32>(cast<int32>(52)) == 52);
+    assert(genericIf<String>(true, "left", "right") == "left");
+    assert(genericIf<String>(false, "left", "right") == "right");
+    assert(genericMatch<String>(0, "zero") == "zero" && genericMatch<String>(1, "other") == "other");
+    ReturnPayload payload; payload.text = "generic owner";
+    assert(genericBlock<ReturnPayload>(payload).text == payload.text);
+    assert(genericLoop<ReturnPayload>(payload).text == payload.text);
+    assert(genericIf<ReturnPayload>(true, payload, payload).text == payload.text);
+    assert(genericMatch<ReturnPayload>(1, payload).text == payload.text);
+    auto array = internalArray(); assert(array[0] == "first" && array[1] == "second");
+    auto copiedArray = externalArray(); assert(copiedArray[0] == "changed" && copiedArray[1] == "right");
+    auto returnedCopy = returnedExternalArray(); assert(returnedCopy[0] == "copied");
+    auto yesArray = conditionalArray(true); auto noArray = conditionalArray(false);
+    assert(yesArray[0] == 3 && noArray[0] == 4);
+    auto matchArray = matchedArray(); assert(matchArray[0] == "matched");
+    auto genericValues = genericArray<String>("generic array"); assert(genericValues[0] == "generic array");
+    auto noElements = emptyArray(); assert(len(noElements) == 0);
+    int64 previousDrops = drops; int64 previousCloses = closes;
+    { auto owners = ownedArray(); assert(owners[0].text == "owner" && drops == previousDrops && closes == previousCloses); }
+    assert(drops == previousDrops + 1 && closes == previousCloses + 1);
+    println("return expressions OK");
+}

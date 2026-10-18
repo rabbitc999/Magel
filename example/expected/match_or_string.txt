@@ -1,0 +1,1 @@
+match alternatives and string ranges OK

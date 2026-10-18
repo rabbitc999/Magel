@@ -1,0 +1,26 @@
+module std::random;
+
+/* 随机数生成器。实现下沉到宿主 C++（glue/std_random.hpp，确定性 LCG 与拆分前逐位一致），
+ * 本文件只留宿主签名 + 极薄 wrapper。句柄型状态，实现 Drop。 */
+uint64 randomWithSeed(uint64 seed);
+uint64 randomFromEntropy();
+uint64 randomNextUInt64(uint64 handle);
+int64 randomNextInt(uint64 handle, int64 minimum, int64 maximum);
+float64 randomNextFloat64(uint64 handle);
+float64 randomNextRange(uint64 handle, float64 minimum, float64 maximum);
+bool randomNextBool(uint64 handle);
+void randomDrop(uint64 handle);
+
+struct Random : Drop {
+    uint64 handle;
+
+    static Random withSeed(uint64 seed) { Random r; r.handle = randomWithSeed(seed); return r; }
+    static Random fromEntropy() { Random r; r.handle = randomFromEntropy(); return r; }
+
+    uint64 nextUInt64() { return randomNextUInt64(self.handle); }
+    int64 nextInt(int64 minimum, int64 maximum) { return randomNextInt(self.handle, minimum, maximum); }
+    float64 nextFloat64() { return randomNextFloat64(self.handle); }
+    float64 nextRange(float64 minimum, float64 maximum) { return randomNextRange(self.handle, minimum, maximum); }
+    bool nextBool() { return randomNextBool(self.handle); }
+    void drop() { randomDrop(self.handle); }
+};

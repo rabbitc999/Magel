@@ -1,0 +1,1 @@
+magel：example/samples-error/destructure_duplicate.mgl 第 1 行第 1 列：解构绑定名称重复：a

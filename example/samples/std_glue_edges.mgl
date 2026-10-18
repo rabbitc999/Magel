@@ -1,0 +1,17 @@
+import std::text;
+import std::math;
+int64 main() {
+    List<String> parts = std::text::Text::split("::甲::::乙::", "::");
+    println("{} [{}]", parts.len(), std::text::Text::join(parts, "|"));
+    List<String> empty = std::text::Text::split("", ",");
+    List<String> whole = std::text::Text::split("甲乙", "");
+    List<String> none;
+    println("{} [{}] [{}]", empty.len(), whole[0], std::text::Text::join(none, ","));
+    parts[1] = "changed";
+    println("[{}]", std::text::Text::join(parts, "|"));
+    float64 notNumber = std::math::sqrt(-1.0);
+    println("{} {} {}", std::math::min(notNumber, 2.0), std::math::isNaN(std::math::max(2.0, notNumber)), std::math::isNaN(std::math::clamp(notNumber, 0.0, 1.0)));
+    int64 smallest = (int64)((uint64)1 << 63);
+    println("{} {} {} {}", std::math::abs(smallest) == smallest, std::math::min(4, 3), std::math::max(-4.0, -3.0), std::math::clamp(-4, -3, 2));
+    return 0;
+}

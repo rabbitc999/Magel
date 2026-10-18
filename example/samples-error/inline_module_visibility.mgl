@@ -1,0 +1,6 @@
+module inlineVisibility;
+import hidden::api;
+
+int64 main() {
+    return hidden::api::secret(21);
+}

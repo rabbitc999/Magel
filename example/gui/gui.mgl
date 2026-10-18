@@ -1,0 +1,38 @@
+/* Magel 的简易 GUI 模块；实现由 WinAPI / Qt Widgets 共享库通过 C ABI 提供。
+ * 所有尺寸与位置均是窗口客户区像素，控件 ID 在 1..65535 之间且不能重复。
+ *
+ * 事件回调：`bindEvents` 把一个 `std::event::Timer` 句柄登记为 GUI 事件中断源。
+ * 之后每次 GUI 事件（按钮点击 = 控件 ID，关窗 = -1）或 GUI 周期事件都会触发该定时器，
+ * 由 VM 在下一条指令边界交付绑定的中断事件函数；别的线程不受影响。
+ */
+module gui;
+
+import std::event;
+
+/* ---- 窗口与控件 ---- */
+int32 open(int32 width, int32 height, String title);
+int32 label(int32 id, int32 x, int32 y, int32 width, int32 height, String text);
+int32 button(int32 id, int32 x, int32 y, int32 width, int32 height, String text);
+int32 textBox(int32 id, int32 x, int32 y, int32 width, int32 height, String text);
+int32 setText(int32 id, String text);
+String getText(int32 id);
+int32 pollEvent();  /* 0 = 暂无事件，正数 = 被点击按钮的 ID，-1 = 窗口关闭。 */
+int32 waitEvent();  /* 等一小段时间片；有事件返回事件，超时返回 0（让 VM 交付中断）。 */
+void close();
+
+/* ---- 事件回调（WinAPI / Qt 后端） ---- */
+/* 把一个 `std::event::EventHandle` 登记为 GUI 事件源；返回 1 表示成功。 */
+int32 bindEvents(EventHandle handle);
+/* 取消登记（窗口关闭 / 程序退出时用）。 */
+int32 unbindEvents();
+/* GUI 侧周期事件：每 intervalMillis 毫秒触发一次；Magel 中断看到的事件值是 0，
+ * 0 表示「每个泵回合一次」，用单调时钟限速。 */
+void startEventTimer(int32 intervalMillis);
+void stopEventTimer();
+/* 注入一个事件（测试 / 宿主脚本）：与真实事件一样派发回调并入队。 */
+int32 postEvent(int32 event);
+/* 处理一轮 GUI 事件（非阻塞）。 */
+int32 pump();
+/* 每 instructions 个执行边界（VM 指令 / AOT 基本块）自动 pump 一次；长计算循环里保持 GUI 响应、
+ * 也让排队的中断在指令边界被交付。传 0 取消。 */
+int32 pumpEvery(int64 instructions);

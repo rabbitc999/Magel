@@ -1,0 +1,104 @@
+/* macro_gensym.mgl —— 宏体内的 整数编号 `$n`：每次展开生成唯一临时名。
+ *
+ *   ./magel samples/macro_gensym.mgl
+ *
+ * Magel 的宏是文本替换；宏内临时变量本来会和调用点的同名变量撞车。整数编号 `$n` 由编译器在
+ * 每次展开时换成唯一标识符（`__magel_macro_<宏名净化>_<展开ID>_<n>`）：同一次展开里同一个
+ * `$n` 处处同名，不同展开 / 不同宏 / 嵌套 / 重载调用各自独立。
+ *
+ * 这只是"变量级近似卫生" —— 解决宏内临时变量捕获，**不是**完整卫生宏：宏体里引用的
+ * 自由标识符（比如外部函数名）仍然绑定到调用点的名字。
+ *
+ * 编号可以是任意长度的十进制整数，允许正负号与前导零。普通代码里禁止
+ * 整数编号 `$n`，字符串与注释里的 `$n` 原样保留。
+ */
+
+/* 1) 宏内临时变量不再撞调用点的 `tmp`。 */
+$macro SWAP((a), (b))
+int64 $0 = a;
+a = b;
+b = $0;
+$end_macro
+
+/* 2) 同一宏展开两次：两次的 `$0` 是两个不同的名字，能在同一作用域并存。 */
+$macro PAIR((v))
+int64 $0 = v;
+int64 $1 = 1;
+int64 $9 = 9;
+int64 $10 = 10; int64 $9999999999999999999999999999999 = 11; int64 $-1 = 12;
+assert($1 + $9 == 10 && $00010 == 10 && $9999999999999999999999999999999 == 11 && $-1 == 12);
+println("pair={}", $0);
+$end_macro
+
+/* 3) 嵌套：外层 OUTER 的 `$0` 与内层 INNER 的 `$0` 互不影响。 */
+$macro INNER((v))
+int64 $0 = v;
+println("inner={}", $0);
+$end_macro
+
+$macro OUTER((v))
+int64 $0 = v + 1;
+println("outer={}", $0);
+    $INNER(v)
+$end_macro
+
+/* 4) 重载宏：每个形态的每次调用各分配一个展开 ID（递归宏本身仍被拒绝）。 */
+$macro REPORT(a)
+int64 $0 = a;
+println("one={}", $0);
+$end_macro
+
+$macro REPORT(a, b)
+int64 $0 = a + b;
+println("two={}", $0);
+$end_macro
+
+/* 5) `$for` 里也能用 `$0`：同一次展开里重复出现就共用同一个名字。 */
+$macro SUM(...values)
+int64 $0 = 0;
+$for item in values
+    $0 = $0 + item;
+$end_for
+println("sum={}", $0);
+$end_macro
+
+/* 6) `$replace` 单行宏同样支持 `$0`（这里宏体是一整条语句块）。 */
+$replace SWAPV((a), (b)) { int64 $0 = a; a = b; b = $0; }
+
+/* 7) 字符串与注释里的 `$0` 原样保留，不参与替换。 */
+$macro LITERAL()
+/* 注释里写 $0 也安全 */
+println("literal={}", "$0 + $2");
+$end_macro
+
+/* 8) `$stringify(形参)` 取原始实参，不替换里面的 `$0`。 */
+$macro SHOW(x)
+    $stringify(x)
+$end_macro
+
+int64 main() {
+    int64 tmp = 111;    /* 和 SWAP 的临时变量同名，互不干扰 */
+    int64 x = 1;
+    int64 y = 2;
+    $SWAP(x, y)
+    println("swap x={} y={} tmp={}", x, y, tmp);
+
+    $PAIR(7)
+    $PAIR(8)
+
+    $OUTER(40)
+
+    $REPORT(3)
+    $REPORT(3, 4)
+
+    $SUM(5, 6, 7)
+
+    int64 p = 10;
+    int64 q = 20;
+    $SWAPV(p, q)
+    println("replace p={} q={}", p, q);
+
+    $LITERAL
+    println("show={}", $SHOW("$0"));
+    return 0;
+}

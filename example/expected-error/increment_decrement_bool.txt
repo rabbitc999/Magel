@@ -1,0 +1,1 @@
+magel：example/samples-error/increment_decrement_bool.mgl 第 2 行第 1 列：自增和自减只支持数值或字符类型

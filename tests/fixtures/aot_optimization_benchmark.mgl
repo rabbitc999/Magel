@@ -1,0 +1,50 @@
+import std::clock;
+int64 scalar(int64 n) {
+    int64 value=1;
+    for(int64 i=0;i<n;i++) { value=(value*17+i)%1000000007; }
+    return value;
+}
+int64 fixedArray(int64 n) {
+    int64 values[64];
+    int64 sum=0;
+    for(int64 i=0;i<n;i++) { int64 k=i%64; values[k]=i+1; sum+=values[k]; }
+    return sum;
+}
+int64 heapArray(int64 n) {
+    int64 values[]=new[64];
+    int64 sum=0;
+    for(int64 i=0;i<n;i++) { int64 k=i%64; values[k]=i+1; sum+=values[k]; }
+    return sum;
+}
+int64 container(int64 n) {
+    List<int64> values;
+    for(int64 i=0;i<64;i++) { values.push(i); }
+    int64 sum=0;
+    for(int64 i=0;i<n;i++) { int64 k=i%64; values[k]=i+1; sum+=values[k]; }
+    return sum;
+}
+int64 callStep(int64 value,int64 i) { return (value*17+i)%1000000007; }
+int64 functionCalls(int64 n) {
+    int64 value=1;
+    for(int64 i=0;i<n;i++) { value=callStep(value,i); }
+    return value;
+}
+int64 main() {
+    int64 n=inputInt();
+    int64 repeats=inputInt();
+    for(int64 r=-1;r<repeats;r++) {
+        int64 begin=std::clock::nowNanos();
+        int64 value=scalar(n);
+        int64 elapsed=std::clock::nowNanos()-begin;
+        if(r>=0) { println("scalar {} {}",elapsed,value); }
+        begin=std::clock::nowNanos();value=fixedArray(n);elapsed=std::clock::nowNanos()-begin;
+        if(r>=0) { println("fixed_array {} {}",elapsed,value); }
+        begin=std::clock::nowNanos();value=heapArray(n);elapsed=std::clock::nowNanos()-begin;
+        if(r>=0) { println("heap_array {} {}",elapsed,value); }
+        begin=std::clock::nowNanos();value=container(n);elapsed=std::clock::nowNanos()-begin;
+        if(r>=0) { println("container {} {}",elapsed,value); }
+        begin=std::clock::nowNanos();value=functionCalls(n);elapsed=std::clock::nowNanos()-begin;
+        if(r>=0) { println("function_calls {} {}",elapsed,value); }
+    }
+    return 0;
+}

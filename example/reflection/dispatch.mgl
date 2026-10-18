@@ -1,0 +1,38 @@
+import std::reflect;
+@Reflect interface View {
+    String name(){return "default";}
+    int64 bump(int64 by){return 100+by;}
+};
+@Reflect struct Actual : View {
+    String title;int64 value;
+    Actual(String title,int64 value){self.title=title;self.value=value;}
+    String name(){return self.title;}
+    int64 bump(int64 by){self.value+=by;return self.value;}
+};
+@Reflect struct DefaultView : View {int64 unused;};
+struct Hidden : View {int64 unused;};
+@Reflect enum State {Ready, Named(String text);
+    String name(){String result="ready";match(self){Named(text)=>{result=text;}Ready=>{}}return result;}
+};
+int64 main(){
+    List<std::reflect::ReflectValue> empty;List<std::reflect::ReflectValue> args;args.push(std::reflect::ReflectValue::I64(2));
+    Actual mut& actual=new Actual("actual",20);Any actualBox;actualBox.set(&actual);View mut& view=actualBox.getReference();
+    assert(std::reflect::callInterfaceConst<View>(view,"name",empty).unwrap().asText().unwrap()=="actual");
+    assert(std::reflect::callInterfaceConst<View>(view,"bump",args).isErr());
+    match(std::reflect::callInterfaceConst<View>(view,"bump",args).error()){std::reflect::ReflectError::ReceiverMismatch=>{} _=>{assert(false);}}
+    assert(actual.value==20);
+    assert(std::reflect::callInterface<View>(view,"bump",args).unwrap().asI64().unwrap()==22 && actual.value==22);
+    DefaultView mut& fallback = heap DefaultView;Any defaultBox;defaultBox.set(&fallback);View const& readonly=defaultBox.getReference();
+    assert(std::reflect::callInterfaceConst<View>(readonly,"name",empty).unwrap().asText().unwrap()=="default");
+    assert(std::reflect::callInterfaceConst<View>(readonly,"bump",args).unwrap().asI64().unwrap()==102);
+    Hidden mut& hidden = heap Hidden;Any hiddenBox;hiddenBox.set(&hidden);View mut& hiddenView=hiddenBox.getReference();
+    match(std::reflect::callInterface<View>(hiddenView,"name",empty).error()){std::reflect::ReflectError::NotExposed=>{} _=>{assert(false);}}
+    State state=State::Ready;
+    assert(std::reflect::callEnumMethodConst<State>(&state,"name",empty).unwrap().asText().unwrap()=="ready");
+    state=State::Named("working");
+    String snapshot=std::reflect::callEnumMethod<State>(&state,"name",empty).unwrap().asText().unwrap();
+    state=State::Ready;state=State::Named("finished");
+    assert(snapshot=="working" && std::reflect::callEnumMethodConst<State>(&state,"name",empty).unwrap().asText().unwrap()=="finished");
+    delete hidden;delete fallback;delete actual;
+    println("reflection dispatch OK");return 0;
+}

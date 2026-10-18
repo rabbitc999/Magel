@@ -1,0 +1,1 @@
+magel：example/samples-error/match_or_binding_types.mgl 第 2 行第 1 列：或模式的载荷绑定名称、顺序和类型必须一致

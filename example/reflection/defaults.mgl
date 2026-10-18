@@ -1,0 +1,15 @@
+import std::reflect;
+@Reflect void close(){}
+@Reflect struct Plain {int64 value;String label;};
+int64 main(){
+    List<std::reflect::ReflectValue> args;
+    assert(std::reflect::call("close",args).isOk());
+    Plain plain=std::reflect::construct<Plain>(args).unwrap();
+    assert(plain.value==0 && plain.label=="");
+    auto info=std::reflect::getStructInfo<Plain>().unwrap();
+    assert(info.methods.len()==1 && info.methods[0].isConstructor && info.methods[0].function.params.len()==0);
+    args.push(std::reflect::ReflectValue::I64(1));
+    assert(std::reflect::construct<Plain>(args).isErr());
+    match(std::reflect::construct<Plain>(args).error()){std::reflect::ReflectError::ArgumentCount=>{} _=>{assert(false);}}
+    println("reflection defaults OK");return 0;
+}

@@ -1,0 +1,1 @@
+语法错误：example/samples-error/collection_mixed_entries.mgl 第 1 行第 37 列：期望 冒号(:)，实际是 右花括号(})

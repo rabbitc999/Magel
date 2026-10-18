@@ -1,0 +1,1 @@
+magel：example/samples-error/enum_direct_payload.mgl 第 4 行第 18 列：enum 载荷不能直接按字段读取：Option.value；请在 match 的 `Option::变体(绑定名) => { ... }` 中解构

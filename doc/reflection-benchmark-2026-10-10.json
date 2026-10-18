@@ -1,0 +1,118 @@
+{
+  "iterations": 1000,
+  "repeats": 5,
+  "backend": "AOT",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "timing": "Python perf_counter, whole process wall time; same executable, startup included; empty process baseline reported separately",
+  "compiler": "G:\\Desktop\\ParseEngine\\magel\\magel-reflection-release.exe",
+  "results": {
+    "free": {
+      "samples_seconds": {
+        "empty": [
+          0.2183136999992712,
+          0.2246709999999439,
+          0.2057033000019146,
+          0.2035833999980241,
+          0.22648649999973713
+        ],
+        "static": [
+          0.22145379999710713,
+          0.2592925999997533,
+          0.20235609999872395,
+          0.20747230000051786,
+          0.2544716000011249
+        ],
+        "reflect": [
+          0.3339261000000988,
+          0.3061650000017835,
+          0.3110593000019435,
+          0.31645360000038636,
+          0.37353880000227946
+        ]
+      },
+      "median_seconds": {
+        "empty": 0.2183136999992712,
+        "static": 0.22145379999710713,
+        "reflect": 0.31645360000038636
+      },
+      "static_ns_per_call_including_startup": 221453.79999710713,
+      "reflect_ns_per_call_including_startup": 316453.60000038636,
+      "ratio_including_startup": 1.4289824785328598,
+      "static_ns_per_call_minus_empty_baseline": 3140.0999978359323,
+      "reflect_ns_per_call_minus_empty_baseline": 98139.90000111518,
+      "checksum": 284199023
+    },
+    "instance": {
+      "samples_seconds": {
+        "empty": [
+          0.24276069999905303,
+          0.3212208000004466,
+          0.3020587000028172,
+          0.37357930000143824,
+          0.5486898999988625
+        ],
+        "static": [
+          0.32474999999976717,
+          0.3138600000020233,
+          0.31404620000103023,
+          0.36972360000072513,
+          0.4190813999994134
+        ],
+        "reflect": [
+          0.38577559999976074,
+          0.3550154999975348,
+          0.3544486000027973,
+          0.39667779999945196,
+          0.5353108000017528
+        ]
+      },
+      "median_seconds": {
+        "empty": 0.3212208000004466,
+        "static": 0.32474999999976717,
+        "reflect": 0.38577559999976074
+      },
+      "static_ns_per_call_including_startup": 324749.99999976717,
+      "reflect_ns_per_call_including_startup": 385775.59999976074,
+      "ratio_including_startup": 1.1879156274058116,
+      "static_ns_per_call_minus_empty_baseline": 3529.1999993205536,
+      "reflect_ns_per_call_minus_empty_baseline": 64554.79999931413,
+      "checksum": 284199023
+    },
+    "interface": {
+      "samples_seconds": {
+        "empty": [
+          0.21104040000136592,
+          0.2100968999984616,
+          0.21025269999881857,
+          0.20558160000291537,
+          0.2293439999994007
+        ],
+        "static": [
+          0.21591629999966244,
+          0.22383110000009765,
+          0.21559920000072452,
+          0.21250619999773335,
+          0.21747469999900204
+        ],
+        "reflect": [
+          0.2983693999995012,
+          0.2993285000011383,
+          0.3088010000028589,
+          0.31123180000213324,
+          0.29457250000268687
+        ]
+      },
+      "median_seconds": {
+        "empty": 0.21025269999881857,
+        "static": 0.21591629999966244,
+        "reflect": 0.2993285000011383
+      },
+      "static_ns_per_call_including_startup": 215916.29999966244,
+      "reflect_ns_per_call_including_startup": 299328.5000011383,
+      "ratio_including_startup": 1.386317290550117,
+      "static_ns_per_call_minus_empty_baseline": 5663.600000843871,
+      "reflect_ns_per_call_minus_empty_baseline": 89075.80000231974,
+      "checksum": 284199023
+    }
+  }
+}

@@ -1,0 +1,5 @@
+interface RootValue { int64 value(); };
+interface DerivedValue : RootValue { };
+struct Number : DerivedValue { int64 value() { return 7; } };
+int64 readValue<T: RootValue>(T item) { return item.value(); }
+int64 main() { Number n; assert(readValue(n) == 7); println("inherited constraint OK"); return 0; }

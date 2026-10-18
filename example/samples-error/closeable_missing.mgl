@@ -1,0 +1,9 @@
+/* closeable_missing.mgl —— 声明实现 Closeable 却没写 close()
+ *
+ * 期望报错：接口要求的方法一个都不能少。
+ */
+struct Widget : Closeable {
+    int64 id;
+};
+
+int64 main() { return 0; }

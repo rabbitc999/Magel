@@ -1,0 +1,1 @@
+magel：example/samples-error/collection_map_literal_equal.mgl 第 1 行第 1 列：Map 自定义键 Key 必须实现 Equal<bool,T> 等于重载接口；Hash<T> 哈希接口可选

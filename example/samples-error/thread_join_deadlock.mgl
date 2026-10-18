@@ -1,0 +1,13 @@
+
+import std::thread;
+
+void worker() {
+    String message = std::thread::receive();
+    std::lang::println("{}", message);
+}
+
+int64 main() {
+    IsolatedThreadHandle task = std::thread::create(worker);
+    std::thread::wait(task);
+    return 0;
+}

@@ -1,0 +1,93 @@
+// 每个完整表达式最多一个 ++ 或 --，前置取新值，后置取旧值。
+List<int64> globalList;
+List<int64> mut& borrowedList() { return &globalList; }
+int64 calls = 0;
+int64 position() { calls += 1; return 0; }
+int64 sum(int64 first, int64 second) { return first + second; }
+struct Counter { int64 value; };
+int64 main() {
+    int64 i = 3;
+    int64 a = i++;
+    assert(a == 3 && i == 4);
+    a = ++i;
+    assert(a == 5 && i == 5);
+    a = i--;
+    assert(a == 5 && i == 4);
+    a = --i;
+    assert(a == 3 && i == 3);
+    i++; ++i; i--; --i;
+    assert(i == 3);
+    a = (i++) * 2 + 1;
+    assert(a == 7 && i == 4);
+    a = sum(i++, 10);
+    assert(a == 14 && i == 5);
+    int64 incrementValue = i++;
+    a += incrementValue;
+    assert(a == 19 && i == 6);
+    int64 b = 0;
+    a = b = i++;
+    assert(a == 6 && b == 6 && i == 7);
+    int64 first = i++, second = i++;
+    assert(first == 7 && second == 8 && i == 9);
+    bool skipped = false && (i++ > 0);
+    assert(!skipped && i == 9);
+    bool ready = true || (++i > 0);
+    assert(ready && i == 9);
+    int64 total = 0;
+    for (int64 n = 0; n < 4; n++) { total += n; }
+    assert(total == 6);
+    int64 data[2]; data[0] = 10;
+    a = data[position()]++;
+    assert(a == 10 && data[0] == 11 && calls == 1);
+    int64 matrix[2][2]; matrix[1][1] = 20;
+    a = ++matrix[1][1];
+    assert(a == 21 && matrix[1][1] == 21);
+    Counter counter; counter.value = 5;
+    a = counter.value--;
+    assert(a == 5 && counter.value == 4);
+    int64 mut& ref = &counter.value;
+    a = ++ref;
+    assert(a == 5 && counter.value == 5);
+    List<int64> list; list.push(3);
+    a = list[position()]++;
+    assert(a == 3 && list[0] == 4 && calls == 2);
+    for (int64 element in list) { element++; }
+    assert(list[0] == 5);
+    globalList.push(12);
+    a = borrowedList()[0]++;
+    assert(a == 12 && globalList[0] == 13);
+    auto map = {"key": 7};
+    a = --map["key"];
+    assert(a == 6 && map["key"] == 6);
+    float64 real = 1.5;
+    float64 previous = real++;
+    assert(previous == 1.5 && real == 2.5);
+    --real;
+    assert(real == 1.5);
+    int8 small = (int8)4;
+    small++;
+    assert(small == (int8)5);
+    uint64 unsignedValue = (uint64)9;
+    --unsignedValue;
+    assert(unsignedValue == (uint64)8);
+    String text = "ab";
+    char old = text[0]++;
+    assert(old == 'a' && text == "bb");
+    for (int64 round = 0; round < 4; ++round) {
+        BigInteger big = BigInteger("100000000000000000000");
+        BigInteger before = big++;
+        assert(before == BigInteger("100000000000000000000"));
+        assert(big == BigInteger("100000000000000000001"));
+        BigInteger after = --big;
+        assert(after == before && big == before);
+        BigDecimal decimal = BigDecimal("1.5");
+        BigDecimal oldDecimal = decimal--;
+        assert(oldDecimal == BigDecimal("1.5") && decimal == BigDecimal("0.5"));
+        ++decimal;
+        assert(decimal == oldDecimal);
+        bool noUpdate = false && (big++ > before);
+        assert(!noUpdate && big == before);
+    }
+    println("increment decrement OK");
+    return 0;
+}

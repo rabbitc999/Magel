@@ -1,0 +1,1 @@
+struct Counter{int64 value; void increment(){self.value=self.value+1;} void update(){self.increment();}}; int64 main(){Counter value; Counter const& readonly=&value; readonly.update(); return 0;}

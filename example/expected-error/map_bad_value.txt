@@ -1,0 +1,1 @@
+magel：example/samples-error/map_bad_value.mgl 第 3 行第 5 列：put 的值 需要 int64，实际是 std::lang::String

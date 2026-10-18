@@ -1,0 +1,8 @@
+hanoi(3) = 7
+hanoi(10) = 1023
+fib(10) = 55
+fib(20) = 6765
+ack(2, 3) = 9
+ack(3, 3) = 61
+walk(5) = 15
+counter = 6

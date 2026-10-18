@@ -1,0 +1,5 @@
+int64 main() {
+    std::lang::Any b = 7;
+    std::lang::Any c = b.copy(1);
+    return 0;
+}

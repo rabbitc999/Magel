@@ -1,0 +1,7 @@
+int64 main() {
+    Any box = 7;
+    box.copy();
+    box.copy();
+    println("box={}", (int64)box.getValue());
+    return 0;
+}

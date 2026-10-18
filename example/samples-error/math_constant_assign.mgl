@@ -1,0 +1,6 @@
+import std::math;
+
+int64 main() {
+    std::math::PI = 3.0;
+    return 0;
+}

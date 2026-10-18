@@ -1,0 +1,49 @@
+/* ownership_release.mgl —— 没人接的返回值与 `a = a.clone()` 的多余副本
+ *
+ *   ./magel samples/ownership_release.mgl
+ *
+ * 1) 独立语句里"当场造出来"的返回值没人接管所有权：
+ *      字符串 → 软释放（不产生堆泄漏提示）；实现 Drop / Closeable 的结构体 → 跑一次析构。
+ * 2) `a = a.clone()`：右边先算进临时结构体，再把旧的 a 析构，最后把新值搬回 a ——
+ *    旧副本（"多余的副本"）当场释放，destruct 每次都会打印出来。
+ */
+List<int64> newList(int64 value) {
+    List<int64> list;
+    list.push(value);
+    return list;
+}
+
+struct Holder : Drop {
+    List<int64> items;
+
+    void drop() {
+        println("holder-drop");
+        delete self.items;
+    }
+
+    Holder clone() {
+        Holder result;
+        result.items = self.items.copy();
+        return result;
+    }
+};
+
+Holder makeHolder(int64 value) {
+    Holder holder;
+    holder.items = newList(value);
+    return holder;
+}
+
+String greeting() { return "he" + "llo"; }
+
+int64 main() {
+    greeting();                     /* 忽略 String 返回值：自动释放 */
+    makeHolder(1);                  /* 忽略 Drop 结构体返回值：自动析构 */
+    println("after-ignored");
+
+    Holder holder = makeHolder(2);
+    holder = holder.clone();        /* 旧 holder 当场析构，不泄漏 */
+    holder = holder.clone();
+    println("len={}", holder.items.len());
+    return 0;                       /* 出块：holder 再析构一次 */
+}

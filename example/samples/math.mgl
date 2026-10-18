@@ -1,0 +1,38 @@
+/* Math 标准类：类型由 Magel 标准库声明，桌面实现由 C++ 胶水对接 <cmath>。
+ *
+ * PI / E 是只读 float64 常数。函数一律 `float64` 进 `float64` 出；实参是 int64 时编译器先加宽到
+ * float64，所以 `pow(3, 3)` 也能写。
+ * 输出显式保留三位小数。 */
+
+import std::math;
+
+int64 main() {
+    println("pi = {:3F}", std::math::PI);
+    println("e = {:3F}", std::math::E);
+    println("sin(pi/2) = {:3F}", std::math::sin(std::math::PI / 2.0));
+    println("cos(0) = {:3F}", std::math::cos(0.0));
+    println("tan(pi/4) = {:3F}", std::math::tan(std::math::PI / 4.0));
+    println("asin(1) = {:3F}", std::math::asin(1.0));
+    println("atan(1) = {:3F}", std::math::atan(1.0));
+
+    println("exp(1) = {:3F}", std::math::exp(1.0));
+    println("ln(exp(2)) = {:3F}", std::math::ln(std::math::exp(2.0)));
+    println("log10(1000) = {:3F}", std::math::log10(1000.0));
+
+    println("pow(2, 10) = {:3F}", std::math::pow(2.0, 10.0));
+    println("sqrt(2) = {:3F}", std::math::sqrt(2.0));
+    println("fabs(-3.5) = {:3F}", std::math::abs(-3.5));
+
+    /* 整数实参自动加宽到 float64 */
+    println("pow(3, 3) = {:3F}", std::math::pow(3, 3));
+
+    /* 拿来做点真事：单位圆上均匀取 4 个点的 x 坐标之和应为 0 */
+    float64 total = 0.0;
+    uint64 k = 0;
+    while (k < 8) {
+        total = total + std::math::cos(std::math::PI * (float64)k / 4.0);
+        k = k + 1;
+    }
+    println("|cos 采样和| = {:3F}", std::math::abs(total));
+    return 0;
+}

@@ -1,0 +1,57 @@
+/* 运行时长度数组 `T a[] = new[N];` —— N **可以是变量**（运行期才知道长度）。
+ *
+ *   * 长度跟着对象走（存在对象里），所以 `a[i]` 的越界检查查的就是这个运行期的 N；
+ *   * `len(a)` 拿元素个数；
+ *   * 传给函数时长度一起过去：`int64 sum(int64 x[])` 里照样查越界，不用另外传长度；
+ *   * 用完 `delete a;`（数组句柄是元素起始，块头在它前面 8 字节，delete 会一起还回去）。 */
+
+struct Point {
+    int64 x;
+    int64 y;
+};
+
+/* 形参写成 `T x[]`（或 `T[] x`）：接运行时数组，长度跟着实参走 */
+int64 sum(int64 x[]) {
+    int64 total = 0;
+    int64 i = 0;
+    while (i < len(x)) {
+        total = total + x[i];
+        i = i + 1;
+    }
+    return total;
+}
+
+int64 main() {
+    int64 n = 5;                      /* 长度是变量：运行时决定 */
+    int64 a[] = new[n];
+    int64 i = 0;
+    while (i < len(a)) {
+        a[i] = i * 10;
+        i = i + 1;
+    }
+    println("len(a)={} a[0]={} a[4]={} sum={}", len(a), a[0], a[4], sum(a));
+
+    /* 结构体元素的运行时数组：元素步长是"字段数 × 8" */
+    int64 count = 3;
+    Point pts[] = new[count];
+    int64 k = 0;
+    while (k < len(pts)) {
+        pts[k].x = k + 1;
+        pts[k].y = (k + 1) * 10;
+        k = k + 1;
+    }
+    println("pts: ({},{}) ({},{}) ({},{})", pts[0].x, pts[0].y, pts[1].x, pts[1].y,
+    pts[2].x, pts[2].y);
+
+    /* 再要一片、长度不同：每一片各记各的长度 */
+    int64 m = 2;
+    int64 b[] = new[m];
+    b[0] = 7;
+    b[1] = 8;
+    println("len(b)={} sum(b)={}", len(b), sum(b));
+
+    delete b;
+    delete pts;
+    delete a;
+    return 0;
+}

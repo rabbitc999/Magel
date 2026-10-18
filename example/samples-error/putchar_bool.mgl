@@ -1,0 +1,4 @@
+int64 main() {
+    putchar(true);
+    return 0;
+}

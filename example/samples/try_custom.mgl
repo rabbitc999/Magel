@@ -1,0 +1,12 @@
+enum Checked : Try<int64,String>, FromResidual<Checked,String> {
+    Value(int64 value), Failed(String error);
+    TryBranch<int64,String> branch(){match(self){
+            Checked::Value(value)=>{return TryBranch<int64,String>::Continue(value);}
+            Checked::Failed(error)=>{return TryBranch<int64,String>::Break(error);}}}
+    static Checked fromResidual(String error){return Checked::Failed(error);}
+};
+Checked read(bool good){if(good){return Checked::Value(3);}return Checked::Failed("bad");}
+Checked run(bool good){auto x=read(good)?;return Checked::Value(x+1);}
+int64 main(){match(run(true)){Checked::Value(v)=>{assert(v==4);}Checked::Failed(e)=>{panic(e);}}
+    match(run(false)){Checked::Value(v)=>{panic("bad success");}Checked::Failed(e)=>{assert(e=="bad");}}
+    println("custom ok");return 0;}

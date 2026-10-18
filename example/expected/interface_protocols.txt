@@ -1,0 +1,2 @@
+index=5 total=15 average=5.000
+for=10 typed=15 builds=2 range=15/9/0

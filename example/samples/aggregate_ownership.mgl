@@ -1,0 +1,70 @@
+/* aggregate_ownership.mgl —— 聚合槽里的字符串 / 对象归聚合自己所有。
+ *
+ *   ./magel samples/aggregate_ownership.mgl
+ *
+ * 结构体、枚举（`Result` / `Option`）和元组都按值保存它们的槽：构造 / 复制进槽时
+ * 字符串各复制一份，聚合销毁（出块 / return / 重新赋值 / delete / 停机）时按叶子
+ * 递归释放。这里把几条最容易出问题的路径串起来，输出固定下来当回归：
+ *
+ *   * 构造器实参是"当场造出来的"字符串（`Ok(prefix + name)`），临时值也有主；
+ *   * `?` 取出的字符串载荷，源 Result 释放后仍然有效；
+ *   * `match` 绑定读字符串，分支里用没问题；
+ *   * 元组变量、聚合变量的重新赋值各自回收旧值；
+ *   * 嵌套 `Result` 的每一层各有一份独立的字符串。
+ */
+
+import std::text;
+
+enum Lookup { Missing(String key), Found(String key, String value) };
+
+/* 构造器实参是拼接结果：临时串构造完就归还，聚合里留的是自己的一份。 */
+Lookup find(String key, String value) {
+    if (value == "") {
+        return Lookup::Missing(key + "!");
+    }
+    return Lookup::Found(key, key + "=" + value);
+}
+
+String describe(Lookup item) {
+    String result;
+    match (item) {
+        Lookup::Missing(key) => { result = "missing:" + key; }
+        Lookup::Found(key, value) => { result = "found:" + value; }
+    }
+    return result;
+}
+
+Result<String, String> positive(int64 value, String tag) {
+    if (value <= 0) { return Result<String, String>::Err("bad:" + tag); }
+    return Result<String, String>::Ok(tag + ":" + std::text::Text::repeat("x", value));
+}
+
+/* `?` 取出的字符串载荷在源 Result 释放后仍然有效（又拼了一次并装进新的 Result）。 */
+Result<String, String> twice(int64 value) {
+    String first = positive(value, "v")?;
+    Result<String, String> second = positive(value + 1, first);
+    String text = second.unwrap();
+    return Result<String, String>::Ok(text + "!");
+}
+
+int64 main() {
+    Lookup hit = find("id", "42");
+    println("{}", describe(hit));
+    Lookup miss = find("id", "");
+    println("{}", describe(miss));
+
+    (String, String) pair = ("left", "right");
+    println("{}|{}", pair.0, pair.1);
+    pair = ("up", "down");
+    println("{}|{}", pair.0, pair.1);
+
+    match (twice(2)) {
+        Result<String, String>::Ok(text) => { println("ok {}", text); }
+        Result<String, String>::Err(error) => { println("err {}", error); }
+    }
+    match (twice(0)) {
+        Result<String, String>::Ok(text) => { println("ok {}", text); }
+        Result<String, String>::Err(error) => { println("err {}", error); }
+    }
+    return 0;
+}

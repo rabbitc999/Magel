@@ -1,0 +1,76 @@
+{
+  "source": "physical MCU DWT_CYCCNT via SWD",
+  "capturedAt": "2026-10-15T08:17:45.097946+00:00",
+  "target": "STM32H743XIH6",
+  "probeUid": "002B00223131510339333437",
+  "clockHz": 480000000,
+  "firmwareSha256": "b61f5feaf5bf371c657e39633ee561528802a143aa4afefca96b94aa95bd9433",
+  "snapshotAddress": "0x24026f60",
+  "programStatus": 0,
+  "samples": [
+    {
+      "iterations": 10000,
+      "vmCycles": 8952340,
+      "nativeCycles": 5243092,
+      "checksum": 1254053515,
+      "vmMilliseconds": 18.650708333333334,
+      "nativeMilliseconds": 10.923108333333333
+    },
+    {
+      "iterations": 10000,
+      "vmCycles": 3916742,
+      "nativeCycles": 197054,
+      "checksum": 1254053515,
+      "vmMilliseconds": 8.159879166666666,
+      "nativeMilliseconds": 0.41052916666666667
+    },
+    {
+      "iterations": 10000,
+      "vmCycles": 3909572,
+      "nativeCycles": 194262,
+      "checksum": 1254053515,
+      "vmMilliseconds": 8.144941666666666,
+      "nativeMilliseconds": 0.4047125
+    },
+    {
+      "iterations": 10000,
+      "vmCycles": 3910184,
+      "nativeCycles": 202768,
+      "checksum": 1254053515,
+      "vmMilliseconds": 8.146216666666668,
+      "nativeMilliseconds": 0.4224333333333333
+    },
+    {
+      "iterations": 10000,
+      "vmCycles": 3909080,
+      "nativeCycles": 193772,
+      "checksum": 1254053515,
+      "vmMilliseconds": 8.143916666666666,
+      "nativeMilliseconds": 0.40369166666666667
+    }
+  ],
+  "medianVmMilliseconds": 8.146216666666668,
+  "medianNativeMilliseconds": 0.41052916666666667,
+  "medianVmCyclesPerIteration": 391.0184,
+  "vmToNativeRatio": 19.84321049052544,
+  "debugConnection": {
+    "deviceId": "0x20036450",
+    "cpuId": "0x411fc271",
+    "flashKiB": 2048,
+    "previousDebugControl": "0x70003f",
+    "earlyAp0DeviceAlias": "0x0"
+  },
+  "selectorTrace": {
+    "completed": 3,
+    "statuses": [
+      0,
+      5,
+      0
+    ],
+    "programs": [
+      0,
+      2,
+      1
+    ]
+  }
+}

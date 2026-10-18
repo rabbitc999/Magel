@@ -1,0 +1,2 @@
+T same<T>(T left, T right) { return left; }
+int64 main() { same(1, "text"); return 0; }

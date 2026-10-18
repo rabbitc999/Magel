@@ -1,0 +1,33 @@
+/* temporary_ownership.mgl —— "转换"和"变长实参"里的临时对象由调用点接管
+ *
+ *   ./magel samples/temporary_ownership.mgl
+ *
+ * 这两处过去会漏：`(int64)BigDecimal("42.9")` 转换只读句柄，没有别的所有者；
+ * 变长实参 `g(a + b, Text::repeat(…))` 的临时值也只是被复制进容器、自己没人收尾。
+ * 现在调用点会把当场造出来的大数 / 串落进临时变量，随块一起释放。
+ * 泄漏提示走 stderr，check.sh 会单独挡一道（见 expected/*.stderr 的约定）。
+ */
+
+BigDecimal scale(BigDecimal value) { return value; }
+int64 toInt(BigDecimal value) { return (int64)value; }
+int64 countBig(BigDecimal... values) { return len(values); }
+int64 countText(String... texts) { return len(texts); }
+
+int64 main() {
+    BigDecimal a = BigDecimal("1.5");
+    BigDecimal b = BigDecimal("2.5");
+
+    /* 转换的源是"当场造出来的"：转换前先落地，随块释放。 */
+    println("{}", (int64)BigDecimal("42.9"));
+    println("{}", (int64)(a * b));
+    println("{}", (bool)BigInteger("1"));
+
+    /* 变长实参里的临时串 / 临时大数：容器复制一份，自己那份归调用点。 */
+    println("{}", countText("a" + "b", "c" + "d"));
+    println("{}", countBig(BigDecimal("1.25"), a * b));
+
+    /* 变量实参是借来的，不该被临时变量多收一次。 */
+    println("{}", countBig(a, b));
+    println("{}", toInt(scale(BigDecimal("7.9"))));
+    return 0;
+}

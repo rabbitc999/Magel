@@ -1,0 +1,55 @@
+/* try_option.mgl —— `?` 用在**可空枚举**上（以前只认 Result<T,E>）。
+ *
+ * 判定口径（`OptionVariants`）：枚举正好两个变体，其中一个**没有载荷**（`None`），
+ * 另一个带一个载荷（`Value`）。空变体没有载荷可传，所以 `?` 的做法是"**原样返回**
+ * 返回类型里同名的空变体"，有值时取载荷 —— 载荷类型可以和返回的 Option 参数不同，
+ * 与 Result 那条路的"错误类型必须一致"是同一个口径。
+ */
+
+import std::text;
+
+Option<int64> half(int64 value) {
+    if (value % 2 != 0) { return Option<int64>::None; }
+    return Option<int64>::Value(value / 2);
+}
+
+Option<String> describe(int64 value) {
+    int64 h = half(value)?;   /* Option<int64> 的载荷进到 Option<String> 的函数里 */
+    return Option<String>::Value(std::text::Text::repeat("x", h));
+}
+
+/* 同一个程序里 Result 和 Option 的 `?` 各走各的：两条检测按**枚举名**区分
+ * （Result__* / Option__*），形状不同、互不冲突。 */
+Result<int64, String> parsePositive(int64 value) {
+    if (value <= 0) { return Result<int64, String>::Err("not positive"); }
+    return Result<int64, String>::Ok(value * 10);
+}
+
+Result<int64, String> scale(int64 value) {
+    int64 parsed = parsePositive(value)?;   /* 走 Result 那条路 */
+    return Result<int64, String>::Ok(parsed + 1);
+}
+
+int64 main() {
+    match (scale(3)) {
+        Result<int64, String>::Ok(number) => { println("ok {}", number); }
+        Result<int64, String>::Err(message) => { println("err {}", message); }
+    }
+    match (scale(0)) {
+        Result<int64, String>::Ok(number) => { println("ok {}", number); }
+        Result<int64, String>::Err(message) => { println("err {}", message); }
+    }
+    match (describe(8)) {   /* half(8) = 4 -> 四个 x */
+        Option<String>::Value(text) => { println("value {}", text); }
+        Option<String>::None => { println("none"); }
+    }
+    match (describe(2)) {   /* half(2) = 1 -> 一个 x */
+        Option<String>::Value(text) => { println("value {}", text); }
+        Option<String>::None => { println("none"); }
+    }
+    match (describe(7)) {   /* 奇数：half 给 None，被 `?` 原样传出来 */
+        Option<String>::Value(text) => { println("value {}", text); }
+        Option<String>::None => { println("none"); }
+    }
+    return 0;
+}

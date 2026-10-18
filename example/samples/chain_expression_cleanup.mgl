@@ -1,0 +1,98 @@
+// 完整表达式结束后立即逆序 drop 中间值，并清空内部槽，避免循环重入重复析构。
+import std::algorithms;
+import std::iter;
+int64 lifeTrace = 0;
+int64 lifeDrops = 0;
+struct LifeValue : Drop, Closeable {
+    int64 id;
+    String text;
+    LifeValue next() {
+        LifeValue result;
+        result.id = self.id + 1;
+        result.text = self.text + "!";
+        return result;
+    }
+    int64 read() { return len(self.text); }
+    String const& borrow() { return &self.text; }
+    void close() { self.text = self.text + "#"; }
+    void drop() {
+        assert((self.text[len(self.text) - 1]) == ('#'));
+        lifeTrace = lifeTrace * 10 + self.id;
+        lifeDrops = lifeDrops + 1;
+    }
+};
+LifeValue makeLife() {
+    LifeValue result;
+    result.id = 1;
+    result.text = "seed";
+    return result;
+}
+int64 returnChain() { return makeLife().next().read(); }
+int64 doubleLifeNumber(int64 value) { return value * 2; }
+List<int64> mappedLife(List<int64> values) {
+    return std::algorithms::mapValue<int64>(values, doubleLifeNumber);
+}
+struct LifeBox { List<int64> values; };
+int64 main() {
+    for (int64 i = 0; i < 5; i = i + 1) {
+        lifeTrace = 0;
+        int64 before = lifeDrops;
+        int64 size = makeLife().next().read();
+        assert((size) == (5));
+        assert((lifeTrace) == (21));
+        assert((lifeDrops) == (before + 2));
+        String live = "still alive";
+        bool skipped = false && makeLife().next().read() > 0;
+        assert((skipped) == (false));
+        assert((lifeDrops) == (before + 2));
+        assert((live) == ("still alive"));
+    }
+    lifeTrace = 0;
+    {
+        LifeValue finalValue = makeLife().next();
+        assert((lifeTrace) == (1));
+        assert((finalValue.text) == ("seed!"));
+    }
+    assert((lifeTrace) == (12));
+    lifeTrace = 0;
+    int64 a = makeLife().read(), observed = lifeTrace;
+    assert((a) == (4));
+    assert((observed) == (1));
+    lifeTrace = 0;
+    if (makeLife().read() == 4) {
+        assert((lifeTrace) == (1));
+    } else { assert(false); }
+    int64 n = 0;
+    int64 before = lifeDrops;
+    while (n < 3 && makeLife().read() == 4) {
+        assert((lifeDrops) == (before + n + 1));
+        n = n + 1;
+    }
+    assert((lifeDrops) == (before + 3));
+    lifeTrace = 0;
+    assert((returnChain()) == (5));
+    assert((lifeTrace) == (21));
+    lifeTrace = 0;
+    {
+        String const& borrowed = makeLife().borrow();
+        assert((lifeTrace) == (0));
+        assert((borrowed) == ("seed"));
+    }
+    assert((lifeTrace) == (1));
+    List<int64> numbers;
+    numbers.push(3);
+    for (int64 i = 0; i < 4; i = i + 1) {
+        List<int64> mapped = mappedLife(numbers);
+        assert((mapped[0]) == (6));
+        mapped = std::algorithms::mapValue<int64>(numbers, doubleLifeNumber);
+        assert((mapped[0]) == (6));
+        LifeBox box;
+        box.values = std::algorithms::mapValue<int64>(numbers, doubleLifeNumber);
+        assert((box.values[0]) == (6));
+        auto moved = std::algorithms::mapValue<int64>(numbers, doubleLifeNumber).intoIter();
+        List<int64> saved = moved.collect();
+        assert((saved[0]) == (6));
+    }
+    println("chain expression cleanup OK");
+    return 0;
+}

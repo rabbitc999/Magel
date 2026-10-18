@@ -1,0 +1,9 @@
+/* macro_broken.mgl —— 坏样例：宏调用实参个数与定义不符（`magel-macro-arity`）。 */
+
+$macro ADD(x, y)
+((x) + (y))
+$end_macro
+
+int64 main() {
+    return ADD(1);
+}

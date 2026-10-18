@@ -1,0 +1,158 @@
+$ python svmb_dump.py magel\doc\examples\svmb\control.svmb
+
+payload 七节的条目数与体积（总 662750 字节）
+节              条目         字节      占比
+程序名             1         11    0.0%
+指令          16728     164122   24.8%
+标签表          1263      31340    4.7%
+类型表          1135      39717    6.0%
+形参表           265      13696    2.1%
+导出表            35        767    0.1%
+调试信息         8204     413073   62.3%
+
+指令总数        16728
+不同操作码      37（枚举共 54 个）
+标签 / 类型 / 形参表 / 导出 / 调试：1263 / 1135 / 265 / 35 / 8204
+内嵌字符串      34758 处 / 5726 个不同
+
+导出表（全部）：
+  classify
+  std::lang::Math::abs$double
+  std::lang::Math::abs$int
+  std::lang::Math::clamp$double$double$double
+  std::lang::Math::clamp$int$int$int
+  std::lang::Math::max$double$double
+  std::lang::Math::max$int$int
+  std::lang::Math::min$double$double
+  std::lang::Math::min$int$int
+  std::lang::assert$bool
+  std::lang::assert$bool$int
+  std::lang::assert$bool$string
+  std::lang::assert$bool$string$int
+  std::lang::dft
+  std::lang::diagonalize2
+  std::lang::fft
+  std::lang::fileClose
+  std::lang::fileEof
+  std::lang::fileOpen
+  std::lang::fileRead
+  std::lang::fileWrite
+  std::lang::idft
+  std::lang::ifft
+  std::lang::jordan2
+  std::lang::luDecompose
+  std::lang::lurDecompose
+  std::lang::processClose
+  std::lang::processRead
+  std::lang::processRun
+  std::lang::range$int$int
+  std::lang::range$int$int$int
+  std::lang::svd
+  std::lang::symmetricEigen
+  std::lang::system
+  main
+
+标签表前 20 项（名字 → 指令下标）：
+  'Arena.allocate'                             @7424
+  'Arena.create'                               @7399
+  'Arena.drop'                                 @7469
+  'Arena.reset'                                @7458
+  'Complex__f64.conjugate'                     @11079
+  'Complex__f64.leftAdd'                       @11180
+  'Complex__f64.leftDiv'                       @11352
+  'Complex__f64.leftMul'                       @11268
+  'Complex__f64.leftSub'                       @11224
+  'Complex__f64.normSquared'                   @11105
+  'Complex__f64.of'                            @11056
+  'Complex__f64.scale'                         @11148
+  'EigenDecomposition.drop'                    @4795
+  'FileStream.close'                           @7354
+  'FileStream.flush'                           @7202
+  'FileStream.open'                            @6987
+  'FileStream.read'                            @7095
+  'FileStream.seek'                            @7253
+  'FileStream.write'                           @7151
+  'JordanDecomposition.drop'                   @6409
+
+类型表前 20 项（变量名 / 类型名 / 位宽 / 标志 / 字节数）：
+  ('__magel_dst', 'i64', 64, 0, 8)
+  ('__magel_enum_arg_IoError_OpenFailed_0', 'i64', 64, 0, 8)
+  ('__magel_enum_arg_IoError_ReadFailed_0', 'i64', 64, 0, 8)
+  ('__magel_enum_arg_IoError_SeekFailed_0', 'i64', 64, 0, 8)
+  ('__magel_enum_arg_IoError_WriteFailed_0', 'i64', 64, 0, 8)
+  ('__magel_enum_arg_Option__char_Value_0', 'u8', 8, 1, 1)
+  ('__magel_enum_arg_Option__int_Value_0', 'i64', 64, 0, 8)
+  ('__magel_enum_arg_Result__FileStream__IoError_Err_0', 'i64', 64, 0, 8)
+  ('__magel_enum_arg_Result__FileStream__IoError_Ok_0', 'i64', 64, 0, 8)
+  ('__magel_enum_arg_Result__Regex__RegexError_Err_0', 'i64', 64, 0, 8)
+  ('__magel_enum_arg_Result__Regex__RegexError_Ok_0', 'i64', 64, 0, 8)
+  ('__magel_enum_arg_Result__bool__ParseError_Err_0', 'i64', 64, 0, 8)
+  ('__magel_enum_arg_Result__bool__ParseError_Ok_0', 'i8', 8, 0, 1)
+  ('__magel_enum_arg_Result__f64__ParseError_Err_0', 'i64', 64, 0, 8)
+  ('__magel_enum_arg_Result__f64__ParseError_Ok_0', 'f64', 64, 2, 8)
+  ('__magel_enum_arg_Result__file__string_Err_0', 'i64', 64, 0, 8)
+  ('__magel_enum_arg_Result__file__string_Ok_0', 'i64', 64, 0, 8)
+  ('__magel_enum_arg_Result__int64__IoError_Err_0', 'i64', 64, 0, 8)
+  ('__magel_enum_arg_Result__int64__IoError_Ok_0', 'i64', 64, 0, 8)
+  ('__magel_enum_arg_Result__int64__ParseError_Err_0', 'i64', 64, 0, 8)
+
+类型表里与用户源码同名的条目：
+  ('i', 'i64', 64, 0, 8)
+  ('n', 'i64', 64, 0, 8)
+  ('sum', 'f64', 64, 2, 8)
+  ('value', 'f64', 64, 2, 8)
+
+形参表前 5 项：
+  ('Arena.allocate', ['bytes', 'self'])
+  ('Arena.drop', ['self'])
+  ('Arena.reset', ['self'])
+  ('Complex__f64.conjugate', ['self'])
+  ('Complex__f64.leftAdd', ['right', 'self'])
+
+调试节前 10 条（指令下标 → 函数 / 文件 / 行 / 四元式行）：
+  (0, '', 'tmp/svmb-study/control.quad', 0, 40)
+  (1, '', 'tmp/svmb-study/control.quad', 0, 41)
+  (2, 'main', 'tmp/svmb-study/control.quad', 0, 44)
+  (4, 'main', 'tmp/svmb-study/control.quad', 0, 45)
+  (5, 'main', 'tmp/svmb-study/control.quad', 0, 46)
+  (7, 'main', 'tmp/svmb-study/control.quad', 0, 47)
+  (8, 'main', 'tmp/svmb-study/control.quad', 0, 48)
+  (10, 'main', 'tmp/svmb-study/control.quad', 0, 49)
+  (12, '__magel_loop_101', 'tmp/svmb-study/control.quad', 0, 51)
+  (16, '__magel_loop_101', 'tmp/svmb-study/control.quad', 0, 52)
+  file 取值集合：['tmp/svmb-study/control.quad']
+  line 取值分布：{0: 8204}（非零共 0 条）
+  四元式行范围：40 ~ 10675
+  出现过的函数名：927 个
+
+字符串样本（前 30 个不同的）：
+  ''
+  'Arena.allocate'
+  'Arena.create'
+  'Arena.drop'
+  'Arena.reset'
+  'Complex__f64.conjugate'
+  'Complex__f64.leftAdd'
+  'Complex__f64.leftDiv'
+  'Complex__f64.leftMul'
+  'Complex__f64.leftSub'
+  'Complex__f64.normSquared'
+  'Complex__f64.of'
+  'Complex__f64.scale'
+  'EigenDecomposition.drop'
+  'FileStream.close'
+  'FileStream.flush'
+  'FileStream.open'
+  'FileStream.read'
+  'FileStream.seek'
+  'FileStream.write'
+  'JordanDecomposition.drop'
+  'LuFactorization.drop'
+  'Matrix__f64.add'
+  'Matrix__f64.apply'
+  'Matrix__f64.at'
+  'Matrix__f64.drop'
+  'Matrix__f64.identity'
+  'Matrix__f64.leftAdd'
+  'Matrix__f64.leftMul$Matrix__f64'
+  'Matrix__f64.leftMul$Vector__f64'

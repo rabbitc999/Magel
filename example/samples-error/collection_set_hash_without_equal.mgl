@@ -1,0 +1,5 @@
+struct HashOnly : Hash<HashOnly> {
+    int64 value;
+    uint64 hash(HashOnly other) { return (uint64)self.value; }
+};
+int64 main() { Set<HashOnly> values; return 0; }

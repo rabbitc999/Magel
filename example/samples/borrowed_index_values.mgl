@@ -1,0 +1,28 @@
+struct IndexedValues : Index<String const&, int64> {
+    String text;
+    String const& index(int64 key) { return &self.text; }
+};
+struct IndexedLists : Index<List<int64> const&, int64> {
+    List<int64> values;
+    List<int64> const& index(int64 key) { return &self.values; }
+};
+struct CopiedValues : Index<String, int64> {
+    String text;
+    String index(int64 key) { return self.text; }
+};
+int64 main() {
+    IndexedValues source; source.text="source";
+    IndexedLists lists; lists.values.push(7);
+    CopiedValues copied; copied.text="copied";
+    for (int64 i=0; i<10; i++) {
+        { String value=source[0]; assert(value=="source"); }
+        assert(source.text=="source");
+        { List<int64> values=lists[0]; values.push(8); assert(values.len()==2); }
+        assert(lists.values.len()==1 && lists.values[0]==7);
+        { String value=copied[0]; assert(value=="copied"); }
+        assert(copied.text=="copied");
+    }
+    source.text="still alive";
+    assert(source[0]=="still alive");
+    println("borrowed index values OK"); return 0;
+}

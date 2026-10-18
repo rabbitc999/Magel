@@ -1,0 +1,7 @@
+int64 wrong() {
+    return "text";
+}
+
+int64 main() {
+    return wrong();
+}

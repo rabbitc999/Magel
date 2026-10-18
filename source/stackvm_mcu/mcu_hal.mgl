@@ -1,0 +1,31 @@
+/* mcu_hal.mgl —— 板端 HAL 在 Magel 侧的**形状**（模板；照抄进你自己的工程）。
+ *
+ * 这些名字**不是 VM 内建**，是宿主胶水：板端由 `magel/source/stackvm_mcu/mcu_glue.cpp` 注册
+ * （或你换成自己的实现），桌面由 `glue/std_*.hpp` 那套注册。
+ *
+ *   * `print` / `println` / `putChar` 是**语言内建**，已经会走 `Machine::setOutputSink()`
+ *     装上的输出下沉（串口 / OLED / RTT），所以不要在这里重复声明；
+ *   * `putText` / `putInt` / `putFloat` / `putHex` / `putLine` 是 HAL 提供的"直接推"接口，
+ *     适合日志、调试打印、给上位机发协议帧——它们不参与 `{}` 格式化，写多少就是多少。
+ *
+ * 用法（你的工程里）：
+ *
+ *   %include "mcu_hal.mgl"
+ *
+ *   int64 main() {
+ *       putText("boot ");
+ *       putInt(42);
+ *       putText(" hex=");
+ *       putHex((uint64)0xff);
+ *       putLine();
+ *       return 0;
+ *   }
+ *
+ * 实测（板端口径，`-fno-exceptions`）输出：`boot 42 hex=ff`。
+ */
+
+void putText(String text);   /* 直接写一段字符串（不做格式化） */
+void putInt(int64 value);    /* 十进制整数 */
+void putFloat(float64 value);/* `%g` 风格的浮点 */
+void putHex(uint64 value);   /* 小写十六进制（`uint64` 形参，传参要显式转换） */
+void putLine();              /* 只写一个换行 */

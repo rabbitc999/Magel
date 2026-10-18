@@ -1,0 +1,215 @@
+str_3 offset=8 size=15 stride=8 type=string
+str_6 offset=24 size=27 stride=8 type=string
+str_7 offset=56 size=36 stride=8 type=string
+str_8 offset=96 size=25 stride=8 type=string
+obj_9 offset=128 size=40 stride=8 type=struct IoError {__tag: i32, __v0_message: string, __v1_message: string, __v2_message: string, __v3_message: string}{value}
+obj_10 offset=168 size=40 stride=8 type=struct IoError {__tag: i32, __v0_message: string, __v1_message: string, __v2_message: string, __v3_message: string}{value}
+obj_11 offset=208 size=40 stride=8 type=struct IoError {__tag: i32, __v0_message: string, __v1_message: string, __v2_message: string, __v3_message: string}{value}
+obj_12 offset=248 size=40 stride=8 type=struct IoError {__tag: i32, __v0_message: string, __v1_message: string, __v2_message: string, __v3_message: string}{value}
+obj_13 offset=288 size=40 stride=8 type=struct IoError {__tag: i32, __v0_message: string, __v1_message: string, __v2_message: string, __v3_message: string}{value}
+obj_14 offset=328 size=16 stride=8 type=struct Option__char {__tag: i32, __v0_value: u8 | methods: isValue isNone unwrap unwrapOr expect transform andThen}{value}
+obj_15 offset=344 size=16 stride=8 type=struct Option__char {__tag: i32, __v0_value: u8 | methods: isValue isNone unwrap unwrapOr expect transform andThen}{value}
+obj_16 offset=360 size=16 stride=8 type=struct Option__int {__tag: i32, __v0_value: i64 | methods: isValue isNone unwrap unwrapOr expect transform andThen}{value}
+obj_17 offset=376 size=16 stride=8 type=struct Option__int {__tag: i32, __v0_value: i64 | methods: isValue isNone unwrap unwrapOr expect transform andThen}{value}
+obj_18 offset=392 size=8 stride=8 type=struct ParseError {__tag: i32}{value}
+obj_19 offset=400 size=8 stride=8 type=struct ParseError {__tag: i32}{value}
+obj_20 offset=408 size=8 stride=8 type=struct ParseError {__tag: i32}{value}
+obj_21 offset=416 size=8 stride=8 type=struct RegexError {__tag: i32}{value}
+obj_22 offset=424 size=8 stride=8 type=struct RegexError {__tag: i32}{value}
+obj_23 offset=432 size=8 stride=8 type=struct RegexError {__tag: i32}{value}
+obj_24 offset=440 size=56 stride=8 type=struct Result__FileStream__IoError {__tag: i32, __v0_value.handle: i64, __v1_error.__tag: i32, __v1_error.__v0_message: string, __v1_error.__v1_message: string, __v1_error.__v2_message: string, __v1_error.__v3_message: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_25 offset=496 size=56 stride=8 type=struct Result__FileStream__IoError {__tag: i32, __v0_value.handle: i64, __v1_error.__tag: i32, __v1_error.__v0_message: string, __v1_error.__v1_message: string, __v1_error.__v2_message: string, __v1_error.__v3_message: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_26 offset=552 size=24 stride=8 type=struct Result__Regex__RegexError {__tag: i32, __v0_value.handle: i64, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_27 offset=576 size=24 stride=8 type=struct Result__Regex__RegexError {__tag: i32, __v0_value.handle: i64, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_28 offset=600 size=24 stride=8 type=struct Result__bool__ParseError {__tag: i32, __v0_value: bool, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_29 offset=624 size=24 stride=8 type=struct Result__bool__ParseError {__tag: i32, __v0_value: bool, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_30 offset=648 size=24 stride=8 type=struct Result__f64__ParseError {__tag: i32, __v0_value: f64, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_31 offset=672 size=24 stride=8 type=struct Result__f64__ParseError {__tag: i32, __v0_value: f64, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_32 offset=696 size=24 stride=8 type=struct Result__file__string {__tag: i32, __v0_value: i64, __v1_error: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_33 offset=720 size=24 stride=8 type=struct Result__file__string {__tag: i32, __v0_value: i64, __v1_error: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_34 offset=744 size=56 stride=8 type=struct Result__int64__IoError {__tag: i32, __v0_value: i64, __v1_error.__tag: i32, __v1_error.__v0_message: string, __v1_error.__v1_message: string, __v1_error.__v2_message: string, __v1_error.__v3_message: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_35 offset=800 size=56 stride=8 type=struct Result__int64__IoError {__tag: i32, __v0_value: i64, __v1_error.__tag: i32, __v1_error.__v0_message: string, __v1_error.__v1_message: string, __v1_error.__v2_message: string, __v1_error.__v3_message: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_36 offset=856 size=24 stride=8 type=struct Result__int64__ParseError {__tag: i32, __v0_value: i64, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_37 offset=880 size=24 stride=8 type=struct Result__int64__ParseError {__tag: i32, __v0_value: i64, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_38 offset=904 size=56 stride=8 type=struct Result__int__IoError {__tag: i32, __v0_value: i64, __v1_error.__tag: i32, __v1_error.__v0_message: string, __v1_error.__v1_message: string, __v1_error.__v2_message: string, __v1_error.__v3_message: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_39 offset=960 size=56 stride=8 type=struct Result__int__IoError {__tag: i32, __v0_value: i64, __v1_error.__tag: i32, __v1_error.__v0_message: string, __v1_error.__v1_message: string, __v1_error.__v2_message: string, __v1_error.__v3_message: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_40 offset=1016 size=56 stride=8 type=struct Result__string__IoError {__tag: i32, __v0_value: string, __v1_error.__tag: i32, __v1_error.__v0_message: string, __v1_error.__v1_message: string, __v1_error.__v2_message: string, __v1_error.__v3_message: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_41 offset=1072 size=56 stride=8 type=struct Result__string__IoError {__tag: i32, __v0_value: string, __v1_error.__tag: i32, __v1_error.__v0_message: string, __v1_error.__v1_message: string, __v1_error.__v2_message: string, __v1_error.__v3_message: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_42 offset=1128 size=24 stride=8 type=struct Result__uint64__ParseError {__tag: i32, __v0_value: u64, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_43 offset=1152 size=24 stride=8 type=struct Result__uint64__ParseError {__tag: i32, __v0_value: u64, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_44 offset=1176 size=8 stride=8 type=struct SeekOrigin {__tag: i32}{value}
+obj_45 offset=1184 size=8 stride=8 type=struct SeekOrigin {__tag: i32}{value}
+obj_46 offset=1192 size=8 stride=8 type=struct SeekOrigin {__tag: i32}{value}
+str_49 offset=1200 size=23 stride=8 type=string
+str_54 offset=1224 size=32 stride=8 type=string
+str_57 offset=1256 size=25 stride=8 type=string
+obj_64 offset=1288 size=8 stride=8 type=struct Regex {handle: i64 | methods: fullMatch contains find capture replaceFirst replaceAll}{value}
+obj_89 offset=1296 size=8 stride=8 type=struct Random {state: u64 | methods: nextUInt64 nextInt nextFloat64 nextRange nextBool}{value}
+obj_94 offset=1304 size=16 stride=8 type=struct Complex__f64 {re: f64, im: f64 | methods: conjugate normSquared scale leftAdd leftSub leftMul leftDiv}{value}
+str_95 offset=1320 size=4 stride=8 type=string
+str_96 offset=1328 size=4 stride=8 type=string
+obj_101 offset=1336 size=16 stride=8 type=struct Complex__f64 {re: f64, im: f64 | methods: conjugate normSquared scale leftAdd leftSub leftMul leftDiv}{value}
+str_102 offset=1352 size=4 stride=8 type=string
+str_103 offset=1360 size=4 stride=8 type=string
+str_105 offset=1368 size=35 stride=8 type=string
+obj_112 offset=1408 size=16 stride=8 type=struct Complex__f64 {re: f64, im: f64 | methods: conjugate normSquared scale leftAdd leftSub leftMul leftDiv}{value}
+str_113 offset=1424 size=4 stride=8 type=string
+obj_114 offset=1432 size=16 stride=8 type=struct Complex__f64 {re: f64, im: f64 | methods: conjugate normSquared scale leftAdd leftSub leftMul leftDiv}{value}
+str_115 offset=1448 size=4 stride=8 type=string
+str_116 offset=1456 size=4 stride=8 type=string
+str_117 offset=1464 size=4 stride=8 type=string
+obj_120 offset=1472 size=16 stride=8 type=struct Complex__f64 {re: f64, im: f64 | methods: conjugate normSquared scale leftAdd leftSub leftMul leftDiv}{value}
+obj_123 offset=1488 size=16 stride=8 type=struct Complex__f64 {re: f64, im: f64 | methods: conjugate normSquared scale leftAdd leftSub leftMul leftDiv}{value}
+obj_126 offset=1504 size=16 stride=8 type=struct Complex__f64 {re: f64, im: f64 | methods: conjugate normSquared scale leftAdd leftSub leftMul leftDiv}{value}
+str_127 offset=1520 size=4 stride=8 type=string
+obj_128 offset=1528 size=16 stride=8 type=struct Complex__f64 {re: f64, im: f64 | methods: conjugate normSquared scale leftAdd leftSub leftMul leftDiv}{value}
+str_129 offset=1544 size=4 stride=8 type=string
+str_130 offset=1552 size=4 stride=8 type=string
+str_131 offset=1560 size=4 stride=8 type=string
+str_135 offset=1568 size=36 stride=8 type=string
+str_138 offset=1608 size=4 stride=8 type=string
+str_139 offset=1616 size=4 stride=8 type=string
+obj_142 offset=1624 size=16 stride=8 type=struct Complex__f64 {re: f64, im: f64 | methods: conjugate normSquared scale leftAdd leftSub leftMul leftDiv}{value}
+str_143 offset=1640 size=4 stride=8 type=string
+str_144 offset=1648 size=4 stride=8 type=string
+str_145 offset=1656 size=30 stride=8 type=string
+str_147 offset=1688 size=36 stride=8 type=string
+str_154 offset=1728 size=47 stride=8 type=string
+str_162 offset=1776 size=26 stride=8 type=string
+str_173 offset=1808 size=35 stride=8 type=string
+str_174 offset=1848 size=27 stride=8 type=string
+str_176 offset=1880 size=41 stride=8 type=string
+str_183 offset=1928 size=26 stride=8 type=string
+str_184 offset=1960 size=35 stride=8 type=string
+str_186 offset=2000 size=31 stride=8 type=string
+str_190 offset=2032 size=29 stride=8 type=string
+str_198 offset=2064 size=25 stride=8 type=string
+str_199 offset=2096 size=19 stride=8 type=string
+str_202 offset=2120 size=19 stride=8 type=string
+str_209 offset=2144 size=19 stride=8 type=string
+str_237 offset=2168 size=32 stride=8 type=string
+str_242 offset=2200 size=36 stride=8 type=string
+str_245 offset=2240 size=22 stride=8 type=string
+obj_246 offset=2264 size=72 stride=8 type=struct LuFactorization {lower.rows: i64, lower.cols: i64, lower.values: i64, upper.rows: i64, upper.cols: i64, upper.values: i64, permutation.rows: i64, permutation.cols: i64, permutation.values: i64 | methods: drop}{value}
+str_253 offset=2336 size=40 stride=8 type=string
+str_265 offset=2376 size=31 stride=8 type=string
+str_270 offset=2408 size=34 stride=8 type=string
+obj_271 offset=2448 size=24 stride=8 type=struct Matrix__f64 {rows: i64, cols: i64, values: i64 | methods: drop at set transpose add subtract scale multiply apply solve leftAdd leftSub leftMul$Matrix__f64 leftMul$Vector__f64 leftMul$double}{value}
+obj_272 offset=2472 size=24 stride=8 type=struct Matrix__f64 {rows: i64, cols: i64, values: i64 | methods: drop at set transpose add subtract scale multiply apply solve leftAdd leftSub leftMul$Matrix__f64 leftMul$Vector__f64 leftMul$double}{value}
+str_290 offset=2496 size=29 stride=8 type=string
+obj_291 offset=2528 size=32 stride=8 type=struct EigenDecomposition {eigenvalues.values: i64, eigenvectors.rows: i64, eigenvectors.cols: i64, eigenvectors.values: i64 | methods: drop}{value}
+str_305 offset=2560 size=23 stride=8 type=string
+obj_308 offset=2584 size=24 stride=8 type=struct Matrix__f64 {rows: i64, cols: i64, values: i64 | methods: drop at set transpose add subtract scale multiply apply solve leftAdd leftSub leftMul$Matrix__f64 leftMul$Vector__f64 leftMul$double}{value}
+obj_309 offset=2608 size=24 stride=8 type=struct Matrix__f64 {rows: i64, cols: i64, values: i64 | methods: drop at set transpose add subtract scale multiply apply solve leftAdd leftSub leftMul$Matrix__f64 leftMul$Vector__f64 leftMul$double}{value}
+obj_310 offset=2632 size=32 stride=8 type=struct EigenDecomposition {eigenvalues.values: i64, eigenvectors.rows: i64, eigenvectors.cols: i64, eigenvectors.values: i64 | methods: drop}{value}
+obj_311 offset=2664 size=56 stride=8 type=struct SingularValueDecomposition {u.rows: i64, u.cols: i64, u.values: i64, singularValues.values: i64, vTranspose.rows: i64, vTranspose.cols: i64, vTranspose.values: i64 | methods: drop}{value}
+str_341 offset=2720 size=29 stride=8 type=string
+str_342 offset=2752 size=30 stride=8 type=string
+obj_345 offset=2784 size=48 stride=8 type=struct JordanDecomposition {basis.rows: i64, basis.cols: i64, basis.values: i64, jordan.rows: i64, jordan.cols: i64, jordan.values: i64 | methods: drop}{value}
+obj_356 offset=2832 size=48 stride=8 type=struct JordanDecomposition {basis.rows: i64, basis.cols: i64, basis.values: i64, jordan.rows: i64, jordan.cols: i64, jordan.values: i64 | methods: drop}{value}
+str_357 offset=2880 size=22 stride=8 type=string
+obj_358 offset=2904 size=24 stride=8 type=struct Result__file__string {__tag: i32, __v0_value: i64, __v1_error: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_359 offset=2928 size=56 stride=8 type=struct Result__FileStream__IoError {__tag: i32, __v0_value.handle: i64, __v1_error.__tag: i32, __v1_error.__v0_message: string, __v1_error.__v1_message: string, __v1_error.__v2_message: string, __v1_error.__v3_message: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_362 offset=2984 size=8 stride=8 type=struct FileStream {handle: i64 | methods: read write flush seek close}{value}
+obj_379 offset=2992 size=24 stride=8 type=struct MemoryStats {liveBytes: i64, liveBlocks: i64, peakBytes: i64}{value}
+obj_380 offset=3016 size=8 stride=8 type=struct Arena {handle: u64 | methods: allocate reset drop}{value}
+obj_391 offset=3024 size=24 stride=8 type=struct __Range {start: i64, stop: i64, step: i64 | methods: iterator}{value}
+str_392 offset=3048 size=27 stride=8 type=string
+obj_393 offset=3080 size=24 stride=8 type=struct __Range {start: i64, stop: i64, step: i64 | methods: iterator}{value}
+str_396 offset=3104 size=16 stride=8 type=string
+str_405 offset=3120 size=44 stride=8 type=string
+str_414 offset=3168 size=44 stride=8 type=string
+str_425 offset=3216 size=1 stride=8 type=string
+obj_434 offset=3224 size=8 stride=8 type=struct Regex {handle: i64 | methods: fullMatch contains find capture replaceFirst replaceAll}{value}
+str_439 offset=3232 size=30 stride=8 type=string
+obj_440 offset=3264 size=8 stride=8 type=struct Regex {handle: i64 | methods: fullMatch contains find capture replaceFirst replaceAll}{value}
+obj_445 offset=3272 size=8 stride=8 type=struct Regex {handle: i64 | methods: fullMatch contains find capture replaceFirst replaceAll}{value}
+obj_450 offset=3280 size=8 stride=8 type=struct RegexError {__tag: i32}{value}
+str_453 offset=3288 size=28 stride=8 type=string
+obj_456 offset=3320 size=24 stride=8 type=struct Result__Regex__RegexError {__tag: i32, __v0_value.handle: i64, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_461 offset=3344 size=24 stride=8 type=struct Result__Regex__RegexError {__tag: i32, __v0_value.handle: i64, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+str_474 offset=3368 size=31 stride=8 type=string
+obj_483 offset=3400 size=16 stride=8 type=struct Option__int {__tag: i32, __v0_value: i64 | methods: isValue isNone unwrap unwrapOr expect transform andThen}{value}
+obj_488 offset=3416 size=16 stride=8 type=struct Option__int {__tag: i32, __v0_value: i64 | methods: isValue isNone unwrap unwrapOr expect transform andThen}{value}
+str_501 offset=3432 size=30 stride=8 type=string
+obj_510 offset=3464 size=8 stride=8 type=struct ParseError {__tag: i32}{value}
+str_513 offset=3472 size=28 stride=8 type=string
+obj_516 offset=3504 size=24 stride=8 type=struct Result__int64__ParseError {__tag: i32, __v0_value: i64, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_521 offset=3528 size=24 stride=8 type=struct Result__int64__ParseError {__tag: i32, __v0_value: i64, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+str_534 offset=3552 size=30 stride=8 type=string
+obj_543 offset=3584 size=8 stride=8 type=struct ParseError {__tag: i32}{value}
+str_546 offset=3592 size=28 stride=8 type=string
+obj_549 offset=3624 size=24 stride=8 type=struct Result__uint64__ParseError {__tag: i32, __v0_value: u64, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_554 offset=3648 size=24 stride=8 type=struct Result__uint64__ParseError {__tag: i32, __v0_value: u64, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+str_567 offset=3672 size=30 stride=8 type=string
+obj_576 offset=3704 size=8 stride=8 type=struct ParseError {__tag: i32}{value}
+str_579 offset=3712 size=28 stride=8 type=string
+obj_582 offset=3744 size=24 stride=8 type=struct Result__f64__ParseError {__tag: i32, __v0_value: f64, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_587 offset=3768 size=24 stride=8 type=struct Result__f64__ParseError {__tag: i32, __v0_value: f64, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+str_600 offset=3792 size=30 stride=8 type=string
+obj_609 offset=3824 size=8 stride=8 type=struct ParseError {__tag: i32}{value}
+str_612 offset=3832 size=28 stride=8 type=string
+obj_615 offset=3864 size=24 stride=8 type=struct Result__bool__ParseError {__tag: i32, __v0_value: bool, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_620 offset=3888 size=24 stride=8 type=struct Result__bool__ParseError {__tag: i32, __v0_value: bool, __v1_error.__tag: i32 | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_625 offset=3912 size=16 stride=8 type=struct Complex__f64 {re: f64, im: f64 | methods: conjugate normSquared scale leftAdd leftSub leftMul leftDiv}{value}
+str_626 offset=3928 size=27 stride=8 type=string
+str_628 offset=3960 size=26 stride=8 type=string
+obj_629 offset=3992 size=24 stride=8 type=struct Matrix__f64 {rows: i64, cols: i64, values: i64 | methods: drop at set transpose add subtract scale multiply apply solve leftAdd leftSub leftMul$Matrix__f64 leftMul$Vector__f64 leftMul$double}{value}
+obj_632 offset=4016 size=24 stride=8 type=struct Matrix__f64 {rows: i64, cols: i64, values: i64 | methods: drop at set transpose add subtract scale multiply apply solve leftAdd leftSub leftMul$Matrix__f64 leftMul$Vector__f64 leftMul$double}{value}
+str_638 offset=4040 size=17 stride=8 type=string
+str_642 offset=4064 size=18 stride=8 type=string
+obj_643 offset=4088 size=24 stride=8 type=struct Matrix__f64 {rows: i64, cols: i64, values: i64 | methods: drop at set transpose add subtract scale multiply apply solve leftAdd leftSub leftMul$Matrix__f64 leftMul$Vector__f64 leftMul$double}{value}
+str_649 offset=4112 size=27 stride=8 type=string
+obj_650 offset=4144 size=24 stride=8 type=struct Matrix__f64 {rows: i64, cols: i64, values: i64 | methods: drop at set transpose add subtract scale multiply apply solve leftAdd leftSub leftMul$Matrix__f64 leftMul$Vector__f64 leftMul$double}{value}
+str_656 offset=4168 size=32 stride=8 type=string
+obj_657 offset=4200 size=24 stride=8 type=struct Matrix__f64 {rows: i64, cols: i64, values: i64 | methods: drop at set transpose add subtract scale multiply apply solve leftAdd leftSub leftMul$Matrix__f64 leftMul$Vector__f64 leftMul$double}{value}
+obj_662 offset=4224 size=24 stride=8 type=struct Matrix__f64 {rows: i64, cols: i64, values: i64 | methods: drop at set transpose add subtract scale multiply apply solve leftAdd leftSub leftMul$Matrix__f64 leftMul$Vector__f64 leftMul$double}{value}
+str_667 offset=4248 size=32 stride=8 type=string
+obj_668 offset=4280 size=24 stride=8 type=struct Matrix__f64 {rows: i64, cols: i64, values: i64 | methods: drop at set transpose add subtract scale multiply apply solve leftAdd leftSub leftMul$Matrix__f64 leftMul$Vector__f64 leftMul$double}{value}
+str_675 offset=4304 size=29 stride=8 type=string
+obj_676 offset=4336 size=8 stride=8 type=struct Vector__f64 {values: i64 | methods: drop len at set dot norm normalized add subtract scale leftAdd leftSub leftMul}{value}
+str_682 offset=4344 size=29 stride=8 type=string
+obj_683 offset=4376 size=24 stride=8 type=struct Matrix__f64 {rows: i64, cols: i64, values: i64 | methods: drop at set transpose add subtract scale multiply apply solve leftAdd leftSub leftMul$Matrix__f64 leftMul$Vector__f64 leftMul$double}{value}
+obj_684 offset=4400 size=8 stride=8 type=struct Vector__f64 {values: i64 | methods: drop len at set dot norm normalized add subtract scale leftAdd leftSub leftMul}{value}
+str_691 offset=4408 size=38 stride=8 type=string
+obj_700 offset=4448 size=8 stride=8 type=struct Vector__f64 {values: i64 | methods: drop len at set dot norm normalized add subtract scale leftAdd leftSub leftMul}{value}
+str_705 offset=4456 size=26 stride=8 type=string
+obj_706 offset=4488 size=8 stride=8 type=struct Vector__f64 {values: i64 | methods: drop len at set dot norm normalized add subtract scale leftAdd leftSub leftMul}{value}
+str_709 offset=4496 size=27 stride=8 type=string
+str_712 offset=4528 size=25 stride=8 type=string
+str_713 offset=4560 size=27 stride=8 type=string
+obj_714 offset=4592 size=8 stride=8 type=struct Vector__f64 {values: i64 | methods: drop len at set dot norm normalized add subtract scale leftAdd leftSub leftMul}{value}
+str_717 offset=4600 size=32 stride=8 type=string
+obj_718 offset=4632 size=8 stride=8 type=struct Vector__f64 {values: i64 | methods: drop len at set dot norm normalized add subtract scale leftAdd leftSub leftMul}{value}
+obj_721 offset=4640 size=8 stride=8 type=struct Vector__f64 {values: i64 | methods: drop len at set dot norm normalized add subtract scale leftAdd leftSub leftMul}{value}
+str_732 offset=4648 size=30 stride=8 type=string
+obj_741 offset=4680 size=40 stride=8 type=struct IoError {__tag: i32, __v0_message: string, __v1_message: string, __v2_message: string, __v3_message: string}{value}
+str_744 offset=4720 size=28 stride=8 type=string
+obj_747 offset=4752 size=56 stride=8 type=struct Result__string__IoError {__tag: i32, __v0_value: string, __v1_error.__tag: i32, __v1_error.__v0_message: string, __v1_error.__v1_message: string, __v1_error.__v2_message: string, __v1_error.__v3_message: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_752 offset=4808 size=56 stride=8 type=struct Result__string__IoError {__tag: i32, __v0_value: string, __v1_error.__tag: i32, __v1_error.__v0_message: string, __v1_error.__v1_message: string, __v1_error.__v2_message: string, __v1_error.__v3_message: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+str_765 offset=4864 size=30 stride=8 type=string
+obj_774 offset=4896 size=40 stride=8 type=struct IoError {__tag: i32, __v0_message: string, __v1_message: string, __v2_message: string, __v3_message: string}{value}
+str_777 offset=4936 size=28 stride=8 type=string
+obj_780 offset=4968 size=56 stride=8 type=struct Result__int__IoError {__tag: i32, __v0_value: i64, __v1_error.__tag: i32, __v1_error.__v0_message: string, __v1_error.__v1_message: string, __v1_error.__v2_message: string, __v1_error.__v3_message: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_785 offset=5024 size=56 stride=8 type=struct Result__int__IoError {__tag: i32, __v0_value: i64, __v1_error.__tag: i32, __v1_error.__v0_message: string, __v1_error.__v1_message: string, __v1_error.__v2_message: string, __v1_error.__v3_message: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+str_798 offset=5080 size=30 stride=8 type=string
+obj_807 offset=5112 size=40 stride=8 type=struct IoError {__tag: i32, __v0_message: string, __v1_message: string, __v2_message: string, __v3_message: string}{value}
+str_810 offset=5152 size=28 stride=8 type=string
+obj_813 offset=5184 size=56 stride=8 type=struct Result__int64__IoError {__tag: i32, __v0_value: i64, __v1_error.__tag: i32, __v1_error.__v0_message: string, __v1_error.__v1_message: string, __v1_error.__v2_message: string, __v1_error.__v3_message: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_818 offset=5240 size=56 stride=8 type=struct Result__int64__IoError {__tag: i32, __v0_value: i64, __v1_error.__tag: i32, __v1_error.__v0_message: string, __v1_error.__v1_message: string, __v1_error.__v2_message: string, __v1_error.__v3_message: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_827 offset=5296 size=8 stride=8 type=struct FileStream {handle: i64 | methods: read write flush seek close}{value}
+str_832 offset=5304 size=30 stride=8 type=string
+obj_833 offset=5336 size=8 stride=8 type=struct FileStream {handle: i64 | methods: read write flush seek close}{value}
+obj_838 offset=5344 size=8 stride=8 type=struct FileStream {handle: i64 | methods: read write flush seek close}{value}
+obj_843 offset=5352 size=40 stride=8 type=struct IoError {__tag: i32, __v0_message: string, __v1_message: string, __v2_message: string, __v3_message: string}{value}
+str_846 offset=5392 size=28 stride=8 type=string
+obj_849 offset=5424 size=56 stride=8 type=struct Result__FileStream__IoError {__tag: i32, __v0_value.handle: i64, __v1_error.__tag: i32, __v1_error.__v0_message: string, __v1_error.__v1_message: string, __v1_error.__v2_message: string, __v1_error.__v3_message: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_854 offset=5480 size=56 stride=8 type=struct Result__FileStream__IoError {__tag: i32, __v0_value.handle: i64, __v1_error.__tag: i32, __v1_error.__v0_message: string, __v1_error.__v1_message: string, __v1_error.__v2_message: string, __v1_error.__v3_message: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+str_867 offset=5536 size=30 stride=8 type=string
+str_878 offset=5568 size=28 stride=8 type=string
+obj_881 offset=5600 size=24 stride=8 type=struct Result__file__string {__tag: i32, __v0_value: i64, __v1_error: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_886 offset=5624 size=24 stride=8 type=struct Result__file__string {__tag: i32, __v0_value: i64, __v1_error: string | methods: isOk isErr unwrap unwrapOr expect error transform andThen}{value}
+obj_891 offset=5648 size=16 stride=8 type=struct Span__char {data: ref<u8>?{nullable}, length: i64 | methods: index iterator len}{value}
+str_904 offset=5664 size=31 stride=8 type=string
+obj_913 offset=5696 size=16 stride=8 type=struct Option__char {__tag: i32, __v0_value: u8 | methods: isValue isNone unwrap unwrapOr expect transform andThen}{value}
+obj_918 offset=5712 size=16 stride=8 type=struct Option__char {__tag: i32, __v0_value: u8 | methods: isValue isNone unwrap unwrapOr expect transform andThen}{value}

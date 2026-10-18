@@ -1,0 +1,3003 @@
+{
+  "date": "2026-10-16T22:50:31.349179+08:00",
+  "version": "1.0.0",
+  "baseline_commit": "12c4dc4",
+  "candidate_base": "19f45dd9f24ab7bcaf53d93f7adeb9004ae379b3",
+  "candidate_dirty": [
+    " D doc/book/latex/book.pdf",
+    " M tests/benchmark_aot_optimization.py",
+    "?? magel-1.0.0-windows-amd64.exe",
+    "?? tests/fixtures/AotOptimizationBenchmark.cpp",
+    "?? tests/fixtures/AotOptimizationBenchmark.lua",
+    "?? tests/fixtures/AotOptimizationBenchmark.py"
+  ],
+  "platform": "Windows-11-10.0.26200-SP0",
+  "cpu": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+  "host_compiler": "g++ (x86_64-posix-seh-rev3, Built by MinGW-W64 project) 11.2.0",
+  "java_versions": {
+    "jdk8": "java version \"1.8.0_421\"\nJava(TM) SE Runtime Environment (build 1.8.0_421-b09)\nJava HotSpot(TM) 64-Bit Server VM (build 25.421-b09, mixed mode)",
+    "jdk22": "java version \"22.0.1\" 2024-04-16\nJava(TM) SE Runtime Environment (build 22.0.1+8-16)\nJava HotSpot(TM) 64-Bit Server VM (build 22.0.1+8-16, mixed mode, sharing)"
+  },
+  "runtime_versions": {
+    "lua": "Lua 5.5.1  Copyright (C) 1994-2026 Lua.org, PUC-Rio",
+    "python": "Python 3.12.3",
+    "cpp": "g++ (x86_64-posix-seh-rev3, Built by MinGW-W64 project) 11.2.0"
+  },
+  "iterations": 1000000,
+  "rounds": 3,
+  "repeats_per_round": 5,
+  "configuration": {
+    "aot": "-O3 --checked; default reflection enabled; full quad optimizer; no unsafe fast-math",
+    "java": "-Xms256m -Xmx256m -Xbatch; 20 warmup iterations per process",
+    "timing": "monotonic nanoseconds around each kernel only; excludes startup, compilation, parsing and printing; includes kernel array/list initialization and cleanup",
+    "aot_warmup": 1,
+    "java_array_note": "Java fixed_array and heap_array both use long[64]; ArrayList<Long> uses boxed elements, Magel uses List<int64>; Python and Lua back both array kernels with their native dynamic sequence, so fixed_array and heap_array are the same kernel in those two columns; results compare algorithms, not identical layouts",
+    "cpp": "native C++17 at -O2 -DNDEBUG, no -ffast-math, no LTO, no closed-form sum; the five kernels are noinline so they cannot be folded into the timing wrapper, while callStep inside function_calls may inline",
+    "lua": "official Lua 5.5.1 source built with its own mingw Makefile target at -O2, no JIT; os.clock bounds each kernel only; 1 warmup round; Windows os.clock resolution commonly lands on whole milliseconds",
+    "python": "CPython, time.perf_counter_ns bounds each kernel only; 1 warmup round; no JIT"
+  },
+  "source_sha256": "7eb6dee911a1219cf17a0d938cb1bc85995b1406a2bfea48a8320716ee0684a4",
+  "java_source_sha256": "e6d8e3d26b0a75632a4b81103d789bd49f81dcac09b4c88533545c16833946d7",
+  "binary_sha256": {
+    "after": "ed442a54a711573742fc96c64688c86af40df5f44fbca751ae314ae93f3f2f7f"
+  },
+  "binary_sizes": {
+    "after": 2713485
+  },
+  "expected_checksums": {
+    "scalar": 497317640,
+    "fixed_array": 500000500000,
+    "heap_array": 500000500000,
+    "container": 500000500000,
+    "function_calls": 497317640
+  },
+  "samples_ms": {
+    "after": {
+      "scalar": [
+        109.2041,
+        110.2917,
+        113.3508,
+        108.9894,
+        108.9644,
+        108.0025,
+        107.9536,
+        107.8984,
+        113.2897,
+        107.843,
+        108.8243,
+        107.4667,
+        107.5937,
+        107.5694,
+        108.7904
+      ],
+      "fixed_array": [
+        285.8428,
+        276.5905,
+        284.0478,
+        274.4773,
+        273.1778,
+        274.1098,
+        274.7688,
+        272.3055,
+        280.1178,
+        272.1652,
+        271.1861,
+        268.87,
+        270.7708,
+        278.193,
+        272.1403
+      ],
+      "heap_array": [
+        348.8786,
+        330.4464,
+        346.585,
+        328.5869,
+        332.3297,
+        326.2191,
+        326.7499,
+        329.2174,
+        330.1103,
+        326.1357,
+        325.5732,
+        324.5616,
+        325.9449,
+        336.0646,
+        330.2831
+      ],
+      "container": [
+        1475.3431,
+        1403.9078,
+        1469.2505,
+        1393.291,
+        1420.1331,
+        1418.1327,
+        1401.9689,
+        1458.7813,
+        1383.3287,
+        1398.1292,
+        1384.8619,
+        1396.7589,
+        1393.9998,
+        1460.4281,
+        1383.0576
+      ],
+      "function_calls": [
+        320.524,
+        310.6817,
+        310.6368,
+        308.2748,
+        305.9235,
+        305.4885,
+        305.3685,
+        319.6983,
+        314.0688,
+        304.9118,
+        308.8008,
+        315.1979,
+        304.0161,
+        312.4519,
+        303.8535
+      ]
+    },
+    "jdk8": {
+      "scalar": [
+        2.5454,
+        2.5487,
+        2.5722,
+        2.597,
+        2.6317,
+        3.025,
+        2.5459,
+        2.5487,
+        2.5557,
+        2.5579,
+        2.546,
+        2.5492,
+        2.57,
+        2.556,
+        2.5542
+      ],
+      "fixed_array": [
+        0.4392,
+        0.4724,
+        0.4743,
+        0.7853,
+        0.7706,
+        0.4943,
+        0.4721,
+        0.473,
+        0.472,
+        0.4721,
+        0.4707,
+        0.4744,
+        0.4721,
+        0.4731,
+        0.4747
+      ],
+      "heap_array": [
+        0.4719,
+        0.4725,
+        0.4686,
+        0.7348,
+        0.6149,
+        0.4718,
+        0.4392,
+        0.4653,
+        0.4721,
+        0.4707,
+        0.6216,
+        0.439,
+        0.4743,
+        0.4396,
+        0.4391
+      ],
+      "container": [
+        3.8444,
+        1.1729,
+        1.4697,
+        2.7096,
+        1.4372,
+        3.7336,
+        1.2403,
+        1.2096,
+        1.8094,
+        1.1979,
+        3.6062,
+        1.2057,
+        1.2124,
+        1.6404,
+        1.2185
+      ],
+      "function_calls": [
+        2.5469,
+        2.5564,
+        2.5743,
+        2.7391,
+        2.5995,
+        2.5465,
+        2.6005,
+        2.5452,
+        2.5669,
+        2.5463,
+        2.5634,
+        2.5454,
+        2.549,
+        2.5607,
+        2.5978
+      ]
+    },
+    "jdk22": {
+      "scalar": [
+        2.8942,
+        2.8658,
+        2.8679,
+        2.8644,
+        2.8812,
+        2.866,
+        2.8975,
+        2.8628,
+        2.8838,
+        2.8916,
+        2.8622,
+        2.8592,
+        2.8803,
+        2.8878,
+        2.8706
+      ],
+      "fixed_array": [
+        0.3412,
+        0.3419,
+        0.3436,
+        0.348,
+        0.3424,
+        0.3418,
+        0.3457,
+        0.3471,
+        0.3429,
+        0.3432,
+        0.3559,
+        0.3416,
+        0.3446,
+        0.3443,
+        0.3415
+      ],
+      "heap_array": [
+        0.3538,
+        0.344,
+        0.3414,
+        0.3601,
+        0.3663,
+        0.3418,
+        0.3453,
+        0.3416,
+        0.3551,
+        0.367,
+        0.3422,
+        0.3413,
+        0.3413,
+        0.3414,
+        0.3668
+      ],
+      "container": [
+        1.9754,
+        2.0463,
+        3.085,
+        2.065,
+        1.9828,
+        1.9721,
+        2.1614,
+        2.7739,
+        1.9713,
+        1.9777,
+        1.9799,
+        1.9939,
+        2.848,
+        2.0153,
+        1.9666
+      ],
+      "function_calls": [
+        3.0346,
+        3.0113,
+        2.8892,
+        2.9863,
+        2.8732,
+        2.9469,
+        2.8982,
+        3.0386,
+        3.0113,
+        3.0741,
+        2.8686,
+        3.0581,
+        2.868,
+        3.0517,
+        2.9678
+      ]
+    },
+    "lua": {
+      "scalar": [
+        5.0,
+        6.0,
+        5.0,
+        6.0,
+        6.0,
+        6.0,
+        7.0,
+        6.0,
+        6.0,
+        7.0,
+        5.0,
+        6.0,
+        6.0,
+        5.0,
+        6.0
+      ],
+      "fixed_array": [
+        9.0,
+        9.0,
+        10.0,
+        10.0,
+        9.0,
+        9.0,
+        9.0,
+        9.0,
+        9.0,
+        8.0,
+        9.0,
+        9.0,
+        8.0,
+        9.0,
+        8.0
+      ],
+      "heap_array": [
+        9.0,
+        10.0,
+        9.0,
+        9.0,
+        9.0,
+        10.0,
+        10.0,
+        10.0,
+        11.0,
+        10.0,
+        9.0,
+        9.0,
+        9.0,
+        9.0,
+        11.0
+      ],
+      "container": [
+        9.0,
+        8.0,
+        9.0,
+        8.0,
+        10.0,
+        9.0,
+        9.0,
+        9.0,
+        10.0,
+        9.0,
+        10.0,
+        9.0,
+        10.0,
+        9.0,
+        8.0
+      ],
+      "function_calls": [
+        15.0,
+        15.0,
+        14.0,
+        15.0,
+        14.0,
+        16.0,
+        16.0,
+        16.0,
+        14.0,
+        16.0,
+        14.0,
+        15.0,
+        15.0,
+        15.0,
+        15.0
+      ]
+    },
+    "python": {
+      "scalar": [
+        48.0965,
+        47.0578,
+        48.0558,
+        48.6253,
+        48.6433,
+        50.6305,
+        51.2703,
+        50.9855,
+        50.3715,
+        51.5373,
+        48.7028,
+        48.4335,
+        48.2098,
+        48.3662,
+        47.7841
+      ],
+      "fixed_array": [
+        47.0886,
+        47.2269,
+        46.5683,
+        46.701,
+        45.8027,
+        47.9702,
+        48.5487,
+        48.5389,
+        47.9644,
+        48.5376,
+        47.1594,
+        47.1361,
+        47.4237,
+        46.3037,
+        46.9515
+      ],
+      "heap_array": [
+        46.4882,
+        46.5602,
+        46.5436,
+        47.3286,
+        46.494,
+        48.9288,
+        48.9214,
+        49.0949,
+        47.5732,
+        48.3162,
+        46.7936,
+        47.0054,
+        47.5912,
+        47.0104,
+        47.2513
+      ],
+      "container": [
+        47.3142,
+        46.6022,
+        46.6565,
+        50.4111,
+        46.4091,
+        49.0052,
+        48.8392,
+        50.066,
+        48.6746,
+        48.7675,
+        46.6631,
+        47.1382,
+        47.1935,
+        47.3325,
+        47.2845
+      ],
+      "function_calls": [
+        64.3887,
+        63.5569,
+        63.3899,
+        66.6004,
+        62.5874,
+        66.394,
+        67.1733,
+        67.0189,
+        67.7888,
+        67.6199,
+        62.8213,
+        63.653,
+        63.0132,
+        63.0175,
+        62.3788
+      ]
+    },
+    "cpp": {
+      "scalar": [
+        2.5428,
+        2.5442,
+        2.5464,
+        2.5442,
+        2.5448,
+        2.56,
+        2.5892,
+        2.5648,
+        2.5947,
+        2.5566,
+        2.5543,
+        3.0311,
+        2.5453,
+        2.5506,
+        2.5546
+      ],
+      "fixed_array": [
+        0.1815,
+        0.1815,
+        0.1816,
+        0.1817,
+        0.1814,
+        0.1816,
+        0.1819,
+        0.1819,
+        0.1872,
+        0.1817,
+        0.1814,
+        0.183,
+        0.1815,
+        0.1814,
+        0.1815
+      ],
+      "heap_array": [
+        0.2828,
+        0.2682,
+        0.2736,
+        0.2815,
+        0.2786,
+        0.2778,
+        0.2713,
+        0.2746,
+        0.2781,
+        0.286,
+        0.2729,
+        0.2793,
+        0.2829,
+        0.2831,
+        0.2844
+      ],
+      "container": [
+        0.284,
+        0.282,
+        0.2956,
+        0.2824,
+        0.2818,
+        0.2742,
+        0.2803,
+        0.2734,
+        0.2712,
+        0.2821,
+        0.275,
+        0.2652,
+        0.2805,
+        0.2819,
+        0.2872
+      ],
+      "function_calls": [
+        2.5426,
+        2.5471,
+        2.5513,
+        2.5417,
+        2.5429,
+        2.5568,
+        2.5448,
+        2.5432,
+        2.57,
+        2.5527,
+        2.5514,
+        2.5635,
+        2.556,
+        3.1498,
+        2.5517
+      ]
+    }
+  },
+  "median_ms": {
+    "after": {
+      "scalar": 108.7904,
+      "fixed_array": 274.1098,
+      "heap_array": 329.2174,
+      "container": 1401.9689,
+      "function_calls": 308.8008
+    },
+    "jdk8": {
+      "scalar": 2.5557,
+      "fixed_array": 0.473,
+      "heap_array": 0.4718,
+      "container": 1.4372,
+      "function_calls": 2.5607
+    },
+    "jdk22": {
+      "scalar": 2.8706,
+      "fixed_array": 0.3432,
+      "heap_array": 0.344,
+      "container": 1.9939,
+      "function_calls": 2.9863
+    },
+    "lua": {
+      "scalar": 6.0,
+      "fixed_array": 9.0,
+      "heap_array": 9.0,
+      "container": 9.0,
+      "function_calls": 15.0
+    },
+    "python": {
+      "scalar": 48.6253,
+      "fixed_array": 47.1594,
+      "heap_array": 47.2513,
+      "container": 47.3142,
+      "function_calls": 63.653
+    },
+    "cpp": {
+      "scalar": 2.5543,
+      "fixed_array": 0.1816,
+      "heap_array": 0.2786,
+      "container": 0.2818,
+      "function_calls": 2.5514
+    }
+  },
+  "raw": [
+    {
+      "round": 0,
+      "implementation": "after",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 109204100,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 285842800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 348878600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1475343100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 320524000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 110291700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 276590500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 330446400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1403907800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 310681700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 113350800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 284047800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 346585000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1469250500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 310636800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 108989400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 274477300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 328586900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1393291000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 308274800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 108964400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 273177800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 332329700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1420133100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 305923500,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 0,
+      "implementation": "jdk8",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2545400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 439200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 471900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 3844400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2546900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2548700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 472400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 472500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1172900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2556400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2572200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 474300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 468600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1469700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2574300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2597000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 785300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 734800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2709600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2739100,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2631700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 770600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 614900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1437200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2599500,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 0,
+      "implementation": "jdk22",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2894200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 341200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 353800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1975400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3034600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2865800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 341900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 344000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2046300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3011300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2867900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 343600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 341400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 3085000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2889200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2864400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 348000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 360100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2065000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2986300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2881200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 342400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 366300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1982800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2873200,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 0,
+      "implementation": "lua",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 5000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 15000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 6000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 10000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 8000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 15000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 5000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 10000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 14000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 6000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 10000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 8000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 15000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 6000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 10000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 14000000,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 0,
+      "implementation": "python",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 48096500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 47088600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 46488200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 47314200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 64388700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 47057800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 47226900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 46560200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 46602200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 63556900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 48055800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 46568300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 46543600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 46656500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 63389900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 48625300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 46701000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 47328600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 50411100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 66600400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 48643300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 45802700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 46494000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 46409100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 62587400,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 0,
+      "implementation": "cpp",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2542800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 181500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 282800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 284000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2542600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2544200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 181500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 268200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 282000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2547100,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2546400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 181600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 273600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 295600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2551300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2544200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 181700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 281500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 282400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2541700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2544800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 181400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 278600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 281800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2542900,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "implementation": "jdk8",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3025000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 494300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 471800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 3733600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2546500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2545900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 472100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 439200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1240300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2600500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2548700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 473000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 465300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1209600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2545200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2555700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 472000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 472100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1809400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2566900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2557900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 472100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 470700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1197900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2546300,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "implementation": "jdk22",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2866000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 341800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 341800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1972100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2946900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2897500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 345700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 345300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2161400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2898200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2862800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 347100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 341600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2773900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3038600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2883800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 342900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 355100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1971300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3011300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2891600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 343200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 367000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1977700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3074100,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "implementation": "lua",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 6000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 10000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 16000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 7000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 10000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 16000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 6000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 10000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 16000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 6000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 11000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 10000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 14000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 7000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 8000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 10000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 16000000,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "implementation": "python",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 50630500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 47970200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 48928800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 49005200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 66394000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 51270300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 48548700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 48921400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 48839200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 67173300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 50985500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 48538900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 49094900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 50066000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 67018900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 50371500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 47964400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 47573200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 48674600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 67788800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 51537300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 48537600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 48316200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 48767500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 67619900,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "implementation": "cpp",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2560000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 181600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 277800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 274200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2556800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2589200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 181900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 271300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 280300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2544800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2564800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 181900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 274600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 273400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2543200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2594700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 187200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 278100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 271200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2570000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2556600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 181700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 286000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 282100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2552700,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "implementation": "after",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 108002500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 274109800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 326219100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1418132700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 305488500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 107953600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 274768800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 326749900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1401968900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 305368500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 107898400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 272305500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 329217400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1458781300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 319698300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 113289700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 280117800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 330110300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1383328700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 314068800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 107843000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 272165200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 326135700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1398129200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 304911800,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "implementation": "jdk22",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2862200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 355900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 342200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1979900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2868600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2859200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 341600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 341300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1993900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3058100,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2880300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 344600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 341300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2848000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2868000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2887800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 344300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 341400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 2015300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3051700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2870600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 341500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 366800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1966600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2967800,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "implementation": "lua",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 5000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 10000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 14000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 6000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 15000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 6000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 8000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 10000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 15000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 5000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 9000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 15000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 6000000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 8000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 11000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 8000000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 15000000,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "implementation": "python",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 48702800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 47159400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 46793600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 46663100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 62821300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 48433500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 47136100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 47005400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 47138200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 63653000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 48209800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 47423700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 47591200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 47193500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 63013200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 48366200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 46303700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 47010400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 47332500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 63017500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 47784100,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 46951500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 47251300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 47284500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 62378800,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "implementation": "cpp",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2554300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 181400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 272900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 275000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2551400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 3031100,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 183000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 279300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 265200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2563500,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2545300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 181500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 282900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 280500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2556000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2550600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 181400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 283100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 281900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 3149800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2554600,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 181500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 284400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 287200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2551700,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "implementation": "after",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 108824300,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 271186100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 325573200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1384861900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 308800800,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 107466700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 268870000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 324561600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1396758900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 315197900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 107593700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 270770800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 325944900,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1393999800,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 304016100,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 107569400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 278193000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 336064600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1460428100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 312451900,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 108790400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 272140300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 330283100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1383057600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 303853500,
+          "checksum": 497317640
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "implementation": "jdk8",
+      "samples": [
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2546000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 470700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 621600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 3606200,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2563400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2549200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 474400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 439000,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1205700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2545400,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2570000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 472100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 474300,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1212400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2549000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2556000,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 473100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 439600,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1640400,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2560700,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "scalar",
+          "nanoseconds": 2554200,
+          "checksum": 497317640
+        },
+        {
+          "kernel": "fixed_array",
+          "nanoseconds": 474700,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "heap_array",
+          "nanoseconds": 439100,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "container",
+          "nanoseconds": 1218500,
+          "checksum": 500000500000
+        },
+        {
+          "kernel": "function_calls",
+          "nanoseconds": 2597800,
+          "checksum": 497317640
+        }
+      ]
+    }
+  ],
+  "compiler_sha256": "d1ffe8ca1f13999b940d66ecaa4a3465391c497f964698ad74bedd70995acc0a",
+  "optimization_source_sha256": {
+    "source/magel-emit/aot.cpp": "5a5d0a1aeb679dad5304e8982f501af288818357fdd65bc31efd448178c70ba6",
+    "source/magel-emit/main.cpp": "215ed452fde33198931222ed2bacdd2effada2974685ff34212b9683c099d394",
+    "library/stackvm/stackvm.hpp": "a65c3f86f607d1d6611b753538a1a0bc28bb279039d97c46c276ef482c410cd4",
+    "library/stackvm/parts/aot_bridge.cpp": "8f77a8abee130a4cb9804b4fc35bc34cdb26ff506022b5755b4afdeb4df68d2c"
+  },
+  "lua_source_sha256": "29e99fc3dcfbe7b87d5d66e68b3e7138891df6cffb6aa95d4634bcf8c22a3884",
+  "lua_binary_sha256": "12e647a82e056aea5bf287b3b010e3896ed216c790964a2b0fb6e8d3b6460be0",
+  "python_source_sha256": "4f65aa81ba55327630d187abdb580922696157e2cf1814a8d38e7e1b72797a24",
+  "jdk8_compiler": {
+    "javac": "C:\\Program Files\\Java\\jdk-22\\bin\\javac.exe",
+    "sha256": "2bd5e488deb0b4b3a0f799d3b64e23d833b47b413e16210d6eb0b496584026bb",
+    "extra_args": [
+      "--release",
+      "8"
+    ],
+    "note": "the JDK 8 column executes on a JRE-only install, so its single class file is produced by this javac with --release 8"
+  },
+  "cpp_source_sha256": "5876c461c8a433c3d268775b94cf2c0bc925d260c64f251128efd7b59b7fc970",
+  "cpp_binary_sha256": "27d4e52ab046aa47d04458f05a42ee4d9b68b6e2aa9544846f4a786d5d0d29ff"
+}

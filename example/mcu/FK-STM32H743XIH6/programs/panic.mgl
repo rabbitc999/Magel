@@ -1,0 +1,8 @@
+%include "board.mgl"
+int64 main() {
+    lcdClear(0);
+    lcdText(8, 8, "Testing panic -> selector", 63488, 0);
+    boardDelay(1000);
+    panic("intentional MCU panic test");
+    return 0;
+}

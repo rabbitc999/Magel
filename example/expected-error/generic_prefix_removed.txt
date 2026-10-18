@@ -1,0 +1,1 @@
+语法错误：example/samples-error/generic_prefix_removed.mgl 第 1 行第 8 列：期望 标识符 / 常量(const) / 可变(mut) / 丢弃(drop) 等 20 个之一，实际是 小于(<)

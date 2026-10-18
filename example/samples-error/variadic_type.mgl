@@ -1,0 +1,2 @@
+int64 sum(int64... values) { return len(values); }
+int64 main() { return sum(1, "bad"); }

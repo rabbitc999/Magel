@@ -1,0 +1,11 @@
+// 运算符返回的只读容器引用不能通过自动解引用获得写权限。
+struct Reader : Negate<List<int64> const&,Reader>, Multiply<List<int64> const&,int64> {
+    List<int64> items;
+    List<int64> const& negate(Reader value){return &self.items;}
+    List<int64> const& leftMul(int64 value){return &self.items;}
+};
+int64 main(){
+    Reader value;
+    (value*1).push(1);
+    return 0;
+}

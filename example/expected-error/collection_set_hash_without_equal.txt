@@ -1,0 +1,1 @@
+magel：example/samples-error/collection_set_hash_without_equal.mgl 第 5 行第 38 列：Set 自定义键 HashOnly 必须实现 Equal<bool,T> 等于重载接口；Hash<T> 哈希接口可选

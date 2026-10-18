@@ -1,0 +1,33 @@
+/* input_text.mgl —— 两种输入：`inputInt()` 读一个数，`inputLine()` 读一项原文。
+ *
+ *   ./magel samples/input_text.mgl --input "abc 3"
+ *   echo "abc 3" | ./magel samples/input_text.mgl    # 不给 --input 就从标准输入读，调试时可直接敲
+ *   → 把输入的第一项当字符串、第二项当数字；两种读法**共用**同一个输入序号
+ *    （check.sh 用的是 expected/input_text.in 里的那一行）
+ *
+ * 注意：String 的下标与切片**按字节**算（不是按字），端点落在多字节字符中间会报
+ *       "切片端点落在多字节字符中间"；中文要按字切得自己按首字节长度算。
+ *
+ * 输入项由 `--input` 按空白切开、按顺序取。数字按变量的类型解析（`int64` 走整数、
+ * `float64` 认小数点）；字符串就是那一项原文 —— 复制到堆上，**归变量所有**
+ * （离开块时自动释放，要提前还就 `delete 变量`）。
+ */
+
+int64 main() {
+    String name = "";
+    int64 times = 0;
+
+    name = inputLine();      /* 第一项：原文当字符串（读进来就归它所有） */
+    times = inputInt();     /* 第二项：解析成一个数 */
+
+    println("你好，{}！", name);
+    println("读数：{}", times);
+
+    /* 字符串能做的事：拼接、切片、格式化、比较 */
+    String shout = name + "！" + format("见过 {} 次", times);
+    println("拼起来：{}（长度 {}）", shout, len(shout));
+    println("前两个字节：{}", shout[0:2]);
+    println("从第 3 个字节到最后：{}", shout[2:]);
+    println("跟原来的名字比（字典序）：{}", shout > name);
+    return 0;
+}
