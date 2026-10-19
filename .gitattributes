@@ -5,9 +5,9 @@
 # `languages.yml` 里的名字，自造名会被静默忽略（那时这些文件不计入任何语言）。
 # 要让它们成为正式语言名得给 Linguist 提 PR；在那之前，认这份声明的平台 / 工具
 # （以及本地统计）会按下面的名字显示。
-*.mgl linguist-language=Magel
-*.gram linguist-language=ParseEngine
-*.tmpl linguist-language=ParseEngineTemplate
+*.mgl linguist-language=C
+*.gram linguist-language=Yacc
+*.tmpl linguist-language=tmpl
 
 # 行尾：源码在 git 里存 LF，Windows 工作区按 core.autocrlf 转 CRLF；
 # 例外是 shell 脚本，必须钉死 LF —— 工作区一旦转成 CRLF，非 Git-Bash 的 sh
