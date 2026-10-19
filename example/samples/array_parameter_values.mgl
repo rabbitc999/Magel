@@ -1,0 +1,172 @@
+/* 数组按值形参拥有独立元素；引用形参保留来源与可变性。 */
+int64 cellDrops = 0;
+
+struct Cell : Drop {
+    String text;
+    int64 value;
+
+    void drop() {
+        cellDrops = cellDrops + 1;
+    }
+};
+
+void copyCells(Cell[] cells) {
+    cells[0].text = "changed";
+    cells[0].value = 99;
+}
+
+void copyBytes(char[] bytes) {
+    bytes[0] = 'X';
+    assert(bytes.len() == 3);
+}
+
+int64 readBytes(char[] & bytes) {
+    return (int64)bytes[0];
+}
+
+int64 readConstBytes(char[] const& bytes) {
+    return (int64)bytes[1];
+}
+
+void writeBytes(char[] mut& bytes) {
+    bytes[0] = 'Z';
+}
+
+void deleteTexts(String[] mut& texts) {
+    delete texts;
+}
+
+void deleteCopy(int64[] numbers) {
+    delete numbers;
+}
+
+void copyNumbers(int64[] numbers) {
+    numbers[0] = 99;
+}
+
+void copyWithLocalReference(int64[] numbers) {
+    int64[] mut& reference = &numbers;
+    reference[0] = 123;
+}
+
+int64 readGeneric<T>(T[] const& values) {
+    return (int64)values[0];
+}
+
+int64 readNumbers(int64[] const& numbers) {
+    return numbers[0];
+}
+
+void writeNumbers(int64[] mut& numbers) {
+    numbers[0] = 42;
+}
+
+void copyTexts(String[] texts) {
+    texts[0] = "changed";
+    assert(texts[1] == "second");
+    texts[1][0] = 'S';
+    assert(texts[1] == "Second");
+    Cell cells[] = new[1];
+    cells[0].text = "original";
+    cells[0].value = 7;
+    int64 before = cellDrops;
+    copyCells(cells);
+    assert(cellDrops == before + 1);
+    assert(cells[0].text == "original");
+    assert(cells[0].value == 7);
+}
+
+int64 forwardReadonly(char[] const& bytes) {
+    copyBytes(bytes);
+    return readBytes(bytes);
+}
+
+void forwardMutable(int64[] mut& numbers) {
+    writeNumbers(numbers);
+}
+
+int64[] copyAndReturn(int64[] numbers) {
+    numbers[0] = 11;
+    return numbers;
+}
+
+void replaceTexts(String[] mut& texts) {
+    String replacement[] = new[1];
+    replacement[0] = "replacement";
+    texts = replacement;
+    replacement[0] = "changed";
+    texts = texts;
+}
+
+void copyEmpty(String[] texts) {
+    assert(texts.len() == 0);
+}
+
+String[] makeTexts() {
+    String texts[] = new[1];
+    texts[0] = "fresh";
+    return texts;
+}
+
+void replaceWithFresh(String[] mut& texts) {
+    texts = makeTexts();
+}
+
+int64 main() {
+    char bytes[] = new[3];
+    bytes[0] = 'a';
+    bytes[1] = 'b';
+    bytes[2] = 'c';
+    copyBytes(bytes);
+    assert(bytes[0] == 'a');
+    assert(readBytes(&bytes) == 97);
+    assert(readConstBytes(&bytes) == 98);
+    assert(forwardReadonly(&bytes) == 97);
+    writeBytes(&bytes);
+    assert(bytes[0] == 'Z');
+    int64 numbers[] = new[2];
+    numbers[0] = 7;
+    numbers[1] = 8;
+    copyNumbers(numbers);
+    assert(numbers[0] == 7);
+    copyWithLocalReference(numbers);
+    assert(numbers[0] == 7);
+    deleteCopy(numbers);
+    assert(numbers[0] == 7);
+    assert(readGeneric(&numbers) == 7);
+    int64 fn(int64[] const&) reader = readNumbers;
+    assert(reader(&numbers) == 7);
+    forwardMutable(&numbers);
+    assert(numbers[0] == 42);
+    int64 returned[] = copyAndReturn(numbers);
+    assert(returned[0] == 11);
+    assert(numbers[0] == 42);
+    String texts[] = new[2];
+    texts[0] = "first";
+    texts[1] = "second";
+    copyTexts(texts);
+    assert(cellDrops == 2);
+    {
+        int64 i = 0;
+        while (i < 3) {
+
+        copyTexts(texts);
+    
+            i = i + 1;
+        }
+    }
+    assert(cellDrops == 8);
+    assert(texts[0] == "first");
+    assert(texts[1] == "second");
+    replaceTexts(&texts);
+    assert(texts.len() == 1);
+    assert(texts[0] == "replacement");
+    replaceWithFresh(&texts);
+    assert(texts.len() == 1);
+    assert(texts[0] == "fresh");
+    String empty[] = new[0];
+    copyEmpty(empty);
+    deleteTexts(&texts);
+    println("array parameter values OK");
+    return 0;
+}

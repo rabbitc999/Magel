@@ -229,7 +229,8 @@ int main(int argc, char **argv)
     mcuGlue::SetOutput(&HostOutputSink, nullptr, /*keepText=*/false);
     mcuGlue::Register(machine);
     /* 文件系统：编译期后端或板端注入（关掉时 __vm_file_* 会明确报错）。 */
-    machine.setFileApi(&mcuFilesystem::CurrentApi());
+    stackvm::NativeServices services{ { magel_file::serviceName, &mcuFilesystem::CurrentApi() } };
+    machine.setHostServices(&services);
     /* 串口输入：桌面回归把 mcuConsole 接到 stdin；板端换成自己的 UART 读函数即可。 */
     if (!StdinInputDisabled())
     {

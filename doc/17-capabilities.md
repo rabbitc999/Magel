@@ -1,5 +1,7 @@
 # 17 当前能力与实现边界
 
+循环语法使用 `while`、`loop` 与 `for (... in ...)`；`for-in` 和 `while` 支持带 `else` 的值表达式，以 `yield` 产生结果。List 字面量使用 `[a, b, c]`，Set 使用 `{a, b, c}`。区间使用 `std::lang::range(a, b)`（左闭右开）和 `rangeEq(a, b)`（闭区间），整数和 char 直接支持，自定义遍历类型实现 `NextValue<T>`；区间 match 仅支持整数和 char，普通自定义值匹配使用 `Equal<T>`。
+
 [文档索引](README.md) · [English](en/17-capabilities.md)
 
 本页统一描述当前检出的实现。程序版本读取根目录 [`VERSION`](../VERSION)，变更历史见
@@ -28,6 +30,9 @@
 语言无 GC，拥有值按作用域确定性清理。引用、资源句柄及含引用的聚合仍受各自契约约束；
 手动 `new` 的存储需要按接口释放。静态检查不覆盖任意原始内存操作、外部宿主行为或所有并发失效。
 字符串下标和切片以 UTF-8 字节为单位，码点操作使用 `std::utf8`。
+普通字符串字面量按字节内容合并生成期数据，字面量不能直接修改或可变借用；独立 String 值仍按值复制。
+运行时数组形参 `T[]` 复制长度及元素；`T[] &` / `T[] const&` 只读借用，
+`T[] mut&` 可变借用。数组引用保留元素布局、运行时长度及来源生命周期。
 详见[语言参考](04-language-reference.md)、[核心概念](03-core-concepts.md)与[移动规则](23-ownership-move.md)。
 
 明确的 `Any` 目标支持自动装箱，包括泛型实参、字段、返回值及异构 List/Set/Map；精确解包、清空与借用检查沿用值语义。接口引用可直接绑定实现类型引用，无需 Any 中转；视图仍借用原对象。详见 [Any 与接口绑定](22-any-generics-data.md)。
@@ -94,3 +99,9 @@ H743 工程已提供 SDRAM、FatFS、USART1、LCD 程序选择和按键，默认
 
 
 API 手册通过 `magel man api` 查询，省略 `api` 会给出用法错误；`magel man macro` 查看内嵌宏帮助。
+
+`opcode T { new = create; drop = destroy; copy = clone; };` 声明不透明胶水对象。
+复制经声明的胶水函数完成；`#NonCopyable` 类型禁止复制，并省略 copy。
+struct 可以拥有多个 opcode 字段。BigInteger、BigDecimal、File、Process 的记录及操作位于
+标准库胶水，VM 核心只管理通用 NativeRecord 壳及宿主服务表。File、Process 不可复制；
+公开进程类型名为 Process。String、List、Map、Set 的完整隔离仍在推进，不能据此视为已完成。

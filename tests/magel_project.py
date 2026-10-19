@@ -3,6 +3,7 @@ from pathlib import Path
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -35,8 +36,11 @@ class ProjectTests(unittest.TestCase):
         self.run_cli('new', 'hello-magel', env=env)
         project = self.directory / 'hello-magel'
         self.assertEqual(
-            {p.relative_to(project).as_posix() for p in project.rglob('*') if p.is_file()},
+            {p.relative_to(project).as_posix() for p in project.rglob('*')
+             if p.is_file() and p.relative_to(project).parts[0] != '.git'},
             {'magel.toml', 'src/main.mgl', 'tests/test_main.mgl', 'README.md', '.gitignore'})
+        if shutil.which('git'):
+            self.assertTrue((project / '.git/HEAD').is_file())
         config = tomllib.loads((project / 'magel.toml').read_text(encoding='utf-8'))
         self.assertEqual(config['package'], {'name': 'hello-magel', 'version': '0.1.0'})
         self.assertEqual(config['magel']['run'], 'interpret')

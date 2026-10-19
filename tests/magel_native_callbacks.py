@@ -70,7 +70,7 @@ bool bindMagelGlue(magel_glue::Registry &registry, Memory::String *error) {
         '-DMAGEL_WITH_REFLECTION=1', '-DSTACKVM_WITH_REFLECTION=1',
         '-DSTACKVM_WITH_BIGINT=0', '-DSTACKVM_WITH_BIGFLOAT=0',
         '-Isource', '-Ilibrary', '-Ilibrary/stackvm', host_source,
-        ROOT / 'library/stackvm/stackvm.cpp', ROOT / 'library/stackvm/stackvm_glue.cpp', '-o', host)
+        ROOT / 'library/stackvm/stackvm.cpp', '-o', host)
     for level in (0, 2):
         images = emit(EXAMPLE / 'demo.mgl', f'demo-O{level}', level)
         vm = run(host, *images)

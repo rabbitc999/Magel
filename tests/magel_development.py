@@ -8,7 +8,7 @@ import sys
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT = ROOT / 'build/work/magel' / ('magel.exe' if os.name == 'nt' else 'magel')
+DEFAULT = ROOT / ('magel.exe' if os.name == 'nt' else 'magel')
 
 
 def main():

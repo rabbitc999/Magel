@@ -33,7 +33,8 @@ import std::io;
 int64 main(List<String> args) {
     assert(args.len() == 1, "请提供允许覆盖的示例文件路径");
     Result<FileStream,IoError> opened = FileStream::open(args[0],"w+");
-    FileStream stream = opened.expect("打开失败");
+    assert(opened.isOk(), "打开失败");
+    FileStream stream = opened.take();
     Result<int64,IoError> written = stream.write("alpha\nbeta\n");
     assert(written.isOk());
     Result<int64,IoError> flushed = stream.flush();
@@ -106,13 +107,13 @@ int64 main(List<String> args) {
 | [FileStream::seek](#api-15) | `Result<int64, IoError> seek(int64 offset, SeekOrigin origin)` |
 | [FileStream::close](#api-16) | `int64 close()` |
 | [fileOpen](#api-17) | `Result<std::lang::File, std::lang::String> fileOpen(std::lang::String path, std::lang::String mode)` |
-| [fileRead](#api-18) | `std::lang::String fileRead(file handle)` |
-| [fileReadLine](#api-19) | `String fileReadLine(File handle)` |
-| [fileReadString](#api-20) | `String fileReadString(File handle,int64 count)` |
-| [fileReadAllString](#api-21) | `String fileReadAllString(File handle,int64 maxBytes=16777216)` |
-| [fileWrite](#api-22) | `int64 fileWrite(file handle, std::lang::String text)` |
-| [fileEof](#api-23) | `int64 fileEof(file handle)` |
-| [fileClose](#api-24) | `int64 fileClose(file handle)` |
+| [fileRead](#api-18) | `std::lang::String fileRead(file const& handle)` |
+| [fileReadLine](#api-19) | `String fileReadLine(File const& handle)` |
+| [fileReadString](#api-20) | `String fileReadString(File const& handle, int64 count)` |
+| [fileReadAllString](#api-21) | `String fileReadAllString(File const& handle, int64 maxBytes = 16777216)` |
+| [fileWrite](#api-22) | `int64 fileWrite(file const& handle, std::lang::String text)` |
+| [fileEof](#api-23) | `int64 fileEof(file const& handle)` |
+| [fileClose](#api-24) | `int64 fileClose(file const& handle)` |
 | [readAllBytes](#api-25) | `Result<List<uint8>,IoError> readAllBytes(String path, int64 maxBytes=16777216)` |
 | [writeAllBytes](#api-26) | `Result<int64,IoError> writeAllBytes(String path, List<uint8> bytes)` |
 | [readAllText](#api-27) | `Result<String,IoError> readAllText(String path, int64 maxBytes=16777216)` |
@@ -416,7 +417,7 @@ Result<std::lang::String, IoError> read();
 obj.read();
 ```
 
-**源码**：[source/std/io.mgl:50](../../source/std/io.mgl#L50)。
+**源码**：[source/std/io.mgl:46](../../source/std/io.mgl#L46)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -452,7 +453,7 @@ Result<String,IoError> readLine();
 obj.readLine();
 ```
 
-**源码**：[source/std/io.mgl:61](../../source/std/io.mgl#L61)。
+**源码**：[source/std/io.mgl:57](../../source/std/io.mgl#L57)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -490,7 +491,7 @@ Result<String,IoError> readString(int64 count);
 obj.readString(count);
 ```
 
-**源码**：[source/std/io.mgl:69](../../source/std/io.mgl#L69)。
+**源码**：[source/std/io.mgl:65](../../source/std/io.mgl#L65)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -528,7 +529,7 @@ Result<String,IoError> readAllString(int64 maxBytes=16777216);
 obj.readAllString(maxBytes);
 ```
 
-**源码**：[source/std/io.mgl:81](../../source/std/io.mgl#L81)。
+**源码**：[source/std/io.mgl:77](../../source/std/io.mgl#L77)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -566,7 +567,7 @@ Result<int64, IoError> write(std::lang::String text);
 obj.write(text);
 ```
 
-**源码**：[source/std/io.mgl:95](../../source/std/io.mgl#L95)。
+**源码**：[source/std/io.mgl:91](../../source/std/io.mgl#L91)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -604,7 +605,7 @@ Result<List<uint8>,IoError> readBytes(int64 count);
 obj.readBytes(count);
 ```
 
-**源码**：[source/std/io.mgl:105](../../source/std/io.mgl#L105)。
+**源码**：[source/std/io.mgl:101](../../source/std/io.mgl#L101)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -642,7 +643,7 @@ Result<int64,IoError> writeBytes(List<uint8> bytes);
 obj.writeBytes(bytes);
 ```
 
-**源码**：[source/std/io.mgl:111](../../source/std/io.mgl#L111)。
+**源码**：[source/std/io.mgl:107](../../source/std/io.mgl#L107)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -678,7 +679,7 @@ Result<int64, IoError> flush();
 obj.flush();
 ```
 
-**源码**：[source/std/io.mgl:117](../../source/std/io.mgl#L117)。
+**源码**：[source/std/io.mgl:113](../../source/std/io.mgl#L113)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -717,7 +718,7 @@ Result<int64, IoError> seek(int64 offset, SeekOrigin origin);
 obj.seek(offset, origin);
 ```
 
-**源码**：[source/std/io.mgl:126](../../source/std/io.mgl#L126)。
+**源码**：[source/std/io.mgl:122](../../source/std/io.mgl#L122)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -753,7 +754,7 @@ int64 close();
 obj.close();
 ```
 
-**源码**：[source/std/io.mgl:141](../../source/std/io.mgl#L141)。
+**源码**：[source/std/io.mgl:137](../../source/std/io.mgl#L137)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -792,7 +793,7 @@ Result<std::lang::File, std::lang::String> fileOpen(std::lang::String path, std:
 std::io::fileOpen(path, mode);
 ```
 
-**源码**：[source/std/io.mgl:146](../../source/std/io.mgl#L146)。
+**源码**：[source/std/io.mgl:142](../../source/std/io.mgl#L142)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -803,7 +804,7 @@ std::io::fileOpen(path, mode);
 **声明**
 
 ```magel
-std::lang::String fileRead(file handle);
+std::lang::String fileRead(file const& handle);
 ```
 
 **行为**
@@ -814,7 +815,7 @@ std::lang::String fileRead(file handle);
 
 | 参数 | 类型／声明 | 含义 | 默认值 |
 | --- | --- | --- | --- |
-| `handle` | `file handle` | 本模块创建且仍有效的宿主句柄 | 无 |
+| `handle` | `file const& handle` | 本模块创建且仍有效的宿主句柄 | 无 |
 
 **返回值**
 
@@ -830,7 +831,7 @@ std::lang::String fileRead(file handle);
 std::io::fileRead(handle);
 ```
 
-**源码**：[source/std/io.mgl:154](../../source/std/io.mgl#L154)。
+**源码**：[source/std/io.mgl:150](../../source/std/io.mgl#L150)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -841,7 +842,7 @@ std::io::fileRead(handle);
 **声明**
 
 ```magel
-String fileReadLine(File handle);
+String fileReadLine(File const& handle);
 ```
 
 **行为**
@@ -852,7 +853,7 @@ String fileReadLine(File handle);
 
 | 参数 | 类型／声明 | 含义 | 默认值 |
 | --- | --- | --- | --- |
-| `handle` | `File handle` | 已打开的文件。 | 无 |
+| `handle` | `File const& handle` | 已打开的文件。 | 无 |
 
 **返回值**
 
@@ -861,6 +862,7 @@ String fileReadLine(File handle);
 **错误与边界**
 
 遵循本页“公共约定与错误边界”。
+实现包含 panic 分支；调用前应处理空值或失败状态。
 
 **调用形式**
 
@@ -868,7 +870,7 @@ String fileReadLine(File handle);
 std::io::fileReadLine(handle);
 ```
 
-**源码**：[source/std/io.mgl:157](../../source/std/io.mgl#L157)。
+**源码**：[source/std/io.mgl:153](../../source/std/io.mgl#L153)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -879,27 +881,28 @@ std::io::fileReadLine(handle);
 **声明**
 
 ```magel
-String fileReadString(File handle,int64 count);
+String fileReadString(File const& handle, int64 count);
 ```
 
 **行为**
 
-从句柄读取至多 count 个字节的文本，错误触发 panic。
+从文件借用中读取至多 count 个字节的文本。
 
 **参数**
 
 | 参数 | 类型／声明 | 含义 | 默认值 |
 | --- | --- | --- | --- |
-| `handle` | `File handle` | 已打开的文件。 | 无 |
-| `count` | `int64 count` | 非负字节数。 | 无 |
+| `handle` | `File const& handle` | 本模块创建且仍有效的宿主句柄 | 无 |
+| `count` | `int64 count` | 元素或字节数量，具体单位见行为说明 | 无 |
 
 **返回值**
 
-`String`。文本，EOF 可以较短。
+`String`。从文件借用中读取至多 count 个字节的文本。
 
 **错误与边界**
 
 遵循本页“公共约定与错误边界”。
+实现包含 panic 分支；调用前应处理空值或失败状态。
 
 **调用形式**
 
@@ -907,7 +910,7 @@ String fileReadString(File handle,int64 count);
 std::io::fileReadString(handle, count);
 ```
 
-**源码**：[source/std/io.mgl:162](../../source/std/io.mgl#L162)。
+**源码**：[source/std/io.mgl:159](../../source/std/io.mgl#L159)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -918,27 +921,28 @@ std::io::fileReadString(handle, count);
 **声明**
 
 ```magel
-String fileReadAllString(File handle,int64 maxBytes=16777216);
+String fileReadAllString(File const& handle, int64 maxBytes = 16777216);
 ```
 
 **行为**
 
-从句柄当前位置读完文本，错误触发 panic；原始字节数据使用 readBytes。
+从文件借用中读取剩余文本，并检查字节预算。
 
 **参数**
 
 | 参数 | 类型／声明 | 含义 | 默认值 |
 | --- | --- | --- | --- |
-| `handle` | `File handle` | 已打开的文件。 | 无 |
-| `maxBytes` | `int64 maxBytes` | 非负预算，默认 16 MiB。 | `16777216` |
+| `handle` | `File const& handle` | 本模块创建且仍有效的宿主句柄 | 无 |
+| `maxBytes` | `int64 maxBytes` | 最多接收字节数 | `16777216` |
 
 **返回值**
 
-`String`。剩余完整文本。
+`String`。从文件借用中读取剩余文本，并检查字节预算。
 
 **错误与边界**
 
 遵循本页“公共约定与错误边界”。
+实现包含 panic 分支；调用前应处理空值或失败状态。
 
 **调用形式**
 
@@ -946,7 +950,7 @@ String fileReadAllString(File handle,int64 maxBytes=16777216);
 std::io::fileReadAllString(handle, maxBytes);
 ```
 
-**源码**：[source/std/io.mgl:167](../../source/std/io.mgl#L167)。
+**源码**：[source/std/io.mgl:171](../../source/std/io.mgl#L171)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -957,7 +961,7 @@ std::io::fileReadAllString(handle, maxBytes);
 **声明**
 
 ```magel
-int64 fileWrite(file handle, std::lang::String text);
+int64 fileWrite(file const& handle, std::lang::String text);
 ```
 
 **行为**
@@ -968,7 +972,7 @@ int64 fileWrite(file handle, std::lang::String text);
 
 | 参数 | 类型／声明 | 含义 | 默认值 |
 | --- | --- | --- | --- |
-| `handle` | `file handle` | 本模块创建且仍有效的宿主句柄 | 无 |
+| `handle` | `file const& handle` | 本模块创建且仍有效的宿主句柄 | 无 |
 | `text` | `std::lang::String text` | 输入文本，位置与长度通常按字节 | 无 |
 
 **返回值**
@@ -985,7 +989,7 @@ int64 fileWrite(file handle, std::lang::String text);
 std::io::fileWrite(handle, text);
 ```
 
-**源码**：[source/std/io.mgl:170](../../source/std/io.mgl#L170)。
+**源码**：[source/std/io.mgl:185](../../source/std/io.mgl#L185)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -996,7 +1000,7 @@ std::io::fileWrite(handle, text);
 **声明**
 
 ```magel
-int64 fileEof(file handle);
+int64 fileEof(file const& handle);
 ```
 
 **行为**
@@ -1007,7 +1011,7 @@ int64 fileEof(file handle);
 
 | 参数 | 类型／声明 | 含义 | 默认值 |
 | --- | --- | --- | --- |
-| `handle` | `file handle` | 本模块创建且仍有效的宿主句柄 | 无 |
+| `handle` | `file const& handle` | 本模块创建且仍有效的宿主句柄 | 无 |
 
 **返回值**
 
@@ -1023,7 +1027,7 @@ int64 fileEof(file handle);
 std::io::fileEof(handle);
 ```
 
-**源码**：[source/std/io.mgl:171](../../source/std/io.mgl#L171)。
+**源码**：[source/std/io.mgl:186](../../source/std/io.mgl#L186)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1034,7 +1038,7 @@ std::io::fileEof(handle);
 **声明**
 
 ```magel
-int64 fileClose(file handle);
+int64 fileClose(file const& handle);
 ```
 
 **行为**
@@ -1045,7 +1049,7 @@ int64 fileClose(file handle);
 
 | 参数 | 类型／声明 | 含义 | 默认值 |
 | --- | --- | --- | --- |
-| `handle` | `file handle` | 本模块创建且仍有效的宿主句柄 | 无 |
+| `handle` | `file const& handle` | 本模块创建且仍有效的宿主句柄 | 无 |
 
 **返回值**
 
@@ -1061,7 +1065,7 @@ int64 fileClose(file handle);
 std::io::fileClose(handle);
 ```
 
-**源码**：[source/std/io.mgl:172](../../source/std/io.mgl#L172)。
+**源码**：[source/std/io.mgl:187](../../source/std/io.mgl#L187)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1100,7 +1104,7 @@ Result<List<uint8>,IoError> readAllBytes(String path, int64 maxBytes=16777216);
 std::io::readAllBytes(path, maxBytes);
 ```
 
-**源码**：[source/std/io.mgl:188](../../source/std/io.mgl#L188)。
+**源码**：[source/std/io.mgl:203](../../source/std/io.mgl#L203)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1139,7 +1143,7 @@ Result<int64,IoError> writeAllBytes(String path, List<uint8> bytes);
 std::io::writeAllBytes(path, bytes);
 ```
 
-**源码**：[source/std/io.mgl:194](../../source/std/io.mgl#L194)。
+**源码**：[source/std/io.mgl:209](../../source/std/io.mgl#L209)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1178,7 +1182,7 @@ Result<String,IoError> readAllText(String path, int64 maxBytes=16777216);
 std::io::readAllText(path, maxBytes);
 ```
 
-**源码**：[source/std/io.mgl:200](../../source/std/io.mgl#L200)。
+**源码**：[source/std/io.mgl:215](../../source/std/io.mgl#L215)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1217,7 +1221,7 @@ Result<int64,IoError> writeAllText(String path, String text);
 std::io::writeAllText(path, text);
 ```
 
-**源码**：[source/std/io.mgl:209](../../source/std/io.mgl#L209)。
+**源码**：[source/std/io.mgl:224](../../source/std/io.mgl#L224)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1255,7 +1259,7 @@ Result<List<String>,IoError> listDirectory(String path);
 std::io::listDirectory(path);
 ```
 
-**源码**：[source/std/io.mgl:214](../../source/std/io.mgl#L214)。
+**源码**：[source/std/io.mgl:229](../../source/std/io.mgl#L229)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1293,7 +1297,7 @@ Result<FileInfo,IoError> fileInfo(String path);
 std::io::fileInfo(path);
 ```
 
-**源码**：[source/std/io.mgl:220](../../source/std/io.mgl#L220)。
+**源码**：[source/std/io.mgl:235](../../source/std/io.mgl#L235)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1331,7 +1335,7 @@ Result<int64,IoError> createDirectories(String path);
 std::io::createDirectories(path);
 ```
 
-**源码**：[source/std/io.mgl:228](../../source/std/io.mgl#L228)。
+**源码**：[source/std/io.mgl:243](../../source/std/io.mgl#L243)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1370,7 +1374,7 @@ Result<int64,IoError> renamePath(String from, String to);
 std::io::renamePath(from, to);
 ```
 
-**源码**：[source/std/io.mgl:234](../../source/std/io.mgl#L234)。
+**源码**：[source/std/io.mgl:249](../../source/std/io.mgl#L249)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1383,21 +1387,21 @@ import std::io;
 
 int64 main(List<String> args) {
     String path=args[0];
-    FileStream output=FileStream::open(path,"wb").unwrap();
+    FileStream output=FileStream::open(path,"wb").take();
     output.write("abc\r\nline two\nlast").unwrap();
     output.close();
-    FileStream input=FileStream::open(path,"rb").unwrap();
+    FileStream input=FileStream::open(path,"rb").take();
     assert(input.readString(2).unwrap()=="ab");
     assert(input.readLine().unwrap()=="c");
     assert(input.readLine().unwrap()=="line two");
     assert(input.readAllString().unwrap()=="last");
     assert(input.readLine().unwrap()=="");
     input.close();
-    File handle=fileOpen(path,"rb").unwrap();
-    assert(fileReadString(handle,3)=="abc");
-    assert(fileReadLine(handle)=="");
-    assert(fileReadAllString(handle)=="line two\nlast");
-    fileClose(handle);
+    File handle=fileOpen(path,"rb").take();
+    assert(fileReadString(&handle,3)=="abc");
+    assert(fileReadLine(&handle)=="");
+    assert(fileReadAllString(&handle)=="line two\nlast");
+    fileClose(&handle);
     println("file strings ok");return 0;
 }
 ```

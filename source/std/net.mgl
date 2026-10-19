@@ -194,15 +194,21 @@ struct HttpResponse {
     std::lang::String header(std::lang::String name) {
         std::lang::List<std::lang::String> lines = std::text::Text::split(self.headers, "\r\n");
         std::lang::String wanted = std::text::Text::toLower(name);
-        for (int64 i = 0; i < std::lang::len(lines); i = i + 1) {
+        {
+            int64 i = 0;
+            while (i < std::lang::len(lines)) {
+
             std::lang::String line = "";
             line = line + lines[i];
             int64 colon = std::text::Text::find(line, ":");
-            if (colon < 0) { continue; }
+            if (colon < 0) { { i = i + 1; continue; } }
             std::lang::String key = std::text::Text::toLower(line[0:colon]);
             if (key == wanted) {
                 std::lang::String value = line[(colon + 1):];
                 return std::text::Text::trim(value);
+            }
+        
+                i = i + 1;
             }
         }
         return "";

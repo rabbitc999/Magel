@@ -126,8 +126,8 @@ int64 main() {
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-365"></a>`struct Random : Drop` | 拥有伪随机生成器状态的资源包装，可指定种子。 |
-| Random | <a id="symbol-366"></a>`uint64 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
+| 模块 | <a id="symbol-369"></a>`struct Random : Drop` | 拥有伪随机生成器状态的资源包装，可指定种子。 |
+| Random | <a id="symbol-370"></a>`uint64 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
 
 ## 函数索引
 

@@ -35,8 +35,8 @@ def main():
                 setup+='Any boxed;boxed.set(&kernel);Step mut& view=boxed.getReference();'
                 static='view.step(value)';dynamic='std::reflect::callInterface<Step>(view,"step",values)'
         source='import std::reflect;\n'+declaration+'\nint64 main(List<String> arguments){'+setup+'int64 value=7;List<std::reflect::ReflectValue> values;values.push(std::reflect::ReflectValue::I64(value));'
-        source+='if(arguments[0]=="static"){for(int64 i=0;i<'+str(args.iterations)+';i++){value='+static+';}}'
-        source+='if(arguments[0]=="reflect"){for(int64 i=0;i<'+str(args.iterations)+';i++){values[0]=std::reflect::ReflectValue::I64(value);value='+dynamic+'.unwrap().asI64().unwrap();}}'
+        source+='if(arguments[0]=="static"){for(int64 i in std::lang::range(0,'+str(args.iterations)+')){value='+static+';}}'
+        source+='if(arguments[0]=="reflect"){for(int64 i in std::lang::range(0,'+str(args.iterations)+')){values[0]=std::reflect::ReflectValue::I64(value);value='+dynamic+'.unwrap().asI64().unwrap();}}'
         source+=cleanup+'println("{}",value);return 0;}\n'
         path=work/(category+'.mgl');path.write_text(source,encoding='utf-8');executable=work/(category+EXE)
         print('[构建] '+category,flush=True)

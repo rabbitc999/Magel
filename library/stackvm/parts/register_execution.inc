@@ -46,11 +46,11 @@ if (registerExecution_ && optimizeExecution_ && !trace_ && !debugHook_ && !instr
             if (operation == Op::LoadAt)
             {
                 Slot value;
-                if (!loadMemory(static_cast<std::size_t>(a), false, value)) return false;
+                if (!loadMemory(static_cast<std::size_t>(a), false, value, program.code[at + 1].intValue == 1 ? 1u : 8u)) return false;
                 out = value.integer;
                 return true;
             }
-            if (operation == Op::StoreAt) return storeMemory(static_cast<std::size_t>(a), false, Slot::fromInt(b));
+            if (operation == Op::StoreAt) return storeMemory(static_cast<std::size_t>(a), false, Slot::fromInt(b), program.code[at + 2].intValue == 1 ? 1u : 8u);
             if (operation == Op::Check) return a >= 0 && a < b;
             if (operation == Op::CheckPointer)
             {

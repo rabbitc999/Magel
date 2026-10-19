@@ -42,7 +42,7 @@ Memory::String DerivedHashExpression(const std::shared_ptr<MType> &type, const M
     if (type->kind == MType::Struct && (type->name == "std::lang::String" || (type->name == "String" && !magel_generic::coreAliasShadows.count("String"))))
         return "__magel_derive_hash_string(" + expression + ")";
     if (type->kind == MType::Struct) return expression + ".hash(" + expression + ")";
-    if (type->kind == MType::String) return "__magel_derive_hash_string(" + expression + ")";
+    if (IsStandardOpcode(type, "String")) return "__magel_derive_hash_string(" + expression + ")";
     if (type->kind == MType::Double) return "__magel_derive_hash_float(" + expression + ")";
     return "cast<uint64>(" + expression + ")";
 }
@@ -187,8 +187,10 @@ Memory::String DerivedHashHelpers()
     return R"MGL(
 uint64 __magel_derive_hash_string(String value) {
     uint64 result = 14695981039346656037u;
-    for (int64 index = 0; index < std::lang::len(value); index = index + 1) {
+    int64 index = 0;
+    while (index < std::lang::len(value)) {
         result = (result ^ cast<uint64>(value[index])) * 1099511628211u;
+        index = index + 1;
     }
     return result;
 }
@@ -325,7 +327,7 @@ bool ValidateDerivedFields()
             for (const auto &field : fields)
             {
                 const auto type = field.second;
-                if (type->kind == MType::Int || type->kind == MType::Double || type->kind == MType::Bool || type->kind == MType::Char || type->kind == MType::String) continue;
+                if (type->kind == MType::Int || type->kind == MType::Double || type->kind == MType::Bool || type->kind == MType::Char || IsStandardOpcode(type, "String")) continue;
                 bool implemented = false;
                 if (type->kind == MType::Struct)
                 {

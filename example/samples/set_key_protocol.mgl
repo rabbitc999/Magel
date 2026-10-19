@@ -29,7 +29,10 @@ SetKey key(int64 id, String text) {
     return result;
 }
 int64 main() {
-    for (int64 i = 0; i < 8; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < 8) {
+
         Set<SetKey> values = {key(1, "first"), key(3, "collision"), key(1, "different")};
         assert(values.len() == 2 && values.has(key(1, "lookup")) != 0);
         Set<SetKey> copy = values;
@@ -53,6 +56,9 @@ int64 main() {
         Set<EnumSetKey> enumCopy = enums;
         enums.clear();
         assert(enumCopy.has(EnumSetKey::Item(1, "copied")) != 0);
+    
+            i = i + 1;
+        }
     }
     println("set key protocol OK");
     return 0;

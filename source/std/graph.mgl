@@ -69,7 +69,13 @@ struct Graph : Drop {
         self.directed = directed;
         self.edgeCount = 0;
         List<int64> heads;
-        for (int64 index = 0; index < vertexCount; index = index + 1) { heads.push(0 - 1); }
+        {
+            int64 index = 0;
+            while (index < vertexCount) {
+ heads.push(0 - 1); 
+                index = index + 1;
+            }
+        }
         self.head = heads;
         List<int64> edgeTos;
         self.edgeTo = edgeTos;
@@ -200,9 +206,15 @@ struct UnionFind : Drop {
         std::lang::assert(n >= 0);
         List<int64> parents;
         List<int64> sizeList;
-        for (int64 index = 0; index < n; index = index + 1) {
+        {
+            int64 index = 0;
+            while (index < n) {
+
             parents.push(index);
             sizeList.push(1);
+        
+                index = index + 1;
+            }
         }
         self.parent = parents;
         self.sizes = sizeList;

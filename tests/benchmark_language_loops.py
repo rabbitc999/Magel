@@ -155,7 +155,7 @@ int64 main() {{ std::lang::println("{{}}", calculate(std::lang::inputInt())); re
         aot_source += f"""int64 main() {{
     int64 n=std::lang::inputInt();
     int64 warmup=calculate(n);
-    for(int64 r=0;r<{repeats};r++) {{
+    for(int64 r in std::lang::range(0,{repeats})) {{
         int64 limit=std::lang::inputInt();
         int64 start=std::clock::nowNanos();
         int64 value=calculate(limit);

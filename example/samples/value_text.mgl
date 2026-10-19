@@ -95,7 +95,7 @@ int64 main()
     pair.left = "one";
     pair.right = "two";
     println("{}", pair.toString());
-    List<Any> list = {1, "two", true};
+    List<Any> list = [1, "two", true];
     println("{}", list.toString());
     Set<int64> set = {3, 1, 2};
     println("{}", set.toString());
@@ -113,9 +113,9 @@ int64 main()
     Promised promised;
     String promisedText = promised;
     assert(promisedText == "promised");
-    List<Pair> pairs = {pair};
+    List<Pair> pairs = [pair];
     assert(pairs.toString() == "[{\"one\", \"two\"}]");
-    List<Named> namedValues = {named};
+    List<Named> namedValues = [named];
     assert(namedValues.toString() == "[named:test]");
     globalNamed.name = "global";
     Any boxed = globalNamed;
@@ -124,7 +124,7 @@ int64 main()
     escaped.left = "a\"b";
     escaped.right = "line\nnext";
     assert(escaped.toString() == "{\"a\\\"b\", \"line\\nnext\"}");
-    List<Any> nested = {list, list};
+    List<Any> nested = [list, list];
     assert(nested.toString() == "[[1, \"two\", true], [1, \"two\", true]]");
     List<int64> emptyList;
     Set<int64> emptySet;

@@ -42,3 +42,5 @@ The standard choose and chooseLazy functions are removed. Replace them with `if 
 The LSP infers conditional and propagation results for auto hover and member completion. Hover over ? to inspect source, output, residual and the enclosing return type.
 
 Interactive terminal output is streamed before the pause prompt. std::lang::pause flushes stdout and stderr before waiting; non-interactive input never waits for Enter. Pipeline output retains the host's buffered collection behavior.
+
+`unwrap()` and `expect()` copy their success payload. Calls are rejected at compile time when that payload contains a `#NonCopyable opcode`. `Option<T>.take()` and `Result<T,E>.take()` consume the receiver and move its success payload; `Result<T,E>.takeError()` consumes the receiver and moves its error payload. A mismatched variant panics. Use `take()` to transfer FileStream or File ownership. String and array values retain independent value semantics.

@@ -33,7 +33,7 @@ def main():
     mc.write_text((fixture / "demo.mgl").read_text(encoding="utf-8").replace(
         '"./native.dll"', json.dumps(library.as_posix())), encoding="utf-8")
     prefix = WORK / "values"
-    run([ROOT / "build/work/magel" / ("magel" + EXE), mc, "--emit", "--out", prefix])
+    run([ROOT / ("magel" + EXE), mc, "--emit", "--out", prefix])
     for target in targets:
         if target == "interpreter":
             continue
@@ -50,7 +50,7 @@ def main():
         assert stats.stdout == "abi-values-ok\n", stats.stdout
         # AOT 接受 --stats，资源错误仍通过 stderr 判定。
         assert stats.stderr == "", stats.stderr
-    compiler = ROOT / "build/work/magel" / ("magel" + EXE)
+    compiler = ROOT / ("magel" + EXE)
     import tempfile
     temp_root = Path(tempfile.gettempdir())
     before = set(temp_root.glob("magel-abi-*"))

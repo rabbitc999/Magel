@@ -16,9 +16,15 @@ int64 sum(Tree value) {
         Tree::Number(number) => { return number; }
         Tree::Branch(label, children) => {
             int64 total = 0;
-            for (int64 i = 0; i < children.len(); i = i + 1) {
+            {
+                int64 i = 0;
+                while (i < children.len()) {
+
                 total = total + sum(children[i]);
                 assert(label == "root" || label == "child");
+            
+                    i = i + 1;
+                }
             }
             return total;
         }
@@ -27,7 +33,10 @@ int64 sum(Tree value) {
 }
 
 int64 main() {
-    for (int64 repeat = 0; repeat < 8; repeat = repeat + 1) {
+    {
+        int64 repeat = 0;
+        while (repeat < 8) {
+
         Tree child = branch("child", Tree::Number(2), Tree::Number(3));
         Tree root = branch("root", Tree::Number(1), child);
         List<Tree> values;
@@ -46,6 +55,9 @@ int64 main() {
         assert(sum(copied[0]) == 6 && sum(mapCopy["tree"]) == 6);
         assert(sum(keyed["tree"]) == 7);
         keyed.remove("tree");
+    
+            repeat = repeat + 1;
+        }
     }
     println("nested enum ownership OK");
     return 0;

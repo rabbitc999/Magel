@@ -3,7 +3,8 @@ import std::io;
 int64 main() {
     Result<FileStream, IoError> opened =
     std::io::FileStream::open("tmp/magel_std_io.txt", "w+");
-    std::io::FileStream stream = opened.expect("open failed");
+    assert(opened.isOk(), "open failed");
+    std::io::FileStream stream = opened.take();
     /* `Result<_, IoError>` 的载荷带字符串（IoError 里有 message）——持资源的临时值
      * 不许直接链式调用，先落进变量。 */
     Result<int64, std::io::IoError> writeResult = stream.write("alpha\nbeta\n");

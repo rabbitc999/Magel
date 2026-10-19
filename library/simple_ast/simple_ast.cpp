@@ -21,6 +21,16 @@ namespace
 using Kind = Type::Kind;
 using TypeEnv = Memory::Map<Memory::String, TypePtr>;
 
+/**
+ * @brief 查询标量或句柄的物理存储宽度，u8 按一个字节保存。
+ * @param type 元素或独立数据项的低层类型。
+ * @return u8 返回 1，其他标量和句柄继续返回 8。
+ */
+std::size_t scalarStorageBytes(const TypePtr &type)
+{
+    return type && type->kind == Kind::Uint && type->bits == 8 ? 1u : 8u;
+}
+
 // ---- .data 二进制导出的小工具 --------------------------------------------
 
 /**
@@ -160,6 +170,7 @@ struct Emitter
     TypeEnv env;
     Memory::Vector<Memory::String> dataLines;
     Memory::Vector<Memory::String> lines;
+    Memory::Map<Memory::String, Memory::String> literalNames;  ///< 当前生成单元内按字节内容合并的普通字面量。
     std::size_t tempIndex = 0;
     std::size_t labelIndex = 0;
     std::size_t lambdaIndex = 0;
@@ -325,6 +336,7 @@ TypePtr infer(const NodePtr &node, const TypeEnv &env)
     case Node::Kind::FloatLit: return Type::f64();
     case Node::Kind::BoolLit: return Type::boolean();
     case Node::Kind::StringLit: return Type::stringType();
+    case Node::Kind::ByteArrayLit: return node->declared;
     case Node::Kind::Var:
     {
         const auto found = env.find(node->text);
@@ -470,10 +482,47 @@ Memory::String emitExpr(const NodePtr &node, Emitter &emitter)
         for (std::size_t index = 0; index + 1u < node->kids.size(); ++index)
             emitStmt(node->kids[index], emitter);
         return emitExpr(node->kids.back(), emitter);
+    case Node::Kind::ByteArrayLit:
+    {
+        // 单独的键空间避免与内部带尾零的 C 字符串共享数据项。
+        const Memory::String key = Memory::String("bytes:") + node->text;
+        Memory::String name;
+        const auto found = emitter.literalNames.find(key);
+        if (found != emitter.literalNames.end())
+            name = found->second;
+        else
+        {
+            name = "bytes_" + Memory::toString(++emitter.labelIndex);
+            emitter.literalNames.emplace(key, name);
+        }
+        Memory::String body = "[";
+        for (std::size_t index = 0; index < node->text.size(); ++index)
+        {
+            if (index != 0u) body += ", ";
+            body += Memory::toString(static_cast<unsigned char>(node->text[index]));
+        }
+        body += "]";
+        emitter.data(name, body, node->declared);
+        const Memory::String address = emitter.temp();
+        emitter.emit("(addr, " + name + ", _, " + address + ")");
+        return address;
+    }
     case Node::Kind::StringLit:
     {
-        /* 具名的（`namedStr`）沿用给的名字 → 同名只有一份数据项；普通的每次新开一个。 */
-        const Memory::String name = node->typeName.empty() ? ("str_" + Memory::toString(++emitter.labelIndex)) : node->typeName;
+        /* 普通字面量跨函数复用数据项；显式具名数据保留调用方指定的符号身份。 */
+        Memory::String name = node->typeName;
+        if (name.empty())
+        {
+            const Memory::String key = Memory::String("cstring:") + node->text;
+            const auto found = emitter.literalNames.find(key);
+            if (found != emitter.literalNames.end())
+                name = found->second;
+            else
+            {
+                name = "str_" + Memory::toString(++emitter.labelIndex);
+                emitter.literalNames.emplace(key, name);
+            }
+        }
         emitter.data(name, "\"" + node->text + "\"", Type::stringType());
         // 字符串在数据区里是一串以 `\0` 结尾的字节；表达式的值是它的**基址**
         // （i64 句柄），这样才能放进变量、当实参传出去、再按地址逐字节取。
@@ -590,16 +639,16 @@ Memory::String emitExpr(const NodePtr &node, Emitter &emitter)
         const Memory::String base = emitExpr(baseNode, emitter);
         const Memory::String position = emitExpr(node->kids.size() > 1u ? node->kids[1] : nullptr,
                                                  emitter);
-        // 降级成"基址 + 偏移"：每个元素一个 8 字节槽位 → 先 位置×8，再加基址。
+        const TypePtr container = infer(baseNode, emitter.env);
+        const TypePtr element = container->element ? container->element : Type::i32();
+        // u8 连续存储，其他标量或句柄保留八字节槽。
         const Memory::String scaled = emitter.temp();
-        emitter.emit("(*:i64, " + position + ", 8, " + scaled + ")");
+        emitter.emit("(*:i64, " + position + ", " + Memory::toString(scalarStorageBytes(element)) + ", " + scaled + ")");
         const Memory::String address = emitter.temp();
         emitter.emit("(+:i64, " + base + ", " + scaled + ", " + address + ")");
         // rvalue：算出地址后再取一次值（本 AST 里赋值目标只能是变量名，所以下标总是 rvalue）。
         // `load` 带上**元素类型**：数据区的槽位是 8 字节，整型按整数解释、浮点按
         // IEEE-754 双精度解释（两个后端都认这个后缀）。
-        const TypePtr container = infer(baseNode, emitter.env);
-        const TypePtr element = container->element ? container->element : Type::i32();
         const Memory::String value = emitter.temp();
         emitter.emit("(load:" + element->quadType() + ", " + address + ", _, " + value + ")");
         return value;
@@ -812,7 +861,7 @@ Memory::String emitExpr(const NodePtr &node, Emitter &emitter)
 /**
  * @brief 算一个左值（下标 / 成员）的**地址**；`a[i] = v`、`p.x = v` 用它。
  *
- * 与 `emitExpr` 里 rvalue 的地址计算逐字一致：下标 = 基址 + 位置×8，
+ * 与右值使用相同的元素宽度：u8 下标按字节，其他标量或句柄按八字节；
  * 成员 = 基址 + 字段序号×8，只是不再补最后那次 `load`。
  */
 Memory::String emitAddress(const NodePtr &node, Emitter &emitter)
@@ -823,8 +872,10 @@ Memory::String emitAddress(const NodePtr &node, Emitter &emitter)
         const Memory::String base = emitExpr(node->kids.size() > 0u ? node->kids[0] : nullptr, emitter);
         const Memory::String position = emitExpr(node->kids.size() > 1u ? node->kids[1] : nullptr,
                                                  emitter);
+        const TypePtr container = infer(node->kids.empty() ? nullptr : node->kids[0], emitter.env);
+        const TypePtr element = container->element ? container->element : Type::i32();
         const Memory::String scaled = emitter.temp();
-        emitter.emit("(*:i64, " + position + ", 8, " + scaled + ")");
+        emitter.emit("(*:i64, " + position + ", " + Memory::toString(scalarStorageBytes(element)) + ", " + scaled + ")");
         const Memory::String address = emitter.temp();
         emitter.emit("(+:i64, " + base + ", " + scaled + ", " + address + ")");
         return address;
@@ -1270,6 +1321,20 @@ NodePtr Node::str(Memory::String text)
     auto node = Memory::makeShared<Node>();
     node->kind = Kind::StringLit;
     node->text = std::move(text);
+    return node;
+}
+
+/**
+ * @brief 构造保存原始 UTF-8 字节及精确长度的数组常量。
+ * @param bytes 原始字节序列，零字节也计入长度。
+ * @return 使用 u8 数组布局的低层节点。
+ */
+NodePtr Node::byteArray(Memory::String bytes)
+{
+    auto node = Memory::makeShared<Node>();
+    node->kind = Kind::ByteArrayLit;
+    node->declared = Type::array(Type::u8(), "count=" + Memory::toString(bytes.size()));
+    node->text = std::move(bytes);
     return node;
 }
 
@@ -2104,9 +2169,17 @@ Memory::String buildDataBinary(const Memory::Vector<CodegenResult::Entry> &entri
     out.assign(8u, '\0');
     for (const CodegenResult::Entry &entry : entries)
     {
-        // 2. 对齐（`align=` 缺省 8 字节）。
-        const int align = metaInt(entry.type->meta, "align", 8);
+        const auto element = entry.type->kind == Type::Kind::Array ? entry.type->element : entry.type;
+        const bool byteStorage = scalarStorageBytes(element) == 1u && entry.type->kind != Type::Kind::Struct;
+        // u8 数据按字节对齐；显式内部对齐元数据仍被保留。
+        const int align = metaInt(entry.type->meta, "align", byteStorage ? 1 : 8);
         while ((out.size() % static_cast<std::size_t>(align > 0 ? align : 1)) != 0u) out.push_back('\0');
+        // 数组地址指向首元素，前八字节记录逻辑长度；布局表不把长度头计入载荷。
+        if (entry.type->kind == Type::Kind::Array)
+        {
+            const int count = metaInt(entry.type->meta, "length", metaInt(entry.type->meta, "count", static_cast<int>(splitTop(entry.body).size())));
+            putInt(out, count);
+        }
         const std::size_t start = out.size();
 
         /**
@@ -2127,7 +2200,9 @@ Memory::String buildDataBinary(const Memory::Vector<CodegenResult::Entry> &entri
             double doubleValue = 0.0;
             if (numberText(text, isFloat, intValue, doubleValue))
             {
-                if (isFloat)
+                if (byteStorage)
+                    out.push_back(static_cast<char>(static_cast<std::uint8_t>(intValue)));
+                else if (isFloat)
                     putDouble(out, doubleValue);
                 else
                     putInt(out, intValue);
@@ -2172,9 +2247,8 @@ Memory::String buildDataBinary(const Memory::Vector<CodegenResult::Entry> &entri
 
         if (layout != nullptr)
         {
-            // 带上 stride=8：数据区里每个槽位固定 8 字节，和四元式里 `(*:i64, index, 8, t)`
-            // 用的步长一致；stackvm 的 DataArea 会把它读进来备查。
-            layout->push_back(entry.name + " offset=" + Memory::toString(start) + " size=" + Memory::toString(out.size() - start) + " stride=8 type=" + entry.type->describe());
+            // 把物理步长写入布局，与下标寻址和边界检查共用口径。
+            layout->push_back(entry.name + " offset=" + Memory::toString(start) + " size=" + Memory::toString(out.size() - start) + " stride=" + Memory::toString(byteStorage ? 1 : 8) + " type=" + entry.type->describe());
         }
     }
     // 5. 尾部补 8 个零字节：数据区是按地址按 8 字节整块读的（`load`），
@@ -2193,8 +2267,10 @@ Memory::String buildDataBinary(const Memory::Vector<CodegenResult::Entry> &entri
  *
  *   - 每个条目按 `align=` 对齐（缺省 8 字节），不足补 0；
  *   - 字符串：UTF-8 字节 + `\0`；
- *   - 数值：8 字节有符号 / 浮点（按条目类型：f* 用 IEEE-754 双精度）；
- *   - 数组 / 结构体：元素依次排布；
+ *   - u8：一个字节，数组中的 u8 连续保存；
+ *   - 其他数值：8 字节有符号 / 浮点（f* 用 IEEE-754 双精度）；
+ *   - 数组：八字节逻辑长度头后紧接元素，符号地址指向首元素；
+ *   - 结构体：字段依次排布；
  *   - 枚举：4 字节 tag（分支序号）+ 载荷；
  *   - 引用 / 字符串 / 复合对象出现在数组里时写 4 字节"条目序号"当句柄。
  * @return 二进制内容。

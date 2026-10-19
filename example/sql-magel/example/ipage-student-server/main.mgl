@@ -192,10 +192,16 @@ int64 charCount(String text) {
 /** @brief 整串是否全是 ASCII 数字（空串不算）。 */
 bool isDigits(String text) {
     if (len(text) == 0) { return false; }
-    for (int64 i = 0; i < len(text); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < len(text)) {
+
         int64 byte = (int64)text[i];
         /* 多字节字符的首字节 >= 192，第一个字节就判掉，不会读进续字节。 */
         if (byte < 48 || byte > 57) { return false; }
+    
+            i = i + 1;
+        }
     }
     return true;
 }
@@ -241,10 +247,16 @@ Option<String> overLimit(String label, String text, int64 maxChars) {
 bool looksLikeDate(String text) {
     if (len(text) != 10) { return false; }
     int64 dash = 0;
-    for (int64 i = 0; i < len(text); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < len(text)) {
+
         int64 byte = (int64)text[i];
         if (byte == 45) { dash = dash + 1; }
         elif (byte < 48 || byte > 57) { return false; }
+    
+            i = i + 1;
+        }
     }
     return dash == 2;
 }
@@ -377,8 +389,14 @@ List<ModuleSpec> allModules() {
 List<ModuleSpec> visibleModules(int64 level) {
     List<ModuleSpec> all = allModules();
     List<ModuleSpec> out;
-    for (int64 i = 0; i < len(all); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < len(all)) {
+
         if (level >= all[i].needLevel) { out.push(all[i]); }
+    
+            i = i + 1;
+        }
     }
     return out;
 }
@@ -391,10 +409,22 @@ List<ModuleSpec> visibleModules(int64 level) {
  */
 int64 actionNeedLevel(String moduleKey, String actionKey) {
     List<ModuleSpec> all = allModules();
-    for (int64 i = 0; i < len(all); i = i + 1) {
-        if (all[i].key != moduleKey) { continue; }
-        for (int64 j = 0; j < len(all[i].actions); j = j + 1) {
+    {
+        int64 i = 0;
+        while (i < len(all)) {
+
+        if (all[i].key != moduleKey) { { i = i + 1; continue; } }
+        {
+            int64 j = 0;
+            while (j < len(all[i].actions)) {
+
             if (all[i].actions[j].key == actionKey) { return all[i].actions[j].needLevel; }
+        
+                j = j + 1;
+            }
+        }
+    
+            i = i + 1;
         }
     }
     return (int64)(0 - 1);
@@ -437,10 +467,16 @@ String jsonString(String text) {
 String jsonNumber(String text) {
     String value = Text::trim(text);
     if (len(value) == 0) { return "0"; }
-    for (int64 i = 0; i < len(value); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < len(value)) {
+
         char c = value[i];
         bool accepted = (c >= '0' && c <= '9') || c == '.' || c == '-' || c == '+' || c == 'e' || c == 'E';
         if (!accepted) { return "0"; }
+    
+            i = i + 1;
+        }
     }
     return value;
 }
@@ -480,11 +516,17 @@ struct Session {
 Option<int64> decimal(String text, int64 maximum) {
     if (len(text) == 0) { return Option<int64>::None; }
     int64 value = 0;
-    for (int64 i = 0; i < len(text); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < len(text)) {
+
         if (text[i] < '0' || text[i] > '9') { return Option<int64>::None; }
         int64 digit = (int64)text[i] - (int64)'0';
         if (value > (maximum - digit) / 10) { return Option<int64>::None; }
         value = value * 10 + digit;
+    
+            i = i + 1;
+        }
     }
     return Option<int64>::Value(value);
 }
@@ -493,14 +535,20 @@ Option<int64> decimal(String text, int64 maximum) {
  * @param query 查询串（不含 `?`）。 @param key 参数名。 @return 参数值，没有给空串。 */
 String queryParam(String query, String key) {
     List<String> pairs = Text::split(query, "&");
-    for (int64 i = 0; i < len(pairs); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < len(pairs)) {
+
         String pair = pairs[i];
         int64 equal = Text::find(pair, "=");
         if (equal < 0) {
             if (pair == key) { return ""; }
-            continue;
+            { i = i + 1; continue; }
         }
         if (pair[0:equal] == key) { return pair[(equal + 1):]; }
+    
+            i = i + 1;
+        }
     }
     return "";
 }
@@ -723,12 +771,24 @@ struct App {
     String issueToken() {
         String hex = "0123456789abcdef";
         String out = "";
-        for (int64 i = 0; i < TOKEN_BYTES; i = i + 1) {
+        {
+            int64 i = 0;
+            while (i < TOKEN_BYTES) {
+
             uint64 value = std::random::randomNextUInt64(self.entropy);
-            for (int64 j = 0; j < 2; j = j + 1) {
+            {
+                int64 j = 0;
+                while (j < 2) {
+
                 int64 nibble = (int64)(value % 16);
                 out = out + hex[nibble:(nibble + 1)];
                 value = value / 16;
+            
+                    j = j + 1;
+                }
+            }
+        
+                i = i + 1;
             }
         }
         return out;
@@ -744,16 +804,28 @@ struct App {
         missing.permission = "STUDENT";
         missing.level = LEVEL_STUDENT;
         if (len(token) == 0) { return missing; }
-        for (int64 i = 0; i < len(self.sessions); i = i + 1) {
+        {
+            int64 i = 0;
+            while (i < len(self.sessions)) {
+
             if (self.sessions[i].token == token) { return self.sessions[i]; }
+        
+                i = i + 1;
+            }
         }
         return missing;
     }
 
     /** @brief 丢弃一个会话（注销）。 */
     void dropSession(String token) {
-        for (int64 i = len(self.sessions) - 1; i >= 0; i = i - 1) {
+        {
+            int64 i = len(self.sessions) - 1;
+            while (i >= 0) {
+
             if (self.sessions[i].token == token) { self.sessions.remove(i); }
+        
+                i = i - 1;
+            }
         }
     }
 
@@ -835,20 +907,32 @@ struct App {
     String modulesJson(int64 level) {
         List<ModuleSpec> modules = visibleModules(level);
         String out = "[";
-        for (int64 i = 0; i < len(modules); i = i + 1) {
+        {
+            int64 i = 0;
+            while (i < len(modules)) {
+
             if (i > 0) { out = out + ","; }
             ModuleSpec spec = modules[i];
             out = out + "{\"key\":" + jsonString(spec.key)
             + ",\"label\":" + jsonString(spec.label)
             + ",\"needLevel\":" + format("{}", spec.needLevel)
             + ",\"actions\":[";
-            for (int64 j = 0; j < len(spec.actions); j = j + 1) {
+            {
+                int64 j = 0;
+                while (j < len(spec.actions)) {
+
                 if (j > 0) { out = out + ","; }
                 out = out + "{\"key\":" + jsonString(spec.actions[j].key)
                 + ",\"label\":" + jsonString(spec.actions[j].label)
                 + ",\"needLevel\":" + format("{}", spec.actions[j].needLevel) + "}";
+            
+                    j = j + 1;
+                }
             }
             out = out + "]}";
+        
+                i = i + 1;
+            }
         }
         return out + "]";
     }
@@ -938,9 +1022,15 @@ struct App {
         + format(" LIMIT {}", LIST_LIMIT));
         if (!rows.ok) { return errorResponse(500, "数据库查询失败：" + rows.error); }
         String items = "[";
-        for (int64 i = 0; i < rows.rowCount(); i = i + 1) {
+        {
+            int64 i = 0;
+            while (i < rows.rowCount()) {
+
             if (i > 0) { items = items + ","; }
             items = items + self.studentRow(&rows, i);
+        
+                i = i + 1;
+            }
         }
         items = items + "]";
         int64 total = self.db.count("SELECT COUNT(*) FROM student");
@@ -1057,9 +1147,15 @@ struct App {
         ResultSet rows = self.db.exec(self.sclassListSql() + condition + " ORDER BY c.sclass_id");
         if (!rows.ok) { return errorResponse(500, "数据库查询失败：" + rows.error); }
         String items = "[";
-        for (int64 i = 0; i < rows.rowCount(); i = i + 1) {
+        {
+            int64 i = 0;
+            while (i < rows.rowCount()) {
+
             if (i > 0) { items = items + ","; }
             items = items + self.sclassRow(&rows, i);
+        
+                i = i + 1;
+            }
         }
         items = items + "]";
         int64 total = self.db.count("SELECT COUNT(*) FROM sclass");
@@ -1167,9 +1263,15 @@ struct App {
         ResultSet rows = self.db.exec(self.courseListSql() + condition + " ORDER BY co.course_id");
         if (!rows.ok) { return errorResponse(500, "数据库查询失败：" + rows.error); }
         String items = "[";
-        for (int64 i = 0; i < rows.rowCount(); i = i + 1) {
+        {
+            int64 i = 0;
+            while (i < rows.rowCount()) {
+
             if (i > 0) { items = items + ","; }
             items = items + self.courseRow(&rows, i);
+        
+                i = i + 1;
+            }
         }
         items = items + "]";
         int64 total = self.db.count("SELECT COUNT(*) FROM course");
@@ -1283,9 +1385,15 @@ struct App {
         + format(" LIMIT {}", LIST_LIMIT));
         if (!rows.ok) { return errorResponse(500, "数据库查询失败：" + rows.error); }
         String items = "[";
-        for (int64 i = 0; i < rows.rowCount(); i = i + 1) {
+        {
+            int64 i = 0;
+            while (i < rows.rowCount()) {
+
             if (i > 0) { items = items + ","; }
             items = items + self.selectionRow(&rows, i);
+        
+                i = i + 1;
+            }
         }
         items = items + "]";
         int64 total = self.db.count("SELECT COUNT(*) FROM selection");
@@ -1413,7 +1521,10 @@ struct App {
         " ORDER BY c.sclass_id");
         if (!rows.ok) { return errorResponse(500, "数据库查询失败：" + rows.error); }
         String items = "[";
-        for (int64 i = 0; i < rows.rowCount(); i = i + 1) {
+        {
+            int64 i = 0;
+            while (i < rows.rowCount()) {
+
             if (i > 0) { items = items + ","; }
             String grade = rows.textAt(i, 2);
             items = items + "{\"id\":" + format("{}", rows.intAt(i, 0))
@@ -1423,6 +1534,9 @@ struct App {
             + ",\"studentCount\":" + format("{}", rows.intAt(i, 3))
             + ",\"selectionCount\":" + format("{}", rows.intAt(i, 4))
             + ",\"averageScore\":" + jsonNumber(rows.textAt(i, 5)) + "}";
+        
+                i = i + 1;
+            }
         }
         return jsonResponse(200, listEnvelope(items + "]", rows.rowCount(), rows.rowCount()));
     }
@@ -1448,9 +1562,15 @@ struct App {
         ResultSet rows = self.db.exec(self.userListSql());
         if (!rows.ok) { return errorResponse(500, "数据库查询失败：" + rows.error); }
         String items = "[";
-        for (int64 i = 0; i < rows.rowCount(); i = i + 1) {
+        {
+            int64 i = 0;
+            while (i < rows.rowCount()) {
+
             if (i > 0) { items = items + ","; }
             items = items + self.userRow(&rows, i);
+        
+                i = i + 1;
+            }
         }
         items = items + "]";
         return jsonResponse(200, listEnvelope(items, rows.rowCount(), rows.rowCount()));
@@ -1564,13 +1684,19 @@ struct App {
         " FROM sclass ORDER BY sclass_id");
         if (!rows.ok) { return errorResponse(500, "数据库查询失败：" + rows.error); }
         String items = "[";
-        for (int64 i = 0; i < rows.rowCount(); i = i + 1) {
+        {
+            int64 i = 0;
+            while (i < rows.rowCount()) {
+
             if (i > 0) { items = items + ","; }
             String grade = rows.textAt(i, 2);
             items = items + "{\"id\":" + format("{}", rows.intAt(i, 0))
             + ",\"name\":" + jsonString(rows.textAt(i, 1))
             + ",\"grade\":" + jsonString(grade)
             + ",\"gradeLabel\":" + jsonString(gradeLabel(grade)) + "}";
+        
+                i = i + 1;
+            }
         }
         return jsonResponse(200, listEnvelope(items + "]", rows.rowCount(), rows.rowCount()));
     }
@@ -1581,13 +1707,19 @@ struct App {
         " FROM course ORDER BY course_id");
         if (!rows.ok) { return errorResponse(500, "数据库查询失败：" + rows.error); }
         String items = "[";
-        for (int64 i = 0; i < rows.rowCount(); i = i + 1) {
+        {
+            int64 i = 0;
+            while (i < rows.rowCount()) {
+
             if (i > 0) { items = items + ","; }
             String state = rows.textAt(i, 2);
             items = items + "{\"id\":" + format("{}", rows.intAt(i, 0))
             + ",\"name\":" + jsonString(rows.textAt(i, 1))
             + ",\"state\":" + jsonString(state)
             + ",\"stateLabel\":" + jsonString(courseStateLabel(state)) + "}";
+        
+                i = i + 1;
+            }
         }
         return jsonResponse(200, listEnvelope(items + "]", rows.rowCount(), rows.rowCount()));
     }
@@ -1989,7 +2121,10 @@ Request readRequest(TcpSocket mut& socket, int64 port) {
     int64 length = 0;
     bool hasLength = false;
     bool hasHost = false;
-    for (int64 i = 1; i < len(lines); i = i + 1) {
+    {
+        int64 i = 1;
+        while (i < len(lines)) {
+
         String line = lines[i];
         int64 colon = Text::find(line, ":");
         if (colon <= 0) { request.status = 400; return request; }
@@ -2010,6 +2145,9 @@ Request readRequest(TcpSocket mut& socket, int64 port) {
         elif (key == "expect") { request.status = 417; return request; }
         elif (key == "content-type") { request.contentType = Text::toLower(value); }
         elif (key == "authorization") { request.authorization = value; }
+    
+            i = i + 1;
+        }
     }
     if (start[2] == "HTTP/1.1" && !hasHost) { request.status = 400; return request; }
     if ((request.method == "POST" || request.method == "PUT") && !hasLength) {
@@ -2076,7 +2214,10 @@ int64 main(List<String> arguments) {
     int64 mysqlPort = 3306;
     int64 maximum = 0;
 
-    for (int64 i = 0; i < len(arguments); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < len(arguments)) {
+
         String argument = arguments[i];
         bool hasValue = i + 1 < len(arguments);
         if (argument == "--listen-host" && hasValue) { listenHost = arguments[i + 1]; i = i + 1; }
@@ -2109,6 +2250,9 @@ int64 main(List<String> arguments) {
         else {
             println("未知参数：{}", argument);
             return 1;
+        }
+    
+            i = i + 1;
         }
     }
 

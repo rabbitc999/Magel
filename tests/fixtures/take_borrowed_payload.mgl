@@ -1,0 +1,17 @@
+struct Record {
+    int64 value;
+};
+int64 main() {
+    Record original;
+    original.value = 7;
+    Option<Record mut&> record = Option<Record mut&>::Value(&original);
+    Record mut& alias = record.take();
+    alias.value = 9;
+    assert(original.value == 9);
+    String text = "borrowed";
+    Option<String const&> message = Option<String const&>::Value(&text);
+    String const& view = message.take();
+    assert(view == "borrowed" && text == "borrowed");
+    println("borrowed take ok");
+    return 0;
+}

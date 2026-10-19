@@ -1,3 +1,13 @@
+/**
+ * @brief 识别 std::lang 声明的具名 opcode，避免与用户同名类型混淆。
+ * @param type 待查询的类型。
+ * @param name lang 包中的公开类型名称。
+ * @return 类型是指定标准 opcode 时返回 true。
+ */
+bool IsStandardOpcode(const std::shared_ptr<MType> &type, const char *name)
+{
+    return type && type->kind == MType::Opcode && type->name == Memory::String("std::lang::") + name;
+}
 /* ---------- 内部执行期类型标签 ---------- */
 
 /**
@@ -158,6 +168,23 @@ Memory::Map<Memory::String, Memory::Vector<MParam>> g_lambdaCaptures;        ///
 Memory::Set<Memory::String> g_lambdaAutoReturns;                             ///< 等捕获类型确定后推导返回值。
 Memory::Set<Memory::String> g_lambdaPrepared;                                ///< 已绑定环境的具体 lambda。
 Memory::Map<Memory::String, std::shared_ptr<MType>> g_hostTypes;             /* 宿主类型名 → VM ABI 类型 */
+/**
+ * @brief 不透明胶水类型的创建、销毁和复制协议。
+ */
+struct MOpcodeDefinition
+{
+    Memory::String create;
+    Memory::String destroy;
+    Memory::String copy;
+    bool nonCopyable = false;
+    bool aggregate = false;
+    bool internal = false;
+    Memory::String module;
+    Memory::String handleType;
+};
+Memory::Map<Memory::String, MOpcodeDefinition> g_opcodeTypes;
+Memory::Map<Memory::String, std::shared_ptr<MType>> g_opcodeValueTypes;
+
 struct MHostInterfaceImpl
 {
     std::shared_ptr<MType> owner;
@@ -395,5 +422,5 @@ Memory::Set<Memory::String> g_parameterValueStorage;
  */
 bool NeedsReferenceStorage(const std::shared_ptr<MType> &type)
 {
-    return type && (type->kind == MType::Int || type->kind == MType::Double || type->kind == MType::Bool || type->kind == MType::Char || type->kind == MType::String || type->kind == MType::BigInt || type->kind == MType::BigFloat || type->kind == MType::Container || type->kind == MType::Func || type->kind == MType::Obj || type->kind == MType::File || type->kind == MType::Proc || IsRuntimeArray(type));
+    return type && (type->kind == MType::Int || type->kind == MType::Double || type->kind == MType::Bool || type->kind == MType::Char || IsStandardOpcode(type, "String") || type->kind == MType::Opcode || IsStandardOpcode(type, "BigInteger") || IsStandardOpcode(type, "BigDecimal") || type->kind == MType::Container || type->kind == MType::Func || type->kind == MType::Obj || IsStandardOpcode(type, "File") || IsStandardOpcode(type, "Process") || IsRuntimeArray(type));
 }

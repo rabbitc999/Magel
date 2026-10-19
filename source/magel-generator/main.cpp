@@ -9,6 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <regex>
 #include <set>
 #include <sstream>
 #include <string>
@@ -30,6 +31,65 @@ bool readFile(const fs::path &path, Memory::String *content)
     output << input.rdbuf();
     if (!input.eof() && input.fail()) return false;
     *content = output.str();
+    return true;
+}
+
+/**
+ * @brief 递归展开权威文法的包含文件，并重定位生成期代码片段的文件路径。
+ * @param path 当前文法文件路径。
+ * @param content 接收展开后的文法内容。
+ * @param parents 当前递归链，用于拒绝循环包含。
+ * @param error 接收文件读取或包含失败的诊断。
+ * @return 全部包含成功展开时返回 true。
+ * @note 仅处理文法文件组合；语言解析仍由 ParseEngine 生成的解析器负责。
+ */
+bool expandGrammarIncludes(const fs::path &path, Memory::String *content,
+                           Memory::Set<fs::path> *parents, Memory::String *error)
+{
+    std::error_code pathError;
+    const auto canonical = fs::weakly_canonical(path, pathError);
+    if (pathError || !parents->insert(canonical).second)
+    {
+        *error = "无法展开文法路径或存在循环包含：" + path.u8string();
+        return false;
+    }
+    Memory::String source;
+    if (!readFile(canonical, &source))
+    {
+        *error = "无法读取文法：" + canonical.u8string();
+        parents->erase(canonical);
+        return false;
+    }
+    static const std::regex includeRule(R"gram(^\s*%include\s+"([^"]+)"\s*$)gram");
+    static const std::regex codeRule(R"gram(^(\s*%(?:code|epilogue|main)\s+include\s+)"([^"]+)"(\s*)$)gram");
+    std::istringstream lines(source);
+    std::string line;
+    content->clear();
+    while (std::getline(lines, line))
+    {
+        std::smatch match;
+        if (std::regex_match(line, match, includeRule))
+        {
+            Memory::String included;
+            if (!expandGrammarIncludes(canonical.parent_path() / fs::u8path(match[1].str()),
+                                       &included, parents, error))
+            {
+                parents->erase(canonical);
+                return false;
+            }
+            *content += included;
+        }
+        else if (std::regex_match(line, match, codeRule))
+        {
+            const auto code = (canonical.parent_path() / fs::u8path(match[2].str())).lexically_normal();
+            *content += match[1].str() + "\"" + code.generic_u8string() + "\"" + match[3].str() + "\n";
+        }
+        else
+        {
+            *content += line + "\n";
+        }
+    }
+    parents->erase(canonical);
     return true;
 }
 
@@ -368,10 +428,18 @@ int runCli(int argc, char **argv)
     if (!forwarded.empty()) { usage(self.string()); return 2; }
 
     fs::path parser = parseEnginePortable;
-    for (const auto &candidate : {mc / "ParseEngine.exe", mc / "ParseEngine",
-            root / "ParseEngine/build/bin/ParseEngine.exe", root / "ParseEngine/build/bin/ParseEngine",
-            parseEngine, parseEnginePortable}) {
-        if (fs::exists(candidate)) { parser = candidate; break; }
+    const char *configuredEngine = std::getenv("ENGINE");
+    if (configuredEngine != nullptr && *configuredEngine != '\0')
+    {
+        parser = fs::u8path(configuredEngine);
+    }
+    else
+    {
+        for (const auto &candidate : {mc / "ParseEngine.exe", mc / "ParseEngine",
+                root / "ParseEngine/build/bin/ParseEngine.exe", root / "ParseEngine/build/bin/ParseEngine",
+                parseEngine, parseEnginePortable}) {
+            if (fs::exists(candidate)) { parser = candidate; break; }
+        }
     }
     if (!fs::exists(parser))
     {
@@ -383,8 +451,27 @@ int runCli(int argc, char **argv)
              std::chrono::steady_clock::now().time_since_epoch().count()));
     std::error_code stageError;
     fs::create_directories(stage, stageError);
-    const int generated = run({parser.string(), (mc / "source/magel.gram").string(),
-                               "--mode", "ielr", "--out-dir", stage.string()});
+    Memory::String expandedGrammar, grammarError;
+    Memory::Set<fs::path> grammarParents;
+    if (!expandGrammarIncludes(mc / "source/magel.gram", &expandedGrammar, &grammarParents, &grammarError))
+    {
+        std::cerr << grammarError << '\n';
+        fs::remove_all(stage, stageError);
+        return 1;
+    }
+    const auto grammarPath = stage / "magel.gram";
+    {
+        std::ofstream grammar(grammarPath, std::ios::binary);
+        grammar << expandedGrammar;
+        if (!grammar)
+        {
+            std::cerr << "无法写入展开文法：" << grammarPath.u8string() << '\n';
+            fs::remove_all(stage, stageError);
+            return 1;
+        }
+    }
+    const int generated = run({parser.string(), grammarPath.string(), "--mode", "ielr",
+                               "--cpp-lexer", "std", "--no-build-files", "--out-dir", stage.string()});
     if (generated != 0)
     {
         fs::remove_all(stage, stageError);
@@ -405,6 +492,15 @@ int runCli(int argc, char **argv)
             {"allocator/magel_allocator.hpp", "runtime/magel_allocator.hpp"},
             {"../../source/magel_i18n.hpp", "magel_i18n.hpp"},
             {"../magel_i18n.hpp", "magel_i18n.hpp"},
+            {"../library/stackvm/value_text.hpp", "runtime/value_text.hpp"},
+            {"../../library/stackvm/stackvm.hpp", "runtime/stackvm.hpp"},
+            {"../library/stackvm/stackvm.hpp", "runtime/stackvm.hpp"},
+            {"../../library/sqlite/sqlite3.h", "sqlite/sqlite3.h"},
+            {"../../library/lztext/lztext.hpp", "lztext/lztext.hpp"},
+            {"../../library/template/engine.hpp", "template/engine.hpp"},
+            {"../library/template/engine.hpp", "template/engine.hpp"},
+            {"../../library/miniz/miniz.h", "miniz/miniz.h"},
+            {"../library/miniz/miniz.h", "miniz/miniz.h"},
             {"../../library/json/json.hpp", "json/json.hpp"},
             {"../json/json.hpp", "json/json.hpp"},
             {"../../library/json/json.cpp", "json/json.cpp"},
@@ -472,8 +568,6 @@ int runCli(int argc, char **argv)
         {"register_core.hpp", root / "magel/library/stackvm/register_core.hpp"},
         {"allocation_index.hpp", root / "magel/library/stackvm/allocation_index.hpp"},
         {"data_capacity_index.hpp", root / "magel/library/stackvm/data_capacity_index.hpp"},
-        {"stackvm_glue.cpp", root / "magel/library/stackvm/stackvm_glue.cpp"},
-        {"stackvm_glue.hpp", root / "magel/library/stackvm/stackvm_glue.hpp"},
         {"bigint.cpp", root / "magel/library/bignum/bigint.cpp"},
         {"bigint.hpp", root / "magel/library/bignum/bigint.hpp"},
         {"bigfloat.cpp", root / "magel/library/bignum/bigfloat.cpp"},
@@ -493,10 +587,51 @@ int runCli(int argc, char **argv)
         }
     }
     for (const char *name : {"std_math.hpp", "std_random.hpp", "std_regex.hpp",
+                             "native_record.hpp", "big_number_natives.hpp", "file_natives.hpp", "file_api.hpp", "desktop_file_api.hpp",
                              "std_signal.hpp",
                              "structured_data.hpp", "std_json.hpp", "std_toml.hpp", "lang_numeric.hpp", "std_binary.hpp", "std_linalg.hpp", "std_parse.hpp",
                              "std_process.hpp", "std_sql.hpp", "std_net.hpp", "std_filesystem.hpp", "std_registry.hpp"})
         ok = copy(root / "magel/source/glue" / name, Memory::String("glue/") + name) && ok;
+    // 前端头和标准胶水随实现扩展；按受控目录收集，避免固定清单遗漏新依赖。
+    for (const auto &entry : fs::directory_iterator(mc / "source"))
+    {
+        const auto name = entry.path().filename().u8string();
+        const auto extension = entry.path().extension().string();
+        if (entry.is_regular_file() && name.rfind("magel_parser", 0) != 0 &&
+            (extension == ".hpp" || extension == ".h" || extension == ".inc"))
+            ok = copy(entry.path(), name) && ok;
+    }
+    for (const auto &entry : fs::directory_iterator(mc / "source/glue"))
+    {
+        const auto extension = entry.path().extension().string();
+        if (entry.is_regular_file() && (extension == ".hpp" || extension == ".h" || extension == ".cpp"))
+            ok = copy(entry.path(), "glue/" + entry.path().filename().u8string()) && ok;
+    }
+    for (const auto &entry : fs::directory_iterator(mc / "library/stackvm/parts"))
+    {
+        const auto extension = entry.path().extension().string();
+        if (entry.is_regular_file() && (extension == ".hpp" || extension == ".h" ||
+                                      extension == ".cpp" || extension == ".inc"))
+            ok = copy(entry.path(), "runtime/parts/" + entry.path().filename().u8string()) && ok;
+    }
+    for (const auto &entry : fs::directory_iterator(mc / "source/epilogue"))
+    {
+        const auto extension = entry.path().extension().string();
+        if (entry.is_regular_file() && (extension == ".hpp" || extension == ".h" ||
+                                      extension == ".cpp" || extension == ".inc"))
+            ok = copy(entry.path(), "epilogue/" + entry.path().filename().u8string()) && ok;
+    }
+    for (const char *name : {"dap_server.hpp", "dap_server.cpp"})
+        ok = copy(mc / "source/dap" / name, Memory::String("dap/") + name) && ok;
+    for (const char *directory : {"lztext", "miniz", "sqlite", "template"})
+    {
+        for (const auto &entry : fs::directory_iterator(mc / "library" / directory))
+        {
+            const auto extension = entry.path().extension().string();
+            if (entry.is_regular_file() && (extension == ".hpp" || extension == ".h" || extension == ".c" || extension == ".cpp"))
+                ok = copy(entry.path(), Memory::String(directory) + "/" + entry.path().filename().u8string()) && ok;
+        }
+    }
     Memory::String langSource;
     Memory::String langTemplate;
     Memory::String cmakeTemplate;

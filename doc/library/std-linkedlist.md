@@ -22,27 +22,27 @@ LinkedList 以游标存储：values/prevs/nexts 三个平行列表，下标即�
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-304"></a>`struct ListReply` | 链表胶水回执；槽布局必须与 glue/std_linkedlist.hpp 的 Reply 一致。 |
-| ListReply | <a id="symbol-305"></a>`String error` | 本次胶水调用的错误说明；成功时为空串。 |
-| ListReply | <a id="symbol-306"></a>`int64 cursor` | 新分配节点的游标。 |
-| ListReply | <a id="symbol-307"></a>`int64 flag` | 布尔结果：1 = 成功 / 非空 / 存在。 |
-| ListReply | <a id="symbol-308"></a>`int64 value` | 弹出或查到的值。 |
-| ListReply | <a id="symbol-309"></a>`int64 head` | 更新后的首节点下标。 |
-| ListReply | <a id="symbol-310"></a>`int64 tail` | 更新后的尾节点下标。 |
-| ListReply | <a id="symbol-311"></a>`int64 count` | 更新后的有效节点数。 |
-| ListReply | <a id="symbol-312"></a>`List<int64> outValues` | 更新后的值列表。 |
-| ListReply | <a id="symbol-313"></a>`List<int64> outPrevs` | 更新后的前驱列表。 |
-| ListReply | <a id="symbol-314"></a>`List<int64> outNexts` | 更新后的后继列表。 |
-| ListReply | <a id="symbol-315"></a>`List<int64> outFree` | 更新后的空闲槽列表。 |
-| ListReply | <a id="symbol-316"></a>`List<int64> out` | 按链表顺序导出的值序列。 |
-| 模块 | <a id="symbol-317"></a>`struct LinkedList : Iterator<int64>, Drop` | 双向链表：首尾两端 O(1) 插删，游标位置 O(1) 插删与摘除。 |
-| LinkedList | <a id="symbol-318"></a>`List<int64> values` | 各节点值，下标即槽号。 |
-| LinkedList | <a id="symbol-319"></a>`List<int64> prevs` | 前驱下标，无前驱为 -1。 |
-| LinkedList | <a id="symbol-320"></a>`List<int64> nexts` | 后继下标，无后继为 -1。 |
-| LinkedList | <a id="symbol-321"></a>`List<int64> freeSlots` | 已删除可复用的槽号。 |
-| LinkedList | <a id="symbol-322"></a>`int64 head` | 首节点下标，空表为 -1。 |
-| LinkedList | <a id="symbol-323"></a>`int64 tail` | 尾节点下标，空表为 -1。 |
-| LinkedList | <a id="symbol-324"></a>`int64 count` | 当前有效节点数。 |
+| 模块 | <a id="symbol-308"></a>`struct ListReply` | 链表胶水回执；槽布局必须与 glue/std_linkedlist.hpp 的 Reply 一致。 |
+| ListReply | <a id="symbol-309"></a>`String error` | 本次胶水调用的错误说明；成功时为空串。 |
+| ListReply | <a id="symbol-310"></a>`int64 cursor` | 新分配节点的游标。 |
+| ListReply | <a id="symbol-311"></a>`int64 flag` | 布尔结果：1 = 成功 / 非空 / 存在。 |
+| ListReply | <a id="symbol-312"></a>`int64 value` | 弹出或查到的值。 |
+| ListReply | <a id="symbol-313"></a>`int64 head` | 更新后的首节点下标。 |
+| ListReply | <a id="symbol-314"></a>`int64 tail` | 更新后的尾节点下标。 |
+| ListReply | <a id="symbol-315"></a>`int64 count` | 更新后的有效节点数。 |
+| ListReply | <a id="symbol-316"></a>`List<int64> outValues` | 更新后的值列表。 |
+| ListReply | <a id="symbol-317"></a>`List<int64> outPrevs` | 更新后的前驱列表。 |
+| ListReply | <a id="symbol-318"></a>`List<int64> outNexts` | 更新后的后继列表。 |
+| ListReply | <a id="symbol-319"></a>`List<int64> outFree` | 更新后的空闲槽列表。 |
+| ListReply | <a id="symbol-320"></a>`List<int64> out` | 按链表顺序导出的值序列。 |
+| 模块 | <a id="symbol-321"></a>`struct LinkedList : Iterator<int64>, Drop` | 双向链表：首尾两端 O(1) 插删，游标位置 O(1) 插删与摘除。 |
+| LinkedList | <a id="symbol-322"></a>`List<int64> values` | 各节点值，下标即槽号。 |
+| LinkedList | <a id="symbol-323"></a>`List<int64> prevs` | 前驱下标，无前驱为 -1。 |
+| LinkedList | <a id="symbol-324"></a>`List<int64> nexts` | 后继下标，无后继为 -1。 |
+| LinkedList | <a id="symbol-325"></a>`List<int64> freeSlots` | 已删除可复用的槽号。 |
+| LinkedList | <a id="symbol-326"></a>`int64 head` | 首节点下标，空表为 -1。 |
+| LinkedList | <a id="symbol-327"></a>`int64 tail` | 尾节点下标，空表为 -1。 |
+| LinkedList | <a id="symbol-328"></a>`int64 count` | 当前有效节点数。 |
 
 ## 函数索引
 
@@ -544,7 +544,7 @@ int64 find(int64 value);
 obj.find(value);
 ```
 
-**源码**：[source/std/linkedlist.mgl:213](../../source/std/linkedlist.mgl#L213)。
+**源码**：[source/std/linkedlist.mgl:219](../../source/std/linkedlist.mgl#L219)。
 
 <a id="api-13"></a>
 
@@ -582,7 +582,7 @@ bool contains(int64 value);
 obj.contains(value);
 ```
 
-**源码**：[source/std/linkedlist.mgl:223](../../source/std/linkedlist.mgl#L223)。
+**源码**：[source/std/linkedlist.mgl:229](../../source/std/linkedlist.mgl#L229)。
 
 <a id="api-14"></a>
 
@@ -616,7 +616,7 @@ Option<int64> front();
 obj.front();
 ```
 
-**源码**：[source/std/linkedlist.mgl:229](../../source/std/linkedlist.mgl#L229)。
+**源码**：[source/std/linkedlist.mgl:235](../../source/std/linkedlist.mgl#L235)。
 
 <a id="api-15"></a>
 
@@ -650,7 +650,7 @@ Option<int64> back();
 obj.back();
 ```
 
-**源码**：[source/std/linkedlist.mgl:238](../../source/std/linkedlist.mgl#L238)。
+**源码**：[source/std/linkedlist.mgl:244](../../source/std/linkedlist.mgl#L244)。
 
 <a id="api-16"></a>
 
@@ -686,7 +686,7 @@ int64 len();
 obj.len();
 ```
 
-**源码**：[source/std/linkedlist.mgl:246](../../source/std/linkedlist.mgl#L246)。
+**源码**：[source/std/linkedlist.mgl:252](../../source/std/linkedlist.mgl#L252)。
 
 <a id="api-17"></a>
 
@@ -722,7 +722,7 @@ bool isEmpty();
 obj.isEmpty();
 ```
 
-**源码**：[source/std/linkedlist.mgl:251](../../source/std/linkedlist.mgl#L251)。
+**源码**：[source/std/linkedlist.mgl:257](../../source/std/linkedlist.mgl#L257)。
 
 <a id="api-18"></a>
 
@@ -760,7 +760,7 @@ Option<int64> iterator(int64 index);
 obj.iterator(index);
 ```
 
-**源码**：[source/std/linkedlist.mgl:258](../../source/std/linkedlist.mgl#L258)。
+**源码**：[source/std/linkedlist.mgl:264](../../source/std/linkedlist.mgl#L264)。
 
 <a id="api-19"></a>
 
@@ -796,7 +796,7 @@ void clear();
 obj.clear();
 ```
 
-**源码**：[source/std/linkedlist.mgl:272](../../source/std/linkedlist.mgl#L272)。
+**源码**：[source/std/linkedlist.mgl:278](../../source/std/linkedlist.mgl#L278)。
 
 <a id="api-20"></a>
 
@@ -832,4 +832,4 @@ void syncFrom(ListReply reply);
 obj.syncFrom(reply);
 ```
 
-**源码**：[source/std/linkedlist.mgl:283](../../source/std/linkedlist.mgl#L283)。
+**源码**：[source/std/linkedlist.mgl:289](../../source/std/linkedlist.mgl#L289)。

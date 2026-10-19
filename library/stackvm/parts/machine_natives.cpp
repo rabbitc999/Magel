@@ -810,10 +810,9 @@ struct NativeContext
     Memory::Function<void(std::size_t, InstructionHook)> instructionHookSetter;  ///< AOT 执行边界钩子入口。
     Memory::Function<void(std::int64_t, std::int64_t)> interruptPosterFn;        ///< AOT 中断投递入口。
     std::size_t threadId = 0u;                                                   ///< 当前线程 id（定时器归属线程）。
-    int *bigFloatPrecision = nullptr;                                            ///< bfloat 除法的有效位数（本次 run 独立）。
     bool *exitRequested = nullptr;                                               ///< `exit(n)` 请求提前正常停机。
     int *exitCode = nullptr;                                                     ///< `exit(n)` 提供的宿主状态码。
-    FileApi *fileApi = nullptr;                                                  ///< 文件系统适配器。
+    const NativeServices *hostServices = nullptr;                                ///< 通用不透明宿主服务。
     Memory::String error;                                                        ///< 非空 = 出错，调用方负责终止运行。
     mutable Memory::String memoryFault;                                          ///< 首次非法访问，优先于回调随后生成的普通错误。
 };
@@ -956,6 +955,62 @@ public:
      * @param invocationError 运行时回调失败的原始诊断，可为空。
      */
     explicit NativeCallContextImpl(NativeContext &context, Invoker invoker = {}, const Memory::String *invocationError = nullptr) : context_(context), invoker_(std::move(invoker)), invocationError_(invocationError) {}
+
+    /**
+     * @brief 将胶水记录装入当前对象表的通用壳。
+     * @param type 宿主记录的生命周期描述符。
+     * @param record 成功时转移所有权的记录。
+     * @return 新句柄；失败返回零。
+     */
+    std::int64_t makeNativeRecord(const NativeRecordType &type, void *record) override;
+    /**
+     * @brief 从当前对象表借用身份匹配的宿主记录。
+     * @param handle 对象句柄。
+     * @param type 预期描述符。
+     * @return 匹配记录或空指针。
+     */
+    void *nativeRecord(std::int64_t handle, const NativeRecordType &type) const override;
+    /**
+     * @brief 释放当前对象表中的宿主记录壳。
+     * @param handle 对象句柄。
+     * @return 成功释放时为 true。
+     */
+    bool releaseNativeRecord(std::int64_t handle) override;
+    /**
+     * @brief 按原始分配身份释放胶水拥有的内存块。
+     * @param address 块首地址。
+     * @param soft 是否跳过空地址和失效分配。
+     * @return 操作成功时为 true。
+     */
+    bool releaseMemory(std::int64_t address, bool soft) override;
+    /**
+     * @brief 调用记录描述符的复制协议。
+     * @param handle 待复制句柄。
+     * @return 独立副本句柄，失败为零。
+     */
+    std::int64_t cloneNativeRecord(std::int64_t handle) override;
+    /**
+     * @brief 按胶水约定的身份借用不透明宿主服务。
+     * @param name 服务身份，VM 不解释其含义。
+     * @return 宿主服务指针；未注入时为空。
+     */
+    void *hostService(const Memory::String &name) const override
+    {
+        if (!context_.hostServices) return nullptr;
+        const auto found = context_.hostServices->find(name);
+        return found == context_.hostServices->end() ? nullptr : found->second;
+    }
+    /**
+     * @brief 读取输入源中的下一项文本。
+     * @param text 输出文本。
+     * @return 取得输入时为 true。
+     */
+    bool takeInputText(Memory::String &text) override;
+    /**
+     * @brief 查询输入源已消费的项数。
+     * @return 已消费项数。
+     */
+    std::size_t inputPosition() const override { return context_.inputIndex ? *context_.inputIndex : 0u; }
 
     /**
      * @brief 按字节读一段（字符串是"以 `\0` 结尾的字节串"，跨 8 字节槽）。
@@ -1694,6 +1749,10 @@ Slot strAt(NativeContext &ctx, const Memory::Vector<Slot> &args)
 
 /**
  * @brief 验证下标后取得字符串字符地址，范围与普通字符串下标一致。
+ * @param ctx 提供堆块和数据区地址范围的运行环境。
+ * @param args 字符串地址和按 UTF-8 字节计数的下标。
+ * @return 对应字节地址；读取失败或越界时返回零并登记运行时错误。
+ * @note 堆串跳过长度头；数据区字面量直接从字节起始地址取值。
  */
 Slot strRef(NativeContext &ctx, const Memory::Vector<Slot> &args)
 {
@@ -1710,7 +1769,8 @@ Slot strRef(NativeContext &ctx, const Memory::Vector<Slot> &args)
         ctx.error = "字符串下标越界：" + Memory::toString(index) + "（长度 " + Memory::toString(text.size()) + "）";
         return Slot::fromInt(0);
     }
-    return Slot::fromInt(address + 8 + index);
+    const std::int64_t prefix = ctx.heap != nullptr && ctx.heap->contains(static_cast<std::size_t>(address)) ? 8 : 0;
+    return Slot::fromInt(address + prefix + index);
 }
 
 /**
@@ -2102,13 +2162,12 @@ Slot inputChar(NativeContext &ctx, const Memory::Vector<Slot> &)
 }
 
 /* ---------------------------------------------------------------------------
- *  运行期对象：大整数（bint）与三个容器（vec / set / map）
+ *  运行期对象：不透明宿主记录与三个容器（vec / set / map）
  * ---------------------------------------------------------------------------
  *
  * 这些东西的"值"**不是**内存地址，而是**对象表里的句柄**：表在 C++ 侧，一个
  * `std::shared_ptr<RuntimeObject>` 装下一种对象。宿主语言的类型只决定"句柄怎么用"：
  *
- *   * `bint`     —— 任意精度整数，后端是 `library/big_number` 的 `bigint::BigInt`；
  *   * `vec<T>`   —— 有序表（`std::vector`）：按下标增删查改；
  *   * `set<T>`   —— 有序集合（`std::map` 的键）：元素不重复、按升序遍历；
  *   * `map<K,V>` —— 映射（`std::map`）；
@@ -2131,14 +2190,11 @@ constexpr std::int64_t kObjectHandleBase = 4611686018427387904LL;
  */
 enum class ObjectKind
 {
-    BigInt,         ///< 任意精度整数（bint）
-    BigFloat,       ///< 任意精度十进制浮点（bfloat）
+    NativeRecord,   ///< 不透明宿主记录，语义由胶水及描述符回调维护。
     Vector,         ///< 有序表（vec<T>）
     Set,            ///< 有序集合（set<T>）
     Map,            ///< 映射（map<K,V>）
     Obj,            ///< 装箱格子（obj）：一个值 + 它的类型号
-    File,           ///< 宿主文件句柄（file）
-    Process,        ///< 宿主进程管道（proc）
     IteratorLease,  ///< 引用迭代器对列表元素单元的共享租约
     Arena,          ///< 批量持有字节堆分配的标准库 Arena
     Closure,        ///< 类型化函数入口和可写借用的捕获环境
@@ -2153,15 +2209,12 @@ enum class ObjectKind
 {
     switch (kind)
     {
-    case ObjectKind::BigInt: return "BigInteger";
+    case ObjectKind::NativeRecord: return "native record";
     case ObjectKind::Closure: return "lambda";
-    case ObjectKind::BigFloat: return "BigDecimal";
     case ObjectKind::Vector: return "vec";
     case ObjectKind::Set: return "set";
     case ObjectKind::Map: return "map";
     case ObjectKind::Obj: return "obj";
-    case ObjectKind::File: return "file";
-    case ObjectKind::Process: return "proc";
     case ObjectKind::Arena: return "arena";
     case ObjectKind::IteratorLease: return "iterator lease";
     }
@@ -2264,19 +2317,14 @@ struct IteratorLeaseState
 
 struct RuntimeObject
 {
+    const NativeRecordType *nativeType = nullptr;               ///< 宿主描述符，VM 不根据名称分派。
+    std::shared_ptr<void> nativeRecord;                         ///< 不透明记录，仅由宿主回调访问及销毁。
     std::int64_t closureTarget = 0;                             ///< 数据区函数标签地址，不保存宿主函数地址。
     bool closureEnvironment = false;                            ///< 调用时是否附加环境句柄。
     bool closureCopy = false;                                   ///< 拥有捕获使用稳定单元，复制闭包时复制当前状态。
     Memory::Map<std::size_t, std::int64_t> captureDestructors;  ///< 聚合捕获的用户析构函数。
-    ObjectKind kind = ObjectKind::BigInt;
-    std::int64_t identity = 0;  ///< 值副本共享的键身份；新对象由 ObjectStore::add 分配。
-#if STACKVM_WITH_BIGINT
-    bigint::BigInt number;  ///< BigInt：值本身（关闭大整数时这个字段不在）
-#endif
-#if STACKVM_WITH_BIGFLOAT
-    bigfloat::BigFloat decimal;  ///< BigFloat：任意精度十进制浮点
-    int decimalPrecision = 0;    ///< 0 使用运行期默认值；正数是该值的除法有效位数。
-#endif
+    ObjectKind kind = ObjectKind::NativeRecord;
+    std::int64_t identity = 0;          ///< 值副本共享的键身份；新对象由 ObjectStore::add 分配。
     Memory::Vector<ObjectValue> items;  ///< Vector：有序元素
     /**
      * @brief 活跃 foreach 元素引用的可寻址单元，由最外层借用负责回收。
@@ -2316,39 +2364,12 @@ struct RuntimeObject
     std::int64_t iteratorLayout = 0;  ///< 状态叶子布局字符串地址。
     bool iteratorStateBox = false;    ///< 专用迭代状态箱拥有单元素存储。
     NativeContext iteratorContext;    ///< 迭代状态或 copy 捕获单元的堆与对象表，供复制和清理使用。
-    /// File：宿主文件流。
-    std::shared_ptr<FileHandle> file;
-    /// File：诊断用路径。
-    Memory::String filePath;
-    /// File：标准库 Result 包装层最近一次操作的错误。
-    Memory::String fileError;
-    /// File：最近一次无陷阱操作是否成功。
-    bool fileSucceeded = true;
-    /// Process：`popen` 返回的宿主管道。
-    std::FILE *process = nullptr;
-    /// Process：诊断用命令。
-    Memory::String command;
     /// Arena：由该 arena 持有、reset/drop 时成批释放的字节堆地址。
     Memory::Vector<std::size_t> arenaBlocks;
 };
 
 bool nativeRefreshViews(NativeContext &ctx, RuntimeObject &object);
 bool nativeWriteView(NativeContext &ctx, const RuntimeObject::ElementView &view, const ObjectValue &value);
-
-#if !STACKVM_WITH_BIGINT
-/**
- * @brief 没把大整数编进来时的一句人话（比"函数入口不存在"强）。只有"轻量构建"里才有。
- * @param ctx 环境。
- * @return 永远返回 0（调用方直接返回它）。
- */
-Slot bigIntDisabled(NativeContext &ctx)
-{
-    ctx.error = "这个构建没有把大整数编进来（附加功能）：用 "
-                "`make -C library/stackvm STACKVM_WITH_BIGINT=1` 重建虚拟机，"
-                "宿主再链上 build/big_number/libbig_number.a";
-    return Slot::fromInt(0);
-}
-#endif
 
 void nativeReleaseViewContents(NativeContext &ctx, const RuntimeObject::ElementView &view);
 
@@ -2523,20 +2544,6 @@ struct ObjectStore
         {
             release(object.objValue.integer);
         }
-        if (object.kind == ObjectKind::File && object.file)
-        {
-            object.file->close();
-        }
-#if STACKVM_WITH_HOST_IO
-        if (object.kind == ObjectKind::Process && object.process != nullptr)
-        {
-#ifdef _WIN32
-            _pclose(object.process);
-#else
-            pclose(object.process);
-#endif
-        }
-#endif
     }
 
     /**
@@ -2547,7 +2554,31 @@ struct ObjectStore
      */
     std::shared_ptr<RuntimeObject> copyObject(const RuntimeObject &object, Memory::String *error)
     {
-        if (object.kind == ObjectKind::File || object.kind == ObjectKind::Process || object.kind == ObjectKind::Arena)
+        if (object.kind == ObjectKind::NativeRecord)
+        {
+            const auto *type = object.nativeType;
+            const auto original = object.nativeRecord;
+            const auto identity = object.identity;
+            if (!type || !type->clone)
+            {
+                if (error) *error = Memory::String(type && type->name ? type->name : "宿主记录") + " 不能复制";
+                return nullptr;
+            }
+            Memory::String reason;
+            void *record = type->clone(original.get(), reason);
+            if (!record || record == original.get())
+            {
+                if (error) *error = reason.empty() ? "宿主复制回调没有返回独立记录" : reason;
+                return nullptr;
+            }
+            auto copy = Memory::makeShared<RuntimeObject>();
+            copy->kind = ObjectKind::NativeRecord;
+            copy->nativeType = type;
+            copy->nativeRecord = std::shared_ptr<void>(record, type->destroy);
+            copy->identity = identity;
+            return copy;
+        }
+        if (object.kind == ObjectKind::Arena)
         {
             if (error != nullptr)
             {
@@ -2657,6 +2688,82 @@ struct ObjectStore
      */
     [[nodiscard]] std::size_t liveCount() const { return objects.size(); }
 };
+
+/**
+ * @brief 创建仅保存描述符和不透明记录的通用对象壳。
+ * @param type 复制及销毁协议，须具有静态或更长生命周期。
+ * @param record 成功时转移给壳的宿主记录。
+ * @return 新对象句柄，失败返回零且不接管记录。
+ */
+std::int64_t NativeCallContextImpl::makeNativeRecord(const NativeRecordType &type, void *record)
+{
+    if (!context_.objects || !record || !type.destroy)
+    {
+        fail("宿主记录缺少对象表、有效记录或销毁回调");
+        return 0;
+    }
+    auto object = Memory::makeShared<RuntimeObject>();
+    object->kind = ObjectKind::NativeRecord;
+    object->nativeType = &type;
+    object->nativeRecord = std::shared_ptr<void>(record, type.destroy);
+    return context_.objects->add(std::move(object));
+}
+/**
+ * @brief 按描述符身份借用当前运行时中的宿主记录。
+ * @param handle 当前对象表的句柄。
+ * @param type 预期的描述符。
+ * @return 存活且身份匹配的记录，否则返回空。
+ */
+void *NativeCallContextImpl::nativeRecord(std::int64_t handle, const NativeRecordType &type) const
+{
+    auto *object = context_.objects ? context_.objects->find(handle) : nullptr;
+    return object && object->kind == ObjectKind::NativeRecord && object->nativeType == &type ? object->nativeRecord.get() : nullptr;
+}
+/**
+ * @brief 释放当前运行时的通用记录壳并调用记录析构。
+ * @param handle 待释放的句柄。
+ * @return 成功释放时为 true。
+ */
+bool NativeCallContextImpl::releaseNativeRecord(std::int64_t handle)
+{
+    return context_.objects && !context_.objects->shuttingDown && context_.objects->release(handle);
+}
+/**
+ * @brief 通过当前堆释放原始块，并结束其关联的存储借用。
+ * @param address 分配块首地址。
+ * @param soft 是否允许空地址和失效地址成为空操作。
+ * @return 释放成功时为 true，失败时保存堆的原始原因。
+ */
+bool NativeCallContextImpl::releaseMemory(std::int64_t address, bool soft)
+{
+    const auto target = static_cast<std::size_t>(address);
+    if (soft && (target == 0 || !context_.heap || !context_.heap->contains(target))) return true;
+    if (!context_.heap) return false;
+    std::size_t capacity = 0;
+    if (context_.objects && context_.heap->capacityAt(target, capacity)) context_.objects->beginStorage(target, capacity, true);
+    Memory::String reason;
+    if (context_.heap->release(target, &reason)) return true;
+    if (!soft) context_.error = "free 失败：" + reason;
+    return soft;
+}
+/**
+ * @brief 在当前对象表执行宿主复制协议。
+ * @param handle 待复制句柄。
+ * @return 新副本句柄，失败返回零并保留原始诊断。
+ */
+std::int64_t NativeCallContextImpl::cloneNativeRecord(std::int64_t handle)
+{
+    return context_.objects ? context_.objects->copyHandle(handle, &context_.error) : 0;
+}
+/**
+ * @brief 从 VM 或 AOT 共用的输入源读取一项文本。
+ * @param text 接收读取结果。
+ * @return 成功读取时为 true。
+ */
+bool NativeCallContextImpl::takeInputText(Memory::String &text)
+{
+    return nextInputText(context_, &text);
+}
 
 /**
  * @brief 创建由本次原生调用管理的临时对象。
@@ -3427,13 +3534,20 @@ bool captureTransferObject(NativeContext &ctx, std::int64_t handle, TransferPack
         ctx.error = "消息包含已释放的对象句柄：" + Memory::toString(handle);
         return false;
     }
-    if (source->kind == ObjectKind::File || source->kind == ObjectKind::Process || source->kind == ObjectKind::Arena || source->kind == ObjectKind::Obj)
+    if (source->kind == ObjectKind::Arena || source->kind == ObjectKind::Obj || (source->kind == ObjectKind::NativeRecord && (!source->nativeType || !source->nativeType->clone)))
     {
         ctx.error = Memory::String("消息不能复制运行期资源或 std::lang::Any：") + objectKindName(source->kind);
         return false;
     }
     active.insert(handle);
-    packet.objects.emplace(handle, *source);
+    if (source->kind == ObjectKind::NativeRecord)
+    {
+        auto copy = ctx.objects->copyObject(*source, &ctx.error);
+        if (!copy) return false;
+        packet.objects.emplace(handle, *copy);
+    }
+    else
+        packet.objects.emplace(handle, *source);
     for (const ObjectValue &item : source->items)
         if (!captureTransferValue(ctx, item, packet, active)) return false;
     for (const auto &entry : source->entries)
@@ -3536,7 +3650,8 @@ bool restoreTransferObject(NativeContext &ctx, const TransferPacket &packet,
         return false;
     }
     active.insert(oldHandle);
-    auto object = Memory::makeShared<RuntimeObject>(found->second);
+    auto object = found->second.kind == ObjectKind::NativeRecord ? ctx.objects->copyObject(found->second, &ctx.error) : Memory::makeShared<RuntimeObject>(found->second);
+    if (!object) return false;
     object->identity = 0;
     for (ObjectValue &item : object->items)
         if (!restoreTransferValue(ctx, packet, &item, active, created)) return false;
@@ -3602,1052 +3717,6 @@ Slot nativeNewObject(NativeContext &ctx, ObjectKind kind)
     object->kind = kind;
     return Slot::fromInt(ctx.objects->add(std::move(object)));
 }
-
-#if STACKVM_WITH_BIGINT
-
-/**
- * @brief 收下一个算好的大整数（并返回它的句柄）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param value 待转换、保存或参与计算的值。
- * @retval 封装为原生值的运行时结果。
- */
-Slot nativeNewBigInt(NativeContext &ctx, bigint::BigInt value)
-{
-    const Slot handle = nativeNewObject(ctx, ObjectKind::BigInt);
-    RuntimeObject *object = ctx.objects->find(handle.integer);
-    if (object == nullptr) return Slot::fromInt(0);
-    object->number = std::move(value);
-    return handle;
-}
-
-/* ---- 大整数（bint）---- */
-
-/**
- * @brief 执行大整数从整数构造并封装运行时结果。
- *
- * `__vm_bint_from_int(值) -> bint`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintFromInt(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    return nativeNewBigInt(ctx, bigint::BigInt(args[0].isFloat ? static_cast<std::int64_t>(args[0].real) : args[0].integer));
-}
-
-/**
- * @brief 从无符号整数完整构造大数，保留 uint64 的高位。
- * @param ctx 原生调用上下文。
- * @param args 包含无符号整数位模式的参数列表。
- * @retval 新建的大数对象句柄。
- */
-Slot bintFromUInt(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    return nativeNewBigInt(ctx, bigint::BigInt::fromU64(static_cast<std::uint64_t>(args[0].integer)));
-}
-
-/**
- * @brief 执行大整数从文本构造并封装运行时结果。
- *
- * `__vm_bint_from_str(十进制文本地址) -> bint`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintFromStr(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    Memory::String text;
-    if (!nativeReadCString(ctx, static_cast<std::size_t>(nativeInt(args[0])), &text))
-    {
-        ctx.error = "构造大整数时读不到文本（地址 " + Memory::toString(nativeInt(args[0])) + "）";
-        return Slot::fromInt(0);
-    }
-    bool ok = false;
-    const bigint::BigInt value = bigint::BigInt::fromString(text, &ok);
-    if (!ok)
-    {
-        ctx.error = "不是合法的大整数文本：\"" + text + "\"（只认可选的 +/- 号加十进制数字）";
-        return Slot::fromInt(0);
-    }
-    return nativeNewBigInt(ctx, value);
-}
-
-/**
- * @brief 执行大整数从浮点数构造并封装运行时结果。
- *
- * `__vm_bint_from_flt(值) -> bint`（按向零截断）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintFromFloat(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    const double value = args[0].isFloat ? args[0].real : static_cast<double>(args[0].integer);
-    return nativeNewBigInt(ctx, bigint::BigInt(static_cast<std::int64_t>(value)));
-}
-
-/**
- * @brief 执行大整数算术运算并封装运行时结果。
- *
- * 大整数的 `+ - * / %`：取两个句柄 → 算 → 把结果装进**新的**对象。
- * @param op `+` / `-` / `*` / `/` / `%`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintArith(NativeContext &ctx, const Memory::Vector<Slot> &args, char op)
-{
-    RuntimeObject *left = nativeObject(ctx, args[0], ObjectKind::BigInt, "大整数运算");
-    if (left == nullptr) return Slot::fromInt(0);
-    RuntimeObject *right = nativeObject(ctx, args[1], ObjectKind::BigInt, "大整数运算");
-    if (right == nullptr) return Slot::fromInt(0);
-    if ((op == '/' || op == '%') && right->number.isZero())
-    {
-        ctx.error = Memory::String("大整数 ") + op + " 0：除数是零";
-        return Slot::fromInt(0);
-    }
-    switch (op)
-    {
-    case '+': return nativeNewBigInt(ctx, left->number + right->number);
-    case '-': return nativeNewBigInt(ctx, left->number - right->number);
-    case '*': return nativeNewBigInt(ctx, left->number * right->number);
-    case '/': return nativeNewBigInt(ctx, left->number / right->number);
-    default: return nativeNewBigInt(ctx, left->number % right->number);
-    }
-}
-
-/**
- * @brief 执行大整数加法并封装运行时结果。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintAdd(NativeContext &ctx, const Memory::Vector<Slot> &args) { return bintArith(ctx, args, '+'); }
-/**
- * @brief 执行大整数减法并封装运行时结果。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintSub(NativeContext &ctx, const Memory::Vector<Slot> &args) { return bintArith(ctx, args, '-'); }
-/**
- * @brief 执行大整数乘法并封装运行时结果。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintMul(NativeContext &ctx, const Memory::Vector<Slot> &args) { return bintArith(ctx, args, '*'); }
-/**
- * @brief 执行大整数除法并封装运行时结果。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintDiv(NativeContext &ctx, const Memory::Vector<Slot> &args) { return bintArith(ctx, args, '/'); }
-/**
- * @brief 执行大整数取余并封装运行时结果。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintMod(NativeContext &ctx, const Memory::Vector<Slot> &args) { return bintArith(ctx, args, '%'); }
-
-/**
- * @brief 执行大整数取反并封装运行时结果。
- *
- * `__vm_bint_neg(值) -> bint`：取负。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintNeg(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigInt, "大整数取负");
-    if (value == nullptr) return Slot::fromInt(0);
-    return nativeNewBigInt(ctx, -value->number);
-}
-
-/**
- * @brief 执行大整数比较并封装运行时结果。
- *
- * `__vm_bint_cmp(左, 右) -> -1 / 0 / 1`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintCmp(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *left = nativeObject(ctx, args[0], ObjectKind::BigInt, "大整数比较");
-    if (left == nullptr) return Slot::fromInt(0);
-    RuntimeObject *right = nativeObject(ctx, args[1], ObjectKind::BigInt, "大整数比较");
-    if (right == nullptr) return Slot::fromInt(0);
-    if (left->number < right->number) return Slot::fromInt(-1);
-    if (right->number < left->number) return Slot::fromInt(1);
-    return Slot::fromInt(0);
-}
-
-/**
- * @brief 执行大整数转换为文本并封装运行时结果。
- *
- * `__vm_bint_str(值) -> 新串地址`：转成十进制文本（`.str()`）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintToStr(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigInt, "大整数转字符串");
-    if (value == nullptr) return Slot::fromInt(0);
-    return Slot::fromInt(static_cast<std::int64_t>(nativeAllocString(ctx, value->number.toString())));
-}
-
-/**
- * @brief 大整数 → 64 位整数：取**低 64 位**（二进制补码截断，和 C 的整数转换一个脾气）。
- *
- * 不能借 `toDouble()` 绕（`double` 只有 53 位有效位，`(int)9223372036854775807` 会
- * 因为四舍五入溢出成 0）；这里按 2^32 进制两位两位地取余数拼出来。
- * @param value 大整数。
- * @return 值。
- */
-std::int64_t bigIntToInt64(const bigint::BigInt &value)
-{
-    const bigint::BigInt base(4294967296LL); /* 2^32 */
-    bigint::BigInt current = value.abs();
-    std::uint64_t low = 0u;
-    for (int index = 0; index < 2; ++index)
-    {
-        bigint::BigInt quotient;
-        bigint::BigInt remainder;
-        if (!current.divmod(base, &quotient, &remainder)) break;
-        low |= static_cast<std::uint64_t>(remainder.toDouble()) << (32 * index);
-        current = quotient;
-    }
-    const std::int64_t bits = static_cast<std::int64_t>(low);
-    return (value.sign() < 0) ? -bits : bits;
-}
-
-/**
- * @brief 执行大整数转换为整数并封装运行时结果。
- *
- * `__vm_bint_to_int(值) -> 整数`（超出 64 位取低 64 位）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintToInt(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigInt, "大整数转 int");
-    if (value == nullptr) return Slot::fromInt(0);
-    return Slot::fromInt(bigIntToInt64(value->number));
-}
-
-/**
- * @brief 执行大整数转换为浮点数并封装运行时结果。
- *
- * `__vm_bint_to_flt(值) -> 浮点`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintToFloat(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigInt, "大整数转 double");
-    if (value == nullptr) return Slot::fromDouble(0.0);
-    return Slot::fromDouble(value->number.toDouble());
-}
-
-/**
- * @brief 跑一段会抛异常的大数运算，把异常翻译成 VM 错误。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param what 运算名称（拼进错误信息）。
- * @param operation 待执行的运算（返回结果槽）。
- * @retval 封装为原生值的运行时结果。
- */
-template <typename Operation>
-Slot nativeGuardedBig(NativeContext &ctx, const char *what, Operation operation)
-{
-    try
-    {
-        return operation();
-    }
-    catch (const std::exception &error)
-    {
-        ctx.error = Memory::String(what) + "：" + error.what();
-        return Slot::fromInt(0);
-    }
-}
-
-/* ---- 大整数扩展方法：幂 / 数论 / 素性 / 位运算 / 进制 / 开方 ---- */
-
-/**
- * @brief `__vm_bint_pow(值, 指数) -> bint`（`.pow(e)`，指数为非负 int64）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintPow(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigInt, "大整数幂运算");
-    if (value == nullptr) return Slot::fromInt(0);
-    const std::int64_t exponent = nativeInt(args[1]);
-    if (exponent < 0)
-    {
-        ctx.error = "BigInteger.pow 的指数不能是负数";
-        return Slot::fromInt(0);
-    }
-    return nativeGuardedBig(ctx, "大整数幂运算", [&] {
-        return nativeNewBigInt(ctx, value->number.pow(static_cast<std::uint64_t>(exponent)));
-    });
-}
-
-/**
- * @brief `__vm_bint_powmod(值, 指数, 模) -> bint`（`.powmod(e, m)`，指数是大整数）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintPowMod(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    return nativeGuardedBig(ctx, "大整数模幂", [&] {
-        RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigInt, "大整数模幂");
-        if (value == nullptr) return Slot::fromInt(0);
-        RuntimeObject *exponent = nativeObject(ctx, args[1], ObjectKind::BigInt, "大整数模幂");
-        if (exponent == nullptr) return Slot::fromInt(0);
-        RuntimeObject *modulus = nativeObject(ctx, args[2], ObjectKind::BigInt, "大整数模幂");
-        if (modulus == nullptr) return Slot::fromInt(0);
-        return nativeNewBigInt(ctx, value->number.powmod(exponent->number, modulus->number));
-    });
-}
-
-/**
- * @brief `__vm_bint_gcd(左, 右) -> bint`（`.gcd(other)`）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintGcd(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *left = nativeObject(ctx, args[0], ObjectKind::BigInt, "大整数 gcd");
-    if (left == nullptr) return Slot::fromInt(0);
-    RuntimeObject *right = nativeObject(ctx, args[1], ObjectKind::BigInt, "大整数 gcd");
-    if (right == nullptr) return Slot::fromInt(0);
-    return nativeNewBigInt(ctx, bigint::BigInt::gcd(left->number, right->number));
-}
-
-/**
- * @brief `__vm_bint_lcm(左, 右) -> bint`（`.lcm(other)`）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintLcm(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *left = nativeObject(ctx, args[0], ObjectKind::BigInt, "大整数 lcm");
-    if (left == nullptr) return Slot::fromInt(0);
-    RuntimeObject *right = nativeObject(ctx, args[1], ObjectKind::BigInt, "大整数 lcm");
-    if (right == nullptr) return Slot::fromInt(0);
-    return nativeNewBigInt(ctx, bigint::BigInt::lcm(left->number, right->number));
-}
-
-/**
- * @brief `__vm_bint_mod_nonneg(值, 模) -> bint`（`.mod(m)`，结果落在 `[0, |m|)`）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintModNonNeg(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    return nativeGuardedBig(ctx, "大整数非负取模", [&] {
-        RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigInt, "大整数非负取模");
-        if (value == nullptr) return Slot::fromInt(0);
-        RuntimeObject *modulus = nativeObject(ctx, args[1], ObjectKind::BigInt, "大整数非负取模");
-        if (modulus == nullptr) return Slot::fromInt(0);
-        return nativeNewBigInt(ctx, value->number.modNonNegative(modulus->number));
-    });
-}
-
-/**
- * @brief `__vm_bint_mod_inverse(值, 模) -> bint`（`.modInverse(m)`，不互素报错）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintModInverse(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    return nativeGuardedBig(ctx, "大整数模逆元", [&] {
-        RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigInt, "大整数模逆元");
-        if (value == nullptr) return Slot::fromInt(0);
-        RuntimeObject *modulus = nativeObject(ctx, args[1], ObjectKind::BigInt, "大整数模逆元");
-        if (modulus == nullptr) return Slot::fromInt(0);
-        return nativeNewBigInt(ctx, bigint::BigInt::modInverse(value->number, modulus->number));
-    });
-}
-
-/**
- * @brief `__vm_bint_is_probable_prime(值, 轮数) -> bool`（`.isProbablePrime(rounds)`）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintIsProbablePrime(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigInt, "大整数素性测试");
-    if (value == nullptr) return Slot::fromInt(0);
-    const std::int64_t rounds = nativeInt(args[1]);
-    if (rounds < 0)
-    {
-        ctx.error = "素性测试的轮数不能是负数";
-        return Slot::fromInt(0);
-    }
-    return Slot::fromInt(value->number.isProbablePrime(static_cast<std::size_t>(rounds)) ? 1 : 0);
-}
-
-/**
- * @brief `__vm_bint_next_probable_prime(值) -> bint`（`.nextProbablePrime()`，25 轮）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintNextProbablePrime(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigInt, "找下一个素数");
-    if (value == nullptr) return Slot::fromInt(0);
-    return nativeGuardedBig(ctx, "找下一个素数", [&] {
-        return nativeNewBigInt(ctx, value->number.nextProbablePrime());
-    });
-}
-
-/**
- * @brief `__vm_bint_bit_length(值) -> 整数`（`.bitLength()`）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintBitLength(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigInt, "大整数位长");
-    if (value == nullptr) return Slot::fromInt(0);
-    return Slot::fromInt(static_cast<std::int64_t>(value->number.bitLength()));
-}
-
-/**
- * @brief 大整数按位运算（`&` / `|` / `^`，只支持非负数）。
- * @param op 运算字符。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintBitwise(NativeContext &ctx, const Memory::Vector<Slot> &args, char op)
-{
-    return nativeGuardedBig(ctx, "大整数位运算", [&] {
-        RuntimeObject *left = nativeObject(ctx, args[0], ObjectKind::BigInt, "大整数位运算");
-        if (left == nullptr) return Slot::fromInt(0);
-        RuntimeObject *right = nativeObject(ctx, args[1], ObjectKind::BigInt, "大整数位运算");
-        if (right == nullptr) return Slot::fromInt(0);
-        switch (op)
-        {
-        case '&': return nativeNewBigInt(ctx, left->number & right->number);
-        case '|': return nativeNewBigInt(ctx, left->number | right->number);
-        default: return nativeNewBigInt(ctx, left->number ^ right->number);
-        }
-    });
-}
-
-/**
- * @brief `__vm_bint_bit_and(左, 右) -> bint`（`.bitAnd(other)`）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintBitAnd(NativeContext &ctx, const Memory::Vector<Slot> &args) { return bintBitwise(ctx, args, '&'); }
-/**
- * @brief `__vm_bint_bit_or(左, 右) -> bint`（`.bitOr(other)`）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintBitOr(NativeContext &ctx, const Memory::Vector<Slot> &args) { return bintBitwise(ctx, args, '|'); }
-/**
- * @brief `__vm_bint_bit_xor(左, 右) -> bint`（`.bitXor(other)`）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintBitXor(NativeContext &ctx, const Memory::Vector<Slot> &args) { return bintBitwise(ctx, args, '^'); }
-
-/**
- * @brief `__vm_bint_str_radix(值, 进制) -> 新串地址`（`.strRadix(base)`，2..36 进制）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintToStrRadix(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigInt, "大整数转进制文本");
-    if (value == nullptr) return Slot::fromInt(0);
-    const std::int64_t base = nativeInt(args[1]);
-    if (base < 2 || base > 36)
-    {
-        ctx.error = "进制必须在 2..36 之间，现在是 " + Memory::toString(base);
-        return Slot::fromInt(0);
-    }
-    return nativeGuardedBig(ctx, "大整数转进制文本", [&] {
-        return Slot::fromInt(static_cast<std::int64_t>(
-            nativeAllocString(ctx, value->number.toString(static_cast<unsigned int>(base)))));
-    });
-}
-
-/**
- * @brief `__vm_bint_iroot(值, k) -> bint`（`.iroot(k)`，整数 k 次方根向下取整）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bintIRoot(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigInt, "大整数开方");
-    if (value == nullptr) return Slot::fromInt(0);
-    const std::int64_t k = nativeInt(args[1]);
-    if (k <= 0)
-    {
-        ctx.error = "根次必须是正整数";
-        return Slot::fromInt(0);
-    }
-    return nativeGuardedBig(ctx, "大整数开方", [&] {
-        return nativeNewBigInt(ctx, bigint::integerRoot(value->number, static_cast<std::uint64_t>(k)));
-    });
-}
-
-/**
- * @brief `__vm_read_bint() -> bint`：把下一项输入按十进制读成一个大整数（`input_bstr`）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @retval 封装为原生值的运行时结果。
- */
-Slot readBigInt(NativeContext &ctx, const Memory::Vector<Slot> &)
-{
-    if (ctx.input == nullptr || ctx.inputIndex == nullptr)
-    {
-        ctx.error = "这个程序没有接输入，取不到大整数";
-        return Slot::fromInt(0);
-    }
-    Memory::String text;
-    if (!nextInputText(ctx, &text))
-    {
-        ctx.error = "输入不够（第 " + Memory::toString(*ctx.inputIndex + 1u) + " 项缺失）";
-        return Slot::fromInt(0);
-    }
-    bool ok = false;
-    const bigint::BigInt value = bigint::BigInt::fromString(text, &ok);
-    if (!ok)
-    {
-        ctx.error = "输入项不是合法的大整数：\"" + text + "\"";
-        return Slot::fromInt(0);
-    }
-    return nativeNewBigInt(ctx, value);
-}
-
-#else /* !STACKVM_WITH_BIGINT：大整数没编进来，这几个名字都指向"一句人话" */
-
-/* 名字照样在表里（调用点不用改），但一调就报"这个构建没有把大整数编进来" ——
- * 比"函数入口不存在"清楚得多。 */
-#define STACKVM_BINT_STUB(name) \
-    Slot name(NativeContext &cx, const Memory::Vector<Slot> &) { return bigIntDisabled(cx); }
-
-STACKVM_BINT_STUB(bintFromInt)
-STACKVM_BINT_STUB(bintFromUInt)
-STACKVM_BINT_STUB(bintFromStr)
-STACKVM_BINT_STUB(bintFromFloat)
-STACKVM_BINT_STUB(bintAdd)
-STACKVM_BINT_STUB(bintSub)
-STACKVM_BINT_STUB(bintMul)
-STACKVM_BINT_STUB(bintDiv)
-STACKVM_BINT_STUB(bintMod)
-STACKVM_BINT_STUB(bintNeg)
-STACKVM_BINT_STUB(bintCmp)
-STACKVM_BINT_STUB(bintToStr)
-STACKVM_BINT_STUB(bintToInt)
-STACKVM_BINT_STUB(bintToFloat)
-STACKVM_BINT_STUB(bintPow)
-STACKVM_BINT_STUB(bintPowMod)
-STACKVM_BINT_STUB(bintGcd)
-STACKVM_BINT_STUB(bintLcm)
-STACKVM_BINT_STUB(bintModNonNeg)
-STACKVM_BINT_STUB(bintModInverse)
-STACKVM_BINT_STUB(bintIsProbablePrime)
-STACKVM_BINT_STUB(bintNextProbablePrime)
-STACKVM_BINT_STUB(bintBitLength)
-STACKVM_BINT_STUB(bintBitAnd)
-STACKVM_BINT_STUB(bintBitOr)
-STACKVM_BINT_STUB(bintBitXor)
-STACKVM_BINT_STUB(bintToStrRadix)
-STACKVM_BINT_STUB(bintIRoot)
-STACKVM_BINT_STUB(readBigInt)
-
-#undef STACKVM_BINT_STUB
-
-#endif /* STACKVM_WITH_BIGINT */
-
-#if STACKVM_WITH_BIGFLOAT
-
-/**
- * @brief 在对象存储中创建大浮点数对象。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param value 待转换、保存或参与计算的值。
- * @param precision 大浮点数的计算精度。
- * @retval 封装为原生值的运行时结果。
- */
-Slot nativeNewBigFloat(NativeContext &ctx, bigfloat::BigFloat value, int precision = 0)
-{
-    const Slot handle = nativeNewObject(ctx, ObjectKind::BigFloat);
-    RuntimeObject *object = ctx.objects->find(handle.integer);
-    if (object == nullptr) return Slot::fromInt(0);
-    object->decimal = std::move(value);
-    object->decimalPrecision = precision;
-    return handle;
-}
-
-/**
- * @brief 执行大浮点数从整数构造并封装运行时结果。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatFromInt(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    return nativeNewBigFloat(ctx, bigfloat::BigFloat::fromInt(
-                                      bigint::BigInt(args[0].isFloat ? static_cast<std::int64_t>(args[0].real) : args[0].integer)));
-}
-
-/**
- * @brief 从无符号整数完整构造大数，保留 uint64 的高位。
- * @param ctx 原生调用上下文。
- * @param args 包含无符号整数位模式的参数列表。
- * @retval 新建的大数对象句柄。
- */
-Slot bfloatFromUInt(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    return nativeNewBigFloat(ctx, bigfloat::BigFloat::fromInt(
-                                      bigint::BigInt::fromU64(static_cast<std::uint64_t>(args[0].integer))));
-}
-
-/**
- * @brief 执行大浮点数从浮点数构造并封装运行时结果。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatFromFloat(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    return nativeNewBigFloat(ctx, bigfloat::BigFloat::fromDouble(
-                                      args[0].isFloat ? args[0].real : static_cast<double>(args[0].integer)));
-}
-
-/**
- * @brief 执行大浮点数从文本构造并封装运行时结果。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatFromStr(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    Memory::String text;
-    if (!nativeReadCString(ctx, static_cast<std::size_t>(nativeInt(args[0])), &text))
-    {
-        ctx.error = "构造大浮点数时读不到文本";
-        return Slot::fromInt(0);
-    }
-    bool ok = false;
-    const bigfloat::BigFloat value = bigfloat::BigFloat::fromString(text, &ok);
-    if (!ok)
-    {
-        ctx.error = "不是合法的大浮点数文本：\"" + text + "\"";
-        return Slot::fromInt(0);
-    }
-    return nativeNewBigFloat(ctx, value);
-}
-
-/**
- * @brief 执行大浮点数从大整数构造并封装运行时结果。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatFromBigInt(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigInt, "大整数转大浮点数");
-    if (value == nullptr) return Slot::fromInt(0);
-    return nativeNewBigFloat(ctx, bigfloat::BigFloat::fromInt(value->number));
-}
-
-/**
- * @brief 校验大浮点数操作数并执行指定算术运算。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @param op 运算符文本或类别。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatArith(NativeContext &ctx, const Memory::Vector<Slot> &args, char op)
-{
-    RuntimeObject *left = nativeObject(ctx, args[0], ObjectKind::BigFloat, "大浮点数运算");
-    if (left == nullptr) return Slot::fromInt(0);
-    RuntimeObject *right = nativeObject(ctx, args[1], ObjectKind::BigFloat, "大浮点数运算");
-    if (right == nullptr) return Slot::fromInt(0);
-    if (op == '/' && right->decimal.isZero())
-    {
-        ctx.error = "大浮点数除数是零";
-        return Slot::fromInt(0);
-    }
-    /* 结果的精度取两个操作数精度的**最大值**（而不是只看左操作数）。 */
-    const int precision = std::max(left->decimalPrecision, right->decimalPrecision);
-    if (op == '+')
-    {
-        auto result = left->decimal + right->decimal;
-        return nativeNewBigFloat(ctx, precision ? result.round(precision) : result, precision);
-    }
-    if (op == '-')
-    {
-        auto result = left->decimal - right->decimal;
-        return nativeNewBigFloat(ctx, precision ? result.round(precision) : result, precision);
-    }
-    if (op == '*')
-    {
-        auto result = left->decimal * right->decimal;
-        return nativeNewBigFloat(ctx, precision ? result.round(precision) : result, precision);
-    }
-    const int digits = precision != 0 ? precision : (ctx.bigFloatPrecision ? *ctx.bigFloatPrecision : 34);
-    return nativeNewBigFloat(ctx, left->decimal.divide(right->decimal, digits), precision);
-}
-
-/**
- * @brief 执行大浮点数加法并封装运行时结果。
- * @param c 原生调用上下文。
- * @param a 第一个操作数或节点编号。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatAdd(NativeContext &c, const Memory::Vector<Slot> &a) { return bfloatArith(c, a, '+'); }
-/**
- * @brief 执行大浮点数减法并封装运行时结果。
- * @param c 原生调用上下文。
- * @param a 第一个操作数或节点编号。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatSub(NativeContext &c, const Memory::Vector<Slot> &a) { return bfloatArith(c, a, '-'); }
-/**
- * @brief 执行大浮点数乘法并封装运行时结果。
- * @param c 原生调用上下文。
- * @param a 第一个操作数或节点编号。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatMul(NativeContext &c, const Memory::Vector<Slot> &a) { return bfloatArith(c, a, '*'); }
-/**
- * @brief 执行大浮点数除法并封装运行时结果。
- * @param c 原生调用上下文。
- * @param a 第一个操作数或节点编号。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatDiv(NativeContext &c, const Memory::Vector<Slot> &a) { return bfloatArith(c, a, '/'); }
-
-/**
- * @brief 执行大浮点数取反并封装运行时结果。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatNeg(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigFloat, "大浮点数取负");
-    return value ? nativeNewBigFloat(ctx, -value->decimal, value->decimalPrecision) : Slot::fromInt(0);
-}
-
-/**
- * @brief 执行大浮点数比较并封装运行时结果。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatCmp(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *left = nativeObject(ctx, args[0], ObjectKind::BigFloat, "大浮点数比较");
-    RuntimeObject *right = nativeObject(ctx, args[1], ObjectKind::BigFloat, "大浮点数比较");
-    return (left && right) ? Slot::fromInt(left->decimal.compare(right->decimal)) : Slot::fromInt(0);
-}
-
-/**
- * @brief 执行大浮点数转换为文本并封装运行时结果。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatToStr(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigFloat, "大浮点数转字符串");
-    if (value == nullptr) return Slot::fromInt(0);
-    return Slot::fromInt(static_cast<std::int64_t>(nativeAllocString(ctx, value->decimal.toString(0))));
-}
-
-/**
- * @brief 执行大浮点数转换为整数并封装运行时结果。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatToInt(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigFloat, "大浮点数转 int");
-    if (value == nullptr) return Slot::fromInt(0);
-    bigint::BigInt result = value->decimal.mantissa();
-    const int exponent = value->decimal.exponent10();
-    bigint::BigInt scale(1);
-    for (int i = 0; i < std::abs(exponent); ++i) scale *= bigint::BigInt(10);
-    result = exponent >= 0 ? result * scale : result / scale;
-    return Slot::fromInt(bigIntToInt64(result));
-}
-
-/**
- * @brief 执行大浮点数转换为浮点数并封装运行时结果。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatToFloat(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigFloat, "大浮点数转 double");
-    if (value == nullptr) return Slot::fromDouble(0.0);
-    return Slot::fromDouble(std::strtod(value->decimal.toString(17).c_str(), nullptr));
-}
-
-/**
- * @brief 设置大浮点数对象的有效精度。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatSetValuePrecision(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigFloat, "BigDecimal.setPrecision");
-    if (value == nullptr) return Slot::fromInt(0);
-    const std::int64_t digits = nativeInt(args[1]);
-    if (digits < 1 || digits > 100000)
-    {
-        ctx.error = "BigDecimal 有效位数必须在 1..100000 之间，现在是 " + Memory::toString(digits);
-        return Slot::fromInt(0);
-    }
-    const int previous = value->decimalPrecision != 0 ? value->decimalPrecision :
-                                                        (ctx.bigFloatPrecision ? *ctx.bigFloatPrecision : 34);
-    value->decimal = value->decimal.round(static_cast<int>(digits));
-    value->decimalPrecision = static_cast<int>(digits);
-    return Slot::fromInt(previous);
-}
-
-/* ---- 大浮点数扩展方法：幂 / 绝对值 / 取整 / 开方 ---- */
-
-/**
- * @brief `__vm_bfloat_pow(值, 指数) -> bfloat`（`.pow(e)`，精确整数次幂）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatPow(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigFloat, "大浮点数幂运算");
-    if (value == nullptr) return Slot::fromInt(0);
-    const std::int64_t exponent = nativeInt(args[1]);
-    if (exponent < 0)
-    {
-        ctx.error = "BigDecimal.pow 的指数不能是负数（负次幂请用除法自己算）";
-        return Slot::fromInt(0);
-    }
-    return nativeGuardedBig(ctx, "大浮点数幂运算", [&] {
-        return nativeNewBigFloat(ctx, value->decimal.pow(static_cast<std::uint64_t>(exponent)),
-                                 value->decimalPrecision);
-    });
-}
-
-/**
- * @brief `__vm_bfloat_abs(值) -> bfloat`（`.abs()`）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatAbs(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigFloat, "大浮点数绝对值");
-    if (value == nullptr) return Slot::fromInt(0);
-    return nativeNewBigFloat(ctx, value->decimal.abs(), value->decimalPrecision);
-}
-
-/**
- * @brief `__vm_bfloat_is_integer(值) -> bool`（`.isInteger()`）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatIsInteger(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigFloat, "大浮点数整数判断");
-    if (value == nullptr) return Slot::fromInt(0);
-    return Slot::fromInt(value->decimal.isInteger() ? 1 : 0);
-}
-
-/**
- * @brief 大浮点数取整家族（floor / ceil / trunc，结果是大整数）。
- * @param mode 取整方式：'f' 向负无穷 / 'c' 向正无穷 / 't' 向零。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatRoundToBigInt(NativeContext &ctx, const Memory::Vector<Slot> &args, char mode)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigFloat, "大浮点数取整");
-    if (value == nullptr) return Slot::fromInt(0);
-    switch (mode)
-    {
-    case 'f': return nativeNewBigInt(ctx, value->decimal.floor());
-    case 'c': return nativeNewBigInt(ctx, value->decimal.ceil());
-    default: return nativeNewBigInt(ctx, value->decimal.trunc());
-    }
-}
-
-/**
- * @brief `__vm_bfloat_floor(值) -> bint`（`.floor()`）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatFloor(NativeContext &ctx, const Memory::Vector<Slot> &args) { return bfloatRoundToBigInt(ctx, args, 'f'); }
-/**
- * @brief `__vm_bfloat_ceil(值) -> bint`（`.ceil()`）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatCeil(NativeContext &ctx, const Memory::Vector<Slot> &args) { return bfloatRoundToBigInt(ctx, args, 'c'); }
-/**
- * @brief `__vm_bfloat_trunc(值) -> bint`（`.trunc()`）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatTrunc(NativeContext &ctx, const Memory::Vector<Slot> &args) { return bfloatRoundToBigInt(ctx, args, 't'); }
-
-/**
- * @brief `__vm_bfloat_sqrt(值, 有效位数) -> bfloat`（`.sqrt(digits)`）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatSqrt(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigFloat, "大浮点数开平方");
-    if (value == nullptr) return Slot::fromInt(0);
-    const std::int64_t digits = nativeInt(args[1]);
-    if (digits < 1 || digits > 100000)
-    {
-        ctx.error = "BigDecimal.sqrt 的有效位数必须在 1..100000 之间，现在是 " + Memory::toString(digits);
-        return Slot::fromInt(0);
-    }
-    return nativeGuardedBig(ctx, "大浮点数开平方", [&] {
-        return nativeNewBigFloat(ctx, value->decimal.sqrt(static_cast<int>(digits)), value->decimalPrecision);
-    });
-}
-
-/**
- * @brief `__vm_bfloat_root(值, k, 有效位数) -> bfloat`（`.root(k, digits)`，k 次方根）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bfloatRoot(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *value = nativeObject(ctx, args[0], ObjectKind::BigFloat, "大浮点数开 k 次方");
-    if (value == nullptr) return Slot::fromInt(0);
-    const std::int64_t k = nativeInt(args[1]);
-    const std::int64_t digits = nativeInt(args[2]);
-    if (k <= 0)
-    {
-        ctx.error = "BigDecimal.root 的根次必须是正整数";
-        return Slot::fromInt(0);
-    }
-    if (digits < 1 || digits > 100000)
-    {
-        ctx.error = "BigDecimal.root 的有效位数必须在 1..100000 之间，现在是 " + Memory::toString(digits);
-        return Slot::fromInt(0);
-    }
-    return nativeGuardedBig(ctx, "大浮点数开 k 次方", [&] {
-        return nativeNewBigFloat(ctx, value->decimal.root(static_cast<std::uint64_t>(k), static_cast<int>(digits)),
-                                 value->decimalPrecision);
-    });
-}
-
-/**
- * @brief 从对象句柄读取大浮点数。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @retval 封装为原生值的运行时结果。
- */
-Slot readBigFloat(NativeContext &ctx, const Memory::Vector<Slot> &)
-{
-    if (ctx.input == nullptr || ctx.inputIndex == nullptr)
-    {
-        ctx.error = "这个程序没有接输入，取不到大浮点数";
-        return Slot::fromInt(0);
-    }
-    Memory::String text;
-    if (!nextInputText(ctx, &text))
-    {
-        ctx.error = "输入不够，取不到大浮点数";
-        return Slot::fromInt(0);
-    }
-    bool ok = false;
-    const bigfloat::BigFloat value = bigfloat::BigFloat::fromString(text, &ok);
-    if (!ok)
-    {
-        ctx.error = "输入项不是合法的大浮点数：\"" + text + "\"";
-        return Slot::fromInt(0);
-    }
-    return nativeNewBigFloat(ctx, value);
-}
-
-#else
-
-/**
- * @brief 报告当前构建未启用大浮点数功能。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @retval 封装为原生值的运行时结果。
- */
-Slot bigFloatDisabled(NativeContext &ctx)
-{
-    ctx.error = "这个构建没有把大浮点数编进来：用 STACKVM_WITH_BIGFLOAT=1 重建虚拟机";
-    return Slot::fromInt(0);
-}
-#define STACKVM_BFLOAT_STUB(name) \
-    Slot name(NativeContext &c, const Memory::Vector<Slot> &) { return bigFloatDisabled(c); }
-STACKVM_BFLOAT_STUB(bfloatFromInt)
-STACKVM_BFLOAT_STUB(bfloatFromUInt)
-STACKVM_BFLOAT_STUB(bfloatFromFloat)
-STACKVM_BFLOAT_STUB(bfloatFromStr)
-STACKVM_BFLOAT_STUB(bfloatFromBigInt)
-STACKVM_BFLOAT_STUB(bfloatAdd)
-STACKVM_BFLOAT_STUB(bfloatSub)
-STACKVM_BFLOAT_STUB(bfloatMul)
-STACKVM_BFLOAT_STUB(bfloatDiv)
-STACKVM_BFLOAT_STUB(bfloatNeg)
-STACKVM_BFLOAT_STUB(bfloatCmp)
-STACKVM_BFLOAT_STUB(bfloatToStr)
-STACKVM_BFLOAT_STUB(bfloatToInt)
-STACKVM_BFLOAT_STUB(bfloatToFloat)
-STACKVM_BFLOAT_STUB(bfloatSetValuePrecision)
-STACKVM_BFLOAT_STUB(bfloatPow)
-STACKVM_BFLOAT_STUB(bfloatAbs)
-STACKVM_BFLOAT_STUB(bfloatIsInteger)
-STACKVM_BFLOAT_STUB(bfloatFloor)
-STACKVM_BFLOAT_STUB(bfloatCeil)
-STACKVM_BFLOAT_STUB(bfloatTrunc)
-STACKVM_BFLOAT_STUB(bfloatSqrt)
-STACKVM_BFLOAT_STUB(bfloatRoot)
-STACKVM_BFLOAT_STUB(readBigFloat)
-#undef STACKVM_BFLOAT_STUB
-
-#endif
 
 /* ---- 容器（vec / set / map）---- */
 
@@ -7087,396 +6156,6 @@ Slot ifaceFail(NativeContext &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief 取得原生调用参数对应的文件句柄。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param handle 待操作的运行时句柄。
- * @param who 诊断信息中使用的操作名称。
- * @retval 匹配项的指针，未找到时为空指针。
- */
-RuntimeObject *nativeFile(NativeContext &ctx, const Slot &handle, const char *who)
-{
-    RuntimeObject *object = nativeObject(ctx, handle, ObjectKind::File, who);
-    if (object == nullptr) return nullptr;
-    if (!object->file || !object->file->isOpen())
-    {
-        ctx.error = Memory::String(who) + " 用到的文件已经关闭";
-        return nullptr;
-    }
-    return object;
-}
-
-/**
- * @brief `__vm_file_open(路径, 模式) -> file`。模式同 C 的 fopen：`r` / `w` / `a` / `r+`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot fileOpen(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    Memory::String path;
-    Memory::String mode;
-    if (!nativeReadCString(ctx, static_cast<std::size_t>(nativeInt(args[0])), &path))
-    {
-        ctx.error = "fopen 读不到路径字符串";
-        return Slot::fromInt(0);
-    }
-    if (!nativeReadCString(ctx, static_cast<std::size_t>(nativeInt(args[1])), &mode))
-    {
-        ctx.error = "fopen 读不到模式字符串";
-        return Slot::fromInt(0);
-    }
-    FileApi *const api = ctx.fileApi != nullptr ? ctx.fileApi : &defaultFileApi();
-    Memory::String openError;
-    std::shared_ptr<FileHandle> stream = api->open(path, mode, openError);
-    if (!stream || !stream->isOpen())
-    {
-        ctx.error = openError.empty() ? "打不开文件：" + path : openError;
-        return Slot::fromInt(0);
-    }
-    auto object = Memory::makeShared<RuntimeObject>();
-    object->kind = ObjectKind::File;
-    object->file = std::move(stream);
-    object->filePath = path;
-    return Slot::fromInt(ctx.objects->add(std::move(object)));
-}
-
-/**
- * @brief Result 包装层使用：打开失败只返回空句柄，不终止 VM。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot fileTryOpen(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    const Slot result = fileOpen(ctx, args);
-    ctx.error.clear();
-    return result;
-}
-
-/**
- * @brief 判断文件对象的宿主句柄是否有效。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot fileValid(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = ctx.objects->find(nativeInt(args[0]));
-    return Slot::fromInt(object != nullptr && object->kind == ObjectKind::File && object->file && object->file->isOpen() ? 1 : 0);
-}
-
-/**
- * @brief `__vm_file_read(file) -> string`：读下一行；EOF 返回空串。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot fileRead(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeFile(ctx, args[0], "fread");
-    if (object == nullptr) return Slot::fromInt(0);
-    Memory::String line;
-    Memory::String error;
-    if (!object->file->readLine(line, error))
-    {
-        ctx.error = error + "：" + object->filePath;
-        return Slot::fromInt(0);
-    }
-    return Slot::fromInt(static_cast<std::int64_t>(nativeAllocString(ctx, line)));
-}
-
-/**
- * @brief 将文本写入文件并返回实际写入字节数。
- *
- * `__vm_file_write(file, text) -> bytes`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot fileWrite(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeFile(ctx, args[0], "fwrite");
-    if (object == nullptr) return Slot::fromInt(0);
-    Memory::String text;
-    if (!nativeReadCString(ctx, static_cast<std::size_t>(nativeInt(args[1])), &text))
-    {
-        ctx.error = "fwrite 读不到要写入的字符串";
-        return Slot::fromInt(0);
-    }
-    Memory::String error;
-    if (!object->file->write(text, error))
-    {
-        ctx.error = error + "：" + object->filePath;
-        return Slot::fromInt(0);
-    }
-    return Slot::fromInt(static_cast<std::int64_t>(text.size()));
-}
-
-/**
- * @brief 读取文件对象并为失败结果设置错误信息。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param handle 待操作的运行时句柄。
- * @retval 对应对象的指针。
- */
-RuntimeObject *fileForResult(NativeContext &ctx, const Slot &handle)
-{
-    RuntimeObject *object = ctx.objects->find(nativeInt(handle));
-    if (object == nullptr || object->kind != ObjectKind::File)
-        return nullptr;
-    object->fileError.clear();
-    object->fileSucceeded = false;
-    if (!object->file || !object->file->isOpen())
-    {
-        object->fileError = "文件已经关闭";
-        return object;
-    }
-    return object;
-}
-
-/**
- * @brief 尝试从宿主文件读取一行文本。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot fileTryRead(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = fileForResult(ctx, args[0]);
-    if (object == nullptr || !object->file || !object->file->isOpen()) return Slot::fromInt(0);
-    Memory::String line;
-    Memory::String error;
-    if (!object->file->readLine(line, error))
-    {
-        object->fileError = error.empty() ? "读取文件失败" : error;
-        return Slot::fromInt(0);
-    }
-    object->fileSucceeded = true;
-    return Slot::fromInt(static_cast<std::int64_t>(nativeAllocString(ctx, line)));
-}
-
-/**
- * @brief 新文本接口的行读取，拒绝内嵌零字节并去掉 CRLF 的 CR。
- * @param ctx 调用上下文。
- * @param args 文件句柄。
- * @return 新行字符串槽；错误由 Result 层读取。
- */
-Slot fileTryReadLine(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = fileForResult(ctx, args[0]);
-    if (!object || !object->file || !object->file->isOpen()) return Slot::fromInt(0);
-    Memory::String line, error;
-    if (!object->file->readLine(line, error))
-    {
-        object->fileError = error.empty() ? Memory::String("读取文件失败") : error;
-        return Slot::fromInt(0);
-    }
-    if (line.find('\0') != Memory::String::npos)
-    {
-        object->fileError = "text contains a zero byte";
-        return Slot::fromInt(0);
-    }
-    if (!line.empty() && line.back() == '\r') line.pop_back();
-    object->fileSucceeded = true;
-    return Slot::fromInt(static_cast<std::int64_t>(nativeAllocString(ctx, line)));
-}
-
-/**
- * @brief 尝试向宿主文件写入文本。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot fileTryWrite(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = fileForResult(ctx, args[0]);
-    if (object == nullptr || !object->file || !object->file->isOpen()) return Slot::fromInt(-1);
-    Memory::String text;
-    if (!nativeReadCString(ctx, static_cast<std::size_t>(nativeInt(args[1])), &text))
-    {
-        object->fileError = "读不到待写入字符串";
-        ctx.error.clear();
-        return Slot::fromInt(-1);
-    }
-    Memory::String error;
-    if (!object->file->write(text, error))
-    {
-        object->fileError = error.empty() ? "写入文件失败" : error;
-        return Slot::fromInt(-1);
-    }
-    object->fileSucceeded = true;
-    return Slot::fromInt(static_cast<std::int64_t>(text.size()));
-}
-
-/**
- * @brief 通过 FileApi 读取原始字节列表。
- * @param ctx 上下文。
- * @param args 文件句柄及数量。
- * @return 拥有型列表或零句柄；错误由文件 Result 层读取。
- */
-Slot fileTryReadBytes(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *file = fileForResult(ctx, args[0]);
-    if (!file || !file->file || !file->file->isOpen()) return Slot::fromInt(0);
-    const auto count = nativeInt(args[1]);
-    if (count < 0 || static_cast<std::uint64_t>(count) > std::numeric_limits<std::size_t>::max())
-    {
-        file->fileError = "非法字节读取数量";
-        return Slot::fromInt(0);
-    }
-    Memory::String bytes, error;
-    if (!file->file->readBytes(static_cast<std::size_t>(count), bytes, error))
-    {
-        file->fileError = error.empty() ? Memory::String("字节读取失败") : error;
-        return Slot::fromInt(0);
-    }
-    const auto result = nativeNewObject(ctx, ObjectKind::Vector);
-    auto *vector = ctx.objects->find(nativeInt(result));
-    if (!vector) return Slot::fromInt(0);
-    vector->items.reserve(bytes.size());
-    for (unsigned char byte : bytes)
-    {
-        ObjectValue value;
-        value.integer = byte;
-        vector->items.push_back(std::move(value));
-    }
-    file->fileSucceeded = true;
-    return result;
-}
-/**
- * @brief 写入字节列表，保留零字节。
- * @param ctx 上下文。
- * @param args 文件及列表句柄。
- * @return 写入数量或 -1。
- */
-Slot fileTryWriteBytes(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *file = fileForResult(ctx, args[0]);
-    if (!file || !file->file || !file->file->isOpen()) return Slot::fromInt(-1);
-    auto *vector = nativeObject(ctx, args[1], ObjectKind::Vector, "字节写入");
-    if (!vector || !nativeRefreshViews(ctx, *vector)) return Slot::fromInt(-1);
-    Memory::String bytes;
-    bytes.reserve(vector->items.size());
-    for (const auto &value : vector->items) bytes.push_back(static_cast<char>(value.integer));
-    Memory::String error;
-    if (!file->file->write(bytes, error))
-    {
-        file->fileError = error.empty() ? Memory::String("字节写入失败") : error;
-        return Slot::fromInt(-1);
-    }
-    file->fileSucceeded = true;
-    return Slot::fromInt(static_cast<std::int64_t>(bytes.size()));
-}
-
-/**
- * @brief 尝试刷新宿主文件输出缓冲区。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot fileTryFlush(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = fileForResult(ctx, args[0]);
-    if (object == nullptr || !object->file || !object->file->isOpen()) return Slot::fromInt(-1);
-    Memory::String error;
-    if (!object->file->flush(error))
-    {
-        object->fileError = error.empty() ? "刷新文件失败" : error;
-        return Slot::fromInt(-1);
-    }
-    object->fileSucceeded = true;
-    return Slot::fromInt(0);
-}
-
-/**
- * @brief 尝试调整宿主文件的读写位置。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot fileTrySeek(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = fileForResult(ctx, args[0]);
-    if (object == nullptr || !object->file || !object->file->isOpen()) return Slot::fromInt(-1);
-    Memory::String error;
-    std::int64_t position = -1;
-    if (!object->file->seek(nativeInt(args[1]), static_cast<int>(nativeInt(args[2])),
-                            position, error))
-    {
-        object->fileError = error.empty() ? "文件定位失败" : error;
-        return Slot::fromInt(-1);
-    }
-    object->fileSucceeded = true;
-    return Slot::fromInt(position);
-}
-
-/**
- * @brief 查询最近一次文件操作是否成功。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot fileOperationSucceeded(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = ctx.objects->find(nativeInt(args[0]));
-    return Slot::fromInt(object != nullptr && object->kind == ObjectKind::File && object->fileSucceeded ? 1 : 0);
-}
-
-/**
- * @brief 读取最近一次文件操作的错误信息。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot fileLastError(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = ctx.objects->find(nativeInt(args[0]));
-    const Memory::String error = object != nullptr && object->kind == ObjectKind::File ? object->fileError : "无效的 file 句柄";
-    return Slot::fromInt(static_cast<std::int64_t>(nativeAllocString(ctx, error)));
-}
-
-/**
- * @brief 尝试关闭宿主文件句柄。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot fileTryClose(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    const std::int64_t handle = nativeInt(args[0]);
-    RuntimeObject *object = ctx.objects->find(handle);
-    if (object != nullptr && object->kind == ObjectKind::File)
-        ctx.objects->release(handle);
-    return Slot::fromInt(0);
-}
-
-/**
- * @brief 判断宿主文件是否已到末尾。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot fileEof(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeFile(ctx, args[0], "feof");
-    if (object == nullptr) return Slot::fromInt(0);
-    return Slot::fromInt(object->file->eof() ? 1 : 0);
-}
-
-/**
- * @brief 关闭宿主文件句柄。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot fileClose(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeFile(ctx, args[0], "fclose");
-    if (object == nullptr) return Slot::fromInt(0);
-    ctx.objects->release(nativeInt(args[0]));
-    return Slot::fromInt(0);
-}
-
-/**
  * @brief 设置程序退出码并终止当前执行。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
@@ -7820,63 +6499,6 @@ const SlotNativeEntry kSlotNativeEntries[] = {
     { "__vm_input_char", { 0, inputChar } },
     { "__vm_memcpy", { 3, memCopy } },
     { "__vm_memset", { 3, memSet } },
-    /* 大整数（bint）：后端是 library/big_number */
-    { "__vm_bint_from_int", { 1, bintFromInt } },
-    { "__vm_bint_from_uint", { 1, bintFromUInt } },
-    { "__vm_bint_from_str", { 1, bintFromStr } },
-    { "__vm_bint_from_flt", { 1, bintFromFloat } },
-    { "__vm_bint_add", { 2, bintAdd } },
-    { "__vm_bint_sub", { 2, bintSub } },
-    { "__vm_bint_mul", { 2, bintMul } },
-    { "__vm_bint_div", { 2, bintDiv } },
-    { "__vm_bint_mod", { 2, bintMod } },
-    { "__vm_bint_neg", { 1, bintNeg } },
-    { "__vm_bint_cmp", { 2, bintCmp } },
-    { "__vm_bint_str", { 1, bintToStr } },
-    { "__vm_bint_to_int", { 1, bintToInt } },
-    { "__vm_bint_to_flt", { 1, bintToFloat } },
-    { "__vm_bint_pow", { 2, bintPow } },
-    { "__vm_bint_powmod", { 3, bintPowMod } },
-    { "__vm_bint_gcd", { 2, bintGcd } },
-    { "__vm_bint_lcm", { 2, bintLcm } },
-    { "__vm_bint_mod_nonneg", { 2, bintModNonNeg } },
-    { "__vm_bint_mod_inverse", { 2, bintModInverse } },
-    { "__vm_bint_is_probable_prime", { 2, bintIsProbablePrime } },
-    { "__vm_bint_next_probable_prime", { 1, bintNextProbablePrime } },
-    { "__vm_bint_bit_length", { 1, bintBitLength } },
-    { "__vm_bint_bit_and", { 2, bintBitAnd } },
-    { "__vm_bint_bit_or", { 2, bintBitOr } },
-    { "__vm_bint_bit_xor", { 2, bintBitXor } },
-    { "__vm_bint_str_radix", { 2, bintToStrRadix } },
-    { "__vm_bint_iroot", { 2, bintIRoot } },
-    { "__vm_read_bint", { 0, readBigInt } },
-    { "__vm_input_bint", { 0, readBigInt } },
-    /* 任意精度十进制浮点（bfloat）：后端是 library/big_number */
-    { "__vm_bfloat_from_int", { 1, bfloatFromInt } },
-    { "__vm_bfloat_from_uint", { 1, bfloatFromUInt } },
-    { "__vm_bfloat_from_flt", { 1, bfloatFromFloat } },
-    { "__vm_bfloat_from_str", { 1, bfloatFromStr } },
-    { "__vm_bfloat_from_bint", { 1, bfloatFromBigInt } },
-    { "__vm_bfloat_add", { 2, bfloatAdd } },
-    { "__vm_bfloat_sub", { 2, bfloatSub } },
-    { "__vm_bfloat_mul", { 2, bfloatMul } },
-    { "__vm_bfloat_div", { 2, bfloatDiv } },
-    { "__vm_bfloat_neg", { 1, bfloatNeg } },
-    { "__vm_bfloat_cmp", { 2, bfloatCmp } },
-    { "__vm_bfloat_str", { 1, bfloatToStr } },
-    { "__vm_bfloat_to_int", { 1, bfloatToInt } },
-    { "__vm_bfloat_pow", { 2, bfloatPow } },
-    { "__vm_bfloat_abs", { 1, bfloatAbs } },
-    { "__vm_bfloat_is_integer", { 1, bfloatIsInteger } },
-    { "__vm_bfloat_floor", { 1, bfloatFloor } },
-    { "__vm_bfloat_ceil", { 1, bfloatCeil } },
-    { "__vm_bfloat_trunc", { 1, bfloatTrunc } },
-    { "__vm_bfloat_sqrt", { 2, bfloatSqrt } },
-    { "__vm_bfloat_root", { 3, bfloatRoot } },
-    { "__vm_bfloat_to_flt", { 1, bfloatToFloat } },
-    { "__vm_bfloat_set_value_precision", { 2, bfloatSetValuePrecision } },
-    { "__vm_read_bfloat", { 0, readBigFloat } },
-    { "__vm_input_bfloat", { 0, readBigFloat } },
     /* 容器：vec / set / map */
     { "__vm_program_arguments", { 0, programArguments } },
     { "__vm_vec_new", { 0, vecNew } },
@@ -7976,29 +6598,11 @@ const SlotNativeEntry kSlotNativeEntries[] = {
     { "__vm_str_fmt", { -1, strFormat } },
     { "__vm_print", { -1, strPrint } },
     { "__vm_put_char", { 1, putChar } },
-    { "__vm_file_open", { 2, fileOpen } },
-    { "__vm_file_try_open", { 2, fileTryOpen } },
-    { "__vm_file_valid", { 1, fileValid } },
-    { "__vm_file_read", { 1, fileRead } },
     { "std::lang::__readLine", { 0, inputReadLine } },
     { "std::lang::__readLines", { 1, inputReadLines } },
-    { "std::io::__fileTryReadLine", { 1, fileTryReadLine } },
-    { "__fileTryReadLine", { 1, fileTryReadLine } },
     { "__readLine", { 0, inputReadLine } },
     { "__readLines", { 1, inputReadLines } },
-    { "__vm_file_write", { 2, fileWrite } },
-    { "__vm_file_eof", { 1, fileEof } },
-    { "__vm_file_close", { 1, fileClose } },
     { "std::lang::__stringBytes", { 1, stringBytes } },
-    { "std::io::__fileTryRead", { 1, fileTryRead } },
-    { "std::io::__fileTryReadBytes", { 2, fileTryReadBytes } },
-    { "std::io::__fileTryWriteBytes", { 2, fileTryWriteBytes } },
-    { "std::io::__fileTryWrite", { 2, fileTryWrite } },
-    { "std::io::__fileTryFlush", { 1, fileTryFlush } },
-    { "std::io::__fileTrySeek", { 3, fileTrySeek } },
-    { "std::io::__fileSucceeded", { 1, fileOperationSucceeded } },
-    { "std::io::__fileLastError", { 1, fileLastError } },
-    { "std::io::__fileTryClose", { 1, fileTryClose } },
     /* 中断事件 / 软件定时器（`std::event::Timer`）：交付在主循环的指令边界做。 */
     { "std::event::__timerCreate", { 1, timerCreate } },
     { "std::event::__timerBind", { 2, timerBind } },

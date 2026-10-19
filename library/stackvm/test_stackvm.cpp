@@ -546,6 +546,77 @@ void testOptimize()
 }
 
 /**
+ * @brief 验证紧凑 u8 读写、优化执行等价性、存储截断及二进制能力契约。
+ */
+void testByteMemory()
+{
+    const auto file = stackvm::parseQuads(
+        "(decl, i64, global, p)\n"
+        "(alloc, 3, _, p)\n"
+        "(+:i64, p, 1, middle)\n"
+        "(+:i64, p, 2, last)\n"
+        "(store:u8, middle, 128, _)\n"
+        "(store:u8, p, 511, _)\n"
+        "(store:u8, last, 258, _)\n"
+        "(load:u8, p, _, firstValue)\n"
+        "(load:u8, middle, _, middleValue)\n"
+        "(load:u8, last, _, lastValue)\n"
+        "(write:u8, firstValue, _, _)\n"
+        "(write:u8, middleValue, _, _)\n"
+        "(write:u8, lastValue, _, _)\n"
+        "(free, p, _, _)\n"
+        "(halt, _, _, _)\n",
+        "<byte-memory>");
+    stackvm::Program program;
+    CHECK(stackvm::assemble(file, program));
+    CHECK((program.requiredFeatures & stackvm::kFeatureByteMemory) != 0u);
+    for (int mode = 0; mode < 3; ++mode)
+    {
+        stackvm::Machine machine;
+        machine.setExecutionOptimization(mode != 0);
+        machine.setRegisterExecution(mode == 2);
+        const auto result = machine.run(program);
+        CHECK(result.ok);
+        CHECK(result.output == "255 128 2");
+        CHECK(result.heapLiveBlocks == 0u);
+    }
+    const Memory::String path = "stackvm_byte_memory.svmb";
+    CHECK(stackvm::saveProgramBinary(program, path));
+    stackvm::Program restored;
+    CHECK(stackvm::loadProgramBinary(path, restored));
+    stackvm::Machine restoredMachine;
+    CHECK(restoredMachine.run(restored).output == "255 128 2");
+    std::remove(path.c_str());
+    auto missingFeature = program;
+    missingFeature.requiredFeatures &= ~stackvm::kFeatureByteMemory;
+    CHECK(!stackvm::validateProgramMetadata(missingFeature));
+    CHECK(!stackvm::saveProgramBinary(missingFeature, path));
+    stackvm::Machine invalidMachine;
+    CHECK(!invalidMachine.run(missingFeature).ok);
+    Memory::String output;
+    CHECK(!runText("(alloc, 1, _, p)\n(+:i64, p, 1, end)\n(store:u8, end, 1, _)\n", {}, output).ok);
+    CHECK(!runText("(alloc, 1, _, p)\n(free, p, _, _)\n(load:u8, p, _, value)\n", {}, output).ok);
+#if STACKVM_WITH_AOT
+    stackvm::RuntimeBridge bridge;
+    CHECK(bridge.begin());
+    std::int64_t address = 0;
+    CHECK(bridge.allocate(2, address));
+    CHECK(bridge.storeByte(address + 1, 128));
+    CHECK(bridge.storeByte(address, -1));
+    std::int64_t value = 0;
+    CHECK(bridge.loadByte(address, value));
+    CHECK(value == 255);
+    CHECK(bridge.loadByte(address + 1, value));
+    CHECK(value == 128);
+    CHECK(bridge.release(address, false));
+    value = 77;
+    CHECK(!bridge.loadByte(address, value));
+    CHECK(value == 77);
+    bridge.end();
+#endif
+}
+
+/**
  * @brief 堆：`(alloc …)` / `(free …)`。
  *
  * 堆和数据区共用一套地址空间（数据区在前、堆跟在后面），但对象不在数据区里、
@@ -1851,6 +1922,7 @@ int main(int argc, char **argv)
     testDisassembly();
     testOptimize();
     testHeap();
+    testByteMemory();
     testRemovedMathNatives();
     testBoundsCheck();
     testFunctionPointer();

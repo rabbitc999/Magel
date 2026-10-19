@@ -35,8 +35,14 @@ int64 main(){
     useResource();assert(resource.value==9);
     auto mapped=std::iter::range(1,4).map(fn(value){value+amount}).collect();
     assert(mapped[0]==103 && mapped[2]==105);
-    for(int64 i=0;i<20;i+=1){
+    {
+        int64 i=0;
+        while (i<20) {
+
         auto local=int64 fn(){i+amount};assert(local()==i+102);
+    
+            i+=1;
+        }
     }
     println("fn captures OK");return 0;
 }

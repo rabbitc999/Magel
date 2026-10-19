@@ -75,11 +75,11 @@ Memory::String InferenceTypeText(const std::shared_ptr<MType> &type)
 }
 
 /**
- * @brief 具体类型直接使用可解析的匿名函数类型参与特化。
+ * @brief 将具体类型转换为实例化器使用的规范拼写，保留根模块同名类型的身份。
  */
 Memory::String GenericArgumentText(const std::shared_ptr<MType> &type)
 {
-    return InferenceTypeText(type);
+    return magel_generic::canonicalType(InferenceTypeText(type));
 }
 
 Memory::Map<Memory::String, Memory::String> g_inferenceCanonicalNames;
@@ -700,17 +700,29 @@ bool RewriteIteratorCall(int id)
     else if (IsContainer(type) && (type->name == "set" || type->name == "map") && (callee.s == "iter" || callee.s == "intoIter"))
     {
         /* `iter` 是借用快照（来源容器保持不变），`intoIter` 是搬空容器。 */
-        if (type->name == "set") function = callee.s == "iter" ? "setIter" : "setIntoIter";
-        else function = callee.s == "iter" ? "mapIter" : "mapIntoIter";
+        if (type->name == "set")
+            function = callee.s == "iter" ? "setIter" : "setIntoIter";
+        else
+            function = callee.s == "iter" ? "mapIter" : "mapIntoIter";
         address = true;
     }
-    else if (type->kind == MType::String && callee.s == "chars")
+    else if (IsStandardOpcode(type, "String") && callee.s == "chars")
         function = "chars";
     else if (type->kind == MType::Struct && StructNameOf(type).find("__Range") != Memory::String::npos && callee.s == "intoIter")
         function = "fromRange";
+    else if (callee.s == "intoIter" && FindIterator(type) != nullptr)
+    {
+        const auto iterator = FindIterator(type);
+        const Memory::Vector<Memory::String> arguments{ GenericArgumentText(iterator->element), GenericArgumentText(type) };
+        const auto specialized = magel_generic::mangle("fromIterator", arguments);
+        if (!magel_generic::session.generics.count("fromIterator"))
+            return Fail("迭代器方法需要先 import std::iter：" + callee.s);
+        if (!magel_generic::session.made.count(specialized)) throw MInstantiationRequest{ "fromIterator", arguments };
+        function = specialized;
+    }
     if (function.empty()) return false;
     const auto generic = magel_generic::session.generics.find(function);
-    if ((generic == magel_generic::session.generics.end() || generic->second.module != "std::iter") && FindFunctionOverloads("std::iter", function) == nullptr)
+    if (!magel_generic::session.made.count(function) && (generic == magel_generic::session.generics.end() || generic->second.module != "std::iter") && FindFunctionOverloads("std::iter", function) == nullptr)
     {
         Fail("迭代器方法需要先 import std::iter：" + callee.s);
         return false;
@@ -783,6 +795,97 @@ bool RewriteErrorAdapter(int id)
 }
 
 /**
+ * @brief 将标准区间调用归一为整数区间节点或自定义前进协议工厂。
+ * @param id 待归一的调用表达式。
+ * @param pattern 是否处于 match 模式位置；该位置只允许整数和 char 区间。
+ * @return 是标准区间调用时返回 true，其他表达式返回 false。
+ */
+bool RewriteRangeCall(int id, bool pattern = false)
+{
+    const auto node = N(id);
+    if (node.kind != MNode::Call || node.kids.size() != 2u) return false;
+    const auto callee = N(node.kids[0]);
+    Memory::String name;
+    if (callee.kind == MNode::EnumCtor && callee.s == "std::lang")
+        name = callee.s2;
+    else if (callee.kind == MNode::Var && CanUseImplicitLang(callee.module, callee.s))
+        name = callee.s;
+    else
+        return false;
+    const auto explicitArguments = magel_generic::session.intrinsicArguments.find(name);
+    const bool typed = explicitArguments != magel_generic::session.intrinsicArguments.end();
+    if (typed)
+    {
+        if (name.compare(0u, 7u, "range__") == 0)
+            name = "range";
+        else if (name.compare(0u, 9u, "rangeEq__") == 0)
+            name = "rangeEq";
+        else
+            return false;
+    }
+    if (name != "range" && name != "rangeEq") return false;
+    const auto arguments = N(node.kids[1]).kids;
+    if (arguments.size() != 2u) return false;
+    std::shared_ptr<MType> element;
+    if (typed)
+    {
+        const auto &text = explicitArguments->second.front();
+        const auto builtin = BuiltinTypeByName(text);
+        if (text == "char")
+            element = T(M_TypeChar());
+        else if (text == "int8" || text == "int16" || text == "int32" || text == "int64"
+                 || text == "uint8" || text == "uint16" || text == "uint32" || text == "uint64")
+        {
+            const bool unsignedType = text[0] == 'u';
+            const auto digits = text.substr(unsignedType ? 4u : 3u);
+            const int bits = digits == "8" ? 8 : digits == "16" ? 16 :
+                                             digits == "32"     ? 32 :
+                                                                  64;
+            element = T(M_TypeIntBits(bits, unsignedType));
+        }
+        else if (builtin >= 0)
+            element = T(builtin);
+        else
+        {
+            Memory::String resolved;
+            const auto *definition = FindStruct(text, &resolved);
+            if (definition)
+                element = NamedType(resolved);
+            else
+                return Fail("range 的类型实参不是可用的值类型：" + text), true;
+        }
+        for (const auto argument : arguments) InferExpression(argument, element);
+    }
+    else
+    {
+        const auto left = ExprType(arguments[0]);
+        const auto right = ExprType(arguments[1]);
+        if (SameType(left, right))
+            element = left;
+        else if (left->kind == MType::Int && right->kind == MType::Int)
+            element = NumericResult(left, right);
+        else
+            return Fail("range 两个端点的类型必须一致"), true;
+    }
+    if (element->kind == MType::Int || element->kind == MType::Char)
+    {
+        auto &target = g_nodes[id];
+        target.kind = MNode::Range;
+        target.s = typed ? "typed" : "";
+        target.kids = arguments;
+        target.type = M_AddType(element);
+        target.i = name == "rangeEq" ? 3 : 2;
+        return true;
+    }
+    if (pattern) return Fail("match 的 range 和 rangeEq 模式只支持整数或 char"), true;
+    auto &target = g_nodes[node.kids[0]];
+    target.kind = MNode::EnumCtor;
+    target.s = "std::lang";
+    target.s2 = name == "rangeEq" ? "__customRangeEq" : "__customRange";
+    return true;
+}
+
+/**
  * @brief 解析枚举简写与普通泛型函数调用，递归期间避免重复推导同一节点。
  */
 void InferExpression(int id, const std::shared_ptr<MType> &expected)
@@ -801,6 +904,7 @@ void InferExpression(int id, const std::shared_ptr<MType> &expected)
         g_nodes[id].type = M_AddType(expected);
         return;
     }
+    RewriteRangeCall(id);
     RewriteErrorAdapter(id);
     RewriteIteratorCall(id);
     const auto node = N(id);

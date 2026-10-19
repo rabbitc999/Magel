@@ -9,15 +9,21 @@ struct Headers {
     String header(String name) {
         List<String> lines = std::text::Text::split(self.headers, "\r\n");
         String wanted = std::text::Text::toLower(name);
-        for (int64 i = 0; i < len(lines); i = i + 1) {
+        {
+            int64 i = 0;
+            while (i < len(lines)) {
+
             String line = "";
             line = line + lines[i];
             int64 colon = std::text::Text::find(line, ":");
-            if (colon < 0) { continue; }
+            if (colon < 0) { { i = i + 1; continue; } }
             String key = std::text::Text::toLower(line[0:colon]);
             if (key == wanted) {
                 String value = line[(colon + 1):];
                 return std::text::Text::trim(value);
+            }
+        
+                i = i + 1;
             }
         }
         return "";
@@ -35,18 +41,30 @@ int64 main() {
     std::net::HttpResponse response;
     response.headers = "Content-Length: 5\r\ninvalid\r\nContent-Type: text/plain\r\n";
     println("{} {}", response.header("Content-Length"), response.header("content-type"));
-    for (int64 i = 0; i < 12; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < 12) {
+
         assert(response.header("content-type") == "text/plain");
         assert(response.header("missing") == "");
+    
+            i = i + 1;
+        }
     }
     assert(response.headers == "Content-Length: 5\r\ninvalid\r\nContent-Type: text/plain\r\n");
     /* 第一轮的临时地址在第二轮分配给 guard，自动清理必须清掉旧槽。 */
-    for (int64 i = 0; i < 3; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < 3) {
+
         String first = "";
         String guard = "";
         if (i > 0) { guard = "kept"; }
         println("{}", std::text::Text::toLower("VALUE"));
         if (i > 0) { assert(guard == "kept"); }
+    
+            i = i + 1;
+        }
     }
     return 0;
 }

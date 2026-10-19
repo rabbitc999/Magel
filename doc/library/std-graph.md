@@ -182,7 +182,7 @@ void addEdge(int64 u, int64 v, int64 weight);
 obj.addEdge(u, v, weight);
 ```
 
-**源码**：[source/std/graph.mgl:89](../../source/std/graph.mgl#L89)。
+**源码**：[source/std/graph.mgl:95](../../source/std/graph.mgl#L95)。
 
 <a id="api-3"></a>
 
@@ -218,7 +218,7 @@ List<int64> bfs(int64 start);
 obj.bfs(start);
 ```
 
-**源码**：[source/std/graph.mgl:109](../../source/std/graph.mgl#L109)。
+**源码**：[source/std/graph.mgl:115](../../source/std/graph.mgl#L115)。
 
 <a id="api-4"></a>
 
@@ -254,7 +254,7 @@ List<int64> dfs(int64 start);
 obj.dfs(start);
 ```
 
-**源码**：[source/std/graph.mgl:120](../../source/std/graph.mgl#L120)。
+**源码**：[source/std/graph.mgl:126](../../source/std/graph.mgl#L126)。
 
 <a id="api-5"></a>
 
@@ -288,7 +288,7 @@ int64 connectedComponents();
 obj.connectedComponents();
 ```
 
-**源码**：[source/std/graph.mgl:129](../../source/std/graph.mgl#L129)。
+**源码**：[source/std/graph.mgl:135](../../source/std/graph.mgl#L135)。
 
 <a id="api-6"></a>
 
@@ -322,7 +322,7 @@ Kahn 拓扑排序。 @retval 无环时输出一个合法序列；有环时输出
 obj.topologicalSort();
 ```
 
-**源码**：[source/std/graph.mgl:139](../../source/std/graph.mgl#L139)。
+**源码**：[source/std/graph.mgl:145](../../source/std/graph.mgl#L145)。
 
 <a id="api-7"></a>
 
@@ -358,7 +358,7 @@ Dijkstra 单源最短路。
 obj.dijkstra(start);
 ```
 
-**源码**：[source/std/graph.mgl:151](../../source/std/graph.mgl#L151)。
+**源码**：[source/std/graph.mgl:157](../../source/std/graph.mgl#L157)。
 
 <a id="api-8"></a>
 
@@ -392,7 +392,7 @@ bool hasCycle();
 obj.hasCycle();
 ```
 
-**源码**：[source/std/graph.mgl:161](../../source/std/graph.mgl#L161)。
+**源码**：[source/std/graph.mgl:167](../../source/std/graph.mgl#L167)。
 
 <a id="api-9"></a>
 
@@ -426,7 +426,7 @@ Kruskal 最小生成树总权值。 @retval 无向连通图的总权值；图不
 obj.minimumSpanningTreeWeight();
 ```
 
-**源码**：[source/std/graph.mgl:175](../../source/std/graph.mgl#L175)。
+**源码**：[source/std/graph.mgl:181](../../source/std/graph.mgl#L181)。
 
 <a id="api-10"></a>
 
@@ -462,7 +462,7 @@ int64 len();
 obj.len();
 ```
 
-**源码**：[source/std/graph.mgl:184](../../source/std/graph.mgl#L184)。
+**源码**：[source/std/graph.mgl:190](../../source/std/graph.mgl#L190)。
 
 <a id="api-11"></a>
 
@@ -498,7 +498,7 @@ void drop();
 obj.drop();
 ```
 
-**源码**：[source/std/graph.mgl:193](../../source/std/graph.mgl#L193)。
+**源码**：[source/std/graph.mgl:199](../../source/std/graph.mgl#L199)。
 
 <a id="api-12"></a>
 
@@ -537,7 +537,7 @@ static UnionFind create(int64 n);
 std::graph::UnionFind::create(n);
 ```
 
-**源码**：[source/std/graph.mgl:199](../../source/std/graph.mgl#L199)。
+**源码**：[source/std/graph.mgl:205](../../source/std/graph.mgl#L205)。
 
 <a id="api-13"></a>
 
@@ -575,7 +575,7 @@ int64 find(int64 x);
 obj.find(x);
 ```
 
-**源码**：[source/std/graph.mgl:217](../../source/std/graph.mgl#L217)。
+**源码**：[source/std/graph.mgl:229](../../source/std/graph.mgl#L229)。
 
 <a id="api-14"></a>
 
@@ -612,7 +612,7 @@ bool unionSets(int64 a, int64 b);
 obj.unionSets(a, b);
 ```
 
-**源码**：[source/std/graph.mgl:230](../../source/std/graph.mgl#L230)。
+**源码**：[source/std/graph.mgl:242](../../source/std/graph.mgl#L242)。
 
 <a id="api-15"></a>
 
@@ -649,7 +649,7 @@ bool connected(int64 a, int64 b);
 obj.connected(a, b);
 ```
 
-**源码**：[source/std/graph.mgl:242](../../source/std/graph.mgl#L242)。
+**源码**：[source/std/graph.mgl:254](../../source/std/graph.mgl#L254)。
 
 <a id="api-16"></a>
 
@@ -685,7 +685,7 @@ x 所在集合的大小。
 obj.sizeOf(x);
 ```
 
-**源码**：[source/std/graph.mgl:247](../../source/std/graph.mgl#L247)。
+**源码**：[source/std/graph.mgl:259](../../source/std/graph.mgl#L259)。
 
 <a id="api-17"></a>
 
@@ -721,4 +721,4 @@ int64 count();
 obj.count();
 ```
 
-**源码**：[source/std/graph.mgl:252](../../source/std/graph.mgl#L252)。
+**源码**：[source/std/graph.mgl:264](../../source/std/graph.mgl#L264)。

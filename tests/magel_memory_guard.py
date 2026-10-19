@@ -26,7 +26,7 @@ def main():
     suffix = ".exe" if os.name == "nt" else ""
     unit = WORK / ("unit" + suffix)
     result = execute(args.cxx, "-std=c++17", "-pthread", "-DMAGEL_CUSTOM_ALLOCATOR=1",
-                     "-DSTACKVM_WITH_REFLECTION=1", "-Ilibrary/stackvm", "tests/magel_memory_guard_test.cpp",
+                     "-DMAGEL_WITH_REFLECTION=1", "-DSTACKVM_WITH_REFLECTION=1", "-Ilibrary", "-Isource", "-Ilibrary/stackvm", "tests/magel_memory_guard_test.cpp",
                      "build/magel-stackvm/libstackvm.a", "-lm", "-o", unit)
     assert result.returncode == 0, result
     result = execute(unit)
@@ -34,8 +34,9 @@ def main():
     unchecked_unit = WORK / ("unit-unchecked" + suffix)
     result = execute(args.cxx, "-std=c++17", "-pthread", "-DMAGEL_CUSTOM_ALLOCATOR=1",
                      "-DSTACKVM_WITH_BIGINT=0", "-DSTACKVM_WITH_BIGFLOAT=0", "-DSTACKVM_WITH_ALLOCATION_GUARDS=0",
+                     "-DMAGEL_WITH_REFLECTION=1", "-DSTACKVM_WITH_REFLECTION=1", "-Ilibrary", "-Isource",
                      "-Ilibrary/stackvm", "tests/magel_memory_guard_test.cpp", "library/stackvm/stackvm.cpp",
-                     "library/stackvm/stackvm_glue.cpp", "-lm", "-o", unchecked_unit)
+                     "-lm", "-o", unchecked_unit)
     assert result.returncode == 0, result
     result = execute(unchecked_unit)
     assert result.returncode == 0 and result.stdout == "custom heap unchecked OK\n", result
@@ -51,7 +52,7 @@ def main():
         source = WORK / (name + ".mgl")
         source.write_text(leaf + "\nint64 outer(" + type_name + " " + permission + " p) { return leaf(p); }\n"
                           "void dispose(" + type_name + " mut& p) { delete p; }\n"
-                          "int64 main() {\n" + type_name + " mut& owner = new;\n"
+                          "int64 main() {\n" + type_name + " mut& owner = heap " + type_name + ";\n"
                           + type_name + " " + permission + " stale = owner;\n"
                           "dispose(owner);\n" + body + "\n}\n", encoding="utf-8")
         result = execute(compiler, "--lang", "zh", "run", source, "--out", WORK / (name + "-interpret"))
@@ -82,8 +83,8 @@ def main():
     safe = ROOT / "example/samples/reference_sugar.mgl"
     expected = "reference sugar OK\n"
     for name, selection, extra in (("default", [], []), ("direct", ["unchecked"], []),
-                                   ("make", [], ["--make", "make"]),
-                                   ("modules", [], ["modules", "cache", WORK / "unchecked-cache"])):
+                                   ("make", ["unchecked"], ["--make", "make"]),
+                                   ("modules", ["unchecked"], ["modules", "cache", WORK / "unchecked-cache"])):
         directory = WORK / ("unchecked-" + name)
         output = directory / ("deploy" + suffix)
         built = execute(compiler, "--lang", "zh", "aot", safe, *selection, "out", output, "opt", "0",
@@ -93,8 +94,12 @@ def main():
         assert result.returncode == 0 and result.stdout == expected and not result.stderr, result
         exported = "\n".join(path.read_text(encoding="utf-8") for path in directory.glob("*.cpp"))
         exported += "\n".join(path.read_text(encoding="utf-8") for path in directory.glob("*.hpp"))
-        assert "#define STACKVM_WITH_ALLOCATION_GUARDS 0" in exported, name
-        assert "#define NO_MAGEL_PANIC_TRACE 1" in exported, name
+        if name == "default":
+            assert "#define STACKVM_WITH_ALLOCATION_GUARDS 0" not in exported, name
+            assert "#define NO_MAGEL_PANIC_TRACE 1" not in exported, name
+        else:
+            assert "#define STACKVM_WITH_ALLOCATION_GUARDS 0" in exported, name
+            assert "#define NO_MAGEL_PANIC_TRACE 1" in exported, name
     result = execute(compiler, "--lang", "zh", "run", safe, "unchecked", "--out", WORK / "rejected")
     assert result.returncode != 0 and "checked / unchecked 只支持 aot" in result.stderr, result
     # 显式语言 panic 仍会终止 unchecked 程序，调用栈及源码定位被裁剪。
@@ -102,7 +107,7 @@ def main():
     source.write_text('int64 leaf() { panic("deploy stop"); return 0; }\n'
                       'int64 main() { return leaf(); }\n', encoding="utf-8")
     output = WORK / ("deployment-panic" + suffix)
-    built = execute(compiler, "--lang", "zh", "aot", source, "out", output, "opt", "0")
+    built = execute(compiler, "--lang", "zh", "aot", source, "unchecked", "out", output, "opt", "0")
     assert built.returncode == 0, built
     result = execute(output)
     assert result.returncode != 0 and "deploy stop" in result.stderr, result

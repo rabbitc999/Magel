@@ -8,7 +8,13 @@ import std::parse;
 
 BigInteger power10(int64 exponent) {
     BigInteger result = BigInteger(1);
-    for (int64 i = 0; i < exponent; i = i + 1) { result = result * 10; }
+    {
+        int64 i = 0;
+        while (i < exponent) {
+ result = result * 10; 
+            i = i + 1;
+        }
+    }
     return result;
 }
 
@@ -41,7 +47,10 @@ BigInteger piScaled(int64 digits) {
     BigInteger xFactor = BigInteger("-262537412640768000");
     int64 terms = digits / 14 + 3;  /* 每项约增加 14 位，再留保护项。 */
 
-    for (int64 k = 1; k < terms; k = k + 1) {
+    {
+        int64 k = 1;
+        while (k < terms) {
+
         BigInteger factor = BigInteger(k) * 12 - 6;
         BigInteger cube = BigInteger(k) * k * k;
         m = m * (factor * factor * factor - factor * 16) / cube;
@@ -50,6 +59,9 @@ BigInteger piScaled(int64 digits) {
         numerator = numerator * xFactor + m * l;
         delete factor;
         delete cube;
+    
+            k = k + 1;
+        }
     }
 
     BigInteger withGuard = 426880 * root * denominator / numerator;
@@ -74,7 +86,13 @@ int64 main(List<String> arguments) {
     putChar(text[0]);
     if (digits > 0) {
         putChar('.');
-        for (int64 i = 1; i < len(text); i = i + 1) { putChar(text[i]); }
+        {
+            int64 i = 1;
+            while (i < len(text)) {
+ putChar(text[i]); 
+                i = i + 1;
+            }
+        }
     }
     println("");
     return 0;

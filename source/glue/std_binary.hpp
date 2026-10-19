@@ -144,14 +144,14 @@ inline bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr
                     static_cast<std::size_t>(i) * static_cast<std::size_t>(width), static_cast<std::size_t>(width)));
             return values; }, error) && registry.bindTypedWithContext<Bytes, magel_glue::Reference<std::uint8_t>, std::int64_t>("std::binary::__fromArray", [](Context &ctx, magel_glue::Reference<std::uint8_t> data, std::int64_t count) {
             Bytes values;
-            if (count < 0 || count > std::numeric_limits<std::int64_t>::max() / 8 ||
+            if (count < 0 ||
                 data.address < 0 || (count > 0 && data.address == 0) ||
-                data.address > std::numeric_limits<std::int64_t>::max() - count * 8) {
+                data.address > std::numeric_limits<std::int64_t>::max() - count) {
                 ctx.fail("二进制读取：数组长度或地址无效"); return values;
             }
             for (std::int64_t i = 0; i < count; ++i) {
-                std::int64_t value = 0;
-                if (!ctx.readBytes(data.address + i * 8, reinterpret_cast<char *>(&value), 8)) {
+                std::uint8_t value = 0;
+                if (!ctx.readBytes(data.address + i, reinterpret_cast<char *>(&value), 1)) {
                     ctx.fail("二进制读取：数组地址越界"); return Bytes{};
                 }
                 values.push_back(static_cast<std::uint8_t>(value));

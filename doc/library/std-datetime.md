@@ -315,7 +315,7 @@ Result<String,DateTimeError> formatUtc(DateTime value);
 std::datetime::formatUtc(value);
 ```
 
-**源码**：[source/std/datetime.mgl:51](../../source/std/datetime.mgl#L51)。
+**源码**：[source/std/datetime.mgl:57](../../source/std/datetime.mgl#L57)。
 
 **完整示例**：[example/samples/std_datetime.mgl](../../example/samples/std_datetime.mgl)。
 
@@ -353,7 +353,7 @@ Result<DateTime,DateTimeError> parseUtc(String text);
 std::datetime::parseUtc(text);
 ```
 
-**源码**：[source/std/datetime.mgl:57](../../source/std/datetime.mgl#L57)。
+**源码**：[source/std/datetime.mgl:63](../../source/std/datetime.mgl#L63)。
 
 **完整示例**：[example/samples/std_datetime.mgl](../../example/samples/std_datetime.mgl)。
 
@@ -392,7 +392,7 @@ Result<DateTime,DateTimeError> addSeconds(DateTime value, int64 delta);
 std::datetime::addSeconds(value, delta);
 ```
 
-**源码**：[source/std/datetime.mgl:77](../../source/std/datetime.mgl#L77)。
+**源码**：[source/std/datetime.mgl:89](../../source/std/datetime.mgl#L89)。
 
 **完整示例**：[example/samples/std_datetime.mgl](../../example/samples/std_datetime.mgl)。
 
@@ -431,7 +431,7 @@ Result<DateTime,DateTimeError> addDays(DateTime value, int64 days);
 std::datetime::addDays(value, days);
 ```
 
-**源码**：[source/std/datetime.mgl:83](../../source/std/datetime.mgl#L83)。
+**源码**：[source/std/datetime.mgl:95](../../source/std/datetime.mgl#L95)。
 
 **完整示例**：[example/samples/std_datetime.mgl](../../example/samples/std_datetime.mgl)。
 
@@ -467,6 +467,6 @@ Result<DateTime,DateTimeError> nowUtc();
 std::datetime::nowUtc();
 ```
 
-**源码**：[source/std/datetime.mgl:90](../../source/std/datetime.mgl#L90)。
+**源码**：[source/std/datetime.mgl:102](../../source/std/datetime.mgl#L102)。
 
 **完整示例**：[example/samples/std_datetime.mgl](../../example/samples/std_datetime.mgl)。

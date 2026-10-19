@@ -167,7 +167,7 @@ def main():
             duplicate = 'int64 main(){int64 source=1; println("{}",source); int64 later=2; return 0;}'
             open_text(duplicate)
             rejected('rename', duplicate, duplicate.index('source'), newName='later')
-            loops = 'int64 main(){for(int64 index=0;index<2;index++){println("{}",index);} int64 index=9; return index;}'
+            loops = 'int64 main(){{\n    int64 index=0;\n    while (index<2) {\nprintln("{}",index);\n        index++;\n    }\n} int64 index=9; return index;}'
             open_text(loops)
             refs = query('references', loops, loops.index('index=0'), context=dict(includeDeclaration=True))
             assert len(refs) == 4, refs

@@ -5,7 +5,8 @@ import std::io;
 int64 main(List<String> args) {
     assert(args.len() == 1, "请提供允许覆盖的示例文件路径");
     Result<FileStream,IoError> opened = FileStream::open(args[0],"w+");
-    FileStream stream = opened.expect("打开失败");
+    assert(opened.isOk(), "打开失败");
+    FileStream stream = opened.take();
     Result<int64,IoError> written = stream.write("alpha\nbeta\n");
     assert(written.isOk());
     Result<int64,IoError> flushed = stream.flush();

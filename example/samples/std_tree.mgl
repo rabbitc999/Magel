@@ -13,7 +13,13 @@ int64 main(){
     assert(bst.remove(20) && bst.remove(30) && !bst.remove(30));
     assert(bst.len()==5 && bst.min().unwrap()==40 && !bst.contains(20));
     RedBlackTree rbt=RedBlackTree::create();
-    for (int64 index=1; index<=10; index=index+1) { rbt.insert(index*10); }
+    {
+        int64 index=1;
+        while (index<=10) {
+ rbt.insert(index*10); 
+            index=index+1;
+        }
+    }
     assert(rbt.contains(70) && !rbt.contains(75));
     assert(rbt.height()<=6 && rbt.len()==10);
     println("rbt inorder {} {} {} {}", rbt.inorder()[0], rbt.inorder()[4],

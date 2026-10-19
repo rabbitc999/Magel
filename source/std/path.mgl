@@ -68,10 +68,16 @@ inline std::lang::String __pathNormalize(std::lang::String path)
     std::lang::String result = prefix;
     if (absolute) { result = result + "/"; }
     bool needsSlash = len(prefix) > 0 && !absolute;
-    for (int64 index = 0; index < parts.len(); index = index + 1) {
+    {
+        int64 index = 0;
+        while (index < parts.len()) {
+
         if (needsSlash) { result = result + "/"; }
         result = result + parts[index];
         needsSlash = true;
+    
+            index = index + 1;
+        }
     }
     if (len(result) == 0) { return "."; }
     return result;

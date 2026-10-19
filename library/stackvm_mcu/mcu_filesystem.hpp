@@ -13,14 +13,15 @@
  *        `2` FatFS     = 板端用，`-I` 指向 SDK 的 `ff.h` 并链上 FatFS；
  *   3. 都不给 → 关闭。
  *
- * 与 VM 的关系：VM 只依赖 `stackvm::FileApi` / `stackvm::FileHandle` 这组抽象
- * （`library/stackvm/stackvm_glue.hpp`），所以换文件系统**不用重新编 VM**。
+ * 与 VM 的关系：文件胶水依赖 `magel_file::FileApi` / `magel_file::FileHandle` 这组抽象
+ * （`source/glue/file_api.hpp`），所以换文件系统**不用重新编 VM**。
  *
  * MCU 上的两条硬约束按定容实现：打开文件数 `MCU_VM_MAX_OPEN_FILES`（缺省 4，静态槽），
  * 按行读逐字节到 `\n`（不设行长上限，也不额外要缓冲）。
  */
 
 #include "stackvm.hpp"
+#include "../../source/glue/file_api.hpp"
 
 namespace mcuFilesystem
 {
@@ -53,11 +54,11 @@ bool Available();
  * 必须在 `Machine::run()` 之前调用；`api` 的生命周期要覆盖整个运行期。
  * @param api 实现；传 `nullptr` 退回编译期后端。
  */
-void SetApi(stackvm::FileApi *api);
+void SetApi(magel_file::FileApi *api);
 /**
  * @brief 当前生效的实现（注入的优先，否则编译期后端）。
  */
-stackvm::FileApi &CurrentApi();
+magel_file::FileApi &CurrentApi();
 }  // namespace mcuFilesystem
 
 #endif

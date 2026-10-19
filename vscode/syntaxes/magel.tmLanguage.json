@@ -31,7 +31,7 @@
         },
         {
           "name": "keyword.control.magel",
-          "match": "#level\\s*\\(\\s*[aA][lL][lL]\\s*\\)|#level\\b|#derive\\b"
+          "match": "#level\\s*\\(\\s*[aA][lL][lL]\\s*\\)|#level\\b|#derive\\b|#NonCopyable\\b"
         },
         {
           "name": "comment.block.magel",
@@ -117,7 +117,7 @@
         },
         {
           "name": "keyword.control.magel",
-          "match": "\\b(?:_|abi|auto|break|cast|const|continue|copy|defer|delete|do|drop|elif|else|enum|export|fn|for|heap|if|impl|import|in|inline|interface|loop|match|module|move|mut|new|return|scope|static|struct|type|while|yield)\\b"
+          "match": "\\b(?:_|abi|auto|break|cast|const|continue|copy|defer|delete|drop|elif|else|enum|export|fn|for|heap|if|impl|import|in|inline|interface|loop|match|module|move|mut|new|opcode|return|scope|static|struct|type|while|yield)\\b"
         },
         {
           "name": "keyword.declaration.annotation.magel",

@@ -1,0 +1,104 @@
+struct Cell {
+    String text;
+    List<int64> items;
+};
+
+struct TextBox {
+    String values[2];
+    int64 sentinel;
+};
+
+void copyNumbers(int64[] values) {
+    values[0] = 99;
+}
+
+void copyTexts(String[] values) {
+    values[0][0] = 'X';
+}
+
+int64[] returnNumbers() {
+    int64 values[2];
+    values[0] = 17;
+    values[1] = 23;
+    return values;
+}
+
+int64 main() {
+    int64 first[2];
+    first[0] = 7;
+    first[1] = 11;
+    int64 second[2] = first;
+    second[0] = 9;
+    assert(first[0] == 7 && second[0] == 9);
+    second = first;
+    second[1] = 13;
+    assert(first[1] == 11 && second[1] == 13);
+    first = first;
+    assert(first[0] == 7 && first[1] == 11);
+    copyNumbers(first);
+    assert(first[0] == 7);
+    int64 dynamic[] = first;
+    dynamic[0] = 31;
+    assert(first[0] == 7);
+    int64 another[] = dynamic;
+    another[0] = 37;
+    assert(dynamic[0] == 31);
+    int64 returned[] = returnNumbers();
+    assert(returned[0] == 17 && returned[1] == 23);
+    int64 matrix[2][3];
+    matrix[1][2] = 41;
+    int64 copiedMatrix[2][3] = matrix;
+    copiedMatrix[1][2] = 43;
+    assert(matrix[1][2] == 41);
+
+    uint8 bytes[9];
+    bytes[0] = 255;
+    bytes[8] = 128;
+    assert(std::lang::address(&bytes[1]) - std::lang::address(&bytes[0]) == 1);
+    uint8 copiedBytes[9] = bytes;
+    copiedBytes[8] = 7;
+    assert(bytes[8] == 128 && copiedBytes[8] == 7);
+    copiedBytes = bytes;
+    assert(copiedBytes[0] == 255 && copiedBytes[8] == 128);
+    char letters[2];
+    letters[0] = (char)255;
+    letters[1] = (char)128;
+    assert(std::lang::address(&letters[1]) - std::lang::address(&letters[0]) == 1);
+    char copiedLetters[2] = letters;
+    copiedLetters[0] = 'a';
+    assert((uint8)letters[0] == 255 && (uint8)letters[1] == 128);
+
+    String texts[2];
+    texts[0] = "first";
+    texts[1] = "second";
+    String copiedTexts[2] = texts;
+    copiedTexts[0][0] = 'F';
+    assert(texts[0] == "first" && copiedTexts[0] == "First");
+    copiedTexts = texts;
+    copyTexts(copiedTexts);
+    assert(copiedTexts[0] == "first" && texts[0] == "first");
+
+    Cell cells[2];
+    cells[0].text = "cell";
+    cells[0].items.push(3);
+    Cell copiedCells[2] = cells;
+    copiedCells[0].text[0] = 'C';
+    copiedCells[0].items.push(5);
+    assert(cells[0].text == "cell" && cells[0].items.len() == 1);
+    copiedCells = cells;
+    assert(copiedCells[0].text == "cell" && copiedCells[0].items.len() == 1);
+
+    TextBox box;
+    box.values[0] = "left";
+    box.values[1] = "right";
+    box.sentinel = 123;
+    copyTexts(box.values);
+    assert(box.values[0] == "left");
+    TextBox copiedBox = box;
+    copiedBox.values[0][0] = 'L';
+    assert(box.values[0] == "left");
+    copiedBox.values = box.values;
+    assert(copiedBox.values[0] == "left" && copiedBox.sentinel == 123);
+    println("fixed array values OK");
+    return 0;
+}

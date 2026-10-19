@@ -42,33 +42,17 @@ struct MType
         Char,
         Int,
         Double,
-        String,
         Struct,
         Host,
+        Opcode,  ///< 胶水不透明对象，生命周期由 opcode 声明约定。
         Array,
         Ptr,
         Func,
-        /**
-         * 任意精度整数（`bint`）：值是**运行期对象表**里的句柄（后端是 library/big_number）。
-         */
-        BigInt,
-        /**
-         * 任意精度十进制浮点（`bfloat`）：值是运行期对象表里的句柄。
-         */
-        BigFloat,
         /**
          * 容器：`std::lang::List<T>` / `std::lang::Set<T>` / `std::lang::Map<K,V>`（`name` 区分是哪个）。
          * 值同样 = 对象表里的句柄，元素 / 键值类型放在 `elem` / `elem2` 里。
          */
         Container,
-        /**
-         * 宿主文件句柄：`fopen` 打开，`fread` / `fwrite` / `feof` / `fclose` 使用。
-         */
-        File,
-        /**
-         * 宿主进程句柄：`prun` 启动，`pread` 读取输出，`pclose` 收尾。
-         */
-        Proc,
         /**
          * **装箱格子** `obj`：一个值 + 它的类型号（运行期对象表里的句柄）。
          * `set` 装、`get` 取、`name` 问类型号（和 `__typeTag(类型)` 比就是泛型）。
@@ -161,6 +145,8 @@ struct MNode
         FuncDef,
         ExternFuncDecl,
         HostTypeDecl,
+        OpcodeDecl,
+        OpcodeMethod,
         StructDecl,
         Defer,
         AssociatedDecl,
@@ -252,6 +238,7 @@ struct MNode
     bool moduleLocal = false;
     bool reflectionBridge = false;      ///< 仅编译器生成的反射桥接节点可以读取内部接口身份。
     bool generatedDeclaration = false;  ///< 由编译器自身的派生模板生成，允许内部辅助符号。
+    bool opcodeNonCopyable = false;     ///< opcode 声明显式禁用值复制。
     long long i = 0;
     double d = 0.0;
     int guard = -1;                  ///< match 分支的可选 bool 守卫。
@@ -779,6 +766,26 @@ int M_AbiBlock(int libraryId, int functionsId);
  * `type Name = ABI类型;`：声明宿主类型的 VM 表示。
  */
 int M_HostType(int nameId, int abiTypeId);
+/**
+ * @brief 构造不透明胶水类型声明。
+ * @param nameId 类型名称编号。
+ * @param methods 创建、销毁及复制方法的列表。
+ * @return 声明节点编号。
+ */
+int M_Opcode(int nameId, int methods);
+/**
+ * @brief 构造一个 opcode 生命周期绑定。
+ * @param operation 零为创建、一为销毁、二为复制。
+ * @param symbol 胶水函数名称编号。
+ * @return 方法绑定节点编号。
+ */
+int M_OpcodeMethod(int operation, int symbol);
+/**
+ * @brief 为 opcode 声明禁用复制。
+ * @param declaration 类型声明节点。
+ * @return 标记后的节点编号。
+ */
+int M_NonCopyableOpcode(int declaration);
 /**
  * `extern cast Target(Source) = cpp_name;`：声明一条显式宿主转换。
  */

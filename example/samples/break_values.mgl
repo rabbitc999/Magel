@@ -29,8 +29,14 @@ int64 main() {
     assert(a == 27);
 
     (int32, String) pair = {
-        for (int32 i = 0; i < 4; i++) {
+        {
+            int32 i = 0;
+            while (i < 4) {
+
             if (i == 2) { yield (i, "found"); }
+        
+                i++;
+            }
         }
         yield (-1, "missing");
     };
@@ -73,10 +79,12 @@ int64 main() {
         yield (-1);
     };
     assert(continued == 3);
-    int64 once = { do { yield (9); } while (false); };
+    int64 once = loop {
+        yield (9);
+    };
     assert(once == 9);
     int64 element = {
-        for (int64 item in [1,5]) {
+        for (int64 item in std::lang::rangeEq<int64>(1,5)) {
             if (item == 4) { yield (item); }
         }
         yield (-1);

@@ -25,15 +25,16 @@ stackvm::value_text::Shape ValueTextShape(const std::shared_ptr<MType> &type,
     case MType::Double: out.kind = 'f'; break;
     case MType::Bool: out.kind = 'b'; break;
     case MType::Char: out.kind = 'c'; break;
-    case MType::String: out.kind = 's'; break;
-    case MType::BigInt: out.kind = 'I'; break;
-    case MType::BigFloat: out.kind = 'D'; break;
+
     case MType::Obj: out.kind = 'O'; break;
     case MType::Ptr: out.kind = 'R'; break;
     case MType::Func: out.kind = 'F'; break;
     case MType::Host: out.kind = 'H'; break;
-    case MType::File:
-    case MType::Proc: out.kind = 'H'; break;
+    case MType::Opcode:
+        out.kind = IsStandardOpcode(type, "String") ? 's' : IsStandardOpcode(type, "BigInteger") ? 'I' :
+                                                        IsStandardOpcode(type, "BigDecimal")     ? 'D' :
+                                                                                                   'H';
+        break;
     case MType::Container:
         out.kind = type->name == "vec" ? 'L' : type->name == "set" ? 'E' :
                                                                      'M';
@@ -61,7 +62,7 @@ stackvm::value_text::Shape ValueTextShape(const std::shared_ptr<MType> &type,
         out.width = static_cast<std::size_t>(StructStride(type));
         if (custom)
             for (const auto &method : definition->second.methods)
-                if (!method.superseded && !method.defaultValueText && !method.isStatic && method.source == "toString" && method.params.empty() && method.result->kind == MType::String)
+                if (!method.superseded && !method.defaultValueText && !method.isStatic && method.source == "toString" && method.params.empty() && IsStandardOpcode(method.result, "String"))
                 {
                     Memory::Set<Memory::String> checking;
                     if (MethodMutatesReceiver(type->name, method, &checking))
@@ -97,6 +98,7 @@ stackvm::value_text::Shape ValueTextShape(const std::shared_ptr<MType> &type,
         else
             for (const auto &declared : definition->second.fields)
             {
+                if (const auto *opcode = FindOpcodeDeclaration(declared.type); opcode && opcode->internal) continue;
                 auto field = ValueTextShape(declared.type, visiting, callbacks, true, depth + 1);
                 field.offset = static_cast<std::size_t>(declared.slot) * 8;
                 out.children.push_back(std::move(field));
@@ -145,17 +147,17 @@ simple_ast::NodePtr LowerDefaultValueText(int valueId)
 {
     const auto type = ExprType(valueId);
     if (!type || type->kind == MType::Void) return Fail("void 不是可转换为字符串的值"), Bad();
-    auto value = type->kind == MType::Struct                            ? OwnedAggregateTempFor(valueId, type) :
-                 type->kind == MType::String && NeedsOwnedTemp(valueId) ? OwnedStringTemp(valueId) :
-                 IsObjectLike(type)                                     ? OwnedObjectTemp(valueId, type) :
-                                                                          LowerExpr(valueId);
-    if (g_freshSink && (IsRuntimeArray(type) || IsResourceLike(type)) && IsFreshValue(valueId))
+    auto value = type->kind == MType::Struct                                 ? OwnedAggregateTempFor(valueId, type) :
+                 IsStandardOpcode(type, "String") && NeedsOwnedTemp(valueId) ? OwnedStringTemp(valueId) :
+                 IsObjectLike(type)                                          ? OwnedObjectTemp(valueId, type) :
+                                                                               LowerExpr(valueId);
+    if (g_freshSink && (type->kind == MType::Array || (IsResourceLike(type) && !IsObjectLike(type))) && IsFreshValue(valueId))
     {
         const auto temporary = AllocateName("__magel_text_source");
         g_freshSink->push_back(simple_ast::Node::declare(temporary, simple_ast::Type::i64()));
-        g_freshSink->push_back(MakeDrop(temporary, IsRuntimeArray(type)));
+        g_freshSink->push_back(MakeDrop(temporary, type->kind == MType::Array));
         g_freshSink->push_back(simple_ast::Node::assign(temporary, value));
-        if (IsRuntimeArray(type))
+        if (type->kind == MType::Array)
             MarkOwnedArray(temporary, type);
         else
             MarkOwned(temporary);
@@ -180,16 +182,16 @@ simple_ast::NodePtr LowerDefaultValueText(int valueId)
 simple_ast::NodePtr LowerValueText(int valueId)
 {
     const auto type = ExprType(valueId);
-    if (type && type->kind == MType::Struct)
+    if (type && (type->kind == MType::Struct || type->kind == MType::Opcode))
     {
         const auto definition = g_structs.find(type->name);
         if (definition != g_structs.end())
             for (const auto &method : definition->second.methods)
-                if (!method.superseded && !method.isStatic && method.source == "toString" && method.params.empty() && method.result->kind == MType::String)
+                if (!method.superseded && !method.isStatic && method.source == "toString" && method.params.empty() && IsStandardOpcode(method.result, "String"))
                 {
                     const auto label = type->name + "." + method.name;
                     if (!CheckMethodReceiver(valueId, label)) return Bad();
-                    return simple_ast::Node::call(label, { "self" }, { OwnedAggregateTempFor(valueId, type) });
+                    return simple_ast::Node::call(label, { "self" }, { type->kind == MType::Struct ? OwnedAggregateTempFor(valueId, type) : OwnedObjectTemp(valueId, type) });
                 }
     }
     if (type)

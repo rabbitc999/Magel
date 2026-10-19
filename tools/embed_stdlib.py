@@ -19,6 +19,7 @@ magel_module.hpp 与 magel-emit/main.cpp 共同 include。
 行尾仍按 CRLF→LF 归一，与直接读文件的结果保持一致。
 """
 
+import io
 import os
 import shutil
 import subprocess
@@ -148,8 +149,6 @@ GENERATOR_ASSETS = [
     "stackvm/data_capacity_index.hpp",
     "stackvm/reflection.hpp",
     "stackvm/stackvm.cpp",
-    "stackvm/stackvm_glue.hpp",
-    "stackvm/stackvm_glue.cpp",
     "magel_glue.hpp",
     "magel_generic_name.hpp",
     "runtime_allocator.hpp",
@@ -162,6 +161,11 @@ GENERATOR_ASSETS = [
     "glue/std_regex.hpp",
     "glue/std_signal.hpp",
     "glue/lang_numeric.hpp",
+    "glue/native_record.hpp",
+    "glue/big_number_natives.hpp",
+    "glue/file_natives.hpp",
+    "glue/file_api.hpp",
+    "glue/desktop_file_api.hpp",
     "glue/structured_data.hpp",
     "glue/std_json.hpp",
     "glue/std_toml.hpp",
@@ -230,7 +234,7 @@ def main():
     assets_blob, assets_slices = bundle(assets)
     assets_packed = compress_bundle(assets_blob)
     out_path = os.path.join(MAGEL, "source", "magel_stdlib_embedded.cpp")
-    with open(out_path, "w", encoding="utf-8", newline="\n") as handle:
+    with io.StringIO() as handle:
         handle.write("// 本文件由 tools/embed_stdlib.py 生成，请勿手工修改。\n")
         handle.write("// 生成命令：python tools/embed_stdlib.py\n\n")
         handle.write("#ifndef MAGEL_STDLIB_EMBEDDED_INC\n")
@@ -350,10 +354,27 @@ inline bool findGeneratorAssetByPath(const Memory::String &path, Memory::String 
         handle.write("} // namespace embedded\n")
         handle.write("} // namespace magel_module\n\n")
         handle.write("#endif\n")
+        payload = handle.getvalue().encode("utf-8")
+    try:
+        with open(out_path, "rb") as existing:
+            unchanged = existing.read() == payload
+    except FileNotFoundError:
+        unchanged = False
+    if not unchanged:
+        temporary = None
+        try:
+            with tempfile.NamedTemporaryFile(prefix=".magel-stdlib-", suffix=".tmp",
+                                             dir=os.path.dirname(out_path), delete=False) as output:
+                temporary = output.name
+                output.write(payload)
+            os.replace(temporary, out_path)
+        finally:
+            if temporary is not None and os.path.exists(temporary):
+                os.unlink(temporary)
     total = sum(len(content) for _, content in modules)
     asset_bytes = sum(len(content) for _, content in assets)
-    print("wrote %s (%d modules, %d bytes; %d generator assets, %d bytes)"
-          % (out_path, len(modules), total, len(assets), asset_bytes))
+    print("%s %s (%d modules, %d bytes; %d generator assets, %d bytes)"
+          % ("unchanged" if unchanged else "wrote", out_path, len(modules), total, len(assets), asset_bytes))
     return 0
 
 

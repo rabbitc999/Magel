@@ -39,7 +39,7 @@ class ConversionTests(unittest.TestCase):
                          'conversions: implicit=7 explicit=107 generic=9\n')
 
     def test_string_and_source_lifetime(self):
-        self.run_program('''
+        self.run_program("""
 int64 drops = 0;
 struct Source : ExplicitConvert<String>, Drop {
     String text;
@@ -58,9 +58,15 @@ int64 main() {
     Source named=make();
     String explicit=cast<String>(named);
     explicit[0]='X'; assert(named.text=="source");
-    for(int64 i=0;i<20;i=i+1) {
+    {
+        int64 i=0;
+        while (i<20) {
+
         String temporary=cast<String>(make());
         assert(temporary=="source");
+    
+            i=i+1;
+        }
     }
     assert(drops==20);
     Automatic value;value.text="automatic";
@@ -70,7 +76,7 @@ int64 main() {
     List<String> items;items.push(value);assert(items[0]=="automatic");
     assert(value.text=="automatic");
     return 0;
-}''')
+}""")
 
     def test_aggregate_values(self):
         self.run_program('''

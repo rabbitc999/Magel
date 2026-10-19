@@ -7,7 +7,10 @@ List<int64> loopList() { List<int64> value; value.push(7); return value; }
 LoopItem loopItem() { LoopItem value; value.text="item"; return value; }
 String returnLoopText() { return loop { String local="returned"; yield (local); }; }
 int64 main() {
-    for (int64 i=0; i<10; i++) {
+    {
+        int64 i=0;
+        while (i<10) {
+
         String fresh=loop { yield (loopText()); };
         String local=loop { String text="local"; yield (text); };
         assert(fresh=="fresh" && local=="local");
@@ -31,6 +34,9 @@ int64 main() {
         loop { yield (loopText()); };
         loop { yield (loopList()); };
         loop { yield (loopItem()); };
+    
+            i++;
+        }
     }
     assert(returnLoopText()=="returned");
     auto narrow=loop { int32 local=7; yield (local); };

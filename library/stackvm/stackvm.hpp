@@ -150,43 +150,7 @@
 #define STACKVM_WITH_AOT STACKVM_WITH_THREADS
 #endif
 
-#include "stackvm_glue.hpp"
 #include "reflection.hpp"
-
-/**
- * @def STACKVM_WITH_BIGINT
- * @brief **大整数（`bint`）是附加功能**：这个宏决定要不要把它编进虚拟机。
- *
- * * `1`（缺省）= 编进来：`__vm_bint_*` 与 `__vm_read_bint` 这批原生函数可用，
- *   本库需要 `library/big_number`（`bigint.hpp`）；
- * * `0` = 不编：不 include big_number、不链 bigint.o，`bint` 那批原生函数**不存在**
- *   —— 调它们会得到一句"这个构建没把大整数编进来"的运行期错误，而不是"函数入口不存在"。
- *
- * 命令行开关（Makefile 里已接）：
- *
- * ```sh
- * make -C library/stackvm STACKVM_WITH_BIGINT=0      # 不带大整数的轻量构建
- * ```
- *
- * 想在自己的宿主里看当前构建支不支持，用下面的 `kBigIntEnabled`（编译期常量，
- * `if constexpr` 用得）。
- */
-#ifndef STACKVM_WITH_BIGINT
-#define STACKVM_WITH_BIGINT 1
-#endif
-
-/**
- * @def STACKVM_WITH_BIGFLOAT
- * @brief 任意精度十进制浮点（`bfloat`）开关；缺省跟随大整数开关。
- *
- * BigFloat 的尾数由 BigInt 保存，因此不能在关闭 BigInt 时单独开启 BigFloat。
- */
-#ifndef STACKVM_WITH_BIGFLOAT
-#define STACKVM_WITH_BIGFLOAT STACKVM_WITH_BIGINT
-#endif
-#if STACKVM_WITH_BIGFLOAT && !STACKVM_WITH_BIGINT
-#error "STACKVM_WITH_BIGFLOAT requires STACKVM_WITH_BIGINT"
-#endif
 
 #include <cstddef>
 #include <cstdint>
@@ -205,9 +169,13 @@ namespace stackvm
  */
 inline constexpr std::uint32_t kFeatureReflection = 0x0002u;
 /**
+ * @brief 程序使用真正的单字节 u8 内存读写，旧运行时必须拒绝该能力位。
+ */
+inline constexpr std::uint32_t kFeatureByteMemory = 0x0004u;
+/**
  * @brief 已定义的程序能力位，未知位必须拒绝。
  */
-inline constexpr std::uint32_t kKnownProgramFeatures = kFeatureReflection;
+inline constexpr std::uint32_t kKnownProgramFeatures = kFeatureReflection | kFeatureByteMemory;
 /**
  * @brief 查询实际链接的运行时能力，避免只检查调用者的头文件配置。
  * @return 当前运行时支持的能力位。
@@ -342,6 +310,8 @@ class Machine;
  * VM 内存的最小寻址/分配单元：1 字节。宽值连续占用多个单元。
  */
 inline constexpr std::size_t kRuntimeCellBytes = 1u;
+static_assert(static_cast<unsigned char>(~0u) == 255u, "VM 要求宿主使用八位字节");
+static_assert(sizeof(std::uint8_t) == 1u && alignof(std::uint8_t) == 1u, "VM u8 必须占一个字节且按一字节对齐");
 /**
  * 当前整数、浮点、地址和对象句柄的存储宽度。
  */
@@ -470,11 +440,6 @@ struct TypeInfo
 //  构建能力
 // ---------------------------------------------------------------------------
 
-/// 这次构建有没有把大整数（`bint`）编进来（见 `STACKVM_WITH_BIGINT`）。
-inline constexpr bool kBigIntEnabled = (STACKVM_WITH_BIGINT != 0);
-/// 这次构建有没有把任意精度十进制浮点（`bfloat`）编进来。
-inline constexpr bool kBigFloatEnabled = (STACKVM_WITH_BIGFLOAT != 0);
-
 // ---------------------------------------------------------------------------
 //  栈指令
 // ---------------------------------------------------------------------------
@@ -547,8 +512,8 @@ enum class Op
     Ret,        ///< 返回：弹栈顶作为返回值。
     Halt,       ///< 停机。
     AddrOf,     ///< 把数据区符号的基址压栈（`name` 是符号名）。
-    LoadAt,     ///< 弹地址，读 8 字节（小端）压栈——数据区取值。
-    StoreAt,    ///< 弹值、再弹地址，往数据区写 8 字节（小端）。
+    LoadAt,     ///< 弹地址，按 intValue 指定的 u8 或旧八字节宽度读内存。
+    StoreAt,    ///< 弹值和地址，按 intValue 指定的 u8 或旧八字节宽度写内存。
 };
 
 /**
@@ -559,7 +524,7 @@ struct Instruction
     Op op = Op::Halt;                          ///< 操作码。
     Memory::String name;                       ///< 变量名 / 标签 / 形参名。
     Memory::String name2;                      ///< `Call` 的返回值目的地。
-    std::int64_t intValue = 0;                 ///< 立即数（整数）；`MulWide` / `DivWide` 时是位宽。
+    std::int64_t intValue = 0;                 ///< 整数立即数；宽乘除时为位宽，LoadAt/StoreAt 为 1 时访问一个 u8，0 保持八字节。
     double doubleValue = 0.0;                  ///< 立即数（浮点）。
     Memory::String textValue;                  ///< 立即数（字符串）。
     bool unsignedOp = false;                   ///< `MulWide` / `DivWide` 是否按无符号做。
@@ -729,6 +694,15 @@ struct Program
 inline bool validateProgramMetadata(const Program &program, Memory::Vector<Memory::String> *diagnostics = nullptr)
 {
     if (!validateProgramFeatures(program.requiredFeatures, diagnostics)) return false;
+    for (const auto &instruction : program.code)
+    {
+        if (instruction.op != Op::LoadAt && instruction.op != Op::StoreAt) continue;
+        if ((instruction.intValue != 0 && instruction.intValue != 1) || (instruction.intValue == 1 && (instruction.isFloat || !(program.requiredFeatures & kFeatureByteMemory))))
+        {
+            if (diagnostics) diagnostics->push_back("内存指令宽度无效或缺少 byte-memory 特征位");
+            return false;
+        }
+    }
     Memory::String error;
     if (!(program.requiredFeatures & kFeatureReflection))
     {
@@ -1086,12 +1060,80 @@ struct NativeValue
 };
 
 /**
- * 一次 C++ 胶水调用可访问的 VM 上下文；对象仅在回调期间有效。
+ * @brief 不透明宿主记录的生命周期协议，VM 不解释记录布局。
+ * @note 描述符须比关联运行时活得更久；回调不得抛出异常。
+ */
+struct NativeRecordType
+{
+    const char *name = nullptr;                                ///< 诊断名称，不参与语义分派。
+    void *(*clone)(const void *, Memory::String &) = nullptr;  ///< 复制独立记录；空回调表示不可复制。
+    void (*destroy)(void *) = nullptr;                         ///< 销毁一条记录，不负责 VM 壳。
+    Memory::String (*toString)(const void *) = nullptr;        ///< 可选的宿主值文本，不解释记录布局。
+};
+
+/**
+ * @brief 宿主服务身份到不透明适配器的映射；VM 不解释服务名称与对象布局。
+ */
+using NativeServices = Memory::Map<Memory::String, void *>;
+/**
+ * @brief 一次 C++ 胶水调用可访问的 VM 上下文，仅在回调期间有效。
  */
 class NativeCallContext
 {
 public:
     virtual ~NativeCallContext() = default;
+    /**
+     * @brief 为宿主不透明记录创建由当前运行时管理的通用壳。
+     * @param type 记录的类型标识及复制、销毁协议。
+     * @param record 胶水拥有的记录指针，成功时所有权交给运行时。
+     * @return 新句柄；失败返回零且调用方仍负责销毁记录。
+     * @note 与销毁通知不同，记录指针和复制回调均保存在壳内，复制壳必调用 clone。
+     */
+    virtual std::int64_t makeNativeRecord(const NativeRecordType &type, void *record);
+    /**
+     * @brief 校验句柄存活及类型身份后借用宿主记录。
+     * @param handle 同一运行时的对象句柄。
+     * @param type 创建记录时使用的同一描述符。
+     * @return 匹配的记录指针；已释放或类型不同返回空。
+     * @note 返回值只供胶水使用，VM 不解引用其内容。
+     */
+    [[nodiscard]] virtual void *nativeRecord(std::int64_t handle, const NativeRecordType &type) const;
+    /**
+     * @brief 显式释放一个通用运行时对象及其宿主记录。
+     * @param handle 当前运行时的句柄。
+     * @return 句柄存活并成功释放时为 true。
+     */
+    virtual bool releaseNativeRecord(std::int64_t handle);
+    /**
+     * @brief 释放胶水通过运行时分配的原始内存块。
+     * @param address 分配块的起始地址。
+     * @param soft 是否静默跳过零地址或已失效地址。
+     * @return 释放成功或软释放跳过时返回 true，失败保留原始诊断。
+     */
+    virtual bool releaseMemory(std::int64_t address, bool soft = false);
+    /**
+     * @brief 通过壳内的宿主复制回调生成独立记录。
+     * @param handle 待复制的存活句柄。
+     * @return 新句柄；不可复制或回调失败时返回零并保存诊断。
+     */
+    virtual std::int64_t cloneNativeRecord(std::int64_t handle);
+    /**
+     * @brief 查询宿主注入的通用不透明服务。
+     * @param name 胶水约定的服务身份，VM 不解释该名称。
+     * @return 注入的指针；服务不存在时返回空指针。
+     */
+    [[nodiscard]] virtual void *hostService(const Memory::String &name) const;
+    /**
+     * @brief 从当前输入源读取下一项文本。
+     * @param text 成功时接收文本。
+     * @return 读取成功时为 true，输入耗尽时为 false。
+     */
+    virtual bool takeInputText(Memory::String &text);
+    /**
+     * @brief 查询当前输入源已经消费的项数。
+     * @return 已消费项数，用于胶水诊断。
+     */
+    [[nodiscard]] virtual std::size_t inputPosition() const;
     [[nodiscard]] virtual bool readBytes(std::int64_t address, char *out,
                                          std::size_t count) const = 0;
     virtual bool writeBytes(std::int64_t address, const char *data, std::size_t count) = 0;
@@ -1429,7 +1471,7 @@ struct RuntimeValue
 /**
  * @brief AOT 生成代码用的运行时桥：复用解释器同一套堆、对象表、`__vm_*` 内建与宿主注册表。
  *
- * AOT 只做计算与控制流；字符串、容器、大整数、BigDecimal、对象表、边界检查、指针失效
+ * AOT 只做计算与控制流；字符串、容器、通用宿主对象、对象表、边界检查、指针失效
  * 检查、输入输出与宿主绑定全部落到这台桥后面的既有运行时上，不重写运行时。
  *
  * 生命周期：`begin()` 建环境（reset 堆、清空对象表 / 输出 / 错误），随后的若干次
@@ -1446,7 +1488,12 @@ public:
 
     void setData(DataArea *data) { data_ = data; }
     void setNativeRegistry(const NativeRegistry *registry) { registry_ = registry; }
-    void setFileApi(FileApi *api) { fileApi_ = api; }
+    /**
+     * @brief 设置胶水可访问的通用宿主服务表。
+     * @param services 服务表；空指针表示没有注入服务。
+     * @note 调用方保证服务表及其记录覆盖当前运行时和子线程的生命周期。
+     */
+    void setHostServices(const NativeServices *services) { hostServices_ = services; }
     void setThreadsEnabled(bool enabled) { threadsEnabled_ = enabled; }
     void setHeapAllocator(HeapAllocator *allocator);
     void setProgramArguments(Memory::Vector<Memory::String> arguments);
@@ -1495,6 +1542,20 @@ public:
      * @retval 成功返回 true，失败保留与通用内存访问一致的诊断并返回 false。
      */
     bool loadInteger(std::int64_t address, std::int64_t &out);
+    /**
+     * @brief 从活跃虚拟内存读取一个无符号字节并零扩展到整数槽。
+     * @param address 运行时虚拟地址。
+     * @param out 成功时接收 0 至 255 的字节值，失败时保持原值。
+     * @return 内存存活且一个字节可读时返回 true，否则保存原内存诊断。
+     */
+    bool loadByte(std::int64_t address, std::int64_t &out);
+    /**
+     * @brief 把整数低八位写入活跃虚拟内存中的一个字节。
+     * @param address 运行时虚拟地址。
+     * @param value 待写入整数，超出八位的部分截断。
+     * @return 内存存活且一个字节可写时返回 true，否则保存原内存诊断。
+     */
+    bool storeByte(std::int64_t address, std::int64_t value);
     /**
      * @brief 按静态标量类型读取虚拟地址，保留堆和数据区的有效性检查。
      * @param address 运行时虚拟地址。
@@ -1592,7 +1653,7 @@ public:
 private:
     DataArea *data_ = nullptr;
     const NativeRegistry *registry_ = nullptr;
-    FileApi *fileApi_ = nullptr;
+    const NativeServices *hostServices_ = nullptr;
     bool threadsEnabled_ = false;
     HeapAllocator *heapAllocator_ = nullptr;
     Memory::Function<bool(std::int64_t, const Memory::Vector<RuntimeValue> &, RuntimeValue &)>
@@ -1745,7 +1806,12 @@ public:
     /**
      * 挂上文件系统接口；传 nullptr 使用桌面端默认实现。
      */
-    void setFileApi(FileApi *api) { fileApi_ = api; }
+    /**
+     * @brief 设置胶水可访问的通用宿主服务表。
+     * @param services 服务表；空指针表示没有注入服务。
+     * @note 调用方保证服务表及其记录覆盖当前运行时和子线程的生命周期。
+     */
+    void setHostServices(const NativeServices *services) { hostServices_ = services; }
 
     /**
      * 设置本次程序入口可见的命令行参数。内容会在 run() 期间复制进 VM 的 List。
@@ -1919,7 +1985,7 @@ private:
     bool registerThreadedDispatch_ = true;             ///< 支持的编译器默认使用标签分派，其余回退 switch。
     bool optimizeExecution_ = true;                    ///< 不改变字节码的运行期优化开关。
     std::size_t stackLimit_ = 0u;                      ///< 每个协程的求值栈槽数上限；0 表示不限制。
-    FileApi *fileApi_ = nullptr;                       ///< 可选的嵌入式文件系统接口。
+    const NativeServices *hostServices_ = nullptr;     ///< 宿主注入的通用不透明服务。
     Memory::Vector<Memory::String> programArguments_;  ///< 传给语言入口的命令行参数。
 #if STACKVM_WITH_THREADS
     bool threadsEnabled_ = false;

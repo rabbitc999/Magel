@@ -6,7 +6,7 @@ import subprocess
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_MC = ROOT / "build/work/magel" / ("magel.exe" if os.name == "nt" else "magel")
+DEFAULT_MC = ROOT / ("magel.exe" if os.name == "nt" else "magel")
 MESSAGE = "MGL1301"
 
 
@@ -52,7 +52,7 @@ def main():
         "bool ready=false && (i++ > (a+=2)); std::lang::assert(i==1 && a==3);",
         "i++; a+=i; --i; b*=2;",
         "int64 first=i++, second=(a+=2);",
-        "for(i+=1; i++<5; a+=1){b++; a+=b;}",
+        '{\n    i+=1;\n    while (i++<5) {\nb++; a+=b;\n        a+=1;\n    }\n}',
     ])
     with tempfile.TemporaryDirectory(prefix="case-", dir=work) as directory:
         directory = Path(directory)

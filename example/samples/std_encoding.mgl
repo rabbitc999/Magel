@@ -1,13 +1,25 @@
 import std::encoding;
-List<uint8> bytesOf(String text){List<uint8> bytes;for(int64 i=0;i<len(text);i=i+1){bytes.push((uint8)text[i]);}return bytes;}
+List<uint8> bytesOf(String text){List<uint8> bytes;{
+    int64 i=0;
+    while (i<len(text)) {
+bytes.push((uint8)text[i]);
+        i=i+1;
+    }
+}return bytes;}
 int64 main(){
     List<String> texts;texts.push("");texts.push("f");texts.push("fo");texts.push("foo");texts.push("foob");texts.push("fooba");texts.push("foobar");
     List<String> encoded;encoded.push("");encoded.push("Zg==");encoded.push("Zm8=");encoded.push("Zm9v");encoded.push("Zm9vYg==");encoded.push("Zm9vYmE=");encoded.push("Zm9vYmFy");
-    for(int64 i=0;i<texts.len();i=i+1){
+    {
+        int64 i=0;
+        while (i<texts.len()) {
+
         List<uint8> bytes=bytesOf(texts[i]);
         assert(encodeBase64(bytes)==encoded[i]);
         assert(encodeHex(decodeBase64(encoded[i]).unwrap())==encodeHex(bytes));
         assert(encodeHex(decodeBase64Url(encodeBase64Url(bytes)).unwrap())==encodeHex(bytes));
+    
+            i=i+1;
+        }
     }
     List<uint8> binary;binary.push((uint8)0);binary.push((uint8)251);binary.push((uint8)255);
     assert(encodeHex(binary)=="00fbff" && encodeHex(binary,true)=="00FBFF");

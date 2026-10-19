@@ -5,7 +5,7 @@ import os
 import tempfile
 from magel_glue_edges import ROOT, MAGEL, EXE, run
 
-POSTGRES_SOURCE = r'''
+POSTGRES_SOURCE = """
 import std::sql;
 int64 main() {
     Database failed = Database::postgres("fixture-fail");
@@ -14,7 +14,7 @@ int64 main() {
     std::lang::assert(!setup.isOpen() && std::lang::len(setup.lastError()) > 0);
     Database db = Database::postgres("fixture-ok");
     if (!db.isOpen()) { std::lang::panic(db.lastError()); }
-    std::lang::assert(db.backendName() == "postgresql" && db.quote("O'Reilly\\path") == "'O''Reilly\\path'");
+    std::lang::assert(db.backendName() == "postgresql" && db.quote("O'Reilly\\\\path") == "'O''Reilly\\\\path'");
     ResultSet result = db.exec("SELECT fixtures");
     std::lang::assert(result.ok && result.rowCount() == 1 && result.colCount() == 6 && result.affected == 0);
     std::lang::assert(result.intAt(0, 0) == 9223372036854775807 && result.realAt(0, 1) == 1.25);
@@ -28,7 +28,13 @@ int64 main() {
     ResultSet huge = db.exec("UPDATE huge");
     std::lang::assert(huge.ok && huge.affected == 5000000000 && db.affectedRows() == 5000000000);
     std::lang::assert(!db.exec("SELECT fail").ok);
-    for (int64 i = 0; i < 300; i = i + 1) { std::lang::assert(db.exec("SELECT fixtures").ok); }
+    {
+        int64 i = 0;
+        while (i < 300) {
+ std::lang::assert(db.exec("SELECT fixtures").ok); 
+            i = i + 1;
+        }
+    }
     db.close(); db.close();
     std::lang::assert(!db.exec("SELECT fixtures").ok);
     Database copy = Database::postgres("fixture-ok");
@@ -38,8 +44,8 @@ int64 main() {
     std::lang::println("postgres ABI checks passed");
     return 0;
 }
-'''
-ODBC_SOURCE = r'''
+"""
+ODBC_SOURCE = """
 import std::sql;
 int64 main(std::lang::List<String> arguments) {
     Database microsoft = Database::sqlServer("DRIVER={Magel Missing Driver};SERVER=invalid;");
@@ -51,7 +57,13 @@ int64 main(std::lang::List<String> arguments) {
     ResultSet created = db.exec("CREATE TABLE items(id BIGINT, name TEXT, amount DOUBLE, note TEXT)");
     if (!created.ok) { std::lang::panic(created.error); }
     String longText = "";
-    for (int64 i = 0; i < 1400; i = i + 1) { longText = longText + "中文🙂"; }
+    {
+        int64 i = 0;
+        while (i < 1400) {
+ longText = longText + "中文🙂"; 
+            i = i + 1;
+        }
+    }
     ResultSet inserted = db.exec("INSERT INTO items VALUES(9223372036854775807, " + db.quote(longText) + ", 1.25, NULL)");
     std::lang::assert(inserted.ok && inserted.affected == 1);
     ResultSet result = db.exec("SELECT id, name, amount, note, '123' AS numeric_text FROM items");
@@ -68,14 +80,20 @@ int64 main(std::lang::List<String> arguments) {
     std::lang::assert(db.execOk("ROLLBACK"));
     std::lang::assert(db.count("SELECT COUNT(*) FROM items") == 1);
     std::lang::assert(!db.exec("SELECT FROM items").ok);
-    for (int64 i = 0; i < 300; i = i + 1) { std::lang::assert(db.count("SELECT COUNT(*) FROM items") == 1); }
+    {
+        int64 i = 0;
+        while (i < 300) {
+ std::lang::assert(db.count("SELECT COUNT(*) FROM items") == 1); 
+            i = i + 1;
+        }
+    }
     ResultSet deleted = db.exec("DELETE FROM items");
     std::lang::assert(deleted.ok && deleted.affected == 1);
     db.close(); db.close();
     std::lang::println("odbc database checks passed");
     return 0;
 }
-'''
+"""
 
 
 def triplet(source, expected, work, arguments_factory=lambda mode: []):

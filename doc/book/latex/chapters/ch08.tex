@@ -47,18 +47,19 @@ int64 main()
 
 作用域有好几种来源：
 
-\begin{center}
-\begin{tabular}{ll}
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.296\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.684\linewidth-2\tabcolsep\relax}}
 \toprule
 来源 & 例子 \\
 \midrule
+\endhead
 一对花括号 & \texttt{\{ int64 x =\allowbreak{} 1; \}} \\
 函数体 & \texttt{int64 add(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{} \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} \}} —— 整个函数是一个作用域 \\
-\texttt{if} / \texttt{for} / \texttt{while} 的主体 & \texttt{for (\allowbreak{}int64 k =\allowbreak{} 0; .\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{} \{ \}} 里的 \texttt{k} 只活在循环里 \\
+\texttt{if} / \texttt{for} / \texttt{while} 的主体 & \texttt{for (\allowbreak{}int64 k in std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}range(\allowbreak{}0,\allowbreak{} 3)\allowbreak{})\allowbreak{} \{ \}} 里的 \texttt{k} 只活在循环里 \\
 块 & \texttt{main} 本身也是块 \\
 \bottomrule
-\end{tabular}
-\end{center}
+\end{longtable}
+}
 
 注意最后一条：\texttt{main} 也是个作用域。 所以 \texttt{main} 里声明的东西，程序结束时会被清理。
 
@@ -320,9 +321,9 @@ deleted
 \par
 \medskip
 \begin{lstlisting}[style=magel]
-Point mut& a = heap Point;             // 糖：heap T  ≡ new;
+Point mut& a = heap Point;             // 糖：heap T 等价于 new;
 Point mut& b = new Point(3, 4);        // new T(args) 栈/堆由左侧声明决定
-Point mut& c = heap new Point(5, 6);   // 糖：heap new T(args)  ≡ new(5, 6)
+Point mut& c = heap new Point(5, 6);   // 糖：heap new T(args) 等价于 new(5, 6)
 \end{lstlisting}
 \par
 \medskip

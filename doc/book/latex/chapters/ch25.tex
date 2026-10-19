@@ -25,7 +25,7 @@
 \midrule
 \endhead
 \href{https://github.com/rabbitc999/Magel/tree/master/library/stackvm}{library/stackvm} & 桌面与板端共同的 VM 核心 \\
-\href{https://github.com/rabbitc999/Magel/blob/master/library/stackvm_mcu/README.md}{source/stackvm\_mcu} & 裁剪配置、静态池和宿主适配 \\
+\href{https://github.com/rabbitc999/Magel/blob/master/library/stackvm_mcu/README.md}{library/stackvm\_mcu} & 裁剪配置、静态池和宿主适配 \\
 \href{https://github.com/rabbitc999/Magel/blob/master/example/mcu/FK-STM32H743XIH6/main.c}{板端 main.c} & 上电后的独立程序入口 \\
 \href{https://github.com/rabbitc999/Magel/blob/master/example/mcu/FK-STM32H743XIH6/magel_board.cpp}{magel\_board.cpp} & 加载、菜单、执行与原生接口注册 \\
 \href{https://github.com/rabbitc999/Magel/blob/master/example/mcu/FK-STM32H743XIH6/programs/board.mgl}{programs/board.mgl} & Magel 可调用的外设函数签名 \\
@@ -139,7 +139,7 @@ LCD 文本当前支持可打印 ASCII，不能把桌面字符串支持 UTF-8 等
 
 这层不应直接知道 LCD 型号或 W25QXX 引脚。它通过字节堆、文件 API、输出下沉与原生注册表接收宿主能力，才能同时用于桌面和板端。
 
-\subsection{source/stackvm\_mcu：把桌面服务替换为有预算的宿主}
+\subsection{library/stackvm\_mcu：把桌面服务替换为有预算的宿主}
 
 \texttt{mcu\_host.\allowbreak{}cpp} 是可在桌面运行的 MCU 配置验证入口。它读取映像、安装内存池、挂接输出和原生胶水，再运行同一份字节码。它方便检查裁剪构建、程序结果和软重启，不能由此推断真实 LCD、串口或 SDRAM 已经验证。
 

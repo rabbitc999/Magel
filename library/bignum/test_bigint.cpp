@@ -430,7 +430,7 @@ void testPrimes()
     CHECK(BigInt(3).isProbablePrime());
     CHECK(!BigInt(4).isProbablePrime());
     CHECK(!BigInt(561).isProbablePrime());
-    CHECK(!BigInt(41041).isProbablePrime()); /* Carmichael 数：7 × 11 × 13 × 41 */
+    CHECK(!BigInt(41041).isProbablePrime());                   /* Carmichael 数：7 × 11 × 13 × 41 */
     CHECK(BigInt(2147483647ll).isProbablePrime());             /* 2^31 − 1 */
     CHECK(BigInt("2305843009213693951").isProbablePrime());    /* 2^61 − 1 */
     CHECK(!BigInt("147573952589676412927").isProbablePrime()); /* 2^67 − 1（Mersenne 合数） */

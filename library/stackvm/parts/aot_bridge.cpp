@@ -133,7 +133,7 @@ struct RuntimeBridge::Impl
 #endif
     DataArea *data = nullptr;
     const NativeRegistry *registry = nullptr;
-    FileApi *fileApi = nullptr;
+    const NativeServices *hostServices = nullptr;
     bool threadsEnabled = false;
     HeapAllocator *heapAllocator = nullptr;
     Heap defaultHeap;
@@ -144,7 +144,6 @@ struct RuntimeBridge::Impl
     Memory::Vector<Memory::String> input;
     std::size_t inputIndex = 0;
     Memory::Vector<Memory::String> programArguments;
-    int bigFloatPrecision = 34;
     bool exitRequested = false;
     int exitCode = 0;
     NativeInvoker invokerFn;  ///< `NativeContext::invoker` 用（胶水回调）。
@@ -435,7 +434,7 @@ bool RuntimeBridge::begin(std::size_t heapBase)
 {
     impl_->data = data_;
     impl_->registry = registry_;
-    impl_->fileApi = fileApi_;
+    impl_->hostServices = hostServices_;
     impl_->threadsEnabled = threadsEnabled_;
     impl_->heapAllocator = heapAllocator_;
     impl_->heap = (heapAllocator_ == nullptr) ? static_cast<HeapAllocator *>(&impl_->defaultHeap) : heapAllocator_;
@@ -452,7 +451,6 @@ bool RuntimeBridge::begin(std::size_t heapBase)
     impl_->text.clear();
     impl_->input.clear();
     impl_->inputIndex = 0u;
-    impl_->bigFloatPrecision = 34;
     impl_->exitRequested = false;
     impl_->exitCode = 0;
     /* 全局变量块：每个桥一份（线程各自独立，协程共享）。 */
@@ -813,10 +811,9 @@ bool RuntimeBridge::callNative(const Memory::String &name,
             context.objects = &impl_->objects;
             context.timers = &impl_->timers;
             context.threadId = impl_->threadId;
-            context.bigFloatPrecision = &impl_->bigFloatPrecision;
             context.exitRequested = &impl_->exitRequested;
             context.exitCode = &impl_->exitCode;
-            context.fileApi = fileApi_;
+            context.hostServices = hostServices_;
             context.invoker = &impl_->invokerFn;
             return context;
         };
@@ -1123,7 +1120,7 @@ bool RuntimeBridge::callNative(const Memory::String &name,
             }
             DataArea *data = data_;
             const NativeRegistry *registry = registry_;
-            FileApi *api = fileApi_;
+            const NativeServices *api = hostServices_;
             auto shared = impl_->shared;
             Memory::Vector<Memory::String> arguments = impl_->programArguments;
             const std::size_t globalsSize = globalsSize_;
@@ -1137,7 +1134,7 @@ bool RuntimeBridge::callNative(const Memory::String &name,
                 RuntimeBridge child;
                 child.setData(data);
                 child.setNativeRegistry(registry);
-                child.setFileApi(api);
+                child.setHostServices(api);
                 child.setThreadsEnabled(true);
                 child.setProgramArguments(std::move(arguments));
                 child.setGlobalsSize(globalsSize);
@@ -1566,10 +1563,9 @@ bool RuntimeBridge::callNative(const Memory::String &name,
         context.timers = &impl_->timers;
         context.machine = nullptr;
         context.threadId = impl_->threadId;
-        context.bigFloatPrecision = &impl_->bigFloatPrecision;
         context.exitRequested = &impl_->exitRequested;
         context.exitCode = &impl_->exitCode;
-        context.fileApi = (fileApi_ != nullptr) ? fileApi_ : nullptr;
+        context.hostServices = (hostServices_ != nullptr) ? hostServices_ : nullptr;
         context.invoker = &impl_->invokerFn;
 
         Memory::Vector<Slot> slots;
@@ -1642,10 +1638,9 @@ bool RuntimeBridge::callNative(const Memory::String &name,
     context.interruptPosterFn = [this](std::int64_t timer, std::int64_t source) {
         impl_->timers.pending.push_back(InterruptEvent{ timer, source, 0, impl_->threadId });
     };
-    context.bigFloatPrecision = &impl_->bigFloatPrecision;
     context.exitRequested = &impl_->exitRequested;
     context.exitCode = &impl_->exitCode;
-    context.fileApi = fileApi_;
+    context.hostServices = hostServices_;
     context.invoker = &impl_->invokerFn;
     NativeCallContextImpl callContext(context, impl_->invokerFn, &error_);
     NativeValue returned;
@@ -1674,6 +1669,68 @@ bool RuntimeBridge::callNative(const Memory::String &name,
     else
         result = RuntimeValue::ofInt(returned.integer);
     return true;
+}
+
+/**
+ * @brief 读取一个无符号字节，复用堆和数据区的活跃内存验证。
+ * @param address 运行时虚拟地址。
+ * @param out 成功时接收零扩展后的字节值，失败时不修改。
+ * @return 读取成功时返回 true，否则报告与标量读取一致的内存错误。
+ */
+bool RuntimeBridge::loadByte(std::int64_t address, std::int64_t &out)
+{
+    const std::size_t target = static_cast<std::size_t>(address);
+    char byte = 0;
+    if (impl_->heap->contains(target))
+    {
+        if (!impl_->heap->readBytes(target, &byte, 1u))
+        {
+            fail("panic：读堆内存失败：地址 " + Memory::toString(address));
+            return false;
+        }
+    }
+    else
+    {
+        if (data_ == nullptr)
+        {
+            fail("panic：没有数据区，无法按地址读");
+            return false;
+        }
+        if (!data_->readBytes(target, &byte, 1u))
+        {
+            fail("panic：读数据区失败：地址 " + Memory::toString(address));
+            return false;
+        }
+    }
+    out = static_cast<unsigned char>(byte);
+    return true;
+}
+
+/**
+ * @brief 写入一个字节，保留活跃分配和边界检查且截断整数高位。
+ * @param address 运行时虚拟地址。
+ * @param value 取低八位写入的整数。
+ * @return 写入成功时返回 true，否则报告与标量写入一致的内存错误。
+ */
+bool RuntimeBridge::storeByte(std::int64_t address, std::int64_t value)
+{
+    const std::size_t target = static_cast<std::size_t>(address);
+    const unsigned char byte = static_cast<unsigned char>(value);
+    const char *source = reinterpret_cast<const char *>(&byte);
+    if (impl_->heap->contains(target))
+    {
+        const bool okay = impl_->heap->writeBytes(target, source, 1u);
+        if (!okay) fail("panic：写堆内存失败：地址 " + Memory::toString(address));
+        return okay;
+    }
+    if (data_ == nullptr)
+    {
+        fail("panic：没有数据区，无法按地址写");
+        return false;
+    }
+    const bool okay = data_->writeBytes(target, source, 1u);
+    if (!okay) fail("panic：写数据区失败：地址 " + Memory::toString(address));
+    return okay;
 }
 
 /**

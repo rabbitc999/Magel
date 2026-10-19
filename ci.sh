@@ -135,6 +135,7 @@ mkdir -p tmp/ci/logs
 if [ "$full" = 1 ]; then
     run_step "配置 stackvm 单测（cmake）" \
         cmake -S library/stackvm -B tmp/ci/stackvm -DCMAKE_BUILD_TYPE=Release \
+              -DSTACKVM_WITH_REFLECTION=ON \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="$root/tmp/ci/stackvm" \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE="$root/tmp/ci/stackvm"
     run_step "构建 stackvm（CLI + 单测）" \
@@ -149,6 +150,7 @@ if [ "$full" = 1 ]; then
         tmp/ci/stackvm/magel-panic-tests tmp/ci/stackvm/panic-compact.svmb
     run_step "配置无 panic 栈构建" \
         cmake -S library/stackvm -B tmp/ci/panic-off -DCMAKE_BUILD_TYPE=Release \
+              -DSTACKVM_WITH_REFLECTION=ON \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="$root/tmp/ci/panic-off" \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE="$root/tmp/ci/panic-off" \
               -DSTACKVM_WITH_PANIC_TRACE=OFF -DSTACKVM_WITH_BIGINT=OFF -DSTACKVM_WITH_BIGFLOAT=OFF
@@ -164,10 +166,20 @@ run_step "构建 MAGEL 驱动（magel）" "$MAKE" -j4
 run_step "MAGEL 样例回归（check.sh）" \
     sh -c 'cd "$1" && MAGEL_TMP="$1/tmp/ci/check" sh check.sh' sh "$root"
 run_step "运行 std::image 与 StringBuilder 回归" "$PYTHON" tests/magel_image.py --magel magel
+run_step "运行数组按值传参与引用回归" "$PYTHON" tests/magel_array_parameters.py --magel magel
+run_step "编译字面量数据合并单元测试" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=0 -DMAGEL_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 library/simple_ast/test_simple_ast.cpp library/simple_ast/simple_ast.cpp -o tmp/ci/simple-ast-literals
+run_step "运行字面量数据合并单元测试" tmp/ci/simple-ast-literals
+run_step "运行字面量合并与字符串副本回归" "$PYTHON" tests/magel_string_literals.py --magel magel
+run_step "检查 opcode 声明与不可复制限制" "$PYTHON" tests/magel_opcode_declarations.py --magel magel
+run_step "检查区间与循环值表达式" "$PYTHON" tests/magel_range_loop_values.py --magel magel
+run_step "检查 opcode 资源所有权与借用" "$PYTHON" tests/magel_opcode_resources.py --magel magel
+run_step "检查 opcode 反射与语言服务隐藏" "$PYTHON" tests/magel_opcode_visibility.py --magel magel
+run_step "检查标准对象与 VM 核心隔离" "$PYTHON" tests/opcode_core_isolation.py
 run_step "检查手册与标准库共享索引同步" "$PYTHON" tools/library_reference.py --check
 
 # ---- 以下均为发布门禁（--full）扩展步骤 ----
 if [ "$full" = 1 ]; then
+run_step "运行整数区间端点与溢出回归" "$PYTHON" tests/magel_foreach_intervals.py --magel magel
 run_step "编译场景命令单元测试" g++ -std=c++17 -O1 tests/magel_cli_test.cpp -o tmp/ci/magel-cli
 run_step "运行场景命令单元测试" tmp/ci/magel-cli
 run_step "编译宏临时编号单元测试" g++ -std=c++17 -O1 -DMAGEL_CUSTOM_ALLOCATOR=0 -Ilibrary -Ilibrary/preprocess tests/magel_macro_slots_test.cpp -o tmp/ci/magel-macro-slots

@@ -16,7 +16,27 @@
  */
 bool LeafOwnedByAggregate(const std::shared_ptr<MType> &type)
 {
-    return type && (type->kind == MType::String || IsObjectLike(type));
+    return type && (IsStandardOpcode(type, "String") || IsObjectLike(type) || OpcodeNonCopyable(type));
+}
+
+/**
+ * @brief 检查拥有值是否直接或经数组、聚合字段包含不可复制胶水对象。
+ * @param type 已解析且已完成聚合布局的值类型。
+ * @return 存在不可复制的拥有叶子时返回 true；引用始终作为借用处理。
+ */
+bool HasNonCopyableValue(const std::shared_ptr<MType> &type)
+{
+    if (!type || type->kind == MType::Ptr) return false;
+    if (OpcodeNonCopyable(type)) return true;
+    if (type->kind == MType::Array) return HasNonCopyableValue(type->elem);
+    if (type->kind == MType::Struct)
+    {
+        const auto *definition = FindStruct(type->name);
+        if (definition)
+            for (const auto &leaf : definition->leaves)
+                if (HasNonCopyableValue(leaf.second)) return true;
+    }
+    return false;
 }
 
 /**
@@ -81,19 +101,19 @@ bool StructNeedsCleanup(const Memory::String &structName);
 bool ArrayElementNeedsRelease(const std::shared_ptr<MType> &element)
 {
     if (!element) return false;
-    if (element->kind == MType::String || IsObjectLike(element)) return true;
+    if (LeafOwnedByAggregate(element)) return true;
     if (element->kind == MType::Struct) return StructNeedsCleanup(element->name);
     return false;
 }
 
 /**
- * @brief 元素释放助手名（`__magel_arr_rel_<类型名>`）；类型名本来就只含标识符字符。
+ * @brief 按内部类型号生成唯一的元素释放助手名，避免不同内建 opcode 共用清理入口。
  * @param element 数组或容器的元素类型。
  * @retval 生成或读取的结果文本。
  */
 Memory::String ArrayReleaseName(const std::shared_ptr<MType> &element)
 {
-    return "__magel_arr_rel_" + (element ? element->name : Memory::String("unknown"));
+    return "__magel_arr_rel_" + (element ? Memory::toString(TypeIdOf(element)) : Memory::String("unknown"));
 }
 
 /**
@@ -106,6 +126,8 @@ Memory::Map<Memory::String, std::shared_ptr<MType>> g_needsArrayRelease;
  * @param name 数组变量名。
  * @param element 元素类型。
  * @param fixedCount 定长数组的编译期元素个数；< 0 表示运行时长度的数组（从对象头读）。
+ * @return 元素释放语句；不持有资源的元素返回空节点。
+ * @note 运行时数组的自动收尾先检查分配存活，避免读取已由可变借用删除的长度头。
  */
 simple_ast::NodePtr MakeArrayElementRelease(const Memory::String &name,
                                             const std::shared_ptr<MType> &element,
@@ -122,7 +144,12 @@ simple_ast::NodePtr MakeArrayElementRelease(const Memory::String &name,
     const auto release = simple_ast::Node::exprStmt(simple_ast::Node::call(
         ArrayReleaseName(element), { "__magel_arr", "__magel_count" },
         { value, count }));
-    return fixedCount >= 0 ? release : simple_ast::Node::ifThenElse(simple_ast::Node::binary("!=", value, simple_ast::Node::i(0)), release, nullptr);
+    if (fixedCount >= 0) return release;
+    // 借用函数可能已经显式删除该数组；自动收尾不再读取失效块的长度头。
+    const auto live = simple_ast::Node::binary("&&", simple_ast::Node::binary("!=", value, simple_ast::Node::i(0)),
+                                               simple_ast::Node::call("__vm_heap_live", { "address" },
+                                                                      { simple_ast::Node::binary("-", value, simple_ast::Node::i(8)) }));
+    return simple_ast::Node::ifThenElse(live, release, nullptr);
 }
 
 /**
@@ -619,13 +646,17 @@ simple_ast::NodePtr MakeDrop(const Memory::String &emitted, bool runtimeArray = 
     const bool indirect = storage != g_referenceStorage.end();
     simple_ast::NodePtr value = indirect ? simple_ast::Node::loadInt(simple_ast::Node::var(storage->second)) : simple_ast::Node::var(emitted);
     const auto handle = value;
-    if (runtimeArray)
+    if (runtimeArray || g_arrayElementTypes.count(emitted) != 0u)
     {
         value = simple_ast::Node::binary("-", value, simple_ast::Node::i(8));
     }
-    const auto release = runtimeArray ? simple_ast::Node::ifThenElse(
-                                            simple_ast::Node::binary("!=", handle, simple_ast::Node::i(0)), simple_ast::Node::release(value), nullptr) :
-                                        simple_ast::Node::release(value);
+    const auto ownedType = g_opcodeValueTypes.find(emitted);
+    const bool referenceAllocation = std::any_of(g_referenceStorage.begin(), g_referenceStorage.end(), [&](const auto &entry) { return entry.second == emitted; });
+    const auto *opcode = referenceAllocation || ownedType == g_opcodeValueTypes.end() ? nullptr : FindOpcodeDefinition(ownedType->second);
+    const auto opcodeRelease = opcode ? simple_ast::Node::exprStmt(simple_ast::Node::call(opcode->destroy, { "__magel_v" }, { value })) : simple_ast::Node::release(value);
+    const auto release = (runtimeArray || g_arrayElementTypes.count(emitted) != 0u) ? simple_ast::Node::ifThenElse(
+                                                                                          simple_ast::Node::binary("!=", handle, simple_ast::Node::i(0)), simple_ast::Node::release(value), nullptr) :
+                                                                                      opcodeRelease;
     /* 软释放只检查当前地址是否活跃，无法区分堆地址复用后的新所有者。
      * 出块后保留旧地址，下一轮临时赋值前的 MakeDrop 就可能释放别人的新字符串。
      * 数组先释放元素、再释放块、最后清句柄；旧值在赋值路径中已由 DeferNewValue 保存。 */
@@ -793,7 +824,7 @@ bool IsContainer(const std::shared_ptr<MType> &type)
  */
 bool IsObjectLike(const std::shared_ptr<MType> &type)
 {
-    return type && (type->kind == MType::BigInt || type->kind == MType::BigFloat || type->kind == MType::Container || type->kind == MType::Func || type->kind == MType::Obj || IsInterfacePointer(type));
+    return type && ((type->kind == MType::Opcode && !IsStandardOpcode(type, "String")) || type->kind == MType::Container || type->kind == MType::Func || type->kind == MType::Obj || IsInterfacePointer(type));
 }
 
 /**
@@ -803,7 +834,7 @@ bool IsObjectLike(const std::shared_ptr<MType> &type)
  */
 bool IsResourceLike(const std::shared_ptr<MType> &type)
 {
-    return type && (type->kind == MType::File || type->kind == MType::Proc);
+    return OpcodeNonCopyable(type);
 }
 
 /**
@@ -950,7 +981,7 @@ bool CheckContainerElement(const std::shared_ptr<MType> &type, const Memory::Str
     {
         return Fail("容器的 " + where + " 不能是 void");
     }
-    if (IsResourceLike(type))
+    if (IsResourceLike(type) || HasNonCopyableValue(type))
     {
         return Fail("容器的 " + where + " 不能是 " + Describe(type) + "：宿主资源句柄不能复制进容器");
     }
@@ -967,6 +998,8 @@ bool CheckContainerElement(const std::shared_ptr<MType> &type, const Memory::Str
  */
 simple_ast::NodePtr ContainerStorageFlag(const std::shared_ptr<MType> &type, bool allowResources = false)
 {
+    if (!allowResources && HasNonCopyableValue(type))
+        return Fail("容器按值存储禁止复制 #NonCopyable opcode，请使用借用或显式移动到拥有变量"), Bad();
     if (type && type->kind == MType::Func) return simple_ast::Node::i(-1);
     if (!type || type->kind != MType::Struct)
         return simple_ast::Node::i(IsObjectLike(type) || (allowResources && IsResourceLike(type)) ? 1 : 0);
@@ -978,14 +1011,14 @@ simple_ast::NodePtr ContainerStorageFlag(const std::shared_ptr<MType> &type, boo
     for (const auto &leaf : definition->leaves)
     {
         const std::shared_ptr<MType> &field = leaf.second;
-        if (IsResourceLike(field) && !allowResources)
+        if ((IsResourceLike(field) || HasNonCopyableValue(field)) && !allowResources)
             return Fail("容器结构体 " + type->name + " 的字段 " + leaf.first + " 是不可复制的资源句柄"), Bad();
         if (field->kind == MType::Array)
             return Fail("容器结构体 " + type->name + " 的数组字段 " + leaf.first + " 需要显式转换为值结构体或引用"), Bad();
-        layout += field->kind == MType::String ? 's' : field->kind == MType::Func                                     ? 'c' :
-                                                   (IsObjectLike(field) || (allowResources && IsResourceLike(field))) ? 'o' :
-                                                   field->kind == MType::Double                                       ? 'f' :
-                                                                                                                        'i';
+        layout += IsStandardOpcode(field, "String") ? 's' : field->kind == MType::Func                                     ? 'c' :
+                                                        (IsObjectLike(field) || (allowResources && IsResourceLike(field))) ? 'o' :
+                                                        field->kind == MType::Double                                       ? 'f' :
+                                                                                                                             'i';
     }
     return simple_ast::Node::str(layout);
 }
@@ -998,9 +1031,9 @@ simple_ast::NodePtr ContainerStorageFlag(const std::shared_ptr<MType> &type, boo
 bool IsOwnedKind(const std::shared_ptr<MType> &type)
 {
     if (!type) return false;
-    /* 运行时数组、堆上的字符串、以及 `bint` / vec / set / map（对象表里的句柄）：
+    /* 数组、堆上的字符串、以及 `bint` / vec / set / map（对象表里的句柄）：
      * 都归声明它的块所有，出块自动释放（见"生命周期"）。 */
-    return IsRuntimeArray(type) || type->kind == MType::String || IsObjectLike(type) || IsResourceLike(type);
+    return type->kind == MType::Array || IsStandardOpcode(type, "String") || IsObjectLike(type) || IsResourceLike(type);
 }
 
 /**
@@ -1155,7 +1188,7 @@ bool DecimalIntegerLiteral(int id, long long *value)
     {
         long long inner = 0;
         if (!DecimalIntegerLiteral(node.kids[0], &inner)) return false;
-        *value = -inner;
+        *value = inner == LLONG_MIN ? LLONG_MIN : -inner;
         return true;
     }
     return false;
@@ -1278,7 +1311,7 @@ simple_ast::NodePtr LowerValueForType(int valueId, const std::shared_ptr<MType> 
         }
     }
     const bool contextualNew = value.kind == MNode::NewPtr;
-    const bool nullHandle = value.kind == MNode::Null && target && (target->kind == MType::Ptr || target->kind == MType::Func || target->kind == MType::String || target->kind == MType::File || target->kind == MType::Proc);
+    const bool nullHandle = value.kind == MNode::Null && target && (target->kind == MType::Ptr || target->kind == MType::Func || IsStandardOpcode(target, "String") || IsStandardOpcode(target, "File") || IsStandardOpcode(target, "Process"));
     const bool overloadedFunction = target && target->kind == MType::Func && value.kind == MNode::Var && FindFunctionOverloads(value.module, value.s) != nullptr;
     if (target && actual && !objGet && !contextualNew && !nullHandle && !overloadedFunction && !Acceptable(target, actual, true) && !integerLiteral)
     {
@@ -1353,9 +1386,9 @@ simple_ast::NodePtr TakeExpressionTempValue(const simple_ast::NodePtr &value,
                                             const std::shared_ptr<MType> &type);
 
 /**
- * @brief 复制运行时数组的元素及长度头，返回独立拥有的数组句柄。
+ * @brief 复制数组的元素并创建长度头，返回独立拥有的数组句柄。
  * @param source 只求值一次的源数组句柄表达式。
- * @param type 保留元素布局的运行时数组类型。
+ * @param type 保留元素布局和可选编译期长度的数组类型。
  * @return 逐元素深拷贝后由调用方接管的数组表达式。
  */
 simple_ast::NodePtr CopyRuntimeArrayValue(const simple_ast::NodePtr &source, const std::shared_ptr<MType> &type);
@@ -1369,9 +1402,11 @@ extern bool g_usesNewArray;
  */
 simple_ast::NodePtr MaterializeStringValue(int valueId, const std::shared_ptr<MType> &target)
 {
+    if (OpcodeNonCopyable(target) && valueId >= 0 && !IsFreshValue(valueId))
+        return Fail("#NonCopyable opcode 禁止复制初始化或赋值，请显式移动或使用引用"), Bad();
     const simple_ast::NodePtr value = LowerValueForType(valueId, target);
-    if (IsRuntimeArray(target) && valueId >= 0 && !IsFreshValue(valueId)) return CopyRuntimeArrayValue(value, target);
-    if (!target || target->kind != MType::String) return value;
+    if (target && target->kind == MType::Array && valueId >= 0 && !IsFreshValue(valueId)) return CopyRuntimeArrayValue(value, target);
+    if (!target || !IsStandardOpcode(target, "String")) return value;
     if (valueId < 0) return value;
     if (N(valueId).kind == MNode::Str)
         return simple_ast::Node::call("__vm_str_lit", { "__magel_addr" }, { value });
@@ -1381,8 +1416,7 @@ simple_ast::NodePtr MaterializeStringValue(int valueId, const std::shared_ptr<MT
      * 接收方（变量 / 字段 / 返回值）随后会登记成所有者，直接交句柄的话两边指着同一块，
      * 先释放的一边把另一边弄成悬垂别名（`string a = b;` 之后 b 一改，a 就废）。
      */
-    return simple_ast::Node::call("__vm_str_sub", { "__magel_s", "__magel_a", "__magel_b" },
-                                  { value, simple_ast::Node::i(0), simple_ast::Node::i(-1) });
+    return simple_ast::Node::call(ObjectCopyFunction(target), { "value" }, { value });
 }
 
 /**
@@ -1399,9 +1433,16 @@ simple_ast::NodePtr MaterializeStringValue(int valueId, const std::shared_ptr<MT
 simple_ast::NodePtr MaterializeReturnStringValue(int valueId, const std::shared_ptr<MType> &target,
                                                  const Memory::Set<Memory::String> &keep)
 {
+    if (OpcodeNonCopyable(target) && valueId >= 0 && !IsFreshValue(valueId))
+    {
+        const auto &source = N(valueId);
+        const auto *variable = source.kind == MNode::Var ? FindIn(source.module, source.s) : nullptr;
+        if (!variable || keep.count(variable->emitted) == 0u)
+            return Fail("#NonCopyable opcode 禁止复制返回借用值，请显式移动拥有值"), Bad();
+    }
     const simple_ast::NodePtr value = LowerValueForType(valueId, target);
     if (IsImplicitConversionValue(valueId, target)) return TakeExpressionTempValue(value, target);
-    if (IsRuntimeArray(target))
+    if (target && target->kind == MType::Array)
     {
         if (IsFreshValue(valueId)) return TakeExpressionTempValue(value, target);
         const auto &source = N(valueId);
@@ -1420,7 +1461,7 @@ simple_ast::NodePtr MaterializeReturnStringValue(int valueId, const std::shared_
     }
     if (target && IsObjectLike(target) && IsFreshValue(valueId))
         return TakeExpressionTempValue(value, target);
-    if (!target || target->kind != MType::String) return value;
+    if (!target || !IsStandardOpcode(target, "String")) return value;
     if (valueId < 0) return value;
     int sourceId = valueId;
     while (N(sourceId).kind == MNode::Cast) sourceId = N(sourceId).kids[0];
@@ -1433,8 +1474,7 @@ simple_ast::NodePtr MaterializeReturnStringValue(int valueId, const std::shared_
         if (found != nullptr && keep.count(found->emitted) != 0u) return value; /* 所有权转移 */
     }
     if (IsFreshValue(valueId) || IsImplicitConversionValue(valueId, target)) return TakeExpressionTempValue(value, target);
-    return simple_ast::Node::call("__vm_str_sub", { "__magel_s", "__magel_a", "__magel_b" },
-                                  { value, simple_ast::Node::i(0), simple_ast::Node::i(-1) });
+    return simple_ast::Node::call(ObjectCopyFunction(target), { "value" }, { value });
 }
 
 /**
@@ -1480,6 +1520,8 @@ simple_ast::NodePtr DeepCopyStructValue(const simple_ast::NodePtr &dst,
                                         const simple_ast::NodePtr &src,
                                         const std::shared_ptr<MType> &type)
 {
+    if (HasNonCopyableValue(type))
+        return Fail("聚合包含 #NonCopyable opcode，禁止复制，请显式移动或使用引用"), Bad();
     if (!AggregateNeedsDeepCopy(type)) return CopyStructValue(dst, src, type);
     g_needsAggregateCopy.insert(type->name);
     return simple_ast::Node::block({ simple_ast::Node::exprStmt(simple_ast::Node::call(
@@ -1490,12 +1532,14 @@ simple_ast::NodePtr DeepCopyStructValue(const simple_ast::NodePtr &dst,
 /**
  * @brief 将数组复制到新分配的带长度存储，逐项复制拥有资源。
  * @param source 源数组表达式，整个复制过程仅求值一次。
- * @param type 包含元素布局的运行时数组类型。
+ * @param type 包含元素布局的数组类型，定长值与开放长度值共用长度头。
  * @return 保存复制循环和独立结果句柄的序列表达式。
  * @note 沿用内存读取检查、数组分配溢出检查与聚合深复制，不复制宿主机器地址。
  */
 simple_ast::NodePtr CopyRuntimeArrayValue(const simple_ast::NodePtr &source, const std::shared_ptr<MType> &type)
 {
+    if (HasNonCopyableValue(type))
+        return Fail("数组包含 #NonCopyable opcode，禁止复制，请显式移动或使用引用"), Bad();
     using simple_ast::Node;
     const auto input = AllocateName("__magel_array_copy_source");
     const auto length = AllocateName("__magel_array_copy_length");
@@ -1507,11 +1551,14 @@ simple_ast::NodePtr CopyRuntimeArrayValue(const simple_ast::NodePtr &source, con
     const int stride = ElementBytes(element);
     const auto from = Node::offset(Node::var(input), Node::var(index), stride);
     const auto into = Node::offset(Node::var(result), Node::var(index), stride);
+    int fixedCount = 1;
+    for (const int dimension : type->dims) fixedCount *= dimension;
+    const auto countValue = IsRuntimeArray(type) ? Node::loadInt(Node::binary("-", Node::var(input), Node::i(8))) : Node::i(fixedCount);
     g_usesNewArray = true;
     Memory::Vector<simple_ast::NodePtr> out{
         Node::declare(input, simple_ast::Type::i64()), Node::assign(input, source),
         Node::declare(length, simple_ast::Type::i64()),
-        Node::assign(length, Node::loadInt(Node::binary("-", Node::var(input), Node::i(8)))),
+        Node::assign(length, countValue),
         Node::declare(result, LowerType(type, result)),
         Node::assign(result, Node::call("__magel_new_array", { "__magel_len", "__magel_stride" }, { Node::var(length), Node::i(stride) })),
         Node::declare(index, simple_ast::Type::i64()), Node::assign(index, Node::i(0)),
@@ -1521,12 +1568,12 @@ simple_ast::NodePtr CopyRuntimeArrayValue(const simple_ast::NodePtr &source, con
         out.push_back(DeepCopyStructValue(into, from, element));
     else
     {
-        auto value = element->kind == MType::Char ? Node::call("__vm_char_load", { "address" }, { from }) : Node::loadFrom(from, LowerType(element, input));
-        if (element->kind == MType::String)
+        auto value = Node::loadFrom(from, LowerType(element, input));
+        if (IsStandardOpcode(element, "String"))
             value = Node::call("__vm_str_sub", { "source", "start", "end" }, { value, Node::i(0), Node::i(-1) });
         else if (IsObjectLike(element))
             value = Node::call(ObjectCopyFunction(element), { "value" }, { value });
-        out.push_back(element->kind == MType::Char ? Node::exprStmt(Node::call("__vm_char_store", { "address", "value" }, { into, value })) : Node::storeAt(into, value, LowerType(element, result)));
+        out.push_back(Node::storeAt(into, value, LowerType(element, result)));
     }
     out.push_back(Node::assign(index, Node::binary("+", Node::var(index), Node::i(1))));
     out.push_back(Node::jump(loop));
@@ -1673,13 +1720,11 @@ bool IsFreshValue(int exprId)
                  * 仍按形态当转发（保守，宁可不复制也不误复制）。
                  */
                 const MNode &argument = N(callArgs[0]);
-                const MType::Kind wanted =
-                    (calleeNode.s2 == "BigInteger") ? MType::BigInt : MType::BigFloat;
                 if (argument.kind == MNode::Var)
                 {
                     const MVar *found = FindIn(argument.module, argument.s);
                     if (found != nullptr && found->type)
-                        return found->type->kind != wanted;
+                        return !IsStandardOpcode(found->type, calleeNode.s2.c_str());
                 }
                 if (argument.kind == MNode::Member || argument.kind == MNode::Arrow || argument.kind == MNode::Index)
                     return false;
@@ -1696,9 +1741,9 @@ bool IsFreshValue(int exprId)
         return expr.type2 == 1 && (RawExprType(exprId)->kind != MType::Ptr || IsInterfacePointer(RawExprType(exprId))) && !IsEnumType(ExprType(exprId));
     case MNode::BigIntCtor:
         /* bint(整数/文本/浮点) 会建新对象；bint(已有 bint) 只是转发旧句柄。 */
-        return !expr.kids.empty() && ExprType(expr.kids[0])->kind != MType::BigInt;
+        return !expr.kids.empty() && !IsStandardOpcode(ExprType(expr.kids[0]), "BigInteger");
     case MNode::BigFloatCtor:
-        return !expr.kids.empty() && ExprType(expr.kids[0])->kind != MType::BigFloat;
+        return !expr.kids.empty() && !IsStandardOpcode(ExprType(expr.kids[0]), "BigDecimal");
     case MNode::Index:
     {
         /* 容器的 `v[i]` / `m[k]`：字符串和运行期对象元素取出来都是**新造的副本**，
@@ -1711,7 +1756,7 @@ bool IsFreshValue(int exprId)
             return RawExprType(exprId)->kind != MType::Ptr || IsInterfacePointer(RawExprType(exprId));
         if (!IsContainer(base)) return false;
         const std::shared_ptr<MType> result = ExprType(exprId);
-        return result && (result->kind == MType::String || IsObjectLike(result));
+        return result && (IsStandardOpcode(result, "String") || IsObjectLike(result));
     }
     case MNode::Try:
     {
@@ -1719,7 +1764,7 @@ bool IsFreshValue(int exprId)
          * 所有权跟着表达式走，所以算"当场造出来的"。结构体载荷仍是源聚合里的别名。 */
         const std::shared_ptr<MType> result = ExprType(exprId);
         if (RawExprType(exprId)->kind == MType::Ptr && !IsInterfacePointer(RawExprType(exprId))) return false;
-        return result && (result->kind == MType::String || IsObjectLike(result) || (result->kind == MType::Struct && OwnedPropagation(exprId)));
+        return result && (IsStandardOpcode(result, "String") || IsObjectLike(result) || (result->kind == MType::Struct && OwnedPropagation(exprId)));
     }
     case MNode::Un:
     {
@@ -1729,7 +1774,7 @@ bool IsFreshValue(int exprId)
          * 和二元算术一样要有主；不当"当场造出来的"就会漏在对象表里。 */
         if (expr.s != "-") return false;
         const std::shared_ptr<MType> type = ExprType(exprId);
-        return type && (type->kind == MType::BigInt || type->kind == MType::BigFloat);
+        return type && (IsStandardOpcode(type, "BigInteger") || IsStandardOpcode(type, "BigDecimal"));
     }
     case MNode::Bin:
     {
@@ -1740,12 +1785,12 @@ bool IsFreshValue(int exprId)
         const std::shared_ptr<MType> type = ExprType(exprId);
         if (!type) return false;
         if (type->kind == MType::Struct) return IsFreshAggregate(exprId);
-        if (type->kind == MType::String) return expr.s == "+";
-        if (type->kind == MType::BigInt)
+        if (IsStandardOpcode(type, "String")) return expr.s == "+";
+        if (IsStandardOpcode(type, "BigInteger"))
         {
             return expr.s == "+" || expr.s == "-" || expr.s == "*" || expr.s == "/" || expr.s == "%";
         }
-        if (type->kind == MType::BigFloat)
+        if (IsStandardOpcode(type, "BigDecimal"))
         {
             return expr.s == "+" || expr.s == "-" || expr.s == "*" || expr.s == "/";
         }
@@ -1770,6 +1815,8 @@ bool IsFreshValue(int exprId)
  */
 simple_ast::NodePtr MaterializeObjectValue(int valueId, const std::shared_ptr<MType> &target)
 {
+    if (OpcodeNonCopyable(target) && valueId >= 0 && !IsFreshValue(valueId))
+        return Fail("#NonCopyable opcode 禁止复制初始化或赋值，请显式移动或使用引用"), Bad();
     if (!IsObjectLike(target)) return LowerValueForType(valueId, target);
     if (IsFreshValue(valueId) || IsImplicitConversionValue(valueId, target))
         return TakeExpressionTempValue(LowerValueForType(valueId, target), target);

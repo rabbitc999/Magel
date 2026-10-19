@@ -6,7 +6,7 @@
 `STACKVM_EMBEDDED` 选择板端适配。CMake 提供同名选项，板端组合见 [板端说明](../stackvm_mcu/README.md)。
 
 > **这份是 magel 自带的副本**：源在 `library/stackvm`，magel 与 `magel-emit` 用这里的
-> 一份（大整数走 `magel/library/bignum`）。两份是**独立维护**的 —— 改了一边不会自动同步，
+> 一份；标准对象后端由宿主胶水单独维护。两份是**独立维护**的 —— 改了一边不会自动同步，
 > 要一起改就在两边各改一次。
 
 把 `library/transfer` 那套**四元式**编译成**栈指令**并执行：`PUSH / LOAD / STORE /
@@ -104,26 +104,23 @@ VM 不擅自选择平台时钟，因此桌面和嵌入式宿主可以使用各�
 
 ### 可移植宿主胶水
 
-文件系统不写死在解释器核心。`stackvm_glue.hpp` 只定义 `FileHandle` / `FileApi` 接口，
-`stackvm_glue.cpp` 提供基于 `std::fstream` 的桌面默认实现。嵌入式宿主实现这两个接口后，
-在运行前注入即可：
+VM 不声明具体标准对象的类型、方法或宿主接口。胶水通过 `NativeCallContext::makeNativeRecord`
+创建通用对象壳，通过描述符提供独立复制、销毁及可选文本转换；VM 只搬运句柄和维护生命周期。
+没有 clone 回调的记录不能复制，传输快照也不能共享可变记录。
+
+宿主可通过 `NativeServices` 注入一组不透明服务：
 
 ```cpp
-class BoardFileApi final : public stackvm::FileApi {
-public:
-    std::shared_ptr<stackvm::FileHandle> open(const std::string& path,
-                                               const std::string& mode,
-                                               std::string& error) override;
-};
-
-BoardFileApi files;
+stackvm::NativeServices services;
+services["application.adapter"] = &adapter;
 stackvm::Machine machine;
-machine.setFileApi(&files);
-stackvm::RunResult result = machine.run(program);
+machine.setHostServices(&services);
 ```
 
-接口对象和它返回的文件句柄必须至少存活到 `run()` 返回。不能提供文件系统的固件也可以
-注入一个总是返回错误的实现，使 `std::lang::fileOpen` 正常得到 `Result::Err`，而不是依赖桌面 API。
+胶水用 `context.hostService("application.adapter")` 取回适配器；VM 不解释服务身份或指针。
+服务表和适配器必须覆盖运行时及子线程的生命周期。文件系统协议与桌面实现分别位于
+`source/glue/file_api.hpp` 和 `source/glue/desktop_file_api.hpp`；板端只需替换文件胶水的适配器，
+核心 VM 不包含该接口，也不链接文件或大数后端。
 
 Magel 的 `std::lang::Parse`、`std::lang::PathString` 与 `std::lang::Memory` 由 StackVM 的受控原生函数实现：解析
 只接受完整文本，路径处理不触碰文件系统，内存层只返回统计值和 Arena 分配出的字节地址。
@@ -312,24 +309,20 @@ front end 在每次下标之前发一条陷阱指令，越界就**终止运行**
 | `__vm_str_fmt` / `__vm_print` | 按格式串拼出新串 / 追加到文本输出（`snprintf` 排版） |
 | `__vm_read_text` | 把下一项输入原文读成堆串 |
 | `__vm_memcpy` / `__vm_memset` | 字节级搬 / 填 |
-| `__vm_file_open/_read/_write/_eof/_close` | 文件资源句柄：打开、读一行、写入、EOF、关闭 |
-| `__vm_proc_run/_read/_close/_system` | 宿主进程：stdout 管道读一行 / 关闭取退出码，或直接 `system` |
 
 于是"字符串"这件事在虚拟机里是**一串真字节 + C++ 实现**：语言侧不写逐字节循环，
 标准输出的宽度 / 精度、拼接、切片与格式化都不用前端逐指令展开。
 
-### 运行期对象表：大整数、容器、装箱与资源
+### 运行期对象表：容器、装箱与不透明宿主记录
 
 除"地址 + 堆"之外，虚拟机还维护一张**对象表**（`ObjectStore`：句柄 → C++ 对象）：
 
 | 对象 | 里面是什么 | 谁在做 |
 | --- | --- | --- |
-| `bint` | `bigint::BigInt`（任意精度整数） | [`library/big_number`](../../library/big_number/README.md)，加 / 减 / 乘 / 除 / 取余都在那边 |
-| `bfloat` | `bigfloat::BigFloat`（任意精度十进制浮点） | 尾数复用 `BigInt`，四则与比较保持十进制语义 |
 | `vec<T>` | `std::vector<ObjectValue>` | 本库（有序表：增删改查 / 按下标访问） |
 | `set<T>` / `map<K,V>` | `std::lang::map<ObjectKey, ObjectValue>` | 本库（按键排序，元素不重复 / 键值对） |
 | `obj` | 一个装箱值 + 类型号 | 本库（给前端做 `nameof` / 泛型式派发） |
-| `file` / `proc` | `std::fstream` / `popen` 管道 | 本库（宿主文件 IO 与进程 stdout 管道；资源释放时自动关闭） |
+| `NativeRecord` | 不透明宿主记录及复制、销毁回调 | 核心只管理壳与存活；具体记录及操作由宿主胶水实现 |
 
 - 句柄取一个**很高的区间**（`kObjectHandleBase = 2^62` 起），与堆地址、数据区地址分开：
   `(free, …)` / `(drop, …)` 一眼能分出"这是对象句柄还是内存地址"；
@@ -342,24 +335,9 @@ front end 在每次下标之前发一条陷阱指令，越界就**终止运行**
   显式指针字段仅复制地址。取出的结构体临时块在本次 `run()` 结束时释放。
 - `file` / `proc` 是资源句柄，不做对象值语义复制；显式 close 后句柄仍可被释放，释放时会跳过已经关闭的宿主资源。
 
-**大整数是附加功能**，编译期开关 `STACKVM_WITH_BIGINT`（见 `stackvm.hpp`，缺省 1）：
-
-```sh
-make -C library/stackvm                        # 缺省：带上大整数（会一起编 bigint.o 进归档）
-make -C library/stackvm STACKVM_WITH_BIGINT=0  # 轻量构建：不依赖 big_number
-```
-
-关掉之后 `__vm_bint_*` 那几个名字还在表里，但一调就报
-"这个构建没有把大整数编进来（附加功能）"——比"函数入口不存在"清楚。宿主侧想按构建
-分支的话用 `stackvm::kBigIntEnabled`（编译期常量）。
-
-大浮点另有 `STACKVM_WITH_BIGFLOAT`，缺省跟随 `STACKVM_WITH_BIGINT`。由于尾数依赖
-`BigInt`，不能在 `STACKVM_WITH_BIGINT=0` 时单独开启：
-
-```sh
-make -C library/stackvm STACKVM_WITH_BIGFLOAT=0
-make -C library/stackvm STACKVM_WITH_BIGINT=0 STACKVM_WITH_BIGFLOAT=0
-```
+大数与宿主资源由 `source/glue/` 的普通注册表绑定提供。后端裁剪在胶水层选择；
+VM 核心没有这些能力开关、类型专用字段或原生操作名。独立桌面命令行宿主注册标准记录，
+纯 VM 库只包含共享执行核心。
 
 ### 数学库边界
 
@@ -591,8 +569,6 @@ make -C library/stackvm check      # 单元测试 + 示例套件 + 反汇编演�
 ```text
 library/stackvm/
 ├── stackvm.hpp / stackvm.cpp   四元式解析、组装、二进制程序、栈式执行、四元式化简
-├── stackvm_glue.hpp            可移植的宿主文件接口
-├── stackvm_glue.cpp            基于 std::fstream 的桌面默认胶水
 ├── main.cpp                    命令行工具（compile / run / disasm / check）
 ├── test_stackvm.cpp            单元测试 + 示例套件
 ├── examples/                   与 library/transfer/core/example 同一批 .quad

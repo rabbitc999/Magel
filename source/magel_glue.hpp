@@ -1269,6 +1269,11 @@ public:
         return declarations_.text();
     }
 
+    /**
+     * @brief 取得可直接注册通用记录协议的原生表。
+     * @return 当前注册表持有的原生函数表。
+     */
+    [[nodiscard]] stackvm::NativeRegistry &native() { return native_; }
     [[nodiscard]] const stackvm::NativeRegistry &native() const { return native_; }
 
     /**

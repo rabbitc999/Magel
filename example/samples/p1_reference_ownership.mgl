@@ -50,7 +50,10 @@ struct Factory {
     static Set<int64> echoSet(Set<int64> input) { return input; }
 };
 int64 main() {
-    for (int64 round = 0; round < 3; round = round + 1) {
+    {
+        int64 round = 0;
+        while (round < 3) {
+
         String text = "abc";
         char mut& head = &text[0];
         char const& tail = &text[2];
@@ -148,6 +151,9 @@ int64 main() {
         assert(reals[0] == 2.0);
         List<String> const& readWords = &words;
         for (String item in readWords) { assert(len(item) > 0); }
+    
+            round = round + 1;
+        }
     }
     globalValues.add(1);
     globalValue.number = 1; globalValue.text = "abc"; globalValue.values = globalValues;

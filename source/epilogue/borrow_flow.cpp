@@ -219,6 +219,15 @@ struct MBorrowFlowBuilder
         if (id < 0) return next;
         const auto node = N(id);
         if (node.kind == MNode::Index) return address(node.kids[0], expression(node.kids[1], next));
+        if (node.kind == MNode::Un && node.s == "&" && !node.kids.empty())
+        {
+            const auto found = capture.types.find(id);
+            const auto target = found != capture.types.end() && found->second && found->second->kind == MType::Ptr ? found->second->elem : nullptr;
+            // 对拥有型胶水值建立借用也要验证源仍存活，不能用取地址绕过移动限制。
+            if (target && (FindOpcodeDefinition(target) || HasNonCopyableValue(target)))
+                next = add(MBorrowFlowNode::Read, place(node.kids[0]), {}, next, id);
+            return address(node.kids[0], next);
+        }
         if ((node.kind == MNode::Member || node.kind == MNode::Arrow || node.kind == MNode::Un || node.kind == MNode::Cast) && !node.kids.empty())
             return address(node.kids[0], next);
         if (node.kind == MNode::Call) return expression(id, next);

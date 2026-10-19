@@ -46,7 +46,13 @@ void inorder(Option<Tree mut&> root,List<int64> mut& result){
     if(root.isNone()){return;}
     Tree mut& node=root.unwrap();
     inorder(node.left,result);
-    for(int64 i=0;i<node.copies;i++){result.push(node.value);}
+    {
+        int64 i=0;
+        while (i<node.copies) {
+result.push(node.value);
+            i++;
+        }
+    }
     inorder(node.right,result);
 }
 void destroyTree(Option<Tree mut&> root){
@@ -60,17 +66,41 @@ void edge(Graph mut& graph,int64 from,int64 target){
 void dfs(Graph const& graph,int64 vertex,List<int64> mut& seen){
     if(seen[vertex]!=0){return;}
     seen[vertex]=1;
-    for(int64 e=graph.head[vertex];e!=-1;e=graph.next[e]){dfs(graph,graph.to[e],seen);}
+    {
+        int64 e=graph.head[vertex];
+        while (e!=-1) {
+dfs(graph,graph.to[e],seen);
+            e=graph.next[e];
+        }
+    }
 }
 List<int64> bfs(Graph const& graph,int64 start){
     List<int64> distance,queue;
-    for(int64 i=0;i<graph.head.len();i++){distance.push(-1);}
+    {
+        int64 i=0;
+        while (i<graph.head.len()) {
+distance.push(-1);
+            i++;
+        }
+    }
     queue.push(start);distance[start]=0;
-    for(int64 cursor=0;cursor<queue.len();cursor++){
+    {
+        int64 cursor=0;
+        while (cursor<queue.len()) {
+
         int64 vertex=queue[cursor];
-        for(int64 e=graph.head[vertex];e!=-1;e=graph.next[e]){
+        {
+            int64 e=graph.head[vertex];
+            while (e!=-1) {
+
             int64 target=graph.to[e];
             if(distance[target]==-1){distance[target]=distance[vertex]+1;queue.push(target);}
+        
+                e=graph.next[e];
+            }
+        }
+    
+            cursor++;
         }
     }
     return distance;
@@ -78,17 +108,29 @@ List<int64> bfs(Graph const& graph,int64 start){
 int64 main(){
     int64 n=std::lang::inputInt(),seed=std::lang::inputInt();
     List<int64> values;Option<Link mut&> head=Option<Link mut&>::None;Option<Tree mut&> tree=Option<Tree mut&>::None;
-    for(int64 i=0;i<n;i++){
+    {
+        int64 i=0;
+        while (i<n) {
+
         int64 value=random(&seed)%1000;values.push(value);
         Link mut& node = heap Link;node.value=value;node.next=head;head=Option<Link mut&>::Value(node);
         if(tree.isNone()){Tree mut& root=makeTree(value);tree=Option<Tree mut&>::Value(root);}
         else {insert(tree.unwrap(),value);}
+    
+            i++;
+        }
     }
     head=reverse(head);
     Option<Link mut&> cursor=head;
-    for(int64 i=0;i<n;i++){
+    {
+        int64 i=0;
+        while (i<n) {
+
         std::lang::assert(cursor.isValue());Link mut& node=cursor.unwrap();
         std::lang::assert(node.value==values[i]);cursor=node.next;
+    
+            i++;
+        }
     }
     std::lang::assert(cursor.isNone());
     cursor=head;
@@ -98,25 +140,61 @@ int64 main(){
     List<int64> sorted;inorder(tree,&sorted);
     std::lang::assert(sorted.len()==n);
     int64 sum=0;
-    for(int64 i=0;i<n;i++){
+    {
+        int64 i=0;
+        while (i<n) {
+
         if(i>0){std::lang::assert(sorted[i-1]<=sorted[i]);}
         sum+=sorted[i];
+    
+            i++;
+        }
     }
     destroyTree(tree);
     std::lang::assert(listDrops==n && treeDrops==treeAllocations);
     Graph graph;
-    for(int64 i=0;i<n;i++){graph.head.push(-1);}
-    for(int64 i=0;i<n*3;i++){
+    {
+        int64 i=0;
+        while (i<n) {
+graph.head.push(-1);
+            i++;
+        }
+    }
+    {
+        int64 i=0;
+        while (i<n*3) {
+
         int64 from=random(&seed)%n,target=random(&seed)%n;
         edge(&graph,from,target);
+    
+            i++;
+        }
     }
     int64 checksum=0;
-    for(int64 start=0;start<n;start++){
-        List<int64> reached;for(int64 i=0;i<n;i++){reached.push(0);}
+    {
+        int64 start=0;
+        while (start<n) {
+
+        List<int64> reached;{
+            int64 i=0;
+            while (i<n) {
+reached.push(0);
+                i++;
+            }
+        }
         dfs(&graph,start,&reached);List<int64> distances=bfs(&graph,start);
-        for(int64 i=0;i<n;i++){
+        {
+            int64 i=0;
+            while (i<n) {
+
             std::lang::assert((reached[i]!=0)==(distances[i]>=0));
             checksum+=(distances[i]+1)*(start+1)*(i+1);
+        
+                i++;
+            }
+        }
+    
+            start++;
         }
     }
     std::lang::println("{} {} {} {}",sum,checksum,listDrops,treeDrops);return 0;

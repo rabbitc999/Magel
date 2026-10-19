@@ -67,11 +67,23 @@ int64 main() {
 
     /* 5. 大津法：左半黑右半白的图，阈值应落在中间。 */
     Image binarySource = Image::make(4, 2).unwrap();
-    for (int64 y = 0; y < 2; y = y + 1) {
-        for (int64 x = 0; x < 4; x = x + 1) {
+    {
+        int64 y = 0;
+        while (y < 2) {
+
+        {
+            int64 x = 0;
+            while (x < 4) {
+
             int64 value = 20;
             if (x >= 2) { value = 230; }
             binarySource.setPixel(x, y, value, value, value, 255);
+        
+                x = x + 1;
+            }
+        }
+    
+            y = y + 1;
         }
     }
     int64 threshold = binarySource.otsuThreshold().unwrap();

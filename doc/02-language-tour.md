@@ -60,7 +60,13 @@ int64 classify(int64 value) {
 }
 int64 main() {
     int64 sum = 0;
-    for (int64 i = 1; i <= 5; i = i + 1) { sum = sum + i; }
+    {
+        int64 i = 1;
+        while (i <= 5) {
+ sum = sum + i; 
+            i = i + 1;
+        }
+    }
     println("sum={} classify(7)={}", sum, classify(7));
     return 0;
 }
@@ -70,7 +76,7 @@ int64 main() {
 sum=15 classify(7)=1
 ```
 
-`if / elif / else`、`while`、`for(init; cond; step)` 都在。另外两种循环形态：
+条件使用 `if / elif / else`，循环使用 `while`、`for-in` 和 `loop`。后两种形态如下：
 
 - `loop { … yield value; }` —— 带值跳出，`yield` 后面可以跟表达式；
 - `for (T item in collection) { … }` —— 遍历容器。
@@ -288,7 +294,13 @@ int64 main() {
     fixed[1] = 2;
     fixed[2] = 3;
     int64 total = 0;
-    for (int64 i = 0; i < 3; i = i + 1) { total = total + fixed[i]; }
+    {
+        int64 i = 0;
+        while (i < 3) {
+ total = total + fixed[i]; 
+            i = i + 1;
+        }
+    }
     int64 runtime[] = new[4];
     runtime[0] = 10;
     println("fixed={} runtime0={}", total, runtime[0]);

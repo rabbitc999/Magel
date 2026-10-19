@@ -107,9 +107,15 @@ int64 main() {
         assert(original.text == "copy" && copy.text == "Copy");
     }
     assert(OwnedNumber::drops == 4);
-    for (int64 i = 0; i < 3; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < 3) {
+
         int64 observed = OwnedNumber::create("loop", i).read();
         assert(observed == i && OwnedNumber::drops == i + 5);
+    
+            i = i + 1;
+        }
     }
     bool skipped = false && OwnedNumber::create("skipped", 0).read() > 0;
     assert(!skipped && OwnedNumber::drops == 7);

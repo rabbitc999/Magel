@@ -204,7 +204,7 @@ void MarkOwnedArray(const Memory::String &emitted, const std::shared_ptr<MType> 
     int count = 1;
     for (const int dim : type->dims) count *= dim;
     g_arrayFixedCounts[emitted] = count;
-    MarkOwned(emitted, false);
+    MarkOwned(emitted, true);
 }
 
 /**

@@ -136,10 +136,16 @@ int64 charCount(String text) {
 /** @brief 整串是否全是 ASCII 数字（空串不算）。 */
 bool isDigits(String text) {
     if (len(text) == 0) { return false; }
-    for (int64 i = 0; i < len(text); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < len(text)) {
+
         int64 byte = (int64)text[i];
         /* 多字节字符的首字节 >= 192，第一个字节就判掉，不会读进续字节。 */
         if (byte < 48 || byte > 57) { return false; }
+    
+            i = i + 1;
+        }
     }
     return true;
 }
@@ -172,10 +178,16 @@ bool validPassword(String text) {
 bool looksLikeDate(String text) {
     if (len(text) != 10) { return false; }
     int64 dash = 0;
-    for (int64 i = 0; i < len(text); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < len(text)) {
+
         int64 byte = (int64)text[i];
         if (byte == 45) { dash = dash + 1; }
         elif (byte < 48 || byte > 57) { return false; }
+    
+            i = i + 1;
+        }
     }
     return dash == 2;
 }
@@ -201,8 +213,14 @@ Action action(String key, String label, int64 needLevel) {
 /** @brief 按当前用户等级过滤出可见菜单项（等价 UserUtils.canUseOperator 的 LOOK 判定）。 */
 List<Action> visibleActions(List<Action> all, int64 level) {
     List<Action> out;
-    for (int64 i = 0; i < len(all); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < len(all)) {
+
         if (level >= all[i].needLevel) { out.push(all[i]); }
+    
+            i = i + 1;
+        }
     }
     return out;
 }
@@ -357,9 +375,15 @@ struct App {
                 while (std::io::fileEof(handle) == 0) {
                     String line = std::io::fileRead(handle);
                     List<String> parts = std::text::Text::split(line, " ");
-                    for (int64 i = 0; i < len(parts); i = i + 1) {
+                    {
+                        int64 i = 0;
+                        while (i < len(parts)) {
+
                         String token = std::text::Text::trim(parts[i]);
                         if (len(token) > 0) { self.answers.push(token); }
+                    
+                            i = i + 1;
+                        }
                     }
                 }
                 std::io::fileClose(handle);
@@ -558,8 +582,14 @@ struct App {
         self.bar();
         println("              {}", heading);
         self.bar();
-        for (int64 i = 0; i < len(actions); i = i + 1) {
+        {
+            int64 i = 0;
+            while (i < len(actions)) {
+
             println("          {}. {}", i + 1, actions[i].label);
+        
+                i = i + 1;
+            }
         }
         println("          0. 返回");
         self.bar();
@@ -607,8 +637,14 @@ struct App {
             println("        当前用户：{}（{}）", self.userName,
             permissionLabel(self.permission));
             self.bar();
-            for (int64 i = 0; i < len(items); i = i + 1) {
+            {
+                int64 i = 0;
+                while (i < len(items)) {
+
                 println("          {}. {}", i + 1, items[i].label);
+            
+                    i = i + 1;
+                }
             }
             println("          0. 退出系统");
             self.bar();
@@ -1501,7 +1537,10 @@ int64 main(List<String> arguments) {
     bool forceInit = false;
     int32 port = (int32)3306;
 
-    for (int64 i = 0; i < len(arguments); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < len(arguments)) {
+
         String argument = arguments[i];
         bool hasValue = i + 1 < len(arguments);
         if (argument == "--answers" && hasValue) { answersPath = arguments[i + 1]; i = i + 1; }
@@ -1513,6 +1552,9 @@ int64 main(List<String> arguments) {
         elif (argument == "--reinit") { forceInit = true; }
         elif (argument == "--port" && hasValue) {
             port = (int32)std::parse::Parse::parseInt64(arguments[i + 1]).unwrapOr(3306);
+            i = i + 1;
+        }
+    
             i = i + 1;
         }
     }

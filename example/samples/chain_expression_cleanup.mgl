@@ -34,7 +34,10 @@ List<int64> mappedLife(List<int64> values) {
 }
 struct LifeBox { List<int64> values; };
 int64 main() {
-    for (int64 i = 0; i < 5; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < 5) {
+
         lifeTrace = 0;
         int64 before = lifeDrops;
         int64 size = makeLife().next().read();
@@ -46,6 +49,9 @@ int64 main() {
         assert((skipped) == (false));
         assert((lifeDrops) == (before + 2));
         assert((live) == ("still alive"));
+    
+            i = i + 1;
+        }
     }
     lifeTrace = 0;
     {
@@ -81,7 +87,10 @@ int64 main() {
     assert((lifeTrace) == (1));
     List<int64> numbers;
     numbers.push(3);
-    for (int64 i = 0; i < 4; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < 4) {
+
         List<int64> mapped = mappedLife(numbers);
         assert((mapped[0]) == (6));
         mapped = std::algorithms::mapValue<int64>(numbers, doubleLifeNumber);
@@ -92,6 +101,9 @@ int64 main() {
         auto moved = std::algorithms::mapValue<int64>(numbers, doubleLifeNumber).intoIter();
         List<int64> saved = moved.collect();
         assert((saved[0]) == (6));
+    
+            i = i + 1;
+        }
     }
     println("chain expression cleanup OK");
     return 0;

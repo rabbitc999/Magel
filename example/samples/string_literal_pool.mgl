@@ -1,0 +1,43 @@
+String repeatedText() {
+    return "literal-pool-data-你好";
+}
+
+void modifyCopy(String value) {
+    value[0] = 'P';
+    assert(value[0] == 'P');
+}
+
+String returnCopy(String value) {
+    value[0] = 'R';
+    return value;
+}
+
+int64 main() {
+    String first = "literal-pool-data-你好";
+    String second = "literal-pool-data-你好";
+    String returned = repeatedText();
+    char const& firstByte = &"literal-pool-data-你好"[0];
+    assert(firstByte == 'l');
+    assert(first == second);
+    assert(returned == second);
+    first[0] = 'X';
+    assert(first != second);
+    assert(second[0] == 'l');
+    assert(returned[0] == 'l');
+    String assigned = "old";
+    assigned = second;
+    assigned[0] = 'A';
+    assert(second[0] == 'l');
+    modifyCopy(second);
+    assert(second[0] == 'l');
+    String parameterResult = returnCopy(second);
+    assert(parameterResult[0] == 'R');
+    assert(second[0] == 'l');
+    parameterResult[1] = 'E';
+    assert(second[1] == 'i');
+    assert(len("你好") == 6);
+    assert(len("") == 0);
+    assert(len("") == 0);
+    println("string literal pool OK");
+    return 0;
+}

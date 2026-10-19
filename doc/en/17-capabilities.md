@@ -1,5 +1,7 @@
 # 17 Current capabilities and implementation limits
 
+Loops use `while`, `loop`, and `for (... in ...)`. Both `for-in` and `while` support value expressions with `else` and `yield`. List literals use `[a, b, c]`; Set literals use `{a, b, c}`. Intervals use `std::lang::range(a, b)` (half open) and `rangeEq(a, b)` (inclusive). Integers and char support intervals directly; custom iteration types implement `NextValue<T>`. Interval match patterns accept integers and char, while ordinary custom value patterns use `Equal<T>`.
+
 [Documentation index](README.md) · [中文](../17-capabilities.md)
 
 This page describes the current checkout. Read the version from [`VERSION`](../../VERSION) and
@@ -30,6 +32,10 @@ Owned values have deterministic cleanup without GC. References, host resources a
 references retain their individual contracts. Manually allocated storage must be released as specified.
 Static checking does not cover arbitrary raw memory, external host behavior or every concurrent invalidation.
 String indexing and slicing use UTF-8 bytes; use `std::utf8` for code-point operations.
+Ordinary string literals share generated data by byte contents and cannot be modified or mutably borrowed; independent String values retain value copying.
+Runtime array parameters `T[]` copy the length and elements. `T[] &` / `T[] const&`
+borrow read-only arrays; `T[] mut&` borrows a mutable array. Array references retain
+element layout, runtime length and the source lifetime.
 See the [language reference](04-language-reference.md), [core concepts](03-core-concepts.md) and
 [move rules](23-ownership-move.md).
 
@@ -104,3 +110,10 @@ Tool interfaces support Chinese and English; unsupported system locales fall bac
 
 
 API manuals require `magel man api`; omitting `api` produces a usage error. `magel man macro` displays embedded macro help.
+
+`opcode T { new = create; drop = destroy; copy = clone; };` declares an opaque glue object.
+Copies call the declared glue function. `#NonCopyable` disables copying and omits copy.
+A struct may declare multiple opcode fields. BigInteger, BigDecimal, File and Process
+records and operations reside in standard library glue; the VM core manages generic NativeRecord
+shells and a host service table. File and Process are noncopyable. Process is the public type name.
+Full String, List, Map and Set isolation remains unfinished.

@@ -79,7 +79,13 @@ struct Image : Drop {
         List<uint8> empty;
         image.pixels = empty;
         int64 total = width * height * 4;
-        for (int64 index = 0; index < total; index = index + 1) { image.pixels.push((uint8)0); }
+        {
+            int64 index = 0;
+            while (index < total) {
+ image.pixels.push((uint8)0); 
+                index = index + 1;
+            }
+        }
         return Result<Image, String>::Ok(image);
     }
 

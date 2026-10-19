@@ -1,14 +1,16 @@
+#ifndef MAGEL_DESKTOP_FILE_API_HPP
+#define MAGEL_DESKTOP_FILE_API_HPP
 /**
- * @file stackvm_glue.cpp
- * @brief StackVM 的桌面宿主胶水；嵌入式移植可用自己的 FileApi 替换本实现。
+ * @file desktop_file_api.hpp
+ * @brief 文件胶水的桌面宿主适配器；嵌入式移植可用自己的 FileApi 替换本实现。
  */
 
-#include "stackvm_glue.hpp"
+#include "file_api.hpp"
 
 #include <fstream>
 #include <algorithm>
 
-namespace stackvm
+namespace magel_file
 {
 namespace
 {
@@ -216,10 +218,12 @@ public:
  * @brief 取得当前平台默认的文件后端接口。
  * @retval 对应对象的引用。
  */
-FileApi &defaultFileApi()
+inline FileApi &defaultFileApi()
 {
     static DesktopFileApi api;
     return api;
 }
 
-}  // namespace stackvm
+}  // namespace magel_file
+
+#endif

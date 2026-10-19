@@ -8,13 +8,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 COMPILER = ROOT / ("magel.exe" if os.name == "nt" else "magel")
 
-SOURCE = """int64 main() {
-    int64 sum = 0;
-    for (int64 i = 1; i <= 5; i = i + 1) { sum = sum + i; }
-    std::lang::println("sum={}", sum);
-    return 0;
-}
-"""
+SOURCE = 'int64 main() {\n    int64 sum = 0;\n    {\n        int64 i = 1;\n        while (i <= 5) {\n sum = sum + i; \n            i = i + 1;\n        }\n    }\n    std::lang::println("sum={}", sum);\n    return 0;\n}\n'
 EXPECTED = "sum=15\n"
 
 
@@ -25,7 +19,14 @@ def run(args, success=True, cwd=ROOT, timeout=900):
     return result
 
 
+def executable_path(path):
+    """按宿主平台补全可执行文件扩展名，保留传给编译器的产物前缀。"""
+    path = Path(path)
+    return path.with_suffix(".exe") if os.name == "nt" and not path.suffix else path
+
+
 def run_exe(path, success=True):
+    path = executable_path(path)
     result = subprocess.run([str(path)], capture_output=True, text=True, encoding="utf-8",
                             errors="replace", timeout=120)
     assert (result.returncode == 0) == success, (path, result.returncode, result.stdout, result.stderr)
@@ -66,7 +67,7 @@ def main():
         # 3) AOT 可运行程序：--out 是 exe；默认删除中间文件（含统一工具清单）。
         vm = work / "progvm"
         run([COMPILER, "aot", source, "--out", vm, "--opt-level=0"], timeout=1800)
-        assert vm.exists()
+        assert executable_path(vm).exists()
         assert run_exe(vm).stdout == EXPECTED
         assert not (work / "progvm.quad").exists()
         assert not (work / ".magel-tool-manifest").exists()
@@ -79,7 +80,7 @@ def main():
         assert (work / "progkeep.quad").exists()
         assert (work / ".magel-tool-manifest").exists()
         run([COMPILER, "clear", "--out-dir", work])
-        assert kept.exists()
+        assert executable_path(kept).exists()
         assert user_file.read_text(encoding="utf-8") == "user\n"
         assert not (work / "progkeep.quad").exists()
         assert not (work / "progkeep.aot.cpp").exists()
@@ -90,22 +91,22 @@ def main():
         run([COMPILER, "aot", source, "--out", kept2, "--keep-intermediate", "--opt-level=0"], timeout=1800)
         assert (work / "progclean.quad").exists()
         run([COMPILER, "--clean", "--out-dir", work])
-        assert kept2.exists()
+        assert executable_path(kept2).exists()
         assert not (work / "progclean.quad").exists()
 
         # 5) AOT 可运行程序：输出与解释一致，默认清理中间文件。
         aot = work / "progaot"
         run([COMPILER, "aot", source, "--out", aot, "--opt-level=0"], timeout=1800)
-        assert aot.exists()
+        assert executable_path(aot).exists()
         assert run_exe(aot).stdout == EXPECTED
         assert not (work / "progaot.quad").exists()
         assert not (work / "progaot.aot.cpp").exists()
         # 默认不带调试信息；`--debug` 才写回调试信息表（产物里含 .quad 路径）。
-        assert b".quad" not in aot.read_bytes()
+        assert b".quad" not in executable_path(aot).read_bytes()
         aot_debug = work / "progaotdbg"
         run([COMPILER, "aot", source, "--out", aot_debug, "--opt-level=0", "--debug"], timeout=1800)
         assert run_exe(aot_debug).stdout == EXPECTED
-        assert b".quad" in aot_debug.read_bytes()
+        assert b".quad" in executable_path(aot_debug).read_bytes()
 
         # 6) magel run：项目缺省运行方式生效，命令行覆盖优先。
         project = work / "projvm"

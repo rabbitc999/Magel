@@ -319,7 +319,7 @@ int64 main()
 
 \section{不止能匹配枚举：标量也支持}
 
-\texttt{match} 也能直接匹配整数、浮点、\texttt{bool}，用常量或区间：
+\texttt{match} 也能匹配整数、\texttt{char}、浮点、\texttt{bool} 和 String。整数与 \texttt{char} 还能使用区间模式：
 
 \par
 \medskip
@@ -332,11 +332,11 @@ int64 grade(int64 score)
         {
             return 3;
         }
-        [90, 99] =>
+        std::lang::rangeEq(90, 99) =>
         {
             return 2;
         }
-        [60, 89] =>
+        std::lang::rangeEq(60, 89) =>
         {
             return 1;
         }
@@ -365,24 +365,20 @@ int64 main()
 \par
 \medskip
 
-区间仅支持两种写法：左闭右开 \texttt{[\allowbreak{}a,\allowbreak{} b)\allowbreak{}} 与闭区间 \texttt{[\allowbreak{}a,\allowbreak{} b]\allowbreak{}}。
+区间模式统一使用标准库调用，可以显式写出类型参数：
 
 \begin{center}
 \begin{tabular}{ll}
 \toprule
-写法 & 含义 \\
+模式 & 命中条件 \\
 \midrule
-\texttt{[\allowbreak{}a,\allowbreak{} b)\allowbreak{}} & \texttt{a <\allowbreak{}=\allowbreak{} x <\allowbreak{} b} \\
-\texttt{[\allowbreak{}a,\allowbreak{} b]\allowbreak{}} & \texttt{a <\allowbreak{}=\allowbreak{} x <\allowbreak{}=\allowbreak{} b} \\
+\texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}range<\allowbreak{}T>\allowbreak{}(\allowbreak{}a,\allowbreak{} b)\allowbreak{}} & \texttt{a <\allowbreak{}=\allowbreak{} x <\allowbreak{} b} \\
+\texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}range\allowbreak{}Eq<\allowbreak{}T>\allowbreak{}(\allowbreak{}a,\allowbreak{} b)\allowbreak{}} & \texttt{a <\allowbreak{}=\allowbreak{} x <\allowbreak{}=\allowbreak{} b} \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\begin{tip}{一个限制}
-标量分支只接受常量或区间。写变量、函数调用或者别的表达式会报「match 分支必须是整数 / 浮点 / bool 常量或区间模式」。想按「算出来的值」分支，就老老实实用 \texttt{if /\allowbreak{} elif}。
-\end{tip}
-
-这时候 \texttt{\_} 就是必需的——标量有无穷多取值，不可能列全。
+区间匹配只支持整数和 \texttt{char}，不接受浮点、String 或自定义类型的区间。实现 \texttt{Equal<\allowbreak{}T>\allowbreak{}} 的自定义类型可以使用普通值模式，编译器通过相等协议比较。需要对浮点或 String 判断上下界时，在分支守卫中写出比较条件。
 
 \subsection{区间重叠的警告}
 
@@ -524,7 +520,7 @@ copy original
 \texttt{match} & 可作语句或表达式；表达式分支给出同类型值，外层声明仍加分号 \\
 自动绑定 & \texttt{X:\allowbreak{}:\allowbreak{}B(\allowbreak{}v)\allowbreak{} =\allowbreak{}>\allowbreak{} .\allowbreak{}.\allowbreak{}.\allowbreak{}} 里的 \texttt{v} 是当场取出来的 \\
 穷尽性 & 漏变体是编译错误；\texttt{\_} 兜底但会放弃检查 \\
-标量匹配 & 常量与区间：\texttt{100}、\texttt{[\allowbreak{}90,\allowbreak{} 99]\allowbreak{}}、\texttt{[\allowbreak{}a,\allowbreak{} b)\allowbreak{}} \\
+标量匹配 & 普通值与整数 / char 区间：\texttt{100}、\texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}range\allowbreak{}Eq(\allowbreak{}90,\allowbreak{} 99)\allowbreak{}} \\
 守卫 & \texttt{模式 if 条件 =\allowbreak{}>\allowbreak{} \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} \}} \\
 方法 & 枚举也能有方法，里面用 \texttt{match (\allowbreak{}self)\allowbreak{}} \\
 \bottomrule

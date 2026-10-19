@@ -17,9 +17,9 @@ def main():
     work.mkdir(parents=True, exist_ok=True)
     cases = {
         'macro': ((ROOT / 'example/samples/any_generics.mgl').read_text(encoding='utf-8'), 'A=6 B=4\n1 2\n'),
-        'containers': ('''int64 main()
+        'containers': ("""int64 main()
 {
-    List<Any> list = {1, "two", true, 1.5};
+    List<Any> list = [1, "two", true, 1.5];
     list.push('A');
     Any character = list[4];
     assert(tryGet<char>(&character).unwrap() == 'A');
@@ -59,8 +59,8 @@ def main():
     assert(keys[key] == 1);
     println("containers OK");
     return 0;
-}''', 'containers OK\n'),
-        'generic': ('''struct Box<T> { T value; };
+}""", 'containers OK\n'),
+        'generic': ("""struct Box<T> { T value; };
 T identity<T>(T value) { return value; }
 Any returned() { return "returned"; }
 Any resultBlock() { return { yield (9); }; }
@@ -81,7 +81,7 @@ int64 main()
     assert(tryGet<String>(&value).unwrap() == "returned");
     value = resultBlock();
     assert(tryGet<int64>(&value).unwrap() == 9);
-    List<int64> numbers = {1, 2};
+    List<int64> numbers = [1, 2];
     List<Any> mixed;
     mixed.push(numbers);
     numbers.push(3);
@@ -103,7 +103,7 @@ int64 main()
     assert(isType<String>(&value));
     println("generic OK");
     return 0;
-}''', 'generic OK\n'),
+}""", 'generic OK\n'),
     }
     cases['interfaces'] = ('''interface Readable { int64 read(); };
 interface Writable { void write(int64 value); };

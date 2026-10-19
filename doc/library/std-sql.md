@@ -55,27 +55,27 @@ int64 main() {
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-435"></a>`struct DataCell` | 结果集里的一个格子，保留类型与文本两种形态。 |
-| DataCell | <a id="symbol-436"></a>`int64 kind` | 单元格种类：NULL、整数、浮点或文本。 |
-| DataCell | <a id="symbol-437"></a>`int64 intValue` | 整数单元格保存的值。 |
-| DataCell | <a id="symbol-438"></a>`float64 realValue` | 浮点单元格保存的值。 |
-| DataCell | <a id="symbol-439"></a>`std::lang::String textValue` | 文本单元格保存的字符串。 |
-| 模块 | <a id="symbol-440"></a>`struct DataRow` | 结果集的一行。 |
-| DataRow | <a id="symbol-441"></a>`std::lang::List<DataCell> cells` | 该行按列顺序保存的单元格。 |
-| 模块 | <a id="symbol-442"></a>`struct ResultSet` | 一次 exec 的结果：状态、错误、影响行数、结果集。 |
-| ResultSet | <a id="symbol-443"></a>`bool ok` | 当前解析或请求是否成功。 |
-| ResultSet | <a id="symbol-444"></a>`std::lang::String error` | 最近操作的错误说明。 |
-| ResultSet | <a id="symbol-445"></a>`int64 affected` | 操作影响的记录数量。 |
-| ResultSet | <a id="symbol-446"></a>`std::lang::List<std::lang::String> columns` | 结果集按顺序保存的列名。 |
-| ResultSet | <a id="symbol-447"></a>`std::lang::List<DataRow> rows` | 按查询顺序保存的数据行。 |
-| 模块 | <a id="symbol-448"></a>`enum Driver` | std::sql 支持的数据库引擎。 |
+| 模块 | <a id="symbol-439"></a>`struct DataCell` | 结果集里的一个格子，保留类型与文本两种形态。 |
+| DataCell | <a id="symbol-440"></a>`int64 kind` | 单元格种类：NULL、整数、浮点或文本。 |
+| DataCell | <a id="symbol-441"></a>`int64 intValue` | 整数单元格保存的值。 |
+| DataCell | <a id="symbol-442"></a>`float64 realValue` | 浮点单元格保存的值。 |
+| DataCell | <a id="symbol-443"></a>`std::lang::String textValue` | 文本单元格保存的字符串。 |
+| 模块 | <a id="symbol-444"></a>`struct DataRow` | 结果集的一行。 |
+| DataRow | <a id="symbol-445"></a>`std::lang::List<DataCell> cells` | 该行按列顺序保存的单元格。 |
+| 模块 | <a id="symbol-446"></a>`struct ResultSet` | 一次 exec 的结果：状态、错误、影响行数、结果集。 |
+| ResultSet | <a id="symbol-447"></a>`bool ok` | 当前解析或请求是否成功。 |
+| ResultSet | <a id="symbol-448"></a>`std::lang::String error` | 最近操作的错误说明。 |
+| ResultSet | <a id="symbol-449"></a>`int64 affected` | 操作影响的记录数量。 |
+| ResultSet | <a id="symbol-450"></a>`std::lang::List<std::lang::String> columns` | 结果集按顺序保存的列名。 |
+| ResultSet | <a id="symbol-451"></a>`std::lang::List<DataRow> rows` | 按查询顺序保存的数据行。 |
+| 模块 | <a id="symbol-452"></a>`enum Driver` | std::sql 支持的数据库引擎。 |
 | Driver | `MySQL, SQLite, PostgreSQL, SqlServer, Odbc, MariaDB` | std::sql 支持的数据库引擎。 变体及载荷见声明。 |
-| 模块 | <a id="symbol-449"></a>`struct Database` | 一个 SQL 数据库连接（MySQL / SQLite / PostgreSQL / SQL Server / ODBC）。 |
-| Database | <a id="symbol-450"></a>`int32 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
-| Database | <a id="symbol-451"></a>`bool opened` | 外部资源是否处于打开状态。 |
-| Database | <a id="symbol-452"></a>`Driver driver` | 数据库后端驱动。 |
-| Database | <a id="symbol-453"></a>`std::lang::String error` | 最近操作的错误说明。 |
-| Database | <a id="symbol-454"></a>`int64 affected` | 操作影响的记录数量。 |
+| 模块 | <a id="symbol-453"></a>`struct Database` | 一个 SQL 数据库连接（MySQL / SQLite / PostgreSQL / SQL Server / ODBC）。 |
+| Database | <a id="symbol-454"></a>`int32 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
+| Database | <a id="symbol-455"></a>`bool opened` | 外部资源是否处于打开状态。 |
+| Database | <a id="symbol-456"></a>`Driver driver` | 数据库后端驱动。 |
+| Database | <a id="symbol-457"></a>`std::lang::String error` | 最近操作的错误说明。 |
+| Database | <a id="symbol-458"></a>`int64 affected` | 操作影响的记录数量。 |
 
 ## 函数索引
 
@@ -603,7 +603,7 @@ DataCell at(int64 row, int64 column);
 obj.at(row, column);
 ```
 
-**源码**：[source/std/sql.mgl:114](../../source/std/sql.mgl#L114)。
+**源码**：[source/std/sql.mgl:120](../../source/std/sql.mgl#L120)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -642,7 +642,7 @@ std::lang::String textAt(int64 row, int64 column);
 obj.textAt(row, column);
 ```
 
-**源码**：[source/std/sql.mgl:115](../../source/std/sql.mgl#L115)。
+**源码**：[source/std/sql.mgl:121](../../source/std/sql.mgl#L121)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -681,7 +681,7 @@ int64 intAt(int64 row, int64 column);
 obj.intAt(row, column);
 ```
 
-**源码**：[source/std/sql.mgl:116](../../source/std/sql.mgl#L116)。
+**源码**：[source/std/sql.mgl:122](../../source/std/sql.mgl#L122)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -720,7 +720,7 @@ float64 realAt(int64 row, int64 column);
 obj.realAt(row, column);
 ```
 
-**源码**：[source/std/sql.mgl:117](../../source/std/sql.mgl#L117)。
+**源码**：[source/std/sql.mgl:123](../../source/std/sql.mgl#L123)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -758,7 +758,7 @@ std::lang::String scalar();
 obj.scalar();
 ```
 
-**源码**：[source/std/sql.mgl:120](../../source/std/sql.mgl#L120)。
+**源码**：[source/std/sql.mgl:126](../../source/std/sql.mgl#L126)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -796,7 +796,7 @@ int64 count();
 obj.count();
 ```
 
-**源码**：[source/std/sql.mgl:126](../../source/std/sql.mgl#L126)。
+**源码**：[source/std/sql.mgl:132](../../source/std/sql.mgl#L132)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -837,7 +837,7 @@ std::lang::String pad(std::lang::String text, int64 width);
 obj.pad(text, width);
 ```
 
-**源码**：[source/std/sql.mgl:132](../../source/std/sql.mgl#L132)。
+**源码**：[source/std/sql.mgl:138](../../source/std/sql.mgl#L138)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -875,7 +875,7 @@ std::lang::String render();
 obj.render();
 ```
 
-**源码**：[source/std/sql.mgl:146](../../source/std/sql.mgl#L146)。
+**源码**：[source/std/sql.mgl:152](../../source/std/sql.mgl#L152)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -919,7 +919,7 @@ static Database mysql(std::lang::String host, std::lang::String user, std::lang:
 std::sql::Database::mysql(host, user, password, database, port);
 ```
 
-**源码**：[source/std/sql.mgl:200](../../source/std/sql.mgl#L200)。
+**源码**：[source/std/sql.mgl:254](../../source/std/sql.mgl#L254)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -959,7 +959,7 @@ static Database sqlite(std::lang::String path);
 std::sql::Database::sqlite(path);
 ```
 
-**源码**：[source/std/sql.mgl:214](../../source/std/sql.mgl#L214)。
+**源码**：[source/std/sql.mgl:268](../../source/std/sql.mgl#L268)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -999,7 +999,7 @@ static Database postgres(std::lang::String options);
 std::sql::Database::postgres(options);
 ```
 
-**源码**：[source/std/sql.mgl:226](../../source/std/sql.mgl#L226)。
+**源码**：[source/std/sql.mgl:280](../../source/std/sql.mgl#L280)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1039,7 +1039,7 @@ static Database odbc(std::lang::String options);
 std::sql::Database::odbc(options);
 ```
 
-**源码**：[source/std/sql.mgl:238](../../source/std/sql.mgl#L238)。
+**源码**：[source/std/sql.mgl:292](../../source/std/sql.mgl#L292)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1079,7 +1079,7 @@ static Database sqlServer(std::lang::String options);
 std::sql::Database::sqlServer(options);
 ```
 
-**源码**：[source/std/sql.mgl:250](../../source/std/sql.mgl#L250)。
+**源码**：[source/std/sql.mgl:304](../../source/std/sql.mgl#L304)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1119,7 +1119,7 @@ std::lang::String quote(std::lang::String text);
 obj.quote(text);
 ```
 
-**源码**：[source/std/sql.mgl:257](../../source/std/sql.mgl#L257)。
+**源码**：[source/std/sql.mgl:311](../../source/std/sql.mgl#L311)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1157,7 +1157,7 @@ std::lang::String backendName();
 obj.backendName();
 ```
 
-**源码**：[source/std/sql.mgl:267](../../source/std/sql.mgl#L267)。
+**源码**：[source/std/sql.mgl:321](../../source/std/sql.mgl#L321)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1200,7 +1200,7 @@ static Database mysql(std::lang::String host, std::lang::String user, std::lang:
 std::sql::Database::mysql(host, user, password, database);
 ```
 
-**源码**：[source/std/sql.mgl:280](../../source/std/sql.mgl#L280)。
+**源码**：[source/std/sql.mgl:334](../../source/std/sql.mgl#L334)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1244,7 +1244,7 @@ static Database maria(std::lang::String host, std::lang::String user, std::lang:
 std::sql::Database::maria(host, user, password, database, port);
 ```
 
-**源码**：[source/std/sql.mgl:285](../../source/std/sql.mgl#L285)。
+**源码**：[source/std/sql.mgl:339](../../source/std/sql.mgl#L339)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1284,7 +1284,7 @@ static Database local(std::lang::String database);
 std::sql::Database::local(database);
 ```
 
-**源码**：[source/std/sql.mgl:292](../../source/std/sql.mgl#L292)。
+**源码**：[source/std/sql.mgl:346](../../source/std/sql.mgl#L346)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1320,7 +1320,7 @@ bool isOpen();
 obj.isOpen();
 ```
 
-**源码**：[source/std/sql.mgl:296](../../source/std/sql.mgl#L296)。
+**源码**：[source/std/sql.mgl:350](../../source/std/sql.mgl#L350)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1356,7 +1356,7 @@ std::lang::String lastError();
 obj.lastError();
 ```
 
-**源码**：[source/std/sql.mgl:297](../../source/std/sql.mgl#L297)。
+**源码**：[source/std/sql.mgl:351](../../source/std/sql.mgl#L351)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1392,7 +1392,7 @@ int64 affectedRows();
 obj.affectedRows();
 ```
 
-**源码**：[source/std/sql.mgl:298](../../source/std/sql.mgl#L298)。
+**源码**：[source/std/sql.mgl:352](../../source/std/sql.mgl#L352)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1430,7 +1430,7 @@ void close();
 obj.close();
 ```
 
-**源码**：[source/std/sql.mgl:301](../../source/std/sql.mgl#L301)。
+**源码**：[source/std/sql.mgl:355](../../source/std/sql.mgl#L355)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1470,7 +1470,7 @@ ResultSet exec(std::lang::String sql);
 obj.exec(sql);
 ```
 
-**源码**：[source/std/sql.mgl:314](../../source/std/sql.mgl#L314)。
+**源码**：[source/std/sql.mgl:368](../../source/std/sql.mgl#L368)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1510,7 +1510,7 @@ bool execOk(std::lang::String sql);
 obj.execOk(sql);
 ```
 
-**源码**：[source/std/sql.mgl:360](../../source/std/sql.mgl#L360)。
+**源码**：[source/std/sql.mgl:432](../../source/std/sql.mgl#L432)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1550,7 +1550,7 @@ std::lang::String scalar(std::lang::String sql);
 obj.scalar(sql);
 ```
 
-**源码**：[source/std/sql.mgl:366](../../source/std/sql.mgl#L366)。
+**源码**：[source/std/sql.mgl:438](../../source/std/sql.mgl#L438)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1590,7 +1590,7 @@ int64 count(std::lang::String sql);
 obj.count(sql);
 ```
 
-**源码**：[source/std/sql.mgl:373](../../source/std/sql.mgl#L373)。
+**源码**：[source/std/sql.mgl:445](../../source/std/sql.mgl#L445)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1630,7 +1630,7 @@ bool hasTable(std::lang::String tableName);
 obj.hasTable(tableName);
 ```
 
-**源码**：[source/std/sql.mgl:380](../../source/std/sql.mgl#L380)。
+**源码**：[source/std/sql.mgl:452](../../source/std/sql.mgl#L452)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1671,7 +1671,7 @@ std::lang::String quote(std::lang::String text, bool escapeBackslash);
 std::sql::quote(text, escapeBackslash);
 ```
 
-**源码**：[source/std/sql.mgl:407](../../source/std/sql.mgl#L407)。
+**源码**：[source/std/sql.mgl:479](../../source/std/sql.mgl#L479)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1711,7 +1711,7 @@ std::lang::String quote(std::lang::String text);
 std::sql::quote(text);
 ```
 
-**源码**：[source/std/sql.mgl:430](../../source/std/sql.mgl#L430)。
+**源码**：[source/std/sql.mgl:502](../../source/std/sql.mgl#L502)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1751,7 +1751,7 @@ std::lang::String intLiteral(int64 value);
 std::sql::intLiteral(value);
 ```
 
-**源码**：[source/std/sql.mgl:433](../../source/std/sql.mgl#L433)。
+**源码**：[source/std/sql.mgl:505](../../source/std/sql.mgl#L505)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1791,7 +1791,7 @@ std::lang::String realLiteral(float64 value);
 std::sql::realLiteral(value);
 ```
 
-**源码**：[source/std/sql.mgl:436](../../source/std/sql.mgl#L436)。
+**源码**：[source/std/sql.mgl:508](../../source/std/sql.mgl#L508)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
 
@@ -1831,6 +1831,6 @@ int64 displayWidth(std::lang::String text);
 std::sql::displayWidth(text);
 ```
 
-**源码**：[source/std/sql.mgl:439](../../source/std/sql.mgl#L439)。
+**源码**：[source/std/sql.mgl:511](../../source/std/sql.mgl#L511)。
 
 **完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。

@@ -88,7 +88,8 @@ void CollectLoopBreakValues(int statementId, Memory::Vector<std::shared_ptr<MTyp
                 InferExpression(statement.kids[0], expected);
                 PinLiteralInExpression(statement.kids[0], expected);
             }
-            values->push_back(ExprType(statement.kids[0]));
+            // 引用结果上下文保留引用身份，与普通 return 的引用转换保持一致。
+            values->push_back(expected && expected->kind == MType::Ptr ? RawExprType(statement.kids[0]) : ExprType(statement.kids[0]));
             if (borrowDepth) *borrowDepth = std::max(*borrowDepth, BorrowSourceDepth(statement.kids[0]));
         }
         return;
@@ -401,7 +402,7 @@ std::shared_ptr<MType> LoopValueType(int id)
     const auto node = N(id);
     const auto contextual = (!node.s.empty() || node.returnExpression) && node.type >= 0 ? T(node.type) : nullptr;
     // Any 在整个值表达式求值后装箱；分支仍须先确定一致的具体结果类型。
-    const auto expected = contextual && contextual->kind != MType::Obj && contextual->kind != MType::String ? contextual : nullptr;
+    const auto expected = contextual && contextual->kind != MType::Obj && !IsStandardOpcode(contextual, "String") ? contextual : nullptr;
     if (node.s == "block")
     {
         if (StatementReturnFlow(node.kids[0], true) & 1)
@@ -502,9 +503,9 @@ bool IsTupleElementAccess(int id)
 }
 
 /**
- * @brief 推导 Set / Map 字面量并向嵌套元素传递上下文类型。
+ * @brief 按括号种类推导 List、Set、Map 字面量并向嵌套元素传递上下文类型。
  * @param id 字面量节点。
- * @param expected 已知目标类型；空字面量必须提供 Set 或 Map 上下文。
+ * @param expected 已知目标类型；空字面量必须提供与括号种类相符的容器上下文。
  * @return 推导所得的容器类型。
  */
 std::shared_ptr<MType> InferCollectionLiteral(int id, const std::shared_ptr<MType> &expected)
@@ -512,25 +513,14 @@ std::shared_ptr<MType> InferCollectionLiteral(int id, const std::shared_ptr<MTyp
     const MNode node = N(id);
     auto target = expected;
     if (target && target->kind == MType::Ptr) target = target->elem;
-    /* `{…}` 的字面量形态由**目标容器的类型**定：`Set<T>` 是元素集合、`Map<K,V>` 是
-     * 键值对、`List<T>` 是顺序表。`node.s` 只记文法上写的是「元素表」还是「键值对」，
-     * 不参与挑容器种类 —— `{1,2,3}` 落到 `List<int64>` 就是列表、落到 `Set<int64>`
-     * 就是集合，`{}` 三者都行（空表）。
-     *
-     * 但**形态必须对得上**：键值对表不能落进 `Set` / `List`，元素表也不能落进 `Map`
-     * —— 那种"凑巧元素个数是偶数"的静默接受会让 `Map<int64,int64> v = {1, 2};` 变成
-     * 一个键 1 值 2 的映射，读代码的人根本看不出来。 */
-    if (target && IsContainer(target) && node.s == "map" && target->name != "map")
+    const bool emptyBraces = node.s == "empty";
+    if (target && IsContainer(target)
+        && (emptyBraces ? target->name == "vec" : node.s != target->name))
     {
-        Fail("集合字面量类型不匹配：map 不能初始化 " + Describe(target));
+        Fail("集合字面量类型不匹配：" + node.s + " 不能初始化 " + Describe(target));
         return target;
     }
-    if (target && IsContainer(target) && node.s == "set" && target->name == "map")
-    {
-        Fail("集合字面量类型不匹配：set 不能初始化 " + Describe(target));
-        return target;
-    }
-    if (target && IsContainer(target) && (node.s == "empty" || (node.s == "map") == (target->name == "map")))
+    if (target && IsContainer(target))
     {
         const bool map = target->name == "map";
         g_nodes[static_cast<std::size_t>(id)].type = M_AddType(target);
@@ -539,12 +529,11 @@ std::shared_ptr<MType> InferCollectionLiteral(int id, const std::shared_ptr<MTyp
         return target;
     }
     if (node.type >= 0) return T(node.type);
-    if (node.s == "empty")
+    if (node.kids.empty())
     {
-        Fail("空集合字面量 `{}` 需要 std::lang::Set<T> 或 std::lang::Map<K,V> 上下文");
+        Fail(node.s == "vec" ? "空列表字面量 `[]` 需要 std::lang::List<T> 上下文" : "空集合字面量 `{}` 需要 std::lang::Set<T> 或 std::lang::Map<K,V> 上下文");
         return T(M_TypeInt());
     }
-    /* 没有上下文时 `{1, 2, 3}` 仍按 Set 收（历史行为，`auto s = {1, 2, 3};` 不必改）。 */
     auto type = Memory::makeShared<MType>();
     type->kind = MType::Container;
     type->name = node.s;
@@ -555,7 +544,7 @@ std::shared_ptr<MType> InferCollectionLiteral(int id, const std::shared_ptr<MTyp
         for (std::size_t i = part; i < node.kids.size(); i += step)
         {
             const auto &child = N(node.kids[i]);
-            if (child.kind == MNode::CollectionLiteral && child.s == "empty" && child.type < 0) continue;
+            if (child.kind == MNode::CollectionLiteral && child.kids.empty() && child.type < 0) continue;
             const auto actual = ExprType(node.kids[i]);
             if (!element)
                 element = actual;
@@ -593,7 +582,7 @@ std::shared_ptr<MType> IntervalElementType(int id)
     const auto node = N(id);
     if (node.type >= 0) return T(node.type);
     auto lo = ExprType(node.kids[0]), hi = ExprType(node.kids[1]);
-    if (SameType(lo, hi) && lo->kind == MType::Int) return lo;
+    if (SameType(lo, hi) && (lo->kind == MType::Int || lo->kind == MType::Char)) return lo;
     const bool wideUnsigned = (lo->kind == MType::Int && lo->isUnsigned && lo->bits == 64) || (hi->kind == MType::Int && hi->isUnsigned && hi->bits == 64);
     return T(M_TypeIntBits(64, wideUnsigned));
 }
@@ -736,9 +725,9 @@ std::shared_ptr<MType> RawExprType(int id)
     case MNode::Range:
     {
         const auto element = IntervalElementType(id);
-        if (!element || element->kind != MType::Int)
+        if (!element || (element->kind != MType::Int && element->kind != MType::Char))
         {
-            Fail("for-in 区间变量必须是整数值类型");
+            Fail("内建区间的元素必须是整数或 char");
             return T(M_TypeVoid());
         }
         return NamedType("std::lang::__Interval_" + Describe(element));
@@ -818,10 +807,7 @@ std::shared_ptr<MType> RawExprType(int id)
         {
             if (node.s == "self")
             {
-                auto receiver = Memory::makeShared<MType>();
-                receiver->kind = MType::Struct;
-                receiver->name = g_owner;
-                return receiver;
+                return NamedType(g_owner);
             }
             const std::shared_ptr<MType> field = FieldType(g_owner, node.s);
             if (field) return field;
@@ -841,12 +827,12 @@ std::shared_ptr<MType> RawExprType(int id)
     {
         auto base = RawExprType(node.kids[0]);
         if (node.s == "__magel_buffer_index" && base->kind == MType::Ptr) return base->elem;
-        if (base->kind == MType::Ptr && base->elem && (base->elem->kind == MType::String || IsContainer(base->elem))) base = base->elem;
+        if (base->kind == MType::Ptr && base->elem && (IsStandardOpcode(base->elem, "String") || base->elem->kind == MType::Array || IsContainer(base->elem))) base = base->elem;
         if (const MIndexDecl *index = FindIndex(base, ExprType(node.kids[1])))
             return index->result;
         if (IsInterfacePointer(base)) return T(M_TypeInt()); /* 会报错，给个占位 */
         if (base->kind == MType::Array || base->kind == MType::Ptr) return base->elem;
-        if (base->kind == MType::String) return T(M_TypeChar());
+        if (IsStandardOpcode(base, "String")) return T(M_TypeChar());
         if (IsContainer(base))
         {
             /* `v[i]` 是元素；`m[k]` 是值（`std::lang::Map<K,V>` 的 V）。`set` 没有下标。 */
@@ -859,6 +845,13 @@ std::shared_ptr<MType> RawExprType(int id)
     case MNode::Arrow:
     {
         const std::shared_ptr<MType> base = ExprType(node.kids[0]);
+        if (node.s == "opcode")
+            if (const auto *declaration = FindOpcodeDeclaration(base))
+            {
+                if (node.module != declaration->module)
+                    return Fail("opcode 内部句柄仅允许在声明模块中访问"), T(M_TypeVoid());
+                return T(M_TypeInt());
+            }
         /* 容器 / `bint` 上的 `.xxx` 只可能是**方法调用**的一部分（`v.push(…)`），
          * 类型由调用点（方法表）决定，这里给个占位就行。 */
         if (IsObjectLike(base)) return T(M_TypeInt());
@@ -912,6 +905,9 @@ std::shared_ptr<MType> RawExprType(int id)
                 const auto baseType = RawExprType(baseId);
                 if (baseType->kind == MType::Ptr && baseType->readOnly) pointer->readOnly = true;
                 const auto &baseNode = N(baseId);
+                if (baseNode.kind == MNode::Str) pointer->readOnly = true;
+                if ((baseNode.kind == MNode::Member || baseNode.kind == MNode::Arrow) && baseNode.s == "opcode" && !baseNode.kids.empty() && FindOpcodeDeclaration(ExprType(baseNode.kids[0])))
+                    pointer->readOnly = true;
                 if (baseNode.kind == MNode::EnumCtor)
                 {
                     const MVar *global = FindQualifiedGlobal(baseNode.s, baseNode.s2);
@@ -938,7 +934,7 @@ std::shared_ptr<MType> RawExprType(int id)
          */
         if (node.kids.empty()) return T(M_TypeInt());
         const std::shared_ptr<MType> operand = ExprType(node.kids[0]);
-        if (operand != nullptr && (operand->kind == MType::Int || operand->kind == MType::Double || operand->kind == MType::BigInt || operand->kind == MType::BigFloat))
+        if (operand != nullptr && (operand->kind == MType::Int || operand->kind == MType::Double || IsStandardOpcode(operand, "BigInteger") || IsStandardOpcode(operand, "BigDecimal")))
             return operand;
         /* 用户自定义一元运算符：结果类型取重载的返回类型。 */
         if (operand != nullptr && (operand->kind == MType::Struct || IsEnumType(operand)))
@@ -984,28 +980,29 @@ std::shared_ptr<MType> RawExprType(int id)
                                 + calleeNode.s),
                            T(M_TypeInt());
                 }
+                if (FindOpcodeDeclaration(baseType))
+                    if (const auto *owner = FindStruct(baseType->name))
+                        for (const auto &method : owner->methods)
+                            if (!method.isStatic && !method.superseded && method.source == calleeNode.s && AcceptsArgumentCount(method.params, N(node.kids[1]).kids.size()))
+                                return method.result;
                 /* 大整数的 `.str()` 返回字符串，`.copy()` 返回新大整数；
                  * 扩展方法见下（幂 / 数论 / 素性 / 位运算 / 进制 / 开方）。 */
-                if (baseType && baseType->kind == MType::BigInt)
+                if (baseType && IsStandardOpcode(baseType, "BigInteger"))
                 {
                     if (calleeNode.s == "str") return T(M_TypeString());
                     if (calleeNode.s == "copy") return baseType;
-                    if (calleeNode.s == "pow" || calleeNode.s == "powmod" || calleeNode.s == "gcd" ||
-                        calleeNode.s == "lcm" || calleeNode.s == "mod" || calleeNode.s == "modInverse" ||
-                        calleeNode.s == "nextProbablePrime" || calleeNode.s == "bitAnd" ||
-                        calleeNode.s == "bitOr" || calleeNode.s == "bitXor" || calleeNode.s == "iroot")
+                    if (calleeNode.s == "pow" || calleeNode.s == "powmod" || calleeNode.s == "gcd" || calleeNode.s == "lcm" || calleeNode.s == "mod" || calleeNode.s == "modInverse" || calleeNode.s == "nextProbablePrime" || calleeNode.s == "bitAnd" || calleeNode.s == "bitOr" || calleeNode.s == "bitXor" || calleeNode.s == "iroot")
                         return baseType;
                     if (calleeNode.s == "isProbablePrime") return T(M_TypeBool());
                     if (calleeNode.s == "bitLength") return T(M_TypeInt());
                     if (calleeNode.s == "strRadix") return T(M_TypeString());
                 }
-                if (baseType && baseType->kind == MType::BigFloat)
+                if (baseType && IsStandardOpcode(baseType, "BigDecimal"))
                 {
                     if (calleeNode.s == "str") return T(M_TypeString());
                     if (calleeNode.s == "copy") return baseType;
                     if (calleeNode.s == "setPrecision") return T(M_TypeInt());
-                    if (calleeNode.s == "pow" || calleeNode.s == "abs" || calleeNode.s == "sqrt" ||
-                        calleeNode.s == "root")
+                    if (calleeNode.s == "pow" || calleeNode.s == "abs" || calleeNode.s == "sqrt" || calleeNode.s == "root")
                         return baseType;
                     if (calleeNode.s == "isInteger") return T(M_TypeBool());
                     if (calleeNode.s == "floor" || calleeNode.s == "ceil" || calleeNode.s == "trunc")
@@ -1200,17 +1197,17 @@ std::shared_ptr<MType> RawExprType(int id)
         const std::shared_ptr<MType> left = ExprType(node.kids[0]);
         const std::shared_ptr<MType> right = ExprType(node.kids[1]);
         /* 字符串：`+` 拼接成**新串**（类型还是 string），比较按字典序（结果是 int）。 */
-        if (left->kind == MType::String || right->kind == MType::String)
+        if (IsStandardOpcode(left, "String") || IsStandardOpcode(right, "String"))
         {
             return (node.s == "+") ? T(M_TypeString()) : T(M_TypeBool());
         }
-        if (left->kind == MType::BigFloat || right->kind == MType::BigFloat)
+        if (IsStandardOpcode(left, "BigDecimal") || IsStandardOpcode(right, "BigDecimal"))
         {
             const bool arithmetic = (node.s == "+" || node.s == "-" || node.s == "*" || node.s == "/");
             return arithmetic ? T(M_TypeBigFloat()) : T(M_TypeBool());
         }
         /* 大整数：`+ - * / %` 的结果还是 `bint`（另一边会自动转过来），比较是 int。 */
-        if (left->kind == MType::BigInt || right->kind == MType::BigInt)
+        if (IsStandardOpcode(left, "BigInteger") || IsStandardOpcode(right, "BigInteger"))
         {
             const bool arithmetic = (node.s == "+" || node.s == "-" || node.s == "*" || node.s == "/" || node.s == "%");
             return arithmetic ? T(M_TypeBigInt()) : T(M_TypeBool());

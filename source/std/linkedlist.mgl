@@ -199,8 +199,14 @@ struct LinkedList : Iterator<int64>, Drop {
      */
     static LinkedList fromArray(List<int64> items) {
         LinkedList list = LinkedList::create();
-        for (int64 index = 0; index < items.len(); index = index + 1) {
+        {
+            int64 index = 0;
+            while (index < items.len()) {
+
             list.pushBack(items[index]);
+        
+                index = index + 1;
+            }
         }
         return list;
     }

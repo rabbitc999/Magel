@@ -9,7 +9,7 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 EXE = ".exe" if os.name == "nt" else ""
 WORK = ROOT / "build" / "magel-linalg-solve"
-MAGEL = ROOT / "build/work/magel" / ("magel" + EXE)
+MAGEL = ROOT / ("magel" + EXE)
 EMITTER = ROOT / "build/magel-emit" / ("magel-emit" + EXE)
 
 

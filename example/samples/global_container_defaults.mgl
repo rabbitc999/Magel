@@ -25,13 +25,25 @@ int64 main() {
     globalBag.values.push(7); globalBag.keys.add(8); globalBag.names.put(9,"name");
     assert(globalBag.values[0]==7 && globalBag.keys.has(8)!=0 && globalBag.names[9]=="name");
     nested.bag.values.push(10); assert(nested.bag.values[0]==10);
-    for (int64 i=0; i<10; i++) {
+    {
+        int64 i=0;
+        while (i<10) {
+
         DefaultChoice empty;
         Result<List<int64>,List<int64>> result;
         result.unwrap().push(1);
         assert(result.unwrap().len()==0);
+    
+            i++;
+        }
     }
-    for(int64 i=0;i<5;i++){resource=makeGlobalResource();}
+    {
+        int64 i=0;
+        while (i<5) {
+resource=makeGlobalResource();
+            i++;
+        }
+    }
     assert(resourceDrops==4);
     delete resource; assert(resourceDrops==5);
     resource=makeGlobalResource(); assert(resourceDrops==5);

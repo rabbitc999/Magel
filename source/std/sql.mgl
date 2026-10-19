@@ -105,8 +105,14 @@ struct ResultSet {
 
     /** @brief 按列名找下标，找不到给 -1。 */
     int64 columnIndex(std::lang::String name) {
-        for (int64 i = 0; i < std::lang::len(self.columns); i = i + 1) {
+        {
+            int64 i = 0;
+            while (i < std::lang::len(self.columns)) {
+
             if (self.columns[i] == name) { return i; }
+        
+                i = i + 1;
+            }
         }
         return -1;
     }
@@ -148,38 +154,86 @@ struct ResultSet {
         if (self.colCount() == 0) { return std::lang::format("影响 {} 行", self.affected); }
 
         std::lang::List<int64> widths;
-        for (int64 c = 0; c < self.colCount(); c = c + 1) {
+        {
+            int64 c = 0;
+            while (c < self.colCount()) {
+
             int64 w = displayWidth(self.columnName(c));
             widths.push(w);
+        
+                c = c + 1;
+            }
         }
-        for (int64 r = 0; r < self.rowCount(); r = r + 1) {
-            for (int64 c = 0; c < self.colCount(); c = c + 1) {
+        {
+            int64 r = 0;
+            while (r < self.rowCount()) {
+
+            {
+                int64 c = 0;
+                while (c < self.colCount()) {
+
                 int64 w = displayWidth(self.textAt(r, c));
                 if (w > widths[c]) { widths[c] = w; }
+            
+                    c = c + 1;
+                }
+            }
+        
+                r = r + 1;
             }
         }
         std::lang::String bar = "+";
-        for (int64 c = 0; c < self.colCount(); c = c + 1) {
+        {
+            int64 c = 0;
+            while (c < self.colCount()) {
+
             int64 limit = widths[c] + 2;
-            for (int64 k = 0; k < limit; k = k + 1) { bar = bar + "-"; }
+            {
+                int64 k = 0;
+                while (k < limit) {
+ bar = bar + "-"; 
+                    k = k + 1;
+                }
+            }
             bar = bar + "+";
+        
+                c = c + 1;
+            }
         }
         std::lang::String out = bar + "\n";
-        for (int64 c = 0; c < self.colCount(); c = c + 1) {
+        {
+            int64 c = 0;
+            while (c < self.colCount()) {
+
             std::lang::String raw = self.columnName(c);
             std::lang::String cell = self.pad(raw, widths[c]);
             out = out + "| " + cell + " ";
+        
+                c = c + 1;
+            }
         }
         out = out + "|\n";
         out = out + bar + "\n";
-        for (int64 r = 0; r < self.rowCount(); r = r + 1) {
-            for (int64 c = 0; c < self.colCount(); c = c + 1) {
+        {
+            int64 r = 0;
+            while (r < self.rowCount()) {
+
+            {
+                int64 c = 0;
+                while (c < self.colCount()) {
+
                 std::lang::String raw = self.textAt(r, c);
                 std::lang::String cell = self.pad(raw, widths[c]);
                 out = out + "| " + cell + " ";
+            
+                    c = c + 1;
+                }
             }
             out = out + "|\n";
             out = out + bar + "\n";
+        
+                r = r + 1;
+            }
         }
         return out;
     }
@@ -334,12 +388,24 @@ struct Database {
 
         int64 columns = (int64)__sqlColCount(rs);
         int64 rows = (int64)__sqlRowCount(rs);
-        for (int64 c = 0; c < columns; c = c + 1) {
+        {
+            int64 c = 0;
+            while (c < columns) {
+
             result.columns.push(__sqlColName(rs, (int32)c));
+        
+                c = c + 1;
+            }
         }
-        for (int64 r = 0; r < rows; r = r + 1) {
+        {
+            int64 r = 0;
+            while (r < rows) {
+
             DataRow row;
-            for (int64 c = 0; c < columns; c = c + 1) {
+            {
+                int64 c = 0;
+                while (c < columns) {
+
                 int32 kind = __sqlCellKind(rs, (int32)r, (int32)c);
                 DataCell cell;
                 cell.kind = (int64)kind;
@@ -349,8 +415,14 @@ struct Database {
                     cell.realValue = __sqlCellReal(rs, (int32)r, (int32)c);
                 }
                 row.cells.push(cell);
+            
+                    c = c + 1;
+                }
             }
             result.rows.push(row);
+        
+                r = r + 1;
+            }
         }
         __sqlFree(rs);
         return result;

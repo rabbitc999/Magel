@@ -196,20 +196,32 @@ bool isPrime<T>(T value)
     bases.push(450775u);
     bases.push(9780504u);
     bases.push(1795265022u);
-    for (int64 index = 0; index < bases.len(); index = index + 1) {
+    {
+        int64 index = 0;
+        while (index < bases.len()) {
+
         uint64 base = bases[index] % candidate;
-        if (base == 0u) { continue; }
+        if (base == 0u) { { index = index + 1; continue; } }
         uint64 residue = __numtheoryPowMod<uint64>(base, odd, candidate);
         if (residue != 1u && residue != candidate - 1u) {
             bool reachedMinusOne = false;
-            for (int64 round = 1; round < powers; round = round + 1) {
+            {
+                int64 round = 1;
+                while (round < powers) {
+
                 residue = __numtheoryMulMod<uint64>(residue, residue, candidate);
                 if (residue == candidate - 1u) {
                     reachedMinusOne = true;
                     break;
                 }
+            
+                    round = round + 1;
+                }
             }
             if (!reachedMinusOne) { return false; }
+        }
+    
+            index = index + 1;
         }
     }
     return true;

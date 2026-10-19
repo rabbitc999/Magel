@@ -79,7 +79,7 @@ def main():
             'int64 x = { loop { auto f = int64 fn(){yield (1);}; yield (2); }; };',
             'auto f = int64 fn(){ (if(true){loop{yield (1);};}else{2}); };f();',
             'int64 const& x = { loop { int64 local = 1; yield (&local); }; };',
-            'int64 const& x = { for (int64 local=0;local<1;local++) { yield (&local); } int64 local=2;yield (&local); };',
+            'int64 const& x = { {\n    int64 local=0;\n    while (local<1) {\n yield (&local); \n        local++;\n    }\n} int64 local=2;yield (&local); };',
             'println(f"value={1}", 2);',
             'auto result=loop{String source="x";yield (source,source);};',
             '(int64 const&,int64) result={loop{int64 local=1;yield (&local,2);};};',

@@ -1,1 +1,1 @@
-match alternatives and string ranges OK
+match alternatives and string guards OK

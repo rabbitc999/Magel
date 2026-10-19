@@ -44,7 +44,7 @@ int64 main() {
 T identity<T>(T value) { return value; }
 int64 main()
 {
-    List<Any> values = {1, "two", true};
+    List<Any> values = [1, "two", true];
     values.push(1.5);
     Any value = identity<Any>("generic");
     Map<String, Any> record = {"count": 3, "name": "Magel"};

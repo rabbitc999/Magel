@@ -79,10 +79,16 @@ int64 main() {
     assert(len(records) == 2 && records[1].inner.weight == 4.5);
     fill_packets(records, (int32)2);
     assert(records[0].count == 12 && records[1].count == 15);
-    for (int64 i = 0; i < 500; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < 500) {
+
         Packet next = transform(p);
         update(&next);
         assert(next.count == 16);
+    
+            i = i + 1;
+        }
     }
     assert(packed_layout() == 1);
     Packed compact;

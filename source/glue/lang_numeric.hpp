@@ -69,16 +69,16 @@ T bytesFloat(const std::uint8_t *bytes, bool bigEndian)
 }
 
 /**
- * @brief 检查 VM 数组前若干槽可读取，拒绝空指针和地址溢出。
+ * @brief 读取 VM 数组的连续字节，拒绝空指针、地址溢出及越界。
  * @param ctx 上下文。
  * @param address 数组地址。
- * @param slots 输出槽。
+ * @param bytes 接收字节的定长缓冲区。
  * @return 是否成功。
  */
 template <std::size_t N>
-bool readArraySlots(magel_glue::Context &ctx, std::int64_t address, std::int64_t (&slots)[N])
+bool readArrayBytes(magel_glue::Context &ctx, std::int64_t address, std::uint8_t (&bytes)[N])
 {
-    if (address <= 0 || address > std::numeric_limits<std::int64_t>::max() - static_cast<std::int64_t>(sizeof(slots)) || !ctx.readBytes(address, reinterpret_cast<char *>(slots), sizeof(slots)))
+    if (address <= 0 || address > std::numeric_limits<std::int64_t>::max() - static_cast<std::int64_t>(sizeof(bytes)) || !ctx.readBytes(address, reinterpret_cast<char *>(bytes), sizeof(bytes)))
     {
         ctx.fail("IEEE 754 转换：数组地址无效或越界");
         return false;
@@ -103,16 +103,13 @@ bool bindFloatBytes(magel_glue::Registry &registry, const char *suffix, Memory::
     return registry.bindTyped<Bytes, T, bool>("std::lang::__float" + number + "ToBytes", [](T value, bool bigEndian) { return floatBytes<T, U>(value, bigEndian); }, error) && registry.bindTypedWithContext<T, Bytes, bool>("std::lang::__bytesToFloat" + number, [](Context &ctx, Bytes bytes, bool bigEndian) {
             if (bytes.size() < sizeof(T)) { ctx.fail("IEEE 754 转换：字节不足"); return T{}; }
             return bytesFloat<T, U>(bytes.data(), bigEndian); }, error) && registry.bindTypedWithContext<T, Reference, bool>("std::lang::__arrayToFloat" + number, [](Context &ctx, Reference pointer, bool bigEndian) {
-            std::int64_t slots[sizeof(T)]{};
-            if (!readArraySlots(ctx, pointer.address, slots)) return T{};
             std::uint8_t bytes[sizeof(T)]{};
-            for (std::size_t i = 0; i < sizeof(T); ++i) bytes[i] = static_cast<std::uint8_t>(slots[i]);
+            if (!readArrayBytes(ctx, pointer.address, bytes)) return T{};
             return bytesFloat<T, U>(bytes, bigEndian); }, error) && registry.bindTypedWithContext<bool, T, Reference, bool>("std::lang::__float" + number + "ToArray", [](Context &ctx, T value, Reference pointer, bool bigEndian) {
-            std::int64_t slots[sizeof(T)]{};
-            if (!readArraySlots(ctx, pointer.address, slots)) return false;
+            std::uint8_t previous[sizeof(T)]{};
+            if (!readArrayBytes(ctx, pointer.address, previous)) return false;
             const auto bytes = floatBytes<T, U>(value, bigEndian);
-            for (std::size_t i = 0; i < sizeof(T); ++i) slots[i] = bytes[i];
-            if (!ctx.writeBytes(pointer.address, reinterpret_cast<const char *>(slots), sizeof(slots))) {
+            if (!ctx.writeBytes(pointer.address, reinterpret_cast<const char *>(bytes.data()), bytes.size())) {
                 ctx.fail("IEEE 754 转换：无法写入数组"); return false;
             }
             return true; }, error);

@@ -25,11 +25,17 @@ Result<List<uint8>,EncodingError> decodeHex(String text) {
     List<uint8> input=stringBytes(text);
     if (len(text)%2!=0) { return Result<List<uint8>,EncodingError>::Err(EncodingError::InvalidLength); }
     List<uint8> result;
-    for (int64 i=0;i<len(text);i=i+2) {
+    {
+        int64 i=0;
+        while (i<len(text)) {
+
         int64 high=hexDigit((char)input[i]); int64 low=hexDigit((char)input[i+1]);
         if (high<0) { return Result<List<uint8>,EncodingError>::Err(EncodingError::InvalidCharacter(i)); }
         if (low<0) { return Result<List<uint8>,EncodingError>::Err(EncodingError::InvalidCharacter(i+1)); }
         result.push((uint8)(high*16+low));
+    
+            i=i+2;
+        }
     }
     return Result<List<uint8>,EncodingError>::Ok(result);
 }
@@ -38,7 +44,10 @@ String encodeBase64(List<uint8> bytes, bool url=false, bool padding=true) {
     String alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     if (url) { alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"; }
     String result="";
-    for (int64 i=0;i<bytes.len();i=i+3) {
+    {
+        int64 i=0;
+        while (i<bytes.len()) {
+
         int64 a=(int64)bytes[i]; int64 b=0; int64 c=0;
         if (i+1<bytes.len()) { b=(int64)bytes[i+1]; }
         if (i+2<bytes.len()) { c=(int64)bytes[i+2]; }
@@ -47,6 +56,9 @@ String encodeBase64(List<uint8> bytes, bool url=false, bool padding=true) {
         elif (padding) { result=result+"="; }
         if (i+2<bytes.len()) { result=result+format("{}",alphabet[c&63]); }
         elif (padding) { result=result+"="; }
+    
+            i=i+3;
+        }
     }
     return result;
 }
@@ -64,13 +76,25 @@ Result<List<uint8>,EncodingError> decodeBase64(String text, bool url=false) {
         return Result<List<uint8>,EncodingError>::Err(EncodingError::InvalidPadding);
     }
     List<uint8> result; int64 buffer=0; int64 bits=0;
-    for (int64 i=0;i<size;i=i+1) {
+    {
+        int64 i=0;
+        while (i<size) {
+
         int64 digit=-1;
-        for (int64 j=0;j<64;j=j+1) { if ((char)input[i]==alphabet[j]) { digit=j; break; } }
+        {
+            int64 j=0;
+            while (j<64) {
+ if ((char)input[i]==alphabet[j]) { digit=j; break; } 
+                j=j+1;
+            }
+        }
         if (digit<0) { return Result<List<uint8>,EncodingError>::Err(EncodingError::InvalidCharacter(i)); }
         buffer=(buffer<<6)|digit; bits=bits+6;
         if (bits>=8) { bits=bits-8; result.push((uint8)((buffer>>bits)&255)); }
         buffer=buffer&((1<<bits)-1);
+    
+            i=i+1;
+        }
     }
     if (buffer!=0) { return Result<List<uint8>,EncodingError>::Err(EncodingError::NonCanonical); }
     return Result<List<uint8>,EncodingError>::Ok(result);

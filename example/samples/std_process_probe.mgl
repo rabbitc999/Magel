@@ -2,9 +2,9 @@ import std::process;
 import std::probe;
 
 int64 main() {
-    proc process = std::process::processRun("echo magel-process-ok");
-    String output = std::process::processRead(process);
-    int64 status = std::process::processClose(process);
+    Process process = std::process::processRun("echo magel-process-ok");
+    String output = std::process::processRead(&process);
+    int64 status = std::process::processClose(&process);
     assert(status == 0);
     assert(output == "magel-process-ok");
     std::probe::Probe value;

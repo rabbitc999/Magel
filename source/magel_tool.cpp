@@ -820,15 +820,9 @@ int main(int argc, char **argv)
         return runFrontEnd(scan.frontEnd);
     }
 
-    const fs::path root = findRepoRoot(argc > 0 ? argv[0] : "magel");
-    /* aot 不再要求仓库目录：运行时源码已经由
-     * `tools/embed_stdlib.py` 内嵌进本二进制（`magel_stdlib_embedded.cpp`）。
-     * 脱离仓库时改用**仓库相对路径**当键，让 `magel-emit::readWholeFile` 读磁盘失败后
-     * 回退到内嵌资产；`gen` / `clear` 仍需要真实仓库根（要跑 magel-generator 与模板）。 */
-    const fs::path assetRoot = root.empty() ? fs::path() : root;
-
     if (mode == "gen" || mode == "clear")
     {
+        const fs::path root = findRepoRoot(argc > 0 ? argv[0] : "magel");
         if (root.empty())
         {
             std::fprintf(stderr, "magel：找不到仓库根（缺 magel/source/magel-emit/aot.cpp），无法转发 %s\n",
@@ -880,8 +874,7 @@ int main(int argc, char **argv)
         return runGenerator(generatorArgs);
     }
 
-    /* aot：先出四元式与数据区，再让 magel-emit 生成 C/C++ 并编译。
-     * `assetRoot` 为空时用 `magel/...` 这样的仓库相对键走内嵌资产。 */
+    /* aot：先出四元式与数据区，默认从本二进制的内嵌运行时生成 C++ 并编译。 */
     /* `--execute-output FILE` 指定可执行文件位置；缺省用 `--out`。两者都等价于
      * 前端的产物前缀（`.quad` / `.data.bin` / `.layout` 与它同目录同前缀）。 */
     std::string exePath = !scan.executeOutput.empty() ? scan.executeOutput : scan.outPath;
@@ -994,11 +987,11 @@ int main(int argc, char **argv)
         "--out",
         exePath,
         "--vm-dir",
-        (assetRoot / "magel" / "library" / "stackvm").u8string(),
+        "embedded://stackvm",
         "--magel-dir",
-        (assetRoot / "magel").u8string(),
+        "embedded://magel",
         "--bigint-dir",
-        (assetRoot / "magel" / "library" / "bignum").u8string(),
+        "embedded://bignum",
     };
     bool hidePanicDetails = haveProject && project.compressSymbols;
     for (const auto &argument : scan.frontEnd)

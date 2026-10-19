@@ -9,7 +9,10 @@ struct DefaultOwned {
 };
 String fn() retained(String mut& text) { return fn() { text }; }
 int64 main() {
-    for (int64 i = 0; i < 20; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < 20) {
+
         String parentCallback="parent callback";
         DefaultOwned local;
         local.kind = 7;
@@ -35,6 +38,9 @@ int64 main() {
         delete words;
         int32 numbers[] = new[3];
         assert(numbers[0] == 0 && numbers[2] == 0);
+    
+            i = i + 1;
+        }
     }
     println("allocated default ownership OK");
     return 0;

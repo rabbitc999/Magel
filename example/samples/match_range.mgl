@@ -1,24 +1,24 @@
 /* match_range.mgl —— `match` 的区间模式。
  *
- * 两种区间写法（整数与浮点标量都支持）：
- *   [a,b)  左闭右开     a <= x < b
- *   [a,b]  闭区间       a <= x <= b
+ * 整数与 char 的区间模式使用标准调用：
+ *   range(a,b)    左闭右开     a <= x < b
+ *   rangeEq(a,b)  闭区间       a <= x <= b
  * `_` 仍可兜底；标量分支照旧写常量。
  */
 int64 classify(int64 x) {
     match (x) {
-        [0, 10) => { return 1; }
-        [10, 20) => { return 2; }
-        [20, 30) => { return 3; }
-        [30, 40] => { return 4; }
+        std::lang::range(0, 10) => { return 1; }
+        std::lang::range(10, 20) => { return 2; }
+        std::lang::range(20, 30) => { return 3; }
+        std::lang::rangeEq(30, 40) => { return 4; }
         _ => { return 0; }
     }
 }
 
 float64 classifyF(float64 x) {
     match (x) {
-        [0.0, 1.0) => { return 1.0; }
-        [1.0, 2.0] => { return 2.0; }
+        _ if x >= 0.0 && x < 1.0 => { return 1.0; }
+        _ if x >= 1.0 && x <= 2.0 => { return 2.0; }
         _ => { return 0.0; }
     }
 }

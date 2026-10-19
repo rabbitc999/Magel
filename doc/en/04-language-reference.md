@@ -27,6 +27,11 @@ about how to use it.
 Statements end with `;`, blocks use `{ }`. Preprocessor directives start with `%` and macros with `$`;
 see §14.
 
+Ordinary string literals with identical byte contents share one generated data item within a program,
+including uses in different functions and empty literals. Independent `String` values retain value copying
+and deterministic cleanup, so changing one variable does not change another. Literals cannot be modified
+directly or borrowed through mutable references to their bytes.
+
 ---
 
 ## 2. Types
@@ -41,6 +46,12 @@ see §14.
 | Other scalars | `bool` `char` |
 | String | `String` (i.e. `std::lang::String`) |
 | Big numbers / high precision | `BigInteger` `BigDecimal` |
+
+`char` holds one UTF-8 byte in the range 0–255 and shares u8 arithmetic and one-byte memory access with `uint8`.
+Adjacent elements of `char[]` and `uint8[]` are one byte apart. Loads zero-extend, stores truncate high bits,
+and arithmetic wraps with u8 semantics. A character literal must decode to exactly one byte; multibyte text
+uses strings, whose indexing and length count UTF-8 bytes. Structures retain their field-slot layout;
+the access width of a byte field does not imply that the whole structure is packed.
 
 **No implicit narrowing.** `int64 -> int32` and `int64 -> char` both need an explicit cast:
 `(int32)x` / `(char)x`.
@@ -98,6 +109,13 @@ void log(String message) { println("{}", message); }
 
 - Parameters are **by value** (copies) by default. To avoid copying, or to allow mutation, write
   `T mut&` / `T const&`.
+- Runtime arrays follow the same rule: `T[] items` copies the length and elements, so changes
+  to the copy do not affect the argument. `T[] & items` and `T[] const& items` are read-only
+  references; `T[] mut& items` is a mutable reference. Bind a reference with `&array`, or
+  forward an existing array reference directly. A read-only reference cannot write elements,
+  obtain mutable element references, or be passed to a mutable reference parameter. References
+  to local arrays cannot outlive their source. Resource-owning elements retain their normal
+  copy and destruction rules.
 - Overloading is supported: selection is by argument types.
 - Variadic trailing parameters are written `T... items`, used with `for-in` or `std::iter`.
 - `static` methods belong to the type and are called `Type::method()`.
@@ -388,26 +406,24 @@ void show(Message message) {
 int64 grade(int64 score) {
     match (score) {
         100 => { return 3; }
-        [90, 99] => { return 2; }
-        [60, 89] => { return 1; }
+        std::lang::rangeEq(90, 99) => { return 2; }
+        std::lang::rangeEq(60, 89) => { return 1; }
         _ => { return 0; }
     }
     return 0;
 }
 ```
 
-Ranges support only the half-open `[a, b)` and closed `[a, b]` forms. Left-open ranges are rejected:
+Integer and `char` range patterns use standard calls:
 
 | Spelling | Meaning |
 | --- | --- |
-| `[a, b)` | `a <= x < b` |
-| `(a, b]` | `a < x <= b` |
-| `[a, b]` | `a <= x <= b` |
+| `std::lang::range<T>(a, b)` | `a <= x < b` |
+| `std::lang::rangeEq<T>(a, b)` | `a <= x <= b` |
 
-> Scalar branches accept **constants or ranges only**. A variable, function call or other expression
-> produces: "match branch must be an integer / float / bool constant or a range pattern".
+`<T>` may be omitted when the endpoint types can be inferred. Range patterns support integers and `char`; ordered conditions on floats and String use guards. Custom values implementing `Equal<T>` can be match subjects, with branch values compared through that protocol. The subject is evaluated once and branches are tested in source order.
 
-Integer match patterns with compile-time bounds are checked for overlapping coverage. `[15,25]` and `[10,20]`, or `15 =>` and `[15,20]`, produce warning `MGL1601`, regardless of which pattern comes first. `[10,15)` and `[15,20]` do not overlap. Empty ranges are ignored. Comparisons preserve full int64/uint64 precision and consider only values representable by the subject type. Constant-expression bounds are checked; runtime bounds are not inferred. Floating-point and string patterns are outside this warning.
+Integer patterns with compile-time bounds are checked for overlapping coverage. `rangeEq(15,25)` and `rangeEq(10,20)`, or `15 =>` and `rangeEq(15,20)`, produce warning `MGL1601`. `range(10,15)` and `rangeEq(15,20)` do not overlap. Empty ranges are ignored. Comparisons preserve full int64/uint64 precision and consider only values representable by the subject. Constant-expression bounds are checked; runtime bounds are not inferred.
 
 Warnings do not prevent compilation or change branch order. Patterns are tested in source order, followed by their guards. Guarded patterns can also receive coverage warnings; this does not prove that a branch is unreachable. Duplicate unguarded single-value patterns remain compilation errors. CLI warnings include source locations, JSON uses `severity: "warning"`, and the editor displays warning severity.
 
@@ -529,9 +545,15 @@ int64 main() {
     };
     println("loop={}", n);
     int64 total = 0;
-    for (int64 k = 0; k < 5; k = k + 1) {
-        if (k == 1) { continue; }
+    {
+        int64 k = 0;
+        while (k < 5) {
+
+        if (k == 1) { { k = k + 1; continue; } }
         total = total + k;
+    
+            k = k + 1;
+        }
     }
     println("for={}", total);
     return 0;
@@ -548,7 +570,6 @@ for=9
 | --- | --- |
 | `if / elif / else` | conditional branches |
 | `while (cond) { }` | test before body |
-| `for (init; cond; step) { }` | three-part |
 | `loop { … yield v; }` | infinite loop; `yield` carries the result |
 | `for (T x in c) { }` | iterate a container / iterator |
 | `break` / `continue` / `return` | exit / continue / return |
@@ -584,7 +605,7 @@ m=1
 | `Map<K, V>` | `[]` `has` `remove` `len` `keys` `values` |
 | `Set<T>` | `insert` `has` `remove` `len` |
 
-Collection literals: `{1, 2, 3}` is a `Set`, `{"a": 1}` is a `Map`.
+Collection literals: `[1, 2, 3]` is a `List`, `{1, 2, 3}` is a `Set`, and `{"a": 1}` is a `Map`. Write an empty list as `List<T> values = [];`. Empty braces require Set or Map context.
 
 Iterator chains (`map` / `filter` / `collect`) need `import std::iter;` — see
 [Language tour](02-language-tour.md#7-collections-and-iterators).
@@ -693,6 +714,45 @@ Full examples: [`example/reflection/`](../../example/reflection/) (`annotations.
 
 ## 16. The C boundary: `abi` blocks
 
+`opcode` declares an opaque object owned by ABI or C++ glue:
+
+```magel
+opcode Number {
+    new = createNumber;
+    drop = destroyNumber;
+    copy = copyNumber;
+};
+
+#NonCopyable
+opcode FileHandle {
+    new = openFile;
+    drop = closeFile;
+};
+```
+
+A `struct` may declare any number of fields of `opcode` types. Each field maintains its own value and lifecycle.
+
+Both `new` and `drop` bindings are required. Copyable types also require a `copy`
+binding that creates an independent host record. `#NonCopyable` omits `copy` and
+prohibits copying during initialization, assignment, value arguments and value
+returns. It still supports ownership transfer with `T target = move(&source);`,
+including explicit `move(&value)` in value arguments and returns. This applies to
+all opcode types. Moving does not call copy; the source binding becomes invalid
+and the final owner is responsible for drop. `Type::new(...)`
+invokes the creation binding. An opcode is a special struct containing an opaque
+glue handle. Its body may also declare ordinary fields, instance methods and
+static methods. The language stores, copies and destroys ordinary fields; they
+do not describe the host object's memory layout. Methods may read `self.opcode`
+and pass it to glue. This internal handle is accessible only in its declaring
+module and is read-only after creation: assignment, compound assignment and
+mutable references are forbidden. Reflection follows the existing `@Reflect`
+rules and can read the object and its public fields, while excluding the internal
+`opcode` handle. Language-service suggestions exclude that internal handle.
+Strings and arrays retain their value semantics.
+`String`, `BigInteger`, `BigDecimal`, `File` and `Process` are defined by `opcode`
+declarations in `std::lang`; the frontend has no separate `Kind` enumerators for
+them. Lowercase `string` is not a type alias for `String`.
+
 ```magel
 abi "./native.dll" {
     int64 c_function(int64 x) = "c_function";
@@ -762,27 +822,54 @@ assert(transferred() == 2);
 
 Duplicate names, unknown variables, parameter conflicts, and mut/move captures of read-only sources are rejected. Listed variables are captured even when unused in the body. Capture applies to the whole variable. Copying or moving a reference does not own its referent or extend its lifetime. Direct global access uses global storage; explicitly list a global for a snapshot. Convert array values to containers or explicit references. File and process handles support move capture but cannot be copied, including through closure copies.
 
-## Integer intervals in for-in
+## Ranges and the advancement protocol
 
-`for(auto item in source)` and `for(item in source)` share element type inference. Lists and other iterators preserve their element type; integer intervals infer it from the endpoints. Explicit types still undergo static compatibility checks.
+`for (auto item in source)`, `for (item in source)` and explicitly typed bindings share the iteration protocol. `std::lang::range(a, b)` excludes the upper endpoint; `std::lang::rangeEq(a, b)` includes both endpoints. Either call accepts an explicit `<T>`.
 
-`for (uint8 x in [0,255]) { ... }` yields 256 values, from 0 through 255; `[0,255)` excludes 255. All eight fixed-width signed and unsigned integer types are supported. Omitted variable types are inferred from the endpoints; ordinary integer literals default to int64.
+The eight fixed-width integer types and `char` support direct range calculations. `for (uint8 x in std::lang::rangeEq<uint8>(0, 255)) { ... }` yields 256 items; `range<uint8>` yields 255. Bounds are evaluated once each, from left to right, and both must fit T, including an exclusive upper endpoint. Foldable integer violations are rejected at compile time; dynamic endpoints are checked before iteration. Reversed ranges are errors. `range(a, a)` is empty; `rangeEq(a, a)` yields one item. A closed maximum endpoint terminates without calculating maximum plus one.
 
-Intervals are internal lazy `Iterator<T>` values using the existing for-in protocol, without allocating a list. Bounds are evaluated once each, from left to right. Both endpoints must fit T, including an exclusive upper endpoint. Constant violations are rejected at compile time; dynamic values are checked before iteration. int8 spans -128..127, so `for(int8 x in [0,255])` is rejected. Reversed intervals are errors; [a,a) is empty and [a,a] yields one value.
+Other value types implement `NextValue<T>`, whose method is `Option<T> nextValue(T end, bool inclusive)`. A range independently owns its starting cursor and endpoint. Each step calls the method on the cursor; the implementation yields the next item, advances its receiver state and detects termination by returning None. Custom advancement supports iteration; match range patterns remain restricted to integers and char.
 
-A closed interval finishes at its last value without incrementing the maximum integer. uint8 255 and uint64 18446744073709551615 are valid inclusive upper bounds. Changing the iteration variable does not change the iterator state. Existing break, continue, return and lambda capture rules apply.
+## Loop value expressions with else
+
+For-in and while can produce values in initializers, assignments, arguments and return positions. An else result is required. `yield value;` exits the entire value expression with a result. Exhaustion, a false condition or a plain break reaches else if no value has been yielded. Continue starts the next iteration. A single-value branch may use `{ value }`; complex branches use `yield value;`.
+
+```magel
+int64 main()
+{
+    int64 first = for (auto value in std::lang::range(1, 8))
+    {
+        if (value % 2 == 0)
+        {
+            yield value;
+        }
+    }
+    else { -1 };
+    int64 fallback = while (false) { 1 } else { 7 };
+    assert(first == 2 && fallback == 7);
+    return 0;
+}
+```
+
+All reachable results are checked against the receiving type. String, arrays and copyable aggregates keep value semantics. Noncopyable opcode results transfer ownership through newly created values or explicit move. The result is saved before loop-local resources are destroyed.
 
 ## Breaking out of nested loops
 
 `break level N;` counts from the current loop and exits the Nth enclosing loop, resuming after that loop. `break level 1;` is equivalent to `break;`. `break all;` exits every enclosing loop in the current function and resumes after the outermost loop; `break level all;` is equivalent. `level` and `all` are recognized only in this position, so `all` remains available as an ordinary variable name.
 
-Only `loop`, `while`, `do-while`, `for` and `for-in` count. Ordinary blocks, value blocks, `if` and `match` do not count. N must be a positive decimal integer literal, not a variable or expression. Zero, negative numbers, excessive depths and use outside a loop are rejected. Exits cannot cross function or `fn` boundaries. These forms carry no result; targeting a loop expression that requires a value is rejected. Use `yield value;` to supply a result.
+Only `loop`, `while` and `for-in` count. Ordinary blocks, value blocks, `if` and `match` do not count. N must be a positive decimal integer literal, not a variable or expression. Zero, negative numbers, excessive depths and use outside a loop are rejected. Exits cannot cross function or `fn` boundaries. These forms carry no result; targeting a loop expression that requires a value is rejected. Use `yield value;` to supply a result.
 
 ```magel
 loop {
     while (true) {
-        for (int64 i = 0; i < 10; i++) {
+        {
+            int64 i = 0;
+            while (i < 10) {
+
             if (i == 3) { break level 2; }
+        
+                i++;
+            }
         }
     }
     // The for and while loops have ended; execution is still inside loop.
@@ -806,14 +893,20 @@ int64 main() {
 }
 ```
 
-A value exit (`yield`) selects the nearest result-receiving expression, crossing intervening while, do-while, for, for-in and statement-position loop constructs. Nested loop, block, if and match expressions used in initializers, assignments, arguments or returns still receive their own exit values. Plain `break;` exits only the nearest loop and does not produce a result for an enclosing expression. `yield (a, b);` forms one tuple: each element is evaluated once from left to right, with element types constrained by the receiving tuple type. A block expression does not create a loop, so `continue;` searches for an enclosing loop. Results are saved before local resources are cleaned up. Strings and lists retain value semantics, and references to expired locals cannot escape.
+A value exit (`yield`) selects the nearest result-receiving expression, crossing intervening statement while, for-in and statement-position loop constructs. Nested loop, block, if and match expressions used in initializers, assignments, arguments or returns still receive their own exit values. Plain `break;` exits only the nearest loop and does not produce a result for an enclosing expression. `yield (a, b);` forms one tuple: each element is evaluated once from left to right, with element types constrained by the receiving tuple type. A block expression does not create a loop, so `continue;` searches for an enclosing loop. Results are saved before local resources are cleaned up. Strings and lists retain value semantics, and references to expired locals cannot escape.
 
 For example, a loop can directly complete an enclosing block assignment, while nested assignment blocks receive their own results:
 
 ```magel
 (int64, String) found = {
-    for (int64 i = 0; i < 10; i++) {
+    {
+        int64 i = 0;
+        while (i < 10) {
+
         if (i == 3) { yield (i, "found"); }
+    
+            i++;
+        }
     }
     yield (-1, "missing");
 };
