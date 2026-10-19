@@ -603,6 +603,70 @@ magel：[MGL1205] 借用来源已移动或销毁，不能继续访问（源对�
 \texttt{copy} 还是 \texttt{move}？ 之后还要用原值 \ensuremath{\rightarrow} \texttt{copy}；原值从此归闭包 \ensuremath{\rightarrow} \texttt{move}。对 \texttt{String} / \texttt{List} / 带 \texttt{Drop} 的 struct，\texttt{move} 省一次拷贝，代价是来源作废。
 \end{tip}
 
+\subsection{同一个变量既借又 \texttt{move}：未定义行为}
+
+下面这段能编译、能跑，但结果是未定义行为：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+void main()
+{
+    int64 n = 1;
+    auto f = fn mut(x) { n = x + n };
+    auto g = fn move(x) { x * n };
+    println("f={}", f(1));
+    println("g={}", g(1));
+}
+\end{lstlisting}
+\par
+\medskip
+
+当前实现打印 \texttt{f=\allowbreak{}1} / \texttt{g=\allowbreak{}1}。别把这个输出当成语言规则——它只是「搬空后的 \texttt{n} 恰好读成 0」的副产品。
+
+问题出在顺序上：
+
+\begin{enumerate}
+
+\item \texttt{f} 按 \texttt{mut\&} 抓住 \texttt{n}，拿到的是一条指向 \texttt{n} 的线；
+
+\item \texttt{g} 按 \texttt{move} 把 \texttt{n} 搬走，\texttt{n} 这个绑定从此作废；
+
+\item \texttt{f(\allowbreak{}1)\allowbreak{}} 却还在沿着那条线读写已经作废的 \texttt{n}。
+
+\end{enumerate}
+
+编译器目前只拦「先 \texttt{move}、后借」这一种顺序（报 \texttt{MGL1205}），不拦「先借、后 \texttt{move}」。同一个变量被两套规则同时管着，谁也没赢。
+
+搬空之后残留什么，取决于类型：\texttt{int64} 读到 0、\texttt{String} 读到空串、容器句柄可能让运行期直接报「不是对象句柄」。换个类型、换个构建，结果就可能变——这就是「未定义」。
+
+别写这种代码。两个闭包都要用同一个变量，就把捕获方式错开：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main()
+{
+    int64 n = 1;
+    auto f = fn mut(x) { n = x + n };
+    auto g = fn copy(x) { x * n };
+    println("{} {} {}", f(1), g(1), n);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+2 1 2
+\end{lstlisting}
+\par
+\medskip
+
+\texttt{g} 用 \texttt{fn copy} 拿走的是创建闭包那一刻的快照（\texttt{n =\allowbreak{} 1}），\texttt{n} 不会再被搬空，\texttt{f} 那条线始终有效。
+
 \section{捕获列表：逐个变量指定方式}
 
 \texttt{fn mut(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} 是"所有外部变量都按 \texttt{mut\&} 抓"。想给不同变量不同待遇，就在 \texttt{fn} 后面加一对方括号：
@@ -1088,6 +1152,8 @@ drops=1
 \item \texttt{move} 之后来源作废，须重新声明新绑定，普通赋值不能恢复。
 
 \item 借用的闭包不能返回；要返回就用 \texttt{copy} / \texttt{move}，或借调用方的指针。
+
+\item 同一个变量不要「又借又 \texttt{move}」：先建借用闭包、再 \texttt{fn move} 同一变量不会报错，结果是未定义行为（见 15.7.5）。
 
 \item 复制闭包：拥有的状态各复制一份，借用的线仍指向同一来源。
 

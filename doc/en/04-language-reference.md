@@ -824,6 +824,8 @@ assert(transferred() == 2);
 
 Duplicate names, unknown variables, parameter conflicts, and mut/move captures of read-only sources are rejected. Listed variables are captured even when unused in the body. Capture applies to the whole variable. Copying or moving a reference does not own its referent or extend its lifetime. Direct global access uses global storage; explicitly list a global for a snapshot. Convert array values to containers or explicit references. File and process handles support move capture but cannot be copied, including through closure copies.
 
+A variable first captured by reference (implicit `const&` or `fn mut`) and later captured by another closure's `move` is **not diagnosed** today: the borrowing closure keeps reading and writing the vacated binding. The result is undefined behavior — an `int64` reads 0, a `String` reads empty, and a container handle may fail at run time. The check only covers the reverse order (capture after `move`, rejected with `MGL1205`). Do not mix reference capture and `move` on one variable; use `copy` when a snapshot is needed.
+
 ## Ranges and the advancement protocol
 
 `for (auto item in source)`, `for (item in source)` and explicitly typed bindings share the iteration protocol. `std::lang::range(a, b)` excludes the upper endpoint; `std::lang::rangeEq(a, b)` includes both endpoints. Either call accepts an explicit `<T>`.
