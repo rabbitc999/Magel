@@ -6,7 +6,7 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 EXE = ".exe" if os.name == "nt" else ""
-MAGEL = ROOT / "build/work/magel" / ("magel" + EXE)
+MAGEL = ROOT / ("magel" + EXE)
 WORK = ROOT / "build/magel-string-reentry"
 
 

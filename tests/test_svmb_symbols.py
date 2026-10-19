@@ -11,7 +11,7 @@ import zlib
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
-from svmb_format import Reader, fnv64, varuint
+from svmb_format import FEATURE_REFLECTION, Reader, fnv32, fnv64, varuint
 from svmb_compress import compress
 from svmb_format import read_raw
 
@@ -138,7 +138,32 @@ def verify(build, magel=None):
         run(magel, "svmb", ROOT / "example/samples/control.mgl", "--out", folder / "current",
             "--compress-symbols")
         raw = folder / "current.raw.svmb"; compact = folder / "current.svmb"
-        assert compress(read_raw(raw.read_bytes()))[0] == compact.read_bytes()
+        raw_bytes = raw.read_bytes()
+        reflected = read_raw(raw_bytes)
+        assert reflected["features"] & FEATURE_REFLECTION
+        assert reflected["reflection"]
+        assert compress(reflected)[0] == compact.read_bytes()
+        # 保留默认反射，同时拒绝损坏的反射结构、未知特性及段尾垃圾。
+        metadata_start = len(raw_bytes) - len(reflected["reflection"])
+        reflected_mutants = []
+        bad = bytearray(raw_bytes); bad[metadata_start] ^= 1; reflected_mutants.append(bad)
+        bad = bytearray(raw_bytes); bad[metadata_start + 4] = 2; reflected_mutants.append(bad)
+        bad = bytearray(raw_bytes); struct.pack_into("<I", bad, metadata_start + 8, 4097); reflected_mutants.append(bad)
+        bad = bytearray(raw_bytes); struct.pack_into("<H", bad, 10, 0); reflected_mutants.append(bad)
+        bad = bytearray(raw_bytes); struct.pack_into("<H", bad, 10, 0x8002); reflected_mutants.append(bad)
+        reflected_mutants.extend((bytearray(raw_bytes[:-1]), bytearray(raw_bytes + b"x")))
+        for index, bad in enumerate(reflected_mutants):
+            struct.pack_into("<Q", bad, 12, len(bad) - 24)
+            struct.pack_into("<I", bad, 20, fnv32(bad[24:]))
+            try:
+                read_raw(bad)
+            except ValueError:
+                pass
+            else:
+                raise AssertionError("损坏的反射产物被 Python 转换器接受")
+            malformed = folder / f"reflection-malformed-{index}.svmb"
+            malformed.write_bytes(bad)
+            run(tool, "compress", malformed, "--output", folder / f"reflection-invalid-{index}.svmb", success=False)
         baseline = run(vm, "run", raw, "--data", folder / "current.raw.data.bin",
             "--layout", folder / "current.raw.layout")
         converted = run(vm, "run", compact, "--data", folder / "current.data.bin",

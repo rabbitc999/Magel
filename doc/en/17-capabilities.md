@@ -30,6 +30,9 @@ Owned values have deterministic cleanup without GC. References, host resources a
 references retain their individual contracts. Manually allocated storage must be released as specified.
 Static checking does not cover arbitrary raw memory, external host behavior or every concurrent invalidation.
 String indexing and slicing use UTF-8 bytes; use `std::utf8` for code-point operations.
+Runtime array parameters `T[]` copy the length and elements. `T[] &` / `T[] const&`
+borrow read-only arrays; `T[] mut&` borrows a mutable array. Array references retain
+element layout, runtime length and the source lifetime.
 See the [language reference](04-language-reference.md), [core concepts](03-core-concepts.md) and
 [move rules](23-ownership-move.md).
 

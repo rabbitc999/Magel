@@ -21,7 +21,7 @@ void checkWord(uint32 word, bool bigEndian) {
     List<uint8> fixedResult = float32ToBytes(bytesToFloat32(fixed, 6, bigEndian).unwrap(), bigEndian);
     uint8 dynamic[] = new[6];
     dynamic[4] = (uint8)99;
-    assert(float32ToBytes(value, dynamic, bigEndian));
+    assert(float32ToBytes(value, &dynamic, bigEndian));
     assert(dynamic[4] == (uint8)99);
     List<uint8> dynamicResult = float32ToBytes(bytesToFloat32(dynamic, bigEndian).unwrap(), bigEndian);
     for (int64 n = 0; n < 4; n = n + 1) {
@@ -63,7 +63,7 @@ int64 main() {
     assert(bytesToFloat32(invalid).unwrap() == (float32)0);
     uint8 shortArray[] = new[3];
     shortArray[0] = (uint8)77;
-    assert(!float32ToBytes((float32)1.5, shortArray));
+    assert(!float32ToBytes((float32)1.5, &shortArray));
     assert(shortArray[0] == (uint8)77 && bytesToFloat32(shortArray).isNone());
     uint8 fixed[5];
     assert(float32ToBytes((float32)1.5, fixed, 5));

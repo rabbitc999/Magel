@@ -31,6 +31,10 @@ AR       = ar
 CXXFLAGS = -std=c++17 -Wall -Wextra -O2 -DNDEBUG -ffunction-sections -fdata-sections
 # 链接期：--gc-sections 丢弃未引用的节，-s 去掉符号表（体积主要靠这两项下降）。
 LDFLAGS  = -Wl,--gc-sections -s
+ifeq ($(OS),Windows_NT)
+# VSIX 只内嵌编译器 EXE；静态链接 MinGW 运行库，避免依赖用户的 MinGW PATH。
+LDFLAGS += -static
+endif
 LDLIBS   = -lm
 ARFLAGS  = rcs
 

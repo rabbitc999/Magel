@@ -2,11 +2,12 @@
 from pathlib import Path
 import argparse
 import os
+import re
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 EXE = ".exe" if os.name == "nt" else ""
-MAGEL = ROOT / "build/work/magel" / ("magel" + EXE)
+MAGEL = ROOT / ("magel" + EXE)
 WORK = ROOT / "build/magel-reference-values"
 
 
@@ -42,7 +43,13 @@ def main():
             results.append((mode, run(executable)))
         for mode, result in results:
             assert result.stdout == expected, (mode, result.stdout, expected)
-            assert not result.stderr, (mode, result.stderr)
+            if sample == "destructuring_guards" and mode == "解释执行":
+                warning = (r"magel：警告：[^\n]*destructuring_guards\.mgl:23:47："
+                           r"\[MGL1601\] match 整数模式与前面的模式重叠；仍按分支顺序和守卫选择匹配项\n"
+                           r"    \|\n 23 \| [^\n]*\n    \| +~\n")
+                assert re.fullmatch(warning, result.stderr), (mode, result.stderr)
+            else:
+                assert not result.stderr, (mode, result.stderr)
         print(f"[通过] {sample}：解释执行、AOT", flush=True)
     print(f"综合样例解释执行与 AOT 检查通过（{len(args.samples)} 个）：{', '.join(args.samples)}")
 

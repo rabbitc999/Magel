@@ -32,7 +32,7 @@ def main():
     result = execute(unit)
     assert result.returncode == 0 and result.stdout == "lambda unit tests OK\n" and not result.stderr, result
     source = ROOT / "example/samples/lambda_callbacks.mgl"
-    expected = "lambda callbacks OK\n"
+    expected = (ROOT / "example/expected/lambda_callbacks.txt").read_text(encoding="utf-8")
     result = execute(compiler, "run", source, "--out", WORK / "interpreted")
     assert result.returncode == 0 and result.stdout == expected and not result.stderr, result
     executable = WORK / ("callbacks" + EXE)
@@ -42,26 +42,26 @@ def main():
     assert result.returncode == 0 and result.stdout == expected and not result.stderr, result
     captures = ROOT / "example/samples/lambda_captures.mgl"
     result = execute(compiler, "run", captures, "--out", WORK / "captures-interpreted")
-    assert result.returncode == 0 and result.stdout == "lambda captures OK\n" and not result.stderr, result
+    assert result.returncode == 0 and result.stdout == (ROOT / "example/expected/lambda_captures.txt").read_text(encoding="utf-8") and not result.stderr, result
     captured_executable = WORK / ("captures" + EXE)
     result = execute(compiler, "aot", captures, "--out", captured_executable, "--opt-level=0")
     assert result.returncode == 0, result.stderr
     result = execute(captured_executable)
-    assert result.returncode == 0 and result.stdout == "lambda captures OK\n" and not result.stderr, result
+    assert result.returncode == 0 and result.stdout == (ROOT / "example/expected/lambda_captures.txt").read_text(encoding="utf-8") and not result.stderr, result
     modes = ROOT / "tests/fixtures/lambda_capture_modes.mgl"
     for backend in ("run", "aot"):
         executable = WORK / ("modes-" + backend + EXE)
         result = execute(compiler, backend, modes, "--out", executable)
         assert result.returncode == 0, result
         if backend == "aot": result = execute(executable)
-        assert result.returncode == 0 and result.stdout == "lambda capture modes OK\n" and not result.stderr, result
+        assert result.returncode == 0 and result.stdout == "fn capture modes OK\n" and not result.stderr, result
     if args.vm:
         prefix = WORK / "captures-binary"
         result = execute(compiler, "svmb", captures, "--out", prefix)
         assert result.returncode == 0, result.stderr
         result = execute(args.vm.resolve(), "run", prefix.with_suffix(".svmb"),
                          "--data", prefix.with_suffix(".data.bin"), "--layout", prefix.with_suffix(".layout"))
-        assert result.returncode == 0 and result.stdout.partition("\n\n;")[0] == "lambda captures OK" and not result.stderr, result
+        assert result.returncode == 0 and result.stdout.partition("\n\n;")[0] == (ROOT / "example/expected/lambda_captures.txt").read_text(encoding="utf-8").rstrip("\n") and not result.stderr, result
         assert "没释放" not in result.stdout, result
     (WORK / "callbacks_module.mgl").write_text(
         "module callbacks_module;\nimport std::iter;\n"

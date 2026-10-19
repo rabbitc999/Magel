@@ -6,7 +6,7 @@ import subprocess
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_MC = ROOT / "build/work/magel" / ("magel.exe" if os.name == "nt" else "magel")
+DEFAULT_MC = ROOT / ("magel.exe" if os.name == "nt" else "magel")
 MESSAGE = "MGL1301"
 
 

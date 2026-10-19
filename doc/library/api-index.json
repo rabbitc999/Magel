@@ -11840,9 +11840,9 @@
     "module": "std::lang",
     "name": "float32ToBytes",
     "owner": "",
-    "signature": "bool float32ToBytes(float32 value, uint8 bytes[], bool bigEndian)",
-    "documentation": "编码到运行时数组，自动获取容量。\n\n**返回值**：bool。",
-    "comment": "/** 编码到运行时数组，自动获取容量。 */",
+    "signature": "bool float32ToBytes(float32 value, uint8[] mut& bytes, bool bigEndian)",
+    "documentation": "编码到运行时数组的可变引用，自动获取容量；调用时传入 &array。\n\n**返回值**：bool。",
+    "comment": "/** 编码到运行时数组的可变引用，自动获取容量；调用时传入 &array。 */",
     "parameters": [
       {
         "name": "value",
@@ -11852,7 +11852,7 @@
       },
       {
         "name": "bytes",
-        "label": "uint8 bytes[]",
+        "label": "uint8[] mut& bytes",
         "documentation": "输入或输出字节存储",
         "default": ""
       },
@@ -11865,7 +11865,7 @@
     ],
     "returns": {
       "type": "bool",
-      "documentation": "编码到运行时数组，自动获取容量。"
+      "documentation": "编码到运行时数组的可变引用，自动获取容量；调用时传入 &array。"
     },
     "errors": {
       "documentation": "自动加载，无需 import。Option/Result 通过 match 或 isValue/isOk 分支处理；unwrap/expect 在失败分支触发 panic。浮点转整数向零截断，范围检查见各重载；字节编码默认小端。拥有值按值复制，引用的生命周期不得超过来源。 List.pop 空列表报错，列表/集合/映射的按位置访问需有效下标。Set/Map 的 has/contains 返回 int64 的 0/1；List 的同名接口返回 bool。Any.getReference/getOptional 的 const/mut 由接收上下文决定，返回引用受盒子寿命限制。BigDecimal 精度范围 1..100000。内存内建接受有效存储引用，字节计数不是元素数量。$assert(condition) 和 $assert(condition,message) 为宏调用，自动添加调用点行号，宏体自带分号。",
@@ -11884,9 +11884,9 @@
     "module": "std::lang",
     "name": "float32ToBytes",
     "owner": "",
-    "signature": "bool float32ToBytes(float32 value, uint8 bytes[])",
-    "documentation": "默认小端运行时数组编码。\n\n**返回值**：bool。",
-    "comment": "/** 默认小端运行时数组编码。 */",
+    "signature": "bool float32ToBytes(float32 value, uint8[] mut& bytes)",
+    "documentation": "默认小端运行时数组编码；调用时传入 &array。\n\n**返回值**：bool。",
+    "comment": "/** 默认小端运行时数组编码；调用时传入 &array。 */",
     "parameters": [
       {
         "name": "value",
@@ -11896,14 +11896,14 @@
       },
       {
         "name": "bytes",
-        "label": "uint8 bytes[]",
+        "label": "uint8[] mut& bytes",
         "documentation": "输入或输出字节存储",
         "default": ""
       }
     ],
     "returns": {
       "type": "bool",
-      "documentation": "默认小端运行时数组编码。"
+      "documentation": "默认小端运行时数组编码；调用时传入 &array。"
     },
     "errors": {
       "documentation": "自动加载，无需 import。Option/Result 通过 match 或 isValue/isOk 分支处理；unwrap/expect 在失败分支触发 panic。浮点转整数向零截断，范围检查见各重载；字节编码默认小端。拥有值按值复制，引用的生命周期不得超过来源。 List.pop 空列表报错，列表/集合/映射的按位置访问需有效下标。Set/Map 的 has/contains 返回 int64 的 0/1；List 的同名接口返回 bool。Any.getReference/getOptional 的 const/mut 由接收上下文决定，返回引用受盒子寿命限制。BigDecimal 精度范围 1..100000。内存内建接受有效存储引用，字节计数不是元素数量。$assert(condition) 和 $assert(condition,message) 为宏调用，自动添加调用点行号，宏体自带分号。",
@@ -11914,7 +11914,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 69,
+    "line": 72,
     "page": "std-lang.md",
     "anchor": "api-18"
   },
@@ -11952,7 +11952,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 76,
+    "line": 79,
     "page": "std-lang.md",
     "anchor": "api-19"
   },
@@ -11984,7 +11984,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 78,
+    "line": 81,
     "page": "std-lang.md",
     "anchor": "api-20"
   },
@@ -12022,7 +12022,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 80,
+    "line": 83,
     "page": "std-lang.md",
     "anchor": "api-21"
   },
@@ -12054,7 +12054,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 85,
+    "line": 88,
     "page": "std-lang.md",
     "anchor": "api-22"
   },
@@ -12098,7 +12098,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 87,
+    "line": 90,
     "page": "std-lang.md",
     "anchor": "api-23"
   },
@@ -12136,7 +12136,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 92,
+    "line": 95,
     "page": "std-lang.md",
     "anchor": "api-24"
   },
@@ -12174,7 +12174,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 94,
+    "line": 97,
     "page": "std-lang.md",
     "anchor": "api-25"
   },
@@ -12206,7 +12206,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 96,
+    "line": 99,
     "page": "std-lang.md",
     "anchor": "api-26"
   },
@@ -12256,7 +12256,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 98,
+    "line": 101,
     "page": "std-lang.md",
     "anchor": "api-27"
   },
@@ -12300,7 +12300,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 103,
+    "line": 106,
     "page": "std-lang.md",
     "anchor": "api-28"
   },
@@ -12308,9 +12308,9 @@
     "module": "std::lang",
     "name": "float64ToBytes",
     "owner": "",
-    "signature": "bool float64ToBytes(float64 value, uint8 bytes[], bool bigEndian)",
-    "documentation": "编码到运行时数组，自动获取容量。\n\n**返回值**：bool。",
-    "comment": "/** 编码到运行时数组，自动获取容量。 */",
+    "signature": "bool float64ToBytes(float64 value, uint8[] mut& bytes, bool bigEndian)",
+    "documentation": "编码到运行时数组的可变引用，自动获取容量；调用时传入 &array。\n\n**返回值**：bool。",
+    "comment": "/** 编码到运行时数组的可变引用，自动获取容量；调用时传入 &array。 */",
     "parameters": [
       {
         "name": "value",
@@ -12320,7 +12320,7 @@
       },
       {
         "name": "bytes",
-        "label": "uint8 bytes[]",
+        "label": "uint8[] mut& bytes",
         "documentation": "输入或输出字节存储",
         "default": ""
       },
@@ -12333,7 +12333,7 @@
     ],
     "returns": {
       "type": "bool",
-      "documentation": "编码到运行时数组，自动获取容量。"
+      "documentation": "编码到运行时数组的可变引用，自动获取容量；调用时传入 &array。"
     },
     "errors": {
       "documentation": "自动加载，无需 import。Option/Result 通过 match 或 isValue/isOk 分支处理；unwrap/expect 在失败分支触发 panic。浮点转整数向零截断，范围检查见各重载；字节编码默认小端。拥有值按值复制，引用的生命周期不得超过来源。 List.pop 空列表报错，列表/集合/映射的按位置访问需有效下标。Set/Map 的 has/contains 返回 int64 的 0/1；List 的同名接口返回 bool。Any.getReference/getOptional 的 const/mut 由接收上下文决定，返回引用受盒子寿命限制。BigDecimal 精度范围 1..100000。内存内建接受有效存储引用，字节计数不是元素数量。$assert(condition) 和 $assert(condition,message) 为宏调用，自动添加调用点行号，宏体自带分号。",
@@ -12344,7 +12344,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 105,
+    "line": 108,
     "page": "std-lang.md",
     "anchor": "api-29"
   },
@@ -12352,9 +12352,9 @@
     "module": "std::lang",
     "name": "float64ToBytes",
     "owner": "",
-    "signature": "bool float64ToBytes(float64 value, uint8 bytes[])",
-    "documentation": "默认小端运行时数组编码。\n\n**返回值**：bool。",
-    "comment": "/** 默认小端运行时数组编码。 */",
+    "signature": "bool float64ToBytes(float64 value, uint8[] mut& bytes)",
+    "documentation": "默认小端运行时数组编码；调用时传入 &array。\n\n**返回值**：bool。",
+    "comment": "/** 默认小端运行时数组编码；调用时传入 &array。 */",
     "parameters": [
       {
         "name": "value",
@@ -12364,14 +12364,14 @@
       },
       {
         "name": "bytes",
-        "label": "uint8 bytes[]",
+        "label": "uint8[] mut& bytes",
         "documentation": "输入或输出字节存储",
         "default": ""
       }
     ],
     "returns": {
       "type": "bool",
-      "documentation": "默认小端运行时数组编码。"
+      "documentation": "默认小端运行时数组编码；调用时传入 &array。"
     },
     "errors": {
       "documentation": "自动加载，无需 import。Option/Result 通过 match 或 isValue/isOk 分支处理；unwrap/expect 在失败分支触发 panic。浮点转整数向零截断，范围检查见各重载；字节编码默认小端。拥有值按值复制，引用的生命周期不得超过来源。 List.pop 空列表报错，列表/集合/映射的按位置访问需有效下标。Set/Map 的 has/contains 返回 int64 的 0/1；List 的同名接口返回 bool。Any.getReference/getOptional 的 const/mut 由接收上下文决定，返回引用受盒子寿命限制。BigDecimal 精度范围 1..100000。内存内建接受有效存储引用，字节计数不是元素数量。$assert(condition) 和 $assert(condition,message) 为宏调用，自动添加调用点行号，宏体自带分号。",
@@ -12382,7 +12382,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 107,
+    "line": 113,
     "page": "std-lang.md",
     "anchor": "api-30"
   },
@@ -12416,7 +12416,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 120,
+    "line": 126,
     "page": "std-lang.md",
     "anchor": "api-31"
   },
@@ -12456,7 +12456,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 124,
+    "line": 130,
     "page": "std-lang.md",
     "anchor": "api-32"
   },
@@ -12496,7 +12496,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 128,
+    "line": 134,
     "page": "std-lang.md",
     "anchor": "api-33"
   },
@@ -12542,7 +12542,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 132,
+    "line": 138,
     "page": "std-lang.md",
     "anchor": "api-34"
   },
@@ -12567,7 +12567,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 143,
+    "line": 149,
     "page": "std-lang.md",
     "anchor": "api-35"
   },
@@ -12592,7 +12592,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 145,
+    "line": 151,
     "page": "std-lang.md",
     "anchor": "api-36"
   },
@@ -12624,7 +12624,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 147,
+    "line": 153,
     "page": "std-lang.md",
     "anchor": "api-37"
   },
@@ -12649,7 +12649,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 152,
+    "line": 158,
     "page": "std-lang.md",
     "anchor": "api-38"
   },
@@ -12674,7 +12674,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 158,
+    "line": 164,
     "page": "std-lang.md",
     "anchor": "api-39"
   },
@@ -12706,7 +12706,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 159,
+    "line": 165,
     "page": "std-lang.md",
     "anchor": "api-40"
   },
@@ -12731,7 +12731,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 160,
+    "line": 166,
     "page": "std-lang.md",
     "anchor": "api-41"
   },
@@ -12756,7 +12756,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 169,
+    "line": 175,
     "page": "std-lang.md",
     "anchor": "api-42"
   },
@@ -12783,7 +12783,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 171,
+    "line": 177,
     "page": "std-lang.md",
     "anchor": "api-43"
   },
@@ -12815,7 +12815,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 180,
+    "line": 186,
     "page": "std-lang.md",
     "anchor": "api-44"
   },
@@ -12847,7 +12847,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 189,
+    "line": 195,
     "page": "std-lang.md",
     "anchor": "api-45"
   },
@@ -12879,7 +12879,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 198,
+    "line": 204,
     "page": "std-lang.md",
     "anchor": "api-46"
   },
@@ -12911,7 +12911,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 207,
+    "line": 213,
     "page": "std-lang.md",
     "anchor": "api-47"
   },
@@ -12936,7 +12936,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 220,
+    "line": 226,
     "page": "std-lang.md",
     "anchor": "api-48"
   },
@@ -12961,7 +12961,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 230,
+    "line": 236,
     "page": "std-lang.md",
     "anchor": "api-49"
   },
@@ -12993,7 +12993,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 231,
+    "line": 237,
     "page": "std-lang.md",
     "anchor": "api-50"
   },
@@ -13018,7 +13018,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 232,
+    "line": 238,
     "page": "std-lang.md",
     "anchor": "api-51"
   },
@@ -13043,7 +13043,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 238,
+    "line": 244,
     "page": "std-lang.md",
     "anchor": "api-52"
   },
@@ -13068,7 +13068,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 247,
+    "line": 253,
     "page": "std-lang.md",
     "anchor": "api-53"
   },
@@ -13095,7 +13095,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 249,
+    "line": 255,
     "page": "std-lang.md",
     "anchor": "api-54"
   },
@@ -13127,7 +13127,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 258,
+    "line": 264,
     "page": "std-lang.md",
     "anchor": "api-55"
   },
@@ -13159,7 +13159,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 267,
+    "line": 273,
     "page": "std-lang.md",
     "anchor": "api-56"
   },
@@ -13184,7 +13184,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 276,
+    "line": 282,
     "page": "std-lang.md",
     "anchor": "api-57"
   },
@@ -13216,7 +13216,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 285,
+    "line": 291,
     "page": "std-lang.md",
     "anchor": "api-58"
   },
@@ -13248,7 +13248,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 294,
+    "line": 300,
     "page": "std-lang.md",
     "anchor": "api-59"
   },
@@ -13288,7 +13288,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 308,
+    "line": 314,
     "page": "std-lang.md",
     "anchor": "api-60"
   },
@@ -13320,7 +13320,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 335,
+    "line": 341,
     "page": "std-lang.md",
     "anchor": "api-61"
   },
@@ -13352,7 +13352,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 341,
+    "line": 347,
     "page": "std-lang.md",
     "anchor": "api-62"
   },
@@ -13384,7 +13384,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 346,
+    "line": 352,
     "page": "std-lang.md",
     "anchor": "api-63"
   },
@@ -13416,7 +13416,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 353,
+    "line": 359,
     "page": "std-lang.md",
     "anchor": "api-64"
   },
@@ -13588,7 +13588,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1198,
+    "line": 1199,
     "page": "std-lang.md",
     "anchor": "api-69"
   },
@@ -13629,7 +13629,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1198,
+    "line": 1199,
     "page": "std-lang.md",
     "anchor": "api-70"
   },
@@ -13667,7 +13667,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1202,
+    "line": 1203,
     "page": "std-lang.md",
     "anchor": "api-71"
   },
@@ -13699,7 +13699,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1248,
+    "line": 1249,
     "page": "std-lang.md",
     "anchor": "api-72"
   },
@@ -13724,7 +13724,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1209,
+    "line": 1210,
     "page": "std-lang.md",
     "anchor": "api-73"
   },
@@ -13749,7 +13749,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1258,
+    "line": 1259,
     "page": "std-lang.md",
     "anchor": "api-74"
   },
@@ -13774,7 +13774,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1263,
+    "line": 1264,
     "page": "std-lang.md",
     "anchor": "api-75"
   },
@@ -13799,7 +13799,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1263,
+    "line": 1264,
     "page": "std-lang.md",
     "anchor": "api-76"
   },
@@ -13824,7 +13824,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1263,
+    "line": 1264,
     "page": "std-lang.md",
     "anchor": "api-77"
   },
@@ -13849,7 +13849,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1263,
+    "line": 1264,
     "page": "std-lang.md",
     "anchor": "api-78"
   },
@@ -13874,7 +13874,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1263,
+    "line": 1264,
     "page": "std-lang.md",
     "anchor": "api-79"
   },
@@ -13899,7 +13899,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1263,
+    "line": 1264,
     "page": "std-lang.md",
     "anchor": "api-80"
   },
@@ -13924,7 +13924,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1263,
+    "line": 1264,
     "page": "std-lang.md",
     "anchor": "api-81"
   },
@@ -13949,7 +13949,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1263,
+    "line": 1264,
     "page": "std-lang.md",
     "anchor": "api-82"
   },
@@ -13981,7 +13981,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1282,
+    "line": 1283,
     "page": "std-lang.md",
     "anchor": "api-83"
   },
@@ -14155,7 +14155,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1299,
+    "line": 1300,
     "page": "std-lang.md",
     "anchor": "api-88"
   },
@@ -14199,7 +14199,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1299,
+    "line": 1300,
     "page": "std-lang.md",
     "anchor": "api-89"
   },
@@ -14224,7 +14224,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 849,
+    "line": 856,
     "page": "std-lang.md",
     "anchor": "api-90"
   },
@@ -14258,7 +14258,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 850,
+    "line": 857,
     "page": "std-lang.md",
     "anchor": "api-91"
   },
@@ -14296,7 +14296,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 851,
+    "line": 858,
     "page": "std-lang.md",
     "anchor": "api-92"
   },
@@ -14328,7 +14328,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 852,
+    "line": 859,
     "page": "std-lang.md",
     "anchor": "api-93"
   },
@@ -14355,7 +14355,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 853,
+    "line": 860,
     "page": "std-lang.md",
     "anchor": "api-94"
   },
@@ -14387,7 +14387,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 854,
+    "line": 861,
     "page": "std-lang.md",
     "anchor": "api-95"
   },
@@ -14419,7 +14419,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 855,
+    "line": 862,
     "page": "std-lang.md",
     "anchor": "api-96"
   },
@@ -14451,7 +14451,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 856,
+    "line": 863,
     "page": "std-lang.md",
     "anchor": "api-97"
   },
@@ -14483,7 +14483,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 857,
+    "line": 864,
     "page": "std-lang.md",
     "anchor": "api-98"
   },
@@ -14508,7 +14508,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 858,
+    "line": 865,
     "page": "std-lang.md",
     "anchor": "api-99"
   },
@@ -14535,7 +14535,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 859,
+    "line": 866,
     "page": "std-lang.md",
     "anchor": "api-100"
   },
@@ -14560,7 +14560,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 849,
+    "line": 856,
     "page": "std-lang.md",
     "anchor": "api-101"
   },
@@ -14592,7 +14592,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 867,
+    "line": 874,
     "page": "std-lang.md",
     "anchor": "api-102"
   },
@@ -14624,7 +14624,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 857,
+    "line": 864,
     "page": "std-lang.md",
     "anchor": "api-103"
   },
@@ -14656,7 +14656,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 856,
+    "line": 863,
     "page": "std-lang.md",
     "anchor": "api-104"
   },
@@ -14688,7 +14688,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 854,
+    "line": 861,
     "page": "std-lang.md",
     "anchor": "api-105"
   },
@@ -14720,7 +14720,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 852,
+    "line": 859,
     "page": "std-lang.md",
     "anchor": "api-106"
   },
@@ -14745,7 +14745,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 858,
+    "line": 865,
     "page": "std-lang.md",
     "anchor": "api-107"
   },
@@ -14772,7 +14772,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 859,
+    "line": 866,
     "page": "std-lang.md",
     "anchor": "api-108"
   },
@@ -14797,7 +14797,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 849,
+    "line": 856,
     "page": "std-lang.md",
     "anchor": "api-109"
   },
@@ -14835,7 +14835,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 881,
+    "line": 888,
     "page": "std-lang.md",
     "anchor": "api-110"
   },
@@ -14867,7 +14867,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 857,
+    "line": 864,
     "page": "std-lang.md",
     "anchor": "api-111"
   },
@@ -14899,7 +14899,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 856,
+    "line": 863,
     "page": "std-lang.md",
     "anchor": "api-112"
   },
@@ -14931,7 +14931,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 854,
+    "line": 861,
     "page": "std-lang.md",
     "anchor": "api-113"
   },
@@ -14963,7 +14963,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 885,
+    "line": 892,
     "page": "std-lang.md",
     "anchor": "api-114"
   },
@@ -14995,7 +14995,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 886,
+    "line": 893,
     "page": "std-lang.md",
     "anchor": "api-115"
   },
@@ -15020,7 +15020,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 858,
+    "line": 865,
     "page": "std-lang.md",
     "anchor": "api-116"
   },
@@ -15047,7 +15047,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/epilogue/aggregate_ownership.cpp",
-    "line": 859,
+    "line": 866,
     "page": "std-lang.md",
     "anchor": "api-117"
   },
@@ -15072,7 +15072,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 733,
+    "line": 732,
     "page": "std-lang.md",
     "anchor": "api-118"
   },
@@ -15097,7 +15097,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 723,
+    "line": 722,
     "page": "std-lang.md",
     "anchor": "api-119"
   },
@@ -15129,7 +15129,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 748,
+    "line": 747,
     "page": "std-lang.md",
     "anchor": "api-120"
   },
@@ -15167,7 +15167,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 754,
+    "line": 753,
     "page": "std-lang.md",
     "anchor": "api-121"
   },
@@ -15199,7 +15199,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 760,
+    "line": 759,
     "page": "std-lang.md",
     "anchor": "api-122"
   },
@@ -15231,7 +15231,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 760,
+    "line": 759,
     "page": "std-lang.md",
     "anchor": "api-123"
   },
@@ -15263,7 +15263,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 768,
+    "line": 767,
     "page": "std-lang.md",
     "anchor": "api-124"
   },
@@ -15295,7 +15295,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 774,
+    "line": 773,
     "page": "std-lang.md",
     "anchor": "api-125"
   },
@@ -15327,7 +15327,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 780,
+    "line": 779,
     "page": "std-lang.md",
     "anchor": "api-126"
   },
@@ -15352,7 +15352,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 786,
+    "line": 785,
     "page": "std-lang.md",
     "anchor": "api-127"
   },
@@ -15377,7 +15377,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 792,
+    "line": 791,
     "page": "std-lang.md",
     "anchor": "api-128"
   },
@@ -15409,7 +15409,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 798,
+    "line": 797,
     "page": "std-lang.md",
     "anchor": "api-129"
   },
@@ -15441,7 +15441,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 798,
+    "line": 797,
     "page": "std-lang.md",
     "anchor": "api-130"
   },
@@ -15473,7 +15473,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 798,
+    "line": 797,
     "page": "std-lang.md",
     "anchor": "api-131"
   },
@@ -15562,7 +15562,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 733,
+    "line": 732,
     "page": "std-lang.md",
     "anchor": "api-134"
   },
@@ -15587,7 +15587,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 723,
+    "line": 722,
     "page": "std-lang.md",
     "anchor": "api-135"
   },
@@ -15619,7 +15619,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 712,
+    "line": 711,
     "page": "std-lang.md",
     "anchor": "api-136"
   },
@@ -15651,7 +15651,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 748,
+    "line": 747,
     "page": "std-lang.md",
     "anchor": "api-137"
   },
@@ -15808,7 +15808,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 851,
+    "line": 852,
     "page": "std-lang.md",
     "anchor": "api-143"
   },
@@ -15846,7 +15846,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 857,
+    "line": 858,
     "page": "std-lang.md",
     "anchor": "api-144"
   },
@@ -15871,7 +15871,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 723,
+    "line": 722,
     "page": "std-lang.md",
     "anchor": "api-145"
   },
@@ -15896,7 +15896,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 883,
+    "line": 884,
     "page": "std-lang.md",
     "anchor": "api-146"
   },
@@ -15921,7 +15921,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 890,
+    "line": 891,
     "page": "std-lang.md",
     "anchor": "api-147"
   },
@@ -15953,7 +15953,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 906,
+    "line": 907,
     "page": "std-lang.md",
     "anchor": "api-148"
   },
@@ -16294,7 +16294,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1063,
+    "line": 1064,
     "page": "std-lang.md",
     "anchor": "api-158"
   },
@@ -16446,7 +16446,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 768,
+    "line": 767,
     "page": "std-lang.md",
     "anchor": "api-162"
   },
@@ -16484,7 +16484,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1645,
+    "line": 1646,
     "page": "std-lang.md",
     "anchor": "api-163"
   },

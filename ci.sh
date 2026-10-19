@@ -135,6 +135,7 @@ mkdir -p tmp/ci/logs
 if [ "$full" = 1 ]; then
     run_step "配置 stackvm 单测（cmake）" \
         cmake -S library/stackvm -B tmp/ci/stackvm -DCMAKE_BUILD_TYPE=Release \
+              -DSTACKVM_WITH_REFLECTION=ON \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="$root/tmp/ci/stackvm" \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE="$root/tmp/ci/stackvm"
     run_step "构建 stackvm（CLI + 单测）" \
@@ -149,6 +150,7 @@ if [ "$full" = 1 ]; then
         tmp/ci/stackvm/magel-panic-tests tmp/ci/stackvm/panic-compact.svmb
     run_step "配置无 panic 栈构建" \
         cmake -S library/stackvm -B tmp/ci/panic-off -DCMAKE_BUILD_TYPE=Release \
+              -DSTACKVM_WITH_REFLECTION=ON \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="$root/tmp/ci/panic-off" \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE="$root/tmp/ci/panic-off" \
               -DSTACKVM_WITH_PANIC_TRACE=OFF -DSTACKVM_WITH_BIGINT=OFF -DSTACKVM_WITH_BIGFLOAT=OFF
@@ -164,6 +166,7 @@ run_step "构建 MAGEL 驱动（magel）" "$MAKE" -j4
 run_step "MAGEL 样例回归（check.sh）" \
     sh -c 'cd "$1" && MAGEL_TMP="$1/tmp/ci/check" sh check.sh' sh "$root"
 run_step "运行 std::image 与 StringBuilder 回归" "$PYTHON" tests/magel_image.py --magel magel
+run_step "运行数组按值传参与引用回归" "$PYTHON" tests/magel_array_parameters.py --magel magel
 run_step "检查手册与标准库共享索引同步" "$PYTHON" tools/library_reference.py --check
 
 # ---- 以下均为发布门禁（--full）扩展步骤 ----

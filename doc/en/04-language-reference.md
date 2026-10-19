@@ -98,6 +98,13 @@ void log(String message) { println("{}", message); }
 
 - Parameters are **by value** (copies) by default. To avoid copying, or to allow mutation, write
   `T mut&` / `T const&`.
+- Runtime arrays follow the same rule: `T[] items` copies the length and elements, so changes
+  to the copy do not affect the argument. `T[] & items` and `T[] const& items` are read-only
+  references; `T[] mut& items` is a mutable reference. Bind a reference with `&array`, or
+  forward an existing array reference directly. A read-only reference cannot write elements,
+  obtain mutable element references, or be passed to a mutable reference parameter. References
+  to local arrays cannot outlive their source. Resource-owning elements retain their normal
+  copy and destruction rules.
 - Overloading is supported: selection is by argument types.
 - Variadic trailing parameters are written `T... items`, used with `for-in` or `std::iter`.
 - `static` methods belong to the type and are called `Type::method()`.

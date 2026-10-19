@@ -213,13 +213,17 @@ builtin_type := INT8    { $$ = M_TypeIntBits(8, 0); }
  * LALR(1) 文法里和乘法分不开（`a * b`），内建类型虽然没这个问题，但为了写法统一、
  * 也为了"看到的引用就知道能不能写"，可写引用必须明确写 mut。写成 `int64* p` 会得到
  * 普通语法错误。
- *   T[]       **运行时长度数组**：`T[] a = new T[N];` —— N 可以是变量，长度跟着对象走，
+ *   T[]       **运行时长度数组**：`T a[] = new[N];` —— N 可以是变量，长度跟着对象走，
  *             下标越界检查就是拿这个长度查的（见 `example/samples-error/pointer_oob.mgl`）。
+ *             形参按值复制；`T[] &` / `T[] const&` 只读借用，`T[] mut&` 可变借用。
  */
 /* 引用适用于标量、字符串、大数、容器和元组；所有类型共享完整 type 产生式。 */
 ptr_type := type AMP                 { $$ = M_TypePtr($1); }
           | type CONST AMP           { $$ = M_TypePtr($1); }
           | type MUT AMP             { $$ = M_TypePtrMut($1); }
+          | array_type AMP           { $$ = M_TypePtr($1); }
+          | array_type CONST AMP     { $$ = M_TypePtr($1); }
+          | array_type MUT AMP       { $$ = M_TypePtrMut($1); }
           ;
 
 

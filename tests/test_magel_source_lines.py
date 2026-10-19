@@ -35,7 +35,7 @@ def main():
         run('$macro INNER(x)\n std::lang::panic(x);\n$end_macro\n$macro OUTER(x)\n $INNER(x)\n$end_macro\nint64 main() {\n $OUTER("nested")\n return 0;\n}\n', 'main.mgl [宏 INNER]:2')
         run('$macro STEP(x)\n int64 temporary = x;\n$end_macro\nint64 main() {\n $STEP(1)\n std::lang::panic("after");\n return 0;\n}\n', 'main.mgl:6')
         run('$macro MANY(...values)\n$for item in values\n std::lang::panic(item);\n$end_for\n$end_macro\nint64 main() {\n $MANY("loop")\n return 0;\n}\n', 'main.mgl [宏 MANY]:3')
-        run('$macro JOIN(left, right)\n left\n ##\n right\n$end_macro\nint64 joined_name=1;\nint64 main() {\n int64 value=$JOIN(joined_, name);\n std::lang::panic("paste");\n return value;\n}\n', 'main.mgl:9')
+        run('$macro JOIN(left, right)\n $concat(left, right)\n\n\n$end_macro\nint64 joined_name=1;\nint64 main() {\n int64 value=$JOIN(joined_, name);\n std::lang::panic("paste");\n return value;\n}\n', 'main.mgl:9')
         run('$macro COMMENT(x)\n /* don\'t "\n comment */\n std::lang::panic(x);\n$end_macro\nint64 main() {\n $COMMENT("comment")\n return 0;\n}\n', 'main.mgl [宏 COMMENT]:4')
         run('int64 main() {\n std::lang::String text="hello\nworld";\n std::lang::panic("multiline");\n return 0;\n}\n', 'main.mgl:4')
         hidden = run(macro, 'macro', ['--compress-symbols', '--debug'])

@@ -694,8 +694,7 @@ simple_ast::NodePtr LowerCall(int id)
                         simple_ast::Node::call(argumentType->isUnsigned ? "__vm_bint_from_uint" : "__vm_bint_from_int",
                                                { "__magel_v" }, { LowerExpr(argIds[index]) }),
                         T(M_TypeBigInt()));
-                Fail("大数方法的参数只能是整数 / 大整数：实际是 " +
-                     (argumentType ? Describe(argumentType) : Memory::String("?")));
+                Fail("大数方法的参数只能是整数 / 大整数：实际是 " + (argumentType ? Describe(argumentType) : Memory::String("?")));
                 return Bad();
             };
             const auto intArg = [&](int index, const char *what) -> simple_ast::NodePtr {
@@ -801,7 +800,8 @@ simple_ast::NodePtr LowerCall(int id)
                         return Fail(Memory::String("BigInteger.") + methodName + " 需要一个参数"), Bad();
                     return simple_ast::Node::call(
                         methodName == "bitAnd" ? "__vm_bint_bit_and" :
-                        methodName == "bitOr" ? "__vm_bint_bit_or" : "__vm_bint_bit_xor",
+                        methodName == "bitOr"  ? "__vm_bint_bit_or" :
+                                                 "__vm_bint_bit_xor",
                         { "__magel_l", "__magel_r" },
                         { OwnedObjectTemp(receiverId, baseType), bigIntArg(0) });
                 }
@@ -845,7 +845,8 @@ simple_ast::NodePtr LowerCall(int id)
                         return Fail(Memory::String("BigDecimal.") + methodName + " 不带参数"), Bad();
                     return simple_ast::Node::call(
                         methodName == "floor" ? "__vm_bfloat_floor" :
-                        methodName == "ceil" ? "__vm_bfloat_ceil" : "__vm_bfloat_trunc",
+                        methodName == "ceil"  ? "__vm_bfloat_ceil" :
+                                                "__vm_bfloat_trunc",
                         { "__magel_v" }, { OwnedObjectTemp(receiverId, baseType) });
                 }
                 if (methodName == "sqrt")
@@ -1880,6 +1881,9 @@ bool IsDestructibleValue(const std::shared_ptr<MType> &type)
  *
  * 删过之后再用它访问（`a[i]` / `p[0]` / `p->f`）会被虚拟机拦住 —— 那块内存已经不在
  * 已分配表里：下标检查会说"地址不在任何一块已分配内存里"，读 / 写会说"堆越界"。
+ * @param id delete 语句节点编号。
+ * @return 释放目标资源的语句；非法删除返回错误节点或空节点。
+ * @note 可变数组引用释放被引用数组，保留保存该数组句柄的引用槽。
  */
 simple_ast::NodePtr LowerDelete(int id)
 {
@@ -1893,7 +1897,11 @@ simple_ast::NodePtr LowerDelete(int id)
             return Fail("不能 delete 只读（const）变量：" + target.s), Bad();
     }
 
-    const std::shared_ptr<MType> type = RawExprType(node.kids[0]);
+    const auto rawType = RawExprType(node.kids[0]);
+    const bool arrayReference = rawType->kind == MType::Ptr && IsRuntimeArray(rawType->elem);
+    if (arrayReference && rawType->readOnly)
+        return Fail("只读数组引用不能 delete；释放调用方数组须使用 T[] mut&"), Bad();
+    const std::shared_ptr<MType> type = arrayReference ? rawType->elem : rawType;
     simple_ast::NodePtr removal;
     /* 对象表句柄（`bint` / 容器 / obj / 接口引用 / file / proc）的 `delete` 只"还走
      * 这一条路径"：同一个变量在别的分支上可能还活着，出块时仍要自动兜底。句柄单调
@@ -1909,7 +1917,7 @@ simple_ast::NodePtr LowerDelete(int id)
         if (ArrayElementNeedsRelease(type->elem))
             if (const auto release = MakeArrayElementRelease(slot, type->elem)) actions.push_back(release);
         actions.push_back(Node::freeMemory(base));
-        removal = Node::block({ Node::declare(slot, simple_ast::Type::i64()), Node::assign(slot, LowerRawExpr(node.kids[0])),
+        removal = Node::block({ Node::declare(slot, simple_ast::Type::i64()), Node::assign(slot, arrayReference ? LowerExpr(node.kids[0]) : LowerRawExpr(node.kids[0])),
                                 Node::ifThenElse(Node::call("__vm_heap_delete_live", { "address" }, { base }), Node::block(actions), nullptr) });
     }
     else if (IsObjectLike(type) || IsResourceLike(type))
@@ -1974,9 +1982,20 @@ simple_ast::NodePtr LowerDelete(int id)
      *     x 还活着，出块时要靠自动释放还回去。还过的那条路径出块再 `drop` 一次是空操作。
      *   * 其它（运行期数组 / 实现了 Drop 的值 / 弹性引用）：从自动名单里摘掉，出块不再来一次。
      *     （运行期数组是堆地址、分配器允许复用时不安全；不做基于非复用的假设。） */
-    if (variable != nullptr)
+    if (variable != nullptr && !keepAutoDrop)
     {
-        if (!keepAutoDrop) UnmarkOwned(variable->emitted);
+        if (IsRuntimeArray(type) && variable->elementReference)
+        {
+            // 被取地址的值另有拥有者名称；删除数组不能取消引用槽本身的收尾。
+            for (const auto &binding : g_referenceStorage)
+                if (binding.second == variable->emitted)
+                {
+                    UnmarkOwned(binding.first);
+                    break;
+                }
+        }
+        else
+            UnmarkOwned(variable->emitted);
     }
     return removal;
 }
@@ -3081,7 +3100,9 @@ simple_ast::NodePtr LowerStmtImpl(int id)
         g_pendingParameterStorage.clear();
         for (const auto &owner : g_parameterReferenceOwners)
         {
-            if (owner.second->kind == MType::Struct)
+            if (IsRuntimeArray(owner.second))
+                MarkOwnedArray(owner.first, owner.second);
+            else if (owner.second->kind == MType::Struct)
                 MarkDestructor(owner.first, owner.second);
             else
                 MarkOwned(owner.first);
@@ -3911,14 +3932,15 @@ void AppendCleanupBlock(simple_ast::Function &function)
 }
 
 /**
- * @brief 为函数体建立作用域并生成低层函数定义。
- * @param name 名称文本。
- * @param owner 所属对象或类型信息。
- * @param result 接收处理结果的对象。
- * @param params 形参或类型参数列表。
- * @param bodyId 函数体在节点池中的编号。
- * @param module 当前模块的名称。
- * @retval 保存为函数体建立作用域并生成低层函数定义结果的对象。
+ * @brief 创建函数形参副本和作用域，降低函数体并附加确定性清理。
+ * @param name 生成函数使用的唯一标签名称。
+ * @param owner 成员函数所属类型名称；顶层函数使用空字符串。
+ * @param result 用于返回路径检查和返回值转换的声明类型。
+ * @param params 按源码顺序保存的形参名称、静态类型及调用约定。
+ * @param bodyId 函数体块在语法树节点池中的编号。
+ * @param module 函数声明模块，用于未限定名称查找。
+ * @return 带参数、函数体和清理块的低层函数定义；失败时返回空定义并登记诊断。
+ * @note 运行时数组按值形参复制长度头及元素，并在退出时清理；数组引用不复制来源。
  */
 simple_ast::Function LowerFunction(const Memory::String &name, const Memory::String &owner,
                                    const std::shared_ptr<MType> &result,
@@ -3959,7 +3981,7 @@ simple_ast::Function LowerFunction(const Memory::String &name, const Memory::Str
         if (module == "std::event" && param.type->kind == MType::Func) var.borrowDepth = 0u;
         g_scope.back()[param.source] = var;
         function.parameters.emplace_back(param.emitted, LowerType(param.type, param.emitted));
-        const bool ownedValue = param.type->kind == MType::String || IsObjectLike(param.type);
+        const bool ownedValue = param.type->kind == MType::String || IsObjectLike(param.type) || IsRuntimeArray(param.type);
         if (g_addressTakenNames.count(param.source) && NeedsReferenceStorage(param.type))
         {
             const auto storage = AllocateName("__magel_parameter_reference");
@@ -3972,6 +3994,8 @@ simple_ast::Function LowerFunction(const Memory::String &name, const Memory::Str
                                                { value, simple_ast::Node::i(0), simple_ast::Node::i(-1) });
             else if (IsObjectLike(param.type))
                 value = simple_ast::Node::call(ObjectCopyFunction(param.type), { "__magel_v" }, { value });
+            else if (IsRuntimeArray(param.type))
+                value = CopyRuntimeArrayValue(value, param.type);
             parameterReferences.push_back(simple_ast::Node::storeAt(simple_ast::Node::var(storage), value, LowerType(param.type, storage)));
             g_referenceStorage[param.emitted] = storage;
             if (ownedValue) g_parameterReferenceOwners.push_back({ param.emitted, param.type });
@@ -3980,7 +4004,8 @@ simple_ast::Function LowerFunction(const Memory::String &name, const Memory::Str
         }
         else if (ownedValue)
         {
-            const auto value = param.type->kind == MType::String ? simple_ast::Node::call("__vm_str_sub", { "__magel_s", "__magel_a", "__magel_b" },
+            const auto value = IsRuntimeArray(param.type)        ? CopyRuntimeArrayValue(simple_ast::Node::var(param.emitted), param.type) :
+                               param.type->kind == MType::String ? simple_ast::Node::call("__vm_str_sub", { "__magel_s", "__magel_a", "__magel_b" },
                                                                                           { simple_ast::Node::var(param.emitted), simple_ast::Node::i(0), simple_ast::Node::i(-1) }) :
                                                                    simple_ast::Node::call(ObjectCopyFunction(param.type), { "__magel_v" }, { simple_ast::Node::var(param.emitted) });
             parameterReferences.push_back(simple_ast::Node::assign(param.emitted, value));

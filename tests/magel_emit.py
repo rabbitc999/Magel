@@ -29,14 +29,8 @@ def main():
     (ROOT/'build').mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='magel-export-modes-', dir=ROOT/'build') as temporary:
         work = Path(temporary)
-        emitter = args.emitter
-        if emitter is None:
-            entry = work/'emit-entry.cpp'
-            entry.write_text('#include "source/magel-emit/emit_cli.hpp"\nint main(int argc,char**argv){return magel_emit::runCli(argc,argv);}', encoding='utf-8')
-            emitter = work/('magel-emit'+EXE)
-            run(['g++', '-std=c++17', '-pthread', '-DMAGEL_CUSTOM_ALLOCATOR=1',
-                 '-I'+str(ROOT), entry, ROOT/'source/magel-emit/main.o',
-                 ROOT/'source/magel-emit/aot.o', ROOT/'library/lztext/lztext.o', ROOT/'build/magel-stackvm/libstackvm.a', '-lm', '-o', emitter])
+        emitter = args.emitter or ROOT / 'build/magel-emit' / ('magel-emit'+EXE)
+        assert emitter.is_file(), f"请先构建独立导出器：make -C source/magel-emit（{emitter}）"
         emitter = emitter.resolve()
         source = work/'main.mgl'
         source.write_text('int64 main(){std::lang::println("export-ok");return 0;}\n', encoding='utf-8')

@@ -24,14 +24,16 @@ def main():
     cases = {
         "scalar": ("void dispose(int64 mut& value) { delete value; }", "int64 mut& value = heap int64;"),
         "struct": ("struct Item { int64 number; }; void dispose(Item mut& value) { delete value; }", "Item mut& value = heap Item;"),
-        "array": ("void dispose(int64 value[]) { delete value; }", "int64 value[] = new[4];"),
+        "array": ("void dispose(int64[] mut& value) { delete value; }", "int64 value[] = new[4];"),
+        "string_array": ("void dispose(String[] mut& value) { delete value; }", 'String value[] = new[2];value[0]="owned";'),
     }
     for kind, (helper, allocation) in cases.items():
         for swept in (False, True):
             source = WORK / f"{kind}-{swept}.mgl"
-            body = "dispose(value); dispose(value);"
+            argument = "&value" if kind.endswith("array") else "value"
+            body = f"dispose({argument}); dispose({argument});"
             if swept:
-                body += "if (std::lang::sweep() < 1) { panic(\"missing tombstone\"); } dispose(value);"
+                body += f'if (std::lang::sweep() < 1) {{ panic("missing tombstone"); }} dispose({argument});'
             source.write_text(helper + "\nint64 main() { " + allocation + body +
                               'std::lang::println("ok"); return 0; }\n', encoding="utf-8")
             commands = [("VM", [compiler, "run", source, "--out", WORK / "vm"])]

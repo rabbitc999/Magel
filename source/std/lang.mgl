@@ -63,10 +63,13 @@ bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count, bool bigEndian
 }
 /** 默认小端固定数组编码。 */
 bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count) { return float32ToBytes(value, bytes, count, false); }
-/** 编码到运行时数组，自动获取容量。 */
-bool float32ToBytes(float32 value, uint8 bytes[], bool bigEndian) { return float32ToBytes(value, bytes, std::lang::len(bytes), bigEndian); }
-/** 默认小端运行时数组编码。 */
-bool float32ToBytes(float32 value, uint8 bytes[]) { return float32ToBytes(value, bytes, std::lang::len(bytes), false); }
+/** 编码到运行时数组的可变引用，自动获取容量；调用时传入 &array。 */
+bool float32ToBytes(float32 value, uint8[] mut& bytes, bool bigEndian) {
+    if (std::lang::len(bytes) < 4) { return false; }
+    return float32ToBytes(value, &bytes[0], std::lang::len(bytes), bigEndian);
+}
+/** 默认小端运行时数组编码；调用时传入 &array。 */
+bool float32ToBytes(float32 value, uint8[] mut& bytes) { return float32ToBytes(value, bytes, false); }
 
 std::lang::List<uint8> __float64ToBytes(float64 value, bool bigEndian);
 float64 __bytesToFloat64(std::lang::List<uint8> bytes, bool bigEndian);
@@ -101,10 +104,13 @@ bool float64ToBytes(float64 value, uint8 mut& bytes, int64 count, bool bigEndian
 }
 /** 默认小端固定数组编码。 */
 bool float64ToBytes(float64 value, uint8 mut& bytes, int64 count) { return float64ToBytes(value, bytes, count, false); }
-/** 编码到运行时数组，自动获取容量。 */
-bool float64ToBytes(float64 value, uint8 bytes[], bool bigEndian) { return float64ToBytes(value, bytes, std::lang::len(bytes), bigEndian); }
-/** 默认小端运行时数组编码。 */
-bool float64ToBytes(float64 value, uint8 bytes[]) { return float64ToBytes(value, bytes, std::lang::len(bytes), false); }
+/** 编码到运行时数组的可变引用，自动获取容量；调用时传入 &array。 */
+bool float64ToBytes(float64 value, uint8[] mut& bytes, bool bigEndian) {
+    if (std::lang::len(bytes) < 8) { return false; }
+    return float64ToBytes(value, &bytes[0], std::lang::len(bytes), bigEndian);
+}
+/** 默认小端运行时数组编码；调用时传入 &array。 */
+bool float64ToBytes(float64 value, uint8[] mut& bytes) { return float64ToBytes(value, bytes, false); }
 
 /* Magel 标准库前导模块。这里放可由 Magel 自身表达的类型；算法由编译器签名接入 VM 胶水。 */
 

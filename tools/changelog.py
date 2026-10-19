@@ -45,7 +45,7 @@ CHANGELOG = ROOT / "CHANGELOG.md"
 VERSION_FILE = ROOT / "VERSION"
 
 INTRO = (
-    "版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **1.0.0**："
+    f"版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **{VERSION_FILE.read_text(encoding='utf-8').strip()}**："
     "v1.0.0 是项目冻结并重新初始化 git 后的稳定基线。不兼容变更升主版本，兼容功能新增升次版本，"
     "修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) "
     "后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 "

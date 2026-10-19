@@ -9,7 +9,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 COMPILER = ROOT / 'magel.exe'
-WITH_REFLECTION = False
+WITH_REFLECTION = True
 
 
 class ConstructorTests(unittest.TestCase):
@@ -86,9 +86,14 @@ int64 main(){
     assert(value.text=="owned");
     assert(args[0].asText().unwrap()=="owned");
     auto info=std::reflect::getStructInfo<Value>().unwrap();
-    assert(info.methods.len()==1);
-    assert(info.methods[0].isConstructor && info.methods[0].isStatic);
-    assert(info.methods[0].function.name=="new");
+    int64 constructors=0;
+    for(auto method in info.methods){
+        if(method.isConstructor){
+            assert(method.isStatic && method.function.name=="new");
+            constructors=constructors+1;
+        }
+    }
+    assert(constructors==1);
     State state=std::reflect::construct<State>(args).unwrap();
     match(state){
         State::Text(text)=>{assert(text=="owned");}
@@ -296,7 +301,7 @@ int64 main(){
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--magel', type=Path, default=COMPILER)
-    parser.add_argument('--reflection', action='store_true')
+    parser.add_argument('--reflection', action='store_true', default=True)
     args, remaining = parser.parse_known_args()
     COMPILER = args.magel.resolve()
     WITH_REFLECTION = args.reflection

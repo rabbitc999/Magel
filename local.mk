@@ -139,7 +139,7 @@ $(FRONTEND_BUILD)/magel_main.o $(FRONTEND_BUILD)/magel_parser.o $(VM_BUILD)/stac
 
 .PHONY: config-force
 build/magel-runtime/buildConfig.json: config-force
-	$(PYTHON) tools/write_build_config.py $@ "$(CXX)" "$(CXXFLAGS)" "$(LDLIBS)"
+	$(PYTHON) tools/write_build_config.py $@ "$(CXX)" "$(CXXFLAGS)" "$(LDLIBS)" "$(LDFLAGS)"
 $(LIB_OBJS) $(DEMO_OBJS) $(VM_BUILD)/stackvm.o $(VM_BUILD)/stackvm_glue.o $(VM_BUILD)/bigint.o $(VM_BUILD)/bigfloat.o build/magel-runtime/simple_ast.o build/magel-runtime/preprocess.o: build/magel-runtime/buildConfig.json
 
 # 结构化数据解析器直接编入胶水翻译单元。

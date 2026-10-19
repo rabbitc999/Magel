@@ -25,6 +25,7 @@ EXE = ".exe" if os.name == "nt" else ""
 # 必须通过的样例：覆盖你确认的 MCU 子集——整数 / float64 / String / 容器 / 结构体 /
 # 枚举 / Result / 闭包 / 接口 / 泛型 / 协程 / 资源清理。
 MUST_PASS = [
+    "array_parameter_values",
     "std_read_lines",
     "match_expression", "string_interpolation", "associated_types", "defer_scope", "macro_controls", "const_generics",
     "if_expression", "try_custom", "error_adapters",

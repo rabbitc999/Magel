@@ -66,7 +66,7 @@ cmake --build build/symbols --parallel
   --out build/symbols/control --compress-symbols \
   --symbol-map build/symbols/control.symbol_map.json
 
-./magel svmb example/samples/control.mgl --no-reflection --no-compress-symbols --out build/symbols/python-raw
+./magel svmb example/samples/control.mgl --no-compress-symbols --out build/symbols/python-raw
 python tools/svmb_compress.py --input build/symbols/python-raw.svmb \
   --output compressed.svmb --map symbol_map.json --module NAME --version 1
 
@@ -80,8 +80,9 @@ build/symbols/magel-stackvm compile input.quad --out output.svmb \
 ~~~
 
 Windows 可执行文件加 .exe；多配置生成器可能把文件放在 Release/。magel 默认映射为 <输出前缀>.symbol_map.json；独立 StackVM CLI 默认为 <输出文件>.symbol_map.json。
-Python 转换器只接受不带特征位的普通 v5 输入，因此上述 Python 对照显式关闭反射。
-需要保留反射时，直接使用编译器的 `--compress-symbols` 或支持反射的原生工具。
+Python 转换器接受普通 v5 输入及已知的反射特性位，保留反射段的原始字节，默认反射配置可直接转换。
+转换前检查反射段的格式版本、字段边界、列表与文本长度以及段尾，不解释或改写类型身份；
+身份、签名及交叉引用的语义校验由原生加载器执行。未知特性和损坏的段结构会被拒绝。
 
 映射记录包含 logical_id、physical_idx、original、kind、line、ref_count。logical_id 用十进制字符串，防止 JSON 消费端浮点转换丢精度。line 优先保存源码行号，否则为四元式行号，未知为 0。
 

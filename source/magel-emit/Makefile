@@ -9,6 +9,10 @@
 
 CXX      ?= g++
 CXXFLAGS ?= -std=c++17 -Wall -Wextra -O2
+ifeq ($(OS),Windows_NT)
+# 独立导出器同样只依赖 Windows 系统 DLL，不依赖 MinGW 运行库目录。
+LDFLAGS += -static
+endif
 include ../../features.mk
 override CXXFLAGS += $(MAGEL_TRIM_FLAGS)
 ROOT_DIR := ../..
@@ -45,7 +49,7 @@ $(TARGET): ../magel_i18n.hpp ../../library/console/utf8.hpp main.cpp module_buil
 	$(CXX) $(CXXFLAGS) $(UTF8FLAGS) -DMAGEL_CUSTOM_ALLOCATOR=1 -pthread -I$(ROOT_DIR)/source -I$(ROOT_DIR)/library -I$(VM_DIR) -I$(BIGINT_DIR) \
 		main.cpp aot.cpp $(VM_DIR)/stackvm.cpp $(VM_DIR)/stackvm_glue.cpp \
 		$(BIGINT_DIR)/bigint.cpp $(BIGINT_DIR)/bigfloat.cpp \
-		../../library/lztext/lztext.cpp -o $@
+		../../library/lztext/lztext.cpp $(LDFLAGS) -o $@
 
 # `make run FILE=tmp/x`：生成 + 编译（用 build-target.sh 一条龙）
 run: $(TARGET)
@@ -59,5 +63,5 @@ $(BUILD_DIR):
 
 .PHONY: config-force
 $(BUILD_DIR)/buildConfig.json: config-force
-	$(PYTHON) ../../tools/write_build_config.py $@ "$(CXX)" "$(CXXFLAGS)"
+	$(PYTHON) ../../tools/write_build_config.py $@ "$(CXX)" "$(CXXFLAGS)" "$(LDFLAGS)"
 $(TARGET): $(BUILD_DIR)/buildConfig.json

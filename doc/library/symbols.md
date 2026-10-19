@@ -537,16 +537,16 @@
 | [std::lang::bytesToFloat64](std-lang.md#api-23) | `Option<float64> bytesToFloat64(uint8 const& bytes, int64 count, bool bigEndian)` |
 | [std::lang::div](std-lang.md#api-161) | `R div(T left,U right)` |
 | [std::lang::eq](std-lang.md#api-152) | `bool eq(T left,T right)` |
-| [std::lang::float32ToBytes](std-lang.md#api-18) | `bool float32ToBytes(float32 value, uint8 bytes[])` |
-| [std::lang::float32ToBytes](std-lang.md#api-17) | `bool float32ToBytes(float32 value, uint8 bytes[], bool bigEndian)` |
 | [std::lang::float32ToBytes](std-lang.md#api-16) | `bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count)` |
 | [std::lang::float32ToBytes](std-lang.md#api-15) | `bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count, bool bigEndian)` |
+| [std::lang::float32ToBytes](std-lang.md#api-18) | `bool float32ToBytes(float32 value, uint8[] mut& bytes)` |
+| [std::lang::float32ToBytes](std-lang.md#api-17) | `bool float32ToBytes(float32 value, uint8[] mut& bytes, bool bigEndian)` |
 | [std::lang::float32ToBytes](std-lang.md#api-8) | `std::lang::List<uint8> float32ToBytes(float32 value)` |
 | [std::lang::float32ToBytes](std-lang.md#api-7) | `std::lang::List<uint8> float32ToBytes(float32 value, bool bigEndian)` |
-| [std::lang::float64ToBytes](std-lang.md#api-30) | `bool float64ToBytes(float64 value, uint8 bytes[])` |
-| [std::lang::float64ToBytes](std-lang.md#api-29) | `bool float64ToBytes(float64 value, uint8 bytes[], bool bigEndian)` |
 | [std::lang::float64ToBytes](std-lang.md#api-28) | `bool float64ToBytes(float64 value, uint8 mut& bytes, int64 count)` |
 | [std::lang::float64ToBytes](std-lang.md#api-27) | `bool float64ToBytes(float64 value, uint8 mut& bytes, int64 count, bool bigEndian)` |
+| [std::lang::float64ToBytes](std-lang.md#api-30) | `bool float64ToBytes(float64 value, uint8[] mut& bytes)` |
+| [std::lang::float64ToBytes](std-lang.md#api-29) | `bool float64ToBytes(float64 value, uint8[] mut& bytes, bool bigEndian)` |
 | [std::lang::float64ToBytes](std-lang.md#api-20) | `std::lang::List<uint8> float64ToBytes(float64 value)` |
 | [std::lang::float64ToBytes](std-lang.md#api-19) | `std::lang::List<uint8> float64ToBytes(float64 value, bool bigEndian)` |
 | [std::lang::format](std-lang.md#api-71) | `String format(String format, Any args...)` |

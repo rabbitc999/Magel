@@ -841,7 +841,7 @@ std::shared_ptr<MType> RawExprType(int id)
     {
         auto base = RawExprType(node.kids[0]);
         if (node.s == "__magel_buffer_index" && base->kind == MType::Ptr) return base->elem;
-        if (base->kind == MType::Ptr && base->elem && (base->elem->kind == MType::String || IsContainer(base->elem))) base = base->elem;
+        if (base->kind == MType::Ptr && base->elem && (base->elem->kind == MType::String || base->elem->kind == MType::Array || IsContainer(base->elem))) base = base->elem;
         if (const MIndexDecl *index = FindIndex(base, ExprType(node.kids[1])))
             return index->result;
         if (IsInterfacePointer(base)) return T(M_TypeInt()); /* 会报错，给个占位 */
@@ -990,10 +990,7 @@ std::shared_ptr<MType> RawExprType(int id)
                 {
                     if (calleeNode.s == "str") return T(M_TypeString());
                     if (calleeNode.s == "copy") return baseType;
-                    if (calleeNode.s == "pow" || calleeNode.s == "powmod" || calleeNode.s == "gcd" ||
-                        calleeNode.s == "lcm" || calleeNode.s == "mod" || calleeNode.s == "modInverse" ||
-                        calleeNode.s == "nextProbablePrime" || calleeNode.s == "bitAnd" ||
-                        calleeNode.s == "bitOr" || calleeNode.s == "bitXor" || calleeNode.s == "iroot")
+                    if (calleeNode.s == "pow" || calleeNode.s == "powmod" || calleeNode.s == "gcd" || calleeNode.s == "lcm" || calleeNode.s == "mod" || calleeNode.s == "modInverse" || calleeNode.s == "nextProbablePrime" || calleeNode.s == "bitAnd" || calleeNode.s == "bitOr" || calleeNode.s == "bitXor" || calleeNode.s == "iroot")
                         return baseType;
                     if (calleeNode.s == "isProbablePrime") return T(M_TypeBool());
                     if (calleeNode.s == "bitLength") return T(M_TypeInt());
@@ -1004,8 +1001,7 @@ std::shared_ptr<MType> RawExprType(int id)
                     if (calleeNode.s == "str") return T(M_TypeString());
                     if (calleeNode.s == "copy") return baseType;
                     if (calleeNode.s == "setPrecision") return T(M_TypeInt());
-                    if (calleeNode.s == "pow" || calleeNode.s == "abs" || calleeNode.s == "sqrt" ||
-                        calleeNode.s == "root")
+                    if (calleeNode.s == "pow" || calleeNode.s == "abs" || calleeNode.s == "sqrt" || calleeNode.s == "root")
                         return baseType;
                     if (calleeNode.s == "isInteger") return T(M_TypeBool());
                     if (calleeNode.s == "floor" || calleeNode.s == "ceil" || calleeNode.s == "trunc")

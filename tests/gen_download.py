@@ -9,10 +9,9 @@ import urllib.error
 
 ROOT = Path(__file__).resolve().parents[1]
 DOWNLOAD = (ROOT / "gen.sh").read_text(encoding="utf-8").split("python - <<'PY'\n", 1)[1].split("\nPY\n", 1)[0]
-# 与 gen.sh 里的 SOURCES 保持一致：先 Gitee，再 GitHub。
-GITEE = "https://gitee.com/rabbitc999/ParseEngine/releases/download/latest/ParseEngine.exe"
-GITHUB = "https://github.com/rabbitc999/ParseEngine/releases/download/latest/ParseEngine.exe"
-SOURCES = [GITEE, GITHUB]
+# 固定验证仓库指定的生成器版本，不跟随远端 latest 漂移。
+GITEE = "https://gitee.com/rabbitc999/ParseEngine/releases/download/v1.1.0/ParseEngine.exe"
+SOURCES = [GITEE]
 
 
 class DownloadTests(unittest.TestCase):
@@ -31,7 +30,7 @@ class DownloadTests(unittest.TestCase):
                 if isinstance(response, list):
                     arguments = {"side_effect": response}
                 elif isinstance(response, Exception):
-                    arguments = {"side_effect": [response] * 2}
+                    arguments = {"side_effect": [response] * len(SOURCES)}
                 else:
                     arguments = {"return_value": response}
                 with patch("urllib.request.urlopen", **arguments) as request:
@@ -41,7 +40,7 @@ class DownloadTests(unittest.TestCase):
                         with self.assertRaisesRegex(SystemExit, expected):
                             exec(compile(DOWNLOAD, "gen.sh:download", "exec"), {})
                     attempted = [call.args[0] for call in request.call_args_list]
-                    # 先试 Gitee；只有它失败时才继续试 GitHub。
+                    # 只访问指定版本的发布地址。
                     self.assertEqual(attempted[0], GITEE)
                     self.assertEqual(attempted, SOURCES[:attempts])
                     self.assertTrue(all(call.kwargs == {"timeout": 60} for call in request.call_args_list))
@@ -53,11 +52,6 @@ class DownloadTests(unittest.TestCase):
     def test_latest_release(self):
         """有效响应替换旧文件并删除临时文件。"""
         self.run_download(io.BytesIO(b"MZlatest"))
-
-    def test_github_fallback(self):
-        """Gitee 失败时继续从 GitHub 拿，成功同样替换生成器。"""
-        self.run_download([urllib.error.URLError("gitee offline"), io.BytesIO(b"MZgithub")],
-                          content=b"MZgithub", attempts=len(SOURCES))
 
     def test_network_failure(self):
         """两处都拿不到时保留旧文件并清理临时文件。"""

@@ -63,7 +63,7 @@ def main():
             "redeclare_live_string": ('void f(){String a="1";String a="2";}', "不能重复声明"),
             "redeclare_branch": ("void f(bool flag){S s;if(flag){S t=std::lang::move(&s);}S s;}", "不能重复声明"),
             "redeclare_field": ("struct B{S item;};void f(){B b;S t=std::lang::move(&b.item);B b;}", "不能重复声明"),
-            "redeclare_reset": ("void f(){S s;S t=std::lang::move(&s);s=t;S s;}", "不能重复声明"),
+            "redeclare_reset": ("void f(){S s;S t=std::lang::move(&s);s=t;S s;}", "MGL1205"),
             "redeclare_old_alias": ("void f(){S s;S mut& p=&s;S t=std::lang::move(&s);S s;int64 x=p.value;}", "MGL1205"),
             "scalar_read": ("void f(){int64 a=1;int64 b=move(&a);int64 c=a;}", "MGL1205"),
             "scalar_repeat": ("void f(){int64 a=1;int64 b=move(&a);int64 c=move(&a);}", "MGL1205"),

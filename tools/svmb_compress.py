@@ -7,12 +7,16 @@ from pathlib import Path
 import struct
 import sys
 import zlib
-from svmb_format import MAX_FILE, MAX_ITEMS, fnv64, read_raw, varuint, varint
+from svmb_format import FEATURE_REFLECTION, MAX_FILE, MAX_ITEMS, fnv64, read_raw, varuint, varint
 
 # 必须与 stackvm::Op::Call 一致；回归测试检查 Python/C++ 输出逐字节相同。
 CALL = 48
 
 def compress(program, module="", version=""):
+    features = program.get("features", 0)
+    reflection = program.get("reflection", b"")
+    if features & ~FEATURE_REFLECTION or bool(features & FEATURE_REFLECTION) != bool(reflection):
+        raise ValueError("程序特性与反射元数据不一致")
     names = {}
     def add(name, kind=0):
         entry = names.setdefault(name, dict(original=name, kind=0, flags=0,
@@ -80,13 +84,14 @@ def compress(program, module="", version=""):
     for origin, op, kind, span, immediate, bits, flags, target in program["internal"]:
         payload += (varuint(origin) + bytes([op, kind]) + varuint(span)
                     + varint(immediate) + varint(bits) + bytes([flags]) + varuint(target))
+    payload += reflection
     table = bytearray()
     for s in records:
         table += varuint(int(s["logical_id"])) + varuint(s["physical_idx"])
         table += bytes([s["kind"], s["flags"]]) + varuint(s["offset"]) + varuint(s["size"])
     body = payload + table
     if len(body) > MAX_FILE - 44: raise ValueError("压缩结果超过文件长度上限")
-    header = struct.pack("<8s9I", b"MCVM0005", 5, 0,
+    header = struct.pack("<8s9I", b"MCVM0005", 5, features,
         sum(bool(s["kind"] & 16) for s in records), sum(bool(s["kind"] & 8) for s in records),
         len(payload), 0, 44 + len(payload), len(table), zlib.crc32(body))
     mapping = dict(module=module or program["name"], version=str(version), symbols=[

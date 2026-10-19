@@ -17,7 +17,7 @@ void checkDouble(uint32 high, uint32 low, bool bigEndian) {
     assert(fixed[8] == (uint8)77 && fixed[9] == (uint8)88);
     List<uint8> fromFixed = float64ToBytes(bytesToFloat64(fixed, 10, bigEndian).unwrap(), bigEndian);
     uint8 dynamic[] = new[10]; dynamic[8] = (uint8)99;
-    assert(float64ToBytes(value, dynamic, bigEndian));
+    assert(float64ToBytes(value, &dynamic, bigEndian));
     assert(dynamic[8] == (uint8)99);
     List<uint8> fromDynamic = float64ToBytes(bytesToFloat64(dynamic, bigEndian).unwrap(), bigEndian);
     for (int64 i = 0; i < 8; i = i + 1) {
@@ -48,7 +48,7 @@ int64 main() {
     for (int64 i = 0; i < 7; i = i + 1) { invalid.push((uint8)0); }
     assert(bytesToFloat64(invalid, true).isNone());
     uint8 shortArray[] = new[7]; shortArray[0] = (uint8)77;
-    assert(!float64ToBytes(1.5, shortArray));
+    assert(!float64ToBytes(1.5, &shortArray));
     assert(shortArray[0] == (uint8)77 && bytesToFloat64(shortArray).isNone());
     uint8 fixed[9];
     assert(float64ToBytes(1.5, fixed, 9));

@@ -34,7 +34,7 @@ int64 main(){
  Packed empty=new Packed();Packed packed=new Packed(3,1,2);assert(empty.value==4 && packed.value==5);
  Made made=Made::create();assert(made.value==11);
  assert(identity(6)==6);
- Box box;assert(box.value==8 && box.plus()==10 && Box::scale()==8);
+ Box box=new Box();assert(box.value==8 && box.plus()==10 && Box::scale()==8);
  assert(sum()==5 && sum(1,2,3)==6);
  assert(read()==3 && apply(3)==6 && nested()==4);
  int64 moduleSeed=100;

@@ -283,7 +283,7 @@ simple_ast::NodePtr LowerIndexChain(int baseId, int positionId, bool bufferIndex
         cursor = N(cursor).kids[0];
     }
     auto base = RawExprType(cursor);
-    if (!bufferIndex && base->kind == MType::Ptr && base->elem && (base->elem->kind == MType::String || IsContainer(base->elem))) base = base->elem;
+    if (!bufferIndex && base->kind == MType::Ptr && base->elem && (base->elem->kind == MType::String || base->elem->kind == MType::Array || IsContainer(base->elem))) base = base->elem;
     if (IsContainer(base))
     {
         /* `v[i]` / `m[k]`：全是运行期对象，下标/键交给 C++ 侧查（越界 / 没这个键都有说法）。 */
@@ -366,12 +366,12 @@ simple_ast::NodePtr LowerIndexChain(int baseId, int positionId, bool bufferIndex
         }
         const Memory::String label = NameOfExpr(cursor);
         const simple_ast::NodePtr length = simple_ast::Node::loadInt(simple_ast::Node::binary(
-            "-", LowerRawExpr(cursor), simple_ast::Node::i(8)));
+            "-", LowerExpr(cursor), simple_ast::Node::i(8)));
         const simple_ast::NodePtr position =
             simple_ast::Node::checkIndex(LowerExpr(indices[0]), length, label);
         const int stride = StructStride(base->elem);
-        if (stride > 0) return simple_ast::Node::offset(LowerRawExpr(cursor), position, stride);
-        return simple_ast::Node::index(LowerRawExpr(cursor), position);
+        if (stride > 0) return simple_ast::Node::offset(LowerExpr(cursor), position, stride);
+        return simple_ast::Node::index(LowerExpr(cursor), position);
     }
     if (base->kind == MType::Array)
     {
@@ -655,10 +655,10 @@ simple_ast::NodePtr LowerAddressOf(int id)
     if (node.kind == MNode::Index)
     {
         auto base = RawExprType(node.kids[0]);
-        const bool stringReference = node.s != "__magel_buffer_index" && base->kind == MType::Ptr && base->elem && base->elem->kind == MType::String;
-        if (stringReference) base = base->elem;
+        const bool valueReference = node.s != "__magel_buffer_index" && base->kind == MType::Ptr && base->elem && (base->elem->kind == MType::String || base->elem->kind == MType::Array);
+        if (valueReference) base = base->elem;
         if (!CheckContainerIndex(node.kids[1], "下标")) return Bad();
-        const auto target = stringReference ? LowerExpr(node.kids[0]) : LowerRawExpr(node.kids[0]);
+        const auto target = valueReference ? LowerExpr(node.kids[0]) : LowerRawExpr(node.kids[0]);
         const simple_ast::NodePtr position = LowerExpr(node.kids[1]);
         const Memory::String label = NameOfExpr(node.kids[0]);
         if (base->kind == MType::String) /* `&s[i]`：字符串按字节 */
@@ -1782,6 +1782,12 @@ simple_ast::NodePtr LowerObjSet(const simple_ast::NodePtr &receiver, int valueId
  * 和结构体字段同一条规则：字符串与对象句柄**借来的先复制一份**（当场造的、字面量各按
  * 自己的规矩物化），覆盖前**还掉旧值** —— 元素和字段一样是值，不是引用。
  * 标量（含结构体以外的类型）原样写。
+ * @param address 接收拥有值的存储槽地址。
+ * @param valueId 右侧表达式编号，用于判断复制或移交。
+ * @param value 已降级的右侧值表达式。
+ * @param type 存储槽的静态类型及元素布局。
+ * @return 先物化新值、释放旧值，再写入目标的语句块。
+ * @note 数组引用的整体赋值逐元素复制或移交，并清理旧数组的元素和长度头。
  */
 simple_ast::NodePtr StoreOwnedValueAt(const simple_ast::NodePtr &address, int valueId,
                                       const simple_ast::NodePtr &value,
@@ -1790,6 +1796,25 @@ simple_ast::NodePtr StoreOwnedValueAt(const simple_ast::NodePtr &address, int va
     if (type && type->kind == MType::Char)
         return simple_ast::Node::exprStmt(simple_ast::Node::call("__vm_char_store",
                                                                  { "__magel_address", "__magel_value" }, { address, value }));
+    if (IsRuntimeArray(type))
+    {
+        using simple_ast::Node;
+        const auto destination = AllocateName("__magel_array_destination");
+        const auto replacement = AllocateName("__magel_array_replacement");
+        const auto previous = AllocateName("__magel_array_previous");
+        const auto stored = IsFreshValue(valueId) ? TakeExpressionTempValue(value, type) : CopyRuntimeArrayValue(value, type);
+        Memory::Vector<simple_ast::NodePtr> out{
+            Node::declare(destination, simple_ast::Type::i64()),
+            Node::assign(destination, address),
+            Node::declare(replacement, LowerType(type, replacement)),
+            Node::assign(replacement, stored),
+            Node::declare(previous, LowerType(type, previous)),
+            Node::assign(previous, Node::loadInt(Node::var(destination)))
+        };
+        AppendOwnedDrop(previous, type, &out);
+        out.push_back(Node::storeAt(Node::var(destination), Node::var(replacement), simple_ast::Type::i64()));
+        return Node::block(out);
+    }
     if (!type || (type->kind != MType::String && !IsObjectLike(type)))
         return simple_ast::Node::storeAt(address, value, LowerType(type, "assignment"));
     simple_ast::NodePtr stored = (IsFreshValue(valueId) || IsImplicitConversionValue(valueId, type)) ? TakeExpressionTempValue(value, type) : value;
@@ -2711,7 +2736,11 @@ bool LowerConstructInit(const Memory::String &emitted, const std::shared_ptr<MTy
                 {
                     if (candidate.superseded || !candidate.isNamedConstructor) continue;
                     if (!AcceptsArgumentCount(candidate.params, args.size())) continue;
-                    if (chosen == nullptr) { chosen = &candidate; named = true; }
+                    if (chosen == nullptr)
+                    {
+                        chosen = &candidate;
+                        named = true;
+                    }
                     matched.push_back(type->name + "." + candidate.name + "$body");
                 }
             }

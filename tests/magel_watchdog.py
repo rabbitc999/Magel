@@ -113,6 +113,8 @@ def main():
     parser.add_argument("--magel", type=Path, default=ROOT / ("magel" + EXE))
     args = parser.parse_args()
     compiler = args.magel.resolve()
+    if os.name == "nt" and not compiler.suffix and compiler.with_suffix(EXE).is_file():
+        compiler = compiler.with_suffix(EXE)
     if not compiler.exists():
         raise SystemExit(f"找不到 magel 编译器：{compiler}")
     work = ROOT / "build/magel-watchdog"

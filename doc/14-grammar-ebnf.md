@@ -365,7 +365,10 @@ builtin_type = "int8"
 
 ptr_type = type, "&"
     | type, "const", "&"
-    | type, "mut", "&" ;
+    | type, "mut", "&"
+    | array_type, "&"
+    | array_type, "const", "&"
+    | array_type, "mut", "&" ;
 
 array_type = type, "[", "]" ;
 

@@ -106,6 +106,8 @@ Memory::Map<Memory::String, std::shared_ptr<MType>> g_needsArrayRelease;
  * @param name 数组变量名。
  * @param element 元素类型。
  * @param fixedCount 定长数组的编译期元素个数；< 0 表示运行时长度的数组（从对象头读）。
+ * @return 元素释放语句；不持有资源的元素返回空节点。
+ * @note 运行时数组的自动收尾先检查分配存活，避免读取已由可变借用删除的长度头。
  */
 simple_ast::NodePtr MakeArrayElementRelease(const Memory::String &name,
                                             const std::shared_ptr<MType> &element,
@@ -122,7 +124,12 @@ simple_ast::NodePtr MakeArrayElementRelease(const Memory::String &name,
     const auto release = simple_ast::Node::exprStmt(simple_ast::Node::call(
         ArrayReleaseName(element), { "__magel_arr", "__magel_count" },
         { value, count }));
-    return fixedCount >= 0 ? release : simple_ast::Node::ifThenElse(simple_ast::Node::binary("!=", value, simple_ast::Node::i(0)), release, nullptr);
+    if (fixedCount >= 0) return release;
+    // 借用函数可能已经显式删除该数组；自动收尾不再读取失效块的长度头。
+    const auto live = simple_ast::Node::binary("&&", simple_ast::Node::binary("!=", value, simple_ast::Node::i(0)),
+                                               simple_ast::Node::call("__vm_heap_live", { "address" },
+                                                                      { simple_ast::Node::binary("-", value, simple_ast::Node::i(8)) }));
+    return simple_ast::Node::ifThenElse(live, release, nullptr);
 }
 
 /**
