@@ -69,7 +69,13 @@ int64 classify(int64 value) {
 }
 int64 main() {
     int64 sum = 0;
-    for (int64 i = 1; i <= 5; i = i + 1) { sum = sum + i; }
+    {
+        int64 i = 1;
+        while (i <= 5) {
+ sum = sum + i; 
+            i = i + 1;
+        }
+    }
     println("sum={} classify(7)={}", sum, classify(7));
     return 0;
 }
@@ -79,7 +85,7 @@ int64 main() {
 sum=15 classify(7)=1
 ```
 
-`if / elif / else`, `while` and `for(init; cond; step)` are all present. Two more loop shapes:
+Conditions use `if / elif / else`; loops use `while`, `for-in`, and `loop`. The latter two forms are:
 
 - `loop { … yield v; }` — loop with a value result; `yield` carries the expression;
 - `for (T item in collection) { … }` — iterate a container.
@@ -308,7 +314,13 @@ int64 main() {
     fixed[1] = 2;
     fixed[2] = 3;
     int64 total = 0;
-    for (int64 i = 0; i < 3; i = i + 1) { total = total + fixed[i]; }
+    {
+        int64 i = 0;
+        while (i < 3) {
+ total = total + fixed[i]; 
+            i = i + 1;
+        }
+    }
     int64 runtime[] = new[4];
     runtime[0] = 10;
     println("fixed={} runtime0={}", total, runtime[0]);

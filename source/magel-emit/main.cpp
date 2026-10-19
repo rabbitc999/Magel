@@ -812,8 +812,8 @@ int runCli(int argc, char **argv)
     Memory::String userGlue;
     const Memory::String vmHppPath = vmDir + "/stackvm.hpp";
     const Memory::String vmCppPath = vmDir + "/stackvm.cpp";
-    const Memory::String vmGlueHppPath = vmDir + "/stackvm_glue.hpp";
-    const Memory::String vmGlueCppPath = vmDir + "/stackvm_glue.cpp";
+    const Memory::String vmGlueHppPath = mcDir + "/source/glue/file_api.hpp";
+    const Memory::String vmGlueCppPath = mcDir + "/source/glue/desktop_file_api.hpp";
     const Memory::String bigintHppPath = bigintDir + "/bigint.hpp";
     const Memory::String bigintCppPath = bigintDir + "/bigint.cpp";
     const Memory::String bigfloatHppPath = bigintDir + "/bigfloat.hpp";
@@ -837,7 +837,6 @@ int runCli(int argc, char **argv)
     inlineLocalIncludes(&vmCpp, vmDir + "/parts", "optimization_flow.inc");
     inlineLocalIncludes(&vmCpp, vmDir + "/parts", "execution_fusion.inc");
     inlineLocalIncludes(&vmCpp, vmDir + "/parts", "register_execution.inc");
-    stripLocalInclude(&vmHpp, "stackvm_glue.hpp");
     Memory::String reflectionHpp;
     if (!readWholeFile(vmDir + "/reflection.hpp", &reflectionHpp)) {
         std::cerr << "读不到反射元数据头；用 --vm-dir 指一下\n"; return 2;
@@ -845,7 +844,7 @@ int runCli(int argc, char **argv)
     stripLocalInclude(&reflectionHpp, "../../source/allocator/magel_allocator.hpp");
     stripLocalInclude(&vmHpp, "reflection.hpp");
     vmHpp = reflectionHpp + "\n" + vmHpp;
-    stripLocalInclude(&vmGlueCpp, "stackvm_glue.hpp");
+    stripLocalInclude(&vmGlueCpp, "file_api.hpp");
     const bool withBigInt = readWholeFile(bigintHppPath, &bigintHpp) &&
                             readWholeFile(bigintCppPath, &bigintCpp);
     if (withBigInt)
@@ -912,6 +911,20 @@ int runCli(int argc, char **argv)
         Memory::String numericGlueHpp;
         if (!readWholeFile(mcDir + "/source/glue/lang_numeric.hpp", &numericGlueHpp)) return 2;
         stripLocalInclude(&numericGlueHpp, "../magel_glue.hpp");
+        Memory::String nativeRecordGlueHpp, bigNumberGlueHpp, fileGlueHpp;
+        if (!readWholeFile(mcDir + "/source/glue/native_record.hpp", &nativeRecordGlueHpp) ||
+            !readWholeFile(mcDir + "/source/glue/big_number_natives.hpp", &bigNumberGlueHpp) ||
+            !readWholeFile(mcDir + "/source/glue/file_natives.hpp", &fileGlueHpp)) return 2;
+        stripLocalInclude(&nativeRecordGlueHpp, "stackvm.hpp");
+        stripLocalInclude(&bigNumberGlueHpp, "native_record.hpp");
+        stripLocalInclude(&bigNumberGlueHpp, "bigint.hpp");
+        stripLocalInclude(&bigNumberGlueHpp, "bigfloat.hpp");
+        stripLocalInclude(&fileGlueHpp, "native_record.hpp");
+        stripLocalInclude(&fileGlueHpp, "file_api.hpp");
+        stripLocalInclude(&fileGlueHpp, "desktop_file_api.hpp");
+        stripLocalInclude(&standardGlue, "file_natives.hpp");
+        stripLocalInclude(&standardGlue, "big_number_natives.hpp");
+        numericGlueHpp = nativeRecordGlueHpp + "\n" + bigNumberGlueHpp + "\n" + fileGlueHpp + "\n" + numericGlueHpp;
         Memory::String structuredGlueHpp, jsonGlueHpp, tomlGlueHpp;
         if (!readWholeFile(mcDir + "/source/glue/structured_data.hpp", &structuredGlueHpp)) return 2;
         stripLocalInclude(&structuredGlueHpp, "../magel_glue.hpp");
@@ -957,6 +970,7 @@ int runCli(int argc, char **argv)
         if (!readWholeFile(mcDir + "/source/glue/std_process.hpp", &processGlueHpp)) return 2;
         stripLocalInclude(&processGlueHpp, "../magel_glue.hpp");
         stripLocalInclude(&processGlueHpp, "magel_glue.hpp");
+        stripLocalInclude(&processGlueHpp, "native_record.hpp");
         Memory::String sqlGlueHpp, netGlueHpp, imageGlueHpp, treeGlueHpp, graphGlueHpp,
             linkedListGlueHpp, kmpGlueHpp;
         if (!readWholeFile(mcDir + "/source/glue/std_sql.hpp", &sqlGlueHpp) ||
@@ -1198,9 +1212,9 @@ int runCli(int argc, char **argv)
         request.declarationSources = glueDefines + "\n" + runtimeAllocatorHpp + "\n" + vmGlueHpp + "\n" + vmHpp + "\n";
 
         request.embeddedSources = glueDefines + "\n" + runtimeAllocatorHpp + "\n" + vmGlueHpp + "\n" +
-                                  vmHpp + "\n" + magicGlueHpp + "\n" + standardGlue + "\n" +
+                                  vmHpp + "\n" + magicGlueHpp + "\n" +
                                   bigintHpp + "\n" + bigintCpp + "\n" +
-                                  bigfloatHpp + "\n" + bigfloatCpp + "\n" + vmGlueCpp + "\n" + vmCpp +
+                                  bigfloatHpp + "\n" + bigfloatCpp + "\n" + standardGlue + "\n" + vmGlueCpp + "\n" + vmCpp +
                                   "\n" + abiGlue + "\n" + userGlue + "\n";
         request.programName = programName;
         request.dataBytes = dataBytes;

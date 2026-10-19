@@ -3,10 +3,10 @@
  * @file mcu_file_api.cpp
  * @brief 板端文件系统：桩 / C stdio / FatFS 三个后端 + 板端注入点。
  *
- * 桌面构建链的是 `library/stackvm/stackvm_glue.cpp`（`std::fstream` 版）；板端不编那份，
- * 由本文件提供 `stackvm::defaultFileApi()`：符号在、语义可控、**可以整个关掉**。
+ * 桌面构建链的是 `source/glue/desktop_file_api.hpp`（`std::fstream` 版）；板端不编那份，
+ * 由本文件提供 `magel_file::defaultFileApi()`：符号在、语义可控、**可以整个关掉**。
  *
- * 语义照抄桌面参考实现（`library/stackvm/stackvm_glue.cpp`）：
+ * 语义照抄桌面参考实现（`source/glue/desktop_file_api.hpp`）：
  *   * `readLine`：读到 `\n` 为止；**EOF 拿不到字节时返回空串且成功**（EOF 不是错误），
  *     真读失败才报错；
  *   * `seek`：0=开头 / 1=当前 / 2=末尾，返回新位置；`write` 写完顺带同步。
@@ -35,7 +35,7 @@ extern "C" {
 }
 #endif
 
-namespace stackvm
+namespace magel_file
 {
 namespace
 {
@@ -727,7 +727,7 @@ FileApi &defaultFileApi()
     return g_installedApi != nullptr ? *g_installedApi : BackendApi();
 }
 
-}  // namespace stackvm
+}  // namespace magel_file
 
 namespace mcuFilesystem
 {
@@ -764,11 +764,11 @@ bool Available() { return ConfiguredBackend() != Backend::Disabled; }
  * 必须在 `Machine::run()` 之前调用；`api` 的生命周期要覆盖整个运行期。
  * @param api 实现；传 `nullptr` 退回编译期后端。
  */
-void SetApi(stackvm::FileApi *api) { stackvm::g_installedApi = api; }
+void SetApi(magel_file::FileApi *api) { magel_file::g_installedApi = api; }
 
 /**
  * @brief 当前生效的实现（注入的优先，否则编译期后端）。
  * @retval 对应对象的引用。
  */
-stackvm::FileApi &CurrentApi() { return stackvm::defaultFileApi(); }
+magel_file::FileApi &CurrentApi() { return magel_file::defaultFileApi(); }
 }  // namespace mcuFilesystem

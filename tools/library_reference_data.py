@@ -47,6 +47,9 @@ MODULES = {
 
 # 精确名称优先，其后由生成器读取源码注释或按同族接口补全。
 BEHAVIOR = {
+    'rangeEq':'构造包含起点和终点的值区间；整数和 char 直接计算，其他类型通过 NextValue<T> 迭代。match 区间模式仅支持整数和 char。',
+    'nextValue':'使用接收者的游标状态、end 与 inclusive 产生下一项，并推进游标；返回 None 结束区间。',
+
     'sin':'计算正弦。', 'cos':'计算余弦。', 'tan':'计算正切。', 'asin':'计算反正弦，结果为弧度。', 'acos':'计算反余弦，结果为弧度。', 'atan':'计算反正切，结果为弧度。',
     'exp':'计算 e 的 value 次幂。', 'ln':'计算自然对数。', 'log10':'计算以 10 为底的对数。', 'pow':'计算 value 的 exponent 次幂。', 'sqrt':'计算平方根。', 'abs':'返回绝对值；泛型入口，整数最小值取负按位宽回绕，NaN 与负数零原样返回。', 'floor':'向负无穷取整。', 'ceil':'向正无穷取整。', 'round':'舍入到最近整数，中点远离零。', 'trunc':'向零截断小数部分。', 'fmod':'计算浮点余数，结果符号与被除数一致。', 'isNaN':'判断是否为 NaN。', 'isInf':'判断是否为正无穷或负无穷。', 'min':'返回实参中的较小值；泛型入口，接受任意数量实参，相等时取后者。', 'max':'返回实参中的较大值；泛型入口，接受任意数量实参，相等时取后者。', 'clamp':'将 value 限制在闭区间 [low,high]；low>high 时报运行错误。',
     'gcd':'计算实参的最大公约数；泛型入口，接受任意数量实参，结果非负。', 'lcm':'计算实参的最小公倍数；泛型入口，接受任意数量实参，任一实参为零给零，乘积回绕时报运行错误。', 'addMod':'计算 (left+right) mod modulus；modulus 不为正时报运行错误。', 'mulMod':'计算 (left×right) mod modulus，避免直接乘法的中间溢出；modulus 不为正时报运行错误。', 'powMod':'通过快速幂计算 base^exponent mod modulus；modulus 不为正时报运行错误。', 'isPrime':'判断整数是否为素数；内部加宽到 uint64 做七个底数的确定性 Miller-Rabin。', 'modInverse':'计算模乘逆元；模数不大于 1 或不互素时报运行错误。',
@@ -76,6 +79,8 @@ BEHAVIOR = {
 }
 
 ITER = {
+    'fromIterator':'复制实现 Iterator<T> 的来源值，建立可组合的独立惰性游标；不会消费来源变量。',
+
     'next':'消费并返回下一项，当前无项时 None。', 'sizeHint':'返回剩余数量下界及可选上界；未知上界为 None。', 'range':'构造半开整数区间 [start,stop) 的惰性迭代器，步长不能为零。', 'fromRange':'将核心整数 range 转为通用 Iter。', 'fromState':'复制实现 IterNext<T> 的状态值到专有存储，返回 Iter<T>。', 'fromList':'用列表值构造迭代器。', 'listIntoIter':'取得拥有列表值的迭代器。', 'listIter':'取得只读元素引用的迭代器。', 'listIterMut':'取得可写元素引用的迭代器。', 'setIntoIter':'取得集合值的迭代器。', 'setIter':'借用集合构造迭代器：把元素快照进迭代器状态，来源集合保持不变；迭代器本身仍是一次性消费。', 'mapIntoIter':'取得映射键值对的迭代器。', 'mapIter':'借用映射构造键值对元组迭代器：把键值对快照进迭代器状态，来源映射保持不变；迭代器本身仍是一次性消费。', 'fromSpan':'从连续存储视图构造迭代器。', 'map':'惰性调用 mapper，将 T 转成 U。', 'filter':'惰性保留 predicate 为真的项。', 'collect':'消费迭代器，收集到独立 List。', 'fold':'从 initial 开始按顺序累积。', 'tryFold':'累积到首个 Err 时短路返回，否则 Ok。', 'filterMap':'调用返回 Option 的 mapper，只输出 Value。', 'mapWhile':'转换元素，遇到首个 None 时结束。', 'scan':'以可变状态调用回调，产生 Option 输出。', 'inspect':'遍历时先执行观察回调，再输出原项。', 'enumerate':'给每项附加从 0 开始的序号。', 'zip':'将两个源配对，较短源结束时终止。', 'chain':'先输出第一源，再输出第二源。', 'rev':'产生逆序结果；实现会缓冲输入，不能用于无限源。', 'cycle':'循环输出源的缓冲副本；空源保持为空。', 'skip':'丢弃前 count 项。', 'take':'最多输出前 count 项。', 'skipWhile':'在前缀谓词为真期间丢弃，之后输出全部剩余项。', 'takeWhile':'输出谓词为真的前缀，消费使谓词失败的那一项。', 'peekingTakeWhile':'分离满足谓词的前缀与剩余迭代器，失败项保留在剩余部分。', 'stepBy':'按指定步长抽取元素，步长必须为正。', 'fuse':'一旦 next 返回 None，后续始终 None。', 'nth':'消费到从 0 开始的第 index 项，返回 Option。', 'last':'消费全部剩余项并返回最后一项。', 'find':'消费到首个 predicate 为真的项并返回 Option。', 'findMap':'转换并返回首个 Value。', 'all':'消费并判断是否全部满足谓词，空源为 true。', 'any':'消费并判断是否存在满足谓词的项，空源为 false。', 'count':'消费并返回项数。', 'countIter':'消费并返回项数。', 'forEach':'逐项调用 action 并消费迭代器。', 'sameItems':'逐项比较两个源的值及长度是否一致。', 'chars':'按字符串字节构造 char 迭代器，非 Unicode 字素切分。', 'repeat':'构造无限重复 value 的源，通常搭配 take。',
 }
 

@@ -17,12 +17,13 @@ struct MReflectionCalls
     static Memory::String tag(const std::shared_ptr<MType> &type)
     {
         if (!type) return "Empty";
+        if (IsStandardOpcode(type, "String")) return "Text";
         switch (type->kind)
         {
         case MType::Void: return "Empty";
         case MType::Bool: return "Bool";
         case MType::Char: return "Char";
-        case MType::String: return "Text";
+
         case MType::Int: return Memory::String(type->isUnsigned ? "U" : "I") + Memory::toString(type->bits);
         case MType::Double: return "F" + Memory::toString(type->bits);
         default: return {};
@@ -178,7 +179,7 @@ struct MReflectionCalls
                 bool allowed = !isConst || !MethodMutatesReceiver(owner, method, &visiting);
                 candidates.push_back({ constructor ? "new" : method.source,
                                        constructor ? "new " + owner : isStatic ? owner + "::" + method.source :
-                                                                        "obj." + method.source,
+                                                                                 "obj." + method.source,
                                        method.result, method.params, allowed });
                 if (!constructor && !isStatic)
                     for (const auto &entry : g_interfaces)

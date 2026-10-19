@@ -112,8 +112,14 @@ struct App {
                 while (std::io::fileEof(handle) == 0) {
                     String line = std::io::fileRead(handle);
                     List<String> parts = std::text::Text::split(line, " ");
-                    for (int64 i = 0; i < len(parts); i = i + 1) {
+                    {
+                        int64 i = 0;
+                        while (i < len(parts)) {
+
                         if (len(parts[i]) > 0) { self.answers.push(parts[i]); }
+                    
+                            i = i + 1;
+                        }
                     }
                 }
                 std::io::fileClose(handle);
@@ -291,7 +297,10 @@ struct App {
         if (!result.ok) { println(">> 查询失败：{}", result.error); return; }
         println("------------------------- 学生列表 -------------------------");
         println("学号        姓名      性别    年龄    班级");
-        for (int64 r = 0; r < result.rowCount(); r = r + 1) {
+        {
+            int64 r = 0;
+            while (r < result.rowCount()) {
+
             String rawNo = result.textAt(r, 0);
             String rawName = result.textAt(r, 1);
             String rawGender = result.textAt(r, 2);
@@ -302,6 +311,9 @@ struct App {
             String gender = pad(rawGender, 8);
             String age = pad(rawAge, 8);
             println("{}{}{}{}{}", no, name, gender, age, className);
+        
+                r = r + 1;
+            }
         }
         println("------------------------------------------------------------");
         println("共 {} 条记录", result.rowCount());
@@ -330,11 +342,17 @@ struct App {
         if (!result.ok) { println(">> 查询失败：{}", result.error); return; }
         if (result.rowCount() == 0) { println(">> 没有找到匹配的学生"); return; }
         println(">> 查询结果：");
-        for (int64 r = 0; r < result.rowCount(); r = r + 1) {
+        {
+            int64 r = 0;
+            while (r < result.rowCount()) {
+
             String line = "学号：" + result.textAt(r, 0) + "   姓名：" + result.textAt(r, 1)
             + "   性别：" + result.textAt(r, 2) + "   年龄：" + result.textAt(r, 3)
             + "   班级：" + result.textAt(r, 4);
             println("{}", line);
+        
+                r = r + 1;
+            }
         }
     }
 
@@ -440,7 +458,10 @@ struct App {
         if (!result.ok) { println(">> 查询失败：{}", result.error); return; }
         println("-------------------- 班级列表 --------------------");
         println("班级编号     班级名称        班主任      人数");
-        for (int64 r = 0; r < result.rowCount(); r = r + 1) {
+        {
+            int64 r = 0;
+            while (r < result.rowCount()) {
+
             String rawCode = result.textAt(r, 0);
             String rawName = result.textAt(r, 1);
             String rawTeacher = result.textAt(r, 2);
@@ -449,6 +470,9 @@ struct App {
             String name = pad(rawName, 16);
             String teacher = pad(rawTeacher, 12);
             println("{}{}{}{}", code, name, teacher, size);
+        
+                r = r + 1;
+            }
         }
         println("-------------------------------------------------");
         println("共 {} 个班级", result.rowCount());
@@ -463,10 +487,16 @@ struct App {
         if (!result.ok) { println(">> 查询失败：{}", result.error); return; }
         if (result.rowCount() == 0) { println(">> 没有找到该班级"); return; }
         println(">> 查询结果：");
-        for (int64 r = 0; r < result.rowCount(); r = r + 1) {
+        {
+            int64 r = 0;
+            while (r < result.rowCount()) {
+
             String line = "编号：" + result.textAt(r, 0) + "   名称：" + result.textAt(r, 1)
             + "   班主任：" + result.textAt(r, 2) + "   人数：" + result.textAt(r, 3);
             println("{}", line);
+        
+                r = r + 1;
+            }
         }
     }
 
@@ -545,7 +575,10 @@ struct App {
         if (!result.ok) { println(">> 查询失败：{}", result.error); return; }
         println("---------------------- 成绩列表 ----------------------");
         println("学号        姓名      课程        成绩     等级");
-        for (int64 r = 0; r < result.rowCount(); r = r + 1) {
+        {
+            int64 r = 0;
+            while (r < result.rowCount()) {
+
             String rawNo = result.textAt(r, 0);
             String rawName = result.textAt(r, 1);
             String rawCourse = result.textAt(r, 2);
@@ -556,6 +589,9 @@ struct App {
             String course = pad(rawCourse, 12);
             String score = pad(rawScore, 8);
             println("{}{}{}{}{}", no, name, course, score, grade);
+        
+                r = r + 1;
+            }
         }
         println("------------------------------------------------------");
         println("共 {} 条记录", result.rowCount());
@@ -587,7 +623,10 @@ struct App {
         if (result.rowCount() == 0) { println(">> 没有找到匹配的成绩"); return; }
         println(">> 查询结果：");
         println("学号        姓名      课程        成绩     等级");
-        for (int64 r = 0; r < result.rowCount(); r = r + 1) {
+        {
+            int64 r = 0;
+            while (r < result.rowCount()) {
+
             String rawNo = result.textAt(r, 0);
             String rawName = result.textAt(r, 1);
             String rawCourse = result.textAt(r, 2);
@@ -598,6 +637,9 @@ struct App {
             String course = pad(rawCourse, 12);
             String score = pad(rawScore, 8);
             println("{}{}{}{}{}", no, name, course, score, grade);
+        
+                r = r + 1;
+            }
         }
     }
 
@@ -643,10 +685,16 @@ struct App {
  */
 int64 main(List<String> arguments) {
     String answersPath = "";
-    for (int64 i = 0; i < len(arguments); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < len(arguments)) {
+
         String argument = arguments[i];
         if (argument == "--answers" && i + 1 < len(arguments)) {
             answersPath = arguments[i + 1];
+            i = i + 1;
+        }
+    
             i = i + 1;
         }
     }

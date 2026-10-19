@@ -21,7 +21,9 @@ AST_DIR := library/simple_ast
 VM_DIR  := library/stackvm
 PP_DIR  := library/preprocess
 AST_LIB := build/magel-runtime/libsimple_ast.a
-VM_BUILD := build/magel-stackvm
+VM_BUILD := build/magel-stackvm-core
+HOST_BUILD := build/magel-host-records
+HOST_LIB := $(HOST_BUILD)/librecords.a
 VM_LIB  := $(VM_BUILD)/libstackvm.a
 PP_LIB  := build/magel-runtime/libpreprocess.a
 
@@ -70,7 +72,7 @@ $(FRONTEND_BUILD)/generator-main.o: source/magel-generator/main.cpp source/magel
 	$(CXX) $(CXXFLAGS) -DMAGEL_GENERATOR_NO_MAIN=1 -I. -c $< -o $@
 
 # 注意顺序：libparser.a 引用了 simple_ast / stackvm 的符号，必须排在它们前面。
-LDLIBS   += $(AST_LIB) $(VM_LIB) $(PP_LIB)
+LDLIBS   += $(AST_LIB) $(VM_LIB) $(HOST_LIB) $(PP_LIB)
 ifeq ($(shell uname -s),Linux)
 LDLIBS   += -ldl
 endif
@@ -83,29 +85,29 @@ $(FRONTEND_BUILD)/magel_main.o: source/magel_analysis.hpp source/magel_diagnosti
 $(FRONTEND_BUILD)/magel_parser.o: source/magel_types.h source/magel_epilogue.cpp source/magel_generic.hpp $(wildcard source/epilogue/*.cpp) library/sqlite/sqlite3.h source/magel_glue.hpp $(VM_DIR)/stackvm.hpp $(VM_DIR)/value_text.hpp $(VM_DIR)/reflection.hpp
 
 # 外部静态库更新后必须重链；只把它们写进 LDLIBS 不会让 make 追踪时间戳。
-$(TARGET): $(AST_LIB) $(VM_LIB) $(PP_LIB)
+$(TARGET): $(AST_LIB) $(VM_LIB) $(HOST_LIB) $(PP_LIB)
 
 # Magel's VM copy includes the std bindings that are intentionally absent from
 # the general-purpose library/stackvm build. Keep its archive separate.
-$(VM_BUILD):
+$(VM_BUILD) $(HOST_BUILD):
 	$(MAGEL_RUNTIME_MKDIR)
 
-$(VM_BUILD)/stackvm.o: $(VM_DIR)/stackvm.cpp $(wildcard $(VM_DIR)/parts/*) $(VM_DIR)/register_core.hpp $(VM_DIR)/execution_plan.hpp $(VM_DIR)/allocation_index.hpp $(VM_DIR)/data_capacity_index.hpp $(VM_DIR)/stackvm.hpp $(VM_DIR)/value_text.hpp $(VM_DIR)/reflection.hpp $(VM_DIR)/stackvm_glue.hpp | $(VM_BUILD)
-	$(CXX) $(CXXFLAGS) -DSTACKVM_WITH_BIGINT=1 -DSTACKVM_WITH_BIGFLOAT=1 -I$(VM_DIR) -I$(MAGEL_LIBRARY_DIR)/bignum -c $< -o $@
-
-$(VM_BUILD)/stackvm_glue.o: $(VM_DIR)/stackvm_glue.cpp $(VM_DIR)/stackvm_glue.hpp | $(VM_BUILD)
+$(VM_BUILD)/stackvm.o: $(VM_DIR)/stackvm.cpp $(wildcard $(VM_DIR)/parts/*) $(VM_DIR)/register_core.hpp $(VM_DIR)/execution_plan.hpp $(VM_DIR)/allocation_index.hpp $(VM_DIR)/data_capacity_index.hpp $(VM_DIR)/stackvm.hpp $(VM_DIR)/value_text.hpp $(VM_DIR)/reflection.hpp | $(VM_BUILD)
 	$(CXX) $(CXXFLAGS) -I$(VM_DIR) -c $< -o $@
 
-$(VM_BUILD)/bigint.o: library/bignum/bigint.cpp library/bignum/bigint.hpp | $(VM_BUILD)
+$(HOST_BUILD)/bigint.o: library/bignum/bigint.cpp library/bignum/bigint.hpp | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -I$(MAGEL_LIBRARY_DIR)/bignum -c $< -o $@
 
-$(VM_BUILD)/bigfloat.o: library/bignum/bigfloat.cpp library/bignum/bigfloat.hpp library/bignum/bigint.hpp | $(VM_BUILD)
+$(HOST_BUILD)/bigfloat.o: library/bignum/bigfloat.cpp library/bignum/bigfloat.hpp library/bignum/bigint.hpp | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -I$(MAGEL_LIBRARY_DIR)/bignum -c $< -o $@
 
-$(VM_BUILD)/sqlite3.o: library/sqlite/sqlite3.c library/sqlite/sqlite3.h | $(VM_BUILD)
+$(HOST_BUILD)/sqlite3.o: library/sqlite/sqlite3.c library/sqlite/sqlite3.h | $(HOST_BUILD)
 	$(CC) -std=c11 -O2 -DSQLITE_THREADSAFE=1 -DSQLITE_OMIT_LOAD_EXTENSION=1 -c $< -o $@
 
-$(VM_LIB): $(VM_BUILD)/sqlite3.o $(VM_BUILD)/stackvm.o $(VM_BUILD)/stackvm_glue.o $(VM_BUILD)/bigint.o $(VM_BUILD)/bigfloat.o
+$(VM_LIB): $(VM_BUILD)/stackvm.o
+	$(AR) $(ARFLAGS) $@ $^
+
+$(HOST_LIB): $(HOST_BUILD)/sqlite3.o $(HOST_BUILD)/bigint.o $(HOST_BUILD)/bigfloat.o
 	$(AR) $(ARFLAGS) $@ $^
 
 .PHONY: check samples
@@ -138,12 +140,12 @@ $(AST_LIB): build/magel-runtime/simple_ast.o
 	$(AR) $(ARFLAGS) $@ $^
 $(PP_LIB): build/magel-runtime/preprocess.o
 	$(AR) $(ARFLAGS) $@ $^
-$(FRONTEND_BUILD)/magel_main.o $(FRONTEND_BUILD)/magel_parser.o $(VM_BUILD)/stackvm.o $(VM_BUILD)/stackvm_glue.o $(VM_BUILD)/bigint.o $(VM_BUILD)/bigfloat.o: source/runtime_allocator.hpp source/allocator/magel_allocator.hpp source/allocator/magel_pool.c source/allocator/magel_pool.h
+$(FRONTEND_BUILD)/magel_main.o $(FRONTEND_BUILD)/magel_parser.o $(VM_BUILD)/stackvm.o $(HOST_BUILD)/bigint.o $(HOST_BUILD)/bigfloat.o: source/runtime_allocator.hpp source/allocator/magel_allocator.hpp source/allocator/magel_pool.c source/allocator/magel_pool.h
 
 .PHONY: config-force
 build/magel-runtime/buildConfig.json: config-force
 	$(PYTHON) tools/write_build_config.py $@ "$(CXX)" "$(CXXFLAGS)" "$(LDLIBS)" "$(LDFLAGS)"
-$(LIB_OBJS) $(DEMO_OBJS) $(VM_BUILD)/stackvm.o $(VM_BUILD)/stackvm_glue.o $(VM_BUILD)/bigint.o $(VM_BUILD)/bigfloat.o build/magel-runtime/simple_ast.o build/magel-runtime/preprocess.o: build/magel-runtime/buildConfig.json
+$(LIB_OBJS) $(DEMO_OBJS) $(VM_BUILD)/stackvm.o $(HOST_BUILD)/bigint.o $(HOST_BUILD)/bigfloat.o build/magel-runtime/simple_ast.o build/magel-runtime/preprocess.o: build/magel-runtime/buildConfig.json
 
 # 结构化数据解析器直接编入胶水翻译单元。
 $(FRONTEND_BUILD)/magel_main.o: $(wildcard library/json/*.hpp library/json/*.cpp library/toml/*.hpp library/toml/*.cpp)
@@ -166,7 +168,7 @@ DEMO_OBJS += $(MAGEL_LSP_OBJS)
 $(TARGET): $(MAGEL_LSP_OBJS)
 
 # 静态消息表变更后所有相关翻译单元必须一致，避免旧消息表混入链接。
-$(LIB_OBJS) $(DEMO_OBJS) $(VM_BUILD)/stackvm.o $(VM_BUILD)/stackvm_glue.o: source/magel_i18n.hpp library/console/utf8.hpp
+$(LIB_OBJS) $(DEMO_OBJS) $(VM_BUILD)/stackvm.o: source/magel_i18n.hpp library/console/utf8.hpp
 
 # 单态化符号由前端与宿主胶水共享；更新编码时必须重编相关目标。
 $(FRONTEND_BUILD)/magel_main.o $(FRONTEND_BUILD)/magel_parser.o build/magel-embedded-lsp/mc.o build/magel-embedded-lsp/server.o: source/magel_generic_name.hpp

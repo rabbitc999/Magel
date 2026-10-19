@@ -106,30 +106,30 @@ response ok=1 status=200 reason=OK len=5 type=text/plain body=hello
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-335"></a>`struct TcpSocket` | 一条 TCP 连接（`connect` 来的，或 `accept` 到的）。 |
-| TcpSocket | <a id="symbol-336"></a>`int32 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
-| TcpSocket | <a id="symbol-337"></a>`bool opened` | 外部资源是否处于打开状态。 |
-| TcpSocket | <a id="symbol-338"></a>`std::lang::String error` | 最近操作的错误说明。 |
-| 模块 | <a id="symbol-339"></a>`struct TcpListener` | TCP 监听器；端口传 0 时由系统分配，用 `localPort()` 查询。 |
-| TcpListener | <a id="symbol-340"></a>`int32 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
-| TcpListener | <a id="symbol-341"></a>`bool opened` | 外部资源是否处于打开状态。 |
-| TcpListener | <a id="symbol-342"></a>`std::lang::String error` | 最近操作的错误说明。 |
-| 模块 | <a id="symbol-343"></a>`struct Url` | 拆开的 HTTP 地址。 |
-| Url | <a id="symbol-344"></a>`bool ok` | 当前解析或请求是否成功。 |
-| Url | <a id="symbol-345"></a>`std::lang::String host` | URL 中的主机名。 |
-| Url | <a id="symbol-346"></a>`int64 port` | 网络端口。 |
-| Url | <a id="symbol-347"></a>`std::lang::String path` | 请求目标路径。 |
-| Url | <a id="symbol-348"></a>`std::lang::String error` | 最近操作的错误说明。 |
-| 模块 | <a id="symbol-349"></a>`struct HttpResponse` | HTTP 响应：状态码、原因、头部原文、正文。 |
-| HttpResponse | <a id="symbol-350"></a>`bool ok` | 当前解析或请求是否成功。 |
-| HttpResponse | <a id="symbol-351"></a>`int64 status` | HTTP 响应状态码。 |
-| HttpResponse | <a id="symbol-352"></a>`std::lang::String reason` | HTTP 状态原因文本。 |
-| HttpResponse | <a id="symbol-353"></a>`std::lang::String headers` | HTTP 响应头。 |
-| HttpResponse | <a id="symbol-354"></a>`std::lang::String body` | HTTP 响应正文。 |
-| HttpResponse | <a id="symbol-355"></a>`std::lang::String error` | 最近操作的错误说明。 |
-| 模块 | <a id="symbol-356"></a>`struct HttpClient` | 一条连接上的 HTTP 客户端；也提供一次性便捷方法 `fetch`/`submit`。 |
-| HttpClient | <a id="symbol-357"></a>`TcpSocket socket` | HTTP 客户端使用的 TCP 连接。 |
-| HttpClient | <a id="symbol-358"></a>`bool connected` | 客户端是否已建立连接。 |
+| 模块 | <a id="symbol-339"></a>`struct TcpSocket` | 一条 TCP 连接（`connect` 来的，或 `accept` 到的）。 |
+| TcpSocket | <a id="symbol-340"></a>`int32 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
+| TcpSocket | <a id="symbol-341"></a>`bool opened` | 外部资源是否处于打开状态。 |
+| TcpSocket | <a id="symbol-342"></a>`std::lang::String error` | 最近操作的错误说明。 |
+| 模块 | <a id="symbol-343"></a>`struct TcpListener` | TCP 监听器；端口传 0 时由系统分配，用 `localPort()` 查询。 |
+| TcpListener | <a id="symbol-344"></a>`int32 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
+| TcpListener | <a id="symbol-345"></a>`bool opened` | 外部资源是否处于打开状态。 |
+| TcpListener | <a id="symbol-346"></a>`std::lang::String error` | 最近操作的错误说明。 |
+| 模块 | <a id="symbol-347"></a>`struct Url` | 拆开的 HTTP 地址。 |
+| Url | <a id="symbol-348"></a>`bool ok` | 当前解析或请求是否成功。 |
+| Url | <a id="symbol-349"></a>`std::lang::String host` | URL 中的主机名。 |
+| Url | <a id="symbol-350"></a>`int64 port` | 网络端口。 |
+| Url | <a id="symbol-351"></a>`std::lang::String path` | 请求目标路径。 |
+| Url | <a id="symbol-352"></a>`std::lang::String error` | 最近操作的错误说明。 |
+| 模块 | <a id="symbol-353"></a>`struct HttpResponse` | HTTP 响应：状态码、原因、头部原文、正文。 |
+| HttpResponse | <a id="symbol-354"></a>`bool ok` | 当前解析或请求是否成功。 |
+| HttpResponse | <a id="symbol-355"></a>`int64 status` | HTTP 响应状态码。 |
+| HttpResponse | <a id="symbol-356"></a>`std::lang::String reason` | HTTP 状态原因文本。 |
+| HttpResponse | <a id="symbol-357"></a>`std::lang::String headers` | HTTP 响应头。 |
+| HttpResponse | <a id="symbol-358"></a>`std::lang::String body` | HTTP 响应正文。 |
+| HttpResponse | <a id="symbol-359"></a>`std::lang::String error` | 最近操作的错误说明。 |
+| 模块 | <a id="symbol-360"></a>`struct HttpClient` | 一条连接上的 HTTP 客户端；也提供一次性便捷方法 `fetch`/`submit`。 |
+| HttpClient | <a id="symbol-361"></a>`TcpSocket socket` | HTTP 客户端使用的 TCP 连接。 |
+| HttpClient | <a id="symbol-362"></a>`bool connected` | 客户端是否已建立连接。 |
 
 ## 函数索引
 
@@ -935,7 +935,7 @@ std::lang::String httpScheme();
 std::net::httpScheme();
 ```
 
-**源码**：[source/std/net.mgl:215](../../source/std/net.mgl#L215)。
+**源码**：[source/std/net.mgl:221](../../source/std/net.mgl#L221)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -973,7 +973,7 @@ Url parseUrl(std::lang::String url);
 std::net::parseUrl(url);
 ```
 
-**源码**：[source/std/net.mgl:217](../../source/std/net.mgl#L217)。
+**源码**：[source/std/net.mgl:223](../../source/std/net.mgl#L223)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -1016,7 +1016,7 @@ std::lang::String buildRequest(std::lang::String method, std::lang::String url, 
 std::net::buildRequest(method, url, body, contentType);
 ```
 
-**源码**：[source/std/net.mgl:257](../../source/std/net.mgl#L257)。
+**源码**：[source/std/net.mgl:263](../../source/std/net.mgl#L263)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -1056,7 +1056,7 @@ HttpResponse parseResponse(std::lang::String raw);
 std::net::parseResponse(raw);
 ```
 
-**源码**：[source/std/net.mgl:283](../../source/std/net.mgl#L283)。
+**源码**：[source/std/net.mgl:289](../../source/std/net.mgl#L289)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -1096,7 +1096,7 @@ bool connect(std::lang::String host, int32 port, int32 timeoutMs);
 obj.connect(host, port, timeoutMs);
 ```
 
-**源码**：[source/std/net.mgl:331](../../source/std/net.mgl#L331)。
+**源码**：[source/std/net.mgl:337](../../source/std/net.mgl#L337)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -1134,7 +1134,7 @@ std::lang::String readAll();
 obj.readAll();
 ```
 
-**源码**：[source/std/net.mgl:338](../../source/std/net.mgl#L338)。
+**源码**：[source/std/net.mgl:344](../../source/std/net.mgl#L344)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -1177,7 +1177,7 @@ HttpResponse exchange(std::lang::String method, std::lang::String url, std::lang
 obj.exchange(method, url, body, contentType);
 ```
 
-**源码**：[source/std/net.mgl:350](../../source/std/net.mgl#L350)。
+**源码**：[source/std/net.mgl:356](../../source/std/net.mgl#L356)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -1213,7 +1213,7 @@ void close();
 obj.close();
 ```
 
-**源码**：[source/std/net.mgl:372](../../source/std/net.mgl#L372)。
+**源码**：[source/std/net.mgl:378](../../source/std/net.mgl#L378)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -1253,7 +1253,7 @@ static HttpResponse fetch(std::lang::String url);
 std::net::HttpClient::fetch(url);
 ```
 
-**源码**：[source/std/net.mgl:378](../../source/std/net.mgl#L378)。
+**源码**：[source/std/net.mgl:384](../../source/std/net.mgl#L384)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -1295,6 +1295,6 @@ static HttpResponse submit(std::lang::String url, std::lang::String body, std::l
 std::net::HttpClient::submit(url, body, contentType);
 ```
 
-**源码**：[source/std/net.mgl:403](../../source/std/net.mgl#L403)。
+**源码**：[source/std/net.mgl:409](../../source/std/net.mgl#L409)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。

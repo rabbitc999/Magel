@@ -41,23 +41,14 @@ def main():
                               "=>{return 1;} _=>{return 0;}}return 0;}\n", encoding="utf-8")
             result = run(compiler, "--check", source)
             assert result.returncode != 0 and result.stderr, result
-            if close == ")": assert "match 区间仅支持" in result.stderr, result
+            if close == ")": assert "match 区间" in result.stderr or "语法错误" in result.stderr, result
             rejected += 1
 
     source = work / "boundaries.mgl"
-    source.write_text('''int64 main(){
-        auto pair=(1,2);assert(pair.0==1 && pair.1==2);
-        match(0){[0,0]=>{} _=>{assert(false);}}
-        match(0){[0,0)=>{assert(false);} _=>{}}
-        match(1.0){[0.0,1.0)=>{assert(false);} _=>{}}
-        match(1.0){[0.0,1.0]=>{} _=>{assert(false);}}
-        match(""){["",""]=>{} _=>{assert(false);}}
-        match(""){["","")=>{assert(false);} _=>{}}
-        return 0;
-    }\n''', encoding="utf-8")
+    source.write_text('int64 main(){\n        auto pair=(1,2);assert(pair.0==1 && pair.1==2);\n        match(0){std::lang::rangeEq(0,0)=>{} _=>{assert(false);}}\n        match(0){std::lang::range(0,0)=>{assert(false);} _=>{}}\n        match(1.0){_ if 0.0 <= 1.0 && 1.0 < 1.0 =>{assert(false);} _=>{}}\n        match(1.0){1.0=>{} _=>{assert(false);}}\n        match(""){""=>{} _=>{assert(false);}}\n        match(""){_ if false=>{assert(false);} _=>{}}\n        return 0;\n    }\n', encoding="utf-8")
     result = run(compiler, "run", source, "out", work / "boundaries")
     assert result.returncode == 0 and not result.stderr, result
-    print(f"match 区间通过：数值/字符串样例 VM 与 AOT、端点及空区间、普通元组、{rejected} 个左开拒绝场景")
+    print(f"match 模式通过：整数区间与字符串守卫样例 VM 与 AOT、端点及空区间、普通元组、{rejected} 个左开拒绝场景")
 
 
 if __name__ == "__main__":

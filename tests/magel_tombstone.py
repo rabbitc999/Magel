@@ -61,7 +61,7 @@ def main():
     # 小块与大块合并后反复分配大块，不能因旧槽位宽而持续扩展物理堆。
     source = WORK / "merged.mgl"
     source.write_text('int64 main() { int64 tiny[] = new[1]; delete tiny; '
-                      'for (int64 i=0; i<300; i++) { int64 large[] = new[262144]; delete large; } '
+                      '{\n    int64 i=0;\n    while (i<300) {\n int64 large[] = new[262144]; delete large; \n        i++;\n    }\n} '
                       'std::lang::println("merged ok"); return 0; }\n', encoding="utf-8")
     output = WORK / ("merged" + (".exe" if os.name == "nt" else ""))
     built = run(compiler, "aot", source, "checked", "out", output, "opt", "0")

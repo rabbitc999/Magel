@@ -497,10 +497,16 @@ struct GeneralTree : Drop {
      */
     BinarySearchTree toBinary() {
         BinarySearchTree tree = BinarySearchTree::create();
-        for (int64 index = 0; index < self.values.len(); index = index + 1) {
+        {
+            int64 index = 0;
+            while (index < self.values.len()) {
+
             tree.keys.push(self.values[index]);
             tree.lefts.push(self.firstChild[index]);
             tree.rights.push(self.nextSibling[index]);
+        
+                index = index + 1;
+            }
         }
         tree.root = self.rootNode();
         tree.count = self.count;
@@ -515,10 +521,16 @@ struct GeneralTree : Drop {
     static GeneralTree fromBinary(BinarySearchTree tree) {
         GeneralTree result = GeneralTree::create();
         if (tree.root != 0 - 1) {
-            for (int64 index = 0; index < tree.keys.len(); index = index + 1) {
+            {
+                int64 index = 0;
+                while (index < tree.keys.len()) {
+
                 result.values.push(tree.keys[index]);
                 result.firstChild.push(tree.lefts[index]);
                 result.nextSibling.push(tree.rights[index]);
+            
+                    index = index + 1;
+                }
             }
             result.count = tree.len();
         }

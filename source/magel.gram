@@ -7,12 +7,13 @@
  *   ③ %main：解析 → 降级 → generate → 落 .quad/.data/.layout →
  *      stackvm 组装执行，直接出结果。
  *
- * 词法声明（%trivia / %token / %define / %right / %left）已抽到
+ * 词法声明（%trivia / %token / %identifier / %space / %right / %left）已抽到
  * magel_token.gram，本文件用 %include 引入；产生式从下方开始。
  * 完整语言范围见 README.md。
  * ============================================================ */
 
 %mode lalr
+%cpp_lexer std
 %namespace magel
 %value_type int
 %max_stack_depth 4096
@@ -31,6 +32,8 @@ top := annotation_decl { $$ = $1; }
      | top_decl { $$ = $1; } ;
 
 top_decl := struct_decl type_decl_end { $$ = $1; }
+     | opcode_decl type_decl_end { $$ = $1; }
+     | NONCOPYABLE opcode_decl type_decl_end { $$ = M_NonCopyableOpcode($2); }
      | derive_directive struct_decl type_decl_end { $$ = M_Derived($1, $2); }
      | derive_directive enum_decl type_decl_end { $$ = M_Derived($1, $2); }
      | MODULE module_name SEMI { $$ = M_Module($2); }
@@ -54,6 +57,16 @@ type_decl_end := %empty { $$ = -1; }
 
 /* 编译器指令仅修饰类型声明，白名单和字段接口约束由语义层检查。 */
 derive_directive := DERIVE LPAREN iface_list RPAREN { $$ = $3; } ;
+
+/* 不透明胶水对象显式绑定创建、销毁及可选复制方法。 */
+opcode_decl := OPCODE name_token LBRACE opcode_methods RBRACE
+    { $$ = M_Opcode($2, $4); } ;
+opcode_methods := %empty { $$ = M_List(); }
+    | opcode_methods opcode_method { M_ListAdd($1, $2); $$ = $1; } ;
+opcode_method := NEW ASSIGN module_name SEMI { $$ = M_OpcodeMethod(0, $3); }
+    | DROP ASSIGN module_name SEMI { $$ = M_OpcodeMethod(1, $3); }
+    | COPY ASSIGN module_name SEMI { $$ = M_OpcodeMethod(2, $3); }
+    | member { $$ = $1; } ;
 
 /* ---- 编译期注解：声明只在顶层，使用只包裹声明，不进入语句/表达式文法。 ---- */
 annotation_decl := ANNOTATION module_name
@@ -468,8 +481,6 @@ stmt := block                  { $$ = $1; }
       | SCOPE_EXIT LPAREN name_token RPAREN block { $$ = M_ScopeExit($3, $5); }
       | if_stmt                { $$ = $1; }
       | while_stmt             { $$ = $1; }
-      | do_while_stmt          { $$ = $1; }
-      | for_stmt               { $$ = $1; }
       | for_in_stmt           { $$ = $1; }
       | match_stmt %prec SEMI  { $$ = $1; }
       | match_stmt SEMI        { $$ = $1; }
@@ -491,10 +502,6 @@ stmt := block                  { $$ = $1; }
        * 语义层将括号元组目标与逗号列表目标统一为解构赋值。 */
       | expression_items SEMI { $$ = M_AssignTuple($1); } ;
 
-/* do { … } while (条件); —— 先做一遍再判条件（用 `(jnz, 条件, _, 回跳)` 收尾） */
-do_while_stmt := DO block WHILE LPAREN expr RPAREN SEMI
-    { $$ = M_DoWhile($2, $5); } ;
-
 /* match 不穿透，也不写 break；`_` 是兜底模式。 */
 match_stmt := MATCH LPAREN expr RPAREN LBRACE match_item_list RBRACE
     { $$ = M_Match($3, $6); } ;
@@ -514,13 +521,7 @@ match_item := match_patterns IF expr FATARROW if_block
 /* 模式位置的 | 表示备选模式；普通表达式中的 | 仍是位或。 */
 match_patterns := match_pattern { $$ = M_List1($1); }
                 | match_patterns PIPE match_pattern { M_ListAdd($1, $3); $$ = $1; } ;
-match_pattern := range_pattern { $$ = $1; }
-               | bxor_expr { $$ = $1; } ;
-
-/* match 区间仅支持左闭右开 [a,b) 与闭区间 [a,b]。
- * 元组表达式仍采用圆括号，但不再解释为开区间模式。 */
-range_pattern := LBRACKET expr COMMA expr RPAREN { $$ = M_Range($2, $4, 1, 0); }
-               | LBRACKET expr COMMA expr RBRACKET { $$ = M_Range($2, $4, 1, 1); } ;
+match_pattern := bxor_expr { $$ = $1; } ;
 
 /* 局部变量：与全局同一套 decl_head + declarator，但发成 (decl, T, local, x) ——
  * stackvm 执行到它就往**当前调用帧**里开一个槽（进函数时分配、返回时释放），
@@ -580,19 +581,20 @@ else_part := %empty             { $$ = -1; }
 
 while_stmt := WHILE LPAREN expr RPAREN block { $$ = M_While($3, $5); } ;
 
-loop_expr := LOOP block { $$ = M_Loop($2); } ;
-
-/* for (init; cond; inc) blk
- * 分号归属：for_init 自己吃掉第一个（空 init 就是光秃秃的一个 `;`），for_inc 吃掉
- * 最后一个（空 inc 时 `%empty` 让 `)` 直接接上）；这样写了初始化的循环
- * （`for (i = 1; i < 5; i = i + 1)`）不会再多吃一个分号。
- * 语法树里它就是**独立的一个节点**（不是展开成 while）：`continue` 要跳到 inc 上，
- * 展开成 while 的话 continue 会把 inc 一起跳过去。 */
-for_stmt := FOR LPAREN for_init expr SEMI for_inc RPAREN block
-    { $$ = M_For($3, $4, $6, $8); } ;
+loop_expr := LOOP block { $$ = M_Loop($2); }
+           | WHILE LPAREN expr RPAREN if_block ELSE if_block
+               { $$ = M_BlockValue(M_Block(M_List2(M_While($3, $5), $7))); }
+           | FOR LPAREN name_token IN for_in_source RPAREN if_block ELSE if_block
+               { $$ = M_BlockValue(M_Block(M_List2(M_Foreach(-1, $3, -1, $5, $7), $9))); }
+           | FOR LPAREN AUTO name_token IN for_in_source RPAREN if_block ELSE if_block
+               { $$ = M_BlockValue(M_Block(M_List2(M_Foreach(-1, $4, -1, $6, $8), $10))); }
+           | FOR LPAREN type name_token IN for_in_source RPAREN if_block ELSE if_block
+               { $$ = M_BlockValue(M_Block(M_List2(M_Foreach($3, $4, -1, $6, $8), $10))); }
+           | FOR LPAREN ptr_type name_token IN for_in_source RPAREN if_block ELSE if_block
+               { $$ = M_BlockValue(M_Block(M_List2(M_Foreach($3, $4, -1, $6, $8), $10))); } ;
 
 /* for (x in src) / for (auto x in src) / for (T x in src) / for (T* x in src)：
- * 与经典 for 共用 FOR 关键字，靠 IN 区分；foreach 关键字已删除，非终结符同步改名。 */
+ * 统一通过 IN 指定迭代来源。 */
 for_in_stmt := FOR LPAREN name_token IN for_in_source RPAREN block
                   { $$ = M_Foreach(-1, $3, -1, $5, $7); }
   | FOR LPAREN AUTO name_token IN for_in_source RPAREN block
@@ -603,23 +605,13 @@ for_in_stmt := FOR LPAREN name_token IN for_in_source RPAREN block
                   { $$ = M_Foreach($3, $4, -1, $6, $8); } ;
 
 /* 区间作为内部 Iterator<T>，和普通迭代源共用 for-in。 */
-for_in_source := expr { $$ = $1; }
-                 | range_pattern { $$ = $1; } ;
+for_in_source := expr { $$ = $1; } ;
 
 /* new/heap 糖的类型位：只作文法识别（真实类型由左值推导），接受结构体名与内置类型，
  * 不用完整 type，避免与 fn 签名里的 ptr_type（type . AMP）产生归约冲突。 */
 heap_type := name_token { $$ = $1; }
            | builtin_type { $$ = $1; } ;
 
-for_init := SEMI                    { $$ = -1; }
-          | decl_stmt               { $$ = $1; }
-          | expr_stmt_simple        { $$ = $1; } ;
-
-/* 自增部分**不带分号**：`for (…; …; i = i + 1)` 里最后那个 `)` 直接接在表达式后面。 */
-for_inc := %empty                   { $$ = -1; }
-         | expr                     { $$ = M_ExprStmt($1); } ;
-
-expr_stmt_simple := expr SEMI { $$ = M_ExprStmt($1); } ;
 
 /* ---- 表达式 ---- */
 expr := assign_expr { $$ = M_CheckUpdates($1); } ;
@@ -737,6 +729,8 @@ postfix := postfix INCREMENT { $$ = M_Update(1, 0, $1); }
          | postfix ARROW name_token            { $$ = M_Arrow($1, $3); }
          | postfix DOT DROP                  { $$ = M_Member($1, M_KeywordName(1)); }
          | postfix ARROW DROP                { $$ = M_Arrow($1, M_KeywordName(1)); }
+         | postfix DOT OPCODE                { $$ = M_Member($1, M_KeywordName(5)); }
+         | postfix ARROW OPCODE              { $$ = M_Arrow($1, M_KeywordName(5)); }
          | postfix LPAREN call_args RPAREN { $$ = M_CallOn($1, $3); }
          | primary                        { $$ = $1; } ;
 
@@ -836,7 +830,10 @@ collection_literal := LBRACE RBRACE { $$ = M_CollectionLiteral(0, M_List()); }
                     | LBRACE expression_items RBRACE { $$ = M_CollectionLiteral(1, $2); }
                     | LBRACE expression_items COMMA RBRACE { $$ = M_CollectionLiteral(1, $2); }
                     | LBRACE map_literal_items RBRACE { $$ = M_CollectionLiteral(2, $2); }
-                    | LBRACE map_literal_items COMMA RBRACE { $$ = M_CollectionLiteral(2, $2); } ;
+                    | LBRACE map_literal_items COMMA RBRACE { $$ = M_CollectionLiteral(2, $2); }
+                    | LBRACKET RBRACKET { $$ = M_CollectionLiteral(3, M_List()); }
+                    | LBRACKET expression_items RBRACKET { $$ = M_CollectionLiteral(3, $2); }
+                    | LBRACKET expression_items COMMA RBRACKET { $$ = M_CollectionLiteral(3, $2); } ;
 expression_items := expr { $$ = M_List1($1); }
                    | expression_items COMMA expr { M_ListAdd($1, $3); $$ = $1; } ;
 map_literal_items := expr COLON expr { $$ = M_List2($1, $3); }

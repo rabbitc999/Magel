@@ -25,7 +25,13 @@ struct CliArguments {
 /** @brief 生成参数诊断。 */
 CliError cliError(String argument, String message) { CliError result; result.argument=argument; result.message=message; return result; }
 /** @brief 从字节位置 start 复制命令行参数后缀。 */
-String cliTail(String text,int64 start) { List<uint8> bytes=stringBytes(text);String result="";for(int64 i=start;i<bytes.len();i=i+1){result=result+format("{}",(char)bytes[i]);}return result; }
+String cliTail(String text,int64 start) { List<uint8> bytes=stringBytes(text);String result="";{
+    int64 i=start;
+    while (i<bytes.len()) {
+result=result+format("{}",(char)bytes[i]);
+        i=i+1;
+    }
+}return result; }
 /** 命令行选项定义与解析器；不调用 exit、不打印帮助，由应用决定交互行为。 */
 struct CliParser {
     String program; String description; List<CliOption> definitions;
@@ -33,9 +39,15 @@ struct CliParser {
     bool add(CliOption option) {
         if (len(option.name)==0 || option.name=="help" || option.shortName=='h') { return false; }
         List<uint8> optionName=stringBytes(option.name);
-        for (int64 i=0;i<optionName.len();i=i+1) {
+        {
+            int64 i=0;
+            while (i<optionName.len()) {
+
             char ch=(char)optionName[i];
             if (!((ch>='a' && ch<='z') || (ch>='A' && ch<='Z') || (ch>='0' && ch<='9') || ch=='-')) { return false; }
+        
+                i=i+1;
+            }
         }
         if (option.name[0]=='-') { return false; }
         if (option.shortName!=(char)0 && !((option.shortName>='a' && option.shortName<='z') || (option.shortName>='A' && option.shortName<='Z'))) { return false; }
@@ -67,20 +79,35 @@ struct CliParser {
             result.options[option.name]=initial;
         }
         bool positional=false;
-        for (int64 i=0;i<arguments.len();i=i+1) {
+        {
+            int64 i=0;
+            while (i<arguments.len()) {
+
             String argument=arguments[i]; List<uint8> argumentBytes=stringBytes(argument);
-            if (positional || len(argument)<2 || argument[0]!='-') { result.positional.push(argument); continue; }
-            if (argument=="--") { positional=true; continue; }
-            if (argument=="--help" || argument=="-h") { result.helpRequested=true; continue; }
+            if (positional || len(argument)<2 || argument[0]!='-') { result.positional.push(argument); { i=i+1; continue; } }
+            if (argument=="--") { positional=true; { i=i+1; continue; } }
+            if (argument=="--help" || argument=="-h") { result.helpRequested=true; { i=i+1; continue; } }
             if (argument[1]=='-') {
                 String name=""; String value=""; bool assigned=false;
-                for (int64 j=2;j<len(argument);j=j+1) {
+                {
+                    int64 j=2;
+                    while (j<len(argument)) {
+
                     if ((char)argumentBytes[j]=='=' && !assigned) { assigned=true; }
                     elif (assigned) { value=value+format("{}",(char)argumentBytes[j]); }
                     else { name=name+format("{}",(char)argumentBytes[j]); }
+                
+                        j=j+1;
+                    }
                 }
                 int64 found=-1;
-                for (int64 j=0;j<self.definitions.len();j=j+1) { if (self.definitions[j].name==name) { found=j; break; } }
+                {
+                    int64 j=0;
+                    while (j<self.definitions.len()) {
+ if (self.definitions[j].name==name) { found=j; break; } 
+                        j=j+1;
+                    }
+                }
                 if (found<0) { return Result<CliArguments,CliError>::Err(cliError(argument,"unknown option")); }
                 CliOption option=self.definitions[found];
                 if (option.takesValue) {
@@ -94,11 +121,20 @@ struct CliParser {
                 }
                 result.options[name]=value; seen[name]=true;
             } else {
-                for (int64 j=1;j<len(argument);j=j+1) {
-                    if ((char)argumentBytes[j]=='h') { result.helpRequested=true; continue; }
+                {
+                    int64 j=1;
+                    while (j<len(argument)) {
+
+                    if ((char)argumentBytes[j]=='h') { result.helpRequested=true; { j=j+1; continue; } }
                     int64 found=-1;
-                    for (int64 k=0;k<self.definitions.len();k=k+1) {
+                    {
+                        int64 k=0;
+                        while (k<self.definitions.len()) {
+
                         if (self.definitions[k].shortName==(char)argumentBytes[j]) { found=k; break; }
+                    
+                            k=k+1;
+                        }
                     }
                     if (found<0) { return Result<CliArguments,CliError>::Err(cliError(argument,"unknown short option")); }
                     CliOption option=self.definitions[found]; String value="true";
@@ -112,7 +148,13 @@ struct CliParser {
                         j=len(argument);
                     }
                     result.options[option.name]=value; seen[option.name]=true;
+                
+                        j=j+1;
+                    }
                 }
+            }
+        
+                i=i+1;
             }
         }
         if (!result.helpRequested) {

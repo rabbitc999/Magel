@@ -22,7 +22,13 @@ int64 main(){
  assert(drops==13 && closes==3);
  {Outer source;source.item.text="whole";Outer result=move(&source);assert(result.item.text=="whole" && drops==13);}
  assert(drops==24 && closes==4);
- for(int64 i=0;i<3;i=i+1){Item items[1];items[0].value=i;Item result=move(&items[0]);assert(result.value==i);}
+ {
+     int64 i=0;
+     while (i<3) {
+Item items[1];items[0].value=i;Item result=move(&items[0]);assert(result.value==i);
+         i=i+1;
+     }
+ }
  assert(drops==27 && closes==7);
  {Item source;source.text="self";Item taken=move(&source);Item source=move(&taken);assert(source.text=="self" && drops==27);}
  assert(drops==28 && closes==8);

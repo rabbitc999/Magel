@@ -1013,12 +1013,12 @@ inline void collectCoreAliasShadows(const Memory::String &source)
             if (module == "__root") module.clear();
             continue;
         }
-        if (word != "struct" && word != "enum" && word != "type" && word != "interface") continue;
+        if (word != "struct" && word != "enum" && word != "type" && word != "interface" && word != "opcode") continue;
         skipSpace(source, at);
         const auto name = at;
         while (at < source.size() && identPart(source[at])) ++at;
         const auto bare = source.substr(name, at - name);
-        coreAliasShadows.insert(bare);
+        if (word != "opcode" || module != "std::lang") coreAliasShadows.insert(bare);
         nominalTypeNames[bare].insert(module.empty() ? bare : module + "::" + bare);
         std::size_t open = at;
         skipSpace(source, open);
@@ -1095,12 +1095,12 @@ inline Memory::String canonicalType(Memory::String value)
         { "std::lang::String", "std::lang::String" },
         { "std::lang::BigInteger", "std::lang::BigInteger" },
         { "std::lang::BigDecimal", "std::lang::BigDecimal" },
-        { "std::lang::File", "file" },
-        { "std::lang::Process", "proc" },
+        { "std::lang::File", "std::lang::File" },
+        { "std::lang::Process", "std::lang::Process" },
         { "std::lang::Any", "std::lang::Any" },
     };
     const Memory::Map<Memory::String, Memory::String> implicitAliases = {
-        { "String", "std::lang::String" }, { "BigInteger", "std::lang::BigInteger" }, { "BigDecimal", "std::lang::BigDecimal" }, { "File", "file" }, { "Process", "proc" }, { "Any", "std::lang::Any" }
+        { "String", "std::lang::String" }, { "BigInteger", "std::lang::BigInteger" }, { "BigDecimal", "std::lang::BigDecimal" }, { "File", "std::lang::File" }, { "Process", "std::lang::Process" }, { "Any", "std::lang::Any" }
     };
     const auto implicit = implicitAliases.find(value);
     if (implicit != implicitAliases.end() && !coreAliasShadows.count(value)) return implicit->second;
@@ -1122,6 +1122,8 @@ inline Memory::String canonicalType(Memory::String value)
     const auto found = aliases.find(value);
     if (found != aliases.end()) return found->second;
     const auto nominal = nominalTypeNames.find(value);
+    // 根模块类型在标准库泛型正文中仍须保留根模块身份，避免同名 opcode 抢占实参。
+    if (nominal != nominalTypeNames.end() && nominal->second.size() > 1u && nominal->second.count(value)) return "__root::" + value;
     if (nominal != nominalTypeNames.end() && nominal->second.size() == 1u) return *nominal->second.begin();
     for (const auto &generic : genericTypeModules)
     {
@@ -1165,6 +1167,7 @@ struct Session
     Memory::Map<Memory::String, Generic> generics;
     Memory::Map<Memory::String, Memory::Set<Memory::String>> implemented;
     Memory::Map<Memory::String, Expansion> made;
+    Memory::Map<Memory::String, Memory::Vector<Memory::String>> intrinsicArguments;
     Memory::Vector<Memory::String> pending;
     std::size_t emitted = 0;
 };
@@ -1384,6 +1387,8 @@ inline bool rewrite(Memory::String &text, const Memory::Map<Memory::String, Gene
             if (!rewrite(arg, generics, implemented, made, pending, error, depth + 1u)) return false;
             arg = canonicalType(arg);
         }
+        if (name == "Equal" && generic->second.origin.file == "<内建 Equal>" && args.size() == 1u)
+            args.insert(args.begin(), Memory::String("bool"));
         if (args.size() > generic->second.params.size())
         {
             error = name + " 至多接受 " + Memory::toString(generic->second.params.size()) + " 个类型实参";
@@ -1435,6 +1440,7 @@ inline bool rewrite(Memory::String &text, const Memory::Map<Memory::String, Gene
             constraints.push_back(std::move(constraint));
         }
         const Memory::String specialized = mangle(name, args);
+        if (generic->second.intrinsic) session.intrinsicArguments[specialized] = args;
         const auto existing = made.find(specialized);
         if (existing != made.end() && (existing->second.generic != &generic->second || existing->second.args != args))
         {
@@ -1478,12 +1484,9 @@ inline bool validateConstraints(const Memory::Map<Memory::String, Expansion> &ma
             if (constraint.empty()) continue;
             // 标准字符串能力由每个值类型的默认 toString 提供，具体方法签名由语义阶段核验。
             const auto declarations = implemented.find("#string-protocol-declarations");
-            bool stringCapability = constraint == "std::io::ToString" ||
-                (constraint == "ToString" && declarations != implemented.end() && declarations->second.size() == 1 && declarations->second.count("std::io::ToString"));
+            bool stringCapability = constraint == "std::io::ToString" || (constraint == "ToString" && declarations != implemented.end() && declarations->second.size() == 1 && declarations->second.count("std::io::ToString"));
             const auto protocol = made.find(constraint);
-            if (protocol != made.end() && (protocol->second.generic->module == "std::lang" || protocol->second.generic->origin.file == "<内建 ImplicitConvert>") &&
-                protocol->second.generic->name == "ImplicitConvert" && protocol->second.args.size() == 1 &&
-                (protocol->second.args[0] == "String" || protocol->second.args[0] == "std::lang::String"))
+            if (protocol != made.end() && (protocol->second.generic->module == "std::lang" || protocol->second.generic->origin.file == "<内建 ImplicitConvert>") && protocol->second.generic->name == "ImplicitConvert" && protocol->second.args.size() == 1 && (protocol->second.args[0] == "String" || protocol->second.args[0] == "std::lang::String"))
                 stringCapability = true;
             if (stringCapability && expansion.args[i] != "void") continue;
             const auto concrete = implemented.find(expansion.args[i]);
@@ -1642,6 +1645,17 @@ inline bool run(preprocess::Result &result, Memory::String &error)
      * `xxxPointer` 收 `T mut&` / `T const&` + 个数、直接在调用者缓冲区上操作
      * （见下面 `module std::algorithms;` 里的那批泛型函数）。 */
     Memory::Map<Memory::String, Generic> algorithmIntrinsics;
+    for (const Memory::String &name : { Memory::String("range"), Memory::String("rangeEq") })
+    {
+        Generic range;
+        range.name = name;
+        range.params = { Parameter{ "T", "", "std::lang::Any" } };
+        range.intrinsic = true;
+        range.requiredQualifier = "std::lang::";
+        range.origin.file = "<内建 std::lang::" + name + ">";
+        range.origin.line = 1u;
+        algorithmIntrinsics.emplace(name, std::move(range));
+    }
     for (const Memory::String &name : {
              Memory::String("findValue"), Memory::String("sortValue"),
              Memory::String("binarySearchValue"),
@@ -1694,6 +1708,16 @@ __Range range(int64 start, int64 stop, int64 step) {
     result.stop = stop;
     result.step = step;
     return result;
+}
+
+/**
+ * @brief 构造包含起点和终点的整数区间。
+ * @param start 区间起点。
+ * @param stop 包含在区间内的终点。
+ * @return 保存独立游标的闭区间值。
+ */
+__Interval_int64 rangeEq(int64 start, int64 stop) {
+    return __interval_int64(start, stop, true);
 }
 
 /* fileOpen / fileRead / … 与 processRun / system 已迁到 std/io.mgl 与 std/process.mgl：
@@ -1767,10 +1791,12 @@ std::lang::List<(T, U)> zipValue<T, U>(std::lang::List<T> left, std::lang::List<
     std::lang::List<(T, U)> result;
     int64 count = left.len();
     if (right.len() < count) { count = right.len(); }
-    for (int64 index = 0; index < count; index = index + 1) {
+    int64 index = 0;
+    while (index < count) {
         T leftValue = left[index];
         U rightValue = right[index];
         result.push((leftValue, rightValue));
+        index = index + 1;
     }
     return result;
 }
@@ -1949,7 +1975,7 @@ interface Closeable { void close(); };
     Memory::String rangeBuiltin = rangeBuiltinRaw;
     // 每种固定宽度整型使用内部状态迭代器；到达闭区间上界后不再递增。
     rangeBuiltin += "\nmodule std::lang;\n";
-    for (const auto &type : { "int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64" })
+    for (const auto &type : { "int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "char" })
     {
         const Memory::String valueType = type;
         const Memory::String owner = "__Interval_" + valueType;

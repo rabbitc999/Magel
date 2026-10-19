@@ -1,0 +1,166 @@
+import std::iter;
+
+struct Tick : NextValue<Tick>, Equal<Tick>
+{
+    int64 value;
+
+    Option<Tick> nextValue(Tick end, bool inclusive)
+    {
+        if (self.value > end.value || (!inclusive && self.value == end.value))
+        {
+            return Option<Tick>::None;
+        }
+        Tick result = self;
+        self.value += 1;
+        return Option<Tick>::Value(result);
+    }
+
+    bool leftEqual(Tick other)
+    {
+        return self.value == other.value;
+    }
+};
+
+Tick tick(int64 value)
+{
+    Tick result;
+    result.value = value;
+    return result;
+}
+
+int64 endpointCalls = 0;
+
+int64 endpoint(int64 value)
+{
+    endpointCalls += 1;
+    return value;
+}
+
+int64 sumInterval(int64 total, int64 value)
+{
+    return total + value;
+}
+
+int64 main()
+{
+    assert(std::lang::range(1, 5).intoIter().fold(0, sumInterval) == 10);
+    auto narrow = std::lang::rangeEq<uint8>(254, 255).intoIter();
+    assert(narrow.next().unwrap() == 254);
+    assert(narrow.next().unwrap() == 255);
+    assert(narrow.next().isNone());
+    auto customCursor = std::lang::rangeEq(tick(2), tick(3)).intoIter();
+    assert(customCursor.next().unwrap().value == 2);
+    assert(customCursor.next().unwrap().value == 3);
+    assert(customCursor.next().isNone());
+    auto list = [3, 1, 3];
+    auto set = {3, 1, 3};
+    assert(list.len() == 3 && set.len() == 2);
+    List<int64> empty = [];
+    List<List<int64>> nested = [[1, 2], []];
+    assert(empty.len() == 0 && nested[0][1] == 2 && nested[1].len() == 0);
+    List<int64> copy = list;
+    copy[0] = 9;
+    assert(list[0] == 3);
+
+    int64 found = for (int64 item in std::lang::range(1, 5))
+    {
+        if (item < 3)
+        {
+            continue;
+        }
+        yield item;
+    }
+    else { -1 };
+    assert(found == 3);
+    int64 missing = for (auto item in std::lang::range(2, 2)) { item } else { 42 };
+    assert(missing == 42);
+    int64 current = 0;
+    int64 selected = while (current < 5)
+    {
+        current += 1;
+        if (current == 3)
+        {
+            yield current;
+        }
+    }
+    else { -1 };
+    assert(selected == 3 && current == 3);
+    int64 immediate = while (false) { 1 } else { 7 };
+    assert(immediate == 7);
+    String text = for (auto item in std::lang::range(1, 2)) { format("n{}", item) } else { "empty" };
+    assert(text == "n1");
+
+    int64 sum = 0;
+    for (char item in std::lang::rangeEq<char>('a', 'c'))
+    {
+        sum += (int64)item;
+    }
+    assert(sum == 294);
+    int64 edgeCount = 0;
+    for (uint8 item in std::lang::rangeEq<uint8>(254, 255))
+    {
+        edgeCount += 1;
+    }
+    assert(edgeCount == 2);
+    int64 total = 0;
+    for (auto item in std::lang::range(endpoint(1), endpoint(4)))
+    {
+        total += item;
+    }
+    assert(total == 6 && endpointCalls == 2);
+
+    Tick start = tick(1);
+    int64 custom = 0;
+    for (auto item in std::lang::range<Tick>(start, tick(4)))
+    {
+        custom += item.value;
+    }
+    assert(custom == 6 && start.value == 1);
+    int64 customClosed = 0;
+    for (auto item in std::lang::rangeEq<Tick>(start, tick(3)))
+    {
+        customClosed += item.value;
+    }
+    assert(customClosed == 6);
+
+    int64 character = match ('b')
+    {
+        std::lang::range<char>('a', 'c') => { 1 }
+        _ => { 0 }
+    };
+    int64 integer = match (5)
+    {
+        std::lang::range<int64>(1, 5) => { 1 }
+        std::lang::rangeEq<int64>(5, 7) => { 2 }
+        _ => { 0 }
+    };
+    int64 equal = match (tick(2))
+    {
+        tick(1) => { 1 }
+        tick(2) => { 2 }
+        _ => { 0 }
+    };
+    assert(character == 1 && integer == 2 && equal == 2);
+    int64 minimumCount = 0;
+    for (auto item in std::lang::rangeEq<int64>(-9223372036854775808, -9223372036854775808))
+    {
+        assert(item == (int64)0x8000000000000000);
+        minimumCount += 1;
+    }
+    assert(minimumCount == 1);
+    int64 minimumPattern = match ((int64)0x8000000000000000)
+    {
+        std::lang::rangeEq<int64>(-9223372036854775808, -9223372036854775808) => { 1 }
+        _ => { 0 }
+    };
+    assert(minimumPattern == 1);
+    int64 maximumCount = 0;
+    for (auto item in std::lang::rangeEq<uint64>(18446744073709551615u, 18446744073709551615u))
+    {
+        assert(item == 18446744073709551615u);
+        maximumCount += 1;
+    }
+    assert(maximumCount == 1);
+    println("range and loop values ok");
+    return 0;
+}

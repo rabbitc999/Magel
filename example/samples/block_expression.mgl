@@ -35,8 +35,14 @@ int64 main() {
     List<String> words = $vec(String, "hello", "世界");
     assert(words[0] == "hello" && words[1] == "世界");
     int32 sum = 0;
-    for (int32 i = 0; i < 3; i += 1) {
-        sum += { if (i == 1) { continue; } yield (i); };
+    {
+        int32 i = 0;
+        while (i < 3) {
+
+        sum += { if (i == 1) { { i += 1; continue; } } yield (i); };
+    
+            i += 1;
+        }
     }
     assert(sum == 2);
     println("block expression OK");

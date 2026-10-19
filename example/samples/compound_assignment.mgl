@@ -66,7 +66,10 @@ int64 main() {
     assert(counter.value == 15 && counter.label == "kept");
     Counter mut& counterRef = &counter; counterRef += 2;
     assert(counter.value == 17 && counter.label == "kept");
-    for (int64 round = 0; round < 8; round += 1) {
+    {
+        int64 round = 0;
+        while (round < 8) {
+
         String text = "left";
         String copy = text;
         text += "-right";
@@ -82,6 +85,9 @@ int64 main() {
         assert(decimal == BigDecimal(2));
         BigDecimal mut& decimalRef = &decimal; decimalRef += 1;
         assert(decimal == BigDecimal(3));
+    
+            round += 1;
+        }
     }
     int64 a = 0; int64 b = 0; int64 c = 4;
     a = b = c + 3;
@@ -109,7 +115,13 @@ int64 main() {
     bool skipTracked = false && ((trackedLeft = trackedRight).value > 0);
     assert(!skipTracked && drops == beforeDrops);
     int64 total = 0;
-    for (int64 i = 0; i < 4; i += 1) { total += i; }
+    {
+        int64 i = 0;
+        while (i < 4) {
+ total += i; 
+            i += 1;
+        }
+    }
     assert(total == 6);
     println("compound assignment OK");
     return 0;

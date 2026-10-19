@@ -1,12 +1,18 @@
 /* 使用两个 uint32 构造 binary64 位模式，覆盖边界及数组读写。 */
 void checkDouble(uint32 high, uint32 low, bool bigEndian) {
     List<uint8> bytes;
-    for (int64 i = 0; i < 8; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < 8) {
+
         int64 index = i;
         if (bigEndian) { index = 7 - i; }
         uint32 word = low;
         if (index >= 4) { word = high; index = index - 4; }
         bytes.push((uint8)(word >> (index * 8)));
+    
+            i = i + 1;
+        }
     }
     bytes.push((uint8)123); // 尾部字节不参与解码
     float64 value = bytesToFloat64(bytes, bigEndian).unwrap();
@@ -20,8 +26,14 @@ void checkDouble(uint32 high, uint32 low, bool bigEndian) {
     assert(float64ToBytes(value, &dynamic, bigEndian));
     assert(dynamic[8] == (uint8)99);
     List<uint8> fromDynamic = float64ToBytes(bytesToFloat64(dynamic, bigEndian).unwrap(), bigEndian);
-    for (int64 i = 0; i < 8; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < 8) {
+
         assert(encoded[i] == bytes[i] && fromFixed[i] == bytes[i] && fromDynamic[i] == bytes[i]);
+    
+            i = i + 1;
+        }
     }
 }
 
@@ -36,16 +48,28 @@ int64 main() {
     high[6] = (uint32)4293918720; low[6] = (uint32)0; // -inf
     high[7] = (uint32)2146959360; low[7] = (uint32)0; // quiet NaN
     high[8] = (uint32)1073217536; low[8] = (uint32)0; // 1.5
-    for (int64 i = 0; i < 9; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < 9) {
+
         checkDouble(high[i], low[i], false);
         checkDouble(high[i], low[i], true);
+    
+            i = i + 1;
+        }
     }
     List<uint8> little = float64ToBytes(1.5);
     assert(little[6] == (uint8)248 && little[7] == (uint8)63);
     assert(bytesToFloat64(little).unwrap() == 1.5);
     List<uint8> invalid;
     assert(bytesToFloat64(invalid).isNone());
-    for (int64 i = 0; i < 7; i = i + 1) { invalid.push((uint8)0); }
+    {
+        int64 i = 0;
+        while (i < 7) {
+ invalid.push((uint8)0); 
+            i = i + 1;
+        }
+    }
     assert(bytesToFloat64(invalid, true).isNone());
     uint8 shortArray[] = new[7]; shortArray[0] = (uint8)77;
     assert(!float64ToBytes(1.5, &shortArray));

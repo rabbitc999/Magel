@@ -18,8 +18,14 @@
 /** 阶乘：`n! = n × (n-1)!`（100! 有 158 位，早就超出 64 位整数了）。 */
 BigInteger factorial(int64 n) {
     BigInteger result = BigInteger(1);
-    for (int64 i = 2; i <= n; i = i + 1) {
+    {
+        int64 i = 2;
+        while (i <= n) {
+
         result = result * i;      /* `BigInteger * int64`：i 自动转成大整数 */
+    
+            i = i + 1;
+        }
     }
     return result;                /* 返回出去的对象归调用方（本块不释放它） */
 }
@@ -28,10 +34,16 @@ BigInteger factorial(int64 n) {
 BigInteger fibonacci(int64 n) {
     BigInteger a = BigInteger(0);
     BigInteger b = BigInteger(1);
-    for (int64 i = 0; i < n; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < n) {
+
         BigInteger next = a + b;
         a = b;
         b = next;
+    
+            i = i + 1;
+        }
     }
     return a;
 }

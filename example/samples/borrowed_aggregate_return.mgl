@@ -13,7 +13,10 @@ BorrowedChoice copiedChoice() { return borrowedChoice(); }
 int64 main() {
     original.text="source";
     original.numbers.push(7);
-    for (int64 i=0; i<5; i++) {
+    {
+        int64 i=0;
+        while (i<5) {
+
         {
             BorrowedItem value=copied();
             value.text="changed";
@@ -28,6 +31,9 @@ int64 main() {
         match(choice){Text(text)=>{assert(text=="enum");} Empty=>{assert(false);}}
         match(borrowedChoice()){Text(text)=>{assert(text=="enum");} Empty=>{assert(false);}}
         match(choice){Text(text)=>{assert(text=="enum");} Empty=>{assert(false);}}
+    
+            i++;
+        }
     }
     println("borrowed aggregate return OK");
     return 0;

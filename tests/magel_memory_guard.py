@@ -36,7 +36,7 @@ def main():
                      "-DSTACKVM_WITH_BIGINT=0", "-DSTACKVM_WITH_BIGFLOAT=0", "-DSTACKVM_WITH_ALLOCATION_GUARDS=0",
                      "-DMAGEL_WITH_REFLECTION=1", "-DSTACKVM_WITH_REFLECTION=1", "-Ilibrary", "-Isource",
                      "-Ilibrary/stackvm", "tests/magel_memory_guard_test.cpp", "library/stackvm/stackvm.cpp",
-                     "library/stackvm/stackvm_glue.cpp", "-lm", "-o", unchecked_unit)
+                     "-lm", "-o", unchecked_unit)
     assert result.returncode == 0, result
     result = execute(unchecked_unit)
     assert result.returncode == 0 and result.stdout == "custom heap unchecked OK\n", result

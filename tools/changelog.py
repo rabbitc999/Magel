@@ -9,12 +9,9 @@ JSON 里每个版本是一个对象——
 {
   "version": "1.0.0",
   "title": "一句话标题",
-  "dates": [
-    { "date": "2026-10-18",
-      "entries": [
-        "一条不带子项的变更",
-        { "text": "带子项的变更", "items": ["子项一", "子项二"] }
-      ] }
+  "entries": [
+    "一条不带子项的变更",
+    { "text": "带子项的变更", "items": ["子项一", "子项二"] }
   ]
 }
 ```
@@ -76,15 +73,13 @@ def render(data):
     lines = ["# Magel 变更记录", "", INTRO, ""]
     for ver in data["versions"]:
         lines += ["", f"## {ver['version']} — {ver['title']}", ""]
-        for group in ver["dates"]:
-            lines += [f"### {group['date']}", ""]
-            for entry in group["entries"]:
-                if isinstance(entry, str):
-                    lines.append(f"- {entry}")
-                    continue
-                lines.append(f"- {entry['text']}")
-                lines += [f"  - {item}" for item in entry.get("items", [])]
-            lines.append("")
+        for entry in ver.get("entries", []):
+            if isinstance(entry, str):
+                lines.append(f"- {entry}")
+                continue
+            lines.append(f"- {entry['text']}")
+            lines += [f"  - {item}" for item in entry.get("items", [])]
+        lines.append("")
     return "\n".join(lines).rstrip("\n") + "\n"
 
 
@@ -124,13 +119,12 @@ def check():
             problems.append(f"版本 {ver} 出现了多次，版本号必须唯一")
         seen.add(ver)
 
-    # 每个版本至少一个日期组，每组至少一条条目。
+    # 变更记录只按版本组织，每个版本至少一条条目。
     for ver in data["versions"]:
-        if not ver["dates"]:
-            problems.append(f"{ver['version']} 节没有任何日期组")
-        for group in ver["dates"]:
-            if not group["entries"]:
-                problems.append(f"{ver['version']} 的 {group['date']} 没有任何条目")
+        if not ver.get("entries"):
+            problems.append(f"{ver['version']} 节没有任何条目")
+        if "dates" in ver or "date" in ver:
+            problems.append(f"{ver['version']} 仅按版本维护条目，不填写日期或日期组")
 
     known = seen
     for tag_version in tags():

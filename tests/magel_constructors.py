@@ -42,7 +42,7 @@ class ConstructorTests(unittest.TestCase):
                      (ROOT / 'example/expected/static_new.txt').read_text(encoding='utf-8'))
 
     def test_early_return_and_default(self):
-        self.program('''
+        self.program("""
 struct Value {
     int64 number;
     static Value create(bool early) {
@@ -59,12 +59,18 @@ int64 main(){
     Value unused;assert(unused.number==0);
     Value a=Value::create(true);Value b=Value::create(false);
     assert(a.number==1 && b.number==2);
-    for(int64 i=0;i<10;i=i+1) {
+    {
+        int64 i=0;
+        while (i<10) {
+
         Partial first=Partial::create(true);assert(first.number==7);
         Partial second=Partial::create(false);assert(second.number==0);
+    
+            i=i+1;
+        }
     }
     return 0;
-}''')
+}""")
 
     def test_reflection(self):
         if not WITH_REFLECTION:
@@ -105,7 +111,7 @@ int64 main(){
 }''', reflection=True)
 
     def test_repeated_ownership(self):
-        self.program('''
+        self.program("""
 struct Owned : Drop {
     static int64 drops;
     String text;
@@ -120,21 +126,27 @@ Owned make(String text){return Owned::create(text);}
 int64 read(Owned value){return value.items.len();}
 int64 main(){
     String source="resource";
-    for(int64 i=0;i<256;i=i+1){
+    {
+        int64 i=0;
+        while (i<256) {
+
         {
             Owned value=Owned::create(source);
             value=make(source);
             assert(read(value)==1 && source=="resource");
         }
         assert(Owned::drops==(i+1)*3);
+    
+            i=i+1;
+        }
     }
     assert(read(Owned::create(source))==1);
     assert(Owned::drops==770);
     return 0;
-}''')
+}""")
 
     def test_chaining_and_add(self):
-        self.program('''
+        self.program("""
 struct Value : Drop, Add<Value,int64> {
     static int64 builds;
     static int64 drops;
@@ -150,7 +162,10 @@ struct Value : Drop, Add<Value,int64> {
     void drop(){Value::drops=Value::drops+1;}
 };
 int64 main(){
-    for(int64 i=0;i<64;i=i+1){
+    {
+        int64 i=0;
+        while (i<64) {
+
         int64 before=Value::drops;
         int64 number=Value::create(i).readValue();
         assert(number==i && Value::drops==before+1);
@@ -162,6 +177,9 @@ int64 main(){
         assert(Value::drops==before+3);
         int64 result=(Value::create(i)+4).readValue();
         assert(result==i+4 && Value::drops==before+5);
+    
+            i=i+1;
+        }
     }
     assert(Value::builds==384 && Value::drops==384);
     {
@@ -172,10 +190,10 @@ int64 main(){
     bool skipped=false && Value::create(0).readValue()>0;
     assert(!skipped && Value::builds==385 && Value::drops==385);
     return 0;
-}''')
+}""")
 
     def test_two_calls_then_add(self):
-        self.program('''
+        self.program("""
 int64 trace=0;
 int64 calls=0;
 struct Chain : Drop, Closeable, Add<Chain,int64> {
@@ -226,7 +244,10 @@ struct Owner : Add<Borrowed const&,int64> {
 };
 int64 main(){
     int64 a=7;
-    for(int64 i=0;i<64;i=i+1){
+    {
+        int64 i=0;
+        while (i<64) {
+
         trace=0;
         int64 before=calls;
         {
@@ -245,6 +266,9 @@ int64 main(){
         trace=0;
         bool skipped=false && (f1(i).f2()+a).read()>0;
         assert(!skipped && trace==0 && calls==before+9);
+    
+            i=i+1;
+        }
     }
     trace=0;
     {
@@ -270,7 +294,7 @@ int64 main(){
     }
     assert(Borrowed::drops==1);
     return 0;
-}''')
+}""")
 
     def test_rejections(self):
         cases = {

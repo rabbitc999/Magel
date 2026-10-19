@@ -1,5 +1,33 @@
 module std::lang;
 
+opcode String {
+    new = std::lang::__stringNew;
+    drop = std::lang::__stringDrop;
+    copy = std::lang::__stringCopy;
+    int64 length() { return std::lang::len(self); }
+};
+
+opcode BigInteger {
+    new = __vm_bint_from_int;
+    drop = __vm_bint_drop;
+    copy = __vm_bint_copy;
+};
+opcode BigDecimal {
+    new = __vm_bfloat_from_int;
+    drop = __vm_bfloat_drop;
+    copy = __vm_bfloat_copy;
+};
+#NonCopyable
+opcode File {
+    new = __vm_file_open;
+    drop = __vm_file_drop;
+};
+#NonCopyable
+opcode Process {
+    new = std::process::__processRun;
+    drop = std::process::__processDrop;
+};
+
 String __readLine();
 String __readLines(int32 N);
 /** @brief 读取一行标准输入，保留空格，去掉 LF/CRLF；EOF 返回空串，空行也返回空串。
@@ -161,7 +189,10 @@ enum Option<T> : Try<T, NoneResidual>, TryMove<T, NoneResidual>, FromResidual<Op
             Option<T>::None => { return TryBranch<T, NoneResidual>::Break(NoneResidual::None); }
         }
     }
-    TryBranch<T, NoneResidual> intoBranch() { return self.branch(); }
+    TryBranch<T, NoneResidual> intoBranch() {
+        if (self.isValue()) { return TryBranch<T, NoneResidual>::Continue(self.take()); }
+        return TryBranch<T, NoneResidual>::Break(NoneResidual::None);
+    }
     static Option<T> fromResidual(NoneResidual residual) { return Option<T>::None; }
     bool isValue() {
         bool result = false;
@@ -173,6 +204,17 @@ enum Option<T> : Try<T, NoneResidual>, TryMove<T, NoneResidual>, FromResidual<Op
     }
 
     bool isNone() { return !self.isValue(); }
+
+    /** 转移整个结果并取出成功载荷；源结果随后不可使用。 */
+    T take() {
+        return {
+            match (std::lang::move(&self)) {
+                Option<T>::Value(value) => { yield value; }
+                Option<T>::None => { std::lang::panic("called take() without a value"); }
+            }
+            loop { std::lang::panic("called take() without a value"); };
+        };
+    }
 
     T unwrap() {
         T result;
@@ -233,8 +275,13 @@ enum Result<T, E> : Try<T, ErrorResidual<E>>, TryMove<T, ErrorResidual<E>>, From
             }
         }
     }
-    TryBranch<T, ErrorResidual<E>> intoBranch() { return self.branch(); }
-    static Result<T,E> fromResidual(ErrorResidual<E> residual) { return Result<T,E>::Err(residual.error); }
+    TryBranch<T, ErrorResidual<E>> intoBranch() {
+        if (self.isOk()) { return TryBranch<T, ErrorResidual<E>>::Continue(self.take()); }
+        ErrorResidual<E> residual;
+        residual.error = self.takeError();
+        return TryBranch<T, ErrorResidual<E>>::Break(std::lang::move(&residual));
+    }
+    static Result<T,E> fromResidual(ErrorResidual<E> residual) { return Result<T,E>::Err(std::lang::move(&residual.error)); }
     Option<T> ok() {
         match (self) {
             Result<T,E>::Ok(value) => { return Option<T>::Value(value); }
@@ -251,6 +298,17 @@ enum Result<T, E> : Try<T, ErrorResidual<E>>, TryMove<T, ErrorResidual<E>>, From
     }
 
     bool isErr() { return !self.isOk(); }
+
+    /** 转移整个结果并取出成功载荷；源结果随后不可使用。 */
+    T take() {
+        return {
+            match (std::lang::move(&self)) {
+                Result<T, E>::Ok(value) => { yield value; }
+                Result<T, E>::Err(error) => { std::lang::panic("called take() without a value"); }
+            }
+            loop { std::lang::panic("called take() without a value"); };
+        };
+    }
 
     T unwrap() {
         T result;
@@ -277,6 +335,17 @@ enum Result<T, E> : Try<T, ErrorResidual<E>>, TryMove<T, ErrorResidual<E>>, From
             Result<T, E>::Err(error) => { std::lang::panic(message); }
         }
         return result;
+    }
+
+    /** 转移整个结果并取出错误载荷；源结果随后不可使用。 */
+    E takeError() {
+        return {
+            match (std::lang::move(&self)) {
+                Result<T, E>::Ok(value) => { std::lang::panic("called takeError() on Ok"); }
+                Result<T, E>::Err(error) => { yield error; }
+            }
+            loop { std::lang::panic("called takeError() on Ok"); };
+        };
     }
 
     E error() {
@@ -306,6 +375,63 @@ enum Result<T, E> : Try<T, ErrorResidual<E>>, TryMove<T, ErrorResidual<E>>, From
         return result;
     }
 };
+
+/**
+ * @brief 自定义区间的有状态前进协议。
+ * @note nextValue 从接收者的游标状态产生下一项并推进状态；到达终点后返回 None。
+ */
+interface NextValue<T> {
+    /**
+     * @brief 取得下一项，由实现判断边界并维护游标状态。
+     * @param end 区间终点。
+     * @param inclusive 是否包含终点。
+     * @return 下一项，或表示遍历结束的 None。
+     */
+    Option<T> nextValue(T end, bool inclusive);
+};
+
+struct __ValueRange<T : NextValue<T>> : Iterator<T> {
+    T cursor;
+    T end;
+    bool inclusive;
+
+    /**
+     * @brief 委托游标对象取得下一项。
+     * @param index 外层迭代位置；游标对象自行保存前进状态。
+     * @return 游标产生的下一项或 None。
+     */
+    Option<T> iterator(int64 index) {
+        return self.cursor.nextValue(self.end, self.inclusive);
+    }
+};
+
+/**
+ * @brief 创建不包含终点的自定义类型区间。
+ * @param start 独立保存的起始游标值。
+ * @param end 交给前进协议判断的终点。
+ * @return 拥有游标状态的区间值。
+ */
+__ValueRange<T> __customRange<T : NextValue<T>>(T start, T end) {
+    __ValueRange<T> result;
+    result.cursor = start;
+    result.end = end;
+    result.inclusive = false;
+    return result;
+}
+
+/**
+ * @brief 创建包含终点的自定义类型区间。
+ * @param start 独立保存的起始游标值。
+ * @param end 交给前进协议判断的终点。
+ * @return 拥有游标状态的区间值。
+ */
+__ValueRange<T> __customRangeEq<T : NextValue<T>>(T start, T end) {
+    __ValueRange<T> result;
+    result.cursor = start;
+    result.end = end;
+    result.inclusive = true;
+    return result;
+}
 
 struct Pair<K, V> {
     K first;

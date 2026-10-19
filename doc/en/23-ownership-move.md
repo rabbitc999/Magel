@@ -51,7 +51,7 @@ Duplicate names, unknown variables, parameter conflicts, and mut/move captures o
 
 ## Match range migration
 
-Match accepts only half-open `[a,b)` and closed `[a,b]` ranges; `(a,b)` and `(a,b]` are rejected for integer, floating-point and string subjects. Integer endpoints may be adjusted for discrete values. Use guards or if/elif when floating-point or string comparisons require an exclusive lower bound. Ordinary tuple expressions keep their existing meaning.
+Match interval patterns use `std::lang::range<T>(a,b)` (half open) and `std::lang::rangeEq<T>(a,b)` (inclusive), and accept only integers and char. Custom types implementing `Equal<T>` can use ordinary value patterns. Use guards or if/elif for floating-point and String bounds. Ordinary tuple expressions retain value semantics.
 
 ## Integer intervals in for-in
 

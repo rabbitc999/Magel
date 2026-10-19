@@ -16,7 +16,10 @@ ChainMiddle mut& borrowed(ChainMiddle mut& value) { return &value; }
 int64 combined(ChainResult left, ChainResult right) { return left.number + right.number; }
 int64 main() {
     ChainStart start;
-    for (int64 i = 0; i < 6; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < 6) {
+
         int64 before = calls;
         ChainResult first = start.f1().f2();
         assert((first.number) == ((before + 1) * 10));
@@ -30,6 +33,9 @@ int64 main() {
         bool skipped = false && start.f1().f2().number > 0;
         assert((calls) == (prior));
         assert((skipped) == (false));
+    
+            i = i + 1;
+        }
     }
     ChainMiddle source; source.number = 7; source.text = "source";
     ChainMiddle mut& ref = &source;

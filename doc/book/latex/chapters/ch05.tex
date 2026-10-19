@@ -3,7 +3,7 @@
 
 程序光会「从上往下做」是干不了活的。它得会拐弯（条件）和转圈（循环）。
 
-第 2 章的猜数字已经把这两种都用上了，这一章把它们补全：Magel 一共有四种循环，还有一套对「同一个变量在一个表达式里被读写两次」管得很严的规则。
+第 2 章的猜数字已经把这两种都用上了，这一章把它们补全：Magel 一共有三种循环：\texttt{while}、\texttt{loop} 和 \texttt{for-in}，还有一套对「同一个变量在一个表达式里被读写两次」管得很严的规则。
 
 \section{条件：\texttt{if} / \texttt{elif} / \texttt{else}}
 
@@ -183,7 +183,9 @@ int64 main()
 
 条件写在括号里，先判后做。条件一开始就不成立，循环体一次都不执行。
 
-\section{\texttt{for}：三段式}
+\section{\texttt{for-in}：遍历区间}
+
+计数循环使用 \texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}range(\allowbreak{}a,\allowbreak{} b)\allowbreak{}}，依次取得左闭右开区间中的值：
 
 \par
 \medskip
@@ -191,7 +193,7 @@ int64 main()
 int64 main()
 {
     int64 total = 0;
-    for (int64 k = 0; k < 5; k = k + 1)
+    for (int64 k in std::lang::range(0, 5))
     {
         total = total + k;
     }
@@ -210,38 +212,37 @@ int64 main()
 \par
 \medskip
 
-\texttt{for} 的括号里是三段，用分号隔开：
+输出为 \texttt{10}。需要包含上端点时使用 \texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}range\allowbreak{}Eq(\allowbreak{}a,\allowbreak{} b)\allowbreak{}}。循环变量只在循环中存在。整数和 \texttt{char} 直接支持区间遍历；其他值类型实现\texttt{Next\allowbreak{}Value<\allowbreak{}T>\allowbreak{}}，以 \texttt{Option<\allowbreak{}T>\allowbreak{} next\allowbreak{}Value(\allowbreak{}T end,\allowbreak{} bool inclusive)\allowbreak{}} 管理前进和终止。
 
-\par
-\medskip
-\begin{lstlisting}[style=out]
-for ( 初始化 ; 条件 ; 每轮结束做什么 )
-       ↑         ↑        ↑
-      int64 k=0  k<5      k=k+1
-\end{lstlisting}
-\par
-\medskip
+\section{循环也能产生值}
 
-顺序是：先跑一次初始化 \ensuremath{\rightarrow} 判条件 \ensuremath{\rightarrow} 执行循环体 \ensuremath{\rightarrow} 跑「每轮结束做什么」 \ensuremath{\rightarrow} 再判条件……
-
-\texttt{for} 里声明的变量（这里是 \texttt{k}）只在这个循环里存在，出了循环就没了。所以循环里可以放心用 \texttt{i}、\texttt{k} 这种短名字。
-
-遍历容器时不要用 \texttt{for}。 数下标容易数错，\texttt{for-in} 是专门干这个的（5.6 节）。
-
-\section{\texttt{do \{ \} while (\allowbreak{} )\allowbreak{}}：先执行一次}
+\texttt{for-in} 和 \texttt{while} 可以作为赋值表达式，循环体用 \texttt{yield} 给出结果，\texttt{else} 在没有产生结果而退出循环时给出后备值。\texttt{continue} 继续下一轮，普通\texttt{break} 结束循环并进入 \texttt{else}。
 
 \par
 \medskip
 \begin{lstlisting}[style=magel]
 int64 main()
 {
-    int64 tries = 0;
-    do
+    int64 found = for (int64 value in std::lang::range(0, 10))
     {
-        tries = tries + 1;
+        if (value > 5)
+        {
+            yield value;
+        }
     }
-    while (tries < 3);
-    println("{}", tries);
+    else
+    {
+        yield -1;
+    };
+    String label = while (false)
+    {
+        "运行"
+    }
+    else
+    {
+        "结束"
+    };
+    println("{} {}", found, label);
     return 0;
 }
 \end{lstlisting}
@@ -251,14 +252,12 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-3
+6 结束
 \end{lstlisting}
 \par
 \medskip
 
-和 \texttt{while} 的唯一区别：循环体至少执行一次，条件在末尾判。
-
-什么时候需要它？「至少得做一次，做完再看要不要继续」——比如读一个输入、至少问用户一次。注意 \texttt{while (\allowbreak{}条件)\allowbreak{}} 后面那个分号不能省。
+输出为 \texttt{6 结束}。分支只有一个值时，可以省略 \texttt{yield} 和值后的分号。表达式必须有 \texttt{else}，并且每条正常结束的路径都产生兼容类型的值。返回 String、数组或容器时仍遵守值语义；不可复制的 opcode 对象需转移所有权。
 
 \section{\texttt{loop}：会「带值跳出来」的循环}
 
@@ -485,7 +484,7 @@ int64 main()
 \par
 \medskip
 
-层数只计算 \texttt{while}、\texttt{do}、\texttt{for}、\texttt{for-in} 和 \texttt{loop}，普通块及 \texttt{if}、\texttt{match} 不增加层数。数字参数必须是正整数字面量，不能用变量代替层数。\texttt{all} 只在 \texttt{break} 后的层级参数位置表示「全部循环」，普通变量仍可命名为 \texttt{all}。
+层数只计算 \texttt{while}、\texttt{for-in} 和 \texttt{loop}，普通块及 \texttt{if}、\texttt{match} 不增加层数。数字参数必须是正整数字面量，不能用变量代替层数。\texttt{all} 只在 \texttt{break} 后的层级参数位置表示「全部循环」，普通变量仍可命名为 \texttt{all}。
 
 层级退出不能携带结果，也不能跳出另一个函数的循环；离开路径上的清理照常执行。带值的 \texttt{yield value;} 则交给最近接收结果的值表达式，无值循环不会把这个值截走。返回表达式中禁止 \texttt{break level} / \texttt{break all}，详见第 4 章。
 
@@ -677,15 +676,13 @@ int64 main()
 \section{小结}
 
 {\small\setlength{\tabcolsep}{4pt}
-\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.254\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.200\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.526\linewidth-2\tabcolsep\relax}}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.219\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.209\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.552\linewidth-2\tabcolsep\relax}}
 \toprule
 结构 & 什么时候用 & 备注 \\
 \midrule
 \endhead
 \texttt{if /\allowbreak{} elif /\allowbreak{} else} & 条件分支 & 条件必须是 \texttt{bool}；花括号不能省 \\
 \texttt{while (\allowbreak{}cond)\allowbreak{} \{ \}} & 先判断后执行 & 可能一次都不执行 \\
-\texttt{for (\allowbreak{}init; cond; step)\allowbreak{} \{ \}} & 已知次数的计数循环 & 循环变量只活在循环里 \\
-\texttt{do \{ \} while (\allowbreak{}cond)\allowbreak{};} & 至少执行一次 & 末尾分号不能省 \\
 \texttt{loop \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} yield v; \}} & 出口不确定、要给个结果 & 是表达式，语句位置要写 \texttt{\};} \\
 \texttt{for (\allowbreak{}T x in c)\allowbreak{} \{ \}} & 遍历一串东西 & 类型可显式写出或推导，遍历出来是副本 \\
 \texttt{break} / \texttt{continue} & 跳出 / 下一个 & 普通无值形式作用于最近循环；\texttt{break level N} 可指定退出层数 \\

@@ -269,10 +269,16 @@ struct Block : Drop {
 }
 
 int64 main() {
-    for (int64 i = 0; i < 3; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < 3) {
+
         Block slab;
         slab.name = "草方块";
         println("放下 第 {} 块", i);
+    
+            i = i + 1;
+        }
     }
     println("一圈走完，地上没留下任何东西");
     return 0;

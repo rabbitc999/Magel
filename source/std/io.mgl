@@ -17,16 +17,16 @@ interface Seek { Result<int64, IoError> seek(int64 offset, SeekOrigin origin); }
 interface ToString { std::lang::String toString(); };
 interface Formattable { std::lang::String toString(std::lang::String style); };
 
-std::lang::String __fileTryRead(std::lang::File handle);
-String __fileTryReadLine(File handle);
-List<uint8> __fileTryReadBytes(File handle, int64 count);
-int64 __fileTryWriteBytes(File handle, List<uint8> bytes);
-int64 __fileTryWrite(std::lang::File handle, std::lang::String text);
-int64 __fileTryFlush(std::lang::File handle);
-int64 __fileTrySeek(std::lang::File handle, int64 offset, int64 origin);
-bool __fileSucceeded(std::lang::File handle);
-std::lang::String __fileLastError(std::lang::File handle);
-int64 __fileTryClose(std::lang::File handle);
+std::lang::String __fileTryRead(std::lang::File const& handle);
+String __fileTryReadLine(File const& handle);
+List<uint8> __fileTryReadBytes(File const& handle, int64 count);
+int64 __fileTryWriteBytes(File const& handle, List<uint8> bytes);
+int64 __fileTryWrite(std::lang::File const& handle, std::lang::String text);
+int64 __fileTryFlush(std::lang::File const& handle);
+int64 __fileTrySeek(std::lang::File const& handle, int64 offset, int64 origin);
+bool __fileSucceeded(std::lang::File const& handle);
+std::lang::String __fileLastError(std::lang::File const& handle);
+int64 __fileTryClose(std::lang::File const& handle);
 
 struct FileStream : Reader, Writer, Seek {
     std::lang::File handle;
@@ -34,34 +34,30 @@ struct FileStream : Reader, Writer, Seek {
     static Result<FileStream, IoError> open(std::lang::String path, std::lang::String mode) {
         Result<std::lang::File, std::lang::String> opened = fileOpen(path, mode);
         Result<FileStream, IoError> result;
-        match (opened) {
-            Result<std::lang::File, std::lang::String>::Ok(handle) => {
-                FileStream stream;
-                stream.handle = handle;
-                result = Result<FileStream, IoError>::Ok(stream);
-            }
-            Result<std::lang::File, std::lang::String>::Err(message) => {
-                result = Result<FileStream, IoError>::Err(IoError::OpenFailed(message));
-            }
+        if (opened.isErr()) {
+            return Result<FileStream, IoError>::Err(IoError::OpenFailed(opened.error()));
         }
+        FileStream stream;
+        stream.handle = opened.take();
+        result = Result<FileStream, IoError>::Ok(std::lang::move(&stream));
         return result;
     }
 
     Result<std::lang::String, IoError> read() {
-        std::lang::String text = __fileTryRead(self.handle);
-        if (__fileSucceeded(self.handle)) {
+        std::lang::String text = __fileTryRead(&self.handle);
+        if (__fileSucceeded(&self.handle)) {
             return Result<std::lang::String, IoError>::Ok(text);
         }
         return Result<std::lang::String, IoError>::Err(
-            IoError::ReadFailed(__fileLastError(self.handle)));
+            IoError::ReadFailed(__fileLastError(&self.handle)));
     }
 
     /** @brief 读取一行文本，保留空格，去掉 LF/CRLF；EOF 返回 Ok(空串)。
      * @return 行文本或 ReadFailed，不隐式关闭文件。 */
     Result<String,IoError> readLine() {
-        String text=__fileTryReadLine(self.handle);
-        if(__fileSucceeded(self.handle)) { return Result<String,IoError>::Ok(text); }
-        return Result<String,IoError>::Err(IoError::ReadFailed(__fileLastError(self.handle)));
+        String text=__fileTryReadLine(&self.handle);
+        if(__fileSucceeded(&self.handle)) { return Result<String,IoError>::Ok(text); }
+        return Result<String,IoError>::Err(IoError::ReadFailed(__fileLastError(&self.handle)));
     }
     /** @brief 从当前游标读取至多 count 个字节为文本；EOF 返回较短字符串。
      * @param count 非负字节数；不按字符或词语切分。
@@ -93,34 +89,34 @@ struct FileStream : Reader, Writer, Seek {
     }
 
     Result<int64, IoError> write(std::lang::String text) {
-        int64 count = __fileTryWrite(self.handle, text);
-        if (__fileSucceeded(self.handle)) {
+        int64 count = __fileTryWrite(&self.handle, text);
+        if (__fileSucceeded(&self.handle)) {
             return Result<int64, IoError>::Ok(count);
         }
         return Result<int64, IoError>::Err(
-            IoError::WriteFailed(__fileLastError(self.handle)));
+            IoError::WriteFailed(__fileLastError(&self.handle)));
     }
 
     /** 读取至多 count 个字节；EOF 返回较短列表。 */
     Result<List<uint8>,IoError> readBytes(int64 count) {
-        List<uint8> bytes=__fileTryReadBytes(self.handle,count);
-        if (__fileSucceeded(self.handle)) { return Result<List<uint8>,IoError>::Ok(bytes); }
-        return Result<List<uint8>,IoError>::Err(IoError::ReadFailed(__fileLastError(self.handle)));
+        List<uint8> bytes=__fileTryReadBytes(&self.handle,count);
+        if (__fileSucceeded(&self.handle)) { return Result<List<uint8>,IoError>::Ok(bytes); }
+        return Result<List<uint8>,IoError>::Err(IoError::ReadFailed(__fileLastError(&self.handle)));
     }
     /** 写入所有字节，保留零字节。 */
     Result<int64,IoError> writeBytes(List<uint8> bytes) {
-        int64 count=__fileTryWriteBytes(self.handle,bytes);
-        if (__fileSucceeded(self.handle)) { return Result<int64,IoError>::Ok(count); }
-        return Result<int64,IoError>::Err(IoError::WriteFailed(__fileLastError(self.handle)));
+        int64 count=__fileTryWriteBytes(&self.handle,bytes);
+        if (__fileSucceeded(&self.handle)) { return Result<int64,IoError>::Ok(count); }
+        return Result<int64,IoError>::Err(IoError::WriteFailed(__fileLastError(&self.handle)));
     }
 
     Result<int64, IoError> flush() {
-        int64 code = __fileTryFlush(self.handle);
-        if (__fileSucceeded(self.handle)) {
+        int64 code = __fileTryFlush(&self.handle);
+        if (__fileSucceeded(&self.handle)) {
             return Result<int64, IoError>::Ok(code);
         }
         return Result<int64, IoError>::Err(
-            IoError::WriteFailed(__fileLastError(self.handle)));
+            IoError::WriteFailed(__fileLastError(&self.handle)));
     }
 
     Result<int64, IoError> seek(int64 offset, SeekOrigin origin) {
@@ -130,15 +126,15 @@ struct FileStream : Reader, Writer, Seek {
             SeekOrigin::Current => { originCode = 1; }
             SeekOrigin::End => { originCode = 2; }
         }
-        int64 position = __fileTrySeek(self.handle, offset, originCode);
-        if (__fileSucceeded(self.handle)) {
+        int64 position = __fileTrySeek(&self.handle, offset, originCode);
+        if (__fileSucceeded(&self.handle)) {
             return Result<int64, IoError>::Ok(position);
         }
         return Result<int64, IoError>::Err(
-            IoError::SeekFailed(__fileLastError(self.handle)));
+            IoError::SeekFailed(__fileLastError(&self.handle)));
     }
 
-    int64 close() { return __fileTryClose(self.handle); }
+    int64 close() { return __fileTryClose(&self.handle); }
 };
 
 /* 文件包装（从编译器注入正文里搬出来）：`std::lang::fileOpen` 这些名字现在住在这里，
@@ -146,30 +142,49 @@ struct FileStream : Reader, Writer, Seek {
 Result<std::lang::File, std::lang::String> fileOpen(std::lang::String path, std::lang::String mode) {
     file opened = __fileTryOpen(path, mode);
     if (__fileValid(opened)) {
-        return Result<std::lang::File, std::lang::String>::Ok(opened);
+        return Result<std::lang::File, std::lang::String>::Ok(std::lang::move(&opened));
     }
     return Result<std::lang::File, std::lang::String>::Err("fileOpen failed");
 }
 
-std::lang::String fileRead(file handle) { return __fileRead(handle); }
+std::lang::String fileRead(file const& handle) { return __fileRead(handle); }
 /** @brief 读取文件句柄的一行文本，不含 LF/CRLF；保留既有 fileRead 语义。
  * @param handle 已打开的文件。 @return 行文本，EOF 为空串，读取错误触发 panic。 */
-String fileReadLine(File handle) {
-    FileStream stream;stream.handle=handle;return stream.readLine().unwrap();
+String fileReadLine(File const& handle) {
+    String text = __fileTryReadLine(handle);
+    if (!__fileSucceeded(handle)) { panic(__fileLastError(handle)); }
+    return text;
 }
-/** @brief 从句柄读取至多 count 个字节的文本，错误触发 panic。
- * @param handle 已打开的文件。 @param count 非负字节数。 @return 文本，EOF 可以较短。 */
-String fileReadString(File handle,int64 count) {
-    FileStream stream;stream.handle=handle;return stream.readString(count).unwrap();
+/** 从文件借用中读取至多 count 个字节的文本。 */
+String fileReadString(File const& handle, int64 count) {
+    if (count < 0) { panic("negative byte count"); }
+    List<uint8> bytes = __fileTryReadBytes(handle, count);
+    if (!__fileSucceeded(handle)) { panic(__fileLastError(handle)); }
+    String text = "";
+    for (uint8 byte in bytes) {
+        if (byte == (uint8)0) { panic("text contains a zero byte"); }
+        text = text + format("{}", (char)byte);
+    }
+    return text;
 }
-/** @brief 从句柄当前位置读完文本，错误触发 panic；原始字节数据使用 readBytes。
- * @param handle 已打开的文件。 @param maxBytes 非负预算，默认 16 MiB。 @return 剩余完整文本。 */
-String fileReadAllString(File handle,int64 maxBytes=16777216) {
-    FileStream stream;stream.handle=handle;return stream.readAllString(maxBytes).unwrap();
+/** 从文件借用中读取剩余文本，并检查字节预算。 */
+String fileReadAllString(File const& handle, int64 maxBytes = 16777216) {
+    if (maxBytes < 0) { panic("negative byte limit"); }
+    String text = "";
+    loop {
+        int64 remaining = maxBytes - len(text);
+        int64 count = 4096;
+        if (remaining < 4096) { count = remaining + 1; }
+        String part = fileReadString(handle, count);
+        if (len(part) == 0) { break; }
+        if (len(part) > remaining) { panic("file exceeds byte limit"); }
+        text = text + part;
+    };
+    return text;
 }
-int64 fileWrite(file handle, std::lang::String text) { return __fileWrite(handle, text); }
-int64 fileEof(file handle) { return __fileEof(handle); }
-int64 fileClose(file handle) { return __fileClose(handle); }
+int64 fileWrite(file const& handle, std::lang::String text) { return __fileWrite(handle, text); }
+int64 fileEof(file const& handle) { return __fileEof(handle); }
+int64 fileClose(file const& handle) { return __fileClose(handle); }
 
 /** 文件信息，时间为 Unix 秒；目录的 size 为零。 */
 struct FileInfo { int64 size; bool isFile; bool isDirectory; int64 modifiedUnixSeconds; };

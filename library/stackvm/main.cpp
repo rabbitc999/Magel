@@ -6,6 +6,9 @@
  */
 
 #include "stackvm.hpp"
+#if !STACKVM_EMBEDDED
+#include "../../source/glue/standard_records.hpp"
+#endif
 
 #include <fstream>
 #include <iostream>
@@ -363,6 +366,16 @@ int main(int argc, char **argv)
     Memory::Vector<Memory::String> input = splitInput(
         inputText.empty() ? file.input : inputText);
     stackvm::Machine machine(trace);
+#if !STACKVM_EMBEDDED
+    magel_glue::Registry registry;
+    Memory::String bindingError;
+    if (!magel_standard_records::bind(registry, &bindingError))
+    {
+        std::cerr << bindingError << "\n";
+        return 1;
+    }
+    machine.setNativeRegistry(&registry.native());
+#endif
     machine.setPanicDetailsEnabled(!compressSymbols);
     stackvm::DataArea dataArea;
     if (!dataPath.empty())

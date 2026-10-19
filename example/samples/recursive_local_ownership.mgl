@@ -21,12 +21,18 @@ int64 visit(List<RecursiveNode> const& nodes, List<int64> const& children, int64
     RecursiveNode current = nodes[index];
     String saved = current.text;
     int64 total = 1;
-    for (int64 i = 0; i < current.count; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < current.count) {
+
         total = total + visit(nodes, children, children[current.first + i]);
         assert(current.kind == nodes[index].kind);
         assert(current.number == nodes[index].number);
         assert(current.text == saved);
         assert(current.count == nodes[index].count);
+    
+            i = i + 1;
+        }
     }
     return total;
 }
@@ -40,8 +46,14 @@ int64 main() {
     nodes.push(node(2, "right", 0, 0));
     nodes.push(node(3, "*", 0, 2));
     nodes.push(node(4, "+", 2, 2));
-    for (int64 repeat = 0; repeat < 8; repeat = repeat + 1) {
+    {
+        int64 repeat = 0;
+        while (repeat < 8) {
+
         assert(visit(&nodes, &children, 4) == 5);
+    
+            repeat = repeat + 1;
+        }
     }
     assert(nodes[4].text == "+");
     println("recursive local ownership OK");

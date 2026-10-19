@@ -105,7 +105,7 @@ Box<int64 fn(int64)> box;
 
 <!-- BEGIN GENERATED MAGEL EBNF -->
 
-以下 124 条产生式由 `source/magel.gram` 导出，语义动作及解析优先级指令省略。
+以下 121 条产生式由 `source/magel.gram` 导出，语义动作及解析优先级指令省略。
 
 ### 终结符登记
 
@@ -114,6 +114,8 @@ Box<int64 fn(int64)> box;
 | `ANNOTATION` | `@annotation` |
 | `AT` | `@` |
 | `STRUCT` | `struct` |
+| `OPCODE` | `opcode` |
+| `NONCOPYABLE` | `#NonCopyable` |
 | `ENUM` | `enum` |
 | `INT8` | `int8` |
 | `INT16` | `int16` |
@@ -160,7 +162,6 @@ Box<int64 fn(int64)> box;
 | `LOOP` | `loop` |
 | `RETURN` | `return` |
 | `MATCH` | `match` |
-| `DO` | `do` |
 | `BREAK` | `break` |
 | `DERIVE` | `#derive` |
 | `YIELD` | `yield` |
@@ -224,6 +225,7 @@ Box<int64 fn(int64)> box;
 ### 显式正则词法规则
 
 ```ebnf
+NUMBER = ? 正则 "[0-9]+" ? ;
 FLIT = ? 正则 "[0-9]+(\\.[0-9]+([eE][-+]?[0-9]+)?|[eE][-+]?[0-9]+)[f]?|[0-9]+f" ? ;
 ULIT = ? 正则 "[0-9]+u" ? ;
 HEXLIT = ? 正则 "0[xX][A-Za-z0-9_]*" ? ;
@@ -245,6 +247,8 @@ top = annotation_decl
     | top_decl ;
 
 top_decl = struct_decl, type_decl_end
+    | opcode_decl, type_decl_end
+    | "#NonCopyable", opcode_decl, type_decl_end
     | derive_directive, struct_decl, type_decl_end
     | derive_directive, enum_decl, type_decl_end
     | "module", module_name, ";"
@@ -265,6 +269,16 @@ type_decl_end = ""
     | ";" ;
 
 derive_directive = "#derive", "(", iface_list, ")" ;
+
+opcode_decl = "opcode", name_token, "{", opcode_methods, "}" ;
+
+opcode_methods = ""
+    | opcode_methods, opcode_method ;
+
+opcode_method = "new", "=", module_name, ";"
+    | "drop", "=", module_name, ";"
+    | "copy", "=", module_name, ";"
+    | member ;
 
 annotation_decl = "@annotation", module_name
     | "@annotation", module_name, "(", annotation_params, ")" ;
@@ -529,8 +543,6 @@ stmt = block
     | "scope", "(", name_token, ")", block
     | if_stmt
     | while_stmt
-    | do_while_stmt
-    | for_stmt
     | for_in_stmt
     | match_stmt
     | match_stmt, ";"
@@ -546,8 +558,6 @@ stmt = block
     | "continue", ";"
     | expression_items, ";" ;
 
-do_while_stmt = "do", block, "while", "(", expr, ")", ";" ;
-
 match_stmt = "match", "(", expr, ")", "{", match_item_list, "}" ;
 
 match_item_list = ""
@@ -561,11 +571,7 @@ match_item = match_patterns, "if", expr, "=>", if_block
 match_patterns = match_pattern
     | match_patterns, "|", match_pattern ;
 
-match_pattern = range_pattern
-    | bxor_expr ;
-
-range_pattern = "[", expr, ",", expr, ")"
-    | "[", expr, ",", expr, "]" ;
+match_pattern = bxor_expr ;
 
 decl_stmt = "auto", "(", destructure_items, ")", "=", expr, ";"
     | type, name_token, "(", param_list, ")", block
@@ -603,29 +609,22 @@ else_part = ""
 
 while_stmt = "while", "(", expr, ")", block ;
 
-loop_expr = "loop", block ;
-
-for_stmt = "for", "(", for_init, expr, ";", for_inc, ")", block ;
+loop_expr = "loop", block
+    | "while", "(", expr, ")", if_block, "else", if_block
+    | "for", "(", name_token, "in", for_in_source, ")", if_block, "else", if_block
+    | "for", "(", "auto", name_token, "in", for_in_source, ")", if_block, "else", if_block
+    | "for", "(", type, name_token, "in", for_in_source, ")", if_block, "else", if_block
+    | "for", "(", ptr_type, name_token, "in", for_in_source, ")", if_block, "else", if_block ;
 
 for_in_stmt = "for", "(", name_token, "in", for_in_source, ")", block
     | "for", "(", "auto", name_token, "in", for_in_source, ")", block
     | "for", "(", type, name_token, "in", for_in_source, ")", block
     | "for", "(", ptr_type, name_token, "in", for_in_source, ")", block ;
 
-for_in_source = expr
-    | range_pattern ;
+for_in_source = expr ;
 
 heap_type = name_token
     | builtin_type ;
-
-for_init = ";"
-    | decl_stmt
-    | expr_stmt_simple ;
-
-for_inc = ""
-    | expr ;
-
-expr_stmt_simple = expr, ";" ;
 
 expr = assign_expr ;
 
@@ -713,6 +712,8 @@ postfix = postfix, "++"
     | postfix, "->", name_token
     | postfix, ".", "drop"
     | postfix, "->", "drop"
+    | postfix, ".", "opcode"
+    | postfix, "->", "opcode"
     | postfix, "(", call_args, ")"
     | primary ;
 
@@ -806,7 +807,10 @@ collection_literal = "{", "}"
     | "{", expression_items, "}"
     | "{", expression_items, ",", "}"
     | "{", map_literal_items, "}"
-    | "{", map_literal_items, ",", "}" ;
+    | "{", map_literal_items, ",", "}"
+    | "[", "]"
+    | "[", expression_items, "]"
+    | "[", expression_items, ",", "]" ;
 
 expression_items = expr
     | expression_items, ",", expr ;

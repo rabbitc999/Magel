@@ -14,6 +14,20 @@ struct MReflectionBuilder
     Memory::Map<Memory::String, const MNode *> declarations;
     bool usesBuiltin = false;
     /**
+     * @brief 判断类型签名是否包含不向反射公开的胶水对象。
+     * @param type 待检查的具体类型或引用。
+     * @return 直接或经数组、函数、容器包含 opcode 时返回 true。
+     */
+    bool hidden(const std::shared_ptr<MType> &type) const
+    {
+        if (!type) return false;
+        if (const auto *opcode = FindOpcodeDeclaration(type); opcode && opcode->internal) return true;
+        if (hidden(type->elem) || hidden(type->elem2)) return true;
+        for (const auto &param : type->paramTypes)
+            if (hidden(param)) return true;
+        return false;
+    }
+    /**
      * @brief 登记规范身份并检查哈希碰撞。
      * @param key 规范身份。
      * @return 稳定编号。
@@ -52,7 +66,7 @@ struct MReflectionBuilder
     Memory::String key(const std::shared_ptr<MType> &type)
     {
         if (!type) return "type:void";
-        if (type->kind == MType::Struct || type->kind == MType::Host)
+        if (type->kind == MType::Struct || type->kind == MType::Host || type->kind == MType::Opcode)
         {
             const auto prefix = g_interfaces.count(type->name) ? "interface:" :
                                 g_enums.count(type->name)      ? "enum:" :
@@ -84,6 +98,7 @@ struct MReflectionBuilder
      */
     std::uint64_t typeId(const std::shared_ptr<MType> &type)
     {
+        if (hidden(type)) return 0;
         if (type)
         {
             if (type->unresolvedName)
@@ -237,6 +252,9 @@ struct MReflectionBuilder
         for (const auto &method : g_structs.at(owner).methods)
         {
             if (method.superseded) continue;
+            bool privateSignature = hidden(method.result);
+            for (const auto &param : method.params) privateSignature = privateSignature || hidden(param.type);
+            if (privateSignature) continue;
             mr::MethodInfo info;
             auto returnType = method.result;
             if (method.isConstructor)
@@ -286,7 +304,7 @@ struct MReflectionBuilder
         for (int id : N(list).kids)
         {
             const auto &member = N(id);
-            if (member.kind == MNode::Field && member.type2 == 1)
+            if (member.kind == MNode::Field && member.type2 == 1 && !hidden(T(member.type)))
                 result.push_back({ member.s, typeId(T(member.type)), owned(T(member.type)), annotations(member) });
         }
         return result;
@@ -317,6 +335,9 @@ struct MReflectionBuilder
         info.typeId = identity("interface:" + info.name);
         for (const auto &method : g_interfaces.at(owner))
         {
+            bool privateSignature = hidden(method.result);
+            for (const auto &param : method.bodyParams) privateSignature = privateSignature || hidden(param.type);
+            if (privateSignature) continue;
             MMethod source;
             source.source = method.name;
             source.bodyId = method.bodyId;
@@ -340,7 +361,7 @@ struct MReflectionBuilder
         for (int id : g_top)
         {
             const auto &top = N(id);
-            if (top.kind != MNode::StructDecl && top.kind != MNode::EnumDecl && top.kind != MNode::InterfaceDecl) continue;
+            if (top.kind != MNode::StructDecl && top.kind != MNode::EnumDecl && top.kind != MNode::InterfaceDecl && top.kind != MNode::OpcodeDecl) continue;
             names[top.s] = AnnotationName(top);
             declarations[top.s] = &top;
         }
@@ -391,16 +412,21 @@ struct MReflectionBuilder
             {
                 const auto &decl = g_functionDecls.at(static_cast<std::size_t>(top.i));
                 if (decl.superseded) continue;
+                bool privateSignature = hidden(decl.signature.result);
+                for (const auto &param : decl.signature.params) privateSignature = privateSignature || hidden(param.type);
+                if (privateSignature) continue;
                 const auto name = ModuleSymbol(decl.module, decl.source);
                 table.functions.push_back(function(name, "function:" + name, decl.signature.result, decl.signature.params, &top));
             }
-            else if (top.kind == MNode::StructDecl)
+            else if (top.kind == MNode::StructDecl || top.kind == MNode::OpcodeDecl)
             {
                 mr::StructInfo info;
                 info.name = named(top.s);
                 info.typeId = identity("struct:" + info.name);
                 for (const auto &field : g_structs.at(top.s).fields)
                 {
+                    if (field.name == "opcode" && top.kind == MNode::OpcodeDecl) continue;
+                    if (hidden(field.type)) continue;
                     mr::FieldInfo value{ field.name, static_cast<std::uint32_t>(field.slot * 8), typeId(field.type), owned(field.type), {} };
                     for (int memberId : N(top.kids[0]).kids)
                         if (N(memberId).kind == MNode::Field && N(memberId).s == field.name && N(memberId).type2 != 1) value.annotations = annotations(N(memberId));

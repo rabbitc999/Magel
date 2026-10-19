@@ -13,7 +13,10 @@ struct Borrower : Negate<String const&,Borrower> {
 int64 main(){
     Producer source;source.text="live";
     Borrower owner;owner.text="borrow";
-    for(int64 i=0;i<64;i=i+1){
+    {
+        int64 i=0;
+        while (i<64) {
+
         String text=source+1;assert(text=="live!");
         List<String> items=source-1;
         assert(items.len()==1 && items[0]=="live");
@@ -28,6 +31,9 @@ int64 main(){
         String unaryBorrowed=-owner;assert(unaryBorrowed=="borrow");
         unaryBorrowed="changed";assert(owner.text=="borrow");
         -owner;assert(owner.text=="borrow");
+    
+            i=i+1;
+        }
     }
     println("ownership operator results OK");
     return 0;

@@ -94,7 +94,7 @@ simple_ast::NodePtr TakeExpressionTempValue(const simple_ast::NodePtr &value,
         transferred->kids.back() = TakeExpressionTempValue(value->kids.back(), type);
         return transferred;
     }
-    if (!g_fullExpressionTemps || !value || value->kind != simple_ast::Node::Kind::Var || !type || (type->kind != MType::String && !IsObjectLike(type))) return value;
+    if (!g_fullExpressionTemps || !value || value->kind != simple_ast::Node::Kind::Var || !type || (!IsStandardOpcode(type, "String") && !IsObjectLike(type))) return value;
     const auto &names = g_fullExpressionTemps->names;
     if (std::find(names.begin(), names.end(), value->text) == names.end()) return value;
     const auto transferred = AllocateName("__magel_transferred_value");
@@ -163,7 +163,7 @@ simple_ast::NodePtr NewContainerValue(const std::shared_ptr<MType> &type)
     if (type->name != "map" && !customSet)
         return Node::call(type->name == "set" ? "__vm_set_new" : "__vm_vec_new", {}, {});
     const auto key = type->elem;
-    if (key->kind == MType::Int || key->kind == MType::Double || key->kind == MType::Bool || key->kind == MType::Char || key->kind == MType::String || key->kind == MType::Obj)
+    if (key->kind == MType::Int || key->kind == MType::Double || key->kind == MType::Bool || key->kind == MType::Char || IsStandardOpcode(key, "String") || key->kind == MType::Obj)
         return Node::call("__vm_map_new", {}, {});
     const auto name = TypeKey(key);
     auto found = g_mapKeyPolicies.find(name);
@@ -276,14 +276,14 @@ simple_ast::NodePtr LowerIndexChain(int baseId, int positionId, bool bufferIndex
     /* `matrix[i][j]` 的同型数组链需要折平；`list[i][j]` 可能是先取出 String/List，
      * 再对结果取下标，必须保留为两次独立操作。 */
     const std::shared_ptr<MType> immediateBase = ExprType(baseId);
-    const bool indexesPreviousValue = immediateBase && (immediateBase->kind == MType::String || IsContainer(immediateBase));
+    const bool indexesPreviousValue = immediateBase && (IsStandardOpcode(immediateBase, "String") || IsContainer(immediateBase));
     while (!indexesPreviousValue && N(cursor).kind == MNode::Index)
     {
         indices.insert(indices.begin(), N(cursor).kids[1]);
         cursor = N(cursor).kids[0];
     }
     auto base = RawExprType(cursor);
-    if (!bufferIndex && base->kind == MType::Ptr && base->elem && (base->elem->kind == MType::String || base->elem->kind == MType::Array || IsContainer(base->elem))) base = base->elem;
+    if (!bufferIndex && base->kind == MType::Ptr && base->elem && (IsStandardOpcode(base->elem, "String") || base->elem->kind == MType::Array || IsContainer(base->elem))) base = base->elem;
     if (IsContainer(base))
     {
         /* `v[i]` / `m[k]`：全是运行期对象，下标/键交给 C++ 侧查（越界 / 没这个键都有说法）。 */
@@ -292,7 +292,7 @@ simple_ast::NodePtr LowerIndexChain(int baseId, int positionId, bool bufferIndex
             Fail("容器只支持一维下标：" + Describe(base));
             return Bad();
         }
-        const bool elementText = base->elem && base->elem->kind == MType::String;
+        const bool elementText = base->elem && IsStandardOpcode(base->elem, "String");
         if (base->name == "vec")
         {
             if (!CheckContainerIndex(indices[0], "vec 下标")) return Bad();
@@ -304,8 +304,8 @@ simple_ast::NodePtr LowerIndexChain(int baseId, int positionId, bool bufferIndex
         }
         if (base->name == "map")
         {
-            const bool keyText = base->elem && base->elem->kind == MType::String;
-            const bool valueText = base->elem2 && base->elem2->kind == MType::String;
+            const bool keyText = base->elem && IsStandardOpcode(base->elem, "String");
+            const bool valueText = base->elem2 && IsStandardOpcode(base->elem2, "String");
             const auto keyType = base->elem;
             if (!CheckContainerArgument(keyType, indices[0], "map 下标键", false)) return Bad();
             Memory::Vector<simple_ast::NodePtr> prefix, post;
@@ -339,7 +339,7 @@ simple_ast::NodePtr LowerIndexChain(int baseId, int positionId, bool bufferIndex
     }
     for (const int position : indices)
         if (!CheckContainerIndex(position, "下标")) return Bad();
-    if (base->kind == MType::String)
+    if (IsStandardOpcode(base, "String"))
     {
         /* 字符串变量与引用统一按字节下标访问。
          * 字符串按**字节**下标：`s[i]` 得到第 i 个字节（0..255）。
@@ -503,6 +503,13 @@ simple_ast::NodePtr FieldAddress(const simple_ast::NodePtr &baseNode,
 simple_ast::NodePtr LowerMember(int baseId, const Memory::String &field)
 {
     const std::shared_ptr<MType> base = ExprType(baseId);
+    if (field == "opcode")
+        if (const auto *declaration = FindOpcodeDeclaration(base))
+        {
+            if (g_currentModule != declaration->module) return Fail("opcode 内部句柄仅允许在声明模块中访问"), Bad();
+            if (!declaration->aggregate) return OwnedObjectTemp(baseId, base);
+            return simple_ast::Node::loadInt(LowerExpr(baseId));
+        }
     if (IsEnumType(base))
     {
         Fail("enum 载荷不能直接按字段读取：" + base->name + "." + field + "；请在 match 的 `" + base->name + "::变体(绑定名) => { ... }` 中解构");
@@ -560,6 +567,13 @@ int ExplicitReceiverField(int id)
 }
 
 /**
+ * @brief 为内部句柄字段转发取得原始所有者变量的引用。
+ * @param id 被取引用的表达式编号。
+ * @return 表达式对应的稳定存储地址。
+ */
+simple_ast::NodePtr LowerAddressOf(int id);
+
+/**
  * @brief 成员**节点**的地址（`&a.f` 那条路用它：传的是 `MNode::Member` / `MNode::Arrow` 的 id）。
  * @param memberId 成员节点。
  * @param field 输出：字段定义（拿它的槽号与类型）。
@@ -574,6 +588,14 @@ simple_ast::NodePtr LowerFieldAddress(int memberId, const MField **field, Memory
     const int baseId = node.kids.empty() ? -1 : node.kids[0];
     const Memory::String fieldName = node.s;
     const std::shared_ptr<MType> base = ExprType(baseId);
+    if (fieldName == "opcode")
+        if (const auto *declaration = FindOpcodeDeclaration(base); declaration && !declaration->aggregate)
+        {
+            if (g_currentModule != declaration->module) return Fail("opcode 内部句柄仅允许在声明模块中访问"), Bad();
+            *owner = base->name;
+            *field = FindField(*owner, fieldName);
+            return LowerAddressOf(baseId);
+        }
     if (IsEnumType(base))
     {
         Fail("enum 载荷不能直接按字段写入：" + base->name + "." + fieldName + "；请构造一个新的枚举值再赋值");
@@ -614,6 +636,7 @@ simple_ast::NodePtr LowerAddressOf(int id)
     if (const int member = ExplicitReceiverField(id); member >= 0) return LowerAddressOf(member);
     const MNode &node = N(id);
     if (RawExprType(id)->kind == MType::Ptr) return LowerRawExpr(id);
+    if (node.kind == MNode::Var && node.s == "self" && !g_owner.empty()) return simple_ast::Node::var("self");
     const auto temporaryType = ExprType(id);
     if (g_freshSink && IsContainer(temporaryType) && IsFreshValue(id))
     {
@@ -661,13 +684,13 @@ simple_ast::NodePtr LowerAddressOf(int id)
     if (node.kind == MNode::Index)
     {
         auto base = RawExprType(node.kids[0]);
-        const bool valueReference = node.s != "__magel_buffer_index" && base->kind == MType::Ptr && base->elem && (base->elem->kind == MType::String || base->elem->kind == MType::Array);
+        const bool valueReference = node.s != "__magel_buffer_index" && base->kind == MType::Ptr && base->elem && (IsStandardOpcode(base->elem, "String") || base->elem->kind == MType::Array);
         if (valueReference) base = base->elem;
         if (!CheckContainerIndex(node.kids[1], "下标")) return Bad();
         const auto target = valueReference ? LowerExpr(node.kids[0]) : LowerRawExpr(node.kids[0]);
         const simple_ast::NodePtr position = LowerExpr(node.kids[1]);
         const Memory::String label = NameOfExpr(node.kids[0]);
-        if (base->kind == MType::String) /* `&s[i]`：字符串按字节 */
+        if (IsStandardOpcode(base, "String")) /* `&s[i]`：字符串按字节 */
         {
             return simple_ast::Node::call("__vm_str_ref", { "__magel_s", "__magel_i" }, { target, position });
         }
@@ -740,12 +763,12 @@ simple_ast::NodePtr LowerUnary(const Memory::String &op, int operandId)
     if (op == "-")
     {
         const std::shared_ptr<MType> type = ExprType(operandId);
-        if (type && type->kind == MType::BigInt)
+        if (type && IsStandardOpcode(type, "BigInteger"))
         {
             return simple_ast::Node::call("__vm_bint_neg", { "__magel_v" },
                                           { LowerExpr(operandId) });
         }
-        if (type && type->kind == MType::BigFloat)
+        if (type && IsStandardOpcode(type, "BigDecimal"))
         {
             return simple_ast::Node::call("__vm_bfloat_neg", { "__magel_v" },
                                           { LowerExpr(operandId) });
@@ -818,7 +841,7 @@ simple_ast::NodePtr LowerUnary(const Memory::String &op, int operandId)
 simple_ast::NodePtr OwnedObjectTempNode(const simple_ast::NodePtr &value,
                                         const std::shared_ptr<MType> &type)
 {
-    if (g_freshSink == nullptr || (!IsObjectLike(type) && (!type || type->kind != MType::String)))
+    if (g_freshSink == nullptr || (!IsObjectLike(type) && (!type || !IsStandardOpcode(type, "String"))))
         return value;
     const Memory::String temp = AllocateName("__magel_tmp_o");
     g_freshSink->push_back(simple_ast::Node::declare(temp, LowerType(type, temp)));
@@ -861,6 +884,7 @@ bool IsOwnedAggregateTemporary(int exprId)
     if (IsBorrowedObjectValueCall(exprId)) return false;
     const MNode &node = N(exprId);
     if (RawExprType(exprId)->kind == MType::Ptr || (node.kind == MNode::Un && node.s == "*")) return false;
+    if (node.kind == MNode::Try) return OwnedPropagation(exprId);
     if (node.kind == MNode::Tuple || node.kind == MNode::Call || node.kind == MNode::Loop) return true;
     if (node.kind == MNode::EnumCtor) return true;
     /* 运算符重载（`a + b` / `-a`）走方法调用，返回值归调用点。 */
@@ -920,10 +944,10 @@ simple_ast::NodePtr ContainerStoreValue(int argId, const std::shared_ptr<MType> 
         if (owner.empty() || !StructHasOwnedLeaves(owner)) return value;
         return AggregateTempNode(value, element, post);
     }
-    if (!IsObjectLike(element) && element->kind != MType::String)
+    if (!IsObjectLike(element) && !IsStandardOpcode(element, "String"))
         return value;
     if (!IsFreshValue(argId) && !IsImplicitConversionValue(argId, element)) return value;
-    if (element->kind == MType::String && argId >= 0 && N(argId).kind == MNode::Str)
+    if (IsStandardOpcode(element, "String") && argId >= 0 && N(argId).kind == MNode::Str)
         return value;
     return OwnedObjectTempNode(value, element);
 }
@@ -1026,7 +1050,7 @@ void CollectStringParts(int exprId, Memory::Vector<int> *out)
     if (node.kind == MNode::Bin && node.s == "+" && node.kids.size() >= 2u)
     {
         const std::shared_ptr<MType> type = ExprType(exprId);
-        if (type && type->kind == MType::String)
+        if (type && IsStandardOpcode(type, "String"))
         {
             CollectStringParts(node.kids[0], out);
             CollectStringParts(node.kids[1], out);
@@ -1070,7 +1094,7 @@ simple_ast::NodePtr LowerBinary(const Memory::String &op, int leftId, int rightI
      * 两件事都交给**虚拟机里那份 C++ 运行时**（`__vm_str_cat` / `__vm_str_cmp`）：
      * 语言侧不写逐字节的循环，拼接的结果是堆上的新串（"块作用域所有"，见 MarkOwned）。
      * ---- */
-    if (leftType->kind == MType::String || rightType->kind == MType::String)
+    if (IsStandardOpcode(leftType, "String") || IsStandardOpcode(rightType, "String"))
     {
         const bool nullCompare = (op == "==" || op == "!=") && ((rightType->kind == MType::Ptr && rightType->elem && rightType->elem->kind == MType::Void) || (leftType->kind == MType::Ptr && leftType->elem && leftType->elem->kind == MType::Void));
         if (nullCompare)
@@ -1078,7 +1102,7 @@ simple_ast::NodePtr LowerBinary(const Memory::String &op, int leftId, int rightI
             /* `s == null`：比的是地址（空串 / 空引用） */
             return simple_ast::Node::binary(op, LowerExpr(leftId), LowerExpr(rightId));
         }
-        if (leftType->kind != MType::String || rightType->kind != MType::String)
+        if (!IsStandardOpcode(leftType, "String") || !IsStandardOpcode(rightType, "String"))
         {
             Fail("字符串只能和字符串做 " + op + "（另一边先转成 std::lang::String）");
             return Bad();
@@ -1095,7 +1119,7 @@ simple_ast::NodePtr LowerBinary(const Memory::String &op, int leftId, int rightI
             for (std::size_t index = 0; index < parts.size(); ++index)
             {
                 const std::shared_ptr<MType> partType = ExprType(parts[index]);
-                if (!partType || partType->kind != MType::String)
+                if (!partType || !IsStandardOpcode(partType, "String"))
                 {
                     Fail("字符串拼接里每一项都得是 std::lang::String：第 " + Memory::toString(index + 1u) + " 项是 " + (partType ? Describe(partType) : Memory::String("?")) + "（要拼数字先 `format` 或强转）");
                     return Bad();
@@ -1119,13 +1143,13 @@ simple_ast::NodePtr LowerBinary(const Memory::String &op, int leftId, int rightI
         return Bad();
     }
     /* ---- 大浮点数（`bfloat`）：十进制任意精度四则与比较。 ---- */
-    if (leftType->kind == MType::BigFloat || rightType->kind == MType::BigFloat)
+    if (IsStandardOpcode(leftType, "BigDecimal") || IsStandardOpcode(rightType, "BigDecimal"))
     {
         const auto toBigFloat = [&](int exprId) -> simple_ast::NodePtr {
             const std::shared_ptr<MType> type = ExprType(exprId);
-            if (type && type->kind == MType::BigFloat) return OwnedObjectTemp(exprId, type);
+            if (type && IsStandardOpcode(type, "BigDecimal")) return OwnedObjectTemp(exprId, type);
             const char *native = nullptr;
-            if (type && type->kind == MType::BigInt)
+            if (type && IsStandardOpcode(type, "BigInteger"))
                 native = "__vm_bfloat_from_bint";
             else if (type && type->kind == MType::Double)
                 native = "__vm_bfloat_from_flt";
@@ -1164,7 +1188,7 @@ simple_ast::NodePtr LowerBinary(const Memory::String &op, int leftId, int rightI
      *
      * 算术上 `bint` 和整数 / 浮点可以混着写：另一边先转成大整数（`__vm_bint_from_int` /
      * `_from_flt`），结果还是 `bint`。比较走 `__vm_bint_cmp`（-1 / 0 / 1）。 */
-    if (leftType->kind == MType::BigInt || rightType->kind == MType::BigInt)
+    if (IsStandardOpcode(leftType, "BigInteger") || IsStandardOpcode(rightType, "BigInteger"))
     {
         const bool nullCompare = (op == "==" || op == "!=") && ((rightType->kind == MType::Ptr && rightType->elem && rightType->elem->kind == MType::Void) || (leftType->kind == MType::Ptr && leftType->elem && leftType->elem->kind == MType::Void));
         if (nullCompare)
@@ -1179,7 +1203,7 @@ simple_ast::NodePtr LowerBinary(const Memory::String &op, int leftId, int rightI
             const std::shared_ptr<MType> type = ExprType(exprId);
             /* 已经是 `bint` 的：如果是"当场造出来的"（`a + b` 这种），落进临时变量，
              * 免得算完就没人管（对象表会涨）。 */
-            if (type && type->kind == MType::BigInt)
+            if (type && IsStandardOpcode(type, "BigInteger"))
             {
                 return OwnedObjectTemp(exprId, type);
             }
@@ -1332,7 +1356,7 @@ simple_ast::NodePtr LowerCast(int typeId, int valueId)
      */
     /* `(int64)大整数` / `(float64)大整数`：走对象表里的转换（超 64 位按低 64 位截断，
      * 和 C 的整数转换一个脾气）。 */
-    if (source && source->kind == MType::BigInt && target)
+    if (source && IsStandardOpcode(source, "BigInteger") && target)
     {
         if (target->kind == MType::Int || target->kind == MType::Bool)
         {
@@ -1349,7 +1373,7 @@ simple_ast::NodePtr LowerCast(int typeId, int valueId)
                                           { OwnedObjectTemp(valueId, source) });
         }
     }
-    if (source && source->kind == MType::BigFloat && target)
+    if (source && IsStandardOpcode(source, "BigDecimal") && target)
     {
         if (target->kind == MType::Int || target->kind == MType::Bool)
         {
@@ -1501,6 +1525,8 @@ Memory::String ConstRootOf(int targetId)
     while (current >= 0)
     {
         const MNode &node = N(current);
+        if ((node.kind == MNode::Member || node.kind == MNode::Arrow) && node.s == "opcode" && !node.kids.empty() && FindOpcodeDeclaration(ExprType(node.kids[0])))
+            return "opcode";
         if (node.kind == MNode::Var)
         {
             const MVar *found = FindIn(node.module, node.s);
@@ -1844,6 +1870,8 @@ simple_ast::NodePtr StoreOwnedValueAt(const simple_ast::NodePtr &address, int va
                                       const simple_ast::NodePtr &value,
                                       const std::shared_ptr<MType> &type)
 {
+    if (OpcodeNonCopyable(type) && valueId >= 0 && !IsFreshValue(valueId))
+        return Fail("#NonCopyable opcode 禁止复制到字段或数组元素，请显式移动"), Bad();
     if (IsRuntimeArray(type))
     {
         using simple_ast::Node;
@@ -1863,16 +1891,15 @@ simple_ast::NodePtr StoreOwnedValueAt(const simple_ast::NodePtr &address, int va
         out.push_back(Node::storeAt(Node::var(destination), Node::var(replacement), simple_ast::Type::i64()));
         return Node::block(out);
     }
-    if (!type || (type->kind != MType::String && !IsObjectLike(type)))
+    if (!type || (!IsStandardOpcode(type, "String") && !IsObjectLike(type) && !OpcodeNonCopyable(type)))
         return simple_ast::Node::storeAt(address, value, LowerType(type, "assignment"));
     simple_ast::NodePtr stored = (IsFreshValue(valueId) || IsImplicitConversionValue(valueId, type)) ? TakeExpressionTempValue(value, type) : value;
-    if (type->kind == MType::String)
+    if (IsStandardOpcode(type, "String"))
     {
         if (valueId >= 0 && N(valueId).kind == MNode::Str)
             stored = simple_ast::Node::call("__vm_str_lit", { "__magel_addr" }, { value });
         else if (!(IsFreshValue(valueId) || IsImplicitConversionValue(valueId, type)))
-            stored = simple_ast::Node::call("__vm_str_sub", { "__magel_s", "__magel_a", "__magel_b" },
-                                            { value, simple_ast::Node::i(0), simple_ast::Node::i(-1) });
+            stored = simple_ast::Node::call(ObjectCopyFunction(type), { "value" }, { value });
     }
     else if (!(IsFreshValue(valueId) || IsImplicitConversionValue(valueId, type)))
     {
@@ -1894,8 +1921,9 @@ simple_ast::NodePtr StoreOwnedValueAt(const simple_ast::NodePtr &address, int va
     out.push_back(simple_ast::Node::assign(slotValue, stored));
     out.push_back(simple_ast::Node::declare(slotAddress, simple_ast::Type::i64()));
     out.push_back(simple_ast::Node::assign(slotAddress, target));
-    out.push_back(simple_ast::Node::release(
-        simple_ast::Node::loadInt(simple_ast::Node::var(slotAddress))));
+    const auto previous = simple_ast::Node::loadInt(simple_ast::Node::var(slotAddress));
+    const auto *opcode = FindOpcodeDefinition(type);
+    out.push_back(opcode ? simple_ast::Node::exprStmt(simple_ast::Node::call(opcode->destroy, { "value" }, { previous })) : simple_ast::Node::release(previous));
     out.push_back(simple_ast::Node::storeAt(simple_ast::Node::var(slotAddress),
                                             simple_ast::Node::var(slotValue),
                                             LowerType(type, "assignment")));
@@ -1953,7 +1981,7 @@ bool CanHoldOperand(const std::shared_ptr<MType> &type)
 {
     if (!type) return false;
     if (type->kind == MType::Struct) return true;
-    if (type->kind == MType::String || type->kind == MType::BigInt || type->kind == MType::BigFloat || IsObjectLike(type))
+    if (IsStandardOpcode(type, "String") || IsStandardOpcode(type, "BigInteger") || IsStandardOpcode(type, "BigDecimal") || IsObjectLike(type))
         return false;
     return true; /* 整数 / 浮点 / 布尔 / 枚举 / 引用：赋值即可 */
 }
@@ -2001,11 +2029,11 @@ simple_ast::NodePtr LowerDeclaredConversion(int valueId,
     const auto source = ExprType(valueId);
     const auto conversion = FindConversion(source, target, allowExplicit);
     if (conversion == nullptr)
-        return source && target && source->kind != MType::Void && target->kind == MType::String ? LowerDefaultValueText(valueId) : nullptr;
+        return source && target && source->kind != MType::Void && IsStandardOpcode(target, "String") ? LowerDefaultValueText(valueId) : nullptr;
     if (!CheckMethodReceiver(valueId, conversion->label)) return Bad();
-    const auto receiver = source->kind == MType::Struct ? OwnedAggregateTempFor(valueId, source) : (source->kind == MType::String && N(valueId).kind == MNode::Str) ? OwnedObjectTempNode(MaterializeStringValue(valueId, source), source) :
-                                                                                               (IsObjectLike(source) || source->kind == MType::String)              ? OwnedObjectTemp(valueId, source) :
-                                                                                                                                                                      LowerExpr(valueId);
+    const auto receiver = source->kind == MType::Struct ? OwnedAggregateTempFor(valueId, source) : (IsStandardOpcode(source, "String") && N(valueId).kind == MNode::Str) ? OwnedObjectTempNode(MaterializeStringValue(valueId, source), source) :
+                                                                                               (IsObjectLike(source) || IsStandardOpcode(source, "String"))              ? OwnedObjectTemp(valueId, source) :
+                                                                                                                                                                           LowerExpr(valueId);
     return simple_ast::Node::call(conversion->label, conversion->callNames, { receiver });
 }
 
@@ -2040,13 +2068,18 @@ simple_ast::NodePtr LowerArgumentValue(int id, const std::shared_ptr<MType> &typ
                                        bool checkObjectBorrow = true)
 {
     if (checkObjectBorrow) RecordObjectArgumentBorrow(id, type);
+    if (OpcodeNonCopyable(type) && !IsFreshValue(id))
+        return Fail("#NonCopyable opcode 禁止按值复制实参，请显式移动或使用引用"), Bad();
+    if (OpcodeNonCopyable(type)) return TakeExpressionTempValue(LowerValueForType(id, type), type);
+    if (HasNonCopyableValue(type) && !IsOwnedAggregateTemporary(id))
+        return Fail("不可复制聚合不能按值复制传参，请显式移动或使用引用"), Bad();
     if (IsImplicitConversionValue(id, type))
     {
         const auto converted = LowerValueForType(id, type);
         if (type->kind == MType::Struct) return OwnedAggregateTemp(converted, type);
         return OwnedObjectTempNode(converted, type);
     }
-    if (type && type->kind == MType::String && SameType(ExprType(id), type) && NeedsOwnedTemp(id))
+    if (type && IsStandardOpcode(type, "String") && SameType(ExprType(id), type) && NeedsOwnedTemp(id))
         return OwnedStringTemp(id);
     if (type && IsObjectLike(type) && SameType(ExprType(id), type))
     {
@@ -2167,7 +2200,7 @@ simple_ast::NodePtr LowerAssignImpl(int targetId, int valueId)
                 const auto call = simple_ast::Node::call("__vm_vec_set",
                                                          { "__magel_v", "__magel_i", "__magel_x", "__magel_t", "__magel_o" },
                                                          { simple_ast::Node::var(found->elementList), simple_ast::Node::var(found->elementIndex),
-                                                           stored, simple_ast::Node::i(found->type->kind == MType::String ? 1 : 0), ContainerStorageFlag(found->type) });
+                                                           stored, simple_ast::Node::i(IsStandardOpcode(found->type, "String") ? 1 : 0), ContainerStorageFlag(found->type) });
                 post.insert(post.begin(), simple_ast::Node::exprStmt(call));
                 return simple_ast::Node::block(post);
             }
@@ -2293,7 +2326,7 @@ simple_ast::NodePtr LowerAssignImpl(int targetId, int valueId)
             }
             out.push_back(simple_ast::Node::assign(found->emitted, pending));
             /* 字符串走 `MaterializeStringValue`：借来的值已经复制过，赋值后归变量所有。 */
-            if (IsOwnedKind(found->type) && (IsFreshValue(valueId) || found->type->kind == MType::String) && !global)
+            if (IsOwnedKind(found->type) && (IsFreshValue(valueId) || IsStandardOpcode(found->type, "String")) && !global)
             {
                 if (IsRuntimeArray(found->type))
                     MarkOwnedArray(found->emitted, found->type);
@@ -2335,7 +2368,7 @@ simple_ast::NodePtr LowerAssignImpl(int targetId, int valueId)
             {
                 if (!CheckContainerIndex(positionId, "vec 下标") || !CheckContainerArgument(container->elem, valueId, "vec 元素", true))
                     return Bad();
-                const bool elementText = container->elem->kind == MType::String;
+                const bool elementText = IsStandardOpcode(container->elem, "String");
                 Memory::Vector<simple_ast::NodePtr> post;
                 const simple_ast::NodePtr stored =
                     ContainerStoreValue(valueId, container->elem, &post);
@@ -2352,8 +2385,8 @@ simple_ast::NodePtr LowerAssignImpl(int targetId, int valueId)
             }
             if (!CheckContainerArgument(container->elem, positionId, "map 键", true) || !CheckContainerArgument(container->elem2, valueId, "map 值", true))
                 return Bad();
-            const bool keyText = container->elem->kind == MType::String;
-            const bool valueText = container->elem2->kind == MType::String;
+            const bool keyText = IsStandardOpcode(container->elem, "String");
+            const bool valueText = IsStandardOpcode(container->elem2, "String");
             Memory::Vector<simple_ast::NodePtr> post;
             const simple_ast::NodePtr key =
                 ContainerStoreValue(positionId, container->elem, &post);
@@ -2376,7 +2409,7 @@ simple_ast::NodePtr LowerAssignImpl(int targetId, int valueId)
         /* `s[i] = 字符;`：字符串按字节写 —— 交给运行时（越界会报错，和数组下标同一个
          * 脾气）。`s[i]` 当右值时是"取第 i 个字节（& 255）"，当不了赋值目标，
          * 所以这里单独走一条：`__vm_str_set(串, 下标, 字符码)`。 */
-        if (target.kind == MNode::Index && target.s != "__magel_buffer_index" && ExprType(target.kids[0])->kind == MType::String)
+        if (target.kind == MNode::Index && target.s != "__magel_buffer_index" && IsStandardOpcode(ExprType(target.kids[0]), "String"))
         {
             const int baseId = target.kids[0];
             const int positionId = target.kids[1];
@@ -2422,7 +2455,7 @@ simple_ast::NodePtr LowerAssignImpl(int targetId, int valueId)
             if (!address || !declared) return Bad();
             const simple_ast::TypePtr fieldType =
                 LowerType(declared->type, owner + "." + declared->name);
-            if (!IsObjectLike(declared->type) && declared->type->kind != MType::String)
+            if (!LeafOwnedByAggregate(declared->type))
             {
                 pending.push_back(simple_ast::Node::storeAt(address, value, fieldType));
                 return simple_ast::Node::block(pending);
@@ -2433,7 +2466,7 @@ simple_ast::NodePtr LowerAssignImpl(int targetId, int valueId)
         }
         /* 下标 / 解引用：simple_ast 对 Assign 的左值只算地址、不补那次 load。
          * 字符串 / 对象元素同样按值语义写（借来的复制一份、覆盖前还旧值）。 */
-        if (targetType && (targetType->kind == MType::String || IsObjectLike(targetType)))
+        if (LeafOwnedByAggregate(targetType))
         {
             Memory::Vector<simple_ast::NodePtr> out(pending.begin(), pending.end());
             /* 这里的左值要的是**地址**：`LowerExpr(a[i])` 会把元素读出来（load），
@@ -2642,15 +2675,15 @@ simple_ast::NodePtr DefaultInit(const Memory::String &emitted, const std::shared
         if (out.size() == 1u) return out[0];
         return Node::block(out);
     }
-    if (type->kind == MType::BigInt)
+    if (IsStandardOpcode(type, "BigInteger"))
     {
         /* 声明出来就是一个 0（新对象）：后面直接 `a + b` 也不用先判断是不是空的。 */
-        return Node::assign(emitted, Node::call("__vm_bint_from_int", { "__magel_v" },
+        return Node::assign(emitted, Node::call(FindOpcodeDefinition(type) ? FindOpcodeDefinition(type)->create : Memory::String("__vm_bint_from_int"), { "__magel_v" },
                                                 { simple_ast::Node::i(0) }));
     }
-    if (type->kind == MType::BigFloat)
+    if (IsStandardOpcode(type, "BigDecimal"))
     {
-        return Node::assign(emitted, Node::call("__vm_bfloat_from_int", { "__magel_v" },
+        return Node::assign(emitted, Node::call(FindOpcodeDefinition(type) ? FindOpcodeDefinition(type)->create : Memory::String("__vm_bfloat_from_int"), { "__magel_v" },
                                                 { simple_ast::Node::i(0) }));
     }
     if (IsContainer(type))
@@ -2666,7 +2699,7 @@ simple_ast::NodePtr DefaultInit(const Memory::String &emitted, const std::shared
     }
     if (type->kind == MType::Double)
         return Node::assign(emitted, Node::f(0.0));
-    if (type->kind == MType::Ptr || type->kind == MType::Func || type->kind == MType::Int || type->kind == MType::String || IsResourceLike(type))
+    if (type->kind == MType::Ptr || type->kind == MType::Func || type->kind == MType::Int || IsStandardOpcode(type, "String") || type->kind == MType::Opcode || IsResourceLike(type))
         return Node::assign(emitted, Node::i(0));
     return nullptr;
 }
@@ -3046,7 +3079,7 @@ simple_ast::NodePtr LowerLocalDecl(int id)
              * `MaterializeObjectValue` 复制了一份 —— 两种情况都归这个变量。
              * 字符串同样：`MaterializeStringValue` 对借来的值会复制一份，
              * `string s = 别的变量;` 之后 s 也是自己那块串的主人。 */
-            if (IsOwnedKind(type) && (IsFreshValue(decl.kids[0]) || IsObjectLike(type) || type->kind == MType::String || type->kind == MType::Array))
+            if (IsOwnedKind(type) && (IsFreshValue(decl.kids[0]) || IsObjectLike(type) || IsStandardOpcode(type, "String") || type->kind == MType::Array))
             {
                 if (type->kind == MType::Array)
                     MarkOwnedArray(emitted, type);
@@ -3190,7 +3223,7 @@ simple_ast::NodePtr LowerUpdate(int id, bool discard = false)
     const auto update = N(id);
     int target = update.kids[0];
     const auto type = ExprType(target);
-    if (!type || (type->kind != MType::Int && type->kind != MType::Double && type->kind != MType::Char && type->kind != MType::BigInt && type->kind != MType::BigFloat))
+    if (!type || (type->kind != MType::Int && type->kind != MType::Double && type->kind != MType::Char && !IsStandardOpcode(type, "BigInteger") && !IsStandardOpcode(type, "BigDecimal")))
         return Fail("自增和自减只支持数值或字符类型"), Bad();
     const auto frozen = ConstRootOf(target);
     if (!frozen.empty()) return Fail("不可变变量（const）的内容不能改：" + frozen), Bad();
@@ -3406,7 +3439,8 @@ bool ReadSwitchConstant(int expressionId, bool *isBool, long long *value)
  */
 bool SwitchConstantFits(const std::shared_ptr<MType> &type, long long value)
 {
-    if (!type || type->kind != MType::Int) return false;
+    if (!type || (type->kind != MType::Int && type->kind != MType::Char)) return false;
+    if (type->kind == MType::Char) return value >= 0 && value <= 255;
     if (type->isUnsigned)
     {
         if (value < 0) return false;
@@ -3570,7 +3604,7 @@ simple_ast::NodePtr LowerEnumSwitch(int id, const std::shared_ptr<MType> &subjec
     {
         if (const simple_ast::NodePtr init = DefaultInit(subject, subjectType))
             setup.push_back(init);
-        setup.push_back(CopyStructValue(simple_ast::Node::var(subject),
+        setup.push_back(MoveStructValue(simple_ast::Node::var(subject),
                                         LowerExpr(switchNode.kids[0]), subjectType));
         MarkDestructor(subject, subjectType);
     }
@@ -3621,6 +3655,42 @@ simple_ast::NodePtr LowerEnumSwitch(int id, const std::shared_ptr<MType> &subjec
                  * 的既有语义（`result = error;` 里 result 会随绑定一起被释放），所以不复制。
                  */
                 auto value = payload.type->kind == MType::Struct || captureStorage ? address : simple_ast::Node::loadFrom(address, LowerType(payload.type, emitted));
+                const bool transferPayload = HasNonCopyableValue(payload.type) && IsFreshAggregate(switchNode.kids[0]);
+                if (valueMatch && HasNonCopyableValue(payload.type) && !transferPayload)
+                    return Fail("不可复制枚举的值匹配需要显式移动主体"), Bad();
+                if (transferPayload)
+                {
+                    Find(sourceName)->elementReference = false;
+                    if (payload.type->kind == MType::Struct)
+                    {
+                        body.push_back(DefaultInit(emitted, payload.type, false, true));
+                        body.push_back(MoveStructValue(simple_ast::Node::var(emitted), address, payload.type));
+                        MarkDestructor(emitted, payload.type);
+                    }
+                    else
+                    {
+                        body.push_back(simple_ast::Node::assign(emitted, simple_ast::Node::loadInt(address)));
+                        body.push_back(simple_ast::Node::storeAt(address, simple_ast::Node::i(0), simple_ast::Type::i64()));
+                        MarkOwned(emitted);
+                        if (g_addressTakenNames.count(sourceName) && NeedsReferenceStorage(payload.type))
+                        {
+                            // 表达式分支的载荷副本与普通局部值一样，需要稳定槽供 break 隐式移动。
+                            const auto storage = AllocateName("__magel_match_value_storage");
+                            body.push_back(simple_ast::Node::declare(storage, simple_ast::Type::i64()));
+                            body.push_back(simple_ast::Node::assign(storage, simple_ast::Node::alloc(simple_ast::Node::i(ElementBytes(payload.type)))));
+                            body.push_back(simple_ast::Node::storeAt(simple_ast::Node::var(storage), simple_ast::Node::var(emitted), LowerType(payload.type, storage)));
+                            MarkOwned(storage);
+                            auto &names = g_ownedScopes.back().names;
+                            const auto slot = names.back();
+                            names.pop_back();
+                            names.insert(names.begin(), slot);
+                            g_referenceStorage[emitted] = storage;
+                            Find(sourceName)->emitted = storage;
+                            Find(sourceName)->elementReference = true;
+                        }
+                    }
+                    continue;
+                }
                 if (valueMatch && payload.type->kind == MType::Struct)
                 {
                     body.push_back(DefaultInit(emitted, payload.type, false, true));
@@ -3629,7 +3699,7 @@ simple_ast::NodePtr LowerEnumSwitch(int id, const std::shared_ptr<MType> &subjec
                 }
                 else
                 {
-                    if (valueMatch && payload.type->kind == MType::String)
+                    if (valueMatch && IsStandardOpcode(payload.type, "String"))
                     {
                         value = simple_ast::Node::call("__vm_str_sub", { "__magel_s", "__magel_a", "__magel_b" },
                                                        { value, simple_ast::Node::i(0), simple_ast::Node::i(-1) });
@@ -3696,6 +3766,15 @@ simple_ast::NodePtr LowerEnumSwitch(int id, const std::shared_ptr<MType> &subjec
     setup.push_back(simple_ast::Node::label(breakLabel));
     return simple_ast::Node::block(setup);
 }
+
+/**
+ * @brief 识别区间常量并校验十进制词素，供模式和遍历共享。
+ * @param id 表达式节点。
+ * @param active 本次递归已访问的节点。
+ * @param negativeLiteral 是否位于直接取负路径，允许 int64 最小值的幅值。
+ * @return 可无副作用求值时返回真。
+ */
+bool IntervalConstantTree(int id, Memory::Set<int> &active, bool negativeLiteral = false);
 
 /**
  * @brief 生成区间条件：`lo <cmp> subject && subject <cmp> hi`。
@@ -3801,7 +3880,6 @@ int CompareMatchInteger(const MMatchInteger &left, const MMatchInteger &right)
     return left.negative ? -order : order;
 }
 
-bool IntervalConstantTree(int id, Memory::Set<int> &active);
 /**
  * @brief 静态读取整数模式端点；运行时表达式不参与重叠判断。
  * @param id 端点表达式。
@@ -3812,7 +3890,7 @@ bool IntervalConstantTree(int id, Memory::Set<int> &active);
 bool ReadMatchInteger(int id, const std::shared_ptr<MType> &subject, MMatchInteger *out)
 {
     const auto type = ExprType(id);
-    if (!type || type->kind != MType::Int) return false;
+    if (!type || (type->kind != MType::Int && type->kind != MType::Char)) return false;
     Memory::Set<int> active;
     if (!IntervalConstantTree(id, active)) return false;
     MConstant value;
@@ -3863,9 +3941,10 @@ void CheckMatchIntegerOverlap(int patternId, const std::shared_ptr<MType> &subje
         }
         current.hiClosed = true;
     }
-    const unsigned bits = subject->bits;
-    const MMatchInteger minimum{ !subject->isUnsigned, subject->isUnsigned ? 0 : std::uint64_t(1) << (bits - 1) };
-    const MMatchInteger maximum{ false, subject->isUnsigned ? (bits == 64 ? UINT64_MAX : (std::uint64_t(1) << bits) - 1) : (std::uint64_t(1) << (bits - 1)) - 1 };
+    const unsigned bits = subject->kind == MType::Char ? 8 : subject->bits;
+    const bool unsignedSubject = subject->isUnsigned || subject->kind == MType::Char;
+    const MMatchInteger minimum{ !unsignedSubject, unsignedSubject ? 0 : std::uint64_t(1) << (bits - 1) };
+    const MMatchInteger maximum{ false, unsignedSubject ? (bits == 64 ? UINT64_MAX : (std::uint64_t(1) << bits) - 1) : (std::uint64_t(1) << (bits - 1)) - 1 };
     if (CompareMatchInteger(current.lo, minimum) < 0) current.lo = minimum;
     if (CompareMatchInteger(current.hi, maximum) > 0) current.hi = maximum;
     if (CompareMatchInteger(current.lo, current.hi) > 0) return;
@@ -3896,12 +3975,17 @@ simple_ast::NodePtr LowerSwitch(int id)
     const std::shared_ptr<MType> subjectType = ExprType(node.kids[0]);
     const Memory::Vector<int> cases = N(node.kids[1]).kids;
     if (IsEnumType(subjectType)) return LowerEnumSwitch(id, subjectType, cases);
-    const bool numeric = subjectType && (subjectType->kind == MType::Int || subjectType->kind == MType::Bool || subjectType->kind == MType::Double);
-    const bool strings = subjectType && subjectType->kind == MType::String;
-    if (!numeric && !strings)
+    const bool numeric = subjectType && (subjectType->kind == MType::Int || subjectType->kind == MType::Char || subjectType->kind == MType::Bool || subjectType->kind == MType::Double);
+    const bool strings = subjectType && IsStandardOpcode(subjectType, "String");
+    const bool equality = !numeric && !strings;
+    const bool builtinEquality = IsStandardOpcode(subjectType, "BigInteger") || IsStandardOpcode(subjectType, "BigDecimal");
+    if (equality && !builtinEquality)
     {
-        Fail("match 主表达式必须是整数、浮点、bool 或字符串，现在给的是 " + Describe(subjectType));
-        return Bad();
+        bool implemented = false;
+        for (const auto &operation : g_operators)
+            if (operation.op == "==" && operation.result && operation.result->kind == MType::Bool
+                && (SameType(operation.left, subjectType) || SameType(operation.right, subjectType))) implemented = true;
+        if (!implemented) return Fail("match 主表达式必须支持 Equal<T>：" + Describe(subjectType)), Bad();
     }
     bool hasDefault = false;
     Memory::Set<Memory::String> constants;
@@ -3921,11 +4005,24 @@ simple_ast::NodePtr LowerSwitch(int id)
             hasDefault = true;
             continue;
         }
+        RewriteRangeCall(static_cast<int>(item.i), true);
+        if (!g_error.empty()) return Bad();
         const MNode pattern = N(static_cast<int>(item.i));
         if (pattern.kind == MNode::Tuple)
-            return Fail("match 区间仅支持 [a,b) 和 [a,b]，不支持左开区间"), Bad();
+            return Fail("match 区间使用 std::lang::range<T>(a,b) 或 std::lang::rangeEq<T>(a,b)"), Bad();
         bool loClosed = false;
         bool hiClosed = false;
+        if (IsRangePattern(pattern, &loClosed, &hiClosed)
+            && subjectType->kind != MType::Int && subjectType->kind != MType::Char)
+            return Fail("match 的 range 和 rangeEq 模式只支持整数或 char"), Bad();
+        if (equality)
+        {
+            const auto patternType = ExprType(static_cast<int>(item.i));
+            const MOperatorDecl *operation = nullptr;
+            if (!builtinEquality && (!FindOperator("==", subjectType, patternType, &operation) || !operation || operation->result->kind != MType::Bool))
+                return Fail("match 模式与主表达式没有返回 bool 的 Equal<T> 实现"), Bad();
+            continue;
+        }
         if (strings)
         {
             Memory::String lo, hi;
@@ -3948,16 +4045,19 @@ simple_ast::NodePtr LowerSwitch(int id)
         {
             if (pattern.kids.size() != 2u)
             {
-                Fail("区间模式要写两个端点：`[a,b)` / `[a,b]`");
+                Fail("区间模式需要两个端点：std::lang::range(a,b) 或 std::lang::rangeEq(a,b)");
                 return Bad();
             }
             for (const int endpoint : pattern.kids)
             {
+                Memory::Set<int> active;
+                IntervalConstantTree(endpoint, active);
+                if (!g_error.empty()) return Bad();
                 const auto type = ExprType(endpoint);
-                if (!type || (type->kind != MType::Int && type->kind != MType::Double && type->kind != MType::Bool))
-                    return Fail("数值区间的端点必须是数值类型"), Bad();
+                if (!type || (type->kind != MType::Int && type->kind != MType::Char))
+                    return Fail("match 区间端点必须是整数或 char"), Bad();
             }
-            if (subjectType->kind == MType::Int) CheckMatchIntegerOverlap(static_cast<int>(item.i), subjectType, &integerRanges);
+            if (subjectType->kind == MType::Int || subjectType->kind == MType::Char) CheckMatchIntegerOverlap(static_cast<int>(item.i), subjectType, &integerRanges);
             continue;
         }
         if (subjectType->kind == MType::Double)
@@ -3982,7 +4082,7 @@ simple_ast::NodePtr LowerSwitch(int id)
         long long caseValue = 0;
         if (!ReadSwitchConstant(static_cast<int>(item.i), &caseIsBool, &caseValue))
         {
-            Fail("match 分支必须是整数 / 浮点 / bool 常量或区间模式（`[a,b)` / `[a,b]`），不能使用变量、调用或其他表达式");
+            Fail("match 分支必须是整数、char、浮点、bool 常量，或 std::lang::range / rangeEq 区间模式");
             return Bad();
         }
         const bool subjectIsBool = subjectType->kind == MType::Bool;
@@ -3996,7 +4096,7 @@ simple_ast::NodePtr LowerSwitch(int id)
             Fail("分支常量 " + Memory::toString(caseValue) + " 超出 " + Describe(subjectType) + " 的取值范围");
             return Bad();
         }
-        if (subjectType->kind == MType::Int) CheckMatchIntegerOverlap(static_cast<int>(item.i), subjectType, &integerRanges);
+        if (subjectType->kind == MType::Int || subjectType->kind == MType::Char) CheckMatchIntegerOverlap(static_cast<int>(item.i), subjectType, &integerRanges);
         const Memory::String key = Memory::String(caseIsBool ? "bool:" : "int:") + Memory::toString(caseValue);
         if (item.guard < 0 && !constants.insert(key).second)
         {
@@ -4009,9 +4109,19 @@ simple_ast::NodePtr LowerSwitch(int id)
     Memory::Vector<simple_ast::NodePtr> setup;
     setup.push_back(simple_ast::Node::declare(subject, LowerType(subjectType, subject)));
     setup.push_back(simple_ast::Node::assign(subject,
-                                             strings ? MaterializeStringValue(node.kids[0], subjectType) : LowerExpr(node.kids[0])));
+                                             strings                                        ? MaterializeStringValue(node.kids[0], subjectType) :
+                                             equality && subjectType->kind == MType::Struct ? OwnedAggregateTempFor(node.kids[0], subjectType) :
+                                             equality && IsObjectLike(subjectType)          ? OwnedObjectTemp(node.kids[0], subjectType) :
+                                                                                              LowerExpr(node.kids[0])));
     /* 字符串主题一定会落到 subject 自己那块串上（借来的已复制），归这个临时所有。 */
     if (strings) MarkOwned(subject);
+    int subjectExpression = -1;
+    if (equality)
+    {
+        g_scope.back()[subject] = MVar{ subjectType, subject, true };
+        subjectExpression = M_New(MNode::Var, subject);
+        g_nodes[subjectExpression].module = node.module;
+    }
 
     const auto lowerBody = [&](const MNode &item, const Memory::String &next) {
         PushScope();
@@ -4046,11 +4156,13 @@ simple_ast::NodePtr LowerSwitch(int id)
         }
         const MNode pattern = N(static_cast<int>(item.i));
         if (pattern.kind == MNode::Tuple)
-            return Fail("match 区间仅支持 [a,b) 和 [a,b]，不支持左开区间"), Bad();
+            return Fail("match 区间使用 std::lang::range<T>(a,b) 或 std::lang::rangeEq<T>(a,b)"), Bad();
         bool loClosed = false;
         bool hiClosed = false;
         simple_ast::NodePtr condition;
-        if (strings)
+        if (equality)
+            condition = LowerBinary("==", subjectExpression, static_cast<int>(item.i));
+        else if (strings)
             condition = MakeStringPatternCondition(subject, pattern);
         else if (IsRangePattern(pattern, &loClosed, &hiClosed))
         {
@@ -4123,13 +4235,28 @@ simple_ast::NodePtr LowerLoop(int id, Memory::String *valueName)
  * @brief 判断端点是否为可折叠整型常量，不把动态表达式误报为常量错误。
  * @param id 表达式。
  * @param active 已访问节点。
+ * @param negativeLiteral 是否位于直接取负路径，允许 int64 最小值的幅值。
  * @return 可无副作用求值时返回真。
  */
-bool IntervalConstantTree(int id, Memory::Set<int> &active)
+bool IntervalConstantTree(int id, Memory::Set<int> &active, bool negativeLiteral)
 {
     if (id < 0 || active.size() >= 128 || !active.insert(id).second) return false;
     const auto node = N(id);
     bool result = node.kind == MNode::Int;
+    if (result && !node.unsignedLiteral && !node.s.empty() && node.s.find_first_not_of("0123456789") == Memory::String::npos)
+    {
+        errno = 0;
+        const auto magnitude = std::strtoull(node.s.c_str(), nullptr, 10);
+        const auto maximum = static_cast<std::uint64_t>(LLONG_MAX) + (negativeLiteral ? 1u : 0u);
+        if (errno == ERANGE || magnitude > maximum)
+        {
+            active.erase(id);
+            return Fail("区间端点的十进制字面量超出 int64 取值范围：" + node.s);
+        }
+        // 词法层的 strtoll 会饱和；直接取负的最小值必须保留真实位模式。
+        if (negativeLiteral && magnitude == static_cast<std::uint64_t>(LLONG_MAX) + 1u)
+            g_nodes[id].i = LLONG_MIN;
+    }
     if (node.kind == MNode::Var || node.kind == MNode::EnumCtor)
     {
         const auto bound = g_constantBindings.find(id);
@@ -4141,7 +4268,8 @@ bool IntervalConstantTree(int id, Memory::Set<int> &active)
     else if (node.kind == MNode::Un || node.kind == MNode::Bin || node.kind == MNode::Cast)
     {
         result = !node.kids.empty();
-        for (const int child : node.kids) result = result && IntervalConstantTree(child, active);
+        const bool negativeChild = node.kind == MNode::Un && (node.s == "-" ? !negativeLiteral : node.s == "+" && negativeLiteral);
+        for (const int child : node.kids) result = result && IntervalConstantTree(child, active, negativeChild);
     }
     active.erase(id);
     return result;
@@ -4158,15 +4286,17 @@ simple_ast::NodePtr LowerInterval(int id)
     using simple_ast::Type;
     const auto node = N(id);
     const auto element = IntervalElementType(id);
-    if (!element || element->kind != MType::Int)
-        return Fail("for-in 区间变量必须是整数值类型"), Bad();
+    if (!element || (element->kind != MType::Int && element->kind != MType::Char))
+        return Fail("内建区间的元素必须是整数或 char"), Bad();
     const auto signedType = Type::i64();
     const auto unsignedType = Type::make(Type::Kind::Uint, 64);
-    const auto maximum = element->isUnsigned ? (element->bits == 64 ? UINT64_MAX : (std::uint64_t(1) << element->bits) - 1) :
-                                               (element->bits == 64 ? std::uint64_t(LLONG_MAX) : (std::uint64_t(1) << (element->bits - 1)) - 1);
-    const long long minimum = element->isUnsigned ? 0 : element->bits == 64 ? LLONG_MIN :
-                                                                              -(1ll << (element->bits - 1));
-    const auto message = "for-in 区间端点超出 " + Describe(element) + " 的取值范围（" + IntegerRangeText(element) + "）";
+    const bool unsignedElement = element->isUnsigned || element->kind == MType::Char;
+    const int elementBits = element->kind == MType::Char ? 8 : element->bits;
+    const auto maximum = unsignedElement ? (elementBits == 64 ? UINT64_MAX : (std::uint64_t(1) << elementBits) - 1) :
+                                           (element->bits == 64 ? std::uint64_t(LLONG_MAX) : (std::uint64_t(1) << (element->bits - 1)) - 1);
+    const long long minimum = unsignedElement ? 0 : element->bits == 64 ? LLONG_MIN :
+                                                                          -(1ll << (element->bits - 1));
+    const auto message = "for-in 区间端点超出 " + Describe(element) + " 的取值范围（" + (element->kind == MType::Char ? Memory::String("0..255") : IntegerRangeText(element)) + "）";
     const auto reverseMessage = Memory::String("for-in 区间下界不能大于上界");
     Memory::Vector<simple_ast::NodePtr> prefix;
     Memory::Vector<Memory::String> bounds;
@@ -4176,17 +4306,18 @@ simple_ast::NodePtr LowerInterval(int id)
     {
         const int endpoint = node.kids[index];
         auto sourceType = ExprType(endpoint);
-        if (!sourceType || sourceType->kind != MType::Int)
-            return Fail("for-in 区间端点必须是整数类型"), Bad();
-        const bool sourceUnsigned = sourceType->isUnsigned || (element->isUnsigned && element->bits == 64 && N(endpoint).kind == MNode::Int && N(endpoint).i < 0);
+        if (!sourceType || (sourceType->kind != MType::Int && sourceType->kind != MType::Char))
+            return Fail("内建区间端点必须是整数或 char"), Bad();
+        const bool sourceUnsigned = sourceType->isUnsigned || sourceType->kind == MType::Char || (unsignedElement && elementBits == 64 && N(endpoint).kind == MNode::Int && N(endpoint).i < 0);
         Memory::Set<int> active;
         constantBounds[index] = IntervalConstantTree(endpoint, active);
+        if (!g_error.empty()) return Bad();
         if (constantBounds[index])
         {
             if (!EvaluateConstant(endpoint, &constants[index])) return Bad();
             const auto value = constants[index].integer;
             const bool fits = sourceUnsigned ? std::uint64_t(value) <= maximum :
-                                               (element->isUnsigned ? value >= 0 && std::uint64_t(value) <= maximum : value >= minimum && value <= static_cast<long long>(maximum));
+                                               (unsignedElement ? value >= 0 && std::uint64_t(value) <= maximum : value >= minimum && value <= static_cast<long long>(maximum));
             if (!fits) return Fail(message), Bad();
         }
         const auto raw = AllocateName("__magel_interval_bound");
@@ -4200,7 +4331,7 @@ simple_ast::NodePtr LowerInterval(int id)
         else
         {
             valid = Node::binary(">=", Node::var(raw), Node::i(minimum));
-            if (!(element->isUnsigned && element->bits == 64))
+            if (!(unsignedElement && elementBits == 64))
                 valid = Node::binary("&&", valid, Node::binary("<=", Node::var(raw), Node::i(static_cast<long long>(maximum))));
         }
         prefix.push_back(Node::ifThenElse(valid, Node::block({}),
@@ -4211,8 +4342,8 @@ simple_ast::NodePtr LowerInterval(int id)
     }
     if (constantBounds[0] && constantBounds[1])
     {
-        const bool reverse = element->isUnsigned ? std::uint64_t(constants[0].integer) > std::uint64_t(constants[1].integer) :
-                                                   constants[0].integer > constants[1].integer;
+        const bool reverse = unsignedElement ? std::uint64_t(constants[0].integer) > std::uint64_t(constants[1].integer) :
+                                               constants[0].integer > constants[1].integer;
         if (reverse) return Fail(reverseMessage), Bad();
     }
     prefix.push_back(Node::ifThenElse(Node::binary("<=", Node::var(bounds[0]), Node::var(bounds[1])), Node::block({}),
@@ -4233,9 +4364,10 @@ simple_ast::NodePtr LowerInterval(int id)
  */
 simple_ast::NodePtr LowerForeach(int id)
 {
-    const MNode &node = N(id);
+    const MNode node = N(id);
+    RewriteRangeCall(node.kids[0]);
     const bool intervalSource = N(node.kids[0]).kind == MNode::Range;
-    if (intervalSource && node.type >= 0) g_nodes[node.kids[0]].type = node.type;
+    if (intervalSource && node.type >= 0 && N(node.kids[0]).s != "typed") g_nodes[node.kids[0]].type = node.type;
     const std::shared_ptr<MType> sourceType = ExprType(node.kids[0]);
     if ((IsContainer(sourceType) && sourceType->name == "vec") || sourceType->kind == MType::Array)
     {
@@ -4297,7 +4429,7 @@ simple_ast::NodePtr LowerForeach(int id)
             length = simple_ast::Node::call("__vm_vec_len", { "__magel_v" }, { simple_ast::Node::var(source) });
             value = simple_ast::Node::call("__vm_vec_ref", { "__magel_v", "__magel_i", "__magel_t", "__magel_o", "__magel_f" },
                                            { simple_ast::Node::var(source), simple_ast::Node::var(index),
-                                             simple_ast::Node::i(element->kind == MType::String ? 1 : 0), ContainerStorageFlag(element),
+                                             simple_ast::Node::i(IsStandardOpcode(element, "String") ? 1 : 0), ContainerStorageFlag(element),
                                              simple_ast::Node::i(element->kind == MType::Double ? 1 : 0) });
         }
         out.push_back(simple_ast::Node::label(loopLabel));
@@ -4683,14 +4815,14 @@ simple_ast::NodePtr BuildFormatCall(const char *native, const Memory::String &fo
 simple_ast::NodePtr BraceStringValue(int argId, const Memory::String &format)
 {
     const std::shared_ptr<MType> type = ExprType(argId);
-    if (type->kind == MType::String)
+    if (IsStandardOpcode(type, "String"))
         return NeedsOwnedTemp(argId) ? OwnedStringTemp(argId) : LowerExpr(argId);
-    if (type->kind == MType::BigInt)
+    if (IsStandardOpcode(type, "BigInteger"))
         return OwnedGeneratedString(
-            simple_ast::Node::call("__vm_bint_str", { "__magel_v" }, { LowerExpr(argId) }));
-    if (type->kind == MType::BigFloat)
+            simple_ast::Node::call("__vm_bint_str", { "__magel_v" }, { OwnedObjectTemp(argId, type) }));
+    if (IsStandardOpcode(type, "BigDecimal"))
         return OwnedGeneratedString(
-            simple_ast::Node::call("__vm_bfloat_str", { "__magel_v" }, { LowerExpr(argId) }));
+            simple_ast::Node::call("__vm_bfloat_str", { "__magel_v" }, { OwnedObjectTemp(argId, type) }));
     if (type->kind != MType::Struct)
     {
         return OwnedGeneratedString(LowerValueText(argId));
@@ -4705,9 +4837,9 @@ simple_ast::NodePtr BraceStringValue(int argId, const Memory::String &format)
     const MMethod *formatted = nullptr;
     for (const MMethod &method : owner->second.methods)
     {
-        if (method.superseded || method.source != "toString" || !method.result || method.result->kind != MType::String) continue;
+        if (method.superseded || method.source != "toString" || !method.result || !IsStandardOpcode(method.result, "String")) continue;
         if (method.params.empty()) plain = &method;
-        if (method.params.size() == 1u && method.params[0].type->kind == MType::String)
+        if (method.params.size() == 1u && IsStandardOpcode(method.params[0].type, "String"))
             formatted = &method;
     }
     const MMethod *chosen = !format.empty() && formatted != nullptr ? formatted : plain;
@@ -4885,7 +5017,7 @@ bool BuildFormatTarget(const Memory::Vector<int> &args, const char *who,
  */
 simple_ast::NodePtr BuildBracePrint(const Memory::Vector<int> &args, bool newline)
 {
-    if (args.size() == 1u && N(args[0]).kind != MNode::Str && ExprType(args[0])->kind == MType::String)
+    if (args.size() == 1u && N(args[0]).kind != MNode::Str && IsStandardOpcode(ExprType(args[0]), "String"))
     {
         Memory::Vector<simple_ast::NodePtr> values{ BraceStringValue(args[0], "") };
         return BuildFormatCall("__vm_print", newline ? "%s\n" : "%s", values);
@@ -4935,7 +5067,7 @@ simple_ast::NodePtr PackVariadicArguments(const Memory::Vector<int> &args, std::
     const std::shared_ptr<MType> element = parameter.type->elem;
     Memory::Vector<Memory::String> names{ "__magel_text", "__magel_object" };
     Memory::Vector<simple_ast::NodePtr> values{
-        simple_ast::Node::i(element->kind == MType::String ? 1 : 0),
+        simple_ast::Node::i(IsStandardOpcode(element, "String") ? 1 : 0),
         ContainerStorageFlag(element)
     };
     for (std::size_t index = begin; index < args.size(); ++index)
@@ -4961,7 +5093,7 @@ simple_ast::NodePtr LowerSlice(int id)
 {
     const MNode &node = N(id);
     const std::shared_ptr<MType> base = ExprType(node.kids[0]);
-    if (!base || base->kind != MType::String)
+    if (!base || !IsStandardOpcode(base, "String"))
     {
         Fail("切片（`s[起:止]`）只能用在 std::lang::String 上：现在切的是 " + (base ? Describe(base) : Memory::String("?")));
         return Bad();

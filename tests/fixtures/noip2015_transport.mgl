@@ -16,7 +16,13 @@ void initialize(WeightedTree mut& tree,int64 n,int64 mut& storage){
     tree.distance=&storage[size*3];tree.parentWeight=&storage[size*4];tree.order=&storage[size*5];
     tree.to=&storage[size*6];tree.next=&storage[size*8];tree.weight=&storage[size*10];
     tree.up=&storage[size*12];
-    for(int64 i=0;i<size;i++){tree.head[i]=-1;}
+    {
+        int64 i=0;
+        while (i<size) {
+tree.head[i]=-1;
+            i++;
+        }
+    }
 }
 void addEdge(WeightedTree mut& tree,int64 from,int64 to,int64 weight){
     int64 e=tree.edgeCount;tree.edgeCount+=1;
@@ -24,19 +30,37 @@ void addEdge(WeightedTree mut& tree,int64 from,int64 to,int64 weight){
 }
 void preprocess(WeightedTree mut& tree){
     tree.parent[1]=1;tree.order[0]=1;tree.orderCount=1;
-    for(int64 cursor=0;cursor<tree.orderCount;cursor++){
+    {
+        int64 cursor=0;
+        while (cursor<tree.orderCount) {
+
         int64 vertex=tree.order[cursor];
         tree.up[vertex*tree.levels]=tree.parent[vertex];
-        for(int64 bit=1;bit<tree.levels;bit++){
+        {
+            int64 bit=1;
+            while (bit<tree.levels) {
+
             int64 middle=tree.up[vertex*tree.levels+bit-1];
             tree.up[vertex*tree.levels+bit]=tree.up[middle*tree.levels+bit-1];
+        
+                bit++;
+            }
         }
-        for(int64 e=tree.head[vertex];e!=-1;e=tree.next[e]){
+        {
+            int64 e=tree.head[vertex];
+            while (e!=-1) {
+
             int64 child=tree.to[e];
-            if(child==tree.parent[vertex]){continue;}
+            if(child==tree.parent[vertex]){{ e=tree.next[e]; continue; }}
             tree.parent[child]=vertex;tree.depth[child]=tree.depth[vertex]+1;
             tree.distance[child]=tree.distance[vertex]+tree.weight[e];
             tree.parentWeight[child]=tree.weight[e];tree.order[tree.orderCount]=child;tree.orderCount+=1;
+        
+                e=tree.next[e];
+            }
+        }
+    
+            cursor++;
         }
     }
     std::lang::assert(tree.orderCount==tree.n);
@@ -44,31 +68,55 @@ void preprocess(WeightedTree mut& tree){
 int64 lca(WeightedTree const& tree,int64 a,int64 b){
     if(tree.depth[a]<tree.depth[b]){int64 temporary=a;a=b;b=temporary;}
     int64 difference=tree.depth[a]-tree.depth[b];
-    for(int64 bit=0;bit<tree.levels;bit++){
+    {
+        int64 bit=0;
+        while (bit<tree.levels) {
+
         if((difference&(1<<bit))!=0){a=tree.up[a*tree.levels+bit];}
+    
+            bit++;
+        }
     }
     if(a==b){return a;}
-    for(int64 bit=tree.levels-1;bit>=0;bit--){
+    {
+        int64 bit=tree.levels-1;
+        while (bit>=0) {
+
         int64 left=tree.up[a*tree.levels+bit],right=tree.up[b*tree.levels+bit];
         if(left!=right){a=left;b=right;}
+    
+            bit--;
+        }
     }
     return tree.parent[a];
 }
 bool feasible(WeightedTree const& tree,Plan const& plans,int64 planCount,int64 limit,int64 maximum){
     int64 difference[]=new[tree.n+1];
     int64 bad=0;
-    for(int64 i=0;i<planCount;i++){
-        if(plans[i].length<=limit){continue;}
+    {
+        int64 i=0;
+        while (i<planCount) {
+
+        if(plans[i].length<=limit){{ i++; continue; }}
         bad+=1;
         difference[plans[i].from]+=1;difference[plans[i].to]+=1;
         difference[plans[i].ancestor]-=2;
+    
+            i++;
+        }
     }
     if(bad==0){return true;}
     int64 removable=0;
-    for(int64 cursor=tree.orderCount-1;cursor>0;cursor--){
+    {
+        int64 cursor=tree.orderCount-1;
+        while (cursor>0) {
+
         int64 vertex=tree.order[cursor];
         if(difference[vertex]==bad && tree.parentWeight[vertex]>removable){removable=tree.parentWeight[vertex];}
         difference[tree.parent[vertex]]+=difference[vertex];
+    
+            cursor--;
+        }
     }
     return maximum-removable<=limit;
 }
@@ -86,19 +134,31 @@ int64 main(){
     int64 levels=1;while((1<<levels)<=n){levels+=1;}
     int64 storage[]=new[(n+1)*(12+levels)];
     WeightedTree tree;initialize(&tree,n,storage);
-    for(int64 i=1;i<n;i++){
+    {
+        int64 i=1;
+        while (i<n) {
+
         int64 from=std::lang::inputInt(),to=std::lang::inputInt(),weight=std::lang::inputInt();
         addEdge(&tree,from,to,weight);addEdge(&tree,to,from,weight);
+    
+            i++;
+        }
     }
     preprocess(&tree);
     Plan plans[]=new[m];List<Plan> genericProbe;int64 maximum=0;
-    for(int64 i=0;i<m;i++){
+    {
+        int64 i=0;
+        while (i<m) {
+
         Plan plan;plan.from=std::lang::inputInt();plan.to=std::lang::inputInt();
         plan.ancestor=lca(&tree,plan.from,plan.to);
         plan.length=tree.distance[plan.from]+tree.distance[plan.to]-2*tree.distance[plan.ancestor];
         if(plan.length>maximum){maximum=plan.length;}
         plans[i]=plan;
         if(i<16){genericProbe.push(plan);std::lang::assert(genericProbe[i].length==plans[i].length);}
+    
+            i++;
+        }
     }
     std::lang::println("{}",solve(&tree,plans,m,maximum));delete plans;delete storage;return 0;
 }

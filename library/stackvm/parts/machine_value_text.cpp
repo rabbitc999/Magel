@@ -397,12 +397,8 @@ struct ValueTextRenderer
             object = context.objects->find(snapshot.handle);
         }
         if (!nativeRefreshViews(context, *object)) return {};
-#if STACKVM_WITH_BIGINT
-        if (object->kind == ObjectKind::BigInt) return object->number.toString();
-#endif
-#if STACKVM_WITH_BIGFLOAT
-        if (object->kind == ObjectKind::BigFloat) return object->decimal.toString(0);
-#endif
+        if (object->kind == ObjectKind::NativeRecord && object->nativeType && object->nativeType->toString)
+            return object->nativeType->toString(object->nativeRecord.get());
         if (object->kind == ObjectKind::Obj)
         {
             if (object->objTag == 0) return "Any()";

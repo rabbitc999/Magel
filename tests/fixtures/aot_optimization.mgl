@@ -20,11 +20,23 @@ int64 main() {
     float32 singles[2];singles[1]=1.25f;assert(singles[1]==1.25f);
     float64 doubles[]=new[4];doubles[3]=2.5;assert(doubles[3]==2.5);
     int64 pool[]=new[8];
-    for(int64 i=0;i<8;i++) { pool[i]=i*5;globals[i%4]=pool[i]; }
+    {
+        int64 i=0;
+        while (i<8) {
+ pool[i]=i*5;globals[i%4]=pool[i]; 
+            i++;
+        }
+    }
     assert(pool[7]==35 && globals[3]==35);
     int64 mut& p=&pool[0];p[2]=41;assert(p[2]==41);
     List<String> words;
-    for(int64 i=0;i<30;i++) { words.push("value");assert(words[i]=="value"); }
+    {
+        int64 i=0;
+        while (i<30) {
+ words.push("value");assert(words[i]=="value"); 
+            i++;
+        }
+    }
     assert(len(words)==30);
     println("aot optimization OK");
     return 0;

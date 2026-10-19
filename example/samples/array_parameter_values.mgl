@@ -146,8 +146,14 @@ int64 main() {
     texts[1] = "second";
     copyTexts(texts);
     assert(cellDrops == 2);
-    for (int64 i = 0; i < 3; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < 3) {
+
         copyTexts(texts);
+    
+            i = i + 1;
+        }
     }
     assert(cellDrops == 8);
     assert(texts[0] == "first");

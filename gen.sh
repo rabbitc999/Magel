@@ -97,4 +97,4 @@ python tools/embed_stdlib.py
 expanded=source/.magel-build.gram
 trap 'rm -f "$expanded"' EXIT HUP INT TERM
 python tools/expand_grammar.py source/magel.gram "$expanded"
-"$ENGINE" "$expanded" --mode ielr --no-build-files --out-dir source
+"$ENGINE" "$expanded" --mode ielr --cpp-lexer std --no-build-files --out-dir source

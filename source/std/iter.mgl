@@ -100,10 +100,16 @@ struct Iter<T> : Iterator<T> {
      */
     Option<T> nth(int64 index) {
         std::lang::assert(index >= 0, "nth 下标不能为负数");
-        for (int64 i = 0; i < index; i = i + 1) {
+        {
+            int64 i = 0;
+            while (i < index) {
+
             Option<T> item = self.next();
             if (item.isNone()) {
                 return Option<T>::None;
+            }
+        
+                i = i + 1;
             }
         }
         return self.next();
@@ -205,6 +211,42 @@ Iter<T> fromState<T,S>(S state) {
     Iter<T> result;
     result.state = __iterBox<S>(state);
     return result;
+}
+
+/** @brief 将语言 Iterator 值保存为独立的惰性游标。 */
+struct IteratorValueState<T,S : Iterator<T>> : IterNext<T> {
+    S source;
+    int64 position;
+    /**
+     * @brief 从语言迭代协议读取下一项。
+     * @return 本次元素，或表示迭代结束的 None。
+     */
+    Option<T> next() {
+        Option<T> result = self.source.iterator(self.position);
+        if (self.position < 9223372036854775807) {
+            self.position = self.position + 1;
+        }
+        return result;
+    }
+    /**
+     * @brief 提供未知长度的剩余项估计。
+     * @return 下界为零，上界未知。
+     */
+    (int64, Option<int64>) sizeHint() {
+        return (0, Option<int64>::None);
+    }
+};
+
+/**
+ * @brief 复制语言迭代器值，建立可组合的独立游标。
+ * @param source 实现 Iterator<T> 的来源值。
+ * @return 拥有来源副本的惰性迭代器。
+ */
+Iter<T> fromIterator<T,S : Iterator<T>>(S source) {
+    IteratorValueState<T,S> state;
+    state.source = source;
+    state.position = 0;
+    return fromState<T,IteratorValueState<T,S>>(state);
 }
 
 /** @brief 列表值迭代状态，保留未消费的元素。 */
@@ -1161,8 +1203,14 @@ Iter<T> rev<T>(Iter<T> source) {
     std::lang::List<T> values = collect<T>(source);
     IterBufferState<T> state;
     state.anchor = source.state;
-    for (int64 i = values.len(); i > 0; i = i - 1) {
+    {
+        int64 i = values.len();
+        while (i > 0) {
+
         state.values.push(values[i - 1]);
+    
+            i = i - 1;
+        }
     }
     return fromState<T,IterBufferState<T> >(state);
 }
@@ -1417,8 +1465,14 @@ std::lang::Map<K,V> __iterTakeMap<K,V>(std::lang::Map<K,V> mut& source);
 Iter<T> setIntoIter<T>(std::lang::Set<T> mut& source) {
     std::lang::Set<T> owned = __iterTakeSet<T>(source);
     IterListState<T> state;
-    for (int64 i = 0; i < owned.len(); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < owned.len()) {
+
         state.values.push(owned.at(i));
+    
+            i = i + 1;
+        }
     }
     return fromState<T,IterListState<T> >(state);
 }
@@ -1430,8 +1484,14 @@ Iter<T> setIntoIter<T>(std::lang::Set<T> mut& source) {
  */
 Iter<T> setIter<T>(std::lang::Set<T> const& source) {
     IterListState<T> state;
-    for (int64 i = 0; i < source.len(); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < source.len()) {
+
         state.values.push(source.at(i));
+    
+            i = i + 1;
+        }
     }
     return fromState<T,IterListState<T> >(state);
 }
@@ -1444,8 +1504,14 @@ Iter<T> setIter<T>(std::lang::Set<T> const& source) {
 Iter<(K,V)> mapIntoIter<K,V>(std::lang::Map<K,V> mut& source) {
     std::lang::Map<K,V> owned = __iterTakeMap<K,V>(source);
     IterListState<(K,V)> state;
-    for (int64 i = 0; i < owned.len(); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < owned.len()) {
+
         state.values.push((owned.keyAt(i), owned.valAt(i)));
+    
+            i = i + 1;
+        }
     }
     return fromState<(K,V),IterListState<(K,V)> >(state);
 }
@@ -1457,8 +1523,14 @@ Iter<(K,V)> mapIntoIter<K,V>(std::lang::Map<K,V> mut& source) {
  */
 Iter<(K,V)> mapIter<K,V>(std::lang::Map<K,V> const& source) {
     IterListState<(K,V)> state;
-    for (int64 i = 0; i < source.len(); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < source.len()) {
+
         state.values.push((source.keyAt(i), source.valAt(i)));
+    
+            i = i + 1;
+        }
     }
     return fromState<(K,V),IterListState<(K,V)> >(state);
 }

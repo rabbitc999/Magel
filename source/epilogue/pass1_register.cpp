@@ -122,6 +122,7 @@ std::shared_ptr<MType> CAbiOptionalReference(const std::shared_ptr<MType> &type)
 Memory::String CAbiType(const std::shared_ptr<MType> &type)
 {
     if (!type) return {};
+    if (IsStandardOpcode(type, "String")) return "const char *";
     if (const auto reference = CAbiOptionalReference(type)) return CAbiType(reference);
     switch (type->kind)
     {
@@ -129,7 +130,7 @@ Memory::String CAbiType(const std::shared_ptr<MType> &type)
     case MType::Bool: return "bool";
     case MType::Char: return "std::uint8_t";
     case MType::Double: return type->bits == 32 ? "float" : "double";
-    case MType::String: return "const char *";
+
     case MType::Int:
         if (type->bits == 8) return type->isUnsigned ? "std::uint8_t" : "std::int8_t";
         if (type->bits == 16) return type->isUnsigned ? "std::uint16_t" : "std::int16_t";
@@ -152,7 +153,7 @@ Memory::String CAbiType(const std::shared_ptr<MType> &type)
     {
         if (type->kind == MType::Array && !type->dims.empty()) return {};
         const auto target = CAbiUnderlying(type->elem);
-        if (!target || CAbiOptionalReference(target) || target->kind == MType::Ptr || target->kind == MType::Func || target->kind == MType::Void || target->kind == MType::String || target->kind == MType::Array) return {};
+        if (!target || CAbiOptionalReference(target) || target->kind == MType::Ptr || target->kind == MType::Func || target->kind == MType::Void || IsStandardOpcode(target, "String") || target->kind == MType::Array) return {};
         const auto element = CAbiType(type->elem);
         return element.empty() ? Memory::String() : element + (type->readOnly ? " const *" : " *");
     }
@@ -163,7 +164,7 @@ Memory::String CAbiType(const std::shared_ptr<MType> &type)
         if (found == g_structs.end() || found->second.fields.empty() || !visiting.insert(type->name).second) return {};
         bool valid = true;
         for (const auto &field : found->second.fields)
-            if (!CAbiUnderlying(field.type) || CAbiOptionalReference(field.type) || CAbiUnderlying(field.type)->kind == MType::Ptr || CAbiUnderlying(field.type)->kind == MType::Func || CAbiUnderlying(field.type)->kind == MType::String || CAbiUnderlying(field.type)->kind == MType::Array || CAbiType(field.type).empty() || CAbiType(field.type) == "void") valid = false;
+            if (!CAbiUnderlying(field.type) || CAbiOptionalReference(field.type) || CAbiUnderlying(field.type)->kind == MType::Ptr || CAbiUnderlying(field.type)->kind == MType::Func || IsStandardOpcode(CAbiUnderlying(field.type), "String") || CAbiUnderlying(field.type)->kind == MType::Array || CAbiType(field.type).empty() || CAbiType(field.type) == "void") valid = false;
         visiting.erase(type->name);
         return valid ? CAbiStructName(type->name) : Memory::String();
     }
@@ -178,17 +179,19 @@ Memory::String CAbiType(const std::shared_ptr<MType> &type)
 bool ResolveImportedTypeNames()
 {
     Memory::Map<Memory::String, Memory::Map<Memory::String, Memory::String>> declarations;
+    Memory::Set<Memory::String> opcodeNames;
     for (const int id : g_top)
     {
         const auto &node = N(id);
         ReductionSourceScope source(id);
-        if (node.kind != MNode::StructDecl && node.kind != MNode::EnumDecl && node.kind != MNode::InterfaceDecl && node.kind != MNode::HostTypeDecl) continue;
+        if (node.kind != MNode::StructDecl && node.kind != MNode::EnumDecl && node.kind != MNode::InterfaceDecl && node.kind != MNode::HostTypeDecl && node.kind != MNode::OpcodeDecl) continue;
         const auto bare = BareTypeName(node.s);
         declarations[bare][node.module] = node.s;
+        if (node.kind == MNode::OpcodeDecl) opcodeNames.insert(ModuleSymbol(node.module, bare));
     }
     for (auto &entry : declarations)
         for (auto &owner : entry.second)
-            owner.second = entry.second.size() > 1 ? ModuleSymbol(owner.first, entry.first) : entry.first;
+            owner.second = entry.second.size() > 1 || opcodeNames.count(ModuleSymbol(owner.first, entry.first)) ? ModuleSymbol(owner.first, entry.first) : entry.first;
     const auto resolve = [&](const Memory::String &name, const Memory::String &module,
                              Memory::String *result) -> bool {
         const auto split = name.rfind("::");
@@ -202,7 +205,8 @@ bool ResolveImportedTypeNames()
         const auto &owners = known->second;
         if (split != Memory::String::npos)
         {
-            const auto exact = owners.find(name.substr(0, split));
+            const auto qualifier = name.substr(0, split);
+            const auto exact = owners.find(qualifier == "__root" ? Memory::String() : qualifier);
             *result = exact == owners.end() ? name : exact->second;
             return true;
         }
@@ -234,8 +238,55 @@ bool ResolveImportedTypeNames()
         ReductionSourceScope source(id);
         const auto found = declarations.find(BareTypeName(node.s));
         if (found == declarations.end()) continue;
-        if (node.kind == MNode::StructDecl || node.kind == MNode::EnumDecl || node.kind == MNode::InterfaceDecl || node.kind == MNode::HostTypeDecl)
+        if (node.kind == MNode::StructDecl || node.kind == MNode::EnumDecl || node.kind == MNode::InterfaceDecl || node.kind == MNode::HostTypeDecl || node.kind == MNode::OpcodeDecl)
             node.s = found->second.at(node.module);
+    }
+    for (const int id : g_top)
+    {
+        const auto &node = N(id);
+        if (node.kind != MNode::OpcodeDecl) continue;
+        ReductionSourceScope source(id);
+        if (!CheckUserName(node.s)) return false;
+        MOpcodeDefinition definition;
+        definition.nonCopyable = node.opcodeNonCopyable;
+        definition.module = node.module;
+        Memory::Set<long long> operations;
+        for (const int methodId : N(node.kids[0]).kids)
+        {
+            const auto &method = N(methodId);
+            if (method.kind != MNode::OpcodeMethod)
+            {
+                if (method.kind == MNode::Field && method.type2 != 1) definition.aggregate = true;
+                continue;
+            }
+            if (!operations.insert(method.i).second) return Fail("opcode 生命周期方法重复声明：" + node.s);
+            Memory::String symbol = method.s;
+            if (symbol.find("::") == Memory::String::npos && symbol.rfind("__vm_", 0) != 0u)
+                symbol = ModuleSymbol(node.module, symbol);
+            if (method.i == 0)
+                definition.create = symbol;
+            else if (method.i == 1)
+                definition.destroy = symbol;
+            else
+                definition.copy = symbol;
+        }
+        if (definition.create.empty() || definition.destroy.empty())
+            return Fail("opcode 必须声明 new 和 drop 胶水方法：" + node.s);
+        if (definition.nonCopyable && !definition.copy.empty())
+            return Fail("#NonCopyable opcode 不能声明 copy 方法：" + node.s);
+        if (!definition.nonCopyable && definition.copy.empty())
+            return Fail("opcode 必须声明 copy 方法，或使用 #NonCopyable：" + node.s);
+        if (!g_opcodeTypes.emplace(node.s, definition).second)
+            return Fail("opcode 类型重复声明：" + node.s);
+        if (definition.aggregate)
+        {
+            auto raw = definition;
+            raw.aggregate = false;
+            raw.internal = true;
+            raw.handleType.clear();
+            g_opcodeTypes[node.s + "$opcode"] = raw;
+            g_opcodeTypes[node.s].handleType = node.s + "$opcode";
+        }
     }
     const auto parsedTypeCount = g_types.size();
     for (std::size_t index = 0; index < parsedTypeCount; ++index)
@@ -248,6 +299,10 @@ bool ResolveImportedTypeNames()
         {
             const int core = BuiltinTypeByName(original);
             if (core >= 0) *type = *T(core);
+        }
+        if (const auto opcode = g_opcodeTypes.find(type->name); opcode != g_opcodeTypes.end())
+        {
+            type->kind = opcode->second.aggregate ? MType::Struct : MType::Opcode;
         }
         type->unresolvedName = false;
     }
@@ -401,7 +456,7 @@ bool RegisterTop()
     for (const auto &item : g_hostTypes)
     {
         const MType::Kind kind = item.second->kind;
-        if (kind != MType::Bool && kind != MType::Int && kind != MType::Double && kind != MType::String && kind != MType::Ptr)
+        if (kind != MType::Bool && kind != MType::Int && kind != MType::Double && !IsStandardOpcode(item.second, "String") && kind != MType::Ptr)
             return Fail("宿主类型 " + item.first + " 的 ABI 必须是 bool、整数、浮点、std::lang::String 或引用；复杂对象请用 uint64 句柄");
     }
     /* 普通类型引用保留名义身份，只有宿主类型声明右侧被展开为真实 ABI。 */
@@ -649,7 +704,7 @@ bool RegisterTop()
     {
         const MNode top = N(topId);
         ReductionSourceScope source(topId);
-        if (top.kind == MNode::StructDecl)
+        if (top.kind == MNode::StructDecl || top.kind == MNode::OpcodeDecl)
         {
             if (!CheckUserName(top.s)) return false;
             if (g_enums.count(top.s) != 0u) return Fail("struct 和 enum 重名：" + top.s);
@@ -657,8 +712,13 @@ bool RegisterTop()
             if (g_interfaces.count(top.s) != 0u) return Fail("struct 和接口重名：" + top.s);
             MStructDef definition;
             definition.abiPacked = top.abiPacked;
+            const bool opcodeOwner = top.kind == MNode::OpcodeDecl;
+            if (opcodeOwner && g_opcodeTypes.at(top.s).aggregate)
+                definition.fields.push_back(MField{ "opcode", NamedType(g_opcodeTypes.at(top.s).handleType) });
+            else if (opcodeOwner)
+                definition.fields.push_back(MField{ "opcode", T(M_TypeInt()) });
             /* 继承的接口：`struct X : A, B`（同一个接口写两遍只算一遍）。 */
-            if (top.i >= 0)
+            if (!opcodeOwner && top.i >= 0)
             {
                 for (const int nameId : N(static_cast<int>(top.i)).kids)
                 {
@@ -675,6 +735,7 @@ bool RegisterTop()
                 const MNode &member = N(memberId);
                 if (member.kind == MNode::Field)
                 {
+                    if (opcodeOwner && member.s == "opcode") return Fail("opcode 是只读内部句柄的保留字段名");
                     if (!CheckUserName(member.s)) return false;
                     const Memory::String qualified = top.s + "::" + member.s;
                     if (member.type2 == 1)
@@ -704,6 +765,8 @@ bool RegisterTop()
                 }
                 if (member.kind == MNode::MethodDef)
                 {
+                    if (opcodeOwner && (member.type2 == 2 || member.s == "drop" || member.s == "copy"))
+                        return Fail("opcode 生命周期使用 new/drop/copy 绑定，附加方法不能替代生命周期入口");
                     if (!CheckUserName(member.s)) return false;
                     MMethod method;
                     method.isStatic = member.type2 == 1;
@@ -733,7 +796,7 @@ bool RegisterTop()
             }
             /* 继承的接口**必须完全实现**：同名、同返回类型、同形参类型，一个都不能少。
              * 两个接口要的是同一个函数时只算一条（去重），实现一遍就够。 */
-            if (!AddInterfaceDefaults(top.s, definition) || !AddDefaultToString(top.s, definition, top.module) || !VerifyInterfaces(top.s, definition)) return false;
+            if (!opcodeOwner && (!AddInterfaceDefaults(top.s, definition) || !AddDefaultToString(top.s, definition, top.module) || !VerifyInterfaces(top.s, definition))) return false;
             g_structs[top.s] = definition;
             continue;
         }
@@ -965,7 +1028,7 @@ bool RegisterTop()
         const auto owner = NamedType(entry.first);
         if (FindConversion(owner, T(M_TypeString()), false)) continue;
         for (const auto &method : entry.second.methods)
-            if (!method.superseded && !method.isStatic && method.source == "toString" && method.params.empty() && method.result->kind == MType::String)
+            if (!method.superseded && !method.isStatic && method.source == "toString" && method.params.empty() && IsStandardOpcode(method.result, "String"))
             {
                 g_conversions.push_back(MConversionDecl{ owner, method.result, entry.first + "." + method.name, { "self" }, true });
                 break;
@@ -1012,7 +1075,7 @@ bool RegisterTop()
         if (FindConversion(implementation.owner, T(M_TypeString()), false)) continue;
         const MInterfaceMethod *required = nullptr;
         Memory::String label;
-        if (FindHostInterfaceImplementation(implementation.owner, "toString", {}, &required, &label) && required && required->result && required->result->kind == MType::String)
+        if (FindHostInterfaceImplementation(implementation.owner, "toString", {}, &required, &label) && required && required->result && IsStandardOpcode(required->result, "String"))
             g_conversions.push_back(MConversionDecl{ implementation.owner, required->result, label, { "__magel_self" }, true });
     }
 
@@ -1059,7 +1122,7 @@ bool RegisterTop()
             if (!declaration.abiRelease.empty())
             {
                 const auto result = CAbiUnderlying(declaration.signature.result);
-                if (result->kind != MType::String && result->kind != MType::Ptr && result->kind != MType::Array && !CAbiOptionalReference(declaration.signature.result))
+                if (!IsStandardOpcode(result, "String") && result->kind != MType::Ptr && result->kind != MType::Array && !CAbiOptionalReference(declaration.signature.result))
                     return Fail("abi 释放函数只能用于字符串、引用或数组返回值");
             }
             if (CAbiUnderlying(declaration.signature.result)->kind == MType::Func || CAbiType(declaration.signature.result).empty())
@@ -1182,7 +1245,7 @@ bool RegisterTop()
         if (argumentsMain)
         {
             const std::shared_ptr<MType> type = declaration.signature.params.size() == 1u ? declaration.signature.params[0].type : nullptr;
-            if (!type || type->kind != MType::Container || type->name != "vec" || !type->elem || type->elem->kind != MType::String || declaration.signature.params[0].variadic)
+            if (!type || type->kind != MType::Container || type->name != "vec" || !type->elem || !IsStandardOpcode(type->elem, "String") || declaration.signature.params[0].variadic)
             {
                 return Fail("main 只允许无参数，或单个 std::lang::List<std::lang::String> 参数");
             }

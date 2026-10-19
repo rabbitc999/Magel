@@ -64,8 +64,8 @@ int64 classify(int64 x) {
 
 int64 matchClassify(int64 x) {
     match (x) {
-        [0, 10) => { return 1; }
-        [10, 20) => { return 2; }
+        std::lang::range(0, 10) => { return 1; }
+        std::lang::range(10, 20) => { return 2; }
         _ => { return 0; }
     }
 }
@@ -73,8 +73,14 @@ int64 matchClassify(int64 x) {
 int64 main() {
     /* 1. 纯整数循环：1..5 求和 = 15 */
     int64 sum = 0;
-    for (int64 i = 1; i <= 5; i = i + 1) {
+    {
+        int64 i = 1;
+        while (i <= 5) {
+
         sum = sum + i;
+    
+            i = i + 1;
+        }
     }
     println("sum={}", sum);
 

@@ -28,9 +28,9 @@ import std::process;
 import std::probe;
 
 int64 main() {
-    proc process = std::process::processRun("echo magel-process-ok");
-    String output = std::process::processRead(process);
-    int64 status = std::process::processClose(process);
+    Process process = std::process::processRun("echo magel-process-ok");
+    String output = std::process::processRead(&process);
+    int64 status = std::process::processClose(&process);
     assert(status == 0);
     assert(output == "magel-process-ok");
     std::probe::Probe value;
@@ -57,9 +57,9 @@ process=0 probe=42
 
 | 名称 | 声明 |
 | --- | --- |
-| [processRun](#api-0) | `proc processRun(std::lang::String command)` |
-| [processRead](#api-1) | `std::lang::String processRead(proc process)` |
-| [processClose](#api-2) | `int64 processClose(proc process)` |
+| [processRun](#api-0) | `Process processRun(std::lang::String command)` |
+| [processRead](#api-1) | `std::lang::String processRead(Process const& process)` |
+| [processClose](#api-2) | `int64 processClose(Process const& process)` |
 | [system](#api-3) | `int64 system(std::lang::String command)` |
 
 <a id="api-0"></a>
@@ -69,7 +69,7 @@ process=0 probe=42
 **声明**
 
 ```magel
-proc processRun(std::lang::String command);
+Process processRun(std::lang::String command);
 ```
 
 **行为**
@@ -84,7 +84,7 @@ proc processRun(std::lang::String command);
 
 **返回值**
 
-`proc`。通过 shell 启动读取管道，返回进程句柄。
+`Process`。通过 shell 启动读取管道，返回进程句柄。
 
 **错误与边界**
 
@@ -107,7 +107,7 @@ std::process::processRun(command);
 **声明**
 
 ```magel
-std::lang::String processRead(proc process);
+std::lang::String processRead(Process const& process);
 ```
 
 **行为**
@@ -118,7 +118,7 @@ std::lang::String processRead(proc process);
 
 | 参数 | 类型／声明 | 含义 | 默认值 |
 | --- | --- | --- | --- |
-| `process` | `proc process` | 进程管道句柄 | 无 |
+| `process` | `Process const& process` | 进程管道句柄 | 无 |
 
 **返回值**
 
@@ -145,7 +145,7 @@ std::process::processRead(process);
 **声明**
 
 ```magel
-int64 processClose(proc process);
+int64 processClose(Process const& process);
 ```
 
 **行为**
@@ -156,7 +156,7 @@ int64 processClose(proc process);
 
 | 参数 | 类型／声明 | 含义 | 默认值 |
 | --- | --- | --- | --- |
-| `process` | `proc process` | 进程管道句柄 | 无 |
+| `process` | `Process const& process` | 进程管道句柄 | 无 |
 
 **返回值**
 

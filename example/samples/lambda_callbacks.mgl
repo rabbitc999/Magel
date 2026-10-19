@@ -78,9 +78,15 @@ int64 main() {
         assert((numbers[0]) == (11));
         assert((numbers.iter().map(fn(value) { value * 2 }).fold(0, fn(a,b) { a+b })) == (46));
     }
-    for (int64 round = 0; round < 4; round = round + 1) {
+    {
+        int64 round = 0;
+        while (round < 4) {
+
         auto labels = std::iter::range(1, 4).map(fn(value) { format("n{};", value) }).collect();
         assert((labels[2]) == ("n3;"));
+    
+            round = round + 1;
+        }
     }
     auto punctuation = fn() { "a;b" };
     assert((punctuation()) == ("a;b"));

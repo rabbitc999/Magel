@@ -446,7 +446,8 @@ int Execute(const ProgramEntry &selected)
     stackvm::Machine machine;
     machine.setHeapAllocator(&mcuArenas::CurrentBytePool());
     machine.setData(&data);
-    machine.setFileApi(&mcuFilesystem::CurrentApi());
+    stackvm::NativeServices services{ { magel_file::serviceName, &mcuFilesystem::CurrentApi() } };
+    machine.setHostServices(&services);
     mcuGlue::SetOutput(SerialWrite, nullptr, false);
     mcuGlue::Register(machine, &registry);
     RegisterBoard(registry);

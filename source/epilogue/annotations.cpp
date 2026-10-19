@@ -36,7 +36,7 @@ Memory::String AnnotationName(const MNode &node)
 bool AnnotationType(const std::shared_ptr<MType> &type)
 {
     if (!type) return false;
-    return type->kind == MType::Bool || type->kind == MType::Char || type->kind == MType::Int || type->kind == MType::Double || type->kind == MType::String;
+    return type->kind == MType::Bool || type->kind == MType::Char || type->kind == MType::Int || type->kind == MType::Double || IsStandardOpcode(type, "String");
 }
 /**
  * @brief 检查字面量常量并归一到精确声明类型；显式 cast 不允许隐式换型。
@@ -63,7 +63,7 @@ bool AnnotationConstant(int expression, int typeId, MAnnotationValue &value, con
         value.integer = node.i;
         return true;
     }
-    if (node.kind == MNode::Str && type->kind == MType::String)
+    if (node.kind == MNode::Str && IsStandardOpcode(type, "String"))
     {
         g_reductionLine = origin.sourceLine;
         g_errorColumn = origin.sourceColumn;
@@ -258,7 +258,7 @@ bool ValidateAnnotations()
             if (node.kind == MNode::AnnotationDecl || !node.annotations.empty())
                 return AnnotationFail(node.kind == MNode::AnnotationDecl ? node : N(node.annotations[0]),
                                       "注解与反射功能未开启，请使用支持该能力的工具链及 --reflection");
-            if (node.kind == MNode::StructDecl || node.kind == MNode::InterfaceDecl || node.kind == MNode::EnumDecl || node.kind == MNode::List)
+            if (node.kind == MNode::StructDecl || node.kind == MNode::OpcodeDecl || node.kind == MNode::InterfaceDecl || node.kind == MNode::EnumDecl || node.kind == MNode::List)
                 for (int child : node.kids)
                     if (!check(child)) return false;
             return true;
@@ -276,16 +276,16 @@ bool ValidateAnnotations()
     for (int id : g_top)
     {
         const auto &node = N(id);
-        if (node.kind == MNode::StructDecl || node.kind == MNode::EnumDecl || node.kind == MNode::InterfaceDecl || node.kind == MNode::HostTypeDecl) types.insert(AnnotationName(node));
+        if (node.kind == MNode::StructDecl || node.kind == MNode::OpcodeDecl || node.kind == MNode::EnumDecl || node.kind == MNode::InterfaceDecl || node.kind == MNode::HostTypeDecl) types.insert(AnnotationName(node));
         if (node.kind == MNode::ImportDecl) imports[node.module].insert(node.s);
     }
     const auto bindTarget = [&](const MNode &node) -> bool {
-        const bool supported = node.kind == MNode::StructDecl || node.kind == MNode::EnumDecl || node.kind == MNode::InterfaceDecl || node.kind == MNode::FuncDef || node.kind == MNode::ExternFuncDecl || node.kind == MNode::Field || node.kind == MNode::MethodDef || node.kind == MNode::ModuleDecl;
+        const bool supported = node.kind == MNode::StructDecl || node.kind == MNode::OpcodeDecl || node.kind == MNode::EnumDecl || node.kind == MNode::InterfaceDecl || node.kind == MNode::FuncDef || node.kind == MNode::ExternFuncDecl || node.kind == MNode::Field || node.kind == MNode::MethodDef || node.kind == MNode::ModuleDecl;
         for (int use : node.annotations)
         {
             if (!supported) return AnnotationFail(N(use), "此声明不支持注解");
             if (!BindAnnotation(use, imports)) return false;
-            if (N(use).type2 == -2 && node.kind != MNode::StructDecl && node.kind != MNode::EnumDecl && node.kind != MNode::InterfaceDecl && node.kind != MNode::FuncDef)
+            if (N(use).type2 == -2 && node.kind != MNode::StructDecl && node.kind != MNode::OpcodeDecl && node.kind != MNode::EnumDecl && node.kind != MNode::InterfaceDecl && node.kind != MNode::FuncDef)
                 return AnnotationFail(N(use), "内建 @Reflect 只暴露具体类型或有实现的自由函数；成员随类型暴露");
         }
         return true;

@@ -181,7 +181,7 @@ static Result<Image, String> decode(List<uint8> bytes);
 std::image::Image::decode(bytes);
 ```
 
-**源码**：[source/std/image.mgl:91](../../source/std/image.mgl#L91)。
+**源码**：[source/std/image.mgl:97](../../source/std/image.mgl#L97)。
 
 <a id="api-3"></a>
 
@@ -217,7 +217,7 @@ static Result<Image, String> open(String path);
 std::image::Image::open(path);
 ```
 
-**源码**：[source/std/image.mgl:108](../../source/std/image.mgl#L108)。
+**源码**：[source/std/image.mgl:114](../../source/std/image.mgl#L114)。
 
 <a id="api-4"></a>
 
@@ -251,7 +251,7 @@ Result<List<uint8>, String> encodeBmp();
 obj.encodeBmp();
 ```
 
-**源码**：[source/std/image.mgl:119](../../source/std/image.mgl#L119)。
+**源码**：[source/std/image.mgl:125](../../source/std/image.mgl#L125)。
 
 <a id="api-5"></a>
 
@@ -285,7 +285,7 @@ Result<List<uint8>, String> encodePpm();
 obj.encodePpm();
 ```
 
-**源码**：[source/std/image.mgl:130](../../source/std/image.mgl#L130)。
+**源码**：[source/std/image.mgl:136](../../source/std/image.mgl#L136)。
 
 <a id="api-6"></a>
 
@@ -319,7 +319,7 @@ Result<List<uint8>, String> encodePgm();
 obj.encodePgm();
 ```
 
-**源码**：[source/std/image.mgl:142](../../source/std/image.mgl#L142)。
+**源码**：[source/std/image.mgl:148](../../source/std/image.mgl#L148)。
 
 <a id="api-7"></a>
 
@@ -355,7 +355,7 @@ Result<int64, String> saveBmp(String path);
 obj.saveBmp(path);
 ```
 
-**源码**：[source/std/image.mgl:154](../../source/std/image.mgl#L154)。
+**源码**：[source/std/image.mgl:160](../../source/std/image.mgl#L160)。
 
 <a id="api-8"></a>
 
@@ -391,7 +391,7 @@ Result<int64, String> savePpm(String path);
 obj.savePpm(path);
 ```
 
-**源码**：[source/std/image.mgl:167](../../source/std/image.mgl#L167)。
+**源码**：[source/std/image.mgl:173](../../source/std/image.mgl#L173)。
 
 <a id="api-9"></a>
 
@@ -427,7 +427,7 @@ Result<int64, String> savePgm(String path);
 obj.savePgm(path);
 ```
 
-**源码**：[source/std/image.mgl:180](../../source/std/image.mgl#L180)。
+**源码**：[source/std/image.mgl:186](../../source/std/image.mgl#L186)。
 
 <a id="api-10"></a>
 
@@ -464,7 +464,7 @@ Result<Pixel, String> getPixel(int64 x, int64 y);
 obj.getPixel(x, y);
 ```
 
-**源码**：[source/std/image.mgl:194](../../source/std/image.mgl#L194)。
+**源码**：[source/std/image.mgl:200](../../source/std/image.mgl#L200)。
 
 <a id="api-11"></a>
 
@@ -505,7 +505,7 @@ Result<int64, String> setPixel(int64 x, int64 y, int64 r, int64 g, int64 b, int6
 obj.setPixel(x, y, r, g, b, a);
 ```
 
-**源码**：[source/std/image.mgl:217](../../source/std/image.mgl#L217)。
+**源码**：[source/std/image.mgl:223](../../source/std/image.mgl#L223)。
 
 <a id="api-12"></a>
 
@@ -543,7 +543,7 @@ Result<Image, String> convolve(List<float64> kernel, int64 kw, int64 kh);
 obj.convolve(kernel, kw, kh);
 ```
 
-**源码**：[source/std/image.mgl:240](../../source/std/image.mgl#L240)。
+**源码**：[source/std/image.mgl:246](../../source/std/image.mgl#L246)。
 
 <a id="api-13"></a>
 
@@ -581,7 +581,7 @@ Result<Image, String> pool(int64 mode, int64 kw, int64 kh);
 obj.pool(mode, kw, kh);
 ```
 
-**源码**：[source/std/image.mgl:258](../../source/std/image.mgl#L258)。
+**源码**：[source/std/image.mgl:264](../../source/std/image.mgl#L264)。
 
 <a id="api-14"></a>
 
@@ -615,7 +615,7 @@ Result<List<uint8>, String> toGray();
 obj.toGray();
 ```
 
-**源码**：[source/std/image.mgl:273](../../source/std/image.mgl#L273)。
+**源码**：[source/std/image.mgl:279](../../source/std/image.mgl#L279)。
 
 <a id="api-15"></a>
 
@@ -653,7 +653,7 @@ static Result<Image, String> fromGray(int64 width, int64 height, List<uint8> gra
 std::image::Image::fromGray(width, height, gray);
 ```
 
-**源码**：[source/std/image.mgl:287](../../source/std/image.mgl#L287)。
+**源码**：[source/std/image.mgl:293](../../source/std/image.mgl#L293)。
 
 <a id="api-16"></a>
 
@@ -687,7 +687,7 @@ Result<List<uint32>, String> toARGB();
 obj.toARGB();
 ```
 
-**源码**：[source/std/image.mgl:302](../../source/std/image.mgl#L302)。
+**源码**：[source/std/image.mgl:308](../../source/std/image.mgl#L308)。
 
 <a id="api-17"></a>
 
@@ -725,7 +725,7 @@ static Result<Image, String> fromARGB(int64 width, int64 height, List<uint32> ar
 std::image::Image::fromARGB(width, height, argb);
 ```
 
-**源码**：[source/std/image.mgl:316](../../source/std/image.mgl#L316)。
+**源码**：[source/std/image.mgl:322](../../source/std/image.mgl#L322)。
 
 <a id="api-18"></a>
 
@@ -759,7 +759,7 @@ Result<List<uint16>, String> toRGB565();
 obj.toRGB565();
 ```
 
-**源码**：[source/std/image.mgl:331](../../source/std/image.mgl#L331)。
+**源码**：[source/std/image.mgl:337](../../source/std/image.mgl#L337)。
 
 <a id="api-19"></a>
 
@@ -797,7 +797,7 @@ static Result<Image, String> fromRGB565(int64 width, int64 height, List<uint16> 
 std::image::Image::fromRGB565(width, height, rgb565);
 ```
 
-**源码**：[source/std/image.mgl:345](../../source/std/image.mgl#L345)。
+**源码**：[source/std/image.mgl:351](../../source/std/image.mgl#L351)。
 
 <a id="api-20"></a>
 
@@ -831,7 +831,7 @@ Result<int64, String> otsuThreshold();
 obj.otsuThreshold();
 ```
 
-**源码**：[source/std/image.mgl:360](../../source/std/image.mgl#L360)。
+**源码**：[source/std/image.mgl:366](../../source/std/image.mgl#L366)。
 
 <a id="api-21"></a>
 
@@ -870,7 +870,7 @@ static Result<List<uint8>, String> binarize(int64 width, int64 height, List<uint
 std::image::Image::binarize(width, height, gray, threshold);
 ```
 
-**源码**：[source/std/image.mgl:376](../../source/std/image.mgl#L376)。
+**源码**：[source/std/image.mgl:382](../../source/std/image.mgl#L382)。
 
 <a id="api-22"></a>
 
@@ -904,4 +904,4 @@ Result<List<uint8>, String> otsuBinarize();
 obj.otsuBinarize();
 ```
 
-**源码**：[source/std/image.mgl:387](../../source/std/image.mgl#L387)。
+**源码**：[source/std/image.mgl:393](../../source/std/image.mgl#L393)。

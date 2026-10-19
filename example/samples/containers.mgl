@@ -75,17 +75,29 @@ int64 main() {
     names.push("bob");
     names.push("cid");
     String joined = "";
-    for (int64 i = 0; i < len(names); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < len(names)) {
+
         joined = joined + names[i] + " ";         /* 字符串元素取出来是新的一份 */
+    
+            i = i + 1;
+        }
     }
     println("std::lang::List<string> 遍历：{}（len={}，contains(bob)={}）",
     joined, len(names), names.contains("bob"));
 
     String keys = "";
     String values = "";
-    for (int64 i = 0; i < len(ages); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < len(ages)) {
+
         keys = keys + ages.keyAt(i) + " ";
         values = values + format("{} ", ages.valAt(i));
+    
+            i = i + 1;
+        }
     }
     println("map 按升序遍历：键 {}| 值 {}", keys, values);
 

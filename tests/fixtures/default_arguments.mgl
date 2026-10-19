@@ -28,7 +28,13 @@ int64 main(){
  assert(add(1)==4 && count==1);
  assert(add(1,9)==10 && count==1);
  assert(add(1)==4 && count==2);
- for(int64 i=0;i<10;i=i+1){assert(text()=="ok");}
+ {
+     int64 i=0;
+     while (i<10) {
+assert(text()=="ok");
+         i=i+1;
+     }
+ }
  assert(widen()==2.0 && overloaded(1)==4 && overloaded("x")==9);
  assert(explicitDefault<int64>()==7);
  Packed empty=new Packed();Packed packed=new Packed(3,1,2);assert(empty.value==4 && packed.value==5);

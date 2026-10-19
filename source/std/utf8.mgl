@@ -6,22 +6,33 @@ enum Utf8Error { InvalidSequence(int64 offset), InvalidCodePoint(int64 index), I
 /** 按 RFC 3629 严格解码；拒绝过长序列、代理项、截断和超范围码点。 */
 Result<List<uint32>,Utf8Error> decodeUtf8Bytes(List<uint8> text) {
     List<uint32> result;
-    for (int64 i=0;i<text.len();) {
+    {
+        int64 i=0;
+        while (i<text.len()) {
+
         int64 first=(int64)text[i]; int64 width=1; int64 point=first; int64 minimum=0;
         if (first>=194 && first<=223) { width=2; point=first&31; minimum=128; }
         elif (first>=224 && first<=239) { width=3; point=first&15; minimum=2048; }
         elif (first>=240 && first<=244) { width=4; point=first&7; minimum=65536; }
         elif (first>=128) { return Result<List<uint32>,Utf8Error>::Err(Utf8Error::InvalidSequence(i)); }
         if (width>text.len()-i) { return Result<List<uint32>,Utf8Error>::Err(Utf8Error::InvalidSequence(i)); }
-        for (int64 j=1;j<width;j=j+1) {
+        {
+            int64 j=1;
+            while (j<width) {
+
             int64 next=(int64)text[i+j];
             if (next<128 || next>191) { return Result<List<uint32>,Utf8Error>::Err(Utf8Error::InvalidSequence(i+j)); }
             point=(point<<6)|(next&63);
+        
+                j=j+1;
+            }
         }
         if (point<minimum || point>1114111 || (point>=55296 && point<=57343)) {
             return Result<List<uint32>,Utf8Error>::Err(Utf8Error::InvalidSequence(i));
         }
         result.push((uint32)point); i=i+width;
+    
+        }
     }
     return Result<List<uint32>,Utf8Error>::Ok(result);
 }
@@ -35,13 +46,19 @@ bool isValidUtf8(String text) { return decodeUtf8(text).isOk(); }
 /** 将 Unicode 标量值编码为 UTF-8；不接受 UTF-16 代理项。 */
 Result<List<uint8>,Utf8Error> encodeUtf8Bytes(List<uint32> points) {
     List<uint8> result;
-    for(int64 i=0;i<points.len();i=i+1){
+    {
+        int64 i=0;
+        while (i<points.len()) {
+
         int64 point=(int64)points[i];
         if(point>1114111 || (point>=55296 && point<=57343)){return Result<List<uint8>,Utf8Error>::Err(Utf8Error::InvalidCodePoint(i));}
         if(point<128){result.push((uint8)point);}
         elif(point<2048){result.push((uint8)(192|(point>>6)));result.push((uint8)(128|(point&63)));}
         elif(point<65536){result.push((uint8)(224|(point>>12)));result.push((uint8)(128|((point>>6)&63)));result.push((uint8)(128|(point&63)));}
         else{result.push((uint8)(240|(point>>18)));result.push((uint8)(128|((point>>12)&63)));result.push((uint8)(128|((point>>6)&63)));result.push((uint8)(128|(point&63)));}
+    
+            i=i+1;
+        }
     }
     return Result<List<uint8>,Utf8Error>::Ok(result);
 }
@@ -64,6 +81,12 @@ Result<String,Utf8Error> sliceCodePoints(String text, int64 start, int64 count) 
     List<uint32> points=decodeUtf8(text)?;
     if (start<0 || count<0 || start>points.len() || count>points.len()-start) { return Result<String,Utf8Error>::Err(Utf8Error::InvalidRange); }
     List<uint32> selected;
-    for (int64 i=start;i<start+count;i=i+1) { selected.push(points[i]); }
+    {
+        int64 i=start;
+        while (i<start+count) {
+ selected.push(points[i]); 
+            i=i+1;
+        }
+    }
     return encodeUtf8(selected);
 }

@@ -20,7 +20,10 @@ Positive<UnaryValue,UnaryValue>, BitNot<UnaryValue,UnaryValue> {
     void drop(){UnaryValue::drops=UnaryValue::drops+1;}
 };
 int64 main(){
-    for(int64 i=0;i<32;i=i+1){
+    {
+        int64 i=0;
+        while (i<32) {
+
         int64 before=UnaryValue::drops;
         {
             UnaryValue result=-UnaryValue::create(7);
@@ -39,6 +42,9 @@ int64 main(){
         assert(value==7 && UnaryValue::drops==before+17);
         bool skipped=false && (-UnaryValue::create(7)).read()>0;
         assert(!skipped && UnaryValue::drops==before+17);
+    
+            i=i+1;
+        }
     }
     println("ownership unary edges OK");
     return 0;

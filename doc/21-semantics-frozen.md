@@ -52,3 +52,11 @@ IR 指四元式。日常构建、运行和交付使用完整 IR 优化与最高�
 
 借用、移动及闭包的详细规则分别见[核心概念](03-core-concepts.md)、[语言参考](04-language-reference.md)
 和[所有权移动](23-ownership-move.md)。后续方向见[路线图](10-roadmap.md)。
+
+## 循环、区间与集合字面量
+
+循环结构为 `while`、`loop` 和 `for (... in ...)`。`for-in` / `while` 的值表达式必须包含 `else`，以 `yield` 产生结果；仅含一个值的分支可省略分号。无结果结束或普通 `break` 进入后备分支，`continue` 继续下一轮。
+
+`std::lang::range<T>(a, b)` 为左闭右开，`rangeEq<T>(a, b)` 为闭区间。整数和 char 直接支持；其他类型实现 `NextValue<T>`，契约为 `Option<T> nextValue(T end, bool inclusive)`。`match` 区间仅支持整数和 char，普通自定义值模式使用 `Equal<T>`。
+
+List 字面量使用 `[a, b, c]`，Set 使用 `{a, b, c}`，Map 使用 `{key: value}`。空 `[]` 需要 List 上下文，空 `{}` 需要 Set 或 Map 上下文。字符串、数组与容器保持值语义。

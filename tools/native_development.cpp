@@ -560,11 +560,11 @@ J range(const std::string &s, size_t a, size_t b)
 const std::set<std::string> keywords = {
     "defer", "scope", "heap",
     "_", "abi", "auto", "bool", "break", "cast", "char",
-    "const", "continue", "copy", "delete", "do", "drop", "elif", "else",
+    "const", "continue", "copy", "delete", "drop", "elif", "else",
     "enum", "export", "false", "float32", "float64", "fn", "for",
     "if", "impl", "import", "in", "inline", "int16", "int32",
     "int64", "int8", "interface", "loop", "match", "module",
-    "move", "mut", "new", "return", "static", "struct",
+    "move", "mut", "new", "opcode", "return", "static", "struct",
     "true", "type", "uint16", "uint32", "uint64", "uint8", "void",
     "while", "yield"
 };
@@ -782,6 +782,30 @@ struct Record
     size_t offset = 0;
     A parameters;
 };
+/**
+ * @brief 收集当前文本中不向语言服务公开的胶水类型名称。
+ * @param tokens 已排除注释与字符串内容的词法序列。
+ * @return 内建胶水类型及当前文本声明的 opcode 类型名称。
+ */
+std::set<std::string> opcodeNames(const std::vector<Token> &tokens)
+{
+    std::set<std::string> names{ "String", "BigInteger", "BigDecimal", "File", "Process", "bint", "bfloat", "file", "proc" };
+    for (size_t i = 0; i + 1 < tokens.size(); ++i)
+        if (tokens[i].word == "opcode" && identifier(tokens[i + 1].word)) names.insert(tokens[i + 1].word);
+    return names;
+}
+/**
+ * @brief 检查签名是否直接使用隐藏的胶水类型。
+ * @param signature 待检查的类型或函数签名。
+ * @param names 当前隐藏类型名称。
+ * @return 签名含有独立的隐藏类型标识符时返回 true。
+ */
+bool opcodeSignature(const std::string &signature, const std::set<std::string> &names)
+{
+    for (const auto &token : lex(signature))
+        if (names.count(token.word)) return true;
+    return false;
+}
 /**
  * @brief 拼接模块与符号的限定名称。
  * @param r 符号、类型或请求记录。
@@ -1048,6 +1072,11 @@ std::vector<Record> scan(const std::string &source, const std::string &s)
             }
         };
     visit(0, t.size(), "");
+    const auto hiddenTypes = opcodeNames(t);
+    records.erase(std::remove_if(records.begin(), records.end(), [&](const Record &record) {
+                      return opcodeSignature(record.signature, hiddenTypes);
+                  }),
+                  records.end());
     return records;
 }
 struct Binding
@@ -1069,6 +1098,7 @@ std::vector<Binding> scanBindings(const std::string &s,
                                   std::set<std::string> types)
 {
     auto t = lex(s);
+    const auto hiddenTypes = opcodeNames(t);
     types.insert(primitives.begin(), primitives.end());
     for (auto n :
          { "String", "List", "Set", "Map", "Option", "Result", "Any", "auto" })
@@ -1122,6 +1152,7 @@ std::vector<Binding> scanBindings(const std::string &s,
         if (!function && following != "=" && following != ";" && following != "," && following != "[" && following != ")" && following != "in")
             continue;
         std::string type = cleanSignature(s.substr(t[i].a, t[j].a - t[i].a));
+        if (opcodeSignature(type, hiddenTypes)) continue;
         out.push_back({ t[j].word, type, function ? "function" : "variable", t[j].a,
                         t[j].b, scopes[j] });
         if (function)

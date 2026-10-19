@@ -1,0 +1,101 @@
+import std::reflect;
+
+uint64 demo_counter_to_uint(uint64 handle);
+
+@Reflect
+opcode Counter
+{
+    new = __vm_bint_from_int;
+    drop = __vm_bint_drop;
+    copy = __vm_bint_copy;
+    int64 count;
+    String label;
+
+    int64 read()
+    {
+        assert(demo_counter_to_uint((uint64)self.opcode) != 0);
+        return self.count;
+    }
+
+    void increment()
+    {
+        self.count += 1;
+    }
+
+    static int64 answer()
+    {
+        return 42;
+    }
+};
+
+@Reflect
+struct Holder
+{
+    Counter a;
+    Counter b;
+};
+
+#NonCopyable
+opcode UniqueCounter
+{
+    new = __vm_bint_from_int;
+    drop = __vm_bint_drop;
+    int64 count;
+    String label;
+
+    int64 read()
+    {
+        assert(demo_counter_to_uint((uint64)self.opcode) != 0);
+        return self.count;
+    }
+};
+
+struct Resources
+{
+    UniqueCounter first;
+    UniqueCounter second;
+};
+
+int64 main()
+{
+    Counter::new(1);
+    Counter first = Counter::new(17);
+    first.count = 19;
+    first.label = "hello";
+    Counter second = first;
+    second.increment();
+    second.label[0] = 'H';
+    assert(first.read() == 19);
+    assert(second.read() == 20);
+    assert(first.label == "hello");
+    assert(second.label == "Hello");
+    assert(Counter::answer() == 42);
+    Holder holder;
+    holder.a = first;
+    holder.b = move(&second);
+    assert(holder.a.read() == 19);
+    assert(holder.b.read() == 20);
+    auto holderInfo = std::reflect::getStructInfo<Holder>().unwrap();
+    assert(holderInfo.fields.len() == 2);
+    assert(holderInfo.fields[0].name == "a");
+    auto counterInfo = std::reflect::getStructInfo<Counter>().unwrap();
+    assert(counterInfo.fields.len() == 2);
+    assert(counterInfo.fields[0].name == "count");
+    assert(counterInfo.fields[1].name == "label");
+    List<std::reflect::ReflectValue> args;
+    auto reflected = std::reflect::callMethodConst<Counter>(&holder.a, "read", args).unwrap();
+    assert(reflected.asI64().unwrap() == 19);
+    UniqueCounter unique = UniqueCounter::new(9);
+    unique.count = 12;
+    unique.label = "owned";
+    UniqueCounter transferred = move(&unique);
+    Resources resources;
+    resources.first = move(&transferred);
+    resources.second = UniqueCounter::new(4);
+    resources.second.count = 4;
+    assert(resources.first.read() == 12);
+    assert(resources.first.label == "owned");
+    assert(resources.second.read() == 4);
+    println("opcode members ok");
+    return 0;
+}

@@ -28,9 +28,9 @@ import std::process;
 import std::probe;
 
 int64 main() {
-    proc process = std::process::processRun("echo magel-process-ok");
-    String output = std::process::processRead(process);
-    int64 status = std::process::processClose(process);
+    Process process = std::process::processRun("echo magel-process-ok");
+    String output = std::process::processRead(&process);
+    int64 status = std::process::processClose(&process);
     assert(status == 0);
     assert(output == "magel-process-ok");
     std::probe::Probe value;
@@ -59,8 +59,8 @@ process=0 probe=42
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-363"></a>`struct Probe` | 记录值并验证复制、移动与析构行为的辅助类型。 |
-| Probe | <a id="symbol-364"></a>`int64 value` | 保存的单个值。 |
+| 模块 | <a id="symbol-367"></a>`struct Probe` | 记录值并验证复制、移动与析构行为的辅助类型。 |
+| Probe | <a id="symbol-368"></a>`int64 value` | 保存的单个值。 |
 
 ## 函数索引
 

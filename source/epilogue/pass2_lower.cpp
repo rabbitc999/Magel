@@ -431,15 +431,12 @@ void AppendLeafStore(Memory::Vector<simple_ast::NodePtr> *body,
 {
     using simple_ast::Node;
     using simple_ast::Type;
-    if (leaf && (leaf->kind == MType::String || IsObjectLike(leaf)))
+    if (leaf && (IsStandardOpcode(leaf, "String") || IsObjectLike(leaf)))
     {
         const Memory::String temp = AllocateName("__magel_agg_leaf");
         body->push_back(Node::declare(temp, Type::i64()));
         body->push_back(Node::assign(temp, value));
-        const simple_ast::NodePtr copied =
-            leaf->kind == MType::String ? Node::call("__vm_str_sub", { "__magel_s", "__magel_a", "__magel_b" },
-                                                     { Node::var(temp), Node::i(0), Node::i(-1) }) :
-                                          Node::call(ObjectCopyFunction(leaf), { "__magel_v" }, { Node::var(temp) });
+        const simple_ast::NodePtr copied = Node::call(ObjectCopyFunction(leaf), { "__magel_v" }, { Node::var(temp) });
         body->push_back(Node::ifThenElse(
             Node::binary("!=", Node::var(temp), Node::i(0)),
             Node::block({ Node::storeAt(dst, copied, Type::i64()) }),
@@ -462,7 +459,7 @@ void AppendLeafCopy(Memory::Vector<simple_ast::NodePtr> *body,
                     const std::shared_ptr<MType> &leaf)
 {
     using simple_ast::Node;
-    if (leaf && (leaf->kind == MType::String || IsObjectLike(leaf)))
+    if (leaf && (IsStandardOpcode(leaf, "String") || IsObjectLike(leaf)))
     {
         AppendLeafStore(body, dst, Node::loadInt(src), leaf);
         return;
@@ -497,7 +494,8 @@ simple_ast::Function MakeAggregateReleaseFunction(const Memory::String &owner)
                 Node::var("__magel_agg"), Node::i(static_cast<std::int64_t>(index - 1u)), 8);
             /* 释放后把槽清 0：同一个静态聚合对象被两次释放（或两个别名指向它）时，
              * 第二次 `drop 0` 是软释放空操作，不会二次释放同一块。 */
-            body.push_back(Node::release(Node::loadInt(address)));
+            const auto *opcode = FindOpcodeDefinition(definition->leaves[index - 1u].second);
+            body.push_back(opcode ? Node::exprStmt(Node::call(opcode->destroy, { "value" }, { Node::loadInt(address) })) : Node::release(Node::loadInt(address)));
             body.push_back(Node::storeAt(address, Node::i(0), Type::i64()));
         }
     }
@@ -591,7 +589,8 @@ simple_ast::Function MakeArrayReleaseFunction(const std::shared_ptr<MType> &elem
     }
     else
     {
-        body.push_back(Node::release(Node::loadInt(address)));
+        const auto *opcode = FindOpcodeDefinition(element);
+        body.push_back(opcode ? Node::exprStmt(Node::call(opcode->destroy, { "value" }, { Node::loadInt(address) })) : Node::release(Node::loadInt(address)));
         body.push_back(Node::storeAt(address, Node::i(0), Type::i64()));
     }
     body.push_back(Node::assign(index, Node::binary("+", Node::var(index), Node::i(1))));
@@ -651,6 +650,16 @@ simple_ast::Function MakeEnumConstructor(const Memory::String &enumName,
         const MEnumPayload &payload = variant.payloads[index];
         const MField *field = FindField(enumName, payload.storageName);
         if (field == nullptr) continue;
+        if (HasNonCopyableValue(payload.type))
+        {
+            const auto target = Node::offset(Node::var(resultName), Node::i(field->slot), 8);
+            const auto source = Node::var(parameterNames[index]);
+            if (payload.type->kind == MType::Struct)
+                body.push_back(MoveStructValue(target, source, payload.type));
+            else
+                body.push_back(Node::storeAt(target, source, simple_ast::Type::i64()));
+            continue;
+        }
         if (payload.type->kind == MType::Struct)
         {
             const auto inner = g_structs.find(payload.type->name);
@@ -717,7 +726,7 @@ simple_ast::Function MakeTupleConstructor(
     Memory::Vector<Memory::String> parameters;
     for (std::size_t index = 0; index < elements.size(); ++index)
     {
-        const Memory::String name = "__magel_tuple_arg_" + Memory::toString(index);
+        const Memory::String name = function.name + "_arg_" + Memory::toString(index);
         parameters.push_back(name);
         function.parameters.emplace_back(name, LowerType(elements[index], name));
     }
@@ -736,6 +745,16 @@ simple_ast::Function MakeTupleConstructor(
     {
         const MField *field = FindField(tupleName, "__" + Memory::toString(index));
         if (field == nullptr) continue;
+        if (HasNonCopyableValue(elements[index]))
+        {
+            const auto target = Node::offset(Node::var(result), Node::i(field->slot), 8);
+            const auto source = Node::var(parameters[index]);
+            if (elements[index]->kind == MType::Struct)
+                body.push_back(MoveStructValue(target, source, elements[index]));
+            else
+                body.push_back(Node::storeAt(target, source, simple_ast::Type::i64()));
+            continue;
+        }
         if (elements[index]->kind == MType::Struct)
         {
             const MStructDef *inner = FindStruct(elements[index]->name);
@@ -797,20 +816,20 @@ void AppendCollectionConstructors(simple_ast::Program &program)
                 Memory::Vector<Memory::String> names{ item.first + "_native_container", item.first + "_native_value",
                                                       item.first + "_native_text", item.first + "_native_object" };
                 Memory::Vector<simple_ast::NodePtr> values{ Node::var(result),
-                                                            Node::var(item.first + "_arg_" + Memory::toString(i)), Node::i(type->elem->kind == MType::String),
+                                                            Node::var(item.first + "_arg_" + Memory::toString(i)), Node::i(IsStandardOpcode(type->elem, "String")),
                                                             ContainerStorageFlag(type->elem) };
                 body.push_back(Node::exprStmt(Node::call("__vm_vec_push", names, values)));
                 continue;
             }
             Memory::Vector<Memory::String> names{ item.first + "_native_container", item.first + "_native_key", item.first + "_native_text", item.first + "_native_object" };
             Memory::Vector<simple_ast::NodePtr> values{ Node::var(result),
-                                                        Node::var(item.first + "_arg_" + Memory::toString(i)), Node::i(type->elem->kind == MType::String),
+                                                        Node::var(item.first + "_arg_" + Memory::toString(i)), Node::i(IsStandardOpcode(type->elem, "String")),
                                                         ContainerStorageFlag(type->elem) };
             if (map)
             {
                 names.insert(names.end(), { item.first + "_native_value", item.first + "_native_value_text", item.first + "_native_value_object" });
                 values.push_back(Node::var(item.first + "_arg_" + Memory::toString(i + 1u)));
-                values.push_back(Node::i(type->elem2->kind == MType::String));
+                values.push_back(Node::i(IsStandardOpcode(type->elem2, "String")));
                 values.push_back(ContainerStorageFlag(type->elem2));
             }
             body.push_back(Node::exprStmt(Node::call(map ? "__vm_map_put" : "__vm_set_add", names, values)));
@@ -1026,6 +1045,92 @@ bool ValidateDefaultArguments(const Memory::Vector<MParam> &params)
 }
 
 /**
+ * @brief 降级一个已确定具体类型的方法，保留构造器正文与工厂的生成顺序。
+ * @param program 接收方法及构造工厂的低层程序。
+ * @param topId 所属具体结构体或枚举声明。
+ * @param signature 已登记的方法签名及正文。
+ */
+void LowerConcreteMethod(simple_ast::Program &program, int topId, const MMethod &signature)
+{
+    const MNode top = N(topId);
+    ReductionSourceScope source(topId);
+    /* 方法名（`plus` / `loperator+`，重载时带 `$类型`）就是标签后缀：`结构体名.方法名` */
+    if (signature.isNamedConstructor)
+    {
+        g_namedConstructorBody = true;
+        auto body = LowerFunction(signature.name + "$body", top.s, SimpleType(MType::Void),
+                                  g_funcs.at(top.s + "." + signature.name + "$body").params,
+                                  signature.bodyId, signature.module);
+        g_namedConstructorBody = false;
+        program.addMethod(top.s, std::move(body));
+        const int factory = NamedConstructorFactoryBody(top.s, signature);
+        program.functions.push_back(LowerFunction(top.s + "." + signature.name,
+                                                  Memory::String(), signature.result, signature.params, factory, signature.module));
+    }
+    else if (signature.isStatic)
+        program.functions.push_back(
+            LowerFunction(top.s + "." + signature.name, Memory::String(), signature.result,
+                          signature.params, signature.bodyId, signature.module));
+    else
+        program.addMethod(top.s, LowerFunction(signature.name, top.s, signature.result,
+                                               signature.params,
+                                               signature.bodyId, signature.module));
+}
+
+/**
+ * @brief 为带语言字段的 opcode 建立接管原生句柄的内部构造入口。
+ * @param program 接收构造函数的低层程序。
+ */
+void AppendOpcodeConstructors(simple_ast::Program &program)
+{
+    using simple_ast::Node;
+    for (const auto &entry : g_opcodeTypes)
+    {
+        if (!entry.second.aggregate || entry.second.internal) continue;
+        const auto type = NamedType(entry.first);
+        const auto value = AllocateName("__magel_opcode_value");
+        simple_ast::Function function;
+        function.name = "__magel_opcode_new_" + entry.first;
+        function.parameters = { { "handle", simple_ast::Type::i64() } };
+        function.result = LowerType(type, value);
+        function.body = Node::block({ Node::declare(value, LowerType(type, value)),
+                                      DefaultInit(value, type, true, false),
+                                      Node::storeAt(Node::var(value), Node::var("handle"), simple_ast::Type::i64()),
+                                      Node::ret(Node::var(value)) });
+        program.functions.push_back(std::move(function));
+    }
+}
+
+/**
+ * @brief 收集低层节点引用的直接调用、方法及函数值标签。
+ * @param node 当前低层语法节点。
+ * @param labels 接收可能被引用的函数标签，保守包含字符串函数值。
+ */
+void CollectLoweredReferences(const simple_ast::NodePtr &node, Memory::Set<Memory::String> &labels)
+{
+    if (!node) return;
+    labels.insert(node->text);
+    if (!node->typeName.empty()) labels.insert(node->typeName + "." + node->text);
+    for (const auto &child : node->kids) CollectLoweredReferences(child, labels);
+}
+
+/**
+ * @brief 判断具体聚合是否为包含不可复制拥有值的泛型实例。
+ * @param owner 已解析的具体聚合名称。
+ * @return 只有需要按实际使用检查方法体的泛型实例返回 true。
+ */
+bool DeferredNonCopyableGeneric(const Memory::String &owner)
+{
+    if (!HasNonCopyableValue(NamedType(owner))) return false;
+    for (const auto &entry : magel_generic::session.made)
+    {
+        const auto &instance = entry.second;
+        if (instance.generic && (instance.name == owner || ModuleSymbol(instance.generic->module, instance.name) == owner)) return true;
+    }
+    return false;
+}
+
+/**
  * @brief 将已登记的完整程序降级为 simple_ast 表示。
  * @param program 待生成或执行的程序。
  * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
@@ -1043,6 +1148,7 @@ bool LowerProgram(simple_ast::Program &program)
     if (!BuildStructTypes(program)) return false;
     g_loweringProgram = &program;
     AppendEnumConstructors(program);
+    AppendOpcodeConstructors(program);
     /* 全局变量的停机清理清单（`g_ownedScopes[0]` 就是全局那层）。 */
     g_cleanupItems.clear();
     g_cleanupBase = g_ownedScopes.size();
@@ -1057,6 +1163,7 @@ bool LowerProgram(simple_ast::Program &program)
      */
     g_globalCleanupItems = g_cleanupItems;
     Memory::Vector<int> pendingLambdas;
+    Memory::Vector<std::pair<int, MMethod>> pendingMethods;
     /* 函数与方法：方法体里的 `self` 由 simple_ast 自动声明（`(decl, i64, local, self)`） */
     for (const int topId : g_top)
     {
@@ -1079,39 +1186,48 @@ bool LowerProgram(simple_ast::Program &program)
                                                       declaration.bodyId, declaration.module));
             continue;
         }
-        if (top.kind != MNode::StructDecl && top.kind != MNode::EnumDecl) continue;
+        if (top.kind != MNode::StructDecl && top.kind != MNode::EnumDecl && top.kind != MNode::OpcodeDecl) continue;
         const auto definition = g_structs.find(top.s);
         if (definition == g_structs.end()) continue;
         for (const MMethod &signature : definition->second.methods)
         {
             if (signature.superseded) continue; /* 被后面的定义覆盖掉了 */
             if (signature.bodyId < 0) continue;
-            /* 方法名（`plus` / `loperator+`，重载时带 `$类型`）就是标签后缀：`结构体名.方法名` */
-            if (signature.isNamedConstructor)
-            {
-                g_namedConstructorBody = true;
-                auto body = LowerFunction(signature.name + "$body", top.s, SimpleType(MType::Void),
-                                          g_funcs.at(top.s + "." + signature.name + "$body").params,
-                                          signature.bodyId, signature.module);
-                g_namedConstructorBody = false;
-                program.addMethod(top.s, std::move(body));
-                const int factory = NamedConstructorFactoryBody(top.s, signature);
-                program.functions.push_back(LowerFunction(top.s + "." + signature.name,
-                                                          Memory::String(), signature.result, signature.params, factory, signature.module));
-            }
-            else if (signature.isStatic)
-                program.functions.push_back(
-                    LowerFunction(top.s + "." + signature.name, Memory::String(), signature.result,
-                                  signature.params, signature.bodyId, signature.module));
+            if (DeferredNonCopyableGeneric(top.s))
+                pendingMethods.push_back({ topId, signature });
             else
-                program.addMethod(top.s, LowerFunction(signature.name, top.s, signature.result,
-                                                       signature.params,
-                                                       signature.bodyId, signature.module));
+                LowerConcreteMethod(program, topId, signature);
         }
     }
-    while (!pendingLambdas.empty())
+    // 不可复制泛型只实例化实际使用的方法体，不能让未调用的复制方法阻止合法借用和移动。
+    for (;;)
     {
+        Memory::Set<Memory::String> references;
+        for (const auto &function : program.functions) CollectLoweredReferences(function.body, references);
+        for (const auto &node : g_globalInit) CollectLoweredReferences(node, references);
+        for (const auto &key : g_usedInterfaceMethods)
+        {
+            const auto bar = key.find('|');
+            if (bar == Memory::String::npos) continue;
+            auto method = key.substr(bar + 1);
+            const auto suffix = method.find('|');
+            if (suffix != Memory::String::npos) method = method.substr(0, suffix);
+            const auto dispatcher = MakeInterfaceDispatcher(key.substr(0, bar), method, suffix != Memory::String::npos);
+            CollectLoweredReferences(dispatcher.body, references);
+        }
         bool progress = false;
+        for (auto it = pendingMethods.begin(); it != pendingMethods.end();)
+        {
+            const auto label = N(it->first).s + "." + it->second.name;
+            if (!references.count(label))
+            {
+                ++it;
+                continue;
+            }
+            LowerConcreteMethod(program, it->first, it->second);
+            it = pendingMethods.erase(it);
+            progress = true;
+        }
         for (auto it = pendingLambdas.begin(); it != pendingLambdas.end();)
         {
             const auto &top = N(*it);
@@ -1125,9 +1241,17 @@ bool LowerProgram(simple_ast::Program &program)
                                                       declaration.signature.params, declaration.bodyId, declaration.module));
             it = pendingLambdas.erase(it);
             progress = true;
-            if (!g_error.empty()) return false;
         }
-        if (!progress) return Fail("lambda 的词法捕获环境无法确定");
+        if (!g_error.empty()) return false;
+        if (!progress)
+        {
+            for (const int lambdaId : pendingLambdas)
+            {
+                const auto &decl = g_functionDecls.at(static_cast<std::size_t>(N(lambdaId).i));
+                if (references.count(decl.label)) return Fail("lambda 的词法捕获环境无法确定");
+            }
+            break;
+        }
     }
     AppendCollectionConstructors(program);
     AppendMapKeyPolicies(program);

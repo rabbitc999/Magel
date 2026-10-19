@@ -1,1 +1,1 @@
-int64 main(){for(int8 x in [0,255]){}return 0;}
+int64 main(){for(int8 x in std::lang::rangeEq<int8>(0,255)){}return 0;}

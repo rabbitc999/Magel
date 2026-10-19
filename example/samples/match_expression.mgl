@@ -11,6 +11,6 @@ int64 main(){
     small=10+(match(4){3=>{fallback()}_=>{2}});assert(small==12);
     String text=match(packet){Packet::Data(copy)=>{copy.text+"!"}Packet::Empty=>{"none"}};
     assert(text=="original!");
-    small=match(4){3 if fallback()==0=>{1}[4,6)=>{int32 local=9;yield (local);}_=>{0}};assert(small==9);assert(side==0);
+    small=match(4){3 if fallback()==0=>{1}std::lang::range(4,6)=>{int32 local=9;yield (local);}_=>{0}};assert(small==9);assert(side==0);
     println("match ok");return 0;
 }

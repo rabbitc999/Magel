@@ -49,10 +49,10 @@ int64 main() {
     /* do-while：先做一遍再判条件 */
     int64 total = 0;
     int64 step = 0;
-    do {
+    { bool magelLoopFirst1 = true; while (magelLoopFirst1 || (total < 12)) { magelLoopFirst1 = false;
         total = total + step;
         step = step + 1;
-    } while (total < 12);
+     } }
     println("do-while: total={} step={}", total, step);
 
     /* 分支：多路选择用 if / elif / else 或 `match`。 */

@@ -43,16 +43,6 @@
 #include <sstream>
 #include <thread>
 
-/* 大整数（`bint`）是**附加功能**：`STACKVM_WITH_BIGINT`（见 stackvm.hpp）为 1 才编进来。
- * 编进来时用仓库里的 library/big_number（`bigint::BigInt`）：加 / 减 / 乘 / 除 / 取余
- * 与十进制串互转都在那边，本库只负责"把它接到虚拟机的值语义上"（见运行期对象表）。 */
-#if STACKVM_WITH_BIGINT
-#include "bigint.hpp"
-#endif
-#if STACKVM_WITH_BIGFLOAT
-#include "bigfloat.hpp"
-#endif
-
 /* 板端输入钩子（串口）。必须放在**第一个 namespace 之前**：下面的 parts 嵌在命名空间里，
  * 在那里 include 会各自造一份 mcuConsole，宿主装的钩子就看不见了。 */
 #if STACKVM_EMBEDDED
@@ -156,6 +146,91 @@ bool HeapAllocator::writeDouble(std::size_t address, double value)
 {
     return allocatedHeapRange(*this, address, sizeof(value)) && writeBytes(address, reinterpret_cast<const char *>(&value), sizeof(value));
 }
+
+/**
+ * @brief 为不支持记录壳的宿主报告创建失败。
+ * @param type 记录描述符。
+ * @param record 尚未转移所有权的记录。
+ * @return 零句柄。
+ */
+std::int64_t NativeCallContext::makeNativeRecord(const NativeRecordType &type, void *record)
+{
+    (void)type;
+    (void)record;
+    fail("native record creation unsupported");
+    return 0;
+}
+/**
+ * @brief 在缺省宿主中拒绝借用记录。
+ * @param handle 待查询句柄。
+ * @param type 预期类型。
+ * @return 空指针。
+ */
+void *NativeCallContext::nativeRecord(std::int64_t handle, const NativeRecordType &type) const
+{
+    (void)handle;
+    (void)type;
+    return nullptr;
+}
+/**
+ * @brief 在缺省宿主中拒绝释放记录。
+ * @param handle 待释放句柄。
+ * @return false，表示未释放。
+ */
+bool NativeCallContext::releaseNativeRecord(std::int64_t handle)
+{
+    (void)handle;
+    return false;
+}
+/**
+ * @brief 在缺省宿主中拒绝释放运行时原始内存。
+ * @param address 待释放块地址。
+ * @param soft 是否允许跳过无效块，缺省宿主不提供内存管理。
+ * @return false，表示操作不受支持。
+ */
+bool NativeCallContext::releaseMemory(std::int64_t address, bool soft)
+{
+    (void)address;
+    (void)soft;
+    fail("runtime memory release unsupported");
+    return false;
+}
+/**
+ * @brief 在缺省宿主中拒绝记录复制。
+ * @param handle 待复制句柄。
+ * @return 零句柄。
+ */
+std::int64_t NativeCallContext::cloneNativeRecord(std::int64_t handle)
+{
+    (void)handle;
+    fail("native record cloning unsupported");
+    return 0;
+}
+/**
+ * @brief 查询缺省宿主是否注入通用服务。
+ * @param name 服务名称，缺省实现不使用。
+ * @return 空指针，具体运行时应覆盖此接口。
+ */
+void *NativeCallContext::hostService(const Memory::String &name) const
+{
+    (void)name;
+    return nullptr;
+}
+/**
+ * @brief 在缺省宿主中报告没有输入项。
+ * @param text 保持不变的输出文本。
+ * @return false，表示没有读取输入。
+ */
+bool NativeCallContext::takeInputText(Memory::String &text)
+{
+    (void)text;
+    return false;
+}
+/**
+ * @brief 查询缺省宿主的输入位置。
+ * @return 零，表示尚未消费输入。
+ */
+std::size_t NativeCallContext::inputPosition() const { return 0u; }
 
 /**
  * @brief 将整数封装为宿主原生值。

@@ -160,7 +160,7 @@ Magel 的图标与总览图都由**仓库里的 Python 脚本画**（PIL），�
 
 [`CHANGELOG.md`](CHANGELOG.md) 由 **Python 从 JSON 生成**：数据源是
 [`tools/changelog_data.json`](tools/changelog_data.json)，**每个版本是一个 JSON 对象**
-（`version` / `title` / `dates`，每个日期组下是条目列表，子项用 `items`）。
+（`version` / `title` / `entries`，版本下直接维护条目列表，子项用 `items`），不指定日期或日期分组。
 改版本记录时改 JSON，然后跑 `python tools/changelog.py --build` 重新生成 Markdown；
 [`tools/changelog.py`](tools/changelog.py) `--check` 校验 md 与 JSON 逐字节一致、
 `VERSION` ↔ 顶级节、tag ↔ 对应节、版本号唯一且自新到旧递减。1.0.0 之前的历史版本

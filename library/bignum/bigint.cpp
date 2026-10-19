@@ -1614,7 +1614,8 @@ BigInt BigInt::powmod(const BigInt &exponent, const BigInt &modulus) const
  * @param b 第二个数。
  * @retval `a × x + b × y = gcd(a, b)` 的三元组。
  */
-ExtendedGcd BigInt::extendedGcd(const BigInt &a, const BigInt &b){
+ExtendedGcd BigInt::extendedGcd(const BigInt &a, const BigInt &b)
+{
     /* 在绝对值上跑迭代版扩展欧几里得，最后按原符号把系数翻回去。 */
     BigInt oldR = a.abs();
     BigInt r = b.abs();
@@ -1669,7 +1670,7 @@ BigInt BigInt::modInverse(const BigInt &value, const BigInt &modulus)
  */
 bool BigInt::isProbablePrime(std::size_t rounds) const
 {
-    static const std::uint32_t kSmallPrimes[] = {2u, 3u, 5u, 7u, 11u, 13u, 17u, 19u, 23u, 29u, 31u, 37u};
+    static const std::uint32_t kSmallPrimes[] = { 2u, 3u, 5u, 7u, 11u, 13u, 17u, 19u, 23u, 29u, 31u, 37u };
     if (sign_ < 0 || compare(BigInt(2)) < 0) return false;
     for (const std::uint32_t prime : kSmallPrimes)
     {
@@ -1834,10 +1835,14 @@ BigInt BigInt::fromString(const Memory::String &text, unsigned int base, bool *o
         const char ch = text[index];
         if (ch == ' ' || ch == '\t') break; /* 交给后面的尾部空白检查 */
         unsigned int digit;
-        if (ch >= '0' && ch <= '9') digit = static_cast<unsigned int>(ch - '0');
-        else if (ch >= 'a' && ch <= 'z') digit = static_cast<unsigned int>(ch - 'a') + 10u;
-        else if (ch >= 'A' && ch <= 'Z') digit = static_cast<unsigned int>(ch - 'A') + 10u;
-        else digit = base; /* 非法字符 */
+        if (ch >= '0' && ch <= '9')
+            digit = static_cast<unsigned int>(ch - '0');
+        else if (ch >= 'a' && ch <= 'z')
+            digit = static_cast<unsigned int>(ch - 'a') + 10u;
+        else if (ch >= 'A' && ch <= 'Z')
+            digit = static_cast<unsigned int>(ch - 'A') + 10u;
+        else
+            digit = base; /* 非法字符 */
         if (digit >= base)
         {
             report(false);

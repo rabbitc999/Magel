@@ -68,7 +68,10 @@ Result<float64, String> parseNumberLexeme(String s) {
     float64 frac = 0.0;
     float64 scale = 1.0;
     int64 n = s.chars().count();
-    for (int64 k = 0; k < n; k = k + 1) {
+    {
+        int64 k = 0;
+        while (k < n) {
+
         char c = s[k];
         if (c == '.') {
             if (seenDot) { return Result<float64, String>::Err("malformed number: two dots"); }
@@ -84,6 +87,9 @@ Result<float64, String> parseNumberLexeme(String s) {
             } else {
                 intPart = intPart * 10.0 + (float64)d;
             }
+        }
+    
+            k = k + 1;
         }
     }
     return Result<float64, String>::Ok(intPart + frac);
@@ -309,8 +315,17 @@ struct Parser {
                 int64 argc = self.countArgs();
                 /* Reserve the argument region first so that the children the
                  * arguments append cannot interleave with it. */
-                for (int64 k = 0; k < argc; k = k + 1) { self.kids.push(-1); }
-                for (int64 k = 0; k < argc; k = k + 1) {
+                {
+                    int64 k = 0;
+                    while (k < argc) {
+ self.kids.push(-1); 
+                        k = k + 1;
+                    }
+                }
+                {
+                    int64 k = 0;
+                    while (k < argc) {
+
                     int64 child = self.parseExpr()?;
                     self.kids[start + k] = child;
                     if (k + 1 < argc) {
@@ -318,6 +333,9 @@ struct Parser {
                             return Result<int64, String>::Err("expected ',' between arguments");
                         }
                         self.pos = self.pos + 1;
+                    }
+                
+                        k = k + 1;
                     }
                 }
                 if (!self.isRParen(self.pos)) {
@@ -400,9 +418,15 @@ Instr makeInstr(int64 op, float64 num, String text) {
 /* Generic renderer constrained by an interface. */
 String renderAll<T: Describable>(List<T> items) {
     String out = "";
-    for (int64 i = 0; i < items.len(); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < items.len()) {
+
         if (i > 0) { out = out + " "; }
         out = out + items[i].describe();
+    
+            i = i + 1;
+        }
     }
     return out;
 }
@@ -424,8 +448,14 @@ int64 idx) {
     int64 kind = current.kind;
     int64 start = current.a;
     int64 count = current.b;
-    for (int64 i = 0; i < count; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < count) {
+
         compileNode(nodes, kids, code, kids[start + i]);
+    
+            i = i + 1;
+        }
     }
     if (kind == K_NUM) {
         code.push(makeInstr(OP_PUSH, current.num, ""));
@@ -461,8 +491,14 @@ struct VM {
             if (a < 0.0) { return Result<float64, String>::Err("sqrt of negative number"); }
             if (a == 0.0) { return Result<float64, String>::Ok(0.0); }
             float64 x = a;
-            for (int64 k = 0; k < 60; k = k + 1) {
+            {
+                int64 k = 0;
+                while (k < 60) {
+
                 x = 0.5 * (x + a / x);
+            
+                    k = k + 1;
+                }
             }
             return Result<float64, String>::Ok(x);
         }
@@ -494,7 +530,13 @@ struct VM {
             int64 m = n;
             if (m < 0) { m = 0 - m; }
             float64 r = 1.0;
-            for (int64 k = 0; k < m; k = k + 1) { r = r * base; }
+            {
+                int64 k = 0;
+                while (k < m) {
+ r = r * base; 
+                    k = k + 1;
+                }
+            }
             if (n < 0) {
                 if (r == 0.0) { return Result<float64, String>::Err("pow: division by zero"); }
                 r = 1.0 / r;
@@ -631,9 +673,15 @@ String fmtNum(float64 v) {
 
 String renderInts(List<int64> xs) {
     String out = "";
-    for (int64 i = 0; i < xs.len(); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < xs.len()) {
+
         if (i > 0) { out = out + ", "; }
         out = out + format("{}", xs[i]);
+    
+            i = i + 1;
+        }
     }
     return out;
 }
@@ -641,7 +689,13 @@ String renderInts(List<int64> xs) {
 int64 main(List<String> args) {
     List<String> program;
     if (args.len() > 0) {
-        for (int64 i = 0; i < args.len(); i = i + 1) { program.push(args[i]); }
+        {
+            int64 i = 0;
+            while (i < args.len()) {
+ program.push(args[i]); 
+                i = i + 1;
+            }
+        }
     } else {
         program.push("x = 3 + 4 * 2");
         program.push("y = x * x - 5");
@@ -668,7 +722,10 @@ int64 main(List<String> args) {
     int64 totalTokens = 0;
     int64 totalNodes = 0;
 
-    for (int64 i = 0; i < program.len(); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < program.len()) {
+
         Result<LineReport, String> r = analyze(program[i], &vars);
         match (r) {
             Result<LineReport, String>::Ok(rep) => {
@@ -687,6 +744,9 @@ int64 main(List<String> args) {
                 println("[{}] error {}   =>   {}", i + 1, program[i], msg);
             }
         }
+    
+            i = i + 1;
+        }
     }
 
     println("");
@@ -697,9 +757,15 @@ int64 main(List<String> args) {
         int64 totalInstr = std::algorithms::foldValue<int64>(okInstrs, 0, addInts);
         int64 lo = okInstrs[0];
         int64 hi = okInstrs[0];
-        for (int64 i = 1; i < okInstrs.len(); i = i + 1) {
+        {
+            int64 i = 1;
+            while (i < okInstrs.len()) {
+
             if (okInstrs[i] < lo) { lo = okInstrs[i]; }
             if (okInstrs[i] > hi) { hi = okInstrs[i]; }
+        
+                i = i + 1;
+            }
         }
         List<int64> sorted = std::algorithms::sortValue<int64>(okInstrs);
         println("instructions over ok lines: total={} min={} max={}", totalInstr, lo, hi);
@@ -707,15 +773,27 @@ int64 main(List<String> args) {
     }
 
     String nameList = "";
-    for (int64 i = 0; i < names.len(); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < names.len()) {
+
         if (i > 0) { nameList = nameList + ", "; }
         nameList = nameList + names.at(i);
+    
+            i = i + 1;
+        }
     }
     println("variables assigned ({}): {}", names.len(), nameList);
     println("live variables in VM ({}):", vars.len());
-    for (int64 i = 0; i < vars.len(); i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < vars.len()) {
+
         String k = vars.keyAt(i);
         println("  {} = {}", k, fmtNum(vars[k]));
+    
+            i = i + 1;
+        }
     }
 
     List<int64> squares = std::iter::range(1, 6)

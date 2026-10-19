@@ -163,12 +163,18 @@ int64 main() {
     assert(copy.close() && config.close() && !server.isValid());
     Result<std::toml::TomlValue, String> duplicate = std::toml::parse("x = 1\nx = 2\n");
     assert(duplicate.isErr() && len(duplicate.error()) > 0);
-    for (int64 i = 0; i < 50; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < 50) {
+
         Result<std::json::JsonValue, String> parsedSmall = std::json::parse("[]");
         std::json::JsonValue small = parsedSmall.unwrap();
         assert(small.close());
         Result<std::toml::TomlValue, String> invalid = std::toml::parse("x = [");
         assert(invalid.isErr());
+    
+            i = i + 1;
+        }
     }
     Result<std::json::JsonValue, String> trailingOk = std::json::parse("true");
     assert(trailingOk.isOk()); // 注册表结束时清理未显式关闭的文档
@@ -196,9 +202,9 @@ JSON and TOML parsing OK
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-465"></a>`struct TomlValue : Iterator<TomlValue>` | 只读节点视图；同一文档的节点共享生命周期，close 关闭整个文档。 |
-| TomlValue | <a id="symbol-466"></a>`int64 document` | 拥有底层解析文档的宿主句柄。 |
-| TomlValue | <a id="symbol-467"></a>`int64 node` | 当前值在解析文档中的节点标识。 |
+| 模块 | <a id="symbol-469"></a>`struct TomlValue : Iterator<TomlValue>` | 只读节点视图；同一文档的节点共享生命周期，close 关闭整个文档。 |
+| TomlValue | <a id="symbol-470"></a>`int64 document` | 拥有底层解析文档的宿主句柄。 |
+| TomlValue | <a id="symbol-471"></a>`int64 node` | 当前值在解析文档中的节点标识。 |
 
 ## 函数索引
 

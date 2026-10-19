@@ -63,7 +63,7 @@ UTF-8 validation and code points OK
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-506"></a>`enum Utf8Error` | 非法 UTF-8 的首个字节位置，或非法码点的位置。 |
+| 模块 | <a id="symbol-510"></a>`enum Utf8Error` | 非法 UTF-8 的首个字节位置，或非法码点的位置。 |
 | Utf8Error | `InvalidSequence(int64 offset), InvalidCodePoint(int64 index), InvalidRange, ZeroByteText` | 非法 UTF-8 的首个字节位置，或非法码点的位置。 变体及载荷见声明。 |
 
 ## 函数索引
@@ -150,7 +150,7 @@ Result<List<uint32>,Utf8Error> decodeUtf8(String text);
 std::utf8::decodeUtf8(text);
 ```
 
-**源码**：[source/std/utf8.mgl:29](../../source/std/utf8.mgl#L29)。
+**源码**：[source/std/utf8.mgl:40](../../source/std/utf8.mgl#L40)。
 
 **完整示例**：[example/samples/std_utf8.mgl](../../example/samples/std_utf8.mgl)。
 
@@ -188,7 +188,7 @@ bool isValidUtf8(String text);
 std::utf8::isValidUtf8(text);
 ```
 
-**源码**：[source/std/utf8.mgl:34](../../source/std/utf8.mgl#L34)。
+**源码**：[source/std/utf8.mgl:45](../../source/std/utf8.mgl#L45)。
 
 **完整示例**：[example/samples/std_utf8.mgl](../../example/samples/std_utf8.mgl)。
 
@@ -226,7 +226,7 @@ Result<List<uint8>,Utf8Error> encodeUtf8Bytes(List<uint32> points);
 std::utf8::encodeUtf8Bytes(points);
 ```
 
-**源码**：[source/std/utf8.mgl:36](../../source/std/utf8.mgl#L36)。
+**源码**：[source/std/utf8.mgl:47](../../source/std/utf8.mgl#L47)。
 
 **完整示例**：[example/samples/std_utf8.mgl](../../example/samples/std_utf8.mgl)。
 
@@ -264,7 +264,7 @@ Result<String,Utf8Error> encodeUtf8(List<uint32> points);
 std::utf8::encodeUtf8(points);
 ```
 
-**源码**：[source/std/utf8.mgl:49](../../source/std/utf8.mgl#L49)。
+**源码**：[source/std/utf8.mgl:66](../../source/std/utf8.mgl#L66)。
 
 **完整示例**：[example/samples/std_utf8.mgl](../../example/samples/std_utf8.mgl)。
 
@@ -302,7 +302,7 @@ Result<int64,Utf8Error> codePointCount(String text);
 std::utf8::codePointCount(text);
 ```
 
-**源码**：[source/std/utf8.mgl:58](../../source/std/utf8.mgl#L58)。
+**源码**：[source/std/utf8.mgl:75](../../source/std/utf8.mgl#L75)。
 
 **完整示例**：[example/samples/std_utf8.mgl](../../example/samples/std_utf8.mgl)。
 
@@ -342,6 +342,6 @@ Result<String,Utf8Error> sliceCodePoints(String text, int64 start, int64 count);
 std::utf8::sliceCodePoints(text, start, count);
 ```
 
-**源码**：[source/std/utf8.mgl:63](../../source/std/utf8.mgl#L63)。
+**源码**：[source/std/utf8.mgl:80](../../source/std/utf8.mgl#L80)。
 
 **完整示例**：[example/samples/std_utf8.mgl](../../example/samples/std_utf8.mgl)。

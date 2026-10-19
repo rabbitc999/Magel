@@ -275,22 +275,22 @@ int M_TypeDouble() { return M_TypeFloatBits(64); }
  * @brief 构造并登记字符串类型。
  * @retval 类型池中对应类型的编号。
  */
-int M_TypeString() { return M_TypeKind(MType::String); }
+int M_TypeString() { return M_TypeKind(MType::Opcode, "std::lang::String"); }
 /**
  * @brief 构造并登记无返回值类型。
  * @retval 类型池中对应类型的编号。
  */
 int M_TypeVoid() { return M_TypeKind(MType::Void); }
 /**
- * @brief `bint`：任意精度整数（值 = 运行期对象句柄）。
+ * @brief 引用 lang 包声明的 BigInteger opcode 类型。
  * @retval 类型池中对应类型的编号。
  */
-int M_TypeBigInt() { return M_TypeKind(MType::BigInt); }
+int M_TypeBigInt() { return M_TypeKind(MType::Opcode, "std::lang::BigInteger"); }
 /**
- * @brief `bfloat`：任意精度十进制浮点（值 = 运行期对象句柄）。
+ * @brief 引用 lang 包声明的 BigDecimal opcode 类型。
  * @retval 类型池中对应类型的编号。
  */
-int M_TypeBigFloat() { return M_TypeKind(MType::BigFloat); }
+int M_TypeBigFloat() { return M_TypeKind(MType::Opcode, "std::lang::BigDecimal"); }
 /**
  * @brief `obj`：**装箱格子**（值 = 运行期对象句柄：一个值 + 它的类型号）。
  *
@@ -300,15 +300,15 @@ int M_TypeBigFloat() { return M_TypeKind(MType::BigFloat); }
  */
 int M_TypeObj() { return M_TypeKind(MType::Obj); }
 /**
- * @brief 构造并登记文件句柄类型。
+ * @brief 引用 lang 包声明的 File opcode 类型。
  * @retval 类型池中对应类型的编号。
  */
-int M_TypeFile() { return M_TypeKind(MType::File); }
+int M_TypeFile() { return M_TypeKind(MType::Opcode, "std::lang::File"); }
 /**
- * @brief 构造并登记过程句柄类型。
+ * @brief 引用 lang 包声明的 Process opcode 类型。
  * @retval 类型池中对应类型的编号。
  */
-int M_TypeProc() { return M_TypeKind(MType::Proc); }
+int M_TypeProc() { return M_TypeKind(MType::Opcode, "std::lang::Process"); }
 
 /**
  * @brief 造一个容器类型：`name` 是 "vec" / "set" / "map"。
@@ -784,7 +784,7 @@ int M_Op(int which)
  */
 int M_KeywordName(int which)
 {
-    static const char *const table[] = { "set", "drop", "new", "copy", "move" };
+    static const char *const table[] = { "set", "drop", "new", "copy", "move", "opcode" };
     const int count = static_cast<int>(sizeof(table) / sizeof(table[0]));
     return M_Name((which >= 0 && which < count) ? table[which] : "set");
 }
@@ -958,17 +958,17 @@ int M_Tuple(int values)
     return id;
 }
 /**
- * @brief 构造 Set、Map 或等待上下文推导的空集合节点。
- * @param kind 0 为空集合，1 为元素表，2 为键值对表。
+ * @brief 构造 List、Set、Map 或等待上下文推导的空花括号集合节点。
+ * @param kind 0 为空花括号，1 为 Set 元素表，2 为 Map 键值对表，3 为 List 元素表。
  * @param values 元素或交替键值的列表节点。
  * @return 集合表达式节点编号。
  *
- * `kind == 1` 的节点记成 `"set"`：**具体是列表还是集合由目标容器类型定**
- * （`List<T>` → 顺序表，`Set<T>` → 去重集合），`{1,2,3}` 两种上下文都能写。
+ * 方括号只构造 List，花括号元素表只构造 Set，键值对表构造 Map。
  */
 int M_CollectionLiteral(int kind, int values)
 {
-    const int id = M_New(MNode::CollectionLiteral, kind == 2 ? "map" : kind == 1 ? "set" :
+    const int id = M_New(MNode::CollectionLiteral, kind == 3 ? "vec" : kind == 2 ? "map" :
+                                                                   kind == 1     ? "set" :
                                                                                    "empty");
     if (values >= 0) g_nodes[static_cast<std::size_t>(id)].kids =
                          g_nodes[static_cast<std::size_t>(values)].kids;
@@ -1951,7 +1951,8 @@ bool M_NameIs(int nameId, const char *text)
 {
     if (nameId < 0 || nameId >= static_cast<int>(g_names.size()) || text == nullptr) return false;
     const std::string &nm = g_names[static_cast<std::size_t>(nameId)];
-    for (size_t i = 0; text[i] != '\0'; ++i) {
+    for (size_t i = 0; text[i] != '\0'; ++i)
+    {
         char a = nm[i], b = text[i];
         if (a >= 'a' && a <= 'z') a -= static_cast<char>('a' - 'A');
         if (b >= 'a' && b <= 'z') b -= static_cast<char>('a' - 'A');
@@ -1966,12 +1967,12 @@ bool M_NameIs(int nameId, const char *text)
  * @retval 名字大小写无关等于 level / all 时返回 true。
  */
 bool M_NameIsLevel(int nameId) { return M_NameIs(nameId, "level"); }
-bool M_NameIsAll(int nameId)   { return M_NameIs(nameId, "all"); }
+bool M_NameIsAll(int nameId) { return M_NameIs(nameId, "all"); }
 
 /**
  * @brief `break level N;` 语法糖的参数错误节点（文法动作不支持字符串字面量）。
  */
-int M_ParseBadLevelSugar()    { return M_ParseBad("break level 后必须跟正整数字面量层数，形如 break level 2;"); }
+int M_ParseBadLevelSugar() { return M_ParseBad("break level 后必须跟正整数字面量层数，形如 break level 2;"); }
 int M_ParseBadLevelAllSugar() { return M_ParseBad("break level 后只能跟 all，形如 break level all;"); }
 int M_ParseBadBreakAllSugar() { return M_ParseBad("break 仅支持 break all 退出全部循环，带值退出请写 yield 值"); }
 
@@ -2265,6 +2266,41 @@ int M_AbiBlock(int libraryId, int functionsId)
     }
     return id;
 }
+/**
+ * @brief 构造不透明胶水类型及其方法绑定列表。
+ * @param nameId 类型名称编号。
+ * @param methods 生命周期方法列表编号。
+ * @return opcode 声明节点编号。
+ */
+int M_Opcode(int nameId, int methods)
+{
+    const int id = M_New(MNode::OpcodeDecl, g_names[nameId]);
+    g_nodes[id].kids.push_back(methods);
+    return id;
+}
+/**
+ * @brief 记录一个 opcode 生命周期胶水函数。
+ * @param operation 创建、销毁或复制的方法种类。
+ * @param symbol 绑定函数名称编号。
+ * @return 方法节点编号。
+ */
+int M_OpcodeMethod(int operation, int symbol)
+{
+    const int id = M_New(MNode::OpcodeMethod, g_names[symbol]);
+    g_nodes[id].i = operation;
+    return id;
+}
+/**
+ * @brief 标记 opcode 类型禁止普通值复制。
+ * @param declaration 待标记的声明节点。
+ * @return 原声明节点编号。
+ */
+int M_NonCopyableOpcode(int declaration)
+{
+    g_nodes[declaration].opcodeNonCopyable = true;
+    return declaration;
+}
+
 /**
  * @brief 构造并登记宿主类型声明。
  * @param nameId 名称池中的名称编号。

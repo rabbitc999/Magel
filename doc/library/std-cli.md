@@ -288,7 +288,7 @@ bool add(CliOption option);
 obj.add(option);
 ```
 
-**源码**：[source/std/cli.mgl:33](../../source/std/cli.mgl#L33)。
+**源码**：[source/std/cli.mgl:39](../../source/std/cli.mgl#L39)。
 
 **完整示例**：[example/samples/std_cli.mgl](../../example/samples/std_cli.mgl)。
 
@@ -324,7 +324,7 @@ String help();
 obj.help();
 ```
 
-**源码**：[source/std/cli.mgl:48](../../source/std/cli.mgl#L48)。
+**源码**：[source/std/cli.mgl:60](../../source/std/cli.mgl#L60)。
 
 **完整示例**：[example/samples/std_cli.mgl](../../example/samples/std_cli.mgl)。
 
@@ -362,6 +362,6 @@ Result<CliArguments,CliError> parse(List<String> arguments);
 obj.parse(arguments);
 ```
 
-**源码**：[source/std/cli.mgl:62](../../source/std/cli.mgl#L62)。
+**源码**：[source/std/cli.mgl:74](../../source/std/cli.mgl#L74)。
 
 **完整示例**：[example/samples/std_cli.mgl](../../example/samples/std_cli.mgl)。

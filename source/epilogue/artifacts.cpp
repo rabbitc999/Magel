@@ -873,7 +873,7 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
                         callbackGuards.emplace_back(new CallbackGuard{ setCallback, slots[i], previous });
                         callbacks.push_back(std::move(state));
                         const auto address = callbackAddress(slots[i]); std::memcpy(data, &address, sizeof(address));
-                    } else if (type->type->kind == MType::String) {
+                    } else if (IsStandardOpcode(type->type, "String")) {
                         strings[i] = magel_glue::Codec<Memory::String>::decode(context, values[i]);
                         if (strings[i].find(static_cast<char>(0)) != Memory::String::npos) throw std::runtime_error("ABI C string contains NUL; use a byte buffer");
                         const char *text = strings[i].c_str(); std::memcpy(data, &text, sizeof(text));
@@ -939,7 +939,7 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
                 } else if (result->type->kind == MType::Struct) {
                     const auto address = context.makeTemporary(result->slots * 8);
                     if (address) RuntimeAbiWrite(*result, context, address, returned.data()); value = Value::fromInt(address);
-                } else if (result->type->kind == MType::String) {
+                } else if (IsStandardOpcode(result->type, "String")) {
                     const char *text; std::memcpy(&text, returned.data(), sizeof(text)); value = Value::fromInt(context.makeString(magel_glue::detail::copyCAbiString(text)));
                 } else if (result->type->kind != MType::Void) value = RuntimeAbiScalarValue(*result->type, returned.data());
                 for (const auto &entry : payloads) {
@@ -1107,6 +1107,8 @@ void ResetState()
     g_lambdaAutoReturns.clear();
     g_lambdaPrepared.clear();
     g_hostTypes.clear();
+    g_opcodeTypes.clear();
+    g_opcodeValueTypes.clear();
     g_hostInterfaceImpls.clear();
     g_globalNames.clear();
     /* "用到才生成"的运行时库开关也要归位（同一个进程里编译第二份源文件时不能继承） */

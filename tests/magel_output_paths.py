@@ -14,13 +14,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 COMPILER = ROOT / ("magel.exe" if os.name == "nt" else "magel")
 
-SOURCE = """int64 main() {
-    int64 sum = 0;
-    for (int64 i = 1; i <= 5; i = i + 1) { sum = sum + i; }
-    std::lang::println("sum={}", sum);
-    return 0;
-}
-"""
+SOURCE = 'int64 main() {\n    int64 sum = 0;\n    {\n        int64 i = 1;\n        while (i <= 5) {\n sum = sum + i; \n            i = i + 1;\n        }\n    }\n    std::lang::println("sum={}", sum);\n    return 0;\n}\n'
 EXPECTED = "sum=15\n"
 
 
@@ -31,7 +25,14 @@ def run(args, success=True, cwd=ROOT, timeout=1800):
     return result
 
 
+def executable_path(path):
+    """按宿主平台补全可执行文件扩展名，保留传给编译器的产物前缀。"""
+    path = Path(path)
+    return path.with_suffix(".exe") if os.name == "nt" and not path.suffix else path
+
+
 def run_exe(path, success=True):
+    path = executable_path(path)
     result = subprocess.run([str(path)], capture_output=True, text=True,
                             encoding="utf-8", errors="replace", timeout=120)
     assert (result.returncode == 0) == success, (path, result.returncode, result.stdout, result.stderr)
@@ -48,7 +49,7 @@ def main():
         # 1) 缺省：AOT 导出只留可执行文件，不写/不留 C++ 源码。
         plain = work / "plain"
         run([COMPILER, "aot", source, "--out", plain, "--opt-level=0"])
-        assert plain.exists() and run_exe(plain).stdout == EXPECTED
+        assert executable_path(plain).exists() and run_exe(plain).stdout == EXPECTED
         assert not (work / "plain.aot.cpp").exists()
         assert not (work / ".magel-aot-manifest").exists()
 
@@ -68,7 +69,7 @@ def main():
         # 4) `--execute-output FILE`：可执行文件写到指定路径（目录不存在也会建）。
         exe_path = work / "build" / "the-app"
         run([COMPILER, "aot", source, "--execute-output", exe_path, "--opt-level=0"])
-        assert exe_path.exists() and run_exe(exe_path).stdout == EXPECTED
+        assert executable_path(exe_path).exists() and run_exe(exe_path).stdout == EXPECTED
 
         # 5) magel.toml：run=aot + opt_level + cpp_output(_dir) + execute_output 一起生效。
         project = work / "proj"
@@ -102,7 +103,7 @@ def main():
         assert not (project2 / "main.aot.cpp").exists()
 
         # 7) `--make` 驱动构建；`--gcc` / `--g++` 是 `--cc` / `--cxx` 的别名。
-        make = shutil.which("make")
+        make = os.environ.get("MAKE") or shutil.which("mingw32-make") or shutil.which("make")
         gxx = shutil.which("g++")
         gcc = shutil.which("gcc")
         if not (make and gxx and gcc):
@@ -141,7 +142,7 @@ def main():
         emitter_name = "magel-emit.exe" if os.name == "nt" else "magel-emit"
         built_emitter = ROOT / "build" / "magel-emit" / emitter_name
         if not built_emitter.exists():
-        print("MAGEL output path checks passed（跳过单文件生成器：先 make -C magel-emit）")
+            print("MAGEL output path checks passed（跳过单文件生成器：先 make -C magel-emit）")
             return
         tools = work / "tools"
         tools.mkdir()

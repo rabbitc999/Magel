@@ -41,10 +41,8 @@ def main():
                                     encoding='utf-8', timeout=60)
             assert result.returncode != 0 and diagnostic in result.stdout + result.stderr, (name, result)
         for name, code, diagnostic in (
-            ('mutable_nested', '''struct Mutable { int64 value; String toString(){self.value=self.value+1;return "bad";} };
-int64 main(){Mutable value;List<Mutable> values={value};println("{}",values.toString());return 0;}''', 'toString 必须只读'),
-            ('callback_failure', '''struct Failing { String toString(){panic("value-text-callback");return "bad";} };
-int64 main(){Failing value;List<Failing> values={value};println("{}",values.toString());return 0;}''', 'value-text-callback'),
+            ('mutable_nested', 'struct Mutable { int64 value; String toString(){self.value=self.value+1;return "bad";} };\nint64 main(){Mutable value;List<Mutable> values=[value];println("{}",values.toString());return 0;}', 'toString 必须只读'),
+            ('callback_failure', 'struct Failing { String toString(){panic("value-text-callback");return "bad";} };\nint64 main(){Failing value;List<Failing> values=[value];println("{}",values.toString());return 0;}', 'value-text-callback'),
         ):
             file = work / (name + '.mgl')
             file.write_text(code, encoding='utf-8')

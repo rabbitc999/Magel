@@ -177,12 +177,12 @@ bool AddDefaultToString(const Memory::String &owner, MStructDef &definition, con
         if (method.superseded || method.isConstructor) continue;
         if (method.source == "toString" && method.params.empty())
         {
-            if (method.isStatic || !method.result || method.result->kind != MType::String)
+            if (method.isStatic || !method.result || !IsStandardOpcode(method.result, "String"))
                 return Fail(owner + ".toString() 必须是返回 String 的实例方法");
             present = true;
         }
-        if (!method.isStatic && method.source == "implicitConvert" && method.params.empty() && method.result && method.result->kind == MType::String) conversion = &method;
-        if (!method.isStatic && method.source == "toString" && method.params.size() == 1 && method.params[0].type->kind == MType::String && method.result && method.result->kind == MType::String) formatted = &method;
+        if (!method.isStatic && method.source == "implicitConvert" && method.params.empty() && method.result && IsStandardOpcode(method.result, "String")) conversion = &method;
+        if (!method.isStatic && method.source == "toString" && method.params.size() == 1 && IsStandardOpcode(method.params[0].type, "String") && method.result && IsStandardOpcode(method.result, "String")) formatted = &method;
     }
     if (!present)
     {
@@ -212,7 +212,7 @@ bool AddDefaultToString(const Memory::String &owner, MStructDef &definition, con
         const auto found = g_interfaces.find(interfaceName);
         if (found == g_interfaces.end()) continue;
         for (const auto &required : found->second)
-            if (required.name == "implicitConvert" && required.params.empty() && required.result->kind == MType::String)
+            if (required.name == "implicitConvert" && required.params.empty() && IsStandardOpcode(required.result, "String"))
                 requiresStringConversion = true;
     }
     if (requiresStringConversion && !conversion)
@@ -230,7 +230,7 @@ bool AddDefaultToString(const Memory::String &owner, MStructDef &definition, con
     }
     // 默认方法构成实际的 ToString 实现；未导入 std::io 时不强制加载 I/O 模块。
     for (const auto &entry : g_interfaces)
-        if ((entry.first == "std::io::ToString" || entry.first == "ToString") && entry.second.size() == 1 && entry.second[0].name == "toString" && entry.second[0].params.empty() && entry.second[0].result->kind == MType::String && std::find(definition.interfaces.begin(), definition.interfaces.end(), entry.first) == definition.interfaces.end())
+        if ((entry.first == "std::io::ToString" || entry.first == "ToString") && entry.second.size() == 1 && entry.second[0].name == "toString" && entry.second[0].params.empty() && IsStandardOpcode(entry.second[0].result, "String") && std::find(definition.interfaces.begin(), definition.interfaces.end(), entry.first) == definition.interfaces.end())
             definition.interfaces.push_back(entry.first);
     return true;
 }
@@ -298,8 +298,9 @@ Memory::String Describe(const std::shared_ptr<MType> &type)
         if (type->bits == 64) return type->isUnsigned ? "uint64" : "int64";
         return Memory::String(type->isUnsigned ? "uint" : "int") + Memory::toString(type->bits);
     case MType::Double: return type->bits == 64 ? "float64" : "float32";
-    case MType::String: return "std::lang::String";
+
     case MType::Host: return type->name;
+    case MType::Opcode: return type->name;
     case MType::Struct:
     {
         if (!IsTupleType(type)) return type->name;
@@ -314,10 +315,6 @@ Memory::String Describe(const std::shared_ptr<MType> &type)
         }
         return text + ")";
     }
-    case MType::BigInt: return "std::lang::BigInteger";
-    case MType::BigFloat: return "std::lang::BigDecimal";
-    case MType::File: return "file";
-    case MType::Proc: return "proc";
     case MType::Obj: return "std::lang::Any";
     case MType::Container:
         if (type->name == "map")
@@ -369,9 +366,6 @@ bool SameType(const std::shared_ptr<MType> &left, const std::shared_ptr<MType> &
         return left->isUnsigned == right->isUnsigned && left->bits == right->bits;
     case MType::Double:
         return left->bits == right->bits;
-    case MType::File:
-    case MType::Proc:
-        return true; /* 宿主资源句柄只有一种静态形状 */
     case MType::Obj:
         return true; /* 装箱格子只有一种（里面装什么不看静态类型，看运行期的类型号） */
     /* 解析后的名义类型键保留不同模块同名类型的身份。 */
@@ -381,6 +375,8 @@ bool SameType(const std::shared_ptr<MType> &left, const std::shared_ptr<MType> &
     case MType::Host:
         if (g_hostTypes.count(left->name) && g_hostTypes.count(right->name)) return left->name == right->name;
         return BareTypeName(left->name) == BareTypeName(right->name);
+    case MType::Opcode:
+        return left->name == right->name;
     case MType::Ptr: return left->readOnly == right->readOnly && SameType(left->elem, right->elem);
     case MType::Func:
     {
@@ -416,13 +412,10 @@ Memory::String TypeTag(const std::shared_ptr<MType> &type)
         if (type->bits == 64) return type->isUnsigned ? "uint64" : "int64";
         return Memory::String(type->isUnsigned ? "uint" : "int") + Memory::toString(type->bits);
     case MType::Double: return type->bits == 64 ? "float64" : "float32";
-    case MType::String: return "string";
+
     case MType::Host: return "host_" + type->name;
-    case MType::BigInt: return "bint";
-    case MType::BigFloat: return "bfloat";
+    case MType::Opcode: return type->name;
     case MType::Obj: return "Any";
-    case MType::File: return "file";
-    case MType::Proc: return "proc";
     case MType::Struct: return type->name;
     case MType::Container:
     {
@@ -506,13 +499,13 @@ bool AnyAcceptsType(const std::shared_ptr<MType> &type)
     case MType::Char:
     case MType::Bool:
     case MType::Double:
-    case MType::String:
+
     case MType::Func:
     case MType::Struct:
     case MType::Array:
     case MType::Container:
-    case MType::BigInt:
-    case MType::BigFloat:
+    case MType::Opcode:
+        return !OpcodeNonCopyable(type);
     case MType::Obj:
         return true;
     case MType::Ptr:
@@ -906,7 +899,7 @@ std::shared_ptr<MType> UserOperatorResultType(int exprId)
         const auto left = ExprType(expr.kids[0]);
         const auto right = ExprType(expr.kids[1]);
         // 与类型推导及降级保持一致：字符串和大数优先使用内建运算。
-        if (left->kind == MType::String || right->kind == MType::String || left->kind == MType::BigInt || right->kind == MType::BigInt || left->kind == MType::BigFloat || right->kind == MType::BigFloat) return nullptr;
+        if (IsStandardOpcode(left, "String") || IsStandardOpcode(right, "String") || IsStandardOpcode(left, "BigInteger") || IsStandardOpcode(right, "BigInteger") || IsStandardOpcode(left, "BigDecimal") || IsStandardOpcode(right, "BigDecimal")) return nullptr;
         const MOperatorDecl *method = nullptr;
         /* 与推断、降级同一口径：带上这个节点钉住的类型，免得挑到另一条返回类型不同的声明
          * （挑错会让所有权判断按错的类型走）。 */

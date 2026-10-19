@@ -101,7 +101,10 @@ int64 main() {
     assert((fused.next().isNone()) == (true));
     List<int64> empty;
     assert((empty.intoIter().count()) == (0));
-    for (int64 round = 0; round < 4; round = round + 1) {
+    {
+        int64 round = 0;
+        while (round < 4) {
+
         List<int64> source; source.push(1); source.push(2); source.push(3);
         {
             auto readonly = source.iter();
@@ -141,6 +144,9 @@ int64 main() {
         assert(((records[0]).number) == (5));
         auto text = std::iter::range(1,4).map(label).collect();
         assert((text[2]) == ("n3"));
+    
+            round = round + 1;
+        }
     }
     int64 raw[3]; raw[0] = 7; raw[1] = 8; raw[2] = 9;
     assert((std::iter::fromSpan<int64>(&raw[0],3).map(read).fold(0,sum)) == (24));

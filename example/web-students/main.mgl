@@ -16,11 +16,17 @@ struct Response { int64 status; String contentType; String body; };
 Option<int64> decimal(String text, int64 maximum) {
     if (text=="") { return Option<int64>::None; }
     int64 value=0;
-    for(int64 i=0;i<len(text);i=i+1){
+    {
+        int64 i=0;
+        while (i<len(text)) {
+
         if(text[i]<'0' || text[i]>'9'){return Option<int64>::None;}
         int64 digit=(int64)text[i]-(int64)'0';
         if(value>(maximum-digit)/10){return Option<int64>::None;}
         value=value*10+digit;
+    
+            i=i+1;
+        }
     }
     return Option<int64>::Value(value);
 }
@@ -80,7 +86,10 @@ Request readRequest(TcpSocket mut& socket,String authority){
     request.method=start[0];request.path=start[1];
     int64 length=0;
     bool hasLength=false, hasHost=false;
-    for(int64 i=1;i<lines.len();i=i+1){
+    {
+        int64 i=1;
+        while (i<lines.len()) {
+
         String line=lines[i];int64 colon=Text::find(line,":");
         if(colon<=0){request.status=400;return request;}
         String key=Text::toLower(line[0:colon]);
@@ -99,6 +108,9 @@ Request readRequest(TcpSocket mut& socket,String authority){
         if(key=="transfer-encoding"){request.status=501;return request;}
         if(key=="expect"){request.status=417;return request;}
         if(key=="content-type"){request.contentType=Text::toLower(value);}
+    
+            i=i+1;
+        }
     }
     if(start[2]=="HTTP/1.1" && !hasHost){request.status=400;return request;}
     if((request.method=="POST" || request.method=="PUT") && !hasLength){request.status=411;return request;}
@@ -184,7 +196,13 @@ Response route(Database mut& db,Request const& request,String page){
         ResultSet rows=db.exec("SELECT id,student_no,name,email,age FROM students ORDER BY id LIMIT 200");
         if(!rows.ok){return errorResponse(500,"数据库查询失败");}
         String items="[";
-        for(int64 i=0;i<rows.rowCount();i=i+1){if(i>0){items=items+",";}items=items+rowJson(&rows,i);}
+        {
+            int64 i=0;
+            while (i<rows.rowCount()) {
+if(i>0){items=items+",";}items=items+rowJson(&rows,i);
+                i=i+1;
+            }
+        }
         return jsonResponse(200,items+"]");
     }
     if(request.method=="DELETE" && !collection){

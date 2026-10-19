@@ -8,7 +8,41 @@
 - `83f9852` 已合入并推送 `origin/master`：包括连续 u8 内存访问、定长数组值复制、普通字面量合并及浮点/二进制数组胶水修复。下文隔离检出的记录是各阶段的验证历史，不再表示这些基础改动尚未合入。
 - 主检出的编译器、独立导出器与 `vscode/dist/magel-editor-1.0.0.vsix` 已替换为修复后的验证快照；编译器 SHA256 为 `cb0f65cfbc952b91d30e9f50d09f8d81824afe3eecfc7fdf4bf5d471c36a2cd4`，版本保持 1.0.0。主检出运行定长数组值语义样例通过。
 - 快速门禁原始结果为九步成功八步；其中样例步骤的八个失败用例修复后逐项 VM 复测通过，三个对应正常样例 checked AOT 通过。没有把原始失败的整轮日志改记为绿色。
-- String 的语言字面量类型迁移、只读数据段、原生记录隔离，以及 opcode 关键字、复制/NonCopyable 检查、ABI 接入与反射/LSP 隐藏仍待实现；Map、Set、List 尚未隔离。
+- 上述已提交基线尚未包含 String 的语言字面量类型迁移与原生记录隔离；本次工作区中的 opcode 和大数、File、Proc 改动见下节，尚未交付。Map、Set、List 尚未隔离。
+
+## 当前工作区：opcode 与大数、文件、进程迁移
+
+- 用户最新确认：采用小写 `opcode T { new = create; drop = destroy; copy = clone; };`；
+  `#NonCopyable` 省略 `copy`，File 禁用复制。ABI 和 C++ 胶水共用此机制，
+  opcode 表示胶水侧不透明 `void*`，不向反射或 LSP 提示公开。
+- 用户将当前优先级调整为大数、File、Proc，随后继续 Map、Set、List；版本维持 1.0.0。
+- 用户最终确认：取消 opcode 句柄数量限制，struct 可以声明多个 opcode 值字段。
+  已补字段登记检查；`tests/magel_opcode_declarations.py --magel build/magel-opcode.exe`
+  的 13 项回归通过，覆盖正常、同类型双字段、异类型双字段、泛型、静态字段及不可复制检查。
+- 工作区已加入权威文法、AST 与生命周期绑定，标准库声明 BigInteger、BigDecimal、
+  File、Process；前两者绑定复制，后两者标记不可复制。
+- VM 新增通用 `NativeRecordType` 描述符与公开记录接口；复制调用宿主 clone，
+  销毁调用宿主 destroy。BigInt、BigFloat、File、Process 的专用对象种类和语义字段
+  已从 VM 核心删除，操作迁到 `source/glue/`，文件适配器仍可由 MCU 注入。
+- `tools/test_native_records.cpp` 已验证独立复制、类型身份隔离、不可复制、幂等释放
+  与运行时退出销毁；`build/test-native-records.exe` 通过。
+- 默认反射编译器构建为独立 `build/magel-opcode.exe`，保留原交付二进制。
+  `opcode_big_numbers`、`object_copy`、`bigint_methods`、`file_proc` VM 通过；
+  `bigint`、`bigfloat` 携带各自 `.in` 输入后与期望输出一致。
+- `File::new` 与 `Process::new` 的 VM 创建、读写和关闭专项通过；输出为 `opcode-file`、`opcode-proc:0`。
+- 自定义 opcode 复制通过；`#NonCopyable` 直接复制、File 直接复制、缺少 drop
+  的声明均在编译期拒绝。MCU 文件胶水的无异常、无 RTTI 语法检查通过；
+  原生 LSP 语法检查、关键字一致性及文档链接检查通过。
+- 新增不可复制聚合与数组的复制检查，以及借用值复制返回的检查。移动参数使用既有
+  `move(&value)` 写法；修复引用存储块被当成 opcode 壳释放的问题后，移动参数示例通过且无泄漏提示。
+  共享 VM 的板端无异常、无 RTTI 语法检查通过；重新编译的桌面 VM 全部 324 项断言通过。
+- 尚未完成：File/Proc 标准库包装层的显式引用迁移、Result/聚合中的完整复制限制与
+  所有权转移、反射/LSP 的全面隐藏回归、ABI 专项、完整 MCU 与 CI、独立导出器及
+  VSIX 重打包。现有 `std_file_result`、`std_process_probe` 被新增复制检查拒绝，
+  不能将本工作区标记为已完成或可发布。
+- checked AOT 专项发现新增胶水头未展开及大数定义顺序问题，导出器已修正；
+  `build/opcode-big-numbers-aot3.exe` 已生成并运行，输出 `17 22 9 11`，与 VM 一致。
+  原始失败日志保留，不将其他尚未复测的 AOT 用例算作通过。
 
 ## 已确认的语义
 
@@ -21,7 +55,7 @@
 - 按用户补充要求，不添加解引用运算；数组引用通过 `s[i]` 和 `s = value` 直接访问。
 - 字面量可以复制给按值数组形参，也可以只读借用；不能直接可变借用。
 - `char[]` 隐式转换为 `String` 采用复制，避免引入借用字符串的生命周期分支。
-- 按用户最新要求，迁移顺序为 String → Opcode → Map → Set → List → 大数、File、Proc；三类容器优先于后续资源类型。
+- 早期排序为 String → Opcode → Map → Set → List；用户随后明确要求先完成大数、File、Proc，本工作区按最新优先级执行，三类容器仍待后续隔离。
 - Set、Map、List 的迭代顺序不作保证；不在胶水迭代路径中排序。
 
 ## 起点核对
@@ -232,11 +266,11 @@ Opcode 单一码表、整数序列化、VM/AOT 派发迁移尚未开始。
 - `opcode` 为区分大小写的小写语言关键字，类型声明采用 `opcode File { ... }`；它表示胶水内部对象的引用对象，不能当作普通整数句柄赋值复制。
 - 默认可复制的 opcode 类型必须在声明体内声明复制胶水函数；语言层复制须调用该函数，取得独立的胶水记录，禁止仅复制内部指针。
 - `#NonCopyable` 修饰 opcode 类型后，在编译期拒绝复制初始化、赋值复制、按值传参及按值返回；现有显式移动规则继续有效。File 等资源对象可据此禁止复制。
-- 这是用户已经确认的语言约束，目前尚未实现为权威文法及类型检查能力。具体复制函数签名及胶水绑定随实现维护，不把这里的约定当作已支持 API。
+- 这些声明约束已进入权威文法与类型检查，声明体采用 new = 创建函数、drop = 销毁函数、copy = 复制函数的绑定形式；不可复制类型省略 copy。
 - String、数组继续遵守值语义；opcode 的内部引用表示不能使它们的普通值复制产生共享可写状态。版本保持 1.0.0，不增加解引用运算符。
 - ABI 与 C++ 胶水共用 opcode 声明及复制/移动限制；ABI 绑定的宿主对象也必须提供复制函数或显式标记 #NonCopyable，不能退回整数别名绕过所有权规则。
 - opcode 在语言中的角色等同胶水侧 void* 不透明对象指针；语言不解释其目标内存布局，复制必须经声明的胶水函数。
-- opcode 对象不进入反射结果及 LSP 提示；内部类型检查、绑定和所有权信息仍保留，不能靠退化为整数来实现隐藏。
+- opcode 是内部保存不透明句柄的特殊结构体，可以声明语言保存的普通字段及附加方法。反射可读取对象及公开字段；内部 opcode 句柄不反射，LSP 保持隐藏胶水实现细节。
 
 ## 字节常量与稳定门禁续验
 
@@ -251,3 +285,38 @@ Opcode 单一码表、整数序列化、VM/AOT 派发迁移尚未开始。
 - 修复版 float32、float64 与 std::binary 三个 checked AOT 样例均通过，日志 build/byte-glue-fixed-aot.log；对应 8 项 VM 复测全通过。不能把修复前的整轮 CI 改记为绿色。
 - 修复版 1.0.0 VSIX 完成 npm run package 及插件测试，ZIP 清单、编译器 LSP initialize 的 serverInfo.version 与 VERSION 一致，内嵌编译器与 build/byte-glue-fixed-compiler.exe 逐字节相同，SHA256 为 cb0f65cfbc952b91d30e9f50d09f8d81824afe3eecfc7fdf4bf5d471c36a2cd4。
 - 使用两处胶水修复后的最新内嵌资产重建独立 AOT 导出器，十四项真实导出检查再次全部通过（build/byte-glue-fixed-emitter-test.log）。
+
+## File、Process 与大数的核心隔离
+
+- 宿主记录及原生操作已迁入 source/glue；删除 VM 目录中的文件适配器，FileApi 改由胶水维护。
+- VM 静态库只包含 stackvm.cpp，数字后端归属宿主记录库；NativeServices 通过不透明服务名向文件胶水提供适配器。
+- Process 是公开类型名称，proc 仅为内部简称。File、Process 使用 #NonCopyable，包装函数通过 const& 借用。
+- Option/Result 的 take 与 Result 的 takeError 消费接收者，支持拥有载荷移动；复制式 unwrap/expect 仍须遵守禁止复制检查。
+- 通用记录仅链接 VM 核心的生命周期专项和桌面/无异常无 RTTI 的核心语法检查已经通过；本轮完整门禁及打包仍待最终验证记录。
+- String 与 Map、Set、List 的完整隔离，以及自定义 opcode 的 ABI 指针映射仍需后续实现与验证。
+
+## opcode 成员与前端类型归一
+
+- 前端 Kind 删除 String、BigInt、BigFloat、File、Proc；公开类型以 lang 包中的 String、BigInteger、BigDecimal、File、Process 声明为准，不保留 string 类型别名。
+- opcode 声明允许普通字段、实例方法和静态方法。普通字段不描述宿主内存布局，按语言值语义独立复制及销毁；struct 可包含多个 opcode 成员。
+- self.opcode 仅声明模块可访问，new 后只读；普通赋值、复合赋值及取得可写引用均受编译期检查。允许只读引用及传给胶水。
+- 反射沿用 @Reflect 规则，可以读取嵌套 opcode 对象及公开字段，内部句柄不进入字段表。
+- 大数递归返回值直接 println、循环 format、弃用返回值，String 附加方法，以及 opcode 字段复制、移动和反射调用已通过固定快照的 VM 与 checked AOT 专项；最终完整门禁及本轮重新打包尚待完成。
+
+## 语法调整与生成工程续验
+
+- 权威文法删除 do/while、三段式 for 和方括号区间；List 使用方括号，Set 使用花括号。range 为左闭右开，rangeEq 为双闭区间，版本保持 1.0.0。
+- 新增 for-in/while 的 else 值表达式，支持 yield 与单值分支。自定义区间迭代遵循 NextValue<T>，自定义普通 match 值遵循 Equal<T>；match 的区间限整数与 char。
+- 区间、循环拥有值、File/Process 与大数资源专项通过 VM 和 checked AOT；MCU 无异常、无 RTTI 专项通过 45 个样例及文件、移动和输出附加检查。日志保留在 build/continued-final-*.log 与 build/final-range-adapters-aot.log。
+- 修复元组辅助参数符号重名、泛型 Pair 名称归一、普通变量误用 opcode 清理，以及 Result/Option 值载荷被误记为借用来源的问题。std_cli、reference_combinations 与借用正反例专项已通过。
+- 解析器生成入口固定使用用户指定的 ParseEngine 和 std::regex。工程生成器展开 %include，并收录前端语义分片、VM 分片和宿主胶水；导出 CMake 默认同时编入前端和运行时反射，分别构建 VM 核心与宿主记录库。
+- 独立工程首次构建发现两类分片清单遗漏，已补齐目录收集。修正后的试验工程完成独立编译，并运行通过基础、大数复制、区间循环和递归大数临时值样例；最终生成工程复验及完整门禁继续执行，不能将此前停止的门禁日志记作绿色。
+- String 全部运行时操作、Map/Set/List 的 VM 核心隔离，以及自定义 opcode 的通用 ABI 指针映射仍未完成。
+
+## 区间端点补验
+
+- 完整样例门禁通过 256 个正常样例和 307 个错误样例，日志 build/opcode-syntax-final-full-ci.log 保留；该轮在后续专项期间停止，未记作整套门禁绿色结果。
+- 独立区间专项发现 strtoll 对超界十进制词素的饱和会绕过范围检查。修复后在折叠前递归校验直接字面量、常量表达式和具名常量，for-in 与 match 共用检查，并保留直接取负的 int64 最小值位模式。
+- 修复版通过循环值表达式 VM/checked AOT 和 19 个拒绝场景；八种整数区间专项通过 VM/AOT、17 个拒绝场景和两类动态错误。match 重叠专项通过完整 64 位边界、JSON、错误并存及 LSP warning 级别检查。对应日志为 build/range-constants-{vm,aot,foreach,overlap}-test.log。
+- 生成器自动导出的 153 文件工程独立构建通过，并运行基础、File/Process、大数复制和递归返回值以及区间循环样例；该独立工程快照早于上述端点补查。最新书稿 39 个完整程序与 LaTeX 同步检查通过，PDF 重建及改动页检查完成。
+- 最新端点修复已进入根编译器，重新启动完整门禁，日志 build/opcode-syntax-verified-full-ci.log；本轮尚未完成提交推送和最终插件重打包。

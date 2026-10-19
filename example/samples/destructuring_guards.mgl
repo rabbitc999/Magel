@@ -24,6 +24,12 @@ int64 main() {
     assert(result == 4);
     match ("hello") { "hello" if false => { result = 8; } "hello" => { result = 5; } _ => { result = 0; } }
     assert(result == 5);
-    for (int64 i=0; i<20; i++) { auto (a, (_, b)) = makePair(); assert(a == "hello" && b == "owned"); }
+    {
+        int64 i=0;
+        while (i<20) {
+ auto (a, (_, b)) = makePair(); assert(a == "hello" && b == "owned"); 
+            i++;
+        }
+    }
     println("destructuring guards OK"); return 0;
 }

@@ -280,7 +280,12 @@ std::size_t BorrowSourceDepth(int id, bool address)
     if (node.kind == MNode::Tuple || node.kind == MNode::EnumCtor || node.kind == MNode::List || node.kind == MNode::CollectionLiteral)
     {
         std::size_t depth = 0u;
-        for (const int child : node.kids) depth = std::max(depth, BorrowSourceDepth(child));
+        for (const int child : node.kids)
+        {
+            // 构造器复制普通值；仅传播载荷中的真实借用，不传播值副本的临时存储地址。
+            if (N(child).kind == MNode::List || HasBorrowedValue(RawExprType(child)))
+                depth = std::max(depth, BorrowSourceDepth(child));
+        }
         return depth;
     }
     // 新分配的拥有型引用没有局部槽来源，仍按既有显式释放规则管理。

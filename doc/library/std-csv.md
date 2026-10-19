@@ -189,6 +189,6 @@ Result<String,CsvError> writeCsv(List<List<String>> rows, char delimiter=',');
 std::csv::writeCsv(rows, delimiter);
 ```
 
-**源码**：[source/std/csv.mgl:50](../../source/std/csv.mgl#L50)。
+**源码**：[source/std/csv.mgl:56](../../source/std/csv.mgl#L56)。
 
 **完整示例**：[example/samples/std_csv.mgl](../../example/samples/std_csv.mgl)。

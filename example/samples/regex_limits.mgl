@@ -5,16 +5,28 @@ import std::regex;
 
 int64 main() {
     String oversized = "";
-    for (int64 i = 0; i < 4097; i = i + 1) { oversized = oversized + "a"; }
+    {
+        int64 i = 0;
+        while (i < 4097) {
+ oversized = oversized + "a"; 
+            i = i + 1;
+        }
+    }
     Result<std::regex::Regex, std::regex::RegexError> longRule = std::regex::Regex::compile(oversized);
     assert(longRule.isOk());
     assert(longRule.unwrap().fullMatch(oversized));
 
     int64 before = std::memory::Memory::stats().liveBlocks;
-    for (int64 i = 0; i < 300; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < 300) {
+
         Result<std::regex::Regex, std::regex::RegexError> item =
         std::regex::Regex::compile(format("x{}y", i));
         assert(item.isOk());
+    
+            i = i + 1;
+        }
     }
     int64 after = std::memory::Memory::stats().liveBlocks;
     assert(after == before);

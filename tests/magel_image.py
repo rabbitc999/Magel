@@ -39,7 +39,7 @@ def main():
     expected = (ROOT / "example/expected/std_image.txt").read_text(encoding="utf-8")
     result = run(MAGEL, "run", source, "--out", work / "vm")
     assert result.stdout == expected and not result.stderr, (result.stdout, result.stderr)
-    # AOT 导出一致（按用户约定：AOT 默认不做分配护栏检查）。
+    # 显式验证无护栏 AOT 导出的一致性；工具链默认配置仍为 checked。
     prefix = work / "image"
     run(MAGEL, "run", source, "--emit", "--out", prefix)
     common = ["--quad", prefix.with_suffix(".quad"), "--data", prefix.with_suffix(".data.bin"),

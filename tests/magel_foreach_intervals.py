@@ -29,21 +29,21 @@ def main():
         assert result.returncode == 0 and result.stdout == "for intervals OK\n" and not result.stderr, result
 
     rejected = {
-        "int8_255": "for(int8 x in [0,255]){}",
-        "int8_256": "for(int8 x in [0,256]){}",
-        "uint8_256": "for(uint8 x in [0,256]){}",
-        "uint8_half_256": "for(uint8 x in [0,256)){}",
-        "int8_below": "for(int8 x in [-129,0]){}",
-        "uint8_negative": "for(uint8 x in [-1,2]){}",
-        "signed64_overflow": "for(int64 x in [0,18446744073709551615]){}",
-        "constant_expression": "for(int8 x in [0,100+100]){}",
-        "named_constant": "const int64 stop=255;for(int8 x in [0,stop]){}",
-        "reversed": "for(int8 x in [10,0]){}",
-        "non_integer": "for(float64 x in [0,1]){}",
-        "float_endpoint": "for(int8 x in [0.0,1.0]){}",
-        "string_endpoint": 'for(x in ["a","b"]){}',
-        "reference_variable": "for(int8 mut& x in [0,1]){}",
-        "borrow_escape": "int8 fn() saved=int8 fn(){return (int8)0;};for(int8 x in [0,1]){saved=int8 fn(){x};}",
+        "int8_255": 'for(int8 x in std::lang::rangeEq<int8>(0,255)){}',
+        "int8_256": 'for(int8 x in std::lang::rangeEq<int8>(0,256)){}',
+        "uint8_256": 'for(uint8 x in std::lang::rangeEq<uint8>(0,256)){}',
+        "uint8_half_256": 'for(uint8 x in std::lang::range<uint8>(0,256)){}',
+        "int8_below": 'for(int8 x in std::lang::rangeEq<int8>(-129,0)){}',
+        "uint8_negative": 'for(uint8 x in std::lang::rangeEq<uint8>(-1,2)){}',
+        "signed64_overflow": 'for(int64 x in std::lang::rangeEq<int64>(0,18446744073709551615)){}',
+        "constant_expression": 'for(int8 x in std::lang::rangeEq<int8>(0,100+100)){}',
+        "named_constant": 'const int64 stop=255;for(int8 x in std::lang::rangeEq<int8>(0,stop)){}',
+        "reversed": 'for(int8 x in std::lang::rangeEq<int8>(10,0)){}',
+        "non_integer": 'for(float64 x in std::lang::rangeEq<float64>(0,1)){}',
+        "float_endpoint": 'for(int8 x in std::lang::rangeEq<int8>(0.0,1.0)){}',
+        "string_endpoint": 'for(x in std::lang::rangeEq("a","b")){}',
+        "reference_variable": 'for(int8 mut& x in std::lang::rangeEq<int8 mut&>(0,1)){}',
+        "borrow_escape": 'int8 fn() saved=int8 fn(){return (int8)0;};for(int8 x in std::lang::rangeEq<int8>(0,1)){saved=int8 fn(){x};}',
         "left_open": "for(x in (0,1)){}",
         "left_open_right_closed": "for(x in (0,1]){}",
     }
@@ -53,8 +53,8 @@ def main():
         assert result.returncode != 0 and result.stderr,(name,result)
         assert "terminate called" not in result.stderr,(name,result)
     for name, body in {
-        "dynamic_overflow": "int64 stop=256;for(uint8 x in [0,stop]){}",
-        "dynamic_reverse": "int64 start=4;int64 stop=2;for(int8 x in [start,stop]){}",
+        "dynamic_overflow": 'int64 stop=256;for(uint8 x in std::lang::rangeEq<uint8>(0,stop)){}',
+        "dynamic_reverse": 'int64 start=4;int64 stop=2;for(int8 x in std::lang::rangeEq<int8>(start,stop)){}',
     }.items():
         source=work/(name+".mgl");source.write_text("int64 main(){"+body+"return 0;}\n",encoding="utf-8")
         for backend in ("run","aot"):

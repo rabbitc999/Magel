@@ -44,7 +44,13 @@ Result<DateTime,DateTimeError> fromUnixSeconds(int64 seconds) {
 /** @brief 输出固定位数的非负十进制字段。 */
 String dateDigits(int64 value, int64 width) {
     String result="";
-    for (int64 i=0;i<width;i=i+1) { result=format("{}",(char)(48+value%10))+result; value=value/10; }
+    {
+        int64 i=0;
+        while (i<width) {
+ result=format("{}",(char)(48+value%10))+result; value=value/10; 
+            i=i+1;
+        }
+    }
     return result;
 }
 /** 输出严格的 YYYY-MM-DDTHH:MM:SSZ 文本。 */
@@ -61,11 +67,17 @@ Result<DateTime,DateTimeError> parseUtc(String text) {
         return Result<DateTime,DateTimeError>::Err(DateTimeError::InvalidFormat);
     }
     List<int64> fields; int64 current=0;
-    for (int64 i=0;i<20;i=i+1) {
+    {
+        int64 i=0;
+        while (i<20) {
+
         if (i==4 || i==7 || i==10 || i==13 || i==16 || i==19) { fields.push(current); current=0; }
         else {
             if ((char)input[i]<'0' || (char)input[i]>'9') { return Result<DateTime,DateTimeError>::Err(DateTimeError::InvalidFormat); }
             current=current*10+(int64)(char)input[i]-48;
+        }
+    
+            i=i+1;
         }
     }
     DateTime value; value.year=fields[0]; value.month=fields[1]; value.day=fields[2];

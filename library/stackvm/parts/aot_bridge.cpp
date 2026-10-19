@@ -133,7 +133,7 @@ struct RuntimeBridge::Impl
 #endif
     DataArea *data = nullptr;
     const NativeRegistry *registry = nullptr;
-    FileApi *fileApi = nullptr;
+    const NativeServices *hostServices = nullptr;
     bool threadsEnabled = false;
     HeapAllocator *heapAllocator = nullptr;
     Heap defaultHeap;
@@ -144,7 +144,6 @@ struct RuntimeBridge::Impl
     Memory::Vector<Memory::String> input;
     std::size_t inputIndex = 0;
     Memory::Vector<Memory::String> programArguments;
-    int bigFloatPrecision = 34;
     bool exitRequested = false;
     int exitCode = 0;
     NativeInvoker invokerFn;  ///< `NativeContext::invoker` 用（胶水回调）。
@@ -435,7 +434,7 @@ bool RuntimeBridge::begin(std::size_t heapBase)
 {
     impl_->data = data_;
     impl_->registry = registry_;
-    impl_->fileApi = fileApi_;
+    impl_->hostServices = hostServices_;
     impl_->threadsEnabled = threadsEnabled_;
     impl_->heapAllocator = heapAllocator_;
     impl_->heap = (heapAllocator_ == nullptr) ? static_cast<HeapAllocator *>(&impl_->defaultHeap) : heapAllocator_;
@@ -452,7 +451,6 @@ bool RuntimeBridge::begin(std::size_t heapBase)
     impl_->text.clear();
     impl_->input.clear();
     impl_->inputIndex = 0u;
-    impl_->bigFloatPrecision = 34;
     impl_->exitRequested = false;
     impl_->exitCode = 0;
     /* 全局变量块：每个桥一份（线程各自独立，协程共享）。 */
@@ -813,10 +811,9 @@ bool RuntimeBridge::callNative(const Memory::String &name,
             context.objects = &impl_->objects;
             context.timers = &impl_->timers;
             context.threadId = impl_->threadId;
-            context.bigFloatPrecision = &impl_->bigFloatPrecision;
             context.exitRequested = &impl_->exitRequested;
             context.exitCode = &impl_->exitCode;
-            context.fileApi = fileApi_;
+            context.hostServices = hostServices_;
             context.invoker = &impl_->invokerFn;
             return context;
         };
@@ -1123,7 +1120,7 @@ bool RuntimeBridge::callNative(const Memory::String &name,
             }
             DataArea *data = data_;
             const NativeRegistry *registry = registry_;
-            FileApi *api = fileApi_;
+            const NativeServices *api = hostServices_;
             auto shared = impl_->shared;
             Memory::Vector<Memory::String> arguments = impl_->programArguments;
             const std::size_t globalsSize = globalsSize_;
@@ -1137,7 +1134,7 @@ bool RuntimeBridge::callNative(const Memory::String &name,
                 RuntimeBridge child;
                 child.setData(data);
                 child.setNativeRegistry(registry);
-                child.setFileApi(api);
+                child.setHostServices(api);
                 child.setThreadsEnabled(true);
                 child.setProgramArguments(std::move(arguments));
                 child.setGlobalsSize(globalsSize);
@@ -1566,10 +1563,9 @@ bool RuntimeBridge::callNative(const Memory::String &name,
         context.timers = &impl_->timers;
         context.machine = nullptr;
         context.threadId = impl_->threadId;
-        context.bigFloatPrecision = &impl_->bigFloatPrecision;
         context.exitRequested = &impl_->exitRequested;
         context.exitCode = &impl_->exitCode;
-        context.fileApi = (fileApi_ != nullptr) ? fileApi_ : nullptr;
+        context.hostServices = (hostServices_ != nullptr) ? hostServices_ : nullptr;
         context.invoker = &impl_->invokerFn;
 
         Memory::Vector<Slot> slots;
@@ -1642,10 +1638,9 @@ bool RuntimeBridge::callNative(const Memory::String &name,
     context.interruptPosterFn = [this](std::int64_t timer, std::int64_t source) {
         impl_->timers.pending.push_back(InterruptEvent{ timer, source, 0, impl_->threadId });
     };
-    context.bigFloatPrecision = &impl_->bigFloatPrecision;
     context.exitRequested = &impl_->exitRequested;
     context.exitCode = &impl_->exitCode;
-    context.fileApi = fileApi_;
+    context.hostServices = hostServices_;
     context.invoker = &impl_->invokerFn;
     NativeCallContextImpl callContext(context, impl_->invokerFn, &error_);
     NativeValue returned;

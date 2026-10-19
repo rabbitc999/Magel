@@ -2,6 +2,7 @@
 #define PARSE_ENGINE_STD_PROCESS_HPP
 
 #include "../magel_glue.hpp"
+#include "native_record.hpp"
 
 #include <cstdint>
 #include <cstdio>
@@ -10,11 +11,11 @@
 namespace std_process_glue
 {
 
-/* `std::process` 的宿主实现从 VM 内部原生表（`kSlotNativeEntries` 的 `__vm_proc_*`）
- * 搬到 Registry 胶水：宿主管道改用 `HandlePool` 的整数 ID，VM 侧只看到 `proc`(int64)。
- * `processRun` 打开命令的 stdout 管道，`processRead` 读一行并剥掉 CR/LF，
- * `processClose` 用 `pclose` 取退出码，`system` 是一次性执行。句柄池随注册表存活，
- * 析构时兜底关闭残留管道；`pclose` 过的句柄立即从池里删除，重复关闭会报错。 */
+/**
+ * @brief 关闭宿主进程管道并取得退出状态。
+ * @param pipe 有效的 stdout 管道。
+ * @return 宿主进程结束状态。
+ */
 inline int closeProcessPipe(std::FILE *pipe)
 {
 #ifdef _WIN32
@@ -24,50 +25,39 @@ inline int closeProcessPipe(std::FILE *pipe)
 #endif
 }
 
-struct ProcessTag;
-
-struct ProcessPool
+/**
+ * @brief 由运行时壳独占的宿主进程管道。
+ */
+struct ProcessRecord
 {
-    magel_glue::HandlePool<ProcessTag, std::FILE *> pipes;
-
-    std::FILE *find(std::int64_t handle)
-    {
-        std::FILE **slot = pipes.get(static_cast<std::uint64_t>(handle));
-        return slot == nullptr ? nullptr : *slot;
-    }
-
-    /**
-     * 关闭句柄并返回退出码；句柄无效 / 已关闭时返回 false（`code` 不动）。
-     */
-    bool close(std::int64_t handle, int *code)
-    {
-        const std::uint64_t id = static_cast<std::uint64_t>(handle);
-        const auto found = pipes.objects.find(id);
-        if (found == pipes.objects.end() || found->second == nullptr) return false;
-        if (code != nullptr) *code = closeProcessPipe(found->second);
-        pipes.objects.erase(found);
-        return true;
-    }
-
-    ~ProcessPool()
-    {
-        for (auto &entry : pipes.objects)
-            if (entry.second != nullptr)
-            {
-                closeProcessPipe(entry.second);
-                entry.second = nullptr;
-            }
-    }
+    std::FILE *pipe = nullptr;
 };
+/**
+ * @brief 回收记录并关闭尚未关闭的管道。
+ * @param record 待销毁的宿主记录。
+ */
+inline void destroyProcess(void *record)
+{
+    auto *process = static_cast<ProcessRecord *>(record);
+    if (process->pipe) closeProcessPipe(process->pipe);
+    delete process;
+}
+inline const stackvm::NativeRecordType processType{ "Process", nullptr, destroyProcess };
 
+/**
+ * @brief 注册使用通用不透明记录的进程操作。
+ * @param registry 胶水注册表。
+ * @param error 绑定失败的诊断。
+ * @return 全部注册成功时为 true。
+ */
 inline bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr)
 {
     using magel_glue::Context;
     using Memory::String;
-    const auto pool = Memory::makeShared<ProcessPool>();
-    return registry.bindTypedWithContext<std::int64_t, String>(
+    return native_record_glue::bind(registry.native(), "std::process::__processDrop", 1, native_record_glue::drop, error)
+           && registry.bindTypedWithContext<std::int64_t, String>(
                "std::process::__processRun",
-               [pool](Context &context, String command) -> std::int64_t {
+               [](Context &context, String command) -> std::int64_t {
 #ifdef _WIN32
                    std::FILE *pipe = _popen(command.c_str(), "r");
 #else
@@ -78,13 +68,17 @@ inline bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr
                        context.fail("启动命令失败：" + command);
                        return 0;
                    }
-                   return static_cast<std::int64_t>(pool->pipes.add(pipe));
+                   auto *record = new ProcessRecord{ pipe };
+                   const auto handle = context.makeNativeRecord(processType, record);
+                   if (!handle) destroyProcess(record);
+                   return handle;
                },
                error)
            && registry.bindTypedWithContext<String, std::int64_t>(
                "std::process::__processRead",
-               [pool](Context &context, std::int64_t handle) -> String {
-                   std::FILE *pipe = pool->find(handle);
+               [](Context &context, std::int64_t handle) -> String {
+                   auto *record = static_cast<ProcessRecord *>(context.nativeRecord(handle, processType));
+                   std::FILE *pipe = record ? record->pipe : nullptr;
                    if (pipe == nullptr)
                    {
                        context.fail("pread 用到的进程句柄无效或已经关闭");
@@ -103,14 +97,17 @@ inline bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr
                error)
            && registry.bindTypedWithContext<std::int64_t, std::int64_t>(
                "std::process::__processClose",
-               [pool](Context &context, std::int64_t handle) -> std::int64_t {
-                   int code = 0;
-                   if (!pool->close(handle, &code))
+               [](Context &context, std::int64_t handle) -> std::int64_t {
+                   auto *record = static_cast<ProcessRecord *>(context.nativeRecord(handle, processType));
+                   if (!record || !record->pipe)
                    {
                        context.fail("pclose 用到的进程句柄无效或已经关闭");
                        return 0;
                    }
-                   return static_cast<std::int64_t>(code);
+                   const auto code = closeProcessPipe(record->pipe);
+                   record->pipe = nullptr;
+                   context.releaseNativeRecord(handle);
+                   return code;
                },
                error)
            && registry.bindTypedWithContext<std::int64_t, String>(

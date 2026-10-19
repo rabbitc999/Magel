@@ -18,25 +18,25 @@ def main():
     compiler = parser.parse_args().magel.resolve()
     env = dict(os.environ, MAGEL_LANG='zh', MAGEL_NO_STDIN_INPUT='1')
     cases = (
-        ('ranges', 'int64 x=17;', '[15,25]=>{} [10,20]=>{}', 1),
-        ('ranges_reverse', 'int64 x=17;', '[10,20]=>{} [15,25]=>{}', 1),
-        ('single_first', 'int64 x=15;', '15=>{} [15,20]=>{}', 1),
-        ('range_first', 'int64 x=15;', '[15,20]=>{} 15=>{}', 1),
-        ('closed_touch', 'int64 x=20;', '[10,20]=>{} [20,30]=>{}', 1),
-        ('open_touch', 'int64 x=20;', '[10,20)=>{} [20,30]=>{}', 0),
-        ('open_single', 'int64 x=20;', '[10,20)=>{} 20=>{}', 0),
-        ('empty', 'int64 x=15;', '[15,15)=>{} 15=>{}', 0),
-        ('point_range', 'int64 x=15;', '[15,15]=>{} 15=>{}', 1),
-        ('reversed', 'int64 x=15;', '[20,10]=>{} [15,25]=>{}', 0),
-        ('negative', 'int64 x=-10;', '[-20,-10]=>{} [-15,-5]=>{}', 1),
-        ('min', 'int64 x=(-9223372036854775807-1);', '[(-9223372036854775807-1),-9223372036854775807]=>{} [-9223372036854775807,0]=>{}', 1),
-        ('max', 'int64 x=9223372036854775807;', '[9223372036854775806,9223372036854775807]=>{} [9223372036854775807,9223372036854775807]=>{}', 1),
-        ('uint64', 'uint64 x=18446744073709551615u;', '[18446744073709551614u,18446744073709551615u]=>{} [18446744073709551615u,18446744073709551615u]=>{}', 1),
-        ('uint64_open', 'uint64 x=18446744073709551615u;', '[18446744073709551614u,18446744073709551615u)=>{} [18446744073709551615u,18446744073709551615u]=>{}', 0),
-        ('guard', 'int64 x=15;', '[10,20] if(false)=>{} [15,25]=>{}', 1),
-        ('constant_expression', 'int64 x=10;', '[1+2,5*3]=>{} [10,20]=>{}', 1),
-        ('dynamic', 'int64 x=15,lo=10;', '[lo,20]=>{} [15,25]=>{}', 0),
-        ('float', 'float64 x=15.0;', '[10.0,20.0]=>{} [15.0,25.0]=>{}', 0),
+        ('ranges', 'int64 x=17;', 'std::lang::rangeEq(15,25)=>{} std::lang::rangeEq(10,20)=>{}', 1),
+        ('ranges_reverse', 'int64 x=17;', 'std::lang::rangeEq(10,20)=>{} std::lang::rangeEq(15,25)=>{}', 1),
+        ('single_first', 'int64 x=15;', '15=>{} std::lang::rangeEq(15,20)=>{}', 1),
+        ('range_first', 'int64 x=15;', 'std::lang::rangeEq(15,20)=>{} 15=>{}', 1),
+        ('closed_touch', 'int64 x=20;', 'std::lang::rangeEq(10,20)=>{} std::lang::rangeEq(20,30)=>{}', 1),
+        ('open_touch', 'int64 x=20;', 'std::lang::range(10,20)=>{} std::lang::rangeEq(20,30)=>{}', 0),
+        ('open_single', 'int64 x=20;', 'std::lang::range(10,20)=>{} 20=>{}', 0),
+        ('empty', 'int64 x=15;', 'std::lang::range(15,15)=>{} 15=>{}', 0),
+        ('point_range', 'int64 x=15;', 'std::lang::rangeEq(15,15)=>{} 15=>{}', 1),
+        ('reversed', 'int64 x=15;', 'std::lang::rangeEq(20,10)=>{} std::lang::rangeEq(15,25)=>{}', 0),
+        ('negative', 'int64 x=-10;', 'std::lang::rangeEq(-20,-10)=>{} std::lang::rangeEq(-15,-5)=>{}', 1),
+        ('min', 'int64 x=(-9223372036854775807-1);', 'std::lang::rangeEq((-9223372036854775807-1),-9223372036854775807)=>{} std::lang::rangeEq(-9223372036854775807,0)=>{}', 1),
+        ('max', 'int64 x=9223372036854775807;', 'std::lang::rangeEq(9223372036854775806,9223372036854775807)=>{} std::lang::rangeEq(9223372036854775807,9223372036854775807)=>{}', 1),
+        ('uint64', 'uint64 x=18446744073709551615u;', 'std::lang::rangeEq(18446744073709551614u,18446744073709551615u)=>{} std::lang::rangeEq(18446744073709551615u,18446744073709551615u)=>{}', 1),
+        ('uint64_open', 'uint64 x=18446744073709551615u;', 'std::lang::range(18446744073709551614u,18446744073709551615u)=>{} std::lang::rangeEq(18446744073709551615u,18446744073709551615u)=>{}', 0),
+        ('guard', 'int64 x=15;', 'std::lang::rangeEq(10,20) if(false)=>{} std::lang::rangeEq(15,25)=>{}', 1),
+        ('constant_expression', 'int64 x=10;', 'std::lang::rangeEq(1+2,5*3)=>{} std::lang::rangeEq(10,20)=>{}', 1),
+        ('dynamic', 'int64 x=15,lo=10;', 'std::lang::rangeEq(lo,20)=>{} std::lang::rangeEq(15,25)=>{}', 0),
+        ('float', 'float64 x=15.0;', '_ if 10.0 <= x && x <= 20.0=>{} _ if 15.0 <= x && x <= 25.0=>{}', 0),
     )
     with tempfile.TemporaryDirectory(prefix='magel-match-overlap-') as folder:
         work = Path(folder)
@@ -60,19 +60,19 @@ def main():
             print('[通过] ' + name, flush=True)
 
         source = work / 'execution.mgl'
-        source.write_text('int64 main(){int64 hits=0;match(17){[15,25]=>{hits=1;} [10,20]=>{hits=2;} _=>{}}assert(hits==1);println("match overlap OK");return 0;}', encoding='utf-8')
+        source.write_text('int64 main(){int64 hits=0;match(17){std::lang::rangeEq(15,25)=>{hits=1;} std::lang::rangeEq(10,20)=>{hits=2;} _=>{}}assert(hits==1);println("match overlap OK");return 0;}', encoding='utf-8')
         for backend in ('run', 'aot'):
             output = work / (backend + '.exe')
             result = invoke(compiler, backend, source, '--out', output)
             assert result.returncode == 0 and 'MGL1601' in result.stderr, result
             if backend == 'aot': result = invoke(output)
             assert result.returncode == 0 and result.stdout == 'match overlap OK\n', result
-        source.write_text('int64 main(){match(1){[0,2]=>{} 1=>{missing();} _=>{}}return 0;}', encoding='utf-8')
+        source.write_text('int64 main(){match(1){std::lang::rangeEq(0,2)=>{} 1=>{missing();} _=>{}}return 0;}', encoding='utf-8')
         result = invoke(compiler, 'check', source, 'json')
         diagnostics = json.loads(result.stdout)['diagnostics']
         assert result.returncode != 0 and {d['severity'] for d in diagnostics} == {'warning', 'error'}, result
         # 编辑器必须保留 warning，不能把成功检查中的警告升级为 error。
-        source.write_text('int64 main(){match(17){[15,25]=>{} [10,20]=>{} _=>{}}return 0;}', encoding='utf-8')
+        source.write_text('int64 main(){match(17){std::lang::rangeEq(15,25)=>{} std::lang::rangeEq(10,20)=>{} _=>{}}return 0;}', encoding='utf-8')
         process = subprocess.Popen([str(compiler), 'lsp'], cwd=work, env=env,
                                    stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         messages = queue.Queue()

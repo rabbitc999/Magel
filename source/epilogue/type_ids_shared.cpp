@@ -41,6 +41,14 @@ std::shared_ptr<MType> NamedType(const Memory::String &name)
     auto type = Memory::makeShared<MType>();
     type->kind = MType::Struct;
     type->name = name;
+    auto opcode = g_opcodeTypes.find(name);
+    if (opcode == g_opcodeTypes.end() && name.find("::") != Memory::String::npos)
+        opcode = g_opcodeTypes.find(name.substr(name.rfind("::") + 2));
+    if (opcode != g_opcodeTypes.end())
+    {
+        type->kind = opcode->second.aggregate ? MType::Struct : MType::Opcode;
+        type->name = opcode->first;
+    }
     return type;
 }
 
@@ -401,10 +409,46 @@ simple_ast::NodePtr LowerDeclaredConversion(int valueId,
 std::shared_ptr<MType> ExprType(int id);
 bool InferAutoFunctionResult(int statementId, std::shared_ptr<MType> *result);
 /**
+ * @brief 查询语言类型对应的 opcode 生命周期声明。
+ * @param type 待查询的语言类型。
+ * @return 对应声明，无声明时为空。
+ */
+const MOpcodeDefinition *FindOpcodeDefinition(const std::shared_ptr<MType> &type)
+{
+    if (!type || type->kind != MType::Opcode) return nullptr;
+    const auto found = g_opcodeTypes.find(type->name);
+    return found == g_opcodeTypes.end() ? nullptr : &found->second;
+}
+/**
+ * @brief 查询 opcode 特殊结构体的声明，包括具有普通字段的聚合表示。
+ * @param type 待查询的语言类型。
+ * @return 对应的生命周期及布局声明，没有声明时为空。
+ */
+const MOpcodeDefinition *FindOpcodeDeclaration(const std::shared_ptr<MType> &type)
+{
+    if (!type || (type->kind != MType::Opcode && type->kind != MType::Struct)) return nullptr;
+    const auto found = g_opcodeTypes.find(type->name);
+    return found == g_opcodeTypes.end() ? nullptr : &found->second;
+}
+
+/**
+ * @brief 查询一个直接对象类型是否禁止复制。
+ * @param type 待检查类型。
+ * @return opcode 声明显式禁止复制时为 true。
+ */
+bool OpcodeNonCopyable(const std::shared_ptr<MType> &type)
+{
+    const auto *definition = FindOpcodeDefinition(type);
+    return definition && definition->nonCopyable;
+}
+
+/**
  * @brief 函数值复制兼容静态标签与拥有型捕获环境，其他对象沿用对象表复制。
  */
 const char *ObjectCopyFunction(const std::shared_ptr<MType> &type)
 {
+    if (const auto *definition = FindOpcodeDefinition(type); definition && !definition->copy.empty())
+        return definition->copy.c_str();
     return type && type->kind == MType::Func ? "__vm_function_copy" : "__vm_object_copy";
 }
 std::shared_ptr<MType> RawExprType(int id);

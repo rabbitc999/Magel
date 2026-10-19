@@ -144,7 +144,7 @@ int64 main()
 
     println("查一个没有的键：{}", ages["zoe"]);
 
-    for (int64 i = 0; i < ages.len(); i = i + 1)
+    for (int64 i in std::lang::range(0, ages.len()))
     {
         println("{} -> {}", ages.keyAt(i), ages.valAt(i));
     }
@@ -235,9 +235,9 @@ remove(5) 拿回 1，现在 len=1
 int64 main()
 {
     List<int64> order =
-    {
+    [
         3, 1, 2
-    };
+    ];
     println("{} {}", order.len(), order[0]);
 
     Set<int64> numbers =
@@ -291,7 +291,7 @@ magel：集合字面量类型不匹配：map 不能初始化 List<int64>
 \par
 \medskip
 
-空表也有讲究：\texttt{List<\allowbreak{}int64>\allowbreak{} v =\allowbreak{} \{\};} 是空表，\texttt{Set<\allowbreak{}int64>\allowbreak{} v =\allowbreak{} \{\};} 是空集，类型必须写清楚（\texttt{auto x =\allowbreak{} \{.\allowbreak{}.\allowbreak{}.\allowbreak{}\};} 这种不给上下文的老写法仍然当成 \texttt{Set}）。
+空表也有讲究：\texttt{List<\allowbreak{}int64>\allowbreak{} v =\allowbreak{} [\allowbreak{}]\allowbreak{};} 是空表，\texttt{Set<\allowbreak{}int64>\allowbreak{} v =\allowbreak{} \{\};} 是空集，空容器需要写清上下文；非空 \texttt{[\allowbreak{}a,\allowbreak{} b,\allowbreak{} c]\allowbreak{}} 推导 List，\texttt{\{a,\allowbreak{} b,\allowbreak{} c\}} 推导 Set，\texttt{\{key:\allowbreak{} value\}} 推导 Map。
 
 要 \texttt{List} 也可以继续 \texttt{push}（或者用第 17 章的 \texttt{collect(\allowbreak{})\allowbreak{}}），两条路都通。
 
@@ -533,7 +533,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=magel]
-for (int64 i = 0; i < scores.len(); i = i + 1)
+for (int64 i in std::lang::range(0, scores.len()))
 {
     scores[i] = scores[i] + 10;
     // 这样才改到表里
@@ -555,7 +555,7 @@ for (int64 i = 0; i < scores.len(); i = i + 1)
 \begin{lstlisting}[style=magel]
 int64 main()
 {
-    List<Any> values = {1, "two", true};
+    List<Any> values = [1, "two", true];
     values.push(1.5);
     Any text = values[1];
     println("{} {}", values.len(), tryGet<String>(&text).unwrap());
@@ -620,7 +620,7 @@ int64 main()
 
 \begin{itemize}
 
-\item 字面量：左边写 \texttt{List<\allowbreak{}T>\allowbreak{}} / \texttt{Set<\allowbreak{}T>\allowbreak{}} / \texttt{Map<\allowbreak{}K,\allowbreak{}V>\allowbreak{}} 决定 \texttt{\{.\allowbreak{}.\allowbreak{}.\allowbreak{}\}} 是什么，带冒号的是 \texttt{Map}；
+\item 字面量：\texttt{[\allowbreak{}a,\allowbreak{} b,\allowbreak{} c]\allowbreak{}} 是 List，\texttt{\{a,\allowbreak{} b,\allowbreak{} c\}} 是 Set，\texttt{\{key:\allowbreak{} value\}} 是 Map；
 
 \item 越界是明确的运行期错误，不是未定义行为；
 

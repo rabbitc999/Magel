@@ -34,7 +34,13 @@ int64 main() {
     bool ready = true || (++i > 0);
     assert(ready && i == 9);
     int64 total = 0;
-    for (int64 n = 0; n < 4; n++) { total += n; }
+    {
+        int64 n = 0;
+        while (n < 4) {
+ total += n; 
+            n++;
+        }
+    }
     assert(total == 6);
     int64 data[2]; data[0] = 10;
     a = data[position()]++;
@@ -73,7 +79,10 @@ int64 main() {
     String text = "ab";
     char old = text[0]++;
     assert(old == 'a' && text == "bb");
-    for (int64 round = 0; round < 4; ++round) {
+    {
+        int64 round = 0;
+        while (round < 4) {
+
         BigInteger big = BigInteger("100000000000000000000");
         BigInteger before = big++;
         assert(before == BigInteger("100000000000000000000"));
@@ -87,6 +96,9 @@ int64 main() {
         assert(decimal == oldDecimal);
         bool noUpdate = false && (big++ > before);
         assert(!noUpdate && big == before);
+    
+            ++round;
+        }
     }
     println("increment decrement OK");
     return 0;

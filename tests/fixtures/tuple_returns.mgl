@@ -69,9 +69,15 @@ int64 main() {
         return x + y;
     };
     assert(capturedAssignment() == 49 && a == 42);
-    for (int64 i = 0; i < 30; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < 30) {
+
         box, values = boxed("iteration");
         left, right = (right, left);
+    
+            i = i + 1;
+        }
     }
     assert(box.value == "iteration" && values[0] == "iteration");
     (int32, String) fn(String) operation = func<String>;

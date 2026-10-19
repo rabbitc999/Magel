@@ -1041,7 +1041,6 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
 #endif
     heap.reset(heapBase);
     std::size_t inputIndex = 0;
-    int bigFloatPrecision = 34;
     bool exitRequested = false;
     int exitCode = 0;
     // 运行期对象表：`bint`（大整数）与 vec / set / map 三种容器的"值"就是这里的句柄。
@@ -1775,10 +1774,9 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         context.timers = &timers;
         context.machine = this;
         context.threadId = threadId_;
-        context.bigFloatPrecision = &bigFloatPrecision;
         context.exitRequested = &exitRequested;
         context.exitCode = &exitCode;
-        context.fileApi = fileApi_;
+        context.hostServices = hostServices_;
         const Slot value = internal->second.apply(context, arguments);
         if (!context.memoryFault.empty()) context.error = context.memoryFault;
         if (!context.error.empty())
@@ -2485,10 +2483,9 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             runtime.timers = &timers;
             runtime.machine = this;
             runtime.threadId = threadId_;
-            runtime.bigFloatPrecision = &bigFloatPrecision;
             runtime.exitRequested = &exitRequested;
             runtime.exitCode = &exitCode;
-            runtime.fileApi = fileApi_;
+            runtime.hostServices = hostServices_;
             NativeCallContextImpl context(runtime, invokeFunction, &result.error);
             const auto callback = external->callback;
             NativeValue value;

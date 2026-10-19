@@ -41,12 +41,12 @@ def main():
         (work/'exact.txt').write_bytes(b'abcd')
         code='''import std::io;
 int64 main(){
- FileStream exact=FileStream::open("exact.txt","rb").unwrap();
+ FileStream exact=FileStream::open("exact.txt","rb").take();
  assert(exact.readAllString(4).unwrap()=="abcd");exact.close();
- FileStream short=FileStream::open("exact.txt","rb").unwrap();assert(short.readAllString(3).isErr());short.close();
- FileStream zero=FileStream::open("raw.bin","rb").unwrap();assert(zero.readString(5).isErr());zero.close();
- FileStream zeroLine=FileStream::open("raw.bin","rb").unwrap();assert(zeroLine.readLine().isErr());zeroLine.close();
- FileStream bad=FileStream::open("exact.txt","rb").unwrap();assert(bad.readString(-1).isErr());bad.close();assert(bad.readLine().isErr());
+ FileStream short=FileStream::open("exact.txt","rb").take();assert(short.readAllString(3).isErr());short.close();
+ FileStream zero=FileStream::open("raw.bin","rb").take();assert(zero.readString(5).isErr());zero.close();
+ FileStream zeroLine=FileStream::open("raw.bin","rb").take();assert(zeroLine.readLine().isErr());zeroLine.close();
+ FileStream bad=FileStream::open("exact.txt","rb").take();assert(bad.readString(-1).isErr());bad.close();assert(bad.readLine().isErr());
  return 0;
 }'''
         result=run(code);assert result.returncode==0,result.stderr

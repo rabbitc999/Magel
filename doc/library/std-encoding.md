@@ -25,15 +25,27 @@ magel run example/samples/std_encoding.mgl
 
 ```magel
 import std::encoding;
-List<uint8> bytesOf(String text){List<uint8> bytes;for(int64 i=0;i<len(text);i=i+1){bytes.push((uint8)text[i]);}return bytes;}
+List<uint8> bytesOf(String text){List<uint8> bytes;{
+    int64 i=0;
+    while (i<len(text)) {
+bytes.push((uint8)text[i]);
+        i=i+1;
+    }
+}return bytes;}
 int64 main(){
     List<String> texts;texts.push("");texts.push("f");texts.push("fo");texts.push("foo");texts.push("foob");texts.push("fooba");texts.push("foobar");
     List<String> encoded;encoded.push("");encoded.push("Zg==");encoded.push("Zm8=");encoded.push("Zm9v");encoded.push("Zm9vYg==");encoded.push("Zm9vYmE=");encoded.push("Zm9vYmFy");
-    for(int64 i=0;i<texts.len();i=i+1){
+    {
+        int64 i=0;
+        while (i<texts.len()) {
+
         List<uint8> bytes=bytesOf(texts[i]);
         assert(encodeBase64(bytes)==encoded[i]);
         assert(encodeHex(decodeBase64(encoded[i]).unwrap())==encodeHex(bytes));
         assert(encodeHex(decodeBase64Url(encodeBase64Url(bytes)).unwrap())==encodeHex(bytes));
+    
+            i=i+1;
+        }
     }
     List<uint8> binary;binary.push((uint8)0);binary.push((uint8)251);binary.push((uint8)255);
     assert(encodeHex(binary)=="00fbff" && encodeHex(binary,true)=="00FBFF");
@@ -231,7 +243,7 @@ Base64 编码；URL 字母表可选，padding 控制尾部等号。
 std::encoding::encodeBase64(bytes, url, padding);
 ```
 
-**源码**：[source/std/encoding.mgl:37](../../source/std/encoding.mgl#L37)。
+**源码**：[source/std/encoding.mgl:43](../../source/std/encoding.mgl#L43)。
 
 **完整示例**：[example/samples/std_encoding.mgl](../../example/samples/std_encoding.mgl)。
 
@@ -270,7 +282,7 @@ URL 安全 Base64，默认省略填充。
 std::encoding::encodeBase64Url(bytes, padding);
 ```
 
-**源码**：[source/std/encoding.mgl:54](../../source/std/encoding.mgl#L54)。
+**源码**：[source/std/encoding.mgl:66](../../source/std/encoding.mgl#L66)。
 
 **完整示例**：[example/samples/std_encoding.mgl](../../example/samples/std_encoding.mgl)。
 
@@ -309,7 +321,7 @@ Result<List<uint8>,EncodingError> decodeBase64(String text, bool url=false);
 std::encoding::decodeBase64(text, url);
 ```
 
-**源码**：[source/std/encoding.mgl:56](../../source/std/encoding.mgl#L56)。
+**源码**：[source/std/encoding.mgl:68](../../source/std/encoding.mgl#L68)。
 
 **完整示例**：[example/samples/std_encoding.mgl](../../example/samples/std_encoding.mgl)。
 
@@ -347,6 +359,6 @@ Result<List<uint8>,EncodingError> decodeBase64Url(String text);
 std::encoding::decodeBase64Url(text);
 ```
 
-**源码**：[source/std/encoding.mgl:79](../../source/std/encoding.mgl#L79)。
+**源码**：[source/std/encoding.mgl:103](../../source/std/encoding.mgl#L103)。
 
 **完整示例**：[example/samples/std_encoding.mgl](../../example/samples/std_encoding.mgl)。

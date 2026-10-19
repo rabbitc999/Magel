@@ -1,3 +1,5 @@
+#include "file_natives.hpp"
+#include "big_number_natives.hpp"
 #ifndef PARSE_ENGINE_LANG_NUMERIC_HPP
 #include "lang_numeric.hpp"
 #endif
@@ -81,6 +83,9 @@ namespace std_registry
 inline bool bindStandardGlue(magel_glue::Registry &registry, Memory::String *error = nullptr)
 {
     bool ok = lang_numeric_glue::bind(registry, error);
+    ok = native_record_glue::bindString(registry.native(), error) && ok;
+    ok = big_number_glue::bind(registry.native(), error) && ok;
+    ok = file_native_glue::bind(registry.native(), error) && ok;
 #ifndef GLUE_NO_STD_FILESYSTEM
     ok = std_filesystem_glue::bind(registry, error) && ok;
 #endif

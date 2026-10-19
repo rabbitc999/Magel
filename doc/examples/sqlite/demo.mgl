@@ -41,8 +41,14 @@ int64 main(List<String> arguments) {
     ResultSet nulText = db.exec("SELECT 'a' || char(0) || 'b'");
     String embedded = nulText.textAt(0, 0);
     assert(nulText.ok && len(embedded) == 3 && embedded[2] == 'b');
-    for (int64 i = 0; i < 300; i = i + 1) {
+    {
+        int64 i = 0;
+        while (i < 300) {
+
         assert(db.count("SELECT COUNT(*) FROM items") == 2);
+    
+            i = i + 1;
+        }
     }
     ResultSet deleted = db.exec("DELETE FROM items WHERE id = 2");
     assert(deleted.ok && deleted.affected == 1);

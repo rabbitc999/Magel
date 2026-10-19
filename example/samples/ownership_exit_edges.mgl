@@ -11,7 +11,10 @@ Result<String,String> propagate(bool ok){
     return Result<String,String>::Ok(owned[0]+value);
 }
 int64 main(){
-    for(int64 iteration=0;iteration<64;iteration=iteration+1){
+    {
+        int64 iteration=0;
+        while (iteration<64) {
+
         Packet<String> source=Packet<String>::Value("seed");
         Packet<String> copy=source;
         source=Packet<String>::Empty;
@@ -27,18 +30,27 @@ int64 main(){
             Packet<String>::Value(text)=>{assert(text=="seed");}
             Packet<String>::Empty=>{assert(false);}
         }
-        for(int64 i=0;i<8;i=i+1){
+        {
+            int64 i=0;
+            while (i<8) {
+
             List<String> local;local.push("loop");
             
-            if(i<3){continue;}
+            if(i<3){{ i=i+1; continue; }}
             if(i==5){break;}
             assert(local[0]=="loop");
+        
+                i=i+1;
+            }
         }
         auto success=propagate(true);assert(success.unwrap()=="localscratch!");
         auto failure=propagate(false);assert(failure.isErr());
         match(failure){
             Result<String,String>::Err(error)=>{assert(error=="failure");}
             Result<String,String>::Ok(value)=>{assert(false);}
+        }
+    
+            iteration=iteration+1;
         }
     }
     println("ownership exit edges OK");
