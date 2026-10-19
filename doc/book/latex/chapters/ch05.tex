@@ -272,9 +272,9 @@ int64 main()
         attempts = attempts + 1;
         if (attempts >= 3)
         {
-            yield attempts * 10;
+            break;
         }
-    };
+    }
     println("{}", attempts);
     return 0;
 }
@@ -292,7 +292,7 @@ int64 main()
 
 \texttt{loop \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} \}} 就是「一直转」，它自己不会停——出口全靠 \texttt{break}。
 
-它的特别之处在于：\texttt{break} 后面可以带一个值，这个值就是整个 \texttt{loop} 的「结果」：
+它的特别之处在于：\texttt{loop} 是表达式，能算出一个结果。要交结果就用 \texttt{yield}：
 
 \par
 \medskip
@@ -310,27 +310,53 @@ int64 firstEven = loop
 \par
 \medskip
 
-所以 \texttt{loop} 是表达式（能算出值），不是语句。这带来一个语法上的小尾巴：
+\texttt{yield candidate;} 把值交给这个 \texttt{loop}，\texttt{loop} 再把它交给 \texttt{first\allowbreak{}Even}。
 
-当 \texttt{loop} 出现在语句位置时，后面要补一个分号。
+既然 \texttt{loop} 是表达式，分号该怎么写？看它站在哪个位置：
+
+\begin{itemize}
+
+\item 语句位置（单独一行，没人接它的结果）：\texttt{loop \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} \}} 直接写，后面不补分号，和 \texttt{while}、\texttt{for}、\texttt{if} 一样。
+
+\item 表达式位置（变量定义、赋值、函数实参、返回值）：\texttt{loop \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} \}} 只是外层表达式的一部分，按外层语句的规矩收尾——\texttt{int64 first\allowbreak{}Even =\allowbreak{} loop \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} \};} 这个分号属于那条定义语句。
+
+\end{itemize}
 
 \par
 \medskip
 \begin{lstlisting}[style=magel]
-loop
+int64 main()
 {
-    done = work();
-    if (done)
+    int64 count = 0;
+    loop
     {
-        break;
+        count = count + 1;
+        if (count >= 2)
+        {
+            break;
+        }
     }
-};
-// ← 这个分号不能少
+
+    int64 doubled = loop
+    {
+        yield count * 2;
+    };
+    println("{} {}", count, doubled);
+    return 0;
+}
 \end{lstlisting}
 \par
 \medskip
 
-看到 \texttt{\};} 别以为是笔误，那是「一个表达式被当成语句用」的正常写法。（\texttt{while}、\texttt{for}、\texttt{if} 是语句，不需要。）
+\par
+\medskip
+\begin{lstlisting}[style=out]
+2 4
+\end{lstlisting}
+\par
+\medskip
+
+前一个 \texttt{loop} 是语句，\texttt{\}} 后面干净收住；后一个被 \texttt{doubled} 接走，分号写在定义语句末尾。语句位置多写一个 \texttt{;} 也能编译（那是一个结果被丢掉的表达式语句），但没必要。
 
 \section{\texttt{for-in}：遍历一串东西}
 
@@ -456,9 +482,9 @@ int64 main()
         {
             visited++;
             break level 2;
-        };
+        }
         visited += 100;
-    };
+    }
 
     int64 total = 0;
     List<int64> values;
@@ -507,16 +533,16 @@ int64 main()
 \medskip
 \begin{lstlisting}[style=magel]
 int64 main() {
-    // yield 值;（只能写在值表达式里）
+    // yield 值;（写在接收结果的值表达式里）
     int64 v = loop { yield 42; };
     assert(v == 42);
     // break level N;
     int64 n = 0;
-    loop { loop { n++; break level 2; }; assert(false); };
+    loop { loop { n++; break level 2; } assert(false); }
     assert(n == 1);
     // break all;
     int64 a = 0;
-    loop { loop { a++; break all; }; assert(false); };
+    loop { loop { a++; break all; } assert(false); }
     assert(a == 1);
     println("break 写法 ok");
     return 0;
@@ -683,7 +709,7 @@ int64 main()
 \endhead
 \texttt{if /\allowbreak{} elif /\allowbreak{} else} & 条件分支 & 条件必须是 \texttt{bool}；花括号不能省 \\
 \texttt{while (\allowbreak{}cond)\allowbreak{} \{ \}} & 先判断后执行 & 可能一次都不执行 \\
-\texttt{loop \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} yield v; \}} & 出口不确定、要给个结果 & 是表达式，语句位置要写 \texttt{\};} \\
+\texttt{loop \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} yield v; \}} & 出口不确定、要给个结果 & 是表达式；语句位置不补分号，表达式位置按外层语句收尾 \\
 \texttt{for (\allowbreak{}T x in c)\allowbreak{} \{ \}} & 遍历一串东西 & 类型可显式写出或推导，遍历出来是副本 \\
 \texttt{break} / \texttt{continue} & 跳出 / 下一个 & 普通无值形式作用于最近循环；\texttt{break level N} 可指定退出层数 \\
 \bottomrule
@@ -700,7 +726,7 @@ int64 main()
 
 \item 分支多了 \texttt{if /\allowbreak{} elif} 会很难看，\texttt{match} 怎么救场——第 10 章；
 
-\item \texttt{loop} 里 \texttt{break} 出来的值，除了赋值还能怎么用——第 10 章的 \texttt{match}、第 16 章的 \texttt{?} 会陆续出现。
+\item \texttt{loop} 里 \texttt{yield} 出来的值，除了赋值还能怎么用——第 10 章的 \texttt{match}、第 16 章的 \texttt{?} 会陆续出现。
 
 \end{itemize}
 

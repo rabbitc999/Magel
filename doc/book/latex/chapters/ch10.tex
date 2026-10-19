@@ -133,7 +133,7 @@ match (要看的东西) {
 
 \item 箭头是 \texttt{=\allowbreak{}>\allowbreak{}}（和 C++ 的 \texttt{switch} 完全不同），每个分支的主体是一对花括号。
 
-\item \texttt{match} 后面不加分号——它是语句，不是表达式。这和 \texttt{loop} 正好相反（\texttt{loop} 是表达式，语句位置要写 \texttt{\};}）。写错了会报「期望 字符串 / 数字 / 标识符 ……，实际是 分号(;)」。
+\item \texttt{match} 后面不加分号——它是语句；多写一个 \texttt{\};} 也能编译，但没必要。这一点和 \texttt{loop} 一样：\texttt{loop} 虽然是表达式，写在语句位置同样不补分号，只有被变量或别的表达式接走时，才按外层语句的规矩收尾。
 
 \end{enumerate}
 

@@ -542,7 +542,7 @@ int64 main() {
     loop {
         n = n + 1;
         if (n >= 3) { yield n; }
-    };
+    }
     println("loop={}", n);
     int64 total = 0;
     {
@@ -574,7 +574,9 @@ for=9
 | `for (T x in c) { }` | iterate a container / iterator |
 | `break` / `continue` / `return` | exit / continue / return |
 
-> `loop { … }` is an **expression**; in statement position write `loop { … };`.
+> `loop { … }` is an **expression**, but a `loop` in statement position takes no trailing
+> semicolon; when a declaration, assignment, argument or return value receives it, the
+> enclosing statement supplies the semicolon (`int64 v = loop { … };`).
 
 ---
 

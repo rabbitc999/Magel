@@ -105,7 +105,7 @@ Box<int64 fn(int64)> box;
 
 <!-- BEGIN GENERATED MAGEL EBNF -->
 
-以下 121 条产生式由 `source/magel.gram` 导出，语义动作及解析优先级指令省略。
+以下 122 条产生式由 `source/magel.gram` 导出，语义动作及解析优先级指令省略。
 
 ### 终结符登记
 
@@ -138,8 +138,6 @@ Box<int64 fn(int64)> box;
 | `AUTO` | `auto` |
 | `COPY` | `copy` |
 | `MOVE` | `move` |
-| `FSTRING` | `__magel_fstring` |
-| `TYPECHECK` | `__magel_typecheck` |
 | `INLINE` | `inline` |
 | `IMPL` | `impl` |
 | `TYPE_KW` | `type` |
@@ -219,6 +217,8 @@ Box<int64 fn(int64)> box;
 | `SHR` | `>>` |
 | `FATARROW` | `=>` |
 | `QUESTION` | `?` |
+| `FSTRING` | `__magel_fstring` |
+| `TYPECHECK` | `__magel_typecheck` |
 | `TYPE_ARGS_BEGIN` | `@<` |
 | `TYPE_ARGS_END` | `@>` |
 
@@ -543,6 +543,7 @@ stmt = block
     | "scope", "(", name_token, ")", block
     | if_stmt
     | while_stmt
+    | loop_stmt
     | for_in_stmt
     | match_stmt
     | match_stmt, ";"
@@ -608,6 +609,8 @@ else_part = ""
     | "else", if_block ;
 
 while_stmt = "while", "(", expr, ")", block ;
+
+loop_stmt = "loop", block ;
 
 loop_expr = "loop", block
     | "while", "(", expr, ")", if_block, "else", if_block

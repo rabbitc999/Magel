@@ -551,7 +551,7 @@ int64 main() {
     loop {
         n = n + 1;
         if (n >= 3) { yield n; }
-    };
+    }
     println("loop={}", n);
     int64 total = 0;
     {
@@ -583,7 +583,8 @@ for=9
 | `for (T x in c) { }` | 遍历容器/迭代器 |
 | `break` / `continue` / `return` | 跳出 / 继续 / 返回 |
 
-> `loop { … }` 是**表达式**，语句位置要写 `loop { … };`。
+> `loop { … }` 是**表达式**；写在语句位置时不补分号，被变量定义、赋值、实参或返回值接走时
+> 按外层语句收尾（`int64 v = loop { … };`）。
 
 ---
 

@@ -22,6 +22,8 @@
 
 %start program
 
+%expect 0
+
 program := top_list { M_SetProgram($1); $$ = $1; } ;
 
 top_list := %empty { $$ = M_List(); }
@@ -95,27 +97,7 @@ annotation_arg := expr { $$ = M_AnnotationArg(-1, $1); }
 module_name := name_token { $$ = $1; }
              | module_name SCOPE name_token { $$ = M_QualifiedName($1, $3); } ;
 
-/* ---- `interface`：**编译期契约** ----
- *
- *   interface Shape {
- *       int64 area();               抽象方法
- *       int64 doubled() { return self.area() * 2; }  默认方法
- *   };
- *   struct Circle : Shape {         继承的结构体**必须**把每个函数实现出来
- *       int64 r;
- *       int64 area() { return 3 * r * r; }
- *   };
- *
- * 三条规矩（登记时逐条核对，违反哪条都直接报错）：
- *   ① 接口只放方法，可带默认函数体，不可定义字段；
- *   ② 接口**可以继承**别的接口（`interface B : A { … }`）：继承来的抽象方法一样要
- *      实现，默认方法一并继承；同名同签名去重、同名不同签名报错、默认方法两路来源
- *      冲突要显式覆盖；继承成环报错；
- *   ③ 结构体可以实现**多个**接口；抽象方法必须实现，同签名方法覆盖默认实现。
- *
- * 接口名还能当**引用的目标类型**用（`Shape const& q` / `Shape mut& q`）：那是
- * "胖引用"（地址 + 具体类型号），`q.area()` 在运行期按类型号挑到具体实现。
- */
+/* ---- interface：编译期契约 ---- */
 interface_decl := INTERFACE name_token LBRACE iface_member_list RBRACE
     { $$ = M_Interface($2, $4); }
   | INTERFACE name_token COLON iface_list LBRACE iface_member_list RBRACE
@@ -146,16 +128,11 @@ iface_member_decl := STATIC type name_token LPAREN param_list RPAREN SEMI
   | type name_token SEMI { $$ = M_InterfaceFieldRejected($2); }
   | ptr_type name_token SEMI { $$ = M_InterfaceFieldRejected($2); } ;
 
-/* `struct X : A, B { … }` 里继承的那串接口名 */
+/* struct X : A, B { … } 里继承的那串接口名 */
 iface_list := name_token                     { $$ = M_List1($1); }
             | iface_list COMMA name_token    { M_ListAdd($1, $3); $$ = $1; } ;
 
-%expect 0   /* 私有类型标签只接受类型，不与表达式产生式竞争。 */
-
-/* ---- 类型 ----
- *
- * `struct` 类型**直接写类型名**（`Point p;`），不写 `struct Point`；`struct` 只在
- * **定义**类型时出现（`struct Point { … };`）。 */
+/* ---- 类型 ---- */
 type := builtin_type { $$ = $1; }
       | name_token     { $$ = M_TypeStruct($1); }
       | qualified_ref { $$ = M_QualifiedType($1); }
@@ -167,8 +144,7 @@ type := builtin_type { $$ = $1; }
 /* 异构定长元组：至少两个元素；单元素括号仍只是普通分组。 */
 tuple_type := LPAREN tuple_items RPAREN { $$ = M_TypeTupleSyntax($2); } ;
 
-/* 先共享括号内容，见到后续声明/表达式上下文再解释类型或值，
- * 避免 (String, int64) 的首项被提前归约成值。 */
+/* 先共享括号内容，见到后续声明/表达式上下文再解释类型或值 */
 tuple_items := tuple_item COMMA tuple_item { $$ = M_List2($1, $3); }
              | tuple_items COMMA tuple_item { M_ListAdd($1, $3); $$ = $1; } ;
 tuple_item := expr { $$ = $1; }
@@ -194,8 +170,7 @@ container_type := name_token TYPE_ARGS_BEGIN element_type TYPE_ARGS_END
                 | qualified_ref TYPE_ARGS_BEGIN element_type COMMA element_type TYPE_ARGS_END
                     { $$ = M_QualifiedContainer($1, $3, $5); } ;
 
-/* 内建类型单独登记；
- * 引用使用 &：`Point &` 等价于 `Point const&`，可写引用用 `Point mut&`。 */
+/* 内建类型单独登记 */
 builtin_type := INT8    { $$ = M_TypeIntBits(8, 0); }
               | INT16   { $$ = M_TypeIntBits(16, 0); }
               | INT32   { $$ = M_TypeIntBits(32, 0); }
@@ -209,28 +184,9 @@ builtin_type := INT8    { $$ = M_TypeIntBits(8, 0); }
               | BOOL    { $$ = M_TypeBool(); }
               | CHAR_T  { $$ = M_TypeChar(); }
               | VOID    { $$ = M_TypeVoid(); }
-              /* 任意精度整数：值 = 运行期对象句柄，算术全在 C++ 侧（library/big_number） */
-              /* 装箱格子：赋值或 `set` 可装入可装箱类型，`get` 按上下文类型取出来，
-               * `name()` 问类型号（和 `__typeTag(...)` 比就是泛型） */
-              /* 宿主资源句柄只写限定名：`std::lang::File`（fopen/fread/fwrite/fclose）与
-               * `std::lang::Process`（prun/pread/pclose）。裸 `file` / `proc` 的关键字已取消
-               * （作为"内部拼写"仍能被按名解析，见 `BuiltinTypeByName`）。 */
               ;
 
-/* ---- 引用与运行时数组 ----
- *
- *   T & / T const&  **只读引用**：只能读、不做地址算术、不持有对象；
- *   T mut&    **可写引用**：能写、默认解引用、禁止地址算术；有所有权（`new` 出来的归它，用完 delete）；
- *
- * **裸星号 `T*` 一律禁用**（`int64* p` 也不行）：那个写法在"类型名 / 变量当表达式用"的
- * LALR(1) 文法里和乘法分不开（`a * b`），内建类型虽然没这个问题，但为了写法统一、
- * 也为了"看到的引用就知道能不能写"，可写引用必须明确写 mut。写成 `int64* p` 会得到
- * 普通语法错误。
- *   T[]       **运行时长度数组**：`T a[] = new[N];` —— N 可以是变量，长度跟着对象走，
- *             下标越界检查就是拿这个长度查的（见 `example/samples-error/pointer_oob.mgl`）。
- *             形参按值复制；`T[] &` / `T[] const&` 只读借用，`T[] mut&` 可变借用。
- */
-/* 引用适用于标量、字符串、大数、容器和元组；所有类型共享完整 type 产生式。 */
+/* ---- 引用与运行时数组 ---- */
 ptr_type := type AMP                 { $$ = M_TypePtr($1); }
           | type CONST AMP           { $$ = M_TypePtr($1); }
           | type MUT AMP             { $$ = M_TypePtrMut($1); }
@@ -239,14 +195,10 @@ ptr_type := type AMP                 { $$ = M_TypePtr($1); }
           | array_type MUT AMP       { $$ = M_TypePtrMut($1); }
           ;
 
-
-/* `T[] a = …;` —— 中括号写在类型这一侧 */
+/* T[] a = …; —— 中括号写在类型这一侧 */
 array_type := type LBRACKET RBRACKET { $$ = M_TypeRuntimeArray($1); } ;
 
-/* ---- struct：定义时写 `struct 名字`（引用类型时只写名字）----
- *
- * 可以继承接口（**多个**，逗号分开）：继承就意味着"这些函数我保证都有"，
- * 登记时逐个核对，漏了哪个直接报错。接口名也能当引用的目标类型（胖引用）。 */
+/* ---- struct：定义时写 `struct 名字`（引用类型时只写名字）---- */
 struct_decl := STRUCT name_token LBRACE member_list RBRACE
     { $$ = M_Struct($2, $4, -1); }
   | STRUCT name_token COLON iface_list LBRACE member_list RBRACE
@@ -256,14 +208,7 @@ struct_decl := STRUCT name_token LBRACE member_list RBRACE
   | STRUCT name_token name_token COLON iface_list LBRACE member_list RBRACE
     { $$ = M_PackedStruct($2, $3, $7, $5); } ;
 
-/* ---- enum：带标签联合体 ----
- *
- *   enum Outcome { Pending, Ok(int32 value), Error(String message) };
- *
- * 无载荷变体写名字；带载荷变体复用“类型 + 名字”的形参写法。构造器与匹配模式
- * 可以使用限定名：`Outcome::Ok(42)` / `Outcome::Ok(value) => { ... }`。
- * 无歧义时也接受普通 name_token / 调用表达式作为变体简写，语义阶段按目标类型与
- * 载荷确定所属枚举；无载荷泛型变体只能从上下文推导类型参数。 */
+/* ---- enum：带标签联合体 ---- */
 enum_decl := ENUM name_token LBRACE enum_variant_list RBRACE
     { $$ = M_Enum($2, $4); }
   | ENUM name_token LBRACE enum_variant_list SEMI member_list RBRACE
@@ -291,7 +236,6 @@ member_decl := type name_token SEMI            { $$ = M_Field($1, $2); }
         | ptr_type name_token SEMI        { $$ = M_Field($1, $2); }   /* `Cell mut& next;` */
         | STATIC type name_token SEMI     { $$ = M_StaticField($2, $3); }
         | STATIC ptr_type name_token SEMI { $$ = M_StaticField($2, $3); }
-        /* 方法：返回类型和函数一样，可以返回引用（`Cell mut& tail() { … }`） */
         | type name_token LPAREN param_list RPAREN block
             { $$ = M_Method($1, $2, -1, $4, $6); }
         | ptr_type name_token LPAREN param_list RPAREN block
@@ -309,8 +253,7 @@ member_decl := type name_token SEMI            { $$ = M_Field($1, $2); }
         | name_token LPAREN param_list RPAREN block
             { $$ = M_Constructor($1, $3, $5); } ;
 
-/* 重载声明里的运算符名：动作里只写序号（动作语言不认字符串字面量参数），
- * 真正的运算符文本在 M_Op() 的表里。 */
+/* 重载声明里的运算符名 */
 OPNAME := PLUS    { $$ = M_Op(0); }  | MINUS { $$ = M_Op(1); }
         | STAR    { $$ = M_Op(2); }  | SLASH { $$ = M_Op(3); }
         | PERCENT { $$ = M_Op(4); }  | EQ    { $$ = M_Op(5); }
@@ -320,18 +263,11 @@ OPNAME := PLUS    { $$ = M_Op(0); }  | MINUS { $$ = M_Op(1); }
         | PIPE    { $$ = M_Op(12); } | CARET { $$ = M_Op(13); }
         | SHL     { $$ = M_Op(14); } | SHR   { $$ = M_Op(15); } ;
 
-/* ---- 运算符重载：顶层的自由函数，左 / 右操作数都显式写出来 ----
- *
- *   C operator+(<左操作数类型> left, <右操作数类型> right) { … }
- *
- * 名字必须就叫 `operator`，紧跟运算符；`a + b` 靠"实参类型和两个形参类型对得上"
- * 来挑重载，所以 `Money + int64`、`int64 + Money`、`Money + Money` 是三个独立签名。
- * 返回类型 C 决定整个表达式的类型。 */
+/* ---- 运算符重载：顶层的自由函数，左 / 右操作数都显式写出来 ---- */
 operator_def := type name_token OPNAME LPAREN param COMMA param RPAREN block
     { $$ = M_OperatorDef($1, $2, $3, M_List2($5, $7), $9); } ;
 
-/* ---- 函数 ----
- * 返回类型按普通值、引用与数组分别列出，避免声明位置提前归约造成 LALR(1) 冲突。 */
+/* ---- 函数 ---- */
 func_def := type name_token LPAREN param_list RPAREN block
     { $$ = M_Func($1, $2, $4, $6); }
     /* 返回引用的函数：`Cell mut& push_front(Cell mut& head, int64 value)` */
@@ -342,10 +278,7 @@ func_def := type name_token LPAREN param_list RPAREN block
   | AUTO name_token LPAREN param_list RPAREN block
     { $$ = M_Func(-1, $2, $4, $6); } ;
 
-/* ---- C++ 胶水声明 ----
- * `type Handle = uint64;` 声明宿主类型在 VM 中的 ABI 表示；复杂 C++ 对象应以
- * 引用/句柄传递。没有函数体的 `T f(...);` 自动登记为宿主签名，运行时按名字查胶水表。
- * MAGEL 函数是否导出与胶水无关：普通定义默认导出，只有 `inline T f(...) { ... }` 不导出。 */
+/* ---- C++ 胶水声明 ---- */
 host_type_decl := TYPE_KW name_token ASSIGN type SEMI
     { $$ = M_HostType($2, $4); }
   | TYPE_KW name_token ASSIGN ptr_type SEMI
@@ -395,7 +328,6 @@ function_type := fn_signature { $$ = M_FnSignatureType($1); } ;
 fn_signature := type FN LPAREN function_params RPAREN { $$ = M_FnSignature($1, $4); }
     | ptr_type FN LPAREN function_params RPAREN { $$ = M_FnSignature($1, $4); }
     | LPAREN array_type RPAREN FN LPAREN function_params RPAREN { $$ = M_FnSignature($2, $6); }
-    /* 括号包住返回函数类型时，继续共用签名，避免提前归约成分组表达式。 */
     | LPAREN function_type RPAREN FN LPAREN function_params RPAREN { $$ = M_FnSignature($2, $6); } ;
 function_params := %empty { $$ = M_List(); }
                  | function_params_nonempty { $$ = $1; } ;
@@ -428,13 +360,7 @@ param := type name_token ASSIGN expr { $$ = M_DefaultParam(M_Param($1, $2), $4);
        | array_type name_token         { $$ = M_Param($1, $2); }
        | type name_token LBRACKET RBRACKET { $$ = M_Param(M_TypeRuntimeArray($1), $2); } ;
 
-/* ---- 变量声明（可带初值，逗号多声明）----
- * 声明与函数定义共前缀：`类型 名字` 之后看一个 Token 就能定下来
- * （`(` 是函数定义，`;` / `,` / `=` / `[` 是声明）——LALR(1) 足够，不需要 mid-rule。
- * 所以这里**不能**把"类型 + const"打包成一个中间非终结符：那样会在看到标识符时
- * 先把它归约掉，和 `type name_token LPAREN …`（函数定义）撞成移进/归约冲突。
- * 类型在**外层规则**里补写到声明节点上（M_SetDeclType），避免归约顺序问题。
- * `const` 写在类型前面：`const int64 x = 1;`（必须有初值，之后不能再赋值）。 */
+/* ---- 变量声明（可带初值，逗号多声明）---- */
 global_decl := type declarator_list SEMI
                  { M_SetDeclType($2, $1, 0); $$ = M_GlobalDecl($1, $2, 0); }
              | ptr_type declarator_list SEMI
@@ -481,25 +407,20 @@ stmt := block                  { $$ = $1; }
       | SCOPE_EXIT LPAREN name_token RPAREN block { $$ = M_ScopeExit($3, $5); }
       | if_stmt                { $$ = $1; }
       | while_stmt             { $$ = $1; }
-      | for_in_stmt           { $$ = $1; }
+      | loop_stmt              { $$ = $1;}
+      | for_in_stmt            { $$ = $1; }
       | match_stmt %prec SEMI  { $$ = $1; }
       | match_stmt SEMI        { $$ = $1; }
       | RETURN expr SEMI       { $$ = M_ReturnValue($2); }
       | RETURN tuple_items SEMI { $$ = M_Return(M_Tuple($2)); }
       | RETURN SEMI            { $$ = M_Return(-1); }
       | DELETE unary SEMI      { $$ = M_Delete($2); }
-      /* 无值 break / continue 控制最近循环；带值退出由 yield 承担（与旧 break 值; 等价
-       * 降级，现已要求显式写 yield）；多层退出用 break level N; / break level all; /
-       * break all;，旧写法 break #level(N) 已删除。level / all 仍是普通标识符，不占用关键字。 */
       | BREAK SEMI             { $$ = M_Break(-1); }
       | YIELD expr SEMI        { $$ = M_Break($2); }
       | BREAK name_token SEMI  { $$ = M_NameIsAll($2) ? M_BreakLevel(-1) : M_ParseBadBreakAllSugar(); }
       | BREAK name_token NUMBER SEMI { $$ = M_NameIsLevel($2) ? M_BreakLevel($3) : M_ParseBadLevelSugar(); }
       | BREAK name_token name_token SEMI { $$ = (M_NameIsLevel($2) && M_NameIsAll($3)) ? M_BreakLevel(-1) : M_ParseBadLevelAllSugar(); }
       | CONTINUE SEMI          { $$ = M_Continue(); }
-      /* 与集合字面量共享逗号表达式列表，避免块 / 集合前缀产生冲突。
-       * 单项可为普通表达式或 (x,y)=tuple；多项必须以普通赋值结束。
-       * 语义层将括号元组目标与逗号列表目标统一为解构赋值。 */
       | expression_items SEMI { $$ = M_AssignTuple($1); } ;
 
 /* match 不穿透，也不写 break；`_` 是兜底模式。 */
@@ -523,9 +444,7 @@ match_patterns := match_pattern { $$ = M_List1($1); }
                 | match_patterns PIPE match_pattern { M_ListAdd($1, $3); $$ = $1; } ;
 match_pattern := bxor_expr { $$ = $1; } ;
 
-/* 局部变量：与全局同一套 decl_head + declarator，但发成 (decl, T, local, x) ——
- * stackvm 执行到它就往**当前调用帧**里开一个槽（进函数时分配、返回时释放），
- * 所以递归里各层互不影响。 */
+/* 局部变量 */
 decl_stmt := AUTO LPAREN destructure_items RPAREN ASSIGN expr SEMI
                { $$ = M_Destructure($3, $6); }
            /* 具名闭包只属于声明语句；返回类型是参数和函数体的类型锚点。 */
@@ -580,6 +499,7 @@ else_part := %empty             { $$ = -1; }
            | ELSE if_block      { $$ = $2; } ;
 
 while_stmt := WHILE LPAREN expr RPAREN block { $$ = M_While($3, $5); } ;
+loop_stmt := LOOP block { $$ = M_Loop($2); } ;
 
 loop_expr := LOOP block { $$ = M_Loop($2); }
            | WHILE LPAREN expr RPAREN if_block ELSE if_block
@@ -593,8 +513,7 @@ loop_expr := LOOP block { $$ = M_Loop($2); }
            | FOR LPAREN ptr_type name_token IN for_in_source RPAREN if_block ELSE if_block
                { $$ = M_BlockValue(M_Block(M_List2(M_Foreach($3, $4, -1, $6, $8), $10))); } ;
 
-/* for (x in src) / for (auto x in src) / for (T x in src) / for (T* x in src)：
- * 统一通过 IN 指定迭代来源。 */
+/* for (x in src) / for (auto x in src) / for (T x in src) / for (T* x in src) */
 for_in_stmt := FOR LPAREN name_token IN for_in_source RPAREN block
                   { $$ = M_Foreach(-1, $3, -1, $5, $7); }
   | FOR LPAREN AUTO name_token IN for_in_source RPAREN block
@@ -607,8 +526,7 @@ for_in_stmt := FOR LPAREN name_token IN for_in_source RPAREN block
 /* 区间作为内部 Iterator<T>，和普通迭代源共用 for-in。 */
 for_in_source := expr { $$ = $1; } ;
 
-/* new/heap 糖的类型位：只作文法识别（真实类型由左值推导），接受结构体名与内置类型，
- * 不用完整 type，避免与 fn 签名里的 ptr_type（type . AMP）产生归约冲突。 */
+/* new/heap 糖的类型位 */
 heap_type := name_token { $$ = $1; }
            | builtin_type { $$ = $1; } ;
 
@@ -690,27 +608,10 @@ unary := INCREMENT unary { $$ = M_Update(1, 1, $2); }
        | HEAP NEW heap_type LPAREN call_args RPAREN { $$ = M_HeapNewSugar($3, $5); }
        | cast_expr        { $$ = $1; } ;
 
-/* `new` 一个对象 / `new [n]` 一片：**类型不写在 new 后面**（声明里已经有了）。
- *
- *   T mut& p = heap T;       单个对象（元素类型 = p 的类型指向的 T，不调构造函数）
- *   T v = new T(实参);       按目标类型的构造函数展开（类型显式写出）
- *   T a[] = new [n];         运行时长度数组（n 可以是变量）
- *
- * 元素类型从"被赋值的那个变量 / 字段的类型"来，所以 `new` / `heap` 只能出现在声明或
- * 赋值里。放在 `unary` 这一层（而不是 `primary`）：`new` 后面紧跟的 `[` 只可能是
- * "数组长度"，要是同时还能被当成"对 new 出来的东西取下标"，文法上就是归约 / 移进的
- * 二义性。
- *
- * 1.0.0 语法清理：删除了裸 `new;` 与裸 `new(实参)`（类型隐式从目标推导），改为显式写出
- * 类型——`heap T` 等价于原 `new;`，`new T(实参)` 等价于原 `new(实参)`。要返回「构造函数
- * 造好的值」的工厂仍写 `static T create(形参)`，它内部就是 `T v = new T(实参);` 这么展开。 */
-
-/* 强转：(T)e —— 数值互转和引用转换；整数不能转换为引用。
- * `(Point &)` 与 `(Point const&)` 等价；具名类型前缀与位与共享后依据右括号消歧。 */
+/* new 一个对象 / new [n]  */
 cast_expr := LPAREN builtin_type RPAREN unary  { $$ = M_Cast($2, $4); }
            | LPAREN band_expr AMP RPAREN unary { $$ = M_Cast(M_ReadOnlyReferenceType($2), $5); }
            | LPAREN ptr_type RPAREN unary      { $$ = M_Cast($2, $4); }
-           /* 用户/宿主类型用显式 `cast<T>(value)`，避免 `(x)` 与 `(T)value` 的 LALR 冲突。 */
            | CAST_KW LT type GT LPAREN expr RPAREN { $$ = M_Cast($3, $6); }
            | postfix                       { $$ = $1; } ;
 
@@ -719,9 +620,6 @@ postfix := postfix INCREMENT { $$ = M_Update(1, 0, $1); }
          | postfix DECREMENT { $$ = M_Update(-1, 0, $1); }
          | postfix LBRACKET expr RBRACKET { $$ = M_Index($1, $3); }
          | postfix QUESTION                    { $$ = M_Try($1); }
-         /* 切片 `s[起:止]`：半开区间 `[起, 止)`，值是**新串**（堆上）。
-          * `止` 可以省（`s[3:]` = 从 3 到末尾）—— 这一条不能和下标撞：
-          * 看完 `expr` 之后是 `:` 就是切片，是 `]` 就是下标。 */
          | postfix LBRACKET expr COLON expr RBRACKET { $$ = M_Slice($1, $3, $5); }
          | postfix LBRACKET expr COLON RBRACKET      { $$ = M_Slice($1, $3, -1); }
          | postfix DOT name_token              { $$ = M_Member($1, $3); }
@@ -740,9 +638,7 @@ call_args := %empty { $$ = M_List(); }
 call_args_nonempty := expr                                { $$ = M_List1($1); }
                     | call_args_nonempty COMMA expr { M_ListAdd($1, $3); $$ = $1; } ;
 
-/* 调用只有"后缀"一条路径（`f(x)` 由 postfix 的 LPAREN 规则给出）：
- * 不留 `name_token LPAREN …` 这条，LALR 就不会在 `f (` 上撞移进/归约冲突。
- * 降级时再看被调者是不是变量名：是名字且不是 struct 值 → 普通函数调用。 */
+/* 调用只有"后缀"一条路径 */
 primary := name_token                         { $$ = M_Var($1); }
          | lambda_expr                     { $$ = $1; }
          | qualified_ref                    { $$ = $1; }
@@ -755,16 +651,12 @@ primary := name_token                         { $$ = M_Var($1); }
          | interpolated_string            { $$ = $1; }
          | TYPECHECK LPAREN element_type COMMA expr RPAREN { $$ = M_CheckType($3, $5); }
          | CHRLIT                        { $$ = M_Char($1); }
-         /* `bint(x)`：`bint` 是**类型关键字**（不是普通函数名），给它一条表达式规则 +
-          * 一个专用节点；降级时按实参类型派发成
-          * `__vm_bint_from_str` / `_from_int` / `_from_flt`。 */
          | TRUE                          { $$ = M_Bool(1); }
          | FALSE                         { $$ = M_Bool(0); }
          | loop_expr                     { $$ = $1; }
          | z_block_value                 { $$ = $1; }
          | z_if_value                    { $$ = $1; }
          | z_match_value                 { $$ = $1; }
-         /* 私有类型标签仅供核心 Any 与反射桥接使用，应用通过类型化 API 判断。 */
          | TYPE_TAG LPAREN element_type RPAREN { $$ = M_TypeTagType($3); }
          | collection_literal           { $$ = $1; }
          | LPAREN tuple_items RPAREN { $$ = M_Tuple($2); }
@@ -773,14 +665,14 @@ primary := name_token                         { $$ = M_Var($1); }
 /* 语句归约先于有值适配，保留无分号的普通 if 语句。 */
 z_if_value := if_stmt { $$ = M_IfValue($1); } ;
 z_match_value := match_stmt %prec SEMI { $$ = M_MatchValue($1); } ;
+
 /* 非空语句块可作为表达式；空花括号保留集合字面量含义。 */
 z_block_value := LBRACE nonempty_stmt_list RBRACE { $$ = M_BlockValue(M_Block($2)); } ;
 
 /* 插值边界由词法层归一化，完整表达式与嵌套仍由文法解析。 */
 interpolated_string := FSTRING LPAREN call_args RPAREN { $$ = M_FString($3); } ;
 
-/* lambda 的块、表达式体、参数及返回签名均由生成解析器识别。
- * 省略类型的参数先通过函数指针上下文单态化，不能产生运行时动态签名。 */
+/* lambda 的块、表达式体、参数及返回签名均由生成解析器识别。 */
 name_token := VARIABLE { $$ = $1; } | COPY { $$ = M_KeywordName(3); } | MOVE { $$ = M_KeywordName(4); } ;
 lambda_capture := %empty { $$ = 0; }
                 | CONST { $$ = 0; }
@@ -820,8 +712,7 @@ lambda_param := param { $$ = $1; }
 lambda_body := block { $$ = $1; }
              | LBRACE expr RBRACE { $$ = $2; } ;
 
-/* 与 C 一样，连续字符串字面量在编译期直接合并：`"x" "y"` 等价于 `"xy"`。
- * 名字池里保存的是去掉外层引号、尚未解释转义的原文，直接拼接后仍只解码一次。 */
+/* 与 C 一样，连续字符串字面量在编译期直接合并  */
 string_literal := STRING { $$ = $1; }
                 | string_literal STRING { $$ = M_ConcatStringLiterals($1, $2); } ;
 
@@ -857,17 +748,6 @@ qualified_ref := name_token SCOPE name_token
                | qualified_ref SCOPE YIELD
                    { $$ = M_QualifiedRef($1, M_YieldName()); } ;
 
-/* ---------------------------------------------------------------
- * 标准**模块**表：`std::lang::X::y` 里的 X 命中这张表 → 按模块解析
- * （限定名保留 `std::lang::` 前缀），否则按标准**类型**解析（`std::lang::List::of` 只留 `List::of`）。
- *
- * 往编译器注入正文（magel_generic.hpp 的 rangeBuiltin）里**新加标准模块**时，
- * 这里必须同步登记：漏登记的话 `std::lang::新模块::f(…)` 会被当成类型 X 的成员，
- * 报出「自定义类型 X 用于 std::lang::print 时必须实现 toString」之类指错方向的错。
- *
- * 首字母小写的限定符（`std::algorithms`）本来就走模块那条路，不必登记。
- * 注意 `std::lang::Random` **不能**登记 —— 那个名字被同名的 struct 占着。
- * --------------------------------------------------------------- */
 %code
 inline const char *const kMagelStdModules[] = {
     nullptr, // 当前没有需要特殊登记的标准模块。
