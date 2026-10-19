@@ -149,13 +149,13 @@ simple_ast::NodePtr LowerDefaultValueText(int valueId)
                  type->kind == MType::String && NeedsOwnedTemp(valueId) ? OwnedStringTemp(valueId) :
                  IsObjectLike(type)                                     ? OwnedObjectTemp(valueId, type) :
                                                                           LowerExpr(valueId);
-    if (g_freshSink && (IsRuntimeArray(type) || IsResourceLike(type)) && IsFreshValue(valueId))
+    if (g_freshSink && (type->kind == MType::Array || IsResourceLike(type)) && IsFreshValue(valueId))
     {
         const auto temporary = AllocateName("__magel_text_source");
         g_freshSink->push_back(simple_ast::Node::declare(temporary, simple_ast::Type::i64()));
-        g_freshSink->push_back(MakeDrop(temporary, IsRuntimeArray(type)));
+        g_freshSink->push_back(MakeDrop(temporary, type->kind == MType::Array));
         g_freshSink->push_back(simple_ast::Node::assign(temporary, value));
-        if (IsRuntimeArray(type))
+        if (type->kind == MType::Array)
             MarkOwnedArray(temporary, type);
         else
             MarkOwned(temporary);

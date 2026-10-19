@@ -1677,6 +1677,68 @@ bool RuntimeBridge::callNative(const Memory::String &name,
 }
 
 /**
+ * @brief 读取一个无符号字节，复用堆和数据区的活跃内存验证。
+ * @param address 运行时虚拟地址。
+ * @param out 成功时接收零扩展后的字节值，失败时不修改。
+ * @return 读取成功时返回 true，否则报告与标量读取一致的内存错误。
+ */
+bool RuntimeBridge::loadByte(std::int64_t address, std::int64_t &out)
+{
+    const std::size_t target = static_cast<std::size_t>(address);
+    char byte = 0;
+    if (impl_->heap->contains(target))
+    {
+        if (!impl_->heap->readBytes(target, &byte, 1u))
+        {
+            fail("panic：读堆内存失败：地址 " + Memory::toString(address));
+            return false;
+        }
+    }
+    else
+    {
+        if (data_ == nullptr)
+        {
+            fail("panic：没有数据区，无法按地址读");
+            return false;
+        }
+        if (!data_->readBytes(target, &byte, 1u))
+        {
+            fail("panic：读数据区失败：地址 " + Memory::toString(address));
+            return false;
+        }
+    }
+    out = static_cast<unsigned char>(byte);
+    return true;
+}
+
+/**
+ * @brief 写入一个字节，保留活跃分配和边界检查且截断整数高位。
+ * @param address 运行时虚拟地址。
+ * @param value 取低八位写入的整数。
+ * @return 写入成功时返回 true，否则报告与标量写入一致的内存错误。
+ */
+bool RuntimeBridge::storeByte(std::int64_t address, std::int64_t value)
+{
+    const std::size_t target = static_cast<std::size_t>(address);
+    const unsigned char byte = static_cast<unsigned char>(value);
+    const char *source = reinterpret_cast<const char *>(&byte);
+    if (impl_->heap->contains(target))
+    {
+        const bool okay = impl_->heap->writeBytes(target, source, 1u);
+        if (!okay) fail("panic：写堆内存失败：地址 " + Memory::toString(address));
+        return okay;
+    }
+    if (data_ == nullptr)
+    {
+        fail("panic：没有数据区，无法按地址写");
+        return false;
+    }
+    const bool okay = data_->writeBytes(target, source, 1u);
+    if (!okay) fail("panic：写数据区失败：地址 " + Memory::toString(address));
+    return okay;
+}
+
+/**
  * @brief 直接读取静态标量，不构造 RuntimeValue。
  * @param address 运行时虚拟地址。
  * @param out 成功时接收读取结果。

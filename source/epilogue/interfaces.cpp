@@ -540,6 +540,9 @@ bool Acceptable(const std::shared_ptr<MType> &param, const std::shared_ptr<MType
         return SameType(param->elem, argument->elem);
     }
     if (!widening || !param || !argument) return false;
+    // 开放长度的值参数接收一维定长数组，复制路径使用同一长度头与元素布局。
+    if (IsRuntimeArray(param) && argument->kind == MType::Array && argument->dims.size() == 1u && SameType(param->elem, argument->elem))
+        return true;
     /* 只允许隐式增加单层引用的只读限定；嵌套引用仍要求目标类型完全一致。 */
     if (param->kind == MType::Ptr && argument->kind == MType::Ptr && param->readOnly && !argument->readOnly && SameType(param->elem, argument->elem))
         return true;

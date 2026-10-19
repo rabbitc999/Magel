@@ -5,6 +5,8 @@ MAX_FILE = 512 * 1024 * 1024
 MAX_ITEMS = 10_000_000
 MAX_TEXT = 64 * 1024 * 1024
 FEATURE_REFLECTION = 0x0002
+FEATURE_BYTE_MEMORY = 0x0004
+KNOWN_FEATURES = FEATURE_REFLECTION | FEATURE_BYTE_MEMORY
 
 
 def validate_reflection(data):
@@ -149,7 +151,7 @@ def read_raw(data):
     if header.take(8) != b"PESVMB\r\n":
         raise ValueError("需要含原始名字的 PESVMB 输入")
     version, features, size, checksum = [header.number(n) for n in (2, 2, 8, 4)]
-    if version != 5 or features & ~FEATURE_REFLECTION:
+    if version != 5 or features & ~KNOWN_FEATURES:
         raise ValueError("仅支持 v5 与已知程序特性，旧产物须重新编译")
     body = header.take(size)
     if header.pos != len(data) or fnv32(body) != checksum:
@@ -176,6 +178,11 @@ def read_raw(data):
             if mask & 128: i["text"] = r.text(True)
         if i["op"] > 53 or i["format"] > 3 or i["flags"] & ~3 or i["quad"] > MAX_ITEMS:
             raise ValueError("非法指令字段")
+        # v5 固定线码：LOADAT=52、STOREAT=53；零宽度标记保留旧八字节访问。
+        if i["op"] in (52, 53):
+            if i["integer"] not in (0, 1) or (i["integer"] == 1 and
+                    (i["flags"] & 2 or not features & FEATURE_BYTE_MEMORY)):
+                raise ValueError("内存指令宽度无效或缺少 byte-memory 特征位")
         result["code"].append(i)
     def insert(table, key, value):
         if key in table:

@@ -912,6 +912,7 @@ std::shared_ptr<MType> RawExprType(int id)
                 const auto baseType = RawExprType(baseId);
                 if (baseType->kind == MType::Ptr && baseType->readOnly) pointer->readOnly = true;
                 const auto &baseNode = N(baseId);
+                if (baseNode.kind == MNode::Str) pointer->readOnly = true;
                 if (baseNode.kind == MNode::EnumCtor)
                 {
                     const MVar *global = FindQualifiedGlobal(baseNode.s, baseNode.s2);

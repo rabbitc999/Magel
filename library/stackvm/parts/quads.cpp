@@ -287,8 +287,8 @@ Memory::String Instruction::toString() const
     case Op::Ret: return "RET";
     case Op::Halt: return "HALT";
     case Op::AddrOf: return "ADDR " + name;
-    case Op::LoadAt: return "LOADAT";
-    case Op::StoreAt: return "STOREAT";
+    case Op::LoadAt: return intValue == 1 ? "LOADAT:u8" : "LOADAT";
+    case Op::StoreAt: return intValue == 1 ? "STOREAT:u8" : "STOREAT";
     }
     return "?";
 }

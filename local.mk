@@ -51,6 +51,9 @@ $(TARGET): $(MAGEL_TOOL_OBJS)
 
 $(MAGEL_TOOL_OBJS): | $(FRONTEND_BUILD)
 
+# 这些翻译单元直接或经模块加载头内嵌资产，必须一起更新，避免链接到旧的内联资产查找实现。
+$(FRONTEND_BUILD)/magel_main.o $(FRONTEND_BUILD)/magel_tool.o $(FRONTEND_BUILD)/emit-main.o $(FRONTEND_BUILD)/generator-main.o: source/magel_module.hpp source/magel_stdlib_embedded.cpp
+
 $(FRONTEND_BUILD)/magel_tool.o: source/magel_tool.cpp source/magel_package.hpp tools/abi_import.hpp source/magel-emit/emit_cli.hpp source/magel-generator/generator_cli.hpp \
         source/runtime_allocator.hpp source/allocator/magel_allocator.hpp
 	$(CXX) $(CXXFLAGS) -I. -c $< -o $@

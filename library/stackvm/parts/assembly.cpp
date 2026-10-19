@@ -543,6 +543,11 @@ bool assemble(const QuadFile &file, Program &out)
             // `(load:f64, 指针, _, 目标)`：浮点按 IEEE-754 双精度解释这 8 个字节
             // （数据区每个槽位就是 8 字节，整型与浮点共用同一片内存）。
             instruction.isFloat = typeOf(typeName).isFloat;
+            if (typeName == "u8")
+            {
+                instruction.intValue = 1;
+                out.requiredFeatures |= kFeatureByteMemory;
+            }
             assembler.emit(std::move(instruction));
             assembler.store(quad.arg(2), index);
             continue;
@@ -554,6 +559,11 @@ bool assemble(const QuadFile &file, Program &out)
             Instruction instruction;
             instruction.op = Op::StoreAt;
             instruction.isFloat = typeOf(typeName).isFloat;
+            if (typeName == "u8")
+            {
+                instruction.intValue = 1;
+                out.requiredFeatures |= kFeatureByteMemory;
+            }
             assembler.emit(std::move(instruction));
             continue;
         }

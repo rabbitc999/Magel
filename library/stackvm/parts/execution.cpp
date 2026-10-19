@@ -1142,13 +1142,22 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
     auto inHeap = [&](std::size_t address) { return heap.contains(address); };
 
     /**
-     * @brief 按地址读 8 个字节。
+     * @brief 按地址读取一个 u8 或八字节标量，保留活跃内存检查。
      * @param address 地址。
      * @param isFloat 是否按 IEEE-754 双精度解释。
      * @param out 结果。
+     * @param bytes 访问宽度；1 表示 u8，其余调用使用 8。
      * @return 成功返回 true。
      */
-    auto loadMemory = [&](std::size_t address, bool isFloat, Slot &out) -> bool {
+    auto loadMemory = [&](std::size_t address, bool isFloat, Slot &out, std::size_t bytes = 8u) -> bool {
+        if (bytes == 1u)
+        {
+            char value = 0;
+            const bool okay = inHeap(address) ? heap.readBytes(address, &value, 1u) :
+                                                (data_ && data_->readBytes(address, &value, 1u));
+            if (okay) out = Slot::fromInt(static_cast<unsigned char>(value));
+            return okay;
+        }
         if (inHeap(address))
         {
             if (isFloat)
@@ -1178,13 +1187,21 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
     };
 
     /**
-     * @brief 按地址写 8 个字节。
+     * @brief 按地址写入一个 u8 或八字节标量，保留活跃内存检查。
      * @param address 地址。
      * @param isFloat 是否按 IEEE-754 双精度写。
      * @param value 值。
+     * @param bytes 访问宽度；1 表示 u8，其余调用使用 8。
      * @return 成功返回 true。
      */
-    auto storeMemory = [&](std::size_t address, bool isFloat, const Slot &value) -> bool {
+    auto storeMemory = [&](std::size_t address, bool isFloat, const Slot &value, std::size_t bytes = 8u) -> bool {
+        if (bytes == 1u)
+        {
+            const unsigned char byte = static_cast<unsigned char>(nativeInt(value));
+            const char *source = reinterpret_cast<const char *>(&byte);
+            return inHeap(address) ? heap.writeBytes(address, source, 1u) :
+                                     (data_ && data_->writeBytes(address, source, 1u));
+        }
         if (inHeap(address))
         {
             return isFloat ? heap.writeDouble(address, value.number()) : heap.writeInt(address, (value.isFloat ? static_cast<std::int64_t>(nativeInt(value)) : value.integer));
@@ -3387,7 +3404,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                 break;
             }
             Slot value;
-            if (!loadMemory(target, instruction.isFloat, value))
+            if (!loadMemory(target, instruction.isFloat, value, instruction.intValue == 1 ? 1u : 8u))
             {
                 const Memory::String where = inHeap(target) ? "堆" : "数据区";
                 fail("panic：" + where + "越界读：地址 " + Memory::toString(target) + (inHeap(target) ? "（没分配或已经 free 过）" : ""));
@@ -3407,7 +3424,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                 fail("panic：没有加载数据区，无法按地址写值：地址 " + Memory::toString(target));
                 break;
             }
-            if (!storeMemory(target, instruction.isFloat, value))
+            if (!storeMemory(target, instruction.isFloat, value, instruction.intValue == 1 ? 1u : 8u))
             {
                 const Memory::String where = inHeap(target) ? "堆" : "数据区";
                 fail("panic：" + where + "越界写：地址 " + Memory::toString(target) + (inHeap(target) ? "（没分配或已经 free 过）" : ""));

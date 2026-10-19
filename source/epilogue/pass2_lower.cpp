@@ -49,28 +49,37 @@ bool FlattenStructFields(const Memory::String &name, Memory::Vector<Memory::Stri
                 definition.leaves.emplace_back(field.name + "." + leaf.first, leaf.second);
             }
         }
-        else if (field.type->kind == MType::Array && !field.type->dims.empty())
+        else if (field.type->kind == MType::Array && !IsRuntimeArray(field.type))
         {
             long long count = 1;
             for (const int dimension : field.type->dims)
             {
                 count *= dimension;
-                if (count > static_cast<long long>(g_runtimeMemory / 8u)) return Fail("定长数组字段超过当前内存预算：" + name + "." + field.name);
+                if (count > static_cast<long long>(g_runtimeMemory)) return Fail("定长数组字段超过当前内存预算：" + name + "." + field.name);
             }
             const auto element = field.type->elem;
             if (element->kind == MType::Struct && !FlattenStructFields(element->name, stack)) return false;
             const auto inner = element->kind == MType::Struct ? FindStruct(element->name) : nullptr;
-            const auto slots = count * (inner ? inner->slotCount : 1);
+            const bool byteStorage = IsByteStorageType(element);
+            const auto payloadSlots = byteStorage ? (count + 7) / 8 : count * (inner ? inner->slotCount : 1);
+            const auto slots = 1 + payloadSlots;
             if (slots > static_cast<long long>(g_runtimeMemory / 8u)) return Fail("定长数组字段超过当前内存预算：" + name + "." + field.name);
             field.slots = static_cast<int>(slots);
-            for (int index = 0; index < count; ++index)
-            {
-                const auto name = field.name + "." + Memory::toString(index);
-                if (inner)
-                    for (const auto &leaf : inner->leaves) definition.leaves.emplace_back(name + "." + leaf.first, leaf.second);
-                else
-                    definition.leaves.emplace_back(name, element);
-            }
+            field.slot = slot + 1;
+            definition.leaves.emplace_back(field.name + ".length", T(M_TypeIntBits(64, 0)));
+            // 字节数组以完整原始槽参与结构体复制，不能把每个字节展开成八字节字段。
+            if (byteStorage)
+                for (int index = 0; index < payloadSlots; ++index)
+                    definition.leaves.emplace_back(field.name + ".bytes" + Memory::toString(index), T(M_TypeIntBits(64, 1)));
+            else
+                for (int index = 0; index < count; ++index)
+                {
+                    const auto name = field.name + "." + Memory::toString(index);
+                    if (inner)
+                        for (const auto &leaf : inner->leaves) definition.leaves.emplace_back(name + "." + leaf.first, leaf.second);
+                    else
+                        definition.leaves.emplace_back(name, element);
+                }
         }
         else
         {

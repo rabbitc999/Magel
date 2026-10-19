@@ -80,9 +80,17 @@ Memory::String makeFilePath(const Memory::String &path)
     return out;
 }
 
-/** 读整个文件；读不到返回 false。 */
+/**
+ * @brief 读取用户文件或显式命名的内嵌运行时资产。
+ * @param path 文件路径；embedded:// 前缀仅查内嵌资产，不访问相邻仓库。
+ * @param out 成功时接收完整内容。
+ * @return 读取成功时返回 true，找不到内容时返回 false。
+ */
 bool readWholeFile(const Memory::String &path, Memory::String *out)
 {
+    const Memory::String embeddedPrefix = "embedded://";
+    if (path.compare(0, embeddedPrefix.size(), embeddedPrefix) == 0)
+        return magel_module::embedded::findGeneratorAssetByPath(path.substr(embeddedPrefix.size()), out);
     std::ifstream stream(path, std::ios::binary);
     if (stream)
     {
@@ -575,10 +583,16 @@ void printUsage(const Memory::String &program)
 namespace magel_emit
 {
 
+/**
+ * @brief 解析 AOT 导出参数，生成运行时源码并调用宿主工具链构建产物。
+ * @param argc 包含工具名称的命令行参数数量。
+ * @param argv 按调用顺序排列的参数文本。
+ * @return 导出成功时返回零；参数、输入、资产或宿主构建失败时返回非零状态。
+ * @note 默认使用内嵌运行时资产；显式目录参数仍可选择用户提供的运行时源码。
+ */
 int runCli(int argc, char **argv)
 {
     const Memory::String self = (argc > 0) ? argv[0] : "magel-emit";
-    const Memory::String selfDir = dirNameOf(self);
 
     Memory::String quadPath;
     Memory::String dataPath;
@@ -587,9 +601,9 @@ int runCli(int argc, char **argv)
     Memory::String outDir;
     Memory::String targetKind = "cpp-aot";
     Memory::String gluePath;
-    Memory::String vmDir = selfDir + "/../../magel/library/stackvm";
-    Memory::String bigintDir = selfDir + "/../../magel/library/bignum";
-    Memory::String mcDir = selfDir + "/../../magel";
+    Memory::String vmDir = "embedded://stackvm";
+    Memory::String bigintDir = "embedded://bignum";
+    Memory::String mcDir = "embedded://magel";
     Memory::String nameOverride;
     /** `--runtime-arena` 的原始值：-1 = 没传（按档给默认）。 */
     std::int64_t runtimeArenaBytes = -1;

@@ -219,3 +219,28 @@ Opcode 单一码表、整数序列化、VM/AOT 派发迁移尚未开始。
 - 根检出的快速门禁五个功能步骤通过：构建、253 个正常样例、307 个错误样例、图像/StringBuilder 与数组专项；最后的索引步骤因本轮新增 C++ 清理代码使源码行号漂移而失败。已重新生成三个索引产物并通过 `library_reference.py --check`，随后重新内嵌、重建驱动和独立导出器，数组专项 VM/AOT 十一项拒绝检查与导出目标十四项检查再次通过。未把原始返回非零的门禁日志改写成全绿。
 - 最新 1.0.0 VSIX 已重新打包，包内编译器与根检出逐字节一致，SHA256 为 `3471ec42922283acfd07daf0b4e78514f2d09111cf63621f61f74ae8465295f2`；尚未交付 String/u8 隔离检出的编译器。
 - 根检出的内嵌脚本重复执行已验证内容与文件时间戳均保持不变（`build/array-final-embed-stability.log`），后续无变化时避免重编译资产使用者。
+
+## 已确认的 opcode 语言声明约定
+
+- `opcode` 为区分大小写的小写语言关键字，类型声明采用 `opcode File { ... }`；它表示胶水内部对象的引用对象，不能当作普通整数句柄赋值复制。
+- 默认可复制的 opcode 类型必须在声明体内声明复制胶水函数；语言层复制须调用该函数，取得独立的胶水记录，禁止仅复制内部指针。
+- `#NonCopyable` 修饰 opcode 类型后，在编译期拒绝复制初始化、赋值复制、按值传参及按值返回；现有显式移动规则继续有效。File 等资源对象可据此禁止复制。
+- 这是用户已经确认的语言约束，目前尚未实现为权威文法及类型检查能力。具体复制函数签名及胶水绑定随实现维护，不把这里的约定当作已支持 API。
+- String、数组继续遵守值语义；opcode 的内部引用表示不能使它们的普通值复制产生共享可写状态。版本保持 1.0.0，不增加解引用运算符。
+- ABI 与 C++ 胶水共用 opcode 声明及复制/移动限制；ABI 绑定的宿主对象也必须提供复制函数或显式标记 #NonCopyable，不能退回整数别名绕过所有权规则。
+- opcode 在语言中的角色等同胶水侧 void* 不透明对象指针；语言不解释其目标内存布局，复制必须经声明的胶水函数。
+- opcode 对象不进入反射结果及 LSP 提示；内部类型检查、绑定和所有权信息仍保留，不能靠退化为整数来实现隐藏。
+
+## 字节常量与稳定门禁续验
+
+- simple_ast 新增 byteArray 节点，与内部带尾零的 C 字符串分别合并；产物使用 u8 数组长度头和精确字节载荷，不添加尾零。单元测试 124 项断言通过，新增跨函数合并、UTF-8 六字节文本、内嵌零、空数组及相邻数组边界检查。
+- 这是低层节点能力，语言层 MNode::Str 尚未切换，不能宣称字符串字面量已经变为 char[N]，只读数据段及 String 原生记录隔离仍未完成。
+- VM 核心从 library/stackvm 工作目录复跑，324 项断言通过，包含样例文件；另一次从项目根运行的日志跳过样例，不作为完整证据。
+- 定长数组样例加入 tests/magel_array_parameters.py，日常专项覆盖运行时及定长数组 VM/checked AOT；隔离检出快速门禁仍在运行，最终状态以后续退出码为准。
+- 本轮隔离检出快速门禁的构建通过，样例步骤发现 8 项失败：lang_float_bytes、lang_float64_bytes、std_binary 以及五个 binary 错误样例。均定位为浮点数组胶水和二进制数组导入仍按八字节槽访问；原始日志 build/byte-foundation-ci-run.log 与 tmp/ci/logs/03.log 保留。
+- 两处胶水改为连续 u8 访问，保留读取范围检查及浮点写入前的有效性检查。修复编译器单独输出至 build/byte-glue-fixed-compiler.exe，不覆盖门禁使用中的 magel.exe；8 项针对性 VM 复测全部通过（build/byte-glue-fixed-targeted.log）。checked AOT 仍在复测，尚未认定完整门禁全绿。
+- 独立 AOT 导出器已重建并通过 14 项真实导出检查；该快照早于上述两处胶水修复，交付前仍须同步最新内嵌资产重建。
+- 原始快速门禁最终退出 1：9 步成功 8 步，仅样例步骤失败；图像/StringBuilder、运行时及定长数组 VM/AOT 十一项拒绝专项、124 项字面量底层断言、字面量 VM/AOT 与索引检查均通过。
+- 修复版 float32、float64 与 std::binary 三个 checked AOT 样例均通过，日志 build/byte-glue-fixed-aot.log；对应 8 项 VM 复测全通过。不能把修复前的整轮 CI 改记为绿色。
+- 修复版 1.0.0 VSIX 完成 npm run package 及插件测试，ZIP 清单、编译器 LSP initialize 的 serverInfo.version 与 VERSION 一致，内嵌编译器与 build/byte-glue-fixed-compiler.exe 逐字节相同，SHA256 为 cb0f65cfbc952b91d30e9f50d09f8d81824afe3eecfc7fdf4bf5d471c36a2cd4。
+- 使用两处胶水修复后的最新内嵌资产重建独立 AOT 导出器，十四项真实导出检查再次全部通过（build/byte-glue-fixed-emitter-test.log）。

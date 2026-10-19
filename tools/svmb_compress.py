@@ -7,7 +7,7 @@ from pathlib import Path
 import struct
 import sys
 import zlib
-from svmb_format import FEATURE_REFLECTION, MAX_FILE, MAX_ITEMS, fnv64, read_raw, varuint, varint
+from svmb_format import FEATURE_REFLECTION, KNOWN_FEATURES, MAX_FILE, MAX_ITEMS, fnv64, read_raw, varuint, varint
 
 # 必须与 stackvm::Op::Call 一致；回归测试检查 Python/C++ 输出逐字节相同。
 CALL = 48
@@ -15,7 +15,7 @@ CALL = 48
 def compress(program, module="", version=""):
     features = program.get("features", 0)
     reflection = program.get("reflection", b"")
-    if features & ~FEATURE_REFLECTION or bool(features & FEATURE_REFLECTION) != bool(reflection):
+    if features & ~KNOWN_FEATURES or bool(features & FEATURE_REFLECTION) != bool(reflection):
         raise ValueError("程序特性与反射元数据不一致")
     names = {}
     def add(name, kind=0):

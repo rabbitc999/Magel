@@ -27,6 +27,11 @@ about how to use it.
 Statements end with `;`, blocks use `{ }`. Preprocessor directives start with `%` and macros with `$`;
 see §14.
 
+Ordinary string literals with identical byte contents share one generated data item within a program,
+including uses in different functions and empty literals. Independent `String` values retain value copying
+and deterministic cleanup, so changing one variable does not change another. Literals cannot be modified
+directly or borrowed through mutable references to their bytes.
+
 ---
 
 ## 2. Types
@@ -41,6 +46,12 @@ see §14.
 | Other scalars | `bool` `char` |
 | String | `String` (i.e. `std::lang::String`) |
 | Big numbers / high precision | `BigInteger` `BigDecimal` |
+
+`char` holds one UTF-8 byte in the range 0–255 and shares u8 arithmetic and one-byte memory access with `uint8`.
+Adjacent elements of `char[]` and `uint8[]` are one byte apart. Loads zero-extend, stores truncate high bits,
+and arithmetic wraps with u8 semantics. A character literal must decode to exactly one byte; multibyte text
+uses strings, whose indexing and length count UTF-8 bytes. Structures retain their field-slot layout;
+the access width of a byte field does not imply that the whole structure is packed.
 
 **No implicit narrowing.** `int64 -> int32` and `int64 -> char` both need an explicit cast:
 `(int32)x` / `(char)x`.

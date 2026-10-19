@@ -28,15 +28,17 @@ def main():
     }
     with tempfile.TemporaryDirectory(prefix="array-parameters-", dir=ROOT / "build") as temporary:
         work = Path(temporary)
-        sample = ROOT / "example/samples/array_parameter_values.mgl"
-        for backend in ("run", "aot"):
-            target = work / (backend + (".exe" if os.name == "nt" else ""))
-            result = subprocess.run([str(compiler), backend, str(sample), "--out", str(target)],
-                                    cwd=ROOT, capture_output=True, text=True, encoding="utf-8", timeout=240)
-            assert result.returncode == 0, (backend, result.stdout, result.stderr)
-            if backend == "aot":
-                result = subprocess.run([str(target)], capture_output=True, text=True, encoding="utf-8", timeout=60)
-            assert result.returncode == 0 and result.stdout == "array parameter values OK\n" and not result.stderr, (backend, result.stdout, result.stderr)
+        for sample_name in ("array_parameter_values", "fixed_array_values"):
+            sample = ROOT / "example/samples" / (sample_name + ".mgl")
+            expected = (ROOT / "example/expected" / (sample_name + ".txt")).read_text(encoding="utf-8")
+            for backend in ("run", "aot"):
+                target = work / (sample_name + "-" + backend + (".exe" if os.name == "nt" else ""))
+                result = subprocess.run([str(compiler), backend, str(sample), "--out", str(target)],
+                                        cwd=ROOT, capture_output=True, text=True, encoding="utf-8", timeout=240)
+                assert result.returncode == 0, (sample_name, backend, result.stdout, result.stderr)
+                if backend == "aot":
+                    result = subprocess.run([str(target)], capture_output=True, text=True, encoding="utf-8", timeout=60)
+                assert result.returncode == 0 and result.stdout == expected and not result.stderr, (sample_name, backend, result.stdout, result.stderr)
         for name, declaration in rejected.items():
             source = work / (name + ".mgl")
             source.write_text(declaration + "\nint64 main() { return 0; }\n", encoding="utf-8")
@@ -44,7 +46,7 @@ def main():
                                     capture_output=True, text=True, encoding="utf-8", timeout=120)
             assert result.returncode != 0, (name, "错误的数组引用被接受")
             assert "语法" not in result.stderr and "Syntax error" not in result.stderr, (name, result.stderr)
-    print(f"数组形参：VM/AOT 与 {len(rejected)} 个只读/生命周期用例通过")
+    print(f"运行时及定长数组值语义：VM/AOT 与 {len(rejected)} 个只读/生命周期用例通过")
 
 
 if __name__ == "__main__":

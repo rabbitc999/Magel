@@ -1,6 +1,18 @@
 /* ---------- 类型 ---------- */
 
 /**
+ * @brief 在类型层识别使用连续 u8 存储的类型，char 与 uint8 共用该布局。
+ * @param type 待查询类型，名义宿主类型按其底层类型查询。
+ * @return char、uint8 及对应宿主包装返回 true，其他类型返回 false。
+ */
+bool IsByteStorageType(const std::shared_ptr<MType> &type)
+{
+    if (!type) return false;
+    if (type->kind == MType::Host) return IsByteStorageType(type->elem);
+    return type->kind == MType::Char || (type->kind == MType::Int && type->isUnsigned && type->bits == 8);
+}
+
+/**
  * @brief 前端类型 → simple_ast 类型：复合 / 数组是指向数据区的 i64 句柄，引用是数据区地址。
  * @param type 类型描述。
  * @param label 诊断或跳转使用的标签。
@@ -52,11 +64,12 @@ simple_ast::TypePtr LowerType(const std::shared_ptr<MType> &type, const Memory::
     {
         int count = 1;
         for (const int dim : type->dims) count *= dim;
+        const int length = count;
         /* 元素是结构体：数据区里按字段铺开（每个元素占"字段数 × 8"字节），
          * 所以 count 要乘上字段数 —— 与下标用的 stride（StructStride）对齐。 */
         const int stride = StructStride(type->elem);
         if (stride > 0) count *= (stride / 8);
-        const Memory::String meta = "count=" + Memory::toString(count) + ";align=8;label=" + (label.empty() ? Memory::String("array") : label);
+        const Memory::String meta = "count=" + Memory::toString(count) + ";length=" + Memory::toString(length) + ";align=" + Memory::toString(IsByteStorageType(type->elem) ? 1 : 8) + ";label=" + (label.empty() ? Memory::String("array") : label);
         return Type::array(LowerType(type->elem, label), meta);
     }
     }
@@ -146,7 +159,7 @@ Memory::String StructNameOf(const std::shared_ptr<MType> &type)
 /**
  * @brief 判断初始化表达式是否提供运行时数组长度。
  *
- * Runtime arrays need a length-bearing allocation or array-returning call.
+ * 分配、数组变量及数组返回值均提供长度；一维定长值也使用相同长度头。
  * @param id 待查找或操作的对象编号。
  * @retval 初始化表达式提供运行时数组长度时为 true，否则为 false。
  */
@@ -155,9 +168,8 @@ bool InitIsRuntimeArray(int id)
     if (id < 0) return false;
     const MNode &node = N(id);
     if (node.kind == MNode::NewPtr) return node.i >= 0; /* 带长度才是数组 */
-    if (node.kind == MNode::Call || node.kind == MNode::Loop || (node.kind == MNode::EnumCtor && node.type2 == 1))
-        return IsRuntimeArray(ExprType(id));
-    return false;
+    const auto type = ExprType(id);
+    return type && type->kind == MType::Array && (IsRuntimeArray(type) || type->dims.size() == 1u);
 }
 
 /**

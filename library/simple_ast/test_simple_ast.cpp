@@ -370,6 +370,126 @@ void testTypedMemoryArithmetic()
     }
 }
 
+/**
+ * @brief 验证普通字面量跨函数合并，具名数据保留独立身份，空串合并且生成状态不跨程序。
+ */
+void testStringLiteralPool()
+{
+    using namespace simple_ast;
+    Program program;
+    Function helper;
+    helper.name = "helper";
+    helper.result = Type::stringType();
+    helper.body = Node::block({ Node::ret(Node::str("literal-pool-unique")) });
+    program.functions.push_back(helper);
+    Function main;
+    main.name = "main";
+    main.body = Node::block({ Node::exprStmt(Node::str("literal-pool-unique")),
+                              Node::exprStmt(Node::str("literal-pool-unique")),
+                              Node::exprStmt(Node::str("literal-pool-other")),
+                              Node::exprStmt(Node::str("")),
+                              Node::exprStmt(Node::str("")),
+                              Node::exprStmt(Node::namedStr("explicit_left", "literal-pool-unique")),
+                              Node::exprStmt(Node::namedStr("explicit_right", "literal-pool-unique")),
+                              Node::ret(Node::i(0)) });
+    program.functions.push_back(main);
+    const auto result = generate(program, "literal-pool");
+    CHECK(result.ok());
+    int repeated = 0, other = 0, empty = 0, named = 0;
+    for (const auto &entry : result.entries)
+    {
+        if (entry.body == "\"literal-pool-unique\"") ++repeated;
+        if (entry.body == "\"literal-pool-other\"") ++other;
+        if (entry.body == "\"\"") ++empty;
+        if (entry.name == "explicit_left" || entry.name == "explicit_right") ++named;
+    }
+    CHECK(repeated == 3);
+    CHECK(other == 1);
+    CHECK(empty == 1);
+    CHECK(named == 2);
+    const auto again = generate(program, "literal-pool");
+    CHECK(result.quads == again.quads);
+    CHECK(result.exportDataBinary() == again.exportDataBinary());
+    Program isolated;
+    main.body = Node::block({ Node::exprStmt(Node::str("new-program-first")),
+                              Node::exprStmt(Node::str("literal-pool-unique")),
+                              Node::ret(Node::i(0)) });
+    isolated.functions.push_back(main);
+    const auto fresh = generate(isolated, "isolated-pool");
+    CHECK(fresh.ok());
+    CHECK(fresh.entries.size() == 2);
+}
+
+/**
+ * @brief 检查 u8 数组的连续字节布局、字节对齐及后继条目的独立存储。
+ */
+void testByteDataLayout()
+{
+    using namespace simple_ast;
+    CodegenResult result;
+    const auto byte = Type::make(Type::Kind::Uint, 8);
+    result.entries.push_back({ "bytes", Type::array(byte, "count=3"), "[255, 128, 2]" });
+    result.entries.push_back({ "tail", byte, "7" });
+    result.entries.push_back({ "empty", Type::array(byte, "count=0"), "[]" });
+    const auto triple = Type::structOf("Triple", { { "a", Type::i64() }, { "b", Type::i64() }, { "c", Type::i64() } });
+    result.entries.push_back({ "pairs", Type::array(triple, "count=6;length=2"), "[1, 2, 3, 4, 5, 6]" });
+    const auto binary = result.exportDataBinary();
+    const auto layout = result.exportDataLayout();
+    CHECK(layout.size() == 4u);
+    CHECK(layout[0].find("offset=16 size=3 stride=1") != Memory::String::npos);
+    CHECK(layout[1].find("offset=19 size=1 stride=1") != Memory::String::npos);
+    CHECK(static_cast<unsigned char>(binary[8]) == 3u);
+    for (std::size_t index = 9; index < 16; ++index) CHECK(binary[index] == '\0');
+    CHECK(static_cast<unsigned char>(binary[16]) == 255u);
+    CHECK(static_cast<unsigned char>(binary[17]) == 128u);
+    CHECK(static_cast<unsigned char>(binary[18]) == 2u);
+    CHECK(static_cast<unsigned char>(binary[19]) == 7u);
+    CHECK(layout[2].find("offset=28 size=0 stride=1") != Memory::String::npos);
+    for (std::size_t index = 20; index < 28; ++index) CHECK(binary[index] == '\0');
+    CHECK(layout[3].find("offset=40 size=48 stride=8") != Memory::String::npos);
+    CHECK(static_cast<unsigned char>(binary[32]) == 2u);
+}
+
+/**
+ * @brief 验证字节字面量的精确长度、内嵌零、跨函数合并及 C 字符串隔离。
+ */
+void testByteArrayLiterals()
+{
+    using namespace simple_ast;
+    Program program;
+    Function helper;
+    helper.name = "helper";
+    helper.body = Node::block({ Node::exprStmt(Node::byteArray("hello")), Node::ret(Node::i(0)) });
+    program.functions.push_back(helper);
+    Function main;
+    main.name = "main";
+    main.body = Node::block({ Node::exprStmt(Node::byteArray("hello")),
+                              Node::exprStmt(Node::str("hello")),
+                              Node::exprStmt(Node::byteArray("\xe4\xbd\xa0\xe5\xa5\xbd")),
+                              Node::exprStmt(Node::byteArray(Memory::String("a\0b", 3))),
+                              Node::exprStmt(Node::byteArray("")), Node::ret(Node::i(0)) });
+    program.functions.push_back(main);
+    const auto result = generate(program, "byte-literals");
+    CHECK(result.ok());
+    CHECK(result.entries.size() == 5u);
+    CHECK(result.entries[0].type->kind == Type::Kind::Array);
+    CHECK(result.entries[1].type->kind == Type::Kind::String);
+    const auto layout = result.exportDataLayout();
+    const auto binary = result.exportDataBinary();
+    CHECK(layout[0].find("offset=16 size=5 stride=1") != Memory::String::npos);
+    CHECK(binary.substr(16u, 5u) == "hello");
+    CHECK(static_cast<unsigned char>(binary[8]) == 5u);
+    CHECK(layout[2].find("size=6 stride=1") != Memory::String::npos);
+    CHECK(layout[3].find("size=3 stride=1") != Memory::String::npos);
+    CHECK(layout[4].find("size=0 stride=1") != Memory::String::npos);
+    // 紧邻两个字节数组时，后者的长度头应紧跟前者的末字节，不能插入尾零。
+    CodegenResult adjacent;
+    adjacent.entries = { result.entries[0], result.entries[3] };
+    const auto packed = adjacent.exportDataBinary();
+    CHECK(static_cast<unsigned char>(packed[21]) == 3u);
+    CHECK(packed.substr(29u, 3u) == Memory::String("a\0b", 3));
+}
+
 }  // namespace
 
 /**
@@ -386,6 +506,9 @@ int main()
     testChainedOverload();
     testFrontendHelpers();
     testTypedMemoryArithmetic();
+    testStringLiteralPool();
+    testByteDataLayout();
+    testByteArrayLiterals();
     if (failures == 0)
     {
         std::cout << "simple_ast-tests：全部通过（" << checks << " 项断言）\n";

@@ -125,6 +125,7 @@ struct Node
         IntLit,
         FloatLit,
         StringLit,
+        ByteArrayLit,
         BoolLit,
         NullLit,
         Var,
@@ -185,17 +186,27 @@ struct Node
      */
     static NodePtr f(double value);
     /**
-     * 造一个字符串字面量（内容进 `.data`）。
+     * @brief 构造按字节内容共享生成期数据项的普通字符串字面量。
+     * @param text 不含外层引号的字符串内容。
+     * @return 生成后取得共享数据项地址的表达式节点。
+     * @note 合并范围为单次 generate 调用，包含同一程序内的全部函数及空串。
      */
     static NodePtr str(Memory::String text);
     /**
+     * @brief 构造带长度头且无尾零的 UTF-8 字节数组常量。
+     * @param bytes 已解码的原始字节，允许包含零字节。
+     * @return 指向数组首字节的表达式节点。
+     * @note 与内部 C 字符串数据分别合并，不混用两者的存储协议。
+     */
+    static NodePtr byteArray(Memory::String bytes);
+    /**
      * @brief **具名**字符串数据项：同名只登记一次，表达式的值是它的地址。
      *
-     * `str()` 每次发射都新开一个数据项（同一个内容出现两次就两份）；要"同一个东西
-     * 地址始终一致"就得用这个（编译器给函数指针发的"函数标签"就是它 —— 于是
-     * `p == 函数名` 能按地址比）。
+     * 显式名称决定数据项身份；即使字节内容相同，不同名称仍对应独立数据项。
+     * 编译器用它保存函数标签，使函数指针依赖标签身份而非普通字面量的合并顺序。
      * @param name 数据项名字（要唯一地对应一份内容）。
      * @param text 内容（不含引号）。
+     * @return 生成后取得具名数据项地址的表达式节点。
      */
     static NodePtr namedStr(Memory::String name, Memory::String text);
     /**

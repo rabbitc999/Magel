@@ -68,9 +68,9 @@ namespace stackvm
 std::uint32_t supportedProgramFeatures()
 {
 #if STACKVM_WITH_REFLECTION
-    return kFeatureReflection;
+    return kFeatureReflection | kFeatureByteMemory;
 #else
-    return 0;
+    return kFeatureByteMemory;
 #endif
 }
 
@@ -1568,6 +1568,7 @@ static bool decodeProgramBinary(const Memory::Vector<std::uint8_t> &fileBytes,
         binaryDiagnostic(diagnostics, "二进制程序尾部有未识别数据");
         return false;
     }
+    if (!validateProgramMetadata(decoded, diagnostics)) return false;
     if (compressed && !validateSymbolProgram(fileBytes, decoded, diagnostics)) return false;
     program = std::move(decoded);
     return true;

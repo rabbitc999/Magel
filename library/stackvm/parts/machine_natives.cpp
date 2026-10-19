@@ -1694,6 +1694,10 @@ Slot strAt(NativeContext &ctx, const Memory::Vector<Slot> &args)
 
 /**
  * @brief 验证下标后取得字符串字符地址，范围与普通字符串下标一致。
+ * @param ctx 提供堆块和数据区地址范围的运行环境。
+ * @param args 字符串地址和按 UTF-8 字节计数的下标。
+ * @return 对应字节地址；读取失败或越界时返回零并登记运行时错误。
+ * @note 堆串跳过长度头；数据区字面量直接从字节起始地址取值。
  */
 Slot strRef(NativeContext &ctx, const Memory::Vector<Slot> &args)
 {
@@ -1710,7 +1714,8 @@ Slot strRef(NativeContext &ctx, const Memory::Vector<Slot> &args)
         ctx.error = "字符串下标越界：" + Memory::toString(index) + "（长度 " + Memory::toString(text.size()) + "）";
         return Slot::fromInt(0);
     }
-    return Slot::fromInt(address + 8 + index);
+    const std::int64_t prefix = ctx.heap != nullptr && ctx.heap->contains(static_cast<std::size_t>(address)) ? 8 : 0;
+    return Slot::fromInt(address + prefix + index);
 }
 
 /**
@@ -3869,8 +3874,7 @@ Slot nativeGuardedBig(NativeContext &ctx, const char *what, Operation operation)
     try
     {
         return operation();
-    }
-    catch (const std::exception &error)
+    } catch (const std::exception &error)
     {
         ctx.error = Memory::String(what) + "：" + error.what();
         return Slot::fromInt(0);

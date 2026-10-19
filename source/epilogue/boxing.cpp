@@ -525,14 +525,11 @@ simple_ast::NodePtr LowerLanguageMove(const Memory::Vector<int> &args, bool impl
     }
     else
     {
-        auto value = type->kind == MType::Char ? Node::call("__vm_char_load", { "address" }, { Node::var(address) }) : Node::loadFrom(Node::var(address), LowerType(type, result));
+        auto value = Node::loadFrom(Node::var(address), LowerType(type, result));
         out.push_back(Node::assign(result, value));
     }
-    if (type->kind == MType::Char)
-        out.push_back(Node::exprStmt(Node::call("__vm_char_store", { "address", "value" }, { Node::var(address), Node::i(0) })));
-    else
-        out.push_back(Node::exprStmt(Node::call("__vm_memset", { "address", "value", "bytes" },
-                                                { Node::var(address), Node::i(0), Node::i(bytes) })));
+    out.push_back(Node::exprStmt(Node::call("__vm_memset", { "address", "value", "bytes" },
+                                            { Node::var(address), Node::i(0), Node::i(bytes) })));
     if (type->kind == MType::Struct)
         AppendMovedAggregate(type->name, Node::var(address), &out);
     return Node::sequence(std::move(out), Node::var(result));
@@ -1722,13 +1719,14 @@ simple_ast::NodePtr LowerCall(int id)
 }
 
 /**
- * @brief 元素字节数：堆上一个 `T` 占多少字节（数据区槽位一律 8 字节，结构体是字段数 × 8）。
+ * @brief 查询数组或独立堆元素的字节数：u8 为一字节，结构体按聚合布局，其他标量和句柄为八字节。
  * @param type 元素类型。
- * @return 字节数（至少 8）。
+ * @return 元素物理存储字节数。
  */
 int ElementBytes(const std::shared_ptr<MType> &type)
 {
     if (!type) return 8;
+    if (IsByteStorageType(type)) return 1;
     if (type->kind == MType::Struct)
     {
         const int stride = StructStride(type);
@@ -1803,6 +1801,19 @@ simple_ast::NodePtr LowerNewPtr(int id)
         return Bad();
     }
     g_usesNewArray = true;
+    if (element->kind == MType::Struct || IsContainer(element))
+    {
+        using simple_ast::Node;
+        const auto length = AllocateName("__magel_new_length");
+        const auto result = AllocateName("__magel_new_result");
+        Memory::Vector<simple_ast::NodePtr> out{
+            Node::declare(length, simple_ast::Type::i64()), Node::assign(length, LowerExpr(static_cast<int>(node.i))),
+            Node::declare(result, simple_ast::Type::i64()),
+            Node::assign(result, Node::call("__magel_new_array", { "__magel_len", "__magel_stride" }, { Node::var(length), Node::i(bytes) }))
+        };
+        InitializeArrayValues(Node::var(result), element, Node::var(length), &out);
+        return Node::sequence(std::move(out), Node::var(result));
+    }
     return simple_ast::Node::call("__magel_new_array", { "__magel_len", "__magel_stride" },
                                   { LowerExpr(static_cast<int>(node.i)), simple_ast::Node::i(bytes) });
 }
@@ -2312,7 +2323,7 @@ simple_ast::NodePtr LowerExpr(int id)
     CaptureBorrowExpression(id, type);
     const auto value = LowerRawExpr(id);
     if (AutoDereferences(id) && type && type->kind == MType::Ptr && type->elem && type->elem->kind != MType::Void && type->elem->kind != MType::Struct && !IsInterfacePointer(type))
-        return type->elem->kind == MType::Char ? simple_ast::Node::call("__vm_char_load", { "__magel_address" }, { value }) : simple_ast::Node::loadFrom(value, LowerType(type->elem, "pointer value"));
+        return simple_ast::Node::loadFrom(value, LowerType(type->elem, "pointer value"));
     return value;
 }
 /**
@@ -2548,8 +2559,6 @@ simple_ast::NodePtr LowerUncheckedExpr(int id)
                 return simple_ast::Node::call("__vm_vec_at", { "__magel_v", "__magel_i", "__magel_t", "__magel_o" },
                                               { simple_ast::Node::var(found->elementList), simple_ast::Node::var(found->elementIndex),
                                                 simple_ast::Node::i(found->type->kind == MType::String ? 1 : 0), ContainerStorageFlag(found->type) });
-            if (found->elementReference && found->type->kind == MType::Char)
-                return simple_ast::Node::call("__vm_char_load", { "__magel_address" }, { simple_ast::Node::var(found->emitted) });
             if (found->elementReference && found->type->kind != MType::Struct)
                 return simple_ast::Node::loadFrom(simple_ast::Node::var(found->emitted), LowerType(found->type, found->emitted));
             return simple_ast::Node::var(found->emitted);
@@ -3100,7 +3109,7 @@ simple_ast::NodePtr LowerStmtImpl(int id)
         g_pendingParameterStorage.clear();
         for (const auto &owner : g_parameterReferenceOwners)
         {
-            if (IsRuntimeArray(owner.second))
+            if (owner.second->kind == MType::Array)
                 MarkOwnedArray(owner.first, owner.second);
             else if (owner.second->kind == MType::Struct)
                 MarkDestructor(owner.first, owner.second);
@@ -3981,12 +3990,12 @@ simple_ast::Function LowerFunction(const Memory::String &name, const Memory::Str
         if (module == "std::event" && param.type->kind == MType::Func) var.borrowDepth = 0u;
         g_scope.back()[param.source] = var;
         function.parameters.emplace_back(param.emitted, LowerType(param.type, param.emitted));
-        const bool ownedValue = param.type->kind == MType::String || IsObjectLike(param.type) || IsRuntimeArray(param.type);
+        const bool ownedValue = param.type->kind == MType::String || IsObjectLike(param.type) || param.type->kind == MType::Array;
         if (g_addressTakenNames.count(param.source) && NeedsReferenceStorage(param.type))
         {
             const auto storage = AllocateName("__magel_parameter_reference");
             parameterReferences.push_back(simple_ast::Node::declare(storage, simple_ast::Type::i64()));
-            parameterReferences.push_back(simple_ast::Node::assign(storage, simple_ast::Node::alloc(simple_ast::Node::i(8))));
+            parameterReferences.push_back(simple_ast::Node::assign(storage, simple_ast::Node::alloc(simple_ast::Node::i(ElementBytes(param.type)))));
             g_pendingParameterStorage.push_back(storage);
             simple_ast::NodePtr value = simple_ast::Node::var(param.emitted);
             if (param.type->kind == MType::String)
@@ -3994,7 +4003,7 @@ simple_ast::Function LowerFunction(const Memory::String &name, const Memory::Str
                                                { value, simple_ast::Node::i(0), simple_ast::Node::i(-1) });
             else if (IsObjectLike(param.type))
                 value = simple_ast::Node::call(ObjectCopyFunction(param.type), { "__magel_v" }, { value });
-            else if (IsRuntimeArray(param.type))
+            else if (param.type->kind == MType::Array)
                 value = CopyRuntimeArrayValue(value, param.type);
             parameterReferences.push_back(simple_ast::Node::storeAt(simple_ast::Node::var(storage), value, LowerType(param.type, storage)));
             g_referenceStorage[param.emitted] = storage;
@@ -4004,7 +4013,7 @@ simple_ast::Function LowerFunction(const Memory::String &name, const Memory::Str
         }
         else if (ownedValue)
         {
-            const auto value = IsRuntimeArray(param.type)        ? CopyRuntimeArrayValue(simple_ast::Node::var(param.emitted), param.type) :
+            const auto value = param.type->kind == MType::Array  ? CopyRuntimeArrayValue(simple_ast::Node::var(param.emitted), param.type) :
                                param.type->kind == MType::String ? simple_ast::Node::call("__vm_str_sub", { "__magel_s", "__magel_a", "__magel_b" },
                                                                                           { simple_ast::Node::var(param.emitted), simple_ast::Node::i(0), simple_ast::Node::i(-1) }) :
                                                                    simple_ast::Node::call(ObjectCopyFunction(param.type), { "__magel_v" }, { simple_ast::Node::var(param.emitted) });

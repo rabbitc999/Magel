@@ -26,6 +26,8 @@ EXE = ".exe" if os.name == "nt" else ""
 # 枚举 / Result / 闭包 / 接口 / 泛型 / 协程 / 资源清理。
 MUST_PASS = [
     "array_parameter_values",
+    "fixed_array_values",
+    "string_literal_pool",
     "std_read_lines",
     "match_expression", "string_interpolation", "associated_types", "defer_scope", "macro_controls", "const_generics",
     "if_expression", "try_custom", "error_adapters",

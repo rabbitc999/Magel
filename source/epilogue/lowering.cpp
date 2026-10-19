@@ -371,6 +371,8 @@ simple_ast::NodePtr LowerIndexChain(int baseId, int positionId, bool bufferIndex
             simple_ast::Node::checkIndex(LowerExpr(indices[0]), length, label);
         const int stride = StructStride(base->elem);
         if (stride > 0) return simple_ast::Node::offset(LowerExpr(cursor), position, stride);
+        if (IsByteStorageType(base->elem))
+            return simple_ast::Node::loadFrom(simple_ast::Node::offset(LowerExpr(cursor), position, 1), LowerType(base->elem, label));
         return simple_ast::Node::index(LowerExpr(cursor), position);
     }
     if (base->kind == MType::Array)
@@ -402,6 +404,8 @@ simple_ast::NodePtr LowerIndexChain(int baseId, int positionId, bool bufferIndex
          * 用 offset（不补 load）；标量元素才用 index（base + i×8 再取值）。 */
         const int stride = StructStride(base->elem);
         if (stride > 0) return simple_ast::Node::offset(LowerRawExpr(cursor), linear, stride);
+        if (IsByteStorageType(base->elem))
+            return simple_ast::Node::loadFrom(simple_ast::Node::offset(LowerRawExpr(cursor), linear, 1), LowerType(base->elem, name));
         return simple_ast::Node::index(LowerRawExpr(cursor), linear);
     }
     if (base->kind == MType::Ptr)
@@ -412,10 +416,12 @@ simple_ast::NodePtr LowerIndexChain(int baseId, int positionId, bool bufferIndex
             return Bad();
         }
         const int stride = StructStride(base->elem);
-        const int bytes = (stride > 0) ? stride : 8;
+        const int bytes = ElementBytes(base->elem);
         const simple_ast::NodePtr position = simple_ast::Node::checkPointer(
             LowerExpr(indices[0]), LowerRawExpr(cursor), bytes, NameOfExpr(cursor));
         if (stride > 0) return simple_ast::Node::offset(LowerRawExpr(cursor), position, stride);
+        if (IsByteStorageType(base->elem))
+            return simple_ast::Node::loadFrom(simple_ast::Node::offset(LowerRawExpr(cursor), position, 1), LowerType(base->elem, "pointer index"));
         return simple_ast::Node::index(LowerRawExpr(cursor), position);
     }
     Fail("下标只能用在数组或引用上");
@@ -673,12 +679,12 @@ simple_ast::NodePtr LowerAddressOf(int id)
             const int stride = StructStride(base->elem);
             return simple_ast::Node::offset(
                 target, simple_ast::Node::checkIndex(position, length, label),
-                stride > 0 ? stride : 8);
+                ElementBytes(base->elem));
         }
         if (base->kind == MType::Ptr)
         {
             const int stride = StructStride(base->elem);
-            const int bytes = (stride > 0) ? stride : 8;
+            const int bytes = ElementBytes(base->elem);
             return simple_ast::Node::offset(
                 target, simple_ast::Node::checkPointer(position, target, bytes, label), bytes);
         }
@@ -694,7 +700,7 @@ simple_ast::NodePtr LowerAddressOf(int id)
             const simple_ast::NodePtr linear =
                 (factor == 1) ? checked : simple_ast::Node::binary("*", checked, simple_ast::Node::i(factor));
             const int stride = StructStride(base->elem);
-            return simple_ast::Node::offset(target, linear, stride > 0 ? stride : 8);
+            return simple_ast::Node::offset(target, linear, ElementBytes(base->elem));
         }
         Fail("`&` 只能取数组 / 引用元素或结构体字段的地址");
         return Bad();
@@ -763,9 +769,7 @@ simple_ast::NodePtr LowerUnary(const Memory::String &op, int operandId)
         const std::shared_ptr<MType> target = pointer->elem;
         if (target && (target->kind == MType::Struct || target->kind == MType::Array || IsEnumType(target)))
             return LowerRawExpr(operandId);
-        if (target && target->kind == MType::Char)
-            return simple_ast::Node::call("__vm_char_load", { "__magel_address" }, { LowerRawExpr(operandId) });
-        return simple_ast::Node::index(LowerRawExpr(operandId), simple_ast::Node::i(0));
+        return simple_ast::Node::loadFrom(LowerRawExpr(operandId), LowerType(target, "reference value"));
     }
     /*
      * 用户自定义一元运算符（`-x` / `~x` / `+x`）：操作数是 struct / 枚举就查重载。
@@ -1419,10 +1423,10 @@ bool CheckBoolCondition(int valueId, const Memory::String &where)
 }
 
 /**
- * @brief 能不能通过这个左值写。
- *
- * 只读引用（`T*` / `T const&`）指向的内容写不了 —— 它就是 C 的 `T const&`；
- * 可写引用（`T mut&`）能写。
+ * @brief 检查左值及其来源能否修改，拒绝字面量和只读引用的写入。
+ * @param targetId 赋值、递增或修改方法使用的目标表达式编号。
+ * @return 来源可写时返回 true；只读来源返回 false 并登记编译诊断。
+ * @note 只读来源的成员和元素也只读；独立复制得到的变量沿用变量自身的可变性。
  */
 bool CheckWritable(int targetId)
 {
@@ -1432,6 +1436,8 @@ bool CheckWritable(int targetId)
     for (int cursor = targetId; cursor >= 0;)
     {
         const auto &part = N(cursor);
+        if (part.kind == MNode::Str)
+            return Fail("字符串字面量只读，不能修改；请先复制到 String 变量");
         if ((part.kind == MNode::Member || part.kind == MNode::Arrow || part.kind == MNode::Index || (part.kind == MNode::Un && part.s == "*")) && !part.kids.empty())
         {
             const auto base = RawExprType(part.kids[0]);
@@ -1777,6 +1783,51 @@ simple_ast::NodePtr LowerObjSet(const simple_ast::NodePtr &receiver, int valueId
                                 const Memory::String &where);
 
 /**
+ * @brief 将定长数组的独立副本搬入现有存储，保留目标数组及内联字段的地址。
+ * @param address 目标首元素地址，仅求值一次。
+ * @param valueId 源表达式编号，用于识别可移交的临时数组。
+ * @param value 源数组首元素地址表达式，仅求值一次。
+ * @param type 目标定长数组类型，决定元素个数与步长。
+ * @return 先物化新值、清理旧元素，再搬入新元素并归还临时长度头的语句块。
+ * @note 自赋值先复制后覆盖；原生对象由复制入口克隆一次，搬入阶段不重复克隆。
+ */
+simple_ast::NodePtr ReplaceFixedArrayValue(const simple_ast::NodePtr &address, int valueId,
+                                           const simple_ast::NodePtr &value, const std::shared_ptr<MType> &type)
+{
+    using simple_ast::Node;
+    int count = 1;
+    for (const int dimension : type->dims) count *= dimension;
+    const auto destination = AllocateName("__magel_fixed_destination");
+    const auto replacement = AllocateName("__magel_fixed_replacement");
+    const auto index = AllocateName("__magel_fixed_index");
+    const auto loop = NewBlockLabel("fixed_array_move");
+    const auto done = NewBlockLabel("fixed_array_move_done");
+    const auto stored = IsFreshValue(valueId) ? TakeExpressionTempValue(value, type) : CopyRuntimeArrayValue(value, type);
+    Memory::Vector<simple_ast::NodePtr> out{
+        Node::declare(destination, simple_ast::Type::i64()), Node::assign(destination, address),
+        Node::declare(replacement, LowerType(type, replacement)), Node::assign(replacement, stored),
+        Node::ifThenElse(Node::binary("!=", Node::loadInt(Node::binary("-", Node::var(replacement), Node::i(8))), Node::i(count)),
+                         Node::exprStmt(Node::call("__vm_panic", { "message" }, { Node::str("定长数组赋值的元素个数不匹配") })), nullptr)
+    };
+    if (const auto release = MakeArrayElementRelease(destination, type->elem, count)) out.push_back(release);
+    out.push_back(Node::declare(index, simple_ast::Type::i64()));
+    out.push_back(Node::assign(index, Node::i(0)));
+    out.push_back(Node::label(loop));
+    out.push_back(Node::ifThenElse(Node::binary(">=", Node::var(index), Node::i(count)), Node::jump(done), nullptr));
+    const auto from = Node::offset(Node::var(replacement), Node::var(index), ElementBytes(type->elem));
+    const auto into = Node::offset(Node::var(destination), Node::var(index), ElementBytes(type->elem));
+    if (type->elem->kind == MType::Struct)
+        out.push_back(MoveStructValue(into, from, type->elem));
+    else
+        out.push_back(Node::storeAt(into, Node::loadFrom(from, LowerType(type->elem, replacement)), LowerType(type->elem, destination)));
+    out.push_back(Node::assign(index, Node::binary("+", Node::var(index), Node::i(1))));
+    out.push_back(Node::jump(loop));
+    out.push_back(Node::label(done));
+    out.push_back(Node::freeMemory(Node::binary("-", Node::var(replacement), Node::i(8))));
+    return Node::block(std::move(out));
+}
+
+/**
  * @brief 把值按**值语义**写进一个地址槽（数组元素 / 引用指向的元素 / 解引用）。
  *
  * 和结构体字段同一条规则：字符串与对象句柄**借来的先复制一份**（当场造的、字面量各按
@@ -1793,9 +1844,6 @@ simple_ast::NodePtr StoreOwnedValueAt(const simple_ast::NodePtr &address, int va
                                       const simple_ast::NodePtr &value,
                                       const std::shared_ptr<MType> &type)
 {
-    if (type && type->kind == MType::Char)
-        return simple_ast::Node::exprStmt(simple_ast::Node::call("__vm_char_store",
-                                                                 { "__magel_address", "__magel_value" }, { address, value }));
     if (IsRuntimeArray(type))
     {
         using simple_ast::Node;
@@ -2045,6 +2093,8 @@ simple_ast::NodePtr LowerAssignImpl(int targetId, int valueId)
             if (!CheckWritable(targetId)) return Bad();
             if (referenceType->readOnly) return Fail(MAGEL_TEXT("只读引用（`T const&`）不能写入元素")), Bad();
             const auto value = LowerValueForType(valueId, referenceType->elem);
+            if (referenceType->elem->kind == MType::Array && !IsRuntimeArray(referenceType->elem))
+                return ReplaceFixedArrayValue(LowerExpr(targetId), valueId, value, referenceType->elem);
             if (referenceType->elem->kind == MType::Struct)
             {
                 // 新值先物化为独立聚合，确保自赋值与借用源不会被旧值释放影响。
@@ -2073,6 +2123,12 @@ simple_ast::NodePtr LowerAssignImpl(int targetId, int valueId)
             if (!CheckWritable(targetId)) return Bad();
             return simple_ast::Node::storeAt(address, LowerValueForType(valueId, referenceType), LowerType(referenceType, "reference binding"));
         }
+    }
+    const auto targetType = ExprType(targetId);
+    if (targetType && targetType->kind == MType::Array && !IsRuntimeArray(targetType))
+    {
+        if (!CheckWritable(targetId)) return Bad();
+        return ReplaceFixedArrayValue(LowerExpr(targetId), valueId, LowerValueForType(valueId, targetType), targetType);
     }
     if (target.kind == MNode::EnumCtor && target.type2 != 1)
     {
@@ -2385,8 +2441,16 @@ simple_ast::NodePtr LowerAssignImpl(int targetId, int valueId)
             out.push_back(StoreOwnedValueAt(LowerRawExpr(targetId), valueId, value, targetType));
             return simple_ast::Node::block(out);
         }
-        if (targetType && targetType->kind == MType::Char && target.kind == MNode::Un && target.s == "*")
-            return StoreOwnedValueAt(LowerRawExpr(target.kids[0]), valueId, value, targetType);
+        if (targetType && targetType->kind != MType::Array && target.kind == MNode::Un && target.s == "*")
+        {
+            pending.push_back(StoreOwnedValueAt(LowerRawExpr(target.kids[0]), valueId, value, targetType));
+            return simple_ast::Node::block(std::move(pending));
+        }
+        if (IsByteStorageType(targetType) && target.kind == MNode::Index)
+        {
+            pending.push_back(StoreOwnedValueAt(LowerAddressOf(targetId), valueId, value, targetType));
+            return simple_ast::Node::block(std::move(pending));
+        }
         return simple_ast::Node::assign(LowerExpr(targetId), value);
     }
     Fail("赋值目标只能是变量、下标、成员或 `*p`");
@@ -2444,14 +2508,16 @@ void InitializeDefaultContainers(const simple_ast::NodePtr &address, const Memor
                 target, NewContainerValue(field.type), LowerType(field.type, owner + "." + field.name)));
         else if (field.type->kind == MType::Struct)
             InitializeDefaultContainers(target, field.type->name, out);
-        else if (field.type->kind == MType::Array && !field.type->dims.empty())
+        else if (field.type->kind == MType::Array && !IsRuntimeArray(field.type))
         {
             int count = 1;
             for (const auto dim : field.type->dims) count *= dim;
+            out->push_back(simple_ast::Node::storeAt(
+                simple_ast::Node::offset(target, simple_ast::Node::i(-1), 8), simple_ast::Node::i(count), simple_ast::Type::i64()));
             const auto element = field.type->elem;
             for (int index = 0; index < count; ++index)
             {
-                const auto item = simple_ast::Node::offset(target, simple_ast::Node::i(index), StructStride(element));
+                const auto item = simple_ast::Node::offset(target, simple_ast::Node::i(index), ElementBytes(element));
                 if (IsContainer(element))
                     out->push_back(simple_ast::Node::storeAt(item, NewContainerValue(element), LowerType(element, field.name)));
                 else if (element->kind == MType::Struct)
@@ -2459,6 +2525,38 @@ void InitializeDefaultContainers(const simple_ast::NodePtr &address, const Memor
             }
         }
     }
+}
+
+/**
+ * @brief 在数组现有载荷中初始化聚合生命周期及其默认容器，不另建共享元素存储。
+ * @param address 数组首元素地址。
+ * @param element 元素类型，非聚合且非容器时不生成操作。
+ * @param length 已求值的元素个数。
+ * @param out 接收初始化循环的语句序列。
+ */
+void InitializeArrayValues(const simple_ast::NodePtr &address, const std::shared_ptr<MType> &element,
+                           const simple_ast::NodePtr &length, Memory::Vector<simple_ast::NodePtr> *out)
+{
+    if (element->kind != MType::Struct && !IsContainer(element)) return;
+    using simple_ast::Node;
+    const auto index = AllocateName("__magel_array_init_index");
+    const auto loop = NewBlockLabel("array_init");
+    const auto done = NewBlockLabel("array_init_done");
+    out->push_back(Node::declare(index, simple_ast::Type::i64()));
+    out->push_back(Node::assign(index, Node::i(0)));
+    out->push_back(Node::label(loop));
+    out->push_back(Node::ifThenElse(Node::binary(">=", Node::var(index), length), Node::jump(done), nullptr));
+    const auto item = Node::offset(address, Node::var(index), ElementBytes(element));
+    if (element->kind == MType::Struct)
+    {
+        out->push_back(BeginAggregateLifetime(item, StructStride(element)));
+        InitializeDefaultContainers(item, element->name, out);
+    }
+    else
+        out->push_back(Node::storeAt(item, NewContainerValue(element), LowerType(element, "array element")));
+    out->push_back(Node::assign(index, Node::binary("+", Node::var(index), Node::i(1))));
+    out->push_back(Node::jump(loop));
+    out->push_back(Node::label(done));
 }
 
 /**
@@ -2484,20 +2582,26 @@ simple_ast::NodePtr DefaultInit(const Memory::String &emitted, const std::shared
         for (const int dim : type->dims) count *= dim;
         const int stride = StructStride(type->elem);
         const int slots = (stride > 0) ? count * (stride / 8) : count;
+        const int unit = IsByteStorageType(type->elem) ? 1 : 8;
         Memory::Vector<simple_ast::NodePtr> items;
         for (int index = 0; index < slots; ++index) items.push_back(zeroOf(type->elem));
         if (localStorage && !g_ownedScopes.empty() && !IsGlobalName(emitted))
         {
+            g_usesNewArray = true;
             Memory::Vector<simple_ast::NodePtr> out{
-                Node::assign(emitted, Node::alloc(Node::i(std::max(8, slots * 8))))
+                Node::assign(emitted, Node::call("__magel_new_array", { "__magel_len", "__magel_stride" },
+                                                 { Node::i(count), Node::i(ElementBytes(type->elem)) }))
             };
             for (int index = 0; index < slots; ++index)
-                out.push_back(Node::storeAt(Node::offset(Node::var(emitted), Node::i(index), 8),
-                                            items[index], simple_ast::Type::i64()));
+                out.push_back(Node::storeAt(Node::offset(Node::var(emitted), Node::i(index), unit),
+                                            items[index], unit == 1 ? LowerType(type->elem, emitted) : simple_ast::Type::i64()));
+            if (initContainers) InitializeArrayValues(Node::var(emitted), type->elem, Node::i(count), &out);
             MarkOwnedArray(emitted, type);
             return Node::block(std::move(out));
         }
-        return Node::assign(emitted, Node::arrayNew(LowerType(type, emitted), items));
+        Memory::Vector<simple_ast::NodePtr> out{ Node::assign(emitted, Node::arrayNew(LowerType(type, emitted), items)) };
+        if (initContainers) InitializeArrayValues(Node::var(emitted), type->elem, Node::i(count), &out);
+        return Node::block(std::move(out));
     }
     if (type->kind == MType::Struct)
     {
@@ -2942,9 +3046,9 @@ simple_ast::NodePtr LowerLocalDecl(int id)
              * `MaterializeObjectValue` 复制了一份 —— 两种情况都归这个变量。
              * 字符串同样：`MaterializeStringValue` 对借来的值会复制一份，
              * `string s = 别的变量;` 之后 s 也是自己那块串的主人。 */
-            if (IsOwnedKind(type) && (IsFreshValue(decl.kids[0]) || IsObjectLike(type) || type->kind == MType::String))
+            if (IsOwnedKind(type) && (IsFreshValue(decl.kids[0]) || IsObjectLike(type) || type->kind == MType::String || type->kind == MType::Array))
             {
-                if (IsRuntimeArray(type))
+                if (type->kind == MType::Array)
                     MarkOwnedArray(emitted, type);
                 else
                     MarkOwned(emitted);
@@ -2957,7 +3061,7 @@ simple_ast::NodePtr LowerLocalDecl(int id)
         {
             const auto storage = AllocateName("__magel_reference_storage");
             out.push_back(simple_ast::Node::declare(storage, simple_ast::Type::i64()));
-            out.push_back(simple_ast::Node::assign(storage, simple_ast::Node::alloc(simple_ast::Node::i(8))));
+            out.push_back(simple_ast::Node::assign(storage, simple_ast::Node::alloc(simple_ast::Node::i(ElementBytes(type)))));
             out.push_back(simple_ast::Node::storeAt(simple_ast::Node::var(storage), simple_ast::Node::var(emitted), LowerType(type, storage)));
             MarkOwned(storage);
             // 引用槽必须晚于其当前拥有值释放：清理原变量时还需从槽中读取最新值。
@@ -3543,7 +3647,7 @@ simple_ast::NodePtr LowerEnumSwitch(int id, const std::shared_ptr<MType> &subjec
                     // 表达式分支的载荷副本与普通局部值一样，需要稳定槽供 break 隐式移动。
                     const auto storage = AllocateName("__magel_match_value_storage");
                     body.push_back(simple_ast::Node::declare(storage, simple_ast::Type::i64()));
-                    body.push_back(simple_ast::Node::assign(storage, simple_ast::Node::alloc(simple_ast::Node::i(8))));
+                    body.push_back(simple_ast::Node::assign(storage, simple_ast::Node::alloc(simple_ast::Node::i(ElementBytes(payload.type)))));
                     body.push_back(simple_ast::Node::storeAt(simple_ast::Node::var(storage), simple_ast::Node::var(emitted), LowerType(payload.type, storage)));
                     MarkOwned(storage);
                     auto &names = g_ownedScopes.back().names;
@@ -4153,7 +4257,7 @@ simple_ast::NodePtr LowerForeach(int id)
         PushOwnedScope();
         if (IsFreshValue(node.kids[0]))
         {
-            if (IsRuntimeArray(sourceType))
+            if (sourceType->kind == MType::Array)
                 MarkOwnedArray(source, sourceType);
             else
                 MarkOwned(source);
@@ -4254,7 +4358,7 @@ simple_ast::NodePtr LowerForeach(int id)
     out.push_back(simple_ast::Node::declare(item, reference || captureStorage ? simple_ast::Type::i64() : LowerType(element, item)));
     if (captureStorage)
     {
-        out.push_back(simple_ast::Node::assign(item, simple_ast::Node::alloc(simple_ast::Node::i(8))));
+        out.push_back(simple_ast::Node::assign(item, simple_ast::Node::alloc(simple_ast::Node::i(ElementBytes(element)))));
         MarkOwned(item);
     }
     if (intervalSource && g_borrowFlowCapture) g_borrowFlowCapture->foreachBindings[id] = { item, {} };
@@ -4267,7 +4371,7 @@ simple_ast::NodePtr LowerForeach(int id)
         MarkDestructor(item, element);
         if (IsOwnedKind(element))
         {
-            if (IsRuntimeArray(element))
+            if (element->kind == MType::Array)
                 MarkOwnedArray(item, element);
             else
                 MarkOwned(item);

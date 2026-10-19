@@ -13588,7 +13588,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1199,
+    "line": 1196,
     "page": "std-lang.md",
     "anchor": "api-69"
   },
@@ -13629,7 +13629,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1199,
+    "line": 1196,
     "page": "std-lang.md",
     "anchor": "api-70"
   },
@@ -13667,7 +13667,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1203,
+    "line": 1200,
     "page": "std-lang.md",
     "anchor": "api-71"
   },
@@ -13699,7 +13699,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1249,
+    "line": 1246,
     "page": "std-lang.md",
     "anchor": "api-72"
   },
@@ -13724,7 +13724,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1210,
+    "line": 1207,
     "page": "std-lang.md",
     "anchor": "api-73"
   },
@@ -13749,7 +13749,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1259,
+    "line": 1256,
     "page": "std-lang.md",
     "anchor": "api-74"
   },
@@ -13774,7 +13774,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1264,
+    "line": 1261,
     "page": "std-lang.md",
     "anchor": "api-75"
   },
@@ -13799,7 +13799,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1264,
+    "line": 1261,
     "page": "std-lang.md",
     "anchor": "api-76"
   },
@@ -13824,7 +13824,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1264,
+    "line": 1261,
     "page": "std-lang.md",
     "anchor": "api-77"
   },
@@ -13849,7 +13849,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1264,
+    "line": 1261,
     "page": "std-lang.md",
     "anchor": "api-78"
   },
@@ -13874,7 +13874,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1264,
+    "line": 1261,
     "page": "std-lang.md",
     "anchor": "api-79"
   },
@@ -13899,7 +13899,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1264,
+    "line": 1261,
     "page": "std-lang.md",
     "anchor": "api-80"
   },
@@ -13924,7 +13924,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1264,
+    "line": 1261,
     "page": "std-lang.md",
     "anchor": "api-81"
   },
@@ -13949,7 +13949,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1264,
+    "line": 1261,
     "page": "std-lang.md",
     "anchor": "api-82"
   },
@@ -13981,7 +13981,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1283,
+    "line": 1280,
     "page": "std-lang.md",
     "anchor": "api-83"
   },
@@ -14015,7 +14015,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 629,
+    "line": 626,
     "page": "std-lang.md",
     "anchor": "api-84"
   },
@@ -14047,7 +14047,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 558,
+    "line": 555,
     "page": "std-lang.md",
     "anchor": "api-85"
   },
@@ -14155,7 +14155,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1300,
+    "line": 1297,
     "page": "std-lang.md",
     "anchor": "api-88"
   },
@@ -14199,7 +14199,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1300,
+    "line": 1297,
     "page": "std-lang.md",
     "anchor": "api-89"
   },
@@ -15072,7 +15072,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 732,
+    "line": 729,
     "page": "std-lang.md",
     "anchor": "api-118"
   },
@@ -15097,7 +15097,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 722,
+    "line": 719,
     "page": "std-lang.md",
     "anchor": "api-119"
   },
@@ -15129,7 +15129,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 747,
+    "line": 744,
     "page": "std-lang.md",
     "anchor": "api-120"
   },
@@ -15167,7 +15167,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 753,
+    "line": 750,
     "page": "std-lang.md",
     "anchor": "api-121"
   },
@@ -15199,7 +15199,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 759,
+    "line": 756,
     "page": "std-lang.md",
     "anchor": "api-122"
   },
@@ -15231,7 +15231,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 759,
+    "line": 756,
     "page": "std-lang.md",
     "anchor": "api-123"
   },
@@ -15263,7 +15263,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 767,
+    "line": 764,
     "page": "std-lang.md",
     "anchor": "api-124"
   },
@@ -15295,7 +15295,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 773,
+    "line": 770,
     "page": "std-lang.md",
     "anchor": "api-125"
   },
@@ -15327,7 +15327,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 779,
+    "line": 776,
     "page": "std-lang.md",
     "anchor": "api-126"
   },
@@ -15352,7 +15352,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 785,
+    "line": 782,
     "page": "std-lang.md",
     "anchor": "api-127"
   },
@@ -15377,7 +15377,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 791,
+    "line": 788,
     "page": "std-lang.md",
     "anchor": "api-128"
   },
@@ -15409,7 +15409,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 797,
+    "line": 794,
     "page": "std-lang.md",
     "anchor": "api-129"
   },
@@ -15441,7 +15441,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 797,
+    "line": 794,
     "page": "std-lang.md",
     "anchor": "api-130"
   },
@@ -15473,7 +15473,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 797,
+    "line": 794,
     "page": "std-lang.md",
     "anchor": "api-131"
   },
@@ -15505,7 +15505,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 808,
+    "line": 805,
     "page": "std-lang.md",
     "anchor": "api-132"
   },
@@ -15537,7 +15537,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 814,
+    "line": 811,
     "page": "std-lang.md",
     "anchor": "api-133"
   },
@@ -15562,7 +15562,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 732,
+    "line": 729,
     "page": "std-lang.md",
     "anchor": "api-134"
   },
@@ -15587,7 +15587,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 722,
+    "line": 719,
     "page": "std-lang.md",
     "anchor": "api-135"
   },
@@ -15619,7 +15619,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 711,
+    "line": 708,
     "page": "std-lang.md",
     "anchor": "api-136"
   },
@@ -15651,7 +15651,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 747,
+    "line": 744,
     "page": "std-lang.md",
     "anchor": "api-137"
   },
@@ -15676,7 +15676,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 830,
+    "line": 827,
     "page": "std-lang.md",
     "anchor": "api-138"
   },
@@ -15701,7 +15701,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 836,
+    "line": 833,
     "page": "std-lang.md",
     "anchor": "api-139"
   },
@@ -15726,7 +15726,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 842,
+    "line": 839,
     "page": "std-lang.md",
     "anchor": "api-140"
   },
@@ -15751,7 +15751,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 842,
+    "line": 839,
     "page": "std-lang.md",
     "anchor": "api-141"
   },
@@ -15776,7 +15776,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 842,
+    "line": 839,
     "page": "std-lang.md",
     "anchor": "api-142"
   },
@@ -15808,7 +15808,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 852,
+    "line": 849,
     "page": "std-lang.md",
     "anchor": "api-143"
   },
@@ -15846,7 +15846,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 858,
+    "line": 855,
     "page": "std-lang.md",
     "anchor": "api-144"
   },
@@ -15871,7 +15871,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 722,
+    "line": 719,
     "page": "std-lang.md",
     "anchor": "api-145"
   },
@@ -15896,7 +15896,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 884,
+    "line": 881,
     "page": "std-lang.md",
     "anchor": "api-146"
   },
@@ -15921,7 +15921,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 891,
+    "line": 888,
     "page": "std-lang.md",
     "anchor": "api-147"
   },
@@ -15953,7 +15953,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 907,
+    "line": 904,
     "page": "std-lang.md",
     "anchor": "api-148"
   },
@@ -16294,7 +16294,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1064,
+    "line": 1061,
     "page": "std-lang.md",
     "anchor": "api-158"
   },
@@ -16446,7 +16446,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 767,
+    "line": 764,
     "page": "std-lang.md",
     "anchor": "api-162"
   },
@@ -16484,7 +16484,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/epilogue/boxing.cpp",
-    "line": 1646,
+    "line": 1643,
     "page": "std-lang.md",
     "anchor": "api-163"
   },

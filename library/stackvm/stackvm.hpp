@@ -205,9 +205,13 @@ namespace stackvm
  */
 inline constexpr std::uint32_t kFeatureReflection = 0x0002u;
 /**
+ * @brief 程序使用真正的单字节 u8 内存读写，旧运行时必须拒绝该能力位。
+ */
+inline constexpr std::uint32_t kFeatureByteMemory = 0x0004u;
+/**
  * @brief 已定义的程序能力位，未知位必须拒绝。
  */
-inline constexpr std::uint32_t kKnownProgramFeatures = kFeatureReflection;
+inline constexpr std::uint32_t kKnownProgramFeatures = kFeatureReflection | kFeatureByteMemory;
 /**
  * @brief 查询实际链接的运行时能力，避免只检查调用者的头文件配置。
  * @return 当前运行时支持的能力位。
@@ -342,6 +346,8 @@ class Machine;
  * VM 内存的最小寻址/分配单元：1 字节。宽值连续占用多个单元。
  */
 inline constexpr std::size_t kRuntimeCellBytes = 1u;
+static_assert(static_cast<unsigned char>(~0u) == 255u, "VM 要求宿主使用八位字节");
+static_assert(sizeof(std::uint8_t) == 1u && alignof(std::uint8_t) == 1u, "VM u8 必须占一个字节且按一字节对齐");
 /**
  * 当前整数、浮点、地址和对象句柄的存储宽度。
  */
@@ -547,8 +553,8 @@ enum class Op
     Ret,        ///< 返回：弹栈顶作为返回值。
     Halt,       ///< 停机。
     AddrOf,     ///< 把数据区符号的基址压栈（`name` 是符号名）。
-    LoadAt,     ///< 弹地址，读 8 字节（小端）压栈——数据区取值。
-    StoreAt,    ///< 弹值、再弹地址，往数据区写 8 字节（小端）。
+    LoadAt,     ///< 弹地址，按 intValue 指定的 u8 或旧八字节宽度读内存。
+    StoreAt,    ///< 弹值和地址，按 intValue 指定的 u8 或旧八字节宽度写内存。
 };
 
 /**
@@ -559,7 +565,7 @@ struct Instruction
     Op op = Op::Halt;                          ///< 操作码。
     Memory::String name;                       ///< 变量名 / 标签 / 形参名。
     Memory::String name2;                      ///< `Call` 的返回值目的地。
-    std::int64_t intValue = 0;                 ///< 立即数（整数）；`MulWide` / `DivWide` 时是位宽。
+    std::int64_t intValue = 0;                 ///< 整数立即数；宽乘除时为位宽，LoadAt/StoreAt 为 1 时访问一个 u8，0 保持八字节。
     double doubleValue = 0.0;                  ///< 立即数（浮点）。
     Memory::String textValue;                  ///< 立即数（字符串）。
     bool unsignedOp = false;                   ///< `MulWide` / `DivWide` 是否按无符号做。
@@ -729,6 +735,15 @@ struct Program
 inline bool validateProgramMetadata(const Program &program, Memory::Vector<Memory::String> *diagnostics = nullptr)
 {
     if (!validateProgramFeatures(program.requiredFeatures, diagnostics)) return false;
+    for (const auto &instruction : program.code)
+    {
+        if (instruction.op != Op::LoadAt && instruction.op != Op::StoreAt) continue;
+        if ((instruction.intValue != 0 && instruction.intValue != 1) || (instruction.intValue == 1 && (instruction.isFloat || !(program.requiredFeatures & kFeatureByteMemory))))
+        {
+            if (diagnostics) diagnostics->push_back("内存指令宽度无效或缺少 byte-memory 特征位");
+            return false;
+        }
+    }
     Memory::String error;
     if (!(program.requiredFeatures & kFeatureReflection))
     {
@@ -1495,6 +1510,20 @@ public:
      * @retval 成功返回 true，失败保留与通用内存访问一致的诊断并返回 false。
      */
     bool loadInteger(std::int64_t address, std::int64_t &out);
+    /**
+     * @brief 从活跃虚拟内存读取一个无符号字节并零扩展到整数槽。
+     * @param address 运行时虚拟地址。
+     * @param out 成功时接收 0 至 255 的字节值，失败时保持原值。
+     * @return 内存存活且一个字节可读时返回 true，否则保存原内存诊断。
+     */
+    bool loadByte(std::int64_t address, std::int64_t &out);
+    /**
+     * @brief 把整数低八位写入活跃虚拟内存中的一个字节。
+     * @param address 运行时虚拟地址。
+     * @param value 待写入整数，超出八位的部分截断。
+     * @return 内存存活且一个字节可写时返回 true，否则保存原内存诊断。
+     */
+    bool storeByte(std::int64_t address, std::int64_t value);
     /**
      * @brief 按静态标量类型读取虚拟地址，保留堆和数据区的有效性检查。
      * @param address 运行时虚拟地址。

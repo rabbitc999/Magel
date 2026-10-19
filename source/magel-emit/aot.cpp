@@ -968,6 +968,13 @@ Memory::String generateAotFile(const AotRequest &request,
                 const String dest = quad.arg(2);
                 const bool isFloat = opType.isFloat;
                 const VarType staticDest = typeOfVar(fn, dest);
+                if (opType.bits == 8 && opType.isUnsigned && !isFloat)
+                {
+                    out += "    { std::int64_t magel_byte = 0; if (!rt.loadByte((std::int64_t)(" + castTo(address, false) + "), magel_byte)) return " + zero + ";\n";
+                    assign(dest, "magel_byte", false);
+                    out += "    }\n";
+                    continue;
+                }
                 if (!staticDest.dynamic && staticDest.isFloat == isFloat)
                 {
                     out += "    if (!rt." + String(isFloat ? "loadFloat" : "loadInteger") + "((std::int64_t)(" + castTo(address, false) + "), " + varName(fn, dest) + ")) return " + zero + ";\n";
@@ -991,6 +998,11 @@ Memory::String generateAotFile(const AotRequest &request,
                 const Expr address = exprOf(quad.arg(0));
                 const Expr value = exprOf(quad.arg(1));
                 const bool isFloat = opType.isFloat;
+                if (opType.bits == 8 && opType.isUnsigned && !isFloat)
+                {
+                    out += "    if (!rt.storeByte((std::int64_t)(" + castTo(address, false) + "), " + castTo(value, false) + ")) return " + zero + ";\n";
+                    continue;
+                }
                 if (!value.dynamic && !value.type.dynamic)
                 {
                     out += "    if (!rt." + String(isFloat ? "storeFloat" : "storeInteger") + "((std::int64_t)(" + castTo(address, false) + "), " + castTo(value, isFloat) + ")) return " + zero + ";\n";
@@ -1116,7 +1128,7 @@ Memory::String generateAotFile(const AotRequest &request,
     code += "// 由 magel-emit --target cpp-aot 生成：基本块 + 局部变量 + goto。\n";
     const String featureContract = "\nstatic_assert((" +
         intText(request.program->requiredFeatures) +
-        "u & ~(STACKVM_WITH_REFLECTION ? 2u : 0u)) == 0, \"AOT required features unsupported\");\n";
+        "u & ~(stackvm::kFeatureByteMemory | (STACKVM_WITH_REFLECTION ? stackvm::kFeatureReflection : 0u))) == 0, \"AOT required features unsupported\");\n";
     code += request.embeddedSources + featureContract;
     if (request.program->requiredFeatures & stackvm::kFeatureReflection) {
         const auto metadata = stackvm::reflection::cppDefinition(request.program->reflection);
