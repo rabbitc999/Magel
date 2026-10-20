@@ -6,13 +6,49 @@
  * @param names 形参节点列表。
  * @return 参数组节点编号。
  */
-int M_MacroParameters(int names);
+int M_MacroParameters(int names, int opening = '(');
+/**
+ * @brief 追加显式参数组，保留组的类型与顺序。
+ * @param groups 已有组结构。
+ * @param group 待追加组。
+ * @return 合并的参数组结构。
+ */
+int M_MacroParameterGroups(int groups, int group);
 /**
  * @brief 构造一个宏形参，不创建运行时变量。
  * @param name 名称池编号。
  * @return 形参节点编号。
  */
-int M_MacroParameter(int name);
+int M_MacroParameter(int name, bool variadic = false);
+/**
+ * @brief 构造编译期片段列表循环。
+ * @param variable 循环参数名称。
+ * @param source 变长参数名称。
+ * @param body 循环模板。
+ * @return 循环节点。
+ */
+int M_MacroFor(int variable, int source, int body);
+/**
+ * @brief 保存通用类型应用，保持语法分类独立于模板是否声明。
+ * @param name 类型名称池编号。
+ * @param arguments 类型项节点列表。
+ * @return 类型池编号。
+ */
+int M_AstGenericType(int name, int arguments);
+/**
+ * @brief 从限定名称表达式保存通用类型应用。
+ * @param name 限定名称表达式。
+ * @param arguments 类型项节点列表。
+ * @return 类型池编号。
+ */
+int M_QualifiedAstGenericType(int name, int arguments);
+/**
+ * @brief 保存类型应用限定的静态成员，不在语法分类时实例化该类型。
+ * @param type 类型池编号。
+ * @param member 成员名称池编号。
+ * @return 限定成员表达式编号。
+ */
+int M_AstTypeQualifiedRef(int type, int member);
 /**
  * @brief 构造已解析的宏模板，表达式尾项不加括号。
  * @param statements 语句节点列表。
@@ -51,6 +87,27 @@ int M_MacroGeneric(int name, int source);
  * @return 调用节点。
  */
 int M_MacroTypedCall(int name, int types, int arguments);
+/**
+ * @brief 建立实际参数组，括号类别由文法明确给出。
+ * @param arguments 已解析表达式或原文片段引用的列表。
+ * @param opening 左括号字符。
+ * @return 参数组编号。
+ */
+int M_MacroCallGroup(int arguments, int opening);
+/**
+ * @brief 将文法读取的全部实参组关联到宏调用。
+ * @param name 宏名称池编号。
+ * @param groups 按源顺序保存的参数组列表。
+ * @param types 类型参数列表，负值表示未显式提供。
+ * @return 调用节点编号。
+ */
+int M_MacroGroupedCall(int name, int groups, int types);
+/**
+ * @brief 保存词法边界层捕获的原文引用，不将片段误当运行时标识符。
+ * @param marker 内部片段引用在名称池中的编号。
+ * @return 片段引用节点编号。
+ */
+int M_MacroFragmentReference(int marker);
 /**
  * @brief 创建语法类别匹配分支，空类别表示兜底。
  * @param category 类别名称池编号，负值表示兜底。

@@ -149,7 +149,7 @@ Equal 按字段生成短路比较，枚举先匹配变体再比较对应载荷�
 ExpandDerivedDeclarations():
     for each declared type with pending derives:
         reject traits outside Equal / Hash / Clone
-        source = expand existing text macros over field metadata
+        source = generate restricted methods from semantic field metadata
         generated = generatedParser.parse(source)
         attach generated methods and concrete interfaces to the original AST
 

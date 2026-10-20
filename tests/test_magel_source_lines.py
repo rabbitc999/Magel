@@ -28,13 +28,13 @@ def main():
         run('import included;\nint64 main() { return included::included(); }\n', 'included.mgl:3')
         (root / 'worker.mgl').write_text('module worker;\nint64 crash() {\n std::lang::panic("module");\n return 0;\n}\n', encoding='utf-8')
         run('import worker;\nint64 main() { return worker::crash(); }\n', 'worker.mgl:3')
-        macro = '$macro CRASH(x)\n std::lang::panic(x);\n$end_macro\nint64 main() {\n $CRASH("macro")\n return 0;\n}\n'
-        run(macro, 'main.mgl [宏 CRASH]:2')
-        run('$macro INNER(x)\n std::lang::panic(x);\n$end_macro\n$macro OUTER(x)\n $INNER(x)\n$end_macro\nint64 main() {\n $OUTER("nested")\n return 0;\n}\n', 'main.mgl [宏 INNER]:2')
-        run('$macro STEP(x)\n int64 temporary = x;\n$end_macro\nint64 main() {\n $STEP(1)\n std::lang::panic("after");\n return 0;\n}\n', 'main.mgl:6')
-        run('$macro MANY(...values)\n$for item in values\n std::lang::panic(item);\n$end_for\n$end_macro\nint64 main() {\n $MANY("loop")\n return 0;\n}\n', 'main.mgl [宏 MANY]:3')
+        macro = '$macro CRASH(x)\n std::lang::panic(x);\n$end_macro\nint64 main() {\n $CRASH("macro");\n return 0;\n}\n'
+        run(macro, 'main.mgl:5')
+        run('$macro INNER(x)\n std::lang::panic(x);\n$end_macro\n$macro OUTER(x)\n $INNER(x);\n$end_macro\nint64 main() {\n $OUTER("nested");\n return 0;\n}\n', 'main.mgl:8')
+        run('$macro STEP(x)\n int64 temporary = x;\n$end_macro\nint64 main() {\n $STEP(1);\n std::lang::panic("after");\n return 0;\n}\n', 'main.mgl:6')
+        run('$macro MANY(...values)\n$for item in values\n std::lang::panic(item);\n$end_for\n$end_macro\nint64 main() {\n $MANY("loop");\n return 0;\n}\n', 'main.mgl:7')
         run('$macro JOIN(left, right)\n $concat(left, right)\n\n\n$end_macro\nint64 joined_name=1;\nint64 main() {\n int64 value=$JOIN(joined_, name);\n std::lang::panic("paste");\n return value;\n}\n', 'main.mgl:9')
-        run('$macro COMMENT(x)\n /* don\'t "\n comment */\n std::lang::panic(x);\n$end_macro\nint64 main() {\n $COMMENT("comment")\n return 0;\n}\n', 'main.mgl [宏 COMMENT]:4')
+        run('$macro COMMENT(x)\n /* don\'t "\n comment */\n std::lang::panic(x);\n$end_macro\nint64 main() {\n $COMMENT("comment");\n return 0;\n}\n', 'main.mgl:7')
         run('int64 main() {\n std::lang::String text="hello\nworld";\n std::lang::panic("multiline");\n return 0;\n}\n', 'main.mgl:4')
         hidden = run(macro, 'macro', ['--compress-symbols', '--debug'])
         assert 'main.mgl' not in hidden and '调用栈' not in hidden and ('出错位置' not in hidden), hidden

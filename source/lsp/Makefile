@@ -30,8 +30,8 @@ SERVER      := $(BUILD_DIR)/magel-lsp$(EXE_SUFFIX)
 TESTS       := $(BUILD_DIR)/magel-lsp-tests$(EXE_SUFFIX)
 
 SOURCES := macro_analyzer.cpp language_server.cpp ../../library/json/json.cpp
-OBJECTS := $(BUILD_DIR)/magel_macro.o $(BUILD_DIR)/magel_macro_controls.o  $(BUILD_DIR)/macro_analyzer.o $(BUILD_DIR)/language_server.o $(BUILD_DIR)/json.o
-INCLUDES := -I. -I$(LSP_LIB_DIR) -I$(ROOT_DIR)/library -I$(ROOT_DIR)/library/preprocess
+OBJECTS := $(BUILD_DIR)/macro_signature.o $(BUILD_DIR)/source_text.o  $(BUILD_DIR)/macro_analyzer.o $(BUILD_DIR)/language_server.o $(BUILD_DIR)/json.o
+INCLUDES := -I.. -I. -I$(LSP_LIB_DIR) -I$(ROOT_DIR)/library -I$(ROOT_DIR)/library/preprocess
 
 # Windows 用 PowerShell 建目录、cmd 清理；其余平台用 POSIX 写法。
 ifeq ($(OS),Windows_NT)
@@ -57,7 +57,7 @@ $(SERVER): $(OBJECTS) lsp_main.cpp | $(BUILD_DIR)
 $(TESTS): $(OBJECTS) macro_analyzer_test.cpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) $(UTF8FLAGS) $(INCLUDES) macro_analyzer_test.cpp $(OBJECTS) -o $@
 
-$(BUILD_DIR)/macro_analyzer.o: macro_analyzer.cpp macro_analyzer.hpp $(LSP_LIB_DIR)/protocol_types.hpp ../magel_macro.hpp ../magel_macro_controls.hpp | $(BUILD_DIR)
+$(BUILD_DIR)/macro_analyzer.o: macro_analyzer.cpp macro_analyzer.hpp $(LSP_LIB_DIR)/protocol_types.hpp ../macro/signature.hpp ../syntax/source_text.hpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) $(UTF8FLAGS) $(INCLUDES) -MMD -MP -c macro_analyzer.cpp -o $@
 
 $(BUILD_DIR)/language_server.o: language_server.cpp language_server.hpp macro_analyzer.hpp ../../library/json/json.hpp | $(BUILD_DIR)
@@ -75,8 +75,8 @@ $(BUILD_DIR):
 clean:
 	$(CLEAN)
 
-$(BUILD_DIR)/magel_macro.o: ../magel_macro.cpp ../magel_macro.hpp | $(BUILD_DIR)
+$(BUILD_DIR)/macro_signature.o: ../macro/signature.cpp ../macro/signature.hpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) $(UTF8FLAGS) $(INCLUDES) -MMD -MP -c $< -o $@
-$(BUILD_DIR)/magel_macro_controls.o: ../magel_macro_controls.cpp ../magel_macro_controls.hpp | $(BUILD_DIR)
+$(BUILD_DIR)/source_text.o: ../syntax/source_text.cpp ../syntax/source_text.hpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) $(UTF8FLAGS) $(INCLUDES) -MMD -MP -c $< -o $@
 -include $(wildcard $(BUILD_DIR)/*.d)

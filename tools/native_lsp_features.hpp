@@ -94,7 +94,7 @@ SymbolIdentity resolveSymbol(const std::string &u, const std::string &text, cons
         {
             Memory::Vector<Memory::String> args;
             size_t ignored = 0;
-            if (magel_macro::groupArguments(text.substr(tokens[next].a, tokens[stop - 1].b - tokens[next].a).c_str(), 0, args, ignored))
+            if (magel_syntax::groupArguments(text.substr(tokens[next].a, tokens[stop - 1].b - tokens[next].a).c_str(), 0, args, ignored))
             {
                 ReceiverTypes resolver(records, text, types);
                 entries = resolver.selectedCalls(entries, args, at);
@@ -215,9 +215,11 @@ J refactor(const std::string &method, const J &params, const std::string &u, con
  * @param text 当前源码。
  * @param records 当前可见声明。
  * @param requested 编辑器请求的可见范围。
+ * @param analysis 编译器给出的真实类型结果。
+ * @param documentUri 当前文档 URI，用于排除依赖模块的提示。
  * @return 只包含唯一可推断类型的提示。
  */
-J inlayHints(const std::string &text, const std::vector<Record> &records, const J &requested)
+J inlayHints(const std::string &text, const std::vector<Record> &records, const J &requested, const J &analysis, const std::string &documentUri)
 {
     A hints;
     ReceiverTypes resolver(records, text, types);
@@ -225,7 +227,28 @@ J inlayHints(const std::string &text, const std::vector<Record> &records, const 
     for (const auto &binding : bindings(text, types))
     {
         if (binding.type != "auto" || binding.offset < begin || binding.end > end || inMacroTemplate(text, binding.offset)) continue;
-        const auto type = resolver.bindingType(binding, binding.end);
+        auto type = resolver.bindingType(binding, binding.end);
+        const auto initializerEnd = text.find(';', binding.end);
+        const bool macroInitializer = text.substr(binding.end, initializerEnd == text.npos ? text.size() - binding.end : initializerEnd - binding.end).find('$') != text.npos;
+        const auto complete = get(analysis, "complete").asBool();
+        if (complete && *complete && (macroInitializer || type.empty() || type == "auto"))
+        {
+            const auto declaration = position(text, binding.offset);
+            const auto declarationEnd = position(text, binding.end);
+            long long distance = std::numeric_limits<long long>::max();
+            for (const auto &hint : array(get(analysis, "typeHints")))
+            {
+                if (str(hint, "name") != binding.name || integer(get(hint, "line")) != integer(get(declaration, "line")) + 1) continue;
+                const auto file = str(hint, "file");
+                if (file.empty() || file.front() == '<' || normalizedPath(fs::u8path(file)) != normalizedPath(pathOf(documentUri))) continue;
+                const auto current = std::llabs(static_cast<long long>(integer(get(hint, "column"))) - integer(get(declarationEnd, "character")) - 1);
+                if (current < distance && !str(hint, "type").empty())
+                {
+                    distance = current;
+                    type = str(hint, "type");
+                }
+            }
+        }
         if (type.empty() || type == "auto") continue;
         hints.push_back(object({ { "position", position(text, binding.end) }, { "label", ": " + type }, { "kind", 1 }, { "paddingLeft", false }, { "tooltip", markup(lspTypeDescription(type) + "\n\n提示不修改源代码。") } }));
     }

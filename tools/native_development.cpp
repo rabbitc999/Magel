@@ -6,7 +6,10 @@
 #include "native_development.hpp"
 #include "../library/console/utf8.hpp"
 #include "../library/json/json.hpp"
-#include "../source/magel_macro.hpp"
+#include "../source/syntax/source_text.hpp"
+#include "../source/macro/signature.hpp"
+#include <limits>
+#include <cstdlib>
 #include "../source/magel_package.hpp"
 #include "../source/magel_module.hpp"
 #include "../source/magel_diagnostics.hpp"
@@ -1422,6 +1425,27 @@ std::string tail(const std::string &s)
 /**
  * @brief 从编辑期声明和初始化式解析接收者类型，供悬停与成员补全共用。
  */
+/**
+ * @brief 当前请求由编译器确认的 auto 声明类型，以原始字节位置区分同名绑定。
+ */
+thread_local const std::map<size_t, std::string> *activeCompilerTypes = nullptr;
+/**
+ * @brief 在请求期间安装已确认类型，并在离开请求时恢复外层视图。
+ */
+struct CompilerTypeScope
+{
+    const std::map<size_t, std::string> *previous;
+    std::map<size_t, std::string> values;
+    /**
+     * @brief 保存外层请求类型视图并安装本请求的空视图。
+     */
+    CompilerTypeScope() : previous(activeCompilerTypes) { activeCompilerTypes = &values; }
+    /**
+     * @brief 恢复外层视图，避免线程复用时泄漏上一文档的类型。
+     */
+    ~CompilerTypeScope() { activeCompilerTypes = previous; }
+};
+
 class ReceiverTypes
 {
     const std::vector<Record> &records;
@@ -1593,6 +1617,11 @@ public:
             return lspFunctionText(lspFunctionShape(binding.type + " fn" + source.substr(binding.end + tokens[open].a, tokens[end - 1].b - tokens[open].a)));
         }
         if (base(binding.type) != "auto") return qualify(binding.type);
+        if (activeCompilerTypes)
+        {
+            const auto found = activeCompilerTypes->find(binding.offset);
+            if (found != activeCompilerTypes->end()) return found->second;
+        }
         if (!binding.iterable.empty())
         {
             auto type = infer(binding.iterable, binding.offset, depth + 1);
@@ -1751,7 +1780,7 @@ public:
         {
             Memory::Vector<Memory::String> actual;
             size_t end = open;
-            if (magel_macro::groupArguments(callee.c_str(), open, actual, end) && actual.size() == names.size())
+            if (magel_syntax::groupArguments(callee.c_str(), open, actual, end) && actual.size() == names.size())
                 for (size_t i = 0; i < names.size(); ++i) values[names[i]] = trim(actual[i].c_str());
         }
         else
@@ -1942,7 +1971,7 @@ public:
             }
             value = trim(value.substr(0, t[open].a));
             size_t ignored = 0;
-            magel_macro::groupArguments(originalValue.c_str(), t[open].a, arguments, ignored);
+            magel_syntax::groupArguments(originalValue.c_str(), t[open].a, arguments, ignored);
             if (value.empty()) return "";
         }
         int level = 0;
@@ -3479,7 +3508,7 @@ class Server
         try
         {
             const auto entry = parse(read(saved));
-            bool valid = integer(get(entry, "schema")) == 1 && integer(get(entry, "language"), -1) == int(magel_i18n::language()) && str(entry, "input") == lspHash(body) && str(entry, "graph") == analysisGraph && get(entry, "dependencies").asObject();
+            bool valid = integer(get(entry, "schema")) == 2 && integer(get(entry, "language"), -1) == int(magel_i18n::language()) && str(entry, "input") == lspHash(body) && str(entry, "graph") == analysisGraph && get(entry, "dependencies").asObject();
             if (valid)
                 for (const auto &dependency : get(entry, "dependencies").asObject()->members())
                     if (fingerprint(std::string(dependency.key)) != str(dependency.value))
@@ -3506,10 +3535,16 @@ class Server
         ++cache->checks;
         const auto result = execute({ compiler.u8string(), "--check", "--diagnostics=json", "--incremental", "--source-stdin",
                                       "--cache-dir", (cache->directory / "preprocess").u8string(), "--source-overlays", (temporary.path / "overlays.json").u8string(),
-                                      "--analysis-deps", (temporary.path / "dependencies.json").u8string(), file.u8string() },
+                                      "--analysis-deps", (temporary.path / "dependencies.json").u8string(),
+                                      "--analysis-types", (temporary.path / "types.json").u8string(), file.u8string() },
                                     file.parent_path(), body, 30, cancelled);
         if (result.cancelled || cancelled()) return J();
-        const auto report = parse(result.output);
+        auto report = parse(result.output);
+        try
+        {
+            const auto analysis = parse(read(temporary.path / "types.json"));
+            if (auto *fields = report.asObject()) (*fields)["analysis"] = analysis;
+        } catch (...) {}
         try
         {
             const auto dependencies = parse(read(temporary.path / "dependencies.json"));
@@ -3539,7 +3574,7 @@ class Server
                     if (next == parent) break;
                     parent = next;
                 }
-                cache->save(saved, object({ { "schema", 1 }, { "language", int(magel_i18n::language()) }, { "input", lspHash(body) }, { "graph", analysisGraph }, { "dependencies", J(std::move(hashes)) }, { "report", report } }));
+                cache->save(saved, object({ { "schema", 2 }, { "language", int(magel_i18n::language()) }, { "input", lspHash(body) }, { "graph", analysisGraph }, { "dependencies", J(std::move(hashes)) }, { "report", report } }));
             }
         } catch (...) {}
         return report;
@@ -3790,89 +3825,29 @@ class Server
      */
     J preview(const std::string &u, const std::string &s)
     {
-        auto file = pathOf(u);
-        if (file.empty())
-            throw std::runtime_error("展开预览需要文件 URI");
-        auto dirs = projectPaths(file);
-        preprocess::Options options = preprocess::Preprocessor::forMetro();
-        options.allowIncludes = false;
-        Memory::Vector<Memory::String> paths;
-        for (auto &p : dirs)
+        (void)s;
+        auto report = checkReport(u, [] { return false; });
+        const auto &analysis = get(report, "analysis");
+        A expansions, diagnostics, mappings;
+        for (const auto &entry : array(get(analysis, "macros")))
         {
-            paths.push_back(p.u8string().c_str());
-            options.includeDirs.push_back(p.u8string().c_str());
+            const auto file = str(entry, "file");
+            if (!file.empty() && file.front() != '<' && normalizedPath(fs::u8path(file)) == normalizedPath(pathOf(u))) expansions.push_back(entry);
         }
-        options.includeLoader = [&](const preprocess::IncludeRequest &request) {
-            auto target = uri(fs::u8path(std::string(request.resolvedPath.c_str())));
-            auto it = documents.find(target);
-            return it == documents.end() ? preprocess::IncludeResult::useDefault() : preprocess::IncludeResult::inlineText(it->second->first.c_str(), request.resolvedPath);
-        };
-        magel_module::Loader loader(options, paths);
-        preprocess::Result processed;
-        Memory::String error;
-        bool ok = loader.rootText(s.c_str(), file.u8string().c_str(),
-                                  file.parent_path().u8string().c_str(), processed,
-                                  error);
-        if (ok)
-            ok = magel_macro::run(processed, error, &loader.moduleByFile());
-        A diagnostics;
-        for (auto &d : processed.diagnostics)
-            diagnostics.push_back(d.toString().c_str());
-        if (!ok && !error.empty())
-            diagnostics.push_back(error.c_str());
-        A mappings;
-        if (ok)
-            for (size_t line = 0; line < processed.lineMap.size(); ++line)
-            {
-                const auto &origin = processed.lineMap[line];
-                if (!origin.line) continue;
-                const auto file = std::string(origin.file.c_str());
-                const auto target = file.empty() || file == "<stdin>" ? u : uri(fs::u8path(file));
-                mappings.push_back(object({ { "expandedLine", int(line) }, { "uri", target }, { "sourceLine", int(origin.line - 1) } }));
-            }
-        A temporaries;
-        if (ok)
+        for (const auto &entry : array(get(report, "diagnostics")))
+            if (str(entry, "severity") == "error") diagnostics.push_back(str(entry, "message"));
+        const auto text = object({ { "format", "hygienic-ast" }, { "expansions", expansions } }).dump(2);
+        size_t cursor = 0;
+        for (const auto &entry : expansions)
         {
-            auto records = collect(u, s);
-            std::set<std::string> seen;
-            for (const auto &token : lex(processed.text.c_str()))
-            {
-                if (!starts(token.word, "__magel_macro_") || !seen.insert(token.word).second) continue;
-                for (const auto &record : records)
-                {
-                    if (record.kind != "macro" || record.source.empty() || !starts(record.signature, "$macro")) continue;
-                    const auto prefix = "__magel_macro_" + std::string(magel_macro::sanitizeMacroName(record.name.c_str()).c_str()) + "_";
-                    if (!starts(token.word, prefix)) continue;
-                    const auto split = token.word.find('_', prefix.size());
-                    if (split == token.word.npos) continue;
-                    const auto expansionId = token.word.substr(prefix.size(), split - prefix.size());
-                    if (expansionId.empty() || expansionId.find_first_not_of("0123456789") != expansionId.npos) continue;
-                    auto slot = token.word.substr(split + 1);
-                    if (starts(slot, "negative_")) slot = "-" + slot.substr(9);
-                    const auto digits = starts(slot, "-") ? slot.substr(1) : slot;
-                    if (digits.empty() || digits.find_first_not_of("0123456789") != digits.npos) continue;
-                    auto definition = source(record.source);
-                    J location = object({ { "uri", record.source }, { "range", range(definition, record.offset, record.offset + record.name.size()) } });
-                    const auto end = definition.find("$end_macro", record.offset);
-                    const Memory::String raw(definition.c_str());
-                    for (const auto &part : lex(definition, true))
-                    {
-                        if (part.a <= record.offset || part.a >= end || part.kind == 8 || part.kind == 9 || !starts(part.word, "$")) continue;
-                        const auto stop = magel_macro::placeholderEnd(raw, part.a);
-                        if (stop <= part.a + 1) continue;
-                        if (magel_macro::gensymName(record.name.c_str(), 0, raw.substr(part.a + 1, stop - part.a - 1)) != magel_macro::gensymName(record.name.c_str(), 0, slot.c_str())) continue;
-                        location = object({ { "uri", record.source }, { "range", range(definition, part.a, stop) } });
-                        break;
-                    }
-                    temporaries.push_back(object({ { "name", token.word }, { "slot", "$" + slot }, { "macro", record.name }, { "expansionId", token.word.substr(prefix.size(), split - prefix.size()) }, { "definition", location } }));
-                    break;
-                }
-            }
+            const auto marker = "\"file\": " + J(str(entry, "file")).dump();
+            const auto at = text.find(marker, cursor);
+            if (at == text.npos) continue;
+            const auto line = static_cast<int>(std::count(text.begin(), text.begin() + at, '\n'));
+            mappings.push_back(object({ { "expandedLine", line }, { "uri", u }, { "sourceLine", std::max(0, integer(get(entry, "line")) - 1) } }));
+            cursor = at + marker.size();
         }
-        return object({ { "text", ok ? std::string(processed.text.c_str()) : "" },
-                        { "diagnostics", diagnostics },
-                        { "mappings", mappings },
-                        { "temporaries", temporaries } });
+        return object({ { "text", text }, { "format", "json" }, { "diagnostics", diagnostics }, { "mappings", mappings } });
     }
 #include "native_lsp_features.hpp"
     /**
@@ -3940,9 +3915,45 @@ class Server
         size_t cursor = offsetAt(s, get(params, "position"));
         auto records = collect(u, s);
         auto vars = bindings(s, types);
+        CompilerTypeScope compilerTypes;
+        if (s.find('$') != s.npos && (method == "textDocument/hover" || method == "textDocument/completion" || method == "textDocument/signatureHelp"))
+        {
+            try
+            {
+                const auto report = checkReport(u, [] { return false; });
+                const auto &analysis = get(report, "analysis");
+                const auto complete = get(analysis, "complete").asBool();
+                if (complete && *complete)
+                    for (const auto &binding : vars)
+                    {
+                        if (!starts(binding.type, "auto")) continue;
+                        const auto declaration = position(s, binding.offset);
+                        long long distance = std::numeric_limits<long long>::max();
+                        for (const auto &hint : array(get(analysis, "typeHints")))
+                        {
+                            if (str(hint, "name") != binding.name || integer(get(hint, "line")) != integer(get(declaration, "line")) + 1) continue;
+                            const auto file = str(hint, "file");
+                            if (file.empty() || file.front() == '<' || normalizedPath(fs::u8path(file)) != normalizedPath(pathOf(u))) continue;
+                            const auto current = std::llabs(static_cast<long long>(integer(get(hint, "column"))) - integer(get(position(s, binding.end), "character")) - 1);
+                            if (current < distance && !str(hint, "type").empty())
+                            {
+                                distance = current;
+                                compilerTypes.values[binding.offset] = str(hint, "type");
+                            }
+                        }
+                    }
+            } catch (const std::exception &)
+            {
+                // 未完成缓冲区可能还没有有效的编译分析报告，继续使用词法类型和宏签名。
+            }
+        }
         if (method == "textDocument/references" || method == "textDocument/prepareRename" || method == "textDocument/rename")
             return refactor(method, params, u, s, records, cursor);
-        if (method == "textDocument/inlayHint") return inlayHints(s, records, get(params, "range"));
+        if (method == "textDocument/inlayHint")
+        {
+            const auto report = checkReport(u, [] { return false; });
+            return inlayHints(s, records, get(params, "range"), get(report, "analysis"), u);
+        }
         if (method == "magel/expandMacro")
             return preview(u, s);
         if (method == "textDocument/semanticTokens/full")

@@ -43,11 +43,15 @@ bool InferAutoFunctionResult(int statementId, std::shared_ptr<MType> *result)
             if (decl.kids.empty() || decl.kids[0] < 0)
             {
                 if (decl.type < 0) return Fail("auto 变量必须给初值：" + decl.s);
-                g_scope.back()[decl.s] = MVar{ T(decl.type), decl.s, decl.type2 != 0 };
+                MVar binding{ T(decl.type), decl.s, decl.type2 != 0 };
+                binding.bindingIdentity = decl.bindingIdentity;
+                g_scope.back()[NodeBindingKey(decl)] = binding;
                 continue;
             }
             const std::shared_ptr<MType> type = decl.type < 0 ? ExprType(decl.kids[0]) : T(decl.type);
-            g_scope.back()[decl.s] = MVar{ type, decl.s, decl.type2 != 0 };
+            MVar binding{ type, decl.s, decl.type2 != 0 };
+            binding.bindingIdentity = decl.bindingIdentity;
+            g_scope.back()[NodeBindingKey(decl)] = binding;
         }
         return true;
     }
@@ -58,7 +62,7 @@ bool InferAutoFunctionResult(int statementId, std::shared_ptr<MType> *result)
         std::function<bool(int, const std::shared_ptr<MType> &)> bind;
         bind = [&](int id, const std::shared_ptr<MType> &t) {const auto &p=N(id);
             if(p.kind==MNode::List){if(!IsTupleType(t)||p.kids.size()!=t->paramTypes.size())return Fail("元组解构的元素数量或嵌套形状不匹配");for(std::size_t i=0;i<p.kids.size();++i)if(!bind(p.kids[i],t->paramTypes[i]))return false;return true;}
-            if(p.s!="_")g_scope.back()[p.s]=MVar{t,p.s,false};return true; };
+            if(p.s!="_"){MVar binding{t,p.s,false};binding.bindingIdentity=p.bindingIdentity;g_scope.back()[NodeBindingKey(p)]=binding;}return true; };
         return bind(statement.kids[0], type);
     }
     if (statement.kind == MNode::Block)
@@ -176,9 +180,10 @@ Memory::String CAbiType(const std::shared_ptr<MType> &type)
 
 /**
  * @brief 在完整声明与导入已知后解析类型裸名，并隔离不同模块的同名类型。
+ * @param registerOpcodes 是否同时登记 opcode 声明；延迟宏只归一化新增类型时为假。
  * @return 无歧义时返回 true；失败保留普通名称解析错误。
  */
-bool ResolveImportedTypeNames()
+bool ResolveImportedTypeNames(bool registerOpcodes = true)
 {
     Memory::Map<Memory::String, Memory::Map<Memory::String, Memory::String>> declarations;
     Memory::Set<Memory::String> opcodeNames;
@@ -246,7 +251,7 @@ bool ResolveImportedTypeNames()
     for (const int id : g_top)
     {
         const auto &node = N(id);
-        if (node.kind != MNode::OpcodeDecl) continue;
+        if (!registerOpcodes || node.kind != MNode::OpcodeDecl) continue;
         ReductionSourceScope source(id);
         if (!CheckUserName(node.s)) return false;
         MOpcodeDefinition definition;
@@ -290,11 +295,21 @@ bool ResolveImportedTypeNames()
             g_opcodeTypes[node.s].handleType = node.s + "$opcode";
         }
     }
-    const auto parsedTypeCount = g_types.size();
-    for (std::size_t index = 0; index < parsedTypeCount; ++index)
+    Memory::Vector<std::shared_ptr<MType>> parsedTypes;
+    Memory::Set<const MType *> parsedTypeNodes;
+    Memory::Function<void(const std::shared_ptr<MType> &)> collectType;
+    collectType = [&](const std::shared_ptr<MType> &type) {
+        if (!type || !parsedTypeNodes.insert(type.get()).second) return;
+        parsedTypes.push_back(type);
+        collectType(type->elem);
+        collectType(type->elem2);
+        for (const auto &parameter : type->paramTypes) collectType(parameter);
+        for (const auto &argument : type->genericArguments) collectType(argument);
+    };
+    for (const auto &type : g_types) collectType(type);
+    for (const auto &type : parsedTypes)
     {
-        const auto type = g_types[index];
-        if (!type || !type->unresolvedName) continue;
+        if (!type || (g_macroSyntaxFiltering && !g_macroActiveTypes.count(type.get())) || !type->unresolvedName) continue;
         const auto original = type->name;
         if (!resolve(original, type->lookupModule, &type->name)) return false;
         if (type->name == original && original.find("::") == Memory::String::npos && declarations.count(original) == 0)
@@ -311,7 +326,7 @@ bool ResolveImportedTypeNames()
     }
     for (auto &node : g_nodes)
     {
-        if (node.kind == MNode::EnumCtor && declarations.count(BareTypeName(node.s)))
+        if ((!g_macroSyntaxFiltering || g_macroActiveNodes.count(&node)) && node.kind == MNode::EnumCtor && declarations.count(BareTypeName(node.s)))
         {
             if (!resolve(node.s, node.module, &node.s)) return false;
         }
@@ -335,6 +350,7 @@ bool ResolveImportedTypeNames()
  */
 bool RegisterTop()
 {
+    RefreshMacroActiveSyntax();
     for (const int topId : g_top)
     {
         const auto &top = N(topId);
@@ -343,6 +359,8 @@ bool RegisterTop()
     }
     g_hasDefer = std::any_of(g_nodes.begin(), g_nodes.end(), [](const MNode &node) { return node.kind == MNode::Defer; });
     if (!ResolveImportedTypeNames() || !ValidateAnnotations()) return false;
+    for (const auto &type : g_types)
+        if ((!g_macroSyntaxFiltering || g_macroActiveTypes.count(type.get())) && !ResolveAstGenericType(type)) return false;
     g_associatedDefinitions.clear();
     g_associatedRequirements.clear();
     g_associatedMethods.clear();
@@ -370,12 +388,13 @@ bool RegisterTop()
     for (std::size_t index = 0; index < associatedTypeCount; ++index)
     {
         const auto type = g_types[index];
-        if (type) *type = *ResolveAssociated(type);
+        if (type && (!g_macroSyntaxFiltering || g_macroActiveTypes.count(type.get()))) *type = *ResolveAssociated(type);
         if (!g_error.empty()) return false;
     }
     /* 显式 `(T1, T2, ...)` 类型在解析期已经带着元素表；先合成匿名 struct，后面的
      * 字段、函数签名和全局声明便都能像普通值结构一样核验。 */
-    for (const std::shared_ptr<MType> &type : g_types) EnsureTupleDefinition(type);
+    for (const std::shared_ptr<MType> &type : g_types)
+        if (!g_macroSyntaxFiltering || g_macroActiveTypes.count(type.get())) EnsureTupleDefinition(type);
 
     /* 数学常数由编译器直接给（不依赖宿主胶水）：`std::math::PI` / `std::math::E` 是
      * `std::math` 模块里的静态只读字段，键就是"模块::名字"。
@@ -599,6 +618,8 @@ bool RegisterTop()
                 if (!CheckUserName(param.s)) return false;
                 method.params.push_back(T(param.type));
                 method.bodyParams.push_back(MParam{ param.s, Memory::String(), T(param.type), false });
+                method.bodyParams.back().bindingKey = NodeBindingKey(param);
+                method.bodyParams.back().bindingIdentity = param.bindingIdentity;
             }
             /* **去重**：同名同签名只算一条要求；同名**不同签名**是真冲突，直接报。 */
             bool duplicate = false;
@@ -690,8 +711,12 @@ bool RegisterTop()
             method.bodyId = member.kids.size() > 1u ? member.kids[1] : -1;
             method.module = top.module;
             for (const int paramId : N(member.kids[0]).kids)
+            {
                 method.params.push_back(MParam{ N(paramId).s, Memory::String(), T(N(paramId).type),
                                                 N(paramId).i != 0, N(paramId).kids.empty() ? -1 : N(paramId).kids[0] });
+                method.params.back().bindingKey = NodeBindingKey(N(paramId));
+                method.params.back().bindingIdentity = N(paramId).bindingIdentity;
+            }
             if (!ValidateVariadicParameters(method.params,
                                             "enum 方法 " + top.s + "." + member.s))
                 return false;
@@ -794,9 +819,13 @@ bool RegisterTop()
                     if (method.isNamedConstructor && !SameType(method.result, NamedType(top.s)))
                         return Fail("static create 的返回类型必须是所属类型：" + top.s);
                     for (const int paramId : N(member.kids[0]).kids)
+                    {
                         method.params.push_back(
                             MParam{ N(paramId).s, Memory::String(), T(N(paramId).type),
                                     N(paramId).i != 0, N(paramId).kids.empty() ? -1 : N(paramId).kids[0] });
+                        method.params.back().bindingKey = NodeBindingKey(N(paramId));
+                        method.params.back().bindingIdentity = N(paramId).bindingIdentity;
+                    }
                     if (!ValidateVariadicParameters(method.params,
                                                     "方法 " + top.s + "." + member.s))
                         return false;
@@ -1102,10 +1131,15 @@ bool RegisterTop()
         MFunctionDecl declaration;
         declaration.source = top.s;
         declaration.module = top.module;
+        declaration.captureSyntax = top.guard;
         for (const int paramId : N(top.kids[0]).kids)
+        {
             declaration.signature.params.push_back(
                 MParam{ N(paramId).s, Memory::String(), T(N(paramId).type),
                         N(paramId).i != 0, N(paramId).kids.empty() ? -1 : N(paramId).kids[0] });
+            declaration.signature.params.back().bindingKey = NodeBindingKey(N(paramId));
+            declaration.signature.params.back().bindingIdentity = N(paramId).bindingIdentity;
+        }
         if (!ValidateVariadicParameters(declaration.signature.params,
                                         "函数 " + declaration.source))
             return false;

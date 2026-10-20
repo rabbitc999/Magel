@@ -26,10 +26,6 @@
     "language": {
       "patterns": [
         {
-          "match": "\\$[+-]?[0-9]+",
-          "name": "variable.other.macro-temporary.magel"
-        },
-        {
           "name": "keyword.control.magel",
           "match": "#level\\s*\\(\\s*[aA][lL][lL]\\s*\\)|#level\\b|#derive\\b|#NonCopyable\\b"
         },
@@ -89,7 +85,7 @@
           ]
         },
         {
-          "match": "^(\\s*)(\\$replace)\\s+(?:expr\\s+)?([A-Za-z_][A-Za-z0-9_]*)",
+          "match": "^(\\s*)(\\$replace)\\s+([A-Za-z_][A-Za-z0-9_]*)",
           "captures": {
             "2": {
               "name": "keyword.control.macro.magel"
@@ -101,7 +97,7 @@
         },
         {
           "name": "keyword.control.macro.magel",
-          "match": "\\$(?:end_macro|end_for|delete_macro|if|elif|else|end_if|let)\\b"
+          "match": "\\$(?:end_macro|end_for|match|regex|else|end_match|end_regex)\\b"
         },
         {
           "name": "keyword.control.for.magel",
@@ -164,18 +160,15 @@
     "macroDefinition": {
       "name": "meta.preprocessor.macro.magel",
       "contentName": "meta.preprocessor.macro.body.magel",
-      "begin": "^(\\s*)(\\$macro)\\b(?:\\s+(expr)\\b)?(?:\\s+([A-Za-z_][A-Za-z0-9_]*))?([^\\r\\n]*)$",
+      "begin": "^(\\s*)(\\$macro)\\b(?:\\s+([A-Za-z_][A-Za-z0-9_]*))?([^\\r\\n]*)$",
       "beginCaptures": {
         "2": {
           "name": "keyword.control.macro.magel"
         },
         "3": {
-          "name": "keyword.control.macro.magel"
-        },
-        "4": {
           "name": "entity.name.function.macro.magel"
         },
-        "5": {
+        "4": {
           "name": "meta.parameters.macro.magel",
           "patterns": [
             {

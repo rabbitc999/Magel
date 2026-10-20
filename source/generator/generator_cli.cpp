@@ -597,10 +597,10 @@ int runCli(int argc, char **argv)
     for (const char *name : {"magel_parser.cpp", "magel_parser.hpp",
                              "magel_parser_user.h", "magel_main.cpp", "RESULT.md"})
         ok = copy(stage / name, name) && ok;
-    for (const char *name : {"magel_driver.cpp", "magel_i18n.hpp", "magel_diagnostics.hpp", "magel_borrow_checker.hpp", "magel_borrow_flow.hpp", "magel_resource_cleanup.hpp", "magel_resource_cleanup.cpp", "magel_macro.hpp", "magel_macro_controls.hpp", "magel_module.hpp",
+    for (const char *name : {"magel_driver.cpp", "magel_i18n.hpp", "magel_diagnostics.hpp", "magel_borrow_checker.hpp", "magel_borrow_flow.hpp", "magel_resource_cleanup.hpp", "magel_resource_cleanup.cpp", "magel_module.hpp",
                              "magel_incremental.hpp", "magel_package.hpp", "magel_project.hpp", "magel_cli.hpp",
                              "magel_lambda.hpp", "magel_generic.hpp", "magel_generic_name.hpp", "magel_glue.hpp",
-                             "magel_stdlib_embedded.cpp", "magel_stdlib.hpp", "magel_generic.cpp", "magel_lambda.cpp", "magel_generic_closure.cpp", "magel_macro.cpp", "magel_macro_controls.cpp", "magel_package.cpp", "magel_report.cpp", "magel_runtime_allocator.hpp",
+                             "magel_stdlib_embedded.cpp", "magel_stdlib.hpp", "magel_generic.cpp", "magel_lambda.cpp", "magel_generic_closure.cpp", "magel_package.cpp", "magel_report.cpp", "magel_runtime_allocator.hpp",
                              "magel_ast.hpp", "magel_semantics.cpp"})
         ok = copy(mc / "source" / name, name) && ok;
     /* 控制台 UTF-8 头来自 `library/console/`，导出工程里仍放 `console/` 的目录名：副本站 `console/utf8.hpp`，
@@ -684,6 +684,13 @@ int runCli(int argc, char **argv)
                                       extension == ".cpp" || extension == ".inc"))
             ok = copy(entry.path(), "semantics/" + entry.path().filename().u8string()) && ok;
     }
+    for (const char *directory : {"macro", "literals", "syntax", "editor"})
+        for (const auto &entry : fs::directory_iterator(mc / "source" / directory))
+        {
+            const auto extension = entry.path().extension().string();
+            if (entry.is_regular_file() && (extension == ".hpp" || extension == ".cpp"))
+                ok = copy(entry.path(), Memory::String(directory) + "/" + entry.path().filename().u8string()) && ok;
+        }
     for (const char *name : {"dap_server.hpp", "dap_server.cpp"})
         ok = copy(mc / "source/dap" / name, Memory::String("dap/") + name) && ok;
     for (const char *directory : {"lztext", "miniz", "sqlite", "template"})

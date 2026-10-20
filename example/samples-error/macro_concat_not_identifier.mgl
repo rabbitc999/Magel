@@ -1,5 +1,5 @@
-/* `$concat` 的实参必须是标识符：这里是字面量 1，展开期就报错。 */
+/* 拼名结果必须是一个标识符，不能含有运算符。 */
 $macro BAD(value)
-int64 $concat(value, 1) = 0;
+$concat(value, +)
 $end_macro
 int64 main() { return $BAD(x); }

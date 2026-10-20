@@ -173,7 +173,10 @@ run_required_step "构建 MAGEL 驱动（magel）" "$MAKE" -j4
 
 run_step "验证并行门禁调度与失败汇总" "$PYTHON" tests/test_parallel_gates.py
 run_step "验证卫生宏绑定、正则、AST 替换及生成解析器" "$PYTHON" tests/macro_foundations.py
-run_step "验证 AST 表达式宏语义与 VM 执行" "$PYTHON" tests/magel_ast_macros.py
+run_step "验证 AST 表达式宏语义与 VM 执行" "$PYTHON" tests/magel_ast_macros.py --default
+run_step "验证宏完整片段分类与正则分支" "$PYTHON" tests/magel_macro_branches.py --default
+run_step "验证卫生宏参数分组、片段循环与调用来源" "$PYTHON" tests/magel_macro_groups.py --default
+run_step "验证卫生宏静态类型参数推导" "$PYTHON" tests/magel_macro_generics.py --default
 
 # ---- 快速门禁核心三件套：样例回归 + 本次新增能力测试 + 文档同步 ----
 run_step "MAGEL 样例回归（check.sh）" \
@@ -208,17 +211,9 @@ if [ "$full" = 1 ]; then
 run_step "运行整数区间端点与溢出回归" "$PYTHON" tests/magel_foreach_intervals.py --magel magel
 run_required_step "编译场景命令单元测试" g++ -std=c++17 -O1 tests/magel_cli_test.cpp -o tmp/ci/magel-cli
 run_step "运行场景命令单元测试" tmp/ci/magel-cli
-run_required_step "编译宏临时编号单元测试" g++ -std=c++17 -O1 -DMAGEL_CUSTOM_ALLOCATOR=0 -Ilibrary -Ilibrary/preprocess tests/magel_macro_slots_test.cpp source/magel_macro.cpp source/magel_macro_controls.cpp -o tmp/ci/magel-macro-slots
-run_step "运行宏临时编号单元测试" tmp/ci/magel-macro-slots
-run_required_step "编译宏结构化拼接与字符串化单元测试" g++ -std=c++17 -O1 -DMAGEL_CUSTOM_ALLOCATOR=0 -Ilibrary -Ilibrary/preprocess tests/magel_macro_structured_test.cpp source/magel_macro.cpp source/magel_macro_controls.cpp -o tmp/ci/magel-macro-structured
-run_step "运行宏结构化拼接与字符串化单元测试" tmp/ci/magel-macro-structured
-run_required_step "编译宏多括号文本分组回归" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=0 -DMAGEL_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 -Ilibrary -Ilibrary/preprocess tests/magel_macro_groups_test.cpp source/magel_macro.cpp source/magel_macro_controls.cpp -o tmp/ci/magel-macro-groups
-run_step "运行宏多括号文本分组回归" tmp/ci/magel-macro-groups
-run_step "验证宏多括号完整前端行列映射" "$PYTHON" tests/magel_macro_groups.py
+run_step "验证独立原始路径的宏分组与来源" "$PYTHON" tests/magel_macro_groups.py
 run_step "验证返回表达式、具名闭包与字段派生" "$PYTHON" tests/magel_declaration_sugars.py
 
-run_required_step "编译宏参数括号规则回归" g++ -std=c++17 -O1 -DMAGEL_CUSTOM_ALLOCATOR=0 -Ilibrary -Ilibrary/preprocess tests/magel_macro_parentheses_test.cpp source/magel_macro.cpp source/magel_macro_controls.cpp -o tmp/ci/magel-macro-parentheses
-run_step "运行宏参数括号规则回归" tmp/ci/magel-macro-parentheses
 
 # ---- lztext：内嵌标准库/运行时资产的压缩存储与运行时解压 ----
 # magel/library/lztext 与 ParseEngine 的 library/lztext 是同一份实现，改一个要同步另一个。
@@ -312,6 +307,7 @@ if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
     run_step "运行新增书本示例与 LaTeX 同步回归" "$PYTHON" tests/magel_book_updates.py
     run_step "运行嵌套函数值的内联 fn 实参回归" "$PYTHON" tests/magel_inline_fn_arguments.py
     run_step "运行胶水调用 Magel 函数的 VM回归" "$PYTHON" tests/magel_native_callbacks.py
+    run_step "运行卫生宏高阶闭包编辑器回归" "$PYTHON" tests/magel_macro_editor.py --magel magel
     run_step "运行共享语义、宏分组提示与安全重构回归" "$PYTHON" tests/magel_lsp_semantic_features.py
     run_step "运行 pause 终端输出顺序回归" "$PYTHON" tests/magel_pause_output.py
     # EBNF 附录由 magel.gram 生成：改了文法忘了重生成附录，这里就红（--check 不改文件）。

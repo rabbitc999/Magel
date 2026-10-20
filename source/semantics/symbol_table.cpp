@@ -31,8 +31,10 @@ struct MParam
     Memory::String emitted;
     std::shared_ptr<MType> type;
     bool variadic = false;
-    int defaultExpr = -1;  ///< 定义模块中的默认表达式，调用时求值。
-    int captureMode = 0;   ///< lambda 捕获：0 只读引用，1 可写引用，2 独立可写副本，3 移入的拥有值。
+    int defaultExpr = -1;               ///< 定义模块中的默认表达式，调用时求值。
+    int captureMode = 0;                ///< lambda 捕获：0 只读引用，1 可写引用，2 独立可写副本，3 移入的拥有值。
+    Memory::String bindingKey{};        ///< 宏引入形参在词法作用域中的卫生绑定键。
+    std::uint32_t bindingIdentity = 0;  ///< 形参原声明的稳定身份。
 };
 
 /**

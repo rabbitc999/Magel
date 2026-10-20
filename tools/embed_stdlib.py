@@ -206,6 +206,12 @@ GENERATOR_ASSETS = [
 
 
 # 胶水接口及实现作为同一组资产导出，固定清单不能遗漏独立编译单元。
+GENERATOR_ASSETS += [
+    directory + "/" + path.name
+    for directory in ("macro", "literals", "syntax", "editor")
+    for path in sorted(Path(MAGEL, "source", directory).iterdir())
+    if path.suffix in (".cpp", ".hpp")
+]
 GENERATOR_ASSETS = list(dict.fromkeys(GENERATOR_ASSETS + [
     "glue/" + path.name for path in sorted(Path(MAGEL, "source/glue").iterdir())
     if path.suffix in (".cpp", ".hpp", ".h", ".c")

@@ -14,8 +14,12 @@
 #include "magel_generic.hpp"
 #include "magel_resource_cleanup.hpp"
 #include "magel_lambda.hpp"
-#include "magel_macro.hpp"
 #include "macro/registry.hpp"
+#include "macro/fragments.hpp"
+#include "macro/source.hpp"
+#include "magel_interpolation.hpp"
+#include "literals/string_escape.hpp"
+#include "editor/compiler_analysis.hpp"
 #include "dap/dap_server.hpp"
 
 #include <cstdio>
@@ -40,6 +44,9 @@ namespace
 {
 /* 语法动作会在读取旧节点的同时创建新节点；deque 保持旧节点引用有效。 */
 Memory::Deque<MNode> g_nodes;
+Memory::Map<int, std::size_t> g_rawMacroNames;
+std::size_t g_macroFragmentFirstLine = 0;
+std::size_t g_macroFragmentFirstColumn = 1;
 Memory::Vector<std::shared_ptr<MType>> g_types;
 Memory::Vector<Memory::String> g_sourceFiles;
 Memory::String g_sourceFallback;
@@ -188,7 +195,10 @@ bool IsInternalQuadLocation(const stackvm::SourceLocation &location)
  * @brief 设置当前归约起始行。
  * @param line 预处理后的行号。
  */
-void M_SetReductionLine(std::size_t line) { g_reductionLine = line; }
+void M_SetReductionLine(std::size_t line)
+{
+    g_reductionLine = g_macroFragmentFirstLine ? (line >= 2 ? g_macroFragmentFirstLine + line - 2 : g_macroFragmentFirstLine) : line;
+}
 /**
  * @brief 设置源码行映射。
  * @param lines 逐行原始行号。
@@ -1038,6 +1048,12 @@ bool IsStandardModule(const Memory::String &name);
 int M_CallOn(int callee, int args)
 {
     MNode &target = g_nodes[static_cast<std::size_t>(callee)];
+    if (target.kind == MNode::TypeQualifiedRef)
+    {
+        target.type2 = 1;
+        target.kids = g_nodes[args].kids;
+        return callee;
+    }
     const bool bufferIndex = (target.kind == MNode::Var && target.s == "index") || (target.kind == MNode::EnumCtor && target.s == "std::lang" && target.s2 == "index");
     if (bufferIndex && g_nodes[static_cast<std::size_t>(args)].kids.size() == 2u)
     {
@@ -1132,6 +1148,12 @@ bool IsStandardModule(const Memory::String &name)
 int M_QualifiedRef(int leftRefId, int rightNameId)
 {
     const MNode &left = g_nodes[static_cast<std::size_t>(leftRefId)];
+    if (left.kind == MNode::TypeQualifiedRef)
+    {
+        const int id = M_AstTypeQualifiedRef(left.type, rightNameId);
+        g_nodes[id].s2 = left.s2 + "::" + g_names[rightNameId];
+        return id;
+    }
     const bool standardType = left.s == "std::lang" && !left.s2.empty() && std::isupper(static_cast<unsigned char>(left.s2[0]));
     /* `std::lang::X::y` 里的 X 是不是**模块**，看 magel.gram 的 `%code` 里那张
      * kMagelStdModules 表（新加标准模块时改文法，别在编译器里硬编码）。
@@ -1150,6 +1172,12 @@ int M_QualifiedRef(int leftRefId, int rightNameId)
 int M_QualifiedType(int refId)
 {
     const MNode &ref = g_nodes[static_cast<std::size_t>(refId)];
+    if (ref.kind == MNode::TypeQualifiedRef)
+    {
+        auto type = Memory::makeShared<MType>(*M_TypeAt(ref.type));
+        type->genericMember = type->genericMember.empty() ? ref.s2 : type->genericMember + "::" + ref.s2;
+        return M_AddType(type);
+    }
     const Memory::String module = ref.s;
     const Memory::String typeName = ref.s2;
     return M_StdNamedType(M_Name(module.c_str()), M_Name(typeName.c_str()));
@@ -2008,26 +2036,6 @@ int M_GenericClosureParameter(int nameId, int constraint, int fallback)
 }
 
 /**
- * @brief 构造完整的泛型闭包语法树，供语法检查与模板阶段保留结构信息。
- * @param resultType 返回类型编号，负数表示按具体实现推导。
- * @param generics 类型参数列表。
- * @param params 调用参数列表。
- * @param body 完整函数体。
- * @param groups 显式捕获分组，负数表示没有分组。
- * @param capture 默认捕获方式。
- * @return 泛型闭包语法节点。
- */
-int M_GenericClosureSyntax(int resultType, int generics, int params, int body, int groups, int capture)
-{
-    const int id = M_New(MNode::GenericLambda);
-    g_nodes[id].type = resultType;
-    g_nodes[id].type2 = groups;
-    g_nodes[id].i = capture;
-    g_nodes[id].kids = { generics, params, body };
-    return id;
-}
-
-/**
  * @brief 构造具有默认闭包表达式的自动类型字段。
  * @param nameId 字段名称编号。
  * @param initializer 初始化表达式编号。
@@ -2217,7 +2225,20 @@ int M_LambdaListed(int resultType, int params, int body, int groups, int default
             if (!specifications.emplace(g_names[name], static_cast<int>(g_nodes[group].i)).second)
                 return M_New(MNode::ParseBad, "lambda 捕获列表重复声明变量：" + g_names[name]);
     const int id = M_Lambda(resultType, params, body, defaultMode);
-    if (g_nodes[id].kind == MNode::Lambda) magel_lambda::captureSpecifications[g_nodes[id].s] = std::move(specifications);
+    if (g_nodes[id].kind == MNode::Lambda)
+    {
+        magel_lambda::captureSpecifications[g_nodes[id].s] = std::move(specifications);
+        const int captures = M_List();
+        for (const int group : g_nodes[groups].kids)
+            for (const int name : g_nodes[group].kids)
+            {
+                const int reference = M_Var(name);
+                const int capture = M_List1(reference);
+                g_nodes[capture].i = g_nodes[group].i;
+                M_ListAdd(captures, capture);
+            }
+        g_nodes[id].kids.push_back(captures);
+    }
     return id;
 }
 #include "semantics/named_function_ast.cpp"
@@ -2670,6 +2691,7 @@ int M_LocalDecl(int typeId, int declarators, int constFlag)
  */
 void M_SetProgram(int topList)
 {
+    magel_macro::sourceFragments.finishParsing();
     g_top.clear();
     for (const int topId : g_nodes[static_cast<std::size_t>(topList)].kids)
     {
@@ -2679,14 +2701,6 @@ void M_SetProgram(int topList)
         else
             g_top.push_back(topId);
     }
-    // 内部函数与普通函数共用签名、复制、Drop 和调用降级，不保存局部环境地址。
-    for (auto &node : g_nodes)
-        if (node.kind == MNode::Lambda)
-        {
-            g_top.push_back(node.kids[0]);
-            node.kind = MNode::Var;
-            node.kids.clear();
-        }
 }
 /**
  * @brief 设置后续声明项继承的待定类型。
@@ -2823,6 +2837,11 @@ void M_SetSourceFiles(const Memory::Vector<Memory::String> &files, const Memory:
 int M_TokenValue(int tokenType, double number, const char *pName, Memory::String text,
                  std::size_t line, std::size_t column)
 {
+    if (g_macroFragmentFirstLine)
+    {
+        if (line == 2) column += g_macroFragmentFirstColumn - 1;
+        line = line >= 2 ? g_macroFragmentFirstLine + line - 2 : g_macroFragmentFirstLine;
+    }
     g_reductionLine = line;
     g_reductionColumn = column;
     if (tokenType == TOKEN_AT || tokenType == TOKEN_ANNOTATION)
@@ -2920,7 +2939,24 @@ int M_TokenValue(int tokenType, double number, const char *pName, Memory::String
         }
         return M_Float(number);
     }
-    if (!text.empty()) return M_Name(text.c_str());
+    if (!text.empty())
+    {
+        auto rawMacro = static_cast<std::size_t>(-1);
+        if (tokenType == TOKEN_MACRO_NAME && text.find("@!") != Memory::String::npos)
+        {
+            rawMacro = magel_macro::sourceFragments.resolveMarker(std::string_view(text.data(), text.size()));
+            text.erase(text.find("@!"));
+        }
+        const int id = M_Name(text.c_str());
+        if (tokenType == TOKEN_MACRO_NAME)
+        {
+            g_rawMacroNames.erase(id);
+            const auto raw = rawMacro != static_cast<std::size_t>(-1) ? rawMacro : magel_macro::sourceFragments.find(line, column);
+            if (raw != static_cast<std::size_t>(-1) && magel_macro::sourceFragments.at(raw).name == std::string(text.data() + 1, text.size() - 1))
+                g_rawMacroNames[id] = raw;
+        }
+        return id;
+    }
     if (pName != nullptr && pName[0] != '\0') return M_Name(pName);
     return M_Int(static_cast<long long>(number));
 }
@@ -2951,6 +2987,7 @@ namespace
 #include "semantics/formatted_output.cpp"
 #include "semantics/builtins.cpp"
 #include "semantics/generic_inference.cpp"
+#include "semantics/editor_analysis.cpp"
 #include "semantics/constants.cpp"
 #include "semantics/lowering.cpp"
 #include "semantics/interface_dispatch.cpp"
@@ -2964,6 +3001,8 @@ namespace
 #include "semantics/reflection_queries.cpp"
 #include "semantics/reflection_calls.cpp"
 #include "semantics/derive.cpp"
+#include "semantics/macro_fragments.cpp"
+#include "semantics/ast_generic_closures.cpp"
 #include "semantics/macro_expansion.cpp"
 }  // namespace
 
@@ -3001,6 +3040,7 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
         RestoreFirstDiagnostic();
         return 1;
     }
+    if (!LiftReachableAstLambdas()) return 1;
     if (!ExpandDerivedDeclarations()) return 1;
     if (!PrepareGenericSignatures()) return 1;
     auto parsedNodes = g_nodes;
@@ -3089,6 +3129,7 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
                     if (!(N(id).module == "std::reflect" && N(id).kind == MNode::ExternFuncDecl && queries.replaced.count(N(id).s))) all.push_back(id);
                 all.insert(all.end(), g_top.begin(), g_top.end());
                 g_top = std::move(all);
+                if (!LiftReachableAstLambdas()) return 1;
                 parsedNodes = g_nodes;
                 parsedTypes = g_types;
                 parsedNames = g_names;
@@ -3097,12 +3138,19 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
                 continue;
             }
             break;
+        } catch (const MMacroSemanticReplay &)
+        {
+            parsedNodes = g_nodes;
+            parsedTypes = g_types;
+            parsedNames = g_names;
+            parsedTop = g_top;
         } catch (const MInstantiationRequest &request)
         {
             g_nodes = parsedNodes;
             g_types = parsedTypes;
             g_names = parsedNames;
             g_top = parsedTop;
+            if (!LiftReachableAstLambdas()) return 1;
             Memory::String source, error;
             if (!magel_generic::instantiate(request.name, request.args, source, error)) return Fail(error), 1;
             if (source.empty()) return Fail("泛型实例化未产生新声明：" + request.name), 1;
@@ -3118,6 +3166,7 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
                 RestoreFirstDiagnostic();
                 return 1;
             }
+            if (!ExpandAdditionalAstMacros()) return 1;
             parsedTop.insert(parsedTop.end(), g_top.begin(), g_top.end());
             g_top = parsedTop;
             if (!ExpandDerivedDeclarations()) return 1;

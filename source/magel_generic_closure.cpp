@@ -335,7 +335,6 @@ bool normalizeGenericClosures(preprocess::Result &result, Memory::String &error)
  */
 void markClosureTypeArguments(Memory::String &source)
 {
-    if (genericClosures.empty()) return;
     const auto mask = codeMask(source);
     Memory::Set<std::size_t> edits;
     for (std::size_t at = 0; at < mask.size(); ++at)
@@ -346,7 +345,14 @@ void markClosureTypeArguments(Memory::String &source)
         if (!name || !ident(mask[name - 1])) continue;
         const auto nameEnd = name;
         while (name && ident(mask[name - 1])) --name;
-        if (mask.substr(name, nameEnd - name) == "cast") continue;
+        if (name == nameEnd || !(std::isalpha(static_cast<unsigned char>(mask[name])) || mask[name] == '_')) continue;
+        const auto spelling = mask.substr(name, nameEnd - name);
+        if (spelling == "cast" || spelling == "fn" || (name && mask[name - 1] == '$')) continue;
+        auto previous = name;
+        while (previous && std::isspace(static_cast<unsigned char>(mask[previous - 1]))) --previous;
+        auto keyword = previous;
+        while (keyword && ident(mask[keyword - 1])) --keyword;
+        if (keyword && mask[keyword - 1] == '$' && (mask.substr(keyword, previous - keyword) == "macro" || mask.substr(keyword, previous - keyword) == "replace")) continue;
         std::size_t end = 0;
         if (!balanced(mask, at, '<', '>', end)) continue;
         auto next = end + 1;

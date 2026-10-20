@@ -147,100 +147,111 @@ magel: 运算符 + 有多条声明匹配同一对操作数 A / int64，返回类
 
 **换边不改变求值顺序**：`bump() + makeA()` 变成 `makeA().leftAdd(bump())` 时，两个操作数仍按源码从左到右求值（左操作数先钳进临时量），副作用顺序与不换边时一致。
 
-## 宏文本拼接与字符串化
+## 编译期卫生 AST 宏
 
-宏这一层以前叠了两套「多余的写法」，当前均不支持：
-
-- **`$match` / `$when` / `$end_when` / `$else` / `$end_else` / `$end_match`** 不再是指令。它本质是在文本替换宏上又叠了一层迷你 DSL——用的人少、报错面却很大。要按分支生成代码，改用 `$for` 配合「按实参个数重载」分形态。
-- **`##` 拼接与 `#形参` 字符串化**也不再是指令。拼名字与取源码文本统一用 `$concat(a, b)` / `$stringify(x)`。`##` / `#形参` 已移除，当前不接受这些写法。
-
-写了就是语法错误：
-
-```text
-Syntax error: …：认不出来的字符
-```
-
-推荐写法：
+`$macro` 定义由生成解析器建立语法树，语义分析按依赖展开，类型推导与展开交错进行，四元式生成前完成。宏不把替换结果拼成源码重新解析。参数保留原文、位置、语法候选及调用处绑定；引入的普通局部声明自动卫生，辅助名称在定义模块查找。
 
 ```magel
-$macro SUM(...rest)
-    $for v in rest
-        + (v)
-    $end_for
+$macro SQUARE(x)
+x * x
+$end_macro
+$macro ANSWER
+42
+$end_macro
+$macro EMPTY()
+42
 $end_macro
 int64 main() {
-    int64 total = 0 $SUM(1, 2, 3, 4);
-    println("{}", total);
+    int64 temporary = 10;
+    println("{} {} {}", $SQUARE(1 + 2), $ANSWER, $EMPTY());
     return 0;
 }
 ```
 
-```text
-10
-```
+实参 `1 + 2` 是完整表达式，替换进乘法的两个操作数，结果为 9。无需形参括号保护，也不自动给输出加括号、缓存参数或插入作用域；`$SQUARE(next())` 仍调用两次 `next()`。编号临时变量、宏头 `expr` 标注及形参保护标注均已删除。语句宏的调用写完整分号；宏体的语句直接插入调用所在列表。需要块表达式时，在模板中显式书写 `{ ... yield value; }`。
+
+## 参数组、变长片段及卫生绑定
+
+裸定义 `$macro A` 只能用 `$A`；空组定义 `$macro A()` 只能用 `$A()`。`[]`、`()`、`{}` 按声明顺序严格匹配，允许重复组。每组支持固定形参和一个末尾变长形参 `...rest` 或 `..rest`，空捕获合法。固定形态优先于适用的变长形态。
 
 ```magel
-$macro SHOW(expr)
-println("{} = {}", $stringify(expr), expr);
+$macro ACCUMULATE(out)[...values]
+$for value in values
+int64 temporary = value;
+out += temporary;
+$end_for
 $end_macro
 int64 main() {
-    int64 a = 6;
-    $SHOW(a * 7)
+    int64 temporary = 100;
+    int64 total = 0;
+    $ACCUMULATE(total)[1, 2, 3];
+    println("{} {}", total, temporary);
     return 0;
 }
 ```
 
-```text
-a * 7 = 42
-```
+结果是 `6 100`。每轮展开中的局部声明互相独立，实参 `out` 保留调用者的绑定。变长片段可转发到另一宏，或在函数参数列表中逐项展开；`$for` 只遍历变长形参。形参出现在声明名位置时必须传入单个标识符，该声明可供后续调用者代码使用。成员名与变量名按各自语法角色处理。
 
-`match`、`when` 这类名字不再占关键字，可以拿来当宏名。`$concat` 只拼标识符，读取原始实参，不受定义端括号标注影响。
+## 宏泛型
 
-## 有序多括号文本宏
-
-宏在 Lexer 之前展开；参数是原始文本，不构建 AST，也不检查参数类型。`$macro` 保持全小写，宏体仍写在声明后的行中，以 `$end_macro` 结束。
+尖括号仅表示宏类型参数，不能作为任意文本参数组：
 
 ```magel
-$macro CODE<..Types>[..Attrs](..Args){..Body}
-    println("types: {}", $stringify(Types));
-    println("attrs: {}", $stringify(Attrs));
-    println("args: {}", $stringify(Args));
-    Body
+$macro CONVERT<T:value>(value)
+cast<T>(value)
 $end_macro
-
-void main() {
-    $CODE<int64, String>[readonly](x, y){
-        println("multi-line body");
-        if (true) {
-            println("nested braces");
-        }
-    }
+$macro RESULT<T>(value)
+cast<T>(value)
+$end_macro
+int64 main() {
+    int32 source = 42;
+    auto same = $CONVERT(source);
+    int32 expected = $RESULT(42);
+    int64 explicitValue = $RESULT<int64>(42);
+    return 0;
 }
 ```
 
-定义中的 `< >`、`[ ]`、`( )`、`{ }` 可以任意排序和重复，如 `$macro FOO()()`、`$macro BAR[](x)()`。调用必须提供定义中对应顺序的各组；`$FOO()()` 与 `$BAR[](value)()` 均消耗全部声明组。现有单组 `NAME()` 仍表示对象宏，以 `$NAME` 调用。
+`T:value` 只从指定实参的静态类型推导；未指定来源的 `T` 只从外层期望结果类型推导。显式类型优先，不执行参数、不自动转换、不改换推导来源。`auto x = $RESULT(42)` 缺少期望类型，编译失败。首版不支持宏泛型值参数、特化、偏特化或任意函数的编译期执行。
 
-每组可使用固定形参和一个末尾 `..rest`，例如 `<T, ..Types>[..Attrs](x, ..Args){..Body}`；不同组独立绑定，形参名称不能重复。每组变长捕获可以为空，不会吞入下一组；`$for` 可分别遍历各组尾参，也可嵌套遍历。旧单圆括号宏的 `...rest`、参数括号保护与 `expr` 写法继续有效。
+## 五类完整语法匹配
 
-实参按当前层的逗号切分，嵌套括号、字符串与注释内的逗号不切分；变长参数重新连接时保留原有逗号及其两侧文本。`List<List<int64>>` 中的 `>>` 按两个字符闭合，不经过运算符词法分析。非尖括号组内不配对的 `<` / `>` 保留为普通文本，可写比较与移位；成对的尖括号参与分组，含歧义的比较表达式可用圆括号明确边界。
+```magel
+$macro CLASSIFY(value)
+$match value is ident
+1
+$else is expr
+2
+$else is type
+3
+$else is block
+4
+$else is stmt
+5
+$else
+0
+$end_match
+$end_macro
+```
 
-大括号实参可以跨任意多行并包含其他括号组，字符串和注释中的括号不参与闭合。宏体和捕获实参使用内部来源标记记录文件与行，捕获片段额外记录列偏移；标记在送入 Lexer 前移除，通过分行和空格占位恢复诊断位置，调用后同一行及后续行也恢复原位置。括号种类、顺序、结构或参数绑定不匹配时报“宏Token分组不匹配”，不解释为类型错误。回归见 [`magel_macro_groups_test.cpp`](../tests/magel_macro_groups_test.cpp)。
+只支持 `expr`、`ident`、`type`、`block`、`stmt` 五类，使用同一生成解析器完整消费原始片段。按书写顺序选择首个成立分支；`ident` 也可能是 `expr`，因此顺序有意义。语法成立不代表名称存在或类型合法；只有最终展开的节点进入名称、类型、捕获、借用和资源检查。无匹配且无兜底不生成内容。未选分支的模板结构仍须合法。大括号参数组不等于块片段：传入一个完整块写 `$A{{ statements; }}`。
 
-宏体中的 `$n` 为当前展开专属的临时名；n 可为任意长度十进制整数，允许正负号，`$0010`、`$+10` 与 `$10` 相同。编号以文本归一化，不受宿主整数上限限制。不同宏调用互相隔离，字符串和注释保持原样；普通源码中仍不能直接使用这些占位符。
+## 正则、原文与来源
 
-## 迁移清单
+```magel
+$macro DECIMAL(value)
+$regex value is "[0-9]+"
+value
+$else
+0
+$end_regex
+$end_macro
+```
 
-| 你原来写的 | 现在改成 |
-| --- | --- |
-| `int32 x = a + (int32)1;` | `int32 x = a + 1;`（字面量按上下文定型） |
-| `5 + a` 报「找不到 `RightAdd`」 | 通常已能推导；要自定义右向就实现 `RightAdd<R,T>`，要禁止就实现 `NoRightAdd` |
-| `$match` / `$when` / `$end_match` 那一套 | 用 `$for` + 按实参个数重载分形态 |
-| `a ## b` | `$concat(a, b)` |
-| `#形参` | `$stringify(形参)` |
+`$regex` 使用 C++ `std::regex` 的 ECMAScript 语法对去除首尾空白的完整参数原文匹配，保留内部注释、引号和换行。字符串按语言规则解码一次，合法与非法模式均缓存；非法模式报编译错误。正则捕获组仅用于匹配，不导出捕获变量。
 
-不需要动的地方：比较与逻辑运算不参与字面量定型；`-` `/` `%`、大小比较、移位仍不交换；`&&` / `||` 本来就不能重载。借用检查包括来源逃逸与控制流中的移动、释放检查，诊断包括 MGL1204 与 MGL1205。
+`$stringify(value)` 返回实参原文的字符串，不先执行或展开参数。`$concat(left, right)` 只生成单个标识符，不能生成任意代码；模板中生成的名字保持定义处上下文，不能借拼名捕获调用者局部变量。直接源码中的拼名按该源码上下文查找。`$line`、`$file`、`$module` 可直接使用；模板内取调用处来源，嵌套参数转发保留原始来源。
 
-## 回归覆盖
+`$replace ADD(a, b) a + b` 是同一 AST 机制的单行定义。宏递归与规模有预算，失败诊断保留调用、定义和参数来源链。编辑器宏预览显示卫生 AST，类型提示读取最终静态类型，不显示内部绑定编号。
 
-- 新增十份回归：`literal_context_type`、`operator_symmetry`、`operator_right_direction`、`operator_result_choice`、`operator_swap_eval_order`，以及 `operator_asymmetric_reverse`、`operator_right_forbidden`、`operator_right_explicit`、`operator_result_ambiguous`、`logical_operator_overload` 五份报错样例。
-- 删除 `macro_match.mgl` 与 7 份 `$match` 报错样例，以及只对旧写法有效的 `macro_paste_missing_side`、`macro_stringify_unknown` 两份报错样例。
+回归见 [宏 AST](../tests/magel_ast_macros.py)、[分组与来源](../tests/magel_macro_groups.py)、[静态类型](../tests/magel_macro_generics.py) 和 [语法及正则](../tests/magel_macro_branches.py)。

@@ -1,6 +1,51 @@
 /* ---------- 类型号（`__typeTag` 与 `obj` 共用） ---------- */
 
 /**
+ * @brief 请求生成普通泛型实例，由编译入口保存解析快照并重放语义阶段。
+ */
+struct MInstantiationRequest
+{
+    Memory::String name;
+    Memory::Vector<Memory::String> args;
+};
+
+/**
+ * @brief 宏新增闭包声明后请求重新登记程序，不执行或生成半成品。
+ */
+struct MMacroSemanticReplay
+{
+};
+
+/**
+ * @brief 提升宏新生成的闭包；存在新声明时请求重放语义登记。
+ * @return 提升检查通过时返回真。
+ */
+bool PrepareExpandedMacroLambdas();
+/**
+ * @brief 为已被类型推导选中的实参提升闭包，不提升其他语法候选。
+ * @param root 实参表达式根节点。
+ * @return 所需闭包声明已登记时返回真。
+ */
+bool PrepareMacroArgumentLambdas(int root);
+
+/**
+ * @brief 在模板已经展开后解析其类型应用，保留未选中语法候选的语义隔离。
+ * @param type 当前类型描述。
+ * @param depth 类型树递归深度。
+ * @return 类型应用已解析或本来就是普通类型时返回真。
+ */
+bool ResolveAstGenericType(const std::shared_ptr<MType> &type, std::size_t depth = 0);
+
+/**
+ * @brief 在静态类型上下文已建立后展开泛型表达式宏。
+ * @param id 待处理的表达式。
+ * @param expected 调用处期望结果类型；空表示没有结果约束。
+ * @param templateRoot 非空时接收完整模板，由语句列表直接拼接。
+ * @return 节点已成功转换为普通表达式时返回真。
+ */
+bool ExpandDeferredAstMacro(int id, const std::shared_ptr<MType> &expected, int *templateRoot = nullptr);
+
+/**
  * @brief 造一个光秃秃的内建类型（不往类型池里放，纯粹为了算类型号）。
  * @param kind 待处理对象的类别。
  * @param isUnsigned 是否使用无符号数值类型。
@@ -282,9 +327,25 @@ void AddDiagnostic(const Memory::String &message, std::size_t line, std::size_t 
 {
     // 诊断在 VM 内存池销毁后仍需输出，字符串副本必须归宿主长期分配器所有。
     Memory::AllocationScope persistent(Memory::defaultRuntimeAllocator());
+    Memory::String detailed = message;
+    int frame = g_macroDiagnosticFrame;
+    for (std::size_t depth = 0; frame >= 0 && depth < 256 && static_cast<std::size_t>(frame) < g_nodes.size(); ++depth)
+    {
+        const auto &origin = N(frame);
+        if (origin.kind != MNode::MacroExpansionFrame) break;
+        const auto location = [&](std::size_t sourceLine, std::size_t sourceColumn) {
+            const auto file = sourceLine && sourceLine <= g_sourceFiles.size() && !g_sourceFiles[sourceLine - 1].empty() ? g_sourceFiles[sourceLine - 1] : g_sourceFallback;
+            const auto originalLine = sourceLine && sourceLine <= g_sourceLines.size() && g_sourceLines[sourceLine - 1] ? g_sourceLines[sourceLine - 1] : sourceLine;
+            return file + ":" + Memory::toString(originalLine) + ":" + Memory::toString(sourceColumn);
+        };
+        detailed += "\n  展开宏 $" + origin.s + "，调用于 " + location(origin.sourceLine, origin.sourceColumn);
+        if (origin.i >= 0 && static_cast<std::size_t>(origin.i) < g_nodes.size())
+            detailed += "，定义于 " + location(N(static_cast<int>(origin.i)).sourceLine, N(static_cast<int>(origin.i)).sourceColumn);
+        frame = origin.kids.empty() ? -1 : origin.kids[0];
+    }
     for (const auto &item : g_diagnostics)
-        if (item.message == message && item.line == line && item.column == column) return;
-    if (g_diagnostics.size() < 100u) g_diagnostics.push_back({ message, line, column });
+        if (item.message == detailed && item.line == line && item.column == column) return;
+    if (g_diagnostics.size() < 100u) g_diagnostics.push_back({ detailed, line, column });
 }
 /**
  * @brief 降级 / 登记时把「当前源码位置」恢复到某个语法节点上。
@@ -298,16 +359,18 @@ struct ReductionSourceScope
 {
     std::size_t previous;
     std::size_t previousColumn;
+    int previousMacroFrame;
     /**
      * @brief 保存并切换当前归约节点的源码位置。
      * @param id 待查找或操作的对象编号。
      */
-    explicit ReductionSourceScope(int id) : previous(g_reductionLine), previousColumn(g_reductionColumn)
+    explicit ReductionSourceScope(int id) : previous(g_reductionLine), previousColumn(g_reductionColumn), previousMacroFrame(g_macroDiagnosticFrame)
     {
         if (id >= 0)
         {
-            g_reductionLine = N(id).sourceLine;
-            g_reductionColumn = N(id).sourceColumn;
+            g_reductionLine = N(id).expansionLine ? N(id).expansionLine : N(id).sourceLine;
+            g_reductionColumn = N(id).expansionLine ? N(id).expansionColumn : N(id).sourceColumn;
+            g_macroDiagnosticFrame = N(id).macroExpansion;
         }
     }
     /**
@@ -317,6 +380,7 @@ struct ReductionSourceScope
     {
         g_reductionLine = previous;
         g_reductionColumn = previousColumn;
+        g_macroDiagnosticFrame = previousMacroFrame;
     }
 };
 
@@ -498,7 +562,17 @@ MVar *Find(const Memory::String &name);
 /**
  * 模块感知的变量解析：局部作用域按裸名，全局先看 `模块::名`，再兜底裸名（根模块 / prelude）。
  */
-MVar *FindIn(const Memory::String &module, const Memory::String &name);
+MVar *FindIn(const Memory::String &module, const Memory::String &name, bool globalOnly = false);
+/**
+ * @brief 按节点携带的卫生身份查找变量，不把宏辅助名称绑定到调用者。
+ * @param node 变量或声明节点。
+ * @return 对应变量，不存在时为空。
+ */
+MVar *FindNodeVar(const MNode &node);
+/**
+ * @brief 更新宏展开后实际可达的节点和类型，隔离未选中的语法候选。
+ */
+void RefreshMacroActiveSyntax();
 /**
  * 只认**模块限定全局**（`模块::名`），不兜底裸名 —— 给 `mod::x` 这种限定写法用。
  */
@@ -525,7 +599,7 @@ bool IsIndirectCallee(int calleeId)
 {
     const MNode &callee = N(calleeId);
     if (callee.kind == MNode::Var && callee.s.rfind("__magel_lambda_", 0) == 0) return true;
-    if ((callee.kind == MNode::Var) && (FindIn(callee.module, callee.s) == nullptr) && (FindFunctionOverloads(callee.module, callee.s) != nullptr))
+    if ((callee.kind == MNode::Var) && (FindNodeVar(callee) == nullptr) && (FindFunctionOverloads(callee.module, callee.s) != nullptr))
     {
         return false; /* 函数名：直接调用 */
     }
@@ -546,6 +620,62 @@ std::shared_ptr<MType> FuncTypeOf(const MFuncSig &signature)
     type->variadic = !signature.params.empty() && signature.params.back().variadic;
     return type;
 }
+
+/**
+ * @brief 访问元组或载荷模式中的标识符叶子，忽略表达式及构造器头。
+ * @param id 绑定模式根。
+ * @param action 每个绑定叶子的处理函数。
+ * @param depth 当前模式深度。
+ */
+void VisitAstPatternBindings(int id, const Memory::Function<void(int)> &action, std::size_t depth = 0)
+{
+    if (id < 0 || depth >= 256) return;
+    const auto &node = N(id);
+    if (node.kind == MNode::Var)
+        action(id);
+    else if (node.kind == MNode::List || node.kind == MNode::Tuple)
+        for (const int child : node.kids) VisitAstPatternBindings(child, action, depth + 1);
+}
+
+/**
+ * @brief 访问声明解构和枚举分支的局部绑定，不把标量模式名称当成声明。
+ * @param node 当前结构节点。
+ * @param action 每个局部模式声明的处理函数。
+ */
+void VisitAstLocalPatternBindings(const MNode &node, const Memory::Function<void(int)> &action)
+{
+    if (node.kind == MNode::Destructure && !node.i) VisitAstPatternBindings(node.kids[0], action);
+    if (node.kind != MNode::Case || node.i < 0) return;
+    const auto pattern = N(static_cast<int>(node.i));
+    if (pattern.kind == MNode::EnumCtor || pattern.kind == MNode::TypeQualifiedRef)
+        for (const int payload : pattern.kids) VisitAstPatternBindings(payload, action);
+    else if (pattern.kind == MNode::Call && pattern.kids.size() == 2)
+        VisitAstPatternBindings(pattern.kids[1], action);
+}
+
+/**
+ * @brief AST 泛型闭包的原始模板、自由引用和具体实现，不存储展开后的源码。
+ */
+struct MAstGenericClosure
+{
+    int syntax = -1;
+    Memory::Vector<int> references;
+};
+Memory::Map<Memory::String, MAstGenericClosure> g_astGenericClosures;
+Memory::Map<Memory::String, Memory::String> g_astGenericImplementations;
+/**
+ * @brief 将可达的泛型闭包 AST 登记为具有独立环境入口的模板。
+ * @param id 原始泛型闭包节点。
+ * @return 新建的环境入口函数节点。
+ */
+int LiftAstGenericClosure(int id);
+/**
+ * @brief 从具体参数实例化 AST 泛型闭包并保留同一捕获环境。
+ * @param id 调用节点。
+ * @param seed 泛型闭包环境入口。
+ * @return 该调用处理成功时返回真。
+ */
+bool ResolveAstGenericClosureCall(int id, const Memory::String &seed);
 
 /**
  * @brief 解析闭包的声明身份，并为外层泛型实例生成独立的环境类型。

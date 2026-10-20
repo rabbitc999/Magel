@@ -39,11 +39,13 @@ interfaces, while platform adapters, record layouts and algorithms compile in th
 `std_binding.hpp` provides a registry forward declaration. Templates for structured data and value conversion
 remain in headers where their definitions are required. The VM core continues to use generic host protocols.
 
-Generic expansion, closures, macro controls, project manifests and diagnostics compile through `magel_generic.cpp`,
-`magel_lambda.cpp`, `magel_generic_closure.cpp`, `magel_macro.cpp`, `magel_macro_controls.cpp`, `magel_package.cpp`
-and `magel_report.cpp`. AST declarations live in `magel_ast.hpp`. The authoritative grammar assembles the
-symbol-registration and program-lowering fragments in `semantics/` into the generated parser. The language
-service uses `lsp/macro_analyzer`, `lsp/language_server` and `lsp/protocol_types`; the compiler generator is in `generator/`.
+Generic expansion, closures, project manifests and diagnostics compile through `magel_generic.cpp`,
+`magel_lambda.cpp`, `magel_generic_closure.cpp`, `magel_package.cpp` and `magel_report.cpp`.
+`macro/` independently compiles hygienic binding, structural substitution, registration, regex matching,
+original fragments and editor header models. `syntax/` provides ordinary source grouping and constant
+expressions; `editor/` writes real compiler analysis. AST declarations live in `magel_ast.hpp`.
+The authoritative grammar assembles registration, hygienic expansion, generic closures and lowering
+from `semantics/`. Language services live in `lsp/`; the compiler generator lives in `generator/`.
 
 After grammar changes, run `sh gen.sh`, then `make -j4`. Compiler-generated `.d` files track actual include
 relationships for ordinary C++ changes. `make` automatically checks standard-library, glue and manual inputs;

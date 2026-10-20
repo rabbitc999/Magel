@@ -1,35 +1,4 @@
-/* #derive 在语义入口读取字段元数据，把纯文本模板展开后交给同一生成解析器。 */
-
-/**
- * @brief 运行派生方法的纯文本模板，不向宏引擎暴露类型或 AST。
- * @param definition 模板定义与调用文本。
- * @param output 接收展开后的普通 Magel 方法源码。
- * @retval 展开成功返回 true，失败保留编译诊断。
- */
-bool ExpandDeriveTemplate(const Memory::String &definition, Memory::String &output)
-{
-    preprocess::Result result;
-    result.text = definition;
-    Memory::String error;
-    if (!magel_macro::run(result, error)) return Fail("#derive 模板展开失败：" + error);
-    output += result.text;
-    return true;
-}
-
-/**
- * @brief 把每字段或每变体的源码片段作为独立宏尾参传入。
- * @param macro 模板名。
- * @param owner 被派生的类型名。
- * @param pieces 每字段或每变体的原始代码片段。
- * @retval 完整的文本宏调用。
- */
-Memory::String DeriveInvocation(const Memory::String &macro, const Memory::String &owner,
-                                const Memory::Vector<Memory::String> &pieces)
-{
-    Memory::String result = "$" + macro + "(" + owner;
-    for (const auto &piece : pieces) result += ", " + piece;
-    return result + ")\n";
-}
+/* #derive 按语义字段元数据生成受限方法，再交给同一生成解析器。 */
 
 /**
  * @brief 生成字段的哈希表达式，嵌套结构体只调用其已声明的 Hash 方法。
@@ -83,7 +52,7 @@ Memory::String DerivedVariantPattern(const Memory::String &owner, const MNode &v
 }
 
 /**
- * @brief 通过已有 $for/$concat 模板生成结构体或枚举的字段方法。
+ * @brief 按字段与变体元数据生成结构体或枚举的方法，不依赖语言宏引擎。
  * @param declaration 类型声明的语法节点。
  * @param trait Equal、Hash 或 Clone。
  * @param output 接收方法源码。
@@ -108,25 +77,24 @@ bool DerivedMethodSource(const MNode &declaration, const Memory::String &trait, 
                 pieces.push_back("__magel_clone." + field.s + " = " + DerivedCloneExpression(T(field.type), "self." + field.s) + ";");
         }
         if (trait == "Equal")
-            return ExpandDeriveTemplate(
-                "$macro __magel_derive_equal(Owner, ...Fields)\n"
-                "bool $concat(left, Equal)(Owner other) { return true\n"
-                "$for field in Fields\n && (self.field == other.field)\n$end_for\n; }\n$end_macro\n"
-                    + DeriveInvocation("__magel_derive_equal", owner, pieces),
-                output);
-        if (trait == "Hash")
-            return ExpandDeriveTemplate(
-                "$macro __magel_derive_hash(Owner, ...Fields)\n"
-                "uint64 hash(Owner value) { uint64 __magel_hash = 14695981039346656037u;\n"
-                "$for field in Fields\nfield\n$end_for\nreturn __magel_hash; }\n$end_macro\n"
-                    + DeriveInvocation("__magel_derive_hash", owner, pieces),
-                output);
-        return ExpandDeriveTemplate(
-            "$macro __magel_derive_clone(Owner, ...Fields)\n"
-            "Owner clone() { Owner __magel_clone;\n"
-            "$for field in Fields\nfield\n$end_for\nreturn __magel_clone; }\n$end_macro\n"
-                + DeriveInvocation("__magel_derive_clone", owner, pieces),
-            output);
+        {
+            output += "bool leftEqual(" + owner + " other) { return true";
+            for (const auto &field : pieces) output += " && (self." + field + " == other." + field + ")";
+            output += "; }\n";
+        }
+        else if (trait == "Hash")
+        {
+            output += "uint64 hash(" + owner + " value) { uint64 __magel_hash = 14695981039346656037u;\n";
+            for (const auto &piece : pieces) output += piece + "\n";
+            output += "return __magel_hash; }\n";
+        }
+        else
+        {
+            output += owner + " clone() { " + owner + " __magel_clone;\n";
+            for (const auto &piece : pieces) output += piece + "\n";
+            output += "return __magel_clone; }\n";
+        }
+        return true;
     }
     std::size_t tag = 0;
     for (const auto variantId : N(declaration.kids[0]).kids)
@@ -169,13 +137,13 @@ bool DerivedMethodSource(const MNode &declaration, const Memory::String &trait, 
         }
         pieces.push_back(branch + " }");
     }
-    const auto signature = trait == "Equal" ? "bool leftEqual(Owner other)" : trait == "Hash" ? "uint64 hash(Owner value)" :
-                                                                                                "Owner clone()";
-    return ExpandDeriveTemplate(
-        "$macro __magel_derive_enum(Owner, ...Variants)\n" + Memory::String(signature) + " { match (" + (trait == "Hash" ? Memory::String("value") : Memory::String("self")) + ") {\n"
-                                                                                                                                                                               "$for variant in Variants\nvariant\n$end_for\n} }\n$end_macro\n"
-            + DeriveInvocation("__magel_derive_enum", owner, pieces),
-        output);
+    const auto signature = trait == "Equal" ? "bool leftEqual(" + owner + " other)" :
+                           trait == "Hash"  ? "uint64 hash(" + owner + " value)" :
+                                              owner + " clone()";
+    output += signature + " { match (" + (trait == "Hash" ? Memory::String("value") : Memory::String("self")) + ") {\n";
+    for (const auto &piece : pieces) output += piece + "\n";
+    output += "} }\n";
+    return true;
 }
 
 /**
@@ -211,7 +179,7 @@ uint64 __magel_derive_hash_float(float64 value) {
 /**
  * @brief 在语义分析前将派生请求展开为普通方法及具体接口声明。
  * @retval 所有模板、具体接口与生成代码均有效时返回 true。
- * @note 只有派生语义层调用正常生成解析器；纯文本宏引擎不调用 Parser。
+ * @note 派生过程只生成 Equal、Hash、Clone 的受限方法，不执行用户宏。
  */
 bool ExpandDerivedDeclarations()
 {

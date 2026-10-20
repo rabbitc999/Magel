@@ -996,6 +996,7 @@ bool WriteArtifacts(const Memory::String &prefix, const simple_ast::CodegenResul
  */
 void ResetState()
 {
+    magel_editor::compilerAnalysis.resetPass();
     g_diagnostics.clear();
     g_warnings.clear();
     g_borrowFacts.clear();

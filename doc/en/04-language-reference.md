@@ -653,39 +653,24 @@ Rules and restrictions (escape checking, `MGL1204`): see
 
 ## 14. Preprocessing and macros
 
+`%if`, `%elif`, `%else` and `%endif` control conditional source inclusion. Use `import` for modules.
+
+`$macro A` requires `$A`; `$macro A()` requires `$A()`. Parameter groups are explicit and match the definition. The generated parser builds macro ASTs; semantic analysis performs hygienic substitution and type inference before quadruple generation. Template locals are hygienic, arguments keep caller bindings, and helpers resolve at the definition. No automatic parentheses or numbered temporary names are used.
+
 ```magel
-%define DETAIL 1
-$macro SQUARE(x)
-((x) * (x))
+$macro ADD<T:a>(a, b)
+cast<T>(a + b)
 $end_macro
+int64 main() {
+    int32 value = 1;
+    int32 result = $ADD(value, 2);
+    return 0;
+}
 ```
 
-| Directive | Effect |
-| --- | --- |
-| `%if` / `%elif` / `%else` / `%endif` | conditional compilation; inactive branches are dropped wholesale |
-| `%ifndef` / `%ifdef` | branch on whether a symbol exists |
-| `%define` / `%undefine` | define / remove a symbol (same as command-line `-D NAME`) |
-| `%error` / `%warning` | error / warning inside an active branch |
-| `$macro N(x) … $end_macro` | function-like macro, called `$N(…)` |
-| `$macro N((x), ...(args)) … $end_macro` | explicitly group x and each variadic argument in an ordinary macro |
-| `$macro expr N(x, ...args) … $end_macro` | group every argument and the full result; redundant `(x)` and `...(args)` annotations are allowed |
-| `$macro N() … $end_macro` | object macro, called `$N` |
-| `$stringify(…)` / `$concat(a,b)` / `$line` | macro-body helpers |
-| `$delete_macro N` | remove a macro |
+`<T:a>` infers from the argument's static type; `<T>` infers from the expected result type. Explicit types take priority. Square, round and curly groups match strictly in order. `...rest` / `..rest` capture a variadic tail, traversed by `$for`. `$match x is expr` supports exactly `expr`, `ident`, `type`, `block` and `stmt`, with ordered `$else is` branches and `$end_match`. `$regex x is "pattern"` uses complete ECMAScript matching of original text and ends with `$end_regex`. Unselected output is excluded from final semantic checks.
 
-Shared source is organized with `module` and `import`. Text inclusion directives are rejected; conditional compilation keeps each module as a separate unit.
-
-Points to remember:
-
-- Definition annotations do not change calls: `$N(x + 1, y * 2)`. Bare parameters in ordinary macros retain textual substitution. `$replace` follows the same rules.
-- The old `!` definition prefix, backtick parameter annotations and `$!` calls are removed and rejected. `$concat` and `$stringify` always read the original argument text.
-- Directive lines and dropped lines are replaced by **blank lines**, so line numbers after
-  preprocessing match the source one-for-one and errors point at the file you actually wrote.
-- A directive counts only at **line start**; a `%` inside a string is not a directive (write `%%` for
-  a literal percent).
-- Symbols from `%define` are for **conditional compilation only**; they are not expression constants.
-
----
+`$stringify(x)` reads original spelling; `$concat(a, b)` produces identifiers only. `$line`, `$file` and `$module` preserve origins. `$replace A(x) x + 1` is a single-line definition. See [hygienic macros](24-literals-operators-macros.md#compile-time-hygienic-ast-macros).
 
 ## 15. Annotations and reflection
 
@@ -997,18 +982,18 @@ A standalone brace statement remains an ordinary scope even with a trailing semi
 A hygienic variadic macro can build a list:
 
 ```magel
-$macro vec(type, ...values)
+$macro vec(T, ...values)
 {
-    List<type> $0;
+    List<T> result;
 $for item in values
-    { type $1 = item; $0.push($1); }
+    { T itemValue = item; result.push(itemValue); }
 $end_for
-    yield $0;
+    yield result;
 }
 $end_macro
 ```
 
-Use `List<int32> values = $vec(int32, 1, 2, 3);` or `values = $vec(int32, 4, 5);`. `$0` and `$1` are hygienic names. Each argument is evaluated once, received using the requested type and appended in order with `push`. No elements produces an empty list. See the runnable [block example](../../example/samples/block_expression.mgl) and [output example](../../example/samples/print_interpolation.mgl).
+Use `List<int32> values = $vec(int32, 1, 2, 3);` or `values = $vec(int32, 4, 5);`. Ordinary local declarations are hygienic. Each argument is evaluated once, received using the requested type and appended in order with `push`. No elements produces an empty list. See the runnable [block example](../../example/samples/block_expression.mgl) and [output example](../../example/samples/print_interpolation.mgl).
 
 Use `fn` for anonymous functions; the old `lambda` syntax has been removed: `auto add = fn(int32 x) { x + 1 };`. An explicit result type precedes `fn`: `auto add = int32 fn(int32 x) { return x + 1; };`. Capture modes and lists use `fn`. `int32 fn(int32)` still denotes a function type.
 
@@ -1045,4 +1030,4 @@ Statements accept `int64 add(int64 x) { return x + 1; }` and a local function bi
 
 ## Field derivation
 
-`#derive(Equal, Hash, Clone)` before a struct or enum uses existing text macros to generate field-based methods, followed by normal semantic checking and quadruple lowering. Nested fields must implement each requested interface. Drop and Closeable derivation is forbidden. Generic methods are generated after instantiation. See [derivation rules](28-declaration-sugars.md).
+`#derive(Equal, Hash, Clone)` before a struct or enum uses semantic field metadata to generate field-based methods, followed by normal semantic checking and quadruple lowering. Nested fields must implement each requested interface. Drop and Closeable derivation is forbidden. Generic methods are generated after instantiation. See [derivation rules](28-declaration-sugars.md).

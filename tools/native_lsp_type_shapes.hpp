@@ -139,7 +139,7 @@ std::string lspTypeDescription(const std::string &type, unsigned depth = 0)
     {
         Memory::Vector<Memory::String> arguments;
         size_t end = open;
-        if (magel_macro::groupArguments(type.c_str(), open, arguments, end))
+        if (magel_syntax::groupArguments(type.c_str(), open, arguments, end))
             for (size_t i = 0; i < arguments.size(); ++i) description += "\n\n泛型实参 " + std::to_string(i + 1) + "：`" + trim(arguments[i].c_str()) + "`";
     }
     return description;

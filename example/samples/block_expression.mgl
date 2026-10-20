@@ -1,11 +1,11 @@
 /* 块表达式与卫生变长宏：每个元素只求值一次，push 按顺序追加副本。 */
-$macro vec(type, ...values)
+$macro vec(T, ...values)
 {
-    List<type> $0;
+    List<T> valuesResult;
 $for item in values
-    { type $1 = item; $0.push($1); }
+    { T itemValue = item; valuesResult.push(itemValue); }
 $end_for
-    yield ($0);
+    yield (valuesResult);
 }
 $end_macro
 

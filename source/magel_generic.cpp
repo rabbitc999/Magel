@@ -7,7 +7,8 @@
 #include <utility>
 #include <vector>
 #include "magel_generic.hpp"
-#include "magel_macro.hpp"
+#include "syntax/source_text.hpp"
+#include "syntax/constant_expression.hpp"
 #include "magel_lambda.hpp"
 
 namespace magel_generic
@@ -368,7 +369,7 @@ bool collectGenericDerives(Memory::String &source, Memory::Map<Memory::String, M
         skipSpace(mask, open);
         Memory::Vector<Memory::String> traits;
         std::size_t end = open;
-        if (open >= mask.size() || mask[open] != '(' || !magel_macro::groupArguments(mask, open, traits, end)) continue;
+        if (open >= mask.size() || mask[open] != '(' || !magel_syntax::groupArguments(mask, open, traits, end)) continue;
         auto type = end;
         skipSpace(mask, type);
         const bool structure = wordAt(mask, type, "struct");
@@ -520,7 +521,7 @@ void normalizeGenericSyntax(Memory::String &source)
  * @param source 已完成单态化的源码；仅插入内部标点，不改变换行。
  * @return 无。
  */
-void markContainerTypeArguments(Memory::String &source)
+void markContainerTypeArguments(Memory::String &source, bool typeFragment)
 {
     Memory::Set<std::size_t> angles;
     for (std::size_t at = 0; at < source.size();)
@@ -561,7 +562,13 @@ void markContainerTypeArguments(Memory::String &source)
         auto start = at++;
         while (at < source.size() && identPart(source[at])) ++at;
         const auto name = source.substr(start, at - start);
-        if (name != "List" && name != "Set" && name != "Map") continue;
+        if (name.empty() || (!typeFragment && !std::isupper(static_cast<unsigned char>(name[0])) && !session.generics.count(name))) continue;
+        auto previous = start;
+        while (previous && std::isspace(static_cast<unsigned char>(source[previous - 1]))) --previous;
+        if (previous && source[previous - 1] == '$') continue;
+        auto keyword = previous;
+        while (keyword && identPart(source[keyword - 1])) --keyword;
+        if (keyword && source[keyword - 1] == '$' && (source.substr(keyword, previous - keyword) == "macro" || source.substr(keyword, previous - keyword) == "replace")) continue;
         auto open = at;
         skipSpace(source, open);
         if (open >= source.size() || source[open] != '<') continue;
@@ -875,7 +882,7 @@ void collectInterfaces(const Memory::String &source,
             skipSpace(text, open);
             auto end = open;
             derived.clear();
-            if (open < text.size() && text[open] == '(' && magel_macro::groupArguments(text, open, derived, end)) at = end - 1;
+            if (open < text.size() && text[open] == '(' && magel_syntax::groupArguments(text, open, derived, end)) at = end - 1;
             continue;
         }
         if (wordAt(text, at, "module"))
@@ -1404,7 +1411,7 @@ bool rewrite(Memory::String &text, const Memory::Map<Memory::String, Generic> &g
             const auto &parameter = generic->second.params[index];
             if (!parameter.constant) return true;
             Memory::String problem;
-            const auto value = magel_macro::evaluateCondition(argument, constants, problem);
+            const auto value = magel_syntax::evaluateConstant(argument, constants, problem);
             if (!problem.empty() || value.string)
             {
                 error = name + " 的 const 泛型实参 " + parameter.name + " 必须是 int64 编译期常量：" + (problem.empty() ? argument : problem);

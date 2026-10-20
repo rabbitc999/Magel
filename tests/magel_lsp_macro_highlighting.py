@@ -1,4 +1,4 @@
-"""验证真实 LSP 对宏内部指令、文本形参、循环变量和整数槽的独立着色。"""
+"""验证真实 LSP 对宏内部指令、文本形参、循环变量和卫生局部变量的独立着色。"""
 from pathlib import Path
 import os
 import tempfile
@@ -22,9 +22,8 @@ def main():
     print("{} ", var);
     $end_for
     println("]");
-    int64 $0 = 1;
-    int64 $10 = $0;
-    int64 $-123456789012345678901234567890 = $10;
+    int64 temporary = 1;
+    int64 next = temporary;
     // $for var in A $end_macro
     println("$for var in A $end_macro");
 }
@@ -66,8 +65,6 @@ int64 main(){int64 A=1;int64 var=2;$example(A)(var);return A+var;}
             assert token('B\n')[1:] == ('parameter', 2)
             assert token('$end_for')[1] == 'keyword'
             assert token('$end_macro', text.index('\n$end_macro'))[1] == 'keyword'
-            for slot in ['$0', '$10', '$-123456789012345678901234567890']:
-                assert token(slot) == (len(slot), 'variable', 2), (slot, token(slot))
             assert token('// $for')[1] == 'comment'
             assert token('"$for var')[1] == 'string'
             outside = text.index('int64 main')
@@ -77,7 +74,7 @@ int64 main(){int64 A=1;int64 var=2;$example(A)(var);return A+var;}
             assert not (root / 'main.mgl').exists()
         finally:
             server.close()
-    print('原生语义着色的宏指令、独立参数组、循环绑定、整数槽及宏外作用域恢复通过。')
+    print('原生语义着色的宏指令、独立参数组、循环绑定、卫生局部变量及宏外作用域恢复通过。')
 
 
 if __name__ == '__main__':

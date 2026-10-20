@@ -127,22 +127,22 @@ def main():
             help = query('signatureHelp', mismatch, mismatch.index('[3,2,4,1]') + 3)
             assert '期待 ()' in help['signatures'][0]['documentation']['value'], help
             preview = server.query('magel/expandMacro', dict(textDocument=dict(uri=uri)))
-            assert any('第 2 组期待 ()' in message for message in preview['diagnostics']), preview
-            slots = '''$macro slots()
+            assert any('参数组' in message for message in preview['diagnostics']), preview
+            hygienic = """$macro make()
     {
-        int64 $0 = 1;
-        int64 $10 = $0;
-        int64 $123456789012345678901234567890 = $10;
-        yield ($123456789012345678901234567890);
+        int64 temporary = 1;
+        int64 next = temporary;
+        yield next;
     }
     $end_macro
-    int64 main(){int64 value=$slots; return 0;}
-    '''
-            open_text(slots)
+    int64 main(){int64 value=$make(); return 0;}
+    """
+            open_text(hygienic)
             preview = server.query('magel/expandMacro', dict(textDocument=dict(uri=uri)))
             assert not preview['diagnostics'], preview
-            assert {t['slot'] for t in preview['temporaries']} == {'$0', '$10', '$123456789012345678901234567890'}, preview
-            assert {t['definition']['range']['start']['line'] for t in preview['temporaries']} == {2, 3, 4}, preview
+            assert preview['format'] == 'json', preview
+            assert 'temporary' in preview['text'] and 'bindingIdentity' not in preview['text'], preview
+            assert 'temporaries' not in preview, preview
 
             text = '''int64 inc(int64 x) { return x + 1; }
     int64 main() {

@@ -14007,7 +14007,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1705,
+    "line": 1712,
     "page": "std-lang.md",
     "anchor": "api-74"
   },
@@ -14053,7 +14053,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1713,
+    "line": 1720,
     "page": "std-lang.md",
     "anchor": "api-75"
   },
@@ -14091,7 +14091,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1728,
+    "line": 1735,
     "page": "std-lang.md",
     "anchor": "api-76"
   },
@@ -14118,7 +14118,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1935,
+    "line": 1942,
     "page": "std-lang.md",
     "anchor": "api-77"
   },
@@ -14143,7 +14143,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1943,
+    "line": 1950,
     "page": "std-lang.md",
     "anchor": "api-78"
   },
@@ -14723,7 +14723,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1642,
+    "line": 1649,
     "page": "std-lang.md",
     "anchor": "api-97"
   },
@@ -14755,7 +14755,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1648,
+    "line": 1655,
     "page": "std-lang.md",
     "anchor": "api-98"
   },
@@ -31785,7 +31785,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1756,
+    "line": 1763,
     "page": "std-algorithms.md",
     "anchor": "api-0"
   },
@@ -31823,7 +31823,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1765,
+    "line": 1772,
     "page": "std-algorithms.md",
     "anchor": "api-1"
   },
@@ -31867,7 +31867,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1785,
+    "line": 1792,
     "page": "std-algorithms.md",
     "anchor": "api-2"
   },
@@ -31905,7 +31905,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1799,
+    "line": 1806,
     "page": "std-algorithms.md",
     "anchor": "api-3"
   },
@@ -31943,7 +31943,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1829,
+    "line": 1836,
     "page": "std-algorithms.md",
     "anchor": "api-4"
   },
@@ -31981,7 +31981,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1834,
+    "line": 1841,
     "page": "std-algorithms.md",
     "anchor": "api-5"
   },
@@ -32025,7 +32025,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1847,
+    "line": 1854,
     "page": "std-algorithms.md",
     "anchor": "api-6"
   },
@@ -32069,7 +32069,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1857,
+    "line": 1864,
     "page": "std-algorithms.md",
     "anchor": "api-7"
   },
@@ -32107,7 +32107,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1869,
+    "line": 1876,
     "page": "std-algorithms.md",
     "anchor": "api-8"
   },
@@ -32145,7 +32145,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1881,
+    "line": 1888,
     "page": "std-algorithms.md",
     "anchor": "api-9"
   },
@@ -32189,7 +32189,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1893,
+    "line": 1900,
     "page": "std-algorithms.md",
     "anchor": "api-10"
   },
@@ -32229,7 +32229,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1904,
+    "line": 1911,
     "page": "std-algorithms.md",
     "anchor": "api-11"
   },

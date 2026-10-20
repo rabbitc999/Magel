@@ -9,7 +9,7 @@ int64 main(){
     text=f"{if(false){next()}else{4}} {match(f){7=>{5}_=>{6}}}";assert(text=="4 5");assert(counter==2);
     text=f"{format("{}", f)} {"quote"}";assert(text=="7 quote");
     assert($ECHO(f"hello {3}")=="f\"hello {3}\"");assert($stringify(f"hello {3}")=="f\"hello {3}\"");
-    String plain=$f"suffix";assert(plain=="prefixsuffix");
+    String plain=$f + "suffix";assert(plain=="prefixsuffix");
     String multiline=f"first
 second";assert(multiline=="first\nsecond");
     println("interpolation ok");return 0;

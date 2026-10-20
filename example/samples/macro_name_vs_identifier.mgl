@@ -6,7 +6,7 @@
  * 两者互不干扰 —— 这是 `$` 调用语法相对「裸名调用」最关键的好处。
  */
 
-$replace expr ADD((a), (b)) a + b
+$replace ADD(a, b) a + b
 
 int64 ADD = 1;   /* 和宏同名的变量，不会被宏吃掉 */
 

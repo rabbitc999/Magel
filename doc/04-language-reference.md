@@ -657,37 +657,24 @@ owned.drop();                  // 释放
 
 ## 14. 预处理与宏
 
+`%if`、`%elif`、`%else`、`%endif` 控制源码条件编译。标准模块用 `import` 导入。
+
+`$macro A` 使用 `$A`，`$macro A()` 使用 `$A()`，有参数的定义使用相同的显式参数组。生成解析器建立宏 AST，语义分析进行卫生替换和类型推导，四元式生成前完成展开。普通模板局部声明自动卫生，实参保留调用者绑定，辅助名字在定义处查找。无需自动括号，也不使用编号临时变量。
+
 ```magel
-%define DETAIL 1
-$macro SQUARE(x)
-((x) * (x))
+$macro ADD<T:a>(a, b)
+cast<T>(a + b)
 $end_macro
+int64 main() {
+    int32 value = 1;
+    int32 result = $ADD(value, 2);
+    return 0;
+}
 ```
 
-| 指令 | 作用 |
-| --- | --- |
-| `%if` / `%elif` / `%else` / `%endif` | 条件编译，不活跃的分支整块丢弃 |
-| `%ifndef` / `%ifdef` | 按符号是否存在分支 |
-| `%define` / `%undefine` | 定义 / 取消符号（等价命令行 `-D NAME`） |
-| `%error` / `%warning` | 在活跃分支里报错 / 报警告 |
-| `$macro N(x) … $end_macro` | 定义函数式宏，调用 `$N(…)` |
-| `$macro N((x), ...(args)) … $end_macro` | 普通宏显式保护 x 与每个变参元素 |
-| `$macro expr N(x, ...args) … $end_macro` | 默认保护全部实参及整个展开结果，允许 `(x)`、`...(args)` 冗余标注 |
-| `$macro N() … $end_macro` | 对象宏，调用 `$N` |
-| `$stringify(…)` / `$concat(a,b)` / `$line` | 宏内工具 |
-| `$delete_macro N` | 取消宏 |
+`<T:a>` 从实参静态类型推导；`<T>` 从外层期望结果类型推导，显式类型优先。`[]`、`()`、`{}` 是严格有序参数组，`...rest` / `..rest` 是末尾变长形参，`$for` 遍历片段列表。`$match x is expr` 支持 `expr`、`ident`、`type`、`block`、`stmt`，`$else is` 顺序选分支，`$end_match` 结束。`$regex x is "模式"` 使用完整 ECMAScript 正则匹配原文，`$end_regex` 结束。未选分支不进入最终语义检查。
 
-共享源码通过 `module` 与 `import` 组织；文本包含指令会报错，条件编译保持各模块独立。
-
-要点：
-
-- 定义端的括号标注不改变调用形式：`$N(x + 1, y * 2)`。普通宏的裸参数保持原样替换；`$replace` 使用相同规则。
-- 旧宏名前 `!`、形参反引号与调用点 `$!` 均已废除，出现时直接报错。`$concat` 与 `$stringify` 始终读取原始实参。
-- 指令行与被丢弃的行用**空行占位**，预处理后行号与源文件一一对应，报错指向真正写错的地方。
-- 指令只在**行首**才算；字符串里的 `%` 不是指令（要打百分号写 `%%`）。
-- `%define` 的符号**只用于条件编译**，不能当表达式里的常量。
-
----
+`$stringify(x)` 读取原文，`$concat(a, b)` 仅产生标识符，`$line` / `$file` / `$module` 保留来源。`$replace A(x) x + 1` 为单行宏。完整规则与可运行示例见 [卫生宏](24-literals-operators-macros.md#编译期卫生-ast-宏)。
 
 ## 15. 注解与反射
 
@@ -980,18 +967,18 @@ int64 a = { int64 b = { yield 1; }; yield b + 1; }; // a == 2
 卫生变长宏可使用块表达式构造列表：
 
 ```magel
-$macro vec(type, ...values)
+$macro vec(T, ...values)
 {
-    List<type> $0;
+    List<T> result;
 $for item in values
-    { type $1 = item; $0.push($1); }
+    { T itemValue = item; result.push(itemValue); }
 $end_for
-    yield $0;
+    yield result;
 }
 $end_macro
 ```
 
-调用 `List<int32> values = $vec(int32, 1, 2, 3);` 或 `values = $vec(int32, 4, 5);`。`$0`、`$1` 为宏展开产生的卫生名称；局部暂存按指定类型接收实参，每个元素只求值一次，再通过 `push` 顺序追加。省略元素得到空列表。完整可运行测试见 [块表达式样例](../example/samples/block_expression.mgl)与[插值输出样例](../example/samples/print_interpolation.mgl)。
+调用 `List<int32> values = $vec(int32, 1, 2, 3);` 或 `values = $vec(int32, 4, 5);`。普通局部声明自动卫生；局部暂存按指定类型接收实参，每个元素只求值一次，再通过 `push` 顺序追加。省略元素得到空列表。完整可运行测试见 [块表达式样例](../example/samples/block_expression.mgl)与[插值输出样例](../example/samples/print_interpolation.mgl)。
 
 匿名函数使用 `fn`，旧 `lambda` 语法已移除：`auto add = fn(int32 x) { x + 1 };`，显式返回类型写 `auto add = int32 fn(int32 x) { return x + 1; };`。`fn const`、`fn mut`、`fn copy`、`fn move` 及显式捕获列表沿用匿名函数规则；`int32 fn(int32)` 仍表示函数类型。
 
@@ -1027,4 +1014,4 @@ $end_macro
 
 ## #derive 字段派生
 
-在 struct 或 enum 前写 `#derive(Equal, Hash, Clone)`，通过现有文本宏遍历字段生成接口方法，再由通常的语义检查与四元式降级处理。嵌套字段必须实现对应接口，禁止派生 Drop 或 Closeable。泛型声明在实例化后生成方法，见[派生规则](28-declaration-sugars.md)。
+在 struct 或 enum 前写 `#derive(Equal, Hash, Clone)`，通过语义字段元数据生成受限接口方法，再由通常的语义检查与四元式降级处理。嵌套字段必须实现对应接口，禁止派生 Drop 或 Closeable。泛型声明在实例化后生成方法，见[派生规则](28-declaration-sugars.md)。

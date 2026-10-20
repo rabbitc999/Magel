@@ -54,9 +54,9 @@ def main():
         keyword=query('keyword','break')['keyword']
         assert 'break level' in keyword['documentation'] and 'yield 值;' in keyword['documentation'] and 'BREAK' in keyword['syntax'],keyword
         macro = json.loads(run('macro', '--json').stdout)['keyword']
-        assert macro['name'] == 'macro' and '..Types' in macro['syntax']
-        assert all(text in macro['documentation'] for text in ('跨任意多行', '宏Token分组不匹配', '$end_macro', '>>'))
-        assert '多括号' in run('macro').stdout
+        assert macro['name'] == 'macro' and '<T:arg>' in macro['syntax']
+        assert all(text in macro['documentation'] for text in ('卫生', 'AST', '$end_macro', 'ECMAScript'))
+        assert '卫生' in run('macro').stdout
         assert 'struct' in query('keyword')['keywords']
         assert '__typeTag' not in query('keyword')['keywords']
         assert 'break level' in query('keyword','BREAK')['keyword']['documentation']

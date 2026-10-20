@@ -74,7 +74,7 @@ void CaptureBorrowExpression(int id, const std::shared_ptr<MType> &type)
         if (node.kind == MNode::Block || node.kind == MNode::FuncDef) return;
         if (node.kind == MNode::Var)
         {
-            const auto variable = FindIn(node.module, node.s);
+            const auto variable = FindNodeVar(node);
             if (variable)
             {
                 g_borrowFlowCapture->variables[current] = { variable->emitted, {} };

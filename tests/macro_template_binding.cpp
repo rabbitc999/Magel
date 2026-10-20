@@ -56,8 +56,8 @@ int main()
     const int value = add(MNode::Int, "", {});
     nodes[value].i = 42;
     magel_macro::AstSubstitution substitution(nodes);
-    const int expanded = substitution.instantiate(bound.root, { { identity, value } }, 1, error);
-    if (expanded < 0 || nodes[nodes[expanded].kids[1]].kind != MNode::Int) return 7;
+    const int expanded = substitution.instantiate(nodes[bound.root].kids[1], { { identity, value } }, 1, error);
+    if (expanded < 0 || nodes[expanded].kind != MNode::Int) return 7;
     magel_macro::BoundTemplate second;
     if (!binder.bind(definition, 0, second, error) || second.parameters.at("x") == identity) return 8;
     nodes[parameters].kids.push_back(parameter);

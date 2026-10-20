@@ -1,20 +1,20 @@
-/* expr 默认保护所有实参，括号标注可冗余，也可与裸形参混用。 */
-$macro expr ADD(a, b)
+/* 宏模板与表达式参数按 AST 结构替换。 */
+$macro ADD(a, b)
 a + b
 $end_macro
-$macro expr EXPLICIT((a), (b))
+$macro EXPLICIT(a, b)
 a + b
 $end_macro
-$replace expr MIXED(a, (b)) a + b
-$macro PRODUCT((a), (b))
+$replace MIXED(a, b) a + b
+$macro PRODUCT(a, b)
 a * b
 $end_macro
-$macro PRINT(...(args))
+$macro PRINT(...args)
 $for item in args
 std::lang::println("{}", item * item);
 $end_for
 $end_macro
-$macro expr FIRST(a, b)
+$macro FIRST(a, b)
 if (true) { a } else { b }
 $end_macro
 
@@ -28,6 +28,6 @@ int64 main() {
     3 * $MIXED(1 + 2, 4 * 2),
         $PRODUCT(1 + 2, 4 + 1),
         $FIRST(values[0] + 1, 5 * 2));
-    $PRINT(1 + 2, $ADD(2, 3))
+    $PRINT(1 + 2, $ADD(2, 3));
     return 0;
 }

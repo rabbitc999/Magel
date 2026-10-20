@@ -1,1 +1,1 @@
-magel: 前处理：example/samples-error/macro_variadic_declaration.mgl 第 1 行：形参表写法不对：`$macro NAME(a, b)` 或 `$macro NAME(x, ...rest)`
+magel: example/samples-error/macro_variadic_declaration.mgl 第 1 行第 1 列：变长宏形参必须位于参数组末尾

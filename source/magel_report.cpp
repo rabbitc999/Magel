@@ -417,6 +417,7 @@ bool isWordByte(unsigned char c)
 std::size_t anchorColumn(const std::string &raw, std::size_t start)
 {
     if (start < raw.size() && isWordByte(static_cast<unsigned char>(raw[start]))) return start;
+    if (start + 1u < raw.size() && raw[start] == '$' && isWordByte(static_cast<unsigned char>(raw[start + 1u]))) return start;
     for (std::size_t at = 0u; at < raw.size(); ++at)
         if (isWordByte(static_cast<unsigned char>(raw[at]))) return at;
     return start;
@@ -434,6 +435,7 @@ std::size_t anchorColumn(const std::string &raw, std::size_t start)
 std::size_t wordExtentAt(const std::string &raw, std::size_t start)
 {
     std::size_t end = start;
+    if (end + 1u < raw.size() && raw[end] == '$' && isWordByte(static_cast<unsigned char>(raw[end + 1u]))) ++end;
     while (end < raw.size() && isWordByte(static_cast<unsigned char>(raw[end]))) ++end;
     return end > start ? end - start : 1u;
 }

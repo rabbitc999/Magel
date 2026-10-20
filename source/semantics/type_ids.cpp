@@ -61,6 +61,7 @@ struct MFunctionDecl
     Memory::String label;  /* 四元式标签 */
     MFuncSig signature;
     int bodyId = -1;          /* 函数体（Block 节点） */
+    int captureSyntax = -1;   ///< AST 闭包的显式捕获项，保存片段替换后的绑定身份。
     bool external = false;    /* 只有签名；实现从 stackvm::NativeRegistry 取得 */
     bool moduleLocal = false; /* `inline`：只允许声明模块内部调用，不导出。 */
     bool superseded = false;  /* 同名同签名又被定义了一次：这一条不降级（后面的覆盖前面的） */
@@ -148,11 +149,20 @@ struct MVar
     bool elementReference = false; /* foreach 隐藏引用，源码变量自动解引用。 */
     Memory::String elementList{};  /* 原生列表元素以容器和索引作为可写引用。 */
     Memory::String elementIndex{};
-    int constantExpression = -1;      ///< 可按需求值的 const 初始化式；普通变量不登记。
-    std::size_t borrowDepth = 0;      ///< 借用来源的最短作用域；0 为全局，1 为调用方，2 起为函数局部。
-    bool allocatedReference = false;  ///< 显式 new 的引用存储可接管调用方借用，仍禁止保存函数局部来源。
-    Memory::String borrowOwner{};     ///< 直接引用别名对应的局部拥有值，用于回传字段及容器写入的来源。
+    int constantExpression = -1;        ///< 可按需求值的 const 初始化式；普通变量不登记。
+    std::size_t borrowDepth = 0;        ///< 借用来源的最短作用域；0 为全局，1 为调用方，2 起为函数局部。
+    bool allocatedReference = false;    ///< 显式 new 的引用存储可接管调用方借用，仍禁止保存函数局部来源。
+    Memory::String borrowOwner{};       ///< 直接引用别名对应的局部拥有值，用于回传字段及容器写入的来源。
+    std::uint32_t bindingIdentity = 0;  ///< 原声明的稳定绑定身份，避免宏导出名字捕获既有实参。
 };
+
+bool g_macroSyntaxFiltering = false;
+std::unique_ptr<magel_macro::HygieneResolver> g_macroResolver;
+std::unique_ptr<magel_macro::Registry> g_macroRegistry;
+int g_macroDiagnosticFrame = -1;
+std::size_t g_macroSemanticDepth = 0;
+Memory::Set<const MNode *> g_macroActiveNodes;
+Memory::Set<const MType *> g_macroActiveTypes;
 
 Memory::Map<Memory::String, Memory::Set<Memory::String>> g_moduleImports;  ///< 模块可省略限定的直接导入。
 Memory::Map<Memory::String, MStructDef> g_structs;                         /* struct 名 → 定义 */
@@ -384,7 +394,7 @@ bool IsTupleType(const std::shared_ptr<MType> &type)
 }
 
 /**
- * @brief 为元组类型确保存在对应的内部定义。
+ * @brief 递归登记元组及其嵌套元素的内部定义，供后续字段布局检查使用。
  * @param type 类型描述。
  */
 void EnsureTupleDefinition(const std::shared_ptr<MType> &type)
@@ -394,10 +404,12 @@ void EnsureTupleDefinition(const std::shared_ptr<MType> &type)
     if (known == g_tupleElements.end())
         known = g_tupleElements.emplace(type->name, type->paramTypes).first;
     if (g_structs.count(type->name) != 0u) return;
+    const auto elements = known->second;
     MStructDef definition;
-    for (std::size_t index = 0; index < known->second.size(); ++index)
-        definition.fields.push_back(MField{ "__" + Memory::toString(index), known->second[index] });
+    for (std::size_t index = 0; index < elements.size(); ++index)
+        definition.fields.push_back(MField{ "__" + Memory::toString(index), elements[index] });
     g_structs[type->name] = std::move(definition);
+    for (const auto &element : elements) EnsureTupleDefinition(element);
 }
 
 bool EnsureTupleLayout(const std::shared_ptr<MType> &type);

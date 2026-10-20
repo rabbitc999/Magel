@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(LSP_LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(JSON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../library/json)
 
-add_library(magel_lsp STATIC macro_analyzer.cpp language_server.cpp ../magel_macro.cpp ../magel_macro_controls.cpp ${JSON_DIR}/json.cpp)
+add_library(magel_lsp STATIC macro_analyzer.cpp language_server.cpp ../macro/signature.cpp ../syntax/source_text.cpp ${JSON_DIR}/json.cpp)
 target_include_directories(magel_lsp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${LSP_LIB_DIR}
     ../../library ../../library/preprocess)
 if(MSVC)

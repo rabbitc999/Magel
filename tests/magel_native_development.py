@@ -51,7 +51,7 @@ def main():
         module.write_text('module calc;\n/// 整数文档\nint64 add(int64 a,int64 b=1){return a+b;}\n/// 浮点文档\nfloat64 add(float64 a,float64 b){return a+b;}\nstruct Box { /// 字段文档\nint64 value; };\n', encoding='utf-8')
         included = root / 'macros.mgl'
         included.write_text('module macros;\n/// 包含宏文档\n$macro TWICE(x)\n((x)+(x))\n$end_macro\n', encoding='utf-8')
-        text = 'import calc;\nimport std::math;\nimport macros;\n/// 平方宏文档\n$macro expr SQUARE((x))\nx*x\n$end_macro\n/// 单行宏文档\n$replace expr PLUS(x,(y)) x+y\n$macro ANSWER()\n3\n$end_macro\nint64 main(){\n    String emoji="😀";\n    calc::Box box;\n    box.value;\n    calc::add(1,2);\n    std::math::sqrt(4.0);\n    int64 answer=$SQUARE($TWICE(2))+$PLUS(1,2)+$ANSWER;\n    return answer;\n}\n'
+        text = 'import calc;\nimport std::math;\nimport macros;\n/// 平方宏文档\n$macro SQUARE(x)\nx*x\n$end_macro\n/// 单行宏文档\n$replace PLUS(x,y) x+y\n$macro ANSWER\n3\n$end_macro\nint64 main(){\n    String emoji="😀";\n    calc::Box box;\n    box.value;\n    calc::add(1,2);\n    std::math::sqrt(4.0);\n    int64 answer=$SQUARE($TWICE(2))+$PLUS(1,2)+$ANSWER;\n    return answer;\n}\n'
         source.write_text(text, encoding='utf-8')
 
         def position(at):
@@ -109,14 +109,13 @@ def main():
         assert value(8)[0]['uri'] == included.as_uri(), value(8)
         assert value(9)['diagnostics'] == [], value(9)
         expanded = value(9)['text']
-        assert 'SQUARE(' not in expanded and 'TWICE(' not in expanded and ('(2)' in expanded), expanded[-1000:]
-        assert '$macro ANSWER()' in value(14)['contents']['value']
+        assert json.loads(expanded)['format'] == 'hygienic-ast', expanded
+        assert any(item['name'] == 'SQUARE' for item in json.loads(expanded)['expansions']), expanded
+        assert '$macro ANSWER' in value(14)['contents']['value']
         assert value(15)['activeParameter'] == 1 and 'PLUS' in value(15)['signatures'][0]['label']
         assert value(10)['data'] and any((item['name'] == 'SQUARE' for item in value(11)))
         assert 'sqrt' in value(12)['contents']['value']
-        expandedFile = root / 'expanded.mgl'
-        expandedFile.write_text(expanded.rsplit('module __root;', 1)[1], encoding='utf-8')
-        run('--check', expandedFile)
+        assert value(9)['format'] == 'json' and value(9)['mappings'], value(9)
     print('原生 LSP、宏提示/展开、格式化、依赖锁定及测试/超时全部通过，无外部 Python。')
 if __name__ == '__main__':
     main()

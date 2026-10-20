@@ -138,9 +138,10 @@ void normalizeGenericSyntax(Memory::String &source);
 /**
  * @brief 标记标准容器类型实参的标点，保留普通标识符与比较运算符的词法角色。
  * @param source 已完成单态化的源码；仅插入内部标点，不改变换行。
+ * @param typeFragment 是否已确定为类型片段，此时不依赖类型名是否已声明或首字母大写。
  * @return 无。
  */
-void markContainerTypeArguments(Memory::String &source);
+void markContainerTypeArguments(Memory::String &source, bool typeFragment = false);
 
 /**
  * @brief 提取泛型声明并保留原始行映射。

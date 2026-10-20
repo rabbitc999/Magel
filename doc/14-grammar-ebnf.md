@@ -105,7 +105,7 @@ Box<int64 fn(int64)> box;
 
 <!-- BEGIN GENERATED MAGEL EBNF -->
 
-以下 140 条产生式由 `source/magel.gram` 导出，语义动作及解析优先级指令省略。
+以下 150 条产生式由 `source/magel.gram` 导出，语义动作及解析优先级指令省略。
 
 ### 终结符登记
 
@@ -114,6 +114,7 @@ Box<int64 fn(int64)> box;
 | `ANNOTATION` | `@annotation` |
 | `AT` | `@` |
 | `MACRO_DEFINE` | `$macro` |
+| `MACRO_REPLACE` | `$replace` |
 | `MACRO_END` | `$end_macro` |
 | `MACRO_BODY` | `@!macrobody` |
 | `MACRO_MATCH` | `$match` |
@@ -121,11 +122,18 @@ Box<int64 fn(int64)> box;
 | `MACRO_END_MATCH` | `$end_match` |
 | `MACRO_REGEX` | `$regex` |
 | `MACRO_END_REGEX` | `$end_regex` |
+| `MACRO_FOR` | `$for` |
+| `MACRO_END_FOR` | `$end_for` |
 | `MACRO_IS` | `is` |
 | `MACRO_EXPR` | `expr` |
 | `MACRO_IDENT` | `ident` |
 | `MACRO_BLOCK` | `block` |
 | `MACRO_STMT` | `stmt` |
+| `MACRO_PARSE_EXPR` | `@!macroparse_expr` |
+| `MACRO_PARSE_IDENT` | `@!macroparse_ident` |
+| `MACRO_PARSE_TYPE` | `@!macroparse_type` |
+| `MACRO_PARSE_BLOCK` | `@!macroparse_block` |
+| `MACRO_PARSE_STMT` | `@!macroparse_stmt` |
 | `STRUCT` | `struct` |
 | `OPCODE` | `opcode` |
 | `NONCOPYABLE` | `#NonCopyable` |
@@ -209,6 +217,7 @@ Box<int64 fn(int64)> box;
 | `NOT` | `!` |
 | `ARROW` | `->` |
 | `ELLIPSIS` | `...` |
+| `DOUBLE_DOT` | `..` |
 | `DOT` | `.` |
 | `LPAREN` | `(` |
 | `RPAREN` | `)` |
@@ -239,7 +248,8 @@ Box<int64 fn(int64)> box;
 
 ```ebnf
 NUMBER = ? 正则 "[0-9]+" ? ;
-MACRO_NAME = ? 正则 "\\$[A-Za-z_][A-Za-z0-9_]*" ? ;
+MACRO_NAME = ? 正则 "\\$[A-Za-z_][A-Za-z0-9_]*(@![0-9]+)?" ? ;
+MACRO_FRAGMENT = ? 正则 "@!macrofragment[0-9]+_[0-9]+" ? ;
 FLIT = ? 正则 "[0-9]+(\\.[0-9]+([eE][-+]?[0-9]+)?|[eE][-+]?[0-9]+)[f]?|[0-9]+f" ? ;
 ULIT = ? 正则 "[0-9]+u" ? ;
 HEXLIT = ? 正则 "0[xX][A-Za-z0-9_]*" ? ;
@@ -251,7 +261,12 @@ CHRLIT = ? 正则 "'([^'\\\\]|\\\\.)+'" ? ;
 ### 全部解析产生式
 
 ```ebnf
-program = top_list ;
+program = top_list
+    | "@!macroparse_expr", expr
+    | "@!macroparse_ident", name_token
+    | "@!macroparse_type", type
+    | "@!macroparse_block", block
+    | "@!macroparse_stmt", stmt ;
 
 top_list = ""
     | top_list, top ;
@@ -373,10 +388,8 @@ element_type = type
     | type, "const", "&"
     | type, "mut", "&" ;
 
-container_type = name_token, "@<", element_type, "@>"
-    | name_token, "@<", element_type, ",", element_type, "@>"
-    | qualified_ref, "@<", element_type, "@>"
-    | qualified_ref, "@<", element_type, ",", element_type, "@>" ;
+container_type = name_token, "@<", closure_type_arguments, "@>"
+    | qualified_ref, "@<", closure_type_arguments, "@>" ;
 
 builtin_type = "int8"
     | "int16"
@@ -548,10 +561,13 @@ block = "{", "}"
     | "{", nonempty_stmt_list, "}" ;
 
 nonempty_stmt_list = stmt
-    | nonempty_stmt_list, stmt ;
+    | macro_control
+    | nonempty_stmt_list, stmt
+    | nonempty_stmt_list, macro_control ;
 
 stmt_list = ""
-    | stmt_list, stmt ;
+    | stmt_list, stmt
+    | stmt_list, macro_control ;
 
 stmt = block
     | decl_stmt
@@ -859,6 +875,7 @@ map_literal_items = expr, ":", expr
     | map_literal_items, ",", expr, ":", expr ;
 
 qualified_ref = name_token, "::", name_token
+    | container_type, "::", name_token
     | name_token, "::", "yield"
     | "yield", "::", name_token
     | "yield", "::", "yield"
@@ -867,7 +884,8 @@ qualified_ref = name_token, "::", name_token
     | qualified_ref, "::", name_token
     | qualified_ref, "::", "yield" ;
 
-macro_definition = "$macro", name_token, macro_generics, macro_parameters, "@!macrobody", macro_template, "$end_macro" ;
+macro_definition = "$macro", name_token, macro_generics, macro_parameters, "@!macrobody", macro_template, "$end_macro"
+    | "$replace", name_token, macro_generics, macro_parameters, "@!macrobody", macro_template, "$end_macro" ;
 
 macro_generics = ""
     | "<", macro_generic_items, ">" ;
@@ -879,13 +897,24 @@ macro_generic = name_token
     | name_token, ":", name_token ;
 
 macro_parameters = ""
-    | "(", macro_parameter_names, ")" ;
+    | macro_parameter_groups ;
+
+macro_parameter_groups = macro_parameter_group
+    | macro_parameter_groups, macro_parameter_group ;
+
+macro_parameter_group = "(", macro_parameter_names, ")"
+    | "[", macro_parameter_names, "]"
+    | "{", macro_parameter_names, "}" ;
 
 macro_parameter_names = ""
     | macro_parameter_items ;
 
-macro_parameter_items = name_token
-    | macro_parameter_items, ",", name_token ;
+macro_parameter_items = macro_parameter
+    | macro_parameter_items, ",", macro_parameter ;
+
+macro_parameter = name_token
+    | "...", name_token
+    | "..", name_token ;
 
 macro_template = macro_template_parts
     | macro_template_parts, expr ;
@@ -895,7 +924,8 @@ macro_template_parts = ""
     | macro_template_parts, macro_control ;
 
 macro_control = "$match", name_token, "is", macro_category, "@!macrobody", macro_template, macro_match_tail, "$end_match"
-    | "$regex", name_token, "is", STRING, "@!macrobody", macro_template, macro_regex_else, "$end_regex" ;
+    | "$regex", name_token, "is", STRING, "@!macrobody", macro_template, macro_regex_else, "$end_regex"
+    | "$for", name_token, "in", name_token, "@!macrobody", macro_template, "$end_for" ;
 
 macro_category = "expr"
     | "ident"
@@ -911,9 +941,31 @@ macro_regex_else = ""
     | "$else", "@!macrobody", macro_template ;
 
 macro_call = MACRO_NAME
-    | MACRO_NAME, "(", call_args, ")"
-    | MACRO_NAME, "<", closure_type_arguments, ">"
-    | MACRO_NAME, "<", closure_type_arguments, ">", "(", call_args, ")" ;
+    | MACRO_NAME, macro_call_groups
+    | MACRO_NAME, "<", macro_type_arguments, ">"
+    | MACRO_NAME, "<", macro_type_arguments, ">", macro_call_groups ;
+
+macro_call_groups = macro_call_group
+    | macro_call_groups, macro_call_group ;
+
+macro_call_group = "(", macro_call_arguments, ")"
+    | "[", macro_call_arguments, "]"
+    | "{", macro_call_arguments, "}" ;
+
+macro_call_arguments = ""
+    | macro_argument_items ;
+
+macro_argument_items = macro_argument
+    | macro_argument_items, ",", macro_argument ;
+
+macro_argument = expr
+    | MACRO_FRAGMENT ;
+
+macro_type_arguments = macro_type_argument
+    | macro_type_arguments, ",", macro_type_argument ;
+
+macro_type_argument = element_type
+    | MACRO_FRAGMENT ;
 ```
 
 <!-- END GENERATED MAGEL EBNF -->

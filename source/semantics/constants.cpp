@@ -40,7 +40,7 @@ void BindConstantReferences(int id)
     const auto &n = N(id);
     if (n.kind == MNode::Var)
     {
-        if (auto *v = FindIn(n.module, n.s)) g_constantBindings[id] = *v;
+        if (auto *v = FindNodeVar(n)) g_constantBindings[id] = *v;
     }
     for (int child : n.kids) BindConstantReferences(child);
 }
@@ -123,7 +123,7 @@ bool ValidateConstantTree(int id, MConstantContext &context, MType::Kind *result
     if (node.kind == MNode::Var || node.kind == MNode::EnumCtor)
     {
         auto bound = g_constantBindings.find(id);
-        auto *variable = bound != g_constantBindings.end() ? &bound->second : node.kind == MNode::Var ? (context.globalOnly ? FindConstantGlobal(node.module, node.s) : FindIn(node.module, node.s)) :
+        auto *variable = bound != g_constantBindings.end() ? &bound->second : node.kind == MNode::Var ? (context.globalOnly ? FindConstantGlobal(node.module, node.s) : FindNodeVar(node)) :
                                                                                                         FindQualifiedGlobal(node.s, node.s2);
         if (!variable || !variable->isConst || variable->constantExpression < 0) return Fail("[MGL1300] 常量表达式不能引用运行时变量：" + node.s);
         if (!variable->type || (variable->type->kind != MType::Int && variable->type->kind != MType::Double && variable->type->kind != MType::Bool)) return Fail("[MGL1300] 常量表达式仅支持整数、浮点和 bool");
@@ -225,7 +225,7 @@ bool EvaluateConstantImpl(int id, MConstant *out, MConstantContext &context)
     if (node.kind == MNode::Var || node.kind == MNode::EnumCtor)
     {
         auto bound = g_constantBindings.find(id);
-        auto *variable = bound != g_constantBindings.end() ? &bound->second : node.kind == MNode::Var ? (context.globalOnly ? FindConstantGlobal(node.module, node.s) : FindIn(node.module, node.s)) :
+        auto *variable = bound != g_constantBindings.end() ? &bound->second : node.kind == MNode::Var ? (context.globalOnly ? FindConstantGlobal(node.module, node.s) : FindNodeVar(node)) :
                                                                                                         FindQualifiedGlobal(node.s, node.s2);
         if (!variable || !variable->isConst || variable->constantExpression < 0)
             return Fail("[MGL1300] 常量表达式不能引用运行时变量：" + node.s);

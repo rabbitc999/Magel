@@ -17,8 +17,9 @@
 /* 前处理器（仓库里的通用库，只依赖 C++17 标准库）。 */
 #include "preprocess.hpp"
 #include "magel_diagnostics.hpp"
-#include "magel_macro.hpp"
 #include "macro/source.hpp"
+#include "macro/fragments.hpp"
+#include "editor/compiler_analysis.hpp"
 #include "magel_interpolation.hpp"
 #include "magel_module.hpp"
 #include "magel_incremental.hpp"
@@ -422,7 +423,7 @@ int magel_main_entry(int argc, char **argv)
     bool runtimeStats = false;
     bool incremental = false;  /* --incremental：跨次复用模块预处理及完整编译产物 */
     bool sourceStdin = false;  ///< 编辑器用真实文件身份读取标准输入中的未保存内容。
-    Memory::String cacheDirectory, overlayPath, analysisDependencies;
+    Memory::String cacheDirectory, overlayPath, analysisDependencies, analysisTypes;
     Memory::Vector<Memory::String> includeDirs;
     Memory::Vector<Memory::String> importDirs;
     Memory::Vector<Memory::String> moduleRuntimeDirs;
@@ -623,7 +624,7 @@ int magel_main_entry(int argc, char **argv)
             sourceStdin = true;
             continue;
         }
-        if (argument == "--cache-dir" || argument == "--source-overlays" || argument == "--analysis-deps")
+        if (argument == "--cache-dir" || argument == "--source-overlays" || argument == "--analysis-deps" || argument == "--analysis-types")
         {
             if (!NeedValue(index, argc, argument.c_str())) return 2;
             const Memory::String value = argv[++index];
@@ -631,8 +632,10 @@ int magel_main_entry(int argc, char **argv)
                 cacheDirectory = value;
             else if (argument == "--source-overlays")
                 overlayPath = value;
-            else
+            else if (argument == "--analysis-deps")
                 analysisDependencies = value;
+            else
+                analysisTypes = value;
             continue;
         }
         if (argument == "--stats")
@@ -911,6 +914,8 @@ int magel_main_entry(int argc, char **argv)
      * 预处理之后的**行号与源文件一一对应**（通过 lineMap 保留源位置）。
      * 模块通过 import 独立加载，命令行 -I 提供模块搜索目录。 */
     preprocess::Result processed;
+    magel_macro::sourceFragments.clear();
+    Memory::Vector<preprocess::LineOrigin> originalMacroOrigins;
     std::uint64_t incrementalInput = 0;
     if (!raw)
     {
@@ -1008,19 +1013,32 @@ int magel_main_entry(int argc, char **argv)
             }
         }
         Memory::String macroError;
+        std::string syntaxError;
+        originalMacroOrigins = processed.lineMap;
+        if (!magel_macro::markReplacementBoundaries(processed.text, syntaxError))
+        {
+            std::fprintf(stderr, "magel: %s\n", syntaxError.c_str());
+            return 1;
+        }
+        if (!magel_macro::sourceFragments.capture(processed.text, syntaxError, 1, 1, true))
+        {
+            std::fprintf(stderr, "magel: %s\n", syntaxError.c_str());
+            return 1;
+        }
         if (!magel_interpolation::run(processed, macroError))
         {
             std::fprintf(stderr, "magel: 插值：%s\n", macroError.c_str());
             return 1;
         }
-        if (!magel_macro::run(processed, macroError, &loader.moduleByFile()))
+        magel_macro::ProtectedDefinitions definitions;
+        if (!definitions.hide(processed.text, syntaxError))
         {
             if (jsonDiagnostics)
             {
-                magel_diagnostics::report("MGL1100", macroError, sourceLabel);
+                magel_diagnostics::report("MGL1100", Memory::String(syntaxError.data(), syntaxError.size()), sourceLabel);
                 return 1;
             }
-            std::fprintf(stderr, MAGEL_TEXT("magel: 前处理：%s\n"), macroError.c_str());
+            std::fprintf(stderr, "magel: %s\n", syntaxError.c_str());
             return 1;
         }
         if (!magel_lambda::run(processed, macroError))
@@ -1044,7 +1062,15 @@ int magel_main_entry(int argc, char **argv)
             return 1;
         }
         magel_lambda::markClosureTypeArguments(processed.text);
+        if (!definitions.restore(processed.text, syntaxError))
+        {
+            std::fprintf(stderr, "magel: %s\n", syntaxError.c_str());
+            return 1;
+        }
         text = processed.text;
+        const auto originOffset = processed.lineMap.size();
+        processed.lineMap.insert(processed.lineMap.end(), originalMacroOrigins.begin(), originalMacroOrigins.end());
+        magel_macro::sourceFragments.rebase(originOffset);
         if (depsOnly)
         {
             for (const Memory::String &file : processed.dependencies) std::printf("%s\n", file.c_str());
@@ -1061,6 +1087,18 @@ int magel_main_entry(int argc, char **argv)
     M_SetSourceLines(sourceLines);
     Engine engine;
     ParserValue_T value{};
+    std::string fragmentError;
+    if (raw && !magel_macro::markReplacementBoundaries(text, fragmentError))
+    {
+        std::fprintf(stderr, "magel: %s\n", fragmentError.c_str());
+        return 1;
+    }
+    if (!magel_macro::sourceFragments.capture(text, fragmentError, 1, 1, true))
+    {
+        std::fprintf(stderr, "magel: %s\n", fragmentError.c_str());
+        return 1;
+    }
+    magel_lambda::markClosureTypeArguments(text);
     magel_generic::markContainerTypeArguments(text);
     magel_macro::markHeaderBoundaries(text);
     const Status status = engine.runText(text, &value);
@@ -1155,8 +1193,18 @@ int magel_main_entry(int argc, char **argv)
             return inner;
         });
     }
+    magel_editor::compilerAnalysis.begin(!analysisTypes.empty());
     const int code = M_Compile("magel", prefix.c_str(), run, emitBinary ? 1 : 0,
                                inputText.c_str());
+    if (!analysisTypes.empty())
+    {
+        std::string error;
+        if (!magel_editor::compilerAnalysis.write(std::string(analysisTypes.data(), analysisTypes.size()), code == 0, error))
+        {
+            std::fprintf(stderr, "magel: %s\n", error.c_str());
+            return 1;
+        }
+    }
     Memory::Vector<magel_diagnostics::Diagnostic> warnings;
     for (const auto &item : M_Warnings())
     {

@@ -44,13 +44,9 @@ private:
         std::string groupedSignature;
         std::string groupedShape;
         /**
-         * 括号里空着（`$macro NAME()`）= 对象宏：裸写 `NAME` 取用，不带括号。
+         * 没有形参组（`$macro NAME`）时裸写 `$NAME`；空组也必须在调用处保留。
          */
         bool objectMacro = false;
-        /**
-         * `$delete_macro NAME` 撤销之后置位：不再参与补全 / 悬停 / 重载挑选，也不算重复定义。
-         */
-        bool deleted = false;
         Range range;
     };
     struct Occurrence

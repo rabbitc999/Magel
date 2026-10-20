@@ -1,37 +1,23 @@
-/* macro_parenthesize.mgl —— 宏的两种"自动加括号"
- *
- *   ./magel samples/macro_parenthesize.mgl
- *
- * 宏体是文本替换，直接用实参容易踩优先级：`$TIMES_TWO(1 + 2)` 会变成
- * `1 + 2 * 2`。两种写法各挡一层：
- *
- *   * 形参的括号标注 `(x)` —— 该形参**每次出现**都替换成 `(实参)`；
- *   * 宏名前的 `expr` —— **整段展开**再包一层括号。
- *
- * $macro 的 `expr` 只写在 `$macro` 头这一行，宏名还是 `PLUS`，调用处写 `$PLUS(2, 3)`；
- *  expr 默认给全部实参加括号，(a) 是允许的冗余标注。
- * `$stringify(…)` 取的是**没加括号**的原始实参，不受这两种加括号影响。
- */
-
-$macro TIMES_TWO((x))
+/* AST 替换保留表达式结构，无需自动加括号或形参保护标注。 */
+$macro TIMES_TWO(x)
 x * 2
 $end_macro
 
-$macro expr PLUS((a), (b))
+$macro PLUS(a, b)
 a + b
 $end_macro
 
-/* 字符串化读取原始实参。 */
+
 $macro SHOW(x)
     $stringify(x)
 $end_macro
 
-/* 拼接读取原始标识符实参，不受定义端括号标注影响。 */
+
 $macro MAKE_NAME(pre, suffix)
     $concat(pre, suffix)
 $end_macro
 
-/* 拼出来的名字就是普通变量，照常读写。 */
+
 $macro JOIN(left, right)
     $concat(left, right)
 $end_macro
@@ -40,19 +26,19 @@ int64 var_x = 9;
 int64 joined_name = 7;
 
 int64 main() {
-    /* (1 + 2) * 2 = 6；不作括号标注就是 1 + 2 * 2 = 5。 */
+
     println("{}", $TIMES_TWO(1 + 2));
 
-    /* 整段包一层：10 / ((2) + (3)) = 2；只包形参就是 10 / (2) + (3) = 8。 */
+
     println("{}", 10 / $PLUS(2, 3));
 
-    /* 字符串化保持原拼写：打印 "1 + 2"。 */
+
     println("{}", $SHOW(1 + 2));
 
-    /* `$concat` 拼接出来的变量名照样可用。 */
+
     println("{}", $MAKE_NAME(var, _x));
 
-    /* 两个标识符拼成一个，再当变量读。 */
+
     println("{}", $JOIN(joined, _name));
     return 0;
 }

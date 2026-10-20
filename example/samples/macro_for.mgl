@@ -29,9 +29,9 @@ $end_for
 $end_macro
 
 int64 main() {
-    $PRINT_ALL("值={}", 1)
-    $PRINT_ALL("值={}", 2, 3, 4)
-    $SUM_SQUARES(2, 3, 4)
-    $PAIRS(1, 2)
+    $PRINT_ALL("值={}", 1);
+    $PRINT_ALL("值={}", 2, 3, 4);
+    $SUM_SQUARES(2, 3, 4);
+    $PAIRS(1, 2);
     return 0;
 }

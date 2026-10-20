@@ -14,17 +14,10 @@ J lspMacroSignature(const std::string &text, size_t cursor, const std::vector<Re
         for (const auto &record : records)
         {
             if (record.kind != "macro" || record.name != token->word.substr(1) || !starts(record.signature, "$macro")) continue;
-            magel_macro::Macro macro;
-            Memory::String name, problem;
-            if (!magel_macro::header(record.signature.c_str(), name, macro, problem)) continue;
+            magel_macro::Signature macro;
+            Memory::String problem;
+            if (!magel_macro::readSignature(record.signature.c_str(), macro, problem)) continue;
             auto groups = macro.groups;
-            if (groups.empty() && macro.functionLike)
-            {
-                magel_macro::ParameterGroup group;
-                group.params = macro.params;
-                if (macro.variadic) group.rest = macro.variadicParam;
-                groups.push_back(std::move(group));
-            }
             if (groups.empty()) continue;
             const Memory::String source(text.c_str());
             size_t at = token->b, active = 0, parameterOffset = 0;
@@ -32,7 +25,7 @@ J lspMacroSignature(const std::string &text, size_t cursor, const std::vector<Re
             std::string description = record.documentation;
             A parameters, details;
             const auto header = lex(record.signature);
-            const size_t macroName = header.size() > 1 && header[1].word == "expr" ? 2 : 1;
+            const size_t macroName = 1;
             const auto parameter = [&](const Memory::String &name) {
                 for (size_t i = macroName + 1; i < header.size(); ++i)
                     if (header[i].word == name.c_str())
@@ -47,17 +40,17 @@ J lspMacroSignature(const std::string &text, size_t cursor, const std::vector<Re
             for (size_t g = 0; g < groups.size(); ++g)
             {
                 const auto &group = groups[g];
-                magel_macro::spaces(source, at);
+                magel_syntax::spaces(source, at);
                 if (at >= source.size()) break;
                 if (source[at] != group.opening)
                 {
-                    if (magel_macro::groupClose(source[at]) && cursor > at)
+                    if (magel_syntax::groupClose(source[at]) && cursor > at)
                     {
                         Memory::Vector<Memory::String> wrong;
                         size_t wrongEnd = at;
-                        if (magel_macro::groupArguments(source, at, wrong, wrongEnd, true) && cursor <= wrongEnd)
+                        if (magel_syntax::groupArguments(source, at, wrong, wrongEnd, true) && cursor <= wrongEnd)
                         {
-                            description = "宏Token分组不匹配：第 " + std::to_string(g + 1) + " 组期待 " + std::string(1, group.opening) + std::string(1, magel_macro::groupClose(group.opening)) + "，实际遇到 " + std::string(1, source[at]);
+                            description = "宏Token分组不匹配：第 " + std::to_string(g + 1) + " 组期待 " + std::string(1, group.opening) + std::string(1, magel_syntax::groupClose(group.opening)) + "，实际遇到 " + std::string(1, source[at]);
                             active = parameterOffset;
                             hit = true;
                         }
@@ -67,7 +60,7 @@ J lspMacroSignature(const std::string &text, size_t cursor, const std::vector<Re
                 Memory::Vector<Memory::String> parts;
                 size_t end = at;
                 bool closed = false;
-                if (!magel_macro::groupArguments(source, at, parts, end, true, &closed)) break;
+                if (!magel_syntax::groupArguments(source, at, parts, end, true, &closed)) break;
                 std::string groupName;
                 for (const auto &p : group.params)
                 {
@@ -79,7 +72,7 @@ J lspMacroSignature(const std::string &text, size_t cursor, const std::vector<Re
                     if (!groupName.empty()) groupName += ", ";
                     groupName += group.rest.c_str();
                 }
-                const bool empty = parts.size() == 1 && magel_macro::trim(parts.front()).empty();
+                const bool empty = parts.size() == 1 && magel_syntax::trim(parts.front()).empty();
                 const auto count = empty ? 0 : parts.size();
                 details.push_back(object({ { "index", int(g) }, { "name", groupName }, { "count", int(count) }, { "opening", std::string(1, group.opening) } }));
                 description += "\n\n" + groupName + "：" + std::to_string(count) + " 项";
@@ -87,7 +80,7 @@ J lspMacroSignature(const std::string &text, size_t cursor, const std::vector<Re
                 {
                     Memory::Vector<Memory::String> prefix;
                     size_t ignored = at;
-                    if (!magel_macro::groupArguments(text.substr(0, cursor).c_str(), at, prefix, ignored, true)) break;
+                    if (!magel_syntax::groupArguments(text.substr(0, cursor).c_str(), at, prefix, ignored, true)) break;
                     auto argument = prefix.empty() ? size_t(0) : prefix.size() - 1;
                     const auto fixed = group.params.size();
                     active = parameterOffset + std::min(argument, group.rest.empty() ? (fixed ? fixed - 1 : 0) : fixed);

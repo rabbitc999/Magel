@@ -1,6 +1,10 @@
 #ifndef MAGEL_MACRO_REGISTRY_HPP
 #define MAGEL_MACRO_REGISTRY_HPP
 #include "template_binding.hpp"
+#include "../literals/string_escape.hpp"
+#include <vector>
+#include <set>
+#include <functional>
 
 namespace magel_macro
 {
@@ -15,8 +19,9 @@ public:
      * @brief 关联语法池及定义环境解析器。
      * @param nodes 编译器节点池。
      * @param resolver 当前编译的卫生解析器。
+     * @param types 当前编译的类型池，无类型的独立测试可省略。
      */
-    Registry(Memory::Deque<MNode> &nodes, HygieneResolver &resolver);
+    Registry(Memory::Deque<MNode> &nodes, HygieneResolver &resolver, Memory::Vector<std::shared_ptr<MType>> *types = nullptr);
     /**
      * @brief 在定义模块内登记宏，绑定模板形参并拒绝重名。
      * @param definition 宏定义节点。
@@ -32,24 +37,42 @@ public:
      * @return 新模板根节点；失败返回负一且不保留部分实例化节点。
      * @note 尚未解析导入可见性或推导宏泛型，泛型调用明确报错。
      */
-    int instantiate(int call, std::string &error);
+    int instantiate(int call, std::string &error,
+                    const std::function<int(int, int, int)> &resolveType = {},
+                    const std::function<bool(int, const std::map<std::string, int> &, std::string &)> &applyTypes = {});
+    /**
+     * @brief 登记调用模块可见的直接导入模块。
+     * @param from 导入声明所属模块。
+     * @param target 被导入模块。
+     */
+    void addImport(const std::string &from, const std::string &target);
 
 private:
     /**
-     * @brief 在辅助名称降级接入前拒绝可能捕获调用环境的引用。
-     * @param root 待检查的已绑定模板节点。
-     * @param depth 当前检查深度。
-     * @param error 接收未接入能力或结构错误。
-     * @return 当前支持的引用均安全时返回真。
+     * @brief 将选中的编译期分支拼入模板，保留表达式尾项及原有作用域。
+     * @param root 模板根节点。
+     * @param depth 当前深度。
+     * @param error 接收结构错误。
+     * @return 归一化成功返回真。
      */
-    bool checkReferences(int root, std::size_t depth, std::string &error) const;
+    bool normalizeTemplate(int root, std::size_t depth, std::string &error);
     /**
      * @brief 保存定义作用域、原始形参顺序和绑定后的不可变模板。
      */
     struct Definition
     {
+        struct Group
+        {
+            int opening = '(';
+            std::size_t begin = 0;
+            std::size_t count = 0;
+            bool variadic = false;
+        };
+        int declaration = -1;
         BoundTemplate bound;
         Memory::Vector<BindingId> parameters;
+        Memory::Vector<std::string> names;
+        std::vector<Group> groups;
         ScopeId scope = 0;
         ContextId context = 0;
         bool grouped = false;
@@ -57,8 +80,11 @@ private:
     };
     Memory::Deque<MNode> &nodes_;
     HygieneResolver &resolver_;
+    RegexMatcher matcher_;
+    std::map<std::string, std::set<std::string>> imports_;
+    Memory::Vector<std::shared_ptr<MType>> *types_ = nullptr;
     std::size_t remainingNodes_ = 1000000;
-    std::map<std::pair<std::string, std::string>, Definition> definitions_;
+    std::map<std::pair<std::string, std::string>, std::vector<Definition>> definitions_;
 };
 }  // namespace magel_macro
 #endif

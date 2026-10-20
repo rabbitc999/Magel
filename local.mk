@@ -74,7 +74,7 @@ endif
 # 避免只改泛型 / 宏展开头或降级实现时 make 误判为无需重编。
 $(FRONTEND_BUILD)/magel_tool.o $(FRONTEND_BUILD)/magel_main.o: source/magel_project.hpp source/magel_cli.hpp
 
-$(FRONTEND_BUILD)/magel_main.o: source/magel_analysis.hpp source/magel_diagnostics.hpp source/magel_stdlib.hpp source/magel_package.hpp source/magel_driver.cpp source/magel_incremental.hpp source/magel_module.hpp source/magel_macro.hpp source/magel_macro_controls.hpp source/magel_lambda.hpp source/magel_generic_closure.hpp source/magel_generic.hpp source/magel_glue.hpp library/sqlite/sqlite3.h $(VM_DIR)/stackvm.hpp $(VM_DIR)/value_text.hpp $(VM_DIR)/reflection.hpp
+$(FRONTEND_BUILD)/magel_main.o: source/magel_analysis.hpp source/magel_diagnostics.hpp source/magel_stdlib.hpp source/magel_package.hpp source/magel_driver.cpp source/magel_incremental.hpp source/magel_module.hpp source/macro/signature.hpp source/syntax/source_text.hpp source/magel_lambda.hpp source/magel_generic_closure.hpp source/magel_generic.hpp source/magel_glue.hpp library/sqlite/sqlite3.h $(VM_DIR)/stackvm.hpp $(VM_DIR)/value_text.hpp $(VM_DIR)/reflection.hpp
 $(FRONTEND_BUILD)/magel_parser.o: source/magel_ast.hpp source/magel_semantics.cpp source/magel_generic.hpp $(wildcard source/semantics/*.cpp) library/sqlite/sqlite3.h source/magel_glue.hpp $(VM_DIR)/stackvm.hpp $(VM_DIR)/value_text.hpp $(VM_DIR)/reflection.hpp
 
 # 外部静态库更新后必须重链；只把它们写进 LDLIBS 不会让 make 追踪时间戳。
@@ -163,7 +163,7 @@ EMBEDDED_LSP_BUILD := build/magel-embedded-lsp
 
 $(EMBEDDED_LSP_BUILD):
 	$(MAGEL_RUNTIME_MKDIR)
-$(EMBEDDED_LSP_BUILD)/macro_analyzer.o: $(LSP_DIR)/macro_analyzer.cpp $(LSP_DIR)/macro_analyzer.hpp $(LSP_LIB_DIR)/protocol_types.hpp source/magel_macro.hpp source/magel_macro_controls.hpp | $(EMBEDDED_LSP_BUILD)
+$(EMBEDDED_LSP_BUILD)/macro_analyzer.o: $(LSP_DIR)/macro_analyzer.cpp $(LSP_DIR)/macro_analyzer.hpp $(LSP_LIB_DIR)/protocol_types.hpp source/macro/signature.hpp source/syntax/source_text.hpp | $(EMBEDDED_LSP_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
 $(EMBEDDED_LSP_BUILD)/language_server.o: $(LSP_DIR)/language_server.cpp $(LSP_DIR)/language_server.hpp $(LSP_DIR)/macro_analyzer.hpp library/json/json.hpp | $(EMBEDDED_LSP_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
@@ -188,7 +188,7 @@ DEMO_OBJS += $(MAGEL_NATIVE_DEVELOPMENT)
 $(TARGET): $(MAGEL_NATIVE_DEVELOPMENT)
 build/magel-native:
 	$(MAGEL_RUNTIME_MKDIR)
-$(MAGEL_NATIVE_DEVELOPMENT): tools/native_development.cpp tools/native_development.hpp source/magel_macro.hpp source/magel_module.hpp source/magel_stdlib.hpp | build/magel-native
+$(MAGEL_NATIVE_DEVELOPMENT): tools/native_development.cpp tools/native_development.hpp source/syntax/source_text.hpp source/magel_module.hpp source/magel_stdlib.hpp | build/magel-native
 	$(CXX) $(CXXFLAGS) -MMD -MP -MF build/magel-native-development.d -I. -c $< -o $@
 $(MAGEL_NATIVE_DEVELOPMENT): source/magel_i18n.hpp library/console/utf8.hpp
 $(FRONTEND_BUILD)/magel_tool.o: tools/native_development.hpp
@@ -206,7 +206,7 @@ endif
 -include build/magel-native-development.d
 
 # 泛型与闭包文本处理实现独立编译，解析器和语言服务只依赖声明。
-MAGEL_FRONTEND_MODULES := magel_resource_cleanup magel_generic magel_lambda magel_generic_closure magel_macro magel_macro_controls magel_package magel_report
+MAGEL_FRONTEND_MODULES := magel_resource_cleanup magel_generic magel_lambda magel_generic_closure magel_package magel_report
 MAGEL_FRONTEND_MODULE_OBJS := $(addprefix $(FRONTEND_BUILD)/,$(addsuffix .o,$(MAGEL_FRONTEND_MODULES)))
 LIB_OBJS += $(MAGEL_FRONTEND_MODULE_OBJS)
 $(LIB): $(MAGEL_FRONTEND_MODULE_OBJS)
@@ -216,13 +216,33 @@ $(MAGEL_FRONTEND_MODULE_OBJS): build/magel-runtime/buildConfig.json
 -include $(wildcard $(FRONTEND_BUILD)/*.d)
 
 # 编译期 AST 宏的独立实现，避免 regex 等重型头传播到解析器接口。
-MAGEL_MACRO_MODULES := hygiene regex_matcher source ast_substitution template_binding registry
+MAGEL_MACRO_MODULES := hygiene regex_matcher source fragments ast_substitution template_binding registry signature
 MAGEL_MACRO_OBJS := $(addprefix $(FRONTEND_BUILD)/macro_,$(addsuffix .o,$(MAGEL_MACRO_MODULES)))
 LIB_OBJS += $(MAGEL_MACRO_OBJS)
 $(LIB): $(MAGEL_MACRO_OBJS)
 $(MAGEL_MACRO_OBJS): $(FRONTEND_BUILD)/macro_%.o: source/macro/%.cpp | $(FRONTEND_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
 $(MAGEL_MACRO_OBJS): build/magel-runtime/buildConfig.json
+
+MAGEL_LITERAL_OBJ := $(FRONTEND_BUILD)/string_escape.o
+LIB_OBJS += $(MAGEL_LITERAL_OBJ)
+$(LIB): $(MAGEL_LITERAL_OBJ)
+$(MAGEL_LITERAL_OBJ): source/literals/string_escape.cpp source/literals/string_escape.hpp | $(FRONTEND_BUILD)
+	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
+
+MAGEL_EDITOR_ANALYSIS_OBJ := $(FRONTEND_BUILD)/compiler_analysis.o
+LIB_OBJS += $(MAGEL_EDITOR_ANALYSIS_OBJ)
+$(LIB): $(MAGEL_EDITOR_ANALYSIS_OBJ)
+$(MAGEL_EDITOR_ANALYSIS_OBJ): source/editor/compiler_analysis.cpp source/editor/compiler_analysis.hpp | $(FRONTEND_BUILD)
+	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
+
+MAGEL_SYNTAX_MODULES := source_text constant_expression
+MAGEL_SYNTAX_OBJS := $(addprefix $(FRONTEND_BUILD)/syntax_,$(addsuffix .o,$(MAGEL_SYNTAX_MODULES)))
+LIB_OBJS += $(MAGEL_SYNTAX_OBJS)
+$(LIB): $(MAGEL_SYNTAX_OBJS)
+$(MAGEL_SYNTAX_OBJS): $(FRONTEND_BUILD)/syntax_%.o: source/syntax/%.cpp | $(FRONTEND_BUILD)
+	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
+$(MAGEL_LITERAL_OBJ): build/magel-runtime/buildConfig.json
 
 MAGEL_STDLIB_OBJ := $(FRONTEND_BUILD)/magel_stdlib_embedded.o
 LIB_OBJS += $(MAGEL_STDLIB_OBJ)

@@ -1004,7 +1004,7 @@ bool ValidateDefaultNames(int id, const Memory::Vector<MParam> &params)
         if (node.s == "self") return Fail("默认参数不能引用 self");
         for (const auto &param : params)
             if (node.s == param.source) return Fail("默认参数不能引用形参：" + node.s);
-        if (!FindIn(node.module, node.s) && !FindFunctionOverloads(node.module, node.s))
+        if (!FindNodeVar(node) && !FindFunctionOverloads(node.module, node.s))
             return Fail("默认参数引用了未定义的名称：" + node.s);
     }
     if (node.kind == MNode::Call && !node.kids.empty() && N(node.kids[0]).kind == MNode::Var)

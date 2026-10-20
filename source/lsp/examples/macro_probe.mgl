@@ -11,7 +11,7 @@ $end_for
 $end_macro
 
 int64 main() {
-    int64 total = ADD(1, 2);
-    DESCRIBE(circle);
+    int64 total = $ADD(1, 2);
+    $DESCRIBE(total);
     return total;
 }

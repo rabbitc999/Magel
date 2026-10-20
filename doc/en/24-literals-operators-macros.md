@@ -147,100 +147,110 @@ magel: 运算符 + 有多条声明匹配同一对操作数 A / int64，返回类
 
 **Swapping operands does not change evaluation order.** When `bump() + makeA()` becomes `makeA().leftAdd(bump())`, both operands are still evaluated left to right as written (the left one is parked in a temporary first), so side effects happen in the same order as they would without the swap.
 
-## Macro text concatenation and stringification
+## Compile-time hygienic AST macros
 
-The macro layer carried two sets of redundant spellings. Both are unsupported:
-
-- **`$match` / `$when` / `$end_when` / `$else` / `$end_else` / `$end_match`** are no longer directives. They were a miniature DSL stacked on top of a textual substitution macro — rarely used, but with a very large diagnostic surface. To generate code per branch, use `$for` together with overloads that distinguish shapes by argument count.
-- **`##` pasting and `#param` stringification** are no longer directives either. Use `$concat(a, b)` and `$stringify(x)`. The former `##` / `#param` spellings have been removed and are rejected.
-
-Writing either is a syntax error:
-
-```text
-Syntax error: …：认不出来的字符
-```
-
-The recommended spellings:
+The generated parser builds macro definitions, calls and syntax fragments. Semantic analysis expands hygienic ASTs while resolving type dependencies, before quadruple generation. Expansion does not concatenate source and reparse it. Arguments retain their original spelling, location and caller bindings; ordinary declarations introduced by a template are hygienic, and helper names resolve in the definition module.
 
 ```magel
-$macro SUM(...rest)
-    $for v in rest
-        + (v)
-    $end_for
+$macro SQUARE(x)
+x * x
+$end_macro
+$macro ANSWER
+42
+$end_macro
+$macro EMPTY()
+42
 $end_macro
 int64 main() {
-    int64 total = 0 $SUM(1, 2, 3, 4);
-    println("{}", total);
+    println("{} {} {}", $SQUARE(1 + 2), $ANSWER, $EMPTY());
     return 0;
 }
 ```
 
-```text
-10
-```
+`1 + 2` remains a complete operand, so the square is 9. Numbered temporary names, the macro-header `expr` annotation and parameter protection annotations are removed. Expansion adds no automatic parentheses, argument cache, closure or scope. `$SQUARE(next())` still evaluates `next()` twice. Write a semicolon after a statement macro invocation. Templates splice statements into the surrounding list; a block expression requires an explicit `{ ... yield value; }` in the template.
+
+## Groups, variadic fragments and bindings
+
+`$macro A` requires `$A`; `$macro A()` requires `$A()`. Square, round and curly groups must match in order and shape; repeated groups are allowed. Each group can end with `...rest` or `..rest`, including an empty capture. An applicable fixed signature takes priority over a variadic signature.
 
 ```magel
-$macro SHOW(expr)
-println("{} = {}", $stringify(expr), expr);
+$macro ACCUMULATE(out)[...values]
+$for value in values
+int64 temporary = value;
+out += temporary;
+$end_for
 $end_macro
 int64 main() {
-    int64 a = 6;
-    $SHOW(a * 7)
+    int64 temporary = 100;
+    int64 total = 0;
+    $ACCUMULATE(total)[1, 2, 3];
+    println("{} {}", total, temporary);
     return 0;
 }
 ```
 
-```text
-a * 7 = 42
-```
+This prints `6 100`. Each iteration has distinct declaration identities without an added runtime block. Variadic fragments can be forwarded to another macro or spread in a function argument list. `$for` traverses variadic parameters only. A parameter in a declaration-name position requires a single identifier; that declaration is visible to subsequent caller code. Member selectors and variable references have separate syntax roles.
 
-Names such as `match` and `when` no longer occupy keywords, so they can be used as macro names. Note that `$concat` only pastes identifiers, so a parameter used for pasting **must not be back-quoted** — back-quoting wraps it in parentheses, and the result is no longer an identifier.
+## Macro type parameters
 
-## Ordered bracket groups in text macros
-
-Macros expand before the Lexer. Arguments remain raw text; grouping neither builds AST nodes nor checks argument types. The keyword is lowercase `$macro`, with the expansion body on following lines and `$end_macro` as its terminator.
+Angle brackets are reserved for type parameters:
 
 ```magel
-$macro CODE<..Types>[..Attrs](..Args){..Body}
-    println("types: {}", $stringify(Types));
-    println("attrs: {}", $stringify(Attrs));
-    println("args: {}", $stringify(Args));
-    Body
+$macro CONVERT<T:value>(value)
+cast<T>(value)
 $end_macro
-
-void main() {
-    $CODE<int64, String>[readonly](x, y){
-        println("multi-line body");
-        if (true) {
-            println("nested braces");
-        }
-    }
+$macro RESULT<T>(value)
+cast<T>(value)
+$end_macro
+int64 main() {
+    int32 source = 42;
+    auto same = $CONVERT(source);
+    int32 expected = $RESULT(42);
+    int64 explicitValue = $RESULT<int64>(42);
+    return 0;
 }
 ```
 
-The declaration determines the order of `< >`, `[ ]`, `( )`, and `{ }`. Repeated groups are supported: `$macro FOO()()` and `$macro BAR[](x)()` are called as `$FOO()()` and `$BAR[](value)()`. The existing single empty `NAME()` declaration still defines an object macro called as `$NAME`.
+`T:value` uses only that argument's static type. A parameter without a source uses only the expected result type. Explicit types take priority. Inference does not evaluate arguments, insert conversions or switch sources. `auto x = $RESULT(42)` fails because no expected type is available. Macro value parameters, specialization, partial specialization and arbitrary compile-time function execution are outside this interface.
 
-Each group accepts fixed parameters and one final `..rest`, for example `<T, ..Types>[..Attrs](x, ..Args){..Body}`. Names must be unique across the declaration. Each variadic capture may be empty and stays inside its own group. `$for` can traverse each group's tail independently, including nested loops across groups. Existing single-parenthesis `...rest`, argument protection, and `expr` macros remain supported.
+## Complete syntax matching
 
-Only commas at the current nesting level split arguments. Nested brackets, strings, and comments shield their commas; joining a variadic capture preserves the original comma separators and surrounding text. `List<List<int64>>` closes character by character without operator tokenization. Unpaired `<` and `>` inside other bracket groups remain ordinary text, allowing comparisons and shifts. Paired angle brackets participate in grouping; parentheses can disambiguate comparison expressions.
+```magel
+$macro CLASSIFY(value)
+$match value is ident
+1
+$else is expr
+2
+$else is type
+3
+$else is block
+4
+$else is stmt
+5
+$else
+0
+$end_match
+$end_macro
+```
 
-Brace arguments may span multiple lines and contain nested groups. Brackets in strings and comments do not close groups. Internal markers retain file and line origins, plus column offsets for captured fragments. Before lexing, markers are removed and line breaks and spaces restore diagnostic positions, including code after a call on the same line and subsequent lines. Bracket kind, order, structure, or binding mismatches report `宏Token分组不匹配` rather than type errors. See [`magel_macro_groups_test.cpp`](../../tests/magel_macro_groups_test.cpp).
+The five categories are exactly `expr`, `ident`, `type`, `block` and `stmt`. The same generated parser must consume the whole fragment. The first matching branch wins; an identifier may also be an expression. Syntax recognition does not imply valid names or types. Only selected output enters final name, type, capture, borrow and resource checks, while all template syntax must be valid. No match without a fallback emits nothing. A curly argument group is a delimiter rather than an implicit block: pass a complete block as `$A{{ statements; }}`.
 
-Inside a macro body, `$n` names an expansion-local temporary. The decimal integer n has no fixed width and may include a sign; `$0010`, `$+10` and `$10` identify the same slot. Normalization uses text rather than host integer conversion. Separate macro calls remain isolated, strings and comments are preserved, and placeholders remain invalid outside macro bodies.
+## Regular expressions, spelling and origins
 
-## Migration checklist
+```magel
+$macro DECIMAL(value)
+$regex value is "[0-9]+"
+value
+$else
+0
+$end_regex
+$end_macro
+```
 
-| You used to write | Write this instead |
-| --- | --- |
-| `int32 x = a + (int32)1;` | `int32 x = a + 1;` (literals are context-typed) |
-| `5 + a` failed with "cannot find `RightAdd`" | Usually inferred now; implement `RightAdd<R,T>` to customise it, `NoRightAdd` to forbid it |
-| the whole `$match` / `$when` / `$end_match` set | `$for` plus overloads that key on argument count |
-| `a ## b` | `$concat(a, b)` |
-| `#param` | `$stringify(param)` |
+`$regex` uses the full C++ `std::regex` ECMAScript syntax and matches the entire argument spelling after trimming outer whitespace. Internal comments, quotes and newlines remain significant. The language string is decoded once; compiled patterns and invalid patterns are cached. Invalid patterns are compile errors. Capture groups are available inside the regex but do not export variables.
 
-Nothing to change for: comparisons and logical operators, which are not context-typed; `-` `/` `%`, ordering comparisons and shifts, which are still not commutative; and `&&` / `||`, which were never overloadable. Borrow checking covers provenance escape and move/release control flow, including MGL1204 and MGL1205 diagnostics.
+`$stringify(value)` returns original argument text without evaluating or expanding it. `$concat(left, right)` produces a single identifier only. A template-generated identifier keeps its definition context and cannot capture a caller's local binding. Direct source concatenation uses that source context. `$line`, `$file` and `$module` are available directly and refer to the invocation inside a template; forwarding retains original argument origins.
 
-## Regression coverage
+`$replace ADD(a, b) a + b` is a single-line definition using the same AST mechanism. Expansion has recursion and size budgets. Diagnostics retain invocation, definition and argument chains. The editor previews hygienic ASTs and obtains type hints from final static types without exposing internal binding identifiers.
 
-- Ten new regressions: `literal_context_type`, `operator_symmetry`, `operator_right_direction`, `operator_result_choice`, `operator_swap_eval_order`, plus the five error samples `operator_asymmetric_reverse`, `operator_right_forbidden`, `operator_right_explicit`, `operator_result_ambiguous` and `logical_operator_overload`.
-- Removed: `macro_match.mgl` and its seven error samples, plus `macro_paste_missing_side` and `macro_stringify_unknown`, which only applied to the removed spellings.
+See [AST tests](../../tests/magel_ast_macros.py), [groups and origins](../../tests/magel_macro_groups.py), [static types](../../tests/magel_macro_generics.py) and [syntax and regex branches](../../tests/magel_macro_branches.py).

@@ -1,1 +1,1 @@
-magel: 前处理：example/samples-error/replace_block_directive.mgl 第 1 行：`$replace` 是单行宏，宏体里不能写 `$for`；要 `$for` 请改用 `$macro … $end_macro`
+语法错误：example/samples-error/replace_block_directive.mgl 第 1 行第 42 列：期望 MACRO_BODY，实际是 MACRO_END_FOR

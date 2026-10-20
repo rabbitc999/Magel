@@ -116,7 +116,8 @@ void CollectLoopBreakValues(int statementId, Memory::Vector<std::shared_ptr<MTyp
             MVar binding{ type, decl.s, decl.type2 != 0 };
             if (initializer >= 0) binding.borrowDepth = BorrowSourceDepth(initializer);
             if (binding.isConst) binding.constantExpression = initializer;
-            g_scope.back()[decl.s] = binding;
+            binding.bindingIdentity = decl.bindingIdentity;
+            g_scope.back()[NodeBindingKey(decl)] = binding;
         }
         return;
     case MNode::Destructure:
@@ -132,7 +133,11 @@ void CollectLoopBreakValues(int statementId, Memory::Vector<std::shared_ptr<MTyp
                 for (std::size_t i = 0; i < pattern.kids.size(); ++i) bind(pattern.kids[i], itemType->paramTypes[i]);
             }
             else if (pattern.s != "_")
-                g_scope.back()[pattern.s] = MVar{ itemType, pattern.s, false };
+            {
+                MVar binding{ itemType, pattern.s, false };
+                binding.bindingIdentity = pattern.bindingIdentity;
+                g_scope.back()[NodeBindingKey(pattern)] = binding;
+            }
         };
         bind(statement.kids[0], type);
         return;
@@ -174,7 +179,9 @@ void CollectLoopBreakValues(int statementId, Memory::Vector<std::shared_ptr<MTyp
                             const auto binder = N(pattern.kids[i]);
                             const auto type = variant->payloads[i].type;
                             const bool frozen = statement.type2 == 1 ? type->kind == MType::Ptr : type->kind != MType::Ptr || type->readOnly;
-                            g_scope.back()[binder.s] = MVar{ type, binder.s, frozen };
+                            MVar binding{ type, binder.s, frozen };
+                            binding.bindingIdentity = binder.bindingIdentity;
+                            g_scope.back()[NodeBindingKey(binder)] = binding;
                         }
             }
             for (const int child : Memory::Vector<int>(N(item.kids[0]).kids))
@@ -203,7 +210,9 @@ void CollectLoopBreakValues(int statementId, Memory::Vector<std::shared_ptr<MTyp
                 element = iterator->element->kind == MType::Ptr ? iterator->element->elem : iterator->element;
         if (!element) return;
         PushScope();
-        g_scope.back()[statement.s] = MVar{ element, statement.s, false };
+        MVar binding{ element, statement.s, false };
+        binding.bindingIdentity = statement.bindingIdentity;
+        g_scope.back()[NodeBindingKey(statement)] = binding;
         CollectLoopBreakValues(statement.kids[1], values, hasPlain, expected, borrowDepth, loopDepth + 1);
         PopScope();
         return;
@@ -824,11 +833,11 @@ std::shared_ptr<MType> RawExprType(int id)
     case MNode::GenericClosureSelect: return ExprType(node.kids[0]);
     case MNode::Var:
     {
-        if (FindGenericClosureDefinition(node.s)) return GenericClosureType(node.s);
-        const MVar *found = FindIn(node.module, node.s);
+        if (!NodeUsesDefinitionLookup(node) && FindGenericClosureDefinition(node.s)) return GenericClosureType(node.s);
+        const MVar *found = FindNodeVar(node);
         if (found != nullptr) return found->type;
         /* 方法体里可以直接写字段名（等价于 `self.字段`），`self` 就是接收者 */
-        if (!g_owner.empty())
+        if (!NodeUsesDefinitionLookup(node) && !g_owner.empty())
         {
             if (node.s == "self")
             {
@@ -921,7 +930,7 @@ std::shared_ptr<MType> RawExprType(int id)
                 return readOnly;
             }
             pointer->elem = ExprType(node.kids[0]);
-            const MVar *variable = N(node.kids[0]).kind == MNode::Var ? FindIn(N(node.kids[0]).module, N(node.kids[0]).s) : nullptr;
+            const MVar *variable = N(node.kids[0]).kind == MNode::Var ? FindNodeVar(N(node.kids[0])) : nullptr;
             pointer->readOnly = (variable != nullptr && variable->isConst) || IsTupleElementAccess(node.kids[0]);
             int baseId = node.kids[0];
             while (baseId >= 0)

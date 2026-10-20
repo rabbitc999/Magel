@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { registerMacroPreview } = require('../src/macros');
 
 async function main() {
-  let command, provider, definition, hover, closed, flushed = false, shown, result = { text: 'int64 answer=4;', diagnostics: [] };
+  let command, provider, definition, closed, flushed = false, shown, result = { text: 'int64 answer=4;', diagnostics: [] };
   const errors = [];
   const uri = (value) => ({ scheme: value.split(':')[0], toString: () => value });
   const document = { languageId: 'magel', uri: uri('file:///project/main.mgl') };
@@ -20,7 +20,7 @@ async function main() {
       async openTextDocument(value) { return { uri: value, text: provider.provideTextDocumentContent(value) }; },
     },
     commands: { registerCommand(name, callback) { assert.equal(name, 'magel.previewMacroExpansion'); command = callback; return { dispose() {} }; } },
-    languages: { registerDefinitionProvider(selector, value) { definition = value; return { dispose() {} }; }, registerHoverProvider(selector, value) { hover = value; return { dispose() {} }; }, async setTextDocumentLanguage(value, language) { assert.equal(language, 'magel'); return value; } },
+    languages: { registerDefinitionProvider(selector, value) { definition = value; return { dispose() {} }; }, async setTextDocumentLanguage(value, language) { assert.equal(language, 'json'); return value; } },
     window: {
       activeTextEditor: { document }, async showInformationMessage() {},
       async showErrorMessage(message) { errors.push(message); },
@@ -36,14 +36,10 @@ async function main() {
     } }),
   });
   await command(); assert.equal(shown.text, result.text); assert.deepEqual(errors, []);
-  result = { text: '__magel_macro_vec_1_10', diagnostics: [], mappings: [{ expandedLine: 0, uri: document.uri.toString(), sourceLine: 8 }],
-    temporaries: [{ name: '__magel_macro_vec_1_10', slot: '$10', macro: 'vec', expansionId: '1',
-      definition: { uri: document.uri.toString(), range: { start: { line: 2, character: 4 }, end: { line: 2, character: 7 } } } }] };
+  result = { text: '{"format":"hygienic-ast","expansions":[]}', format: 'json', diagnostics: [],
+    mappings: [{ expandedLine: 0, uri: document.uri.toString(), sourceLine: 8 }] };
   await command();
-  shown.getWordRangeAtPosition = () => ({}); shown.getText = () => result.text;
-  assert.match(hover.provideHover(shown, { line: 0, character: 2 }).contents.value, /\$10/);
-  assert.deepEqual(definition.provideDefinition(shown, { line: 0, character: 2 }).range.coordinates, [2, 4, 2, 7]);
-  shown.getWordRangeAtPosition = () => undefined;
+  assert.ok(shown.uri.toString().endsWith('.json'));
   assert.equal(definition.provideDefinition(shown, { line: 0, character: 0 }).range.line, 8);
   closed(shown); assert.equal(provider.provideTextDocumentContent(shown.uri), '');
   result = { diagnostics: ['宏实参数量错误'], text: '' };

@@ -344,6 +344,14 @@ doubled the diagnostic surface for no gain. See the deletion list in the next se
 
 ---
 
+### 7.3 Macros need binding identities too
+
+Macros use hygienic AST substitution after parsing. Ordinary template locals receive distinct bindings,
+arguments retain caller bindings, and helpers resolve at the definition. Expression structure removes
+the need for automatic parentheses and numbered temporary names. `$match` recognizes five complete
+syntax categories; `$regex` matches original text. Unselected output is excluded from final semantic
+checks. Identifier concatenation and stringification use `$concat` and `$stringify` only.
+
 ## 8. The deletion list
 
 Half the shape of this language comes from what was removed:
@@ -360,7 +368,7 @@ Half the shape of this language comes from what was removed:
 | `IterChain` eager chaining | `std::iter` lazy adapters | ownership of the owning intermediates was unclear |
 | `magel zip` | `tools/package_compiler.py` | the tool itself need not ship a compression implementation just to be released |
 | macro `##` pasting / `#param` stringification | `$concat(a, b)` / `$stringify(x)` | a second spelling of the same thing, doubling the diagnostic surface |
-| the `$match` / `$when` / `$else` macro DSL | `$for` plus overloads that key on argument count | a miniature DSL stacked on a text substitution macro: rarely used, huge diagnostic surface |
+| text macros before lexing, automatic parentheses and numbered temporaries | hygienic AST macros, syntax classification and regex matching | preserve structure and binding identities rather than capture caller names through text substitution |
 
 Removed things **get no privileges**: there are no dedicated migration hints, and writing one is an
 ordinary error. Expecting old syntax to slip past the new rules is the same as not writing it.

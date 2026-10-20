@@ -46,11 +46,12 @@ magel clear out build/compiler
 算法实现在对应 `.cpp` 独立编译。`std_binding.hpp` 只提供注册表前置声明；模板需要的
 结构化数据与类型转换定义保留在头文件中。VM 核心继续使用通用宿主协议。
 
-泛型、闭包、宏控制、工程清单和诊断呈现分别由 `magel_generic.cpp`、`magel_lambda.cpp`、
-`magel_generic_closure.cpp`、`magel_macro.cpp`、`magel_macro_controls.cpp`、`magel_package.cpp`
-和 `magel_report.cpp` 编译。AST 声明位于 `magel_ast.hpp`；`semantics/` 中的符号登记、
-程序降级等分片由权威文法装配进生成解析器。语言服务位于 `lsp/`，分别使用
-`macro_analyzer`、`language_server` 和 `protocol_types` 表达职责；工程生成器位于 `generator/`。
+泛型、闭包、工程清单和诊断分别由 `magel_generic.cpp`、`magel_lambda.cpp`、
+`magel_generic_closure.cpp`、`magel_package.cpp` 和 `magel_report.cpp` 编译。
+`macro/` 独立编译卫生绑定、结构化替换、宏注册、正则匹配、原始片段和编辑器宏头模型；
+`syntax/` 提供普通源码分组及常量求值，`editor/` 输出真实编译分析。
+AST 声明位于 `magel_ast.hpp`；`semantics/` 中的符号登记、卫生展开、泛型闭包和程序降级
+由权威文法装配进生成解析器。语言服务位于 `lsp/`，工程生成器位于 `generator/`。
 
 修改文法后执行 `sh gen.sh`，然后执行 `make -j4`。普通 C++ 实现变化由 `.d` 文件追踪实际包含关系。
 `make` 自动检查标准库、胶水及手册的内嵌输入，内容由 `tools/embed_stdlib.py` 生成并单独编译为

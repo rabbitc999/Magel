@@ -32,7 +32,7 @@ MEffectPlace EffectPlace(int id)
     const auto node = N(id);
     if (node.kind == MNode::Var)
     {
-        const auto variable = FindIn(node.module, node.s);
+        const auto variable = FindNodeVar(node);
         if (variable)
         {
             const auto alias = g_effectAliases.find(variable->emitted);
@@ -108,6 +108,15 @@ void RecordExpressionEffects(int id)
         }
         if (node.kind == MNode::Assign)
         {
+            const auto &value = N(node.kids[1]);
+            const bool compoundRight = value.kind == MNode::Assign && value.type2 == 1;
+            const bool compoundChain = node.type2 == 1 && value.kind == MNode::Bin && value.kids.size() == 2 && N(value.kids[1]).kind == MNode::Assign;
+            if (compoundRight || compoundChain)
+            {
+                ReductionSourceScope source(current);
+                Fail("复合赋值不能参与链式赋值");
+                return;
+            }
             accesses.push_back({ EffectPlace(node.kids[0]), current, false, true });
             address(node.kids[0]);
             visit(node.kids[1]);

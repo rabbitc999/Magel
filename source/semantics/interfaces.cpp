@@ -584,7 +584,7 @@ bool StableBoxAddress(int valueId)
     const MNode &node = N(valueId);
     if (node.kind == MNode::Var)
     {
-        const MVar *found = FindIn(node.module, node.s);
+        const MVar *found = FindNodeVar(node);
         if (found == nullptr || g_scope.empty()) return false;
         /* 得是**全局**（不是局部）才算稳定地址。 */
         const Memory::String key = node.module.empty() ? node.s : node.module + "::" + node.s;

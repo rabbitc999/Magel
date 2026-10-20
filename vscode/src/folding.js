@@ -8,7 +8,7 @@
  *   - 配对用一个栈，交叉写错时不会把层次折乱；
  *   - 收尾还没写完（编辑到一半）时按文件末尾收，块不会突然消失。
  *
- * 指令名按**完整词面**判断：`$match_if` 不是 `$match`（`$match` 那套 DSL 已从语言删除）。
+ * 指令名按**完整词面**判断：`$match_if` 不是 `$match`。
  * 行号是 0 基、闭区间，和 VS Code 的 `FoldingRange` 一致。
  */
 
@@ -16,11 +16,12 @@
 const OPENERS = [
   ['$macro', '宏定义'],
   ['$for', 'for 展开'],
-  ['$if', '条件展开'],
+  ['$match', '语法匹配'],
+  ['$regex', '正则匹配'],
 ];
 
 /** 收标签。 */
-const CLOSERS = ['$end_macro', '$end_for', '$end_if'];
+const CLOSERS = ['$end_macro', '$end_for', '$end_match', '$end_regex'];
 
 /**
  * 这一行是不是完整的 `word` 指令（后面不能紧跟标识符字符）。
@@ -62,10 +63,12 @@ function planFoldingRanges(lines) {
     const text = String(lines[index]).trim();
     const name = openerName(text);
     if (name !== null) {
-      open.push({ line: index, name });
+      const directive = OPENERS.find(([word]) => isDirective(text, word))[0];
+      open.push({ line: index, name, closing: '$end_' + directive.slice(1) });
       continue;
     }
-    if (!CLOSERS.some((word) => isDirective(text, word))) continue;
+    const closing = CLOSERS.find((word) => isDirective(text, word));
+    if (!closing || !open.length || open[open.length - 1].closing !== closing) continue;
     const start = open.pop();
     if (start === undefined) continue; // 多余的收尾：交给编译器诊断，这里不报
     if (index > start.line) blocks.push({ start: start.line, end: index, name: start.name });

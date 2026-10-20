@@ -61,15 +61,13 @@ int64 main() {
 
 Registration does not run the body. Normal scope exit, return, panic, break, continue and propagation through `?` run registered callbacks once. Callbacks in the same scope run in reverse registration order and read variables at exit time. They run before automatic resource cleanup. Defer handles cleanup outside ownership; Drop and Closeable keep their automatic behavior.
 
-## Macro expansion
+## Hygienic macro expansion
 
-- `$if condition`: select a branch using a compile-time constant.
-- `$elif condition`: test another condition if no previous branch was selected.
-- `$else`: select the fallback branch.
-- `$end_if`: end the condition block and check nesting with for blocks.
-- `$let name = value`: bind local text for the current macro invocation.
-- `$argc`: read the number of actual arguments.
-- `$count(...)`: count a variadic tail or text list.
-- `$typecheck(T, expr)`: check an expression using assignment compatibility, without an arbitrary cast.
+The generated parser builds macro ASTs, and semantic analysis performs hygienic expansion.
+`$match value is expr` recognizes exactly the complete `expr`, `ident`, `type`, `block` and `stmt`
+syntax categories, with ordered `$else is` branches and an optional `$else` fallback.
+`$regex value is "pattern"` performs full ECMAScript matching against original argument text.
+Unselected output is excluded from final semantic checks; every template must remain syntactically valid.
 
-Conditions support integer arithmetic, comparisons, logical operations and string equality. Logical evaluation short-circuits. Parameters and local bindings may supply constants; runtime variables cannot. Recursive expansion may terminate through a condition, with a maximum depth of 64 and 100000 expansions per preprocessing run. Arity errors remain compile-time errors. The removed match DSL, `##` and `#parameter` aliases are not restored.
+Ordinary local declarations are hygienic and arguments keep caller bindings. Expansion adds no automatic
+parentheses or argument cache. See [hygienic macros](24-literals-operators-macros.md#compile-time-hygienic-ast-macros).

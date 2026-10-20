@@ -31,7 +31,7 @@ async function main() {
     '$macro example(...A)(...B)', '{', '    print("A=[");', '    $for var in A',
     '    print("{} ", var);', '    $end_for', '    println("]");', '    print("B=[");',
     '    $for var in B', '    print("{} ", var);', '    $end_for', '    println("]");',
-    '    int64 $123456789012345678901234567890 = 1;',
+    '    int64 temporary = 1;',
     '    // $for var in A $end_macro', '    println("$end_macro var A");', '}', '$end_macro',
     'int64 main() { int64 A=1; println("{}", A); return 0; }',
   ];
@@ -45,7 +45,7 @@ async function main() {
   assert(scopes(3, 'A').includes('variable.parameter.macro.magel'));
   assert(scopes(4, 'var').includes('variable.other.macro-body.magel'));
   assert(scopes(8, 'B').includes('variable.parameter.macro.magel'));
-  assert(scopes(12, '$123').includes('variable.other.macro-temporary.magel'));
+  assert(scopes(12, 'temporary').includes('variable.other.macro-body.magel'));
   assert(scopes(13, '$for').includes('comment.line.double-slash.magel'));
   assert(scopes(14, '$end_macro').includes('string.quoted.double.magel'));
   assert(scopes(15, '}').includes('meta.preprocessor.macro.body.magel'));
@@ -59,6 +59,6 @@ async function main() {
   const incomplete = tokenize(['$macro vec<T>[...list]', '{', '    $for var in list', '    println("{}", var);']);
   assert(incomplete[3][0].scopes.includes('meta.preprocessor.macro.body.magel'));
   registry.dispose();
-  console.log('真实 TextMate 宏头、独立宏体、两组循环、整数槽、字符串/注释保护与结束恢复高亮通过。');
+  console.log('真实 TextMate 宏头、独立宏体、两组循环、卫生局部变量、字符串/注释保护与结束恢复高亮通过。');
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });

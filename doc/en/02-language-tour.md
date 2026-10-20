@@ -425,7 +425,7 @@ Directives starting with `%` run before parsing: `%if` / `%elif` / `%else`
 `-D NAME`).
 
 Things starting with `$` are macros: `$macro NAME(x) … $end_macro` defines one, called as
-`$NAME(…)`; a parameterless object macro is written `$macro NAME()` and called `$NAME`. Inside a macro
+`$NAME(…)`; a parameterless object macro is written `$macro NAME` and called `$NAME`. Inside a macro
 body you can also use `$stringify(...)`, `$concat(a, b)` and `$line`.
 
 > Symbols from `%define` are for conditional compilation only; they are not constants usable in

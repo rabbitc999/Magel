@@ -59,8 +59,8 @@ def generate():
                               documentation='\n\n'.join(selected), source=source)
     macro_source = 'doc/24-literals-operators-macros.md'
     macro_sections = re.split(r'(?=^## )', (ROOT / macro_source).read_text(encoding='utf-8'), flags=re.M)
-    keywords['macro'] = dict(name='macro', token='$macro', syntax='$macro NAME<..Types>[..Attrs](..Args){..Body}\n...\n$end_macro',
-                             documentation='\n\n'.join(section for section in macro_sections if section.startswith(('## 宏文本拼接', '## 有序多括号'))), source=macro_source)
+    keywords['macro'] = dict(name='macro', token='$macro', syntax='$macro NAME<T:arg>[..Attrs](arg, ..Args){Body}\n...\n$end_macro',
+                             documentation='\n\n'.join(section for section in macro_sections if section.startswith(('## 编译期卫生', '## 参数组', '## 宏泛型', '## 五类', '## 正则'))), source=macro_source)
     assert 'break' in keywords and 'struct' in keywords and len(book) >= 28
     images = [dict(path='images/' + path.name, hex=path.read_bytes().hex())
               for path in sorted((ROOT / 'doc/book/images').glob('*')) if path.is_file()]

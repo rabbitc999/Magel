@@ -208,10 +208,29 @@ Memory::Vector<simple_ast::NodePtr> LowerStmtList(int listId)
 {
     Memory::Vector<simple_ast::NodePtr> out;
     if (listId < 0) return out;
-    for (const int stmtId : N(listId).kids)
+    std::size_t expansionDepth = 0;
+    for (std::size_t index = 0; index < N(listId).kids.size();)
     {
+        const int stmtId = N(listId).kids[index];
+        const auto statement = N(stmtId);
+        if (statement.kind == MNode::ExprStmt && statement.kids.size() == 1 && N(statement.kids[0]).kind == MNode::MacroCall)
+        {
+            if (++expansionDepth >= 256) return Fail("宏语句展开超过深度预算"), out;
+            int root = -1;
+            if (!ExpandDeferredAstMacro(statement.kids[0], nullptr, &root)) return out;
+            const auto body = N(root);
+            auto items = N(body.kids[0]).kids;
+            if (body.kids[1] >= 0) items.push_back(M_ExprStmt(body.kids[1]));
+            auto &statements = g_nodes[listId].kids;
+            statements.erase(statements.begin() + static_cast<std::ptrdiff_t>(index));
+            statements.insert(statements.begin() + static_cast<std::ptrdiff_t>(index), items.begin(), items.end());
+            if (!PrepareExpandedMacroLambdas()) return out;
+            continue;
+        }
+        expansionDepth = 0;
         const simple_ast::NodePtr node = LowerStmt(stmtId);
         if (node) out.push_back(node);
+        ++index;
     }
     return out;
 }
@@ -564,7 +583,7 @@ int ExplicitReceiverField(int id)
 {
     if (id < 0 || N(id).kind != MNode::Var) return -1;
     const auto source = N(id);
-    if (g_owner.empty() || FindIn(source.module, source.s) || !FieldType(g_owner, source.s)) return -1;
+    if (NodeUsesDefinitionLookup(source) || g_owner.empty() || FindNodeVar(source) || !FieldType(g_owner, source.s)) return -1;
     const int self = M_New(MNode::Var, "self");
     g_nodes[self].module = source.module;
     const int member = M_New(MNode::Member, source.s);
@@ -644,7 +663,7 @@ simple_ast::NodePtr LowerAddressOf(int id)
     if (const int member = ExplicitReceiverField(id); member >= 0) return LowerAddressOf(member);
     const MNode &node = N(id);
     if (RawExprType(id)->kind == MType::Ptr) return LowerRawExpr(id);
-    if (node.kind == MNode::Var && node.s == "self" && !g_owner.empty()) return simple_ast::Node::var("self");
+    if (node.kind == MNode::Var && !NodeUsesDefinitionLookup(node) && node.s == "self" && !g_owner.empty()) return simple_ast::Node::var("self");
     const auto temporaryType = ExprType(id);
     if (g_freshSink && IsContainer(temporaryType) && IsFreshValue(id))
     {
@@ -677,7 +696,7 @@ simple_ast::NodePtr LowerAddressOf(int id)
          *
          * 标量、字符串、大数与容器变量由隐藏单元素槽提供地址；结构体与元组
          * 直接使用自身的存储地址。运行时数组等其他句柄不在此处转换为变量引用。 */
-        const MVar *found = FindIn(node.module, node.s);
+        const MVar *found = FindNodeVar(node);
         if (found != nullptr && found->elementReference)
             return simple_ast::Node::var(found->emitted);
         if (found != nullptr && found->type && (found->type->kind == MType::Struct || (found->type->kind == MType::Array && !IsRuntimeArray(found->type))))
@@ -1537,7 +1556,7 @@ Memory::String ConstRootOf(int targetId)
             return "opcode";
         if (node.kind == MNode::Var)
         {
-            const MVar *found = FindIn(node.module, node.s);
+            const MVar *found = FindNodeVar(node);
             return (found != nullptr && found->isConst) ? node.s : Memory::String();
         }
         if (node.kind == MNode::EnumCtor)
@@ -2194,7 +2213,7 @@ simple_ast::NodePtr LowerAssignImpl(int targetId, int valueId)
     }
     if (target.kind == MNode::Var)
     {
-        MVar *found = FindIn(target.module, target.s);
+        MVar *found = FindNodeVar(target);
         if (found != nullptr)
         {
             if (found->isConst)
@@ -2250,7 +2269,7 @@ simple_ast::NodePtr LowerAssignImpl(int targetId, int valueId)
                 /* `a = a;`：自赋值什么也不做，别把旧字段析构完再把同一个值拷回来。 */
                 if (N(valueId).kind == MNode::Var)
                 {
-                    const MVar *source = FindIn(N(valueId).module, N(valueId).s);
+                    const MVar *source = FindNodeVar(N(valueId));
                     if (source != nullptr && source->emitted == found->emitted)
                         return simple_ast::Node::block({});
                 }
@@ -3036,30 +3055,31 @@ simple_ast::NodePtr LowerLocalDecl(int id)
             Fail("不可变变量（const）必须给初值：" + decl.s);
             return nullptr;
         }
-        const auto previous = g_scope.back().find(decl.s);
+        const auto previous = g_scope.back().find(NodeBindingKey(decl));
         if (previous != g_scope.back().end() && g_borrowFlowCapture)
         {
             // 先保存旧槽，合法性由控制流的所有到达路径共同决定。
             g_borrowFlowCapture->redeclarations[declId] = { previous->second.emitted, {} };
             g_scope.back().erase(previous);
         }
-        const Memory::String emitted = DeclareVar(decl.s, type, Memory::String(), isConst);
+        const Memory::String emitted = DeclareVar(decl.s, type, Memory::String(), isConst, NodeBindingKey(decl), decl.bindingIdentity);
+        if (decl.type < 0) RecordEditorTypeHint(declId, type);
         if (decl.kids[0] >= 0)
         {
             Memory::Set<Memory::String> borrowedTypes;
             if (ContainsBorrowedReferences(type, &borrowedTypes))
-                Find(decl.s)->borrowDepth = BorrowSourceDepth(decl.kids[0]);
+                FindNodeVar(decl)->borrowDepth = BorrowSourceDepth(decl.kids[0]);
             if (type->kind == MType::Ptr)
             {
                 const auto root = BorrowRootVariable(decl.kids[0]);
-                Find(decl.s)->allocatedReference = N(decl.kids[0]).kind == MNode::NewPtr || (root && root->allocatedReference);
-                if (root) Find(decl.s)->borrowOwner = root->type->kind == MType::Ptr ? root->borrowOwner : root->emitted;
+                FindNodeVar(decl)->allocatedReference = N(decl.kids[0]).kind == MNode::NewPtr || (root && root->allocatedReference);
+                if (root) FindNodeVar(decl)->borrowOwner = root->type->kind == MType::Ptr ? root->borrowOwner : root->emitted;
                 g_effectAliases[emitted] = EffectPlace(decl.kids[0]);
             }
         }
-        if (isConst && Find(decl.s))
+        if (isConst && FindNodeVar(decl))
         {
-            Find(decl.s)->constantExpression = decl.kids[0];
+            FindNodeVar(decl)->constantExpression = decl.kids[0];
             BindConstantReferences(decl.kids[0]);
         }
 
@@ -3151,10 +3171,10 @@ simple_ast::NodePtr LowerLocalDecl(int id)
                 break;
             }
             g_referenceStorage[emitted] = storage;
-            Find(decl.s)->emitted = storage;
-            Find(decl.s)->elementReference = true;
+            FindNodeVar(decl)->emitted = storage;
+            FindNodeVar(decl)->elementReference = true;
         }
-        CaptureBorrowDeclaration(declId, Find(decl.s));
+        CaptureBorrowDeclaration(declId, FindNodeVar(decl));
         g_expectedFuncType = savedFuncType;
         g_expectedNewType = savedNewType;
         const auto cleanup = initializerTemps.finish();
@@ -3373,8 +3393,15 @@ simple_ast::NodePtr LowerDestructure(int id)
         g_nodes[child].type = childType;
         // 与普通 auto 声明一致；M_Decl 的未设置标记不能被误读成 const。
         g_nodes[child].type2 = 0;
+        g_nodes[child].syntaxContext = pattern.syntaxContext;
+        g_nodes[child].bindingIdentity = pattern.bindingIdentity;
+        g_nodes[child].bindingContext = pattern.bindingContext;
+        g_nodes[child].module = pattern.module;
+        g_nodes[child].sourceLine = pattern.sourceLine;
+        g_nodes[child].sourceColumn = pattern.sourceColumn;
+        g_nodes[child].macroExpansion = pattern.macroExpansion;
         out.push_back(LowerLocalDecl(M_LocalDecl(childType, M_List1(child), 0)));
-        CaptureBorrowDeclaration(patternId, Find(pattern.s));
+        CaptureBorrowDeclaration(patternId, FindNodeVar(pattern));
         return g_error.empty();
     };
     if (!bind(node.kids[0], M_Var(M_Name(name.c_str())), type)) return Bad();
@@ -3548,6 +3575,7 @@ simple_ast::NodePtr LowerEnumSwitch(int id, const std::shared_ptr<MType> &subjec
             }
             continue;
         }
+        if (!NormalizeAstTypeQualifier(static_cast<int>(item.i))) return Bad();
         const MNode &parsedPattern = N(static_cast<int>(item.i));
         MNode pattern = parsedPattern;
         if (pattern.kind == MNode::Call && pattern.kids.size() == 2u)
@@ -3667,7 +3695,8 @@ simple_ast::NodePtr LowerEnumSwitch(int id, const std::shared_ptr<MType> &subjec
             for (std::size_t index = 0; index < variant->payloads.size(); ++index)
             {
                 const MEnumPayload &payload = variant->payloads[index];
-                const Memory::String sourceName = N(pattern.kids[index]).s;
+                const auto &bindingSyntax = N(pattern.kids[index]);
+                const Memory::String sourceName = bindingSyntax.s;
                 /*
                  * 载荷绑定默认是"只看不改"的：值载荷本来就是副本，`T const &` 载荷也只能读。
                  * 但 `Value(T mut & v)` 这种**可变引用载荷**要放开 —— 否则透过它写回原对象会被
@@ -3675,12 +3704,12 @@ simple_ast::NodePtr LowerEnumSwitch(int id, const std::shared_ptr<MType> &subjec
                  */
                 const bool valueMatch = switchNode.type2 == 1;
                 const bool frozen = valueMatch ? payload.type->kind == MType::Ptr : payload.type->kind != MType::Ptr || payload.type->readOnly;
-                const Memory::String emitted = DeclareVar(sourceName, payload.type, Memory::String(), frozen);
+                const Memory::String emitted = DeclareVar(sourceName, payload.type, Memory::String(), frozen, NodeBindingKey(bindingSyntax), bindingSyntax.bindingIdentity);
                 if (HasBorrowedValue(payload.type))
-                    Find(sourceName)->borrowDepth = BorrowSourceDepth(switchNode.kids[0]);
+                    FindNodeVar(bindingSyntax)->borrowDepth = BorrowSourceDepth(switchNode.kids[0]);
                 // 被闭包借用的载荷直接使用主体的稳定槽，避免建立指向临时标量的引用。
                 const bool captureStorage = !valueMatch && g_addressTakenNames.count(sourceName) && NeedsReferenceStorage(payload.type);
-                Find(sourceName)->elementReference = captureStorage;
+                FindNodeVar(bindingSyntax)->elementReference = captureStorage;
                 body.push_back(simple_ast::Node::declare(emitted,
                                                          captureStorage ? simple_ast::Type::i64() : LowerType(payload.type, emitted)));
                 const MField *field = FindField(subjectType->name, payload.storageName);
@@ -3702,7 +3731,7 @@ simple_ast::NodePtr LowerEnumSwitch(int id, const std::shared_ptr<MType> &subjec
                     return Fail("不可复制枚举的值匹配需要显式移动主体"), Bad();
                 if (transferPayload)
                 {
-                    Find(sourceName)->elementReference = false;
+                    FindNodeVar(bindingSyntax)->elementReference = false;
                     if (payload.type->kind == MType::Struct)
                     {
                         body.push_back(DefaultInit(emitted, payload.type, false, true));
@@ -3727,8 +3756,8 @@ simple_ast::NodePtr LowerEnumSwitch(int id, const std::shared_ptr<MType> &subjec
                             names.pop_back();
                             names.insert(names.begin(), slot);
                             g_referenceStorage[emitted] = storage;
-                            Find(sourceName)->emitted = storage;
-                            Find(sourceName)->elementReference = true;
+                            FindNodeVar(bindingSyntax)->emitted = storage;
+                            FindNodeVar(bindingSyntax)->elementReference = true;
                         }
                     }
                     continue;
@@ -3767,8 +3796,8 @@ simple_ast::NodePtr LowerEnumSwitch(int id, const std::shared_ptr<MType> &subjec
                     names.pop_back();
                     names.insert(names.begin(), slot);
                     g_referenceStorage[emitted] = storage;
-                    Find(sourceName)->emitted = storage;
-                    Find(sourceName)->elementReference = true;
+                    FindNodeVar(bindingSyntax)->emitted = storage;
+                    FindNodeVar(bindingSyntax)->elementReference = true;
                 }
             }
         }
@@ -4303,7 +4332,7 @@ bool IntervalConstantTree(int id, Memory::Set<int> &active, bool negativeLiteral
     {
         const auto bound = g_constantBindings.find(id);
         const auto variable = bound != g_constantBindings.end() ? &bound->second :
-                              node.kind == MNode::Var           ? FindIn(node.module, node.s) :
+                              node.kind == MNode::Var           ? FindNodeVar(node) :
                                                                   FindQualifiedGlobal(node.s, node.s2);
         result = variable && variable->isConst && variable->constantExpression >= 0 && IntervalConstantTree(variable->constantExpression, active);
     }
@@ -4436,8 +4465,8 @@ simple_ast::NodePtr LowerForeach(int id)
             else
                 MarkOwned(source);
         }
-        const Memory::String item = DeclareVar(node.s, element);
-        MVar *binding = Find(node.s);
+        const Memory::String item = DeclareVar(node.s, element, Memory::String(), false, NodeBindingKey(node), node.bindingIdentity);
+        MVar *binding = FindNodeVar(node);
         binding->elementReference = true;
         binding->isConst = IsReadOnlyAccess(node.kids[0]);
         out.push_back(simple_ast::Node::declare(item, simple_ast::Type::i64()));
@@ -4525,10 +4554,10 @@ simple_ast::NodePtr LowerForeach(int id)
     PushScope();
     PushOwnedScope();
     if (IsFreshValue(node.kids[0])) MarkDestructor(source, sourceType);
-    const Memory::String item = DeclareVar(node.s, element);
+    const Memory::String item = DeclareVar(node.s, element, Memory::String(), false, NodeBindingKey(node), node.bindingIdentity);
     const bool captureStorage = !reference && element->kind == MType::Int && g_addressTakenNames.count(node.s);
-    Find(node.s)->elementReference = reference || captureStorage;
-    Find(node.s)->isConst = reference && iterator->element->readOnly;
+    FindNodeVar(node)->elementReference = reference || captureStorage;
+    FindNodeVar(node)->isConst = reference && iterator->element->readOnly;
     out.push_back(simple_ast::Node::declare(item, reference || captureStorage ? simple_ast::Type::i64() : LowerType(element, item)));
     if (captureStorage)
     {
@@ -4791,39 +4820,10 @@ Memory::String DecodeAbiLibraryPath(const Memory::String &raw)
  */
 Memory::String UnescapeText(const Memory::String &raw)
 {
-    Memory::String out;
-    for (std::size_t index = 0; index < raw.size(); ++index)
-    {
-        if (raw[index] != '\\')
-        {
-            out.push_back(raw[index]);
-            continue;
-        }
-        if (index + 1u >= raw.size())
-        {
-            Fail("字符串以反斜杠结尾（写 `\\\\` 表示一个反斜杠）");
-            return out;
-        }
-        const char escape = raw[++index];
-        switch (escape)
-        {
-        case 'n': out.push_back('\n'); break;
-        case 't': out.push_back('\t'); break;
-        case 'r': out.push_back('\r'); break;
-        case '0': out.push_back('\0'); break;
-        case 'a': out.push_back('\a'); break;
-        case 'b': out.push_back('\b'); break;
-        case 'f': out.push_back('\f'); break;
-        case 'v': out.push_back('\v'); break;
-        case '\\': out.push_back('\\'); break;
-        case '"': out.push_back('"'); break;
-        case '\'': out.push_back('\''); break;
-        default:
-            Fail(Memory::String("字符串里不认识的转义：\\") + escape + "（支持 \\n \\t \\r \\0 \\\\ \\\" \\' ）");
-            return out;
-        }
-    }
-    return out;
+    std::string output, error;
+    if (!magel_literal::decodeString(std::string_view(raw.data(), raw.size()), output, error))
+        Fail(Memory::String(error.data(), error.size()));
+    return Memory::String(output.data(), output.size());
 }
 
 /**

@@ -397,7 +397,7 @@ detail square5=25
 
 以 `%` 开头的指令在解析之前处理：`%if` / `%elif` / `%else` / `%endif` 条件编译、`%define` 定义符号（等价命令行 `-D NAME`）。
 
-以 `$` 开头的是宏：`$macro NAME(x) … $end_macro` 定义，调用写 `$NAME(…)`；不带形参的对象宏写 `$macro NAME()` / 调用 `$NAME`。宏体里还能用 `$stringify(...)`、`$concat(a, b)`、`$line`。
+以 `$` 开头的是宏：`$macro NAME(x) … $end_macro` 定义，调用写 `$NAME(…)`；不带形参的对象宏写 `$macro NAME` / 调用 `$NAME`。宏体里还能用 `$stringify(...)`、`$concat(a, b)`、`$line`。
 
 > `%define` 的符号只用于条件编译，不能当表达式里的常量用。
 

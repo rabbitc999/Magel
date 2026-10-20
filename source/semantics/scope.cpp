@@ -33,12 +33,17 @@ MVar *Find(const Memory::String &name)
  * 全局变量按**模块限定名**登记（见 `RegisterTop`），所以模块里的 `x` 会先命中
  * 本模块的 `mod::x`；根模块与 prelude（`lang`）仍可按裸名兜底。两个模块各写一个
  * 同名全局时，各自的代码解析到各自的槽，不会再互相覆盖。
+ * @param module 引用所在的定义模块。
+ * @param name 源码名称。
+ * @param globalOnly 是否跳过调用者局部作用域。
+ * @return 找到的变量，不存在时返回空指针。
  */
-MVar *FindIn(const Memory::String &module, const Memory::String &name)
+MVar *FindIn(const Memory::String &module, const Memory::String &name, bool globalOnly)
 {
     /* 局部作用域：0 号是全局作用域，跳过。 */
-    for (std::size_t index = g_scope.size(); index-- > 1u;)
+    for (std::size_t index = globalOnly ? 0u : g_scope.size(); index > 1u;)
     {
+        --index;
         const auto found = g_scope[index].find(name);
         if (found != g_scope[index].end()) return &found->second;
     }
@@ -68,6 +73,78 @@ MVar *FindIn(const Memory::String &module, const Memory::String &name)
         chosen = candidate->first;
     }
     return result;
+}
+
+/**
+ * @brief 从独立的语法上下文和声明身份生成内部作用域键，不改变用户名字。
+ * @param node 声明或引用节点。
+ * @return 普通节点返回源名字，宏局部返回不能由源码标识符构造的绑定键。
+ */
+Memory::String NodeBindingKey(const MNode &node)
+{
+    if (!node.syntaxContext || !node.bindingIdentity) return node.s;
+    return Memory::String("\x1fmacro:") + Memory::toString(node.bindingContext ? node.bindingContext : node.syntaxContext) + ":" + Memory::toString(node.bindingIdentity);
+}
+
+/**
+ * @brief 判断节点是否为宏定义环境中的未限定辅助名称。
+ * @param node 待解析的语法节点。
+ * @return 应跳过调用者局部及接收者字段时返回真。
+ */
+bool NodeUsesDefinitionLookup(const MNode &node)
+{
+    return node.syntaxContext != 0 && node.bindingIdentity == 0;
+}
+
+/**
+ * @brief 区分调用者片段、宏局部绑定与定义处辅助名称，统一供类型和资源检查使用。
+ * @param node 带原始名字及卫生来源的节点。
+ * @return 对应变量，不存在返回空指针。
+ */
+MVar *FindNodeVar(const MNode &node)
+{
+    if (node.bindingIdentity)
+        for (auto scope = g_scope.rbegin(); scope != g_scope.rend(); ++scope)
+            for (auto &entry : *scope)
+                if (entry.second.bindingIdentity == node.bindingIdentity) return &entry.second;
+    if (!node.syntaxContext) return FindIn(node.module, node.s);
+    if (node.bindingIdentity) return Find(NodeBindingKey(node));
+    return FindIn(node.module, node.s, true);
+}
+
+/**
+ * @brief 按捕获时记录的声明身份查找环境来源，避免同名宏局部之间相互捕获。
+ * @param module 闭包所在模块。
+ * @param capture 环境字段及其原声明身份。
+ * @return 可见的来源变量，找不到时返回空指针。
+ */
+MVar *FindCaptureVar(const Memory::String &module, const MParam &capture)
+{
+    MNode reference;
+    reference.s = capture.source;
+    reference.module = module;
+    reference.bindingIdentity = capture.bindingIdentity;
+    return FindNodeVar(reference);
+}
+
+/**
+ * @brief 为与形参同名的捕获保留独立槽，源码名称仍优先指向形参。
+ * @param capture 带原声明身份的捕获字段。
+ * @param parameters 当前函数的实际形参列表。
+ * @return 可放入当前作用域且不会覆盖形参的内部绑定键。
+ */
+Memory::String CaptureBindingKey(const MParam &capture, const Memory::Vector<MParam> &parameters)
+{
+    const auto key = capture.bindingKey.empty() ? capture.source : capture.bindingKey;
+    for (const auto &parameter : parameters)
+    {
+        const auto parameterKey = parameter.bindingKey.empty() ? parameter.source : parameter.bindingKey;
+        if (key == parameterKey && capture.bindingIdentity != parameter.bindingIdentity)
+            return Memory::String("\x1f"
+                                  "capture:")
+                   + Memory::toString(capture.bindingIdentity) + ":" + capture.source;
+    }
+    return key;
 }
 
 /**
@@ -201,25 +278,29 @@ Memory::String AllocateName(const Memory::String &source)
  * @param type 类型描述。
  * @param emitted 已生成清理代码的聚合对象集合。
  * @param isConst 是否声明为只读变量。
+ * @param bindingKey 内部卫生作用域键；空时使用源名字。
+ * @param bindingIdentity 原声明稳定身份，零表示普通名字查找。
  * @retval 生成或读取的结果文本。
  */
 Memory::String DeclareVar(const Memory::String &name, const std::shared_ptr<MType> &type,
-                          const Memory::String &emitted = Memory::String(), bool isConst = false)
+                          const Memory::String &emitted = Memory::String(), bool isConst = false, const Memory::String &bindingKey = Memory::String(), std::uint32_t bindingIdentity = 0)
 {
     MVar var;
     var.type = type;
     var.emitted = emitted.empty() ? AllocateName(name) : emitted;
     var.isConst = isConst;
+    var.bindingIdentity = bindingIdentity;
     g_usedNames.insert(var.emitted);
     /* 记下"这个变量归哪一层块"（所有权跟着声明处，见 g_ownedHome） */
     if (!g_ownedScopes.empty()) g_ownedHome[var.emitted] = g_ownedScopes.size() - 1u;
     /* **同一个块里**不许重名（那多半是写错了）；外层已经有同名变量则允许 ——
      * 内层这份把外层**遮蔽**掉，名字解析从最内层往外找（见 Find）。 */
-    if (g_scope.back().count(name) != 0u)
+    const auto &key = bindingKey.empty() ? name : bindingKey;
+    if (g_scope.back().count(key) != 0u)
     {
         Fail("同一个块里不能重复声明：" + name + "（要遮蔽外层变量就在内层块里声明）");
         return var.emitted;
     }
-    g_scope.back()[name] = var;
+    g_scope.back()[key] = var;
     return var.emitted;
 }

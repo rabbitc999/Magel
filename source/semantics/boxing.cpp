@@ -747,7 +747,7 @@ simple_ast::NodePtr LowerCall(int id)
             const simple_ast::NodePtr call = simple_ast::Node::call(hostSymbol, names, values);
             if (argIds.empty() && receiverId >= 0 && N(receiverId).kind == MNode::Var)
             {
-                const MVar *variable = FindIn(N(receiverId).module, N(receiverId).s);
+                const MVar *variable = FindNodeVar(N(receiverId));
                 if (variable != nullptr)
                 {
                     if (methodName == "close" && hostImpl->interfaceName == "Closeable")
@@ -1777,14 +1777,14 @@ simple_ast::NodePtr LowerCall(int id)
         const auto owner = StructNameOf(ExprType(callee.kids[0]));
         if (!owner.empty() && StructHasInterface(owner, "Drop"))
         {
-            const auto variable = N(callee.kids[0]).kind == MNode::Var ? FindIn(N(callee.kids[0]).module, N(callee.kids[0]).s) : nullptr;
+            const auto variable = N(callee.kids[0]).kind == MNode::Var ? FindNodeVar(N(callee.kids[0])) : nullptr;
             return FinishExplicitDrop(owner, variable ? variable->emitted : Memory::String(), values.front(), call);
         }
     }
     if ((callee.kind == MNode::Member || callee.kind == MNode::Arrow) && args.empty() && signature->second.params.empty() && callee.kids[0] >= 0 && N(callee.kids[0]).kind == MNode::Var)
     {
         const Memory::String ownerName = StructNameOf(ExprType(callee.kids[0]));
-        const MVar *variable = FindIn(N(callee.kids[0]).module, N(callee.kids[0]).s);
+        const MVar *variable = FindNodeVar(N(callee.kids[0]));
         if (variable != nullptr && !ownerName.empty())
         {
             if (callee.s == "drop" && StructHasInterface(ownerName, "Drop"))
@@ -1905,7 +1905,7 @@ simple_ast::NodePtr LowerNewPtr(int id)
 simple_ast::NodePtr LowerResourceDrop(int receiver)
 {
     const MNode target = N(receiver);
-    MVar *variable = target.kind == MNode::Var ? FindIn(target.module, target.s) : (target.kind == MNode::EnumCtor ? FindQualifiedGlobal(target.s, target.s2) : nullptr);
+    MVar *variable = target.kind == MNode::Var ? FindNodeVar(target) : (target.kind == MNode::EnumCtor ? FindQualifiedGlobal(target.s, target.s2) : nullptr);
     if (variable != nullptr)
     {
         if (variable->isConst)
@@ -2568,7 +2568,7 @@ simple_ast::NodePtr LowerUncheckedExpr(int id)
         return Fail("泛型闭包需要在所属声明作用域完成模板归一化"), Bad();
     case MNode::Var:
     {
-        const MVar *found = FindIn(node.module, node.s);
+        const MVar *found = FindNodeVar(node);
         if (found != nullptr)
         {
             if (!found->elementList.empty())
@@ -2580,7 +2580,7 @@ simple_ast::NodePtr LowerUncheckedExpr(int id)
             return simple_ast::Node::var(found->emitted);
         }
         /* 方法体里的保留名：`self` 是接收者，字段名等价于 `self.字段` */
-        if (!g_owner.empty() && node.s == "self") return simple_ast::Node::var("self");
+        if (!NodeUsesDefinitionLookup(node) && !g_owner.empty() && node.s == "self") return simple_ast::Node::var("self");
         if (const int member = ExplicitReceiverField(id); member >= 0)
             return LowerMember(N(member).kids[0], N(member).s);
         /* 函数名当值用（函数指针）：值 = 数据区里存着函数标签那串字节的地址。 */
@@ -2610,7 +2610,8 @@ simple_ast::NodePtr LowerUncheckedExpr(int id)
                 {
                     const int source = M_New(MNode::Var, capture.source);
                     g_nodes[source].module = node.module;
-                    const auto captureVariable = FindIn(node.module, capture.source);
+                    g_nodes[source].bindingIdentity = capture.bindingIdentity;
+                    const auto captureVariable = FindCaptureVar(node.module, capture);
                     if (g_borrowFlowCapture && captureVariable)
                         g_borrowFlowCapture->lambdaReads[id].push_back({ captureVariable->emitted, {} });
                     const bool owned = capture.captureMode >= 2;
@@ -2629,7 +2630,7 @@ simple_ast::NodePtr LowerUncheckedExpr(int id)
                     if (moving)
                     {
                         if (IsReadOnlyAccess(source)) return Fail("lambda move 不能移动只读变量：" + capture.source), Bad();
-                        const auto variable = FindIn(node.module, capture.source);
+                        const auto variable = FindCaptureVar(node.module, capture);
                         if (g_borrowFlowCapture && variable)
                             g_borrowFlowCapture->lambdaMoves[id].push_back({ variable->emitted, {} });
                         if (capture.type->kind == MType::Ptr)
@@ -2857,7 +2858,7 @@ Memory::String ReturnedVariableName(int returnId)
         exprId = expr.kids.empty() ? -1 : expr.kids[0];
     }
     if (exprId < 0 || N(exprId).kind != MNode::Var) return Memory::String();
-    const MVar *found = FindIn(N(exprId).module, N(exprId).s);
+    const MVar *found = FindNodeVar(N(exprId));
     return (found == nullptr) ? Memory::String() : found->emitted;
 }
 
@@ -2882,7 +2883,7 @@ Memory::Set<Memory::String> ReturnedOwnedNames(int returnId)
         int exprId = N(returnId).kids[0];
         for (int guard = 0; guard < 8 && N(exprId).kind == MNode::Cast; ++guard)
             exprId = N(exprId).kids[0];
-        const MVar *variable = FindIn(N(exprId).module, N(exprId).s);
+        const MVar *variable = FindNodeVar(N(exprId));
         if (variable != nullptr && !variable->elementReference && (SameType(variable->type, g_returnType) || (IsRuntimeArray(variable->type) && g_returnType && g_returnType->kind == MType::Ptr)) && (IsOwnedNow(variable->emitted) || HasDestructorNow(variable->emitted)) && (IsOwnedKind(variable->type) || (variable->type && variable->type->kind == MType::Struct)))
             names.insert(variable->emitted);
     }
@@ -2900,7 +2901,7 @@ Memory::Set<Memory::String> ReturnedOwnedNames(int returnId)
         for (int guard = 0; guard < 8 && argumentId >= 0 && N(argumentId).kind == MNode::Cast; ++guard)
             argumentId = N(argumentId).kids.empty() ? -1 : N(argumentId).kids[0];
         if (argumentId < 0 || N(argumentId).kind != MNode::Var) continue;
-        const MVar *variable = FindIn(N(argumentId).module, N(argumentId).s);
+        const MVar *variable = FindNodeVar(N(argumentId));
         /*
          * 字符串 / 对象载荷构造器已经深拷贝，原变量照常释放；但聚合**借用**的那些
          * （运行时数组、`file` / `proc` 资源句柄、带 Drop / Closeable 的值结构体）
@@ -2980,7 +2981,7 @@ int PrepareBreakValue(int value, std::size_t scopeDepth, bool returnExpression =
         return value;
     }
     if (expression.kind != MNode::Var) return value;
-    const auto variable = FindIn(expression.module, expression.s);
+    const auto variable = FindNodeVar(expression);
     if (!variable || (variable->isConst && !returnExpression) || !variable->type || variable->type->kind == MType::Ptr || (variable->type->kind == MType::Array && !(returnExpression && IsRuntimeArray(variable->type))) || variable->type->kind == MType::Host)
         return value;
     if (variable->elementReference && std::none_of(g_referenceStorage.begin(), g_referenceStorage.end(), [&](const auto &entry) { return entry.second == variable->emitted; }))
@@ -3088,7 +3089,7 @@ simple_ast::NodePtr LowerStmtImpl(int id)
                         g_nodes[value].s = receiverName;
                         return;
                     }
-                    if (!FindIn(original.module, original.s) && FieldType(g_owner, original.s))
+                    if (!FindNodeVar(original) && FieldType(g_owner, original.s))
                     {
                         g_nodes[value].kind = MNode::Member;
                         g_nodes[value].kids = { receiver() };
@@ -3098,7 +3099,7 @@ simple_ast::NodePtr LowerStmtImpl(int id)
                 if (original.kind == MNode::Call && original.kids.size() == 2u)
                 {
                     const auto callee = N(original.kids[0]);
-                    if (callee.kind == MNode::Var && !locals.count(callee.s) && !FindIn(callee.module, callee.s))
+                    if (callee.kind == MNode::Var && !locals.count(callee.s) && !FindNodeVar(callee))
                     {
                         const auto definition = FindStruct(g_owner);
                         if (definition)
@@ -3131,7 +3132,7 @@ simple_ast::NodePtr LowerStmtImpl(int id)
                 if (capture.captureMode >= 2) continue;
                 const int source = M_New(MNode::Var, capture.source);
                 g_nodes[source].module = node.module;
-                const auto binding = FindIn(node.module, capture.source);
+                const auto binding = FindCaptureVar(node.module, capture);
                 if (!binding) continue;
                 g_ownedScopes.back().deferredReads.insert(binding->emitted);
                 const auto place = EffectPlace(source);
@@ -4048,6 +4049,7 @@ simple_ast::Function LowerFunction(const Memory::String &name, const Memory::Str
     Memory::Vector<simple_ast::NodePtr> parameterReferences;
     for (const MParam &param : params)
     {
+        const auto &parameterKey = param.bindingKey.empty() ? param.source : param.bindingKey;
         if (!CheckDeclaredType(param.type, param.source)) return {}; /* 报错后返回空函数，g_error 已记下 */
         MVar var;
         var.type = param.type;
@@ -4057,7 +4059,8 @@ simple_ast::Function LowerFunction(const Memory::String &name, const Memory::Str
             var.borrowDepth = HasOpaqueObjectBorrow(param.type) ? 0u : 1u;
         // 事件模块入口已在调用点检查回调环境；内部转送保持静态寿命契约。
         if (module == "std::event" && param.type->kind == MType::Func) var.borrowDepth = 0u;
-        g_scope.back()[param.source] = var;
+        var.bindingIdentity = param.bindingIdentity;
+        g_scope.back()[parameterKey] = var;
         function.parameters.emplace_back(param.emitted, LowerType(param.type, param.emitted));
         const bool ownedValue = IsStandardOpcode(param.type, "String") || IsObjectLike(param.type) || param.type->kind == MType::Array || OpcodeNonCopyable(param.type);
         if (g_addressTakenNames.count(param.source) && NeedsReferenceStorage(param.type))
@@ -4076,8 +4079,8 @@ simple_ast::Function LowerFunction(const Memory::String &name, const Memory::Str
             parameterReferences.push_back(simple_ast::Node::storeAt(simple_ast::Node::var(storage), value, LowerType(param.type, storage)));
             g_referenceStorage[param.emitted] = storage;
             if (ownedValue) g_parameterReferenceOwners.push_back({ param.emitted, param.type });
-            g_scope.back()[param.source].emitted = storage;
-            g_scope.back()[param.source].elementReference = true;
+            g_scope.back()[parameterKey].emitted = storage;
+            g_scope.back()[parameterKey].elementReference = true;
         }
         else if (ownedValue)
         {
@@ -4098,7 +4101,7 @@ simple_ast::Function LowerFunction(const Memory::String &name, const Memory::Str
             parameterReferences.push_back(HasNonCopyableValue(param.type) ?
                                               MoveStructValue(simple_ast::Node::var(storage), simple_ast::Node::var(param.emitted), param.type) :
                                               DeepCopyStructValue(simple_ast::Node::var(storage), simple_ast::Node::var(param.emitted), param.type));
-            g_scope.back()[param.source].emitted = storage;
+            g_scope.back()[parameterKey].emitted = storage;
             g_parameterReferenceOwners.push_back({ storage, param.type });
         }
     }
@@ -4113,12 +4116,13 @@ simple_ast::Function LowerFunction(const Memory::String &name, const Memory::Str
         for (std::size_t i = 0; i < captures->second.size(); ++i)
         {
             const auto &capture = captures->second[i];
-            if (std::any_of(params.begin(), params.end(), [&](const MParam &param) { return param.source == capture.source; })) continue;
+            if (std::any_of(params.begin(), params.end(), [&](const MParam &param) { return capture.bindingIdentity ? param.bindingIdentity == capture.bindingIdentity : param.source == capture.source; })) continue;
             const auto local = AllocateName("__magel_capture_" + capture.source);
             MVar binding{ capture.type, local, capture.captureMode == 0 };
             binding.elementReference = (capture.captureMode >= 2 || capture.type->kind != MType::Ptr) && (capture.captureMode < 2 || capture.type->kind != MType::Struct) && (capture.type->kind != MType::Array || IsRuntimeArray(capture.type));
             binding.borrowDepth = 1u;
-            g_scope.back()[capture.source] = binding;
+            binding.bindingIdentity = capture.bindingIdentity;
+            g_scope.back()[CaptureBindingKey(capture, params)] = binding;
             parameterReferences.push_back(simple_ast::Node::declare(local, simple_ast::Type::i64()));
             parameterReferences.push_back(simple_ast::Node::assign(local,
                                                                    simple_ast::Node::call(capture.captureMode >= 2 ? "__std_closure_ref" : "__std_closure_get",

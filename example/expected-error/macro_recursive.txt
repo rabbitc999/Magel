@@ -1,1 +1,1 @@
-magel: 前处理：example/samples-error/macro_recursive.mgl 第 4 行：宏递归展开超过 64 层：LOOP
+magel: example/samples-error/macro_recursive.mgl 第 4 行第 23 列：宏展开超过深度或规模预算

@@ -55,9 +55,13 @@ struct MType
          */
         Obj
     } kind = Void;
-    Memory::String name;          /* struct 名 / 接口名 / 类型名 */
-    Memory::String lookupModule;  ///< 未限定具名类型的声明作用域。
-    bool unresolvedName = false;  ///< 解析结束后按导入与同名声明确定真实类型。
+    Memory::String name;                                      /* struct 名 / 接口名 / 类型名 */
+    Memory::String lookupModule;                              ///< 未限定具名类型的声明作用域。
+    bool unresolvedName = false;                              ///< 解析结束后按导入与同名声明确定真实类型。
+    Memory::String genericBase;                               ///< 尚未单态化的类型应用名称，保留结构供宏类型替换。
+    Memory::String genericMember;                             ///< 泛型实例后附加的关联类型限定路径。
+    Memory::Vector<std::shared_ptr<MType>> genericArguments;  ///< 类型应用的有序语法实参。
+    std::uint32_t macroBinding = 0;                           ///< 类型位置引用的宏形参身份，零表示普通具名类型。
     /* 数值位宽：整数 8/16/32/64，浮点 32/64。 */
     int bits = 64;
     bool isUnsigned = false;     /* 整型有没有符号 */
@@ -153,6 +157,7 @@ struct MNode
         AbiBlock,
         Lambda,
         GenericClosureSelect,
+        TypeQualifiedRef,  ///< 保留结构化类型应用限定的构造器或静态成员引用。
         GenericLambda,
         /* 声明头（带 `const` 与否）：type = 类型池下标，i = 是否不可变 */
         DeclHead,
@@ -214,21 +219,33 @@ struct MNode
         AnnotationParam,
         AnnotationUse,
         AnnotationArg,
-        MacroDefinition,  ///< 编译期宏定义，kids 保存参数组和模板。
-        MacroParameters,  ///< 显式参数组，与不存在参数组区分。
-        MacroParameter,   ///< 模板中的形参名字。
-        MacroTemplate,    ///< 已解析语句与表达式尾项。
-        MacroCall,        ///< 保留实参语法结构的编译期调用。
-        MacroHole,        ///< 已绑定到宏形参的语法占位，不按文字替换名字。
-        MacroGeneric,     ///< 泛型名称及显式推导来源。
-        MacroMatch,       ///< 编译期语法类别匹配。
-        MacroBranch,      ///< 语法匹配的有序候选分支。
-        MacroRegex,       ///< 编译期原文正则匹配。
+        MacroDefinition,      ///< 编译期宏定义，kids 保存参数组和模板。
+        MacroParameters,      ///< 显式参数组，与不存在参数组区分。
+        MacroParameter,       ///< 模板中的形参名字。
+        MacroTemplate,        ///< 已解析语句与表达式尾项。
+        MacroCall,            ///< 保留实参语法结构的编译期调用。
+        MacroHole,            ///< 已绑定到宏形参的语法占位，不按文字替换名字。
+        MacroGeneric,         ///< 泛型名称及显式推导来源。
+        MacroMatch,           ///< 编译期语法类别匹配。
+        MacroBranch,          ///< 语法匹配的有序候选分支。
+        MacroRegex,           ///< 编译期原文正则匹配。
+        MacroArgument,        ///< 同一原始实参的五类完整语法候选，保留原文及位置。
+        MacroArgumentGroup,   ///< 一组显式括号实参。
+        MacroArguments,       ///< 按书写顺序保存全部括号实参组。
+        MacroExpansionFrame,  ///< 保存调用、定义及父展开的只读诊断来源，不进入运行时树。
+        MacroVariadic,        ///< 变长实参的原始片段列表，不隐式转换为表达式。
+        MacroFor,             ///< 编译期遍历变长片段，逐次绑定循环形参。
     } kind = List;
     std::size_t sourceLine = 0;                         ///< 预处理后语法节点的起始行。
     std::size_t sourceColumn = 0;                       ///< 注解起始 token 的一基列号。
     std::uint32_t syntaxContext = 0;                    ///< 原始片段或宏展开的卫生上下文。
     std::uint32_t bindingIdentity = 0;                  ///< 声明及引用解析后的稳定绑定身份。
+    std::uint32_t nameParameter = 0;                    ///< 声明名称来自的宏形参身份，零表示普通名字。
+    std::uint32_t bindingContext = 0;                   ///< 被引用声明的上下文，供循环展开引用外层声明。
+    std::size_t expansionLine = 0;                      ///< 引入当前模板的调用行，零表示原始源码。
+    std::size_t expansionColumn = 0;                    ///< 引入当前模板的调用列。
+    Memory::String expansionModule;                     ///< 引入当前模板的调用模块。
+    int macroExpansion = -1;                            ///< 宏展开诊断帧，实参保持原有来源。
     Memory::Vector<int> annotations;                    ///< 附着于本声明的注解使用节点。
     Memory::Vector<Memory::String> derives;             ///< 请求按字段派生的接口名称。
     bool derivesExpanded = false;                       ///< 已完成宏模板注入，泛型重放时不重复生成。

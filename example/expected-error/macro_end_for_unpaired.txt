@@ -1,1 +1,1 @@
-magel: 前处理：example/samples-error/macro_end_for_unpaired.mgl 第 4 行：`$end_for` 没有配对的 `$for`
+语法错误：example/samples-error/macro_end_for_unpaired.mgl 第 4 行第 1 列：期望 MACRO_END，实际是 MACRO_END_FOR

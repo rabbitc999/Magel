@@ -23,6 +23,18 @@ int main()
     magel_macro::markHeaderBoundaries(branches);
     if (branches.find("$regex A is \"[0-9]+\" @!macrobody \n\"yes\"") == Memory::String::npos) return 6;
     if (branches.find("$else @!macrobody \nis + 1") == Memory::String::npos) return 7;
+    magel_macro::ProtectedDefinitions definitions;
+    Memory::String protectedSource = original;
+    std::string error;
+    if (!definitions.hide(protectedSource, error) || !error.empty()) return 8;
+    if (protectedSource.find("value + 1") != Memory::String::npos || protectedSource.find("$macro A") != Memory::String::npos) return 9;
+    if (std::count(protectedSource.begin(), protectedSource.end(), '\n') != std::count(original.begin(), original.end(), '\n')) return 10;
+    protectedSource = "// relocated\n" + protectedSource + "\nint64 generated() { return 1; }\n";
+    if (!definitions.restore(protectedSource, error) || protectedSource != "// relocated\n" + original + "\nint64 generated() { return 1; }\n") return 11;
+    Memory::String replacement = "$replace ADD<T:a>(a, b) a + b // comment\n$replace URL() \"https://example\"\n";
+    if (!magel_macro::markReplacementBoundaries(replacement, error)) return 12;
+    if (replacement.find("$replace ADD<T:a>(a, b)  @!macrobody a + b  $end_macro // comment") == Memory::String::npos) return 13;
+    if (replacement.find("\"https://example\" $end_macro") == Memory::String::npos) return 14;
     std::cout << "macro declaration boundaries passed\n";
     return 0;
 }

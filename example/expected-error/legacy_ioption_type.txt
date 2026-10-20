@@ -1,1 +1,1 @@
-语法错误：example/samples-error/legacy_ioption_type.mgl 第 2 行第 18 列：期望 常量(const) / 可变(mut) / 函数(fn) / 左方括号([) 等 5 个之一，实际是 大于(>)
+magel: 没有声明的泛型类型：IOption

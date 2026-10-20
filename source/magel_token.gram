@@ -12,6 +12,7 @@
 
 /* 编译期 AST 宏：关键字单独登记，调用名保留美元前缀。 */
 %token MACRO_DEFINE "$macro"
+%token MACRO_REPLACE "$replace"
 %token MACRO_END "$end_macro"
 %token MACRO_BODY "@!macrobody"
 %token MACRO_MATCH "$match"
@@ -19,12 +20,20 @@
 %token MACRO_END_MATCH "$end_match"
 %token MACRO_REGEX "$regex"
 %token MACRO_END_REGEX "$end_regex"
+%token MACRO_FOR "$for"
+%token MACRO_END_FOR "$end_for"
 %token MACRO_IS "is"
 %token MACRO_EXPR "expr"
 %token MACRO_IDENT "ident"
 %token MACRO_BLOCK "block"
 %token MACRO_STMT "stmt"
-%token regex MACRO_NAME "\\$[A-Za-z_][A-Za-z0-9_]*"
+%token MACRO_PARSE_EXPR "@!macroparse_expr"
+%token MACRO_PARSE_IDENT "@!macroparse_ident"
+%token MACRO_PARSE_TYPE "@!macroparse_type"
+%token MACRO_PARSE_BLOCK "@!macroparse_block"
+%token MACRO_PARSE_STMT "@!macroparse_stmt"
+%token regex MACRO_NAME "\\$[A-Za-z_][A-Za-z0-9_]*(@![0-9]+)?"
+%token regex MACRO_FRAGMENT "@!macrofragment[0-9]+_[0-9]+"
 
 %token STRUCT "struct"
 %token OPCODE "opcode"
@@ -109,6 +118,7 @@
 %token NOT "!"
 %token ARROW "->"
 %token ELLIPSIS "..."
+%token DOUBLE_DOT ".."
 %token DOT "."
 %token LPAREN "("
 %token RPAREN ")"
@@ -153,6 +163,7 @@
 %right NOT
 %left AT ANNOTATION
 %left LPAREN
+%left LBRACKET LBRACE
 
 /* f 后紧跟双引号的词法归一化标记，不登记 f 为关键字。 */
 %token FSTRING "__magel_fstring"

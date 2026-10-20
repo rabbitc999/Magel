@@ -3,15 +3,15 @@
  *   ./magel samples/replace.mgl
  *
  * `$replace` 把声明写在**一行**里：`$replace 宏名(形参) 宏体`，没有 `$end_macro`。
- * 它支持 `$macro` 的所有"行内"规则——形参前反引号、宏名前 `!`、`$stringify(…)`、
- * `$concat(…)`（`concat` 只拼标识符，所以拼接用的形参不能再加反引号）、`$line` / `$file` /
- * `$module`；但宏体只有一行，装不下 `$for` 这类块（要它们请用 `$macro … $end_macro`）。
+ * 它与 `$macro` 共用卫生 AST 替换，支持 `$stringify(…)`、`$concat(…)`、
+ * `$line` / `$file` / `$module`，不使用自动括号或形参保护标注。
+ * 宏体只有一行；需要分行书写 `$for` 等块时，使用 `$macro … $end_macro`。
  * 宏名、调用方式和 `$macro` 完全一样，两种声明混用也行。
  * 无形参的对象宏可以省掉括号：`$replace 宏名 宏体`，调用处裸写宏名。
  */
 
-$replace expr ADD((a), (b)) a + b
-$replace TIMES_TWO((x)) x * 2
+$replace ADD(a, b) a + b
+$replace TIMES_TWO(x) x * 2
 $replace SHOW(x) $stringify(x)
 $replace MAKE(pre, suffix) $concat(pre, suffix)
 $replace AT $line
@@ -20,10 +20,10 @@ $replace LIMIT 100
 int64 var_x = 9;
 
 int64 main() {
-    /* `!` 整段包一层：((2) + (3)) * 10 = 50；不写 ! 就是 2 + 3 * 10 = 32。 */
+    /* 替换后的加法 AST 保持完整，先计算 2 + 3，再乘 10，结果为 50。 */
     println("{}", $ADD(2, 3) * 10);
 
-    /* 形参包一层：(1 + 2) * 2 = 6；不写反引号就是 1 + 2 * 2 = 5。 */
+    /* 形参的加法 AST 保持完整，先计算 1 + 2，再乘 2，结果为 6。 */
     println("{}", $TIMES_TWO(1 + 2));
 
     /* `$stringify` 拿原始拼写，打印 "1 + 2"。 */

@@ -1,13 +1,59 @@
 /* 名称后置泛型：签名仍由生成解析器读取，推导只处理类型树。 */
 
 /**
- * @brief 请求补充一个特化；编译入口重放语义分析，不输出中间产物。
+ * @brief 递归解析结构化类型应用，缺少具体声明时请求普通泛型实例化。
+ * @param type 当前类型树。
+ * @param depth 当前递归深度。
+ * @return 类型应用全部解析时返回真。
  */
-struct MInstantiationRequest
+bool ResolveAstGenericType(const std::shared_ptr<MType> &type, std::size_t depth)
 {
-    Memory::String name;
-    Memory::Vector<Memory::String> args;
-};
+    if (!type) return true;
+    if (depth >= 256) return Fail("类型应用超过递归深度预算");
+    if (!ResolveAstGenericType(type->elem, depth + 1) || !ResolveAstGenericType(type->elem2, depth + 1)) return false;
+    for (const auto &parameter : type->paramTypes)
+        if (!ResolveAstGenericType(parameter, depth + 1)) return false;
+    for (const auto &argument : type->genericArguments)
+        if (!ResolveAstGenericType(argument, depth + 1)) return false;
+    if (type->genericBase.empty())
+    {
+        if (!type->genericMember.empty())
+        {
+            type->name += "::" + type->genericMember;
+            type->genericMember.clear();
+            type->kind = MType::Struct;
+        }
+        return true;
+    }
+    const auto &generics = magel_generic::session.generics;
+    auto found = generics.find(type->lookupModule.empty() ? type->genericBase : type->lookupModule + "::" + type->genericBase);
+    if (found == generics.end()) found = generics.find(type->genericBase);
+    if (found == generics.end()) found = generics.find("std::lang::" + type->genericBase);
+    if (found == generics.end())
+    {
+        const auto imports = g_moduleImports.find(type->lookupModule);
+        if (imports != g_moduleImports.end())
+            for (const auto &module : imports->second)
+            {
+                const auto candidate = generics.find(module + "::" + type->genericBase);
+                if (candidate == generics.end()) continue;
+                if (found != generics.end()) return Fail("泛型类型名称有多个可见定义：" + type->genericBase);
+                found = candidate;
+            }
+    }
+    if (found == generics.end()) return Fail("没有声明的泛型类型：" + type->genericBase);
+    Memory::Vector<Memory::String> arguments;
+    for (const auto &argument : type->genericArguments) arguments.push_back(Describe(argument));
+    const auto name = magel_generic::mangle(found->second.name, arguments);
+    if (!magel_generic::session.made.count(name)) throw MInstantiationRequest{ found->second.name, arguments };
+    type->name = found->second.module.empty() ? name : found->second.module + "::" + name;
+    if (!type->genericMember.empty()) type->name += "::" + type->genericMember;
+    type->unresolvedName = false;
+    type->genericBase.clear();
+    type->genericArguments.clear();
+    type->genericMember.clear();
+    return true;
+}
 
 /**
  * @brief 泛型结构体命名构造入口的符号参数及实参数量约束。
@@ -447,7 +493,7 @@ bool CompleteGenericArguments(const magel_generic::Generic &generic,
  */
 bool HasOrdinaryName(const MNode &node)
 {
-    return FindIn(node.module, node.s) != nullptr || (!g_owner.empty() && (node.s == "self" || FieldType(g_owner, node.s))) || FindFunctionOverloads(node.module, node.s) != nullptr;
+    return FindNodeVar(node) != nullptr || (!NodeUsesDefinitionLookup(node) && !g_owner.empty() && (node.s == "self" || FieldType(g_owner, node.s))) || FindFunctionOverloads(node.module, node.s) != nullptr;
 }
 
 /**
@@ -508,7 +554,11 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
         Memory::Vector<MParam> captures;
         Memory::Set<Memory::String> captured;
         Memory::Set<Memory::String> locals;
-        for (const auto &param : declaration.signature.params) locals.insert(param.source);
+        for (const auto &param : declaration.signature.params)
+        {
+            locals.insert(param.bindingIdentity ? Memory::String("binding:") + Memory::toString(param.bindingIdentity) : param.source);
+            if (param.bindingKey.empty() || param.bindingKey == param.source) locals.insert(param.source);
+        }
         const Memory::Map<Memory::String, int> *specifications = nullptr;
         std::size_t specificationLength = 0;
         for (const auto &entry : magel_lambda::captureSpecifications)
@@ -522,16 +572,49 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
             if (name.find("_defer") != Memory::String::npos && (variable->isConst || (variable->type->kind == MType::Ptr && variable->type->readOnly))) mode = 0;
             if ((mode == 1 || mode == 3) && (variable->isConst || (variable->type->kind == MType::Ptr && variable->type->readOnly)))
                 return Fail("lambda 的 mut/move 捕获不能借用或移动只读变量：" + source);
-            if (captured.insert(source).second)
+            if (captured.insert(variable->emitted).second)
             {
                 MParam capture{ source, {}, variable->type, false };
                 capture.captureMode = mode;
+                capture.bindingIdentity = variable->bindingIdentity;
+                capture.bindingKey = variable->bindingIdentity && !(variable->bindingIdentity & 0x80000000u) ? Memory::String("\x1f"
+                                                                                                                              "capture:")
+                                                                                                                   + Memory::toString(variable->bindingIdentity) :
+                                                                                                               source;
                 if (mode == 0 && capture.type->kind == MType::Ptr)
                     capture.type = PointerType(capture.type->elem, true);
                 captures.push_back(capture);
             }
             return true;
         };
+        if (declaration.captureSyntax >= 0)
+        {
+            specifications = nullptr;
+            for (const int capture : N(declaration.captureSyntax).kids)
+            {
+                const auto &item = N(capture);
+                if (item.kids.size() != 1 || N(item.kids[0]).kind != MNode::Var)
+                    return Fail("lambda 捕获形参必须替换为单个标识符");
+                const auto &reference = N(item.kids[0]);
+                for (const auto &parameter : declaration.signature.params)
+                    if (parameter.source == reference.s && !reference.syntaxContext && parameter.bindingKey == parameter.source)
+                        return Fail("lambda 捕获变量与形参重名：" + reference.s);
+                if (!addCapture(reference.s, FindNodeVar(reference), static_cast<int>(item.i))) return false;
+            }
+        }
+        const auto astClosure = g_astGenericClosures.find(name);
+        if (astClosure != g_astGenericClosures.end())
+            for (const int reference : astClosure->second.references)
+            {
+                const auto &syntax = N(reference);
+                const auto variable = FindNodeVar(syntax);
+                if (!variable) continue;
+                bool local = false;
+                for (std::size_t scope = 1; scope < g_scope.size(); ++scope)
+                    for (const auto &entry : g_scope[scope])
+                        if (&entry.second == variable) local = true;
+                if (local && !addCapture(syntax.s, variable, captureMode)) return false;
+            }
         if (genericClosure != magel_lambda::genericClosures.end())
         {
             specifications = &genericClosure->second.captures;
@@ -561,7 +644,10 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
             if (id < 0) return;
             const auto &node = N(id);
             if (node.kind == MNode::Var && node.s != "_")
-                names.insert(node.s);
+            {
+                names.insert(node.bindingIdentity ? Memory::String("binding:") + Memory::toString(node.bindingIdentity) : node.s);
+                if (!node.syntaxContext) names.insert(node.s);
+            }
             else
                 for (const int child : node.kids) bind(child, names);
         };
@@ -569,19 +655,26 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
         visit = [&](int id, Memory::Set<Memory::String> &names) -> bool {
             if (id < 0) return true;
             const auto &node = N(id);
-            if (node.kind == MNode::Var && !names.count(node.s))
+            if (node.kind == MNode::Var && !names.count(node.bindingIdentity ? Memory::String("binding:") + Memory::toString(node.bindingIdentity) : node.s))
             {
-                const auto resolved = FindIn(node.module, node.s);
+                const auto resolved = FindNodeVar(node);
                 for (std::size_t scope = g_scope.size(); scope-- > 1u;)
                 {
-                    const auto found = g_scope[scope].find(node.s);
+                    const auto found = g_scope[scope].find(NodeBindingKey(node));
                     if (found == g_scope[scope].end() || resolved != &found->second) continue;
                     const auto explicitMode = specifications ? specifications->find(node.s) : Memory::Map<Memory::String, int>::const_iterator{};
-                    const int mode = specifications && explicitMode != specifications->end() ? explicitMode->second : captureMode;
+                    int mode = specifications && explicitMode != specifications->end() ? explicitMode->second : captureMode;
+                    if (declaration.captureSyntax >= 0)
+                        for (const int capture : N(declaration.captureSyntax).kids)
+                        {
+                            const auto &item = N(capture);
+                            const auto &reference = N(item.kids[0]);
+                            if ((reference.bindingIdentity && reference.bindingIdentity == node.bindingIdentity) || (!reference.bindingIdentity && reference.s == node.s && reference.syntaxContext == node.syntaxContext)) mode = static_cast<int>(item.i);
+                        }
                     if (!addCapture(node.s, &found->second, mode)) return false;
                     break;
                 }
-                if (node.s == "self" || (!resolved && !g_owner.empty() && FieldType(g_owner, node.s)))
+                if (!NodeUsesDefinitionLookup(node) && (node.s == "self" || (!resolved && !g_owner.empty() && FieldType(g_owner, node.s))))
                     return Fail("lambda 不能隐式捕获 self 或接收者字段：" + node.s);
                 if (node.s.rfind("__magel_lambda_", 0) == 0)
                 {
@@ -589,7 +682,11 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
                     {
                         if (nested.source != node.s || nested.module != node.module || nested.bodyId < 0) continue;
                         auto inner = names;
-                        for (const auto &param : nested.signature.params) inner.insert(param.source);
+                        for (const auto &param : nested.signature.params)
+                        {
+                            inner.insert(param.bindingIdentity ? Memory::String("binding:") + Memory::toString(param.bindingIdentity) : param.source);
+                            if (param.bindingKey.empty() || param.bindingKey == param.source) inner.insert(param.source);
+                        }
                         for (const auto &specification : magel_lambda::captureSpecifications)
                         {
                             if (nested.source != specification.first && nested.source.rfind(specification.first + "__", 0) != 0) continue;
@@ -603,6 +700,11 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
                                 if (!addCapture(entry.first, variable, mode)) return false;
                             }
                         }
+                        const auto astNested = g_astGenericClosures.find(nested.source);
+                        if (astNested != g_astGenericClosures.end())
+                            for (const int reference : astNested->second.references)
+                                if (!visit(reference, inner)) return false;
+                        if (nested.captureSyntax >= 0 && !visit(nested.captureSyntax, inner)) return false;
                         if (!visit(nested.bodyId, inner)) return false;
                         break;
                     }
@@ -634,7 +736,8 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
                     const auto &decl = N(child);
                     for (const int init : decl.kids)
                         if (!visit(init, names)) return false;
-                    names.insert(decl.s);
+                    names.insert(decl.bindingIdentity ? Memory::String("binding:") + Memory::toString(decl.bindingIdentity) : decl.s);
+                    if (!decl.syntaxContext) names.insert(decl.s);
                 }
                 return true;
             }
@@ -649,7 +752,8 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
             {
                 if (!visit(node.kids[0], names)) return false;
                 auto nested = names;
-                nested.insert(node.s);
+                nested.insert(node.bindingIdentity ? Memory::String("binding:") + Memory::toString(node.bindingIdentity) : node.s);
+                if (!node.syntaxContext) nested.insert(node.s);
                 return visit(node.kids[1], nested);
             }
             for (const int child : node.kids)
@@ -657,6 +761,14 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
             return true;
         };
         bool genericImplementation = false;
+        const auto astImplementation = g_astGenericImplementations.find(name);
+        if (astImplementation != g_astGenericImplementations.end())
+        {
+            const auto environment = g_lambdaCaptures.find(ModuleSymbol(module, astImplementation->second));
+            if (environment == g_lambdaCaptures.end()) return Fail("AST 泛型闭包的捕获环境尚未构造");
+            captures = environment->second;
+            genericImplementation = true;
+        }
         const auto expansion = magel_generic::session.made.find(name);
         if (expansion != magel_generic::session.made.end())
         {
@@ -687,8 +799,18 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
             g_currentModule = declaration.module;
             g_owner.clear();
             PushScope();
-            for (const auto &capture : captures) g_scope.back()[capture.source] = MVar{ capture.type, capture.source, capture.captureMode == 0 };
-            for (const auto &param : declaration.signature.params) g_scope.back()[param.source] = MVar{ param.type, param.source, false };
+            for (const auto &capture : captures)
+            {
+                MVar binding{ capture.type, capture.source, capture.captureMode == 0 };
+                binding.bindingIdentity = capture.bindingIdentity;
+                g_scope.back()[CaptureBindingKey(capture, declaration.signature.params)] = binding;
+            }
+            for (const auto &param : declaration.signature.params)
+            {
+                MVar binding{ param.type, param.source, false };
+                binding.bindingIdentity = param.bindingIdentity;
+                g_scope.back()[param.bindingKey.empty() ? param.source : param.bindingKey] = binding;
+            }
             std::shared_ptr<MType> result;
             const bool ok = InferAutoFunctionResult(declaration.bodyId, &result);
             PopScope();
@@ -774,7 +896,7 @@ void InferKnownCallArguments(const MNode &callee, const Memory::Vector<int> &arg
     Memory::Vector<Memory::Vector<std::shared_ptr<MType>>> candidates;
     if (callee.kind == MNode::Var)
     {
-        const auto *variable = FindIn(callee.module, callee.s);
+        const auto *variable = FindNodeVar(callee);
         if (variable && variable->type && variable->type->kind == MType::Func)
             candidates.push_back(variable->type->paramTypes);
     }
@@ -1120,6 +1242,7 @@ bool ResolveGenericClosureCall(int id)
     if (explicitArguments) value = selection.kids[0];
     const auto type = ExprType(value);
     if (!type || type->kind != MType::Func || type->name.empty()) return false;
+    if (g_astGenericClosures.count(type->name)) return ResolveAstGenericClosureCall(id, type->name);
     const auto definition = FindGenericClosureDefinition(type->name);
     if (!definition) return false;
     if (node.type >= 0 && !node.s.empty()) return true;
@@ -1254,6 +1377,69 @@ bool ResolveGenericClosureCall(int id)
 }
 
 /**
+ * @brief 将片段语法保留的类型限定引用交回普通构造器与静态成员路径。
+ * @param id 表达式节点编号。
+ * @return 类型限定已解析或节点不属于该形式时返回真。
+ */
+bool NormalizeAstTypeQualifier(int id)
+{
+    if (id < 0 || N(id).kind != MNode::TypeQualifiedRef) return true;
+    auto &node = g_nodes[id];
+    auto type = T(node.type);
+    if (!ResolveAstGenericType(type)) return false;
+    node.s = type->name.empty() ? Describe(type) : type->name;
+    const auto split = node.s2.rfind("::");
+    if (split != Memory::String::npos)
+    {
+        node.s += "::" + node.s2.substr(0, split);
+        node.s2.erase(0, split + 2);
+    }
+    node.type = -1;
+    node.kind = MNode::EnumCtor;
+    return true;
+}
+
+/**
+ * @brief 将片段中的显式普通函数类型实参接入既有单态化，不把调用表达式重写成源码。
+ * @param id 调用表达式。
+ * @return 显式函数选择已处理时返回真，普通调用和闭包调用返回假。
+ */
+bool ResolveExplicitAstGenericCall(int id)
+{
+    const auto call = N(id);
+    if (call.kind != MNode::Call || call.kids.size() != 2) return false;
+    const auto selection = N(call.kids[0]);
+    if (selection.kind != MNode::GenericClosureSelect || selection.kids.size() != 2) return false;
+    const auto base = N(selection.kids[0]);
+    if ((base.kind != MNode::Var && base.kind != MNode::EnumCtor) || (base.kind == MNode::Var && FindNodeVar(base))) return false;
+    const auto spelling = base.kind == MNode::Var ? base.s : base.s2;
+    auto generic = magel_generic::session.generics.find(spelling);
+    if (generic == magel_generic::session.generics.end()) return false;
+    if (base.kind == MNode::EnumCtor && base.s != generic->second.module) return false;
+    const auto &items = N(selection.kids[1]).kids;
+    if (items.size() != generic->second.params.size())
+        return Fail("泛型函数的显式类型实参数量不匹配：" + spelling), true;
+    Memory::Vector<Memory::String> arguments;
+    for (const int item : items)
+    {
+        if (N(item).type < 0) return Fail("显式泛型实参必须是完整类型"), true;
+        auto type = T(N(item).type);
+        if (!ResolveAstGenericType(type)) return true;
+        arguments.push_back(GenericArgumentText(type));
+    }
+    const auto specialized = magel_generic::mangle(generic->second.name, arguments);
+    if (!magel_generic::session.made.count(specialized)) throw MInstantiationRequest{ generic->second.name, arguments };
+    auto &callee = g_nodes[call.kids[0]];
+    callee = base;
+    callee.kind = MNode::Var;
+    callee.s = specialized;
+    callee.s2.clear();
+    callee.kids.clear();
+    callee.module = generic->second.module;
+    return true;
+}
+
+/**
  * @brief 解析枚举简写与普通泛型函数调用，递归期间避免重复推导同一节点。
  */
 void InferExpression(int id, const std::shared_ptr<MType> &expected)
@@ -1267,6 +1453,13 @@ void InferExpression(int id, const std::shared_ptr<MType> &expected)
          */
         ~Guard() { g_inferringExpressions.erase(id); }
     } guard{ id };
+    if (N(id).kind == MNode::MacroCall)
+    {
+        if (!ExpandDeferredAstMacro(id, expected)) return;
+    }
+    if (!NormalizeAstTypeQualifier(id)) return;
+    if (N(id).kind == MNode::Call && !N(id).kids.empty() && !NormalizeAstTypeQualifier(N(id).kids[0])) return;
+    if (ResolveExplicitAstGenericCall(id) && !g_error.empty()) return;
     if (N(id).kind == MNode::Loop && !N(id).s.empty() && expected)
     {
         g_nodes[id].type = M_AddType(expected);

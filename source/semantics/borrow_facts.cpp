@@ -76,7 +76,7 @@ MVar *BorrowRootVariable(int id)
 {
     if (id < 0) return nullptr;
     const auto &node = N(id);
-    if (node.kind == MNode::Var) return FindIn(node.module, node.s);
+    if (node.kind == MNode::Var) return FindNodeVar(node);
     if ((node.kind == MNode::Member || node.kind == MNode::Arrow || node.kind == MNode::Index || node.kind == MNode::Cast || node.kind == MNode::Un) && !node.kids.empty()) return BorrowRootVariable(node.kids[0]);
     return nullptr;
 }
@@ -155,7 +155,7 @@ std::size_t BorrowSourceDepth(int id, bool address)
     const auto node = N(id);
     if (node.kind == MNode::Var)
     {
-        const auto variable = FindIn(node.module, node.s);
+        const auto variable = FindNodeVar(node);
         if (!variable)
         {
             const auto captures = g_lambdaCaptures.find(ModuleSymbol(node.module, node.s));
@@ -164,7 +164,7 @@ std::size_t BorrowSourceDepth(int id, bool address)
                 std::size_t depth = 0u;
                 for (const auto &capture : captures->second)
                 {
-                    const auto source = FindIn(node.module, capture.source);
+                    const auto source = FindCaptureVar(node.module, capture);
                     depth = std::max(depth, capture.captureMode >= 2 ?
                                                 (HasBorrowedValue(capture.type) && source ? source->borrowDepth : 0u) :
                                                 BorrowStorageDepth(source));

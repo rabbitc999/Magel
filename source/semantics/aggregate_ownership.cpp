@@ -467,6 +467,7 @@ bool CheckMapKey(const std::shared_ptr<MType> &type, const Memory::String &colle
 bool CheckDeclaredType(const std::shared_ptr<MType> &type, const Memory::String &where)
 {
     if (!type) return true;
+    if (!ResolveAstGenericType(type)) return false;
     if (type->kind == MType::Ptr && IsInterfaceType(type->elem)) return true;
     if (type->kind == MType::Ptr || type->kind == MType::Array)
         return CheckDeclaredType(type->elem, where);
@@ -812,7 +813,7 @@ simple_ast::NodePtr MaterializeReturnStringValue(int valueId, const std::shared_
     if (OpcodeNonCopyable(target) && valueId >= 0 && !IsFreshValue(valueId))
     {
         const auto &source = N(valueId);
-        const auto *variable = source.kind == MNode::Var ? FindIn(source.module, source.s) : nullptr;
+        const auto *variable = source.kind == MNode::Var ? FindNodeVar(source) : nullptr;
         if (!variable || keep.count(variable->emitted) == 0u)
             return Fail("#NonCopyable opcode 禁止复制返回借用值，请显式移动拥有值"), Bad();
     }
@@ -822,7 +823,7 @@ simple_ast::NodePtr MaterializeReturnStringValue(int valueId, const std::shared_
     {
         if (IsFreshValue(valueId)) return TakeExpressionTempValue(value, target);
         const auto &source = N(valueId);
-        const auto *variable = source.kind == MNode::Var ? FindIn(source.module, source.s) : nullptr;
+        const auto *variable = source.kind == MNode::Var ? FindNodeVar(source) : nullptr;
         if (variable == nullptr || keep.count(variable->emitted) == 0u) return CopyRuntimeArrayValue(value, target);
         return value;
     }
@@ -831,7 +832,7 @@ simple_ast::NodePtr MaterializeReturnStringValue(int valueId, const std::shared_
         int sourceId = valueId;
         while (N(sourceId).kind == MNode::Cast) sourceId = N(sourceId).kids[0];
         const MNode &source = N(sourceId);
-        const MVar *variable = source.kind == MNode::Var ? FindIn(source.module, source.s) : nullptr;
+        const MVar *variable = source.kind == MNode::Var ? FindNodeVar(source) : nullptr;
         if (variable == nullptr || keep.count(variable->emitted) == 0u)
             return simple_ast::Node::call(ObjectCopyFunction(target), { "__magel_v" }, { value });
     }
@@ -846,7 +847,7 @@ simple_ast::NodePtr MaterializeReturnStringValue(int valueId, const std::shared_
         return simple_ast::Node::call("__std_str_lit", { "__magel_addr" }, { value });
     if (expr.kind == MNode::Var)
     {
-        const MVar *found = FindIn(expr.module, expr.s);
+        const MVar *found = FindNodeVar(expr);
         if (found != nullptr && keep.count(found->emitted) != 0u) return value; /* 所有权转移 */
     }
     if (IsFreshValue(valueId) || IsImplicitConversionValue(valueId, target)) return TakeExpressionTempValue(value, target);
@@ -1063,7 +1064,7 @@ bool IsFreshValue(int exprId)
     {
     case MNode::Range: return true;
     case MNode::Var:
-        return FindIn(expr.module, expr.s) == nullptr && FindFunctionOverloads(expr.module, expr.s) != nullptr;
+        return FindNodeVar(expr) == nullptr && FindFunctionOverloads(expr.module, expr.s) != nullptr;
     case MNode::Str:               /* 字面量：会先复制成堆串（MaterializeStringValue） */
     case MNode::Null:              /* 空引用：释放它是空操作 */
     case MNode::Slice:             /* 切片：新串 */
@@ -1098,7 +1099,7 @@ bool IsFreshValue(int exprId)
                 const MNode &argument = N(callArgs[0]);
                 if (argument.kind == MNode::Var)
                 {
-                    const MVar *found = FindIn(argument.module, argument.s);
+                    const MVar *found = FindNodeVar(argument);
                     if (found != nullptr && found->type)
                         return !IsStandardOpcode(found->type, calleeNode.s2.c_str());
                 }
