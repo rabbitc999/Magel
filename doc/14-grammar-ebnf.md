@@ -105,7 +105,7 @@ Box<int64 fn(int64)> box;
 
 <!-- BEGIN GENERATED MAGEL EBNF -->
 
-以下 126 条产生式由 `source/magel.gram` 导出，语义动作及解析优先级指令省略。
+以下 140 条产生式由 `source/magel.gram` 导出，语义动作及解析优先级指令省略。
 
 ### 终结符登记
 
@@ -113,6 +113,19 @@ Box<int64 fn(int64)> box;
 | --- | --- |
 | `ANNOTATION` | `@annotation` |
 | `AT` | `@` |
+| `MACRO_DEFINE` | `$macro` |
+| `MACRO_END` | `$end_macro` |
+| `MACRO_BODY` | `@!macrobody` |
+| `MACRO_MATCH` | `$match` |
+| `MACRO_ELSE` | `$else` |
+| `MACRO_END_MATCH` | `$end_match` |
+| `MACRO_REGEX` | `$regex` |
+| `MACRO_END_REGEX` | `$end_regex` |
+| `MACRO_IS` | `is` |
+| `MACRO_EXPR` | `expr` |
+| `MACRO_IDENT` | `ident` |
+| `MACRO_BLOCK` | `block` |
+| `MACRO_STMT` | `stmt` |
 | `STRUCT` | `struct` |
 | `OPCODE` | `opcode` |
 | `NONCOPYABLE` | `#NonCopyable` |
@@ -226,6 +239,7 @@ Box<int64 fn(int64)> box;
 
 ```ebnf
 NUMBER = ? 正则 "[0-9]+" ? ;
+MACRO_NAME = ? 正则 "\\$[A-Za-z_][A-Za-z0-9_]*" ? ;
 FLIT = ? 正则 "[0-9]+(\\.[0-9]+([eE][-+]?[0-9]+)?|[eE][-+]?[0-9]+)[f]?|[0-9]+f" ? ;
 ULIT = ? 正则 "[0-9]+u" ? ;
 HEXLIT = ? 正则 "0[xX][A-Za-z0-9_]*" ? ;
@@ -247,6 +261,8 @@ top = annotation_decl
     | top_decl ;
 
 top_decl = struct_decl, type_decl_end
+    | macro_definition
+    | macro_call, ";"
     | opcode_decl, type_decl_end
     | "#NonCopyable", opcode_decl, type_decl_end
     | derive_directive, struct_decl, type_decl_end
@@ -730,6 +746,7 @@ call_args_nonempty = expr
     | call_args_nonempty, ",", expr ;
 
 primary = name_token
+    | macro_call
     | lambda_expr
     | qualified_ref
     | NUMBER
@@ -762,7 +779,12 @@ interpolated_string = "__magel_fstring", "(", call_args, ")" ;
 
 name_token = VARIABLE
     | "copy"
-    | "move" ;
+    | "move"
+    | "is"
+    | "expr"
+    | "ident"
+    | "block"
+    | "stmt" ;
 
 lambda_capture = ""
     | "const"
@@ -844,6 +866,54 @@ qualified_ref = name_token, "::", name_token
     | "yield", "::", "new"
     | qualified_ref, "::", name_token
     | qualified_ref, "::", "yield" ;
+
+macro_definition = "$macro", name_token, macro_generics, macro_parameters, "@!macrobody", macro_template, "$end_macro" ;
+
+macro_generics = ""
+    | "<", macro_generic_items, ">" ;
+
+macro_generic_items = macro_generic
+    | macro_generic_items, ",", macro_generic ;
+
+macro_generic = name_token
+    | name_token, ":", name_token ;
+
+macro_parameters = ""
+    | "(", macro_parameter_names, ")" ;
+
+macro_parameter_names = ""
+    | macro_parameter_items ;
+
+macro_parameter_items = name_token
+    | macro_parameter_items, ",", name_token ;
+
+macro_template = macro_template_parts
+    | macro_template_parts, expr ;
+
+macro_template_parts = ""
+    | macro_template_parts, stmt
+    | macro_template_parts, macro_control ;
+
+macro_control = "$match", name_token, "is", macro_category, "@!macrobody", macro_template, macro_match_tail, "$end_match"
+    | "$regex", name_token, "is", STRING, "@!macrobody", macro_template, macro_regex_else, "$end_regex" ;
+
+macro_category = "expr"
+    | "ident"
+    | "type"
+    | "block"
+    | "stmt" ;
+
+macro_match_tail = ""
+    | "$else", "@!macrobody", macro_template
+    | "$else", "is", macro_category, "@!macrobody", macro_template, macro_match_tail ;
+
+macro_regex_else = ""
+    | "$else", "@!macrobody", macro_template ;
+
+macro_call = MACRO_NAME
+    | MACRO_NAME, "(", call_args, ")"
+    | MACRO_NAME, "<", closure_type_arguments, ">"
+    | MACRO_NAME, "<", closure_type_arguments, ">", "(", call_args, ")" ;
 ```
 
 <!-- END GENERATED MAGEL EBNF -->

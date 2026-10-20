@@ -1,4 +1,4 @@
-"""验证匿名 fn 类型、旧词法删除、组合语法与三种执行路径。"""
+"""验证匿名 fn 类型、旧词法删除、组合语法及 VM 执行。"""
 from pathlib import Path
 import argparse
 import os
@@ -21,7 +21,15 @@ def main():
     compiler = args.magel.resolve()
     WORK.mkdir(parents=True, exist_ok=True)
     unit = WORK / ('unit' + EXE)
-    result = execute('g++', '-std=c++17', '-I' + str(ROOT), '-I' + str(ROOT / 'source'), '-I' + str(ROOT / 'library'), '-I' + str(ROOT / 'library/preprocess'), ROOT / 'tests/magel_function_types_test.cpp', '-o', unit)
+    libraries = [ROOT / path for path in ('build/magel-frontend/libparser.a',
+                 'build/magel-runtime/libsimple_ast.a', 'build/magel-stackvm-core/libstackvm.a',
+                 'build/magel-host-records/librecords.a', 'build/magel-runtime/libpreprocess.a')]
+    system = ['-lwinhttp'] if os.name == 'nt' else []
+    result = execute('g++', '-std=c++17', '-O3', '-pthread', '-ffunction-sections', '-fdata-sections',
+                     '-DMAGEL_CUSTOM_ALLOCATOR=1', '-DMAGEL_WITH_REFLECTION=1', '-DSTACKVM_WITH_REFLECTION=1',
+                     '-I' + str(ROOT), '-I' + str(ROOT / 'source'), '-I' + str(ROOT / 'library'),
+                     '-I' + str(ROOT / 'library/preprocess'), ROOT / 'tests/magel_function_types_test.cpp',
+                     '-Wl,--gc-sections', *libraries, *system, '-o', unit)
     assert result.returncode == 0, result.stderr
     result = execute(unit)
     assert result.returncode == 0 and result.stdout == 'function type unit tests OK\n' and (not result.stderr), result

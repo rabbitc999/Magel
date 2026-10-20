@@ -172,6 +172,7 @@ run_required_step "生成 MAGEL 解析器（gen.sh）" sh gen.sh
 run_required_step "构建 MAGEL 驱动（magel）" "$MAKE" -j4
 
 run_step "验证并行门禁调度与失败汇总" "$PYTHON" tests/test_parallel_gates.py
+run_step "验证卫生宏绑定、正则、AST 替换及生成解析器" "$PYTHON" tests/macro_foundations.py
 
 # ---- 快速门禁核心三件套：样例回归 + 本次新增能力测试 + 文档同步 ----
 run_step "MAGEL 样例回归（check.sh）" \

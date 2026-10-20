@@ -10,6 +10,22 @@
 %token ANNOTATION "@annotation"
 %token AT "@"
 
+/* 编译期 AST 宏：关键字单独登记，调用名保留美元前缀。 */
+%token MACRO_DEFINE "$macro"
+%token MACRO_END "$end_macro"
+%token MACRO_BODY "@!macrobody"
+%token MACRO_MATCH "$match"
+%token MACRO_ELSE "$else"
+%token MACRO_END_MATCH "$end_match"
+%token MACRO_REGEX "$regex"
+%token MACRO_END_REGEX "$end_regex"
+%token MACRO_IS "is"
+%token MACRO_EXPR "expr"
+%token MACRO_IDENT "ident"
+%token MACRO_BLOCK "block"
+%token MACRO_STMT "stmt"
+%token regex MACRO_NAME "\\$[A-Za-z_][A-Za-z0-9_]*"
+
 %token STRUCT "struct"
 %token OPCODE "opcode"
 %token NONCOPYABLE "#NonCopyable"

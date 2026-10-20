@@ -58,8 +58,9 @@ def highlight_keywords():
 def grammar_words():
     """文法登记的词形字面量 token。"""
     text = (ROOT / "source/magel.gram").read_text(encoding="utf-8") + (ROOT / "source/magel_token.gram").read_text(encoding="utf-8")
-    words = {match.group(1) for match in
-             re.finditer(r'%(?:token|define)\s+[A-Za-z_][A-Za-z_0-9]*\s+"([^"]*)"', text)}
+    words = {match.group(2) for match in
+             re.finditer(r'%(?:token|define)\s+([A-Za-z_][A-Za-z_0-9]*)\s+"([^"]*)"', text)
+             if not match.group(1).startswith('MACRO_')}
     # 编译器内部类型标签不是应用语言的补全入口。
     return {word for word in words if WORD.match(word) and word != "__typeTag" and not word.startswith("__magel_")}
 

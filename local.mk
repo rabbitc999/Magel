@@ -215,6 +215,15 @@ $(MAGEL_FRONTEND_MODULE_OBJS): $(FRONTEND_BUILD)/%.o: source/%.cpp | $(FRONTEND_
 $(MAGEL_FRONTEND_MODULE_OBJS): build/magel-runtime/buildConfig.json
 -include $(wildcard $(FRONTEND_BUILD)/*.d)
 
+# 编译期 AST 宏的独立实现，避免 regex 等重型头传播到解析器接口。
+MAGEL_MACRO_MODULES := hygiene regex_matcher source ast_substitution
+MAGEL_MACRO_OBJS := $(addprefix $(FRONTEND_BUILD)/macro_,$(addsuffix .o,$(MAGEL_MACRO_MODULES)))
+LIB_OBJS += $(MAGEL_MACRO_OBJS)
+$(LIB): $(MAGEL_MACRO_OBJS)
+$(MAGEL_MACRO_OBJS): $(FRONTEND_BUILD)/macro_%.o: source/macro/%.cpp | $(FRONTEND_BUILD)
+	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
+$(MAGEL_MACRO_OBJS): build/magel-runtime/buildConfig.json
+
 MAGEL_STDLIB_OBJ := $(FRONTEND_BUILD)/magel_stdlib_embedded.o
 LIB_OBJS += $(MAGEL_STDLIB_OBJ)
 $(LIB): $(MAGEL_STDLIB_OBJ)

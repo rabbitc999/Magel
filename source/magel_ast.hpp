@@ -17,6 +17,7 @@
  * 前缀 M_：Parser_ / ParserValue 是生成器保留名，不要碰。
  * --------------------------------------------------------------- */
 #include <map>
+#include <cstdint>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -213,9 +214,21 @@ struct MNode
         AnnotationParam,
         AnnotationUse,
         AnnotationArg,
+        MacroDefinition,  ///< 编译期宏定义，kids 保存参数组和模板。
+        MacroParameters,  ///< 显式参数组，与不存在参数组区分。
+        MacroParameter,   ///< 模板中的形参名字。
+        MacroTemplate,    ///< 已解析语句与表达式尾项。
+        MacroCall,        ///< 保留实参语法结构的编译期调用。
+        MacroHole,        ///< 已绑定到宏形参的语法占位，不按文字替换名字。
+        MacroGeneric,     ///< 泛型名称及显式推导来源。
+        MacroMatch,       ///< 编译期语法类别匹配。
+        MacroBranch,      ///< 语法匹配的有序候选分支。
+        MacroRegex,       ///< 编译期原文正则匹配。
     } kind = List;
     std::size_t sourceLine = 0;                         ///< 预处理后语法节点的起始行。
     std::size_t sourceColumn = 0;                       ///< 注解起始 token 的一基列号。
+    std::uint32_t syntaxContext = 0;                    ///< 原始片段或宏展开的卫生上下文。
+    std::uint32_t bindingIdentity = 0;                  ///< 声明及引用解析后的稳定绑定身份。
     Memory::Vector<int> annotations;                    ///< 附着于本声明的注解使用节点。
     Memory::Vector<Memory::String> derives;             ///< 请求按字段派生的接口名称。
     bool derivesExpanded = false;                       ///< 已完成宏模板注入，泛型重放时不重复生成。

@@ -31,6 +31,24 @@ def main():
                 assert diagnostic in result.stderr, (sequence, result.stderr)
             return result
 
+        run('''int64 fn(int64) make(int64 mut& bias) {
+            return fn(int64 value) { value + bias };
+        }
+        void main() {
+            int64 bias = 85;
+            int64 fn(int64) callback = make(&bias);
+            List<(int64 fn(int64)) const&> references;
+            references.push(&callback);
+            assert(references[0](5) == 90);
+            assert(callback(6) == 91);
+        }''')
+        run('''void main() {
+            String owner = "hello";
+            List<String const&> references;
+            references.push(&owner);
+            assert(references[0] == "hello");
+            assert(owner == "hello");
+        }''')
         result = run('''void main() {
             String a = "text";
             int64 i = 0;

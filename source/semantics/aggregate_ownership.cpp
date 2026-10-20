@@ -1131,6 +1131,8 @@ bool IsFreshValue(int exprId)
         if (expr.kids.size() > 1u && FindIndex(base, ExprType(expr.kids[1])) != nullptr)
             return RawExprType(exprId)->kind != MType::Ptr || IsInterfacePointer(RawExprType(exprId));
         if (!IsContainer(base)) return false;
+        // 容器里保存的普通引用仍借用原值，自动解引用不能把它变成临时所有者。
+        if (RawExprType(exprId)->kind == MType::Ptr && !IsInterfacePointer(RawExprType(exprId))) return false;
         const std::shared_ptr<MType> result = ExprType(exprId);
         return result && (IsStandardOpcode(result, "String") || IsObjectLike(result));
     }

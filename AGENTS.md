@@ -4,6 +4,9 @@
 回归测试为准。已实现能力写入对应功能文档，历史记录由 Git 提交及 `CHANGELOG.md` 条目
 承载，不把待办计划当作当前能力说明。
 
+根目录 `TASK.md` 若存在，记录当前已授权任务及验收清单；实施过程中同步维护，不把计划写成已实现能力。
+只有其中要求全部实现并完成验收、文档和产物同步后，才删除 `TASK.md`；未完成时保留未完成项，不以结束一次会话代替任务完成。
+
 ## 硬性要求
 
 1. **必须写完整的文法文件**：`source/magel.gram` 是 Magel 的**权威语法定义**，产生式要覆盖
@@ -115,8 +118,8 @@ python tools/format_cpp.py --check   # 只检查格式
 ```
 
 其余语言层语义要点（match 重叠警告 `MGL1601` 不升级为错误、匿名函数只用 `fn`、
-`yield` / `break level` 值语义、默认值文本统一走 `toString()`、宏在 Lexer 前纯文本替换且
-`$macro` 仅小写、`#derive` 只生成 Equal/Hash/Clone 等）以权威文法
+`yield` / `break level` 值语义、默认值文本统一走 `toString()`、`$macro` 仅小写、
+`#derive` 只生成 Equal/Hash/Clone 等）以权威文法
 [`source/magel.gram`](source/magel.gram)、语义冻结清单
 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与回归测试为准，此处不再重复展开。
 

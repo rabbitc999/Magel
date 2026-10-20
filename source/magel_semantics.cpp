@@ -2925,6 +2925,7 @@ int M_TokenValue(int tokenType, double number, const char *pName, Memory::String
 }
 
 #include "semantics/annotation_ast.cpp"
+#include "semantics/macro_ast.cpp"
 
 /* ============================================================
  * 降级：C 语法树 → simple_ast::Program → 四元式 / .data → stackvm 执行

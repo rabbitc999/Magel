@@ -34,6 +34,8 @@ top := annotation_decl { $$ = $1; }
      | top_decl { $$ = $1; } ;
 
 top_decl := struct_decl type_decl_end { $$ = $1; }
+     | macro_definition { $$ = $1; }
+     | macro_call SEMI { $$ = $1; }
      | opcode_decl type_decl_end { $$ = $1; }
      | NONCOPYABLE opcode_decl type_decl_end { $$ = M_NonCopyableOpcode($2); }
      | derive_directive struct_decl type_decl_end { $$ = M_Derived($1, $2); }
@@ -644,6 +646,7 @@ call_args_nonempty := expr                                { $$ = M_List1($1); }
 
 /* 调用只有"后缀"一条路径 */
 primary := name_token                         { $$ = M_Var($1); }
+         | macro_call { $$ = $1; }
          | lambda_expr                     { $$ = $1; }
          | qualified_ref                    { $$ = $1; }
          | NUMBER                        { $$ = $1; }
@@ -677,7 +680,9 @@ z_block_value := LBRACE nonempty_stmt_list RBRACE { $$ = M_BlockValue(M_Block($2
 interpolated_string := FSTRING LPAREN call_args RPAREN { $$ = M_FString($3); } ;
 
 /* lambda 的块、表达式体、参数及返回签名均由生成解析器识别。 */
-name_token := VARIABLE { $$ = $1; } | COPY { $$ = M_KeywordName(3); } | MOVE { $$ = M_KeywordName(4); } ;
+name_token := VARIABLE { $$ = $1; } | COPY { $$ = M_KeywordName(3); } | MOVE { $$ = M_KeywordName(4); }
+    | MACRO_IS { $$ = $1; } | MACRO_EXPR { $$ = $1; } | MACRO_IDENT { $$ = $1; }
+    | MACRO_BLOCK { $$ = $1; } | MACRO_STMT { $$ = $1; } ;
 lambda_capture := %empty { $$ = 0; }
                 | CONST { $$ = 0; }
                 | MUT { $$ = 1; }
@@ -765,6 +770,43 @@ qualified_ref := name_token SCOPE name_token
                | qualified_ref SCOPE YIELD
                    { $$ = M_QualifiedRef($1, M_YieldName()); } ;
 
+/* 宏头换行仅进行词法边界归一化；宏体及实参由本生成解析器建立 AST。 */
+macro_definition := MACRO_DEFINE name_token macro_generics macro_parameters MACRO_BODY macro_template MACRO_END
+    { $$ = M_MacroDefinition($2, $4, $6, $3); } ;
+macro_generics := %empty { $$ = M_List(); }
+    | LT macro_generic_items GT { $$ = $2; } ;
+macro_generic_items := macro_generic { $$ = M_List1($1); }
+    | macro_generic_items COMMA macro_generic { M_ListAdd($1, $3); $$ = $1; } ;
+macro_generic := name_token { $$ = M_MacroGeneric($1, -1); }
+    | name_token COLON name_token { $$ = M_MacroGeneric($1, $3); } ;
+macro_parameters := %empty { $$ = -1; }
+    | LPAREN macro_parameter_names RPAREN { $$ = M_MacroParameters($2); } ;
+macro_parameter_names := %empty { $$ = M_List(); }
+    | macro_parameter_items { $$ = $1; } ;
+macro_parameter_items := name_token { $$ = M_List1(M_MacroParameter($1)); }
+    | macro_parameter_items COMMA name_token { M_ListAdd($1, M_MacroParameter($3)); $$ = $1; } ;
+macro_template := macro_template_parts { $$ = M_MacroTemplate($1, -1); }
+    | macro_template_parts expr { $$ = M_MacroTemplate($1, $2); } ;
+macro_template_parts := %empty { $$ = M_List(); }
+    | macro_template_parts stmt { M_ListAdd($1, $2); $$ = $1; }
+    | macro_template_parts macro_control { M_ListAdd($1, $2); $$ = $1; } ;
+macro_control := MACRO_MATCH name_token MACRO_IS macro_category MACRO_BODY macro_template macro_match_tail MACRO_END_MATCH
+    { $$ = M_MacroMatch($2, M_MacroBranches(M_MacroBranch($4, $6), $7)); }
+    | MACRO_REGEX name_token MACRO_IS STRING MACRO_BODY macro_template macro_regex_else MACRO_END_REGEX
+    { $$ = M_MacroRegex($2, $4, $6, $7); } ;
+macro_category := MACRO_EXPR { $$ = $1; } | MACRO_IDENT { $$ = $1; }
+    | TYPE_KW { $$ = $1; } | MACRO_BLOCK { $$ = $1; } | MACRO_STMT { $$ = $1; } ;
+macro_match_tail := %empty { $$ = M_List(); }
+    | MACRO_ELSE MACRO_BODY macro_template { $$ = M_List1(M_MacroBranch(-1, $3)); }
+    | MACRO_ELSE MACRO_IS macro_category MACRO_BODY macro_template macro_match_tail
+    { $$ = M_MacroBranches(M_MacroBranch($3, $5), $6); } ;
+macro_regex_else := %empty { $$ = -1; }
+    | MACRO_ELSE MACRO_BODY macro_template { $$ = $3; } ;
+macro_call := MACRO_NAME %prec FN { $$ = M_MacroCall($1, -1); }
+    | MACRO_NAME LPAREN call_args RPAREN { $$ = M_MacroCall($1, $3); }
+    | MACRO_NAME LT closure_type_arguments GT %prec FN { $$ = M_MacroTypedCall($1, $3, -1); }
+    | MACRO_NAME LT closure_type_arguments GT LPAREN call_args RPAREN { $$ = M_MacroTypedCall($1, $3, $6); } ;
+
 %code
 inline const char *const kMagelStdModules[] = {
     nullptr, // 当前没有需要特殊登记的标准模块。
@@ -772,6 +814,7 @@ inline const char *const kMagelStdModules[] = {
 %endcode
 
 %code include "magel_ast.hpp"
+%code include "macro/ast.hpp"
 
 %epilogue include "magel_semantics.cpp"
 
