@@ -41,7 +41,7 @@ def main():
                 functions += 1
                 if not re.fullmatch(r'[a-z][A-Za-z0-9]*', name):
                     errors.append(f'{module}::{row["owner"]}::{name}：函数/方法必须使用小驼峰')
-            elif kind in ('struct', 'enum', 'interface'):
+            elif kind in ('struct', 'enum', 'interface', 'opcode'):
                 types += 1
                 if not re.fullmatch(r'[A-Z][a-z0-9]*(?:[A-Z][a-z0-9]+)*', name):
                     errors.append(f'{module}::{name}：类型必须使用大驼峰')

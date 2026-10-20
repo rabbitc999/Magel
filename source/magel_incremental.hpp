@@ -186,28 +186,8 @@ public:
         return true;
     }
 
-    bool preprocessTextUnit(const Memory::String &path, const preprocess::Options &options,
-                            const Memory::String &text, const Memory::String &label,
-                            const Memory::String &base, const Memory::String &manifest,
-                            preprocess::Result &result)
-    {
-        const Memory::String source = canonical(path);
-        const fs::path cachePath = fs::path(directory_) / (Memory::toString(hashBytes(source + text, signature_)) + ".unit");
-        if (readUnit(cachePath, source, result))
-        {
-            ++reused_;
-            return true;
-        }
-        preprocess::Preprocessor processor(options);
-        if (!processor.runText(text, label, base, result)) return false;
-        result.dependencies.push_back(manifest);
-        ++rebuilt_;
-        writeUnit(cachePath, source, result);
-        return true;
-    }
-
     /**
-     * @brief 设置编辑器的未保存源码，同时用于校验包含依赖的内容指纹。
+     * @brief 设置编辑器的未保存源码，同时用于校验模块依赖的内容指纹。
      * @param values 规范路径到未保存源码的覆盖表。
      */
     void setOverlays(const Memory::Map<Memory::String, Memory::String> &values) { overlays_ = values; }

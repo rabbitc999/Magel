@@ -1,5 +1,5 @@
 import std::reflect;
-opcode Secret {new=__vm_bint_from_int;drop=__vm_bint_drop;copy=__vm_bint_copy;};
+opcode Secret {new=__std_bint_from_int;drop=__std_bint_drop;copy=__std_bint_copy;};
 @Reflect
 struct Holder { Secret hidden; int64 visible; };
 @Reflect

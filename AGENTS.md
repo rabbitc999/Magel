@@ -41,7 +41,7 @@
    向它推送任何分支或 tag 之前，**必须先取得用户明确同意**；未经同意不得推送，
    也不要把它当成 `origin` 的自动镜像顺手同步。
 8. **程序与插件分别记录版本**：根目录 [`VERSION`](VERSION) 是 Magel 程序版本，当前为
-   `0.21.0`；[`vscode/package.json`](vscode/package.json) 的插件 `version` 独立保持 `1.0.0`，
+   `0.21.1`；[`vscode/package.json`](vscode/package.json) 的插件 `version` 独立保持 `1.0.0`，
    `magelCompilerVersion` 必须与 `VERSION` 一致。内嵌编译器报告程序版本，VSIX 清单和包名
    使用插件版本。交付前在 `vscode/` 执行 `npm run package`，生成
    `vscode/dist/magel-editor-1.0.0.vsix`，核对两种版本及内嵌编译器字节。
@@ -147,7 +147,7 @@ Magel 的图标与总览图都由**仓库里的 Python 脚本画**（PIL），�
 
 ## CHANGELOG 与版本口径
 
-语言尚未发布，当前开发版本为 **0.21.0**。此前累计的 1.0.0 开发记录细分为
+语言尚未发布，当前开发版本为 **0.21.1**。此前累计的 1.0.0 开发记录细分为
 `0.19.0`–`0.19.15` 与 `0.20.0`–`0.20.16`；更早的 1.x 已重排为 `0.18.0`–`0.18.6`。
 历史版本都使用三段 `0.x.x`；VS Code 扩展包独立使用 `1.0.0`。
 

@@ -30,9 +30,11 @@ struct Headers {
     }
 };
 int64 main() {
-    /* 导出程序也必须注册网络与 SQL 宿主接口；无效句柄无需外部服务。 */
+    /* VM 必须注册网络与 SQL 宿主接口；关闭未打开的连接不需要外部服务。 */
     assert(std::sql::__sqlClose((int32)0) == (int32)-1);
-    assert(std::net::__netClose((int32)-1) == (int32)-1);
+    std::net::TcpSocket unopened;
+    unopened.close();
+    assert(!unopened.isOpen());
     Headers r;
     r.headers = "A: alpha\r\nB: beta\r\nC: gamma\r\n";
     println("{} {}", r.header("A"), r.header("B"));

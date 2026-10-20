@@ -4,23 +4,25 @@ opcode String {
     new = std::lang::__stringNew;
     drop = std::lang::__stringDrop;
     copy = std::lang::__stringCopy;
+    /** @brief 返回 UTF-8 文本的字节长度。
+     * @return 不包括终止零字节的长度。 */
     int64 length() { return std::lang::len(self); }
 };
 
 opcode BigInteger {
-    new = __vm_bint_from_int;
-    drop = __vm_bint_drop;
-    copy = __vm_bint_copy;
+    new = __std_bint_from_int;
+    drop = __std_bint_drop;
+    copy = __std_bint_copy;
 };
 opcode BigDecimal {
-    new = __vm_bfloat_from_int;
-    drop = __vm_bfloat_drop;
-    copy = __vm_bfloat_copy;
+    new = __std_bfloat_from_int;
+    drop = __std_bfloat_drop;
+    copy = __std_bfloat_copy;
 };
 #NonCopyable
 opcode File {
-    new = __vm_file_open;
-    drop = __vm_file_drop;
+    new = __std_file_open;
+    drop = __std_file_drop;
 };
 #NonCopyable
 opcode Process {
@@ -143,7 +145,7 @@ bool float64ToBytes(float64 value, uint8[] mut& bytes) { return float64ToBytes(v
 /* Magel 标准库前导模块。这里放可由 Magel 自身表达的类型；算法由编译器签名接入 VM 胶水。 */
 
 /*
- * 中止统一走 std::lang::panic：编译器与虚拟机里只有 `__vm_panic` 这一个停机原语，
+ * 中止统一走 std::lang::panic：编译器与虚拟机里只有 `__std_panic` 这一个停机原语，
  * `exit(n)` 与内建 `assert(x)` 都已删除。需要断言时用下面这几个函数 —— 它们自己
  * 调 `std::lang::panic`，所以停机清理只有一条入口；带消息的重载让标准库自己的前置检查
  * 也能给出人话（例如 range 的步长）。

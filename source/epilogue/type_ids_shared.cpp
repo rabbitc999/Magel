@@ -449,7 +449,7 @@ const char *ObjectCopyFunction(const std::shared_ptr<MType> &type)
 {
     if (const auto *definition = FindOpcodeDefinition(type); definition && !definition->copy.empty())
         return definition->copy.c_str();
-    return type && type->kind == MType::Func ? "__vm_function_copy" : "__vm_object_copy";
+    return type && type->kind == MType::Func ? "__std_function_copy" : "__std_object_copy";
 }
 std::shared_ptr<MType> RawExprType(int id);
 /**

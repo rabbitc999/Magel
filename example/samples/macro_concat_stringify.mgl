@@ -7,7 +7,7 @@
  *   形参取调用点写下的原文，别的表达式取字面文本。
  * - 两者都能在普通代码里用，和 `$line` / `$file` / `$module` 同属 `$` 前缀的元数据形式。
  */
-%include "include/macros.mgl"
+import include::macros;
 
 $macro DECLARE(prefix, suffix, value)
 int64 $concat(prefix, suffix) = value;

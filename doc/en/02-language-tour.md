@@ -420,7 +420,7 @@ int64 main() {
 detail square5=25
 ```
 
-Directives starting with `%` run before parsing: `%include` expands a file, `%if` / `%elif` / `%else`
+Directives starting with `%` run before parsing: `%if` / `%elif` / `%else`
 / `%endif` do conditional compilation, `%define` defines a symbol (equivalent to the command-line
 `-D NAME`).
 

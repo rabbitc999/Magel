@@ -5,9 +5,9 @@ uint64 demo_counter_to_uint(uint64 handle);
 @Reflect
 opcode Counter
 {
-    new = __vm_bint_from_int;
-    drop = __vm_bint_drop;
-    copy = __vm_bint_copy;
+    new = __std_bint_from_int;
+    drop = __std_bint_drop;
+    copy = __std_bint_copy;
     int64 count;
     String label;
 
@@ -38,8 +38,8 @@ struct Holder
 #NonCopyable
 opcode UniqueCounter
 {
-    new = __vm_bint_from_int;
-    drop = __vm_bint_drop;
+    new = __std_bint_from_int;
+    drop = __std_bint_drop;
     int64 count;
     String label;
 

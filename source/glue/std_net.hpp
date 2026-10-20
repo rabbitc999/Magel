@@ -2,7 +2,10 @@
 #define PARSE_ENGINE_STD_NET_HPP
 
 #include "../magel_glue.hpp"
+#include "native_record.hpp"
 
+#include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -311,6 +314,7 @@ constexpr int kNetOk = 0;
 constexpr int kNetClosed = 1;  /* 对端关闭 */
 constexpr int kNetTimeout = 2; /* 等超时 */
 constexpr int kNetError = 3;
+constexpr int kNetPending = 4;
 
 /* setsockopt / getsockopt 的层级与选项号两个平台不同 */
 #if defined(_WIN32)
@@ -736,9 +740,11 @@ inline std::int32_t netAccept(std::int32_t listener, std::int32_t timeoutMs)
 
 inline std::int32_t netSend(std::int32_t sock, String data)
 {
+    lastStatus() = kNetOk;
     SockSlot *slot = slotAt(sock);
     if (slot == nullptr || slot->listener)
     {
+        lastStatus() = kNetError;
         setErrorText("不是连接句柄");
         return -1;
     }
@@ -749,6 +755,7 @@ inline std::int32_t netSend(std::int32_t sock, String data)
         const int written = api().send(slot->fd, data.data() + sent, static_cast<int>(total - sent), 0);
         if (written <= 0)
         {
+            lastStatus() = kNetError;
             captureSocketError("发送");
             return -1;
         }
@@ -896,9 +903,403 @@ inline std::int32_t netLocalPort(std::int32_t handle)
 #endif
 }
 
+/**
+ * @brief 持有一项平台连接及该连接最近一次操作的诊断。
+ */
+
+/**
+ * @brief 持有平台连接及该连接的独立状态、错误和连接超时。
+ */
+struct SocketResource
+{
+    std::int32_t slot = -1;
+    String error;
+    std::int64_t status = kNetOk;
+    bool connecting = false;
+    bool timed = false;
+    std::chrono::steady_clock::time_point deadline;
+};
+
+/**
+ * @brief 销毁独占套接字资源，尚未关闭时同时归还系统句柄。
+ * @param pointer 待销毁的 SocketResource。
+ */
+inline void destroySocketResource(void *pointer)
+{
+    auto *resource = static_cast<SocketResource *>(pointer);
+    if (resource->slot >= 0) netClose(resource->slot);
+    delete resource;
+}
+
+inline const stackvm::NativeRecordType socketType{ "std::net::SocketResource", nullptr, destroySocketResource };
+
+/**
+ * @brief 将平台连接收进当前 VM 的不透明记录。
+ * @param ctx 当前胶水调用上下文。
+ * @param slot 平台连接表位置，负值表示未连接。
+ * @return 独占记录句柄。
+ */
+inline std::int64_t makeSocketResource(magel_glue::Context &ctx, std::int32_t slot)
+{
+    auto *resource = new SocketResource;
+    resource->slot = slot;
+    resource->status = lastStatus();
+    if (slot < 0) resource->error = netError();
+    return ctx.makeNativeRecord(socketType, resource);
+}
+
+/**
+ * @brief 校验并借用当前运行时拥有的套接字资源。
+ * @param ctx 当前胶水调用上下文。
+ * @param handle 不透明记录句柄。
+ * @return 有效资源；已经释放或类型不匹配时报告错误并返回空。
+ */
+inline SocketResource *socketResource(magel_glue::Context &ctx, std::int64_t handle)
+{
+    auto *resource = static_cast<SocketResource *>(ctx.nativeRecord(handle, socketType));
+    if (!resource) ctx.fail("网络 opcode 已释放或类型不匹配");
+    return resource;
+}
+
+/**
+ * @brief 保存本次平台操作的结果，避免其他连接覆盖该连接的状态。
+ * @param resource 刚完成操作的连接。
+ */
+inline void saveSocketStatus(SocketResource &resource)
+{
+    resource.status = lastStatus();
+    if (resource.status == kNetError) resource.error = netError();
+}
+
+/**
+ * @brief 检查平台错误是否表示非阻塞操作尚未就绪。
+ * @return 尚未就绪或正在连接时返回 true。
+ */
+inline bool wouldBlock()
+{
+    const int code = api().last_error ? api().last_error() : 0;
+#if defined(_WIN32)
+    return code == 10035 || code == 10036 || code == 10037;
+#else
+    return code == EWOULDBLOCK || code == EAGAIN || code == EINPROGRESS || code == EALREADY;
+#endif
+}
+
+/**
+ * @brief 保存异步操作错误，不将可恢复网络错误升级为 VM panic。
+ * @param resource 操作所属连接。
+ * @param message 错误说明。
+ * @return 通用失败数值 -1。
+ */
+inline std::int64_t asyncError(SocketResource &resource, const String &message)
+{
+    resource.status = kNetError;
+    resource.error = message;
+    return -1;
+}
+
+/**
+ * @brief 创建非阻塞 IPv4 连接，地址解析仅接受数值 IP。
+ * @param ctx 当前胶水上下文。
+ * @param host 数值 IPv4 地址。
+ * @param port 远端端口。
+ * @param timeoutMs 正数表示连接超时毫秒数，非正数表示无内建超时。
+ * @return 由当前 VM 拥有的连接记录，status 表示完成、进行中或失败。
+ */
+inline std::int64_t connectAsync(magel_glue::Context &ctx, String host, std::int32_t port, std::int32_t timeoutMs)
+{
+    auto handle = makeSocketResource(ctx, -1);
+    auto *resource = socketResource(ctx, handle);
+    if (!resource) return 0;
+    resource->error.clear();
+    if (!initNet())
+    {
+        asyncError(*resource, netError());
+        return handle;
+    }
+    if (!numericHost(host) || port <= 0 || port > 65535)
+    {
+        asyncError(*resource, "connectAsync 需要数值 IPv4 地址及 1..65535 端口；域名请使用 connect");
+        return handle;
+    }
+    unsigned char address[kAddrBuffer]{};
+    int length = resolveAddress(host, port, address);
+    if (!length)
+    {
+        asyncError(*resource, netError());
+        return handle;
+    }
+    auto fd = api().create(2, 1, 6);
+    if (isInvalid(fd))
+    {
+        captureSocketError("创建异步连接");
+        asyncError(*resource, netError());
+        return handle;
+    }
+    if (!setNonBlocking(fd, true))
+    {
+        captureSocketError("设置非阻塞连接");
+        api().close(fd);
+        asyncError(*resource, netError());
+        return handle;
+    }
+    int result = api().connect(fd, address, length);
+    const bool pending = result != 0 && wouldBlock();
+    if (result != 0 && !pending)
+    {
+        captureSocketError("异步连接");
+        api().close(fd);
+        asyncError(*resource, netError());
+        return handle;
+    }
+    auto slot = allocateSlot(false, fd);
+    if (slot < 0)
+    {
+        api().close(fd);
+        asyncError(*resource, netError());
+        return handle;
+    }
+    resource->slot = slot;
+    resource->connecting = pending;
+    resource->status = pending ? kNetPending : kNetOk;
+    resource->timed = timeoutMs > 0;
+    resource->deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs > 0 ? timeoutMs : 0);
+    if (!pending && !setNonBlocking(fd, false))
+    {
+        netClose(slot);
+        resource->slot = -1;
+        asyncError(*resource, "恢复连接模式失败");
+    }
+    return handle;
+}
+
+/**
+ * @brief 以零等待轮询异步连接，完成后恢复同步 API 可用的连接模式。
+ * @param resource 正在连接或已经完成的连接记录。
+ * @return NET_PENDING、NET_OK、NET_TIMEOUT 或 NET_ERROR。
+ */
+inline std::int64_t pollConnect(SocketResource &resource)
+{
+    if (!resource.connecting) return resource.status;
+    auto *slot = slotAt(resource.slot);
+    if (!slot)
+    {
+        resource.connecting = false;
+        return asyncError(resource, "异步连接已经关闭"), resource.status;
+    }
+    int ready = waitWritable(slot->fd, 0);
+    if (ready == 0 && (!resource.timed || std::chrono::steady_clock::now() < resource.deadline)) return resource.status = kNetPending;
+    int pending = 0, size = sizeof(pending);
+    const bool failed = ready < 0 || (ready > 0 && (!api().getopt || api().getopt(slot->fd, kSolSocket, kSoError, &pending, &size) != 0 || pending != 0));
+    resource.connecting = false;
+    if (ready == 0 || failed || !setNonBlocking(slot->fd, false))
+    {
+        netClose(resource.slot);
+        resource.slot = -1;
+        resource.status = ready == 0 ? kNetTimeout : kNetError;
+        resource.error = ready == 0 ? "异步连接超时" : "异步连接失败（套接字错误码 " + Memory::toString(pending) + "）";
+        return resource.status;
+    }
+    resource.error.clear();
+    return resource.status = kNetOk;
+}
+
+/**
+ * @brief 以零等待接受一条连接，不就绪时保留监听器并返回 pending 状态记录。
+ * @param ctx 当前胶水上下文。
+ * @param resource 监听器记录。
+ * @return 新连接或 pending/错误结果的记录句柄。
+ */
+inline std::int64_t acceptAsync(magel_glue::Context &ctx, SocketResource &resource)
+{
+    auto *slot = slotAt(resource.slot);
+    if (!slot || !slot->listener)
+    {
+        asyncError(resource, "不是有效监听器");
+        auto handle = makeSocketResource(ctx, -1);
+        auto *result = socketResource(ctx, handle);
+        if (result)
+        {
+            result->status = resource.status;
+            result->error = resource.error;
+        }
+        return handle;
+    }
+    if (!setNonBlocking(slot->fd, true))
+    {
+        asyncError(resource, "设置非阻塞监听失败");
+        auto handle = makeSocketResource(ctx, -1);
+        auto *result = socketResource(ctx, handle);
+        if (result)
+        {
+            result->status = resource.status;
+            result->error = resource.error;
+        }
+        return handle;
+    }
+    const auto accepted = netAccept(resource.slot, 0);
+    const auto status = accepted >= 0 ? kNetOk : lastStatus() == kNetTimeout || wouldBlock() ? kNetPending :
+                                                                                               kNetError;
+    setNonBlocking(slot->fd, false);
+    const auto handle = makeSocketResource(ctx, accepted);
+    auto *result = socketResource(ctx, handle);
+    resource.status = status;
+    if (result)
+    {
+        result->status = status;
+        if (status == kNetPending) result->error.clear();
+    }
+    if (status == kNetError) resource.error = netError();
+    return handle;
+}
+
+/**
+ * @brief 执行一次有界非阻塞发送，保留部分发送的字节数。
+ * @param resource 连接记录。
+ * @param data 完整待发送文本。
+ * @param offset 本次发送在文本中的字节偏移。
+ * @return 本次发送字节数；未就绪为零，失败为 -1。
+ */
+inline std::int64_t sendAsync(SocketResource &resource, const String &data, std::int64_t offset)
+{
+    if (resource.connecting && pollConnect(resource) != kNetOk) return resource.status == kNetPending ? 0 : -1;
+    auto *slot = slotAt(resource.slot);
+    if (!slot || slot->listener) return asyncError(resource, "不是有效连接");
+    if (offset < 0 || static_cast<std::uint64_t>(offset) > data.size()) return asyncError(resource, "异步发送偏移越界");
+    resource.status = kNetOk;
+    if (static_cast<std::size_t>(offset) == data.size()) return 0;
+    if (!setNonBlocking(slot->fd, true)) return asyncError(resource, "设置非阻塞发送失败");
+    const int count = static_cast<int>((std::min)(data.size() - static_cast<std::size_t>(offset), std::size_t{ 65536 }));
+    int flags = 0;
+#if defined(MSG_NOSIGNAL)
+    flags = MSG_NOSIGNAL;
+#endif
+    const int sent = api().send(slot->fd, data.data() + offset, count, flags);
+    const bool pending = sent < 0 && wouldBlock();
+    if (sent < 0 && !pending) captureSocketError("异步发送");
+    setNonBlocking(slot->fd, false);
+    if (pending)
+    {
+        resource.status = kNetPending;
+        return 0;
+    }
+    if (sent <= 0) return asyncError(resource, netError());
+    return sent;
+}
+
+/**
+ * @brief 读取一次非阻塞网络数据或交出已有行缓冲中的字节。
+ * @param resource 连接记录。
+ * @param maxBytes 字节读取上限，每次最多 65536。
+ * @param line true 表示等待完整行，false 表示读取任意字节。
+ * @return 本次结果；空串通过 status 区分 pending、关闭、空行或错误。
+ */
+inline String receiveAsync(SocketResource &resource, std::int32_t maxBytes, bool line)
+{
+    if (resource.connecting && pollConnect(resource) != kNetOk) return {};
+    auto *slot = slotAt(resource.slot);
+    if (!slot || slot->listener)
+    {
+        asyncError(resource, "不是有效连接");
+        return {};
+    }
+    if (maxBytes <= 0)
+    {
+        asyncError(resource, "异步接收长度必须为正");
+        return {};
+    }
+    resource.status = kNetOk;
+    bool closed = false;
+    const auto readyLine = [&]() { return slot->pending.find('\n') != std::string::npos; };
+    if ((line && !readyLine()) || (!line && slot->pending.empty()))
+    {
+        if (!setNonBlocking(slot->fd, true))
+        {
+            asyncError(resource, "设置非阻塞接收失败");
+            return {};
+        }
+        char bytes[65536];
+        int count = api().recv(slot->fd, bytes, line ? 4096 : (std::min)(maxBytes, std::int32_t{ 65536 }), 0);
+        const bool pending = count < 0 && wouldBlock();
+        if (count < 0 && !pending) captureSocketError("异步接收");
+        setNonBlocking(slot->fd, false);
+        if (pending)
+        {
+            resource.status = kNetPending;
+            return {};
+        }
+        if (count < 0)
+        {
+            asyncError(resource, netError());
+            return {};
+        }
+        closed = count == 0;
+        if (count > 0) slot->pending.append(bytes, static_cast<std::size_t>(count));
+    }
+    if (line)
+    {
+        const auto newline = slot->pending.find('\n');
+        if (newline == std::string::npos && !closed)
+        {
+            if (slot->pending.size() > 1048576)
+            {
+                slot->pending.clear();
+                asyncError(resource, "异步行缓冲超过 1 MiB");
+                return {};
+            }
+            resource.status = kNetPending;
+            return {};
+        }
+        if (newline != std::string::npos)
+        {
+            auto result = slot->pending.substr(0, newline);
+            slot->pending.erase(0, newline + 1);
+            if (!result.empty() && result.back() == '\r') result.pop_back();
+            return String(result);
+        }
+    }
+    const auto count = (std::min)(slot->pending.size(), static_cast<std::size_t>(maxBytes));
+    auto result = slot->pending.substr(0, count);
+    slot->pending.erase(0, count);
+    if (closed && result.empty()) resource.status = kNetClosed;
+    return String(result);
+}
+
+/**
+ * @brief 注册网络 opcode 的独占生命周期及所有连接操作。
+ * @param registry 宿主函数注册表。
+ * @param error 注册失败时接收诊断。
+ * @return 全部入口注册成功时返回 true。
+ */
 inline bool bind(Registry &registry, String *error = nullptr)
 {
-    return registry.bindTyped<std::int32_t>("std::net::__netInit", netInit, error) && registry.bindTyped<String>("std::net::__netError", netError, error) && registry.bindTyped<std::int32_t>("std::net::__netStatus", netStatus, error) && registry.bindTyped<std::int32_t, String, std::int32_t, std::int32_t>("std::net::__netConnect", netConnect, error) && registry.bindTyped<std::int32_t, String, std::int32_t, std::int32_t>("std::net::__netListen", netListen, error) && registry.bindTyped<std::int32_t, std::int32_t, std::int32_t>("std::net::__netAccept", netAccept, error) && registry.bindTyped<std::int32_t, std::int32_t, String>("std::net::__netSend", netSend, error) && registry.bindTyped<String, std::int32_t, std::int32_t>("std::net::__netReceive", netReceive, error) && registry.bindTyped<String, std::int32_t, std::int32_t>("std::net::__netReceiveLine", netReceiveLine, error) && registry.bindTyped<std::int32_t, std::int32_t>("std::net::__netClose", netClose, error) && registry.bindTyped<std::int32_t, std::int32_t>("std::net::__netLocalPort", netLocalPort, error);
+    using Context = magel_glue::Context;
+    bool ok = registry.bindTypedWithContext<std::int64_t>("std::net::__std_netNew", [](Context &ctx) { return makeSocketResource(ctx, -1); }, error);
+    ok = registry.bindTypedWithContext<void, std::int64_t>("std::net::__std_netDrop", [](Context &ctx, std::int64_t handle) { ctx.releaseNativeRecord(handle); }, error) && ok;
+    ok = registry.bindTypedWithContext<std::int64_t, String, std::int32_t, std::int32_t>("std::net::__std_netConnect", [](Context &ctx, String host, std::int32_t port, std::int32_t timeout) { return makeSocketResource(ctx, netConnect(host, port, timeout)); }, error) && ok;
+    ok = registry.bindTypedWithContext<std::int64_t, String, std::int32_t, std::int32_t>("std::net::__std_netListen", [](Context &ctx, String host, std::int32_t port, std::int32_t backlog) { return makeSocketResource(ctx, netListen(host, port, backlog)); }, error) && ok;
+    ok = registry.bindTypedWithContext<std::int64_t, std::int64_t, std::int32_t>("std::net::__std_netAccept", [](Context &ctx, std::int64_t reference, std::int32_t timeout) {
+        auto *resource = socketResource(ctx, native_record_glue::referenceHandle(ctx, reference, socketType));
+        if (!resource) return std::int64_t{};
+        auto slot = netAccept(resource->slot, timeout);
+        saveSocketStatus(*resource);
+        return makeSocketResource(ctx, slot); }, error) && ok;
+    ok = registry.bindTypedWithContext<bool, std::int64_t>("std::net::__std_netIsOpen", [](Context &ctx, std::int64_t handle) { auto *r = socketResource(ctx, handle); return r && r->slot >= 0 && !r->connecting; }, error) && ok;
+    ok = registry.bindTypedWithContext<String, std::int64_t>("std::net::__std_netError", [](Context &ctx, std::int64_t handle) { auto *r = socketResource(ctx, handle); return r ? r->error : String{}; }, error) && ok;
+    ok = registry.bindTypedWithContext<std::int64_t, std::int64_t>("std::net::__std_netStatus", [](Context &ctx, std::int64_t handle) { auto *r = socketResource(ctx, handle); return r ? r->status : kNetError; }, error) && ok;
+    ok = registry.bindTypedWithContext<void, std::int64_t>("std::net::__std_netCloseSocket", [](Context &ctx, std::int64_t reference) { auto *r = socketResource(ctx, native_record_glue::referenceHandle(ctx, reference, socketType)); if (r && r->slot >= 0) { netClose(r->slot); r->slot = -1; r->connecting = false; r->status = kNetClosed; } }, error) && ok;
+    ok = registry.bindTypedWithContext<void, std::int64_t>("std::net::__std_netCloseListener", [](Context &ctx, std::int64_t reference) { auto *r = socketResource(ctx, native_record_glue::referenceHandle(ctx, reference, socketType)); if (r && r->slot >= 0) { netClose(r->slot); r->slot = -1; r->connecting = false; r->status = kNetClosed; } }, error) && ok;
+    ok = registry.bindTypedWithContext<std::int64_t, std::int64_t>("std::net::__std_netLocalPort", [](Context &ctx, std::int64_t handle) { auto *r = socketResource(ctx, handle); return r ? static_cast<std::int64_t>(netLocalPort(r->slot)) : 0; }, error) && ok;
+    ok = registry.bindTypedWithContext<std::int64_t, std::int64_t, String>("std::net::__std_netSend", [](Context &ctx, std::int64_t reference, String data) { auto *r = socketResource(ctx, native_record_glue::referenceHandle(ctx, reference, socketType)); if (!r) return std::int64_t{-1}; auto count = netSend(r->slot, data); saveSocketStatus(*r); return static_cast<std::int64_t>(count); }, error) && ok;
+    ok = registry.bindTypedWithContext<String, std::int64_t, std::int32_t>("std::net::__std_netReceive", [](Context &ctx, std::int64_t reference, std::int32_t count) { auto *r = socketResource(ctx, native_record_glue::referenceHandle(ctx, reference, socketType)); if (!r) return String{}; auto text = netReceive(r->slot, count); saveSocketStatus(*r); return text; }, error) && ok;
+    ok = registry.bindTypedWithContext<String, std::int64_t, std::int32_t>("std::net::__std_netReceiveLine", [](Context &ctx, std::int64_t reference, std::int32_t timeout) { auto *r = socketResource(ctx, native_record_glue::referenceHandle(ctx, reference, socketType)); if (!r) return String{}; auto text = netReceiveLine(r->slot, timeout); saveSocketStatus(*r); return text; }, error) && ok;
+    ok = registry.bindTypedWithContext<std::int64_t, String, std::int32_t, std::int32_t>("std::net::__std_netConnectAsync", connectAsync, error) && ok;
+    ok = registry.bindTypedWithContext<std::int64_t, std::int64_t>("std::net::__std_netPollConnect", [](Context &ctx, std::int64_t reference) { auto *resource = socketResource(ctx, native_record_glue::referenceHandle(ctx, reference, socketType)); return resource ? pollConnect(*resource) : std::int64_t{kNetError}; }, error) && ok;
+    ok = registry.bindTypedWithContext<std::int64_t, std::int64_t>("std::net::__std_netAcceptAsync", [](Context &ctx, std::int64_t reference) { auto *resource = socketResource(ctx, native_record_glue::referenceHandle(ctx, reference, socketType)); return resource ? acceptAsync(ctx, *resource) : 0; }, error) && ok;
+    ok = registry.bindTypedWithContext<std::int64_t, std::int64_t, String, std::int64_t>("std::net::__std_netSendAsync", [](Context &ctx, std::int64_t reference, String data, std::int64_t offset) { auto *resource = socketResource(ctx, native_record_glue::referenceHandle(ctx, reference, socketType)); return resource ? sendAsync(*resource, data, offset) : std::int64_t{-1}; }, error) && ok;
+    ok = registry.bindTypedWithContext<String, std::int64_t, std::int32_t>("std::net::__std_netReceiveAsync", [](Context &ctx, std::int64_t reference, std::int32_t count) { auto *resource = socketResource(ctx, native_record_glue::referenceHandle(ctx, reference, socketType)); return resource ? receiveAsync(*resource, count, false) : String{}; }, error) && ok;
+    ok = registry.bindTypedWithContext<String, std::int64_t>("std::net::__std_netReceiveLineAsync", [](Context &ctx, std::int64_t reference) { auto *resource = socketResource(ctx, native_record_glue::referenceHandle(ctx, reference, socketType)); return resource ? receiveAsync(*resource, 1048576, true) : String{}; }, error) && ok;
+    return ok;
 }
 
 }  // namespace std_net_glue

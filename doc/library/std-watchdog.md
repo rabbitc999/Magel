@@ -62,7 +62,7 @@ int64 main() {
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-511"></a>`enum WatchdogError` | 看门狗错误。 |
+| 模块 | <a id="symbol-508"></a>`enum WatchdogError` | 看门狗错误。 |
 | WatchdogError | `NotEnabled, InvalidWatermark, InvalidTimeout` | 看门狗错误。 变体及载荷见声明。 |
 
 ## 函数索引

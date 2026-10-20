@@ -30,16 +30,15 @@ def main() -> None:
         work = Path(directory)
         module = work / "math" / "ops.mgl"
         module.parent.mkdir()
-        body = module.parent / "body.inc"
+        body = module
         source = work / "app.mgl"
         source.write_text("module demo;\nimport math::ops;\n"
                           "int64 main() { std::lang::println(\"{}\", math::ops::twice(2)); return 0; }\n",
                           encoding="utf-8")
-        module.write_text('module math::ops;\n%include "body.inc"\n', encoding="utf-8")
-        body.write_text("int64 twice(int64 x) { return x + x; }\n", encoding="utf-8")
+        body.write_text("module math::ops;\nint64 twice(int64 x) { return x + x; }\n", encoding="utf-8")
         output = work / "build" / "app"
         output.parent.mkdir()
-        args = ("run", source, "--emit", "--svmb", "--incremental", "-I", ROOT,
+        args = ("run", source, "--emit", "--svmb", "--incremental", "-I", work, "-I", ROOT,
                 "--out", output)
 
         first = run(*args)
@@ -56,7 +55,7 @@ def main() -> None:
         recovered = run(*args)
         assert "增量缓存命中：0 个模块复用" in recovered.stderr, recovered.stderr
 
-        body.write_text("int64 twice(int64 x) { return x + x + 1; }\n", encoding="utf-8")
+        body.write_text("module math::ops;\nint64 twice(int64 x) { return x + x + 1; }\n", encoding="utf-8")
         changed = run(*args)
         assert "1 个模块复用，1 个模块重新预处理" in changed.stderr, changed.stderr
         assert output.with_suffix(".quad").read_bytes() != original
@@ -70,7 +69,8 @@ def main() -> None:
         module.write_text("module math::ops;\nint64 twice(int64 x) { return ; }\n",
                           encoding="utf-8")
         run(*args, success=False)
-        module.write_text('module math::ops;\n%include "body.inc"\n', encoding="utf-8")
+        body.write_text("module math::ops;\nint64 twice(int64 x) { return x + x + 1; }\n", encoding="utf-8")
+        run(*args)
         assert "增量缓存命中" in run(*args).stderr
 
         # Output switches invalidate outputs, but keep module preprocessing reusable.
@@ -91,10 +91,10 @@ def main() -> None:
         assert "增量缓存命中" in run(*args, "--compress-symbols").stderr
 
         # A common include is content-hashed once per compiler invocation.
-        shared = work / "shared.inc"
-        shared.write_text("// shared dependency A\n", encoding="utf-8")
-        source.write_text(source.read_text(encoding="utf-8") + '%include "shared.inc"\n', encoding="utf-8")
-        module.write_text('module math::ops;\n%include "body.inc"\n%include "../shared.inc"\n', encoding="utf-8")
+        shared = work / "shared.mgl"
+        shared.write_text("module shared; // shared dependency A\n", encoding="utf-8")
+        source.write_text(source.read_text(encoding="utf-8").replace('import math::ops;', 'import math::ops;\nimport shared;'), encoding="utf-8")
+        module.write_text('module math::ops;\nimport shared;\nint64 twice(int64 x) { return x + x + 1; }\n', encoding="utf-8")
         run(*args)
         checked = run(*args, "--stats")
         counts = re.search(r"增量文件校验：(\d+) 次读取，(\d+) 次复用", checked.stderr)
@@ -103,12 +103,12 @@ def main() -> None:
         print("shared dependency hash reads/reuses:", counts[1], counts[2])
         # Same-size edits with restored timestamps must still invalidate across runs.
         stamp = shared.stat()
-        shared.write_text("// shared dependency B\n", encoding="utf-8")
+        shared.write_text("module shared; // shared dependency B\n", encoding="utf-8")
         os.utime(shared, ns=(stamp.st_atime_ns, stamp.st_mtime_ns))
         edited = run(*args)
-        assert "0 个模块复用，2 个模块重新预处理" in edited.stderr, edited.stderr
+        assert "3 个模块复用，1 个模块重新预处理" in edited.stderr, edited.stderr
 
-        runtime = run('run', source, "--incremental", "-I", ROOT,
+        runtime = run('run', source, "--incremental", "-I", work, "-I", ROOT,
                       "--out", work / "build" / "runtime")
         assert runtime.stdout.strip() == "5", runtime.stdout
 

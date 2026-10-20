@@ -160,41 +160,24 @@ magel run app.mgl -D FEATURE
 
 发布版 / 调试版、不同硬件平台，就靠这个开关切。
 
-\section{\texttt{\%include}：把文件原地拼进来}
+\section{模块复用与条件编译}
 
-\texttt{\%include} 在当前文件里原地展开另一个文件，像是把那边的文本复制过来：
+共享的类型、函数和宏放入带 \texttt{module} 声明的模块，通过 \texttt{import} 引入（第 18 章）。条件编译只处理当前源文件中的分支与符号，不把其他文件的文本拼到当前位置。命令行 \texttt{-D} 定义的部署符号对各模块生效，文件中的 \texttt{\%define} 保持在该编译单元内。
 
 \par
 \medskip
 \begin{lstlisting}[style=magel]
-%include "util.mgl"
+import util;
 
 int64 main() {
-    println("{}", twiceValue(21));
+    println("{}", util::twiceValue(21));
     return 0;
 }
 \end{lstlisting}
 \par
 \medskip
 
-如果 \texttt{util.\allowbreak{}mgl} 里定义了 \texttt{twice\allowbreak{}Value}，这段就能跑，输出 \texttt{42}。
-
-\texttt{\%include} 和 \texttt{import}（第 18 章）解决的不是一回事：
-
-\begin{center}
-\begin{tabular}{lll}
-\toprule
- & \texttt{import}（模块） & \texttt{\%include}（预处理） \\
-\midrule
-层次 & 语言层 & 预处理层，早于编译 \\
-效果 & 引入模块，按裸名调函数 & 文本原地展开 \\
-同一文件重复 & 只算一次 & 默认也只一次（\texttt{\%include\_once} 显式表达） \\
-适用 & 正常组织代码 & 常量表、平台片段、生成代码 \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-优先用 \texttt{import}。 \texttt{\%include} 是给「同一份片段要拼进很多文件」这种场景留的。
+模块依赖保留各自的文件和行号，\texttt{--deps} 可列出依赖文件，供构建工具使用。
 
 \section{宏：\texttt{\$macro} 文本替换}
 
@@ -991,7 +974,6 @@ int64 main() {
 \texttt{\%define 名字 [\allowbreak{}值]\allowbreak{}} / \texttt{\%undefine 名字} & 定义 / 取消符号 \\
 \texttt{\%if} / \texttt{\%elif} / \texttt{\%else} / \texttt{\%endif} & 按值条件编译 \\
 \texttt{\%ifdef} / \texttt{\%ifndef} & 按是否定义条件编译 \\
-\texttt{\%include "路径"} & 原地展开文件（默认只一次） \\
 \texttt{\%error} / \texttt{\%warning} & 活跃分支里报错 / 报警告 \\
 \texttt{\$macro N(\allowbreak{}参数)\allowbreak{} … \$end\_macro} & 函数式宏，调用 \texttt{\$N(\allowbreak{}…)\allowbreak{}} \\
 \texttt{\$macro N(\allowbreak{})\allowbreak{} … \$end\_macro} & 对象宏，调用 \texttt{\$N} \\
@@ -1032,7 +1014,7 @@ int64 main() {
 「想要一个常量」 & \texttt{const}（第 3 章） \\
 「给函数起个短别名」 & \texttt{\$macro} 可以，只是读代码多一层跳转，通常不划算 \\
 「按平台/调试开关切代码」 & \textcolor{green!50!black}{\ding{51}} \texttt{\%define} + \texttt{\%if}，正解 \\
-「把常量表拼进多个文件」 & \textcolor{green!50!black}{\ding{51}} \texttt{\%include}，合理 \\
+「多个文件共享常量表」 & 使用模块和 \texttt{import} \\
 「生成一大堆重复代码」 & \textcolor{green!50!black}{\ding{51}} \texttt{\$macro}，正当用途 \\
 \bottomrule
 \end{tabular}
@@ -1051,7 +1033,6 @@ int64 main() {
 \texttt{\%if} / \texttt{\%else} / \texttt{\%endif} & 按值分支（\texttt{\%if} 后只能写符号名） \\
 \texttt{\%ifdef} / \texttt{\%ifndef} & 按是否定义分支 \\
 行号 & 指令/丢弃行用空行占位，报错指回真实位置 \\
-\texttt{\%include} & 文本原地展开；正常组织代码请用 \texttt{import} \\
 \texttt{\$macro} & \texttt{\$macro N(\allowbreak{}x)\allowbreak{} … \$end\_macro}，调用写 \texttt{\$N(\allowbreak{}…)\allowbreak{}} \\
 对象宏 & \texttt{\$macro N(\allowbreak{})\allowbreak{} … \$end\_macro}，调用写 \texttt{\$N} \\
 括号铁律 & 宏体、参数都要裹括号，否则优先级出错 \\

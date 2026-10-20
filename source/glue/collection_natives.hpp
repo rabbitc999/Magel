@@ -702,7 +702,7 @@ inline bool vecIndex(State &ctx, Record *object, std::int64_t index, std::size_t
 /**
  * @brief 创建空的运行时列表。
  *
- * `__vm_vec_new() -> vec`。
+ * `__std_vec_new() -> vec`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @retval 封装为原生值的运行时结果。
  * @param args 按此原生操作的绑定约定排列的实参槽；无参操作为空。
@@ -761,7 +761,7 @@ inline Slot stringBytes(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_vec_pack(isText, isObject, values...) -> vec`：MAGEL 变长参数的调用点打包。
+ * @brief `__std_vec_pack(isText, isObject, values...) -> vec`：MAGEL 变长参数的调用点打包。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -791,7 +791,7 @@ inline Slot vecPack(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_vec_push(vec, 值, 值是不是字符串, 值是不是对象句柄) -> 0`：追加到末尾。
+ * @brief `__std_vec_push(vec, 值, 值是不是字符串, 值是不是对象句柄) -> 0`：追加到末尾。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -808,7 +808,7 @@ inline Slot vecPush(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_vec_insert(vec, 下标, 值, 是不是字符串, 是不是对象句柄) -> 0`：插到下标处（允许 == 长度）。
+ * @brief `__std_vec_insert(vec, 下标, 值, 是不是字符串, 是不是对象句柄) -> 0`：插到下标处（允许 == 长度）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -992,7 +992,7 @@ inline Slot iterLeaseRef(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_vec_at(vec, 下标, 是不是字符串, 是不是对象句柄) -> 值`。
+ * @brief `__std_vec_at(vec, 下标, 是不是字符串, 是不是对象句柄) -> 值`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1009,7 +1009,7 @@ inline Slot vecAt(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_vec_set(vec, 下标, 值, 是不是字符串, 是不是对象句柄) -> 0`。
+ * @brief `__std_vec_set(vec, 下标, 值, 是不是字符串, 是不是对象句柄) -> 0`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1039,7 +1039,7 @@ inline Slot vecSet(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_vec_remove(vec, 下标) -> 0`：删掉下标处那个。
+ * @brief `__std_vec_remove(vec, 下标) -> 0`：删掉下标处那个。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1061,7 +1061,7 @@ inline Slot vecRemove(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_vec_pop(vec, 是不是字符串, 是不是对象句柄) -> 值`：弹出末尾（空表报错）。
+ * @brief `__std_vec_pop(vec, 是不是字符串, 是不是对象句柄) -> 值`：弹出末尾（空表报错）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1088,7 +1088,7 @@ inline Slot vecPop(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_vec_len(vec) -> 元素个数`。
+ * @brief `__std_vec_len(vec) -> 元素个数`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1103,7 +1103,7 @@ inline Slot vecLen(State &ctx, const Memory::Vector<Slot> &args)
 /**
  * @brief 释放运行时列表的全部元素。
  *
- * `__vm_vec_clear(vec) -> 0`。
+ * `__std_vec_clear(vec) -> 0`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1221,7 +1221,7 @@ inline Slot vecSortedCopy(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_vec_find(vec, 值, 是不是字符串, 是不是对象句柄) -> 下标 / -1`（线性找第一个相等的）。
+ * @brief `__std_vec_find(vec, 值, 是不是字符串, 是不是对象句柄) -> 下标 / -1`（线性找第一个相等的）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1477,7 +1477,7 @@ inline Slot algorithmAbort(State &ctx, Memory::Vector<ObjectValue> &items)
 }
 
 /**
- * @brief `__vm_vec_map(vec, 回调, 结果种类) -> 新 vec`：逐元素换成回调的返回值。
+ * @brief `__std_vec_map(vec, 回调, 结果种类) -> 新 vec`：逐元素换成回调的返回值。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1521,7 +1521,7 @@ inline Slot vecMap(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_vec_filter(vec, 回调, 是不是字符串, 是不是对象) -> 新 vec`：留下回调为真的元素。
+ * @brief `__std_vec_filter(vec, 回调, 是不是字符串, 是不是对象) -> 新 vec`：留下回调为真的元素。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1562,7 +1562,7 @@ inline Slot vecFilter(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_vec_reduce(vec, 回调) -> 值`：拿**第一个元素**当初值往后折叠；空表报错。
+ * @brief `__std_vec_reduce(vec, 回调) -> 值`：拿**第一个元素**当初值往后折叠；空表报错。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1604,7 +1604,7 @@ inline Slot vecReduce(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_vec_sum(vec, 是不是浮点) -> 值`：数值求和（空表给 0 / 0.0）。
+ * @brief `__std_vec_sum(vec, 是不是浮点) -> 值`：数值求和（空表给 0 / 0.0）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1628,7 +1628,7 @@ inline Slot vecSum(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_vec_count_if(vec, 回调) -> 整数`：回调为真的元素个数。
+ * @brief `__std_vec_count_if(vec, 回调) -> 整数`：回调为真的元素个数。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1659,7 +1659,7 @@ inline Slot vecCountIf(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_vec_count_value(vec, 值, 是不是字符串, 是不是对象) -> 整数`：等于该值的元素个数。
+ * @brief `__std_vec_count_value(vec, 值, 是不是字符串, 是不是对象) -> 整数`：等于该值的元素个数。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1804,7 +1804,7 @@ inline Slot vecClamp(State &ctx, const Memory::Vector<Slot> &args)
 /**
  * @brief 创建空的运行时集合。
  *
- * `__vm_set_new() -> set`。
+ * `__std_set_new() -> set`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @retval 封装为原生值的运行时结果。
  * @param args 按此原生操作的绑定约定排列的实参槽；无参操作为空。
@@ -1844,7 +1844,7 @@ inline auto mapFind(State &ctx, Record &object, const Slot &query, ObjectKey *lo
     -> Entries::iterator;
 
 /**
- * @brief `__vm_set_add(set, 值, 是不是字符串, 是不是对象句柄) -> 0`（已经在里面就什么都不做）。
+ * @brief `__std_set_add(set, 值, 是不是字符串, 是不是对象句柄) -> 0`（已经在里面就什么都不做）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1882,7 +1882,7 @@ inline Slot setAdd(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_set_has(set, 值, 是不是字符串, 是不是对象句柄) -> 0 / 1`。
+ * @brief `__std_set_has(set, 值, 是不是字符串, 是不是对象句柄) -> 0 / 1`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1900,7 +1900,7 @@ inline Slot setHas(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_set_remove(set, 值, 是不是字符串, 是不是对象句柄) -> 0 / 1`（在不在）。
+ * @brief `__std_set_remove(set, 值, 是不是字符串, 是不是对象句柄) -> 0 / 1`（在不在）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1923,7 +1923,7 @@ inline Slot setRemove(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_set_at(set, 第几个, 是不是字符串, 是不是对象句柄) -> 值`（遍历顺序不保证稳定）。
+ * @brief `__std_set_at(set, 第几个, 是不是字符串, 是不是对象句柄) -> 值`（遍历顺序不保证稳定）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1948,7 +1948,7 @@ inline Slot setAt(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_set_len(set) -> 元素个数`。
+ * @brief `__std_set_len(set) -> 元素个数`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1963,7 +1963,7 @@ inline Slot setLen(State &ctx, const Memory::Vector<Slot> &args)
 /**
  * @brief 释放运行时集合的全部元素。
  *
- * `__vm_set_clear(set) -> 0`。
+ * `__std_set_clear(set) -> 0`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1984,7 +1984,7 @@ inline Slot setClear(State &ctx, const Memory::Vector<Slot> &args)
 /**
  * @brief 创建空的运行时映射。
  *
- * `__vm_map_new() -> map`。
+ * `__std_map_new() -> map`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @retval 封装为原生值的运行时结果。
  * @param args 按此原生操作的绑定约定排列的实参槽；无参操作为空。
@@ -2136,7 +2136,7 @@ inline auto mapFind(State &ctx, Record &object, const Slot &query, ObjectKey *lo
 }
 
 /**
- * @brief `__vm_map_put(map, 键, 键是不是字符串, 键是不是对象句柄, 值, 值是不是字符串, 值是不是对象句柄) -> 0`。
+ * @brief `__std_map_put(map, 键, 键是不是字符串, 键是不是对象句柄, 值, 值是不是字符串, 值是不是对象句柄) -> 0`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -2180,7 +2180,7 @@ inline Slot mapPut(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_map_get(map, 键, 键是不是字符串, 键是不是对象句柄, 值是不是字符串, 值是不是对象句柄) -> 值`（没有这个键给"零值"）。
+ * @brief `__std_map_get(map, 键, 键是不是字符串, 键是不是对象句柄, 值是不是字符串, 值是不是对象句柄) -> 值`（没有这个键给"零值"）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -2206,7 +2206,7 @@ inline Slot mapGet(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_map_has(map, 键, 键是不是字符串, 键是不是对象句柄) -> 0 / 1`。
+ * @brief `__std_map_has(map, 键, 键是不是字符串, 键是不是对象句柄) -> 0 / 1`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -2224,7 +2224,7 @@ inline Slot mapHas(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_map_remove(map, 键, 键是不是字符串, 键是不是对象句柄) -> 0 / 1`（在不在）。
+ * @brief `__std_map_remove(map, 键, 键是不是字符串, 键是不是对象句柄) -> 0 / 1`（在不在）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -2247,7 +2247,7 @@ inline Slot mapRemove(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_map_len(map) -> 键值对个数`。
+ * @brief `__std_map_len(map) -> 键值对个数`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -2262,7 +2262,7 @@ inline Slot mapLen(State &ctx, const Memory::Vector<Slot> &args)
 /**
  * @brief 释放运行时映射的全部键值。
  *
- * `__vm_map_clear(map) -> 0`。
+ * `__std_map_clear(map) -> 0`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -2281,7 +2281,7 @@ inline Slot mapClear(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_map_key_at(map, 第几个, 键是不是字符串, 键是不是对象句柄) -> 键`（遍历顺序不保证稳定）。
+ * @brief `__std_map_key_at(map, 第几个, 键是不是字符串, 键是不是对象句柄) -> 键`（遍历顺序不保证稳定）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -2318,7 +2318,7 @@ inline Slot mapKeyAt(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_map_val_at(map, 第几个, 值是不是字符串, 值是不是对象句柄) -> 值`（遍历顺序不保证稳定）。
+ * @brief `__std_map_val_at(map, 第几个, 值是不是字符串, 值是不是对象句柄) -> 值`（遍历顺序不保证稳定）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -2964,57 +2964,57 @@ inline bool bind(stackvm::NativeRegistry &registry, Memory::String *error = null
         Slot (*apply)(State &, const Memory::Vector<Slot> &);
     };
     static const Binding bindings[] = {
-        { "__vm_program_arguments", 0, programArguments },
-        { "__vm_vec_new", 0, vecNew },
-        { "__vm_vec_pack", static_cast<std::size_t>(-1), vecPack },
-        { "__vm_vec_push", 4, vecPush },
-        { "__vm_vec_insert", 5, vecInsert },
-        { "__vm_vec_ref", 5, vecRef },
-        { "__vm_iter_take", 1, iterTake },
-        { "__vm_iter_lease", 1, iterLeaseNew },
-        { "__vm_iter_lease_len", 1, iterLeaseLen },
-        { "__vm_iter_lease_ref", 5, iterLeaseRef },
-        { "__vm_vec_unref", 2, vecUnref },
-        { "__vm_vec_at", 4, vecAt },
-        { "__vm_vec_set", 5, vecSet },
-        { "__vm_vec_remove", 2, vecRemove },
-        { "__vm_vec_pop", 3, vecPop },
-        { "__vm_vec_len", 1, vecLen },
-        { "__vm_vec_clear", 1, vecClear },
-        { "__vm_vec_stable_sort", 1, vecStableSort },
-        { "__vm_vec_sorted_copy", 1, vecSortedCopy },
-        { "__vm_vec_find", 4, vecFind },
-        { "__vm_vec_binary_search", 4, vecBinarySearch },
-        { "__vm_vec_min", 4, vecMin },
-        { "__vm_vec_max", 4, vecMax },
-        { "__vm_vec_clamp", 4, vecClamp },
-        { "__vm_vec_all", 2, vecAll },
-        { "__vm_vec_any", 2, vecAny },
-        { "__vm_vec_fold", 3, vecFold },
-        { "__vm_vec_map", 4, vecMap },
-        { "__vm_vec_filter", 4, vecFilter },
-        { "__vm_vec_reduce", 2, vecReduce },
-        { "__vm_vec_sum", 2, vecSum },
-        { "__vm_vec_count_if", 2, vecCountIf },
-        { "__vm_vec_count_value", 4, vecCountValue },
-        { "__vm_set_new", 0, setNew },
-        { "__vm_set_new_policy", 2, setNewPolicy },
-        { "__vm_set_add", 4, setAdd },
-        { "__vm_set_has", 4, setHas },
-        { "__vm_set_remove", 4, setRemove },
-        { "__vm_set_at", 4, setAt },
-        { "__vm_set_len", 1, setLen },
-        { "__vm_set_clear", 1, setClear },
-        { "__vm_map_new", 0, mapNew },
-        { "__vm_map_new_policy", 2, mapNewPolicy },
-        { "__vm_map_put", 7, mapPut },
-        { "__vm_map_get", 6, mapGet },
-        { "__vm_map_has", 4, mapHas },
-        { "__vm_map_remove", 4, mapRemove },
-        { "__vm_map_len", 1, mapLen },
-        { "__vm_map_clear", 1, mapClear },
-        { "__vm_map_key_at", 4, mapKeyAt },
-        { "__vm_map_val_at", 4, mapValAt },
+        { "__std_program_arguments", 0, programArguments },
+        { "__std_vec_new", 0, vecNew },
+        { "__std_vec_pack", static_cast<std::size_t>(-1), vecPack },
+        { "__std_vec_push", 4, vecPush },
+        { "__std_vec_insert", 5, vecInsert },
+        { "__std_vec_ref", 5, vecRef },
+        { "__std_iter_take", 1, iterTake },
+        { "__std_iter_lease", 1, iterLeaseNew },
+        { "__std_iter_lease_len", 1, iterLeaseLen },
+        { "__std_iter_lease_ref", 5, iterLeaseRef },
+        { "__std_vec_unref", 2, vecUnref },
+        { "__std_vec_at", 4, vecAt },
+        { "__std_vec_set", 5, vecSet },
+        { "__std_vec_remove", 2, vecRemove },
+        { "__std_vec_pop", 3, vecPop },
+        { "__std_vec_len", 1, vecLen },
+        { "__std_vec_clear", 1, vecClear },
+        { "__std_vec_stable_sort", 1, vecStableSort },
+        { "__std_vec_sorted_copy", 1, vecSortedCopy },
+        { "__std_vec_find", 4, vecFind },
+        { "__std_vec_binary_search", 4, vecBinarySearch },
+        { "__std_vec_min", 4, vecMin },
+        { "__std_vec_max", 4, vecMax },
+        { "__std_vec_clamp", 4, vecClamp },
+        { "__std_vec_all", 2, vecAll },
+        { "__std_vec_any", 2, vecAny },
+        { "__std_vec_fold", 3, vecFold },
+        { "__std_vec_map", 4, vecMap },
+        { "__std_vec_filter", 4, vecFilter },
+        { "__std_vec_reduce", 2, vecReduce },
+        { "__std_vec_sum", 2, vecSum },
+        { "__std_vec_count_if", 2, vecCountIf },
+        { "__std_vec_count_value", 4, vecCountValue },
+        { "__std_set_new", 0, setNew },
+        { "__std_set_new_policy", 2, setNewPolicy },
+        { "__std_set_add", 4, setAdd },
+        { "__std_set_has", 4, setHas },
+        { "__std_set_remove", 4, setRemove },
+        { "__std_set_at", 4, setAt },
+        { "__std_set_len", 1, setLen },
+        { "__std_set_clear", 1, setClear },
+        { "__std_map_new", 0, mapNew },
+        { "__std_map_new_policy", 2, mapNewPolicy },
+        { "__std_map_put", 7, mapPut },
+        { "__std_map_get", 6, mapGet },
+        { "__std_map_has", 4, mapHas },
+        { "__std_map_remove", 4, mapRemove },
+        { "__std_map_len", 1, mapLen },
+        { "__std_map_clear", 1, mapClear },
+        { "__std_map_key_at", 4, mapKeyAt },
+        { "__std_map_val_at", 4, mapValAt },
         { "std::lang::__stringBytes", 1, stringBytes },
     };
     for (const auto &binding : bindings)

@@ -7,7 +7,7 @@ struct LspUnit
     PositionIndex positions;
     std::vector<Token> tokens, raw;
     std::vector<Record> records;
-    std::vector<std::string> imports, includes;
+    std::vector<std::string> imports;
     std::vector<size_t> braces;
     std::vector<std::vector<int>> scopes;
     std::vector<std::pair<size_t, size_t>> macroRegions;
@@ -40,9 +40,6 @@ struct LspUnit
             scopes.push_back(scope);
         }
         if (macroBegin != std::string::npos) macroRegions.push_back({ macroBegin, text->size() });
-        for (size_t at = 0; at + 2 < raw.size(); ++at)
-            if (raw[at].word == "%" && (raw[at + 1].word == "include" || raw[at + 1].word == "include_once" || raw[at + 1].word == "import") && raw[at + 2].kind == 9)
-                includes.push_back(raw[at + 2].word.substr(1, raw[at + 2].word.size() - 2));
     }
     /**
      * @brief 估算源码、词法与声明所占内存，供缓存淘汰使用。
@@ -64,7 +61,7 @@ struct LspUnit
             for (const auto *value : { &r.name, &r.module, &r.owner, &r.qualified, &r.signature, &r.documentation, &r.source, &r.type, &r.kind }) total += value->capacity();
             for (const auto &p : r.parameters) total += p.dump().size();
         }
-        for (const auto *list : { &imports, &includes })
+        for (const auto *list : { &imports })
         {
             total += list->capacity() * sizeof(std::string);
             for (const auto &value : *list) total += value.capacity();

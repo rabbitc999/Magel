@@ -1531,7 +1531,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 36,
+    "line": 47,
     "page": "std-image.md",
     "anchor": "symbol-85",
     "examples": [],
@@ -1548,7 +1548,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 37,
+    "line": 48,
     "page": "std-image.md",
     "anchor": "symbol-86",
     "examples": [],
@@ -1565,7 +1565,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 38,
+    "line": 49,
     "page": "std-image.md",
     "anchor": "symbol-87",
     "examples": [],
@@ -1582,7 +1582,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 39,
+    "line": 50,
     "page": "std-image.md",
     "anchor": "symbol-88",
     "examples": [],
@@ -1599,7 +1599,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 40,
+    "line": 51,
     "page": "std-image.md",
     "anchor": "symbol-89",
     "examples": [],
@@ -1616,7 +1616,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 44,
+    "line": 55,
     "page": "std-image.md",
     "anchor": "symbol-90",
     "examples": [],
@@ -1633,7 +1633,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 45,
+    "line": 56,
     "page": "std-image.md",
     "anchor": "symbol-91",
     "examples": [],
@@ -1650,7 +1650,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 46,
+    "line": 57,
     "page": "std-image.md",
     "anchor": "symbol-92",
     "examples": [],
@@ -1667,7 +1667,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 47,
+    "line": 58,
     "page": "std-image.md",
     "anchor": "symbol-93",
     "examples": [],
@@ -1684,7 +1684,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 48,
+    "line": 59,
     "page": "std-image.md",
     "anchor": "symbol-94",
     "examples": [],
@@ -1701,7 +1701,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 49,
+    "line": 60,
     "page": "std-image.md",
     "anchor": "symbol-95",
     "examples": [],
@@ -1718,7 +1718,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 50,
+    "line": 61,
     "page": "std-image.md",
     "anchor": "symbol-96",
     "examples": [],
@@ -1735,7 +1735,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 51,
+    "line": 62,
     "page": "std-image.md",
     "anchor": "symbol-97",
     "examples": [],
@@ -1752,7 +1752,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 52,
+    "line": 63,
     "page": "std-image.md",
     "anchor": "symbol-98",
     "examples": [],
@@ -1769,7 +1769,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 53,
+    "line": 64,
     "page": "std-image.md",
     "anchor": "symbol-99",
     "examples": [],
@@ -1786,7 +1786,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 54,
+    "line": 65,
     "page": "std-image.md",
     "anchor": "symbol-100",
     "examples": [],
@@ -1803,7 +1803,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 55,
+    "line": 66,
     "page": "std-image.md",
     "anchor": "symbol-101",
     "examples": [],
@@ -1820,7 +1820,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 56,
+    "line": 67,
     "page": "std-image.md",
     "anchor": "symbol-102",
     "examples": [],
@@ -1837,7 +1837,7 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 57,
+    "line": 68,
     "page": "std-image.md",
     "anchor": "symbol-103",
     "examples": [],
@@ -1847,67 +1847,16 @@
     "module": "std::image",
     "name": "Image",
     "owner": "",
-    "kind": "struct",
+    "kind": "opcode",
     "type": "",
-    "signature": "struct Image : Drop",
+    "signature": "opcode Image",
     "documentation": "RGBA 图片：width × height，像素缓冲长度恒为 width*height*4。",
     "comment": "",
     "parameters": [],
     "source": "source/std/image.mgl",
-    "line": 61,
+    "line": 72,
     "page": "std-image.md",
     "anchor": "symbol-104",
-    "examples": [],
-    "sourceLanguage": "zh"
-  },
-  {
-    "module": "std::image",
-    "name": "Image::width",
-    "owner": "Image",
-    "kind": "member",
-    "type": "int64",
-    "signature": "int64 width",
-    "documentation": "图片宽，单位像素。",
-    "comment": "",
-    "parameters": [],
-    "source": "source/std/image.mgl",
-    "line": 62,
-    "page": "std-image.md",
-    "anchor": "symbol-105",
-    "examples": [],
-    "sourceLanguage": "zh"
-  },
-  {
-    "module": "std::image",
-    "name": "Image::height",
-    "owner": "Image",
-    "kind": "member",
-    "type": "int64",
-    "signature": "int64 height",
-    "documentation": "图片高，单位像素。",
-    "comment": "",
-    "parameters": [],
-    "source": "source/std/image.mgl",
-    "line": 63,
-    "page": "std-image.md",
-    "anchor": "symbol-106",
-    "examples": [],
-    "sourceLanguage": "zh"
-  },
-  {
-    "module": "std::image",
-    "name": "Image::pixels",
-    "owner": "Image",
-    "kind": "member",
-    "type": "List<uint8>",
-    "signature": "List<uint8> pixels",
-    "documentation": "RGBA8888 像素缓冲，行优先，长度为 width*height*4。",
-    "comment": "",
-    "parameters": [],
-    "source": "source/std/image.mgl",
-    "line": 64,
-    "page": "std-image.md",
-    "anchor": "symbol-107",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -1924,7 +1873,7 @@
     "source": "source/std/io.mgl",
     "line": 4,
     "page": "std-io.md",
-    "anchor": "symbol-108",
+    "anchor": "symbol-105",
     "examples": [
       "doc/examples/library/io.mgl"
     ],
@@ -1943,7 +1892,7 @@
     "source": "source/std/io.mgl",
     "line": 9,
     "page": "std-io.md",
-    "anchor": "symbol-109",
+    "anchor": "symbol-106",
     "examples": [
       "doc/examples/library/io.mgl"
     ],
@@ -1962,7 +1911,7 @@
     "source": "source/std/io.mgl",
     "line": 11,
     "page": "std-io.md",
-    "anchor": "symbol-110",
+    "anchor": "symbol-107",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -1979,7 +1928,7 @@
     "source": "source/std/io.mgl",
     "line": 12,
     "page": "std-io.md",
-    "anchor": "symbol-111",
+    "anchor": "symbol-108",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -1996,7 +1945,7 @@
     "source": "source/std/io.mgl",
     "line": 16,
     "page": "std-io.md",
-    "anchor": "symbol-112",
+    "anchor": "symbol-109",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2013,7 +1962,7 @@
     "source": "source/std/io.mgl",
     "line": 17,
     "page": "std-io.md",
-    "anchor": "symbol-113",
+    "anchor": "symbol-110",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2030,7 +1979,7 @@
     "source": "source/std/io.mgl",
     "line": 18,
     "page": "std-io.md",
-    "anchor": "symbol-114",
+    "anchor": "symbol-111",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2047,7 +1996,7 @@
     "source": "source/std/io.mgl",
     "line": 31,
     "page": "std-io.md",
-    "anchor": "symbol-115",
+    "anchor": "symbol-112",
     "examples": [
       "doc/examples/library/io.mgl"
     ],
@@ -2066,7 +2015,7 @@
     "source": "source/std/io.mgl",
     "line": 32,
     "page": "std-io.md",
-    "anchor": "symbol-116",
+    "anchor": "symbol-113",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2083,7 +2032,7 @@
     "source": "source/std/io.mgl",
     "line": 190,
     "page": "std-io.md",
-    "anchor": "symbol-117",
+    "anchor": "symbol-114",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2100,7 +2049,7 @@
     "source": "source/std/io.mgl",
     "line": 190,
     "page": "std-io.md",
-    "anchor": "symbol-118",
+    "anchor": "symbol-115",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2117,7 +2066,7 @@
     "source": "source/std/io.mgl",
     "line": 190,
     "page": "std-io.md",
-    "anchor": "symbol-119",
+    "anchor": "symbol-116",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2134,7 +2083,7 @@
     "source": "source/std/io.mgl",
     "line": 190,
     "page": "std-io.md",
-    "anchor": "symbol-120",
+    "anchor": "symbol-117",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2151,7 +2100,7 @@
     "source": "source/std/io.mgl",
     "line": 190,
     "page": "std-io.md",
-    "anchor": "symbol-121",
+    "anchor": "symbol-118",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2168,7 +2117,7 @@
     "source": "source/std/io.mgl",
     "line": 192,
     "page": "std-io.md",
-    "anchor": "symbol-122",
+    "anchor": "symbol-119",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2185,7 +2134,7 @@
     "source": "source/std/io.mgl",
     "line": 193,
     "page": "std-io.md",
-    "anchor": "symbol-123",
+    "anchor": "symbol-120",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2202,7 +2151,7 @@
     "source": "source/std/io.mgl",
     "line": 193,
     "page": "std-io.md",
-    "anchor": "symbol-124",
+    "anchor": "symbol-121",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2219,7 +2168,7 @@
     "source": "source/std/io.mgl",
     "line": 193,
     "page": "std-io.md",
-    "anchor": "symbol-125",
+    "anchor": "symbol-122",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2236,7 +2185,7 @@
     "source": "source/std/io.mgl",
     "line": 193,
     "page": "std-io.md",
-    "anchor": "symbol-126",
+    "anchor": "symbol-123",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2253,7 +2202,7 @@
     "source": "source/std/io.mgl",
     "line": 194,
     "page": "std-io.md",
-    "anchor": "symbol-127",
+    "anchor": "symbol-124",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2270,7 +2219,7 @@
     "source": "source/std/io.mgl",
     "line": 194,
     "page": "std-io.md",
-    "anchor": "symbol-128",
+    "anchor": "symbol-125",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2287,7 +2236,7 @@
     "source": "source/std/io.mgl",
     "line": 194,
     "page": "std-io.md",
-    "anchor": "symbol-129",
+    "anchor": "symbol-126",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2304,7 +2253,7 @@
     "source": "source/std/io.mgl",
     "line": 194,
     "page": "std-io.md",
-    "anchor": "symbol-130",
+    "anchor": "symbol-127",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2321,7 +2270,7 @@
     "source": "source/std/iter.mgl",
     "line": 4,
     "page": "std-iter.md",
-    "anchor": "symbol-131",
+    "anchor": "symbol-128",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -2340,7 +2289,7 @@
     "source": "source/std/iter.mgl",
     "line": 18,
     "page": "std-iter.md",
-    "anchor": "symbol-132",
+    "anchor": "symbol-129",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -2359,7 +2308,7 @@
     "source": "source/std/iter.mgl",
     "line": 19,
     "page": "std-iter.md",
-    "anchor": "symbol-133",
+    "anchor": "symbol-130",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -2378,7 +2327,7 @@
     "source": "source/std/iter.mgl",
     "line": 20,
     "page": "std-iter.md",
-    "anchor": "symbol-134",
+    "anchor": "symbol-131",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2395,7 +2344,7 @@
     "source": "source/std/iter.mgl",
     "line": 21,
     "page": "std-iter.md",
-    "anchor": "symbol-135",
+    "anchor": "symbol-132",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2412,7 +2361,7 @@
     "source": "source/std/iter.mgl",
     "line": 217,
     "page": "std-iter.md",
-    "anchor": "symbol-136",
+    "anchor": "symbol-133",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2429,7 +2378,7 @@
     "source": "source/std/iter.mgl",
     "line": 218,
     "page": "std-iter.md",
-    "anchor": "symbol-137",
+    "anchor": "symbol-134",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -2448,7 +2397,7 @@
     "source": "source/std/iter.mgl",
     "line": 219,
     "page": "std-iter.md",
-    "anchor": "symbol-138",
+    "anchor": "symbol-135",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2465,7 +2414,7 @@
     "source": "source/std/iter.mgl",
     "line": 253,
     "page": "std-iter.md",
-    "anchor": "symbol-139",
+    "anchor": "symbol-136",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2482,7 +2431,7 @@
     "source": "source/std/iter.mgl",
     "line": 254,
     "page": "std-iter.md",
-    "anchor": "symbol-140",
+    "anchor": "symbol-137",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -2501,7 +2450,7 @@
     "source": "source/std/iter.mgl",
     "line": 255,
     "page": "std-iter.md",
-    "anchor": "symbol-141",
+    "anchor": "symbol-138",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2518,7 +2467,7 @@
     "source": "source/std/iter.mgl",
     "line": 291,
     "page": "std-iter.md",
-    "anchor": "symbol-142",
+    "anchor": "symbol-139",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2535,7 +2484,7 @@
     "source": "source/std/iter.mgl",
     "line": 292,
     "page": "std-iter.md",
-    "anchor": "symbol-143",
+    "anchor": "symbol-140",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2552,7 +2501,7 @@
     "source": "source/std/iter.mgl",
     "line": 293,
     "page": "std-iter.md",
-    "anchor": "symbol-144",
+    "anchor": "symbol-141",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2569,7 +2518,7 @@
     "source": "source/std/iter.mgl",
     "line": 294,
     "page": "std-iter.md",
-    "anchor": "symbol-145",
+    "anchor": "symbol-142",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2586,7 +2535,7 @@
     "source": "source/std/iter.mgl",
     "line": 295,
     "page": "std-iter.md",
-    "anchor": "symbol-146",
+    "anchor": "symbol-143",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2603,7 +2552,7 @@
     "source": "source/std/iter.mgl",
     "line": 371,
     "page": "std-iter.md",
-    "anchor": "symbol-147",
+    "anchor": "symbol-144",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2620,7 +2569,7 @@
     "source": "source/std/iter.mgl",
     "line": 372,
     "page": "std-iter.md",
-    "anchor": "symbol-148",
+    "anchor": "symbol-145",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -2639,7 +2588,7 @@
     "source": "source/std/iter.mgl",
     "line": 373,
     "page": "std-iter.md",
-    "anchor": "symbol-149",
+    "anchor": "symbol-146",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2656,7 +2605,7 @@
     "source": "source/std/iter.mgl",
     "line": 409,
     "page": "std-iter.md",
-    "anchor": "symbol-150",
+    "anchor": "symbol-147",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2673,7 +2622,7 @@
     "source": "source/std/iter.mgl",
     "line": 410,
     "page": "std-iter.md",
-    "anchor": "symbol-151",
+    "anchor": "symbol-148",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -2692,7 +2641,7 @@
     "source": "source/std/iter.mgl",
     "line": 411,
     "page": "std-iter.md",
-    "anchor": "symbol-152",
+    "anchor": "symbol-149",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2709,7 +2658,7 @@
     "source": "source/std/iter.mgl",
     "line": 453,
     "page": "std-iter.md",
-    "anchor": "symbol-153",
+    "anchor": "symbol-150",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2726,7 +2675,7 @@
     "source": "source/std/iter.mgl",
     "line": 454,
     "page": "std-iter.md",
-    "anchor": "symbol-154",
+    "anchor": "symbol-151",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -2745,7 +2694,7 @@
     "source": "source/std/iter.mgl",
     "line": 455,
     "page": "std-iter.md",
-    "anchor": "symbol-155",
+    "anchor": "symbol-152",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2762,7 +2711,7 @@
     "source": "source/std/iter.mgl",
     "line": 498,
     "page": "std-iter.md",
-    "anchor": "symbol-156",
+    "anchor": "symbol-153",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2779,7 +2728,7 @@
     "source": "source/std/iter.mgl",
     "line": 499,
     "page": "std-iter.md",
-    "anchor": "symbol-157",
+    "anchor": "symbol-154",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -2798,7 +2747,7 @@
     "source": "source/std/iter.mgl",
     "line": 500,
     "page": "std-iter.md",
-    "anchor": "symbol-158",
+    "anchor": "symbol-155",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2815,7 +2764,7 @@
     "source": "source/std/iter.mgl",
     "line": 501,
     "page": "std-iter.md",
-    "anchor": "symbol-159",
+    "anchor": "symbol-156",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2832,7 +2781,7 @@
     "source": "source/std/iter.mgl",
     "line": 546,
     "page": "std-iter.md",
-    "anchor": "symbol-160",
+    "anchor": "symbol-157",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2849,7 +2798,7 @@
     "source": "source/std/iter.mgl",
     "line": 547,
     "page": "std-iter.md",
-    "anchor": "symbol-161",
+    "anchor": "symbol-158",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -2868,7 +2817,7 @@
     "source": "source/std/iter.mgl",
     "line": 548,
     "page": "std-iter.md",
-    "anchor": "symbol-162",
+    "anchor": "symbol-159",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2885,7 +2834,7 @@
     "source": "source/std/iter.mgl",
     "line": 549,
     "page": "std-iter.md",
-    "anchor": "symbol-163",
+    "anchor": "symbol-160",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2902,7 +2851,7 @@
     "source": "source/std/iter.mgl",
     "line": 594,
     "page": "std-iter.md",
-    "anchor": "symbol-164",
+    "anchor": "symbol-161",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2919,7 +2868,7 @@
     "source": "source/std/iter.mgl",
     "line": 595,
     "page": "std-iter.md",
-    "anchor": "symbol-165",
+    "anchor": "symbol-162",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -2938,7 +2887,7 @@
     "source": "source/std/iter.mgl",
     "line": 596,
     "page": "std-iter.md",
-    "anchor": "symbol-166",
+    "anchor": "symbol-163",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2955,7 +2904,7 @@
     "source": "source/std/iter.mgl",
     "line": 597,
     "page": "std-iter.md",
-    "anchor": "symbol-167",
+    "anchor": "symbol-164",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2972,7 +2921,7 @@
     "source": "source/std/iter.mgl",
     "line": 641,
     "page": "std-iter.md",
-    "anchor": "symbol-168",
+    "anchor": "symbol-165",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -2989,7 +2938,7 @@
     "source": "source/std/iter.mgl",
     "line": 642,
     "page": "std-iter.md",
-    "anchor": "symbol-169",
+    "anchor": "symbol-166",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -3008,7 +2957,7 @@
     "source": "source/std/iter.mgl",
     "line": 643,
     "page": "std-iter.md",
-    "anchor": "symbol-170",
+    "anchor": "symbol-167",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3025,7 +2974,7 @@
     "source": "source/std/iter.mgl",
     "line": 689,
     "page": "std-iter.md",
-    "anchor": "symbol-171",
+    "anchor": "symbol-168",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3042,7 +2991,7 @@
     "source": "source/std/iter.mgl",
     "line": 690,
     "page": "std-iter.md",
-    "anchor": "symbol-172",
+    "anchor": "symbol-169",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -3061,7 +3010,7 @@
     "source": "source/std/iter.mgl",
     "line": 691,
     "page": "std-iter.md",
-    "anchor": "symbol-173",
+    "anchor": "symbol-170",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3078,7 +3027,7 @@
     "source": "source/std/iter.mgl",
     "line": 745,
     "page": "std-iter.md",
-    "anchor": "symbol-174",
+    "anchor": "symbol-171",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3095,7 +3044,7 @@
     "source": "source/std/iter.mgl",
     "line": 746,
     "page": "std-iter.md",
-    "anchor": "symbol-175",
+    "anchor": "symbol-172",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3112,7 +3061,7 @@
     "source": "source/std/iter.mgl",
     "line": 747,
     "page": "std-iter.md",
-    "anchor": "symbol-176",
+    "anchor": "symbol-173",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3129,7 +3078,7 @@
     "source": "source/std/iter.mgl",
     "line": 748,
     "page": "std-iter.md",
-    "anchor": "symbol-177",
+    "anchor": "symbol-174",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3146,7 +3095,7 @@
     "source": "source/std/iter.mgl",
     "line": 787,
     "page": "std-iter.md",
-    "anchor": "symbol-178",
+    "anchor": "symbol-175",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3163,7 +3112,7 @@
     "source": "source/std/iter.mgl",
     "line": 788,
     "page": "std-iter.md",
-    "anchor": "symbol-179",
+    "anchor": "symbol-176",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3180,7 +3129,7 @@
     "source": "source/std/iter.mgl",
     "line": 789,
     "page": "std-iter.md",
-    "anchor": "symbol-180",
+    "anchor": "symbol-177",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3197,7 +3146,7 @@
     "source": "source/std/iter.mgl",
     "line": 829,
     "page": "std-iter.md",
-    "anchor": "symbol-181",
+    "anchor": "symbol-178",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3214,7 +3163,7 @@
     "source": "source/std/iter.mgl",
     "line": 830,
     "page": "std-iter.md",
-    "anchor": "symbol-182",
+    "anchor": "symbol-179",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -3233,7 +3182,7 @@
     "source": "source/std/iter.mgl",
     "line": 831,
     "page": "std-iter.md",
-    "anchor": "symbol-183",
+    "anchor": "symbol-180",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3250,7 +3199,7 @@
     "source": "source/std/iter.mgl",
     "line": 867,
     "page": "std-iter.md",
-    "anchor": "symbol-184",
+    "anchor": "symbol-181",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3267,7 +3216,7 @@
     "source": "source/std/iter.mgl",
     "line": 868,
     "page": "std-iter.md",
-    "anchor": "symbol-185",
+    "anchor": "symbol-182",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -3286,7 +3235,7 @@
     "source": "source/std/iter.mgl",
     "line": 869,
     "page": "std-iter.md",
-    "anchor": "symbol-186",
+    "anchor": "symbol-183",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3303,7 +3252,7 @@
     "source": "source/std/iter.mgl",
     "line": 870,
     "page": "std-iter.md",
-    "anchor": "symbol-187",
+    "anchor": "symbol-184",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3320,7 +3269,7 @@
     "source": "source/std/iter.mgl",
     "line": 907,
     "page": "std-iter.md",
-    "anchor": "symbol-188",
+    "anchor": "symbol-185",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3337,7 +3286,7 @@
     "source": "source/std/iter.mgl",
     "line": 908,
     "page": "std-iter.md",
-    "anchor": "symbol-189",
+    "anchor": "symbol-186",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -3356,7 +3305,7 @@
     "source": "source/std/iter.mgl",
     "line": 909,
     "page": "std-iter.md",
-    "anchor": "symbol-190",
+    "anchor": "symbol-187",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3373,7 +3322,7 @@
     "source": "source/std/iter.mgl",
     "line": 949,
     "page": "std-iter.md",
-    "anchor": "symbol-191",
+    "anchor": "symbol-188",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3390,7 +3339,7 @@
     "source": "source/std/iter.mgl",
     "line": 950,
     "page": "std-iter.md",
-    "anchor": "symbol-192",
+    "anchor": "symbol-189",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -3409,7 +3358,7 @@
     "source": "source/std/iter.mgl",
     "line": 951,
     "page": "std-iter.md",
-    "anchor": "symbol-193",
+    "anchor": "symbol-190",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3426,7 +3375,7 @@
     "source": "source/std/iter.mgl",
     "line": 987,
     "page": "std-iter.md",
-    "anchor": "symbol-194",
+    "anchor": "symbol-191",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3443,7 +3392,7 @@
     "source": "source/std/iter.mgl",
     "line": 988,
     "page": "std-iter.md",
-    "anchor": "symbol-195",
+    "anchor": "symbol-192",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3460,7 +3409,7 @@
     "source": "source/std/iter.mgl",
     "line": 989,
     "page": "std-iter.md",
-    "anchor": "symbol-196",
+    "anchor": "symbol-193",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3477,7 +3426,7 @@
     "source": "source/std/iter.mgl",
     "line": 990,
     "page": "std-iter.md",
-    "anchor": "symbol-197",
+    "anchor": "symbol-194",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -3496,7 +3445,7 @@
     "source": "source/std/iter.mgl",
     "line": 1033,
     "page": "std-iter.md",
-    "anchor": "symbol-198",
+    "anchor": "symbol-195",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3513,7 +3462,7 @@
     "source": "source/std/iter.mgl",
     "line": 1034,
     "page": "std-iter.md",
-    "anchor": "symbol-199",
+    "anchor": "symbol-196",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -3532,7 +3481,7 @@
     "source": "source/std/iter.mgl",
     "line": 1035,
     "page": "std-iter.md",
-    "anchor": "symbol-200",
+    "anchor": "symbol-197",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3549,7 +3498,7 @@
     "source": "source/std/iter.mgl",
     "line": 1036,
     "page": "std-iter.md",
-    "anchor": "symbol-201",
+    "anchor": "symbol-198",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3566,7 +3515,7 @@
     "source": "source/std/iter.mgl",
     "line": 1180,
     "page": "std-iter.md",
-    "anchor": "symbol-202",
+    "anchor": "symbol-199",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3583,7 +3532,7 @@
     "source": "source/std/iter.mgl",
     "line": 1181,
     "page": "std-iter.md",
-    "anchor": "symbol-203",
+    "anchor": "symbol-200",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -3602,7 +3551,7 @@
     "source": "source/std/iter.mgl",
     "line": 1182,
     "page": "std-iter.md",
-    "anchor": "symbol-204",
+    "anchor": "symbol-201",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3619,7 +3568,7 @@
     "source": "source/std/iter.mgl",
     "line": 1183,
     "page": "std-iter.md",
-    "anchor": "symbol-205",
+    "anchor": "symbol-202",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3636,7 +3585,7 @@
     "source": "source/std/iter.mgl",
     "line": 1365,
     "page": "std-iter.md",
-    "anchor": "symbol-206",
+    "anchor": "symbol-203",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3653,7 +3602,7 @@
     "source": "source/std/iter.mgl",
     "line": 1366,
     "page": "std-iter.md",
-    "anchor": "symbol-207",
+    "anchor": "symbol-204",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3670,7 +3619,7 @@
     "source": "source/std/iter.mgl",
     "line": 1367,
     "page": "std-iter.md",
-    "anchor": "symbol-208",
+    "anchor": "symbol-205",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3687,7 +3636,7 @@
     "source": "source/std/iter.mgl",
     "line": 1389,
     "page": "std-iter.md",
-    "anchor": "symbol-209",
+    "anchor": "symbol-206",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3704,7 +3653,7 @@
     "source": "source/std/iter.mgl",
     "line": 1390,
     "page": "std-iter.md",
-    "anchor": "symbol-210",
+    "anchor": "symbol-207",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3721,7 +3670,7 @@
     "source": "source/std/iter.mgl",
     "line": 1391,
     "page": "std-iter.md",
-    "anchor": "symbol-211",
+    "anchor": "symbol-208",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3738,7 +3687,7 @@
     "source": "source/std/iter.mgl",
     "line": 1539,
     "page": "std-iter.md",
-    "anchor": "symbol-212",
+    "anchor": "symbol-209",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3755,7 +3704,7 @@
     "source": "source/std/iter.mgl",
     "line": 1540,
     "page": "std-iter.md",
-    "anchor": "symbol-213",
+    "anchor": "symbol-210",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -3774,7 +3723,7 @@
     "source": "source/std/iter.mgl",
     "line": 1541,
     "page": "std-iter.md",
-    "anchor": "symbol-214",
+    "anchor": "symbol-211",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3791,7 +3740,7 @@
     "source": "source/std/iter.mgl",
     "line": 1542,
     "page": "std-iter.md",
-    "anchor": "symbol-215",
+    "anchor": "symbol-212",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3808,7 +3757,7 @@
     "source": "source/std/iter.mgl",
     "line": 1580,
     "page": "std-iter.md",
-    "anchor": "symbol-216",
+    "anchor": "symbol-213",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3825,7 +3774,7 @@
     "source": "source/std/iter.mgl",
     "line": 1581,
     "page": "std-iter.md",
-    "anchor": "symbol-217",
+    "anchor": "symbol-214",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -3844,7 +3793,7 @@
     "source": "source/std/iter.mgl",
     "line": 1582,
     "page": "std-iter.md",
-    "anchor": "symbol-218",
+    "anchor": "symbol-215",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3861,7 +3810,7 @@
     "source": "source/std/iter.mgl",
     "line": 1617,
     "page": "std-iter.md",
-    "anchor": "symbol-219",
+    "anchor": "symbol-216",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3878,7 +3827,7 @@
     "source": "source/std/iter.mgl",
     "line": 1618,
     "page": "std-iter.md",
-    "anchor": "symbol-220",
+    "anchor": "symbol-217",
     "examples": [
       "example/samples/iter_pipeline.mgl"
     ],
@@ -3897,7 +3846,7 @@
     "source": "source/std/json.mgl",
     "line": 25,
     "page": "std-json.md",
-    "anchor": "symbol-221",
+    "anchor": "symbol-218",
     "examples": [
       "example/samples/std_structured_data.mgl"
     ],
@@ -3916,7 +3865,7 @@
     "source": "source/std/json.mgl",
     "line": 26,
     "page": "std-json.md",
-    "anchor": "symbol-222",
+    "anchor": "symbol-219",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3933,7 +3882,94 @@
     "source": "source/std/json.mgl",
     "line": 27,
     "page": "std-json.md",
+    "anchor": "symbol-220",
+    "examples": [],
+    "sourceLanguage": "zh"
+  },
+  {
+    "module": "std::lang",
+    "name": "String",
+    "owner": "",
+    "kind": "opcode",
+    "type": "",
+    "signature": "opcode String",
+    "documentation": "拥有 UTF-8 文本的 opcode 值，复制产生独立可写缓冲。",
+    "comment": "",
+    "parameters": [],
+    "source": "source/std/lang.mgl",
+    "line": 3,
+    "page": "std-lang.md",
+    "anchor": "symbol-221",
+    "examples": [
+      "example/samples/std_collections_algorithms.mgl"
+    ],
+    "sourceLanguage": "zh"
+  },
+  {
+    "module": "std::lang",
+    "name": "BigInteger",
+    "owner": "",
+    "kind": "opcode",
+    "type": "",
+    "signature": "opcode BigInteger",
+    "documentation": "任意精度有符号整数，算术由大数运行时实现。",
+    "comment": "",
+    "parameters": [],
+    "source": "source/std/lang.mgl",
+    "line": 12,
+    "page": "std-lang.md",
+    "anchor": "symbol-222",
+    "examples": [],
+    "sourceLanguage": "zh"
+  },
+  {
+    "module": "std::lang",
+    "name": "BigDecimal",
+    "owner": "",
+    "kind": "opcode",
+    "type": "",
+    "signature": "opcode BigDecimal",
+    "documentation": "可配置精度的十进制大数。",
+    "comment": "",
+    "parameters": [],
+    "source": "source/std/lang.mgl",
+    "line": 17,
+    "page": "std-lang.md",
     "anchor": "symbol-223",
+    "examples": [],
+    "sourceLanguage": "zh"
+  },
+  {
+    "module": "std::lang",
+    "name": "File",
+    "owner": "",
+    "kind": "opcode",
+    "type": "",
+    "signature": "#NonCopyable opcode File",
+    "documentation": "不可复制的文件 opcode，作用域退出释放文件资源。",
+    "comment": "",
+    "parameters": [],
+    "source": "source/std/lang.mgl",
+    "line": 22,
+    "page": "std-lang.md",
+    "anchor": "symbol-224",
+    "examples": [],
+    "sourceLanguage": "zh"
+  },
+  {
+    "module": "std::lang",
+    "name": "Process",
+    "owner": "",
+    "kind": "opcode",
+    "type": "",
+    "signature": "#NonCopyable opcode Process",
+    "documentation": "不可复制的进程 opcode，操作由宿主胶水提供。",
+    "comment": "",
+    "parameters": [],
+    "source": "source/std/lang.mgl",
+    "line": 27,
+    "page": "std-lang.md",
+    "anchor": "symbol-225",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3948,9 +3984,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/lang.mgl",
-    "line": 171,
+    "line": 173,
     "page": "std-lang.md",
-    "anchor": "symbol-224",
+    "anchor": "symbol-226",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3965,9 +4001,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/lang.mgl",
-    "line": 173,
+    "line": 175,
     "page": "std-lang.md",
-    "anchor": "symbol-225",
+    "anchor": "symbol-227",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3982,9 +4018,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/lang.mgl",
-    "line": 173,
+    "line": 175,
     "page": "std-lang.md",
-    "anchor": "symbol-226",
+    "anchor": "symbol-228",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -3999,9 +4035,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/lang.mgl",
-    "line": 175,
+    "line": 177,
     "page": "std-lang.md",
-    "anchor": "symbol-227",
+    "anchor": "symbol-229",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -4016,9 +4052,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/lang.mgl",
-    "line": 177,
+    "line": 179,
     "page": "std-lang.md",
-    "anchor": "symbol-228",
+    "anchor": "symbol-230",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -4033,9 +4069,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/lang.mgl",
-    "line": 179,
+    "line": 181,
     "page": "std-lang.md",
-    "anchor": "symbol-229",
+    "anchor": "symbol-231",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -4050,9 +4086,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/lang.mgl",
-    "line": 181,
+    "line": 183,
     "page": "std-lang.md",
-    "anchor": "symbol-230",
+    "anchor": "symbol-232",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -4067,9 +4103,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/lang.mgl",
-    "line": 183,
+    "line": 185,
     "page": "std-lang.md",
-    "anchor": "symbol-231",
+    "anchor": "symbol-233",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -4084,9 +4120,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/lang.mgl",
-    "line": 265,
+    "line": 267,
     "page": "std-lang.md",
-    "anchor": "symbol-232",
+    "anchor": "symbol-234",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -4101,9 +4137,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/lang.mgl",
-    "line": 383,
+    "line": 385,
     "page": "std-lang.md",
-    "anchor": "symbol-233",
+    "anchor": "symbol-235",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -4118,9 +4154,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/lang.mgl",
-    "line": 436,
+    "line": 438,
     "page": "std-lang.md",
-    "anchor": "symbol-234",
+    "anchor": "symbol-236",
     "examples": [
       "example/samples/std_collections_algorithms.mgl"
     ],
@@ -4137,9 +4173,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/lang.mgl",
-    "line": 437,
+    "line": 439,
     "page": "std-lang.md",
-    "anchor": "symbol-235",
+    "anchor": "symbol-237",
     "examples": [
       "example/samples/std_collections_algorithms.mgl"
     ],
@@ -4156,9 +4192,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/lang.mgl",
-    "line": 438,
+    "line": 440,
     "page": "std-lang.md",
-    "anchor": "symbol-236",
+    "anchor": "symbol-238",
     "examples": [
       "example/samples/std_collections_algorithms.mgl"
     ],
@@ -4177,7 +4213,7 @@
     "source": "source/magel_generic.hpp",
     "line": 1926,
     "page": "std-lang.md",
-    "anchor": "symbol-237",
+    "anchor": "symbol-239",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -4194,7 +4230,7 @@
     "source": "source/magel_generic.hpp",
     "line": 1934,
     "page": "std-lang.md",
-    "anchor": "symbol-238",
+    "anchor": "symbol-240",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -4211,7 +4247,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "symbol-239",
+    "anchor": "symbol-241",
     "examples": [
       "example/samples/std_collections_algorithms.mgl"
     ],
@@ -4230,7 +4266,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "symbol-240",
+    "anchor": "symbol-242",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -4246,40 +4282,6 @@
     "parameters": [],
     "source": "source/epilogue/boxing.cpp",
     "line": 1,
-    "page": "std-lang.md",
-    "anchor": "symbol-241",
-    "examples": [],
-    "sourceLanguage": "zh"
-  },
-  {
-    "module": "std::lang",
-    "name": "BigInteger",
-    "owner": "",
-    "kind": "struct",
-    "type": "",
-    "signature": "struct BigInteger",
-    "documentation": "任意精度有符号整数，算术由大数运行时实现。",
-    "comment": "",
-    "parameters": [],
-    "source": "source/epilogue/boxing.cpp",
-    "line": 180,
-    "page": "std-lang.md",
-    "anchor": "symbol-242",
-    "examples": [],
-    "sourceLanguage": "zh"
-  },
-  {
-    "module": "std::lang",
-    "name": "BigDecimal",
-    "owner": "",
-    "kind": "struct",
-    "type": "",
-    "signature": "struct BigDecimal",
-    "documentation": "可配置精度的十进制大数。",
-    "comment": "",
-    "parameters": [],
-    "source": "source/epilogue/boxing.cpp",
-    "line": 180,
     "page": "std-lang.md",
     "anchor": "symbol-243",
     "examples": [],
@@ -5035,6 +5037,57 @@
   },
   {
     "module": "std::linalg",
+    "name": "ScalarStorage",
+    "owner": "",
+    "kind": "opcode",
+    "type": "",
+    "signature": "opcode ScalarStorage",
+    "documentation": "线性代数专用数值存储，缓冲在宿主胶水中深复制和释放。",
+    "comment": "",
+    "parameters": [],
+    "source": "source/std/linalg.mgl",
+    "line": 11,
+    "page": "std-linalg.md",
+    "anchor": "symbol-288",
+    "examples": [],
+    "sourceLanguage": "zh"
+  },
+  {
+    "module": "std::linalg",
+    "name": "ScalarArray",
+    "owner": "",
+    "kind": "struct",
+    "type": "",
+    "signature": "struct ScalarArray<T>: Index<T, int64>, Iterator<T>",
+    "documentation": "为内建数值类型提供泛型索引外观，元素保存在 opcode 中。",
+    "comment": "",
+    "parameters": [],
+    "source": "source/std/linalg.mgl",
+    "line": 23,
+    "page": "std-linalg.md",
+    "anchor": "symbol-289",
+    "examples": [],
+    "sourceLanguage": "zh"
+  },
+  {
+    "module": "std::linalg",
+    "name": "ScalarArray::storage",
+    "owner": "ScalarArray",
+    "kind": "member",
+    "type": "ScalarStorage",
+    "signature": "ScalarStorage storage",
+    "documentation": "独占此数组数值缓冲的 opcode 记录；复制时深复制。",
+    "comment": "",
+    "parameters": [],
+    "source": "source/std/linalg.mgl",
+    "line": 25,
+    "page": "std-linalg.md",
+    "anchor": "symbol-290",
+    "examples": [],
+    "sourceLanguage": "zh"
+  },
+  {
+    "module": "std::linalg",
     "name": "Vector",
     "owner": "",
     "kind": "struct",
@@ -5044,9 +5097,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 10,
+    "line": 42,
     "page": "std-linalg.md",
-    "anchor": "symbol-288",
+    "anchor": "symbol-291",
     "examples": [
       "example/samples/std_linalg_solve_glue.mgl"
     ],
@@ -5057,15 +5110,15 @@
     "name": "Vector::values",
     "owner": "Vector",
     "kind": "member",
-    "type": "std::lang::List<T>",
-    "signature": "std::lang::List<T> values",
+    "type": "ScalarArray<T>",
+    "signature": "ScalarArray<T> values",
     "documentation": "按声明顺序保存的元素存储。",
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 13,
+    "line": 45,
     "page": "std-linalg.md",
-    "anchor": "symbol-289",
+    "anchor": "symbol-292",
     "examples": [
       "example/samples/std_linalg_solve_glue.mgl"
     ],
@@ -5082,9 +5135,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 89,
+    "line": 121,
     "page": "std-linalg.md",
-    "anchor": "symbol-290",
+    "anchor": "symbol-293",
     "examples": [
       "example/samples/std_linalg_solve_glue.mgl"
     ],
@@ -5101,9 +5154,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 94,
+    "line": 126,
     "page": "std-linalg.md",
-    "anchor": "symbol-291",
+    "anchor": "symbol-294",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5118,9 +5171,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 95,
+    "line": 127,
     "page": "std-linalg.md",
-    "anchor": "symbol-292",
+    "anchor": "symbol-295",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5129,15 +5182,15 @@
     "name": "Matrix::values",
     "owner": "Matrix",
     "kind": "member",
-    "type": "std::lang::List<T>",
-    "signature": "std::lang::List<T> values",
+    "type": "ScalarArray<T>",
+    "signature": "ScalarArray<T> values",
     "documentation": "按声明顺序保存的元素存储。",
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 96,
+    "line": 128,
     "page": "std-linalg.md",
-    "anchor": "symbol-293",
+    "anchor": "symbol-296",
     "examples": [
       "example/samples/std_linalg_solve_glue.mgl"
     ],
@@ -5154,9 +5207,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 238,
+    "line": 270,
     "page": "std-linalg.md",
-    "anchor": "symbol-294",
+    "anchor": "symbol-297",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5171,9 +5224,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 239,
+    "line": 271,
     "page": "std-linalg.md",
-    "anchor": "symbol-295",
+    "anchor": "symbol-298",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5188,9 +5241,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 240,
+    "line": 272,
     "page": "std-linalg.md",
-    "anchor": "symbol-296",
+    "anchor": "symbol-299",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5205,9 +5258,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 241,
+    "line": 273,
     "page": "std-linalg.md",
-    "anchor": "symbol-297",
+    "anchor": "symbol-300",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5222,9 +5275,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 250,
+    "line": 282,
     "page": "std-linalg.md",
-    "anchor": "symbol-298",
+    "anchor": "symbol-301",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5239,9 +5292,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 251,
+    "line": 283,
     "page": "std-linalg.md",
-    "anchor": "symbol-299",
+    "anchor": "symbol-302",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5256,9 +5309,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 252,
+    "line": 284,
     "page": "std-linalg.md",
-    "anchor": "symbol-300",
+    "anchor": "symbol-303",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5273,9 +5326,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 258,
+    "line": 290,
     "page": "std-linalg.md",
-    "anchor": "symbol-301",
+    "anchor": "symbol-304",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5290,9 +5343,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 259,
+    "line": 291,
     "page": "std-linalg.md",
-    "anchor": "symbol-302",
+    "anchor": "symbol-305",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5307,9 +5360,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 260,
+    "line": 292,
     "page": "std-linalg.md",
-    "anchor": "symbol-303",
+    "anchor": "symbol-306",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5324,9 +5377,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 261,
+    "line": 293,
     "page": "std-linalg.md",
-    "anchor": "symbol-304",
+    "anchor": "symbol-307",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5341,9 +5394,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 267,
+    "line": 299,
     "page": "std-linalg.md",
-    "anchor": "symbol-305",
+    "anchor": "symbol-308",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5358,9 +5411,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 268,
+    "line": 300,
     "page": "std-linalg.md",
-    "anchor": "symbol-306",
+    "anchor": "symbol-309",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5375,9 +5428,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/linalg.mgl",
-    "line": 269,
+    "line": 301,
     "page": "std-linalg.md",
-    "anchor": "symbol-307",
+    "anchor": "symbol-310",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5394,7 +5447,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 36,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-308",
+    "anchor": "symbol-311",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5411,7 +5464,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 37,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-309",
+    "anchor": "symbol-312",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5428,7 +5481,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 38,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-310",
+    "anchor": "symbol-313",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5445,7 +5498,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 39,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-311",
+    "anchor": "symbol-314",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5462,7 +5515,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 40,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-312",
+    "anchor": "symbol-315",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5479,7 +5532,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 41,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-313",
+    "anchor": "symbol-316",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5496,7 +5549,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 42,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-314",
+    "anchor": "symbol-317",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5513,7 +5566,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 43,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-315",
+    "anchor": "symbol-318",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5530,7 +5583,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 44,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-316",
+    "anchor": "symbol-319",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5547,7 +5600,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 45,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-317",
+    "anchor": "symbol-320",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5564,7 +5617,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 46,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-318",
+    "anchor": "symbol-321",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5581,7 +5634,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 47,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-319",
+    "anchor": "symbol-322",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5598,7 +5651,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 48,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-320",
+    "anchor": "symbol-323",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5615,7 +5668,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 52,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-321",
+    "anchor": "symbol-324",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5632,7 +5685,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 53,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-322",
+    "anchor": "symbol-325",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5649,7 +5702,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 54,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-323",
+    "anchor": "symbol-326",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5666,7 +5719,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 55,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-324",
+    "anchor": "symbol-327",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5683,7 +5736,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 56,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-325",
+    "anchor": "symbol-328",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5700,7 +5753,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 57,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-326",
+    "anchor": "symbol-329",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5717,7 +5770,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 58,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-327",
+    "anchor": "symbol-330",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5734,7 +5787,7 @@
     "source": "source/std/linkedlist.mgl",
     "line": 59,
     "page": "std-linkedlist.md",
-    "anchor": "symbol-328",
+    "anchor": "symbol-331",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5751,7 +5804,7 @@
     "source": "source/std/memory.mgl",
     "line": 7,
     "page": "std-memory.md",
-    "anchor": "symbol-329",
+    "anchor": "symbol-332",
     "examples": [
       "example/samples/std_parse_random_path_memory.mgl"
     ],
@@ -5770,7 +5823,7 @@
     "source": "source/std/memory.mgl",
     "line": 8,
     "page": "std-memory.md",
-    "anchor": "symbol-330",
+    "anchor": "symbol-333",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5787,7 +5840,7 @@
     "source": "source/std/memory.mgl",
     "line": 9,
     "page": "std-memory.md",
-    "anchor": "symbol-331",
+    "anchor": "symbol-334",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5804,7 +5857,7 @@
     "source": "source/std/memory.mgl",
     "line": 30,
     "page": "std-memory.md",
-    "anchor": "symbol-332",
+    "anchor": "symbol-335",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5821,7 +5874,7 @@
     "source": "source/std/memory.mgl",
     "line": 31,
     "page": "std-memory.md",
-    "anchor": "symbol-333",
+    "anchor": "symbol-336",
     "examples": [
       "example/samples/std_parse_random_path_memory.mgl"
     ],
@@ -5840,7 +5893,7 @@
     "source": "source/std/memory.mgl",
     "line": 32,
     "page": "std-memory.md",
-    "anchor": "symbol-334",
+    "anchor": "symbol-337",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5857,7 +5910,7 @@
     "source": "source/std/memory.mgl",
     "line": 33,
     "page": "std-memory.md",
-    "anchor": "symbol-335",
+    "anchor": "symbol-338",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5874,7 +5927,7 @@
     "source": "source/std/memory.mgl",
     "line": 44,
     "page": "std-memory.md",
-    "anchor": "symbol-336",
+    "anchor": "symbol-339",
     "examples": [
       "example/samples/std_parse_random_path_memory.mgl"
     ],
@@ -5893,7 +5946,7 @@
     "source": "source/std/memory.mgl",
     "line": 54,
     "page": "std-memory.md",
-    "anchor": "symbol-337",
+    "anchor": "symbol-340",
     "examples": [
       "example/samples/std_parse_random_path_memory.mgl"
     ],
@@ -5912,7 +5965,7 @@
     "source": "source/std/memory.mgl",
     "line": 55,
     "page": "std-memory.md",
-    "anchor": "symbol-338",
+    "anchor": "symbol-341",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -5920,67 +5973,14 @@
     "module": "std::net",
     "name": "TcpSocket",
     "owner": "",
-    "kind": "struct",
+    "kind": "opcode",
     "type": "",
-    "signature": "struct TcpSocket",
-    "documentation": "一条 TCP 连接（`connect` 来的，或 `accept` 到的）。",
+    "signature": "#NonCopyable opcode TcpSocket",
+    "documentation": "独占 TCP 连接；复制被拒绝，显式 move 转移所有权。",
     "comment": "",
     "parameters": [],
     "source": "source/std/net.mgl",
-    "line": 52,
-    "page": "std-net.md",
-    "anchor": "symbol-339",
-    "examples": [
-      "example/samples/std_net.mgl"
-    ],
-    "sourceLanguage": "zh"
-  },
-  {
-    "module": "std::net",
-    "name": "TcpSocket::handle",
-    "owner": "TcpSocket",
-    "kind": "member",
-    "type": "int32",
-    "signature": "int32 handle",
-    "documentation": "宿主资源句柄；应通过所属类型的方法操作。",
-    "comment": "",
-    "parameters": [],
-    "source": "source/std/net.mgl",
-    "line": 53,
-    "page": "std-net.md",
-    "anchor": "symbol-340",
-    "examples": [],
-    "sourceLanguage": "zh"
-  },
-  {
-    "module": "std::net",
-    "name": "TcpSocket::opened",
-    "owner": "TcpSocket",
-    "kind": "member",
-    "type": "bool",
-    "signature": "bool opened",
-    "documentation": "外部资源是否处于打开状态。",
-    "comment": "",
-    "parameters": [],
-    "source": "source/std/net.mgl",
-    "line": 54,
-    "page": "std-net.md",
-    "anchor": "symbol-341",
-    "examples": [],
-    "sourceLanguage": "zh"
-  },
-  {
-    "module": "std::net",
-    "name": "TcpSocket::error",
-    "owner": "TcpSocket",
-    "kind": "member",
-    "type": "std::lang::String",
-    "signature": "std::lang::String error",
-    "documentation": "最近操作的错误说明。",
-    "comment": "",
-    "parameters": [],
-    "source": "source/std/net.mgl",
-    "line": 55,
+    "line": 63,
     "page": "std-net.md",
     "anchor": "symbol-342",
     "examples": [
@@ -5992,69 +5992,16 @@
     "module": "std::net",
     "name": "TcpListener",
     "owner": "",
-    "kind": "struct",
+    "kind": "opcode",
     "type": "",
-    "signature": "struct TcpListener",
-    "documentation": "TCP 监听器；端口传 0 时由系统分配，用 `localPort()` 查询。",
+    "signature": "#NonCopyable opcode TcpListener",
+    "documentation": "独占 TCP 监听器；端口为零时由系统分配。",
     "comment": "",
     "parameters": [],
     "source": "source/std/net.mgl",
-    "line": 124,
+    "line": 101,
     "page": "std-net.md",
     "anchor": "symbol-343",
-    "examples": [
-      "example/samples/std_net.mgl"
-    ],
-    "sourceLanguage": "zh"
-  },
-  {
-    "module": "std::net",
-    "name": "TcpListener::handle",
-    "owner": "TcpListener",
-    "kind": "member",
-    "type": "int32",
-    "signature": "int32 handle",
-    "documentation": "宿主资源句柄；应通过所属类型的方法操作。",
-    "comment": "",
-    "parameters": [],
-    "source": "source/std/net.mgl",
-    "line": 125,
-    "page": "std-net.md",
-    "anchor": "symbol-344",
-    "examples": [],
-    "sourceLanguage": "zh"
-  },
-  {
-    "module": "std::net",
-    "name": "TcpListener::opened",
-    "owner": "TcpListener",
-    "kind": "member",
-    "type": "bool",
-    "signature": "bool opened",
-    "documentation": "外部资源是否处于打开状态。",
-    "comment": "",
-    "parameters": [],
-    "source": "source/std/net.mgl",
-    "line": 126,
-    "page": "std-net.md",
-    "anchor": "symbol-345",
-    "examples": [],
-    "sourceLanguage": "zh"
-  },
-  {
-    "module": "std::net",
-    "name": "TcpListener::error",
-    "owner": "TcpListener",
-    "kind": "member",
-    "type": "std::lang::String",
-    "signature": "std::lang::String error",
-    "documentation": "最近操作的错误说明。",
-    "comment": "",
-    "parameters": [],
-    "source": "source/std/net.mgl",
-    "line": 127,
-    "page": "std-net.md",
-    "anchor": "symbol-346",
     "examples": [
       "example/samples/std_net.mgl"
     ],
@@ -6071,9 +6018,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/net.mgl",
-    "line": 174,
+    "line": 122,
     "page": "std-net.md",
-    "anchor": "symbol-347",
+    "anchor": "symbol-344",
     "examples": [
       "example/samples/std_net.mgl"
     ],
@@ -6090,9 +6037,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/net.mgl",
-    "line": 175,
+    "line": 123,
     "page": "std-net.md",
-    "anchor": "symbol-348",
+    "anchor": "symbol-345",
     "examples": [
       "example/samples/std_net.mgl"
     ],
@@ -6109,9 +6056,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/net.mgl",
-    "line": 176,
+    "line": 124,
     "page": "std-net.md",
-    "anchor": "symbol-349",
+    "anchor": "symbol-346",
     "examples": [
       "example/samples/std_net.mgl"
     ],
@@ -6128,9 +6075,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/net.mgl",
-    "line": 177,
+    "line": 125,
     "page": "std-net.md",
-    "anchor": "symbol-350",
+    "anchor": "symbol-347",
     "examples": [
       "example/samples/std_net.mgl"
     ],
@@ -6147,9 +6094,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/net.mgl",
-    "line": 178,
+    "line": 126,
     "page": "std-net.md",
-    "anchor": "symbol-351",
+    "anchor": "symbol-348",
     "examples": [
       "example/samples/std_net.mgl"
     ],
@@ -6166,9 +6113,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/net.mgl",
-    "line": 179,
+    "line": 127,
     "page": "std-net.md",
-    "anchor": "symbol-352",
+    "anchor": "symbol-349",
     "examples": [
       "example/samples/std_net.mgl"
     ],
@@ -6185,9 +6132,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/net.mgl",
-    "line": 183,
+    "line": 131,
     "page": "std-net.md",
-    "anchor": "symbol-353",
+    "anchor": "symbol-350",
     "examples": [
       "example/samples/std_net.mgl"
     ],
@@ -6204,9 +6151,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/net.mgl",
-    "line": 184,
+    "line": 132,
     "page": "std-net.md",
-    "anchor": "symbol-354",
+    "anchor": "symbol-351",
     "examples": [
       "example/samples/std_net.mgl"
     ],
@@ -6223,9 +6170,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/net.mgl",
-    "line": 185,
+    "line": 133,
     "page": "std-net.md",
-    "anchor": "symbol-355",
+    "anchor": "symbol-352",
     "examples": [
       "example/samples/std_net.mgl"
     ],
@@ -6242,9 +6189,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/net.mgl",
-    "line": 186,
+    "line": 134,
     "page": "std-net.md",
-    "anchor": "symbol-356",
+    "anchor": "symbol-353",
     "examples": [
       "example/samples/std_net.mgl"
     ],
@@ -6261,9 +6208,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/net.mgl",
-    "line": 187,
+    "line": 135,
     "page": "std-net.md",
-    "anchor": "symbol-357",
+    "anchor": "symbol-354",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6278,9 +6225,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/net.mgl",
-    "line": 188,
+    "line": 136,
     "page": "std-net.md",
-    "anchor": "symbol-358",
+    "anchor": "symbol-355",
     "examples": [
       "example/samples/std_net.mgl"
     ],
@@ -6297,9 +6244,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/net.mgl",
-    "line": 189,
+    "line": 137,
     "page": "std-net.md",
-    "anchor": "symbol-359",
+    "anchor": "symbol-356",
     "examples": [
       "example/samples/std_net.mgl"
     ],
@@ -6316,9 +6263,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/net.mgl",
-    "line": 333,
+    "line": 281,
     "page": "std-net.md",
-    "anchor": "symbol-360",
+    "anchor": "symbol-357",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6333,9 +6280,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/net.mgl",
-    "line": 334,
+    "line": 282,
     "page": "std-net.md",
-    "anchor": "symbol-361",
+    "anchor": "symbol-358",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6350,9 +6297,9 @@
     "comment": "",
     "parameters": [],
     "source": "source/std/net.mgl",
-    "line": 335,
+    "line": 283,
     "page": "std-net.md",
-    "anchor": "symbol-362",
+    "anchor": "symbol-359",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6369,7 +6316,7 @@
     "source": "source/std/numerics.mgl",
     "line": 132,
     "page": "std-numerics.md",
-    "anchor": "symbol-363",
+    "anchor": "symbol-360",
     "examples": [
       "example/samples/std_numerics_number_theory.mgl"
     ],
@@ -6388,7 +6335,7 @@
     "source": "source/std/parse.mgl",
     "line": 4,
     "page": "std-parse.md",
-    "anchor": "symbol-364",
+    "anchor": "symbol-361",
     "examples": [
       "example/samples/std_parse_random_path_memory.mgl"
     ],
@@ -6407,7 +6354,7 @@
     "source": "source/std/parse.mgl",
     "line": 15,
     "page": "std-parse.md",
-    "anchor": "symbol-365",
+    "anchor": "symbol-362",
     "examples": [
       "example/samples/std_parse_random_path_memory.mgl"
     ],
@@ -6426,7 +6373,7 @@
     "source": "source/std/path.mgl",
     "line": 136,
     "page": "std-path.md",
-    "anchor": "symbol-366",
+    "anchor": "symbol-363",
     "examples": [
       "example/samples/std_parse_random_path_memory.mgl"
     ],
@@ -6445,7 +6392,7 @@
     "source": "source/std/probe.mgl",
     "line": 3,
     "page": "std-probe.md",
-    "anchor": "symbol-367",
+    "anchor": "symbol-364",
     "examples": [
       "example/samples/std_process_probe.mgl"
     ],
@@ -6464,7 +6411,7 @@
     "source": "source/std/probe.mgl",
     "line": 3,
     "page": "std-probe.md",
-    "anchor": "symbol-368",
+    "anchor": "symbol-365",
     "examples": [
       "example/samples/std_process_probe.mgl"
     ],
@@ -6483,7 +6430,7 @@
     "source": "source/std/random.mgl",
     "line": 14,
     "page": "std-random.md",
-    "anchor": "symbol-369",
+    "anchor": "symbol-366",
     "examples": [
       "example/samples/std_math_clock_random.mgl"
     ],
@@ -6502,7 +6449,7 @@
     "source": "source/std/random.mgl",
     "line": 15,
     "page": "std-random.md",
-    "anchor": "symbol-370",
+    "anchor": "symbol-367",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6519,7 +6466,7 @@
     "source": "source/std/reflect.mgl",
     "line": 4,
     "page": "std-reflect.md",
-    "anchor": "symbol-371",
+    "anchor": "symbol-368",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6536,7 +6483,7 @@
     "source": "source/std/reflect.mgl",
     "line": 7,
     "page": "std-reflect.md",
-    "anchor": "symbol-372",
+    "anchor": "symbol-369",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6553,7 +6500,7 @@
     "source": "source/std/reflect.mgl",
     "line": 109,
     "page": "std-reflect.md",
-    "anchor": "symbol-373",
+    "anchor": "symbol-370",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6570,7 +6517,7 @@
     "source": "source/std/reflect.mgl",
     "line": 109,
     "page": "std-reflect.md",
-    "anchor": "symbol-374",
+    "anchor": "symbol-371",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -6589,7 +6536,7 @@
     "source": "source/std/reflect.mgl",
     "line": 109,
     "page": "std-reflect.md",
-    "anchor": "symbol-375",
+    "anchor": "symbol-372",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -6608,7 +6555,7 @@
     "source": "source/std/reflect.mgl",
     "line": 110,
     "page": "std-reflect.md",
-    "anchor": "symbol-376",
+    "anchor": "symbol-373",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6625,7 +6572,7 @@
     "source": "source/std/reflect.mgl",
     "line": 110,
     "page": "std-reflect.md",
-    "anchor": "symbol-377",
+    "anchor": "symbol-374",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -6644,7 +6591,7 @@
     "source": "source/std/reflect.mgl",
     "line": 110,
     "page": "std-reflect.md",
-    "anchor": "symbol-378",
+    "anchor": "symbol-375",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -6663,7 +6610,7 @@
     "source": "source/std/reflect.mgl",
     "line": 110,
     "page": "std-reflect.md",
-    "anchor": "symbol-379",
+    "anchor": "symbol-376",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6680,7 +6627,7 @@
     "source": "source/std/reflect.mgl",
     "line": 111,
     "page": "std-reflect.md",
-    "anchor": "symbol-380",
+    "anchor": "symbol-377",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6697,7 +6644,7 @@
     "source": "source/std/reflect.mgl",
     "line": 111,
     "page": "std-reflect.md",
-    "anchor": "symbol-381",
+    "anchor": "symbol-378",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -6716,7 +6663,7 @@
     "source": "source/std/reflect.mgl",
     "line": 111,
     "page": "std-reflect.md",
-    "anchor": "symbol-382",
+    "anchor": "symbol-379",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -6735,7 +6682,7 @@
     "source": "source/std/reflect.mgl",
     "line": 111,
     "page": "std-reflect.md",
-    "anchor": "symbol-383",
+    "anchor": "symbol-380",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6752,7 +6699,7 @@
     "source": "source/std/reflect.mgl",
     "line": 112,
     "page": "std-reflect.md",
-    "anchor": "symbol-384",
+    "anchor": "symbol-381",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6769,7 +6716,7 @@
     "source": "source/std/reflect.mgl",
     "line": 112,
     "page": "std-reflect.md",
-    "anchor": "symbol-385",
+    "anchor": "symbol-382",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6786,7 +6733,7 @@
     "source": "source/std/reflect.mgl",
     "line": 112,
     "page": "std-reflect.md",
-    "anchor": "symbol-386",
+    "anchor": "symbol-383",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6803,7 +6750,7 @@
     "source": "source/std/reflect.mgl",
     "line": 113,
     "page": "std-reflect.md",
-    "anchor": "symbol-387",
+    "anchor": "symbol-384",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6820,7 +6767,7 @@
     "source": "source/std/reflect.mgl",
     "line": 113,
     "page": "std-reflect.md",
-    "anchor": "symbol-388",
+    "anchor": "symbol-385",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -6839,7 +6786,7 @@
     "source": "source/std/reflect.mgl",
     "line": 113,
     "page": "std-reflect.md",
-    "anchor": "symbol-389",
+    "anchor": "symbol-386",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -6858,7 +6805,7 @@
     "source": "source/std/reflect.mgl",
     "line": 113,
     "page": "std-reflect.md",
-    "anchor": "symbol-390",
+    "anchor": "symbol-387",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6875,7 +6822,7 @@
     "source": "source/std/reflect.mgl",
     "line": 113,
     "page": "std-reflect.md",
-    "anchor": "symbol-391",
+    "anchor": "symbol-388",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6892,7 +6839,7 @@
     "source": "source/std/reflect.mgl",
     "line": 113,
     "page": "std-reflect.md",
-    "anchor": "symbol-392",
+    "anchor": "symbol-389",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6909,7 +6856,7 @@
     "source": "source/std/reflect.mgl",
     "line": 114,
     "page": "std-reflect.md",
-    "anchor": "symbol-393",
+    "anchor": "symbol-390",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6926,7 +6873,7 @@
     "source": "source/std/reflect.mgl",
     "line": 114,
     "page": "std-reflect.md",
-    "anchor": "symbol-394",
+    "anchor": "symbol-391",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6943,7 +6890,7 @@
     "source": "source/std/reflect.mgl",
     "line": 114,
     "page": "std-reflect.md",
-    "anchor": "symbol-395",
+    "anchor": "symbol-392",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6960,7 +6907,7 @@
     "source": "source/std/reflect.mgl",
     "line": 114,
     "page": "std-reflect.md",
-    "anchor": "symbol-396",
+    "anchor": "symbol-393",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6977,7 +6924,7 @@
     "source": "source/std/reflect.mgl",
     "line": 114,
     "page": "std-reflect.md",
-    "anchor": "symbol-397",
+    "anchor": "symbol-394",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -6994,7 +6941,7 @@
     "source": "source/std/reflect.mgl",
     "line": 114,
     "page": "std-reflect.md",
-    "anchor": "symbol-398",
+    "anchor": "symbol-395",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7011,7 +6958,7 @@
     "source": "source/std/reflect.mgl",
     "line": 115,
     "page": "std-reflect.md",
-    "anchor": "symbol-399",
+    "anchor": "symbol-396",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7028,7 +6975,7 @@
     "source": "source/std/reflect.mgl",
     "line": 115,
     "page": "std-reflect.md",
-    "anchor": "symbol-400",
+    "anchor": "symbol-397",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -7047,7 +6994,7 @@
     "source": "source/std/reflect.mgl",
     "line": 115,
     "page": "std-reflect.md",
-    "anchor": "symbol-401",
+    "anchor": "symbol-398",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7064,7 +7011,7 @@
     "source": "source/std/reflect.mgl",
     "line": 115,
     "page": "std-reflect.md",
-    "anchor": "symbol-402",
+    "anchor": "symbol-399",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -7083,7 +7030,7 @@
     "source": "source/std/reflect.mgl",
     "line": 115,
     "page": "std-reflect.md",
-    "anchor": "symbol-403",
+    "anchor": "symbol-400",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7100,7 +7047,7 @@
     "source": "source/std/reflect.mgl",
     "line": 115,
     "page": "std-reflect.md",
-    "anchor": "symbol-404",
+    "anchor": "symbol-401",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7117,7 +7064,7 @@
     "source": "source/std/reflect.mgl",
     "line": 116,
     "page": "std-reflect.md",
-    "anchor": "symbol-405",
+    "anchor": "symbol-402",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7134,7 +7081,7 @@
     "source": "source/std/reflect.mgl",
     "line": 116,
     "page": "std-reflect.md",
-    "anchor": "symbol-406",
+    "anchor": "symbol-403",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -7153,7 +7100,7 @@
     "source": "source/std/reflect.mgl",
     "line": 116,
     "page": "std-reflect.md",
-    "anchor": "symbol-407",
+    "anchor": "symbol-404",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -7172,7 +7119,7 @@
     "source": "source/std/reflect.mgl",
     "line": 116,
     "page": "std-reflect.md",
-    "anchor": "symbol-408",
+    "anchor": "symbol-405",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7189,7 +7136,7 @@
     "source": "source/std/reflect.mgl",
     "line": 116,
     "page": "std-reflect.md",
-    "anchor": "symbol-409",
+    "anchor": "symbol-406",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7206,7 +7153,7 @@
     "source": "source/std/reflect.mgl",
     "line": 117,
     "page": "std-reflect.md",
-    "anchor": "symbol-410",
+    "anchor": "symbol-407",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7223,7 +7170,7 @@
     "source": "source/std/reflect.mgl",
     "line": 117,
     "page": "std-reflect.md",
-    "anchor": "symbol-411",
+    "anchor": "symbol-408",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -7242,7 +7189,7 @@
     "source": "source/std/reflect.mgl",
     "line": 117,
     "page": "std-reflect.md",
-    "anchor": "symbol-412",
+    "anchor": "symbol-409",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7259,7 +7206,7 @@
     "source": "source/std/reflect.mgl",
     "line": 117,
     "page": "std-reflect.md",
-    "anchor": "symbol-413",
+    "anchor": "symbol-410",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7276,7 +7223,7 @@
     "source": "source/std/reflect.mgl",
     "line": 118,
     "page": "std-reflect.md",
-    "anchor": "symbol-414",
+    "anchor": "symbol-411",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -7295,7 +7242,7 @@
     "source": "source/std/reflect.mgl",
     "line": 118,
     "page": "std-reflect.md",
-    "anchor": "symbol-415",
+    "anchor": "symbol-412",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -7314,7 +7261,7 @@
     "source": "source/std/reflect.mgl",
     "line": 118,
     "page": "std-reflect.md",
-    "anchor": "symbol-416",
+    "anchor": "symbol-413",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -7333,7 +7280,7 @@
     "source": "source/std/reflect.mgl",
     "line": 118,
     "page": "std-reflect.md",
-    "anchor": "symbol-417",
+    "anchor": "symbol-414",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -7352,7 +7299,7 @@
     "source": "source/std/reflect.mgl",
     "line": 118,
     "page": "std-reflect.md",
-    "anchor": "symbol-418",
+    "anchor": "symbol-415",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7369,7 +7316,7 @@
     "source": "source/std/reflect.mgl",
     "line": 118,
     "page": "std-reflect.md",
-    "anchor": "symbol-419",
+    "anchor": "symbol-416",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7386,7 +7333,7 @@
     "source": "source/std/reflect.mgl",
     "line": 118,
     "page": "std-reflect.md",
-    "anchor": "symbol-420",
+    "anchor": "symbol-417",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7403,7 +7350,7 @@
     "source": "source/std/reflect.mgl",
     "line": 118,
     "page": "std-reflect.md",
-    "anchor": "symbol-421",
+    "anchor": "symbol-418",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7420,7 +7367,7 @@
     "source": "source/std/reflect.mgl",
     "line": 119,
     "page": "std-reflect.md",
-    "anchor": "symbol-422",
+    "anchor": "symbol-419",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7437,7 +7384,7 @@
     "source": "source/std/reflect.mgl",
     "line": 119,
     "page": "std-reflect.md",
-    "anchor": "symbol-423",
+    "anchor": "symbol-420",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -7456,7 +7403,7 @@
     "source": "source/std/reflect.mgl",
     "line": 119,
     "page": "std-reflect.md",
-    "anchor": "symbol-424",
+    "anchor": "symbol-421",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -7475,7 +7422,7 @@
     "source": "source/std/reflect.mgl",
     "line": 119,
     "page": "std-reflect.md",
-    "anchor": "symbol-425",
+    "anchor": "symbol-422",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7492,7 +7439,7 @@
     "source": "source/std/reflect.mgl",
     "line": 119,
     "page": "std-reflect.md",
-    "anchor": "symbol-426",
+    "anchor": "symbol-423",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7509,7 +7456,7 @@
     "source": "source/std/reflect.mgl",
     "line": 119,
     "page": "std-reflect.md",
-    "anchor": "symbol-427",
+    "anchor": "symbol-424",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7526,7 +7473,7 @@
     "source": "source/std/reflect.mgl",
     "line": 119,
     "page": "std-reflect.md",
-    "anchor": "symbol-428",
+    "anchor": "symbol-425",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7543,7 +7490,7 @@
     "source": "source/std/reflect.mgl",
     "line": 119,
     "page": "std-reflect.md",
-    "anchor": "symbol-429",
+    "anchor": "symbol-426",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7560,7 +7507,7 @@
     "source": "source/std/reflect.mgl",
     "line": 120,
     "page": "std-reflect.md",
-    "anchor": "symbol-430",
+    "anchor": "symbol-427",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7577,7 +7524,7 @@
     "source": "source/std/reflect.mgl",
     "line": 120,
     "page": "std-reflect.md",
-    "anchor": "symbol-431",
+    "anchor": "symbol-428",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -7596,7 +7543,7 @@
     "source": "source/std/reflect.mgl",
     "line": 120,
     "page": "std-reflect.md",
-    "anchor": "symbol-432",
+    "anchor": "symbol-429",
     "examples": [
       "doc/examples/library/reflect.mgl"
     ],
@@ -7615,7 +7562,7 @@
     "source": "source/std/reflect.mgl",
     "line": 120,
     "page": "std-reflect.md",
-    "anchor": "symbol-433",
+    "anchor": "symbol-430",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7632,7 +7579,7 @@
     "source": "source/std/reflect.mgl",
     "line": 120,
     "page": "std-reflect.md",
-    "anchor": "symbol-434",
+    "anchor": "symbol-431",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7649,7 +7596,7 @@
     "source": "source/std/reflect.mgl",
     "line": 120,
     "page": "std-reflect.md",
-    "anchor": "symbol-435",
+    "anchor": "symbol-432",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7666,7 +7613,7 @@
     "source": "source/std/regex.mgl",
     "line": 5,
     "page": "std-regex.md",
-    "anchor": "symbol-436",
+    "anchor": "symbol-433",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7683,7 +7630,7 @@
     "source": "source/std/regex.mgl",
     "line": 15,
     "page": "std-regex.md",
-    "anchor": "symbol-437",
+    "anchor": "symbol-434",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7700,7 +7647,7 @@
     "source": "source/std/regex.mgl",
     "line": 16,
     "page": "std-regex.md",
-    "anchor": "symbol-438",
+    "anchor": "symbol-435",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7717,7 +7664,7 @@
     "source": "source/std/sql.mgl",
     "line": 57,
     "page": "std-sql.md",
-    "anchor": "symbol-439",
+    "anchor": "symbol-436",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7734,7 +7681,7 @@
     "source": "source/std/sql.mgl",
     "line": 58,
     "page": "std-sql.md",
-    "anchor": "symbol-440",
+    "anchor": "symbol-437",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7751,7 +7698,7 @@
     "source": "source/std/sql.mgl",
     "line": 59,
     "page": "std-sql.md",
-    "anchor": "symbol-441",
+    "anchor": "symbol-438",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7768,7 +7715,7 @@
     "source": "source/std/sql.mgl",
     "line": 60,
     "page": "std-sql.md",
-    "anchor": "symbol-442",
+    "anchor": "symbol-439",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7785,7 +7732,7 @@
     "source": "source/std/sql.mgl",
     "line": 61,
     "page": "std-sql.md",
-    "anchor": "symbol-443",
+    "anchor": "symbol-440",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7802,7 +7749,7 @@
     "source": "source/std/sql.mgl",
     "line": 86,
     "page": "std-sql.md",
-    "anchor": "symbol-444",
+    "anchor": "symbol-441",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7819,7 +7766,7 @@
     "source": "source/std/sql.mgl",
     "line": 87,
     "page": "std-sql.md",
-    "anchor": "symbol-445",
+    "anchor": "symbol-442",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7836,7 +7783,7 @@
     "source": "source/std/sql.mgl",
     "line": 94,
     "page": "std-sql.md",
-    "anchor": "symbol-446",
+    "anchor": "symbol-443",
     "examples": [
       "doc/examples/library/sqlite.mgl"
     ],
@@ -7855,7 +7802,7 @@
     "source": "source/std/sql.mgl",
     "line": 95,
     "page": "std-sql.md",
-    "anchor": "symbol-447",
+    "anchor": "symbol-444",
     "examples": [
       "doc/examples/library/sqlite.mgl"
     ],
@@ -7874,7 +7821,7 @@
     "source": "source/std/sql.mgl",
     "line": 96,
     "page": "std-sql.md",
-    "anchor": "symbol-448",
+    "anchor": "symbol-445",
     "examples": [
       "doc/examples/library/sqlite.mgl"
     ],
@@ -7893,7 +7840,7 @@
     "source": "source/std/sql.mgl",
     "line": 97,
     "page": "std-sql.md",
-    "anchor": "symbol-449",
+    "anchor": "symbol-446",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7910,7 +7857,7 @@
     "source": "source/std/sql.mgl",
     "line": 98,
     "page": "std-sql.md",
-    "anchor": "symbol-450",
+    "anchor": "symbol-447",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7927,7 +7874,7 @@
     "source": "source/std/sql.mgl",
     "line": 99,
     "page": "std-sql.md",
-    "anchor": "symbol-451",
+    "anchor": "symbol-448",
     "examples": [
       "doc/examples/library/sqlite.mgl"
     ],
@@ -7946,7 +7893,7 @@
     "source": "source/std/sql.mgl",
     "line": 243,
     "page": "std-sql.md",
-    "anchor": "symbol-452",
+    "anchor": "symbol-449",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7963,7 +7910,7 @@
     "source": "source/std/sql.mgl",
     "line": 246,
     "page": "std-sql.md",
-    "anchor": "symbol-453",
+    "anchor": "symbol-450",
     "examples": [
       "doc/examples/library/sqlite.mgl"
     ],
@@ -7982,7 +7929,7 @@
     "source": "source/std/sql.mgl",
     "line": 247,
     "page": "std-sql.md",
-    "anchor": "symbol-454",
+    "anchor": "symbol-451",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -7999,7 +7946,7 @@
     "source": "source/std/sql.mgl",
     "line": 248,
     "page": "std-sql.md",
-    "anchor": "symbol-455",
+    "anchor": "symbol-452",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8016,7 +7963,7 @@
     "source": "source/std/sql.mgl",
     "line": 249,
     "page": "std-sql.md",
-    "anchor": "symbol-456",
+    "anchor": "symbol-453",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8033,7 +7980,7 @@
     "source": "source/std/sql.mgl",
     "line": 250,
     "page": "std-sql.md",
-    "anchor": "symbol-457",
+    "anchor": "symbol-454",
     "examples": [
       "doc/examples/library/sqlite.mgl"
     ],
@@ -8052,7 +7999,7 @@
     "source": "source/std/sql.mgl",
     "line": 251,
     "page": "std-sql.md",
-    "anchor": "symbol-458",
+    "anchor": "symbol-455",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8069,7 +8016,7 @@
     "source": "source/std/text.mgl",
     "line": 242,
     "page": "std-text.md",
-    "anchor": "symbol-459",
+    "anchor": "symbol-456",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8086,7 +8033,7 @@
     "source": "source/std/text.mgl",
     "line": 243,
     "page": "std-text.md",
-    "anchor": "symbol-460",
+    "anchor": "symbol-457",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8103,7 +8050,7 @@
     "source": "source/std/text.mgl",
     "line": 244,
     "page": "std-text.md",
-    "anchor": "symbol-461",
+    "anchor": "symbol-458",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8120,7 +8067,7 @@
     "source": "source/std/text.mgl",
     "line": 245,
     "page": "std-text.md",
-    "anchor": "symbol-462",
+    "anchor": "symbol-459",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8137,7 +8084,7 @@
     "source": "source/std/text.mgl",
     "line": 246,
     "page": "std-text.md",
-    "anchor": "symbol-463",
+    "anchor": "symbol-460",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8154,7 +8101,7 @@
     "source": "source/std/text.mgl",
     "line": 247,
     "page": "std-text.md",
-    "anchor": "symbol-464",
+    "anchor": "symbol-461",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8171,7 +8118,7 @@
     "source": "source/std/text.mgl",
     "line": 250,
     "page": "std-text.md",
-    "anchor": "symbol-465",
+    "anchor": "symbol-462",
     "examples": [
       "example/samples/std_glue_edges.mgl"
     ],
@@ -8190,7 +8137,7 @@
     "source": "source/std/text.mgl",
     "line": 359,
     "page": "std-text.md",
-    "anchor": "symbol-466",
+    "anchor": "symbol-463",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8207,7 +8154,7 @@
     "source": "source/std/text.mgl",
     "line": 360,
     "page": "std-text.md",
-    "anchor": "symbol-467",
+    "anchor": "symbol-464",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8224,7 +8171,7 @@
     "source": "source/std/text.mgl",
     "line": 361,
     "page": "std-text.md",
-    "anchor": "symbol-468",
+    "anchor": "symbol-465",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8241,7 +8188,7 @@
     "source": "source/std/toml.mgl",
     "line": 25,
     "page": "std-toml.md",
-    "anchor": "symbol-469",
+    "anchor": "symbol-466",
     "examples": [
       "example/samples/std_structured_data.mgl"
     ],
@@ -8260,7 +8207,7 @@
     "source": "source/std/toml.mgl",
     "line": 26,
     "page": "std-toml.md",
-    "anchor": "symbol-470",
+    "anchor": "symbol-467",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8277,7 +8224,7 @@
     "source": "source/std/toml.mgl",
     "line": 27,
     "page": "std-toml.md",
-    "anchor": "symbol-471",
+    "anchor": "symbol-468",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8294,7 +8241,7 @@
     "source": "source/std/tree.mgl",
     "line": 47,
     "page": "std-tree.md",
-    "anchor": "symbol-472",
+    "anchor": "symbol-469",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8311,7 +8258,7 @@
     "source": "source/std/tree.mgl",
     "line": 48,
     "page": "std-tree.md",
-    "anchor": "symbol-473",
+    "anchor": "symbol-470",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8328,7 +8275,7 @@
     "source": "source/std/tree.mgl",
     "line": 49,
     "page": "std-tree.md",
-    "anchor": "symbol-474",
+    "anchor": "symbol-471",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8345,7 +8292,7 @@
     "source": "source/std/tree.mgl",
     "line": 50,
     "page": "std-tree.md",
-    "anchor": "symbol-475",
+    "anchor": "symbol-472",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8362,7 +8309,7 @@
     "source": "source/std/tree.mgl",
     "line": 51,
     "page": "std-tree.md",
-    "anchor": "symbol-476",
+    "anchor": "symbol-473",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8379,7 +8326,7 @@
     "source": "source/std/tree.mgl",
     "line": 52,
     "page": "std-tree.md",
-    "anchor": "symbol-477",
+    "anchor": "symbol-474",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8396,7 +8343,7 @@
     "source": "source/std/tree.mgl",
     "line": 53,
     "page": "std-tree.md",
-    "anchor": "symbol-478",
+    "anchor": "symbol-475",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8413,7 +8360,7 @@
     "source": "source/std/tree.mgl",
     "line": 54,
     "page": "std-tree.md",
-    "anchor": "symbol-479",
+    "anchor": "symbol-476",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8430,7 +8377,7 @@
     "source": "source/std/tree.mgl",
     "line": 55,
     "page": "std-tree.md",
-    "anchor": "symbol-480",
+    "anchor": "symbol-477",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8447,7 +8394,7 @@
     "source": "source/std/tree.mgl",
     "line": 56,
     "page": "std-tree.md",
-    "anchor": "symbol-481",
+    "anchor": "symbol-478",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8464,7 +8411,7 @@
     "source": "source/std/tree.mgl",
     "line": 60,
     "page": "std-tree.md",
-    "anchor": "symbol-482",
+    "anchor": "symbol-479",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8481,7 +8428,7 @@
     "source": "source/std/tree.mgl",
     "line": 61,
     "page": "std-tree.md",
-    "anchor": "symbol-483",
+    "anchor": "symbol-480",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8498,7 +8445,7 @@
     "source": "source/std/tree.mgl",
     "line": 62,
     "page": "std-tree.md",
-    "anchor": "symbol-484",
+    "anchor": "symbol-481",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8515,7 +8462,7 @@
     "source": "source/std/tree.mgl",
     "line": 63,
     "page": "std-tree.md",
-    "anchor": "symbol-485",
+    "anchor": "symbol-482",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8532,7 +8479,7 @@
     "source": "source/std/tree.mgl",
     "line": 64,
     "page": "std-tree.md",
-    "anchor": "symbol-486",
+    "anchor": "symbol-483",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8549,7 +8496,7 @@
     "source": "source/std/tree.mgl",
     "line": 65,
     "page": "std-tree.md",
-    "anchor": "symbol-487",
+    "anchor": "symbol-484",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8566,7 +8513,7 @@
     "source": "source/std/tree.mgl",
     "line": 66,
     "page": "std-tree.md",
-    "anchor": "symbol-488",
+    "anchor": "symbol-485",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8583,7 +8530,7 @@
     "source": "source/std/tree.mgl",
     "line": 67,
     "page": "std-tree.md",
-    "anchor": "symbol-489",
+    "anchor": "symbol-486",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8600,7 +8547,7 @@
     "source": "source/std/tree.mgl",
     "line": 71,
     "page": "std-tree.md",
-    "anchor": "symbol-490",
+    "anchor": "symbol-487",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8617,7 +8564,7 @@
     "source": "source/std/tree.mgl",
     "line": 72,
     "page": "std-tree.md",
-    "anchor": "symbol-491",
+    "anchor": "symbol-488",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8634,7 +8581,7 @@
     "source": "source/std/tree.mgl",
     "line": 73,
     "page": "std-tree.md",
-    "anchor": "symbol-492",
+    "anchor": "symbol-489",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8651,7 +8598,7 @@
     "source": "source/std/tree.mgl",
     "line": 74,
     "page": "std-tree.md",
-    "anchor": "symbol-493",
+    "anchor": "symbol-490",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8668,7 +8615,7 @@
     "source": "source/std/tree.mgl",
     "line": 75,
     "page": "std-tree.md",
-    "anchor": "symbol-494",
+    "anchor": "symbol-491",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8685,7 +8632,7 @@
     "source": "source/std/tree.mgl",
     "line": 76,
     "page": "std-tree.md",
-    "anchor": "symbol-495",
+    "anchor": "symbol-492",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8702,7 +8649,7 @@
     "source": "source/std/tree.mgl",
     "line": 214,
     "page": "std-tree.md",
-    "anchor": "symbol-496",
+    "anchor": "symbol-493",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8719,7 +8666,7 @@
     "source": "source/std/tree.mgl",
     "line": 215,
     "page": "std-tree.md",
-    "anchor": "symbol-497",
+    "anchor": "symbol-494",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8736,7 +8683,7 @@
     "source": "source/std/tree.mgl",
     "line": 216,
     "page": "std-tree.md",
-    "anchor": "symbol-498",
+    "anchor": "symbol-495",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8753,7 +8700,7 @@
     "source": "source/std/tree.mgl",
     "line": 217,
     "page": "std-tree.md",
-    "anchor": "symbol-499",
+    "anchor": "symbol-496",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8770,7 +8717,7 @@
     "source": "source/std/tree.mgl",
     "line": 218,
     "page": "std-tree.md",
-    "anchor": "symbol-500",
+    "anchor": "symbol-497",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8787,7 +8734,7 @@
     "source": "source/std/tree.mgl",
     "line": 219,
     "page": "std-tree.md",
-    "anchor": "symbol-501",
+    "anchor": "symbol-498",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8804,7 +8751,7 @@
     "source": "source/std/tree.mgl",
     "line": 220,
     "page": "std-tree.md",
-    "anchor": "symbol-502",
+    "anchor": "symbol-499",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8821,7 +8768,7 @@
     "source": "source/std/tree.mgl",
     "line": 327,
     "page": "std-tree.md",
-    "anchor": "symbol-503",
+    "anchor": "symbol-500",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8838,7 +8785,7 @@
     "source": "source/std/tree.mgl",
     "line": 328,
     "page": "std-tree.md",
-    "anchor": "symbol-504",
+    "anchor": "symbol-501",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8855,7 +8802,7 @@
     "source": "source/std/tree.mgl",
     "line": 390,
     "page": "std-tree.md",
-    "anchor": "symbol-505",
+    "anchor": "symbol-502",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8872,7 +8819,7 @@
     "source": "source/std/tree.mgl",
     "line": 391,
     "page": "std-tree.md",
-    "anchor": "symbol-506",
+    "anchor": "symbol-503",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8889,7 +8836,7 @@
     "source": "source/std/tree.mgl",
     "line": 392,
     "page": "std-tree.md",
-    "anchor": "symbol-507",
+    "anchor": "symbol-504",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8906,7 +8853,7 @@
     "source": "source/std/tree.mgl",
     "line": 393,
     "page": "std-tree.md",
-    "anchor": "symbol-508",
+    "anchor": "symbol-505",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8923,7 +8870,7 @@
     "source": "source/std/tree.mgl",
     "line": 394,
     "page": "std-tree.md",
-    "anchor": "symbol-509",
+    "anchor": "symbol-506",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8940,7 +8887,7 @@
     "source": "source/std/utf8.mgl",
     "line": 4,
     "page": "std-utf8.md",
-    "anchor": "symbol-510",
+    "anchor": "symbol-507",
     "examples": [],
     "sourceLanguage": "zh"
   },
@@ -8957,7 +8904,7 @@
     "source": "source/std/watchdog.mgl",
     "line": 50,
     "page": "std-watchdog.md",
-    "anchor": "symbol-511",
+    "anchor": "symbol-508",
     "examples": [
       "doc/examples/library/watchdog.mgl"
     ],

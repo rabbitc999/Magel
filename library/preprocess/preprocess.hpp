@@ -219,6 +219,11 @@ struct Options
     Syntax syntax = Syntax::Auto;
 
     /**
+     * @brief 是否允许文本包含指令；语言宿主可关闭，文法生成器默认保留。
+     */
+    bool allowIncludes = true;
+
+    /**
      * `Syntax::Custom` 使用的前缀字符集合（默认给了两个都常见的）。
      */
     Memory::String directivePrefixes = "#%";

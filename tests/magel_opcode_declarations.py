@@ -12,10 +12,10 @@ def main():
     options = parser.parse_args()
     compiler = str(Path(options.magel).resolve())
     declarations = '''
-opcode First { new = __vm_bint_from_int; drop = __vm_bint_drop; copy = __vm_bint_copy; };
-opcode Second { new = __vm_bint_from_int; drop = __vm_bint_drop; copy = __vm_bint_copy; };
+opcode First { new = __std_bint_from_int; drop = __std_bint_drop; copy = __std_bint_copy; };
+opcode Second { new = __std_bint_from_int; drop = __std_bint_drop; copy = __std_bint_copy; };
 '''
-    unique = '#NonCopyable\nopcode Unique { new = __vm_bint_from_int; drop = __vm_bint_drop; };\n'
+    unique = '#NonCopyable\nopcode Unique { new = __std_bint_from_int; drop = __std_bint_drop; };\n'
     cases = [
         ('one', declarations + 'struct One { First value; int64 count; bool ready; };', None),
         ('nested', declarations + 'struct Left { First value; }; struct Right { Second value; }; struct Pair { Left left; Right right; };', None),
@@ -33,8 +33,8 @@ opcode Second { new = __vm_bint_from_int; drop = __vm_bint_drop; copy = __vm_bin
         ('handle_increment_readonly', declarations + 'void invalid() { First value = First::new(1); value.opcode++; }', 'const'),
         ('handle_const_borrow', declarations + 'void valid() { First value; int64 const& alias = &value.opcode; }', None),
         ('handle_mutable_borrow', declarations + 'void invalid() { First value; int64 mut& alias = &value.opcode; }', 'int64 const& -> int64 mut&'),
-        ('missing_drop', 'opcode Invalid { new = __vm_bint_from_int; copy = __vm_bint_copy; };', '必须声明 new 和 drop'),
-        ('missing_copy', 'opcode Invalid { new = __vm_bint_from_int; drop = __vm_bint_drop; };', '必须声明 copy'),
+        ('missing_drop', 'opcode Invalid { new = __std_bint_from_int; copy = __std_bint_copy; };', '必须声明 new 和 drop'),
+        ('missing_copy', 'opcode Invalid { new = __std_bint_from_int; drop = __std_bint_drop; };', '必须声明 copy'),
         ('noncopyable_move', unique + 'void consume(Unique value) {} void transfer() { Unique first; Unique second = move(&first); consume(move(&second)); }', None),
         ('noncopyable_move_return', unique + 'Unique relay(Unique value) { return move(&value); }', None),
         ('noncopyable_moved_read', unique + 'void transfer() { Unique first; Unique second = move(&first); Unique const& invalid = &first; }', 'MGL1205'),
@@ -47,7 +47,7 @@ opcode Second { new = __vm_bint_from_int; drop = __vm_bint_drop; copy = __vm_bin
         ('noncopyable_copy', unique + 'Unique original; Unique copied = original;', '禁止复制初始化或赋值'),
         ('noncopyable_return', unique + 'Unique borrowed(Unique const& value) { return value; }', '禁止复制返回借用值'),
         ('noncopyable_aggregate', unique + 'struct Box { Unique value; }; Box original; Box copied = original;', '聚合包含 #NonCopyable opcode'),
-        ('noncopyable_member_fields', '#NonCopyable opcode Unique {new=__vm_bint_from_int;drop=__vm_bint_drop;int64 count;String label;}; Unique original; Unique copied=original;', '聚合包含 #NonCopyable opcode'),
+        ('noncopyable_member_fields', '#NonCopyable opcode Unique {new=__std_bint_from_int;drop=__std_bint_drop;int64 count;String label;}; Unique original; Unique copied=original;', '聚合包含 #NonCopyable opcode'),
     ]
     with tempfile.TemporaryDirectory(prefix='magel-opcode-') as directory:
         for name, source, diagnostic in cases:
@@ -61,7 +61,7 @@ opcode Second { new = __vm_bint_from_int; drop = __vm_bint_drop; copy = __vm_bin
             else:
                 assert result.returncode != 0 and diagnostic in output, f'{name}: {output}'
         module = Path(directory, 'vault.mgl')
-        module.write_text('module vault;\nopcode Secret {new=__vm_bint_from_int;drop=__vm_bint_drop;copy=__vm_bint_copy;int64 count;}; int64 read(Secret const& value){return value.opcode;}', encoding='utf-8')
+        module.write_text('module vault;\nopcode Secret {new=__std_bint_from_int;drop=__std_bint_drop;copy=__std_bint_copy;int64 count;}; int64 read(Secret const& value){return value.opcode;}', encoding='utf-8')
         source = Path(directory, 'private_handle.mgl')
         source.write_text('import vault;\nint64 main(){vault::Secret value; return value.opcode;}', encoding='utf-8')
         result = subprocess.run([compiler, '--check', str(source)], capture_output=True,encoding='utf-8', errors='replace',timeout=60)

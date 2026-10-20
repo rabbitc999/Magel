@@ -1170,35 +1170,6 @@ std::int64_t nativeInt(const Slot &slot)
 }
 
 /**
- * @brief 整数 → 十进制文本（`int` 是 64 位，所以按 `long long` 打）。
- * @param value 值。
- * @return 文本。
- */
-Memory::String nativeIntText(std::int64_t value) { return Memory::toString(value); }
-
-/**
- * @brief 浮点 → 文本：默认保留 3 位小数（语言的默认），去掉尾随的 0。
- *
- * 与 `%f` 的默认精度保持一致：`3.5` 打成 `3.5`（不是 `3.500`），`2.0` 打成 `2.0`。
- * @param value 值。
- * @param precision 小数位数。
- * @return 文本。
- */
-Memory::String nativeFloatText(double value, int precision)
-{
-    if (precision < 0) precision = 3;
-    char buffer[256];
-    std::snprintf(buffer, sizeof(buffer), "%.*f", precision, value);
-    Memory::String text = buffer;
-    if (precision > 0 && text.find('.') != Memory::String::npos)
-    {
-        while (!text.empty() && text.back() == '0') text.pop_back();
-        if (!text.empty() && text.back() == '.') text.pop_back();
-    }
-    return text;
-}
-
-/**
  * @brief 按格式串把实参拼成文本。
  *
  * 这是 `printf` 与 `format` **共用的一份实现**（语言侧不写格式化逻辑）。占位符：
@@ -1426,28 +1397,7 @@ struct SlotNative
 };
 
 /**
- * @brief `__vm_str_lit(地址) -> 堆上的新串地址`：把只读的字面量字节复制成一份**可写**的堆串。
- *
- * 字符串的"值"永远是堆地址（`\0` 结尾的字节串），数据区里只留只读的字面量字节当
- * 复制源 —— 于是每个 `string` 变量手里那块是自己能写的，`s[i] = 字符` 不会改到
- * 共享的字面量；所有权也就统一了：**变量即那块堆串的主人**。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot strLit(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    Memory::String text;
-    if (!nativeReadCString(ctx, static_cast<std::size_t>(nativeInt(args[0])), &text))
-    {
-        ctx.error = "复制字符串字面量时读不到它（地址 " + Memory::toString(nativeInt(args[0])) + "）";
-        return Slot::fromInt(0);
-    }
-    return Slot::fromInt(static_cast<std::int64_t>(nativeAllocString(ctx, text)));
-}
-
-/**
- * @brief `__vm_str_len(地址) -> 长度`。
+ * @brief `__std_str_len(地址) -> 长度`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1468,33 +1418,7 @@ Slot strLen(NativeContext &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_str_join(串…) -> 新串地址`：把**一串**字符串接成一个（变参）。
- *
- * 之所以一次接一整条链（而不是两个两个接）：`a + b + c` 那样两两接会留下一个中间串，
- * 而中间串没有哪个变量"拥有"它 —— 没人释放（漏）。摊平成一次调用就只分配一个结果，
- * 它正好归被赋值的那个变量所有。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot strJoin(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    Memory::String text;
-    for (const Slot &argument : args)
-    {
-        Memory::String part;
-        if (!nativeReadCString(ctx, static_cast<std::size_t>(nativeInt(argument)), &part))
-        {
-            ctx.error = "拼接字符串时读不到操作数（地址 " + Memory::toString(nativeInt(argument)) + "）";
-            return Slot::fromInt(0);
-        }
-        text += part;
-    }
-    return Slot::fromInt(static_cast<std::int64_t>(nativeAllocString(ctx, text)));
-}
-
-/**
- * `__vm_str_sub(串, 起, 止) -> 新串地址`：半开区间 `[起, 止)`，**越界自动夹到范围内**；
+ * `__std_str_sub(串, 起, 止) -> 新串地址`：半开区间 `[起, 止)`，**越界自动夹到范围内**；
  * `止` 传负数表示"到末尾"。
  */
 /**
@@ -1514,64 +1438,7 @@ bool utf8Boundary(const Memory::String &text, std::size_t index)
 }
 
 /**
- * @brief 按字节区间截取字符串，并检查 UTF-8 端点边界。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot strSub(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    Memory::String text;
-    if (!nativeReadCString(ctx, static_cast<std::size_t>(nativeInt(args[0])), &text))
-    {
-        ctx.error = "切片时读不到字符串（地址 " + Memory::toString(nativeInt(args[0])) + "）";
-        return Slot::fromInt(0);
-    }
-    const std::int64_t length = static_cast<std::int64_t>(text.size());
-    std::int64_t begin = nativeInt(args[1]);
-    std::int64_t end = nativeInt(args[2]);
-    if (end < 0) end = length;
-    if (begin < 0) begin = 0;
-    if (begin > length) begin = length;
-    if (end < begin) end = begin;
-    if (end > length) end = length;
-    /* 端点落在多字节字符中间就报错：切出来的半个字符既不是合法 UTF-8，也没人会想用。 */
-    if (!utf8Boundary(text, static_cast<std::size_t>(begin)) || !utf8Boundary(text, static_cast<std::size_t>(end)))
-    {
-        ctx.error = "切片端点落在多字节字符中间（String 的切片按字节算）";
-        return Slot::fromInt(0);
-    }
-    return Slot::fromInt(static_cast<std::int64_t>(nativeAllocString(
-        ctx, text.substr(static_cast<std::size_t>(begin),
-                         static_cast<std::size_t>(end - begin)))));
-}
-
-/**
- * @brief `__vm_str_of_int(值) -> 新串地址`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot strOfInt(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    return Slot::fromInt(static_cast<std::int64_t>(nativeAllocString(ctx, nativeIntText(nativeInt(args[0])))));
-}
-
-/**
- * @brief `__vm_str_of_flt(值) -> 新串地址`（默认 3 位小数，`精度` 可覆盖）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot strOfFlt(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    const double value = args[0].isFloat ? args[0].real : static_cast<double>(args[0].integer);
-    const int precision = (args.size() > 1u) ? static_cast<int>(nativeInt(args[1])) : 3;
-    return Slot::fromInt(static_cast<std::int64_t>(nativeAllocString(ctx, nativeFloatText(value, precision))));
-}
-
-/**
- * @brief `__vm_str_fmt(格式串, 实参…) -> 新串地址`。
+ * @brief `__std_str_fmt(格式串, 实参…) -> 新串地址`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1609,7 +1476,7 @@ void nativeEmitText(NativeContext &ctx, const char *bytes, std::size_t count)
 }
 
 /**
- * @brief `__vm_print(格式串, 实参…) -> 0`：把格式化结果追加到文本输出桶（`printf` 用它）。
+ * @brief `__std_print(格式串, 实参…) -> 0`：把格式化结果追加到文本输出桶（`printf` 用它）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1647,43 +1514,7 @@ Slot putChar(NativeContext &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_str_cmp(左, 右) -> -1 / 0 / 1`（字典序；空指针当空串）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot strCmp(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    Memory::String left, right;
-    if (!nativeReadCString(ctx, static_cast<std::size_t>(nativeInt(args[0])), &left) || !nativeReadCString(ctx, static_cast<std::size_t>(nativeInt(args[1])), &right))
-    {
-        ctx.error = "比较字符串时读不到操作数（地址 " + Memory::toString(nativeInt(args[0])) + " / " + Memory::toString(nativeInt(args[1])) + "）";
-        return Slot::fromInt(0);
-    }
-    const int order = left.compare(right);
-    return Slot::fromInt(order < 0 ? -1 : (order > 0 ? 1 : 0));
-}
-
-/**
- * @brief `__vm_str_pos(串, 子串) -> 位置 / -1`：子串第一次出现的位置。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 子串首次出现的字节位置，未找到时为 -1。
- */
-Slot strPos(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    Memory::String text, needle;
-    if (!nativeReadCString(ctx, static_cast<std::size_t>(nativeInt(args[0])), &text) || !nativeReadCString(ctx, static_cast<std::size_t>(nativeInt(args[1])), &needle))
-    {
-        ctx.error = "查找子串时读不到操作数（地址 " + Memory::toString(nativeInt(args[0])) + " / " + Memory::toString(nativeInt(args[1])) + "）";
-        return Slot::fromInt(-1);
-    }
-    const std::size_t found = text.find(needle);
-    return Slot::fromInt(found == Memory::String::npos ? -1 : static_cast<std::int64_t>(found));
-}
-
-/**
- * @brief `__vm_str_set(串, 下标, 字符码) -> 0`：往字符串的第 `下标` 个字节写一个字符。
+ * @brief `__std_str_set(串, 下标, 字符码) -> 0`：往字符串的第 `下标` 个字节写一个字符。
  *
  * 字符串在堆上是**可写**的（字面量当值用时已经复制成自己的那块），越界就报错 ——
  * 和数组下标一个脾气。写进去的是低 8 位。
@@ -1716,7 +1547,7 @@ Slot strSet(NativeContext &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_str_at(串, 下标) -> 字符码 / -1`：按下标取一个字符。
+ * @brief `__std_str_at(串, 下标) -> 字符码 / -1`：按下标取一个字符。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1771,7 +1602,7 @@ Slot strRef(NativeContext &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_memcpy(目标, 源, 字节数) -> 0`：逐字节搬一段（C++ 里就是 `memcpy`）。
+ * @brief `__std_memcpy(目标, 源, 字节数) -> 0`：逐字节搬一段（C++ 里就是 `memcpy`）。
  *
  * 源与目标整段必须**各自落在一块已分配内存里**（堆块 / 数据区符号），否则报错 ——
  * 以前语言侧是"在目标地址上读 8 字节 → 只改最低那个字节 → 写回"，那么读堆串最后一
@@ -1806,7 +1637,7 @@ Slot memCopy(NativeContext &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_memset(地址, 字节值, 字节数) -> 0`：把一段内存填成同一个字节。
+ * @brief `__std_memset(地址, 字节值, 字节数) -> 0`：把一段内存填成同一个字节。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1832,7 +1663,7 @@ Slot memSet(NativeContext &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * `__vm_read_text() -> 堆上的新串地址`：把**下一项输入原文**读成一个字符串。
+ * `__std_read_text() -> 堆上的新串地址`：把**下一项输入原文**读成一个字符串。
  *
  * `input_number(x)` 走的是 `(read, _, _, x)`（按变量类型解析一个数），而字符串没法
  * "解析"成一个数，所以单独给一个原生函数：输入项本身就是文本，直接复制到堆上。
@@ -2018,7 +1849,7 @@ Slot inputReadLines(NativeContext &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief 标准输入是不是交互式终端——决定 `__vm_pause` 要不要真的停下来等。
+ * @brief 标准输入是不是交互式终端——决定 `__std_pause` 要不要真的停下来等。
  * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
  */
 bool standardInputIsInteractive()
@@ -2031,7 +1862,7 @@ bool standardInputIsInteractive()
 }
 
 /**
- * @brief `__vm_pause() -> 0`：调试用"临时停一下"，等到一行输入再继续（`std::lang::pause()` 降到它）。
+ * @brief `__std_pause() -> 0`：调试用"临时停一下"，等到一行输入再继续（`std::lang::pause()` 降到它）。
  *
  * **只在交互式终端里真的停**：标准输入不是终端（重定向、管道、CI、嵌入式宿主）时立刻返回，
  * 所以回归样例和自动化跑批不会被它挂住。停下时提示走 stderr，不污染程序的 stdout；
@@ -3547,7 +3378,7 @@ Slot functionCopy(NativeContext &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_object_free(句柄) -> 0`：把对象还回去（`delete` 用；不是句柄就报错）。
+ * @brief `__std_object_free(句柄) -> 0`：把对象还回去（`delete` 用；不是句柄就报错）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -3579,10 +3410,10 @@ Slot memoryLiveBytes(NativeContext &ctx, const Memory::Vector<Slot> &)
 }
 
 /**
- * @brief `__vm_watchdog_enable(watermarkBytes) -> int64`：程序侧打开软重启看门狗。
+ * @brief `__std_watchdog_enable(watermarkBytes) -> int64`：程序侧打开软重启看门狗。
  *
  * 对应 Magel 的 `std::watchdog::enable(watermarkBytes)`。默认关闭：不调它就
- * `__vm_request_restart()` 只报 `NotEnabled`、不产生重启。水位由宿主每轮量（VM 只记下来）。
+ * `__std_request_restart()` 只报 `NotEnabled`、不产生重启。水位由宿主每轮量（VM 只记下来）。
  * @param ctx 环境。
  * @param args `[水位字节数]`。
  * @return 0 = 成功；1 = 水位为负（参数非法）。
@@ -3597,7 +3428,7 @@ Slot watchdogEnable(NativeContext &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_request_restart() -> int64`：程序显式请求软重启（写标志 + 原因）。
+ * @brief `__std_request_restart() -> int64`：程序显式请求软重启（写标志 + 原因）。
  *
  * 对应 Magel 的 `std::watchdog::requestRestart()`。**未 `enable()` 时不产生重启**，
  * 返回 1（`NotEnabled`）；已开启则写 `WatchdogReason::ExplicitRequest`，VM 在下一条
@@ -3733,7 +3564,7 @@ Slot arenaDrop(NativeContext &ctx, const Memory::Vector<Slot> &args)
  */
 
 /**
- * @brief `__vm_obj_new() -> obj`：造一个空格子（类型号 0 = 还没 set 过）。
+ * @brief `__std_obj_new() -> obj`：造一个空格子（类型号 0 = 还没 set 过）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @retval 封装为原生值的运行时结果。
  */
@@ -3743,7 +3574,7 @@ Slot objNew(NativeContext &ctx, const Memory::Vector<Slot> &)
 }
 
 /**
- * @brief `__vm_obj_set(obj, 值, 类型号, 值是不是字符串, 值是不是对象句柄, 类型名地址) -> 0`：把值装进去。
+ * @brief `__std_obj_set(obj, 值, 类型号, 值是不是字符串, 值是不是对象句柄, 类型名地址) -> 0`：把值装进去。
  *
  * 原来的值直接丢掉（格子只有一个），类型号与类型名一起换成新的。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
@@ -3814,7 +3645,7 @@ bool objCheckTag(NativeContext &ctx, const RuntimeObject *object, const Memory::
 }
 
 /**
- * @brief `__vm_obj_get(obj, 要取的类型的名字地址, 是不是字符串, 是不是浮点, 是不是对象句柄, 允许的类型号…) -> 值`。
+ * @brief `__std_obj_get(obj, 要取的类型的名字地址, 是不是字符串, 是不是浮点, 是不是对象句柄, 允许的类型号…) -> 值`。
  *
  * 取出来的是**裸值**（整数 / 浮点 / 堆上的新串 / 指针的地址）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
@@ -3867,7 +3698,7 @@ Slot objHasTag(NativeContext &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_obj_get_ptr(obj, 要取的类型的名字地址, 0, 0, 1, 允许的类型号…) -> 新的 obj（胖指针）`。
+ * @brief `__std_obj_get_ptr(obj, 要取的类型的名字地址, 0, 0, 1, 允许的类型号…) -> 新的 obj（胖指针）`。
  *
  * 接口指针走这一条：校验过关后**复制一份胖指针**（值语义），交给变量持有 ——
  * 于是"两个接口指针"各拿各的类型号，谁先出块被释放都不会把对方弄悬空。
@@ -3919,7 +3750,7 @@ Slot objGetPointer(NativeContext &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_obj_name(obj) -> 类型号`：和 `nameof(类型)` 是同一个编号（空格子给 0）。
+ * @brief `__std_obj_name(obj) -> 类型号`：和 `nameof(类型)` 是同一个编号（空格子给 0）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -3945,7 +3776,7 @@ Slot requireReference(NativeContext &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_obj_addr(obj) -> 地址`：胖指针里那个对象的地址（接口分派把它当 `self` 传下去）。
+ * @brief `__std_obj_addr(obj) -> 地址`：胖指针里那个对象的地址（接口分派把它当 `self` 传下去）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -3958,7 +3789,7 @@ Slot objAddress(NativeContext &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__vm_iface_fail(类型号, 接口.方法 名地址) -> 0`：`q.area()` 分派不到实现时的报错出口。
+ * @brief `__std_iface_fail(类型号, 接口.方法 名地址) -> 0`：`q.area()` 分派不到实现时的报错出口。
  *
  * 两种情形都落到这里：接口指针是空的（类型号 0），或者它指着的对象没实现这个接口。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
@@ -4297,52 +4128,45 @@ struct SlotNativeTable
 #include "machine_value_text.cpp"
 
 const SlotNativeEntry kSlotNativeEntries[] = {
-    { "__vm_value_to_string", { -1, valueToString } },
-    { "__vm_exit", { 1, programExit } },
-    { "__vm_assert", { 1, programAssert } },
-    { "__vm_panic", { 1, programPanic } },
-    { "__vm_str_lit", { 1, strLit } },
-    { "__vm_str_len", { 1, strLen } },
-    { "__vm_str_join", { -1, strJoin } },
-    { "__vm_str_sub", { 3, strSub } },
-    { "__vm_str_of_int", { 1, strOfInt } },
-    { "__vm_str_of_flt", { 2, strOfFlt } },
-    { "__vm_str_cmp", { 2, strCmp } },
-    { "__vm_str_pos", { 2, strPos } },
-    { "__vm_str_at", { 2, strAt } },
-    { "__vm_str_set", { 3, strSet } },
-    { "__vm_read_text", { 0, readText } },
-    { "__vm_input_line", { 0, readText } },
-    { "__vm_pause", { 0, pauseForDebug } },
-    { "__vm_input_int", { 0, inputInt } },
-    { "__vm_input_uint", { 0, inputUInt } },
-    { "__vm_input_float", { 0, inputFloat } },
-    { "__vm_input_bool", { 0, inputBool } },
-    { "__vm_input_char", { 0, inputChar } },
-    { "__vm_memcpy", { 3, memCopy } },
-    { "__vm_memset", { 3, memSet } },
+    { "__std_value_to_string", { -1, valueToString } },
+    { "__std_exit", { 1, programExit } },
+    { "__std_assert", { 1, programAssert } },
+    { "__std_panic", { 1, programPanic } },
+    { "__std_str_len", { 1, strLen } },
+    { "__std_str_at", { 2, strAt } },
+    { "__std_str_set", { 3, strSet } },
+    { "__std_read_text", { 0, readText } },
+    { "__std_input_line", { 0, readText } },
+    { "__std_pause", { 0, pauseForDebug } },
+    { "__std_input_int", { 0, inputInt } },
+    { "__std_input_uint", { 0, inputUInt } },
+    { "__std_input_float", { 0, inputFloat } },
+    { "__std_input_bool", { 0, inputBool } },
+    { "__std_input_char", { 0, inputChar } },
+    { "__std_memcpy", { 3, memCopy } },
+    { "__std_memset", { 3, memSet } },
     /* 容器：vec / set / map */
-    { "__vm_str_ref", { 2, strRef } },
-    { "__vm_char_load", { 1, charLoad } },
-    { "__vm_char_store", { 2, charStore } },
-    { "__vm_iter_box", { 4, iterBox } },
-    { "__vm_heap_live", { 1, heapLive } },
-    { "__vm_heap_delete_live", { 1, heapDeleteLive } },
-    { "__vm_heap_sweep", { 0, heapSweep } },
-    { "__vm_move_live", { 3, moveLifetime<0> } },
-    { "__vm_move_require", { 3, moveLifetime<1> } },
-    { "__vm_move_end", { 3, moveLifetime<2> } },
-    { "__vm_move_begin", { 2, moveLifetime<3> } },
-    { "__vm_object_copy", { 1, objectCopy } },
-    { "__vm_closure_new", { 2, closureNew } },
-    { "__vm_closure_capture", { 4, closureCapture } },
-    { "__vm_closure_capture_copy", { 4, closureCaptureCopy } },
-    { "__vm_closure_capture_move", { 6, closureCaptureMove } },
-    { "__vm_closure_destructor", { 3, closureDestructor } },
-    { "__vm_closure_ref", { 5, closureRef } },
-    { "__vm_closure_get", { 2, closureGet } },
-    { "__vm_function_copy", { 1, functionCopy } },
-    { "__vm_object_free", { 1, objectFree } },
+    { "__std_str_ref", { 2, strRef } },
+    { "__std_char_load", { 1, charLoad } },
+    { "__std_char_store", { 2, charStore } },
+    { "__std_iter_box", { 4, iterBox } },
+    { "__std_heap_live", { 1, heapLive } },
+    { "__std_heap_delete_live", { 1, heapDeleteLive } },
+    { "__std_heap_sweep", { 0, heapSweep } },
+    { "__std_move_live", { 3, moveLifetime<0> } },
+    { "__std_move_require", { 3, moveLifetime<1> } },
+    { "__std_move_end", { 3, moveLifetime<2> } },
+    { "__std_move_begin", { 2, moveLifetime<3> } },
+    { "__std_object_copy", { 1, objectCopy } },
+    { "__std_closure_new", { 2, closureNew } },
+    { "__std_closure_capture", { 4, closureCapture } },
+    { "__std_closure_capture_copy", { 4, closureCaptureCopy } },
+    { "__std_closure_capture_move", { 6, closureCaptureMove } },
+    { "__std_closure_destructor", { 3, closureDestructor } },
+    { "__std_closure_ref", { 5, closureRef } },
+    { "__std_closure_get", { 2, closureGet } },
+    { "__std_function_copy", { 1, functionCopy } },
+    { "__std_object_free", { 1, objectFree } },
     { "std::memory::__memoryLiveBytes", { 0, memoryLiveBytes } },
     /* std::watchdog（软重启看门狗）：模块级原生函数按「模块限定名」登记；裸名一并留着，
      * 便于别的宿主 / 导出代码直接按裸名调用。 */
@@ -4357,18 +4181,18 @@ const SlotNativeEntry kSlotNativeEntries[] = {
     { "std::memory::__arenaReset", { 1, arenaReset } },
     { "std::memory::__arenaDrop", { 1, arenaDrop } },
     /* 装箱格子（obj）：值 + 类型号；也是接口指针（胖指针）的运行时表示 */
-    { "__vm_obj_new", { 0, objNew } },
-    { "__vm_obj_set", { -1, objSet } },
-    { "__vm_obj_get", { -1, objGet } }, /* 变参：后面跟一串"允许的类型号" */
-    { "__vm_obj_has_tag", { -1, objHasTag } },
-    { "__vm_obj_get_ptr", { -1, objGetPointer } },
-    { "__vm_obj_name", { 1, objName } },
-    { "__vm_obj_addr", { 1, objAddress } },
-    { "__vm_reference", { 1, requireReference } },
-    { "__vm_iface_fail", { 2, ifaceFail } },
-    { "__vm_str_fmt", { -1, strFormat } },
-    { "__vm_print", { -1, strPrint } },
-    { "__vm_put_char", { 1, putChar } },
+    { "__std_obj_new", { 0, objNew } },
+    { "__std_obj_set", { -1, objSet } },
+    { "__std_obj_get", { -1, objGet } }, /* 变参：后面跟一串"允许的类型号" */
+    { "__std_obj_has_tag", { -1, objHasTag } },
+    { "__std_obj_get_ptr", { -1, objGetPointer } },
+    { "__std_obj_name", { 1, objName } },
+    { "__std_obj_addr", { 1, objAddress } },
+    { "__std_reference", { 1, requireReference } },
+    { "__std_iface_fail", { 2, ifaceFail } },
+    { "__std_str_fmt", { -1, strFormat } },
+    { "__std_print", { -1, strPrint } },
+    { "__std_put_char", { 1, putChar } },
     { "std::lang::__readLine", { 0, inputReadLine } },
     { "std::lang::__readLines", { 1, inputReadLines } },
     { "__readLine", { 0, inputReadLine } },

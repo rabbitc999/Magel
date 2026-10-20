@@ -1,1 +1,2 @@
+module extra;
 int64 extraValue() { return 1; }

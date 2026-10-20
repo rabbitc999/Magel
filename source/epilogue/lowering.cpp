@@ -165,14 +165,14 @@ simple_ast::NodePtr NewContainerValue(const std::shared_ptr<MType> &type)
         const auto element = type->elem;
         const bool intrinsic = element->kind == MType::Int || element->kind == MType::Double || element->kind == MType::Bool || element->kind == MType::Char || IsStandardOpcode(element, "String");
         if (type->name == "set" && !intrinsic)
-            return Node::call("__vm_set_new_policy", { "equal", "hash" }, { Node::i(0), Node::i(0) });
-        return Node::call(type->name == "set" ? "__vm_set_new" : "__vm_vec_new", {}, {});
+            return Node::call("__std_set_new_policy", { "equal", "hash" }, { Node::i(0), Node::i(0) });
+        return Node::call(type->name == "set" ? "__std_set_new" : "__std_vec_new", {}, {});
     }
     const auto key = type->elem;
     if (key->kind == MType::Obj)
-        return Node::call("__vm_map_new_policy", { "equal", "hash" }, { Node::i(0), Node::i(0) });
+        return Node::call("__std_map_new_policy", { "equal", "hash" }, { Node::i(0), Node::i(0) });
     if (key->kind == MType::Int || key->kind == MType::Double || key->kind == MType::Bool || key->kind == MType::Char || IsStandardOpcode(key, "String"))
-        return Node::call("__vm_map_new", {}, {});
+        return Node::call("__std_map_new", {}, {});
     const auto name = TypeKey(key);
     auto found = g_mapKeyPolicies.find(name);
     if (found == g_mapKeyPolicies.end())
@@ -194,7 +194,7 @@ simple_ast::NodePtr NewContainerValue(const std::shared_ptr<MType> &type)
             }
         found = g_mapKeyPolicies.emplace(name, std::move(policy)).first;
     }
-    return Node::call(customSet ? "__vm_set_new_policy" : "__vm_map_new_policy", { "equal", "hash" },
+    return Node::call(customSet ? "__std_set_new_policy" : "__std_map_new_policy", { "equal", "hash" },
                       { FunctionPointerValue(found->second.equalLabel), found->second.hashLabel.empty() ? Node::i(0) :
                                                                                                           FunctionPointerValue(found->second.hashLabel) });
 }
@@ -305,7 +305,7 @@ simple_ast::NodePtr LowerIndexChain(int baseId, int positionId, bool bufferIndex
         {
             if (!CheckContainerIndex(indices[0], "vec 下标")) return Bad();
             return simple_ast::Node::call(
-                "__vm_vec_at", { "__magel_v", "__magel_i", "__magel_t", "__magel_o" },
+                "__std_vec_at", { "__magel_v", "__magel_i", "__magel_t", "__magel_o" },
                 { OwnedObjectTemp(cursor, base), LowerExpr(indices[0]),
                   simple_ast::Node::i(elementText ? 1 : 0),
                   ContainerStorageFlag(base->elem) });
@@ -332,7 +332,7 @@ simple_ast::NodePtr LowerIndexChain(int baseId, int positionId, bool bufferIndex
             } sink(&prefix);
             const auto receiver = OwnedObjectTemp(cursor, base);
             const auto key = ContainerStoreValue(indices[0], keyType, &post);
-            const auto call = simple_ast::Node::call("__vm_map_get",
+            const auto call = simple_ast::Node::call("__std_map_get",
                                                      { "__magel_v", "__magel_k", "__magel_t", "__magel_o", "__magel_t", "__magel_o" },
                                                      { receiver, key, simple_ast::Node::i(keyText), ContainerStorageFlag(keyType),
                                                        simple_ast::Node::i(valueText), ContainerStorageFlag(base->elem2) });
@@ -351,7 +351,7 @@ simple_ast::NodePtr LowerIndexChain(int baseId, int positionId, bool bufferIndex
     {
         /* 字符串变量与引用统一按字节下标访问。
          * 字符串按**字节**下标：`s[i]` 得到第 i 个字节（0..255）。
-         * 交给运行时的 `__vm_str_at`：**一次读一个字节**（越界会报错，下标写到结尾的
+         * 交给运行时的 `__std_str_at`：**一次读一个字节**（越界会报错，下标写到结尾的
          * `\0` 是允许的 —— `while (s[i] != 0)` 这种数长度写法要用它）。
          * 早先是"offset 算地址 + 读 8 字节 + & 255"，字符串搬到堆上之后那样读会
          * 越过块尾（堆块是紧的）。 */
@@ -361,7 +361,7 @@ simple_ast::NodePtr LowerIndexChain(int baseId, int positionId, bool bufferIndex
             return Bad();
         }
         return simple_ast::Node::call(
-            "__vm_str_at", { "__magel_s", "__magel_i" },
+            "__std_str_at", { "__magel_s", "__magel_i" },
             { OwnedObjectTemp(cursor, base), LowerExpr(indices[0]) });
     }
     if (IsRuntimeArray(base))
@@ -700,7 +700,7 @@ simple_ast::NodePtr LowerAddressOf(int id)
         const Memory::String label = NameOfExpr(node.kids[0]);
         if (IsStandardOpcode(base, "String")) /* `&s[i]`：字符串按字节 */
         {
-            return simple_ast::Node::call("__vm_str_ref", { "__magel_s", "__magel_i" }, { target, position });
+            return simple_ast::Node::call("__std_str_ref", { "__magel_s", "__magel_i" }, { target, position });
         }
         if (IsRuntimeArray(base))
         {
@@ -773,12 +773,12 @@ simple_ast::NodePtr LowerUnary(const Memory::String &op, int operandId)
         const std::shared_ptr<MType> type = ExprType(operandId);
         if (type && IsStandardOpcode(type, "BigInteger"))
         {
-            return simple_ast::Node::call("__vm_bint_neg", { "__magel_v" },
+            return simple_ast::Node::call("__std_bint_neg", { "__magel_v" },
                                           { LowerExpr(operandId) });
         }
         if (type && IsStandardOpcode(type, "BigDecimal"))
         {
-            return simple_ast::Node::call("__vm_bfloat_neg", { "__magel_v" },
+            return simple_ast::Node::call("__std_bfloat_neg", { "__magel_v" },
                                           { LowerExpr(operandId) });
         }
     }
@@ -1045,7 +1045,7 @@ simple_ast::NodePtr OwnedGeneratedString(const simple_ast::NodePtr &value)
  * @brief 把 `a + b + c` 这样的字符串拼接链摊平成一串操作数（按源码从左到右）。
  *
  * 只往下钻"两边都是字符串的 `+`"：`("x" + y) + "z"` 摊成 `x y z`。这样整条链只需要
- * **一次** `__vm_str_join` 调用与**一次**堆分配。
+ * **一次** `__std_str_join` 调用与**一次**堆分配。
  */
 void CollectStringParts(int exprId, Memory::Vector<int> *out)
 {
@@ -1099,7 +1099,7 @@ simple_ast::NodePtr LowerBinary(const Memory::String &op, int leftId, int rightI
     }
     /* ---- 字符串内建：拼接（`+`）与比较（字典序）。
      *
-     * 两件事都交给**虚拟机里那份 C++ 运行时**（`__vm_str_cat` / `__vm_str_cmp`）：
+     * 两件事都交给**虚拟机里那份 C++ 运行时**（`__std_str_cat` / `__std_str_cmp`）：
      * 语言侧不写逐字节的循环，拼接的结果是堆上的新串（"块作用域所有"，见 MarkOwned）。
      * ---- */
     if (IsStandardOpcode(leftType, "String") || IsStandardOpcode(rightType, "String"))
@@ -1117,7 +1117,7 @@ simple_ast::NodePtr LowerBinary(const Memory::String &op, int leftId, int rightI
         }
         if (op == "+")
         {
-            /* 整条 `a + b + c` 链摊平成**一次** `__vm_str_join`：只分配一个结果串。
+            /* 整条 `a + b + c` 链摊平成**一次** `__std_str_join`：只分配一个结果串。
              * 两两接的话中间串没人拥有（`("a"+"b") + "c"` 里前者是临时值），会漏。 */
             Memory::Vector<int> parts;
             CollectStringParts(leftId, &parts);
@@ -1137,14 +1137,14 @@ simple_ast::NodePtr LowerBinary(const Memory::String &op, int leftId, int rightI
                  * 先落进临时变量 —— 否则它没人释放（递归里会一直涨）。 */
                 values.push_back(NeedsOwnedTemp(parts[index]) ? OwnedStringTemp(parts[index]) : LowerExpr(parts[index]));
             }
-            return simple_ast::Node::call("__vm_str_join", names, values);
+            return simple_ast::Node::call("__std_str_join", names, values);
         }
         if (op == "==" || op == "!=" || op == "<" || op == "<=" || op == ">" || op == ">=")
         {
             const simple_ast::NodePtr left = NeedsOwnedTemp(leftId) ? OwnedStringTemp(leftId) : LowerExpr(leftId);
             const simple_ast::NodePtr right = NeedsOwnedTemp(rightId) ? OwnedStringTemp(rightId) : LowerExpr(rightId);
             const simple_ast::NodePtr diff =
-                simple_ast::Node::call("__vm_str_cmp", { "__magel_sl", "__magel_sr" }, { left, right });
+                simple_ast::Node::call("__std_str_cmp", { "__magel_sl", "__magel_sr" }, { left, right });
             return simple_ast::Node::binary(op, diff, simple_ast::Node::i(0));
         }
         Fail("字符串只支持 + 拼接与 == != < <= > >= 比较，不支持 " + op);
@@ -1158,11 +1158,11 @@ simple_ast::NodePtr LowerBinary(const Memory::String &op, int leftId, int rightI
             if (type && IsStandardOpcode(type, "BigDecimal")) return OwnedObjectTemp(exprId, type);
             const char *native = nullptr;
             if (type && IsStandardOpcode(type, "BigInteger"))
-                native = "__vm_bfloat_from_bint";
+                native = "__std_bfloat_from_bint";
             else if (type && type->kind == MType::Double)
-                native = "__vm_bfloat_from_flt";
+                native = "__std_bfloat_from_flt";
             else if (type && (type->kind == MType::Int || type->kind == MType::Bool))
-                native = type->isUnsigned ? "__vm_bfloat_from_uint" : "__vm_bfloat_from_int";
+                native = type->isUnsigned ? "__std_bfloat_from_uint" : "__std_bfloat_from_int";
             if (native != nullptr)
             {
                 return OwnedObjectTempNode(simple_ast::Node::call(native, { "__magel_v" }, { LowerExpr(exprId) }),
@@ -1173,20 +1173,20 @@ simple_ast::NodePtr LowerBinary(const Memory::String &op, int leftId, int rightI
         };
         const char *arith = nullptr;
         if (op == "+")
-            arith = "__vm_bfloat_add";
+            arith = "__std_bfloat_add";
         else if (op == "-")
-            arith = "__vm_bfloat_sub";
+            arith = "__std_bfloat_sub";
         else if (op == "*")
-            arith = "__vm_bfloat_mul";
+            arith = "__std_bfloat_mul";
         else if (op == "/")
-            arith = "__vm_bfloat_div";
+            arith = "__std_bfloat_div";
         if (arith != nullptr)
             return simple_ast::Node::call(arith, { "__magel_l", "__magel_r" },
                                           { toBigFloat(leftId), toBigFloat(rightId) });
         if (op == "==" || op == "!=" || op == "<" || op == "<=" || op == ">" || op == ">=")
         {
             const simple_ast::NodePtr diff = simple_ast::Node::call(
-                "__vm_bfloat_cmp", { "__magel_l", "__magel_r" }, { toBigFloat(leftId), toBigFloat(rightId) });
+                "__std_bfloat_cmp", { "__magel_l", "__magel_r" }, { toBigFloat(leftId), toBigFloat(rightId) });
             return simple_ast::Node::binary(op, diff, simple_ast::Node::i(0));
         }
         Fail("大浮点数只支持 + - * / 与 == != < <= > >=，不支持 " + op);
@@ -1194,8 +1194,8 @@ simple_ast::NodePtr LowerBinary(const Memory::String &op, int leftId, int rightI
     }
     /* ---- 大整数（`bint`）：`+ - * / %` 与比较，全走运行期对象表里的 C++ 实现 ----
      *
-     * 算术上 `bint` 和整数 / 浮点可以混着写：另一边先转成大整数（`__vm_bint_from_int` /
-     * `_from_flt`），结果还是 `bint`。比较走 `__vm_bint_cmp`（-1 / 0 / 1）。 */
+     * 算术上 `bint` 和整数 / 浮点可以混着写：另一边先转成大整数（`__std_bint_from_int` /
+     * `_from_flt`），结果还是 `bint`。比较走 `__std_bint_cmp`（-1 / 0 / 1）。 */
     if (IsStandardOpcode(leftType, "BigInteger") || IsStandardOpcode(rightType, "BigInteger"))
     {
         const bool nullCompare = (op == "==" || op == "!=") && ((rightType->kind == MType::Ptr && rightType->elem && rightType->elem->kind == MType::Void) || (leftType->kind == MType::Ptr && leftType->elem && leftType->elem->kind == MType::Void));
@@ -1220,14 +1220,14 @@ simple_ast::NodePtr LowerBinary(const Memory::String &op, int leftId, int rightI
             if (type && type->kind == MType::Double)
             {
                 return OwnedObjectTempNode(
-                    simple_ast::Node::call("__vm_bint_from_flt", { "__magel_v" },
+                    simple_ast::Node::call("__std_bint_from_flt", { "__magel_v" },
                                            { LowerExpr(exprId) }),
                     T(M_TypeBigInt()));
             }
             if (type && (type->kind == MType::Int || type->kind == MType::Bool))
             {
                 return OwnedObjectTempNode(
-                    simple_ast::Node::call(type->isUnsigned ? "__vm_bint_from_uint" : "__vm_bint_from_int", { "__magel_v" },
+                    simple_ast::Node::call(type->isUnsigned ? "__std_bint_from_uint" : "__std_bint_from_int", { "__magel_v" },
                                            { LowerExpr(exprId) }),
                     T(M_TypeBigInt()));
             }
@@ -1236,15 +1236,15 @@ simple_ast::NodePtr LowerBinary(const Memory::String &op, int leftId, int rightI
         };
         const char *arith = nullptr;
         if (op == "+")
-            arith = "__vm_bint_add";
+            arith = "__std_bint_add";
         else if (op == "-")
-            arith = "__vm_bint_sub";
+            arith = "__std_bint_sub";
         else if (op == "*")
-            arith = "__vm_bint_mul";
+            arith = "__std_bint_mul";
         else if (op == "/")
-            arith = "__vm_bint_div";
+            arith = "__std_bint_div";
         else if (op == "%")
-            arith = "__vm_bint_mod";
+            arith = "__std_bint_mod";
         if (arith != nullptr)
         {
             return simple_ast::Node::call(arith, { "__magel_l", "__magel_r" },
@@ -1253,7 +1253,7 @@ simple_ast::NodePtr LowerBinary(const Memory::String &op, int leftId, int rightI
         if (op == "==" || op == "!=" || op == "<" || op == "<=" || op == ">" || op == ">=")
         {
             const simple_ast::NodePtr diff = simple_ast::Node::call(
-                "__vm_bint_cmp", { "__magel_l", "__magel_r" }, { toBigInt(leftId), toBigInt(rightId) });
+                "__std_bint_cmp", { "__magel_l", "__magel_r" }, { toBigInt(leftId), toBigInt(rightId) });
             return simple_ast::Node::binary(op, diff, simple_ast::Node::i(0));
         }
         Fail("大整数只支持 + - * / % 与 == != < <= > >=，不支持 " + op);
@@ -1369,7 +1369,7 @@ simple_ast::NodePtr LowerCast(int typeId, int valueId)
         if (target->kind == MType::Int || target->kind == MType::Bool)
         {
             const simple_ast::NodePtr value = simple_ast::Node::call(
-                "__vm_bint_to_int", { "__magel_v" }, { OwnedObjectTemp(valueId, source) });
+                "__std_bint_to_int", { "__magel_v" }, { OwnedObjectTemp(valueId, source) });
             if (target->kind == MType::Bool)
                 return simple_ast::Node::binary("!=", value, simple_ast::Node::i(0));
             if (target->bits == 64 && !target->isUnsigned) return value;
@@ -1377,7 +1377,7 @@ simple_ast::NodePtr LowerCast(int typeId, int valueId)
         }
         if (target->kind == MType::Double)
         {
-            return simple_ast::Node::call("__vm_bint_to_flt", { "__magel_v" },
+            return simple_ast::Node::call("__std_bint_to_flt", { "__magel_v" },
                                           { OwnedObjectTemp(valueId, source) });
         }
     }
@@ -1386,14 +1386,14 @@ simple_ast::NodePtr LowerCast(int typeId, int valueId)
         if (target->kind == MType::Int || target->kind == MType::Bool)
         {
             const simple_ast::NodePtr value = simple_ast::Node::call(
-                "__vm_bfloat_to_int", { "__magel_v" }, { OwnedObjectTemp(valueId, source) });
+                "__std_bfloat_to_int", { "__magel_v" }, { OwnedObjectTemp(valueId, source) });
             if (target->kind == MType::Bool)
                 return simple_ast::Node::binary("!=", value, simple_ast::Node::i(0));
             if (target->bits == 64 && !target->isUnsigned) return value;
             return simple_ast::Node::cast(value, LowerType(target, "cast"));
         }
         if (target->kind == MType::Double)
-            return simple_ast::Node::call("__vm_bfloat_to_flt", { "__magel_v" },
+            return simple_ast::Node::call("__std_bfloat_to_flt", { "__magel_v" },
                                           { OwnedObjectTemp(valueId, source) });
     }
     /* 显式引用转换以目标类型的 mut/const 限定为准，不修改共享类型定义。 */
@@ -1841,7 +1841,7 @@ simple_ast::NodePtr ReplaceFixedArrayValue(const simple_ast::NodePtr &address, i
         Node::declare(destination, simple_ast::Type::i64()), Node::assign(destination, address),
         Node::declare(replacement, LowerType(type, replacement)), Node::assign(replacement, stored),
         Node::ifThenElse(Node::binary("!=", Node::loadInt(Node::binary("-", Node::var(replacement), Node::i(8))), Node::i(count)),
-                         Node::exprStmt(Node::call("__vm_panic", { "message" }, { Node::str("定长数组赋值的元素个数不匹配") })), nullptr)
+                         Node::exprStmt(Node::call("__std_panic", { "message" }, { Node::str("定长数组赋值的元素个数不匹配") })), nullptr)
     };
     if (const auto release = MakeArrayElementRelease(destination, type->elem, count)) out.push_back(release);
     out.push_back(Node::declare(index, simple_ast::Type::i64()));
@@ -1905,7 +1905,7 @@ simple_ast::NodePtr StoreOwnedValueAt(const simple_ast::NodePtr &address, int va
     if (IsStandardOpcode(type, "String"))
     {
         if (valueId >= 0 && N(valueId).kind == MNode::Str)
-            stored = simple_ast::Node::call("__vm_str_lit", { "__magel_addr" }, { value });
+            stored = simple_ast::Node::call("__std_str_lit", { "__magel_addr" }, { value });
         else if (!(IsFreshValue(valueId) || IsImplicitConversionValue(valueId, type)))
             stored = simple_ast::Node::call(ObjectCopyFunction(type), { "value" }, { value });
     }
@@ -2205,7 +2205,7 @@ simple_ast::NodePtr LowerAssignImpl(int targetId, int valueId)
             {
                 Memory::Vector<simple_ast::NodePtr> post;
                 const auto stored = ContainerStoreValue(valueId, found->type, &post);
-                const auto call = simple_ast::Node::call("__vm_vec_set",
+                const auto call = simple_ast::Node::call("__std_vec_set",
                                                          { "__magel_v", "__magel_i", "__magel_x", "__magel_t", "__magel_o" },
                                                          { simple_ast::Node::var(found->elementList), simple_ast::Node::var(found->elementIndex),
                                                            stored, simple_ast::Node::i(IsStandardOpcode(found->type, "String") ? 1 : 0), ContainerStorageFlag(found->type) });
@@ -2218,7 +2218,7 @@ simple_ast::NodePtr LowerAssignImpl(int targetId, int valueId)
                 {
                     const auto temp = AllocateName("__magel_boxed_assignment");
                     return simple_ast::Node::block({ simple_ast::Node::declare(temp, LowerType(found->type, temp)),
-                                                     simple_ast::Node::assign(temp, simple_ast::Node::call("__vm_obj_new", {}, {})),
+                                                     simple_ast::Node::assign(temp, simple_ast::Node::call("__std_obj_new", {}, {})),
                                                      simple_ast::Node::exprStmt(LowerObjSet(simple_ast::Node::var(temp), valueId, "Any 赋值")),
                                                      simple_ast::Node::release(simple_ast::Node::loadInt(simple_ast::Node::var(found->emitted))),
                                                      simple_ast::Node::storeAt(simple_ast::Node::var(found->emitted), simple_ast::Node::var(temp), LowerType(found->type, temp)) });
@@ -2381,7 +2381,7 @@ simple_ast::NodePtr LowerAssignImpl(int targetId, int valueId)
                 const simple_ast::NodePtr stored =
                     ContainerStoreValue(valueId, container->elem, &post);
                 const simple_ast::NodePtr call = simple_ast::Node::call(
-                    "__vm_vec_set", { "__magel_v", "__magel_i", "__magel_x", "__magel_t", "__magel_o" },
+                    "__std_vec_set", { "__magel_v", "__magel_i", "__magel_x", "__magel_t", "__magel_o" },
                     { receiver, LowerExpr(positionId),
                       stored,
                       simple_ast::Node::i(elementText ? 1 : 0),
@@ -2401,7 +2401,7 @@ simple_ast::NodePtr LowerAssignImpl(int targetId, int valueId)
             const simple_ast::NodePtr stored =
                 ContainerStoreValue(valueId, container->elem2, &post);
             const simple_ast::NodePtr call = simple_ast::Node::call(
-                "__vm_map_put",
+                "__std_map_put",
                 { "__magel_v", "__magel_k", "__magel_t", "__magel_o", "__magel_x", "__magel_t", "__magel_o" },
                 { receiver, key,
                   simple_ast::Node::i(keyText ? 1 : 0),
@@ -2416,7 +2416,7 @@ simple_ast::NodePtr LowerAssignImpl(int targetId, int valueId)
         }
         /* `s[i] = 字符;`：字符串按字节写 —— 交给运行时（越界会报错，和数组下标同一个
          * 脾气）。`s[i]` 当右值时是"取第 i 个字节（& 255）"，当不了赋值目标，
-         * 所以这里单独走一条：`__vm_str_set(串, 下标, 字符码)`。 */
+         * 所以这里单独走一条：`__std_str_set(串, 下标, 字符码)`。 */
         if (target.kind == MNode::Index && target.s != "__magel_buffer_index" && IsStandardOpcode(ExprType(target.kids[0]), "String"))
         {
             const int baseId = target.kids[0];
@@ -2429,7 +2429,7 @@ simple_ast::NodePtr LowerAssignImpl(int targetId, int valueId)
                 return Bad();
             }
             return simple_ast::Node::exprStmt(simple_ast::Node::call(
-                "__vm_str_set", { "__magel_s", "__magel_i", "__magel_c" },
+                "__std_str_set", { "__magel_s", "__magel_i", "__magel_c" },
                 { LowerExpr(baseId), LowerExpr(positionId), LowerExpr(valueId) }));
         }
         /* 结构体元素 / 字段同样是值语义：`arr[i] = b;` / `s.inner = b;` 深拷贝。 */
@@ -2659,7 +2659,7 @@ simple_ast::NodePtr DefaultInit(const Memory::String &emitted, const std::shared
         {
             out.push_back(Node::assign(emitted, Node::alloc(Node::i(std::max(8, StructStride(type))))));
             // 窄数值仍占八字节槽，按完整块清零，不能留下上半槽的旧字节。
-            out.push_back(Node::exprStmt(Node::call("__vm_memset", { "__magel_addr", "__magel_val", "__magel_n" },
+            out.push_back(Node::exprStmt(Node::call("__std_memset", { "__magel_addr", "__magel_val", "__magel_n" },
                                                     { Node::var(emitted), Node::i(0), Node::i(std::max(8, StructStride(type))) })));
             MarkOwned(emitted);
             g_parameterValueStorage.insert(emitted);
@@ -2686,12 +2686,12 @@ simple_ast::NodePtr DefaultInit(const Memory::String &emitted, const std::shared
     if (IsStandardOpcode(type, "BigInteger"))
     {
         /* 声明出来就是一个 0（新对象）：后面直接 `a + b` 也不用先判断是不是空的。 */
-        return Node::assign(emitted, Node::call(FindOpcodeDefinition(type) ? FindOpcodeDefinition(type)->create : Memory::String("__vm_bint_from_int"), { "__magel_v" },
+        return Node::assign(emitted, Node::call(FindOpcodeDefinition(type) ? FindOpcodeDefinition(type)->create : Memory::String("__std_bint_from_int"), { "__magel_v" },
                                                 { simple_ast::Node::i(0) }));
     }
     if (IsStandardOpcode(type, "BigDecimal"))
     {
-        return Node::assign(emitted, Node::call(FindOpcodeDefinition(type) ? FindOpcodeDefinition(type)->create : Memory::String("__vm_bfloat_from_int"), { "__magel_v" },
+        return Node::assign(emitted, Node::call(FindOpcodeDefinition(type) ? FindOpcodeDefinition(type)->create : Memory::String("__std_bfloat_from_int"), { "__magel_v" },
                                                 { simple_ast::Node::i(0) }));
     }
     if (IsContainer(type))
@@ -2703,7 +2703,7 @@ simple_ast::NodePtr DefaultInit(const Memory::String &emitted, const std::shared
     {
         /* `obj b;` 声明出来是个**空格子**（类型号 0）；接口引用声明出来是**空胖引用** ——
          * 用的时候 `obj.get` 会报"还没 set 过"、接口分派会报"没指向任何对象"。 */
-        return Node::assign(emitted, Node::call("__vm_obj_new", {}, {}));
+        return Node::assign(emitted, Node::call("__std_obj_new", {}, {}));
     }
     if (type->kind == MType::Double)
         return Node::assign(emitted, Node::f(0.0));
@@ -2725,7 +2725,7 @@ simple_ast::NodePtr AllocateDefaultObject(const std::shared_ptr<MType> &type)
     Memory::Vector<simple_ast::NodePtr> out{
         Node::declare(address, simple_ast::Type::i64()),
         Node::assign(address, Node::alloc(Node::i(bytes))),
-        Node::exprStmt(Node::call("__vm_memset", { "__magel_addr", "__magel_val", "__magel_n" },
+        Node::exprStmt(Node::call("__std_memset", { "__magel_addr", "__magel_val", "__magel_n" },
                                   { Node::var(address), Node::i(0), Node::i(bytes) }))
     };
     if (type->kind == MType::Struct)
@@ -3709,7 +3709,7 @@ simple_ast::NodePtr LowerEnumSwitch(int id, const std::shared_ptr<MType> &subjec
                 {
                     if (valueMatch && IsStandardOpcode(payload.type, "String"))
                     {
-                        value = simple_ast::Node::call("__vm_str_sub", { "__magel_s", "__magel_a", "__magel_b" },
+                        value = simple_ast::Node::call("__std_str_sub", { "__magel_s", "__magel_a", "__magel_b" },
                                                        { value, simple_ast::Node::i(0), simple_ast::Node::i(-1) });
                         MarkOwned(emitted);
                     }
@@ -3849,7 +3849,7 @@ bool ReadStringPattern(int id, Memory::String *text)
 simple_ast::NodePtr MakeStringPatternCondition(const Memory::String &subject, const MNode &pattern)
 {
     const auto compare = [&](const Memory::String &text, const char *op) {
-        const auto order = simple_ast::Node::call("__vm_str_cmp", { "__magel_sl", "__magel_sr" },
+        const auto order = simple_ast::Node::call("__std_str_cmp", { "__magel_sl", "__magel_sr" },
                                                   { simple_ast::Node::var(subject), simple_ast::Node::str(text) });
         return simple_ast::Node::binary(op, order, simple_ast::Node::i(0));
     };
@@ -4343,7 +4343,7 @@ simple_ast::NodePtr LowerInterval(int id)
                 valid = Node::binary("&&", valid, Node::binary("<=", Node::var(raw), Node::i(static_cast<long long>(maximum))));
         }
         prefix.push_back(Node::ifThenElse(valid, Node::block({}),
-                                          Node::exprStmt(Node::call("__vm_panic", { "message" }, { Node::str(message) }))));
+                                          Node::exprStmt(Node::call("__std_panic", { "message" }, { Node::str(message) }))));
         prefix.push_back(Node::declare(converted, LowerType(element, converted)));
         prefix.push_back(Node::assign(converted, Node::cast(Node::var(raw), LowerType(element, converted))));
         bounds.push_back(converted);
@@ -4355,7 +4355,7 @@ simple_ast::NodePtr LowerInterval(int id)
         if (reverse) return Fail(reverseMessage), Bad();
     }
     prefix.push_back(Node::ifThenElse(Node::binary("<=", Node::var(bounds[0]), Node::var(bounds[1])), Node::block({}),
-                                      Node::exprStmt(Node::call("__vm_panic", { "message" }, { Node::str(reverseMessage) }))));
+                                      Node::exprStmt(Node::call("__std_panic", { "message" }, { Node::str(reverseMessage) }))));
     const auto factory = "std::lang::__interval_" + Describe(element);
     const auto signature = g_funcs.find(factory);
     if (signature == g_funcs.end()) return Fail("内部区间迭代器工厂没有登记：" + factory), Bad();
@@ -4411,7 +4411,7 @@ simple_ast::NodePtr LowerForeach(int id)
         PushOwnedScope();
         if (sourceType->kind != MType::Array)
             g_ownedScopes.back().finalizers.push_back(simple_ast::Node::exprStmt(simple_ast::Node::call(
-                "__vm_vec_unref", { "__magel_v", "__magel_address" },
+                "__std_vec_unref", { "__magel_v", "__magel_address" },
                 { simple_ast::Node::var(source), simple_ast::Node::var(item) })));
         g_blockStack.push_back(MBlockContext{ breakLabel, continueLabel, loopDepth, {}, nullptr });
         const simple_ast::NodePtr body = LowerStmt(node.kids[1]);
@@ -4434,8 +4434,8 @@ simple_ast::NodePtr LowerForeach(int id)
         }
         else
         {
-            length = simple_ast::Node::call("__vm_vec_len", { "__magel_v" }, { simple_ast::Node::var(source) });
-            value = simple_ast::Node::call("__vm_vec_ref", { "__magel_v", "__magel_i", "__magel_t", "__magel_o", "__magel_f" },
+            length = simple_ast::Node::call("__std_vec_len", { "__magel_v" }, { simple_ast::Node::var(source) });
+            value = simple_ast::Node::call("__std_vec_ref", { "__magel_v", "__magel_i", "__magel_t", "__magel_o", "__magel_f" },
                                            { simple_ast::Node::var(source), simple_ast::Node::var(index),
                                              simple_ast::Node::i(IsStandardOpcode(element, "String") ? 1 : 0), ContainerStorageFlag(element),
                                              simple_ast::Node::i(element->kind == MType::Double ? 1 : 0) });
@@ -4699,7 +4699,7 @@ simple_ast::NodePtr LowerFor(int id)
  * @brief 解析旧式百分号格式串，供返回字符串的 `format` 使用。
  *
  * 只支持 `%d`（int64）与 `%f`（float64，三位小数）与 `%%`；输出**全部落在文本流**上：
- * 排版交给虚拟机里的 C++ 运行时（`__vm_print`），语言侧只检查格式串与实参类型。
+ * 排版交给虚拟机里的 C++ 运行时（`__std_print`），语言侧只检查格式串与实参类型。
  * 这么绕是因为 stackvm 把 `write` 的数值与 `print` / `putc` 的文本分成两个桶，
  * 混着用会让标准输出顺序乱掉。
  */
@@ -4827,10 +4827,10 @@ simple_ast::NodePtr BraceStringValue(int argId, const Memory::String &format)
         return NeedsOwnedTemp(argId) ? OwnedStringTemp(argId) : LowerExpr(argId);
     if (IsStandardOpcode(type, "BigInteger"))
         return OwnedGeneratedString(
-            simple_ast::Node::call("__vm_bint_str", { "__magel_v" }, { OwnedObjectTemp(argId, type) }));
+            simple_ast::Node::call("__std_bint_str", { "__magel_v" }, { OwnedObjectTemp(argId, type) }));
     if (IsStandardOpcode(type, "BigDecimal"))
         return OwnedGeneratedString(
-            simple_ast::Node::call("__vm_bfloat_str", { "__magel_v" }, { OwnedObjectTemp(argId, type) }));
+            simple_ast::Node::call("__std_bfloat_str", { "__magel_v" }, { OwnedObjectTemp(argId, type) }));
     if (type->kind != MType::Struct)
     {
         return OwnedGeneratedString(LowerValueText(argId));
@@ -4873,7 +4873,7 @@ simple_ast::NodePtr BraceStringValue(int argId, const Memory::String &format)
  *
  * 语言侧只认 `{}` 占位符：`{}` / `{1}` 顺序或显式编号，`{1:2F}` 给浮点保留位数，
  * `{1:b}` / `{1:x}` / `{1:X}` 以二进制 / 十六进制输出整数，
- * `{{` / `}}` 输出字面量大括号。底层 `__vm_print` / `__vm_str_fmt` 仍是百分号实现，
+ * `{{` / `}}` 输出字面量大括号。底层 `__std_print` / `__std_str_fmt` 仍是百分号实现，
  * 两者在**编译期**对上：占位符的个数、索引、类型不对都在这里报错，运行时不再检查。
  *
  * @param args 实参表达式（第一个必须是格式串字面量）。
@@ -5028,13 +5028,13 @@ simple_ast::NodePtr BuildBracePrint(const Memory::Vector<int> &args, bool newlin
     if (args.size() == 1u && N(args[0]).kind != MNode::Str && IsStandardOpcode(ExprType(args[0]), "String"))
     {
         Memory::Vector<simple_ast::NodePtr> values{ BraceStringValue(args[0], "") };
-        return BuildFormatCall("__vm_print", newline ? "%s\n" : "%s", values);
+        return BuildFormatCall("__std_print", newline ? "%s\n" : "%s", values);
     }
     Memory::String target;
     Memory::Vector<simple_ast::NodePtr> values;
     if (!BuildFormatTarget(args, "std::lang::print/std::lang::println", target, values)) return Bad();
     if (newline) target += '\n';
-    return BuildFormatCall("__vm_print", target, values);
+    return BuildFormatCall("__std_print", target, values);
 }
 
 /**
@@ -5049,7 +5049,7 @@ simple_ast::NodePtr BuildBraceFormat(const Memory::Vector<int> &args)
     Memory::String target;
     Memory::Vector<simple_ast::NodePtr> values;
     if (!BuildFormatTarget(args, "std::lang::format", target, values)) return Bad();
-    return BuildFormatCall("__vm_str_fmt", target, values);
+    return BuildFormatCall("__std_str_fmt", target, values);
 }
 
 /**
@@ -5082,13 +5082,13 @@ simple_ast::NodePtr PackVariadicArguments(const Memory::Vector<int> &args, std::
     {
         names.push_back("__magel_item" + Memory::toString(index - begin));
         /*
-         * `__vm_vec_pack` 会把每个元素复制进容器，实参自己那份临时值归调用点：
+         * `__std_vec_pack` 会把每个元素复制进容器，实参自己那份临时值归调用点：
          * 当场造出来的串 / 对象先落地、随块释放，否则变长调用的每个临时元素漏一块
          * （`g("a" + "b")`、`g(std::lang::BigDecimal("2.5"))`）。借来的变量与标量原样传。
          */
         values.push_back(LowerArgumentValue(args[index], element));
     }
-    return OwnedObjectTempNode(simple_ast::Node::call("__vm_vec_pack", names, values),
+    return OwnedObjectTempNode(simple_ast::Node::call("__std_vec_pack", names, values),
                                parameter.type);
 }
 
@@ -5110,7 +5110,7 @@ simple_ast::NodePtr LowerSlice(int id)
     Memory::Vector<simple_ast::NodePtr> values{ LowerExpr(node.kids[0]), LowerExpr(node.kids[1]) };
     /* `止` 省了就是"到末尾"：给 -1，运行时按串长收尾。 */
     values.push_back(node.kids[2] >= 0 ? LowerExpr(node.kids[2]) : simple_ast::Node::i(-1));
-    return simple_ast::Node::call("__vm_str_sub", { "__magel_s", "__magel_b", "__magel_e" }, values);
+    return simple_ast::Node::call("__std_str_sub", { "__magel_s", "__magel_b", "__magel_e" }, values);
 }
 
 /**

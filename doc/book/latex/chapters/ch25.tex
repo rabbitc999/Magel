@@ -55,21 +55,21 @@
 
 \section{写一个可退出的 LCD 程序}
 
-在 \texttt{programs/\allowbreak{}} 下创建练习源码，或使用 include 搜索路径找到 \texttt{board.\allowbreak{}mgl}：
+在 \texttt{programs/\allowbreak{}} 下创建练习源码，或使用 模块搜索路径找到 \texttt{board.\allowbreak{}mgl}：
 
 \par
 \medskip
 \begin{lstlisting}[style=magel]
-%include "board.mgl"
+import board;
 
 void main() {
-    lcdClear(0);
-    lcdText(8, 8, "Hello Magel", 65535, 0);
-    while (!boardExitRequested()) {
-        if (keyClicked(2)) {
-            lcdFill(8, 40, 100, 20, 2016);
+    board::lcdClear(0);
+    board::lcdText(8, 8, "Hello Magel", 65535, 0);
+    while (!board::boardExitRequested()) {
+        if (board::keyClicked(2)) {
+            board::lcdFill(8, 40, 100, 20, 2016);
         }
-        boardDelay(10);
+        board::boardDelay(10);
     }
 }
 \end{lstlisting}

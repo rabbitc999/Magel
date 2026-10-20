@@ -1,4 +1,4 @@
-"""验证 MAGEL 原始源码、宏、include、子模块与导出的行级调试信息。"""
+"""验证 MAGEL 原始源码、宏、导入模块、子模块与导出的行级调试信息。"""
 import argparse
 from pathlib import Path
 import subprocess
@@ -7,7 +7,6 @@ import tempfile
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--magel', default='magel.exe')
-    parser.add_argument('--exports', action='store_true')
     args = parser.parse_args()
     compiler = Path(args.magel).resolve()
     with tempfile.TemporaryDirectory(prefix='magel-lines-', ignore_cleanup_errors=True) as folder:
@@ -25,8 +24,8 @@ def main():
         source.write_text('int64 main() {\n int64 zero=0;\n return 1/zero;\n}\n', encoding='utf-8')
         raw = subprocess.run([str(compiler), 'run', str(source), '--raw', '--out', str(root / 'raw')], capture_output=True, timeout=20)
         assert raw.returncode != 0 and 'main.mgl:3' in raw.stderr.decode('utf-8', errors='replace'), raw.stderr
-        (root / 'included.mgl').write_text('int64 included() {\n std::lang::panic("include");\n return 0;\n}\n', encoding='utf-8')
-        run('%include "included.mgl"\nint64 main() { return included(); }\n', 'included.mgl:2')
+        (root / 'included.mgl').write_text('module included;\nint64 included() {\n std::lang::panic("include");\n return 0;\n}\n', encoding='utf-8')
+        run('import included;\nint64 main() { return included::included(); }\n', 'included.mgl:3')
         (root / 'worker.mgl').write_text('module worker;\nint64 crash() {\n std::lang::panic("module");\n return 0;\n}\n', encoding='utf-8')
         run('import worker;\nint64 main() { return worker::crash(); }\n', 'worker.mgl:3')
         macro = '$macro CRASH(x)\n std::lang::panic(x);\n$end_macro\nint64 main() {\n $CRASH("macro")\n return 0;\n}\n'
@@ -39,8 +38,6 @@ def main():
         run('int64 main() {\n std::lang::String text="hello\nworld";\n std::lang::panic("multiline");\n return 0;\n}\n', 'main.mgl:4')
         hidden = run(macro, 'macro', ['--compress-symbols', '--debug'])
         assert 'main.mgl' not in hidden and '调用栈' not in hidden and ('出错位置' not in hidden), hidden
-        if args.exports:
-            source.write_text(macro, encoding='utf-8')
-        print('MAGEL original lines + include + module + macro + privacy' + (' + exports' if args.exports else '') + ': PASS')
+        print('MAGEL original lines + imported module + macro + privacy' + ': PASS')
 if __name__ == '__main__':
     main()

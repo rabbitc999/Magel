@@ -992,16 +992,21 @@ std::vector<Record> scan(const std::string &source, const std::string &s)
                     cleanSignature(s.substr(t[start].a, t[i].a - t[start].a));
                 r.documentation = precedingDoc(s, t[start].a, &raw);
                 r.offset = t[start].a;
-                if ((t[start].word == "struct" || t[start].word == "enum" || t[start].word == "interface") && start + 1 < i)
+                const size_t typeStart = t[start].word == "#" && start + 2 < i && t[start + 1].word == "NonCopyable" ? start + 2 : start;
+                if ((t[typeStart].word == "struct" || t[typeStart].word == "enum" || t[typeStart].word == "interface" || t[typeStart].word == "opcode") && typeStart + 1 < i)
                 {
-                    r.kind = t[start].word;
-                    r.name = t[start + 1].word;
-                    r.offset = t[start + 1].a;
+                    r.kind = t[typeStart].word;
+                    r.name = t[typeStart + 1].word;
+                    r.offset = t[typeStart + 1].a;
                     r.qualified = qualified(r);
                     records.push_back(r);
                     if (t[i].word == "{")
                         visit(i + 1, end - 1,
                               owner.empty() ? r.name : owner + "::" + r.name);
+                }
+                else if (!owner.empty() && start + 1 < i && t[start + 1].word == "=" && (t[start].word == "new" || t[start].word == "drop" || t[start].word == "copy"))
+                {
+                    // opcode 生命周期绑定属于宿主协议，不是公开字段。
                 }
                 else if (t[start].word != "module" && t[start].word != "import" && t[start].word != "type" && t[start].word[0] != '%')
                 {
@@ -1117,7 +1122,7 @@ std::vector<Binding> scanBindings(const std::string &s,
     std::vector<Binding> out;
     std::vector<std::pair<size_t, size_t>> regions;
     for (size_t i = 0; i + 2 < t.size(); ++i)
-        if ((t[i].word == "struct" || t[i].word == "enum" || t[i].word == "interface") && identifier(t[i + 1].word))
+        if ((t[i].word == "struct" || t[i].word == "enum" || t[i].word == "interface" || t[i].word == "opcode") && identifier(t[i + 1].word))
             types.insert(t[i + 1].word);
     for (size_t i = 1; i < t.size(); ++i)
         if (t[i].word == "<" && identifier(t[i - 1].word))
@@ -1131,7 +1136,7 @@ std::vector<Binding> scanBindings(const std::string &s,
     {
         if (!types.count(t[i].word) && !(i + 1 < t.size() && t[i + 1].word == "::"))
             continue;
-        if (i && (t[i - 1].word == "struct" || t[i - 1].word == "enum" || t[i - 1].word == "interface" || t[i - 1].word == "."))
+        if (i && (t[i - 1].word == "struct" || t[i - 1].word == "enum" || t[i - 1].word == "interface" || t[i - 1].word == "opcode" || t[i - 1].word == "."))
             continue;
         size_t j = i + 1;
         while (j + 1 < t.size() && t[j].word == "::")
@@ -1440,7 +1445,7 @@ class ReceiverTypes
      */
     bool isType(const Record &r) const
     {
-        return r.kind == "struct" || r.kind == "enum" || r.kind == "interface";
+        return r.kind == "struct" || r.kind == "enum" || r.kind == "interface" || r.kind == "opcode";
     }
     /**
      * @brief 将名称解析为当前作用域中的限定名称。
@@ -2285,7 +2290,7 @@ std::string download(const std::string &url)
         path.append(parts.lpszExtraInfo, parts.dwExtraInfoLength);
     if (path.empty())
         path = L"/";
-    Http session{ WinHttpOpen(L"Magel/0.21.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+    Http session{ WinHttpOpen(L"Magel/0.21.1", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
                               WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0) };
     if (!session.h)
         throw std::runtime_error("无法初始化 HTTP");
@@ -2513,7 +2518,7 @@ fs::path extract(std::string data, const fs::path &destination)
         return children[0];
     throw std::runtime_error("在线依赖压缩包根目录或唯一顶层目录需要 magel.toml");
 }
-const std::string toolVersion = "0.21.0";
+const std::string toolVersion = "0.21.1";
 /**
  * @brief 校验下载依赖的版本信息。
  * @param data 输入或待写入的字节数据。
@@ -3118,7 +3123,7 @@ class Server
                 const auto &entries = unit->records;
                 for (auto &r : entries)
                 {
-                    if (r.kind == "struct" || r.kind == "enum" || r.kind == "interface")
+                    if (r.kind == "struct" || r.kind == "enum" || r.kind == "interface" || r.kind == "opcode")
                         types.insert(r.name);
                     out.push_back(r);
                 }
@@ -3141,21 +3146,6 @@ class Server
                             auto declared = directives(child, "module");
                             if (!declared.empty() && declared[0] == module)
                                 visit(target, child);
-                            break;
-                        } catch (const std::exception &)
-                        {
-                        }
-                    }
-                }
-                // %include 的宏也必须进入索引；只加载真实词法指令，不扫描字符串正文。
-                for (const auto &name : unit->includes)
-                {
-                    for (auto &root : lookup)
-                    {
-                        auto target = uri(root / fs::u8path(name));
-                        try
-                        {
-                            visit(target, source(target));
                             break;
                         } catch (const std::exception &)
                         {
@@ -3257,7 +3247,7 @@ class Server
      */
     static int symbolKind(const Record &r)
     {
-        if (r.kind == "struct")
+        if (r.kind == "struct" || r.kind == "opcode")
             return 23;
         if (r.kind == "enum")
             return 10;
@@ -3274,7 +3264,7 @@ class Server
      */
     static int completionKind(const Record &r)
     {
-        if (r.kind == "struct")
+        if (r.kind == "struct" || r.kind == "opcode")
             return 22;
         if (r.kind == "enum")
             return 13;
@@ -3503,7 +3493,7 @@ class Server
         static const std::regex typeName("[A-Z][a-z0-9]*([A-Z][a-z0-9]+)*");
         for (const auto &record : unit->records)
         {
-            const bool type = record.kind == "struct" || record.kind == "enum" || record.kind == "interface";
+            const bool type = record.kind == "struct" || record.kind == "enum" || record.kind == "interface" || record.kind == "opcode";
             const bool function = record.kind == "function";
             if ((!type && !function) || starts(record.name, "__") || (function && (record.name == tail(record.owner) || starts(record.signature, record.name + "("))))
                 continue;
@@ -3537,7 +3527,7 @@ class Server
         known.insert(primitives.begin(), primitives.end());
         for (size_t i = 0; i + 1 < t.size(); ++i)
         {
-            if (t[i].word == "struct" || t[i].word == "enum" || t[i].word == "interface" || t[i].word == "type")
+            if (t[i].word == "struct" || t[i].word == "enum" || t[i].word == "interface" || t[i].word == "opcode" || t[i].word == "type")
             {
                 known.insert(t[i + 1].word);
                 classes[t[i + 1].a] = { 1, 1 };
@@ -3680,6 +3670,7 @@ class Server
             throw std::runtime_error("展开预览需要文件 URI");
         auto dirs = projectPaths(file);
         preprocess::Options options = preprocess::Preprocessor::forMetro();
+        options.allowIncludes = false;
         Memory::Vector<Memory::String> paths;
         for (auto &p : dirs)
         {
@@ -3804,7 +3795,7 @@ class Server
                                      { "full", true } }) },
                           { "experimental",
                             object({ { "macroExpansionProvider", true } }) } }) },
-                  { "serverInfo", object({ { "name", "Magel" }, { "version", "0.21.0" } }) } });
+                  { "serverInfo", object({ { "name", "Magel" }, { "version", "0.21.1" } }) } });
         }
         if (method == "shutdown")
         {

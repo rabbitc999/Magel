@@ -666,8 +666,6 @@ $end_macro
 
 | 指令 | 作用 |
 | --- | --- |
-| `%include "路径"` | 原地展开文件；同一文件默认只展开一次 |
-| `%include_once` / `%import` | 与 `%include` 同义，显式表达"只一次" |
 | `%if` / `%elif` / `%else` / `%endif` | 条件编译，不活跃的分支整块丢弃 |
 | `%ifndef` / `%ifdef` | 按符号是否存在分支 |
 | `%define` / `%undefine` | 定义 / 取消符号（等价命令行 `-D NAME`） |
@@ -678,6 +676,8 @@ $end_macro
 | `$macro N() … $end_macro` | 对象宏，调用 `$N` |
 | `$stringify(…)` / `$concat(a,b)` / `$line` | 宏内工具 |
 | `$delete_macro N` | 取消宏 |
+
+共享源码通过 `module` 与 `import` 组织；文本包含指令会报错，条件编译保持各模块独立。
 
 要点：
 

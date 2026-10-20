@@ -25,7 +25,7 @@ struct Project
     /// 编译器最低版本、依赖清单与锁文件签名。
     Memory::String compiler, lockSignature;
     Memory::Map<Memory::String, Memory::String> dependencies;
-    Memory::Vector<Memory::String> authors, includes, imports, searchPaths, includePaths, importPaths;
+    Memory::Vector<Memory::String> authors, imports, searchPaths, includePaths, importPaths;
     /**
      * `[magel] debug`：写 `.svmb` 时是否带调试节，缺省 `false`（不带）。
      *  为 `true` 时等价于命令行加 `--debug`：保留"指令 → 文件/行"位置表，
@@ -144,12 +144,12 @@ inline Memory::Set<Memory::String> embeddedDeniedModules(const Project &project)
 }
 
 /**
- * @brief 归一化 `%include` 的路径：反斜杠转正斜杠，并拒绝空串 / 跨行 / 含 NUL。
+ * @brief 归一化工程配置路径：反斜杠转正斜杠，并拒绝空串 / 跨行 / 含 NUL。
  * @param s 配置里写的路径。
  * @return 归一化后的路径。
  * @throws std::runtime_error 路径为空、跨行或含 NUL 时。
  */
-inline Memory::String includeName(const Memory::String &s)
+inline Memory::String normalizedPathText(const Memory::String &s)
 {
     Memory::String normalized = s;
     for (char &c : normalized)
@@ -171,7 +171,7 @@ inline Memory::String includeName(const Memory::String &s)
  */
 inline Memory::String path(const Memory::String &s, const std::filesystem::path &base)
 {
-    return std::filesystem::absolute(base / Memory::u8path(includeName(s)))
+    return std::filesystem::absolute(base / Memory::u8path(normalizedPathText(s)))
         .lexically_normal()
         .generic_u8string();
 }
@@ -265,7 +265,7 @@ inline Memory::Vector<Memory::String> tomlArray(const toml::Value &value,
 /**
  * @brief 当前工具链版本，参与项目最低版本验证。
  */
-inline constexpr const char *compilerVersion = "0.21.0";
+inline constexpr const char *compilerVersion = "0.21.1";
 
 /**
  * @brief 解析 `1.2.3` 形式的三段版本号。
@@ -468,14 +468,14 @@ inline bool read(const std::filesystem::path &file, Project &project, Memory::St
                 {
                     project.main = path(tomlText(entry.value, where), base);
                 }
-                else if (key == "include" || key == "search_paths" || key == "include_paths" || key == "import_paths")
+                else if (key == "search_paths" || key == "include_paths" || key == "import_paths")
                 {
                     const auto values = tomlArray(entry.value, where);
-                    auto &target = key == "include" ? project.includes : key == "include_paths" ? project.includePaths :
-                                                                     key == "import_paths"      ? project.importPaths :
-                                                                                                  project.searchPaths;
+                    auto &target = key == "include_paths" ? project.includePaths :
+                                   key == "import_paths"  ? project.importPaths :
+                                                            project.searchPaths;
                     for (const auto &value : values)
-                        target.push_back(key == "include" ? includeName(value) : path(value, base));
+                        target.push_back(path(value, base));
                 }
                 else if (key == "import")
                 {
@@ -496,15 +496,8 @@ inline bool read(const std::filesystem::path &file, Project &project, Memory::St
                             if (!moduleName(imported)) throw std::runtime_error("invalid import command");
                             project.imports.push_back(imported);
                         }
-                        else if (command.size() > 9 && command.compare(0, 8, "%include") == 0 && std::isspace(static_cast<unsigned char>(command[8])))
-                        {
-                            const auto argument = trim(command.substr(9));
-                            if (argument.size() < 2 || argument.front() != '"' || argument.back() != '"')
-                                throw std::runtime_error("include command needs a quoted path");
-                            project.includes.push_back(includeName(argument.substr(1, argument.size() - 2)));
-                        }
                         else
-                            throw std::runtime_error("commands only supports %include and import");
+                            throw std::runtime_error("commands only supports import");
                     }
                 }
                 else

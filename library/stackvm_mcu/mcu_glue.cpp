@@ -474,9 +474,9 @@ void Register(stackvm::Machine &machine, stackvm::NativeRegistry *customRegistry
 {
     static stackvm::NativeRegistry defaultRegistry; /* 板端单线程：函数内静态不需要加锁 */
     stackvm::NativeRegistry &registry = customRegistry ? *customRegistry : defaultRegistry;
-    if (!registry.find("__vm_vec_new")) collection_glue::bind(registry);
+    if (!registry.find("__std_vec_new")) collection_glue::bind(registry);
     if (!registry.find("std::lang::__stringNew")) native_record_glue::bindString(registry);
-    if (!registry.find("__vm_file_open")) file_native_glue::bind(registry);
+    if (!registry.find("__std_file_open")) file_native_glue::bind(registry);
     registry.add("std::lang::__tryToInt32", 1u, TryToInt32);
     registry.add("std::lang::__toInt64", 1u, ToInt64);
     /* putXXX 系列：板端把输出直接推给自己（串口 / OLED / RTT）。 */

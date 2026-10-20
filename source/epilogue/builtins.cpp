@@ -1106,7 +1106,7 @@ std::shared_ptr<MType> RawExprType(int id)
             if (name == "memcpy" || name == "memset") return T(M_TypeInt());
             if (name == "print" || name == "println" || name == "putChar")
                 return T(M_TypeInt());
-            /* `std::lang::pause()`：调试暂停，降成 VM 内建 `__vm_pause`，返回 0。 */
+            /* `std::lang::pause()`：调试暂停，降成 VM 内建 `__std_pause`，返回 0。 */
             if (name == "pause" || name == "sweep") return T(M_TypeInt());
             /* `std::lang::format("…", …)`：按 `{}` 占位符拼出的**新串**（和 `std::lang::print` 同规则）。 */
             if (name == "format") return T(M_TypeString());

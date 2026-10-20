@@ -38,7 +38,7 @@
  * | `alloc` / `free` | 堆：`(alloc, 字节数, _, 目标)` 拿到一个地址，`(free, 地址, _, _)` 还回去 |
  * | `check` | 下标陷阱：`(check, 下标, 上限, 标签)`，越界就终止运行 |
  * | `checkptr` | 按区块容量查下标：`(checkptr, 下标, 基址, 步长, 标签)`（堆块 / 数据区符号的 extent） |
- * | `call 名字` | 名字不在标签表里时先查**原生函数表**（数学 / 字符串 / 文件 / 进程等 `__vm_*`） |
+ * | `call 名字` | 名字不在标签表里时先查**原生函数表**（数学 / 字符串 / 文件 / 进程等 `__std_*`） |
  * | `halt` | 停机 |
  *
  * 不支持的（宽类型分片 `+c`/`-b`、中断 `int`/`iret`、数据区等）会在组装期报一条
@@ -93,7 +93,7 @@
  * / `std::chrono`**，`setThreadsEnabled` / `setThreadHeapFactory` / `raiseInterrupt` /
  * `clearInterrupts` 不存在，`std::thread::*` 与 `Shared` 走"函数入口不存在"的普通错误。
  *
- * **协程不受影响**：`std::coroutine::*` 与 `__vm_message_*_coroutine` 是 VM 自己的状态机
+ * **协程不受影响**：`std::coroutine::*` 与 `__std_message_*_coroutine` 是 VM 自己的状态机
  * （在求值循环里切换，不需要 OS 线程），板端照常可用 —— 这就是"板端不需要线程"的那条线。
  *
  * 关线程是**零成本裁剪**：桌面构建不用改代码，板端 `-DSTACKVM_WITH_THREADS=0` 即可

@@ -180,7 +180,7 @@ syntax error: example/samples-error/syntax_extern_impl_removed.mgl line 2 col 8:
 
 - The width of the underline is the length of the offending token; tabs are padded to 4-column tab
   stops and CJK characters count as 2 columns, so the column never drifts.
-- When the error sits in a file pulled in by `%include`, it points at **the file that actually
+- When the error sits in a module loaded by `import`, it points at **the file that actually
   contains the mistake**, not at the expanded main file.
 - Internal token names are no longer shown: `SEMI` → `semicolon(;)`, `IMPL` → `impl(impl)`,
   `VARIABLE` → `identifier`.

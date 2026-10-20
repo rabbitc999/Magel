@@ -2,6 +2,7 @@
 #define PARSE_ENGINE_STD_LINALG_HPP
 
 #include "../magel_glue.hpp"
+#include "scalar_buffer.hpp"
 
 #include <cmath>
 #include <cstdint>
@@ -14,9 +15,9 @@
  * 泛型类型定义与基础运算符保留在 MAGEL；Matrix.solve 按内置数值类型注册特化，
  * 顶层分解函数采用 float64。求解保留逐步运算顺序与标量精度。
  *
- * 结构体是「摊平槽布局」：值字段（嵌套结构体）内联展开，每个标量/List 字段占一个 8 字节槽。
- *   Vector<float64>            = { List values }                          → 1 槽
- *   Matrix<float64>            = { int rows, int cols, List values }      → 3 槽
+ * 结构体是「摊平槽布局」：值字段（嵌套结构体）内联展开，每个标量/ScalarStorage 字段占一个 8 字节槽。
+ *   Vector<float64>            = { ScalarStorage values }                          → 1 槽
+ *   Matrix<float64>            = { int rows, int cols, ScalarStorage values }      → 3 槽
  *   LuFactorization            = { Matrix×3 }                             → 9 槽
  *   EigenDecomposition         = { Vector, Matrix }                       → 4 槽
  *   SingularValueDecomposition = { Matrix, Vector, Matrix }               → 7 槽
@@ -87,25 +88,15 @@ inline void writeSlotF64(Context &ctx, std::int64_t address, std::size_t slot, d
                    reinterpret_cast<const char *>(&value), 8);
 }
 
-/* ---- List<float64> 读写 ---- */
+/* ---- ScalarStorage<float64> 读写 ---- */
 inline std::vector<double> readListF64(Context &ctx, std::int64_t handle)
 {
-    Memory::Vector<Value> raw;
-    std::vector<double> out;
-    if (!collection_glue::readList(ctx, handle, raw))
-    {
-        ctx.fail("读取 List<float64> 失败");
-        return out;
-    }
-    out.reserve(raw.size());
-    for (const Value &item : raw) out.push_back(item.asFloat());
-    return out;
+    const auto values = scalar_buffer::read<double>(ctx, handle);
+    return std::vector<double>(values.begin(), values.end());
 }
 inline std::int64_t makeListF64(Context &ctx, const std::vector<double> &values)
 {
-    const std::int64_t list = collection_glue::makeList(ctx);
-    for (double value : values) collection_glue::listPush(ctx, list, Value::fromFloat(value));
-    return list;
+    return scalar_buffer::make(ctx, values);
 }
 
 /* ---- Matrix / Vector 结构体读写（摊平槽） ---- */
@@ -494,10 +485,8 @@ inline std::int64_t matrixSolve(Context &ctx, Matrix input, Vector rhs)
 {
     const auto rows = input.field<std::int64_t>(0);
     const auto cols = input.field<std::int64_t>(1);
-    auto lu = magel_glue::Codec<Memory::Vector<Scalar>>::decode(
-        ctx, Value::fromInt(input.field<std::int64_t>(2)));
-    auto b = magel_glue::Codec<Memory::Vector<Scalar>>::decode(
-        ctx, Value::fromInt(rhs.field<std::int64_t>(0)));
+    auto lu = scalar_buffer::read<Scalar>(ctx, input.field<std::int64_t>(2));
+    auto b = scalar_buffer::read<Scalar>(ctx, rhs.field<std::int64_t>(0));
     if (rows < 0 || rows != cols || static_cast<std::uint64_t>(rows) != b.size() || (rows != 0 && (lu.size() / static_cast<std::uint64_t>(rows) != static_cast<std::uint64_t>(rows) || lu.size() % static_cast<std::uint64_t>(rows) != 0)) || (rows == 0 && !lu.empty()))
     {
         ctx.fail("Matrix.solve 维度不匹配");
@@ -547,7 +536,7 @@ inline std::int64_t matrixSolve(Context &ctx, Matrix input, Vector rhs)
         answer[i] = divideScalar(sum, at(i, i));
     }
     const auto address = ctx.makeTemporary(8);
-    writeSlot(ctx, address, 0, magel_glue::Codec<Memory::Vector<Scalar>>::encode(ctx, answer).asInt());
+    writeSlot(ctx, address, 0, scalar_buffer::make(ctx, answer));
     return address;
 }
 
@@ -568,8 +557,7 @@ inline std::int64_t matrixColumn(Context &ctx, Matrix input, std::int64_t key)
         ctx.fail("Matrix.column 列索引越界或维度无效");
         return 0;
     }
-    auto values = magel_glue::Codec<Memory::Vector<Scalar>>::decode(
-        ctx, Value::fromInt(input.field<std::int64_t>(2)));
+    auto values = scalar_buffer::read<Scalar>(ctx, input.field<std::int64_t>(2));
     if (values.size() / static_cast<std::uint64_t>(cols) != static_cast<std::uint64_t>(rows) || values.size() % static_cast<std::uint64_t>(cols) != 0)
     {
         ctx.fail("Matrix.column 存储长度与维度不匹配");
@@ -580,7 +568,7 @@ inline std::int64_t matrixColumn(Context &ctx, Matrix input, std::int64_t key)
     for (std::int64_t row = 0; row < rows; ++row)
         column.push_back(values[static_cast<std::size_t>(row) * static_cast<std::size_t>(cols) + static_cast<std::size_t>(key)]);
     const auto address = ctx.makeTemporary(8);
-    writeSlot(ctx, address, 0, magel_glue::Codec<Memory::Vector<Scalar>>::encode(ctx, column).asInt());
+    writeSlot(ctx, address, 0, scalar_buffer::make(ctx, column));
     return address;
 }
 
@@ -606,7 +594,7 @@ inline bool bindMatrixSolve(magel_glue::Registry &registry, const Memory::String
 /* ---- 绑定泛型求解与六个顶层分解函数 ---- */
 inline bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr)
 {
-    return bindMatrixSolve<float>(registry, "float32", error) && bindMatrixSolve<double>(registry, "float64", error) && bindMatrixSolve<std::int8_t>(registry, "int8", error) && bindMatrixSolve<std::int16_t>(registry, "int16", error) && bindMatrixSolve<std::int32_t>(registry, "int32", error) && bindMatrixSolve<std::int64_t>(registry, "int64", error) && bindMatrixSolve<std::uint8_t>(registry, "uint8", error) && bindMatrixSolve<std::uint16_t>(registry, "uint16", error) && bindMatrixSolve<std::uint32_t>(registry, "uint32", error) && bindMatrixSolve<std::uint64_t>(registry, "uint64", error) && registry.bindTypedWithContext<std::int64_t, Matrix>("std::linalg::luDecompose", [](Context &ctx, Matrix input) -> std::int64_t {
+    return scalar_buffer::bind(registry, error) && bindMatrixSolve<float>(registry, "float32", error) && bindMatrixSolve<double>(registry, "float64", error) && bindMatrixSolve<std::int8_t>(registry, "int8", error) && bindMatrixSolve<std::int16_t>(registry, "int16", error) && bindMatrixSolve<std::int32_t>(registry, "int32", error) && bindMatrixSolve<std::int64_t>(registry, "int64", error) && bindMatrixSolve<std::uint8_t>(registry, "uint8", error) && bindMatrixSolve<std::uint16_t>(registry, "uint16", error) && bindMatrixSolve<std::uint32_t>(registry, "uint32", error) && bindMatrixSolve<std::uint64_t>(registry, "uint64", error) && registry.bindTypedWithContext<std::int64_t, Matrix>("std::linalg::luDecompose", [](Context &ctx, Matrix input) -> std::int64_t {
                    const LUResult r = luDecomposeImpl(ctx, readMatrix(ctx, input));
                    if (r.lower.values.empty()) return 0;
                    const std::int64_t address = ctx.makeTemporary(9u * 8u);

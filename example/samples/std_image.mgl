@@ -45,9 +45,9 @@ int64 main() {
     /* 3. 池化：2x2 最大池化。 */
     Image pooled = image.pool(0, 2, 2).unwrap();
     StringBuilder poolLine = StringBuilder::create();
-    poolLine.appendInt(pooled.width);
+    poolLine.appendInt(pooled.width());
     poolLine.appendChar('x');
-    poolLine.appendInt(pooled.height);
+    poolLine.appendInt(pooled.height());
     poolLine.appendChar(':');
     poolLine.appendInt(pooled.getPixel(0, 0).unwrap().r);
     poolLine.appendChar(',');

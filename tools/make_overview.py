@@ -68,7 +68,7 @@ def draw() -> Canvas:
                     ("生成与构建", "gen.sh → magel / libparser.a"),
                 )),
                 ("编译源码", (
-                    ("预处理与展开", "%include / %if / 宏 / lambda / 泛型"),
+                    ("预处理与展开", "%if / 宏 / lambda / 泛型"),
                     ("解析与降级", "类型检查 → simple_ast → 四元式"),
                 )),
                 ("编译产物", (

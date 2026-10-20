@@ -124,7 +124,7 @@ def main():
 def check_benchmark():
     """执行实际 Magel 测速程序，确认退出轮询、方向键和超时均能正常结束。"""
     source = (BOARD / 'programs/benchmark.mgl').read_text(encoding='utf-8')
-    source = source.replace('%include "board.mgl"', '').replace('int64 main()', 'int64 benchmarkMain()')
+    source = source.replace('import board;', '').replace('board::', '').replace('int64 main()', 'int64 benchmarkMain()')
     mocks = """
 int64 elapsed = 0;
 int64 polls = 0;

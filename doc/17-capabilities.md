@@ -12,7 +12,7 @@
 
 支持[返回控制表达式、语句级具名闭包和字段派生](28-declaration-sugars.md)：隐藏结果绑定保留内部移动、外部复制及借用清理，具名函数复用 fn 捕获，`#derive` 仅生成 Equal/Hash/Clone 并检查字段协议，不生成 Drop。
 
-宏在 Lexer 前做文本替换，支持四种括号按定义顺序组合及重复、每组独立 `..rest` 和跨行大括号实参；捕获文本与调用后代码保留原始行列位置。详见[多括号文本宏](24-literals-operators-macros.md#有序多括号文本宏)。
+源码与宏通过 `module` / `import` 复用，预处理不支持文本文件包含。宏在 Lexer 前做文本替换，支持四种括号按定义顺序组合及重复、每组独立 `..rest` 和跨行大括号实参；捕获文本与调用后代码保留原始行列位置。详见[多括号文本宏](24-literals-operators-macros.md#有序多括号文本宏)。
 
 入口支持 `int64 main` 和 `void main`，无参或接收 `List<String>`；void 入口正常退出码为 0，panic 仍失败。`struct`、`enum`、`interface` 声明的尾分号可选。
 
@@ -25,7 +25,7 @@
 | 错误与清理 | Option、Result、自定义错误传播、`?`、panic、defer、scope(exit)、Drop 与 Closeable |
 | 所有权 | 普通拥有值赋值和按值传参复制；`move` 转移资源。移动后的原绑定禁止读写或重绑，完整移动后可重新声明同名变量 |
 | 引用 | 非空的只读/可变引用；`Option<T const&>` / `Option<T mut&>` 表示可能没有的引用，None 不构造空引用 |
-| 检查 | 独立的借用来源与控制流检查跟踪局部变量、字段、别名、移动和释放；允许别名共享，不实行全局独占借用规则 |
+| 检查 | 独立的借用来源与控制流检查跟踪局部变量、字段、别名、移动、释放及闭包捕获；调用前检查捕获来源，复制、解构和聚合传播保持关联；允许别名共享，不实行全局独占借用规则 |
 
 语言无 GC，拥有值按作用域确定性清理。引用、资源句柄及含引用的聚合仍受各自契约约束；
 手动 `new` 的存储需要按接口释放。静态检查不覆盖任意原始内存操作、外部宿主行为或所有并发失效。
@@ -101,3 +101,8 @@ struct 可以拥有多个 opcode 字段。BigInteger、BigDecimal、File、Proce
 内建标量键与实现 Hash<T> 的自定义键使用 HashMap / HashSet，只有 Equal<bool,T> 而没有 Hash<T>
 的自定义键退化为线性查找的 ArrayMap / ArraySet。哈希碰撞通过 Equal 区分。
 Map、Set 的 keyAt、valAt、at、遍历及默认文本均不承诺排序或插入顺序。String 的完整隔离仍在推进。
+
+
+Image 使用可深复制的 opcode，宽高与连续 RGBA 像素由胶水拥有；width()/height() 查询尺寸，pixels() 导出独立列表快照。TcpSocket、TcpListener 使用不可复制的 opcode，作用域退出自动关闭，显式 move 转移所有权，各连接独立保存读状态与错误。线性代数 Vector<T>、Matrix<T> 保留泛型聚合外观，ScalarArray<T> 的 ScalarStorage opcode 保存内建整数与浮点数值，复制缓冲互不影响。字符串拼接、切片、比较、查找及数值转文本由标准胶水实现；内部入口统一使用 __std_ 前缀，VM 保留执行控制、内存安全与闭包等核心机制。
+
+网络异步入口使用非阻塞轮询和 NET_PENDING，配合协程让出执行权；connectAsync 首批仅接受数值 IPv4，域名解析保留在同步 connect。sendAsync 返回部分发送字节数并接受 offset；receiveLineAsync 保留未完成行，缓冲上限为 1 MiB。

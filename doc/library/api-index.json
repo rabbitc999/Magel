@@ -5168,28 +5168,78 @@
   },
   {
     "module": "std::image",
-    "name": "Image::drop",
+    "name": "Image::width",
     "owner": "Image",
-    "signature": "void drop()",
-    "documentation": "释放对象拥有的资源，调用后遵守本模块失效规则。\n\n**返回值**：void。",
-    "comment": "///< RGBA8888 像素缓冲，行优先，长度 width*height*4。",
+    "signature": "int64 width()",
+    "documentation": "图片宽度，单位像素。\n\n**返回值**：int64。",
+    "comment": "/** @brief 图片宽度，单位像素。 */",
     "parameters": [],
     "returns": {
-      "type": "void",
-      "documentation": "无返回值。"
+      "type": "int64",
+      "documentation": "图片宽度，单位像素。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "obj.drop();",
+    "usage": "obj.width();",
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 66,
+    "line": 78,
     "page": "std-image.md",
     "anchor": "api-0"
+  },
+  {
+    "module": "std::image",
+    "name": "Image::height",
+    "owner": "Image",
+    "signature": "int64 height()",
+    "documentation": "图片高度，单位像素。\n\n**返回值**：int64。",
+    "comment": "/** @brief 图片高度，单位像素。 */",
+    "parameters": [],
+    "returns": {
+      "type": "int64",
+      "documentation": "图片高度，单位像素。"
+    },
+    "errors": {
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.height();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/image.mgl",
+    "line": 80,
+    "page": "std-image.md",
+    "anchor": "api-1"
+  },
+  {
+    "module": "std::image",
+    "name": "Image::pixels",
+    "owner": "Image",
+    "signature": "List<uint8> pixels()",
+    "documentation": "导出独立 RGBA 像素列表，修改返回值不会修改原图。\n\n**返回值**：List<uint8>。",
+    "comment": "/** @brief 导出独立 RGBA 像素列表，修改返回值不会修改原图。 */",
+    "parameters": [],
+    "returns": {
+      "type": "List<uint8>",
+      "documentation": "导出独立 RGBA 像素列表，修改返回值不会修改原图。"
+    },
+    "errors": {
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.pixels();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/image.mgl",
+    "line": 82,
+    "page": "std-image.md",
+    "anchor": "api-2"
   },
   {
     "module": "std::image",
@@ -5217,7 +5267,7 @@
       "documentation": "新图片；宽高不合法时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5225,9 +5275,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 74,
+    "line": 90,
     "page": "std-image.md",
-    "anchor": "api-1"
+    "anchor": "api-3"
   },
   {
     "module": "std::image",
@@ -5249,7 +5299,7 @@
       "documentation": "解码后的图片；格式不识别或数据不完整时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5257,9 +5307,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 97,
+    "line": 102,
     "page": "std-image.md",
-    "anchor": "api-2"
+    "anchor": "api-4"
   },
   {
     "module": "std::image",
@@ -5281,7 +5331,7 @@
       "documentation": "解码后的图片；读取失败或格式不识别时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5289,9 +5339,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 114,
+    "line": 116,
     "page": "std-image.md",
-    "anchor": "api-3"
+    "anchor": "api-5"
   },
   {
     "module": "std::image",
@@ -5306,7 +5356,7 @@
       "documentation": "BMP 文件字节；缓冲长度不符时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5314,9 +5364,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 125,
+    "line": 127,
     "page": "std-image.md",
-    "anchor": "api-4"
+    "anchor": "api-6"
   },
   {
     "module": "std::image",
@@ -5331,7 +5381,7 @@
       "documentation": "PPM 文件字节；缓冲长度不符时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5339,9 +5389,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 136,
+    "line": 138,
     "page": "std-image.md",
-    "anchor": "api-5"
+    "anchor": "api-7"
   },
   {
     "module": "std::image",
@@ -5356,7 +5406,7 @@
       "documentation": "PGM 文件字节；缓冲长度不符时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5364,9 +5414,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 148,
+    "line": 150,
     "page": "std-image.md",
-    "anchor": "api-6"
+    "anchor": "api-8"
   },
   {
     "module": "std::image",
@@ -5388,7 +5438,7 @@
       "documentation": "写入的字节数；编码或写盘失败时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5396,9 +5446,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 160,
+    "line": 162,
     "page": "std-image.md",
-    "anchor": "api-7"
+    "anchor": "api-9"
   },
   {
     "module": "std::image",
@@ -5420,7 +5470,7 @@
       "documentation": "写入的字节数；编码或写盘失败时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5428,9 +5478,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 173,
+    "line": 175,
     "page": "std-image.md",
-    "anchor": "api-8"
+    "anchor": "api-10"
   },
   {
     "module": "std::image",
@@ -5452,7 +5502,7 @@
       "documentation": "写入的字节数；编码或写盘失败时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5460,9 +5510,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 186,
+    "line": 188,
     "page": "std-image.md",
-    "anchor": "api-9"
+    "anchor": "api-11"
   },
   {
     "module": "std::image",
@@ -5490,7 +5540,7 @@
       "documentation": "像素颜色分量；坐标越界时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5498,9 +5548,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 200,
+    "line": 202,
     "page": "std-image.md",
-    "anchor": "api-10"
+    "anchor": "api-12"
   },
   {
     "module": "std::image",
@@ -5552,7 +5602,7 @@
       "documentation": "成功时为 0；坐标越界或分量超范围时返回错误，不修改缓冲。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5560,9 +5610,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 223,
+    "line": 225,
     "page": "std-image.md",
-    "anchor": "api-11"
+    "anchor": "api-13"
   },
   {
     "module": "std::image",
@@ -5596,7 +5646,7 @@
       "documentation": "卷积后的新图片；核形状或缓冲长度不符时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5604,9 +5654,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 246,
+    "line": 248,
     "page": "std-image.md",
-    "anchor": "api-12"
+    "anchor": "api-14"
   },
   {
     "module": "std::image",
@@ -5640,7 +5690,7 @@
       "documentation": "池化后的新图片，尺寸为 (width/kw, height/kh) 向下取整；参数不合法时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5648,9 +5698,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 264,
+    "line": 263,
     "page": "std-image.md",
-    "anchor": "api-13"
+    "anchor": "api-15"
   },
   {
     "module": "std::image",
@@ -5665,7 +5715,7 @@
       "documentation": "长度 width height 的灰度缓冲，每像素按 BT.601 亮度取值；缓冲长度不符时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5673,9 +5723,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 279,
+    "line": 275,
     "page": "std-image.md",
-    "anchor": "api-14"
+    "anchor": "api-16"
   },
   {
     "module": "std::image",
@@ -5709,7 +5759,7 @@
       "documentation": "三通道同值、透明度 255 的图片；缓冲长度不符时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5717,9 +5767,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 293,
+    "line": 289,
     "page": "std-image.md",
-    "anchor": "api-15"
+    "anchor": "api-17"
   },
   {
     "module": "std::image",
@@ -5734,7 +5784,7 @@
       "documentation": "每像素一个 uint32 的列表，布局 (A<<24)|(R<<16)|(G<<8)|B；缓冲长度不符时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5742,9 +5792,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 308,
+    "line": 301,
     "page": "std-image.md",
-    "anchor": "api-16"
+    "anchor": "api-18"
   },
   {
     "module": "std::image",
@@ -5778,7 +5828,7 @@
       "documentation": "还原后的图片；缓冲长度不符时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5786,9 +5836,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 322,
+    "line": 315,
     "page": "std-image.md",
-    "anchor": "api-17"
+    "anchor": "api-19"
   },
   {
     "module": "std::image",
@@ -5803,7 +5853,7 @@
       "documentation": "每像素一个 uint16 的列表，R 高 5 位、G 中 6 位、B 低 5 位；缓冲长度不符时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5811,9 +5861,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 337,
+    "line": 327,
     "page": "std-image.md",
-    "anchor": "api-18"
+    "anchor": "api-20"
   },
   {
     "module": "std::image",
@@ -5847,7 +5897,7 @@
       "documentation": "还原后的图片，5/6 位分量按高位复制扩展回 8 位；缓冲长度不符时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5855,9 +5905,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 351,
+    "line": 341,
     "page": "std-image.md",
-    "anchor": "api-19"
+    "anchor": "api-21"
   },
   {
     "module": "std::image",
@@ -5872,7 +5922,7 @@
       "documentation": "使类间方差最大的灰度阈值，0..255；图片无效时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5880,9 +5930,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 366,
+    "line": 353,
     "page": "std-image.md",
-    "anchor": "api-20"
+    "anchor": "api-22"
   },
   {
     "module": "std::image",
@@ -5922,7 +5972,7 @@
       "documentation": "二值化后的灰度缓冲；阈值越界或缓冲长度不符时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5930,9 +5980,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 382,
+    "line": 369,
     "page": "std-image.md",
-    "anchor": "api-21"
+    "anchor": "api-23"
   },
   {
     "module": "std::image",
@@ -5947,7 +5997,7 @@
       "documentation": "0/255 灰度缓冲；任何一步失败时返回错误。"
     },
     "errors": {
-      "documentation": "Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
+      "documentation": "Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。",
       "preconditions": [],
       "panic": false
     },
@@ -5955,9 +6005,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/image.mgl",
-    "line": 393,
+    "line": 380,
     "page": "std-image.md",
-    "anchor": "api-22"
+    "anchor": "api-24"
   },
   {
     "module": "std::io",
@@ -11315,6 +11365,31 @@
   },
   {
     "module": "std::lang",
+    "name": "String::length",
+    "owner": "String",
+    "signature": "int64 length()",
+    "documentation": "返回 UTF-8 文本的字节长度。\n\n**返回值**：int64。不包括终止零字节的长度。",
+    "comment": "/** @brief 返回 UTF-8 文本的字节长度。\n     * @return 不包括终止零字节的长度。 */",
+    "parameters": [],
+    "returns": {
+      "type": "int64",
+      "documentation": "不包括终止零字节的长度。"
+    },
+    "errors": {
+      "documentation": "自动加载，无需 import。Option/Result 通过 match 或 isValue/isOk 分支处理；unwrap/expect 在失败分支触发 panic。浮点转整数向零截断，范围检查见各重载；字节编码默认小端。拥有值按值复制，引用的生命周期不得超过来源。 List.pop 空列表报错，列表/集合/映射的按位置访问需有效下标。Set/Map 的 has/contains 返回 int64 的 0/1；List 的同名接口返回 bool。Any.getReference/getOptional 的 const/mut 由接收上下文决定，返回引用受盒子寿命限制。BigDecimal 精度范围 1..100000。内存内建接受有效存储引用，字节计数不是元素数量。$assert(condition) 和 $assert(condition,message) 为宏调用，自动添加调用点行号，宏体自带分号。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.length();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/lang.mgl",
+    "line": 9,
+    "page": "std-lang.md",
+    "anchor": "api-0"
+  },
+  {
+    "module": "std::lang",
     "name": "readLine",
     "owner": "",
     "signature": "String readLine()",
@@ -11336,9 +11411,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 35,
+    "line": 37,
     "page": "std-lang.md",
-    "anchor": "api-0"
+    "anchor": "api-1"
   },
   {
     "module": "std::lang",
@@ -11370,9 +11445,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 39,
+    "line": 41,
     "page": "std-lang.md",
-    "anchor": "api-1"
+    "anchor": "api-2"
   },
   {
     "module": "std::lang",
@@ -11404,9 +11479,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 43,
+    "line": 45,
     "page": "std-lang.md",
-    "anchor": "api-2"
+    "anchor": "api-3"
   },
   {
     "module": "std::lang",
@@ -11436,9 +11511,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 49,
+    "line": 51,
     "page": "std-lang.md",
-    "anchor": "api-3"
+    "anchor": "api-4"
   },
   {
     "module": "std::lang",
@@ -11468,9 +11543,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 55,
+    "line": 57,
     "page": "std-lang.md",
-    "anchor": "api-4"
+    "anchor": "api-5"
   },
   {
     "module": "std::lang",
@@ -11500,9 +11575,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 57,
+    "line": 59,
     "page": "std-lang.md",
-    "anchor": "api-5"
+    "anchor": "api-6"
   },
   {
     "module": "std::lang",
@@ -11532,9 +11607,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 59,
+    "line": 61,
     "page": "std-lang.md",
-    "anchor": "api-6"
+    "anchor": "api-7"
   },
   {
     "module": "std::lang",
@@ -11570,9 +11645,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 66,
+    "line": 68,
     "page": "std-lang.md",
-    "anchor": "api-7"
+    "anchor": "api-8"
   },
   {
     "module": "std::lang",
@@ -11602,9 +11677,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 68,
+    "line": 70,
     "page": "std-lang.md",
-    "anchor": "api-8"
+    "anchor": "api-9"
   },
   {
     "module": "std::lang",
@@ -11640,9 +11715,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 70,
+    "line": 72,
     "page": "std-lang.md",
-    "anchor": "api-9"
+    "anchor": "api-10"
   },
   {
     "module": "std::lang",
@@ -11672,9 +11747,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 75,
+    "line": 77,
     "page": "std-lang.md",
-    "anchor": "api-10"
+    "anchor": "api-11"
   },
   {
     "module": "std::lang",
@@ -11716,9 +11791,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 77,
+    "line": 79,
     "page": "std-lang.md",
-    "anchor": "api-11"
+    "anchor": "api-12"
   },
   {
     "module": "std::lang",
@@ -11754,9 +11829,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 82,
+    "line": 84,
     "page": "std-lang.md",
-    "anchor": "api-12"
+    "anchor": "api-13"
   },
   {
     "module": "std::lang",
@@ -11792,9 +11867,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 84,
+    "line": 86,
     "page": "std-lang.md",
-    "anchor": "api-13"
+    "anchor": "api-14"
   },
   {
     "module": "std::lang",
@@ -11824,9 +11899,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 86,
+    "line": 88,
     "page": "std-lang.md",
-    "anchor": "api-14"
+    "anchor": "api-15"
   },
   {
     "module": "std::lang",
@@ -11874,9 +11949,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 88,
+    "line": 90,
     "page": "std-lang.md",
-    "anchor": "api-15"
+    "anchor": "api-16"
   },
   {
     "module": "std::lang",
@@ -11918,9 +11993,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 93,
+    "line": 95,
     "page": "std-lang.md",
-    "anchor": "api-16"
+    "anchor": "api-17"
   },
   {
     "module": "std::lang",
@@ -11962,9 +12037,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 95,
+    "line": 97,
     "page": "std-lang.md",
-    "anchor": "api-17"
+    "anchor": "api-18"
   },
   {
     "module": "std::lang",
@@ -12000,9 +12075,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 100,
+    "line": 102,
     "page": "std-lang.md",
-    "anchor": "api-18"
+    "anchor": "api-19"
   },
   {
     "module": "std::lang",
@@ -12038,9 +12113,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 107,
+    "line": 109,
     "page": "std-lang.md",
-    "anchor": "api-19"
+    "anchor": "api-20"
   },
   {
     "module": "std::lang",
@@ -12070,9 +12145,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 109,
+    "line": 111,
     "page": "std-lang.md",
-    "anchor": "api-20"
+    "anchor": "api-21"
   },
   {
     "module": "std::lang",
@@ -12108,9 +12183,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 111,
+    "line": 113,
     "page": "std-lang.md",
-    "anchor": "api-21"
+    "anchor": "api-22"
   },
   {
     "module": "std::lang",
@@ -12140,9 +12215,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 116,
+    "line": 118,
     "page": "std-lang.md",
-    "anchor": "api-22"
+    "anchor": "api-23"
   },
   {
     "module": "std::lang",
@@ -12184,9 +12259,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 118,
+    "line": 120,
     "page": "std-lang.md",
-    "anchor": "api-23"
+    "anchor": "api-24"
   },
   {
     "module": "std::lang",
@@ -12222,9 +12297,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 123,
+    "line": 125,
     "page": "std-lang.md",
-    "anchor": "api-24"
+    "anchor": "api-25"
   },
   {
     "module": "std::lang",
@@ -12260,9 +12335,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 125,
+    "line": 127,
     "page": "std-lang.md",
-    "anchor": "api-25"
+    "anchor": "api-26"
   },
   {
     "module": "std::lang",
@@ -12292,9 +12367,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 127,
+    "line": 129,
     "page": "std-lang.md",
-    "anchor": "api-26"
+    "anchor": "api-27"
   },
   {
     "module": "std::lang",
@@ -12342,9 +12417,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 129,
+    "line": 131,
     "page": "std-lang.md",
-    "anchor": "api-27"
+    "anchor": "api-28"
   },
   {
     "module": "std::lang",
@@ -12386,9 +12461,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 134,
+    "line": 136,
     "page": "std-lang.md",
-    "anchor": "api-28"
+    "anchor": "api-29"
   },
   {
     "module": "std::lang",
@@ -12430,9 +12505,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 136,
+    "line": 138,
     "page": "std-lang.md",
-    "anchor": "api-29"
+    "anchor": "api-30"
   },
   {
     "module": "std::lang",
@@ -12468,9 +12543,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 141,
+    "line": 143,
     "page": "std-lang.md",
-    "anchor": "api-30"
+    "anchor": "api-31"
   },
   {
     "module": "std::lang",
@@ -12478,7 +12553,7 @@
     "owner": "",
     "signature": "void assert(bool condition)",
     "documentation": "condition 为真时继续，为假时以指定诊断文本和可选行号触发 panic。\n\n**返回值**：void。",
-    "comment": "/*\n * 中止统一走 std::lang::panic：编译器与虚拟机里只有 `__vm_panic` 这一个停机原语，\n * `exit(n)` 与内建 `assert(x)` 都已删除。需要断言时用下面这几个函数 —— 它们自己\n * 调 `std::lang::panic`，所以停机清理只有一条入口；带消息的重载让标准库自己的前置检查\n * 也能给出人话（例如 range 的步长）。\n *\n * 带 `int64 line` 的重载给文件末尾的系统宏 `$assert(...)` 用：宏把调用点的 `$line`\n * 传进来，失败时就地报出**源码行号**，不必每处自己写文案。\n */",
+    "comment": "/*\n * 中止统一走 std::lang::panic：编译器与虚拟机里只有 `__std_panic` 这一个停机原语，\n * `exit(n)` 与内建 `assert(x)` 都已删除。需要断言时用下面这几个函数 —— 它们自己\n * 调 `std::lang::panic`，所以停机清理只有一条入口；带消息的重载让标准库自己的前置检查\n * 也能给出人话（例如 range 的步长）。\n *\n * 带 `int64 line` 的重载给文件末尾的系统宏 `$assert(...)` 用：宏把调用点的 `$line`\n * 传进来，失败时就地报出**源码行号**，不必每处自己写文案。\n */",
     "parameters": [
       {
         "name": "condition",
@@ -12502,9 +12577,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 154,
+    "line": 156,
     "page": "std-lang.md",
-    "anchor": "api-31"
+    "anchor": "api-32"
   },
   {
     "module": "std::lang",
@@ -12542,9 +12617,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 158,
+    "line": 160,
     "page": "std-lang.md",
-    "anchor": "api-32"
+    "anchor": "api-33"
   },
   {
     "module": "std::lang",
@@ -12582,9 +12657,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 162,
+    "line": 164,
     "page": "std-lang.md",
-    "anchor": "api-33"
+    "anchor": "api-34"
   },
   {
     "module": "std::lang",
@@ -12628,9 +12703,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 166,
+    "line": 168,
     "page": "std-lang.md",
-    "anchor": "api-34"
+    "anchor": "api-35"
   },
   {
     "module": "std::lang",
@@ -12653,9 +12728,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 177,
+    "line": 179,
     "page": "std-lang.md",
-    "anchor": "api-35"
+    "anchor": "api-36"
   },
   {
     "module": "std::lang",
@@ -12678,9 +12753,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 179,
+    "line": 181,
     "page": "std-lang.md",
-    "anchor": "api-36"
+    "anchor": "api-37"
   },
   {
     "module": "std::lang",
@@ -12710,9 +12785,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 181,
+    "line": 183,
     "page": "std-lang.md",
-    "anchor": "api-37"
+    "anchor": "api-38"
   },
   {
     "module": "std::lang",
@@ -12735,9 +12810,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 186,
+    "line": 188,
     "page": "std-lang.md",
-    "anchor": "api-38"
+    "anchor": "api-39"
   },
   {
     "module": "std::lang",
@@ -12760,9 +12835,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 192,
+    "line": 194,
     "page": "std-lang.md",
-    "anchor": "api-39"
+    "anchor": "api-40"
   },
   {
     "module": "std::lang",
@@ -12792,9 +12867,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 196,
+    "line": 198,
     "page": "std-lang.md",
-    "anchor": "api-40"
+    "anchor": "api-41"
   },
   {
     "module": "std::lang",
@@ -12817,9 +12892,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 197,
+    "line": 199,
     "page": "std-lang.md",
-    "anchor": "api-41"
+    "anchor": "api-42"
   },
   {
     "module": "std::lang",
@@ -12842,9 +12917,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 206,
+    "line": 208,
     "page": "std-lang.md",
-    "anchor": "api-42"
+    "anchor": "api-43"
   },
   {
     "module": "std::lang",
@@ -12867,9 +12942,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 209,
+    "line": 211,
     "page": "std-lang.md",
-    "anchor": "api-43"
+    "anchor": "api-44"
   },
   {
     "module": "std::lang",
@@ -12894,9 +12969,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 219,
+    "line": 221,
     "page": "std-lang.md",
-    "anchor": "api-44"
+    "anchor": "api-45"
   },
   {
     "module": "std::lang",
@@ -12926,9 +13001,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 228,
+    "line": 230,
     "page": "std-lang.md",
-    "anchor": "api-45"
+    "anchor": "api-46"
   },
   {
     "module": "std::lang",
@@ -12958,9 +13033,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 237,
+    "line": 239,
     "page": "std-lang.md",
-    "anchor": "api-46"
+    "anchor": "api-47"
   },
   {
     "module": "std::lang",
@@ -12990,9 +13065,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 246,
+    "line": 248,
     "page": "std-lang.md",
-    "anchor": "api-47"
+    "anchor": "api-48"
   },
   {
     "module": "std::lang",
@@ -13022,9 +13097,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 255,
+    "line": 257,
     "page": "std-lang.md",
-    "anchor": "api-48"
+    "anchor": "api-49"
   },
   {
     "module": "std::lang",
@@ -13047,9 +13122,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 268,
+    "line": 270,
     "page": "std-lang.md",
-    "anchor": "api-49"
+    "anchor": "api-50"
   },
   {
     "module": "std::lang",
@@ -13072,9 +13147,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 278,
+    "line": 280,
     "page": "std-lang.md",
-    "anchor": "api-50"
+    "anchor": "api-51"
   },
   {
     "module": "std::lang",
@@ -13104,9 +13179,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 284,
+    "line": 286,
     "page": "std-lang.md",
-    "anchor": "api-51"
+    "anchor": "api-52"
   },
   {
     "module": "std::lang",
@@ -13129,9 +13204,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 285,
+    "line": 287,
     "page": "std-lang.md",
-    "anchor": "api-52"
+    "anchor": "api-53"
   },
   {
     "module": "std::lang",
@@ -13154,9 +13229,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 291,
+    "line": 293,
     "page": "std-lang.md",
-    "anchor": "api-53"
+    "anchor": "api-54"
   },
   {
     "module": "std::lang",
@@ -13179,9 +13254,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 300,
+    "line": 302,
     "page": "std-lang.md",
-    "anchor": "api-54"
+    "anchor": "api-55"
   },
   {
     "module": "std::lang",
@@ -13204,9 +13279,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 303,
+    "line": 305,
     "page": "std-lang.md",
-    "anchor": "api-55"
+    "anchor": "api-56"
   },
   {
     "module": "std::lang",
@@ -13231,9 +13306,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 313,
+    "line": 315,
     "page": "std-lang.md",
-    "anchor": "api-56"
+    "anchor": "api-57"
   },
   {
     "module": "std::lang",
@@ -13263,9 +13338,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 322,
+    "line": 324,
     "page": "std-lang.md",
-    "anchor": "api-57"
+    "anchor": "api-58"
   },
   {
     "module": "std::lang",
@@ -13295,9 +13370,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 331,
+    "line": 333,
     "page": "std-lang.md",
-    "anchor": "api-58"
+    "anchor": "api-59"
   },
   {
     "module": "std::lang",
@@ -13320,9 +13395,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 341,
+    "line": 343,
     "page": "std-lang.md",
-    "anchor": "api-59"
+    "anchor": "api-60"
   },
   {
     "module": "std::lang",
@@ -13345,9 +13420,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 351,
+    "line": 353,
     "page": "std-lang.md",
-    "anchor": "api-60"
+    "anchor": "api-61"
   },
   {
     "module": "std::lang",
@@ -13377,9 +13452,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 360,
+    "line": 362,
     "page": "std-lang.md",
-    "anchor": "api-61"
+    "anchor": "api-62"
   },
   {
     "module": "std::lang",
@@ -13409,9 +13484,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 369,
+    "line": 371,
     "page": "std-lang.md",
-    "anchor": "api-62"
+    "anchor": "api-63"
   },
   {
     "module": "std::lang",
@@ -13447,9 +13522,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 390,
+    "line": 392,
     "page": "std-lang.md",
-    "anchor": "api-63"
+    "anchor": "api-64"
   },
   {
     "module": "std::lang",
@@ -13487,9 +13562,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 446,
+    "line": 448,
     "page": "std-lang.md",
-    "anchor": "api-64"
+    "anchor": "api-65"
   },
   {
     "module": "std::lang",
@@ -13521,9 +13596,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 456,
+    "line": 458,
     "page": "std-lang.md",
-    "anchor": "api-65"
+    "anchor": "api-66"
   },
   {
     "module": "std::lang",
@@ -13546,9 +13621,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 465,
+    "line": 467,
     "page": "std-lang.md",
-    "anchor": "api-66"
+    "anchor": "api-67"
   },
   {
     "module": "std::lang",
@@ -13578,9 +13653,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 489,
+    "line": 491,
     "page": "std-lang.md",
-    "anchor": "api-67"
+    "anchor": "api-68"
   },
   {
     "module": "std::lang",
@@ -13610,9 +13685,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 495,
+    "line": 497,
     "page": "std-lang.md",
-    "anchor": "api-68"
+    "anchor": "api-69"
   },
   {
     "module": "std::lang",
@@ -13642,9 +13717,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 500,
+    "line": 502,
     "page": "std-lang.md",
-    "anchor": "api-69"
+    "anchor": "api-70"
   },
   {
     "module": "std::lang",
@@ -13674,9 +13749,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 507,
+    "line": 509,
     "page": "std-lang.md",
-    "anchor": "api-70"
+    "anchor": "api-71"
   },
   {
     "module": "std::lang",
@@ -13714,7 +13789,7 @@
     "source": "source/magel_generic.hpp",
     "line": 1696,
     "page": "std-lang.md",
-    "anchor": "api-71"
+    "anchor": "api-72"
   },
   {
     "module": "std::lang",
@@ -13760,7 +13835,7 @@
     "source": "source/magel_generic.hpp",
     "line": 1704,
     "page": "std-lang.md",
-    "anchor": "api-72"
+    "anchor": "api-73"
   },
   {
     "module": "std::lang",
@@ -13798,7 +13873,7 @@
     "source": "source/magel_generic.hpp",
     "line": 1719,
     "page": "std-lang.md",
-    "anchor": "api-73"
+    "anchor": "api-74"
   },
   {
     "module": "std::lang",
@@ -13823,7 +13898,7 @@
     "source": "source/magel_generic.hpp",
     "line": 1926,
     "page": "std-lang.md",
-    "anchor": "api-74"
+    "anchor": "api-75"
   },
   {
     "module": "std::lang",
@@ -13848,7 +13923,7 @@
     "source": "source/magel_generic.hpp",
     "line": 1934,
     "page": "std-lang.md",
-    "anchor": "api-75"
+    "anchor": "api-76"
   },
   {
     "module": "std::lang",
@@ -13886,7 +13961,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1205,
     "page": "std-lang.md",
-    "anchor": "api-76"
+    "anchor": "api-77"
   },
   {
     "module": "std::lang",
@@ -13927,7 +14002,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1205,
     "page": "std-lang.md",
-    "anchor": "api-77"
+    "anchor": "api-78"
   },
   {
     "module": "std::lang",
@@ -13965,7 +14040,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1209,
     "page": "std-lang.md",
-    "anchor": "api-78"
+    "anchor": "api-79"
   },
   {
     "module": "std::lang",
@@ -13997,7 +14072,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1255,
     "page": "std-lang.md",
-    "anchor": "api-79"
+    "anchor": "api-80"
   },
   {
     "module": "std::lang",
@@ -14022,7 +14097,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1216,
     "page": "std-lang.md",
-    "anchor": "api-80"
+    "anchor": "api-81"
   },
   {
     "module": "std::lang",
@@ -14047,7 +14122,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1265,
     "page": "std-lang.md",
-    "anchor": "api-81"
+    "anchor": "api-82"
   },
   {
     "module": "std::lang",
@@ -14072,7 +14147,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1270,
     "page": "std-lang.md",
-    "anchor": "api-82"
+    "anchor": "api-83"
   },
   {
     "module": "std::lang",
@@ -14097,7 +14172,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1270,
     "page": "std-lang.md",
-    "anchor": "api-83"
+    "anchor": "api-84"
   },
   {
     "module": "std::lang",
@@ -14122,7 +14197,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1270,
     "page": "std-lang.md",
-    "anchor": "api-84"
+    "anchor": "api-85"
   },
   {
     "module": "std::lang",
@@ -14147,7 +14222,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1270,
     "page": "std-lang.md",
-    "anchor": "api-85"
+    "anchor": "api-86"
   },
   {
     "module": "std::lang",
@@ -14172,7 +14247,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1270,
     "page": "std-lang.md",
-    "anchor": "api-86"
+    "anchor": "api-87"
   },
   {
     "module": "std::lang",
@@ -14197,7 +14272,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1270,
     "page": "std-lang.md",
-    "anchor": "api-87"
+    "anchor": "api-88"
   },
   {
     "module": "std::lang",
@@ -14222,7 +14297,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1270,
     "page": "std-lang.md",
-    "anchor": "api-88"
+    "anchor": "api-89"
   },
   {
     "module": "std::lang",
@@ -14247,7 +14322,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1270,
     "page": "std-lang.md",
-    "anchor": "api-89"
+    "anchor": "api-90"
   },
   {
     "module": "std::lang",
@@ -14279,7 +14354,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1289,
     "page": "std-lang.md",
-    "anchor": "api-90"
+    "anchor": "api-91"
   },
   {
     "module": "std::lang",
@@ -14313,7 +14388,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 635,
     "page": "std-lang.md",
-    "anchor": "api-91"
+    "anchor": "api-92"
   },
   {
     "module": "std::lang",
@@ -14345,7 +14420,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 559,
     "page": "std-lang.md",
-    "anchor": "api-92"
+    "anchor": "api-93"
   },
   {
     "module": "std::lang",
@@ -14377,7 +14452,7 @@
     "source": "source/magel_generic.hpp",
     "line": 1633,
     "page": "std-lang.md",
-    "anchor": "api-93"
+    "anchor": "api-94"
   },
   {
     "module": "std::lang",
@@ -14409,7 +14484,7 @@
     "source": "source/magel_generic.hpp",
     "line": 1639,
     "page": "std-lang.md",
-    "anchor": "api-94"
+    "anchor": "api-95"
   },
   {
     "module": "std::lang",
@@ -14453,7 +14528,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1306,
     "page": "std-lang.md",
-    "anchor": "api-95"
+    "anchor": "api-96"
   },
   {
     "module": "std::lang",
@@ -14497,7 +14572,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1306,
     "page": "std-lang.md",
-    "anchor": "api-96"
+    "anchor": "api-97"
   },
   {
     "module": "std::lang",
@@ -14522,7 +14597,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 870,
     "page": "std-lang.md",
-    "anchor": "api-97"
+    "anchor": "api-98"
   },
   {
     "module": "std::lang",
@@ -14556,7 +14631,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 871,
     "page": "std-lang.md",
-    "anchor": "api-98"
+    "anchor": "api-99"
   },
   {
     "module": "std::lang",
@@ -14594,7 +14669,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 872,
     "page": "std-lang.md",
-    "anchor": "api-99"
+    "anchor": "api-100"
   },
   {
     "module": "std::lang",
@@ -14626,7 +14701,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 873,
     "page": "std-lang.md",
-    "anchor": "api-100"
+    "anchor": "api-101"
   },
   {
     "module": "std::lang",
@@ -14653,7 +14728,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 874,
     "page": "std-lang.md",
-    "anchor": "api-101"
+    "anchor": "api-102"
   },
   {
     "module": "std::lang",
@@ -14685,7 +14760,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 875,
     "page": "std-lang.md",
-    "anchor": "api-102"
+    "anchor": "api-103"
   },
   {
     "module": "std::lang",
@@ -14717,7 +14792,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 876,
     "page": "std-lang.md",
-    "anchor": "api-103"
+    "anchor": "api-104"
   },
   {
     "module": "std::lang",
@@ -14749,7 +14824,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 877,
     "page": "std-lang.md",
-    "anchor": "api-104"
+    "anchor": "api-105"
   },
   {
     "module": "std::lang",
@@ -14781,7 +14856,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 878,
     "page": "std-lang.md",
-    "anchor": "api-105"
+    "anchor": "api-106"
   },
   {
     "module": "std::lang",
@@ -14806,7 +14881,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 879,
     "page": "std-lang.md",
-    "anchor": "api-106"
+    "anchor": "api-107"
   },
   {
     "module": "std::lang",
@@ -14833,7 +14908,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 880,
     "page": "std-lang.md",
-    "anchor": "api-107"
+    "anchor": "api-108"
   },
   {
     "module": "std::lang",
@@ -14858,7 +14933,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 870,
     "page": "std-lang.md",
-    "anchor": "api-108"
+    "anchor": "api-109"
   },
   {
     "module": "std::lang",
@@ -14890,7 +14965,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 888,
     "page": "std-lang.md",
-    "anchor": "api-109"
+    "anchor": "api-110"
   },
   {
     "module": "std::lang",
@@ -14922,7 +14997,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 878,
     "page": "std-lang.md",
-    "anchor": "api-110"
+    "anchor": "api-111"
   },
   {
     "module": "std::lang",
@@ -14954,7 +15029,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 877,
     "page": "std-lang.md",
-    "anchor": "api-111"
+    "anchor": "api-112"
   },
   {
     "module": "std::lang",
@@ -14986,7 +15061,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 875,
     "page": "std-lang.md",
-    "anchor": "api-112"
+    "anchor": "api-113"
   },
   {
     "module": "std::lang",
@@ -15018,7 +15093,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 873,
     "page": "std-lang.md",
-    "anchor": "api-113"
+    "anchor": "api-114"
   },
   {
     "module": "std::lang",
@@ -15043,7 +15118,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 879,
     "page": "std-lang.md",
-    "anchor": "api-114"
+    "anchor": "api-115"
   },
   {
     "module": "std::lang",
@@ -15070,7 +15145,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 880,
     "page": "std-lang.md",
-    "anchor": "api-115"
+    "anchor": "api-116"
   },
   {
     "module": "std::lang",
@@ -15095,7 +15170,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 870,
     "page": "std-lang.md",
-    "anchor": "api-116"
+    "anchor": "api-117"
   },
   {
     "module": "std::lang",
@@ -15133,7 +15208,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 902,
     "page": "std-lang.md",
-    "anchor": "api-117"
+    "anchor": "api-118"
   },
   {
     "module": "std::lang",
@@ -15165,7 +15240,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 878,
     "page": "std-lang.md",
-    "anchor": "api-118"
+    "anchor": "api-119"
   },
   {
     "module": "std::lang",
@@ -15197,7 +15272,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 877,
     "page": "std-lang.md",
-    "anchor": "api-119"
+    "anchor": "api-120"
   },
   {
     "module": "std::lang",
@@ -15229,7 +15304,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 875,
     "page": "std-lang.md",
-    "anchor": "api-120"
+    "anchor": "api-121"
   },
   {
     "module": "std::lang",
@@ -15261,7 +15336,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 906,
     "page": "std-lang.md",
-    "anchor": "api-121"
+    "anchor": "api-122"
   },
   {
     "module": "std::lang",
@@ -15293,7 +15368,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 907,
     "page": "std-lang.md",
-    "anchor": "api-122"
+    "anchor": "api-123"
   },
   {
     "module": "std::lang",
@@ -15318,7 +15393,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 879,
     "page": "std-lang.md",
-    "anchor": "api-123"
+    "anchor": "api-124"
   },
   {
     "module": "std::lang",
@@ -15345,7 +15420,7 @@
     "source": "source/epilogue/aggregate_ownership.cpp",
     "line": 880,
     "page": "std-lang.md",
-    "anchor": "api-124"
+    "anchor": "api-125"
   },
   {
     "module": "std::lang",
@@ -15370,7 +15445,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 738,
     "page": "std-lang.md",
-    "anchor": "api-125"
+    "anchor": "api-126"
   },
   {
     "module": "std::lang",
@@ -15395,7 +15470,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 728,
     "page": "std-lang.md",
-    "anchor": "api-126"
+    "anchor": "api-127"
   },
   {
     "module": "std::lang",
@@ -15427,7 +15502,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 753,
     "page": "std-lang.md",
-    "anchor": "api-127"
+    "anchor": "api-128"
   },
   {
     "module": "std::lang",
@@ -15465,7 +15540,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 759,
     "page": "std-lang.md",
-    "anchor": "api-128"
+    "anchor": "api-129"
   },
   {
     "module": "std::lang",
@@ -15497,7 +15572,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 765,
     "page": "std-lang.md",
-    "anchor": "api-129"
+    "anchor": "api-130"
   },
   {
     "module": "std::lang",
@@ -15529,7 +15604,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 765,
     "page": "std-lang.md",
-    "anchor": "api-130"
+    "anchor": "api-131"
   },
   {
     "module": "std::lang",
@@ -15561,7 +15636,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 773,
     "page": "std-lang.md",
-    "anchor": "api-131"
+    "anchor": "api-132"
   },
   {
     "module": "std::lang",
@@ -15593,7 +15668,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 779,
     "page": "std-lang.md",
-    "anchor": "api-132"
+    "anchor": "api-133"
   },
   {
     "module": "std::lang",
@@ -15625,7 +15700,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 785,
     "page": "std-lang.md",
-    "anchor": "api-133"
+    "anchor": "api-134"
   },
   {
     "module": "std::lang",
@@ -15650,7 +15725,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 791,
     "page": "std-lang.md",
-    "anchor": "api-134"
+    "anchor": "api-135"
   },
   {
     "module": "std::lang",
@@ -15675,7 +15750,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 797,
     "page": "std-lang.md",
-    "anchor": "api-135"
+    "anchor": "api-136"
   },
   {
     "module": "std::lang",
@@ -15707,7 +15782,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 803,
     "page": "std-lang.md",
-    "anchor": "api-136"
+    "anchor": "api-137"
   },
   {
     "module": "std::lang",
@@ -15739,7 +15814,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 803,
     "page": "std-lang.md",
-    "anchor": "api-137"
+    "anchor": "api-138"
   },
   {
     "module": "std::lang",
@@ -15771,7 +15846,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 803,
     "page": "std-lang.md",
-    "anchor": "api-138"
+    "anchor": "api-139"
   },
   {
     "module": "std::lang",
@@ -15803,7 +15878,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 814,
     "page": "std-lang.md",
-    "anchor": "api-139"
+    "anchor": "api-140"
   },
   {
     "module": "std::lang",
@@ -15835,7 +15910,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 820,
     "page": "std-lang.md",
-    "anchor": "api-140"
+    "anchor": "api-141"
   },
   {
     "module": "std::lang",
@@ -15860,7 +15935,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 738,
     "page": "std-lang.md",
-    "anchor": "api-141"
+    "anchor": "api-142"
   },
   {
     "module": "std::lang",
@@ -15885,7 +15960,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 728,
     "page": "std-lang.md",
-    "anchor": "api-142"
+    "anchor": "api-143"
   },
   {
     "module": "std::lang",
@@ -15917,7 +15992,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 717,
     "page": "std-lang.md",
-    "anchor": "api-143"
+    "anchor": "api-144"
   },
   {
     "module": "std::lang",
@@ -15949,7 +16024,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 753,
     "page": "std-lang.md",
-    "anchor": "api-144"
+    "anchor": "api-145"
   },
   {
     "module": "std::lang",
@@ -15974,7 +16049,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 836,
     "page": "std-lang.md",
-    "anchor": "api-145"
+    "anchor": "api-146"
   },
   {
     "module": "std::lang",
@@ -15999,7 +16074,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 842,
     "page": "std-lang.md",
-    "anchor": "api-146"
+    "anchor": "api-147"
   },
   {
     "module": "std::lang",
@@ -16024,7 +16099,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 848,
     "page": "std-lang.md",
-    "anchor": "api-147"
+    "anchor": "api-148"
   },
   {
     "module": "std::lang",
@@ -16049,7 +16124,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 848,
     "page": "std-lang.md",
-    "anchor": "api-148"
+    "anchor": "api-149"
   },
   {
     "module": "std::lang",
@@ -16074,7 +16149,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 848,
     "page": "std-lang.md",
-    "anchor": "api-149"
+    "anchor": "api-150"
   },
   {
     "module": "std::lang",
@@ -16106,7 +16181,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 858,
     "page": "std-lang.md",
-    "anchor": "api-150"
+    "anchor": "api-151"
   },
   {
     "module": "std::lang",
@@ -16144,7 +16219,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 864,
     "page": "std-lang.md",
-    "anchor": "api-151"
+    "anchor": "api-152"
   },
   {
     "module": "std::lang",
@@ -16169,7 +16244,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 728,
     "page": "std-lang.md",
-    "anchor": "api-152"
+    "anchor": "api-153"
   },
   {
     "module": "std::lang",
@@ -16194,7 +16269,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 890,
     "page": "std-lang.md",
-    "anchor": "api-153"
+    "anchor": "api-154"
   },
   {
     "module": "std::lang",
@@ -16219,7 +16294,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 897,
     "page": "std-lang.md",
-    "anchor": "api-154"
+    "anchor": "api-155"
   },
   {
     "module": "std::lang",
@@ -16251,7 +16326,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 913,
     "page": "std-lang.md",
-    "anchor": "api-155"
+    "anchor": "api-156"
   },
   {
     "module": "std::lang",
@@ -16276,7 +16351,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 134,
     "page": "std-lang.md",
-    "anchor": "api-156"
+    "anchor": "api-157"
   },
   {
     "module": "std::lang",
@@ -16301,7 +16376,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 134,
     "page": "std-lang.md",
-    "anchor": "api-157"
+    "anchor": "api-158"
   },
   {
     "module": "std::lang",
@@ -16326,7 +16401,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 134,
     "page": "std-lang.md",
-    "anchor": "api-158"
+    "anchor": "api-159"
   },
   {
     "module": "std::lang",
@@ -16364,7 +16439,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "api-159"
+    "anchor": "api-160"
   },
   {
     "module": "std::lang",
@@ -16402,7 +16477,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "api-160"
+    "anchor": "api-161"
   },
   {
     "module": "std::lang",
@@ -16440,7 +16515,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "api-161"
+    "anchor": "api-162"
   },
   {
     "module": "std::lang",
@@ -16478,7 +16553,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "api-162"
+    "anchor": "api-163"
   },
   {
     "module": "std::lang",
@@ -16516,7 +16591,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "api-163"
+    "anchor": "api-164"
   },
   {
     "module": "std::lang",
@@ -16554,7 +16629,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "api-164"
+    "anchor": "api-165"
   },
   {
     "module": "std::lang",
@@ -16592,7 +16667,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1070,
     "page": "std-lang.md",
-    "anchor": "api-165"
+    "anchor": "api-166"
   },
   {
     "module": "std::lang",
@@ -16630,7 +16705,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "api-166"
+    "anchor": "api-167"
   },
   {
     "module": "std::lang",
@@ -16668,7 +16743,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "api-167"
+    "anchor": "api-168"
   },
   {
     "module": "std::lang",
@@ -16706,7 +16781,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "api-168"
+    "anchor": "api-169"
   },
   {
     "module": "std::lang",
@@ -16744,7 +16819,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 773,
     "page": "std-lang.md",
-    "anchor": "api-169"
+    "anchor": "api-170"
   },
   {
     "module": "std::lang",
@@ -16782,7 +16857,7 @@
     "source": "source/epilogue/boxing.cpp",
     "line": 1651,
     "page": "std-lang.md",
-    "anchor": "api-170"
+    "anchor": "api-171"
   },
   {
     "module": "std::lang",
@@ -16814,7 +16889,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-171"
+    "anchor": "api-172"
   },
   {
     "module": "std::lang",
@@ -16846,7 +16921,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-172"
+    "anchor": "api-173"
   },
   {
     "module": "std::lang",
@@ -16878,7 +16953,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-173"
+    "anchor": "api-174"
   },
   {
     "module": "std::lang",
@@ -16910,7 +16985,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-174"
+    "anchor": "api-175"
   },
   {
     "module": "std::lang",
@@ -16942,7 +17017,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-175"
+    "anchor": "api-176"
   },
   {
     "module": "std::lang",
@@ -16974,7 +17049,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-176"
+    "anchor": "api-177"
   },
   {
     "module": "std::lang",
@@ -17006,7 +17081,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-177"
+    "anchor": "api-178"
   },
   {
     "module": "std::lang",
@@ -17038,7 +17113,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-178"
+    "anchor": "api-179"
   },
   {
     "module": "std::lang",
@@ -17070,7 +17145,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-179"
+    "anchor": "api-180"
   },
   {
     "module": "std::lang",
@@ -17102,7 +17177,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-180"
+    "anchor": "api-181"
   },
   {
     "module": "std::lang",
@@ -17134,7 +17209,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-181"
+    "anchor": "api-182"
   },
   {
     "module": "std::lang",
@@ -17166,7 +17241,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-182"
+    "anchor": "api-183"
   },
   {
     "module": "std::lang",
@@ -17198,7 +17273,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-183"
+    "anchor": "api-184"
   },
   {
     "module": "std::lang",
@@ -17230,7 +17305,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-184"
+    "anchor": "api-185"
   },
   {
     "module": "std::lang",
@@ -17262,7 +17337,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-185"
+    "anchor": "api-186"
   },
   {
     "module": "std::lang",
@@ -17294,7 +17369,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-186"
+    "anchor": "api-187"
   },
   {
     "module": "std::lang",
@@ -17326,7 +17401,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-187"
+    "anchor": "api-188"
   },
   {
     "module": "std::lang",
@@ -17358,7 +17433,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-188"
+    "anchor": "api-189"
   },
   {
     "module": "std::lang",
@@ -17390,7 +17465,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-189"
+    "anchor": "api-190"
   },
   {
     "module": "std::lang",
@@ -17422,7 +17497,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-190"
+    "anchor": "api-191"
   },
   {
     "module": "std::lang",
@@ -17454,7 +17529,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-191"
+    "anchor": "api-192"
   },
   {
     "module": "std::lang",
@@ -17486,7 +17561,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-192"
+    "anchor": "api-193"
   },
   {
     "module": "std::lang",
@@ -17518,7 +17593,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-193"
+    "anchor": "api-194"
   },
   {
     "module": "std::lang",
@@ -17550,7 +17625,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-194"
+    "anchor": "api-195"
   },
   {
     "module": "std::lang",
@@ -17582,7 +17657,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-195"
+    "anchor": "api-196"
   },
   {
     "module": "std::lang",
@@ -17614,7 +17689,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-196"
+    "anchor": "api-197"
   },
   {
     "module": "std::lang",
@@ -17646,7 +17721,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-197"
+    "anchor": "api-198"
   },
   {
     "module": "std::lang",
@@ -17678,7 +17753,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-198"
+    "anchor": "api-199"
   },
   {
     "module": "std::lang",
@@ -17710,7 +17785,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-199"
+    "anchor": "api-200"
   },
   {
     "module": "std::lang",
@@ -17742,7 +17817,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-200"
+    "anchor": "api-201"
   },
   {
     "module": "std::lang",
@@ -17774,7 +17849,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-201"
+    "anchor": "api-202"
   },
   {
     "module": "std::lang",
@@ -17806,7 +17881,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-202"
+    "anchor": "api-203"
   },
   {
     "module": "std::lang",
@@ -17838,7 +17913,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-203"
+    "anchor": "api-204"
   },
   {
     "module": "std::lang",
@@ -17870,7 +17945,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-204"
+    "anchor": "api-205"
   },
   {
     "module": "std::lang",
@@ -17904,7 +17979,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-205"
+    "anchor": "api-206"
   },
   {
     "module": "std::lang",
@@ -17936,7 +18011,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-206"
+    "anchor": "api-207"
   },
   {
     "module": "std::lang",
@@ -17961,7 +18036,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-207"
+    "anchor": "api-208"
   },
   {
     "module": "std::lang",
@@ -17986,7 +18061,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-208"
+    "anchor": "api-209"
   },
   {
     "module": "std::lang",
@@ -18018,7 +18093,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-209"
+    "anchor": "api-210"
   },
   {
     "module": "std::lang",
@@ -18050,7 +18125,7 @@
     "source": "source/magel_generic.hpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-210"
+    "anchor": "api-211"
   },
   {
     "module": "std::lang",
@@ -18082,7 +18157,7 @@
     "source": "source/std/lang.mgl",
     "line": 2,
     "page": "std-lang.md",
-    "anchor": "api-211"
+    "anchor": "api-212"
   },
   {
     "module": "std::lang",
@@ -18114,7 +18189,7 @@
     "source": "source/std/lang.mgl",
     "line": 3,
     "page": "std-lang.md",
-    "anchor": "api-212"
+    "anchor": "api-213"
   },
   {
     "module": "std::lang",
@@ -18146,7 +18221,254 @@
     "source": "source/std/lang.mgl",
     "line": 3,
     "page": "std-lang.md",
-    "anchor": "api-213"
+    "anchor": "api-214"
+  },
+  {
+    "module": "std::linalg",
+    "name": "ScalarArray::len",
+    "owner": "ScalarArray",
+    "signature": "int64 len()",
+    "documentation": "返回当前元素数量。\n\n**返回值**：int64。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "int64",
+      "documentation": "返回当前元素数量。"
+    },
+    "errors": {
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.len();",
+    "examples": [
+      "example/samples/std_linalg_solve_glue.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/linalg.mgl",
+    "line": 26,
+    "page": "std-linalg.md",
+    "anchor": "api-0"
+  },
+  {
+    "module": "std::linalg",
+    "name": "ScalarArray::clear",
+    "owner": "ScalarArray",
+    "signature": "void clear()",
+    "documentation": "移除全部元素。\n\n**返回值**：void。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "void",
+      "documentation": "无返回值。"
+    },
+    "errors": {
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.clear();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/linalg.mgl",
+    "line": 30,
+    "page": "std-linalg.md",
+    "anchor": "api-1"
+  },
+  {
+    "module": "std::linalg",
+    "name": "ScalarArray::at",
+    "owner": "ScalarArray",
+    "signature": "T at(int64 index)",
+    "documentation": "读取从 0 开始的指定位置。\n\n**返回值**：T。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "index",
+        "label": "int64 index",
+        "documentation": "从 0 开始的位置",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "T",
+      "documentation": "读取从 0 开始的指定位置。"
+    },
+    "errors": {
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.at(index);",
+    "examples": [
+      "example/samples/std_linalg_solve_glue.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/linalg.mgl",
+    "line": 31,
+    "page": "std-linalg.md",
+    "anchor": "api-2"
+  },
+  {
+    "module": "std::linalg",
+    "name": "ScalarArray::index",
+    "owner": "ScalarArray",
+    "signature": "T index(int64 key)",
+    "documentation": "读取 key 对应的元素，供下标语法调用。\n\n**返回值**：T。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "key",
+        "label": "int64 key",
+        "documentation": "查找键或下标",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "T",
+      "documentation": "读取 key 对应的元素，供下标语法调用。"
+    },
+    "errors": {
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.index(key);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/linalg.mgl",
+    "line": 32,
+    "page": "std-linalg.md",
+    "anchor": "api-3"
+  },
+  {
+    "module": "std::linalg",
+    "name": "ScalarArray::set",
+    "owner": "ScalarArray",
+    "signature": "void set(int64 index, T value)",
+    "documentation": "将指定位置或共享槽替换为 value。\n\n**返回值**：void。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "index",
+        "label": "int64 index",
+        "documentation": "从 0 开始的位置",
+        "default": ""
+      },
+      {
+        "name": "value",
+        "label": "T value",
+        "documentation": "输入值或写入的新值",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "void",
+      "documentation": "无返回值。"
+    },
+    "errors": {
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.set(index, value);",
+    "examples": [
+      "example/samples/std_linalg_solve_glue.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/linalg.mgl",
+    "line": 33,
+    "page": "std-linalg.md",
+    "anchor": "api-4"
+  },
+  {
+    "module": "std::linalg",
+    "name": "ScalarArray::push",
+    "owner": "ScalarArray",
+    "signature": "void push(T value)",
+    "documentation": "将 value 追加到列表尾部。\n\n**返回值**：void。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "value",
+        "label": "T value",
+        "documentation": "输入值或写入的新值",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "void",
+      "documentation": "无返回值。"
+    },
+    "errors": {
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.push(value);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/linalg.mgl",
+    "line": 34,
+    "page": "std-linalg.md",
+    "anchor": "api-5"
+  },
+  {
+    "module": "std::linalg",
+    "name": "ScalarArray::copy",
+    "owner": "ScalarArray",
+    "signature": "ScalarArray<T> copy()",
+    "documentation": "返回独立的值副本。\n\n**返回值**：ScalarArray<T>。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "ScalarArray<T>",
+      "documentation": "返回独立的值副本。"
+    },
+    "errors": {
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.copy();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/linalg.mgl",
+    "line": 35,
+    "page": "std-linalg.md",
+    "anchor": "api-6"
+  },
+  {
+    "module": "std::linalg",
+    "name": "ScalarArray::iterator",
+    "owner": "ScalarArray",
+    "signature": "Option<T> iterator(int64 position)",
+    "documentation": "读取指定迭代位置；无元素时返回 None。\n\n**返回值**：Option<T>。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "position",
+        "label": "int64 position",
+        "documentation": "目标绝对位置",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Option<T>",
+      "documentation": "读取指定迭代位置；无元素时返回 None。"
+    },
+    "errors": {
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.iterator(position);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/linalg.mgl",
+    "line": 36,
+    "page": "std-linalg.md",
+    "anchor": "api-7"
   },
   {
     "module": "std::linalg",
@@ -18161,7 +18483,7 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -18169,9 +18491,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 14,
+    "line": 46,
     "page": "std-linalg.md",
-    "anchor": "api-0"
+    "anchor": "api-8"
   },
   {
     "module": "std::linalg",
@@ -18193,7 +18515,7 @@
       "documentation": "创建指定大小并以 T 的默认值填充。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [
         "n >= 0, \"Vector 长度必须非负\""
       ],
@@ -18205,9 +18527,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 16,
+    "line": 48,
     "page": "std-linalg.md",
-    "anchor": "api-1"
+    "anchor": "api-9"
   },
   {
     "module": "std::linalg",
@@ -18235,7 +18557,7 @@
       "documentation": "从连续数组复制元素；带 count 的重载由调用者保证有效范围。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [
         "count >= 0, \"Vector.fromArray 长度必须非负\""
       ],
@@ -18247,9 +18569,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 27,
+    "line": 59,
     "page": "std-linalg.md",
-    "anchor": "api-2"
+    "anchor": "api-10"
   },
   {
     "module": "std::linalg",
@@ -18271,7 +18593,7 @@
       "documentation": "从连续数组复制元素；带 count 的重载由调用者保证有效范围。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -18281,9 +18603,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 34,
+    "line": 66,
     "page": "std-linalg.md",
-    "anchor": "api-3"
+    "anchor": "api-11"
   },
   {
     "module": "std::linalg",
@@ -18298,7 +18620,7 @@
       "documentation": "复制成由调用者作用域管理的独立运行时数组。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -18308,9 +18630,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 36,
+    "line": 68,
     "page": "std-linalg.md",
-    "anchor": "api-4"
+    "anchor": "api-12"
   },
   {
     "module": "std::linalg",
@@ -18332,7 +18654,7 @@
       "documentation": "读取 key 对应的元素，供下标语法调用。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -18340,9 +18662,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 42,
+    "line": 74,
     "page": "std-linalg.md",
-    "anchor": "api-5"
+    "anchor": "api-13"
   },
   {
     "module": "std::linalg",
@@ -18364,7 +18686,7 @@
       "documentation": "读取指定迭代位置；无元素时返回 None。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -18372,9 +18694,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 43,
+    "line": 75,
     "page": "std-linalg.md",
-    "anchor": "api-6"
+    "anchor": "api-14"
   },
   {
     "module": "std::linalg",
@@ -18389,7 +18711,7 @@
       "documentation": "返回当前元素数量。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -18399,9 +18721,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 47,
+    "line": 79,
     "page": "std-linalg.md",
-    "anchor": "api-7"
+    "anchor": "api-15"
   },
   {
     "module": "std::linalg",
@@ -18423,7 +18745,7 @@
       "documentation": "读取从 0 开始的指定位置。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -18433,9 +18755,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 48,
+    "line": 80,
     "page": "std-linalg.md",
-    "anchor": "api-8"
+    "anchor": "api-16"
   },
   {
     "module": "std::linalg",
@@ -18463,7 +18785,7 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -18473,9 +18795,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 49,
+    "line": 81,
     "page": "std-linalg.md",
-    "anchor": "api-9"
+    "anchor": "api-17"
   },
   {
     "module": "std::linalg",
@@ -18497,7 +18819,7 @@
       "documentation": "计算等长向量的点积。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [
         "self.len() == other.len(), \"Vector.dot 维度不匹配\""
       ],
@@ -18507,9 +18829,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 50,
+    "line": 82,
     "page": "std-linalg.md",
-    "anchor": "api-10"
+    "anchor": "api-18"
   },
   {
     "module": "std::linalg",
@@ -18524,7 +18846,7 @@
       "documentation": "返回向量欧氏范数。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -18532,9 +18854,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 57,
+    "line": 89,
     "page": "std-linalg.md",
-    "anchor": "api-11"
+    "anchor": "api-19"
   },
   {
     "module": "std::linalg",
@@ -18549,7 +18871,7 @@
       "documentation": "返回单位向量；零向量报错。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [
         "length > 0.000000000001, \"零向量不能归一化\""
       ],
@@ -18559,9 +18881,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 58,
+    "line": 90,
     "page": "std-linalg.md",
-    "anchor": "api-12"
+    "anchor": "api-20"
   },
   {
     "module": "std::linalg",
@@ -18583,7 +18905,7 @@
       "documentation": "返回同维向量/矩阵逐项相加的新值。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [
         "self.len() == other.len(), \"Vector.add 维度不匹配\""
       ],
@@ -18593,9 +18915,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 63,
+    "line": 95,
     "page": "std-linalg.md",
-    "anchor": "api-13"
+    "anchor": "api-21"
   },
   {
     "module": "std::linalg",
@@ -18617,7 +18939,7 @@
       "documentation": "返回等维数据逐项相减的结果。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [
         "self.len() == other.len(), \"Vector.subtract 维度不匹配\""
       ],
@@ -18627,9 +18949,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 70,
+    "line": 102,
     "page": "std-linalg.md",
-    "anchor": "api-14"
+    "anchor": "api-22"
   },
   {
     "module": "std::linalg",
@@ -18651,7 +18973,7 @@
       "documentation": "返回各分量乘以 factor 的新值。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -18659,9 +18981,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 77,
+    "line": 109,
     "page": "std-linalg.md",
-    "anchor": "api-15"
+    "anchor": "api-23"
   },
   {
     "module": "std::linalg",
@@ -18683,7 +19005,7 @@
       "documentation": "实现左操作数加法接口。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -18691,9 +19013,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 83,
+    "line": 115,
     "page": "std-linalg.md",
-    "anchor": "api-16"
+    "anchor": "api-24"
   },
   {
     "module": "std::linalg",
@@ -18715,7 +19037,7 @@
       "documentation": "实现左操作数减法接口。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -18723,9 +19045,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 84,
+    "line": 116,
     "page": "std-linalg.md",
-    "anchor": "api-17"
+    "anchor": "api-25"
   },
   {
     "module": "std::linalg",
@@ -18747,7 +19069,7 @@
       "documentation": "实现左操作数乘法接口。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -18755,9 +19077,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 85,
+    "line": 117,
     "page": "std-linalg.md",
-    "anchor": "api-18"
+    "anchor": "api-26"
   },
   {
     "module": "std::linalg",
@@ -18772,7 +19094,7 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -18780,9 +19102,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 97,
+    "line": 129,
     "page": "std-linalg.md",
-    "anchor": "api-19"
+    "anchor": "api-27"
   },
   {
     "module": "std::linalg",
@@ -18810,7 +19132,7 @@
       "documentation": "创建指定大小并以 T 的默认值填充。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [
         "rows >= 0 && cols >= 0, \"Matrix 维度必须非负\""
       ],
@@ -18822,9 +19144,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 99,
+    "line": 131,
     "page": "std-linalg.md",
-    "anchor": "api-20"
+    "anchor": "api-28"
   },
   {
     "module": "std::linalg",
@@ -18864,7 +19186,7 @@
       "documentation": "从连续数组复制元素；带 count 的重载由调用者保证有效范围。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [
         "rows >= 0 && cols >= 0 && count >= 0, \"Matrix.fromArray 维度不匹配\"",
         "count == 0, \"Matrix.fromArray 维度不匹配\"",
@@ -18878,9 +19200,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 111,
+    "line": 143,
     "page": "std-linalg.md",
-    "anchor": "api-21"
+    "anchor": "api-29"
   },
   {
     "module": "std::linalg",
@@ -18914,7 +19236,7 @@
       "documentation": "从连续数组复制元素；带 count 的重载由调用者保证有效范围。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -18924,9 +19246,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 120,
+    "line": 152,
     "page": "std-linalg.md",
-    "anchor": "api-22"
+    "anchor": "api-30"
   },
   {
     "module": "std::linalg",
@@ -18941,7 +19263,7 @@
       "documentation": "复制成由调用者作用域管理的独立运行时数组。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -18951,9 +19273,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 124,
+    "line": 156,
     "page": "std-linalg.md",
-    "anchor": "api-23"
+    "anchor": "api-31"
   },
   {
     "module": "std::linalg",
@@ -18975,7 +19297,7 @@
       "documentation": "复制指定列为向量。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -18985,9 +19307,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 131,
+    "line": 163,
     "page": "std-linalg.md",
-    "anchor": "api-24"
+    "anchor": "api-32"
   },
   {
     "module": "std::linalg",
@@ -19009,7 +19331,7 @@
       "documentation": "读取 key 对应的元素，供下标语法调用。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -19017,9 +19339,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 132,
+    "line": 164,
     "page": "std-linalg.md",
-    "anchor": "api-25"
+    "anchor": "api-33"
   },
   {
     "module": "std::linalg",
@@ -19041,7 +19363,7 @@
       "documentation": "读取指定迭代位置；无元素时返回 None。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -19049,9 +19371,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 133,
+    "line": 165,
     "page": "std-linalg.md",
-    "anchor": "api-26"
+    "anchor": "api-34"
   },
   {
     "module": "std::linalg",
@@ -19073,7 +19395,7 @@
       "documentation": "创建单位矩阵。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -19083,9 +19405,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 139,
+    "line": 171,
     "page": "std-linalg.md",
-    "anchor": "api-27"
+    "anchor": "api-35"
   },
   {
     "module": "std::linalg",
@@ -19113,7 +19435,7 @@
       "documentation": "读取从 0 开始的指定位置。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [
         "row >= 0 && row < self.rows && col >= 0 && col < self.cols, \"Matrix.at 越界\""
       ],
@@ -19125,9 +19447,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 145,
+    "line": 177,
     "page": "std-linalg.md",
-    "anchor": "api-28"
+    "anchor": "api-36"
   },
   {
     "module": "std::linalg",
@@ -19161,7 +19483,7 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [
         "row >= 0 && row < self.rows && col >= 0 && col < self.cols, \"Matrix.set 越界\""
       ],
@@ -19173,9 +19495,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 149,
+    "line": 181,
     "page": "std-linalg.md",
-    "anchor": "api-29"
+    "anchor": "api-37"
   },
   {
     "module": "std::linalg",
@@ -19190,7 +19512,7 @@
       "documentation": "返回转置矩阵。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -19198,9 +19520,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 153,
+    "line": 185,
     "page": "std-linalg.md",
-    "anchor": "api-30"
+    "anchor": "api-38"
   },
   {
     "module": "std::linalg",
@@ -19222,7 +19544,7 @@
       "documentation": "返回同维向量/矩阵逐项相加的新值。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [
         "self.rows == other.rows && self.cols == other.cols, \"Matrix.add 维度不匹配\""
       ],
@@ -19232,9 +19554,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 163,
+    "line": 195,
     "page": "std-linalg.md",
-    "anchor": "api-31"
+    "anchor": "api-39"
   },
   {
     "module": "std::linalg",
@@ -19256,7 +19578,7 @@
       "documentation": "返回等维数据逐项相减的结果。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [
         "self.rows == other.rows && self.cols == other.cols, \"Matrix.subtract 维度不匹配\""
       ],
@@ -19266,9 +19588,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 174,
+    "line": 206,
     "page": "std-linalg.md",
-    "anchor": "api-32"
+    "anchor": "api-40"
   },
   {
     "module": "std::linalg",
@@ -19290,7 +19612,7 @@
       "documentation": "返回各分量乘以 factor 的新值。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -19298,9 +19620,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 185,
+    "line": 217,
     "page": "std-linalg.md",
-    "anchor": "api-33"
+    "anchor": "api-41"
   },
   {
     "module": "std::linalg",
@@ -19322,7 +19644,7 @@
       "documentation": "进行矩阵乘法。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [
         "self.cols == other.rows, \"Matrix.multiply 维度不匹配\""
       ],
@@ -19332,9 +19654,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 195,
+    "line": 227,
     "page": "std-linalg.md",
-    "anchor": "api-34"
+    "anchor": "api-42"
   },
   {
     "module": "std::linalg",
@@ -19356,7 +19678,7 @@
       "documentation": "计算矩阵与向量的乘积。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [
         "self.cols == vector.len(), \"Matrix.apply 维度不匹配\""
       ],
@@ -19366,9 +19688,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 211,
+    "line": 243,
     "page": "std-linalg.md",
-    "anchor": "api-35"
+    "anchor": "api-43"
   },
   {
     "module": "std::linalg",
@@ -19390,7 +19712,7 @@
       "documentation": "解线性方程组，返回独立解向量；奇异或维度不符时报错。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -19400,9 +19722,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 224,
+    "line": 256,
     "page": "std-linalg.md",
-    "anchor": "api-36"
+    "anchor": "api-44"
   },
   {
     "module": "std::linalg",
@@ -19424,7 +19746,7 @@
       "documentation": "实现左操作数加法接口。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -19432,9 +19754,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 227,
+    "line": 259,
     "page": "std-linalg.md",
-    "anchor": "api-37"
+    "anchor": "api-45"
   },
   {
     "module": "std::linalg",
@@ -19456,7 +19778,7 @@
       "documentation": "实现左操作数减法接口。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -19464,9 +19786,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 228,
+    "line": 260,
     "page": "std-linalg.md",
-    "anchor": "api-38"
+    "anchor": "api-46"
   },
   {
     "module": "std::linalg",
@@ -19488,7 +19810,7 @@
       "documentation": "实现左操作数乘法接口。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -19496,9 +19818,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 229,
+    "line": 261,
     "page": "std-linalg.md",
-    "anchor": "api-39"
+    "anchor": "api-47"
   },
   {
     "module": "std::linalg",
@@ -19520,7 +19842,7 @@
       "documentation": "实现左操作数乘法接口。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -19528,9 +19850,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 230,
+    "line": 262,
     "page": "std-linalg.md",
-    "anchor": "api-40"
+    "anchor": "api-48"
   },
   {
     "module": "std::linalg",
@@ -19552,7 +19874,7 @@
       "documentation": "实现左操作数乘法接口。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -19560,9 +19882,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 231,
+    "line": 263,
     "page": "std-linalg.md",
-    "anchor": "api-41"
+    "anchor": "api-49"
   },
   {
     "module": "std::linalg",
@@ -19584,7 +19906,7 @@
       "documentation": "计算带主元置换的 LU 分解。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -19592,9 +19914,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 245,
+    "line": 277,
     "page": "std-linalg.md",
-    "anchor": "api-42"
+    "anchor": "api-50"
   },
   {
     "module": "std::linalg",
@@ -19616,7 +19938,7 @@
       "documentation": "计算 LUR 分解结果。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -19624,9 +19946,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 248,
+    "line": 280,
     "page": "std-linalg.md",
-    "anchor": "api-43"
+    "anchor": "api-51"
   },
   {
     "module": "std::linalg",
@@ -19648,7 +19970,7 @@
       "documentation": "计算实对称矩阵的特征分解。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -19656,9 +19978,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 256,
+    "line": 288,
     "page": "std-linalg.md",
-    "anchor": "api-44"
+    "anchor": "api-52"
   },
   {
     "module": "std::linalg",
@@ -19680,7 +20002,7 @@
       "documentation": "计算奇异值分解。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -19688,9 +20010,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 265,
+    "line": 297,
     "page": "std-linalg.md",
-    "anchor": "api-45"
+    "anchor": "api-53"
   },
   {
     "module": "std::linalg",
@@ -19712,7 +20034,7 @@
       "documentation": "计算 2×2 矩阵的 Jordan 分解。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -19720,9 +20042,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 273,
+    "line": 305,
     "page": "std-linalg.md",
-    "anchor": "api-46"
+    "anchor": "api-54"
   },
   {
     "module": "std::linalg",
@@ -19744,7 +20066,7 @@
       "documentation": "将可对角化的实数 2×2 矩阵对角化；不满足条件时报错。"
     },
     "errors": {
-      "documentation": "Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
+      "documentation": "Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。",
       "preconditions": [],
       "panic": false
     },
@@ -19752,9 +20074,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/linalg.mgl",
-    "line": 275,
+    "line": 307,
     "page": "std-linalg.md",
-    "anchor": "api-47"
+    "anchor": "api-55"
   },
   {
     "module": "std::linkedlist",
@@ -21568,13 +21890,13 @@
     "module": "std::net",
     "name": "TcpSocket::connect",
     "owner": "TcpSocket",
-    "signature": "static TcpSocket connect(std::lang::String host, int32 port, int32 timeoutMs)",
+    "signature": "static TcpSocket connect(String host, int32 port, int32 timeoutMs)",
     "documentation": "连接远端 TCP/HTTP 服务。\n\n**返回值**：TcpSocket。",
-    "comment": "/** @brief 连接远端；`timeoutMs > 0` 时带连接超时。 */",
+    "comment": "",
     "parameters": [
       {
         "name": "host",
-        "label": "std::lang::String host",
+        "label": "String host",
         "documentation": "主机名或 IP 地址",
         "default": ""
       },
@@ -21596,7 +21918,7 @@
       "documentation": "连接远端 TCP/HTTP 服务。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -21606,7 +21928,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 58,
+    "line": 67,
     "page": "std-net.md",
     "anchor": "api-0"
   },
@@ -21614,13 +21936,13 @@
     "module": "std::net",
     "name": "TcpSocket::connect",
     "owner": "TcpSocket",
-    "signature": "static TcpSocket connect(std::lang::String host, int32 port)",
+    "signature": "static TcpSocket connect(String host, int32 port)",
     "documentation": "连接远端 TCP/HTTP 服务。\n\n**返回值**：TcpSocket。",
-    "comment": "/** @brief 默认 5 秒连接超时。 */",
+    "comment": "",
     "parameters": [
       {
         "name": "host",
-        "label": "std::lang::String host",
+        "label": "String host",
         "documentation": "主机名或 IP 地址",
         "default": ""
       },
@@ -21636,7 +21958,7 @@
       "documentation": "连接远端 TCP/HTTP 服务。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -21646,9 +21968,243 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 68,
+    "line": 70,
     "page": "std-net.md",
     "anchor": "api-1"
+  },
+  {
+    "module": "std::net",
+    "name": "TcpSocket::connectAsync",
+    "owner": "TcpSocket",
+    "signature": "static TcpSocket connectAsync(String host, int32 port, int32 timeoutMs)",
+    "documentation": "发起数值 IPv4 的非阻塞连接；通过 pollConnect 推进，NET_PENDING 表示进行中。\n\n**返回值**：TcpSocket。",
+    "comment": "/** @brief 发起数值 IPv4 的非阻塞连接；通过 pollConnect 推进，NET_PENDING 表示进行中。 */",
+    "parameters": [
+      {
+        "name": "host",
+        "label": "String host",
+        "documentation": "主机名或 IP 地址",
+        "default": ""
+      },
+      {
+        "name": "port",
+        "label": "int32 port",
+        "documentation": "端口号",
+        "default": ""
+      },
+      {
+        "name": "timeoutMs",
+        "label": "int32 timeoutMs",
+        "documentation": "超时时间，毫秒",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "TcpSocket",
+      "documentation": "发起数值 IPv4 的非阻塞连接；通过 pollConnect 推进，NET_PENDING 表示进行中。"
+    },
+    "errors": {
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::net::TcpSocket::connectAsync(host, port, timeoutMs);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/net.mgl",
+    "line": 74,
+    "page": "std-net.md",
+    "anchor": "api-2"
+  },
+  {
+    "module": "std::net",
+    "name": "TcpSocket::connectAsync",
+    "owner": "TcpSocket",
+    "signature": "static TcpSocket connectAsync(String host, int32 port)",
+    "documentation": "发起默认五秒超时的非阻塞数值 IPv4 连接。\n\n**返回值**：TcpSocket。",
+    "comment": "/** @brief 发起默认五秒超时的非阻塞数值 IPv4 连接。 */",
+    "parameters": [
+      {
+        "name": "host",
+        "label": "String host",
+        "documentation": "主机名或 IP 地址",
+        "default": ""
+      },
+      {
+        "name": "port",
+        "label": "int32 port",
+        "documentation": "端口号",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "TcpSocket",
+      "documentation": "发起默认五秒超时的非阻塞数值 IPv4 连接。"
+    },
+    "errors": {
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::net::TcpSocket::connectAsync(host, port);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/net.mgl",
+    "line": 78,
+    "page": "std-net.md",
+    "anchor": "api-3"
+  },
+  {
+    "module": "std::net",
+    "name": "TcpSocket::pollConnect",
+    "owner": "TcpSocket",
+    "signature": "int64 pollConnect()",
+    "documentation": "立即检查连接结果，返回 NET_PENDING、NET_OK、NET_TIMEOUT 或 NET_ERROR。\n\n**返回值**：int64。",
+    "comment": "/** @brief 立即检查连接结果，返回 NET_PENDING、NET_OK、NET_TIMEOUT 或 NET_ERROR。 */",
+    "parameters": [],
+    "returns": {
+      "type": "int64",
+      "documentation": "立即检查连接结果，返回 NET_PENDING、NET_OK、NET_TIMEOUT 或 NET_ERROR。"
+    },
+    "errors": {
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.pollConnect();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/net.mgl",
+    "line": 82,
+    "page": "std-net.md",
+    "anchor": "api-4"
+  },
+  {
+    "module": "std::net",
+    "name": "TcpSocket::sendAsync",
+    "owner": "TcpSocket",
+    "signature": "int64 sendAsync(String data, int64 offset)",
+    "documentation": "非阻塞发送，从 offset 开始；返回本次发送字节数，未就绪返回零并设置 NET_PENDING。\n\n**返回值**：int64。",
+    "comment": "/** @brief 非阻塞发送，从 offset 开始；返回本次发送字节数，未就绪返回零并设置 NET_PENDING。 */",
+    "parameters": [
+      {
+        "name": "data",
+        "label": "String data",
+        "documentation": "连续存储的首元素引用，调用者保证范围有效",
+        "default": ""
+      },
+      {
+        "name": "offset",
+        "label": "int64 offset",
+        "documentation": "字节偏移或 seek 相对位移",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "int64",
+      "documentation": "非阻塞发送，从 offset 开始；返回本次发送字节数，未就绪返回零并设置 NET_PENDING。"
+    },
+    "errors": {
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.sendAsync(data, offset);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/net.mgl",
+    "line": 84,
+    "page": "std-net.md",
+    "anchor": "api-5"
+  },
+  {
+    "module": "std::net",
+    "name": "TcpSocket::sendAsync",
+    "owner": "TcpSocket",
+    "signature": "int64 sendAsync(String data)",
+    "documentation": "从零偏移开始执行一次非阻塞发送；长消息可能只发送一部分。\n\n**返回值**：int64。",
+    "comment": "/** @brief 从零偏移开始执行一次非阻塞发送；长消息可能只发送一部分。 */",
+    "parameters": [
+      {
+        "name": "data",
+        "label": "String data",
+        "documentation": "连续存储的首元素引用，调用者保证范围有效",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "int64",
+      "documentation": "从零偏移开始执行一次非阻塞发送；长消息可能只发送一部分。"
+    },
+    "errors": {
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.sendAsync(data);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/net.mgl",
+    "line": 86,
+    "page": "std-net.md",
+    "anchor": "api-6"
+  },
+  {
+    "module": "std::net",
+    "name": "TcpSocket::receiveAsync",
+    "owner": "TcpSocket",
+    "signature": "String receiveAsync(int32 maxBytes)",
+    "documentation": "非阻塞读取至多 maxBytes 字节；空串结合 status 区分未就绪、关闭及错误。\n\n**返回值**：String。",
+    "comment": "/** @brief 非阻塞读取至多 maxBytes 字节；空串结合 status 区分未就绪、关闭及错误。 */",
+    "parameters": [
+      {
+        "name": "maxBytes",
+        "label": "int32 maxBytes",
+        "documentation": "最多接收字节数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "String",
+      "documentation": "非阻塞读取至多 maxBytes 字节；空串结合 status 区分未就绪、关闭及错误。"
+    },
+    "errors": {
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.receiveAsync(maxBytes);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/net.mgl",
+    "line": 88,
+    "page": "std-net.md",
+    "anchor": "api-7"
+  },
+  {
+    "module": "std::net",
+    "name": "TcpSocket::receiveLineAsync",
+    "owner": "TcpSocket",
+    "signature": "String receiveLineAsync()",
+    "documentation": "非阻塞读取一行；未完成的内容保留，NET_PENDING 不丢失行缓冲。\n\n**返回值**：String。",
+    "comment": "/** @brief 非阻塞读取一行；未完成的内容保留，NET_PENDING 不丢失行缓冲。 */",
+    "parameters": [],
+    "returns": {
+      "type": "String",
+      "documentation": "非阻塞读取一行；未完成的内容保留，NET_PENDING 不丢失行缓冲。"
+    },
+    "errors": {
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.receiveLineAsync();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/net.mgl",
+    "line": 90,
+    "page": "std-net.md",
+    "anchor": "api-8"
   },
   {
     "module": "std::net",
@@ -21663,7 +22219,7 @@
       "documentation": "判断连接或监听器是否已打开。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -21673,24 +22229,24 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 72,
+    "line": 91,
     "page": "std-net.md",
-    "anchor": "api-2"
+    "anchor": "api-9"
   },
   {
     "module": "std::net",
     "name": "TcpSocket::lastError",
     "owner": "TcpSocket",
-    "signature": "std::lang::String lastError()",
-    "documentation": "返回连接/网络操作最近的错误文本。\n\n**返回值**：std::lang::String。",
-    "comment": "/**\n     * @brief 最近一次出错说明。\n     *\n     * 直接返回字段即可：String 是值语义，`return self.error;` 交出的是独立副本，\n     * 接收者释放后调用方手上的串仍然有效。\n     */",
+    "signature": "String lastError()",
+    "documentation": "返回连接/网络操作最近的错误文本。\n\n**返回值**：String。",
+    "comment": "",
     "parameters": [],
     "returns": {
-      "type": "std::lang::String",
+      "type": "String",
       "documentation": "返回连接/网络操作最近的错误文本。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -21698,9 +22254,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 80,
+    "line": 92,
     "page": "std-net.md",
-    "anchor": "api-3"
+    "anchor": "api-10"
   },
   {
     "module": "std::net",
@@ -21708,14 +22264,14 @@
     "owner": "TcpSocket",
     "signature": "int64 status()",
     "documentation": "返回最近一次网络读取状态码。\n\n**返回值**：int64。",
-    "comment": "/** @brief 最近一次读的结果：NET_OK / NET_CLOSED / NET_TIMEOUT / NET_ERROR。 */",
+    "comment": "",
     "parameters": [],
     "returns": {
       "type": "int64",
       "documentation": "返回最近一次网络读取状态码。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -21725,9 +22281,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 83,
+    "line": 93,
     "page": "std-net.md",
-    "anchor": "api-4"
+    "anchor": "api-11"
   },
   {
     "module": "std::net",
@@ -21735,14 +22291,14 @@
     "owner": "TcpSocket",
     "signature": "void close()",
     "documentation": "关闭底层资源；文档节点会使同文档所有视图失效。\n\n**返回值**：void。",
-    "comment": "/** @brief 关闭连接；重复调用安全。 */",
+    "comment": "",
     "parameters": [],
     "returns": {
       "type": "void",
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -21752,21 +22308,21 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 86,
+    "line": 94,
     "page": "std-net.md",
-    "anchor": "api-5"
+    "anchor": "api-12"
   },
   {
     "module": "std::net",
     "name": "TcpSocket::send",
     "owner": "TcpSocket",
-    "signature": "int64 send(std::lang::String data)",
+    "signature": "int64 send(String data)",
     "documentation": "发送 TCP 文本并返回发送结果。\n\n**返回值**：int64。",
-    "comment": "/** @brief 发送全部文本；返回发送的字节数，失败 -1。 */",
+    "comment": "",
     "parameters": [
       {
         "name": "data",
-        "label": "std::lang::String data",
+        "label": "String data",
         "documentation": "连续存储的首元素引用，调用者保证范围有效",
         "default": ""
       }
@@ -21776,7 +22332,7 @@
       "documentation": "发送 TCP 文本并返回发送结果。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -21788,15 +22344,15 @@
     "source": "source/std/net.mgl",
     "line": 95,
     "page": "std-net.md",
-    "anchor": "api-6"
+    "anchor": "api-13"
   },
   {
     "module": "std::net",
     "name": "TcpSocket::receive",
     "owner": "TcpSocket",
-    "signature": "std::lang::String receive(int32 maxBytes)",
-    "documentation": "读取至多 maxBytes 字节；空串结合 status 判断原因。\n\n**返回值**：std::lang::String。",
-    "comment": "/** @brief 收一段文本（最多 maxBytes 字节）。 */",
+    "signature": "String receive(int32 maxBytes)",
+    "documentation": "读取至多 maxBytes 字节；空串结合 status 判断原因。\n\n**返回值**：String。",
+    "comment": "",
     "parameters": [
       {
         "name": "maxBytes",
@@ -21806,11 +22362,11 @@
       }
     ],
     "returns": {
-      "type": "std::lang::String",
+      "type": "String",
       "documentation": "读取至多 maxBytes 字节；空串结合 status 判断原因。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -21818,17 +22374,17 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 109,
+    "line": 96,
     "page": "std-net.md",
-    "anchor": "api-7"
+    "anchor": "api-14"
   },
   {
     "module": "std::net",
     "name": "TcpSocket::receiveLine",
     "owner": "TcpSocket",
-    "signature": "std::lang::String receiveLine(int32 timeoutMs)",
-    "documentation": "读取一行网络文本；空串时检查 status。\n\n**返回值**：std::lang::String。",
-    "comment": "/** @brief 收一行（不含行尾换行）。 */",
+    "signature": "String receiveLine(int32 timeoutMs)",
+    "documentation": "读取一行网络文本；空串时检查 status。\n\n**返回值**：String。",
+    "comment": "",
     "parameters": [
       {
         "name": "timeoutMs",
@@ -21838,11 +22394,11 @@
       }
     ],
     "returns": {
-      "type": "std::lang::String",
+      "type": "String",
       "documentation": "读取一行网络文本；空串时检查 status。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -21852,21 +22408,21 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 116,
+    "line": 97,
     "page": "std-net.md",
-    "anchor": "api-8"
+    "anchor": "api-15"
   },
   {
     "module": "std::net",
     "name": "TcpListener::listen",
     "owner": "TcpListener",
-    "signature": "static TcpListener listen(std::lang::String host, int32 port, int32 backlog)",
+    "signature": "static TcpListener listen(String host, int32 port, int32 backlog)",
     "documentation": "绑定本机地址并开始监听，返回监听器。\n\n**返回值**：TcpListener。",
     "comment": "",
     "parameters": [
       {
         "name": "host",
-        "label": "std::lang::String host",
+        "label": "String host",
         "documentation": "主机名或 IP 地址",
         "default": ""
       },
@@ -21888,7 +22444,7 @@
       "documentation": "绑定本机地址并开始监听，返回监听器。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -21898,21 +22454,21 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 129,
+    "line": 105,
     "page": "std-net.md",
-    "anchor": "api-9"
+    "anchor": "api-16"
   },
   {
     "module": "std::net",
     "name": "TcpListener::listen",
     "owner": "TcpListener",
-    "signature": "static TcpListener listen(std::lang::String host, int32 port)",
+    "signature": "static TcpListener listen(String host, int32 port)",
     "documentation": "绑定本机地址并开始监听，返回监听器。\n\n**返回值**：TcpListener。",
-    "comment": "/** @brief 默认积压队列 8。 */",
+    "comment": "",
     "parameters": [
       {
         "name": "host",
-        "label": "std::lang::String host",
+        "label": "String host",
         "documentation": "主机名或 IP 地址",
         "default": ""
       },
@@ -21928,7 +22484,7 @@
       "documentation": "绑定本机地址并开始监听，返回监听器。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -21938,9 +22494,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 139,
+    "line": 108,
     "page": "std-net.md",
-    "anchor": "api-10"
+    "anchor": "api-17"
   },
   {
     "module": "std::net",
@@ -21955,7 +22511,7 @@
       "documentation": "判断连接或监听器是否已打开。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -21965,24 +22521,24 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 143,
+    "line": 111,
     "page": "std-net.md",
-    "anchor": "api-11"
+    "anchor": "api-18"
   },
   {
     "module": "std::net",
     "name": "TcpListener::lastError",
     "owner": "TcpListener",
-    "signature": "std::lang::String lastError()",
-    "documentation": "返回连接/网络操作最近的错误文本。\n\n**返回值**：std::lang::String。",
-    "comment": "/** @brief 最近一次出错说明；String 为值语义，返回的是独立副本。 */",
+    "signature": "String lastError()",
+    "documentation": "返回连接/网络操作最近的错误文本。\n\n**返回值**：String。",
+    "comment": "",
     "parameters": [],
     "returns": {
-      "type": "std::lang::String",
+      "type": "String",
       "documentation": "返回连接/网络操作最近的错误文本。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -21990,9 +22546,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 146,
+    "line": 112,
     "page": "std-net.md",
-    "anchor": "api-12"
+    "anchor": "api-19"
   },
   {
     "module": "std::net",
@@ -22000,14 +22556,14 @@
     "owner": "TcpListener",
     "signature": "int64 localPort()",
     "documentation": "返回实际绑定的本地端口。\n\n**返回值**：int64。",
-    "comment": "/** @brief 本端端口（监听器常用端口 0 让系统分配，再从这里读回来）。 */",
+    "comment": "",
     "parameters": [],
     "returns": {
       "type": "int64",
       "documentation": "返回实际绑定的本地端口。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22017,9 +22573,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 149,
+    "line": 113,
     "page": "std-net.md",
-    "anchor": "api-13"
+    "anchor": "api-20"
   },
   {
     "module": "std::net",
@@ -22027,7 +22583,7 @@
     "owner": "TcpListener",
     "signature": "TcpSocket accept(int32 timeoutMs)",
     "documentation": "接受一条 TCP 连接，可指定等待超时。\n\n**返回值**：TcpSocket。",
-    "comment": "/** @brief 等一个连接；超时返回未打开的套接字。 */",
+    "comment": "",
     "parameters": [
       {
         "name": "timeoutMs",
@@ -22041,7 +22597,7 @@
       "documentation": "接受一条 TCP 连接，可指定等待超时。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22051,9 +22607,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 152,
+    "line": 114,
     "page": "std-net.md",
-    "anchor": "api-14"
+    "anchor": "api-21"
   },
   {
     "module": "std::net",
@@ -22061,14 +22617,14 @@
     "owner": "TcpListener",
     "signature": "TcpSocket accept()",
     "documentation": "接受一条 TCP 连接，可指定等待超时。\n\n**返回值**：TcpSocket。",
-    "comment": "/** @brief 默认 5 秒等待。 */",
+    "comment": "",
     "parameters": [],
     "returns": {
       "type": "TcpSocket",
       "documentation": "接受一条 TCP 连接，可指定等待超时。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22078,9 +22634,34 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 162,
+    "line": 115,
     "page": "std-net.md",
-    "anchor": "api-15"
+    "anchor": "api-22"
+  },
+  {
+    "module": "std::net",
+    "name": "TcpListener::acceptAsync",
+    "owner": "TcpListener",
+    "signature": "TcpSocket acceptAsync()",
+    "documentation": "非阻塞接受连接；返回未打开且状态为 NET_PENDING 的值表示暂无连接。\n\n**返回值**：TcpSocket。",
+    "comment": "/** @brief 非阻塞接受连接；返回未打开且状态为 NET_PENDING 的值表示暂无连接。 */",
+    "parameters": [],
+    "returns": {
+      "type": "TcpSocket",
+      "documentation": "非阻塞接受连接；返回未打开且状态为 NET_PENDING 的值表示暂无连接。"
+    },
+    "errors": {
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.acceptAsync();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/net.mgl",
+    "line": 117,
+    "page": "std-net.md",
+    "anchor": "api-23"
   },
   {
     "module": "std::net",
@@ -22095,7 +22676,7 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22105,9 +22686,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 164,
+    "line": 118,
     "page": "std-net.md",
-    "anchor": "api-16"
+    "anchor": "api-24"
   },
   {
     "module": "std::net",
@@ -22122,7 +22703,7 @@
       "documentation": "判断 HTTP 状态码是否位于 200..299。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22130,9 +22711,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 191,
+    "line": 139,
     "page": "std-net.md",
-    "anchor": "api-17"
+    "anchor": "api-25"
   },
   {
     "module": "std::net",
@@ -22154,7 +22735,7 @@
       "documentation": "按名称查找响应头。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22164,9 +22745,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 194,
+    "line": 142,
     "page": "std-net.md",
-    "anchor": "api-18"
+    "anchor": "api-26"
   },
   {
     "module": "std::net",
@@ -22181,7 +22762,7 @@
       "documentation": "返回 URL 的协议部分。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22189,9 +22770,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 221,
+    "line": 169,
     "page": "std-net.md",
-    "anchor": "api-19"
+    "anchor": "api-27"
   },
   {
     "module": "std::net",
@@ -22213,7 +22794,7 @@
       "documentation": "拆分 HTTP URL 的主机、端口和请求路径。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22223,9 +22804,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 223,
+    "line": 171,
     "page": "std-net.md",
-    "anchor": "api-20"
+    "anchor": "api-28"
   },
   {
     "module": "std::net",
@@ -22265,7 +22846,7 @@
       "documentation": "构造 HTTP 请求报文。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22275,9 +22856,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 263,
+    "line": 211,
     "page": "std-net.md",
-    "anchor": "api-21"
+    "anchor": "api-29"
   },
   {
     "module": "std::net",
@@ -22299,7 +22880,7 @@
       "documentation": "解析原始 HTTP 响应报文。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22309,9 +22890,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 289,
+    "line": 237,
     "page": "std-net.md",
-    "anchor": "api-22"
+    "anchor": "api-30"
   },
   {
     "module": "std::net",
@@ -22345,7 +22926,7 @@
       "documentation": "连接远端 TCP/HTTP 服务。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22355,9 +22936,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 337,
+    "line": 285,
     "page": "std-net.md",
-    "anchor": "api-23"
+    "anchor": "api-31"
   },
   {
     "module": "std::net",
@@ -22372,7 +22953,7 @@
       "documentation": "持续读取 HTTP 响应原始文本。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22380,9 +22961,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 344,
+    "line": 292,
     "page": "std-net.md",
-    "anchor": "api-24"
+    "anchor": "api-32"
   },
   {
     "module": "std::net",
@@ -22422,7 +23003,7 @@
       "documentation": "发送构造后的 HTTP 请求并解析响应。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22430,9 +23011,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 356,
+    "line": 304,
     "page": "std-net.md",
-    "anchor": "api-25"
+    "anchor": "api-33"
   },
   {
     "module": "std::net",
@@ -22447,7 +23028,7 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22457,9 +23038,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 378,
+    "line": 326,
     "page": "std-net.md",
-    "anchor": "api-26"
+    "anchor": "api-34"
   },
   {
     "module": "std::net",
@@ -22481,7 +23062,7 @@
       "documentation": "发出 HTTP GET 并返回响应。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22489,9 +23070,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 384,
+    "line": 332,
     "page": "std-net.md",
-    "anchor": "api-27"
+    "anchor": "api-35"
   },
   {
     "module": "std::net",
@@ -22525,7 +23106,7 @@
       "documentation": "提交 HTTP 请求体并返回响应。"
     },
     "errors": {
-      "documentation": "TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22533,9 +23114,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/net.mgl",
-    "line": 409,
+    "line": 357,
     "page": "std-net.md",
-    "anchor": "api-28"
+    "anchor": "api-36"
   },
   {
     "module": "std::numerics",

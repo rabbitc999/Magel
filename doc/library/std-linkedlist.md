@@ -22,27 +22,27 @@ LinkedList 以游标存储：values/prevs/nexts 三个平行列表，下标即�
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-308"></a>`struct ListReply` | 链表胶水回执；槽布局必须与 glue/std_linkedlist.hpp 的 Reply 一致。 |
-| ListReply | <a id="symbol-309"></a>`String error` | 本次胶水调用的错误说明；成功时为空串。 |
-| ListReply | <a id="symbol-310"></a>`int64 cursor` | 新分配节点的游标。 |
-| ListReply | <a id="symbol-311"></a>`int64 flag` | 布尔结果：1 = 成功 / 非空 / 存在。 |
-| ListReply | <a id="symbol-312"></a>`int64 value` | 弹出或查到的值。 |
-| ListReply | <a id="symbol-313"></a>`int64 head` | 更新后的首节点下标。 |
-| ListReply | <a id="symbol-314"></a>`int64 tail` | 更新后的尾节点下标。 |
-| ListReply | <a id="symbol-315"></a>`int64 count` | 更新后的有效节点数。 |
-| ListReply | <a id="symbol-316"></a>`List<int64> outValues` | 更新后的值列表。 |
-| ListReply | <a id="symbol-317"></a>`List<int64> outPrevs` | 更新后的前驱列表。 |
-| ListReply | <a id="symbol-318"></a>`List<int64> outNexts` | 更新后的后继列表。 |
-| ListReply | <a id="symbol-319"></a>`List<int64> outFree` | 更新后的空闲槽列表。 |
-| ListReply | <a id="symbol-320"></a>`List<int64> out` | 按链表顺序导出的值序列。 |
-| 模块 | <a id="symbol-321"></a>`struct LinkedList : Iterator<int64>, Drop` | 双向链表：首尾两端 O(1) 插删，游标位置 O(1) 插删与摘除。 |
-| LinkedList | <a id="symbol-322"></a>`List<int64> values` | 各节点值，下标即槽号。 |
-| LinkedList | <a id="symbol-323"></a>`List<int64> prevs` | 前驱下标，无前驱为 -1。 |
-| LinkedList | <a id="symbol-324"></a>`List<int64> nexts` | 后继下标，无后继为 -1。 |
-| LinkedList | <a id="symbol-325"></a>`List<int64> freeSlots` | 已删除可复用的槽号。 |
-| LinkedList | <a id="symbol-326"></a>`int64 head` | 首节点下标，空表为 -1。 |
-| LinkedList | <a id="symbol-327"></a>`int64 tail` | 尾节点下标，空表为 -1。 |
-| LinkedList | <a id="symbol-328"></a>`int64 count` | 当前有效节点数。 |
+| 模块 | <a id="symbol-311"></a>`struct ListReply` | 链表胶水回执；槽布局必须与 glue/std_linkedlist.hpp 的 Reply 一致。 |
+| ListReply | <a id="symbol-312"></a>`String error` | 本次胶水调用的错误说明；成功时为空串。 |
+| ListReply | <a id="symbol-313"></a>`int64 cursor` | 新分配节点的游标。 |
+| ListReply | <a id="symbol-314"></a>`int64 flag` | 布尔结果：1 = 成功 / 非空 / 存在。 |
+| ListReply | <a id="symbol-315"></a>`int64 value` | 弹出或查到的值。 |
+| ListReply | <a id="symbol-316"></a>`int64 head` | 更新后的首节点下标。 |
+| ListReply | <a id="symbol-317"></a>`int64 tail` | 更新后的尾节点下标。 |
+| ListReply | <a id="symbol-318"></a>`int64 count` | 更新后的有效节点数。 |
+| ListReply | <a id="symbol-319"></a>`List<int64> outValues` | 更新后的值列表。 |
+| ListReply | <a id="symbol-320"></a>`List<int64> outPrevs` | 更新后的前驱列表。 |
+| ListReply | <a id="symbol-321"></a>`List<int64> outNexts` | 更新后的后继列表。 |
+| ListReply | <a id="symbol-322"></a>`List<int64> outFree` | 更新后的空闲槽列表。 |
+| ListReply | <a id="symbol-323"></a>`List<int64> out` | 按链表顺序导出的值序列。 |
+| 模块 | <a id="symbol-324"></a>`struct LinkedList : Iterator<int64>, Drop` | 双向链表：首尾两端 O(1) 插删，游标位置 O(1) 插删与摘除。 |
+| LinkedList | <a id="symbol-325"></a>`List<int64> values` | 各节点值，下标即槽号。 |
+| LinkedList | <a id="symbol-326"></a>`List<int64> prevs` | 前驱下标，无前驱为 -1。 |
+| LinkedList | <a id="symbol-327"></a>`List<int64> nexts` | 后继下标，无后继为 -1。 |
+| LinkedList | <a id="symbol-328"></a>`List<int64> freeSlots` | 已删除可复用的槽号。 |
+| LinkedList | <a id="symbol-329"></a>`int64 head` | 首节点下标，空表为 -1。 |
+| LinkedList | <a id="symbol-330"></a>`int64 tail` | 尾节点下标，空表为 -1。 |
+| LinkedList | <a id="symbol-331"></a>`int64 count` | 当前有效节点数。 |
 
 ## 函数索引
 

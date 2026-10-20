@@ -7,16 +7,48 @@ module std::linalg;
 /* 稠密向量：T 为支持算术的标量；norm/normalized 适用于 float32/float64。 */
 import std::math;
 
+/** @brief 线性代数专用数值存储，缓冲在宿主胶水中深复制和释放。 */
+opcode ScalarStorage {
+    new = std::linalg::__std_scalarNew;
+    drop = std::linalg::__std_scalarDrop;
+    copy = std::linalg::__std_scalarCopy;
+};
+int64 __std_scalarLen(int64 handle);
+void __std_scalarClear(ScalarStorage mut& storage);
+T __std_scalarAt<T>(int64 handle, int64 index);
+void __std_scalarSet<T>(ScalarStorage mut& storage, int64 index, T value);
+void __std_scalarPush<T>(ScalarStorage mut& storage, T value);
+
+/** @brief 为内建数值类型提供泛型索引外观，元素保存在 opcode 中。 */
+struct ScalarArray<T>: Index<T, int64>, Iterator<T> {
+    /** @brief 独占此数组数值缓冲的 opcode 记录；复制时深复制。 */
+    ScalarStorage storage;
+    int64 len() {
+        if (self.storage.opcode == 0) { return 0; }
+        return __std_scalarLen(self.storage.opcode);
+    }
+    void clear() { if (self.storage.opcode == 0) { self.storage = ScalarStorage::new(); } __std_scalarClear(&self.storage); }
+    T at(int64 index) { assert(index >= 0 && index < self.len(), "线性代数存储下标越界"); return __std_scalarAt<T>(self.storage.opcode, index); }
+    T index(int64 key) { return self.at(key); }
+    void set(int64 index, T value) { if (self.storage.opcode == 0) { self.storage = ScalarStorage::new(); } __std_scalarSet<T>(&self.storage, index, value); }
+    void push(T value) { if (self.storage.opcode == 0) { self.storage = ScalarStorage::new(); } __std_scalarPush<T>(&self.storage, value); }
+    ScalarArray<T> copy() { return self; }
+    Option<T> iterator(int64 position) {
+        if (position >= 0 && position < self.len()) { return Option<T>::Value(self.at(position)); }
+        return Option<T>::None;
+    }
+};
+
 struct Vector<T>: Add<Vector<T>, Vector<T>>,
                            Subtract<Vector<T>, Vector<T>>,
                            Multiply<Vector<T>, T>, Index<T, int64>, Iterator<T>, Drop {
-    std::lang::List<T> values;
+    ScalarArray<T> values;
     void drop() { delete self.values; }
 
     static Vector<T> zeros(int64 n) {
         std::lang::assert(n >= 0, "Vector 长度必须非负");
         Vector<T> result;
-        std::lang::List<T> values;
+        ScalarArray<T> values;
         result.values = values.copy();
         T zero;
         int64 i = 0;
@@ -46,7 +78,7 @@ struct Vector<T>: Add<Vector<T>, Vector<T>>,
     }
     int64 len() { return self.values.len(); }
     T at(int64 i) { return self.values.at(i); }
-    void set(int64 i, T value) { self.values[i] = value; }
+    void set(int64 i, T value) { self.values.set(i, value); }
     T dot(Vector<T> other) {
         std::lang::assert(self.len() == other.len(), "Vector.dot 维度不匹配");
         T sum;
@@ -93,14 +125,14 @@ struct Matrix<T>: Add<Matrix<T>, Matrix<T>>,
                            Multiply<Matrix<T>, T>, Index<Vector<T>, int64>, Iterator<Vector<T>>, Drop {
     int64 rows;
     int64 cols;
-    std::lang::List<T> values;
+    ScalarArray<T> values;
     void drop() { delete self.values; }
 
     static Matrix<T> zeros(int64 rows, int64 cols) {
         std::lang::assert(rows >= 0 && cols >= 0, "Matrix 维度必须非负");
         Matrix<T> result;
         result.rows = rows; result.cols = cols;
-        std::lang::List<T> values;
+        ScalarArray<T> values;
         result.values = values.copy();
         T zero;
         int64 i = 0;
@@ -114,7 +146,7 @@ struct Matrix<T>: Add<Matrix<T>, Matrix<T>>,
         else { std::lang::assert(count / rows == cols && count % rows == 0, "Matrix.fromArray 维度不匹配"); }
         Matrix<T> result = Matrix<T>::zeros(rows, cols);
         int64 i = 0;
-        while (i < count) { result.values[i] = std::lang::index(data, i); i = i + 1; }
+        while (i < count) { result.values.set(i, std::lang::index(data, i)); i = i + 1; }
         return result;
     }
     static Matrix<T> fromArray(T data[], int64 rows, int64 cols) {
@@ -148,7 +180,7 @@ struct Matrix<T>: Add<Matrix<T>, Matrix<T>>,
     }
     void set(int64 row, int64 col, T value) {
         std::lang::assert(row >= 0 && row < self.rows && col >= 0 && col < self.cols, "Matrix.set 越界");
-        self.values[row * self.cols + col] = value;
+        self.values.set(row * self.cols + col, value);
     }
     Matrix<T> transpose() {
         Matrix<T> result = Matrix<T>::zeros(self.cols,self.rows);

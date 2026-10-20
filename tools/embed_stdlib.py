@@ -163,6 +163,7 @@ GENERATOR_ASSETS = [
     "glue/lang_numeric.hpp",
     "glue/native_record.hpp",
     "glue/collection_natives.hpp",
+    "glue/scalar_buffer.hpp",
     "glue/collection_storage.hpp",
     "glue/big_number_natives.hpp",
     "glue/file_natives.hpp",

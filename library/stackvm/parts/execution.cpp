@@ -1057,7 +1057,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             (void)ignored;
             nativeNames.emplace(program.symbolKey(name), name);
         }
-        for (const char *name : { "__vm_message_receive_coroutine", "__vm_message_receive_thread", "__vm_message_send_coroutine", "__vm_message_send_thread", "__vm_shared_create", "__vm_shared_get", "__vm_shared_set", "__vm_shared_swap", "main", "std::coroutine::create", "std::coroutine::current", "std::coroutine::parent", "std::coroutine::receive", "std::coroutine::send", "std::coroutine::wait", "std::coroutine::yelid", "std::coroutine::yield", "std::thread::create", "std::thread::current", "std::thread::parent", "std::thread::receive", "std::thread::send", "std::thread::wait" })
+        for (const char *name : { "__std_message_receive_coroutine", "__std_message_receive_thread", "__std_message_send_coroutine", "__std_message_send_thread", "__std_shared_create", "__std_shared_get", "__std_shared_set", "__std_shared_swap", "main", "std::coroutine::create", "std::coroutine::current", "std::coroutine::parent", "std::coroutine::receive", "std::coroutine::send", "std::coroutine::wait", "std::coroutine::yelid", "std::coroutine::yield", "std::thread::create", "std::thread::current", "std::thread::parent", "std::thread::receive", "std::thread::send", "std::thread::wait" })
             nativeNames.emplace(program.symbolKey(Memory::String(name)), name);
         if (data_)
             for (const auto &[name, offset] : data_->symbols)
@@ -1071,7 +1071,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             const auto symbol = item.second;
             const auto alias = nativeNames.find(item.first);
             const auto &name = alias == nativeNames.end() ? item.first : alias->second;
-            specialEntries[symbol] = name.compare(0, 15, "std::coroutine::") == 0 || name.compare(0, 13, "std::thread::") == 0 || name.compare(0, 13, "__vm_message_") == 0 || name.compare(0, 12, "__vm_shared_") == 0;
+            specialEntries[symbol] = name.compare(0, 15, "std::coroutine::") == 0 || name.compare(0, 13, "std::thread::") == 0 || name.compare(0, 13, "__std_message_") == 0 || name.compare(0, 12, "__std_shared_") == 0;
             internalEntries[symbol] = kSlotNatives.find(name);
             if (alias != nativeNames.end()) nativeAliases[symbol] = &alias->second;
         }
@@ -1233,7 +1233,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
      * ① 分配失败：在**失败点只写标志**（`Memory::restartSignal()`，见
      *    `allocator/magel_allocator.hpp`），当前这次申请由 arena 的应急预留兜住，于是当前
      *    指令照常跑完、容器保持自洽；
-     * ② 显式请求：`std::watchdog::requestRestart()` → `__vm_request_restart()` 写同一份标志。
+     * ② 显式请求：`std::watchdog::requestRestart()` → `__std_request_restart()` 写同一份标志。
      * VM 在**下一条指令边界（安全点）**看到标志就停在这里，把本轮标成 `recoverable`。
      * **不抛异常、不 longjmp、不在失败点跳走**。
      * panic 的判定永远排在前面：panic 不是可恢复终止。 */
@@ -1805,14 +1805,14 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         if (optimizeExecution_ && symbol != absent && !specialEntries[symbol] && pc < program.code.size() && &rawName == &program.code[pc].name && plan.code[pc].target != absent && !resolveExternal(symbol, rawName)) return false;
         const auto alias = nativeNames.find(rawName);
         const Memory::String &name = alias == nativeNames.end() ? rawName : alias->second;
-        const bool messageSendThread = name == "__vm_message_send_thread";
-        const bool messageReceiveThread = name == "__vm_message_receive_thread";
-        const bool messageSendCoroutine = name == "__vm_message_send_coroutine";
-        const bool messageReceiveCoroutine = name == "__vm_message_receive_coroutine";
-        const bool sharedCreate = name == "__vm_shared_create";
-        const bool sharedGet = name == "__vm_shared_get";
-        const bool sharedSet = name == "__vm_shared_set";
-        const bool sharedSwap = name == "__vm_shared_swap";
+        const bool messageSendThread = name == "__std_message_send_thread";
+        const bool messageReceiveThread = name == "__std_message_receive_thread";
+        const bool messageSendCoroutine = name == "__std_message_send_coroutine";
+        const bool messageReceiveCoroutine = name == "__std_message_receive_coroutine";
+        const bool sharedCreate = name == "__std_shared_create";
+        const bool sharedGet = name == "__std_shared_get";
+        const bool sharedSet = name == "__std_shared_set";
+        const bool sharedSwap = name == "__std_shared_swap";
         if (messageSendThread || messageReceiveThread || messageSendCoroutine || messageReceiveCoroutine || sharedCreate || sharedGet || sharedSet || sharedSwap)
         {
             const bool send = messageSendThread || messageSendCoroutine;

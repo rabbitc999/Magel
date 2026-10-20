@@ -86,6 +86,6 @@ python magel/tests/test_magel_panic.py --magel magel/magel --exports
 
 前端记录语法节点起始行，降级与发射期间将原始位置写成 `.quad` 的 `# magel-source: 行号 "文件"` 元数据。组装器将其写入已有 SVMB 调试节，因此运行时直接显示 `.mgl:行号`；没有来源元数据的旧四元式仍使用 `.quad` 行号。
 
-`%include` 与 `import` 使用各自文件中的原始行号。宏正文指向定义文件的正文行，并显示 `[宏 名称]`；嵌套宏指向实际执行的内层宏。退出展开后恢复调用文件行号，`$line` / `$file` 等宏元变量的既有调用处语义保持不变。
+`import` 引入的模块 使用各自文件中的原始行号。宏正文指向定义文件的正文行，并显示 `[宏 名称]`；嵌套宏指向实际执行的内层宏。退出展开后恢复调用文件行号，`$line` / `$file` 等宏元变量的既有调用处语义保持不变。
 
 验证：`python magel/tests/test_magel_source_lines.py --magel magel/magel --exports`。

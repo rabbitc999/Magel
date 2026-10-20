@@ -39,8 +39,8 @@ Integer address and handle conversions in execution preserve their full integer 
 ## Explicit sweep and restart insertion points
 
 `source/epilogue/builtins.cpp` registers the return type of `sweep()`;
-`source/epilogue/boxing.cpp` lowers it to `__vm_heap_sweep`. Explicit aggregate deletion uses
-`__vm_heap_delete_live` to distinguish retained old identities from swept identities.
+`source/epilogue/boxing.cpp` lowers it to `__std_heap_sweep`. Explicit aggregate deletion uses
+`__std_heap_delete_live` to distinguish retained old identities from swept identities.
 Both native entries are registered in `library/stackvm/parts/machine_natives.cpp`.
 
 `HeapAllocator` exposes sweep and retired-identity contracts. Unsupported custom heaps report
@@ -83,3 +83,12 @@ Asynchronous event entry signatures require static callback sources, including p
 interrupt callback fields. Capturing local variables cannot be hidden behind an ordinary
 function-pointer conversion of an event registration entry. Synchronous algorithm callbacks
 can borrow the caller's live variables.
+
+
+## Checking later closure uses
+
+Capture discovery and later uses are modeled separately. `FlowState::captures` records external borrowed places held by function values and aggregate fields. Copies, assignments, tuples and enum payloads propagate these sets; reference fields inside owned captures still depend on their external referents. Reading a callable checks whether a captured place was freed, moved or dropped on a reachable path. The callable itself and its captured sources are checked again after argument evaluation, preventing `callback(move(&source))` from invalidating its environment before invocation. Callable results conservatively inherit known external borrows from arguments and receivers. Reassignment replaces the previous capture set, and destruction after the closure's final use remains valid.
+
+The design follows the explicit loan registration in Rust's [borrow_set.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/borrow_set.rs), capture-mode distinctions in [upvar.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_hir_typeck/src/upvar.rs), and projection conflicts in [places_conflict.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/places_conflict.rs). It uses Magel's own place and control-flow analysis without copying Rust implementation code.
+
+Checks cover invalidation and propagation visible within the current function. Opaque host code, raw memory writes and erased interprocedural side effects still depend on interface lifetime contracts. This analysis does not establish the absence of all undefined behavior.

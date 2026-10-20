@@ -112,7 +112,7 @@ void indirect(const std::string &directory)
     p.code[4].textValue = "preserved string";
     p.code[5].op = stackvm::Op::PrintText;
     p.code[6].op = stackvm::Op::Call;
-    p.code[6].name = "__vm_vec_new";
+    p.code[6].name = "__std_vec_new";
     p.code[6].name2 = "length";
     p.code[7].op = stackvm::Op::Halt;
     p.code[8].op = stackvm::Op::PushInt;

@@ -22,44 +22,44 @@ BinarySearchTree 是集合语义的二叉搜索树，重复插入返回 false，
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-472"></a>`struct TreeReply` | 胶水操作的统一回执；槽布局必须与 glue/std_tree.hpp 的 Reply 一致。 |
-| TreeReply | <a id="symbol-473"></a>`String error` | 本次胶水调用的错误说明；成功时为空串。 |
-| TreeReply | <a id="symbol-474"></a>`int64 flag` | 布尔结果：1 = 成功 / 存在 / 非空。 |
-| TreeReply | <a id="symbol-475"></a>`int64 value` | 标量结果：查到的键、弹出的堆顶或树高。 |
-| TreeReply | <a id="symbol-476"></a>`int64 root` | 更新后的根节点下标，空树为 -1。 |
-| TreeReply | <a id="symbol-477"></a>`List<int64> outKeys` | 更新后的键列表。 |
-| TreeReply | <a id="symbol-478"></a>`List<int64> outLefts` | 更新后的左孩子列表。 |
-| TreeReply | <a id="symbol-479"></a>`List<int64> outRights` | 更新后的右孩子列表。 |
-| TreeReply | <a id="symbol-480"></a>`List<int64> values` | 遍历序列或更新后的堆数组。 |
-| TreeReply | <a id="symbol-481"></a>`List<int64> colors` | 红黑树更新后的颜色列表，0 红 1 黑。 |
-| 模块 | <a id="symbol-482"></a>`struct GeneralReply` | 通用树胶水回执；槽布局必须与 glue/std_tree.hpp 的 GeneralReply 一致。 |
-| GeneralReply | <a id="symbol-483"></a>`String error` | 本次胶水调用的错误说明；成功时为空串。 |
-| GeneralReply | <a id="symbol-484"></a>`int64 value` | 标量结果：新节点下标或树高。 |
-| GeneralReply | <a id="symbol-485"></a>`int64 flag` | 布尔结果：1 = 成功。 |
-| GeneralReply | <a id="symbol-486"></a>`List<int64> values` | 更新后的节点值列表。 |
-| GeneralReply | <a id="symbol-487"></a>`List<int64> firstChild` | 更新后的第一个孩子列表。 |
-| GeneralReply | <a id="symbol-488"></a>`List<int64> nextSibling` | 更新后的下一个兄弟列表。 |
-| GeneralReply | <a id="symbol-489"></a>`List<int64> out` | 遍历序列或孩子下标序列。 |
-| 模块 | <a id="symbol-490"></a>`struct BinarySearchTree : Drop` | 二叉搜索树：集合语义，重复插入返回 false；中序即升序。 |
-| BinarySearchTree | <a id="symbol-491"></a>`List<int64> keys` | 节点键值，下标即节点号。 |
-| BinarySearchTree | <a id="symbol-492"></a>`List<int64> lefts` | 左孩子下标，无孩子为 -1。 |
-| BinarySearchTree | <a id="symbol-493"></a>`List<int64> rights` | 右孩子下标，无孩子为 -1。 |
-| BinarySearchTree | <a id="symbol-494"></a>`int64 root` | 根节点下标，空树为 -1。 |
-| BinarySearchTree | <a id="symbol-495"></a>`int64 count` | 当前有效节点数。 |
-| 模块 | <a id="symbol-496"></a>`struct RedBlackTree : Drop` | 红黑树：平衡二叉搜索树，插入含双红修复；只支持插入不支持删除。 |
-| RedBlackTree | <a id="symbol-497"></a>`List<int64> keys` | 节点键值，下标即节点号。 |
-| RedBlackTree | <a id="symbol-498"></a>`List<int64> lefts` | 左孩子下标，无孩子为 -1。 |
-| RedBlackTree | <a id="symbol-499"></a>`List<int64> rights` | 右孩子下标，无孩子为 -1。 |
-| RedBlackTree | <a id="symbol-500"></a>`List<int64> colors` | 节点颜色，0 = 红、1 = 黑。 |
-| RedBlackTree | <a id="symbol-501"></a>`int64 root` | 根节点下标，空树为 -1。 |
-| RedBlackTree | <a id="symbol-502"></a>`int64 count` | 当前有效节点数。 |
-| 模块 | <a id="symbol-503"></a>`struct MinHeap : Drop` | 二叉最小堆：可当优先队列用，pop 恒返回当前最小值；相等键出堆顺序不保证插入序。 |
-| MinHeap | <a id="symbol-504"></a>`List<int64> values` | 堆数组，下标 0 是最小值。 |
-| 模块 | <a id="symbol-505"></a>`struct GeneralTree : Drop` | 通用树（n 叉树）：第一个孩子 / 下一个兄弟存储，与二叉表示可按映射互转。 |
-| GeneralTree | <a id="symbol-506"></a>`List<int64> values` | 节点值，下标即节点号。 |
-| GeneralTree | <a id="symbol-507"></a>`List<int64> firstChild` | 第一个孩子下标，无孩子为 -1。 |
-| GeneralTree | <a id="symbol-508"></a>`List<int64> nextSibling` | 下一个兄弟下标，无兄弟为 -1。 |
-| GeneralTree | <a id="symbol-509"></a>`int64 count` | 当前节点数。 |
+| 模块 | <a id="symbol-469"></a>`struct TreeReply` | 胶水操作的统一回执；槽布局必须与 glue/std_tree.hpp 的 Reply 一致。 |
+| TreeReply | <a id="symbol-470"></a>`String error` | 本次胶水调用的错误说明；成功时为空串。 |
+| TreeReply | <a id="symbol-471"></a>`int64 flag` | 布尔结果：1 = 成功 / 存在 / 非空。 |
+| TreeReply | <a id="symbol-472"></a>`int64 value` | 标量结果：查到的键、弹出的堆顶或树高。 |
+| TreeReply | <a id="symbol-473"></a>`int64 root` | 更新后的根节点下标，空树为 -1。 |
+| TreeReply | <a id="symbol-474"></a>`List<int64> outKeys` | 更新后的键列表。 |
+| TreeReply | <a id="symbol-475"></a>`List<int64> outLefts` | 更新后的左孩子列表。 |
+| TreeReply | <a id="symbol-476"></a>`List<int64> outRights` | 更新后的右孩子列表。 |
+| TreeReply | <a id="symbol-477"></a>`List<int64> values` | 遍历序列或更新后的堆数组。 |
+| TreeReply | <a id="symbol-478"></a>`List<int64> colors` | 红黑树更新后的颜色列表，0 红 1 黑。 |
+| 模块 | <a id="symbol-479"></a>`struct GeneralReply` | 通用树胶水回执；槽布局必须与 glue/std_tree.hpp 的 GeneralReply 一致。 |
+| GeneralReply | <a id="symbol-480"></a>`String error` | 本次胶水调用的错误说明；成功时为空串。 |
+| GeneralReply | <a id="symbol-481"></a>`int64 value` | 标量结果：新节点下标或树高。 |
+| GeneralReply | <a id="symbol-482"></a>`int64 flag` | 布尔结果：1 = 成功。 |
+| GeneralReply | <a id="symbol-483"></a>`List<int64> values` | 更新后的节点值列表。 |
+| GeneralReply | <a id="symbol-484"></a>`List<int64> firstChild` | 更新后的第一个孩子列表。 |
+| GeneralReply | <a id="symbol-485"></a>`List<int64> nextSibling` | 更新后的下一个兄弟列表。 |
+| GeneralReply | <a id="symbol-486"></a>`List<int64> out` | 遍历序列或孩子下标序列。 |
+| 模块 | <a id="symbol-487"></a>`struct BinarySearchTree : Drop` | 二叉搜索树：集合语义，重复插入返回 false；中序即升序。 |
+| BinarySearchTree | <a id="symbol-488"></a>`List<int64> keys` | 节点键值，下标即节点号。 |
+| BinarySearchTree | <a id="symbol-489"></a>`List<int64> lefts` | 左孩子下标，无孩子为 -1。 |
+| BinarySearchTree | <a id="symbol-490"></a>`List<int64> rights` | 右孩子下标，无孩子为 -1。 |
+| BinarySearchTree | <a id="symbol-491"></a>`int64 root` | 根节点下标，空树为 -1。 |
+| BinarySearchTree | <a id="symbol-492"></a>`int64 count` | 当前有效节点数。 |
+| 模块 | <a id="symbol-493"></a>`struct RedBlackTree : Drop` | 红黑树：平衡二叉搜索树，插入含双红修复；只支持插入不支持删除。 |
+| RedBlackTree | <a id="symbol-494"></a>`List<int64> keys` | 节点键值，下标即节点号。 |
+| RedBlackTree | <a id="symbol-495"></a>`List<int64> lefts` | 左孩子下标，无孩子为 -1。 |
+| RedBlackTree | <a id="symbol-496"></a>`List<int64> rights` | 右孩子下标，无孩子为 -1。 |
+| RedBlackTree | <a id="symbol-497"></a>`List<int64> colors` | 节点颜色，0 = 红、1 = 黑。 |
+| RedBlackTree | <a id="symbol-498"></a>`int64 root` | 根节点下标，空树为 -1。 |
+| RedBlackTree | <a id="symbol-499"></a>`int64 count` | 当前有效节点数。 |
+| 模块 | <a id="symbol-500"></a>`struct MinHeap : Drop` | 二叉最小堆：可当优先队列用，pop 恒返回当前最小值；相等键出堆顺序不保证插入序。 |
+| MinHeap | <a id="symbol-501"></a>`List<int64> values` | 堆数组，下标 0 是最小值。 |
+| 模块 | <a id="symbol-502"></a>`struct GeneralTree : Drop` | 通用树（n 叉树）：第一个孩子 / 下一个兄弟存储，与二叉表示可按映射互转。 |
+| GeneralTree | <a id="symbol-503"></a>`List<int64> values` | 节点值，下标即节点号。 |
+| GeneralTree | <a id="symbol-504"></a>`List<int64> firstChild` | 第一个孩子下标，无孩子为 -1。 |
+| GeneralTree | <a id="symbol-505"></a>`List<int64> nextSibling` | 下一个兄弟下标，无兄弟为 -1。 |
+| GeneralTree | <a id="symbol-506"></a>`int64 count` | 当前节点数。 |
 
 ## 函数索引
 

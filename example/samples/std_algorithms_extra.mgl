@@ -2,7 +2,7 @@
  *
  * 这一批和 `fold` / `all` / `any` 是同一套"回调式内建"：源码里写
  * `std::algorithms::mapValue<T>(表, 函数名)`，泛型预处理器只负责吃掉 `<T>`，
- * 真正的降级在 `LowerAlgorithmCall`，运行期落到 VM 的 `__vm_vec_map` 等等。
+ * 真正的降级在 `LowerAlgorithmCall`，运行期落到 VM 的 `__std_vec_map` 等等。
  *
  * 两条既有约束（都不是这批新名字引入的，改样例时别当成 bug）：
  *   ① 回调要写成**裸函数名**，而 `module X;` 里传裸函数名当 fptr 实参现在解析不到

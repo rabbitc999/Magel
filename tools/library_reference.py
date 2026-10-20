@@ -40,7 +40,8 @@ def inventory():
             at=origin_text.find('"'+entry['name']+'"')
             entry['line'] = origin_text.count('\n',0,at)+1 if at>=0 else 1
             entry['intrinsic'] = True
-        data.setdefault(module, []).extend(entries)
+        known = {r['name'] for r in data.get(module, []) if r['kind'] == 'opcode'}
+        data.setdefault(module, []).extend(r for r in entries if not (r['kind'] == 'struct' and r['name'] in known))
     # 运算符接口由编译器循环生成，直接读取名称表，避免文档维护另一套名字。
     traits=[]
     for table in ('operators','unaryOperators'):
@@ -186,6 +187,7 @@ def render(data):
             flags=' --threads' if expected.with_suffix('.threads').exists() else ' --reflection' if module=='std::reflect' else ''
             if module=='std::io': flags+=' -- build/library-example.txt'
             lines += [f'完整程序：[{example}](../../{example})。', '', '```powershell', 'magel run '+example+flags, '```', '']
+            if module=='std::net': lines += ['非阻塞与协程配合的完整程序：[std_net_async.mgl](../../example/samples/std_net_async.mgl)。', '']
             if module=='std::io': lines+=['先创建 `build` 目录；示例会覆盖给定路径，请使用专用测试文件。','']
             if module=='std::reflect': lines+=['需先用 `make reflection` 构建支持反射的工具链；当前二进制未编入支持时，上述命令会明确报缺失宏。','']
             path=ROOT/example
@@ -213,7 +215,7 @@ def render(data):
             lines+=['## 类型、枚举、常量与字段', '', '公开字段按源码原样列出；句柄和游标字段用于包装器状态，通常通过方法操作。枚举的括号表示变体载荷。', '', '| 所属类型 | 声明 | 说明 |', '| --- | --- | --- |']
             for r in types:
                 if r['name'].startswith('__') or r['owner'].startswith('__'): continue
-                if r['kind'] not in ('struct','enum','interface','member'): continue
+                if r['kind'] not in ('struct','enum','interface','opcode','member'): continue
                 symbol=dict(r)
                 if r['kind']=='member':
                     if r['owner'] in enum_types:
@@ -275,8 +277,8 @@ def render(data):
             type_args=generic.group(1) if generic and generic.group(1) else ''
             # 约束不是实参；调用形式只保留泛型参数名。
             type_args=re.sub(r':[^,>]+','',type_args)
-            owner_decl=next((t['signature'] for t in types if t['kind'] in ('struct','enum','interface') and t['name']==r['owner']), '')
-            owner_type=re.match(r'(?:struct|enum|interface)\s+(\w+(?:<[^>]+>)?)',owner_decl)
+            owner_decl=next((t['signature'] for t in types if t['kind'] in ('struct','enum','interface','opcode') and t['name']==r['owner']), '')
+            owner_type=re.match(r'(?:struct|enum|interface|opcode)\s+(\w+(?:<[^>]+>)?)',owner_decl)
             owner_type=owner_type.group(1) if owner_type else r['owner']
             prefix='' if module=='std::lang' else module+'::'
             call=(prefix+owner_type+'::' if r['owner'] and r['signature'].startswith('static ') else 'obj.' if r['owner'] else prefix)+r['name']+type_args+'('+', '.join(p[0] for p in params)+')'
@@ -313,7 +315,7 @@ def render(data):
         fallback=ROOT/(module.replace('::','/')+'.mgl')
         source=candidates[0] if candidates else fallback
         dependencies[module]=re.findall(r'\bimport\s+([\w:]+)\s*;',without_comments(source.read_text(encoding='utf-8'))) if source.exists() else []
-    output['../../tools/magel_stdlib_api.json']=json.dumps(dict(schemaVersion=1,modules=dependencies,types=sorted({r['name'] for records in data.values() for r in records if r['kind'] in ('struct','enum','interface') and not r['name'].startswith('__')}),functions=api_index,symbols=symbol_index,
+    output['../../tools/magel_stdlib_api.json']=json.dumps(dict(schemaVersion=1,modules=dependencies,types=sorted({r['name'] for records in data.values() for r in records if r['kind'] in ('struct','enum','interface','opcode') and not r['name'].startswith('__')}),functions=api_index,symbols=symbol_index,
         reference=dict(modules=module_info,examples=examples,sourceLanguage='zh')),ensure_ascii=False,separators=(',', ':'))+'\n'
     # 编辑器把本清单当作公开 API 直接补全；`__` 前缀是内部协议，漏进来就等于把它公开了。
     leaked=sorted({row['name'] for row in api_index if row['name'].startswith('__') or row['owner'].startswith('__')} |

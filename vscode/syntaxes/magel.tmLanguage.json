@@ -113,7 +113,7 @@
         },
         {
           "name": "keyword.control.preprocessor.magel",
-          "match": "^\\s*%(?:include|include_once|import|if|ifdef|ifndef|elif|else|endif|define|undefine|symbol|unsymbol|warning|error)\\b"
+          "match": "^\\s*%(?:if|ifdef|ifndef|elif|else|endif|define|undefine|symbol|unsymbol|warning|error)\\b"
         },
         {
           "name": "keyword.control.magel",

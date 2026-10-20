@@ -1,0 +1,98 @@
+import std::net;
+import std::coroutine;
+import std::text;
+
+int64 ticks = 0;
+
+void tick() {
+    ticks += 1;
+    std::coroutine::yield();
+    ticks += 1;
+}
+
+String awaitLine(TcpSocket mut& socket) {
+    while (true) {
+        String line = socket.receiveLineAsync();
+        if (socket.status() != NET_PENDING) { return line; }
+        std::coroutine::yield();
+    }
+    return "";
+}
+
+int64 main() {
+    TcpListener listener = TcpListener::listen("127.0.0.1", (int32)0);
+    assert(listener.isOpen());
+    {
+        TcpSocket pending = listener.acceptAsync();
+        assert(!pending.isOpen() && pending.status() == NET_PENDING);
+    }
+    TcpSocket client = TcpSocket::connectAsync("127.0.0.1", (int32)listener.localPort());
+    while (client.pollConnect() == NET_PENDING) {
+        std::coroutine::yield();
+    }
+    assert(client.isOpen() && client.status() == NET_OK);
+    TcpSocket peer = listener.acceptAsync();
+    assert(peer.isOpen());
+    auto task = std::coroutine::create(tick);
+    assert(peer.receiveLineAsync() == "" && peer.status() == NET_PENDING);
+    std::coroutine::yield();
+    assert(ticks > 0);
+    assert(client.sendAsync("part") == 4);
+    assert(peer.receiveLineAsync() == "" && peer.status() == NET_PENDING);
+    assert(client.sendAsync("ial\r\nnext\n\n") == 11);
+    String first = "";
+    while (true) {
+        first = peer.receiveLineAsync();
+        if (peer.status() != NET_PENDING) { break; }
+        std::coroutine::yield();
+    }
+    assert(first == "partial");
+    assert(awaitLine(&peer) == "next");
+    assert(awaitLine(&peer) == "" && peer.status() == NET_OK);
+    String payload = std::text::Text::repeat("x", 262144);
+    int64 sent = 0;
+    int64 received = 0;
+    while (sent < len(payload) || received < len(payload)) {
+        if (sent < len(payload)) {
+            int64 count = client.sendAsync(payload, sent);
+            assert(count >= 0 && count <= 65536);
+            sent += count;
+        }
+        String chunk = peer.receiveAsync((int32)65536);
+        assert(peer.status() == NET_OK || peer.status() == NET_PENDING);
+        received += len(chunk);
+        std::coroutine::yield();
+    }
+    assert(sent == len(payload) && received == len(payload));
+    assert(client.sendAsync(payload, (0 - 1)) == (0 - 1));
+    assert(client.status() == NET_ERROR);
+    client.close();
+    String final = "";
+    while (peer.status() != NET_CLOSED) {
+        final = peer.receiveAsync((int32)32);
+        assert(final == "");
+        std::coroutine::yield();
+    }
+    TcpSocket invalid = TcpSocket::connectAsync("example.com", (int32)80);
+    assert(!invalid.isOpen() && invalid.status() == NET_ERROR);
+    TcpSocket cancelled = TcpSocket::connectAsync("127.0.0.1", (int32)listener.localPort());
+    cancelled.close();
+    assert(!cancelled.isOpen() && cancelled.pollConnect() == NET_CLOSED);
+    int64 refusedPort;
+    {
+        TcpListener temporary = TcpListener::listen("127.0.0.1", (int32)0);
+        refusedPort = temporary.localPort();
+    }
+    TcpSocket refused = TcpSocket::connectAsync("127.0.0.1", (int32)refusedPort);
+    while (refused.pollConnect() == NET_PENDING) {
+        std::coroutine::yield();
+    }
+    assert(!refused.isOpen() && refused.status() == NET_ERROR);
+    listener.close();
+    TcpSocket noListener = listener.acceptAsync();
+    assert(!noListener.isOpen() && noListener.status() == NET_ERROR);
+    std::coroutine::wait(task);
+    assert(ticks == 2);
+    println("nonblocking network OK");
+    return 0;
+}

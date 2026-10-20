@@ -9,8 +9,10 @@ bool CheckUserName(const Memory::String &name)
 {
     if (name.rfind("__magel_", 0) == 0u && name.rfind("__magel_lambda_", 0) != 0u)
         return Fail("`__magel_` 前缀是编译器的运行时保留名：" + name);
-    if (name.rfind("__vm_", 0) == 0u)
-        return Fail("`__vm_` 前缀是虚拟机内部运行时的保留名：" + name);
+    if (name.rfind("__std_", 0) == 0u
+        && !(g_reductionLine > 0 && g_reductionLine <= g_sourceFiles.size()
+             && g_sourceFiles[g_reductionLine - 1].rfind("<内建 std::", 0) == 0u))
+        return Fail("`__std_` 前缀是标准库内部胶水的保留名：" + name);
     if (name == "self") return Fail("`self` 是方法接收者的保留名");
     return true;
 }
@@ -261,7 +263,7 @@ bool ResolveImportedTypeNames()
             }
             if (!operations.insert(method.i).second) return Fail("opcode 生命周期方法重复声明：" + node.s);
             Memory::String symbol = method.s;
-            if (symbol.find("::") == Memory::String::npos && symbol.rfind("__vm_", 0) != 0u)
+            if (symbol.find("::") == Memory::String::npos && symbol.rfind("__std_", 0) != 0u)
                 symbol = ModuleSymbol(node.module, symbol);
             if (method.i == 0)
                 definition.create = symbol;

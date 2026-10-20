@@ -9,6 +9,7 @@ struct MBorrowFlowCapture
     Memory::Map<int, MBorrowPlace> variables;
     Memory::Map<int, Memory::Vector<MBorrowPlace>> lambdaMoves;
     Memory::Map<int, Memory::Vector<MBorrowPlace>> lambdaReads;
+    Memory::Map<int, Memory::Vector<MBorrowPlace>> lambdaBorrows;
     Memory::Map<int, bool> references;
     Memory::Map<int, std::shared_ptr<MType>> types;
     Memory::Map<int, Memory::String> calls;
@@ -21,6 +22,33 @@ struct MBorrowFlowCapture
 };
 Memory::Vector<magel_borrow_checker::FlowGraph> g_borrowFlows;
 MBorrowFlowCapture *g_borrowFlowCapture = nullptr;
+/**
+ * @brief 保存拥有捕获内部引用的外部来源，结构字段按真实布局逐层展开。
+ * @param id 闭包表达式节点。
+ * @param source 捕获值的来源存储路径。
+ * @param type 捕获值类型。
+ * @param depth 当前字段嵌套层数，限制递归类型展开。
+ */
+void CaptureOwnedClosureBorrows(int id, MBorrowPlace source, const std::shared_ptr<MType> &type, unsigned depth = 0)
+{
+    if (!g_borrowFlowCapture || !type || depth > 16) return;
+    if (type->kind == MType::Ptr || IsRuntimeArray(type))
+    {
+        source.path.push_back("*");
+        g_borrowFlowCapture->lambdaBorrows[id].push_back(std::move(source));
+    }
+    else if (type->kind == MType::Struct)
+    {
+        const auto definition = g_structs.find(type->name);
+        if (definition == g_structs.end()) return;
+        for (const auto &field : definition->second.fields)
+        {
+            auto child = source;
+            child.path.push_back("." + field.name);
+            CaptureOwnedClosureBorrows(id, std::move(child), field.type, depth + 1);
+        }
+    }
+}
 /**
  * @brief 保存表达式变量身份及已推导类型，保留字段引用和影子变量区别。
  * @param id 源码节点。
@@ -167,6 +195,28 @@ struct MBorrowFlowBuilder
         return found != capture.references.end() && found->second;
     }
     /**
+     * @brief 判断表达式结果是否可能携带闭包及其借用来源。
+     * @param id 待检查的源码表达式。
+     * @return 函数值或含函数字段的聚合返回 true。
+     */
+    bool carriesCaptures(int id) const
+    {
+        const auto found = capture.types.find(id);
+        if (found == capture.types.end()) return false;
+        Memory::Set<Memory::String> visited;
+        std::function<bool(const std::shared_ptr<MType> &)> contains = [&](const std::shared_ptr<MType> &type) {
+            if (!type) return false;
+            if (type->kind == MType::Func) return true;
+            if (type->kind != MType::Struct || !visited.insert(type->name).second) return false;
+            const auto definition = g_structs.find(type->name);
+            if (definition == g_structs.end()) return false;
+            for (const auto &field : definition->second.fields)
+                if (contains(field.type)) return true;
+            return false;
+        };
+        return contains(found->second);
+    }
+    /**
      * @brief 获取带解引用分段的对象路径。
      * @param id 源码节点。
      * @param slot 是否保留最终引用槽。
@@ -176,10 +226,15 @@ struct MBorrowFlowBuilder
     {
         if (id < 0) return {};
         const auto node = N(id);
+        if (capture.lambdaReads.count(id)) return { "$closure:" + Memory::toString(id), {} };
         MBorrowPlace result;
         const auto variable = capture.variables.find(id);
         if (variable != capture.variables.end())
             result = variable->second;
+        else if (node.kind == MNode::Call && node.kids.size() > 1 && (StandardCallName(N(node.kids[0])) == "move" || StandardCallName(N(node.kids[0])) == "copy") && N(node.kids[1]).kids.size() == 1u)
+            return place(N(node.kids[1]).kids[0], slot);
+        else if (node.kind == MNode::Call && carriesCaptures(id))
+            return { "$callvalue:" + Memory::toString(id), {} };
         else if (node.kind == MNode::Call && reference(id) && !node.kids.empty())
         {
             const auto callee = N(node.kids[0]);
@@ -244,6 +299,42 @@ struct MBorrowFlowBuilder
         if (!reference(target) || value < 0) return false;
         const auto node = N(value);
         return (node.kind == MNode::Un && node.s == "&") || node.kind == MNode::NewPtr;
+    }
+    /**
+     * @brief 复制函数值及元组、枚举载荷中保存的闭包借用来源。
+     * @param target 接收值的存储路径。
+     * @param value 来源表达式。
+     * @param next 复制后的控制流后继。
+     * @return 元数据复制操作的入口。
+     */
+    std::size_t copyCaptures(const MBorrowPlace &target, int value, std::size_t next)
+    {
+        if (value < 0) return add(MBorrowFlowNode::CopyCaptures, target, {}, next, value);
+        const auto node = N(value);
+        if (node.kind == MNode::Tuple)
+        {
+            for (std::size_t i = node.kids.size(); i > 0; --i)
+            {
+                auto field = target;
+                field.path.push_back(".__" + Memory::toString(i - 1));
+                next = copyCaptures(field, node.kids[i - 1], next);
+            }
+            return add(MBorrowFlowNode::CopyCaptures, target, {}, next, value);
+        }
+        const auto type = capture.types.find(value);
+        if (node.kind == MNode::EnumCtor && type != capture.types.end() && type->second)
+        {
+            const auto variant = FindEnumVariant(type->second->name, node.s2);
+            if (variant)
+                for (std::size_t i = 0; i < variant->payloads.size() && i < node.kids.size(); ++i)
+                {
+                    auto field = target;
+                    field.path.push_back("." + variant->payloads[i].storageName);
+                    next = copyCaptures(field, node.kids[i], next);
+                }
+            return add(MBorrowFlowNode::CopyCaptures, target, {}, next, value);
+        }
+        return add(MBorrowFlowNode::CopyCaptures, target, place(value), next, value);
     }
     /**
      * @brief 复制聚合中直接引用字段及枚举活动载荷的来源。
@@ -311,13 +402,20 @@ struct MBorrowFlowBuilder
         const auto reads = capture.lambdaReads.find(id);
         if (reads != capture.lambdaReads.end())
         {
+            const auto borrows = capture.lambdaBorrows.find(id);
+            if (borrows != capture.lambdaBorrows.end())
+                for (const auto &source : borrows->second)
+                    next = add(MBorrowFlowNode::CaptureBorrow, place(id), source, next, id);
             const auto moves = capture.lambdaMoves.find(id);
             if (moves != capture.lambdaMoves.end())
                 for (auto it = moves->second.rbegin(); it != moves->second.rend(); ++it)
                     next = add(MBorrowFlowNode::Move, *it, {}, next, id);
             for (auto it = reads->second.rbegin(); it != reads->second.rend(); ++it)
+            {
+                next = add(MBorrowFlowNode::InheritCaptures, place(id), *it, next, id);
                 next = add(MBorrowFlowNode::Read, *it, {}, next, id);
-            return next;
+            }
+            return add(MBorrowFlowNode::CopyCaptures, place(id), {}, next, id);
         }
         const auto moves = capture.lambdaMoves.find(id);
         if (moves != capture.lambdaMoves.end())
@@ -337,6 +435,7 @@ struct MBorrowFlowBuilder
                                             { "$allocation:" + Memory::toString(id), {} }, next, id);
                 return address(target, expression(value, allocation));
             }
+            next = copyCaptures(place(target), value, next);
             auto entry = add(binding(target, value) ? MBorrowFlowNode::Bind : MBorrowFlowNode::Write,
                              place(target, binding(target, value)), place(value), next, id);
             if (!binding(target, value)) entry = aggregateBindings(place(target), value, entry);
@@ -348,6 +447,15 @@ struct MBorrowFlowBuilder
         {
             const auto callee = N(node.kids[0]);
             const auto arguments = node.kids.size() > 1 ? N(node.kids[1]).kids : Memory::Vector<int>{};
+            if (carriesCaptures(id) && StandardCallName(callee) != "move" && StandardCallName(callee) != "copy")
+            {
+                // 不透明调用可能返回实参或接收者持有的函数值，保守保留所有外部借用。
+                for (const int argument : arguments)
+                    next = add(MBorrowFlowNode::InheritCaptures, place(id), place(argument), next, id);
+                if ((callee.kind == MNode::Member || callee.kind == MNode::Arrow) && !callee.kids.empty())
+                    next = add(MBorrowFlowNode::InheritCaptures, place(id), place(callee.kids[0]), next, id);
+                next = add(MBorrowFlowNode::CopyCaptures, place(id), {}, next, id);
+            }
             if (reference(id))
             {
                 const auto origins = methodOrigins(id);
@@ -380,8 +488,12 @@ struct MBorrowFlowBuilder
                 next = add(capture.managed.count(arguments[0]) && capture.managed.at(arguments[0]) ? MBorrowFlowNode::Move : MBorrowFlowNode::MoveScalar, place(arguments[0]), {}, next, id);
             else if ((callee.kind == MNode::Member || callee.kind == MNode::Arrow) && callee.s == "drop" && !callee.kids.empty())
                 next = add(MBorrowFlowNode::Drop, place(callee.kids[0]), {}, next, id);
+            // 实参可能移动或释放捕获来源，调用前再检查已求值的闭包环境。
+            if (!arguments.empty() && !place(node.kids[0]).root.empty())
+                next = add(MBorrowFlowNode::CheckCaptures, place(node.kids[0]), {}, next, id);
             for (auto it = arguments.rbegin(); it != arguments.rend(); ++it) next = expression(*it, next);
             if ((callee.kind == MNode::Member || callee.kind == MNode::Arrow) && !callee.kids.empty()) next = callee.s == "drop" ? address(callee.kids[0], next) : expression(callee.kids[0], next);
+            if (callee.kind != MNode::Member && callee.kind != MNode::Arrow) next = expression(node.kids[0], next);
             return next;
         }
         if (node.kind == MNode::Loop)
@@ -429,15 +541,27 @@ struct MBorrowFlowBuilder
             return statement(node.kids[0], next, stop, repeat);
         if (node.kind == MNode::Destructure && !node.i)
         {
-            std::function<void(int)> initialize = [&](int pattern) {
+            const MBorrowPlace temporary{ "$destructure:" + Memory::toString(id), {} };
+            std::function<void(int, MBorrowPlace)> initialize = [&](int pattern, MBorrowPlace source) {
                 const auto found = capture.declarations.find(pattern);
                 if (found != capture.declarations.end())
+                {
+                    next = add(MBorrowFlowNode::CopyCaptures, found->second, source, next, pattern);
                     next = add(MBorrowFlowNode::Initialize, found->second, {}, next, pattern);
+                }
                 else
-                    for (const int child : N(pattern).kids) initialize(child);
+                {
+                    const auto children = N(pattern).kids;
+                    for (std::size_t i = 0; i < children.size(); ++i)
+                    {
+                        auto field = source;
+                        field.path.push_back(".__" + Memory::toString(i));
+                        initialize(children[i], std::move(field));
+                    }
+                }
             };
-            initialize(node.kids[0]);
-            return expression(node.kids[1], next);
+            initialize(node.kids[0], temporary);
+            return expression(node.kids[1], copyCaptures(temporary, node.kids[1], next));
         }
         if (node.kind == MNode::Block || node.kind == MNode::List)
         {
@@ -464,7 +588,8 @@ struct MBorrowFlowBuilder
                 }
                 else
                 {
-                    const auto write = add(MBorrowFlowNode::Initialize, found->second, {}, next, *it);
+                    const auto copied = copyCaptures(found->second, value, next);
+                    const auto write = add(MBorrowFlowNode::Initialize, found->second, {}, copied, *it);
                     next = expression(value, aggregateBindings(found->second, value, write));
                 }
                 // 每次执行声明均创建新的绑定，包括循环内重复到达的声明。

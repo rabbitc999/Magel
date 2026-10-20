@@ -14,7 +14,7 @@ def execute(*args):
     return subprocess.run([str(arg) for arg in args], cwd=ROOT, capture_output=True, env=env, encoding='utf-8', errors='replace', timeout=180)
 
 def main():
-    """运行正常样例的两个后端以及签名和推导拒绝场景。"""
+    """运行 VM、独立字节码加载及签名和推导拒绝场景。"""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--magel', type=Path, default=ROOT / ('magel' + EXE))
     parser.add_argument('--cxx', default='g++')

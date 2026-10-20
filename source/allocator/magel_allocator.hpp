@@ -175,7 +175,7 @@ inline RuntimeAllocator *defaultRuntimeAllocatorIfCreated() { return defaultRunt
  *  与板端 `magel/library/stackvm_mcu/allocator/magel_allocator.hpp` 里的同名实现**逐字对应**
  *  （"同一改动各打两遍"），差别只在两边怎么收尾：
  *    * 桌面：分配失败记下标志后**照旧抛 `std::bad_alloc`**，宿主读信号决定这是不是
- *      "可恢复终止"；显式请求由 `__vm_request_restart()` 写，VM 在下一条指令边界停下。
+ *      "可恢复终止"；显式请求由 `__std_request_restart()` 写，VM 在下一条指令边界停下。
  *    * 板端：分配失败由应急预留兜住、不抛异常，VM 在安全点以可恢复终止结束 `run()`。
  *  两条路都**不在失败点跳走**，宿主/VM 看到的是同一份"标志 + 原因"。
  *

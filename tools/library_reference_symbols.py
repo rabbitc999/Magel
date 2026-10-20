@@ -2,6 +2,9 @@
 from magel_lsp import documentation
 
 TYPE_DESCRIPTIONS = {
+    'String': '拥有 UTF-8 文本的 opcode 值，复制产生独立可写缓冲。',
+    'File': '不可复制的文件 opcode，作用域退出释放文件资源。',
+    'Process': '不可复制的进程 opcode，操作由宿主胶水提供。',
     'TryBranch': '传播分支：Continue 产生成功值，Break 携带失败载荷退出当前函数。',
     'ErrorResidual': 'Result 的错误传播载荷，保留错误类型身份。',
     'NoneResidual': 'Option 无值分支的传播载荷。',
@@ -237,7 +240,7 @@ OVERRIDES.update({
 def symbol_description(row):
     """返回类型或字段的实际含义；缺失人工说明时让生成门禁失败。"""
     name, owner, kind = row['name'], row['owner'], row['kind']
-    if kind in ('struct','enum','interface'):
+    if kind in ('struct','enum','interface','opcode'):
         if name in TYPE_DESCRIPTIONS:
             return TYPE_DESCRIPTIONS[name]
         operation = name.removeprefix('Right')

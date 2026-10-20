@@ -16,7 +16,7 @@ int main(int argc, char **argv)
     const auto quads = stackvm::parseQuads(
         "0: (label, _, _, main)\n1: (call, outer, _, x)\n2: (halt, _, _, _)\n"
         "3: (label, _, _, outer)\n4: (call, inner, _, y)\n5: (ret, 0, _, _)\n"
-        "6: (label, _, _, inner)\n7: (param, 8, _, message)\n8: (call, __vm_panic, _, z)\n9: (ret, 0, _, _)\n",
+        "6: (label, _, _, inner)\n7: (param, 8, _, message)\n8: (call, __std_panic, _, z)\n9: (ret, 0, _, _)\n",
         "private-path.quad");
     stackvm::Program program;
     if (!stackvm::assemble(quads, program)) return 1;
@@ -75,7 +75,7 @@ int main(int argc, char **argv)
         "14: (ret, 0, _, _)\n"
         "15: (label, _, _, inner)\n"
         "16: (param, 8, _, message)\n"
-        "17: (call, __vm_panic, _, z)\n"
+        "17: (call, __std_panic, _, z)\n"
         "18: (ret, 0, _, _)\n",
         "thread-panic.quad");
     stackvm::Program threadedProgram;

@@ -147,7 +147,7 @@ simple_ast::NodePtr MakeArrayElementRelease(const Memory::String &name,
     if (fixedCount >= 0) return release;
     // 借用函数可能已经显式删除该数组；自动收尾不再读取失效块的长度头。
     const auto live = simple_ast::Node::binary("&&", simple_ast::Node::binary("!=", value, simple_ast::Node::i(0)),
-                                               simple_ast::Node::call("__vm_heap_live", { "address" },
+                                               simple_ast::Node::call("__std_heap_live", { "address" },
                                                                       { simple_ast::Node::binary("-", value, simple_ast::Node::i(8)) }));
     return simple_ast::Node::ifThenElse(live, release, nullptr);
 }
@@ -284,7 +284,7 @@ simple_ast::NodePtr GuardLiveAggregate(const Memory::String &owner,
     using simple_ast::Node;
     const auto found = g_structs.find(owner);
     const int bytes = found == g_structs.end() ? 8 : std::max(8, found->second.slotCount * 8);
-    return Node::ifThenElse(Node::call("__vm_move_live", { "address", "bytes", "type" },
+    return Node::ifThenElse(Node::call("__std_move_live", { "address", "bytes", "type" },
                                        { value, Node::i(bytes), Node::i(TypeIdOf(NamedType(owner))) }),
                             action, nullptr);
 }
@@ -298,7 +298,7 @@ simple_ast::NodePtr GuardLiveAggregate(const Memory::String &owner,
 simple_ast::NodePtr BeginAggregateLifetime(const simple_ast::NodePtr &value, int bytes)
 {
     if (!g_usesLanguageMove) return simple_ast::Node::block({});
-    return simple_ast::Node::exprStmt(simple_ast::Node::call("__vm_move_begin", { "address", "bytes" },
+    return simple_ast::Node::exprStmt(simple_ast::Node::call("__std_move_begin", { "address", "bytes" },
                                                              { value, simple_ast::Node::i(std::max(8, bytes)) }));
 }
 
@@ -314,7 +314,7 @@ void AppendMovedAggregate(const Memory::String &owner, const simple_ast::NodePtr
     using simple_ast::Node;
     const auto found = g_structs.find(owner);
     if (found == g_structs.end()) return;
-    out->push_back(Node::exprStmt(Node::call("__vm_move_end", { "address", "bytes", "type" },
+    out->push_back(Node::exprStmt(Node::call("__std_move_end", { "address", "bytes", "type" },
                                              { value, Node::i(std::max(8, found->second.slotCount * 8)), Node::i(TypeIdOf(NamedType(owner))) })));
     for (const auto &field : found->second.fields)
         if (field.type && field.type->kind == MType::Struct)
@@ -373,7 +373,7 @@ simple_ast::NodePtr MakeDropCallAt(const Memory::String &structName,
     using simple_ast::Node;
     const auto found = g_structs.find(structName);
     const int bytes = found == g_structs.end() ? 8 : std::max(8, found->second.slotCount * 8);
-    const auto mark = Node::exprStmt(Node::call("__vm_move_end", { "address", "bytes", "type" },
+    const auto mark = Node::exprStmt(Node::call("__std_move_end", { "address", "bytes", "type" },
                                                 { value, Node::i(bytes), Node::i(TypeIdOf(NamedType(structName))) }));
     return GuardLiveAggregate(structName, value, Node::block({ call, mark }));
 }
@@ -806,7 +806,7 @@ bool CheckContainerElement(const std::shared_ptr<MType> &type, const Memory::Str
  * @brief 是不是"对象句柄"类（`bint` / 容器 / `obj` / 接口引用）：值不落在数据区，
  *        释放走对象表。
  *
- * 归到这一类的类型自动获得三件事：**值语义**（赋值 / 初始化时 `__vm_object_copy`
+ * 归到这一类的类型自动获得三件事：**值语义**（赋值 / 初始化时 `__std_object_copy`
  * 复制一份）、**块作用域所有**（出块自动释放）、`delete` 能用。
  *
  * 接口引用也算 —— 它是"地址 + 类型号"的**胖引用**，存在对象表里；于是
@@ -867,46 +867,46 @@ struct MContainerMethod
  * `std::lang::List<T>` 的方法。
  */
 const MContainerMethod kVecMethods[] = {
-    { "copy", "__vm_object_copy", 0, "h", MContainerResult::Self, false },
-    { "push", "__vm_vec_push", 1, "hvno", MContainerResult::Process, false },
-    { "insert", "__vm_vec_insert", 2, "hiwmp", MContainerResult::Process, false },
-    { "at", "__vm_vec_at", 1, "hino", MContainerResult::Element, false },
-    { "pop", "__vm_vec_pop", 0, "hno", MContainerResult::Element, false },
-    { "remove", "__vm_vec_remove", 1, "hi", MContainerResult::Process, false },
-    { "indexOf", "__vm_vec_find", 1, "hvno", MContainerResult::Process, false },
-    { "contains", "__vm_vec_find", 1, "hvno", MContainerResult::Process, true },
-    { "has", "__vm_vec_find", 1, "hvno", MContainerResult::Process, true },
-    { "clear", "__vm_vec_clear", 0, "h", MContainerResult::Process, false },
-    { "len", "__vm_vec_len", 0, "h", MContainerResult::Process, false },
+    { "copy", "__std_object_copy", 0, "h", MContainerResult::Self, false },
+    { "push", "__std_vec_push", 1, "hvno", MContainerResult::Process, false },
+    { "insert", "__std_vec_insert", 2, "hiwmp", MContainerResult::Process, false },
+    { "at", "__std_vec_at", 1, "hino", MContainerResult::Element, false },
+    { "pop", "__std_vec_pop", 0, "hno", MContainerResult::Element, false },
+    { "remove", "__std_vec_remove", 1, "hi", MContainerResult::Process, false },
+    { "indexOf", "__std_vec_find", 1, "hvno", MContainerResult::Process, false },
+    { "contains", "__std_vec_find", 1, "hvno", MContainerResult::Process, true },
+    { "has", "__std_vec_find", 1, "hvno", MContainerResult::Process, true },
+    { "clear", "__std_vec_clear", 0, "h", MContainerResult::Process, false },
+    { "len", "__std_vec_len", 0, "h", MContainerResult::Process, false },
 };
 
 /**
  * `std::lang::Set<T>` 的方法。
  */
 const MContainerMethod kSetMethods[] = {
-    { "copy", "__vm_object_copy", 0, "h", MContainerResult::Self, false },
-    { "add", "__vm_set_add", 1, "hvno", MContainerResult::Process, false },
-    { "has", "__vm_set_has", 1, "hvno", MContainerResult::Process, false },
-    { "contains", "__vm_set_has", 1, "hvno", MContainerResult::Process, false },
-    { "remove", "__vm_set_remove", 1, "hvno", MContainerResult::Process, false },
-    { "at", "__vm_set_at", 1, "hino", MContainerResult::Element, false },
-    { "clear", "__vm_set_clear", 0, "h", MContainerResult::Process, false },
-    { "len", "__vm_set_len", 0, "h", MContainerResult::Process, false },
+    { "copy", "__std_object_copy", 0, "h", MContainerResult::Self, false },
+    { "add", "__std_set_add", 1, "hvno", MContainerResult::Process, false },
+    { "has", "__std_set_has", 1, "hvno", MContainerResult::Process, false },
+    { "contains", "__std_set_has", 1, "hvno", MContainerResult::Process, false },
+    { "remove", "__std_set_remove", 1, "hvno", MContainerResult::Process, false },
+    { "at", "__std_set_at", 1, "hino", MContainerResult::Element, false },
+    { "clear", "__std_set_clear", 0, "h", MContainerResult::Process, false },
+    { "len", "__std_set_len", 0, "h", MContainerResult::Process, false },
 };
 
 /**
  * `std::lang::Map<K,V>` 的方法。
  */
 const MContainerMethod kMapMethods[] = {
-    { "copy", "__vm_object_copy", 0, "h", MContainerResult::Self, false },
-    { "put", "__vm_map_put", 2, "hktowmp", MContainerResult::Process, false },
-    { "has", "__vm_map_has", 1, "hkto", MContainerResult::Process, false },
-    { "contains", "__vm_map_has", 1, "hkto", MContainerResult::Process, false },
-    { "remove", "__vm_map_remove", 1, "hkto", MContainerResult::Process, false },
-    { "keyAt", "__vm_map_key_at", 1, "hito", MContainerResult::Key, false },
-    { "valAt", "__vm_map_val_at", 1, "himp", MContainerResult::Value, false },
-    { "clear", "__vm_map_clear", 0, "h", MContainerResult::Process, false },
-    { "len", "__vm_map_len", 0, "h", MContainerResult::Process, false },
+    { "copy", "__std_object_copy", 0, "h", MContainerResult::Self, false },
+    { "put", "__std_map_put", 2, "hktowmp", MContainerResult::Process, false },
+    { "has", "__std_map_has", 1, "hkto", MContainerResult::Process, false },
+    { "contains", "__std_map_has", 1, "hkto", MContainerResult::Process, false },
+    { "remove", "__std_map_remove", 1, "hkto", MContainerResult::Process, false },
+    { "keyAt", "__std_map_key_at", 1, "hito", MContainerResult::Key, false },
+    { "valAt", "__std_map_val_at", 1, "himp", MContainerResult::Value, false },
+    { "clear", "__std_map_clear", 0, "h", MContainerResult::Process, false },
+    { "len", "__std_map_len", 0, "h", MContainerResult::Process, false },
 };
 
 /**
@@ -1356,7 +1356,7 @@ bool SameStruct(const std::shared_ptr<MType> &left, const std::shared_ptr<MType>
  * @brief 字符串字面量当"**变量的值**"时，先复制成一份堆串。
  *
  * 字符串的值一律是**堆地址**（8 字节长度 + UTF-8 字节数据，由虚拟机运行时管理）：
- * 数据区里只留只读的字面量字节当复制源（`__vm_str_lit` 把它们拷到堆上）。于是：
+ * 数据区里只留只读的字面量字节当复制源（`__std_str_lit` 把它们拷到堆上）。于是：
  *
  * - 变量手里那块是**自己能写**的（`s[i] = 'x'` 不会改到别人共享的字面量）；
  * - 所有权也统一了：**变量 = 那块堆串的主人**，离开语句块时自动释放（见 MarkOwned）。
@@ -1399,7 +1399,7 @@ simple_ast::NodePtr MaterializeStringValue(int valueId, const std::shared_ptr<MT
     if (!target || !IsStandardOpcode(target, "String")) return value;
     if (valueId < 0) return value;
     if (N(valueId).kind == MNode::Str)
-        return simple_ast::Node::call("__vm_str_lit", { "__magel_addr" }, { value });
+        return simple_ast::Node::call("__std_str_lit", { "__magel_addr" }, { value });
     if (IsFreshValue(valueId) || IsImplicitConversionValue(valueId, target)) return TakeExpressionTempValue(value, target);
     /*
      * 借来的值（变量 / 别名 / 字段 / 下标 / 解引用）**复制成自己的堆串**：
@@ -1457,7 +1457,7 @@ simple_ast::NodePtr MaterializeReturnStringValue(int valueId, const std::shared_
     while (N(sourceId).kind == MNode::Cast) sourceId = N(sourceId).kids[0];
     const MNode &expr = N(sourceId);
     if (expr.kind == MNode::Str)
-        return simple_ast::Node::call("__vm_str_lit", { "__magel_addr" }, { value });
+        return simple_ast::Node::call("__std_str_lit", { "__magel_addr" }, { value });
     if (expr.kind == MNode::Var)
     {
         const MVar *found = FindIn(expr.module, expr.s);
@@ -1560,7 +1560,7 @@ simple_ast::NodePtr CopyRuntimeArrayValue(const simple_ast::NodePtr &source, con
     {
         auto value = Node::loadFrom(from, LowerType(element, input));
         if (IsStandardOpcode(element, "String"))
-            value = Node::call("__vm_str_sub", { "source", "start", "end" }, { value, Node::i(0), Node::i(-1) });
+            value = Node::call("__std_str_sub", { "source", "start", "end" }, { value, Node::i(0), Node::i(-1) });
         else if (IsObjectLike(element))
             value = Node::call(ObjectCopyFunction(element), { "value" }, { value });
         out.push_back(Node::storeAt(into, value, LowerType(element, result)));
@@ -1760,7 +1760,7 @@ bool IsFreshValue(int exprId)
     {
         if (const auto result = UserOperatorResultType(exprId))
             return result->kind != MType::Ptr || IsInterfacePointer(result);
-        /* 大整数 / 大浮点的一元取负（`-a`）是**新对象**（`__vm_bint_neg`），
+        /* 大整数 / 大浮点的一元取负（`-a`）是**新对象**（`__std_bint_neg`），
          * 和二元算术一样要有主；不当"当场造出来的"就会漏在对象表里。 */
         if (expr.s != "-") return false;
         const std::shared_ptr<MType> type = ExprType(exprId);
@@ -1797,7 +1797,7 @@ bool IsFreshValue(int exprId)
  * 对象类类型的值是对象表里的句柄。如果赋值 / 初始化只抄句柄，`a = b;` 之后两个变量
  * 就会指向同一个对象 —— 谁被重新赋值（旧值要还回去）另一个就悬空了。所以这里按
  * **值语义**办：右边不是"当场造出来的新对象"（运算结果 / 方法返回值 / `bint(…)`）时，
- * 套一层 `__vm_object_copy` 复制一份。
+ * 套一层 `__std_object_copy` 复制一份。
  *
  * @param valueId 右边的表达式。
  * @param target 目标类型。

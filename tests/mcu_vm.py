@@ -67,8 +67,8 @@ COROUTINE_SAMPLE = "coroutine"
 # 已知的原生函数缺口（`library/stackvm` 相对前端产物）。门禁的 sweep 只允许这两种情况：
 # 通过，或落在下面的名单里；**出现新缺口就失败**——这样"前后端名字漂移"不会再悄悄发生。
 KNOWN_MISSING_NATIVES = {
-    "__vm_reference", "__vm_str_ref",
-    "__vm_closure_new", "__vm_function_copy",
+    "__std_reference", "__std_str_ref",
+    "__std_closure_new", "__std_function_copy",
     # 这三个是**胶水**（不是 VM 原生函数）：`__tryToInt32`/`__toInt64` 已由
     # `mcu_glue.cpp` 提供并验证；`__float32ToBytes`/`__bytesToFloat64` 要返回/接收
     # `List<uint8>`，卡在"通用 VM 的胶水上下文还没有建容器能力"（见 README 清单 B）。

@@ -10,7 +10,7 @@ import std::linalg;
 
 ## 公共约定与错误边界
 
-Vector<T>、Matrix<T> 拥有稠密数据。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。
+Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。
 
 ## 参考代码
 
@@ -177,83 +177,393 @@ LU glue solve OK
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-288"></a>`struct Vector<T>: Add<Vector<T>, Vector<T>>, Subtract<Vector<T>, Vector<T>>, Multiply<Vector<T>, T>, Index<T, int64>, Iterator<T>, Drop` | 稠密数值向量，元素按顺序存储。 |
-| Vector | <a id="symbol-289"></a>`std::lang::List<T> values` | 按声明顺序保存的元素存储。 |
-| 模块 | <a id="symbol-290"></a>`struct Matrix<T>: Add<Matrix<T>, Matrix<T>>, Subtract<Matrix<T>, Matrix<T>>, Multiply<Matrix<T>, Matrix<T>>, Multiply<Vector<T>, Vector<T>>, Multiply<Matrix<T>, T>, Index<Vector<T>, int64>, Iterator<Vector<T>>, Drop` | 行主元 LU 满足 P*A=L*U；矩阵求解的主元判断适用于 float32/float64。 |
-| Matrix | <a id="symbol-291"></a>`int64 rows` | 矩阵的行数。 |
-| Matrix | <a id="symbol-292"></a>`int64 cols` | 矩阵的列数。 |
-| Matrix | <a id="symbol-293"></a>`std::lang::List<T> values` | 按声明顺序保存的元素存储。 |
-| 模块 | <a id="symbol-294"></a>`struct LuFactorization` | LU 分解结果，包含下三角、上三角及置换矩阵。 |
-| LuFactorization | <a id="symbol-295"></a>`Matrix<float64> lower` | LU 分解的下三角矩阵。 |
-| LuFactorization | <a id="symbol-296"></a>`Matrix<float64> upper` | LU 分解的上三角矩阵。 |
-| LuFactorization | <a id="symbol-297"></a>`Matrix<float64> permutation` | LU 分解的置换矩阵。 |
-| 模块 | <a id="symbol-298"></a>`struct EigenDecomposition` | 特征分解结果，包含特征值与对应特征向量。 |
-| EigenDecomposition | <a id="symbol-299"></a>`Vector<float64> eigenvalues` | 分解得到的特征值。 |
-| EigenDecomposition | <a id="symbol-300"></a>`Matrix<float64> eigenvectors` | 与特征值对应的特征向量。 |
-| 模块 | <a id="symbol-301"></a>`struct SingularValueDecomposition` | 奇异值分解结果，包含 U、奇异值及 V 的转置。 |
-| SingularValueDecomposition | <a id="symbol-302"></a>`Matrix<float64> u` | 奇异值分解的左奇异向量矩阵。 |
-| SingularValueDecomposition | <a id="symbol-303"></a>`Vector<float64> singularValues` | 分解得到的奇异值。 |
-| SingularValueDecomposition | <a id="symbol-304"></a>`Matrix<float64> vTranspose` | 右奇异向量矩阵 V 的转置。 |
-| 模块 | <a id="symbol-305"></a>`struct JordanDecomposition` | Jordan 分解结果，包含 Jordan 矩阵与变换基。 |
-| JordanDecomposition | <a id="symbol-306"></a>`Matrix<float64> basis` | 将原矩阵转换到分解形式的基矩阵。 |
-| JordanDecomposition | <a id="symbol-307"></a>`Matrix<float64> jordan` | Jordan 标准形矩阵。 |
+| 模块 | <a id="symbol-288"></a>`opcode ScalarStorage` | 线性代数专用数值存储，缓冲在宿主胶水中深复制和释放。 |
+| 模块 | <a id="symbol-289"></a>`struct ScalarArray<T>: Index<T, int64>, Iterator<T>` | 为内建数值类型提供泛型索引外观，元素保存在 opcode 中。 |
+| ScalarArray | <a id="symbol-290"></a>`ScalarStorage storage` | 独占此数组数值缓冲的 opcode 记录；复制时深复制。 |
+| 模块 | <a id="symbol-291"></a>`struct Vector<T>: Add<Vector<T>, Vector<T>>, Subtract<Vector<T>, Vector<T>>, Multiply<Vector<T>, T>, Index<T, int64>, Iterator<T>, Drop` | 稠密数值向量，元素按顺序存储。 |
+| Vector | <a id="symbol-292"></a>`ScalarArray<T> values` | 按声明顺序保存的元素存储。 |
+| 模块 | <a id="symbol-293"></a>`struct Matrix<T>: Add<Matrix<T>, Matrix<T>>, Subtract<Matrix<T>, Matrix<T>>, Multiply<Matrix<T>, Matrix<T>>, Multiply<Vector<T>, Vector<T>>, Multiply<Matrix<T>, T>, Index<Vector<T>, int64>, Iterator<Vector<T>>, Drop` | 行主元 LU 满足 P*A=L*U；矩阵求解的主元判断适用于 float32/float64。 |
+| Matrix | <a id="symbol-294"></a>`int64 rows` | 矩阵的行数。 |
+| Matrix | <a id="symbol-295"></a>`int64 cols` | 矩阵的列数。 |
+| Matrix | <a id="symbol-296"></a>`ScalarArray<T> values` | 按声明顺序保存的元素存储。 |
+| 模块 | <a id="symbol-297"></a>`struct LuFactorization` | LU 分解结果，包含下三角、上三角及置换矩阵。 |
+| LuFactorization | <a id="symbol-298"></a>`Matrix<float64> lower` | LU 分解的下三角矩阵。 |
+| LuFactorization | <a id="symbol-299"></a>`Matrix<float64> upper` | LU 分解的上三角矩阵。 |
+| LuFactorization | <a id="symbol-300"></a>`Matrix<float64> permutation` | LU 分解的置换矩阵。 |
+| 模块 | <a id="symbol-301"></a>`struct EigenDecomposition` | 特征分解结果，包含特征值与对应特征向量。 |
+| EigenDecomposition | <a id="symbol-302"></a>`Vector<float64> eigenvalues` | 分解得到的特征值。 |
+| EigenDecomposition | <a id="symbol-303"></a>`Matrix<float64> eigenvectors` | 与特征值对应的特征向量。 |
+| 模块 | <a id="symbol-304"></a>`struct SingularValueDecomposition` | 奇异值分解结果，包含 U、奇异值及 V 的转置。 |
+| SingularValueDecomposition | <a id="symbol-305"></a>`Matrix<float64> u` | 奇异值分解的左奇异向量矩阵。 |
+| SingularValueDecomposition | <a id="symbol-306"></a>`Vector<float64> singularValues` | 分解得到的奇异值。 |
+| SingularValueDecomposition | <a id="symbol-307"></a>`Matrix<float64> vTranspose` | 右奇异向量矩阵 V 的转置。 |
+| 模块 | <a id="symbol-308"></a>`struct JordanDecomposition` | Jordan 分解结果，包含 Jordan 矩阵与变换基。 |
+| JordanDecomposition | <a id="symbol-309"></a>`Matrix<float64> basis` | 将原矩阵转换到分解形式的基矩阵。 |
+| JordanDecomposition | <a id="symbol-310"></a>`Matrix<float64> jordan` | Jordan 标准形矩阵。 |
 
 ## 函数索引
 
 | 名称 | 声明 |
 | --- | --- |
-| [Vector::drop](#api-0) | `void drop()` |
-| [Vector::zeros](#api-1) | `static Vector<T> zeros(int64 n)` |
-| [Vector::fromArray](#api-2) | `static Vector<T> fromArray(T const& data, int64 count)` |
-| [Vector::fromArray](#api-3) | `static Vector<T> fromArray(T data[])` |
-| [Vector::toArray](#api-4) | `T[] toArray()` |
-| [Vector::index](#api-5) | `T index(int64 key)` |
-| [Vector::iterator](#api-6) | `Option<T> iterator(int64 position)` |
-| [Vector::len](#api-7) | `int64 len()` |
-| [Vector::at](#api-8) | `T at(int64 i)` |
-| [Vector::set](#api-9) | `void set(int64 i, T value)` |
-| [Vector::dot](#api-10) | `T dot(Vector<T> other)` |
-| [Vector::norm](#api-11) | `float64 norm()` |
-| [Vector::normalized](#api-12) | `Vector<T> normalized()` |
-| [Vector::add](#api-13) | `Vector<T> add(Vector<T> other)` |
-| [Vector::subtract](#api-14) | `Vector<T> subtract(Vector<T> other)` |
-| [Vector::scale](#api-15) | `Vector<T> scale(T amount)` |
-| [Vector::leftAdd](#api-16) | `Vector<T> leftAdd(Vector<T> right)` |
-| [Vector::leftSub](#api-17) | `Vector<T> leftSub(Vector<T> right)` |
-| [Vector::leftMul](#api-18) | `Vector<T> leftMul(T right)` |
-| [Matrix::drop](#api-19) | `void drop()` |
-| [Matrix::zeros](#api-20) | `static Matrix<T> zeros(int64 rows, int64 cols)` |
-| [Matrix::fromArray](#api-21) | `static Matrix<T> fromArray(T const& data, int64 count, int64 rows, int64 cols)` |
-| [Matrix::fromArray](#api-22) | `static Matrix<T> fromArray(T data[], int64 rows, int64 cols)` |
-| [Matrix::toArray](#api-23) | `T[] toArray()` |
-| [Matrix::column](#api-24) | `Vector<T> column(int64 key)` |
-| [Matrix::index](#api-25) | `Vector<T> index(int64 key)` |
-| [Matrix::iterator](#api-26) | `Option<Vector<T>> iterator(int64 position)` |
-| [Matrix::identity](#api-27) | `static Matrix<T> identity(int64 n)` |
-| [Matrix::at](#api-28) | `T at(int64 row, int64 col)` |
-| [Matrix::set](#api-29) | `void set(int64 row, int64 col, T value)` |
-| [Matrix::transpose](#api-30) | `Matrix<T> transpose()` |
-| [Matrix::add](#api-31) | `Matrix<T> add(Matrix<T> other)` |
-| [Matrix::subtract](#api-32) | `Matrix<T> subtract(Matrix<T> other)` |
-| [Matrix::scale](#api-33) | `Matrix<T> scale(T factor)` |
-| [Matrix::multiply](#api-34) | `Matrix<T> multiply(Matrix<T> other)` |
-| [Matrix::apply](#api-35) | `Vector<T> apply(Vector<T> vector)` |
-| [Matrix::solve](#api-36) | `Vector<T> solve(Vector<T> rhs)` |
-| [Matrix::leftAdd](#api-37) | `Matrix<T> leftAdd(Matrix<T> right)` |
-| [Matrix::leftSub](#api-38) | `Matrix<T> leftSub(Matrix<T> right)` |
-| [Matrix::leftMul](#api-39) | `Matrix<T> leftMul(Matrix<T> right)` |
-| [Matrix::leftMul](#api-40) | `Vector<T> leftMul(Vector<T> right)` |
-| [Matrix::leftMul](#api-41) | `Matrix<T> leftMul(T right)` |
-| [luDecompose](#api-42) | `LuFactorization luDecompose(Matrix<float64> input)` |
-| [lurDecompose](#api-43) | `LuFactorization lurDecompose(Matrix<float64> input)` |
-| [symmetricEigen](#api-44) | `EigenDecomposition symmetricEigen(Matrix<float64> input)` |
-| [svd](#api-45) | `SingularValueDecomposition svd(Matrix<float64> input)` |
-| [jordan2](#api-46) | `JordanDecomposition jordan2(Matrix<float64> input)` |
-| [diagonalize2](#api-47) | `JordanDecomposition diagonalize2(Matrix<float64> input)` |
+| [ScalarArray::len](#api-0) | `int64 len()` |
+| [ScalarArray::clear](#api-1) | `void clear()` |
+| [ScalarArray::at](#api-2) | `T at(int64 index)` |
+| [ScalarArray::index](#api-3) | `T index(int64 key)` |
+| [ScalarArray::set](#api-4) | `void set(int64 index, T value)` |
+| [ScalarArray::push](#api-5) | `void push(T value)` |
+| [ScalarArray::copy](#api-6) | `ScalarArray<T> copy()` |
+| [ScalarArray::iterator](#api-7) | `Option<T> iterator(int64 position)` |
+| [Vector::drop](#api-8) | `void drop()` |
+| [Vector::zeros](#api-9) | `static Vector<T> zeros(int64 n)` |
+| [Vector::fromArray](#api-10) | `static Vector<T> fromArray(T const& data, int64 count)` |
+| [Vector::fromArray](#api-11) | `static Vector<T> fromArray(T data[])` |
+| [Vector::toArray](#api-12) | `T[] toArray()` |
+| [Vector::index](#api-13) | `T index(int64 key)` |
+| [Vector::iterator](#api-14) | `Option<T> iterator(int64 position)` |
+| [Vector::len](#api-15) | `int64 len()` |
+| [Vector::at](#api-16) | `T at(int64 i)` |
+| [Vector::set](#api-17) | `void set(int64 i, T value)` |
+| [Vector::dot](#api-18) | `T dot(Vector<T> other)` |
+| [Vector::norm](#api-19) | `float64 norm()` |
+| [Vector::normalized](#api-20) | `Vector<T> normalized()` |
+| [Vector::add](#api-21) | `Vector<T> add(Vector<T> other)` |
+| [Vector::subtract](#api-22) | `Vector<T> subtract(Vector<T> other)` |
+| [Vector::scale](#api-23) | `Vector<T> scale(T amount)` |
+| [Vector::leftAdd](#api-24) | `Vector<T> leftAdd(Vector<T> right)` |
+| [Vector::leftSub](#api-25) | `Vector<T> leftSub(Vector<T> right)` |
+| [Vector::leftMul](#api-26) | `Vector<T> leftMul(T right)` |
+| [Matrix::drop](#api-27) | `void drop()` |
+| [Matrix::zeros](#api-28) | `static Matrix<T> zeros(int64 rows, int64 cols)` |
+| [Matrix::fromArray](#api-29) | `static Matrix<T> fromArray(T const& data, int64 count, int64 rows, int64 cols)` |
+| [Matrix::fromArray](#api-30) | `static Matrix<T> fromArray(T data[], int64 rows, int64 cols)` |
+| [Matrix::toArray](#api-31) | `T[] toArray()` |
+| [Matrix::column](#api-32) | `Vector<T> column(int64 key)` |
+| [Matrix::index](#api-33) | `Vector<T> index(int64 key)` |
+| [Matrix::iterator](#api-34) | `Option<Vector<T>> iterator(int64 position)` |
+| [Matrix::identity](#api-35) | `static Matrix<T> identity(int64 n)` |
+| [Matrix::at](#api-36) | `T at(int64 row, int64 col)` |
+| [Matrix::set](#api-37) | `void set(int64 row, int64 col, T value)` |
+| [Matrix::transpose](#api-38) | `Matrix<T> transpose()` |
+| [Matrix::add](#api-39) | `Matrix<T> add(Matrix<T> other)` |
+| [Matrix::subtract](#api-40) | `Matrix<T> subtract(Matrix<T> other)` |
+| [Matrix::scale](#api-41) | `Matrix<T> scale(T factor)` |
+| [Matrix::multiply](#api-42) | `Matrix<T> multiply(Matrix<T> other)` |
+| [Matrix::apply](#api-43) | `Vector<T> apply(Vector<T> vector)` |
+| [Matrix::solve](#api-44) | `Vector<T> solve(Vector<T> rhs)` |
+| [Matrix::leftAdd](#api-45) | `Matrix<T> leftAdd(Matrix<T> right)` |
+| [Matrix::leftSub](#api-46) | `Matrix<T> leftSub(Matrix<T> right)` |
+| [Matrix::leftMul](#api-47) | `Matrix<T> leftMul(Matrix<T> right)` |
+| [Matrix::leftMul](#api-48) | `Vector<T> leftMul(Vector<T> right)` |
+| [Matrix::leftMul](#api-49) | `Matrix<T> leftMul(T right)` |
+| [luDecompose](#api-50) | `LuFactorization luDecompose(Matrix<float64> input)` |
+| [lurDecompose](#api-51) | `LuFactorization lurDecompose(Matrix<float64> input)` |
+| [symmetricEigen](#api-52) | `EigenDecomposition symmetricEigen(Matrix<float64> input)` |
+| [svd](#api-53) | `SingularValueDecomposition svd(Matrix<float64> input)` |
+| [jordan2](#api-54) | `JordanDecomposition jordan2(Matrix<float64> input)` |
+| [diagonalize2](#api-55) | `JordanDecomposition diagonalize2(Matrix<float64> input)` |
 
 <a id="api-0"></a>
 
-### Vector::drop（1）
+### ScalarArray::len（1）
+
+**声明**
+
+```magel
+int64 len();
+```
+
+**行为**
+
+返回当前元素数量。
+
+**参数**
+
+无显式参数。实例方法使用当前接收者。
+
+**返回值**
+
+`int64`。返回当前元素数量。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.len();
+```
+
+**源码**：[source/std/linalg.mgl:26](../../source/std/linalg.mgl#L26)。
+
+**完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
+
+<a id="api-1"></a>
+
+### ScalarArray::clear（2）
+
+**声明**
+
+```magel
+void clear();
+```
+
+**行为**
+
+移除全部元素。
+
+**参数**
+
+无显式参数。实例方法使用当前接收者。
+
+**返回值**
+
+无返回值。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.clear();
+```
+
+**源码**：[source/std/linalg.mgl:30](../../source/std/linalg.mgl#L30)。
+
+**完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
+
+<a id="api-2"></a>
+
+### ScalarArray::at（3）
+
+**声明**
+
+```magel
+T at(int64 index);
+```
+
+**行为**
+
+读取从 0 开始的指定位置。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `index` | `int64 index` | 从 0 开始的位置 | 无 |
+
+**返回值**
+
+`T`。读取从 0 开始的指定位置。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.at(index);
+```
+
+**源码**：[source/std/linalg.mgl:31](../../source/std/linalg.mgl#L31)。
+
+**完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
+
+<a id="api-3"></a>
+
+### ScalarArray::index（4）
+
+**声明**
+
+```magel
+T index(int64 key);
+```
+
+**行为**
+
+读取 key 对应的元素，供下标语法调用。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `key` | `int64 key` | 查找键或下标 | 无 |
+
+**返回值**
+
+`T`。读取 key 对应的元素，供下标语法调用。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.index(key);
+```
+
+**源码**：[source/std/linalg.mgl:32](../../source/std/linalg.mgl#L32)。
+
+**完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
+
+<a id="api-4"></a>
+
+### ScalarArray::set（5）
+
+**声明**
+
+```magel
+void set(int64 index, T value);
+```
+
+**行为**
+
+将指定位置或共享槽替换为 value。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `index` | `int64 index` | 从 0 开始的位置 | 无 |
+| `value` | `T value` | 输入值或写入的新值 | 无 |
+
+**返回值**
+
+无返回值。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.set(index, value);
+```
+
+**源码**：[source/std/linalg.mgl:33](../../source/std/linalg.mgl#L33)。
+
+**完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
+
+<a id="api-5"></a>
+
+### ScalarArray::push（6）
+
+**声明**
+
+```magel
+void push(T value);
+```
+
+**行为**
+
+将 value 追加到列表尾部。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `value` | `T value` | 输入值或写入的新值 | 无 |
+
+**返回值**
+
+无返回值。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.push(value);
+```
+
+**源码**：[source/std/linalg.mgl:34](../../source/std/linalg.mgl#L34)。
+
+**完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
+
+<a id="api-6"></a>
+
+### ScalarArray::copy（7）
+
+**声明**
+
+```magel
+ScalarArray<T> copy();
+```
+
+**行为**
+
+返回独立的值副本。
+
+**参数**
+
+无显式参数。实例方法使用当前接收者。
+
+**返回值**
+
+`ScalarArray<T>`。返回独立的值副本。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.copy();
+```
+
+**源码**：[source/std/linalg.mgl:35](../../source/std/linalg.mgl#L35)。
+
+**完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
+
+<a id="api-7"></a>
+
+### ScalarArray::iterator（8）
+
+**声明**
+
+```magel
+Option<T> iterator(int64 position);
+```
+
+**行为**
+
+读取指定迭代位置；无元素时返回 None。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `position` | `int64 position` | 目标绝对位置 | 无 |
+
+**返回值**
+
+`Option<T>`。读取指定迭代位置；无元素时返回 None。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.iterator(position);
+```
+
+**源码**：[source/std/linalg.mgl:36](../../source/std/linalg.mgl#L36)。
+
+**完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
+
+<a id="api-8"></a>
+
+### Vector::drop（9）
 
 **声明**
 
@@ -283,13 +593,13 @@ void drop();
 obj.drop();
 ```
 
-**源码**：[source/std/linalg.mgl:14](../../source/std/linalg.mgl#L14)。
+**源码**：[source/std/linalg.mgl:46](../../source/std/linalg.mgl#L46)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-1"></a>
+<a id="api-9"></a>
 
-### Vector::zeros（2）
+### Vector::zeros（10）
 
 **声明**
 
@@ -322,13 +632,13 @@ static Vector<T> zeros(int64 n);
 std::linalg::Vector<T>::zeros(n);
 ```
 
-**源码**：[source/std/linalg.mgl:16](../../source/std/linalg.mgl#L16)。
+**源码**：[source/std/linalg.mgl:48](../../source/std/linalg.mgl#L48)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-2"></a>
+<a id="api-10"></a>
 
-### Vector::fromArray（3）
+### Vector::fromArray（11）
 
 **声明**
 
@@ -364,13 +674,13 @@ static Vector<T> fromArray(T const& data, int64 count);
 std::linalg::Vector<T>::fromArray(data, count);
 ```
 
-**源码**：[source/std/linalg.mgl:27](../../source/std/linalg.mgl#L27)。
+**源码**：[source/std/linalg.mgl:59](../../source/std/linalg.mgl#L59)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-3"></a>
+<a id="api-11"></a>
 
-### Vector::fromArray（4）
+### Vector::fromArray（12）
 
 **声明**
 
@@ -402,13 +712,13 @@ static Vector<T> fromArray(T data[]);
 std::linalg::Vector<T>::fromArray(data);
 ```
 
-**源码**：[source/std/linalg.mgl:34](../../source/std/linalg.mgl#L34)。
+**源码**：[source/std/linalg.mgl:66](../../source/std/linalg.mgl#L66)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-4"></a>
+<a id="api-12"></a>
 
-### Vector::toArray（5）
+### Vector::toArray（13）
 
 **声明**
 
@@ -440,13 +750,13 @@ T[] toArray();
 obj.toArray();
 ```
 
-**源码**：[source/std/linalg.mgl:36](../../source/std/linalg.mgl#L36)。
+**源码**：[source/std/linalg.mgl:68](../../source/std/linalg.mgl#L68)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-5"></a>
+<a id="api-13"></a>
 
-### Vector::index（6）
+### Vector::index（14）
 
 **声明**
 
@@ -478,13 +788,13 @@ T index(int64 key);
 obj.index(key);
 ```
 
-**源码**：[source/std/linalg.mgl:42](../../source/std/linalg.mgl#L42)。
+**源码**：[source/std/linalg.mgl:74](../../source/std/linalg.mgl#L74)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-6"></a>
+<a id="api-14"></a>
 
-### Vector::iterator（7）
+### Vector::iterator（15）
 
 **声明**
 
@@ -516,13 +826,13 @@ Option<T> iterator(int64 position);
 obj.iterator(position);
 ```
 
-**源码**：[source/std/linalg.mgl:43](../../source/std/linalg.mgl#L43)。
+**源码**：[source/std/linalg.mgl:75](../../source/std/linalg.mgl#L75)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-7"></a>
+<a id="api-15"></a>
 
-### Vector::len（8）
+### Vector::len（16）
 
 **声明**
 
@@ -552,13 +862,13 @@ int64 len();
 obj.len();
 ```
 
-**源码**：[source/std/linalg.mgl:47](../../source/std/linalg.mgl#L47)。
+**源码**：[source/std/linalg.mgl:79](../../source/std/linalg.mgl#L79)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-8"></a>
+<a id="api-16"></a>
 
-### Vector::at（9）
+### Vector::at（17）
 
 **声明**
 
@@ -590,13 +900,13 @@ T at(int64 i);
 obj.at(i);
 ```
 
-**源码**：[source/std/linalg.mgl:48](../../source/std/linalg.mgl#L48)。
+**源码**：[source/std/linalg.mgl:80](../../source/std/linalg.mgl#L80)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-9"></a>
+<a id="api-17"></a>
 
-### Vector::set（10）
+### Vector::set（18）
 
 **声明**
 
@@ -629,13 +939,13 @@ void set(int64 i, T value);
 obj.set(i, value);
 ```
 
-**源码**：[source/std/linalg.mgl:49](../../source/std/linalg.mgl#L49)。
+**源码**：[source/std/linalg.mgl:81](../../source/std/linalg.mgl#L81)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-10"></a>
+<a id="api-18"></a>
 
-### Vector::dot（11）
+### Vector::dot（19）
 
 **声明**
 
@@ -668,13 +978,13 @@ T dot(Vector<T> other);
 obj.dot(other);
 ```
 
-**源码**：[source/std/linalg.mgl:50](../../source/std/linalg.mgl#L50)。
+**源码**：[source/std/linalg.mgl:82](../../source/std/linalg.mgl#L82)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-11"></a>
+<a id="api-19"></a>
 
-### Vector::norm（12）
+### Vector::norm（20）
 
 **声明**
 
@@ -704,13 +1014,13 @@ float64 norm();
 obj.norm();
 ```
 
-**源码**：[source/std/linalg.mgl:57](../../source/std/linalg.mgl#L57)。
+**源码**：[source/std/linalg.mgl:89](../../source/std/linalg.mgl#L89)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-12"></a>
+<a id="api-20"></a>
 
-### Vector::normalized（13）
+### Vector::normalized（21）
 
 **声明**
 
@@ -741,13 +1051,13 @@ Vector<T> normalized();
 obj.normalized();
 ```
 
-**源码**：[source/std/linalg.mgl:58](../../source/std/linalg.mgl#L58)。
+**源码**：[source/std/linalg.mgl:90](../../source/std/linalg.mgl#L90)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-13"></a>
+<a id="api-21"></a>
 
-### Vector::add（14）
+### Vector::add（22）
 
 **声明**
 
@@ -780,13 +1090,13 @@ Vector<T> add(Vector<T> other);
 obj.add(other);
 ```
 
-**源码**：[source/std/linalg.mgl:63](../../source/std/linalg.mgl#L63)。
+**源码**：[source/std/linalg.mgl:95](../../source/std/linalg.mgl#L95)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-14"></a>
+<a id="api-22"></a>
 
-### Vector::subtract（15）
+### Vector::subtract（23）
 
 **声明**
 
@@ -819,13 +1129,13 @@ Vector<T> subtract(Vector<T> other);
 obj.subtract(other);
 ```
 
-**源码**：[source/std/linalg.mgl:70](../../source/std/linalg.mgl#L70)。
+**源码**：[source/std/linalg.mgl:102](../../source/std/linalg.mgl#L102)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-15"></a>
+<a id="api-23"></a>
 
-### Vector::scale（16）
+### Vector::scale（24）
 
 **声明**
 
@@ -857,13 +1167,13 @@ Vector<T> scale(T amount);
 obj.scale(amount);
 ```
 
-**源码**：[source/std/linalg.mgl:77](../../source/std/linalg.mgl#L77)。
+**源码**：[source/std/linalg.mgl:109](../../source/std/linalg.mgl#L109)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-16"></a>
+<a id="api-24"></a>
 
-### Vector::leftAdd（17）
+### Vector::leftAdd（25）
 
 **声明**
 
@@ -895,13 +1205,13 @@ Vector<T> leftAdd(Vector<T> right);
 obj.leftAdd(right);
 ```
 
-**源码**：[source/std/linalg.mgl:83](../../source/std/linalg.mgl#L83)。
+**源码**：[source/std/linalg.mgl:115](../../source/std/linalg.mgl#L115)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-17"></a>
+<a id="api-25"></a>
 
-### Vector::leftSub（18）
+### Vector::leftSub（26）
 
 **声明**
 
@@ -933,13 +1243,13 @@ Vector<T> leftSub(Vector<T> right);
 obj.leftSub(right);
 ```
 
-**源码**：[source/std/linalg.mgl:84](../../source/std/linalg.mgl#L84)。
+**源码**：[source/std/linalg.mgl:116](../../source/std/linalg.mgl#L116)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-18"></a>
+<a id="api-26"></a>
 
-### Vector::leftMul（19）
+### Vector::leftMul（27）
 
 **声明**
 
@@ -971,13 +1281,13 @@ Vector<T> leftMul(T right);
 obj.leftMul(right);
 ```
 
-**源码**：[source/std/linalg.mgl:85](../../source/std/linalg.mgl#L85)。
+**源码**：[source/std/linalg.mgl:117](../../source/std/linalg.mgl#L117)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-19"></a>
+<a id="api-27"></a>
 
-### Matrix::drop（20）
+### Matrix::drop（28）
 
 **声明**
 
@@ -1007,13 +1317,13 @@ void drop();
 obj.drop();
 ```
 
-**源码**：[source/std/linalg.mgl:97](../../source/std/linalg.mgl#L97)。
+**源码**：[source/std/linalg.mgl:129](../../source/std/linalg.mgl#L129)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-20"></a>
+<a id="api-28"></a>
 
-### Matrix::zeros（21）
+### Matrix::zeros（29）
 
 **声明**
 
@@ -1047,13 +1357,13 @@ static Matrix<T> zeros(int64 rows, int64 cols);
 std::linalg::Matrix<T>::zeros(rows, cols);
 ```
 
-**源码**：[source/std/linalg.mgl:99](../../source/std/linalg.mgl#L99)。
+**源码**：[source/std/linalg.mgl:131](../../source/std/linalg.mgl#L131)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-21"></a>
+<a id="api-29"></a>
 
-### Matrix::fromArray（22）
+### Matrix::fromArray（30）
 
 **声明**
 
@@ -1093,13 +1403,13 @@ static Matrix<T> fromArray(T const& data, int64 count, int64 rows, int64 cols);
 std::linalg::Matrix<T>::fromArray(data, count, rows, cols);
 ```
 
-**源码**：[source/std/linalg.mgl:111](../../source/std/linalg.mgl#L111)。
+**源码**：[source/std/linalg.mgl:143](../../source/std/linalg.mgl#L143)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-22"></a>
+<a id="api-30"></a>
 
-### Matrix::fromArray（23）
+### Matrix::fromArray（31）
 
 **声明**
 
@@ -1133,13 +1443,13 @@ static Matrix<T> fromArray(T data[], int64 rows, int64 cols);
 std::linalg::Matrix<T>::fromArray(data, rows, cols);
 ```
 
-**源码**：[source/std/linalg.mgl:120](../../source/std/linalg.mgl#L120)。
+**源码**：[source/std/linalg.mgl:152](../../source/std/linalg.mgl#L152)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-23"></a>
+<a id="api-31"></a>
 
-### Matrix::toArray（24）
+### Matrix::toArray（32）
 
 **声明**
 
@@ -1171,13 +1481,13 @@ T[] toArray();
 obj.toArray();
 ```
 
-**源码**：[source/std/linalg.mgl:124](../../source/std/linalg.mgl#L124)。
+**源码**：[source/std/linalg.mgl:156](../../source/std/linalg.mgl#L156)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-24"></a>
+<a id="api-32"></a>
 
-### Matrix::column（25）
+### Matrix::column（33）
 
 **声明**
 
@@ -1211,13 +1521,13 @@ Vector<T> column(int64 key);
 obj.column(key);
 ```
 
-**源码**：[source/std/linalg.mgl:131](../../source/std/linalg.mgl#L131)。
+**源码**：[source/std/linalg.mgl:163](../../source/std/linalg.mgl#L163)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-25"></a>
+<a id="api-33"></a>
 
-### Matrix::index（26）
+### Matrix::index（34）
 
 **声明**
 
@@ -1249,13 +1559,13 @@ Vector<T> index(int64 key);
 obj.index(key);
 ```
 
-**源码**：[source/std/linalg.mgl:132](../../source/std/linalg.mgl#L132)。
+**源码**：[source/std/linalg.mgl:164](../../source/std/linalg.mgl#L164)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-26"></a>
+<a id="api-34"></a>
 
-### Matrix::iterator（27）
+### Matrix::iterator（35）
 
 **声明**
 
@@ -1287,13 +1597,13 @@ Option<Vector<T>> iterator(int64 position);
 obj.iterator(position);
 ```
 
-**源码**：[source/std/linalg.mgl:133](../../source/std/linalg.mgl#L133)。
+**源码**：[source/std/linalg.mgl:165](../../source/std/linalg.mgl#L165)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-27"></a>
+<a id="api-35"></a>
 
-### Matrix::identity（28）
+### Matrix::identity（36）
 
 **声明**
 
@@ -1325,13 +1635,13 @@ static Matrix<T> identity(int64 n);
 std::linalg::Matrix<T>::identity(n);
 ```
 
-**源码**：[source/std/linalg.mgl:139](../../source/std/linalg.mgl#L139)。
+**源码**：[source/std/linalg.mgl:171](../../source/std/linalg.mgl#L171)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-28"></a>
+<a id="api-36"></a>
 
-### Matrix::at（29）
+### Matrix::at（37）
 
 **声明**
 
@@ -1365,13 +1675,13 @@ T at(int64 row, int64 col);
 obj.at(row, col);
 ```
 
-**源码**：[source/std/linalg.mgl:145](../../source/std/linalg.mgl#L145)。
+**源码**：[source/std/linalg.mgl:177](../../source/std/linalg.mgl#L177)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-29"></a>
+<a id="api-37"></a>
 
-### Matrix::set（30）
+### Matrix::set（38）
 
 **声明**
 
@@ -1406,13 +1716,13 @@ void set(int64 row, int64 col, T value);
 obj.set(row, col, value);
 ```
 
-**源码**：[source/std/linalg.mgl:149](../../source/std/linalg.mgl#L149)。
+**源码**：[source/std/linalg.mgl:181](../../source/std/linalg.mgl#L181)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-30"></a>
+<a id="api-38"></a>
 
-### Matrix::transpose（31）
+### Matrix::transpose（39）
 
 **声明**
 
@@ -1442,13 +1752,13 @@ Matrix<T> transpose();
 obj.transpose();
 ```
 
-**源码**：[source/std/linalg.mgl:153](../../source/std/linalg.mgl#L153)。
+**源码**：[source/std/linalg.mgl:185](../../source/std/linalg.mgl#L185)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-31"></a>
+<a id="api-39"></a>
 
-### Matrix::add（32）
+### Matrix::add（40）
 
 **声明**
 
@@ -1481,13 +1791,13 @@ Matrix<T> add(Matrix<T> other);
 obj.add(other);
 ```
 
-**源码**：[source/std/linalg.mgl:163](../../source/std/linalg.mgl#L163)。
+**源码**：[source/std/linalg.mgl:195](../../source/std/linalg.mgl#L195)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-32"></a>
+<a id="api-40"></a>
 
-### Matrix::subtract（33）
+### Matrix::subtract（41）
 
 **声明**
 
@@ -1520,13 +1830,13 @@ Matrix<T> subtract(Matrix<T> other);
 obj.subtract(other);
 ```
 
-**源码**：[source/std/linalg.mgl:174](../../source/std/linalg.mgl#L174)。
+**源码**：[source/std/linalg.mgl:206](../../source/std/linalg.mgl#L206)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-33"></a>
+<a id="api-41"></a>
 
-### Matrix::scale（34）
+### Matrix::scale（42）
 
 **声明**
 
@@ -1558,13 +1868,13 @@ Matrix<T> scale(T factor);
 obj.scale(factor);
 ```
 
-**源码**：[source/std/linalg.mgl:185](../../source/std/linalg.mgl#L185)。
+**源码**：[source/std/linalg.mgl:217](../../source/std/linalg.mgl#L217)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-34"></a>
+<a id="api-42"></a>
 
-### Matrix::multiply（35）
+### Matrix::multiply（43）
 
 **声明**
 
@@ -1597,13 +1907,13 @@ Matrix<T> multiply(Matrix<T> other);
 obj.multiply(other);
 ```
 
-**源码**：[source/std/linalg.mgl:195](../../source/std/linalg.mgl#L195)。
+**源码**：[source/std/linalg.mgl:227](../../source/std/linalg.mgl#L227)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-35"></a>
+<a id="api-43"></a>
 
-### Matrix::apply（36）
+### Matrix::apply（44）
 
 **声明**
 
@@ -1636,13 +1946,13 @@ Vector<T> apply(Vector<T> vector);
 obj.apply(vector);
 ```
 
-**源码**：[source/std/linalg.mgl:211](../../source/std/linalg.mgl#L211)。
+**源码**：[source/std/linalg.mgl:243](../../source/std/linalg.mgl#L243)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-36"></a>
+<a id="api-44"></a>
 
-### Matrix::solve（37）
+### Matrix::solve（45）
 
 **声明**
 
@@ -1676,13 +1986,13 @@ Vector<T> solve(Vector<T> rhs);
 obj.solve(rhs);
 ```
 
-**源码**：[source/std/linalg.mgl:224](../../source/std/linalg.mgl#L224)。
+**源码**：[source/std/linalg.mgl:256](../../source/std/linalg.mgl#L256)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-37"></a>
+<a id="api-45"></a>
 
-### Matrix::leftAdd（38）
+### Matrix::leftAdd（46）
 
 **声明**
 
@@ -1714,13 +2024,13 @@ Matrix<T> leftAdd(Matrix<T> right);
 obj.leftAdd(right);
 ```
 
-**源码**：[source/std/linalg.mgl:227](../../source/std/linalg.mgl#L227)。
+**源码**：[source/std/linalg.mgl:259](../../source/std/linalg.mgl#L259)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-38"></a>
+<a id="api-46"></a>
 
-### Matrix::leftSub（39）
+### Matrix::leftSub（47）
 
 **声明**
 
@@ -1752,13 +2062,13 @@ Matrix<T> leftSub(Matrix<T> right);
 obj.leftSub(right);
 ```
 
-**源码**：[source/std/linalg.mgl:228](../../source/std/linalg.mgl#L228)。
+**源码**：[source/std/linalg.mgl:260](../../source/std/linalg.mgl#L260)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-39"></a>
+<a id="api-47"></a>
 
-### Matrix::leftMul（40）
+### Matrix::leftMul（48）
 
 **声明**
 
@@ -1790,13 +2100,13 @@ Matrix<T> leftMul(Matrix<T> right);
 obj.leftMul(right);
 ```
 
-**源码**：[source/std/linalg.mgl:229](../../source/std/linalg.mgl#L229)。
+**源码**：[source/std/linalg.mgl:261](../../source/std/linalg.mgl#L261)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-40"></a>
+<a id="api-48"></a>
 
-### Matrix::leftMul（41）
+### Matrix::leftMul（49）
 
 **声明**
 
@@ -1828,13 +2138,13 @@ Vector<T> leftMul(Vector<T> right);
 obj.leftMul(right);
 ```
 
-**源码**：[source/std/linalg.mgl:230](../../source/std/linalg.mgl#L230)。
+**源码**：[source/std/linalg.mgl:262](../../source/std/linalg.mgl#L262)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-41"></a>
+<a id="api-49"></a>
 
-### Matrix::leftMul（42）
+### Matrix::leftMul（50）
 
 **声明**
 
@@ -1866,13 +2176,13 @@ Matrix<T> leftMul(T right);
 obj.leftMul(right);
 ```
 
-**源码**：[source/std/linalg.mgl:231](../../source/std/linalg.mgl#L231)。
+**源码**：[source/std/linalg.mgl:263](../../source/std/linalg.mgl#L263)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-42"></a>
+<a id="api-50"></a>
 
-### luDecompose（43）
+### luDecompose（51）
 
 **声明**
 
@@ -1906,13 +2216,13 @@ LuFactorization luDecompose(Matrix<float64> input);
 std::linalg::luDecompose(input);
 ```
 
-**源码**：[source/std/linalg.mgl:245](../../source/std/linalg.mgl#L245)。
+**源码**：[source/std/linalg.mgl:277](../../source/std/linalg.mgl#L277)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-43"></a>
+<a id="api-51"></a>
 
-### lurDecompose（44）
+### lurDecompose（52）
 
 **声明**
 
@@ -1946,13 +2256,13 @@ LUR 在本库中指带行置换的 LU；返回的 permutation 满足 P*A=L*U。
 std::linalg::lurDecompose(input);
 ```
 
-**源码**：[source/std/linalg.mgl:248](../../source/std/linalg.mgl#L248)。
+**源码**：[source/std/linalg.mgl:280](../../source/std/linalg.mgl#L280)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-44"></a>
+<a id="api-52"></a>
 
-### symmetricEigen（45）
+### symmetricEigen（53）
 
 **声明**
 
@@ -1986,13 +2296,13 @@ EigenDecomposition symmetricEigen(Matrix<float64> input);
 std::linalg::symmetricEigen(input);
 ```
 
-**源码**：[source/std/linalg.mgl:256](../../source/std/linalg.mgl#L256)。
+**源码**：[source/std/linalg.mgl:288](../../source/std/linalg.mgl#L288)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-45"></a>
+<a id="api-53"></a>
 
-### svd（46）
+### svd（54）
 
 **声明**
 
@@ -2026,13 +2336,13 @@ SingularValueDecomposition svd(Matrix<float64> input);
 std::linalg::svd(input);
 ```
 
-**源码**：[source/std/linalg.mgl:265](../../source/std/linalg.mgl#L265)。
+**源码**：[source/std/linalg.mgl:297](../../source/std/linalg.mgl#L297)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-46"></a>
+<a id="api-54"></a>
 
-### jordan2（47）
+### jordan2（55）
 
 **声明**
 
@@ -2066,13 +2376,13 @@ JordanDecomposition jordan2(Matrix<float64> input);
 std::linalg::jordan2(input);
 ```
 
-**源码**：[source/std/linalg.mgl:273](../../source/std/linalg.mgl#L273)。
+**源码**：[source/std/linalg.mgl:305](../../source/std/linalg.mgl#L305)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。
 
-<a id="api-47"></a>
+<a id="api-55"></a>
 
-### diagonalize2（48）
+### diagonalize2（56）
 
 **声明**
 
@@ -2104,6 +2414,6 @@ JordanDecomposition diagonalize2(Matrix<float64> input);
 std::linalg::diagonalize2(input);
 ```
 
-**源码**：[source/std/linalg.mgl:275](../../source/std/linalg.mgl#L275)。
+**源码**：[source/std/linalg.mgl:307](../../source/std/linalg.mgl#L307)。
 
 **完整示例**：[example/samples/std_linalg_solve_glue.mgl](../../example/samples/std_linalg_solve_glue.mgl)。

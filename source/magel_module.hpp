@@ -206,6 +206,7 @@ public:
            magel_incremental::Cache *cache = nullptr,
            const magel_package::Project *project = nullptr) : options_(std::move(options)), includeDirs_(std::move(includeDirs)), cache_(cache), project_(project)
     {
+        options_.allowIncludes = false;
 #if defined(_WIN32)
         const char *os = "windows";
 #elif defined(__APPLE__) && defined(__MACH__)
@@ -280,83 +281,23 @@ private:
             if (!preprocessFile(path, root)) return diagnostics(root, error);
             return true;
         }
-        const Memory::String marker = "// __magel_entry_boundary__";
-        Memory::String wrapper;
-        for (const auto &include : project_->includes)
-        {
-            namespace fs = std::filesystem;
-            const auto name = Memory::u8path(include);
-            const auto fromProject = Memory::u8path(project_->file).parent_path() / name;
-            auto resolved = fromProject;
-            std::error_code ec;
-            if (!name.is_absolute() && !fs::is_regular_file(fromProject, ec))
-            {
-                for (const auto &directory : options_.includeDirs)
-                {
-                    const auto candidate = Memory::u8path(directory) / name;
-                    if (fs::is_regular_file(candidate, ec))
-                    {
-                        resolved = candidate;
-                        break;
-                    }
-                }
-            }
-            wrapper += "%include " + magel_package::quote(fs::absolute(resolved).lexically_normal().generic_u8string()) + "\n";
-        }
-        const auto boundaryLine = project_->includes.size() + 1u;
-        wrapper += marker + "\n";
-        if (inlineRoot)
-            wrapper += text;
-        else
-            wrapper += "%include " + magel_package::quote(std::filesystem::absolute(Memory::u8path(path)).generic_u8string()) + "\n";
-        preprocess::Result combined;
-        const Memory::String label = inlineRoot ? path : Memory::String("<magel entry>");
-        const Memory::String directory = inlineRoot ? base : Memory::String(Memory::u8path(project_->file).parent_path().generic_u8string());
+        preprocess::Result entry;
         bool ok;
-        if (cache_ && !inlineRoot)
-            ok = cache_->preprocessTextUnit(path, options_, wrapper, label, directory, project_->file, combined);
-        else
+        if (inlineRoot)
         {
             preprocess::Preprocessor processor(options_);
-            ok = processor.runText(wrapper, label, directory, combined);
-            combined.dependencies.push_back(project_->file);
+            ok = processor.runText(text, path, base, entry);
         }
+        else
+            ok = preprocessFile(path, entry);
         if (!ok)
         {
-            root = combined;
+            root = entry;
             return diagnostics(root, error);
         }
-        preprocess::Result prefix, entry;
-        bool reached = false;
-        Memory::InputStringStream lines(combined.text);
-        Memory::String line;
-        std::size_t index = 0;
-        while (std::getline(lines, line))
-        {
-            const auto origin = combined.lineMap.at(index++);
-            if (!reached && origin.file == label && origin.line == boundaryLine && line == marker)
-            {
-                reached = true;
-                continue;
-            }
-            auto &target = reached ? entry : prefix;
-            target.text += line + "\n";
-            auto mapped = origin;
-            if (inlineRoot && reached && mapped.file == label) mapped.line -= boundaryLine;
-            target.lineMap.push_back(mapped);
-        }
-        if (!reached)
-        {
-            error = "magel entry boundary was lost";
-            return false;
-        }
-        UnitInfo entryInfo, prefixInfo;
-        if (!inspect(entry, entryInfo, error) || !inspect(prefix, prefixInfo, error)) return false;
-        if (prefixInfo.hasModule)
-        {
-            error = "magel includes must not declare module";
-            return false;
-        }
+        entry.dependencies.push_back(project_->file);
+        UnitInfo entryInfo;
+        if (!inspect(entry, entryInfo, error)) return false;
         // Keep the original entry's module/import header ahead of package values.
         preprocess::Result header;
         auto extractHeader = [&](preprocess::Result &unit, const UnitInfo &info) {
@@ -379,16 +320,14 @@ private:
             unit.text = rebuilt;
         };
         extractHeader(entry, entryInfo);
-        extractHeader(prefix, prefixInfo);
         for (const auto &name : project_->imports)
         {
             header.text += "import " + name + ";\n";
             header.lineMap.push_back({ project_->file, 1u });
         }
         root = header;
-        append(root, prefix);
         append(root, entry);
-        root.dependencies = combined.dependencies;
+        root.dependencies = entry.dependencies;
         return true;
     }
 

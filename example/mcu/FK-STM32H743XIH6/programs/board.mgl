@@ -1,3 +1,4 @@
+module board;
 /* RGB565 颜色；坐标、宽高和键号均由胶水检查范围。 */
 void lcdClear(int64 color);
 void lcdFill(int64 x, int64 y, int64 width, int64 height, int64 color);

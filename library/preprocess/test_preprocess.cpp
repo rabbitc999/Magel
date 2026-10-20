@@ -332,6 +332,28 @@ void testPredefinedSymbols()
 }
 
 /**
+ * @brief 验证语言宿主可拒绝文本包含，同时不影响通用预处理器默认能力。
+ */
+void testDisabledIncludes()
+{
+    preprocess::Options options = preprocess::Preprocessor::forMetro();
+    options.allowIncludes = false;
+    bool loaded = false;
+    options.includeLoader = [&](const preprocess::IncludeRequest &) {
+        loaded = true;
+        return preprocess::IncludeResult::inlineText("int value;", "injected");
+    };
+    for (const auto *name : { "include", "include_once", "import" })
+    {
+        preprocess::Result result;
+        CHECK(!preprocess::Preprocessor(options).runText(Memory::String("%") + name + " \"missing\"\n", "<disabled>", "", result));
+        CHECK(!loaded);
+        CHECK(result.diagnostics.size() == 1u);
+        CHECK(result.diagnostics[0].code == "unknown-directive");
+    }
+}
+
+/**
  * @brief include / import / include_once 与依赖表。
  */
 void testInclude()
@@ -760,6 +782,7 @@ int main(int argc, char **argv)
     testExpressions();
     testNames();
     testPredefinedSymbols();
+    testDisabledIncludes();
     testInclude();
     testIncludeCycle();
     testDiagnostics();

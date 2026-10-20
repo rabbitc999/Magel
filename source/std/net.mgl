@@ -3,7 +3,7 @@ module std::net;
 /*
  * std::net —— Magel 语言连接**外部网络**的标准库模块（TCP + 极简 HTTP 客户端）。
  *
- * 套接字在宿主胶水（glue/std_net.hpp）里，Magel 一侧只拿到 int32 句柄：
+ * 套接字在宿主胶水（glue/std_net.hpp）里，Magel 一侧通过独占 opcode 管理连接：
  * Windows 运行期加载 ws2_32.dll，POSIX 平台直接调用同名接口，两边都不用改链接参数。
  *
  * 用法：
@@ -29,145 +29,93 @@ module std::net;
 import std::text;
 import std::parse;
 
-/* ── 宿主签名（由 glue/std_net.hpp 注册） ─────────────────────────────── */
-int32 __netInit();
-std::lang::String __netError();
-int32 __netStatus();
-int32 __netConnect(std::lang::String host, int32 port, int32 timeoutMs);
-int32 __netListen(std::lang::String host, int32 port, int32 backlog);
-int32 __netAccept(int32 listener, int32 timeoutMs);
-int32 __netSend(int32 sock, std::lang::String data);
-std::lang::String __netReceive(int32 sock, int32 maxBytes);
-std::lang::String __netReceiveLine(int32 sock, int32 timeoutMs);
-int32 __netClose(int32 handle);
-int32 __netLocalPort(int32 handle);
+/* 套接字通过 opcode 持有宿主资源，作用域退出时自动关闭。 */
+int64 __std_netNew();
+void __std_netDrop(int64 handle);
+TcpSocket __std_netConnect(String host, int32 port, int32 timeoutMs);
+TcpListener __std_netListen(String host, int32 port, int32 backlog);
+TcpSocket __std_netAccept(TcpListener mut& listener, int32 timeoutMs);
+bool __std_netIsOpen(int64 handle);
+String __std_netError(int64 handle);
+int64 __std_netStatus(int64 handle);
+int64 __std_netSend(TcpSocket mut& socket, String data);
+String __std_netReceive(TcpSocket mut& socket, int32 maxBytes);
+String __std_netReceiveLine(TcpSocket mut& socket, int32 timeoutMs);
+void __std_netCloseSocket(TcpSocket mut& socket);
+void __std_netCloseListener(TcpListener mut& listener);
+int64 __std_netLocalPort(int64 handle);
 
-/* ── 读结果编号 ───────────────────────────────────────────────────────── */
+TcpSocket __std_netConnectAsync(String host, int32 port, int32 timeoutMs);
+int64 __std_netPollConnect(TcpSocket mut& socket);
+TcpSocket __std_netAcceptAsync(TcpListener mut& listener);
+int64 __std_netSendAsync(TcpSocket mut& socket, String data, int64 offset);
+String __std_netReceiveAsync(TcpSocket mut& socket, int32 maxBytes);
+String __std_netReceiveLineAsync(TcpSocket mut& socket);
+
 const int64 NET_OK = 0;
 const int64 NET_CLOSED = 1;
 const int64 NET_TIMEOUT = 2;
 const int64 NET_ERROR = 3;
+/** @brief 非阻塞操作尚未就绪，调用方可让出协程后继续轮询。 */
+const int64 NET_PENDING = 4;
 
-/** @brief 一条 TCP 连接（`connect` 来的，或 `accept` 到的）。 */
-struct TcpSocket {
-    int32 handle;
-    bool opened;
-    std::lang::String error;
-
-    /** @brief 连接远端；`timeoutMs > 0` 时带连接超时。 */
-    static TcpSocket connect(std::lang::String host, int32 port, int32 timeoutMs) {
-        TcpSocket socket;
-        socket.handle = __netConnect(host, port, timeoutMs);
-        socket.opened = socket.handle >= 0;
-        socket.error = "";
-        if (!socket.opened) { socket.error = __netError(); }
-        return socket;
+/** @brief 独占 TCP 连接；复制被拒绝，显式 move 转移所有权。 */
+#NonCopyable
+opcode TcpSocket {
+    new = std::net::__std_netNew;
+    drop = std::net::__std_netDrop;
+    static TcpSocket connect(String host, int32 port, int32 timeoutMs) {
+        return __std_netConnect(host, port, timeoutMs);
     }
-
-    /** @brief 默认 5 秒连接超时。 */
-    static TcpSocket connect(std::lang::String host, int32 port) {
+    static TcpSocket connect(String host, int32 port) {
         return TcpSocket::connect(host, port, (int32)5000);
     }
-
-    bool isOpen() { return self.opened; }
-
-    /**
-     * @brief 最近一次出错说明。
-     *
-     * 直接返回字段即可：String 是值语义，`return self.error;` 交出的是独立副本，
-     * 接收者释放后调用方手上的串仍然有效。
-     */
-    std::lang::String lastError() { return self.error; }
-
-    /** @brief 最近一次读的结果：NET_OK / NET_CLOSED / NET_TIMEOUT / NET_ERROR。 */
-    int64 status() { return (int64)__netStatus(); }
-
-    /** @brief 关闭连接；重复调用安全。 */
-    void close() {
-        if (self.opened) {
-            __netClose(self.handle);
-            self.opened = false;
-            self.handle = (int32)(0 - 1);
-        }
+    /** @brief 发起数值 IPv4 的非阻塞连接；通过 pollConnect 推进，NET_PENDING 表示进行中。 */
+    static TcpSocket connectAsync(String host, int32 port, int32 timeoutMs) {
+        return __std_netConnectAsync(host, port, timeoutMs);
     }
-
-    /** @brief 发送全部文本；返回发送的字节数，失败 -1。 */
-    int64 send(std::lang::String data) {
-        if (!self.opened) {
-            self.error = "连接未打开";
-            return 0 - 1;
-        }
-        int32 written = __netSend(self.handle, data);
-        if (written < 0) {
-            self.error = __netError();
-            return (int64)written;
-        }
-        return (int64)written;
+    /** @brief 发起默认五秒超时的非阻塞数值 IPv4 连接。 */
+    static TcpSocket connectAsync(String host, int32 port) {
+        return TcpSocket::connectAsync(host, port, (int32)5000);
     }
-
-    /** @brief 收一段文本（最多 maxBytes 字节）。 */
-    std::lang::String receive(int32 maxBytes) {
-        std::lang::String text = __netReceive(self.handle, maxBytes);
-        if ((int64)__netStatus() == NET_ERROR) { self.error = __netError(); }
-        return text;
-    }
-
-    /** @brief 收一行（不含行尾换行）。 */
-    std::lang::String receiveLine(int32 timeoutMs) {
-        std::lang::String line = __netReceiveLine(self.handle, timeoutMs);
-        if ((int64)__netStatus() == NET_ERROR) { self.error = __netError(); }
-        return line;
-    }
+    /** @brief 立即检查连接结果，返回 NET_PENDING、NET_OK、NET_TIMEOUT 或 NET_ERROR。 */
+    int64 pollConnect() { return __std_netPollConnect(&self); }
+    /** @brief 非阻塞发送，从 offset 开始；返回本次发送字节数，未就绪返回零并设置 NET_PENDING。 */
+    int64 sendAsync(String data, int64 offset) { return __std_netSendAsync(&self, data, offset); }
+    /** @brief 从零偏移开始执行一次非阻塞发送；长消息可能只发送一部分。 */
+    int64 sendAsync(String data) { return self.sendAsync(data, 0); }
+    /** @brief 非阻塞读取至多 maxBytes 字节；空串结合 status 区分未就绪、关闭及错误。 */
+    String receiveAsync(int32 maxBytes) { return __std_netReceiveAsync(&self, maxBytes); }
+    /** @brief 非阻塞读取一行；未完成的内容保留，NET_PENDING 不丢失行缓冲。 */
+    String receiveLineAsync() { return __std_netReceiveLineAsync(&self); }
+    bool isOpen() { if (self.opcode == 0) { return false; } return __std_netIsOpen(self.opcode); }
+    String lastError() { if (self.opcode == 0) { return "连接未打开"; } return __std_netError(self.opcode); }
+    int64 status() { return __std_netStatus(self.opcode); }
+    void close() { if (self.opcode != 0) { __std_netCloseSocket(&self); } }
+    int64 send(String data) { return __std_netSend(&self, data); }
+    String receive(int32 maxBytes) { return __std_netReceive(&self, maxBytes); }
+    String receiveLine(int32 timeoutMs) { return __std_netReceiveLine(&self, timeoutMs); }
 };
 
-/** @brief TCP 监听器；端口传 0 时由系统分配，用 `localPort()` 查询。 */
-struct TcpListener {
-    int32 handle;
-    bool opened;
-    std::lang::String error;
-
-    static TcpListener listen(std::lang::String host, int32 port, int32 backlog) {
-        TcpListener listener;
-        listener.handle = __netListen(host, port, backlog);
-        listener.opened = listener.handle >= 0;
-        listener.error = "";
-        if (!listener.opened) { listener.error = __netError(); }
-        return listener;
+/** @brief 独占 TCP 监听器；端口为零时由系统分配。 */
+#NonCopyable
+opcode TcpListener {
+    new = std::net::__std_netNew;
+    drop = std::net::__std_netDrop;
+    static TcpListener listen(String host, int32 port, int32 backlog) {
+        return __std_netListen(host, port, backlog);
     }
-
-    /** @brief 默认积压队列 8。 */
-    static TcpListener listen(std::lang::String host, int32 port) {
+    static TcpListener listen(String host, int32 port) {
         return TcpListener::listen(host, port, (int32)8);
     }
-
-    bool isOpen() { return self.opened; }
-
-    /** @brief 最近一次出错说明；String 为值语义，返回的是独立副本。 */
-    std::lang::String lastError() { return self.error; }
-
-    /** @brief 本端端口（监听器常用端口 0 让系统分配，再从这里读回来）。 */
-    int64 localPort() { return (int64)__netLocalPort(self.handle); }
-
-    /** @brief 等一个连接；超时返回未打开的套接字。 */
-    TcpSocket accept(int32 timeoutMs) {
-        TcpSocket socket;
-        socket.handle = __netAccept(self.handle, timeoutMs);
-        socket.opened = socket.handle >= 0;
-        socket.error = "";
-        if (!socket.opened) { socket.error = __netError(); }
-        return socket;
-    }
-
-    /** @brief 默认 5 秒等待。 */
+    bool isOpen() { if (self.opcode == 0) { return false; } return __std_netIsOpen(self.opcode); }
+    String lastError() { if (self.opcode == 0) { return "连接未打开"; } return __std_netError(self.opcode); }
+    int64 localPort() { return __std_netLocalPort(self.opcode); }
+    TcpSocket accept(int32 timeoutMs) { return __std_netAccept(&self, timeoutMs); }
     TcpSocket accept() { return self.accept((int32)5000); }
-
-    void close() {
-        if (self.opened) {
-            __netClose(self.handle);
-            self.opened = false;
-            self.handle = (int32)(0 - 1);
-        }
-    }
+    /** @brief 非阻塞接受连接；返回未打开且状态为 NET_PENDING 的值表示暂无连接。 */
+    TcpSocket acceptAsync() { return __std_netAcceptAsync(&self); }
+    void close() { if (self.opcode != 0) { __std_netCloseListener(&self); } }
 };
 
 /** @brief 拆开的 HTTP 地址。 */

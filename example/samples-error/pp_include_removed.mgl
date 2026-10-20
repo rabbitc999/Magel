@@ -1,0 +1,3 @@
+/* 文本包含指令在预处理阶段拒绝。 */
+%include "missing.mgl"
+int64 main() { return 0; }

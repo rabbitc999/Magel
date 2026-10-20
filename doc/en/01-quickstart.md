@@ -91,7 +91,7 @@ int64 main(List<String> arguments) {
 
 `magel run` does four things, all **inside one process**:
 
-1. **Preprocess** — handles `%include`, `%define`, `%if` and friends;
+1. **Preprocess** — handles `%define`, `%if` and friends;
 2. **Parse and type-check** — syntax, types and reference lifetimes are checked here; nothing runs if
    this fails;
 3. **Lower to quadruples** — the front end turns the program into StackVM's intermediate

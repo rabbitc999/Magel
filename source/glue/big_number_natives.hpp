@@ -152,7 +152,7 @@ inline Value nativeNewBigInt(State &ctx, bigint::BigInt value)
 /**
  * @brief 执行大整数从整数构造并封装运行时结果。
  *
- * `__vm_bint_from_int(值) -> bint`。
+ * `__std_bint_from_int(值) -> bint`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -176,7 +176,7 @@ inline Value bintFromUInt(State &ctx, const Memory::Vector<Value> &args)
 /**
  * @brief 执行大整数从文本构造并封装运行时结果。
  *
- * `__vm_bint_from_str(十进制文本地址) -> bint`。
+ * `__std_bint_from_str(十进制文本地址) -> bint`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -202,7 +202,7 @@ inline Value bintFromStr(State &ctx, const Memory::Vector<Value> &args)
 /**
  * @brief 执行大整数从浮点数构造并封装运行时结果。
  *
- * `__vm_bint_from_flt(值) -> bint`（按向零截断）。
+ * `__std_bint_from_flt(值) -> bint`（按向零截断）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -282,7 +282,7 @@ inline Value bintMod(State &ctx, const Memory::Vector<Value> &args) { return bin
 /**
  * @brief 执行大整数取反并封装运行时结果。
  *
- * `__vm_bint_neg(值) -> bint`：取负。
+ * `__std_bint_neg(值) -> bint`：取负。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -297,7 +297,7 @@ inline Value bintNeg(State &ctx, const Memory::Vector<Value> &args)
 /**
  * @brief 执行大整数比较并封装运行时结果。
  *
- * `__vm_bint_cmp(左, 右) -> -1 / 0 / 1`。
+ * `__std_bint_cmp(左, 右) -> -1 / 0 / 1`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -316,7 +316,7 @@ inline Value bintCmp(State &ctx, const Memory::Vector<Value> &args)
 /**
  * @brief 执行大整数转换为文本并封装运行时结果。
  *
- * `__vm_bint_str(值) -> 新串地址`：转成十进制文本（`.str()`）。
+ * `__std_bint_str(值) -> 新串地址`：转成十进制文本（`.str()`）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -356,7 +356,7 @@ inline std::int64_t bigIntToInt64(const bigint::BigInt &value)
 /**
  * @brief 执行大整数转换为整数并封装运行时结果。
  *
- * `__vm_bint_to_int(值) -> 整数`（超出 64 位取低 64 位）。
+ * `__std_bint_to_int(值) -> 整数`（超出 64 位取低 64 位）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -371,7 +371,7 @@ inline Value bintToInt(State &ctx, const Memory::Vector<Value> &args)
 /**
  * @brief 执行大整数转换为浮点数并封装运行时结果。
  *
- * `__vm_bint_to_flt(值) -> 浮点`。
+ * `__std_bint_to_flt(值) -> 浮点`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -406,7 +406,7 @@ inline Value nativeGuardedBig(State &ctx, const char *what, Operation operation)
 /* ---- 大整数扩展方法：幂 / 数论 / 素性 / 位运算 / 进制 / 开方 ---- */
 
 /**
- * @brief `__vm_bint_pow(值, 指数) -> bint`（`.pow(e)`，指数为非负 int64）。
+ * @brief `__std_bint_pow(值, 指数) -> bint`（`.pow(e)`，指数为非负 int64）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -427,7 +427,7 @@ inline Value bintPow(State &ctx, const Memory::Vector<Value> &args)
 }
 
 /**
- * @brief `__vm_bint_powmod(值, 指数, 模) -> bint`（`.powmod(e, m)`，指数是大整数）。
+ * @brief `__std_bint_powmod(值, 指数, 模) -> bint`（`.powmod(e, m)`，指数是大整数）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -446,7 +446,7 @@ inline Value bintPowMod(State &ctx, const Memory::Vector<Value> &args)
 }
 
 /**
- * @brief `__vm_bint_gcd(左, 右) -> bint`（`.gcd(other)`）。
+ * @brief `__std_bint_gcd(左, 右) -> bint`（`.gcd(other)`）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -461,7 +461,7 @@ inline Value bintGcd(State &ctx, const Memory::Vector<Value> &args)
 }
 
 /**
- * @brief `__vm_bint_lcm(左, 右) -> bint`（`.lcm(other)`）。
+ * @brief `__std_bint_lcm(左, 右) -> bint`（`.lcm(other)`）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -476,7 +476,7 @@ inline Value bintLcm(State &ctx, const Memory::Vector<Value> &args)
 }
 
 /**
- * @brief `__vm_bint_mod_nonneg(值, 模) -> bint`（`.mod(m)`，结果落在 `[0, |m|)`）。
+ * @brief `__std_bint_mod_nonneg(值, 模) -> bint`（`.mod(m)`，结果落在 `[0, |m|)`）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -493,7 +493,7 @@ inline Value bintModNonNeg(State &ctx, const Memory::Vector<Value> &args)
 }
 
 /**
- * @brief `__vm_bint_mod_inverse(值, 模) -> bint`（`.modInverse(m)`，不互素报错）。
+ * @brief `__std_bint_mod_inverse(值, 模) -> bint`（`.modInverse(m)`，不互素报错）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -510,7 +510,7 @@ inline Value bintModInverse(State &ctx, const Memory::Vector<Value> &args)
 }
 
 /**
- * @brief `__vm_bint_is_probable_prime(值, 轮数) -> bool`（`.isProbablePrime(rounds)`）。
+ * @brief `__std_bint_is_probable_prime(值, 轮数) -> bool`（`.isProbablePrime(rounds)`）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -529,7 +529,7 @@ inline Value bintIsProbablePrime(State &ctx, const Memory::Vector<Value> &args)
 }
 
 /**
- * @brief `__vm_bint_next_probable_prime(值) -> bint`（`.nextProbablePrime()`，25 轮）。
+ * @brief `__std_bint_next_probable_prime(值) -> bint`（`.nextProbablePrime()`，25 轮）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -544,7 +544,7 @@ inline Value bintNextProbablePrime(State &ctx, const Memory::Vector<Value> &args
 }
 
 /**
- * @brief `__vm_bint_bit_length(值) -> 整数`（`.bitLength()`）。
+ * @brief `__std_bint_bit_length(值) -> 整数`（`.bitLength()`）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -580,21 +580,21 @@ inline Value bintBitwise(State &ctx, const Memory::Vector<Value> &args, char op)
 }
 
 /**
- * @brief `__vm_bint_bit_and(左, 右) -> bint`（`.bitAnd(other)`）。
+ * @brief `__std_bint_bit_and(左, 右) -> bint`（`.bitAnd(other)`）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
  */
 inline Value bintBitAnd(State &ctx, const Memory::Vector<Value> &args) { return bintBitwise(ctx, args, '&'); }
 /**
- * @brief `__vm_bint_bit_or(左, 右) -> bint`（`.bitOr(other)`）。
+ * @brief `__std_bint_bit_or(左, 右) -> bint`（`.bitOr(other)`）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
  */
 inline Value bintBitOr(State &ctx, const Memory::Vector<Value> &args) { return bintBitwise(ctx, args, '|'); }
 /**
- * @brief `__vm_bint_bit_xor(左, 右) -> bint`（`.bitXor(other)`）。
+ * @brief `__std_bint_bit_xor(左, 右) -> bint`（`.bitXor(other)`）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -602,7 +602,7 @@ inline Value bintBitOr(State &ctx, const Memory::Vector<Value> &args) { return b
 inline Value bintBitXor(State &ctx, const Memory::Vector<Value> &args) { return bintBitwise(ctx, args, '^'); }
 
 /**
- * @brief `__vm_bint_str_radix(值, 进制) -> 新串地址`（`.strRadix(base)`，2..36 进制）。
+ * @brief `__std_bint_str_radix(值, 进制) -> 新串地址`（`.strRadix(base)`，2..36 进制）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -624,7 +624,7 @@ inline Value bintToStrRadix(State &ctx, const Memory::Vector<Value> &args)
 }
 
 /**
- * @brief `__vm_bint_iroot(值, k) -> bint`（`.iroot(k)`，整数 k 次方根向下取整）。
+ * @brief `__std_bint_iroot(值, k) -> bint`（`.iroot(k)`，整数 k 次方根向下取整）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -645,7 +645,7 @@ inline Value bintIRoot(State &ctx, const Memory::Vector<Value> &args)
 }
 
 /**
- * @brief `__vm_read_bint() -> bint`：把下一项输入按十进制读成一个大整数（`input_bstr`）。
+ * @brief `__std_read_bint() -> bint`：把下一项输入按十进制读成一个大整数（`input_bstr`）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @retval 封装为原生值的运行时结果。
  */
@@ -961,7 +961,7 @@ inline Value bfloatSetValuePrecision(State &ctx, const Memory::Vector<Value> &ar
 /* ---- 大浮点数扩展方法：幂 / 绝对值 / 取整 / 开方 ---- */
 
 /**
- * @brief `__vm_bfloat_pow(值, 指数) -> bfloat`（`.pow(e)`，精确整数次幂）。
+ * @brief `__std_bfloat_pow(值, 指数) -> bfloat`（`.pow(e)`，精确整数次幂）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -983,7 +983,7 @@ inline Value bfloatPow(State &ctx, const Memory::Vector<Value> &args)
 }
 
 /**
- * @brief `__vm_bfloat_abs(值) -> bfloat`（`.abs()`）。
+ * @brief `__std_bfloat_abs(值) -> bfloat`（`.abs()`）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -996,7 +996,7 @@ inline Value bfloatAbs(State &ctx, const Memory::Vector<Value> &args)
 }
 
 /**
- * @brief `__vm_bfloat_is_integer(值) -> bool`（`.isInteger()`）。
+ * @brief `__std_bfloat_is_integer(值) -> bool`（`.isInteger()`）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1028,21 +1028,21 @@ inline Value bfloatRoundToBigInt(State &ctx, const Memory::Vector<Value> &args, 
 }
 
 /**
- * @brief `__vm_bfloat_floor(值) -> bint`（`.floor()`）。
+ * @brief `__std_bfloat_floor(值) -> bint`（`.floor()`）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
  */
 inline Value bfloatFloor(State &ctx, const Memory::Vector<Value> &args) { return bfloatRoundToBigInt(ctx, args, 'f'); }
 /**
- * @brief `__vm_bfloat_ceil(值) -> bint`（`.ceil()`）。
+ * @brief `__std_bfloat_ceil(值) -> bint`（`.ceil()`）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
  */
 inline Value bfloatCeil(State &ctx, const Memory::Vector<Value> &args) { return bfloatRoundToBigInt(ctx, args, 'c'); }
 /**
- * @brief `__vm_bfloat_trunc(值) -> bint`（`.trunc()`）。
+ * @brief `__std_bfloat_trunc(值) -> bint`（`.trunc()`）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1050,7 +1050,7 @@ inline Value bfloatCeil(State &ctx, const Memory::Vector<Value> &args) { return 
 inline Value bfloatTrunc(State &ctx, const Memory::Vector<Value> &args) { return bfloatRoundToBigInt(ctx, args, 't'); }
 
 /**
- * @brief `__vm_bfloat_sqrt(值, 有效位数) -> bfloat`（`.sqrt(digits)`）。
+ * @brief `__std_bfloat_sqrt(值, 有效位数) -> bfloat`（`.sqrt(digits)`）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1071,7 +1071,7 @@ inline Value bfloatSqrt(State &ctx, const Memory::Vector<Value> &args)
 }
 
 /**
- * @brief `__vm_bfloat_root(值, k, 有效位数) -> bfloat`（`.root(k, digits)`，k 次方根）。
+ * @brief `__std_bfloat_root(值, k, 有效位数) -> bfloat`（`.root(k, digits)`，k 次方根）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1172,65 +1172,65 @@ STACKVM_BFLOAT_STUB(readBigFloat)
 inline bool bind(stackvm::NativeRegistry &registry, Memory::String *error = nullptr)
 {
     bool ok = true;
-    ok = native_record_glue::bind(registry, "__vm_bint_from_int", 1, bintFromInt, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_from_uint", 1, bintFromUInt, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_from_str", 1, bintFromStr, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_from_flt", 1, bintFromFloat, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_add", 2, bintAdd, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_sub", 2, bintSub, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_mul", 2, bintMul, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_div", 2, bintDiv, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_mod", 2, bintMod, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_neg", 1, bintNeg, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_cmp", 2, bintCmp, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_str", 1, bintToStr, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_to_int", 1, bintToInt, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_to_flt", 1, bintToFloat, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_pow", 2, bintPow, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_powmod", 3, bintPowMod, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_gcd", 2, bintGcd, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_lcm", 2, bintLcm, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_mod_nonneg", 2, bintModNonNeg, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_mod_inverse", 2, bintModInverse, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_is_probable_prime", 2, bintIsProbablePrime, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_next_probable_prime", 1, bintNextProbablePrime, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_bit_length", 1, bintBitLength, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_bit_and", 2, bintBitAnd, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_bit_or", 2, bintBitOr, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_bit_xor", 2, bintBitXor, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_str_radix", 2, bintToStrRadix, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_iroot", 2, bintIRoot, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_read_bint", 0, readBigInt, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_input_bint", 0, readBigInt, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_from_int", 1, bfloatFromInt, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_from_uint", 1, bfloatFromUInt, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_from_flt", 1, bfloatFromFloat, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_from_str", 1, bfloatFromStr, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_from_bint", 1, bfloatFromBigInt, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_add", 2, bfloatAdd, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_sub", 2, bfloatSub, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_mul", 2, bfloatMul, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_div", 2, bfloatDiv, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_neg", 1, bfloatNeg, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_cmp", 2, bfloatCmp, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_str", 1, bfloatToStr, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_to_int", 1, bfloatToInt, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_pow", 2, bfloatPow, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_abs", 1, bfloatAbs, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_is_integer", 1, bfloatIsInteger, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_floor", 1, bfloatFloor, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_ceil", 1, bfloatCeil, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_trunc", 1, bfloatTrunc, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_sqrt", 2, bfloatSqrt, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_root", 3, bfloatRoot, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_to_flt", 1, bfloatToFloat, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_set_value_precision", 2, bfloatSetValuePrecision, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_read_bfloat", 0, readBigFloat, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_input_bfloat", 0, readBigFloat, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_copy", 1, native_record_glue::copy, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bint_drop", 1, native_record_glue::drop, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_copy", 1, native_record_glue::copy, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_bfloat_drop", 1, native_record_glue::drop, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_from_int", 1, bintFromInt, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_from_uint", 1, bintFromUInt, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_from_str", 1, bintFromStr, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_from_flt", 1, bintFromFloat, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_add", 2, bintAdd, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_sub", 2, bintSub, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_mul", 2, bintMul, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_div", 2, bintDiv, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_mod", 2, bintMod, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_neg", 1, bintNeg, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_cmp", 2, bintCmp, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_str", 1, bintToStr, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_to_int", 1, bintToInt, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_to_flt", 1, bintToFloat, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_pow", 2, bintPow, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_powmod", 3, bintPowMod, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_gcd", 2, bintGcd, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_lcm", 2, bintLcm, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_mod_nonneg", 2, bintModNonNeg, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_mod_inverse", 2, bintModInverse, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_is_probable_prime", 2, bintIsProbablePrime, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_next_probable_prime", 1, bintNextProbablePrime, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_bit_length", 1, bintBitLength, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_bit_and", 2, bintBitAnd, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_bit_or", 2, bintBitOr, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_bit_xor", 2, bintBitXor, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_str_radix", 2, bintToStrRadix, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_iroot", 2, bintIRoot, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_read_bint", 0, readBigInt, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_input_bint", 0, readBigInt, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_from_int", 1, bfloatFromInt, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_from_uint", 1, bfloatFromUInt, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_from_flt", 1, bfloatFromFloat, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_from_str", 1, bfloatFromStr, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_from_bint", 1, bfloatFromBigInt, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_add", 2, bfloatAdd, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_sub", 2, bfloatSub, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_mul", 2, bfloatMul, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_div", 2, bfloatDiv, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_neg", 1, bfloatNeg, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_cmp", 2, bfloatCmp, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_str", 1, bfloatToStr, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_to_int", 1, bfloatToInt, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_pow", 2, bfloatPow, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_abs", 1, bfloatAbs, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_is_integer", 1, bfloatIsInteger, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_floor", 1, bfloatFloor, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_ceil", 1, bfloatCeil, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_trunc", 1, bfloatTrunc, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_sqrt", 2, bfloatSqrt, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_root", 3, bfloatRoot, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_to_flt", 1, bfloatToFloat, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_set_value_precision", 2, bfloatSetValuePrecision, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_read_bfloat", 0, readBigFloat, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_input_bfloat", 0, readBigFloat, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_copy", 1, native_record_glue::copy, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bint_drop", 1, native_record_glue::drop, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_copy", 1, native_record_glue::copy, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_drop", 1, native_record_glue::drop, error) && ok;
     return ok;
 }
 }  // namespace big_number_glue

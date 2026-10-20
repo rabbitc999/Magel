@@ -21,7 +21,7 @@ def declarations(path, source=None, line_offset=0, root=None):
     module = module_match.group(1) if module_match else ''
     origin = path.relative_to(root).as_posix() if root else str(path)
 
-    def visit(begin, end, owner=''):
+    def visit(begin, end, owner='', owner_kind=''):
         i = begin
         while i < end:
             if tokens[i][0] == ';':
@@ -58,7 +58,7 @@ def declarations(path, source=None, line_offset=0, root=None):
                     if tokens[body_end][0] == '{': depth += 1
                     elif tokens[body_end][0] == '}': depth -= 1
                     body_end += 1
-            kind_match = re.match(r'(struct|enum|interface)\s+(\w+)', signature)
+            kind_match = re.match(r'(?:#\s*NonCopyable\s+)?(struct|enum|interface|opcode)\s+(\w+)', signature)
             function = None
             declaration_matches = list(TOKEN.finditer(signature))
             declaration_tokens = [m.group() for m in declaration_matches]
@@ -91,7 +91,9 @@ def declarations(path, source=None, line_offset=0, root=None):
                 kind, name = kind_match.groups()
                 entry.update(kind=kind, name=name)
                 records.append(entry)
-                visit(i + 1, body_end - 1, (owner + '::' if owner else '') + name)
+                visit(i + 1, body_end - 1, (owner + '::' if owner else '') + name, kind)
+            elif owner_kind == 'opcode' and re.match(r'^(?:new|drop|copy)\s*=', signature):
+                pass
             elif function and not signature.startswith(('import ', 'module ', 'type ', '$')):
                 result, name = function
                 # 枚举的带载荷变体没有返回类型，不属于函数声明。

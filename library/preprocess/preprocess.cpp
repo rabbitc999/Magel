@@ -1132,6 +1132,11 @@ private:
         case Directive::Include:
         case Directive::IncludeOnce:
         {
+            if (!options_.allowIncludes)
+            {
+                report(Diagnostic::Severity::Error, "unknown-directive", file, lineNumber, argumentColumn, "不支持文本包含指令，请使用 import");
+                return false;
+            }
             // 6. 包含：不活跃的分支不展开（语法仍然检查）。
             //    展开成功时，被包含内容顶替这一行（不再补空行）。
             //    `%import` 与 `%include_once` 都按"只展开一次"处理，区别只有

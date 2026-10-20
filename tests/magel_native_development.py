@@ -50,8 +50,8 @@ def main():
         module = root / 'calc.mgl'
         module.write_text('module calc;\n/// 整数文档\nint64 add(int64 a,int64 b=1){return a+b;}\n/// 浮点文档\nfloat64 add(float64 a,float64 b){return a+b;}\nstruct Box { /// 字段文档\nint64 value; };\n', encoding='utf-8')
         included = root / 'macros.mgl'
-        included.write_text('/// 包含宏文档\n$macro TWICE(x)\n((x)+(x))\n$end_macro\n', encoding='utf-8')
-        text = 'import calc;\nimport std::math;\n%include "macros.mgl"\n/// 平方宏文档\n$macro expr SQUARE((x))\nx*x\n$end_macro\n/// 单行宏文档\n$replace expr PLUS(x,(y)) x+y\n$macro ANSWER()\n3\n$end_macro\nint64 main(){\n    String emoji="😀";\n    calc::Box box;\n    box.value;\n    calc::add(1,2);\n    std::math::sqrt(4.0);\n    int64 answer=$SQUARE($TWICE(2))+$PLUS(1,2)+$ANSWER;\n    return answer;\n}\n'
+        included.write_text('module macros;\n/// 包含宏文档\n$macro TWICE(x)\n((x)+(x))\n$end_macro\n', encoding='utf-8')
+        text = 'import calc;\nimport std::math;\nimport macros;\n/// 平方宏文档\n$macro expr SQUARE((x))\nx*x\n$end_macro\n/// 单行宏文档\n$replace expr PLUS(x,(y)) x+y\n$macro ANSWER()\n3\n$end_macro\nint64 main(){\n    String emoji="😀";\n    calc::Box box;\n    box.value;\n    calc::add(1,2);\n    std::math::sqrt(4.0);\n    int64 answer=$SQUARE($TWICE(2))+$PLUS(1,2)+$ANSWER;\n    return answer;\n}\n'
         source.write_text(text, encoding='utf-8')
 
         def position(at):
@@ -102,7 +102,10 @@ def main():
         assert any((item['label'] == 'value' for item in value(4))), value(4)
         assert value(5)[0]['uri'] == module.as_uri(), value(5)
         assert '平方宏文档' in value(6)['contents']['value'], value(6)
-        assert value(7)['signatures'][0]['parameters'][0]['label'] == '(x)', value(7)
+        signature = value(7)['signatures'][0]
+        label = signature['parameters'][0]['label']
+        parameter = signature['label'][label[0]:label[1]] if isinstance(label, list) else label
+        assert parameter.strip('()') == 'x', value(7)
         assert value(8)[0]['uri'] == included.as_uri(), value(8)
         assert value(9)['diagnostics'] == [], value(9)
         expanded = value(9)['text']

@@ -21,7 +21,7 @@ def naming_warnings(text):
     output = []
     for row in declarations(Path('<editor>'), text):
         kind, name = row['kind'], row['name']
-        is_type = kind in ('struct', 'enum', 'interface')
+        is_type = kind in ('struct', 'enum', 'interface', 'opcode')
         if not is_type and kind != 'function':
             continue
         if name.startswith('__') or (kind == 'function' and name == row['owner'].split('::')[-1]):
@@ -107,7 +107,7 @@ class ApiIndex:
         output = []
         symbols = []
         for entry in records:
-            if entry['kind'] not in ('struct', 'enum', 'interface', 'member'):
+            if entry['kind'] not in ('struct', 'enum', 'interface', 'opcode', 'member'):
                 continue
             record = dict(entry)
             if record['kind'] == 'member':
@@ -123,7 +123,7 @@ class ApiIndex:
             record['offset'] = start + (match.start() if match else 0)
             symbols.append(record)
         self.symbols[uri] = symbols
-        declared_types={r['name'] for r in records if r['kind'] in ('struct','enum','interface')}
+        declared_types={r['name'] for r in records if r['kind'] in ('struct','enum','interface','opcode')}
         self.type_names.update(declared_types)
         for record in records:
             if record['kind'] != 'function':
@@ -238,7 +238,7 @@ def inferred_type(records, name, text, cursor=None, depth=0):
     def qualify(value, module=''):
         value = re.sub(r'^(?:(?:static|inline)\s+)+', '', value.strip())
         head = base(value)
-        matches = {r['qualified'] for r in records if r.get('kind') in ('struct','enum','interface') and
+        matches = {r['qualified'] for r in records if r.get('kind') in ('struct','enum','interface','opcode') and
                    (r['qualified']==head or r['name']==head or r['qualified'].endswith('::'+head))}
         preferred = {r['qualified'] for r in records if r.get('module')==module and r['qualified'] in matches}
         if len(preferred)==1: matches=preferred
@@ -257,7 +257,7 @@ def inferred_type(records, name, text, cursor=None, depth=0):
                     elif word=='>':level-=1
                 return qualify(argument)
         for record in records:
-            if record.get('kind') in ('struct','enum') and record['qualified']==head:
+            if record.get('kind') in ('struct','enum','opcode') and record['qualified']==head:
                 match=re.search(r'\bTry(?:Move)?\s*<([^,>]+)',record['signature'])
                 if match:return qualify(match.group(1),record.get('module',''))
         return ''
@@ -304,7 +304,7 @@ def inferred_type(records, name, text, cursor=None, depth=0):
         entries=matching(records,name[:dot]+'.'+name[dot+1:],text,cursor)
     elif call:
         head=base(name)
-        if any(r.get('kind') in ('struct','enum','interface') and
+        if any(r.get('kind') in ('struct','enum','interface','opcode') and
                (r['name']==head or r['qualified']==head or r['qualified'].endswith('::'+head)) for r in records):
             return qualify(name)
         entries=matching(records,head,text,cursor)
@@ -357,7 +357,7 @@ def inferred_type(records, name, text, cursor=None, depth=0):
         value=entry.get('type') or entry['signature'].split(entry['name'],1)[0].strip()
         if '<' in receiver:
             head=base(receiver)
-            template=next((r for r in records if r['qualified']==head and r.get('kind') in ('struct','enum','interface')),None)
+            template=next((r for r in records if r['qualified']==head and r.get('kind') in ('struct','enum','interface','opcode')),None)
             if template:
                 params=re.search(r'<([^>]+)>',template['signature'])
                 args=re.search(r'<(.*)>',receiver)
@@ -451,7 +451,7 @@ def semantic_tokens(text, records, keywords, pos, extra_types=()):
     classified={}
     generic=set()
     for i,word in enumerate(words):
-        if word in ('struct','enum','interface','type') and i+1<len(words):
+        if word in ('struct','enum','interface','opcode','type') and i+1<len(words):
             types.add(words[i+1]); classified[i+1]=('type',1)
             if i+2<len(words) and words[i+2]=='<':
                 j=i+3
@@ -492,7 +492,7 @@ def semantic_tokens(text, records, keywords, pos, extra_types=()):
         return len(words)
     for i,word in enumerate(words):
         if word not in types and word!='auto':continue
-        if i and words[i-1] in ('struct','enum','interface','type','.'):continue
+        if i and words[i-1] in ('struct','enum','interface','opcode','type','.'):continue
         j=i+1
         while j+1<len(words) and words[j]=='::':j+=2
         if j<len(words) and words[j]=='<':j=end_group(j,'<','>')

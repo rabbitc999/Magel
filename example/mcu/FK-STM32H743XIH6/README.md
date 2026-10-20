@@ -123,15 +123,15 @@ magel svmb app.mgl --no-reflection --out app
 在 Magel 程序中包含 [`programs/board.mgl`](programs/board.mgl)：
 
 ```magel
-%include "board.mgl"
+import board;
 int64 main() {
-    lcdClear(0);
-    lcdFill(8, 40, 100, 20, 2016);
-    lcdText(8, 8, "Hello Magel", 65535, 0);
-    println("size={}x{}", lcdWidth(), lcdHeight());
+    board::lcdClear(0);
+    board::lcdFill(8, 40, 100, 20, 2016);
+    board::lcdText(8, 8, "Hello Magel", 65535, 0);
+    println("size={}x{}", board::lcdWidth(), board::lcdHeight());
     for (int64 i = 0; i < 500; i += 1) {
-        if (keyClicked(1)) { break; }
-        boardDelay(10);
+        if (board::keyClicked(1)) { break; }
+        board::boardDelay(10);
     }
     return 0;
 }

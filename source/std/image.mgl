@@ -10,24 +10,35 @@ import std::io;
  *   - 像素缓冲统一 RGBA8888，每像素 4 字节，行优先；
  *   - 灰度用 ITU-R BT.601 亮度；(299R + 587G + 114B) / 1000。
  *
- * 像素读写是纯下标运算，直接在 Magel 侧完成，不走胶水调用。
+ * Image 是 opcode；尺寸和 RGBA 存储由宿主记录拥有，复制得到独立像素缓冲。
  * 所有可恢复错误（格式不识别、坐标越界、缓冲长度不符）都走 Result，不 panic。
  */
 
+int64 __std_imageNew();
+void __std_imageDrop(int64 image);
+int64 __std_imageCopy(int64 image);
+Image __std_imageMake(int64 width, int64 height);
+Image __std_imageFromPixels(int64 width, int64 height, List<uint8> pixels);
+int64 __std_imageWidth(int64 image);
+int64 __std_imageHeight(int64 image);
+List<uint8> __std_imagePixels(int64 image);
+uint8 __std_imageByte(int64 image, int64 index);
+void __std_imageSetByte(Image mut& image, int64 index, uint8 value);
+
 /* ---- 胶水声明：实现见 glue/std_image.hpp；槽布局与 ImageReply 一致 ---- */
 void __decode(List<uint8> bytes, ImageReply mut& reply);
-void __encodeBmp(int64 width, int64 height, List<uint8> pixels, ImageReply mut& reply);
-void __encodePpm(int64 width, int64 height, List<uint8> pixels, ImageReply mut& reply);
-void __encodePgm(int64 width, int64 height, List<uint8> pixels, ImageReply mut& reply);
-void __convolve(int64 width, int64 height, List<uint8> pixels, List<float64> kernel,
+void __encodeBmp(int64 image, ImageReply mut& reply);
+void __encodePpm(int64 image, ImageReply mut& reply);
+void __encodePgm(int64 image, ImageReply mut& reply);
+void __convolve(int64 image, List<float64> kernel,
                 int64 kw, int64 kh, ImageReply mut& reply);
-void __pool(int64 width, int64 height, List<uint8> pixels, int64 mode,
+void __pool(int64 image, int64 mode,
             int64 kw, int64 kh, ImageReply mut& reply);
-void __toGray(int64 width, int64 height, List<uint8> pixels, ImageReply mut& reply);
+void __toGray(int64 image, ImageReply mut& reply);
 void __fromGray(int64 width, int64 height, List<uint8> gray, ImageReply mut& reply);
-void __toARGB(int64 width, int64 height, List<uint8> pixels, ImageReply mut& reply);
+void __toARGB(int64 image, ImageReply mut& reply);
 void __fromARGB(int64 width, int64 height, List<uint32> argb, ImageReply mut& reply);
-void __toRGB565(int64 width, int64 height, List<uint8> pixels, ImageReply mut& reply);
+void __toRGB565(int64 image, ImageReply mut& reply);
 void __fromRGB565(int64 width, int64 height, List<uint16> rgb565, ImageReply mut& reply);
 void __otsu(int64 width, int64 height, List<uint8> gray, ImageReply mut& reply);
 void __binarize(int64 width, int64 height, List<uint8> gray, int64 threshold, ImageReply mut& reply);
@@ -58,12 +69,17 @@ struct ImageReply {
 }
 
 /** RGBA 图片：width × height，像素缓冲长度恒为 width*height*4。 */
-struct Image : Drop {
-    int64 width; ///< 图片宽，单位像素。
-    int64 height; ///< 图片高，单位像素。
-    List<uint8> pixels; ///< RGBA8888 像素缓冲，行优先，长度 width*height*4。
+opcode Image {
+    new = std::image::__std_imageNew;
+    drop = std::image::__std_imageDrop;
+    copy = std::image::__std_imageCopy;
 
-    void drop() { delete self.pixels; }
+    /** @brief 图片宽度，单位像素。 */
+    int64 width() { return __std_imageWidth(self.opcode); }
+    /** @brief 图片高度，单位像素。 */
+    int64 height() { return __std_imageHeight(self.opcode); }
+    /** @brief 导出独立 RGBA 像素列表，修改返回值不会修改原图。 */
+    List<uint8> pixels() { return __std_imagePixels(self.opcode); }
 
     /**
      * @brief 新建全透明黑图。
@@ -73,19 +89,8 @@ struct Image : Drop {
      */
     static Result<Image, String> make(int64 width, int64 height) {
         if (width <= 0 || height <= 0) { return Result<Image, String>::Err("图片创建：宽高必须为正"); }
-        Image image;
-        image.width = width;
-        image.height = height;
-        List<uint8> empty;
-        image.pixels = empty;
-        int64 total = width * height * 4;
-        {
-            int64 index = 0;
-            while (index < total) {
- image.pixels.push((uint8)0); 
-                index = index + 1;
-            }
-        }
+        if (width > 536870911 / height) { return Result<Image, String>::Err("图片创建：缓冲超过预算"); }
+        Image image = __std_imageMake(width, height);
         return Result<Image, String>::Ok(image);
     }
 
@@ -98,10 +103,7 @@ struct Image : Drop {
         ImageReply reply;
         __decode(bytes, &reply);
         if (len(reply.error) > 0) { return Result<Image, String>::Err(reply.error); }
-        Image image;
-        image.width = reply.width;
-        image.height = reply.height;
-        image.pixels = reply.pixels;
+        Image image = __std_imageFromPixels(reply.width, reply.height, reply.pixels);
         return Result<Image, String>::Ok(image);
     }
 
@@ -124,7 +126,7 @@ struct Image : Drop {
      */
     Result<List<uint8>, String> encodeBmp() {
         ImageReply reply;
-        __encodeBmp(self.width, self.height, self.pixels, &reply);
+        __encodeBmp(self.opcode, &reply);
         if (len(reply.error) > 0) { return Result<List<uint8>, String>::Err(reply.error); }
         return Result<List<uint8>, String>::Ok(reply.bytes);
     }
@@ -135,7 +137,7 @@ struct Image : Drop {
      */
     Result<List<uint8>, String> encodePpm() {
         ImageReply reply;
-        __encodePpm(self.width, self.height, self.pixels, &reply);
+        __encodePpm(self.opcode, &reply);
         if (len(reply.error) > 0) { return Result<List<uint8>, String>::Err(reply.error); }
         return Result<List<uint8>, String>::Ok(reply.bytes);
     }
@@ -147,7 +149,7 @@ struct Image : Drop {
      */
     Result<List<uint8>, String> encodePgm() {
         ImageReply reply;
-        __encodePgm(self.width, self.height, self.pixels, &reply);
+        __encodePgm(self.opcode, &reply);
         if (len(reply.error) > 0) { return Result<List<uint8>, String>::Err(reply.error); }
         return Result<List<uint8>, String>::Ok(reply.bytes);
     }
@@ -198,15 +200,15 @@ struct Image : Drop {
      * @return 像素颜色分量；坐标越界时返回错误。
      */
     Result<Pixel, String> getPixel(int64 x, int64 y) {
-        if (x < 0 || y < 0 || x >= self.width || y >= self.height) {
+        if (x < 0 || y < 0 || x >= self.width() || y >= self.height()) {
             return Result<Pixel, String>::Err("getPixel：坐标越界");
         }
-        int64 base = (y * self.width + x) * 4;
+        int64 base = (y * self.width() + x) * 4;
         Pixel pixel;
-        pixel.r = self.pixels[base];
-        pixel.g = self.pixels[base + 1];
-        pixel.b = self.pixels[base + 2];
-        pixel.a = self.pixels[base + 3];
+        pixel.r = __std_imageByte(self.opcode, base);
+        pixel.g = __std_imageByte(self.opcode, base + 1);
+        pixel.b = __std_imageByte(self.opcode, base + 2);
+        pixel.a = __std_imageByte(self.opcode, base + 3);
         return Result<Pixel, String>::Ok(pixel);
     }
 
@@ -221,17 +223,17 @@ struct Image : Drop {
      * @return 成功时为 0；坐标越界或分量超范围时返回错误，不修改缓冲。
      */
     Result<int64, String> setPixel(int64 x, int64 y, int64 r, int64 g, int64 b, int64 a) {
-        if (x < 0 || y < 0 || x >= self.width || y >= self.height) {
+        if (x < 0 || y < 0 || x >= self.width() || y >= self.height()) {
             return Result<int64, String>::Err("setPixel：坐标越界");
         }
         if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255 || a < 0 || a > 255) {
             return Result<int64, String>::Err("setPixel：分量必须在 0..255");
         }
-        int64 base = (y * self.width + x) * 4;
-        self.pixels[base] = (uint8)r;
-        self.pixels[base + 1] = (uint8)g;
-        self.pixels[base + 2] = (uint8)b;
-        self.pixels[base + 3] = (uint8)a;
+        int64 base = (y * self.width() + x) * 4;
+        __std_imageSetByte(&self, base, (uint8)r);
+        __std_imageSetByte(&self, base + 1, (uint8)g);
+        __std_imageSetByte(&self, base + 2, (uint8)b);
+        __std_imageSetByte(&self, base + 3, (uint8)a);
         return Result<int64, String>::Ok(0);
     }
 
@@ -245,12 +247,9 @@ struct Image : Drop {
      */
     Result<Image, String> convolve(List<float64> kernel, int64 kw, int64 kh) {
         ImageReply reply;
-        __convolve(self.width, self.height, self.pixels, kernel, kw, kh, &reply);
+        __convolve(self.opcode, kernel, kw, kh, &reply);
         if (len(reply.error) > 0) { return Result<Image, String>::Err(reply.error); }
-        Image image;
-        image.width = reply.width;
-        image.height = reply.height;
-        image.pixels = reply.pixels;
+        Image image = __std_imageFromPixels(reply.width, reply.height, reply.pixels);
         return Result<Image, String>::Ok(image);
     }
 
@@ -263,12 +262,9 @@ struct Image : Drop {
      */
     Result<Image, String> pool(int64 mode, int64 kw, int64 kh) {
         ImageReply reply;
-        __pool(self.width, self.height, self.pixels, mode, kw, kh, &reply);
+        __pool(self.opcode, mode, kw, kh, &reply);
         if (len(reply.error) > 0) { return Result<Image, String>::Err(reply.error); }
-        Image image;
-        image.width = reply.width;
-        image.height = reply.height;
-        image.pixels = reply.pixels;
+        Image image = __std_imageFromPixels(reply.width, reply.height, reply.pixels);
         return Result<Image, String>::Ok(image);
     }
 
@@ -278,7 +274,7 @@ struct Image : Drop {
      */
     Result<List<uint8>, String> toGray() {
         ImageReply reply;
-        __toGray(self.width, self.height, self.pixels, &reply);
+        __toGray(self.opcode, &reply);
         if (len(reply.error) > 0) { return Result<List<uint8>, String>::Err(reply.error); }
         return Result<List<uint8>, String>::Ok(reply.gray);
     }
@@ -294,10 +290,7 @@ struct Image : Drop {
         ImageReply reply;
         __fromGray(width, height, gray, &reply);
         if (len(reply.error) > 0) { return Result<Image, String>::Err(reply.error); }
-        Image image;
-        image.width = reply.width;
-        image.height = reply.height;
-        image.pixels = reply.pixels;
+        Image image = __std_imageFromPixels(reply.width, reply.height, reply.pixels);
         return Result<Image, String>::Ok(image);
     }
 
@@ -307,7 +300,7 @@ struct Image : Drop {
      */
     Result<List<uint32>, String> toARGB() {
         ImageReply reply;
-        __toARGB(self.width, self.height, self.pixels, &reply);
+        __toARGB(self.opcode, &reply);
         if (len(reply.error) > 0) { return Result<List<uint32>, String>::Err(reply.error); }
         return Result<List<uint32>, String>::Ok(reply.argb);
     }
@@ -323,10 +316,7 @@ struct Image : Drop {
         ImageReply reply;
         __fromARGB(width, height, argb, &reply);
         if (len(reply.error) > 0) { return Result<Image, String>::Err(reply.error); }
-        Image image;
-        image.width = reply.width;
-        image.height = reply.height;
-        image.pixels = reply.pixels;
+        Image image = __std_imageFromPixels(reply.width, reply.height, reply.pixels);
         return Result<Image, String>::Ok(image);
     }
 
@@ -336,7 +326,7 @@ struct Image : Drop {
      */
     Result<List<uint16>, String> toRGB565() {
         ImageReply reply;
-        __toRGB565(self.width, self.height, self.pixels, &reply);
+        __toRGB565(self.opcode, &reply);
         if (len(reply.error) > 0) { return Result<List<uint16>, String>::Err(reply.error); }
         return Result<List<uint16>, String>::Ok(reply.rgb565);
     }
@@ -352,10 +342,7 @@ struct Image : Drop {
         ImageReply reply;
         __fromRGB565(width, height, rgb565, &reply);
         if (len(reply.error) > 0) { return Result<Image, String>::Err(reply.error); }
-        Image image;
-        image.width = reply.width;
-        image.height = reply.height;
-        image.pixels = reply.pixels;
+        Image image = __std_imageFromPixels(reply.width, reply.height, reply.pixels);
         return Result<Image, String>::Ok(image);
     }
 
@@ -366,7 +353,7 @@ struct Image : Drop {
     Result<int64, String> otsuThreshold() {
         List<uint8> gray = self.toGray()?;
         ImageReply reply;
-        __otsu(self.width, self.height, gray, &reply);
+        __otsu(self.width(), self.height(), gray, &reply);
         if (len(reply.error) > 0) { return Result<int64, String>::Err(reply.error); }
         return Result<int64, String>::Ok(reply.threshold);
     }
@@ -393,6 +380,6 @@ struct Image : Drop {
     Result<List<uint8>, String> otsuBinarize() {
         List<uint8> gray = self.toGray()?;
         int64 threshold = self.otsuThreshold()?;
-        return Image::binarize(self.width, self.height, gray, threshold);
+        return Image::binarize(self.width(), self.height(), gray, threshold);
     }
 }

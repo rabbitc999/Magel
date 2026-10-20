@@ -202,9 +202,9 @@ JSON and TOML parsing OK
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-221"></a>`struct JsonValue : Iterator<JsonValue>` | 只读节点视图；同一文档的节点共享生命周期，close 关闭整个文档。 |
-| JsonValue | <a id="symbol-222"></a>`int64 document` | 拥有底层解析文档的宿主句柄。 |
-| JsonValue | <a id="symbol-223"></a>`int64 node` | 当前值在解析文档中的节点标识。 |
+| 模块 | <a id="symbol-218"></a>`struct JsonValue : Iterator<JsonValue>` | 只读节点视图；同一文档的节点共享生命周期，close 关闭整个文档。 |
+| JsonValue | <a id="symbol-219"></a>`int64 document` | 拥有底层解析文档的宿主句柄。 |
+| JsonValue | <a id="symbol-220"></a>`int64 node` | 当前值在解析文档中的节点标识。 |
 
 ## 函数索引
 

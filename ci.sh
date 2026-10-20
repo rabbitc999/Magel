@@ -177,6 +177,9 @@ run_step "检查标准对象与 VM 核心隔离" "$PYTHON" tests/opcode_core_iso
 run_step "检查 VM 集合宿主胶水与同步回调" "$PYTHON" tests/magel_collection_glue.py --magel magel
 run_step "检查 Map Pair 迭代元素类型" "$PYTHON" tests/magel_map_pair_iterator.py --magel magel
 run_step "检查泛型命名构造入口推导" "$PYTHON" tests/magel_generic_constructors.py --magel magel
+run_step "检查标准库 opcode 存储与资源边界" "$PYTHON" tests/magel_opcode_std_storage.py --magel magel
+run_step "运行闭包来源与借用控制流回归" "$PYTHON" tests/magel_borrow_flow.py --magel magel
+run_step "检查模块路径与文本包含指令删除" "$PYTHON" tests/magel_package_paths.py
 run_step "检查 VM 命令与未知文件" "$PYTHON" tests/magel_tool.py
 run_step "检查手册与标准库共享索引同步" "$PYTHON" tools/library_reference.py --check
 
@@ -246,7 +249,6 @@ if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
         "$PYTHON" tests/magel_update_restrictions.py --magel magel
     run_step "运行多诊断与独立借用检查回归" \
         "$PYTHON" tests/magel_analysis_diagnostics.py --magel magel
-    run_step "运行借用控制流回归" "$PYTHON" tests/magel_borrow_flow.py --magel magel
     run_step "运行数据结构及 NOIP 算法鲁棒性回归" \
         "$PYTHON" tests/magel_algorithm_robustness.py --magel magel
     run_step "运行多值返回与泛型元组回归" \

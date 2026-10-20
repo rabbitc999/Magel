@@ -48,7 +48,7 @@
   <text x="428" y="416" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="13" font-weight="700" fill="#10233f">编译源码</text>
   <rect x="428" y="430" width="324" height="52" rx="8" fill="#f7f9fc" stroke="#e2e9f3" stroke-width="1"/>
   <text x="439" y="451" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="12" font-weight="700" fill="#14507e">预处理与展开</text>
-  <text x="439" y="471" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="11" fill="#55677f">%include / %if / 宏 / lambda / 泛型</text>
+  <text x="439" y="471" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="11" fill="#55677f">%if / 宏 / lambda / 泛型</text>
   <rect x="428" y="492" width="324" height="52" rx="8" fill="#f7f9fc" stroke="#e2e9f3" stroke-width="1"/>
   <text x="439" y="513" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="12" font-weight="700" fill="#14507e">解析与降级</text>
   <text x="439" y="533" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="11" fill="#55677f">类型检查 → simple_ast → 四元式</text>

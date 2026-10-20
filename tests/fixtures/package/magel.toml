@@ -4,9 +4,9 @@ version = "0.1.0"
 author = "示例作者"
 
 [magel]
-include = ["include/shared.inc"]
-import_paths = ["modules"]
-import = ["tools::math"]
+
+import_paths = ["modules", "include"]
+import = ["tools::math", "shared"]
 commands = [
-    '%include "include/extra.inc"',
+    'import extra;',
 ]

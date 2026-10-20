@@ -1,0 +1,47 @@
+import std::image;
+import std::linalg;
+import std::net;
+
+int64 main() {
+    Image original = Image::make(2, 2).unwrap();
+    original.setPixel(0, 0, 10, 20, 30, 255).unwrap();
+    Image copied = original;
+    copied.setPixel(0, 0, 90, 80, 70, 255).unwrap();
+    assert(original.getPixel(0, 0).unwrap().r == 10);
+    assert(copied.getPixel(0, 0).unwrap().r == 90);
+    auto snapshot = original.pixels();
+    snapshot[0] = (uint8)99;
+    assert(original.getPixel(0, 0).unwrap().r == 10);
+    assert(original.width() == 2 && original.height() == 2);
+    assert(Image::make(536870912, 1).isErr());
+    auto matrix = Matrix<float32>::identity(2);
+    auto matrixCopy = matrix;
+    matrixCopy.set(0, 0, 7.0f);
+    assert(matrix.at(0, 0) == 1.0f && matrixCopy.at(0, 0) == 7.0f);
+    auto integer = Vector<uint64>::zeros(1);
+    integer.set(0, 18446744073709551615u);
+    auto integerCopy = integer;
+    integerCopy.set(0, 0u);
+    assert(integer.at(0) == 18446744073709551615u);
+    int64 index = 0;
+    while (index < 300) {
+        TcpListener transient = TcpListener::listen("127.0.0.1", (int32)0);
+        assert(transient.isOpen());
+        index += 1;
+    }
+    TcpListener listener = TcpListener::listen("127.0.0.1", (int32)0);
+    TcpSocket client = TcpSocket::connect("127.0.0.1", (int32)listener.localPort());
+    TcpSocket peer = listener.accept();
+    assert(client.isOpen() && peer.isOpen());
+    assert(peer.receiveLine((int32)10) == "");
+    assert(peer.status() == NET_TIMEOUT);
+    client.send("ping\n");
+    assert(peer.status() == NET_TIMEOUT);
+    assert(peer.receiveLine((int32)2000) == "ping");
+    TcpSocket moved = move(&client);
+    moved.close();
+    moved.close();
+    assert(!moved.isOpen() && peer.status() == NET_OK);
+    println("opcode standard storage OK");
+    return 0;
+}

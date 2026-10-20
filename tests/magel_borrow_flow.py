@@ -7,7 +7,7 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 WORK = ROOT / "build/borrow-flow-tests"
-PREFIX = "struct S:Drop{int64 value;void drop(){}};struct B{S left;S right;};S mut& identity(S mut& p){return p;}struct View{S left;S right;S mut& leftRef(){return &self.left;}S mut& rightRef(){S mut& r=&self.right;return r;}S mut& from(S mut& p){return p;}S mut& deadLeft(){if(false){return &self.left;}return &self.right;}S mut& earlyRight(bool flag){if(flag){return &self.right;}S mut& p=&self.left;p=&self.right;return p;}S mut& shadowRight(){S mut& p=&self.right;{S mut& p=&self.left;}return p;}S mut& assignedRight(){S mut& p=&self.left;{p=&self.right;}return p;}S mut& fresh(){S mut& p = heap S;return p;}};"
+PREFIX = "struct S:Drop{int64 value;void drop(){}};struct B{S left;S right;};S mut& identity(S mut& p){return p;}struct View{S left;S right;S mut& leftRef(){return &self.left;}S mut& rightRef(){S mut& r=&self.right;return r;}S mut& from(S mut& p){return p;}S mut& deadLeft(){if(false){return &self.left;}return &self.right;}S mut& earlyRight(bool flag){if(flag){return &self.right;}S mut& p=&self.left;p=&self.right;return p;}S mut& shadowRight(){S mut& p=&self.right;{S mut& p=&self.left;}return p;}S mut& assignedRight(){S mut& p=&self.left;{p=&self.right;}return p;}S mut& fresh(){S mut& p = heap S;return p;}};int64 fn() forwardFn(int64 fn() callback){return callback;}struct FnHolder{int64 fn() callback;};struct RefHolder{S mut& ptr;};"
 
 
 def main():
@@ -17,6 +17,25 @@ def main():
     compiler = parser.parse_args().magel.resolve()
     WORK.mkdir(parents=True, exist_ok=True)
     rejected = {
+        "closure_field": "S s;FnHolder h;h.callback=int64 fn(){s.value};auto copied=h;s.drop();int64 x=copied.callback();",
+        "closure_owned_field_reference": "S mut& p=heap S;RefHolder h;h.ptr=&*p;auto f=int64 fn copy[h](){h.ptr.value};delete p;int64 x=f();",
+        "closure_builtin_move": "S s;auto f=int64 fn(){s.value};auto g=std::lang::move(&f);s.drop();int64 x=g();",
+        "closure_destructure": "S s;auto f=int64 fn(){s.value};auto(g,n)=(f,1);s.drop();int64 x=g();",
+        "closure_returned_argument": "S s;auto f=int64 fn(){s.value};auto g=forwardFn(f);s.drop();int64 x=g();",
+        "closure_argument_move": "S s;auto f=int64 fn(S taken){s.value};int64 x=f(std::lang::move(&s));",
+        "closure_enum_return": "S s;auto f=int64 fn(){s.value};auto holder=Option<int64 fn()>::Value(f);auto g=holder.unwrap();s.drop();int64 x=g();",
+        "closure_callee_deleted_by_argument": "S s;auto f=int64 fn(int64 ignored){s.value};int64 x=f(loop{delete f;yield 1;});",
+        "closure_drop": "S s;auto f=int64 fn(){s.value};s.drop();int64 x=f();",
+        "closure_move": "S s;auto f=int64 fn(){s.value};S taken=std::lang::move(&s);int64 x=f();",
+        "closure_free": "S mut& p=heap S;auto f=int64 fn(){p.value};delete p;int64 x=f();",
+        "closure_copy": "S s;auto f=int64 fn(){s.value};auto g=f;s.drop();int64 x=g();",
+        "closure_assignment": "S s;auto f=int64 fn(){s.value};auto g=int64 fn(){1};g=f;s.drop();int64 x=g();",
+        "closure_tuple": "S s;auto f=int64 fn(){s.value};auto pair=(f,1);s.drop();int64 x=pair.0();",
+        "closure_tuple_copy": "S s;auto f=int64 fn(){s.value};auto pair=(f,1);auto copied=pair;s.drop();int64 x=copied.0();",
+        "closure_owned_reference": "S mut& p=heap S;auto f=int64 fn copy[p](){p.value};delete p;int64 x=f();",
+        "closure_owned_nested": "S s;auto f=int64 fn(){s.value};auto g=int64 fn copy[f](){f()};s.drop();int64 x=g();",
+        "closure_branch": "S s;auto f=int64 fn(){s.value};if(flag){s.drop();}int64 x=f();",
+        "closure_loop": "S s;auto f=int64 fn(){s.value};while(flag){int64 x=f();s.drop();}",
         "break_level_moved_after": "S s;loop{loop{S taken=std::lang::move(&s);break level 2;};};int64 x=s.value;",
         "break_all_moved_after": "S s;loop{loop{S taken=std::lang::move(&s);break all;};};int64 x=s.value;",
         "break_duplicate_move": 'auto result=loop{String source="x";yield (source,source);};',
@@ -45,6 +64,13 @@ def main():
         "write_freed": "S mut& p = heap S;delete p;p.value=1;",
     }
     accepted = {
+        "closure_other_deleted_by_argument": "S s;auto other=int64 fn(){1};auto f=int64 fn(int64 ignored){s.value};int64 x=f(loop{delete other;yield 1;});",
+        "closure_owned_argument_move": "S s;auto f=int64 fn copy[s](S taken){s.value};int64 x=f(std::lang::move(&s));",
+        "closure_last_use": "S s;auto f=int64 fn(){s.value};int64 x=f();s.drop();",
+        "closure_owned_copy": "S s;auto f=int64 fn copy[s](){s.value};s.drop();int64 x=f();",
+        "closure_owned_move": "S s;auto f=int64 fn move[s](){s.value};int64 x=f();",
+        "closure_replaced": "S s;auto f=int64 fn(){s.value};f=int64 fn(){1};s.drop();int64 x=f();",
+        "closure_dead_branch": "S s;auto f=int64 fn(){s.value};if(false){s.drop();}int64 x=f();",
         "break_level_skips_read": "S s;loop{loop{S taken=std::lang::move(&s);break level 2;};int64 x=s.value;};",
         "break_all_skips_read": "S s;loop{loop{S taken=std::lang::move(&s);break all;};int64 x=s.value;};",
         "break_external_copy": "S source;S value=loop{yield (source);};int64 x=source.value;",

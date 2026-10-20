@@ -55,7 +55,7 @@ enum WatchdogError {
 
 /* 下面两个是 VM 原生函数：`enable` 记水位，`requestRestart` 写"标志 + 原因"。
  * 返回 0 = 成功；非 0 = 错误（码值与上面 `WatchdogError` 的顺序一致）。
- * （名字不能带 `__vm_` 前缀：那是虚拟机内部运行时的保留名，用户面/标准库都不许声明。）
+ * （名字不能带 `__std_` 前缀：那是虚拟机内部运行时的保留名，用户面/标准库都不许声明。）
  * 原生表里的键是 `std::watchdog::__watchdogEnable` / `std::watchdog::__watchdogRequestRestart`。 */
 int64 __watchdogEnable(int64 watermarkBytes);
 int64 __watchdogRequestRestart();

@@ -1,21 +1,24 @@
 {
   "versions": [
     {
+      "version": "0.21.1",
+      "title": "标准库 opcode 资源与胶水分层",
+      "entries": [
+        "Image 改为可深复制的 opcode，尺寸和连续 RGBA 像素存储移入胶水，处理算法直接读取宿主缓冲；width()/height() 查询尺寸，pixels() 导出独立快照。",
+        "TcpSocket、TcpListener 改为不可复制的 opcode，宿主记录独占连接并自动关闭；通过 move 转移所有权，每条连接独立保留状态和错误。",
+        "网络增加 connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync，未就绪使用 NET_PENDING；支持部分发送偏移、跨轮询行缓冲和连接超时，异步连接首批使用数值 IPv4。",
+        "线性代数 Vector<T>、Matrix<T> 保留泛型聚合外观，ScalarStorage opcode 保存连续数值缓冲，替代通用 List；覆盖全部内建整数和 float32/float64。",
+        "字符串拼接、切片、比较、查找、数值转文本迁出 VM 核心，由标准胶水通过公开接口实现；内部函数统一使用 __std_ 前缀。",
+        "移除源码文本包含指令及工程 include 命令，模块与宏共享统一通过 import；编辑器索引、增量依赖、板端示例和书稿同步调整。",
+        "闭包借用来源进入控制流数据流，复制、赋值、聚合字段和嵌套拥有捕获继续追踪外部借用；调用时拒绝来源已释放、移动或销毁的闭包，保留最后使用和独立拥有捕获。",
+        "程序版本更新为 0.21.1；VS Code 扩展包保持 1.0.0，内嵌编译器同步更新。"
+      ]
+    },
+    {
       "version": "0.21.0",
       "title": "标准集合胶水、Pair 与 VM 工具链",
       "entries": [
-        {
-          "text": "剥离 List、Map、Set 的前端 Container Kind、VM 专用 Kind、存储与方法，统一通过标准库胶水和 NativeRecord 协议维护复制、借用与清理。",
-          "items": [
-            "List 使用 ArrayList；内建哈希键及实现 Hash 的自定义键使用 HashMap / HashSet，无 Hash 的自定义键使用 ArrayMap / ArraySet，Equal 继续负责精确比较与去重。",
-            "Map、Set 的遍历、按位置访问与默认文本不再承诺排序或插入顺序；补齐碰撞、数组退化、复制、删除和嵌套所有权回归。",
-            "Map 的 iter / intoIter 只产生 Pair<K,V> 键值对，使用 first / second 访问，不再返回元组；补齐类型拒绝与嵌套拥有值迭代回归。",
-            "Pair 统一以 Pair::create((key, value)) 与 Pair::create(key, value) 构造，从实参推导类型，也支持显式类型参数；toTuple() 按值转换为二元组。"
-          ]
-        },
-        "程序通过统一 VM 执行，支持源码运行、四元式与 .svmb 字节码输出，以及桌面、嵌入式宿主胶水。",
-        "同步更新中英文功能文档、入门书与执行流程图；Magel 当前开发版本为 0.21.0，VS Code 扩展包独立使用 1.0.0；此前开发记录细分为 0.19.0–0.19.15 与 0.20.0–0.20.16。",
-        "修复反射常量桥接固定截取类型身份前缀的问题，正确生成字符串注解默认值，保留既有元数据 ID；没有显式构造函数的结构体通过反射使用默认初始化。"
+        "将标准集合迁入 NativeRecord 胶水，List 使用 ArrayList，Map/Set 按 Hash 能力选择哈希或数组存储且不保证顺序；Map 迭代使用 Pair，统一 Pair::create 与 toTuple，完善泛型构造推导与反射桥接；统一 VM 工具链，整理历史版本并同步文档、书稿及流程图。"
       ]
     },
     {

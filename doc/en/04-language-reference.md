@@ -662,8 +662,6 @@ $end_macro
 
 | Directive | Effect |
 | --- | --- |
-| `%include "path"` | expand a file in place; the same file is expanded only once by default |
-| `%include_once` / `%import` | synonyms for `%include`, expressing the intent explicitly |
 | `%if` / `%elif` / `%else` / `%endif` | conditional compilation; inactive branches are dropped wholesale |
 | `%ifndef` / `%ifdef` | branch on whether a symbol exists |
 | `%define` / `%undefine` | define / remove a symbol (same as command-line `-D NAME`) |
@@ -674,6 +672,8 @@ $end_macro
 | `$macro N() … $end_macro` | object macro, called `$N` |
 | `$stringify(…)` / `$concat(a,b)` / `$line` | macro-body helpers |
 | `$delete_macro N` | remove a macro |
+
+Shared source is organized with `module` and `import`. Text inclusion directives are rejected; conditional compilation keeps each module as a separate unit.
 
 Points to remember:
 

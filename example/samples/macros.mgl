@@ -3,7 +3,7 @@
  * 括号不能省：`$macro NAME()` 是对象宏（调用处写 `$NAME`），`$macro NAME(x)` 才是
  * 带形参的函数式宏（调用处写 `$NAME(…)`）。
  */
-%include "include/macros.mgl"
+import include::macros;
 
 $macro SQUARE(x)
 ((x) * (x))

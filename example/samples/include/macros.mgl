@@ -1,3 +1,4 @@
+module include::macros;
 $macro DOUBLE(x)
 ((x) + (x))
 $end_macro

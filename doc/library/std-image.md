@@ -10,7 +10,7 @@ import std::image;
 
 ## 公共约定与错误边界
 
-Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。
+Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。
 
 ## 参考代码
 
@@ -41,54 +41,51 @@ Image 以 RGBA8888 保存 width×height 像素。decode/open 支持无压缩 24/
 | ImageReply | <a id="symbol-101"></a>`int64 g` | 保留槽，恒为 0。 |
 | ImageReply | <a id="symbol-102"></a>`int64 b` | 保留槽，恒为 0。 |
 | ImageReply | <a id="symbol-103"></a>`int64 a` | 保留槽，恒为 0。 |
-| 模块 | <a id="symbol-104"></a>`struct Image : Drop` | RGBA 图片：width × height，像素缓冲长度恒为 width*height*4。 |
-| Image | <a id="symbol-105"></a>`int64 width` | 图片宽，单位像素。 |
-| Image | <a id="symbol-106"></a>`int64 height` | 图片高，单位像素。 |
-| Image | <a id="symbol-107"></a>`List<uint8> pixels` | RGBA8888 像素缓冲，行优先，长度为 width*height*4。 |
+| 模块 | <a id="symbol-104"></a>`opcode Image` | RGBA 图片：width × height，像素缓冲长度恒为 width*height*4。 |
 
 ## 函数索引
 
 | 名称 | 声明 |
 | --- | --- |
-| [Image::drop](#api-0) | `void drop()` |
-| [Image::make](#api-1) | `static Result<Image, String> make(int64 width, int64 height)` |
-| [Image::decode](#api-2) | `static Result<Image, String> decode(List<uint8> bytes)` |
-| [Image::open](#api-3) | `static Result<Image, String> open(String path)` |
-| [Image::encodeBmp](#api-4) | `Result<List<uint8>, String> encodeBmp()` |
-| [Image::encodePpm](#api-5) | `Result<List<uint8>, String> encodePpm()` |
-| [Image::encodePgm](#api-6) | `Result<List<uint8>, String> encodePgm()` |
-| [Image::saveBmp](#api-7) | `Result<int64, String> saveBmp(String path)` |
-| [Image::savePpm](#api-8) | `Result<int64, String> savePpm(String path)` |
-| [Image::savePgm](#api-9) | `Result<int64, String> savePgm(String path)` |
-| [Image::getPixel](#api-10) | `Result<Pixel, String> getPixel(int64 x, int64 y)` |
-| [Image::setPixel](#api-11) | `Result<int64, String> setPixel(int64 x, int64 y, int64 r, int64 g, int64 b, int64 a)` |
-| [Image::convolve](#api-12) | `Result<Image, String> convolve(List<float64> kernel, int64 kw, int64 kh)` |
-| [Image::pool](#api-13) | `Result<Image, String> pool(int64 mode, int64 kw, int64 kh)` |
-| [Image::toGray](#api-14) | `Result<List<uint8>, String> toGray()` |
-| [Image::fromGray](#api-15) | `static Result<Image, String> fromGray(int64 width, int64 height, List<uint8> gray)` |
-| [Image::toARGB](#api-16) | `Result<List<uint32>, String> toARGB()` |
-| [Image::fromARGB](#api-17) | `static Result<Image, String> fromARGB(int64 width, int64 height, List<uint32> argb)` |
-| [Image::toRGB565](#api-18) | `Result<List<uint16>, String> toRGB565()` |
-| [Image::fromRGB565](#api-19) | `static Result<Image, String> fromRGB565(int64 width, int64 height, List<uint16> rgb565)` |
-| [Image::otsuThreshold](#api-20) | `Result<int64, String> otsuThreshold()` |
-| [Image::binarize](#api-21) | `static Result<List<uint8>, String> binarize(int64 width, int64 height, List<uint8> gray, int64 threshold)` |
-| [Image::otsuBinarize](#api-22) | `Result<List<uint8>, String> otsuBinarize()` |
+| [Image::width](#api-0) | `int64 width()` |
+| [Image::height](#api-1) | `int64 height()` |
+| [Image::pixels](#api-2) | `List<uint8> pixels()` |
+| [Image::make](#api-3) | `static Result<Image, String> make(int64 width, int64 height)` |
+| [Image::decode](#api-4) | `static Result<Image, String> decode(List<uint8> bytes)` |
+| [Image::open](#api-5) | `static Result<Image, String> open(String path)` |
+| [Image::encodeBmp](#api-6) | `Result<List<uint8>, String> encodeBmp()` |
+| [Image::encodePpm](#api-7) | `Result<List<uint8>, String> encodePpm()` |
+| [Image::encodePgm](#api-8) | `Result<List<uint8>, String> encodePgm()` |
+| [Image::saveBmp](#api-9) | `Result<int64, String> saveBmp(String path)` |
+| [Image::savePpm](#api-10) | `Result<int64, String> savePpm(String path)` |
+| [Image::savePgm](#api-11) | `Result<int64, String> savePgm(String path)` |
+| [Image::getPixel](#api-12) | `Result<Pixel, String> getPixel(int64 x, int64 y)` |
+| [Image::setPixel](#api-13) | `Result<int64, String> setPixel(int64 x, int64 y, int64 r, int64 g, int64 b, int64 a)` |
+| [Image::convolve](#api-14) | `Result<Image, String> convolve(List<float64> kernel, int64 kw, int64 kh)` |
+| [Image::pool](#api-15) | `Result<Image, String> pool(int64 mode, int64 kw, int64 kh)` |
+| [Image::toGray](#api-16) | `Result<List<uint8>, String> toGray()` |
+| [Image::fromGray](#api-17) | `static Result<Image, String> fromGray(int64 width, int64 height, List<uint8> gray)` |
+| [Image::toARGB](#api-18) | `Result<List<uint32>, String> toARGB()` |
+| [Image::fromARGB](#api-19) | `static Result<Image, String> fromARGB(int64 width, int64 height, List<uint32> argb)` |
+| [Image::toRGB565](#api-20) | `Result<List<uint16>, String> toRGB565()` |
+| [Image::fromRGB565](#api-21) | `static Result<Image, String> fromRGB565(int64 width, int64 height, List<uint16> rgb565)` |
+| [Image::otsuThreshold](#api-22) | `Result<int64, String> otsuThreshold()` |
+| [Image::binarize](#api-23) | `static Result<List<uint8>, String> binarize(int64 width, int64 height, List<uint8> gray, int64 threshold)` |
+| [Image::otsuBinarize](#api-24) | `Result<List<uint8>, String> otsuBinarize()` |
 
 <a id="api-0"></a>
 
-### Image::drop（1）
+### Image::width（1）
 
 **声明**
 
 ```magel
-void drop();
+int64 width();
 ```
 
 **行为**
 
-释放对象拥有的资源，调用后遵守本模块失效规则。
-
-///< RGBA8888 像素缓冲，行优先，长度 width*height*4。
+图片宽度，单位像素。
 
 **参数**
 
@@ -96,7 +93,7 @@ void drop();
 
 **返回值**
 
-无返回值。
+`int64`。图片宽度，单位像素。
 
 **错误与边界**
 
@@ -105,14 +102,82 @@ void drop();
 **调用形式**
 
 ```magel
-obj.drop();
+obj.width();
 ```
 
-**源码**：[source/std/image.mgl:66](../../source/std/image.mgl#L66)。
+**源码**：[source/std/image.mgl:78](../../source/std/image.mgl#L78)。
 
 <a id="api-1"></a>
 
-### Image::make（2）
+### Image::height（2）
+
+**声明**
+
+```magel
+int64 height();
+```
+
+**行为**
+
+图片高度，单位像素。
+
+**参数**
+
+无显式参数。实例方法使用当前接收者。
+
+**返回值**
+
+`int64`。图片高度，单位像素。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.height();
+```
+
+**源码**：[source/std/image.mgl:80](../../source/std/image.mgl#L80)。
+
+<a id="api-2"></a>
+
+### Image::pixels（3）
+
+**声明**
+
+```magel
+List<uint8> pixels();
+```
+
+**行为**
+
+导出独立 RGBA 像素列表，修改返回值不会修改原图。
+
+**参数**
+
+无显式参数。实例方法使用当前接收者。
+
+**返回值**
+
+`List<uint8>`。导出独立 RGBA 像素列表，修改返回值不会修改原图。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.pixels();
+```
+
+**源码**：[source/std/image.mgl:82](../../source/std/image.mgl#L82)。
+
+<a id="api-3"></a>
+
+### Image::make（4）
 
 **声明**
 
@@ -145,11 +210,11 @@ static Result<Image, String> make(int64 width, int64 height);
 std::image::Image::make(width, height);
 ```
 
-**源码**：[source/std/image.mgl:74](../../source/std/image.mgl#L74)。
+**源码**：[source/std/image.mgl:90](../../source/std/image.mgl#L90)。
 
-<a id="api-2"></a>
+<a id="api-4"></a>
 
-### Image::decode（3）
+### Image::decode（5）
 
 **声明**
 
@@ -181,11 +246,11 @@ static Result<Image, String> decode(List<uint8> bytes);
 std::image::Image::decode(bytes);
 ```
 
-**源码**：[source/std/image.mgl:97](../../source/std/image.mgl#L97)。
+**源码**：[source/std/image.mgl:102](../../source/std/image.mgl#L102)。
 
-<a id="api-3"></a>
+<a id="api-5"></a>
 
-### Image::open（4）
+### Image::open（6）
 
 **声明**
 
@@ -217,11 +282,11 @@ static Result<Image, String> open(String path);
 std::image::Image::open(path);
 ```
 
-**源码**：[source/std/image.mgl:114](../../source/std/image.mgl#L114)。
+**源码**：[source/std/image.mgl:116](../../source/std/image.mgl#L116)。
 
-<a id="api-4"></a>
+<a id="api-6"></a>
 
-### Image::encodeBmp（5）
+### Image::encodeBmp（7）
 
 **声明**
 
@@ -251,11 +316,11 @@ Result<List<uint8>, String> encodeBmp();
 obj.encodeBmp();
 ```
 
-**源码**：[source/std/image.mgl:125](../../source/std/image.mgl#L125)。
+**源码**：[source/std/image.mgl:127](../../source/std/image.mgl#L127)。
 
-<a id="api-5"></a>
+<a id="api-7"></a>
 
-### Image::encodePpm（6）
+### Image::encodePpm（8）
 
 **声明**
 
@@ -285,11 +350,11 @@ Result<List<uint8>, String> encodePpm();
 obj.encodePpm();
 ```
 
-**源码**：[source/std/image.mgl:136](../../source/std/image.mgl#L136)。
+**源码**：[source/std/image.mgl:138](../../source/std/image.mgl#L138)。
 
-<a id="api-6"></a>
+<a id="api-8"></a>
 
-### Image::encodePgm（7）
+### Image::encodePgm（9）
 
 **声明**
 
@@ -319,11 +384,11 @@ Result<List<uint8>, String> encodePgm();
 obj.encodePgm();
 ```
 
-**源码**：[source/std/image.mgl:148](../../source/std/image.mgl#L148)。
+**源码**：[source/std/image.mgl:150](../../source/std/image.mgl#L150)。
 
-<a id="api-7"></a>
+<a id="api-9"></a>
 
-### Image::saveBmp（8）
+### Image::saveBmp（10）
 
 **声明**
 
@@ -355,11 +420,11 @@ Result<int64, String> saveBmp(String path);
 obj.saveBmp(path);
 ```
 
-**源码**：[source/std/image.mgl:160](../../source/std/image.mgl#L160)。
+**源码**：[source/std/image.mgl:162](../../source/std/image.mgl#L162)。
 
-<a id="api-8"></a>
+<a id="api-10"></a>
 
-### Image::savePpm（9）
+### Image::savePpm（11）
 
 **声明**
 
@@ -391,11 +456,11 @@ Result<int64, String> savePpm(String path);
 obj.savePpm(path);
 ```
 
-**源码**：[source/std/image.mgl:173](../../source/std/image.mgl#L173)。
+**源码**：[source/std/image.mgl:175](../../source/std/image.mgl#L175)。
 
-<a id="api-9"></a>
+<a id="api-11"></a>
 
-### Image::savePgm（10）
+### Image::savePgm（12）
 
 **声明**
 
@@ -427,11 +492,11 @@ Result<int64, String> savePgm(String path);
 obj.savePgm(path);
 ```
 
-**源码**：[source/std/image.mgl:186](../../source/std/image.mgl#L186)。
+**源码**：[source/std/image.mgl:188](../../source/std/image.mgl#L188)。
 
-<a id="api-10"></a>
+<a id="api-12"></a>
 
-### Image::getPixel（11）
+### Image::getPixel（13）
 
 **声明**
 
@@ -464,11 +529,11 @@ Result<Pixel, String> getPixel(int64 x, int64 y);
 obj.getPixel(x, y);
 ```
 
-**源码**：[source/std/image.mgl:200](../../source/std/image.mgl#L200)。
+**源码**：[source/std/image.mgl:202](../../source/std/image.mgl#L202)。
 
-<a id="api-11"></a>
+<a id="api-13"></a>
 
-### Image::setPixel（12）
+### Image::setPixel（14）
 
 **声明**
 
@@ -505,11 +570,11 @@ Result<int64, String> setPixel(int64 x, int64 y, int64 r, int64 g, int64 b, int6
 obj.setPixel(x, y, r, g, b, a);
 ```
 
-**源码**：[source/std/image.mgl:223](../../source/std/image.mgl#L223)。
+**源码**：[source/std/image.mgl:225](../../source/std/image.mgl#L225)。
 
-<a id="api-12"></a>
+<a id="api-14"></a>
 
-### Image::convolve（13）
+### Image::convolve（15）
 
 **声明**
 
@@ -543,11 +608,11 @@ Result<Image, String> convolve(List<float64> kernel, int64 kw, int64 kh);
 obj.convolve(kernel, kw, kh);
 ```
 
-**源码**：[source/std/image.mgl:246](../../source/std/image.mgl#L246)。
+**源码**：[source/std/image.mgl:248](../../source/std/image.mgl#L248)。
 
-<a id="api-13"></a>
+<a id="api-15"></a>
 
-### Image::pool（14）
+### Image::pool（16）
 
 **声明**
 
@@ -581,11 +646,11 @@ Result<Image, String> pool(int64 mode, int64 kw, int64 kh);
 obj.pool(mode, kw, kh);
 ```
 
-**源码**：[source/std/image.mgl:264](../../source/std/image.mgl#L264)。
+**源码**：[source/std/image.mgl:263](../../source/std/image.mgl#L263)。
 
-<a id="api-14"></a>
+<a id="api-16"></a>
 
-### Image::toGray（15）
+### Image::toGray（17）
 
 **声明**
 
@@ -615,11 +680,11 @@ Result<List<uint8>, String> toGray();
 obj.toGray();
 ```
 
-**源码**：[source/std/image.mgl:279](../../source/std/image.mgl#L279)。
+**源码**：[source/std/image.mgl:275](../../source/std/image.mgl#L275)。
 
-<a id="api-15"></a>
+<a id="api-17"></a>
 
-### Image::fromGray（16）
+### Image::fromGray（18）
 
 **声明**
 
@@ -653,11 +718,11 @@ static Result<Image, String> fromGray(int64 width, int64 height, List<uint8> gra
 std::image::Image::fromGray(width, height, gray);
 ```
 
-**源码**：[source/std/image.mgl:293](../../source/std/image.mgl#L293)。
+**源码**：[source/std/image.mgl:289](../../source/std/image.mgl#L289)。
 
-<a id="api-16"></a>
+<a id="api-18"></a>
 
-### Image::toARGB（17）
+### Image::toARGB（19）
 
 **声明**
 
@@ -687,11 +752,11 @@ Result<List<uint32>, String> toARGB();
 obj.toARGB();
 ```
 
-**源码**：[source/std/image.mgl:308](../../source/std/image.mgl#L308)。
+**源码**：[source/std/image.mgl:301](../../source/std/image.mgl#L301)。
 
-<a id="api-17"></a>
+<a id="api-19"></a>
 
-### Image::fromARGB（18）
+### Image::fromARGB（20）
 
 **声明**
 
@@ -725,11 +790,11 @@ static Result<Image, String> fromARGB(int64 width, int64 height, List<uint32> ar
 std::image::Image::fromARGB(width, height, argb);
 ```
 
-**源码**：[source/std/image.mgl:322](../../source/std/image.mgl#L322)。
+**源码**：[source/std/image.mgl:315](../../source/std/image.mgl#L315)。
 
-<a id="api-18"></a>
+<a id="api-20"></a>
 
-### Image::toRGB565（19）
+### Image::toRGB565（21）
 
 **声明**
 
@@ -759,11 +824,11 @@ Result<List<uint16>, String> toRGB565();
 obj.toRGB565();
 ```
 
-**源码**：[source/std/image.mgl:337](../../source/std/image.mgl#L337)。
+**源码**：[source/std/image.mgl:327](../../source/std/image.mgl#L327)。
 
-<a id="api-19"></a>
+<a id="api-21"></a>
 
-### Image::fromRGB565（20）
+### Image::fromRGB565（22）
 
 **声明**
 
@@ -797,11 +862,11 @@ static Result<Image, String> fromRGB565(int64 width, int64 height, List<uint16> 
 std::image::Image::fromRGB565(width, height, rgb565);
 ```
 
-**源码**：[source/std/image.mgl:351](../../source/std/image.mgl#L351)。
+**源码**：[source/std/image.mgl:341](../../source/std/image.mgl#L341)。
 
-<a id="api-20"></a>
+<a id="api-22"></a>
 
-### Image::otsuThreshold（21）
+### Image::otsuThreshold（23）
 
 **声明**
 
@@ -831,11 +896,11 @@ Result<int64, String> otsuThreshold();
 obj.otsuThreshold();
 ```
 
-**源码**：[source/std/image.mgl:366](../../source/std/image.mgl#L366)。
+**源码**：[source/std/image.mgl:353](../../source/std/image.mgl#L353)。
 
-<a id="api-21"></a>
+<a id="api-23"></a>
 
-### Image::binarize（22）
+### Image::binarize（24）
 
 **声明**
 
@@ -870,11 +935,11 @@ static Result<List<uint8>, String> binarize(int64 width, int64 height, List<uint
 std::image::Image::binarize(width, height, gray, threshold);
 ```
 
-**源码**：[source/std/image.mgl:382](../../source/std/image.mgl#L382)。
+**源码**：[source/std/image.mgl:369](../../source/std/image.mgl#L369)。
 
-<a id="api-22"></a>
+<a id="api-24"></a>
 
-### Image::otsuBinarize（23）
+### Image::otsuBinarize（25）
 
 **声明**
 
@@ -904,4 +969,4 @@ Result<List<uint8>, String> otsuBinarize();
 obj.otsuBinarize();
 ```
 
-**源码**：[source/std/image.mgl:393](../../source/std/image.mgl#L393)。
+**源码**：[source/std/image.mgl:380](../../source/std/image.mgl#L380)。

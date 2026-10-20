@@ -55,7 +55,7 @@ inline FileRecord *nativeFile(State &ctx, const Value &handle, const char *who)
 }
 
 /**
- * @brief `__vm_file_open(路径, 模式) -> file`。模式同 C 的 fopen：`r` / `w` / `a` / `r+`。
+ * @brief `__std_file_open(路径, 模式) -> file`。模式同 C 的 fopen：`r` / `w` / `a` / `r+`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -120,7 +120,7 @@ inline Value fileValid(State &ctx, const Memory::Vector<Value> &args)
 }
 
 /**
- * @brief `__vm_file_read(file) -> string`：读下一行；EOF 返回空串。
+ * @brief `__std_file_read(file) -> string`：读下一行；EOF 返回空串。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -142,7 +142,7 @@ inline Value fileRead(State &ctx, const Memory::Vector<Value> &args)
 /**
  * @brief 将文本写入文件并返回实际写入字节数。
  *
- * `__vm_file_write(file, text) -> bytes`。
+ * `__std_file_write(file, text) -> bytes`。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -437,15 +437,15 @@ inline Value fileClose(State &ctx, const Memory::Vector<Value> &args)
 inline bool bind(stackvm::NativeRegistry &registry, Memory::String *error = nullptr)
 {
     bool ok = true;
-    ok = native_record_glue::bind(registry, "__vm_file_open", 2, fileOpen, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_file_try_open", 2, fileTryOpen, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_file_valid", 1, fileValid, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_file_read", 1, fileRead, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_file_open", 2, fileOpen, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_file_try_open", 2, fileTryOpen, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_file_valid", 1, fileValid, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_file_read", 1, fileRead, error) && ok;
     ok = native_record_glue::bind(registry, "std::io::__fileTryReadLine", 1, fileTryReadLine, error, true) && ok;
     ok = native_record_glue::bind(registry, "__fileTryReadLine", 1, fileTryReadLine, error, true) && ok;
-    ok = native_record_glue::bind(registry, "__vm_file_write", 2, fileWrite, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_file_eof", 1, fileEof, error) && ok;
-    ok = native_record_glue::bind(registry, "__vm_file_close", 1, fileClose, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_file_write", 2, fileWrite, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_file_eof", 1, fileEof, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_file_close", 1, fileClose, error) && ok;
     ok = native_record_glue::bind(registry, "std::io::__fileTryRead", 1, fileTryRead, error, true) && ok;
     ok = native_record_glue::bind(registry, "std::io::__fileTryReadBytes", 2, fileTryReadBytes, error, true) && ok;
     ok = native_record_glue::bind(registry, "std::io::__fileTryWriteBytes", 2, fileTryWriteBytes, error, true) && ok;
@@ -455,7 +455,7 @@ inline bool bind(stackvm::NativeRegistry &registry, Memory::String *error = null
     ok = native_record_glue::bind(registry, "std::io::__fileSucceeded", 1, fileOperationSucceeded, error, true) && ok;
     ok = native_record_glue::bind(registry, "std::io::__fileLastError", 1, fileLastError, error, true) && ok;
     ok = native_record_glue::bind(registry, "std::io::__fileTryClose", 1, fileTryClose, error, true) && ok;
-    ok = native_record_glue::bind(registry, "__vm_file_drop", 1, native_record_glue::drop, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_file_drop", 1, native_record_glue::drop, error) && ok;
     return ok;
 }
 }  // namespace file_native_glue

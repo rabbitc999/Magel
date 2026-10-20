@@ -29,17 +29,17 @@
 | [`std::encoding`](std-encoding.md) | 文本编码 | 7 |
 | [`std::event`](std-event.md) | 中断事件与定时器 | 20 |
 | [`std::graph`](std-graph.md) | 图论与并查集 | 18 |
-| [`std::image`](std-image.md) | 图片处理 | 23 |
+| [`std::image`](std-image.md) | 图片处理 | 25 |
 | [`std::io`](std-io.md) | 文件与流接口 | 33 |
 | [`std::iter`](std-iter.md) | 惰性迭代器 | 109 |
 | [`std::json`](std-json.md) | JSON 只读文档 | 27 |
-| [`std::lang`](std-lang.md) | 核心库 | 214 |
-| [`std::linalg`](std-linalg.md) | 向量与矩阵 | 48 |
+| [`std::lang`](std-lang.md) | 核心库 | 215 |
+| [`std::linalg`](std-linalg.md) | 向量与矩阵 | 56 |
 | [`std::linkedlist`](std-linkedlist.md) | 双向链表 | 21 |
 | [`std::math`](std-math.md) | 标量数学 | 23 |
 | [`std::memory`](std-memory.md) | 内存视图与 arena | 9 |
 | [`std::message`](std-message.md) | 消息路由 | 4 |
-| [`std::net`](std-net.md) | TCP 与 HTTP | 29 |
+| [`std::net`](std-net.md) | TCP 与 HTTP | 37 |
 | [`std::numerics`](std-numerics.md) | 数值分析 | 7 |
 | [`std::numtheory`](std-numtheory.md) | 整数数论 | 7 |
 | [`std::parse`](std-parse.md) | 严格文本解析 | 4 |

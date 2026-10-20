@@ -3,7 +3,7 @@
  *                           [-I 目录] [-D 符号[=值]] [--raw] [--deps]
  *
  *   ① 读源文件（不给文件就读标准输入）；
- *   ② **前处理**：`%include` / `%import` / `%if` / `%define` 等指令（library/preprocess，
+ *   ② **前处理**：`%if` / `%define` 等指令（library/preprocess，
  *      语言无关的那一份），默认用空行占位，所以行号与源文件一一对应；
  *   ③ 解析：文法动作在归约的那一刻就把自己的 C 语法树建好；
  *   ④ M_Compile：降级到 simple_ast → 出 .quad / .data → stackvm 组装执行。
@@ -323,7 +323,7 @@ void PrintUsage(std::FILE *out)
                    "  --symbol-map FILE      映射路径（默认 <前缀>.symbol_map.json）\n"
                    "  --input \"文本\"        `input(变量);` 的输入项（空白分隔）；不给就从标准读，调试时可直接敲\n"
                    "  --raw                  跳过前处理：源文件原样喂给解析器\n"
-                   "  --deps                 只列出 `%include` 拉进来的文件（构建脚本用）\n"
+                   "  --deps                 只列出 import 模块与工程依赖文件（构建脚本用）\n"
                    "  --incremental          跨次复用模块预处理与完整编译产物\n"
                    "  --threads              启用隔离的宿主线程执行\n"
                    "  --no-debug             （兼容别名）显式不带调试信息；现在也是缺省\n"
@@ -334,8 +334,8 @@ void PrintUsage(std::FILE *out)
                    "  --max-restarts N       最多软重启几次（缺省 3；隐含 --watchdog）\n"
                    "  --watchdog-watermark N 内存水位（字节；隐含 --watchdog）\n"
                    "  --step-limit N         本次执行的指令条数上限（缺省不设上限；0 同缺省）\n"
-                   "  -I, --include-dir 目录 追加 include 搜索目录（也可写 -I目录）\n"
-                   "  --include-path 目录    追加 include 搜索目录\n"
+                   "  -I, --include-dir 目录 追加模块搜索目录（也可写 -I目录）\n"
+                   "  --include-path 目录    追加模块搜索目录\n"
                    "  --import-dir 目录      追加 import 搜索目录\n"
                    "  -D, --define 符号[=值] 定义预处理符号（也可写 -D符号=值）\n"
                    "  --                     后面全部作为程序的命令行参数\n"),
@@ -723,7 +723,7 @@ int magel_main_entry(int argc, char **argv)
             raw = true;
             continue;
         }
-        if (argument == "--deps") /* 只列出 `%include` 扯进来的文件（构建脚本用） */
+        if (argument == "--deps") /* 只列出 import 模块与工程依赖文件（构建脚本用） */
         {
             depsOnly = true;
             continue;
@@ -746,6 +746,7 @@ int magel_main_entry(int argc, char **argv)
             if (!NeedValue(index, argc, argument.c_str())) return 2;
             auto &directories = argument == "--include-path" ? includeDirs : importDirs;
             directories.push_back(argv[++index]);
+            if (argument == "--include-path") importDirs.push_back(directories.back());
             continue;
         }
         if (argument == "-D" || argument == "--define")
@@ -835,6 +836,7 @@ int magel_main_entry(int argc, char **argv)
         emitBinary = true;
     }
     includeDirs.insert(includeDirs.end(), project.includePaths.begin(), project.includePaths.end());
+    importDirs.insert(importDirs.end(), project.includePaths.begin(), project.includePaths.end());
     importDirs.insert(importDirs.end(), project.importPaths.begin(), project.importPaths.end());
     includeDirs.insert(includeDirs.end(), project.searchPaths.begin(), project.searchPaths.end());
     importDirs.insert(importDirs.end(), project.searchPaths.begin(), project.searchPaths.end());
@@ -909,17 +911,18 @@ int magel_main_entry(int argc, char **argv)
         text.assign(std::istreambuf_iterator<char>(std::cin), std::istreambuf_iterator<char>());
     }
 
-    /* ---- 前处理：`%include` / `%if` / `%define` / `%error` … ----
+    /* ---- 前处理：`%if` / `%define` / `%error` … ----
      *
      * 用 `forMetro()` 这套：只认 `%` 前缀，`%define` / `%undefine` 也算符号定义。
      * `preserveLines` 默认开着 —— 指令行与"条件为假"的行都输出成空行，所以
-     * 预处理之后的**行号与源文件一一对应**（`%include` 那几行靠 lineMap 翻回去）。
-     * `%include` 先查"当前文件所在目录"，再按 `-I` 的顺序找。 */
+     * 预处理之后的**行号与源文件一一对应**（通过 lineMap 保留源位置）。
+     * 模块通过 import 独立加载，命令行 -I 提供模块搜索目录。 */
     preprocess::Result processed;
     std::uint64_t incrementalInput = 0;
     if (!raw)
     {
         preprocess::Options options = preprocess::Preprocessor::forMetro();
+        options.allowIncludes = false;
         options.includeDirs = includeDirs;
         if (!sourceOverlays.empty()) options.includeLoader = [&](const preprocess::IncludeRequest &request) {
             const auto found = sourceOverlays.find(magel_incremental::canonical(request.resolvedPath));
@@ -1082,7 +1085,7 @@ int magel_main_entry(int argc, char **argv)
         }
         if (error != nullptr)
         {
-            /* 行号是**预处理之后**的行号：有映射就翻回源文件（`%include` 展开的地方
+            /* 行号是**预处理之后**的行号：有映射就翻回源文件（模块展开的位置
              * 尤其需要 —— 报错要指向真正写错的那个文件）。 */
             const std::size_t line = error->line();
             /* 消息里写的是 Token 内部名（`SEMI` / `IMPL`…），换成「分号(;)」这种

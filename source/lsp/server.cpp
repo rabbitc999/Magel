@@ -10,7 +10,7 @@ namespace
 {
 
 const char *kServerName = "magel-lsp";
-const char *kServerVersion = "0.21.0";
+const char *kServerVersion = "0.21.1";
 
 /**
  * 语义 token 的 legend：与 `mc.cpp` 里写进 token 的类型名一一对应。

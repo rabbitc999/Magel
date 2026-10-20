@@ -47,7 +47,11 @@ struct FlowNode
         Drop,
         Move,
         MoveScalar,
-        Redeclare
+        Redeclare,
+        CaptureBorrow,
+        CopyCaptures,
+        InheritCaptures,
+        CheckCaptures
     } kind = Nop;
     Place target, source;
     Memory::Vector<std::size_t> next;
@@ -95,7 +99,8 @@ struct FlowState
         Freed
     };
     Memory::Map<Place, Memory::Set<Place>> origins;
-    Memory::Set<Place> definitelyMoved;  ///< 所有到达路径均已完整移动的存储。
+    Memory::Map<Place, Memory::Set<Place>> captures;  ///< 闭包及聚合字段持有的借用来源。
+    Memory::Set<Place> definitelyMoved;               ///< 所有到达路径均已完整移动的存储。
     Memory::Map<Place, InvalidKind> invalid;
 };
 /**
@@ -168,6 +173,13 @@ inline bool merge(FlowState &target, const FlowState &source)
         else
             ++it;
     }
+    for (const auto &entry : source.captures)
+    {
+        auto &values = target.captures[entry.first];
+        const auto size = values.size();
+        values.insert(entry.second.begin(), entry.second.end());
+        changed = changed || size != values.size();
+    }
     for (const auto &entry : source.origins)
     {
         auto &values = target.origins[entry.first];
@@ -220,7 +232,50 @@ inline Memory::Vector<FlowDiagnostic> checkFlow(const FlowGraph &graph)
                     ++it;
             }
         }
-        if (node.kind == FlowNode::Allocate)
+        if (node.kind == FlowNode::CaptureBorrow)
+        {
+            const auto sources = resolve(state, node.source);
+            for (const auto &target : targets)
+                state.captures[target].insert(sources.begin(), sources.end());
+        }
+        else if (node.kind == FlowNode::InheritCaptures)
+        {
+            const auto sources = resolve(state, node.source);
+            Memory::Set<Place> borrowed;
+            for (const auto &source : sources)
+                for (const auto &entry : state.captures)
+                    if (overlaps(source, entry.first)) borrowed.insert(entry.second.begin(), entry.second.end());
+            for (const auto &target : targets)
+                state.captures[target].insert(borrowed.begin(), borrowed.end());
+        }
+        else if (node.kind == FlowNode::CopyCaptures)
+        {
+            // 先快照来源再覆盖目标，支持自赋值及同一聚合内的字段复制。
+            const auto sources = resolve(state, node.source);
+            Memory::Map<Place, Memory::Set<Place>> copied;
+            for (const auto &target : targets)
+                for (const auto &source : sources)
+                    for (const auto &entry : state.captures)
+                        if (source.root == entry.first.root && source.path.size() <= entry.first.path.size() && std::equal(source.path.begin(), source.path.end(), entry.first.path.begin()))
+                        {
+                            auto slot = target;
+                            slot.path.insert(slot.path.end(), entry.first.path.begin() + source.path.size(), entry.first.path.end());
+                            copied[slot].insert(entry.second.begin(), entry.second.end());
+                        }
+            for (auto it = state.captures.begin(); it != state.captures.end();)
+            {
+                bool covered = false;
+                for (const auto &target : targets)
+                    covered = covered || (target.root == it->first.root && target.path.size() <= it->first.path.size() && std::equal(target.path.begin(), target.path.end(), it->first.path.begin()));
+                if (covered && targets.size() == 1u)
+                    it = state.captures.erase(it);
+                else
+                    ++it;
+            }
+            for (const auto &entry : copied)
+                state.captures[entry.first].insert(entry.second.begin(), entry.second.end());
+        }
+        else if (node.kind == FlowNode::Allocate)
         {
             // 分配点采用最近一次 / 更早实例两个抽象身份；重新分配不能复活旧别名。
             const auto fresh = node.source.root;
@@ -231,6 +286,11 @@ inline Memory::Vector<FlowDiagnostic> checkFlow(const FlowGraph &graph)
             for (const auto &entry : state.origins)
             {
                 auto &values = renamed.origins[age(entry.first)];
+                for (const auto &value : entry.second) values.insert(age(value));
+            }
+            for (const auto &entry : state.captures)
+            {
+                auto &values = renamed.captures[age(entry.first)];
                 for (const auto &value : entry.second) values.insert(age(value));
             }
             for (const auto &entry : state.invalid)
@@ -308,9 +368,18 @@ inline Memory::Vector<FlowDiagnostic> checkFlow(const FlowGraph &graph)
             if (!states[index].definitelyMoved.count(node.target)) diagnostics.push_back({ "同一个块里不能重复声明：" + node.label + "（旧变量必须在所有到达路径上完整移动后才能重新定义）", node.line });
             continue;
         }
-        if (node.kind != FlowNode::Read && node.kind != FlowNode::Write && node.kind != FlowNode::Bind && node.kind != FlowNode::Allocate && node.kind != FlowNode::Move && node.kind != FlowNode::MoveScalar && node.kind != FlowNode::Destroy) continue;
+        if (node.kind != FlowNode::CheckCaptures && node.kind != FlowNode::Read && node.kind != FlowNode::Write && node.kind != FlowNode::Bind && node.kind != FlowNode::Allocate && node.kind != FlowNode::Move && node.kind != FlowNode::MoveScalar && node.kind != FlowNode::Destroy) continue;
         bool freed = false, moved = false;
-        for (const auto &target : resolve(states[index], node.target))
+        auto accessed = resolve(states[index], node.target);
+        if (node.kind == FlowNode::Read || node.kind == FlowNode::CheckCaptures)
+        {
+            Memory::Set<Place> borrowed;
+            for (const auto &target : accessed)
+                for (const auto &capture : states[index].captures)
+                    if (overlaps(target, capture.first)) borrowed.insert(capture.second.begin(), capture.second.end());
+            accessed.insert(borrowed.begin(), borrowed.end());
+        }
+        for (const auto &target : accessed)
             for (const auto &invalid : states[index].invalid)
                 if (overlaps(target, invalid.first))
                 {

@@ -8,7 +8,7 @@ def main():
     root = Path(__file__).resolve().parents[1]
     directory = root / 'library/stackvm'
     forbidden = re.compile(r'\b(?:FileApi|FileHandle|BigInt|BigFloat|BigInteger|BigDecimal)\b|'
-                           r'__vm_(?:file|bint|bfloat|vec|set|map)|ObjectKind::(?:File|Process|Vector|Set|Map|IteratorLease)|'
+                           r'__std_(?:file|bint|bfloat|vec|set|map)|"__std_str_(?:lit|join|sub|of_int|of_flt|cmp|pos)"|ObjectKind::(?:File|Process|Vector|Set|Map|IteratorLease)|'
                            r'STACKVM_WITH_BIG(?:INT|FLOAT)|\bbignum\b|'
                            r'\b(?:makeList|readList|listPush|listPushStruct|readListStruct|makeMap|readMap|mapSet|makeSet|readSet|setInsert)\s*\(')
     sources = [directory / 'stackvm.cpp', *sorted(directory.glob('*.hpp')), *sorted(directory.glob('*.inc')), *sorted((directory / 'parts').glob('*'))]

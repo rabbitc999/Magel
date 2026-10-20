@@ -14,7 +14,7 @@
 | --- | --- |
 | 分配 | 语言 `new` lowering → VM/native 分配 → `Heap::allocate()` → `AllocationIndex::add()`；物理字节区与逻辑身份分离。 |
 | 首次释放 | `LowerDelete()` / VM `free`、`drop` → 对应堆的 `release()` → `AllocationIndex::release()`；聚合释放先验证来源，再访问字段并执行析构。 |
-| 重复释放 | 原实现先命中 `retired_`，不再释放物理字节；聚合旧引用原先通过 `__vm_heap_live` 跳过析构。物理复用后旧身份仍须幂等，不能释放新对象。 |
+| 重复释放 | 原实现先命中 `retired_`，不再释放物理字节；聚合旧引用原先通过 `__std_heap_live` 跳过析构。物理复用后旧身份仍须幂等，不能释放新对象。 |
 
 ## 墓碑压缩的落点
 
@@ -27,7 +27,7 @@
 ## sweep() 的插入点
 
 - `source/epilogue/builtins.cpp` 登记核心内建的返回类型。
-- `source/epilogue/boxing.cpp` 将 `sweep()` 降低到 `__vm_heap_sweep`，并让显式聚合 delete 使用 `__vm_heap_delete_live` 区分“未清扫旧身份”和“已经失去墓碑保证的身份”。
+- `source/epilogue/boxing.cpp` 将 `sweep()` 降低到 `__std_heap_sweep`，并让显式聚合 delete 使用 `__std_heap_delete_live` 区分“未清扫旧身份”和“已经失去墓碑保证的身份”。
 - `library/stackvm/parts/machine_natives.cpp` 登记两个 native 入口，调用当前堆的 `sweep()` / `retired()`。
 - `library/stackvm/stackvm.hpp` 的 `HeapAllocator` 增加清扫和墓碑查询契约。未实现清扫的自定义堆显式报告不支持，不伪装成清理了零条。
 - 清扫推进每槽边界，保留活跃分配及其未来释放的幂等保证；不释放活跃对象，不重置代次，不追踪引用。已清扫旧身份再次显式 delete 报 MGL1205。
@@ -64,3 +64,12 @@
 闭包建立时将捕获来源的读取和 move 捕获写入同一张控制流图。引用槽与其所指对象分别检查：移动引用变量使其槽失效；重新绑定只恢复该槽，不复活旧的已释放对象。copy/move 捕获的内部引用仍须通过寿命检查，拥有闭包不会延长外部被引用对象的寿命。
 
 这是一套 Magel 自身的来源与移动分析，并未实现 Rust 的完整 NLL 区域推导、可变借用唯一性或 Polonius。引用资料用于规则对照，现有 Magel 允许的别名关系保持其语言契约。
+
+
+## 闭包后续使用的来源检查
+
+捕获发现和后续使用分别建模。`FlowState::captures` 保存函数值及聚合字段持有的外部借用来源；复制、赋值、元组和枚举载荷传递该集合，拥有捕获中的引用字段仍关联外部对象。调用函数值时读取其存储路径，并检查捕获来源是否在某条可达路径上已释放、移动或销毁。实参求值完成后再次检查闭包本身和捕获来源，避免 `callback(move(&source))` 在调用前使环境失效。返回函数值的调用保守继承接收者和实参已知的外部借用来源。重新赋值替换原有捕获集合，闭包最后一次使用后的销毁允许通过。
+
+该处理参考 Rust 的 [borrow_set.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/borrow_set.rs) 对借用的显式登记、[upvar.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_hir_typeck/src/upvar.rs) 对捕获方式的区分，以及 [places_conflict.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/places_conflict.rs) 的存储路径重叠分析。实现沿用 Magel 的字段路径和控制流检查器，不移植 Rust 源码。
+
+检查覆盖当前函数内可见的来源失效与传播；不透明宿主代码、原始内存写入及被擦除的跨函数副作用仍需要对应接口的生命周期契约。此分析不等于消除了所有未定义行为。

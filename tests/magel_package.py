@@ -28,13 +28,13 @@ def main():
         native.write_text('#include <stdint.h>\n#ifdef _WIN32\n#define API __declspec(dllexport)\n#else\n#define API\n#endif\nAPI int32_t identity(int32_t n) { return n; }\n', encoding='utf-8')
         library = project / 'include' / ('native.dll' if os.name == 'nt' else 'native.so')
         run(['gcc', '-shared', *(['-fPIC'] if os.name != 'nt' else []), native, '-o', library])
-        (project / 'include/abi.inc').write_text('abi "./' + library.name + '" { int32 nativeIdentity(int32 n) = "identity"; }\n', encoding='utf-8')
-        original = manifest.read_text(encoding='utf-8').replace('commands = [', 'commands = [\n    \'%include "include/abi.inc"\',')
+        (project / 'include/nativeapi.mgl').write_text('module nativeapi;\nabi "./' + library.name + '" { int32 nativeIdentity(int32 n) = "identity"; }\n', encoding='utf-8')
+        original = manifest.read_text(encoding='utf-8').replace('commands = [', 'commands = [\n    \'import nativeapi;\',')
         manifest.write_text(original, encoding='utf-8')
         source = project / 'src/main.mgl'
         prefix = work / 'program'
         args = [COMPILER, 'run', source, '--out', prefix]
-        source.write_text('/*\nmodule hidden;\nimport absent;\n*/\n' + source.read_text(encoding='utf-8').replace('    std::lang::println("magel-ok");', '    std::lang::assert(nativeIdentity((int32)7) == 7);\n    std::lang::println("magel-ok");'), encoding='utf-8')
+        source.write_text('/*\nmodule hidden;\nimport absent;\n*/\n' + source.read_text(encoding='utf-8').replace('    std::lang::println("magel-ok");', '    std::lang::assert(nativeapi::nativeIdentity((int32)7) == 7);\n    std::lang::println("magel-ok");'), encoding='utf-8')
         assert run(args).stdout == 'magel-ok\n'
         emitted = [*args, '--emit', '--incremental']
         first = run(emitted)
@@ -45,20 +45,20 @@ def main():
         assert '增量缓存命中' in cached.stderr, cached.stderr
         assert quad.stat().st_mtime_ns == stamp
         dependencies = run([*args, '--deps']).stdout.replace('\\', '/')
-        for file in (manifest, source, project / 'include/shared.inc', project / 'modules/tools/math.mgl'):
+        for file in (manifest, source, project / 'include/shared.mgl', project / 'modules/tools/math.mgl'):
             assert file.as_posix() in dependencies, dependencies
         manifest.write_text(original.replace('version = "0.1.0"', 'version = "0.1.1"'), encoding='utf-8')
         rebuilt = run(emitted)
         assert '增量缓存命中' not in rebuilt.stderr, rebuilt.stderr
-        (project / 'include/extra.inc').write_text('int64 extraValue() { return 2; }\n', encoding='utf-8')
+        (project / 'include/extra.mgl').write_text('module extra;\nint64 extraValue() { return 2; }\n', encoding='utf-8')
         assert '增量缓存命中' not in run(emitted).stderr
-        (project / 'include/extra.inc').write_text('int64 extraValue() { return 1; }\n', encoding='utf-8')
+        (project / 'include/extra.mgl').write_text('module extra;\nint64 extraValue() { return 1; }\n', encoding='utf-8')
         manifest.write_text(original, encoding='utf-8')
         assert run(args).stdout == 'magel-ok\n'
-        (project / 'include/extra.inc').write_text('int64 extraValue( { return 1; }\n', encoding='utf-8')
+        (project / 'include/extra.mgl').write_text('module extra;\nint64 extraValue( { return 1; }\n', encoding='utf-8')
         failed = run(args, success=False)
-        assert 'extra.inc' in failed.stderr and '第 1 行' in failed.stderr, failed.stderr
-        (project / 'include/extra.inc').write_text('int64 extraValue() { return 1; }\n', encoding='utf-8')
+        assert 'extra.mgl' in failed.stderr and '第 2 行' in failed.stderr, failed.stderr
+        (project / 'include/extra.mgl').write_text('module extra;\nint64 extraValue() { return 1; }\n', encoding='utf-8')
         manifest.write_text(original.replace('tools::math', 'missing::module'), encoding='utf-8')
         assert 'missing::module' in run(args, success=False).stderr
         for invalid in ('[package]\nname = "a"\nname = "b"\n', '[magel]\ncommands = ["%define BAD 1"]\n', '[magel]\nimport = ["bad::"]\n', '[magel]\ninclude = ["missing.inc"]\n', '[other]\ninclude = []\n', '[package]\nversion = 42\n', '[magel]\ndebug = "yes"\n', '[magel]\nrun = "bogus"\n', '[magel]\ninclude = ["unfinished"\n'):

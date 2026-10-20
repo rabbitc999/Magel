@@ -10,7 +10,7 @@ import std::net;
 
 ## 公共约定与错误边界
 
-TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。连接、监听器及客户端需关闭。
+TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。
 
 ## 参考代码
 
@@ -19,6 +19,8 @@ TCP 返回句柄包装值，先检查 isOpen/lastError。receive/receiveLine 的
 ```powershell
 magel run example/samples/std_net.mgl
 ```
+
+非阻塞与协程配合的完整程序：[std_net_async.mgl](../../example/samples/std_net_async.mgl)。
 
 <details>
 <summary>展开完整参考代码</summary>
@@ -106,64 +108,66 @@ response ok=1 status=200 reason=OK len=5 type=text/plain body=hello
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-339"></a>`struct TcpSocket` | 一条 TCP 连接（`connect` 来的，或 `accept` 到的）。 |
-| TcpSocket | <a id="symbol-340"></a>`int32 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
-| TcpSocket | <a id="symbol-341"></a>`bool opened` | 外部资源是否处于打开状态。 |
-| TcpSocket | <a id="symbol-342"></a>`std::lang::String error` | 最近操作的错误说明。 |
-| 模块 | <a id="symbol-343"></a>`struct TcpListener` | TCP 监听器；端口传 0 时由系统分配，用 `localPort()` 查询。 |
-| TcpListener | <a id="symbol-344"></a>`int32 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
-| TcpListener | <a id="symbol-345"></a>`bool opened` | 外部资源是否处于打开状态。 |
-| TcpListener | <a id="symbol-346"></a>`std::lang::String error` | 最近操作的错误说明。 |
-| 模块 | <a id="symbol-347"></a>`struct Url` | 拆开的 HTTP 地址。 |
-| Url | <a id="symbol-348"></a>`bool ok` | 当前解析或请求是否成功。 |
-| Url | <a id="symbol-349"></a>`std::lang::String host` | URL 中的主机名。 |
-| Url | <a id="symbol-350"></a>`int64 port` | 网络端口。 |
-| Url | <a id="symbol-351"></a>`std::lang::String path` | 请求目标路径。 |
-| Url | <a id="symbol-352"></a>`std::lang::String error` | 最近操作的错误说明。 |
-| 模块 | <a id="symbol-353"></a>`struct HttpResponse` | HTTP 响应：状态码、原因、头部原文、正文。 |
-| HttpResponse | <a id="symbol-354"></a>`bool ok` | 当前解析或请求是否成功。 |
-| HttpResponse | <a id="symbol-355"></a>`int64 status` | HTTP 响应状态码。 |
-| HttpResponse | <a id="symbol-356"></a>`std::lang::String reason` | HTTP 状态原因文本。 |
-| HttpResponse | <a id="symbol-357"></a>`std::lang::String headers` | HTTP 响应头。 |
-| HttpResponse | <a id="symbol-358"></a>`std::lang::String body` | HTTP 响应正文。 |
-| HttpResponse | <a id="symbol-359"></a>`std::lang::String error` | 最近操作的错误说明。 |
-| 模块 | <a id="symbol-360"></a>`struct HttpClient` | 一条连接上的 HTTP 客户端；也提供一次性便捷方法 `fetch`/`submit`。 |
-| HttpClient | <a id="symbol-361"></a>`TcpSocket socket` | HTTP 客户端使用的 TCP 连接。 |
-| HttpClient | <a id="symbol-362"></a>`bool connected` | 客户端是否已建立连接。 |
+| 模块 | <a id="symbol-342"></a>`#NonCopyable opcode TcpSocket` | 独占 TCP 连接；复制被拒绝，显式 move 转移所有权。 |
+| 模块 | <a id="symbol-343"></a>`#NonCopyable opcode TcpListener` | 独占 TCP 监听器；端口为零时由系统分配。 |
+| 模块 | <a id="symbol-344"></a>`struct Url` | 拆开的 HTTP 地址。 |
+| Url | <a id="symbol-345"></a>`bool ok` | 当前解析或请求是否成功。 |
+| Url | <a id="symbol-346"></a>`std::lang::String host` | URL 中的主机名。 |
+| Url | <a id="symbol-347"></a>`int64 port` | 网络端口。 |
+| Url | <a id="symbol-348"></a>`std::lang::String path` | 请求目标路径。 |
+| Url | <a id="symbol-349"></a>`std::lang::String error` | 最近操作的错误说明。 |
+| 模块 | <a id="symbol-350"></a>`struct HttpResponse` | HTTP 响应：状态码、原因、头部原文、正文。 |
+| HttpResponse | <a id="symbol-351"></a>`bool ok` | 当前解析或请求是否成功。 |
+| HttpResponse | <a id="symbol-352"></a>`int64 status` | HTTP 响应状态码。 |
+| HttpResponse | <a id="symbol-353"></a>`std::lang::String reason` | HTTP 状态原因文本。 |
+| HttpResponse | <a id="symbol-354"></a>`std::lang::String headers` | HTTP 响应头。 |
+| HttpResponse | <a id="symbol-355"></a>`std::lang::String body` | HTTP 响应正文。 |
+| HttpResponse | <a id="symbol-356"></a>`std::lang::String error` | 最近操作的错误说明。 |
+| 模块 | <a id="symbol-357"></a>`struct HttpClient` | 一条连接上的 HTTP 客户端；也提供一次性便捷方法 `fetch`/`submit`。 |
+| HttpClient | <a id="symbol-358"></a>`TcpSocket socket` | HTTP 客户端使用的 TCP 连接。 |
+| HttpClient | <a id="symbol-359"></a>`bool connected` | 客户端是否已建立连接。 |
 
 ## 函数索引
 
 | 名称 | 声明 |
 | --- | --- |
-| [TcpSocket::connect](#api-0) | `static TcpSocket connect(std::lang::String host, int32 port, int32 timeoutMs)` |
-| [TcpSocket::connect](#api-1) | `static TcpSocket connect(std::lang::String host, int32 port)` |
-| [TcpSocket::isOpen](#api-2) | `bool isOpen()` |
-| [TcpSocket::lastError](#api-3) | `std::lang::String lastError()` |
-| [TcpSocket::status](#api-4) | `int64 status()` |
-| [TcpSocket::close](#api-5) | `void close()` |
-| [TcpSocket::send](#api-6) | `int64 send(std::lang::String data)` |
-| [TcpSocket::receive](#api-7) | `std::lang::String receive(int32 maxBytes)` |
-| [TcpSocket::receiveLine](#api-8) | `std::lang::String receiveLine(int32 timeoutMs)` |
-| [TcpListener::listen](#api-9) | `static TcpListener listen(std::lang::String host, int32 port, int32 backlog)` |
-| [TcpListener::listen](#api-10) | `static TcpListener listen(std::lang::String host, int32 port)` |
-| [TcpListener::isOpen](#api-11) | `bool isOpen()` |
-| [TcpListener::lastError](#api-12) | `std::lang::String lastError()` |
-| [TcpListener::localPort](#api-13) | `int64 localPort()` |
-| [TcpListener::accept](#api-14) | `TcpSocket accept(int32 timeoutMs)` |
-| [TcpListener::accept](#api-15) | `TcpSocket accept()` |
-| [TcpListener::close](#api-16) | `void close()` |
-| [HttpResponse::isSuccess](#api-17) | `bool isSuccess()` |
-| [HttpResponse::header](#api-18) | `std::lang::String header(std::lang::String name)` |
-| [httpScheme](#api-19) | `std::lang::String httpScheme()` |
-| [parseUrl](#api-20) | `Url parseUrl(std::lang::String url)` |
-| [buildRequest](#api-21) | `std::lang::String buildRequest(std::lang::String method, std::lang::String url, std::lang::String body, std::lang::String contentType)` |
-| [parseResponse](#api-22) | `HttpResponse parseResponse(std::lang::String raw)` |
-| [HttpClient::connect](#api-23) | `bool connect(std::lang::String host, int32 port, int32 timeoutMs)` |
-| [HttpClient::readAll](#api-24) | `std::lang::String readAll()` |
-| [HttpClient::exchange](#api-25) | `HttpResponse exchange(std::lang::String method, std::lang::String url, std::lang::String body, std::lang::String contentType)` |
-| [HttpClient::close](#api-26) | `void close()` |
-| [HttpClient::fetch](#api-27) | `static HttpResponse fetch(std::lang::String url)` |
-| [HttpClient::submit](#api-28) | `static HttpResponse submit(std::lang::String url, std::lang::String body, std::lang::String contentType)` |
+| [TcpSocket::connect](#api-0) | `static TcpSocket connect(String host, int32 port, int32 timeoutMs)` |
+| [TcpSocket::connect](#api-1) | `static TcpSocket connect(String host, int32 port)` |
+| [TcpSocket::connectAsync](#api-2) | `static TcpSocket connectAsync(String host, int32 port, int32 timeoutMs)` |
+| [TcpSocket::connectAsync](#api-3) | `static TcpSocket connectAsync(String host, int32 port)` |
+| [TcpSocket::pollConnect](#api-4) | `int64 pollConnect()` |
+| [TcpSocket::sendAsync](#api-5) | `int64 sendAsync(String data, int64 offset)` |
+| [TcpSocket::sendAsync](#api-6) | `int64 sendAsync(String data)` |
+| [TcpSocket::receiveAsync](#api-7) | `String receiveAsync(int32 maxBytes)` |
+| [TcpSocket::receiveLineAsync](#api-8) | `String receiveLineAsync()` |
+| [TcpSocket::isOpen](#api-9) | `bool isOpen()` |
+| [TcpSocket::lastError](#api-10) | `String lastError()` |
+| [TcpSocket::status](#api-11) | `int64 status()` |
+| [TcpSocket::close](#api-12) | `void close()` |
+| [TcpSocket::send](#api-13) | `int64 send(String data)` |
+| [TcpSocket::receive](#api-14) | `String receive(int32 maxBytes)` |
+| [TcpSocket::receiveLine](#api-15) | `String receiveLine(int32 timeoutMs)` |
+| [TcpListener::listen](#api-16) | `static TcpListener listen(String host, int32 port, int32 backlog)` |
+| [TcpListener::listen](#api-17) | `static TcpListener listen(String host, int32 port)` |
+| [TcpListener::isOpen](#api-18) | `bool isOpen()` |
+| [TcpListener::lastError](#api-19) | `String lastError()` |
+| [TcpListener::localPort](#api-20) | `int64 localPort()` |
+| [TcpListener::accept](#api-21) | `TcpSocket accept(int32 timeoutMs)` |
+| [TcpListener::accept](#api-22) | `TcpSocket accept()` |
+| [TcpListener::acceptAsync](#api-23) | `TcpSocket acceptAsync()` |
+| [TcpListener::close](#api-24) | `void close()` |
+| [HttpResponse::isSuccess](#api-25) | `bool isSuccess()` |
+| [HttpResponse::header](#api-26) | `std::lang::String header(std::lang::String name)` |
+| [httpScheme](#api-27) | `std::lang::String httpScheme()` |
+| [parseUrl](#api-28) | `Url parseUrl(std::lang::String url)` |
+| [buildRequest](#api-29) | `std::lang::String buildRequest(std::lang::String method, std::lang::String url, std::lang::String body, std::lang::String contentType)` |
+| [parseResponse](#api-30) | `HttpResponse parseResponse(std::lang::String raw)` |
+| [HttpClient::connect](#api-31) | `bool connect(std::lang::String host, int32 port, int32 timeoutMs)` |
+| [HttpClient::readAll](#api-32) | `std::lang::String readAll()` |
+| [HttpClient::exchange](#api-33) | `HttpResponse exchange(std::lang::String method, std::lang::String url, std::lang::String body, std::lang::String contentType)` |
+| [HttpClient::close](#api-34) | `void close()` |
+| [HttpClient::fetch](#api-35) | `static HttpResponse fetch(std::lang::String url)` |
+| [HttpClient::submit](#api-36) | `static HttpResponse submit(std::lang::String url, std::lang::String body, std::lang::String contentType)` |
 
 <a id="api-0"></a>
 
@@ -172,20 +176,18 @@ response ok=1 status=200 reason=OK len=5 type=text/plain body=hello
 **声明**
 
 ```magel
-static TcpSocket connect(std::lang::String host, int32 port, int32 timeoutMs);
+static TcpSocket connect(String host, int32 port, int32 timeoutMs);
 ```
 
 **行为**
 
 连接远端 TCP/HTTP 服务。
 
-连接远端；`timeoutMs > 0` 时带连接超时。
-
 **参数**
 
 | 参数 | 类型／声明 | 含义 | 默认值 |
 | --- | --- | --- | --- |
-| `host` | `std::lang::String host` | 主机名或 IP 地址 | 无 |
+| `host` | `String host` | 主机名或 IP 地址 | 无 |
 | `port` | `int32 port` | 端口号 | 无 |
 | `timeoutMs` | `int32 timeoutMs` | 超时时间，毫秒 | 无 |
 
@@ -203,7 +205,7 @@ static TcpSocket connect(std::lang::String host, int32 port, int32 timeoutMs);
 std::net::TcpSocket::connect(host, port, timeoutMs);
 ```
 
-**源码**：[source/std/net.mgl:58](../../source/std/net.mgl#L58)。
+**源码**：[source/std/net.mgl:67](../../source/std/net.mgl#L67)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
@@ -214,20 +216,18 @@ std::net::TcpSocket::connect(host, port, timeoutMs);
 **声明**
 
 ```magel
-static TcpSocket connect(std::lang::String host, int32 port);
+static TcpSocket connect(String host, int32 port);
 ```
 
 **行为**
 
 连接远端 TCP/HTTP 服务。
 
-默认 5 秒连接超时。
-
 **参数**
 
 | 参数 | 类型／声明 | 含义 | 默认值 |
 | --- | --- | --- | --- |
-| `host` | `std::lang::String host` | 主机名或 IP 地址 | 无 |
+| `host` | `String host` | 主机名或 IP 地址 | 无 |
 | `port` | `int32 port` | 端口号 | 无 |
 
 **返回值**
@@ -244,13 +244,279 @@ static TcpSocket connect(std::lang::String host, int32 port);
 std::net::TcpSocket::connect(host, port);
 ```
 
-**源码**：[source/std/net.mgl:68](../../source/std/net.mgl#L68)。
+**源码**：[source/std/net.mgl:70](../../source/std/net.mgl#L70)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
 <a id="api-2"></a>
 
-### TcpSocket::isOpen（3）
+### TcpSocket::connectAsync（3）
+
+**声明**
+
+```magel
+static TcpSocket connectAsync(String host, int32 port, int32 timeoutMs);
+```
+
+**行为**
+
+发起数值 IPv4 的非阻塞连接；通过 pollConnect 推进，NET_PENDING 表示进行中。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `host` | `String host` | 主机名或 IP 地址 | 无 |
+| `port` | `int32 port` | 端口号 | 无 |
+| `timeoutMs` | `int32 timeoutMs` | 超时时间，毫秒 | 无 |
+
+**返回值**
+
+`TcpSocket`。发起数值 IPv4 的非阻塞连接；通过 pollConnect 推进，NET_PENDING 表示进行中。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+std::net::TcpSocket::connectAsync(host, port, timeoutMs);
+```
+
+**源码**：[source/std/net.mgl:74](../../source/std/net.mgl#L74)。
+
+**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+
+<a id="api-3"></a>
+
+### TcpSocket::connectAsync（4）
+
+**声明**
+
+```magel
+static TcpSocket connectAsync(String host, int32 port);
+```
+
+**行为**
+
+发起默认五秒超时的非阻塞数值 IPv4 连接。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `host` | `String host` | 主机名或 IP 地址 | 无 |
+| `port` | `int32 port` | 端口号 | 无 |
+
+**返回值**
+
+`TcpSocket`。发起默认五秒超时的非阻塞数值 IPv4 连接。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+std::net::TcpSocket::connectAsync(host, port);
+```
+
+**源码**：[source/std/net.mgl:78](../../source/std/net.mgl#L78)。
+
+**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+
+<a id="api-4"></a>
+
+### TcpSocket::pollConnect（5）
+
+**声明**
+
+```magel
+int64 pollConnect();
+```
+
+**行为**
+
+立即检查连接结果，返回 NET_PENDING、NET_OK、NET_TIMEOUT 或 NET_ERROR。
+
+**参数**
+
+无显式参数。实例方法使用当前接收者。
+
+**返回值**
+
+`int64`。立即检查连接结果，返回 NET_PENDING、NET_OK、NET_TIMEOUT 或 NET_ERROR。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.pollConnect();
+```
+
+**源码**：[source/std/net.mgl:82](../../source/std/net.mgl#L82)。
+
+**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+
+<a id="api-5"></a>
+
+### TcpSocket::sendAsync（6）
+
+**声明**
+
+```magel
+int64 sendAsync(String data, int64 offset);
+```
+
+**行为**
+
+非阻塞发送，从 offset 开始；返回本次发送字节数，未就绪返回零并设置 NET_PENDING。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `data` | `String data` | 连续存储的首元素引用，调用者保证范围有效 | 无 |
+| `offset` | `int64 offset` | 字节偏移或 seek 相对位移 | 无 |
+
+**返回值**
+
+`int64`。非阻塞发送，从 offset 开始；返回本次发送字节数，未就绪返回零并设置 NET_PENDING。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.sendAsync(data, offset);
+```
+
+**源码**：[source/std/net.mgl:84](../../source/std/net.mgl#L84)。
+
+**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+
+<a id="api-6"></a>
+
+### TcpSocket::sendAsync（7）
+
+**声明**
+
+```magel
+int64 sendAsync(String data);
+```
+
+**行为**
+
+从零偏移开始执行一次非阻塞发送；长消息可能只发送一部分。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `data` | `String data` | 连续存储的首元素引用，调用者保证范围有效 | 无 |
+
+**返回值**
+
+`int64`。从零偏移开始执行一次非阻塞发送；长消息可能只发送一部分。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.sendAsync(data);
+```
+
+**源码**：[source/std/net.mgl:86](../../source/std/net.mgl#L86)。
+
+**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+
+<a id="api-7"></a>
+
+### TcpSocket::receiveAsync（8）
+
+**声明**
+
+```magel
+String receiveAsync(int32 maxBytes);
+```
+
+**行为**
+
+非阻塞读取至多 maxBytes 字节；空串结合 status 区分未就绪、关闭及错误。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `maxBytes` | `int32 maxBytes` | 最多接收字节数 | 无 |
+
+**返回值**
+
+`String`。非阻塞读取至多 maxBytes 字节；空串结合 status 区分未就绪、关闭及错误。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.receiveAsync(maxBytes);
+```
+
+**源码**：[source/std/net.mgl:88](../../source/std/net.mgl#L88)。
+
+**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+
+<a id="api-8"></a>
+
+### TcpSocket::receiveLineAsync（9）
+
+**声明**
+
+```magel
+String receiveLineAsync();
+```
+
+**行为**
+
+非阻塞读取一行；未完成的内容保留，NET_PENDING 不丢失行缓冲。
+
+**参数**
+
+无显式参数。实例方法使用当前接收者。
+
+**返回值**
+
+`String`。非阻塞读取一行；未完成的内容保留，NET_PENDING 不丢失行缓冲。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.receiveLineAsync();
+```
+
+**源码**：[source/std/net.mgl:90](../../source/std/net.mgl#L90)。
+
+**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+
+<a id="api-9"></a>
+
+### TcpSocket::isOpen（10）
 
 **声明**
 
@@ -280,25 +546,23 @@ bool isOpen();
 obj.isOpen();
 ```
 
-**源码**：[source/std/net.mgl:72](../../source/std/net.mgl#L72)。
+**源码**：[source/std/net.mgl:91](../../source/std/net.mgl#L91)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-3"></a>
+<a id="api-10"></a>
 
-### TcpSocket::lastError（4）
+### TcpSocket::lastError（11）
 
 **声明**
 
 ```magel
-std::lang::String lastError();
+String lastError();
 ```
 
 **行为**
 
 返回连接/网络操作最近的错误文本。
-
-最近一次出错说明。 直接返回字段即可：String 是值语义，`return self.error;` 交出的是独立副本， 接收者释放后调用方手上的串仍然有效。
 
 **参数**
 
@@ -306,7 +570,7 @@ std::lang::String lastError();
 
 **返回值**
 
-`std::lang::String`。返回连接/网络操作最近的错误文本。
+`String`。返回连接/网络操作最近的错误文本。
 
 **错误与边界**
 
@@ -318,13 +582,13 @@ std::lang::String lastError();
 obj.lastError();
 ```
 
-**源码**：[source/std/net.mgl:80](../../source/std/net.mgl#L80)。
+**源码**：[source/std/net.mgl:92](../../source/std/net.mgl#L92)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-4"></a>
+<a id="api-11"></a>
 
-### TcpSocket::status（5）
+### TcpSocket::status（12）
 
 **声明**
 
@@ -335,8 +599,6 @@ int64 status();
 **行为**
 
 返回最近一次网络读取状态码。
-
-最近一次读的结果：NET_OK / NET_CLOSED / NET_TIMEOUT / NET_ERROR。
 
 **参数**
 
@@ -356,13 +618,13 @@ int64 status();
 obj.status();
 ```
 
-**源码**：[source/std/net.mgl:83](../../source/std/net.mgl#L83)。
+**源码**：[source/std/net.mgl:93](../../source/std/net.mgl#L93)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-5"></a>
+<a id="api-12"></a>
 
-### TcpSocket::close（6）
+### TcpSocket::close（13）
 
 **声明**
 
@@ -373,8 +635,6 @@ void close();
 **行为**
 
 关闭底层资源；文档节点会使同文档所有视图失效。
-
-关闭连接；重复调用安全。
 
 **参数**
 
@@ -394,31 +654,29 @@ void close();
 obj.close();
 ```
 
-**源码**：[source/std/net.mgl:86](../../source/std/net.mgl#L86)。
+**源码**：[source/std/net.mgl:94](../../source/std/net.mgl#L94)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-6"></a>
+<a id="api-13"></a>
 
-### TcpSocket::send（7）
+### TcpSocket::send（14）
 
 **声明**
 
 ```magel
-int64 send(std::lang::String data);
+int64 send(String data);
 ```
 
 **行为**
 
 发送 TCP 文本并返回发送结果。
 
-发送全部文本；返回发送的字节数，失败 -1。
-
 **参数**
 
 | 参数 | 类型／声明 | 含义 | 默认值 |
 | --- | --- | --- | --- |
-| `data` | `std::lang::String data` | 连续存储的首元素引用，调用者保证范围有效 | 无 |
+| `data` | `String data` | 连续存储的首元素引用，调用者保证范围有效 | 无 |
 
 **返回值**
 
@@ -438,21 +696,19 @@ obj.send(data);
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-7"></a>
+<a id="api-14"></a>
 
-### TcpSocket::receive（8）
+### TcpSocket::receive（15）
 
 **声明**
 
 ```magel
-std::lang::String receive(int32 maxBytes);
+String receive(int32 maxBytes);
 ```
 
 **行为**
 
 读取至多 maxBytes 字节；空串结合 status 判断原因。
-
-收一段文本（最多 maxBytes 字节）。
 
 **参数**
 
@@ -462,7 +718,7 @@ std::lang::String receive(int32 maxBytes);
 
 **返回值**
 
-`std::lang::String`。读取至多 maxBytes 字节；空串结合 status 判断原因。
+`String`。读取至多 maxBytes 字节；空串结合 status 判断原因。
 
 **错误与边界**
 
@@ -474,25 +730,23 @@ std::lang::String receive(int32 maxBytes);
 obj.receive(maxBytes);
 ```
 
-**源码**：[source/std/net.mgl:109](../../source/std/net.mgl#L109)。
+**源码**：[source/std/net.mgl:96](../../source/std/net.mgl#L96)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-8"></a>
+<a id="api-15"></a>
 
-### TcpSocket::receiveLine（9）
+### TcpSocket::receiveLine（16）
 
 **声明**
 
 ```magel
-std::lang::String receiveLine(int32 timeoutMs);
+String receiveLine(int32 timeoutMs);
 ```
 
 **行为**
 
 读取一行网络文本；空串时检查 status。
-
-收一行（不含行尾换行）。
 
 **参数**
 
@@ -502,7 +756,7 @@ std::lang::String receiveLine(int32 timeoutMs);
 
 **返回值**
 
-`std::lang::String`。读取一行网络文本；空串时检查 status。
+`String`。读取一行网络文本；空串时检查 status。
 
 **错误与边界**
 
@@ -514,18 +768,18 @@ std::lang::String receiveLine(int32 timeoutMs);
 obj.receiveLine(timeoutMs);
 ```
 
-**源码**：[source/std/net.mgl:116](../../source/std/net.mgl#L116)。
+**源码**：[source/std/net.mgl:97](../../source/std/net.mgl#L97)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-9"></a>
+<a id="api-16"></a>
 
-### TcpListener::listen（10）
+### TcpListener::listen（17）
 
 **声明**
 
 ```magel
-static TcpListener listen(std::lang::String host, int32 port, int32 backlog);
+static TcpListener listen(String host, int32 port, int32 backlog);
 ```
 
 **行为**
@@ -536,7 +790,7 @@ static TcpListener listen(std::lang::String host, int32 port, int32 backlog);
 
 | 参数 | 类型／声明 | 含义 | 默认值 |
 | --- | --- | --- | --- |
-| `host` | `std::lang::String host` | 主机名或 IP 地址 | 无 |
+| `host` | `String host` | 主机名或 IP 地址 | 无 |
 | `port` | `int32 port` | 端口号 | 无 |
 | `backlog` | `int32 backlog` | 监听待接受队列长度 | 无 |
 
@@ -554,31 +808,29 @@ static TcpListener listen(std::lang::String host, int32 port, int32 backlog);
 std::net::TcpListener::listen(host, port, backlog);
 ```
 
-**源码**：[source/std/net.mgl:129](../../source/std/net.mgl#L129)。
+**源码**：[source/std/net.mgl:105](../../source/std/net.mgl#L105)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-10"></a>
+<a id="api-17"></a>
 
-### TcpListener::listen（11）
+### TcpListener::listen（18）
 
 **声明**
 
 ```magel
-static TcpListener listen(std::lang::String host, int32 port);
+static TcpListener listen(String host, int32 port);
 ```
 
 **行为**
 
 绑定本机地址并开始监听，返回监听器。
 
-默认积压队列 8。
-
 **参数**
 
 | 参数 | 类型／声明 | 含义 | 默认值 |
 | --- | --- | --- | --- |
-| `host` | `std::lang::String host` | 主机名或 IP 地址 | 无 |
+| `host` | `String host` | 主机名或 IP 地址 | 无 |
 | `port` | `int32 port` | 端口号 | 无 |
 
 **返回值**
@@ -595,13 +847,13 @@ static TcpListener listen(std::lang::String host, int32 port);
 std::net::TcpListener::listen(host, port);
 ```
 
-**源码**：[source/std/net.mgl:139](../../source/std/net.mgl#L139)。
+**源码**：[source/std/net.mgl:108](../../source/std/net.mgl#L108)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-11"></a>
+<a id="api-18"></a>
 
-### TcpListener::isOpen（12）
+### TcpListener::isOpen（19）
 
 **声明**
 
@@ -631,25 +883,23 @@ bool isOpen();
 obj.isOpen();
 ```
 
-**源码**：[source/std/net.mgl:143](../../source/std/net.mgl#L143)。
+**源码**：[source/std/net.mgl:111](../../source/std/net.mgl#L111)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-12"></a>
+<a id="api-19"></a>
 
-### TcpListener::lastError（13）
+### TcpListener::lastError（20）
 
 **声明**
 
 ```magel
-std::lang::String lastError();
+String lastError();
 ```
 
 **行为**
 
 返回连接/网络操作最近的错误文本。
-
-最近一次出错说明；String 为值语义，返回的是独立副本。
 
 **参数**
 
@@ -657,7 +907,7 @@ std::lang::String lastError();
 
 **返回值**
 
-`std::lang::String`。返回连接/网络操作最近的错误文本。
+`String`。返回连接/网络操作最近的错误文本。
 
 **错误与边界**
 
@@ -669,13 +919,13 @@ std::lang::String lastError();
 obj.lastError();
 ```
 
-**源码**：[source/std/net.mgl:146](../../source/std/net.mgl#L146)。
+**源码**：[source/std/net.mgl:112](../../source/std/net.mgl#L112)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-13"></a>
+<a id="api-20"></a>
 
-### TcpListener::localPort（14）
+### TcpListener::localPort（21）
 
 **声明**
 
@@ -686,8 +936,6 @@ int64 localPort();
 **行为**
 
 返回实际绑定的本地端口。
-
-本端端口（监听器常用端口 0 让系统分配，再从这里读回来）。
 
 **参数**
 
@@ -707,13 +955,13 @@ int64 localPort();
 obj.localPort();
 ```
 
-**源码**：[source/std/net.mgl:149](../../source/std/net.mgl#L149)。
+**源码**：[source/std/net.mgl:113](../../source/std/net.mgl#L113)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-14"></a>
+<a id="api-21"></a>
 
-### TcpListener::accept（15）
+### TcpListener::accept（22）
 
 **声明**
 
@@ -724,8 +972,6 @@ TcpSocket accept(int32 timeoutMs);
 **行为**
 
 接受一条 TCP 连接，可指定等待超时。
-
-等一个连接；超时返回未打开的套接字。
 
 **参数**
 
@@ -747,13 +993,13 @@ TcpSocket accept(int32 timeoutMs);
 obj.accept(timeoutMs);
 ```
 
-**源码**：[source/std/net.mgl:152](../../source/std/net.mgl#L152)。
+**源码**：[source/std/net.mgl:114](../../source/std/net.mgl#L114)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-15"></a>
+<a id="api-22"></a>
 
-### TcpListener::accept（16）
+### TcpListener::accept（23）
 
 **声明**
 
@@ -764,8 +1010,6 @@ TcpSocket accept();
 **行为**
 
 接受一条 TCP 连接，可指定等待超时。
-
-默认 5 秒等待。
 
 **参数**
 
@@ -785,13 +1029,49 @@ TcpSocket accept();
 obj.accept();
 ```
 
-**源码**：[source/std/net.mgl:162](../../source/std/net.mgl#L162)。
+**源码**：[source/std/net.mgl:115](../../source/std/net.mgl#L115)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-16"></a>
+<a id="api-23"></a>
 
-### TcpListener::close（17）
+### TcpListener::acceptAsync（24）
+
+**声明**
+
+```magel
+TcpSocket acceptAsync();
+```
+
+**行为**
+
+非阻塞接受连接；返回未打开且状态为 NET_PENDING 的值表示暂无连接。
+
+**参数**
+
+无显式参数。实例方法使用当前接收者。
+
+**返回值**
+
+`TcpSocket`。非阻塞接受连接；返回未打开且状态为 NET_PENDING 的值表示暂无连接。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.acceptAsync();
+```
+
+**源码**：[source/std/net.mgl:117](../../source/std/net.mgl#L117)。
+
+**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+
+<a id="api-24"></a>
+
+### TcpListener::close（25）
 
 **声明**
 
@@ -821,13 +1101,13 @@ void close();
 obj.close();
 ```
 
-**源码**：[source/std/net.mgl:164](../../source/std/net.mgl#L164)。
+**源码**：[source/std/net.mgl:118](../../source/std/net.mgl#L118)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-17"></a>
+<a id="api-25"></a>
 
-### HttpResponse::isSuccess（18）
+### HttpResponse::isSuccess（26）
 
 **声明**
 
@@ -857,13 +1137,13 @@ bool isSuccess();
 obj.isSuccess();
 ```
 
-**源码**：[source/std/net.mgl:191](../../source/std/net.mgl#L191)。
+**源码**：[source/std/net.mgl:139](../../source/std/net.mgl#L139)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-18"></a>
+<a id="api-26"></a>
 
-### HttpResponse::header（19）
+### HttpResponse::header（27）
 
 **声明**
 
@@ -897,13 +1177,13 @@ std::lang::String header(std::lang::String name);
 obj.header(name);
 ```
 
-**源码**：[source/std/net.mgl:194](../../source/std/net.mgl#L194)。
+**源码**：[source/std/net.mgl:142](../../source/std/net.mgl#L142)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-19"></a>
+<a id="api-27"></a>
 
-### httpScheme（20）
+### httpScheme（28）
 
 **声明**
 
@@ -935,13 +1215,13 @@ std::lang::String httpScheme();
 std::net::httpScheme();
 ```
 
-**源码**：[source/std/net.mgl:221](../../source/std/net.mgl#L221)。
+**源码**：[source/std/net.mgl:169](../../source/std/net.mgl#L169)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-20"></a>
+<a id="api-28"></a>
 
-### parseUrl（21）
+### parseUrl（29）
 
 **声明**
 
@@ -973,13 +1253,13 @@ Url parseUrl(std::lang::String url);
 std::net::parseUrl(url);
 ```
 
-**源码**：[source/std/net.mgl:223](../../source/std/net.mgl#L223)。
+**源码**：[source/std/net.mgl:171](../../source/std/net.mgl#L171)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-21"></a>
+<a id="api-29"></a>
 
-### buildRequest（22）
+### buildRequest（30）
 
 **声明**
 
@@ -1016,13 +1296,13 @@ std::lang::String buildRequest(std::lang::String method, std::lang::String url, 
 std::net::buildRequest(method, url, body, contentType);
 ```
 
-**源码**：[source/std/net.mgl:263](../../source/std/net.mgl#L263)。
+**源码**：[source/std/net.mgl:211](../../source/std/net.mgl#L211)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-22"></a>
+<a id="api-30"></a>
 
-### parseResponse（23）
+### parseResponse（31）
 
 **声明**
 
@@ -1056,13 +1336,13 @@ HttpResponse parseResponse(std::lang::String raw);
 std::net::parseResponse(raw);
 ```
 
-**源码**：[source/std/net.mgl:289](../../source/std/net.mgl#L289)。
+**源码**：[source/std/net.mgl:237](../../source/std/net.mgl#L237)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-23"></a>
+<a id="api-31"></a>
 
-### HttpClient::connect（24）
+### HttpClient::connect（32）
 
 **声明**
 
@@ -1096,13 +1376,13 @@ bool connect(std::lang::String host, int32 port, int32 timeoutMs);
 obj.connect(host, port, timeoutMs);
 ```
 
-**源码**：[source/std/net.mgl:337](../../source/std/net.mgl#L337)。
+**源码**：[source/std/net.mgl:285](../../source/std/net.mgl#L285)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-24"></a>
+<a id="api-32"></a>
 
-### HttpClient::readAll（25）
+### HttpClient::readAll（33）
 
 **声明**
 
@@ -1134,13 +1414,13 @@ std::lang::String readAll();
 obj.readAll();
 ```
 
-**源码**：[source/std/net.mgl:344](../../source/std/net.mgl#L344)。
+**源码**：[source/std/net.mgl:292](../../source/std/net.mgl#L292)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-25"></a>
+<a id="api-33"></a>
 
-### HttpClient::exchange（26）
+### HttpClient::exchange（34）
 
 **声明**
 
@@ -1177,13 +1457,13 @@ HttpResponse exchange(std::lang::String method, std::lang::String url, std::lang
 obj.exchange(method, url, body, contentType);
 ```
 
-**源码**：[source/std/net.mgl:356](../../source/std/net.mgl#L356)。
+**源码**：[source/std/net.mgl:304](../../source/std/net.mgl#L304)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-26"></a>
+<a id="api-34"></a>
 
-### HttpClient::close（27）
+### HttpClient::close（35）
 
 **声明**
 
@@ -1213,13 +1493,13 @@ void close();
 obj.close();
 ```
 
-**源码**：[source/std/net.mgl:378](../../source/std/net.mgl#L378)。
+**源码**：[source/std/net.mgl:326](../../source/std/net.mgl#L326)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-27"></a>
+<a id="api-35"></a>
 
-### HttpClient::fetch（28）
+### HttpClient::fetch（36）
 
 **声明**
 
@@ -1253,13 +1533,13 @@ static HttpResponse fetch(std::lang::String url);
 std::net::HttpClient::fetch(url);
 ```
 
-**源码**：[source/std/net.mgl:384](../../source/std/net.mgl#L384)。
+**源码**：[source/std/net.mgl:332](../../source/std/net.mgl#L332)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
 
-<a id="api-28"></a>
+<a id="api-36"></a>
 
-### HttpClient::submit（29）
+### HttpClient::submit（37）
 
 **声明**
 
@@ -1295,6 +1575,6 @@ static HttpResponse submit(std::lang::String url, std::lang::String body, std::l
 std::net::HttpClient::submit(url, body, contentType);
 ```
 
-**源码**：[source/std/net.mgl:409](../../source/std/net.mgl#L409)。
+**源码**：[source/std/net.mgl:357](../../source/std/net.mgl#L357)。
 
 **完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。

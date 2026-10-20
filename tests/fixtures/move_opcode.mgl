@@ -1,7 +1,7 @@
 #NonCopyable
 opcode Unique {
-    new = __vm_bint_from_int;
-    drop = __vm_bint_drop;
+    new = __std_bint_from_int;
+    drop = __std_bint_drop;
 };
 
 Unique relay(Unique value) {

@@ -13,7 +13,7 @@ tested version, configuration and date; they do not automatically describe curre
 
 Support includes [return control expressions, statement-level named closures and field derivation](28-declaration-sugars.md). Hidden result bindings preserve internal moves, external copies and borrow cleanup. Named functions reuse fn captures; `#derive` generates only Equal/Hash/Clone, validates field protocols and never generates Drop.
 
-Macros expand as text before the Lexer, with ordered and repeated groups of four bracket kinds, independent `..rest` captures, and multiline brace arguments. Captured fragments and code following a call retain their original line and column positions. See [ordered bracket groups](24-literals-operators-macros.md#ordered-bracket-groups-in-text-macros).
+Sources and macros are shared through `module` / `import`; preprocessing does not support textual file inclusion. Macros expand as text before the Lexer, with ordered and repeated groups of four bracket kinds, independent `..rest` captures, and multiline brace arguments. Captured fragments and code following a call retain their original line and column positions. See [ordered bracket groups](24-literals-operators-macros.md#ordered-bracket-groups-in-text-macros).
 
 Entry points support `int64 main` and `void main`, with no parameters or `List<String>` arguments. A void entry exits with code 0 on normal completion; panic still fails. Trailing semicolons on `struct`, `enum`, and `interface` declarations are optional.
 
@@ -26,7 +26,7 @@ Entry points support `int64 main` and `void main`, with no parameters or `List<S
 | Errors and cleanup | Option, Result, custom error propagation, `?`, panic, defer, scope(exit), Drop and Closeable |
 | Ownership | Ordinary owned-value assignment and value arguments copy; move transfers resources. The old binding cannot be read, written or rebound; a complete move permits a new declaration using that name |
 | References | Non-null read-only/mutable references; `Option<T const&>` and `Option<T mut&>` represent an optional reference, with None constructing no reference |
-| Checking | Independent provenance and control-flow checking tracks locals, fields, aliases, moves and releases; alias sharing is allowed, without a global exclusive-borrow rule |
+| Checking | Independent provenance and control-flow checking tracks locals, fields, aliases, moves, releases and closure captures; callable uses validate captured sources, preserving dependencies through copies, destructuring and aggregates; alias sharing is allowed, without a global exclusive-borrow rule |
 
 Owned values have deterministic cleanup without GC. References, host resources and aggregates containing
 references retain their individual contracts. Manually allocated storage must be released as specified.
@@ -112,3 +112,8 @@ storage. Map/Set use HashMap/HashSet storage for intrinsic scalar keys and custo
 Hash<T>; custom keys with Equal<bool,T> but no Hash<T> use ArrayMap/ArraySet with linear lookup.
 Hash collisions are resolved with Equal. Map and Set promise neither sorted nor insertion order,
 including keyAt, valAt, at, iteration and default text. String isolation remains unfinished.
+
+
+Image is a deeply copied opcode whose dimensions and contiguous RGBA pixels belong to glue. width()/height() query dimensions; pixels() returns an independent list snapshot. TcpSocket and TcpListener are noncopyable opcodes that close automatically at scope exit; explicit move transfers ownership, and each connection retains its own read status and error. Generic Vector<T> and Matrix<T> retain their aggregate API; ScalarArray<T> stores built-in integer and floating-point values in a ScalarStorage opcode with independent copies. Standard glue implements string concatenation, slicing, comparison, search and numeric-to-text conversion. Internal entry points use the __std_ prefix; the VM retains execution control, memory safety and closures.
+
+Network async methods use nonblocking polling and NET_PENDING, allowing callers to yield between polls. connectAsync currently accepts numeric IPv4 addresses only; synchronous connect retains hostname resolution. sendAsync returns a partial byte count and accepts an offset; receiveLineAsync preserves incomplete lines with a 1 MiB buffer limit.

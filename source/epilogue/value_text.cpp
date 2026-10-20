@@ -173,7 +173,7 @@ simple_ast::NodePtr LowerDefaultValueText(int valueId)
         names.push_back("callback" + Memory::toString(names.size()));
         values.push_back(callback);
     }
-    return simple_ast::Node::call("__vm_value_to_string", names, values);
+    return simple_ast::Node::call("__std_value_to_string", names, values);
 }
 
 /**

@@ -287,10 +287,10 @@ bool LowerGlobals(simple_ast::Program &program)
  * 所以分派只要读一下类型号就能挑到具体实现 —— 生成出来的函数长这样（伪码）：
  *
  *     int __magel_iface.Shape.area(胖引用 __magel_self) {
- *         __magel_t = __vm_obj_name(__magel_self)            // 读出盒子里那个类型号
- *         if (__magel_t == __typeTag(Circle mut&)) { return Circle.area(__vm_obj_addr(__magel_self)) }
- *         if (__magel_t == __typeTag(Square mut&)) { return Square.area(__vm_obj_addr(__magel_self)) }
- *         __vm_iface_fail(__magel_t, "Shape.area")        // 空引用 / 没实现 → 运行期错误
+ *         __magel_t = __std_obj_name(__magel_self)            // 读出盒子里那个类型号
+ *         if (__magel_t == __typeTag(Circle mut&)) { return Circle.area(__std_obj_addr(__magel_self)) }
+ *         if (__magel_t == __typeTag(Square mut&)) { return Square.area(__std_obj_addr(__magel_self)) }
+ *         __std_iface_fail(__magel_t, "Shape.area")        // 空引用 / 没实现 → 运行期错误
  *         return 0
  *     }
  *
@@ -331,7 +331,7 @@ simple_ast::Function MakeInterfaceDispatcher(const Memory::String &iface,
     Memory::Vector<NodePtr> body;
     body.push_back(Node::declare("__magel_t", Type::i64()));
     body.push_back(Node::assign(
-        "__magel_t", Node::call("__vm_obj_name", { "__magel_o" }, { Node::var("__magel_self") })));
+        "__magel_t", Node::call("__std_obj_name", { "__magel_o" }, { Node::var("__magel_self") })));
     for (const auto &item : g_structs)
     {
         if (!ImplementsInterface(item.first, iface)) continue;
@@ -348,12 +348,12 @@ simple_ast::Function MakeInterfaceDispatcher(const Memory::String &iface,
         /* 调用点：`self` = 胖引用里那个地址，后面按位置传 —— 和方法调用一个规矩。 */
         Memory::Vector<Memory::String> callNames{ "self" };
         Memory::Vector<NodePtr> callValues{
-            Node::call("__vm_obj_addr", { "__magel_o" }, { Node::var("__magel_self") })
+            Node::call("__std_obj_addr", { "__magel_o" }, { Node::var("__magel_self") })
         };
         if (implicitOperand)
         {
             callNames.push_back(implementation->params[0].emitted);
-            callValues.push_back(Node::call("__vm_obj_addr", { "__magel_o" }, { Node::var("__magel_self") }));
+            callValues.push_back(Node::call("__std_obj_addr", { "__magel_o" }, { Node::var("__magel_self") }));
         }
         for (std::size_t index = 0; index < argNames.size(); ++index)
         {
@@ -372,7 +372,7 @@ simple_ast::Function MakeInterfaceDispatcher(const Memory::String &iface,
         if (methodName == "drop" || MethodMutatesReceiver(item.first, *implementation, &visiting))
         {
             dispatch.push_back(Node::ifThenElse(Node::var("__magel_readonly"),
-                                                Node::exprStmt(Node::call("__vm_panic", { "__magel_message" },
+                                                Node::exprStmt(Node::call("__std_panic", { "__magel_message" },
                                                                           { Node::str("只读接收者不能调用修改方法：" + iface + "." + methodName) })),
                                                 nullptr));
         }
@@ -392,7 +392,7 @@ simple_ast::Function MakeInterfaceDispatcher(const Memory::String &iface,
             Node::block(dispatch),
             nullptr));
     }
-    body.push_back(Node::exprStmt(Node::call("__vm_iface_fail", { "__magel_t", "__magel_name" },
+    body.push_back(Node::exprStmt(Node::call("__std_iface_fail", { "__magel_t", "__magel_name" },
                                              { Node::var("__magel_t"),
                                                Node::str(iface + "." + methodName) })));
     body.push_back(Node::ret(IsFloatType(declaredResult) ? Node::f(0.0) : Node::i(0)));
@@ -423,7 +423,7 @@ void AppendInterfaceDispatchers(simple_ast::Program &program)
  * @brief 把"一个值"按叶子类型存进聚合槽：字符串 / 对象复制一份，标量原样写。
  *
  * 字符串 / 对象的空值（0）原样写 0：空值没有资源可复制，也不能让
- * `__vm_object_copy(0)` / `__vm_str_sub(0, …)` 报错或白分配。
+ * `__std_object_copy(0)` / `__std_str_sub(0, …)` 报错或白分配。
  */
 void AppendLeafStore(Memory::Vector<simple_ast::NodePtr> *body,
                      const simple_ast::NodePtr &dst, const simple_ast::NodePtr &value,
@@ -792,8 +792,8 @@ void AppendCollectionConstructors(simple_ast::Program &program)
     {
         const auto type = item.second.type;
         const bool map = type->name == "map";
-        /* `List<T>` 的 `{a, b, c}` 走 `__vm_vec_push`（顺序追加）；`Set<T>` 走
-         * `__vm_set_add`（去重）、`Map<K,V>` 走 `__vm_map_put`（覆盖同键）。 */
+        /* `List<T>` 的 `{a, b, c}` 走 `__std_vec_push`（顺序追加）；`Set<T>` 走
+         * `__std_set_add`（去重）、`Map<K,V>` 走 `__std_map_put`（覆盖同键）。 */
         const bool list = type->name == "vec";
         simple_ast::Function function;
         function.name = item.first;
@@ -818,7 +818,7 @@ void AppendCollectionConstructors(simple_ast::Program &program)
                 Memory::Vector<simple_ast::NodePtr> values{ Node::var(result),
                                                             Node::var(item.first + "_arg_" + Memory::toString(i)), Node::i(IsStandardOpcode(type->elem, "String")),
                                                             ContainerStorageFlag(type->elem) };
-                body.push_back(Node::exprStmt(Node::call("__vm_vec_push", names, values)));
+                body.push_back(Node::exprStmt(Node::call("__std_vec_push", names, values)));
                 continue;
             }
             Memory::Vector<Memory::String> names{ item.first + "_native_container", item.first + "_native_key", item.first + "_native_text", item.first + "_native_object" };
@@ -832,7 +832,7 @@ void AppendCollectionConstructors(simple_ast::Program &program)
                 values.push_back(Node::i(IsStandardOpcode(type->elem2, "String")));
                 values.push_back(ContainerStorageFlag(type->elem2));
             }
-            body.push_back(Node::exprStmt(Node::call(map ? "__vm_map_put" : "__vm_set_add", names, values)));
+            body.push_back(Node::exprStmt(Node::call(map ? "__std_map_put" : "__std_set_add", names, values)));
         }
         body.push_back(Node::ret(Node::var(result)));
         function.body = Node::block(std::move(body));
@@ -903,7 +903,7 @@ void AppendArgumentsMain(simple_ast::Program &program)
         const Memory::String result = "__magel_program_result";
         Memory::Vector<simple_ast::NodePtr> body{
             Node::declare(arguments, LowerType(declaration.signature.params[0].type, arguments)),
-            Node::assign(arguments, Node::call("__vm_program_arguments", {}, {})),
+            Node::assign(arguments, Node::call("__std_program_arguments", {}, {})),
         };
         const auto call = Node::call(declaration.label, { declaration.signature.params[0].emitted }, { Node::var(arguments) });
         if (voidMain)
@@ -913,7 +913,7 @@ void AppendArgumentsMain(simple_ast::Program &program)
             body.push_back(Node::declare(result, wrapper.result));
             body.push_back(Node::assign(result, call));
         }
-        body.push_back(Node::exprStmt(Node::call("__vm_object_free", { "__magel_o" }, { Node::var(arguments) })));
+        body.push_back(Node::exprStmt(Node::call("__std_object_free", { "__magel_o" }, { Node::var(arguments) })));
         /* 带参数入口的引导也是"正常停机"的出口；全局清理由之后统一跑一次的
          * `InsertGlobalCleanupBeforeReturns` 补在 `ret` 前面。 */
         body.push_back(Node::ret(voidMain ? Node::i(0) : Node::var(result)));

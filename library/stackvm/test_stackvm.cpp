@@ -12,6 +12,7 @@
 
 #include "stackvm.hpp"
 #include "../../source/glue/collection_natives.hpp"
+#include "../../source/glue/native_record.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -48,7 +49,7 @@ int failures = 0;
 stackvm::NativeRegistry &collectionRegistry()
 {
     static stackvm::NativeRegistry registry;
-    static const bool bound = collection_glue::bind(registry);
+    static const bool bound = collection_glue::bind(registry) && native_record_glue::bindString(registry);
     (void)bound;
     return registry;
 }
@@ -82,9 +83,9 @@ void testCollectionLeaseRelease()
 {
     Memory::String output;
     const auto result = runText(
-        "(call, __vm_vec_new, 0, values)\n"
+        "(call, __std_vec_new, 0, values)\n"
         "(param, values, _, source)\n"
-        "(call, __vm_iter_lease, 1, lease)\n"
+        "(call, __std_iter_lease, 1, lease)\n"
         "(free, values, _, _)\n"
         "(free, lease, _, _)\n"
         "(halt, _, _, _)\n",
@@ -736,14 +737,14 @@ void testHeap()
 }
 
 /**
- * @brief 数学库已移到宿主胶水，StackVM 不再暴露旧 `__vm_*` 数学指令。
+ * @brief 数学库已移到宿主胶水，StackVM 不再暴露旧 `__std_*` 数学指令。
  */
 void testRemovedMathNatives()
 {
     Memory::String output;
     const stackvm::RunResult removed = runText(
         "0: (param, 0.0, _, a)\n"
-        "1: (call, __vm_sin, _, t1)\n"
+        "1: (call, __std_sin, _, t1)\n"
         "2: (halt, _, _, _)\n",
         {}, output);
     CHECK(!removed.ok);
@@ -1118,10 +1119,10 @@ void testDataArea()
 }
 
 /**
- * @brief 装箱格子（`obj`）：`__vm_obj_*` 那批原生函数。
+ * @brief 装箱格子（`obj`）：`__std_obj_*` 那批原生函数。
  *
  * 盒子就是"一个值 + 类型号"，也是**接口指针（胖指针）的运行时表示** ——
- * `__vm_obj_get` 后面跟的是一串"允许的类型号"，对不上就报运行期错误。
+ * `__std_obj_get` 后面跟的是一串"允许的类型号"，对不上就报运行期错误。
  * 类型名（第 5 个实参 / 第 2 个实参）只是个诊断用的字符串，放在数据区里。
  */
 void testObj()
@@ -1139,9 +1140,9 @@ void testObj()
     {
         const stackvm::QuadFile file = stackvm::parseQuads(
             "0: (decl, i64, global, o)\n"
-            "1: (call, __vm_obj_new, _, o)\n"
+            "1: (call, __std_obj_new, _, o)\n"
             "2: (param, o, _, a0)\n"
-            "3: (call, __vm_obj_name, _, t)\n"
+            "3: (call, __std_obj_name, _, t)\n"
             "4: (write, t, _, _)\n"
             "5: (halt, _, _, _)\n",
             "<test>");
@@ -1162,16 +1163,16 @@ void testObj()
             "0: (decl, i64, global, o)\n"
             "1: (decl, i64, global, p)\n"
             "2: (decl, i64, global, t)\n"
-            "3: (call, __vm_obj_new, _, o)\n"
+            "3: (call, __std_obj_new, _, o)\n"
             "4: (param, o, _, a0)\n"
             "5: (param, 42, _, a1)\n"
             "6: (param, 1, _, a2)\n"  // 类型号 = 1
             "7: (param, 0, _, a3)\n"  // 值不是字符串
             "8: (param, 0, _, a4)\n"  // 不是对象句柄
             "9: (param, 0, _, a5)\n"  // 类型名地址 = tname
-            "10: (call, __vm_obj_set, _, t)\n"
+            "10: (call, __std_obj_set, _, t)\n"
             "11: (param, o, _, a0)\n"
-            "12: (call, __vm_obj_name, _, t)\n"
+            "12: (call, __std_obj_name, _, t)\n"
             "13: (write, t, _, _)\n"  // 期望 1
             "14: (param, o, _, a0)\n"
             "15: (param, 0, _, a1)\n"  // 要取的类型名地址
@@ -1179,22 +1180,22 @@ void testObj()
             "17: (param, 0, _, a3)\n"  // 不是浮点
             "18: (param, 0, _, a4)\n"  // 不是对象句柄
             "19: (param, 1, _, a5)\n"  // 允许的类型号
-            "20: (call, __vm_obj_get, _, t)\n"
+            "20: (call, __std_obj_get, _, t)\n"
             "21: (write, t, _, _)\n"  // 期望 42
             "22: (param, o, _, a0)\n"
-            "23: (call, __vm_object_copy, _, p)\n"  // 值语义：复制一格
+            "23: (call, __std_object_copy, _, p)\n"  // 值语义：复制一格
             "24: (param, p, _, a0)\n"
             "25: (param, 7, _, a1)\n"
             "26: (param, 2, _, a2)\n"  // 副本改成 类型号 2
             "27: (param, 0, _, a3)\n"
             "28: (param, 0, _, a4)\n"
             "29: (param, 0, _, a5)\n"
-            "30: (call, __vm_obj_set, _, t)\n"
+            "30: (call, __std_obj_set, _, t)\n"
             "31: (param, o, _, a0)\n"
-            "32: (call, __vm_obj_name, _, t)\n"
+            "32: (call, __std_obj_name, _, t)\n"
             "33: (write, t, _, _)\n"  // 原件仍是 1
             "34: (param, p, _, a0)\n"
-            "35: (call, __vm_obj_name, _, t)\n"
+            "35: (call, __std_obj_name, _, t)\n"
             "36: (write, t, _, _)\n"  // 副本是 2
             "37: (halt, _, _, _)\n",
             "<test>");
@@ -1213,7 +1214,7 @@ void testObj()
         const stackvm::QuadFile file = stackvm::parseQuads(
             "0: (decl, i64, global, o)\n"
             "1: (decl, i64, global, t)\n"
-            "2: (call, __vm_obj_new, _, o)\n"
+            "2: (call, __std_obj_new, _, o)\n"
             "3: (addr, sname, _, s)\n"
             "4: (param, o, _, a0)\n"
             "5: (param, s, _, a1)\n"  // 值 = "hi" 的地址
@@ -1221,16 +1222,16 @@ void testObj()
             "7: (param, 1, _, a3)\n"  // 值是字符串
             "8: (param, 0, _, a4)\n"
             "9: (param, 0, _, a5)\n"
-            "10: (call, __vm_obj_set, _, t)\n"
+            "10: (call, __std_obj_set, _, t)\n"
             "11: (param, o, _, a0)\n"
             "12: (param, 0, _, a1)\n"
             "13: (param, 1, _, a2)\n"  // 取字符串
             "14: (param, 0, _, a3)\n"
             "15: (param, 0, _, a4)\n"
             "16: (param, 5, _, a5)\n"
-            "17: (call, __vm_obj_get, _, t)\n"
+            "17: (call, __std_obj_get, _, t)\n"
             "18: (param, t, _, a0)\n"
-            "19: (call, __vm_str_len, _, t)\n"
+            "19: (call, __std_str_len, _, t)\n"
             "20: (write, t, _, _)\n"  // 期望 2（"hi" 两个字节）
             "21: (halt, _, _, _)\n",
             "<test>");
@@ -1249,21 +1250,21 @@ void testObj()
         const stackvm::QuadFile file = stackvm::parseQuads(
             "0: (decl, i64, global, o)\n"
             "1: (decl, i64, global, t)\n"
-            "2: (call, __vm_obj_new, _, o)\n"
+            "2: (call, __std_obj_new, _, o)\n"
             "3: (param, o, _, a0)\n"
             "4: (param, 42, _, a1)\n"
             "5: (param, 1, _, a2)\n"
             "6: (param, 0, _, a3)\n"
             "7: (param, 0, _, a4)\n"
             "8: (param, 0, _, a5)\n"
-            "9: (call, __vm_obj_set, _, t)\n"
+            "9: (call, __std_obj_set, _, t)\n"
             "10: (param, o, _, a0)\n"
             "11: (param, 8, _, a1)\n"  // 要取的类型名 = "hi"（随便一个名字）
             "12: (param, 0, _, a2)\n"
             "13: (param, 0, _, a3)\n"
             "14: (param, 0, _, a4)\n"
             "15: (param, 5, _, a5)\n"  // 只允许类型号 5
-            "16: (call, __vm_obj_get, _, t)\n"
+            "16: (call, __std_obj_get, _, t)\n"
             "17: (halt, _, _, _)\n",
             "<test>");
         stackvm::Program program;
@@ -1280,7 +1281,7 @@ void testObj()
     {
         const stackvm::QuadFile file = stackvm::parseQuads(
             "0: (decl, i64, global, o)\n"
-            "1: (call, __vm_obj_new, _, o)\n"
+            "1: (call, __std_obj_new, _, o)\n"
             "2: (free, o, _, _)\n"
             "3: (halt, _, _, _)\n",
             "<test>");
@@ -1296,7 +1297,7 @@ void testObj()
     {
         const stackvm::QuadFile file = stackvm::parseQuads(
             "0: (decl, i64, global, o)\n"
-            "1: (call, __vm_obj_new, _, o)\n"
+            "1: (call, __std_obj_new, _, o)\n"
             "2: (free, o, _, _)\n"
             "3: (free, o, _, _)\n"
             "4: (halt, _, _, _)\n",
@@ -1318,36 +1319,36 @@ void testObj()
             "1: (decl, i64, global, outer)\n"
             "2: (decl, i64, global, copy)\n"
             "3: (decl, i64, global, t)\n"
-            "4: (call, __vm_obj_new, _, inner)\n"
-            "5: (call, __vm_obj_new, _, outer)\n"
+            "4: (call, __std_obj_new, _, inner)\n"
+            "5: (call, __std_obj_new, _, outer)\n"
             "6: (param, inner, _, a0)\n"
             "7: (param, 42, _, a1)\n"
             "8: (param, 1, _, a2)\n"
             "9: (param, 0, _, a3)\n"
             "10: (param, 0, _, a4)\n"
             "11: (param, 0, _, a5)\n"
-            "12: (call, __vm_obj_set, _, t)\n"
+            "12: (call, __std_obj_set, _, t)\n"
             "13: (param, outer, _, a0)\n"
             "14: (param, inner, _, a1)\n"
             "15: (param, 8, _, a2)\n"
             "16: (param, 0, _, a3)\n"
             "17: (param, 1, _, a4)\n"
             "18: (param, 0, _, a5)\n"
-            "19: (call, __vm_obj_set, _, t)\n"
+            "19: (call, __std_obj_set, _, t)\n"
             "20: (param, outer, _, a0)\n"
             "21: (param, 0, _, a1)\n"
             "22: (param, 0, _, a2)\n"
             "23: (param, 0, _, a3)\n"
             "24: (param, 1, _, a4)\n"
             "25: (param, 8, _, a5)\n"
-            "26: (call, __vm_obj_get, _, copy)\n"
+            "26: (call, __std_obj_get, _, copy)\n"
             "27: (param, copy, _, a0)\n"
             "28: (param, 0, _, a1)\n"
             "29: (param, 0, _, a2)\n"
             "30: (param, 0, _, a3)\n"
             "31: (param, 0, _, a4)\n"
             "32: (param, 1, _, a5)\n"
-            "33: (call, __vm_obj_get, _, t)\n"
+            "33: (call, __std_obj_get, _, t)\n"
             "34: (write, t, _, _)\n"
             "35: (free, inner, _, _)\n"
             "36: (free, outer, _, _)\n"
@@ -1374,65 +1375,65 @@ void testObj()
             "3: (decl, i64, global, m)\n"
             "4: (decl, i64, global, copy)\n"
             "5: (decl, i64, global, t)\n"
-            "6: (call, __vm_obj_new, _, inner)\n"
-            "7: (call, __vm_vec_new, _, v)\n"
-            "8: (call, __vm_set_new, _, s)\n"
-            "9: (call, __vm_map_new, _, m)\n"
+            "6: (call, __std_obj_new, _, inner)\n"
+            "7: (call, __std_vec_new, _, v)\n"
+            "8: (call, __std_set_new, _, s)\n"
+            "9: (call, __std_map_new, _, m)\n"
             "10: (param, inner, _, a0)\n"
             "11: (param, 42, _, a1)\n"
             "12: (param, 1, _, a2)\n"
             "13: (param, 0, _, a3)\n"
             "14: (param, 0, _, a4)\n"
             "15: (param, 0, _, a5)\n"
-            "16: (call, __vm_obj_set, _, t)\n"
+            "16: (call, __std_obj_set, _, t)\n"
             "17: (param, v, _, a0)\n"
             "18: (param, inner, _, a1)\n"
             "19: (param, 0, _, a2)\n"
             "20: (param, 1, _, a3)\n"
-            "21: (call, __vm_vec_push, _, t)\n"
+            "21: (call, __std_vec_push, _, t)\n"
             "22: (param, v, _, a0)\n"
             "23: (param, inner, _, a1)\n"
             "24: (param, 0, _, a2)\n"
             "25: (param, 1, _, a3)\n"
-            "26: (call, __vm_vec_find, _, t)\n"
+            "26: (call, __std_vec_find, _, t)\n"
             "27: (write, t, _, _)\n"
             "28: (param, v, _, a0)\n"
             "29: (param, 0, _, a1)\n"
             "30: (param, 0, _, a2)\n"
             "31: (param, 1, _, a3)\n"
-            "32: (call, __vm_vec_at, _, copy)\n"
+            "32: (call, __std_vec_at, _, copy)\n"
             "33: (param, copy, _, a0)\n"
             "34: (param, 0, _, a1)\n"
             "35: (param, 0, _, a2)\n"
             "36: (param, 0, _, a3)\n"
             "37: (param, 0, _, a4)\n"
             "38: (param, 1, _, a5)\n"
-            "39: (call, __vm_obj_get, _, t)\n"
+            "39: (call, __std_obj_get, _, t)\n"
             "40: (write, t, _, _)\n"
             "41: (free, copy, _, _)\n"
             "42: (param, s, _, a0)\n"
             "43: (param, inner, _, a1)\n"
             "44: (param, 0, _, a2)\n"
             "45: (param, 1, _, a3)\n"
-            "46: (call, __vm_set_add, _, t)\n"
+            "46: (call, __std_set_add, _, t)\n"
             "47: (param, s, _, a0)\n"
             "48: (param, inner, _, a1)\n"
             "49: (param, 0, _, a2)\n"
             "50: (param, 1, _, a3)\n"
-            "51: (call, __vm_set_has, _, t)\n"
+            "51: (call, __std_set_has, _, t)\n"
             "52: (write, t, _, _)\n"
             "53: (param, s, _, a0)\n"
             "54: (param, 0, _, a1)\n"
             "55: (param, 0, _, a2)\n"
             "56: (param, 1, _, a3)\n"
-            "57: (call, __vm_set_at, _, copy)\n"
+            "57: (call, __std_set_at, _, copy)\n"
             "58: (param, copy, _, a0)\n"
             "59: (param, 0, _, a1)\n"
             "60: (param, 0, _, a2)\n"
             "61: (param, 0, _, a3)\n"
             "62: (param, 0, _, a4)\n"
             "63: (param, 1, _, a5)\n"
-            "64: (call, __vm_obj_get, _, t)\n"
+            "64: (call, __std_obj_get, _, t)\n"
             "65: (write, t, _, _)\n"
             "66: (free, copy, _, _)\n"
             "67: (param, m, _, a0)\n"
@@ -1442,12 +1443,12 @@ void testObj()
             "71: (param, inner, _, a4)\n"
             "72: (param, 0, _, a5)\n"
             "73: (param, 1, _, a6)\n"
-            "74: (call, __vm_map_put, _, t)\n"
+            "74: (call, __std_map_put, _, t)\n"
             "75: (param, m, _, a0)\n"
             "76: (param, inner, _, a1)\n"
             "77: (param, 0, _, a2)\n"
             "78: (param, 1, _, a3)\n"
-            "79: (call, __vm_map_has, _, t)\n"
+            "79: (call, __std_map_has, _, t)\n"
             "80: (write, t, _, _)\n"
             "81: (param, m, _, a0)\n"
             "82: (param, inner, _, a1)\n"
@@ -1455,14 +1456,14 @@ void testObj()
             "84: (param, 1, _, a3)\n"
             "85: (param, 0, _, a4)\n"
             "86: (param, 1, _, a5)\n"
-            "87: (call, __vm_map_get, _, copy)\n"
+            "87: (call, __std_map_get, _, copy)\n"
             "88: (param, copy, _, a0)\n"
             "89: (param, 0, _, a1)\n"
             "90: (param, 0, _, a2)\n"
             "91: (param, 0, _, a3)\n"
             "92: (param, 0, _, a4)\n"
             "93: (param, 1, _, a5)\n"
-            "94: (call, __vm_obj_get, _, t)\n"
+            "94: (call, __std_obj_get, _, t)\n"
             "95: (write, t, _, _)\n"
             "96: (free, copy, _, _)\n"
             "97: (free, inner, _, _)\n"
@@ -1488,9 +1489,9 @@ void testObj()
             "1: (decl, i64, global, value)\n"
             "2: (decl, i64, global, map)\n"
             "3: (decl, i64, global, tmp)\n"
-            "4: (call, __vm_obj_new, _, key)\n"
-            "5: (call, __vm_obj_new, _, value)\n"
-            "6: (call, __vm_map_new, _, map)\n"
+            "4: (call, __std_obj_new, _, key)\n"
+            "5: (call, __std_obj_new, _, value)\n"
+            "6: (call, __std_map_new, _, map)\n"
             "7: (param, map, _, a0)\n"
             "8: (param, key, _, a1)\n"
             "9: (param, 0, _, a2)\n"
@@ -1498,9 +1499,9 @@ void testObj()
             "11: (param, value, _, a4)\n"
             "12: (param, 0, _, a5)\n"
             "13: (param, 1, _, a6)\n"
-            "14: (call, __vm_map_put, _, tmp)\n"
+            "14: (call, __std_map_put, _, tmp)\n"
             "15: (param, map, _, a0)\n"
-            "16: (call, __vm_map_clear, _, tmp)\n"
+            "16: (call, __std_map_clear, _, tmp)\n"
             "17: (free, key, _, _)\n"
             "18: (free, value, _, _)\n"
             "19: (free, map, _, _)\n"
@@ -1778,9 +1779,9 @@ void testDebugger()
 }
 
 /**
- * @brief `__vm_panic`：唯一的中止原语。
+ * @brief `__std_panic`：唯一的中止原语。
  *
- * `__vm_exit` 与 `__vm_assert` 已删除 —— Magel 侧的中止只有 `std::lang::panic`，
+ * `__std_exit` 与 `__std_assert` 已删除 —— Magel 侧的中止只有 `std::lang::panic`，
  * `std::lang::assert` 是标准库对它的包装，虚拟机里不再有第二条停机路径。
  */
 void testPanic()
@@ -1792,7 +1793,7 @@ void testPanic()
     CHECK(data.writeBytes(8u, message, sizeof(message)));
     const stackvm::QuadFile panicFile = stackvm::parseQuads(
         "0: (param, 8, _, __magel_value)\n"
-        "1: (call, __vm_panic, _, t)\n"
+        "1: (call, __std_panic, _, t)\n"
         "2: (write, 99, _, _)\n"
         "3: (halt, _, _, _)\n",
         "<panic-test>");
