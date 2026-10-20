@@ -2001,6 +2001,67 @@ int M_Field(int typeId, int nameId)
     return id;
 }
 /**
+ * @brief 保存泛型闭包类型参数的名称、接口约束与默认类型。
+ * @param nameId 名称池中的类型参数编号。
+ * @param constraint 接口约束类型编号，负数表示无约束。
+ * @param fallback 默认类型编号，负数表示无默认值。
+ * @return 参数语法节点编号。
+ */
+int M_GenericClosureParameter(int nameId, int constraint, int fallback)
+{
+    const int id = M_New(MNode::Params, g_names[nameId]);
+    g_nodes[id].type = fallback;
+    g_nodes[id].type2 = constraint;
+    return id;
+}
+
+/**
+ * @brief 构造完整的泛型闭包语法树，供语法检查与模板阶段保留结构信息。
+ * @param resultType 返回类型编号，负数表示按具体实现推导。
+ * @param generics 类型参数列表。
+ * @param params 调用参数列表。
+ * @param body 完整函数体。
+ * @param groups 显式捕获分组，负数表示没有分组。
+ * @param capture 默认捕获方式。
+ * @return 泛型闭包语法节点。
+ */
+int M_GenericClosureSyntax(int resultType, int generics, int params, int body, int groups, int capture)
+{
+    const int id = M_New(MNode::GenericLambda);
+    g_nodes[id].type = resultType;
+    g_nodes[id].type2 = groups;
+    g_nodes[id].i = capture;
+    g_nodes[id].kids = { generics, params, body };
+    return id;
+}
+
+/**
+ * @brief 构造具有默认闭包表达式的自动类型字段。
+ * @param nameId 字段名称编号。
+ * @param initializer 初始化表达式编号。
+ * @return 字段声明节点。
+ */
+int M_ClosureField(int nameId, int initializer)
+{
+    const int id = M_Field(-1, nameId);
+    g_nodes[id].kids = { initializer };
+    return id;
+}
+
+/**
+ * @brief 构造泛型闭包的显式类型选择，保留原闭包环境表达式。
+ * @param value 闭包值表达式。
+ * @param arguments 类型参数节点列表。
+ * @return 选择表达式编号。
+ */
+int M_ClosureSelect(int value, int arguments)
+{
+    const int id = M_New(MNode::GenericClosureSelect);
+    g_nodes[id].kids = { value, arguments };
+    return id;
+}
+
+/**
  * @brief 数组字段的尺寸在类型登记时检查并内联铺开。
  * @param type 元素。
  * @param name 名称。

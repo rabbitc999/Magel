@@ -226,6 +226,7 @@ struct MBorrowFlowBuilder
     {
         if (id < 0) return {};
         const auto node = N(id);
+        if (node.kind == MNode::GenericClosureSelect && !node.kids.empty()) return place(node.kids[0], slot);
         if (capture.lambdaReads.count(id)) return { "$closure:" + Memory::toString(id), {} };
         MBorrowPlace result;
         const auto variable = capture.variables.find(id);

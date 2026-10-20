@@ -151,6 +151,8 @@ struct MNode
         Params,
         AbiBlock,
         Lambda,
+        GenericClosureSelect,
+        GenericLambda,
         /* 声明头（带 `const` 与否）：type = 类型池下标，i = 是否不可变 */
         DeclHead,
         /* `new T` / `new T[n]`：type = 元素类型，i = 元素个数表达式（-1 = 单个） */
@@ -696,6 +698,40 @@ int M_BreakLevel(int level);
  * `match` 不截获 `break`，也不影响 `continue` 的目标（就是外面那层循环）。
  */
 int M_Continue();
+/**
+ * @brief 保留泛型闭包的类型参数声明。
+ * @param nameId 类型参数名称。
+ * @param constraint 可选接口约束的类型编号。
+ * @param fallback 可选默认类型编号。
+ * @return 参数语法节点。
+ */
+int M_GenericClosureParameter(int nameId, int constraint, int fallback);
+/**
+ * @brief 保留尚未单态化的泛型闭包语法树。
+ * @param resultType 返回类型编号，负数表示推导。
+ * @param generics 类型参数列表节点。
+ * @param params 调用参数列表节点。
+ * @param body 完整函数体节点。
+ * @param groups 显式捕获分组节点，负数表示没有分组。
+ * @param capture 默认捕获方式。
+ * @return 泛型闭包语法节点。
+ * @note 编译流程在进入值降级前由模板归一化生成具体函数。
+ */
+int M_GenericClosureSyntax(int resultType, int generics, int params, int body, int groups, int capture);
+/**
+ * @brief 保存带默认闭包的实例字段声明。
+ * @param nameId 字段名称编号。
+ * @param initializer 默认闭包表达式节点。
+ * @return 字段声明节点。
+ */
+int M_ClosureField(int nameId, int initializer);
+/**
+ * @brief 保存泛型闭包的显式类型实参选择。
+ * @param value 被选择的闭包表达式。
+ * @param arguments 包含类型节点的列表。
+ * @return 闭包选择表达式节点。
+ */
+int M_ClosureSelect(int value, int arguments);
 int M_Field(int typeId, int nameId);
 int M_StaticField(int typeId, int nameId);
 /* opName = -1 是普通方法；否则是运算符的序号（`loperator+` / `roperator+`）。 */

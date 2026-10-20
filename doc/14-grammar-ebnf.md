@@ -105,7 +105,7 @@ Box<int64 fn(int64)> box;
 
 <!-- BEGIN GENERATED MAGEL EBNF -->
 
-以下 122 条产生式由 `source/magel.gram` 导出，语义动作及解析优先级指令省略。
+以下 126 条产生式由 `source/magel.gram` 导出，语义动作及解析优先级指令省略。
 
 ### 终结符登记
 
@@ -220,6 +220,8 @@ Box<int64 fn(int64)> box;
 | `TYPECHECK` | `__magel_typecheck` |
 | `TYPE_ARGS_BEGIN` | `@<` |
 | `TYPE_ARGS_END` | `@>` |
+| `CLOSURE_ARGS_BEGIN` | `@!<` |
+| `CLOSURE_ARGS_END` | `@!>` |
 
 ### 显式正则词法规则
 
@@ -405,7 +407,8 @@ member_list = ""
 member = annotation_list, member_decl
     | member_decl ;
 
-member_decl = type, name_token, ";"
+member_decl = "auto", name_token, "=", expr, ";"
+    | type, name_token, ";"
     | type, name_token, "[", expr, "]", ";"
     | type, name_token, "[", expr, "]", "[", expr, "]", ";"
     | "type", name_token, "=", element_type, ";"
@@ -702,7 +705,11 @@ cast_expr = "(", builtin_type, ")", unary
     | "cast", "<", type, ">", "(", expr, ")"
     | postfix ;
 
-postfix = postfix, "++"
+closure_type_arguments = element_type
+    | closure_type_arguments, ",", element_type ;
+
+postfix = postfix, "@!<", closure_type_arguments, "@!>"
+    | postfix, "++"
     | postfix, "--"
     | postfix, "[", expr, "]"
     | postfix, "?"
@@ -767,7 +774,19 @@ lambda_capture = ""
 
 lambda_keyword = "fn" ;
 
+generic_closure_parameter = name_token
+    | name_token, ":", element_type
+    | name_token, "=", element_type
+    | name_token, ":", element_type, "=", element_type ;
+
+generic_closure_parameters = generic_closure_parameter
+    | generic_closure_parameters, ",", generic_closure_parameter ;
+
+generic_closure_head = "fn", "<", generic_closure_parameters, ">" ;
+
 lambda_expr = fn_signature, lambda_body
+    | generic_closure_head, lambda_capture, "(", lambda_params, ")", lambda_body
+    | generic_closure_head, lambda_capture_groups, lambda_capture, "(", lambda_params, ")", lambda_body
     | lambda_keyword, lambda_capture, "(", lambda_params, ")", lambda_body
     | type, lambda_keyword, lambda_capture, "(", lambda_params, ")", lambda_body
     | ptr_type, lambda_keyword, lambda_capture, "(", lambda_params, ")", lambda_body

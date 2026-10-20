@@ -12,6 +12,8 @@
 
 支持[返回控制表达式、语句级具名闭包和字段派生](28-declaration-sugars.md)：隐藏结果绑定保留内部移动、外部复制及借用清理，具名函数复用 fn 捕获，`#derive` 仅生成 Equal/Hash/Clone 并检查字段协议，不生成 Drop。
 
+泛型闭包支持 `fn<T>`、实参类型推导、完整特化及唯一最具体的偏特化；可以直接作为结构体成员，并作为泛型类型参数 `F` 的值传递或保存。不同类型调用共享同一闭包的捕获状态，复制与借用规则沿用普通闭包。见[语言参考](04-language-reference.md)。
+
 源码与宏通过 `module` / `import` 复用，预处理不支持文本文件包含。宏在 Lexer 前做文本替换，支持四种括号按定义顺序组合及重复、每组独立 `..rest` 和跨行大括号实参；捕获文本与调用后代码保留原始行列位置。详见[多括号文本宏](24-literals-operators-macros.md#有序多括号文本宏)。
 
 入口支持 `int64 main` 和 `void main`，无参或接收 `List<String>`；void 入口正常退出码为 0，panic 仍失败。`struct`、`enum`、`interface` 声明的尾分号可选。

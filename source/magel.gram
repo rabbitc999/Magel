@@ -228,7 +228,8 @@ member_list := %empty { $$ = M_List(); }
 member := annotation_list member_decl { $$ = M_Annotated($1, $2); }
   | member_decl { $$ = $1; } ;
 
-member_decl := type name_token SEMI            { $$ = M_Field($1, $2); }
+member_decl := AUTO name_token ASSIGN expr SEMI { $$ = M_ClosureField($2, $4); }
+        | type name_token SEMI            { $$ = M_Field($1, $2); }
         | type name_token LBRACKET expr RBRACKET SEMI { $$ = M_ArrayField($1, $2, M_Dims1($4)); }
         | type name_token LBRACKET expr RBRACKET LBRACKET expr RBRACKET SEMI { $$ = M_ArrayField($1, $2, M_Dims2($4, $7)); }
         | TYPE_KW name_token ASSIGN element_type SEMI { $$ = M_AssociatedDef($2, $4); }
@@ -615,7 +616,11 @@ cast_expr := LPAREN builtin_type RPAREN unary  { $$ = M_Cast($2, $4); }
            | postfix                       { $$ = $1; } ;
 
 /* 字符串值与引用的 [] 统一访问字符；显式 Index 调用访问缓冲区元素。 */
-postfix := postfix INCREMENT { $$ = M_Update(1, 0, $1); }
+closure_type_arguments := element_type { $$ = M_List1(M_TupleTypeItem($1)); }
+                        | closure_type_arguments COMMA element_type { M_ListAdd($1, M_TupleTypeItem($3)); $$ = $1; } ;
+
+postfix := postfix CLOSURE_ARGS_BEGIN closure_type_arguments CLOSURE_ARGS_END { $$ = M_ClosureSelect($1, $3); }
+         | postfix INCREMENT { $$ = M_Update(1, 0, $1); }
          | postfix DECREMENT { $$ = M_Update(-1, 0, $1); }
          | postfix LBRACKET expr RBRACKET { $$ = M_Index($1, $3); }
          | postfix QUESTION                    { $$ = M_Try($1); }
@@ -679,7 +684,20 @@ lambda_capture := %empty { $$ = 0; }
                 | COPY { $$ = 2; }
                 | MOVE { $$ = 3; } ;
 lambda_keyword := FN { $$ = 0; } ;
+/* 模板归一化前的泛型闭包保留参数、约束、捕获和完整函数体的结构。 */
+generic_closure_parameter := name_token { $$ = M_GenericClosureParameter($1, -1, -1); }
+    | name_token COLON element_type { $$ = M_GenericClosureParameter($1, $3, -1); }
+    | name_token ASSIGN element_type { $$ = M_GenericClosureParameter($1, -1, $3); }
+    | name_token COLON element_type ASSIGN element_type { $$ = M_GenericClosureParameter($1, $3, $5); } ;
+generic_closure_parameters := generic_closure_parameter { $$ = M_List1($1); }
+    | generic_closure_parameters COMMA generic_closure_parameter { M_ListAdd($1, $3); $$ = $1; } ;
+generic_closure_head := FN LT generic_closure_parameters GT { $$ = $3; } ;
+
 lambda_expr := fn_signature lambda_body { $$ = M_FnSignatureLambda($1, $2); }
+    | generic_closure_head lambda_capture LPAREN lambda_params RPAREN lambda_body
+    { $$ = M_GenericClosureSyntax(-1, $1, $4, $6, -1, $2); }
+    | generic_closure_head lambda_capture_groups lambda_capture LPAREN lambda_params RPAREN lambda_body
+    { $$ = M_GenericClosureSyntax(-1, $1, $5, $7, $2, $3); }
     | lambda_keyword lambda_capture LPAREN lambda_params RPAREN lambda_body
     { $$ = M_Lambda(-1, $4, $6, $2); }
     | type lambda_keyword lambda_capture LPAREN lambda_params RPAREN lambda_body

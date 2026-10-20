@@ -2073,6 +2073,7 @@ inline bool instantiate(const Memory::String &name, const Memory::Vector<Memory:
     collectInterfaces(generated, session.implemented);
     if (!validateConstraints(session.made, session.implemented, error)) return false;
     markContainerTypeArguments(generated);
+    magel_lambda::markClosureTypeArguments(generated);
     return true;
 }
 

@@ -1050,6 +1050,7 @@ int magel_main_entry(int argc, char **argv)
             std::fprintf(stderr, MAGEL_TEXT("magel：泛型：%s\n"), macroError.c_str());
             return 1;
         }
+        magel_lambda::markClosureTypeArguments(processed.text);
         text = processed.text;
         if (depsOnly)
         {

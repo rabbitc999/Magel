@@ -827,6 +827,27 @@ Duplicate names, unknown variables, parameter conflicts, and mut/move captures o
 
 Capturing a variable by reference (implicit `const&` or `fn mut`) and later moving it into another closure is allowed when the borrowing closure is last used before the move. Using a borrowing closure after its source has been moved, destroyed or freed is rejected with `MGL1205`; copying the closure preserves its dependency on that source. A closure escaping a source lifetime that is too short is rejected with `MGL1204`. Use `copy` for an independent snapshot when both closures must remain usable. Copying or moving a reference still does not extend its referent's lifetime. These checks cover borrow sources tracked by the compiler; raw memory and opaque host operations retain their interface contracts.
 
+## Generic closures and specialization
+
+`auto f = fn<T>(T value) { value };` declares a closure with type parameters. Calls such as `f(1)` and `f("text")` infer `T` from their arguments; `f<int64>(1)` supplies it explicitly. The concrete implementation determines its return type. Parameters without inference evidence or an explicit default are rejected rather than replaced with Any.
+
+Full and partial specializations use the same closure name. Argument types are determined before selecting the uniquely most specific matching implementation:
+
+```magel
+auto f = fn<T, U>(T first, U second) { 0 };
+f<T, int64> = fn(T first, int64 second) { 1 };
+f<int64, int64> = fn(int64 first, int64 second) { 2 };
+assert(f(true, false) == 0);
+assert(f(true, 3) == 1);
+assert(f(2, 3) == 2);
+```
+
+Specializations are selected at compile time, rather than replaced at run time. Duplicate declarations and ambiguous partial specializations are rejected. Implementations inherit the primary declaration's capture modes and reuse its environment. Calls with different types share the same captured state. Copying the entire closure independently copies owned state while preserving borrowed sources.
+
+A struct may directly declare an `auto f = fn<T>(T value) { value };` member and specialize it within the struct. Instances call it as `s.f(1)` or `s.f<String>("text")`. Default initialization resolves captures in the member's declaration scope, preserving isolation from same-named locals in the constructing caller. Existing restrictions on implicit captures of `self` and receiver fields remain applicable.
+
+Both ordinary and generic closure values can serve as a generic type parameter `F`, for example `int64 apply<F>(F f) { return f(3); }`; `apply(callback)` infers `F`. Generic aggregates such as `Box<F>` can store closure values. A generic closure retains its declaration identity and capture environment, without erasure to a single ordinary function-pointer signature. Borrow and move rules continue to apply.
+
 ## Ranges and the advancement protocol
 
 `for (auto item in source)`, `for (item in source)` and explicitly typed bindings share the iteration protocol. `std::lang::range(a, b)` excludes the upper endpoint; `std::lang::rangeEq(a, b)` includes both endpoints. Either call accepts an explicit `<T>`.

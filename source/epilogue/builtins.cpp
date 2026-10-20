@@ -798,8 +798,10 @@ std::shared_ptr<MType> RawExprType(int id)
         MPropagationInfo info;
         return ResolvePropagation(node.kids[0], false, &info) ? info.output : T(M_TypeVoid());
     }
+    case MNode::GenericClosureSelect: return ExprType(node.kids[0]);
     case MNode::Var:
     {
+        if (FindGenericClosureDefinition(node.s)) return GenericClosureType(node.s);
         const MVar *found = FindIn(node.module, node.s);
         if (found != nullptr) return found->type;
         /* 方法体里可以直接写字段名（等价于 `self.字段`），`self` 就是接收者 */
@@ -950,6 +952,7 @@ std::shared_ptr<MType> RawExprType(int id)
          * 各阶段会被反复查询，没有这个快路径的话每次查询都完整重推整条链，
          * 代价随链长指数增长。类型由下方 ResolveCall 成功后回写，语义与
          * MNode::Bin 的写回惯例一致。 */
+        if (ResolveGenericClosureCall(id)) return N(id).type >= 0 ? T(N(id).type) : T(M_TypeVoid());
         if (node.type >= 0) return T(node.type);
         if (!node.kids.empty() && N(node.kids[0]).kind == MNode::Var && N(node.kids[0]).s == "__magel_default_to_string") return T(M_TypeString());
         /* 容器方法（`v.push(…)` / `m.valAt(i)`）与 `bint` 的 `.str()`：被调者是成员访问，

@@ -13,6 +13,8 @@ tested version, configuration and date; they do not automatically describe curre
 
 Support includes [return control expressions, statement-level named closures and field derivation](28-declaration-sugars.md). Hidden result bindings preserve internal moves, external copies and borrow cleanup. Named functions reuse fn captures; `#derive` generates only Equal/Hash/Clone, validates field protocols and never generates Drop.
 
+Generic closures support `fn<T>`, inference from argument types, full specialization and uniquely most specific partial specialization. They can be direct struct members and can be passed or stored as values of a generic type parameter `F`. Calls with different types share one closure environment, preserving ordinary capture, copy and borrow rules. See the [language reference](04-language-reference.md).
+
 Sources and macros are shared through `module` / `import`; preprocessing does not support textual file inclusion. Macros expand as text before the Lexer, with ordered and repeated groups of four bracket kinds, independent `..rest` captures, and multiline brace arguments. Captured fragments and code following a call retain their original line and column positions. See [ordered bracket groups](24-literals-operators-macros.md#ordered-bracket-groups-in-text-macros).
 
 Entry points support `int64 main` and `void main`, with no parameters or `List<String>` arguments. A void entry exits with code 0 on normal completion; panic still fails. Trailing semicolons on `struct`, `enum`, and `interface` declarations are optional.

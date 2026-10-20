@@ -16,6 +16,7 @@ struct MField
      */
     int slot = -1;
     int slots = 0;
+    int initializer = -1;
 };
 
 /**

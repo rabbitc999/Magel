@@ -179,6 +179,7 @@ run_step "检查 Map Pair 迭代元素类型" "$PYTHON" tests/magel_map_pair_ite
 run_step "检查泛型命名构造入口推导" "$PYTHON" tests/magel_generic_constructors.py --magel magel
 run_step "检查标准库 opcode 存储与资源边界" "$PYTHON" tests/magel_opcode_std_storage.py --magel magel
 run_step "运行闭包来源与借用控制流回归" "$PYTHON" tests/magel_borrow_flow.py --magel magel
+run_step "运行泛型闭包与特化回归" "$PYTHON" tests/magel_generic_closures.py --magel magel
 run_step "检查模块路径与文本包含指令删除" "$PYTHON" tests/magel_package_paths.py
 run_step "检查 VM 命令与未知文件" "$PYTHON" tests/magel_tool.py
 run_step "检查手册与标准库共享索引同步" "$PYTHON" tools/library_reference.py --check

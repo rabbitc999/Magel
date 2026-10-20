@@ -548,6 +548,46 @@ std::shared_ptr<MType> FuncTypeOf(const MFuncSig &signature)
 }
 
 /**
+ * @brief 解析闭包的声明身份，并为外层泛型实例生成独立的环境类型。
+ * @param name 原闭包入口或其具体外层实例名称。
+ * @return 相关声明；普通类型与函数返回空指针。
+ */
+const magel_lambda::GenericClosure *FindGenericClosureDefinition(const Memory::String &name)
+{
+    const auto found = magel_lambda::genericClosures.find(name);
+    if (found != magel_lambda::genericClosures.end()) return &found->second;
+    const auto expansion = magel_generic::session.made.find(name);
+    if (expansion == magel_generic::session.made.end()) return nullptr;
+    const auto source = magel_lambda::genericClosures.find(expansion->second.generic->name);
+    if (source == magel_lambda::genericClosures.end() || source->second.outerNames.size() != expansion->second.args.size()) return nullptr;
+    auto definition = source->second;
+    definition.seed = name;
+    definition.outerArguments = expansion->second.args;
+    return &magel_lambda::genericClosures.emplace(name, std::move(definition)).first->second;
+}
+
+/**
+ * @brief 构造保留泛型声明身份的闭包类型，运行时仍使用普通闭包句柄。
+ * @param seed 环境构造入口的唯一名称。
+ * @return 泛型闭包类型。
+ */
+std::shared_ptr<MType> GenericClosureType(const Memory::String &seed)
+{
+    auto type = Memory::makeShared<MType>();
+    type->kind = MType::Func;
+    type->name = seed;
+    type->elem = T(M_TypeVoid());
+    return type;
+}
+
+/**
+ * @brief 从实参推导泛型闭包并选择唯一最具体的实现。
+ * @param id 调用表达式节点。
+ * @return 被调用者属于泛型闭包时返回 true，包括已报告的错误。
+ */
+bool ResolveGenericClosureCall(int id);
+
+/**
  * @brief 函数名当值用（函数指针）：挑出该用哪个重载的标签。
  *
  * 有目标签名时始终精确匹配，包括只有一个候选的情况。
@@ -562,6 +602,7 @@ Memory::String ResolveFunctionValue(const Memory::String &module, const Memory::
 {
     const Memory::Vector<Memory::String> *found = FindFunctionOverloads(module, name);
     if (found == nullptr || found->empty()) return Memory::String();
+    if (found->size() == 1u && expected && expected->name == name && magel_lambda::genericClosures.count(name)) return (*found)[0];
     if (found->size() == 1u && (!expected || expected->kind != MType::Func)) return (*found)[0];
     if (expected != nullptr && expected->kind == MType::Func)
     {

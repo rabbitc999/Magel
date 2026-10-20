@@ -552,6 +552,43 @@ simple_ast::NodePtr LowerCall(int id)
         Fail("调用缺少参数表");
         return Bad();
     }
+    if (ResolveGenericClosureCall(id))
+    {
+        if (!g_error.empty()) return Bad();
+        const auto &call = N(id);
+        const auto definition = magel_lambda::genericClosures.find(call.s2);
+        if (definition == magel_lambda::genericClosures.end()) return Bad();
+        const auto label = ResolveFunctionValue(definition->second.module, call.s, nullptr);
+        if (label.empty()) return Bad();
+        const auto &signature = g_funcs.at(label);
+        int value = node.kids[0];
+        if (N(value).kind == MNode::GenericClosureSelect) value = N(value).kids[0];
+        Memory::Vector<Memory::String> names;
+        Memory::Vector<simple_ast::NodePtr> values;
+        const auto environment = AllocateName("__magel_generic_environment");
+        Memory::Vector<simple_ast::NodePtr> prefix{
+            simple_ast::Node::declare(environment, simple_ast::Type::i64()),
+            simple_ast::Node::assign(environment, OwnedObjectTemp(value, ExprType(value)))
+        };
+        prefix.push_back(simple_ast::Node::ifThenElse(
+            simple_ast::Node::binary("==", simple_ast::Node::var(environment), simple_ast::Node::i(0)),
+            simple_ast::Node::exprStmt(simple_ast::Node::call("__std_panic", { "message" },
+                                                              { simple_ast::Node::str("不能调用未初始化或已移动的泛型闭包") })),
+            nullptr));
+        const auto arguments = N(node.kids[1]).kids;
+        for (std::size_t index = 0; index < arguments.size(); ++index)
+        {
+            names.push_back(signature.params[index].emitted);
+            values.push_back(LowerArgumentValue(arguments[index], signature.params[index].type));
+        }
+        const auto captures = g_lambdaCaptures.find(ModuleSymbol(definition->second.module, call.s2));
+        if (captures != g_lambdaCaptures.end() && !captures->second.empty())
+        {
+            names.push_back("__magel_environment");
+            values.push_back(simple_ast::Node::var(environment));
+        }
+        return simple_ast::Node::sequence(std::move(prefix), simple_ast::Node::call(label, names, values));
+    }
     MNode callee = N(node.kids[0]);
     const Memory::String standardName = StandardCallName(callee);
     if (!standardName.empty()) callee.s = standardName;
@@ -2559,6 +2596,8 @@ simple_ast::NodePtr LowerUncheckedExpr(int id)
                 inlineBody.push_back(part);
         return simple_ast::Node::sequence(std::move(inlineBody), value);
     }
+    case MNode::GenericLambda:
+        return Fail("泛型闭包需要在所属声明作用域完成模板归一化"), Bad();
     case MNode::Var:
     {
         const MVar *found = FindIn(node.module, node.s);
@@ -4077,11 +4116,12 @@ simple_ast::Function LowerFunction(const Memory::String &name, const Memory::Str
         if (declaration.label != name) continue;
         const auto captures = g_lambdaCaptures.find(ModuleSymbol(declaration.module, declaration.source));
         if (captures == g_lambdaCaptures.end() || captures->second.empty()) break;
-        const auto environment = AllocateName("__magel_environment");
+        const auto environment = Memory::String("__magel_environment");
         function.parameters.emplace_back(environment, simple_ast::Type::i64());
         for (std::size_t i = 0; i < captures->second.size(); ++i)
         {
             const auto &capture = captures->second[i];
+            if (std::any_of(params.begin(), params.end(), [&](const MParam &param) { return param.source == capture.source; })) continue;
             const auto local = AllocateName("__magel_capture_" + capture.source);
             MVar binding{ capture.type, local, capture.captureMode == 0 };
             binding.elementReference = (capture.captureMode >= 2 || capture.type->kind != MType::Ptr) && (capture.captureMode < 2 || capture.type->kind != MType::Struct) && (capture.type->kind != MType::Array || IsRuntimeArray(capture.type));

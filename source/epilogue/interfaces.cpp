@@ -331,6 +331,7 @@ Memory::String Describe(const std::shared_ptr<MType> &type)
     }
     case MType::Func:
     {
+        if (!type->name.empty()) return "泛型闭包 " + type->name;
         /* `int(int32, int32)` 这种写法：返回类型 + 形参类型表。 */
         Memory::String text = Describe(type->elem) + "(";
         for (std::size_t index = 0; index < type->paramTypes.size(); ++index)
@@ -384,16 +385,17 @@ bool SameType(const std::shared_ptr<MType> &left, const std::shared_ptr<MType> &
         return SameType(left->elem, right->elem) && (!left->elem2 ? !right->elem2 : SameType(left->elem2, right->elem2));
     case MType::Ptr: return left->readOnly == right->readOnly && SameType(left->elem, right->elem);
     case MType::Func:
-    {
-        if (left->variadic != right->variadic) return false;
-        if (left->paramTypes.size() != right->paramTypes.size()) return false;
-        if (!SameType(left->elem, right->elem)) return false;
-        for (std::size_t index = 0; index < left->paramTypes.size(); ++index)
+        if (left->name != right->name) return false;
         {
-            if (!SameType(left->paramTypes[index], right->paramTypes[index])) return false;
+            if (left->variadic != right->variadic) return false;
+            if (left->paramTypes.size() != right->paramTypes.size()) return false;
+            if (!SameType(left->elem, right->elem)) return false;
+            for (std::size_t index = 0; index < left->paramTypes.size(); ++index)
+            {
+                if (!SameType(left->paramTypes[index], right->paramTypes[index])) return false;
+            }
+            return true;
         }
-        return true;
-    }
     case MType::Array:
         return (left->dims == right->dims) && SameType(left->elem, right->elem);
     default: return true;
@@ -431,6 +433,7 @@ Memory::String TypeTag(const std::shared_ptr<MType> &type)
     case MType::Ptr: return TypeTag(type->elem) + (type->readOnly ? "_const_ptr" : "_ptr");
     case MType::Func:
     {
+        if (!type->name.empty()) return type->name;
         Memory::String tag = TypeTag(type->elem) + "_fn";
         for (const std::shared_ptr<MType> &param : type->paramTypes) tag += "_" + TypeTag(param);
         return tag;

@@ -146,3 +146,7 @@
 /* 泛型归一化后的内部标点；不登记任何容器名关键字。 */
 %token TYPE_ARGS_BEGIN "@<"
 %token TYPE_ARGS_END "@>"
+
+/* 显式闭包类型选择使用独立边界，避免与容器类型归约混淆。 */
+%token CLOSURE_ARGS_BEGIN "@!<"
+%token CLOSURE_ARGS_END "@!>"

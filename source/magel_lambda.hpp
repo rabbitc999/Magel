@@ -210,6 +210,8 @@ inline Memory::String inferArgument(const Memory::String &argument,
     return {};
 }
 
+#include "magel_generic_closure_normalize.inc"
+
 /**
  * @brief 保留模块与行映射并提升待推导 lambda。
  * @param result 源码及原行映射。
@@ -219,6 +221,7 @@ inline Memory::String inferArgument(const Memory::String &argument,
 inline bool run(preprocess::Result &result, Memory::String &error)
 {
     captureSpecifications.clear();
+    if (!normalizeGenericClosures(result, error)) return false;
     const Memory::String mask = codeMask(result.text);
     Memory::Map<Memory::String, Memory::String> variables;
     Memory::Vector<std::pair<std::size_t, Memory::String>> modules;

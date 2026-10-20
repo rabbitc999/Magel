@@ -54,6 +54,7 @@ Memory::String InferenceTypeText(const std::shared_ptr<MType> &type)
     }
     if (type->kind == MType::Func)
     {
+        if (!type->name.empty()) return type->name;
         auto result = InferenceTypeText(type->elem);
         if (type->elem && type->elem->kind == MType::Array) result = "(" + result + ")";
         Memory::String text = result + " fn(";
@@ -124,6 +125,87 @@ void IndexInferenceTypes(const Memory::Vector<std::shared_ptr<MType>> &pool, std
 }
 
 /**
+ * @brief 泛型闭包各实现中不受局部声明遮蔽的名称，供环境构造时解析实际来源。
+ */
+Memory::Map<Memory::String, Memory::Set<Memory::String>> g_genericClosureCaptureNames;
+
+/**
+ * @brief 从生成解析器的语法树提取自由变量，不对符号类型执行值运算。
+ * @param id 待遍历的语法节点。
+ * @param locals 当前词法作用域中已声明的名称。
+ * @param names 接收自由变量名称。
+ */
+void CollectGenericClosureNames(int id, Memory::Set<Memory::String> &locals, Memory::Set<Memory::String> &names)
+{
+    if (id < 0) return;
+    const auto node = N(id);
+    if (node.kind == MNode::Var)
+    {
+        if (!locals.count(node.s)) names.insert(node.s);
+        if (node.s.rfind("__magel_lambda_", 0) == 0)
+            for (const auto top : g_top)
+            {
+                const auto nested = N(top);
+                if (nested.kind != MNode::FuncDef || nested.s != node.s) continue;
+                auto inner = locals;
+                for (const auto param : N(nested.kids[0]).kids) inner.insert(N(param).s);
+                const auto specification = magel_lambda::captureSpecifications.find(nested.s);
+                if (specification != magel_lambda::captureSpecifications.end())
+                    for (const auto &capture : specification->second)
+                        if (!inner.count(capture.first)) names.insert(capture.first);
+                CollectGenericClosureNames(nested.kids[1], inner, names);
+                break;
+            }
+        return;
+    }
+    if (node.kind == MNode::Block)
+    {
+        auto nested = locals;
+        CollectGenericClosureNames(static_cast<int>(node.i), nested, names);
+        return;
+    }
+    if (node.kind == MNode::Declare)
+    {
+        for (const auto child : N(node.kids[0]).kids)
+        {
+            const auto declaration = N(child);
+            for (const auto init : declaration.kids) CollectGenericClosureNames(init, locals, names);
+            locals.insert(declaration.s);
+        }
+        return;
+    }
+    if (node.kind == MNode::Destructure && !node.i)
+    {
+        CollectGenericClosureNames(node.kids[1], locals, names);
+        std::function<void(int)> bind = [&](int pattern) {
+            const auto &value = N(pattern);
+            if (value.kind == MNode::Var && value.s != "_")
+                locals.insert(value.s);
+            else
+                for (const auto child : value.kids) bind(child);
+        };
+        bind(node.kids[0]);
+        return;
+    }
+    if (node.kind == MNode::For)
+    {
+        auto nested = locals;
+        for (const auto child : node.kids) CollectGenericClosureNames(child, nested, names);
+        return;
+    }
+    if (node.kind == MNode::Foreach)
+    {
+        CollectGenericClosureNames(node.kids[0], locals, names);
+        auto nested = locals;
+        nested.insert(node.s);
+        CollectGenericClosureNames(node.kids[1], nested, names);
+        return;
+    }
+    for (const auto child : node.kids) CollectGenericClosureNames(child, locals, names);
+    if (node.guard >= 0) CollectGenericClosureNames(node.guard, locals, names);
+}
+
+/**
  * @brief 读取符号签名；函数正文不参与推导，枚举保留其全部载荷定义。
  */
 bool PrepareGenericSignatures()
@@ -132,6 +214,7 @@ bool PrepareGenericSignatures()
     g_inferenceSymbolicTypes.clear();
     g_inferenceSymbolicCount = 0;
     g_genericSignatures.clear();
+    g_genericClosureCaptureNames.clear();
     g_genericPatterns.clear();
     g_genericPatternTypes.clear();
     const auto savedTop = g_top;
@@ -146,7 +229,8 @@ bool PrepareGenericSignatures()
         if (magel_generic::wordAt(head, 0, "interface") || magel_generic::wordAt(head, 0, "type")) continue;
         if (structure && head.find("create") == Memory::String::npos) continue;
         magel_generic::Generic probe = generic;
-        if (!enumeration && !structure)
+        const auto closureBody = magel_lambda::genericClosureBodies.find(generic.name);
+        if (!enumeration && !structure && closureBody == magel_lambda::genericClosureBodies.end())
         {
             const auto body = probe.declaration.find('{');
             if (body != Memory::String::npos)
@@ -183,6 +267,7 @@ bool PrepareGenericSignatures()
             pattern.generic = &magel_generic::session.generics.at(pattern.generic->name);
             g_genericPatterns[item.first] = std::move(pattern);
         }
+        const auto savedCaptureSpecifications = magel_lambda::captureSpecifications;
         magel::Engine parser;
         int value = 0;
         g_parseModule.clear();
@@ -196,6 +281,12 @@ bool PrepareGenericSignatures()
             if (node.s != "McInferenceProbe") continue;
             if (node.kind == MNode::FuncDef)
             {
+                if (closureBody != magel_lambda::genericClosureBodies.end())
+                {
+                    Memory::Set<Memory::String> locals;
+                    for (const auto param : N(node.kids[0]).kids) locals.insert(N(param).s);
+                    CollectGenericClosureNames(node.kids[1], locals, g_genericClosureCaptureNames[closureBody->second]);
+                }
                 signature.result = node.type >= 0 ? T(node.type) : nullptr;
                 for (int param : N(node.kids[0]).kids)
                 {
@@ -236,6 +327,7 @@ bool PrepareGenericSignatures()
         g_nodes.resize(nodeCount);
         g_types.resize(typeCount);
         g_names.resize(nameCount);
+        magel_lambda::captureSpecifications = savedCaptureSpecifications;
     }
     g_top = savedTop;
     g_parseModule = savedModule;
@@ -257,6 +349,7 @@ bool UnifyGenericType(const std::shared_ptr<MType> &pattern, const std::shared_p
         return true;
     }
     if (pattern->kind != actual->kind) return false;
+    if (pattern->kind == MType::Func && pattern->name != actual->name) return false;
     if (pattern->kind == MType::Ptr || pattern->kind == MType::Array || IsContainer(pattern) || pattern->kind == MType::Func)
     {
         if (IsContainer(pattern) && pattern->name != actual->name) return false;
@@ -406,10 +499,12 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
     for (auto &declaration : g_functionDecls)
     {
         if (declaration.source != name || declaration.module != module || declaration.bodyId < 0) continue;
-        const int captureMode = name.find("_mut_") != Memory::String::npos  ? 1 :
-                                name.find("_copy_") != Memory::String::npos ? 2 :
-                                name.find("_move_") != Memory::String::npos ? 3 :
-                                                                              0;
+        FindGenericClosureDefinition(name);
+        const auto genericClosure = magel_lambda::genericClosures.find(name);
+        const int captureMode = genericClosure != magel_lambda::genericClosures.end() ? genericClosure->second.captureMode : name.find("_mut_") != Memory::String::npos ? 1 :
+                                                                                                                         name.find("_copy_") != Memory::String::npos    ? 2 :
+                                                                                                                         name.find("_move_") != Memory::String::npos    ? 3 :
+                                                                                                                                                                          0;
         Memory::Vector<MParam> captures;
         Memory::Set<Memory::String> captured;
         Memory::Set<Memory::String> locals;
@@ -437,6 +532,24 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
             }
             return true;
         };
+        if (genericClosure != magel_lambda::genericClosures.end())
+        {
+            specifications = &genericClosure->second.captures;
+            for (const auto &source : g_genericClosureCaptureNames[genericClosure->second.sourceSeed])
+            {
+                const auto variable = FindIn(module, source);
+                if (!variable) continue;
+                bool local = false;
+                for (std::size_t scope = 1; scope < g_scope.size(); ++scope)
+                {
+                    const auto found = g_scope[scope].find(source);
+                    if (found != g_scope[scope].end() && &found->second == variable) local = true;
+                }
+                if (!local || genericClosure->second.member) continue;
+                const auto mode = specifications->find(source);
+                if (!addCapture(source, variable, mode == specifications->end() ? captureMode : mode->second)) return false;
+            }
+        }
         if (specifications)
             for (const auto &entry : *specifications)
             {
@@ -543,7 +656,28 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
                 if (!visit(child, names)) return false;
             return true;
         };
-        if (!visit(declaration.bodyId, locals)) return false;
+        bool genericImplementation = false;
+        const auto expansion = magel_generic::session.made.find(name);
+        if (expansion != magel_generic::session.made.end())
+        {
+            const auto genericBody = magel_lambda::genericClosureBodies.find(expansion->second.generic->name);
+            if (genericBody != magel_lambda::genericClosureBodies.end())
+            {
+                const auto &source = magel_lambda::genericClosures.at(genericBody->second);
+                auto environmentName = source.seed;
+                if (!source.outerNames.empty())
+                {
+                    if (expansion->second.args.size() < source.outerNames.size()) return Fail("泛型闭包缺少外层类型参数");
+                    Memory::Vector<Memory::String> outer(expansion->second.args.begin(), expansion->second.args.begin() + source.outerNames.size());
+                    environmentName = magel_generic::mangle(source.seed, outer);
+                }
+                const auto environment = g_lambdaCaptures.find(ModuleSymbol(module, environmentName));
+                if (environment == g_lambdaCaptures.end()) return Fail("泛型闭包的捕获环境尚未构造");
+                captures = environment->second;
+                genericImplementation = true;
+            }
+        }
+        if (!genericImplementation && !visit(declaration.bodyId, locals)) return false;
         g_lambdaCaptures[key] = captures;
         g_lambdaPrepared.insert(key);
         if (g_lambdaAutoReturns.count(key))
@@ -968,6 +1102,154 @@ bool InferGenericConstructor(int id)
     const auto specialized = magel_generic::mangle(name, selected);
     if (!magel_generic::session.made.count(specialized)) throw MInstantiationRequest{ name, selected };
     g_nodes[ownerId].s = ModuleSymbol(generic->second.module, specialized);
+    return true;
+}
+
+/**
+ * @brief 根据泛型闭包的实参类型选择主实现、完整特化或唯一最具体的偏特化。
+ * @param id 调用表达式节点；成功后缓存具体函数名称与返回类型。
+ * @return 被调用者为泛型闭包时返回 true，普通调用返回 false。
+ */
+bool ResolveGenericClosureCall(int id)
+{
+    const auto node = N(id);
+    if (node.kind != MNode::Call || node.kids.size() != 2) return false;
+    int value = node.kids[0];
+    const auto selection = N(value);
+    const bool explicitArguments = selection.kind == MNode::GenericClosureSelect;
+    if (explicitArguments) value = selection.kids[0];
+    const auto type = ExprType(value);
+    if (!type || type->kind != MType::Func || type->name.empty()) return false;
+    const auto definition = FindGenericClosureDefinition(type->name);
+    if (!definition) return false;
+    if (node.type >= 0 && !node.s.empty()) return true;
+    const auto &closure = *definition;
+    const auto primary = magel_generic::session.generics.find(closure.primary);
+    const auto signature = g_genericSignatures.find(closure.primary);
+    if (primary == magel_generic::session.generics.end() || signature == g_genericSignatures.end())
+        return Fail("泛型闭包缺少主实现签名"), true;
+    Memory::Vector<Memory::String> arguments;
+    Memory::Vector<std::shared_ptr<MType>> types;
+    const auto actuals = N(node.kids[1]).kids;
+    Memory::Map<Memory::String, std::shared_ptr<MType>> bindings;
+    const auto outerCount = closure.outerArguments.size();
+    for (std::size_t index = 0; index < outerCount; ++index)
+    {
+        std::shared_ptr<MType> concrete;
+        for (const auto &candidate : g_types)
+            if (GenericArgumentText(candidate) == closure.outerArguments[index])
+            {
+                concrete = candidate;
+                break;
+            }
+        bindings["McInferenceParameter" + Memory::toString(index)] = concrete ? concrete : NamedType(closure.outerArguments[index]);
+    }
+    const auto outerBindings = bindings;
+    if (explicitArguments)
+    {
+        const auto supplied = N(selection.kids[1]).kids;
+        if (supplied.size() != closure.names.size()) return Fail("泛型闭包的显式类型实参数量不匹配"), true;
+        arguments = closure.outerArguments;
+        for (const auto argument : supplied)
+        {
+            const auto concrete = T(N(argument).type);
+            types.push_back(concrete);
+            arguments.push_back(GenericArgumentText(concrete));
+        }
+    }
+    else
+    {
+        const auto &sig = signature->second;
+        if (actuals.size() != sig.params.size()) return Fail("泛型闭包的实参数量不匹配"), true;
+        for (std::size_t index = 0; index < actuals.size(); ++index)
+        {
+            const auto pattern = sig.params[index];
+            const auto bound = BoundCallbackType(pattern, bindings);
+            if (ConcreteCallbackParameter(bound)) InferExpression(actuals[index], bound);
+            const auto actual = pattern->kind == MType::Ptr ? RawExprType(actuals[index]) : ExprType(actuals[index]);
+            if (!UnifyGenericType(pattern, actual, bindings))
+                return Fail("泛型闭包的类型推导冲突，请显式指定类型实参"), true;
+        }
+        if (!CompleteGenericArguments(primary->second, bindings, arguments))
+            return Fail("无法推导泛型闭包的全部类型参数"), true;
+        for (std::size_t index = outerCount; index < arguments.size(); ++index)
+        {
+            const auto bound = bindings.find("McInferenceParameter" + Memory::toString(index));
+            if (bound != bindings.end())
+                types.push_back(bound->second);
+            else
+            {
+                std::shared_ptr<MType> concrete;
+                for (const auto &candidate : g_types)
+                    if (GenericArgumentText(candidate) == arguments[index])
+                    {
+                        concrete = candidate;
+                        break;
+                    }
+                types.push_back(concrete ? concrete : NamedType(arguments[index]));
+            }
+        }
+    }
+    const magel_lambda::GenericClosureBranch *chosen = nullptr;
+    Memory::Map<Memory::String, std::shared_ptr<MType>> chosenBindings;
+    Memory::Vector<std::pair<const magel_lambda::GenericClosureBranch *, Memory::Map<Memory::String, std::shared_ptr<MType>>>> candidates;
+    for (const auto &branch : closure.branches)
+    {
+        const auto matcher = g_genericSignatures.find(branch.matcher);
+        if (matcher == g_genericSignatures.end() || matcher->second.params.size() != types.size())
+            return Fail("泛型闭包的特化模式缺少签名"), true;
+        auto matched = outerBindings;
+        bool accepts = true;
+        for (std::size_t index = 0; index < types.size(); ++index)
+            if (!UnifyGenericType(matcher->second.params[index], types[index], matched)) accepts = false;
+        if (accepts) candidates.push_back({ &branch, std::move(matched) });
+    }
+    for (const auto &candidate : candidates)
+    {
+        bool dominated = false;
+        const auto &pattern = g_genericSignatures.at(candidate.first->matcher).params;
+        for (const auto &other : candidates)
+        {
+            if (candidate.first == other.first) continue;
+            const auto &alternative = g_genericSignatures.at(other.first->matcher).params;
+            Memory::Map<Memory::String, std::shared_ptr<MType>> left, right;
+            bool acceptsOther = true, otherAccepts = true;
+            for (std::size_t index = 0; index < types.size(); ++index)
+            {
+                if (!UnifyGenericType(pattern[index], alternative[index], left)) acceptsOther = false;
+                if (!UnifyGenericType(alternative[index], pattern[index], right)) otherAccepts = false;
+            }
+            if (acceptsOther && !otherAccepts) dominated = true;
+        }
+        if (dominated) continue;
+        if (chosen) return Fail("泛型闭包的偏特化匹配存在歧义"), true;
+        chosen = candidate.first;
+        chosenBindings = candidate.second;
+    }
+    const auto function = chosen ? chosen->function : closure.primary;
+    auto specializationArguments = arguments;
+    if (chosen)
+        for (std::size_t index = 0; index < arguments.size(); ++index)
+        {
+            const auto matched = chosenBindings.find("McInferenceParameter" + Memory::toString(index));
+            if (matched != chosenBindings.end()) specializationArguments[index] = GenericArgumentText(matched->second);
+        }
+    const auto specialized = magel_generic::mangle(function, specializationArguments);
+    if (!magel_generic::session.made.count(specialized)) throw MInstantiationRequest{ function, specializationArguments };
+    if (!CheckLambdaCaptures(specialized, closure.module)) return true;
+    const auto resolved = FindInferenceFunction(closure.module, specialized);
+    if (!resolved) return Fail("泛型闭包实例没有可调用的实现"), true;
+    if (actuals.size() != resolved->params.size()) return Fail("泛型闭包特化的实参数量不匹配"), true;
+    for (std::size_t index = 0; index < actuals.size(); ++index)
+    {
+        InferExpression(actuals[index], resolved->params[index].type);
+        const auto actual = resolved->params[index].type->kind == MType::Ptr ? RawExprType(actuals[index]) : ExprType(actuals[index]);
+        if (!Acceptable(resolved->params[index].type, actual, true))
+            return Fail("泛型闭包特化的实参类型不匹配"), true;
+    }
+    g_nodes[id].s = specialized;
+    g_nodes[id].s2 = closure.seed;
+    g_nodes[id].type = M_AddType(resolved->result);
     return true;
 }
 

@@ -708,6 +708,7 @@ Memory::String TypeKey(const std::shared_ptr<MType> &type)
     }
     case MType::Func:
     {
+        if (!type->name.empty()) return "generic closure " + type->name;
         Memory::String key = "fn(";
         for (std::size_t index = 0; index < type->paramTypes.size(); ++index)
         {

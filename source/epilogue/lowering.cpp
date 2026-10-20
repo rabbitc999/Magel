@@ -2521,6 +2521,37 @@ simple_ast::NodePtr LowerAssign(int targetId, int valueId)
 }
 
 /**
+ * @brief 在声明作用域初始化闭包成员，隔离构造调用者的局部同名绑定。
+ * @param initializer 默认闭包表达式。
+ * @return 拥有独立环境的闭包值。
+ */
+simple_ast::NodePtr LowerMemberClosureInitializer(int initializer)
+{
+    struct Scope
+    {
+        decltype(g_scope) saved;
+        Memory::String owner;
+        /**
+         * @brief 暂存调用者的符号作用域，只保留模块全局名称。
+         */
+        Scope() : saved(std::move(g_scope)), owner(std::move(g_owner))
+        {
+            g_scope.push_back(saved.front());
+            g_owner.clear();
+        }
+        /**
+         * @brief 在正常返回或语义重放异常时恢复调用者的符号作用域。
+         */
+        ~Scope()
+        {
+            g_scope = std::move(saved);
+            g_owner = std::move(owner);
+        }
+    } scope;
+    return LowerExpr(initializer);
+}
+
+/**
  * @brief 初始化默认值中实际存在的容器字段，跳过枚举未激活的载荷。
  * @param address 已清零的聚合地址。
  * @param owner 聚合类型名称。
@@ -2544,7 +2575,9 @@ void InitializeDefaultContainers(const simple_ast::NodePtr &address, const Memor
             if (!active) continue;
         }
         const auto target = simple_ast::Node::offset(address, simple_ast::Node::i(field.slot), 8);
-        if (IsContainer(field.type))
+        if (field.initializer >= 0)
+            out->push_back(simple_ast::Node::storeAt(target, LowerMemberClosureInitializer(field.initializer), simple_ast::Type::i64()));
+        else if (IsContainer(field.type))
             out->push_back(simple_ast::Node::storeAt(
                 target, NewContainerValue(field.type), LowerType(field.type, owner + "." + field.name)));
         else if (field.type->kind == MType::Struct)
