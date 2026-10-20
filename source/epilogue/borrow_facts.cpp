@@ -131,7 +131,7 @@ bool PropagationBorrowsStorage(const std::shared_ptr<MType> &type, Memory::Set<M
     if (!type) return false;
     if (type->kind == MType::Ptr) return true;
     if (type->kind == MType::Func || type->kind == MType::Obj) return false;
-    if (type->kind == MType::Container || type->kind == MType::Array)
+    if (IsContainer(type) || type->kind == MType::Array)
         return PropagationBorrowsStorage(type->elem, seen) || PropagationBorrowsStorage(type->elem2, seen);
     if (type->kind != MType::Struct || !seen.insert(type->name).second) return false;
     const auto definition = FindStruct(type->name);

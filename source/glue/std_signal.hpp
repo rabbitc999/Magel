@@ -17,7 +17,7 @@ inline std::vector<std::complex<double>> readComplexes(Context &ctx, std::int64_
 {
     Memory::Vector<double> flat;
     std::vector<std::complex<double>> out;
-    if (!ctx.readListStruct(list, 2u, flat))
+    if (!collection_glue::readListStruct(ctx, list, 2u, flat))
     {
         ctx.fail("读取 List<Complex> 失败");
         return out;
@@ -31,11 +31,11 @@ inline std::vector<std::complex<double>> readComplexes(Context &ctx, std::int64_
 /* 把 `std::vector<std::complex<double>>` 写成 `std::lang::List<Complex<float64>>`。 */
 inline std::int64_t writeComplexes(Context &ctx, const std::vector<std::complex<double>> &values)
 {
-    const std::int64_t list = ctx.makeList();
+    const std::int64_t list = collection_glue::makeList(ctx);
     for (const std::complex<double> &value : values)
     {
         const std::int64_t address = magel_glue::makeStruct(ctx, { value.real(), value.imag() });
-        ctx.listPushStruct(list, address, 2u);
+        collection_glue::listPushStruct(ctx, list, address, 2u);
     }
     return list;
 }

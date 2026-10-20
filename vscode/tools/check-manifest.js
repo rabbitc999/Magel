@@ -14,7 +14,7 @@
  *   8. 宏块折叠由 `src/folding.js` 提供（`planFoldingRanges` 是函数）；
  *   9. 图标 `icon.png` 存在、是 PNG、且不小于 128×128（市场要求）；
  *  10. **只注册 `.mgl`**：`.gram` / `.metro` 归根目录的 GramEditor 插件，不该在这里重复声明。
- *  11. 插件版本与仓库根目录 VERSION 中的 Magel 程序版本一致。
+ *  11. 插件独立编号，magelCompilerVersion 与仓库根目录 VERSION 一致。
  *
  * 用法（在仓库任意目录执行都可以）：
  *   node magel/vscode/tools/check-manifest.js
@@ -91,7 +91,7 @@ function main() {
   }
 
   const version = fs.readFileSync(path.join(EXTENSION_DIR, '..', 'VERSION'), 'utf8').trim();
-  check('插件版本与 Magel 程序版本一致', pkg.version === version,
+  check('内嵌编译器版本声明与 Magel 程序版本一致', pkg.magelCompilerVersion === version,
     `插件 ${pkg.version}，Magel ${version}`);
 
   const contributes = pkg.contributes || {};

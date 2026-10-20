@@ -794,27 +794,25 @@ struct TimerRuntime;
  */
 struct NativeContext
 {
-    HeapAllocator *heap = nullptr;                                               ///< 堆：造出来的字符串放这儿。
-    const DataArea *data = nullptr;                                              ///< 数据区：字面量所在的那片静态内存。
-    Memory::String *text = nullptr;                                              ///< 文本输出桶（`printf` 往里追加）。
-    OutputSink textSink = nullptr;                                               ///< 文本输出下沉（`Machine::setOutputSink`）；空 = 只进桶。
-    void *textSinkUser = nullptr;                                                ///< 下沉上下文。
-    const bool *textKeep = nullptr;                                              ///< 有下沉时是否仍累积进文本桶；空 = 累积。
-    const Memory::Vector<Memory::String> *input = nullptr;                       ///< 输入项（按顺序取）。
-    std::size_t *inputIndex = nullptr;                                           ///< 已经取到第几项。
-    const Memory::Vector<Memory::String> *programArguments = nullptr;            ///< 程序入口参数。
-    NativeInvoker *invoker = nullptr;                                            ///< 同步调用 MAGEL 函数指针。
-    struct ObjectStore *objects = nullptr;                                       ///< 运行期对象表（bint / 容器）。
-    TimerRuntime *timers = nullptr;                                              ///< 软件定时器表（中断事件）。
-    Machine *machine = nullptr;                                                  ///< 正在执行 run() 的虚拟机（胶水投递中断用）。
-    Memory::Function<void(std::size_t, InstructionHook)> instructionHookSetter;  ///< AOT 执行边界钩子入口。
-    Memory::Function<void(std::int64_t, std::int64_t)> interruptPosterFn;        ///< AOT 中断投递入口。
-    std::size_t threadId = 0u;                                                   ///< 当前线程 id（定时器归属线程）。
-    bool *exitRequested = nullptr;                                               ///< `exit(n)` 请求提前正常停机。
-    int *exitCode = nullptr;                                                     ///< `exit(n)` 提供的宿主状态码。
-    const NativeServices *hostServices = nullptr;                                ///< 通用不透明宿主服务。
-    Memory::String error;                                                        ///< 非空 = 出错，调用方负责终止运行。
-    mutable Memory::String memoryFault;                                          ///< 首次非法访问，优先于回调随后生成的普通错误。
+    HeapAllocator *heap = nullptr;                                     ///< 堆：造出来的字符串放这儿。
+    const DataArea *data = nullptr;                                    ///< 数据区：字面量所在的那片静态内存。
+    Memory::String *text = nullptr;                                    ///< 文本输出桶（`printf` 往里追加）。
+    OutputSink textSink = nullptr;                                     ///< 文本输出下沉（`Machine::setOutputSink`）；空 = 只进桶。
+    void *textSinkUser = nullptr;                                      ///< 下沉上下文。
+    const bool *textKeep = nullptr;                                    ///< 有下沉时是否仍累积进文本桶；空 = 累积。
+    const Memory::Vector<Memory::String> *input = nullptr;             ///< 输入项（按顺序取）。
+    std::size_t *inputIndex = nullptr;                                 ///< 已经取到第几项。
+    const Memory::Vector<Memory::String> *programArguments = nullptr;  ///< 程序入口参数。
+    NativeInvoker *invoker = nullptr;                                  ///< 同步调用 MAGEL 函数指针。
+    struct ObjectStore *objects = nullptr;                             ///< 运行期通用对象表。
+    TimerRuntime *timers = nullptr;                                    ///< 软件定时器表（中断事件）。
+    Machine *machine = nullptr;                                        ///< 正在执行 run() 的虚拟机（胶水投递中断用）。
+    std::size_t threadId = 0u;                                         ///< 当前线程 id（定时器归属线程）。
+    bool *exitRequested = nullptr;                                     ///< `exit(n)` 请求提前正常停机。
+    int *exitCode = nullptr;                                           ///< `exit(n)` 提供的宿主状态码。
+    const NativeServices *hostServices = nullptr;                      ///< 通用不透明宿主服务。
+    Memory::String error;                                              ///< 非空 = 出错，调用方负责终止运行。
+    mutable Memory::String memoryFault;                                ///< 首次非法访问，优先于回调随后生成的普通错误。
 };
 
 /**
@@ -973,7 +971,7 @@ public:
     /**
      * @brief 释放当前对象表中的宿主记录壳。
      * @param handle 对象句柄。
-     * @return 成功释放时为 true。
+     * @return 接受立即或延期释放时为 true；无效句柄或被拒绝时为 false。
      */
     bool releaseNativeRecord(std::int64_t handle) override;
     /**
@@ -989,6 +987,23 @@ public:
      * @return 独立副本句柄，失败为零。
      */
     std::int64_t cloneNativeRecord(std::int64_t handle) override;
+    /**
+     * @brief 返回对象跨副本保持的身份。
+     * @param handle 对象句柄。
+     * @return 身份；无效句柄返回零。
+     */
+    std::int64_t objectIdentity(std::int64_t handle) const override;
+    /**
+     * @brief 登记本次运行结束时清理的临时资源。
+     * @param handle 地址或对象句柄。
+     * @param object 是否为对象句柄。
+     */
+    void trackTemporary(std::int64_t handle, bool object) override;
+    /**
+     * @brief 复制当前宿主入口参数。
+     * @return 参数列表；未设置时为空。
+     */
+    Memory::Vector<Memory::String> programArguments() const override { return context_.programArguments ? *context_.programArguments : Memory::Vector<Memory::String>{}; }
     /**
      * @brief 按胶水约定的身份借用不透明宿主服务。
      * @param name 服务身份，VM 不解释其含义。
@@ -1037,6 +1052,16 @@ public:
     }
 
     /**
+     * @brief 在运行时内存中创建字符串并返回其原生值。
+     * @param text 待处理的文本。
+     * @retval 在运行时内存中创建字符串并返回其原生值。
+     */
+    std::int64_t makeString(const Memory::String &text) override
+    {
+        return static_cast<std::int64_t>(nativeAllocString(context_, text));
+    }
+
+    /**
      * @brief 从原生值对应的地址读取字符串。
      * @param address 运行时内存地址。
      * @param out 接收处理结果的输出对象。
@@ -1046,22 +1071,6 @@ public:
     {
         return address >= 0 && nativeReadCString(context_, static_cast<std::size_t>(address), &out);
     }
-
-    bool readList(std::int64_t handle, Memory::Vector<NativeValue> &out) const override;
-
-    std::int64_t makeList() override;
-    bool listPush(std::int64_t listHandle, const NativeValue &value) override;
-    bool listPushStruct(std::int64_t listHandle, std::int64_t structAddress,
-                        std::size_t slotCount) override;
-    bool readListStruct(std::int64_t handle, std::size_t slotCount,
-                        Memory::Vector<double> &out) const override;
-    std::int64_t makeMap() override;
-    std::int64_t makeSet() override;
-    bool mapSet(std::int64_t mapHandle, const NativeValue &key, const NativeValue &value) override;
-    bool setInsert(std::int64_t setHandle, const NativeValue &value) override;
-    bool readMap(std::int64_t handle, Memory::Vector<NativeValue> &keys,
-                 Memory::Vector<NativeValue> &values) const override;
-    bool readSet(std::int64_t handle, Memory::Vector<NativeValue> &elements) const override;
 
     /**
      * @brief 通过当前虚拟机调用指定函数。
@@ -1077,16 +1086,6 @@ public:
         if (context_.error.empty())
             context_.error = invocationError_ && !invocationError_->empty() ? *invocationError_ : "当前运行时无法调用指定函数指针";
         return false;
-    }
-
-    /**
-     * @brief 在运行时内存中创建字符串并返回其原生值。
-     * @param text 待处理的文本。
-     * @retval 在运行时内存中创建字符串并返回其原生值。
-     */
-    std::int64_t makeString(const Memory::String &text) override
-    {
-        return static_cast<std::int64_t>(nativeAllocString(context_, text));
     }
 
     std::int64_t makeTemporary(std::size_t bytes) override;
@@ -1122,13 +1121,13 @@ public:
     {
         if (auto *machine = context_.machine)
             return [machine](std::int64_t timer, std::int64_t source) { machine->raiseInterrupt(timer, source); };
-        return context_.interruptPosterFn;
+        return {};
     }
 
 #endif
 
     /**
-     * @brief 为 VM 或 AOT 安装执行钩子。
+     * @brief 为 VM 安装执行钩子。
      * @param interval 间隔。
      * @param hook 钩子。
      * @return 是否支持。
@@ -1140,9 +1139,7 @@ public:
             context_.machine->setInstructionHook(interval, std::move(hook));
             return true;
         }
-        if (!context_.instructionHookSetter) return false;
-        context_.instructionHookSetter(interval, std::move(hook));
-        return true;
+        return false;
     }
 
     /**
@@ -2190,14 +2187,10 @@ constexpr std::int64_t kObjectHandleBase = 4611686018427387904LL;
  */
 enum class ObjectKind
 {
-    NativeRecord,   ///< 不透明宿主记录，语义由胶水及描述符回调维护。
-    Vector,         ///< 有序表（vec<T>）
-    Set,            ///< 有序集合（set<T>）
-    Map,            ///< 映射（map<K,V>）
-    Obj,            ///< 装箱格子（obj）：一个值 + 它的类型号
-    IteratorLease,  ///< 引用迭代器对列表元素单元的共享租约
-    Arena,          ///< 批量持有字节堆分配的标准库 Arena
-    Closure,        ///< 类型化函数入口和可写借用的捕获环境
+    NativeRecord,  ///< 不透明宿主记录，语义由胶水及描述符回调维护。
+    Obj,           ///< 装箱格子（obj）：一个值 + 它的类型号
+    Arena,         ///< 批量持有字节堆分配的标准库 Arena
+    Closure,       ///< 类型化函数入口和可写借用的捕获环境
 };
 
 /**
@@ -2211,110 +2204,17 @@ enum class ObjectKind
     {
     case ObjectKind::NativeRecord: return "native record";
     case ObjectKind::Closure: return "lambda";
-    case ObjectKind::Vector: return "vec";
-    case ObjectKind::Set: return "set";
-    case ObjectKind::Map: return "map";
     case ObjectKind::Obj: return "obj";
     case ObjectKind::Arena: return "arena";
-    case ObjectKind::IteratorLease: return "iterator lease";
     }
     return "?";
 }
 
-/**
- * 集合 / 映射的键：对象按可跨副本保留的身份排序，其余按值排序。
- */
-struct ObjectKey
-{
-    bool isStruct = false;
-    bool isObject = false;
-    bool isText = false;
-    bool isFloat = false;
-    bool ownsObject = false;
-    std::int64_t integer = 0;
-    std::int64_t ownedInteger = 0;
-    double real = 0.0;
-    Memory::String text;
-    Memory::Vector<ObjectKey> fields;
-    bool hashed = false;    ///< 自定义 Map 键是否已缓存哈希。
-    std::int64_t hash = 0;  ///< Hash<T> 返回值按位保存，用于同哈希范围查找。
-
-    /**
-     * @brief 判断左值是否小于右值。
-     *
-     * 类型不同时按"数值 < 字符串"排（保证严格弱序）；同类型按值比。
-     * @param other 参与当前运算或比较的另一对象。
-     * @retval 左值小于右值时为 true，否则为 false。
-     */
-    bool operator<(const ObjectKey &other) const
-    {
-        if (hashed != other.hashed) return !hashed;
-        if (hashed && hash != other.hash) return hash < other.hash;
-        if (isStruct != other.isStruct) return !isStruct;
-        if (isStruct) return fields < other.fields;
-        if (isText != other.isText) return !isText;
-        if (isText) return text < other.text;
-        if (isFloat != other.isFloat)
-        {
-            const double left = isFloat ? real : static_cast<double>(integer);
-            const double right = other.isFloat ? other.real : static_cast<double>(other.integer);
-            return left < right;
-        }
-        return isFloat ? (real < other.real) : (integer < other.integer);
-    }
-};
-
-/**
- * 容器里的一个值：数值（整数 / 浮点）或字符串（**存副本**）。
- */
-struct ObjectValue
-{
-    bool isStruct = false;
-    bool isText = false;
-    bool isFloat = false;
-    bool ownsObject = false;
-    std::int64_t integer = 0;
-    std::int64_t objectIdentity = 0;
-    double real = 0.0;
-    Memory::String text;
-    Memory::Vector<ObjectValue> fields;
-
-    /**
-     * @brief 当键用（集合元素、映射的键）。
-     * @param keepOwnership 是否保留输入对象的所有权。
-     * @retval 保存当键用（集合元素、映射的键）结果的对象。
-     */
-    [[nodiscard]] ObjectKey key(bool keepOwnership = false) const
-    {
-        ObjectKey out;
-        out.isStruct = isStruct;
-        out.isObject = objectIdentity != 0;
-        out.isText = isText;
-        out.isFloat = isFloat;
-        out.ownsObject = keepOwnership && ownsObject;
-        out.integer = objectIdentity != 0 ? objectIdentity : integer;
-        out.ownedInteger = integer;
-        out.real = real;
-        out.text = text;
-        for (const ObjectValue &field : fields) out.fields.push_back(field.key(keepOwnership));
-        return out;
-    }
-};
+using ObjectValue = NativeStoredValue;
 
 /**
  * 一个运行期对象（几种里的一种，用同一个结构装下，省一套 union 的麻烦）。
  */
-/**
- * @brief 共享借用租约；最后一个游标副本释放时写回并回收引用单元。
- */
-struct IteratorLeaseState
-{
-    NativeContext context;
-    std::int64_t source = 0;
-    Memory::Map<std::size_t, std::size_t> cells;
-    ~IteratorLeaseState();
-};
-
 struct RuntimeObject
 {
     const NativeRecordType *nativeType = nullptr;               ///< 宿主描述符，VM 不根据名称分派。
@@ -2325,7 +2225,7 @@ struct RuntimeObject
     Memory::Map<std::size_t, std::int64_t> captureDestructors;  ///< 聚合捕获的用户析构函数。
     ObjectKind kind = ObjectKind::NativeRecord;
     std::int64_t identity = 0;          ///< 值副本共享的键身份；新对象由 ObjectStore::add 分配。
-    Memory::Vector<ObjectValue> items;  ///< Vector：有序元素
+    Memory::Vector<ObjectValue> items;  ///< 动态状态箱及闭包的拥有值槽。
     /**
      * @brief 活跃 foreach 元素引用的可寻址单元，由最外层借用负责回收。
      */
@@ -2339,13 +2239,6 @@ struct RuntimeObject
     };
     Memory::Map<std::size_t, ElementView> elementViews;
     bool refreshingViews = false;
-    std::size_t iteratorLeases = 0;  ///< 活跃引用游标租约数量。
-    bool pendingRelease = false;     ///< 持有元素引用时延后释放源列表。
-    std::shared_ptr<IteratorLeaseState> iteratorLease;
-    std::int64_t mapEqual = 0;                    ///< Equal<bool,T> 回调；0 表示内建键比较。
-    std::int64_t mapHash = 0;                     ///< 可选 Hash<T> 回调；0 表示直接 Equal 查找。
-    bool mapComparing = false;                    ///< 比较期间禁止重入同一个 Map。
-    Memory::Map<ObjectKey, ObjectValue> entries;  ///< Set / Map：键 → 值（Set 的值不用）
     /**
      * Obj：**类型号**（由前端在编译期算好，`nameof(类型)` 给的就是它；0 = 还没 set 过）。
      * 有了类型号，`obj.name()` 才能和 `nameof(...)` 比对 —— 泛型就是靠这一条分支的。
@@ -2378,6 +2271,7 @@ void nativeReleaseViewContents(NativeContext &ctx, const RuntimeObject::ElementV
  */
 struct ObjectStore
 {
+    NativeContext recordContext;                                                  ///< 不透明记录清理所需的运行时存储上下文。
     Memory::Map<std::pair<std::size_t, std::int64_t>, std::size_t> movedStorage;  ///< 已销毁子对象的（地址、类型号）及存储大小。
     Memory::Map<std::int64_t, std::shared_ptr<RuntimeObject>> objects;            ///< 还活着的对象
     /**
@@ -2406,6 +2300,8 @@ struct ObjectStore
     ~ObjectStore()
     {
         shuttingDown = true;
+        for (const auto &entry : objects)
+            if (entry.second->kind == ObjectKind::NativeRecord) releaseContents(*entry.second);
         objects.clear();
     }
     std::int64_t next = kObjectHandleBase;  ///< 下一个句柄
@@ -2457,43 +2353,6 @@ struct ObjectStore
     }
 
     /**
-     * @brief 复制映射键及其持有的数据。
-     * @param key 查找或写入使用的键。
-     * @param error 接收失败原因的错误信息。
-     * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
-     */
-    bool copyKey(ObjectKey *key, Memory::String *error)
-    {
-        if (key == nullptr) return true;
-        for (ObjectKey &field : key->fields)
-            if (!copyKey(&field, error)) return false;
-        if (!key->ownsObject) return true;
-        const std::int64_t nestedCopy = copyHandle(key->ownedInteger, error);
-        if (nestedCopy == 0) return false;
-        key->ownedInteger = nestedCopy;
-        return true;
-    }
-
-    /**
-     * @brief 为映射键建立独立持有的数据。
-     * @param key 查找或写入使用的键。
-     * @param error 接收失败原因的错误信息。
-     * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
-     */
-    bool ownKey(ObjectKey *key, Memory::String *error)
-    {
-        if (key == nullptr) return true;
-        for (ObjectKey &field : key->fields)
-            if (!ownKey(&field, error)) return false;
-        if (!key->isObject || key->ownsObject) return true;
-        const std::int64_t nestedCopy = copyHandle(key->ownedInteger, error);
-        if (nestedCopy == 0) return false;
-        key->ownedInteger = nestedCopy;
-        key->ownsObject = true;
-        return true;
-    }
-
-    /**
      * @brief 释放对象值持有的资源。
      * @param value 待转换、保存或参与计算的值。
      */
@@ -2504,21 +2363,16 @@ struct ObjectStore
     }
 
     /**
-     * @brief 释放映射键持有的资源。
-     * @param key 查找或写入使用的键。
-     */
-    void releaseKey(const ObjectKey &key)
-    {
-        for (const ObjectKey &field : key.fields) releaseKey(field);
-        if (key.ownsObject) release(key.ownedInteger);
-    }
-
-    /**
-     * @brief 释放容器中全部键值持有的资源。
+     * @brief 释放通用对象拥有的槽值与宿主记录资源。
      * @param object 待访问的对象。
      */
     void releaseContents(const RuntimeObject &object)
     {
+        if (object.kind == ObjectKind::NativeRecord && object.nativeType && object.nativeType->dispose)
+        {
+            NativeCallContextImpl host(recordContext);
+            object.nativeType->dispose(host, object.nativeRecord.get());
+        }
         if (object.iteratorStateBox || object.closureCopy)
         {
             auto context = object.iteratorContext;
@@ -2535,11 +2389,6 @@ struct ObjectStore
             }
         }
         for (const ObjectValue &value : object.items) releaseValue(value);
-        for (const auto &entry : object.entries)
-        {
-            releaseKey(entry.first);
-            releaseValue(entry.second);
-        }
         if (object.kind == ObjectKind::Obj && object.objOwnsObject)
         {
             release(object.objValue.integer);
@@ -2547,7 +2396,7 @@ struct ObjectStore
     }
 
     /**
-     * @brief 复制运行时对象及其容器内容。
+     * @brief 复制运行时对象并调用宿主记录的复制协议。
      * @param object 待访问的对象。
      * @param error 接收失败原因的错误信息。
      * @retval 对应对象的指针。
@@ -2559,13 +2408,22 @@ struct ObjectStore
             const auto *type = object.nativeType;
             const auto original = object.nativeRecord;
             const auto identity = object.identity;
-            if (!type || !type->clone)
+            if (!type || (!type->clone && !type->copy))
             {
                 if (error) *error = Memory::String(type && type->name ? type->name : "宿主记录") + " 不能复制";
                 return nullptr;
             }
             Memory::String reason;
-            void *record = type->clone(original.get(), reason);
+            recordContext.error.clear();
+            recordContext.memoryFault.clear();
+            NativeCallContextImpl host(recordContext);
+            if (type->prepare && !type->prepare(host, original.get()))
+            {
+                if (error) *error = recordContext.memoryFault.empty() ? recordContext.error : recordContext.memoryFault;
+                return nullptr;
+            }
+            void *record = type->copy ? type->copy(host, original.get()) : type->clone(original.get(), reason);
+            if (reason.empty()) reason = recordContext.memoryFault.empty() ? recordContext.error : recordContext.memoryFault;
             if (!record || record == original.get())
             {
                 if (error) *error = reason.empty() ? "宿主复制回调没有返回独立记录" : reason;
@@ -2589,24 +2447,9 @@ struct ObjectStore
         auto copy = Memory::makeShared<RuntimeObject>(object);
         copy->elementViews.clear();
         copy->refreshingViews = false;
-        copy->pendingRelease = false;
-        copy->iteratorLeases = 0;
-        copy->mapComparing = false;
         for (ObjectValue &value : copy->items)
         {
             if (!copyValue(&value, error)) return nullptr;
-        }
-        if (!copy->entries.empty())
-        {
-            Memory::Map<ObjectKey, ObjectValue> copiedEntries;
-            for (auto entry : copy->entries)
-            {
-                ObjectKey key = entry.first;
-                if (!copyKey(&key, error)) return nullptr;
-                if (!copyValue(&entry.second, error)) return nullptr;
-                copiedEntries.emplace(std::move(key), std::move(entry.second));
-            }
-            copy->entries = std::move(copiedEntries);
         }
         if (copy->kind == ObjectKind::Obj && copy->objOwnsObject)
         {
@@ -2670,11 +2513,11 @@ struct ObjectStore
     {
         const auto found = objects.find(handle);
         if (found == objects.end()) return false;
-        if (found->second->mapComparing) return false;
-        if (found->second->iteratorLeases || (!found->second->iteratorStateBox && !found->second->closureCopy && !found->second->elementViews.empty()))
+        if (found->second->kind == ObjectKind::NativeRecord && found->second->nativeType && found->second->nativeType->releaseDecision)
         {
-            found->second->pendingRelease = true;
-            return true;
+            const auto decision = found->second->nativeType->releaseDecision(found->second->nativeRecord.get());
+            if (decision == NativeRecordRelease::Deferred) return true;
+            if (decision == NativeRecordRelease::Rejected) return false;
         }
         std::shared_ptr<RuntimeObject> object = std::move(found->second);
         objects.erase(found);
@@ -2702,6 +2545,9 @@ std::int64_t NativeCallContextImpl::makeNativeRecord(const NativeRecordType &typ
         fail("宿主记录缺少对象表、有效记录或销毁回调");
         return 0;
     }
+    context_.objects->recordContext.heap = context_.heap;
+    context_.objects->recordContext.data = context_.data;
+    context_.objects->recordContext.objects = context_.objects;
     auto object = Memory::makeShared<RuntimeObject>();
     object->kind = ObjectKind::NativeRecord;
     object->nativeType = &type;
@@ -2716,13 +2562,16 @@ std::int64_t NativeCallContextImpl::makeNativeRecord(const NativeRecordType &typ
  */
 void *NativeCallContextImpl::nativeRecord(std::int64_t handle, const NativeRecordType &type) const
 {
-    auto *object = context_.objects ? context_.objects->find(handle) : nullptr;
-    return object && object->kind == ObjectKind::NativeRecord && object->nativeType == &type ? object->nativeRecord.get() : nullptr;
+    auto *object = context_.objects && !context_.objects->shuttingDown ? context_.objects->find(handle) : nullptr;
+    if (!object || object->kind != ObjectKind::NativeRecord || !object->nativeType) return nullptr;
+    const auto *actual = object->nativeType;
+    const bool sameIdentity = actual == &type || (actual->identityKey && type.identityKey && type.identityKey[0] && std::strcmp(actual->identityKey, type.identityKey) == 0);
+    return sameIdentity ? object->nativeRecord.get() : nullptr;
 }
 /**
  * @brief 释放当前运行时的通用记录壳并调用记录析构。
  * @param handle 待释放的句柄。
- * @return 成功释放时为 true。
+ * @return 接受立即或延期释放时为 true；无效句柄或被拒绝时为 false。
  */
 bool NativeCallContextImpl::releaseNativeRecord(std::int64_t handle)
 {
@@ -2756,7 +2605,30 @@ std::int64_t NativeCallContextImpl::cloneNativeRecord(std::int64_t handle)
     return context_.objects ? context_.objects->copyHandle(handle, &context_.error) : 0;
 }
 /**
- * @brief 从 VM 或 AOT 共用的输入源读取一项文本。
+ * @brief 读取存活对象的稳定身份。
+ * @param handle 对象句柄。
+ * @return 身份编号；未找到返回零。
+ */
+std::int64_t NativeCallContextImpl::objectIdentity(std::int64_t handle) const
+{
+    const auto *object = context_.objects ? context_.objects->find(handle) : nullptr;
+    return object ? object->identity : 0;
+}
+/**
+ * @brief 将临时资源追加到所属运行时的清理队列。
+ * @param handle 内存地址或对象句柄。
+ * @param object 是否登记对象。
+ */
+void NativeCallContextImpl::trackTemporary(std::int64_t handle, bool object)
+{
+    if (!context_.objects || !handle) return;
+    if (object)
+        context_.objects->materializedObjects.push_back(handle);
+    else
+        context_.objects->materializedHeap.push_back(static_cast<std::size_t>(handle));
+}
+/**
+ * @brief 从 VM 共用的输入源读取一项文本。
  * @param text 接收读取结果。
  * @return 成功读取时为 true。
  */
@@ -2785,363 +2657,6 @@ std::int64_t NativeCallContextImpl::makeTemporary(std::size_t bytes)
     }
     context_.objects->materializedHeap.push_back(address);
     return static_cast<std::int64_t>(address);
-}
-
-/**
- * @brief 创建原生调用可用的运行时列表。
- * @retval 创建原生调用可用的运行时列表。
- */
-std::int64_t NativeCallContextImpl::makeList()
-{
-    if (context_.objects == nullptr)
-    {
-        fail("没有接上对象表，建不了列表");
-        return 0;
-    }
-    auto object = Memory::makeShared<RuntimeObject>();
-    object->kind = ObjectKind::Vector;
-    return static_cast<std::int64_t>(context_.objects->add(std::move(object)));
-}
-
-/**
- * @brief 将一个原生值追加到运行时列表。
- * @param listHandle 目标运行时列表的句柄。
- * @param value 待转换、保存或参与计算的值。
- * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
- */
-bool NativeCallContextImpl::listPush(std::int64_t listHandle, const NativeValue &value)
-{
-    if (context_.objects == nullptr)
-    {
-        fail("没有接上对象表");
-        return false;
-    }
-    RuntimeObject *object = context_.objects->find(listHandle);
-    if (object == nullptr || object->kind != ObjectKind::Vector)
-    {
-        fail("listPush 的句柄不是 List");
-        return false;
-    }
-    ObjectValue out;
-    if (value.isText())
-    {
-        out.isText = true;
-        out.text = value.text;
-    }
-    else if (value.isFloat())
-    {
-        out.isFloat = true;
-        out.real = value.asFloat();
-    }
-    else
-    {
-        out.integer = value.asInt();
-    }
-    object->items.push_back(std::move(out));
-    return true;
-}
-
-/**
- * @brief 将结构体数据追加到运行时列表。
- * @param listHandle 目标运行时列表的句柄。
- * @param structAddress 结构体数据的运行时地址。
- * @param slotCount 结构体数据包含的值槽数量。
- * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
- */
-bool NativeCallContextImpl::listPushStruct(std::int64_t listHandle, std::int64_t structAddress,
-                                           std::size_t slotCount)
-{
-    if (context_.objects == nullptr)
-    {
-        fail("没有接上对象表");
-        return false;
-    }
-    RuntimeObject *object = context_.objects->find(listHandle);
-    if (object == nullptr || object->kind != ObjectKind::Vector)
-    {
-        fail("listPushStruct 的句柄不是 List");
-        return false;
-    }
-    ObjectValue out;
-    out.isStruct = true;
-    out.fields.reserve(slotCount);
-    for (std::size_t i = 0; i < slotCount; ++i)
-    {
-        /* 每个槽按 double 的位模式拷贝：MAGEL 结构体字段都是 8 字节对齐，
-         * 数值型结构体（如 Complex 的 re/im）这样拷最省事。 */
-        double raw = 0.0;
-        if (!readBytes(structAddress + static_cast<std::int64_t>(i * 8u),
-                       reinterpret_cast<char *>(&raw), sizeof(raw)))
-        {
-            fail("listPushStruct 读结构体槽失败");
-            return false;
-        }
-        ObjectValue field;
-        field.isFloat = true;
-        field.real = raw;
-        out.fields.push_back(std::move(field));
-    }
-    object->items.push_back(std::move(out));
-    return true;
-}
-
-/**
- * @brief 从列表项读取结构体数据。
- * @param handle 待操作的运行时句柄。
- * @param slotCount 结构体数据包含的值槽数量。
- * @param out 接收处理结果的输出对象。
- * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
- */
-bool NativeCallContextImpl::readListStruct(std::int64_t handle, std::size_t slotCount,
-                                           Memory::Vector<double> &out) const
-{
-    out.clear();
-    if (context_.objects == nullptr) return false;
-    RuntimeObject *object = context_.objects->find(handle);
-    if (object == nullptr || object->kind != ObjectKind::Vector) return false;
-    if (!nativeRefreshViews(context_, *object)) return false;
-    for (const ObjectValue &item : object->items)
-    {
-        if (!item.isStruct) return false;
-        for (std::size_t i = 0; i < slotCount; ++i)
-        {
-            if (i < item.fields.size())
-            {
-                const ObjectValue &field = item.fields[i];
-                out.push_back(field.isFloat ? field.real : static_cast<double>(field.integer));
-            }
-            else
-            {
-                out.push_back(0.0);
-            }
-        }
-    }
-    return true;
-}
-
-/**
- * @brief 将运行时列表转换为原生值数组。
- * @param handle 待操作的运行时句柄。
- * @param out 接收处理结果的输出对象。
- * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
- */
-bool NativeCallContextImpl::readList(std::int64_t handle,
-                                     Memory::Vector<NativeValue> &out) const
-{
-    out.clear();
-    if (context_.objects == nullptr) return false;
-    RuntimeObject *object = context_.objects->find(handle);
-    if (object == nullptr || object->kind != ObjectKind::Vector) return false;
-    if (!nativeRefreshViews(context_, *object)) return false;
-    out.reserve(object->items.size());
-    for (const ObjectValue &item : object->items)
-    {
-        if (item.isText)
-            out.push_back(NativeValue::fromText(item.text));
-        else if (item.isFloat)
-            out.push_back(NativeValue::fromFloat(item.real));
-        else
-            out.push_back(NativeValue::fromInt(item.integer));
-    }
-    return true;
-}
-
-/**
- * @brief 创建原生调用可用的运行时映射。
- * @retval 创建原生调用可用的运行时映射。
- */
-std::int64_t NativeCallContextImpl::makeMap()
-{
-    if (context_.objects == nullptr)
-    {
-        fail("没有接上对象表，建不了映射");
-        return 0;
-    }
-    auto object = Memory::makeShared<RuntimeObject>();
-    object->kind = ObjectKind::Map;
-    return static_cast<std::int64_t>(context_.objects->add(std::move(object)));
-}
-
-/**
- * @brief 创建原生调用可用的运行时集合。
- * @retval 创建原生调用可用的运行时集合。
- */
-std::int64_t NativeCallContextImpl::makeSet()
-{
-    if (context_.objects == nullptr)
-    {
-        fail("没有接上对象表，建不了集合");
-        return 0;
-    }
-    auto object = Memory::makeShared<RuntimeObject>();
-    object->kind = ObjectKind::Set;
-    return static_cast<std::int64_t>(context_.objects->add(std::move(object)));
-}
-
-namespace
-{
-/**
- * @brief 将运行时值转换为容器键。
- * @param value 待转换、保存或参与计算的值。
- * @retval 保存将运行时值转换为容器键结果的对象。
- */
-ObjectKey keyFromValue(const NativeValue &value)
-{
-    ObjectKey key;
-    if (value.isText())
-    {
-        key.isText = true;
-        key.text = value.text;
-    }
-    else if (value.isFloat())
-    {
-        key.isFloat = true;
-        key.real = value.asFloat();
-    }
-    else
-    {
-        key.integer = value.asInt();
-    }
-    return key;
-}
-/**
- * @brief 将宿主原生值转换为对象存储值。
- * @param value 待转换、保存或参与计算的值。
- * @retval 保存将宿主原生值转换为对象存储值结果的对象。
- */
-ObjectValue valueFromNative(const NativeValue &value)
-{
-    ObjectValue out;
-    if (value.isText())
-    {
-        out.isText = true;
-        out.text = value.text;
-    }
-    else if (value.isFloat())
-    {
-        out.isFloat = true;
-        out.real = value.asFloat();
-    }
-    else
-    {
-        out.integer = value.asInt();
-    }
-    return out;
-}
-}  // namespace
-
-/**
- * @brief 向运行时映射写入一个键值对。
- * @param mapHandle 目标运行时映射的句柄。
- * @param key 查找或写入使用的键。
- * @param value 待转换、保存或参与计算的值。
- * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
- */
-bool NativeCallContextImpl::mapSet(std::int64_t mapHandle, const NativeValue &key,
-                                   const NativeValue &value)
-{
-    if (context_.objects == nullptr)
-    {
-        fail("没有接上对象表");
-        return false;
-    }
-    RuntimeObject *object = context_.objects->find(mapHandle);
-    if (object == nullptr || object->kind != ObjectKind::Map)
-    {
-        fail("mapSet 的句柄不是 Map");
-        return false;
-    }
-    object->entries[keyFromValue(key)] = valueFromNative(value);
-    return true;
-}
-
-/**
- * @brief 将原生值插入运行时集合。
- * @param setHandle 目标运行时集合的句柄。
- * @param value 待转换、保存或参与计算的值。
- * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
- */
-bool NativeCallContextImpl::setInsert(std::int64_t setHandle, const NativeValue &value)
-{
-    if (context_.objects == nullptr)
-    {
-        fail("没有接上对象表");
-        return false;
-    }
-    RuntimeObject *object = context_.objects->find(setHandle);
-    if (object == nullptr || object->kind != ObjectKind::Set)
-    {
-        fail("setInsert 的句柄不是 Set");
-        return false;
-    }
-    /* Set 的值不用，键存元素本身。 */
-    object->entries[keyFromValue(value)] = valueFromNative(value);
-    return true;
-}
-
-namespace
-{
-/**
- * @brief 将容器键转换为宿主原生值。
- * @param key 查找或写入使用的键。
- * @retval 封装为原生值的运行时结果。
- */
-NativeValue nativeFromKey(const ObjectKey &key)
-{
-    if (key.isText) return NativeValue::fromText(key.text);
-    if (key.isFloat) return NativeValue::fromFloat(key.real);
-    return NativeValue::fromInt(key.integer);
-}
-/**
- * @brief 将对象存储值转换为宿主原生值。
- * @param value 待转换、保存或参与计算的值。
- * @retval 封装为原生值的运行时结果。
- */
-NativeValue nativeFromValue(const ObjectValue &value)
-{
-    if (value.isText) return NativeValue::fromText(value.text);
-    if (value.isFloat) return NativeValue::fromFloat(value.real);
-    return NativeValue::fromInt(value.integer);
-}
-}  // namespace
-
-/**
- * @brief 读取运行时映射的全部键值。
- * @param handle 待操作的运行时句柄。
- * @param keys 接收映射键的输出列表。
- * @param values 输入值列表或接收读取值的输出列表。
- * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
- */
-bool NativeCallContextImpl::readMap(std::int64_t handle, Memory::Vector<NativeValue> &keys,
-                                    Memory::Vector<NativeValue> &values) const
-{
-    keys.clear();
-    values.clear();
-    if (context_.objects == nullptr) return false;
-    RuntimeObject *object = context_.objects->find(handle);
-    if (object == nullptr || object->kind != ObjectKind::Map) return false;
-    for (const auto &entry : object->entries)
-    {
-        keys.push_back(nativeFromKey(entry.first));
-        values.push_back(nativeFromValue(entry.second));
-    }
-    return true;
-}
-
-/**
- * @brief 读取运行时集合中的原生值。
- * @param handle 待操作的运行时句柄。
- * @param elements 元素类型或元素值列表。
- * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
- */
-bool NativeCallContextImpl::readSet(std::int64_t handle, Memory::Vector<NativeValue> &elements) const
-{
-    elements.clear();
-    if (context_.objects == nullptr) return false;
-    RuntimeObject *object = context_.objects->find(handle);
-    if (object == nullptr || object->kind != ObjectKind::Set) return false;
-    for (const auto &entry : object->entries) elements.push_back(nativeFromKey(entry.first));
-    return true;
 }
 
 /**
@@ -3185,11 +2700,6 @@ RuntimeObject *nativeObject(NativeContext &ctx, const Slot &handle, ObjectKind k
     if (object->kind != kind)
     {
         ctx.error = Memory::String(who) + " 要的是 " + objectKindName(kind) + "，拿到的是 " + objectKindName(object->kind);
-        return nullptr;
-    }
-    if (object->mapComparing)
-    {
-        ctx.error = Memory::String("Equal / Hash 回调期间不能重入同一个 ") + (kind == ObjectKind::Set ? "Set" : "Map");
         return nullptr;
     }
     if (object->kind != ObjectKind::Closure && !nativeRefreshViews(ctx, *object)) return nullptr;
@@ -3496,22 +3006,6 @@ bool captureTransferValue(NativeContext &ctx, const ObjectValue &value,
 }
 
 /**
- * @brief 捕获可跨运行时传递的容器键。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param key 查找或写入使用的键。
- * @param packet 待处理的 JSON-RPC 消息对象。
- * @param active 当前正在处理的节点集合。
- * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
- */
-bool captureTransferKey(NativeContext &ctx, const ObjectKey &key,
-                        TransferPacket &packet, Memory::Set<std::int64_t> &active)
-{
-    for (const ObjectKey &field : key.fields)
-        if (!captureTransferKey(ctx, field, packet, active)) return false;
-    return !key.isObject || captureTransferObject(ctx, key.ownedInteger, packet, active);
-}
-
-/**
  * @brief 捕获运行时对象的可传输快照。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param handle 待操作的运行时句柄。
@@ -3542,16 +3036,22 @@ bool captureTransferObject(NativeContext &ctx, std::int64_t handle, TransferPack
     active.insert(handle);
     if (source->kind == ObjectKind::NativeRecord)
     {
-        auto copy = ctx.objects->copyObject(*source, &ctx.error);
-        if (!copy) return false;
-        packet.objects.emplace(handle, *copy);
+        NativeCallContextImpl host(ctx);
+        if (source->nativeType->prepare && !source->nativeType->prepare(host, source->nativeRecord.get())) return false;
+        RuntimeObject copy;
+        copy.kind = ObjectKind::NativeRecord;
+        copy.nativeType = source->nativeType;
+        void *record = source->nativeType->clone(source->nativeRecord.get(), ctx.error);
+        if (!record) return false;
+        copy.nativeRecord = std::shared_ptr<void>(record, source->nativeType->destroy);
+        packet.objects.emplace(handle, std::move(copy));
     }
     else
         packet.objects.emplace(handle, *source);
     for (const ObjectValue &item : source->items)
         if (!captureTransferValue(ctx, item, packet, active)) return false;
-    for (const auto &entry : source->entries)
-        if (!captureTransferKey(ctx, entry.first, packet, active) || !captureTransferValue(ctx, entry.second, packet, active)) return false;
+    if (source->kind == ObjectKind::NativeRecord && source->nativeType->visit)
+        if (!source->nativeType->visit(packet.objects[handle].nativeRecord.get(), [&](NativeStoredValue &value) { return captureTransferValue(ctx, value, packet, active); })) return false;
     active.erase(handle);
     return true;
 }
@@ -3606,30 +3106,6 @@ bool restoreTransferValue(NativeContext &ctx, const TransferPacket &packet,
 }
 
 /**
- * @brief 在目标运行时恢复传输的容器键。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param packet 待处理的 JSON-RPC 消息对象。
- * @param key 查找或写入使用的键。
- * @param active 当前正在处理的节点集合。
- * @param created 已恢复对象的句柄映射，避免重复恢复。
- * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
- */
-bool restoreTransferKey(NativeContext &ctx, const TransferPacket &packet,
-                        ObjectKey *key, Memory::Set<std::int64_t> &active,
-                        Memory::Vector<std::int64_t> &created)
-{
-    for (ObjectKey &field : key->fields)
-        if (!restoreTransferKey(ctx, packet, &field, active, created)) return false;
-    if (!key->isObject) return true;
-    std::int64_t handle = 0;
-    if (!restoreTransferObject(ctx, packet, key->ownedInteger, active, created, &handle)) return false;
-    key->ownedInteger = handle;
-    key->integer = ctx.objects->find(handle)->identity;
-    key->ownsObject = true;
-    return true;
-}
-
-/**
  * @brief 在目标运行时恢复传输的对象快照。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param packet 待处理的 JSON-RPC 消息对象。
@@ -3650,23 +3126,21 @@ bool restoreTransferObject(NativeContext &ctx, const TransferPacket &packet,
         return false;
     }
     active.insert(oldHandle);
-    auto object = found->second.kind == ObjectKind::NativeRecord ? ctx.objects->copyObject(found->second, &ctx.error) : Memory::makeShared<RuntimeObject>(found->second);
-    if (!object) return false;
+    auto object = Memory::makeShared<RuntimeObject>(found->second);
+    if (object->kind == ObjectKind::NativeRecord)
+    {
+        void *record = object->nativeType->clone(object->nativeRecord.get(), ctx.error);
+        if (!record) return false;
+        object->nativeRecord = std::shared_ptr<void>(record, object->nativeType->destroy);
+        ctx.objects->recordContext.heap = ctx.heap;
+        ctx.objects->recordContext.data = ctx.data;
+        ctx.objects->recordContext.objects = ctx.objects;
+    }
     object->identity = 0;
     for (ObjectValue &item : object->items)
         if (!restoreTransferValue(ctx, packet, &item, active, created)) return false;
-    if (!object->entries.empty())
-    {
-        Memory::Map<ObjectKey, ObjectValue> entries;
-        for (const auto &entry : object->entries)
-        {
-            ObjectKey key = entry.first;
-            ObjectValue value = entry.second;
-            if (!restoreTransferKey(ctx, packet, &key, active, created) || !restoreTransferValue(ctx, packet, &value, active, created)) return false;
-            entries.emplace(std::move(key), std::move(value));
-        }
-        object->entries = std::move(entries);
-    }
+    if (object->kind == ObjectKind::NativeRecord && object->nativeType->visit)
+        if (!object->nativeType->visit(object->nativeRecord.get(), [&](NativeStoredValue &value) { return restoreTransferValue(ctx, packet, &value, active, created); })) return false;
     *newHandle = ctx.objects->add(std::move(object));
     created.push_back(*newHandle);
     active.erase(oldHandle);
@@ -3721,27 +3195,6 @@ Slot nativeNewObject(NativeContext &ctx, ObjectKind kind)
 /* ---- 容器（vec / set / map）---- */
 
 /**
- * @brief 按下标取第 `index` 个（越界报错）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param object 待访问的对象。
- * @param index 待访问的元素索引。
- * @param out 接收处理结果的输出对象。
- * @param who 诊断信息中使用的操作名称。
- * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
- */
-bool vecIndex(NativeContext &ctx, RuntimeObject *object, std::int64_t index, std::size_t *out,
-              const char *who)
-{
-    if (index < 0 || static_cast<std::size_t>(index) >= object->items.size())
-    {
-        ctx.error = Memory::String(who) + " 下标越界：" + Memory::toString(index) + "（长度 " + Memory::toString(object->items.size()) + "）";
-        return false;
-    }
-    *out = static_cast<std::size_t>(index);
-    return true;
-}
-
-/**
  * @brief 按一个字节读取 char 引用，适用于字符串字节及八字节标量槽。
  */
 Slot charLoad(NativeContext &ctx, const Memory::Vector<Slot> &args)
@@ -3760,214 +3213,6 @@ Slot charStore(NativeContext &ctx, const Memory::Vector<Slot> &args)
     if (!nativeWrite(ctx, static_cast<std::size_t>(nativeInt(args[0])), reinterpret_cast<const char *>(&byte), 1u))
         ctx.error = "字符引用写入地址无效";
     return Slot::fromInt(0);
-}
-
-/**
- * @brief 创建空的运行时列表。
- *
- * `__vm_vec_new() -> vec`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecNew(NativeContext &ctx, const Memory::Vector<Slot> &)
-{
-    return nativeNewObject(ctx, ObjectKind::Vector);
-}
-
-/**
- * @brief 把宿主入口参数复制成 `std::lang::List<std::lang::String>`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @retval 封装为原生值的运行时结果。
- */
-Slot programArguments(NativeContext &ctx, const Memory::Vector<Slot> &)
-{
-    const Slot handle = nativeNewObject(ctx, ObjectKind::Vector);
-    RuntimeObject *object = ctx.objects == nullptr ? nullptr : ctx.objects->find(handle.integer);
-    if (object == nullptr) return Slot::fromInt(0);
-    if (ctx.programArguments == nullptr) return handle;
-    object->items.reserve(ctx.programArguments->size());
-    for (const Memory::String &argument : *ctx.programArguments)
-    {
-        ObjectValue value;
-        value.isText = true;
-        value.text = argument;
-        object->items.push_back(std::move(value));
-    }
-    return handle;
-}
-
-/**
- * @brief 复制文本的原始 UTF-8 字节，避免字符边界索引影响二进制算法。
- * @param ctx 上下文。
- * @param args 文本地址。
- * @return 拥有型字节列表。
- */
-Slot stringBytes(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    Memory::String text;
-    if (!nativeReadCString(ctx, static_cast<std::size_t>(nativeInt(args[0])), &text)) return Slot::fromInt(0);
-    const auto result = nativeNewObject(ctx, ObjectKind::Vector);
-    auto *vector = ctx.objects->find(nativeInt(result));
-    if (!vector) return Slot::fromInt(0);
-    vector->items.reserve(text.size());
-    for (unsigned char byte : text)
-    {
-        ObjectValue value;
-        value.integer = byte;
-        vector->items.push_back(std::move(value));
-    }
-    return result;
-}
-
-/**
- * @brief `__vm_vec_pack(isText, isObject, values...) -> vec`：MAGEL 变长参数的调用点打包。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecPack(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    if (args.size() < 2u)
-    {
-        ctx.error = "变长参数打包至少需要两个类型标志";
-        return Slot::fromInt(0);
-    }
-    auto object = Memory::makeShared<RuntimeObject>();
-    object->kind = ObjectKind::Vector;
-    const bool isText = nativeInt(args[0]) != 0;
-    const std::int64_t isObject = nativeInt(args[1]);
-    for (std::size_t index = 2u; index < args.size(); ++index)
-    {
-        ObjectValue value;
-        if (!nativeValue(ctx, args[index], isText, isObject, true, &value))
-        {
-            for (const ObjectValue &stored : object->items) ctx.objects->releaseValue(stored);
-            return Slot::fromInt(0);
-        }
-        object->items.push_back(std::move(value));
-    }
-    return Slot::fromInt(ctx.objects->add(std::move(object)));
-}
-
-/**
- * @brief `__vm_vec_push(vec, 值, 值是不是字符串, 值是不是对象句柄) -> 0`：追加到末尾。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecPush(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector, "vec.push");
-    if (object == nullptr) return Slot::fromInt(0);
-    ObjectValue value;
-    if (!nativeValue(ctx, args[1], nativeInt(args[2]) != 0, nativeInt(args[3]), true,
-                     &value)) return Slot::fromInt(0);
-    object->items.push_back(std::move(value));
-    return Slot::fromInt(0);
-}
-
-/**
- * @brief `__vm_vec_insert(vec, 下标, 值, 是不是字符串, 是不是对象句柄) -> 0`：插到下标处（允许 == 长度）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecInsert(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector, "vec.insert");
-    if (object == nullptr) return Slot::fromInt(0);
-    if (object->iteratorLeases || !object->elementViews.empty())
-    {
-        ctx.error = "活跃 for-in 引用期间不能移动或删除列表元素";
-        return Slot::fromInt(0);
-    }
-    const std::int64_t index = nativeInt(args[1]);
-    if (index < 0 || static_cast<std::size_t>(index) > object->items.size())
-    {
-        ctx.error = "vec.insert 的位置越界：" + Memory::toString(index) + "（长度 " + Memory::toString(object->items.size()) + "，只能落在 0..长度 之间）";
-        return Slot::fromInt(0);
-    }
-    ObjectValue value;
-    if (!nativeValue(ctx, args[2], nativeInt(args[3]) != 0, nativeInt(args[4]), true,
-                     &value)) return Slot::fromInt(0);
-    object->items.insert(object->items.begin() + index, std::move(value));
-    return Slot::fromInt(0);
-}
-
-/**
- * @brief 借用列表元素的稳定地址，嵌套迭代同一元素共享单元并计数。
- */
-Slot vecRef(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector, "foreach");
-    if (object == nullptr) return Slot::fromInt(0);
-    std::size_t index = 0;
-    if (!vecIndex(ctx, object, nativeInt(args[1]), &index, "foreach")) return Slot::fromInt(0);
-    const auto found = object->elementViews.find(index);
-    if (found != object->elementViews.end())
-    {
-        ++found->second.users;
-        return Slot::fromInt(found->second.address);
-    }
-    RuntimeObject::ElementView view;
-    view.isText = nativeInt(args[2]) != 0;
-    view.objectFlag = nativeInt(args[3]);
-    view.isFloat = nativeInt(args[4]) != 0;
-    view.address = nativeAllocate(ctx, std::max<std::size_t>(8u,
-                                                             object->items[index].isStruct ? object->items[index].fields.size() * 8u : 8u));
-    if (view.address == 0u)
-    {
-        ctx.error = "列表迭代引用内存不足";
-        return Slot::fromInt(0);
-    }
-    if (!nativeWriteView(ctx, view, object->items[index]))
-    {
-        nativeReleaseViewContents(ctx, view);
-        ctx.heap->release(view.address);
-        return Slot::fromInt(0);
-    }
-    object->elementViews[index] = view;
-    return Slot::fromInt(static_cast<std::int64_t>(view.address));
-}
-/**
- * @brief 结束列表元素借用，写回当前值，最后一个借用者释放单元及资源叶子。
- */
-Slot vecUnref(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector, "foreach 结束");
-    if (object == nullptr) return Slot::fromInt(0);
-    for (auto it = object->elementViews.begin(); it != object->elementViews.end(); ++it)
-    {
-        if (it->second.address != static_cast<std::size_t>(nativeInt(args[1]))) continue;
-        if (--it->second.users == 0u)
-        {
-            nativeReleaseViewContents(ctx, it->second);
-            ctx.heap->release(it->second.address);
-            object->elementViews.erase(it);
-        }
-        if (object->pendingRelease && !object->iteratorLeases && object->elementViews.empty())
-            ctx.objects->release(nativeInt(args[0]));
-        return Slot::fromInt(0);
-    }
-    ctx.error = "列表迭代引用已释放";
-    return Slot::fromInt(0);
-}
-
-/**
- * @brief 最后一个租约释放时提交修改，释放单元并完成延期的源列表清理。
- */
-IteratorLeaseState::~IteratorLeaseState()
-{
-    if (!context.objects || context.objects->shuttingDown) return;
-    for (const auto &cell : cells)
-    {
-        if (!context.objects->find(source)) break;
-        context.error.clear();
-        vecUnref(context, { Slot::fromInt(source), Slot::fromInt(static_cast<std::int64_t>(cell.second)) });
-    }
-    auto *object = context.objects->find(source);
-    if (object && object->iteratorLeases) --object->iteratorLeases;
-    if (object && object->pendingRelease && !object->iteratorLeases && object->elementViews.empty()) context.objects->release(source);
 }
 
 /**
@@ -4081,1429 +3326,6 @@ Slot moveLifetime(NativeContext &ctx, const Memory::Vector<Slot> &args)
     return Slot::fromInt(0);
 }
 
-/**
- * @brief 原子转移容器句柄并写回同策略空容器，禁止移动活跃借用来源。
- * @param ctx 运行上下文。
- * @param args 来源容器句柄槽的地址。
- * @return 移出的容器句柄。失败时记录运行错误。
- */
-Slot iterTake(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    std::int64_t handle = 0;
-    const auto address = static_cast<std::size_t>(nativeInt(args[0]));
-    if (!nativeRead(ctx, address, reinterpret_cast<char *>(&handle), sizeof(handle)))
-    {
-        ctx.error = "intoIter 来源引用无效";
-        return Slot::fromInt(0);
-    }
-    auto *source = ctx.objects->find(handle);
-    if (!source || (source->kind != ObjectKind::Vector && source->kind != ObjectKind::Set && source->kind != ObjectKind::Map))
-    {
-        ctx.error = "intoIter 来源不是容器";
-        return Slot::fromInt(0);
-    }
-    if (source->iteratorLeases || !source->elementViews.empty() || source->mapComparing)
-    {
-        ctx.error = "活跃引用或比较回调期间不能 intoIter 转移容器";
-        return Slot::fromInt(0);
-    }
-    auto empty = Memory::makeShared<RuntimeObject>();
-    empty->kind = source->kind;
-    empty->mapEqual = source->mapEqual;
-    empty->mapHash = source->mapHash;
-    const auto replacement = ctx.objects->add(std::move(empty));
-    if (!nativeWrite(ctx, address, reinterpret_cast<const char *>(&replacement), sizeof(replacement)))
-    {
-        ctx.objects->release(replacement);
-        ctx.error = "intoIter 来源引用不可写";
-        return Slot::fromInt(0);
-    }
-    return Slot::fromInt(handle);
-}
-
-/**
- * @brief 创建列表引用迭代租约，副本共享单元但游标位置彼此独立。
- * @param ctx 运行上下文。
- * @param args 源列表句柄。
- * @return 新租约句柄。失败时记录运行错误。
- */
-Slot iterLeaseNew(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    auto *source = nativeObject(ctx, args[0], ObjectKind::Vector, "iter");
-    if (!source) return Slot::fromInt(0);
-    ++source->iteratorLeases;
-    auto object = Memory::makeShared<RuntimeObject>();
-    object->kind = ObjectKind::IteratorLease;
-    object->iteratorLease = Memory::makeShared<IteratorLeaseState>();
-    object->iteratorLease->context.heap = ctx.heap;
-    object->iteratorLease->context.data = ctx.data;
-    object->iteratorLease->context.objects = ctx.objects;
-    object->iteratorLease->source = nativeInt(args[0]);
-    return Slot::fromInt(ctx.objects->add(std::move(object)));
-}
-
-/**
- * @brief 返回借用来源当前长度。
- * @param ctx 运行上下文。
- * @param args 租约句柄。
- * @return 来源元素数量。失败时记录运行错误。
- */
-Slot iterLeaseLen(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    auto *lease = nativeObject(ctx, args[0], ObjectKind::IteratorLease, "iter sizeHint");
-    if (!lease) return Slot::fromInt(0);
-    auto *source = nativeObject(ctx, Slot::fromInt(lease->iteratorLease->source), ObjectKind::Vector, "iter 来源");
-    return Slot::fromInt(source ? static_cast<std::int64_t>(source->items.size()) : 0);
-}
-
-/**
- * @brief 返回租约持有的稳定元素地址，写入会通过列表的共享单元同步到来源。
- * @param ctx 运行上下文。
- * @param args 租约、索引、字符串标志、叶子布局与浮点标志。
- * @return 稳定元素地址。失败时记录运行错误。
- */
-Slot iterLeaseRef(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    auto *lease = nativeObject(ctx, args[0], ObjectKind::IteratorLease, "iter next");
-    if (!lease) return Slot::fromInt(0);
-    auto &state = *lease->iteratorLease;
-    const auto index = static_cast<std::size_t>(nativeInt(args[1]));
-    const auto found = state.cells.find(index);
-    if (found != state.cells.end()) return Slot::fromInt(static_cast<std::int64_t>(found->second));
-    const auto result = vecRef(ctx, { Slot::fromInt(state.source), args[1], args[2], args[3], args[4] });
-    if (ctx.error.empty()) state.cells[index] = static_cast<std::size_t>(result.integer);
-    return result;
-}
-
-/**
- * @brief `__vm_vec_at(vec, 下标, 是不是字符串, 是不是对象句柄) -> 值`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecAt(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector, "vec 取元素");
-    if (object == nullptr) return Slot::fromInt(0);
-    std::size_t index = 0u;
-    if (!vecIndex(ctx, object, nativeInt(args[1]), &index, "vec")) return Slot::fromInt(0);
-    Slot out;
-    if (!nativeSlot(ctx, object->items[index], &out)) return Slot::fromInt(0);
-    return out;
-}
-
-/**
- * @brief `__vm_vec_set(vec, 下标, 值, 是不是字符串, 是不是对象句柄) -> 0`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecSet(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector, "vec 改元素");
-    if (object == nullptr) return Slot::fromInt(0);
-    std::size_t index = 0u;
-    if (!vecIndex(ctx, object, nativeInt(args[1]), &index, "vec")) return Slot::fromInt(0);
-    ObjectValue value;
-    if (!nativeValue(ctx, args[2], nativeInt(args[3]) != 0, nativeInt(args[4]), true,
-                     &value)) return Slot::fromInt(0);
-    const auto view = object->elementViews.find(index);
-    if (view != object->elementViews.end())
-    {
-        nativeReleaseViewContents(ctx, view->second);
-        if (!nativeWriteView(ctx, view->second, value))
-        {
-            ctx.objects->releaseValue(value);
-            return Slot::fromInt(0);
-        }
-    }
-    ctx.objects->releaseValue(object->items[index]);
-    object->items[index] = std::move(value);
-    return Slot::fromInt(0);
-}
-
-/**
- * @brief `__vm_vec_remove(vec, 下标) -> 0`：删掉下标处那个。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecRemove(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector, "vec.remove");
-    if (object == nullptr) return Slot::fromInt(0);
-    if (object->iteratorLeases || !object->elementViews.empty())
-    {
-        ctx.error = "活跃 for-in 引用期间不能移动或删除列表元素";
-        return Slot::fromInt(0);
-    }
-    std::size_t index = 0u;
-    if (!vecIndex(ctx, object, nativeInt(args[1]), &index, "vec.remove")) return Slot::fromInt(0);
-    ctx.objects->releaseValue(object->items[index]);
-    object->items.erase(object->items.begin() + static_cast<std::ptrdiff_t>(index));
-    return Slot::fromInt(0);
-}
-
-/**
- * @brief `__vm_vec_pop(vec, 是不是字符串, 是不是对象句柄) -> 值`：弹出末尾（空表报错）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecPop(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector, "vec.pop");
-    if (object == nullptr) return Slot::fromInt(0);
-    if (object->iteratorLeases || !object->elementViews.empty())
-    {
-        ctx.error = "活跃 for-in 引用期间不能移动或删除列表元素";
-        return Slot::fromInt(0);
-    }
-    if (object->items.empty())
-    {
-        ctx.error = "vec.pop：表是空的";
-        return Slot::fromInt(0);
-    }
-    Slot out;
-    if (!nativeSlot(ctx, object->items.back(), &out)) return Slot::fromInt(0);
-    ctx.objects->releaseValue(object->items.back());
-    object->items.pop_back();
-    return out;
-}
-
-/**
- * @brief `__vm_vec_len(vec) -> 元素个数`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecLen(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector, "len(vec)");
-    if (object == nullptr) return Slot::fromInt(0);
-    return Slot::fromInt(static_cast<std::int64_t>(object->items.size()));
-}
-
-/**
- * @brief 释放运行时列表的全部元素。
- *
- * `__vm_vec_clear(vec) -> 0`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecClear(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector, "vec.clear");
-    if (object == nullptr) return Slot::fromInt(0);
-    if (object->iteratorLeases || !object->elementViews.empty())
-    {
-        ctx.error = "活跃 for-in 引用期间不能移动或删除列表元素";
-        return Slot::fromInt(0);
-    }
-    for (const ObjectValue &value : object->items) ctx.objects->releaseValue(value);
-    object->items.clear();
-    return Slot::fromInt(0);
-}
-
-/**
- * @brief List 的稳定迭代归并排序：O(n log n) 时间、O(n) 辅助空间，不使用递归栈。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecStableSort(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector,
-                                         "std::lang::algorithms::sort");
-    if (object == nullptr) return Slot::fromInt(0);
-    if (object->iteratorLeases || !object->elementViews.empty())
-    {
-        ctx.error = "活跃 for-in 引用期间不能移动或删除列表元素";
-        return Slot::fromInt(0);
-    }
-    const std::size_t count = object->items.size();
-    if (count < 2u) return Slot::fromInt(0);
-
-#ifdef SIMPLE_SORT
-    /* 希尔排序：就地、不额外分配，间距逐步缩到 1；代价是**不稳定**。
-     * 定义 `SIMPLE_SORT` 时替换掉默认的自底向上归并，见 README 的构建开关一节。 */
-    for (std::size_t gap = count / 2u; gap > 0u; gap /= 2u)
-    {
-        for (std::size_t index = gap; index < count; ++index)
-        {
-            ObjectValue held = std::move(object->items[index]);
-            std::size_t slot = index;
-            while (slot >= gap && held.key() < object->items[slot - gap].key())
-            {
-                object->items[slot] = std::move(object->items[slot - gap]);
-                slot -= gap;
-            }
-            object->items[slot] = std::move(held);
-        }
-    }
-    return Slot::fromInt(0);
-#else
-    Memory::Vector<ObjectValue> source = std::move(object->items);
-    Memory::Vector<ObjectValue> target(count);
-    for (std::size_t width = 1u; width < count;)
-    {
-        for (std::size_t left = 0u; left < count; left += width * 2u)
-        {
-            const std::size_t middle = std::min(left + width, count);
-            const std::size_t end = std::min(left + width * 2u, count);
-            std::size_t first = left;
-            std::size_t second = middle;
-            std::size_t output = left;
-            while (first < middle && second < end)
-            {
-                /* 相等时取左段，稳定性由这一处分支保证。 */
-                if (source[second].key() < source[first].key())
-                    target[output++] = std::move(source[second++]);
-                else
-                    target[output++] = std::move(source[first++]);
-            }
-            while (first < middle) target[output++] = std::move(source[first++]);
-            while (second < end) target[output++] = std::move(source[second++]);
-        }
-        source.swap(target);
-        if (width > count / 2u) break;
-        width *= 2u;
-    }
-    object->items = std::move(source);
-    return Slot::fromInt(0);
-#endif
-}
-
-/**
- * @brief `std::lang::algorithms::sortValue` 的值语义入口：复制 List，再对副本做稳定排序。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecSortedCopy(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    if (ctx.objects == nullptr)
-    {
-        ctx.error = "std::lang::algorithms::sort 缺少对象表";
-        return Slot::fromInt(0);
-    }
-    Memory::String error;
-    const std::int64_t copy = ctx.objects->copyHandle(nativeInt(args[0]), &error);
-    if (copy == 0)
-    {
-        ctx.error = error;
-        return Slot::fromInt(0);
-    }
-    vecStableSort(ctx, { Slot::fromInt(copy) });
-    if (!ctx.error.empty())
-    {
-        ctx.objects->release(copy);
-        return Slot::fromInt(0);
-    }
-    return Slot::fromInt(copy);
-}
-
-/**
- * @brief `__vm_vec_find(vec, 值, 是不是字符串, 是不是对象句柄) -> 下标 / -1`（线性找第一个相等的）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecFind(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector, "vec 查找");
-    if (object == nullptr) return Slot::fromInt(-1);
-    ObjectValue wanted;
-    if (!nativeValue(ctx, args[1], nativeInt(args[2]) != 0, nativeInt(args[3]), false,
-                     &wanted)) return Slot::fromInt(-1);
-    const ObjectKey key = wanted.key();
-    for (std::size_t index = 0; index < object->items.size(); ++index)
-    {
-        if (object->items[index].key() < key) continue;
-        if (key < object->items[index].key()) continue;
-        return Slot::fromInt(static_cast<std::int64_t>(index));
-    }
-    return Slot::fromInt(-1);
-}
-
-/**
- * @brief 将列表项转换为算法回调可接收的值。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param value 待转换、保存或参与计算的值。
- * @param out 接收处理结果的输出对象。
- * @param temporaryString 接收回调使用的临时字符串。
- * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
- */
-bool vecCallbackValue(NativeContext &ctx, const ObjectValue &value, NativeValue *out,
-                      std::size_t *temporaryString)
-{
-    *temporaryString = 0u;
-    if (value.isStruct)
-    {
-        Slot materialized;
-        if (!nativeSlot(ctx, value, &materialized)) return false;
-        *out = NativeValue::fromInt(materialized.integer);
-    }
-    else if (value.isText)
-    {
-        *temporaryString = nativeAllocString(ctx, value.text);
-        if (*temporaryString == 0u) return false;
-        *out = NativeValue::fromInt(static_cast<std::int64_t>(*temporaryString));
-    }
-    else if (value.isFloat)
-        *out = NativeValue::fromFloat(value.real);
-    else
-        *out = NativeValue::fromInt(value.integer);
-    return true;
-}
-
-/**
- * @brief 调用谓词回调并取得布尔结果。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @param all 是否要求全部列表项满足谓词。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecPredicate(NativeContext &ctx, const Memory::Vector<Slot> &args, bool all)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector,
-                                         all ? "std::lang::algorithms::all" : "std::lang::algorithms::any");
-    if (object == nullptr) return Slot::fromInt(0);
-    if (ctx.invoker == nullptr)
-    {
-        ctx.error = "当前 VM 上下文不能从算法胶水调用函数指针";
-        return Slot::fromInt(0);
-    }
-    for (const ObjectValue &item : object->items)
-    {
-        NativeValue argument;
-        std::size_t temporary = 0u;
-        if (!vecCallbackValue(ctx, item, &argument, &temporary)) return Slot::fromInt(0);
-        NativeValue result;
-        const bool invoked = (*ctx.invoker)(nativeInt(args[1]), { argument }, result);
-        if (temporary != 0u) ctx.heap->release(temporary);
-        if (!invoked) return Slot::fromInt(0);
-        const bool accepted = result.asInt() != 0;
-        if (all && !accepted) return Slot::fromInt(0);
-        if (!all && accepted) return Slot::fromInt(1);
-    }
-    return Slot::fromInt(all ? 1 : 0);
-}
-
-/**
- * @brief 判断列表中的每一项是否都满足谓词。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecAll(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    return vecPredicate(ctx, args, true);
-}
-
-/**
- * @brief 判断列表中是否至少有一项满足谓词。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecAny(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    return vecPredicate(ctx, args, false);
-}
-
-/**
- * @brief 按顺序调用归约回调合并列表项。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecFold(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector,
-                                         "std::lang::algorithms::fold");
-    if (object == nullptr) return Slot::fromInt(0);
-    if (ctx.invoker == nullptr)
-    {
-        ctx.error = "当前 VM 上下文不能从算法胶水调用函数指针";
-        return Slot::fromInt(0);
-    }
-    NativeValue accumulated = args[1].isFloat ? NativeValue::fromFloat(args[1].real) : NativeValue::fromInt(args[1].integer);
-    for (const ObjectValue &item : object->items)
-    {
-        NativeValue value;
-        std::size_t temporary = 0u;
-        if (!vecCallbackValue(ctx, item, &value, &temporary)) return Slot::fromInt(0);
-        NativeValue next;
-        const bool invoked = (*ctx.invoker)(nativeInt(args[2]), { accumulated, value }, next);
-        if (temporary != 0u) ctx.heap->release(temporary);
-        if (!invoked) return Slot::fromInt(0);
-        accumulated = std::move(next);
-    }
-    return accumulated.isFloat() ? Slot::fromDouble(accumulated.floating) : Slot::fromInt(accumulated.integer);
-}
-
-/**
- * @brief 算法回调的返回值 → 容器里的值。
- *
- * `kind`：0 = 整数（`char` / `bool` 也在这一档），1 = 浮点（f64），2 = 字符串，
- * 3 = 对象句柄。回调只能传整数与浮点（`invoker` 的约定），所以字符串是**地址**、
- * 对象是**句柄**，都装在 `integer` 里。
- */
-bool nativeCallbackResult(NativeContext &ctx, const NativeValue &produced, std::int64_t kind,
-                          std::int64_t layout,
-                          ObjectValue *out)
-{
-    out->isText = false;
-    out->isFloat = false;
-    out->ownsObject = false;
-    out->objectIdentity = 0;
-    out->integer = 0;
-    out->real = 0.0;
-    if (kind == 2)
-    {
-        out->isText = true;
-        const std::size_t address = static_cast<std::size_t>(produced.asInt());
-        const bool read = nativeReadCString(ctx, address, &out->text);
-        /* 回调返回的堆串所有权归调用方（MAGEL 的 `return` 是 move）：内容已经复制进
-         * `out->text`，这块堆串就地还掉，否则每个字符串元素漏一块。 */
-        if (ctx.heap != nullptr) ctx.heap->release(address);
-        if (!read)
-        {
-            ctx.error = "算法回调返回的字符串读不到（地址 " + Memory::toString(produced.asInt()) + "）";
-            return false;
-        }
-        return true;
-    }
-    if (kind == 3)
-        return nativeValue(ctx, Slot::fromInt(produced.asInt()), false, true, true, out);
-    if (kind == 4)
-        return nativeValue(ctx, Slot::fromInt(produced.asInt()), false, layout, true, out);
-    if (kind == 1)
-    {
-        out->isFloat = true;
-        out->real = produced.floating;
-        return true;
-    }
-    out->integer = produced.asInt();
-    return true;
-}
-
-/**
- * @brief 容器里的值复制一份：`filter` 留下的元素要和原表**各自**持有。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param source 提供输入数据的来源。
- * @param isText 是否将该值作为文本处理。
- * @param isObject 是否将该值作为对象句柄处理。
- * @param out 接收处理结果的输出对象。
- * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
- */
-bool nativeCopyValue(NativeContext &ctx, const ObjectValue &source, bool isText, bool isObject,
-                     ObjectValue *out)
-{
-    if (source.isStruct)
-    {
-        *out = source;
-        Memory::String error;
-        if (!ctx.objects->copyValue(out, &error))
-        {
-            ctx.error = error;
-            return false;
-        }
-        return true;
-    }
-    out->isText = isText;
-    out->ownsObject = false;
-    out->isFloat = false;
-    out->objectIdentity = 0;
-    out->integer = 0;
-    out->real = 0.0;
-    if (isText)
-    {
-        out->text = source.text; /* 字符串在 ObjectValue 里是值语义 */
-        return true;
-    }
-    out->isFloat = source.isFloat;
-    out->real = source.real;
-    out->integer = source.integer;
-    if (!isObject) return true;
-    Memory::String error;
-    const std::int64_t copy = ctx.objects->copyHandle(source.integer, &error);
-    if (copy == 0)
-    {
-        ctx.error = error;
-        return false;
-    }
-    const RuntimeObject *object = ctx.objects->find(copy);
-    out->integer = copy;
-    out->objectIdentity = object == nullptr ? source.objectIdentity : object->identity;
-    out->ownsObject = true;
-    return true;
-}
-
-/**
- * @brief 算法内建中途失败的统一收尾：释放已经攒下的元素，返回 0。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param items 待保存的元素集合。
- * @retval 封装为原生值的运行时结果。
- */
-Slot algorithmAbort(NativeContext &ctx, Memory::Vector<ObjectValue> &items)
-{
-    for (const ObjectValue &value : items) ctx.objects->releaseValue(value);
-    if (ctx.error.empty()) ctx.error = "算法内建执行失败";
-    return Slot::fromInt(0);
-}
-
-/**
- * @brief `__vm_vec_map(vec, 回调, 结果种类) -> 新 vec`：逐元素换成回调的返回值。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecMap(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector,
-                                         "std::lang::algorithms::map");
-    if (object == nullptr) return Slot::fromInt(0);
-    if (ctx.invoker == nullptr)
-    {
-        ctx.error = "当前 VM 上下文不能从算法胶水调用函数指针";
-        return Slot::fromInt(0);
-    }
-    const std::int64_t kind = nativeInt(args[2]);
-    Memory::Vector<ObjectValue> items;
-    items.reserve(object->items.size());
-    for (const ObjectValue &item : object->items)
-    {
-        NativeValue argument;
-        std::size_t temporary = 0u;
-        if (!vecCallbackValue(ctx, item, &argument, &temporary))
-            return algorithmAbort(ctx, items);
-        NativeValue produced;
-        const bool invoked = (*ctx.invoker)(nativeInt(args[1]), { argument }, produced);
-        /* 字符串实参的临时块同时也是回调形参的存储：回调 `return 形参` 时结果
-         * 就是它（MAGEL 的 return 是 move），这时不能先还，交给 `nativeCallbackResult`
-         * 统一释放；结果不是它才在这里还。 */
-        if (temporary != 0u && (kind != 2 || produced.asInt() != static_cast<std::int64_t>(temporary)))
-            ctx.heap->release(temporary);
-        if (!invoked) return algorithmAbort(ctx, items);
-        ObjectValue value;
-        if (!nativeCallbackResult(ctx, produced, kind, nativeInt(args[3]), &value))
-            return algorithmAbort(ctx, items);
-        items.push_back(std::move(value));
-    }
-    auto result = Memory::makeShared<RuntimeObject>();
-    result->kind = ObjectKind::Vector;
-    result->items = std::move(items);
-    return Slot::fromInt(ctx.objects->add(std::move(result)));
-}
-
-/**
- * @brief `__vm_vec_filter(vec, 回调, 是不是字符串, 是不是对象) -> 新 vec`：留下回调为真的元素。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecFilter(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector,
-                                         "std::lang::algorithms::filter");
-    if (object == nullptr) return Slot::fromInt(0);
-    if (ctx.invoker == nullptr)
-    {
-        ctx.error = "当前 VM 上下文不能从算法胶水调用函数指针";
-        return Slot::fromInt(0);
-    }
-    const bool isText = nativeInt(args[2]) != 0;
-    const bool isObject = nativeInt(args[3]) != 0;
-    Memory::Vector<ObjectValue> items;
-    for (const ObjectValue &item : object->items)
-    {
-        NativeValue argument;
-        std::size_t temporary = 0u;
-        if (!vecCallbackValue(ctx, item, &argument, &temporary))
-            return algorithmAbort(ctx, items);
-        NativeValue produced;
-        const bool invoked = (*ctx.invoker)(nativeInt(args[1]), { argument }, produced);
-        if (temporary != 0u) ctx.heap->release(temporary);
-        if (!invoked) return algorithmAbort(ctx, items);
-        if (produced.asInt() == 0) continue;
-        ObjectValue value;
-        if (!nativeCopyValue(ctx, item, isText, isObject, &value))
-            return algorithmAbort(ctx, items);
-        items.push_back(std::move(value));
-    }
-    auto result = Memory::makeShared<RuntimeObject>();
-    result->kind = ObjectKind::Vector;
-    result->items = std::move(items);
-    return Slot::fromInt(ctx.objects->add(std::move(result)));
-}
-
-/**
- * @brief `__vm_vec_reduce(vec, 回调) -> 值`：拿**第一个元素**当初值往后折叠；空表报错。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecReduce(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector,
-                                         "std::lang::algorithms::reduce");
-    if (object == nullptr) return Slot::fromInt(0);
-    if (ctx.invoker == nullptr)
-    {
-        ctx.error = "当前 VM 上下文不能从算法胶水调用函数指针";
-        return Slot::fromInt(0);
-    }
-    if (object->items.empty())
-    {
-        ctx.error = "std::lang::algorithms::reduce 不能作用在空表上（要给初值就用 fold）";
-        return Slot::fromInt(0);
-    }
-    NativeValue accumulated;
-    std::size_t seedTemporary = 0u;
-    if (!vecCallbackValue(ctx, object->items[0], &accumulated, &seedTemporary))
-        return Slot::fromInt(0);
-    for (std::size_t index = 1u; index < object->items.size(); ++index)
-    {
-        NativeValue value;
-        std::size_t temporary = 0u;
-        if (!vecCallbackValue(ctx, object->items[index], &value, &temporary))
-            return Slot::fromInt(0);
-        NativeValue next;
-        const bool invoked = (*ctx.invoker)(nativeInt(args[1]), { accumulated, value }, next);
-        if (temporary != 0u) ctx.heap->release(temporary);
-        if (!invoked) return Slot::fromInt(0);
-        accumulated = std::move(next);
-    }
-    /* 初值那份临时串和回调返回的那份都**不在这里还**：可能是数据区字面量，
-     * 也可能是只有一个元素时直接当结果用的那份（跟 `vecFold` 一个口径）。 */
-    return accumulated.isFloat() ? Slot::fromDouble(accumulated.floating) : Slot::fromInt(accumulated.integer);
-}
-
-/**
- * @brief `__vm_vec_sum(vec, 是不是浮点) -> 值`：数值求和（空表给 0 / 0.0）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecSum(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector,
-                                         "std::lang::algorithms::sum");
-    if (object == nullptr) return Slot::fromInt(0);
-    if (nativeInt(args[1]) != 0)
-    {
-        double total = 0.0;
-        for (const ObjectValue &item : object->items)
-            total += item.isFloat ? item.real : static_cast<double>(item.integer);
-        return Slot::fromDouble(total);
-    }
-    std::int64_t total = 0;
-    for (const ObjectValue &item : object->items)
-        total += item.isFloat ? static_cast<std::int64_t>(item.real) : item.integer;
-    return Slot::fromInt(total);
-}
-
-/**
- * @brief `__vm_vec_count_if(vec, 回调) -> 整数`：回调为真的元素个数。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecCountIf(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector,
-                                         "std::lang::algorithms::count");
-    if (object == nullptr) return Slot::fromInt(0);
-    if (ctx.invoker == nullptr)
-    {
-        ctx.error = "当前 VM 上下文不能从算法胶水调用函数指针";
-        return Slot::fromInt(0);
-    }
-    std::int64_t total = 0;
-    for (const ObjectValue &item : object->items)
-    {
-        NativeValue argument;
-        std::size_t temporary = 0u;
-        if (!vecCallbackValue(ctx, item, &argument, &temporary)) return Slot::fromInt(0);
-        NativeValue produced;
-        const bool invoked = (*ctx.invoker)(nativeInt(args[1]), { argument }, produced);
-        if (temporary != 0u) ctx.heap->release(temporary);
-        if (!invoked) return Slot::fromInt(0);
-        if (produced.asInt() != 0) ++total;
-    }
-    return Slot::fromInt(total);
-}
-
-/**
- * @brief `__vm_vec_count_value(vec, 值, 是不是字符串, 是不是对象) -> 整数`：等于该值的元素个数。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecCountValue(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector,
-                                         "std::lang::algorithms::count");
-    if (object == nullptr) return Slot::fromInt(0);
-    ObjectValue wanted;
-    if (!nativeValue(ctx, args[1], nativeInt(args[2]) != 0, nativeInt(args[3]), false,
-                     &wanted)) return Slot::fromInt(0);
-    const ObjectKey key = wanted.key();
-    std::int64_t total = 0;
-    for (const ObjectValue &item : object->items)
-    {
-        const ObjectKey candidate = item.key();
-        if (candidate < key) continue;
-        if (key < candidate) continue;
-        ++total;
-    }
-    return Slot::fromInt(total);
-}
-
-/**
- * @brief 已排序 List 的 lower_bound 二分查找；相等元素返回第一项。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecBinarySearch(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector,
-                                         "std::lang::algorithms::binarySearch");
-    if (object == nullptr) return Slot::fromInt(-1);
-    ObjectValue wanted;
-    if (!nativeValue(ctx, args[1], nativeInt(args[2]) != 0, nativeInt(args[3]), false,
-                     &wanted))
-        return Slot::fromInt(-1);
-    const ObjectKey key = wanted.key();
-    std::size_t low = 0u;
-    std::size_t high = object->items.size();
-    while (low < high)
-    {
-        const std::size_t middle = low + (high - low) / 2u;
-        if (object->items[middle].key() < key)
-            low = middle + 1u;
-        else
-            high = middle;
-    }
-    if (low >= object->items.size() || object->items[low].key() < key || key < object->items[low].key())
-        return Slot::fromInt(-1);
-    return Slot::fromInt(static_cast<std::int64_t>(low));
-}
-
-/**
- * @brief 使用比较回调查找列表中的极值。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @param maximum 是否选取最大值。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecExtreme(NativeContext &ctx, const Memory::Vector<Slot> &args, bool maximum)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Vector,
-                                         maximum ? "std::lang::algorithms::max" : "std::lang::algorithms::min");
-    if (object == nullptr) return Slot::fromInt(0);
-    ObjectValue first;
-    const std::int64_t objectValue = nativeInt(args[3]);
-    if (!nativeValue(ctx, args[1], nativeInt(args[2]) != 0, objectValue, false, &first))
-        return Slot::fromInt(0);
-    const ObjectValue *selected = &first;
-    for (const ObjectValue &item : object->items)
-    {
-        const bool replace = maximum ? selected->key() < item.key() : item.key() < selected->key();
-        if (replace) selected = &item;
-    }
-    if (selected == &first && objectValue == 1) first.ownsObject = true;
-    Slot result;
-    if (!nativeSlot(ctx, *selected, &result)) return Slot::fromInt(0);
-    return result;
-}
-
-/**
- * @brief 查找列表中的最小值。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecMin(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    return vecExtreme(ctx, args, false);
-}
-
-/**
- * @brief 查找列表中的最大值。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecMax(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    return vecExtreme(ctx, args, true);
-}
-
-/**
- * @brief 接收 `[low, high]` List 与 value，返回落在闭区间内的值。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot vecClamp(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *bounds = nativeObject(ctx, args[0], ObjectKind::Vector,
-                                         "std::lang::algorithms::clamp");
-    if (bounds == nullptr) return Slot::fromInt(0);
-    if (bounds->items.size() != 2u)
-    {
-        ctx.error = "std::lang::algorithms::clamp 的边界胶水需要 low/high 两项";
-        return Slot::fromInt(0);
-    }
-    if (bounds->items[1].key() < bounds->items[0].key())
-    {
-        ctx.error = "std::lang::algorithms::clamp 要求 low <= high";
-        return Slot::fromInt(0);
-    }
-    ObjectValue value;
-    const std::int64_t objectValue = nativeInt(args[3]);
-    if (!nativeValue(ctx, args[1], nativeInt(args[2]) != 0, objectValue, false, &value))
-        return Slot::fromInt(0);
-    const ObjectValue *selected = &value;
-    if (value.key() < bounds->items[0].key())
-        selected = &bounds->items[0];
-    else if (bounds->items[1].key() < value.key())
-        selected = &bounds->items[1];
-    if (selected == &value && objectValue == 1) value.ownsObject = true;
-    Slot result;
-    if (!nativeSlot(ctx, *selected, &result)) return Slot::fromInt(0);
-    return result;
-}
-
-/**
- * @brief 创建空的运行时集合。
- *
- * `__vm_set_new() -> set`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @retval 封装为原生值的运行时结果。
- */
-Slot setNew(NativeContext &ctx, const Memory::Vector<Slot> &)
-{
-    return nativeNewObject(ctx, ObjectKind::Set);
-}
-
-/**
- * @brief 为自定义 Set 元素绑定 Equal 与可选 Hash，复制容器时保留策略。
- */
-Slot setNewPolicy(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    const Slot result = nativeNewObject(ctx, ObjectKind::Set);
-    if (auto *object = ctx.objects->find(result.integer))
-    {
-        object->mapEqual = nativeInt(args[0]);
-        object->mapHash = nativeInt(args[1]);
-    }
-    return result;
-}
-
-/**
- * @brief Set 与 Map 共用精确 Equal、可选 Hash 及回调重入护栏。
- */
-auto mapFind(NativeContext &ctx, RuntimeObject &object, const Slot &query, ObjectKey *lookup)
-    -> Memory::Map<ObjectKey, ObjectValue>::iterator;
-
-/**
- * @brief `__vm_set_add(set, 值, 是不是字符串, 是不是对象句柄) -> 0`（已经在里面就什么都不做）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot setAdd(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Set, "set.add");
-    if (object == nullptr) return Slot::fromInt(0);
-    ObjectValue value;
-    if (!nativeValue(ctx, args[1], nativeInt(args[2]) != 0, nativeInt(args[3]), false,
-                     &value)) return Slot::fromInt(0);
-    ObjectKey key = value.key();
-    const auto found = mapFind(ctx, *object, args[1], &key);
-    if (!ctx.error.empty()) return Slot::fromInt(0);
-    if (found == object->entries.end())
-    {
-        ObjectValue stored;
-        if (!nativeValue(ctx, args[1], nativeInt(args[2]) != 0, nativeInt(args[3]), true,
-                         &stored)) return Slot::fromInt(0);
-        if (object->mapEqual && !ctx.objects->ownKey(&key, &ctx.error))
-        {
-            ctx.objects->releaseValue(stored);
-            return Slot::fromInt(0);
-        }
-        object->entries.emplace(std::move(key), std::move(stored));
-    }
-    return Slot::fromInt(0);
-}
-
-/**
- * @brief `__vm_set_has(set, 值, 是不是字符串, 是不是对象句柄) -> 0 / 1`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot setHas(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Set, "set.has");
-    if (object == nullptr) return Slot::fromInt(0);
-    ObjectValue value;
-    if (!nativeValue(ctx, args[1], nativeInt(args[2]) != 0, nativeInt(args[3]), false,
-                     &value)) return Slot::fromInt(0);
-    ObjectKey key = value.key();
-    const auto found = mapFind(ctx, *object, args[1], &key);
-    return Slot::fromInt(found != object->entries.end() ? 1 : 0);
-}
-
-/**
- * @brief `__vm_set_remove(set, 值, 是不是字符串, 是不是对象句柄) -> 0 / 1`（在不在）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot setRemove(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Set, "set.remove");
-    if (object == nullptr) return Slot::fromInt(0);
-    ObjectValue value;
-    if (!nativeValue(ctx, args[1], nativeInt(args[2]) != 0, nativeInt(args[3]), false,
-                     &value)) return Slot::fromInt(0);
-    ObjectKey key = value.key();
-    const auto found = mapFind(ctx, *object, args[1], &key);
-    if (!ctx.error.empty()) return Slot::fromInt(0);
-    if (found == object->entries.end()) return Slot::fromInt(0);
-    ctx.objects->releaseKey(found->first);
-    ctx.objects->releaseValue(found->second);
-    object->entries.erase(found);
-    return Slot::fromInt(1);
-}
-
-/**
- * @brief `__vm_set_at(set, 第几个, 是不是字符串, 是不是对象句柄) -> 值`（按键的升序）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot setAt(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Set, "set.at");
-    if (object == nullptr) return Slot::fromInt(0);
-    const std::int64_t wanted = nativeInt(args[1]);
-    if (wanted < 0 || static_cast<std::size_t>(wanted) >= object->entries.size())
-    {
-        ctx.error = "set.at 的位置越界：" + Memory::toString(wanted) + "（元素个数 " + Memory::toString(object->entries.size()) + "）";
-        return Slot::fromInt(0);
-    }
-    auto it = object->entries.begin();
-    std::advance(it, static_cast<std::ptrdiff_t>(wanted));
-    /* 集合里存进去的"值"就是元素本身（`setAdd` 用的是 `entries[key] = value`），
-     * 所以直接取 `second` 就行。 */
-    Slot out;
-    if (!nativeSlot(ctx, it->second, &out)) return Slot::fromInt(0);
-    return out;
-}
-
-/**
- * @brief `__vm_set_len(set) -> 元素个数`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot setLen(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Set, "len(set)");
-    if (object == nullptr) return Slot::fromInt(0);
-    return Slot::fromInt(static_cast<std::int64_t>(object->entries.size()));
-}
-
-/**
- * @brief 释放运行时集合的全部元素。
- *
- * `__vm_set_clear(set) -> 0`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot setClear(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Set, "set.clear");
-    if (object == nullptr) return Slot::fromInt(0);
-    for (const auto &entry : object->entries)
-    {
-        ctx.objects->releaseKey(entry.first);
-        ctx.objects->releaseValue(entry.second);
-    }
-    object->entries.clear();
-    return Slot::fromInt(0);
-}
-
-/**
- * @brief 创建空的运行时映射。
- *
- * `__vm_map_new() -> map`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @retval 封装为原生值的运行时结果。
- */
-Slot mapNew(NativeContext &ctx, const Memory::Vector<Slot> &)
-{
-    return nativeNewObject(ctx, ObjectKind::Map);
-}
-
-/**
- * @brief 为自定义键 Map 绑定等于与可选哈希函数。
- * @param ctx 运行时上下文。
- * @param args Equal 和 Hash 函数地址；Hash 为零表示顺序等于查找。
- * @return 新建 Map 句柄。
- */
-Slot mapNewPolicy(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    const Slot result = nativeNewObject(ctx, ObjectKind::Map);
-    if (auto *object = ctx.objects->find(result.integer))
-    {
-        object->mapEqual = nativeInt(args[0]);
-        object->mapHash = nativeInt(args[1]);
-    }
-    return result;
-}
-
-/**
- * @brief 把存储键还原为回调可借用的槽，临时文本和聚合内存在回调后回收。
- * @param ctx 运行时上下文。
- * @param key 存入 Map 的键快照。
- * @param out 接收可传给 Equal 回调的键槽。
- * @param temporaries 登记回调结束时需要释放的堆地址。
- * @return 还原成功返回 true；失败设置运行时错误。
- */
-bool mapCallbackKey(NativeContext &ctx, const ObjectKey &key, Slot *out,
-                    Memory::Vector<std::size_t> *temporaries)
-{
-    if (key.isStruct)
-    {
-        const auto address = nativeAllocate(ctx, std::max<std::size_t>(8u, key.fields.size() * 8u));
-        if (!address)
-        {
-            ctx.error = "Map 比较键时堆内存不足";
-            return false;
-        }
-        temporaries->push_back(address);
-        for (std::size_t i = 0; i < key.fields.size(); ++i)
-        {
-            Slot field;
-            if (!mapCallbackKey(ctx, key.fields[i], &field, temporaries)) return false;
-            std::int64_t bits = field.integer;
-            if (field.isFloat) std::memcpy(&bits, &field.real, sizeof(bits));
-            if (!ctx.heap->writeBytes(address + i * 8u, reinterpret_cast<const char *>(&bits), 8u))
-            {
-                ctx.error = "Map 比较键时写入临时槽失败";
-                return false;
-            }
-        }
-        *out = Slot::fromInt(static_cast<std::int64_t>(address));
-    }
-    else if (key.isText)
-    {
-        const auto address = nativeAllocString(ctx, key.text);
-        if (!address) return false;
-        temporaries->push_back(address);
-        *out = Slot::fromInt(static_cast<std::int64_t>(address));
-    }
-    else if (key.isFloat)
-        *out = Slot::fromDouble(key.real);
-    else
-        *out = Slot::fromInt(key.isObject && key.ownsObject ? key.ownedInteger : key.integer);
-    return true;
-}
-
-/**
- * @brief 通过内建比较或自定义 Equal 查找键，Hash 可选并缓存到存储键。
- * @param ctx 运行时上下文。
- * @param object Map 对象。
- * @param query 原始查询键槽，传递给用户回调。
- * @param lookup 查询键快照，Hash 启用时补写缓存信息。
- * @return 找到的迭代器；未找到或回调失败返回 end。
- */
-auto mapFind(NativeContext &ctx, RuntimeObject &object, const Slot &query, ObjectKey *lookup)
-    -> Memory::Map<ObjectKey, ObjectValue>::iterator
-{
-    if (!object.mapEqual) return object.entries.find(*lookup);
-    if (!ctx.invoker)
-    {
-        ctx.error = "当前后端不支持 Map 键回调";
-        return object.entries.end();
-    }
-    struct Guard
-    {
-        RuntimeObject &object;
-        /**
-         * @brief 保存并切换当前运行时回调的临时状态。
-         * @param value 待转换、保存或参与计算的值。
-         */
-        explicit Guard(RuntimeObject &value) : object(value) { object.mapComparing = true; }
-        /**
-         * @brief 恢复当前运行时回调的临时状态。
-         */
-        ~Guard() { object.mapComparing = false; }
-    } guard(object);
-    const auto nativeQuery = query.isFloat ? NativeValue::fromFloat(query.real) : NativeValue::fromInt(query.integer);
-    if (object.mapHash)
-    {
-        NativeValue hash;
-        if (!(*ctx.invoker)(object.mapHash, { nativeQuery }, hash)) return object.entries.end();
-        lookup->hashed = true;
-        lookup->hash = hash.asInt();
-    }
-    auto first = object.entries.begin();
-    if (lookup->hashed)
-    {
-        ObjectKey lower;
-        lower.hashed = true;
-        lower.hash = lookup->hash;
-        first = object.entries.lower_bound(lower);
-    }
-    for (auto it = first; it != object.entries.end(); ++it)
-    {
-        if (lookup->hashed && it->first.hash != lookup->hash) break;
-        Memory::Vector<std::size_t> temporaries;
-        struct Release
-        {
-            NativeContext &ctx;
-            Memory::Vector<std::size_t> &addresses;
-            /**
-             * @brief 释放当前作用域持有的临时运行时对象。
-             */
-            ~Release()
-            {
-                for (auto it = addresses.rbegin(); it != addresses.rend(); ++it) ctx.heap->release(*it);
-            }
-        } release{ ctx, temporaries };
-        Slot stored;
-        if (!mapCallbackKey(ctx, it->first, &stored, &temporaries)) return object.entries.end();
-        const auto nativeStored = stored.isFloat ? NativeValue::fromFloat(stored.real) : NativeValue::fromInt(stored.integer);
-        NativeValue equal;
-        if (!(*ctx.invoker)(object.mapEqual, { nativeStored, nativeQuery }, equal)) return object.entries.end();
-        if (equal.asInt()) return it;
-    }
-    return object.entries.end();
-}
-
-/**
- * @brief `__vm_map_put(map, 键, 键是不是字符串, 键是不是对象句柄, 值, 值是不是字符串, 值是不是对象句柄) -> 0`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot mapPut(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Map, "map.put");
-    if (object == nullptr) return Slot::fromInt(0);
-    ObjectValue key;
-    if (!nativeValue(ctx, args[1], nativeInt(args[2]) != 0, nativeInt(args[3]), false,
-                     &key)) return Slot::fromInt(0);
-    ObjectValue value;
-    if (!nativeValue(ctx, args[4], nativeInt(args[5]) != 0, nativeInt(args[6]), true,
-                     &value)) return Slot::fromInt(0);
-    ObjectKey lookup = key.key();
-    const auto found = mapFind(ctx, *object, args[1], &lookup);
-    if (!ctx.error.empty())
-    {
-        ctx.objects->releaseValue(value);
-        return Slot::fromInt(0);
-    }
-    if (found != object->entries.end())
-    {
-        ctx.objects->releaseValue(found->second);
-        found->second = std::move(value);
-        return Slot::fromInt(0);
-    }
-    ObjectKey storedKey = lookup;
-    if (storedKey.isObject || storedKey.isStruct)
-    {
-        Memory::String error;
-        if (!ctx.objects->ownKey(&storedKey, &error))
-        {
-            ctx.error = error;
-            ctx.objects->releaseValue(value);
-            return Slot::fromInt(0);
-        }
-    }
-    object->entries.emplace(std::move(storedKey), std::move(value));
-    return Slot::fromInt(0);
-}
-
-/**
- * @brief `__vm_map_get(map, 键, 键是不是字符串, 键是不是对象句柄, 值是不是字符串, 值是不是对象句柄) -> 值`（没有这个键给"零值"）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot mapGet(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Map, "map.get");
-    if (object == nullptr) return Slot::fromInt(0);
-    ObjectValue key;
-    if (!nativeValue(ctx, args[1], nativeInt(args[2]) != 0, nativeInt(args[3]), false,
-                     &key)) return Slot::fromInt(0);
-    ObjectKey lookup = key.key();
-    const auto found = mapFind(ctx, *object, args[1], &lookup);
-    if (!ctx.error.empty()) return Slot::fromInt(0);
-    if (found == object->entries.end())
-    {
-        /* 没有这个键：给"零"（数值 0 / 空串），拿 has() 判断在不在。 */
-        return (nativeInt(args[4]) != 0) ? Slot::fromInt(static_cast<std::int64_t>(nativeAllocString(ctx, Memory::String()))) : Slot::fromInt(0);
-    }
-    Slot out;
-    if (!nativeSlot(ctx, found->second, &out)) return Slot::fromInt(0);
-    return out;
-}
-
-/**
- * @brief `__vm_map_has(map, 键, 键是不是字符串, 键是不是对象句柄) -> 0 / 1`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot mapHas(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Map, "map.has");
-    if (object == nullptr) return Slot::fromInt(0);
-    ObjectValue key;
-    if (!nativeValue(ctx, args[1], nativeInt(args[2]) != 0, nativeInt(args[3]), false,
-                     &key)) return Slot::fromInt(0);
-    ObjectKey lookup = key.key();
-    const auto found = mapFind(ctx, *object, args[1], &lookup);
-    return Slot::fromInt(found != object->entries.end() ? 1 : 0);
-}
-
-/**
- * @brief `__vm_map_remove(map, 键, 键是不是字符串, 键是不是对象句柄) -> 0 / 1`（在不在）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot mapRemove(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Map, "map.remove");
-    if (object == nullptr) return Slot::fromInt(0);
-    ObjectValue key;
-    if (!nativeValue(ctx, args[1], nativeInt(args[2]) != 0, nativeInt(args[3]), false,
-                     &key)) return Slot::fromInt(0);
-    ObjectKey lookup = key.key();
-    const auto found = mapFind(ctx, *object, args[1], &lookup);
-    if (!ctx.error.empty()) return Slot::fromInt(0);
-    if (found == object->entries.end()) return Slot::fromInt(0);
-    ctx.objects->releaseKey(found->first);
-    ctx.objects->releaseValue(found->second);
-    object->entries.erase(found);
-    return Slot::fromInt(1);
-}
-
-/**
- * @brief `__vm_map_len(map) -> 键值对个数`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot mapLen(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Map, "len(map)");
-    if (object == nullptr) return Slot::fromInt(0);
-    return Slot::fromInt(static_cast<std::int64_t>(object->entries.size()));
-}
-
-/**
- * @brief 释放运行时映射的全部键值。
- *
- * `__vm_map_clear(map) -> 0`。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot mapClear(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Map, "map.clear");
-    if (object == nullptr) return Slot::fromInt(0);
-    for (const auto &entry : object->entries)
-    {
-        ctx.objects->releaseKey(entry.first);
-        ctx.objects->releaseValue(entry.second);
-    }
-    object->entries.clear();
-    return Slot::fromInt(0);
-}
-
-/**
- * @brief `__vm_map_key_at(map, 第几个, 键是不是字符串, 键是不是对象句柄) -> 键`（按键的升序）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot mapKeyAt(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Map, "map.keyAt");
-    if (object == nullptr) return Slot::fromInt(0);
-    const std::int64_t wanted = nativeInt(args[1]);
-    if (wanted < 0 || static_cast<std::size_t>(wanted) >= object->entries.size())
-    {
-        ctx.error = "map.keyAt 的位置越界：" + Memory::toString(wanted) + "（键值对个数 " + Memory::toString(object->entries.size()) + "）";
-        return Slot::fromInt(0);
-    }
-    auto it = object->entries.begin();
-    std::advance(it, static_cast<std::ptrdiff_t>(wanted));
-    const auto fromKey = [&](const auto &self, const ObjectKey &source) -> ObjectValue {
-        ObjectValue value;
-        value.isStruct = source.isStruct;
-        value.isText = source.isText;
-        value.isFloat = source.isFloat;
-        value.integer = source.ownsObject ? source.ownedInteger : source.integer;
-        value.objectIdentity = source.isObject ? source.integer : 0;
-        value.real = source.real;
-        value.text = source.text;
-        value.ownsObject = source.ownsObject;
-        for (const ObjectKey &field : source.fields) value.fields.push_back(self(self, field));
-        return value;
-    };
-    ObjectValue key = fromKey(fromKey, it->first);
-    Slot out;
-    if (!nativeSlot(ctx, key, &out)) return Slot::fromInt(0);
-    return out;
-}
-
-/**
- * @brief `__vm_map_val_at(map, 第几个, 值是不是字符串, 值是不是对象句柄) -> 值`（按键的升序）。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot mapValAt(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    RuntimeObject *object = nativeObject(ctx, args[0], ObjectKind::Map, "map.valAt");
-    if (object == nullptr) return Slot::fromInt(0);
-    const std::int64_t wanted = nativeInt(args[1]);
-    if (wanted < 0 || static_cast<std::size_t>(wanted) >= object->entries.size())
-    {
-        ctx.error = "map.valAt 的位置越界：" + Memory::toString(wanted) + "（键值对个数 " + Memory::toString(object->entries.size()) + "）";
-        return Slot::fromInt(0);
-    }
-    auto it = object->entries.begin();
-    std::advance(it, static_cast<std::ptrdiff_t>(wanted));
-    Slot out;
-    if (!nativeSlot(ctx, it->second, &out)) return Slot::fromInt(0);
-    return out;
-}
-
-/**
- * `__vm_object_copy(句柄) -> 新句柄`：**复制一份**对象（`bint` / 容器都一样）。
- *
- * 为什么需要：`bint a = b;` / `vec<int> x = y;` 这类写法如果只把句柄抄一份，两个变量
- * 就指向同一个对象 —— 谁被重新赋值（旧值要还回去）另一个就悬空了。所以对象类类型
- * 定成**值语义**：赋值 / 初始化都复制一份（和结构体一个脾气），别名从源头上没有。
- */
 /**
  * @brief 解析闭包或旧式无环境函数地址。
  * @param objects 对象表。
@@ -6500,15 +4322,9 @@ const SlotNativeEntry kSlotNativeEntries[] = {
     { "__vm_memcpy", { 3, memCopy } },
     { "__vm_memset", { 3, memSet } },
     /* 容器：vec / set / map */
-    { "__vm_program_arguments", { 0, programArguments } },
-    { "__vm_vec_new", { 0, vecNew } },
-    { "__vm_vec_pack", { -1, vecPack } },
-    { "__vm_vec_push", { 4, vecPush } },
-    { "__vm_vec_insert", { 5, vecInsert } },
     { "__vm_str_ref", { 2, strRef } },
     { "__vm_char_load", { 1, charLoad } },
     { "__vm_char_store", { 2, charStore } },
-    { "__vm_vec_ref", { 5, vecRef } },
     { "__vm_iter_box", { 4, iterBox } },
     { "__vm_heap_live", { 1, heapLive } },
     { "__vm_heap_delete_live", { 1, heapDeleteLive } },
@@ -6517,51 +4333,6 @@ const SlotNativeEntry kSlotNativeEntries[] = {
     { "__vm_move_require", { 3, moveLifetime<1> } },
     { "__vm_move_end", { 3, moveLifetime<2> } },
     { "__vm_move_begin", { 2, moveLifetime<3> } },
-    { "__vm_iter_take", { 1, iterTake } },
-    { "__vm_iter_lease", { 1, iterLeaseNew } },
-    { "__vm_iter_lease_len", { 1, iterLeaseLen } },
-    { "__vm_iter_lease_ref", { 5, iterLeaseRef } },
-    { "__vm_vec_unref", { 2, vecUnref } },
-    { "__vm_vec_at", { 4, vecAt } },
-    { "__vm_vec_set", { 5, vecSet } },
-    { "__vm_vec_remove", { 2, vecRemove } },
-    { "__vm_vec_pop", { 3, vecPop } },
-    { "__vm_vec_len", { 1, vecLen } },
-    { "__vm_vec_clear", { 1, vecClear } },
-    { "__vm_vec_stable_sort", { 1, vecStableSort } },
-    { "__vm_vec_sorted_copy", { 1, vecSortedCopy } },
-    { "__vm_vec_find", { 4, vecFind } },
-    { "__vm_vec_binary_search", { 4, vecBinarySearch } },
-    { "__vm_vec_min", { 4, vecMin } },
-    { "__vm_vec_max", { 4, vecMax } },
-    { "__vm_vec_clamp", { 4, vecClamp } },
-    { "__vm_vec_all", { 2, vecAll } },
-    { "__vm_vec_any", { 2, vecAny } },
-    { "__vm_vec_fold", { 3, vecFold } },
-    { "__vm_vec_map", { 4, vecMap } },
-    { "__vm_vec_filter", { 4, vecFilter } },
-    { "__vm_vec_reduce", { 2, vecReduce } },
-    { "__vm_vec_sum", { 2, vecSum } },
-    { "__vm_vec_count_if", { 2, vecCountIf } },
-    { "__vm_vec_count_value", { 4, vecCountValue } },
-    { "__vm_set_new", { 0, setNew } },
-    { "__vm_set_new_policy", { 2, setNewPolicy } },
-    { "__vm_set_add", { 4, setAdd } },
-    { "__vm_set_has", { 4, setHas } },
-    { "__vm_set_remove", { 4, setRemove } },
-    { "__vm_set_at", { 4, setAt } },
-    { "__vm_set_len", { 1, setLen } },
-    { "__vm_set_clear", { 1, setClear } },
-    { "__vm_map_new", { 0, mapNew } },
-    { "__vm_map_new_policy", { 2, mapNewPolicy } },
-    { "__vm_map_put", { 7, mapPut } },
-    { "__vm_map_get", { 6, mapGet } },
-    { "__vm_map_has", { 4, mapHas } },
-    { "__vm_map_remove", { 4, mapRemove } },
-    { "__vm_map_len", { 1, mapLen } },
-    { "__vm_map_clear", { 1, mapClear } },
-    { "__vm_map_key_at", { 4, mapKeyAt } },
-    { "__vm_map_val_at", { 4, mapValAt } },
     { "__vm_object_copy", { 1, objectCopy } },
     { "__vm_closure_new", { 2, closureNew } },
     { "__vm_closure_capture", { 4, closureCapture } },
@@ -6602,7 +4373,6 @@ const SlotNativeEntry kSlotNativeEntries[] = {
     { "std::lang::__readLines", { 1, inputReadLines } },
     { "__readLine", { 0, inputReadLine } },
     { "__readLines", { 1, inputReadLines } },
-    { "std::lang::__stringBytes", { 1, stringBytes } },
     /* 中断事件 / 软件定时器（`std::event::Timer`）：交付在主循环的指令边界做。 */
     { "std::event::__timerCreate", { 1, timerCreate } },
     { "std::event::__timerBind", { 2, timerBind } },

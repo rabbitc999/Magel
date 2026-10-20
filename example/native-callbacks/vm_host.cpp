@@ -1,10 +1,12 @@
 #include "magel_glue.hpp"
+#include "glue/collection_natives.hpp"
+#include "glue/native_record.hpp"
 #include "glue.cpp"
 
 #include <cstdio>
 
 /**
- * @brief 加载 Magel 字节码，注册与 AOT 相同的胶水并在默认最高优化 VM 中运行。
+ * @brief 加载 Magel 字节码，注册宿主胶水并在默认最高优化 VM 中运行。
  * @param argc 参数个数，至少为四个。
  * @param argv 依次为宿主路径、字节码、数据区和布局文件路径，其余参数传给 Magel main。
  * @return 正常完成返回程序退出码；参数或加载失败返回 2，运行失败返回 1。
@@ -19,6 +21,8 @@ int main(int argc, char **argv)
     Memory::String error;
     if (!stackvm::loadProgramBinary(argv[1], program, &diagnostics)
         || !data.load(argv[2], argv[3], &diagnostics)
+        || !collection_glue::bind(registry.native(), &error)
+        || !native_record_glue::bindString(registry.native(), &error)
         || !bindMagelGlue(registry, &error))
     {
         for (const auto &message : diagnostics) std::fprintf(stderr, "%s\n", message.c_str());

@@ -364,8 +364,6 @@ int runCli(int argc, char **argv)
     const fs::path templateDir = mc / "source/magel-generator";
     const fs::path parseEngine = root / "build/bin/ParseEngine.exe";
     const fs::path parseEnginePortable = root / "build/bin/ParseEngine";
-    const fs::path emitter = root / "build/magel-emit/magel-emit.exe";
-    const fs::path emitterPortable = root / "build/magel-emit/magel-emit";
     if (argc <= commandIndex)
     {
         usage(self.string());
@@ -392,7 +390,6 @@ int runCli(int argc, char **argv)
         return 2;
     }
     const fs::path output = fs::absolute(outDir).lexically_normal();
-    const fs::path emitterExe = fs::exists(emitter) ? emitter : emitterPortable;
     if (command == "clear")
     {
         if (!forwarded.empty())
@@ -415,8 +412,6 @@ int runCli(int argc, char **argv)
         }
         std::error_code removeError;
         fs::remove(output / kManifestName, removeError);
-        if (fs::exists(emitterExe) && run({emitterExe.string(), "clear", "--out-dir", outDir}) != 0)
-            return 1;
         std::cout << MAGEL_TEXT("清理完成，共删除 ") << removed << MAGEL_TEXT(" 个编译器文件\n");
         return 0;
     }
@@ -550,7 +545,7 @@ int runCli(int argc, char **argv)
                              "return_expression_ast.cpp", "named_function_ast.cpp", "derive_ast.cpp", "derive.cpp",
                              "types.cpp", "interfaces.cpp", "builtins.cpp", "generic_inference.cpp", "constants.cpp", "annotation_ast.cpp", "annotations.cpp", "reflection_metadata.cpp", "reflection_queries.cpp", "reflection_calls.cpp",
                              "lowering.cpp", "borrow_facts.cpp", "borrow_flow.cpp", "borrow_return_sources.cpp", "expression_effects.cpp", "interface_dispatch.cpp", "boxing.cpp",
-                             "pass1_register.cpp", "pass2_lower.cpp", "c_exports.cpp", "artifacts.cpp"})
+                             "pass1_register.cpp", "pass2_lower.cpp", "artifacts.cpp"})
         ok = copy(mc / "source/epilogue" / name, Memory::String("epilogue/") + name) && ok;
     const Memory::Map<Memory::String, fs::path> runtime{
         {"magel_allocator.hpp", root / "magel/source/allocator/magel_allocator.hpp"},
@@ -577,7 +572,7 @@ int runCli(int argc, char **argv)
     /* `stackvm.cpp` 同样拆成 `parts/` 下的 `.cpp`，随 runtime/stackvm.cpp 一起复制。 */
     for (const char *name : {"symbol_build.cpp", "symbol_container.cpp",
                              "machine_natives.cpp", "machine_value_text.cpp", "quads.cpp", "assembly.cpp",
-                             "execution.cpp", "execution_fusion.inc", "register_execution.inc", "optimization_flow.inc", "aot_bridge.cpp"})
+                             "execution.cpp", "execution_fusion.inc", "register_execution.inc", "optimization_flow.inc"})
         ok = copy(root / "magel/library/stackvm/parts" / name,
                   Memory::String("runtime/parts/") + name) && ok;
     for (const char *format : {"json", "toml"}) {

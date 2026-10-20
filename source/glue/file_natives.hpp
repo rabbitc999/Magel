@@ -1,6 +1,7 @@
 #ifndef MAGEL_GLUE_FILE_NATIVES_HPP
 #define MAGEL_GLUE_FILE_NATIVES_HPP
 #include "native_record.hpp"
+#include "collection_natives.hpp"
 #include "file_api.hpp"
 #if !STACKVM_EMBEDDED
 #include "desktop_file_api.hpp"
@@ -282,10 +283,10 @@ inline Value fileTryReadBytes(State &ctx, const Memory::Vector<Value> &args)
         file->fileError = error.empty() ? Memory::String("字节读取失败") : error;
         return Value::fromInt(0);
     }
-    const auto result = ctx.host.makeList();
+    const auto result = collection_glue::makeList(ctx.host);
     if (!result) return Value::fromInt(0);
     for (unsigned char byte : bytes)
-        if (!ctx.host.listPush(result, Value::fromInt(byte)))
+        if (!collection_glue::listPush(ctx.host, result, Value::fromInt(byte)))
         {
             ctx.host.releaseNativeRecord(result);
             return Value::fromInt(0);
@@ -304,7 +305,7 @@ inline Value fileTryWriteBytes(State &ctx, const Memory::Vector<Value> &args)
     FileRecord *file = fileForResult(ctx, args[0]);
     if (!file || !file->file || !file->file->isOpen()) return Value::fromInt(-1);
     Memory::Vector<Value> values;
-    if (!ctx.host.readList(nativeInt(args[1]), values)) return Value::fromInt(-1);
+    if (!collection_glue::readList(ctx.host, nativeInt(args[1]), values)) return Value::fromInt(-1);
     Memory::String bytes;
     bytes.reserve(values.size());
     for (const auto &value : values) bytes.push_back(static_cast<char>(value.asInt()));

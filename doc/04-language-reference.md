@@ -248,8 +248,10 @@ int64 main() {
 3,4 1 2 30 40
 ```
 
-`static T create(...)` 是**具名构造入口**（名字任取，习惯用 `create`），隐式带 `self`：体里往 `self`（或 `self.字段`）写值即可，
+`static T create(...)` 是**具名构造入口**（固定使用 `create`），隐式带 `self`：体里往 `self`（或 `self.字段`）写值即可，
 **不写 `return`**，返回值由调用点接住。丢弃它的返回值会报错。
+
+泛型结构体的 `create` 可从实参推导所属类型的参数，例如 `Pair::create(key, value)` 与 `Pair::create((key, value))`。实参不能唯一确定类型时，显式写出 `Pair<K, V>::create(...)`。
 
 `new` / 构造相关的写法汇总：
 
@@ -504,7 +506,6 @@ int64 total<T: Shape>(T shape) { return shape.area(); }
 - 编译期单态化，调用点静态确定，没有虚表开销。
 - 调用可显式写 `total<Circle>(c)`，也可让编译器推。
 
-
 支持在外层模板内部分绑定内层模板的参数；外层仍保持泛型，使用具体类型时才递归生成完整实例：
 
 ```magel
@@ -536,7 +537,7 @@ int64 main() {
 值字段不能直接或间接包含自身；同一实例的引用递归允许存在。不断扩大的递归类型会报错，
 每次编译最多生成 1024 个泛型实例，类型表达式嵌套达到 128 层时停止展开并给出诊断。
 综合回归见 [`tests/magel_generic_monomorphization.py`](../tests/magel_generic_monomorphization.py)，
-覆盖解释执行、AOT、实例复用及非法代码诊断。
+覆盖VM 执行、实例复用及非法代码诊断。
 
 ---
 
@@ -560,7 +561,7 @@ int64 main() {
 
         if (k == 1) { { k = k + 1; continue; } }
         total = total + k;
-    
+
             k = k + 1;
         }
     }
@@ -754,7 +755,7 @@ abi "./native.dll" {
 }
 ```
 
-`abi` 块声明按 C ABI 调用外部库函数。导出 Magel 函数给 C 使用仅供 AOT 的 `export`。类型映射、可空引用、胶水绑定详见[宿主集成与 C ABI](08-host-integration.md)。
+`abi` 块声明按 C ABI 调用外部库函数。宿主通过共享 VM 加载与运行程序。类型映射、可空引用、胶水绑定详见[宿主集成与 C ABI](08-host-integration.md)。
 
 ---
 
@@ -859,7 +860,7 @@ loop {
             while (i < 10) {
 
             if (i == 3) { break level 2; }
-        
+
                 i++;
             }
         }
@@ -896,7 +897,7 @@ int64 main() {
         while (i < 10) {
 
         if (i == 3) { yield (i, "found"); }
-    
+
             i++;
         }
     }
@@ -933,7 +934,6 @@ $end_macro
 函数类型检查；省略的参数类型从该形参推导。嵌套函数返回值与元组组合见
 [`fn_inline_arguments.mgl`](../example/samples/fn_inline_arguments.mgl)。
 
-
 ## 默认值文本与字符串协议
 
 每个非 void 值支持 `String toString()`，并可转换到 `String`。整数展示数值、布尔展示 `true`/`false`；结构体按字段声明顺序展示为 `{值, 值}`，List/数组为 `[...]`，Set 为 `{...}`，Map 为 `{键: 值, ...}`，元组为 `(...)`。嵌套字符串加双引号并转义，顶层字符串返回自身文本。Any 按实际载荷展示，空 Any 为 `Any()`；枚举展示变体与载荷。引用、函数与不透明宿主资源显示 `<类型>`，不为格式化解引用。递归有深度限制并检测重复对象路径；文本不保证可逆序列化。
@@ -950,8 +950,7 @@ $end_macro
 
 结果先保存，再执行退出路径上的延迟回调和自动清理。移动清空源存储并结束源绑定的生命周期，不调用源值的 close/drop；最终接收方负责资源回收。同时实现 Closeable 与 Drop 时先 close、后 drop。复制产生独立拥有值，来源与结果分别按各自生命周期清理。跨循环退出清理所有离开的作用域，不能释放已交给结果的资源。
 
-移动不延长借用寿命，直接引用及聚合内的引用都不能指向已经退出的局部对象。[移动与清理样例](../example/samples/break_move.mgl)验证求值次数、原始资源句柄身份、外部变量复制、析构次数、清理顺序及 VM/AOT 行为；[所有权移动](23-ownership-move.md)给出通用规则。
-
+移动不延长借用寿命，直接引用及聚合内的引用都不能指向已经退出的局部对象。[移动与清理样例](../example/samples/break_move.mgl)验证求值次数、原始资源句柄身份、外部变量复制、析构次数、清理顺序及 VM 行为；[所有权移动](23-ownership-move.md)给出通用规则。
 
 ## 返回控制表达式
 

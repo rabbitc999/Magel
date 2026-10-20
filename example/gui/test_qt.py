@@ -39,11 +39,11 @@ def main() -> None:
         raise SystemExit("这个无头测试面向 Linux/macOS；Windows 用 tests/magel_desktop.py")
 
     gui_dir = Path(__file__).resolve().parent
-    repo = gui_dir.parents[2]
+    repo = gui_dir.parents[1]
     out = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else repo / "build" / "magel-gui-qt"
     out.mkdir(parents=True, exist_ok=True)
 
-    demo = os.environ.get("MAGEL_DEMO", str(repo / "magel" / "magel"))
+    demo = os.environ.get("MAGEL_DEMO", str(repo / "magel"))
     if not Path(demo).is_file():
         raise SystemExit(f"找不到 {demo}；先构建 Magel 或设置 MAGEL_DEMO")
 
@@ -53,16 +53,25 @@ def main() -> None:
     env = dict(os.environ)
     env["QT_QPA_PLATFORM"] = "offscreen"
 
-    def build_example(source: Path, name: str) -> Path:
-        binary = out / name
-        run([demo, "aot", str(source), "-I", str(gui_dir),
-             "--glue", str(gui_dir / "glue.cpp"), "--out", str(binary),
-             "--opt-level=0"], cwd=repo)
-        return binary
+    host_source = out / "vm_host.cpp"
+    host_source.write_text((repo / "example/native-callbacks/vm_host.cpp").read_text(encoding="utf-8").replace('#include "glue.cpp"', '#include "' + (gui_dir / "glue.cpp").as_posix() + '"'), encoding="utf-8")
+    host = out / "vm-host"
+    run([os.environ.get("CXX", "g++"), "-std=c++17", "-O2", "-pthread",
+         "-DMAGEL_WITH_REFLECTION=1", "-DSTACKVM_WITH_REFLECTION=1",
+         "-DSTACKVM_WITH_BIGINT=0", "-DSTACKVM_WITH_BIGFLOAT=0",
+         "-Isource", "-Ilibrary", "-Ilibrary/stackvm", str(host_source),
+         "library/stackvm/stackvm.cpp", "-ldl", "-o", str(host)], cwd=repo)
+
+    def build_example(source: Path, name: str) -> list[str]:
+        prefix = out / name
+        run([demo, "emit", str(source), "-I", str(gui_dir),
+             "--svmb", "--out", str(prefix)], cwd=repo)
+        return [str(host), str(prefix.with_suffix(".svmb")),
+                str(prefix.with_suffix(".data.bin")), str(prefix.with_suffix(".layout"))]
 
     # 2) counter.mgl 的 close 分支：UTF-8 文本往返。
     counter = build_example(gui_dir / "examples" / "counter.mgl", "counter")
-    result = subprocess.run([str(counter), "close"], cwd=out, env=env,
+    result = subprocess.run([*counter, "close"], cwd=out, env=env,
                             capture_output=True, text=True)
     assert result.returncode == 0, (result.stdout, result.stderr)
     first = result.stdout.splitlines()[0] if result.stdout.splitlines() else ""
@@ -70,7 +79,7 @@ def main() -> None:
 
     # 3) qt_interrupt.mgl：事件回调 + 每 N 条指令泵一次。
     interrupt = build_example(gui_dir / "examples" / "qt_interrupt.mgl", "qt_interrupt")
-    result = subprocess.run([str(interrupt)], cwd=out, env=env,
+    result = subprocess.run(interrupt, cwd=out, env=env,
                             capture_output=True, text=True)
     assert result.returncode == 0, (result.stdout, result.stderr)
     line = result.stdout.strip().splitlines()[-1] if result.stdout.strip() else ""

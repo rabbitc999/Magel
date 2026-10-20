@@ -3,6 +3,7 @@
 #define PARSE_ENGINE_MAGEL_GLUE_HPP
 
 #include "stackvm.hpp"
+#include "glue/collection_natives.hpp"
 #include "magel_generic_name.hpp"
 
 #include <cstddef>
@@ -105,7 +106,7 @@ public:
 };
 
 /**
- * @brief 当前 VM 或 AOT 运行时中的 Magel 可调用函数值，支持具名函数与捕获闭包。
+ * @brief 当前 VM 运行时中的 Magel 可调用函数值，支持具名函数与捕获闭包。
  * @note 仅在所属宿主回调期间同步使用；地址不是可直接转换的 C/C++ 函数指针。
  */
 template <typename Signature>
@@ -216,7 +217,7 @@ struct Codec<Variadic<T>>
     static Variadic<T> decode(Context &context, const Value &value)
     {
         Memory::Vector<Value> raw;
-        if (!context.readList(value.asInt(), raw))
+        if (!collection_glue::readList(context, value.asInt(), raw))
         {
             context.fail("胶水层读取变长参数失败：不是有效的 std::lang::List 句柄");
             return {};
@@ -238,7 +239,7 @@ struct Codec<Memory::Vector<T>>
     static Memory::Vector<T> decode(Context &context, const Value &value)
     {
         Memory::Vector<Value> raw;
-        if (!context.readList(value.asInt(), raw))
+        if (!collection_glue::readList(context, value.asInt(), raw))
         {
             context.fail("胶水层读取 List 失败：不是有效的 std::lang::List 句柄");
             return {};
@@ -251,14 +252,14 @@ struct Codec<Memory::Vector<T>>
     }
     static Value encode(Context &context, const Memory::Vector<T> &values)
     {
-        const std::int64_t list = context.makeList();
+        const std::int64_t list = collection_glue::makeList(context);
         for (const T &item : values)
         {
             // 列表持有字符串值；普通 string 返回 ABI 的堆地址不携带元素所有权。
             if constexpr (std::is_same_v<std::decay_t<T>, Memory::String> || std::is_same_v<std::decay_t<T>, std::string>)
-                context.listPush(list, Value::fromText(Memory::String(item)));
+                collection_glue::listPush(context, list, Value::fromText(Memory::String(item)));
             else
-                context.listPush(list, Codec<std::decay_t<T>>::encode(context, item));
+                collection_glue::listPush(context, list, Codec<std::decay_t<T>>::encode(context, item));
         }
         return Value::fromInt(list);
     }
@@ -273,7 +274,7 @@ struct Codec<Memory::Map<K, V>>
     static Memory::Map<K, V> decode(Context &context, const Value &value)
     {
         Memory::Vector<Value> keys, values;
-        if (!context.readMap(value.asInt(), keys, values))
+        if (!collection_glue::readMap(context, value.asInt(), keys, values))
         {
             context.fail("胶水层读取 Map 失败：不是有效的 std::lang::Map 句柄");
             return {};
@@ -286,10 +287,10 @@ struct Codec<Memory::Map<K, V>>
     }
     static Value encode(Context &context, const Memory::Map<K, V> &map)
     {
-        const std::int64_t handle = context.makeMap();
+        const std::int64_t handle = collection_glue::makeMap(context);
         for (const auto &entry : map)
-            context.mapSet(handle, Codec<std::decay_t<K>>::encode(context, entry.first),
-                           Codec<std::decay_t<V>>::encode(context, entry.second));
+            collection_glue::mapSet(context, handle, Codec<std::decay_t<K>>::encode(context, entry.first),
+                                    Codec<std::decay_t<V>>::encode(context, entry.second));
         return Value::fromInt(handle);
     }
 };
@@ -303,7 +304,7 @@ struct Codec<Memory::Set<T>>
     static Memory::Set<T> decode(Context &context, const Value &value)
     {
         Memory::Vector<Value> elements;
-        if (!context.readSet(value.asInt(), elements))
+        if (!collection_glue::readSet(context, value.asInt(), elements))
         {
             context.fail("胶水层读取 Set 失败：不是有效的 std::lang::Set 句柄");
             return {};
@@ -315,9 +316,9 @@ struct Codec<Memory::Set<T>>
     }
     static Value encode(Context &context, const Memory::Set<T> &set)
     {
-        const std::int64_t handle = context.makeSet();
+        const std::int64_t handle = collection_glue::makeSet(context);
         for (const T &element : set)
-            context.setInsert(handle, Codec<std::decay_t<T>>::encode(context, element));
+            collection_glue::setInsert(context, handle, Codec<std::decay_t<T>>::encode(context, element));
         return Value::fromInt(handle);
     }
 };
@@ -486,7 +487,7 @@ public:
     Function() = default;
     /**
      * @brief 将 Magel 函数值关联到本次宿主调用。
-     * @param context 所属 VM 或 AOT 的宿主上下文。
+     * @param context 所属 VM 的宿主上下文。
      * @param address Magel 运行时函数地址或闭包句柄，零表示空函数。
      * @note 上下文与闭包的生命周期必须覆盖每次同步调用。
      */
@@ -559,7 +560,7 @@ struct Codec<Function<Result(Args...)>>
 {
     /**
      * @brief 将函数地址或闭包句柄绑定到当前调用上下文。
-     * @param context 当前 VM 或 AOT 的宿主上下文。
+     * @param context 当前 VM 的宿主上下文。
      * @param value 保存函数地址或闭包句柄的返回槽。
      * @return 当前宿主调用期间有效的函数包装。
      */

@@ -548,14 +548,12 @@
     "vm_unit": 318,
     "normal_samples": 198,
     "error_samples": 306,
-    "vm_aot_algorithms": 100,
     "vm_mcu_algorithms": 60,
     "mcu_required": 24,
     "mcu_sweep_pass": 129,
     "mcu_sweep_ram": 0,
     "mcu_sweep_pending": 0,
     "mcu_arena_peak_bytes": 574440,
-    "mcu_arena_previous_bytes": 573416,
-    "offline_aot": "idempotent destruction ok 7"
+    "mcu_arena_previous_bytes": 573416
   }
 }

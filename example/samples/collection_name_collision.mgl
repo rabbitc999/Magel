@@ -1,0 +1,31 @@
+// 普通类型名称不能改变标准集合的生命周期或默认文本。
+opcode vec {
+    new = __vm_bint_from_int;
+    drop = __vm_bint_drop;
+    copy = __vm_bint_copy;
+};
+struct set {
+    String toString() {
+        return "user set";
+    }
+};
+struct map {
+    String toString() {
+        return "user map";
+    }
+};
+
+int64 main() {
+    List<int64> numbers = [3, 1];
+    List<int64> copy = numbers;
+    numbers.clear();
+    assert(copy[0] == 3 && copy[1] == 1);
+    assert(copy.toString() == "[3, 1]");
+    Set<int64> unique = {3, 1};
+    Map<int64, int64> values = {3: 30, 1: 10};
+    assert(unique.toString() != "user set");
+    assert(values.toString() != "user map");
+    assert(unique.has(1) != 0 && values[3] == 30);
+    println("collection names OK");
+    return 0;
+}

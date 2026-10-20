@@ -11,6 +11,7 @@
  */
 
 #include "stackvm.hpp"
+#include "../../source/glue/collection_natives.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -41,6 +42,18 @@ int failures = 0;
     } while (false)
 
 /**
+ * @brief 为测试宿主显式注册标准集合胶水，核心自身不提供集合操作。
+ * @return 测试进程共用的原生注册表。
+ */
+stackvm::NativeRegistry &collectionRegistry()
+{
+    static stackvm::NativeRegistry registry;
+    static const bool bound = collection_glue::bind(registry);
+    (void)bound;
+    return registry;
+}
+
+/**
  * @brief 组装并执行一段四元式文本。
  * @param text 文本。
  * @param input 输入项。
@@ -56,9 +69,28 @@ stackvm::RunResult runText(const Memory::String &text, const Memory::Vector<Memo
     stackvm::assemble(file, assembled);
     if (program != nullptr) *program = assembled;
     stackvm::Machine machine;
+    machine.setNativeRegistry(&collectionRegistry());
     const stackvm::RunResult result = machine.run(assembled, input);
     output = result.output;
     return result;
+}
+
+/**
+ * @brief 显式释放活跃租约的来源时接受延期请求，最后一个租约负责完成清理。
+ */
+void testCollectionLeaseRelease()
+{
+    Memory::String output;
+    const auto result = runText(
+        "(call, __vm_vec_new, 0, values)\n"
+        "(param, values, _, source)\n"
+        "(call, __vm_iter_lease, 1, lease)\n"
+        "(free, values, _, _)\n"
+        "(free, lease, _, _)\n"
+        "(halt, _, _, _)\n",
+        {}, output);
+    CHECK(result.ok);
+    CHECK(result.liveObjects == 0u);
 }
 
 /**
@@ -128,6 +160,7 @@ void testStackLimit()
     CHECK(stackvm::assemble(file, program));
 
     stackvm::Machine limited;
+    limited.setNativeRegistry(&collectionRegistry());
     limited.setStackLimit(1u);
     CHECK(limited.stackLimit() == 1u);
     const stackvm::RunResult overflow = limited.run(program);
@@ -135,6 +168,7 @@ void testStackLimit()
     CHECK(overflow.error.find("求值栈超过上限") != Memory::String::npos);
 
     stackvm::Machine enough;
+    enough.setNativeRegistry(&collectionRegistry());
     CHECK(enough.stackLimit() == 0u);
     enough.setStackLimit(2u);
     const stackvm::RunResult result = enough.run(program);
@@ -511,6 +545,7 @@ void testOptimize()
     stackvm::assemble(plain, plainProgram);
     stackvm::assemble(optimized, optimizedProgram);
     stackvm::Machine machine;
+    machine.setNativeRegistry(&collectionRegistry());
     const stackvm::RunResult plainResult = machine.run(plainProgram);
     const stackvm::RunResult optimizedResult = machine.run(optimizedProgram);
     CHECK(plainResult.ok && optimizedResult.ok);
@@ -540,6 +575,7 @@ void testOptimize()
     stackvm::Program guided;
     CHECK(stackvm::assemble(guide, guided));
     stackvm::Machine guidedMachine;
+    guidedMachine.setNativeRegistry(&collectionRegistry());
     const stackvm::RunResult guidedResult = guidedMachine.run(guided, {}, 1000u);
     CHECK(guidedResult.ok);
     CHECK(guidedResult.output == Memory::String("42"));  // k = 41（形参），r = k + 1
@@ -573,6 +609,7 @@ void testByteMemory()
     for (int mode = 0; mode < 3; ++mode)
     {
         stackvm::Machine machine;
+        machine.setNativeRegistry(&collectionRegistry());
         machine.setExecutionOptimization(mode != 0);
         machine.setRegisterExecution(mode == 2);
         const auto result = machine.run(program);
@@ -585,6 +622,7 @@ void testByteMemory()
     stackvm::Program restored;
     CHECK(stackvm::loadProgramBinary(path, restored));
     stackvm::Machine restoredMachine;
+    restoredMachine.setNativeRegistry(&collectionRegistry());
     CHECK(restoredMachine.run(restored).output == "255 128 2");
     std::remove(path.c_str());
     auto missingFeature = program;
@@ -592,28 +630,11 @@ void testByteMemory()
     CHECK(!stackvm::validateProgramMetadata(missingFeature));
     CHECK(!stackvm::saveProgramBinary(missingFeature, path));
     stackvm::Machine invalidMachine;
+    invalidMachine.setNativeRegistry(&collectionRegistry());
     CHECK(!invalidMachine.run(missingFeature).ok);
     Memory::String output;
     CHECK(!runText("(alloc, 1, _, p)\n(+:i64, p, 1, end)\n(store:u8, end, 1, _)\n", {}, output).ok);
     CHECK(!runText("(alloc, 1, _, p)\n(free, p, _, _)\n(load:u8, p, _, value)\n", {}, output).ok);
-#if STACKVM_WITH_AOT
-    stackvm::RuntimeBridge bridge;
-    CHECK(bridge.begin());
-    std::int64_t address = 0;
-    CHECK(bridge.allocate(2, address));
-    CHECK(bridge.storeByte(address + 1, 128));
-    CHECK(bridge.storeByte(address, -1));
-    std::int64_t value = 0;
-    CHECK(bridge.loadByte(address, value));
-    CHECK(value == 255);
-    CHECK(bridge.loadByte(address + 1, value));
-    CHECK(value == 128);
-    CHECK(bridge.release(address, false));
-    value = 77;
-    CHECK(!bridge.loadByte(address, value));
-    CHECK(value == 77);
-    bridge.end();
-#endif
 }
 
 /**
@@ -815,6 +836,7 @@ void testBoundsCheck()
     stackvm::Program insideProgram;
     CHECK(stackvm::assemble(inside, insideProgram));
     stackvm::Machine insideMachine;
+    insideMachine.setNativeRegistry(&collectionRegistry());
     insideMachine.setData(&data);
     CHECK(insideMachine.run(insideProgram).ok);
 
@@ -827,6 +849,7 @@ void testBoundsCheck()
     stackvm::Program outsideProgram;
     CHECK(stackvm::assemble(outside, outsideProgram));
     stackvm::Machine outsideMachine;
+    outsideMachine.setNativeRegistry(&collectionRegistry());
     outsideMachine.setData(&data);
     const stackvm::RunResult caught = outsideMachine.run(outsideProgram);
     CHECK(!caught.ok);
@@ -871,6 +894,7 @@ void testFunctionPointer()
         stackvm::QuadFile file = stackvm::parseQuads(prologue + tail, "<test>");
         stackvm::Program program;
         stackvm::Machine machine;
+        machine.setNativeRegistry(&collectionRegistry());
         machine.setData(&data);
         CHECK(stackvm::assemble(file, program));
         CHECK(program.parameters.size() == yesParamCount);  // 标签 → 形参名扫出来了
@@ -932,6 +956,7 @@ void testFunctionPointer()
         CHECK(stackvm::assemble(file, program));
         CHECK(program.parameters.empty());
         stackvm::Machine machine;
+        machine.setNativeRegistry(&collectionRegistry());
         machine.setData(&data);
         return machine.run(program);
     };
@@ -979,6 +1004,7 @@ void testCoroutines()
     stackvm::Program program;
     CHECK(stackvm::assemble(file, program));
     stackvm::Machine machine;
+    machine.setNativeRegistry(&collectionRegistry());
     machine.setData(&data);
     const stackvm::RunResult result = machine.run(program);
     CHECK(result.ok);
@@ -1006,6 +1032,7 @@ void testTimingAndInstructionHook()
     std::uint64_t now = 100u;
     Memory::Vector<stackvm::InstructionHookInfo> calls;
     stackvm::Machine machine;
+    machine.setNativeRegistry(&collectionRegistry());
     machine.setTimeCallback([&now]() {
         const std::uint64_t value = now;
         now += 75u;
@@ -1057,6 +1084,7 @@ void testDataArea()
     CHECK(stackvm::assemble(file, program));
     CHECK(program.code[0].toString() == Memory::String("ADDR arr"));
     stackvm::Machine machine;
+    machine.setNativeRegistry(&collectionRegistry());
     machine.setData(&data);
     const stackvm::RunResult result = machine.run(program);
     CHECK(result.ok);
@@ -1076,12 +1104,14 @@ void testDataArea()
     stackvm::Program writerProgram;
     CHECK(stackvm::assemble(writer, writerProgram));
     stackvm::Machine writerMachine;
+    writerMachine.setNativeRegistry(&collectionRegistry());
     writerMachine.setData(&data);
     const stackvm::RunResult wrote = writerMachine.run(writerProgram);
     CHECK(wrote.ok && wrote.output == Memory::String("99"));
 
     // 4. 没挂数据区时给清楚的错误。
     stackvm::Machine bare;
+    bare.setNativeRegistry(&collectionRegistry());
     const stackvm::RunResult missing = bare.run(program);
     CHECK(!missing.ok);
     CHECK(missing.error.find("数据区") != Memory::String::npos);
@@ -1118,6 +1148,7 @@ void testObj()
         stackvm::Program program;
         CHECK(stackvm::assemble(file, program));
         stackvm::Machine machine;
+        machine.setNativeRegistry(&collectionRegistry());
         machine.setData(&data);
         const stackvm::RunResult result = machine.run(program);
         CHECK(result.ok);
@@ -1170,6 +1201,7 @@ void testObj()
         stackvm::Program program;
         CHECK(stackvm::assemble(file, program));
         stackvm::Machine machine;
+        machine.setNativeRegistry(&collectionRegistry());
         machine.setData(&data);
         const stackvm::RunResult result = machine.run(program);
         CHECK(result.ok);
@@ -1205,6 +1237,7 @@ void testObj()
         stackvm::Program program;
         CHECK(stackvm::assemble(file, program));
         stackvm::Machine machine;
+        machine.setNativeRegistry(&collectionRegistry());
         machine.setData(&data);
         const stackvm::RunResult result = machine.run(program);
         CHECK(result.ok);
@@ -1236,6 +1269,7 @@ void testObj()
         stackvm::Program program;
         CHECK(stackvm::assemble(file, program));
         stackvm::Machine machine;
+        machine.setNativeRegistry(&collectionRegistry());
         machine.setData(&data);
         const stackvm::RunResult result = machine.run(program);
         CHECK(!result.ok);
@@ -1253,6 +1287,7 @@ void testObj()
         stackvm::Program program;
         CHECK(stackvm::assemble(file, program));
         stackvm::Machine machine;
+        machine.setNativeRegistry(&collectionRegistry());
         machine.setData(&data);
         const stackvm::RunResult result = machine.run(program);
         CHECK(result.ok);
@@ -1269,6 +1304,7 @@ void testObj()
         stackvm::Program program;
         CHECK(stackvm::assemble(file, program));
         stackvm::Machine machine;
+        machine.setNativeRegistry(&collectionRegistry());
         machine.setData(&data);
         const stackvm::RunResult result = machine.run(program);
         CHECK(result.ok);
@@ -1321,6 +1357,7 @@ void testObj()
         stackvm::Program program;
         CHECK(stackvm::assemble(file, program));
         stackvm::Machine machine;
+        machine.setNativeRegistry(&collectionRegistry());
         machine.setData(&data);
         const stackvm::RunResult result = machine.run(program);
         CHECK(result.ok);
@@ -1437,6 +1474,7 @@ void testObj()
         stackvm::Program program;
         CHECK(stackvm::assemble(file, program));
         stackvm::Machine machine;
+        machine.setNativeRegistry(&collectionRegistry());
         machine.setData(&data);
         const stackvm::RunResult result = machine.run(program);
         CHECK(result.ok);
@@ -1471,6 +1509,7 @@ void testObj()
         stackvm::Program program;
         CHECK(stackvm::assemble(file, program));
         stackvm::Machine machine;
+        machine.setNativeRegistry(&collectionRegistry());
         const stackvm::RunResult result = machine.run(program);
         CHECK(result.ok);
         CHECK(result.liveObjects == 0u);
@@ -1580,6 +1619,7 @@ void testProgramBinary()
     CHECK(restored.exports.count("entry") == 1u);
 
     stackvm::Machine machine;
+    machine.setNativeRegistry(&collectionRegistry());
     const stackvm::RunResult result = machine.run(restored);
     CHECK(result.ok);
     CHECK(result.output == "42");
@@ -1644,6 +1684,7 @@ void testDebugger()
     /* 断点：停在 twice 入口（**执行之前**），并能看到调用者。 */
     {
         stackvm::Machine machine;
+        machine.setNativeRegistry(&collectionRegistry());
         machine.setBreakpoints({ twiceEntry });
         CHECK(machine.breakpointCount() == 1u);
         Memory::Vector<stackvm::DebugEvent> stops;
@@ -1671,6 +1712,7 @@ void testDebugger()
     /* 单步：每条指令执行前回调一次，次数与执行条数一致。 */
     {
         stackvm::Machine machine;
+        machine.setNativeRegistry(&collectionRegistry());
         machine.setSingleStep(true);
         Memory::Vector<std::size_t> visited;
         machine.setDebugHook([&](const stackvm::DebugEvent &event) {
@@ -1686,6 +1728,7 @@ void testDebugger()
     /* 中止：结果里带中止位置与源码级调用栈。 */
     {
         stackvm::Machine machine;
+        machine.setNativeRegistry(&collectionRegistry());
         machine.setBreakpoints({ twiceEntry });
         machine.setDebugHook([](const stackvm::DebugEvent &) { return stackvm::DebugAction::Abort; });
         const stackvm::RunResult result = machine.run(program);
@@ -1705,6 +1748,7 @@ void testDebugger()
         stackvm::Program brokenProgram;
         CHECK(stackvm::assemble(broken, brokenProgram));
         stackvm::Machine machine;
+        machine.setNativeRegistry(&collectionRegistry());
         const stackvm::RunResult result = machine.run(brokenProgram);
         CHECK(!result.ok);
         CHECK(result.error.find("undefinedValue") != Memory::String::npos);
@@ -1722,6 +1766,7 @@ void testDebugger()
         location.line = 7;
         external.add(0u, location);
         stackvm::Machine machine;
+        machine.setNativeRegistry(&collectionRegistry());
         machine.attachDebugInfo(&external);
         CHECK(machine.debugInfo() == nullptr); /* 还没跑过，表要等 run() 才生效 */
         const stackvm::RunResult result = machine.run(program);
@@ -1754,6 +1799,7 @@ void testPanic()
     stackvm::Program panicProgram;
     CHECK(stackvm::assemble(panicFile, panicProgram));
     stackvm::Machine panicMachine;
+    panicMachine.setNativeRegistry(&collectionRegistry());
     panicMachine.setData(&data);
     const stackvm::RunResult panicked = panicMachine.run(panicProgram);
     CHECK(!panicked.ok);
@@ -1798,6 +1844,7 @@ void testNativeRegistry()
     stackvm::Program program;
     CHECK(stackvm::assemble(file, program));
     stackvm::Machine machine;
+    machine.setNativeRegistry(&collectionRegistry());
     machine.setData(&data);
     machine.setNativeRegistry(&registry);
     const stackvm::RunResult result = machine.run(program);
@@ -1811,6 +1858,7 @@ void testNativeRegistry()
     stackvm::Program restored;
     CHECK(stackvm::loadProgramBinary(binaryPath, restored, &diagnostics));
     stackvm::Machine restoredMachine;
+    restoredMachine.setNativeRegistry(&collectionRegistry());
     restoredMachine.setData(&data);
     restoredMachine.setNativeRegistry(&registry);
     const stackvm::RunResult restoredResult = restoredMachine.run(restored);
@@ -1873,6 +1921,7 @@ void testExamples(const Memory::String &directory)
         }
 
         stackvm::Machine machine;
+        machine.setNativeRegistry(&collectionRegistry());
         const stackvm::RunResult result = machine.run(program, input);
         ++checks;
         if (!result.ok)
@@ -1911,6 +1960,7 @@ int main(int argc, char **argv)
 {
     const Memory::String directory = (argc > 1) ? argv[1] : "examples";
 
+    testCollectionLeaseRelease();
     testTypes();
     testStackLimit();
     testFloat();

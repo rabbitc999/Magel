@@ -341,8 +341,8 @@
 | [std::iter::listIter](std-iter.md#api-94) | `Iter<T const&> listIter<T>(std::lang::List<T> const& source)` |
 | [std::iter::listIterMut](std-iter.md#api-95) | `Iter<T mut&> listIterMut<T>(std::lang::List<T> mut& source)` |
 | [std::iter::map](std-iter.md#api-26) | `Iter<U> map<T,U>(Iter<T> source, U fn(T) callback)` |
-| [std::iter::mapIntoIter](std-iter.md#api-98) | `Iter<(K,V)> mapIntoIter<K,V>(std::lang::Map<K,V> mut& source)` |
-| [std::iter::mapIter](std-iter.md#api-99) | `Iter<(K,V)> mapIter<K,V>(std::lang::Map<K,V> const& source)` |
+| [std::iter::mapIntoIter](std-iter.md#api-98) | `Iter<Pair<K,V>> mapIntoIter<K,V>(std::lang::Map<K,V> mut& source)` |
+| [std::iter::mapIter](std-iter.md#api-99) | `Iter<Pair<K,V>> mapIter<K,V>(std::lang::Map<K,V> const& source)` |
 | [std::iter::mapWhile](std-iter.md#api-35) | `Iter<U> mapWhile<T,U>(Iter<T> source, Option<U> fn(T) callback)` |
 | [std::iter::nth](std-iter.md#api-82) | `Option<T> nth<T>(Iter<T> mut& source, int64 index)` |
 | [std::iter::peekingTakeWhile](std-iter.md#api-80) | `(Iter<T>,Iter<T>) peekingTakeWhile<T>(Iter<T> source, bool fn(T) predicate)` |
@@ -388,82 +388,82 @@
 | [std::json::JsonValue::kind](std-json.md#api-2) | `int64 kind()` |
 | [std::json::JsonValue::len](std-json.md#api-12) | `int64 len()` |
 | [std::json::parse](std-json.md#api-26) | `Result<JsonValue, std::lang::String> parse(std::lang::String text)` |
-| [std::lang::Add::leftAdd](std-lang.md#api-169) | `R leftAdd(T value)` |
-| [std::lang::And::leftBitAnd](std-lang.md#api-191) | `R leftBitAnd(T value)` |
-| [std::lang::Any::clear](std-lang.md#api-152) | `void clear()` |
-| [std::lang::Any::copy](std-lang.md#api-150) | `Any copy()` |
-| [std::lang::Any::getOptional](std-lang.md#api-156) | `Option<T mut&> getOptional()` |
-| [std::lang::Any::getReference](std-lang.md#api-155) | `T mut& getReference()` |
-| [std::lang::Any::getValue](std-lang.md#api-154) | `T getValue()` |
-| [std::lang::Any::isEmpty](std-lang.md#api-151) | `bool isEmpty()` |
-| [std::lang::Any::set](std-lang.md#api-153) | `int64 set(T value)` |
-| [std::lang::BigDecimal::abs](std-lang.md#api-143) | `BigDecimal abs()` |
-| [std::lang::BigDecimal::ceil](std-lang.md#api-146) | `BigInteger ceil()` |
-| [std::lang::BigDecimal::copy](std-lang.md#api-140) | `BigDecimal copy()` |
-| [std::lang::BigDecimal::floor](std-lang.md#api-145) | `BigInteger floor()` |
-| [std::lang::BigDecimal::isInteger](std-lang.md#api-144) | `bool isInteger()` |
-| [std::lang::BigDecimal::pow](std-lang.md#api-142) | `BigDecimal pow(int64 exponent)` |
-| [std::lang::BigDecimal::root](std-lang.md#api-149) | `BigDecimal root(int64 k, int64 digits)` |
-| [std::lang::BigDecimal::setPrecision](std-lang.md#api-141) | `int64 setPrecision(int64 digits)` |
-| [std::lang::BigDecimal::sqrt](std-lang.md#api-148) | `BigDecimal sqrt(int64 digits)` |
-| [std::lang::BigDecimal::str](std-lang.md#api-139) | `String str()` |
-| [std::lang::BigDecimal::trunc](std-lang.md#api-147) | `BigInteger trunc()` |
-| [std::lang::BigInteger::bitAnd](std-lang.md#api-134) | `BigInteger bitAnd(BigInteger other)` |
-| [std::lang::BigInteger::bitLength](std-lang.md#api-133) | `int64 bitLength()` |
-| [std::lang::BigInteger::bitOr](std-lang.md#api-135) | `BigInteger bitOr(BigInteger other)` |
-| [std::lang::BigInteger::bitXor](std-lang.md#api-136) | `BigInteger bitXor(BigInteger other)` |
-| [std::lang::BigInteger::copy](std-lang.md#api-124) | `BigInteger copy()` |
-| [std::lang::BigInteger::gcd](std-lang.md#api-127) | `BigInteger gcd(BigInteger other)` |
-| [std::lang::BigInteger::iroot](std-lang.md#api-138) | `BigInteger iroot(int64 k)` |
-| [std::lang::BigInteger::isProbablePrime](std-lang.md#api-131) | `bool isProbablePrime(int64 rounds)` |
-| [std::lang::BigInteger::lcm](std-lang.md#api-128) | `BigInteger lcm(BigInteger other)` |
-| [std::lang::BigInteger::mod](std-lang.md#api-129) | `BigInteger mod(BigInteger modulus)` |
-| [std::lang::BigInteger::modInverse](std-lang.md#api-130) | `BigInteger modInverse(BigInteger modulus)` |
-| [std::lang::BigInteger::nextProbablePrime](std-lang.md#api-132) | `BigInteger nextProbablePrime()` |
-| [std::lang::BigInteger::pow](std-lang.md#api-125) | `BigInteger pow(int64 exponent)` |
-| [std::lang::BigInteger::powmod](std-lang.md#api-126) | `BigInteger powmod(BigInteger exponent, BigInteger modulus)` |
-| [std::lang::BigInteger::str](std-lang.md#api-123) | `String str()` |
-| [std::lang::BigInteger::strRadix](std-lang.md#api-137) | `String strRadix(int64 base)` |
-| [std::lang::BitNot::bitNot](std-lang.md#api-202) | `R bitNot(T value)` |
-| [std::lang::Closeable::close](std-lang.md#api-73) | `void close()` |
-| [std::lang::Divide::leftDiv](std-lang.md#api-175) | `R leftDiv(T value)` |
-| [std::lang::Drop::drop](std-lang.md#api-72) | `void drop()` |
-| [std::lang::Equal::leftEqual](std-lang.md#api-179) | `R leftEqual(T value)` |
-| [std::lang::ExplicitConvert::explicitConvert](std-lang.md#api-205) | `T explicitConvert()` |
+| [std::lang::Add::leftAdd](std-lang.md#api-171) | `R leftAdd(T value)` |
+| [std::lang::And::leftBitAnd](std-lang.md#api-193) | `R leftBitAnd(T value)` |
+| [std::lang::Any::clear](std-lang.md#api-154) | `void clear()` |
+| [std::lang::Any::copy](std-lang.md#api-152) | `Any copy()` |
+| [std::lang::Any::getOptional](std-lang.md#api-158) | `Option<T mut&> getOptional()` |
+| [std::lang::Any::getReference](std-lang.md#api-157) | `T mut& getReference()` |
+| [std::lang::Any::getValue](std-lang.md#api-156) | `T getValue()` |
+| [std::lang::Any::isEmpty](std-lang.md#api-153) | `bool isEmpty()` |
+| [std::lang::Any::set](std-lang.md#api-155) | `int64 set(T value)` |
+| [std::lang::BigDecimal::abs](std-lang.md#api-145) | `BigDecimal abs()` |
+| [std::lang::BigDecimal::ceil](std-lang.md#api-148) | `BigInteger ceil()` |
+| [std::lang::BigDecimal::copy](std-lang.md#api-142) | `BigDecimal copy()` |
+| [std::lang::BigDecimal::floor](std-lang.md#api-147) | `BigInteger floor()` |
+| [std::lang::BigDecimal::isInteger](std-lang.md#api-146) | `bool isInteger()` |
+| [std::lang::BigDecimal::pow](std-lang.md#api-144) | `BigDecimal pow(int64 exponent)` |
+| [std::lang::BigDecimal::root](std-lang.md#api-151) | `BigDecimal root(int64 k, int64 digits)` |
+| [std::lang::BigDecimal::setPrecision](std-lang.md#api-143) | `int64 setPrecision(int64 digits)` |
+| [std::lang::BigDecimal::sqrt](std-lang.md#api-150) | `BigDecimal sqrt(int64 digits)` |
+| [std::lang::BigDecimal::str](std-lang.md#api-141) | `String str()` |
+| [std::lang::BigDecimal::trunc](std-lang.md#api-149) | `BigInteger trunc()` |
+| [std::lang::BigInteger::bitAnd](std-lang.md#api-136) | `BigInteger bitAnd(BigInteger other)` |
+| [std::lang::BigInteger::bitLength](std-lang.md#api-135) | `int64 bitLength()` |
+| [std::lang::BigInteger::bitOr](std-lang.md#api-137) | `BigInteger bitOr(BigInteger other)` |
+| [std::lang::BigInteger::bitXor](std-lang.md#api-138) | `BigInteger bitXor(BigInteger other)` |
+| [std::lang::BigInteger::copy](std-lang.md#api-126) | `BigInteger copy()` |
+| [std::lang::BigInteger::gcd](std-lang.md#api-129) | `BigInteger gcd(BigInteger other)` |
+| [std::lang::BigInteger::iroot](std-lang.md#api-140) | `BigInteger iroot(int64 k)` |
+| [std::lang::BigInteger::isProbablePrime](std-lang.md#api-133) | `bool isProbablePrime(int64 rounds)` |
+| [std::lang::BigInteger::lcm](std-lang.md#api-130) | `BigInteger lcm(BigInteger other)` |
+| [std::lang::BigInteger::mod](std-lang.md#api-131) | `BigInteger mod(BigInteger modulus)` |
+| [std::lang::BigInteger::modInverse](std-lang.md#api-132) | `BigInteger modInverse(BigInteger modulus)` |
+| [std::lang::BigInteger::nextProbablePrime](std-lang.md#api-134) | `BigInteger nextProbablePrime()` |
+| [std::lang::BigInteger::pow](std-lang.md#api-127) | `BigInteger pow(int64 exponent)` |
+| [std::lang::BigInteger::powmod](std-lang.md#api-128) | `BigInteger powmod(BigInteger exponent, BigInteger modulus)` |
+| [std::lang::BigInteger::str](std-lang.md#api-125) | `String str()` |
+| [std::lang::BigInteger::strRadix](std-lang.md#api-139) | `String strRadix(int64 base)` |
+| [std::lang::BitNot::bitNot](std-lang.md#api-204) | `R bitNot(T value)` |
+| [std::lang::Closeable::close](std-lang.md#api-75) | `void close()` |
+| [std::lang::Divide::leftDiv](std-lang.md#api-177) | `R leftDiv(T value)` |
+| [std::lang::Drop::drop](std-lang.md#api-74) | `void drop()` |
+| [std::lang::Equal::leftEqual](std-lang.md#api-181) | `R leftEqual(T value)` |
+| [std::lang::ExplicitConvert::explicitConvert](std-lang.md#api-207) | `T explicitConvert()` |
 | [std::lang::FromResidual::fromResidual](std-lang.md#api-37) | `static F fromResidual(R residual)` |
-| [std::lang::Greater::leftGreater](std-lang.md#api-187) | `R leftGreater(T value)` |
-| [std::lang::GreaterOrEqual::leftGreaterEqual](std-lang.md#api-189) | `R leftGreaterEqual(T value)` |
-| [std::lang::Hash::hash](std-lang.md#api-204) | `uint64 hash(T value)` |
-| [std::lang::ImplicitConvert::implicitConvert](std-lang.md#api-206) | `T implicitConvert()` |
-| [std::lang::Index::index](std-lang.md#api-207) | `R index(T key)` |
-| [std::lang::Iterator::iterator](std-lang.md#api-208) | `Option<R> iterator(int64 index)` |
-| [std::lang::Less::leftLess](std-lang.md#api-183) | `R leftLess(T value)` |
-| [std::lang::LessOrEqual::leftLessEqual](std-lang.md#api-185) | `R leftLessEqual(T value)` |
-| [std::lang::List::at](std-lang.md#api-98) | `T at(int64 index)` |
-| [std::lang::List::clear](std-lang.md#api-104) | `int64 clear()` |
-| [std::lang::List::contains](std-lang.md#api-102) | `bool contains(T value)` |
-| [std::lang::List::copy](std-lang.md#api-95) | `List<T> copy()` |
-| [std::lang::List::has](std-lang.md#api-103) | `bool has(T value)` |
-| [std::lang::List::indexOf](std-lang.md#api-101) | `int64 indexOf(T value)` |
-| [std::lang::List::insert](std-lang.md#api-97) | `int64 insert(int64 index, T value)` |
-| [std::lang::List::len](std-lang.md#api-105) | `int64 len()` |
-| [std::lang::List::pop](std-lang.md#api-99) | `T pop()` |
-| [std::lang::List::push](std-lang.md#api-96) | `int64 push(T value)` |
-| [std::lang::List::remove](std-lang.md#api-100) | `int64 remove(int64 index)` |
-| [std::lang::Map::clear](std-lang.md#api-121) | `int64 clear()` |
-| [std::lang::Map::contains](std-lang.md#api-117) | `int64 contains(K key)` |
-| [std::lang::Map::copy](std-lang.md#api-114) | `Map<K,V> copy()` |
-| [std::lang::Map::has](std-lang.md#api-116) | `int64 has(K key)` |
-| [std::lang::Map::keyAt](std-lang.md#api-119) | `K keyAt(int64 index)` |
-| [std::lang::Map::len](std-lang.md#api-122) | `int64 len()` |
-| [std::lang::Map::put](std-lang.md#api-115) | `int64 put(K key,V value)` |
-| [std::lang::Map::remove](std-lang.md#api-118) | `int64 remove(K key)` |
-| [std::lang::Map::valAt](std-lang.md#api-120) | `V valAt(int64 index)` |
-| [std::lang::Modulo::leftMod](std-lang.md#api-177) | `R leftMod(T value)` |
-| [std::lang::Multiply::leftMul](std-lang.md#api-173) | `R leftMul(T value)` |
-| [std::lang::Negate::negate](std-lang.md#api-201) | `R negate(T value)` |
+| [std::lang::Greater::leftGreater](std-lang.md#api-189) | `R leftGreater(T value)` |
+| [std::lang::GreaterOrEqual::leftGreaterEqual](std-lang.md#api-191) | `R leftGreaterEqual(T value)` |
+| [std::lang::Hash::hash](std-lang.md#api-206) | `uint64 hash(T value)` |
+| [std::lang::ImplicitConvert::implicitConvert](std-lang.md#api-208) | `T implicitConvert()` |
+| [std::lang::Index::index](std-lang.md#api-209) | `R index(T key)` |
+| [std::lang::Iterator::iterator](std-lang.md#api-210) | `Option<R> iterator(int64 index)` |
+| [std::lang::Less::leftLess](std-lang.md#api-185) | `R leftLess(T value)` |
+| [std::lang::LessOrEqual::leftLessEqual](std-lang.md#api-187) | `R leftLessEqual(T value)` |
+| [std::lang::List::at](std-lang.md#api-100) | `T at(int64 index)` |
+| [std::lang::List::clear](std-lang.md#api-106) | `int64 clear()` |
+| [std::lang::List::contains](std-lang.md#api-104) | `bool contains(T value)` |
+| [std::lang::List::copy](std-lang.md#api-97) | `List<T> copy()` |
+| [std::lang::List::has](std-lang.md#api-105) | `bool has(T value)` |
+| [std::lang::List::indexOf](std-lang.md#api-103) | `int64 indexOf(T value)` |
+| [std::lang::List::insert](std-lang.md#api-99) | `int64 insert(int64 index, T value)` |
+| [std::lang::List::len](std-lang.md#api-107) | `int64 len()` |
+| [std::lang::List::pop](std-lang.md#api-101) | `T pop()` |
+| [std::lang::List::push](std-lang.md#api-98) | `int64 push(T value)` |
+| [std::lang::List::remove](std-lang.md#api-102) | `int64 remove(int64 index)` |
+| [std::lang::Map::clear](std-lang.md#api-123) | `int64 clear()` |
+| [std::lang::Map::contains](std-lang.md#api-119) | `int64 contains(K key)` |
+| [std::lang::Map::copy](std-lang.md#api-116) | `Map<K,V> copy()` |
+| [std::lang::Map::has](std-lang.md#api-118) | `int64 has(K key)` |
+| [std::lang::Map::keyAt](std-lang.md#api-121) | `K keyAt(int64 index)` |
+| [std::lang::Map::len](std-lang.md#api-124) | `int64 len()` |
+| [std::lang::Map::put](std-lang.md#api-117) | `int64 put(K key,V value)` |
+| [std::lang::Map::remove](std-lang.md#api-120) | `int64 remove(K key)` |
+| [std::lang::Map::valAt](std-lang.md#api-122) | `V valAt(int64 index)` |
+| [std::lang::Modulo::leftMod](std-lang.md#api-179) | `R leftMod(T value)` |
+| [std::lang::Multiply::leftMul](std-lang.md#api-175) | `R leftMul(T value)` |
+| [std::lang::Negate::negate](std-lang.md#api-203) | `R negate(T value)` |
 | [std::lang::NextValue::nextValue](std-lang.md#api-63) | `Option<T> nextValue(T end, bool inclusive)` |
-| [std::lang::NotEqual::leftNotEqual](std-lang.md#api-181) | `R leftNotEqual(T value)` |
+| [std::lang::NotEqual::leftNotEqual](std-lang.md#api-183) | `R leftNotEqual(T value)` |
 | [std::lang::Option::andThen](std-lang.md#api-48) | `Option<T> andThen(Option<T> fn(T) mapper)` |
 | [std::lang::Option::branch](std-lang.md#api-38) | `TryBranch<T, NoneResidual> branch()` |
 | [std::lang::Option::expect](std-lang.md#api-46) | `T expect(std::lang::String message)` |
@@ -471,15 +471,17 @@
 | [std::lang::Option::intoBranch](std-lang.md#api-39) | `TryBranch<T, NoneResidual> intoBranch()` |
 | [std::lang::Option::isNone](std-lang.md#api-42) | `bool isNone()` |
 | [std::lang::Option::isValue](std-lang.md#api-41) | `bool isValue()` |
-| [std::lang::Option::okOr](std-lang.md#api-210) | `Result<T,E> okOr<E>(E error)` |
-| [std::lang::Option::okOrElse](std-lang.md#api-211) | `Result<T,E> okOrElse<E>(E fn() factory)` |
+| [std::lang::Option::okOr](std-lang.md#api-212) | `Result<T,E> okOr<E>(E error)` |
+| [std::lang::Option::okOrElse](std-lang.md#api-213) | `Result<T,E> okOrElse<E>(E fn() factory)` |
 | [std::lang::Option::take](std-lang.md#api-43) | `T take()` |
 | [std::lang::Option::transform](std-lang.md#api-47) | `Option<T> transform(T fn(T) mapper)` |
 | [std::lang::Option::unwrap](std-lang.md#api-44) | `T unwrap()` |
 | [std::lang::Option::unwrapOr](std-lang.md#api-45) | `T unwrapOr(T fallback)` |
-| [std::lang::Or::leftBitOr](std-lang.md#api-193) | `R leftBitOr(T value)` |
-| [std::lang::Pair::of](std-lang.md#api-64) | `static Pair<K, V> of(K first, V second)` |
-| [std::lang::Positive::positive](std-lang.md#api-203) | `R positive(T value)` |
+| [std::lang::Or::leftBitOr](std-lang.md#api-195) | `R leftBitOr(T value)` |
+| [std::lang::Pair::create](std-lang.md#api-65) | `static Pair<K, V> create((K, V) value)` |
+| [std::lang::Pair::create](std-lang.md#api-64) | `static Pair<K, V> create(K first, V second)` |
+| [std::lang::Pair::toTuple](std-lang.md#api-66) | `(K, V) toTuple()` |
+| [std::lang::Positive::positive](std-lang.md#api-205) | `R positive(T value)` |
 | [std::lang::Result::andThen](std-lang.md#api-62) | `Result<T, E> andThen(Result<T, E> fn(T) mapper)` |
 | [std::lang::Result::branch](std-lang.md#api-49) | `TryBranch<T, ErrorResidual<E>> branch()` |
 | [std::lang::Result::error](std-lang.md#api-60) | `E error()` |
@@ -488,44 +490,44 @@
 | [std::lang::Result::intoBranch](std-lang.md#api-50) | `TryBranch<T, ErrorResidual<E>> intoBranch()` |
 | [std::lang::Result::isErr](std-lang.md#api-54) | `bool isErr()` |
 | [std::lang::Result::isOk](std-lang.md#api-53) | `bool isOk()` |
-| [std::lang::Result::mapErr](std-lang.md#api-209) | `Result<T,F> mapErr<F>(F fn(E) mapper)` |
+| [std::lang::Result::mapErr](std-lang.md#api-211) | `Result<T,F> mapErr<F>(F fn(E) mapper)` |
 | [std::lang::Result::ok](std-lang.md#api-52) | `Option<T> ok()` |
 | [std::lang::Result::take](std-lang.md#api-55) | `T take()` |
 | [std::lang::Result::takeError](std-lang.md#api-59) | `E takeError()` |
 | [std::lang::Result::transform](std-lang.md#api-61) | `Result<T, E> transform(T fn(T) mapper)` |
 | [std::lang::Result::unwrap](std-lang.md#api-56) | `T unwrap()` |
 | [std::lang::Result::unwrapOr](std-lang.md#api-57) | `T unwrapOr(T fallback)` |
-| [std::lang::RightAdd::rightAdd](std-lang.md#api-170) | `R rightAdd(T value)` |
-| [std::lang::RightAnd::rightBitAnd](std-lang.md#api-192) | `R rightBitAnd(T value)` |
-| [std::lang::RightDivide::rightDiv](std-lang.md#api-176) | `R rightDiv(T value)` |
-| [std::lang::RightEqual::rightEqual](std-lang.md#api-180) | `R rightEqual(T value)` |
-| [std::lang::RightGreater::rightGreater](std-lang.md#api-188) | `R rightGreater(T value)` |
-| [std::lang::RightGreaterOrEqual::rightGreaterEqual](std-lang.md#api-190) | `R rightGreaterEqual(T value)` |
-| [std::lang::RightLess::rightLess](std-lang.md#api-184) | `R rightLess(T value)` |
-| [std::lang::RightLessOrEqual::rightLessEqual](std-lang.md#api-186) | `R rightLessEqual(T value)` |
-| [std::lang::RightModulo::rightMod](std-lang.md#api-178) | `R rightMod(T value)` |
-| [std::lang::RightMultiply::rightMul](std-lang.md#api-174) | `R rightMul(T value)` |
-| [std::lang::RightNotEqual::rightNotEqual](std-lang.md#api-182) | `R rightNotEqual(T value)` |
-| [std::lang::RightOr::rightBitOr](std-lang.md#api-194) | `R rightBitOr(T value)` |
-| [std::lang::RightShiftLeft::rightShiftLeft](std-lang.md#api-198) | `R rightShiftLeft(T value)` |
-| [std::lang::RightShiftRight::rightShiftRight](std-lang.md#api-200) | `R rightShiftRight(T value)` |
-| [std::lang::RightSubtract::rightSub](std-lang.md#api-172) | `R rightSub(T value)` |
-| [std::lang::RightXor::rightBitXor](std-lang.md#api-196) | `R rightBitXor(T value)` |
-| [std::lang::Set::add](std-lang.md#api-107) | `int64 add(T value)` |
-| [std::lang::Set::at](std-lang.md#api-111) | `T at(int64 index)` |
-| [std::lang::Set::clear](std-lang.md#api-112) | `int64 clear()` |
-| [std::lang::Set::contains](std-lang.md#api-109) | `int64 contains(T value)` |
-| [std::lang::Set::copy](std-lang.md#api-106) | `Set<T> copy()` |
-| [std::lang::Set::has](std-lang.md#api-108) | `int64 has(T value)` |
-| [std::lang::Set::len](std-lang.md#api-113) | `int64 len()` |
-| [std::lang::Set::remove](std-lang.md#api-110) | `int64 remove(T value)` |
-| [std::lang::ShiftLeft::leftShiftLeft](std-lang.md#api-197) | `R leftShiftLeft(T value)` |
-| [std::lang::ShiftRight::leftShiftRight](std-lang.md#api-199) | `R leftShiftRight(T value)` |
-| [std::lang::Subtract::leftSub](std-lang.md#api-171) | `R leftSub(T value)` |
+| [std::lang::RightAdd::rightAdd](std-lang.md#api-172) | `R rightAdd(T value)` |
+| [std::lang::RightAnd::rightBitAnd](std-lang.md#api-194) | `R rightBitAnd(T value)` |
+| [std::lang::RightDivide::rightDiv](std-lang.md#api-178) | `R rightDiv(T value)` |
+| [std::lang::RightEqual::rightEqual](std-lang.md#api-182) | `R rightEqual(T value)` |
+| [std::lang::RightGreater::rightGreater](std-lang.md#api-190) | `R rightGreater(T value)` |
+| [std::lang::RightGreaterOrEqual::rightGreaterEqual](std-lang.md#api-192) | `R rightGreaterEqual(T value)` |
+| [std::lang::RightLess::rightLess](std-lang.md#api-186) | `R rightLess(T value)` |
+| [std::lang::RightLessOrEqual::rightLessEqual](std-lang.md#api-188) | `R rightLessEqual(T value)` |
+| [std::lang::RightModulo::rightMod](std-lang.md#api-180) | `R rightMod(T value)` |
+| [std::lang::RightMultiply::rightMul](std-lang.md#api-176) | `R rightMul(T value)` |
+| [std::lang::RightNotEqual::rightNotEqual](std-lang.md#api-184) | `R rightNotEqual(T value)` |
+| [std::lang::RightOr::rightBitOr](std-lang.md#api-196) | `R rightBitOr(T value)` |
+| [std::lang::RightShiftLeft::rightShiftLeft](std-lang.md#api-200) | `R rightShiftLeft(T value)` |
+| [std::lang::RightShiftRight::rightShiftRight](std-lang.md#api-202) | `R rightShiftRight(T value)` |
+| [std::lang::RightSubtract::rightSub](std-lang.md#api-174) | `R rightSub(T value)` |
+| [std::lang::RightXor::rightBitXor](std-lang.md#api-198) | `R rightBitXor(T value)` |
+| [std::lang::Set::add](std-lang.md#api-109) | `int64 add(T value)` |
+| [std::lang::Set::at](std-lang.md#api-113) | `T at(int64 index)` |
+| [std::lang::Set::clear](std-lang.md#api-114) | `int64 clear()` |
+| [std::lang::Set::contains](std-lang.md#api-111) | `int64 contains(T value)` |
+| [std::lang::Set::copy](std-lang.md#api-108) | `Set<T> copy()` |
+| [std::lang::Set::has](std-lang.md#api-110) | `int64 has(T value)` |
+| [std::lang::Set::len](std-lang.md#api-115) | `int64 len()` |
+| [std::lang::Set::remove](std-lang.md#api-112) | `int64 remove(T value)` |
+| [std::lang::ShiftLeft::leftShiftLeft](std-lang.md#api-199) | `R leftShiftLeft(T value)` |
+| [std::lang::ShiftRight::leftShiftRight](std-lang.md#api-201) | `R leftShiftRight(T value)` |
+| [std::lang::Subtract::leftSub](std-lang.md#api-173) | `R leftSub(T value)` |
 | [std::lang::Try::branch](std-lang.md#api-35) | `TryBranch<T, R> branch()` |
 | [std::lang::TryMove::intoBranch](std-lang.md#api-36) | `TryBranch<T, R> intoBranch()` |
-| [std::lang::Xor::leftBitXor](std-lang.md#api-195) | `R leftBitXor(T value)` |
-| [std::lang::add](std-lang.md#api-163) | `R add(T left,U right)` |
+| [std::lang::Xor::leftBitXor](std-lang.md#api-197) | `R leftBitXor(T value)` |
+| [std::lang::add](std-lang.md#api-165) | `R add(T left,U right)` |
 | [std::lang::assert](std-lang.md#api-31) | `void assert(bool condition)` |
 | [std::lang::assert](std-lang.md#api-33) | `void assert(bool condition, int64 line)` |
 | [std::lang::assert](std-lang.md#api-32) | `void assert(bool condition, std::lang::String message)` |
@@ -542,8 +544,8 @@
 | [std::lang::bytesToFloat64](std-lang.md#api-25) | `Option<float64> bytesToFloat64(uint8 bytes[], bool bigEndian)` |
 | [std::lang::bytesToFloat64](std-lang.md#api-24) | `Option<float64> bytesToFloat64(uint8 const& bytes, int64 count)` |
 | [std::lang::bytesToFloat64](std-lang.md#api-23) | `Option<float64> bytesToFloat64(uint8 const& bytes, int64 count, bool bigEndian)` |
-| [std::lang::div](std-lang.md#api-166) | `R div(T left,U right)` |
-| [std::lang::eq](std-lang.md#api-157) | `bool eq(T left,T right)` |
+| [std::lang::div](std-lang.md#api-168) | `R div(T left,U right)` |
+| [std::lang::eq](std-lang.md#api-159) | `bool eq(T left,T right)` |
 | [std::lang::float32ToBytes](std-lang.md#api-16) | `bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count)` |
 | [std::lang::float32ToBytes](std-lang.md#api-15) | `bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count, bool bigEndian)` |
 | [std::lang::float32ToBytes](std-lang.md#api-18) | `bool float32ToBytes(float32 value, uint8[] mut& bytes)` |
@@ -556,50 +558,50 @@
 | [std::lang::float64ToBytes](std-lang.md#api-29) | `bool float64ToBytes(float64 value, uint8[] mut& bytes, bool bigEndian)` |
 | [std::lang::float64ToBytes](std-lang.md#api-20) | `std::lang::List<uint8> float64ToBytes(float64 value)` |
 | [std::lang::float64ToBytes](std-lang.md#api-19) | `std::lang::List<uint8> float64ToBytes(float64 value, bool bigEndian)` |
-| [std::lang::format](std-lang.md#api-76) | `String format(String format, Any args...)` |
-| [std::lang::ge](std-lang.md#api-162) | `bool ge(T left,T right)` |
-| [std::lang::gt](std-lang.md#api-161) | `bool gt(T left,T right)` |
-| [std::lang::index](std-lang.md#api-168) | `T index(T const& data,int64 index)` |
-| [std::lang::inputBigDecimal](std-lang.md#api-87) | `BigDecimal inputBigDecimal()` |
-| [std::lang::inputBigInteger](std-lang.md#api-86) | `BigInteger inputBigInteger()` |
-| [std::lang::inputBool](std-lang.md#api-84) | `bool inputBool()` |
-| [std::lang::inputChar](std-lang.md#api-85) | `char inputChar()` |
-| [std::lang::inputFloat](std-lang.md#api-83) | `float64 inputFloat()` |
-| [std::lang::inputInt](std-lang.md#api-81) | `int64 inputInt()` |
-| [std::lang::inputLine](std-lang.md#api-80) | `String inputLine()` |
-| [std::lang::inputUInt](std-lang.md#api-82) | `uint64 inputUInt()` |
-| [std::lang::le](std-lang.md#api-160) | `bool le(T left,T right)` |
-| [std::lang::len](std-lang.md#api-89) | `int64 len(Any value)` |
-| [std::lang::lt](std-lang.md#api-159) | `bool lt(T left,T right)` |
-| [std::lang::memcpy](std-lang.md#api-93) | `int64 memcpy(char mut& destination, char const& source, int64 bytes)` |
-| [std::lang::memset](std-lang.md#api-94) | `int64 memset(char mut& destination, int64 value, int64 bytes)` |
-| [std::lang::mod](std-lang.md#api-167) | `R mod(T left,U right)` |
-| [std::lang::move](std-lang.md#api-90) | `T move<T>(T mut& value)` |
-| [std::lang::mul](std-lang.md#api-165) | `R mul(T left,U right)` |
-| [std::lang::ne](std-lang.md#api-158) | `bool ne(T left,T right)` |
-| [std::lang::panic](std-lang.md#api-88) | `int64 panic(String message)` |
-| [std::lang::pause](std-lang.md#api-78) | `int64 pause()` |
-| [std::lang::print](std-lang.md#api-74) | `int64 print(String format, Any args...)` |
-| [std::lang::println](std-lang.md#api-75) | `int64 println(String format, Any args...)` |
-| [std::lang::putChar](std-lang.md#api-77) | `int64 putChar(char value)` |
-| [std::lang::range](std-lang.md#api-69) | `__Range range(int64 start, int64 stop)` |
-| [std::lang::range](std-lang.md#api-70) | `__Range range(int64 start, int64 stop, int64 step)` |
-| [std::lang::rangeEq](std-lang.md#api-71) | `__Interval_int64 rangeEq(int64 start, int64 stop)` |
+| [std::lang::format](std-lang.md#api-78) | `String format(String format, Any args...)` |
+| [std::lang::ge](std-lang.md#api-164) | `bool ge(T left,T right)` |
+| [std::lang::gt](std-lang.md#api-163) | `bool gt(T left,T right)` |
+| [std::lang::index](std-lang.md#api-170) | `T index(T const& data,int64 index)` |
+| [std::lang::inputBigDecimal](std-lang.md#api-89) | `BigDecimal inputBigDecimal()` |
+| [std::lang::inputBigInteger](std-lang.md#api-88) | `BigInteger inputBigInteger()` |
+| [std::lang::inputBool](std-lang.md#api-86) | `bool inputBool()` |
+| [std::lang::inputChar](std-lang.md#api-87) | `char inputChar()` |
+| [std::lang::inputFloat](std-lang.md#api-85) | `float64 inputFloat()` |
+| [std::lang::inputInt](std-lang.md#api-83) | `int64 inputInt()` |
+| [std::lang::inputLine](std-lang.md#api-82) | `String inputLine()` |
+| [std::lang::inputUInt](std-lang.md#api-84) | `uint64 inputUInt()` |
+| [std::lang::le](std-lang.md#api-162) | `bool le(T left,T right)` |
+| [std::lang::len](std-lang.md#api-91) | `int64 len(Any value)` |
+| [std::lang::lt](std-lang.md#api-161) | `bool lt(T left,T right)` |
+| [std::lang::memcpy](std-lang.md#api-95) | `int64 memcpy(char mut& destination, char const& source, int64 bytes)` |
+| [std::lang::memset](std-lang.md#api-96) | `int64 memset(char mut& destination, int64 value, int64 bytes)` |
+| [std::lang::mod](std-lang.md#api-169) | `R mod(T left,U right)` |
+| [std::lang::move](std-lang.md#api-92) | `T move<T>(T mut& value)` |
+| [std::lang::mul](std-lang.md#api-167) | `R mul(T left,U right)` |
+| [std::lang::ne](std-lang.md#api-160) | `bool ne(T left,T right)` |
+| [std::lang::panic](std-lang.md#api-90) | `int64 panic(String message)` |
+| [std::lang::pause](std-lang.md#api-80) | `int64 pause()` |
+| [std::lang::print](std-lang.md#api-76) | `int64 print(String format, Any args...)` |
+| [std::lang::println](std-lang.md#api-77) | `int64 println(String format, Any args...)` |
+| [std::lang::putChar](std-lang.md#api-79) | `int64 putChar(char value)` |
+| [std::lang::range](std-lang.md#api-71) | `__Range range(int64 start, int64 stop)` |
+| [std::lang::range](std-lang.md#api-72) | `__Range range(int64 start, int64 stop, int64 step)` |
+| [std::lang::rangeEq](std-lang.md#api-73) | `__Interval_int64 rangeEq(int64 start, int64 stop)` |
 | [std::lang::readLine](std-lang.md#api-0) | `String readLine()` |
 | [std::lang::readLines](std-lang.md#api-1) | `String readLines(int32 N)` |
 | [std::lang::readLines](std-lang.md#api-2) | `String readLines(int64 N)` |
-| [std::lang::stringBytes](std-lang.md#api-68) | `List<uint8> stringBytes(String text)` |
-| [std::lang::sub](std-lang.md#api-164) | `R sub(T left,U right)` |
-| [std::lang::sweep](std-lang.md#api-79) | `int64 sweep()` |
+| [std::lang::stringBytes](std-lang.md#api-70) | `List<uint8> stringBytes(String text)` |
+| [std::lang::sub](std-lang.md#api-166) | `R sub(T left,U right)` |
+| [std::lang::sweep](std-lang.md#api-81) | `int64 sweep()` |
 | [std::lang::toInt32](std-lang.md#api-4) | `Option<int32> toInt32(float32 value)` |
 | [std::lang::toInt32](std-lang.md#api-3) | `Option<int32> toInt32(float64 value)` |
 | [std::lang::toInt64](std-lang.md#api-6) | `int64 toInt64(float32 value)` |
 | [std::lang::toInt64](std-lang.md#api-5) | `int64 toInt64(float64 value)` |
-| [std::lang::toOptional](std-lang.md#api-92) | `Option<T mut&> toOptional<T>(T mut& value)` |
-| [std::lang::toReference](std-lang.md#api-91) | `T mut& toReference<T>(Option<T mut&> value)` |
-| [std::lang::tryGet](std-lang.md#api-65) | `Option<T> tryGet<T>(Any const& value)` |
-| [std::lang::tryGetMut](std-lang.md#api-67) | `Option<T mut&> tryGetMut<T>(Any mut& value)` |
-| [std::lang::tryGetReference](std-lang.md#api-66) | `Option<T const&> tryGetReference<T>(Any const& value)` |
+| [std::lang::toOptional](std-lang.md#api-94) | `Option<T mut&> toOptional<T>(T mut& value)` |
+| [std::lang::toReference](std-lang.md#api-93) | `T mut& toReference<T>(Option<T mut&> value)` |
+| [std::lang::tryGet](std-lang.md#api-67) | `Option<T> tryGet<T>(Any const& value)` |
+| [std::lang::tryGetMut](std-lang.md#api-69) | `Option<T mut&> tryGetMut<T>(Any mut& value)` |
+| [std::lang::tryGetReference](std-lang.md#api-68) | `Option<T const&> tryGetReference<T>(Any const& value)` |
 | [std::linalg::Matrix::add](std-linalg.md#api-31) | `Matrix<T> add(Matrix<T> other)` |
 | [std::linalg::Matrix::apply](std-linalg.md#api-35) | `Vector<T> apply(Vector<T> vector)` |
 | [std::linalg::Matrix::at](std-linalg.md#api-28) | `T at(int64 row, int64 col)` |

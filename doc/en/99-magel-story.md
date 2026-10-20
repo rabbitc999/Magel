@@ -213,14 +213,6 @@ see [validation](../11-algorithm-validation.md) and [core concepts](03-core-conc
 
 On 2026-10-10 the project officially took the name **Magel** and reset the version to **0.7.0**:
 
-- the directory became `magel/`, the tools `magel` / `magel-emit` / `magel-generator`, the source
-  extension `.mgl`, and the project files `magel.toml` / `magel.lock`;
-- compiler macros were unified under the `MAGEL_` prefix, while the VM kept its `STACKVM_` capability
-  contract and the `.svmb` binary protocol kept its meaning;
-- Chinese / English display was added: `--lang`, `MAGEL_LANG` and system locale
-  detection. User strings, file paths and JSON protocols are not translated, and diagnostic codes do
-  not change with language.
-
 One thing has to be said clearly: **the 0.0.1–0.6.2 records come before 0.7.0, they are not its
 successors.** The numbers were shifted once more on 2026-10-15: every version from this one onward
 moved down, and the former 2.5.3 became language **0.18.0**. The mapping lives in the
@@ -245,12 +237,6 @@ is where today's positioning comes from.
 | Quadruples | a readable intermediate form | like laying the whole circuit out on the ground: it works, it does not travel |
 | `.svmb` bytecode (PESVMB v4) | instructions, data, types, module exports and host symbols to bind | names are still there; the file itself is readable |
 | Compacted symbols (MCVM0004) | an artifact whose names became stable FNV-1a 64 ids, ULEB128-encoded | the map file stays on your side and must not ship with the artifact |
-| AOT native program | a native executable for the target platform | a different platform needs a rebuild; it is no longer the same bytecode |
-
-Along the way **an entire path was deleted**: the embedded-VM export (generating the VM sources
-together with the program and compiling them). It used to be the third leg; maintaining it cost more
-than it returned — so `magel vm`, `--mode vm` and `--target cpp` were removed together, and today
-only **interpretation, bytecode + StackVM, and AOT** remain.
 
 The board side went through one real acceptance run as well: compile, trim and package on the PC,
 update to an **STM32F407VET6** board, and run with a fixed-capacity VM calling the on-board HAL glue;
@@ -377,9 +363,8 @@ Half the shape of this language comes from what was removed:
 | `extern` / `extern cast` | `abi` blocks plus host signature declarations | make the boundary explicit, no implicit external symbols |
 | `printf` / bare `putchar` / input writing into variables | `println` / `putChar` / `inputLine()` etc. returning expressions | types live in the signature, not inferred from the target variable |
 | `generic<T>` prefix | postfix `T name<T>` / `struct Box<T>` | matches the call syntax; `generic` returns to being an identifier |
-| `.mcpp` host description language | `abi "..."` blocks plus `--glue FILE.cpp` | maintaining another grammar for the description layer cost more than the registration code it saved |
+| `.mcpp` host description language | `abi "..."` blocks plus VM host registration | maintaining another grammar for the description layer cost more than the registration code it saved |
 | `IterChain` eager chaining | `std::iter` lazy adapters | ownership of the owning intermediates was unclear |
-| embedded-VM export | AOT plus `.svmb` | the shortest of the three legs and the most expensive to maintain |
 | `magel zip` | `tools/package_compiler.py` | the tool itself need not ship a compression implementation just to be released |
 | macro `##` pasting / `#param` stringification | `$concat(a, b)` / `$stringify(x)` | a second spelling of the same thing, doubling the diagnostic surface |
 | the `$match` / `$when` / `$else` macro DSL | `$for` plus overloads that key on argument count | a miniature DSL stacked on a text substitution macro: rarely used, huge diagnostic surface |
@@ -392,23 +377,6 @@ ordinary error. Expecting old syntax to slip past the new rules is the same as n
 ## 9. What is still unfinished
 
 Where the story stops is not "it will get better"; it is **what is genuinely not done today**:
-
-- **Semantic diagnostics exist only in Chinese.** Syntax errors have all three languages; type
-  mismatches and undefined symbols do not.
-- **The reflection feature bit is stamped unconditionally.** If the compiler was built with
-  reflection, even `hello.mgl` gets a `# magel-features: reflection` header, so the artifact demands
-  a VM that also has it — and the board-side `mcu_vm` defaults to off and refuses to load it. It
-  should only be stamped when the program actually uses annotations, `@Reflect` or `import std::reflect`.
-- **Lifetime checking is not a complete proof.** Arbitrary cross-function writes, every alias after
-  an explicit `delete`, concurrent invalidation, and references held by the host still rest on
-  contracts. AOT defaults to `checked` with runtime allocation guards and panic traces, while explicit
-  `unchecked` disables optional checks. Arbitrary deployment artifacts cannot be described as always having complete memory guardrails.
-- **Performance has not been measured systematically.** AOT can emit a native program; do not expect
-  it to beat hand-optimized C/C++.
-- **Ecosystem size and IDE maturity.** The standard library covers the common capabilities but
-  cannot compare with a mainstream language's third-party libraries; the VS Code extension already
-  does highlighting, diagnostics, completion, navigation and breakpoint debugging, but the toolchain
-  is still under construction.
 
 Each of these is listed in the [roadmap](10-roadmap.md) and in
 [who should not use Magel](00-vision.md#4-who-should-not-use-magel).

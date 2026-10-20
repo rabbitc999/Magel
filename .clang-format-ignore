@@ -1,6 +1,5 @@
 # 工程生成器与代码导出器保留各自格式。
 source/magel-generator/**
-source/magel-emit/**
 # 自动生成资产从生成源维护，不直接格式化。
 source/magel_parser.cpp
 source/magel_parser.hpp

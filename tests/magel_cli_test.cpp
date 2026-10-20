@@ -30,11 +30,12 @@ int main()
     check({ "magel", "check", "demo.mgl", "json" }, { "magel", "--check", "demo.mgl", "--diagnostics=json" });
     check({ "magel", "new", "demo", "name", "help" }, { "magel", "new", "demo", "--name", "help" });
     check({ "magel", "new", "name" }, { "magel", "new", "name" });
-    check({ "magel", "aot", "demo.mgl", "out", "debug", "opt", "0", "reflect" },
-          { "magel", "aot", "demo.mgl", "--out", "debug", "--opt-level", "0", "--reflection" });
+    check({ "magel", "aot" }, { "magel", "run", "aot" });
+    check({ "magel", "emit", "demo.mgl", "out", "debug", "reflect" },
+          { "magel", "emit", "demo.mgl", "--out", "debug", "--reflection" });
     check({ "magel", "run", "out", "--out", "help", "--", "reflect" },
           { "magel", "run", "out", "--out", "help", "--", "reflect" });
-    check({ "magel", "test", "tests", "backend", "all", "json" }, { "magel", "test", "tests", "--backend", "all", "--json" });
+    check({ "magel", "test", "tests", "backend", "interpret", "json" }, { "magel", "test", "tests", "--backend", "interpret", "--json" });
     check({ "magel", "fmt", "check", "src" }, { "magel", "fmt", "--check", "src" });
     check({ "magel", "deps", "lock", "project", "out", "offline" }, { "magel", "deps", "lock", "--project", "out", "--offline" });
     check({ "magel", "gen", "compiler", "out", "tmp" }, { "magel", "gen", "compiler", "--out-dir", "tmp" });

@@ -65,7 +65,7 @@ inline std::int64_t listSlot(Reply reply, std::size_t slot)
 inline bool readPixels(Context &ctx, std::int64_t handle, std::size_t expected, Bytes &out)
 {
     Memory::Vector<magel_glue::Value> raw;
-    if (!ctx.readList(handle, raw))
+    if (!collection_glue::readList(ctx, handle, raw))
     {
         ctx.fail("图片处理：像素缓冲不是有效的 List");
         return false;
@@ -89,7 +89,7 @@ inline bool readPixels(Context &ctx, std::int64_t handle, std::size_t expected, 
 inline void writePixels(Context &ctx, Reply reply, const Bytes &pixels)
 {
     const std::int64_t handle = listSlot(reply, 3);
-    for (std::uint8_t byte : pixels) ctx.listPush(handle, magel_glue::Value::fromInt(byte));
+    for (std::uint8_t byte : pixels) collection_glue::listPush(ctx, handle, magel_glue::Value::fromInt(byte));
 }
 
 /**
@@ -101,7 +101,7 @@ inline void writePixels(Context &ctx, Reply reply, const Bytes &pixels)
 inline void writeBytes(Context &ctx, Reply reply, const Bytes &bytes)
 {
     const std::int64_t handle = listSlot(reply, 4);
-    for (std::uint8_t byte : bytes) ctx.listPush(handle, magel_glue::Value::fromInt(byte));
+    for (std::uint8_t byte : bytes) collection_glue::listPush(ctx, handle, magel_glue::Value::fromInt(byte));
 }
 
 /**
@@ -113,7 +113,7 @@ inline void writeBytes(Context &ctx, Reply reply, const Bytes &bytes)
 inline void writeGray(Context &ctx, Reply reply, const Bytes &gray)
 {
     const std::int64_t handle = listSlot(reply, 5);
-    for (std::uint8_t byte : gray) ctx.listPush(handle, magel_glue::Value::fromInt(byte));
+    for (std::uint8_t byte : gray) collection_glue::listPush(ctx, handle, magel_glue::Value::fromInt(byte));
 }
 
 /* ---- 编解码辅助 ---- */
@@ -121,8 +121,7 @@ inline void writeGray(Context &ctx, Reply reply, const Bytes &gray)
 inline std::uint16_t readU16LE(const std::uint8_t *p) { return static_cast<std::uint16_t>(p[0] | (p[1] << 8)); }
 inline std::uint32_t readU32LE(const std::uint8_t *p)
 {
-    return static_cast<std::uint32_t>(p[0]) | (static_cast<std::uint32_t>(p[1]) << 8) |
-           (static_cast<std::uint32_t>(p[2]) << 16) | (static_cast<std::uint32_t>(p[3]) << 24);
+    return static_cast<std::uint32_t>(p[0]) | (static_cast<std::uint32_t>(p[1]) << 8) | (static_cast<std::uint32_t>(p[2]) << 16) | (static_cast<std::uint32_t>(p[3]) << 24);
 }
 inline void writeU16LE(Bytes &out, std::uint16_t v)
 {
@@ -237,16 +236,21 @@ inline std::string decodeNetpbm(const Bytes &data, std::int64_t &width, std::int
     const char kind = static_cast<char>(data[1]);
     if (kind != '5' && kind != '6') return "Netpbm：仅支持二进制 P5/P6";
     std::size_t pos = 2;
-    std::int64_t fields[3] = {0, 0, 0};
+    std::int64_t fields[3] = { 0, 0, 0 };
     for (int i = 0; i < 3; ++i)
     {
         auto skip = [&] {
             while (pos < data.size())
             {
                 const std::uint8_t c = data[pos];
-                if (c == '#') { while (pos < data.size() && data[pos] != '\n') ++pos; }
-                else if (c == ' ' || c == '\t' || c == '\r' || c == '\n') ++pos;
-                else break;
+                if (c == '#')
+                {
+                    while (pos < data.size() && data[pos] != '\n') ++pos;
+                }
+                else if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
+                    ++pos;
+                else
+                    break;
             }
         };
         skip();
@@ -284,8 +288,16 @@ inline Bytes encodeNetpbm(const char *magic, std::int64_t width, std::int64_t he
     out.insert(out.end(), header.begin(), header.end());
     for (std::size_t p = 0; p < static_cast<std::size_t>(width) * static_cast<std::size_t>(height); ++p)
     {
-        if (magic[1] == '6') { out.push_back(pixels[p * 4 + 0]); out.push_back(pixels[p * 4 + 1]); out.push_back(pixels[p * 4 + 2]); }
-        else { out.push_back(luma(pixels[p * 4 + 0], pixels[p * 4 + 1], pixels[p * 4 + 2])); }
+        if (magic[1] == '6')
+        {
+            out.push_back(pixels[p * 4 + 0]);
+            out.push_back(pixels[p * 4 + 1]);
+            out.push_back(pixels[p * 4 + 2]);
+        }
+        else
+        {
+            out.push_back(luma(pixels[p * 4 + 0], pixels[p * 4 + 1], pixels[p * 4 + 2]));
+        }
     }
     return out;
 }
@@ -308,23 +320,19 @@ inline bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr
         if (!message.empty()) { fail(reply, message); return; }
         reply.set<std::int64_t>(1, width);
         reply.set<std::int64_t>(2, height);
-        writePixels(ctx, reply, pixels);
-    }, error) && ok;
+        writePixels(ctx, reply, pixels); }, error) && ok;
     ok = registry.bindTypedWithContext<void, std::int64_t, std::int64_t, Bytes, Reply>("std::image::__encodeBmp", [](Context &ctx, std::int64_t width, std::int64_t height, Bytes pixels, Reply reply) {
         if (width <= 0 || height <= 0) { fail(reply, "BMP 编码：宽高必须为正"); return; }
         if (pixels.size() != static_cast<std::size_t>(width) * static_cast<std::size_t>(height) * 4) { fail(reply, "BMP 编码：像素缓冲长度不符"); return; }
-        writeBytes(ctx, reply, encodeBmp(width, height, pixels));
-    }, error) && ok;
+        writeBytes(ctx, reply, encodeBmp(width, height, pixels)); }, error) && ok;
     ok = registry.bindTypedWithContext<void, std::int64_t, std::int64_t, Bytes, Reply>("std::image::__encodePpm", [](Context &ctx, std::int64_t width, std::int64_t height, Bytes pixels, Reply reply) {
         if (width <= 0 || height <= 0) { fail(reply, "PPM 编码：宽高必须为正"); return; }
         if (pixels.size() != static_cast<std::size_t>(width) * static_cast<std::size_t>(height) * 4) { fail(reply, "PPM 编码：像素缓冲长度不符"); return; }
-        writeBytes(ctx, reply, encodeNetpbm("P6", width, height, pixels));
-    }, error) && ok;
+        writeBytes(ctx, reply, encodeNetpbm("P6", width, height, pixels)); }, error) && ok;
     ok = registry.bindTypedWithContext<void, std::int64_t, std::int64_t, Bytes, Reply>("std::image::__encodePgm", [](Context &ctx, std::int64_t width, std::int64_t height, Bytes pixels, Reply reply) {
         if (width <= 0 || height <= 0) { fail(reply, "PGM 编码：宽高必须为正"); return; }
         if (pixels.size() != static_cast<std::size_t>(width) * static_cast<std::size_t>(height) * 4) { fail(reply, "PGM 编码：像素缓冲长度不符"); return; }
-        writeBytes(ctx, reply, encodeNetpbm("P5", width, height, pixels));
-    }, error) && ok;
+        writeBytes(ctx, reply, encodeNetpbm("P5", width, height, pixels)); }, error) && ok;
     ok = registry.bindTypedWithContext<void, std::int64_t, std::int64_t, Bytes, Memory::Vector<double>, std::int64_t, std::int64_t, Reply>("std::image::__convolve", [](Context &ctx, std::int64_t width, std::int64_t height, Bytes pixels, Memory::Vector<double> kernel, std::int64_t kw, std::int64_t kh, Reply reply) {
         if (width <= 0 || height <= 0) { fail(reply, "卷积：宽高必须为正"); return; }
         if (kw <= 0 || kh <= 0 || kw % 2 == 0 || kh % 2 == 0 || kw > 15 || kh > 15) { fail(reply, "卷积：核边长必须是不超过 15 的奇数"); return; }
@@ -358,8 +366,7 @@ inline bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr
         }
         reply.set<std::int64_t>(1, width);
         reply.set<std::int64_t>(2, height);
-        writePixels(ctx, reply, out);
-    }, error) && ok;
+        writePixels(ctx, reply, out); }, error) && ok;
     ok = registry.bindTypedWithContext<void, std::int64_t, std::int64_t, Bytes, std::int64_t, std::int64_t, std::int64_t, Reply>("std::image::__pool", [](Context &ctx, std::int64_t width, std::int64_t height, Bytes pixels, std::int64_t mode, std::int64_t kw, std::int64_t kh, Reply reply) {
         if (width <= 0 || height <= 0) { fail(reply, "池化：宽高必须为正"); return; }
         if (kw <= 0 || kh <= 0) { fail(reply, "池化：窗口边长必须为正"); return; }
@@ -394,16 +401,14 @@ inline bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr
         }
         reply.set<std::int64_t>(1, ow);
         reply.set<std::int64_t>(2, oh);
-        writePixels(ctx, reply, out);
-    }, error) && ok;
+        writePixels(ctx, reply, out); }, error) && ok;
     ok = registry.bindTypedWithContext<void, std::int64_t, std::int64_t, Bytes, Reply>("std::image::__toGray", [](Context &ctx, std::int64_t width, std::int64_t height, Bytes pixels, Reply reply) {
         if (width <= 0 || height <= 0) { fail(reply, "灰度转换：宽高必须为正"); return; }
         if (pixels.size() != static_cast<std::size_t>(width) * static_cast<std::size_t>(height) * 4) { fail(reply, "灰度转换：像素缓冲长度不符"); return; }
         Bytes gray(static_cast<std::size_t>(width) * static_cast<std::size_t>(height), 0);
         for (std::size_t p = 0; p < gray.size(); ++p)
             gray[p] = luma(pixels[p * 4 + 0], pixels[p * 4 + 1], pixels[p * 4 + 2]);
-        writeGray(ctx, reply, gray);
-    }, error) && ok;
+        writeGray(ctx, reply, gray); }, error) && ok;
     ok = registry.bindTypedWithContext<void, std::int64_t, std::int64_t, Bytes, Reply>("std::image::__fromGray", [](Context &ctx, std::int64_t width, std::int64_t height, Bytes gray, Reply reply) {
         if (width <= 0 || height <= 0) { fail(reply, "灰度还原：宽高必须为正"); return; }
         if (gray.size() != static_cast<std::size_t>(width) * static_cast<std::size_t>(height)) { fail(reply, "灰度还原：灰度缓冲长度不符"); return; }
@@ -417,8 +422,7 @@ inline bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr
         }
         reply.set<std::int64_t>(1, width);
         reply.set<std::int64_t>(2, height);
-        writePixels(ctx, reply, out);
-    }, error) && ok;
+        writePixels(ctx, reply, out); }, error) && ok;
     ok = registry.bindTypedWithContext<void, std::int64_t, std::int64_t, Bytes, Reply>("std::image::__toARGB", [](Context &ctx, std::int64_t width, std::int64_t height, Bytes pixels, Reply reply) {
         if (width <= 0 || height <= 0) { fail(reply, "ARGB 转换：宽高必须为正"); return; }
         if (pixels.size() != static_cast<std::size_t>(width) * static_cast<std::size_t>(height) * 4) { fail(reply, "ARGB 转换：像素缓冲长度不符"); return; }
@@ -427,9 +431,8 @@ inline bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr
         {
             const std::uint32_t value = (static_cast<std::uint32_t>(pixels[p * 4 + 3]) << 24) | (static_cast<std::uint32_t>(pixels[p * 4 + 0]) << 16) |
                                         (static_cast<std::uint32_t>(pixels[p * 4 + 1]) << 8) | static_cast<std::uint32_t>(pixels[p * 4 + 2]);
-            ctx.listPush(handle, magel_glue::Value::fromInt(static_cast<std::int64_t>(value)));
-        }
-    }, error) && ok;
+            collection_glue::listPush(ctx, handle, magel_glue::Value::fromInt(static_cast<std::int64_t>(value)));
+        } }, error) && ok;
     ok = registry.bindTypedWithContext<void, std::int64_t, std::int64_t, Memory::Vector<std::uint32_t>, Reply>("std::image::__fromARGB", [](Context &ctx, std::int64_t width, std::int64_t height, Memory::Vector<std::uint32_t> argb, Reply reply) {
         if (width <= 0 || height <= 0) { fail(reply, "ARGB 还原：宽高必须为正"); return; }
         if (argb.size() != static_cast<std::size_t>(width) * static_cast<std::size_t>(height)) { fail(reply, "ARGB 还原：缓冲长度不符"); return; }
@@ -444,8 +447,7 @@ inline bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr
         }
         reply.set<std::int64_t>(1, width);
         reply.set<std::int64_t>(2, height);
-        writePixels(ctx, reply, out);
-    }, error) && ok;
+        writePixels(ctx, reply, out); }, error) && ok;
     ok = registry.bindTypedWithContext<void, std::int64_t, std::int64_t, Bytes, Reply>("std::image::__toRGB565", [](Context &ctx, std::int64_t width, std::int64_t height, Bytes pixels, Reply reply) {
         if (width <= 0 || height <= 0) { fail(reply, "RGB565 转换：宽高必须为正"); return; }
         if (pixels.size() != static_cast<std::size_t>(width) * static_cast<std::size_t>(height) * 4) { fail(reply, "RGB565 转换：像素缓冲长度不符"); return; }
@@ -453,9 +455,8 @@ inline bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr
         for (std::size_t p = 0; p < static_cast<std::size_t>(width) * static_cast<std::size_t>(height); ++p)
         {
             const std::uint16_t value = static_cast<std::uint16_t>(((pixels[p * 4 + 0] & 0xF8) << 8) | ((pixels[p * 4 + 1] & 0xFC) << 3) | (pixels[p * 4 + 2] >> 3));
-            ctx.listPush(handle, magel_glue::Value::fromInt(value));
-        }
-    }, error) && ok;
+            collection_glue::listPush(ctx, handle, magel_glue::Value::fromInt(value));
+        } }, error) && ok;
     ok = registry.bindTypedWithContext<void, std::int64_t, std::int64_t, Memory::Vector<std::uint16_t>, Reply>("std::image::__fromRGB565", [](Context &ctx, std::int64_t width, std::int64_t height, Memory::Vector<std::uint16_t> rgb565, Reply reply) {
         if (width <= 0 || height <= 0) { fail(reply, "RGB565 还原：宽高必须为正"); return; }
         if (rgb565.size() != static_cast<std::size_t>(width) * static_cast<std::size_t>(height)) { fail(reply, "RGB565 还原：缓冲长度不符"); return; }
@@ -471,8 +472,7 @@ inline bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr
         }
         reply.set<std::int64_t>(1, width);
         reply.set<std::int64_t>(2, height);
-        writePixels(ctx, reply, out);
-    }, error) && ok;
+        writePixels(ctx, reply, out); }, error) && ok;
     ok = registry.bindTypedWithContext<void, std::int64_t, std::int64_t, Bytes, Reply>("std::image::__otsu", [](Context &, std::int64_t width, std::int64_t height, Bytes gray, Reply reply) {
         if (width <= 0 || height <= 0) { fail(reply, "大津法：宽高必须为正"); return; }
         if (gray.size() != static_cast<std::size_t>(width) * static_cast<std::size_t>(height)) { fail(reply, "大津法：灰度缓冲长度不符"); return; }
@@ -499,16 +499,14 @@ inline bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr
             const double variance = wB * wF * (meanB - meanF) * (meanB - meanF);
             if (variance > bestVariance) { bestVariance = variance; bestThreshold = v; }
         }
-        reply.set<std::int64_t>(8, bestThreshold);
-    }, error) && ok;
+        reply.set<std::int64_t>(8, bestThreshold); }, error) && ok;
     ok = registry.bindTypedWithContext<void, std::int64_t, std::int64_t, Bytes, std::int64_t, Reply>("std::image::__binarize", [](Context &ctx, std::int64_t width, std::int64_t height, Bytes gray, std::int64_t threshold, Reply reply) {
         if (width <= 0 || height <= 0) { fail(reply, "二值化：宽高必须为正"); return; }
         if (threshold < 0 || threshold > 255) { fail(reply, "二值化：阈值必须在 0..255"); return; }
         if (gray.size() != static_cast<std::size_t>(width) * static_cast<std::size_t>(height)) { fail(reply, "二值化：灰度缓冲长度不符"); return; }
         Bytes out(gray.size(), 0);
         for (std::size_t p = 0; p < gray.size(); ++p) out[p] = gray[p] > threshold ? 255 : 0;
-        writeGray(ctx, reply, out);
-    }, error) && ok;
+        writeGray(ctx, reply, out); }, error) && ok;
     return ok;
 }
 }  // namespace std_image_glue

@@ -14,8 +14,6 @@
   "lua_sha256": "1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce",
   "compiler": "gcc (x86_64-posix-seh-rev3, Built by MinGW-W64 project) 11.2.0",
   "compiler_flags": "Lua -O2; Magel -O2 -DNDEBUG MAGEL_CUSTOM_ALLOCATOR=1",
-  "aot_flags": "-O2 unchecked; fresh runtime input per sample prevents folding and cross-sample hoisting; generated source retained",
-  "timing": "Java System.nanoTime; AOT std::clock::nowNanos around calculate only; Python perf_counter_ns; Lua os.clock; Magel steady_clock; exclude parsing and file loading; Magel includes execution-plan setup and final checksum output",
   "results": {
     "Python": {
       "median_ms": 404.1922,
@@ -114,7 +112,6 @@
   },
   "baseline_commit": "51e3739",
   "change": "Fuse arithmetic temporary store followed by load/store copy; preserve both stores and conversions",
-  "command": "python tests/benchmark_language_loops.py --runner build/copy-core-benchmark.exe --baseline-runner build/new-core-benchmark.exe --iterations 10000000 --repeats 7 --skip-reference --skip-aot",
   "runner_build": "g++ -std=c++17 -O2 -DNDEBUG -DMAGEL_CUSTOM_ALLOCATOR=1 -Istackvm tests/benchmark_vm_program.cpp build/magel-stackvm/libstackvm.a -pthread -o build/copy-core-benchmark.exe",
   "runner_sha256": {
     "build/copy-core-benchmark.exe": "e8068efeab2c692e2a5a0eaf21654a0c6c69a7caa6962e9623b77d3e0c820b52",

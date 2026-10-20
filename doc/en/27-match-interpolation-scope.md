@@ -73,5 +73,3 @@ Registration does not run the body. Normal scope exit, return, panic, break, con
 - `$typecheck(T, expr)`: check an expression using assignment compatibility, without an arbitrary cast.
 
 Conditions support integer arithmetic, comparisons, logical operations and string equality. Logical evaluation short-circuits. Parameters and local bindings may supply constants; runtime variables cannot. Recursive expansion may terminate through a condition, with a maximum depth of 64 and 100000 expansions per preprocessing run. Arity errors remain compile-time errors. The removed match DSL, `##` and `#parameter` aliases are not restored.
-
-The VM, AOT and diagnostic regressions live in the samples run by `sh check.sh` and the matching suites under `tests/`.

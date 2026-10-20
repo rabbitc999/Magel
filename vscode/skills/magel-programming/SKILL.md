@@ -69,8 +69,6 @@ int64 main() {
 
 对新增或修改的程序执行 `magel check path/to/program.mgl`，再 `magel run path/to/program.mgl`，比较输出并检查断言。命令以安装工具链的实际 `--help` 为准；Windows 仓库可用 `./magel.exe`。无法执行时说明未验证，不能把推测写成实测结果。
 
-涉及所有权、分支退出、宏副作用时，覆盖空输入、多个元素、嵌套作用域与重复求值风险。AOT 默认 checked 和 O3。目标是 AOT 时再执行 `magel aot path/to/program.mgl --out <artifact>` 并运行产物；构建成功不能代替运行验证。版本支持不足时按用户目标提供兼容写法或说明最低能力需求。
-
 在 Magel 仓库内，默认编入前端与运行时反射，IR（四元式）和 VM 使用最高可用优化；只有调试或差分验证才显式关闭。编写文档时使用功能说明，发布变更放根目录 `CHANGELOG.md`，`doc/` 不新增版本发布页。
 
 单独执行 `magel man` 与 `magel man help` 均显示用法；`magel man api` 显示 API 分类，`magel man api XXX` 查询内嵌 `doc/library/` 的 API。

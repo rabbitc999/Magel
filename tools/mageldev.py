@@ -55,9 +55,6 @@ _MESSAGES = {
   "      magel 场景 [文件.mgl] [配置词...] [-- 程序参数...]\n": [
     "       magel COMMAND [FILE.mgl] [settings...] [-- program arguments...]\n"
   ],
-  "统一工具链：解释、导出 .svmb、导出 AOT 可执行文件都在这一个程序里。\n": [
-    "One toolchain: interpret, export .svmb, or build native AOT executables.\n"
-  ],
   "场景指令（运行方式也可用 --mode 指定）：\n": [
     "Commands (execution mode can also be selected with --mode):\n"
   ],
@@ -76,9 +73,6 @@ _MESSAGES = {
   "  svmb           只导出 <前缀>.svmb，不执行\n": [
     "  svmb           Export <prefix>.svmb without executing\n"
   ],
-  "  aot FILE [out EXE] [opt LEVEL] [checked|unchecked]  导出 AOT（默认 checked）\n": [
-    "  aot FILE [out EXE] [opt LEVEL] [checked|unchecked]  Build AOT (default: checked)\n"
-  ],
   "  new DIR [name NAME]  新建 Magel 应用工程（目标目录必须不存在）\n": [
     "  new DIR [name NAME]  Create a Magel project (destination must not exist)\n"
   ],
@@ -91,8 +85,8 @@ _MESSAGES = {
   "常用配置词：out 路径、opt 级别、reflect、debug、release；new 使用 name 工程名。\n": [
     "Settings: out PATH, opt LEVEL, reflect, debug, release; new accepts name NAME.\n"
   ],
-  "开发场景：test tests backend all、fmt check src、deps lock project . offline。\n": [
-    "Development: test tests backend all, fmt check src, deps lock project . offline.\n"
+  "开发场景：test tests backend interpret、fmt check src、deps lock project . offline。\n": [
+    "Development: test tests backend interpret, fmt check src, deps lock project . offline.\n"
   ],
   "直接文件调用始终运行；文件后的所有内容传给程序。显式场景的高级选项：\n": [
     "A direct file invocation always runs; all following arguments belong to the program. Advanced options:\n"
@@ -105,12 +99,6 @@ _MESSAGES = {
   ],
   "  --out 前缀             生成产物的文件名前缀（缺省 build/magel_out）\n": [
     "  --out PREFIX           Output file prefix (default: build/magel_out)\n"
-  ],
-  "  --separate-modules     AOT 按模块缓存本地目标文件并统一链接\n": [
-    "  --separate-modules     Cache AOT object files by module and link together\n"
-  ],
-  "  --module-cache DIR     指定 AOT 模块目标文件缓存目录\n": [
-    "  --module-cache DIR     AOT module object cache directory\n"
   ],
   "  --check                仅检查，不执行、不生成产物\n": [
     "  --check                Check only; do not execute or write artifacts\n"
@@ -286,9 +274,6 @@ _MESSAGES = {
   "\n\nMagel 应用工程。以下命令在工程根目录执行：\n\n": [
     "\n\nMagel application. Run these commands from the project root:\n\n"
   ],
-  "运行示例输出 `Hello, Magel!`。开发命令原生内建，无需 Python；AOT 需要 C++17 工具链。\n": [
-    "The example prints `Hello, Magel!`. Development commands are native and do not require Python; AOT requires a C++17 toolchain.\n"
-  ],
   "`magel.toml` 配置项目包；`src/` 放应用源码，`tests/` 放普通 main 测试。\n": [
     "Configure the package in `magel.toml`; `src/` contains source files and `tests/` contains ordinary main tests.\n"
   ],
@@ -316,29 +301,11 @@ _MESSAGES = {
   "无法定位 magel 可执行文件": [
     "Cannot locate the magel executable"
   ],
-  "magel：模块编译缓存只支持 aot 模式\n": [
-    "magel: module compilation caching requires aot mode\n"
-  ],
-  "magel：checked / unchecked 只支持 aot 模式\n": [
-    "magel: checked / unchecked require aot mode\n"
-  ],
   "magel：clear 需要 --out-dir DIR\n": [
     "magel: clear requires --out-dir DIR\n"
   ],
   "清理完成：已删除 %zu 个生成的中间文件\n": [
     "Cleanup complete: removed %zu generated intermediate files\n"
-  ],
-  "magel：无法创建导出目录：%s\n": [
-    "magel: cannot create the export directory: %s\n"
-  ],
-  "magel：导出失败；中间文件保留在 %s\n": [
-    "magel: export failed; intermediate files retained in %s\n"
-  ],
-  "已生成可执行文件：%s（运行方式：%s）\n": [
-    "Executable generated: %s (mode: %s)\n"
-  ],
-  "中间文件已保留在：%s\n": [
-    "Intermediate files retained in: %s\n"
   ],
   "只读引用（`T const&`）只能读，不能写入元素或成员": [
     "A read-only reference (`T const&`) cannot modify elements or members"
@@ -448,35 +415,11 @@ _MESSAGES = {
   "无法检查产物：": [
     "Cannot inspect artifact: "
   ],
-  "写不出统一产物清单：": [
-    "Cannot write artifact manifest: "
-  ],
-  "读不出统一产物清单": [
-    "Cannot read artifact manifest"
-  ],
-  "统一产物清单版本无法识别": [
-    "Unsupported artifact manifest version"
-  ],
-  "统一产物清单包含不安全路径：": [
-    "Artifact manifest contains an unsafe path: "
-  ],
   "magel：不认识的运行方式：%s\n": [
     "magel: unknown execution mode: %s\n"
   ],
-  "magel：不认识的运行方式：%s（用 interpret|svmb|aot）\n": [
-    "magel: unknown execution mode: %s (use interpret|svmb|aot)\n"
-  ],
   "magel：子命令与 --mode=%s 冲突\n": [
     "magel: command conflicts with --mode=%s\n"
-  ],
-  "magel：找不到仓库树（缺 magel/source/magel-emit/aot.cpp），无法转发 %s\n": [
-    "magel: repository tree missing (magel/source/magel-emit/aot.cpp); cannot forward %s\n"
-  ],
-  "magel：这个构建不含 aot 导出；请用仓库的统一 magel 或 magel-emit\n": [
-    "magel: this build lacks AOT export; use the unified magel or magel-emit\n"
-  ],
-  "magel：这个构建不含 %s 导出；请用仓库的统一 magel 或 magel-emit\n": [
-    "magel: this build lacks %s export; use the unified magel or magel-emit\n"
   ],
   "没有声明的类型：": [
     "Undeclared type: "
@@ -502,101 +445,17 @@ _MESSAGES = {
   "用法：magel new <目录> [name 工程名]\n创建 magel.toml、src/main.mgl、tests/test_main.mgl、README.md 和 .gitignore。\n目标目录必须不存在；父目录必须存在。工程名由英文字母开头，后接字母、数字、- 或 _。\n": [
     "Usage: magel new <DIR> [name NAME]\nCreate magel.toml, src/main.mgl, tests/test_main.mgl, README.md and .gitignore.\nThe destination must not exist and its parent must exist. Names start with a letter, followed by letters, digits, - or _.\n"
   ],
-  "\n\nMagel 应用工程。以下命令在工程根目录执行：\n\n```sh\nmagel run src/main.mgl\nmagel check src/main.mgl\nmagel test tests\nmagel aot src/main.mgl out build/main\n```\n\n运行示例输出 `Hello, Magel!`。开发命令原生内建，无需 Python；AOT 需要 C++17 工具链。\n`magel.toml` 配置项目包；`src/` 放应用源码，`tests/` 放普通 main 测试。\n": [
-    "\n\nMagel application. Run these commands from the project root:\n\n```sh\nmagel run src/main.mgl\nmagel check src/main.mgl\nmagel test tests\nmagel aot src/main.mgl out build/main\n```\n\nThe example prints `Hello, Magel!`. Development commands are native and do not require Python; AOT requires a C++17 toolchain.\nConfigure the package in `magel.toml`; `src/` contains source files and `tests/` contains ordinary main tests.\n"
-  ],
   "用法：": [
     "Usage: "
   ],
   "用法：\n": [
     "Usage:\n"
   ],
-  "              [--checked | --unchecked] AOT 默认 checked；unchecked 关闭可选护栏与 panic 跟踪\n": [
-    "              [--checked | --unchecked] Default: checked; unchecked disables optional memory guards and panic traces\n"
-  ],
-  "把四元式和数据区编译为自包含 AOT 可执行文件。默认目标 cpp-aot。\n": [
-    "Compile quadruples and data into a standalone AOT executable. Default target: cpp-aot.\n"
-  ],
-  "  --cpp-output 导出程序时保留生成的 C++ 源码（缺省不写/不留代码）；\n": [
-    "  --cpp-output Keep generated C++ source (not retained by default).\n"
-  ],
-  "  --cpp-output-dir DIR 指定源码写到哪里（隐含 --cpp-output）；\n": [
-    "  --cpp-output-dir DIR Source output directory (implies --cpp-output).\n"
-  ],
-  "  --separate-modules 按 MAGEL 模块编译本地目标文件并缓存；仅 cpp-aot。\n": [
-    "  --separate-modules Compile and cache objects by Magel module; cpp-aot only.\n"
-  ],
-  "  --module-cache DIR 指定模块目标文件缓存目录。\n": [
-    "  --module-cache DIR Module object cache directory.\n"
-  ],
-  "  --execute-output FILE 指定可执行文件 / 二进制的位置（等价扩展 --out）。\n": [
-    "  --execute-output FILE Executable/binary output path (an alternative to --out).\n"
-  ],
-  "  --cxx PATH 编译 / 链接用的 C++ 编译器（缺省环境变量 CXX，再 g++）；\n": [
-    "  --cxx PATH C++ compiler/linker (default: CXX environment variable, then g++).\n"
-  ],
-  "  --g++ PATH / --gxx PATH 是 --cxx 的别名，--gcc PATH 是 --cc 的别名。\n": [
-    "  --g++ PATH / --gxx PATH Alias for --cxx; --gcc PATH is an alias for --cc.\n"
-  ],
-  "  --cc PATH  C 编译器（写进构建脚本的 CC；AOT 产物是 C++，用 --cxx 编）。\n": [
-    "  --cc PATH C compiler for the build script; AOT uses the C++ compiler --cxx.\n"
-  ],
-  "  --make PATH 用指定 make 驱动编译（先生成 <exe>.aot.mk 构建脚本再跑 make；\n": [
-    "  --make PATH Build using make and a generated <exe>.aot.mk script;\n"
-  ],
-  "    缺省不传就直接调编译器）。构建脚本是中间文件，成功后按清单删除。\n": [
-    "    by default, invoke the compiler directly. Remove the script after a successful build.\n"
-  ],
-  "--glue 用于 C++ 导出：传一个原样内嵌的 .cpp（里面定义 bindMagelGlue）。\n": [
-    "--glue Embed a .cpp file defining bindMagelGlue for C++ export.\n"
-  ],
-  "--runtime-arena BYTES 指定运行内存池总容量（默认 512 MiB）。\n": [
-    "--runtime-arena BYTES Runtime memory pool capacity (default: 512 MiB).\n"
-  ],
   "  --no-panic-details 隐藏 panic 路径及调用记录（上游符号压缩时自动启用）。\n": [
     "  --no-panic-details Hide panic paths and call traces (automatic with compressed symbols).\n"
   ],
-  "默认导出程序不带调试信息表（位置没了，程序行为不变）；--debug 才带上。\n": [
-    "Debug information is omitted by default; use --debug to include it.\n"
-  ],
-  "--threads 给 C++ 产物启用隔离的宿主线程与文本消息。\n": [
-    "--threads Enable isolated host threads and text messages in C++ artifacts.\n"
-  ],
-  "默认输出为四元式同名可执行文件；\n": [
-    "The default executable uses the quadruple file's name.\n"
-  ],
   "已生成 ": [
     "Generated "
-  ],
-  "（保留中间文件）\n": [
-    " (intermediate files retained)\n"
-  ],
-  "（已清理 ": [
-    " (removed "
-  ],
-  " 个中间文件；用 --keep-intermediate 保留）\n": [
-    " intermediate files; use --keep-intermediate to retain)\n"
-  ],
-  "  生成源码：": [
-    "  Generated source: "
-  ],
-  "  目标文件：": [
-    "  Object file: "
-  ],
-  "  编译日志：": [
-    "  Build log: "
-  ],
-  "  构建脚本：": [
-    "  Build script: "
-  ],
-  "  优化级别：": [
-    "  Optimization level: "
-  ],
-  "  构建脚本已删（--keep-intermediate 可保留）\n": [
-    "  Build script removed (use --keep-intermediate to retain)\n"
-  ],
-  "警告：中间文件清理失败：": [
-    "Warning: intermediate file cleanup failed: "
   ],
   "已生成 Magel 编译器工程：": [
     "Generated Magel compiler project: "
@@ -715,9 +574,6 @@ _MESSAGES = {
   "协程异步入口不支持带捕获的 lambda": [
     "Coroutine entry points do not support capturing lambdas"
   ],
-  "用法：magel test [路径...] [--filter 文本] [--backend interpret|aot|all] [--timeout 秒] [--json|--list]\n": [
-    "Usage: magel test [PATH...] [--filter TEXT] [--backend interpret|aot|all] [--timeout SECONDS] [--json|--list]\n"
-  ],
   "用法：magel fmt 路径... [--check|--write]\n": [
     "Usage: magel fmt PATH... [--check|--write]\n"
   ],
@@ -820,8 +676,11 @@ _MESSAGES = {
   "按可写借用捕获外部变量；闭包读写当前值，借用来源必须保持有效。": [
     "Capture external values by mutable borrow; the closure accesses current values and sources must remain valid."
   ],
-  "用法：magel 文件.mgl [程序参数...]\n      magel 场景 [文件.mgl] [配置词...] [-- 程序参数...]\n\n统一工具链：解释、导出 .svmb、导出 AOT 可执行文件都在这一个程序里。\n场景指令（运行方式也可用 --mode 指定）：\n  run|interpret  内部解释运行（缺省）；直接传入文件时，其后全为程序参数\n  check FILE [json]    仅检查，可输出 JSON 诊断\n  help                 显示帮助\n  emit           只出 .quad / .data.bin / .layout\n  svmb           只导出 <前缀>.svmb，不执行\n  aot FILE [out EXE] [opt LEVEL] [checked|unchecked]  导出 AOT（默认 checked）\n  new DIR [name NAME]  新建 Magel 应用工程（目标目录必须不存在）\n  gen            生成独立编译器工程（转发 magel-generator compiler）\n  clear out DIR  清理登记过的中间产物（不重新编译）\n  lang zh|en|auto     选择显示语言；默认自动检测系统语言\n常用配置词：out 路径、opt 级别、reflect、debug、release；new 使用 name 工程名。\n开发场景：test tests backend all、fmt check src、deps lock project . offline。\n直接文件调用始终运行；文件后的所有内容传给程序。显式场景的高级选项：\n不给源文件时从标准输入读。选项：\n  -h, --help             显示本帮助并退出\n  --out 前缀             生成产物的文件名前缀（缺省 build/magel_out）\n  --separate-modules     AOT 按模块缓存本地目标文件并统一链接\n  --shared / --object    AOT 库输出，可省略 main；.dll/.so/.o 自动选择类型\n  --module-cache DIR     指定 AOT 模块目标文件缓存目录\n  --check                仅检查，不执行、不生成产物\n  --hard-realtime        禁止整个编译单元使用反射\n  --reflection           启用注解与反射（要求前端和运行时均编入支持）\n  --no-reflection        关闭注解与反射（注解与反射缺省已开启）\n  --diagnostics=json     检查并输出稳定 JSON 诊断\n  test|fmt|lsp|deps      测试、格式化、语言服务与依赖锁定（原生内建）\n  --emit                 只生成 .quad / .data.bin / .layout，不执行\n  --svmb                 额外写出可由 stackvm 直接加载的 <前缀>.svmb\n  --debug                写 .svmb 时带上调试节，并在解释执行时打印位置轨迹\n  --dap                  作为调试适配器运行（VS Code 断点调试用，stdio 收发 DAP）\n  --compress-symbols     写无名变长符号表，生成 PC 映射文件\n  --no-compress-symbols  覆盖 magel 配置，关闭符号压缩\n  --symbol-map FILE      映射路径（默认 <前缀>.symbol_map.json）\n  --input \"文本\"        `input(变量);` 的输入项（空白分隔）；不给就从标准读，调试时可直接敲\n  --raw                  跳过前处理：源文件原样喂给解析器\n  --deps                 只列出 `%include` 拉进来的文件（构建脚本用）\n  --incremental          跨次复用模块预处理与完整编译产物\n  --threads              启用隔离的宿主线程执行\n  --no-debug             （兼容别名）显式不带调试信息；现在也是缺省\n  --stats                打印运行时及增量文件校验统计\n  --memory-size 字节     运行时堆容量（缺省 512MiB，最小 64）\n  --watchdog             打开可选软重启看门狗（分配失败 / 显式请求 / 超水位重跑）\n  --no-watchdog          关闭软重启看门狗（缺省）\n  --max-restarts N       最多软重启几次（缺省 3；隐含 --watchdog）\n  --watchdog-watermark N 内存水位（字节；隐含 --watchdog）\n  --step-limit N         本次执行的指令条数上限（缺省不设上限；0 同缺省）\n  -I, --include-dir 目录 追加 include 搜索目录（也可写 -I目录）\n  --include-path 目录    追加 include 搜索目录\n  --import-dir 目录      追加 import 搜索目录\n  -D, --define 符号[=值] 定义预处理符号（也可写 -D符号=值）\n  --                     后面全部作为程序的命令行参数\n": [
-    "Usage: magel FILE.mgl [program arguments...]\n       magel COMMAND [FILE.mgl] [settings...] [-- program arguments...]\n\nOne toolchain: interpret, export .svmb, or build native AOT executables.\nCommands (execution mode can also be selected with --mode):\n  run|interpret  Interpret (default); arguments after a direct file go to the program\n  check FILE [json]    Check only; optionally emit JSON diagnostics\n  help                 Show help\n  emit           Export .quad / .data.bin / .layout only\n  svmb           Export <prefix>.svmb without executing\n  aot FILE [out EXE] [opt LEVEL] [checked|unchecked]  Build AOT (default: checked)\n  new DIR [name NAME]  Create a Magel project (destination must not exist)\n  gen            Generate a standalone compiler project (magel-generator compiler)\n  clear out DIR  Remove registered intermediate files without recompiling\n  lang zh|en|auto     Select display language (default: system detection)\nSettings: out PATH, opt LEVEL, reflect, debug, release; new accepts name NAME.\nDevelopment: test tests backend all, fmt check src, deps lock project . offline.\nA direct file invocation always runs; all following arguments belong to the program. Advanced options:\nWithout a source file, read standard input. Options:\n  -h, --help             Show this help and exit\n  --out PREFIX           Output file prefix (default: build/magel_out)\n  --separate-modules     Cache AOT object files by module and link together\n  --shared / --object    AOT library output; main optional; .dll/.so/.o select the output kind\n  --module-cache DIR     AOT module object cache directory\n  --check                Check only; do not execute or write artifacts\n  --hard-realtime        Forbid reflection throughout the compilation unit\n  --reflection           Enable annotations/reflection (compiler and VM support required)\n  --no-reflection        Disable annotations/reflection (enabled by default)\n  --diagnostics=json     Check and emit structured JSON diagnostics\n  test|fmt|lsp|deps      Tests, formatting, language service, dependency locks (native)\n  --emit                 Export .quad / .data.bin without executing\n  --svmb                 Also write <prefix>.svmb for stackvm\n  --debug                Include .svmb debug data and interpreter location traces\n  --compress-symbols     Write compact symbols and a PC mapping file\n  --no-compress-symbols  Override configuration and disable symbol compression\n  --symbol-map FILE      Mapping path (default: <prefix>.symbol_map.json)\n  --input \"TEXT\"        Whitespace-separated input for input(variable);\n  --raw                  Skip preprocessing and parse the source directly\n  --deps                 List files loaded by %include (for build scripts)\n  --incremental          Reuse module preprocessing and compiled artifacts\n  --threads              Enable isolated host-thread execution\n  --no-debug             Omit debug information (also the default)\n  --stats                Show runtime and incremental validation statistics\n  --memory-size BYTES    Runtime memory capacity (default: 512MiB; minimum: 64)\n  --step-limit N         Instruction limit (default: unlimited; 0 means unlimited)\n  -I, --include-dir DIR  Add an include search directory (also -IDIR)\n  --include-path DIR     Add an include search directory\n  --import-dir DIR       Add an import search directory\n  -D, --define NAME[=VALUE] Define a preprocessing symbol (also -DNAME=VALUE)\n  --                     Pass all remaining arguments to the program\n  --dap                  Run the stdio debug adapter for VSCode.\n  --watchdog             Enable failure recovery and memory monitoring.\n  --no-watchdog          Disable failure recovery (default).\n  --max-restarts N       Maximum restart count (default: 3).\n  --watchdog-watermark N Memory watermark in bytes.\n"
+  "统一工具链：VM 执行、导出四元式和 .svmb 字节码。\n": [
+    "One toolchain: execute VM programs and export quadruples or .svmb bytecode.\n"
+  ],
+  "不认识的文件：%s\n": [
+    "Unknown file: %s\n"
   ]
 }
 # MAGEL_CATALOG_END
@@ -835,10 +694,10 @@ def _text(original):
     return _MESSAGES.get(original, (original, original))[0]
 
 
-VERSION = "1.0.0"
+VERSION = "0.21.0"
 IGNORED = {".git", ".magel", "build", "tmp", "node_modules", "__pycache__"}
 EXTENSIONS = {".mgl", ".inc", ".h", ".hpp", ".c", ".cpp", ".toml", ".json"}
-KEYWORDS = "_ abi auto bool break cast char const continue copy defer delete drop elif else enum export false float32 float64 fn for heap if impl import in inline int16 int32 int64 int8 interface loop match module move mut new opcode return scope static struct true type uint16 uint32 uint64 uint8 void while yield".split()
+KEYWORDS = "_ abi auto bool break cast char const continue copy defer delete drop elif else enum false float32 float64 fn for heap if impl import in inline int16 int32 int64 int8 interface loop match module move mut new opcode return scope static struct true type uint16 uint32 uint64 uint8 void while yield".split()
 
 
 def invoke(args, **kwargs):
@@ -1125,16 +984,10 @@ def test_command(args):
                 outputs = []
                 with tempfile.TemporaryDirectory(prefix='magel-test-') as directory:
                     directory = Path(directory)
-                    for backend in (('interpret', 'aot') if args.backend == 'all' else (args.backend,)):
+                    for backend in (args.backend,):
                         prefix = directory / ('test-' + backend + ('.exe' if os.name == 'nt' else ''))
                         timeout = config.get('timeout', args.timeout)
-                        if backend == 'interpret':
-                            command = [args.magel, 'interpret', source, '--out', prefix, '--', *config.get('args', [])]
-                        else:
-                            compilation = invoke([args.magel, backend, source, '--out', prefix, '--opt-level=0'], capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=timeout)
-                            if compilation.returncode:
-                                raise ValueError(compilation.stderr or compilation.stdout)
-                            command = [prefix, *config.get('args', [])]
+                        command = [args.magel, 'run', source, '--out', prefix, '--', *config.get('args', [])]
                         execution = invoke(command, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=timeout)
                         if execution.returncode != config.get('expected_exit', 0):
                             raise ValueError(f"{backend} 退出码 {execution.returncode}：{execution.stderr}")
@@ -1525,7 +1378,7 @@ def main():
     test = commands.add_parser('test', help=_text('发现并运行 test_*.mgl / *_test.mgl'))
     test.add_argument('paths', type=Path, nargs='*', default=[Path('tests')])
     test.add_argument('--filter', default='')
-    test.add_argument('--backend', choices=['interpret', 'aot', 'all'], default='interpret')
+    test.add_argument('--backend', choices=['interpret'], default='interpret')
     test.add_argument('--timeout', type=float, default=120)
     test.add_argument('--json', action='store_true')
     test.add_argument('--list', action='store_true')

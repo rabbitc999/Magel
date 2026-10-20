@@ -156,8 +156,10 @@ int64 main() {
         auto map = {"a":"one","b":"two"};
         auto entries = map.intoIter().collect();
         assert((map.len()) == (0));
-        assert(((entries[0]).0) == ("a"));
-        assert(((entries[0]).1) == ("one"));
+        for (Pair<String, String> entry in entries) {
+            assert((entry.first == "a" && entry.second == "one")
+                || (entry.first == "b" && entry.second == "two"));
+        }
         List<String> words; words.push("one"); words.push("two");
         {
             auto textRefs = words.iterMut(); textRefs.forEach(replaceText);
@@ -447,8 +449,8 @@ iterator pipelines OK
 | [listIterMut](#api-95) | `Iter<T mut&> listIterMut<T>(std::lang::List<T> mut& source)` |
 | [setIntoIter](#api-96) | `Iter<T> setIntoIter<T>(std::lang::Set<T> mut& source)` |
 | [setIter](#api-97) | `Iter<T> setIter<T>(std::lang::Set<T> const& source)` |
-| [mapIntoIter](#api-98) | `Iter<(K,V)> mapIntoIter<K,V>(std::lang::Map<K,V> mut& source)` |
-| [mapIter](#api-99) | `Iter<(K,V)> mapIter<K,V>(std::lang::Map<K,V> const& source)` |
+| [mapIntoIter](#api-98) | `Iter<Pair<K,V>> mapIntoIter<K,V>(std::lang::Map<K,V> mut& source)` |
+| [mapIter](#api-99) | `Iter<Pair<K,V>> mapIter<K,V>(std::lang::Map<K,V> const& source)` |
 | [IterSpanState::next](#api-100) | `Option<T const&> next()` |
 | [IterSpanState::sizeHint](#api-101) | `(int64, Option<int64>) sizeHint()` |
 | [fromSpan](#api-102) | `Iter<T const&> fromSpan<T>(T const& source, int64 length)` |
@@ -4158,7 +4160,7 @@ std::iter::setIter<T>(source);
 **声明**
 
 ```magel
-Iter<(K,V)> mapIntoIter<K,V>(std::lang::Map<K,V> mut& source);
+Iter<Pair<K,V>> mapIntoIter<K,V>(std::lang::Map<K,V> mut& source);
 ```
 
 **行为**
@@ -4173,7 +4175,7 @@ Iter<(K,V)> mapIntoIter<K,V>(std::lang::Map<K,V> mut& source);
 
 **返回值**
 
-`Iter<(K,V)>`。取得映射键值对的迭代器。
+`Iter<Pair<K,V>>`。取得映射键值对的迭代器。
 
 **错误与边界**
 
@@ -4196,14 +4198,14 @@ std::iter::mapIntoIter<K,V>(source);
 **声明**
 
 ```magel
-Iter<(K,V)> mapIter<K,V>(std::lang::Map<K,V> const& source);
+Iter<Pair<K,V>> mapIter<K,V>(std::lang::Map<K,V> const& source);
 ```
 
 **行为**
 
 借用映射构造键值对元组迭代器：把键值对快照进迭代器状态，来源映射保持不变；迭代器本身仍是一次性消费。
 
-借用映射建立迭代器：把 (键, 值) 元组快照进迭代器状态，来源映射保持不变。
+借用映射建立迭代器：把 Pair<K,V> 键值对快照进迭代器状态，来源映射保持不变。
 
 **参数**
 
@@ -4213,7 +4215,7 @@ Iter<(K,V)> mapIter<K,V>(std::lang::Map<K,V> const& source);
 
 **返回值**
 
-`Iter<(K,V)>`。独立有状态的元组迭代器；迭代器本身仍是一次性消费。
+`Iter<Pair<K,V>>`。独立有状态的 Pair<K,V> 迭代器；迭代器本身仍是一次性消费。
 
 **错误与边界**
 

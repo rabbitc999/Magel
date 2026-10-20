@@ -92,7 +92,7 @@ inline std::vector<double> readListF64(Context &ctx, std::int64_t handle)
 {
     Memory::Vector<Value> raw;
     std::vector<double> out;
-    if (!ctx.readList(handle, raw))
+    if (!collection_glue::readList(ctx, handle, raw))
     {
         ctx.fail("读取 List<float64> 失败");
         return out;
@@ -103,8 +103,8 @@ inline std::vector<double> readListF64(Context &ctx, std::int64_t handle)
 }
 inline std::int64_t makeListF64(Context &ctx, const std::vector<double> &values)
 {
-    const std::int64_t list = ctx.makeList();
-    for (double value : values) ctx.listPush(list, Value::fromFloat(value));
+    const std::int64_t list = collection_glue::makeList(ctx);
+    for (double value : values) collection_glue::listPush(ctx, list, Value::fromFloat(value));
     return list;
 }
 

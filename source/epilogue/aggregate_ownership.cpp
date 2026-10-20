@@ -803,16 +803,6 @@ Memory::String Describe(const std::shared_ptr<MType> &type);
 bool CheckContainerElement(const std::shared_ptr<MType> &type, const Memory::String &where);
 
 /**
- * @brief 是不是容器类型（`vec` / `set` / `map`）。
- * @param type 类型描述。
- * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
- */
-bool IsContainer(const std::shared_ptr<MType> &type)
-{
-    return type && type->kind == MType::Container;
-}
-
-/**
  * @brief 是不是"对象句柄"类（`bint` / 容器 / `obj` / 接口引用）：值不落在数据区，
  *        释放走对象表。
  *
@@ -824,7 +814,7 @@ bool IsContainer(const std::shared_ptr<MType> &type)
  */
 bool IsObjectLike(const std::shared_ptr<MType> &type)
 {
-    return type && ((type->kind == MType::Opcode && !IsStandardOpcode(type, "String")) || type->kind == MType::Container || type->kind == MType::Func || type->kind == MType::Obj || IsInterfacePointer(type));
+    return type && ((type->kind == MType::Opcode && !IsStandardOpcode(type, "String")) || IsContainer(type) || type->kind == MType::Func || type->kind == MType::Obj || IsInterfacePointer(type));
 }
 
 /**

@@ -353,7 +353,7 @@ OptimizationReport optimize(QuadFile &file, std::size_t maxRounds, bool collectT
                 continue;
             }
             // 声明的类型和存储类别是元数据，不能把名为 local 的变量常量代入其中。
-            // 函数参数恰好位于前一函数清理之后；污染 local 会导致 AOT 漏收参数。
+            // 函数参数恰好位于前一函数清理之后；污染 local 会导致 参数清理遗漏。
             if (base == "mul" || base == "div")
             {
                 // 双结果操作同时覆盖商/余数或低/高位，不能保留任一旧值。
@@ -918,7 +918,7 @@ struct ThreadRuntime
     Memory::Map<std::size_t, std::shared_ptr<Worker>> workers;
     std::size_t nextId = 1u;
     bool closing = false;
-    std::atomic<bool> panicked{ false };  ///< 发布快照后置位，所有 VM/AOT 安全点检查。
+    std::atomic<bool> panicked{ false };  ///< 发布快照后置位，所有 VM 安全点检查。
     Memory::String panicError;
     std::size_t panicThread = 0;
 #if STACKVM_WITH_PANIC_TRACE
@@ -2457,7 +2457,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         {
             const NativeRegistry::Entry *external = resolveExternal(symbol, name);
             if (external == nullptr) return false;
-            if (pending.size() != external->arity)
+            if (external->arity != static_cast<std::size_t>(-1) && pending.size() != external->arity)
             {
                 fail("宿主函数 " + name + " 需要 " + Memory::toString(external->arity) + " 个参数，实到 " + Memory::toString(pending.size()) + " 个");
                 pending.clear();

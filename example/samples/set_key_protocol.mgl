@@ -38,8 +38,17 @@ int64 main() {
         Set<SetKey> copy = values;
         values.clear();
         assert(copy.has(key(3, "after clear")) != 0);
-        SetKey stored = copy.at(0);
-        assert(stored.text == "first" && stored.data[0] == 1);
+        int64 position = 0;
+        bool foundOriginal = false;
+        while (position < copy.len()) {
+            SetKey stored = copy.at(position);
+            if (stored.id == 1) {
+                assert(stored.text == "first" && stored.data[0] == 1);
+                foundOriginal = true;
+            }
+            position = position + 1;
+        }
+        assert(foundOriginal);
         assert(copy.remove(key(1, "remove")) != 0 && copy.len() == 1);
         assert(copy.has(key(3, "remaining")) != 0);
         SetHolder holder;

@@ -61,7 +61,7 @@
 
 /**
  * @def STACKVM_WITH_ALLOCATION_GUARDS
- * @brief 默认校验完整访问范围属于活跃分配；AOT unchecked 可裁剪此额外护栏。
+ * @brief 默认校验完整访问范围属于活跃分配。
  * 分配器自身的底层边界检查不受此宏影响。
  */
 #ifndef STACKVM_WITH_ALLOCATION_GUARDS
@@ -141,13 +141,6 @@
  */
 #ifndef STACKVM_WITH_HOST_IO
 #define STACKVM_WITH_HOST_IO 1
-#endif
-/**
- * @def STACKVM_WITH_AOT
- * @brief 是否编入 AOT 运行时桥；无线程构建缺省关闭。
- */
-#ifndef STACKVM_WITH_AOT
-#define STACKVM_WITH_AOT STACKVM_WITH_THREADS
 #endif
 
 #include "reflection.hpp"
@@ -1060,15 +1053,58 @@ struct NativeValue
 };
 
 /**
+ * @brief 宿主记录与动态值共享的槽快照，递归保存聚合字段与拥有型句柄。
+ */
+struct NativeStoredValue
+{
+    bool isStruct = false;
+    bool isText = false;
+    bool isFloat = false;
+    bool ownsObject = false;
+    std::int64_t integer = 0;
+    std::int64_t objectIdentity = 0;
+    double real = 0.0;
+    Memory::String text;
+    Memory::Vector<NativeStoredValue> fields;
+};
+
+class NativeCallContext;
+/**
+ * @brief 宿主记录提供的通用文本视图，分隔符和字段内容由宿主决定。
+ */
+struct NativeRecordTextView
+{
+    Memory::String prefix, suffix, separator = ", ", fieldSeparator = ": ";
+    Memory::Vector<Memory::Vector<NativeStoredValue>> rows;
+};
+
+/**
+ * @brief 宿主记录对释放请求的通用处理结果。
+ */
+enum class NativeRecordRelease
+{
+    Immediate,  ///< 可立即清理并销毁记录。
+    Deferred,   ///< 已接受请求，由宿主记录在借用结束后重新请求释放。
+    Rejected,   ///< 当前操作期间拒绝释放，调用方仍拥有记录。
+};
+
+/**
  * @brief 不透明宿主记录的生命周期协议，VM 不解释记录布局。
  * @note 描述符须比关联运行时活得更久；回调不得抛出异常。
  */
 struct NativeRecordType
 {
-    const char *name = nullptr;                                ///< 诊断名称，不参与语义分派。
-    void *(*clone)(const void *, Memory::String &) = nullptr;  ///< 复制独立记录；空回调表示不可复制。
-    void (*destroy)(void *) = nullptr;                         ///< 销毁一条记录，不负责 VM 壳。
-    Memory::String (*toString)(const void *) = nullptr;        ///< 可选的宿主值文本，不解释记录布局。
+    const char *name = nullptr;                                                             ///< 诊断名称，不参与语义分派。
+    void *(*clone)(const void *, Memory::String &) = nullptr;                               ///< 复制不访问运行时的记录快照；与 copy 均为空时不可复制。
+    void (*destroy)(void *) = nullptr;                                                      ///< 销毁一条记录，不负责 VM 壳。
+    Memory::String (*toString)(const void *) = nullptr;                                     ///< 可选的宿主值文本，不解释记录布局。
+    void *(*copy)(NativeCallContext &, const void *) = nullptr;                             ///< 使用目标运行时深复制拥有值。
+    void (*dispose)(NativeCallContext &, void *) = nullptr;                                 ///< 壳释放前清理运行时资源，不销毁记录本身。
+    bool (*prepare)(NativeCallContext &, void *) = nullptr;                                 ///< 读取或复制前同步借用存储。
+    NativeRecordRelease (*releaseDecision)(void *) = nullptr;                               ///< 区分立即释放、已接受的延期释放与拒绝释放。
+    bool (*visit)(void *, const Memory::Function<bool(NativeStoredValue &)> &) = nullptr;   ///< 遍历可跨运行时转移的拥有值。
+    bool (*textView)(NativeCallContext &, const void *, NativeRecordTextView &) = nullptr;  ///< 提供结构化文本字段。
+    const char *identityKey = nullptr;                                                      ///< 可选的跨动态库布局身份；非空时同键描述符必须遵守同一记录 ABI。
 };
 
 /**
@@ -1093,7 +1129,7 @@ public:
     /**
      * @brief 校验句柄存活及类型身份后借用宿主记录。
      * @param handle 同一运行时的对象句柄。
-     * @param type 创建记录时使用的同一描述符。
+     * @param type 创建记录时的描述符，或具有相同非空 identityKey 与记录布局的描述符。
      * @return 匹配的记录指针；已释放或类型不同返回空。
      * @note 返回值只供胶水使用，VM 不解引用其内容。
      */
@@ -1101,7 +1137,7 @@ public:
     /**
      * @brief 显式释放一个通用运行时对象及其宿主记录。
      * @param handle 当前运行时的句柄。
-     * @return 句柄存活并成功释放时为 true。
+     * @return 接受立即或延期释放时为 true；句柄无效或请求被拒绝时为 false。
      */
     virtual bool releaseNativeRecord(std::int64_t handle);
     /**
@@ -1117,6 +1153,31 @@ public:
      * @return 新句柄；不可复制或回调失败时返回零并保存诊断。
      */
     virtual std::int64_t cloneNativeRecord(std::int64_t handle);
+    /**
+     * @brief 查询拥有型对象跨值复制保持不变的身份。
+     * @param handle 当前运行时的存活对象句柄。
+     * @return 身份编号；句柄无效返回零。
+     */
+    virtual std::int64_t objectIdentity(std::int64_t handle) const
+    {
+        (void)handle;
+        return 0;
+    }
+    /**
+     * @brief 将临时拥有对象或内存登记到本次运行结束时的清理队列。
+     * @param handle 临时对象句柄或内存地址。
+     * @param object true 表示对象句柄，false 表示内存地址。
+     */
+    virtual void trackTemporary(std::int64_t handle, bool object)
+    {
+        (void)handle;
+        (void)object;
+    }
+    /**
+     * @brief 读取宿主传入的程序入口参数副本。
+     * @return 入口参数；未设置时为空。
+     */
+    virtual Memory::Vector<Memory::String> programArguments() const { return {}; }
     /**
      * @brief 查询宿主注入的通用不透明服务。
      * @param name 胶水约定的服务身份，VM 不解释该名称。
@@ -1139,109 +1200,7 @@ public:
     virtual bool writeBytes(std::int64_t address, const char *data, std::size_t count) = 0;
     [[nodiscard]] virtual bool readString(std::int64_t address, Memory::String &out) const = 0;
     /**
-     * 把 VM `std::lang::List<T>` 句柄读取为无所有权的胶水值序列。
-     */
-    [[nodiscard]] virtual bool readList(std::int64_t handle,
-                                        Memory::Vector<NativeValue> &out) const = 0;
-    /**
-     * 新建一个空的 `std::lang::List<T>`，返回对象句柄（配合 listPush 往里填元素）。
-     */
-    virtual std::int64_t makeList()
-    {
-        fail("list creation unsupported");
-        return 0;
-    }
-    /**
-     * 往 `makeList` 造出的列表末尾追加一个标量/字符串元素（地址型元素按 int 处理）。
-     */
-    virtual bool listPush(std::int64_t listHandle, const NativeValue &value)
-    {
-        (void)listHandle;
-        (void)value;
-        fail("list push unsupported");
-        return false;
-    }
-    /**
-     * 往列表末尾追加一个**值结构体**元素：从 `structAddress` 拷贝 `slotCount` 个 8 字节槽。
-     */
-    virtual bool listPushStruct(std::int64_t listHandle, std::int64_t structAddress, std::size_t slotCount)
-    {
-        (void)listHandle;
-        (void)structAddress;
-        (void)slotCount;
-        fail("list struct push unsupported");
-        return false;
-    }
-    /**
-     * 读取 `std::lang::List<结构体>`：每个元素按 `slotCount` 个 double 槽展平进 `out`。
-     */
-    virtual bool readListStruct(std::int64_t handle, std::size_t slotCount,
-                                Memory::Vector<double> &out) const
-    {
-        (void)handle;
-        (void)slotCount;
-        (void)out;
-        return false; /* 缺省不支持（const 方法不能 fail，由实现者自行报错） */
-    }
-    /**
-     * 新建一个空的 `std::lang::Map<K,V>`，返回对象句柄（配合 mapSet 往里塞键值对）。
-     */
-    virtual std::int64_t makeMap()
-    {
-        fail("map creation unsupported");
-        return 0;
-    }
-    /**
-     * 新建一个空的 `std::lang::Set<T>`，返回对象句柄（配合 setInsert 往里塞元素）。
-     */
-    virtual std::int64_t makeSet()
-    {
-        fail("set creation unsupported");
-        return 0;
-    }
-    /**
-     * 往 `makeMap` 造出的映射里塞一对键值（键值都是标量/字符串）。
-     */
-    virtual bool mapSet(std::int64_t mapHandle, const NativeValue &key, const NativeValue &value)
-    {
-        (void)mapHandle;
-        (void)key;
-        (void)value;
-        fail("map set unsupported");
-        return false;
-    }
-    /**
-     * 往 `makeSet` 造出的集合里塞一个元素（标量/字符串）。
-     */
-    virtual bool setInsert(std::int64_t setHandle, const NativeValue &value)
-    {
-        (void)setHandle;
-        (void)value;
-        fail("set insert unsupported");
-        return false;
-    }
-    /**
-     * 读 `std::lang::Map<K,V>`：键/值分别展平成两组 NativeValue（标量/字符串）。
-     */
-    virtual bool readMap(std::int64_t handle, Memory::Vector<NativeValue> &keys,
-                         Memory::Vector<NativeValue> &values) const
-    {
-        (void)handle;
-        (void)keys;
-        (void)values;
-        return false;
-    }
-    /**
-     * 读 `std::lang::Set<T>`：元素展平成 NativeValue 序列（标量/字符串）。
-     */
-    virtual bool readSet(std::int64_t handle, Memory::Vector<NativeValue> &elements) const
-    {
-        (void)handle;
-        (void)elements;
-        return false;
-    }
-    /**
-     * @brief 在当前 VM 或 AOT 运行时中同步调用 Magel 函数或捕获闭包。
+     * @brief 在当前 VM 运行时中同步调用 Magel 函数或捕获闭包。
      * @param functionPointer 同一运行时的函数地址或闭包句柄。
      * @param arguments 按声明顺序编码的参数槽，字符串等对象须使用其运行时地址。
      * @param result 成功时接收返回槽；void 函数的返回槽应忽略。
@@ -1273,7 +1232,7 @@ public:
      */
     virtual Memory::Function<void(std::int64_t, std::int64_t)> interruptPoster() { return {}; }
     /**
-     * @brief 安装执行边界钩子；VM 按指令、AOT 按基本块边界计数。
+     * @brief 安装执行边界钩子；按 VM 指令边界计数。
      * @param interval 调用间隔，零表示取消。
      * @param hook 同步执行的钩子，不得递归执行运行时。
      * @return 当前运行时支持钩子时返回 true。
@@ -1316,7 +1275,7 @@ class NativeRegistry
 public:
     struct Entry
     {
-        std::size_t arity = 0;
+        std::size_t arity = 0;  ///< 固定实参数量；size_t(-1) 表示由胶水检查的变长参数。
         NativeCallback callback;
     };
 
@@ -1439,278 +1398,6 @@ struct DataArea
      * @return 越界返回 false。
      */
     bool writeBytes(std::size_t address, const char *in, std::size_t count);
-};
-
-// ---------------------------------------------------------------------------
-//  AOT 运行时桥（`magel-emit --target cpp-aot` 生成的代码调用它）
-// ---------------------------------------------------------------------------
-
-/**
- * @brief AOT 生成代码与 VM 运行时之间的单值：整数（含地址 / 句柄）、浮点、字符串。
- *
- * 与解释器内部的 `Slot` 一一对应，但不暴露 `Slot` 的私有实现。
- */
-struct RuntimeValue
-{
-    bool isFloat = false;      ///< 浮点值。
-    bool isText = false;       ///< 字符串值（`text` 有效）。
-    std::int64_t integer = 0;  ///< 整数 / 地址 / 对象句柄。
-    double real = 0.0;         ///< 浮点值。
-    Memory::String text;       ///< 字符串内容（宿主胶水往返用）。
-
-    static RuntimeValue ofInt(std::int64_t value);
-    static RuntimeValue ofFloat(double value);
-    static RuntimeValue ofText(Memory::String value);
-
-    /**
-     * 取出数值（整数或浮点都行，与解释器的 `Slot::number()` 一致）。
-     */
-    [[nodiscard]] double number() const { return isFloat ? real : static_cast<double>(integer); }
-};
-
-/**
- * @brief AOT 生成代码用的运行时桥：复用解释器同一套堆、对象表、`__vm_*` 内建与宿主注册表。
- *
- * AOT 只做计算与控制流；字符串、容器、通用宿主对象、对象表、边界检查、指针失效
- * 检查、输入输出与宿主绑定全部落到这台桥后面的既有运行时上，不重写运行时。
- *
- * 生命周期：`begin()` 建环境（reset 堆、清空对象表 / 输出 / 错误），随后的若干次
- * `callNative` / `loadMemory` / `storeMemory` / `allocate` / `release` 共享同一套对象状态，
- * `end()` 收尾。
- */
-class RuntimeBridge
-{
-public:
-    RuntimeBridge();
-    ~RuntimeBridge();
-    RuntimeBridge(const RuntimeBridge &) = delete;
-    RuntimeBridge &operator=(const RuntimeBridge &) = delete;
-
-    void setData(DataArea *data) { data_ = data; }
-    void setNativeRegistry(const NativeRegistry *registry) { registry_ = registry; }
-    /**
-     * @brief 设置胶水可访问的通用宿主服务表。
-     * @param services 服务表；空指针表示没有注入服务。
-     * @note 调用方保证服务表及其记录覆盖当前运行时和子线程的生命周期。
-     */
-    void setHostServices(const NativeServices *services) { hostServices_ = services; }
-    void setThreadsEnabled(bool enabled) { threadsEnabled_ = enabled; }
-    void setHeapAllocator(HeapAllocator *allocator);
-    void setProgramArguments(Memory::Vector<Memory::String> arguments);
-    /**
-     * 宿主胶水回调函数指针（`NativeCallContext::invoke`）的 AOT 实现。
-     */
-    void setInvoker(Memory::Function<bool(std::int64_t, const Memory::Vector<RuntimeValue> &,
-                                          RuntimeValue &)>
-                        invoker);
-    /**
-     * @brief 生成代码的分派器：把函数指针（数据区里的标签地址）与实参交给 AOT 生成的
-     *        `magel_aot_callptr`，`rt` 是**要跑的桥**。
-     *
-     * 线程创建与协程 / 中断交付都靠它：线程会新建一台桥再调回来（互不干扰的堆 /
-     * 对象表 / 全局），协程与中断交付则直接用调用方的桥。
-     */
-    void setFunctionRunner(Memory::Function<bool(RuntimeBridge &, std::int64_t,
-                                                 const Memory::Vector<RuntimeValue> &,
-                                                 RuntimeValue &)>
-                               runner);
-    /**
-     * 全局变量块大小（`sizeof(McGlobals)`）；`begin()` 按这个尺寸开一块零初始化内存。
-     */
-    void setGlobalsSize(std::size_t bytes);
-    /**
-     * 全局变量块地址（每个桥一份；线程各自独立，协程共享）。
-     */
-    [[nodiscard]] void *globalsBlock() const;
-
-    bool begin(std::size_t heapBase = 0u);
-    void end();
-
-    /**
-     * @brief 指令边界：交付到期软件定时器与队列里的中断事件（AOT 在每个基本块开头调用）。
-     * @return 有运行期错误返回 false。
-     */
-    bool boundary();
-
-    bool callNative(const Memory::String &name, const Memory::Vector<RuntimeValue> &args,
-                    RuntimeValue &result);
-    [[nodiscard]] bool hasNative(const Memory::String &name) const;
-    /**
-     * @brief 按静态标量类型读取虚拟地址，保留堆和数据区的有效性检查。
-     * @param address 运行时虚拟地址。
-     * @param out 读取结果，仅成功时更新。
-     * @retval 成功返回 true，失败保留与通用内存访问一致的诊断并返回 false。
-     */
-    bool loadInteger(std::int64_t address, std::int64_t &out);
-    /**
-     * @brief 从活跃虚拟内存读取一个无符号字节并零扩展到整数槽。
-     * @param address 运行时虚拟地址。
-     * @param out 成功时接收 0 至 255 的字节值，失败时保持原值。
-     * @return 内存存活且一个字节可读时返回 true，否则保存原内存诊断。
-     */
-    bool loadByte(std::int64_t address, std::int64_t &out);
-    /**
-     * @brief 把整数低八位写入活跃虚拟内存中的一个字节。
-     * @param address 运行时虚拟地址。
-     * @param value 待写入整数，超出八位的部分截断。
-     * @return 内存存活且一个字节可写时返回 true，否则保存原内存诊断。
-     */
-    bool storeByte(std::int64_t address, std::int64_t value);
-    /**
-     * @brief 按静态标量类型读取虚拟地址，保留堆和数据区的有效性检查。
-     * @param address 运行时虚拟地址。
-     * @param out 读取结果，仅成功时更新。
-     * @retval 成功返回 true，失败保留与通用内存访问一致的诊断并返回 false。
-     */
-    bool loadFloat(std::int64_t address, double &out);
-    /**
-     * @brief 按静态标量类型写入虚拟地址，保留堆和数据区的有效性检查。
-     * @param address 运行时虚拟地址。
-     * @param value 待写入的标量值。
-     * @retval 成功返回 true，失败保留与通用内存访问一致的诊断并返回 false。
-     */
-    bool storeInteger(std::int64_t address, std::int64_t value);
-    /**
-     * @brief 按静态标量类型写入虚拟地址，保留堆和数据区的有效性检查。
-     * @param address 运行时虚拟地址。
-     * @param value 待写入的标量值。
-     * @retval 成功返回 true，失败保留与通用内存访问一致的诊断并返回 false。
-     */
-    bool storeFloat(std::int64_t address, double value);
-    bool loadMemory(std::int64_t address, bool isFloat, RuntimeValue &out);
-    bool storeMemory(std::int64_t address, bool isFloat, const RuntimeValue &value);
-    [[nodiscard]] bool dataAddress(const Memory::String &symbol, std::int64_t &address) const;
-    [[nodiscard]] Memory::String readCString(std::int64_t address) const;
-    /**
-     * @brief 解析函数值及隐式环境。
-     * @param pointer 函数值。
-     * @param environment 环境输出。
-     * @return 标签地址。
-     */
-    std::int64_t resolveFunction(std::int64_t pointer, std::int64_t &environment);
-    bool checkIndex(std::int64_t index, std::int64_t limit, const Memory::String &label);
-    bool checkPointer(std::int64_t index, std::int64_t base, std::int64_t stride,
-                      const Memory::String &label);
-    bool allocate(std::int64_t bytes, std::int64_t &address);
-    bool release(std::int64_t address, bool soft);
-    [[nodiscard]] bool alive(std::int64_t handle) const;
-
-    [[nodiscard]] const Memory::String &output() const;
-    [[nodiscard]] const Memory::String &error() const;
-    [[nodiscard]] bool failed() const { return !error_.empty(); }
-    /**
-     * @brief 报告错误；panic 会请求整个线程组停止。
-     * @param message 错误信息。
-     */
-    void fail(const Memory::String &message);
-    void clearError() { error_.clear(); }
-    /**
-     * @brief AOT 进入函数时记录一帧。
-     * @param function 函数标签。
-     */
-    void enterTrace(const Memory::String &function);
-    /**
-     * @brief 更新当前 AOT 帧的 MAGEL 位置。
-     * @param file 原始文件。
-     * @param line 原始行号。
-     */
-    void locateTrace(const Memory::String &file, std::int32_t line);
-    /**
-     * @brief 用生成代码的文件名字面量更新当前帧，避免每条四元式构造临时字符串。
-     * @param file 以零结尾的 UTF-8 文件名；空指针按空文件名处理，变化时复制到帧中。
-     * @param line 原始源码行号。
-     * @note 保留线程同步及错误快照语义，不要求调用方长期保存文件名。
-     */
-    void locateTrace(const char *file, std::int32_t line);
-    /**
-     * @brief AOT 离开函数前保存首次错误快照并退栈。
-     */
-    void leaveTrace();
-    /**
-     * @brief 传播子线程的真实失败栈。
-     * @param trace 子线程已保存的快照。
-     */
-    void adoptFailureTrace(const Memory::Vector<DebugFrame> &trace);
-    /**
-     * @brief 查询 AOT 首次错误的调用栈，从外到内。
-     * @return 快照；宏关闭时为空。
-     */
-    [[nodiscard]] Memory::Vector<DebugFrame> callStack() const;
-    /**
-     * @brief 设置 AOT 文本输出下沉。
-     * @param sink 字节回调，空指针只累积文本。
-     * @param user 回调上下文。
-     * @param keepText 下沉时是否仍保留完整文本。
-     */
-    void setOutputSink(OutputSink sink, void *user = nullptr, bool keepText = true);
-    void clearOutput();
-    void appendOutput(const Memory::String &text);
-    void appendValue(const RuntimeValue &value);
-    void appendChar(int code);
-    bool readInput(bool getCharacter, bool isFloat, RuntimeValue &out);
-    [[nodiscard]] std::int64_t heapPeak() const;
-
-private:
-    DataArea *data_ = nullptr;
-    const NativeRegistry *registry_ = nullptr;
-    const NativeServices *hostServices_ = nullptr;
-    bool threadsEnabled_ = false;
-    HeapAllocator *heapAllocator_ = nullptr;
-    Memory::Function<bool(std::int64_t, const Memory::Vector<RuntimeValue> &, RuntimeValue &)>
-        invoker_;
-    Memory::Function<bool(RuntimeBridge &, std::int64_t,
-                          const Memory::Vector<RuntimeValue> &, RuntimeValue &)>
-        runner_;
-    std::size_t globalsSize_ = 0u;
-    mutable Memory::String error_;
-    struct Impl;
-    Memory::UniquePtr<Impl> impl_;
-
-    /**
-     * @brief 发布全程序 panic 并唤醒线程等待者。
-     */
-    void publishPanic();
-
-    /**
-     * 轮转找下一个可跑（Ready / Suspended）的协程；没有返回槽数。
-     */
-    std::size_t bridgeNextRunnable(std::size_t after);
-    /**
-     * 放行一个协程，跑到它 `yield` / 完成再回到调度方。
-     */
-    bool bridgeSchedule(std::size_t id);
-};
-
-/**
- * @brief AOT 函数作用域，离开前保留错误栈；关闭宏时不生成此对象。
- */
-class RuntimeCallFrame
-{
-    RuntimeBridge &runtime_;
-
-public:
-    /**
-     * @brief 进入函数。
-     * @param runtime 所属桥。
-     * @param function 函数标签。
-     */
-    RuntimeCallFrame(RuntimeBridge &runtime, const Memory::String &function) : runtime_(runtime) { runtime_.enterTrace(function); }
-    /**
-     * @brief 析构前保存错误快照并退栈。
-     */
-    ~RuntimeCallFrame()
-    {
-#if STACKVM_WITH_HOST_EXCEPTION_GUARD
-        try
-        {
-            runtime_.leaveTrace();
-        } catch (...) {}
-#else
-        runtime_.leaveTrace();
-#endif
-    }
-    RuntimeCallFrame(const RuntimeCallFrame &) = delete;
-    RuntimeCallFrame &operator=(const RuntimeCallFrame &) = delete;
 };
 
 class Machine

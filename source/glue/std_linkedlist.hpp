@@ -39,7 +39,7 @@ using Reply = magel_glue::Record<ReplyTag>;
 inline void readInts(Context &ctx, std::int64_t handle, Ints &out)
 {
     Memory::Vector<magel_glue::Value> raw;
-    if (!ctx.readList(handle, raw))
+    if (!collection_glue::readList(ctx, handle, raw))
     {
         ctx.fail("链表：列表参数无效");
         return;
@@ -58,7 +58,7 @@ inline void readInts(Context &ctx, std::int64_t handle, Ints &out)
 inline void writeInts(Context &ctx, Reply reply, std::size_t slot, const Ints &values)
 {
     const std::int64_t handle = reply.field<std::int64_t>(slot);
-    for (std::int64_t value : values) ctx.listPush(handle, magel_glue::Value::fromInt(value));
+    for (std::int64_t value : values) collection_glue::listPush(ctx, handle, magel_glue::Value::fromInt(value));
 }
 
 /**
@@ -270,11 +270,15 @@ inline std::int64_t unlinkNode(Ints &values, Ints &prevs, Ints &nexts, Ints &fre
 {
     const std::int64_t previous = prevs[static_cast<std::size_t>(node)];
     const std::int64_t following = nexts[static_cast<std::size_t>(node)];
-    if (previous >= 0) nexts[static_cast<std::size_t>(previous)] = following;
-    else head = following;
-    if (following >= 0) prevs[static_cast<std::size_t>(following)] = previous;
-    else tail = previous;
-    prevs[static_cast<std::size_t>(node)] = -2; // 标记已删除（-2 不是合法前驱）。
+    if (previous >= 0)
+        nexts[static_cast<std::size_t>(previous)] = following;
+    else
+        head = following;
+    if (following >= 0)
+        prevs[static_cast<std::size_t>(following)] = previous;
+    else
+        tail = previous;
+    prevs[static_cast<std::size_t>(node)] = -2;  // 标记已删除（-2 不是合法前驱）。
     nexts[static_cast<std::size_t>(node)] = -2;
     freeSlots.push_back(node);
     count -= 1;
@@ -446,85 +450,94 @@ inline void llContains(const Ints &values, const Ints &nexts, std::int64_t head,
 inline bool bind(magel_glue::Registry &registry, Memory::String *error)
 {
     bool ok = true;
-    auto push = [&](const char *name, auto &&lambda)
-    {
+    auto push = [&](const char *name, auto &&lambda) {
         ok = registry.bindTyped(name, std::forward<decltype(lambda)>(lambda)) && ok;
     };
     (void)push;
     ok = registry.bindTypedWithContext<
-        void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, std::int64_t, std::int64_t, Reply>(
-        "std::linkedlist::__pushFront",
-        [](Context &ctx, Ints values, Ints prevs, Ints nexts, Ints freeSlots,
-           std::int64_t head, std::int64_t tail, std::int64_t count, std::int64_t value,
-           Reply reply) {
-            llPushFront(values, prevs, nexts, freeSlots, head, tail, count, value, ctx, reply);
-        }) && ok;
+             void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, std::int64_t, std::int64_t, Reply>(
+             "std::linkedlist::__pushFront",
+             [](Context &ctx, Ints values, Ints prevs, Ints nexts, Ints freeSlots,
+                std::int64_t head, std::int64_t tail, std::int64_t count, std::int64_t value,
+                Reply reply) {
+                 llPushFront(values, prevs, nexts, freeSlots, head, tail, count, value, ctx, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<
-        void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, std::int64_t, std::int64_t, Reply>(
-        "std::linkedlist::__pushBack",
-        [](Context &ctx, Ints values, Ints prevs, Ints nexts, Ints freeSlots,
-           std::int64_t head, std::int64_t tail, std::int64_t count, std::int64_t value,
-           Reply reply) {
-            llPushBack(values, prevs, nexts, freeSlots, head, tail, count, value, ctx, reply);
-        }) && ok;
+             void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, std::int64_t, std::int64_t, Reply>(
+             "std::linkedlist::__pushBack",
+             [](Context &ctx, Ints values, Ints prevs, Ints nexts, Ints freeSlots,
+                std::int64_t head, std::int64_t tail, std::int64_t count, std::int64_t value,
+                Reply reply) {
+                 llPushBack(values, prevs, nexts, freeSlots, head, tail, count, value, ctx, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<
-        void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, std::int64_t, Reply>(
-        "std::linkedlist::__popFront",
-        [](Context &ctx, Ints values, Ints prevs, Ints nexts, Ints freeSlots,
-           std::int64_t head, std::int64_t tail, std::int64_t count, Reply reply) {
-            llPopFront(values, prevs, nexts, freeSlots, head, tail, count, ctx, reply);
-        }) && ok;
+             void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, std::int64_t, Reply>(
+             "std::linkedlist::__popFront",
+             [](Context &ctx, Ints values, Ints prevs, Ints nexts, Ints freeSlots,
+                std::int64_t head, std::int64_t tail, std::int64_t count, Reply reply) {
+                 llPopFront(values, prevs, nexts, freeSlots, head, tail, count, ctx, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<
-        void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, std::int64_t, Reply>(
-        "std::linkedlist::__popBack",
-        [](Context &ctx, Ints values, Ints prevs, Ints nexts, Ints freeSlots,
-           std::int64_t head, std::int64_t tail, std::int64_t count, Reply reply) {
-            llPopBack(values, prevs, nexts, freeSlots, head, tail, count, ctx, reply);
-        }) && ok;
+             void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, std::int64_t, Reply>(
+             "std::linkedlist::__popBack",
+             [](Context &ctx, Ints values, Ints prevs, Ints nexts, Ints freeSlots,
+                std::int64_t head, std::int64_t tail, std::int64_t count, Reply reply) {
+                 llPopBack(values, prevs, nexts, freeSlots, head, tail, count, ctx, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<
-        void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, std::int64_t, std::int64_t, std::int64_t, Reply>(
-        "std::linkedlist::__insertBefore",
-        [](Context &ctx, Ints values, Ints prevs, Ints nexts, Ints freeSlots,
-           std::int64_t head, std::int64_t tail, std::int64_t count, std::int64_t cursor,
-           std::int64_t value, Reply reply) {
-            llInsertBefore(values, prevs, nexts, freeSlots, head, tail, count, cursor, value,
-                           ctx, reply);
-        }) && ok;
+             void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, std::int64_t, std::int64_t, std::int64_t, Reply>(
+             "std::linkedlist::__insertBefore",
+             [](Context &ctx, Ints values, Ints prevs, Ints nexts, Ints freeSlots,
+                std::int64_t head, std::int64_t tail, std::int64_t count, std::int64_t cursor,
+                std::int64_t value, Reply reply) {
+                 llInsertBefore(values, prevs, nexts, freeSlots, head, tail, count, cursor, value,
+                                ctx, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<
-        void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, std::int64_t, std::int64_t, std::int64_t, Reply>(
-        "std::linkedlist::__insertAfter",
-        [](Context &ctx, Ints values, Ints prevs, Ints nexts, Ints freeSlots,
-           std::int64_t head, std::int64_t tail, std::int64_t count, std::int64_t cursor,
-           std::int64_t value, Reply reply) {
-            llInsertAfter(values, prevs, nexts, freeSlots, head, tail, count, cursor, value,
-                          ctx, reply);
-        }) && ok;
+             void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, std::int64_t, std::int64_t, std::int64_t, Reply>(
+             "std::linkedlist::__insertAfter",
+             [](Context &ctx, Ints values, Ints prevs, Ints nexts, Ints freeSlots,
+                std::int64_t head, std::int64_t tail, std::int64_t count, std::int64_t cursor,
+                std::int64_t value, Reply reply) {
+                 llInsertAfter(values, prevs, nexts, freeSlots, head, tail, count, cursor, value,
+                               ctx, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<
-        void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, std::int64_t, std::int64_t, Reply>(
-        "std::linkedlist::__removeAt",
-        [](Context &ctx, Ints values, Ints prevs, Ints nexts, Ints freeSlots,
-           std::int64_t head, std::int64_t tail, std::int64_t count, std::int64_t cursor,
-           Reply reply) {
-            llRemoveAt(values, prevs, nexts, freeSlots, head, tail, count, cursor, ctx, reply);
-        }) && ok;
+             void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, std::int64_t, std::int64_t, Reply>(
+             "std::linkedlist::__removeAt",
+             [](Context &ctx, Ints values, Ints prevs, Ints nexts, Ints freeSlots,
+                std::int64_t head, std::int64_t tail, std::int64_t count, std::int64_t cursor,
+                Reply reply) {
+                 llRemoveAt(values, prevs, nexts, freeSlots, head, tail, count, cursor, ctx, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<
-        void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, std::int64_t, Reply>(
-        "std::linkedlist::__reverse",
-        [](Context &ctx, Ints values, Ints freeSlots, Ints prevs, Ints nexts, std::int64_t head,
-           std::int64_t tail, std::int64_t count, Reply reply) {
-            llReverse(values, freeSlots, prevs, nexts, head, tail, count, ctx, reply);
-        }) && ok;
+             void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, std::int64_t, Reply>(
+             "std::linkedlist::__reverse",
+             [](Context &ctx, Ints values, Ints freeSlots, Ints prevs, Ints nexts, std::int64_t head,
+                std::int64_t tail, std::int64_t count, Reply reply) {
+                 llReverse(values, freeSlots, prevs, nexts, head, tail, count, ctx, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, std::int64_t, std::int64_t, Reply>(
-        "std::linkedlist::__toArray",
-        [](Context &ctx, Ints values, Ints nexts, std::int64_t head, std::int64_t count,
-           Reply reply) { llToArray(values, nexts, head, count, ctx, reply); }) && ok;
+             "std::linkedlist::__toArray",
+             [](Context &ctx, Ints values, Ints nexts, std::int64_t head, std::int64_t count,
+                Reply reply) { llToArray(values, nexts, head, count, ctx, reply); })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, std::int64_t, std::int64_t, Reply>(
-        "std::linkedlist::__contains",
-        [](Context &, Ints values, Ints nexts, std::int64_t head, std::int64_t value,
-           Reply reply) { llContains(values, nexts, head, value, reply); }) && ok;
+             "std::linkedlist::__contains",
+             [](Context &, Ints values, Ints nexts, std::int64_t head, std::int64_t value,
+                Reply reply) { llContains(values, nexts, head, value, reply); })
+         && ok;
     if (!ok && error) *error = Memory::String("std::linkedlist 胶水注册失败", std::strlen("std::linkedlist 胶水注册失败"));
     return ok;
 }
-} // namespace std_linkedlist_glue
+}  // namespace std_linkedlist_glue
 
 #endif

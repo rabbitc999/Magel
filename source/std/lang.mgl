@@ -437,11 +437,33 @@ struct Pair<K, V> {
     K first;
     V second;
 
-    static Pair<K, V> of(K first, V second) {
-        Pair<K, V> result;
-        result.first = first;
-        result.second = second;
-        return result;
+    /**
+     * @brief 从两个值复制构造键值对。
+     * @param first 键或第一项。
+     * @param second 值或第二项。
+     * @return 拥有独立字段值的 Pair。
+     */
+    static Pair<K, V> create(K first, V second) {
+        self.first = first;
+        self.second = second;
+    }
+
+    /**
+     * @brief 从二元组复制构造键值对。
+     * @param value 提供 first 与 second 的两个值。
+     * @return 拥有独立字段值的 Pair。
+     */
+    static Pair<K, V> create((K, V) value) {
+        self.first = value.0;
+        self.second = value.1;
+    }
+
+    /**
+     * @brief 将键值对的两个字段复制为二元组。
+     * @return 按 first、second 顺序保存独立值的二元组。
+     */
+    (K, V) toTuple() {
+        return (self.first, self.second);
     }
 };
 

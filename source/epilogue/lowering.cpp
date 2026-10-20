@@ -161,9 +161,17 @@ simple_ast::NodePtr NewContainerValue(const std::shared_ptr<MType> &type)
     if (!CheckDeclaredType(type, "容器构造")) return Bad();
     const bool customSet = type->name == "set" && type->elem->kind == MType::Struct && !IsTupleType(type->elem);
     if (type->name != "map" && !customSet)
+    {
+        const auto element = type->elem;
+        const bool intrinsic = element->kind == MType::Int || element->kind == MType::Double || element->kind == MType::Bool || element->kind == MType::Char || IsStandardOpcode(element, "String");
+        if (type->name == "set" && !intrinsic)
+            return Node::call("__vm_set_new_policy", { "equal", "hash" }, { Node::i(0), Node::i(0) });
         return Node::call(type->name == "set" ? "__vm_set_new" : "__vm_vec_new", {}, {});
+    }
     const auto key = type->elem;
-    if (key->kind == MType::Int || key->kind == MType::Double || key->kind == MType::Bool || key->kind == MType::Char || IsStandardOpcode(key, "String") || key->kind == MType::Obj)
+    if (key->kind == MType::Obj)
+        return Node::call("__vm_map_new_policy", { "equal", "hash" }, { Node::i(0), Node::i(0) });
+    if (key->kind == MType::Int || key->kind == MType::Double || key->kind == MType::Bool || key->kind == MType::Char || IsStandardOpcode(key, "String"))
         return Node::call("__vm_map_new", {}, {});
     const auto name = TypeKey(key);
     auto found = g_mapKeyPolicies.find(name);
@@ -5054,7 +5062,7 @@ simple_ast::NodePtr BuildBraceFormat(const Memory::Vector<int> &args)
 simple_ast::NodePtr PackVariadicArguments(const Memory::Vector<int> &args, std::size_t begin,
                                           const MParam &parameter)
 {
-    if (!parameter.type || parameter.type->kind != MType::Container || parameter.type->name != "vec" || !parameter.type->elem)
+    if (!parameter.type || !IsContainer(parameter.type) || parameter.type->name != "vec" || !parameter.type->elem)
     {
         Fail("内部错误：变长参数没有降为 std::lang::List<T>：" + parameter.source);
         return Bad();

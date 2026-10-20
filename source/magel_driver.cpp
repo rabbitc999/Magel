@@ -282,17 +282,6 @@ bool NeedValue(int index, int argc, const char *what)
 }
 
 /**
- * @brief 路径的目录部分（`%include` 相对源文件目录解析，所以要先抽出目录）。
- * @param path 目标文件或目录的路径。
- * @retval 生成或读取的结果文本。
- */
-Memory::String DirNameOf(const Memory::String &path)
-{
-    const std::size_t slash = path.find_last_of("/\\");
-    return (slash == Memory::String::npos) ? Memory::String(".") : path.substr(0u, slash);
-}
-
-/**
  * @brief `-h` / `--help`：把全部命令行选项列一遍（不回显源文件，直接退出 0）。
  * @param out 接收处理结果的输出对象。
  */
@@ -302,27 +291,23 @@ void PrintUsage(std::FILE *out)
         MAGEL_TEXT("用法：magel 文件.mgl [程序参数...]\n"
                    "      magel 场景 [文件.mgl] [配置词...] [-- 程序参数...]\n"
                    "\n"
-                   "统一工具链：解释、导出 .svmb、导出 AOT 可执行文件都在这一个程序里。\n"
+                   "统一工具链：VM 执行、导出四元式和 .svmb 字节码。\n"
                    "场景指令（运行方式也可用 --mode 指定）：\n"
                    "  run|interpret  内部解释运行（缺省）；直接传入文件时，其后全为程序参数\n"
                    "  check FILE [json]    仅检查，可输出 JSON 诊断\n"
                    "  help                 显示帮助\n"
                    "  emit           只出 .quad / .data.bin / .layout\n"
                    "  svmb           只导出 <前缀>.svmb，不执行\n"
-                   "  aot FILE [out EXE] [opt LEVEL] [checked|unchecked]  导出 AOT（默认 checked）\n"
                    "  new DIR [name NAME]  新建 Magel 应用工程（目标目录必须不存在）\n"
                    "  gen            生成独立编译器工程（转发 magel-generator compiler）\n"
                    "  clear out DIR  清理登记过的中间产物（不重新编译）\n"
                    "  lang zh|en|auto     选择显示语言；默认自动检测系统语言\n"
-                   "常用配置词：out 路径、opt 级别、reflect、debug、release；new 使用 name 工程名。\n"
-                   "开发场景：test tests backend all、fmt check src、deps lock project . offline。\n"
+                   "常用配置词：out 路径、reflect、debug；new 使用 name 工程名。\n"
+                   "开发场景：test tests backend interpret、fmt check src、deps lock project . offline。\n"
                    "直接文件调用始终运行；文件后的所有内容传给程序。显式场景的高级选项：\n"
                    "不给源文件时从标准输入读。选项：\n"
                    "  -h, --help             显示本帮助并退出\n"
                    "  --out 前缀             生成产物的文件名前缀（缺省 build/magel_out）\n"
-                   "  --separate-modules     AOT 按模块缓存本地目标文件并统一链接\n"
-                   "  --shared / --object    AOT 库输出，可省略 main；.dll/.so/.o 自动选择类型\n"
-                   "  --module-cache DIR     指定 AOT 模块目标文件缓存目录\n"
                    "  --check                仅检查，不执行、不生成产物\n"
                    "  --hard-realtime        禁止整个编译单元使用反射\n"
                    "  --reflection           启用注解与反射（要求前端和运行时均编入支持）\n"
@@ -415,10 +400,11 @@ int magel_main_entry(int argc, char **argv)
      * 只有显式写了 `--reflection` 才按"要求必须有支持"处理（不支持就报错）。 */
     bool reflectionEnabled = true;
     bool reflectionExplicit = false; /* 用户是否显式给了 --reflection / --no-reflection。 */
-    bool emitBinary = false;         /* --svmb：额外输出可由 stackvm 直接加载的程序 */
-    bool raw = false;                /* --raw：不跑前处理 */
-    bool depsOnly = false;           /* --deps：只列出依赖文件 */
-    bool threadsEnabled = false;     /* --threads：启用隔离的宿主线程 */
+    bool runModeGiven = false;
+    bool emitBinary = false;     /* --svmb：额外输出可由 stackvm 直接加载的程序 */
+    bool raw = false;            /* --raw：不跑前处理 */
+    bool depsOnly = false;       /* --deps：只列出依赖文件 */
+    bool threadsEnabled = false; /* --threads：启用隔离的宿主线程 */
     /* 可选软重启看门狗：默认关闭；数值选项同时隐含打开（与 `--watchdog` 同义）。 */
     bool watchdogEnabled = false;
     int watchdogMaxRestarts = 3;
@@ -451,28 +437,28 @@ int magel_main_entry(int argc, char **argv)
     }
     Memory::Vector<Memory::String> defineItems;
     Memory::Vector<Memory::String> programArguments;
-    /* 前置子命令（与统一入口一致）：run|interpret / emit / svmb。aot 需要 magel-emit，
-     * 独立编译器工程没有链进来，给明确指引而不是"不认识的选项"。 */
+    /* 统一入口与独立编译器均仅支持 VM 执行及中间产物导出。 */
     int firstArgument = 1;
     if (argc > 1)
     {
         const Memory::String first = argv[1];
-        if (first == "run" || first == "interpret") { firstArgument = 2; }
+        if (first == "run" || first == "interpret")
+        {
+            firstArgument = 2;
+            runModeGiven = true;
+        }
         else if (first == "emit")
         {
+            runModeGiven = true;
             run = 0;
             firstArgument = 2;
         }
         else if (first == "svmb" || first == "smvb")
         {
+            runModeGiven = true;
             run = 0;
             emitBinary = true;
             firstArgument = 2;
-        }
-        else if (first == "aot")
-        {
-            std::fprintf(stderr, MAGEL_TEXT("magel：这个构建不含 aot 导出；请用仓库的统一 magel 或 magel-emit\n"));
-            return 2;
         }
     }
     for (int index = firstArgument; index < argc; ++index)
@@ -484,14 +470,16 @@ int magel_main_entry(int argc, char **argv)
             return 0;
         }
         /* `--mode`：与统一入口一致的运行方式；独立构建只认 interpret / emit / svmb。 */
-        if (argument == "--mode" || argument == "--run-mode")
+        if (argument == "--mode" || argument == "--run-mode" || argument.rfind("--mode=", 0) == 0 || argument.rfind("--run-mode=", 0) == 0)
         {
-            if (index + 1 >= argc)
+            const auto separator = argument.find('=');
+            if (separator == Memory::String::npos && index + 1 >= argc)
             {
                 std::fprintf(stderr, MAGEL_TEXT("magel：%s 缺少取值\n"), argument.c_str());
                 return 2;
             }
-            const Memory::String mode = argv[++index];
+            const Memory::String mode = separator == Memory::String::npos ? Memory::String(argv[++index]) : argument.substr(separator + 1);
+            runModeGiven = true;
             if (mode == "interpret") { /* 缺省 */ }
             else if (mode == "emit")
                 run = 0;
@@ -499,11 +487,6 @@ int magel_main_entry(int argc, char **argv)
             {
                 run = 0;
                 emitBinary = true;
-            }
-            else if (mode == "aot")
-            {
-                std::fprintf(stderr, MAGEL_TEXT("magel：这个构建不含 %s 导出；请用仓库的统一 magel 或 magel-emit\n"), mode.c_str());
-                return 2;
             }
             else
             {
@@ -681,6 +664,7 @@ int magel_main_entry(int argc, char **argv)
         }
         if (argument == "--emit") /* 只生成 .quad / .data.bin / .layout，不执行 */
         {
+            runModeGiven = true;
             run = 0;
             continue;
         }
@@ -845,6 +829,11 @@ int magel_main_entry(int argc, char **argv)
             std::fprintf(stderr, "magel：magel：%s\n", packageError.c_str());
         return 1;
     }
+    if (!runModeGiven && project.run == "svmb")
+    {
+        run = 0;
+        emitBinary = true;
+    }
     includeDirs.insert(includeDirs.end(), project.includePaths.begin(), project.includePaths.end());
     importDirs.insert(importDirs.end(), project.importPaths.begin(), project.importPaths.end());
     includeDirs.insert(includeDirs.end(), project.searchPaths.begin(), project.searchPaths.end());
@@ -910,7 +899,7 @@ int magel_main_entry(int argc, char **argv)
         std::ifstream stream(std::filesystem::u8path(path), std::ios::binary);
         if (!stream)
         {
-            std::fprintf(stderr, MAGEL_TEXT("打不开文件：%s\n"), path);
+            std::fprintf(stderr, MAGEL_TEXT("不认识的文件：%s\n"), path);
             return 2;
         }
         text.assign(std::istreambuf_iterator<char>(stream), std::istreambuf_iterator<char>());

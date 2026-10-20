@@ -3,7 +3,7 @@
 重新生成证据文件，写在本目录的 evidence-*.txt 里。
 
 设计口径：**文件里的每个数字都必须由这个脚本跑出来**，不手写。看得到的输入是
-`control.svmb`（标本，随本目录入库）和可选的 VM / 导出 exe 路径；看不到的输入一律
+`control.svmb`（标本，随本目录入库）和可选的 VM 路径；看不到的输入一律
 不采信。工具缺失时对应那一节写成“跳过（缺 xxx）”，不伪造内容。
 
 用法（在仓库根目录）：
@@ -11,7 +11,6 @@
         --parser magel/magel.exe \
         --vm tmp/vm-9700x-pool/x64/Release/magel-stackvm.exe \
         --vm-opcode tmp/vm-9700x-pool/gcc64/magel-stackvm.exe \
-        --exported tmp/svmb-study/export/program.exe
 """
 
 import argparse
@@ -448,54 +447,6 @@ def extract_mnemonics(path):
     return [name for _, name in ordered], len(hits), len({name for _, name in hits})
 
 
-def evidence_exported(paths, specimen):
-    """独立 exe 里还能捞到哪些名字；带调试表与 `--no-debug` 两份一起看。"""
-    lines = []
-    available = [(label, path) for label, path in paths if path and os.path.exists(path)]
-    if not available:
-        return write("evidence-06-exported-exe.txt",
-                     ["（未提供可用的 --exported / --exported-strip）"])
-
-    probes = ["main", "classify", "i$451", "sum$452", "value$194",
-              "std::lang::Math::abs$double", "__magel_loop_101", "else_1", "endif_2",
-              "control.quad", "PUSH ", "DECLARE ", "sum 1..5 = %d"]
-    for label, path in available:
-        data = open(path, "rb").read()
-        section_header(lines, f"{label}：{os.path.relpath(path, ROOT)}")
-        lines.append(f"  字节数          {len(data)}")
-        runs = re.findall(rb"[ -~]{6,}", data)
-        lines.append(f"  长度 >= 6 的可读串 {len(runs)} 条，其中不同 {len(set(runs))} 条")
-        lines.append("  探测串是否出现在 exe 里（直接字节搜索，不依赖 PE 解析）：")
-        for probe in probes:
-            position = data.find(probe.encode())
-            lines.append(f"    {probe:<26} {'@ ' + str(position) if position >= 0 else '未命中'}")
-        for probe in ("control.quad",):
-            present = probe.encode() in data
-            lines.append(f"  生成期路径 {probe!r}：{'在（调试表写了位置）' if present else '不在'}")
-    if len(available) >= 2:
-        (first, second) = available[0][1], available[1][1]
-        lines.append("")
-        lines.append(f"  两份差 {os.path.getsize(first)} - {os.path.getsize(second)} = "
-                     f"{os.path.getsize(first) - os.path.getsize(second)} 字节")
-
-    lines.append("")
-    lines.append("对照：这些名字在 .svmb 里出现的位置")
-    info = svmb_dump.parse(specimen)
-    in_strings = set(info["strings"])
-    exported = set(info["exports"])
-    labels = {name for name, _ in info["labels"]}
-    for probe in probes[:6]:
-        where = []
-        if probe in exported:
-            where.append("导出表")
-        if probe in labels:
-            where.append("标签表")
-        if probe in in_strings:
-            where.append("指令操作数/字符串")
-        lines.append(f"  {probe:<26} {'、'.join(where) if where else '（不在，属于数据区或代码生成器产物）'}")
-    return write("evidence-06-exported-exe.txt", lines)
-
-
 def evidence_strip(specimen, stripped, parser, vm):
     """`--no-debug` 前后：体积差来自哪一节、还剩什么、丢的是什么。
 
@@ -593,8 +544,6 @@ def main():
     parser.add_argument("--parser", default="", help="magel，用来做同源码复现比对")
     parser.add_argument("--vm", default="", help="magel-stackvm，用来跑 disasm/run/check")
     parser.add_argument("--vm-opcode", default="", help="第二份 magel-stackvm（GCC 档，带符号）")
-    parser.add_argument("--exported", default="", help="magel-emit 导出的独立 exe（带调试表）")
-    parser.add_argument("--exported-strip", default="", help="同上但 magel-emit --no-debug")
     parser.add_argument("--tests", default="", help="magel-stackvm-tests 可执行文件")
     args = parser.parse_args()
 
@@ -606,8 +555,6 @@ def main():
     evidence_instructions(args.svmb)
     evidence_runtime(args.vm, args.svmb)
     evidence_native(args.vm, args.vm_opcode)
-    evidence_exported([("导出 exe（带调试表）", args.exported),
-                       ("导出 exe（--no-debug）", args.exported_strip)], args.svmb)
     evidence_strip(args.svmb, args.stripped, args.parser, args.vm)
     cache = os.path.join(HERE, "__pycache__")
     if os.path.isdir(cache):

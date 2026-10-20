@@ -1654,7 +1654,4 @@ static bool decodeProgramBinary(const Memory::Vector<std::uint8_t> &fileBytes,
 #include "parts/quads.cpp"
 #include "parts/assembly.cpp"
 #include "parts/execution.cpp"
-#if STACKVM_WITH_AOT
-#include "parts/aot_bridge.cpp"
-#endif
 }  // namespace stackvm

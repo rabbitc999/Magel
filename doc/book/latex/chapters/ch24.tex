@@ -300,17 +300,17 @@ python tests/magel_ipage_student_server_browser.py --browser "C:/Program Files (
 
 接口回归覆盖登录、角色权限、五模块业务、统计与 HTTP 边界；浏览器回归真正从不同源访问 API，检查菜单、增删改查和 HTML 注入防护。本章截图来自该真实浏览器回归，数据来自仓库夹具。
 
-后端可通过 AOT 交付：
+后端通过 VM 运行：
 
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-./magel.exe aot example/sql-magel/example/ipage-student-server/main.mgl --out build/student-server.exe
+./magel.exe run example/sql-magel/example/ipage-student-server/main.mgl
 \end{lstlisting}
 \par
 \medskip
 
-AOT 默认 checked 和 O3。前端目录仍单独部署，MySQL 服务与客户端依赖也需要准备；不能因为后端生成了可执行文件，就认为数据库与页面已经一并打包。
+VM 默认使用最高可用优化。前端目录仍单独部署，MySQL 服务与客户端依赖也需要准备；Magel 程序、数据库服务与前端资源分别按部署环境准备。
 
 该示例沿用练习数据中的明文口令，会话没有到期与刷新机制，前端的登录尝试次数也不构成服务端限流。正式服务需进一步完善认证、会话、TLS、SQL 参数绑定、超时及并发；本章的目标是把现有应用的职责与请求链路讲清楚。
 

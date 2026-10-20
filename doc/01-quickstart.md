@@ -10,9 +10,6 @@
 
 **方式一：用发布包**
 
-发布包 `dist/magel-<版本>-<平台>-<架构>.tar.gz` 内含 `bin/`（`magel`、`magel-emit`、`magel-generator`、`magel-stackvm` 等）、`doc/`、`VERSION`、`CHANGELOG.md`、`LICENSE`。
-解压后把 `bin/` 放进 PATH 即可。
-
 **方式二：从源码构建**
 
 ```sh
@@ -121,13 +118,11 @@ magel check hello.mgl
 | 只检查不运行 | `magel check src/main.mgl` |
 | 输出 JSON 诊断（给编辑器用） | `magel check src/main.mgl json` |
 | 导出 `.svmb` 字节码 | `magel svmb src/main.mgl out build/app` |
-| 导出本地可执行程序 | `magel aot src/main.mgl out build/app.exe opt 2` |
 | 新建工程 | `magel new hello` |
 | 跑测试 | `magel test tests` |
 | 格式检查 / 写回 | `magel fmt check src` / `magel fmt write src` |
 | 查看帮助 | `magel help` |
 
 更多子命令、`magel.toml` 配置与编译选项见[工具链使用](09-toolchain.md)。
-
 
 解析器生成源码、头文件与报告统一位于 `source/`；对象文件与解析器静态库位于 `build/magel-frontend/`，不会散落到仓库根目录。

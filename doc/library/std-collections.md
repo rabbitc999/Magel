@@ -88,7 +88,7 @@ int64 main() {
     channel.send(21);
     println("{} {}", channel.len(), channel.receive().unwrap());
 
-    Pair<int64, String> pair = Pair<int64, String>::of(7, "seven");
+    Pair<int64, String> pair = Pair<int64, String>::create(7, "seven");
     println("{} {}", pair.first, pair.second);
     delete raw;
     return 0;

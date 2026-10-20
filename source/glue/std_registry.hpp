@@ -1,3 +1,4 @@
+#include "collection_natives.hpp"
 #include "file_natives.hpp"
 #include "big_number_natives.hpp"
 #ifndef PARSE_ENGINE_LANG_NUMERIC_HPP
@@ -6,7 +7,7 @@
 #ifndef PARSE_ENGINE_STD_REGISTRY_HPP
 #define PARSE_ENGINE_STD_REGISTRY_HPP
 
-/* 统一的"标准胶水"注册入口：解释器（InstallDemoGlue）与 magel-emit 导出（bindMagelStandardGlue）
+/* 统一的"标准胶水"注册入口：编译器 VM（InstallDemoGlue）与独立 VM 宿主（bindMagelStandardGlue）
  * 共用这一份。每个模块的注册都用 `#ifndef GLUE_NO_XXX` 包住，定义宏即整段不编进来：
  *
  *   - `import std::xxx;` 决定 MAGEL 侧符号可见性；
@@ -83,6 +84,7 @@ namespace std_registry
 inline bool bindStandardGlue(magel_glue::Registry &registry, Memory::String *error = nullptr)
 {
     bool ok = lang_numeric_glue::bind(registry, error);
+    ok = collection_glue::bind(registry.native(), error) && ok;
     ok = native_record_glue::bindString(registry.native(), error) && ok;
     ok = big_number_glue::bind(registry.native(), error) && ok;
     ok = file_native_glue::bind(registry.native(), error) && ok;

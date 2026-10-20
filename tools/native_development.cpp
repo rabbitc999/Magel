@@ -561,7 +561,7 @@ const std::set<std::string> keywords = {
     "defer", "scope", "heap",
     "_", "abi", "auto", "bool", "break", "cast", "char",
     "const", "continue", "copy", "delete", "drop", "elif", "else",
-    "enum", "export", "false", "float32", "float64", "fn", "for",
+    "enum", "false", "float32", "float64", "fn", "for",
     "if", "impl", "import", "in", "inline", "int16", "int32",
     "int64", "int8", "interface", "loop", "match", "module",
     "move", "mut", "new", "opcode", "return", "static", "struct",
@@ -2285,7 +2285,7 @@ std::string download(const std::string &url)
         path.append(parts.lpszExtraInfo, parts.dwExtraInfoLength);
     if (path.empty())
         path = L"/";
-    Http session{ WinHttpOpen(L"Magel/1.0.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+    Http session{ WinHttpOpen(L"Magel/0.21.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
                               WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0) };
     if (!session.h)
         throw std::runtime_error("无法初始化 HTTP");
@@ -2513,7 +2513,7 @@ fs::path extract(std::string data, const fs::path &destination)
         return children[0];
     throw std::runtime_error("在线依赖压缩包根目录或唯一顶层目录需要 magel.toml");
 }
-const std::string toolVersion = "1.0.0";
+const std::string toolVersion = "0.21.0";
 /**
  * @brief 校验下载依赖的版本信息。
  * @param data 输入或待写入的字节数据。
@@ -2847,7 +2847,7 @@ int tests(int argc, char **argv, const fs::path &compiler)
         {
             std::cout << MAGEL_TEXT(
                 "用法：magel test [路径...] [--filter 文本] [--backend "
-                "interpret|aot|all] [--timeout 秒] [--json|--list]\n");
+                "interpret] [--timeout 秒] [--json|--list]\n");
             return 0;
         }
         else if (starts(arg, "--"))
@@ -2855,7 +2855,7 @@ int tests(int argc, char **argv, const fs::path &compiler)
         else
             paths.push_back(fs::u8path(arg));
     }
-    if (backend != "interpret" && backend != "aot" && backend != "all")
+    if (backend != "interpret")
         throw std::runtime_error("不支持的测试后端");
     if (!std::isfinite(timeout) || timeout <= 0)
         throw std::runtime_error("测试超时必须为正数");
@@ -2920,7 +2920,7 @@ int tests(int argc, char **argv, const fs::path &compiler)
                 int expected = int(field(config, "expected_exit").asInt().value_or(0));
                 std::string first;
                 bool hasFirst = false;
-                for (auto &mode : backend == "all" ? std::vector<std::string>{ "interpret", "aot" } : std::vector<std::string>{ backend })
+                for (auto &mode : std::vector<std::string>{ backend })
                 {
                     auto output = temp.path / ("test-" + mode
 #ifdef _WIN32
@@ -2928,20 +2928,7 @@ int tests(int argc, char **argv, const fs::path &compiler)
 #endif
                                   );
                     std::vector<std::string> command;
-                    if (mode == "interpret")
-                        command = { compiler.u8string(), "interpret",
-                                    file.u8string(), "--out",
-                                    output.u8string(), "--" };
-                    else
-                    {
-                        auto compilation =
-                            execute({ compiler.u8string(), "aot", file.u8string(), "--out",
-                                      output.u8string(), "--opt-level=0" },
-                                    fs::current_path(), "", limit);
-                        if (compilation.code)
-                            throw std::runtime_error(compilation.error + compilation.output);
-                        command = { output.u8string() };
-                    }
+                    command = { compiler.u8string(), "interpret", file.u8string(), "--out", output.u8string(), "--" };
                     command.insert(command.end(), arguments.begin(), arguments.end());
                     auto result = execute(command, fs::current_path(), "", limit);
                     result.output =
@@ -3817,7 +3804,7 @@ class Server
                                      { "full", true } }) },
                           { "experimental",
                             object({ { "macroExpansionProvider", true } }) } }) },
-                  { "serverInfo", object({ { "name", "Magel" }, { "version", "1.0.0" } }) } });
+                  { "serverInfo", object({ { "name", "Magel" }, { "version", "0.21.0" } }) } });
         }
         if (method == "shutdown")
         {

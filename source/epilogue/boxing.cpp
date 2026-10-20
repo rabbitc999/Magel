@@ -46,7 +46,6 @@ bool CheckObjValue(int valueId, Memory::String *reason)
     case MType::Struct:
     case MType::Array:
         return true; /* 多槽值按地址装箱：obj 里存这块数据的引用。 */
-    case MType::Container:
     case MType::Opcode:
         if (OpcodeNonCopyable(type))
         {
@@ -178,7 +177,7 @@ bool ObjGetAllowedTags(const std::shared_ptr<MType> &target, Memory::Vector<std:
         out->push_back(TypeIdOf(PointerType(target->elem, false)));
         return true;
     }
-    if (target->kind == MType::Container || IsStandardOpcode(target, "BigInteger") || IsStandardOpcode(target, "BigDecimal") || target->kind == MType::Obj)
+    if (IsContainer(target) || IsStandardOpcode(target, "BigInteger") || IsStandardOpcode(target, "BigDecimal") || target->kind == MType::Obj)
     {
         out->push_back(TypeIdOf(target));
         return true;
@@ -230,7 +229,7 @@ std::shared_ptr<MType> RequireAlgorithmList(const Memory::Vector<int> &args, std
 {
     if (index >= args.size()) return nullptr;
     const std::shared_ptr<MType> type = ExprType(args[index]);
-    if (!type || type->kind != MType::Container || type->name != "vec" || !type->elem)
+    if (!type || !IsContainer(type) || type->name != "vec" || !type->elem)
     {
         Fail("std::algorithms::" + name + " 的第 " + Memory::toString(index + 1u) + " 个参数必须是 std::lang::List<T>，现在是 " + Describe(type));
         return nullptr;
@@ -289,7 +288,7 @@ simple_ast::NodePtr LowerAlgorithmCall(const Memory::String &name, const Memory:
             if (!Acceptable(element, ExprType(args[index]), true))
                 return Fail("std::algorithms::" + name + " 的所有参数必须兼容 " + Describe(element)), Bad();
         auto list = Memory::makeShared<MType>();
-        list->kind = MType::Container;
+        list->kind = MType::Opcode;
         list->name = "vec";
         list->elem = element;
         const MParam pack{ "rest", "__magel_rest", list, true };
@@ -407,7 +406,7 @@ simple_ast::NodePtr LowerAlgorithmCall(const Memory::String &name, const Memory:
         if (!Acceptable(element, ExprType(args[1]), true) || !Acceptable(element, ExprType(args[2]), true))
             return Fail("std::algorithms::clamp 的 value、low、high 必须是兼容类型"), Bad();
         auto list = Memory::makeShared<MType>();
-        list->kind = MType::Container;
+        list->kind = MType::Opcode;
         list->name = "vec";
         list->elem = element;
         const MParam bounds{ "bounds", "__magel_bounds", list, true };
@@ -629,7 +628,7 @@ simple_ast::NodePtr LowerCall(int id)
         }
         /* ---- 运行时数组 `T[]` 的 `.len()` ----
          * 元素个数存在对象块头的前 8 字节（`new[n]` 建的时候写进去的），
-         * 也就是"对象首地址 - 8"处那个槽。1.0.0 删掉 `sizeof` 之后，
+         * 也就是"对象首地址 - 8"处那个槽。0.20.7 删掉 `sizeof` 之后，
          * 这是问"数组有几个元素"的唯一写法。 */
         if (baseType && IsRuntimeArray(baseType))
         {
@@ -1571,9 +1570,8 @@ simple_ast::NodePtr LowerCall(int id)
             case MType::Double:
 
                 return true;
-            case MType::Opcode: return !OpcodeNonCopyable(item);
-            case MType::Container:
-                return supported(item->elem) && (!item->elem2 || supported(item->elem2));
+            case MType::Opcode:
+                return IsContainer(item) ? supported(item->elem) && (!item->elem2 || supported(item->elem2)) : !OpcodeNonCopyable(item);
             case MType::Struct:
             {
                 EnsureTupleLayout(item);
@@ -1755,7 +1753,7 @@ int ElementBytes(const std::shared_ptr<MType> &type)
  *     `__magel_new_array(N, 步长)`，它在块头写下元素个数、返回元素起始，
  *     后面 `a[i]` 的越界检查就是读这个长度（`i < len`）。
  *
- * 1.0.0 起 `new(实参)` 已删除：带初值的对象走 `T v = T::new(实参);`（`static T new(...)` 工厂）。
+ * 0.20.7 起 `new(实参)` 已删除：带初值的对象走 `T v = T::create(实参);`（`static T create(...)` 工厂）。
  */
 /**
  * @brief 生成私有执行期分派标签，不作为稳定元数据身份。
@@ -3645,7 +3643,7 @@ bool ValidateReturnForms(int statementId, const std::shared_ptr<MType> &result)
     {
     case MNode::Return:
         if (result && result->kind == MType::Void && !statement.kids.empty())
-            return Fail(g_namedConstructorBody ? Memory::String("`static T new(...)` 构造入口体内不要写 `return`："
+            return Fail(g_namedConstructorBody ? Memory::String("`static T create(...)` 构造入口体内不要写 `return`："
                                                                 "往 `self`（或 `self.字段`）写值即可，返回值由调用点接住") :
                                                  Memory::String(MAGEL_TEXT("void 函数不能返回值")));
         if (result && result->kind != MType::Void && statement.kids.empty())

@@ -49,7 +49,7 @@ inline bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr
             }
             if (input.bad()) { fail(reply,"file read failed"); return; }
             const auto handle=reply.field<std::int64_t>(1);
-            for (auto byte:bytes) ctx.listPush(handle,magel_glue::Value::fromInt(byte)); }, error);
+            for (auto byte:bytes) collection_glue::listPush(ctx, handle,magel_glue::Value::fromInt(byte)); }, error);
     ok = registry.bindTyped<void, Memory::String, Bytes, Reply>("std::io::__writeAllBytes", [](Memory::String path, Bytes bytes, Reply reply) {
             std::ofstream output(Memory::u8path(path),std::ios::binary|std::ios::trunc);
             if (!output) { fail(reply,"cannot open file for writing"); return; }
@@ -67,7 +67,7 @@ inline bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr
             }
             if (ec) { fail(reply,ec.message()); return; }
             std::sort(paths.begin(),paths.end()); const auto handle=reply.field<std::int64_t>(2);
-            for (const auto &path:paths) ctx.listPush(handle,magel_glue::Value::fromText(path)); }, error) && ok;
+            for (const auto &path:paths) collection_glue::listPush(ctx, handle,magel_glue::Value::fromText(path)); }, error) && ok;
     ok = registry.bindTyped<void, Memory::String, Reply>("std::io::__fileInfo", [](Memory::String path, Reply reply) {
             std::error_code ec; const auto p=Memory::u8path(path); const auto status=fs::status(p,ec);
             if (ec || !fs::exists(status)) { fail(reply,ec?ec.message():"path does not exist"); return; }

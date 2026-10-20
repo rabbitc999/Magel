@@ -26,6 +26,6 @@ cmake --build build --config Release
 ./build/magel program.mgl --reflection
 ```
 
-使用 `magel new hello-magel` 新建应用工程，再用 `magel hello-magel/src/main.mgl` 运行。新建指令无需 Python 或磁盘模板，目标目录必须不存在。完整的 test / aot 等开发命令由仓库统一工具链 magel 提供。
+使用 `magel new hello-magel` 新建应用工程，再用 `magel hello-magel/src/main.mgl` 运行。新建指令无需 Python 或磁盘模板，目标目录必须不存在。完整的 test / fmt 等开发命令由仓库统一工具链 magel 提供。
 
 VM 核心与大数、SQLite 宿主后端分别构建为静态目标；标准胶水通过通用不透明记录接口访问宿主对象。

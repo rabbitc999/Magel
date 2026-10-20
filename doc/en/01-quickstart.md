@@ -11,10 +11,6 @@ Two ways; pick one:
 
 **Option 1: use a release package**
 
-The release package `dist/magel-<version>-<platform>-<arch>.tar.gz` contains `bin/` (`magel`,
-`magel-emit`, `magel-generator`, `magel-stackvm`, …), `doc/`, `VERSION`, `CHANGELOG.md` and `LICENSE`.
-Unpack it and put `bin/` on your PATH.
-
 **Option 2: build from source**
 
 ```sh
@@ -129,7 +125,6 @@ magel check hello.mgl
 | Check only, do not run | `magel check src/main.mgl` |
 | JSON diagnostics (for editors) | `magel check src/main.mgl json` |
 | Export `.svmb` bytecode | `magel svmb src/main.mgl out build/app` |
-| Export a native executable | `magel aot src/main.mgl out build/app.exe opt 2` |
 | Create a project | `magel new hello` |
 | Run tests | `magel test tests` |
 | Format check / write | `magel fmt check src` / `magel fmt write src` |
@@ -139,6 +134,5 @@ More subcommands, `magel.toml` configuration and compile options: [Toolchain](09
 
 > Reading the English edition? Snippets are identical to the Chinese edition and are executed before
 > publication. See the [Chinese edition](../01-quickstart.md).
-
 
 Generated parser sources, headers and reports live in `source/`. Object files and the parser archive live in `build/magel-frontend/`, keeping the repository root clear.

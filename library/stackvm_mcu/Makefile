@@ -23,7 +23,7 @@ HERE := .
 MCU_DEFS := -fno-exceptions -fno-rtti -fno-threadsafe-statics \
 	-DSTACKVM_WITH_DEFAULT_HEAP=0 -DSTACKVM_WITH_HOST_EXCEPTION_GUARD=0 \
 	-DSTACKVM_WITH_HOST_IO=0 -DSTACKVM_WITH_BIGINT=0 -DSTACKVM_WITH_BIGFLOAT=0 \
-	-DSTACKVM_WITH_THREADS=0 -DSTACKVM_WITH_AOT=0 -DSTACKVM_EMBEDDED=1
+	-DSTACKVM_WITH_THREADS=0 -DSTACKVM_EMBEDDED=1
 
 # 预算：按"H743 + 16 MB 外部 SDRAM"给（片内只有 ~1 MB，静态数组放不下这么多，
 # 板端要用 mcuArenas::SetBytePool / SetMetadata 把 SDRAM 注入进来；见 README）。
@@ -59,7 +59,7 @@ endif
 
 all: $(TARGET)
 
-$(TARGET): $(SOURCES) $(wildcard $(STACKVM_DIR)/*.hpp $(STACKVM_DIR)/parts/* *.hpp) | $(BUILD_DIR)
+$(TARGET): $(SOURCES) $(wildcard $(STACKVM_DIR)/*.hpp $(STACKVM_DIR)/parts/* *.hpp ../../source/glue/*.hpp) | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) $(MCU_DEFS) $(MCU_BUDGET) $(MCU_FS_DEFS) $(INCLUDES) $(SOURCES) -o $@
 
 $(BUILD_DIR):

@@ -130,8 +130,10 @@ int64 main() {
         auto map = {"a":"one","b":"two"};
         auto entries = map.intoIter().collect();
         assert((map.len()) == (0));
-        assert(((entries[0]).0) == ("a"));
-        assert(((entries[0]).1) == ("one"));
+        for (Pair<String, String> entry in entries) {
+            assert((entry.first == "a" && entry.second == "one")
+                || (entry.first == "b" && entry.second == "two"));
+        }
         List<String> words; words.push("one"); words.push("two");
         {
             auto textRefs = words.iterMut(); textRefs.forEach(replaceText);

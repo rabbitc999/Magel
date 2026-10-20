@@ -1,11 +1,11 @@
 /*
  * gui/glue.cpp —— 把 MAGEL 的 `gui::` 宿主声明绑到 GUI 共享库（C ABI）。
  *
- * `magel aot --glue` 把这个文件编进应用；共享库句柄保留在绑定闭包与指令钩子里，
+ * VM 宿主把这个胶水文件编入宿主程序；共享库句柄保留在绑定闭包与指令钩子里，
  * 进程存活期间不会卸载。MAGEL 与库之间只传定宽整数和 UTF-8 字符串。
  *
  * 事件回调那条链：GUI 事件 → `mcgui_callback_t` 桥（本文件）→
- * 运行时投递器 → VM / AOT 在下一个执行边界交付 MAGEL 中断
+ * 运行时投递器 → VM 在下一个执行边界交付 MAGEL 中断
  * 处理函数。桥只缓存运行时投递器与定时器句柄，不缓存 `NativeCallContext`，所以
  * 指令钩子（GUI 泵）在宿主回调之外触发也安全。
  */
@@ -41,7 +41,7 @@ void guiEventBridge(std::int64_t event, std::int64_t, void *)
 
 }  // namespace
 
-/* magel aot --glue 将这个文件编入应用；共享库保留在所有绑定闭包中。 */
+/* VM 宿主将这个文件编入宿主程序；共享库保留在所有绑定闭包中。 */
 /**
  * @brief 向宿主注册表绑定本模块提供的 Magel 胶水接口。
  * @param registry 接收函数绑定的宿主注册表。
@@ -130,7 +130,7 @@ bool bindMagelGlue(magel_glue::Registry &registry, Memory::String *error)
         return false;
 
     /*
-     * 每 N 个执行边界泵一次 GUI：指令钩子在 VM 执行线程、执行边界同步触发（VM 指令 / AOT 基本块），所以这里能直接
+     * 每 N 个执行边界泵一次 GUI：指令钩子在 VM 执行线程、执行边界同步触发（VM 指令），所以这里能直接
      * 通过统一运行时接口安装钩子；钩子里派发的 GUI 事件再经 `guiEventBridge` 投递中断。
      */
     if (!registry.bindTypedWithContext<i32, i64>(

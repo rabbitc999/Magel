@@ -43,27 +43,20 @@
 
 | 方式 | 实现 | 部署要求 |
 | --- | --- | --- |
-| 源码运行 | 前处理、解析、类型及借用检查、四元式降级后进入 VM | Magel 工具链及所用宿主能力 |
-| 字节码 | `.svmb` 由共享 `library/stackvm/` 加载 | 支持产物特征位的 VM、宿主胶水、数据区及目标平台资源 |
-| AOT | 四元式导出 C++，由选定的 C++ 工具链编成本机程序或库 | 运行时服务编入产物，外部驱动、系统库及 ABI 库按使用情况准备 |
+| 源码运行 | 前处理、解析、类型与借用检查、四元式降级后进入 VM | 编译器和实际使用的宿主能力 |
+| 字节码 | 共享 VM 校验并加载 `.svmb` | 兼容特征位的 VM、胶水及配套数据 |
+| 宿主嵌入 | 宿主加载字节码，以 `stackvm::Machine` 执行 | 目标平台的 VM 宿主和资源适配 |
 
-IR 指四元式，默认执行完整优化流程；VM 默认使用最高可用执行优化，包括寄存器核心、
-执行准备与融合、跳转折叠及整数专用路径。源码运行和字节码运行共用 VM；当前没有 JIT 模式。
-AOT 默认 `checked` 与 `-O3`，支持静态标量内存路径、数组检查成功路径与调用帧内宿主参数缓冲区复用；
-支持 checked/unchecked、模块缓存与显式 GCC 命令/路径/目录。
-库输出包括 `.dll` / `.so` 共享库及 `.o` 可重定位文件，生成 C 头文件，允许无 `main`；
-至少有一个 `export`，不支持 `.lib` / `.a` 静态库。详见[库输出](09-toolchain.md#aot-库输出)。
-字节码和 AOT 可用于交付，符号压缩不提供加密、完整沙箱或防逆向保证。
+IR 指四元式，默认执行完整优化流程；VM 默认使用最高可用执行优化，包括寄存器核心、执行准备与融合、跳转折叠及整数专用路径。源码与字节码共用 VM。
 
-共同支持的功能使用同一语言语义；`export` C 接口仅用于 AOT，VM 运行和字节码导出拒绝它。
-交付字节码更新的是程序映像，不承诺运行中的栈、闭包或全局状态可无缝迁移。
+交付可使用字节码与宿主，符号压缩不提供加密、完整沙箱或防逆向保证。程序更新不自动迁移正在运行的栈、闭包或全局状态。
 
 ## 宿主与反射
 
 Magel 可通过 `abi` 调用 C 动态库，或调用 Registry 注册的 C++ 胶水。引用、结构体、数组、
 可选引用、返回内存释放及有限头文件绑定均按 ABI 契约处理；宿主声明必须匹配真实 C 签名。
 胶水使用 `NativeCallContext::invoke` 或 `magel_glue::Function` 同步调用 Magel 具名函数、
-内联 fn 和闭包，VM/AOT 共用接口并检查参数数量、返回值和错误传播。
+内联 fn 和闭包，VM 共用接口并检查参数数量、返回值和错误传播。
 函数包装与上下文仅在所属宿主回调期间、同一线程同步使用；资源值仍按 Codec 管理所有权。
 详见[宿主集成](08-host-integration.md)和[回调示例](../example/native-callbacks/README.md)。
 
@@ -97,11 +90,14 @@ H743 工程已提供 SDRAM、FatFS、USART1、LCD 程序选择和按键，默认
 
 工具界面仅支持中文、英文，其他系统区域回退英文，显式日语选项被拒绝。`man book`、`man keyword` 与 `man skill` 从可执行文件内嵌数据查询书稿、关键字和 AI SKILL；VS Code 包携带同一份 SKILL。
 
-
 API 手册通过 `magel man api` 查询，省略 `api` 会给出用法错误；`magel man macro` 查看内嵌宏帮助。
 
 `opcode T { new = create; drop = destroy; copy = clone; };` 声明不透明胶水对象。
 复制经声明的胶水函数完成；`#NonCopyable` 类型禁止复制，并省略 copy。
 struct 可以拥有多个 opcode 字段。BigInteger、BigDecimal、File、Process 的记录及操作位于
 标准库胶水，VM 核心只管理通用 NativeRecord 壳及宿主服务表。File、Process 不可复制；
-公开进程类型名为 Process。String、List、Map、Set 的完整隔离仍在推进，不能据此视为已完成。
+公开进程类型名为 Process。List、Map、Set 使用参数化 opcode 类型和标准库不透明记录，
+前端不再声明 Container Kind，VM 不再声明集合专用 Kind 或实现集合方法。List 使用 ArrayList；
+内建标量键与实现 Hash<T> 的自定义键使用 HashMap / HashSet，只有 Equal<bool,T> 而没有 Hash<T>
+的自定义键退化为线性查找的 ArrayMap / ArraySet。哈希碰撞通过 Equal 区分。
+Map、Set 的 keyAt、valAt、at、遍历及默认文本均不承诺排序或插入顺序。String 的完整隔离仍在推进。

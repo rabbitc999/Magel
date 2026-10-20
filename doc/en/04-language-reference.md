@@ -257,6 +257,8 @@ int64 main() {
 body just writes into `self` (or `self.field`) and does **not** write `return` — the value is taken by
 the call site. Discarding its result is an error.
 
+A generic struct’s `create` entry can infer the owner’s type arguments from its inputs, as in `Pair::create(key, value)` and `Pair::create((key, value))`. If the inputs do not uniquely determine the types, write `Pair<K, V>::create(...)` explicitly.
+
 ---
 
 ## 5. Operators
@@ -491,7 +493,6 @@ int64 total<T: Shape>(T shape) { return shape.area(); }
 - Monomorphised at compile time; the call site is resolved statically, no vtable overhead.
 - Calls may be explicit (`total<Circle>(c)`) or inferred.
 
-
 An outer template can bind some parameters of an inner template while retaining its own parameters.
 Concrete uses recursively generate complete instances:
 
@@ -527,7 +528,7 @@ This is template composition; parameter-pattern partial specialisation with sepa
 has no syntax at present. Recursive value fields are rejected, while references to the same instance are allowed.
 Expanding recursion is diagnosed: a compilation allows at most 1024 generic instances and rejects type-expression
 nesting at 128 levels. The regression suite, [`tests/magel_generic_monomorphization.py`](../../tests/magel_generic_monomorphization.py),
-covers interpretation, AOT, instance reuse and invalid programs.
+covers VM execution, instance reuse and invalid programs.
 
 ---
 
@@ -551,7 +552,7 @@ int64 main() {
 
         if (k == 1) { { k = k + 1; continue; } }
         total = total + k;
-    
+
             k = k + 1;
         }
     }
@@ -761,7 +762,7 @@ abi "./native.dll" {
 }
 ```
 
-An `abi` block imports C ABI functions from a library. Use AOT-only `export` to expose Magel functions to C.
+An `abi` block imports C ABI functions from a library. Hosts load and run programs through the shared VM.
 Type mapping, nullable references and glue bindings: see
 [Host integration and C ABI](08-host-integration.md).
 
@@ -871,7 +872,7 @@ loop {
             while (i < 10) {
 
             if (i == 3) { break level 2; }
-        
+
                 i++;
             }
         }
@@ -908,7 +909,7 @@ For example, a loop can directly complete an enclosing block assignment, while n
         while (i < 10) {
 
         if (i == 3) { yield (i, "found"); }
-    
+
             i++;
         }
     }
@@ -946,7 +947,6 @@ checked against its parameter's function type, which also provides context for o
 types. See [`fn_inline_arguments.mgl`](../../example/samples/fn_inline_arguments.mgl) for a nested
 function result combined with tuple values.
 
-
 ## Moving and cleaning up value exits
 
 Explicit `yield i;` prefers moving a writable local variable declared inside the receiving value expression, equivalent to `yield std::lang::move(&i);` for that source. Variables outside that expression remain usable and are copied. Crossing loops does not change this boundary. Direct variables in tuples, including nested tuples, follow the same rule. Const values, read-only sources, reference bindings, fields and indexing retain existing value semantics; use explicit `move(&value)` when a transfer is required. If scope exit callbacks are present, an independent result is conservatively saved so callbacks can still read or modify the source.
@@ -955,8 +955,7 @@ Expressions such as `yield i + 1;` and `yield makeText();` are evaluated once an
 
 The result is saved before exit callbacks and automatic cleanup. Moving clears the source storage and ends its binding lifetime without invoking close/drop on the source; the final receiver owns cleanup. Types implementing both Closeable and Drop close before dropping. Copies own independent resources, so source and result are cleaned up at their respective lifetime ends. Exits across loops clean up every scope that is left without releasing resources already transferred to the result.
 
-Moving does not extend borrowed lifetimes, including references stored inside aggregates. The [move and cleanup sample](../../example/samples/break_move.mgl) checks evaluation counts, raw resource handle identity, external variable copying, destructor counts, cleanup order and VM/AOT behavior. See [ownership transfer](23-ownership-move.md) for general rules.
-
+Moving does not extend borrowed lifetimes, including references stored inside aggregates. The [move and cleanup sample](../../example/samples/break_move.mgl) checks evaluation counts, raw resource handle identity, external variable copying, destructor counts, cleanup order and VM behavior. See [ownership transfer](23-ownership-move.md) for general rules.
 
 ## Default value text and string conversion
 

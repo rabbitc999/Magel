@@ -62,8 +62,6 @@
   "magel_version": "0.10.2",
   "magel_commit": "1f3e7f8",
   "compiler_flags": "Lua -O2; Magel -O2 -DNDEBUG MAGEL_CUSTOM_ALLOCATOR=1",
-  "aot_flags": "-O2 unchecked; fresh runtime input per sample prevents folding and cross-sample hoisting; generated source retained",
-  "timing": "Java System.nanoTime; AOT std::clock::nowNanos around calculate only; Python perf_counter_ns; Lua os.clock; Magel steady_clock; exclude parsing and file loading; Magel includes execution-plan setup and final checksum output",
   "results": {
     "Python": {
       "median_ms": 287.8238,
@@ -216,19 +214,6 @@
       ],
       "checksum": "49999995000000",
       "logical_steps": 150000035
-    },
-    "Magel AOT": {
-      "median_ms": 1.83,
-      "samples_ms": [
-        1.83,
-        1.84,
-        1.82,
-        1.82,
-        1.84,
-        1.82,
-        1.92
-      ],
-      "checksum": "49999995000000"
     },
     "Java HotSpot interpreter (-Xint)": {
       "median_ms": 47.5381,

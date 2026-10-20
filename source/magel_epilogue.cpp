@@ -320,7 +320,7 @@ int M_TypeProc() { return M_TypeKind(MType::Opcode, "std::lang::Process"); }
 int M_ContainerType(const char *name, int firstId, int secondId)
 {
     auto type = Memory::makeShared<MType>();
-    type->kind = MType::Container;
+    type->kind = MType::Opcode;
     type->name = name;
     type->elem = M_TypeAt(firstId);
     if (secondId >= 0) type->elem2 = M_TypeAt(secondId);
@@ -1818,7 +1818,7 @@ int M_Decl2(int nameId, int dims, int init)
  * **元素类型不写在 new 后面**：降级时从"被赋值的变量 / 字段的类型"取
  * （`T mut& p = new;` / `T a[] = new [n];`），所以 `new` 只能出现在声明或赋值里。
  *
- * 1.0.0 起 `new(实参)` 已删除：需要初值就写 `T v = T::new(实参);`（`static T new(...)` 工厂）。
+ * 0.20.7 起 `new(实参)` 已删除：需要初值就写 `T v = T::create(实参);`（`static T create(...)` 工厂）。
  * @param count 元素个数表达式；-1 表示单个对象。
  * @retval 生成的语法节点在节点池中的编号。
  */
@@ -1826,7 +1826,7 @@ int M_NewPtr(int count)
 {
     /* `new` / `new [n]`：i = 元素个数表达式（-1 = 单个）。
      * 元素类型不在这儿定 —— 降级时从"被赋值的那个东西的类型"取。
-     * `new(实参)` 那条路 1.0.0 起已删除（构造走 `static T new(...)` 工厂）。 */
+     * `new(实参)` 那条路 0.20.7 起已删除（构造走 `static T create(...)` 工厂）。 */
     const int id = M_New(MNode::NewPtr);
     g_nodes[static_cast<std::size_t>(id)].i = count;
     return id;
@@ -1838,7 +1838,7 @@ int M_NewPtr(int count)
  * 两个来源共用这一个节点：
  *   * 用户语法 `T v = new(实参);` → `M_Construct(-1, $3, -1)`，类型从声明目标推，
  *     构造函数在降级时按名字 + 实参重载挑选；
- *   * `static T new(形参)` 工厂的内部展开 → `M_Construct(类型, 实参表, 工厂修饰名)`，
+ *   * `static T create(形参)` 工厂的内部展开 → `M_Construct(类型, 实参表, 工厂修饰名)`，
  *     `skipName` 用来把正在展开的这条工厂排除掉，免得工厂体递归调自己。
  *
  * @param typeId   目标类型（-1 = 由降级阶段的声明目标决定）。
@@ -2233,16 +2233,6 @@ int M_AbiBufferFunc(int resultType, int nameId, int params, int symbolId, int le
 int M_AbiOwned(int function, int release)
 {
     g_nodes[function].abiRelease = g_names[release];
-    return function;
-}
-/**
- * @brief 标记函数为 AOT 的上下文式 C 导出接口。
- * @param function 函数定义节点编号。
- * @return 原函数节点编号。
- */
-int M_ExportFunc(int function)
-{
-    g_nodes[function].cExport = true;
     return function;
 }
 /**
@@ -2914,7 +2904,6 @@ namespace
 #include "epilogue/annotations.cpp"
 #include "epilogue/pass1_register.cpp"
 #include "epilogue/pass2_lower.cpp"
-#include "epilogue/c_exports.cpp"
 #include "epilogue/artifacts.cpp"
 #include "epilogue/reflection_metadata.cpp"
 #include "epilogue/reflection_queries.cpp"
@@ -3014,7 +3003,16 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
                 const auto firstBridgeNode = g_nodes.size();
                 magel_generic::markContainerTypeArguments(generated);
                 if (parser.runText(generated, &value) != magel::Status::Ok)
-                    return Fail("编译器生成的反射查询无法解析"), 1;
+                {
+                    const auto *error = parser.lastError();
+                    const auto detail = g_error.empty() ? (error ? Memory::String(error->message().c_str()) : Memory::String()) : g_error;
+                    if (const char *dump = std::getenv("MAGEL_DUMP_REFLECTION"))
+                    {
+                        std::ofstream output(std::filesystem::u8path(dump), std::ios::binary);
+                        output.write(generated.data(), static_cast<std::streamsize>(generated.size()));
+                    }
+                    return Fail("编译器生成的反射查询无法解析" + (detail.empty() ? Memory::String() : Memory::String(": ") + detail)), 1;
+                }
                 for (std::size_t i = firstBridgeNode; i < g_nodes.size(); ++i) g_nodes[i].reflectionBridge = true;
                 auto generatedTop = g_top;
                 if (!additional.empty())
@@ -3078,9 +3076,6 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
     MReflectionBuilder reflection;
     if (g_reflectionEnabled && !reflection.build()) return 1;
     if (g_checkOnly) return 0;
-    if (run != 0 || emitBinary != 0)
-        for (const auto &function : g_functionDecls)
-            if (function.cExport) return Fail("C 函数导出仅支持 AOT，VM 执行不支持 export 声明"), 1;
 
     AddRuntimeHelpers(program);
 

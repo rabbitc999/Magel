@@ -63,7 +63,7 @@ inline void setResult(Reply reply, std::int64_t flag, std::int64_t value)
 inline void readInts(Context &ctx, std::int64_t handle, Ints &out)
 {
     Memory::Vector<magel_glue::Value> raw;
-    if (!ctx.readList(handle, raw))
+    if (!collection_glue::readList(ctx, handle, raw))
     {
         ctx.fail("二叉树：列表参数无效");
         return;
@@ -82,7 +82,7 @@ inline void readInts(Context &ctx, std::int64_t handle, Ints &out)
 inline void writeInts(Context &ctx, Reply reply, std::size_t slot, const Ints &values)
 {
     const std::int64_t handle = reply.field<std::int64_t>(slot);
-    for (std::int64_t value : values) ctx.listPush(handle, magel_glue::Value::fromInt(value));
+    for (std::int64_t value : values) collection_glue::listPush(ctx, handle, magel_glue::Value::fromInt(value));
 }
 
 /**
@@ -137,13 +137,14 @@ inline void bstInsert(Ints &keys, Ints &lefts, Ints &rights, std::int64_t root,
             return;
         }
         bool goLeft = value < keys[static_cast<std::size_t>(node)];
-        std::int64_t child = goLeft ? lefts[static_cast<std::size_t>(node)]
-                                    : rights[static_cast<std::size_t>(node)];
+        std::int64_t child = goLeft ? lefts[static_cast<std::size_t>(node)] : rights[static_cast<std::size_t>(node)];
         if (child < 0)
         {
             const std::int64_t fresh = makeNode(keys, lefts, rights, value);
-            if (goLeft) lefts[static_cast<std::size_t>(node)] = fresh;
-            else rights[static_cast<std::size_t>(node)] = fresh;
+            if (goLeft)
+                lefts[static_cast<std::size_t>(node)] = fresh;
+            else
+                rights[static_cast<std::size_t>(node)] = fresh;
             reply.set<std::int64_t>(1, 1);
             reply.set<std::int64_t>(3, root);
             writeInts(ctx, reply, 4, keys);
@@ -176,8 +177,7 @@ inline void bstContains(const Ints &keys, const Ints &lefts, const Ints &rights,
             setResult(reply, 1, key);
             return;
         }
-        node = value < key ? lefts[static_cast<std::size_t>(node)]
-                           : rights[static_cast<std::size_t>(node)];
+        node = value < key ? lefts[static_cast<std::size_t>(node)] : rights[static_cast<std::size_t>(node)];
     }
     setResult(reply, 0, 0);
 }
@@ -200,9 +200,7 @@ inline void bstRemove(Ints &keys, Ints &lefts, Ints &rights, std::int64_t root,
     while (node >= 0 && value != keys[static_cast<std::size_t>(node)])
     {
         parent = node;
-        node = value < keys[static_cast<std::size_t>(node)]
-                   ? lefts[static_cast<std::size_t>(node)]
-                   : rights[static_cast<std::size_t>(node)];
+        node = value < keys[static_cast<std::size_t>(node)] ? lefts[static_cast<std::size_t>(node)] : rights[static_cast<std::size_t>(node)];
     }
     if (node < 0)
     {
@@ -505,7 +503,7 @@ inline void heapPeek(const Ints &values, Reply reply)
 inline void readIntsReply(Context &ctx, std::int64_t handle, Ints &out)
 {
     Memory::Vector<magel_glue::Value> raw;
-    if (!ctx.readList(handle, raw))
+    if (!collection_glue::readList(ctx, handle, raw))
     {
         ctx.fail("树：列表参数无效");
         return;
@@ -620,7 +618,7 @@ inline void rbtInsert(Ints &keys, Ints &lefts, Ints &rights, Ints &colors,
         keys.push_back(value);
         lefts.push_back(-1);
         rights.push_back(-1);
-        colors.push_back(1); // 根恒黑。
+        colors.push_back(1);  // 根恒黑。
         writeRbt(ctx, reply, total, keys, lefts, rights, colors);
         setResult(reply, 1, 0);
         return;
@@ -661,18 +659,19 @@ inline void rbtInsert(Ints &keys, Ints &lefts, Ints &rights, Ints &colors,
             return;
         }
         const bool goLeft = value < keys[static_cast<std::size_t>(node)];
-        child = goLeft ? lefts[static_cast<std::size_t>(node)]
-                       : rights[static_cast<std::size_t>(node)];
+        child = goLeft ? lefts[static_cast<std::size_t>(node)] : rights[static_cast<std::size_t>(node)];
         if (child < 0)
         {
             keys.push_back(value);
             lefts.push_back(-1);
             rights.push_back(-1);
-            colors.push_back(0); // 新节点为红。
+            colors.push_back(0);  // 新节点为红。
             child = static_cast<std::int64_t>(keys.size()) - 1;
             parent.push_back(node);
-            if (goLeft) lefts[static_cast<std::size_t>(node)] = child;
-            else rights[static_cast<std::size_t>(node)] = child;
+            if (goLeft)
+                lefts[static_cast<std::size_t>(node)] = child;
+            else
+                rights[static_cast<std::size_t>(node)] = child;
             break;
         }
         node = child;
@@ -747,7 +746,7 @@ inline void rbtInsert(Ints &keys, Ints &lefts, Ints &rights, Ints &colors,
 inline void writeIntsGeneral(Context &ctx, GeneralReply reply, std::size_t slot, const Ints &values)
 {
     const std::int64_t handle = reply.field<std::int64_t>(slot);
-    for (std::int64_t value : values) ctx.listPush(handle, magel_glue::Value::fromInt(value));
+    for (std::int64_t value : values) collection_glue::listPush(ctx, handle, magel_glue::Value::fromInt(value));
 }
 
 /**
@@ -953,7 +952,6 @@ inline void gtHeight(const Ints &firstChild, const Ints &nextSibling, std::int64
     reply.set<std::int64_t>(1, best);
 }
 
-
 /**
  * @brief 注册 std::tree 的全部胶水入口。
  * @param registry 函数注册表。
@@ -963,117 +961,138 @@ inline void gtHeight(const Ints &firstChild, const Ints &nextSibling, std::int64
 inline bool bind(magel_glue::Registry &registry, Memory::String *error)
 {
     bool ok = true;
-    auto fail = [&](const char *message)
-    {
+    auto fail = [&](const char *message) {
         if (error) *error = Memory::String(message, std::strlen(message));
         ok = false;
     };
     ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, std::int64_t, std::int64_t, Reply>(
-        "std::tree::__bstInsert",
-        [](Context &ctx, Ints keys, Ints lefts, Ints rights, std::int64_t root,
-           std::int64_t value, Reply reply) {
-            bstInsert(keys, lefts, rights, root, value, ctx, reply);
-        }) && ok;
+             "std::tree::__bstInsert",
+             [](Context &ctx, Ints keys, Ints lefts, Ints rights, std::int64_t root,
+                std::int64_t value, Reply reply) {
+                 bstInsert(keys, lefts, rights, root, value, ctx, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, std::int64_t, std::int64_t, Reply>(
-        "std::tree::__bstContains",
-        [](Context &, Ints keys, Ints lefts, Ints rights, std::int64_t root,
-           std::int64_t value, Reply reply) {
-            bstContains(keys, lefts, rights, root, value, reply);
-        }) && ok;
+             "std::tree::__bstContains",
+             [](Context &, Ints keys, Ints lefts, Ints rights, std::int64_t root,
+                std::int64_t value, Reply reply) {
+                 bstContains(keys, lefts, rights, root, value, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, std::int64_t, std::int64_t, Reply>(
-        "std::tree::__bstRemove",
-        [](Context &ctx, Ints keys, Ints lefts, Ints rights, std::int64_t root,
-           std::int64_t value, Reply reply) {
-            bstRemove(keys, lefts, rights, root, value, ctx, reply);
-        }) && ok;
+             "std::tree::__bstRemove",
+             [](Context &ctx, Ints keys, Ints lefts, Ints rights, std::int64_t root,
+                std::int64_t value, Reply reply) {
+                 bstRemove(keys, lefts, rights, root, value, ctx, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, std::int64_t, Reply>(
-        "std::tree::__bstMin",
-        [](Context &, Ints keys, Ints lefts, std::int64_t root, Reply reply) {
-            bstMin(keys, lefts, root, reply);
-        }) && ok;
+             "std::tree::__bstMin",
+             [](Context &, Ints keys, Ints lefts, std::int64_t root, Reply reply) {
+                 bstMin(keys, lefts, root, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, std::int64_t, Reply>(
-        "std::tree::__bstMax",
-        [](Context &, Ints keys, Ints rights, std::int64_t root, Reply reply) {
-            bstMax(keys, rights, root, reply);
-        }) && ok;
+             "std::tree::__bstMax",
+             [](Context &, Ints keys, Ints rights, std::int64_t root, Reply reply) {
+                 bstMax(keys, rights, root, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, std::int64_t, Reply>(
-        "std::tree::__bstHeight",
-        [](Context &, Ints lefts, Ints rights, std::int64_t root, Reply reply) {
-            bstHeight(lefts, rights, root, reply);
-        }) && ok;
+             "std::tree::__bstHeight",
+             [](Context &, Ints lefts, Ints rights, std::int64_t root, Reply reply) {
+                 bstHeight(lefts, rights, root, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, std::int64_t, std::int64_t, Reply>(
-        "std::tree::__bstTraverse",
-        [](Context &ctx, Ints keys, Ints lefts, Ints rights, std::int64_t root,
-           std::int64_t mode, Reply reply) {
-            bstTraverse(keys, lefts, rights, root, mode, ctx, reply);
-        }) && ok;
+             "std::tree::__bstTraverse",
+             [](Context &ctx, Ints keys, Ints lefts, Ints rights, std::int64_t root,
+                std::int64_t mode, Reply reply) {
+                 bstTraverse(keys, lefts, rights, root, mode, ctx, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, std::int64_t, Reply>(
-        "std::tree::__heapPush",
-        [](Context &ctx, Ints values, std::int64_t value, Reply reply) {
-            heapPush(values, value, ctx, reply);
-        }) && ok;
+             "std::tree::__heapPush",
+             [](Context &ctx, Ints values, std::int64_t value, Reply reply) {
+                 heapPush(values, value, ctx, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Reply>(
-        "std::tree::__heapPop",
-        [](Context &ctx, Ints values, Reply reply) { heapPop(values, ctx, reply); }) && ok;
+             "std::tree::__heapPop",
+             [](Context &ctx, Ints values, Reply reply) { heapPop(values, ctx, reply); })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Reply>(
-        "std::tree::__heapPeek",
-        [](Context &, Ints values, Reply reply) { heapPeek(values, reply); }) && ok;
+             "std::tree::__heapPeek",
+             [](Context &, Ints values, Reply reply) { heapPeek(values, reply); })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, Reply>(
-        "std::tree::__rbtInsert",
-        [](Context &ctx, Ints keys, Ints lefts, Ints rights, Ints colors, std::int64_t root,
-           std::int64_t value, Reply reply) {
-            rbtInsert(keys, lefts, rights, colors, root, value, ctx, reply);
-        }) && ok;    ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, std::int64_t, std::int64_t, Reply>(
-        "std::tree::__rbtContains",
-        [](Context &, Ints keys, Ints lefts, Ints rights, std::int64_t root, std::int64_t value,
-           Reply reply) { bstContains(keys, lefts, rights, root, value, reply); }) && ok;
+             "std::tree::__rbtInsert",
+             [](Context &ctx, Ints keys, Ints lefts, Ints rights, Ints colors, std::int64_t root,
+                std::int64_t value, Reply reply) {
+                 rbtInsert(keys, lefts, rights, colors, root, value, ctx, reply);
+             })
+         && ok;
+    ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, std::int64_t, std::int64_t, Reply>(
+             "std::tree::__rbtContains",
+             [](Context &, Ints keys, Ints lefts, Ints rights, std::int64_t root, std::int64_t value,
+                Reply reply) { bstContains(keys, lefts, rights, root, value, reply); })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, std::int64_t, Reply>(
-        "std::tree::__rbtMin",
-        [](Context &, Ints keys, Ints lefts, std::int64_t root, Reply reply) {
-            bstMin(keys, lefts, root, reply);
-        }) && ok;
+             "std::tree::__rbtMin",
+             [](Context &, Ints keys, Ints lefts, std::int64_t root, Reply reply) {
+                 bstMin(keys, lefts, root, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, std::int64_t, Reply>(
-        "std::tree::__rbtMax",
-        [](Context &, Ints keys, Ints rights, std::int64_t root, Reply reply) {
-            bstMax(keys, rights, root, reply);
-        }) && ok;
+             "std::tree::__rbtMax",
+             [](Context &, Ints keys, Ints rights, std::int64_t root, Reply reply) {
+                 bstMax(keys, rights, root, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, std::int64_t, Reply>(
-        "std::tree::__rbtHeight",
-        [](Context &, Ints lefts, Ints rights, std::int64_t root, Reply reply) {
-            bstHeight(lefts, rights, root, reply);
-        }) && ok;
+             "std::tree::__rbtHeight",
+             [](Context &, Ints lefts, Ints rights, std::int64_t root, Reply reply) {
+                 bstHeight(lefts, rights, root, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, std::int64_t, Reply>(
-        "std::tree::__rbtInorder",
-        [](Context &ctx, Ints keys, Ints lefts, Ints rights, std::int64_t root, Reply reply) {
-            bstTraverse(keys, lefts, rights, root, 0, ctx, reply);
-        }) && ok;
+             "std::tree::__rbtInorder",
+             [](Context &ctx, Ints keys, Ints lefts, Ints rights, std::int64_t root, Reply reply) {
+                 bstTraverse(keys, lefts, rights, root, 0, ctx, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<
-        void, Ints, Ints, Ints, std::int64_t, std::int64_t, std::int64_t, GeneralReply>(
-        "std::tree::__gtAddChild",
-        [](Context &ctx, Ints values, Ints firstChild, Ints nextSibling, std::int64_t count,
-           std::int64_t cursor, std::int64_t value, GeneralReply reply) {
-            gtAddChild(values, firstChild, nextSibling, count, cursor, value, ctx, reply);
-        }) && ok;
+             void, Ints, Ints, Ints, std::int64_t, std::int64_t, std::int64_t, GeneralReply>(
+             "std::tree::__gtAddChild",
+             [](Context &ctx, Ints values, Ints firstChild, Ints nextSibling, std::int64_t count,
+                std::int64_t cursor, std::int64_t value, GeneralReply reply) {
+                 gtAddChild(values, firstChild, nextSibling, count, cursor, value, ctx, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, std::int64_t, GeneralReply>(
-        "std::tree::__gtChildren",
-        [](Context &ctx, Ints firstChild, Ints nextSibling, std::int64_t cursor,
-           GeneralReply reply) { gtChildren(firstChild, nextSibling, cursor, ctx, reply); }) && ok;
+             "std::tree::__gtChildren",
+             [](Context &ctx, Ints firstChild, Ints nextSibling, std::int64_t cursor,
+                GeneralReply reply) { gtChildren(firstChild, nextSibling, cursor, ctx, reply); })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, std::int64_t, GeneralReply>(
-        "std::tree::__gtPreorder",
-        [](Context &ctx, Ints firstChild, Ints nextSibling, std::int64_t root,
-           GeneralReply reply) { gtPreorder(firstChild, nextSibling, root, ctx, reply); }) && ok;
+             "std::tree::__gtPreorder",
+             [](Context &ctx, Ints firstChild, Ints nextSibling, std::int64_t root,
+                GeneralReply reply) { gtPreorder(firstChild, nextSibling, root, ctx, reply); })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, std::int64_t, GeneralReply>(
-        "std::tree::__gtLevelOrder",
-        [](Context &ctx, Ints firstChild, Ints nextSibling, std::int64_t root,
-           GeneralReply reply) { gtLevelOrder(firstChild, nextSibling, root, ctx, reply); }) && ok;
+             "std::tree::__gtLevelOrder",
+             [](Context &ctx, Ints firstChild, Ints nextSibling, std::int64_t root,
+                GeneralReply reply) { gtLevelOrder(firstChild, nextSibling, root, ctx, reply); })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, std::int64_t, GeneralReply>(
-        "std::tree::__gtHeight",
-        [](Context &, Ints firstChild, Ints nextSibling, std::int64_t root, GeneralReply reply) {
-            gtHeight(firstChild, nextSibling, root, reply);
-        }) && ok;
+             "std::tree::__gtHeight",
+             [](Context &, Ints firstChild, Ints nextSibling, std::int64_t root, GeneralReply reply) {
+                 gtHeight(firstChild, nextSibling, root, reply);
+             })
+         && ok;
     if (!ok) fail("std::tree 胶水注册失败");
     return ok;
 }
-} // namespace std_tree_glue
+}  // namespace std_tree_glue
 
 #endif

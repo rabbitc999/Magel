@@ -7,7 +7,7 @@ JSON 里每个版本是一个对象——
 
 ```json
 {
-  "version": "1.0.0",
+  "version": "0.21.0",
   "title": "一句话标题",
   "entries": [
     "一条不带子项的变更",
@@ -43,17 +43,17 @@ VERSION_FILE = ROOT / "VERSION"
 
 INTRO = (
     f"版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **{VERSION_FILE.read_text(encoding='utf-8').strip()}**："
-    "v1.0.0 是项目冻结并重新初始化 git 后的稳定基线。不兼容变更升主版本，兼容功能新增升次版本，"
+    "语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，"
     "修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) "
     "后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 "
-    "`AGENTS.md`。1.0.0 之前的历史版本只保留一行摘要。")
+    "`AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。")
 
 TAG = re.compile(r"^v(\d+(?:\.\d+)*)$")
-VERSION_TEXT = re.compile(r"^\d+(?:\.\d+)*$")
+VERSION_TEXT = re.compile(r"^\d+\.\d+\.\d+$")
 
 
 def version_key(text):
-    """`0.12.2` / `0.3.2.3` → 整数元组，可直接比大小。"""
+    """`0.12.2` / `0.3.5` → 整数元组，可直接比大小。"""
     return tuple(int(part) for part in text.split("."))
 
 
@@ -115,6 +115,8 @@ def check():
             problems.append(f"版本顺序不对：{newer} 之后应是更旧的版本，却拍到 {older}")
     seen = set()
     for ver in versions:
+        if not VERSION_TEXT.fullmatch(ver):
+            problems.append(f"版本 {ver} 必须使用三个非负整数分量")
         if ver in seen:
             problems.append(f"版本 {ver} 出现了多次，版本号必须唯一")
         seen.add(ver)
@@ -127,7 +129,10 @@ def check():
             problems.append(f"{ver['version']} 仅按版本维护条目，不填写日期或日期组")
 
     known = seen
+    editor_version = json.loads((ROOT / "vscode/package.json").read_text(encoding="utf-8"))["version"]
     for tag_version in tags():
+        if tag_version == editor_version and tag_version != version:
+            continue  # 已有扩展版本标签独立于语言开发版本。
         if tag_version not in known:
             problems.append(f"tag v{tag_version} 没有对应的 CHANGELOG 版本")
 
@@ -137,7 +142,7 @@ def check():
             print(f"  - {problem}", file=sys.stderr)
         return 1
     print(f"CHANGELOG：{len(versions)} 个版本，与 JSON 一致，顶级 {versions[0]} 与 "
-          f"VERSION({version}) 一致，{len(tags())} 个 tag 均有记录")
+          f"VERSION({version}) 一致，已核对 {len(tags())} 个语言或扩展版本 tag")
     return 0
 
 

@@ -34,25 +34,6 @@ Memory::String valueTextQuote(const Memory::String &text, char quote = '"')
 }
 
 /**
- * @brief 将映射键作为只读值查看，不复制或释放对象句柄。
- * @param key 容器中的键。
- * @retval 保留标量、文本、结构体字段及对象身份的值视图。
- */
-ObjectValue valueTextKey(const ObjectKey &key)
-{
-    ObjectValue value;
-    value.isStruct = key.isStruct;
-    value.isText = key.isText;
-    value.isFloat = key.isFloat;
-    value.ownsObject = key.isObject;
-    value.integer = key.isObject ? key.ownedInteger : key.integer;
-    value.real = key.real;
-    value.text = key.text;
-    for (const auto &field : key.fields) value.fields.push_back(valueTextKey(field));
-    return value;
-}
-
-/**
  * @brief 判断布局是否可能通过自定义方法或 Any 动态载荷调用用户代码。
  * @param shape 当前静态布局。
  * @retval 需要保护外层容器的遍历快照时返回 true。
@@ -75,7 +56,7 @@ struct ValueTextRenderer
     bool failed = false;
 
     /**
-     * @brief 绑定当前 VM 或 AOT 的共同原生上下文。
+     * @brief 绑定当前 VM 的共同原生上下文。
      * @param ctx 用于读取存储及报告错误的上下文。
      */
     explicit ValueTextRenderer(NativeContext &ctx) : context(ctx) {}
@@ -385,7 +366,7 @@ struct ValueTextRenderer
                 if (handle) context.objects->release(handle);
             }
         } snapshot{ context };
-        if ((valueTextMayInvoke(shape) || (callbacks && !callbacks->empty()) || !object->objTextCallbacks.empty()) && (object->kind == ObjectKind::Vector || object->kind == ObjectKind::Set || object->kind == ObjectKind::Map || object->kind == ObjectKind::Obj))
+        if ((valueTextMayInvoke(shape) || (callbacks && !callbacks->empty()) || !object->objTextCallbacks.empty()) && ((object->kind == ObjectKind::NativeRecord && object->nativeType && object->nativeType->textView) || object->kind == ObjectKind::Obj))
         {
             Memory::String error;
             snapshot.handle = context.objects->copyHandle(integer, &error);
@@ -428,35 +409,30 @@ struct ValueTextRenderer
             callbacks = saved;
             return text;
         }
-        if (object->kind == ObjectKind::Vector || object->kind == ObjectKind::Set || object->kind == ObjectKind::Map)
+        if (object->kind == ObjectKind::NativeRecord && object->nativeType && object->nativeType->textView)
         {
-            if (shape.children.empty()) return "<" + shape.name + ">";
-            const bool list = object->kind == ObjectKind::Vector;
-            const bool map = object->kind == ObjectKind::Map;
-            if (map && shape.children.size() != 2)
+            NativeCallContextImpl host(context);
+            if (object->nativeType->prepare && !object->nativeType->prepare(host, object->nativeRecord.get())) return {};
+            NativeRecordTextView view;
+            if (!object->nativeType->textView(host, object->nativeRecord.get(), view)) return {};
+            Memory::String text = view.prefix;
+            for (std::size_t index = 0; index < view.rows.size(); ++index)
             {
-                context.error = "Map 文本表示缺少值布局";
-                return {};
+                if (index) text += view.separator;
+                const auto &row = view.rows[index];
+                if (row.size() != shape.children.size())
+                {
+                    context.error = "宿主记录文本字段与静态布局不一致";
+                    return {};
+                }
+                for (std::size_t field = 0; field < row.size(); ++field)
+                {
+                    if (field) text += view.fieldSeparator;
+                    text += render(shape.children[field], Slot::fromInt(0), &row[field], depth + 1, true);
+                    if (!context.error.empty() || failed) return {};
+                }
             }
-            Memory::String text = list ? "[" : "{";
-            std::size_t index = 0;
-            if (list)
-                for (const auto &item : object->items)
-                {
-                    if (index++) text += ", ";
-                    text += render(shape.children[0], Slot::fromInt(0), &item, depth + 1, true);
-                    if (!context.error.empty() || failed) return {};
-                }
-            else
-                for (const auto &entry : object->entries)
-                {
-                    if (index++) text += ", ";
-                    const auto key = valueTextKey(entry.first);
-                    text += render(shape.children[0], Slot::fromInt(0), map ? &key : &entry.second, depth + 1, true);
-                    if (map) text += ": " + render(shape.children[1], Slot::fromInt(0), &entry.second, depth + 1, true);
-                    if (!context.error.empty() || failed) return {};
-                }
-            return text + (list ? ']' : '}');
+            return text + view.suffix;
         }
         return "<" + shape.name + ">";
     }
@@ -464,7 +440,7 @@ struct ValueTextRenderer
 
 /**
  * @brief 将任意受支持值的默认文本表示分配为拥有型字符串。
- * @param ctx VM 与 AOT 共用的原生上下文。
+ * @param ctx VM 共用的原生上下文。
  * @param args 源值及静态布局字符串地址。
  * @retval 新字符串地址；失败时写入诊断并返回零。
  */

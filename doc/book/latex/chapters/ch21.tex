@@ -17,18 +17,17 @@
 
 工具链支持三条路，按「需要多少 C 侧配合」排：
 
-{\small\setlength{\tabcolsep}{4pt}
-\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.267\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.501\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.212\linewidth-2\tabcolsep\relax}}
+\begin{center}
+\begin{tabular}{lll}
 \toprule
 方式 & 用在哪 & 你要准备什么 \\
 \midrule
-\endhead
 \texttt{abi} 块 & 调动态库里按 C ABI 导出的函数 & 一份 \texttt{.\allowbreak{}dll} / \texttt{.\allowbreak{}so} \\
 宿主胶水绑定 & 把 C++ 函数注册进工具链，Magel 侧当普通函数调 & 写一点 C++ \\
-嵌入（AOT + \texttt{run\allowbreak{}Magel}） & 宿主程序调用编译好的 Magel 逻辑 & AOT 产物 \\
+VM 嵌入 & 宿主加载字节码并运行 Magel 逻辑 & 共享 VM 和配套数据 \\
 \bottomrule
-\end{longtable}
-}
+\end{tabular}
+\end{center}
 
 \texttt{abi} 块是最轻的一条——不用改工具链，不用重新编译，运行时直接加载库。
 
@@ -299,7 +298,7 @@ int64 main()
 
 \end{itemize}
 
-宿主类型的名字是编译期就绑死的，所以这条路比 \texttt{abi} 强类型、报错也早，胶水需要编入宿主或 AOT 产物；AOT 可直接通过 --glue 指定文件。
+宿主类型的名字是编译期就绑死的，所以这条路比 \texttt{abi} 强类型、报错也早，胶水编入 VM 宿主，并在运行程序前注册。
 
 \subsection{\texttt{impl}：把宿主函数绑定到协议}
 
@@ -341,30 +340,15 @@ int64 main()
 \par
 \medskip
 
-接口签名、宿主参数和返回值必须一致。同步回调通过 \texttt{Native\allowbreak{}Call\allowbreak{}Context:\allowbreak{}:\allowbreak{}invoke} 与 \texttt{magel\_glue:\allowbreak{}:\allowbreak{}Function} 使用同一套 VM/AOT 规则；不要把函数值中的运行时地址当作宿主机器函数指针。完整胶水约定见\href{https://github.com/rabbitc999/Magel/blob/master/doc/08-host-integration.md}{宿主集成}。
+接口签名、宿主参数和返回值必须一致。同步回调通过 \texttt{Native\allowbreak{}Call\allowbreak{}Context:\allowbreak{}:\allowbreak{}invoke} 与 \texttt{magel\_glue:\allowbreak{}:\allowbreak{}Function} 使用同一套 VM 规则；不要把函数值中的运行时地址当作宿主机器函数指针。完整胶水约定见\href{https://github.com/rabbitc999/Magel/blob/master/doc/08-host-integration.md}{宿主集成}。
 
 \section{反方向：宿主调用 Magel}
 
-宿主有三种可用方式：
+宿主通过共享 VM 加载 \texttt{.\allowbreak{}svmb} 与数据区，注册原生胶水后调用 \texttt{Machine:\allowbreak{}:\allowbreak{}run}。桌面与 MCU 使用同一份 VM 核心；宿主负责字节码、数据、注册表和所借用资源的生命周期。
 
-{\small\setlength{\tabcolsep}{4pt}
-\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.093\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.887\linewidth-2\tabcolsep\relax}}
-\toprule
-方式 & 调用路径 \\
-\midrule
-\endhead
-独立 VM & 宿主加载 .svmb 和数据区，注册胶水，由 Machine 执行；适用于当前 MCU 工程 \\
-AOT C 导出 & Magel 用 export 声明，AOT 生成库和 C 头文件，宿主按头文件创建上下文并调用导出函数 \\
-同步回调 & Magel 将具名函数或 fn 值传给 C++ 胶水，胶水用 Function 包装或 Context::invoke 调回；VM/AOT 共用 \\
-\bottomrule
-\end{longtable}
-}
+在宿主原生函数内，可以通过 \texttt{magel\_glue:\allowbreak{}:\allowbreak{}Function} 或 \texttt{Native\allowbreak{}Call\allowbreak{}Context:\allowbreak{}:\allowbreak{}invoke} 同步调用 Magel 函数和闭包。它们支持高阶函数、引用和同步重入，并保留 VM 的错误传播与所有权约定。函数值中的运行时地址不能转换为宿主机器函数指针。
 
-库可以没有 main，但至少有一个 export。按后缀输出 .dll / .so 共享库或 .o 可重定位文件，并生成同名 C 头文件；.o 需要宿主链接器，不是动态加载器直接加载的共享库。不支持 .lib / .a 静态库。上下文初始化不自动调用源码的 main。
-
-export 只供 AOT，VM 执行和字节码导出遇到它会报错。普通同步回调不要求 export，支持闭包、高阶函数、引用和多层重入；函数值与上下文只在所属宿主回调期间同步使用。
-
-AOT 的 static runMagel 是生成 C++ 内部的整程序入口，不能当作通用动态库 C 导出或字节码加载器。完整 API 与可运行代码见\href{https://github.com/rabbitc999/Magel/blob/master/doc/08-host-integration.md}{宿主集成}及\href{https://github.com/rabbitc999/Magel/blob/master/example/native-callbacks/README.md}{胶水回调示例}。
+Magel 通过 VM 宿主加载胶水。完整接口和代码见\href{https://github.com/rabbitc999/Magel/blob/master/doc/08-host-integration.md}{宿主集成}及\href{https://github.com/rabbitc999/Magel/blob/master/example/native-callbacks/README.md}{VM 回调示例}。
 
 \section{小结}
 
@@ -373,7 +357,7 @@ AOT 的 static runMagel 是生成 C++ 内部的整程序入口，不能当作通
 \toprule
 你会了 & 关键点 \\
 \midrule
-三种集成 & \texttt{abi} 块（轻）／宿主胶水（要编 C++）／AOT 嵌入（宿主调 Magel） \\
+三种集成 & \texttt{abi} 块（轻）／宿主胶水（要编 C++）／VM 嵌入（宿主运行 Magel） \\
 \texttt{abi} 语法 & \texttt{abi ".\allowbreak{}/\allowbreak{}x.\allowbreak{}dll" \{ 返回类型 名字(\allowbreak{}形参)\allowbreak{} =\allowbreak{} "C符号名"; \}} \\
 名字映射 & 等号右边是 C 侧真实符号名，左边随你起 \\
 结构体 & 按值传；Magel 侧声明字段一致的 \texttt{struct} \\
@@ -383,7 +367,7 @@ AOT 的 static runMagel 是生成 C++ 内部的整程序入口，不能当作通
 「空」 & 只有 \texttt{Option<\allowbreak{}T \&>\allowbreak{}} 能把空送过边界 \\
 紧凑布局 & \texttt{struct X packed \{ … \}} 对接 \texttt{\#pragma pack} \\
 胶水 & \texttt{bind\allowbreak{}Magel\allowbreak{}Glue} 注册 C++ 函数；复杂对象用整数句柄 \\
-反向 & VM 宿主执行、AOT export C 接口，或胶水同步回调 fn \\
+反向 & VM 宿主执行，或胶水同步回调 fn \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -392,6 +376,6 @@ AOT 的 static runMagel 是生成 C++ 内部的整程序入口，不能当作通
 
 你能调 C 了、能被 C 调了。最后一个技术问题是：怎么把程序交出去——变成对方机器上能跑的东西。
 
-第 22 章讲交付与部署：\texttt{.\allowbreak{}svmb}、AOT、符号压缩，以及嵌入式与看门狗。
+第 22 章讲交付与部署：\texttt{.\allowbreak{}svmb}、VM 宿主、符号压缩，以及嵌入式与看门狗。
 
 翻到\hyperref[ch:22]{第 22 章 交付与部署}。

@@ -27,6 +27,10 @@ class ReleaseTests(unittest.TestCase):
             (root / 'vscode/package.json').write_text('{"version":"0.9.0"}', encoding='utf-8')
             with self.assertRaisesRegex(ValueError, 'VERSION'):
                 release.version_of(root)
+            (root / 'VERSION').write_text('0.21.0', encoding='utf-8')
+            (root / 'vscode/package.json').write_text('{"version":"1.0.0","magelCompilerVersion":"0.21.0"}', encoding='utf-8')
+            self.assertEqual(release.version_of(root), '0.21.0')
+            self.assertEqual(release.editor_version_of(root), '1.0.0')
             (root / 'VERSION').write_text('../bad', encoding='utf-8')
             with self.assertRaisesRegex(ValueError, 'VERSION'):
                 release.version_of(root)
@@ -39,18 +43,20 @@ class ReleaseTests(unittest.TestCase):
             (root / 'example/samples').mkdir(parents=True)
             (root / 'doc/book/latex/book.pdf').write_bytes(b'%PDF-1.7\n')
             for name in ('VERSION', 'LICENSE', 'CHANGELOG.md'):
-                (root / name).write_text('1.0.0', encoding='utf-8')
+                (root / name).write_text('0.21.0', encoding='utf-8')
             for name in release.SAMPLES:
                 (root / f'example/samples/{name}.mgl').write_text('int64 main(){return 0;}', encoding='utf-8')
             binary, vsix = root / 'magel.exe', root / 'magel-editor-1.0.0.vsix'
             binary.write_bytes(b'compiler')
             vsix.write_bytes(b'extension')
             output = root / 'output with spaces'
-            archive = release.package_assets(root, output, binary, vsix, '1.0.0', 'windows-x64', 'abc123', True)
+            archive = release.package_assets(root, output, binary, vsix, '0.21.0', 'windows-x64', 'abc123', True)
             with zipfile.ZipFile(archive) as packed:
                 self.assertIsNone(packed.testzip())
                 metadata = json.loads(packed.read('release.json'))
                 self.assertEqual(metadata['commit'], 'abc123')
+                self.assertEqual(metadata['version'], '0.21.0')
+                self.assertIn('magel-editor-1.0.0.vsix', packed.namelist())
                 self.assertTrue(metadata['workingTreeDirty'])
                 self.assertEqual(packed.read('magel.exe'), b'compiler')
                 self.assertIn('examples/any_generics.mgl', packed.namelist())
@@ -60,7 +66,7 @@ class ReleaseTests(unittest.TestCase):
             original = archive.read_bytes()
             (root / f'example/samples/{release.SAMPLES[-1]}.mgl').unlink()
             with self.assertRaises(OSError):
-                release.package_assets(root, output, binary, vsix, '1.0.0', 'windows-x64', 'new', False)
+                release.package_assets(root, output, binary, vsix, '0.21.0', 'windows-x64', 'new', False)
             self.assertEqual(archive.read_bytes(), original)
             self.assertFalse(list(output.glob('*.zip.tmp')))
 

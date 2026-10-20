@@ -1,0 +1,27 @@
+List<int64> collectionTransform(List<int64> values, int64 fn(int64) transform);
+Map<int64, int64> collectionMapCopy(Map<int64, int64> values);
+Set<int64> collectionSetCopy(Set<int64> values);
+
+int64 doubleValue(int64 value) {
+    return value * 2;
+}
+
+int64 main() {
+    List<int64> source = [1, 2, 3];
+    List<int64> transformed = collectionTransform(source, doubleValue);
+    assert(source[0] == 1 && transformed[0] == 2 && transformed[2] == 6);
+    transformed.push(8);
+    List<int64> copy = transformed;
+    transformed.clear();
+    assert(copy.len() == 4 && copy[3] == 8);
+    Map<int64, int64> inputMap = {2: 20, 1: 10};
+    Map<int64, int64> outputMap = collectionMapCopy(inputMap);
+    inputMap.clear();
+    assert(outputMap.len() == 2 && outputMap[2] == 20 && outputMap[1] == 10);
+    Set<int64> inputSet = {3, 1, 3};
+    Set<int64> outputSet = collectionSetCopy(inputSet);
+    inputSet.clear();
+    assert(outputSet.len() == 2 && outputSet.has(3) != 0 && outputSet.has(1) != 0);
+    println("collection host glue OK");
+    return 0;
+}

@@ -1,9 +1,4 @@
-/* aot_basic.mgl —— AOT（基本块 + 局部变量 + goto）冒烟样例。
- *
- * 覆盖：整数循环 / 浮点 / 结构体按值 / 递归 / if-elif-else / while / for / match /
- * Closeable 收尾 / List·Set·Map / 字符串拼接与比较 / 接口分派。
- * 解释、`--target cpp`、`--target cpp-aot` 三种执行方式输出一致（浮点允许微小误差）。
- */
+/* vm_basic.mgl —— 覆盖控制流、值语义、集合、清理和接口分派的 VM 冒烟样例。 */
 
 /* ---------------- 结构体按值 ---------------- */
 struct Point {

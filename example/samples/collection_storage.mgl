@@ -1,0 +1,90 @@
+// 哈希碰撞与无 Hash 的数组退化共享公开 Map / Set API，不依赖遍历顺序。
+int64 hashCalls = 0;
+int64 equalCalls = 0;
+
+struct HashedKey: Equal<bool, HashedKey>, Hash<HashedKey> {
+    int64 id;
+    bool leftEqual(HashedKey other) {
+        equalCalls = equalCalls + 1;
+        return self.id == other.id;
+    }
+    uint64 hash(HashedKey other) {
+        hashCalls = hashCalls + 1;
+        return (uint64)(self.id % 8);
+    }
+};
+
+struct ArrayKey: Equal<bool, ArrayKey> {
+    int64 id;
+    bool leftEqual(ArrayKey other) {
+        equalCalls = equalCalls + 1;
+        return self.id == other.id;
+    }
+};
+
+HashedKey hashed(int64 id) {
+    HashedKey key;
+    key.id = id;
+    return key;
+}
+
+ArrayKey linear(int64 id) {
+    ArrayKey key;
+    key.id = id;
+    return key;
+}
+
+int64 main() {
+    Map<HashedKey, String> hashMap;
+    Set<HashedKey> hashSet;
+    Map<ArrayKey, String> arrayMap;
+    Set<ArrayKey> arraySet;
+    int64 index = 0;
+    while (index < 128) {
+        String text = index.toString();
+        hashMap.put(hashed(index), text);
+        hashSet.add(hashed(index));
+        arrayMap.put(linear(index), text);
+        arraySet.add(linear(index));
+        index = index + 1;
+    }
+    hashCalls = 0;
+    equalCalls = 0;
+    assert(hashMap.has(hashed(999)) == 0);
+    assert(hashCalls == 1 && equalCalls == 16);
+    hashCalls = 0;
+    equalCalls = 0;
+    assert(arrayMap.has(linear(999)) == 0);
+    assert(hashCalls == 0 && equalCalls == 128);
+    Map<HashedKey, String> hashCopy = hashMap;
+    Map<ArrayKey, String> arrayCopy = arrayMap;
+    index = 0;
+    while (index < 128) {
+        assert(hashSet.remove(hashed(index)) != 0);
+        assert(arraySet.remove(linear(index)) != 0);
+        assert(hashMap.remove(hashed(index)) != 0);
+        assert(arrayMap.remove(linear(index)) != 0);
+        assert(hashCopy[hashed(index)] == index.toString());
+        assert(arrayCopy[linear(index)] == index.toString());
+        index = index + 1;
+    }
+    assert(hashMap.len() == 0 && hashSet.len() == 0);
+    assert(arrayMap.len() == 0 && arraySet.len() == 0);
+    List<String> values = ["first", "third"];
+    values.insert(1, "second");
+    List<String> copy = values;
+    values.remove(0);
+    assert(copy[0] == "first" && copy[1] == "second" && copy[2] == "third");
+    assert(values.pop() == "third" && values[0] == "second");
+    Set<List<int64>> nested;
+    {
+        List<int64> seed = [7, 8];
+        nested.add(seed);
+    }
+    Set<List<int64>> nestedCopy = nested;
+    nested.clear();
+    List<int64> stored = nestedCopy.at(0);
+    assert(stored[0] == 7 && stored[1] == 8);
+    println("collection storage OK");
+    return 0;
+}

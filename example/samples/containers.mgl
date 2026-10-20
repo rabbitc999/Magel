@@ -49,13 +49,13 @@ int64 main() {
     v.clear();
     println("clear 之后：len={}", len(v));
 
-    /* ---------- Set<T>：元素不重复，按升序遍历 ---------- */
+    /* ---------- Set<T>：元素不重复，不保证遍历顺序 ---------- */
     Set<int64> s;
     s.add(5);
     s.add(3);
     s.add(5);                                     /* 重复的加不进去 */
     println("set: len={} has(5)={} has(9)={}", len(s), s.has(5), s.has(9));
-    println("按升序看：at(0)={} at(1)={}", s.at(0), s.at(1));
+    println("按位置取出：和={} 元素互异={}", s.at(0) + s.at(1), s.at(0) != s.at(1));
     println("remove(5) 拿回 {}，现在 len={}", s.remove(5), len(s));
 
     /* ---------- Map<K,V>：键 → 值 ---------- */
@@ -69,7 +69,7 @@ int64 main() {
     ages.has("zoe"), ages["zoe"]);
     println("remove(bob) 拿回 {}，现在 len={}", ages.remove("bob"), len(ages));
 
-    /* ---------- 遍历：按下标 / 按升序键 ---------- */
+    /* ---------- 遍历：List 按下标，Map 不保证顺序 ---------- */
     List<String> names;
     names.push("ada");
     names.push("bob");
@@ -99,7 +99,9 @@ int64 main() {
             i = i + 1;
         }
     }
-    println("map 按升序遍历：键 {}| 值 {}", keys, values);
+    assert((keys == "amy cid " && values == "11 33 ")
+        || (keys == "cid amy " && values == "33 11 "));
+    println("map 遍历：已核对键值关联（不保证顺序）");
 
     /* ---------- 非标量：结构体和 Any 都按副本存 ---------- */
     p.x = 4;

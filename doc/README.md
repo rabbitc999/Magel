@@ -64,7 +64,7 @@ Magel 让业务逻辑成为一份可以独立交付的资产：写一次，从�
 | [14](14-grammar-ebnf.md) | EBNF 语法参考 | 查文法细节的人 | 从 `source/magel.gram` 生成的全部产生式与词法登记，权威语法的可读形式 |
 | [15](15-svmb-format.md) | `.svmb` 二进制格式 | 做格式分析与逆向评估的人 | 容器与节布局、逐字节解码、逆向成本 |
 | [16](16-compact-symbols.md) | 无名变长符号表 | 关注体积与诊断隐私的人 | `--compress-symbols` 的格式、工具与空间对比 |
-| [17](17-capabilities.md) | 当前能力与实现边界 | 评估与集成人员 | 语言、VM/AOT、借用、反射、标准库及板端的统一说明 |
+| [17](17-capabilities.md) | 当前能力与实现边界 | 评估与集成人员 | 语言、VM、借用、反射、标准库及板端的统一说明 |
 | [18](18-panic-trace.md) | panic 与源码行号 | 排查崩溃的人 | 失败输出、函数栈、源码位置与压缩隐藏策略 |
 | [19](19-reflection.md) | 注解与反射 | 用注解 / 动态调用的人 | 声明元数据、类型化查询与封闭值动态调用 |
 | [20](20-memory-allocator.md) | 内存分配器 | 接宿主内存的人 | 池与容量统计、分配范围检查、外部缓冲区接入 |
@@ -121,12 +121,9 @@ Magel 让业务逻辑成为一份可以独立交付的资产：写一次，从�
 
 ## 其余入口
 
-- 多值返回与泛型元组：[语言参考 §4](04-language-reference.md#多值返回与泛型元组)，[解释执行 / AOT 回归](../tests/magel_tuple_returns.py)。
-- 带值退出与循环穿透：[语言参考](04-language-reference.md#块表达式与插值输出)、[完整示例](../example/samples/break_values.mgl)、[解释执行 / AOT 回归](../tests/magel_block_expression.py)。
-
 - [11 借用控制流与算法验证](11-algorithm-validation.md)：独立数据流检查、链表 / BST / DFS / BFS、NOIP2015 运输计划与暴力对照。
 
-- [12 VM 性能对比](12-vm-performance.md)：Magel 0.18.3 / 0.18.2 的 VM 与 AOT、JVM 不带与带即时编译、Python、Lua、原生 C++ 的同机五类实测；包含完整测试代码、性能差异原因、计时口径和两轮原始数据。
+- [12 VM 性能对比](12-vm-performance.md)：Magel 0.18.3 / 0.18.2 的 VM、JVM 不带与带即时编译、Python、Lua、原生 C++ 的同机五类实测；包含完整测试代码、性能差异原因、计时口径和两轮原始数据。
 
 - 静态 SQLite 与 MySQL/MariaDB 连接入口：[SQL 接口](../example/sql-magel/doc/01-sql-library.md)、[SQLite 实库回归](../tests/magel_sqlite.py)、[连接 ABI 夹具回归](../tests/magel_sql_connections.py)、[MySQL/PostgreSQL 实库回归](../tests/magel_sql_live.py)。
 

@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""把 Magel 标准库 .mgl 源码 + 生成器运行时资产内嵌进编译器 / 导出器。
+"""把 Magel 标准库 .mgl 源码 + 生成器运行时资产内嵌进编译器。
 
 读取（路径都以本项目根为基准）：
   * lang.mgl、std/*.mgl —— 一张
     {模块名 → 源码} 静态表（加载器 magel_module.hpp 先查它，命中就不读文件）；
   * 生成独立程序要用的运行时资产（stackvm 源码与 parts、胶水、C
-    分配器、大数后端）—— 一张 {仓库相对路径 → 源码} 静态表。magel-emit 读磁盘失败时
+    分配器、大数后端）—— 一张 {仓库相对路径 → 源码} 静态表。独立编译器生成器读磁盘失败时
     回退到这张表，于是**单个生成器二进制不依赖仓库目录**也能导出完整程序。
 
 生成 magel_stdlib_embedded.cpp（两张表 + 查询函数），由
-magel_module.hpp 与 magel-emit/main.cpp 共同 include。
+magel_module.hpp include。
 
 文本不再以原始字符串字面量摊在 `.rodata` 里，而是**整体拼接后用 lztext 压缩**，
 只把压缩后的字节内联进来，运行时由 table() / generatorAssetTable() 解压重建
@@ -136,7 +136,7 @@ def asset_disk_path(relative):
     return "source/" + relative
 
 
-# 生成器（magel-emit / magel-generator）在运行期需要的运行时资产。相对路径键与仓库布局一致，
+# 生成器（magel-generator）在运行期需要的运行时资产。相对路径键与仓库布局一致，
 # 磁盘读失败时按"整段后缀"或"唯一 basename"回退到这里的文本。
 GENERATOR_ASSETS = [
     "tools/magel_manual.json",
@@ -162,6 +162,8 @@ GENERATOR_ASSETS = [
     "glue/std_signal.hpp",
     "glue/lang_numeric.hpp",
     "glue/native_record.hpp",
+    "glue/collection_natives.hpp",
+    "glue/collection_storage.hpp",
     "glue/big_number_natives.hpp",
     "glue/file_natives.hpp",
     "glue/file_api.hpp",

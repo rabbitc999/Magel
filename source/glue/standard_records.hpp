@@ -1,3 +1,4 @@
+#include "collection_natives.hpp"
 #ifndef MAGEL_STANDARD_RECORDS_HPP
 #define MAGEL_STANDARD_RECORDS_HPP
 #include "../magel_glue.hpp"
@@ -15,7 +16,7 @@ namespace magel_standard_records
  */
 inline bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr)
 {
-    return native_record_glue::bindString(registry.native(), error) && big_number_glue::bind(registry.native(), error) && file_native_glue::bind(registry.native(), error) && std_process_glue::bind(registry, error);
+    return collection_glue::bind(registry.native(), error) && native_record_glue::bindString(registry.native(), error) && big_number_glue::bind(registry.native(), error) && file_native_glue::bind(registry.native(), error) && std_process_glue::bind(registry, error);
 }
 }  // namespace magel_standard_records
 #endif

@@ -10,6 +10,16 @@ struct MInstantiationRequest
 };
 
 /**
+ * @brief 泛型结构体命名构造入口的符号参数及实参数量约束。
+ */
+struct MGenericConstructor
+{
+    Memory::Vector<std::shared_ptr<MType>> params;
+    bool variadic = false;
+    std::size_t required = 0;
+};
+
+/**
  * @brief 泛型签名的类型树及枚举载荷，符号类型参数不参与最终降级。
  */
 struct MGenericSignature
@@ -19,6 +29,7 @@ struct MGenericSignature
     Memory::Map<Memory::String, Memory::Vector<std::shared_ptr<MType>>> variants;
     bool variadic = false;
     std::size_t required = 0;
+    Memory::Vector<MGenericConstructor> constructors;
 };
 Memory::Map<Memory::String, MGenericSignature> g_genericSignatures;
 Memory::Map<Memory::String, magel_generic::Expansion> g_genericPatterns;
@@ -63,7 +74,7 @@ Memory::String InferenceTypeText(const std::shared_ptr<MType> &type)
         return text + (type->readOnly ? " const&" : " mut&");
     }
     if (type->kind == MType::Array) return InferenceTypeText(type->elem) + "[]";
-    if (type->kind == MType::Container)
+    if (IsContainer(type))
     {
         auto text = Memory::String("std::lang::") + (type->name == "vec" ? "List" : type->name == "set" ? "Set" :
                                                                                                           "Map")
@@ -131,9 +142,11 @@ bool PrepareGenericSignatures()
         const auto &generic = entry.second;
         const auto head = magel_generic::trim(generic.declaration);
         const bool enumeration = magel_generic::wordAt(head, 0, "enum");
-        if (!enumeration && (magel_generic::wordAt(head, 0, "struct") || magel_generic::wordAt(head, 0, "interface") || magel_generic::wordAt(head, 0, "type"))) continue;
+        const bool structure = magel_generic::wordAt(head, 0, "struct");
+        if (magel_generic::wordAt(head, 0, "interface") || magel_generic::wordAt(head, 0, "type")) continue;
+        if (structure && head.find("create") == Memory::String::npos) continue;
         magel_generic::Generic probe = generic;
-        if (!enumeration)
+        if (!enumeration && !structure)
         {
             const auto body = probe.declaration.find('{');
             if (body != Memory::String::npos)
@@ -191,6 +204,23 @@ bool PrepareGenericSignatures()
                     signature.variadic = N(param).i != 0;
                 }
             }
+            else if (node.kind == MNode::StructDecl)
+            {
+                for (const int memberId : N(node.kids[0]).kids)
+                {
+                    const auto &member = N(memberId);
+                    if (member.kind != MNode::MethodDef || member.type2 != 1 || member.s != "create") continue;
+                    MGenericConstructor constructor;
+                    for (const int paramId : N(member.kids[0]).kids)
+                    {
+                        const auto &param = N(paramId);
+                        constructor.params.push_back(T(param.type));
+                        if (param.kids.empty() && param.i == 0) ++constructor.required;
+                        constructor.variadic = param.i != 0;
+                    }
+                    signature.constructors.push_back(std::move(constructor));
+                }
+            }
             else if (node.kind == MNode::EnumDecl)
             {
                 for (int variant : N(node.kids[0]).kids)
@@ -227,9 +257,9 @@ bool UnifyGenericType(const std::shared_ptr<MType> &pattern, const std::shared_p
         return true;
     }
     if (pattern->kind != actual->kind) return false;
-    if (pattern->kind == MType::Ptr || pattern->kind == MType::Array || pattern->kind == MType::Container || pattern->kind == MType::Func)
+    if (pattern->kind == MType::Ptr || pattern->kind == MType::Array || IsContainer(pattern) || pattern->kind == MType::Func)
     {
-        if (pattern->kind == MType::Container && pattern->name != actual->name) return false;
+        if (IsContainer(pattern) && pattern->name != actual->name) return false;
         if (pattern->kind == MType::Ptr && !pattern->readOnly && actual->readOnly) return false;
         if (!UnifyGenericType(pattern->elem, actual->elem, bindings)) return false;
         if (pattern->elem2 && !UnifyGenericType(pattern->elem2, actual->elem2, bindings)) return false;
@@ -886,6 +916,62 @@ bool RewriteRangeCall(int id, bool pattern = false)
 }
 
 /**
+ * @brief 从命名构造入口的实参推导所属泛型结构体，复用标准单态化流程。
+ * @param id 构造表达式节点编号。
+ * @return 已识别并完成改写或报告歧义时返回 true，其他表达式返回 false。
+ */
+bool InferGenericConstructor(int id)
+{
+    const auto node = N(id);
+    int ownerId = id;
+    Memory::Vector<int> arguments;
+    if (node.kind == MNode::Call && node.kids.size() == 2u)
+    {
+        ownerId = node.kids[0];
+        arguments = N(node.kids[1]).kids;
+    }
+    else if (node.kind == MNode::EnumCtor)
+        arguments = node.kids;
+    else
+        return false;
+    const auto owner = N(ownerId);
+    if (owner.kind != MNode::EnumCtor || owner.s2 != "create" || FindStruct(owner.s)) return false;
+    const auto name = BareTypeName(owner.s);
+    const auto generic = magel_generic::session.generics.find(name);
+    const auto signature = g_genericSignatures.find(name);
+    if (generic == magel_generic::session.generics.end() || signature == g_genericSignatures.end()
+        || signature->second.constructors.empty()) return false;
+    if (owner.s != name && owner.s != ModuleSymbol(generic->second.module, name)) return false;
+    Memory::Vector<Memory::String> selected;
+    bool found = false;
+    for (const auto &constructor : signature->second.constructors)
+    {
+        if (arguments.size() < constructor.required
+            || (!constructor.variadic && arguments.size() > constructor.params.size())) continue;
+        Memory::Map<Memory::String, std::shared_ptr<MType>> bindings;
+        bool matches = true;
+        for (std::size_t index = 0; index < arguments.size(); ++index)
+        {
+            auto pattern = constructor.params[std::min(index, constructor.params.size() - 1u)];
+            if (constructor.variadic && index + 1u >= constructor.params.size()) pattern = pattern->elem;
+            const auto actual = pattern->kind == MType::Ptr ? RawExprType(arguments[index]) : ExprType(arguments[index]);
+            if (!UnifyGenericType(pattern, actual, bindings)) matches = false;
+        }
+        Memory::Vector<Memory::String> inferred;
+        if (!matches || !CompleteGenericArguments(generic->second, bindings, inferred)) continue;
+        if (found && selected != inferred)
+            return Fail("泛型构造入口 " + owner.s + "::create 的类型推导存在歧义，请显式指定类型实参"), true;
+        selected = std::move(inferred);
+        found = true;
+    }
+    if (!found) return false;
+    const auto specialized = magel_generic::mangle(name, selected);
+    if (!magel_generic::session.made.count(specialized)) throw MInstantiationRequest{ name, selected };
+    g_nodes[ownerId].s = ModuleSymbol(generic->second.module, specialized);
+    return true;
+}
+
+/**
  * @brief 解析枚举简写与普通泛型函数调用，递归期间避免重复推导同一节点。
  */
 void InferExpression(int id, const std::shared_ptr<MType> &expected)
@@ -907,6 +993,7 @@ void InferExpression(int id, const std::shared_ptr<MType> &expected)
     RewriteRangeCall(id);
     RewriteErrorAdapter(id);
     RewriteIteratorCall(id);
+    if (InferGenericConstructor(id)) return;
     const auto node = N(id);
     if (node.kind == MNode::Int && node.unsignedLiteral && expected && expected->kind == MType::Int)
     {

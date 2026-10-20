@@ -4,6 +4,23 @@
 
 Generated runtime assets must match the compiler. Recompile source, regenerate host glue and rebuild caches after changing type contracts.
 
+## Collection storage and traversal order
+
+The public APIs remain `List<T>`, `Set<T>` and `Map<K,V>`, with the same type parameters, literals
+and value semantics. List uses ArrayList storage and preserves element positions; copies own
+independent values. Intrinsic scalar keys provide intrinsic hashing. Custom keys implementing
+`Hash<T>` use HashMap / HashSet storage, resolving collisions through `Equal<bool,T>`.
+Custom keys with Equal but no Hash automatically use ArrayMap / ArraySet and linear lookup.
+Composite Set elements without Hash also use array storage and retain their existing value or
+identity comparison rules.
+
+Map and Set promise neither sorted nor insertion order, including after deletion. `keyAt`, `valAt`,
+`at`, for-in and default `toString()` use current storage positions. In an unchanged Map, keyAt and
+valAt at the same position describe the same entry. Collect into a List and sort explicitly when
+stable presentation is required. Copying, clearing, default field initialization and consuming
+iteration retain the key policy. Active element borrows still prevent moving or removing List
+elements. See the [collection storage regression](../../example/samples/collection_storage.mgl).
+
 ## Any and type checks
 
 The public boxed type `Object` is now `Any`, available from the automatically loaded core module. Copying, destruction, interface conversion and borrow checks retain their existing rules. The new name does not permit local addresses to escape through a longer-lived box.
@@ -146,7 +163,7 @@ Embedded filesystems are injected through FileApi. Desktop directory operations 
 
 `emit` now writes `.quad` (MGQI v1), `.layout` (MGLY v1), and `.data.bin`. Quads share a string table and encode counts, positions and references with unsigned LEB128. Layout records retain names, offsets, sizes and strides. Raw `.data.bin` bytes remain unchanged. Duplicate `.data` text and `.data.h` arrays are no longer emitted; rebuilding the same prefix removes old copies.
 
-The VM and AOT exporter detect binary formats automatically and still accept legacy text. Decoders check versions, overflow, truncation, string references and trailing data. This is serialization without encryption.
+The VM exporter detect binary formats automatically and still accept legacy text. Decoders check versions, overflow, truncation, string references and trailing data. This is serialization without encryption.
 
 Measured on Windows / MinGW `-O2`, 2026-10-13, comparing identical content (bytes):
 
@@ -158,3 +175,11 @@ Measured on Windows / MinGW `-O2`, 2026-10-13, comparing identical content (byte
 Old totals include `.quad`, `.layout`, `.data`, `.data.bin`; new totals omit `.data`. The unchanged raw images contain 5,464 and 3,960 bytes respectively. Old `.data.h` arrays are excluded from this comparison.
 
 The `magel-artifact-tests` CMake target benchmarks in-memory decoding for at least 250 ms per format, including structure allocation and destruction, excluding disk and compiler work. For the two samples, quad decoding averaged 19,213.7 → 2,766.85 µs (6.9×) and 16,294.9 → 2,398.31 µs (6.8×). Layout decoding averaged 300.935 → 3.969 µs and 284.044 → 4.734 µs. These are decoding measurements, not whole-compilation speedups. Optional text quad/layout path arguments allow measurements on other inputs. Tests also verify structural, source-location, assembled-instruction and layout equivalence and reject malformed inputs.
+
+Map `.iter()` and `.intoIter()` yield only `Pair<K, V>`: `first` is the key and `second` is the value. They do not yield tuples or individual keys/values.
+
+`Pair<K, V>::create((key, value))` constructs a Pair from a tuple; `pair.toTuple()` returns `(K, V)`. Both conversions copy owned fields according to value semantics.
+
+`Pair<K, V>::create(key, value)` and `Pair<K, V>::create((key, value))` are equivalent overloads. There is no `from` method.
+
+Type arguments can be inferred from the inputs: both `Pair::create(key, value)` and `Pair::create((key, value))` work directly. Explicit `Pair<K, V>` arguments continue to check both fields against the requested types.

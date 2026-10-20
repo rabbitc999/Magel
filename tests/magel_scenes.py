@@ -7,30 +7,24 @@ import subprocess
 import sys
 import tempfile
 import unittest
-
 ROOT = Path(__file__).resolve().parents[1]
 COMPILER = ROOT / 'magel.exe'
 
-
 class SceneTests(unittest.TestCase):
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix='magel-scenes-')
         self.addCleanup(self.temp.cleanup)
         self.work = Path(self.temp.name)
         self.source = self.work / 'hello world.mgl'
-        self.source.write_text('int64 main(List<String> args) {\n'
-                               '    for (String arg in args) { std::lang::println("[{}]", arg); }\n'
-                               '    return 0;\n}\n', encoding='utf-8')
+        self.source.write_text('int64 main(List<String> args) {\n    for (String arg in args) { std::lang::println("[{}]", arg); }\n    return 0;\n}\n', encoding='utf-8')
 
     def cli(self, *arguments, code=0):
-        result = subprocess.run([str(COMPILER), *map(str, arguments)], cwd=self.work,
-                                capture_output=True, text=True, encoding='utf-8', errors='replace',
-                                timeout=180, env=dict(os.environ, MAGEL_PYTHON=sys.executable))
+        result = subprocess.run([str(COMPILER), *map(str, arguments)], cwd=self.work, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=180, env=dict(os.environ, MAGEL_PYTHON=sys.executable))
         self.assertEqual(result.returncode, code, (arguments, result.stdout, result.stderr))
         return result
 
     def test_dragged_source_arguments(self):
-        # 父配置也不能将直接运行改成仅导出。
         (self.work / 'magel.toml').write_text('[magel]\nrun="svmb"\n', encoding='utf-8')
         result = self.cli(self.source, 'Alice', 'two words', '', '--check', '--out', 'debug')
         self.assertEqual(result.stdout, '[Alice]\n[two words]\n[]\n[--check]\n[--out]\n[debug]\n')
@@ -51,22 +45,13 @@ class SceneTests(unittest.TestCase):
         self.cli('deps', 'lock', 'project', self.work / 'app', 'offline')
         self.cli('deps', 'check', 'project', self.work / 'app', 'offline')
         self.assertIn('check FILE', self.cli('help').stdout)
-        self.cli('new', 'help')  # help 保留为动作，不能创建目录。
+        self.cli('new', 'help')
         self.assertFalse((self.work / 'help').exists())
 
-    def test_explicit_run_and_aot(self):
+    def test_explicit_run(self):
         result = self.cli('run', self.source, 'out', 'debug', '--', 'out', '--check')
         self.assertEqual(result.stdout, '[out]\n[--check]\n')
         self.assertTrue((self.work / 'debug.quad').exists())
-        self.cli('aot', self.source, 'out', 'build/app', 'opt', '0')
-        executable = self.work / 'build/app'
-        if not executable.exists():
-            executable = executable.with_suffix('.exe')
-        result = subprocess.run([str(executable), 'two words', '--check'], capture_output=True,
-                                text=True, encoding='utf-8', timeout=30)
-        self.assertEqual((result.returncode, result.stdout, result.stderr), (0, '[two words]\n[--check]\n', ''))
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--magel', type=Path, default=COMPILER)

@@ -33,6 +33,6 @@ void stopEventTimer();
 int32 postEvent(int32 event);
 /* 处理一轮 GUI 事件（非阻塞）。 */
 int32 pump();
-/* 每 instructions 个执行边界（VM 指令 / AOT 基本块）自动 pump 一次；长计算循环里保持 GUI 响应、
+/* 每 instructions 个执行边界（VM 指令）自动 pump 一次；长计算循环里保持 GUI 响应、
  * 也让排队的中断在指令边界被交付。传 0 取消。 */
 int32 pumpEvery(int64 instructions);

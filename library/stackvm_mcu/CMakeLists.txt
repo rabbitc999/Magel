@@ -10,7 +10,7 @@ endif()
 # 板端口径：异常自由 + 无默认堆 + 无 OS 线程 / 互斥 / 条件变量 + 无文件 I/O + 无宿主异常兜底。
 set(MCU_DEFS
     STACKVM_EMBEDDED=1
-    STACKVM_WITH_AOT=0
+
     STACKVM_WITH_DEFAULT_HEAP=0
     STACKVM_WITH_THREADS=0
     STACKVM_WITH_HOST_EXCEPTION_GUARD=0

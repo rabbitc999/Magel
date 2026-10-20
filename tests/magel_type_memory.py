@@ -5,12 +5,9 @@ import os
 import subprocess
 import tempfile
 import unittest
-
 ROOT = Path(__file__).resolve().parents[1]
 EXE = '.exe' if os.name == 'nt' else ''
-FIXTURES = ('loop_owned_values', 'borrowed_aggregate_return',
-            'borrowed_index_values', 'global_container_defaults')
-
+FIXTURES = ('loop_owned_values', 'borrowed_aggregate_return', 'borrowed_index_values', 'global_container_defaults')
 
 def main():
     """运行三后端正常用例与编译期拒绝用例，每个运行产物都必须无资源泄漏诊断。"""
@@ -26,8 +23,7 @@ def main():
 
             def run_tool(self, command):
                 """捕获编译器或独立程序的输出，并限制单次验证时间。"""
-                return subprocess.run(list(map(str, command)), cwd=ROOT, capture_output=True,
-                                      text=True, encoding='utf-8', errors='replace', timeout=240)
+                return subprocess.run(list(map(str, command)), cwd=ROOT, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=240)
 
             def check_backend(self, backend):
                 """每个后端读取相同源码和预期输出，覆盖循环内重复构造与来源后续使用。"""
@@ -36,8 +32,7 @@ def main():
                         source = ROOT / f'example/samples/{name}.mgl'
                         expected = (ROOT / f'example/expected/{name}.txt').read_text(encoding='utf-8')
                         executable = work / (name + (backend or 'direct') + EXE)
-                        result = self.run_tool([compiler, *([backend, '--opt-level=0'] if backend else ['run']),
-                                                source, '--out', executable])
+                        result = self.run_tool([compiler, *['run'], source, '--out', executable])
                         self.assertEqual(result.returncode, 0, (result.stdout, result.stderr))
                         if backend:
                             result = self.run_tool([executable])
@@ -49,17 +44,9 @@ def main():
                 """直接执行四个拥有资源和类型场景。"""
                 self.check_backend('')
 
-            def test_aot(self):
-                """AOT 编译后执行相同四个场景。"""
-                self.check_backend('aot')
-
             def test_invalid_types(self):
                 """拒绝不一致的退出类型、越过块作用域的变量和只读下标写入。"""
-                sources = {
-                    'loop_mismatch': 'int64 main(){auto value=loop{if(true){String value="text";yield (value);}else{int32 value=7;yield (value);}};return 0;}',
-                    'loop_scope': 'int64 main(){auto value=loop{{String hidden="text";}yield (hidden);};return 0;}',
-                    'index_const': 'struct Source : Index<String const&,int64>{String value;String const& index(int64 key){return &self.value;}};int64 main(){Source source;source.value="old";source[0]="new";return 0;}',
-                }
+                sources = {'loop_mismatch': 'int64 main(){auto value=loop{if(true){String value="text";yield (value);}else{int32 value=7;yield (value);}};return 0;}', 'loop_scope': 'int64 main(){auto value=loop{{String hidden="text";}yield (hidden);};return 0;}', 'index_const': 'struct Source : Index<String const&,int64>{String value;String const& index(int64 key){return &self.value;}};int64 main(){Source source;source.value="old";source[0]="new";return 0;}'}
                 for name, source in sources.items():
                     with self.subTest(fixture=name):
                         path = work / (name + '.mgl')
@@ -67,13 +54,9 @@ def main():
                         result = self.run_tool([compiler, 'run', path, '--check'])
                         self.assertNotEqual(result.returncode, 0)
                         self.assertTrue(result.stderr)
-                        for expected in {'loop_mismatch': ('std::lang::String', 'int32'),
-                                         'loop_scope': ('hidden',), 'index_const': ('const&',)}[name]:
+                        for expected in {'loop_mismatch': ('std::lang::String', 'int32'), 'loop_scope': ('hidden',), 'index_const': ('const&',)}[name]:
                             self.assertIn(expected, result.stderr)
-
         result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(TypeMemoryTests))
         return 0 if result.wasSuccessful() else 1
-
-
 if __name__ == '__main__':
     raise SystemExit(main())

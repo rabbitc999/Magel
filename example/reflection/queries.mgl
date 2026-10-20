@@ -30,7 +30,7 @@ int64 main(){
     assert(snapshot.typeId==std::reflect::getTypeId<Counter>());
     assert(snapshot.fields[0].name=="label" && snapshot.fields[0].isOwned);
     assert(snapshot.fields[1].offset==(uint32)8 && snapshot.fields[1].typeId==std::reflect::getTypeId<int64>());
-    assert(snapshot.methods.len()==3 && snapshot.staticMembers.len()==1);
+    assert(snapshot.methods.len()==4 && snapshot.staticMembers.len()==1);
     snapshot.name="changed";assert(std::reflect::getStructInfo<Counter>().unwrap().name=="Counter");
     assert(std::reflect::getStructInfo<Hidden>().isNone() && std::reflect::getStructInfo<int64>().isNone());
     auto e=std::reflect::getEnumInfo<Choice>();assert(e.isValue() && e.unwrap().variants.len()==2);

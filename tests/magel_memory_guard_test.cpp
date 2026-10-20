@@ -121,7 +121,7 @@ public:
 };
 
 /**
- * @brief 检查分配边界、释放后访问、VM 和 AOT 栈快照。
+ * @brief 检查分配边界、释放后访问、VM 错误与资源状态。
  * @return 零表示通过。
  */
 int main()
@@ -156,27 +156,6 @@ int main()
     vm.setHeapAllocator(&heap);
     auto result = vm.run(program);
     if (result.ok || result.error.rfind("panic", 0) != 0 || heap.reads != 0) return 6;
-    for (int operation = 0; operation < 4; ++operation)
-    {
-        stackvm::RuntimeBridge runtime;
-        runtime.setData(&data);
-        runtime.setHeapAllocator(&heap);
-        if (!runtime.begin()) return 7;
-        {
-            stackvm::RuntimeCallFrame root(runtime, "main"), outer(runtime, "outer"), leaf(runtime, "leaf");
-            runtime.locateTrace("guard.mgl", 21);
-            std::int64_t p = 0;
-            stackvm::RuntimeValue out;
-            if (!runtime.allocate(8, p) || !runtime.release(p, false)) return 8;
-            bool okay = operation == 0 ? runtime.loadMemory(p, false, out) : operation == 1 ? runtime.storeMemory(p, true, stackvm::RuntimeValue::ofFloat(1)) :
-                                                                         operation == 2     ? runtime.callNative("__vm_char_load", { stackvm::RuntimeValue::ofInt(p) }, out) :
-                                                                                              runtime.callNative("__vm_char_store", { stackvm::RuntimeValue::ofInt(p), stackvm::RuntimeValue::ofInt(65) }, out);
-            if (okay || runtime.error().rfind("panic", 0) != 0 || heap.reads || heap.writes) return 9;
-        }
-        const auto trace = runtime.callStack();
-        if (trace.size() != 3 || trace.back().function != "leaf" || trace.back().location.line != 21) return 10;
-        runtime.end();
-    }
     std::cout << "custom heap memory guard OK\n";
 #endif
 }

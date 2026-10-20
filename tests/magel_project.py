@@ -9,10 +9,8 @@ import sys
 import tempfile
 import tomllib
 import unittest
-
 ROOT = Path(__file__).resolve().parents[1]
 COMPILER = ROOT / ('magel.exe' if os.name == 'nt' else 'magel')
-
 
 class ProjectTests(unittest.TestCase):
     """使用真实统一工具链验证工程创建。"""
@@ -23,22 +21,15 @@ class ProjectTests(unittest.TestCase):
         self.directory = Path(self.temporary.name)
 
     def run_cli(self, *arguments, expected=0, cwd=None, env=None):
-        result = subprocess.run(
-            [str(COMPILER), *map(str, arguments)], cwd=cwd or self.directory,
-            capture_output=True, text=True, encoding='utf-8', errors='replace',
-            timeout=180, env=env)
+        result = subprocess.run([str(COMPILER), *map(str, arguments)], cwd=cwd or self.directory, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=180, env=env)
         self.assertEqual(result.returncode, expected, (arguments, result.stdout, result.stderr))
         return result
 
     def test_generated_project(self):
-        # 新建指令无需 Python；配置文件须由真实 TOML 解析器验证。
         env = dict(os.environ, MAGEL_PYTHON='missing-python-for-project-test')
         self.run_cli('new', 'hello-magel', env=env)
         project = self.directory / 'hello-magel'
-        self.assertEqual(
-            {p.relative_to(project).as_posix() for p in project.rglob('*')
-             if p.is_file() and p.relative_to(project).parts[0] != '.git'},
-            {'magel.toml', 'src/main.mgl', 'tests/test_main.mgl', 'README.md', '.gitignore'})
+        self.assertEqual({p.relative_to(project).as_posix() for p in project.rglob('*') if p.is_file() and p.relative_to(project).parts[0] != '.git'}, {'magel.toml', 'src/main.mgl', 'tests/test_main.mgl', 'README.md', '.gitignore'})
         if shutil.which('git'):
             self.assertTrue((project / '.git/HEAD').is_file())
         config = tomllib.loads((project / 'magel.toml').read_text(encoding='utf-8'))
@@ -52,14 +43,11 @@ class ProjectTests(unittest.TestCase):
         env = dict(os.environ, MAGEL_PYTHON=sys.executable)
         report = self.run_cli('test', 'tests', '--json', cwd=project, env=env)
         self.assertEqual(json.loads(report.stdout)['summary'], {'passed': 1, 'failed': 0, 'skipped': 0})
-        self.run_cli('aot', 'src/main.mgl', '--out', 'build/main', cwd=project)
         native = project / 'build/main'
         if not native.exists():
             native = native.with_suffix('.exe')
-        execution = subprocess.run([str(native)], cwd=project, capture_output=True,
-                                   text=True, encoding='utf-8', timeout=30)
-        self.assertEqual((execution.returncode, execution.stdout, execution.stderr),
-                         (0, 'Hello, Magel!\n', ''))
+        execution = subprocess.run([str(native)], cwd=project, capture_output=True, text=True, encoding='utf-8', timeout=30)
+        self.assertEqual((execution.returncode, execution.stdout, execution.stderr), (0, 'Hello, Magel!\n', ''))
 
     def test_paths_and_names(self):
         (self.directory / 'my projects').mkdir()
@@ -93,11 +81,7 @@ class ProjectTests(unittest.TestCase):
         self.run_cli('new', '..', '--name', 'demo', expected=1)
 
     def test_invalid_arguments(self):
-        cases = [(), ('app', 'extra'), ('app', '--unknown'), ('app', '--name'),
-                 ('app', '--name', 'one', '--name', 'two'),
-                 ('app', '--name', ''), ('app', '--name', '2bad'),
-                 ('app', '--name', 'bad/name'), ('app', '--name', 'bad"name'),
-                 ('bad name',), ('app', '--check')]
+        cases = [(), ('app', 'extra'), ('app', '--unknown'), ('app', '--name'), ('app', '--name', 'one', '--name', 'two'), ('app', '--name', ''), ('app', '--name', '2bad'), ('app', '--name', 'bad/name'), ('app', '--name', 'bad"name'), ('bad name',), ('app', '--check')]
         for arguments in cases:
             with self.subTest(arguments=arguments):
                 self.run_cli('new', *arguments, expected=2)
@@ -122,8 +106,6 @@ class ProjectTests(unittest.TestCase):
         self.assertTrue(link.is_symlink())
         self.assertTrue(dangling.is_symlink())
         self.assertEqual(list(source.iterdir()), [])
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--magel', type=Path, default=COMPILER)

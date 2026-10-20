@@ -32,13 +32,21 @@ def run(command, cwd=ROOT, capture=False, env=None):
 
 
 def version_of(root):
-    """读取唯一版本并拒绝编译器与插件版本漂移。"""
+    """读取程序版本并校验插件声明的内嵌编译器版本。"""
     version = (root / 'VERSION').read_text(encoding='utf-8').strip()
-    if not re.fullmatch(r'\d+\.\d+\.\d+(?:\.\d+)?', version):
+    if not re.fullmatch(r'\d+\.\d+\.\d+', version):
         raise ValueError('VERSION 格式无效：' + version)
     manifest = json.loads((root / 'vscode/package.json').read_text(encoding='utf-8'))
-    if manifest['version'] != version:
-        raise ValueError('vscode/package.json 的 version 必须与 VERSION 一致')
+    if manifest.get('magelCompilerVersion', manifest['version']) != version:
+        raise ValueError('vscode/package.json 的 magelCompilerVersion 必须与 VERSION 一致')
+    return version
+
+
+def editor_version_of(root):
+    """读取独立编号的扩展包版本，拒绝非法包名版本。"""
+    version = json.loads((root / 'vscode/package.json').read_text(encoding='utf-8'))['version']
+    if not re.fullmatch(r'\d+\.\d+\.\d+', version):
+        raise ValueError('扩展包 version 格式无效：' + version)
     return version
 
 
@@ -74,8 +82,10 @@ def verify_assets(root, binary, vsix, version, windows, env=None):
         manifest = json.loads(package.read('extension/package.json'))
         identity = ET.fromstring(package.read('extension.vsixmanifest')).find('.//{*}Identity')
         embedded = 'extension/bin/' + binary.name
-        if manifest['version'] != version or identity is None or identity.attrib['Version'] != version:
-            raise ValueError('VSIX 清单版本与 VERSION 不一致')
+        if manifest['version'] != editor_version_of(root) or identity is None or identity.attrib['Version'] != editor_version_of(root):
+            raise ValueError('VSIX 清单版本与扩展包版本不一致')
+        if manifest.get('magelCompilerVersion', manifest['version']) != version:
+            raise ValueError('VSIX 内嵌编译器版本声明与 VERSION 不一致')
         if package.read(embedded) != binary.read_bytes():
             raise ValueError('VSIX 内嵌编译器与本次编译器字节不一致')
     pdf = root / 'doc/book/latex/book.pdf'
@@ -177,7 +187,7 @@ def main(argv=None):
     target = {'win32': 'windows', 'darwin': 'macos'}.get(sys.platform, sys.platform) + '-' + {
         'amd64': 'x64', 'x86_64': 'x64', 'aarch64': 'arm64'}.get(platform.machine().lower(), platform.machine().lower())
     binary = ROOT / ('magel.exe' if windows else 'magel')
-    vsix = ROOT / f'vscode/dist/magel-editor-{version}.vsix'
+    vsix = ROOT / f'vscode/dist/magel-editor-{editor_version_of(ROOT)}.vsix'
     if args.dry_run:
         print(f'版本 {version}，目标 {target}，输出 {args.out_dir.resolve()}')
         print('复用产物 → 版本/字节/反射/依赖验证 → ZIP/SHA256' if args.package_only else

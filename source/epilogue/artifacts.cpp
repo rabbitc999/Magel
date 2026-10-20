@@ -706,7 +706,7 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
         source += "break; }\n";
     }
     source += "} }\n";
-    const Memory::String identity = Memory::String("magel-abi-v1.0.0|") + Memory::toString(sizeof(void *)) + "|" + source;
+    const Memory::String identity = Memory::String("magel-abi-v1.0.0-collections-2|") + Memory::toString(sizeof(void *)) + "|" + source;
     source += "extern \"C\" API const char *magel_abi_identity() { return " + CxxStringLiteral(identity) + "; }\n";
     auto bridge = Memory::makeShared<RuntimeAbiBridge>();
     Memory::String error;
@@ -968,10 +968,8 @@ bool WriteArtifacts(const Memory::String &prefix, const simple_ast::CodegenResul
     *layoutPath = prefix + ".layout";
     Memory::String layout;
     for (const Memory::String &line : result.exportDataLayout()) layout += line + "\n";
-    /* ABI 绑定只在真有 `@abi` 库时才出文件：没有绑定时 `AbiGlueSource()` 给空串，
-     * 再落一个 0 字节的 .abi.cpp 只会让人以为产物不完整。不生成是安全的——
-     * magel-emit 读不到就按"没有绑定"处理；同时清掉上次的残留，
-     * 免得旧绑定被当成本次的用上。 */
+    /* 仅在程序导入 C ABI 符号时生成可供 VM 宿主编入的绑定胶水；
+     * 没有绑定时删除同前缀旧文件，避免误用其他程序的符号声明。 */
     const Memory::String abiGlue = AbiGlueSource();
     if (abiGlue.empty())
     {
@@ -980,20 +978,6 @@ bool WriteArtifacts(const Memory::String &prefix, const simple_ast::CodegenResul
     }
     else if (!WriteFile(prefix + ".abi.cpp", abiGlue))
         return false;
-    Memory::String exportHeader;
-    const auto exportSource = CExportSource(&exportHeader);
-    for (const auto &part : Memory::Vector<std::pair<Memory::String, Memory::String>>{ { ".exports.cpp", exportSource }, { ".exports.h", exportHeader } })
-    {
-        if (!part.second.empty())
-        {
-            if (!WriteFile(prefix + part.first, part.second)) return false;
-        }
-        else
-        {
-            std::error_code removed;
-            std::filesystem::remove(Memory::u8path(prefix + part.first), removed);
-        }
-    }
     *parsed = stackvm::parseQuads(result.quads, prefix + ".quad");
     const auto quadBytes = stackvm::encodeQuadBinary(*parsed);
     Memory::Vector<stackvm::LayoutRow> rows;

@@ -26,8 +26,6 @@ Borrowed fields retain their original lifetime constraints. Static analysis cove
 
 File and process handles can be transferred. Arrays, interface values without concrete layouts and opaque host types cannot be moved directly; concrete array elements can be moved. Manually allocated source storage still needs delete after its value is moved; freeing that block does not destroy the resources now owned by the destination.
 
-Regression tests compare raw handle identity for strings, List, Map, Set, Any and closures and check destructor counts, nested fields, return chains, discarded results, self-move assignment, loops, redeclarations, file writes, interpreter execution, AOT and MCU behavior.
-
 ## fn captures and moving closures
 
 External locals are captured by `const&` by default; `fn const(...)` is equivalent. Reads observe later changes in the source, while writes are rejected. `fn mut(...)` captures by `mut&` and writes back to the source. `fn copy(...)` owns mutable independent copies. `fn move(...)` transfers captured values into the closure and forbids reading or writing the old bindings; declare new bindings before reuse. Copying a closure duplicates owned state and preserves references to borrowed sources. Reference captures must not outlive their sources; owned captures may escape only when their contents do not borrow shorter-lived storage. Capture lists use `fn copy[a, b] mut[c] const[d] move[e](int64 x) { ... }`; unlisted external locals use `const&` by default. One trailing default mode may override this: `fn copy[a, b] mut(int64 x)` borrows other locals by `mut&`. Multiple defaults, such as `copy[a, b] mut const(...)`, are rejected.
@@ -60,7 +58,6 @@ Match interval patterns use `std::lang::range<T>(a,b)` (half open) and `std::lan
 Intervals are internal lazy `Iterator<T>` values using the existing for-in protocol, without allocating a list. Bounds are evaluated once each, from left to right. Both endpoints must fit T, including an exclusive upper endpoint. Constant violations are rejected at compile time; dynamic values are checked before iteration. int8 spans -128..127, so `for(int8 x in [0,255])` is rejected. Reversed intervals are errors; [a,a) is empty and [a,a] yields one value.
 
 A closed interval finishes at its last value without incrementing the maximum integer. uint8 255 and uint64 18446744073709551615 are valid inclusive upper bounds. Changing the iteration variable does not change the iterator state. Existing break, continue, return and lambda capture rules apply.
-
 
 ## Value breaks
 

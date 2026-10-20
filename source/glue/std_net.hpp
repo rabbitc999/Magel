@@ -38,7 +38,7 @@
  *   __netClose / __netLocalPort / __netPeer
  *
  * **不链接 winsock 导入库**：Windows 下运行期 `LoadLibraryA("ws2_32.dll")` 取符号，
- * 这样解释器（magel）与 magel-emit 导出的程序都不用改链接参数；POSIX 平台直接调用 libc
+ * 这样Magel VM 与独立 VM 宿主都不用改链接参数；POSIX 平台直接调用 libc
  * 里的同名接口。
  *
  * 地址解析用 `getaddrinfo(name, NULL, NULL, &res)`（hints 传 NULL，避开平台相关的

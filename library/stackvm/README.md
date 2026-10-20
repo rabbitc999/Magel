@@ -2,10 +2,10 @@
 
 本目录是 Magel 桌面与板端共用的唯一 VM 核心。`library/stackvm_mcu/` 只保留固定池、控制台和板级适配，
 构建时直接编译这里的源码。`STACKVM_WITH_THREADS`、`STACKVM_WITH_DEFAULT_HEAP`、
-`STACKVM_WITH_HOST_IO`、`STACKVM_WITH_HOST_EXCEPTION_GUARD`、`STACKVM_WITH_AOT` 控制功能裁剪；
+`STACKVM_WITH_HOST_IO`、`STACKVM_WITH_HOST_EXCEPTION_GUARD` 控制功能裁剪；
 `STACKVM_EMBEDDED` 选择板端适配。CMake 提供同名选项，板端组合见 [板端说明](../stackvm_mcu/README.md)。
 
-> **这份是 magel 自带的副本**：源在 `library/stackvm`，magel 与 `magel-emit` 用这里的
+> **这份是 magel 自带的副本**：源在 `library/stackvm`，Magel 和 VM 宿主使用这里的
 > 一份；标准对象后端由宿主胶水单独维护。两份是**独立维护**的 —— 改了一边不会自动同步，
 > 要一起改就在两边各改一次。
 
@@ -78,11 +78,11 @@ machine.setNativeRegistry(&natives);
 stackvm::RunResult result = machine.run(program);
 ```
 
-`NativeCallContext::readList` 可把 Magel `std::lang::List<T>` 解包为胶水值；`invoke` 可在宿主回调
+标准集合胶水的 `collection_glue::readList(context, handle, out)` 可解包 List；`NativeCallContext::invoke` 可在宿主回调
 期间同步调用 Magel 函数指针，并复用当前执行的堆、对象表、全局变量与调用栈。由上下文创建的
 函数、结构体和枚举视图只在本次 Native 回调内有效，不能跨线程或保存到回调结束以后。
 
-内建 `__vm_*` 名称优先，宿主注册表不能覆盖 VM 运行时。注册表只属于宿主进程，`.svmb`
+核心内建 `__vm_*` 名称优先，宿主注册表不能覆盖 VM 运行时。历史集合 `__vm_vec_*`、`__vm_set_*`、`__vm_map_*` 名称仅为标准库胶水的兼容绑定名，不再属于核心内建。注册表只属于宿主进程，`.svmb`
 只保存调用符号；加载二进制后应重新挂接同一组实现。
 `__vm_panic` 接受一个指向 VM 长度字符串的地址（8 字节长度 + UTF-8 字节，不带结尾 NUL），
 并通过 `RunResult::error` 立即终止；
@@ -319,8 +319,8 @@ front end 在每次下标之前发一条陷阱指令，越界就**终止运行**
 
 | 对象 | 里面是什么 | 谁在做 |
 | --- | --- | --- |
-| `vec<T>` | `std::vector<ObjectValue>` | 本库（有序表：增删改查 / 按下标访问） |
-| `set<T>` / `map<K,V>` | `std::lang::map<ObjectKey, ObjectValue>` | 本库（按键排序，元素不重复 / 键值对） |
+| `List<T>` | ArrayList 的不透明 NativeRecord | 标准库胶水（数组存储与按下标访问） |
+| `Set<T>` / `Map<K,V>` | HashSet / HashMap，缺少 Hash 时为 ArraySet / ArrayMap | 标准库胶水（Equal 去重，遍历不保证顺序） |
 | `obj` | 一个装箱值 + 类型号 | 本库（给前端做 `nameof` / 泛型式派发） |
 | `NativeRecord` | 不透明宿主记录及复制、销毁回调 | 核心只管理壳与存活；具体记录及操作由宿主胶水实现 |
 
@@ -461,10 +461,6 @@ $ stackvm run tmp/debug_fail.quad      # 不带 --debug 也会报出错位置
   inner  tmp/debug_fail.quad:13
 ```
 
-`magel-emit` 导出 C++ 时会把这张表一起写进生成程序（`program.debug.add(…)`），
-所以**导出后的独立可执行文件同样能给出源码位置与调用栈**，详见
-[magel-emit/README.md](../magel-emit/README.md)。
-
 ## 内存模型
 
 运行内存以 **1 字节 cell** 寻址和分配（`kRuntimeCellBytes == 1`），堆不再把短字符串或
@@ -507,45 +503,11 @@ std::cout << machine.run(program).steps;                       // 指令条数
 `Program` 里能拿到 `code`（栈指令，`Instruction::toString()` 可读）、`labels`、
 `types`；`OptimizationReport` 给出每趟改了多少处与逐条 `trace`。
 
-### AOT 运行时桥（`magel-emit --target cpp-aot` 用）
+### 宿主集成
 
-`magel-emit --target cpp-aot` 生成的 C++ 不跑 VM 解释循环，只调这一层桥：
-
-```cpp
-stackvm::RuntimeBridge bridge;
-bridge.setData(&data);
-bridge.setNativeRegistry(&registry);   // 标准胶水 / abi / --glue
-bridge.setProgramArguments(args);
-bridge.setInvoker(callback);           // 宿主 NativeCallContext::invoke 反向调 Magel
-bridge.begin();
-bridge.callNative("__vm_vec_push", {…}, result);   // 字符串 / 容器 / 大数 / 对象表
-bridge.loadMemory(addr, false, value);             // load / store / check
-bridge.end();
-```
-
-`RuntimeValue` 是桥上的单值（整数 / 浮点 / 文本），`callNative()` 先特判**消息 / 共享值 /
-线程 / 协程**（这些在解释器里是 `Machine::run` 特判的同一批），再查解释器同一张
-`kSlotNatives` 内建表，最后回退到宿主 `NativeRegistry`。
-
-线程 / 协程 / 定时器还需要几个额外接口：
-
-```cpp
-bridge.setFunctionRunner(magel_aot_run_on);  // (桥, 函数指针, 实参, 结果) -> bool
-bridge.setGlobalsSize(sizeof(McGlobals));
-bridge.setThreadsEnabled(true);           // --threads
-bridge.begin();
-if (!bridge.boundary()) …                 // 用到 std::event:: 时每个基本块入口交付中断
-```
-
-- `setFunctionRunner` 是生成代码的分派器（按数据区标签名查表）：线程会新建一台桥再调
-  回来，协程与中断交付直接用调用方的桥。
-- `setGlobalsSize` 让桥开一块零初始化的全局变量块（`globalsBlock()`）：**线程各一份**
-  （隔离的全局），**协程共享**。
-- `boundary()` 复刻解释器的 `deliverInterrupts`：虚拟时钟按边界计数、16 拍节流、
-  一次边界排空事件队列（处理器里再 `raise` 的排到队尾同一轮跑）。
-
-这一层**不重写运行时**，只是把解释器的对象表、堆、`__vm_*` 内建、线程组、消息、
-协程调度与宿主绑定暴露给生成代码。
+宿主加载字节码与数据，安装 `NativeRegistry` 后由 `Machine` 执行。原生函数通过
+`NativeCallContext::invoke` 同步调用 Magel 函数或闭包，参数、返回值、重入与错误均由 VM 维护。
+不提供原生程序导出器或独立原生执行桥。
 
 ## 构建与自检
 
@@ -587,7 +549,6 @@ library/stackvm/
 | 适合 | 讲"真正的后端" | 讲"最简执行模型"，也方便当脚本引擎的原型 |
 
 两者互不依赖，可以拿同一份 `.quad` 分别跑，对比产物与执行结果。
-
 
 ## 数据区：`--data` / `--layout`
 

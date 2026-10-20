@@ -26,6 +26,13 @@ def load(catalog=CATALOG):
         rows[parts[0]]=parts[1:]
     return rows
 
+def write_if_changed(path, text):
+    """仅在内嵌资产字节变化时更新文件，避免一致内容触发全量重建。"""
+    content = text.encode('utf-8')
+    if not path.exists() or path.read_bytes() != content:
+        path.write_bytes(content)
+
+
 def generate(rows=None):
     """按 UTF-8 字节序生成可二分查询的只读表。"""
     rows=load() if rows is None else rows
@@ -33,12 +40,12 @@ def generate(rows=None):
     body='inline constexpr Message messages[] = {\n'+''.join('    {'+', '.join(map(quote,[zh,*rows[zh]]))+'},\n' for zh in sorted(rows,key=lambda s:s.encode('utf-8')))+'};\n'
     text=HEADER.read_text(encoding='utf-8')
     text=re.sub(r'(?<=// MAGEL_CATALOG_BEGIN\n)[\s\S]*?(?=// MAGEL_CATALOG_END)',lambda _:body,text)
-    HEADER.write_text(text,encoding='utf-8')
-    (ROOT/'library/stackvm_mcu/magel_i18n.hpp').write_text(text,encoding='utf-8')
+    write_if_changed(HEADER, text)
+    write_if_changed(ROOT/'library/stackvm_mcu/magel_i18n.hpp', text)
     script=ROOT/'tools/mageldev.py'
     python=script.read_text(encoding='utf-8')
     table='_MESSAGES = '+json.dumps(rows,ensure_ascii=False,indent=2)+'\n'
     python=re.sub(r'(?<=# MAGEL_CATALOG_BEGIN\n)[\s\S]*?(?=# MAGEL_CATALOG_END)',lambda _:table,python)
-    script.write_text(python,encoding='utf-8')
+    write_if_changed(script, python)
     print(f'Magel: embedded {len(rows)} Chinese / English messages')
 if __name__=='__main__':generate()

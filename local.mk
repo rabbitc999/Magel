@@ -42,30 +42,23 @@ MAGEL_INCLUDES := -I$(MAGEL_SOURCE_DIR) -I$(MAGEL_LIBRARY_DIR) \
     -I$(MAGEL_LIBRARY_DIR)/sqlite -I$(MAGEL_LIBRARY_DIR)/console -I$(MAGEL_LIBRARY_DIR)/lztext
 override CXXFLAGS += -DMAGEL_CUSTOM_ALLOCATOR=1 -pthread $(MAGEL_INCLUDES) -I$(AST_DIR) -I$(VM_DIR) -I$(PP_DIR)
 
-# ---- 统一工具链：magel 同时是前端 / 导出器 / 工程生成器 ----
+# ---- 统一工具链：magel 同时是前端 / VM / 工程生成器 ----
 # `$(FRONTEND_BUILD)/magel_main.o` 只提供 `magel_main_entry`，真正的 main 在 magel_tool.cpp；
-# magel-emit / magel-generator 各自去掉自己的 main，改成进程内 `runCli`。
+# magel-generator 去掉自己的 main，改成进程内 `runCli`。
 override CXXFLAGS += -DMAGEL_FRONT_END_NO_MAIN=1
 
-MAGEL_TOOL_OBJS := $(FRONTEND_BUILD)/magel_tool.o $(FRONTEND_BUILD)/emit-main.o $(FRONTEND_BUILD)/emit-aot.o $(FRONTEND_BUILD)/generator-main.o
+MAGEL_TOOL_OBJS := $(FRONTEND_BUILD)/magel_tool.o $(FRONTEND_BUILD)/generator-main.o
 DEMO_OBJS += $(MAGEL_TOOL_OBJS)
 $(TARGET): $(MAGEL_TOOL_OBJS)
 
 $(MAGEL_TOOL_OBJS): | $(FRONTEND_BUILD)
 
 # 这些翻译单元直接或经模块加载头内嵌资产，必须一起更新，避免链接到旧的内联资产查找实现。
-$(FRONTEND_BUILD)/magel_main.o $(FRONTEND_BUILD)/magel_tool.o $(FRONTEND_BUILD)/emit-main.o $(FRONTEND_BUILD)/generator-main.o: source/magel_module.hpp source/magel_stdlib_embedded.cpp
+$(FRONTEND_BUILD)/magel_main.o $(FRONTEND_BUILD)/magel_tool.o $(FRONTEND_BUILD)/generator-main.o: source/magel_module.hpp source/magel_stdlib_embedded.cpp
 
-$(FRONTEND_BUILD)/magel_tool.o: source/magel_tool.cpp source/magel_package.hpp tools/abi_import.hpp source/magel-emit/emit_cli.hpp source/magel-generator/generator_cli.hpp \
+$(FRONTEND_BUILD)/magel_tool.o: source/magel_tool.cpp source/magel_package.hpp tools/abi_import.hpp source/magel-generator/generator_cli.hpp \
         source/runtime_allocator.hpp source/allocator/magel_allocator.hpp
 	$(CXX) $(CXXFLAGS) -I. -c $< -o $@
-
-$(FRONTEND_BUILD)/emit-main.o: source/magel-emit/main.cpp source/magel-emit/module_build.hpp source/magel-emit/emit_cli.hpp source/magel-emit/aot.hpp source/magel_stdlib_embedded.cpp \
-        library/template/engine.hpp source/runtime_allocator.hpp $(VM_DIR)/stackvm.hpp $(VM_DIR)/value_text.hpp $(VM_DIR)/reflection.hpp
-	$(CXX) $(CXXFLAGS) -DMAGEL_EMIT_NO_MAIN=1 -I. -I$(VM_DIR) -c $< -o $@
-
-$(FRONTEND_BUILD)/emit-aot.o: source/magel-emit/aot.cpp source/magel-emit/aot.hpp source/runtime_allocator.hpp $(VM_DIR)/stackvm.hpp $(VM_DIR)/value_text.hpp $(VM_DIR)/reflection.hpp
-	$(CXX) $(CXXFLAGS) -I. -I$(VM_DIR) -c $< -o $@
 
 $(FRONTEND_BUILD)/generator-main.o: source/magel-generator/main.cpp source/magel-generator/generator_cli.hpp \
         library/template/engine.hpp source/runtime_allocator.hpp
@@ -187,6 +180,7 @@ build/magel-native:
 	$(MAGEL_RUNTIME_MKDIR)
 $(MAGEL_NATIVE_DEVELOPMENT): tools/native_development.cpp tools/native_development.hpp source/magel_macro.hpp source/magel_module.hpp source/magel_stdlib_embedded.cpp | build/magel-native
 	$(CXX) $(CXXFLAGS) -MMD -MP -MF build/magel-native-development.d -I. -c $< -o $@
+$(MAGEL_NATIVE_DEVELOPMENT): source/magel_i18n.hpp library/console/utf8.hpp
 $(FRONTEND_BUILD)/magel_tool.o: tools/native_development.hpp
 
 # 内置 ZIP/Gzip 的 Deflate 解压器；仅构建解压部分。

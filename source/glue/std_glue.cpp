@@ -1,3 +1,4 @@
+#include "collection_natives.hpp"
 #include "file_natives.hpp"
 #include "big_number_natives.hpp"
 #ifndef GLUE_NO_STD_FILESYSTEM
@@ -110,6 +111,7 @@
 bool bindMagelStandardGlue(magel_glue::Registry &registry, Memory::String *error)
 {
     bool ok = lang_numeric_glue::bind(registry, error);
+    ok = collection_glue::bind(registry.native(), error) && ok;
     ok = native_record_glue::bindString(registry.native(), error) && ok;
     ok = big_number_glue::bind(registry.native(), error) && ok;
     ok = file_native_glue::bind(registry.native(), error) && ok;

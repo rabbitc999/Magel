@@ -289,6 +289,14 @@ bool VerifyInterfaces(const Memory::String &owner, const MStructDef &definition,
 Memory::String Describe(const std::shared_ptr<MType> &type)
 {
     if (!type) return Memory::String("void");
+    if (IsContainer(type))
+    {
+        if (type->name == "map")
+        {
+            return "std::lang::Map<" + Describe(type->elem) + ", " + Describe(type->elem2) + ">";
+        }
+        return Memory::String(type->name == "vec" ? "std::lang::List<" : "std::lang::Set<") + Describe(type->elem) + ">";
+    }
     switch (type->kind)
     {
     case MType::Void: return "void";
@@ -316,12 +324,6 @@ Memory::String Describe(const std::shared_ptr<MType> &type)
         return text + ")";
     }
     case MType::Obj: return "std::lang::Any";
-    case MType::Container:
-        if (type->name == "map")
-        {
-            return "std::lang::Map<" + Describe(type->elem) + ", " + Describe(type->elem2) + ">";
-        }
-        return Memory::String(type->name == "vec" ? "std::lang::List<" : "std::lang::Set<") + Describe(type->elem) + ">";
     case MType::Ptr:
     {
         const Memory::String star = type->readOnly ? " const&" : " mut&";
@@ -376,7 +378,10 @@ bool SameType(const std::shared_ptr<MType> &left, const std::shared_ptr<MType> &
         if (g_hostTypes.count(left->name) && g_hostTypes.count(right->name)) return left->name == right->name;
         return BareTypeName(left->name) == BareTypeName(right->name);
     case MType::Opcode:
-        return left->name == right->name;
+        if (left->name != right->name) return false;
+        if (IsContainer(left) != IsContainer(right)) return false;
+        if (!IsContainer(left)) return true;
+        return SameType(left->elem, right->elem) && (!left->elem2 ? !right->elem2 : SameType(left->elem2, right->elem2));
     case MType::Ptr: return left->readOnly == right->readOnly && SameType(left->elem, right->elem);
     case MType::Func:
     {
@@ -403,6 +408,12 @@ bool SameType(const std::shared_ptr<MType> &left, const std::shared_ptr<MType> &
 Memory::String TypeTag(const std::shared_ptr<MType> &type)
 {
     if (!type) return "void";
+    if (IsContainer(type))
+    {
+        Memory::String tag = type->name + "_" + TypeTag(type->elem);
+        if (type->elem2) tag += "_" + TypeTag(type->elem2);
+        return tag;
+    }
     switch (type->kind)
     {
     case MType::Void: return "void";
@@ -417,12 +428,6 @@ Memory::String TypeTag(const std::shared_ptr<MType> &type)
     case MType::Opcode: return type->name;
     case MType::Obj: return "Any";
     case MType::Struct: return type->name;
-    case MType::Container:
-    {
-        Memory::String tag = type->name + "_" + TypeTag(type->elem);
-        if (type->elem2) tag += "_" + TypeTag(type->elem2);
-        return tag;
-    }
     case MType::Ptr: return TypeTag(type->elem) + (type->readOnly ? "_const_ptr" : "_ptr");
     case MType::Func:
     {
@@ -503,7 +508,6 @@ bool AnyAcceptsType(const std::shared_ptr<MType> &type)
     case MType::Func:
     case MType::Struct:
     case MType::Array:
-    case MType::Container:
     case MType::Opcode:
         return !OpcodeNonCopyable(type);
     case MType::Obj:
@@ -625,7 +629,7 @@ bool CheckContainerArgument(const std::shared_ptr<MType> &expected, int valueId,
     if (stored && expected && expected->kind != MType::Struct && expected->kind != MType::Ptr && !HasImplicitConversion(ExprType(valueId), expected) && !CheckStoredAddress(valueId, where)) return false;
     if (IsObjGetCall(valueId)) return true; /* get() uses the expected type at lowering. */
     const std::shared_ptr<MType> actual = expected && expected->kind == MType::Ptr ? RawExprType(valueId) : ExprType(valueId);
-    if (expected && actual && (TypeKey(expected) == TypeKey(actual) || ((expected->kind != MType::Container && expected->kind != MType::Array) && Acceptable(expected, actual, true))))
+    if (expected && actual && (TypeKey(expected) == TypeKey(actual) || ((!IsContainer(expected) && expected->kind != MType::Array) && Acceptable(expected, actual, true))))
         return true;
     return Fail(where + " 需要 " + Describe(expected) + "，实际是 " + Describe(actual));
 }

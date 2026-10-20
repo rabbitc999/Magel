@@ -103,8 +103,8 @@ inline int runCli(int argc, char **argv)
         write("tests/test_main.mgl", "int64 main() {\n    std::lang::assert(1 + 1 == 2);\n    return 0;\n}\n");
         write(".gitignore", "/build/\n/.magel/\n/magel_out*\n*.exe\n");
         write("README.md", "# " + name + MAGEL_TEXT("\n\nMagel 应用工程。以下命令在工程根目录执行：\n\n"
-                                                    "```sh\nmagel run src/main.mgl\nmagel check src/main.mgl\nmagel test tests\nmagel aot src/main.mgl out build/main\n```\n\n"
-                                                    "运行示例输出 `Hello, Magel!`。开发命令原生内建，无需 Python；AOT 需要 C++17 工具链。\n"
+                                                    "```sh\nmagel run src/main.mgl\nmagel check src/main.mgl\nmagel test tests\nmagel svmb src/main.mgl out build/main\n```\n\n"
+                                                    "运行示例输出 `Hello, Magel!`。开发命令原生内建，无需 Python；程序通过 VM 执行。\n"
                                                     "`magel.toml` 配置项目包；`src/` 放应用源码，`tests/` 放普通 main 测试。\n"));
         /* 系统里装了 git 就顺手 `git init`，方便后续版本管理。
          * 没有 git、或初始化失败都不算创建失败（工程本身已经写好了）。 */

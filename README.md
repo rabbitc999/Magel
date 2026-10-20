@@ -26,9 +26,8 @@ Magel 编译器由本仓库的 `source/magel.gram` 经 [ParseEngine](https://git
 进入独立整数寄存器核心，连续执行区域内的运算、复制、跳转、整数内存访问、下标检查与参数传递；
 内存访问复用现有校验服务，函数调用复用已返回的小帧，其他复杂操作继续使用运行时服务。
 调试、动态值或精确边界要求逐条执行时使用基础指令路径。
-AOT 程序执行本地机器码，并使用相应的运行时服务。
 
-![Magel 运行流程：VM 内部指令、精确执行回退与 AOT 本地执行](doc/images/magel-execution.png)
+![Magel 运行流程：VM 内部指令、精确执行回退](doc/images/magel-execution.png)
 
 配图由 [`tools/make_pipeline_diagrams.py`](tools/make_pipeline_diagrams.py) 生成，运行
 `python tools/make_pipeline_diagrams.py` 可重建中英文 PNG 和 SVG。
@@ -119,7 +118,6 @@ make reflection     # 保留的显式启用入口
 ```sh
 ./magel run  example/samples/hello.mgl        # 解释运行（默认）
 ./magel svmb example/samples/hello.mgl --out ../tmp/hello   # 生成 .svmb
-./magel aot  example/samples/hello.mgl --out ../tmp/hello --opt-level=2
 ./magel new  hello-magel                       # 新建应用工程
 ```
 
@@ -220,7 +218,6 @@ magel/
 │   ├── glue/                       宿主侧 C++ 胶水
 │   ├── allocator/                  桌面分配器
 │   ├── lsp/ dap/                   编辑器集成
-│   ├── magel-emit/                 导出独立 C++ 程序的工具
 │   └── magel-generator/            生成独立编译器工程的入口
 ├── library/                        可复用 C++ 库与板端宿主
 │   ├── stackvm/                    VM 核心（桌面与板端共用）
@@ -242,6 +239,5 @@ magel/
 ## 许可证
 
 MIT，见 `LICENSE`。
-
 
 解析器生成源码、头文件与报告统一位于 `source/`；对象文件与解析器静态库位于 `build/magel-frontend/`，不会散落到仓库根目录。

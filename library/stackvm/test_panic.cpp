@@ -53,23 +53,6 @@ int main(int argc, char **argv)
     vm.setPanicDetailsEnabled(true);
     if (!check(program, false)) return 8;
     std::remove(path.c_str());
-    stackvm::RuntimeBridge runtime;
-    runtime.setData(&data);
-    if (!runtime.begin()) return 9;
-    {
-        stackvm::RuntimeCallFrame root(runtime, "main");
-        stackvm::RuntimeCallFrame outer(runtime, "outer");
-        stackvm::RuntimeCallFrame inner(runtime, "inner");
-        stackvm::RuntimeValue out;
-        if (runtime.callNative("__vm_panic", { stackvm::RuntimeValue::ofInt(8) }, out)) return 10;
-    }
-    auto trace = runtime.callStack();
-    if (trace.size() != (STACKVM_WITH_PANIC_TRACE ? 3u : 0u)) return 11;
-    if (STACKVM_WITH_PANIC_TRACE && trace.back().function != "inner") return 12;
-    runtime.end();
-    if (runtime.callStack().size() != trace.size()) return 13;
-    if (!runtime.begin() || !runtime.callStack().empty()) return 14;
-    runtime.end();
     // 两个真实线程：忙循环兄弟线程必须被另一个线程的 panic 取消。
     data.binary.resize(128, 0);
     data.writeBytes(32, "spin", 5);
@@ -111,33 +94,6 @@ int main(int argc, char **argv)
     const auto hiddenStopped = vm.run(compact, {}, 10000000);
     if (hiddenStopped.ok || hiddenStopped.error.find("panic：fatal") == Memory::String::npos || !hiddenStopped.sourceTrace.empty() || hiddenStopped.failureLocation.known()) return 19;
     std::remove(path.c_str());
-    // AOT 桥同样取消真实忙循环线程；不显式 wait，由 end() 回收。
-    runtime.setThreadsEnabled(true);
-    runtime.setFunctionRunner([](stackvm::RuntimeBridge &child, int64_t target, const Memory::Vector<stackvm::RuntimeValue> &, stackvm::RuntimeValue &) {
-        stackvm::RuntimeCallFrame frame(child, target == 32 ? "spin" : "crash");
-        if (target == 32)
-        {
-            while (child.boundary()) {}
-            return false;
-        }
-        stackvm::RuntimeCallFrame inner(child, "inner");
-        stackvm::RuntimeValue out;
-        return child.callNative("__vm_panic", { stackvm::RuntimeValue::ofInt(8) }, out);
-    });
-    if (!runtime.begin()) return 20;
-    stackvm::RuntimeValue thread;
-    if (!runtime.callNative("std::thread::create", { stackvm::RuntimeValue::ofInt(32) }, thread)) return 21;
-    runtime.callNative("std::thread::create", { stackvm::RuntimeValue::ofInt(64) }, thread);
-    runtime.end();  // 即使第一位兄弟忙循环，第二位 panic 也必须令 join 返回。
-    if (runtime.error().find("线程 2 失败：panic：fatal") == Memory::String::npos)
-    {
-        std::cerr << runtime.error() << "\n";
-        return 22;
-    }
-    const auto childTrace = runtime.callStack();
-    if (STACKVM_WITH_PANIC_TRACE && (childTrace.empty() || childTrace.back().threadId != 2 || childTrace.back().function != "inner")) return 23;
-    if (!runtime.begin() || !runtime.boundary() || !runtime.callStack().empty()) return 24;
-    runtime.end();
-    std::cout << "panic trace, stripped debug, compression privacy, AOT, reset: PASS\n";
+    std::cout << "VM panic trace, stripped debug and compression privacy: PASS\n";
     return 0;
 }

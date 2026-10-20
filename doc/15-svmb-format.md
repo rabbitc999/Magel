@@ -32,7 +32,6 @@ mkdir -p build/doc-example
 
 for 初始化、比较、累加和更新分别降级为赋值、条件跳转、算术和回跳；classify 的 if/elif/else 变为条件与返回路径。函数和变量名保存在普通格式的符号信息中，可能降低分析成本；当前源码行号链路可保留 .mgl 来源，但默认不写调试记录。
 
-
 ## 如何阅读下方历史标本
 
 [`examples/svmb/`](examples/svmb/README.md) 保存旧 control.svmb 标本、解析脚本和 evidence 原始输出。标本为 662750 字节，SHA-256 前后缀 CF30A3C8…7ABE；其条目数、调试比例和 9700X 性能属于采样时环境，不是重新编译当前 control.mgl 必须得到的固定值。
@@ -280,7 +279,6 @@ magel-stackvm check prog.svmb           # 只校验容器与程序合法性
 | Magel 编译器 | `magel run app.mgl --emit --svmb --debug` | 不传 `--debug`（或兼容别名 `--no-debug`） |
 | 项目级默认 | `magel.toml` 里 `[magel] debug = true`（缺省 `false`，见 [09 工具链 §3](09-toolchain.md)） | 缺省 / `debug = false` |
 | StackVM CLI | `magel-stackvm compile app.quad --debug` | 不传（或兼容别名 `--no-debug`） |
-| 独立 exe 导出 | `magel-emit … --debug`（才写 `program.debug.add(…)` 与 `.quad` 路径） | 缺省不写 |
 
 写出来的仍然是合法的 v4——调试节在场、但 0 条。同一份 `control.mgl` 的实测对照：
 
@@ -334,37 +332,6 @@ exports 是全部 1263 个标签，所以两份都比 Magel 前端产出的略�
 ## 9. 容器能力标志
 
 普通容器使用 `0x0002` 表示反射能力；其余未定义标志必须拒绝加载。历史 `0x0001` 载荷加密位已移除，旧加密文件须从源码重新导出。校验和仅用于发现损坏，不提供身份认证。
-
-## 10. 只有独立 exe 的时候
-
-本节内嵌 VM 导出的测量属于历史记录。当前已删除该导出模式，现行原生产物使用 AOT；`.svmb` 格式及前文的二进制分析不受影响。
-
-`magel-emit --target cpp` 会把 VM 源码与程序一起内嵌。实测导出 `control.mgl`：
-生成源码 11 127 109 字节（内嵌 VM 408 669 + 大整数后端 52 542 + 大浮点 21 744 字节），
-`g++ -std=c++17 -O0` 编出 **15 441 180 字节**的 exe。在它身上做 `strings` 等价扫描：
-
-| 探测串 | 带调试表 | `magel-emit --no-debug` |
-| --- | --- | --- |
-| `main`、`classify` | 命中 | 命中 |
-| `i$451`、`sum$452`、`value$194` | 命中 | 命中 |
-| `std::math::abs$double` | 命中 | 命中 |
-| `__magel_loop_101`、`else_1`、`endif_2` | 命中 | 命中 |
-| `control.quad`（生成时的 `.quad` 路径） | 命中 | **未命中** |
-| `sum 1..5 = %d`（已格式化的字面量） | 命中 | 命中 |
-| `PUSH `、`DECLARE `（助记符表） | 命中 | 命中 |
-| 文件大小 | 15 441 180 | 13 414 172（−2 027 008，−13.1%） |
-
-长度 ≥ 6 的可读字符串 42 965 条、其中不同 41 323 条（原始探测输出见
-[`evidence-06-exported-exe.txt`](examples/svmb/evidence-06-exported-exe.txt)）。结论：**独立 exe
-不但没有变难，反而把三样东西塞进了同一个文件**——带符号名的字节码、带助记符表的解释器、以及
-数据区的格式化字符串。只拿到 exe 的逆向者不需要先分离字节码，用 `strings` + 反汇编 VM 主循环
-就能开工。
-
-导出侧同一个开关（缺省就不写；要显式说"不带"可用兼容别名 `--no-debug`，见
-[06 部署](06-deployment.md)）：不写 `program.debug.add(…)`，于是产物里既没有位置表、
-也没有生成期的 `.quad` 路径字符串——上表那 2 MB 就是它。
-但对比两列可以看到：**除了路径，名字一个都没少**，`i$451`、`sum$452`、`classify` 在剥离版里
-照样一搜就中。这与 `.svmb` 侧是同一个结论：能剥的是“位置”，剥不掉的是“身份”。
 
 ## 11. 从产物到伪代码的实际路径
 
@@ -439,50 +406,6 @@ def parse(path):
 
 下面第 2 步之后用的都是**已入库的标本**（[`examples/svmb/`](examples/svmb/README.md)，
 含 `.svmb`、`.data.bin`、`.layout`、`.quad`），所以不需要先编译；第 1 步只是说明标本怎么来的。
-
-```sh
-# 1. 标本是怎么来的（`--out` 决定烙进调试节的路径，换个目录会改变产物大小，不改程序本体）
-magel/magel run magel/example/samples/control.mgl --emit --svmb --out tmp/svmb-study/control
-
-# 2. 静态看汇编清单（0 基指令下标，和 --trace 的下标一致）
-magel-stackvm disasm magel/doc/examples/svmb/control.svmb | head -40
-
-# 3. 动态看执行与位置
-magel-stackvm run magel/doc/examples/svmb/control.svmb \
-    --data magel/doc/examples/svmb/control.data.bin \
-    --layout magel/doc/examples/svmb/control.layout --limit 12 --trace
-magel-stackvm run magel/doc/examples/svmb/control.svmb \
-    --data magel/doc/examples/svmb/control.data.bin \
-    --layout magel/doc/examples/svmb/control.layout --limit 12 --debug
-
-# 4. 篡改 / 截断，观察完整性检查
-python -c "d=bytearray(open('magel/doc/examples/svmb/control.svmb','rb').read()); d[100]^=0x5A; open('tmp/tampered.svmb','wb').write(bytes(d))"
-magel-stackvm check tmp/tampered.svmb                 # 二进制程序校验和不匹配
-
-# 5. 结构统计（解析器同目录）
-python magel/doc/examples/svmb/svmb_dump.py magel/doc/examples/svmb/control.svmb
-
-# 6. VM 自身的原生反汇编（GCC 档带符号；先按 magel/benchmarks/compare-vm.ps1 构建）
-objdump -d --start-address=0x14006be70 --stop-address=0x14006bf50 \
-    tmp/vm-9700x-pool/gcc64/magel-stackvm.exe
-nm -C tmp/vm-9700x-pool/gcc64/magel-stackvm.exe | wc -l      # 3631
-
-# 7. 导出独立 exe，再看它泄漏什么
-build/magel-emit/magel-emit --quad magel/doc/examples/svmb/control.quad \
-    --data magel/doc/examples/svmb/control.data.bin \
-    --layout magel/doc/examples/svmb/control.layout \
-    --out-dir tmp/svmb-study/export --target cpp-aot \
-    --glue magel/source/glue/cpp_glue.cpp --stack-slots 128
-g++ -std=c++17 -O0 -I magel -I magel/library/stackvm \
-    tmp/svmb-study/export/control.target.cpp -o tmp/svmb-study/export/program.exe
-tmp/svmb-study/export/program.exe --memory-size 536870912
-
-# 8. 剥离调试节（第 8.5 节）
-magel/magel run magel/example/samples/control.mgl --emit --svmb --no-debug --out tmp/svmb-strip/stripped
-# 或者项目级：magel.toml 的 [magel] 下写 debug = false
-# VM 侧同理：magel-stackvm compile app.quad --no-debug --out app.svmb
-
-```
 
 本文所有原始输出都由一个脚本重新生成，改完标本或换了 VM 就重跑一遍：
 

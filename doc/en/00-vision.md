@@ -46,14 +46,7 @@ GC don't run on embedded" and "without a GC you will get it wrong" look like a b
 Magel source compiles to `.svmb` bytecode, executed by StackVM. **What you deliver is bytecode, not
 source.**
 
-You can deliver bytecode, compress its symbol table, or AOT-export a standalone native executable. Choose the form for each recipient; see [Delivery security](05-delivery-security.md). Symbol compression removes readable names while preserving executable logic, which remains available for analysis.
-
 ### Answer 2: from MCU to cloud — one logic crosses every boundary
-
-The same Magel program runs several ways: interpret it directly while developing; export `.svmb` for
-delivery; AOT-compile to a native executable for local deployment. All three share one set of types,
-value semantics and resource-management rules — **what changes is the execution mode, not the logic
-you wrote.**
 
 This is not a slogan. There is a real-hardware record on STM32F407: compile, trim and package on the
 PC, push to an STM32F407VET6 board via H7TOOL or UART1, and execute through a fixed-capacity virtual
@@ -104,20 +97,6 @@ interfaces, and reuse platform-independent parts as-is.
 
 Read this section carefully. It matters more than everything above.
 
-- **Projects that need a mature ecosystem and a huge third-party library catalogue.** Magel's standard
-  library covers containers, text, numerics, networking, databases and concurrency, but its ecosystem
-  cannot compare with mainstream languages. If your project leans heavily on off-the-shelf libraries,
-  Magel will slow you down.
-- **Teams that need a mature IDE, hot reload and rich debug visualisation.** The VS Code extension
-  already supports syntax highlighting, diagnostics, completion, go-to-definition, document outline,
-  formatting and breakpoint debugging, but overall toolchain maturity is still a work in progress.
-- **Scenarios chasing maximum runtime performance.** Magel prioritises predictability and
-  portability. AOT can export a native program, but do not expect it to beat hand-optimised C/C++.
-- **Anyone expecting shipped logic to be impossible to reverse engineer.** See the
-  [boundary statement in Delivery security](05-delivery-security.md#boundaries).
-- **Cross-platform UI, web front-end frameworks, mobile development.** These are not Magel's target
-  domains.
-
 ---
 
 ## 5. Design principles
@@ -128,7 +107,6 @@ Read this section carefully. It matters more than everything above.
 | **Non-null references** | A reference is never null; read-only and writable are written in the type |
 | **No GC** | Resources are released deterministically at the end of scope; memory footprint is predictable |
 | **Deterministic cleanup** | `Drop` / `Closeable` give explicit release points, with automatic cleanup covering common code |
-| **Multiple execution levels** | Interpretation, `.svmb` bytecode, AOT native program — one logic, three delivery forms |
 | **Clear over clever** | The language prefers refusing combinations it cannot prove safe over letting you rely on implicit behaviour |
 
 ---

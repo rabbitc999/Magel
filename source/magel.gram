@@ -43,7 +43,6 @@ top_decl := struct_decl type_decl_end { $$ = $1; }
      | enum_decl type_decl_end { $$ = $1; }
      | interface_decl type_decl_end { $$ = $1; }
      | func_def     { $$ = $1; }
-     | EXPORT func_def { $$ = M_ExportFunc($2); }
      | INLINE func_def { $$ = M_Inline($2); }
      | host_func_decl { $$ = $1; }
      | abi_block { $$ = $1; }
@@ -597,7 +596,7 @@ unary := INCREMENT unary { $$ = M_Update(1, 1, $2); }
        | TILDE unary      { $$ = M_UnOp(3, $2); }   /* 按位取反 `~x` */
        | STAR unary       { $$ = M_UnOp(2, $2); }   /* 解引用 `*p` */
        | AMP unary        { $$ = M_UnOp(4, $2); }   /* 取地址 `&x`（得到只读引用） */
-       /* 1.0.0 语法清理：删除裸 new; 与裸 new(args)，改为显式写出类型：
+       /* 分配语法：删除裸 new; 与裸 new(args)，改为显式写出类型：
         *   heap T           ≡ 原 new;（堆上分配 T，类型由左值推导）
         *   new T(args)      ≡ 原 new(args);（按目标类型构造，类型显式写出）
         *   heap new T(args) ≡ 原 new(args);（堆上构造）

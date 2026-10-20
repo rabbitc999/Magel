@@ -38,13 +38,6 @@ mkdir -p build
 
 仍从仓库根目录运行，使用简短场景指令：
 
-```powershell
-.\magel\magel.exe aot magel/example/web-students/main.mgl out build/students-aot.exe opt 0
-.\build\students-aot.exe build/students.db 8080
-```
-
-导出程序内置 SQLite，仍需要页面文件。移到其他目录部署时，把 `index.html` 一同复制，并用第四个参数指定其路径，例如 `students-aot.exe students.db 8080 0 index.html`。
-
 ## HTTP 接口
 
 每条连接处理一个请求，响应采用 UTF-8、字节 Content-Length 与 `Connection: close`。
@@ -75,14 +68,6 @@ SQL 表名和列名固定；文本值统一使用当前连接的 `db.quote(...)`
 
 以下命令在仓库根目录执行。测试使用静态内置 SQLite，外部 SQLite 动态库路径被设为无效以验证独立运行。数据库、端口就绪文件和构建产物隔离在临时目录中。
 
-```powershell
-python tests/magel_web_students.py --magel magel/magel.exe
-python tests/magel_web_students.py --magel magel/magel.exe --backends aot --make make
-python tests/magel_web_students_browser.py --magel magel/magel.exe --browser "C:/Program Files/Google/Chrome/Application/chrome.exe"
-```
-
-第一条验证解释执行和 AOT。每个后端处理 62 个真实 HTTP 请求，包括增删改查、重复学号、JSON 类型与范围错误、中文/引号/反斜杠/控制字符、SQL 注入形态的字面量、HTTP 报文长度、重复 Content-Length、错误 Host/Origin、分段正文与截断正文。随后用 Python sqlite3 独立查询落盘数据并执行 integrity_check，再启动服务器确认重启后的记录。正常退出要求标准错误为空。
-
 第二条单独验证 VM 的 make 构建路径。第三条使用本机已安装的 Chrome 或 Edge，无第三方 Python 包，通过真实浏览器操作表单、查看重复学号提示、编辑、搜索和删除，并检查 HTML 注入防护与实际 SQL 行数；截图写入 `build/magel-web-students-browser.png`。
 
 ## 示例边界
@@ -92,7 +77,3 @@ python tests/magel_web_students_browser.py --magel magel/magel.exe --browser "C:
 本例的建表语句、自动主键和 `last_insert_rowid()` 使用 SQLite 方言。虽然 `std::sql` 也提供 MySQL/PostgreSQL/SQL Server，切换后端时应同时改写这些 SQL，不能只更换连接函数就声称已经兼容。
 
 ## 本次验收
-
-验证（2026-10-10，Windows / GCC 11.2、真实 SQLite 3 动态库、本机 Chrome）：解释执行、C++ VM、AOT 各 62 个 HTTP 请求通过，SQL 落盘与重启核验通过；VM make 路径另 62 个请求通过；浏览器新增、重复提示、编辑、搜索、删除与 HTML 注入防护通过；正常服务器退出资源诊断为空。既有场景指令专项 3 组、CLI 参数单元测试及文档同步检查通过。
-
-4.0.0 起仅提供 AOT 和 .svmb 导出；内嵌 VM 导出模式已删除。以上 make 命令验证 AOT 构建路径。3.2.3 验收记录是当时版本的历史结果。

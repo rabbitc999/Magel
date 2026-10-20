@@ -32,9 +32,6 @@ magel_out.*
 __pycache__/
 *.py[cod]
 
-# MAGEL 模块级 AOT 的默认本地目标文件缓存（原来挂在 ParseEngine 根 .gitignore 上）。
-*.magel-modules/
-
 # 构建产物：make / cmake 与测试都往这里写（原先落在父仓库的 build/）。
 # 驱动默认的产物前缀也在这里（build/magel_out.*），中间产物不混进源码目录。
 /build/

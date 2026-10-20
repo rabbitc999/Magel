@@ -509,7 +509,7 @@ int64 main()
 
 \subsection{\texttt{Set.\allowbreak{}iter(\allowbreak{})\allowbreak{}} 与 \texttt{Map.\allowbreak{}iter(\allowbreak{})\allowbreak{}}}
 
-\texttt{Set<\allowbreak{}T>\allowbreak{}} 和 \texttt{Map<\allowbreak{}K,\allowbreak{}V>\allowbreak{}} 同样有 \texttt{.\allowbreak{}iter(\allowbreak{})\allowbreak{}}：借用快照——把元素（Map 是 \texttt{(\allowbreak{}K,\allowbreak{} V)\allowbreak{}} 元组）复制进迭代器，来源容器保持不变；对应的 \texttt{.\allowbreak{}into\allowbreak{}Iter(\allowbreak{})\allowbreak{}} 则把容器搬空。
+\texttt{Set<\allowbreak{}T>\allowbreak{}} 和 \texttt{Map<\allowbreak{}K,\allowbreak{}V>\allowbreak{}} 同样有 \texttt{.\allowbreak{}iter(\allowbreak{})\allowbreak{}}：借用快照——把元素（Map 只能是 \texttt{Pair<\allowbreak{}K,\allowbreak{} V>\allowbreak{}}，用 \texttt{first} 读取键、\texttt{second} 读取值）复制进迭代器，来源容器保持不变；对应的 \texttt{.\allowbreak{}into\allowbreak{}Iter(\allowbreak{})\allowbreak{}} 则把容器搬空。
 
 \par
 \medskip
@@ -542,7 +542,7 @@ int64 main()
     {
         match(mi.next())
         {
-            Value(pair) => { doubled = doubled + pair.0 * pair.1; }
+            Value(pair) => { doubled = doubled + pair.first * pair.second; }
             None => { break; }
         }
     }

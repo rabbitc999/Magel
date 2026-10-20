@@ -4,13 +4,7 @@
 
 ## 地址复用样例揭示什么
 
-Magel 的解释器和 AOT 桥接层支持可选的分配范围检查。解释执行默认开启，AOT 默认 `unchecked`，用 `magel aot app.mgl checked` 开启。开启后，标量读写先验证整个 8 字节区间，字符、字符串和胶水字节访问按实际长度验证；区间必须完全落在同一个活跃分配中。检查失败进入语言级 `panic`，报告原始 Magel 文件、行号和函数调用栈；`checked` 无需加 `debug` 才能得到 panic 行号。
-
-`magel aot app.mgl` 等价于 `magel aot app.mgl unchecked`：导出的运行时定义 `STACKVM_WITH_ALLOCATION_GUARDS=0` 和 `NO_MAGEL_PANIC_TRACE=1`，裁剪额外分配区域检查、逐条源码定位与调用记录。`checked` 恢复护栏和 panic 跟踪，二者同时出现时最后一个生效；`run` / `svmb` 不接受这两个选项。直接构建、make 构建和模块独立构建使用相同配置，模块缓存通过生成公共头的内容区分配置。`unchecked` 保留普通类型检查、引用生命周期规则、资源清理、显式 panic，以及分配器与容器原有底层检查；它不承诺所有边界检查归零，也不保证非法内存访问一定能变为语言 panic。`debug` / `release` 控制 C++ 调试与优化配置，不替代 `checked`。
-
 自定义 `stackvm::HeapAllocator` 必须准确实现 `capacityAt`：未分配或已释放地址返回 false，有效地址返回到所属块末尾的剩余容量。运行时复用这份分配元数据，先检查再调用底层读写，不额外维护位图。`contains` 只表示地址属于池，不能作为有效分配的依据。可以用位图实现分配器，但仍须识别块边界，不能把两个相邻分配拼成一次合法访问。
-
-`tests/magel_memory_guard.py` 使用故意放宽底层读写的自定义堆验证拦截，再验证真实 Magel 的整数读写、浮点和字符读写共五种情况在解释执行及 AOT checked 中的 panic、行号与调用栈；另验收默认 unchecked 的三种构建路径和显式 panic。开启的护栏覆盖 VM 地址访问及经 NativeCallContext 的胶水访问，不拦截宿主绕开接口直接解引用原生指针。显式 `--compress-symbols` / panic 跟踪裁剪会隐藏诊断详情，已经剥离的 `.svmb` 来源信息不能凭空恢复。
 
 [heap_address_reuse.mgl](../example/samples/heap_address_reuse.mgl) 先分配整数并赋 11，释放后再分配同样大小的整数并赋 22，从新引用读取，正式预期输出为 [22](../example/expected/heap_address_reuse.txt)。物理块可以复用，逻辑身份不会复活；释放前的旧别名不能再解引用。拒绝旧别名的样例见 [heap_stale_alias.mgl](../example/samples-error/heap_stale_alias.mgl)，正常引用与所有权写法见[核心概念](03-core-concepts.md)。
 
@@ -26,8 +20,6 @@ mkdir -p ../build/doc-example
 ../build/work/magel/magel run example/samples/std_parse_random_path_memory.mgl --stats --out ../build/doc-example/memory
 ```
 
-程序 stdout 仍与[正式 expected](../example/expected/std_parse_random_path_memory.txt) 比较，最后为 memory=ok；统计走 stderr。VM 堆峰值和整个运行池峰值不是同一个数字。AOT 接受 --stats 但不提供同一组 VM 堆统计，不能沿用 VM 的阈值判断。
-
 Magel 分配器通过 Memory 命名空间管理容器和对象，默认池 512 MiB；全局 C++ new/delete 保留宿主行为。通用分配器实现在仓库根的 [`source/allocator/`](../source/allocator)（`magel_pool.c` 与 `source/magel_allocator.hpp`），Magel 导出使用同一份资产。接入与宿主边界如下。
 
 ## PC 容量与统计
@@ -39,30 +31,7 @@ magel run app.mgl --memory-size 16777216 --stats
 ./app --memory-size 16777216 --stats
 ```
 
-导出时 `magel-emit --runtime-arena 16777216` 可以修改 exe 的默认容量。
-这限制的是池的总大小，块头、对齐空隙也消耗容量；统计的峰值包含这些开销。
-池耗尽报告失败，不转向另一个宿主堆继续分配。成功和失败路径都在销毁运行对象后清零池。
-
 ## 外部缓冲区
-
-使用 `magel aot app.mgl out app --cpp-output` 保留 `app.aot.cpp`。嵌入式宿主定义 `MAGEL_NO_MAIN`，调用统一入口：
-
-```cpp
-#define MAGEL_NO_MAIN
-#include "app.aot.cpp"
-
-alignas(std::max_align_t) static unsigned char buffer[1024 * 1024];
-
-int execute() {
-    const char *arguments[] = {"example"};
-    std::size_t peak = 0;
-    /* 第 4 个参数 stepLimit：0 = 不设指令上限；要防死循环可传正整数。 */
-    int status = runMagel(1, arguments, false, 0,
-                          buffer, sizeof(buffer), &peak);
-    // 此时整个 buffer 为零；peak 是本次运行的最大池占用。
-    return status;
-}
-```
 
 缓冲区由宿主持有并覆盖整个调用生命周期。此路径不申请 PC 的后备池。
 返回值 0 表示成功，1 表示 VM / 分配失败；`stepLimit` 限制失控循环，**传 0 表示不设上限**
@@ -121,11 +90,6 @@ Magel 翻译单元及其依赖库必须一致定义 `MAGEL_CUSTOM_ALLOCATOR=1`�
 托管胶水文本和错误参数使用 `Memory::String` / `Memory::String *`。
 普通 `std::string` 宿主签名可以使用 Codec 转换，其宿主字符串由宿主释放。
 
-回归：[`runtime_allocator.c`](../tests/runtime_allocator.c)、
-[`runtime_allocator.cpp`](../tests/runtime_allocator.cpp)、[`magel_emit.py`](../tests/magel_emit.py)；
-它们都挂在发布门禁 `sh ci.sh` 上（见[06 部署](06-deployment.md)），
-修改分配器后先跑基础门禁，再按改动影响补充 ABI、逐库或其他专项；入口见 [`ci.sh`](../ci.sh) 的分配器小节。
-
 ## 墓碑压缩与手动清扫
 
 sweep() 不是垃圾回收器。它不做引用追踪、不判断对象存活、不自动调用。它只做一件事：清理已释放块的墓碑记录。
@@ -133,8 +97,6 @@ sweep() 不是垃圾回收器。它不做引用追踪、不判断对象存活、
 运行时按曾使用的物理块首建立稳定槽，保存最新分配代次与清扫边界。物理复用更新原槽，拆分产生的新块首建立新槽，合并不删除已有槽；同一物理地址的累计分配次数不会增加槽数。存储上界取决于物理块首的高水位，而不是当前空闲链表节点数。统计中的逻辑墓碑身份数量仍可增长，但不再对应逐条存储。
 
 `sweep()` 返回本次撤销幂等保证的已释放逻辑身份数量；重复清扫且无新释放时返回零。调用者必须保证没有仍需使用的旧引用指向已释放块。清扫保留活跃分配，以及它们随后释放时的幂等保证；已被清扫的引用再次显式 `delete` 报 `MGL1205`。清扫不释放活跃对象，不缩小物理池，不重置分配代次。自定义 `HeapAllocator` 须实现 `sweep()` 与 `retired()`；未实现清扫时显式报告运行错误，不伪装为成功清理零条。
-
-桌面和板端共用 `library/stackvm/` 的压缩索引；`library/stackvm_mcu/` 注入静态字节池及无异常元数据 arena，通过宏裁剪默认堆、线程、宿主文件 I/O、异常保护及 AOT 桥。32 位板端使用同一编码算法的 32 位布局，代次与单块容量限制见上文。
 
 内部逻辑地址编码槽号、分配代次和块内偏移，并携带槽号及偏移的位宽标签。旧引用自行解码稳定物理槽，不依赖最新分配的大小；不同槽的地址窗口互不重叠，合并、拆分后的旧引用不会命中新对象。槽号按实际位数编码，不预留固定数量的槽。64 位宿主的第一个槽对小于 256 字节的块可表示 4398046511103 个代次，对小于 4 MiB 的块可表示 268435455 个代次；较大的槽号或块会消耗更多地址位，代次上限相应降低。32 位宿主的第一个槽对小于 8 字节的块可表示 524287 个代次，单块请求须小于 262144 字节。编码空间耗尽时拒绝分配，不回绕或复活旧引用。内部逻辑地址与原生地址不等价，应用不应依赖地址的数值或不同地址的大小关系。
 

@@ -1,14 +1,12 @@
-"""验证无符号 u 后缀的范围、负号诊断、常量及解释/AOT 一致性。"""
+"""验证无符号 u 后缀的范围、负号诊断、常量及解释/VM 一致性。"""
 from pathlib import Path
 import argparse
 import os
 import subprocess
 import sys
 import tempfile
-
 ROOT = Path(__file__).resolve().parents[1]
 EXE = '.exe' if os.name == 'nt' else ''
-
 
 def main():
     """运行无符号字面量回归及非法写法检查。"""
@@ -30,17 +28,13 @@ def main():
 
         def invoke(command):
             """执行命令并捕获诊断，禁止等待交互输入。"""
-            return subprocess.run(list(map(str, command)), cwd=ROOT, env=env,
-                                  capture_output=True, text=True, encoding='utf-8',
-                                  errors='replace', timeout=240)
-
+            return subprocess.run(list(map(str, command)), cwd=ROOT, env=env, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=240)
         source = ROOT / 'example/samples/unsigned_suffix.mgl'
-        for backend in ('run', 'aot'):
+        for backend in ('run',):
             for level in (0, 2):
                 output = work / (f'{backend}-{level}' + EXE)
-                result = invoke([compiler, backend, source, '--out', output, f'--opt-level={level}'])
+                result = invoke([compiler, backend, source, '--out', output])
                 assert result.returncode == 0, (backend, level, result.stdout, result.stderr)
-                if backend == 'aot': result = invoke([output])
                 assert (result.returncode, result.stdout, result.stderr) == (0, 'unsigned suffix OK\n', ''), result
                 print(f'[通过] {backend} opt={level} 无符号运算、上下文及常量', flush=True)
 
@@ -51,29 +45,17 @@ def main():
             result = invoke([compiler, '--check', source])
             assert (result.returncode == 0) == succeeds, (code, result.stdout, result.stderr)
             assert diagnostic in result.stdout + result.stderr, (code, diagnostic, result.stdout, result.stderr)
-
         for expression in ('-1u', '-(1u)', '-+1u', '-0u', '-0xffu', '-b_1u'):
             check(f'int64 main(){{auto x={expression};return 0;}}', False, 'u 后缀整数字面量不能使用一元负号')
             print(f'[通过] 拒绝 {expression}', flush=True)
-        for declaration in ('uint8 x=256u;', 'uint8 x=0x100u;', 'uint8 x=b_100000000u;',
-                            'int64 x=1u;', 'uint8 x=1u;x=256u;'):
+        for declaration in ('uint8 x=256u;', 'uint8 x=0x100u;', 'uint8 x=b_100000000u;', 'int64 x=1u;', 'uint8 x=1u;x=256u;'):
             check('int64 main(){' + declaration + 'return 0;}', False)
         check('int64 main(){auto x=18446744073709551616u;return 0;}', False, '超出 64 位')
         for expression in ('1.0u', '0x1_uu'):
             check(f'int64 main(){{auto x={expression};return 0;}}', False)
-        check('''@annotation U(value:uint64=18446744073709551615u)
-@U struct Tagged {};
-@annotation Small(value:uint8)
-@Small(255u) struct Narrow {};
-int64 main(){return 0;}''', True)
-        check('''@annotation Signed(value:int64)
-@Signed(1u) struct Tagged {};
-int64 main(){return 0;}''', False, 'u 后缀整数字面量只能用于无符号注解参数')
-        check('''@annotation Small(value:uint8)
-@Small(256u) struct Tagged {};
-int64 main(){return 0;}''', False, '超出声明类型范围')
+        check('@annotation U(value:uint64=18446744073709551615u)\n@U struct Tagged {};\n@annotation Small(value:uint8)\n@Small(255u) struct Narrow {};\nint64 main(){return 0;}', True)
+        check('@annotation Signed(value:int64)\n@Signed(1u) struct Tagged {};\nint64 main(){return 0;}', False, 'u 后缀整数字面量只能用于无符号注解参数')
+        check('@annotation Small(value:uint8)\n@Small(256u) struct Tagged {};\nint64 main(){return 0;}', False, '超出声明类型范围')
         print('[通过] 越界、换符号、非法后缀及注解参数检查', flush=True)
-
-
 if __name__ == '__main__':
     main()

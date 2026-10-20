@@ -133,7 +133,6 @@ Box<int64 fn(int64)> box;
 | `DELETE` | `delete` |
 | `DROP` | `drop` |
 | `STATIC` | `static` |
-| `EXPORT` | `export` |
 | `FN` | `fn` |
 | `AUTO` | `auto` |
 | `COPY` | `copy` |
@@ -256,7 +255,6 @@ top_decl = struct_decl, type_decl_end
     | enum_decl, type_decl_end
     | interface_decl, type_decl_end
     | func_def
-    | "export", func_def
     | "inline", func_def
     | host_func_decl
     | abi_block

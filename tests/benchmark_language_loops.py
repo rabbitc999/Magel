@@ -46,7 +46,6 @@ def main():
     parser.add_argument("--magel", type=Path, default=ROOT / "magel.exe")
     parser.add_argument("--runner", type=Path, default=ROOT / "build/vm-program-benchmark.exe")
     parser.add_argument("--baseline-runner", type=Path)
-    parser.add_argument("--skip-aot", action="store_true")
     parser.add_argument("--skip-reference", action="store_true", help="跳过未优化逐条执行；仍测旧优化核心")
     parser.add_argument("--skip-legacy", action="store_true", help="跳过关闭寄存器核心的旧优化路径")
     parser.add_argument("--core-variants", action="store_true", help="额外比较标签分派、跳转折叠、专用码与块执行")
@@ -150,28 +149,6 @@ int64 main() {{ std::lang::println("{{}}", calculate(std::lang::inputInt())); re
         record("Magel VM reference", run([args.runner.resolve(), prefix, repeats, "0", count]), True)
     if args.baseline_runner:
         record("Magel VM before", run([args.baseline_runner.resolve(), prefix, repeats, "1", count]), True)
-    if not args.skip_aot:
-        aot_source = "import std::clock;\n" + magel_source[:magel_source.index("int64 main()")]
-        aot_source += f"""int64 main() {{
-    int64 n=std::lang::inputInt();
-    int64 warmup=calculate(n);
-    for(int64 r in std::lang::range(0,{repeats})) {{
-        int64 limit=std::lang::inputInt();
-        int64 start=std::clock::nowNanos();
-        int64 value=calculate(limit);
-        int64 elapsed=std::clock::nowNanos()-start;
-        std::lang::println(\"{{}} {{}}\", elapsed/1000000.0, value);
-    }}
-    if(warmup<0) {{ return 1; }}
-    return 0;
-}}
-"""
-        aot_file = WORK / "loop-aot.mgl"
-        aot_file.write_text(aot_source, encoding="utf-8")
-        aot_exe = WORK / ("loop-aot" + suffix)
-        run([args.magel.resolve(), "aot", aot_file, "--out", aot_exe,
-             "--opt-level=2", "--keep-intermediate"], timeout=600)
-        record("Magel AOT", run([aot_exe], input=(str(count)+"\n")*(repeats+1)))
     java_file = WORK / "LoopBenchmark.java"
     java_file.write_text("""public final class LoopBenchmark {
     private static volatile long sink;
@@ -217,8 +194,7 @@ int64 main() {{ std::lang::println("{{}}", calculate(std::lang::inputInt())); re
               if (ROOT / "VERSION").exists() else "",
               "magel_commit": run(["git", "-C", str(ROOT), "rev-parse", "--short", "HEAD"]).strip(),
               "compiler_flags": "Lua -O2; Magel -O2 -DNDEBUG MAGEL_CUSTOM_ALLOCATOR=1",
-              "aot_flags": "-O2 unchecked; fresh runtime input per sample prevents folding and cross-sample hoisting; generated source retained",
-              "timing": "Java System.nanoTime; AOT std::clock::nowNanos around calculate only; Python perf_counter_ns; Lua os.clock; Magel steady_clock; exclude parsing and file loading; Magel includes execution-plan setup and final checksum output",
+              "timing": "Java System.nanoTime; Python perf_counter_ns; Lua os.clock; Magel steady_clock; exclude parsing and file loading; Magel includes execution-plan setup and final checksum output",
               "results": results}
     (WORK / "results.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False, indent=2))

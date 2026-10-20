@@ -35,7 +35,7 @@ inline std::vector<std::string> normalize(int argc, char **argv)
         return result;
     }
     std::string command = argv[1];
-    const bool sourceCommand = command == "run" || command == "interpret" || command == "aot" || command == "emit" || command == "svmb" || command == "smvb" || command == "check" || command == "new" || command == "gen";
+    const bool sourceCommand = command == "run" || command == "interpret" || command == "emit" || command == "svmb" || command == "smvb" || command == "check" || command == "new" || command == "gen";
     const bool scenario = sourceCommand || command == "help" || command == "clear" || command == "test" || command == "fmt" || command == "deps" || command == "lsp" || command == "man";
     if (!scenario && !command.empty() && command[0] != '-')
     {
@@ -100,23 +100,9 @@ inline std::vector<std::string> normalize(int argc, char **argv)
                     value = command == "gen" || command == "clear" ? "--out-dir" : "--out";
                     takesValue = true;
                 }
-                else if (value == "opt")
-                {
-                    value = "--opt-level";
-                    takesValue = true;
-                }
-                else if (value == "cache")
-                {
-                    value = "--module-cache";
-                    takesValue = true;
-                }
-                else if (value == "modules")
-                    value = "--separate-modules";
                 else if (value == "reflect")
                     value = "--reflection";
-                else if (value == "debug" || value == "release")
-                    value = "--" + value;
-                else if (value == "unchecked" || value == "checked")
+                else if (value == "debug")
                     value = "--" + value;
                 else if (command == "check" && value == "json")
                     value = "--diagnostics=json";
@@ -125,9 +111,7 @@ inline std::vector<std::string> normalize(int argc, char **argv)
         // 已有长选项的值同样跳过翻译，避免 out/name/help 等字面值被当作场景词。
         for (const char *option : { "--lang", "--out", "--out-dir", "--name", "--input", "--memory-size", "--step-limit",
                                     "--include-dir", "--include-path", "--import-dir", "--define", "--symbol-map", "-I", "-D",
-                                    "--module-cache", "--opt-level", "--runtime-arena", "--template", "--vm-dir", "--magel-dir",
-                                    "--bigint-dir", "--stack-slots", "--target", "--quad", "--data", "--layout", "--glue",
-                                    "--cxx", "--cc", "--gcc", "--g++", "--gxx", "--make", "--execute-output", "--run-mode", "--cpp-output-dir", "--mode", "--backend", "--filter", "--timeout", "--project",
+                                    "--run-mode", "--mode", "--backend", "--filter", "--timeout", "--project",
                                     "--search", "--cache-dir", "--source-overlays", "--analysis-deps" })
             if (value == option) takesValue = true;
         result.push_back(value);

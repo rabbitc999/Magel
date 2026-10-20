@@ -27,7 +27,7 @@ int64 count(Set<int64> values) { return values.len(); }
 int64 mapCount(Map<String, int64> values) { return values.len(); }
 int64 main() {
     auto set = {3, 1, 3, 2,};
-    assert(set.len() == 3 && set.has(1) != 0 && set.at(0) == 1);
+    assert(set.len() == 3 && set.has(1) != 0 && set.has(2) != 0 && set.has(3) != 0);
     auto map = {"a": 1, "b": 2, "a": 3,};
     assert(map.len() == 2 && map["a"] == 3 && map["b"] == 2);
     auto ordered = {step(): step(), step(): step()};
@@ -81,8 +81,17 @@ int64 main() {
         assert(number == BigInteger("12345678901234567890"));
         auto keyed = {key(1, "first"): "one", key(3, "collision"): "three", key(1, "duplicate"): "updated"};
         assert(keyed.len() == 2 && keyed[key(1, "query")] == "updated" && keyed[key(3, "query")] == "three");
-        HashedKey saved = keyed.keyAt(0);
-        assert(saved.id == 1 && saved.label == "first");
+        int64 position = 0;
+        bool foundOriginal = false;
+        while (position < keyed.len()) {
+            HashedKey saved = keyed.keyAt(position);
+            if (saved.id == 1) {
+                assert(saved.label == "first");
+                foundOriginal = true;
+            }
+            position = position + 1;
+        }
+        assert(foundOriginal);
         keyed.put(key(2, "even"), "two");
         equalCalls = 0; hashCalls = 0;
         assert(keyed.has(key(2, "query")) != 0 && equalCalls == 1 && hashCalls == 1);

@@ -1,6 +1,6 @@
 /**
  * @file reflection_queries.cpp
- * @brief 将只读元数据生成为普通 MAGEL 值函数，复用全部后端与确定性清理。
+ * @brief 将只读元数据生成为普通 MAGEL 值函数，复用 VM 执行与确定性清理。
  */
 /**
  * @brief 判断本次输入是否加载 std::reflect 模块。
@@ -129,7 +129,13 @@ struct MReflectionQueries
     {
         Memory::String type;
         for (const auto &id : metadata.table.identities)
-            if (id.id == value.typeId) type = id.key.substr(5);
+            if (id.id == value.typeId)
+            {
+                // 类型身份域可为 type、host 或 struct，不能假设前缀长度一致。
+                const auto separator = id.key.find(':');
+                type = separator == Memory::String::npos ? id.key : id.key.substr(separator + 1u);
+                break;
+            }
         if (type == "std::lang::String") return "ReflectValue::Text(" + quote(value.text) + ")";
         if (type == "bool") return "ReflectValue::Bool(" + boolean(value.bits != 0) + ")";
         if (type == "char") return "ReflectValue::Char((char)" + number(value.bits) + ")";

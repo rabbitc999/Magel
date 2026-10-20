@@ -1,5 +1,7 @@
 # 借用控制流与算法验证
 
+本文保留历史测试配置及原始数据；执行方式为 VM。
+
 借用检查分为两部分：`source/magel_borrow_checker.hpp` 检查引用逃逸，
 `source/magel_borrow_flow.hpp` 检查函数内的释放后访问和移动后访问。
 前端适配层 `source/epilogue/borrow_flow.cpp` 记录已绑定的变量身份、字段、下标和控制流；
@@ -59,16 +61,6 @@ g++ -std=c++17 -I. tests/magel_borrow_checker.cpp -o build/borrow-checker-test
 python tests/magel_algorithm_robustness.py --magel magel.exe
 python tests/magel_algorithm_robustness.py --magel magel.exe --stress-size 300000
 ```
-
-本次验证已通过原题样例、60 组随机小树的独立暴力对照，以及 AOT 的 `n=m=300000` 等权深链（输出 `299998000`，标准错误为空）。压力测试用于正确性和资源清理验证，不作为原赛事时限的性能承诺。
-
-默认用例分别运行 VM 和 AOT；超过 10000 节点的压力数据只运行 AOT。
-`--skip-aot` 可用于单独诊断 VM，`--random-cases` 控制随机小数据数量。
-失败时保留 `build/algorithm-robustness/<compiler-name>/last-input.txt`，便于复现。
-
-`drop()` 和 `delete` 均为幂等终结操作：重复调用不再析构或释放，释放后读写仍拒绝。默认堆复用物理内存，同时为每次分配提供不复用的逻辑身份，防止旧引用删除新对象；这项约束同时适用于 VM 与 AOT。默认堆按物理块首保存最新代次和清扫边界，同址复用不追加墓碑存储；逻辑历史身份通过代次范围识别。`sweep()` 显式撤销已释放身份的幂等保证，此后旧引用再次 delete 报 MGL1205；调用者保证清扫时不再需要这些旧引用。完整 watchdog 重启清空墓碑和 arena。
-
-板端 `library/stackvm_mcu/` 使用共享 `library/stackvm/` 核心的生命周期、压缩分配身份及幂等释放。新增 VM/板端算法对照可通过 `--skip-aot --mcu-host build/stackvm_mcu/mcu-host.exe` 运行；桌面与板端的执行优化及内存预算见 [VM 执行优化](12-vm-performance.md)。
 
 局部开发按模块运行门禁，复测保存固定随机种子及独立日志：
 

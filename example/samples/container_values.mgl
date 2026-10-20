@@ -53,6 +53,10 @@ int64 main() {
     metrics.add(high);
     metrics.add(low);
     Metric first = metrics.at(0);
+    for (int64 index in std::lang::range(0, metrics.len())) {
+        Metric item = metrics.at(index);
+        if (item.amount < first.amount) { first = item; }
+    }
     println("{} {}", metrics.has(low), first.amount);
     List<Metric> measured;
     measured.push(low);

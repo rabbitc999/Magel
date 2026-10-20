@@ -1501,38 +1501,38 @@ Iter<T> setIter<T>(std::lang::Set<T> const& source) {
  * @param source 来源游标、容器或连续存储。
  * @return 操作结果。
  */
-Iter<(K,V)> mapIntoIter<K,V>(std::lang::Map<K,V> mut& source) {
+Iter<Pair<K,V>> mapIntoIter<K,V>(std::lang::Map<K,V> mut& source) {
     std::lang::Map<K,V> owned = __iterTakeMap<K,V>(source);
-    IterListState<(K,V)> state;
+    IterListState<Pair<K,V>> state;
     {
         int64 i = 0;
         while (i < owned.len()) {
 
-        state.values.push((owned.keyAt(i), owned.valAt(i)));
+        state.values.push(Pair<K,V>::create(owned.keyAt(i), owned.valAt(i)));
     
             i = i + 1;
         }
     }
-    return fromState<(K,V),IterListState<(K,V)> >(state);
+    return fromState<Pair<K,V>,IterListState<Pair<K,V>> >(state);
 }
 
 /**
- * @brief 借用映射建立迭代器：把 (键, 值) 元组快照进迭代器状态，来源映射保持不变。
+ * @brief 借用映射建立迭代器：把 Pair<K,V> 键值对快照进迭代器状态，来源映射保持不变。
  * @param source 来源映射，只读借用。
- * @return 独立有状态的元组迭代器；迭代器本身仍是一次性消费。
+ * @return 独立有状态的 Pair<K,V> 迭代器；迭代器本身仍是一次性消费。
  */
-Iter<(K,V)> mapIter<K,V>(std::lang::Map<K,V> const& source) {
-    IterListState<(K,V)> state;
+Iter<Pair<K,V>> mapIter<K,V>(std::lang::Map<K,V> const& source) {
+    IterListState<Pair<K,V>> state;
     {
         int64 i = 0;
         while (i < source.len()) {
 
-        state.values.push((source.keyAt(i), source.valAt(i)));
+        state.values.push(Pair<K,V>::create(source.keyAt(i), source.valAt(i)));
     
             i = i + 1;
         }
     }
-    return fromState<(K,V),IterListState<(K,V)> >(state);
+    return fromState<Pair<K,V>,IterListState<Pair<K,V>> >(state);
 }
 
 /** @brief 读取数组或 Span 的只读引用，来源必须覆盖游标生命周期。 */

@@ -535,7 +535,7 @@ std::shared_ptr<MType> InferCollectionLiteral(int id, const std::shared_ptr<MTyp
         return T(M_TypeInt());
     }
     auto type = Memory::makeShared<MType>();
-    type->kind = MType::Container;
+    type->kind = MType::Opcode;
     type->name = node.s;
     const std::size_t step = node.s == "map" ? 2u : 1u;
     for (std::size_t part = 0; part < step; ++part)
@@ -971,7 +971,7 @@ std::shared_ptr<MType> RawExprType(int id)
                            T(M_TypeInt());
                 }
                 /* 运行时数组 `T[]` 的 `.len()`：元素个数存在对象块头里。
-                 * 1.0.0 删掉 `sizeof` 之后，这是"数组有几个元素"的唯一写法。 */
+                 * 0.20.7 删掉 `sizeof` 之后，这是"数组有几个元素"的唯一写法。 */
                 if (baseType && IsRuntimeArray(baseType))
                 {
                     if (calleeNode.s == "len") return T(M_TypeInt());

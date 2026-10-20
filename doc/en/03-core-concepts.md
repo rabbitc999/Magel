@@ -105,12 +105,6 @@ idempotent termination, allocation identities and sweep.
 
 ## 5. Memory and execution limits
 
-- The desktop runtime pool defaults to 512 MiB and is configurable; standalone MCU pools/macros follow the board project.
-- Bounds, references, capacity and conversions have corresponding checks; integer operations normalize to the declared width, without promising an error for every arithmetic overflow.
-- AOT checked/unchecked, VM validation, borrow analysis and C/C++ host correctness are separate contracts, not a complete safety proof.
-- When enabled, watchdog restart can handle exhaustion, explicit requests, watermarks or timeouts; old runtime objects cannot survive a restart.
-- No GC gives deterministic owned-value release points; hard real time still requires bounded allocation, execution, host calls and interrupts. Reflection has no hard-real-time guarantee.
-
 ## 6. Choosing a transfer mode
 
 | Need | Mechanism |

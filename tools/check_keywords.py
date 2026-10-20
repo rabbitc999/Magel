@@ -6,7 +6,7 @@
   * `tools/native_development.cpp` 的 `keywords` —— 原生语言服务器关键字表；
   * `tools/mageldev.py` 的 `KEYWORDS` —— 语言服务器 `magel lsp` 补全用的关键字表；
   * `vscode/syntaxes/magel.tmLanguage.json` —— 编辑器高亮用的关键字正则；
-  * `magel.gram` 里 `%token NAME "字面量"` 登记的词形 token（如 `fn` / `export`）。
+  * `magel.gram` 里 `%token NAME "字面量"` 登记的词形 token（如 `fn` / `opcode`）。
 
 判据：四处的“词”集合必须相等（运算符、标点不算）。谁加了关键字忘了同步另一处，这里就红。
 

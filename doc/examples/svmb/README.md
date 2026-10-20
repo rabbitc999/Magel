@@ -36,7 +36,6 @@ magel/magel run magel/example/samples/control.mgl --emit --svmb --out tmp/svmb-s
 | `evidence-03-instructions.txt` | 前 12 条指令的逐字节解码、操作码直方图、带 `$` 作用域的变量名 |
 | `evidence-04-runtime.txt` | `disasm` / `run --trace` / `run --debug` / 完整输出，以及损坏、截断、改完重算校验和三种实验 |
 | `evidence-05-vm-native.txt` | 两档 VM 的符号数、`.text` 大小、`Machine::run` 原生反汇编开头、从 exe 里捞出的助记符串 |
-| `evidence-06-exported-exe.txt` | 独立 exe 里的名字泄漏探测与可读串统计 |
 | `evidence-07-strip-debug.txt` | `--no-debug` 前后逐节对照（净省 62.3%）、剩下的名字、丢掉的位置、以及"剥离版与构建目录无关"的复现 |
 
 ## 重新生成
@@ -51,18 +50,4 @@ python magel/doc/examples/svmb/collect.py \
     --tests tmp/vm-9700x-pool/gcc64/magel-stackvm-tests.exe
 ```
 
-`--vm` 是跑 `disasm` / `run` / `check` 用的 VM，`--vm-opcode` 是带符号的第二档构建
-（两档都看，才能说明“符号在不在”这件事的差别），`--exported` / `--exported-strip` 是
-`magel-emit` 导出的两份 exe（带调试表 / `--no-debug`）。所有路径都可以省，
-省掉的节会写成“缺失，跳过”。
-
 ## 生成这批证据时的环境
-
-- 机器：AMD Ryzen 7 9700X，Windows 11 26200。
-- VM：MSVC 19.44.35228.0 x64 Release（609 792 字节）、GCC 11.2.0 x64 Release
-  （1 148 954 字节），构建方式见 [`magel/benchmarks/compare-vm.ps1`](../../../benchmarks/compare-vm.ps1)。
-- 编译器：`magel/magel.exe`，2026-10-01 构建。
-- 导出 exe：`build/magel-emit/magel-emit` 加 `g++ -std=c++17 -O0`（编导出源码要带
-  `-I magel -I magel/library/stackvm`）。带调试表那份 15 441 180 字节，`magel-emit --no-debug`
-  那份 13 414 172 字节；`evidence-06` 里两份的探测结果并列，可以直接看到“剥了路径、
-  名字还在”。

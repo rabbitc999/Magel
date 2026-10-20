@@ -17,7 +17,7 @@ MODULES = {
     "generics": ["magel_generic_monomorphization", "magel_language_move", "magel_tuple_returns"],
     "mcu": ["mcu_vm"],
     "samples": [],
-    "tools": ["magel_module_compilation", "magel_package", "magel_aot"],
+    "tools": ["magel_tool", "magel_package", "magel_map_pair_iterator", "magel_generic_constructors"],
 }
 
 

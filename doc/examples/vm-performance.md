@@ -1,6 +1,6 @@
 # VM 跨语言基准：30 份完整测试源码
 
-五种语言、五类负载；Magel 另有 AOT 计时入口。两版 VM 共用 VM 源码，两版 AOT 共用 AOT 源码；JVM 两种模式共用 Java 源码。文档仅移除行尾空格，实际源码摘要见 [性能报告](../12-vm-performance.md)。
+本文保留历史测试配置及原始数据；执行方式为 VM。
 
 ## integer_loop
 
@@ -9,15 +9,6 @@
 ```cpp
 int64 mix(int64 x){return x*17;}
 int64 main(){int64 n=inputInt(),i=0;int64 total=0;while(i<n){total+=i;i+=1;}println("{}",total);return 0;}
-```
-
-### Magel AOT 0.18.3 / 0.18.2
-
-```cpp
-import std::clock;
-int64 mix(int64 x){return x*17;}
-int64 calculate(int64 n){int64 i=0;int64 total=0;while(i<n){total+=i;i+=1;}return total;}
-int64 main(){int64 first=inputInt();int64 warmup=calculate(first);int64 n=inputInt();int64 start=std::clock::nowNanos();int64 value=calculate(n);int64 elapsed=std::clock::nowNanos()-start;if(warmup!=value){return 1;}println("{} {}",elapsed/1000000.0,value);return 0;}
 ```
 
 ### Java / JVM
@@ -116,15 +107,6 @@ int64 mix(int64 x){return x*17;}
 int64 main(){int64 n=inputInt(),i=0;int64 total=0;while(i<n){if((i&1)==0){total+=i;}else{total-=i;}i+=1;}println("{}",total);return 0;}
 ```
 
-### Magel AOT 0.18.3 / 0.18.2
-
-```cpp
-import std::clock;
-int64 mix(int64 x){return x*17;}
-int64 calculate(int64 n){int64 i=0;int64 total=0;while(i<n){if((i&1)==0){total+=i;}else{total-=i;}i+=1;}return total;}
-int64 main(){int64 first=inputInt();int64 warmup=calculate(first);int64 n=inputInt();int64 start=std::clock::nowNanos();int64 value=calculate(n);int64 elapsed=std::clock::nowNanos()-start;if(warmup!=value){return 1;}println("{} {}",elapsed/1000000.0,value);return 0;}
-```
-
 ### Java / JVM
 
 ```java
@@ -219,15 +201,6 @@ int main() {
 ```cpp
 int64 mix(int64 x){return x*17;}
 int64 main(){int64 n=inputInt(),i=0;float64 total=0;while(i<n){total+=0.5;i+=1;}println("{}",total);return 0;}
-```
-
-### Magel AOT 0.18.3 / 0.18.2
-
-```cpp
-import std::clock;
-int64 mix(int64 x){return x*17;}
-float64 calculate(int64 n){int64 i=0;float64 total=0;while(i<n){total+=0.5;i+=1;}return total;}
-int64 main(){int64 first=inputInt();float64 warmup=calculate(first);int64 n=inputInt();int64 start=std::clock::nowNanos();float64 value=calculate(n);int64 elapsed=std::clock::nowNanos()-start;if(warmup!=value){return 1;}println("{} {}",elapsed/1000000.0,value);return 0;}
 ```
 
 ### Java / JVM
@@ -326,15 +299,6 @@ int64 mix(int64 x){return x*17;}
 int64 main(){int64 n=inputInt(),i=0;int64 total=0;while(i<n){total+=mix(i);i+=1;}println("{}",total);return 0;}
 ```
 
-### Magel AOT 0.18.3 / 0.18.2
-
-```cpp
-import std::clock;
-int64 mix(int64 x){return x*17;}
-int64 calculate(int64 n){int64 i=0;int64 total=0;while(i<n){total+=mix(i);i+=1;}return total;}
-int64 main(){int64 first=inputInt();int64 warmup=calculate(first);int64 n=inputInt();int64 start=std::clock::nowNanos();int64 value=calculate(n);int64 elapsed=std::clock::nowNanos()-start;if(warmup!=value){return 1;}println("{} {}",elapsed/1000000.0,value);return 0;}
-```
-
 ### Java / JVM
 
 ```java
@@ -429,15 +393,6 @@ int main() {
 ```cpp
 int64 mix(int64 x){return x*17;}
 int64 main(){int64 n=inputInt(),i=0;int64 total=0;int64 values[4];values[0]=1;values[1]=2;values[2]=3;values[3]=4;while(i<n){total+=values[i%4];i+=1;}println("{}",total);return 0;}
-```
-
-### Magel AOT 0.18.3 / 0.18.2
-
-```cpp
-import std::clock;
-int64 mix(int64 x){return x*17;}
-int64 calculate(int64 n){int64 i=0;int64 total=0;int64 values[4];values[0]=1;values[1]=2;values[2]=3;values[3]=4;while(i<n){total+=values[i%4];i+=1;}return total;}
-int64 main(){int64 first=inputInt();int64 warmup=calculate(first);int64 n=inputInt();int64 start=std::clock::nowNanos();int64 value=calculate(n);int64 elapsed=std::clock::nowNanos()-start;if(warmup!=value){return 1;}println("{} {}",elapsed/1000000.0,value);return 0;}
 ```
 
 ### Java / JVM

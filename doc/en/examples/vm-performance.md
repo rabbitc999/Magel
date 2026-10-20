@@ -1,6 +1,4 @@
-# VM and AOT baselines: 30 complete test sources
-
-Five languages and five workloads, with an additional Magel AOT timing harness per workload. Both versions share each VM/AOT input; JVM modes share Java input. Only trailing spaces are removed. See the [performance report](../12-vm-performance.md).
+# VM and language baselines: 30 complete test sources
 
 ## integer_loop
 
@@ -11,7 +9,7 @@ int64 mix(int64 x){return x*17;}
 int64 main(){int64 n=inputInt(),i=0;int64 total=0;while(i<n){total+=i;i+=1;}println("{}",total);return 0;}
 ```
 
-### Magel AOT 0.18.3 / 0.18.2
+### Magel0.18.3 / 0.18.2
 
 ```cpp
 import std::clock;
@@ -116,7 +114,7 @@ int64 mix(int64 x){return x*17;}
 int64 main(){int64 n=inputInt(),i=0;int64 total=0;while(i<n){if((i&1)==0){total+=i;}else{total-=i;}i+=1;}println("{}",total);return 0;}
 ```
 
-### Magel AOT 0.18.3 / 0.18.2
+### Magel0.18.3 / 0.18.2
 
 ```cpp
 import std::clock;
@@ -221,7 +219,7 @@ int64 mix(int64 x){return x*17;}
 int64 main(){int64 n=inputInt(),i=0;float64 total=0;while(i<n){total+=0.5;i+=1;}println("{}",total);return 0;}
 ```
 
-### Magel AOT 0.18.3 / 0.18.2
+### Magel0.18.3 / 0.18.2
 
 ```cpp
 import std::clock;
@@ -326,7 +324,7 @@ int64 mix(int64 x){return x*17;}
 int64 main(){int64 n=inputInt(),i=0;int64 total=0;while(i<n){total+=mix(i);i+=1;}println("{}",total);return 0;}
 ```
 
-### Magel AOT 0.18.3 / 0.18.2
+### Magel0.18.3 / 0.18.2
 
 ```cpp
 import std::clock;
@@ -431,7 +429,7 @@ int64 mix(int64 x){return x*17;}
 int64 main(){int64 n=inputInt(),i=0;int64 total=0;int64 values[4];values[0]=1;values[1]=2;values[2]=3;values[3]=4;while(i<n){total+=values[i%4];i+=1;}println("{}",total);return 0;}
 ```
 
-### Magel AOT 0.18.3 / 0.18.2
+### Magel0.18.3 / 0.18.2
 
 ```cpp
 import std::clock;

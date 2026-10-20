@@ -19,6 +19,18 @@ stackvm::value_text::Shape ValueTextShape(const std::shared_ptr<MType> &type,
                 type->kind == MType::Int                               ? std::max(1, type->bits / 8) :
                                                                          8;
     if (depth > 32) return out;
+    if (IsContainer(type))
+    {
+        out.kind = type->name == "vec" ? 'L' : type->name == "set" ? 'E' :
+                                                                     'M';
+        if (visiting.insert(TypeKey(type)).second)
+        {
+            out.children.push_back(ValueTextShape(type->elem, visiting, callbacks, true, depth + 1));
+            if (type->elem2) out.children.push_back(ValueTextShape(type->elem2, visiting, callbacks, true, depth + 1));
+            visiting.erase(TypeKey(type));
+        }
+        return out;
+    }
     switch (type->kind)
     {
     case MType::Int: out.kind = type->isUnsigned ? 'u' : 'i'; break;
@@ -34,16 +46,6 @@ stackvm::value_text::Shape ValueTextShape(const std::shared_ptr<MType> &type,
         out.kind = IsStandardOpcode(type, "String") ? 's' : IsStandardOpcode(type, "BigInteger") ? 'I' :
                                                         IsStandardOpcode(type, "BigDecimal")     ? 'D' :
                                                                                                    'H';
-        break;
-    case MType::Container:
-        out.kind = type->name == "vec" ? 'L' : type->name == "set" ? 'E' :
-                                                                     'M';
-        if (visiting.insert(TypeKey(type)).second)
-        {
-            out.children.push_back(ValueTextShape(type->elem, visiting, callbacks, true, depth + 1));
-            if (type->elem2) out.children.push_back(ValueTextShape(type->elem2, visiting, callbacks, true, depth + 1));
-            visiting.erase(TypeKey(type));
-        }
         break;
     case MType::Array:
         out.kind = IsRuntimeArray(type) ? 'a' : 'A';
@@ -115,7 +117,7 @@ stackvm::value_text::Shape ValueTextShape(const std::shared_ptr<MType> &type,
  * @brief 编码具体类型的默认字符串表示布局。
  * @param type 需要编码的类型。
  * @param customRoot 是否保留根值的用户覆盖。
- * @retval 供 VM 与 AOT 共用原语读取的布局。
+ * @retval 供 VM 值文本原语读取的布局。
  */
 Memory::String ValueTextLayout(const std::shared_ptr<MType> &type, bool customRoot)
 {
@@ -182,7 +184,7 @@ simple_ast::NodePtr LowerDefaultValueText(int valueId)
 simple_ast::NodePtr LowerValueText(int valueId)
 {
     const auto type = ExprType(valueId);
-    if (type && (type->kind == MType::Struct || type->kind == MType::Opcode))
+    if (type && !IsContainer(type) && (type->kind == MType::Struct || type->kind == MType::Opcode))
     {
         const auto definition = g_structs.find(type->name);
         if (definition != g_structs.end())

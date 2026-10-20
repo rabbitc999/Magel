@@ -198,7 +198,7 @@ struct MReflectionCalls
                     }
             }
             if (constructor && candidates.empty() && !g_enums.count(owner))
-                candidates.push_back({ "new", "new " + owner, NamedType(owner), {}, true });
+                candidates.push_back({ "new", {}, NamedType(owner), {}, true });
         }
         body += "bool found=false;bool countMatches=false;bool unsupported=false;int64 selected=-1;";
         unsigned index = 0;
@@ -249,7 +249,7 @@ struct MReflectionCalls
                     }
                     call += ")";
                     if (constructor)
-                        body += owner + " instance=" + call + ";return " + result + "::Ok(instance);";
+                        body += owner + " instance" + (candidate.expression.empty() ? "" : "=" + call) + ";return " + result + "::Ok(instance);";
                     else if (tag(candidate.result) == "Empty")
                         body += call + ";return " + result + "::Ok(std::reflect::ReflectValue::Empty);";
                     else

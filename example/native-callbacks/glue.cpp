@@ -6,7 +6,7 @@ using IntegerFunction = magel_glue::Function<std::int64_t(std::int64_t)>;
 using IntegerReference = magel_glue::Reference<std::int64_t>;
 
 /**
- * @brief 为 VM 与 AOT 注册同步调用 Magel 函数的相同胶水实现。
+ * @brief 为 VM 注册同步调用 Magel 函数的相同胶水实现。
  * @param registry 接收宿主函数的注册表，须覆盖程序的运行期。
  * @param error 绑定失败时接收诊断，可为空。
  * @return 所有入口绑定成功时为 true。

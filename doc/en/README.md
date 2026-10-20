@@ -60,7 +60,7 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 | [14](../14-grammar-ebnf.md) | EBNF grammar reference | Anyone checking grammar details | Every production and token declaration generated from `source/magel.gram`; the readable form of the authoritative grammar |
 | [15](../15-svmb-format.md) | `.svmb` binary format | Format analysts and RE assessors | Container and section layout, byte-level decoding, reverse-engineering cost |
 | [16](../16-compact-symbols.md) | Nameless compact symbols | Anyone tracking size and diagnostic privacy | `--compress-symbols` format, tooling and space comparison |
-| [17](17-capabilities.md) | Current capabilities | Evaluation and integration | Language, VM/AOT, borrowing, reflection, libraries, MCU and tooling contracts |
+| [17](17-capabilities.md) | Current capabilities | Evaluation and integration | Language, VM, borrowing, reflection, libraries, MCU and tooling contracts |
 | [18](../18-panic-trace.md) | Panic and source lines | Anyone debugging crashes | Failure output, call stack, source location, compact symbol-hiding policy |
 | [19](../19-reflection.md) | Annotations and reflection | Anyone using annotations / dynamic calls | Declaration metadata, typed queries, closed-value dynamic invocation |
 | [20](../20-memory-allocator.md) | Memory allocator | Anyone wiring host memory | Pool and capacity stats, allocation range checks, external buffers |
@@ -68,8 +68,6 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 | [99](99-magel-story.md) | The Magel story | Anyone curious how it got here | From Magic-C to Magel: which walls it hit, what it deleted, what is still unfinished |
 
 ## More entry points
-
-- Multiple return values and generic tuples: [language reference §4](04-language-reference.md#multiple-return-values-and-generic-tuples), [interpreter / AOT regression](../../tests/magel_tuple_returns.py).
 
 ## Companion resources
 
@@ -96,6 +94,6 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 - [Matching, interpolation, generics and scope cleanup](27-match-interpolation-scope.md)
 
 - [Return expressions, named closures and field derivation](28-declaration-sugars.md)
-- Value breaks and loop traversal: [language reference](04-language-reference.md#block-expressions-and-interpolated-output), [complete sample](../../example/samples/break_values.mgl), [VM / AOT regressions](../../tests/magel_block_expression.py).
+- Value breaks and loop traversal: [language reference](04-language-reference.md#block-expressions-and-interpolated-output), [complete sample](../../example/samples/break_values.mgl), [VM regressions](../../tests/magel_block_expression.py).
 
 - Implicit moves in value breaks: [semantics and cleanup order](04-language-reference.md#moving-and-cleaning-up-value-breaks), [resource identity and destructor sample](../../example/samples/break_move.mgl).

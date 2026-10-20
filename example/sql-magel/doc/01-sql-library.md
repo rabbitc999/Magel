@@ -1,6 +1,5 @@
 # 01 std::sql —— Magel 连接外部 SQL 数据库（magel/example/sql-magel 接口参考）
 
-
 ## 当前支持的数据库
 
 `std::sql` 提供统一的连接、执行和结果集接口，SQL 文本由所选数据库执行。各数据库的建表语法、分页、函数和事务规则仍遵循自己的 SQL 方言，不自动翻译。
@@ -14,15 +13,9 @@
 | Microsoft SQL Server | `Database::sqlServer(options)` | ODBC 管理器和已安装的 SQL Server ODBC 驱动，需要 SQL Server 服务 |
 | 通用 ODBC | `Database::odbc(options)` | ODBC 管理器及对应驱动；`ODBC_LIBRARY` 可指定管理器路径 |
 
-Windows ODBC 管理器默认使用 `odbc32.dll`，Linux/macOS 查找 unixODBC。SQLite 已静态编译进桌面 Magel，使用 SQL 的 AOT 程序也静态链接 SQLite；`SQLITE_LIBRARY` 不再生效。PostgreSQL 在其他平台查找 `libpq`；MySQL、libpq、ODBC 及对应驱动仍需在部署时提供。
-
 ### 静态 SQLite 的构建与交付
 
 官方 amalgamation 源码固定为 SQLite 3.54.0，位于 `sqlite/`，来源与校验值见 [依赖说明](../../sqlite/README.md)。以 C 编译，启用 `SQLITE_THREADSAFE=1`、禁用动态扩展加载；MySQL/MariaDB、PostgreSQL、ODBC 仍使用动态客户端。
-
-普通运行和使用 SQL 的 AOT 可执行文件无需 SQLite DLL。`.svmb` 仍保存指令，由桌面宿主的内置 SQLite 提供服务。嵌入式模式仍禁用 SQL。
-
-AOT 使用 `--cc` / `CC` / `gcc` 编译 SQLite C 源码，再用 C++ 编译器静态链接；普通构建、`--make`、`--separate-modules` 均支持。未使用 SQL 时不生成或链接 SQLite 目标文件。SQLite 源码属于工具链内嵌资产，脱离仓库也能导出。
 
 默认清理 SQLite 中间源码和目标文件。`--cpp-output-dir` 保留 C++ 源码及配套 `<exe>.sqlite3.c`，手动重建时须用 C 编译器编译该 C 文件（采用上述宏），然后与 C++ 目标文件一起链接；交付最终可执行文件时无需这些源码。`--keep-intermediate` 可保留目标文件。
 
@@ -59,8 +52,6 @@ python tests/magel_sqlite.py
 python tests/magel_sql_connections.py
 python tests/magel_sql_backends.py
 ```
-
-SQLite 测试将外部库路径设为不存在的文件，验证解释执行、普通 AOT、make、模块缓存和内嵌资产导出；生成的程序复制到隔离目录运行，只在 build 下写测试数据库。PostgreSQL 测试使用标明身份的 libpq ABI 夹具，覆盖错误连接、初始化失败、NULL、类型、64 位结果与重复执行。ODBC 实库检查优先使用 Windows 已安装的 SQLite3 ODBC Driver，其他环境可通过 `MAGEL_TEST_ODBC_DRIVER` 指定 SQLite ODBC 驱动；缺少驱动会明确报告未运行。夹具和 SQLite ODBC 测试不等于连接过真实 PostgreSQL 或 SQL Server 服务。
 
 实现契约参考 [SQLite prepare](https://www.sqlite.org/c3ref/prepare.html)、[PostgreSQL libpq 执行](https://www.postgresql.org/docs/current/libpq-exec.html)、[ODBC SQLDriverConnect](https://learn.microsoft.com/en-us/sql/odbc/reference/syntax/sqldriverconnect-function) 与 [SQLGetData](https://learn.microsoft.com/en-us/sql/odbc/reference/syntax/sqlgetdata-function)。
 
@@ -199,6 +190,4 @@ SQL 客户端提供的借用缓冲区仍须由胶水复制为拥有型字符串�
 
 `tests/magel_sql_live.py` 通过环境变量 `MAGEL_SQL_TEST_PASSWORD` 读取密码，并通过标准输入传给测试程序；源码不写连接密码。默认连接本机 MySQL 的 `root` 用户、`mysql` 数据库，以及 PostgreSQL 的 `postgres` 用户、`postgres` 数据库。客户端库可通过 `MYSQL_LIBRARY`、`POSTGRES_LIBRARY` 指定。
 
-回归仅创建连接内的临时表，验证 VM/AOT 的 CRUD、事务提交与回滚、64 位整数、数值外观文本、中文/emoji、NULL、重复主键后的恢复与重复关闭。临时表在连接关闭后删除。MariaDB 的入口和默认端口由 `tests/magel_sql_connections.py` 的 ABI 夹具验证；夹具通过不代表真实 MariaDB 服务通过。
-
-2026-10-12 本机验收：MySQL 8.0.37、PostgreSQL 17.2 的上述真实服务测试均通过 VM/AOT；SQLite 通过解释执行、普通 AOT、Makefile、分模块及离线资产导出，ODBC 的 SQLite 驱动通过真实读写回归。SQL Server、MariaDB 未安装，未声明真实服务验收通过。
+回归仅创建连接内的临时表，验证 VM 的 CRUD、事务提交与回滚、64 位整数、数值外观文本、中文/emoji、NULL、重复主键后的恢复与重复关闭。临时表在连接关闭后删除。MariaDB 的入口和默认端口由 `tests/magel_sql_connections.py` 的 ABI 夹具验证；夹具通过不代表真实 MariaDB 服务通过。

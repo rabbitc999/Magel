@@ -199,10 +199,6 @@ python -m http.server 5500 --directory sql-magel/example/ipage-student-server/we
 
 两套脚本，用法与 ipage 自检一致（在仓库根目录执行）：
 
-```sh
-# 接口本身：run 与 aot 两种后端各跑一遍，每种 207 个真实 HTTP 请求
-python tests/magel_ipage_student_server.py
-
 # 前端：真浏览器跨源跑一遍完整用户流程
 python tests/magel_ipage_student_server_browser.py \
     --browser "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
@@ -241,9 +237,3 @@ python tests/magel_ipage_student_server_browser.py \
 ## 本次验收
 
 2026-10-12，Windows / GCC 11.2 / 本机 MySQL 8.0 / 本机 Edge 无头模式：
-
-* 接口：`run` 与 `aot` 两种后端 × 5 组场景全部通过（82 / 31 / 28 / 25 / 41 个真实
-  HTTP 请求），正常退出且标准错误为空、资源诊断为空。
-* 前端：跨源登录、四种权限的侧栏收放、学生看不到新增/删除、新增 / 编辑 / 查询 / 删除、
-  成绩聚合统计页、HTML 注入防护全部通过。
-* 静态检查：`magel check` 无诊断；`node --check web/app.js` 通过。

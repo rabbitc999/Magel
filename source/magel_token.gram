@@ -30,7 +30,6 @@
 %token DELETE "delete"
 %token DROP "drop"
 %token STATIC "static"
-%token EXPORT "export"
 %token FN "fn"
 %token AUTO "auto"
 %token COPY "copy"

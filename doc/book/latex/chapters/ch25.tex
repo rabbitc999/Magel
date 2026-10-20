@@ -53,8 +53,6 @@
 
 总计 22 MiB，来自参考板的外部 SDRAM 配置，不代表只有少量 SRAM 的 MCU 也能直接使用。硬件容量变化时，需要同时核对 BSP 布局、链接脚本和三项预算。
 
-板端关闭异常、RTTI、OS 线程、AOT 和大数，默认关闭反射，保留共享核心支持的执行优化。关闭 OS 线程不等于关闭协作式协程；具体标准库是否能用，还取决于模块门禁和宿主注册。
-
 \section{写一个可退出的 LCD 程序}
 
 在 \texttt{programs/\allowbreak{}} 下创建练习源码，或使用 include 搜索路径找到 \texttt{board.\allowbreak{}mgl}：
@@ -135,7 +133,7 @@ LCD 文本当前支持可打印 ASCII，不能把桌面字符串支持 UTF-8 等
 
 \texttt{load\allowbreak{}Program\allowbreak{}Binary} 把 \texttt{.\allowbreak{}svmb} 解码为 \texttt{Program}，\texttt{Data\allowbreak{}Area:\allowbreak{}:\allowbreak{}load\allowbreak{}From\allowbreak{}Bytes} 把数据字节和 layout 组合为运行时数据区。二者可以分别失败，所以板端 \texttt{Execute} 给它们安排了独立诊断和返回码，不等到第一条程序指令执行时才猜测“是不是文件读错了”。
 
-\texttt{Machine:\allowbreak{}:\allowbreak{}run} 使用共享的执行核心及其默认优化。源码解析、类型检查和四元式优化已经在桌面编译阶段完成；这里不会再次解释 \texttt{struct}、展开泛型或调用 AOT 编译器。想追具体指令的执行，再从 \texttt{stackvm.\allowbreak{}cpp} 包含的执行模块继续进入寄存器核心与执行准备逻辑。
+\texttt{Machine:\allowbreak{}:\allowbreak{}run} 使用共享的执行核心及其默认优化。源码解析、类型检查和四元式优化已经在桌面编译阶段完成；这里不会再次解释 \texttt{struct}、展开泛型。想追具体指令的执行，再从 \texttt{stackvm.\allowbreak{}cpp} 包含的执行模块继续进入寄存器核心与执行准备逻辑。
 
 这层不应直接知道 LCD 型号或 W25QXX 引脚。它通过字节堆、文件 API、输出下沉与原生注册表接收宿主能力，才能同时用于桌面和板端。
 

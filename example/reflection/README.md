@@ -21,5 +21,3 @@ annotations 42 7
 ```sh
 python tests/magel_annotations.py
 ```
-
-脚本还会生成并实际运行 VM 和 AOT 两种独立程序。

@@ -1,0 +1,34 @@
+import std::iter;
+
+int64 main() {
+    Map<String, List<int64>> values = {"first": [1, 2], "second": [3]};
+    Pair<String, List<int64>> converted = Pair<String, List<int64>>::create(("tuple", [4, 5]));
+    auto tuple = converted.toTuple();
+    converted.second.clear();
+    assert(tuple.0 == "tuple" && tuple.1.len() == 2);
+    Pair<int64, String> scalar = Pair<int64, String>::create(7, "seven");
+    assert(scalar.toTuple().0 == 7 && scalar.second == "seven");
+    auto inferred = Pair::create("inferred", (int64)9);
+    auto inferredTuple = Pair::create(((int64)3, "three"));
+    assert(inferred.first == "inferred" && inferred.second == 9);
+    assert(inferredTuple.toTuple().0 == 3 && inferredTuple.second == "three");
+    int64 total = 0;
+    int64 count = 0;
+    for (Pair<String, List<int64>> entry in values.iter()) {
+        assert(values.has(entry.first) != 0);
+        total = total + entry.second.len();
+        count = count + 1;
+        entry.second.push(9);
+    }
+    assert(total == 3 && count == 2);
+    assert(values["first"].len() == 2 && values["second"].len() == 1);
+    List<Pair<String, List<int64>>> entries = values.intoIter().collect();
+    assert(values.len() == 0 && entries.len() == 2);
+    int64 sum = 0;
+    for (auto entry in entries) {
+        sum = sum + entry.second.len();
+    }
+    assert(sum == 3);
+    println("Map Pair iterator OK");
+    return 0;
+}

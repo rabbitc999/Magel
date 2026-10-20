@@ -415,7 +415,7 @@ bool InferAutoFunctionResult(int statementId, std::shared_ptr<MType> *result);
  */
 const MOpcodeDefinition *FindOpcodeDefinition(const std::shared_ptr<MType> &type)
 {
-    if (!type || type->kind != MType::Opcode) return nullptr;
+    if (!type || type->kind != MType::Opcode || IsContainer(type)) return nullptr;
     const auto found = g_opcodeTypes.find(type->name);
     return found == g_opcodeTypes.end() ? nullptr : &found->second;
 }
@@ -426,7 +426,7 @@ const MOpcodeDefinition *FindOpcodeDefinition(const std::shared_ptr<MType> &type
  */
 const MOpcodeDefinition *FindOpcodeDeclaration(const std::shared_ptr<MType> &type)
 {
-    if (!type || (type->kind != MType::Opcode && type->kind != MType::Struct)) return nullptr;
+    if (!type || IsContainer(type) || (type->kind != MType::Opcode && type->kind != MType::Struct)) return nullptr;
     const auto found = g_opcodeTypes.find(type->name);
     return found == g_opcodeTypes.end() ? nullptr : &found->second;
 }

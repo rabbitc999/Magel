@@ -98,10 +98,10 @@ def draw() -> Canvas:
             ),
         ),
         (
-            "④ 导出与宿主", "magel/source/magel-emit · source/magel_glue.hpp",
+            "④ VM 交付与宿主", "library/stackvm · source/magel_glue.hpp",
             (
                 ("部署形态", (
-                    ("桌面 AOT C++", "原生函数 · 基本块 + goto · 宿主胶水"),
+                    ("VM 宿主集成", "字节码 · 原生注册表 · 同步回调"),
                     ("嵌入式字节码", "固定容量 VM 字节堆"),
                     ("调试与自包含", ".svmb v5 调试节 · 标准库内嵌 exe"),
                 )),
@@ -112,7 +112,7 @@ def draw() -> Canvas:
                 ("维护与验证", (
                     ("受管产物", "manifest 登记生成文件与 clear"),
                     ("端到端样例", "example/samples/ + check.sh"),
-                    ("导出回归", "tests/magel_generator.py / magel_emit.py"),
+                    ("导出回归", "tests/magel_generator.py / magel_tool.py"),
                 )),
             ),
         ),
@@ -132,7 +132,7 @@ def draw() -> Canvas:
                 canvas.text(x + 29, y + 41, detail, item_detail, NOTE)
 
     canvas.text(40, 859,
-                "构建关系：ParseEngine 从 magel.gram 生成 MAGEL 编译器；编译器将 .mgl 降级为四元式，交给 StackVM 或 magel-emit。",
+                "构建关系：ParseEngine 从 magel.gram 生成 MAGEL 编译器；编译器将 .mgl 降级为四元式，交给共享 StackVM 执行。",
                 footer, NOTE)
     canvas.text(40, 885,
                 "语言细节与当前支持范围见 README.md；解析器生成器（ParseEngine）总览见它自己的仓库。",

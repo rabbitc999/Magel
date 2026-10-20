@@ -49,7 +49,7 @@ using DsuReply = magel_glue::Record<DsuReplyTag>;
 inline void readInts(Context &ctx, std::int64_t handle, Ints &out)
 {
     Memory::Vector<magel_glue::Value> raw;
-    if (!ctx.readList(handle, raw))
+    if (!collection_glue::readList(ctx, handle, raw))
     {
         ctx.fail("图论：列表参数无效");
         return;
@@ -68,7 +68,7 @@ inline void readInts(Context &ctx, std::int64_t handle, Ints &out)
 inline void writeInts(Context &ctx, GraphReply reply, std::size_t slot, const Ints &values)
 {
     const std::int64_t handle = reply.field<std::int64_t>(slot);
-    for (std::int64_t value : values) ctx.listPush(handle, magel_glue::Value::fromInt(value));
+    for (std::int64_t value : values) collection_glue::listPush(ctx, handle, magel_glue::Value::fromInt(value));
 }
 
 /**
@@ -339,7 +339,7 @@ inline void graphHasCycle(const Ints &head, const Ints &edgeTo, const Ints &edge
              edge = edgeNext[static_cast<std::size_t>(edge)])
         {
             const std::int64_t other = edgeTo[static_cast<std::size_t>(edge)];
-            if (other < node) continue; // 无向边只处理一次。
+            if (other < node) continue;  // 无向边只处理一次。
             // find(node)
             findRoot = node;
             path.clear();
@@ -360,8 +360,10 @@ inline void graphHasCycle(const Ints &head, const Ints &edgeTo, const Ints &edge
             }
             for (std::int64_t hop : path) parent[static_cast<std::size_t>(hop)] = findRoot;
             const std::int64_t rootB = findRoot;
-            if (rootA == rootB) hasCycle = true;
-            else parent[static_cast<std::size_t>(rootA)] = rootB;
+            if (rootA == rootB)
+                hasCycle = true;
+            else
+                parent[static_cast<std::size_t>(rootA)] = rootB;
         }
     }
     reply.set<std::int64_t>(2, hasCycle ? 1 : 0);
@@ -480,7 +482,7 @@ inline void dsuFind(Ints &parent, std::int64_t x, Context &ctx, DsuReply reply)
     reply.set<std::int64_t>(2, root);
     reply.set<std::int64_t>(3, 1);
     const std::int64_t parentHandle = reply.field<std::int64_t>(0);
-    for (std::int64_t value : compressed) ctx.listPush(parentHandle, magel_glue::Value::fromInt(value));
+    for (std::int64_t value : compressed) collection_glue::listPush(ctx, parentHandle, magel_glue::Value::fromInt(value));
 }
 
 /**
@@ -524,9 +526,9 @@ inline void dsuUnion(Ints &parent, Ints &sizes, std::int64_t a, std::int64_t b,
         reply.set<std::int64_t>(2, rootA);
         reply.set<std::int64_t>(3, 0);
         const std::int64_t parentHandle = reply.field<std::int64_t>(0);
-        for (std::int64_t value : compressed) ctx.listPush(parentHandle, magel_glue::Value::fromInt(value));
+        for (std::int64_t value : compressed) collection_glue::listPush(ctx, parentHandle, magel_glue::Value::fromInt(value));
         const std::int64_t sizesHandle = reply.field<std::int64_t>(1);
-        for (std::int64_t value : sizes) ctx.listPush(sizesHandle, magel_glue::Value::fromInt(value));
+        for (std::int64_t value : sizes) collection_glue::listPush(ctx, sizesHandle, magel_glue::Value::fromInt(value));
         return;
     }
     if (sizes[static_cast<std::size_t>(rootA)] < sizes[static_cast<std::size_t>(rootB)])
@@ -540,9 +542,9 @@ inline void dsuUnion(Ints &parent, Ints &sizes, std::int64_t a, std::int64_t b,
     reply.set<std::int64_t>(2, rootA);
     reply.set<std::int64_t>(3, 1);
     const std::int64_t parentHandle = reply.field<std::int64_t>(0);
-    for (std::int64_t value : compressed) ctx.listPush(parentHandle, magel_glue::Value::fromInt(value));
+    for (std::int64_t value : compressed) collection_glue::listPush(ctx, parentHandle, magel_glue::Value::fromInt(value));
     const std::int64_t sizesHandle = reply.field<std::int64_t>(1);
-    for (std::int64_t value : sizes) ctx.listPush(sizesHandle, magel_glue::Value::fromInt(value));
+    for (std::int64_t value : sizes) collection_glue::listPush(ctx, sizesHandle, magel_glue::Value::fromInt(value));
 }
 
 /**
@@ -555,49 +557,58 @@ inline bool bind(magel_glue::Registry &registry, Memory::String *error)
 {
     bool ok = true;
     ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, std::int64_t, std::int64_t, GraphReply>(
-        "std::graph::__bfs",
-        [](Context &ctx, Ints head, Ints to, Ints next, std::int64_t n, std::int64_t start,
-           GraphReply reply) { graphBfs(head, to, next, n, start, ctx, reply); }) && ok;
+             "std::graph::__bfs",
+             [](Context &ctx, Ints head, Ints to, Ints next, std::int64_t n, std::int64_t start,
+                GraphReply reply) { graphBfs(head, to, next, n, start, ctx, reply); })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, std::int64_t, std::int64_t, GraphReply>(
-        "std::graph::__dfs",
-        [](Context &ctx, Ints head, Ints to, Ints next, std::int64_t n, std::int64_t start,
-           GraphReply reply) { graphDfs(head, to, next, n, start, ctx, reply); }) && ok;
+             "std::graph::__dfs",
+             [](Context &ctx, Ints head, Ints to, Ints next, std::int64_t n, std::int64_t start,
+                GraphReply reply) { graphDfs(head, to, next, n, start, ctx, reply); })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, std::int64_t, GraphReply>(
-        "std::graph::__components",
-        [](Context &, Ints head, Ints to, Ints next, std::int64_t n, GraphReply reply) {
-            graphComponents(head, to, next, n, reply);
-        }) && ok;
+             "std::graph::__components",
+             [](Context &, Ints head, Ints to, Ints next, std::int64_t n, GraphReply reply) {
+                 graphComponents(head, to, next, n, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, std::int64_t, GraphReply>(
-        "std::graph::__topo",
-        [](Context &ctx, Ints head, Ints to, Ints next, std::int64_t n, GraphReply reply) {
-            graphTopo(head, to, next, n, ctx, reply);
-        }) && ok;
+             "std::graph::__topo",
+             [](Context &ctx, Ints head, Ints to, Ints next, std::int64_t n, GraphReply reply) {
+                 graphTopo(head, to, next, n, ctx, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, GraphReply>(
-        "std::graph::__dijkstra",
-        [](Context &ctx, Ints head, Ints to, Ints weight, Ints next, std::int64_t n,
-           std::int64_t start, GraphReply reply) {
-            graphDijkstra(head, to, weight, next, n, start, ctx, reply);
-        }) && ok;
+             "std::graph::__dijkstra",
+             [](Context &ctx, Ints head, Ints to, Ints weight, Ints next, std::int64_t n,
+                std::int64_t start, GraphReply reply) {
+                 graphDijkstra(head, to, weight, next, n, start, ctx, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, std::int64_t, std::int64_t, GraphReply>(
-        "std::graph::__hasCycle",
-        [](Context &, Ints head, Ints to, Ints next, std::int64_t n, std::int64_t directed,
-           GraphReply reply) { graphHasCycle(head, to, next, n, directed != 0, reply); }) && ok;
+             "std::graph::__hasCycle",
+             [](Context &, Ints head, Ints to, Ints next, std::int64_t n, std::int64_t directed,
+                GraphReply reply) { graphHasCycle(head, to, next, n, directed != 0, reply); })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, Ints, std::int64_t, GraphReply>(
-        "std::graph::__mstWeight",
-        [](Context &, Ints head, Ints to, Ints weight, Ints next, std::int64_t n,
-           GraphReply reply) { graphMstWeight(head, to, weight, next, n, reply); }) && ok;
+             "std::graph::__mstWeight",
+             [](Context &, Ints head, Ints to, Ints weight, Ints next, std::int64_t n,
+                GraphReply reply) { graphMstWeight(head, to, weight, next, n, reply); })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, std::int64_t, DsuReply>(
-        "std::graph::__dsuFind",
-        [](Context &ctx, Ints parent, std::int64_t x, DsuReply reply) {
-            dsuFind(parent, x, ctx, reply);
-        }) && ok;
+             "std::graph::__dsuFind",
+             [](Context &ctx, Ints parent, std::int64_t x, DsuReply reply) {
+                 dsuFind(parent, x, ctx, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<void, Ints, Ints, std::int64_t, std::int64_t, DsuReply>(
-        "std::graph::__dsuUnion",
-        [](Context &ctx, Ints parent, Ints sizes, std::int64_t a, std::int64_t b,
-           DsuReply reply) { dsuUnion(parent, sizes, a, b, ctx, reply); }) && ok;
+             "std::graph::__dsuUnion",
+             [](Context &ctx, Ints parent, Ints sizes, std::int64_t a, std::int64_t b,
+                DsuReply reply) { dsuUnion(parent, sizes, a, b, ctx, reply); })
+         && ok;
     if (!ok && error) *error = Memory::String("std::graph 胶水注册失败", std::strlen("std::graph 胶水注册失败"));
     return ok;
 }
-} // namespace std_graph_glue
+}  // namespace std_graph_glue
 
 #endif

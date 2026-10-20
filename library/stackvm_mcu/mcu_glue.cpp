@@ -1,12 +1,11 @@
 /**
  * @file mcu_glue.cpp
- * @brief 板端 HAL 胶水的最小实现：把 `std::lang::__*` 里**不依赖容器**的那几个接上。
+ * @brief 板端宿主胶水：注册标准集合记录、基础数值转换、文件与输出适配。
  *
  * 这些名字**不是 VM 原生函数**，是 `lang.mgl` 里声明、由宿主提供的：
  *   * `std::lang::__tryToInt32(float64) -> int64`：向零截断 + 范围检查（越界/NaN 返回哨兵值）；
  *   * `std::lang::__toInt64(float64) -> int64`：同上，非法输入报运行错误。
- * （`std::lang::__float32ToBytes` / `std::lang::__bytesToFloat64` 返回 / 接收 `List<uint8>`，
- * 需要 VM 的胶水上下文能建容器——通用 VM 现在只有 `makeString`，见 README 的清单。）
+ * IEEE 754 字节转换通过 collection_glue 访问 List<uint8>，不要求 VM 内建容器方法。
  *
  * 板端接产品接口（串口、OLED、RTT、传感器…）时照这里的写法往下加：
  * `registry.add("你的名字", arity, 回调)`，回调里读写参数、必要时写 `context.error`。
@@ -240,15 +239,15 @@ stackvm::NativeValue FloatToBytesList(stackvm::NativeCallContext &context, doubl
     const T typed = static_cast<T>(value);
     U bits = 0;
     std::memcpy(&bits, &typed, sizeof(T));
-    const std::int64_t handle = context.makeList();
+    const std::int64_t handle = collection_glue::makeList(context);
     if (handle == 0) return stackvm::NativeValue::fromInt(0);
     for (std::size_t index = 0u; index < sizeof(T); ++index)
     {
         const std::size_t shift = bigEndian ? (sizeof(T) - 1u - index) : index;
         const unsigned long long byte =
             (static_cast<unsigned long long>(bits) >> (8u * shift)) & 0xffu;
-        if (!context.listPush(handle,
-                              stackvm::NativeValue::fromInt(static_cast<std::int64_t>(byte))))
+        if (!collection_glue::listPush(context, handle,
+                                       stackvm::NativeValue::fromInt(static_cast<std::int64_t>(byte))))
             return stackvm::NativeValue::fromInt(0);
     }
     return stackvm::NativeValue::fromInt(handle);
@@ -261,7 +260,7 @@ template <typename T, typename U>
 double BytesListToFloat(stackvm::NativeCallContext &context, std::int64_t handle, bool bigEndian)
 {
     Memory::Vector<stackvm::NativeValue> items;
-    if (!context.readList(handle, items) || items.size() < sizeof(T))
+    if (!collection_glue::readList(context, handle, items) || items.size() < sizeof(T))
     {
         context.fail("IEEE 754 解码：字节列表不足");
         return 0.0;
@@ -475,6 +474,7 @@ void Register(stackvm::Machine &machine, stackvm::NativeRegistry *customRegistry
 {
     static stackvm::NativeRegistry defaultRegistry; /* 板端单线程：函数内静态不需要加锁 */
     stackvm::NativeRegistry &registry = customRegistry ? *customRegistry : defaultRegistry;
+    if (!registry.find("__vm_vec_new")) collection_glue::bind(registry);
     if (!registry.find("std::lang::__stringNew")) native_record_glue::bindString(registry);
     if (!registry.find("__vm_file_open")) file_native_glue::bind(registry);
     registry.add("std::lang::__tryToInt32", 1u, TryToInt32);

@@ -1,6 +1,6 @@
 #include <cstdint>
 
-/* magel-emit --glue 会把这个文件原样编入导出的 C++ 程序。 */
+/* VM 宿主编入本文件，并在执行字节码前安装其注册表。 */
 /**
  * @brief 向宿主注册表绑定本模块提供的 Magel 胶水接口。
  * @param registry 接收函数绑定的宿主注册表。

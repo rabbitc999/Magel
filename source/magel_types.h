@@ -49,11 +49,6 @@ struct MType
         Ptr,
         Func,
         /**
-         * 容器：`std::lang::List<T>` / `std::lang::Set<T>` / `std::lang::Map<K,V>`（`name` 区分是哪个）。
-         * 值同样 = 对象表里的句柄，元素 / 键值类型放在 `elem` / `elem2` 里。
-         */
-        Container,
-        /**
          * **装箱格子** `obj`：一个值 + 它的类型号（运行期对象表里的句柄）。
          * `set` 装、`get` 取、`name` 问类型号（和 `__typeTag(类型)` 比就是泛型）。
          */
@@ -160,9 +155,9 @@ struct MNode
         DeclHead,
         /* `new T` / `new T[n]`：type = 元素类型，i = 元素个数表达式（-1 = 单个） */
         NewPtr,
-        /* `T::new(实参)` 的构造体调用：type = 目标类型，kids = {实参列表节点}。
-         * 只由 `static T new(...)` 工厂的内部展开生成，**没有对应的用户语法**
-         * （`new(实参)` 这条路 1.0.0 起已删除）。 */
+        /* `T::create(实参)` 的构造体调用：type = 目标类型，kids = {实参列表节点}。
+         * 只由 `static T create(...)` 工厂的内部展开生成，**没有对应的用户语法**
+         * （`new(实参)` 这条路 0.20.7 起已删除）。 */
         Construct,
         /**
          * `List<T>(初值…)` / `Set<T>(…)` / `Map<K,V>(…)` 的显式构造：
@@ -230,7 +225,6 @@ struct MNode
     Memory::String abiLength;
     Memory::String abiRelease;
     bool abiPacked = false;
-    bool cExport = false;
     Memory::String module;
     /**
      * `inline` 顶层函数仅在声明它的模块内部可见，不进入模块导出表。
@@ -655,16 +649,16 @@ int M_Decl2(int nameId, int dims, int init);
  * **元素类型不写在 new 后面**：降级时从"被赋值的变量 / 字段的类型"取
  * （`T mut& p = new;` / `T a[] = new [n];`），所以 `new` 只能出现在声明或赋值里。
  *
- * 1.0.0 起 `new(实参)` 已删除：需要初值就写 `T v = T::new(实参);`（`static T new(...)` 工厂）。
+ * 0.20.7 起 `new(实参)` 已删除：需要初值就写 `T v = T::create(实参);`（`static T create(...)` 工厂）。
  * @param count 元素个数表达式；-1 表示单个对象。
  */
 int M_NewPtr(int count);
 /**
  * @brief 构造调用：按目标类型展开一个结构体的构造函数体。
  *
- * 1.0.0 起有两个来源：
+ * 0.20.7 起有两个来源：
  *   * 用户语法 `T v = new(实参);`（类型由声明目标推，实参重载在降级时挑）；
- *   * `static T new(...)` 工厂体内部的展开（`NamedConstructorFactoryBody`）。
+ *   * `static T create(...)` 工厂体内部的展开（`NamedConstructorFactoryBody`）。
  * @param typeId 目标类型（-1 = 由降级阶段的声明目标决定）。
  * @param args 实参列表节点。
  * @param skipName 正在展开的那条工厂的修饰名（-1 = 不指定）。
@@ -754,12 +748,6 @@ int M_AbiFunc(int resultType, int nameId, int params, int symbolId);
  * @return 原函数节点编号。
  */
 int M_AbiOwned(int function, int release);
-/**
- * @brief 标记只能由 AOT 提供的 C 导出函数。
- * @param function 普通函数定义节点。
- * @return 原节点编号。
- */
-int M_ExportFunc(int function);
 int M_AbiBufferFunc(int resultType, int nameId, int params, int symbolId, int lengthId);
 int M_AbiBlock(int libraryId, int functionsId);
 /**

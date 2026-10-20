@@ -42,40 +42,10 @@ struct Project
     Memory::String symbolMap;
     /**
      * `[magel] run`：项目默认运行方式，缺省 `"interpret"`。取值
-     *  `interpret` / `svmb` / `aot`（也接受 `smvb` 拼写）；命令行的子命令或
+     *  `interpret` / `svmb`（也接受 `smvb` 拼写）；命令行的子命令或
      *  `--mode` 覆盖它。统一入口 `magel` 据此决定解释 / 导出。
      */
     Memory::String run = "interpret";
-    /**
-     * `[magel] cpp_output`：导出可执行文件时是否保留生成的 C++ 源码，缺省
-     *  `false`（导出程序不写/不留代码）。等价命令行 `--cpp-output`。
-     */
-    bool cppOutput = false;
-    /**
-     * `[magel] cpp_output_dir`：生成的 C++ 源码目录（缺省与可执行文件同目录）。
-     */
-    Memory::String cppOutputDir;
-    /**
-     * `[magel] execute_output`：可执行文件 / 二进制的输出路径（等价 `--execute-output`）。
-     */
-    Memory::String executeOutput;
-    /**
-     * `[magel] opt_level`：AOT / VM 导出时传给 C/C++ 编译器的优化等级
-     *  （`0/1/2/3/s/fast` 或裸 `-O2`）。空串 = 用各模式缺省。
-     */
-    Memory::String optLevel;
-    /**
-     * `[magel] cxx`（别名 `g++` / `gxx`）/ `cc`（别名 `gcc`）：导出程序时用的
-     *  C++ / C 编译器（空 = 环境变量 `CXX` / `CC`，再退回 `g++` / `gcc`）。
-     *  命令行 `--cxx` / `--g++` / `--cc` / `--gcc` 优先。
-     */
-    Memory::String cxx, cc;
-    Memory::String gccToolchain;  ///< GCC 目录或可执行文件路径；裸命令保持 PATH 查找。
-    /**
-     * `[magel] make`：构建生成工程时用的 make 路径（空 = 环境变量 `MAKE`，再退回
-     *  `make`）。命令行 `--make` 优先。
-     */
-    Memory::String makeTool;
     /**
      * `[embedded] enabled`：是否开启嵌入式构建模式，缺省 `false`。开启后编译器按
      *  嵌入式运行时标准做能力检查，用了被限制模块 / 不存在的能力会编译报错。
@@ -127,7 +97,7 @@ inline Memory::String trim(const Memory::String &s)
 inline Memory::String normalizeRunMode(const Memory::String &mode)
 {
     if (mode == "smvb") return "svmb";
-    if (mode == "interpret" || mode == "svmb" || mode == "aot") return mode;
+    if (mode == "interpret" || mode == "svmb") return mode;
     return Memory::String();
 }
 
@@ -295,7 +265,7 @@ inline Memory::Vector<Memory::String> tomlArray(const toml::Value &value,
 /**
  * @brief 当前工具链版本，参与项目最低版本验证。
  */
-inline constexpr const char *compilerVersion = "1.0.0";
+inline constexpr const char *compilerVersion = "0.21.0";
 
 /**
  * @brief 解析 `1.2.3` 形式的三段版本号。
@@ -479,7 +449,7 @@ inline bool read(const std::filesystem::path &file, Project &project, Memory::St
                 if (key == "run")
                 {
                     const auto mode = normalizeRunMode(tomlText(entry.value, where));
-                    if (mode.empty()) throw std::runtime_error("invalid run mode (expect interpret|svmb|aot)");
+                    if (mode.empty()) throw std::runtime_error("invalid run mode (expect interpret|svmb)");
                     project.run = mode;
                 }
                 else if (key == "debug")
@@ -493,37 +463,6 @@ inline bool read(const std::filesystem::path &file, Project &project, Memory::St
                 else if (key == "symbol_map")
                 {
                     project.symbolMap = path(tomlText(entry.value, where), base);
-                }
-                else if (key == "cpp_output")
-                {
-                    project.cppOutput = tomlBool(entry.value, where);
-                }
-                else if (key == "cpp_output_dir")
-                {
-                    project.cppOutputDir = path(tomlText(entry.value, where), base);
-                }
-                else if (key == "execute_output")
-                {
-                    project.executeOutput = path(tomlText(entry.value, where), base);
-                }
-                else if (key == "opt_level")
-                {
-                    project.optLevel = tomlText(entry.value, where);
-                }
-                else if (key == "gcc_toolchain")
-                {
-                    const auto value = tomlText(entry.value, where);
-                    project.gccToolchain = value.find('/') != Memory::String::npos || value.find(static_cast<char>(92)) != Memory::String::npos ? path(value, base) : value;
-                }
-                else if (key == "cxx" || key == "g++" || key == "gxx" || key == "cc" || key == "gcc" || key == "make")
-                {
-                    const Memory::String value = tomlText(entry.value, where);
-                    if (key == "cxx" || key == "g++" || key == "gxx")
-                        project.cxx = value;
-                    else if (key == "cc" || key == "gcc")
-                        project.cc = value;
-                    else
-                        project.makeTool = value;
                 }
                 else if (key == "main")
                 {

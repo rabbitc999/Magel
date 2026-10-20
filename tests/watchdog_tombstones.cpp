@@ -1,6 +1,6 @@
 /**
  * @file watchdog_tombstones.cpp
- * @brief 在宿主收尾边界验证 VM 与 AOT 桥清空墓碑。
+ * @brief 在宿主收尾边界验证 VM清空墓碑。
  */
 #include "stackvm.hpp"
 #include "../library/stackvm_mcu/embed_pool_allocator.hpp"
@@ -28,15 +28,5 @@ int main()
     machine.setHeapAllocator(&heap);
     const auto result = machine.run(program);
     if (!result.recoverable || heap.sweep() != 0u) return 2;
-    RuntimeBridge bridge;
-    bridge.setData(&data);
-    bridge.setHeapAllocator(&heap);
-    if (!bridge.begin()) return 3;
-    std::int64_t address = 0;
-    RuntimeValue returned;
-    if (!bridge.allocate(16, address) || !bridge.release(address, false) || !heap.retired(address)) return 4;
-    if (!bridge.callNative("__watchdogEnable", { RuntimeValue::ofInt(0) }, returned) || !bridge.callNative("__watchdogRequestRestart", {}, returned)) return 5;
-    bridge.end();
-    if (heap.sweep() != 0u || heap.retired(address)) return 6;
-    std::cout << "VM/AOT watchdog tombstones cleared before reset\n";
+    std::cout << "VM watchdog tombstones cleared before reset\n";
 }

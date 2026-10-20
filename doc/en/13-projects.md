@@ -19,13 +19,12 @@ is written `magel`).
 | [Gradebook · console](#42-gradebook--console-edition) | [`example/sql-magel/example/ipage-student/`](../../example/sql-magel/example/ipage-student) | A real MySQL database, a four-role permission matrix, menu pruning | MySQL |
 | [Gradebook · split front end and back end](#43-gradebook--split-front-end-and-back-end) | [`example/sql-magel/example/ipage-student-server/`](../../example/sql-magel/example/ipage-student-server) | A JSON-only back end, separately hosted front end, cross-origin CORS | MySQL + static server |
 | [Calculator (two ASTs)](#51-calculator-two-asts) | [`example/calculator/`](../../example/calculator/) | Recursive-descent parsing, recursive ownership under value semantics | none |
-| [Module compilation](#52-module-compilation) | [`example/module-compilation/`](../../example/module-compilation/) | Partial rebuild of a multi-module AOT project | none |
 | [Annotations and reflection](#53-annotations-and-reflection) | [`example/reflection/`](../../example/reflection/) | Compile-time annotations, runtime metadata queries | reflection build macros |
 | [Standard library companions](#54-standard-library-companions) | [`doc/examples/library/`](../examples/library/) | Four runnable programs: io / sqlite / watchdog / reflect | some need reflection |
 | [C ABI companions](#55-c-abi-companions) | [`doc/examples/abi_buffers/`](../examples/abi_buffers/), [`abi_dynamic/`](../examples/abi_dynamic/) | Static buffers vs. dynamic library bindings | a C compiler |
 | [`.svmb` evidence pack](#6-delivery-and-reverse-engineering-the-svmb-evidence-pack) | [`doc/examples/svmb/`](../examples/svmb/) | A bytecode specimen, section-by-section anatomy, reproducible reversing-cost data | none |
 | [Board-side VM](#71-board-side-vm-mcu_vm) | [`library/stackvm_mcu/`](../../library/stackvm_mcu) | A `.svmb` runtime built with `-fno-exceptions` | a C++ compiler |
-| [Glue callbacks](../../example/native-callbacks/README.md) | [`example/native-callbacks/`](../../example/native-callbacks/) | Shared VM/AOT glue calling named functions, closures, references and higher-order callbacks | a C++ compiler |
+| [Glue callbacks](../../example/native-callbacks/README.md) | [`example/native-callbacks/`](../../example/native-callbacks/) | Shared VM glue calling named functions, closures, references and higher-order callbacks | a C++ compiler |
 | [Editor language servers](#72-editor-language-servers-and-the-vs-code-extension) | [`source/lsp/`](../../source/lsp), [`vscode/`](../../vscode/) | Macro pairing checks, semantic highlighting, real diagnostics | none / VS Code |
 
 ---
@@ -60,7 +59,7 @@ the boundary — **no window handles or widget structures are passed**.
 
 Events travel the same "happen asynchronously, deliver at a safe point" path as software timers:
 a GUI event returns through a C callback to the glue layer, the runtime poster queues it, and the
-VM / AOT delivers it to a Magel interrupt function at the next execution boundary.
+VM delivers it to a Magel interrupt function at the next execution boundary.
 
 **How to run it**:
 
@@ -72,9 +71,6 @@ python tests/magel_desktop.py        # WinAPI：出 GUI 与海龟两个产物
 python gui/test_qt.py                # Qt offscreen: build, UTF-8 round trip, event injection, pumpEvery
 ```
 
-To run the Qt build by hand: `sh gui/qt/build.sh build/magel-gui-qt`, then
-`magel aot gui/examples/counter.mgl -I gui --glue gui/glue.cpp --out build/magel-gui-qt/counter`.
-
 **How it is verified**: `tests/magel_desktop.py` (WinAPI), `example/gui/test_qt.py` (Qt offscreen),
 `example/gui/test_winapi.py`, `example/gui/test_program.py`.
 
@@ -84,14 +80,6 @@ and must be unique; the shared library has to sit in the same working directory 
 window close = -1, Qt periodic event = 0".
 
 ### 3.2 Turtle graphics (turtle_winapi)
-
-**What it demonstrates**: the smallest complete C ABI desktop example.
-[`demo.mgl`](../examples/turtle_winapi/demo.mgl) sequences turtle paths through host function
-declarations, [`turtle.c`](../examples/turtle_winapi/turtle.c) builds into `turtle.dll` and creates
-the window and GDI canvas with WinAPI, and [`glue.cpp`](../examples/turtle_winapi/glue.cpp) is
-embedded into a standalone program by `magel aot --glue`. **The VM never touches `HWND` / `HDC` /
-canvas memory** — all canvas state belongs to the window thread, and Magel calls are handed
-synchronously to the window procedure via `SendMessageW`.
 
 **How to run it**:
 
@@ -130,11 +118,6 @@ Arguments after `--` go straight to the Magel `main` (in order: database file, p
 page path, ready file); SQLite does **not** create directories, so `build/` has to exist first.
 
 **How it is verified**:
-
-```sh
-python tests/magel_web_students.py            # interpreted + AOT, 62 real HTTP requests per back end
-python tests/magel_web_students_browser.py --browser "<path to Chrome or Edge>"
-```
 
 The second one drives the form in a real browser and checks HTML-injection protection plus the
 actual SQL rows on disk.
@@ -205,11 +188,6 @@ Open `http://127.0.0.1:5500/`; if the back end is not on the default 8080, overr
 
 **How it is verified**:
 
-```sh
-python tests/magel_ipage_student_server.py            # run 与 aot 各 5 组，各 207 个真实请求
-python tests/magel_ipage_student_server_browser.py --browser "<path to Chrome or Edge>"
-```
-
 The API script covers login / logout / bad tokens, the visible modules and per-action thresholds of
 all four roles, CRUD plus aggregate statistics for the five modules, the CORS preflight, the fact
 that the back end serves no pages, and HTTP message boundaries. The browser script starts another
@@ -236,29 +214,12 @@ recursively owned locals under value semantics.
 
 **How to run it**:
 
-```sh
-magel run example/calculator/calc.mgl
-magel run example/calculator/calc_nested.mgl
-magel aot example/calculator/calc.mgl --out build/calculator && build/calculator
-```
-
 Of the 12 default input lines, 7 succeed and 5 report application errors (including division by
 zero, a syntax error, an undefined variable, and `min(x, y, z)` with too many arguments).
 
-**How it is verified**: `python tests/magel_recursive_ownership.py` — it checks interpretation, AOT,
-the values and error reports of both representations, and resource diagnostics.
-
 ### 5.2 Module compilation
 
-**What it demonstrates**: the AOT path for multi-module projects — per-module native object caching,
-partial rebuild, dependency invalidation and a final link. The layout lives in
-[`example/module-compilation/magel.toml`](../../example/module-compilation/magel.toml).
-
 **How to run it**:
-
-```sh
-magel aot example/module-compilation/main.mgl --separate-modules --out build/module-demo
-```
 
 **How it is verified**: `python tests/magel_module_compilation.py`.
 The relevant options (`--separate-modules`, `--module-cache`) are in
@@ -275,9 +236,6 @@ then querying metadata at runtime and calling by name.
 ```sh
 magel --reflection example/reflection/annotations.mgl --out build/annotation-example
 ```
-
-**How it is verified**: `python tests/magel_annotations.py` (it generates and actually runs both a VM
-and an AOT program).
 
 **Boundaries**: annotations are type-checked and reflected declarations produce runtime metadata and restricted call bridges. The `std::reflect::` API is in the [library reference](../library/README.md).
 
@@ -396,13 +354,11 @@ and breakpoint debugging are described in its [README](../../vscode/README.md).
 | `sh check.sh` | Every sample in `example/samples/` against its expected output |
 | `python tests/magel_desktop.py [--turtle-only]` | Two desktop artifacts: WinAPI GUI / turtle |
 | `python gui/test_qt.py <dir>` (Linux) | Qt back end: build, UTF-8, event injection and `pumpEvery` |
-| `python tests/magel_web_students.py` | Web student records: interpreted + AOT |
 | `python tests/magel_web_students_browser.py --browser …` | Web student records in a real browser |
 | `sh sql-magel/tests/check-ipage.sh` | Gradebook console edition (never touches the real database) |
 | `python tests/magel_ipage_student_server.py` | Gradebook split edition: the API |
 | `python tests/magel_ipage_student_server_browser.py --browser …` | Gradebook split edition: cross-origin browser flow |
 | `python tests/magel_recursive_ownership.py` | Calculator, both AST representations |
-| `python tests/magel_module_compilation.py` | Modular AOT and partial rebuild |
 | `python tests/magel_annotations.py` | Annotations and reflection |
 | `python tests/magel_library_reference.py` | Standard library companions |
 | `python tests/magel_abi_values.py` | C ABI companions |

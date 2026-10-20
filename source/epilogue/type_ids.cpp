@@ -1,4 +1,14 @@
 /**
+ * @brief 识别标准集合的参数化 opcode 表示，不为容器分配独立类型类别。
+ * @param type 待查询的类型及其元素参数。
+ * @return 类型是 List、Set 或 Map 的内部标准集合名称时返回 true。
+ */
+bool IsContainer(const std::shared_ptr<MType> &type)
+{
+    return type && type->kind == MType::Opcode && type->elem && (type->name == "vec" || type->name == "set" || type->name == "map");
+}
+
+/**
  * @brief 识别 std::lang 声明的具名 opcode，避免与用户同名类型混淆。
  * @param type 待查询的类型。
  * @param name lang 包中的公开类型名称。
@@ -58,7 +68,6 @@ struct MFunctionDecl
     Memory::String abiSymbol;
     int abiResultCountIndex = -1;
     Memory::String abiRelease;
-    bool cExport = false;
 };
 
 /**
@@ -246,7 +255,7 @@ Memory::String g_currentModule;                            /* 正在检查/降�
 /**
  * @brief 合成一个 `std::lang::List<element>` 类型。
  *
- * 给 `map` / `filter` 这类"结果表"用：`TypeKey` 对 Container 会写成
+ * 给 `map` / `filter` 这类"结果表"用：`TypeKey` 对参数化集合 opcode 会写成
  * `vec<T>`，所以合成的类型照样能发类型号、能 `LowerType` 成 i64 句柄。
  *
  * @param element 元素类型。
@@ -255,7 +264,7 @@ Memory::String g_currentModule;                            /* 正在检查/降�
 std::shared_ptr<MType> MakeListType(const std::shared_ptr<MType> &element)
 {
     auto list = Memory::makeShared<MType>();
-    list->kind = MType::Container;
+    list->kind = MType::Opcode;
     list->name = "vec";
     list->elem = element;
     return list;
@@ -422,5 +431,5 @@ Memory::Set<Memory::String> g_parameterValueStorage;
  */
 bool NeedsReferenceStorage(const std::shared_ptr<MType> &type)
 {
-    return type && (type->kind == MType::Int || type->kind == MType::Double || type->kind == MType::Bool || type->kind == MType::Char || IsStandardOpcode(type, "String") || type->kind == MType::Opcode || IsStandardOpcode(type, "BigInteger") || IsStandardOpcode(type, "BigDecimal") || type->kind == MType::Container || type->kind == MType::Func || type->kind == MType::Obj || IsStandardOpcode(type, "File") || IsStandardOpcode(type, "Process") || IsRuntimeArray(type));
+    return type && (type->kind == MType::Int || type->kind == MType::Double || type->kind == MType::Bool || type->kind == MType::Char || IsStandardOpcode(type, "String") || type->kind == MType::Opcode || IsStandardOpcode(type, "BigInteger") || IsStandardOpcode(type, "BigDecimal") || IsContainer(type) || type->kind == MType::Func || type->kind == MType::Obj || IsStandardOpcode(type, "File") || IsStandardOpcode(type, "Process") || IsRuntimeArray(type));
 }

@@ -1,4 +1,4 @@
-"""同机比较 Magel VM/AOT、JVM、CPython、官方 Lua 和原生 C++，保留全部样本；可选追加旧版 Magel 两行。"""
+"""同机比较 Magel VM、JVM、CPython、官方 Lua 和原生 C++，保留全部样本；可选追加旧版 Magel 两行。"""
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
@@ -50,15 +50,6 @@ def prepare(name):
     (WORK / (name+".mgl")).write_text("int64 mix(int64 x){return x*17;}\nint64 main(){int64 n=inputInt(),i=0;"
         + ("float64" if floating else "int64") + " total=0;"+mgl_decl+"while(i<n){"+body
         +"i+=1;}println(\"{}\",total);return 0;}\n", encoding="utf-8")
-    value_type = 'float64' if floating else 'int64'
-    aot = ('import std::clock;\nint64 mix(int64 x){return x*17;}\n' + value_type
-           + ' calculate(int64 n){int64 i=0;' + value_type + ' total=0;' + mgl_decl
-           + 'while(i<n){' + body + 'i+=1;}return total;}\n'
-           + 'int64 main(){int64 first=inputInt();' + value_type + ' warmup=calculate(first);'
-           + 'int64 n=inputInt();int64 start=std::clock::nowNanos();' + value_type
-           + ' value=calculate(n);int64 elapsed=std::clock::nowNanos()-start;'
-           + 'if(warmup!=value){return 1;}println("{} {}",elapsed/1000000.0,value);return 0;}\n')
-    (WORK/(name+'-aot.mgl')).write_text(aot,encoding='utf-8')
     (WORK / (name+".lua")).write_text("local n=tonumber(arg[1])\nlocal function mix(x) return x*17 end\n"
         "local function calculate(n)\nlocal i,total=0,"+("0.0" if floating else "0")
         +"\nlocal values={1,2,3,4}\nwhile i<n do "+lua_body+";i=i+1 end\nreturn total end\n"
@@ -124,7 +115,7 @@ def main():
     parser.add_argument('--magel',type=Path,default=ROOT/'magel.exe')
     parser.add_argument('--runner',type=Path,required=True)
     parser.add_argument('--magel-label',default='Magel '+(ROOT/'VERSION').read_text().strip())
-    parser.add_argument('--baseline-magel',type=Path,help='旧版编译器；给出后追加旧版 VM 与 AOT 两行')
+    parser.add_argument('--baseline-magel',type=Path,help='旧版编译器；给出后追加旧版 VM 一行')
     parser.add_argument('--baseline-runner',type=Path)
     parser.add_argument('--baseline-label',default='Magel baseline')
     parser.add_argument('--repeats',type=int,default=7)
@@ -142,41 +133,12 @@ def main():
     assert hashlib.sha256(archive.read_bytes()).hexdigest()==SHA256,'先运行 benchmark_vm_lua.py 下载并构建官方 Lua'
     lua=LUA_WORK/'lua-5.5.1/src'/('lua.exe' if os.name=='nt' else 'lua')
     suffix='.exe' if os.name=='nt' else ''
-    aot_jobs=[]
     for name,_,_ in CASES:
         prepare(name)
         run(['g++','-std=c++17','-O2','-DNDEBUG',WORK/(name+'.cpp'),'-o',WORK/(name+suffix)])
         run(['javac','-encoding','UTF-8',WORK/('Case_'+name+'.java')])
         for label,compiler,_,_ in targets:
             run([compiler,'svmb',WORK/(name+'.mgl'),'out',WORK/(name+'-'+label)])
-            aot_jobs.append((name,label,compiler))
-    def build_aot(job):
-        """为单个版本生成 AOT 程序；缓存同时核对源码、编译器和产物哈希。"""
-        name,label,compiler=job
-        source=WORK/(name+'-aot.mgl');output=WORK/(name+'-aot-'+label+suffix)
-        stamp=WORK/(name+'-aot-'+label+'.build.json')
-        key={'source':hashlib.sha256(source.read_bytes()).hexdigest(),
-             'compiler':hashlib.sha256(compiler.read_bytes()).hexdigest(),
-             'assets':'isolated compiler executable and cwd outside repository; embedded runtime only',
-             'gcc':run(['g++','--version']),'options':['--opt-level=2','--unchecked','--keep-intermediate']}
-        if args.reuse_builds and output.exists() and stamp.exists():
-            previous=json.loads(stamp.read_text(encoding='utf-8'))
-            if previous.get('key')==key and previous.get('binary')==hashlib.sha256(output.read_bytes()).hexdigest():
-                print('reuse AOT',name,label,flush=True)
-                return
-        isolated_compiler=isolated_root/label/'magel.exe'
-        run([isolated_compiler,'aot',source,'--out',output,'--opt-level=2','--unchecked','--keep-intermediate'],cwd=isolated_compiler.parent)
-        stamp.write_text(json.dumps({'key':key,'binary':hashlib.sha256(output.read_bytes()).hexdigest()},indent=2)+'\n',encoding='utf-8')
-        print('built AOT',name,label,flush=True)
-    # 仅构建阶段并行；进入测量前等待全部编译结束。
-    with tempfile.TemporaryDirectory(prefix='magel-aot-versioned-') as directory:
-        isolated_root=Path(directory)
-        assert ROOT not in isolated_root.resolve().parents, 'AOT 隔离目录必须位于仓库外'
-        for label,compiler,_,_ in targets:
-            (isolated_root/label).mkdir()
-            shutil.copy2(compiler,isolated_root/label/'magel.exe')
-        with ThreadPoolExecutor(max_workers=2) as pool:
-            list(pool.map(build_aot,aot_jobs))
     report={'measured_at_utc':datetime.now(timezone.utc).isoformat(),'commit':run(['git','rev-parse','HEAD']).strip(),
             'platform':platform.platform(),'python':sys.version,'java':run(['java','--version']).strip(),
             'benchmark_script_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
@@ -185,21 +147,18 @@ def main():
             'warmups':{'JVM JIT':20,'others':1},'flags':{'C++':'-std=c++17 -O2 -DNDEBUG; noinline calculation; volatile result sink; fresh stdin input after warmup',
             'JVM JIT':'-Xbatch; 20 full warmups; volatile result sink; fresh stdin input per invocation',
             'JVM interpreter':'-Xint; 1 full warmup',            'Magel':'each listed Magel version keeps reflection enabled and all default VM optimizations; runner built -O2 against that version static library',
-            'Magel AOT':'each listed version --opt-level=2 --unchecked --keep-intermediate; GCC -O2; isolated executable and cwd outside repository force version-specific embedded runtime; std::clock::nowNanos around calculate; fresh stdin input after warmup; compare warmup result after timing to retain it',
             'Lua':'official mingw Makefile -O2; no JIT'},
             'timing':'all exclude startup, source compilation and loading; VM includes execution preparation and checksum output; other runtimes measure calculation only; one measured sample per process; rotate order each repeat; serial; all builds finish before measurements',
             'binaries':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in [*(compiler for _,compiler,_,_ in targets),*(runner for _,_,_,runner in targets),lua]},
             'results':{}}
     report['generated_sources']={p.name:hashlib.sha256(p.read_bytes()).hexdigest()
-                                 for p in WORK.iterdir() if p.suffix in ('.mgl','.lua','.py','.java') or (p.suffix=='.cpp' and '.aot.' not in p.name)}
-    report['aot_binaries']={label:{name:hashlib.sha256((WORK/(name+'-aot-'+label+suffix)).read_bytes()).hexdigest() for name,_,_ in CASES} for label,_,_,_ in targets}
+                                 for p in WORK.iterdir() if p.suffix in ('.mgl','.lua','.py','.java') or p.suffix=='.cpp'}
     if os.name=='nt':
         report['cpu']=json.loads(run(['powershell','-NoProfile','-Command','Get-CimInstance Win32_Processor | Select-Object Name,NumberOfCores,NumberOfLogicalProcessors | ConvertTo-Json -Compress']))
     for round_index in range(args.rounds):
         results={}
         for name,count,expected in CASES:
             modes=[(label,[runner,WORK/(name+'-'+tag),1,1,count],None) for tag,_,label,runner in targets]
-            modes+=[(label+' AOT',[WORK/(name+'-aot-'+tag+suffix)],(str(count)+'\n')*2) for tag,_,label,_ in targets]
             modes+=[('JVM JIT',['java','-Xbatch','-cp',WORK,'Case_'+name,20],(str(count)+'\n')*21),
                    ('JVM interpreter',['java','-Xint','-cp',WORK,'Case_'+name,1],(str(count)+'\n')*2),
                    ('Python',[sys.executable,WORK/(name+'.py'),count],None),

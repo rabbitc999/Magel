@@ -45,31 +45,22 @@ Every non-void value has default `toString()` and String conversion: structs `{.
 
 ## Execution, optimization and delivery
 
-| Mode | Implementation | Deployment requirements |
+| Route | Implementation | Host requirements |
 | --- | --- | --- |
-| Source execution | Preprocess, parse, check types/borrows, lower to quadruples, then execute in the VM | Magel toolchain and required host capabilities |
-| Bytecode | Load `.svmb` in the shared `library/stackvm/` core | Compatible feature bits, host glue, data and platform resources |
-| AOT | Export quadruples as C++, then compile with the selected toolchain | Runtime services are compiled into the artifact; external drivers, system and ABI libraries remain dependencies when used |
+| Source | Front-end checks and quadruple lowering followed by VM execution | Compiler and required host services |
+| Bytecode | Shared VM validates and loads `.svmb` | Compatible VM features, glue and companion data |
+| Embedding | Host executes bytecode with `stackvm::Machine` | VM host and target resource adapters |
 
-IR means quadruples. The complete IR optimizer and highest available VM execution optimizations are
-enabled by default, including the register core, preparation/fusion, jump folding and integer paths.
-Source and bytecode execution share the VM; there is no JIT mode.
-Library output supports `.dll` / `.so` shared libraries and relocatable `.o` files with C headers.
-Libraries require at least one `export` and may omit `main`. Static `.lib` / `.a` output is unsupported.
-See [library output](09-toolchain.md#aot-library-output). AOT defaults to `checked` and `-O3`, specializes scalar memory operations and successful array checks, and reuses native argument buffers within each invocation. AOT supports checked/unchecked,
-module caches and explicit GCC commands, paths or directories. Symbol compression does not provide
-encryption, a complete sandbox or a guarantee against reverse engineering.
+IR means quadruples. Full quadruple optimization and the highest supported VM optimizations are enabled by default. Source and bytecode share the VM; there is no JIT or native program exporter.
 
-Shared capabilities follow the same semantics. C `export` is AOT-only and is rejected by VM execution
-and bytecode export. Replacing bytecode updates a program image, without promising live migration of
-stacks, closures or global state.
+Symbol compression is not encryption or a sandbox. Program updates do not automatically migrate running stacks, closures or globals.
 
 ## Host integration and reflection
 
 Magel calls C libraries through `abi` and C++ through a Registry. References, structs, arrays, optional
 references, returned-memory release and limited header bindings follow explicit ABI contracts; declarations
 must match the actual C signatures. Glue calls named functions, inline fn values and closures through
-`NativeCallContext::invoke` or `magel_glue::Function`. VM/AOT share the interface, argument-count checks
+`NativeCallContext::invoke` or `magel_glue::Function`. VM share the interface, argument-count checks
 and error propagation. Wrappers and contexts are valid only synchronously, on the same thread, during
 the enclosing host callback. Resource values retain their Codec ownership requirements.
 See [host integration](08-host-integration.md) and the [callback example](../../example/native-callbacks/README.md).
@@ -108,7 +99,6 @@ long-term production validation are separate claims.
 
 Tool interfaces support Chinese and English; unsupported system locales fall back to English and explicit Japanese selection is rejected. `man book`, `man keyword`, and `man skill` query embedded book, keyword and AI SKILL data. The VS Code package includes the same SKILL.
 
-
 API manuals require `magel man api`; omitting `api` produces a usage error. `magel man macro` displays embedded macro help.
 
 `opcode T { new = create; drop = destroy; copy = clone; };` declares an opaque glue object.
@@ -116,4 +106,9 @@ Copies call the declared glue function. `#NonCopyable` disables copying and omit
 A struct may declare multiple opcode fields. BigInteger, BigDecimal, File and Process
 records and operations reside in standard library glue; the VM core manages generic NativeRecord
 shells and a host service table. File and Process are noncopyable. Process is the public type name.
-Full String, List, Map and Set isolation remains unfinished.
+List, Map and Set use parameterized opcode types and opaque standard library records; there is no
+frontend Container Kind or dedicated VM collection Kind or method implementation. List uses ArrayList
+storage. Map/Set use HashMap/HashSet storage for intrinsic scalar keys and custom keys implementing
+Hash<T>; custom keys with Equal<bool,T> but no Hash<T> use ArrayMap/ArraySet with linear lookup.
+Hash collisions are resolved with Equal. Map and Set promise neither sorted nor insertion order,
+including keyAt, valAt, at, iteration and default text. String isolation remains unfinished.

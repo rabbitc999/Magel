@@ -1,7 +1,5 @@
 # WinAPI 海龟绘图：Magel + C ABI
 
-这是 Windows 桌面示例。Magel 的 [`demo.mgl`](demo.mgl) 用宿主函数声明编排海龟路径；[`turtle.c`](turtle.c) 编成 `turtle.dll`，使用 WinAPI 创建窗口和 GDI 画布；[`glue.cpp`](glue.cpp) 由 `magel aot --glue` 嵌入独立程序，逐一从 DLL 绑定 C ABI 符号。VM 不接触 `HWND`、`HDC` 或画布内存。
-
 ## 构建与运行
 
 在仓库根目录的 PowerShell 中，先构建 `magel/magel.exe` 并准备 MinGW，再运行；编译器路径可由测试的 `--magel FILE` 指定：

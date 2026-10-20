@@ -93,12 +93,12 @@
   <text x="809" y="727" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="12" font-weight="700" fill="#14507e">集合与反射</text>
   <text x="809" y="747" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="11" fill="#55677f">std::collections · std::reflect</text>
   <rect x="1150" y="118" width="360" height="700" rx="14" fill="#ffffff" stroke="#d8e1ee" stroke-width="1.5"/>
-  <text x="1168" y="148" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="17" font-weight="700" fill="#14507e">④ 导出与宿主</text>
-  <text x="1168" y="170" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="11" fill="#55677f">magel/source/magel-emit · source/magel_glue.hpp</text>
+  <text x="1168" y="148" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="17" font-weight="700" fill="#14507e">④ VM 交付与宿主</text>
+  <text x="1168" y="170" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="11" fill="#55677f">library/stackvm · source/magel_glue.hpp</text>
   <text x="1168" y="202" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="13" font-weight="700" fill="#10233f">部署形态</text>
   <rect x="1168" y="216" width="324" height="52" rx="8" fill="#f7f9fc" stroke="#e2e9f3" stroke-width="1"/>
-  <text x="1179" y="237" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="12" font-weight="700" fill="#14507e">桌面 AOT C++</text>
-  <text x="1179" y="257" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="11" fill="#55677f">原生函数 · 基本块 + goto · 宿主胶水</text>
+  <text x="1179" y="237" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="12" font-weight="700" fill="#14507e">VM 宿主集成</text>
+  <text x="1179" y="257" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="11" fill="#55677f">字节码 · 原生注册表 · 同步回调</text>
   <rect x="1168" y="278" width="324" height="52" rx="8" fill="#f7f9fc" stroke="#e2e9f3" stroke-width="1"/>
   <text x="1179" y="299" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="12" font-weight="700" fill="#14507e">嵌入式字节码</text>
   <text x="1179" y="319" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="11" fill="#55677f">固定容量 VM 字节堆</text>
@@ -121,7 +121,7 @@
   <text x="1179" y="685" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="11" fill="#55677f">example/samples/ + check.sh</text>
   <rect x="1168" y="706" width="324" height="52" rx="8" fill="#f7f9fc" stroke="#e2e9f3" stroke-width="1"/>
   <text x="1179" y="727" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="12" font-weight="700" fill="#14507e">导出回归</text>
-  <text x="1179" y="747" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="11" fill="#55677f">tests/magel_generator.py / magel_emit.py</text>
-  <text x="40" y="859" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="12" fill="#55677f">构建关系：ParseEngine 从 magel.gram 生成 MAGEL 编译器；编译器将 .mgl 降级为四元式，交给 StackVM 或 magel-emit。</text>
+  <text x="1179" y="747" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="11" fill="#55677f">tests/magel_generator.py / magel_tool.py</text>
+  <text x="40" y="859" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="12" fill="#55677f">构建关系：ParseEngine 从 magel.gram 生成 MAGEL 编译器；编译器将 .mgl 降级为四元式，交给共享 StackVM 执行。</text>
   <text x="40" y="885" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="12" fill="#55677f">语言细节与当前支持范围见 README.md；解析器生成器（ParseEngine）总览见它自己的仓库。</text>
 </svg>

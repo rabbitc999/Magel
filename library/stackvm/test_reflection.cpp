@@ -259,7 +259,7 @@ int main(int argc, char **argv)
         for (unsigned i = 0; i < 4; ++i) file[20 + i] = std::uint8_t(crc >> (8 * i));
         write(directory + "/legacy-capability.svmb", file);
         CHECK(stackvm::loadProgramBinary(directory + "/legacy-capability.svmb", loaded) && loaded.reflection.empty());
-        // 为真实 magel-emit VM/AOT 查询测试保留输入和宿主断言。
+        // 为真实 VM 查询测试保留输入和宿主断言。
         std::ofstream quad(directory + "/metadata.quad", std::ios::binary);
         quad << "# magel-features: reflection\n# magel-reflection: " << *hex << "\n(write, 42, _, _)\n(halt, _, _, _)\n";
         std::ofstream header(directory + "/query.inc", std::ios::binary);

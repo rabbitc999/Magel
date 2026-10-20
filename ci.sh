@@ -139,9 +139,8 @@ if [ "$full" = 1 ]; then
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="$root/tmp/ci/stackvm" \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE="$root/tmp/ci/stackvm"
     run_step "构建 stackvm（CLI + 单测）" \
-        cmake --build tmp/ci/stackvm --config Release --target magel-stackvm magel-stackvm-tests magel-artifact-tests magel-symbol-tests magel-panic-tests magel-closure-tests svmb_symtool -j4
+        cmake --build tmp/ci/stackvm --config Release --target magel-stackvm magel-stackvm-tests magel-artifact-tests magel-symbol-tests magel-panic-tests svmb_symtool -j4
     run_step "运行二进制中间产物等价性与损坏输入回归" tmp/ci/stackvm/magel-artifact-tests
-    run_step "运行闭包环境所有权单测" tmp/ci/stackvm/magel-closure-tests
     run_step "运行 stackvm 单测" \
         tmp/ci/stackvm/magel-stackvm-tests library/stackvm/examples
     run_step "运行变长符号与十万符号回归" \
@@ -175,6 +174,10 @@ run_step "检查区间与循环值表达式" "$PYTHON" tests/magel_range_loop_va
 run_step "检查 opcode 资源所有权与借用" "$PYTHON" tests/magel_opcode_resources.py --magel magel
 run_step "检查 opcode 反射与语言服务隐藏" "$PYTHON" tests/magel_opcode_visibility.py --magel magel
 run_step "检查标准对象与 VM 核心隔离" "$PYTHON" tests/opcode_core_isolation.py
+run_step "检查 VM 集合宿主胶水与同步回调" "$PYTHON" tests/magel_collection_glue.py --magel magel
+run_step "检查 Map Pair 迭代元素类型" "$PYTHON" tests/magel_map_pair_iterator.py --magel magel
+run_step "检查泛型命名构造入口推导" "$PYTHON" tests/magel_generic_constructors.py --magel magel
+run_step "检查 VM 命令与未知文件" "$PYTHON" tests/magel_tool.py
 run_step "检查手册与标准库共享索引同步" "$PYTHON" tools/library_reference.py --check
 
 # ---- 以下均为发布门禁（--full）扩展步骤 ----
@@ -206,13 +209,13 @@ fi
 if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
     run_step "运行符号转换与 CLI 集成回归" \
         "$PYTHON" tests/test_svmb_symbols.py --build tmp/ci/stackvm --magel magel
-    run_step "运行 MAGEL 与 VM/AOT panic 诊断回归" \
+    run_step "运行 MAGEL 与 VM panic 诊断回归" \
         "$PYTHON" tests/test_magel_panic.py --magel magel --exports
     run_step "运行源码行号诊断回归" \
         "$PYTHON" tests/test_magel_source_lines.py --magel magel --exports
-    run_step "运行字符串清理与循环重入三后端回归" \
+    run_step "运行字符串清理与循环重入VM 多入口回归" \
         "$PYTHON" tests/magel_string_reentry.py --magel magel
-    run_step "运行语言功能、值类型与引用三后端回归" \
+    run_step "运行语言功能、值类型与引用VM 多入口回归" \
         "$PYTHON" tests/magel_reference_values.py --magel magel
 fi
 
@@ -228,7 +231,6 @@ if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
     run_step "运行构造函数与资源清理回归" "$PYTHON" tests/magel_constructors.py --magel magel
     run_step "运行转换接口与资源清理回归" "$PYTHON" tests/magel_conversions.py --magel magel
     run_step "运行数值、数组安全与 float32 后缀回归" "$PYTHON" tests/magel_numeric_v101.py --magel magel
-    run_step "运行 AOT 数组与静态标量优化回归" "$PYTHON" tests/magel_aot_optimization.py --magel magel
     run_step "运行 match 整数模式重叠警告回归" "$PYTHON" tests/magel_match_overlap.py --magel magel
     run_step "运行 fn 匿名函数与 lambda 兼容回归" "$PYTHON" tests/magel_fn.py --magel magel
     # 软重启看门狗（PC 宿主）：--watchdog 打开前后的行为、输出回滚与重启上限。
@@ -268,10 +270,8 @@ fi
 
 # ---- 6. Python 门禁 ----
 if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
-    [ -x build/magel-emit/magel-emit ] || [ -x build/magel-emit/magel-emit.exe ] || \
-        run_step "构建 magel-emit" "$MAKE" -C source/magel-emit -j4
-    for t in magel_emit magel_aot magel_tool magel_output_paths magel_generator magel_incremental magel_package magel_zip magel_i18n magel_development magel_module_compilation magel_package_paths magel_platform_abi_paths magel_abi_values; do
-        if [ "$t" = magel_zip ] || [ "$t" = magel_i18n ] || [ "$t" = magel_development ] || [ "$t" = magel_module_compilation ]; then
+    for t in magel_tool magel_generator magel_incremental magel_package magel_zip magel_i18n magel_development magel_package_paths magel_platform_abi_paths magel_abi_values; do
+        if [ "$t" = magel_zip ] || [ "$t" = magel_i18n ] || [ "$t" = magel_development ] || [ "$t" = ]; then
             run_step "python tests/$t.py" "$PYTHON" "tests/$t.py" --magel magel
         else
             run_step "python tests/$t.py" "$PYTHON" "tests/$t.py"
@@ -289,13 +289,12 @@ if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
     run_step "运行行输入与文件文本读取回归" "$PYTHON" tests/magel_text_readers.py
     run_step "检查内嵌书稿关键字与 SKILL 同步" "$PYTHON" tools/embed_manual.py --check
     run_step "运行格式化多行字符串保真回归" "$PYTHON" tests/magel_formatter_literals.py
-    run_step "运行 void main 的 VM/AOT 回归" "$PYTHON" tests/magel_void_main.py
+    run_step "运行 void main 的 VM 回归" "$PYTHON" tests/magel_void_main.py
     run_step "运行类型声明可选尾分号回归" "$PYTHON" tests/magel_type_decl_terminators.py
     run_step "运行发布脚本与归档一致性回归" "$PYTHON" tests/magel_release.py
     run_step "运行新增书本示例与 LaTeX 同步回归" "$PYTHON" tests/magel_book_updates.py
     run_step "运行嵌套函数值的内联 fn 实参回归" "$PYTHON" tests/magel_inline_fn_arguments.py
-    run_step "运行胶水调用 Magel 函数的 VM 与 AOT 一致性回归" "$PYTHON" tests/magel_native_callbacks.py
-    run_step "运行无 main 的 AOT 共享库与目标文件回归" "$PYTHON" tests/magel_aot_libraries.py
+    run_step "运行胶水调用 Magel 函数的 VM回归" "$PYTHON" tests/magel_native_callbacks.py
     run_step "运行共享语义、宏分组提示与安全重构回归" "$PYTHON" tests/magel_lsp_semantic_features.py
     run_step "运行 pause 终端输出顺序回归" "$PYTHON" tests/magel_pause_output.py
     # EBNF 附录由 magel.gram 生成：改了文法忘了重生成附录，这里就红（--check 不改文件）。

@@ -1271,35 +1271,9 @@ bool LowerProgram(simple_ast::Program &program)
         program.functions.push_back(std::move(function));
     }
     AppendAggregateHelpers(program);
-    if (g_functionIndex.find("main") == g_functionIndex.end() && std::any_of(g_functionDecls.begin(), g_functionDecls.end(), [](const MFunctionDecl &function) { return function.cExport; }))
-    {
-        simple_ast::Function main;
-        main.name = "main";
-        main.result = simple_ast::Type::i64();
-        main.body = simple_ast::Node::block({ simple_ast::Node::ret(simple_ast::Node::i(0)) });
-        program.functions.push_back(std::move(main));
-    }
     AppendArgumentsMain(program);
     /* 函数体全降级完了，这时才展开全局停机清理（`g.close()` 之类的注销都已经反映到快照上）。 */
     AppendGlobalCleanupToEntryMain(program);
-    if (std::any_of(g_functionDecls.begin(), g_functionDecls.end(), [](const MFunctionDecl &function) { return function.cExport; }))
-    {
-        simple_ast::Function initialize;
-        initialize.name = "__magel_c_init";
-        initialize.result = simple_ast::Type::i64();
-        auto body = g_globalInit;
-        body.push_back(simple_ast::Node::ret(simple_ast::Node::i(0)));
-        initialize.body = simple_ast::Node::block(body);
-        program.functions.push_back(std::move(initialize));
-        simple_ast::Function destroy;
-        destroy.name = "__magel_c_destroy";
-        destroy.result = simple_ast::Type::i64();
-        body = EmitGlobalCleanupStatements();
-        body.push_back(simple_ast::Node::ret(simple_ast::Node::i(0)));
-        destroy.body = simple_ast::Node::block(body);
-        program.functions.push_back(std::move(destroy));
-    }
-
     /* 接口引用的方法调用：给每个用过的 `(接口, 方法)` 补一个分派函数。
      * 放在这里是因为"用过哪些"要等函数体全降级完才知道。 */
     AppendInterfaceDispatchers(program);

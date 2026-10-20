@@ -1139,19 +1139,6 @@ bool RegisterTop()
                 if (param.variadic || CAbiType(param.type).empty() || CAbiType(param.type) == "void")
                     return Fail("abi 函数 " + declaration.source + " 的参数必须是固定的 C ABI 标量、纯值结构体或单对象引用");
         }
-        declaration.cExport = top.cExport;
-        if (top.cExport)
-        {
-            const auto scalar = [](const std::shared_ptr<MType> &type, bool result) {
-                return type && (type->kind == MType::Int || type->kind == MType::Double || type->kind == MType::Bool || type->kind == MType::Char || (result && type->kind == MType::Void));
-            };
-            if (declaration.source == "main" || declaration.source == "create" || declaration.source == "destroy" || declaration.source == "last_error" || declaration.source.rfind("magel_", 0) == 0 || !scalar(declaration.signature.result, true))
-                return Fail("C 导出函数必须使用非保留名称及标量返回类型");
-            for (const auto &parameter : declaration.signature.params)
-                if (parameter.variadic || !scalar(parameter.type, false)) return Fail("C 导出函数暂只支持固定标量参数");
-            for (const auto &other : g_functionDecls)
-                if (other.cExport && other.source == declaration.source) return Fail("C 导出符号不能重载或重复：" + declaration.source);
-        }
         declaration.moduleLocal = top.moduleLocal;
         declaration.bodyId = declaration.external ? -1 : static_cast<int>(top.kids[1]);
         if (declaration.external)
@@ -1245,7 +1232,7 @@ bool RegisterTop()
         if (argumentsMain)
         {
             const std::shared_ptr<MType> type = declaration.signature.params.size() == 1u ? declaration.signature.params[0].type : nullptr;
-            if (!type || type->kind != MType::Container || type->name != "vec" || !type->elem || !IsStandardOpcode(type->elem, "String") || declaration.signature.params[0].variadic)
+            if (!type || !IsContainer(type) || type->name != "vec" || !type->elem || !IsStandardOpcode(type->elem, "String") || declaration.signature.params[0].variadic)
             {
                 return Fail("main 只允许无参数，或单个 std::lang::List<std::lang::String> 参数");
             }
@@ -1260,7 +1247,7 @@ bool RegisterTop()
     /* 「有没有入口」是**构建 / 运行**时才成立的要求：多模块工程里单独检查一个模块文件，
      * 入口 main 在别的文件里，这里没有是完全正常的。所以 `--check`（只检查，不执行）
      * 不报这条，留给真正编译时报——编辑器里也不会因此一直挂红。 */
-    if (g_functionIndex.find("main") == g_functionIndex.end() && !g_checkOnly && !std::any_of(g_functionDecls.begin(), g_functionDecls.end(), [](const MFunctionDecl &function) { return function.cExport; }))
+    if (g_functionIndex.find("main") == g_functionIndex.end() && !g_checkOnly)
         return Fail("magel 程序必须有一个 main 函数");
     /* 名字都登记完了，可以给类型发号了：`__typeTag` 与 `obj` 的类型号从此固定下来。 */
     for (const auto &entry : g_structs)

@@ -1,5 +1,7 @@
 # Borrow control flow and algorithm validation
 
+Historical configurations and measurements are preserved below. Programs execute through the VM.
+
 `source/magel_borrow_checker.hpp` checks reference escapes; `source/magel_borrow_flow.hpp` checks
 intraprocedural use after free and use after move. The adapter in
 `source/epilogue/borrow_flow.cpp` records bound storage identities and control flow.
@@ -55,13 +57,5 @@ g++ -std=c++17 -I. tests/magel_borrow_checker.cpp -o build/borrow-checker-test
 python tests/magel_algorithm_robustness.py --magel magel.exe
 python tests/magel_algorithm_robustness.py --magel magel.exe --stress-size 300000
 ```
-
-Validation passed the original sample, 60 independently brute-forced random small trees, and an AOT chain with `n=m=300000` (output `299998000`, empty stderr). This stress check validates correctness and cleanup, rather than promising compliance with the original contest time limit.
-
-Default cases run on VM and AOT. Stress inputs above 10000 vertices run on AOT only.
-Use `--skip-aot` to isolate VM behavior and `--random-cases` to change the small-case count.
-The latest input is saved to `build/algorithm-robustness/<compiler-name>/last-input.txt` for reproducing failures.
-
-Both `drop()` and `delete` are idempotent. Repeated destruction has no effect, while later reads and writes remain invalid. The default VM/AOT heap reuses physical memory but assigns distinct logical identities, so old references cannot delete new allocations. Released identities are represented by a generation range in a fixed slot per physical allocation root. Reusing that root does not append tracking records. Explicit sweep() revokes idempotent deletion for retired identities while preserving live allocations; deleting a swept identity reports MGL1205. The caller must guarantee that these retired references are no longer needed. A complete watchdog restart clears tombstones and resets the arena.
 
 Desktop and MCU builds share the single `library/stackvm/` core and lifecycle native instructions, with host features trimmed by build macros.

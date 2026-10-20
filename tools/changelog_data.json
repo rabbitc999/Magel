@@ -1,176 +1,257 @@
 {
   "versions": [
     {
-      "version": "1.0.0",
-      "title": "fn 语法定型与稳定版本基线",
+      "version": "0.21.0",
+      "title": "标准集合胶水、Pair 与 VM 工具链",
       "entries": [
         {
-          "text": "统一运行时数组形参与引用语义：T[] 按值复制长度及元素；T[] & 和 T[] const& 只读借用，T[] mut& 可变借用。数组副本按元素值语义复制与释放，只读引用禁止修改及可变转传。",
+          "text": "剥离 List、Map、Set 的前端 Container Kind、VM 专用 Kind、存储与方法，统一通过标准库胶水和 NativeRecord 协议维护复制、借用与清理。",
           "items": [
-            "float32ToBytes / float64ToBytes 的运行时数组输出重载改用 uint8[] mut&；调用时显式传入 &array，继续写回调用方缓冲区。",
-            "Windows 编译器与独立 AOT 导出器静态链接 MinGW 运行库，VSIX 内嵌编译器不再依赖用户的 MinGW PATH。",
-            "内嵌资产内容不变时保留生成文件时间戳，避免重复编译；内容变化时原子替换生成文件。",
-            "修复 Python SVMB 符号转换器对默认反射产物的拒绝，保留程序特性与反射段原字节，并校验版本、列表及文本长度和段尾边界；Python/C++ 输出逐字节一致。",
-            "同步回归门禁与现行语义：固定生成器版本、fn 样例输出、MGL1601 警告、显式构造与移动后访问；补齐默认反射检查及 Windows 路径和头文件配置，checked 继续作为 AOT 默认。"
+            "List 使用 ArrayList；内建哈希键及实现 Hash 的自定义键使用 HashMap / HashSet，无 Hash 的自定义键使用 ArrayMap / ArraySet，Equal 继续负责精确比较与去重。",
+            "Map、Set 的遍历、按位置访问与默认文本不再承诺排序或插入顺序；补齐碰撞、数组退化、复制、删除和嵌套所有权回归。",
+            "Map 的 iter / intoIter 只产生 Pair<K,V> 键值对，使用 first / second 访问，不再返回元组；补齐类型拒绝与嵌套拥有值迭代回归。",
+            "Pair 统一以 Pair::create((key, value)) 与 Pair::create(key, value) 构造，从实参推导类型，也支持显式类型参数；toTuple() 按值转换为二元组。"
           ]
         },
-        {
-          "text": "相同字节内容的普通字符串字面量在同一生成单元内合并，覆盖跨函数使用与空串；具名数据保持符号身份。编译期拒绝直接改写字面量或可变借用其字节，独立 String 值仍复制与清理。新增数据项、生成一致性和 VM/AOT 回归。",
-          "items": [
-            "修复统一工具链与工程生成器对内嵌资产的增量构建依赖，资产变更时同时重编全部消费目标，防止 AOT 使用旧运行时副本。"
-          ]
-        },
-        {
-          "text": "统一 char 与 uint8 的 u8 内存路径：单字节读写、零扩展加载及高位截断存储，保留边界与存活检查；字节码记录所需字节内存特性，旧加载器明确拒绝。",
-          "items": [
-            "定长数组初始化、整体赋值、自赋值、按值传参及返回均复制独立存储，递归维护 String 与结构体拥有元素；内联数组字段保留原存储并逐元素替换，避免别名和资源泄漏。",
-            "数组数据区和内联字段记录逻辑长度，字节数组连续保存；补充桌面 VM、checked AOT 与关闭异常和 RTTI 的 MCU 回归。",
-            "simple_ast 增加与内部 C 字符串分离的无尾零字节数组常量节点，覆盖精确 UTF-8 字节长度及内嵌零；语言层字面量类型迁移另行推进。"
-          ]
-        },
-        {
-          "text": "加入 opcode 不透明胶水类型声明，统一 new、drop 与可选 copy 生命周期绑定；#NonCopyable 在编译期拒绝复制，struct 可包含多个 opcode 字段。",
-          "items": [
-            "BigInteger、BigDecimal、File 与 Process 的宿主记录和原生操作移到标准库胶水；VM 核心只保留通用 NativeRecord 与宿主服务表，不再链接文件适配器或大数后端。",
-            "File 和 Process 禁止复制，文件及进程操作显式借用；Option/Result 增加消费式 take，Result 增加 takeError，用于转移拥有载荷。语言版本保持 1.0.0。",
-            "所有 opcode 均允许通过 move(&value) 转移所有权，包括禁止复制的 File；移动保留记录身份、不调用 copy，源绑定失效，由最终所有者销毁。补齐移动后重新借用与重复移动的编译期拒绝检查。",
-            "修复大数按值返回后直接参与 println 或 format 的临时对象泄漏，覆盖递归 fib 返回 BigInteger 与 BigDecimal 的重复格式化；公开类型名称以 std::lang 声明为准。",
-            "前端删除 String、BigInt、BigFloat、File、Proc 专用 Kind，统一使用 lang 包中的具名 opcode 声明；不保留小写 string 类型别名，取消结构体中 opcode 字段的数量限制。",
-            "opcode 支持语言保存的普通字段、实例方法与静态方法；self.opcode 为仅声明模块可读的内部句柄，禁止赋值和可写引用。反射可读取对象及公开字段，但不暴露内部句柄；补齐 VM 与 checked AOT 的字段复制、移动、胶水调用和嵌套反射回归。"
-          ]
-        },
-        {
-          "text": "调整稳定基线中的循环、区间与集合语法：循环使用 while、loop 和 for-in；List 使用方括号字面量，Set 保留花括号。",
-          "items": [
-            "删除 do...while、三段式 for 与括号区间语法；range 为左闭右开，rangeEq 为闭区间，支持整数、char 和 NextValue<T> 自定义遍历。",
-            "for-in 与 while 支持带 else 的循环值表达式，yield 和单值分支保持所有权与值语义。match 普通值支持 Equal<T>，区间模式仅支持整数与 char。",
-            "解析器由 ParseEngine 生成，显式使用 std::regex 词法模式；保持语言和插件版本为 1.0.0。",
-            "区间端点在折叠前校验十进制词素，拒绝溢出的直接字面量、常量表达式和具名常量；for-in 与 match 共用检查，并覆盖 int64 最小值与 uint64 最大值。",
-            "独立编译器工程生成器支持 ENGINE 配置及文法 include 展开，收录前端和 VM 实现分片及宿主胶水；默认同时编入前端与运行时反射，VM 核心与宿主记录后端分别构建。"
-          ]
-        },
-        {
-          "text": "新增标准库数据结构与算法模块，算法一律下沉宿主胶水：",
-          "items": [
-            "`std::tree`：`BinarySearchTree`（插入 / 删除 / 查找、中序前序后序遍历、`min` / `max` / `height`）、`RedBlackTree`（插入含双红修复，颜色 0 红 1 黑）、`MinHeap`（最小二叉堆，可当优先队列用）、`GeneralTree`（首个孩子 / 下一兄弟存储，`toBinary` / `fromBinary` 与二叉表示互转）。",
-            "`std::graph`：`Graph` 采用链式前向星，提供 `bfs` / `dfs` / `connectedComponents` / `topologicalSort`（Kahn）/ `dijkstra` / `hasCycle` / `minimumSpanningTreeWeight`（Kruskal）；`UnionFind` 路径压缩 + 按大小合并。",
-            "`std::linkedlist`：`LinkedList` 双向链表，首尾两端与游标处 O(1) 插删，含 `reverse` / `toArray` / `fromArray` / `find`，实现 `Iterator<int64>` 与 `Drop`。",
-            "`std::text` 增加字节级 KMP：`kmpFind` / `kmpFindAll`（允许重叠）/ `kmpFailureTable`。",
-            "实现分别落在 `source/glue/std_tree.hpp`、`std_graph.hpp`、`std_linkedlist.hpp`、`std_kmp.hpp`，`.mgl` 只做公开 API 壳；新增 `GLUE_NO_STD_*` 裁剪宏与 `NO_MAGEL_STD_*` 映射，接入 `magel-emit` 的 `noStd` 与 `embed_stdlib.py` 的生成资产清单。",
-            "新增样例 `example/samples/std_tree.mgl`、`std_graph.mgl`、`std_linkedlist.mgl`、`std_text_kmp.mgl` 与对应期望输出，VM 与 AOT（`--unchecked`）输出一致。"
-          ]
-        },
-        {
-          "text": "新增标准库 `std::image` 图片处理模块：",
-          "items": [
-            "`Image` 以 RGBA8888 保存 width×height 像素；`make` / `decode` / `open` 创建或加载，`encodeBmp` / `encodePpm` / `encodePgm` 与 `saveBmp` / `savePpm` / `savePgm` 编码保存。文件格式：无压缩 24/32 位 BMP、二进制 Netpbm P5/P6，按魔数自动识别。",
-            "`getPixel` / `setPixel` 读写单像素（纯下标运算，Magel 侧完成）；`convolve` 浮点核卷积（奇数核、边缘复制填充）、`pool` 不重叠窗口最大 / 平均池化；`toGray` / `fromGray`、`toARGB` / `fromARGB`、`toRGB565` / `fromRGB565` 格式转换（灰度按 BT.601 亮度，RGB565 还原按高位复制扩展）；`otsuThreshold` / `binarize` / `otsuBinarize` 大津法二值化。",
-            "重活下沉在宿主胶水 `source/glue/std_image.hpp`，注册接入 `std_glue.cpp` /`std_registry.hpp` / `magel-emit`（含 `GLUE_NO_STD_IMAGE` 裁剪与 NO_MAGEL_STD_IMAGE 映射）；所有可恢复错误走 `Result`，不 panic。",
-            "新样例 `example/samples/std_image.mgl`（含期望输出）；新测试 `tests/magel_image.py`覆盖 VM、AOT 导出（按约定 `--unchecked` 口径）、模块裁剪与 BMP 文件读写往返；测试结果落 `Result/Python-2026-10-18-std-image.output.txt`。",
-            "标准库参考手册、符号索引与 `07-stdlib-overview.md` 同步再生成。"
-          ]
-        },
-        "`std::text` 新增 `StringBuilder` 字符串构建器：片段收进 `List<String>`，`toString` 用平衡两两合并摊平，把循环拼接从 O(n²) 压到近似线性；支持 `append` / `appendLine` /`appendChar` / `appendInt` / `appendFloat` / `appendBool` / `clear` / `len`。追加方法一律原地修改返回 void（按值语义返回 `self` 的链式第二段会作用在临时副本上丢状态）。新样例 `example/samples/std_string_builder.mgl`（含期望输出）。",
-        "门禁分档：`ci.sh` 默认只跑快速门禁（生成解析器 → 构建 → 样例回归 `check.sh` →`tests/magel_image.py` → 标准库手册索引同步检查），`--full` 保留原发布门禁的全部stackvm 单测与 Python 回归；make 检测自动回退 `mingw32-make`（Windows/MSYS 环境），并修复 `test_magel_source_lines.py` 未走 `run_step`（失败既不记日志也不计失败）的漏网问题。",
-        {
-          "text": "`library/bignum` 任意精度库扩展：",
-          "items": [
-            "`BigInt` 新增快速幂 `powmod(BigInt 指数, BigInt 模数)`、`gcd` / `lcm`、非负取模 `modNonNegative`、扩展欧几里得 `extendedGcd`（返回 `ExtendedGcd{gcd,x,y}`）与模逆元 `modInverse`；素性用固定种子（可复现）的 Miller-Rabin `isProbablePrime` / `nextProbablePrime`；位运算 `&` / `|` / `^`（仅非负数，负数抛 `std::domain_error`）、`operator~`（按补码语义 `~x = -x-1`）、`bitLength` / `bitAt` / `setBit` / `clearBit` / `flipBit` / 移位；2..36 进制互转 `toString(base)` / `fromString(text, base, ok)`；通用整数 `integerRoot(value, k)`（k 次方根，二分，向下取整）。",
-            "`BigFloat` 新增 `pow(k)` / `abs()` / `isInteger()` / `floor()` / `ceil()` / `trunc()`（取整返回 `BigInt`）与 `root(k, digits)`（k 次方根，低精度预热 + 精度倍增牛顿迭代，`sqrt` 之外任意次数均可收敛）。",
-            "转换语义：`BigInt` / `BigFloat` 接受 `int64` / `double` **隐式**构造；转回 `int64` / `double` 为 **显式**（`explicit operator`）。`BigFloat` 的显式转 `int64` 保留符号（此前按幅值转换会丢负号）。",
-            "单测扩展：`test_bigint.cpp` 273 条、`test_bigfloat.cpp` 136 条，全部通过。"
-          ]
-        },
-        {
-          "text": "Magel 语言层对接 `BigInteger` / `BigDecimal` 新方法（解释器与 AOT 同路）：",
-          "items": [
-            "`BigInteger`：`pow` / `powmod` / `gcd` / `lcm` / `mod`（非负取模）/ `modInverse` / `isProbablePrime` / `nextProbablePrime` / `bitLength` / `bitAnd` / `bitOr` / `bitXor` / `strRadix(base)` / `iroot(k)`。",
-            "`BigDecimal`：`pow` / `abs` / `isInteger` / `floor` / `ceil` / `trunc` / `sqrt(digits)` / `root(k, digits)`。",
-            "实现链路：VM 原生 `__vm_bint_*` / `__vm_bfloat_*`（`library/stackvm/parts/machine_natives.cpp`，含无 BigInt 编译开关的桩）、方法降级（`source/epilogue/boxing.cpp`）与成员调用类型规则（`source/epilogue/builtins.cpp`）同步；实参按 int/bool/double 自动装箱为大数。",
-            "新样例 `example/samples/bigint_methods.mgl`（含期望输出），解释执行与 `magel aot` 导出产物输出一致。"
-          ]
-        },
-        "语言转换规则：`int64` 可**隐式**转为 `BigInteger` / `BigDecimal`，`double` 同样隐式转 `BigDecimal`；反向（大数 → `int64` / `double`）必须显式转换，编译期检查。",
-        "标准库参考文档、符号索引、`magel_stdlib_api.json` 与内嵌手册同步再生成；`tools/library_reference_data.py` 新增 `BIG_BEHAVIOR`（按 `Owner::name` 精确匹配，避免与 `std::numerics` 同名顶层函数说明冲突）。",
-        {
-          "text": "**语法清理（不兼容，三项合一）**：",
-          "items": [
-            "`break` 侧：删除 `break #level(N);` / `break #level(ALL);` 与带值退出 `break 值;`，改为 `break level N;`（`level` 后跟正整数字面量或 `all`）、`break all;` / `break level all;` 与 `yield 值;`（块 / if / match / loop 的值出口）。",
-            "`new` 侧：删除裸 `new;` / `new(实参);` 与工厂名 `static T new(...)`，改为 `heap T;`（堆分配）、`new T(实参);` / `heap new T(实参);`（构造），具名构造入口改名 `static T create(...)`（体里往 `self` 写值，不再 `return`）。`heap` 是保留关键字，不能当变量名；`heap T` 的类型位放宽为 `name_token | builtin_type`，`heap int64;` 这类内置类型堆分配不再被拒。",
-            "`foreach` 侧：删除 `foreach` 关键字，区间遍历统一写 `for (变量 in 可迭代)`，与经典 `for (init; cond; inc)` 由 `in` 前看符号区分（IELR 表仍是 `%expect 0`）。",
-            "四处关键字表（文法词形、补全 `tools/mageldev.py`、原生 LSP `tools/native_development.cpp`、VSCode 高亮）同步：`foreach` 移除并补齐 `heap` / `yield`；`tools/check_keywords.py` 的高亮提取改为递归遍历 `repository`，门禁重新生效。样例、错误样例、回归、中英文文档、书稿 LaTeX 与内嵌手册全部迁移；`for-in` 相关诊断与提示同步改名；标准库 `Deque` / `Queue` / `Channel` / `Shared` / `Arena` 的 `create` 体改为写 `self`。"
-          ]
-        },
-        "修复具名构造入口结果被丢弃时漏报：判定原先按工厂名 `new` 匹配，改名 `create` 后失效，现按具名构造入口判定并报出 `X::create(...)` 的完整名字（`tests/magel_constructors.py` 的 discarded 系列覆盖）。",
-        "修复构造函数重载在省略默认实参时静默挑第一条：`new T(...)` / `T::create(...)` 有多条候选接受同一实参个数且省略了默认实参时，现在按普通函数重载的同一套文案报出歧义（候选签名、省略的形参名与消歧建议），不再无声选中声明顺序靠前的那条。",
-        "`gen.sh` 的 ParseEngine 发行版下载新增 GitHub 源：`SOURCES` 按顺序尝试 Gitee 与 GitHub 的 `latest/ParseEngine.exe`，先成功的那个生效（GitHub 侧尚未发版时自动落到 Gitee）；`tests/gen_download.py` 补上「Gitee 失败转 GitHub」的用例。",
-        "对外链接改到 GitHub：书稿与 LaTeX 生成器的仓库地址、README、插件清单、发布脚本里的项目链接统一为 `https://github.com/rabbitc999/Magel`，ParseEngine 链接改为 `https://github.com/rabbitc999/ParseEngine`；下载说明改为两处源按顺序尝试。",
-        "文法非终结符 `foreach_stmt` / `foreach_source` 改名 `for_in_stmt` / `for_in_source`（`foreach` 关键字此前已删除，避免对外 EBNF 仍出现该名字），EBNF 附录、内嵌手册与内嵌标准库同步再生成；`Iterator` 的说明文案改为 `for-in`。",
-        "`AGENTS.md` 补充门禁范围约定：只改注释（不进入产物的文字）不必跑 `ci.sh` / `check.sh` 整套门禁，涉及文法、语义、标准库、内嵌资产、文档正文或测试时仍跑完整门禁。",
-        "精简发布门禁 `ci.sh`：合并重复覆盖，删除与 `check.sh` 样例重复的套件、5 个 LSP 子套件（保留语义与原生对齐两组）、MCU / 板级与 VM 执行差分、以及分配器 / 借用检查器 / 优化器元数据 / IR 差分 / 墓碑压缩等成对 C++ 单测；同时删除 `tests/magel_v220.py`、`magel_v250.py`、`magel_v251.py`、`magel_lsp_v250.py`、`magel_lsp_v251.py` 五个已过时套件并修正文档里指向它们的链接。",
-        "分析栈深度由文法指令 `%max_stack_depth 4096` 固定为 4096（此前沿用生成器缺省 64），嵌套闭包等深层语法结构不再触发 MGL1001「分析栈已满」。",
-        "修复链式方法调用编译期指数级卡顿：`RawExprType` 的调用分支在重载解析成功后把结果类型钉回节点，后续各阶段查询直接命中，6 层及以上链式调用从超时（>40s）降为毫秒级。",
-        "`std::iter` 新增借用快照迭代器 `setIter` / `mapIter`（`set.iter()` / `map.iter()`）：把元素或 `(K, V)` 元组快照进迭代器，来源容器保持不变；`intoIter` 系列维持搬空语义。标准库参考文档与符号索引同步再生成。",
-        "书稿补充：第 9 章 `return self;` 与链式调用的值语义、第 16 章 `Value(v)` / `None` 简写的适用条件、第 17 章迭代器一次性消费与 `fromList` / `set.iter()` / `map.iter()`；LaTeX 同步再生成。",
-        "标准库分层迁移（A/B 档）：`std::math` 的 `abs`/`min`/`max` 收敛为泛型入口，`min`/`max` 接受任意数量实参，`clamp` 保留 int64/float64 两份重载；`std::numtheory` 删除 `NumberTheory` 静态包装与全部只给胶水用的宿主私有名，改为模块级泛型自由函数 `gcd`/`lcm`/`addMod`/`mulMod`/`powMod`/`modInverse`/`isPrime`（`gcd`/`lcm` 变参，`modInverse` 全程非负中间量，无符号类型同样成立）；`std::numerics`、`std::text`、`std::path` 的实现全部下沉到 `.mgl`，删除对应宿主胶水头与模块裁剪开关，公开面 `Numerics::*`、`Text::*`、`PathString::*` 不变。迁移前后用差分探针逐值核对数学、数论、字符串（含 UTF-8）、路径与数值分析，停机文案与原宿主原文一致。",
-        "标准库 `__` 前缀符号不再进入编辑器与手册：共享索引 `tools/magel_stdlib_api.json` 生成时剔除 `__` 前缀的函数、类型与所属类型并加断言防回归（此前 `std::lang::__Range` 会作为可补全类型出现），原生 LSP 与 Python 参考实现加载索引时同样过滤；`tools/check_std_naming.py` 新增门禁，带函数体的 `__` 函数必须声明为 `inline`（模块私有），无函数体的宿主声明不受此限，`std::event::__eventTrampoline`/`__bindEventArguments`、`std::watchdog::__wdOnTick` 已补齐。",
-        "统一默认 `toString()` 与字符串转换：非 void 值展示值文本，结构体 `{...}`、List/数组 `[...]`、Set/Map `{...}`、元组 `(...)`，嵌套字符串转义，Any 复用实际载荷格式。用户无参方法与 `ImplicitConvert<String>` 补齐缺失入口，专用显式转换优先；VM/AOT 共用不依赖反射的原语，保留临时值清理和回调重入隔离，并同步 LSP、书稿和回归。",
-        "统一发布脚本的构建、书稿、回归、VSIX、一致性校验、ZIP 与 SHA256 流程；远端推送与旧标签替换均须显式启用。修正章节地图第 23/24 章之间空行造成的拆表和第 25 章丢失，转换器拒绝缺少合法分隔行的表格。",
-        "调整书稿 LaTeX 转换：所有 lstlisting 均可自然跨页，代码块移出 enumerate/itemize 环境，拆分后的有序列表保持连续编号，避免短示例造成大块留白。",
-        "补齐 Any 目标在泛型参数、字段、返回值与 List/Set/Map 元素、键值中的自动装箱，保留精确类型、键身份和借用检查；新增 Any.clear，修复临时字符串装箱清理，接口引用可直接绑定具体实现引用，书稿补充双参数组异构列表宏。",
-        "宏定义体增加独立 TextMate 区域与语义着色：区分宏指令、各组文本形参、for 循环变量及任意整数临时槽，保护字符串和注释，并在 end_macro 后恢复普通代码着色；增加真实 TextMate 引擎与原生 LSP 回归。",
-        "增强 LSP 共享绑定与类型查询：补齐 foreach(auto) 元素、显式及直接推断的泛型实参、高阶 fn 返回值和上下文匿名函数参数；auto 悬停显示完整类型及函数层次，增加可选类型内联提示。",
-        "宏签名复用编译器字符分组器，按组高亮并统计独立尾参；未闭合输入可提示，编译检查仍严格；展开预览增加行来源及任意整数临时槽的悬停与定义导航。",
-        "新增原始绑定引用查找及版本化安全重命名，拒绝遮蔽冲突、重载歧义与无法确认的宏模板引用；所有权诊断关联声明、捕获和清理位置，新增服务端及实际编辑器 provider 回归。",
-        "扩写书稿的用户自定义错误传播：解释 Try 与 FromResidual 两端协议、T/R/F 类型参数、成功与失败控制流、单次求值和提前返回清理，并区分只读传播与移动传播。",
-        "宏临时名支持任意长度十进制整数编号（含正负号），移除 `$9` 上限；以文本归一化前导零和符号，不发生宿主整数溢出，保留宏调用间的名字隔离。",
-        "foreach 支持显式 `auto` 元素类型推断，复用省略类型的现有降级路径；书稿加入多括号 vec 宏、变长列表、唯一临时名和 auto 遍历的完整示例。",
-        "补齐返回控制表达式的运行时数组结果：内部数组转移长度头与元素所有权，外部数组逐项深复制；移动后的清理读取实际引用槽并跳过空句柄，避免提前析构或重复释放。",
-        "修正括号包围的函数返回类型与匿名函数签名之间的归约冲突，支持 `(int64 fn(int64)) fn(...) { ... }` 组合闭包，并保留块末尾表达式返回及捕获生命周期检查。",
-        "对照现有功能补全书稿的返回表达式、派生接口、泛型、具名闭包、五层高阶函数、宏和宿主接口示例；补充 `1u` / `1.0f` 字面量规则，移除过时的宏兼容别名说明。",
-        "关键字手册逐项指定文档来源，修正 `ALL`、`_` 与 `impl` 的说明，隐藏内部 `__typeTag`，同步返回表达式和派生限制。",
-        "板端宿主目录统一改为 `source/stackvm_mcu/`，同步构建、控制台同步、共享 VM 引用和回归路径。",
-        "整理书稿 Magel 代码示例的缩进、运算符空格和多行分支，PDF 代码样式保留空格，避免类型、变量名及退出语句黏连。",
-        "终端手册查询 API 必须显式使用 `magel man api`；省略子命令时报错并提示正确用法，`magel man api std` 可列出标准库模块。",
-        "书稿读者入口改为语言版本、能力说明与 PDF 阅读指引，将生成与测试说明移至书稿维护页，同步 LaTeX 和 PDF。",
-        "`break #level(ALL)` 的 ALL 参数支持全部大小写组合，包括 `all`；仅在指令参数位置识别，普通变量仍可命名为 `all`。",
-        "解析器生成源码、头文件及报告归入 `source/`，对象文件和静态库归入 `build/magel-frontend/`，同步生成、构建及测试路径。",
-        "内嵌宏帮助支持 `magel man macro` 和 `--json`，覆盖有序多括号、独立变长参数及跨行大括号。",
-        "`return` 后的块、loop、if 和 match 控制表达式在 AST 中生成隐藏结果声明，分支结果类型精确一致；禁止内部嵌套 return、层级 break 和隐式提前返回的传播，内部拥有值在清理前消费，外部来源复制，保留借用寿命检查。",
-        "语句位置支持 `T name(params) { ... }` 具名闭包及局部无体声明，返回类型提供类型锚点，默认 const& 捕获，支持显式 mut/copy/move，复用 fn 的状态所有权与引用逃逸检查。",
-        "新增 `#derive(Equal, Hash, Clone)` 类型指令，复用文本宏模板生成结构体字段与枚举活动载荷的方法并注入正常 AST；编译期检查嵌套字段协议，明确禁止派生 Drop/Closeable，不生成运行时反射遍历。",
-        "宏在原有词法分析前文本替换流程中支持 `< >`、`[ ]`、`( )`、`{ }` 按定义顺序组合及重复分组，每组可声明独立的 `..args`；大括号实参支持跨行和嵌套，连续 `>>` 按字符分组，保留捕获文本与后续代码的原始行列位置，分组错误统一报告“宏Token分组不匹配”。",
-        "工具界面改为中英双语，移除日语选项、译文和消息分支；内嵌书稿、关键字说明与 AI SKILL，新增 `man help`、`man api`、`man book`、`man keyword`、`man skill`，无参数 `man` 默认显示用法，API 正文内嵌自 `doc/library/`，VSIX 携带同源 SKILL。书稿取消 Part 分组，新增学生信息系统与 H743 解释器实战，配真实跨源浏览器截图。",
-        "统一格式化示例源码；原生格式化器逐字保留多行字符串，防止缩进改变运行结果。验证 AOT 生成的 C++ 可由 MSVC 手工编译运行，工具链文档明确直接驱动尚待适配。",
-        "入口支持 `void main()` 及带 `List<String>` 参数的 void 入口；正常退出码为 0，panic 仍失败。表达式匹配的载荷副本提供稳定引用槽，支持 `break` 隐式移动。",
-        "`struct`、`enum`、`interface` 声明在 `}` 结束，尾部分号改为可选并兼容原有写法。",
-        "独立花括号语句不再创建可丢弃的块结果槽；没有外层值表达式接收的带值 break 报错，保留嵌套赋值 loop 各自接收结果并同步类型及控制流分析。",
-        "AOT 默认开启 `checked` 的可选分配护栏与 panic 跟踪，并使用 `-O3`，按静态标量类型直接读写内存，生成数组检查成功路径，复用调用帧内宿主参数缓冲区；保留边界与失效地址诊断，修正指针索引乘法溢出检查，并增加同步重入、模块构建与优化前后及 JDK 8/22 性能对照。",
-        "新增 `break #level(N);` 与 `break #level(ALL);`，仅按包围循环计层，跨层退出清理沿途作用域并同步返回路径和借用检查。",
-        "对 match 整数区间及单值模式的重叠发出警告，按开闭端点判断相交，保持编译成功与分支选择顺序；命令行、JSON 和编辑器保持警告级别，目标版本保持 1.0.0。",
-        "显式 `break i;` 优先移动值表达式内部可写局部变量、复制外部变量，元组逐项应用相同的移动或复制规则；统一复用移动后访问、只读来源与借用寿命检查，修正带值出口穿透循环及循环内解构重入的借用控制流，补充 VM/AOT 资源身份、析构及清理顺序回归。",
-        "支持 `break a, b;` 以元组退出；带值退出穿透无值循环并交给最近接收结果的表达式，保留无值循环退出规则，同步类型推导、路径检查与资源清理回归。",
-        "Windows 下 `gen.sh` 未找到 ParseEngine 时自动下载最新发布版生成器，下载失败不保留不完整的可执行文件。",
-        "移除 lambda 关键字及匿名函数兼容解析，仅保留 fn；同步补全、高亮、语言服务、文档与编程 Skill。",
-        "将此前 1.0.0 至 1.3.0 的发布按顺序重排为 0.18.0 至 0.18.6，历史基准重新标识实际被测版本。",
-        "以本次版本作为新的稳定基线，统一编译器、语言服务、编辑器扩展及交付版本为 1.0.0。",
-        "添加 FK-STM32H743XIH6 板端工程，共用 VM 核心，使用 SDRAM 内存池、FatFS、USART1，以及 LCD 程序选择和按键原生函数；程序退出或 panic 后返回选择页。",
-        "修复 FatFS 后端的打开模式转换和追加写入位置，以及外部运行时池首次绑定时提前构造过小占位池的问题；支持 SDRAM 就绪前的元数据启动分配。",
-        "内置 FK 板级库及其构建依赖、来源哈希与许可，取消对原工程目录的构建依赖；默认上电运行一次 benchmark。",
-        "修复 benchmark 缺少按键退出分支的问题，支持 MODE/ENTER 实体按下及 USART1 虚拟按键退出，清理返回菜单后的残留事件；烧录工具增加 RAM 上传和逐页回读校验及扇区重试。",
-        "修复嵌套函数值调用直接传入 fn 表达式时继承外层函数类型上下文的问题，保留临时闭包所有权和形参签名检查。",
-        "移动后禁止读写或重绑原绑定，只能通过二次声明建立新的同名变量；分开处理移动、析构与存储释放状态，保留循环声明和分支合流检查。",
-        "修复闭包稳定单元中函数值未释放，以及板端在安装 SDRAM 分配器之前构造字节池索引导致动态字符串分配中止的问题。",
-        "删除入门书 LaTeX 高亮表残留的 lambda 关键字，统一匿名函数语法说明为 fn 并重新生成书本。",
-        "补齐胶水同步调用 Magel 函数的 VM/AOT 对齐示例与差分门禁，覆盖闭包、标量、void、引用、高阶函数和嵌套重入；提供 Function::tryInvoke 显式成败检查，并保留回调失败的原始运行时诊断。",
-        "修复 AOT 函数指针分派忽略实参数量的问题，少传或多传参数时报告诊断，避免访问越界或静默丢弃参数。",
-        "AOT 按扩展名输出 `.dll` / `.so` 共享库和 `.o` 可重定位文件，支持 `--object`、无 `main` 的 `export` 库、模块缓存及 make；校验目标平台，不提供静态库。",
-        "统一中文、英文、入门书及 MCU 宿主文档，新增能力与边界总览；校准借用检查、可选引用、手动分配、反射默认值、VM/AOT、宿主与板端配置，保留历史性能数据的原测试标识。"
+        "程序通过统一 VM 执行，支持源码运行、四元式与 .svmb 字节码输出，以及桌面、嵌入式宿主胶水。",
+        "同步更新中英文功能文档、入门书与执行流程图；Magel 当前开发版本为 0.21.0，VS Code 扩展包独立使用 1.0.0；此前开发记录细分为 0.19.0–0.19.15 与 0.20.0–0.20.16。",
+        "修复反射常量桥接固定截取类型身份前缀的问题，正确生成字符串注解默认值，保留既有元数据 ID；没有显式构造函数的结构体通过反射使用默认初始化。"
+      ]
+    },
+    {
+      "version": "0.20.16",
+      "title": "opcode 与循环集合语法",
+      "entries": [
+        "加入 opcode 不透明胶水类型声明，统一 new、drop 与可选 copy 生命周期绑定；#NonCopyable 在编译期拒绝复制，struct 可包含多个 opcode 字段；调整开发基线中的循环、区间与集合语法：循环使用 while、loop 和 for-in；List 使用方括号字面量，Set 保留花括号。"
+      ]
+    },
+    {
+      "version": "0.20.15",
+      "title": "字符串字面量合并",
+      "entries": [
+        "相同字节内容的普通字符串字面量在同一生成单元内合并，覆盖跨函数使用与空串；具名数据保持符号身份。"
+      ]
+    },
+    {
+      "version": "0.20.14",
+      "title": "字节数组布局与值复制",
+      "entries": [
+        "统一 char 与 uint8 的 u8 内存路径：单字节读写、零扩展加载及高位截断存储，保留边界与存活检查；字节码记录所需字节内存特性，旧加载器明确拒绝。"
+      ]
+    },
+    {
+      "version": "0.20.13",
+      "title": "运行时数组形参语义",
+      "entries": [
+        "统一运行时数组形参与引用语义：T[] 按值复制长度及元素；T[] & 和 T[] const& 只读借用，T[] mut& 可变借用。"
+      ]
+    },
+    {
+      "version": "0.20.12",
+      "title": "构建归档与书稿生成",
+      "entries": [
+        "统一发布脚本的构建、书稿、回归、VSIX、一致性校验、ZIP 与 SHA256 流程；远端推送与旧标签替换均须显式启用；调整书稿 LaTeX 转换：所有 lstlisting 均可自然跨页，代码块移出 enumerate/itemize 环境，拆分后的有序列表保持连续编号，避免短示例造成大块留白；门禁分档：`ci.sh` 默认只跑快速门禁（生成解析器 → 构建 → 样例回归 `check.sh` →`tests/magel_image.py` → 标准库手册索引同步检查），`--full` 保留完整门禁的全部stackvm 单测与 Python 回归；make 检测自动回退 `mingw32-make`（Windows/MSYS 环境）。"
+      ]
+    },
+    {
+      "version": "0.20.11",
+      "title": "标准库胶水与值文本",
+      "entries": [
+        "标准库分层迁移（A/B 档）：`std::math` 的 `abs`/`min`/`max` 收敛为泛型入口，`min`/`max` 接受任意数量实参，`clamp` 保留 int64/float64 两份重载；`std::numtheory` 删除 `NumberTheory` 静态包装与全部只给胶水用的宿主私有名；标准库 `__` 前缀符号不再进入编辑器与手册：共享索引 `tools/magel_stdlib_api.json` 生成时剔除 `__` 前缀的函数、类型与所属类型并加断言防回归（此前 `std::lang::__Range` 会作为可补全类型出现），原生 LSP 与 Python 参考实现加载索引时同样过滤；`tools/check_std_naming.py` 新增门禁；统一默认 `toString()` 与字符串转换：非 void 值展示值文本，结构体 `{...}`、List/数组 `[...]`、Set/Map `{...}`、元组 `(...)`，嵌套字符串转义，Any 复用实际载荷格式。"
+      ]
+    },
+    {
+      "version": "0.20.10",
+      "title": "调用缓存与快照迭代器",
+      "entries": [
+        "修复链式方法调用编译期指数级卡顿：`RawExprType` 的调用分支在重载解析成功后把结果类型钉回节点，后续各阶段查询直接命中，6 层及以上链式调用从超时（>40s）降为毫秒级；`std::iter` 新增借用快照迭代器 `setIter` / `mapIter`（`set.iter()` / `map.iter()`）：把元素或 `(K, V)` 元组快照进迭代器，来源容器保持不变；`intoIter` 系列维持搬空语义；书稿补充：第 9 章 `return self;` 与链式调用的值语义、第 16 章 `Value(v)` / `None` 简写的适用条件、第 17 章迭代器一次性消费与 `fromList` / `set.iter()` / `map.iter()`；LaTeX 同步再生成。"
+      ]
+    },
+    {
+      "version": "0.20.9",
+      "title": "门禁与解析栈预算",
+      "entries": [
+        "`AGENTS.md` 补充门禁范围约定：只改注释（不进入产物的文字）不必跑 `ci.sh` / `check.sh` 整套门禁，涉及文法、语义、标准库、内嵌资产、文档正文或测试时仍跑完整门禁；精简发布门禁 `ci.sh`：合并重复覆盖；分析栈深度由文法指令 `%max_stack_depth 4096` 固定为 4096（此前沿用生成器缺省 64），嵌套闭包等深层语法结构不再触发 MGL1001「分析栈已满」。"
+      ]
+    },
+    {
+      "version": "0.20.8",
+      "title": "生成器下载与工具链文法",
+      "entries": [
+        "`gen.sh` 的 ParseEngine 发行版下载新增 GitHub 源：`SOURCES` 按顺序尝试 Gitee 与 GitHub 的 `latest/ParseEngine.exe`，先成功的那个生效（GitHub 侧尚未发版时自动落到 Gitee）；`tests/gen_download.py` 补上「Gitee 失败转 GitHub」的用例；对外链接改到 GitHub：书稿与 LaTeX 生成器的仓库地址、README、插件清单、发布脚本里的项目链接统一为 `https://github.com/rabbitc999/Magel`，ParseEngine 链接改为 `https://github.com/rabbitc999/ParseEngine`；下载说明改为两处源按顺序尝试；文法非终结符 `foreach_stmt` / `foreach_source` 改名 `for_in_stmt` / `for_in_source`（`foreach` 关键字此前已删除，避免对外 EBNF 仍出现该名字），EBNF 附录、内嵌手册与内嵌标准库同步再生成；`Iterator` 的说明文案改为 `for-in`。"
+      ]
+    },
+    {
+      "version": "0.20.7",
+      "title": "具名构造与默认参数",
+      "entries": [
+        "**语法清理（不兼容，三项合一）**；修复具名构造入口结果被丢弃时漏报：判定原先按工厂名 `new` 匹配，改名 `create` 后失效，现按具名构造入口判定并报出 `X::create(...)` 的完整名字（`tests/magel_constructors.py` 的 discarded 系列覆盖）；修复构造函数重载在省略默认实参时静默挑第一条：`new T(...)` / `T::create(...)` 有多条候选接受同一实参个数且省略了默认实参时，现在按普通函数重载的同一套文案报出歧义（候选签名、省略的形参名与消歧建议），不再无声选中声明顺序靠前的那条。"
+      ]
+    },
+    {
+      "version": "0.20.6",
+      "title": "大数计算与转换",
+      "entries": [
+        "`library/bignum` 任意精度库扩展；Magel 语言层对接 `BigInteger` / `BigDecimal` 新方法（VM）；语言转换规则：`int64` 可**隐式**转为 `BigInteger` / `BigDecimal`，`double` 同样隐式转 `BigDecimal`；反向（大数 → `int64` / `double`）必须显式转换，编译期检查；标准库参考文档、符号索引、`magel_stdlib_api.json` 与内嵌手册同步再生成；`tools/library_reference_data.py` 新增 `BIG_BEHAVIOR`（按 `Owner::name` 精确匹配，避免与 `std::numerics` 同名顶层函数说明冲突）。"
+      ]
+    },
+    {
+      "version": "0.20.5",
+      "title": "图像处理与字符串构建",
+      "entries": [
+        "新增标准库 `std::image` 图片处理模块；`std::text` 新增 `StringBuilder` 字符串构建器：片段收进 `List<String>`，`toString` 用平衡两两合并摊平。"
+      ]
+    },
+    {
+      "version": "0.20.4",
+      "title": "数据结构与算法",
+      "entries": [
+        "新增标准库数据结构与算法模块，算法一律下沉宿主胶水。"
+      ]
+    },
+    {
+      "version": "0.20.3",
+      "title": "VM 同步回调胶水",
+      "entries": [
+        "补齐胶水同步调用 Magel 函数的 VM 对齐示例与差分门禁，覆盖闭包、标量、void、引用、高阶函数和嵌套重入；提供 Function::tryInvoke 显式成败检查，并保留回调失败的原始运行时诊断。"
+      ]
+    },
+    {
+      "version": "0.20.2",
+      "title": "移动和闭包资源清理",
+      "entries": [
+        "修复嵌套函数值调用直接传入 fn 表达式时继承外层函数类型上下文的问题，保留临时闭包所有权和形参签名检查；移动后禁止读写或重绑原绑定，只能通过二次声明建立新的同名变量；分开处理移动、析构与存储释放状态，保留循环声明和分支合流检查；修复闭包稳定单元中函数值未释放，以及板端在安装 SDRAM 分配器之前构造字节池索引导致动态字符串分配中止的问题。"
+      ]
+    },
+    {
+      "version": "0.20.1",
+      "title": "板级 SDK 与烧录校验",
+      "entries": [
+        "内置 FK 板级库及其构建依赖、来源哈希与许可，取消对原工程目录的构建依赖；默认上电运行一次 benchmark；修复 benchmark 缺少按键退出分支的问题，支持 MODE/ENTER 实体按下及 USART1 虚拟按键退出，清理返回菜单后的残留事件；烧录工具增加 RAM 上传和逐页回读校验及扇区重试。"
+      ]
+    },
+    {
+      "version": "0.20.0",
+      "title": "FK 板端与 FatFS 宿主",
+      "entries": [
+        "添加 FK-STM32H743XIH6 板端工程，共用 VM 核心，使用 SDRAM 内存池、FatFS、USART1，以及 LCD 程序选择和按键原生函数；程序退出或 panic 后返回选择页；修复 FatFS 后端的打开模式转换和追加写入位置，以及外部运行时池首次绑定时提前构造过小占位池的问题；支持 SDRAM 就绪前的元数据启动分配。"
+      ]
+    },
+    {
+      "version": "0.19.15",
+      "title": "解析器目录与宿主工具",
+      "entries": [
+        "解析器生成源码、头文件及报告归入 `source/`，对象文件和静态库归入 `build/magel-frontend/`，同步生成、构建及测试路径；板端宿主目录统一改为 `source/stackvm_mcu/`，同步构建、控制台同步、共享 VM 引用和回归路径；Windows 下 `gen.sh` 未找到 ParseEngine 时自动下载最新发布版生成器，下载失败不保留不完整的可执行文件。"
+      ]
+    },
+    {
+      "version": "0.19.14",
+      "title": "能力文档与阅读入口",
+      "entries": [
+        "书稿读者入口改为语言版本、能力说明与 PDF 阅读指引，将生成与测试说明移至书稿维护页，同步 LaTeX 和 PDF；删除入门书 LaTeX 高亮表残留的 lambda 关键字，统一匿名函数语法说明为 fn 并重新生成书本；统一中文、英文、入门书及 MCU 宿主文档，新增能力与边界总览；校准借用检查、可选引用、手动分配、反射默认值、VM、宿主与板端配置，保留历史性能数据的原测试标识。"
+      ]
+    },
+    {
+      "version": "0.19.13",
+      "title": "书稿语义与代码排版",
+      "entries": [
+        "扩写书稿的用户自定义错误传播：解释 Try 与 FromResidual 两端协议、T/R/F 类型参数、成功与失败控制流、单次求值和提前返回清理，并区分只读传播与移动传播；对照现有功能补全书稿的返回表达式、派生接口、泛型、具名闭包、五层高阶函数、宏和宿主接口示例；补充 `1u` / `1.0f` 字面量规则，移除过时的宏兼容别名说明；整理书稿 Magel 代码示例的缩进、运算符空格和多行分支，PDF 代码样式保留空格，避免类型、变量名及退出语句黏连；统一格式化示例源码；原生格式化器逐字保留多行字符串，防止缩进改变运行结果。"
+      ]
+    },
+    {
+      "version": "0.19.12",
+      "title": "双语终端手册与宏帮助",
+      "entries": [
+        "工具界面改为中英双语，移除日语选项、译文和消息分支；内嵌书稿、关键字说明与 AI SKILL，新增 `man help`、`man api`、`man book`、`man keyword`、`man skill`，无参数 `man` 默认显示用法，API 正文内嵌自 `doc/library/`，VSIX 携带同源 SKILL；关键字手册逐项指定文档来源，修正 `ALL`、`_` 与 `impl` 的说明，隐藏内部 `__typeTag`，同步返回表达式和派生限制；终端手册查询 API 必须显式使用 `magel man api`；省略子命令时报错并提示正确用法，`magel man api std` 可列出标准库模块；内嵌宏帮助支持 `magel man macro` 和 `--json`，覆盖有序多括号、独立变长参数及跨行大括号。"
+      ]
+    },
+    {
+      "version": "0.19.11",
+      "title": "语言服务绑定与安全重命名",
+      "entries": [
+        "增强 LSP 共享绑定与类型查询：补齐 foreach(auto) 元素、显式及直接推断的泛型实参、高阶 fn 返回值和上下文匿名函数参数；auto 悬停显示完整类型及函数层次，增加可选类型内联提示；新增原始绑定引用查找及版本化安全重命名，拒绝遮蔽冲突、重载歧义与无法确认的宏模板引用；所有权诊断关联声明、捕获和清理位置，新增服务端及实际编辑器 provider 回归。"
+      ]
+    },
+    {
+      "version": "0.19.10",
+      "title": "宏编辑器着色与签名",
+      "entries": [
+        "宏定义体增加独立 TextMate 区域与语义着色：区分宏指令、各组文本形参、for 循环变量及任意整数临时槽，保护字符串和注释，并在 end_macro 后恢复普通代码着色；增加真实 TextMate 引擎与原生 LSP 回归；宏签名复用编译器字符分组器，按组高亮并统计独立尾参；未闭合输入可提示，编译检查仍严格；展开预览增加行来源及任意整数临时槽的悬停与定义导航。"
+      ]
+    },
+    {
+      "version": "0.19.9",
+      "title": "Any 装箱与接口引用",
+      "entries": [
+        "补齐 Any 目标在泛型参数、字段、返回值与 List/Set/Map 元素、键值中的自动装箱，保留精确类型、键身份和借用检查；新增 Any.clear，修复临时字符串装箱清理，接口引用可直接绑定具体实现引用，书稿补充双参数组异构列表宏。"
+      ]
+    },
+    {
+      "version": "0.19.8",
+      "title": "数组返回与高阶函数签名",
+      "entries": [
+        "补齐返回控制表达式的运行时数组结果：内部数组转移长度头与元素所有权，外部数组逐项深复制；移动后的清理读取实际引用槽并跳过空句柄，避免提前析构或重复释放；修正括号包围的函数返回类型与匿名函数签名之间的归约冲突，支持 `(int64 fn(int64)) fn(...) { ... }` 组合闭包，并保留块末尾表达式返回及捕获生命周期检查。"
+      ]
+    },
+    {
+      "version": "0.19.7",
+      "title": "匹配警告与退出值所有权",
+      "entries": [
+        "对 match 整数区间及单值模式的重叠发出警告，按开闭端点判断相交，保持编译成功与分支选择顺序；命令行、JSON 和编辑器保持警告级别，保持警告级别；显式 `break i;` 优先移动值表达式内部可写局部变量、复制外部变量，元组逐项应用相同的移动或复制规则；统一复用移动后访问、只读来源与借用寿命检查，修正带值出口穿透循环及循环内解构重入的借用控制流，补充 VM 资源身份、析构及清理顺序回归；支持 `break a, b;` 以元组退出；带值退出穿透无值循环并交给最近接收结果的表达式，保留无值循环退出规则，同步类型推导、路径检查与资源清理回归。"
+      ]
+    },
+    {
+      "version": "0.19.6",
+      "title": "块值与层级退出",
+      "entries": [
+        "独立花括号语句不再创建可丢弃的块结果槽；没有外层值表达式接收的带值 break 报错，保留嵌套赋值 loop 各自接收结果并同步类型及控制流分析；新增 `break #level(N);` 与 `break #level(ALL);`，仅按包围循环计层，跨层退出清理沿途作用域并同步返回路径和借用检查。"
+      ]
+    },
+    {
+      "version": "0.19.5",
+      "title": "入口与类型声明语法",
+      "entries": [
+        "入口支持 `void main()` 及带 `List<String>` 参数的 void 入口；正常退出码为 0，panic 仍失败；`struct`、`enum`、`interface` 声明在 `}` 结束，尾部分号改为可选并兼容原有写法。"
+      ]
+    },
+    {
+      "version": "0.19.4",
+      "title": "遍历推断与跨层退出参数",
+      "entries": [
+        "foreach 支持显式 `auto` 元素类型推断，复用省略类型的现有降级路径；书稿加入多括号 vec 宏、变长列表、唯一临时名和 auto 遍历的完整示例；`break #level(ALL)` 的 ALL 参数支持全部大小写组合，包括 `all`；仅在指令参数位置识别，普通变量仍可命名为 `all`。"
+      ]
+    },
+    {
+      "version": "0.19.3",
+      "title": "宏括号分组与临时名",
+      "entries": [
+        "宏在原有词法分析前文本替换流程中支持 `< >`、`[ ]`、`( )`、`{ }` 按定义顺序组合及重复分组，每组可声明独立的 `..args`；大括号实参支持跨行和嵌套，连续 `>>` 按字符分组，保留捕获文本与后续代码的原始行列位置，分组错误统一报告“宏Token分组不匹配”；宏临时名支持任意长度十进制整数编号（含正负号），移除 `$9` 上限；以文本归一化前导零和符号，不发生宿主整数溢出，保留宏调用间的名字隔离。"
+      ]
+    },
+    {
+      "version": "0.19.2",
+      "title": "派生协议",
+      "entries": [
+        "新增 `#derive(Equal, Hash, Clone)` 类型指令，复用文本宏模板生成结构体字段与枚举活动载荷的方法并注入正常 AST；编译期检查嵌套字段协议，明确禁止派生 Drop/Closeable，不生成运行时反射遍历。"
+      ]
+    },
+    {
+      "version": "0.19.1",
+      "title": "返回控制表达式与具名闭包",
+      "entries": [
+        "`return` 后的块、loop、if 和 match 控制表达式在 AST 中生成隐藏结果声明，分支结果类型精确一致；禁止内部嵌套 return、层级 break 和隐式提前返回的传播，内部拥有值在清理前消费，外部来源复制，保留借用寿命检查；语句位置支持 `T name(params) { ... }` 具名闭包及局部无体声明，返回类型提供类型锚点，默认 const& 捕获，支持显式 mut/copy/move，复用 fn 的状态所有权与引用逃逸检查。"
+      ]
+    },
+    {
+      "version": "0.19.0",
+      "title": "fn 匿名函数基线",
+      "entries": [
+        "移除 lambda 关键字及匿名函数兼容解析，仅保留 fn；同步补全、高亮、语言服务、文档与编程 Skill。"
       ]
     },
     {
       "version": "0.18.6",
-      "title": "ABI 合约、同步回调与 AOT C 导出",
+      "title": "ABI 合约、同步回调",
       "entries": [
         "ABI 返回字符串、引用和数组可以指定同库释放符号，复制完成或失败后按声明释放；增加布局边界、字符串 NUL 和缓冲区检查。"
       ]
@@ -288,13 +369,6 @@
       ]
     },
     {
-      "version": "0.15.1",
-      "title": "Windows AOT 产物恢复 .exe 后缀",
-      "entries": [
-        "修正 Windows 上 AOT 导出物的文件名：`magel aot src/main.mgl --out build/app` 以前先链接成 `build/app.exe`，再把 `.exe` 改名去掉，留下一个系统不认的执行映像，双击或直接调用都跑不起来；现在无扩展名直接落成 `build/app.exe`。"
-      ]
-    },
-    {
       "version": "0.15.0",
       "title": "资源所有权移动与显式闭包捕获",
       "entries": [
@@ -396,7 +470,7 @@
       "version": "0.8.2",
       "title": "修复桌面事件桥接与项目验收入口",
       "entries": [
-        "修复 GUI / car 胶水依赖 Machine 指针导致 AOT 事件登记失败的问题；通过宿主上下文取得运行期投递器，统一 VM 与 AOT 的中断排队和泵钩子入口，不保存短命的调用上下文。"
+        "统一 GUI / car 胶水的事件登记；通过宿主上下文取得运行期投递器，统一 VM 的中断排队和泵钩子入口，不保存短命的调用上下文。"
       ]
     },
     {
@@ -417,14 +491,14 @@
       "version": "0.7.1",
       "title": "修复 Windows 控制台与含空格路径，发布打包改用脚本",
       "entries": [
-        "C++ 控制台输出使用 Unicode 接口，C stdio 和子进程使用 UTF-8 代码页；退出前刷新并恢复代码页，管道与文件保留 UTF-8。共用头同步到独立生成器及 AOT 资产。"
+        "C++ 控制台输出使用 Unicode 接口，C stdio 和子进程使用 UTF-8 代码页；退出前刷新并恢复代码页，管道与文件保留 UTF-8。共用头同步到独立生成器资产。"
       ]
     },
     {
       "version": "0.7.0",
       "title": "更名为 Magel，重置版本并增加三语显示",
       "entries": [
-        "语言目录统一为 `magel/`；工具为 `magel`、`magel-emit`、`magel-generator`；源码使用 `.mgl`，工程配置及锁文件为 `magel.toml` / `magel.lock`。同步权威文法、生成器、内嵌资产、标准库、样例、测试、构建与编辑器扩展。"
+        "语言目录统一为 `magel/`；工具为 `magel`、`magel-generator`；源码使用 `.mgl`，工程配置及锁文件为 `magel.toml` / `magel.lock`。同步权威文法、生成器、内嵌资产、标准库、样例、测试、构建与编辑器扩展。"
       ]
     },
     {
@@ -438,7 +512,7 @@
       "version": "0.6.1",
       "title": "增加跨功能组合并修复静态构造临时借用漏检",
       "entries": [
-        "新增引用与泛型包装、枚举、嵌套 Result/Option、lambda / 函数指针、迭代器租约、接口分派、拥有型构造和 Drop 的组合回归；解释执行与 AOT 校验相同输出，正常退出资源诊断必须为空。"
+        "新增引用与泛型包装、枚举、嵌套 Result/Option、lambda / 函数指针、迭代器租约、接口分派、拥有型构造和 Drop 的组合回归；VM 校验输出，正常退出资源诊断必须为空。"
       ]
     },
     {
@@ -456,28 +530,21 @@
       ]
     },
     {
-      "version": "0.4.0",
-      "title": "删除内嵌 VM 导出，仅保留 AOT 与字节码",
-      "entries": [
-        "不兼容变更：删除 magel vm、--mode vm、项目 run=\"vm\"、magel-generator 的 VM 转发与 magel-emit --target cpp。magel-emit 默认目标改为 cpp-aot；保留解释运行、AOT 与 svmb/smvb 场景，字节码扩展名统一为 .svmb。"
-      ]
-    },
-    {
-      "version": "0.3.2.3",
+      "version": "0.3.5",
       "title": "Web 学生管理示例与 Windows VM 大目标文件修复",
       "entries": [
         "增加 example/web-students：Magel TCP HTTP 服务、同源浏览器管理页面与真实 SQLite 学生增删改查；含输入校验、学号唯一、错误响应、请求长度限制、SQL 文本转义与持久化。"
       ]
     },
     {
-      "version": "0.3.2.2",
+      "version": "0.3.4",
       "title": "修复运算符结果所有权与引用读取",
       "entries": [
         "用户重载运算符按实际返回签名判定所有权，补齐一元聚合结果及二元/一元字符串和容器结果的接管、丢弃清理，引用结果保持借用。"
       ]
     },
     {
-      "version": "0.3.2.1",
+      "version": "0.3.3",
       "title": "修复链式运算结果丢弃时的资源清理",
       "entries": [
         "修复重载二元运算符按值返回聚合时，独立表达式语句未执行最终结果的 Closeable / Drop 及拥有字段清理的问题。"
@@ -505,24 +572,24 @@
       ]
     },
     {
-      "version": "0.2.3",
+      "version": "0.2.5",
       "title": "新建 Magel 应用工程指令",
       "entries": [
         "增加 `magel new <目录> [--name 工程名]`，内嵌生成配置、应用入口、示例测试、说明和忽略文件，无需 Python、网络或外部模板。"
       ]
     },
     {
-      "version": "0.2.2.2",
+      "version": "0.2.4",
       "title": "类型推导与聚合资源管理修复",
       "entries": [
         "loop 在词法作用域内推导退出值类型，识别局部声明、解构和 match 载荷绑定，保留位宽及分支类型一致性检查；退出前保存独立拥有值，修复字符串、容器和聚合返回的泄漏及悬垂来源。嵌套 loop 的 break 上下文使用快照，避免栈扩容使指针失效。"
       ]
     },
     {
-      "version": "0.2.2.1",
+      "version": "0.2.3",
       "title": "反射端到端验收与所有权修复",
       "entries": [
-        "完成 JSON 到已知模型的构造与方法调用、接口实际覆盖/default 分派、枚举普通变体切换后方法调用的解释器/VM/AOT 验收；保留封闭 ReflectValue 首版范围。"
+        "完成 JSON 到已知模型的构造与方法调用、接口实际覆盖/default 分派、枚举普通变体切换后方法调用的解释器/VM 验收；保留封闭 ReflectValue 首版范围。"
       ]
     },
     {
@@ -572,13 +639,6 @@
       "title": "注解与反射基础模块",
       "entries": [
         "新增默认关闭的 `MAGEL_WITH_REFLECTION` / `STACKVM_WITH_REFLECTION` 构建宏；单次编译还需 `--reflection`，前端和实际链接的 VM 均支持时才接受。"
-      ]
-    },
-    {
-      "version": "0.1.5",
-      "title": "AOT 模块级独立编译",
-      "entries": [
-        "新增 `magel aot --separate-modules` 和 `--module-cache DIR`：按 Magel 限定模块拆分 C++ 编译单元，分别产生本地目标文件，统一链接唯一运行时与入口。"
       ]
     },
     {

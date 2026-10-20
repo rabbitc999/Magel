@@ -8,18 +8,19 @@ def main():
     root = Path(__file__).resolve().parents[1]
     directory = root / 'library/stackvm'
     forbidden = re.compile(r'\b(?:FileApi|FileHandle|BigInt|BigFloat|BigInteger|BigDecimal)\b|'
-                           r'__vm_(?:file|bint|bfloat)|ObjectKind::(?:File|Process)|'
-                           r'STACKVM_WITH_BIG(?:INT|FLOAT)|\bbignum\b')
+                           r'__vm_(?:file|bint|bfloat|vec|set|map)|ObjectKind::(?:File|Process|Vector|Set|Map|IteratorLease)|'
+                           r'STACKVM_WITH_BIG(?:INT|FLOAT)|\bbignum\b|'
+                           r'\b(?:makeList|readList|listPush|listPushStruct|readListStruct|makeMap|readMap|mapSet|makeSet|readSet|setInsert)\s*\(')
     sources = [directory / 'stackvm.cpp', *sorted(directory.glob('*.hpp')), *sorted(directory.glob('*.inc')), *sorted((directory / 'parts').glob('*'))]
     failures = []
     frontend = [root / 'source/magel_types.h', root / 'source/magel_epilogue.cpp', *sorted((root / 'source/epilogue').glob('*.cpp'))]
-    legacy_kinds = re.compile(r'MType::(?:String|BigInt|BigFloat|File|Proc)\b')
+    legacy_kinds = re.compile(r'MType::(?:String|BigInt|BigFloat|File|Proc|Container)\b')
     for path in frontend:
         source = path.read_text(encoding='utf-8')
         if legacy_kinds.search(source):
             failures.append(f'前端仍依赖已删除的具体类型 Kind：{path.relative_to(root)}')
     kinds = (root / 'source/magel_types.h').read_text(encoding='utf-8').split('enum Kind', 1)[1].split('} kind', 1)[0]
-    if re.search(r'^\s*(?:String|BigInt|BigFloat|File|Proc)\s*,', kinds, re.M):
+    if re.search(r'^\s*(?:String|BigInt|BigFloat|File|Proc|Container)\s*,', kinds, re.M):
         failures.append('MType::Kind 仍声明具体标准对象类型')
     for path in sources:
         if not path.is_file():

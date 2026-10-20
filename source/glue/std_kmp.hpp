@@ -36,7 +36,7 @@ using Reply = magel_glue::Record<ReplyTag>;
 inline void readBytes(Context &ctx, std::int64_t handle, Bytes &out)
 {
     Memory::Vector<magel_glue::Value> raw;
-    if (!ctx.readList(handle, raw))
+    if (!collection_glue::readList(ctx, handle, raw))
     {
         ctx.fail("KMP：字节列表参数无效");
         return;
@@ -55,7 +55,7 @@ inline void readBytes(Context &ctx, std::int64_t handle, Bytes &out)
 inline void writeInts(Context &ctx, Reply reply, std::size_t slot, const Ints &values)
 {
     const std::int64_t handle = reply.field<std::int64_t>(slot);
-    for (std::int64_t value : values) ctx.listPush(handle, magel_glue::Value::fromInt(value));
+    for (std::int64_t value : values) collection_glue::listPush(ctx, handle, magel_glue::Value::fromInt(value));
 }
 
 /**
@@ -208,21 +208,24 @@ inline bool bind(magel_glue::Registry &registry, Memory::String *error)
 {
     bool ok = true;
     ok = registry.bindTypedWithContext<void, Bytes, Reply>(
-        "std::text::__kmpTable",
-        [](Context &ctx, Bytes pattern, Reply reply) { kmpTable(pattern, ctx, reply); }) && ok;
+             "std::text::__kmpTable",
+             [](Context &ctx, Bytes pattern, Reply reply) { kmpTable(pattern, ctx, reply); })
+         && ok;
     ok = registry.bindTypedWithContext<void, Bytes, Bytes, std::int64_t, Reply>(
-        "std::text::__kmpFind",
-        [](Context &ctx, Bytes hay, Bytes needle, std::int64_t from, Reply reply) {
-            kmpFind(hay, needle, from, ctx, reply);
-        }) && ok;
+             "std::text::__kmpFind",
+             [](Context &ctx, Bytes hay, Bytes needle, std::int64_t from, Reply reply) {
+                 kmpFind(hay, needle, from, ctx, reply);
+             })
+         && ok;
     ok = registry.bindTypedWithContext<void, Bytes, Bytes, Reply>(
-        "std::text::__kmpFindAll",
-        [](Context &ctx, Bytes hay, Bytes needle, Reply reply) {
-            kmpFindAll(hay, needle, ctx, reply);
-        }) && ok;
+             "std::text::__kmpFindAll",
+             [](Context &ctx, Bytes hay, Bytes needle, Reply reply) {
+                 kmpFindAll(hay, needle, ctx, reply);
+             })
+         && ok;
     if (!ok && error) *error = Memory::String("std::text KMP 胶水注册失败", std::strlen("std::text KMP 胶水注册失败"));
     return ok;
 }
-} // namespace std_kmp_glue
+}  // namespace std_kmp_glue
 
 #endif

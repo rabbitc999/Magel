@@ -42,7 +42,6 @@ simple_ast::TypePtr LowerType(const std::shared_ptr<MType> &type, const Memory::
     case MType::Host:
         return LowerType(type->elem, label); /* 名义宿主类型按声明的 ABI 落槽 */
     /* 拥有型对象按通用句柄保存；opcode 的目标布局仅由胶水解释。 */
-    case MType::Container:
     case MType::Obj: return Type::i64();
     case MType::Opcode: return Type::i64();
     case MType::Struct:
@@ -156,6 +155,7 @@ int StructStride(const std::shared_ptr<MType> &type)
 Memory::String StructNameOf(const std::shared_ptr<MType> &type)
 {
     if (!type) return Memory::String();
+    if (IsContainer(type)) return Memory::String();
     if (type->kind == MType::Struct || type->kind == MType::Opcode) return type->name;
     if (type->kind == MType::Ptr) return StructNameOf(type->elem);
     return Memory::String();
@@ -676,6 +676,12 @@ bool g_usesStructCopy = false;
 Memory::String TypeKey(const std::shared_ptr<MType> &type)
 {
     if (!type) return "void";
+    if (IsContainer(type))
+    {
+        Memory::String key = type->name + "<" + TypeKey(type->elem);
+        if (type->elem2) key += ", " + TypeKey(type->elem2);
+        return key + ">";
+    }
     switch (type->kind)
     {
     case MType::Void: return "void";
@@ -692,12 +698,6 @@ Memory::String TypeKey(const std::shared_ptr<MType> &type)
     case MType::Struct: return "struct " + type->name;
     case MType::Ptr:
         return (type->readOnly ? "const& " : "mut& ") + TypeKey(type->elem);
-    case MType::Container:
-    {
-        Memory::String key = type->name + "<" + TypeKey(type->elem);
-        if (type->elem2) key += ", " + TypeKey(type->elem2);
-        return key + ">";
-    }
     case MType::Array:
     {
         /* 运行时长度数组（`T[]`）与静态数组（`T[N]`）**不是**同一个类型。 */

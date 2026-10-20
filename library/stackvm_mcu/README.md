@@ -14,7 +14,7 @@
 | --- | --- |
 | 编译器 | C++17，禁用 exceptions、RTTI 和线程安全静态初始化 |
 | STACKVM_EMBEDDED | 1，使用平台控制台与板端宿主路径 |
-| STACKVM_WITH_THREADS / STACKVM_WITH_AOT | 0，不编 OS 线程与 AOT 桥 |
+| STACKVM_WITH_THREADS | 0，不编 OS 线程 |
 | STACKVM_WITH_HOST_IO | 0，不使用桌面文件装载；宿主先读映像，再从内存解码 |
 | STACKVM_WITH_HOST_EXCEPTION_GUARD | 0，宿主回调不得抛 C++ 异常 |
 | STACKVM_WITH_DEFAULT_HEAP | 0，由宿主注入字节池 |
@@ -25,7 +25,7 @@
 整数、浮点、字符串、容器、结构体、枚举、引用、闭包、泛型、接口与协作式协程按共享核心及
 实际胶水运行。关闭 OS 线程不等于关闭所有协程。标准库能否使用还取决于导入门禁、宿主注册
 和内存预算；不承诺桌面全部模块在当前默认宿主中可用。
-NativeCallContext 已有字符串/容器读写及同步函数调用接口；本目录不再维护旧版“缺七种原生函数”的迁移清单。
+NativeCallContext 提供字符串、通用 NativeRecord、内存及同步函数调用接口；容器读写与键策略由共享的标准集合胶水 collection_glue 提供，板端宿主显式注册这份胶水，不维护 VM 容器源码副本。
 
 ## 主机验证
 

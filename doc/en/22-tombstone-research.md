@@ -1,5 +1,7 @@
 # Tombstone implementation research
 
+Historical configurations and measurements are preserved below. Programs execute through the VM.
+
 This report records the original design and the implementation points used for compression,
 explicit sweeping and watchdog restart. Following the later consolidation request, desktop
 and embedded builds both compile the single core in `library/stackvm/`; embedded features are trimmed
@@ -44,12 +46,6 @@ Both native entries are registered in `library/stackvm/parts/machine_natives.cpp
 `HeapAllocator` exposes sweep and retired-identity contracts. Unsupported custom heaps report
 that sweeping is unavailable. Sweeping advances per-slot boundaries, preserves active
 allocations and their future idempotence, and never traces or releases live objects.
-
-`Machine::run()` sweeps after all execution contexts stop for a recoverable restart.
-`RuntimeBridge::end()` performs the corresponding AOT cleanup after workers finish.
-The host then resets the arena and heap before running the logic again. Tests inspect the
-heap at this boundary: module initialization in the next run can legitimately create new
-tombstones before `main` begins.
 
 The embedded host in `library/stackvm_mcu/mcu_host.cpp` explicitly sweeps and resets its byte pool and
 identity slots before resetting the arenas. Watermark restarts after normal execution use

@@ -42,7 +42,6 @@ parameter. The literal is rounded to 32-bit precision before any widening:
 `float64 rounded = 16777217f;` therefore stores `16777216`.
 Uppercase `F` is not a suffix; `f` in a hexadecimal integer remains a hexadecimal digit.
 
-
 The lowercase `u` suffix marks an unsigned integer literal: `1u`, `0xffu`, or `b_101u`.
 Without context its type is `uint64`, covering `0u` through `18446744073709551615u`.
 An unsigned integer context checks the target width: `uint8 value = 255u;` is valid,
@@ -72,7 +71,7 @@ int64 main() {
     {
         int64 i = 1;
         while (i <= 5) {
- sum = sum + i; 
+ sum = sum + i;
             i = i + 1;
         }
     }
@@ -317,7 +316,7 @@ int64 main() {
     {
         int64 i = 0;
         while (i < 3) {
- total = total + fixed[i]; 
+ total = total + fixed[i];
             i = i + 1;
         }
     }
@@ -471,7 +470,6 @@ The tour stops here. The other half of Magel has its own documents:
 | Annotations and reflection | Compile-time metadata, queryable and callable at run time | [Language reference](04-language-reference.md) |
 | Coroutines and concurrency | `std::coroutine`, `std::thread` | [Standard library overview](07-stdlib-overview.md) |
 | Bytecode delivery | `.svmb`, symbol compression | [Delivery security](05-delivery-security.md) |
-| Embedded and AOT | Native code generation, memory pool, watchdog | [Cross-platform deployment](06-deployment.md) |
 
 ---
 

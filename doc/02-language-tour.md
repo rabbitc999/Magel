@@ -36,7 +36,6 @@ int64 main() {
 `float64` 也不会恢复精度，例如 `float64 rounded = 16777217f;` 的值为 `16777216`。
 大写 `F` 不属于此后缀语法；十六进制整数中的 `f` 仍是十六进制数字。
 
-
 整数的小写 `u` 后缀表示无符号字面量，例如 `1u`、`0xffu`、`b_101u`。
 无上下文时默认 `uint64`，支持完整范围 `0u` 到 `18446744073709551615u`；
 在无符号整型上下文中按目标位宽检查，例如 `uint8 value = 255u;` 合法，`256u` 越界。
@@ -63,7 +62,7 @@ int64 main() {
     {
         int64 i = 1;
         while (i <= 5) {
- sum = sum + i; 
+ sum = sum + i;
             i = i + 1;
         }
     }
@@ -297,7 +296,7 @@ int64 main() {
     {
         int64 i = 0;
         while (i < 3) {
- total = total + fixed[i]; 
+ total = total + fixed[i];
             i = i + 1;
         }
     }
@@ -432,7 +431,6 @@ detail square5=25
 | 注解与反射 | 编译期元数据，运行期可查询、可按名调用 | [语言参考](04-language-reference.md) |
 | 协程与并发 | `std::coroutine`、`std::thread` | [标准库概览](07-stdlib-overview.md) |
 | 字节码交付 | `.svmb`、符号压缩 | [交付安全](05-delivery-security.md) |
-| 嵌入式与 AOT | 本地代码生成、内存池、看门狗 | [跨平台部署](06-deployment.md) |
 
 ---
 

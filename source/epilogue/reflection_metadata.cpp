@@ -66,6 +66,7 @@ struct MReflectionBuilder
     Memory::String key(const std::shared_ptr<MType> &type)
     {
         if (!type) return "type:void";
+        if (IsContainer(type)) return "type:" + type->name + "<" + key(type->elem) + (type->elem2 ? "," + key(type->elem2) : Memory::String()) + ">";
         if (type->kind == MType::Struct || type->kind == MType::Host || type->kind == MType::Opcode)
         {
             const auto prefix = g_interfaces.count(type->name) ? "interface:" :
@@ -75,7 +76,6 @@ struct MReflectionBuilder
             return prefix + named(type->name);
         }
         if (type->kind == MType::Ptr) return "type:" + key(type->elem) + (type->readOnly ? " const&" : " mut&");
-        if (type->kind == MType::Container) return "type:" + type->name + "<" + key(type->elem) + (type->elem2 ? "," + key(type->elem2) : Memory::String()) + ">";
         if (type->kind == MType::Array)
         {
             auto value = "type:" + key(type->elem);

@@ -5,10 +5,6 @@
 [`glue.cpp`](glue.cpp) 把 Magel 符号绑到共享库的 C 函数。Magel 与库之间只传固定宽度整数与
 UTF-8 字符串，不传递窗口指针或控件结构。
 
-两个后端均支持**事件回调**：GUI 事件发生时就地通过 C 回调交回胶水层，
-胶水通过统一运行时投递器排队，由 VM / AOT 在下一个执行边界交付 Magel 中断事件函数。这样
-GUI 事件走的是和[宿主集成](../doc/08-host-integration.md)里的回调投放同一套"异步发生、安全点交付"机制。
-
 ## Windows 原生后端
 
 安装 MinGW 并将 `gcc`、`g++` 放入 PATH，先构建 `magel/magel.exe`，然后从仓库根目录运行：
@@ -38,14 +34,6 @@ python magel/example/gui/test_qt.py            # 用 QT_QPA_PLATFORM=offscreen
 
 有交互桌面时手动跑：
 
-```sh
-mkdir -p build/magel-gui-qt
-sh magel/example/gui/qt/build.sh build/magel-gui-qt
-./magel/magel aot magel/example/gui/examples/counter.mgl -I magel/example/gui \
-    --glue magel/example/gui/glue.cpp --out build/magel-gui-qt/counter
-cd build/magel-gui-qt && ./counter          # 点击“加一”或“问候”，关窗退出
-```
-
 共享库要和 exe 在同一个工作目录（胶水用 `./libmcguiqt.so` 定位）。Windows 上把
 `qt/build.sh` 的产物换成 `mcguiqt.dll` 即可，符号与布局约定完全一致。
 [`winapi/gui.c`](winapi/gui.c) 是 Windows 原生后端；`glue.cpp` 按平台选择默认库，也可通过环境变量覆盖。
@@ -64,16 +52,6 @@ cd build/magel-gui-qt && ./counter          # 点击“加一”或“问候”�
 | `gui::close()` | 主动关闭窗口。 |
 
 事件回调（Qt 后端）：
-
-| 调用 | 行为 |
-| --- | --- |
-| `gui::bindEvents(EventHandle)` | 把一个事件句柄（`std::event::Timer.handle` 或其他事件源）登记为 GUI / Qt 事件源；成功 1。 |
-| `gui::unbindEvents()` | 取消登记。 |
-| `gui::startEventTimer(intervalMillis)` | GUI 侧周期事件源；`0` = 每个泵回合一次，`>0` 用单调时钟限速。 |
-| `gui::stopEventTimer()` | 停掉周期事件源。 |
-| `gui::postEvent(event)` | 注入一个事件（测试 / 宿主脚本），与真实事件一样派发回调并入队。 |
-| `gui::pump()` | 处理一轮 Qt 事件（非阻塞）。 |
-| `gui::pumpEvery(instructions)` | 每 N 个执行边界自动 `pump()` 一次（VM 指令 / AOT 基本块）；传 0 取消。长计算循环里保持 GUI 响应与中断交付。 |
 
 中断处理函数收到的事件值约定：按钮点击 = 控件 ID（>0），窗口关闭 = -1，Qt 周期事件 = 0。
 
@@ -116,14 +94,6 @@ int64 main() {
 钩子定期调用 `pump()`，所以纯计算循环也能收到事件；钩子在中断交付期间不运行，避免套娃。
 
 ## ABI 与验证
-
-共享库导出 `mcgui_open`、`mcgui_label`、`mcgui_button`、`mcgui_text_box`、
-`mcgui_set_text`、`mcgui_get_text`、`mcgui_poll_event`、`mcgui_wait_event`、
-`mcgui_close`，以及事件相关的 `mcgui_pump`、`mcgui_post_event`、`mcgui_start_timer`、
-`mcgui_stop_timer`、`mcgui_set_callback`。`glue.cpp` 用 `DynamicLibrary::bind<R(Args...)>`
-按精确 C 签名绑定到 `gui::` 声明；`const char *` 返回值由胶水立即复制进 Magel。
-事件的原始符号用 `DynamicLibrary::resolve` 取，再包成带 `Context&` 的绑定，
-通过 `interruptPoster()` 取得可跨宿主调用使用的投递器，通过 `setInstructionHook()` 安装泵钩子。投递器只在所属运行时的执行线程与运行期内有效，胶水不保存短命的 `Context&`；AOT 不要求提供 `Machine *`。
 
 `python magel/example/gui/test_qt.py` 在 `QT_QPA_PLATFORM=offscreen` 下验证库构建、UTF-8
 文本往返、事件注入、Qt 周期事件与每 N 条指令泵；`test_winapi.py` / `test_program.py`

@@ -58,9 +58,9 @@ def title(canvas, heading, detail):
 def compilation(english=False):
     """绘制编译阶段与三类交付出口。"""
     c = Canvas()
-    title(c, "Magel 0.9.1 · Compilation" if english else "Magel 0.9.1 · 编译过程",
-          "Source → generated front end → checked IR → execution / bytecode / AOT" if english else
-          "源码 → 文法生成的前端 → 检查与中间产物 → 内存执行 / 字节码 / AOT")
+    title(c, "Magel · Compilation" if english else "Magel · 编译过程",
+          "Source → generated front end → checked IR → execution / bytecode / quadruples" if english else
+          "源码 → 文法生成的前端 → 检查与中间产物 → VM 执行 / 字节码 / 四元式")
     nodes = [
         (40, 145, "1  Source" if english else "1  源码输入", [".mgl + imports", "Embedded standard library"] if english else [".mgl 与导入模块", "内嵌标准库"]),
         (560, 145, "2  Preprocessing" if english else "2  预处理", ["Macros and conditional compilation", "Source locations retained"] if english else ["宏展开与条件编译", "保留源码位置"]),
@@ -83,7 +83,7 @@ def compilation(english=False):
     outputs = [
         (40, "In-memory execution" if english else "内存执行", ["Program → desktop VM", "No bytecode file required"] if english else ["Program → 桌面 VM", "无需先写字节码文件"]),
         (560, ".svmb · format 5" if english else ".svmb · 格式 5", ["VM code + internal execution sequence", "Desktop / embedded VM"] if english else ["VM 指令与内部执行序列", "桌面 / 嵌入式 VM"]),
-        (1080, "AOT native program" if english else "AOT 本地程序", ["Generated C++ → native compiler", "Executable + runtime services"] if english else ["生成 C++ → 本地编译器", "可执行文件与运行时服务"]),
+        (1080, "Quadruple artifacts" if english else "四元式产物", ["Quadruples + data + layout", "Inspection or VM assembly"] if english else ["四元式、数据区与布局", "用于检查或 VM 装配"]),
     ]
     for x, heading, lines in outputs:
         arrow(c, ((x + 220, 655), (x + 220, 720)))
@@ -92,41 +92,38 @@ def compilation(english=False):
 
 
 def execution(english=False):
-    """绘制 VM 快速路径、精确回退及 AOT 执行路径。"""
+    """绘制共享 VM 的执行准备、快速路径和精确回退。"""
     c = Canvas()
-    title(c, "Magel 0.9.1 · Execution" if english else "Magel 0.9.1 · 运行过程",
-          "Desktop and embedded VMs share lowering rules; AOT executes native code" if english else
-          "桌面与嵌入式 VM 共用内部指令规则；AOT 直接执行本地机器码")
+    title(c, "Magel · Execution" if english else "Magel · 运行过程",
+          "Desktop and embedded hosts share the same VM core" if english else
+          "桌面与嵌入式宿主使用同一份 VM 执行核心")
     box(c, 40, 145, 440, ".mgl / in-memory Program" if english else ".mgl / 内存 Program",
         ["Compile source, then enter the VM", "Lower internal instructions in memory"] if english else ["源码先编译，再进入 VM", "在内存中降低内部指令"])
     box(c, 560, 145, 440, ".svmb · format 5" if english else ".svmb · 格式 5",
         ["Read and validate code + metadata", "Use the stored internal sequence"] if english else ["读取并校验指令与元数据", "使用产物携带的内部序列"])
-    box(c, 1080, 145, 440, "AOT executable" if english else "AOT 可执行文件",
-        ["OS / board starts native code", "No VM instruction dispatch"] if english else ["操作系统 / 板端启动机器码", "无需 VM 指令分派"])
+    box(c, 1080, 145, 440, "VM host configuration" if english else "VM 宿主配置",
+        ["Native registry and memory budget", "Input / output and peripherals"] if english else ["原生注册表与内存预算", "输入输出与外设适配"])
     arrow(c, ((260, 265), (260, 320)))
     arrow(c, ((780, 265), (780, 320)))
     arrow(c, ((1300, 265), (1300, 320)))
-    box(c, 40, 320, 960, "VM execution preparation" if english else "VM 执行准备",
+    box(c, 40, 320, 1480, "VM execution preparation" if english else "VM 执行准备",
         ["Bind symbols / jumps / natives; allocate per-function continuous slots" if english else
          "绑定符号、跳转和原生入口；按函数分配连续槽位",
          "16-bit local register IDs; wide-slot fallback for oversized functions" if english else
          "16 位局部寄存器编号；超大函数保留宽槽回退"], green=True)
-    box(c, 1080, 320, 440, "Native execution" if english else "本地执行",
-        ["Native arithmetic and control flow", "Native function calls"] if english else ["机器码运算与控制流", "本地函数调用"], green=True)
-    arrow(c, ((260, 440), (260, 510)))
-    arrow(c, ((780, 440), (780, 510)))
-    box(c, 40, 510, 440, "Internal instruction path" if english else "内部指令快速路径",
+    arrow(c, ((400, 440), (400, 510)))
+    arrow(c, ((1160, 440), (1160, 510)))
+    box(c, 40, 510, 720, "Internal instruction path" if english else "内部指令快速路径",
         ["Integer register control-flow regions", "Independent loop; periodic safe points"] if english else
         ["整数寄存器控制流区域", "独立分派循环；定期返回安全点"], green=True)
-    box(c, 560, 510, 440, "Precise fallback path" if english else "基础指令精确路径",
+    box(c, 800, 510, 720, "Precise fallback path" if english else "基础指令精确路径",
         ["Dynamic values / debug / hooks", "Step, stack and async boundaries"] if english else
         ["动态值、调试与指令钩子", "步数、栈容量与异步边界"])
-    arrow(c, ((260, 630), (260, 665)))
-    arrow(c, ((780, 630), (780, 665)))
-    box(c, 40, 665, 960, "Update PC → dispatch next instruction / return / stop" if english else
+    arrow(c, ((400, 630), (400, 665)))
+    arrow(c, ((1160, 630), (1160, 665)))
+    box(c, 40, 665, 1480, "Update PC → dispatch next instruction / return / stop" if english else
         "更新 PC → 继续分派下一条指令 / 返回 / 终止", [], height=60)
-    arrow(c, ((520, 725), (520, 770)))
-    arrow(c, ((1300, 440), (1300, 770)))
+    arrow(c, ((780, 725), (780, 770)))
     box(c, 40, 770, 1480, "Runtime services during execution; output and cleanup at exit" if english else
         "执行期间使用运行时服务；退出时输出结果并清理资源",
         ["Data / heap · host natives · I/O · drop / delete · error reporting" if english else

@@ -17,13 +17,12 @@
 | [学生成绩管理 · 控制台版](#42-学生成绩管理--控制台版) | [`example/sql-magel/example/ipage-student/`](../example/sql-magel/example/ipage-student) | 真实 MySQL 库、四角色权限矩阵、菜单回收 | MySQL |
 | [学生成绩管理 · 前后端分离版](#43-学生成绩管理--前后端分离版) | [`example/sql-magel/example/ipage-student-server/`](../example/sql-magel/example/ipage-student-server) | 后端只出 JSON API、前端独立托管、跨源 CORS | MySQL + 静态服务器 |
 | [计算器（两种 AST）](#51-计算器两种-ast) | [`example/calculator/`](../example/calculator/) | 递归下降解析、值语义下的递归拥有 | 无 |
-| [模块编译](#52-模块编译) | [`example/module-compilation/`](../example/module-compilation/) | 多模块工程的 AOT 局部重编译 | 无 |
 | [注解与反射](#53-注解与反射) | [`example/reflection/`](../example/reflection/) | 编译期注解、运行期元数据查询 | 需开启反射构建宏 |
 | [标准库配套程序](#54-标准库配套程序) | [`doc/examples/library/`](examples/library/) | io / sqlite / watchdog / reflect 四段可跑程序 | 部分需反射 |
 | [C ABI 配套示例](#55-c-abi-配套示例) | [`doc/examples/abi_buffers/`](examples/abi_buffers/)、[`abi_dynamic/`](examples/abi_dynamic/) | 静态缓冲与动态库两种绑定方式 | C 编译器 |
 | [`.svmb` 证据包](#6-交付与逆向svmb-证据包) | [`doc/examples/svmb/`](examples/svmb/) | 字节码标本、逐节解剖、可复现的逆向成本数据 | 无 |
 | [板端虚拟机](#71-板端虚拟机-mcu_vm) | [`library/stackvm_mcu/`](../library/stackvm_mcu) | `-fno-exceptions` 口径下的 `.svmb` 运行时 | C++ 编译器 |
-| [胶水回调](../example/native-callbacks/README.md) | [`example/native-callbacks/`](../example/native-callbacks/) | 同一胶水在 VM/AOT 调用具名函数、闭包、引用及高阶回调 | C++ 编译器 |
+| [胶水回调](../example/native-callbacks/README.md) | [`example/native-callbacks/`](../example/native-callbacks/) | 同一胶水在 VM 调用具名函数、闭包、引用及高阶回调 | C++ 编译器 |
 | [编辑器语言服务器](#72-编辑器语言服务器与-vs-code-插件) | [`source/lsp/`](../source/lsp)、[`vscode/`](../vscode/) | 宏配对检查、语义高亮、真诊断 | 无 / VS Code |
 
 ---
@@ -53,7 +52,7 @@
 两者之间只传固定宽度整数与 UTF-8 字符串——**不传窗口指针或控件结构**。
 
 事件走的是和软件定时器同一套「异步发生、安全点交付」机制：GUI 事件经 C 回调交回胶水层，
-由运行时投递器排队，VM / AOT 在下一个执行边界交付 Magel 中断函数。
+由运行时投递器排队，VM 在下一个执行边界交付 Magel 中断函数。
 
 **怎么跑**：
 
@@ -65,9 +64,6 @@ python tests/magel_desktop.py        # WinAPI：出 GUI 与海龟两个产物
 python gui/test_qt.py                # Qt 离屏：构建、UTF-8 往返、事件注入、pumpEvery
 ```
 
-手动跑 Qt 版：`sh gui/qt/build.sh build/magel-gui-qt`，再
-`magel aot gui/examples/counter.mgl -I gui --glue gui/glue.cpp --out build/magel-gui-qt/counter`。
-
 **怎么验证**：`tests/magel_desktop.py`（WinAPI）、`example/gui/test_qt.py`（Qt 离屏）、
 `example/gui/test_winapi.py`、`example/gui/test_program.py`。
 
@@ -76,12 +72,6 @@ python gui/test_qt.py                # Qt 离屏：构建、UTF-8 往返、事�
 事件值约定为「按钮点击 = 控件 ID（>0）、关窗 = -1、Qt 周期事件 = 0」。
 
 ### 3.2 海龟绘图（turtle_winapi）
-
-**演示什么**：最小但完整的 C ABI 桌面示例。[`demo.mgl`](examples/turtle_winapi/demo.mgl)
-用宿主函数声明编排海龟路径，[`turtle.c`](examples/turtle_winapi/turtle.c) 编成 `turtle.dll`
-用 WinAPI 创建窗口与 GDI 画布，[`glue.cpp`](examples/turtle_winapi/glue.cpp) 由
-`magel aot --glue` 嵌入独立程序。**VM 不接触 `HWND` / `HDC` / 画布内存**——所有画布状态
-都归窗口线程，Magel 调用经 `SendMessageW` 同步交给窗口过程。
 
 **怎么跑**：
 
@@ -119,11 +109,6 @@ Set-Location .\build\magel-turtle-winapi
 SQLite **不会**自动建目录，`build/` 要事先存在。
 
 **怎么验证**：
-
-```sh
-python tests/magel_web_students.py            # 解释执行 + AOT，每个后端 62 个真实 HTTP 请求
-python tests/magel_web_students_browser.py --browser "<Chrome 或 Edge 的路径>"
-```
 
 后者用真实浏览器操作表单，并核对 HTML 注入防护与落盘 SQL 行数。
 
@@ -187,11 +172,6 @@ python -m http.server 5500 --directory sql-magel/example/ipage-student-server/we
 
 **怎么验证**：
 
-```sh
-python tests/magel_ipage_student_server.py            # run 与 aot 各 5 组，各 207 个真实请求
-python tests/magel_ipage_student_server_browser.py --browser "<Chrome 或 Edge 的路径>"
-```
-
 接口脚本覆盖登录 / 注销 / 坏令牌、四种权限的模块可见性与动作门槛、五模块增删查改与
 聚合统计、CORS 预检、后端不返回页面、HTTP 报文边界。浏览器脚本另起一个线程内静态服务器，
 **真的跨源**跑一遍登录、按权限收放菜单与按钮、增改查删、统计页与注入防护。
@@ -211,28 +191,12 @@ python tests/magel_ipage_student_server_browser.py --browser "<Chrome 或 Edge �
 
 **怎么跑**：
 
-```sh
-magel run example/calculator/calc.mgl
-magel run example/calculator/calc_nested.mgl
-magel aot example/calculator/calc.mgl --out build/calculator && build/calculator
-```
-
 默认输入的 12 行里 7 行成功、5 行报应用错误（含除零、语法错误、未定义变量，
 以及 `min(x, y, z)` 参数过多）。
 
-**怎么验证**：`python tests/magel_recursive_ownership.py`——同时检查解释执行、AOT、
-两种表示的数值与错误报告，以及资源诊断。
-
 ### 5.2 模块编译
 
-**演示什么**：多模块工程的 AOT 路径——按模块缓存本地目标文件、局部重编译、
-依赖失效与统一链接。工程布局见 [`example/module-compilation/magel.toml`](../example/module-compilation/magel.toml)。
-
 **怎么跑**：
-
-```sh
-magel aot example/module-compilation/main.mgl --separate-modules --out build/module-demo
-```
 
 **怎么验证**：`python tests/magel_module_compilation.py`。
 相关选项（`--separate-modules` / `--module-cache`）见[跨平台部署](06-deployment.md)。
@@ -248,7 +212,7 @@ magel aot example/module-compilation/main.mgl --separate-modules --out build/mod
 magel --reflection example/reflection/annotations.mgl --out build/annotation-example
 ```
 
-**怎么验证**：`python tests/magel_annotations.py`（会生成并实际运行 VM 与 AOT 两种独立程序）。
+**怎么验证**：`python tests/magel_annotations.py`（会生成并实际运行 VM 两种独立程序）。
 
 **边界**：注解保存于编译器 AST 并完成类型检查；`std::reflect::` 的完整运行期 API 见
 [库函数参考](library/README.md)。
@@ -359,13 +323,11 @@ VS Code 插件在 [`vscode/`](../vscode/)，语法高亮、补全、跳转与断
 | `sh check.sh` | `example/samples/` 全部样例 + 预期输出比对 |
 | `python tests/magel_desktop.py [--turtle-only]` | WinAPI GUI / 海龟两套桌面产物 |
 | `python gui/test_qt.py <目录>`（Linux） | Qt 后端的构建、UTF-8、事件注入与 `pumpEvery` |
-| `python tests/magel_web_students.py` | Web 学生管理：解释执行 + AOT |
 | `python tests/magel_web_students_browser.py --browser …` | Web 学生管理的真浏览器流程 |
 | `sh sql-magel/tests/check-ipage.sh` | 成绩管理控制台版（不碰真实库） |
 | `python tests/magel_ipage_student_server.py` | 成绩管理前后端分离版接口 |
 | `python tests/magel_ipage_student_server_browser.py --browser …` | 前后端分离版的跨源浏览器流程 |
 | `python tests/magel_recursive_ownership.py` | 计算器的两种 AST 表示 |
-| `python tests/magel_module_compilation.py` | 模块化 AOT 与局部重编译 |
 | `python tests/magel_annotations.py` | 注解与反射 |
 | `python tests/magel_library_reference.py` | 标准库配套程序 |
 | `python tests/magel_abi_values.py` | C ABI 配套示例 |

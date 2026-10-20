@@ -36,13 +36,12 @@ const stackvm::NativeRecordType unique{ "unique", nullptr, destroyRecord };
 }  // namespace
 
 /**
- * @brief 通过 AOT 公共桥验证与 VM 共用的对象存储和胶水上下文。
+ * @brief 通过 VM 原生调用上下文验证对象存储、独立复制与退出清理。
  * @return 所有生命周期断言通过时返回零。
  */
 int main()
 {
     using stackvm::NativeValue;
-    using stackvm::RuntimeValue;
     stackvm::NativeRegistry registry;
     assert(registry.add("create", 0, [](stackvm::NativeCallContext &context, const Memory::Vector<NativeValue> &) {
         return NativeValue::fromInt(context.makeNativeRecord(copyable, new int(17)));
@@ -63,23 +62,27 @@ int main()
     assert(registry.add("unique", 0, [](stackvm::NativeCallContext &context, const Memory::Vector<NativeValue> &) {
         return NativeValue::fromInt(context.makeNativeRecord(unique, new int(23)));
     }));
-    stackvm::RuntimeBridge runtime;
-    runtime.setNativeRegistry(&registry);
-    assert(runtime.begin());
-    RuntimeValue result;
-    assert(runtime.callNative("create", {}, result));
-    const auto original = result;
-    assert(runtime.callNative("copy", { original }, result));
-    const auto copied = result;
-    assert(copies == 1 && copied.integer != original.integer);
-    assert(runtime.callNative("mutate", { copied }, result) && result.integer == 18);
-    assert(runtime.callNative("mutate", { original }, result) && result.integer == 18);
-    assert(runtime.callNative("drop", { copied }, result));
-    assert(runtime.callNative("drop", { copied }, result) && destroys == 1);
-    assert(runtime.callNative("unique", {}, result));
-    assert(!runtime.callNative("copy", { result }, result));
-    assert(copies == 1);
-    runtime.end();
-    assert(destroys == 3);
+    assert(registry.add("audit", 4, [](stackvm::NativeCallContext &, const Memory::Vector<NativeValue> &args) {
+        assert(copies == 1 && args[0].asInt() != args[1].asInt());
+        assert(args[2].asInt() == 18 && args[3].asInt() == 18);
+        return NativeValue::fromInt(0);
+    }));
+    const auto quads = stackvm::parseQuads(
+        "(call, create, _, original)\n(param, original, _, value)\n(call, copy, _, copied)\n"
+        "(param, copied, _, value)\n(call, mutate, _, changedCopy)\n"
+        "(param, original, _, value)\n(call, mutate, _, changedOriginal)\n"
+        "(param, original, _, original)\n(param, copied, _, copied)\n"
+        "(param, changedCopy, _, changedCopy)\n(param, changedOriginal, _, changedOriginal)\n(call, audit, _, checked)\n"
+        "(param, copied, _, value)\n(call, drop, _, dropped)\n"
+        "(param, copied, _, value)\n(call, drop, _, repeated)\n"
+        "(call, unique, _, item)\n(param, item, _, value)\n(call, copy, _, forbidden)\n(halt, _, _, _)\n",
+        "native-records.quad");
+    stackvm::Program program;
+    assert(stackvm::assemble(quads, program));
+    stackvm::Machine machine;
+    machine.setNativeRegistry(&registry);
+    const auto result = machine.run(program);
+    assert(!result.ok && !result.error.empty());
+    assert(copies == 1 && destroys == 3);
     std::cout << "native records: independent copy, type identity, noncopyable and destruction passed\n";
 }

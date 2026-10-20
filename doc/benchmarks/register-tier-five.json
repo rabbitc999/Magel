@@ -58,8 +58,6 @@
   "lua_sha256": "1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce",
   "compiler": "gcc (x86_64-posix-seh-rev3, Built by MinGW-W64 project) 11.2.0",
   "compiler_flags": "Lua -O2; Magel -O2 -DNDEBUG MAGEL_CUSTOM_ALLOCATOR=1",
-  "aot_flags": "-O2 unchecked; fresh runtime input per sample prevents folding and cross-sample hoisting; generated source retained",
-  "timing": "Java System.nanoTime; AOT std::clock::nowNanos around calculate only; Python perf_counter_ns; Lua os.clock; Magel steady_clock; exclude parsing and file loading; Magel includes execution-plan setup and final checksum output",
   "results": {
     "Python": {
       "median_ms": 407.4363,
@@ -228,7 +226,6 @@
   },
   "baseline_commit": "f2e8175",
   "default_dispatch": "labels on GCC-compatible compilers; switch fallback; explicit runtime override and compile-time removal supported",
-  "command": "python tests/benchmark_language_loops.py --runner build/tier-five-benchmark.exe --baseline-runner build/tier-five-before-benchmark.exe --iterations 10000000 --repeats 7 --skip-reference --skip-legacy --skip-aot --core-variants",
   "dispatch_command": "python tests/benchmark_register_dispatch.py --runner build/tier-five-benchmark.exe",
   "dispatch_interleaved": {
     "warmups_per_process": 1,
@@ -726,7 +723,6 @@
     "switch_only_differential_assertions": 74009,
     "normal_samples": 198,
     "error_samples": 306,
-    "vm_aot_algorithm_runs": 100,
     "vm_mcu_algorithm_runs": 60,
     "mcu_required": 24,
     "mcu_sweep_pass": 129,
