@@ -1,9 +1,8 @@
 # 栈式虚拟机（`magel/library/stackvm`）
 
-本目录是 Magel 桌面与板端共用的唯一 VM 核心。`library/stackvm_mcu/` 只保留固定池、控制台和板级适配，
-构建时直接编译这里的源码。`STACKVM_WITH_THREADS`、`STACKVM_WITH_DEFAULT_HEAP`、
-`STACKVM_WITH_HOST_IO`、`STACKVM_WITH_HOST_EXCEPTION_GUARD` 控制功能裁剪；
-`STACKVM_EMBEDDED` 选择板端适配。CMake 提供同名选项，板端组合见 [板端说明](../stackvm_mcu/README.md)。
+本目录是 Magel 桌面与嵌入式 Linux 共用的唯一 VM 核心。目标宿主提供 C++17 标准库、
+内存和所需操作系统服务。`STACKVM_WITH_THREADS`、`STACKVM_WITH_DEFAULT_HEAP`、
+`STACKVM_WITH_HOST_IO`、`STACKVM_WITH_HOST_EXCEPTION_GUARD` 控制通用功能裁剪，CMake 提供同名选项。
 
 > **这份是 magel 自带的副本**：源在 `library/stackvm`，Magel 和 VM 宿主使用这里的
 > 一份；标准对象后端由宿主胶水单独维护。两份是**独立维护**的 —— 改了一边不会自动同步，
@@ -119,7 +118,7 @@ machine.setHostServices(&services);
 
 胶水用 `context.hostService("application.adapter")` 取回适配器；VM 不解释服务身份或指针。
 服务表和适配器必须覆盖运行时及子线程的生命周期。文件系统协议与桌面实现分别位于
-`source/glue/file_api.hpp` 和 `source/glue/desktop_file_api.hpp`；板端只需替换文件胶水的适配器，
+`source/glue/std_file_api.hpp` 和 `source/glue/std_desktop_file.hpp`；目标宿主只需替换文件胶水的适配器，
 核心 VM 不包含该接口，也不链接文件或大数后端。
 
 Magel 的 `std::lang::Parse`、`std::lang::PathString` 与 `std::lang::Memory` 由 StackVM 的受控原生函数实现：解析

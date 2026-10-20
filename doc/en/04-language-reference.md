@@ -171,7 +171,7 @@ Statically tracked reads and repeated moves after a move are rejected, including
 
 Aggregate lifetime markers prevent duplicate destruction. Moving from manually allocated storage does not free its storage block; delete the original reference when appropriate. Ordinary assignment and ordinary value parameters still copy. Use references for calls that must avoid copying, and move explicitly where the result should take ownership. Initialization, assignment, returns and temporary reception transfer owned fields from the move result. See the [Ownership transfer](23-ownership-move.md).
 
-The toolchain and MCU share the single `library/stackvm/` core. MCU builds trim host features with macros and use injected static pools.
+Desktop and embedded Linux hosts share the single `library/stackvm/` core and configure resources through their host integration.
 
 ### Default arguments
 
@@ -705,10 +705,10 @@ int64 health() { return 200; }
 `STACKVM_WITH_REFLECTION=1`; source compilation enables reflection by default. `make reflection`
 remains an explicit enable target. `--reflection` explicitly requires support and `--no-reflection`
 disables it, rejecting annotations/reflection use. Only explicit trimmed builds set both macros to 0.
-Generated compiler projects and MCU hosts have their own build configuration.
+Generated compiler projects and embedded Linux hosts have their own build configuration.
 
-Reflection artifacts require a capable target VM. Compile explicitly with `--no-reflection` for the
-default MCU VM. Dynamic-call and signature limits are specified in the [reflection document](../19-reflection.md).
+Reflection artifacts require a capable target VM. Compile explicitly with `--no-reflection` for
+a VM built without reflection. Dynamic-call and signature limits are specified in the [reflection document](../19-reflection.md).
 
 Full examples: [`example/reflection/`](../../example/reflection/) (`annotations.mgl`, `calls.mgl`,
 `dispatch.mgl`, `queries.mgl`).
@@ -848,6 +848,31 @@ A struct may directly declare an `auto f = fn<T>(T value) { value };` member and
 
 Both ordinary and generic closure values can serve as a generic type parameter `F`, for example `int64 apply<F>(F f) { return f(3); }`; `apply(callback)` infers `F`. Generic aggregates such as `Box<F>` can store closure values. A generic closure retains its declaration identity and capture environment, without erasure to a single ordinary function-pointer signature. Borrow and move rules continue to apply.
 
+### Function-value declarations inside outer generics
+
+Once the outer type or function binds `T`, `T fn(T, int32)` has a concrete return type and parameter signature.
+Both structure fields and local variables support this form:
+
+```magel
+struct CallbackPair<T> {
+    T fn(T, int32) a;
+    int32 fn(T, int32) b;
+};
+
+int32 useCallbacks<T>(int32 c) {
+    T fn(T, int32) a;
+    int32 fn(T, int32) b;
+    return c;
+}
+```
+
+Assign a valid function or closure before calling a value. Fields can hold closures with `copy` captures;
+copying the aggregate copies their owned environments. An enum can store function values in a variant payload,
+for example `enum Callbacks<T> { Pair(T fn(T, int32) a, int32 fn(T, int32) b) };`.
+Only methods may follow the variant list; shared instance fields are not supported there. Non-generic opcodes
+support fields with concrete function signatures. Generic declarations such as `opcode A<T>` are currently unsupported.
+
+
 ## Ranges and the advancement protocol
 
 `for (auto item in source)`, `for (item in source)` and explicitly typed bindings share the iteration protocol. `std::lang::range(a, b)` excludes the upper endpoint; `std::lang::rangeEq(a, b)` includes both endpoints. Either call accepts an explicit `<T>`.
@@ -906,6 +931,30 @@ loop {
 Scope cleanup runs from inner to outer scopes, including `defer`, `scope(exit)` and resource cleanup. Statements and update expressions bypassed by the exit do not run. See the [nested-loop exit example](../../example/samples/break_level.mgl).
 
 ## Block expressions and interpolated output
+
+`eprint` and `eprintln` write to the host standard error stream using the same formatting rules as
+`print` and `println`: `{}`, one-based argument indexes, numeric styles and interpolated strings.
+`eprintln` appends one LF. Both return `0` on success and do not append to the VM standard-output
+result. `eprintln()` writes only a newline. A single `String` expression is written verbatim without
+interpreting its braces or percent signs again.
+
+Files offer `File.print` / `File.println`, `FileStream.print` / `FileStream.println`, and the
+`std::io::filePrint` / `filePrintln` functions, with format strings and variable arguments.
+File functions return the byte count; stream methods return `Result<int64, IoError>`. Counts include
+the LF, and closed/read-only errors retain the existing write behavior. File `println` with no text
+writes one LF; it does not automatically flush or close the file.
+
+```magel
+import std::io;
+
+void main() {
+    eprintln("Task {} failed", 7);
+    FileStream log = FileStream::open("run.log", "wb").take();
+    log.print("count={}", 3).unwrap();
+    log.println(" hex={:X}", 255).unwrap();
+    log.close();
+}
+```
 
 A nonempty statement block can produce a value in an initializer, assignment, argument or return. Every normally completing path must exit using `yield value;`. Ordinary statement blocks retain their behavior; empty `{}` remains a collection literal.
 

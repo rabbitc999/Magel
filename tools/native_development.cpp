@@ -1,3 +1,4 @@
+#include "../source/magel_i18n.hpp"
 /**
  * @file native_development.cpp
  * @brief 原生 LSP、格式化及开发进程服务，复用编译器诊断和宏展开。
@@ -2052,7 +2053,7 @@ public:
             method.signature = "String toString()";
             method.type = "std::lang::String";
             method.documentation = "返回拥有型字符串。默认结构体使用 {值, ...}，List 使用 [...]，Set/Map 使用 {...}，元组使用 (...)；嵌套字符串加引号。自定义无参 toString 或 ImplicitConvert<String> 优先。";
-            method.source = "source/epilogue/value_text.cpp";
+            method.source = "source/semantics/value_text.cpp";
             out.push_back(std::move(method));
         }
         return out;

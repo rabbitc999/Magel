@@ -5,7 +5,7 @@
 #include "preprocess.hpp"
 #include "magel_incremental.hpp"
 #include "magel_package.hpp"
-#include "magel_stdlib_embedded.cpp"
+#include "magel_stdlib.hpp"
 
 #include <cctype>
 #include <filesystem>
@@ -443,15 +443,6 @@ private:
         for (const Memory::String &imported : info.imports)
         {
             if (imported == "std::lang") continue;
-            /* 嵌入式模式（`magel.toml` 的 `[embedded] enabled` + `restrict_modules`）：
-             * 用到被限制的模块就在这里**编译期**拦住 —— 这些模块在嵌入式运行时里没有
-             * 后端，与其等到运行时报"函数入口不存在"，不如在编译期直接拒绝。 */
-            if (project_ != nullptr && project_->embeddedEnabled && magel_package::embeddedDeniedModules(*project_).count(imported) != 0u)
-            {
-                error = "嵌入式模式不允许使用模块 " + imported + "：它在嵌入式运行时里没有后端；"
-                                                                 "确需放开请改 magel.toml 的 [embedded] restrict_modules";
-                return false;
-            }
             /* `std::algorithms` 没有 MAGEL 文件，但仍在合并源码里保留模块边界。限定调用由
              * 编译器直接降级到 StackVM 胶水，不在这里注入函数体。 */
             if (imported == "std::algorithms")

@@ -147,7 +147,7 @@ sum=10
 \texttt{std:\allowbreak{}:\allowbreak{}process} & 进程与系统调用；命令管道由宿主管柄池持有 \\
 \texttt{std:\allowbreak{}:\allowbreak{}clock} & 单调时钟 \texttt{steady\_clock}，只用来做差值，别当挂钟用 \\
 \texttt{std:\allowbreak{}:\allowbreak{}memory} & \texttt{Span<\allowbreak{}T>\allowbreak{}}（指针 + 长度视图）；它的迭代器给的是元素指针，能直接写 \\
-\texttt{std:\allowbreak{}:\allowbreak{}watchdog} & 软重启看门狗（水位与超时两个维度都默认关闭），桌面与板端共用一份实现 \\
+\texttt{std:\allowbreak{}:\allowbreak{}watchdog} & 软重启看门狗（水位与超时两个维度都默认关闭），桌面与目标宿主共用一份实现 \\
 \bottomrule
 \end{longtable}
 }
@@ -174,7 +174,7 @@ sum=10
 
 二、压缩结果是二进制，不是文本。 \texttt{std:\allowbreak{}:\allowbreak{}compress} 的输出含 \texttt{\textbackslash\{\}0} 字节，类型是\texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}List<\allowbreak{}uint8>\allowbreak{}}；别拿它当字符串打印，解压出来的才是 \texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}String}。
 
-三、前端嵌入式配置固定禁用部分模块。 \texttt{std:\allowbreak{}:\allowbreak{}net}、\texttt{std:\allowbreak{}:\allowbreak{}process}、\texttt{std:\allowbreak{}:\allowbreak{}sql}、\texttt{std:\allowbreak{}:\allowbreak{}io}、\texttt{std:\allowbreak{}:\allowbreak{}thread}、\texttt{std:\allowbreak{}:\allowbreak{}coroutine}、\texttt{std:\allowbreak{}:\allowbreak{}concurrency} 在 \texttt{[\allowbreak{}embedded]\allowbreak{}} 目标下\texttt{import} 就会编译报错——不是你的代码写错了，是那一端不提供这个能力。见第 22 章。
+三、模块能力由宿主提供。 Linux 设备使用普通宿主；实际文件、网络、数据库和线程能力以注册胶水、系统库及构建配置为准。
 
 \section{细节去哪儿查}
 

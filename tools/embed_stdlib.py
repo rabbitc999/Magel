@@ -10,7 +10,7 @@
     回退到这张表，于是**单个生成器二进制不依赖仓库目录**也能导出完整程序。
 
 生成 magel_stdlib_embedded.cpp（两张表 + 查询函数），由
-magel_module.hpp include。
+独立编译单元编入，声明位于 magel_stdlib.hpp。
 
 文本不再以原始字符串字面量摊在 `.rodata` 里，而是**整体拼接后用 lztext 压缩**，
 只把压缩后的字节内联进来，运行时由 table() / generatorAssetTable() 解压重建
@@ -20,6 +20,7 @@ magel_module.hpp include。
 """
 
 import io
+from pathlib import Path
 import os
 import shutil
 import subprocess
@@ -151,25 +152,25 @@ GENERATOR_ASSETS = [
     "stackvm/stackvm.cpp",
     "magel_glue.hpp",
     "magel_generic_name.hpp",
-    "runtime_allocator.hpp",
+    "magel_runtime_allocator.hpp",
     "magel_i18n.hpp",
     "console/utf8.hpp",
     "glue/std_glue.cpp",
-    "glue/cpp_glue.cpp",
+    "glue/std_demo.cpp",
     "glue/std_math.hpp",
     "glue/std_random.hpp",
     "glue/std_regex.hpp",
     "glue/std_signal.hpp",
-    "glue/lang_numeric.hpp",
-    "glue/native_record.hpp",
-    "glue/collection_natives.hpp",
-    "glue/scalar_buffer.hpp",
-    "glue/collection_storage.hpp",
-    "glue/big_number_natives.hpp",
-    "glue/file_natives.hpp",
-    "glue/file_api.hpp",
-    "glue/desktop_file_api.hpp",
-    "glue/structured_data.hpp",
+    "glue/std_numeric.hpp",
+    "glue/std_native_record.hpp",
+    "glue/std_collection.hpp",
+    "glue/std_scalar_buffer.hpp",
+    "glue/std_collection_storage.hpp",
+    "glue/std_big_number.hpp",
+    "glue/std_file.hpp",
+    "glue/std_file_api.hpp",
+    "glue/std_desktop_file.hpp",
+    "glue/std_structured_data.hpp",
     "glue/std_json.hpp",
     "glue/std_toml.hpp",
     "json/json.hpp",
@@ -204,6 +205,13 @@ GENERATOR_ASSETS = [
 ]
 
 
+# 胶水接口及实现作为同一组资产导出，固定清单不能遗漏独立编译单元。
+GENERATOR_ASSETS = list(dict.fromkeys(GENERATOR_ASSETS + [
+    "glue/" + path.name for path in sorted(Path(MAGEL, "source/glue").iterdir())
+    if path.suffix in (".cpp", ".hpp", ".h", ".c")
+]))
+
+
 def collect_generator_assets():
     assets = []
     for relative in GENERATOR_ASSETS:
@@ -225,9 +233,37 @@ def collect():
     return modules
 
 
+def dependencies():
+    """列出内嵌资产的生成输入，供增量构建精确追踪。"""
+    from pathlib import Path
+    root = Path(MAGEL)
+    paths = {Path(asset_disk_path(name)) for name in GENERATOR_ASSETS}
+    paths.update(path.relative_to(root) for path in (root / "library/stackvm/parts").iterdir()
+                 if path.suffix in (".cpp", ".inc"))
+    for pattern in ("source/std/*.mgl", "doc/book/*.md", "doc/book/images/*", "doc/library/*.md"):
+        paths.update(path.relative_to(root) for path in root.glob(pattern) if path.is_file())
+    paths.update(map(Path, ("tools/embed_stdlib.py", "tools/embed_manual.py", "source/magel.gram",
+                           "source/magel_token.gram", "doc/04-language-reference.md",
+                           "doc/24-literals-operators-macros.md", "skills/magel-programming/SKILL.md")))
+    names = sorted(path.as_posix() for path in paths)
+    # Windows GNU make 无法可靠打开非 ASCII 前置文件名，改用固定 ASCII 路径
+    # 记录这些文件的精确时间与大小，保持增量依赖可追踪。
+    indirect = [name for name in names if not name.isascii() or any(ch.isspace() for ch in name)]
+    marker = root / "build/magel-frontend/stdlib_manual_inputs.json"
+    import json
+    payload = json.dumps([(name, (root / name).stat().st_mtime_ns, (root / name).stat().st_size)
+                          for name in indirect], ensure_ascii=False, separators=(",", ":")) + "\n"
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    if not marker.exists() or marker.read_text(encoding="utf-8") != payload:
+        marker.write_text(payload, encoding="utf-8")
+    return [name for name in names if name not in indirect] + [marker.relative_to(root).as_posix()]
+
+
 def main():
     from embed_manual import OUTPUT, generate
-    OUTPUT.write_text(generate(), encoding="utf-8")
+    manual = generate()
+    if not OUTPUT.exists() or OUTPUT.read_text(encoding="utf-8") != manual:
+        OUTPUT.write_text(manual, encoding="utf-8")
     modules = collect()
     assets = collect_generator_assets()
     # 整体拼接后再压缩：跨模块、跨资产的重复也能被利用，比率明显好于逐个压缩
@@ -240,15 +276,15 @@ def main():
     with io.StringIO() as handle:
         handle.write("// 本文件由 tools/embed_stdlib.py 生成，请勿手工修改。\n")
         handle.write("// 生成命令：python tools/embed_stdlib.py\n\n")
-        handle.write("#ifndef MAGEL_STDLIB_EMBEDDED_INC\n")
-        handle.write("#define MAGEL_STDLIB_EMBEDDED_INC\n\n")
+        handle.write('#include "magel_stdlib.hpp"\n')
+        handle.write("\n")
         handle.write("// 文本以 lztext 压缩形式内联（运行时解压），算法见 lztext/README.md。\n")
         handle.write("#include <cstddef>\n")
         handle.write("#include <string>\n")
         handle.write("#include <vector>\n\n")
         handle.write('#include "lztext/lztext.hpp"\n\n')
         handle.write("namespace magel_module\n{\nnamespace embedded\n{\n\n")
-        handle.write("struct Entry { const char *name; const char *text; };\n\n")
+
         handle.write("namespace\n{\n\n")
         handle.write("// 全部模块源码按顺序拼接（每段以 '\\0' 结尾）后压缩的结果："
                      "%d 段，原始 %d 字节，压缩后 %d 字节。\n"
@@ -263,7 +299,7 @@ def main():
             handle.write('    {"%s", %d},\n' % (key, offset))
         handle.write("};\n\n")
         handle.write("} // namespace\n\n")
-        handle.write("""inline const Entry *table()
+        handle.write("""/**\n * @brief 解压一次标准库源码并返回进程内持久的模块视图。\n * @return 以空项结尾的标准库模块表。\n */\nconst Entry *table()
 {
     // 解压一次，之后每个模块都指向这块缓冲区里的某段（各段以 '\\0' 结尾）。
     static const std::string k_text =
@@ -283,11 +319,11 @@ def main():
 }
 
 """)
-        handle.write("inline bool find(const Memory::String &name, Memory::String *out)\n{\n")
+        handle.write("/**\n * @brief 按模块限定名复制内嵌源码。\n * @param name 完整模块名。\n * @param out 成功时接收源码。\n * @return 找到模块时为 true。\n */\nbool find(const Memory::String &name, Memory::String *out)\n{\n")
         handle.write("    for (const Entry *entry = table(); entry->name != nullptr; ++entry)\n")
         handle.write("        if (name == entry->name) { *out = entry->text; return true; }\n")
         handle.write("    return false;\n}\n\n")
-        handle.write("struct GeneratorAsset { const char *path; const char *text; };\n\n")
+
         handle.write("namespace\n{\n\n")
         handle.write("// 全部生成器资产按顺序拼接（每段以 '\\0' 结尾）后压缩的结果："
                      "%d 项，原始 %d 字节，压缩后 %d 字节。\n"
@@ -302,7 +338,7 @@ def main():
             handle.write('    {"%s", %d},\n' % (path, offset))
         handle.write("};\n\n")
         handle.write("} // namespace\n\n")
-        handle.write("""inline const GeneratorAsset *generatorAssetTable()
+        handle.write("""/**\n * @brief 解压一次生成器资产并创建稳定的内容视图。\n * @return 以空项结尾的工程资产表。\n */\nconst GeneratorAsset *generatorAssetTable()
 {
     static const std::string k_text =
         lztext::decompressString(kAssetsPacked, sizeof(kAssetsPacked));
@@ -321,14 +357,16 @@ def main():
 }
 
 """)
-        handle.write("inline Memory::String generatorAssetTail(const Memory::String &path)\n{\n")
+        handle.write("/**\n * @brief 取得兼容正反斜杠的路径末尾文件名。\n * @param path 原始资产路径。\n * @return 去除父目录后的文件名。\n */\nMemory::String generatorAssetTail(const Memory::String &path)\n{\n")
         handle.write("    const std::size_t slash = path.find_last_of(\"/\\\\\");\n")
         handle.write("    return (slash == Memory::String::npos) ? path : path.substr(slash + 1u);\n}\n\n")
         handle.write("""/**
- * 按磁盘路径找内嵌的生成器资产：先比"整段后缀"（仓库布局一致时命中），
- * 再用唯一 basename 兜底（--vm-dir/--magel-dir 指到别处时命中）。同名资产只能有一份。
+ * @brief 按路径后缀或唯一文件名查找内嵌工程资产。
+ * @param path 原始资产路径。
+ * @param out 成功时接收资产内容。
+ * @return 唯一命中时为 true；未找到或存在歧义时为 false。
  */
-inline bool findGeneratorAssetByPath(const Memory::String &path, Memory::String *out)
+bool findGeneratorAssetByPath(const Memory::String &path, Memory::String *out)
 {
     Memory::String want = path;
     for (char &c : want) if (c == '\\\\') c = '/';
@@ -355,8 +393,8 @@ inline bool findGeneratorAssetByPath(const Memory::String &path, Memory::String 
 
 """)
         handle.write("} // namespace embedded\n")
-        handle.write("} // namespace magel_module\n\n")
-        handle.write("#endif\n")
+        handle.write("} // namespace magel_module\n")
+
         payload = handle.getvalue().encode("utf-8")
     try:
         with open(out_path, "rb") as existing:
@@ -382,4 +420,13 @@ inline bool findGeneratorAssetByPath(const Memory::String &path, Memory::String 
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    if sys.argv[1:] == ["--dependencies"]:
+        print(" ".join(dependencies()))
+    elif len(sys.argv) == 3 and sys.argv[1] == "--stamp":
+        status = main()
+        if status == 0:
+            from pathlib import Path
+            Path(sys.argv[2]).touch()
+        sys.exit(status)
+    else:
+        sys.exit(main())

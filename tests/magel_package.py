@@ -94,10 +94,14 @@ def main():
         manifest.write_text(original, encoding='utf-8')
         rejected = run([COMPILER, 'svmb', source, '--out', binary, '--encrypt'], success=False)
         assert '--encrypt' in rejected.stderr
+        manifest.write_text(original + '\n[embedded]\nenabled = true\nmax_memory = 1024\nrestrict_modules = ["std::net"]\n', encoding='utf-8')
+        rejected = run([COMPILER, 'run', source, '--out', binary], success=False)
+        assert 'unknown or repeated table: embedded' in rejected.stderr, rejected.stderr
+        manifest.write_text(original, encoding='utf-8')
         probe = work / 'metadata.cpp'
         probe.write_text('#include "magel_package.hpp"\n#include <iostream>\nint main(int argc, char **argv) { magel_package::Project p; Memory::String e; if (!magel_package::read(std::filesystem::u8path(argv[1]), p, e)) return 1; std::cout << p.name << "\\n" << p.version << "\\n" << p.authors.at(0) << "\\n" << (p.debug ? "debug=1" : "debug=0") << "\\n" << p.run << "\\n"; }\n', encoding='utf-8')
         exe = work / ('metadata.exe' if os.name == 'nt' else 'metadata')
-        run(['g++', '-std=c++17', '-I', ROOT / 'source', '-I', ROOT / 'library', probe, ROOT / 'library/toml/toml.cpp', ROOT / 'library/json/json.cpp', '-o', exe])
+        run(['g++', '-std=c++17', '-I', ROOT / 'source', '-I', ROOT / 'library', probe, ROOT / 'source/magel_package.cpp', ROOT / 'library/toml/toml.cpp', ROOT / 'library/json/json.cpp', '-o', exe])
         assert run([exe, manifest]).stdout == 'magel-demo\n0.1.0\n示例作者\ndebug=0\ninterpret\n'
         manifest.write_text(original.replace('[magel]', '[magel]\ndebug = true'), encoding='utf-8')
         assert run([exe, manifest]).stdout == 'magel-demo\n0.1.0\n示例作者\ndebug=1\ninterpret\n'

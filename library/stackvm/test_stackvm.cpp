@@ -11,8 +11,8 @@
  */
 
 #include "stackvm.hpp"
-#include "../../source/glue/collection_natives.hpp"
-#include "../../source/glue/native_record.hpp"
+#include "../../source/glue/std_collection.hpp"
+#include "../../source/glue/std_native_record.hpp"
 
 #include <algorithm>
 #include <cstdio>

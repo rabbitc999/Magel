@@ -43,12 +43,6 @@
 #include <sstream>
 #include <thread>
 
-/* 板端输入钩子（串口）。必须放在**第一个 namespace 之前**：下面的 parts 嵌在命名空间里，
- * 在那里 include 会各自造一份 mcuConsole，宿主装的钩子就看不见了。 */
-#if STACKVM_EMBEDDED
-#include "../stackvm_mcu/mcu_console.hpp"
-#endif
-
 namespace stackvm
 {
 /**
@@ -375,7 +369,7 @@ Memory::String DataArea::readCString(std::size_t address, std::size_t limit) con
 }
 
 /**
- * @brief 从**内存映像 + 布局文本**加载数据区（板端：两者都在 flash 里，没有文件系统）。
+ * @brief 从**内存映像 + 布局文本**加载数据区（由宿主直接提供内存缓冲区）。
  *
  * 行格式与文件版一致：`符号 offset=0 size=8 type=… stride=8`。
  * @param bytes 数据区字节。

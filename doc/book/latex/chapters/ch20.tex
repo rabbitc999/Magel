@@ -323,27 +323,26 @@ magel svmb app.mgl --no-reflection --out build/board-app
 \par
 \medskip
 
-第二条用于无需反射的源程序：产物必须匹配默认无反射的板端 VM。开启反射的产物携带特征位，关闭能力的 VM 会拒绝加载。若源程序依赖反射，应为目标编入能力并评估元数据和运行时预算，不能通过省略 \texttt{--reflection} 假装关闭。独立生成的编译器工程按其 CMake 配置单独启用两项宏。
+第二条用于无需反射的源程序：产物必须匹配目标 VM 的反射构建配置。开启反射的产物携带特征位，关闭能力的 VM 会拒绝加载。若源程序依赖反射，应为目标编入能力并评估元数据和运行时预算，不能通过省略 \texttt{--reflection} 假装关闭。独立生成的编译器工程按其 CMake 配置单独启用两项宏。
 
 \section{什么时候该用注解}
 
 注解与反射提供运行期元数据和受限动态调用，会增加产物、分配和调用开销。默认桌面工具链支持它，裁剪目标需要显式评估能力和预算。
 
-{\small\setlength{\tabcolsep}{4pt}
-\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.362\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.618\linewidth-2\tabcolsep\relax}}
+\begin{center}
+\begin{tabular}{ll}
 \toprule
 你的想法 & 该不该用 \\
 \midrule
-\endhead
 「想给函数打点标记，运行时按标记分派」 & \textcolor{green!50!black}{\ding{51}} 典型场景（路由、插件注册） \\
 「想让代码生成器读元数据」 & \textcolor{green!50!black}{\ding{51}} 合理 \\
 「想根据标记做一遍扫描」 & \textcolor{green!50!black}{\ding{51}} 合理 \\
 「想省一个函数参数」 & \textcolor{red!80!black}{\ding{55}} 用参数 \\
 「想实现多态」 & \textcolor{red!80!black}{\ding{55}} 用接口 / 泛型（第 13、14 章） \\
-「想在板子上用」 & 默认板端关闭；按预算编入能力，或移除依赖并用 --no-reflection 生成 \\
+「目标 VM 关闭反射」 & 移除反射依赖并用 --no-reflection 生成 \\
 \bottomrule
-\end{longtable}
-}
+\end{tabular}
+\end{center}
 
 经验法则：注解是「框架和工具用的」，不是「业务逻辑用的」。写业务代码时，几乎总有更直接的办法。
 

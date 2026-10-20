@@ -1,3 +1,4 @@
+#include "../source/magel_i18n.hpp"
 /**
  * @brief 手册字符串的大小写归一化。
  * @param text 文本。

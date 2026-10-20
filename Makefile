@@ -48,7 +48,11 @@ LIB_OBJS  := $(FRONTEND_BUILD)/magel_parser.o $(FRONTEND_BUILD)/lztext.o $(FRONT
 DEMO_OBJS := $(FRONTEND_BUILD)/magel_main.o
 
 LIB    := $(FRONTEND_BUILD)/libparser.a
+ifeq ($(OS),Windows_NT)
+TARGET := magel.exe
+else
 TARGET := magel
+endif
 
 .PHONY: all lib demo run clean gen check samples reflection
 
@@ -76,17 +80,17 @@ else
 endif
 
 $(FRONTEND_BUILD)/%.o: source/%.cpp $(HDRS) | $(FRONTEND_BUILD)
-	$(CXX) $(CXXFLAGS) -I. -c $< -o $@
+	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
 
 $(FRONTEND_BUILD)/lztext.o: library/lztext/lztext.cpp $(HDRS) | $(FRONTEND_BUILD)
-	$(CXX) $(CXXFLAGS) -I. -c $< -o $@
+	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
 
 $(FRONTEND_BUILD)/dap_server.o: source/dap/dap_server.cpp $(HDRS) | $(FRONTEND_BUILD)
-	$(CXX) $(CXXFLAGS) -I. -c $< -o $@
+	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
 
 # 编入注解与反射：前端（MAGEL_WITH_REFLECTION）与运行时（STACKVM_WITH_REFLECTION）
 # 默认同时开启，缺一个 `--reflection` 就会报缺宏；本目标保留为显式启用入口。
-# 单次源码编译默认启用反射，可用 --no-reflection 关闭；独立板端 VM 按其 Makefile 裁剪。
+# 单次源码编译默认启用反射，可用 --no-reflection 关闭。
 reflection:
 	$(MAKE) MAGEL_WITH_REFLECTION=1 STACKVM_WITH_REFLECTION=1
 

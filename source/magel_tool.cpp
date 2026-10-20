@@ -2,13 +2,13 @@
  * @file magel_tool.cpp
  * @brief 统一 VM 前端、工程生成器和原生开发命令的入口。
  */
-#include "runtime_allocator.hpp"
-#include "lsp/server.hpp"
+#include "magel_runtime_allocator.hpp"
+#include "lsp/language_server.hpp"
 #include "tools/native_development.hpp"
 #include "tools/abi_import.hpp"
 #include "magel_project.hpp"
 #include "magel_cli.hpp"
-#include "magel-generator/generator_cli.hpp"
+#include "generator/generator_cli.hpp"
 #include <filesystem>
 #include <cstdlib>
 #include <cstdio>

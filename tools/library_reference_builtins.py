@@ -1,11 +1,15 @@
 """编译器识别的应用层内建 API 的等价调用签名，不作为可导入的语言源码。"""
 
 BUILTINS = {
-    'std::lang': ('source/epilogue/boxing.cpp', '''
+    'std::lang': ('source/semantics/boxing.cpp', '''
 /** 输出格式化文本，返回过程状态；占位符和变长实参由编译器检查。 */
 int64 print(String format, Any args...);
 /** 输出格式化文本并换行。 */
 int64 println(String format, Any args...);
+/** 格式化写入标准错误流，不追加换行。 */
+int64 eprint(String format, Any args...);
+/** 格式化写入标准错误流并追加换行。 */
+int64 eprintln(String format, Any args...);
 /** 返回格式化的新字符串。 */
 String format(String format, Any args...);
 /** 输出一个字符。 */
@@ -129,7 +133,7 @@ R mod(T left,U right);
 /** 读取连续存储的第 index 项，相当于下标操作。 */
 T index(T const& data,int64 index);
 '''),
-    'std::algorithms': ('source/epilogue/boxing.cpp', '''
+    'std::algorithms': ('source/semantics/boxing.cpp', '''
 /** 返回升序排序副本，原列表保持不变。 */
 List<T> sortValue<T>(List<T> items);
 /** 线性查找，返回首个下标；未找到为 -1。 */

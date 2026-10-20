@@ -82,7 +82,7 @@ def compilation(english=False):
          "保留源码与原始 PC 映射，用于诊断和精确执行"], green=True)
     outputs = [
         (40, "In-memory execution" if english else "内存执行", ["Program → desktop VM", "No bytecode file required"] if english else ["Program → 桌面 VM", "无需先写字节码文件"]),
-        (560, ".svmb · format 5" if english else ".svmb · 格式 5", ["VM code + internal execution sequence", "Desktop / embedded VM"] if english else ["VM 指令与内部执行序列", "桌面 / 嵌入式 VM"]),
+        (560, ".svmb · format 5" if english else ".svmb · 格式 5", ["VM code + internal execution sequence", "Desktop / Linux VM"] if english else ["VM 指令与内部执行序列", "桌面 / Linux VM"]),
         (1080, "Quadruple artifacts" if english else "四元式产物", ["Quadruples + data + layout", "Inspection or VM assembly"] if english else ["四元式、数据区与布局", "用于检查或 VM 装配"]),
     ]
     for x, heading, lines in outputs:
@@ -95,8 +95,8 @@ def execution(english=False):
     """绘制共享 VM 的执行准备、快速路径和精确回退。"""
     c = Canvas()
     title(c, "Magel · Execution" if english else "Magel · 运行过程",
-          "Desktop and embedded hosts share the same VM core" if english else
-          "桌面与嵌入式宿主使用同一份 VM 执行核心")
+          "Desktop and embedded Linux hosts share the same VM core" if english else
+          "桌面与嵌入式 Linux 宿主使用同一份 VM 执行核心")
     box(c, 40, 145, 440, ".mgl / in-memory Program" if english else ".mgl / 内存 Program",
         ["Compile source, then enter the VM", "Lower internal instructions in memory"] if english else ["源码先编译，再进入 VM", "在内存中降低内部指令"])
     box(c, 560, 145, 440, ".svmb · format 5" if english else ".svmb · 格式 5",

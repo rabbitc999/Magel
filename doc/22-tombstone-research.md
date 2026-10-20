@@ -26,8 +26,8 @@
 
 ## sweep() 的插入点
 
-- `source/epilogue/builtins.cpp` 登记核心内建的返回类型。
-- `source/epilogue/boxing.cpp` 将 `sweep()` 降低到 `__std_heap_sweep`，并让显式聚合 delete 使用 `__std_heap_delete_live` 区分“未清扫旧身份”和“已经失去墓碑保证的身份”。
+- `source/semantics/builtins.cpp` 登记核心内建的返回类型。
+- `source/semantics/boxing.cpp` 将 `sweep()` 降低到 `__std_heap_sweep`，并让显式聚合 delete 使用 `__std_heap_delete_live` 区分“未清扫旧身份”和“已经失去墓碑保证的身份”。
 - `library/stackvm/parts/machine_natives.cpp` 登记两个 native 入口，调用当前堆的 `sweep()` / `retired()`。
 - `library/stackvm/stackvm.hpp` 的 `HeapAllocator` 增加清扫和墓碑查询契约。未实现清扫的自定义堆显式报告不支持，不伪装成清理了零条。
 - 清扫推进每槽边界，保留活跃分配及其未来释放的幂等保证；不释放活跃对象，不重置代次，不追踪引用。已清扫旧身份再次显式 delete 报 MGL1205。
@@ -47,7 +47,7 @@
 
 参考 Rust 编译器 [upvar.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_hir_typeck/src/upvar.rs) 的捕获分析流程，以及 [constraint_conversion.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/type_check/constraint_conversion.rs) 的寿命约束转换。Magel 使用自己的作用域来源事实与控制流检查器，不引入 Rust 的类型系统。0.15.0 默认捕获为 `const&`，显式 `mut` 使用可写借用；`copy` 和 `move` 持有内部状态。复制引用捕获的闭包不延长来源寿命。
 
-捕获发现位于 `source/epilogue/generic_inference.cpp::CheckLambdaCaptures`；地址存储在 `source/epilogue/artifacts.cpp` 预登记，经 `source/epilogue/boxing.cpp` 建立和恢复闭包环境；来源寿命经 `source/epilogue/borrow_facts.cpp` 传播到赋值、返回与聚合字段。`LowerAssign` 必须先完成右值推导、发现 lambda 捕获，再记录保存约束。
+捕获发现位于 `source/semantics/generic_inference.cpp::CheckLambdaCaptures`；地址存储在 `source/semantics/artifacts.cpp` 预登记，经 `source/semantics/boxing.cpp` 建立和恢复闭包环境；来源寿命经 `source/semantics/borrow_facts.cpp` 传播到赋值、返回与聚合字段。`LowerAssign` 必须先完成右值推导、发现 lambda 捕获，再记录保存约束。
 
 异步事件回调可以被保存到全局登记表，因此单独要求静态来源；事件函数签名携带该契约，调用时拒绝借用局部环境的闭包，模块内部转送保留契约。含回调参数的事件登记入口不能转换成擦除该契约的普通函数指针。该限制不要求同步算法回调具有全局寿命。
 

@@ -26,7 +26,7 @@ def main():
         host_source = work / 'vm_host.cpp'
         text = (root / 'example/native-callbacks/vm_host.cpp').read_text(encoding='utf-8')
         text = text.replace('#include "glue.cpp"',
-                            '#include "glue/collection_natives.hpp"\n#include "' + fixture.with_suffix('.cpp').as_posix() + '"')
+                            '#include "glue/std_collection.hpp"\n#include "' + fixture.with_suffix('.cpp').as_posix() + '"')
         if 'collection_glue::bind' not in text:
             text = text.replace('|| !bindMagelGlue(registry, &error)',
                                 '|| !collection_glue::bind(registry.native(), &error)\n        || !bindMagelGlue(registry, &error)')
@@ -35,7 +35,7 @@ def main():
         run(os.environ.get('CXX', 'g++'), '-std=c++17', '-O2', '-pthread',
             '-DMAGEL_CUSTOM_ALLOCATOR=1', '-DMAGEL_WITH_REFLECTION=1', '-DSTACKVM_WITH_REFLECTION=1',
             '-Isource', '-Ilibrary', '-Ilibrary/stackvm', host_source,
-            root / 'build/magel-stackvm-core/libstackvm.a', '-o', host)
+            root / 'build/magel-stackvm-core/libstackvm.a', root / 'build/magel-host-records/librecords.a', '-o', host)
         prefix = work / 'program'
         run(compiler, 'emit', fixture.with_suffix('.mgl'), '--svmb', '--out', prefix)
         result = run(host, prefix.with_suffix('.svmb'), prefix.with_suffix('.data.bin'),

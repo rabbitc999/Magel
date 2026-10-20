@@ -1,7 +1,7 @@
 # 99 The Magel Story: A Language Carved by Deletion
 
 > **Write once, run anywhere.**
-> One logic, from MCU to cloud; value semantics, non-null references, no GC.
+> One logic, from embedded Linux to cloud; value semantics, non-null references, no GC.
 >
 > This is not a syntax manual. It is the record of **how this language became what it is**:
 > where it started, which walls it hit, what it deleted, and what is still unfinished.
@@ -237,13 +237,6 @@ is where today's positioning comes from.
 | Quadruples | a readable intermediate form | like laying the whole circuit out on the ground: it works, it does not travel |
 | `.svmb` bytecode (PESVMB v4) | instructions, data, types, module exports and host symbols to bind | names are still there; the file itself is readable |
 | Compacted symbols (MCVM0004) | an artifact whose names became stable FNV-1a 64 ids, ULEB128-encoded | the map file stays on your side and must not ship with the artifact |
-
-The board side went through one real acceptance run as well: compile, trim and package on the PC,
-update to an **STM32F407VET6** board, and run with a fixed-capacity VM calling the on-board HAL glue;
-integer and double-precision programs finished normally and the Flash image read back identical.
-That separate project has since been removed from the repository on request, and the record is still
-readable from Git history — **that historical run does not mean every current language feature has
-been re-verified on the board.** See [vision](00-vision.md) for the current state and boundaries.
 
 The same principle runs through the standard library: **capability belongs to modules, not to the VM
 instruction set**. `sin`, `cos` and `pow` nearly became instructions and ended up in `std::math`; the

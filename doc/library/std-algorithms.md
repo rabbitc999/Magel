@@ -177,7 +177,7 @@ T choiceValue<T>(std::lang::List<T> items, uint64 seed);
 std::algorithms::choiceValue<T>(items, seed);
 ```
 
-**源码**：[source/magel_generic.hpp:1747](../../source/magel_generic.hpp#L1747)。
+**源码**：[source/magel_generic.cpp:1756](../../source/magel_generic.cpp#L1756)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -216,7 +216,7 @@ Fisher-Yates 洗牌，返回**打乱后的副本**（原表不动）。 从后�
 std::algorithms::shuffleValue<T>(items, seed);
 ```
 
-**源码**：[source/magel_generic.hpp:1756](../../source/magel_generic.hpp#L1756)。
+**源码**：[source/magel_generic.cpp:1765](../../source/magel_generic.cpp#L1765)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -256,7 +256,7 @@ Fisher-Yates 洗牌的**引用形式**：直接在 `data` 里 `count` 个元素�
 std::algorithms::shuffleReference<T>(data, count, seed);
 ```
 
-**源码**：[source/magel_generic.hpp:1776](../../source/magel_generic.hpp#L1776)。
+**源码**：[source/magel_generic.cpp:1785](../../source/magel_generic.cpp#L1785)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -297,7 +297,7 @@ Pair corresponding elements; excess elements in the longer list are ignored.
 std::algorithms::zipValue<T, U>(left, right);
 ```
 
-**源码**：[source/magel_generic.hpp:1790](../../source/magel_generic.hpp#L1790)。
+**源码**：[source/magel_generic.cpp:1799](../../source/magel_generic.cpp#L1799)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -336,7 +336,7 @@ void sortReference<T>(T mut& data, int64 count);
 std::algorithms::sortReference<T>(data, count);
 ```
 
-**源码**：[source/magel_generic.hpp:1820](../../source/magel_generic.hpp#L1820)。
+**源码**：[source/magel_generic.cpp:1829](../../source/magel_generic.cpp#L1829)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -375,7 +375,7 @@ void reverseReference<T>(T mut& data, int64 count);
 std::algorithms::reverseReference<T>(data, count);
 ```
 
-**源码**：[source/magel_generic.hpp:1825](../../source/magel_generic.hpp#L1825)。
+**源码**：[source/magel_generic.cpp:1834](../../source/magel_generic.cpp#L1834)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -415,7 +415,7 @@ int64 findReference<T>(T const& data, int64 count, T value);
 std::algorithms::findReference<T>(data, count, value);
 ```
 
-**源码**：[source/magel_generic.hpp:1838](../../source/magel_generic.hpp#L1838)。
+**源码**：[source/magel_generic.cpp:1847](../../source/magel_generic.cpp#L1847)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -455,7 +455,7 @@ int64 binarySearchReference<T>(T const& data, int64 count, T value);
 std::algorithms::binarySearchReference<T>(data, count, value);
 ```
 
-**源码**：[source/magel_generic.hpp:1848](../../source/magel_generic.hpp#L1848)。
+**源码**：[source/magel_generic.cpp:1857](../../source/magel_generic.cpp#L1857)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -494,7 +494,7 @@ Option<T mut&> minReference<T>(T mut& data, int64 count);
 std::algorithms::minReference<T>(data, count);
 ```
 
-**源码**：[source/magel_generic.hpp:1860](../../source/magel_generic.hpp#L1860)。
+**源码**：[source/magel_generic.cpp:1869](../../source/magel_generic.cpp#L1869)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -533,7 +533,7 @@ Option<T mut&> maxReference<T>(T mut& data, int64 count);
 std::algorithms::maxReference<T>(data, count);
 ```
 
-**源码**：[source/magel_generic.hpp:1872](../../source/magel_generic.hpp#L1872)。
+**源码**：[source/magel_generic.cpp:1881](../../source/magel_generic.cpp#L1881)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -573,7 +573,7 @@ int64 countReference<T>(T const& data, int64 count, T value);
 std::algorithms::countReference<T>(data, count, value);
 ```
 
-**源码**：[source/magel_generic.hpp:1884](../../source/magel_generic.hpp#L1884)。
+**源码**：[source/magel_generic.cpp:1893](../../source/magel_generic.cpp#L1893)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -613,7 +613,7 @@ T sumReference<T>(T mut& data, int64 count);
 std::algorithms::sumReference<T>(data, count);
 ```
 
-**源码**：[source/magel_generic.hpp:1895](../../source/magel_generic.hpp#L1895)。
+**源码**：[source/magel_generic.cpp:1904](../../source/magel_generic.cpp#L1904)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -651,7 +651,7 @@ List<T> sortValue<T>(List<T> items);
 std::algorithms::sortValue<T>(items);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:401](../../source/epilogue/boxing.cpp#L401)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:401](../../source/semantics/boxing.cpp#L401)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -690,7 +690,7 @@ int64 findValue<T>(List<T> items,T value);
 std::algorithms::findValue<T>(items, value);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:429](../../source/epilogue/boxing.cpp#L429)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:429](../../source/semantics/boxing.cpp#L429)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -729,7 +729,7 @@ int64 binarySearchValue<T>(List<T> items,T value);
 std::algorithms::binarySearchValue<T>(items, value);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:429](../../source/epilogue/boxing.cpp#L429)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:429](../../source/semantics/boxing.cpp#L429)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -768,7 +768,7 @@ T minValue<T>(T first,T rest...);
 std::algorithms::minValue<T>(first, rest);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:283](../../source/epilogue/boxing.cpp#L283)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:283](../../source/semantics/boxing.cpp#L283)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -807,7 +807,7 @@ T maxValue<T>(T first,T rest...);
 std::algorithms::maxValue<T>(first, rest);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:283](../../source/epilogue/boxing.cpp#L283)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:283](../../source/semantics/boxing.cpp#L283)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -847,7 +847,7 @@ T clampValue<T>(T value,T low,T high);
 std::algorithms::clampValue<T>(value, low, high);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:401](../../source/epilogue/boxing.cpp#L401)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:401](../../source/semantics/boxing.cpp#L401)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -886,7 +886,7 @@ bool allValue<T>(List<T> items,bool fn(T) predicate);
 std::algorithms::allValue<T>(items, predicate);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:440](../../source/epilogue/boxing.cpp#L440)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:440](../../source/semantics/boxing.cpp#L440)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -925,7 +925,7 @@ bool anyValue<T>(List<T> items,bool fn(T) predicate);
 std::algorithms::anyValue<T>(items, predicate);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:440](../../source/epilogue/boxing.cpp#L440)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:440](../../source/semantics/boxing.cpp#L440)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -965,7 +965,7 @@ T foldValue<T>(List<T> items,T initial,T fn(T,T) folder);
 std::algorithms::foldValue<T>(items, initial, folder);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:401](../../source/epilogue/boxing.cpp#L401)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:401](../../source/semantics/boxing.cpp#L401)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -1004,7 +1004,7 @@ List<R> mapValue<T>(List<T> items,R fn(T) mapper);
 std::algorithms::mapValue<T>(items, mapper);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:318](../../source/epilogue/boxing.cpp#L318)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:318](../../source/semantics/boxing.cpp#L318)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -1043,7 +1043,7 @@ List<T> filterValue<T>(List<T> items,bool fn(T) predicate);
 std::algorithms::filterValue<T>(items, predicate);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:340](../../source/epilogue/boxing.cpp#L340)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:340](../../source/semantics/boxing.cpp#L340)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -1082,7 +1082,7 @@ T reduceValue<T>(List<T> items,T fn(T,T) folder);
 std::algorithms::reduceValue<T>(items, folder);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:378](../../source/epilogue/boxing.cpp#L378)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:378](../../source/semantics/boxing.cpp#L378)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -1122,7 +1122,7 @@ T reduceValue<T>(List<T> items,T initial,T fn(T,T) folder);
 std::algorithms::reduceValue<T>(items, initial, folder);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:378](../../source/epilogue/boxing.cpp#L378)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:378](../../source/semantics/boxing.cpp#L378)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -1160,7 +1160,7 @@ T sumValue<T>(List<T> items);
 std::algorithms::sumValue<T>(items);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:305](../../source/epilogue/boxing.cpp#L305)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:305](../../source/semantics/boxing.cpp#L305)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -1199,7 +1199,7 @@ int64 countValue<T>(List<T> items,T value);
 std::algorithms::countValue<T>(items, value);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:355](../../source/epilogue/boxing.cpp#L355)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:355](../../source/semantics/boxing.cpp#L355)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -1238,6 +1238,6 @@ int64 countValue<T>(List<T> items,bool fn(T) predicate);
 std::algorithms::countValue<T>(items, predicate);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:355](../../source/epilogue/boxing.cpp#L355)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:355](../../source/semantics/boxing.cpp#L355)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。

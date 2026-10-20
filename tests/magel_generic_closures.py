@@ -190,6 +190,14 @@ def main():
             return 0;
         }''', ''),
     })
+    accepted.update({
+        'typed_struct': ('struct A<T> { T fn(T, int32) a; int32 fn(T, int32) b; };\nint32 add(int32 x, int32 c) { return x + c; }\nint32 mul(int32 x, int32 c) { return x * c; }\nint64 main() { A<int32> x; x.a = add; x.b = mul; println("{} {}", x.a(3, 4), x.b(3, 4)); return 0; }', '7 12'),
+        'typed_local': ('int32 A<T>(int32 c) { T fn(T, int32) a; int32 fn(T, int32) b; a = fn(T x, int32 y) { x + cast<T>(y) }; b = int32 fn(T x, int32 y) { cast<int32>(x) * y }; println("{} {}", a(cast<T>(3), c), b(cast<T>(3), c)); return 0; } int64 main() { int32 c = 4; return A<int32>(c); }', '7 12'),
+        'typed_enum_payload': ('enum A<T> { Pair(T fn(T, int32) a, int32 fn(T, int32) b) };\nint32 add(int32 x, int32 c) { return x + c; }\nint32 mul(int32 x, int32 c) { return x * c; }\nint64 main() { A<int32> x = A<int32>::Pair(add, mul); match(x) { Pair(a, b) => { println("{} {}", a(3, 4), b(3, 4)); } } return 0; }', '7 12'),
+        'typed_opcode': ('opcode A { new=__std_bint_from_int; drop=__std_bint_drop; copy=__std_bint_copy; int32 fn(int32, int32) a; int32 fn(int32, int32) b; };\nint32 add(int32 x, int32 c) { return x + c; }\nint32 mul(int32 x, int32 c) { return x * c; }\nint64 main() { A x; x.a = add; x.b = mul; println("{} {}", x.a(3, 4), x.b(3, 4)); return 0; }', '7 12'),
+        'typed_struct_capture': ('struct A<T> { T fn(T, int32) a; int32 fn(T, int32) b; };\nint64 main() { int32 state = 10; A<int32> x; x.a = int32 fn copy(int32 v, int32 c) { state += c; return v + state; }; auto copied = x; int32 v = 3; int32 four = 4; int32 one = 1; println("{} {} {}", x.a(v, four), copied.a(v, one), x.a(v, one)); return 0; }', '17 14 18'),
+        'typed_opcode_capture': ('opcode A { new=__std_bint_from_int; drop=__std_bint_drop; copy=__std_bint_copy; int32 fn(int32, int32) a; int32 fn(int32, int32) b; };\nint64 main() { int32 state = 10; A x = A::new(0); x.a = int32 fn copy(int32 v, int32 c) { state += c; return v + state; }; auto copied = x; int32 v = 3; int32 four = 4; int32 one = 1; println("{} {} {}", x.a(v, four), copied.a(v, one), x.a(v, one)); return 0; }', '17 14 18'),
+    })
     rejected = {
         'duplicate': '''void main() {
             auto f = fn<T>(T x) { x };
@@ -223,6 +231,10 @@ def main():
         auto f = fn<T>(T value) { state += 1; return state; };
         f(1);
     }'''
+    rejected.update({
+        'typed_enum_members': 'enum A<T> { Empty, Some(T item); T fn(T, int32) a; int32 fn(T, int32) b; };\nint32 add(int32 x, int32 c) { return x + c; }\nint32 mul(int32 x, int32 c) { return x * c; }\nint64 main() { A<int32> x = A<int32>::Empty; x.a = add; x.b = mul; println("{} {}", x.a(3, 4), x.b(3, 4)); return 0; }',
+        'typed_opcode_generic': 'opcode A<T> { new=__std_bint_from_int; drop=__std_bint_drop; copy=__std_bint_copy; T fn(T, int32) a; int32 fn(T, int32) b; };\nint32 add(int32 x, int32 c) { return x + c; }\nint32 mul(int32 x, int32 c) { return x * c; }\nint64 main() { A<int32> x; x.a = add; x.b = mul; println("{} {}", x.a(3, 4), x.b(3, 4)); return 0; }',
+    })
     with tempfile.TemporaryDirectory(prefix='magel-generic-closures-') as directory:
         work = Path(directory)
         for name, (source, output) in accepted.items():

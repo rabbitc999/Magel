@@ -23,7 +23,7 @@ def main():
     compiler = args.magel.resolve()
     WORK.mkdir(parents=True, exist_ok=True)
     unit = WORK / ('lambda-unit' + EXE)
-    result = execute(args.cxx, '-std=c++17', '-I' + str(ROOT), '-I' + str(ROOT / 'source'), '-I' + str(ROOT / 'library'), '-I' + str(ROOT / 'library/preprocess'), ROOT / 'tests/magel_lambda_test.cpp', '-o', unit)
+    result = execute(args.cxx, '-std=c++17', '-I' + str(ROOT), '-I' + str(ROOT / 'source'), '-I' + str(ROOT / 'library'), '-I' + str(ROOT / 'library/preprocess'), ROOT / 'tests/magel_lambda_test.cpp', *[ROOT / 'source' / name for name in ('magel_generic.cpp', 'magel_lambda.cpp', 'magel_generic_closure.cpp', 'magel_macro.cpp', 'magel_macro_controls.cpp')], '-o', unit)
     assert result.returncode == 0, result.stderr
     result = execute(unit)
     assert result.returncode == 0 and result.stdout == 'lambda unit tests OK\n' and (not result.stderr), result

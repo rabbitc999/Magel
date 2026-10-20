@@ -165,6 +165,7 @@ run_step "构建 MAGEL 驱动（magel）" "$MAKE" -j4
 run_step "MAGEL 样例回归（check.sh）" \
     sh -c 'cd "$1" && MAGEL_TMP="$1/tmp/ci/check" sh check.sh' sh "$root"
 run_step "运行 std::image 与 StringBuilder 回归" "$PYTHON" tests/magel_image.py --magel magel
+run_step "运行标准错误流与文件打印回归" "$PYTHON" tests/magel_print_streams.py --magel magel
 run_step "运行数组按值传参与引用回归" "$PYTHON" tests/magel_array_parameters.py --magel magel
 run_step "编译字面量数据合并单元测试" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=0 -DMAGEL_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 library/simple_ast/test_simple_ast.cpp library/simple_ast/simple_ast.cpp -o tmp/ci/simple-ast-literals
 run_step "运行字面量数据合并单元测试" tmp/ci/simple-ast-literals
@@ -189,16 +190,16 @@ if [ "$full" = 1 ]; then
 run_step "运行整数区间端点与溢出回归" "$PYTHON" tests/magel_foreach_intervals.py --magel magel
 run_step "编译场景命令单元测试" g++ -std=c++17 -O1 tests/magel_cli_test.cpp -o tmp/ci/magel-cli
 run_step "运行场景命令单元测试" tmp/ci/magel-cli
-run_step "编译宏临时编号单元测试" g++ -std=c++17 -O1 -DMAGEL_CUSTOM_ALLOCATOR=0 -Ilibrary -Ilibrary/preprocess tests/magel_macro_slots_test.cpp -o tmp/ci/magel-macro-slots
+run_step "编译宏临时编号单元测试" g++ -std=c++17 -O1 -DMAGEL_CUSTOM_ALLOCATOR=0 -Ilibrary -Ilibrary/preprocess tests/magel_macro_slots_test.cpp source/magel_macro.cpp source/magel_macro_controls.cpp -o tmp/ci/magel-macro-slots
 run_step "运行宏临时编号单元测试" tmp/ci/magel-macro-slots
-run_step "编译宏结构化拼接与字符串化单元测试" g++ -std=c++17 -O1 -DMAGEL_CUSTOM_ALLOCATOR=0 -Ilibrary -Ilibrary/preprocess tests/magel_macro_structured_test.cpp -o tmp/ci/magel-macro-structured
+run_step "编译宏结构化拼接与字符串化单元测试" g++ -std=c++17 -O1 -DMAGEL_CUSTOM_ALLOCATOR=0 -Ilibrary -Ilibrary/preprocess tests/magel_macro_structured_test.cpp source/magel_macro.cpp source/magel_macro_controls.cpp -o tmp/ci/magel-macro-structured
 run_step "运行宏结构化拼接与字符串化单元测试" tmp/ci/magel-macro-structured
-run_step "编译宏多括号文本分组回归" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=0 -DMAGEL_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 -Ilibrary -Ilibrary/preprocess tests/magel_macro_groups_test.cpp -o tmp/ci/magel-macro-groups
+run_step "编译宏多括号文本分组回归" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=0 -DMAGEL_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 -Ilibrary -Ilibrary/preprocess tests/magel_macro_groups_test.cpp source/magel_macro.cpp source/magel_macro_controls.cpp -o tmp/ci/magel-macro-groups
 run_step "运行宏多括号文本分组回归" tmp/ci/magel-macro-groups
 run_step "验证宏多括号完整前端行列映射" python tests/magel_macro_groups.py
 run_step "验证返回表达式、具名闭包与字段派生" python tests/magel_declaration_sugars.py
 
-run_step "编译宏参数括号规则回归" g++ -std=c++17 -O1 -DMAGEL_CUSTOM_ALLOCATOR=0 -Ilibrary -Ilibrary/preprocess tests/magel_macro_parentheses_test.cpp -o tmp/ci/magel-macro-parentheses
+run_step "编译宏参数括号规则回归" g++ -std=c++17 -O1 -DMAGEL_CUSTOM_ALLOCATOR=0 -Ilibrary -Ilibrary/preprocess tests/magel_macro_parentheses_test.cpp source/magel_macro.cpp source/magel_macro_controls.cpp -o tmp/ci/magel-macro-parentheses
 run_step "运行宏参数括号规则回归" tmp/ci/magel-macro-parentheses
 
 # ---- lztext：内嵌标准库/运行时资产的压缩存储与运行时解压 ----
@@ -242,8 +243,6 @@ if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
     run_step "运行软重启看门狗回归" "$PYTHON" tests/magel_watchdog.py --magel magel
     # 总览图（各项目的 make_*_overview.py → 各自 overview 目录；Magel 那张由 magel 自己
     # 绘制，落在 doc/overview/）：能重跑、成对产出、重复生成一致。
-    # mcu_vm：板端口径（-fno-exceptions）构建 + 异常符号检查 + 样例等价性 + 缺口漂移检测。
-    # 这条同时挡住"往板端 VM 里塞 try/catch"和"前后端原生函数名字漂移"两类回归。
     run_step "运行简短场景指令与拖入文件回归" "$PYTHON" tests/magel_scenes.py --magel magel
     run_step "运行新建工程回归" "$PYTHON" tests/magel_project.py --magel magel
     run_step "运行表达式对象冲突及目标求值回归" \

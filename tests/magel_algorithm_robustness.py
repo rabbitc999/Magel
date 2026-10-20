@@ -63,7 +63,6 @@ def main():
     parser.add_argument('--magel', type=Path, default=ROOT / 'magel.exe')
     parser.add_argument('--random-cases', type=int, default=40)
     parser.add_argument('--stress-size', type=int, default=2000)
-    parser.add_argument('--mcu-host', type=Path, help='额外对照板端宿主（使用相同字节码及输入）')
     args = parser.parse_args()
     compiler = args.magel.resolve()
     work = WORK / compiler.stem
@@ -74,9 +73,7 @@ def main():
     def execute(command, data='', timeout=240):
         result = subprocess.run(list(map(str, command)), input=data, cwd=ROOT, env=env, capture_output=True, encoding='utf-8', errors='replace', timeout=timeout)
         assert result.returncode == 0, (command, result.returncode, result.stdout, result.stderr)
-        if args.mcu_host and Path(command[0]).resolve() == args.mcu_host.resolve():
-            assert all((not line.strip() or line.startswith('mcu-vm：') for line in result.stderr.splitlines())), (command, result.stderr)
-        elif len(command) > 1 and command[1] == 'svmb':
+        if len(command) > 1 and command[1] == 'svmb':
             assert all((not line.strip() or line.startswith('magel：不带调试节') for line in result.stderr.splitlines())), (command, result.stderr)
         else:
             assert not result.stderr.strip(), (command, result.stderr)
@@ -85,10 +82,6 @@ def main():
     for name in ('borrow_algorithms', 'noip2015_transport', 'idempotent_destruction'):
         source = ROOT / 'tests/fixtures' / (name + '.mgl')
         programs[name] = [[compiler, 'run', source, '--out', work / name]]
-        if args.mcu_host:
-            prefix = work / (name + '-mcu')
-            execute([compiler, 'svmb', source, '--no-reflection', 'out', prefix])
-            programs[name].append([args.mcu_host.resolve(), Path(str(prefix) + '.svmb'), Path(str(prefix) + '.data.bin'), Path(str(prefix) + '.layout')])
         print(f'已准备 {name}', flush=True)
     count = 0
 

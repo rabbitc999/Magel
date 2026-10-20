@@ -19,7 +19,7 @@
    都是 `sh gen.sh` 生成到 `source/` 的产物，不入库；对象文件和静态库写入 `build/magel-frontend/`；
    `Makefile` 是手写的，`gen.sh` 不会覆盖它。
 3. **引用到的库各自拷一份进本项目**：`library/` 下的库是 ParseEngine 仓库 `library/` 同名目录的副本；
-   控制台头 `library/console/utf8.hpp` 由 [`tools/sync_tool_console.py`](tools/sync_tool_console.py) 逐字节同步。
+   控制台头 `library/console/utf8.hpp` 在本仓库独立维护。
    本项目要能单独克隆、单独构建，**不依赖 `library/`**；改副本时想清楚要不要一起改外面的原件（反之亦然）。
 4. **固化生成资产**：标准库 `.mgl` 与生成器运行时资产在构建期内嵌成 C++ 源
    （[`tools/embed_stdlib.py`](tools/embed_stdlib.py) → `source/magel_stdlib_embedded.cpp`），
@@ -30,11 +30,9 @@
    `@return` / `@retval`、`@note` 各占独立一行；无参数时不写空的 `@param`，
    无返回值及构造/析构函数不虚构返回值。注释必须解释实际功能、参数用途与返回含义，
    不能只复述函数名或填占位语句，不使用紧凑形式或 `///` 代替函数文档块。
-6. **一份 VM 按宏裁剪**：`library/stackvm/` 是桌面与板端唯一的 VM 核心；`library/stackvm_mcu/` 只保留
-   板端宿主、静态池和外设适配，不维护 VM 源码副本。修改共享核心时验证桌面口径与
-   板端 `-fno-exceptions -fno-rtti` 口径，宏和预算见 [`library/stackvm_mcu/README.md`](library/stackvm_mcu/README.md)。
-   FK 板级库在 `example/mcu/FK-STM32H743XIH6/sdk/` 内维护副本，不依赖原工作区；修改导入文件
-   时复核并更新 `sdk-snapshot.json` 的本地 LF 哈希，保留原哈希、编码及组件许可证。
+6. **统一 VM 核心**：`library/stackvm/` 是桌面与嵌入式 Linux 共用的 VM 核心。
+   目标平台需具备受支持的 C++17 工具链与操作系统宿主服务；构建宏、资源预算和胶水
+   按实际宿主配置维护，不承诺单片机或裸机支持。
 7. 文档索引用 [`doc/README.md`](doc/README.md)；改动完成后 `git add -A` → commit →
    `git push origin master`（远端 <https://gitee.com/rabbitc999/magel.git>）。
    仓库里另配的 `github` 远端（<https://github.com/rabbitc999/Magel.git>）默认不动：
@@ -48,7 +46,7 @@
 9. **编译器默认编入反射**：构建、测试及交付 Magel 编译器时，默认同时启用
    `MAGEL_WITH_REFLECTION=1` 与 `STACKVM_WITH_REFLECTION=1`，以根目录 `features.mk`
    的默认值为准；不得只开启前端或只开启运行时。本规则包括 VS Code 插件内嵌的编译器。
-   显式验证无反射裁剪配置时才覆盖为 `0`；独立板端 VM 按板端预算与宏配置构建。
+   显式验证无反射裁剪配置时才覆盖为 `0`。
    编入反射能力后，沿用前端默认启用反射的行为；单次源程序编译需要关闭时，
    显式使用 `--no-reflection`，不要把省略 `--reflection` 当作关闭反射。
 10. **VM 与四元式默认最高优化**：日常构建、运行、测试及交付默认使用当前实现支持的
@@ -74,9 +72,25 @@
 
 ## C/C++ 格式与语义要点
 
+### 文件组织与增量编译
+
+- 工程内部的 `.c` / `.cpp` / `.h` / `.hpp` 按模块职责组织，文件名使用清楚的下划线名称；
+  不使用 `pass1_xxx`、`pass2_xxx` 等阶段序号名称。`source/glue/` 的标准库胶水及其内部
+  辅助模块统一使用 `std_xxx` 文件名，名称体现具体功能。
+- 大型头文件必须审查声明与实现的边界：将可独立编译的非模板函数、非模板成员实现和
+  私有实现迁入对应 `.c` / `.cpp`，头文件保留必要的类型、接口声明、模板定义和确有需要的
+  轻量内联实现。不得仅将实现改为被头文件包含的 `.cpp`，也不得通过继续包含大型实现头
+  使拆分只改变文件数量。
+- 内部类型、成员与函数沿用项目既有的类 Qt 命名规范；文件名的下划线规范不用于批量改名
+  类、函数或公开 API。维护既有接口语义及 ABI，避免为整理文件引入无关行为变化。
+- 拆分或重命名时同步维护所有引用、构建目标、自动依赖、裁剪配置、内嵌资产和导出工程模板。
+  从头文件迁出的实现必须作为独立编译单元链接；解析器生成器的语义分片仍按权威文法装配。
+  生成资产只从生成源维护。用增量构建核对只修改实现时
+  的重编范围，避免因公共头或笼统依赖触发无关模块重编。
+
 根目录 [`.clang-format`](.clang-format) 是全项目 C/C++ 源码及头文件的唯一格式规范：
 四空格缩进、不用 Tab、自定义大括号换行、指针符号靠变量、不限制行宽、不排序 include。
-工程生成器 `source/magel-generator/` 不适用格式整理；
+工程生成器 `source/generator/` 不适用格式整理；
 解析器、驱动、内嵌标准库与消息表等自动生成资产从生成源维护，不直接批量改写。
 排除清单统一记录在 [`.clang-format-ignore`](.clang-format-ignore)。有逐字节同步关系的文件
 仍须使用对应同步脚本保持一致；不要因此覆盖外部 ParseEngine 仓库。

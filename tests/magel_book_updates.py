@@ -31,7 +31,7 @@ def main():
             assert environments.pop() == name
     assert not environments
     try:
-        Converter().convert('| chapter | title |\n| 24 | project |\n| 25 | MCU |')
+        Converter().convert('| chapter | title |\n| 24 | project |\n| 25 | Linux |')
     except ValueError as error:
         assert '分隔行' in str(error)
     else:

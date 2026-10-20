@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1560" height="900" viewBox="0 0 1560 900">
   <rect width="1560" height="900" fill="#f4f7fb"/>
   <text x="40" y="58" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="33" font-weight="700" fill="#10233f">Magel · Execution</text>
-  <text x="40" y="95" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="19" fill="#4a5b73">Desktop and embedded hosts share the same VM core</text>
+  <text x="40" y="95" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="19" fill="#4a5b73">Desktop and embedded Linux hosts share the same VM core</text>
   <rect x="40" y="145" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
   <text x="260" y="175" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">.mgl / in-memory Program</text>
   <text x="260" y="205" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Compile source, then enter the VM</text>

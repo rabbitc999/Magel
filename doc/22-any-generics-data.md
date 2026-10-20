@@ -154,13 +154,13 @@ int64 main() {
 }
 ```
 
-## 文件和板端边界
+## 文件和目标宿主边界
 
-`FileStream.readBytes(count)` 在 EOF 返回短列表，`writeBytes` 保留零字节；失败返回 `IoError`。桌面、MCU stdio 和 FatFS 适配提供字节读取；自定义旧 FileApi 后端未实现字节读取时明确报告不支持。
+`FileStream.readBytes(count)` 在 EOF 返回短列表，`writeBytes` 保留零字节；失败返回 `IoError`。操作系统宿主提供字节读取；自定义旧 FileApi 后端未实现字节读取时明确报告不支持。
 
 `readAllBytes` 默认预算为 16 MiB，可显式传入上限。`readAllText` 读取完整内容而非一行，拒绝内嵌零字节；二进制文件必须使用字节接口。`listDirectory` 只枚举一层并排序；`fileInfo` 跟随符号链接；`renamePath` 的目标覆盖规则遵从平台。文件操作不承诺事务或原子写入。
 
-MCU 的文件系统能力由 FileApi 注入；桌面目录操作不会自动出现在板端。日期换算不依赖操作系统时区，`nowUtc` 的宿主必须提供真实 UTC 时钟。
+自定义宿主的文件系统能力由 FileApi 注入，目录操作需相应系统服务。日期换算不依赖操作系统时区，`nowUtc` 的宿主必须提供真实 UTC 时钟。
 
 ## 二进制中间产物与体积实测
 

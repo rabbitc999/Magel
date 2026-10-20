@@ -20,7 +20,7 @@ def inventory():
     paths = sorted((ROOT / 'source/std').glob('*.mgl'))
     data = {re.search(r'\bmodule\s+([\w:]+)\s*;', p.read_text(encoding='utf-8')).group(1): declarations(p)
             for p in paths}
-    path = ROOT / 'source/magel_generic.hpp'
+    path = ROOT / 'source/magel_generic.cpp'
     source = path.read_text(encoding='utf-8')
     raw = re.search(r'const Memory::String rangeBuiltinRaw = R"MAGEL\((.*?)\)MAGEL";', source, re.S)
     chunks = list(re.finditer(r'\bmodule\s+([\w:]+)\s*;', raw.group(1)))
@@ -33,9 +33,11 @@ def inventory():
         entries = declarations(ROOT / origin, 'module '+module+';\n'+text)
         for entry in entries:
             if entry['owner'] in ('List','Set','Map'):
-                entry['source']='source/epilogue/aggregate_ownership.cpp'
+                entry['source']='source/semantics/aggregate_ownership.cpp'
             elif entry['name'] in ('toReference','toOptional'):
-                entry['source']='source/magel_generic.hpp'
+                entry['source']='source/magel_generic.cpp'
+            elif entry['name'] in ('eprint','eprintln'):
+                entry['source']='source/semantics/formatted_output.cpp'
             origin_text=(ROOT/entry['source']).read_text(encoding='utf-8')
             at=origin_text.find('"'+entry['name']+'"')
             entry['line'] = origin_text.count('\n',0,at)+1 if at>=0 else 1
@@ -61,7 +63,7 @@ def inventory():
         entry['line']=827
         data['std::lang'].append(entry)
     # 核对手工等价签名与编译器方法/算法登记表，新增内建 API 不得静默遗漏。
-    container_source=(ROOT/'source/epilogue/aggregate_ownership.cpp').read_text(encoding='utf-8')
+    container_source=(ROOT/'source/semantics/aggregate_ownership.cpp').read_text(encoding='utf-8')
     for table,owner in (('kVecMethods','List'),('kSetMethods','Set'),('kMapMethods','Map')):
         block=re.search(table+r'\[\] = \{(.*?)\n\};',container_source,re.S).group(1)
         names=set(re.findall(r'\{\s*"(\w+)"',block))
@@ -202,7 +204,7 @@ def render(data):
                 lines+=['<details>','<summary>示例输出</summary>','','```text',expected.with_suffix('.txt').read_text(encoding='utf-8').rstrip(),'```','','</details>','']
         if module=='std::iter':
             lines+=['## 点调用与自由函数对应','','`Iter` 的适配器点调用由编译器转为同名自由函数，接收者作为第一个参数。例如 `cursor.map(mapper)` 等价于 `std::iter::map(cursor,mapper)`。下表中的方法同样适用各函数条目的参数、返回值与边界。','','| 点调用 | 对应入口 |','| --- | --- |']
-            inference=(ROOT/'source/epilogue/generic_inference.cpp').read_text(encoding='utf-8')
+            inference=(ROOT/'source/semantics/generic_inference.cpp').read_text(encoding='utf-8')
             adapters=re.search(r'adapters\{(.*?)\};',inference,re.S).group(1)
             for adapter in re.findall(r'"(\w+)"',adapters):
                 lines.append(f'| `cursor.{adapter}(...)` | `std::iter::{adapter}(cursor,...)` |')

@@ -2,7 +2,7 @@
  * @file tombstone_index.cpp
  * @brief 墓碑压缩、拆分复用及清扫边界回归。
  */
-#include "../source/runtime_allocator.hpp"
+#include "../source/magel_runtime_allocator.hpp"
 #include "../library/stackvm/allocation_index.hpp"
 #include <cassert>
 #include <cstdio>

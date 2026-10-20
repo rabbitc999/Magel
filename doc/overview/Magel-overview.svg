@@ -61,7 +61,7 @@
   <text x="439" y="685" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="11" fill="#55677f">.svmb 保存指令与公开符号</text>
   <rect x="428" y="706" width="324" height="52" rx="8" fill="#f7f9fc" stroke="#e2e9f3" stroke-width="1"/>
   <text x="439" y="727" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="12" font-weight="700" fill="#14507e">构建入口</text>
-  <text x="439" y="747" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="11" fill="#55677f">magel-generator：compiler / vm / clear</text>
+  <text x="439" y="747" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="11" fill="#55677f">magel gen compiler / clear</text>
   <rect x="780" y="118" width="360" height="700" rx="14" fill="#ffffff" stroke="#d8e1ee" stroke-width="1.5"/>
   <text x="798" y="148" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="17" font-weight="700" fill="#14507e">③ 运行时与标准库</text>
   <text x="798" y="170" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="11" fill="#55677f">magel/library/stackvm · source/glue/</text>

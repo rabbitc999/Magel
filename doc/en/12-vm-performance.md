@@ -76,27 +76,4 @@ The [previous seven-configuration dataset](../benchmarks/vm-baselines-0.18.3.jso
 Earlier Lua-only [first](../benchmarks/vm-lua-0.18.3.json) and [repeat](../benchmarks/vm-lua-0.18.3-repeat.json)
 rounds and the [dispatch comparison](../benchmarks/register-dispatch-0.18.3.json) remain archives.
 They are not mixed into this report. Results describe these workloads, not a general language ranking or
-timing on physical MCU hardware.
-
-## STM32H743 hardware measurements
-
-The [FK-STM32H743XIH6 project](../../example/mcu/FK-STM32H743XIH6/README.md) records
-DWT cycles on a physical 480 MHz Cortex-M7. The metadata, runtime and byte pools use
-2 / 16 / 4 MiB of SDRAM. Clang builds the firmware with `-Os`; the shared VM retains
-its highest default execution optimizations.
-
-For the same 10,000-step integer recurrence, two boots produced VM medians of
-**8.146217 ms** and **8.143513 ms**, approximately **391 cycles per iteration** or
-**1.23 million iterations per second**. The current native C++ host callback produced
-medians of **0.410529 ms** and **0.528200 ms**, giving ratios of **19.84** and **15.42**. Its loop condition still reads a host argument, and the interval includes VM dispatch
-and callback boundaries.
-
-Both runs retain the slower first sample. Waiting until the self-test had finished
-before attaching SWD did not remove that effect; its exact source has not been isolated.
-VM dispatch, runtime values and control flow add work beyond the native machine loop.
-SDRAM, caches, interrupts and host glue also contribute, without separate attribution
-in this experiment. The [board report](../../example/mcu/FK-STM32H743XIH6/README.md)
-contains code, firmware hashes and limitations; the raw records are
-[the initial capture](../../example/mcu/FK-STM32H743XIH6/results/benchmark.json) and
-[the isolated repeat](../../example/mcu/FK-STM32H743XIH6/results/benchmark-isolated.json).
-These physical MCU times cannot be compared directly with desktop times as a hardware-independent ranking.
+timing on physical embedded Linux hardware.

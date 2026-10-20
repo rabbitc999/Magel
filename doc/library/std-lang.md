@@ -206,220 +206,224 @@ int64 main() {
 | 名称 | 声明 |
 | --- | --- |
 | [String::length](#api-0) | `int64 length()` |
-| [readLine](#api-1) | `String readLine()` |
-| [readLines](#api-2) | `String readLines(int32 N)` |
-| [readLines](#api-3) | `String readLines(int64 N)` |
-| [toInt32](#api-4) | `Option<int32> toInt32(float64 value)` |
-| [toInt32](#api-5) | `Option<int32> toInt32(float32 value)` |
-| [toInt64](#api-6) | `int64 toInt64(float64 value)` |
-| [toInt64](#api-7) | `int64 toInt64(float32 value)` |
-| [float32ToBytes](#api-8) | `std::lang::List<uint8> float32ToBytes(float32 value, bool bigEndian)` |
-| [float32ToBytes](#api-9) | `std::lang::List<uint8> float32ToBytes(float32 value)` |
-| [bytesToFloat32](#api-10) | `Option<float32> bytesToFloat32(std::lang::List<uint8> bytes, bool bigEndian)` |
-| [bytesToFloat32](#api-11) | `Option<float32> bytesToFloat32(std::lang::List<uint8> bytes)` |
-| [bytesToFloat32](#api-12) | `Option<float32> bytesToFloat32(uint8 const& bytes, int64 count, bool bigEndian)` |
-| [bytesToFloat32](#api-13) | `Option<float32> bytesToFloat32(uint8 const& bytes, int64 count)` |
-| [bytesToFloat32](#api-14) | `Option<float32> bytesToFloat32(uint8 bytes[], bool bigEndian)` |
-| [bytesToFloat32](#api-15) | `Option<float32> bytesToFloat32(uint8 bytes[])` |
-| [float32ToBytes](#api-16) | `bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count, bool bigEndian)` |
-| [float32ToBytes](#api-17) | `bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count)` |
-| [float32ToBytes](#api-18) | `bool float32ToBytes(float32 value, uint8[] mut& bytes, bool bigEndian)` |
-| [float32ToBytes](#api-19) | `bool float32ToBytes(float32 value, uint8[] mut& bytes)` |
-| [float64ToBytes](#api-20) | `std::lang::List<uint8> float64ToBytes(float64 value, bool bigEndian)` |
-| [float64ToBytes](#api-21) | `std::lang::List<uint8> float64ToBytes(float64 value)` |
-| [bytesToFloat64](#api-22) | `Option<float64> bytesToFloat64(std::lang::List<uint8> bytes, bool bigEndian)` |
-| [bytesToFloat64](#api-23) | `Option<float64> bytesToFloat64(std::lang::List<uint8> bytes)` |
-| [bytesToFloat64](#api-24) | `Option<float64> bytesToFloat64(uint8 const& bytes, int64 count, bool bigEndian)` |
-| [bytesToFloat64](#api-25) | `Option<float64> bytesToFloat64(uint8 const& bytes, int64 count)` |
-| [bytesToFloat64](#api-26) | `Option<float64> bytesToFloat64(uint8 bytes[], bool bigEndian)` |
-| [bytesToFloat64](#api-27) | `Option<float64> bytesToFloat64(uint8 bytes[])` |
-| [float64ToBytes](#api-28) | `bool float64ToBytes(float64 value, uint8 mut& bytes, int64 count, bool bigEndian)` |
-| [float64ToBytes](#api-29) | `bool float64ToBytes(float64 value, uint8 mut& bytes, int64 count)` |
-| [float64ToBytes](#api-30) | `bool float64ToBytes(float64 value, uint8[] mut& bytes, bool bigEndian)` |
-| [float64ToBytes](#api-31) | `bool float64ToBytes(float64 value, uint8[] mut& bytes)` |
-| [assert](#api-32) | `void assert(bool condition)` |
-| [assert](#api-33) | `void assert(bool condition, std::lang::String message)` |
-| [assert](#api-34) | `void assert(bool condition, int64 line)` |
-| [assert](#api-35) | `void assert(bool condition, std::lang::String message, int64 line)` |
-| [Try::branch](#api-36) | `TryBranch<T, R> branch()` |
-| [TryMove::intoBranch](#api-37) | `TryBranch<T, R> intoBranch()` |
-| [FromResidual::fromResidual](#api-38) | `static F fromResidual(R residual)` |
-| [Option::branch](#api-39) | `TryBranch<T, NoneResidual> branch()` |
-| [Option::intoBranch](#api-40) | `TryBranch<T, NoneResidual> intoBranch()` |
-| [Option::fromResidual](#api-41) | `static Option<T> fromResidual(NoneResidual residual)` |
-| [Option::isValue](#api-42) | `bool isValue()` |
-| [Option::isNone](#api-43) | `bool isNone()` |
-| [Option::take](#api-44) | `T take()` |
-| [Option::unwrap](#api-45) | `T unwrap()` |
-| [Option::unwrapOr](#api-46) | `T unwrapOr(T fallback)` |
-| [Option::expect](#api-47) | `T expect(std::lang::String message)` |
-| [Option::transform](#api-48) | `Option<T> transform(T fn(T) mapper)` |
-| [Option::andThen](#api-49) | `Option<T> andThen(Option<T> fn(T) mapper)` |
-| [Result::branch](#api-50) | `TryBranch<T, ErrorResidual<E>> branch()` |
-| [Result::intoBranch](#api-51) | `TryBranch<T, ErrorResidual<E>> intoBranch()` |
-| [Result::fromResidual](#api-52) | `static Result<T,E> fromResidual(ErrorResidual<E> residual)` |
-| [Result::ok](#api-53) | `Option<T> ok()` |
-| [Result::isOk](#api-54) | `bool isOk()` |
-| [Result::isErr](#api-55) | `bool isErr()` |
-| [Result::take](#api-56) | `T take()` |
-| [Result::unwrap](#api-57) | `T unwrap()` |
-| [Result::unwrapOr](#api-58) | `T unwrapOr(T fallback)` |
-| [Result::expect](#api-59) | `T expect(std::lang::String message)` |
-| [Result::takeError](#api-60) | `E takeError()` |
-| [Result::error](#api-61) | `E error()` |
-| [Result::transform](#api-62) | `Result<T, E> transform(T fn(T) mapper)` |
-| [Result::andThen](#api-63) | `Result<T, E> andThen(Result<T, E> fn(T) mapper)` |
-| [NextValue::nextValue](#api-64) | `Option<T> nextValue(T end, bool inclusive)` |
-| [Pair::create](#api-65) | `static Pair<K, V> create(K first, V second)` |
-| [Pair::create](#api-66) | `static Pair<K, V> create((K, V) value)` |
-| [Pair::toTuple](#api-67) | `(K, V) toTuple()` |
-| [tryGet](#api-68) | `Option<T> tryGet<T>(Any const& value)` |
-| [tryGetReference](#api-69) | `Option<T const&> tryGetReference<T>(Any const& value)` |
-| [tryGetMut](#api-70) | `Option<T mut&> tryGetMut<T>(Any mut& value)` |
-| [stringBytes](#api-71) | `List<uint8> stringBytes(String text)` |
-| [range](#api-72) | `__Range range(int64 start, int64 stop)` |
-| [range](#api-73) | `__Range range(int64 start, int64 stop, int64 step)` |
-| [rangeEq](#api-74) | `__Interval_int64 rangeEq(int64 start, int64 stop)` |
-| [Drop::drop](#api-75) | `void drop()` |
-| [Closeable::close](#api-76) | `void close()` |
-| [print](#api-77) | `int64 print(String format, Any args...)` |
-| [println](#api-78) | `int64 println(String format, Any args...)` |
-| [format](#api-79) | `String format(String format, Any args...)` |
-| [putChar](#api-80) | `int64 putChar(char value)` |
-| [pause](#api-81) | `int64 pause()` |
-| [sweep](#api-82) | `int64 sweep()` |
-| [inputLine](#api-83) | `String inputLine()` |
-| [inputInt](#api-84) | `int64 inputInt()` |
-| [inputUInt](#api-85) | `uint64 inputUInt()` |
-| [inputFloat](#api-86) | `float64 inputFloat()` |
-| [inputBool](#api-87) | `bool inputBool()` |
-| [inputChar](#api-88) | `char inputChar()` |
-| [inputBigInteger](#api-89) | `BigInteger inputBigInteger()` |
-| [inputBigDecimal](#api-90) | `BigDecimal inputBigDecimal()` |
-| [panic](#api-91) | `int64 panic(String message)` |
-| [len](#api-92) | `int64 len(Any value)` |
-| [move](#api-93) | `T move<T>(T mut& value)` |
-| [toReference](#api-94) | `T mut& toReference<T>(Option<T mut&> value)` |
-| [toOptional](#api-95) | `Option<T mut&> toOptional<T>(T mut& value)` |
-| [memcpy](#api-96) | `int64 memcpy(char mut& destination, char const& source, int64 bytes)` |
-| [memset](#api-97) | `int64 memset(char mut& destination, int64 value, int64 bytes)` |
-| [List::copy](#api-98) | `List<T> copy()` |
-| [List::push](#api-99) | `int64 push(T value)` |
-| [List::insert](#api-100) | `int64 insert(int64 index, T value)` |
-| [List::at](#api-101) | `T at(int64 index)` |
-| [List::pop](#api-102) | `T pop()` |
-| [List::remove](#api-103) | `int64 remove(int64 index)` |
-| [List::indexOf](#api-104) | `int64 indexOf(T value)` |
-| [List::contains](#api-105) | `bool contains(T value)` |
-| [List::has](#api-106) | `bool has(T value)` |
-| [List::clear](#api-107) | `int64 clear()` |
-| [List::len](#api-108) | `int64 len()` |
-| [Set::copy](#api-109) | `Set<T> copy()` |
-| [Set::add](#api-110) | `int64 add(T value)` |
-| [Set::has](#api-111) | `int64 has(T value)` |
-| [Set::contains](#api-112) | `int64 contains(T value)` |
-| [Set::remove](#api-113) | `int64 remove(T value)` |
-| [Set::at](#api-114) | `T at(int64 index)` |
-| [Set::clear](#api-115) | `int64 clear()` |
-| [Set::len](#api-116) | `int64 len()` |
-| [Map::copy](#api-117) | `Map<K,V> copy()` |
-| [Map::put](#api-118) | `int64 put(K key,V value)` |
-| [Map::has](#api-119) | `int64 has(K key)` |
-| [Map::contains](#api-120) | `int64 contains(K key)` |
-| [Map::remove](#api-121) | `int64 remove(K key)` |
-| [Map::keyAt](#api-122) | `K keyAt(int64 index)` |
-| [Map::valAt](#api-123) | `V valAt(int64 index)` |
-| [Map::clear](#api-124) | `int64 clear()` |
-| [Map::len](#api-125) | `int64 len()` |
-| [BigInteger::str](#api-126) | `String str()` |
-| [BigInteger::copy](#api-127) | `BigInteger copy()` |
-| [BigInteger::pow](#api-128) | `BigInteger pow(int64 exponent)` |
-| [BigInteger::powmod](#api-129) | `BigInteger powmod(BigInteger exponent, BigInteger modulus)` |
-| [BigInteger::gcd](#api-130) | `BigInteger gcd(BigInteger other)` |
-| [BigInteger::lcm](#api-131) | `BigInteger lcm(BigInteger other)` |
-| [BigInteger::mod](#api-132) | `BigInteger mod(BigInteger modulus)` |
-| [BigInteger::modInverse](#api-133) | `BigInteger modInverse(BigInteger modulus)` |
-| [BigInteger::isProbablePrime](#api-134) | `bool isProbablePrime(int64 rounds)` |
-| [BigInteger::nextProbablePrime](#api-135) | `BigInteger nextProbablePrime()` |
-| [BigInteger::bitLength](#api-136) | `int64 bitLength()` |
-| [BigInteger::bitAnd](#api-137) | `BigInteger bitAnd(BigInteger other)` |
-| [BigInteger::bitOr](#api-138) | `BigInteger bitOr(BigInteger other)` |
-| [BigInteger::bitXor](#api-139) | `BigInteger bitXor(BigInteger other)` |
-| [BigInteger::strRadix](#api-140) | `String strRadix(int64 base)` |
-| [BigInteger::iroot](#api-141) | `BigInteger iroot(int64 k)` |
-| [BigDecimal::str](#api-142) | `String str()` |
-| [BigDecimal::copy](#api-143) | `BigDecimal copy()` |
-| [BigDecimal::setPrecision](#api-144) | `int64 setPrecision(int64 digits)` |
-| [BigDecimal::pow](#api-145) | `BigDecimal pow(int64 exponent)` |
-| [BigDecimal::abs](#api-146) | `BigDecimal abs()` |
-| [BigDecimal::isInteger](#api-147) | `bool isInteger()` |
-| [BigDecimal::floor](#api-148) | `BigInteger floor()` |
-| [BigDecimal::ceil](#api-149) | `BigInteger ceil()` |
-| [BigDecimal::trunc](#api-150) | `BigInteger trunc()` |
-| [BigDecimal::sqrt](#api-151) | `BigDecimal sqrt(int64 digits)` |
-| [BigDecimal::root](#api-152) | `BigDecimal root(int64 k, int64 digits)` |
-| [Any::copy](#api-153) | `Any copy()` |
-| [Any::isEmpty](#api-154) | `bool isEmpty()` |
-| [Any::clear](#api-155) | `void clear()` |
-| [Any::set](#api-156) | `int64 set(T value)` |
-| [Any::getValue](#api-157) | `T getValue()` |
-| [Any::getReference](#api-158) | `T mut& getReference()` |
-| [Any::getOptional](#api-159) | `Option<T mut&> getOptional()` |
-| [eq](#api-160) | `bool eq(T left,T right)` |
-| [ne](#api-161) | `bool ne(T left,T right)` |
-| [lt](#api-162) | `bool lt(T left,T right)` |
-| [le](#api-163) | `bool le(T left,T right)` |
-| [gt](#api-164) | `bool gt(T left,T right)` |
-| [ge](#api-165) | `bool ge(T left,T right)` |
-| [add](#api-166) | `R add(T left,U right)` |
-| [sub](#api-167) | `R sub(T left,U right)` |
-| [mul](#api-168) | `R mul(T left,U right)` |
-| [div](#api-169) | `R div(T left,U right)` |
-| [mod](#api-170) | `R mod(T left,U right)` |
-| [index](#api-171) | `T index(T const& data,int64 index)` |
-| [Add::leftAdd](#api-172) | `R leftAdd(T value)` |
-| [RightAdd::rightAdd](#api-173) | `R rightAdd(T value)` |
-| [Subtract::leftSub](#api-174) | `R leftSub(T value)` |
-| [RightSubtract::rightSub](#api-175) | `R rightSub(T value)` |
-| [Multiply::leftMul](#api-176) | `R leftMul(T value)` |
-| [RightMultiply::rightMul](#api-177) | `R rightMul(T value)` |
-| [Divide::leftDiv](#api-178) | `R leftDiv(T value)` |
-| [RightDivide::rightDiv](#api-179) | `R rightDiv(T value)` |
-| [Modulo::leftMod](#api-180) | `R leftMod(T value)` |
-| [RightModulo::rightMod](#api-181) | `R rightMod(T value)` |
-| [Equal::leftEqual](#api-182) | `R leftEqual(T value)` |
-| [RightEqual::rightEqual](#api-183) | `R rightEqual(T value)` |
-| [NotEqual::leftNotEqual](#api-184) | `R leftNotEqual(T value)` |
-| [RightNotEqual::rightNotEqual](#api-185) | `R rightNotEqual(T value)` |
-| [Less::leftLess](#api-186) | `R leftLess(T value)` |
-| [RightLess::rightLess](#api-187) | `R rightLess(T value)` |
-| [LessOrEqual::leftLessEqual](#api-188) | `R leftLessEqual(T value)` |
-| [RightLessOrEqual::rightLessEqual](#api-189) | `R rightLessEqual(T value)` |
-| [Greater::leftGreater](#api-190) | `R leftGreater(T value)` |
-| [RightGreater::rightGreater](#api-191) | `R rightGreater(T value)` |
-| [GreaterOrEqual::leftGreaterEqual](#api-192) | `R leftGreaterEqual(T value)` |
-| [RightGreaterOrEqual::rightGreaterEqual](#api-193) | `R rightGreaterEqual(T value)` |
-| [And::leftBitAnd](#api-194) | `R leftBitAnd(T value)` |
-| [RightAnd::rightBitAnd](#api-195) | `R rightBitAnd(T value)` |
-| [Or::leftBitOr](#api-196) | `R leftBitOr(T value)` |
-| [RightOr::rightBitOr](#api-197) | `R rightBitOr(T value)` |
-| [Xor::leftBitXor](#api-198) | `R leftBitXor(T value)` |
-| [RightXor::rightBitXor](#api-199) | `R rightBitXor(T value)` |
-| [ShiftLeft::leftShiftLeft](#api-200) | `R leftShiftLeft(T value)` |
-| [RightShiftLeft::rightShiftLeft](#api-201) | `R rightShiftLeft(T value)` |
-| [ShiftRight::leftShiftRight](#api-202) | `R leftShiftRight(T value)` |
-| [RightShiftRight::rightShiftRight](#api-203) | `R rightShiftRight(T value)` |
-| [Negate::negate](#api-204) | `R negate(T value)` |
-| [BitNot::bitNot](#api-205) | `R bitNot(T value)` |
-| [Positive::positive](#api-206) | `R positive(T value)` |
-| [Hash::hash](#api-207) | `uint64 hash(T value)` |
-| [ExplicitConvert::explicitConvert](#api-208) | `T explicitConvert()` |
-| [ImplicitConvert::implicitConvert](#api-209) | `T implicitConvert()` |
-| [Index::index](#api-210) | `R index(T key)` |
-| [Iterator::iterator](#api-211) | `Option<R> iterator(int64 index)` |
-| [Result::mapErr](#api-212) | `Result<T,F> mapErr<F>(F fn(E) mapper)` |
-| [Option::okOr](#api-213) | `Result<T,E> okOr<E>(E error)` |
-| [Option::okOrElse](#api-214) | `Result<T,E> okOrElse<E>(E fn() factory)` |
+| [File::print](#api-1) | `int64 print(String text)` |
+| [File::println](#api-2) | `int64 println(String text = "")` |
+| [readLine](#api-3) | `String readLine()` |
+| [readLines](#api-4) | `String readLines(int32 N)` |
+| [readLines](#api-5) | `String readLines(int64 N)` |
+| [toInt32](#api-6) | `Option<int32> toInt32(float64 value)` |
+| [toInt32](#api-7) | `Option<int32> toInt32(float32 value)` |
+| [toInt64](#api-8) | `int64 toInt64(float64 value)` |
+| [toInt64](#api-9) | `int64 toInt64(float32 value)` |
+| [float32ToBytes](#api-10) | `std::lang::List<uint8> float32ToBytes(float32 value, bool bigEndian)` |
+| [float32ToBytes](#api-11) | `std::lang::List<uint8> float32ToBytes(float32 value)` |
+| [bytesToFloat32](#api-12) | `Option<float32> bytesToFloat32(std::lang::List<uint8> bytes, bool bigEndian)` |
+| [bytesToFloat32](#api-13) | `Option<float32> bytesToFloat32(std::lang::List<uint8> bytes)` |
+| [bytesToFloat32](#api-14) | `Option<float32> bytesToFloat32(uint8 const& bytes, int64 count, bool bigEndian)` |
+| [bytesToFloat32](#api-15) | `Option<float32> bytesToFloat32(uint8 const& bytes, int64 count)` |
+| [bytesToFloat32](#api-16) | `Option<float32> bytesToFloat32(uint8 bytes[], bool bigEndian)` |
+| [bytesToFloat32](#api-17) | `Option<float32> bytesToFloat32(uint8 bytes[])` |
+| [float32ToBytes](#api-18) | `bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count, bool bigEndian)` |
+| [float32ToBytes](#api-19) | `bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count)` |
+| [float32ToBytes](#api-20) | `bool float32ToBytes(float32 value, uint8[] mut& bytes, bool bigEndian)` |
+| [float32ToBytes](#api-21) | `bool float32ToBytes(float32 value, uint8[] mut& bytes)` |
+| [float64ToBytes](#api-22) | `std::lang::List<uint8> float64ToBytes(float64 value, bool bigEndian)` |
+| [float64ToBytes](#api-23) | `std::lang::List<uint8> float64ToBytes(float64 value)` |
+| [bytesToFloat64](#api-24) | `Option<float64> bytesToFloat64(std::lang::List<uint8> bytes, bool bigEndian)` |
+| [bytesToFloat64](#api-25) | `Option<float64> bytesToFloat64(std::lang::List<uint8> bytes)` |
+| [bytesToFloat64](#api-26) | `Option<float64> bytesToFloat64(uint8 const& bytes, int64 count, bool bigEndian)` |
+| [bytesToFloat64](#api-27) | `Option<float64> bytesToFloat64(uint8 const& bytes, int64 count)` |
+| [bytesToFloat64](#api-28) | `Option<float64> bytesToFloat64(uint8 bytes[], bool bigEndian)` |
+| [bytesToFloat64](#api-29) | `Option<float64> bytesToFloat64(uint8 bytes[])` |
+| [float64ToBytes](#api-30) | `bool float64ToBytes(float64 value, uint8 mut& bytes, int64 count, bool bigEndian)` |
+| [float64ToBytes](#api-31) | `bool float64ToBytes(float64 value, uint8 mut& bytes, int64 count)` |
+| [float64ToBytes](#api-32) | `bool float64ToBytes(float64 value, uint8[] mut& bytes, bool bigEndian)` |
+| [float64ToBytes](#api-33) | `bool float64ToBytes(float64 value, uint8[] mut& bytes)` |
+| [assert](#api-34) | `void assert(bool condition)` |
+| [assert](#api-35) | `void assert(bool condition, std::lang::String message)` |
+| [assert](#api-36) | `void assert(bool condition, int64 line)` |
+| [assert](#api-37) | `void assert(bool condition, std::lang::String message, int64 line)` |
+| [Try::branch](#api-38) | `TryBranch<T, R> branch()` |
+| [TryMove::intoBranch](#api-39) | `TryBranch<T, R> intoBranch()` |
+| [FromResidual::fromResidual](#api-40) | `static F fromResidual(R residual)` |
+| [Option::branch](#api-41) | `TryBranch<T, NoneResidual> branch()` |
+| [Option::intoBranch](#api-42) | `TryBranch<T, NoneResidual> intoBranch()` |
+| [Option::fromResidual](#api-43) | `static Option<T> fromResidual(NoneResidual residual)` |
+| [Option::isValue](#api-44) | `bool isValue()` |
+| [Option::isNone](#api-45) | `bool isNone()` |
+| [Option::take](#api-46) | `T take()` |
+| [Option::unwrap](#api-47) | `T unwrap()` |
+| [Option::unwrapOr](#api-48) | `T unwrapOr(T fallback)` |
+| [Option::expect](#api-49) | `T expect(std::lang::String message)` |
+| [Option::transform](#api-50) | `Option<T> transform(T fn(T) mapper)` |
+| [Option::andThen](#api-51) | `Option<T> andThen(Option<T> fn(T) mapper)` |
+| [Result::branch](#api-52) | `TryBranch<T, ErrorResidual<E>> branch()` |
+| [Result::intoBranch](#api-53) | `TryBranch<T, ErrorResidual<E>> intoBranch()` |
+| [Result::fromResidual](#api-54) | `static Result<T,E> fromResidual(ErrorResidual<E> residual)` |
+| [Result::ok](#api-55) | `Option<T> ok()` |
+| [Result::isOk](#api-56) | `bool isOk()` |
+| [Result::isErr](#api-57) | `bool isErr()` |
+| [Result::take](#api-58) | `T take()` |
+| [Result::unwrap](#api-59) | `T unwrap()` |
+| [Result::unwrapOr](#api-60) | `T unwrapOr(T fallback)` |
+| [Result::expect](#api-61) | `T expect(std::lang::String message)` |
+| [Result::takeError](#api-62) | `E takeError()` |
+| [Result::error](#api-63) | `E error()` |
+| [Result::transform](#api-64) | `Result<T, E> transform(T fn(T) mapper)` |
+| [Result::andThen](#api-65) | `Result<T, E> andThen(Result<T, E> fn(T) mapper)` |
+| [NextValue::nextValue](#api-66) | `Option<T> nextValue(T end, bool inclusive)` |
+| [Pair::create](#api-67) | `static Pair<K, V> create(K first, V second)` |
+| [Pair::create](#api-68) | `static Pair<K, V> create((K, V) value)` |
+| [Pair::toTuple](#api-69) | `(K, V) toTuple()` |
+| [tryGet](#api-70) | `Option<T> tryGet<T>(Any const& value)` |
+| [tryGetReference](#api-71) | `Option<T const&> tryGetReference<T>(Any const& value)` |
+| [tryGetMut](#api-72) | `Option<T mut&> tryGetMut<T>(Any mut& value)` |
+| [stringBytes](#api-73) | `List<uint8> stringBytes(String text)` |
+| [range](#api-74) | `__Range range(int64 start, int64 stop)` |
+| [range](#api-75) | `__Range range(int64 start, int64 stop, int64 step)` |
+| [rangeEq](#api-76) | `__Interval_int64 rangeEq(int64 start, int64 stop)` |
+| [Drop::drop](#api-77) | `void drop()` |
+| [Closeable::close](#api-78) | `void close()` |
+| [print](#api-79) | `int64 print(String format, Any args...)` |
+| [println](#api-80) | `int64 println(String format, Any args...)` |
+| [eprint](#api-81) | `int64 eprint(String format, Any args...)` |
+| [eprintln](#api-82) | `int64 eprintln(String format, Any args...)` |
+| [format](#api-83) | `String format(String format, Any args...)` |
+| [putChar](#api-84) | `int64 putChar(char value)` |
+| [pause](#api-85) | `int64 pause()` |
+| [sweep](#api-86) | `int64 sweep()` |
+| [inputLine](#api-87) | `String inputLine()` |
+| [inputInt](#api-88) | `int64 inputInt()` |
+| [inputUInt](#api-89) | `uint64 inputUInt()` |
+| [inputFloat](#api-90) | `float64 inputFloat()` |
+| [inputBool](#api-91) | `bool inputBool()` |
+| [inputChar](#api-92) | `char inputChar()` |
+| [inputBigInteger](#api-93) | `BigInteger inputBigInteger()` |
+| [inputBigDecimal](#api-94) | `BigDecimal inputBigDecimal()` |
+| [panic](#api-95) | `int64 panic(String message)` |
+| [len](#api-96) | `int64 len(Any value)` |
+| [move](#api-97) | `T move<T>(T mut& value)` |
+| [toReference](#api-98) | `T mut& toReference<T>(Option<T mut&> value)` |
+| [toOptional](#api-99) | `Option<T mut&> toOptional<T>(T mut& value)` |
+| [memcpy](#api-100) | `int64 memcpy(char mut& destination, char const& source, int64 bytes)` |
+| [memset](#api-101) | `int64 memset(char mut& destination, int64 value, int64 bytes)` |
+| [List::copy](#api-102) | `List<T> copy()` |
+| [List::push](#api-103) | `int64 push(T value)` |
+| [List::insert](#api-104) | `int64 insert(int64 index, T value)` |
+| [List::at](#api-105) | `T at(int64 index)` |
+| [List::pop](#api-106) | `T pop()` |
+| [List::remove](#api-107) | `int64 remove(int64 index)` |
+| [List::indexOf](#api-108) | `int64 indexOf(T value)` |
+| [List::contains](#api-109) | `bool contains(T value)` |
+| [List::has](#api-110) | `bool has(T value)` |
+| [List::clear](#api-111) | `int64 clear()` |
+| [List::len](#api-112) | `int64 len()` |
+| [Set::copy](#api-113) | `Set<T> copy()` |
+| [Set::add](#api-114) | `int64 add(T value)` |
+| [Set::has](#api-115) | `int64 has(T value)` |
+| [Set::contains](#api-116) | `int64 contains(T value)` |
+| [Set::remove](#api-117) | `int64 remove(T value)` |
+| [Set::at](#api-118) | `T at(int64 index)` |
+| [Set::clear](#api-119) | `int64 clear()` |
+| [Set::len](#api-120) | `int64 len()` |
+| [Map::copy](#api-121) | `Map<K,V> copy()` |
+| [Map::put](#api-122) | `int64 put(K key,V value)` |
+| [Map::has](#api-123) | `int64 has(K key)` |
+| [Map::contains](#api-124) | `int64 contains(K key)` |
+| [Map::remove](#api-125) | `int64 remove(K key)` |
+| [Map::keyAt](#api-126) | `K keyAt(int64 index)` |
+| [Map::valAt](#api-127) | `V valAt(int64 index)` |
+| [Map::clear](#api-128) | `int64 clear()` |
+| [Map::len](#api-129) | `int64 len()` |
+| [BigInteger::str](#api-130) | `String str()` |
+| [BigInteger::copy](#api-131) | `BigInteger copy()` |
+| [BigInteger::pow](#api-132) | `BigInteger pow(int64 exponent)` |
+| [BigInteger::powmod](#api-133) | `BigInteger powmod(BigInteger exponent, BigInteger modulus)` |
+| [BigInteger::gcd](#api-134) | `BigInteger gcd(BigInteger other)` |
+| [BigInteger::lcm](#api-135) | `BigInteger lcm(BigInteger other)` |
+| [BigInteger::mod](#api-136) | `BigInteger mod(BigInteger modulus)` |
+| [BigInteger::modInverse](#api-137) | `BigInteger modInverse(BigInteger modulus)` |
+| [BigInteger::isProbablePrime](#api-138) | `bool isProbablePrime(int64 rounds)` |
+| [BigInteger::nextProbablePrime](#api-139) | `BigInteger nextProbablePrime()` |
+| [BigInteger::bitLength](#api-140) | `int64 bitLength()` |
+| [BigInteger::bitAnd](#api-141) | `BigInteger bitAnd(BigInteger other)` |
+| [BigInteger::bitOr](#api-142) | `BigInteger bitOr(BigInteger other)` |
+| [BigInteger::bitXor](#api-143) | `BigInteger bitXor(BigInteger other)` |
+| [BigInteger::strRadix](#api-144) | `String strRadix(int64 base)` |
+| [BigInteger::iroot](#api-145) | `BigInteger iroot(int64 k)` |
+| [BigDecimal::str](#api-146) | `String str()` |
+| [BigDecimal::copy](#api-147) | `BigDecimal copy()` |
+| [BigDecimal::setPrecision](#api-148) | `int64 setPrecision(int64 digits)` |
+| [BigDecimal::pow](#api-149) | `BigDecimal pow(int64 exponent)` |
+| [BigDecimal::abs](#api-150) | `BigDecimal abs()` |
+| [BigDecimal::isInteger](#api-151) | `bool isInteger()` |
+| [BigDecimal::floor](#api-152) | `BigInteger floor()` |
+| [BigDecimal::ceil](#api-153) | `BigInteger ceil()` |
+| [BigDecimal::trunc](#api-154) | `BigInteger trunc()` |
+| [BigDecimal::sqrt](#api-155) | `BigDecimal sqrt(int64 digits)` |
+| [BigDecimal::root](#api-156) | `BigDecimal root(int64 k, int64 digits)` |
+| [Any::copy](#api-157) | `Any copy()` |
+| [Any::isEmpty](#api-158) | `bool isEmpty()` |
+| [Any::clear](#api-159) | `void clear()` |
+| [Any::set](#api-160) | `int64 set(T value)` |
+| [Any::getValue](#api-161) | `T getValue()` |
+| [Any::getReference](#api-162) | `T mut& getReference()` |
+| [Any::getOptional](#api-163) | `Option<T mut&> getOptional()` |
+| [eq](#api-164) | `bool eq(T left,T right)` |
+| [ne](#api-165) | `bool ne(T left,T right)` |
+| [lt](#api-166) | `bool lt(T left,T right)` |
+| [le](#api-167) | `bool le(T left,T right)` |
+| [gt](#api-168) | `bool gt(T left,T right)` |
+| [ge](#api-169) | `bool ge(T left,T right)` |
+| [add](#api-170) | `R add(T left,U right)` |
+| [sub](#api-171) | `R sub(T left,U right)` |
+| [mul](#api-172) | `R mul(T left,U right)` |
+| [div](#api-173) | `R div(T left,U right)` |
+| [mod](#api-174) | `R mod(T left,U right)` |
+| [index](#api-175) | `T index(T const& data,int64 index)` |
+| [Add::leftAdd](#api-176) | `R leftAdd(T value)` |
+| [RightAdd::rightAdd](#api-177) | `R rightAdd(T value)` |
+| [Subtract::leftSub](#api-178) | `R leftSub(T value)` |
+| [RightSubtract::rightSub](#api-179) | `R rightSub(T value)` |
+| [Multiply::leftMul](#api-180) | `R leftMul(T value)` |
+| [RightMultiply::rightMul](#api-181) | `R rightMul(T value)` |
+| [Divide::leftDiv](#api-182) | `R leftDiv(T value)` |
+| [RightDivide::rightDiv](#api-183) | `R rightDiv(T value)` |
+| [Modulo::leftMod](#api-184) | `R leftMod(T value)` |
+| [RightModulo::rightMod](#api-185) | `R rightMod(T value)` |
+| [Equal::leftEqual](#api-186) | `R leftEqual(T value)` |
+| [RightEqual::rightEqual](#api-187) | `R rightEqual(T value)` |
+| [NotEqual::leftNotEqual](#api-188) | `R leftNotEqual(T value)` |
+| [RightNotEqual::rightNotEqual](#api-189) | `R rightNotEqual(T value)` |
+| [Less::leftLess](#api-190) | `R leftLess(T value)` |
+| [RightLess::rightLess](#api-191) | `R rightLess(T value)` |
+| [LessOrEqual::leftLessEqual](#api-192) | `R leftLessEqual(T value)` |
+| [RightLessOrEqual::rightLessEqual](#api-193) | `R rightLessEqual(T value)` |
+| [Greater::leftGreater](#api-194) | `R leftGreater(T value)` |
+| [RightGreater::rightGreater](#api-195) | `R rightGreater(T value)` |
+| [GreaterOrEqual::leftGreaterEqual](#api-196) | `R leftGreaterEqual(T value)` |
+| [RightGreaterOrEqual::rightGreaterEqual](#api-197) | `R rightGreaterEqual(T value)` |
+| [And::leftBitAnd](#api-198) | `R leftBitAnd(T value)` |
+| [RightAnd::rightBitAnd](#api-199) | `R rightBitAnd(T value)` |
+| [Or::leftBitOr](#api-200) | `R leftBitOr(T value)` |
+| [RightOr::rightBitOr](#api-201) | `R rightBitOr(T value)` |
+| [Xor::leftBitXor](#api-202) | `R leftBitXor(T value)` |
+| [RightXor::rightBitXor](#api-203) | `R rightBitXor(T value)` |
+| [ShiftLeft::leftShiftLeft](#api-204) | `R leftShiftLeft(T value)` |
+| [RightShiftLeft::rightShiftLeft](#api-205) | `R rightShiftLeft(T value)` |
+| [ShiftRight::leftShiftRight](#api-206) | `R leftShiftRight(T value)` |
+| [RightShiftRight::rightShiftRight](#api-207) | `R rightShiftRight(T value)` |
+| [Negate::negate](#api-208) | `R negate(T value)` |
+| [BitNot::bitNot](#api-209) | `R bitNot(T value)` |
+| [Positive::positive](#api-210) | `R positive(T value)` |
+| [Hash::hash](#api-211) | `uint64 hash(T value)` |
+| [ExplicitConvert::explicitConvert](#api-212) | `T explicitConvert()` |
+| [ImplicitConvert::implicitConvert](#api-213) | `T implicitConvert()` |
+| [Index::index](#api-214) | `R index(T key)` |
+| [Iterator::iterator](#api-215) | `Option<R> iterator(int64 index)` |
+| [Result::mapErr](#api-216) | `Result<T,F> mapErr<F>(F fn(E) mapper)` |
+| [Option::okOr](#api-217) | `Result<T,E> okOr<E>(E error)` |
+| [Option::okOrElse](#api-218) | `Result<T,E> okOrElse<E>(E fn() factory)` |
 
 <a id="api-0"></a>
 
@@ -459,7 +463,83 @@ obj.length();
 
 <a id="api-1"></a>
 
-### readLine（2）
+### File::print（2）
+
+**声明**
+
+```magel
+int64 print(String text);
+```
+
+**行为**
+
+写入文本，格式参数沿用 print 的规则。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `text` | `String text` | 待写入文本，支持由格式化调用生成。 | 无 |
+
+**返回值**
+
+`int64`。成功写入的字节数，失败沿用文件写入诊断。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.print(text);
+```
+
+**源码**：[source/std/lang.mgl:31](../../source/std/lang.mgl#L31)。
+
+**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+
+<a id="api-2"></a>
+
+### File::println（3）
+
+**声明**
+
+```magel
+int64 println(String text = "");
+```
+
+**行为**
+
+写入文本并追加一个 LF 换行。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `text` | `String text` | 待写入文本，省略时只写换行。 | `""` |
+
+**返回值**
+
+`int64`。包括换行的写入字节数。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.println(text);
+```
+
+**源码**：[source/std/lang.mgl:37](../../source/std/lang.mgl#L37)。
+
+**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+
+<a id="api-3"></a>
+
+### readLine（4）
 
 **声明**
 
@@ -489,13 +569,13 @@ String readLine();
 readLine();
 ```
 
-**源码**：[source/std/lang.mgl:37](../../source/std/lang.mgl#L37)。
+**源码**：[source/std/lang.mgl:71](../../source/std/lang.mgl#L71)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-2"></a>
+<a id="api-4"></a>
 
-### readLines（3）
+### readLines（5）
 
 **声明**
 
@@ -527,13 +607,13 @@ String readLines(int32 N);
 readLines(N);
 ```
 
-**源码**：[source/std/lang.mgl:41](../../source/std/lang.mgl#L41)。
+**源码**：[source/std/lang.mgl:75](../../source/std/lang.mgl#L75)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-3"></a>
+<a id="api-5"></a>
 
-### readLines（4）
+### readLines（6）
 
 **声明**
 
@@ -565,13 +645,13 @@ String readLines(int64 N);
 readLines(N);
 ```
 
-**源码**：[source/std/lang.mgl:45](../../source/std/lang.mgl#L45)。
+**源码**：[source/std/lang.mgl:79](../../source/std/lang.mgl#L79)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-4"></a>
+<a id="api-6"></a>
 
-### toInt32（5）
+### toInt32（7）
 
 **声明**
 
@@ -603,13 +683,13 @@ Option<int32> toInt32(float64 value);
 toInt32(value);
 ```
 
-**源码**：[source/std/lang.mgl:51](../../source/std/lang.mgl#L51)。
+**源码**：[source/std/lang.mgl:85](../../source/std/lang.mgl#L85)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-5"></a>
+<a id="api-7"></a>
 
-### toInt32（6）
+### toInt32（8）
 
 **声明**
 
@@ -641,13 +721,13 @@ Option<int32> toInt32(float32 value);
 toInt32(value);
 ```
 
-**源码**：[source/std/lang.mgl:57](../../source/std/lang.mgl#L57)。
+**源码**：[source/std/lang.mgl:91](../../source/std/lang.mgl#L91)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-6"></a>
+<a id="api-8"></a>
 
-### toInt64（7）
+### toInt64（9）
 
 **声明**
 
@@ -679,13 +759,13 @@ int64 toInt64(float64 value);
 toInt64(value);
 ```
 
-**源码**：[source/std/lang.mgl:59](../../source/std/lang.mgl#L59)。
+**源码**：[source/std/lang.mgl:93](../../source/std/lang.mgl#L93)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-7"></a>
+<a id="api-9"></a>
 
-### toInt64（8）
+### toInt64（10）
 
 **声明**
 
@@ -717,13 +797,13 @@ int64 toInt64(float32 value);
 toInt64(value);
 ```
 
-**源码**：[source/std/lang.mgl:61](../../source/std/lang.mgl#L61)。
+**源码**：[source/std/lang.mgl:95](../../source/std/lang.mgl#L95)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-8"></a>
+<a id="api-10"></a>
 
-### float32ToBytes（9）
+### float32ToBytes（11）
 
 **声明**
 
@@ -756,13 +836,13 @@ std::lang::List<uint8> float32ToBytes(float32 value, bool bigEndian);
 float32ToBytes(value, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:68](../../source/std/lang.mgl#L68)。
+**源码**：[source/std/lang.mgl:102](../../source/std/lang.mgl#L102)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-9"></a>
+<a id="api-11"></a>
 
-### float32ToBytes（10）
+### float32ToBytes（12）
 
 **声明**
 
@@ -794,13 +874,13 @@ std::lang::List<uint8> float32ToBytes(float32 value);
 float32ToBytes(value);
 ```
 
-**源码**：[source/std/lang.mgl:70](../../source/std/lang.mgl#L70)。
+**源码**：[source/std/lang.mgl:104](../../source/std/lang.mgl#L104)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-10"></a>
+<a id="api-12"></a>
 
-### bytesToFloat32（11）
+### bytesToFloat32（13）
 
 **声明**
 
@@ -833,13 +913,13 @@ Option<float32> bytesToFloat32(std::lang::List<uint8> bytes, bool bigEndian);
 bytesToFloat32(bytes, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:72](../../source/std/lang.mgl#L72)。
+**源码**：[source/std/lang.mgl:106](../../source/std/lang.mgl#L106)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-11"></a>
+<a id="api-13"></a>
 
-### bytesToFloat32（12）
+### bytesToFloat32（14）
 
 **声明**
 
@@ -871,13 +951,13 @@ Option<float32> bytesToFloat32(std::lang::List<uint8> bytes);
 bytesToFloat32(bytes);
 ```
 
-**源码**：[source/std/lang.mgl:77](../../source/std/lang.mgl#L77)。
+**源码**：[source/std/lang.mgl:111](../../source/std/lang.mgl#L111)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-12"></a>
+<a id="api-14"></a>
 
-### bytesToFloat32（13）
+### bytesToFloat32（15）
 
 **声明**
 
@@ -911,13 +991,13 @@ Option<float32> bytesToFloat32(uint8 const& bytes, int64 count, bool bigEndian);
 bytesToFloat32(bytes, count, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:79](../../source/std/lang.mgl#L79)。
+**源码**：[source/std/lang.mgl:113](../../source/std/lang.mgl#L113)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-13"></a>
+<a id="api-15"></a>
 
-### bytesToFloat32（14）
+### bytesToFloat32（16）
 
 **声明**
 
@@ -950,13 +1030,13 @@ Option<float32> bytesToFloat32(uint8 const& bytes, int64 count);
 bytesToFloat32(bytes, count);
 ```
 
-**源码**：[source/std/lang.mgl:84](../../source/std/lang.mgl#L84)。
+**源码**：[source/std/lang.mgl:118](../../source/std/lang.mgl#L118)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-14"></a>
+<a id="api-16"></a>
 
-### bytesToFloat32（15）
+### bytesToFloat32（17）
 
 **声明**
 
@@ -989,13 +1069,13 @@ Option<float32> bytesToFloat32(uint8 bytes[], bool bigEndian);
 bytesToFloat32(bytes, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:86](../../source/std/lang.mgl#L86)。
+**源码**：[source/std/lang.mgl:120](../../source/std/lang.mgl#L120)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-15"></a>
+<a id="api-17"></a>
 
-### bytesToFloat32（16）
+### bytesToFloat32（18）
 
 **声明**
 
@@ -1027,13 +1107,13 @@ Option<float32> bytesToFloat32(uint8 bytes[]);
 bytesToFloat32(bytes);
 ```
 
-**源码**：[source/std/lang.mgl:88](../../source/std/lang.mgl#L88)。
+**源码**：[source/std/lang.mgl:122](../../source/std/lang.mgl#L122)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-16"></a>
+<a id="api-18"></a>
 
-### float32ToBytes（17）
+### float32ToBytes（19）
 
 **声明**
 
@@ -1068,13 +1148,13 @@ bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count, bool bigEndian
 float32ToBytes(value, bytes, count, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:90](../../source/std/lang.mgl#L90)。
+**源码**：[source/std/lang.mgl:124](../../source/std/lang.mgl#L124)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-17"></a>
+<a id="api-19"></a>
 
-### float32ToBytes（18）
+### float32ToBytes（20）
 
 **声明**
 
@@ -1108,13 +1188,13 @@ bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count);
 float32ToBytes(value, bytes, count);
 ```
 
-**源码**：[source/std/lang.mgl:95](../../source/std/lang.mgl#L95)。
+**源码**：[source/std/lang.mgl:129](../../source/std/lang.mgl#L129)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-18"></a>
+<a id="api-20"></a>
 
-### float32ToBytes（19）
+### float32ToBytes（21）
 
 **声明**
 
@@ -1148,13 +1228,13 @@ bool float32ToBytes(float32 value, uint8[] mut& bytes, bool bigEndian);
 float32ToBytes(value, bytes, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:97](../../source/std/lang.mgl#L97)。
+**源码**：[source/std/lang.mgl:131](../../source/std/lang.mgl#L131)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-19"></a>
+<a id="api-21"></a>
 
-### float32ToBytes（20）
+### float32ToBytes（22）
 
 **声明**
 
@@ -1187,13 +1267,13 @@ bool float32ToBytes(float32 value, uint8[] mut& bytes);
 float32ToBytes(value, bytes);
 ```
 
-**源码**：[source/std/lang.mgl:102](../../source/std/lang.mgl#L102)。
+**源码**：[source/std/lang.mgl:136](../../source/std/lang.mgl#L136)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-20"></a>
+<a id="api-22"></a>
 
-### float64ToBytes（21）
+### float64ToBytes（23）
 
 **声明**
 
@@ -1226,13 +1306,13 @@ std::lang::List<uint8> float64ToBytes(float64 value, bool bigEndian);
 float64ToBytes(value, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:109](../../source/std/lang.mgl#L109)。
+**源码**：[source/std/lang.mgl:143](../../source/std/lang.mgl#L143)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-21"></a>
+<a id="api-23"></a>
 
-### float64ToBytes（22）
+### float64ToBytes（24）
 
 **声明**
 
@@ -1264,13 +1344,13 @@ std::lang::List<uint8> float64ToBytes(float64 value);
 float64ToBytes(value);
 ```
 
-**源码**：[source/std/lang.mgl:111](../../source/std/lang.mgl#L111)。
+**源码**：[source/std/lang.mgl:145](../../source/std/lang.mgl#L145)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-22"></a>
+<a id="api-24"></a>
 
-### bytesToFloat64（23）
+### bytesToFloat64（25）
 
 **声明**
 
@@ -1303,13 +1383,13 @@ Option<float64> bytesToFloat64(std::lang::List<uint8> bytes, bool bigEndian);
 bytesToFloat64(bytes, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:113](../../source/std/lang.mgl#L113)。
+**源码**：[source/std/lang.mgl:147](../../source/std/lang.mgl#L147)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-23"></a>
+<a id="api-25"></a>
 
-### bytesToFloat64（24）
+### bytesToFloat64（26）
 
 **声明**
 
@@ -1341,13 +1421,13 @@ Option<float64> bytesToFloat64(std::lang::List<uint8> bytes);
 bytesToFloat64(bytes);
 ```
 
-**源码**：[source/std/lang.mgl:118](../../source/std/lang.mgl#L118)。
+**源码**：[source/std/lang.mgl:152](../../source/std/lang.mgl#L152)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-24"></a>
+<a id="api-26"></a>
 
-### bytesToFloat64（25）
+### bytesToFloat64（27）
 
 **声明**
 
@@ -1381,13 +1461,13 @@ Option<float64> bytesToFloat64(uint8 const& bytes, int64 count, bool bigEndian);
 bytesToFloat64(bytes, count, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:120](../../source/std/lang.mgl#L120)。
+**源码**：[source/std/lang.mgl:154](../../source/std/lang.mgl#L154)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-25"></a>
+<a id="api-27"></a>
 
-### bytesToFloat64（26）
+### bytesToFloat64（28）
 
 **声明**
 
@@ -1420,13 +1500,13 @@ Option<float64> bytesToFloat64(uint8 const& bytes, int64 count);
 bytesToFloat64(bytes, count);
 ```
 
-**源码**：[source/std/lang.mgl:125](../../source/std/lang.mgl#L125)。
+**源码**：[source/std/lang.mgl:159](../../source/std/lang.mgl#L159)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-26"></a>
+<a id="api-28"></a>
 
-### bytesToFloat64（27）
+### bytesToFloat64（29）
 
 **声明**
 
@@ -1459,13 +1539,13 @@ Option<float64> bytesToFloat64(uint8 bytes[], bool bigEndian);
 bytesToFloat64(bytes, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:127](../../source/std/lang.mgl#L127)。
+**源码**：[source/std/lang.mgl:161](../../source/std/lang.mgl#L161)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-27"></a>
+<a id="api-29"></a>
 
-### bytesToFloat64（28）
+### bytesToFloat64（30）
 
 **声明**
 
@@ -1497,13 +1577,13 @@ Option<float64> bytesToFloat64(uint8 bytes[]);
 bytesToFloat64(bytes);
 ```
 
-**源码**：[source/std/lang.mgl:129](../../source/std/lang.mgl#L129)。
+**源码**：[source/std/lang.mgl:163](../../source/std/lang.mgl#L163)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-28"></a>
+<a id="api-30"></a>
 
-### float64ToBytes（29）
+### float64ToBytes（31）
 
 **声明**
 
@@ -1538,13 +1618,13 @@ bool float64ToBytes(float64 value, uint8 mut& bytes, int64 count, bool bigEndian
 float64ToBytes(value, bytes, count, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:131](../../source/std/lang.mgl#L131)。
+**源码**：[source/std/lang.mgl:165](../../source/std/lang.mgl#L165)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-29"></a>
+<a id="api-31"></a>
 
-### float64ToBytes（30）
+### float64ToBytes（32）
 
 **声明**
 
@@ -1578,13 +1658,13 @@ bool float64ToBytes(float64 value, uint8 mut& bytes, int64 count);
 float64ToBytes(value, bytes, count);
 ```
 
-**源码**：[source/std/lang.mgl:136](../../source/std/lang.mgl#L136)。
+**源码**：[source/std/lang.mgl:170](../../source/std/lang.mgl#L170)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-30"></a>
+<a id="api-32"></a>
 
-### float64ToBytes（31）
+### float64ToBytes（33）
 
 **声明**
 
@@ -1618,13 +1698,13 @@ bool float64ToBytes(float64 value, uint8[] mut& bytes, bool bigEndian);
 float64ToBytes(value, bytes, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:138](../../source/std/lang.mgl#L138)。
+**源码**：[source/std/lang.mgl:172](../../source/std/lang.mgl#L172)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-31"></a>
+<a id="api-33"></a>
 
-### float64ToBytes（32）
+### float64ToBytes（34）
 
 **声明**
 
@@ -1657,13 +1737,13 @@ bool float64ToBytes(float64 value, uint8[] mut& bytes);
 float64ToBytes(value, bytes);
 ```
 
-**源码**：[source/std/lang.mgl:143](../../source/std/lang.mgl#L143)。
+**源码**：[source/std/lang.mgl:177](../../source/std/lang.mgl#L177)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-32"></a>
+<a id="api-34"></a>
 
-### assert（33）
+### assert（35）
 
 **声明**
 
@@ -1698,13 +1778,13 @@ condition 为真时继续，为假时以指定诊断文本和可选行号触发 
 assert(condition);
 ```
 
-**源码**：[source/std/lang.mgl:156](../../source/std/lang.mgl#L156)。
+**源码**：[source/std/lang.mgl:190](../../source/std/lang.mgl#L190)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-33"></a>
+<a id="api-35"></a>
 
-### assert（34）
+### assert（36）
 
 **声明**
 
@@ -1738,13 +1818,13 @@ condition 为真时继续，为假时以指定诊断文本和可选行号触发 
 assert(condition, message);
 ```
 
-**源码**：[source/std/lang.mgl:160](../../source/std/lang.mgl#L160)。
+**源码**：[source/std/lang.mgl:194](../../source/std/lang.mgl#L194)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-34"></a>
+<a id="api-36"></a>
 
-### assert（35）
+### assert（37）
 
 **声明**
 
@@ -1778,13 +1858,13 @@ condition 为真时继续，为假时以指定诊断文本和可选行号触发 
 assert(condition, line);
 ```
 
-**源码**：[source/std/lang.mgl:164](../../source/std/lang.mgl#L164)。
+**源码**：[source/std/lang.mgl:198](../../source/std/lang.mgl#L198)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-35"></a>
+<a id="api-37"></a>
 
-### assert（36）
+### assert（38）
 
 **声明**
 
@@ -1819,13 +1899,13 @@ condition 为真时继续，为假时以指定诊断文本和可选行号触发 
 assert(condition, message, line);
 ```
 
-**源码**：[source/std/lang.mgl:168](../../source/std/lang.mgl#L168)。
+**源码**：[source/std/lang.mgl:202](../../source/std/lang.mgl#L202)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-36"></a>
+<a id="api-38"></a>
 
-### Try::branch（37）
+### Try::branch（39）
 
 **声明**
 
@@ -1855,13 +1935,13 @@ TryBranch<T, R> branch();
 obj.branch();
 ```
 
-**源码**：[source/std/lang.mgl:179](../../source/std/lang.mgl#L179)。
+**源码**：[source/std/lang.mgl:213](../../source/std/lang.mgl#L213)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-37"></a>
+<a id="api-39"></a>
 
-### TryMove::intoBranch（38）
+### TryMove::intoBranch（40）
 
 **声明**
 
@@ -1891,13 +1971,13 @@ TryBranch<T, R> intoBranch();
 obj.intoBranch();
 ```
 
-**源码**：[source/std/lang.mgl:181](../../source/std/lang.mgl#L181)。
+**源码**：[source/std/lang.mgl:215](../../source/std/lang.mgl#L215)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-38"></a>
+<a id="api-40"></a>
 
-### FromResidual::fromResidual（39）
+### FromResidual::fromResidual（41）
 
 **声明**
 
@@ -1929,13 +2009,13 @@ static F fromResidual(R residual);
 FromResidual<F, R>::fromResidual(residual);
 ```
 
-**源码**：[source/std/lang.mgl:183](../../source/std/lang.mgl#L183)。
+**源码**：[source/std/lang.mgl:217](../../source/std/lang.mgl#L217)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-39"></a>
+<a id="api-41"></a>
 
-### Option::branch（40）
+### Option::branch（42）
 
 **声明**
 
@@ -1965,13 +2045,13 @@ TryBranch<T, NoneResidual> branch();
 obj.branch();
 ```
 
-**源码**：[source/std/lang.mgl:188](../../source/std/lang.mgl#L188)。
+**源码**：[source/std/lang.mgl:222](../../source/std/lang.mgl#L222)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-40"></a>
+<a id="api-42"></a>
 
-### Option::intoBranch（41）
+### Option::intoBranch（43）
 
 **声明**
 
@@ -2001,13 +2081,13 @@ TryBranch<T, NoneResidual> intoBranch();
 obj.intoBranch();
 ```
 
-**源码**：[source/std/lang.mgl:194](../../source/std/lang.mgl#L194)。
+**源码**：[source/std/lang.mgl:228](../../source/std/lang.mgl#L228)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-41"></a>
+<a id="api-43"></a>
 
-### Option::fromResidual（42）
+### Option::fromResidual（44）
 
 **声明**
 
@@ -2039,13 +2119,13 @@ static Option<T> fromResidual(NoneResidual residual);
 Option<T>::fromResidual(residual);
 ```
 
-**源码**：[source/std/lang.mgl:198](../../source/std/lang.mgl#L198)。
+**源码**：[source/std/lang.mgl:232](../../source/std/lang.mgl#L232)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-42"></a>
+<a id="api-44"></a>
 
-### Option::isValue（43）
+### Option::isValue（45）
 
 **声明**
 
@@ -2075,13 +2155,13 @@ bool isValue();
 obj.isValue();
 ```
 
-**源码**：[source/std/lang.mgl:199](../../source/std/lang.mgl#L199)。
+**源码**：[source/std/lang.mgl:233](../../source/std/lang.mgl#L233)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-43"></a>
+<a id="api-45"></a>
 
-### Option::isNone（44）
+### Option::isNone（46）
 
 **声明**
 
@@ -2111,13 +2191,13 @@ bool isNone();
 obj.isNone();
 ```
 
-**源码**：[source/std/lang.mgl:208](../../source/std/lang.mgl#L208)。
+**源码**：[source/std/lang.mgl:242](../../source/std/lang.mgl#L242)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-44"></a>
+<a id="api-46"></a>
 
-### Option::take（45）
+### Option::take（47）
 
 **声明**
 
@@ -2148,13 +2228,13 @@ T take();
 obj.take();
 ```
 
-**源码**：[source/std/lang.mgl:211](../../source/std/lang.mgl#L211)。
+**源码**：[source/std/lang.mgl:245](../../source/std/lang.mgl#L245)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-45"></a>
+<a id="api-47"></a>
 
-### Option::unwrap（46）
+### Option::unwrap（48）
 
 **声明**
 
@@ -2185,13 +2265,13 @@ T unwrap();
 obj.unwrap();
 ```
 
-**源码**：[source/std/lang.mgl:221](../../source/std/lang.mgl#L221)。
+**源码**：[source/std/lang.mgl:255](../../source/std/lang.mgl#L255)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-46"></a>
+<a id="api-48"></a>
 
-### Option::unwrapOr（47）
+### Option::unwrapOr（49）
 
 **声明**
 
@@ -2223,13 +2303,13 @@ T unwrapOr(T fallback);
 obj.unwrapOr(fallback);
 ```
 
-**源码**：[source/std/lang.mgl:230](../../source/std/lang.mgl#L230)。
+**源码**：[source/std/lang.mgl:264](../../source/std/lang.mgl#L264)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-47"></a>
+<a id="api-49"></a>
 
-### Option::expect（48）
+### Option::expect（50）
 
 **声明**
 
@@ -2262,13 +2342,13 @@ T expect(std::lang::String message);
 obj.expect(message);
 ```
 
-**源码**：[source/std/lang.mgl:239](../../source/std/lang.mgl#L239)。
+**源码**：[source/std/lang.mgl:273](../../source/std/lang.mgl#L273)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-48"></a>
+<a id="api-50"></a>
 
-### Option::transform（49）
+### Option::transform（51）
 
 **声明**
 
@@ -2300,13 +2380,13 @@ Option<T> transform(T fn(T) mapper);
 obj.transform(mapper);
 ```
 
-**源码**：[source/std/lang.mgl:248](../../source/std/lang.mgl#L248)。
+**源码**：[source/std/lang.mgl:282](../../source/std/lang.mgl#L282)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-49"></a>
+<a id="api-51"></a>
 
-### Option::andThen（50）
+### Option::andThen（52）
 
 **声明**
 
@@ -2338,13 +2418,13 @@ Option<T> andThen(Option<T> fn(T) mapper);
 obj.andThen(mapper);
 ```
 
-**源码**：[source/std/lang.mgl:257](../../source/std/lang.mgl#L257)。
+**源码**：[source/std/lang.mgl:291](../../source/std/lang.mgl#L291)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-50"></a>
+<a id="api-52"></a>
 
-### Result::branch（51）
+### Result::branch（53）
 
 **声明**
 
@@ -2374,13 +2454,13 @@ TryBranch<T, ErrorResidual<E>> branch();
 obj.branch();
 ```
 
-**源码**：[source/std/lang.mgl:270](../../source/std/lang.mgl#L270)。
+**源码**：[source/std/lang.mgl:304](../../source/std/lang.mgl#L304)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-51"></a>
+<a id="api-53"></a>
 
-### Result::intoBranch（52）
+### Result::intoBranch（54）
 
 **声明**
 
@@ -2410,13 +2490,13 @@ TryBranch<T, ErrorResidual<E>> intoBranch();
 obj.intoBranch();
 ```
 
-**源码**：[source/std/lang.mgl:280](../../source/std/lang.mgl#L280)。
+**源码**：[source/std/lang.mgl:314](../../source/std/lang.mgl#L314)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-52"></a>
+<a id="api-54"></a>
 
-### Result::fromResidual（53）
+### Result::fromResidual（55）
 
 **声明**
 
@@ -2448,13 +2528,13 @@ static Result<T,E> fromResidual(ErrorResidual<E> residual);
 Result<T, E>::fromResidual(residual);
 ```
 
-**源码**：[source/std/lang.mgl:286](../../source/std/lang.mgl#L286)。
+**源码**：[source/std/lang.mgl:320](../../source/std/lang.mgl#L320)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-53"></a>
+<a id="api-55"></a>
 
-### Result::ok（54）
+### Result::ok（56）
 
 **声明**
 
@@ -2484,13 +2564,13 @@ Option<T> ok();
 obj.ok();
 ```
 
-**源码**：[source/std/lang.mgl:287](../../source/std/lang.mgl#L287)。
+**源码**：[source/std/lang.mgl:321](../../source/std/lang.mgl#L321)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-54"></a>
+<a id="api-56"></a>
 
-### Result::isOk（55）
+### Result::isOk（57）
 
 **声明**
 
@@ -2520,13 +2600,13 @@ bool isOk();
 obj.isOk();
 ```
 
-**源码**：[source/std/lang.mgl:293](../../source/std/lang.mgl#L293)。
+**源码**：[source/std/lang.mgl:327](../../source/std/lang.mgl#L327)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-55"></a>
+<a id="api-57"></a>
 
-### Result::isErr（56）
+### Result::isErr（58）
 
 **声明**
 
@@ -2556,13 +2636,13 @@ bool isErr();
 obj.isErr();
 ```
 
-**源码**：[source/std/lang.mgl:302](../../source/std/lang.mgl#L302)。
+**源码**：[source/std/lang.mgl:336](../../source/std/lang.mgl#L336)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-56"></a>
+<a id="api-58"></a>
 
-### Result::take（57）
+### Result::take（59）
 
 **声明**
 
@@ -2593,13 +2673,13 @@ T take();
 obj.take();
 ```
 
-**源码**：[source/std/lang.mgl:305](../../source/std/lang.mgl#L305)。
+**源码**：[source/std/lang.mgl:339](../../source/std/lang.mgl#L339)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-57"></a>
+<a id="api-59"></a>
 
-### Result::unwrap（58）
+### Result::unwrap（60）
 
 **声明**
 
@@ -2630,13 +2710,13 @@ T unwrap();
 obj.unwrap();
 ```
 
-**源码**：[source/std/lang.mgl:315](../../source/std/lang.mgl#L315)。
+**源码**：[source/std/lang.mgl:349](../../source/std/lang.mgl#L349)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-58"></a>
+<a id="api-60"></a>
 
-### Result::unwrapOr（59）
+### Result::unwrapOr（61）
 
 **声明**
 
@@ -2668,13 +2748,13 @@ T unwrapOr(T fallback);
 obj.unwrapOr(fallback);
 ```
 
-**源码**：[source/std/lang.mgl:324](../../source/std/lang.mgl#L324)。
+**源码**：[source/std/lang.mgl:358](../../source/std/lang.mgl#L358)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-59"></a>
+<a id="api-61"></a>
 
-### Result::expect（60）
+### Result::expect（62）
 
 **声明**
 
@@ -2707,13 +2787,13 @@ T expect(std::lang::String message);
 obj.expect(message);
 ```
 
-**源码**：[source/std/lang.mgl:333](../../source/std/lang.mgl#L333)。
+**源码**：[source/std/lang.mgl:367](../../source/std/lang.mgl#L367)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-60"></a>
+<a id="api-62"></a>
 
-### Result::takeError（61）
+### Result::takeError（63）
 
 **声明**
 
@@ -2744,13 +2824,13 @@ E takeError();
 obj.takeError();
 ```
 
-**源码**：[source/std/lang.mgl:343](../../source/std/lang.mgl#L343)。
+**源码**：[source/std/lang.mgl:377](../../source/std/lang.mgl#L377)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-61"></a>
+<a id="api-63"></a>
 
-### Result::error（62）
+### Result::error（64）
 
 **声明**
 
@@ -2781,13 +2861,13 @@ E error();
 obj.error();
 ```
 
-**源码**：[source/std/lang.mgl:353](../../source/std/lang.mgl#L353)。
+**源码**：[source/std/lang.mgl:387](../../source/std/lang.mgl#L387)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-62"></a>
+<a id="api-64"></a>
 
-### Result::transform（63）
+### Result::transform（65）
 
 **声明**
 
@@ -2819,13 +2899,13 @@ Result<T, E> transform(T fn(T) mapper);
 obj.transform(mapper);
 ```
 
-**源码**：[source/std/lang.mgl:362](../../source/std/lang.mgl#L362)。
+**源码**：[source/std/lang.mgl:396](../../source/std/lang.mgl#L396)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-63"></a>
+<a id="api-65"></a>
 
-### Result::andThen（64）
+### Result::andThen（66）
 
 **声明**
 
@@ -2857,13 +2937,13 @@ Result<T, E> andThen(Result<T, E> fn(T) mapper);
 obj.andThen(mapper);
 ```
 
-**源码**：[source/std/lang.mgl:371](../../source/std/lang.mgl#L371)。
+**源码**：[source/std/lang.mgl:405](../../source/std/lang.mgl#L405)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-64"></a>
+<a id="api-66"></a>
 
-### NextValue::nextValue（65）
+### NextValue::nextValue（67）
 
 **声明**
 
@@ -2898,13 +2978,13 @@ Option<T> nextValue(T end, bool inclusive);
 obj.nextValue(end, inclusive);
 ```
 
-**源码**：[source/std/lang.mgl:392](../../source/std/lang.mgl#L392)。
+**源码**：[source/std/lang.mgl:426](../../source/std/lang.mgl#L426)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-65"></a>
+<a id="api-67"></a>
 
-### Pair::create（66）
+### Pair::create（68）
 
 **声明**
 
@@ -2939,13 +3019,13 @@ static Pair<K, V> create(K first, V second);
 Pair<K, V>::create(first, second);
 ```
 
-**源码**：[source/std/lang.mgl:448](../../source/std/lang.mgl#L448)。
+**源码**：[source/std/lang.mgl:482](../../source/std/lang.mgl#L482)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-66"></a>
+<a id="api-68"></a>
 
-### Pair::create（67）
+### Pair::create（69）
 
 **声明**
 
@@ -2979,13 +3059,13 @@ static Pair<K, V> create((K, V) value);
 Pair<K, V>::create(value);
 ```
 
-**源码**：[source/std/lang.mgl:458](../../source/std/lang.mgl#L458)。
+**源码**：[source/std/lang.mgl:492](../../source/std/lang.mgl#L492)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-67"></a>
+<a id="api-69"></a>
 
-### Pair::toTuple（68）
+### Pair::toTuple（70）
 
 **声明**
 
@@ -3015,13 +3095,13 @@ Pair<K, V>::create(value);
 obj.toTuple();
 ```
 
-**源码**：[source/std/lang.mgl:467](../../source/std/lang.mgl#L467)。
+**源码**：[source/std/lang.mgl:501](../../source/std/lang.mgl#L501)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-68"></a>
+<a id="api-70"></a>
 
-### tryGet（69）
+### tryGet（71）
 
 **声明**
 
@@ -3053,13 +3133,13 @@ Option<T> tryGet<T>(Any const& value);
 tryGet<T>(value);
 ```
 
-**源码**：[source/std/lang.mgl:491](../../source/std/lang.mgl#L491)。
+**源码**：[source/std/lang.mgl:525](../../source/std/lang.mgl#L525)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-69"></a>
+<a id="api-71"></a>
 
-### tryGetReference（70）
+### tryGetReference（72）
 
 **声明**
 
@@ -3091,13 +3171,13 @@ Option<T const&> tryGetReference<T>(Any const& value);
 tryGetReference<T>(value);
 ```
 
-**源码**：[source/std/lang.mgl:497](../../source/std/lang.mgl#L497)。
+**源码**：[source/std/lang.mgl:531](../../source/std/lang.mgl#L531)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-70"></a>
+<a id="api-72"></a>
 
-### tryGetMut（71）
+### tryGetMut（73）
 
 **声明**
 
@@ -3129,13 +3209,13 @@ Option<T mut&> tryGetMut<T>(Any mut& value);
 tryGetMut<T>(value);
 ```
 
-**源码**：[source/std/lang.mgl:502](../../source/std/lang.mgl#L502)。
+**源码**：[source/std/lang.mgl:536](../../source/std/lang.mgl#L536)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-71"></a>
+<a id="api-73"></a>
 
-### stringBytes（72）
+### stringBytes（74）
 
 **声明**
 
@@ -3167,13 +3247,13 @@ List<uint8> stringBytes(String text);
 stringBytes(text);
 ```
 
-**源码**：[source/std/lang.mgl:509](../../source/std/lang.mgl#L509)。
+**源码**：[source/std/lang.mgl:543](../../source/std/lang.mgl#L543)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-72"></a>
+<a id="api-74"></a>
 
-### range（73）
+### range（75）
 
 **声明**
 
@@ -3206,13 +3286,13 @@ __Range range(int64 start, int64 stop);
 range(start, stop);
 ```
 
-**源码**：[source/magel_generic.hpp:1696](../../source/magel_generic.hpp#L1696)。
+**源码**：[source/magel_generic.cpp:1705](../../source/magel_generic.cpp#L1705)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-73"></a>
+<a id="api-75"></a>
 
-### range（74）
+### range（76）
 
 **声明**
 
@@ -3247,13 +3327,13 @@ __Range range(int64 start, int64 stop, int64 step);
 range(start, stop, step);
 ```
 
-**源码**：[source/magel_generic.hpp:1704](../../source/magel_generic.hpp#L1704)。
+**源码**：[source/magel_generic.cpp:1713](../../source/magel_generic.cpp#L1713)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-74"></a>
+<a id="api-76"></a>
 
-### rangeEq（75）
+### rangeEq（77）
 
 **声明**
 
@@ -3288,13 +3368,13 @@ __Interval_int64 rangeEq(int64 start, int64 stop);
 rangeEq(start, stop);
 ```
 
-**源码**：[source/magel_generic.hpp:1719](../../source/magel_generic.hpp#L1719)。
+**源码**：[source/magel_generic.cpp:1728](../../source/magel_generic.cpp#L1728)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-75"></a>
+<a id="api-77"></a>
 
-### Drop::drop（76）
+### Drop::drop（78）
 
 **声明**
 
@@ -3324,13 +3404,13 @@ void drop();
 obj.drop();
 ```
 
-**源码**：[source/magel_generic.hpp:1926](../../source/magel_generic.hpp#L1926)。
+**源码**：[source/magel_generic.cpp:1935](../../source/magel_generic.cpp#L1935)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-76"></a>
+<a id="api-78"></a>
 
-### Closeable::close（77）
+### Closeable::close（79）
 
 **声明**
 
@@ -3360,13 +3440,13 @@ void close();
 obj.close();
 ```
 
-**源码**：[source/magel_generic.hpp:1934](../../source/magel_generic.hpp#L1934)。
+**源码**：[source/magel_generic.cpp:1943](../../source/magel_generic.cpp#L1943)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-77"></a>
+<a id="api-79"></a>
 
-### print（78）
+### print（80）
 
 **声明**
 
@@ -3399,13 +3479,13 @@ int64 print(String format, Any args...);
 print(format, args);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1242](../../source/epilogue/boxing.cpp#L1242)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1243](../../source/semantics/boxing.cpp#L1243)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-78"></a>
+<a id="api-80"></a>
 
-### println（79）
+### println（81）
 
 **声明**
 
@@ -3438,13 +3518,91 @@ int64 println(String format, Any args...);
 println(format, args);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1242](../../source/epilogue/boxing.cpp#L1242)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1243](../../source/semantics/boxing.cpp#L1243)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-79"></a>
+<a id="api-81"></a>
 
-### format（80）
+### eprint（82）
+
+**声明**
+
+```magel
+int64 eprint(String format, Any args...);
+```
+
+**行为**
+
+格式化写入标准错误流，不追加换行。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `format` | `String format` | 格式模板，使用 {} 占位符 | 无 |
+| `args` | `Any args...` | 与目标参数数量、位宽和类型匹配的封闭反射值列表 | 无 |
+
+**返回值**
+
+`int64`。格式化写入标准错误流，不追加换行。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+eprint(format, args);
+```
+
+**源码**：[source/semantics/formatted_output.cpp:15](../../source/semantics/formatted_output.cpp#L15)（编译器内建，签名为等价调用形式）。
+
+**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+
+<a id="api-82"></a>
+
+### eprintln（83）
+
+**声明**
+
+```magel
+int64 eprintln(String format, Any args...);
+```
+
+**行为**
+
+格式化写入标准错误流并追加换行。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `format` | `String format` | 格式模板，使用 {} 占位符 | 无 |
+| `args` | `Any args...` | 与目标参数数量、位宽和类型匹配的封闭反射值列表 | 无 |
+
+**返回值**
+
+`int64`。格式化写入标准错误流并追加换行。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+eprintln(format, args);
+```
+
+**源码**：[source/semantics/formatted_output.cpp:15](../../source/semantics/formatted_output.cpp#L15)（编译器内建，签名为等价调用形式）。
+
+**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+
+<a id="api-83"></a>
+
+### format（84）
 
 **声明**
 
@@ -3477,13 +3635,13 @@ String format(String format, Any args...);
 format(format, args);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1246](../../source/epilogue/boxing.cpp#L1246)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1247](../../source/semantics/boxing.cpp#L1247)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-80"></a>
+<a id="api-84"></a>
 
-### putChar（81）
+### putChar（85）
 
 **声明**
 
@@ -3515,13 +3673,13 @@ int64 putChar(char value);
 putChar(value);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1292](../../source/epilogue/boxing.cpp#L1292)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1293](../../source/semantics/boxing.cpp#L1293)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-81"></a>
+<a id="api-85"></a>
 
-### pause（82）
+### pause（86）
 
 **声明**
 
@@ -3551,13 +3709,13 @@ int64 pause();
 pause();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1253](../../source/epilogue/boxing.cpp#L1253)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1254](../../source/semantics/boxing.cpp#L1254)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-82"></a>
+<a id="api-86"></a>
 
-### sweep（83）
+### sweep（87）
 
 **声明**
 
@@ -3587,13 +3745,13 @@ int64 sweep();
 sweep();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1302](../../source/epilogue/boxing.cpp#L1302)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1303](../../source/semantics/boxing.cpp#L1303)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-83"></a>
+<a id="api-87"></a>
 
-### inputLine（84）
+### inputLine（88）
 
 **声明**
 
@@ -3623,13 +3781,13 @@ String inputLine();
 inputLine();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1307](../../source/epilogue/boxing.cpp#L1307)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1308](../../source/semantics/boxing.cpp#L1308)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-84"></a>
+<a id="api-88"></a>
 
-### inputInt（85）
+### inputInt（89）
 
 **声明**
 
@@ -3659,13 +3817,13 @@ int64 inputInt();
 inputInt();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1307](../../source/epilogue/boxing.cpp#L1307)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1308](../../source/semantics/boxing.cpp#L1308)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-85"></a>
+<a id="api-89"></a>
 
-### inputUInt（86）
+### inputUInt（90）
 
 **声明**
 
@@ -3695,13 +3853,13 @@ uint64 inputUInt();
 inputUInt();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1307](../../source/epilogue/boxing.cpp#L1307)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1308](../../source/semantics/boxing.cpp#L1308)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-86"></a>
+<a id="api-90"></a>
 
-### inputFloat（87）
+### inputFloat（91）
 
 **声明**
 
@@ -3731,13 +3889,13 @@ float64 inputFloat();
 inputFloat();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1307](../../source/epilogue/boxing.cpp#L1307)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1308](../../source/semantics/boxing.cpp#L1308)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-87"></a>
+<a id="api-91"></a>
 
-### inputBool（88）
+### inputBool（92）
 
 **声明**
 
@@ -3767,13 +3925,13 @@ bool inputBool();
 inputBool();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1307](../../source/epilogue/boxing.cpp#L1307)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1308](../../source/semantics/boxing.cpp#L1308)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-88"></a>
+<a id="api-92"></a>
 
-### inputChar（89）
+### inputChar（93）
 
 **声明**
 
@@ -3803,13 +3961,13 @@ char inputChar();
 inputChar();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1307](../../source/epilogue/boxing.cpp#L1307)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1308](../../source/semantics/boxing.cpp#L1308)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-89"></a>
+<a id="api-93"></a>
 
-### inputBigInteger（90）
+### inputBigInteger（94）
 
 **声明**
 
@@ -3839,13 +3997,13 @@ BigInteger inputBigInteger();
 inputBigInteger();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1307](../../source/epilogue/boxing.cpp#L1307)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1308](../../source/semantics/boxing.cpp#L1308)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-90"></a>
+<a id="api-94"></a>
 
-### inputBigDecimal（91）
+### inputBigDecimal（95）
 
 **声明**
 
@@ -3875,13 +4033,13 @@ BigDecimal inputBigDecimal();
 inputBigDecimal();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1307](../../source/epilogue/boxing.cpp#L1307)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1308](../../source/semantics/boxing.cpp#L1308)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-91"></a>
+<a id="api-95"></a>
 
-### panic（92）
+### panic（96）
 
 **声明**
 
@@ -3913,13 +4071,13 @@ int64 panic(String message);
 panic(message);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1326](../../source/epilogue/boxing.cpp#L1326)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1327](../../source/semantics/boxing.cpp#L1327)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-92"></a>
+<a id="api-96"></a>
 
-### len（93）
+### len（97）
 
 **声明**
 
@@ -3953,13 +4111,13 @@ int64 len(Any value);
 len(value);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:672](../../source/epilogue/boxing.cpp#L672)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:673](../../source/semantics/boxing.cpp#L673)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-93"></a>
+<a id="api-97"></a>
 
-### move（94）
+### move（98）
 
 **声明**
 
@@ -3991,13 +4149,13 @@ T move<T>(T mut& value);
 move<T>(value);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:596](../../source/epilogue/boxing.cpp#L596)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:597](../../source/semantics/boxing.cpp#L597)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-94"></a>
+<a id="api-98"></a>
 
-### toReference（95）
+### toReference（99）
 
 **声明**
 
@@ -4029,13 +4187,13 @@ T mut& toReference<T>(Option<T mut&> value);
 toReference<T>(value);
 ```
 
-**源码**：[source/magel_generic.hpp:1633](../../source/magel_generic.hpp#L1633)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:1642](../../source/magel_generic.cpp#L1642)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-95"></a>
+<a id="api-99"></a>
 
-### toOptional（96）
+### toOptional（100）
 
 **声明**
 
@@ -4067,13 +4225,13 @@ Option<T mut&> toOptional<T>(T mut& value);
 toOptional<T>(value);
 ```
 
-**源码**：[source/magel_generic.hpp:1639](../../source/magel_generic.hpp#L1639)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:1648](../../source/magel_generic.cpp#L1648)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-96"></a>
+<a id="api-100"></a>
 
-### memcpy（97）
+### memcpy（101）
 
 **声明**
 
@@ -4107,13 +4265,13 @@ int64 memcpy(char mut& destination, char const& source, int64 bytes);
 memcpy(destination, source, bytes);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1343](../../source/epilogue/boxing.cpp#L1343)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1344](../../source/semantics/boxing.cpp#L1344)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-97"></a>
+<a id="api-101"></a>
 
-### memset（98）
+### memset（102）
 
 **声明**
 
@@ -4147,13 +4305,13 @@ int64 memset(char mut& destination, int64 value, int64 bytes);
 memset(destination, value, bytes);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1343](../../source/epilogue/boxing.cpp#L1343)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1344](../../source/semantics/boxing.cpp#L1344)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-98"></a>
+<a id="api-102"></a>
 
-### List::copy（99）
+### List::copy（103）
 
 **声明**
 
@@ -4183,13 +4341,13 @@ List<T> copy();
 obj.copy();
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:870](../../source/epilogue/aggregate_ownership.cpp#L870)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:870](../../source/semantics/aggregate_ownership.cpp#L870)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-99"></a>
+<a id="api-103"></a>
 
-### List::push（100）
+### List::push（104）
 
 **声明**
 
@@ -4221,13 +4379,13 @@ int64 push(T value);
 obj.push(value);
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:871](../../source/epilogue/aggregate_ownership.cpp#L871)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:871](../../source/semantics/aggregate_ownership.cpp#L871)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-100"></a>
+<a id="api-104"></a>
 
-### List::insert（101）
+### List::insert（105）
 
 **声明**
 
@@ -4260,13 +4418,13 @@ int64 insert(int64 index, T value);
 obj.insert(index, value);
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:872](../../source/epilogue/aggregate_ownership.cpp#L872)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:872](../../source/semantics/aggregate_ownership.cpp#L872)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-101"></a>
+<a id="api-105"></a>
 
-### List::at（102）
+### List::at（106）
 
 **声明**
 
@@ -4298,13 +4456,13 @@ T at(int64 index);
 obj.at(index);
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:873](../../source/epilogue/aggregate_ownership.cpp#L873)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:873](../../source/semantics/aggregate_ownership.cpp#L873)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-102"></a>
+<a id="api-106"></a>
 
-### List::pop（103）
+### List::pop（107）
 
 **声明**
 
@@ -4334,13 +4492,13 @@ T pop();
 obj.pop();
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:874](../../source/epilogue/aggregate_ownership.cpp#L874)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:874](../../source/semantics/aggregate_ownership.cpp#L874)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-103"></a>
+<a id="api-107"></a>
 
-### List::remove（104）
+### List::remove（108）
 
 **声明**
 
@@ -4372,13 +4530,13 @@ int64 remove(int64 index);
 obj.remove(index);
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:875](../../source/epilogue/aggregate_ownership.cpp#L875)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:875](../../source/semantics/aggregate_ownership.cpp#L875)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-104"></a>
+<a id="api-108"></a>
 
-### List::indexOf（105）
+### List::indexOf（109）
 
 **声明**
 
@@ -4410,13 +4568,13 @@ int64 indexOf(T value);
 obj.indexOf(value);
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:876](../../source/epilogue/aggregate_ownership.cpp#L876)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:876](../../source/semantics/aggregate_ownership.cpp#L876)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-105"></a>
+<a id="api-109"></a>
 
-### List::contains（106）
+### List::contains（110）
 
 **声明**
 
@@ -4448,13 +4606,13 @@ bool contains(T value);
 obj.contains(value);
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:877](../../source/epilogue/aggregate_ownership.cpp#L877)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:877](../../source/semantics/aggregate_ownership.cpp#L877)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-106"></a>
+<a id="api-110"></a>
 
-### List::has（107）
+### List::has（111）
 
 **声明**
 
@@ -4486,13 +4644,13 @@ bool has(T value);
 obj.has(value);
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:878](../../source/epilogue/aggregate_ownership.cpp#L878)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:878](../../source/semantics/aggregate_ownership.cpp#L878)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-107"></a>
+<a id="api-111"></a>
 
-### List::clear（108）
+### List::clear（112）
 
 **声明**
 
@@ -4522,13 +4680,13 @@ int64 clear();
 obj.clear();
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:879](../../source/epilogue/aggregate_ownership.cpp#L879)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:879](../../source/semantics/aggregate_ownership.cpp#L879)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-108"></a>
+<a id="api-112"></a>
 
-### List::len（109）
+### List::len（113）
 
 **声明**
 
@@ -4558,13 +4716,13 @@ int64 len();
 obj.len();
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:880](../../source/epilogue/aggregate_ownership.cpp#L880)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:880](../../source/semantics/aggregate_ownership.cpp#L880)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-109"></a>
+<a id="api-113"></a>
 
-### Set::copy（110）
+### Set::copy（114）
 
 **声明**
 
@@ -4594,13 +4752,13 @@ Set<T> copy();
 obj.copy();
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:870](../../source/epilogue/aggregate_ownership.cpp#L870)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:870](../../source/semantics/aggregate_ownership.cpp#L870)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-110"></a>
+<a id="api-114"></a>
 
-### Set::add（111）
+### Set::add（115）
 
 **声明**
 
@@ -4632,13 +4790,13 @@ int64 add(T value);
 obj.add(value);
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:888](../../source/epilogue/aggregate_ownership.cpp#L888)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:888](../../source/semantics/aggregate_ownership.cpp#L888)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-111"></a>
+<a id="api-115"></a>
 
-### Set::has（112）
+### Set::has（116）
 
 **声明**
 
@@ -4670,13 +4828,13 @@ int64 has(T value);
 obj.has(value);
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:878](../../source/epilogue/aggregate_ownership.cpp#L878)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:878](../../source/semantics/aggregate_ownership.cpp#L878)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-112"></a>
+<a id="api-116"></a>
 
-### Set::contains（113）
+### Set::contains（117）
 
 **声明**
 
@@ -4708,13 +4866,13 @@ int64 contains(T value);
 obj.contains(value);
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:877](../../source/epilogue/aggregate_ownership.cpp#L877)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:877](../../source/semantics/aggregate_ownership.cpp#L877)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-113"></a>
+<a id="api-117"></a>
 
-### Set::remove（114）
+### Set::remove（118）
 
 **声明**
 
@@ -4746,13 +4904,13 @@ int64 remove(T value);
 obj.remove(value);
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:875](../../source/epilogue/aggregate_ownership.cpp#L875)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:875](../../source/semantics/aggregate_ownership.cpp#L875)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-114"></a>
+<a id="api-118"></a>
 
-### Set::at（115）
+### Set::at（119）
 
 **声明**
 
@@ -4784,13 +4942,13 @@ T at(int64 index);
 obj.at(index);
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:873](../../source/epilogue/aggregate_ownership.cpp#L873)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:873](../../source/semantics/aggregate_ownership.cpp#L873)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-115"></a>
+<a id="api-119"></a>
 
-### Set::clear（116）
+### Set::clear（120）
 
 **声明**
 
@@ -4820,13 +4978,13 @@ int64 clear();
 obj.clear();
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:879](../../source/epilogue/aggregate_ownership.cpp#L879)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:879](../../source/semantics/aggregate_ownership.cpp#L879)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-116"></a>
+<a id="api-120"></a>
 
-### Set::len（117）
+### Set::len（121）
 
 **声明**
 
@@ -4856,13 +5014,13 @@ int64 len();
 obj.len();
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:880](../../source/epilogue/aggregate_ownership.cpp#L880)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:880](../../source/semantics/aggregate_ownership.cpp#L880)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-117"></a>
+<a id="api-121"></a>
 
-### Map::copy（118）
+### Map::copy（122）
 
 **声明**
 
@@ -4892,13 +5050,13 @@ Map<K,V> copy();
 obj.copy();
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:870](../../source/epilogue/aggregate_ownership.cpp#L870)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:870](../../source/semantics/aggregate_ownership.cpp#L870)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-118"></a>
+<a id="api-122"></a>
 
-### Map::put（119）
+### Map::put（123）
 
 **声明**
 
@@ -4931,13 +5089,13 @@ int64 put(K key,V value);
 obj.put(key, value);
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:902](../../source/epilogue/aggregate_ownership.cpp#L902)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:902](../../source/semantics/aggregate_ownership.cpp#L902)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-119"></a>
+<a id="api-123"></a>
 
-### Map::has（120）
+### Map::has（124）
 
 **声明**
 
@@ -4969,13 +5127,13 @@ int64 has(K key);
 obj.has(key);
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:878](../../source/epilogue/aggregate_ownership.cpp#L878)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:878](../../source/semantics/aggregate_ownership.cpp#L878)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-120"></a>
+<a id="api-124"></a>
 
-### Map::contains（121）
+### Map::contains（125）
 
 **声明**
 
@@ -5007,13 +5165,13 @@ int64 contains(K key);
 obj.contains(key);
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:877](../../source/epilogue/aggregate_ownership.cpp#L877)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:877](../../source/semantics/aggregate_ownership.cpp#L877)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-121"></a>
+<a id="api-125"></a>
 
-### Map::remove（122）
+### Map::remove（126）
 
 **声明**
 
@@ -5045,13 +5203,13 @@ int64 remove(K key);
 obj.remove(key);
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:875](../../source/epilogue/aggregate_ownership.cpp#L875)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:875](../../source/semantics/aggregate_ownership.cpp#L875)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-122"></a>
+<a id="api-126"></a>
 
-### Map::keyAt（123）
+### Map::keyAt（127）
 
 **声明**
 
@@ -5083,13 +5241,13 @@ K keyAt(int64 index);
 obj.keyAt(index);
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:906](../../source/epilogue/aggregate_ownership.cpp#L906)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:906](../../source/semantics/aggregate_ownership.cpp#L906)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-123"></a>
+<a id="api-127"></a>
 
-### Map::valAt（124）
+### Map::valAt（128）
 
 **声明**
 
@@ -5121,13 +5279,13 @@ V valAt(int64 index);
 obj.valAt(index);
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:907](../../source/epilogue/aggregate_ownership.cpp#L907)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:907](../../source/semantics/aggregate_ownership.cpp#L907)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-124"></a>
+<a id="api-128"></a>
 
-### Map::clear（125）
+### Map::clear（129）
 
 **声明**
 
@@ -5157,13 +5315,13 @@ int64 clear();
 obj.clear();
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:879](../../source/epilogue/aggregate_ownership.cpp#L879)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:879](../../source/semantics/aggregate_ownership.cpp#L879)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-125"></a>
+<a id="api-129"></a>
 
-### Map::len（126）
+### Map::len（130）
 
 **声明**
 
@@ -5193,13 +5351,13 @@ int64 len();
 obj.len();
 ```
 
-**源码**：[source/epilogue/aggregate_ownership.cpp:880](../../source/epilogue/aggregate_ownership.cpp#L880)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/aggregate_ownership.cpp:880](../../source/semantics/aggregate_ownership.cpp#L880)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-126"></a>
+<a id="api-130"></a>
 
-### BigInteger::str（127）
+### BigInteger::str（131）
 
 **声明**
 
@@ -5229,13 +5387,13 @@ String str();
 obj.str();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:775](../../source/epilogue/boxing.cpp#L775)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:776](../../source/semantics/boxing.cpp#L776)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-127"></a>
+<a id="api-131"></a>
 
-### BigInteger::copy（128）
+### BigInteger::copy（132）
 
 **声明**
 
@@ -5265,13 +5423,13 @@ BigInteger copy();
 obj.copy();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:765](../../source/epilogue/boxing.cpp#L765)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:766](../../source/semantics/boxing.cpp#L766)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-128"></a>
+<a id="api-132"></a>
 
-### BigInteger::pow（129）
+### BigInteger::pow（133）
 
 **声明**
 
@@ -5305,13 +5463,13 @@ BigInteger pow(int64 exponent);
 obj.pow(exponent);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:790](../../source/epilogue/boxing.cpp#L790)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:791](../../source/semantics/boxing.cpp#L791)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-129"></a>
+<a id="api-133"></a>
 
-### BigInteger::powmod（130）
+### BigInteger::powmod（134）
 
 **声明**
 
@@ -5346,13 +5504,13 @@ BigInteger powmod(BigInteger exponent, BigInteger modulus);
 obj.powmod(exponent, modulus);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:796](../../source/epilogue/boxing.cpp#L796)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:797](../../source/semantics/boxing.cpp#L797)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-130"></a>
+<a id="api-134"></a>
 
-### BigInteger::gcd（131）
+### BigInteger::gcd（135）
 
 **声明**
 
@@ -5386,13 +5544,13 @@ BigInteger gcd(BigInteger other);
 obj.gcd(other);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:802](../../source/epilogue/boxing.cpp#L802)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:803](../../source/semantics/boxing.cpp#L803)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-131"></a>
+<a id="api-135"></a>
 
-### BigInteger::lcm（132）
+### BigInteger::lcm（136）
 
 **声明**
 
@@ -5424,13 +5582,13 @@ BigInteger lcm(BigInteger other);
 obj.lcm(other);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:802](../../source/epilogue/boxing.cpp#L802)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:803](../../source/semantics/boxing.cpp#L803)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-132"></a>
+<a id="api-136"></a>
 
-### BigInteger::mod（133）
+### BigInteger::mod（137）
 
 **声明**
 
@@ -5464,13 +5622,13 @@ BigInteger mod(BigInteger modulus);
 obj.mod(modulus);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:810](../../source/epilogue/boxing.cpp#L810)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:811](../../source/semantics/boxing.cpp#L811)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-133"></a>
+<a id="api-137"></a>
 
-### BigInteger::modInverse（134）
+### BigInteger::modInverse（138）
 
 **声明**
 
@@ -5504,13 +5662,13 @@ BigInteger modInverse(BigInteger modulus);
 obj.modInverse(modulus);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:816](../../source/epilogue/boxing.cpp#L816)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:817](../../source/semantics/boxing.cpp#L817)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-134"></a>
+<a id="api-138"></a>
 
-### BigInteger::isProbablePrime（135）
+### BigInteger::isProbablePrime（139）
 
 **声明**
 
@@ -5544,13 +5702,13 @@ Miller-Rabin 概率素性测试（固定种子，可复现）。
 obj.isProbablePrime(rounds);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:822](../../source/epilogue/boxing.cpp#L822)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:823](../../source/semantics/boxing.cpp#L823)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-135"></a>
+<a id="api-139"></a>
 
-### BigInteger::nextProbablePrime（136）
+### BigInteger::nextProbablePrime（140）
 
 **声明**
 
@@ -5582,13 +5740,13 @@ BigInteger nextProbablePrime();
 obj.nextProbablePrime();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:828](../../source/epilogue/boxing.cpp#L828)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:829](../../source/semantics/boxing.cpp#L829)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-136"></a>
+<a id="api-140"></a>
 
-### BigInteger::bitLength（137）
+### BigInteger::bitLength（141）
 
 **声明**
 
@@ -5620,13 +5778,13 @@ int64 bitLength();
 obj.bitLength();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:834](../../source/epilogue/boxing.cpp#L834)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:835](../../source/semantics/boxing.cpp#L835)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-137"></a>
+<a id="api-141"></a>
 
-### BigInteger::bitAnd（138）
+### BigInteger::bitAnd（142）
 
 **声明**
 
@@ -5660,13 +5818,13 @@ BigInteger bitAnd(BigInteger other);
 obj.bitAnd(other);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:840](../../source/epilogue/boxing.cpp#L840)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:841](../../source/semantics/boxing.cpp#L841)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-138"></a>
+<a id="api-142"></a>
 
-### BigInteger::bitOr（139）
+### BigInteger::bitOr（143）
 
 **声明**
 
@@ -5698,13 +5856,13 @@ BigInteger bitOr(BigInteger other);
 obj.bitOr(other);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:840](../../source/epilogue/boxing.cpp#L840)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:841](../../source/semantics/boxing.cpp#L841)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-139"></a>
+<a id="api-143"></a>
 
-### BigInteger::bitXor（140）
+### BigInteger::bitXor（144）
 
 **声明**
 
@@ -5736,13 +5894,13 @@ BigInteger bitXor(BigInteger other);
 obj.bitXor(other);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:840](../../source/epilogue/boxing.cpp#L840)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:841](../../source/semantics/boxing.cpp#L841)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-140"></a>
+<a id="api-144"></a>
 
-### BigInteger::strRadix（141）
+### BigInteger::strRadix（145）
 
 **声明**
 
@@ -5776,13 +5934,13 @@ String strRadix(int64 base);
 obj.strRadix(base);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:851](../../source/epilogue/boxing.cpp#L851)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:852](../../source/semantics/boxing.cpp#L852)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-141"></a>
+<a id="api-145"></a>
 
-### BigInteger::iroot（142）
+### BigInteger::iroot（146）
 
 **声明**
 
@@ -5816,13 +5974,13 @@ BigInteger iroot(int64 k);
 obj.iroot(k);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:857](../../source/epilogue/boxing.cpp#L857)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:858](../../source/semantics/boxing.cpp#L858)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-142"></a>
+<a id="api-146"></a>
 
-### BigDecimal::str（143）
+### BigDecimal::str（147）
 
 **声明**
 
@@ -5852,13 +6010,13 @@ String str();
 obj.str();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:775](../../source/epilogue/boxing.cpp#L775)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:776](../../source/semantics/boxing.cpp#L776)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-143"></a>
+<a id="api-147"></a>
 
-### BigDecimal::copy（144）
+### BigDecimal::copy（148）
 
 **声明**
 
@@ -5888,13 +6046,13 @@ BigDecimal copy();
 obj.copy();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:765](../../source/epilogue/boxing.cpp#L765)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:766](../../source/semantics/boxing.cpp#L766)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-144"></a>
+<a id="api-148"></a>
 
-### BigDecimal::setPrecision（145）
+### BigDecimal::setPrecision（149）
 
 **声明**
 
@@ -5926,13 +6084,13 @@ int64 setPrecision(int64 digits);
 obj.setPrecision(digits);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:754](../../source/epilogue/boxing.cpp#L754)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:755](../../source/semantics/boxing.cpp#L755)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-145"></a>
+<a id="api-149"></a>
 
-### BigDecimal::pow（146）
+### BigDecimal::pow（150）
 
 **声明**
 
@@ -5966,13 +6124,13 @@ BigDecimal pow(int64 exponent);
 obj.pow(exponent);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:790](../../source/epilogue/boxing.cpp#L790)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:791](../../source/semantics/boxing.cpp#L791)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-146"></a>
+<a id="api-150"></a>
 
-### BigDecimal::abs（147）
+### BigDecimal::abs（151）
 
 **声明**
 
@@ -6004,13 +6162,13 @@ BigDecimal abs();
 obj.abs();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:873](../../source/epilogue/boxing.cpp#L873)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:874](../../source/semantics/boxing.cpp#L874)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-147"></a>
+<a id="api-151"></a>
 
-### BigDecimal::isInteger（148）
+### BigDecimal::isInteger（152）
 
 **声明**
 
@@ -6042,13 +6200,13 @@ bool isInteger();
 obj.isInteger();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:879](../../source/epilogue/boxing.cpp#L879)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:880](../../source/semantics/boxing.cpp#L880)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-148"></a>
+<a id="api-152"></a>
 
-### BigDecimal::floor（149）
+### BigDecimal::floor（153）
 
 **声明**
 
@@ -6080,13 +6238,13 @@ BigInteger floor();
 obj.floor();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:885](../../source/epilogue/boxing.cpp#L885)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:886](../../source/semantics/boxing.cpp#L886)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-149"></a>
+<a id="api-153"></a>
 
-### BigDecimal::ceil（150）
+### BigDecimal::ceil（154）
 
 **声明**
 
@@ -6116,13 +6274,13 @@ BigInteger ceil();
 obj.ceil();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:885](../../source/epilogue/boxing.cpp#L885)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:886](../../source/semantics/boxing.cpp#L886)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-150"></a>
+<a id="api-154"></a>
 
-### BigDecimal::trunc（151）
+### BigDecimal::trunc（155）
 
 **声明**
 
@@ -6152,13 +6310,13 @@ BigInteger trunc();
 obj.trunc();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:885](../../source/epilogue/boxing.cpp#L885)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:886](../../source/semantics/boxing.cpp#L886)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-151"></a>
+<a id="api-155"></a>
 
-### BigDecimal::sqrt（152）
+### BigDecimal::sqrt（156）
 
 **声明**
 
@@ -6192,13 +6350,13 @@ BigDecimal sqrt(int64 digits);
 obj.sqrt(digits);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:895](../../source/epilogue/boxing.cpp#L895)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:896](../../source/semantics/boxing.cpp#L896)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-152"></a>
+<a id="api-156"></a>
 
-### BigDecimal::root（153）
+### BigDecimal::root（157）
 
 **声明**
 
@@ -6233,13 +6391,13 @@ k 次方根，保留 digits 位有效数字。
 obj.root(k, digits);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:901](../../source/epilogue/boxing.cpp#L901)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:902](../../source/semantics/boxing.cpp#L902)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-153"></a>
+<a id="api-157"></a>
 
-### Any::copy（154）
+### Any::copy（158）
 
 **声明**
 
@@ -6269,13 +6427,13 @@ Any copy();
 obj.copy();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:765](../../source/epilogue/boxing.cpp#L765)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:766](../../source/semantics/boxing.cpp#L766)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-154"></a>
+<a id="api-158"></a>
 
-### Any::isEmpty（155）
+### Any::isEmpty（159）
 
 **声明**
 
@@ -6305,13 +6463,13 @@ bool isEmpty();
 obj.isEmpty();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:927](../../source/epilogue/boxing.cpp#L927)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:928](../../source/semantics/boxing.cpp#L928)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-155"></a>
+<a id="api-159"></a>
 
-### Any::clear（156）
+### Any::clear（160）
 
 **声明**
 
@@ -6341,13 +6499,13 @@ void clear();
 obj.clear();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:934](../../source/epilogue/boxing.cpp#L934)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:935](../../source/semantics/boxing.cpp#L935)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-156"></a>
+<a id="api-160"></a>
 
-### Any::set（157）
+### Any::set（161）
 
 **声明**
 
@@ -6379,13 +6537,13 @@ int64 set(T value);
 obj.set(value);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:950](../../source/epilogue/boxing.cpp#L950)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:951](../../source/semantics/boxing.cpp#L951)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-157"></a>
+<a id="api-161"></a>
 
-### Any::getValue（158）
+### Any::getValue（162）
 
 **声明**
 
@@ -6415,13 +6573,13 @@ T getValue();
 obj.getValue();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:134](../../source/epilogue/boxing.cpp#L134)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:134](../../source/semantics/boxing.cpp#L134)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-158"></a>
+<a id="api-162"></a>
 
-### Any::getReference（159）
+### Any::getReference（163）
 
 **声明**
 
@@ -6451,13 +6609,13 @@ T mut& getReference();
 obj.getReference();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:134](../../source/epilogue/boxing.cpp#L134)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:134](../../source/semantics/boxing.cpp#L134)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-159"></a>
+<a id="api-163"></a>
 
-### Any::getOptional（160）
+### Any::getOptional（164）
 
 **声明**
 
@@ -6487,13 +6645,13 @@ Option<T mut&> getOptional();
 obj.getOptional();
 ```
 
-**源码**：[source/epilogue/boxing.cpp:134](../../source/epilogue/boxing.cpp#L134)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:134](../../source/semantics/boxing.cpp#L134)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-160"></a>
+<a id="api-164"></a>
 
-### eq（161）
+### eq（165）
 
 **声明**
 
@@ -6526,13 +6684,13 @@ bool eq(T left,T right);
 eq(left, right);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1](../../source/epilogue/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1](../../source/semantics/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-161"></a>
+<a id="api-165"></a>
 
-### ne（162）
+### ne（166）
 
 **声明**
 
@@ -6565,13 +6723,13 @@ bool ne(T left,T right);
 ne(left, right);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1](../../source/epilogue/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1](../../source/semantics/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-162"></a>
+<a id="api-166"></a>
 
-### lt（163）
+### lt（167）
 
 **声明**
 
@@ -6604,13 +6762,13 @@ bool lt(T left,T right);
 lt(left, right);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1](../../source/epilogue/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1](../../source/semantics/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-163"></a>
+<a id="api-167"></a>
 
-### le（164）
+### le（168）
 
 **声明**
 
@@ -6643,13 +6801,13 @@ bool le(T left,T right);
 le(left, right);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1](../../source/epilogue/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1](../../source/semantics/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-164"></a>
+<a id="api-168"></a>
 
-### gt（165）
+### gt（169）
 
 **声明**
 
@@ -6682,13 +6840,13 @@ bool gt(T left,T right);
 gt(left, right);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1](../../source/epilogue/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1](../../source/semantics/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-165"></a>
+<a id="api-169"></a>
 
-### ge（166）
+### ge（170）
 
 **声明**
 
@@ -6721,13 +6879,13 @@ bool ge(T left,T right);
 ge(left, right);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1](../../source/epilogue/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1](../../source/semantics/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-166"></a>
+<a id="api-170"></a>
 
-### add（167）
+### add（171）
 
 **声明**
 
@@ -6762,13 +6920,13 @@ R add(T left,U right);
 add(left, right);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1107](../../source/epilogue/boxing.cpp#L1107)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1108](../../source/semantics/boxing.cpp#L1108)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-167"></a>
+<a id="api-171"></a>
 
-### sub（168）
+### sub（172）
 
 **声明**
 
@@ -6801,13 +6959,13 @@ R sub(T left,U right);
 sub(left, right);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1](../../source/epilogue/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1](../../source/semantics/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-168"></a>
+<a id="api-172"></a>
 
-### mul（169）
+### mul（173）
 
 **声明**
 
@@ -6840,13 +6998,13 @@ R mul(T left,U right);
 mul(left, right);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1](../../source/epilogue/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1](../../source/semantics/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-169"></a>
+<a id="api-173"></a>
 
-### div（170）
+### div（174）
 
 **声明**
 
@@ -6879,13 +7037,13 @@ R div(T left,U right);
 div(left, right);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1](../../source/epilogue/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1](../../source/semantics/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-170"></a>
+<a id="api-174"></a>
 
-### mod（171）
+### mod（175）
 
 **声明**
 
@@ -6918,13 +7076,13 @@ R mod(T left,U right);
 mod(left, right);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:810](../../source/epilogue/boxing.cpp#L810)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:811](../../source/semantics/boxing.cpp#L811)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-171"></a>
+<a id="api-175"></a>
 
-### index（172）
+### index（176）
 
 **声明**
 
@@ -6959,13 +7117,13 @@ T index(T const& data,int64 index);
 index(data, index);
 ```
 
-**源码**：[source/epilogue/boxing.cpp:1688](../../source/epilogue/boxing.cpp#L1688)（编译器内建，签名为等价调用形式）。
+**源码**：[source/semantics/boxing.cpp:1689](../../source/semantics/boxing.cpp#L1689)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-172"></a>
+<a id="api-176"></a>
 
-### Add::leftAdd（173）
+### Add::leftAdd（177）
 
 **声明**
 
@@ -6997,13 +7155,13 @@ R leftAdd(T value);
 obj.leftAdd(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-173"></a>
+<a id="api-177"></a>
 
-### RightAdd::rightAdd（174）
+### RightAdd::rightAdd（178）
 
 **声明**
 
@@ -7035,13 +7193,13 @@ R rightAdd(T value);
 obj.rightAdd(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-174"></a>
+<a id="api-178"></a>
 
-### Subtract::leftSub（175）
+### Subtract::leftSub（179）
 
 **声明**
 
@@ -7073,13 +7231,13 @@ R leftSub(T value);
 obj.leftSub(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-175"></a>
+<a id="api-179"></a>
 
-### RightSubtract::rightSub（176）
+### RightSubtract::rightSub（180）
 
 **声明**
 
@@ -7111,13 +7269,13 @@ R rightSub(T value);
 obj.rightSub(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-176"></a>
+<a id="api-180"></a>
 
-### Multiply::leftMul（177）
+### Multiply::leftMul（181）
 
 **声明**
 
@@ -7149,13 +7307,13 @@ R leftMul(T value);
 obj.leftMul(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-177"></a>
+<a id="api-181"></a>
 
-### RightMultiply::rightMul（178）
+### RightMultiply::rightMul（182）
 
 **声明**
 
@@ -7187,13 +7345,13 @@ R rightMul(T value);
 obj.rightMul(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-178"></a>
+<a id="api-182"></a>
 
-### Divide::leftDiv（179）
+### Divide::leftDiv（183）
 
 **声明**
 
@@ -7225,13 +7383,13 @@ R leftDiv(T value);
 obj.leftDiv(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-179"></a>
+<a id="api-183"></a>
 
-### RightDivide::rightDiv（180）
+### RightDivide::rightDiv（184）
 
 **声明**
 
@@ -7263,13 +7421,13 @@ R rightDiv(T value);
 obj.rightDiv(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-180"></a>
+<a id="api-184"></a>
 
-### Modulo::leftMod（181）
+### Modulo::leftMod（185）
 
 **声明**
 
@@ -7301,13 +7459,13 @@ R leftMod(T value);
 obj.leftMod(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-181"></a>
+<a id="api-185"></a>
 
-### RightModulo::rightMod（182）
+### RightModulo::rightMod（186）
 
 **声明**
 
@@ -7339,13 +7497,13 @@ R rightMod(T value);
 obj.rightMod(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-182"></a>
+<a id="api-186"></a>
 
-### Equal::leftEqual（183）
+### Equal::leftEqual（187）
 
 **声明**
 
@@ -7377,13 +7535,13 @@ R leftEqual(T value);
 obj.leftEqual(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-183"></a>
+<a id="api-187"></a>
 
-### RightEqual::rightEqual（184）
+### RightEqual::rightEqual（188）
 
 **声明**
 
@@ -7415,13 +7573,13 @@ R rightEqual(T value);
 obj.rightEqual(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-184"></a>
+<a id="api-188"></a>
 
-### NotEqual::leftNotEqual（185）
+### NotEqual::leftNotEqual（189）
 
 **声明**
 
@@ -7453,13 +7611,13 @@ R leftNotEqual(T value);
 obj.leftNotEqual(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-185"></a>
+<a id="api-189"></a>
 
-### RightNotEqual::rightNotEqual（186）
+### RightNotEqual::rightNotEqual（190）
 
 **声明**
 
@@ -7491,13 +7649,13 @@ R rightNotEqual(T value);
 obj.rightNotEqual(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-186"></a>
+<a id="api-190"></a>
 
-### Less::leftLess（187）
+### Less::leftLess（191）
 
 **声明**
 
@@ -7529,13 +7687,13 @@ R leftLess(T value);
 obj.leftLess(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-187"></a>
+<a id="api-191"></a>
 
-### RightLess::rightLess（188）
+### RightLess::rightLess（192）
 
 **声明**
 
@@ -7567,13 +7725,13 @@ R rightLess(T value);
 obj.rightLess(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-188"></a>
+<a id="api-192"></a>
 
-### LessOrEqual::leftLessEqual（189）
+### LessOrEqual::leftLessEqual（193）
 
 **声明**
 
@@ -7605,13 +7763,13 @@ R leftLessEqual(T value);
 obj.leftLessEqual(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-189"></a>
+<a id="api-193"></a>
 
-### RightLessOrEqual::rightLessEqual（190）
+### RightLessOrEqual::rightLessEqual（194）
 
 **声明**
 
@@ -7643,13 +7801,13 @@ R rightLessEqual(T value);
 obj.rightLessEqual(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-190"></a>
+<a id="api-194"></a>
 
-### Greater::leftGreater（191）
+### Greater::leftGreater（195）
 
 **声明**
 
@@ -7681,13 +7839,13 @@ R leftGreater(T value);
 obj.leftGreater(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-191"></a>
+<a id="api-195"></a>
 
-### RightGreater::rightGreater（192）
+### RightGreater::rightGreater（196）
 
 **声明**
 
@@ -7719,13 +7877,13 @@ R rightGreater(T value);
 obj.rightGreater(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-192"></a>
+<a id="api-196"></a>
 
-### GreaterOrEqual::leftGreaterEqual（193）
+### GreaterOrEqual::leftGreaterEqual（197）
 
 **声明**
 
@@ -7757,13 +7915,13 @@ R leftGreaterEqual(T value);
 obj.leftGreaterEqual(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-193"></a>
+<a id="api-197"></a>
 
-### RightGreaterOrEqual::rightGreaterEqual（194）
+### RightGreaterOrEqual::rightGreaterEqual（198）
 
 **声明**
 
@@ -7795,13 +7953,13 @@ R rightGreaterEqual(T value);
 obj.rightGreaterEqual(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-194"></a>
+<a id="api-198"></a>
 
-### And::leftBitAnd（195）
+### And::leftBitAnd（199）
 
 **声明**
 
@@ -7833,13 +7991,13 @@ R leftBitAnd(T value);
 obj.leftBitAnd(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-195"></a>
+<a id="api-199"></a>
 
-### RightAnd::rightBitAnd（196）
+### RightAnd::rightBitAnd（200）
 
 **声明**
 
@@ -7871,13 +8029,13 @@ R rightBitAnd(T value);
 obj.rightBitAnd(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-196"></a>
+<a id="api-200"></a>
 
-### Or::leftBitOr（197）
+### Or::leftBitOr（201）
 
 **声明**
 
@@ -7909,13 +8067,13 @@ R leftBitOr(T value);
 obj.leftBitOr(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-197"></a>
+<a id="api-201"></a>
 
-### RightOr::rightBitOr（198）
+### RightOr::rightBitOr（202）
 
 **声明**
 
@@ -7947,13 +8105,13 @@ R rightBitOr(T value);
 obj.rightBitOr(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-198"></a>
+<a id="api-202"></a>
 
-### Xor::leftBitXor（199）
+### Xor::leftBitXor（203）
 
 **声明**
 
@@ -7985,13 +8143,13 @@ R leftBitXor(T value);
 obj.leftBitXor(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-199"></a>
+<a id="api-203"></a>
 
-### RightXor::rightBitXor（200）
+### RightXor::rightBitXor（204）
 
 **声明**
 
@@ -8023,13 +8181,13 @@ R rightBitXor(T value);
 obj.rightBitXor(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-200"></a>
+<a id="api-204"></a>
 
-### ShiftLeft::leftShiftLeft（201）
+### ShiftLeft::leftShiftLeft（205）
 
 **声明**
 
@@ -8061,13 +8219,13 @@ R leftShiftLeft(T value);
 obj.leftShiftLeft(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-201"></a>
+<a id="api-205"></a>
 
-### RightShiftLeft::rightShiftLeft（202）
+### RightShiftLeft::rightShiftLeft（206）
 
 **声明**
 
@@ -8099,13 +8257,13 @@ R rightShiftLeft(T value);
 obj.rightShiftLeft(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-202"></a>
+<a id="api-206"></a>
 
-### ShiftRight::leftShiftRight（203）
+### ShiftRight::leftShiftRight（207）
 
 **声明**
 
@@ -8137,13 +8295,13 @@ R leftShiftRight(T value);
 obj.leftShiftRight(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-203"></a>
+<a id="api-207"></a>
 
-### RightShiftRight::rightShiftRight（204）
+### RightShiftRight::rightShiftRight（208）
 
 **声明**
 
@@ -8175,13 +8333,13 @@ R rightShiftRight(T value);
 obj.rightShiftRight(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-204"></a>
+<a id="api-208"></a>
 
-### Negate::negate（205）
+### Negate::negate（209）
 
 **声明**
 
@@ -8213,13 +8371,13 @@ R negate(T value);
 obj.negate(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-205"></a>
+<a id="api-209"></a>
 
-### BitNot::bitNot（206）
+### BitNot::bitNot（210）
 
 **声明**
 
@@ -8251,13 +8409,13 @@ R bitNot(T value);
 obj.bitNot(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-206"></a>
+<a id="api-210"></a>
 
-### Positive::positive（207）
+### Positive::positive（211）
 
 **声明**
 
@@ -8289,13 +8447,13 @@ R positive(T value);
 obj.positive(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-207"></a>
+<a id="api-211"></a>
 
-### Hash::hash（208）
+### Hash::hash（212）
 
 **声明**
 
@@ -8327,13 +8485,13 @@ uint64 hash(T value);
 obj.hash(value);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-208"></a>
+<a id="api-212"></a>
 
-### ExplicitConvert::explicitConvert（209）
+### ExplicitConvert::explicitConvert（213）
 
 **声明**
 
@@ -8363,13 +8521,13 @@ T explicitConvert();
 obj.explicitConvert();
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-209"></a>
+<a id="api-213"></a>
 
-### ImplicitConvert::implicitConvert（210）
+### ImplicitConvert::implicitConvert（214）
 
 **声明**
 
@@ -8399,13 +8557,13 @@ T implicitConvert();
 obj.implicitConvert();
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-210"></a>
+<a id="api-214"></a>
 
-### Index::index（211）
+### Index::index（215）
 
 **声明**
 
@@ -8437,13 +8595,13 @@ R index(T key);
 obj.index(key);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-211"></a>
+<a id="api-215"></a>
 
-### Iterator::iterator（212）
+### Iterator::iterator（216）
 
 **声明**
 
@@ -8475,13 +8633,13 @@ Option<R> iterator(int64 index);
 obj.iterator(index);
 ```
 
-**源码**：[source/magel_generic.hpp:827](../../source/magel_generic.hpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-212"></a>
+<a id="api-216"></a>
 
-### Result::mapErr（213）
+### Result::mapErr（217）
 
 **声明**
 
@@ -8517,9 +8675,9 @@ obj.mapErr<F>(mapper);
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-213"></a>
+<a id="api-217"></a>
 
-### Option::okOr（214）
+### Option::okOr（218）
 
 **声明**
 
@@ -8555,9 +8713,9 @@ obj.okOr<E>(error);
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
-<a id="api-214"></a>
+<a id="api-218"></a>
 
-### Option::okOrElse（215）
+### Option::okOrElse（219）
 
 **声明**
 

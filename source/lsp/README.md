@@ -46,7 +46,7 @@ magel-lsp --check FILE...    直接校验，输出 FILE:行:列: 级别: 消息 
 两个共用件**直接编进本工程**（不复制，免得漂移）：
 
 * [`library/lsp/json.cpp`](../../library/lsp/json.cpp)：最小 JSON；
-* [`library/lsp/types.hpp`](../../library/lsp/types.hpp)：位置 / 区间 / 诊断 / 悬停等头文件级共用类型。
+* [`library/lsp/protocol_types.hpp`](../../library/lsp/protocol_types.hpp)：位置 / 区间 / 诊断 / 悬停等头文件级共用类型。
 
 模型各管各的：`.gram` 的文法模型在 [`library/lsp`](../../library/lsp/README.md)，Magel 的宏模型
-就是本目录的 `mc.hpp` / `mc.cpp`（原来住在 `library/lsp`，2026-10 跟着 Magel 搬过来）。
+就是本目录的 `macro_analyzer.hpp` / `macro_analyzer.cpp`（原来住在 `library/lsp`，2026-10 跟着 Magel 搬过来）。

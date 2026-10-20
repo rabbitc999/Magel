@@ -3,7 +3,7 @@
 MODULES = {
     'std::encoding': ('文本编码', 'RFC 4648 的 Base64、Base64URL 与十六进制编解码。输入字节使用 List<uint8>，解码返回 Result；拒绝非法字符、填充与非零尾部位，不忽略空白。'),
     'std::csv': ('CSV 读写', '支持自定义单字节分隔符、引号转义和字段内换行，保留空字段与空行。错误位置从一开始，列按字节计。输出记录以 LF 结束，空记录必须含至少一个空字段。'),
-    'std::datetime': ('UTC 日期时间', 'Unix 秒与公历 UTC 日期换算，年份 1..9999，秒 0..59，不表示闰秒。ISO 8601 首版只接受 YYYY-MM-DDTHH:MM:SSZ。纯换算适用于板端；nowUtc 要求宿主时钟。'),
+    'std::datetime': ('UTC 日期时间', 'Unix 秒与公历 UTC 日期换算，年份 1..9999，秒 0..59，不表示闰秒。ISO 8601 首版只接受 YYYY-MM-DDTHH:MM:SSZ。纯换算不依赖平台时区；nowUtc 要求宿主时钟。'),
     'std::cli': ('命令行参数', '长短选项、短选项组合、附着值、位置参数与 -- 分隔。重复选项采用最后一次值，required 必须显式出现。--help/-h 自动识别但不退出或打印，由应用处理。'),
     'std::utf8': ('UTF-8 与码点', 'RFC 3629 严格校验与码点解码，拒绝过长序列、代理项及超范围值。数量和截取按 Unicode 码点，不能代替字素簇处理。String 不适合保存内嵌零字节。'),
     'std::lang': ('核心库', '自动加载，无需 import。Option/Result 通过 match 或 isValue/isOk 分支处理；unwrap/expect 在失败分支触发 panic。浮点转整数向零截断，范围检查见各重载；字节编码默认小端。拥有值按值复制，引用的生命周期不得超过来源。'),
@@ -36,7 +36,7 @@ MODULES = {
     'std::random': ('随机数', '固定种子采用确定性 LCG，可复现；不用于密码学。nextInt/nextRange 区间为 [minimum,maximum)，要求 maximum>minimum；nextFloat64 为 [0,1)。Random 实现 Drop，裸 handle 接口需要配对 randomDrop。'),
     'std::regex': ('正则表达式', '模式在宿主注册表按文本缓存，compile 失败返回 RegexError::Invalid。find 返回首个匹配的字节下标或 None。capture 的 group=0 表示完整匹配。语法和 replacement 捕获组替换规则采用宿主 std::regex 的默认 ECMAScript 规则。'),
     'std::signal': ('复数信号变换', 'DFT 接受一般长度，FFT 要求长度为 2 的幂；非法长度由宿主检查。正变换采用负指数，逆变换归一化。输入输出为 Complex<float64> 列表，结果拥有独立存储。DFT 为 O(n²)，基 2 FFT 为 O(n log n)。'),
-    'std::sql': ('数据库', 'SQLite 静态内置，无需 sqlite3.dll，忽略 SQLITE_LIBRARY。MySQL/MariaDB 使用 MYSQL_LIBRARY；PostgreSQL 使用 POSTGRES_LIBRARY；ODBC 需要相应驱动。mysql/maria 默认端口 3306，connect 已移除。exec 返回最后一条语句的结果，失败检查 ok/error；结果已复制，不借用客户端缓冲区。事务由 SQL BEGIN/COMMIT/ROLLBACK 控制。拼字符串字面量使用 db.quote；它不转义表名/列名。桌面后端不代表 MCU 支持 SQL。'),
+    'std::sql': ('数据库', 'SQLite 静态内置，无需 sqlite3.dll，忽略 SQLITE_LIBRARY。MySQL/MariaDB 使用 MYSQL_LIBRARY；PostgreSQL 使用 POSTGRES_LIBRARY；ODBC 需要相应驱动。mysql/maria 默认端口 3306，connect 已移除。exec 返回最后一条语句的结果，失败检查 ok/error；结果已复制，不借用客户端缓冲区。事务由 SQL BEGIN/COMMIT/ROLLBACK 控制。拼字符串字面量使用 db.quote；它不转义表名/列名。目标宿主必须提供相应数据库驱动。'),
     'std::tree': ('树与堆', 'BinarySearchTree 是集合语义的二叉搜索树，重复插入返回 false，中序即升序；删除双孩子节点取中序后继替换，被删节点的存储保留但不可达。RedBlackTree 只支持插入（含双红修复），颜色 0 红 1 黑，删除请用 BinarySearchTree::remove。MinHeap 是最小二叉堆，可当优先队列用，相等键的出堆顺序不保证插入序。GeneralTree 用"第一个孩子 / 下一个兄弟"存储，toBinary 与 fromBinary 按"左孩子 = 第一个孩子、右孩子 = 下一个兄弟"互转，转换本身不排序、不保证 BST 有序性。树高按节点数计（单节点 1，空树 0）；节点存放在平行列表里，`0 - 1` 表示空指针。全部算法由宿主胶水 glue/std_tree.hpp 提供，裁剪宏 NO_MAGEL_STD_TREE。'),
     'std::graph': ('图论与并查集', 'Graph 使用链式前向星存储：head 是每顶点首条边，edgeTo/edgeNext/edgeWeight 是边终点、同起点下一条边与边权，顶点编号 0..vertexCount-1，重边与自环都允许。有向 / 无向由 create 的 directed 决定，无向图加边时自动镜像登记。bfs/dfs 输出可达顶点的访问序；topologicalSort 用 Kahn 算法，有环时输出空表；dijkstra 要求边权非负，不可达顶点距离为 -1；hasCycle 有向图用 Kahn 计数、无向图用并查集；minimumSpanningTreeWeight 用 Kruskal，图不连通返回 -1。UnionFind 采用路径压缩与按大小合并，find 返回后父指针已压缩。全部算法由宿主胶水 glue/std_graph.hpp 提供，裁剪宏 NO_MAGEL_STD_GRAPH。'),
     'std::linkedlist': ('双向链表', 'LinkedList 以游标存储：values/prevs/nexts 三个平行列表，下标即节点号，`0 - 1` 表示空指针；被删节点回收进 free 列表复用，删除后对应槽的值标记为 -2。pushFront/pushBack 返回新节点游标，insertBefore/insertAfter 在游标前后插入，removeAt 按游标摘除；游标在未发生指向它的删除操作前一直有效。首尾两端插删是 O(1)，按游标插删也是 O(1)，按值查找与按序迭代是 O(n)。fromArray 逐项尾插，toArray 返回拥有独立存储的值序列。容器实现 Drop，同时满足 Iterator<int64>。全部结构操作由宿主胶水 glue/std_linkedlist.hpp 提供，裁剪宏 NO_MAGEL_STD_LINKEDLIST。'),

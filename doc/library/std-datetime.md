@@ -10,7 +10,7 @@ import std::datetime;
 
 ## 公共约定与错误边界
 
-Unix 秒与公历 UTC 日期换算，年份 1..9999，秒 0..59，不表示闰秒。ISO 8601 首版只接受 YYYY-MM-DDTHH:MM:SSZ。纯换算适用于板端；nowUtc 要求宿主时钟。
+Unix 秒与公历 UTC 日期换算，年份 1..9999，秒 0..59，不表示闰秒。ISO 8601 首版只接受 YYYY-MM-DDTHH:MM:SSZ。纯换算不依赖平台时区；nowUtc 要求宿主时钟。
 
 ## 参考代码
 

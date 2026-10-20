@@ -3,7 +3,7 @@
 #define PARSE_ENGINE_MAGEL_GLUE_HPP
 
 #include "stackvm.hpp"
-#include "glue/collection_natives.hpp"
+#include "glue/std_collection.hpp"
 #include "magel_generic_name.hpp"
 
 #include <cstddef>

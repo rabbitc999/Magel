@@ -77,7 +77,7 @@ lowerReturnControl(E):
 
 这里的 transfer/copy 是编译器伪操作，不新增 VM 操作码。已有 `LowerLanguageMove` 使用存活内存检查、地址读取、源槽清零及聚合移动标记；复制仍使用现有字符串、对象与结构体复制路径。Drop 保留在相应控制流上，由移动状态保护，不能在遇到一条移动分支时全局删除另一条分支的清理。清理回调若仍访问已消费的来源，必须由借用检查拒绝，不能靠悬垂别名访问搬走的资源。
 
-核心代码见 [`M_ReturnValue`](../source/epilogue/return_expression_ast.cpp)、[`PrepareBreakValue` 与 `LowerLanguageMove`](../source/epilogue/boxing.cpp)、[`LowerLoop`](../source/epilogue/lowering.cpp) 和[借用控制流](../source/magel_borrow_flow.hpp)。
+核心代码见 [`M_ReturnValue`](../source/semantics/return_expression_ast.cpp)、[`PrepareBreakValue` 与 `LowerLanguageMove`](../source/semantics/boxing.cpp)、[`LowerLoop`](../source/semantics/lowering.cpp) 和[借用控制流](../source/magel_borrow_flow.hpp)。
 
 运行时数组也沿用该规则：`return { String values[] = new[2]; ... yield values; };` 的内部数组连同长度头一起转移，源句柄清零，清理时跳过源元素。外部运行时数组则重新分配长度相同的存储，字符串、对象和聚合元素逐项深复制。隐藏结果槽接受带长度的块、if、match 与 loop 结果，不再只接受 new 或函数调用。此编译器内部消费不开放为源码中的 `move(&array)`；定长数组仍按原有存储和返回类型约束处理，不透明宿主类型也不会被推断成拥有资源。
 
@@ -111,7 +111,7 @@ NamedFunction(T, name, params, body, capture)
 
 返回类型是类型锚点，不从调用处猜测。默认捕获 const&；`mut` 显式允许修改借用来源，`copy` 建立独立状态，`move` 接管状态所有权。闭包构造结果由新绑定接管，后续普通函数值赋值仍遵守值复制规则。没有函数体的局部声明是函数值变量，可随后赋值；顶层 `T f(...);` 继续表示已有宿主函数声明。
 
-闭包捕获与函数值生命周期复用已有 `fn` 实现。返回或保存一个仍借用局部变量的具名闭包不会延长来源寿命，必须编译报错。核心入口为 [`M_NamedFunction`](../source/epilogue/named_function_ast.cpp)；没有另建一套闭包运行时。
+闭包捕获与函数值生命周期复用已有 `fn` 实现。返回或保存一个仍借用局部变量的具名闭包不会延长来源寿命，必须编译报错。核心入口为 [`M_NamedFunction`](../source/semantics/named_function_ast.cpp)；没有另建一套闭包运行时。
 
 ## 字段派生指令
 
@@ -143,7 +143,7 @@ Equal 按字段生成短路比较，枚举先匹配变体再比较对应载荷�
 
 字段协议在全部类型和接口登记之后检查，未被调用的派生类型同样检查。标量和 String 有内建语义；嵌套自定义结构体或枚举必须已经实现对应接口，或自身也请求并完成了该接口派生。引用、函数值、原始数组及其他没有相应语义协议的字段不会按地址、内存字节或自动析构规则偷偷推导，必须明确提供合适的封装和接口。
 
-核心框架在 [`derive.cpp`](../source/epilogue/derive.cpp)：
+核心框架在 [`derive.cpp`](../source/semantics/derive.cpp)：
 
 ```text
 ExpandDerivedDeclarations():

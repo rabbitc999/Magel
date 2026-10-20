@@ -22,7 +22,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix='magel-generic-monomorphization-') as folder:
         work = Path(folder)
         unit = work / ('unit.exe' if os.name == 'nt' else 'unit')
-        result = run('g++', '-std=c++17', '-I' + str(ROOT / 'source'), '-I' + str(ROOT / 'library'), '-I' + str(ROOT / 'library/preprocess'), '-I' + str(ROOT / 'library/stackvm'), ROOT / 'tests/magel_generic_monomorphization_test.cpp', '-o', unit)
+        result = run('g++', '-std=c++17', '-I' + str(ROOT / 'source'), '-I' + str(ROOT / 'library'), '-I' + str(ROOT / 'library/preprocess'), '-I' + str(ROOT / 'library/stackvm'), ROOT / 'tests/magel_generic_monomorphization_test.cpp', *[ROOT / 'source' / name for name in ('magel_generic.cpp', 'magel_lambda.cpp', 'magel_generic_closure.cpp', 'magel_macro.cpp', 'magel_macro_controls.cpp')], '-o', unit)
         assert result.returncode == 0, result.stderr
         result = run(unit)
         assert (result.returncode, result.stdout, result.stderr) == (0, 'generic monomorphization unit tests OK\n', ''), result

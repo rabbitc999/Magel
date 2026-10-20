@@ -771,8 +771,8 @@ inline const char *const kMagelStdModules[] = {
 };
 %endcode
 
-%code include "magel_types.h"
+%code include "magel_ast.hpp"
 
-%epilogue include "magel_epilogue.cpp"
+%epilogue include "magel_semantics.cpp"
 
 %main include "magel_driver.cpp"

@@ -24,6 +24,6 @@ Complex calls may require a C++ toolchain to prepare a foreign-call bridge; the 
 
 See the [ABI examples](../examples/abi_contracts/).
 
-Reflection is enabled together in the default compiler and VM. MCU features are explicitly trimmed by the host. Native failures retain VM diagnostics; the VM does not promise a complete sandbox.
+Reflection is enabled together in the default compiler and VM. embedded Linux features are explicitly trimmed by the host. Native failures retain VM diagnostics; the VM does not promise a complete sandbox.
 
 See [toolchain](09-toolchain.md), [capabilities](17-capabilities.md) and [callbacks](../../example/native-callbacks/README.md).

@@ -69,7 +69,7 @@ lowerReturnControl(E):
 
 Transfer/copy are compiler pseudocode, not new VM opcodes. Existing `LowerLanguageMove` performs live-memory checks, storage reads, source clearing and aggregate move marking. Existing string, object and aggregate paths perform copies. Cleanup remains on its control-flow edges and is protected by move state; consuming on one branch must not globally erase another branch's cleanup. Deferred callbacks cannot access an already consumed source through a dangling alias.
 
-See [`M_ReturnValue`](../../source/epilogue/return_expression_ast.cpp), [`PrepareBreakValue` and `LowerLanguageMove`](../../source/epilogue/boxing.cpp), [`LowerLoop`](../../source/epilogue/lowering.cpp), and [borrow dataflow](../../source/magel_borrow_flow.hpp).
+See [`M_ReturnValue`](../../source/semantics/return_expression_ast.cpp), [`PrepareBreakValue` and `LowerLanguageMove`](../../source/semantics/boxing.cpp), [`LowerLoop`](../../source/semantics/lowering.cpp), and [borrow dataflow](../../source/magel_borrow_flow.hpp).
 
 Runtime arrays follow the same rule. An internal array in `return { String values[] = new[2]; ... yield values; };` transfers its length-bearing allocation; the source handle is cleared and source element cleanup is skipped. An external runtime array receives a new allocation and per-element deep copies of strings, objects and aggregates. Hidden result bindings accept length-bearing block, if, match and loop expressions as well as allocations and calls. This compiler-only consumption does not enable source-level `move(&array)`; fixed arrays retain their existing storage/return constraints, and opaque host types are not assumed to own resources.
 
@@ -102,7 +102,7 @@ NamedFunction(T, name, params, body, capture)
 
 The explicit return type anchors checking. Default capture is const&; `mut` borrows writable state, `copy` creates private state, and `move` transfers ownership. The newly constructed closure is taken over by its binding. Subsequent ordinary function-value assignments retain copy semantics. A local bodyless declaration is a function-value variable for later assignment; a top-level bodyless declaration retains its existing host-function meaning.
 
-Named closures reuse `fn` ownership and lifetime analysis. Returning or storing a closure that still borrows a local does not extend that local's lifetime and must fail compilation. The AST entry point is [`M_NamedFunction`](../../source/epilogue/named_function_ast.cpp); there is no separate closure runtime.
+Named closures reuse `fn` ownership and lifetime analysis. Returning or storing a closure that still borrows a local does not extend that local's lifetime and must fail compilation. The AST entry point is [`M_NamedFunction`](../../source/semantics/named_function_ast.cpp); there is no separate closure runtime.
 
 ## Field derivation
 
@@ -128,7 +128,7 @@ Equal compares fields with short circuiting and checks enum variants before payl
 
 Field protocols are validated after all interfaces are registered, including for unused types. Scalars and String have built-in semantics. A nested custom struct or enum must implement the corresponding interface, either manually or through its own derive request. References, function values, raw arrays and other fields without a matching semantic protocol are not silently compared by address or raw bytes; provide a suitable wrapper and explicit interfaces.
 
-The core framework is [`derive.cpp`](../../source/epilogue/derive.cpp):
+The core framework is [`derive.cpp`](../../source/semantics/derive.cpp):
 
 ```text
 ExpandDerivedDeclarations():

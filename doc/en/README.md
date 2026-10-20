@@ -2,7 +2,7 @@
 
 See [current capabilities and limits](17-capabilities.md) for the shared implementation contract and build defaults.
 
-**Write once, run anywhere.** One logic, from MCU to cloud; value semantics, non-null references, no GC.
+**Write once, run anywhere.** One logic, from embedded Linux to cloud; value semantics, non-null references, no GC.
 
 Magel turns business logic into an asset you can deliver on its own: write it once and run the same
 logic from desktop down to the embedded board; what you hand over is bytecode or a native program,
@@ -60,7 +60,7 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 | [14](../14-grammar-ebnf.md) | EBNF grammar reference | Anyone checking grammar details | Every production and token declaration generated from `source/magel.gram`; the readable form of the authoritative grammar |
 | [15](../15-svmb-format.md) | `.svmb` binary format | Format analysts and RE assessors | Container and section layout, byte-level decoding, reverse-engineering cost |
 | [16](../16-compact-symbols.md) | Nameless compact symbols | Anyone tracking size and diagnostic privacy | `--compress-symbols` format, tooling and space comparison |
-| [17](17-capabilities.md) | Current capabilities | Evaluation and integration | Language, VM, borrowing, reflection, libraries, MCU and tooling contracts |
+| [17](17-capabilities.md) | Current capabilities | Evaluation and integration | Language, VM, borrowing, reflection, libraries, embedded Linux and tooling contracts |
 | [18](../18-panic-trace.md) | Panic and source lines | Anyone debugging crashes | Failure output, call stack, source location, compact symbol-hiding policy |
 | [19](../19-reflection.md) | Annotations and reflection | Anyone using annotations / dynamic calls | Declaration metadata, typed queries, closed-value dynamic invocation |
 | [20](../20-memory-allocator.md) | Memory allocator | Anyone wiring host memory | Pool and capacity stats, allocation range checks, external buffers |

@@ -23,12 +23,46 @@ opcode BigDecimal {
 opcode File {
     new = __std_file_open;
     drop = __std_file_drop;
+    /**
+     * @brief 写入文本，格式参数沿用 print 的规则。
+     * @param text 待写入文本，支持由格式化调用生成。
+     * @return 成功写入的字节数，失败沿用文件写入诊断。
+     */
+    int64 print(String text) { return __fileWrite(self, text); }
+    /**
+     * @brief 写入文本并追加一个 LF 换行。
+     * @param text 待写入文本，省略时只写换行。
+     * @return 包括换行的写入字节数。
+     */
+    int64 println(String text = "") {
+        String line = text + "\n";
+        return __fileWrite(self, line);
+    }
 };
 #NonCopyable
 opcode Process {
     new = std::process::__processRun;
     drop = std::process::__processDrop;
 };
+
+/**
+ * @brief 由宿主将已格式化文本写入标准错误流。
+ * @param text 不再解释占位符的文本。
+ * @return 成功返回零，失败报告宿主错误。
+ */
+int64 __std_stderr_write(String text);
+/**
+ * @brief eprint 归一后的内部字符串入口。
+ * @param text 已格式化的文本。
+ * @return 成功返回零。
+ */
+int64 __std_eprint(String text) { return __std_stderr_write(text); }
+/**
+ * @brief eprintln 归一后的内部字符串入口。
+ * @param text 已格式化的文本。
+ * @return 成功返回零。
+ */
+int64 __std_eprintln(String text) { return __std_stderr_write(text + "\n"); }
 
 String __readLine();
 String __readLines(int32 N);

@@ -1,4 +1,4 @@
-#include "../source/runtime_allocator.hpp"
+#include "../source/magel_runtime_allocator.hpp"
 #include <algorithm>
 #include <cassert>
 #include <cstdint>

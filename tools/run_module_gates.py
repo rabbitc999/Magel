@@ -15,7 +15,6 @@ MODULES = {
     "borrow": ["magel_borrow_flow", "magel_analysis_diagnostics", "magel_reference_values"],
     "memory": ["magel_memory_guard", "magel_tombstone", "magel_watchdog"],
     "generics": ["magel_generic_monomorphization", "magel_language_move", "magel_tuple_returns"],
-    "mcu": ["mcu_vm"],
     "samples": [],
     "tools": ["magel_tool", "magel_package", "magel_map_pair_iterator", "magel_generic_constructors"],
 }
@@ -40,7 +39,7 @@ def main():
             commands["samples"] = ["sh", "check.sh"]
         elif module == "docs":
             for script, flags in (("check_doc_links", []), ("export_magel_ebnf", ["--check"]),
-                                  ("library_reference", ["--check"]), ("sync_vm_execution", ["--check"])):
+                                  ("library_reference", ["--check"])):
                 commands[script] = [sys.executable, str(ROOT / "tools" / (script + ".py")), *flags]
         else:
             for script in MODULES[module]:

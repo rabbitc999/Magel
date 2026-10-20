@@ -1,8 +1,0 @@
-import board;
-int64 main() {
-    board::lcdClear(0);
-    board::lcdText(8, 8, "Testing panic -> selector", 63488, 0);
-    board::boardDelay(1000);
-    panic("intentional MCU panic test");
-    return 0;
-}

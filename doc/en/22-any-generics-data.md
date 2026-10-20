@@ -153,7 +153,7 @@ int64 main() {
 
 ## Files and embedded hosts
 
-`FileStream.readBytes(count)` returns a short list at EOF. Byte writes preserve zero bytes. Desktop, MCU stdio and FatFS adapters implement byte reads; older custom backends explicitly report an unsupported operation until adapted.
+`FileStream.readBytes(count)` returns a short list at EOF. Byte writes preserve zero bytes. Operating-system host adapters implement byte reads; older custom backends explicitly report an unsupported operation until adapted.
 
 `readAllBytes` defaults to a 16 MiB limit that callers can change. `readAllText` reads the entire content but rejects embedded zero bytes; use byte APIs for binary files. Directory listing is one level deep and sorted. File metadata follows symbolic links. Rename replacement rules depend on the platform; these operations do not promise transactional or atomic writes.
 

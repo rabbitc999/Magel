@@ -9,7 +9,7 @@ VM 宿主显式安装相同注册表；编译器的 `run` 命令没有加载任�
 下面用仓库共享核心构建最小宿主，再加载编译器输出的程序：
 
 ```sh
-g++ -std=c++17 -O2 -pthread -DMAGEL_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 -DSTACKVM_WITH_BIGINT=0 -DSTACKVM_WITH_BIGFLOAT=0 -Isource -Ilibrary -Ilibrary/stackvm example/native-callbacks/vm_host.cpp library/stackvm/stackvm.cpp -o build/native-callbacks-vm
+g++ -std=c++17 -O2 -pthread -DMAGEL_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 -DSTACKVM_WITH_BIGINT=0 -DSTACKVM_WITH_BIGFLOAT=0 -Isource -Ilibrary -Ilibrary/stackvm example/native-callbacks/vm_host.cpp library/stackvm/stackvm.cpp source/glue/std_collection.cpp source/glue/std_collection_storage.cpp source/glue/std_native_record.cpp -o build/native-callbacks-vm
 ./magel emit example/native-callbacks/demo.mgl --svmb --out build/native-callbacks-program
 ./build/native-callbacks-vm build/native-callbacks-program.svmb build/native-callbacks-program.data.bin build/native-callbacks-program.layout
 ```
@@ -24,7 +24,7 @@ callbacks: named inline copy move float32 bool void reference higher-order reent
 
 `function(value)` 返回按签名解码的值。需要检查失败时使用
 `function.tryInvoke(rawResult, value)`；成功后可按返回类型使用 `Codec<Result>::decode(context, rawResult)`。
-原始 `Context::invoke(address, encodedArguments, rawResult)` 也适用于无需类型包装的板端胶水。
+原始 `Context::invoke(address, encodedArguments, rawResult)` 也适用于无需类型包装的目标宿主胶水。
 `void` 函数忽略返回槽。调用失败仍使所属运行时失败，不能以缺省返回值掩盖 `panic` 或参数错误。
 
 函数地址和闭包句柄属于当前运行时，不能转换成宿主机器函数指针；包装和上下文只能在当前宿主

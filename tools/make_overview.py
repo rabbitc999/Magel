@@ -74,7 +74,7 @@ def draw() -> Canvas:
                 ("编译产物", (
                     ("可读中间文件", ".quad / .data.bin / .layout"),
                     ("二进制程序", ".svmb 保存指令与公开符号"),
-                    ("构建入口", "magel-generator：compiler / vm / clear"),
+                    ("构建入口", "magel gen compiler / clear"),
                 )),
             ),
         ),

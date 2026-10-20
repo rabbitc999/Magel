@@ -53,7 +53,7 @@
   <rect x="560" y="720" width="440" height="120" rx="15" fill="#eaf6ef" stroke="#bfe0cc" stroke-width="1"/>
   <text x="780" y="750" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">.svmb · format 5</text>
   <text x="780" y="780" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">VM code + internal execution sequence</text>
-  <text x="780" y="810" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Desktop / embedded VM</text>
+  <text x="780" y="810" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Desktop / Linux VM</text>
   <polyline points="1300,655 1300,720" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
   <polygon points="1300,720 1295,709 1305,709" fill="#8ea2bb"/>
   <rect x="1080" y="720" width="440" height="120" rx="15" fill="#eaf6ef" stroke="#bfe0cc" stroke-width="1"/>

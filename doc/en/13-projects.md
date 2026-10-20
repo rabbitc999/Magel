@@ -23,7 +23,6 @@ is written `magel`).
 | [Standard library companions](#54-standard-library-companions) | [`doc/examples/library/`](../examples/library/) | Four runnable programs: io / sqlite / watchdog / reflect | some need reflection |
 | [C ABI companions](#55-c-abi-companions) | [`doc/examples/abi_buffers/`](../examples/abi_buffers/), [`abi_dynamic/`](../examples/abi_dynamic/) | Static buffers vs. dynamic library bindings | a C compiler |
 | [`.svmb` evidence pack](#6-delivery-and-reverse-engineering-the-svmb-evidence-pack) | [`doc/examples/svmb/`](../examples/svmb/) | A bytecode specimen, section-by-section anatomy, reproducible reversing-cost data | none |
-| [Board-side VM](#71-board-side-vm-mcu_vm) | [`library/stackvm_mcu/`](../../library/stackvm_mcu) | A `.svmb` runtime built with `-fno-exceptions` | a C++ compiler |
 | [Glue callbacks](../../example/native-callbacks/README.md) | [`example/native-callbacks/`](../../example/native-callbacks/) | Shared VM glue calling named functions, closures, references and higher-order callbacks | a C++ compiler |
 | [Editor language servers](#72-editor-language-servers-and-the-vs-code-extension) | [`source/lsp/`](../../source/lsp), [`vscode/`](../../vscode/) | Macro pairing checks, semantic highlighting, real diagnostics | none / VS Code |
 
@@ -298,31 +297,11 @@ byte-identical. `svmb_dump.py` is a minimal parser using only the standard libra
 
 ## 7. Toolchain companions
 
-### 7.1 Board-side VM (mcu_vm)
+### 7.1 Embedded Linux hosting
 
-**What it demonstrates**: not "another interpreter" but **a compilation stance** — the same VM
-source built under board constraints, targeting H743 (roughly 1 MB RAM / 2 MB Flash) as a floor.
-`-fno-exceptions` makes `try` / `catch` / `throw` **fail to compile**: exception freedom is enforced
-by the compiler, not by review.
-
-**How to run it**:
-
-```sh
-make -C library/stackvm_mcu                 # 出 build/stackvm_mcu/mcu-host（桌面可跑的板端宿主）
-build/stackvm_mcu/mcu-host program.svmb data.data.bin data.layout
-make -C library/stackvm_mcu show-flags      # 打印这次实际用的口径
-```
-
-**How it is verified**: `python tests/mcu_vm.py --sweep` (already part of `ci.sh`).
-The full stance table is in [`library/stackvm_mcu/README.md`](../../library/stackvm_mcu/README.md).
-
-The physical FK-STM32H743XIH6 project is in
-[`example/mcu/FK-STM32H743XIH6/`](../../example/mcu/FK-STM32H743XIH6/README.md).
-It places the large VM pools in SDRAM, uses USART1 for diagnostics and FatFS for loading programs,
-and provides an LCD program selector controlled by physical buttons. Normal exit and panic return
-to the selector. The board libraries are included, and the default firmware runs the benchmark once
-at startup. After timing completes, MODE/ENTER or the USART1 virtual key commands `key mode` /
-`key enter` return to the selector. A DWT cycle benchmark compares the VM with the same integer kernel in native C++.
+Build `library/stackvm/` and the native glue with the target Linux C++17 toolchain. Deploy the
+`.svmb`, data and layout files together, and provide the system libraries used by the host.
+The [deployment guide](06-deployment.md) describes the execution and resource boundaries.
 
 ### 7.2 Editor language servers and the VS Code extension
 
@@ -362,7 +341,6 @@ and breakpoint debugging are described in its [README](../../vscode/README.md).
 | `python tests/magel_annotations.py` | Annotations and reflection |
 | `python tests/magel_library_reference.py` | Standard library companions |
 | `python tests/magel_abi_values.py` | C ABI companions |
-| `python tests/mcu_vm.py --sweep` | Board-side VM stance |
 
 The entries that need a graphical environment or a database are **not part of `ci.sh`**; they are
 dedicated regressions: the desktop ones want Windows + MinGW (or Qt5), and the gradebook wants a

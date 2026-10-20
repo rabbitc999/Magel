@@ -13,7 +13,7 @@ A host application may itself be compiled into a native executable and embed byt
 
 The compiler embeds its standard library and runtime assets. Operating-system services, external libraries, databases and peripherals remain deployment dependencies when used.
 
-The host owns the program, data, registry and borrowed resources. Configure memory and instruction budgets and check execution errors and resource statistics. MCU hosts use the same VM core with explicit feature and memory budgets.
+The host owns the program, data, registry and borrowed resources. Configure memory and instruction budgets and check execution errors and resource statistics. Embedded Linux hosts use the same VM core with explicit feature and memory budgets.
 
 Symbol compression is not encryption or a sandbox. Updating bytecode does not automatically migrate running stacks, closures or globals.
 

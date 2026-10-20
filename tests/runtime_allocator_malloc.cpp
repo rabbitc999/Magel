@@ -1,4 +1,4 @@
-#include "runtime_allocator.hpp"
+#include "magel_runtime_allocator.hpp"
 #include <cassert>
 /**
  * @brief 运行本文件的回归测试并报告执行结果。

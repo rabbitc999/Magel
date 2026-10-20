@@ -831,7 +831,7 @@ OptimizationReport optimize(QuadFile &file, std::size_t maxRounds, bool collectT
  * @brief 宿主投递的中断邮箱（`Machine::raiseInterrupt`）。
  *
  * `posted` 是**无锁快路径**计数：没有宿主投递时，VM 每条指令只读一个原子量，
- * 不加锁；有投递时取锁把队列整体搬走。**跨线程才需要这把锁**，所以板端
+ * 不加锁；有投递时取锁把队列整体搬走。**跨线程才需要这把锁**，所以裁剪配置
  * （`STACKVM_WITH_THREADS=0`）整段裁掉，只剩 VM 自己的软件定时器。
  */
 struct InterruptMailbox
@@ -894,7 +894,7 @@ void Machine::clearInterrupts()
 /**
  * @brief 线程运行时：每个隔离宿主线程一个 VM，消息在它们之间复制传递。
  *
- * 板端（`STACKVM_WITH_THREADS=0`）整段裁掉：不编 `std::thread` /
+ * 裁剪配置（`STACKVM_WITH_THREADS=0`）整段裁掉：不编 `std::thread` /
  * `std::mutex` / `std::condition_variable`，`std::thread::*` 与
  * `std::concurrency::Shared` 走"函数入口不存在"的普通错误。
  */
@@ -1034,8 +1034,8 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
     Heap defaultHeap;
     HeapAllocator &heap = heapAllocator_ == nullptr ? static_cast<HeapAllocator &>(defaultHeap) : *heapAllocator_;
 #else
-    /* 板端不编默认字节堆（`STACKVM_WITH_DEFAULT_HEAP=0`）：必须由宿主注入字节池
-     *（`mcuArenas::SetBytePool`）。没注入时用空堆，全部分配明确失败。 */
+    /* 裁剪配置不编默认字节堆（`STACKVM_WITH_DEFAULT_HEAP=0`）：必须由宿主注入字节池
+     *（`Machine::setHeapAllocator`）。没注入时用空堆，全部分配明确失败。 */
     NoHeapAllocator noHeap;
     HeapAllocator &heap = heapAllocator_ == nullptr ? static_cast<HeapAllocator &>(noHeap) : *heapAllocator_;
 #endif
@@ -1219,7 +1219,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
     };
 
     /**
-     * 追加一段**文本**输出：挂了输出下沉就先实时推给宿主（板端串口 / OLED / RTT），
+     * 追加一段**文本**输出：挂了输出下沉就先实时推给宿主（宿主日志接口），
      * `keepText=false` 时不再累积进 `RunResult::text`。`print` / `println` / `putChar`
      * 的指令与原生函数路径都走它，保证下沉看到的字节与累积文本完全一致。
      */
@@ -1528,7 +1528,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
     };
 #else
     /**
-     * @brief 板端没有线程：没有跨线程 panic 要在这里收，安全点检查恒为"没停"。
+     * @brief 裁剪配置没有线程：没有跨线程 panic 要在这里收，安全点检查恒为"没停"。
      */
     auto stopForPanic = [&]() -> bool { return false; };
 #endif /* STACKVM_WITH_THREADS */
@@ -1632,7 +1632,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
      * 交付时**必须释放线程锁**：处理器里可能再调线程 / 共享值函数（它们要同一把锁），
      * 持锁交付就是自锁。谓词在放锁前后各查一次，避免丢掉唤醒。
      *
-     * 只有线程等待才需要它（板端 `STACKVM_WITH_THREADS=0` 时整段裁掉）。
+     * 只有线程等待才需要它（裁剪配置 `STACKVM_WITH_THREADS=0` 时整段裁掉）。
      */
 #if STACKVM_WITH_THREADS
     const auto waitWithInterrupts = [&](std::unique_lock<std::mutex> &guard,
@@ -1834,7 +1834,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                 return true;
             }
 #else
-            /* 板端不编线程运行时与线程共享值（`STACKVM_WITH_THREADS=0`）：这几个名字明确报
+            /* 裁剪配置不编线程运行时与线程共享值（`STACKVM_WITH_THREADS=0`）：这几个名字明确报
              * "这个构建没有"，而不是掉到"函数入口不存在"。协程消息继续往下走。 */
             if (messageSendThread || messageReceiveThread || sharedCreate || sharedGet || sharedSet || sharedSwap)
             {
@@ -2549,7 +2549,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
 #if STACKVM_WITH_THREADS
         const bool mailboxPosted = interruptMailbox_ != nullptr && interruptMailbox_->posted.load(std::memory_order_relaxed) != 0u;
 #else
-        /* 板端不编宿主中断邮箱（跨线程才需要）：只剩 VM 自己的软件定时器。 */
+        /* 裁剪配置不编宿主中断邮箱（跨线程才需要）：只剩 VM 自己的软件定时器。 */
         const bool mailboxPosted = false;
 #endif
         /* 快路径：没有投递、没有在跑的定时器、队列也空 → 什么都不做。 */
@@ -3488,7 +3488,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         threadRuntime_.reset();
     }
 #else
-    /* 板端没有线程运行时：线程收尾（关闭 / join / 合并子线程输出）整段不存在。 */
+    /* 裁剪配置没有线程运行时：线程收尾（关闭 / join / 合并子线程输出）整段不存在。 */
 #endif /* STACKVM_WITH_THREADS */
 
     stopForPanic();

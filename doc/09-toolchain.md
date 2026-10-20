@@ -38,3 +38,24 @@ magel clear out build/compiler
 
 项目配置的运行方式为 `interpret` 与 `svmb`。
 配置见[工程与包管理](13-projects.md)，字节码约定见[SVMB 格式](15-svmb-format.md)。
+
+## 源码模块与增量构建
+
+`source/` 的 C/C++ 文件按模块职责使用下划线名称；类、成员和函数保持既有命名。
+标准库胶水统一位于 `source/glue/std_xxx.{hpp,cpp}`：公共头暴露绑定入口，平台适配、记录布局和
+算法实现在对应 `.cpp` 独立编译。`std_binding.hpp` 只提供注册表前置声明；模板需要的
+结构化数据与类型转换定义保留在头文件中。VM 核心继续使用通用宿主协议。
+
+泛型、闭包、宏控制、工程清单和诊断呈现分别由 `magel_generic.cpp`、`magel_lambda.cpp`、
+`magel_generic_closure.cpp`、`magel_macro.cpp`、`magel_macro_controls.cpp`、`magel_package.cpp`
+和 `magel_report.cpp` 编译。AST 声明位于 `magel_ast.hpp`；`semantics/` 中的符号登记、
+程序降级等分片由权威文法装配进生成解析器。语言服务位于 `lsp/`，分别使用
+`macro_analyzer`、`language_server` 和 `protocol_types` 表达职责；工程生成器位于 `generator/`。
+
+修改文法后执行 `sh gen.sh`，然后执行 `make -j4`。普通 C++ 实现变化由 `.d` 文件追踪实际包含关系。
+`make` 自动检查标准库、胶水及手册的内嵌输入，内容由 `tools/embed_stdlib.py` 生成并单独编译为
+`magel_stdlib_embedded.o`；压缩数据不再被公共头包含。生成输入使用时间戳记录，内容未变化时不重复写入
+生成源码。独立导出的编译器工程也将这些实现作为单独的 CMake 源文件链接。
+
+宿主接入胶水时同时包含 `magel_glue.hpp` 与所需 `std_xxx.hpp`，并链接对应 `.cpp` 或宿主记录库。
+只有绑定接口的头文件不会隐式带入全部实现；完整构建命令见[同步回调示例](../example/native-callbacks/README.md)。

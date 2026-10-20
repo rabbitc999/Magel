@@ -113,9 +113,7 @@ it. Closing twice returns `false` and does not crash.
 **Compressed output is binary.** `std::compress` output contains NUL bytes and has type
 `std::lang::List<uint8>`; only the decompressed result is a `std::lang::String`.
 
-**The front-end `[embedded]` profile blocks selected modules.** It rejects std::net, std::process,
-std::sql, std::io, std::thread, std::coroutine and std::concurrency. Standalone MCU hosts separately
-choose build macros, filesystems, coroutine support and glue; see [deployment](06-deployment.md).
+Module availability follows the target host bindings, system libraries and build configuration. Embedded Linux uses ordinary Linux hosts without a separate module-blocking deployment mode. See [deployment](06-deployment.md).
 
 **Migrated modules now need `import`.** These symbols used to be visible automatically through
 `source/std/lang.mgl`'s injected body; now everything except core `std::lang` must be imported explicitly.

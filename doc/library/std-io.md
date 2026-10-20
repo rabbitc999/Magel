@@ -101,27 +101,31 @@ int64 main(List<String> args) {
 | [FileStream::readString](#api-9) | `Result<String,IoError> readString(int64 count)` |
 | [FileStream::readAllString](#api-10) | `Result<String,IoError> readAllString(int64 maxBytes=16777216)` |
 | [FileStream::write](#api-11) | `Result<int64, IoError> write(std::lang::String text)` |
-| [FileStream::readBytes](#api-12) | `Result<List<uint8>,IoError> readBytes(int64 count)` |
-| [FileStream::writeBytes](#api-13) | `Result<int64,IoError> writeBytes(List<uint8> bytes)` |
-| [FileStream::flush](#api-14) | `Result<int64, IoError> flush()` |
-| [FileStream::seek](#api-15) | `Result<int64, IoError> seek(int64 offset, SeekOrigin origin)` |
-| [FileStream::close](#api-16) | `int64 close()` |
-| [fileOpen](#api-17) | `Result<std::lang::File, std::lang::String> fileOpen(std::lang::String path, std::lang::String mode)` |
-| [fileRead](#api-18) | `std::lang::String fileRead(file const& handle)` |
-| [fileReadLine](#api-19) | `String fileReadLine(File const& handle)` |
-| [fileReadString](#api-20) | `String fileReadString(File const& handle, int64 count)` |
-| [fileReadAllString](#api-21) | `String fileReadAllString(File const& handle, int64 maxBytes = 16777216)` |
-| [fileWrite](#api-22) | `int64 fileWrite(file const& handle, std::lang::String text)` |
-| [fileEof](#api-23) | `int64 fileEof(file const& handle)` |
-| [fileClose](#api-24) | `int64 fileClose(file const& handle)` |
-| [readAllBytes](#api-25) | `Result<List<uint8>,IoError> readAllBytes(String path, int64 maxBytes=16777216)` |
-| [writeAllBytes](#api-26) | `Result<int64,IoError> writeAllBytes(String path, List<uint8> bytes)` |
-| [readAllText](#api-27) | `Result<String,IoError> readAllText(String path, int64 maxBytes=16777216)` |
-| [writeAllText](#api-28) | `Result<int64,IoError> writeAllText(String path, String text)` |
-| [listDirectory](#api-29) | `Result<List<String>,IoError> listDirectory(String path)` |
-| [fileInfo](#api-30) | `Result<FileInfo,IoError> fileInfo(String path)` |
-| [createDirectories](#api-31) | `Result<int64,IoError> createDirectories(String path)` |
-| [renamePath](#api-32) | `Result<int64,IoError> renamePath(String from, String to)` |
+| [FileStream::print](#api-12) | `Result<int64, IoError> print(String text)` |
+| [FileStream::println](#api-13) | `Result<int64, IoError> println(String text = "")` |
+| [FileStream::readBytes](#api-14) | `Result<List<uint8>,IoError> readBytes(int64 count)` |
+| [FileStream::writeBytes](#api-15) | `Result<int64,IoError> writeBytes(List<uint8> bytes)` |
+| [FileStream::flush](#api-16) | `Result<int64, IoError> flush()` |
+| [FileStream::seek](#api-17) | `Result<int64, IoError> seek(int64 offset, SeekOrigin origin)` |
+| [FileStream::close](#api-18) | `int64 close()` |
+| [fileOpen](#api-19) | `Result<std::lang::File, std::lang::String> fileOpen(std::lang::String path, std::lang::String mode)` |
+| [fileRead](#api-20) | `std::lang::String fileRead(file const& handle)` |
+| [fileReadLine](#api-21) | `String fileReadLine(File const& handle)` |
+| [fileReadString](#api-22) | `String fileReadString(File const& handle, int64 count)` |
+| [fileReadAllString](#api-23) | `String fileReadAllString(File const& handle, int64 maxBytes = 16777216)` |
+| [fileWrite](#api-24) | `int64 fileWrite(file const& handle, std::lang::String text)` |
+| [filePrint](#api-25) | `int64 filePrint(file const& handle, String text)` |
+| [filePrintln](#api-26) | `int64 filePrintln(file const& handle, String text = "")` |
+| [fileEof](#api-27) | `int64 fileEof(file const& handle)` |
+| [fileClose](#api-28) | `int64 fileClose(file const& handle)` |
+| [readAllBytes](#api-29) | `Result<List<uint8>,IoError> readAllBytes(String path, int64 maxBytes=16777216)` |
+| [writeAllBytes](#api-30) | `Result<int64,IoError> writeAllBytes(String path, List<uint8> bytes)` |
+| [readAllText](#api-31) | `Result<String,IoError> readAllText(String path, int64 maxBytes=16777216)` |
+| [writeAllText](#api-32) | `Result<int64,IoError> writeAllText(String path, String text)` |
+| [listDirectory](#api-33) | `Result<List<String>,IoError> listDirectory(String path)` |
+| [fileInfo](#api-34) | `Result<FileInfo,IoError> fileInfo(String path)` |
+| [createDirectories](#api-35) | `Result<int64,IoError> createDirectories(String path)` |
+| [renamePath](#api-36) | `Result<int64,IoError> renamePath(String from, String to)` |
 
 <a id="api-0"></a>
 
@@ -573,7 +577,83 @@ obj.write(text);
 
 <a id="api-12"></a>
 
-### FileStream::readBytes（13）
+### FileStream::print（13）
+
+**声明**
+
+```magel
+Result<int64, IoError> print(String text);
+```
+
+**行为**
+
+按 print 格式规则写入文本，不追加换行。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `text` | `String text` | 已格式化的文本。 | 无 |
+
+**返回值**
+
+`Result<int64, IoError>`。写入字节数或 WriteFailed，保留关闭和只读错误。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.print(text);
+```
+
+**源码**：[source/std/io.mgl:105](../../source/std/io.mgl#L105)。
+
+**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+
+<a id="api-13"></a>
+
+### FileStream::println（14）
+
+**声明**
+
+```magel
+Result<int64, IoError> println(String text = "");
+```
+
+**行为**
+
+按 print 格式规则写入文本并追加 LF。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `text` | `String text` | 已格式化的文本，省略时只写换行。 | `""` |
+
+**返回值**
+
+`Result<int64, IoError>`。包括换行的写入字节数或 WriteFailed。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.println(text);
+```
+
+**源码**：[source/std/io.mgl:111](../../source/std/io.mgl#L111)。
+
+**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+
+<a id="api-14"></a>
+
+### FileStream::readBytes（15）
 
 **声明**
 
@@ -605,13 +685,13 @@ Result<List<uint8>,IoError> readBytes(int64 count);
 obj.readBytes(count);
 ```
 
-**源码**：[source/std/io.mgl:101](../../source/std/io.mgl#L101)。
+**源码**：[source/std/io.mgl:114](../../source/std/io.mgl#L114)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-13"></a>
+<a id="api-15"></a>
 
-### FileStream::writeBytes（14）
+### FileStream::writeBytes（16）
 
 **声明**
 
@@ -643,13 +723,13 @@ Result<int64,IoError> writeBytes(List<uint8> bytes);
 obj.writeBytes(bytes);
 ```
 
-**源码**：[source/std/io.mgl:107](../../source/std/io.mgl#L107)。
+**源码**：[source/std/io.mgl:120](../../source/std/io.mgl#L120)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-14"></a>
+<a id="api-16"></a>
 
-### FileStream::flush（15）
+### FileStream::flush（17）
 
 **声明**
 
@@ -679,13 +759,13 @@ Result<int64, IoError> flush();
 obj.flush();
 ```
 
-**源码**：[source/std/io.mgl:113](../../source/std/io.mgl#L113)。
+**源码**：[source/std/io.mgl:126](../../source/std/io.mgl#L126)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-15"></a>
+<a id="api-17"></a>
 
-### FileStream::seek（16）
+### FileStream::seek（18）
 
 **声明**
 
@@ -718,13 +798,13 @@ Result<int64, IoError> seek(int64 offset, SeekOrigin origin);
 obj.seek(offset, origin);
 ```
 
-**源码**：[source/std/io.mgl:122](../../source/std/io.mgl#L122)。
+**源码**：[source/std/io.mgl:135](../../source/std/io.mgl#L135)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-16"></a>
+<a id="api-18"></a>
 
-### FileStream::close（17）
+### FileStream::close（19）
 
 **声明**
 
@@ -754,13 +834,13 @@ int64 close();
 obj.close();
 ```
 
-**源码**：[source/std/io.mgl:137](../../source/std/io.mgl#L137)。
+**源码**：[source/std/io.mgl:150](../../source/std/io.mgl#L150)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-17"></a>
+<a id="api-19"></a>
 
-### fileOpen（18）
+### fileOpen（20）
 
 **声明**
 
@@ -793,13 +873,13 @@ Result<std::lang::File, std::lang::String> fileOpen(std::lang::String path, std:
 std::io::fileOpen(path, mode);
 ```
 
-**源码**：[source/std/io.mgl:142](../../source/std/io.mgl#L142)。
+**源码**：[source/std/io.mgl:155](../../source/std/io.mgl#L155)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-18"></a>
+<a id="api-20"></a>
 
-### fileRead（19）
+### fileRead（21）
 
 **声明**
 
@@ -831,13 +911,13 @@ std::lang::String fileRead(file const& handle);
 std::io::fileRead(handle);
 ```
 
-**源码**：[source/std/io.mgl:150](../../source/std/io.mgl#L150)。
+**源码**：[source/std/io.mgl:163](../../source/std/io.mgl#L163)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-19"></a>
+<a id="api-21"></a>
 
-### fileReadLine（20）
+### fileReadLine（22）
 
 **声明**
 
@@ -870,13 +950,13 @@ String fileReadLine(File const& handle);
 std::io::fileReadLine(handle);
 ```
 
-**源码**：[source/std/io.mgl:153](../../source/std/io.mgl#L153)。
+**源码**：[source/std/io.mgl:166](../../source/std/io.mgl#L166)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-20"></a>
+<a id="api-22"></a>
 
-### fileReadString（21）
+### fileReadString（23）
 
 **声明**
 
@@ -910,13 +990,13 @@ String fileReadString(File const& handle, int64 count);
 std::io::fileReadString(handle, count);
 ```
 
-**源码**：[source/std/io.mgl:159](../../source/std/io.mgl#L159)。
+**源码**：[source/std/io.mgl:172](../../source/std/io.mgl#L172)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-21"></a>
+<a id="api-23"></a>
 
-### fileReadAllString（22）
+### fileReadAllString（24）
 
 **声明**
 
@@ -950,13 +1030,13 @@ String fileReadAllString(File const& handle, int64 maxBytes = 16777216);
 std::io::fileReadAllString(handle, maxBytes);
 ```
 
-**源码**：[source/std/io.mgl:171](../../source/std/io.mgl#L171)。
+**源码**：[source/std/io.mgl:184](../../source/std/io.mgl#L184)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-22"></a>
+<a id="api-24"></a>
 
-### fileWrite（23）
+### fileWrite（25）
 
 **声明**
 
@@ -989,13 +1069,91 @@ int64 fileWrite(file const& handle, std::lang::String text);
 std::io::fileWrite(handle, text);
 ```
 
-**源码**：[source/std/io.mgl:185](../../source/std/io.mgl#L185)。
+**源码**：[source/std/io.mgl:198](../../source/std/io.mgl#L198)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-23"></a>
+<a id="api-25"></a>
 
-### fileEof（24）
+### filePrint（26）
+
+**声明**
+
+```magel
+int64 filePrint(file const& handle, String text);
+```
+
+**行为**
+
+将格式化文本写入文件，不追加换行。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `handle` | `file const& handle` | 已打开的文件句柄。 | 无 |
+| `text` | `String text` | 已格式化文本，调用时支持格式串与变长实参。 | 无 |
+
+**返回值**
+
+`int64`。写入字节数，失败沿用 fileWrite 的诊断。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+std::io::filePrint(handle, text);
+```
+
+**源码**：[source/std/io.mgl:205](../../source/std/io.mgl#L205)。
+
+**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+
+<a id="api-26"></a>
+
+### filePrintln（27）
+
+**声明**
+
+```magel
+int64 filePrintln(file const& handle, String text = "");
+```
+
+**行为**
+
+将格式化文本和 LF 换行写入文件。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `handle` | `file const& handle` | 已打开的文件句柄。 | 无 |
+| `text` | `String text` | 已格式化文本，省略时只写换行。 | `""` |
+
+**返回值**
+
+`int64`。包括换行的写入字节数。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+std::io::filePrintln(handle, text);
+```
+
+**源码**：[source/std/io.mgl:212](../../source/std/io.mgl#L212)。
+
+**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+
+<a id="api-27"></a>
+
+### fileEof（28）
 
 **声明**
 
@@ -1027,13 +1185,13 @@ int64 fileEof(file const& handle);
 std::io::fileEof(handle);
 ```
 
-**源码**：[source/std/io.mgl:186](../../source/std/io.mgl#L186)。
+**源码**：[source/std/io.mgl:216](../../source/std/io.mgl#L216)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-24"></a>
+<a id="api-28"></a>
 
-### fileClose（25）
+### fileClose（29）
 
 **声明**
 
@@ -1065,13 +1223,13 @@ int64 fileClose(file const& handle);
 std::io::fileClose(handle);
 ```
 
-**源码**：[source/std/io.mgl:187](../../source/std/io.mgl#L187)。
+**源码**：[source/std/io.mgl:217](../../source/std/io.mgl#L217)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-25"></a>
+<a id="api-29"></a>
 
-### readAllBytes（26）
+### readAllBytes（30）
 
 **声明**
 
@@ -1104,13 +1262,13 @@ Result<List<uint8>,IoError> readAllBytes(String path, int64 maxBytes=16777216);
 std::io::readAllBytes(path, maxBytes);
 ```
 
-**源码**：[source/std/io.mgl:203](../../source/std/io.mgl#L203)。
+**源码**：[source/std/io.mgl:233](../../source/std/io.mgl#L233)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-26"></a>
+<a id="api-30"></a>
 
-### writeAllBytes（27）
+### writeAllBytes（31）
 
 **声明**
 
@@ -1143,13 +1301,13 @@ Result<int64,IoError> writeAllBytes(String path, List<uint8> bytes);
 std::io::writeAllBytes(path, bytes);
 ```
 
-**源码**：[source/std/io.mgl:209](../../source/std/io.mgl#L209)。
+**源码**：[source/std/io.mgl:239](../../source/std/io.mgl#L239)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-27"></a>
+<a id="api-31"></a>
 
-### readAllText（28）
+### readAllText（32）
 
 **声明**
 
@@ -1182,13 +1340,13 @@ Result<String,IoError> readAllText(String path, int64 maxBytes=16777216);
 std::io::readAllText(path, maxBytes);
 ```
 
-**源码**：[source/std/io.mgl:215](../../source/std/io.mgl#L215)。
+**源码**：[source/std/io.mgl:245](../../source/std/io.mgl#L245)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-28"></a>
+<a id="api-32"></a>
 
-### writeAllText（29）
+### writeAllText（33）
 
 **声明**
 
@@ -1221,13 +1379,13 @@ Result<int64,IoError> writeAllText(String path, String text);
 std::io::writeAllText(path, text);
 ```
 
-**源码**：[source/std/io.mgl:224](../../source/std/io.mgl#L224)。
+**源码**：[source/std/io.mgl:254](../../source/std/io.mgl#L254)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-29"></a>
+<a id="api-33"></a>
 
-### listDirectory（30）
+### listDirectory（34）
 
 **声明**
 
@@ -1259,13 +1417,13 @@ Result<List<String>,IoError> listDirectory(String path);
 std::io::listDirectory(path);
 ```
 
-**源码**：[source/std/io.mgl:229](../../source/std/io.mgl#L229)。
+**源码**：[source/std/io.mgl:259](../../source/std/io.mgl#L259)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-30"></a>
+<a id="api-34"></a>
 
-### fileInfo（31）
+### fileInfo（35）
 
 **声明**
 
@@ -1297,13 +1455,13 @@ Result<FileInfo,IoError> fileInfo(String path);
 std::io::fileInfo(path);
 ```
 
-**源码**：[source/std/io.mgl:235](../../source/std/io.mgl#L235)。
+**源码**：[source/std/io.mgl:265](../../source/std/io.mgl#L265)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-31"></a>
+<a id="api-35"></a>
 
-### createDirectories（32）
+### createDirectories（36）
 
 **声明**
 
@@ -1335,13 +1493,13 @@ Result<int64,IoError> createDirectories(String path);
 std::io::createDirectories(path);
 ```
 
-**源码**：[source/std/io.mgl:243](../../source/std/io.mgl#L243)。
+**源码**：[source/std/io.mgl:273](../../source/std/io.mgl#L273)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
-<a id="api-32"></a>
+<a id="api-36"></a>
 
-### renamePath（33）
+### renamePath（37）
 
 **声明**
 
@@ -1374,7 +1532,7 @@ Result<int64,IoError> renamePath(String from, String to);
 std::io::renamePath(from, to);
 ```
 
-**源码**：[source/std/io.mgl:249](../../source/std/io.mgl#L249)。
+**源码**：[source/std/io.mgl:279](../../source/std/io.mgl#L279)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 

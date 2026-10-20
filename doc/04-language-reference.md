@@ -707,10 +707,9 @@ int64 health() { return 200; }
 
 - `--reflection` 显式要求支持；前端或运行时缺少能力时按配置报错。
 - `--no-reflection` 显式关闭，关闭后使用注解或反射会被拒绝。
-- 显式裁剪构建才覆盖两项宏为 0；不能用根目录默认值推断所有独立生成工程和 MCU 宿主的配置。
+- 显式裁剪构建才覆盖两项宏为 0；不能用根目录默认值推断所有独立生成工程和 embedded Linux 宿主的配置。
 
-反射产物要求目标 VM 编入反射；交付默认无反射的 `library/stackvm_mcu/` 时，编译源程序须显式使用
-`--no-reflection`。反射当前的签名及动态调用边界见[反射说明](19-reflection.md)。
+反射产物要求目标 VM 编入反射；目标显式关闭反射时，编译源程序须使用 `--no-reflection`。反射当前的签名及动态调用边界见[反射说明](19-reflection.md)。
 
 完整例子见 [`example/reflection/`](../example/reflection/)（`annotations.mgl`、`calls.mgl`、`dispatch.mgl`、`queries.mgl`）。
 
@@ -836,6 +835,29 @@ assert(f(2, 3) == 2);
 
 普通闭包和泛型闭包都可以作为泛型类型参数 `F` 的值，例如 `int64 apply<F>(F f) { return f(3); }`，调用 `apply(callback)` 自动推导 `F`。`Box<F>` 等泛型聚合可保存闭包值；泛型闭包保留声明身份及捕获环境，不被擦除为一个固定签名的普通函数指针。所有借用和移动限制继续适用。
 
+### 外层泛型中的函数值声明
+
+外层类型或函数的 `T` 具体化后，`T fn(T, int32)` 就有确定的返回类型和参数签名。
+结构体字段及函数体内的局部变量都可以这样声明：
+
+```magel
+struct CallbackPair<T> {
+    T fn(T, int32) a;
+    int32 fn(T, int32) b;
+};
+
+int32 useCallbacks<T>(int32 c) {
+    T fn(T, int32) a;
+    int32 fn(T, int32) b;
+    return c;
+}
+```
+
+调用前须赋予有效函数或闭包；字段也可保存 `copy` 捕获闭包，复制聚合时复制其拥有的环境。
+枚举可以把函数值声明为变体载荷，例如 `enum Callbacks<T> { Pair(T fn(T, int32) a, int32 fn(T, int32) b) };`。
+变体列表之后目前只允许声明方法，不允许增加公共实例字段。普通 opcode 支持确定签名的函数值字段；
+`opcode A<T>` 泛型声明目前不受支持。
+
 ## for-in 区间与前进协议
 
 `for (auto item in source)`、`for (item in source)` 与显式类型写法共用迭代协议。`std::lang::range(a, b)` 表示左闭右开区间，`std::lang::rangeEq(a, b)` 包含两端；两种调用均可显式指定 `<T>`。
@@ -894,6 +916,28 @@ loop {
 跨层退出沿用作用域清理规则，从内到外执行 `defer`、`scope(exit)` 与资源清理，且不执行被跳过的循环后续语句或更新表达式。完整检查见[层级退出示例](../example/samples/break_level.mgl)。
 
 ## 块表达式与插值输出
+
+`eprint`、`eprintln` 将文本写入宿主标准错误流；格式规则与 `print`、`println` 一致，
+支持 `{}`、从 1 开始的位置索引、数值格式和插值字符串。`eprintln` 追加一个 LF 换行，
+两者成功返回 `0`，不会把文本加入 VM 的标准输出结果。空参数 `eprintln()` 只输出换行。
+单个 `String` 表达式按原文写入，不再解析其中的花括号或百分号。
+
+文件使用 `File.print` / `File.println`、`FileStream.print` / `FileStream.println`，
+或 `std::io::filePrint` / `filePrintln`，同样支持格式串与变长实参。普通文件接口返回
+写入字节数，流接口返回 `Result<int64, IoError>`；换行计入字节数，关闭或只读错误沿用
+既有写入行为。省略文本时，文件 `println` 只写一个 LF，不自动刷新或关闭文件。
+
+```magel
+import std::io;
+
+void main() {
+    eprintln("任务 {} 失败", 7);
+    FileStream log = FileStream::open("run.log", "wb").take();
+    log.print("count={}", 3).unwrap();
+    log.println(" hex={:X}", 255).unwrap();
+    log.close();
+}
+```
 
 非空语句块可以产生一个值，用于初始化、已有变量赋值、实参或返回值。每条正常完成的路径必须通过 `yield 值;` 退出；普通语句块仍按原有规则执行，空 `{}` 保留集合字面量含义。`yield` 只在该糖里作关键字，作为普通标识符仍可用（如 `std::coroutine::yield()`），但不能写成 `yield(参数)` 调用形式。
 

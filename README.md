@@ -1,13 +1,13 @@
 # Magel 语言
 
 > **一次编写，处处运行。**
-> 一份逻辑，从 MCU 到云端；值语义、非空引用、无 GC。
+> 一份逻辑，从嵌入式 Linux 到云端；值语义、非空引用、无 GC。
 >
 > <sub>Write once, run anywhere. · 一度書けば、どこでも動く。</sub>
 
 **中文（默认）** · [English](README.en.md)
 
-Magel 是一门静态类型、值语义优先、不带 GC 的通用编程语言，提供借用来源与控制流检查。它借用 C 的表达式与块语法，但类型、所有权与运行时行为由 Magel 自行定义，面向"同一份程序从桌面一直到嵌入式板端"的场景。
+Magel 是一门静态类型、值语义优先、不带 GC 的通用编程语言，提供借用来源与控制流检查。它借用 C 的表达式与块语法，但类型、所有权与运行时行为由 Magel 自行定义，面向"同一份程序从桌面一直到嵌入式 Linux"的场景。
 
 Magel 编译器由本仓库的 `source/magel.gram` 经 [ParseEngine](https://github.com/rabbitc999/ParseEngine) 生成前端，把 `.mgl` 源码降级为 StackVM 四元式，再组装为 VM 指令。程序可在内存中执行、保存为 `.svmb` 字节码，或导出为可独立部署的 C++ 程序。
 
@@ -48,7 +48,7 @@ Magel 编译器由本仓库的 `source/magel.gram` 经 [ParseEngine](https://git
 | [库函数 API 参考](doc/library/README.md) | 查阅库 API 的人 | 模块的声明、重载、参数、返回值、错误边界与完整示例 |
 | [08 宿主集成与 C ABI](doc/08-host-integration.md) | 做集成的人 | `abi` 块、宿主胶水绑定、类型映射、可空引用 |
 | [09 工具链使用](doc/09-toolchain.md) | 日常用 `magel` 的人 | 场景指令、选项、`magel.toml`、报错呈现、调试 |
-| [17 当前能力](doc/17-capabilities.md) | 评估与集成人员 | 实现能力、默认配置、宿主/板端及工具边界 |
+| [17 当前能力](doc/17-capabilities.md) | 评估与集成人员 | 实现能力、默认配置、宿主/目标宿主及工具边界 |
 | [10 路线图](doc/10-roadmap.md) | 贡献者、长期用户 | 短中长期目标与「明确不做的事」 |
 | [99 Magel 的故事](doc/99-magel-story.md) | 好奇这门语言怎么来的人 | 从 Magic-C 到 Magel：撞过哪几次墙、删掉了什么 |
 
@@ -89,7 +89,7 @@ sh gen.sh          # 用 IELR 从 magel.gram 重新生成前端（需要 [ParseE
 ```
 
 - `source/magel.gram` / `source/magel_token.gram`（文法）
-- `source/magel_epilogue.cpp` / `source/epilogue/*.cpp`（`%epilogue include` 展开进 `magel_parser.cpp`）
+- `source/magel_semantics.cpp` / `source/semantics/*.cpp`（`%epilogue include` 展开进 `magel_parser.cpp`）
 - `source/magel_driver.cpp`（`%main include` 展开进 `magel_main.cpp`）
 
 > 忘了跑 `gen.sh` 是最容易踩的坑：`magel_main.cpp` 是 `source/magel_driver.cpp` 的**生成副本**，
@@ -110,7 +110,7 @@ make reflection     # 保留的显式启用入口
 前端（`MAGEL_WITH_REFLECTION`）与运行时（`STACKVM_WITH_REFLECTION`）必须同时开启，缺一个 `--reflection` 就报缺宏。之后 `--reflection` 生效，`--no-reflection` 可显式关闭。
 
 工具链编入反射能力后，单次源码编译默认生成反射元数据及对应产物特征位。
-交付到未编入反射的板端 VM 时，必须使用 `--no-reflection` 显式关闭。
+交付到未编入反射的目标宿主 VM 时，必须使用 `--no-reflection` 显式关闭。
 验证裁剪配置时可显式执行 `make MAGEL_WITH_REFLECTION=0 STACKVM_WITH_REFLECTION=0`。
 
 ## 快速使用
@@ -190,22 +190,11 @@ main = "src/main.mgl"
 `[magel] main` 指定工程主文件：**不给源文件**执行时用它当入口（即构建项目）；
 命令行显式给了文件就是单文件编译，不看主文件。`magel new` 生成的工程默认带这一行。
 
-## 嵌入式模式
+## Linux 部署
 
-在 `magel.toml` 里开启：
-
-```toml
-[embedded]
-enabled = true
-restrict_modules = ["std::math"]     # 在内置禁用之外再追加
-max_memory = 1048576                   # 运行内存上限（字节）
-```
-
-- **门禁在编译期**：程序 import 了被禁模块就直接编译报错（带源码位置）。内置禁用
-  `std::net` / `std::process` / `std::sql` / `std::io` / `std::thread` / `std::coroutine` /
-  `std::concurrency`（前端此配置固定禁用的模块），`restrict_modules` 只做**追加**。
-- **同一 VM 核心**：`[embedded]` 配置控制前端模块门禁与内存上限；独立 MCU VM 另外由构建宏、内存池与宿主胶水决定实际能力。命令行 `--memory-size` 优先于配置。
-- 产物仍是普通的 `.svmb`，`vscode/` 插件已能识别该文件类型。
+桌面和嵌入式 Linux 共用普通操作系统宿主与 VM 核心。宿主及原生依赖按目标架构构建，
+交付字节码、数据和布局文件。通用 `--memory-size` 设置内存预算，模块能力由宿主注册的胶水决定。
+详细流程见[部署说明](doc/06-deployment.md)。
 
 ## 目录结构
 
@@ -218,10 +207,9 @@ magel/
 │   ├── glue/                       宿主侧 C++ 胶水
 │   ├── allocator/                  桌面分配器
 │   ├── lsp/ dap/                   编辑器集成
-│   └── magel-generator/            生成独立编译器工程的入口
-├── library/                        可复用 C++ 库与板端宿主
-│   ├── stackvm/                    VM 核心（桌面与板端共用）
-│   ├── stackvm_mcu/                面向板端的虚拟机分支
+│   └── generator/            生成独立编译器工程的入口
+├── library/                        可复用 C++ 库与目标宿主
+│   ├── stackvm/                    VM 核心（桌面与目标宿主共用）
 │   ├── bignum/ json/ toml/ sqlite/ console/ lztext/ …
 │   └── …
 ├── doc/                            面向使用者的文档（00–20、99）

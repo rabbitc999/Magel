@@ -1,6 +1,6 @@
 #include "magel_glue.hpp"
-#include "glue/collection_natives.hpp"
-#include "glue/native_record.hpp"
+#include "glue/std_collection.hpp"
+#include "glue/std_native_record.hpp"
 #include "glue.cpp"
 
 #include <cstdio>

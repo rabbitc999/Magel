@@ -43,17 +43,17 @@ def main():
         command([GENERATOR, "compiler", "--out-dir", compiler])
         required = [
             "magel_parser.cpp", "magel_main.cpp", "magel_incremental.hpp",
-            "magel_borrow_checker.hpp", "magel_borrow_flow.hpp", "epilogue/borrow_flow.cpp", "epilogue/borrow_return_sources.cpp", "epilogue/borrow_facts.cpp", "epilogue/expression_effects.cpp",
+            "magel_borrow_checker.hpp", "magel_borrow_flow.hpp", "semantics/borrow_flow.cpp", "semantics/borrow_return_sources.cpp", "semantics/borrow_facts.cpp", "semantics/expression_effects.cpp",
             "magel_package.hpp", "magel_project.hpp", "magel_cli.hpp", "magel_i18n.hpp", "console/utf8.hpp",
             "runtime/stackvm.cpp", "runtime/execution_plan.hpp", "runtime/register_core.hpp", "runtime/allocation_index.hpp",
             "runtime/data_capacity_index.hpp", "runtime/parts/optimization_flow.inc",
             "runtime/parts/execution_fusion.inc", "runtime/parts/register_execution.inc", "runtime/magel_pool.c", "runtime/magel_pool.h",
-            "runtime/magel_allocator.hpp", "runtime_allocator.hpp",
+            "runtime/magel_allocator.hpp", "magel_runtime_allocator.hpp",
             "runtime/simple_ast.cpp", "CMakeLists.txt", "std/lang.mgl",
-            "glue/standard_records.hpp", "glue/native_record.hpp", "glue/file_api.hpp",
-            "glue/big_number_natives.hpp", "sqlite/sqlite3.c", "lztext/lztext.cpp",
+            "glue/std_records.hpp", "glue/std_native_record.hpp", "glue/std_file_api.hpp",
+            "glue/std_big_number.hpp", "sqlite/sqlite3.c", "lztext/lztext.cpp",
             "miniz/miniz_tinfl.c", "template/engine.hpp", "dap/dap_server.cpp",
-            "runtime/parts/artifact_binary.cpp", "epilogue/associated_types.cpp",
+            "runtime/parts/artifact_binary.cpp", "semantics/associated_types.cpp",
             ".magel-generator-manifest",
         ]
         missing = [name for name in required if not (compiler / name).is_file()]

@@ -416,10 +416,6 @@ int magel_main_entry(int argc, char **argv)
     Memory::String symbolMap;
     bool symbolMapGiven = false;
     std::size_t memoryBytes = Memory::defaultRuntimeCapacity;
-    /**
-     * `--memory-size` 是否被命令行显式给过：显式给过就优先于 `[embedded] max_memory`。
-     */
-    bool memoryBytesGiven = false;
     std::size_t stepLimit = 0u; /* --step-limit：0 表示不设上限（缺省） */
     bool runtimeStats = false;
     bool incremental = false;  /* --incremental：跨次复用模块预处理及完整编译产物 */
@@ -520,7 +516,6 @@ int magel_main_entry(int argc, char **argv)
                 memoryBytes = static_cast<std::size_t>(std::stoull(value));
             } catch (...) { return 2; }
             if (memoryBytes < 64) return 2;
-            memoryBytesGiven = true;
             continue;
         }
         if (argument == "--hard-realtime")
@@ -855,10 +850,6 @@ int magel_main_entry(int argc, char **argv)
         projectMainPath = project.main;
         path = projectMainPath.c_str();
     }
-    /* `[embedded] max_memory`：嵌入式模式的目标最大内存 —— 嵌入式**用正常解释器**执行，
-     * 只是把运行时内存上限压到这个值；命令行 `--memory-size` 优先。 */
-    if (!memoryBytesGiven && project.maxMemory > 0)
-        memoryBytes = static_cast<std::size_t>(project.maxMemory);
     if (!compressSymbols && !symbolMap.empty())
     {
         if (symbolMapGiven)

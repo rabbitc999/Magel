@@ -2,11 +2,7 @@
  * @file utf8.hpp
  * @brief Magel 的命令行 UTF-8 支持：Windows 实参解析、控制台 UTF-8 输出与代码页恢复。
  *
- * 本文件是 **Magel 工程自己的 master**，[`tools/sync_tool_console.py`](../tools/sync_tool_console.py)
- * 把它逐字节复制到
- *   * `library/stackvm_mcu/console/utf8.hpp`（板端 MCU 工程，同一相对布局）
- * Magel 侧统一写 `#include "console/utf8.hpp"`；要改就改这里，再跑同步脚本
- * （`gen.sh` 会在构建时自动跑）。
+ * 本文件在 Magel 工程独立维护，统一使用 `#include "console/utf8.hpp"`。
  *
  * 它最早来自 ParseEngine 仓库的 `library/console/utf8.hpp`。两个项目剥离之后各自独立：
  * 那份继续服务 `source/include/ParseEngine/tool_console.hpp`，改一边不再自动同步另一边。

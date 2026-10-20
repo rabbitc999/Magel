@@ -3,7 +3,7 @@ module std::watchdog;
 /*
  * std::watchdog —— **软重启看门狗**（默认关闭）。
  *
- * 板端（`magel/library/stackvm_mcu`）与桌面（工具链）**共用这一份**。它管的不是"多线程看门狗定时器"，
+ * 桌面与嵌入式 Linux 宿主**共用这一份**。它管的不是"多线程看门狗定时器"，
  * 而是"这一轮跑不下去了 / 该重来一遍了，请宿主清干净、复用缓冲区重跑"（软重启）。
  * 宿主完整重启时：结束旧执行上下文、重置 arena、清空墓碑，再重跑逻辑。
  * watchdog 重启在墓碑清理效果上等价于一次完整的 std::lang::sweep()。
@@ -20,7 +20,7 @@ module std::watchdog;
  *
  * 默认**关闭**：没 `enable()` / `enableTimeout*()` 过时 `requestRestart()` 返回
  * `Err(NotEnabled)`，**不产生任何重启**。三条路都**不抛异常、不 longjmp、不在失败点跳走**
- * —— 板端（`-fno-exceptions`）与桌面共用同一套机制：触发点只写标志，VM 在安全点消费它。
+ * —— 目标宿主（`-fno-exceptions`）与桌面共用同一套机制：触发点只写标志，VM 在安全点消费它。
  *
  * ③ 用 `std::event` 的**软件定时器**计时，时间源跟它一致：宿主注入过时钟（`Machine::
  * setTimeCallback`）就是真实时间，没有就是虚拟时钟（1 条指令 = 1 个时间单位）——所以

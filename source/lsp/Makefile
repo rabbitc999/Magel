@@ -6,14 +6,14 @@
 #   make clean
 #
 # 与外面那份文法 LSP（ParseEngine 的 library/lsp）的关系：类型定义与最小 JSON 都是
-# **本项目自带的副本**（`lsp/types.hpp`、`../../library/json/`），不跨仓库引用——
-#   * `lsp/types.hpp`（位置 / 区间 / 诊断 / 悬停 … 的头文件级共用类型）；
+# **本项目自带的副本**（`lsp/protocol_types.hpp`、`../../library/json/`），不跨仓库引用——
+#   * `lsp/protocol_types.hpp`（位置 / 区间 / 诊断 / 悬停 … 的头文件级共用类型）；
 #   * `../../library/json/`（JSON 库的 Magel 内置副本，与 `std::json` 同一份实现）。
-# 语言模型各管各的：文法在 ParseEngine 那份，Magel 宏/块在 `mc.hpp` / `mc.cpp`。
+# 语言模型各管各的：文法在 ParseEngine 那份，Magel 宏/块在 `macro_analyzer.hpp` / `macro_analyzer.cpp`。
 # 源码是 UTF-8（中文注释与中文诊断）。GCC 下钉住输入/执行字符集，MSVC 用 /utf-8。
 
 CXX      ?= g++
-CXXFLAGS ?= -std=c++17 -Wall -Wextra -Wpedantic
+CXXFLAGS ?= -std=c++17 -Wall -Wextra -Wpedantic -O2
 PYTHON   ?= python
 
 ifeq ($(findstring g++,$(CXX)),g++)
@@ -23,11 +23,14 @@ endif
 ROOT_DIR    := ../..
 LSP_LIB_DIR := .
 BUILD_DIR   ?= $(ROOT_DIR)/build/magel-lsp
-SERVER      := $(BUILD_DIR)/magel-lsp
-TESTS       := $(BUILD_DIR)/magel-lsp-tests
+ifeq ($(OS),Windows_NT)
+EXE_SUFFIX := .exe
+endif
+SERVER      := $(BUILD_DIR)/magel-lsp$(EXE_SUFFIX)
+TESTS       := $(BUILD_DIR)/magel-lsp-tests$(EXE_SUFFIX)
 
-SOURCES := mc.cpp server.cpp ../../library/json/json.cpp
-OBJECTS := $(BUILD_DIR)/mc.o $(BUILD_DIR)/server.o $(BUILD_DIR)/json.o
+SOURCES := macro_analyzer.cpp language_server.cpp ../../library/json/json.cpp
+OBJECTS := $(BUILD_DIR)/magel_macro.o $(BUILD_DIR)/magel_macro_controls.o  $(BUILD_DIR)/macro_analyzer.o $(BUILD_DIR)/language_server.o $(BUILD_DIR)/json.o
 INCLUDES := -I. -I$(LSP_LIB_DIR) -I$(ROOT_DIR)/library -I$(ROOT_DIR)/library/preprocess
 
 # Windows 用 PowerShell 建目录、cmd 清理；其余平台用 POSIX 写法。
@@ -48,20 +51,20 @@ server: $(SERVER)
 
 tests: $(TESTS)
 
-$(SERVER): $(OBJECTS) main.cpp | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) $(UTF8FLAGS) $(INCLUDES) main.cpp $(OBJECTS) -o $@
+$(SERVER): $(OBJECTS) lsp_main.cpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) $(UTF8FLAGS) $(INCLUDES) lsp_main.cpp $(OBJECTS) -o $@
 
-$(TESTS): $(OBJECTS) test_mc.cpp | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) $(UTF8FLAGS) $(INCLUDES) test_mc.cpp $(OBJECTS) -o $@
+$(TESTS): $(OBJECTS) macro_analyzer_test.cpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) $(UTF8FLAGS) $(INCLUDES) macro_analyzer_test.cpp $(OBJECTS) -o $@
 
-$(BUILD_DIR)/mc.o: mc.cpp mc.hpp $(LSP_LIB_DIR)/types.hpp ../magel_macro.hpp ../magel_macro_controls.hpp | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) $(UTF8FLAGS) $(INCLUDES) -c mc.cpp -o $@
+$(BUILD_DIR)/macro_analyzer.o: macro_analyzer.cpp macro_analyzer.hpp $(LSP_LIB_DIR)/protocol_types.hpp ../magel_macro.hpp ../magel_macro_controls.hpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) $(UTF8FLAGS) $(INCLUDES) -MMD -MP -c macro_analyzer.cpp -o $@
 
-$(BUILD_DIR)/server.o: server.cpp server.hpp mc.hpp ../../library/json/json.hpp | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) $(UTF8FLAGS) $(INCLUDES) -c server.cpp -o $@
+$(BUILD_DIR)/language_server.o: language_server.cpp language_server.hpp macro_analyzer.hpp ../../library/json/json.hpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) $(UTF8FLAGS) $(INCLUDES) -MMD -MP -c language_server.cpp -o $@
 
 $(BUILD_DIR)/json.o: ../../library/json/json.cpp ../../library/json/json.hpp | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) $(UTF8FLAGS) $(INCLUDES) -c ../../library/json/json.cpp -o $@
+	$(CXX) $(CXXFLAGS) $(UTF8FLAGS) $(INCLUDES) -MMD -MP -c ../../library/json/json.cpp -o $@
 
 check: all
 	$(TESTS)
@@ -71,3 +74,9 @@ $(BUILD_DIR):
 
 clean:
 	$(CLEAN)
+
+$(BUILD_DIR)/magel_macro.o: ../magel_macro.cpp ../magel_macro.hpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) $(UTF8FLAGS) $(INCLUDES) -MMD -MP -c $< -o $@
+$(BUILD_DIR)/magel_macro_controls.o: ../magel_macro_controls.cpp ../magel_macro_controls.hpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) $(UTF8FLAGS) $(INCLUDES) -MMD -MP -c $< -o $@
+-include $(wildcard $(BUILD_DIR)/*.d)

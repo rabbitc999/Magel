@@ -638,11 +638,11 @@ private:
 };
 #else  /* !STACKVM_WITH_DEFAULT_HEAP */
 /**
- * @brief 板端"不编默认字节堆"时的空堆：**所有分配都失败**，统计恒为 0。
+ * @brief 关闭默认字节堆时使用的空堆：**所有分配都失败**，统计恒为 0。
  *
- * 板端必须由宿主注入字节池（`mcuArenas::SetBytePool` → `Machine::setHeapAllocator`）。
+ * 该配置必须通过 `Machine::setHeapAllocator` 注入堆分配器。
  * 万一没注入，这里让每次分配明确失败（`alloc` 报"堆内存不足" → 记分配失败标志 →
- * 下一个安全点可恢复终止），而不是悄悄退化成宿主堆 —— 板端根本没有宿主堆可用。
+ * 下一个安全点可恢复终止），而不是隐式回退到已关闭的默认堆。
  */
 class NoHeapAllocator final : public HeapAllocator
 {
@@ -1682,12 +1682,8 @@ Slot memSet(NativeContext &ctx, const Memory::Vector<Slot> &args)
  */
 bool stdinInputDisabled()
 {
-#if STACKVM_EMBEDDED
-    return !mcuConsole::HasInput();
-#else
     const char *flag = std::getenv("MAGEL_NO_STDIN_INPUT");
     return flag != nullptr && flag[0] != '\0' && flag[0] != '0';
-#endif
 }
 
 /**
@@ -1706,11 +1702,7 @@ bool stdinInputDisabled()
  */
 int nativeInputByte()
 {
-#if STACKVM_EMBEDDED
-    return mcuConsole::ReadByte();
-#else
     return std::getchar();
-#endif
 }
 
 /**

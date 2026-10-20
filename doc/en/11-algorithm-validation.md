@@ -4,7 +4,7 @@ Historical configurations and measurements are preserved below. Programs execute
 
 `source/magel_borrow_checker.hpp` checks reference escapes; `source/magel_borrow_flow.hpp` checks
 intraprocedural use after free and use after move. The adapter in
-`source/epilogue/borrow_flow.cpp` records bound storage identities and control flow.
+`source/semantics/borrow_flow.cpp` records bound storage identities and control flow.
 The independent checker runs after all functions and generic instances have been lowered.
 
 The design draws on [Rust MIR dataflow](https://rustc-dev-guide.rust-lang.org/mir/dataflow.html)
@@ -58,4 +58,4 @@ python tests/magel_algorithm_robustness.py --magel magel.exe
 python tests/magel_algorithm_robustness.py --magel magel.exe --stress-size 300000
 ```
 
-Desktop and MCU builds share the single `library/stackvm/` core and lifecycle native instructions, with host features trimmed by build macros.
+Desktop and embedded Linux builds share the single `library/stackvm/` core and lifecycle native instructions, with host features trimmed by build macros.

@@ -103,7 +103,7 @@ isObject=1 len=1
 | `std::process` | 进程与系统调用；命令管道由宿主管柄池持有 |
 | `std::clock` | 单调时钟 `steady_clock`，只做差值，不当挂钟用 |
 | `std::memory` | `Span<T>`（引用地址 + 长度视图）；它的迭代器返回**元素引用**，`for (T mut& p in span)` 可直接写 |
-| `std::watchdog` | 软重启看门狗（水位与超时两个维度都默认关闭），桌面与板端共用一份实现 |
+| `std::watchdog` | 软重启看门狗（水位与超时两个维度都默认关闭），桌面与目标宿主共用一份实现 |
 
 ### 迭代
 
@@ -121,7 +121,7 @@ isObject=1 len=1
 
 **压缩结果是二进制。** `std::compress` 的输出含 NUL 字节，类型是 `std::lang::List<uint8>`；解压出来的才是 `std::lang::String`。
 
-**前端嵌入式配置固定禁用部分模块。** `std::net`、`std::process`、`std::sql`、`std::io`、`std::thread`、`std::coroutine`、`std::concurrency` 在 `[embedded]` 下导入会报错。独立 MCU VM 的实际文件系统、协程与胶水另按构建配置说明。详见[跨平台部署](06-deployment.md#3-嵌入式前端配置与独立-vm)。
+模块能力由目标宿主提供的胶水、系统库及实际构建配置决定。嵌入式 Linux 使用普通 Linux 宿主，不额外设置模块禁用模式。详见[部署说明](06-deployment.md)。
 
 **模块迁移后必须 import。** 早期这些符号在 `source/std/lang.mgl` 注入正文里自动可见；现在除核心 `std::lang` 外都要显式 `import`。
 

@@ -4,7 +4,7 @@
 
 借用检查分为两部分：`source/magel_borrow_checker.hpp` 检查引用逃逸，
 `source/magel_borrow_flow.hpp` 检查函数内的释放后访问和移动后访问。
-前端适配层 `source/epilogue/borrow_flow.cpp` 记录已绑定的变量身份、字段、下标和控制流；
+前端适配层 `source/semantics/borrow_flow.cpp` 记录已绑定的变量身份、字段、下标和控制流；
 所有函数及泛型实例降级完成后，独立检查器才运行，不访问语义分析符号表。
 
 实现参考 [Rust MIR 数据流分析](https://rustc-dev-guide.rust-lang.org/mir/dataflow.html)
@@ -71,4 +71,4 @@ python tools/run_module_gates.py memory
 python tools/run_module_gates.py generics tools docs
 ```
 
-先用 `make` 构建当前编译器。模块门禁只运行所选范围，不代替发布时各模块及底层 C/C++、VM、板端检查的完整覆盖。
+先用 `make` 构建当前编译器。模块门禁只运行所选范围，不代替发布时各模块及底层 C/C++、VM、目标宿主检查的完整覆盖。

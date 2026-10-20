@@ -1,8 +1,0 @@
-import board;
-int64 main() {
-    board::lcdClear(0);
-    board::lcdText(8, 8, "Hello from Magel", 2016, 0);
-    println("LCD {}x{}; MODE pressed={}", board::lcdWidth(), board::lcdHeight(), board::keyPressed(0));
-    board::boardDelay(1000);
-    return 0;
-}

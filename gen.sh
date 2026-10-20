@@ -86,7 +86,6 @@ echo "文法生成器：$ENGINE"
 
 # 先把标准库 .mgl 源码内嵌进编译器（magel_stdlib_embedded.cpp），
 # 这样 exe 自包含，import std::xxx 不依赖磁盘上的 .mgl 文件。
-python tools/sync_tool_console.py
 python tools/embed_i18n.py
 python tools/embed_stdlib.py
 

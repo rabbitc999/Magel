@@ -85,19 +85,19 @@
 
 /**
  * @def STACKVM_WITH_THREADS
- * @brief 是否编入 **OS 线程 / 互斥 / 条件变量 / 线程共享值 / 宿主中断邮箱**；板端口径默认 0。
+ * @brief 是否编入 **OS 线程 / 互斥 / 条件变量 / 线程共享值 / 宿主中断邮箱**；目标宿主口径默认 0。
  *
  * `1`（缺省，桌面行为）= 编入 `std::thread` 那套线程运行时、`std::thread::*` 与
  * `std::concurrency::Shared` 原生函数、宿主投递中断的邮箱，以及运行内存池的互斥锁。
- * `0`（板端）= 整段裁掉：**不出现 `std::thread` / `std::mutex` / `std::condition_variable`
+ * `0`（目标宿主）= 整段裁掉：**不出现 `std::thread` / `std::mutex` / `std::condition_variable`
  * / `std::chrono`**，`setThreadsEnabled` / `setThreadHeapFactory` / `raiseInterrupt` /
  * `clearInterrupts` 不存在，`std::thread::*` 与 `Shared` 走"函数入口不存在"的普通错误。
  *
  * **协程不受影响**：`std::coroutine::*` 与 `__std_message_*_coroutine` 是 VM 自己的状态机
- * （在求值循环里切换，不需要 OS 线程），板端照常可用 —— 这就是"板端不需要线程"的那条线。
+ * （在求值循环里切换，不需要 OS 线程），目标宿主照常可用 —— 这就是"目标宿主不需要线程"的那条线。
  *
- * 关线程是**零成本裁剪**：桌面构建不用改代码，板端 `-DSTACKVM_WITH_THREADS=0` 即可
- * （`magel/library/stackvm_mcu/Makefile` 已经这么传）。默认字节堆同理走 `STACKVM_WITH_DEFAULT_HEAP`。
+ * 关线程是**零成本裁剪**：桌面构建不用改代码，目标宿主 `-DSTACKVM_WITH_THREADS=0` 即可
+ * （目标宿主按需要显式配置）。默认字节堆同理走 `STACKVM_WITH_DEFAULT_HEAP`。
  */
 #ifndef STACKVM_WITH_THREADS
 #define STACKVM_WITH_THREADS 1
@@ -111,7 +111,7 @@
  * @brief 是否编入**默认字节堆**（`parts/machine_natives.cpp` 的 `Heap`：STL 容器实现）。
  *
  * `1`（缺省，桌面行为）= 宿主没 `setHeapAllocator` 时用这个堆，分配失败靠 STL 扩容报错。
- * `0`（板端）= 整个类裁掉（连带它的互斥锁与 STL 容器），此时**必须**由宿主注入
+ * `0`（目标宿主）= 整个类裁掉（连带它的互斥锁与 STL 容器），此时**必须**由宿主注入
  * `HeapAllocator`（`SetBytePool`）；没注入时所有堆分配明确失败，不会退化成宿主堆。
  */
 #ifndef STACKVM_WITH_DEFAULT_HEAP
@@ -121,13 +121,6 @@
 #error STACKVM_WITH_DEFAULT_HEAP must be 0 or 1
 #endif
 
-/**
- * @def STACKVM_EMBEDDED
- * @brief 使用注入式板端控制台；桌面缺省为零。
- */
-#ifndef STACKVM_EMBEDDED
-#define STACKVM_EMBEDDED 0
-#endif
 /**
  * @def STACKVM_WITH_HOST_EXCEPTION_GUARD
  * @brief 宿主回调异常保护；无异常构建设为零。
@@ -755,7 +748,7 @@ bool loadProgramBinary(const Memory::String &path, Program &program,
                        Memory::Vector<Memory::String> *diagnostics = nullptr);
 
 /**
- * @brief 从**内存字节**直接恢复组装后的程序（板端：映像在 flash 里，没有文件系统）。
+ * @brief 从**内存字节**直接恢复组装后的程序（目标宿主：映像在 flash 里，没有文件系统）。
  *
  * 与路径版共用同一套解码、校验与能力检查，区别只是不碰文件系统；`label` 只用于诊断文案。
  * @param bytes 映像首地址。
@@ -852,7 +845,7 @@ using InstructionHook = Memory::Function<void(const InstructionHookInfo &)>;
 /**
  * @brief 文本输出下沉：`print` / `println` / `putChar` 产出的字节被**实时**交给它。
  *
- * 板端把串口 / OLED / RTT 的写函数挂上来（见 `Machine::setOutputSink`），就不必等
+ * 目标宿主把串口 / OLED / RTT 的写函数挂上来（见 `Machine::setOutputSink`），就不必等
  * `run()` 结束才看到输出；不挂时输出只累积进 `RunResult::text`（桌面行为不变）。
  * @param user 挂下沉时给的上下文。
  * @param bytes 字节。
@@ -943,7 +936,7 @@ struct RunResult
     /**
      * @brief 是不是"可恢复终止"（分配失败等来自 VM 外部的停止原因）。
      *
-     * 板端没有异常：分配失败在失败点只写标志（`Memory::restartSignal()`），VM 在
+     * 目标宿主没有异常：分配失败在失败点只写标志（`Memory::restartSignal()`），VM 在
      * 下一条指令边界（安全点）看到它就停在这里并把本轮标成可恢复。宿主据此清标志、
      * 重置 arena（`Memory::BufferRuntimeArena::resetForRestart()` / `mcuMetadataResetForRestart()`）
      * 后重跑——这就是软重启触发器之一；`ok == false` 的普通运行错误不带这个标记。
@@ -986,7 +979,7 @@ struct RunResult
  * `Machine::run()` 每次执行前都会调用 `reset(base)`；实现必须清空上一轮状态，并把地址 0
  * 留给空指针。接口管理的是 MAGEL/四元式 `alloc`、字符串和按地址 load/store 使用的字节堆，
  * 不接管 C++ 调用帧、STL 容器或运行期对象表的宿主内存。
- * 默认堆与板端池会复用物理字节，但通过槽号和分配代次区分逻辑身份；旧引用不能访问
+ * 默认堆与目标宿主池会复用物理字节，但通过槽号和分配代次区分逻辑身份；旧引用不能访问
  * 新分配对象。释放之后不得再解引用，未清扫的旧身份重复释放仍幂等；清扫后重复释放失败。
  * 自定义堆应分别提供活跃区间、旧身份判定及显式清扫，不得把物理地址复用当作身份复用。
  */
@@ -1322,7 +1315,7 @@ struct DataArea
               Memory::Vector<Memory::String> *diagnostics = nullptr);
 
     /**
-     * @brief 从**内存映像 + 布局文本**加载数据区（板端：映像与布局都在 flash 里）。
+     * @brief 从**内存映像 + 布局文本**加载数据区（目标宿主：映像与布局都在 flash 里）。
      *
      * 行格式与文件版一致：`符号 offset=0 size=8 type=… stride=8`；`layoutText` 可为空。
      * @param bytes 数据区字节。
@@ -1511,7 +1504,7 @@ public:
     /**
      * @brief 挂上文本输出下沉：`print` / `println` / `putChar` 的文本**实时**推给宿主。
      *
-     * 板端接串口 / OLED / RTT 只需在这里写一次；`keepText=false` 时不再往
+     * 目标宿主接串口 / OLED / RTT 只需在这里写一次；`keepText=false` 时不再往
      * `RunResult::text` 累积（省 RAM，也不用等 `run()` 结束才看到输出）。
      * 不挂下沉（`sink == nullptr`）＝桌面行为：文本只进 `RunResult::text`。
      * @param sink 下沉；空 = 只累积。

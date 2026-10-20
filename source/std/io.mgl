@@ -97,6 +97,19 @@ struct FileStream : Reader, Writer, Seek {
             IoError::WriteFailed(__fileLastError(&self.handle)));
     }
 
+    /**
+     * @brief 按 print 格式规则写入文本，不追加换行。
+     * @param text 已格式化的文本。
+     * @return 写入字节数或 WriteFailed，保留关闭和只读错误。
+     */
+    Result<int64, IoError> print(String text) { return self.write(text); }
+    /**
+     * @brief 按 print 格式规则写入文本并追加 LF。
+     * @param text 已格式化的文本，省略时只写换行。
+     * @return 包括换行的写入字节数或 WriteFailed。
+     */
+    Result<int64, IoError> println(String text = "") { return self.write(text + "\n"); }
+
     /** 读取至多 count 个字节；EOF 返回较短列表。 */
     Result<List<uint8>,IoError> readBytes(int64 count) {
         List<uint8> bytes=__fileTryReadBytes(&self.handle,count);
@@ -183,6 +196,23 @@ String fileReadAllString(File const& handle, int64 maxBytes = 16777216) {
     return text;
 }
 int64 fileWrite(file const& handle, std::lang::String text) { return __fileWrite(handle, text); }
+/**
+ * @brief 将格式化文本写入文件，不追加换行。
+ * @param handle 已打开的文件句柄。
+ * @param text 已格式化文本，调用时支持格式串与变长实参。
+ * @return 写入字节数，失败沿用 fileWrite 的诊断。
+ */
+int64 filePrint(file const& handle, String text) { return __fileWrite(handle, text); }
+/**
+ * @brief 将格式化文本和 LF 换行写入文件。
+ * @param handle 已打开的文件句柄。
+ * @param text 已格式化文本，省略时只写换行。
+ * @return 包括换行的写入字节数。
+ */
+int64 filePrintln(file const& handle, String text = "") {
+    String line = text + "\n";
+    return __fileWrite(handle, line);
+}
 int64 fileEof(file const& handle) { return __fileEof(handle); }
 int64 fileClose(file const& handle) { return __fileClose(handle); }
 

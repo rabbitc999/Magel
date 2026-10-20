@@ -1,7 +1,7 @@
 # 00 Vision: Business logic as an independently deliverable asset
 
 > **Write once, run anywhere.**
-> One logic, from MCU to cloud; value semantics, non-null references, no GC.
+> One logic, from embedded Linux to cloud; value semantics, non-null references, no GC.
 
 > This document is not about syntax. It answers: **why does Magel exist, what does it solve for you,
 > and where will it disappoint you.**
@@ -46,20 +46,12 @@ GC don't run on embedded" and "without a GC you will get it wrong" look like a b
 Magel source compiles to `.svmb` bytecode, executed by StackVM. **What you deliver is bytecode, not
 source.**
 
-### Answer 2: from MCU to cloud — one logic crosses every boundary
+### Answer 2: from desktop to embedded Linux
 
-This is not a slogan. There is a real-hardware record on STM32F407: compile, trim and package on the
-PC, push to an STM32F407VET6 board via H7TOOL or UART1, and execute through a fixed-capacity virtual
-machine calling on-board HAL glue; integer and double-precision programs terminate normally, the
-read-back Flash image matches, and single / double click and long-press events render correctly on
-the OLED.
-(That separate project was later removed from the repository as requested; the record is still in Git
-history. This historical run **does not** mean every current language feature has been re-validated
-on the board.)
-
-The current H743 project supplies SDRAM, FatFS, USART1, LCD and key adapters; see the [board project](../../example/mcu/FK-STM32H743XIH6/README.md). Desktop hosts and board ports follow the same division of labour: **Magel
-source describes the business, the binary holds the executable program, the target platform provides
-the runtime and the host interface.**
+Desktop and embedded Linux hosts use the same `library/stackvm/` execution core. The target needs a
+C++17 toolchain, sufficient memory and the system libraries required by its program. Build the host
+and native glue for the target architecture and runtime. Magel source describes the business,
+bytecode carries the program, and the host supplies files, networking, clocks and other services.
 
 ### Answer 3: value semantics, non-null references and borrow checking
 
@@ -77,10 +69,8 @@ See [core concepts](03-core-concepts.md#3-borrow-provenance-and-control-flow-che
 
 ## 3. Who Magel fits
 
-**Embedded and IoT vendors**
-The same control logic must be reused across models and chips; firmware is updated onto devices and
-you would rather the on-board binary not be trivially readable. Magel's `.svmb` + external memory
-buffer + soft-restart watchdog are built for this.
+**Embedded Linux and IoT vendors**
+Reuse application logic across Linux devices, deploy bytecode updates and adapt system services through native glue. Resource budgets and process recovery follow the target configuration.
 
 **SaaS companies that must deliver on-premise**
 The customer wants it in their own data center. You can ship bytecode with compressed symbols, keep the mapping file yourself — locate problems through the mapping when they

@@ -1,7 +1,3 @@
-/* 板端元数据 arena 是平台适配，VM 核心通过统一入口选择无异常分配后端。 */
-#if defined(STACKVM_EMBEDDED) && STACKVM_EMBEDDED
-#include "../../library/stackvm_mcu/allocator/magel_allocator.hpp"
-#else
 #ifndef MAGEL_CUSTOM_ALLOCATOR
 #define MAGEL_CUSTOM_ALLOCATOR 1
 #endif
@@ -172,18 +168,14 @@ inline RuntimeAllocator *defaultRuntimeAllocatorIfCreated() { return defaultRunt
 /* ---------------------------------------------------------------------------
  *  软重启信号（桌面口径）
  *
- *  与板端 `magel/library/stackvm_mcu/allocator/magel_allocator.hpp` 里的同名实现**逐字对应**
- *  （"同一改动各打两遍"），差别只在两边怎么收尾：
- *    * 桌面：分配失败记下标志后**照旧抛 `std::bad_alloc`**，宿主读信号决定这是不是
- *      "可恢复终止"；显式请求由 `__std_request_restart()` 写，VM 在下一条指令边界停下。
- *    * 板端：分配失败由应急预留兜住、不抛异常，VM 在安全点以可恢复终止结束 `run()`。
- *  两条路都**不在失败点跳走**，宿主/VM 看到的是同一份"标志 + 原因"。
+ *  分配失败记录原因并抛出 `std::bad_alloc`，宿主在执行边界决定是否恢复。
+ *  显式重启请求由 VM 在安全点检查；信号不直接跳转或替换宿主控制流。
  *
  *  本对象不吃 Magel 池（纯 POD 成员），所以池耗尽之后仍然可读。
  * ------------------------------------------------------------------------- */
 
 /**
- * @brief 一次软重启的原因（与板端 `WatchdogReason` 逐项对应）。
+ * @brief 一次软重启的触发原因。
  */
 enum class WatchdogReason
 {
@@ -311,7 +303,7 @@ public:
 };
 
 /**
- * @brief 进程级软重启信号位（桌面一份；板端那份在 `magel/library/stackvm_mcu/`）。
+ * @brief 进程级软重启信号位，由宿主在执行边界检查。
  */
 inline RestartSignal &restartSignal()
 {
@@ -772,5 +764,3 @@ struct hash<Memory::String>
 }  // namespace std
 #endif
 #endif
-
-#endif /* STACKVM_EMBEDDED */

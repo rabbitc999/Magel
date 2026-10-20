@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""把 doc/book/*.md 转换为 LaTeX（模板：STM32_PROGRAM/Book 的 colorful 类）。
+"""把 doc/book/*.md 转换为 LaTeX（使用仓库内的 colorful 类模板）。
 
 用法：python tools/md2tex.py
 读取 ../*.md（即 doc/book/），生成 ../chapters/*.tex。
@@ -39,7 +39,7 @@ FILES = [
     ('22-交付与部署.md', 'ch22.tex'),
     ('23-综合项目.md', 'ch23.tex'),
     ('24-学生信息管理系统.md', 'ch24.tex'),
-    ('25-单片机解释器.md', 'ch25.tex'),
+    ('25-嵌入式Linux部署.md', 'ch25.tex'),
     ('A-常见错误速查.md', 'appendix-a.tex'),
     ('B-标准库速查.md', 'appendix-b.tex'),
     ('README.md', 'preface.tex'),
