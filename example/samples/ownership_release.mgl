@@ -18,7 +18,7 @@ struct Holder : Drop {
 
     void drop() {
         println("holder-drop");
-        delete self.items;
+        self.items.drop();
     }
 
     Holder clone() {

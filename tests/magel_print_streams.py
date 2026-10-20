@@ -113,7 +113,7 @@ def main():
         void main() {
             File file = fileOpen("closed.txt", "wb").take(); fileClose(&file); file.println("bad");
         }''', success=False)
-        assert 'fwrite' in result.stderr and '已经释放过了' in result.stderr and not result.stdout, result.stderr
+        assert 'fwrite' in result.stderr and '已经关闭' in result.stderr and not result.stdout, result.stderr
     print('VM 打印流：stdout/stderr 分离、格式化、文件字节与关闭/只读错误通过。')
 
 

@@ -360,7 +360,7 @@ struct StringBuilder : Drop {
     std::lang::List<std::lang::String> chunks; ///< 已累计的字符串片段。
     int64 length; ///< 已累计的总字节数。
 
-    void drop() { delete self.chunks; }
+    void drop() { self.chunks.drop(); }
 
     /** 新建空构建器（`create` 是具名构造入口：体内写 self，不写 return）。 */
     static StringBuilder create() {

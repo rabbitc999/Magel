@@ -60,7 +60,7 @@ the original file position.
 
 ## 3. Borrow provenance and control-flow checking
 
-The independent checker models storage paths, merges branch/loop state and tracks move, drop and delete.
+The independent checker models storage paths, merges branch/loop state and tracks move, drop and drop.
 Access to moved or released sources and repeated moves follows the corresponding rules; MGL1205 is a
 common diagnostic. Redeclaration after a complete move creates a new identity and does not redirect old aliases.
 
@@ -101,7 +101,7 @@ after block
 `T mut& p = heap T;` creates manually allocated storage that must be deleted as specified; ending the
 reference's scope is not a promise to release its target. Files, processes, databases and other host
 handles follow their Drop/Closeable contracts. See [validation](../11-algorithm-validation.md) for
-idempotent termination, allocation identities and sweep.
+non-idempotent destruction, allocation identities and automatic cleanup.
 
 ## 5. Memory and execution limits
 

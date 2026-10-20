@@ -56,7 +56,7 @@ struct Graph : Drop {
     List<int64> edgeWeight; ///< 边权表。
     int64 edgeCount; ///< 当前边数（按 addEdge 调用次数计）。
 
-    void drop() { delete self.head; delete self.edgeTo; delete self.edgeNext; delete self.edgeWeight; }
+    void drop() { self.head.drop(); self.edgeTo.drop(); self.edgeNext.drop(); self.edgeWeight.drop(); }
 
     /**
      * @brief 创建 n 个顶点的空图。
@@ -196,7 +196,7 @@ struct UnionFind : Drop {
     List<int64> sizes; ///< 各根对应的集合大小。
     int64 components; ///< 当前集合（连通分量）个数。
 
-    void drop() { delete self.parent; delete self.sizes; }
+    void drop() { self.parent.drop(); self.sizes.drop(); }
 
     /**
      * @brief 创建 n 个单元素集合。

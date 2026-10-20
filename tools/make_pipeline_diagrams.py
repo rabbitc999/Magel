@@ -126,8 +126,8 @@ def execution(english=False):
     arrow(c, ((780, 725), (780, 770)))
     box(c, 40, 770, 1480, "Runtime services during execution; output and cleanup at exit" if english else
         "执行期间使用运行时服务；退出时输出结果并清理资源",
-        ["Data / heap · host natives · I/O · drop / delete · error reporting" if english else
-         "数据区与堆 · 宿主原生函数 · 输入输出 · drop / delete · 错误报告"], height=90)
+        ["Data / heap · host natives · I/O · drop · error reporting" if english else
+         "数据区与堆 · 宿主原生函数 · 输入输出 · drop · 错误报告"], height=90)
     return c
 
 

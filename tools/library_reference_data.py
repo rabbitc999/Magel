@@ -42,7 +42,7 @@ MODULES = {
     'std::linkedlist': ('双向链表', 'LinkedList 以游标存储：values/prevs/nexts 三个平行列表，下标即节点号，`0 - 1` 表示空指针；被删节点回收进 free 列表复用，删除后对应槽的值标记为 -2。pushFront/pushBack 返回新节点游标，insertBefore/insertAfter 在游标前后插入，removeAt 按游标摘除；游标在未发生指向它的删除操作前一直有效。首尾两端插删是 O(1)，按游标插删也是 O(1)，按值查找与按序迭代是 O(n)。fromArray 逐项尾插，toArray 返回拥有独立存储的值序列。容器实现 Drop，同时满足 Iterator<int64>。全部结构操作由宿主胶水 glue/std_linkedlist.hpp 提供，裁剪宏 NO_MAGEL_STD_LINKEDLIST。'),
     'std::text': ('UTF-8 文本工具', '长度、位置和填充宽度按 UTF-8 字节，不按字符数或显示宽度。大小写转换仅 ASCII。除 charAt 返回字节外，变换返回新字符串。字符串下标/切片不允许从多字节编码中间开始；处理中文要保持 UTF-8 边界。kmpFind/kmpFindAll/kmpFailureTable 是字节级 KMP：kmpFind 返回首个匹配的字节下标，找不到为 -1，空针返回 0（与 find 口径一致）；kmpFindAll 返回升序命中下标、允许重叠匹配，空针给空列表；kmpFailureTable 返回长度等于针长的失配表。KMP 实现在宿主胶水 glue/std_kmp.hpp，裁剪宏 NO_MAGEL_STD_KMP。'),
     'std::thread': ('隔离线程', '运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待目标完成；receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。'),
-    'std::watchdog': ('软重启看门狗', '默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主重置 arena、清空墓碑并重跑；watchdog 重启在清除墓碑的效果上等价于一次完整的 std::lang::sweep()，同时会结束全部旧执行上下文；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。'),
+    'std::watchdog': ('软重启看门狗', '默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主结束全部旧执行上下文、重置 arena 与分配身份后重跑；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。'),
 }
 
 # 精确名称优先，其后由生成器读取源码注释或按同族接口补全。

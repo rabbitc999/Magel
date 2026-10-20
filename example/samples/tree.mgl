@@ -9,7 +9,7 @@
  *
  * 这个样例把这一路要用的东西串在一起：递归、字符串按字节下标读、`format` 把
  * 字符码变成字符串、`+` 把递归结果拼起来（拼的结果是新串，归变量所有）。
- * 树的结点用 `new` 显式管理：`T mut&` 是"**手动所有**"，用完自己 `delete`。
+ * 树的结点用 `new` 显式管理：`T mut&` 是"**手动所有**"，用完自己 `drop`。
  */
 
 struct Node {
@@ -56,7 +56,7 @@ String postorder(Option<Node mut&> optional) {
     return postorder(node.left) + postorder(node.right) + format("{}", (char)node.value);
 }
 
-/** 用完把整棵树还回去：`T mut&` 归程序自己管，显式递归 delete。 */
+/** 用完把整棵树还回去：`T mut&` 归程序自己管，显式递归 drop。 */
 void release(Option<Node mut&> optional) {
     if (optional.isNone()) {
         return;
@@ -64,7 +64,7 @@ void release(Option<Node mut&> optional) {
     Node mut& node = optional.unwrap();
     release(node.left);
     release(node.right);
-    delete node;
+    node.drop();
 }
 
 /** 中序（左 → 根 → 右）：顺便验证重建出来的树结构没错。 */

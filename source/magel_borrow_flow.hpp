@@ -6,7 +6,7 @@
 /**
  * @brief 独立的借用控制流与来源集合分析，不依赖前端类型、符号表或代码生成。
  * 存储路径、投影冲突与初始化数据流参考 rustc 的 move_paths / places_conflict / dataflow；
- * 本实现遵循 Magel 的别名契约，源码入口与语义边界见 doc/22-tombstone-research.md。
+ * 本实现遵循 Magel 的别名契约，源码入口与语义边界见 doc/22-resource-lifetime.md。
  */
 namespace magel_borrow_checker
 {
@@ -57,6 +57,7 @@ struct FlowNode
     Memory::Vector<std::size_t> next;
     std::size_t line = 0;
     Memory::String label;
+    int operation = -1;  ///< 对应的源码操作编号，供资源合并阶段定位。
 };
 /**
  * @brief 一次函数调用的静态控制流，入口为零号节点。
@@ -102,6 +103,7 @@ struct FlowState
     Memory::Map<Place, Memory::Set<Place>> captures;  ///< 闭包及聚合字段持有的借用来源。
     Memory::Set<Place> definitelyMoved;               ///< 所有到达路径均已完整移动的存储。
     Memory::Map<Place, InvalidKind> invalid;
+    Memory::Map<Place, InvalidKind> terminated;  ///< 所有到达路径上均已终结的精确存储。
 };
 /**
  * @brief 沿引用槽解析所有可能的来源，分支合并后保留来源并集。
@@ -173,6 +175,17 @@ inline bool merge(FlowState &target, const FlowState &source)
         else
             ++it;
     }
+    for (auto it = target.terminated.begin(); it != target.terminated.end();)
+    {
+        const auto found = source.terminated.find(it->first);
+        if (found == source.terminated.end() || found->second != it->second)
+        {
+            it = target.terminated.erase(it);
+            changed = true;
+        }
+        else
+            ++it;
+    }
     for (const auto &entry : source.captures)
     {
         auto &values = target.captures[entry.first];
@@ -206,9 +219,11 @@ inline bool merge(FlowState &target, const FlowState &source)
 /**
  * @brief 以工作队列迭代到控制流不动点，再检查每个可达节点，避免迭代过程中的临时误报。
  * @param graph 已绑定存储身份的函数控制流图。
+ * @param entryStates 可选输出：每个操作之前的来源与生命周期状态。
+ * @param reachable 可选输出：各节点是否可达。
  * @return 全部释放后访问、移动后访问及非法重新定义诊断；不修改输入。
  */
-inline Memory::Vector<FlowDiagnostic> checkFlow(const FlowGraph &graph)
+inline Memory::Vector<FlowDiagnostic> checkFlow(const FlowGraph &graph, Memory::Vector<FlowState> *entryStates = nullptr, Memory::Vector<bool> *reachable = nullptr)
 {
     const auto count = graph.nodes.size();
     if (!count) return {};
@@ -218,6 +233,16 @@ inline Memory::Vector<FlowDiagnostic> checkFlow(const FlowGraph &graph)
     reached[0] = queued[0] = true;
     const auto transfer = [](const FlowNode &node, FlowState state) {
         const auto targets = resolve(state, node.target);
+        if (node.kind == FlowNode::Allocate) state.terminated.clear();
+        if (node.kind == FlowNode::Initialize || node.kind == FlowNode::Write || node.kind == FlowNode::Bind || node.kind == FlowNode::Move || node.kind == FlowNode::MoveScalar)
+            for (const auto &target : targets)
+                for (auto it = state.terminated.begin(); it != state.terminated.end();)
+                    if (overlaps(target, it->first))
+                        it = state.terminated.erase(it);
+                    else
+                        ++it;
+        if ((node.kind == FlowNode::Drop || node.kind == FlowNode::Destroy) && targets.size() == 1u)
+            state.terminated[*targets.begin()] = std::max(state.terminated[*targets.begin()], node.kind == FlowNode::Destroy ? FlowState::Freed : FlowState::Dropped);
         if ((node.kind == FlowNode::Move || node.kind == FlowNode::MoveScalar) && targets.size() == 1u)
             state.definitelyMoved.insert(*targets.begin());
         else if (node.kind == FlowNode::Initialize || node.kind == FlowNode::Drop || node.kind == FlowNode::Destroy)
@@ -322,8 +347,8 @@ inline Memory::Vector<FlowDiagnostic> checkFlow(const FlowGraph &graph)
         else if (node.kind == FlowNode::Destroy || node.kind == FlowNode::Drop || node.kind == FlowNode::Move || node.kind == FlowNode::MoveScalar)
         {
             for (const auto &target : targets)
-                state.invalid[target] = node.kind == FlowNode::Destroy ? FlowState::Freed : node.kind == FlowNode::Drop ? FlowState::Dropped :
-                                                                                                                          FlowState::Moved;
+                state.invalid[target] = std::max(state.invalid[target], node.kind == FlowNode::Destroy ? FlowState::Freed : node.kind == FlowNode::Drop ? FlowState::Dropped :
+                                                                                                                                                          FlowState::Moved);
         }
         else if ((node.kind == FlowNode::Initialize || node.kind == FlowNode::Write) && targets.size() == 1u)
         {
@@ -368,7 +393,7 @@ inline Memory::Vector<FlowDiagnostic> checkFlow(const FlowGraph &graph)
             if (!states[index].definitelyMoved.count(node.target)) diagnostics.push_back({ "同一个块里不能重复声明：" + node.label + "（旧变量必须在所有到达路径上完整移动后才能重新定义）", node.line });
             continue;
         }
-        if (node.kind != FlowNode::CheckCaptures && node.kind != FlowNode::Read && node.kind != FlowNode::Write && node.kind != FlowNode::Bind && node.kind != FlowNode::Allocate && node.kind != FlowNode::Move && node.kind != FlowNode::MoveScalar && node.kind != FlowNode::Destroy) continue;
+        if (node.kind != FlowNode::CheckCaptures && node.kind != FlowNode::Read && node.kind != FlowNode::Write && node.kind != FlowNode::Bind && node.kind != FlowNode::Allocate && node.kind != FlowNode::Move && node.kind != FlowNode::MoveScalar && node.kind != FlowNode::Destroy && node.kind != FlowNode::Drop) continue;
         bool freed = false, moved = false;
         auto accessed = resolve(states[index], node.target);
         if (node.kind == FlowNode::Read || node.kind == FlowNode::CheckCaptures)
@@ -385,10 +410,12 @@ inline Memory::Vector<FlowDiagnostic> checkFlow(const FlowGraph &graph)
                 {
                     freed = freed || invalid.second == FlowState::Freed;
                     const bool writing = node.kind == FlowNode::Write || node.kind == FlowNode::Bind || node.kind == FlowNode::Allocate;
-                    moved = moved || invalid.second == FlowState::Moved || (!writing && invalid.second == FlowState::Dropped);
+                    moved = moved || (node.kind != FlowNode::Destroy && invalid.second == FlowState::Moved) || (!writing && node.kind != FlowNode::Destroy && node.kind != FlowNode::Drop && invalid.second == FlowState::Dropped);
                 }
-        if (node.kind != FlowNode::Destroy && (freed || moved)) diagnostics.push_back({ freed ? "[MGL1205] 借用来源已释放，不能继续访问：" + node.label : "[MGL1205] 借用来源已移动或销毁，不能继续访问（源对象已经销毁）：" + node.label, node.line });
+        if (((node.kind != FlowNode::Destroy && node.kind != FlowNode::Drop) || moved) && (freed || moved)) diagnostics.push_back({ freed ? "[MGL1205] 借用来源已释放，不能继续访问：" + node.label : "[MGL1205] 借用来源已移动或销毁，不能继续访问（源对象已经销毁）：" + node.label, node.line });
     }
+    if (entryStates) *entryStates = std::move(states);
+    if (reachable) *reachable = std::move(reached);
     return diagnostics;
 }
 }  // namespace magel_borrow_checker

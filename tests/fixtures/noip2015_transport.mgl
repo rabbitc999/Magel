@@ -160,5 +160,5 @@ int64 main(){
             i++;
         }
     }
-    std::lang::println("{}",solve(&tree,plans,m,maximum));delete plans;delete storage;return 0;
+    std::lang::println("{}",solve(&tree,plans,m,maximum));plans.drop();storage.drop();return 0;
 }

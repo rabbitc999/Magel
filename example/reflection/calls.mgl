@@ -78,7 +78,7 @@ int64 main(){
     match(std::reflect::call("unsupported",args).error()){std::reflect::ReflectError::UnsupportedSignature=>{} _=>{assert(false);}}
     match(std::reflect::callMethod<Hidden>(&hidden,"read",empty).error()){std::reflect::ReflectError::NotExposed=>{} _=>{assert(false);}}
 
-    delete interfaceObj;
+    interfaceObj.drop();
     println("reflection calls OK");return 0;
 }
 

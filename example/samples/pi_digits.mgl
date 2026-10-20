@@ -57,8 +57,8 @@ BigInteger piScaled(int64 digits) {
         l = l + 545140134;
         denominator = denominator * xFactor;
         numerator = numerator * xFactor + m * l;
-        delete factor;
-        delete cube;
+        factor.drop();
+        cube.drop();
     
             k = k + 1;
         }

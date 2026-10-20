@@ -1695,7 +1695,9 @@
       "panic": false
     },
     "usage": "obj.drop();",
-    "examples": [],
+    "examples": [
+      "example/samples/std_collections_algorithms.mgl"
+    ],
     "sourceLanguage": "zh",
     "source": "source/std/collections.mgl",
     "line": 33,
@@ -1919,7 +1921,9 @@
       "panic": false
     },
     "usage": "obj.drop();",
-    "examples": [],
+    "examples": [
+      "example/samples/std_collections_algorithms.mgl"
+    ],
     "sourceLanguage": "zh",
     "source": "source/std/collections.mgl",
     "line": 61,
@@ -2127,7 +2131,9 @@
       "panic": false
     },
     "usage": "obj.drop();",
-    "examples": [],
+    "examples": [
+      "example/samples/std_collections_algorithms.mgl"
+    ],
     "sourceLanguage": "zh",
     "source": "source/std/collections.mgl",
     "line": 94,
@@ -2365,7 +2371,9 @@
       "panic": false
     },
     "usage": "obj.drop();",
-    "examples": [],
+    "examples": [
+      "example/samples/std_collections_algorithms.mgl"
+    ],
     "sourceLanguage": "zh",
     "source": "source/std/collections.mgl",
     "line": 126,
@@ -2537,7 +2545,9 @@
       "panic": false
     },
     "usage": "obj.drop();",
-    "examples": [],
+    "examples": [
+      "example/samples/std_collections_algorithms.mgl"
+    ],
     "sourceLanguage": "zh",
     "source": "source/std/collections.mgl",
     "line": 149,
@@ -6947,7 +6957,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/io.mgl",
-    "line": 216,
+    "line": 215,
     "page": "std-io.md",
     "anchor": "api-27"
   },
@@ -6981,7 +6991,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/io.mgl",
-    "line": 217,
+    "line": 216,
     "page": "std-io.md",
     "anchor": "api-28"
   },
@@ -7019,7 +7029,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/io.mgl",
-    "line": 233,
+    "line": 232,
     "page": "std-io.md",
     "anchor": "api-29"
   },
@@ -7057,7 +7067,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/io.mgl",
-    "line": 239,
+    "line": 238,
     "page": "std-io.md",
     "anchor": "api-30"
   },
@@ -7095,7 +7105,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/io.mgl",
-    "line": 245,
+    "line": 244,
     "page": "std-io.md",
     "anchor": "api-31"
   },
@@ -7133,7 +7143,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/io.mgl",
-    "line": 254,
+    "line": 253,
     "page": "std-io.md",
     "anchor": "api-32"
   },
@@ -7165,7 +7175,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/io.mgl",
-    "line": 259,
+    "line": 258,
     "page": "std-io.md",
     "anchor": "api-33"
   },
@@ -7197,7 +7207,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/io.mgl",
-    "line": 265,
+    "line": 264,
     "page": "std-io.md",
     "anchor": "api-34"
   },
@@ -7229,7 +7239,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/io.mgl",
-    "line": 273,
+    "line": 272,
     "page": "std-io.md",
     "anchor": "api-35"
   },
@@ -7267,7 +7277,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/io.mgl",
-    "line": 279,
+    "line": 278,
     "page": "std-io.md",
     "anchor": "api-36"
   },
@@ -11621,7 +11631,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 71,
+    "line": 70,
     "page": "std-lang.md",
     "anchor": "api-3"
   },
@@ -11655,7 +11665,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 75,
+    "line": 74,
     "page": "std-lang.md",
     "anchor": "api-4"
   },
@@ -11689,7 +11699,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 79,
+    "line": 78,
     "page": "std-lang.md",
     "anchor": "api-5"
   },
@@ -11721,7 +11731,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 85,
+    "line": 84,
     "page": "std-lang.md",
     "anchor": "api-6"
   },
@@ -11753,7 +11763,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 91,
+    "line": 90,
     "page": "std-lang.md",
     "anchor": "api-7"
   },
@@ -11785,7 +11795,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 93,
+    "line": 92,
     "page": "std-lang.md",
     "anchor": "api-8"
   },
@@ -11817,7 +11827,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 95,
+    "line": 94,
     "page": "std-lang.md",
     "anchor": "api-9"
   },
@@ -11855,7 +11865,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 102,
+    "line": 101,
     "page": "std-lang.md",
     "anchor": "api-10"
   },
@@ -11887,7 +11897,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 104,
+    "line": 103,
     "page": "std-lang.md",
     "anchor": "api-11"
   },
@@ -11925,7 +11935,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 106,
+    "line": 105,
     "page": "std-lang.md",
     "anchor": "api-12"
   },
@@ -11957,7 +11967,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 111,
+    "line": 110,
     "page": "std-lang.md",
     "anchor": "api-13"
   },
@@ -12001,7 +12011,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 113,
+    "line": 112,
     "page": "std-lang.md",
     "anchor": "api-14"
   },
@@ -12039,7 +12049,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 118,
+    "line": 117,
     "page": "std-lang.md",
     "anchor": "api-15"
   },
@@ -12077,7 +12087,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 120,
+    "line": 119,
     "page": "std-lang.md",
     "anchor": "api-16"
   },
@@ -12109,7 +12119,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 122,
+    "line": 121,
     "page": "std-lang.md",
     "anchor": "api-17"
   },
@@ -12159,7 +12169,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 124,
+    "line": 123,
     "page": "std-lang.md",
     "anchor": "api-18"
   },
@@ -12203,7 +12213,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 129,
+    "line": 128,
     "page": "std-lang.md",
     "anchor": "api-19"
   },
@@ -12247,7 +12257,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 131,
+    "line": 130,
     "page": "std-lang.md",
     "anchor": "api-20"
   },
@@ -12285,7 +12295,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 136,
+    "line": 135,
     "page": "std-lang.md",
     "anchor": "api-21"
   },
@@ -12323,7 +12333,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 143,
+    "line": 142,
     "page": "std-lang.md",
     "anchor": "api-22"
   },
@@ -12355,7 +12365,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 145,
+    "line": 144,
     "page": "std-lang.md",
     "anchor": "api-23"
   },
@@ -12393,7 +12403,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 147,
+    "line": 146,
     "page": "std-lang.md",
     "anchor": "api-24"
   },
@@ -12425,7 +12435,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 152,
+    "line": 151,
     "page": "std-lang.md",
     "anchor": "api-25"
   },
@@ -12469,7 +12479,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 154,
+    "line": 153,
     "page": "std-lang.md",
     "anchor": "api-26"
   },
@@ -12507,7 +12517,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 159,
+    "line": 158,
     "page": "std-lang.md",
     "anchor": "api-27"
   },
@@ -12545,7 +12555,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 161,
+    "line": 160,
     "page": "std-lang.md",
     "anchor": "api-28"
   },
@@ -12577,7 +12587,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 163,
+    "line": 162,
     "page": "std-lang.md",
     "anchor": "api-29"
   },
@@ -12627,7 +12637,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 165,
+    "line": 164,
     "page": "std-lang.md",
     "anchor": "api-30"
   },
@@ -12671,7 +12681,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 170,
+    "line": 169,
     "page": "std-lang.md",
     "anchor": "api-31"
   },
@@ -12715,7 +12725,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 172,
+    "line": 171,
     "page": "std-lang.md",
     "anchor": "api-32"
   },
@@ -12753,7 +12763,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 177,
+    "line": 176,
     "page": "std-lang.md",
     "anchor": "api-33"
   },
@@ -12787,7 +12797,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 190,
+    "line": 189,
     "page": "std-lang.md",
     "anchor": "api-34"
   },
@@ -12827,7 +12837,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 194,
+    "line": 193,
     "page": "std-lang.md",
     "anchor": "api-35"
   },
@@ -12867,7 +12877,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 198,
+    "line": 197,
     "page": "std-lang.md",
     "anchor": "api-36"
   },
@@ -12913,7 +12923,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 202,
+    "line": 201,
     "page": "std-lang.md",
     "anchor": "api-37"
   },
@@ -12938,7 +12948,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 213,
+    "line": 212,
     "page": "std-lang.md",
     "anchor": "api-38"
   },
@@ -12963,7 +12973,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 215,
+    "line": 214,
     "page": "std-lang.md",
     "anchor": "api-39"
   },
@@ -12995,7 +13005,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 217,
+    "line": 216,
     "page": "std-lang.md",
     "anchor": "api-40"
   },
@@ -13020,7 +13030,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 222,
+    "line": 221,
     "page": "std-lang.md",
     "anchor": "api-41"
   },
@@ -13045,7 +13055,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 228,
+    "line": 227,
     "page": "std-lang.md",
     "anchor": "api-42"
   },
@@ -13077,7 +13087,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 232,
+    "line": 231,
     "page": "std-lang.md",
     "anchor": "api-43"
   },
@@ -13102,7 +13112,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 233,
+    "line": 232,
     "page": "std-lang.md",
     "anchor": "api-44"
   },
@@ -13127,7 +13137,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 242,
+    "line": 241,
     "page": "std-lang.md",
     "anchor": "api-45"
   },
@@ -13152,7 +13162,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 245,
+    "line": 244,
     "page": "std-lang.md",
     "anchor": "api-46"
   },
@@ -13179,7 +13189,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 255,
+    "line": 254,
     "page": "std-lang.md",
     "anchor": "api-47"
   },
@@ -13211,7 +13221,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 264,
+    "line": 263,
     "page": "std-lang.md",
     "anchor": "api-48"
   },
@@ -13243,7 +13253,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 273,
+    "line": 272,
     "page": "std-lang.md",
     "anchor": "api-49"
   },
@@ -13275,7 +13285,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 282,
+    "line": 281,
     "page": "std-lang.md",
     "anchor": "api-50"
   },
@@ -13307,7 +13317,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 291,
+    "line": 290,
     "page": "std-lang.md",
     "anchor": "api-51"
   },
@@ -13332,7 +13342,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 304,
+    "line": 303,
     "page": "std-lang.md",
     "anchor": "api-52"
   },
@@ -13357,7 +13367,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 314,
+    "line": 313,
     "page": "std-lang.md",
     "anchor": "api-53"
   },
@@ -13389,7 +13399,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 320,
+    "line": 319,
     "page": "std-lang.md",
     "anchor": "api-54"
   },
@@ -13414,7 +13424,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 321,
+    "line": 320,
     "page": "std-lang.md",
     "anchor": "api-55"
   },
@@ -13439,7 +13449,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 327,
+    "line": 326,
     "page": "std-lang.md",
     "anchor": "api-56"
   },
@@ -13464,7 +13474,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 336,
+    "line": 335,
     "page": "std-lang.md",
     "anchor": "api-57"
   },
@@ -13489,7 +13499,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 339,
+    "line": 338,
     "page": "std-lang.md",
     "anchor": "api-58"
   },
@@ -13516,7 +13526,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 349,
+    "line": 348,
     "page": "std-lang.md",
     "anchor": "api-59"
   },
@@ -13548,7 +13558,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 358,
+    "line": 357,
     "page": "std-lang.md",
     "anchor": "api-60"
   },
@@ -13580,7 +13590,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 367,
+    "line": 366,
     "page": "std-lang.md",
     "anchor": "api-61"
   },
@@ -13605,7 +13615,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 377,
+    "line": 376,
     "page": "std-lang.md",
     "anchor": "api-62"
   },
@@ -13630,7 +13640,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 387,
+    "line": 386,
     "page": "std-lang.md",
     "anchor": "api-63"
   },
@@ -13662,7 +13672,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 396,
+    "line": 395,
     "page": "std-lang.md",
     "anchor": "api-64"
   },
@@ -13694,7 +13704,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 405,
+    "line": 404,
     "page": "std-lang.md",
     "anchor": "api-65"
   },
@@ -13732,7 +13742,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 426,
+    "line": 425,
     "page": "std-lang.md",
     "anchor": "api-66"
   },
@@ -13772,7 +13782,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 482,
+    "line": 481,
     "page": "std-lang.md",
     "anchor": "api-67"
   },
@@ -13806,7 +13816,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 492,
+    "line": 491,
     "page": "std-lang.md",
     "anchor": "api-68"
   },
@@ -13831,7 +13841,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 501,
+    "line": 500,
     "page": "std-lang.md",
     "anchor": "api-69"
   },
@@ -13863,7 +13873,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 525,
+    "line": 524,
     "page": "std-lang.md",
     "anchor": "api-70"
   },
@@ -13895,7 +13905,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 531,
+    "line": 530,
     "page": "std-lang.md",
     "anchor": "api-71"
   },
@@ -13927,7 +13937,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 536,
+    "line": 535,
     "page": "std-lang.md",
     "anchor": "api-72"
   },
@@ -13959,7 +13969,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/lang.mgl",
-    "line": 543,
+    "line": 542,
     "page": "std-lang.md",
     "anchor": "api-73"
   },
@@ -14103,7 +14113,9 @@
       "panic": false
     },
     "usage": "obj.drop();",
-    "examples": [],
+    "examples": [
+      "example/samples/std_collections_algorithms.mgl"
+    ],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
     "line": 1935,
@@ -14169,7 +14181,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1243,
+    "line": 1281,
     "page": "std-lang.md",
     "anchor": "api-79"
   },
@@ -14210,7 +14222,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1243,
+    "line": 1281,
     "page": "std-lang.md",
     "anchor": "api-80"
   },
@@ -14324,7 +14336,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1247,
+    "line": 1285,
     "page": "std-lang.md",
     "anchor": "api-83"
   },
@@ -14356,7 +14368,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1293,
+    "line": 1331,
     "page": "std-lang.md",
     "anchor": "api-84"
   },
@@ -14381,34 +14393,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1254,
+    "line": 1292,
     "page": "std-lang.md",
     "anchor": "api-85"
-  },
-  {
-    "module": "std::lang",
-    "name": "sweep",
-    "owner": "",
-    "signature": "int64 sweep()",
-    "documentation": "清理全部已释放块的墓碑身份，返回清理身份数。调用者必须保证不存在仍需使用的已释放块旧引用；清理后重复 delete 报 MGL1205。保留活跃分配及其未来的幂等释放保证。\n\n**返回值**：int64。",
-    "comment": "/** 清理全部已释放块的墓碑身份，返回清理身份数。调用者必须保证不存在仍需使用的已释放块旧引用；清理后重复 delete 报 MGL1205。保留活跃分配及其未来的幂等释放保证。 */",
-    "parameters": [],
-    "returns": {
-      "type": "int64",
-      "documentation": "清理全部已释放块的墓碑身份，返回清理身份数。调用者必须保证不存在仍需使用的已释放块旧引用；清理后重复 delete 报 MGL1205。保留活跃分配及其未来的幂等释放保证。"
-    },
-    "errors": {
-      "documentation": "自动加载，无需 import。Option/Result 通过 match 或 isValue/isOk 分支处理；unwrap/expect 在失败分支触发 panic。浮点转整数向零截断，范围检查见各重载；字节编码默认小端。拥有值按值复制，引用的生命周期不得超过来源。 List.pop 空列表报错，列表/集合/映射的按位置访问需有效下标。Set/Map 的 has/contains 返回 int64 的 0/1；List 的同名接口返回 bool。Any.getReference/getOptional 的 const/mut 由接收上下文决定，返回引用受盒子寿命限制。BigDecimal 精度范围 1..100000。内存内建接受有效存储引用，字节计数不是元素数量。$assert(condition) 和 $assert(condition,message) 为宏调用，自动添加调用点行号，宏体自带分号。",
-      "preconditions": [],
-      "panic": false
-    },
-    "usage": "sweep();",
-    "examples": [],
-    "sourceLanguage": "zh",
-    "source": "source/semantics/boxing.cpp",
-    "line": 1303,
-    "page": "std-lang.md",
-    "anchor": "api-86"
   },
   {
     "module": "std::lang",
@@ -14431,9 +14418,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1308,
+    "line": 1341,
     "page": "std-lang.md",
-    "anchor": "api-87"
+    "anchor": "api-86"
   },
   {
     "module": "std::lang",
@@ -14456,9 +14443,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1308,
+    "line": 1341,
     "page": "std-lang.md",
-    "anchor": "api-88"
+    "anchor": "api-87"
   },
   {
     "module": "std::lang",
@@ -14481,9 +14468,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1308,
+    "line": 1341,
     "page": "std-lang.md",
-    "anchor": "api-89"
+    "anchor": "api-88"
   },
   {
     "module": "std::lang",
@@ -14506,9 +14493,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1308,
+    "line": 1341,
     "page": "std-lang.md",
-    "anchor": "api-90"
+    "anchor": "api-89"
   },
   {
     "module": "std::lang",
@@ -14531,9 +14518,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1308,
+    "line": 1341,
     "page": "std-lang.md",
-    "anchor": "api-91"
+    "anchor": "api-90"
   },
   {
     "module": "std::lang",
@@ -14556,9 +14543,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1308,
+    "line": 1341,
     "page": "std-lang.md",
-    "anchor": "api-92"
+    "anchor": "api-91"
   },
   {
     "module": "std::lang",
@@ -14581,9 +14568,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1308,
+    "line": 1341,
     "page": "std-lang.md",
-    "anchor": "api-93"
+    "anchor": "api-92"
   },
   {
     "module": "std::lang",
@@ -14606,9 +14593,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1308,
+    "line": 1341,
     "page": "std-lang.md",
-    "anchor": "api-94"
+    "anchor": "api-93"
   },
   {
     "module": "std::lang",
@@ -14638,9 +14625,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1327,
+    "line": 1360,
     "page": "std-lang.md",
-    "anchor": "api-95"
+    "anchor": "api-94"
   },
   {
     "module": "std::lang",
@@ -14672,9 +14659,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 673,
+    "line": 711,
     "page": "std-lang.md",
-    "anchor": "api-96"
+    "anchor": "api-95"
   },
   {
     "module": "std::lang",
@@ -14704,9 +14691,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 597,
+    "line": 635,
     "page": "std-lang.md",
-    "anchor": "api-97"
+    "anchor": "api-96"
   },
   {
     "module": "std::lang",
@@ -14738,7 +14725,7 @@
     "source": "source/magel_generic.cpp",
     "line": 1642,
     "page": "std-lang.md",
-    "anchor": "api-98"
+    "anchor": "api-97"
   },
   {
     "module": "std::lang",
@@ -14770,7 +14757,7 @@
     "source": "source/magel_generic.cpp",
     "line": 1648,
     "page": "std-lang.md",
-    "anchor": "api-99"
+    "anchor": "api-98"
   },
   {
     "module": "std::lang",
@@ -14812,9 +14799,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1344,
+    "line": 1377,
     "page": "std-lang.md",
-    "anchor": "api-100"
+    "anchor": "api-99"
   },
   {
     "module": "std::lang",
@@ -14856,9 +14843,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1344,
+    "line": 1377,
     "page": "std-lang.md",
-    "anchor": "api-101"
+    "anchor": "api-100"
   },
   {
     "module": "std::lang",
@@ -14881,9 +14868,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 870,
+    "line": 256,
     "page": "std-lang.md",
-    "anchor": "api-102"
+    "anchor": "api-101"
   },
   {
     "module": "std::lang",
@@ -14915,9 +14902,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 871,
+    "line": 257,
     "page": "std-lang.md",
-    "anchor": "api-103"
+    "anchor": "api-102"
   },
   {
     "module": "std::lang",
@@ -14953,9 +14940,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 872,
+    "line": 258,
     "page": "std-lang.md",
-    "anchor": "api-104"
+    "anchor": "api-103"
   },
   {
     "module": "std::lang",
@@ -14985,9 +14972,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 873,
+    "line": 259,
     "page": "std-lang.md",
-    "anchor": "api-105"
+    "anchor": "api-104"
   },
   {
     "module": "std::lang",
@@ -15012,9 +14999,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 874,
+    "line": 260,
     "page": "std-lang.md",
-    "anchor": "api-106"
+    "anchor": "api-105"
   },
   {
     "module": "std::lang",
@@ -15044,9 +15031,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 875,
+    "line": 261,
     "page": "std-lang.md",
-    "anchor": "api-107"
+    "anchor": "api-106"
   },
   {
     "module": "std::lang",
@@ -15076,9 +15063,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 876,
+    "line": 262,
     "page": "std-lang.md",
-    "anchor": "api-108"
+    "anchor": "api-107"
   },
   {
     "module": "std::lang",
@@ -15108,9 +15095,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 877,
+    "line": 263,
     "page": "std-lang.md",
-    "anchor": "api-109"
+    "anchor": "api-108"
   },
   {
     "module": "std::lang",
@@ -15140,9 +15127,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 878,
+    "line": 264,
     "page": "std-lang.md",
-    "anchor": "api-110"
+    "anchor": "api-109"
   },
   {
     "module": "std::lang",
@@ -15165,9 +15152,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 879,
+    "line": 265,
     "page": "std-lang.md",
-    "anchor": "api-111"
+    "anchor": "api-110"
   },
   {
     "module": "std::lang",
@@ -15192,9 +15179,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 880,
+    "line": 266,
     "page": "std-lang.md",
-    "anchor": "api-112"
+    "anchor": "api-111"
   },
   {
     "module": "std::lang",
@@ -15217,9 +15204,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 870,
+    "line": 256,
     "page": "std-lang.md",
-    "anchor": "api-113"
+    "anchor": "api-112"
   },
   {
     "module": "std::lang",
@@ -15249,9 +15236,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 888,
+    "line": 274,
     "page": "std-lang.md",
-    "anchor": "api-114"
+    "anchor": "api-113"
   },
   {
     "module": "std::lang",
@@ -15281,9 +15268,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 878,
+    "line": 264,
     "page": "std-lang.md",
-    "anchor": "api-115"
+    "anchor": "api-114"
   },
   {
     "module": "std::lang",
@@ -15313,9 +15300,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 877,
+    "line": 263,
     "page": "std-lang.md",
-    "anchor": "api-116"
+    "anchor": "api-115"
   },
   {
     "module": "std::lang",
@@ -15345,9 +15332,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 875,
+    "line": 261,
     "page": "std-lang.md",
-    "anchor": "api-117"
+    "anchor": "api-116"
   },
   {
     "module": "std::lang",
@@ -15377,9 +15364,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 873,
+    "line": 259,
     "page": "std-lang.md",
-    "anchor": "api-118"
+    "anchor": "api-117"
   },
   {
     "module": "std::lang",
@@ -15402,9 +15389,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 879,
+    "line": 265,
     "page": "std-lang.md",
-    "anchor": "api-119"
+    "anchor": "api-118"
   },
   {
     "module": "std::lang",
@@ -15429,9 +15416,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 880,
+    "line": 266,
     "page": "std-lang.md",
-    "anchor": "api-120"
+    "anchor": "api-119"
   },
   {
     "module": "std::lang",
@@ -15454,9 +15441,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 870,
+    "line": 256,
     "page": "std-lang.md",
-    "anchor": "api-121"
+    "anchor": "api-120"
   },
   {
     "module": "std::lang",
@@ -15492,9 +15479,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 902,
+    "line": 288,
     "page": "std-lang.md",
-    "anchor": "api-122"
+    "anchor": "api-121"
   },
   {
     "module": "std::lang",
@@ -15524,9 +15511,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 878,
+    "line": 264,
     "page": "std-lang.md",
-    "anchor": "api-123"
+    "anchor": "api-122"
   },
   {
     "module": "std::lang",
@@ -15556,9 +15543,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 877,
+    "line": 263,
     "page": "std-lang.md",
-    "anchor": "api-124"
+    "anchor": "api-123"
   },
   {
     "module": "std::lang",
@@ -15588,9 +15575,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 875,
+    "line": 261,
     "page": "std-lang.md",
-    "anchor": "api-125"
+    "anchor": "api-124"
   },
   {
     "module": "std::lang",
@@ -15620,9 +15607,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 906,
+    "line": 292,
     "page": "std-lang.md",
-    "anchor": "api-126"
+    "anchor": "api-125"
   },
   {
     "module": "std::lang",
@@ -15652,9 +15639,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 907,
+    "line": 293,
     "page": "std-lang.md",
-    "anchor": "api-127"
+    "anchor": "api-126"
   },
   {
     "module": "std::lang",
@@ -15677,9 +15664,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 879,
+    "line": 265,
     "page": "std-lang.md",
-    "anchor": "api-128"
+    "anchor": "api-127"
   },
   {
     "module": "std::lang",
@@ -15704,9 +15691,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/semantics/aggregate_ownership.cpp",
-    "line": 880,
+    "line": 266,
     "page": "std-lang.md",
-    "anchor": "api-129"
+    "anchor": "api-128"
   },
   {
     "module": "std::lang",
@@ -15729,9 +15716,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 776,
+    "line": 814,
     "page": "std-lang.md",
-    "anchor": "api-130"
+    "anchor": "api-129"
   },
   {
     "module": "std::lang",
@@ -15754,9 +15741,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 766,
+    "line": 804,
     "page": "std-lang.md",
-    "anchor": "api-131"
+    "anchor": "api-130"
   },
   {
     "module": "std::lang",
@@ -15786,9 +15773,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 791,
+    "line": 829,
     "page": "std-lang.md",
-    "anchor": "api-132"
+    "anchor": "api-131"
   },
   {
     "module": "std::lang",
@@ -15824,9 +15811,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 797,
+    "line": 835,
     "page": "std-lang.md",
-    "anchor": "api-133"
+    "anchor": "api-132"
   },
   {
     "module": "std::lang",
@@ -15856,9 +15843,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 803,
+    "line": 841,
     "page": "std-lang.md",
-    "anchor": "api-134"
+    "anchor": "api-133"
   },
   {
     "module": "std::lang",
@@ -15888,9 +15875,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 803,
+    "line": 841,
     "page": "std-lang.md",
-    "anchor": "api-135"
+    "anchor": "api-134"
   },
   {
     "module": "std::lang",
@@ -15920,9 +15907,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 811,
+    "line": 849,
     "page": "std-lang.md",
-    "anchor": "api-136"
+    "anchor": "api-135"
   },
   {
     "module": "std::lang",
@@ -15952,9 +15939,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 817,
+    "line": 855,
     "page": "std-lang.md",
-    "anchor": "api-137"
+    "anchor": "api-136"
   },
   {
     "module": "std::lang",
@@ -15984,9 +15971,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 823,
+    "line": 861,
     "page": "std-lang.md",
-    "anchor": "api-138"
+    "anchor": "api-137"
   },
   {
     "module": "std::lang",
@@ -16009,9 +15996,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 829,
+    "line": 867,
     "page": "std-lang.md",
-    "anchor": "api-139"
+    "anchor": "api-138"
   },
   {
     "module": "std::lang",
@@ -16034,9 +16021,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 835,
+    "line": 873,
     "page": "std-lang.md",
-    "anchor": "api-140"
+    "anchor": "api-139"
   },
   {
     "module": "std::lang",
@@ -16066,9 +16053,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 841,
+    "line": 879,
     "page": "std-lang.md",
-    "anchor": "api-141"
+    "anchor": "api-140"
   },
   {
     "module": "std::lang",
@@ -16098,9 +16085,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 841,
+    "line": 879,
     "page": "std-lang.md",
-    "anchor": "api-142"
+    "anchor": "api-141"
   },
   {
     "module": "std::lang",
@@ -16130,9 +16117,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 841,
+    "line": 879,
     "page": "std-lang.md",
-    "anchor": "api-143"
+    "anchor": "api-142"
   },
   {
     "module": "std::lang",
@@ -16162,9 +16149,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 852,
+    "line": 890,
     "page": "std-lang.md",
-    "anchor": "api-144"
+    "anchor": "api-143"
   },
   {
     "module": "std::lang",
@@ -16194,9 +16181,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 858,
+    "line": 896,
     "page": "std-lang.md",
-    "anchor": "api-145"
+    "anchor": "api-144"
   },
   {
     "module": "std::lang",
@@ -16219,9 +16206,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 776,
+    "line": 814,
     "page": "std-lang.md",
-    "anchor": "api-146"
+    "anchor": "api-145"
   },
   {
     "module": "std::lang",
@@ -16244,9 +16231,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 766,
+    "line": 804,
     "page": "std-lang.md",
-    "anchor": "api-147"
+    "anchor": "api-146"
   },
   {
     "module": "std::lang",
@@ -16276,9 +16263,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 755,
+    "line": 793,
     "page": "std-lang.md",
-    "anchor": "api-148"
+    "anchor": "api-147"
   },
   {
     "module": "std::lang",
@@ -16308,9 +16295,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 791,
+    "line": 829,
     "page": "std-lang.md",
-    "anchor": "api-149"
+    "anchor": "api-148"
   },
   {
     "module": "std::lang",
@@ -16333,9 +16320,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 874,
+    "line": 912,
     "page": "std-lang.md",
-    "anchor": "api-150"
+    "anchor": "api-149"
   },
   {
     "module": "std::lang",
@@ -16358,9 +16345,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 880,
+    "line": 918,
     "page": "std-lang.md",
-    "anchor": "api-151"
+    "anchor": "api-150"
   },
   {
     "module": "std::lang",
@@ -16383,9 +16370,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 886,
+    "line": 924,
     "page": "std-lang.md",
-    "anchor": "api-152"
+    "anchor": "api-151"
   },
   {
     "module": "std::lang",
@@ -16408,9 +16395,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 886,
+    "line": 924,
     "page": "std-lang.md",
-    "anchor": "api-153"
+    "anchor": "api-152"
   },
   {
     "module": "std::lang",
@@ -16433,9 +16420,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 886,
+    "line": 924,
     "page": "std-lang.md",
-    "anchor": "api-154"
+    "anchor": "api-153"
   },
   {
     "module": "std::lang",
@@ -16465,9 +16452,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 896,
+    "line": 934,
     "page": "std-lang.md",
-    "anchor": "api-155"
+    "anchor": "api-154"
   },
   {
     "module": "std::lang",
@@ -16503,9 +16490,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 902,
+    "line": 940,
     "page": "std-lang.md",
-    "anchor": "api-156"
+    "anchor": "api-155"
   },
   {
     "module": "std::lang",
@@ -16528,9 +16515,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 766,
+    "line": 804,
     "page": "std-lang.md",
-    "anchor": "api-157"
+    "anchor": "api-156"
   },
   {
     "module": "std::lang",
@@ -16553,9 +16540,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 928,
+    "line": 966,
     "page": "std-lang.md",
-    "anchor": "api-158"
+    "anchor": "api-157"
   },
   {
     "module": "std::lang",
@@ -16578,9 +16565,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 935,
+    "line": 973,
     "page": "std-lang.md",
-    "anchor": "api-159"
+    "anchor": "api-158"
   },
   {
     "module": "std::lang",
@@ -16610,9 +16597,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 951,
+    "line": 989,
     "page": "std-lang.md",
-    "anchor": "api-160"
+    "anchor": "api-159"
   },
   {
     "module": "std::lang",
@@ -16637,7 +16624,7 @@
     "source": "source/semantics/boxing.cpp",
     "line": 134,
     "page": "std-lang.md",
-    "anchor": "api-161"
+    "anchor": "api-160"
   },
   {
     "module": "std::lang",
@@ -16662,7 +16649,7 @@
     "source": "source/semantics/boxing.cpp",
     "line": 134,
     "page": "std-lang.md",
-    "anchor": "api-162"
+    "anchor": "api-161"
   },
   {
     "module": "std::lang",
@@ -16687,7 +16674,7 @@
     "source": "source/semantics/boxing.cpp",
     "line": 134,
     "page": "std-lang.md",
-    "anchor": "api-163"
+    "anchor": "api-162"
   },
   {
     "module": "std::lang",
@@ -16725,7 +16712,7 @@
     "source": "source/semantics/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "api-164"
+    "anchor": "api-163"
   },
   {
     "module": "std::lang",
@@ -16763,7 +16750,7 @@
     "source": "source/semantics/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "api-165"
+    "anchor": "api-164"
   },
   {
     "module": "std::lang",
@@ -16801,7 +16788,7 @@
     "source": "source/semantics/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "api-166"
+    "anchor": "api-165"
   },
   {
     "module": "std::lang",
@@ -16839,7 +16826,7 @@
     "source": "source/semantics/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "api-167"
+    "anchor": "api-166"
   },
   {
     "module": "std::lang",
@@ -16877,7 +16864,7 @@
     "source": "source/semantics/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "api-168"
+    "anchor": "api-167"
   },
   {
     "module": "std::lang",
@@ -16915,7 +16902,7 @@
     "source": "source/semantics/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "api-169"
+    "anchor": "api-168"
   },
   {
     "module": "std::lang",
@@ -16951,9 +16938,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1108,
+    "line": 1146,
     "page": "std-lang.md",
-    "anchor": "api-170"
+    "anchor": "api-169"
   },
   {
     "module": "std::lang",
@@ -16991,7 +16978,7 @@
     "source": "source/semantics/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "api-171"
+    "anchor": "api-170"
   },
   {
     "module": "std::lang",
@@ -17029,7 +17016,7 @@
     "source": "source/semantics/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "api-172"
+    "anchor": "api-171"
   },
   {
     "module": "std::lang",
@@ -17067,7 +17054,7 @@
     "source": "source/semantics/boxing.cpp",
     "line": 1,
     "page": "std-lang.md",
-    "anchor": "api-173"
+    "anchor": "api-172"
   },
   {
     "module": "std::lang",
@@ -17103,9 +17090,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 811,
+    "line": 849,
     "page": "std-lang.md",
-    "anchor": "api-174"
+    "anchor": "api-173"
   },
   {
     "module": "std::lang",
@@ -17141,9 +17128,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1689,
+    "line": 1722,
     "page": "std-lang.md",
-    "anchor": "api-175"
+    "anchor": "api-174"
   },
   {
     "module": "std::lang",
@@ -17175,7 +17162,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-176"
+    "anchor": "api-175"
   },
   {
     "module": "std::lang",
@@ -17207,7 +17194,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-177"
+    "anchor": "api-176"
   },
   {
     "module": "std::lang",
@@ -17239,7 +17226,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-178"
+    "anchor": "api-177"
   },
   {
     "module": "std::lang",
@@ -17271,7 +17258,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-179"
+    "anchor": "api-178"
   },
   {
     "module": "std::lang",
@@ -17303,7 +17290,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-180"
+    "anchor": "api-179"
   },
   {
     "module": "std::lang",
@@ -17335,7 +17322,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-181"
+    "anchor": "api-180"
   },
   {
     "module": "std::lang",
@@ -17367,7 +17354,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-182"
+    "anchor": "api-181"
   },
   {
     "module": "std::lang",
@@ -17399,7 +17386,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-183"
+    "anchor": "api-182"
   },
   {
     "module": "std::lang",
@@ -17431,7 +17418,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-184"
+    "anchor": "api-183"
   },
   {
     "module": "std::lang",
@@ -17463,7 +17450,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-185"
+    "anchor": "api-184"
   },
   {
     "module": "std::lang",
@@ -17495,7 +17482,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-186"
+    "anchor": "api-185"
   },
   {
     "module": "std::lang",
@@ -17527,7 +17514,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-187"
+    "anchor": "api-186"
   },
   {
     "module": "std::lang",
@@ -17559,7 +17546,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-188"
+    "anchor": "api-187"
   },
   {
     "module": "std::lang",
@@ -17591,7 +17578,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-189"
+    "anchor": "api-188"
   },
   {
     "module": "std::lang",
@@ -17623,7 +17610,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-190"
+    "anchor": "api-189"
   },
   {
     "module": "std::lang",
@@ -17655,7 +17642,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-191"
+    "anchor": "api-190"
   },
   {
     "module": "std::lang",
@@ -17687,7 +17674,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-192"
+    "anchor": "api-191"
   },
   {
     "module": "std::lang",
@@ -17719,7 +17706,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-193"
+    "anchor": "api-192"
   },
   {
     "module": "std::lang",
@@ -17751,7 +17738,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-194"
+    "anchor": "api-193"
   },
   {
     "module": "std::lang",
@@ -17783,7 +17770,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-195"
+    "anchor": "api-194"
   },
   {
     "module": "std::lang",
@@ -17815,7 +17802,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-196"
+    "anchor": "api-195"
   },
   {
     "module": "std::lang",
@@ -17847,7 +17834,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-197"
+    "anchor": "api-196"
   },
   {
     "module": "std::lang",
@@ -17879,7 +17866,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-198"
+    "anchor": "api-197"
   },
   {
     "module": "std::lang",
@@ -17911,7 +17898,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-199"
+    "anchor": "api-198"
   },
   {
     "module": "std::lang",
@@ -17943,7 +17930,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-200"
+    "anchor": "api-199"
   },
   {
     "module": "std::lang",
@@ -17975,7 +17962,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-201"
+    "anchor": "api-200"
   },
   {
     "module": "std::lang",
@@ -18007,7 +17994,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-202"
+    "anchor": "api-201"
   },
   {
     "module": "std::lang",
@@ -18039,7 +18026,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-203"
+    "anchor": "api-202"
   },
   {
     "module": "std::lang",
@@ -18071,7 +18058,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-204"
+    "anchor": "api-203"
   },
   {
     "module": "std::lang",
@@ -18103,7 +18090,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-205"
+    "anchor": "api-204"
   },
   {
     "module": "std::lang",
@@ -18135,7 +18122,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-206"
+    "anchor": "api-205"
   },
   {
     "module": "std::lang",
@@ -18167,7 +18154,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-207"
+    "anchor": "api-206"
   },
   {
     "module": "std::lang",
@@ -18199,7 +18186,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-208"
+    "anchor": "api-207"
   },
   {
     "module": "std::lang",
@@ -18231,7 +18218,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-209"
+    "anchor": "api-208"
   },
   {
     "module": "std::lang",
@@ -18265,7 +18252,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-210"
+    "anchor": "api-209"
   },
   {
     "module": "std::lang",
@@ -18297,7 +18284,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-211"
+    "anchor": "api-210"
   },
   {
     "module": "std::lang",
@@ -18322,7 +18309,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-212"
+    "anchor": "api-211"
   },
   {
     "module": "std::lang",
@@ -18347,7 +18334,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-213"
+    "anchor": "api-212"
   },
   {
     "module": "std::lang",
@@ -18379,7 +18366,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-214"
+    "anchor": "api-213"
   },
   {
     "module": "std::lang",
@@ -18411,7 +18398,7 @@
     "source": "source/magel_generic.cpp",
     "line": 827,
     "page": "std-lang.md",
-    "anchor": "api-215"
+    "anchor": "api-214"
   },
   {
     "module": "std::lang",
@@ -18443,7 +18430,7 @@
     "source": "source/std/lang.mgl",
     "line": 2,
     "page": "std-lang.md",
-    "anchor": "api-216"
+    "anchor": "api-215"
   },
   {
     "module": "std::lang",
@@ -18475,7 +18462,7 @@
     "source": "source/std/lang.mgl",
     "line": 3,
     "page": "std-lang.md",
-    "anchor": "api-217"
+    "anchor": "api-216"
   },
   {
     "module": "std::lang",
@@ -18507,7 +18494,7 @@
     "source": "source/std/lang.mgl",
     "line": 3,
     "page": "std-lang.md",
-    "anchor": "api-218"
+    "anchor": "api-217"
   },
   {
     "module": "std::linalg",
@@ -31628,7 +31615,7 @@
       "documentation": "`Ok(watermarkBytes)`；水位为负返回 `Err(InvalidWatermark)`。"
     },
     "errors": {
-      "documentation": "默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主重置 arena、清空墓碑并重跑；watchdog 重启在清除墓碑的效果上等价于一次完整的 std::lang::sweep()，同时会结束全部旧执行上下文；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。",
+      "documentation": "默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主结束全部旧执行上下文、重置 arena 与分配身份后重跑；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。",
       "preconditions": [],
       "panic": false
     },
@@ -31638,7 +31625,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/watchdog.mgl",
-    "line": 80,
+    "line": 79,
     "page": "std-watchdog.md",
     "anchor": "api-0"
   },
@@ -31655,7 +31642,7 @@
       "documentation": "`Ok(true)` = 请求已记下（本轮马上会在安全点结束）。"
     },
     "errors": {
-      "documentation": "默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主重置 arena、清空墓碑并重跑；watchdog 重启在清除墓碑的效果上等价于一次完整的 std::lang::sweep()，同时会结束全部旧执行上下文；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。",
+      "documentation": "默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主结束全部旧执行上下文、重置 arena 与分配身份后重跑；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。",
       "preconditions": [],
       "panic": false
     },
@@ -31665,7 +31652,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/watchdog.mgl",
-    "line": 96,
+    "line": 95,
     "page": "std-watchdog.md",
     "anchor": "api-1"
   },
@@ -31689,7 +31676,7 @@
       "documentation": "`Ok(timeoutUnits)`；不为正返回 `Err(InvalidTimeout)`。"
     },
     "errors": {
-      "documentation": "默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主重置 arena、清空墓碑并重跑；watchdog 重启在清除墓碑的效果上等价于一次完整的 std::lang::sweep()，同时会结束全部旧执行上下文；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。",
+      "documentation": "默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主结束全部旧执行上下文、重置 arena 与分配身份后重跑；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。",
       "preconditions": [],
       "panic": false
     },
@@ -31699,7 +31686,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/watchdog.mgl",
-    "line": 130,
+    "line": 129,
     "page": "std-watchdog.md",
     "anchor": "api-2"
   },
@@ -31723,7 +31710,7 @@
       "documentation": "同 `enableTimeout`。"
     },
     "errors": {
-      "documentation": "默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主重置 arena、清空墓碑并重跑；watchdog 重启在清除墓碑的效果上等价于一次完整的 std::lang::sweep()，同时会结束全部旧执行上下文；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。",
+      "documentation": "默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主结束全部旧执行上下文、重置 arena 与分配身份后重跑；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。",
       "preconditions": [],
       "panic": false
     },
@@ -31731,7 +31718,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/watchdog.mgl",
-    "line": 157,
+    "line": 156,
     "page": "std-watchdog.md",
     "anchor": "api-3"
   },
@@ -31748,7 +31735,7 @@
       "documentation": "`Ok(true)` = 记下了。"
     },
     "errors": {
-      "documentation": "默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主重置 arena、清空墓碑并重跑；watchdog 重启在清除墓碑的效果上等价于一次完整的 std::lang::sweep()，同时会结束全部旧执行上下文；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。",
+      "documentation": "默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主结束全部旧执行上下文、重置 arena 与分配身份后重跑；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。",
       "preconditions": [],
       "panic": false
     },
@@ -31758,7 +31745,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/watchdog.mgl",
-    "line": 169,
+    "line": 168,
     "page": "std-watchdog.md",
     "anchor": "api-4"
   },

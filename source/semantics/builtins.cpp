@@ -710,6 +710,28 @@ void ResolveBufferIndexShadowing(int id)
 }
 
 /**
+ * @brief 判断无实参 drop() 是否由编译器完成拥有存储或聚合的终结。
+ * @param id 待识别的调用表达式。
+ * @return 堆引用、数组、函数对象及可析构聚合的 drop() 返回 true；普通同名方法返回 false。
+ */
+bool IsIntrinsicDropCall(int id)
+{
+    const auto node = N(id);
+    if (node.kind != MNode::Call || node.kids.size() < 2u || !N(node.kids[1]).kids.empty()) return false;
+    const auto callee = N(node.kids[0]);
+    if ((callee.kind != MNode::Member && callee.kind != MNode::Arrow) || callee.s != "drop" || callee.kids.empty()) return false;
+    const auto type = RawExprType(callee.kids[0]);
+    if (!type) return false;
+    if ((type->kind == MType::Ptr && !IsInterfacePointer(type)) || IsRuntimeArray(type) || type->kind == MType::Opcode || type->kind == MType::Func || type->kind == MType::Obj) return true;
+    if (!IsDestructibleValue(type) || StructHasInterface(StructNameOf(type), "Drop")) return false;
+    const auto definition = FindStruct(StructNameOf(type));
+    if (definition)
+        for (const auto &method : definition->methods)
+            if (!method.superseded && !method.isStatic && method.source == "drop") return false;
+    return true;
+}
+
+/**
  * @brief 推导表达式在原始值上下文中的类型。
  * @param id 待查找或操作的对象编号。
  * @retval 对应的类型描述对象。
@@ -883,7 +905,6 @@ std::shared_ptr<MType> RawExprType(int id)
         return fallback;
     }
     case MNode::Construct: return T(node.type); /* `T::new(...)` 工厂体内的构造 → 目标类型本身 */
-    case MNode::Delete: return T(M_TypeInt());
     case MNode::TypeTag: return T(M_TypeInt()); /* __typeTag → int（类型号，编译期折好） */
     case MNode::Un:
     {
@@ -953,6 +974,7 @@ std::shared_ptr<MType> RawExprType(int id)
          * 各阶段会被反复查询，没有这个快路径的话每次查询都完整重推整条链，
          * 代价随链长指数增长。类型由下方 ResolveCall 成功后回写，语义与
          * MNode::Bin 的写回惯例一致。 */
+        if (IsIntrinsicDropCall(id)) return T(M_TypeVoid());
         if (ResolveGenericClosureCall(id)) return N(id).type >= 0 ? T(N(id).type) : T(M_TypeVoid());
         if (node.type >= 0) return T(node.type);
         if (!node.kids.empty() && N(node.kids[0]).kind == MNode::Var && N(node.kids[0]).s == "__magel_default_to_string") return T(M_TypeString());
@@ -1106,12 +1128,12 @@ std::shared_ptr<MType> RawExprType(int id)
              * `std::lang::BigInteger(x)` / `std::lang::BigDecimal(x)` 是同一个东西的限定名写法。 */
             if (name == "bint" || name == "BigInteger") return T(M_TypeBigInt());
             if (name == "bfloat" || name == "BigDecimal") return T(M_TypeBigFloat());
-            /* 内存内建：memcpy / memset 是过程（`new` / `delete` 是关键字，不走这里） */
+            /* 内存内建：memcpy / memset 是过程（`new` / `drop` 是关键字，不走这里） */
             if (name == "memcpy" || name == "memset") return T(M_TypeInt());
             if (name == "print" || name == "println" || name == "putChar")
                 return T(M_TypeInt());
             /* `std::lang::pause()`：调试暂停，降成 VM 内建 `__std_pause`，返回 0。 */
-            if (name == "pause" || name == "sweep") return T(M_TypeInt());
+            if (name == "pause") return T(M_TypeInt());
             /* `std::lang::format("…", …)`：按 `{}` 占位符拼出的**新串**（和 `std::lang::print` 同规则）。 */
             if (name == "format") return T(M_TypeString());
             if (name == "inputLine") return T(M_TypeString());

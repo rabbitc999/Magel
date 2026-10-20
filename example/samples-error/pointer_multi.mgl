@@ -35,6 +35,6 @@ int64 main() {
     *nested.value = 11;
     std::lang::println("{} {}", *block, **nested.link);
 
-    delete block;
+    block.drop();
     return 0;
 }

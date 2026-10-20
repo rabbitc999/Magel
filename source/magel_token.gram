@@ -27,7 +27,6 @@
 %token MUT "mut"
 %token NEW "new"
 %token HEAP "heap"
-%token DELETE "delete"
 %token DROP "drop"
 %token STATIC "static"
 %token FN "fn"

@@ -76,9 +76,9 @@ int64 main() {
     println("inverse {} {} {} {}",restored.at(0).re,restored.at(1).re,
     restored.at(2).re,restored.at(3).re);
     println("dft {}",slow.at(0).re);
-    delete oddLength;
-    delete oddSpectrum;
-    delete oddBack;
+    oddLength.drop();
+    oddSpectrum.drop();
+    oddBack.drop();
     return 0;
 }
 ```

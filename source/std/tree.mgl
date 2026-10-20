@@ -75,7 +75,7 @@ struct BinarySearchTree : Drop {
     int64 root; ///< 根下标，空树为 -1。
     int64 count; ///< 当前有效节点数。
 
-    void drop() { delete self.keys; delete self.lefts; delete self.rights; }
+    void drop() { self.keys.drop(); self.lefts.drop(); self.rights.drop(); }
 
     /**
      * @brief 创建一棵空搜索树。
@@ -219,7 +219,7 @@ struct RedBlackTree : Drop {
     int64 root; ///< 根下标，空树为 -1。
     int64 count; ///< 当前有效节点数。
 
-    void drop() { delete self.keys; delete self.lefts; delete self.rights; delete self.colors; }
+    void drop() { self.keys.drop(); self.lefts.drop(); self.rights.drop(); self.colors.drop(); }
 
     /**
      * @brief 创建一棵空红黑树。
@@ -327,7 +327,7 @@ struct RedBlackTree : Drop {
 struct MinHeap : Drop {
     List<int64> values; ///< 堆数组，下标 0 是最小值。
 
-    void drop() { delete self.values; }
+    void drop() { self.values.drop(); }
 
     /**
      * @brief 创建一个空最小堆。
@@ -393,7 +393,7 @@ struct GeneralTree : Drop {
     List<int64> nextSibling; ///< 下一个兄弟下标，无兄弟为 -1。
     int64 count; ///< 当前节点数。
 
-    void drop() { delete self.values; delete self.firstChild; delete self.nextSibling; }
+    void drop() { self.values.drop(); self.firstChild.drop(); self.nextSibling.drop(); }
 
     /**
      * @brief 创建一棵空通用树。

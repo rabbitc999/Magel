@@ -1,6 +1,6 @@
 /**
- * @file tombstone_index.cpp
- * @brief 墓碑压缩、拆分复用及清扫边界回归。
+ * @file allocation_identity.cpp
+ * @brief 无墓碑分配身份、拆分复用及代次边界回归。
  */
 #include "../source/magel_runtime_allocator.hpp"
 #include "../library/stackvm/allocation_index.hpp"
@@ -19,27 +19,27 @@ int main()
     for (int i = 0; i < 1000000; ++i)
     {
         const auto current = index.add(0, 16);
-        assert(current && index.release(first));
+        assert(current && !index.release(first));
         assert(index.find(current) && !index.find(first));
         assert(!index.release(current + 1) && index.release(current));
     }
-    assert(index.slotCount() == 1 && index.retiredCount() == 1000001);
+    assert(index.slotCount() == 1);
     const auto live = index.add(0, 64);
     assert(live);
     const auto other = index.add(128, 8);
     assert(other && index.release(other));
-    assert(index.slotCount() == 2 && index.sweep() == 1000002);
+    assert(index.slotCount() == 2);
     assert(!index.release(first) && !index.release(other) && index.find(live));
-    assert(index.release(live) && index.release(live));
-    assert(index.sweep() == 1 && index.sweep() == 0 && !index.release(live));
+    assert(index.release(live) && !index.release(live));
+    assert(!index.release(live));
     const auto after = index.add(0, 8);
     assert(after && after != live && index.release(after));
     index.reset(8);
-    assert(index.slotCount() == 0 && !index.retired(after));
+    assert(index.slotCount() == 0 && !index.find(after));
     const auto small = index.add(0, 8);
     assert(small && index.release(small));
     const auto large = index.add(0, 2u * 1024u * 1024u);
-    assert(large && index.release(small));
+    assert(large && !index.release(small));
     assert(!index.find(small + 8) && index.find(large + 1024u * 1024u));
     assert(index.slotCount() == 1 && index.release(large));
     index.reset(8);
@@ -52,7 +52,7 @@ int main()
     assert(right && index.release(right));
     const auto merged = index.add(0, 16);
     assert(merged && !index.find(right));
-    assert(index.release(right) && index.find(merged + 8) && !index.release(right + 1));
+    assert(!index.release(right) && index.find(merged + 8) && !index.release(right + 1));
     assert(index.release(merged));
     stackvm::execution_detail::AllocationIndex limited(3);
     limited.reset(8);
@@ -62,12 +62,12 @@ int main()
         exhausted = limited.add(0, 16);
         assert(exhausted && limited.release(exhausted));
     }
-    assert(!limited.add(0, 16) && limited.retired(exhausted));
+    assert(!limited.add(0, 16) && !limited.release(exhausted));
     std::size_t placement = 0;
     assert(limited.placement(0, 32, 16, placement) && placement == 1);
     const auto fallback = limited.add(placement, 16);
     assert(fallback && limited.release(fallback));
     assert(limited.placement(0, 32, 16, placement) && placement == 1);
     assert(!index.add(std::numeric_limits<std::size_t>::max() - 7, 16));
-    std::puts("墓碑索引：百万次分配一个槽，清扫边界与活跃身份保留通过");
+    std::puts("分配身份：百万次分配一个槽，拒绝重复释放且隔离旧引用");
 }

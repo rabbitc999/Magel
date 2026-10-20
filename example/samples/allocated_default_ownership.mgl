@@ -28,14 +28,14 @@ int64 main() {
         assert(owned.callback() == "child");
         assert(local.kind == 7 && local.text == "parent" && local.values[0] == "owned");
         assert(local.callback() == "parent callback");
-        delete owned;
+        owned.drop();
         assert(local.text == "parent" && local.callback() == "parent callback");
         String words[] = new[3];
         words[0] = format("{}", i);
         words[1] = "first";
         words[1] = "second";
         assert(words[0] == format("{}", i) && words[1] == "second");
-        delete words;
+        words.drop();
         int32 numbers[] = new[3];
         assert(numbers[0] == 0 && numbers[2] == 0);
     

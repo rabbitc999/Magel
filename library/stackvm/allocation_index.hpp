@@ -26,11 +26,11 @@ class AllocationIndex
     static constexpr unsigned minimumDisplacementBits = sizeof(std::size_t) >= 8 ? 8 : 3;
     static constexpr unsigned prefixBits = addressBits - headerBits;
     /**
-     * @brief 物理槽的最新代次、清扫边界和当前偏移位宽。
+     * @brief 物理槽的最新代次和当前偏移位宽；不记录已释放身份。
      */
     struct Slot
     {
-        std::size_t offset = 0, generation = 0, swept = 0;
+        std::size_t generation = 0;
         unsigned displacementBits = minimumDisplacementBits;
     };
     /**
@@ -191,7 +191,7 @@ public:
         if (found == byOffset_.end())
         {
             id = slots_.size();
-            slots_.push_back(Slot{ offset, 0, 0, displacement(bytes) });
+            slots_.push_back(Slot{ 0, displacement(bytes) });
             byOffset_.emplace(offset, id);
         }
         else
@@ -234,13 +234,12 @@ public:
         return found == active_.end() ? nullptr : &found->second;
     }
     /**
-     * @brief 幂等释放精确身份。
+     * @brief 释放仍然活跃的精确身份。
      * @param address 块首地址。
-     * @return 活跃或未清扫的已释放身份为真。
+     * @return 首次释放成功为真，空地址、内部地址及失效身份为假。
      */
     bool release(std::size_t address)
     {
-        if (!address || retired(address)) return true;
         auto found = active_.find(address);
         if (found == active_.end()) return false;
         live_ -= found->second.size;
@@ -249,36 +248,7 @@ public:
         return true;
     }
     /**
-     * @brief 判断身份是否仍享有幂等释放保证。
-     * @param address 精确块首。
-     * @return 未清扫的已释放身份为真。
-     */
-    bool retired(std::size_t address) const
-    {
-        std::size_t id = 0, generation = 0;
-        unsigned bits = 0;
-        if (!decode(address, id, generation, bits) || (address & ((std::size_t(1) << bits) - 1))) return false;
-        const auto &slot = slots_[id];
-        return generation > slot.swept && generation <= slot.generation && !root(address);
-    }
-    /**
-     * @brief 撤销所有已释放身份的幂等保证，保留活跃身份。
-     * @return 本次撤销的身份数量。
-     */
-    std::size_t sweep()
-    {
-        std::size_t count = 0;
-        for (std::size_t id = 0; id < slots_.size(); ++id)
-        {
-            auto &slot = slots_[id];
-            const auto boundary = slot.generation - (root(encode(id)) ? 1 : 0);
-            count += boundary - slot.swept;
-            slot.swept = boundary;
-        }
-        return count;
-    }
-    /**
-     * @brief 判断是否属于编码堆空间，包括已清扫身份。
+     * @brief 判断是否属于编码堆空间，包括已释放身份。
      * @param address 地址。
      * @return 属于堆空间为真。
      */
@@ -293,16 +263,6 @@ public:
      * @return 槽数。
      */
     std::size_t slotCount() const { return slots_.size(); }
-    /**
-     * @brief 查询仍享有幂等保证的已释放逻辑身份数，不等同于存储槽数。
-     * @return 身份数。
-     */
-    std::size_t retiredCount() const
-    {
-        std::size_t count = 0;
-        for (const auto &slot : slots_) count += slot.generation - slot.swept;
-        return count - active_.size();
-    }
     /**
      * @brief 查询活跃字节数。
      * @return 字节数。

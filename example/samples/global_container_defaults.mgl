@@ -45,10 +45,10 @@ resource=makeGlobalResource();
         }
     }
     assert(resourceDrops==4);
-    delete resource; assert(resourceDrops==5);
+    resource.drop(); assert(resourceDrops==5);
     resource=makeGlobalResource(); assert(resourceDrops==5);
     nestedResource=makeNestedResource();
-    delete nestedResource;
+    nestedResource.drop();
     nestedResource=makeNestedResource();
     println("global container defaults OK"); return 0;
 }

@@ -23,5 +23,5 @@ int64 main(){
     assert(std::reflect::callInterfaceConst<Positive<int64,Scalar>>(positive,"positive",empty).unwrap().asI64().unwrap()==5);
     assert(std::reflect::callMethodConst<Scalar>(scalar,"negate",empty).unwrap().asI64().unwrap()==-5);
     assert(std::reflect::getInterfaceInfo<Negate<int64,Scalar>>().unwrap().methods[0].function.params.len()==0);
-    delete scalar;println("reflection operators OK");return 0;
+    scalar.drop();println("reflection operators OK");return 0;
 }

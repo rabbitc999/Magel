@@ -46,5 +46,5 @@
   <polygon points="780,770 775,759 785,759" fill="#8ea2bb"/>
   <rect x="40" y="770" width="1480" height="90" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
   <text x="780" y="800" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">Runtime services during execution; output and cleanup at exit</text>
-  <text x="780" y="830" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Data / heap · host natives · I/O · drop / delete · error reporting</text>
+  <text x="780" y="830" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Data / heap · host natives · I/O · drop · error reporting</text>
 </svg>

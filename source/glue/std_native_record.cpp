@@ -15,14 +15,15 @@ Value copy(State &state, const Memory::Vector<Value> &arguments)
 }
 
 /**
- * @brief 幂等释放通用记录，供 opcode 的 drop 方法绑定。
+ * @brief 严格释放通用记录，供 opcode 的 drop 方法绑定。
  * @param state 当前胶水调用状态。
- * @param arguments 包含待释放句柄，零或已释放句柄不重复销毁。
+ * @param arguments 包含待释放的存活句柄。
  * @return 零占位值。
  */
 Value drop(State &state, const Memory::Vector<Value> &arguments)
 {
-    state.host.releaseNativeRecord(arguments[0].asInt());
+    if (!state.host.releaseNativeRecord(arguments[0].asInt()))
+        state.error = "[MGL1205] drop 的对象已经释放或句柄无效";
     return Value::fromInt(0);
 }
 

@@ -1,0 +1,5 @@
+/* 显式释放统一使用 drop；delete 不再是语言关键字。 */
+void main() {
+    int64 mut& block = heap int64;
+    delete block;
+}

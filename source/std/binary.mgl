@@ -13,7 +13,7 @@ struct BinaryReader : Drop {
     int64 offset;
     bool bigEndian;
 
-    void drop() { delete self.bytes; }
+    void drop() { self.bytes.drop(); }
     /** 从字节列表复制；不依赖原列表的生命周期。 */
     static BinaryReader fromBytes(std::lang::List<uint8> bytes) {
         BinaryReader reader;

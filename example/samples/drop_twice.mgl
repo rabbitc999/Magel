@@ -1,0 +1,7 @@
+/* 编译器合并同一分配的已知重复 drop；底层释放本身不幂等。 */
+int64 main() {
+    int64 mut& block = heap int64;
+    block.drop();
+    block.drop();
+    return 0;
+}

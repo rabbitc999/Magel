@@ -118,6 +118,6 @@ int64 main() {
     while (i < 8) { i = i + 1; }
     println("unbound event={} count={}", seenEvent, seenCount);
 
-    delete args;
+    args.drop();
     return 0;
 }

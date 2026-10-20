@@ -70,7 +70,7 @@ SymbolIdentity resolveSymbol(const std::string &u, const std::string &text, cons
     if (name.find('.') == name.npos && name.find("::") == name.npos)
         for (const auto &b : vars)
             if (b.name == token->word && (b.offset == token->a || visible(b, scope, at)) && (!binding || b.scope.size() > binding->scope.size() || (b.scope.size() == binding->scope.size() && b.offset > binding->offset))) binding = &b;
-    if (binding && (binding->kind != "function" || binding->scope.size() > 1) && !inMacroTemplate(text, at))
+    if (binding && (binding->offset == token->a || binding->kind != "function" || binding->scope.size() > 1) && !inMacroTemplate(text, at))
     {
         result.source = u;
         result.kind = binding->kind;

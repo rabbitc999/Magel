@@ -3,7 +3,7 @@
  *   * 长度跟着对象走（存在对象里），所以 `a[i]` 的越界检查查的就是这个运行期的 N；
  *   * `len(a)` 拿元素个数；
  *   * 传给函数时长度一起过去：`int64 sum(int64 x[])` 里照样查越界，不用另外传长度；
- *   * 用完 `delete a;`（数组句柄是元素起始，块头在它前面 8 字节，delete 会一起还回去）。 */
+ *   * 用完 `a.drop();`（数组句柄是元素起始，块头在它前面 8 字节，drop 会一起还回去）。 */
 
 struct Point {
     int64 x;
@@ -50,8 +50,8 @@ int64 main() {
     b[1] = 8;
     println("len(b)={} sum(b)={}", len(b), sum(b));
 
-    delete b;
-    delete pts;
-    delete a;
+    b.drop();
+    pts.drop();
+    a.drop();
     return 0;
 }

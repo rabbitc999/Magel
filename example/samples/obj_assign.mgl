@@ -19,6 +19,6 @@ int64 main() {
 
     b.set(9);
     println("set={}", (int64)b.getValue());
-    delete global_box;
+    global_box.drop();
     return 0;
 }

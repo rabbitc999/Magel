@@ -66,7 +66,7 @@ def main():
                     expected = (ROOT / f'example/expected/{name}.txt').read_text(encoding='utf-8').rstrip()
                     self.assertEqual(output.partition('\n\n;')[0], expected)
                     self.assertNotIn('没释放', output)
-                    self.assertNotIn('没有 delete', output)
+                    self.assertNotIn('没有 drop', output)
 
         def test_set_rejections(self):
             """Hash 不能代替 Equal；比较期间不能重入同一容器。"""

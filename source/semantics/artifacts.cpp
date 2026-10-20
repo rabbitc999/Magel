@@ -1098,7 +1098,7 @@ void ResetState()
     /* "用到才生成"的运行时库开关也要归位（同一个进程里编译第二份源文件时不能继承） */
     g_usesNewArray = false;
     g_usesStructCopy = false;
-    g_usesLanguageMove = true;  // drop / delete 的幂等析构同样需要生命周期标记。
+    g_usesLanguageMove = true;  // 自动清理须区分已经移动或显式销毁的聚合。
     for (const auto &node : g_nodes)
     {
         if (node.kind != MNode::Call || node.kids.empty()) continue;
@@ -1116,6 +1116,8 @@ void ResetState()
     g_blockSerial = 0;
     g_ownedScopes.clear();
     g_ownedHome.clear();
+    g_resourceCloseStates.clear();
+    g_resourceCloseAliases.clear();
     g_scope.push_back(Memory::Map<Memory::String, MVar>()); /* 0 号 = 全局作用域 */
     /* 运行时辅助函数的内部名字先占住，免得用户程序撞名 */
     for (const char *name : { "__magel_p", "__magel_ip", "__magel_fr", "__magel_k", "__magel_d", "__magel_code",

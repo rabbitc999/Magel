@@ -105,7 +105,6 @@ bool bind(magel_glue::Registry &registry, Memory::String *error)
                    }
                    const auto code = closeProcessPipe(record->pipe);
                    record->pipe = nullptr;
-                   context.releaseNativeRecord(handle);
                    return code;
                },
                error)

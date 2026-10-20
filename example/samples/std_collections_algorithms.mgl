@@ -64,6 +64,6 @@ int64 main() {
 
     Pair<int64, String> pair = Pair<int64, String>::create(7, "seven");
     println("{} {}", pair.first, pair.second);
-    delete raw;
+    raw.drop();
     return 0;
 }

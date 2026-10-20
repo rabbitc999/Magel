@@ -24,7 +24,6 @@ EXE = ".exe" if os.name == "nt" else ""
 PROBE = """import std::watchdog;
 
 int64 main() {
-    std::lang::sweep(); // 模块初始化也可能产生已释放临时块；先建立本轮清扫边界。
     match (std::watchdog::enable(0)) {
         Result<int64, std::watchdog::WatchdogError>::Ok(w) => { std::lang::println("on {}", w); }
         Result<int64, std::watchdog::WatchdogError>::Err(reason) => {
@@ -36,7 +35,7 @@ int64 main() {
         }
     }
     int64 mut& retired = heap int64;
-    delete retired;
+    retired.drop();
     std::watchdog::requestRestart();
     std::lang::println("tail");
     return 0;

@@ -227,11 +227,11 @@ List<Action> visibleActions(List<Action> all, int64 level) {
 
 /*
  * 五个模块的门槛照搬 Java 端 @ModelClass 的 look / edit / delete：
- *   学生 student    look = STUDENT(0)  edit = TEACHER(2)  delete = ADMINISTRATOR(3)
- *   班级 sclass     look = TEACHER(2)  edit = TEACHER(2)  delete = ADMINISTRATOR(3)
- *   课程 course     look = TEACHER(2)  edit = TEACHER(2)  delete = ADMINISTRATOR(3)
- *   成绩 selection  look = STUDENT(0)  edit = TEACHER(2)  delete = ADMINISTRATOR(3)
- *   用户 user       look = edit = delete = SUPER_ADMINISTRATOR(4)
+ *   学生 student    look = STUDENT(0)  edit = TEACHER(2)  drop = ADMINISTRATOR(3)
+ *   班级 sclass     look = TEACHER(2)  edit = TEACHER(2)  drop = ADMINISTRATOR(3)
+ *   课程 course     look = TEACHER(2)  edit = TEACHER(2)  drop = ADMINISTRATOR(3)
+ *   成绩 selection  look = STUDENT(0)  edit = TEACHER(2)  drop = ADMINISTRATOR(3)
+ *   用户 user       look = edit = drop = SUPER_ADMINISTRATOR(4)
  */
 
 /** @brief 主菜单。 */

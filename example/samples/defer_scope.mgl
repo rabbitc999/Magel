@@ -12,5 +12,5 @@ int64 main(){assert(run()==7);assert(sequence==23);int64 c=0;
     const int64 n=8;{defer add(n);}assert(sequence==234445968);
     Receiver receiver;receiver.finish();assert(receiver.value==3);
     assert(snapshot()=="before");
-    {int64 mut& memory = heap int64;defer delete memory;memory=4;}
+    {int64 mut& memory = heap int64;defer memory.drop();memory=4;}
     println("defer ok");return 0;}

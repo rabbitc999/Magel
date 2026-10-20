@@ -12,6 +12,7 @@
 #include "../library/stackvm/value_text.hpp"
 #include "magel_glue.hpp"
 #include "magel_generic.hpp"
+#include "magel_resource_cleanup.hpp"
 #include "magel_lambda.hpp"
 #include "magel_macro.hpp"
 #include "dap/dap_server.hpp"
@@ -1978,17 +1979,6 @@ int M_ParseBadLevelAllSugar() { return M_ParseBad("break level 后只能跟 all�
 int M_ParseBadBreakAllSugar() { return M_ParseBad("break 仅支持 break all 退出全部循环，带值退出请写 yield 值"); }
 
 /**
- * @brief 构造并登记指针释放语句。
- * @param pointer 待释放或校验的指针。
- * @retval 生成的语法节点在节点池中的编号。
- */
-int M_Delete(int pointer)
-{
-    const int id = M_New(MNode::Delete);
-    g_nodes[static_cast<std::size_t>(id)].kids = { pointer };
-    return id;
-}
-/**
  * @brief 构造并登记实例字段声明。
  * @param typeId 类型池中的类型编号。
  * @param nameId 名称池中的名称编号。
@@ -3378,10 +3368,10 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
                         }
                         return 1;
                     }
-                    /* 堆卫生：`new` 出来的可写引用要自己 `delete`，漏了就在这里提醒一句（不影响退出码）。 */
+                    /* 堆卫生：`new` 出来的可写引用要自己 `drop`，漏了就在这里提醒一句（不影响退出码）。 */
                     if (executed.heapLiveBytes != 0u)
                     {
-                        std::fprintf(stderr, "提示：程序结束时堆上还有 %zu 字节 / %zu 块没有 delete（峰值 %zu 字节）\n",
+                        std::fprintf(stderr, "提示：程序结束时堆上还有 %zu 字节 / %zu 块没有 drop（峰值 %zu 字节）\n",
                                      executed.heapLiveBytes, executed.heapLiveBlocks, executed.heapPeakBytes);
                     }
                     /* 对象卫生：`bint` / 容器走运行期对象表，不占堆字节，漏了单独提示一句。 */
@@ -3389,7 +3379,7 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
                     {
                         std::fprintf(stderr,
                                      "提示：程序结束时还有 %zu 个 BigInteger / BigDecimal / 容器对象没释放"
-                                     "（`delete 变量;`，或者让它们随声明它的块一起走）\n",
+                                     "（`drop 变量;`，或者让它们随声明它的块一起走）\n",
                                      executed.liveObjects);
                     }
                     /* `exit(n)` 已删除：正常停机只有 `main` 返回一条路，宿主退出码固定 0。 */

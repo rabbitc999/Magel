@@ -250,7 +250,7 @@ struct Slot
  * 分配策略：**按 1 字节单元** + 首次适配 + 相邻空闲块
  * 合并——**释放过的块会被后续分配复用**，块表也不会随"反复申请 / 释放"越滚越大，
  * 物理块继续复用，逻辑地址则单调分配；旧引用不会命中新对象。
- * 已释放块首保留墓碑，重复 release 成功且无效果，内部地址及未知地址仍报错。
+ * 释放立即撤销活跃身份；重复释放、内部地址及未知地址均返回失败。
  * 读写通过逻辑地址映射到物理偏移，仅允许访问当前活跃分配。
  *
  * 线程安全：`allocate` / `release` 由一把互斥锁串行化（宿主回调 / 多线程场景下
@@ -421,7 +421,6 @@ public:
     {
         if (address == 0u) return true;  // free(NULL) 是空操作
         std::lock_guard<std::mutex> guard(mutex_);
-        if (index_.retired(address)) return true;
         for (std::size_t index = 0; index < blocks_.size(); ++index)
         {
             Block &block = blocks_[index];
@@ -443,26 +442,10 @@ public:
         }
         if (reason != nullptr)
         {
-            *reason = "[MGL1205] 无效或已清扫的释放身份：地址 " + Memory::toString(address) + " 不在堆里（堆区从 " + Memory::toString(base_) + " 起）";
+            *reason = "[MGL1205] 无效或已经释放的身份：地址 " + Memory::toString(address) + " 不在堆里（堆区从 " + Memory::toString(base_) + " 起）";
         }
         return false;
     }
-
-    /**
-     * @brief 清扫释放身份，保留活跃分配。
-     * @return 被清扫的身份数。
-     */
-    std::size_t sweep() override
-    {
-        std::lock_guard<std::mutex> guard(mutex_);
-        return index_.sweep();
-    }
-    /**
-     * @brief 查询幂等释放身份。
-     * @param address 块首。
-     * @return 未清扫的墓碑为真。
-     */
-    bool retired(std::size_t address) const override { return index_.retired(address); }
 
     /**
      * @brief 判断是否属于编码堆空间，包括已清扫身份。
@@ -2403,7 +2386,7 @@ bool NativeCallContextImpl::releaseNativeRecord(std::int64_t handle)
 /**
  * @brief 通过当前堆释放原始块，并结束其关联的存储借用。
  * @param address 分配块首地址。
- * @param soft 是否允许空地址和失效地址成为空操作。
+ * @param soft 是否允许空地址和数据区成为空操作；失效堆身份仍诊断。
  * @return 释放成功时为 true，失败时保存堆的原始原因。
  */
 bool NativeCallContextImpl::releaseMemory(std::int64_t address, bool soft)
@@ -2415,8 +2398,8 @@ bool NativeCallContextImpl::releaseMemory(std::int64_t address, bool soft)
     if (context_.objects && context_.heap->capacityAt(target, capacity)) context_.objects->beginStorage(target, capacity, true);
     Memory::String reason;
     if (context_.heap->release(target, &reason)) return true;
-    if (!soft) context_.error = "free 失败：" + reason;
-    return soft;
+    context_.error = "[MGL1205] free 失败：" + reason;
+    return false;
 }
 /**
  * @brief 在当前对象表执行宿主复制协议。
@@ -3082,7 +3065,7 @@ std::size_t nativeAllocate(NativeContext &ctx, std::size_t bytes)
 }
 
 /**
- * @brief 查询逻辑分配是否仍有效，重复 delete 必须跳过析构与数组载荷读取。
+ * @brief 查询逻辑分配是否有效，供编译器清理守卫避免读取失效载荷。
  * @param ctx 当前堆。
  * @param args 块首地址。
  * @return 活跃分配返回一。
@@ -3094,37 +3077,19 @@ Slot heapLive(NativeContext &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief 显式删除前检查块首，清扫后旧引用必须诊断。
+ * @brief 显式删除前严格检查块首，阻止对失效身份再次析构。
  * @param ctx 当前堆。
  * @param args 块首。
- * @return 活跃时为一，墓碑时为零。
+ * @return 活跃时为一；失效时记录诊断并返回零。
  */
-Slot heapDeleteLive(NativeContext &ctx, const Memory::Vector<Slot> &args)
+Slot heapDropLive(NativeContext &ctx, const Memory::Vector<Slot> &args)
 {
     const auto address = static_cast<std::size_t>(nativeInt(args[0]));
     std::size_t capacity = 0;
     if (ctx.heap->capacityAt(address, capacity)) return Slot::fromInt(1);
-    if (address && !ctx.heap->retired(address)) ctx.error = "panic：[MGL1205] delete 的来源已释放且墓碑已清扫，或不是有效块首";
+    ctx.error = "panic：[MGL1205] drop 的来源已经释放、为空或不是有效块首";
     return Slot::fromInt(0);
 }
-/**
- * @brief 手动撤销释放身份的幂等保证。
- * @param ctx 当前堆。
- * @param args 无参数。
- * @return 清理身份数。
- */
-Slot heapSweep(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    (void)args;
-    const auto count = ctx.heap->sweep();
-    if (count == static_cast<std::size_t>(-1))
-    {
-        ctx.error = "panic：当前宿主分配器未实现 std::lang::sweep";
-        return Slot::fromInt(0);
-    }
-    return Slot::fromInt(static_cast<std::int64_t>(count));
-}
-
 /**
  * @brief 查询、结束或重新开始 std::lang::move 管理的存储生命周期。
  * @param ctx 本次运行的对象表；标记不跨虚拟机实例共享。
@@ -4143,8 +4108,7 @@ const SlotNativeEntry kSlotNativeEntries[] = {
     { "__std_char_store", { 2, charStore } },
     { "__std_iter_box", { 4, iterBox } },
     { "__std_heap_live", { 1, heapLive } },
-    { "__std_heap_delete_live", { 1, heapDeleteLive } },
-    { "__std_heap_sweep", { 0, heapSweep } },
+    { "__std_heap_drop_live", { 1, heapDropLive } },
     { "__std_move_live", { 3, moveLifetime<0> } },
     { "__std_move_require", { 3, moveLifetime<1> } },
     { "__std_move_end", { 3, moveLifetime<2> } },

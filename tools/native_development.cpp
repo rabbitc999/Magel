@@ -7,6 +7,7 @@
 #include "../library/console/utf8.hpp"
 #include "../library/json/json.hpp"
 #include "../source/magel_macro.hpp"
+#include "../source/magel_package.hpp"
 #include "../source/magel_module.hpp"
 #include "../source/magel_diagnostics.hpp"
 #include "../library/miniz/miniz_tinfl.h"
@@ -561,7 +562,7 @@ J range(const std::string &s, size_t a, size_t b)
 const std::set<std::string> keywords = {
     "defer", "scope", "heap",
     "_", "abi", "auto", "bool", "break", "cast", "char",
-    "const", "continue", "copy", "delete", "drop", "elif", "else",
+    "const", "continue", "copy", "drop", "elif", "else",
     "enum", "false", "float32", "float64", "fn", "for",
     "if", "impl", "import", "in", "inline", "int16", "int32",
     "int64", "int8", "interface", "loop", "match", "module",
@@ -1080,7 +1081,7 @@ std::vector<Record> scan(const std::string &source, const std::string &s)
     visit(0, t.size(), "");
     const auto hiddenTypes = opcodeNames(t);
     records.erase(std::remove_if(records.begin(), records.end(), [&](const Record &record) {
-                      return opcodeSignature(record.signature, hiddenTypes);
+                      return record.kind != "function" && opcodeSignature(record.signature, hiddenTypes);
                   }),
                   records.end());
     return records;
@@ -1104,7 +1105,9 @@ std::vector<Binding> scanBindings(const std::string &s,
                                   std::set<std::string> types)
 {
     auto t = lex(s);
-    const auto hiddenTypes = opcodeNames(t);
+    auto hiddenTypes = opcodeNames(t);
+    // String 是语言值类型；隐藏胶水声明不应隐藏用户的字符串绑定。
+    hiddenTypes.erase("String");
     types.insert(primitives.begin(), primitives.end());
     for (auto n :
          { "String", "List", "Set", "Map", "Option", "Result", "Any", "auto" })
@@ -1129,7 +1132,13 @@ std::vector<Binding> scanBindings(const std::string &s,
         if (t[i].word == "<" && identifier(t[i - 1].word))
         {
             const auto end = groupEnd(t, i, "<", ">");
-            if (end >= t.size() || (t[end].word != "(" && t[end].word != "{" && t[end].word != ":")) continue;
+            size_t following = end;
+            while (following < t.size() && (t[following].word == "copy" || t[following].word == "move" || t[following].word == "mut" || t[following].word == "const"))
+            {
+                ++following;
+                if (following < t.size() && t[following].word == "[") following = groupEnd(t, following, "[", "]");
+            }
+            if (following >= t.size() || (t[following].word != "(" && t[following].word != "{" && t[following].word != ":")) continue;
             for (size_t j = i + 1; j + 1 < end; ++j)
                 if (identifier(t[j].word) && (t[j - 1].word == "<" || t[j - 1].word == ",")) types.insert(t[j].word);
         }
@@ -1158,7 +1167,7 @@ std::vector<Binding> scanBindings(const std::string &s,
         if (!function && following != "=" && following != ";" && following != "," && following != "[" && following != ")" && following != "in")
             continue;
         std::string type = cleanSignature(s.substr(t[i].a, t[j].a - t[i].a));
-        if (opcodeSignature(type, hiddenTypes)) continue;
+        if (!function && opcodeSignature(type, hiddenTypes)) continue;
         out.push_back({ t[j].word, type, function ? "function" : "variable", t[j].a,
                         t[j].b, scopes[j] });
         if (function)
@@ -1186,7 +1195,12 @@ std::vector<Binding> scanBindings(const std::string &s,
         if (t[i].word == "fn")
         {
             size_t open = i + 1;
-            if (open < t.size() && (t[open].word == "copy" || t[open].word == "move" || t[open].word == "mut" || t[open].word == "const")) ++open;
+            if (open < t.size() && t[open].word == "<") open = groupEnd(t, open, "<", ">");
+            while (open < t.size() && (t[open].word == "copy" || t[open].word == "move" || t[open].word == "mut" || t[open].word == "const"))
+            {
+                ++open;
+                if (open < t.size() && t[open].word == "[") open = groupEnd(t, open, "[", "]");
+            }
             if (open >= t.size() || t[open].word != "(") continue;
             const auto end = groupEnd(t, open, "(", ")");
             if (end >= t.size() || t[end].word != "{") continue;
@@ -1490,6 +1504,13 @@ class ReceiverTypes
                     break;
                 }
         }
+        if (type == "auto" && r.kind == "member")
+            for (const auto &binding : vars)
+                if (binding.offset == r.offset && binding.name == r.name)
+                {
+                    type = bindingType(binding, binding.offset, 1);
+                    break;
+                }
         // 泛型字段与方法返回值中的类型形参按实例接收者替换。
         auto args = receiver.find('<');
         if (args != receiver.npos)
@@ -1608,6 +1629,11 @@ public:
         {
             const auto &word = initializer[end].word;
             if (!nesting && (word == ";" || word == "," || word == "}")) break;
+            if (word == "<" && end > 1 && initializer[end - 1].word == "fn")
+            {
+                end = groupEnd(initializer, end, "<", ">") - 1;
+                continue;
+            }
             if (word == "(" || word == "[" || word == "{") ++nesting;
             if (word == ")" || word == "]" || word == "}") --nesting;
         }
@@ -1771,12 +1797,67 @@ public:
         if (starts(value, "f\"")) return qualify("std::lang::String");
         auto t = valueTokens(value);
         if (t.empty()) return "";
-        const auto shape = lspFunctionShape(value);
+        auto shape = lspFunctionShape(value);
         if (shape.valid)
         {
-            if (!shape.result.empty()) return lspFunctionText(shape);
+            if (!shape.result.empty() && shape.result != "auto") return lspFunctionText(shape);
             auto at = source.find(value, cursor);
-            return at == source.npos ? "" : contextualType(at, depth + 1);
+            if (at == source.npos) at = source.find(value);
+            const auto expected = at == source.npos ? "" : contextualType(at, depth + 1);
+            const auto context = lspFunctionShape(expected);
+            if (context.valid && !context.result.empty() && context.result != "auto") return expected;
+            size_t body = 0;
+            while (body < t.size() && t[body].word != "{") ++body;
+            if (body == t.size()) return "";
+            const auto end = groupEnd(t, body, "{", "}");
+            if (!end || end > t.size()) return "";
+            std::set<std::string> results;
+            size_t tail = body + 1;
+            int blockDepth = 0;
+            for (size_t i = tail; i + 1 < end; ++i)
+            {
+                if (t[i].word == "return")
+                {
+                    size_t stop = i + 1;
+                    while (stop + 1 < end && t[stop].word != ";")
+                    {
+                        if (t[stop].word == "(" || t[stop].word == "[" || t[stop].word == "{")
+                            stop = groupEnd(t, stop, t[stop].word, t[stop].word == "(" ? ")" : t[stop].word == "[" ? "]" :
+                                                                                                                     "}");
+                        else
+                            ++stop;
+                    }
+                    const auto result = stop == i + 1 ? "void" : infer(value.substr(t[i + 1].a, t[stop - 1].b - t[i + 1].a), at == source.npos ? cursor : at + t[i].a, depth + 1);
+                    if (result.empty()) return "";
+                    results.insert(result);
+                }
+                // 返回表达式中的匿名函数属于下一层，不能收集其内部 return。
+                if (t[i].word == "fn")
+                {
+                    size_t nested = i + 1;
+                    while (nested + 1 < end && t[nested].word != "{") ++nested;
+                    if (nested + 1 < end) i = groupEnd(t, nested, "{", "}") - 1;
+                    continue;
+                }
+                if (t[i].word == "(" || t[i].word == "[")
+                {
+                    i = groupEnd(t, i, t[i].word, t[i].word == "(" ? ")" : "]") - 1;
+                    continue;
+                }
+                if (t[i].word == "{") ++blockDepth;
+                if (t[i].word == "}") --blockDepth;
+                if (t[i].word == ";" && !blockDepth) tail = i + 1;
+            }
+            if (tail + 1 < end && t[tail].word != "return")
+            {
+                const auto result = infer(value.substr(t[tail].a, t[end - 2].b - t[tail].a), at == source.npos ? cursor : at + t[tail].a, depth + 1);
+                if (result.empty()) return "";
+                results.insert(result);
+            }
+            if (results.empty()) return "";
+            if (results.size() != 1) return "";
+            shape.result = *results.begin();
+            return lspFunctionText(shape);
         }
         if (t.back().word == "?")
         {
@@ -1820,6 +1901,30 @@ public:
         }
         if (t.front().word == "(" && groupEnd(t, 0, "(", ")") == t.size())
             return infer(value.substr(t.front().b, t.back().a - t.front().b), cursor, depth + 1);
+        const auto split = lspBinarySplit(t);
+        if (split != std::string::npos)
+        {
+            const auto &word = t[split].word;
+            const auto leftText = trim(value.substr(0, t[split].a));
+            const auto rightText = trim(value.substr(t[split].b));
+            auto left = infer(leftText, cursor, depth + 1);
+            auto right = infer(rightText, cursor, depth + 1);
+            if (left.empty() || right.empty()) return "";
+            if (lspBinaryPriority(word) <= 4) return "bool";
+            if (word == "+" && (tail(left) == "String" || tail(right) == "String")) return "std::lang::String";
+            const bool leftLiteral = lspFitsIntegerLiteral(leftText, "uint64");
+            const bool rightLiteral = lspFitsIntegerLiteral(rightText, "uint64");
+            if (leftLiteral && !rightLiteral && lspFitsIntegerLiteral(leftText, right)) left = right;
+            if (rightLiteral && !leftLiteral && lspFitsIntegerLiteral(rightText, left)) right = left;
+            const auto leftBits = lspIntegerBits(left), rightBits = lspIntegerBits(right);
+            if (leftBits && rightBits) return std::string(starts(left, "uint") || starts(right, "uint") ? "uint" : "int") + std::to_string(std::max(leftBits, rightBits));
+            const bool leftNumeric = leftBits || left == "float32" || left == "float64" || left == "char" || left == "bool";
+            const bool rightNumeric = rightBits || right == "float32" || right == "float64" || right == "char" || right == "bool";
+            if (!leftNumeric || !rightNumeric) return "";
+            if (left == "float64" || right == "float64") return "float64";
+            if (left == "float32" || right == "float32") return "float32";
+            return "int64";
+        }
         bool call = t.back().word == ")";
         Memory::Vector<Memory::String> arguments;
         if (call)
@@ -1864,6 +1969,16 @@ public:
                 if (call || r.kind == "member")
                 {
                     auto result = resultType(r, receiver);
+                    if (call && r.kind == "member")
+                    {
+                        const auto callable = lspFunctionShape(result);
+                        if (!callable.valid) continue;
+                        Record declaration;
+                        declaration.name = "__closure";
+                        declaration.signature = "__closure" + callable.generics;
+                        for (const auto &parameter : callable.arguments) declaration.parameters.push_back(object({ { "label", parameter } }));
+                        result = instantiateResult(declaration, callable.result, memberName, arguments, cursor, depth + 1);
+                    }
                     auto explicitAt = memberName.find('<');
                     if (explicitAt != memberName.npos && !memberName.empty() && memberName.back() == '>')
                     {
@@ -1942,8 +2057,15 @@ public:
             if (record.kind == "function" && (record.qualified == name || (record.owner.empty() && record.name == name) || ends(record.qualified, "::" + name))) functions.push_back(record);
         if (functions.empty())
         {
-            const auto callable = lspFunctionShape(infer(value, cursor, depth + 1));
-            if (callable.valid) return qualify(callable.result);
+            const auto callable = lspFunctionShape(infer(!value.empty() && value.back() == '>' ? base(value) : value, cursor, depth + 1));
+            if (callable.valid)
+            {
+                Record declaration;
+                declaration.name = "__closure";
+                declaration.signature = "__closure" + callable.generics;
+                for (const auto &parameter : callable.arguments) declaration.parameters.push_back(object({ { "label", parameter } }));
+                return instantiateResult(declaration, callable.result, value, arguments, cursor, depth + 1);
+            }
         }
         std::set<std::string> results;
         for (auto &r : selectedCalls(functions, arguments, cursor, depth + 1))
@@ -2291,7 +2413,9 @@ std::string download(const std::string &url)
         path.append(parts.lpszExtraInfo, parts.dwExtraInfoLength);
     if (path.empty())
         path = L"/";
-    Http session{ WinHttpOpen(L"Magel/0.21.1", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+    const auto agent = std::string("Magel/") + magel_package::compilerVersion;
+    const std::wstring wideAgent(agent.begin(), agent.end());
+    Http session{ WinHttpOpen(wideAgent.c_str(), WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
                               WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0) };
     if (!session.h)
         throw std::runtime_error("无法初始化 HTTP");
@@ -2519,7 +2643,7 @@ fs::path extract(std::string data, const fs::path &destination)
         return children[0];
     throw std::runtime_error("在线依赖压缩包根目录或唯一顶层目录需要 magel.toml");
 }
-const std::string toolVersion = "0.21.1";
+const std::string toolVersion = magel_package::compilerVersion;
 /**
  * @brief 校验下载依赖的版本信息。
  * @param data 输入或待写入的字节数据。
@@ -3796,7 +3920,7 @@ class Server
                                      { "full", true } }) },
                           { "experimental",
                             object({ { "macroExpansionProvider", true } }) } }) },
-                  { "serverInfo", object({ { "name", "Magel" }, { "version", "0.21.1" } }) } });
+                  { "serverInfo", object({ { "name", "Magel" }, { "version", magel_package::compilerVersion } }) } });
         }
         if (method == "shutdown")
         {

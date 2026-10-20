@@ -35,8 +35,7 @@ opcode File {
      * @return 包括换行的写入字节数。
      */
     int64 println(String text = "") {
-        String line = text + "\n";
-        return __fileWrite(self, line);
+        return __fileWrite(self, text + "\n");
     }
 };
 #NonCopyable

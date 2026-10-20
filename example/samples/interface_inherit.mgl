@@ -72,6 +72,6 @@ int64 main()
     boxed.set(&boxRef);
     Shape mut& view = boxed.getReference();
     println("view {} {}", view.area(), view.describe());
-    delete boxRef;
+    boxRef.drop();
     return 0;
 }

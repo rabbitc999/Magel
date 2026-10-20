@@ -33,7 +33,7 @@ def main():
     for name, (type_name, leaf, body) in cases.items():
         permission = 'mut&' if name in ('write', 'char_write') else '&'
         source = WORK / (name + '.mgl')
-        source.write_text(leaf + '\nint64 outer(' + type_name + ' ' + permission + ' p) { return leaf(p); }\nvoid dispose(' + type_name + ' mut& p) { delete p; }\nint64 main() {\n' + type_name + ' mut& owner = heap ' + type_name + ';\n' + type_name + ' ' + permission + ' stale = owner;\ndispose(owner);\n' + body + '\n}\n', encoding='utf-8')
+        source.write_text(leaf + '\nint64 outer(' + type_name + ' ' + permission + ' p) { return leaf(p); }\nvoid dispose(' + type_name + ' mut& p) { p.drop(); }\nint64 main() {\n' + type_name + ' mut& owner = heap ' + type_name + ';\n' + type_name + ' ' + permission + ' stale = owner;\ndispose(owner);\n' + body + '\n}\n', encoding='utf-8')
         result = execute(compiler, '--lang', 'zh', 'run', source, '--out', WORK / (name + '-interpret'))
         results = [('解释执行', result)]
         for backend, result in results:

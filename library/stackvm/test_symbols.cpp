@@ -112,7 +112,7 @@ void indirect(const std::string &directory)
     p.code[4].textValue = "preserved string";
     p.code[5].op = stackvm::Op::PrintText;
     p.code[6].op = stackvm::Op::Call;
-    p.code[6].name = "__std_vec_new";
+    p.code[6].name = "test_native";
     p.code[6].name2 = "length";
     p.code[7].op = stackvm::Op::Halt;
     p.code[8].op = stackvm::Op::PushInt;
@@ -127,7 +127,13 @@ void indirect(const std::string &directory)
     data.binary.insert(data.binary.end(), name.begin(), name.end());
     data.binary.push_back(0);
     data.symbols["callback_address"] = 1;
+    stackvm::NativeRegistry registry;
+    registry.add("test_native", 0, [](stackvm::NativeCallContext &, const Memory::Vector<stackvm::NativeValue> &) {
+        return stackvm::NativeValue::fromInt(0);
+    });
     stackvm::Machine before, after;
+    before.setNativeRegistry(&registry);
+    after.setNativeRegistry(&registry);
     before.setData(&data);
     after.setData(&data);
     const auto expected = before.run(p);

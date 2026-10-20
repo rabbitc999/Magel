@@ -414,7 +414,7 @@ stmt := block                  { $$ = $1; }
       | RETURN expr SEMI       { $$ = M_ReturnValue($2); }
       | RETURN tuple_items SEMI { $$ = M_Return(M_Tuple($2)); }
       | RETURN SEMI            { $$ = M_Return(-1); }
-      | DELETE unary SEMI      { $$ = M_Delete($2); }
+
       | BREAK SEMI             { $$ = M_Break(-1); }
       | YIELD expr SEMI        { $$ = M_Break($2); }
       | BREAK name_token SEMI  { $$ = M_NameIsAll($2) ? M_BreakLevel(-1) : M_ParseBadBreakAllSugar(); }

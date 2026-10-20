@@ -305,7 +305,7 @@ int64 main()
 Counter c = new Counter(7);
 // 栈上：跟着作用域走
 Counter mut& p = heap new Counter(7);
-// 堆上：要自己 delete
+// 堆上：要自己 drop
 \end{lstlisting}
 \par
 \medskip
@@ -318,7 +318,7 @@ Counter mut& p = heap new Counter(7);
 
 \item 左边是值，对象在栈上，出作用域自动清理；
 
-\item 左边是引用（\texttt{Counter mut\&}），对象在堆上，得自己 \texttt{delete p;}（第 8 章）。
+\item 左边是引用（\texttt{Counter mut\&}），对象在堆上，得自己 \texttt{p.\allowbreak{}drop(\allowbreak{})\allowbreak{};}（第 8 章）。
 
 \end{itemize}
 
@@ -378,7 +378,7 @@ int64 main()
     Point q = Point::create(3, 4);
     // 具名入口
     println("{},{} {} {} {} {}", o.x, o.y, p.x, p.y, q.x, q.y);
-    delete p;
+    p.drop();
     return 0;
 }
 \end{lstlisting}
@@ -604,7 +604,7 @@ left changed
 \section{小结}
 
 {\small\setlength{\tabcolsep}{4pt}
-\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.085\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.895\linewidth-2\tabcolsep\relax}}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.087\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.893\linewidth-2\tabcolsep\relax}}
 \toprule
 你会了 & 关键点 \\
 \midrule
@@ -614,7 +614,7 @@ left changed
 方法 & 写在结构体里，用 \texttt{self.\allowbreak{}x} 访问字段 \\
 \texttt{static} & 属于类型，用 \texttt{X:\allowbreak{}:\allowbreak{}name} 访问，里面没有 \texttt{self} \\
 构造器 & 与类型同名、无返回类型，用 \texttt{new T(\allowbreak{}实参)\allowbreak{}} 调用（目标类型由左边声明决定） \\
-栈 vs 堆 & \texttt{X v =\allowbreak{} new X(\allowbreak{}实参)\allowbreak{};} 栈上；\texttt{X mut\& p =\allowbreak{} heap X;} / \texttt{heap new X(\allowbreak{}实参)\allowbreak{}} 堆上要 \texttt{delete} \\
+栈 vs 堆 & \texttt{X v =\allowbreak{} new X(\allowbreak{}实参)\allowbreak{};} 栈上；\texttt{X mut\& p =\allowbreak{} heap X;} / \texttt{heap new X(\allowbreak{}实参)\allowbreak{}} 堆上要 \texttt{drop} \\
 具名入口 & \texttt{X:\allowbreak{}:\allowbreak{}create(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} 用 \texttt{static X create(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}}；\texttt{new X(\allowbreak{}实参)\allowbreak{}} 优先认真构造器 \\
 运算符 & 实现 \texttt{Add} / \texttt{Equal} / \texttt{Negate} 等内建接口 \\
 传参 & 是复制；大结构体用 \texttt{const\&} / \texttt{mut\&} \\

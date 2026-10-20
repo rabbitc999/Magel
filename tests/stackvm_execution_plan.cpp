@@ -325,6 +325,18 @@ int main(int argc, char **argv)
     machine.setNativeRegistry(&registry);
     const auto dynamicResult = machine.run(dynamicProgram);
     check(dynamicResult.ok && dynamicResult.output == "10 20 30", "宿主注册表版本及对象切换");
+    for (const auto *operation : { "free", "drop" })
+    {
+        const auto source = Memory::String("0: (alloc, 8, _, p)\n1: (") + operation + ", p, _, _)\n2: (" + operation + ", p, _, _)\n3: (halt, _, _, _)\n";
+        stackvm::Program repeatedRelease;
+        check(stackvm::assemble(stackvm::parseQuads(source, "<strict-release>"), repeatedRelease), "重复释放测试组装");
+        for (const bool prepared : { false, true })
+        {
+            machine.setExecutionOptimization(prepared);
+            const auto failure = machine.run(repeatedRelease);
+            check(!failure.ok && failure.error.find("MGL1205") != Memory::String::npos, "基础与优化 VM 均拒绝重复释放");
+        }
+    }
     stackvm::execution_detail::AllocationIndex index;
     index.reset(8);
     const auto first = index.add(0, 16);
@@ -333,13 +345,11 @@ int main(int argc, char **argv)
     check(index.release(first), "首次释放");
     const auto second = index.add(0, 16);
     check(first != second, "物理复用逻辑身份不同");
-    check(index.release(first), "重复释放幂等");
+    check(!index.release(first), "拒绝重复释放");
     check(index.find(second) != nullptr && !index.find(first), "旧身份不影响新分配及缓存");
     check(!index.release(second + 1), "内部地址不能释放");
-    check(index.sweep() == 1, "清扫旧身份并保留活跃分配");
-    check(!index.release(first) && index.find(second), "清扫后旧引用失去幂等保证");
-    check(index.release(second) && index.release(second), "跨清扫存活对象仍可幂等释放");
-    check(index.sweep() == 1 && !index.release(second), "再次清扫撤销后续墓碑");
+    check(!index.release(first) && index.find(second), "旧引用释放失败且保留新对象");
+    check(index.release(second) && !index.release(second), "存活对象仅能释放一次");
     for (int i = 0; i < 100000; ++i)
     {
         const auto address = index.add(0, 16);

@@ -47,7 +47,7 @@ int64 main() {
     Point mut& alias = shared;
     alias->x = 42;
     println("引用共享：shared->x={} alias->x={}", shared->x, alias->x);
-    delete shared;
+    shared.drop();
 
     /* 指向数据区里的元素：读得到（只读引用），要写就用可写引用 */
     Point const& view = &items[0];

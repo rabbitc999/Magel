@@ -202,7 +202,7 @@ and blocks the detours through `Option`, tuples, pattern bindings and containers
 code is **`MGL1204`**, and it points at a source location.
 
 Origin tracking and independent control-flow checking now form the borrow checker: the former checks
-escape, while the latter follows move, drop, delete and subsequent access, with diagnostics including
+escape, while the latter follows move, drop, drop and subsequent access, with diagnostics including
 MGL1204 and MGL1205. Aliases may share an object without a global exclusive-borrow rule.
 Cross-function effects, dynamic indices, recursive paths and raw host memory have explicit limits;
 see [validation](../11-algorithm-validation.md) and [core concepts](03-core-concepts.md).

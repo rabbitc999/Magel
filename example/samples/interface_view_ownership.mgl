@@ -5,5 +5,5 @@ int64 main(){
     Value mut& value = heap Value;value.data=7;value.label="owned";
     Any box;box.set(&value);
     {Reader const& first=viewOf(box);Reader const& second=first;assert(first.read()==7 && second.read()==7);}
-    delete value;println("interface view ownership OK");return 0;
+    value.drop();println("interface view ownership OK");return 0;
 }

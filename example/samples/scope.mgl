@@ -9,7 +9,7 @@
  *    那个又回来了。同一个块里**不许**重名。
  * 2. **生命周期**：运行时数组（`T a[] = new [n]`）与堆上的字符串（拼出来的、切出来的、
  *    `format` 出来的）都归**声明它的块**所有，离开块时自动释放；
- *    `T mut&` 是"手动所有"，自己 `delete`。
+ *    `T mut&` 是"手动所有"，自己 `drop`。
  *
  * 跑完**不会**出现"程序结束时堆上还有 … 字节没有 delete"那句提示 —— 说明这些
  * 临时串、数组、结点都还给堆了。
@@ -46,7 +46,7 @@ void release(Option<Node mut&> head) {
     while (cursor.isValue()) {
         Node mut& node = cursor.unwrap();
         cursor = node.next;
-        delete node;
+        node.drop();
     }
 }
 
@@ -99,7 +99,7 @@ int64 main() {
     int64 i = 100;              /* 和上面那个 `i` 不冲突（那个已经出了作用域） */
     println("循环外：i={}", i);
 
-    /* 手动所有：这条链自己 delete 回去 */
+    /* 手动所有：这条链自己 drop 回去 */
     Option<Node mut&> head = chain(4);
     println("链：{}", show(head));
     release(head);

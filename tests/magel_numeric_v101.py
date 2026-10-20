@@ -46,11 +46,11 @@ def main():
                 print(f'[通过] {backend} opt={level} 数值、f 后缀及 loop', flush=True)
         for name, value in [('string', '"x"'), ('float', '1.9'), ('bool', 'true')]:
             source = work / (name + '.mgl')
-            source.write_text(f'int64 main() {{ int64 a[]=new[{value}]; delete a; return 0; }}', encoding='utf-8')
+            source.write_text(f'int64 main() {{ int64 a[]=new[{value}]; a.drop(); return 0; }}', encoding='utf-8')
             check(invoke([compiler, '--check', source]), False, '数组长度必须是整数')
             print(f'[通过] 拒绝 {name} 数组长度', flush=True)
         source = work / 'invalid-allocation.mgl'
-        source.write_text('int64 main() {\n            int64 n=inputInt(); int64 a[]=new[n];\n            println("unexpected allocation: {}", a.len()); delete a; return 0;\n        }', encoding='utf-8')
+        source.write_text('int64 main() {\n            int64 n=inputInt(); int64 a[]=new[n];\n            println("unexpected allocation: {}", a.len()); a.drop(); return 0;\n        }', encoding='utf-8')
         for backend in ('run',):
             output = work / ('invalid-' + backend + EXE)
             for length, diagnostic in [(-1, '数组长度为负数或分配字节数溢出'), (-4294967295, '数组长度为负数或分配字节数溢出'), (9223372036854775807, '数组长度为负数或分配字节数溢出'), (4294967297, '堆内存不足'), (536870913, '堆内存不足')]:

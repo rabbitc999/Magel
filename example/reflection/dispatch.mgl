@@ -33,6 +33,6 @@ int64 main(){
     String snapshot=std::reflect::callEnumMethod<State>(&state,"name",empty).unwrap().asText().unwrap();
     state=State::Ready;state=State::Named("finished");
     assert(snapshot=="working" && std::reflect::callEnumMethodConst<State>(&state,"name",empty).unwrap().asText().unwrap()=="finished");
-    delete hidden;delete fallback;delete actual;
+    hidden.drop();fallback.drop();actual.drop();
     println("reflection dispatch OK");return 0;
 }

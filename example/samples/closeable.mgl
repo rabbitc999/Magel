@@ -3,7 +3,7 @@
  *   ./magel samples/closeable.mgl
  *
  * 语义：
- *   * 实现 `Closeable` 的值在生命周期结束时（出块 / return / `delete` / 停机清理）
+ *   * 实现 `Closeable` 的值在生命周期结束时（出块 / return / `drop` / 停机清理）
  *     自动调用 `close()`；
  *   * 用户显式调用过 `close()` 的变量不会再自动关闭；
  *   * 同时实现 `Drop` 与 `Closeable` 时，析构顺序固定为先 `close()` 再 `drop()`

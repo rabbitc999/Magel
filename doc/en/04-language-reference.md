@@ -169,7 +169,7 @@ Only writable references are accepted. Supported targets include scalars, string
 
 Statically tracked reads and repeated moves after a move are rejected, including scalar reads and aliases. Assignment does not restore usability; a new declaration is required. Redeclaration requires the whole variable to have been moved on every incoming path. Moving one field leaves disjoint fields usable but prevents reading the complete aggregate.
 
-Aggregate lifetime markers prevent duplicate destruction. Moving from manually allocated storage does not free its storage block; delete the original reference when appropriate. Ordinary assignment and ordinary value parameters still copy. Use references for calls that must avoid copying, and move explicitly where the result should take ownership. Initialization, assignment, returns and temporary reception transfer owned fields from the move result. See the [Ownership transfer](23-ownership-move.md).
+Aggregate lifetime markers prevent duplicate destruction. Moving from manually allocated storage does not free its storage block; drop the original reference when appropriate. Ordinary assignment and ordinary value parameters still copy. Use references for calls that must avoid copying, and move explicitly where the result should take ownership. Initialization, assignment, returns and temporary reception transfer owned fields from the move result. See the [Ownership transfer](23-ownership-move.md).
 
 Desktop and embedded Linux hosts share the single `library/stackvm/` core and configure resources through their host integration.
 
@@ -220,7 +220,7 @@ value=7 alive=1
 ```
 
 Heap objects are written `T mut& p = heap T;` (no constructor arguments — the element type comes from
-`p`'s type) and freed with `delete p;`.
+`p`'s type) and freed with `p.drop();`.
 
 `new(args)` carries no type information — **the declaration on the left decides which constructor
 runs**:
@@ -228,7 +228,7 @@ runs**:
 | Form | Which path |
 | --- | --- |
 | `T v = new T(args);` | stack value, calls `T`'s **real constructor** (same name as `T`) |
-| `T mut& p = heap new T(args);` | heap object, same real constructor, remember `delete p;` |
+| `T mut& p = heap new T(args);` | heap object, same real constructor, remember `p.drop();` |
 | `T v = T::create(args);` | **named constructor entry point** `static T create(...)` |
 | `T v = T::otherFactory();` | an ordinary static factory (any name) |
 
@@ -244,7 +244,7 @@ int64 main() {
     Point mut& p = heap new Point(1, 2);  // real constructor + heap → 1,2
     Point q = Point::create(3, 4);  // named constructor entry point → 30,40
     println("{},{} {} {} {} {}", o.x, o.y, p.x, p.y, q.x, q.y);
-    delete p;
+    p.drop();
     return 0;
 }
 ```
@@ -643,7 +643,7 @@ alias = 9;                    // writing through it writes value
 
 ```magel
 T mut& owned = heap T;         // heap object (element type from owned's type)
-delete owned;                  // free
+owned.drop();                  // free
 ```
 
 Rules and restrictions (escape checking, `MGL1204`): see
@@ -792,9 +792,9 @@ More capabilities (`json` / `toml` / `regex` / `sql` / `net` / `linalg` …): se
 | Constructs expected to fail | [`example/samples-error/`](../../example/samples-error/) |
 | Commands and compile options | [Toolchain](09-toolchain.md) |
 
-### Idempotent destruction and release
+### Destruction, release and temporary ownership
 
-Repeated `drop()` and `delete` have no additional effect. Assignment starts a new lifecycle; `const &` still cannot call `drop()`. Reads and writes after release, and reads after move, produce `MGL1205`; a moved binding cannot be written or rebound; a new declaration is required. The default heap reuses physical memory without reusing logical allocation identities, so repeated deletion through old references cannot affect new objects. See [borrow control flow and algorithm validation](11-algorithm-validation.md).
+Use `value.drop()` for explicit release of heap references, arrays and resource values. There is no standalone release statement; structs implementing Drop keep their protocol method. All forms share cleanup and coalescing; runtime release is not idempotent. The compiler coalesces visible drop operations for one lifecycle using control-flow analysis and still rejects use after release; runtime checks report `MGL1205` for cases that cannot be proven statically. Assignment starts a new lifecycle; `const &` still cannot call `drop()`. Reads and writes after release, and reads after move, produce `MGL1205`; a moved binding cannot be written or rebound; a new declaration is required. The default heap reuses physical memory without reusing logical allocation identities, so deletion through an old reference fails without affecting a new object. Release removes the active record immediately, without tombstones or a sweeping API. Fresh string arguments to printing, formatting and file writes are held by owning temporaries until the full expression completes. Ownership transfer clears the source slot, and releasing on one branch does not cancel cleanup on another branch. See [borrow control flow and algorithm validation](11-algorithm-validation.md).
 
 The program entry `main` must return `int64` or `void`. Function pointers can be array elements: `int64 fn(int64) a[] = new[2];`; assign elements before calling `auto callback = a[0]; callback(value);`. Function types compose with arrays, tuples, containers and nested function types. Write an array-returning function type as `(int64[]) fn()` to distinguish it from an array of function pointers.
 

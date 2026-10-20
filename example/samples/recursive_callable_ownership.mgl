@@ -45,7 +45,7 @@ int64 recurse(int64 depth) {
         CallableValue::Functions(callbacks) => { assert(callbacks[0]() == label); }
         _ => { assert(false); }
     }
-    delete allocated;
+    allocated.drop();
     return total;
 }
 int64 main() {

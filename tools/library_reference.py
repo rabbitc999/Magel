@@ -170,7 +170,7 @@ def render(data):
     index=['# 库函数 API 参考手册', '', '采用 C/C++ 参考手册常见的组织方式：模块 → 类型 → 函数/重载，逐项列出声明、参数、返回值、行为、边界及调用形式。语法仍为 Magel，不是 C++。', '',
            '覆盖工具链自带的 `std::lang`、`std`、`std::*` 与可选 `std::reflect`；编译器注入的算法和核心容器另有来源标记。`__` 前缀胶水是实现细节，不作为应用 API。底层 C++ 依赖库与宿主 C ABI 见[宿主集成](../08-host-integration.md)。', '',
            '## 阅读约定', '', '签名中 `static` 使用 `类型::方法`，实例方法使用 `对象.方法`。重载分别编号；泛型参数必须满足源码接口约束。`T`、`U`、`R` 等为类型参数，不能直接作为完整程序的具体类型。内建函数用等价调用签名表示，其参数检查由编译器完成。', '',
-           '参数为值时遵循值语义；`const&` 只读借用，`mut&` 可写借用。修改/释放资源会影响依赖它的借用；`const&` 不能调用 `drop`。显式重复 `drop/delete` 的幂等不意味着释放后的值还能读取。', '',
+           '参数为值时遵循值语义；`const&` 只读借用，`mut&` 可写借用。修改/释放资源会影响依赖它的借用；`const&` 不能调用 `drop`。显式释放统一使用 `value.drop();`，底层释放非幂等；编译器合并已知重复操作，释放后仍不能读取。', '',
            '每项的“调用形式”展示如何排列参数，参数名代表调用者已准备的值，不能单独运行。模块页链接的 `.mgl` 是带入口的完整参考代码；有输入、线程、反射或外部服务条件时以示例说明为准。错误条件既包括库显式返回的 Option/Result，也包括断言、宿主检查和借用检查诊断。', '',
            '## 模块目录', '', '| 模块 | 内容 | 函数重载数 |', '| --- | --- | ---: |']
     for module, records in data.items():
@@ -180,7 +180,6 @@ def render(data):
         functions=[r for r in records if r['kind']=='function' and not r['owner'].startswith('__')]
         index.append(f'| [`{module}`]({filename(module)}) | {title} | {len(functions)} |')
         lines=[f'# {module} — {title}', '', '[返回库目录](README.md) · [全部符号](symbols.md)', '', '## 引入', '', '```magel', '// std::lang 自动加载' if module=='std::lang' else '// 编译器内建，无需 import std' if module=='std' else 'import '+module+';', '```', '', '## 公共约定与错误边界', '', contract, '']
-        if module=='std::lang': lines=['std::lang::sweep() 不是垃圾回收器。它不做引用追踪、不判断对象存活、不自动调用。它只做一件事：清理已释放块的墓碑记录。', '']+lines
         example=EXAMPLES.get(module)
         module_info[module]=dict(name=module,title=title,documentation=contract,capability=capability.get(module,'system'),sourceLanguage='zh',examples=([example] if example else [])+SUPPLEMENTAL.get(module,[]))
         lines+=['## 参考代码', '']

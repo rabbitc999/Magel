@@ -1,7 +1,0 @@
-/* 幂等释放：同一分配重复 delete，第二次不执行任何操作。 */
-int64 main() {
-    int64 mut& block = heap int64;
-    delete block;
-    delete block;
-    return 0;
-}

@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MODULES = {
     "language": ["magel_entry_signature", "magel_function_types", "magel_lambdas"],
     "borrow": ["magel_borrow_flow", "magel_analysis_diagnostics", "magel_reference_values"],
-    "memory": ["magel_memory_guard", "magel_tombstone", "magel_watchdog"],
+    "memory": ["magel_memory_guard", "magel_resource_lifetime", "magel_watchdog"],
     "generics": ["magel_generic_monomorphization", "magel_language_move", "magel_tuple_returns"],
     "samples": [],
     "tools": ["magel_tool", "magel_package", "magel_map_pair_iterator", "magel_generic_constructors"],

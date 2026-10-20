@@ -28,7 +28,7 @@ struct FileRecord
 inline void destroyFile(void *record)
 {
     auto *file = static_cast<FileRecord *>(record);
-    if (file->file) file->file->close();
+    if (file->file && file->file->isOpen()) file->file->close();
     delete file;
 }
 inline const stackvm::NativeRecordType fileType{ "file", nullptr, destroyFile };
@@ -393,8 +393,8 @@ inline Value fileTryClose(State &ctx, const Memory::Vector<Value> &args)
 {
     const std::int64_t handle = nativeInt(args[0]);
     FileRecord *object = static_cast<FileRecord *>(ctx.host.nativeRecord(handle, fileType));
-    if (object != nullptr)
-        ctx.host.releaseNativeRecord(handle);
+    if (object != nullptr && object->file && object->file->isOpen())
+        object->file->close();
     return Value::fromInt(0);
 }
 
@@ -421,7 +421,7 @@ inline Value fileClose(State &ctx, const Memory::Vector<Value> &args)
 {
     FileRecord *object = nativeFile(ctx, args[0], "fclose");
     if (object == nullptr) return Value::fromInt(0);
-    ctx.host.releaseNativeRecord(nativeInt(args[0]));
+    object->file->close();
     return Value::fromInt(0);
 }
 

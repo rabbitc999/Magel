@@ -39,7 +39,7 @@ def generate():
         selected = [section for prefix, names in groups.items() if word in names.split()
                     for section in sections if section.startswith('## ' + prefix)]
         source = 'doc/04-language-reference.md'
-        if word in ('defer', 'scope', 'drop', 'delete'):
+        if word in ('defer', 'scope', 'drop'):
             source = 'doc/book/08-资源与作用域.md'
             selected = [(ROOT / source).read_text(encoding='utf-8')]
         if word == 'impl':

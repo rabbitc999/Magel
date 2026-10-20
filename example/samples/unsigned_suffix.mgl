@@ -32,7 +32,7 @@ int64 main() {
     int64 dynamic[] = new[3u];
     dynamic[2] = proof[1];
     assert(dynamic.len() == 3 && dynamic[2] == 42);
-    delete dynamic;
+    dynamic.drop();
     println("unsigned suffix OK");
     return 0;
 }

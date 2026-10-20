@@ -1185,7 +1185,7 @@ int64 fileEof(file const& handle);
 std::io::fileEof(handle);
 ```
 
-**源码**：[source/std/io.mgl:216](../../source/std/io.mgl#L216)。
+**源码**：[source/std/io.mgl:215](../../source/std/io.mgl#L215)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1223,7 +1223,7 @@ int64 fileClose(file const& handle);
 std::io::fileClose(handle);
 ```
 
-**源码**：[source/std/io.mgl:217](../../source/std/io.mgl#L217)。
+**源码**：[source/std/io.mgl:216](../../source/std/io.mgl#L216)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1262,7 +1262,7 @@ Result<List<uint8>,IoError> readAllBytes(String path, int64 maxBytes=16777216);
 std::io::readAllBytes(path, maxBytes);
 ```
 
-**源码**：[source/std/io.mgl:233](../../source/std/io.mgl#L233)。
+**源码**：[source/std/io.mgl:232](../../source/std/io.mgl#L232)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1301,7 +1301,7 @@ Result<int64,IoError> writeAllBytes(String path, List<uint8> bytes);
 std::io::writeAllBytes(path, bytes);
 ```
 
-**源码**：[source/std/io.mgl:239](../../source/std/io.mgl#L239)。
+**源码**：[source/std/io.mgl:238](../../source/std/io.mgl#L238)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1340,7 +1340,7 @@ Result<String,IoError> readAllText(String path, int64 maxBytes=16777216);
 std::io::readAllText(path, maxBytes);
 ```
 
-**源码**：[source/std/io.mgl:245](../../source/std/io.mgl#L245)。
+**源码**：[source/std/io.mgl:244](../../source/std/io.mgl#L244)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1379,7 +1379,7 @@ Result<int64,IoError> writeAllText(String path, String text);
 std::io::writeAllText(path, text);
 ```
 
-**源码**：[source/std/io.mgl:254](../../source/std/io.mgl#L254)。
+**源码**：[source/std/io.mgl:253](../../source/std/io.mgl#L253)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1417,7 +1417,7 @@ Result<List<String>,IoError> listDirectory(String path);
 std::io::listDirectory(path);
 ```
 
-**源码**：[source/std/io.mgl:259](../../source/std/io.mgl#L259)。
+**源码**：[source/std/io.mgl:258](../../source/std/io.mgl#L258)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1455,7 +1455,7 @@ Result<FileInfo,IoError> fileInfo(String path);
 std::io::fileInfo(path);
 ```
 
-**源码**：[source/std/io.mgl:265](../../source/std/io.mgl#L265)。
+**源码**：[source/std/io.mgl:264](../../source/std/io.mgl#L264)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1493,7 +1493,7 @@ Result<int64,IoError> createDirectories(String path);
 std::io::createDirectories(path);
 ```
 
-**源码**：[source/std/io.mgl:273](../../source/std/io.mgl#L273)。
+**源码**：[source/std/io.mgl:272](../../source/std/io.mgl#L272)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 
@@ -1532,7 +1532,7 @@ Result<int64,IoError> renamePath(String from, String to);
 std::io::renamePath(from, to);
 ```
 
-**源码**：[source/std/io.mgl:279](../../source/std/io.mgl#L279)。
+**源码**：[source/std/io.mgl:278](../../source/std/io.mgl#L278)。
 
 **完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
 

@@ -597,7 +597,7 @@ int runCli(int argc, char **argv)
     for (const char *name : {"magel_parser.cpp", "magel_parser.hpp",
                              "magel_parser_user.h", "magel_main.cpp", "RESULT.md"})
         ok = copy(stage / name, name) && ok;
-    for (const char *name : {"magel_driver.cpp", "magel_i18n.hpp", "magel_diagnostics.hpp", "magel_borrow_checker.hpp", "magel_borrow_flow.hpp", "magel_macro.hpp", "magel_macro_controls.hpp", "magel_module.hpp",
+    for (const char *name : {"magel_driver.cpp", "magel_i18n.hpp", "magel_diagnostics.hpp", "magel_borrow_checker.hpp", "magel_borrow_flow.hpp", "magel_resource_cleanup.hpp", "magel_resource_cleanup.cpp", "magel_macro.hpp", "magel_macro_controls.hpp", "magel_module.hpp",
                              "magel_incremental.hpp", "magel_package.hpp", "magel_project.hpp", "magel_cli.hpp",
                              "magel_lambda.hpp", "magel_generic.hpp", "magel_generic_name.hpp", "magel_glue.hpp",
                              "magel_stdlib_embedded.cpp", "magel_stdlib.hpp", "magel_generic.cpp", "magel_lambda.cpp", "magel_generic_closure.cpp", "magel_macro.cpp", "magel_macro_controls.cpp", "magel_package.cpp", "magel_report.cpp", "magel_runtime_allocator.hpp",
@@ -609,7 +609,7 @@ int runCli(int argc, char **argv)
     /* `magel_semantics.cpp` 按职责拆成 `semantics/*.cpp`，它用相对 `#include`
      * 拼回；生成工程必须把分片一起带过去（编译 `magel_parser.cpp` 时按相对路径找到）。 */
     for (const char *name : {"symbol_table.cpp", "type_ids.cpp", "type_ids_shared.cpp",
-                             "lifetime.cpp", "aggregate_ownership.cpp", "scope.cpp",
+                             "lifetime.cpp", "aggregate_ownership.cpp", "resource_lifetime.cpp", "scope.cpp",
                              "return_expression_ast.cpp", "named_function_ast.cpp", "derive_ast.cpp", "derive.cpp",
                              "types.cpp", "interfaces.cpp", "formatted_output.cpp", "builtins.cpp", "generic_inference.cpp", "constants.cpp", "annotation_ast.cpp", "annotations.cpp", "reflection_metadata.cpp", "reflection_queries.cpp", "reflection_calls.cpp",
                              "lowering.cpp", "borrow_facts.cpp", "borrow_flow.cpp", "borrow_return_sources.cpp", "expression_effects.cpp", "interface_dispatch.cpp", "boxing.cpp",

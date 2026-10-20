@@ -19,7 +19,7 @@ VS Code 那边两个插件分工也一致：[`magel/vscode/`](../vscode/README.m
 
 | 能力 | 说明 |
 | --- | --- |
-| 诊断 | 14 个稳定短码：`magel-macro-duplicate` / `magel-macro-header` / `magel-macro-params` / `magel-macro-arity` / `magel-macro-unclosed` / `magel-macro-end` / `magel-macro-end-legacy` / `magel-nested-macro` / `magel-replace-header` / `magel-delete-macro` / `magel-macro-object-call` / `magel-match-outside` / `magel-match-end-outside` / `magel-end-for` |
+| 诊断 | 14 个稳定短码：`magel-macro-duplicate` / `magel-macro-header` / `magel-macro-params` / `magel-macro-arity` / `magel-macro-unclosed` / `magel-macro-end` / `magel-macro-end-legacy` / `magel-nested-macro` / `magel-replace-header` / `magel-drop-macro` / `magel-macro-object-call` / `magel-match-outside` / `magel-match-end-outside` / `magel-end-for` |
 | 悬停 | 宏声明（含形参、`expr` / 参数括号修饰的说明） |
 | 补全 | 当前文档里可见的宏（插入 `NAME(x, y)`），按块作用域过滤 |
 | 跳转定义 | 宏调用 → 定义处 |

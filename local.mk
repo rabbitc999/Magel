@@ -206,7 +206,7 @@ endif
 -include build/magel-native-development.d
 
 # 泛型与闭包文本处理实现独立编译，解析器和语言服务只依赖声明。
-MAGEL_FRONTEND_MODULES := magel_generic magel_lambda magel_generic_closure magel_macro magel_macro_controls magel_package magel_report
+MAGEL_FRONTEND_MODULES := magel_resource_cleanup magel_generic magel_lambda magel_generic_closure magel_macro magel_macro_controls magel_package magel_report
 MAGEL_FRONTEND_MODULE_OBJS := $(addprefix $(FRONTEND_BUILD)/,$(addsuffix .o,$(MAGEL_FRONTEND_MODULES)))
 LIB_OBJS += $(MAGEL_FRONTEND_MODULE_OBJS)
 $(LIB): $(MAGEL_FRONTEND_MODULE_OBJS)

@@ -43,7 +43,7 @@ struct Vector<T>: Add<Vector<T>, Vector<T>>,
                            Subtract<Vector<T>, Vector<T>>,
                            Multiply<Vector<T>, T>, Index<T, int64>, Iterator<T>, Drop {
     ScalarArray<T> values;
-    void drop() { delete self.values; }
+    void drop() { self.values.drop(); }
 
     static Vector<T> zeros(int64 n) {
         std::lang::assert(n >= 0, "Vector 长度必须非负");
@@ -126,7 +126,7 @@ struct Matrix<T>: Add<Matrix<T>, Matrix<T>>,
     int64 rows;
     int64 cols;
     ScalarArray<T> values;
-    void drop() { delete self.values; }
+    void drop() { self.values.drop(); }
 
     static Matrix<T> zeros(int64 rows, int64 cols) {
         std::lang::assert(rows >= 0 && cols >= 0, "Matrix 维度必须非负");

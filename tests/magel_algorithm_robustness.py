@@ -79,7 +79,7 @@ def main():
             assert not result.stderr.strip(), (command, result.stderr)
         return result.stdout.strip()
     programs = {}
-    for name in ('borrow_algorithms', 'noip2015_transport', 'idempotent_destruction'):
+    for name in ('borrow_algorithms', 'noip2015_transport', 'resource_cleanup'):
         source = ROOT / 'tests/fixtures' / (name + '.mgl')
         programs[name] = [[compiler, 'run', source, '--out', work / name]]
         print(f'已准备 {name}', flush=True)
@@ -92,7 +92,7 @@ def main():
             actual = execute(command, data, timeout=900)
             assert actual == str(expected), (name, command, data[:2000], expected, actual)
             count += 1
-    verify('idempotent_destruction', '', 'idempotent destruction ok 7')
+    verify('resource_cleanup', '', 'resource cleanup ok 7')
     for n, seed in [(0, 1), (1, 1), (2, 42), (12, 42), (32, 0), (64, 7), (128, 2026)]:
         verify('borrow_algorithms', f'{n} {seed}\n', structures(n, seed))
     sample = [(1, 2, 3), (1, 6, 4), (3, 1, 7), (4, 3, 6), (3, 5, 5)]

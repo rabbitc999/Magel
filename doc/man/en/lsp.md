@@ -4,6 +4,8 @@
 
 ## Types, macros and safe refactoring
 
+Closures without an explicit result type infer it from their tail expression and `return` expressions. Generic closures retain type parameters and instantiate them at calls. When a closure returns another closure or a named function, hints preserve the parameters and result at every `fn` level; successive calls unwrap one level at a time. Struct members initialized with `auto` closures share this inference. Integer arithmetic follows the compiler's literal range adaptation, width and unsigned rules; comparisons respect operator precedence. Ambiguous results remain unknown rather than guessing a concrete type.
+
 Completion, hover, definitions and refactoring share binding scans and type queries. Original document URIs and declaration offsets distinguish shadowed names. Queries cover `for(auto item in values)` element types, generic fields and method results, inference of direct function type parameters, explicit generic arguments, nested `fn` results and contextual anonymous function parameters. Uncertain types do not produce inlay hints; compiler diagnostics remain authoritative.
 
 `auto` hover shows the complete inferred type on either the variable or the `auto` keyword, including generic arguments and nested function signatures. Function types additionally describe parameters and return types. Unknown inference is reported explicitly. `textDocument/inlayHint` displays inferred types for `auto` bindings and contextual parameters; VS Code users can disable `magel.inlayHints.enabled` or use the editor's inlay hint settings.

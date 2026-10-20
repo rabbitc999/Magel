@@ -64,7 +64,7 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 | [18](../18-panic-trace.md) | Panic and source lines | Anyone debugging crashes | Failure output, call stack, source location, compact symbol-hiding policy |
 | [19](../19-reflection.md) | Annotations and reflection | Anyone using annotations / dynamic calls | Declaration metadata, typed queries, closed-value dynamic invocation |
 | [20](../20-memory-allocator.md) | Memory allocator | Anyone wiring host memory | Pool and capacity stats, allocation range checks, external buffers |
-| [22](22-tombstone-research.md) | Tombstone implementation research | Runtime contributors | Original storage, allocation/release paths, sweep and restart boundaries, lambda borrowing research |
+| [22](22-resource-lifetime.md) | Resource lifetimes and borrow control flow | Runtime contributors | Allocation identities, resource cleanup and coalescing, temporary ownership, closure borrowing |
 | [99](99-magel-story.md) | The Magel story | Anyone curious how it got here | From Magic-C to Magel: which walls it hit, what it deleted, what is still unfinished |
 
 ## More entry points

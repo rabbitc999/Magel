@@ -1671,7 +1671,7 @@ bool BodyMutatesReceiver(int id, const Memory::String &owner, Memory::Set<Memory
             if (BodyMutatesReceiver(child, owner, nested, visiting, nestedLocals, returnType)) return true;
         return false;
     }
-    if ((node.kind == MNode::Assign || node.kind == MNode::Delete) && !node.kids.empty() && ReceiverRooted(node.kids[0], roots)) return true;
+    if (node.kind == MNode::Assign && !node.kids.empty() && ReceiverRooted(node.kids[0], roots)) return true;
     if (node.kind == MNode::Foreach && node.kids.size() > 1u)
     {
         auto nested = roots;
@@ -1931,7 +1931,8 @@ simple_ast::NodePtr StoreOwnedValueAt(const simple_ast::NodePtr &address, int va
     out.push_back(simple_ast::Node::assign(slotAddress, target));
     const auto previous = simple_ast::Node::loadInt(simple_ast::Node::var(slotAddress));
     const auto *opcode = FindOpcodeDefinition(type);
-    out.push_back(opcode ? simple_ast::Node::exprStmt(simple_ast::Node::call(opcode->destroy, { "value" }, { previous })) : simple_ast::Node::release(previous));
+    out.push_back(simple_ast::Node::ifThenElse(simple_ast::Node::binary("!=", previous, simple_ast::Node::i(0)),
+                                               opcode ? simple_ast::Node::exprStmt(simple_ast::Node::call(opcode->destroy, { "value" }, { previous })) : simple_ast::Node::release(previous), nullptr));
     out.push_back(simple_ast::Node::storeAt(simple_ast::Node::var(slotAddress),
                                             simple_ast::Node::var(slotValue),
                                             LowerType(type, "assignment")));
@@ -2548,7 +2549,7 @@ simple_ast::NodePtr LowerMemberClosureInitializer(int initializer)
             g_owner = std::move(owner);
         }
     } scope;
-    return LowerExpr(initializer);
+    return TakeExpressionTempValue(LowerExpr(initializer), ExprType(initializer));
 }
 
 /**

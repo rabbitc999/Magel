@@ -152,8 +152,8 @@ int64 main() {
     println("iface {} {}", tell(s1), tell(s2));
     println("twice {} {}", twiceArea(s1), twiceArea(s2));
 
-    delete pr;
-    delete pq;
+    pr.drop();
+    pq.drop();
 
     return 0;
 }

@@ -20,7 +20,7 @@ void free_list(Option<Cell mut&> head) {
     while (cursor.isValue()) {
         Cell mut& node = cursor.unwrap();
         cursor = node.next;
-        delete node;
+        node.drop();
     }
 }
 int64 main() {
@@ -37,7 +37,7 @@ int64 main() {
     Cell mut& first = head.unwrap();
     println("删掉头节点 {}", first.value);
     head = first.next;
-    delete first;
+    first.drop();
     println("剩下的元素和 = {}", sum_of(head));
     free_list(head);
     return 0;

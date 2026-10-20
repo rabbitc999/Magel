@@ -1,0 +1,53 @@
+int64 drops = 0;
+struct Item : Drop {
+    int64 value;
+    String text;
+    void drop() { drops += 1; }
+};
+struct Pair { Item left; Item right; };
+void conditional(bool dispose) {
+    Item value;
+    value.text = "branch";
+    if (dispose) { value.drop(); }
+    value.drop();
+    value.drop();
+}
+int64 main() {
+    {
+        Item value;
+        value.text = "owned";
+        value.drop();
+        value.drop();
+        value.drop();
+        assert(drops == 1);
+    }
+    {
+        Pair pair;
+        pair.left.drop();
+        pair.right.drop();
+    }
+    assert(drops == 3);
+    Item mut& first = heap Item;
+    first.text = "heap";
+    Item mut& stale = first;
+    first.drop();
+    first.drop();
+    stale.drop();
+    Item mut& second = heap Item;
+    second.value = 22;
+    stale.drop();
+    assert(second.value == 22 && drops == 4);
+    second.drop();
+    assert(drops == 5);
+    conditional(true);
+    conditional(false);
+    assert(drops == 7);
+    int64 data[] = new[2];
+    data.drop();
+    data.drop();
+    List<int64> list = [1];
+    list.drop();
+    list.drop();
+    println("resource cleanup ok {}", drops);
+    return 0;
+}

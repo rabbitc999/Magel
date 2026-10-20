@@ -540,6 +540,44 @@ simple_ast::NodePtr LowerLanguageMove(const Memory::Vector<int> &args, bool impl
 }
 
 /**
+ * @brief 登记无副作用的命名资源终结操作，供控制流合并保留正确执行路径。
+ * @param id 显式操作的源码编号。
+ * @param receiver 被销毁的资源表达式。
+ * @param operation 已降级的销毁或释放代码。
+ * @return 原操作；合并阶段会直接更新该共享节点。
+ */
+simple_ast::NodePtr RememberResourceRelease(int id, int receiver, const simple_ast::NodePtr &operation)
+{
+    if (!g_borrowFlowCapture || receiver < 0 || !operation) return operation;
+    std::function<bool(int)> stable = [&](int value) {
+        if (value < 0) return false;
+        const auto source = N(value);
+        if (source.kind == MNode::Var) return true;
+        if ((source.kind == MNode::Member || source.kind == MNode::Arrow) && !source.kids.empty()) return stable(source.kids[0]);
+        if (source.kind == MNode::Index && source.kids.size() == 2u)
+            return stable(source.kids[0]) && N(source.kids[1]).kind == MNode::Int;
+        return false;
+    };
+    if (!stable(receiver)) return operation;
+    using simple_ast::Node;
+    const auto raw = RawExprType(receiver);
+    const auto type = raw && raw->kind == MType::Ptr ? raw->elem : raw;
+    simple_ast::NodePtr guard;
+    if (type && type->kind == MType::Struct && (raw->kind != MType::Ptr || !g_borrowFlowCapture->storageReleases.count(id)))
+        guard = Node::call("__std_move_live", { "address", "bytes", "type" },
+                           { LowerExpr(receiver), Node::i(std::max(8, StructStride(type))), Node::i(TypeIdOf(type)) });
+    else if (IsRuntimeArray(type))
+        guard = Node::call("__std_heap_live", { "address" },
+                           { Node::binary("-", raw->kind == MType::Ptr ? LowerExpr(receiver) : LowerRawExpr(receiver), Node::i(8)) });
+    else if (raw && raw->kind == MType::Ptr)
+        guard = Node::call("__std_heap_live", { "address" }, { LowerRawExpr(receiver) });
+    else
+        guard = Node::binary("!=", LowerRawExpr(receiver), Node::i(0));
+    g_borrowFlowCapture->releases[id] = { operation, guard };
+    return operation;
+}
+
+/**
  * @brief 解析函数调用并生成对应的低层表达式。
  * @param id 待查找或操作的对象编号。
  * @retval 生成的低层语法节点。
@@ -704,8 +742,8 @@ simple_ast::NodePtr LowerCall(int id)
                 names.push_back("__magel_value" + Memory::toString(index));
                 values.push_back(LowerArgumentValue(argIds[index], hostRequired->params[index]));
             }
-            /* 显式调用胶水实现的 `drop()` / `close()`：从自动析构名单里摘掉，别再跑一次。
-             * `drop()` 是终结操作：先补 `close()`，之后系统不再自动回收（见 FinishExplicitDrop）。 */
+            /* 显式协议调用记录实际执行的终结或关闭路径。
+             * 自动清理登记仍保留，由存活状态和局部关闭标志避免重复收尾。 */
             const simple_ast::NodePtr call = simple_ast::Node::call(hostSymbol, names, values);
             if (argIds.empty() && receiverId >= 0 && N(receiverId).kind == MNode::Var)
             {
@@ -713,7 +751,7 @@ simple_ast::NodePtr LowerCall(int id)
                 if (variable != nullptr)
                 {
                     if (methodName == "close" && hostImpl->interfaceName == "Closeable")
-                        UnmarkDestructor(variable->emitted, false, true);
+                        return FinishExplicitClose(variable->emitted, call);
                     else if (methodName == "drop" && hostImpl->interfaceName == "Drop")
                         return FinishExplicitDrop(StructNameOf(baseType), variable->emitted,
                                                   values.front(), call);
@@ -1300,11 +1338,6 @@ simple_ast::NodePtr LowerCall(int id)
             return simple_ast::Node::call("__std_put_char", { "__magel_char" },
                                           { LowerExpr(args[0]) });
         }
-        if (callee.s == "sweep")
-        {
-            if (!args.empty()) return Fail("std::lang::sweep 不接受参数"), Bad();
-            return simple_ast::Node::call("__std_heap_sweep", {}, {});
-        }
         if (callee.s == "inputLine" || callee.s == "inputInt" || callee.s == "inputUInt" || callee.s == "inputFloat" || callee.s == "inputBool" || callee.s == "inputChar" || callee.s == "inputBigInteger" || callee.s == "inputBigDecimal")
         {
             if (!args.empty())
@@ -1340,7 +1373,7 @@ simple_ast::NodePtr LowerCall(int id)
             return simple_ast::Node::call(g_hasDefer ? "__magel_defer_panic" : "__std_panic",
                                           { "__magel_value" }, { LowerExpr(args[0]) });
         }
-        /* ---- 内存内建：new / delete / memcpy / memset（数据区上的单调堆 + 逐字节操作）---- */
+        /* ---- 内存内建：new / drop / memcpy / memset（数据区上的单调堆 + 逐字节操作）---- */
         if (callee.s == "memcpy" || callee.s == "memset")
         {
             const Memory::String &name = callee.s;
@@ -1448,7 +1481,7 @@ simple_ast::NodePtr LowerCall(int id)
                 return Bad();
             }
             return simple_ast::Node::call("__std_file_write", { "__magel_f", "__magel_s" },
-                                          { LowerExpr(args[0]), LowerExpr(args[1]) });
+                                          { LowerExpr(args[0]), NeedsOwnedTemp(args[1]) ? OwnedStringTemp(args[1]) : LowerExpr(args[1]) });
         }
         if (callee.s == "feof" || callee.s == "fileEof" || callee.s == "__fileEof" || callee.s == "fclose" || callee.s == "fileClose" || callee.s == "__fileClose")
         {
@@ -1736,9 +1769,8 @@ simple_ast::NodePtr LowerCall(int id)
         return Fail("宿主函数没有绑定：" + label + "（宿主用 registry.bindTyped / bindTypedWithContext 注册）"),
                Bad();
     }
-    /* 显式调用 MAGEL 实现的 `drop()` / `close()`：从自动析构名单里摘掉，别再跑一次。
-     * 只看光秃秃的变量接收者；`self.drop()` / `p.close()` 这类没法在编译期归属到某个变量。
-     * `drop()` 是终结操作：先补 `close()`，之后系统不再自动回收（见 FinishExplicitDrop）。 */
+    /* Drop 协议统一完成关闭、析构和拥有字段回收；成员接收者也只求值一次。
+     * 命名 Closeable 的关闭路径保存在编译器标志中，其他分支的自动清理继续保留。 */
     const simple_ast::NodePtr call = simple_ast::Node::call(label, names, values);
     if ((callee.kind == MNode::Member || callee.kind == MNode::Arrow) && callee.s == "drop" && args.empty())
     {
@@ -1758,7 +1790,7 @@ simple_ast::NodePtr LowerCall(int id)
             if (callee.s == "drop" && StructHasInterface(ownerName, "Drop"))
                 return FinishExplicitDrop(ownerName, variable->emitted, values.front(), call);
             if (callee.s == "close" && StructHasInterface(ownerName, "Closeable"))
-                UnmarkDestructor(variable->emitted, false, true);
+                return FinishExplicitClose(variable->emitted, call);
         }
     }
     return call;
@@ -1865,133 +1897,75 @@ simple_ast::NodePtr LowerNewPtr(int id)
 }
 
 /**
- * @brief 调用一个值上的 `drop()` / `close()` 析构（`std::lang::Drop` / `std::lang::Closeable` 协议）。
- *
- * `x` 是光秃秃的变量时顺手取消它本次作用域的自动析构（`UnmarkDestructor`）——
- * 显式来一次、出块再来一次就是双重析构。失败时已经 `Fail` 过，返回 `nullptr`。
+ * @brief 统一降级资源的 drop() 调用，先销毁拥有资源，再释放其存储并清空拥有槽。
+ * @param receiver 显式终结的接收者表达式编号。
+ * @return 严格回收资源的语句；非法类型或只读来源返回诊断节点。
+ * @note 资源合并模块消除已知重复终结，分支释放保留其他路径的自动清理。
  */
-simple_ast::NodePtr MakeDestructorCall(int valueId)
+simple_ast::NodePtr LowerResourceDrop(int receiver)
 {
-    const std::shared_ptr<MType> type = ExprType(valueId);
-    const Memory::String owner = StructNameOf(type);
-    if (owner.empty()) return nullptr;
-    const bool drop = StructHasInterface(owner, "Drop");
-    const bool close = StructHasInterface(owner, "Closeable");
-    const bool aggregate = StructHasOwnedLeaves(owner);
-    if (!drop && !close && !aggregate) return nullptr;
-    const simple_ast::NodePtr value = LowerExpr(valueId);
-    Memory::Vector<simple_ast::NodePtr> stmts;
-    if (close)
-        if (const simple_ast::NodePtr call = MakeCloseCallAt(owner, value))
-            stmts.push_back(call);
-    if (drop)
-        if (const simple_ast::NodePtr call = MakeDropCallAt(owner, value))
-            stmts.push_back(call);
-    if (aggregate)
-        if (const simple_ast::NodePtr release = MakeAggregateRelease(owner, value))
-            stmts.push_back(release);
-    if (stmts.empty())
-    {
-        Fail("struct " + owner + " 实现了 Drop / Closeable 但缺少 drop() / close()");
-        return nullptr;
-    }
-    if (N(valueId).kind == MNode::Var)
-    {
-        const MVar *variable = FindIn(N(valueId).module, N(valueId).s);
-        if (variable != nullptr)
-        {
-            UnmarkDestructor(variable->emitted, drop, close);
-            if (aggregate) UnmarkAggregate(variable->emitted);
-        }
-    }
-    if (stmts.size() == 1u) return stmts.front();
-    return simple_ast::Node::block(stmts);
-}
-
-/**
- * @brief 这个类型是不是"实现了 `std::lang::Drop` / `std::lang::Closeable` 的普通值"（`delete` 靠它决定要不要调析构）。
- * @param type 类型描述。
- * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
- */
-bool IsDestructibleValue(const std::shared_ptr<MType> &type)
-{
-    const Memory::String owner = StructNameOf(type);
-    return !owner.empty() && (StructHasInterface(owner, "Drop") || StructHasInterface(owner, "Closeable") || StructHasOwnedLeaves(owner));
-}
-
-/**
- * @brief `delete x;`：**唯一**的"处理掉这个变量"语句（旧的 `drop x;` 已经并进这里）。
- *
- * 按 `x` 的类型分派：
- *   * **运行时数组** `T[]`：句柄前面 8 字节是块头（存长度），还回去的是块首 `句柄 - 8`；
- *   * **对象类 / 资源句柄**（`bint` / 容器 / `obj` / `file` / `proc`）：还的是对象表里那个对象；
- *   * **实现了 `std::lang::Drop` 的普通值**：调用它的 `drop()`（等于旧的 `drop x;`）；
- *   * **可写引用** `T mut&`：`new T` 拿到的地址本身就是块首，直接还；
- *   * 只读引用 `T*`、标量等不持有资源的类型 → 编译期报错。
- *
- * 作用域检测（`x` 是光秃秃的变量时）：
- *   * `const` 变量不能 delete；
- *   * 同一变量**中间没有重新赋值**就 delete 两次 → 编译期报错（赋值会清掉这个记号）；
- *   * 删过之后把它从"自动释放名单"里摘掉（`UnmarkOwned`）：离开块时不会再还一次，而变量里
- *     留着的仍是那个**已经失效的地址** —— 再用它访问照样报"堆越界读 / 已经 free 过"，
- *     诊断不会因为自动释放而变模糊。
- *
- * 删过之后再用它访问（`a[i]` / `p[0]` / `p->f`）会被虚拟机拦住 —— 那块内存已经不在
- * 已分配表里：下标检查会说"地址不在任何一块已分配内存里"，读 / 写会说"堆越界"。
- * @param id delete 语句节点编号。
- * @return 释放目标资源的语句；非法删除返回错误节点或空节点。
- * @note 可变数组引用释放被引用数组，保留保存该数组句柄的引用槽。
- */
-simple_ast::NodePtr LowerDelete(int id)
-{
-    const MNode &node = N(id);
-    if (node.kids.empty()) return nullptr;
-    const MNode &target = N(node.kids[0]);
+    const MNode target = N(receiver);
     MVar *variable = target.kind == MNode::Var ? FindIn(target.module, target.s) : (target.kind == MNode::EnumCtor ? FindQualifiedGlobal(target.s, target.s2) : nullptr);
     if (variable != nullptr)
     {
         if (variable->isConst)
-            return Fail("不能 delete 只读（const）变量：" + target.s), Bad();
+            return Fail("不能 drop 只读（const）变量：" + target.s), Bad();
     }
 
-    const auto rawType = RawExprType(node.kids[0]);
+    if (!variable && IsReadOnlyAccess(receiver)) return Fail("只读接收者不能调用 drop()"), Bad();
+    const auto rawType = RawExprType(receiver);
     const bool arrayReference = rawType->kind == MType::Ptr && IsRuntimeArray(rawType->elem);
     if (arrayReference && rawType->readOnly)
-        return Fail("只读数组引用不能 delete；释放调用方数组须使用 T[] mut&"), Bad();
+        return Fail("只读数组引用不能 drop；释放调用方数组须使用 T[] mut&"), Bad();
     const std::shared_ptr<MType> type = arrayReference ? rawType->elem : rawType;
     simple_ast::NodePtr removal;
-    /* 对象表句柄（`bint` / 容器 / obj / 接口引用 / file / proc）的 `delete` 只"还走
-     * 这一条路径"：同一个变量在别的分支上可能还活着，出块时仍要自动兜底。句柄单调
-     * 递增、永不复用，出块再 `drop` 一次已经还过的句柄是空操作（`Op::Drop` 软释放）。 */
-    bool keepAutoDrop = false;
+    Memory::Vector<simple_ast::NodePtr> prefix;
+    simple_ast::NodePtr ownerSlot;
+    if (!variable && (target.kind == MNode::Member || target.kind == MNode::Arrow || target.kind == MNode::Index) && (IsRuntimeArray(type) || type->kind == MType::Opcode || IsObjectLike(type) || IsResourceLike(type)))
+    {
+        const auto slot = AllocateName("__magel_drop_owner");
+        prefix.push_back(simple_ast::Node::declare(slot, simple_ast::Type::i64()));
+        prefix.push_back(simple_ast::Node::assign(slot, LowerAddressOf(receiver)));
+        ownerSlot = simple_ast::Node::var(slot);
+    }
+
+    /* 显式释放严格执行；分支路径通过清空拥有槽与后续资源合并保持单次回收。 */
+    bool clearOwner = false;
     if (IsRuntimeArray(type))
     {
         using simple_ast::Node;
-        const auto slot = AllocateName("__magel_delete_array");
+        const auto slot = AllocateName("__magel_drop_array");
         const auto value = Node::var(slot);
         const auto base = Node::binary("-", value, Node::i(8));
         Memory::Vector<simple_ast::NodePtr> actions;
         if (ArrayElementNeedsRelease(type->elem))
             if (const auto release = MakeArrayElementRelease(slot, type->elem)) actions.push_back(release);
         actions.push_back(Node::freeMemory(base));
-        removal = Node::block({ Node::declare(slot, simple_ast::Type::i64()), Node::assign(slot, arrayReference ? LowerExpr(node.kids[0]) : LowerRawExpr(node.kids[0])),
-                                Node::ifThenElse(Node::call("__std_heap_delete_live", { "address" }, { base }), Node::block(actions), nullptr) });
+        removal = Node::block({ Node::declare(slot, simple_ast::Type::i64()), Node::assign(slot, ownerSlot ? Node::loadInt(ownerSlot) : arrayReference ? LowerExpr(receiver) :
+                                                                                                                                                         LowerRawExpr(receiver)),
+                                Node::ifThenElse(Node::call("__std_heap_drop_live", { "address" }, { base }), Node::block(actions), nullptr) });
+    }
+    else if (const auto *opcode = FindOpcodeDefinition(type))
+    {
+        clearOwner = true;
+        const auto value = ownerSlot ? simple_ast::Node::loadInt(ownerSlot) : LowerRawExpr(receiver);
+        removal = simple_ast::Node::exprStmt(simple_ast::Node::call(opcode->destroy, { "value" }, { value }));
     }
     else if (IsObjectLike(type) || IsResourceLike(type))
     {
-        /* `delete 大整数;` / `delete 容器;` / `delete file;` / `delete proc;`：
-         * 把对象表里那个对象还回去；已释放的对象句柄重复回收无效果。 */
-        keepAutoDrop = true;
-        removal = simple_ast::Node::freeMemory(LowerRawExpr(node.kids[0]));
+        /* 函数对象及标准集合的 drop() 严格归还对象表记录，
+         * 由控制流合并处理已知重复调用，底层不接受失效句柄。 */
+        clearOwner = true;
+        removal = simple_ast::Node::freeMemory(ownerSlot ? simple_ast::Node::loadInt(ownerSlot) : LowerRawExpr(receiver));
     }
     else if (type->kind == MType::Ptr && type->elem && type->elem->kind == MType::Struct)
     {
-        if (type->readOnly) return Fail("delete 只能用在可写引用（`T mut&`）或运行时数组（`T[]`）上；只读引用（`T const&`）不持有对象"), Bad();
+        if (type->readOnly) return Fail("drop 只能用在可写引用（`T mut&`）或运行时数组（`T[]`）上；只读引用（`T const&`）不持有对象"), Bad();
         // new 创建的拥有资源对象：先按活动载荷析构，再释放对象本身的分配块。
-        const auto slot = AllocateName("__magel_delete_object");
+        const auto slot = AllocateName("__magel_drop_object");
         Memory::Vector<simple_ast::NodePtr> out{
             simple_ast::Node::declare(slot, simple_ast::Type::i64()),
-            simple_ast::Node::assign(slot, LowerRawExpr(node.kids[0]))
+            simple_ast::Node::assign(slot, LowerRawExpr(receiver))
         };
         const auto value = simple_ast::Node::var(slot);
         const auto owner = type->elem->name;
@@ -2000,24 +1974,17 @@ simple_ast::NodePtr LowerDelete(int id)
         out.push_back(simple_ast::Node::freeMemory(value));
         const auto actions = simple_ast::Node::block(Memory::Vector<simple_ast::NodePtr>(out.begin() + 2, out.end()));
         out.resize(2);
-        out.push_back(simple_ast::Node::ifThenElse(simple_ast::Node::call("__std_heap_delete_live", { "address" }, { value }), actions, nullptr));
+        out.push_back(simple_ast::Node::ifThenElse(simple_ast::Node::call("__std_heap_drop_live", { "address" }, { value }), actions, nullptr));
         removal = simple_ast::Node::block(out);
-        if (variable)
-        {
-            UnmarkDestructor(variable->emitted, true, true);
-            UnmarkAggregate(variable->emitted);
-        }
     }
     else if (IsDestructibleValue(type))
     {
-        removal = MakeDestructorCall(node.kids[0]);
+        removal = FinishExplicitDrop(StructNameOf(type), variable ? variable->emitted : Memory::String(), LowerExpr(receiver), nullptr);
         if (removal == nullptr) return Bad();
-        if (variable && g_parameterValueStorage.count(variable->emitted))
-            removal = simple_ast::Node::block({ removal, MakeDrop(variable->emitted, false) });
     }
     else if (type->kind != MType::Ptr)
     {
-        Fail("delete 只能用在可写引用（`T mut&`）、运行时数组（`T[]`）、"
+        Fail("drop 只能用在可写引用（`T mut&`）、运行时数组（`T[]`）、"
              "`bint` / 容器 / obj 或 file / proc 资源句柄，"
              "以及实现了 std::lang::Drop 的值上，现在给的是 "
              + Describe(type));
@@ -2025,34 +1992,34 @@ simple_ast::NodePtr LowerDelete(int id)
     }
     else if (type->readOnly)
     {
-        Fail("delete 只能用在可写引用（`T mut&`）或运行时数组（`T[]`）上；只读引用（`T const&`）不持有对象");
+        Fail("drop 只能用在可写引用（`T mut&`）或运行时数组（`T[]`）上；只读引用（`T const&`）不持有对象");
         return nullptr;
     }
     else
     {
-        removal = simple_ast::Node::freeMemory(LowerRawExpr(node.kids[0]));
+        removal = simple_ast::Node::freeMemory(ownerSlot ? simple_ast::Node::loadInt(ownerSlot) : LowerRawExpr(receiver));
     }
 
-    /* `delete x;`（x 是变量）：
-     *   * 对象表句柄（`delete 大数;` / `delete 容器;` / 资源）：**保留**自动释放登记 ——
-     *     显式 `delete` 可能只在某条分支上跑（`if (…) { delete x; return; }`），别的分支上
-     *     x 还活着，出块时要靠自动释放还回去。还过的那条路径出块再 `drop` 一次是空操作。
-     *   * 其它（运行期数组 / 实现了 Drop 的值 / 弹性引用）：从自动名单里摘掉，出块不再来一次。
-     *     （运行期数组是堆地址、分配器允许复用时不安全；不做基于非复用的假设。） */
-    if (variable != nullptr && !keepAutoDrop)
+    /* 析构登记属于词法存储，不随某条分支删除；实际释放路径清空拥有槽。 */
+    if (IsRuntimeArray(type)) clearOwner = true;
+    if (clearOwner && ownerSlot)
     {
-        if (IsRuntimeArray(type) && variable->elementReference)
-        {
-            // 被取地址的值另有拥有者名称；删除数组不能取消引用槽本身的收尾。
-            for (const auto &binding : g_referenceStorage)
-                if (binding.second == variable->emitted)
-                {
-                    UnmarkOwned(binding.first);
-                    break;
-                }
-        }
-        else
-            UnmarkOwned(variable->emitted);
+        prefix.push_back(removal);
+        prefix.push_back(simple_ast::Node::storeAt(ownerSlot, simple_ast::Node::i(0), simple_ast::Type::i64()));
+        return simple_ast::Node::block(prefix);
+    }
+    if (clearOwner && arrayReference)
+        return simple_ast::Node::block({ removal, simple_ast::Node::storeAt(
+                                                      LowerRawExpr(receiver), simple_ast::Node::i(0), simple_ast::Type::i64()) });
+    if (clearOwner && variable)
+    {
+        const auto storage = g_referenceStorage.find(variable->emitted);
+        const auto clear = variable->elementReference ?
+                               simple_ast::Node::storeAt(simple_ast::Node::var(variable->emitted), simple_ast::Node::i(0), simple_ast::Type::i64()) :
+                           storage != g_referenceStorage.end() ?
+                               simple_ast::Node::storeAt(simple_ast::Node::var(storage->second), simple_ast::Node::i(0), simple_ast::Type::i64()) :
+                               simple_ast::Node::assign(variable->emitted, simple_ast::Node::i(0));
+        removal = simple_ast::Node::block({ removal, clear });
     }
     return removal;
 }
@@ -2791,7 +2758,33 @@ simple_ast::NodePtr LowerUncheckedExpr(int id)
     case MNode::TypeTag:
         return LowerTypeTag(id);
     case MNode::Call:
-        return LowerCall(id);
+    {
+        const auto callee = N(node.kids[0]);
+        const bool noArguments = N(node.kids[1]).kids.empty();
+        if (IsIntrinsicDropCall(id))
+        {
+            const auto receiver = callee.kids[0];
+            if (g_borrowFlowCapture)
+            {
+                g_borrowFlowCapture->terminalCalls.insert(id);
+                if (RawExprType(receiver)->kind == MType::Ptr) g_borrowFlowCapture->storageReleases.insert(id);
+            }
+            const auto release = LowerResourceDrop(receiver);
+            return release ? RememberResourceRelease(id, receiver, simple_ast::Node::block({ release })) : Bad();
+        }
+        const auto result = LowerCall(id);
+        if ((callee.kind == MNode::Member || callee.kind == MNode::Arrow) && callee.s == "drop" && !callee.kids.empty() && noArguments)
+        {
+            const auto type = ExprType(callee.kids[0]);
+            const auto owner = StructNameOf(type);
+            if (StructHasInterface(owner, "Drop") || (IsInterfacePointer(type) && BareTypeName(owner) == "Drop"))
+            {
+                if (g_borrowFlowCapture) g_borrowFlowCapture->terminalCalls.insert(id);
+                return RememberResourceRelease(id, callee.kids[0], result);
+            }
+        }
+        return result;
+    }
     case MNode::Update:
         return LowerUpdate(id);
     case MNode::Assign:
@@ -3184,8 +3177,6 @@ simple_ast::NodePtr LowerStmtImpl(int id)
         return LowerDestructure(id);
     case MNode::Declare:
         return LowerLocalDecl(id);
-    case MNode::Delete:
-        return LowerDelete(id);
     case MNode::If:
         return LowerIf(id);
     case MNode::While:
@@ -4161,7 +4152,9 @@ simple_ast::Function LowerFunction(const Memory::String &name, const Memory::Str
         const auto self = Node::var("self");
         const auto mark = Node::exprStmt(Node::call("__std_move_end", { "address", "bytes", "type" },
                                                     { self, Node::i(std::max(8, StructStride(NamedType(owner)))), Node::i(TypeIdOf(NamedType(owner))) }));
-        function.body = GuardLiveAggregate(owner, self, Node::block({ mark, function.body }));
+        const auto require = Node::exprStmt(Node::call("__std_move_require", { "address", "bytes", "type" },
+                                                       { self, Node::i(std::max(8, StructStride(NamedType(owner)))), Node::i(TypeIdOf(NamedType(owner))) }));
+        function.body = Node::block({ require, mark, function.body });
     }
     g_borrowFlowCapture = savedBorrowCapture;
     if (!parameterReferences.empty())
@@ -4256,10 +4249,10 @@ void AddRuntimeHelpers(simple_ast::Program &program)
     const TypePtr i32 = Type::i32();
     const TypePtr f64 = Type::f64();
     /* ---------------- 内存内建：逐字节操作（memcpy / memset） ----------------
-     * 下面这块是 `new` / `delete` / 字符串拼接的旧实现：人已经拍板删掉，
+     * 下面这块是 `new` / `drop` / 字符串拼接的旧实现：人已经拍板删掉，
      * 用 `#if 0` 留着当参考（别再打开：`__magel_new` 的第一次调用返回 0 的坑还没修）。 */
 #if 0
-#endif /* 旧实现（new / delete / strcat） */
+#endif /* 旧实现（new / drop / strcat） */
     /* ---------------- 结构体按值拷贝 ----------------
      *
      * 8 字节槽逐个搬（按位原样），所以整型 / 浮点字段都不会失真；
@@ -4292,7 +4285,7 @@ void AddRuntimeHelpers(simple_ast::Program &program)
      *
      * 块布局：`[元素个数 i64][第 0 个元素][第 1 个元素]…`，返回的是**元素起始**
      * （也就是"数组句柄"）。因为长度就写在块头，所以 `a[i]` 的越界检查能查到
-     * 运行期才知道的 N；`delete a` 还回去的是块首（`a - 8`）。
+     * 运行期才知道的 N；`drop a` 还回去的是块首（`a - 8`）。
      *
      * 句柄声明成"两个 i64 的数组"是为了让按地址取值 / 存值都按 i64 整存整取
      * （长度不能被当成浮点解释）。 */

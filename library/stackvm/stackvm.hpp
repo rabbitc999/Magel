@@ -454,7 +454,7 @@ enum class Op
     Declare,       ///< 在当前调用帧里开一个变量槽（`name`；`(decl, T, local, x)` 用它）。
     Alloc,         ///< 堆分配：弹栈取字节数，把地址压回栈（失败就终止运行）。
     Free,          ///< 堆释放：弹栈取地址（`name` 是源操作数名，仅用于诊断）。
-    Drop,          ///< **软释放**：地址是活跃堆块才还回去；0 / 数据区地址 / 已经释放过 → 什么都不做。
+    Drop,          ///< 拥有值清理：跳过空槽和数据区；失效堆地址及已释放对象报错。
     Check,         ///< 下标越界陷阱：弹栈取下标与上限，越界就终止（`name` 是给诊断看的标签）。
     CheckPointer,  ///< 按区块容量查下标：弹栈取下标与基址，`intValue` 是元素步长。
     CallIndirect,  ///< 间接调用：弹栈取"函数指针"（数据区里一串标签字节的地址），再按它调用。
@@ -980,8 +980,8 @@ struct RunResult
  * 留给空指针。接口管理的是 MAGEL/四元式 `alloc`、字符串和按地址 load/store 使用的字节堆，
  * 不接管 C++ 调用帧、STL 容器或运行期对象表的宿主内存。
  * 默认堆与目标宿主池会复用物理字节，但通过槽号和分配代次区分逻辑身份；旧引用不能访问
- * 新分配对象。释放之后不得再解引用，未清扫的旧身份重复释放仍幂等；清扫后重复释放失败。
- * 自定义堆应分别提供活跃区间、旧身份判定及显式清扫，不得把物理地址复用当作身份复用。
+ * 新分配对象。释放之后不得再解引用或重复释放；不保存释放墓碑。
+ * 自定义堆应分别提供活跃区间与不复用的逻辑身份，不得把物理地址复用当作身份复用。
  */
 class HeapAllocator
 {
@@ -992,18 +992,6 @@ public:
     [[nodiscard]] virtual std::size_t base() const = 0;
     [[nodiscard]] virtual std::size_t allocate(std::size_t bytes) = 0;
     virtual bool release(std::size_t address, Memory::String *reason = nullptr) = 0;
-    /**
-     * @brief 清理已释放身份；自定义堆须覆盖此接口。
-     * @return 清理身份数；未实现返回 size_t(-1)。
-     */
-    virtual std::size_t sweep() { return static_cast<std::size_t>(-1); }
-    /**
-     * @brief 查询未被清扫的释放身份；旧自定义堆沿用删除守卫的静默跳过行为，支持清扫的堆须覆盖。
-     * @param address 精确块首。
-     * @return 仍可幂等释放时为真。
-     */
-    [[nodiscard]] virtual bool retired(std::size_t address) const { return address != 0; }
-
     [[nodiscard]] virtual bool contains(std::size_t address) const = 0;
     [[nodiscard]] virtual bool capacityAt(std::size_t address,
                                           std::size_t &capacity) const = 0;
@@ -1136,7 +1124,7 @@ public:
     /**
      * @brief 释放胶水通过运行时分配的原始内存块。
      * @param address 分配块的起始地址。
-     * @param soft 是否静默跳过零地址或已失效地址。
+     * @param soft 是否跳过零地址和不属于堆的数据区地址；失效堆身份仍报错。
      * @return 释放成功或软释放跳过时返回 true，失败保留原始诊断。
      */
     virtual bool releaseMemory(std::int64_t address, bool soft = false);

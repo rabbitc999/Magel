@@ -3162,7 +3162,6 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             if (trace_) result.trace.push_back("    release " + Memory::toString(handle));
             if (isObjectHandle(handle))
             {
-                if (!objects.find(handle) && handle < objects.next) break;
                 if (!objects.release(handle))
                 {
                     fail("free 失败：这个对象已经释放过了（句柄 " + Memory::toString(handle) + "）");
@@ -3182,20 +3181,15 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         }
         case Op::Drop:
         {
-            /* **软释放**（编译器在语句块出口插的那一条）：只有"地址确实是一块活跃的
-             * 堆内存"才还回去。0（空指针）、数据区地址（字符串字面量）、以及**已经还过**
-             * 的地址都当没这回事 —— 这就是"作用域所有"能安全重入的原因：
-             * 显式 `delete` 之后变量被置 0，块出口再 drop 一次是空操作；
-             * 两个变量指向同一块堆内存时（别名），多出来的那次 drop 也不会炸。 */
+            /* 编译器用空槽表示没有拥有值；有效地址严格释放，失效身份不能静默通过。 */
             Slot address;
             if (!pop(address)) break;
             if (trace_) result.trace.push_back("    drop " + Memory::toString(static_cast<std::int64_t>(nativeInt(address))));
-            /* 对象句柄（`bint` / 容器）也认：还在就还回去，已经还过就当没这回事
-             * （和后面堆那条一个脾气）。 */
+            /* 对象表同样严格检查资源身份。 */
             const std::int64_t handle = static_cast<std::int64_t>(nativeInt(address));
             if (isObjectHandle(handle))
             {
-                objects.release(handle);
+                if (!objects.release(handle)) fail("[MGL1205] drop 的对象已经释放或句柄无效");
                 break;
             }
             const std::size_t target = static_cast<std::size_t>(nativeInt(address));
@@ -3203,7 +3197,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             Memory::String reason;
             std::size_t capacity = 0;
             if (heap.capacityAt(target, capacity)) objects.beginStorage(target, capacity, true);
-            heap.release(target, &reason); /* 已释放分配再次回收无效果。 */
+            if (!heap.release(target, &reason)) fail("[MGL1205] drop 失败：" + reason);
             break;
         }
         case Op::Check:
@@ -3549,7 +3543,6 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                                                    context.frames.size(), context.stack.size(),
                                                    context.waitingFor });
     }
-    // 本轮全部执行上下文已停下；重启前撤销释放身份，下一轮 reset 再清空物理槽。
-    if (result.recoverable) heap.sweep();
+    // 本轮全部执行上下文已停下，下一轮 reset 清空分配与物理槽。
     return result;
 }

@@ -10,7 +10,7 @@ import std::watchdog;
 
 ## 公共约定与错误边界
 
-默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主重置 arena、清空墓碑并重跑；watchdog 重启在清除墓碑的效果上等价于一次完整的 std::lang::sweep()，同时会结束全部旧执行上下文；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。
+默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主结束全部旧执行上下文、重置 arena 与分配身份后重跑；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。
 
 ## 参考代码
 
@@ -111,7 +111,7 @@ Result<int64, WatchdogError> enable(int64 watermarkBytes);
 std::watchdog::enable(watermarkBytes);
 ```
 
-**源码**：[source/std/watchdog.mgl:80](../../source/std/watchdog.mgl#L80)。
+**源码**：[source/std/watchdog.mgl:79](../../source/std/watchdog.mgl#L79)。
 
 **完整示例**：[doc/examples/library/watchdog.mgl](../../doc/examples/library/watchdog.mgl)。
 
@@ -149,7 +149,7 @@ Result<bool, WatchdogError> requestRestart();
 std::watchdog::requestRestart();
 ```
 
-**源码**：[source/std/watchdog.mgl:96](../../source/std/watchdog.mgl#L96)。
+**源码**：[source/std/watchdog.mgl:95](../../source/std/watchdog.mgl#L95)。
 
 **完整示例**：[doc/examples/library/watchdog.mgl](../../doc/examples/library/watchdog.mgl)。
 
@@ -187,7 +187,7 @@ Result<int64, WatchdogError> enableTimeout(int64 timeoutUnits);
 std::watchdog::enableTimeout(timeoutUnits);
 ```
 
-**源码**：[source/std/watchdog.mgl:130](../../source/std/watchdog.mgl#L130)。
+**源码**：[source/std/watchdog.mgl:129](../../source/std/watchdog.mgl#L129)。
 
 **完整示例**：[doc/examples/library/watchdog.mgl](../../doc/examples/library/watchdog.mgl)。
 
@@ -225,7 +225,7 @@ Result<int64, WatchdogError> enableTimeoutMillis(int64 millis);
 std::watchdog::enableTimeoutMillis(millis);
 ```
 
-**源码**：[source/std/watchdog.mgl:157](../../source/std/watchdog.mgl#L157)。
+**源码**：[source/std/watchdog.mgl:156](../../source/std/watchdog.mgl#L156)。
 
 **完整示例**：[doc/examples/library/watchdog.mgl](../../doc/examples/library/watchdog.mgl)。
 
@@ -261,6 +261,6 @@ Result<bool, WatchdogError> kick();
 std::watchdog::kick();
 ```
 
-**源码**：[source/std/watchdog.mgl:169](../../source/std/watchdog.mgl#L169)。
+**源码**：[source/std/watchdog.mgl:168](../../source/std/watchdog.mgl#L168)。
 
 **完整示例**：[doc/examples/library/watchdog.mgl](../../doc/examples/library/watchdog.mgl)。

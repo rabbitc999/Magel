@@ -58,7 +58,7 @@ result.push(node.value);
 void destroyTree(Option<Tree mut&> root){
     if(root.isNone()){return;}
     Tree mut& node=root.unwrap();
-    destroyTree(node.left);destroyTree(node.right);delete node;
+    destroyTree(node.left);destroyTree(node.right);node.drop();
 }
 void edge(Graph mut& graph,int64 from,int64 target){
     graph.to.push(target);graph.next.push(graph.head[from]);graph.head[from]=graph.to.len()-1;
@@ -135,7 +135,7 @@ int64 main(){
     std::lang::assert(cursor.isNone());
     cursor=head;
     while(cursor.isValue()){
-        Link mut& node=cursor.unwrap();Option<Link mut&> rest=node.next;delete node;cursor=rest;
+        Link mut& node=cursor.unwrap();Option<Link mut&> rest=node.next;node.drop();cursor=rest;
     }
     List<int64> sorted;inorder(tree,&sorted);
     std::lang::assert(sorted.len()==n);

@@ -166,6 +166,10 @@ run_step "MAGEL 样例回归（check.sh）" \
     sh -c 'cd "$1" && MAGEL_TMP="$1/tmp/ci/check" sh check.sh' sh "$root"
 run_step "运行 std::image 与 StringBuilder 回归" "$PYTHON" tests/magel_image.py --magel magel
 run_step "运行标准错误流与文件打印回归" "$PYTHON" tests/magel_print_streams.py --magel magel
+run_step "运行临时值与资源释放合并回归" "$PYTHON" tests/magel_resource_lifetime.py --magel magel
+run_step "运行闭包自动类型与嵌套返回语言服务回归" "$PYTHON" tests/magel_lsp_closure_types.py --magel magel
+run_step "编译无墓碑分配身份回归" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=1 -Isource -Ilibrary -Isource/allocator tests/allocation_identity.cpp -o tmp/ci/allocation-identity
+run_step "运行百万次分配身份回归" tmp/ci/allocation-identity
 run_step "运行数组按值传参与引用回归" "$PYTHON" tests/magel_array_parameters.py --magel magel
 run_step "编译字面量数据合并单元测试" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=0 -DMAGEL_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 library/simple_ast/test_simple_ast.cpp library/simple_ast/simple_ast.cpp -o tmp/ci/simple-ast-literals
 run_step "运行字面量数据合并单元测试" tmp/ci/simple-ast-literals
@@ -262,9 +266,6 @@ fi
 
 # ---- 样例回归已在快速门禁跑过；--full 的扩展测试继续 ----
 
-if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
-    run_step "运行墓碑清扫回归" "$PYTHON" tests/magel_tombstone.py --magel magel
-fi
 
 # ---- 5. 分配器单元测试（C 与 C++ 两份，之前没人自动跑）----
 

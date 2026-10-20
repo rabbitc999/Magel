@@ -18,7 +18,10 @@ struct MBorrowFlowCapture
     Memory::Map<int, bool> declarationReferences;
     Memory::Map<int, MBorrowPlace> redeclarations;
     Memory::Map<int, MBorrowPlace> foreachBindings;
-    Memory::Set<int> valueLoops;  ///< 实际分配了结果槽的循环，独立语句也可能接收并丢弃结果。
+    Memory::Set<int> storageReleases;                                                ///< 明确释放堆存储的 drop() 调用。
+    Memory::Set<int> terminalCalls;                                                  ///< 确认为 Drop 协议的显式调用，不包括普通同名方法。
+    Memory::Map<int, std::pair<simple_ast::NodePtr, simple_ast::NodePtr>> releases;  ///< 显式终结及其路径守卫。
+    Memory::Set<int> valueLoops;                                                     ///< 实际分配了结果槽的循环，独立语句也可能接收并丢弃结果。
 };
 Memory::Vector<magel_borrow_checker::FlowGraph> g_borrowFlows;
 MBorrowFlowCapture *g_borrowFlowCapture = nullptr;
@@ -180,7 +183,7 @@ struct MBorrowFlowBuilder
     std::size_t add(MBorrowFlowNode::Kind kind, MBorrowPlace target, MBorrowPlace source, std::size_t next, int id)
     {
         const auto index = graph.nodes.size();
-        graph.nodes.push_back({ kind, std::move(target), std::move(source), {}, id >= 0 ? N(id).sourceLine : 0u, id >= 0 && !N(id).s.empty() ? N(id).s : Memory::String("表达式") });
+        graph.nodes.push_back({ kind, std::move(target), std::move(source), {}, id >= 0 ? N(id).sourceLine : 0u, id >= 0 && !N(id).s.empty() ? N(id).s : Memory::String("表达式"), id });
         if (next != static_cast<std::size_t>(-1)) graph.nodes.back().next.push_back(next);
         return index;
     }
@@ -487,13 +490,15 @@ struct MBorrowFlowBuilder
             }
             if (StandardCallName(callee) == "move" && arguments.size() == 1u)
                 next = add(capture.managed.count(arguments[0]) && capture.managed.at(arguments[0]) ? MBorrowFlowNode::Move : MBorrowFlowNode::MoveScalar, place(arguments[0]), {}, next, id);
-            else if ((callee.kind == MNode::Member || callee.kind == MNode::Arrow) && callee.s == "drop" && !callee.kids.empty())
-                next = add(MBorrowFlowNode::Drop, place(callee.kids[0]), {}, next, id);
+            else if ((callee.kind == MNode::Member || callee.kind == MNode::Arrow) && capture.terminalCalls.count(id) && !callee.kids.empty())
+                next = add(capture.storageReleases.count(id) ? MBorrowFlowNode::Destroy : MBorrowFlowNode::Drop, place(callee.kids[0]), {}, next, id);
             // 实参可能移动或释放捕获来源，调用前再检查已求值的闭包环境。
             if (!arguments.empty() && !place(node.kids[0]).root.empty())
                 next = add(MBorrowFlowNode::CheckCaptures, place(node.kids[0]), {}, next, id);
             for (auto it = arguments.rbegin(); it != arguments.rend(); ++it) next = expression(*it, next);
-            if ((callee.kind == MNode::Member || callee.kind == MNode::Arrow) && !callee.kids.empty()) next = callee.s == "drop" ? address(callee.kids[0], next) : expression(callee.kids[0], next);
+            if ((callee.kind == MNode::Member || callee.kind == MNode::Arrow) && !callee.kids.empty()) next = capture.terminalCalls.count(id) ? address(callee.kids[0], next) : expression(callee.kids[0], next);
+            // 释放移动后的载荷存储仍合法，但不能经已移动的引用绑定释放。
+            if (capture.storageReleases.count(id) && !callee.kids.empty()) next = add(MBorrowFlowNode::Read, place(callee.kids[0], true), {}, next, id);
             if (callee.kind != MNode::Member && callee.kind != MNode::Arrow) next = expression(node.kids[0], next);
             return next;
         }
@@ -677,7 +682,7 @@ struct MBorrowFlowBuilder
         }
         if (node.kind == MNode::Continue) return repeat;
         if (node.kind == MNode::Return) return node.kids.empty() ? static_cast<std::size_t>(-1) : expression(node.kids[0], static_cast<std::size_t>(-1));
-        if (node.kind == MNode::Delete && !node.kids.empty()) return address(node.kids[0], add(reference(node.kids[0]) ? MBorrowFlowNode::Destroy : MBorrowFlowNode::Drop, place(node.kids[0]), {}, next, id));
+
         return expression(id, next);
     }
 };
@@ -694,5 +699,21 @@ void FinishBorrowFlow(int body, const MBorrowFlowCapture &capture)
     const auto end = builder.add(MBorrowFlowNode::Nop, {}, {}, static_cast<std::size_t>(-1), body);
     const auto entry = builder.statement(body, end, end, end);
     builder.graph.nodes[0].next.push_back(entry);
+    Memory::Vector<magel_borrow_checker::FlowState> states;
+    Memory::Vector<bool> reachable;
+    magel_borrow_checker::checkFlow(builder.graph, &states, &reachable);
+    for (const auto &merge : magel_resource_cleanup::coalesce(builder.graph, states, reachable))
+    {
+        const auto found = capture.releases.find(merge.operation);
+        if (found == capture.releases.end() || !found->second.first) continue;
+        const auto operation = found->second.first;
+        if (merge.redundant)
+            *operation = *simple_ast::Node::block({});
+        else if (found->second.second)
+        {
+            const auto original = std::make_shared<simple_ast::Node>(*operation);
+            *operation = *simple_ast::Node::ifThenElse(found->second.second, original, nullptr);
+        }
+    }
     g_borrowFlows.push_back(std::move(builder.graph));
 }

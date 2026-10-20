@@ -43,7 +43,7 @@ int64 main() {
     Score mut& a = first.getReference();
     Score mut& b = second.getReference();
     println("dispatch={}/{}", a.doubled(), b.doubled());
-    delete basePointer;
-    delete customPointer;
+    basePointer.drop();
+    customPointer.drop();
     return 0;
 }

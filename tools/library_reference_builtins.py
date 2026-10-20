@@ -16,8 +16,6 @@ String format(String format, Any args...);
 int64 putChar(char value);
 /** 调试暂停，提示写入标准错误；非交互输入立即返回。 */
 int64 pause();
-/** 清理全部已释放块的墓碑身份，返回清理身份数。调用者必须保证不存在仍需使用的已释放块旧引用；清理后重复 delete 报 MGL1205。保留活跃分配及其未来的幂等释放保证。 */
-int64 sweep();
 /** 读取下一项原文，输入项按空白分隔，不是整行。 */
 String inputLine();
 /** 读取下一项有符号整数。 */

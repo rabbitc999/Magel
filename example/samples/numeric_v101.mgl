@@ -71,10 +71,10 @@ int64 main() {
     int64 dynamic[] = new[count];
     dynamic[2] = values[1];
     assert(dynamic.len() == 3 && dynamic[2] == 42);
-    delete dynamic;
+    dynamic.drop();
     int64 empty[] = new[0];
     assert(empty.len() == 0);
-    delete empty;
+    empty.drop();
     println("numeric v1.0.1 OK");
     return 0;
 }

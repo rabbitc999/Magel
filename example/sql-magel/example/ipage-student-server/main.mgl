@@ -268,11 +268,11 @@ bool looksLikeDate(String text) {
  * 接口门槛不再另写一份常量，而是用 `actionNeedLevel()` 从这里查。改门限只改这一处。
  *
  * 门限来自 Java 端各模型 @ModelClass 的 look / edit / delete：
- *   学生 student    look = STUDENT(0)  edit = TEACHER(2)  delete = ADMINISTRATOR(3)
- *   班级 sclass     look = TEACHER(2)  edit = TEACHER(2)  delete = ADMINISTRATOR(3)
- *   课程 course     look = TEACHER(2)  edit = TEACHER(2)  delete = ADMINISTRATOR(3)
- *   成绩 selection  look = STUDENT(0)  edit = TEACHER(2)  delete = ADMINISTRATOR(3)
- *   用户 user       look = edit = delete = SUPER_ADMINISTRATOR(4)
+ *   学生 student    look = STUDENT(0)  edit = TEACHER(2)  drop = ADMINISTRATOR(3)
+ *   班级 sclass     look = TEACHER(2)  edit = TEACHER(2)  drop = ADMINISTRATOR(3)
+ *   课程 course     look = TEACHER(2)  edit = TEACHER(2)  drop = ADMINISTRATOR(3)
+ *   成绩 selection  look = STUDENT(0)  edit = TEACHER(2)  drop = ADMINISTRATOR(3)
+ *   用户 user       look = edit = drop = SUPER_ADMINISTRATOR(4)
  */
 
 /** @brief 一个菜单动作：内部键、显示名、可执行它所需的最低权限等级。 */

@@ -7,7 +7,7 @@ int64 main() {
         Any object; object.set(&box);
         Value mut& view = object.getReference();
         assert(viaInterface(view) == 7);
-        delete box;
+        box.drop();
     }
     { Tracker tracker; tracker.text = "box"; }
     assert(identity((int64)9) == 9);

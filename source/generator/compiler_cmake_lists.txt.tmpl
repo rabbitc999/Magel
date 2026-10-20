@@ -35,7 +35,7 @@ foreach(feature NO_MAGEL_BIG_INT NO_MAGEL_BIG_FLOAT NO_MAGEL_DEFAULT_POOL NO_MAG
     endif()
 endforeach()
 
-add_library(magel_parser STATIC magel_parser.cpp magel_generic.cpp magel_lambda.cpp
+add_library(magel_parser STATIC magel_parser.cpp magel_resource_cleanup.cpp magel_generic.cpp magel_lambda.cpp
     magel_generic_closure.cpp magel_macro.cpp magel_macro_controls.cpp magel_package.cpp magel_report.cpp magel_stdlib_embedded.cpp)
 target_include_directories(magel_parser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(magel_parser PUBLIC magel_runtime)

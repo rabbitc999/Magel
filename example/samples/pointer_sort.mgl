@@ -32,7 +32,7 @@ int64 main() {
     raw[0] = 4; raw[1] = 1; raw[2] = 3; raw[3] = 1; raw[4] = 2;
     std::algorithms::sortReference<int64>(raw, len(raw));
     println("{} {} {} {} {}", raw[0], raw[1], raw[2], raw[3], raw[4]);
-    delete raw;
+    raw.drop();
 
     /* 字符串也走同一套：`>` 按字典序。 */
     String words[] = new[3];
@@ -48,7 +48,7 @@ int64 main() {
     index(view.data, 1) = "fig";
     String const& firstWord = &index(view.data, 0);
     assert(firstWord[0] == 'X');
-    delete words;
+    words.drop();
 
     /* 结构体数组：比较规则来自它的运算符接口，引用形式照用。 */
     Item items[] = new[3];
@@ -57,6 +57,6 @@ int64 main() {
     items[2].weight = 3; items[2].name = "c";
     std::algorithms::sortReference<Item>(items, len(items));
     println("{} {} {}", items[0].name, items[1].name, items[2].name);
-    delete items;
+    items.drop();
     return 0;
 }

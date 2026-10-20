@@ -705,7 +705,7 @@ void testHeap()
         {}, output);
     CHECK(!staleAfterAllocate.ok);
 
-    // 4. 重复释放无效果，释放后读写仍报错。
+    // 4. 底层重复释放必须报错，编译器负责合并可证明的重复操作。
     const stackvm::RunResult twice = runText(
         "0: (decl, i64, global, p)\n"
         "1: (alloc, 8, _, p)\n"
@@ -713,7 +713,7 @@ void testHeap()
         "3: (free, p, _, _)\n"
         "4: (halt, _, _, _)\n",
         {}, output);
-    CHECK(twice.ok);
+    CHECK(!twice.ok);
     CHECK(twice.heapLiveBlocks == 0u);
 
     const stackvm::RunResult useAfterFree = runText(
@@ -1308,7 +1308,7 @@ void testObj()
         machine.setNativeRegistry(&collectionRegistry());
         machine.setData(&data);
         const stackvm::RunResult result = machine.run(program);
-        CHECK(result.ok);
+        CHECK(!result.ok);
         CHECK(result.liveObjects == 0u);
     }
 

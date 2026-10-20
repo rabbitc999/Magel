@@ -80,7 +80,7 @@ struct MType
      * 引用是否只读：
      *   `T*` / `T const&` → true（≡ C 的 `T const&`，只能读、不能做引用算术）；
      *   `T mut&`          → false（**可写引用**：能写、能做引用算术、`new` 出来的归它，
-     *                       用完自己 `delete`）。
+     *                       用完自己 `drop`）。
      * 强转时"可写性"跟着被转的表达式走（与 C 去掉 const 同理），所以 `(int64*)` 数组
      * 出来的仍然只读，`(int64 mut&)` 转出来的可写。
      */
@@ -166,8 +166,7 @@ struct MNode
          * s 为容器类别（`list` / `set` / `map`），kids = {实参列表节点}。
          */
         ContainerCtor,
-        /* `delete p;`：kids = {引用表达式} */
-        Delete,
+        /* `drop p;`：kids = {引用表达式} */
         /* 解析期攒下的错的占位节点：`s` 里存着要报的那句话（声明校验
          * 写错、用了改过名的老关键字…）。解析期不能用 Fail：M_Compile 开头的
          * ResetState 会把 g_error 清掉，所以要挂在节点上、等降级时再报。 */
@@ -675,11 +674,6 @@ int M_Construct(int typeId, int args, int skipName);
  */
 int M_HeapSugar(int typeName);
 int M_HeapNewSugar(int typeName, int args);
-/**
- * `delete p;`：把可写引用指向的堆块还回去。
- */
-int M_Delete(int pointer);
-int M_Drop(int value);
 /**
  * @brief 构造循环或块退出，显式退出优先移动内部可写局部变量并复制外部变量。
  * @param value 退出表达式编号；负值表示退出最近循环而不产生结果。

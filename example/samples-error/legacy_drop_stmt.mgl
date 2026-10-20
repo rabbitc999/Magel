@@ -1,6 +1,5 @@
-/* `drop x;` 语句已并入 `delete x;`：只保留 delete 一种写法。 */
-int64 main() {
+/* 释放统一使用对象的 drop()；不提供 drop 语句。 */
+void main() {
     int64 mut& block = heap int64;
     drop block;
-    return 0;
 }

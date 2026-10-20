@@ -5,6 +5,7 @@ struct LspFunctionShape
 {
     std::string result;
     std::vector<std::string> arguments;
+    std::string generics;
     bool valid = false;
 };
 
@@ -51,12 +52,25 @@ LspFunctionShape lspFunctionShape(const std::string &text)
         if (word == "fn" && depth == 0)
         {
             size_t open = i + 1;
-            if (open < tokens.size() && (tokens[open].word == "copy" || tokens[open].word == "move" || tokens[open].word == "mut" || tokens[open].word == "const")) ++open;
+            std::string generics;
+            if (open < tokens.size() && tokens[open].word == "<")
+            {
+                const auto end = groupEnd(tokens, open, "<", ">");
+                if (!end || end > tokens.size()) return {};
+                generics = cleanSignature(text.substr(tokens[open].a, tokens[end - 1].b - tokens[open].a));
+                open = end;
+            }
+            while (open < tokens.size() && (tokens[open].word == "copy" || tokens[open].word == "move" || tokens[open].word == "mut" || tokens[open].word == "const"))
+            {
+                ++open;
+                if (open < tokens.size() && tokens[open].word == "[") open = groupEnd(tokens, open, "[", "]");
+            }
             if (open >= tokens.size() || tokens[open].word != "(") return {};
             const auto end = groupEnd(tokens, open, "(", ")");
             if (!end || end > tokens.size() || tokens[end - 1].word != ")") return {};
             LspFunctionShape shape;
             shape.valid = true;
+            shape.generics = generics;
             shape.result = lspUngroup(text.substr(0, tokens[i].a));
             size_t begin = open + 1;
             int nesting = 0;
@@ -96,7 +110,7 @@ std::string lspFunctionText(const LspFunctionShape &shape)
 {
     if (!shape.valid || shape.result.empty()) return "";
     std::string text = shape.result.find("fn") == std::string::npos ? shape.result : "(" + shape.result + ")";
-    text += " fn(";
+    text += " fn" + shape.generics + "(";
     for (size_t i = 0; i < shape.arguments.size(); ++i) text += (i ? ", " : "") + shape.arguments[i];
     return text + ")";
 }
@@ -129,4 +143,113 @@ std::string lspTypeDescription(const std::string &type, unsigned depth = 0)
             for (size_t i = 0; i < arguments.size(); ++i) description += "\n\n泛型实参 " + std::to_string(i + 1) + "：`" + trim(arguments[i].c_str()) + "`";
     }
     return description;
+}
+
+/**
+ * @brief 取得内建整数类型的位宽，非整数类型返回零。
+ * @param type 已规范化的类型名。
+ * @return 整数存储的位数。
+ */
+unsigned lspIntegerBits(const std::string &type)
+{
+    for (unsigned bits : { 8u, 16u, 32u, 64u })
+        if (type == "int" + std::to_string(bits) || type == "uint" + std::to_string(bits)) return bits;
+    return 0;
+}
+
+/**
+ * @brief 按编译器范围规则判断未定型整数文本能否采用目标整数类型。
+ * @param expression 单个非负整数字面量文本。
+ * @param target 目标整数类型。
+ * @return 可按目标类型定型时为 true；表达式、浮点或越界文本返回 false。
+ * @note 无符号后缀不适配有符号类型；无后缀十六进制及二进制保留位模式规则。
+ */
+bool lspFitsIntegerLiteral(std::string expression, const std::string &target)
+{
+    const auto bits = lspIntegerBits(target);
+    if (!bits) return false;
+    expression = trim(expression);
+    expression.erase(std::remove(expression.begin(), expression.end(), '_'), expression.end());
+    if (expression.empty()) return false;
+    const bool suffixed = expression.back() == 'u';
+    if (suffixed) expression.pop_back();
+    const bool unsignedTarget = starts(target, "uint");
+    if (suffixed && !unsignedTarget) return false;
+    unsigned radix = 10;
+    if (starts(expression, "0x") || starts(expression, "0X"))
+    {
+        radix = 16;
+        expression.erase(0, 2);
+    }
+    else if (starts(expression, "b") || starts(expression, "B"))
+    {
+        radix = 2;
+        expression.erase(0, 1);
+    }
+    if (expression.empty()) return false;
+    const auto maximum = ~std::uint64_t(0);
+    const auto limit = radix != 10 && !suffixed ? maximum : unsignedTarget ? (bits == 64 ? maximum : (std::uint64_t(1) << bits) - 1) :
+                                                                             (std::uint64_t(1) << (bits - 1)) - 1;
+    std::uint64_t value = 0;
+    for (const unsigned char ch : expression)
+    {
+        const unsigned digit = ch >= '0' && ch <= '9' ? unsigned(ch - '0') : ch >= 'a' && ch <= 'f' ? unsigned(ch - 'a' + 10) :
+                                                                         ch >= 'A' && ch <= 'F'     ? unsigned(ch - 'A' + 10) :
+                                                                                                      radix;
+        if (digit >= radix || digit > limit || value > (limit - digit) / radix) return false;
+        value = value * radix + digit;
+    }
+    return true;
+}
+
+/**
+ * @brief 返回语言二元运算符的结合优先级。
+ * @param word 运算符词形。
+ * @return 越小越先拆分；不是受支持二元运算符时返回零。
+ */
+unsigned lspBinaryPriority(const std::string &word)
+{
+    if (word == "||") return 1;
+    if (word == "&&") return 2;
+    if (word == "==" || word == "!=") return 3;
+    if (word == "<" || word == "<=" || word == ">" || word == ">=") return 4;
+    if (word == "+" || word == "-") return 5;
+    if (word == "*" || word == "/" || word == "%") return 6;
+    return 0;
+}
+
+/**
+ * @brief 按括号和运算优先级寻找最外层二元表达式的拆分位置。
+ * @param tokens 当前表达式的词法项。
+ * @return 运算符索引；没有可拆分运算符时返回 npos。
+ * @note 跳过调用的泛型实参和一元符号，避免把类型尖括号当成比较。
+ */
+size_t lspBinarySplit(const std::vector<Token> &tokens)
+{
+    size_t split = std::string::npos;
+    unsigned priority = 100;
+    int depth = 0;
+    for (size_t i = 0; i < tokens.size(); ++i)
+    {
+        const auto &word = tokens[i].word;
+        if (word == "(" || word == "[" || word == "{") ++depth;
+        if (word == ")" || word == "]" || word == "}") --depth;
+        if (depth || !i || i + 1 == tokens.size()) continue;
+        if (word == "<" && identifier(tokens[i - 1].word))
+        {
+            const auto end = groupEnd(tokens, i, "<", ">");
+            if (end > i && end < tokens.size() && tokens[end - 1].word == ">" && (tokens[end].word == "(" || tokens[end].word == "::"))
+            {
+                i = end - 1;
+                continue;
+            }
+        }
+        const auto rank = lspBinaryPriority(word);
+        if (!rank || rank > priority) continue;
+        const auto &previous = tokens[i - 1].word;
+        if ((word == "+" || word == "-" || word == "*") && (lspBinaryPriority(previous) || previous == "(" || previous == "[" || previous == ",")) continue;
+        priority = rank;
+        split = i;
+    }
+    return split;
 }

@@ -50,9 +50,9 @@ Leaf makeLeaf(){Leaf result; return result;}
             for body,marker in cases:
                 result = query(body,marker)
                 labels = {r['label'] for r in result}
-                assert labels == {'read','value'}, (body,result)
+                assert labels == {'read','value','toString'}, (body,result)
             result = query('int64 main(){Leaf item;{Other item;item.', 'item.')
-            assert {r['label'] for r in result}=={'check','flag'}, result
+            assert {r['label'] for r in result}=={'check','flag','toString'}, result
             assert query('int64 main(){auto item=missing();item.', 'item.')==[]
             for initializer, expected in [('makeLeaf()','Leaf'), ('42','int64'), ('1.25','float64'), ('true','bool'), ('"hello"','String')]:
                 body=f'int64 main(){{auto item={initializer};item;}}'
@@ -70,9 +70,10 @@ Leaf makeLeaf(){Leaf result; return result;}
             head='import a;import b;\n'
             for module,method in [('a','onlyA'),('b','onlyB')]:
                 result=query(f'int64 main(){{{module}::Same item;item.', 'item.',head=head)
-                assert {r['label'] for r in result}=={method},result
+                assert {r['label'] for r in result}=={method,'toString'},result
             result=query('int64 main(){Same item;item.', 'item.',head=head)
-            assert result==[],result
+            # 同名类型未确定时仅提供两者共有的通用 toString，不泄漏具体模块成员。
+            assert {item['label'] for item in result}=={'toString'},result
     finally:
         server.close()
     print('LSP 实例成员、auto 具体类型、泛型字段与返回值、局部遮蔽及模块同名隔离全部通过。')

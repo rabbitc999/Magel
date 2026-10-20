@@ -694,10 +694,10 @@ def _text(original):
     return _MESSAGES.get(original, (original, original))[0]
 
 
-VERSION = "0.21.1"
+VERSION = "0.22.0"
 IGNORED = {".git", ".magel", "build", "tmp", "node_modules", "__pycache__"}
 EXTENSIONS = {".mgl", ".inc", ".h", ".hpp", ".c", ".cpp", ".toml", ".json"}
-KEYWORDS = "_ abi auto bool break cast char const continue copy defer delete drop elif else enum false float32 float64 fn for heap if impl import in inline int16 int32 int64 int8 interface loop match module move mut new opcode return scope static struct true type uint16 uint32 uint64 uint8 void while yield".split()
+KEYWORDS = "_ abi auto bool break cast char const continue copy defer drop elif else enum false float32 float64 fn for heap if impl import in inline int16 int32 int64 int8 interface loop match module move mut new opcode return scope static struct true type uint16 uint32 uint64 uint8 void while yield".split()
 
 
 def invoke(args, **kwargs):

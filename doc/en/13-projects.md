@@ -103,7 +103,7 @@ C ABI boundary error — background in [Host integration](08-host-integration.md
 
 **What it demonstrates**: Magel as its own server — `std::net` listens for HTTP, `std::sql` talks to
 a real SQLite file, and the browser calls **same-origin** JSON endpoints. No web framework and no
-front-end dependencies. It supports create, list, edit and delete, filtering by student number,
+front-end dependencies. It supports create, list, edit and drop, filtering by student number,
 name or e-mail, with uniqueness and range checks on the server.
 
 **How to run it**:
@@ -132,7 +132,7 @@ SQL statements too.
 project) rewritten in Magel as a console program, **without the ipage framework**, reading and
 writing ipage-student's own `student` database. The four-role permission matrix (3 / 5 / 5 / 6 menu
 entries for student, teacher, administrator and super administrator), the "filter the menu first,
-then check again on selection" rule, and printing the blast radius before a delete all live in a
+then check again on selection" rule, and printing the blast radius before a drop all live in a
 single file.
 
 **How to run it**:
@@ -191,7 +191,7 @@ The API script covers login / logout / bad tokens, the visible modules and per-a
 all four roles, CRUD plus aggregate statistics for the five modules, the CORS preflight, the fact
 that the back end serves no pages, and HTTP message boundaries. The browser script starts another
 static server in a thread and runs the whole flow **genuinely cross-origin**: sign in, menus and
-buttons appearing or disappearing by permission, create/edit/find/delete, the statistics page, and
+buttons appearing or disappearing by permission, create/edit/find/drop, the statistics page, and
 injection protection.
 
 **Boundaries**: the "3 attempts" limit on a stateless HTTP back end is counted by the front end, so

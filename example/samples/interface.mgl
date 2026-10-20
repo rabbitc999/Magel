@@ -85,7 +85,7 @@ int64 main() {
     Circle mut& back = obj1.getReference();
     println("取回具体类型：back->r={} back->name()={}", back->r, back->name());
 
-    delete pc;
-    delete ps;
+    pc.drop();
+    ps.drop();
     return 0;
 }

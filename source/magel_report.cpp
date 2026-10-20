@@ -65,7 +65,6 @@ const std::map<std::string, TokenName> &tokenDisplayNames()
         { "CONST", { "常量(const)", "constant(const)" } },
         { "MUT", { "可变(mut)", "mutable(mut)" } },
         { "NEW", { "新建(new)", "new(new)" } },
-        { "DELETE", { "删除(delete)", "delete(delete)" } },
         { "DROP", { "丢弃(drop)", "drop(drop)" } },
         { "STATIC", { "静态(static)", "static(static)" } },
         { "FN", { "函数(fn)", "function(fn)" } },

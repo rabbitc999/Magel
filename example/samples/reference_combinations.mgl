@@ -125,7 +125,7 @@ int64 main() {
     erased.set(&allocated);
     ReadNumber mut& polymorphic = erased.getReference();
     assert(dispatch(polymorphic) == 40);
-    delete allocated;
+    allocated.drop();
     assert(OwnedNumber::drops == 8);
     println("reference combinations OK");
     return 0;

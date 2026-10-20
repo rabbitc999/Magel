@@ -67,7 +67,7 @@ int64 main() {
     int64 mut& empty = raw;
     println("empty  {}",
     std::algorithms::minReference<int64>(empty, 0).isNone());
-    delete raw;
+    raw.drop();
 
     /* 结构体数组：Span 迭代给出 Item mut&，`node->字段` 写回元素。 */
     Item items[] = new[3];
@@ -79,6 +79,6 @@ int64 main() {
     std::algorithms::sortReference<Item>(items, len(items));
     println("items  {} {} {}", items[0].tag, items[1].tag, items[2].tag);
     println("first  {}", items[0].weight);
-    delete items;
+    items.drop();
     return 0;
 }

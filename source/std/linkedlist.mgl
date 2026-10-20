@@ -58,7 +58,7 @@ struct LinkedList : Iterator<int64>, Drop {
     int64 tail; ///< 尾节点下标，空表为 -1。
     int64 count; ///< 有效节点数。
 
-    void drop() { delete self.values; delete self.prevs; delete self.nexts; delete self.freeSlots; }
+    void drop() { self.values.drop(); self.prevs.drop(); self.nexts.drop(); self.freeSlots.drop(); }
 
     /**
      * @brief 创建空链表。

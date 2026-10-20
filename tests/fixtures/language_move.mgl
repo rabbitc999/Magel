@@ -5,7 +5,7 @@ struct Item:Drop,Closeable {
 };
 struct Outer:Drop{Item item;void drop(){drops=drops+10;}};
 int64 resourceDrops=0;
-struct Owner:Drop {int64 mut& value;void drop(){delete self.value;resourceDrops=resourceDrops+1;}};
+struct Owner:Drop {int64 mut& value;void drop(){self.value.drop();resourceDrops=resourceDrops+1;}};
 Item mut& sourceRef(Item mut& source){reads=reads+1;return source;}
 Item consume(Item mut& source){return move(source);}
 List<int64> takeList(List<int64> mut& source){return move(source);}
@@ -42,7 +42,7 @@ Item items[1];items[0].value=i;Item result=move(&items[0]);assert(result.value==
   assert(before==after && result[0]==4);List<int64> fresh;fresh.push(8);source=move(&fresh);assert(source[0]==8);}
  {Any source=(int64)42;int64 before;memcpy(&before,&source,8);Any result=move(&source);
   int64 after;memcpy(&after,&result,8);assert(before==after && tryGet<int64>(&result).unwrap()==42);}
- {Item mut& cell = heap Item;cell.value=77;Item result=move(cell);delete cell;assert(result.value==77);}
+ {Item mut& cell = heap Item;cell.value=77;Item result=move(cell);cell.drop();assert(result.value==77);}
  assert(drops==30 && closes==10);
  {Item source;Item result=move(&source);Item source;source.value=10;assert(source.value==10);}
  assert(drops==32 && closes==12);

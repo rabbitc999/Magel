@@ -50,7 +50,7 @@ int main(int argc, char **argv)
     const std::string directory = argc > 1 ? argv[1] : "feature-fixtures";
     std::filesystem::create_directories(directory);
     constexpr bool enabled = STACKVM_WITH_REFLECTION != 0;
-    CHECK(stackvm::supportedProgramFeatures() == (enabled ? stackvm::kFeatureReflection : 0));
+    CHECK(stackvm::supportedProgramFeatures() == (stackvm::kFeatureByteMemory | (enabled ? stackvm::kFeatureReflection : 0)));
     CHECK(stackvm::validateProgramFeatures(0));
     CHECK(stackvm::validateProgramFeatures(stackvm::kFeatureReflection) == enabled);
     CHECK(!stackvm::validateProgramFeatures(0x80000000u));
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
         CHECK(stackvm::loadProgramBinary(plainPath, loaded));
         CHECK(loaded.requiredFeatures == 0 && stackvm::Machine().run(loaded).ok);
         auto bad = ordinary;
-        bad[flagOffset] |= 4;
+        bad[flagOffset] |= 8;
         const auto badPath = directory + "/unknown-" + std::to_string(format) + ".svmb";
         writeBytes(badPath, bad);
         loaded.name = "unchanged";

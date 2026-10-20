@@ -42,7 +42,7 @@ int64 main() {
     first[2] = 99;
     println("runtime: {} {} {} {} (len={})", runtime[0], runtime[1], runtime[2],
     runtime[3], len(runtime));
-    delete runtime;
+    runtime.drop();
 
     /* 结构体数组 → Pair mut&：按元素步长下标 */
     Pair pairs[2];

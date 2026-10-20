@@ -228,7 +228,7 @@ bool LowerGlobals(simple_ast::Program &program)
              * 全局**不进**"出块自动释放"名单（`g_ownedScopes` 里根本没有全局那一层，
              * 硬塞进去会让每个 `return` 的 `AppendDropsAll` 都去还全局），只登记到
              * 停机清理清单：它是最外层（深度 = `g_cleanupBase`），所以停机时会软释放
-             * 一次，并跑 `Drop` 析构。`T mut&` 这类"程序自己 `delete`"的仍然不登记。
+             * 一次，并跑 `Drop` 析构。`T mut&` 这类"程序自己 `drop`"的仍然不登记。
              */
             if (IsOwnedKind(type))
                 NoteCleanup(emitted, g_cleanupBase, IsRuntimeArray(type), false, false,
@@ -495,7 +495,8 @@ simple_ast::Function MakeAggregateReleaseFunction(const Memory::String &owner)
             /* 释放后把槽清 0：同一个静态聚合对象被两次释放（或两个别名指向它）时，
              * 第二次 `drop 0` 是软释放空操作，不会二次释放同一块。 */
             const auto *opcode = FindOpcodeDefinition(definition->leaves[index - 1u].second);
-            body.push_back(opcode ? Node::exprStmt(Node::call(opcode->destroy, { "value" }, { Node::loadInt(address) })) : Node::release(Node::loadInt(address)));
+            body.push_back(Node::ifThenElse(Node::binary("!=", Node::loadInt(address), Node::i(0)),
+                                            opcode ? Node::exprStmt(Node::call(opcode->destroy, { "value" }, { Node::loadInt(address) })) : Node::release(Node::loadInt(address)), nullptr));
             body.push_back(Node::storeAt(address, Node::i(0), Type::i64()));
         }
     }
@@ -590,7 +591,8 @@ simple_ast::Function MakeArrayReleaseFunction(const std::shared_ptr<MType> &elem
     else
     {
         const auto *opcode = FindOpcodeDefinition(element);
-        body.push_back(opcode ? Node::exprStmt(Node::call(opcode->destroy, { "value" }, { Node::loadInt(address) })) : Node::release(Node::loadInt(address)));
+        body.push_back(Node::ifThenElse(Node::binary("!=", Node::loadInt(address), Node::i(0)),
+                                        opcode ? Node::exprStmt(Node::call(opcode->destroy, { "value" }, { Node::loadInt(address) })) : Node::release(Node::loadInt(address)), nullptr));
         body.push_back(Node::storeAt(address, Node::i(0), Type::i64()));
     }
     body.push_back(Node::assign(index, Node::binary("+", Node::var(index), Node::i(1))));
@@ -927,7 +929,7 @@ void AppendArgumentsMain(simple_ast::Program &program)
  * @brief 把全局停机清理插进入口 `main` 的每条 `return` 之前。
  *
  * 放在**所有函数体都降级完**之后做：那时任何地方对全局写的 `g.close()` 都已经通过
- * `UnmarkDestructor` 反映到 `g_globalCleanupItems` 上，不会漏也不会重。
+ * 关闭路径标记 反映到 `g_globalCleanupItems` 上，不会漏也不会重。
  * `return` 可能嵌在 `if` / 循环的块里，所以这里递归整棵语句树。
  */
 simple_ast::NodePtr InsertGlobalCleanupBeforeReturns(
@@ -1158,7 +1160,7 @@ bool LowerProgram(simple_ast::Program &program)
     /*
      * 全局变量的停机清理项**先存快照**：`g_cleanupItems` 会被后面的函数降级
      * 反复清空，而 `g_globalCleanupItems` 要一直留到函数体全降级完。
-     * 函数体里对全局写的 `g.close()` / `delete g;` 会通过 `UnmarkDestructor`
+     * 函数体里对全局写的 `g.close()` / `drop g;` 会通过 关闭路径标记
      * 改这份快照，所以展开语句必须等所有函数都降级完（见 `AppendGlobalCleanupToEntryMain`）。
      */
     g_globalCleanupItems = g_cleanupItems;

@@ -11,7 +11,7 @@
  * 约定（和结构体一样是**值语义**）：
  *   * `List<int64> v;` 声明出来就是**建好的空容器**，直接 `v.push(1)`；
  *   * 赋值 / 初始化是**复制一份**（`List<int64> b = a;` 之后 a、b 各一份，互不影响）；
- *   * 容器归**声明它的块**所有：出块自动释放（要提前还就 `delete v;`）；
+ *   * 容器归**声明它的块**所有：出块自动释放（要提前还就 `v.drop();`）；
  *   * 字符串元素按**副本**存（取出来是新的一份），所以容器活得比某根字符串久也没事；
  *   * 结构体连同嵌套值字段按副本存；显式引用仍保存地址。
  */
@@ -134,7 +134,7 @@ int64 main() {
     object_map.put(box, 88);
     Any map_key = object_map.keyAt(0);
     Map<Any, int64> object_map_copy = object_map;
-    delete box;                                  /* 键身份不依赖原变量继续存活 */
+    box.drop();                                  /* 键身份不依赖原变量继续存活 */
     println("std::lang::Map<std::lang::Any,int64> 取出再查：has={} 值={} 副本={}",
     object_map.has(map_key), object_map[map_key], object_map_copy[map_key]);
     Any unrelated;

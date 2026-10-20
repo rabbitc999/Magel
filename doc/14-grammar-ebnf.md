@@ -130,7 +130,6 @@ Box<int64 fn(int64)> box;
 | `MUT` | `mut` |
 | `NEW` | `new` |
 | `HEAP` | `heap` |
-| `DELETE` | `delete` |
 | `DROP` | `drop` |
 | `STATIC` | `static` |
 | `FN` | `fn` |
@@ -551,7 +550,6 @@ stmt = block
     | "return", expr, ";"
     | "return", tuple_items, ";"
     | "return", ";"
-    | "delete", unary, ";"
     | "break", ";"
     | "yield", expr, ";"
     | "break", name_token, ";"

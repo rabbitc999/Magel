@@ -18,13 +18,13 @@ int64 main() {
 }
 ```
 
-The source reference is evaluated once. Its handles and slots are transferred, source storage is cleared, and its value lifetime ends. Moving does not run source close/drop methods; the final owner performs cleanup. Code that relied on destruction side effects during a move must change. Close external resources explicitly when immediate closure is required.
+The source reference is evaluated once. Its handles and slots are transferred, source storage is cleared, and its value lifetime ends. Moving does not run source close/methods.drop(); the final owner performs cleanup. Code that relied on destruction side effects during a move must change. Close external resources explicitly when immediate closure is required.
 
 The old binding cannot be read, written or rebound after a move. Declare a new binding to reuse the name. Scalars also participate in moved-value checks. Redeclaration requires a complete move on every incoming path; moving one field or only one branch is insufficient. Disjoint fields remain usable after a partial move, while reading the entire aggregate is rejected.
 
 Borrowed fields retain their original lifetime constraints. Static analysis covers tracked variables, fields, aliases and control flow; it does not promise to track arbitrary raw memory or external host behavior. Runtime aggregate markers continue to protect against repeated moves and destruction.
 
-File and process handles can be transferred. Arrays, interface values without concrete layouts and opaque host types cannot be moved directly; concrete array elements can be moved. Manually allocated source storage still needs delete after its value is moved; freeing that block does not destroy the resources now owned by the destination.
+File and process handles can be transferred. Arrays, interface values without concrete layouts and opaque host types cannot be moved directly; concrete array elements can be moved. Manually allocated source storage still needs drop after its value is moved; freeing that block does not destroy the resources now owned by the destination.
 
 ## fn captures and moving closures
 

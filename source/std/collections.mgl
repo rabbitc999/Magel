@@ -30,7 +30,7 @@ struct Deque<T>: Iterator<T>, Index<T, int64>, Drop {
     int64 len() { return self.values.len(); }
     bool isEmpty() { return self.values.len() == 0; }
     void clear() { self.values.clear(); }
-    void drop() { delete self.values; }
+    void drop() { self.values.drop(); }
 };
 
 struct Queue<T>: Iterator<T>, Drop {
@@ -58,7 +58,7 @@ struct Queue<T>: Iterator<T>, Drop {
     }
     int64 len() { return self.values.len(); }
     bool isEmpty() { return self.values.len() == 0; }
-    void drop() { delete self.values; }
+    void drop() { self.values.drop(); }
 };
 
 struct RingBuffer<T>: Iterator<T>, Drop {
@@ -91,7 +91,7 @@ struct RingBuffer<T>: Iterator<T>, Drop {
     }
     int64 len() { return self.values.len(); }
     int64 available() { return self.capacity - self.values.len(); }
-    void drop() { delete self.values; }
+    void drop() { self.values.drop(); }
 };
 
 struct FixedVector<T>: Iterator<T>, Index<T, int64>, Drop {
@@ -123,7 +123,7 @@ struct FixedVector<T>: Iterator<T>, Index<T, int64>, Drop {
     }
     int64 len() { return self.values.len(); }
     int64 capacityValue() { return self.capacity; }
-    void drop() { delete self.values; }
+    void drop() { self.values.drop(); }
 };
 
 struct Channel<T>: Iterator<T>, Drop {
@@ -146,5 +146,5 @@ struct Channel<T>: Iterator<T>, Drop {
         return Option<T>::None;
     }
     int64 len() { return self.pending.len(); }
-    void drop() { delete self.pending; }
+    void drop() { self.pending.drop(); }
 };

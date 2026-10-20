@@ -268,7 +268,7 @@ after
 
 不用记特例：关动作在前，销毁动作在后。
 
-\section{堆对象：\texttt{new} 和 \texttt{delete}}
+\section{堆对象：\texttt{new} 和 \texttt{drop}}
 
 前面所有东西都活在栈上，跟着作用域走。要手动控制生命周期时，用堆：
 
@@ -287,7 +287,7 @@ int64 main()
     p.x = 3;
     p.y = 4;
     println("{},{}", p.x, p.y);
-    delete p;
+    p.drop();
     println("deleted");
     return 0;
 }
@@ -308,7 +308,7 @@ deleted
 
 \item \texttt{Point mut\& p =\allowbreak{} heap Point;} —— 在堆上建一个 \texttt{Point}，\texttt{p} 是指向它的引用；
 
-\item \texttt{delete p;} —— 释放它。
+\item \texttt{p.\allowbreak{}drop(\allowbreak{})\allowbreak{};} —— 释放它。
 
 \end{itemize}
 
@@ -328,9 +328,9 @@ Point mut& c = heap new Point(5, 6);   // 糖：heap new T(args) 等价于 new(5
 \par
 \medskip
 
-忘记 \texttt{delete} 会怎样？ 手动分配的对象不会因为引用变量离开作用域而自动释放。运行结束时会报告仍未释放的堆块；应显式 delete，或将分配封装进有明确 Drop/Closeable 契约的拥有类型。遗留分配会占用预算，长期运行可能耗尽内存。堆对象的最佳实践还是让它的生命周期和某层花括号对齐，别让 \texttt{new} 和 \texttt{delete} 离得太远。
+忘记 \texttt{drop} 会怎样？ 手动分配的对象不会因为引用变量离开作用域而自动释放。运行结束时会报告仍未释放的堆块；应显式 drop，或将分配封装进有明确 Drop/Closeable 契约的拥有类型。遗留分配会占用预算，长期运行可能耗尽内存。堆对象的最佳实践还是让它的生命周期和某层花括号对齐，别让 \texttt{new} 和 \texttt{drop} 离得太远。
 
-\subsection{\texttt{delete} 两次没事}
+\subsection{编译器合并已知的重复终结}
 
 \par
 \medskip
@@ -348,8 +348,8 @@ int64 main()
 {
     Box mut& b = heap Box;
     b.id = 7;
-    delete b;
-    delete b;
+    b.drop();
+    b.drop();
     println("twice ok");
     return 0;
 }
@@ -366,7 +366,7 @@ twice ok
 \par
 \medskip
 
-\texttt{drop} 只出现了一次。同一对象只析构、释放一次——重复 \texttt{delete} 不会崩，也不会执行两遍清理。\texttt{drop(\allowbreak{})\allowbreak{}} 手动调用同理。
+输出中的 \texttt{drop} 只出现了一次。编译器能证明两条语句终结同一生命周期时，会合并它们，使析构和释放各执行一次；协议方法 \texttt{drop(\allowbreak{})\allowbreak{}} 使用同一机制。底层释放本身不幂等，跨调用等无法证明的重复释放会报告 MGL1205。
 
 但释放之后不能再读：
 
@@ -383,7 +383,7 @@ int64 main()
 {
     Point mut& p = heap Point;
     p.x = 1;
-    delete p;
+    p.drop();
     p.x = 2;
     return 0;
 }
@@ -489,8 +489,8 @@ first
 禁忌 & 不要在 \texttt{drop(\allowbreak{})\allowbreak{}} 里手动析构字段，会双重析构 \\
 \texttt{Closeable} & 离开作用域或提前 \texttt{close(\allowbreak{})\allowbreak{}}；关过就不会再关 \\
 两者都有 & 顺序固定：先 \texttt{close(\allowbreak{})\allowbreak{}} 再 \texttt{drop(\allowbreak{})\allowbreak{}} \\
-堆对象 & \texttt{T mut\& p =\allowbreak{} heap T;} 建，\texttt{delete p;} 释放 \\
-幂等 & \texttt{delete} / \texttt{drop(\allowbreak{})\allowbreak{}} 重复调用只执行一次 \\
+堆对象 & \texttt{T mut\& p =\allowbreak{} heap T;} 建，\texttt{p.\allowbreak{}drop(\allowbreak{})\allowbreak{};} 释放 \\
+非幂等终结 & 编译器合并已知重复终结；其他重复释放报 MGL1205 \\
 释放后访问 & \texttt{MGL1205} \\
 被消除的三类错误 & 空指针、悬垂引用、忘记释放 \\
 不保证的 & 逻辑错误——那是你的活儿 \\

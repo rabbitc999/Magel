@@ -28,6 +28,6 @@ int64 main() {
         Option<Box mut&>::Value(value) => { println("{}", value->value); }
         Option<Box mut&>::None => { println("none"); }
     }
-    delete pointer;
+    pointer.drop();
     return 0;
 }

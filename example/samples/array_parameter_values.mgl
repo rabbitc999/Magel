@@ -33,11 +33,11 @@ void writeBytes(char[] mut& bytes) {
 }
 
 void deleteTexts(String[] mut& texts) {
-    delete texts;
+    texts.drop();
 }
 
 void deleteCopy(int64[] numbers) {
-    delete numbers;
+    numbers.drop();
 }
 
 void copyNumbers(int64[] numbers) {

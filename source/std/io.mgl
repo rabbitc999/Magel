@@ -210,8 +210,7 @@ int64 filePrint(file const& handle, String text) { return __fileWrite(handle, te
  * @return 包括换行的写入字节数。
  */
 int64 filePrintln(file const& handle, String text = "") {
-    String line = text + "\n";
-    return __fileWrite(handle, line);
+    return __fileWrite(handle, text + "\n");
 }
 int64 fileEof(file const& handle) { return __fileEof(handle); }
 int64 fileClose(file const& handle) { return __fileClose(handle); }

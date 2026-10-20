@@ -132,7 +132,7 @@ struct Timer : Drop {
  * 交付仍走同一套「下一条指令边界」的中断机制。
  *
  * 参数按值复制进登记表；`bindEventArguments` 之后**调用点手里的列表仍归调用点**，
- * 要释放就自己 `delete`。多个事件源请分别建 `Timer` 并只对其中一个调用本函数
+ * 要释放就自己 `drop`。多个事件源请分别建 `Timer` 并只对其中一个调用本函数
  * （后登记覆盖前一个）。
  *
  * ⚠ 元素类型要真写成 `std::lang::Any`：Magel 把 `std::lang::Any` 当泛型通配符，所以
@@ -166,9 +166,9 @@ inline int32 __bindEventArguments(EventHandle handle, void fn(int64, std::lang::
                                   std::lang::List<std::lang::Any> arguments) {
     if (!__timerAlive(handle)) { return 0; }   /* 句柄无效 / 已释放 */
     if (callback == 0) { return 0; }           /* 没给回调函数 */
-    if (__eventBinding.bound) { delete __eventBinding.arguments; }
+    if (__eventBinding.bound) { __eventBinding.arguments.drop(); }
     __eventBinding.callback = callback;
-    /* 结构体字段直接接一个具名容器会**别名**（不复制），调用点 `delete` 后登记表就悬空；
+    /* 结构体字段直接接一个具名容器会**别名**（不复制），调用点 `drop` 后登记表就悬空；
      * `.copy()` 造一个只归登记表的副本，重新登记 / `unbindEventArguments` 时安全释放。 */
     __eventBinding.arguments = arguments.copy();
     __eventBinding.bound = true;
@@ -197,5 +197,5 @@ int32 bindEventArguments(EventHandle handle, void fn(int64, std::lang::List<std:
 void unbindEventArguments() {
     if (!__eventBinding.bound) { return; }
     __eventBinding.bound = false;
-    delete __eventBinding.arguments;
+    __eventBinding.arguments.drop();
 }

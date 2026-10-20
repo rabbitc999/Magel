@@ -46,7 +46,7 @@ int64 main() {
     assert(references[0] == 10);
     int64 mut& allocatedValue = allocated();
     assert(allocatedValue == 42);
-    delete allocatedValue;
+    allocatedValue.drop();
     Option<int64 mut&> saved;
     { saved = Option<int64 mut&>::Value(&global); }
     assert(saved.unwrap() == 10);

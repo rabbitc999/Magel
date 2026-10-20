@@ -1,5 +1,5 @@
-/* `delete` 接管析构：对实现 Drop 的值调用它的 drop()，并且取消出块时的自动析构
- * （所以不会析构两次）。这里是 delete 与作用域自动释放并存的对照。 */
+/* `drop` 接管析构：对实现 Drop 的值调用它的 drop()，并且取消出块时的自动析构
+ * （所以不会析构两次）。这里是 drop 与作用域自动释放并存的对照。 */
 struct Resource : Drop {
     int64 value;
 
@@ -15,7 +15,7 @@ struct Resource : Drop {
 int64 main() {
     Resource first = new Resource(1);
     Resource second = new Resource(2);
-    delete first;                       /* 显式 delete：调用 drop() 并取消本块的自动析构 */
+    first.drop();                       /* 显式 drop：调用 drop() 并取消本块的自动析构 */
     println("after delete first");
     second.value = 22;
     return 0;                           /* 出块：second 自动析构一次 */

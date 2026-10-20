@@ -57,7 +57,7 @@ Option<int64 const&> optional = Option<int64 const&>::Value(&value);
 
 ## 3. 借用来源与控制流检查
 
-编译器的独立检查器为变量和字段建立来源路径，合并分支与循环状态，并跟踪 move、drop、delete
+编译器的独立检查器为变量和字段建立来源路径，合并分支与循环状态，并跟踪 move、drop、drop
 之后的访问。已移动或已释放来源的读取、写入和重复移动按对应规则拒绝，常见诊断为 `MGL1205`。
 对完整移动后的二次声明使用新身份，旧别名不会自动指向新变量。
 
@@ -94,9 +94,9 @@ drop conn
 after block
 ```
 
-`T mut& p = heap T;` 创建手动分配的存储，须按规则 `delete p;`，不能把离开引用作用域当作自动释放
+`T mut& p = heap T;` 创建手动分配的存储，须按规则 `p.drop();`，不能把离开引用作用域当作自动释放
 目标存储的承诺。文件、进程、数据库与其他宿主句柄按各自 Drop/Closeable 契约管理。
-幂等 delete/drop、分配身份和 sweep 的边界见[验证说明](11-algorithm-validation.md)。
+非幂等 drop、分配身份与自动清理的边界见[验证说明](11-algorithm-validation.md)。
 
 ## 5. 内存与执行边界
 
