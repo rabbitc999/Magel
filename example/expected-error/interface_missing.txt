@@ -1,1 +1,1 @@
-magel：example/samples-error/interface_missing.mgl 第 10 行第 1 列：struct Circle 实现了接口 Shape，但没有完全实现：area() -> int64、describe() -> std::lang::String（接口要求同名、同返回类型、同形参类型；一个都不能少）
+magel: example/samples-error/interface_missing.mgl 第 10 行第 1 列：struct Circle 实现了接口 Shape，但没有完全实现：area() -> int64、describe() -> std::lang::String（接口要求同名、同返回类型、同形参类型；一个都不能少）

@@ -35,7 +35,7 @@ int64 main() {
 ```
 
 ```text
-magel：整数字面量 200 超出 int8 的取值范围（-128..127）
+magel: 整数字面量 200 超出 int8 的取值范围（-128..127）
 ```
 
 Hexadecimal and binary literals are still read as bit patterns, so `int8 x = 0xFF;` is unaffected.
@@ -107,7 +107,7 @@ int64 main() {
 Writing `5 + f` instead of `f + 5`:
 
 ```text
-magel：右向被显式禁止：Forbid 实现了 NoRightAdd，int64 + Forbid 不再推导；要去掉该标记接口，或改为实现 RightAdd<R,T>
+magel: 右向被显式禁止：Forbid 实现了 NoRightAdd，int64 + Forbid 不再推导；要去掉该标记接口，或改为实现 RightAdd<R,T>
 ```
 
 ## One operand pair, several result types
@@ -142,7 +142,7 @@ int64 main() {
 With no target type (`auto z = a + 3;`) the compiler reports the candidates:
 
 ```text
-magel：运算符 + 有多条声明匹配同一对操作数 A / int64，返回类型分别是 int64、Vec（先强转再算；若它们只是返回类型不同，给表达式一个目标类型就能定）
+magel: 运算符 + 有多条声明匹配同一对操作数 A / int64，返回类型分别是 int64、Vec（先强转再算；若它们只是返回类型不同，给表达式一个目标类型就能定）
 ```
 
 **Swapping operands does not change evaluation order.** When `bump() + makeA()` becomes `makeA().leftAdd(bump())`, both operands are still evaluated left to right as written (the left one is parked in a temporary first), so side effects happen in the same order as they would without the swap.

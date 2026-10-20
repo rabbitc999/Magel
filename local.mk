@@ -216,7 +216,7 @@ $(MAGEL_FRONTEND_MODULE_OBJS): build/magel-runtime/buildConfig.json
 -include $(wildcard $(FRONTEND_BUILD)/*.d)
 
 # 编译期 AST 宏的独立实现，避免 regex 等重型头传播到解析器接口。
-MAGEL_MACRO_MODULES := hygiene regex_matcher source ast_substitution
+MAGEL_MACRO_MODULES := hygiene regex_matcher source ast_substitution template_binding registry
 MAGEL_MACRO_OBJS := $(addprefix $(FRONTEND_BUILD)/macro_,$(addsuffix .o,$(MAGEL_MACRO_MODULES)))
 LIB_OBJS += $(MAGEL_MACRO_OBJS)
 $(LIB): $(MAGEL_MACRO_OBJS)

@@ -15,6 +15,7 @@
 #include "magel_resource_cleanup.hpp"
 #include "magel_lambda.hpp"
 #include "magel_macro.hpp"
+#include "macro/registry.hpp"
 #include "dap/dap_server.hpp"
 
 #include <cstdio>
@@ -2963,6 +2964,7 @@ namespace
 #include "semantics/reflection_queries.cpp"
 #include "semantics/reflection_calls.cpp"
 #include "semantics/derive.cpp"
+#include "semantics/macro_expansion.cpp"
 }  // namespace
 
 /**
@@ -2994,6 +2996,11 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
     }
     /* 1. 降级成 simple_ast 的程序。 */
     simple_ast::Program program;
+    if (!ExpandAstMacros())
+    {
+        RestoreFirstDiagnostic();
+        return 1;
+    }
     if (!ExpandDerivedDeclarations()) return 1;
     if (!PrepareGenericSignatures()) return 1;
     auto parsedNodes = g_nodes;
@@ -3201,7 +3208,7 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
         if (g_stripDebug)
         {
             assembled.debug.entries.clear();
-            std::fputs("magel：不带调试节（缺省；--debug 或 magel debug = true 可保留）\n", stderr);
+            std::fputs("magel: 不带调试节（缺省；--debug 或 magel debug = true 可保留）\n", stderr);
         }
         if (!stackvm::saveProgramBinary(assembled, programPath, &diagnostics, g_compressSymbols))
         {
@@ -3420,12 +3427,12 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
             if (attempt >= g_watchdogMaxRestarts)
             {
                 std::fprintf(stderr,
-                             MAGEL_TEXT("magel：软重启次数用尽（最多 %d 次），本轮仍是可恢复终止\n"),
+                             MAGEL_TEXT("magel: 软重启次数用尽（最多 %d 次），本轮仍是可恢复终止\n"),
                              g_watchdogMaxRestarts);
                 runtimeStatus = 1;
                 break;
             }
-            std::fprintf(stderr, MAGEL_TEXT("magel：软重启 %d/%d（%s）\n"), attempt + 1,
+            std::fprintf(stderr, MAGEL_TEXT("magel: 软重启 %d/%d（%s）\n"), attempt + 1,
                          g_watchdogMaxRestarts, WatchdogReasonName(stopReason));
         }
         g_runtimePeak = runtimeArena.peakBytes();

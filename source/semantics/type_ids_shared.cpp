@@ -367,7 +367,7 @@ bool Fail(const Memory::String &message)
  */
 void Note(const Memory::String &message)
 {
-    std::fprintf(stderr, "magel：提示：%s\n", message.c_str());
+    std::fprintf(stderr, "magel: 提示：%s\n", message.c_str());
 }
 
 /**

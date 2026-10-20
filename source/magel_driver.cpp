@@ -18,6 +18,7 @@
 #include "preprocess.hpp"
 #include "magel_diagnostics.hpp"
 #include "magel_macro.hpp"
+#include "macro/source.hpp"
 #include "magel_interpolation.hpp"
 #include "magel_module.hpp"
 #include "magel_incremental.hpp"
@@ -57,7 +58,7 @@ void InstallDemoGlue(magel_glue::Registry &registry)
     /* 标准胶水（math / random / regex）统一走 std_registry，GLUE_NO_XXX 编译期裁剪。 */
     Memory::String stdError;
     if (!std_registry::bindStandardGlue(registry, &stdError))
-        std::fprintf(stderr, "magel：注册标准胶水失败：%s\n", stdError.c_str());
+        std::fprintf(stderr, "magel: 注册标准胶水失败：%s\n", stdError.c_str());
     registry.bindTypedImplementation<DemoCounter, std::uint64_t>(
         "demo_counter_from_uint", [](std::uint64_t value) { return DemoCounter{ value }; });
     registry.bindTypedImplementation<std::uint64_t, DemoCounter>(
@@ -472,7 +473,7 @@ int magel_main_entry(int argc, char **argv)
             const auto separator = argument.find('=');
             if (separator == Memory::String::npos && index + 1 >= argc)
             {
-                std::fprintf(stderr, MAGEL_TEXT("magel：%s 缺少取值\n"), argument.c_str());
+                std::fprintf(stderr, MAGEL_TEXT("magel: %s 缺少取值\n"), argument.c_str());
                 return 2;
             }
             const Memory::String mode = separator == Memory::String::npos ? Memory::String(argv[++index]) : argument.substr(separator + 1);
@@ -487,7 +488,7 @@ int magel_main_entry(int argc, char **argv)
             }
             else
             {
-                std::fprintf(stderr, MAGEL_TEXT("magel：不认识的运行方式：%s\n"), mode.c_str());
+                std::fprintf(stderr, MAGEL_TEXT("magel: 不认识的运行方式：%s\n"), mode.c_str());
                 return 2;
             }
             continue;
@@ -778,7 +779,7 @@ int magel_main_entry(int argc, char **argv)
             if (jsonDiagnostics)
                 magel_diagnostics::report("MGL1102", message, path ? path : "<命令行>");
             else
-                std::fprintf(stderr, "magel：%s\n", message);
+                std::fprintf(stderr, "magel: %s\n", message);
             return 2;
         }
         reflectionEnabled = false;
@@ -791,17 +792,17 @@ int magel_main_entry(int argc, char **argv)
         if (jsonDiagnostics)
             magel_diagnostics::report("MGL1102", message, path ? path : "<命令行>");
         else
-            std::fprintf(stderr, "magel：%s\n", message);
+            std::fprintf(stderr, "magel: %s\n", message);
         return 2;
     }
     if (incremental && (path == nullptr || raw))
     {
-        std::fprintf(stderr, MAGEL_TEXT("magel：--incremental 需要源文件，且不能与 --raw 合用\n"));
+        std::fprintf(stderr, MAGEL_TEXT("magel: --incremental 需要源文件，且不能与 --raw 合用\n"));
         return 2;
     }
     if (sourceStdin && (!path || !checkOnly))
     {
-        std::fputs("magel：--source-stdin 需要 --check 和源文件路径\n", stderr);
+        std::fputs("magel: --source-stdin 需要 --check 和源文件路径\n", stderr);
         return 2;
     }
     Memory::Map<Memory::String, Memory::String> sourceOverlays;
@@ -813,7 +814,7 @@ int magel_main_entry(int argc, char **argv)
         if (jsonDiagnostics)
             magel_diagnostics::report("MGL1102", error.what(), "<命令行>");
         else
-            std::fprintf(stderr, "magel：%s\n", error.what());
+            std::fprintf(stderr, "magel: %s\n", error.what());
         return 2;
     }
     magel_package::Project project;
@@ -823,7 +824,7 @@ int magel_main_entry(int argc, char **argv)
         if (jsonDiagnostics)
             magel_diagnostics::report("MGL1101", packageError, project.file);
         else
-            std::fprintf(stderr, "magel：magel：%s\n", packageError.c_str());
+            std::fprintf(stderr, "magel: %s\n", packageError.c_str());
         return 1;
     }
     if (!runModeGiven && project.run == "svmb")
@@ -926,7 +927,7 @@ int magel_main_entry(int argc, char **argv)
             preprocess::Define define;
             if (!preprocess::Preprocessor::parseDefine(item, define))
             {
-                std::fprintf(stderr, "magel：-D 的写法不对（要 NAME 或 NAME=值）：%s\n",
+                std::fprintf(stderr, "magel: -D 的写法不对（要 NAME 或 NAME=值）：%s\n",
                              item.c_str());
                 return 2;
             }
@@ -946,7 +947,7 @@ int magel_main_entry(int argc, char **argv)
         }
         magel_analysis::dependencies(analysisDependencies, analysisFiles, ok);
         for (const preprocess::Diagnostic &item : processed.diagnostics)
-            if (!jsonDiagnostics) std::fprintf(stderr, MAGEL_TEXT("magel：前处理：%s\n"), item.toString().c_str());
+            if (!jsonDiagnostics) std::fprintf(stderr, MAGEL_TEXT("magel: 前处理：%s\n"), item.toString().c_str());
         if (!ok)
         {
             if (jsonDiagnostics)
@@ -960,7 +961,7 @@ int magel_main_entry(int argc, char **argv)
                     magel_diagnostics::report("MGL1100", moduleError, sourceLabel);
                 return 1;
             }
-            std::fprintf(stderr, "magel：%s：%s\n",
+            std::fprintf(stderr, "magel: %s：%s\n",
                          loader.preprocessError() ? "前处理" : "模块",
                          moduleError.c_str());
             return 1;
@@ -1000,16 +1001,16 @@ int magel_main_entry(int argc, char **argv)
             if (cache->outputsCurrent(prefix, incrementalInput, emitBinary,
                                       compressSymbols ? (symbolMap.empty() ? prefix + ".symbol_map.json" : symbolMap) : Memory::String()))
             {
-                std::fprintf(stderr, "magel：增量缓存命中：%zu 个模块复用，编译产物未变\n",
+                std::fprintf(stderr, "magel: 增量缓存命中：%zu 个模块复用，编译产物未变\n",
                              cache->reused());
-                if (runtimeStats) std::fprintf(stderr, "magel：增量文件校验：%zu 次读取，%zu 次复用\n", cache->hashReads(), cache->hashReuses());
+                if (runtimeStats) std::fprintf(stderr, "magel: 增量文件校验：%zu 次读取，%zu 次复用\n", cache->hashReads(), cache->hashReuses());
                 return 0;
             }
         }
         Memory::String macroError;
         if (!magel_interpolation::run(processed, macroError))
         {
-            std::fprintf(stderr, "magel：插值：%s\n", macroError.c_str());
+            std::fprintf(stderr, "magel: 插值：%s\n", macroError.c_str());
             return 1;
         }
         if (!magel_macro::run(processed, macroError, &loader.moduleByFile()))
@@ -1019,7 +1020,7 @@ int magel_main_entry(int argc, char **argv)
                 magel_diagnostics::report("MGL1100", macroError, sourceLabel);
                 return 1;
             }
-            std::fprintf(stderr, MAGEL_TEXT("magel：前处理：%s\n"), macroError.c_str());
+            std::fprintf(stderr, MAGEL_TEXT("magel: 前处理：%s\n"), macroError.c_str());
             return 1;
         }
         if (!magel_lambda::run(processed, macroError))
@@ -1029,7 +1030,7 @@ int magel_main_entry(int argc, char **argv)
                 magel_diagnostics::report("MGL1100", macroError, sourceLabel);
                 return 1;
             }
-            std::fprintf(stderr, "magel：lambda：%s\n", macroError.c_str());
+            std::fprintf(stderr, "magel: lambda：%s\n", macroError.c_str());
             return 1;
         }
         if (!magel_generic::run(processed, macroError))
@@ -1039,7 +1040,7 @@ int magel_main_entry(int argc, char **argv)
                 magel_diagnostics::report("MGL1500", macroError, sourceLabel);
                 return 1;
             }
-            std::fprintf(stderr, MAGEL_TEXT("magel：泛型：%s\n"), macroError.c_str());
+            std::fprintf(stderr, MAGEL_TEXT("magel: 泛型：%s\n"), macroError.c_str());
             return 1;
         }
         magel_lambda::markClosureTypeArguments(processed.text);
@@ -1061,6 +1062,7 @@ int magel_main_entry(int argc, char **argv)
     Engine engine;
     ParserValue_T value{};
     magel_generic::markContainerTypeArguments(text);
+    magel_macro::markHeaderBoundaries(text);
     const Status status = engine.runText(text, &value);
     if (status != Status::Ok)
     {
@@ -1135,7 +1137,7 @@ int magel_main_entry(int argc, char **argv)
             const int inner = M_Compile("magel", prefix.c_str(), 1, emitBinary ? 1 : 0,
                                         inputText.c_str());
             if (inner == 0) return 0;
-            Memory::String text = "magel：";
+            Memory::String text = "magel: ";
             const char *message = M_LastError();
             if (message != nullptr && message[0] != '\0')
             {
@@ -1162,7 +1164,7 @@ int magel_main_entry(int argc, char **argv)
         warnings.push_back({ item.message, original.file, original.line, item.column ? item.column : 1u, true });
         if (!jsonDiagnostics)
         {
-            std::fprintf(stderr, "magel：警告：%s:%zu:%zu：%s\n", original.file.c_str(), original.line, item.column ? item.column : 1u, item.message.c_str());
+            std::fprintf(stderr, "magel: 警告：%s:%zu:%zu：%s\n", original.file.c_str(), original.line, item.column ? item.column : 1u, item.message.c_str());
             const auto snippet = magel_report::renderSnippet(original.file, original.line, item.column ? item.column : 1u);
             if (!snippet.empty()) std::fputs(snippet.c_str(), stderr);
         }
@@ -1191,10 +1193,10 @@ int magel_main_entry(int argc, char **argv)
                      * 这笔账算在这里 —— 文案里的"第 N 列"与波浪号必须是同一个位置。 */
                     const std::size_t column = item.column ? magel_report::anchoredColumn(original.file, original.line, item.column) : 0u;
                     if (column)
-                        std::fprintf(stderr, MAGEL_TEXT("magel：%s 第 %zu 行第 %zu 列：%s\n"),
+                        std::fprintf(stderr, MAGEL_TEXT("magel: %s 第 %zu 行第 %zu 列：%s\n"),
                                      original.file.c_str(), original.line, column, item.message.c_str());
                     else
-                        std::fprintf(stderr, MAGEL_TEXT("magel：%s 第 %zu 行：%s\n"),
+                        std::fprintf(stderr, MAGEL_TEXT("magel: %s 第 %zu 行：%s\n"),
                                      original.file.c_str(), original.line, item.message.c_str());
                     const Memory::String snippet = magel_report::renderSnippet(
                         original.file, original.line, column,
@@ -1202,7 +1204,7 @@ int magel_main_entry(int argc, char **argv)
                     if (!snippet.empty()) std::fputs(snippet.c_str(), stderr);
                 }
                 else
-                    std::fprintf(stderr, "magel：%s\n", item.message.c_str());
+                    std::fprintf(stderr, "magel: %s\n", item.message.c_str());
             }
         }
         if (diagnostics.empty() && M_LastError() && M_LastError()[0])
@@ -1216,15 +1218,15 @@ int magel_main_entry(int argc, char **argv)
                 /* 行号为 0 = 这条错误没有可指的源码位置（比如运行期错误：位置得跑起来才知道，
                  * 它的 `出错位置` / `调用栈` 自己就写在下面几行）。这时保持单行原文不加前缀。 */
                 if (!line || original.file.empty() || original.file.front() == '<' || !magel_report::hasSourceLine(original.file, original.line))
-                    std::fprintf(stderr, "magel：%s\n", M_LastError());
+                    std::fprintf(stderr, "magel: %s\n", M_LastError());
                 else
                 {
                     const std::size_t anchored = column ? magel_report::anchoredColumn(original.file, original.line, column) : 0u;
                     if (anchored)
-                        std::fprintf(stderr, MAGEL_TEXT("magel：%s 第 %zu 行第 %zu 列：%s\n"),
+                        std::fprintf(stderr, MAGEL_TEXT("magel: %s 第 %zu 行第 %zu 列：%s\n"),
                                      original.file.c_str(), original.line, anchored, M_LastError());
                     else
-                        std::fprintf(stderr, MAGEL_TEXT("magel：%s 第 %zu 行：%s\n"),
+                        std::fprintf(stderr, MAGEL_TEXT("magel: %s 第 %zu 行：%s\n"),
                                      original.file.c_str(), original.line, M_LastError());
                     const Memory::String snippet = magel_report::renderSnippet(
                         original.file, original.line, anchored,
@@ -1242,9 +1244,9 @@ int magel_main_entry(int argc, char **argv)
     {
         cache->saveOutputs(prefix, incrementalInput, emitBinary,
                            compressSymbols ? (symbolMap.empty() ? prefix + ".symbol_map.json" : symbolMap) : Memory::String());
-        std::fprintf(stderr, "magel：增量编译：%zu 个模块复用，%zu 个模块重新预处理\n",
+        std::fprintf(stderr, "magel: 增量编译：%zu 个模块复用，%zu 个模块重新预处理\n",
                      cache->reused(), cache->rebuilt());
-        if (runtimeStats) std::fprintf(stderr, "magel：增量文件校验：%zu 次读取，%zu 次复用\n", cache->hashReads(), cache->hashReuses());
+        if (runtimeStats) std::fprintf(stderr, "magel: 增量文件校验：%zu 次读取，%zu 次复用\n", cache->hashReads(), cache->hashReuses());
     }
     return 0;
 }

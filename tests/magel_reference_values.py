@@ -33,7 +33,7 @@ def main():
         for mode, result in results:
             assert result.stdout == expected, (mode, result.stdout, expected)
             if sample == 'destructuring_guards' and mode == '解释执行':
-                warning = 'magel：警告：[^\\n]*destructuring_guards\\.mgl:23:47：\\[MGL1601\\] match 整数模式与前面的模式重叠；仍按分支顺序和守卫选择匹配项\\n    \\|\\n 23 \\| [^\\n]*\\n    \\| +~\\n'
+                warning = 'magel: 警告：[^\\n]*destructuring_guards\\.mgl:23:47：\\[MGL1601\\] match 整数模式与前面的模式重叠；仍按分支顺序和守卫选择匹配项\\n    \\|\\n 23 \\| [^\\n]*\\n    \\| +~\\n'
                 assert re.fullmatch(warning, result.stderr), (mode, result.stderr)
             else:
                 assert not result.stderr, (mode, result.stderr)

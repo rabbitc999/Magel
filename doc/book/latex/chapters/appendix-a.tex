@@ -17,9 +17,9 @@ Magel 的报错分三类，看开头几个字就能分清：
 开头 & 是哪一类 & 什么时候出现 \\
 \midrule
 \endhead
-\texttt{magel：……} & 编译期错误（语义检查） & 运行之前，代码「含义不对」 \\
+\texttt{magel:\allowbreak{} ……} & 编译期错误（语义检查） & 运行之前，代码「含义不对」 \\
 \texttt{语法错误：文件 第 行第 列：……} & 语法错误 & 运行之前，代码「话都说不通」 \\
-\texttt{magel：运行期错误：……} & 运行期错误 & 程序跑到那一句才炸 \\
+\texttt{magel:\allowbreak{} 运行期错误：……} & 运行期错误 & 程序跑到那一句才炸 \\
 \bottomrule
 \end{longtable}
 }
@@ -45,7 +45,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel：运行期错误：整数除零
+magel: 运行期错误：整数除零
 出错位置：hello.mgl:4（main）
 调用栈（外 → 内）：
   main  hello.mgl:4 [thread 0 coroutine 0 ip 12]
@@ -67,22 +67,22 @@ magel：运行期错误：整数除零
 现象 & 真实消息 & 怎么办 \\
 \midrule
 \endhead
-用没声明的变量 & \texttt{magel：引用了没声明的变量：y} & 检查拼写；变量必须先声明再用 \\
-调没定义的函数 & \texttt{magel：调用了没定义的函数：nosuch} & 名字拼错，或者忘了 \texttt{import} \\
-同一个块里重名 & \texttt{magel：同一个块里不能重复声明：x（要遮蔽外层变量就在内层块里声明）} & 换名字；想遮蔽就用内层块 \\
-给 \texttt{const} 赋值 & \texttt{magel：不可变变量（const）不能再赋值：LIMIT} & 去掉 \texttt{const}，或不该在这里改 \\
-类型对不上（赋值/返回/传参） & \texttt{magel：不能隐式转换：String ->\allowbreak{} int64（请显式强转）} & 见下面 A.2.1 \\
-整数字面量超出目标范围 & \texttt{magel：整数字面量 200 超出 int8 的取值范围（-128.\allowbreak{}.\allowbreak{}127）} & 换类型，或换成范围内的值（见 A.2.2） \\
-\texttt{if} 条件不是布尔 & \texttt{magel：if 条件必须是 bool，现在给的是 int64（数值条件请显式写成 }(bool)值\texttt{ 或比较表达式）} & 写比较表达式，别拿数字当布尔 \\
-实参个数/类型对不上 & \texttt{magel：调用 函数 f 找不到匹配的重载：(\allowbreak{}int64,\allowbreak{} int64,\allowbreak{} int64)\allowbreak{}；没有参数类型能对上的重载（候选：f）} & 数实参个数；看类型是否精确对上 \\
-接口没实现完 & \texttt{magel：struct Circle 实现了接口 Shape，但没有完全实现：area(\allowbreak{})\allowbreak{} ->\allowbreak{} int64（接口要求同名、同返回类型、同形参类型；一个都不能少）} & 把接口里的方法补全，签名一字不差 \\
-\texttt{match} 漏了分支 & \texttt{magel：enum match 必须覆盖所有变体或提供 }\_\texttt{ 兜底分支；缺少：Color:\allowbreak{}:\allowbreak{}Green} & 补上缺的变体，或加 \texttt{\_ =\allowbreak{}>\allowbreak{}} 兜底 \\
+用没声明的变量 & \texttt{magel:\allowbreak{} 引用了没声明的变量：y} & 检查拼写；变量必须先声明再用 \\
+调没定义的函数 & \texttt{magel:\allowbreak{} 调用了没定义的函数：nosuch} & 名字拼错，或者忘了 \texttt{import} \\
+同一个块里重名 & \texttt{magel:\allowbreak{} 同一个块里不能重复声明：x（要遮蔽外层变量就在内层块里声明）} & 换名字；想遮蔽就用内层块 \\
+给 \texttt{const} 赋值 & \texttt{magel:\allowbreak{} 不可变变量（const）不能再赋值：LIMIT} & 去掉 \texttt{const}，或不该在这里改 \\
+类型对不上（赋值/返回/传参） & \texttt{magel:\allowbreak{} 不能隐式转换：String ->\allowbreak{} int64（请显式强转）} & 见下面 A.2.1 \\
+整数字面量超出目标范围 & \texttt{magel:\allowbreak{} 整数字面量 200 超出 int8 的取值范围（-128.\allowbreak{}.\allowbreak{}127）} & 换类型，或换成范围内的值（见 A.2.2） \\
+\texttt{if} 条件不是布尔 & \texttt{magel:\allowbreak{} if 条件必须是 bool，现在给的是 int64（数值条件请显式写成 }(bool)值\texttt{ 或比较表达式）} & 写比较表达式，别拿数字当布尔 \\
+实参个数/类型对不上 & \texttt{magel:\allowbreak{} 调用 函数 f 找不到匹配的重载：(\allowbreak{}int64,\allowbreak{} int64,\allowbreak{} int64)\allowbreak{}；没有参数类型能对上的重载（候选：f）} & 数实参个数；看类型是否精确对上 \\
+接口没实现完 & \texttt{magel:\allowbreak{} struct Circle 实现了接口 Shape，但没有完全实现：area(\allowbreak{})\allowbreak{} ->\allowbreak{} int64（接口要求同名、同返回类型、同形参类型；一个都不能少）} & 把接口里的方法补全，签名一字不差 \\
+\texttt{match} 漏了分支 & \texttt{magel:\allowbreak{} enum match 必须覆盖所有变体或提供 }\_\texttt{ 兜底分支；缺少：Color:\allowbreak{}:\allowbreak{}Green} & 补上缺的变体，或加 \texttt{\_ =\allowbreak{}>\allowbreak{}} 兜底 \\
 自定义泛型名撞了内置 & \texttt{magel:\allowbreak{} generics:\allowbreak{} 重复的泛型声明 Pair} & 换个名字（内置有 \texttt{Pair}，改叫 \texttt{Duo} / \texttt{Entry} 之类） \\
-找不到模块 & \texttt{magel：模块：找不到模块 no\_such\_module（需要 no\_such\_module.\allowbreak{}mgl）} & 检查 \texttt{import} 的名字与文件是否在同目录 \\
-引用声明没初始化 & \texttt{magel：引用声明必须初始化，缺省值请使用 Option<\allowbreak{}T mut\&>\allowbreak{}} & 引用必须当场绑定；可能为空就用 \texttt{Option<\allowbreak{}T mut\&>\allowbreak{}} \\
-只读引用被写入 & \texttt{magel：只读引用（}T const\&\texttt{）不能写入元素} & 改用 \texttt{T mut\&} \\
-悬垂引用（返回局部引用） & \texttt{magel：[\allowbreak{}MGL1204]\allowbreak{} 返回值中的引用不能超过局部来源的生命周期（int64 mut\&，所属类型 ，来源 local）} & 别把指向局部变量的引用交出去 \\
-引用已被释放还在用 & \texttt{magel：[\allowbreak{}MGL1205]\allowbreak{} 借用来源已释放，不能继续访问：表达式} & 检查 \texttt{Drop} / 作用域，别在对象没了以后还用它 \\
+找不到模块 & \texttt{magel:\allowbreak{} 模块：找不到模块 no\_such\_module（需要 no\_such\_module.\allowbreak{}mgl）} & 检查 \texttt{import} 的名字与文件是否在同目录 \\
+引用声明没初始化 & \texttt{magel:\allowbreak{} 引用声明必须初始化，缺省值请使用 Option<\allowbreak{}T mut\&>\allowbreak{}} & 引用必须当场绑定；可能为空就用 \texttt{Option<\allowbreak{}T mut\&>\allowbreak{}} \\
+只读引用被写入 & \texttt{magel:\allowbreak{} 只读引用（}T const\&\texttt{）不能写入元素} & 改用 \texttt{T mut\&} \\
+悬垂引用（返回局部引用） & \texttt{magel:\allowbreak{} [\allowbreak{}MGL1204]\allowbreak{} 返回值中的引用不能超过局部来源的生命周期（int64 mut\&，所属类型 ，来源 local）} & 别把指向局部变量的引用交出去 \\
+引用已被释放还在用 & \texttt{magel:\allowbreak{} [\allowbreak{}MGL1205]\allowbreak{} 借用来源已释放，不能继续访问：表达式} & 检查 \texttt{Drop} / 作用域，别在对象没了以后还用它 \\
 \bottomrule
 \end{longtable}
 }
@@ -124,7 +124,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel：不能隐式转换：int64 -> int32（请显式强转）
+magel: 不能隐式转换：int64 -> int32（请显式强转）
 \end{lstlisting}
 \par
 \medskip
@@ -165,7 +165,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel：整数字面量 256 超出 uint8 的取值范围（0..255）
+magel: 整数字面量 256 超出 uint8 的取值范围（0..255）
 \end{lstlisting}
 \par
 \medskip
@@ -206,7 +206,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel：不能隐式转换：int64 -> int64 mut&（请显式强转）
+magel: 不能隐式转换：int64 -> int64 mut&（请显式强转）
 \end{lstlisting}
 \par
 \medskip
@@ -231,7 +231,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel：引用声明必须初始化，缺省值请使用 Option<T mut&>
+magel: 引用声明必须初始化，缺省值请使用 Option<T mut&>
 \end{lstlisting}
 \par
 \medskip
@@ -241,7 +241,7 @@ magel：引用声明必须初始化，缺省值请使用 Option<T mut&>
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel：[MGL1204] 返回值中的引用不能超过局部来源的生命周期（int64 mut&，所属类型 ，来源 local）
+magel: [MGL1204] 返回值中的引用不能超过局部来源的生命周期（int64 mut&，所属类型 ，来源 local）
 \end{lstlisting}
 \par
 \medskip
@@ -308,21 +308,21 @@ int64 main()
 
 \section{运行期错误速查}
 
-运行期错误都带 \texttt{magel：运行期错误：} 前缀，后面跟具体原因、出错位置和调用栈。它们不是「未定义行为」，是明确被检查到的错误——出问题的那一下，程序会停下来告诉你，而不是悄悄读到垃圾数据。
+运行期错误都带 \texttt{magel:\allowbreak{} 运行期错误：} 前缀，后面跟具体原因、出错位置和调用栈。它们不是「未定义行为」，是明确被检查到的错误——出问题的那一下，程序会停下来告诉你，而不是悄悄读到垃圾数据。
 
 \begin{center}
 \begin{tabular}{ll}
 \toprule
 现象 & 真实消息（首行） \\
 \midrule
-整数除以零 & \texttt{magel：运行期错误：整数除零} \\
-定长数组越界 & \texttt{magel：运行期错误：数组下标越界：fixed 的下标 5，长度 3} \\
-\texttt{List} 越界 & \texttt{magel：运行期错误：vec 下标越界：5（长度 1）} \\
-展开空的 \texttt{Option} & \texttt{magel：运行期错误：panic：called Option.\allowbreak{}unwrap(\allowbreak{})\allowbreak{} on None} \\
-展开 \texttt{Err} 的 \texttt{Result} & \texttt{magel：运行期错误：panic：called Result.\allowbreak{}unwrap(\allowbreak{})\allowbreak{} on Err} \\
-\texttt{expect} 落空 & \texttt{magel：运行期错误：panic：<\allowbreak{}你写的消息>\allowbreak{}} \\
-\texttt{assert} 失败 & \texttt{magel：运行期错误：panic：<\allowbreak{}你写的消息>\allowbreak{}} \\
-主动 \texttt{panic} & \texttt{magel：运行期错误：panic：<\allowbreak{}你写的消息>\allowbreak{}} \\
+整数除以零 & \texttt{magel:\allowbreak{} 运行期错误：整数除零} \\
+定长数组越界 & \texttt{magel:\allowbreak{} 运行期错误：数组下标越界：fixed 的下标 5，长度 3} \\
+\texttt{List} 越界 & \texttt{magel:\allowbreak{} 运行期错误：vec 下标越界：5（长度 1）} \\
+展开空的 \texttt{Option} & \texttt{magel:\allowbreak{} 运行期错误：panic：called Option.\allowbreak{}unwrap(\allowbreak{})\allowbreak{} on None} \\
+展开 \texttt{Err} 的 \texttt{Result} & \texttt{magel:\allowbreak{} 运行期错误：panic：called Result.\allowbreak{}unwrap(\allowbreak{})\allowbreak{} on Err} \\
+\texttt{expect} 落空 & \texttt{magel:\allowbreak{} 运行期错误：panic：<\allowbreak{}你写的消息>\allowbreak{}} \\
+\texttt{assert} 失败 & \texttt{magel:\allowbreak{} 运行期错误：panic：<\allowbreak{}你写的消息>\allowbreak{}} \\
+主动 \texttt{panic} & \texttt{magel:\allowbreak{} 运行期错误：panic：<\allowbreak{}你写的消息>\allowbreak{}} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -345,7 +345,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel：运行期错误：panic：called Option.unwrap() on None
+magel: 运行期错误：panic：called Option.unwrap() on None
 \end{lstlisting}
 \par
 \medskip
@@ -359,8 +359,8 @@ magel：运行期错误：panic：called Option.unwrap() on None
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel：运行期错误：数组下标越界：fixed 的下标 5，长度 3     <- 定长数组，带变量名
-magel：运行期错误：vec 下标越界：5（长度 1）                <- List
+magel: 运行期错误：数组下标越界：fixed 的下标 5，长度 3     <- 定长数组，带变量名
+magel: 运行期错误：vec 下标越界：5（长度 1）                <- List
 \end{lstlisting}
 \par
 \medskip
@@ -373,8 +373,8 @@ magel：运行期错误：vec 下标越界：5（长度 1）                <- L
 现象 & 真实消息 & 怎么办 \\
 \midrule
 \endhead
-用了注解/反射但工具链不支持 & \texttt{magel：x.\allowbreak{}mgl 第 1 行第 1 列：注解与反射功能未开启，请使用支持该能力的工具链及 --reflection} & 用带反射的构建，运行时加 \texttt{--reflection}（第 20 章） \\
-调了不存在的方法 & \texttt{magel：方法只能调在 struct 上：foo\allowbreak{}Bar} & 方法名拼错，或那个类型上真没有这个方法 \\
+用了注解/反射但工具链不支持 & \texttt{magel:\allowbreak{} x.\allowbreak{}mgl 第 1 行第 1 列：注解与反射功能未开启，请使用支持该能力的工具链及 --reflection} & 用带反射的构建，运行时加 \texttt{--reflection}（第 20 章） \\
+调了不存在的方法 & \texttt{magel:\allowbreak{} 方法只能调在 struct 上：foo\allowbreak{}Bar} & 方法名拼错，或那个类型上真没有这个方法 \\
 \bottomrule
 \end{longtable}
 }
@@ -389,7 +389,7 @@ magel：运行期错误：vec 下标越界：5（长度 1）                <- L
 
 \begin{enumerate}
 
-\item 看开头几个字，定类别：\texttt{语法错误} \ensuremath{\rightarrow} 语法；\texttt{magel：} \ensuremath{\rightarrow} 编译期；\texttt{magel：运行期错误：} \ensuremath{\rightarrow} 运行期。三类改法完全不同。
+\item 看开头几个字，定类别：\texttt{语法错误} \ensuremath{\rightarrow} 语法；\texttt{magel:\allowbreak{} } \ensuremath{\rightarrow} 编译期；\texttt{magel:\allowbreak{} 运行期错误：} \ensuremath{\rightarrow} 运行期。三类改法完全不同。
 
 \item 语法/编译期：看行号，往上一行找。 报错行常常只是「被发现」的地方，真正的问题往往在上一行（典型的：少分号）。
 

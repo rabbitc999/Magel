@@ -1,1 +1,1 @@
-magel：example/samples-error/match_range_type.mgl 第 1 行第 1 列：match 的 range 和 rangeEq 模式只支持整数或 char
+magel: example/samples-error/match_range_type.mgl 第 1 行第 1 列：match 的 range 和 rangeEq 模式只支持整数或 char

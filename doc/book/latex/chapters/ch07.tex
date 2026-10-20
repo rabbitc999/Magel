@@ -81,7 +81,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel：只读引用（`T const&`）不能写入元素
+magel: 只读引用（`T const&`）不能写入元素
 \end{lstlisting}
 \par
 \medskip
@@ -212,7 +212,7 @@ Magel 没有 \texttt{null}。 没有 \texttt{nullptr}，没有 \texttt{nil}，�
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel：引用声明必须初始化，缺省值请使用 Option<T mut&>
+magel: 引用声明必须初始化，缺省值请使用 Option<T mut&>
 \end{lstlisting}
 \par
 \medskip
@@ -247,7 +247,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel：`&` 只能取数据区里对象的地址（数组元素 / 结构体字段 / 字符串字节；栈上的标量变量取不了）
+magel: `&` 只能取数据区里对象的地址（数组元素 / 结构体字段 / 字符串字节；栈上的标量变量取不了）
 \end{lstlisting}
 \par
 \medskip
@@ -280,7 +280,7 @@ int64 mut& bad()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel：[MGL1204] 返回值中的引用不能超过局部来源的生命周期（int64 mut&，所属类型 ，来源 local）
+magel: [MGL1204] 返回值中的引用不能超过局部来源的生命周期（int64 mut&，所属类型 ，来源 local）
 \end{lstlisting}
 \par
 \medskip
@@ -318,7 +318,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel：[MGL1204] 返回值中的引用不能超过局部来源的生命周期（Holder，所属类型 ，来源 holder）
+magel: [MGL1204] 返回值中的引用不能超过局部来源的生命周期（Holder，所属类型 ，来源 holder）
 \end{lstlisting}
 \par
 \medskip

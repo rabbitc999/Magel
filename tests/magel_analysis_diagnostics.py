@@ -2,6 +2,8 @@
 from pathlib import Path
 import argparse
 import json
+import os
+import re
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,7 +36,13 @@ def main():
             assert diagnostic["source"] == text.splitlines()[diagnostic["span"]["line"] - 1], diagnostic
         plain = subprocess.run([str(compiler), "--check", str(source)], cwd=ROOT,
                                capture_output=True, encoding="utf-8", errors="replace", timeout=90)
-        assert plain.returncode != 0 and plain.stderr.count("magel：") == len(expected), plain
+        assert plain.returncode != 0 and len(re.findall(r"^magel: ", plain.stderr, re.MULTILINE)) == len(expected), plain
+        assert "magel：" not in plain.stderr, plain.stderr
+    for language in ("zh", "en"):
+        missing = subprocess.run([str(compiler), "--mode"], cwd=ROOT, env=dict(os.environ, MAGEL_LANG=language),
+                                 capture_output=True, encoding="utf-8", errors="replace", timeout=90)
+        assert missing.returncode != 0 and missing.stderr.startswith("magel: "), (language, missing)
+        assert "magel：" not in missing.stderr and "magel: magel:" not in missing.stderr, missing.stderr
     print("多诊断验证通过：跨语句、跨函数、借用与语义混合错误及 JSON 定位")
 
 

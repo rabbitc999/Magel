@@ -74,7 +74,7 @@ def main():
         result = subprocess.run(list(map(str, command)), input=data, cwd=ROOT, env=env, capture_output=True, encoding='utf-8', errors='replace', timeout=timeout)
         assert result.returncode == 0, (command, result.returncode, result.stdout, result.stderr)
         if len(command) > 1 and command[1] == 'svmb':
-            assert all((not line.strip() or line.startswith('magel：不带调试节') for line in result.stderr.splitlines())), (command, result.stderr)
+            assert all((not line.strip() or line.startswith('magel: 不带调试节') for line in result.stderr.splitlines())), (command, result.stderr)
         else:
             assert not result.stderr.strip(), (command, result.stderr)
         return result.stdout.strip()

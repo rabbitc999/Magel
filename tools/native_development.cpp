@@ -4766,7 +4766,7 @@ int run(int argc, char **argv, const fs::path &compiler)
         return server.run();
     } catch (const std::exception &e)
     {
-        std::cerr << "magel：" << e.what() << "\n";
+        std::cerr << "magel: " << e.what() << "\n";
         return 1;
     }
 }

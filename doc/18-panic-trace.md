@@ -20,7 +20,7 @@ mkdir -p build/doc-example
 build/work/magel/magel run magel/example/samples-error/assert_failure.mgl --debug --out build/doc-example/assert-failure
 ```
 
-[正式错误期望](../example/expected-error/assert_failure.txt) 的消息为 `magel：运行期错误：panic：assert(x) 的 x 为假`。--debug 还会输出执行轨迹、失败位置和可用调用记录，所以不能把完整 stderr 与这一行直接做严格相等比较；专项测试分别检查消息、位置与帧顺序。
+[正式错误期望](../example/expected-error/assert_failure.txt) 的消息为 `magel: 运行期错误：panic：assert(x) 的 x 为假`。--debug 还会输出执行轨迹、失败位置和可用调用记录，所以不能把完整 stderr 与这一行直接做严格相等比较；专项测试分别检查消息、位置与帧顺序。
 
 ## 有消息、有函数栈和有源码位置是三件事
 
@@ -62,7 +62,7 @@ if (!result.ok) {
 
 VM 帧提供 `function`、`instruction` 与 `location`；递归每层、直接/间接调用和当前协程共享同一份真实执行帧，采集发生在退栈之前。每次 `run()` 清空上次快照，线程子 VM 继承隐藏策略。无调试表时不会伪造源码行号。
 
-编译器的错误首行继续是 `magel：运行期错误：panic：…`，后续行才附位置和调用栈；`M_LastError()` 也包含这份多行诊断。正常程序的输出与返回值不变。
+编译器的错误首行继续是 `magel: 运行期错误：panic：…`，后续行才附位置和调用栈；`M_LastError()` 也包含这份多行诊断。正常程序的输出与返回值不变。
 
 ## 回归
 

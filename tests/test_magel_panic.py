@@ -27,7 +27,7 @@ def main():
                 cmd += ['--compress-symbols']
             result, stderr = command(cmd)
             assert result.returncode != 0 and 'nested failure' in stderr
-            assert stderr.splitlines()[0].startswith('magel：运行期错误：panic：'), stderr
+            assert stderr.splitlines()[0].startswith('magel: 运行期错误：panic：'), stderr
             assert ('调用栈' in stderr) == (not compressed), stderr
             if compressed:
                 assert 'inner' not in stderr and '出错位置' not in stderr and ('nested.mgl' not in stderr)

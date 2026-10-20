@@ -34,10 +34,11 @@ def main():
     with tempfile.TemporaryDirectory(prefix="foundations-", dir=base) as directory:
         for name, module in (("macro_hygiene", "hygiene"), ("macro_regex", "regex_matcher"),
                              ("macro_source", "source"), ("macro_ast_substitution", "ast_substitution"),
+                             ("macro_template_binding", ["template_binding", "ast_substitution", "hygiene", "registry"]),
                              ("macro_parser", None)):
             binary = Path(directory) / (name + (".exe" if os.name == "nt" else ""))
             sources = ["tests/" + name + ".cpp"]
-            sources += ["source/macro/" + module + ".cpp"] if module else libraries
+            sources += ["source/macro/" + item + ".cpp" for item in (module if isinstance(module, list) else [module])] if module else libraries
             system = ["-lwinhttp"] if os.name == "nt" and module is None else []
             execute([*flags, *sources, "-Wl,--gc-sections", *system, "-o", binary])
             execute([binary])

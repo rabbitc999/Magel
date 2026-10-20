@@ -98,7 +98,7 @@ int main(int argc, char **argv)
         }
         if (!fs::exists(root / "source/magel.gram"))
         {
-            std::fputs(MAGEL_TEXT("magel：找不到工程生成器源码根目录\n"), stderr);
+            std::fputs(MAGEL_TEXT("magel: 找不到工程生成器源码根目录\n"), stderr);
             return 1;
         }
         std::vector<std::string> values{ argv[0], "--root", root.u8string() };

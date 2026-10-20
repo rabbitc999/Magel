@@ -17,6 +17,7 @@ magel_generic_constructors magel_borrow_flow magel_generic_closures
 magel_entry_signature magel_function_types magel_analysis_diagnostics
 magel_memory_guard magel_watchdog magel_generic_monomorphization
 magel_language_move magel_tuple_returns
+macro_foundations magel_ast_macros
 check_doc_links export_magel_ebnf library_reference check_keywords
 check_std_naming embed_manual changelog
 """.split())

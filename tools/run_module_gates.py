@@ -12,7 +12,7 @@ from parallel_gates import default_jobs, positive_jobs, run_tasks
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULES = {
-    "language": ["magel_entry_signature", "magel_function_types", "magel_lambdas"],
+    "language": ["magel_entry_signature", "magel_function_types", "magel_lambdas", "magel_ast_macros"],
     "borrow": ["magel_borrow_flow", "magel_analysis_diagnostics", "magel_reference_values"],
     "memory": ["magel_memory_guard", "magel_resource_lifetime", "magel_watchdog"],
     "generics": ["magel_generic_monomorphization", "magel_language_move", "magel_tuple_returns"],

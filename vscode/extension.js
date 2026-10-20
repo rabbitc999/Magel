@@ -215,7 +215,7 @@ async function startServer(context) {
     }
     return;
   }
-  logLine(`magel：${resolved.magel}（来源：${resolved.source}）`);
+  logLine(`magel: ${resolved.magel}（来源：${resolved.source}）`);
 
   // 2. 起进程并握手（`magel lsp` 走 stdio，不需要额外参数）。
   const instance = new LspClient(resolved.magel, ['lsp'], {

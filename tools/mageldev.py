@@ -184,7 +184,7 @@ _MESSAGES = {
   "选项 %s 后面要跟一个值\n": [
     "Option %s requires a value\n"
   ],
-  "magel：%s 缺少取值\n": [
+  "magel: %s 缺少取值\n": [
     "magel: %s requires a value\n"
   ],
   "不认识的选项：%s\n": [
@@ -205,10 +205,10 @@ _MESSAGES = {
   "打不开文件：%s\n": [
     "Cannot open file: %s\n"
   ],
-  "magel：前处理：%s\n": [
+  "magel: 前处理：%s\n": [
     "magel: preprocessing: %s\n"
   ],
-  "magel：泛型：%s\n": [
+  "magel: 泛型：%s\n": [
     "magel: generics: %s\n"
   ],
   "语法错误：%s 第 %zu 行第 %u 列：%s\n": [
@@ -217,7 +217,7 @@ _MESSAGES = {
   "语法错误：第 %u 行第 %u 列：%s\n": [
     "Syntax error: line %u, column %u: %s\n"
   ],
-  "magel：%s 第 %zu 行第 %zu 列：%s\n": [
+  "magel: %s 第 %zu 行第 %zu 列：%s\n": [
     "magel: %s:%zu:%zu: %s\n"
   ],
   "解析失败：%s\n": [
@@ -244,7 +244,7 @@ _MESSAGES = {
   "--symbol-map 需要启用 --compress-symbols\n": [
     "--symbol-map requires --compress-symbols\n"
   ],
-  "magel：--incremental 需要源文件，且不能与 --raw 合用\n": [
+  "magel: --incremental 需要源文件，且不能与 --raw 合用\n": [
     "magel: --incremental requires a source file and cannot be combined with --raw\n"
   ],
   "用法：magel new <目录> [name 工程名]\n": [
@@ -256,13 +256,13 @@ _MESSAGES = {
   "目标目录必须不存在；父目录必须存在。工程名由英文字母开头，后接字母、数字、- 或 _。\n": [
     "The destination must not exist and its parent must exist. Names start with a letter, followed by letters, digits, - or _.\n"
   ],
-  "magel：name 必须且只能指定一个工程名\n": [
+  "magel: name 必须且只能指定一个工程名\n": [
     "magel: name requires exactly one project name\n"
   ],
   "目标必须是新的工程目录": [
     "The destination must be a new project directory"
   ],
-  "magel：无效工程名；请用 name 指定字母开头的字母、数字、- 或 _ 组合\n": [
+  "magel: 无效工程名；请用 name 指定字母开头的字母、数字、- 或 _ 组合\n": [
     "magel: invalid project name; use name with a leading letter and letters, digits, - or _\n"
   ],
   "目标已存在，拒绝覆盖": [
@@ -283,7 +283,7 @@ _MESSAGES = {
   "进入工程目录后执行：magel run src/main.mgl\n": [
     "From the project directory, run: magel run src/main.mgl\n"
   ],
-  "magel：创建工程失败：%s\n": [
+  "magel: 创建工程失败：%s\n": [
     "magel: project creation failed: %s\n"
   ],
   "无法创建开发工具临时目录": [
@@ -301,7 +301,7 @@ _MESSAGES = {
   "无法定位 magel 可执行文件": [
     "Cannot locate the magel executable"
   ],
-  "magel：clear 需要 --out-dir DIR\n": [
+  "magel: clear 需要 --out-dir DIR\n": [
     "magel: clear requires --out-dir DIR\n"
   ],
   "清理完成：已删除 %zu 个生成的中间文件\n": [
@@ -415,10 +415,10 @@ _MESSAGES = {
   "无法检查产物：": [
     "Cannot inspect artifact: "
   ],
-  "magel：不认识的运行方式：%s\n": [
+  "magel: 不认识的运行方式：%s\n": [
     "magel: unknown execution mode: %s\n"
   ],
-  "magel：子命令与 --mode=%s 冲突\n": [
+  "magel: 子命令与 --mode=%s 冲突\n": [
     "magel: command conflicts with --mode=%s\n"
   ],
   "没有声明的类型：": [
@@ -1445,7 +1445,7 @@ def main():
             return deps_command(args)
         return LanguageServer(args.magel).run()
     except (ValueError, OSError, tarfile.TarError, zipfile.BadZipFile, subprocess.CalledProcessError, tomllib.TOMLDecodeError) as error:
-        print(f'magel：{error}', file=sys.stderr)
+        print(f'magel: {error}', file=sys.stderr)
         return 1
 
 

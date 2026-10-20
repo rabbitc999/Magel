@@ -47,7 +47,7 @@ inline int runCli(int argc, char **argv)
         {
             if (haveName || i + 1 == argc)
             {
-                std::fputs(MAGEL_TEXT("magel：name 必须且只能指定一个工程名\n"), stderr);
+                std::fputs(MAGEL_TEXT("magel: name 必须且只能指定一个工程名\n"), stderr);
                 return 2;
             }
             haveName = true;
@@ -82,7 +82,7 @@ inline int runCli(int argc, char **argv)
         const auto letter = [](unsigned char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'); };
         if (name.empty() || !letter(static_cast<unsigned char>(name[0])) || !std::all_of(name.begin(), name.end(), [&](unsigned char c) { return letter(c) || (c >= '0' && c <= '9') || c == '-' || c == '_'; }))
         {
-            std::fputs(MAGEL_TEXT("magel：无效工程名；请用 name 指定字母开头的字母、数字、- 或 _ 组合\n"), stderr);
+            std::fputs(MAGEL_TEXT("magel: 无效工程名；请用 name 指定字母开头的字母、数字、- 或 _ 组合\n"), stderr);
             return 2;
         }
         // create_directory 原子判定目标；已有空目录、文件和符号链接也不得覆盖。
@@ -137,7 +137,7 @@ inline int runCli(int argc, char **argv)
             fs::remove(target / "src", ignored);
             fs::remove(target, ignored);
         }
-        std::fprintf(stderr, MAGEL_TEXT("magel：创建工程失败：%s\n"), error.what());
+        std::fprintf(stderr, MAGEL_TEXT("magel: 创建工程失败：%s\n"), error.what());
         return 1;
     }
 }
