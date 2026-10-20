@@ -681,6 +681,48 @@ _MESSAGES = {
   ],
   "不认识的文件：%s\n": [
     "Unknown file: %s\n"
+  ],
+  "  emit           只出 .quad / .data.bin / .layout\n": [
+    "  emit           Export .quad / .data.bin / .layout only\n"
+  ],
+  "常用配置词：out 路径、reflect、debug；new 使用 name 工程名。\n": [
+    "Settings: out PATH, reflect, debug; new accepts name NAME.\n"
+  ],
+  "  --emit                 只生成 .quad / .data.bin / .layout，不执行\n": [
+    "  --emit                 Export .quad / .data.bin / .layout without executing\n"
+  ],
+  "  --dap                  作为调试适配器运行（VS Code 断点调试用，stdio 收发 DAP）\n": [
+    "  --dap                  Run the debug adapter over standard input/output\n"
+  ],
+  "  --input \"文本\"        `input(变量);` 的输入项（空白分隔）；不给就从标准读，调试时可直接敲\n": [
+    "  --input \"TEXT\"        Whitespace-separated input values; otherwise read standard input\n"
+  ],
+  "  --deps                 只列出 import 模块与工程依赖文件（构建脚本用）\n": [
+    "  --deps                 List imported modules and project dependencies for build scripts\n"
+  ],
+  "  --watchdog             打开可选软重启看门狗（分配失败 / 显式请求 / 超水位重跑）\n": [
+    "  --watchdog             Enable optional soft restarts on allocation failure, requests or watermarks\n"
+  ],
+  "  --no-watchdog          关闭软重启看门狗（缺省）\n": [
+    "  --no-watchdog          Disable soft restarts (default)\n"
+  ],
+  "  --max-restarts N       最多软重启几次（缺省 3；隐含 --watchdog）\n": [
+    "  --max-restarts N       Maximum soft restarts (default 3; enables --watchdog)\n"
+  ],
+  "  --watchdog-watermark N 内存水位（字节；隐含 --watchdog）\n": [
+    "  --watchdog-watermark N Memory watermark in bytes; enables --watchdog\n"
+  ],
+  "  -I, --include-dir 目录 追加模块搜索目录（也可写 -I目录）\n": [
+    "  -I, --include-dir DIR  Add a module search directory; -IDIR is also accepted\n"
+  ],
+  "  --include-path 目录    追加模块搜索目录\n": [
+    "  --include-path DIR    Add a module search directory\n"
+  ],
+  "用法：magel test [路径...] [--filter 文本] [--backend interpret] [--timeout 秒] [--json|--list]\n": [
+    "Usage: magel test [paths...] [--filter TEXT] [--backend interpret] [--timeout SECONDS] [--json|--list]\n"
+  ],
+  "运行示例输出 `Hello, Magel!`。开发命令原生内建，无需 Python；程序通过 VM 执行。\n": [
+    "The example prints `Hello, Magel!`. Development commands are built in and need no Python; programs execute in the VM.\n"
   ]
 }
 # MAGEL_CATALOG_END
@@ -694,7 +736,7 @@ def _text(original):
     return _MESSAGES.get(original, (original, original))[0]
 
 
-VERSION = "0.22.0"
+VERSION = "0.22.1"
 IGNORED = {".git", ".magel", "build", "tmp", "node_modules", "__pycache__"}
 EXTENSIONS = {".mgl", ".inc", ".h", ".hpp", ".c", ".cpp", ".toml", ".json"}
 KEYWORDS = "_ abi auto bool break cast char const continue copy defer drop elif else enum false float32 float64 fn for heap if impl import in inline int16 int32 int64 int8 interface loop match module move mut new opcode return scope static struct true type uint16 uint32 uint64 uint8 void while yield".split()

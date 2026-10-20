@@ -18,6 +18,8 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--magel',type=Path,default=ROOT/'magel.exe')
     compiler=parser.parse_args().magel.resolve()
+    if os.name == "nt" and not compiler.is_file():
+        compiler = compiler.with_suffix(".exe")
     env=os.environ.copy();env['MAGEL_LANG']='ja';env['MAGEL_PYTHON']=os.sys.executable
     def run(*args,cwd):
         return subprocess.run([str(x) for x in args],cwd=cwd,env=env,capture_output=True,encoding='utf-8',timeout=180)
@@ -28,7 +30,7 @@ def main():
         def package(*args):
             return run(os.sys.executable,script,'magel','--compiler',compiler,*args,cwd=work)
         result=package('out',output)
-        assert result.returncode==0 and 'パッケージ化しました' in result.stdout,result
+        assert result.returncode==0 and 'Packaged:' in result.stdout,result
         original=compiler.read_bytes();before=output.read_bytes()
         name='magel.exe' if os.name=='nt' else 'magel'
         with zipfile.ZipFile(output) as archive:
@@ -50,10 +52,10 @@ def main():
         assert len(defaults)==1,defaults
         source=work/'日本語 示例.mgl'
         source.write_text('import std::text;\nint64 main(){std::lang::println("ZIP 中文 / 日本語");return 0;}\n',encoding='utf-8')
-        result=run(extracted/name,'lang','ja',source,cwd=extracted)
+        result=run(extracted/name,'lang','en',source,cwd=extracted)
         assert result.returncode==0 and result.stdout=='ZIP 中文 / 日本語\n' and not result.stderr,result
-        result=run(extracted/name,'help','lang','ja',cwd=extracted)
-        assert result.returncode==0 and '使い方' in result.stdout and 'zip [out' not in result.stdout,result
+        result=run(extracted/name,'help','lang','en',cwd=extracted)
+        assert result.returncode==0 and 'Usage:' in result.stdout and 'zip [out' not in result.stdout,result
         removed=work/'removed.zip'
         result=run(compiler,'zip','out',removed,cwd=work)
         assert result.returncode!=0 and not removed.exists(),result

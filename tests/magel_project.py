@@ -26,6 +26,7 @@ class ProjectTests(unittest.TestCase):
         return result
 
     def test_generated_project(self):
+        """验证新建应用的 VM 运行、测试发现与字节码产物交付。"""
         env = dict(os.environ, MAGEL_PYTHON='missing-python-for-project-test')
         self.run_cli('new', 'hello-magel', env=env)
         project = self.directory / 'hello-magel'
@@ -43,11 +44,11 @@ class ProjectTests(unittest.TestCase):
         env = dict(os.environ, MAGEL_PYTHON=sys.executable)
         report = self.run_cli('test', 'tests', '--json', cwd=project, env=env)
         self.assertEqual(json.loads(report.stdout)['summary'], {'passed': 1, 'failed': 0, 'skipped': 0})
-        native = project / 'build/main'
-        if not native.exists():
-            native = native.with_suffix('.exe')
-        execution = subprocess.run([str(native)], cwd=project, capture_output=True, text=True, encoding='utf-8', timeout=30)
-        self.assertEqual((execution.returncode, execution.stdout, execution.stderr), (0, 'Hello, Magel!\n', ''))
+        self.run_cli('svmb', 'src/main.mgl', '--out', 'build/main', cwd=project)
+        for suffix in ('.quad', '.data.bin', '.layout', '.svmb'):
+            self.assertTrue((project / ('build/main' + suffix)).is_file(), suffix)
+        self.assertFalse((project / 'build/main').is_file())
+        self.assertFalse((project / 'build/main.exe').exists())
 
     def test_paths_and_names(self):
         (self.directory / 'my projects').mkdir()

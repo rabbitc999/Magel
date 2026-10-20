@@ -2,6 +2,7 @@
 #include "../magel_glue.hpp"
 #include <cstdio>
 #include <mutex>
+#include <utility>
 
 namespace std_print_glue
 {
@@ -22,6 +23,17 @@ std::int64_t writeError(magel_glue::Context &context, Memory::String text)
         context.fail("标准错误流写入失败");
     return 0;
 }
+/**
+ * @brief 为已格式化文本追加换行，再通过同一互斥入口写入标准错误流。
+ * @param context 用于传播写入失败的宿主上下文。
+ * @param text 由胶水拥有的文本副本，追加换行后自动回收。
+ * @return 写入成功返回零，失败通过上下文保留诊断。
+ */
+std::int64_t writeErrorLine(magel_glue::Context &context, Memory::String text)
+{
+    text += '\n';
+    return writeError(context, std::move(text));
+}
 }  // namespace
 
 /**
@@ -32,6 +44,6 @@ std::int64_t writeError(magel_glue::Context &context, Memory::String text)
  */
 bool bind(magel_glue::Registry &registry, Memory::String *error)
 {
-    return registry.bindTypedWithContext<std::int64_t, Memory::String>("std::lang::__std_stderr_write", writeError, error);
+    return registry.bindTypedWithContext<std::int64_t, Memory::String>("std::lang::__std_stderr_write", writeError, error) && registry.bindTypedWithContext<std::int64_t, Memory::String>("std::lang::__std_eprint", writeError, error) && registry.bindTypedWithContext<std::int64_t, Memory::String>("std::lang::__std_eprintln", writeErrorLine, error);
 }
 }  // namespace std_print_glue

@@ -59,3 +59,21 @@ python tests/magel_algorithm_robustness.py --magel magel.exe --stress-size 30000
 ```
 
 Desktop and embedded Linux builds share the single `library/stackvm/` core and lifecycle native instructions, with host features trimmed by build macros.
+
+Local module gates run after building the compiler with `make`:
+
+```sh
+python tools/run_module_gates.py generics tools docs --jobs 4
+python tools/run_module_gates.py language --random-recheck 1 --seed 20261013
+sh ci.sh --jobs 4
+```
+
+Gates default to at most four worker threads. Set `--jobs 1` for serial execution,
+or configure the default with `MAGEL_GATE_JOBS`. Only explicitly registered independent
+Python and VM checks run concurrently. Generation, builds, samples, networking and unknown checks
+form serial barriers. Failed parser generation or compiler builds skip subsequent checks,
+preventing tests from using stale executables. Ordinary test failures do not stop other checks.
+CI writes individual logs and ordered JSON results to `tmp/ci/logs/`; module gates use a
+separate directory for each run. Random rechecks use registration order and the recorded seed,
+then run serially to avoid duplicate tests sharing a working directory.
+Module gates cover only the selected scope and do not replace full release validation.

@@ -1,6 +1,15 @@
 # Magel 变更记录
 
-版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.22.0**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.22.1**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+
+
+## 0.22.1 — 并行门禁与验证调度
+
+- 门禁默认最多四个工作线程并行执行已审查的独立回归，支持 --jobs 与 MAGEL_GATE_JOBS；生成、编译、样例和共享资源检查按屏障顺序执行。
+- 模块门禁共用有界调度器，保留独立日志、有序 JSON 结果及确定性随机复测；生成或主编译失败时跳过后续测试，避免验证旧产物。
+- 修正完整门禁发现的 MSVC 二进制胶水闭包常量捕获错误，并清理发布门禁的无效 shell 条件、过期回归参数及新建工程测试中的旧产物假设，统一验证 VM 字节码。
+- 完整门禁统一为 VM 产物与裁剪宿主验证，修正 ZIP 回归的 Windows 可执行文件路径及双语预期；帮助与工程模板文本按段翻译并补齐消息，标准错误流字符串与换行处理统一进入胶水。
+- 程序版本更新为 0.22.1，VS Code 扩展保持 1.0.0，内嵌编译器与程序版本一致。
 
 
 ## 0.22.0 — 生命周期基线与严格资源释放

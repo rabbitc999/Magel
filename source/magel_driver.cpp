@@ -287,60 +287,61 @@ bool NeedValue(int index, int argc, const char *what)
  */
 void PrintUsage(std::FILE *out)
 {
-    std::fputs(
-        MAGEL_TEXT("用法：magel 文件.mgl [程序参数...]\n"
-                   "      magel 场景 [文件.mgl] [配置词...] [-- 程序参数...]\n"
-                   "\n"
-                   "统一工具链：VM 执行、导出四元式和 .svmb 字节码。\n"
-                   "场景指令（运行方式也可用 --mode 指定）：\n"
-                   "  run|interpret  内部解释运行（缺省）；直接传入文件时，其后全为程序参数\n"
-                   "  check FILE [json]    仅检查，可输出 JSON 诊断\n"
-                   "  help                 显示帮助\n"
-                   "  emit           只出 .quad / .data.bin / .layout\n"
-                   "  svmb           只导出 <前缀>.svmb，不执行\n"
-                   "  new DIR [name NAME]  新建 Magel 应用工程（目标目录必须不存在）\n"
-                   "  gen            生成独立编译器工程（转发 magel-generator compiler）\n"
-                   "  clear out DIR  清理登记过的中间产物（不重新编译）\n"
-                   "  lang zh|en|auto     选择显示语言；默认自动检测系统语言\n"
-                   "常用配置词：out 路径、reflect、debug；new 使用 name 工程名。\n"
-                   "开发场景：test tests backend interpret、fmt check src、deps lock project . offline。\n"
-                   "直接文件调用始终运行；文件后的所有内容传给程序。显式场景的高级选项：\n"
-                   "不给源文件时从标准输入读。选项：\n"
-                   "  -h, --help             显示本帮助并退出\n"
-                   "  --out 前缀             生成产物的文件名前缀（缺省 build/magel_out）\n"
-                   "  --check                仅检查，不执行、不生成产物\n"
-                   "  --hard-realtime        禁止整个编译单元使用反射\n"
-                   "  --reflection           启用注解与反射（要求前端和运行时均编入支持）\n"
-                   "  --no-reflection        关闭注解与反射（注解与反射缺省已开启）\n"
-                   "  --diagnostics=json     检查并输出稳定 JSON 诊断\n"
-                   "  test|fmt|lsp|deps      测试、格式化、语言服务与依赖锁定（原生内建）\n"
-                   "  --emit                 只生成 .quad / .data.bin / .layout，不执行\n"
-                   "  --svmb                 额外写出可由 stackvm 直接加载的 <前缀>.svmb\n"
-                   "  --debug                写 .svmb 时带上调试节，并在解释执行时打印位置轨迹\n"
-                   "  --dap                  作为调试适配器运行（VS Code 断点调试用，stdio 收发 DAP）\n"
-                   "  --compress-symbols     写无名变长符号表，生成 PC 映射文件\n"
-                   "  --no-compress-symbols  覆盖 magel 配置，关闭符号压缩\n"
-                   "  --symbol-map FILE      映射路径（默认 <前缀>.symbol_map.json）\n"
-                   "  --input \"文本\"        `input(变量);` 的输入项（空白分隔）；不给就从标准读，调试时可直接敲\n"
-                   "  --raw                  跳过前处理：源文件原样喂给解析器\n"
-                   "  --deps                 只列出 import 模块与工程依赖文件（构建脚本用）\n"
-                   "  --incremental          跨次复用模块预处理与完整编译产物\n"
-                   "  --threads              启用隔离的宿主线程执行\n"
-                   "  --no-debug             （兼容别名）显式不带调试信息；现在也是缺省\n"
-                   "  --stats                打印运行时及增量文件校验统计\n"
-                   "  --memory-size 字节     运行时堆容量（缺省 512MiB，最小 64）\n"
-                   "  --watchdog             打开可选软重启看门狗（分配失败 / 显式请求 / 超水位重跑）\n"
-                   "  --no-watchdog          关闭软重启看门狗（缺省）\n"
-                   "  --max-restarts N       最多软重启几次（缺省 3；隐含 --watchdog）\n"
-                   "  --watchdog-watermark N 内存水位（字节；隐含 --watchdog）\n"
-                   "  --step-limit N         本次执行的指令条数上限（缺省不设上限；0 同缺省）\n"
-                   "  -I, --include-dir 目录 追加模块搜索目录（也可写 -I目录）\n"
-                   "  --include-path 目录    追加模块搜索目录\n"
-                   "  --import-dir 目录      追加 import 搜索目录\n"
-                   "  -D, --define 符号[=值] 定义预处理符号（也可写 -D符号=值）\n"
-                   "  --                     后面全部作为程序的命令行参数\n"),
-        out);
-    fputs(MAGEL_TEXT("  man [目标]            查询内嵌标准库手册、参数、边界与示例\n"), out);
+    for (const char *line : {
+             "用法：magel 文件.mgl [程序参数...]\n",
+             "      magel 场景 [文件.mgl] [配置词...] [-- 程序参数...]\n",
+             "\n",
+             "统一工具链：VM 执行、导出四元式和 .svmb 字节码。\n",
+             "场景指令（运行方式也可用 --mode 指定）：\n",
+             "  run|interpret  内部解释运行（缺省）；直接传入文件时，其后全为程序参数\n",
+             "  check FILE [json]    仅检查，可输出 JSON 诊断\n",
+             "  help                 显示帮助\n",
+             "  emit           只出 .quad / .data.bin / .layout\n",
+             "  svmb           只导出 <前缀>.svmb，不执行\n",
+             "  new DIR [name NAME]  新建 Magel 应用工程（目标目录必须不存在）\n",
+             "  gen            生成独立编译器工程（转发 magel-generator compiler）\n",
+             "  clear out DIR  清理登记过的中间产物（不重新编译）\n",
+             "  lang zh|en|auto     选择显示语言；默认自动检测系统语言\n",
+             "常用配置词：out 路径、reflect、debug；new 使用 name 工程名。\n",
+             "开发场景：test tests backend interpret、fmt check src、deps lock project . offline。\n",
+             "直接文件调用始终运行；文件后的所有内容传给程序。显式场景的高级选项：\n",
+             "不给源文件时从标准输入读。选项：\n",
+             "  -h, --help             显示本帮助并退出\n",
+             "  --out 前缀             生成产物的文件名前缀（缺省 build/magel_out）\n",
+             "  --check                仅检查，不执行、不生成产物\n",
+             "  --hard-realtime        禁止整个编译单元使用反射\n",
+             "  --reflection           启用注解与反射（要求前端和运行时均编入支持）\n",
+             "  --no-reflection        关闭注解与反射（注解与反射缺省已开启）\n",
+             "  --diagnostics=json     检查并输出稳定 JSON 诊断\n",
+             "  test|fmt|lsp|deps      测试、格式化、语言服务与依赖锁定（原生内建）\n",
+             "  --emit                 只生成 .quad / .data.bin / .layout，不执行\n",
+             "  --svmb                 额外写出可由 stackvm 直接加载的 <前缀>.svmb\n",
+             "  --debug                写 .svmb 时带上调试节，并在解释执行时打印位置轨迹\n",
+             "  --dap                  作为调试适配器运行（VS Code 断点调试用，stdio 收发 DAP）\n",
+             "  --compress-symbols     写无名变长符号表，生成 PC 映射文件\n",
+             "  --no-compress-symbols  覆盖 magel 配置，关闭符号压缩\n",
+             "  --symbol-map FILE      映射路径（默认 <前缀>.symbol_map.json）\n",
+             "  --input \"文本\"        `input(变量);` 的输入项（空白分隔）；不给就从标准读，调试时可直接敲\n",
+             "  --raw                  跳过前处理：源文件原样喂给解析器\n",
+             "  --deps                 只列出 import 模块与工程依赖文件（构建脚本用）\n",
+             "  --incremental          跨次复用模块预处理与完整编译产物\n",
+             "  --threads              启用隔离的宿主线程执行\n",
+             "  --no-debug             （兼容别名）显式不带调试信息；现在也是缺省\n",
+             "  --stats                打印运行时及增量文件校验统计\n",
+             "  --memory-size 字节     运行时堆容量（缺省 512MiB，最小 64）\n",
+             "  --watchdog             打开可选软重启看门狗（分配失败 / 显式请求 / 超水位重跑）\n",
+             "  --no-watchdog          关闭软重启看门狗（缺省）\n",
+             "  --max-restarts N       最多软重启几次（缺省 3；隐含 --watchdog）\n",
+             "  --watchdog-watermark N 内存水位（字节；隐含 --watchdog）\n",
+             "  --step-limit N         本次执行的指令条数上限（缺省不设上限；0 同缺省）\n",
+             "  -I, --include-dir 目录 追加模块搜索目录（也可写 -I目录）\n",
+             "  --include-path 目录    追加模块搜索目录\n",
+             "  --import-dir 目录      追加 import 搜索目录\n",
+             "  -D, --define 符号[=值] 定义预处理符号（也可写 -D符号=值）\n",
+             "  --                     后面全部作为程序的命令行参数\n",
+             "  man [目标]            查询内嵌标准库手册、参数、边界与示例\n",
+         })
+        std::fputs(MAGEL_TEXT(line), out);
 }
 
 }  // namespace

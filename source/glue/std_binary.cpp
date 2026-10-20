@@ -86,14 +86,14 @@ bool bindNumber(magel_glue::Registry &registry, const char *name, Memory::String
     constexpr std::size_t width = std::is_same_v<T, bool> ? 1 : sizeof(T);
     const auto scalar = magel_glue::specialize("std::binary::__read", { name });
     const auto array = magel_glue::specialize("std::binary::__readArray", { name });
-    return registry.bindTypedWithContext<T, Bytes, std::int64_t, bool>(scalar, [](Context &ctx, Bytes data, std::int64_t offset, bool bigEndian) -> T {
+    return registry.bindTypedWithContext<T, Bytes, std::int64_t, bool>(scalar, [width](Context &ctx, Bytes data, std::int64_t offset, bool bigEndian) -> T {
             if (!checkRange(ctx, data, offset, 1, width)) return T{};
             if constexpr (std::is_same_v<T, bool>) {
                 if (data[static_cast<std::size_t>(offset)] > 1) {
                     ctx.fail("二进制读取：bool 字节必须为 0 或 1"); return false;
                 }
             }
-            return decode<T>(data.data() + offset, bigEndian); }, error) && registry.bindTypedWithContext<Memory::Vector<T>, Bytes, std::int64_t, std::int64_t, bool>(array, [](Context &ctx, Bytes data, std::int64_t offset, std::int64_t count, bool bigEndian) {
+            return decode<T>(data.data() + offset, bigEndian); }, error) && registry.bindTypedWithContext<Memory::Vector<T>, Bytes, std::int64_t, std::int64_t, bool>(array, [width](Context &ctx, Bytes data, std::int64_t offset, std::int64_t count, bool bigEndian) {
             Memory::Vector<T> values;
             if (!checkRange(ctx, data, offset, count, width)) return values;
             values.reserve(static_cast<std::size_t>(count));

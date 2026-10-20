@@ -5,9 +5,10 @@
 #   sh ci.sh                 快速门禁（默认）：构建 + 样例回归 + 核心测试 + 文档门禁
 #   sh ci.sh --full          发布门禁：在快速门禁之外，再跑全部 stackvm / Python 回归
 #   sh ci.sh --no-python     （只对 --full 有意义）只编 / 跑工具链，不跑 tests/*.py
+#   sh ci.sh --jobs 4       并行独立回归；--jobs 1 串行（也可设 MAGEL_GATE_JOBS）
 #   sh ci.sh --help
 #
-# 环境要求：g++ / gcc / make / python3.11+ / cmake 必需。
+# 环境要求：g++ / gcc / make / python3.11+ 必需；cmake 仅发布门禁需要。
 # 还要一份 **ParseEngine 文法生成器**：默认找 `${ENGINE:-../build/bin/ParseEngine}`，
 # 它由 ParseEngine 仓库（不含在本项目里）产出；不在就报错退出 2。
 #
@@ -17,14 +18,25 @@ set -u
 # 诊断与样例输出都是中文，显示语言固定，免得随执行主机变化。
 export MAGEL_LANG=zh
 export PARSEENGINE_LANG=zh
+export PYTHONUTF8=1
+export PYTHONIOENCODING=utf-8
 
 root=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd) || exit 2
 cd "$root" || exit 2
 
 run_python=1
 full=0
-for arg in "$@"; do
+jobs=${MAGEL_GATE_JOBS:-4}
+while [ "$#" -gt 0 ]; do
+    arg=$1
+    shift
     case "$arg" in
+    --jobs)
+        [ "$#" -gt 0 ] || { echo "--jobs 需要正整数" >&2; exit 2; }
+        jobs=$1
+        shift
+        ;;
+    --jobs=*) jobs=${arg#--jobs=} ;;
     --no-python) run_python=0 ;;
     --full) full=1 ;;
     -h | --help)
@@ -37,6 +49,9 @@ for arg in "$@"; do
         ;;
     esac
 done
+
+case "$jobs" in ''|*[!0-9]*|0) echo "--jobs 需要正整数" >&2; exit 2 ;; esac
+[ "$jobs" -gt 0 ] 2>/dev/null || { echo "--jobs 需要正整数" >&2; exit 2; }
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
@@ -111,34 +126,29 @@ if [ -n "$missing" ]; then
     exit 2
 fi
 
-step=0
-failed=''
-run_step() { # 标题 命令...
-    title=$1
-    shift
-    step=$((step + 1))
-    printf '\n[%2d] %s ... ' "$step" "$title"
-    started=$(date +%s)
-    if "$@" >"tmp/ci/logs/$(printf '%02d' "$step").log" 2>&1; then
-        echo "ok（$(($(date +%s) - started))s）"
-        return 0
-    fi
-    echo "失败（$(($(date +%s) - started))s）"
-    echo "     完整输出：tmp/ci/logs/$(printf '%02d' "$step").log"
-    failed="$failed
-  - $title"
-    return 1
+# 先登记完整命令；Python 调度器仅并行明确审查过的独立 Python 与 VM 回归。
+# 生成、构建和未知任务形成屏障，确保不会边运行编译器边覆盖可执行文件。
+export ENGINE
+mkdir -p tmp/ci/logs
+manifest=$(mktemp tmp/ci/gates.XXXXXX) || exit 2
+trap 'rm -f "$manifest"' EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
+run_step() {
+    "$PYTHON" tools/parallel_gates.py append "$manifest" "$@" || exit 2
+}
+run_required_step() {
+    "$PYTHON" tools/parallel_gates.py append --required "$manifest" "$@" || exit 2
 }
 
-mkdir -p tmp/ci/logs
-
 if [ "$full" = 1 ]; then
-    run_step "配置 stackvm 单测（cmake）" \
+    run_required_step "配置 stackvm 单测（cmake）" \
         cmake -S library/stackvm -B tmp/ci/stackvm -DCMAKE_BUILD_TYPE=Release \
               -DSTACKVM_WITH_REFLECTION=ON \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="$root/tmp/ci/stackvm" \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE="$root/tmp/ci/stackvm"
-    run_step "构建 stackvm（CLI + 单测）" \
+    run_required_step "构建 stackvm（CLI + 单测）" \
         cmake --build tmp/ci/stackvm --config Release --target magel-stackvm magel-stackvm-tests magel-artifact-tests magel-symbol-tests magel-panic-tests svmb_symtool -j4
     run_step "运行二进制中间产物等价性与损坏输入回归" tmp/ci/stackvm/magel-artifact-tests
     run_step "运行 stackvm 单测" \
@@ -147,19 +157,21 @@ if [ "$full" = 1 ]; then
         tmp/ci/stackvm/magel-symbol-tests tmp/ci/stackvm/symbol-fixtures
     run_step "运行 panic 调用栈与压缩隐私回归" \
         tmp/ci/stackvm/magel-panic-tests tmp/ci/stackvm/panic-compact.svmb
-    run_step "配置无 panic 栈构建" \
+    run_required_step "配置无 panic 栈构建" \
         cmake -S library/stackvm -B tmp/ci/panic-off -DCMAKE_BUILD_TYPE=Release \
               -DSTACKVM_WITH_REFLECTION=ON \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="$root/tmp/ci/panic-off" \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE="$root/tmp/ci/panic-off" \
               -DSTACKVM_WITH_PANIC_TRACE=OFF -DSTACKVM_WITH_BIGINT=OFF -DSTACKVM_WITH_BIGFLOAT=OFF
-    run_step "构建无 panic 栈测试" cmake --build tmp/ci/panic-off --config Release --target magel-panic-tests -j4
+    run_required_step "构建无 panic 栈测试" cmake --build tmp/ci/panic-off --config Release --target magel-panic-tests -j4
     run_step "运行无 panic 栈测试" tmp/ci/panic-off/magel-panic-tests tmp/ci/panic-off/panic-compact.svmb
 fi
 
 # ---- 3. Magel：由文法生成解析器，再编驱动 ----
-run_step "生成 MAGEL 解析器（gen.sh）" sh gen.sh
-run_step "构建 MAGEL 驱动（magel）" "$MAKE" -j4
+run_required_step "生成 MAGEL 解析器（gen.sh）" sh gen.sh
+run_required_step "构建 MAGEL 驱动（magel）" "$MAKE" -j4
+
+run_step "验证并行门禁调度与失败汇总" "$PYTHON" tests/test_parallel_gates.py
 
 # ---- 快速门禁核心三件套：样例回归 + 本次新增能力测试 + 文档同步 ----
 run_step "MAGEL 样例回归（check.sh）" \
@@ -168,10 +180,10 @@ run_step "运行 std::image 与 StringBuilder 回归" "$PYTHON" tests/magel_imag
 run_step "运行标准错误流与文件打印回归" "$PYTHON" tests/magel_print_streams.py --magel magel
 run_step "运行临时值与资源释放合并回归" "$PYTHON" tests/magel_resource_lifetime.py --magel magel
 run_step "运行闭包自动类型与嵌套返回语言服务回归" "$PYTHON" tests/magel_lsp_closure_types.py --magel magel
-run_step "编译无墓碑分配身份回归" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=1 -Isource -Ilibrary -Isource/allocator tests/allocation_identity.cpp -o tmp/ci/allocation-identity
+run_required_step "编译无墓碑分配身份回归" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=1 -Isource -Ilibrary -Isource/allocator tests/allocation_identity.cpp -o tmp/ci/allocation-identity
 run_step "运行百万次分配身份回归" tmp/ci/allocation-identity
 run_step "运行数组按值传参与引用回归" "$PYTHON" tests/magel_array_parameters.py --magel magel
-run_step "编译字面量数据合并单元测试" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=0 -DMAGEL_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 library/simple_ast/test_simple_ast.cpp library/simple_ast/simple_ast.cpp -o tmp/ci/simple-ast-literals
+run_required_step "编译字面量数据合并单元测试" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=0 -DMAGEL_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 library/simple_ast/test_simple_ast.cpp library/simple_ast/simple_ast.cpp -o tmp/ci/simple-ast-literals
 run_step "运行字面量数据合并单元测试" tmp/ci/simple-ast-literals
 run_step "运行字面量合并与字符串副本回归" "$PYTHON" tests/magel_string_literals.py --magel magel
 run_step "检查 opcode 声明与不可复制限制" "$PYTHON" tests/magel_opcode_declarations.py --magel magel
@@ -192,26 +204,26 @@ run_step "检查手册与标准库共享索引同步" "$PYTHON" tools/library_re
 # ---- 以下均为发布门禁（--full）扩展步骤 ----
 if [ "$full" = 1 ]; then
 run_step "运行整数区间端点与溢出回归" "$PYTHON" tests/magel_foreach_intervals.py --magel magel
-run_step "编译场景命令单元测试" g++ -std=c++17 -O1 tests/magel_cli_test.cpp -o tmp/ci/magel-cli
+run_required_step "编译场景命令单元测试" g++ -std=c++17 -O1 tests/magel_cli_test.cpp -o tmp/ci/magel-cli
 run_step "运行场景命令单元测试" tmp/ci/magel-cli
-run_step "编译宏临时编号单元测试" g++ -std=c++17 -O1 -DMAGEL_CUSTOM_ALLOCATOR=0 -Ilibrary -Ilibrary/preprocess tests/magel_macro_slots_test.cpp source/magel_macro.cpp source/magel_macro_controls.cpp -o tmp/ci/magel-macro-slots
+run_required_step "编译宏临时编号单元测试" g++ -std=c++17 -O1 -DMAGEL_CUSTOM_ALLOCATOR=0 -Ilibrary -Ilibrary/preprocess tests/magel_macro_slots_test.cpp source/magel_macro.cpp source/magel_macro_controls.cpp -o tmp/ci/magel-macro-slots
 run_step "运行宏临时编号单元测试" tmp/ci/magel-macro-slots
-run_step "编译宏结构化拼接与字符串化单元测试" g++ -std=c++17 -O1 -DMAGEL_CUSTOM_ALLOCATOR=0 -Ilibrary -Ilibrary/preprocess tests/magel_macro_structured_test.cpp source/magel_macro.cpp source/magel_macro_controls.cpp -o tmp/ci/magel-macro-structured
+run_required_step "编译宏结构化拼接与字符串化单元测试" g++ -std=c++17 -O1 -DMAGEL_CUSTOM_ALLOCATOR=0 -Ilibrary -Ilibrary/preprocess tests/magel_macro_structured_test.cpp source/magel_macro.cpp source/magel_macro_controls.cpp -o tmp/ci/magel-macro-structured
 run_step "运行宏结构化拼接与字符串化单元测试" tmp/ci/magel-macro-structured
-run_step "编译宏多括号文本分组回归" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=0 -DMAGEL_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 -Ilibrary -Ilibrary/preprocess tests/magel_macro_groups_test.cpp source/magel_macro.cpp source/magel_macro_controls.cpp -o tmp/ci/magel-macro-groups
+run_required_step "编译宏多括号文本分组回归" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=0 -DMAGEL_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 -Ilibrary -Ilibrary/preprocess tests/magel_macro_groups_test.cpp source/magel_macro.cpp source/magel_macro_controls.cpp -o tmp/ci/magel-macro-groups
 run_step "运行宏多括号文本分组回归" tmp/ci/magel-macro-groups
-run_step "验证宏多括号完整前端行列映射" python tests/magel_macro_groups.py
-run_step "验证返回表达式、具名闭包与字段派生" python tests/magel_declaration_sugars.py
+run_step "验证宏多括号完整前端行列映射" "$PYTHON" tests/magel_macro_groups.py
+run_step "验证返回表达式、具名闭包与字段派生" "$PYTHON" tests/magel_declaration_sugars.py
 
-run_step "编译宏参数括号规则回归" g++ -std=c++17 -O1 -DMAGEL_CUSTOM_ALLOCATOR=0 -Ilibrary -Ilibrary/preprocess tests/magel_macro_parentheses_test.cpp source/magel_macro.cpp source/magel_macro_controls.cpp -o tmp/ci/magel-macro-parentheses
+run_required_step "编译宏参数括号规则回归" g++ -std=c++17 -O1 -DMAGEL_CUSTOM_ALLOCATOR=0 -Ilibrary -Ilibrary/preprocess tests/magel_macro_parentheses_test.cpp source/magel_macro.cpp source/magel_macro_controls.cpp -o tmp/ci/magel-macro-parentheses
 run_step "运行宏参数括号规则回归" tmp/ci/magel-macro-parentheses
 
 # ---- lztext：内嵌标准库/运行时资产的压缩存储与运行时解压 ----
 # magel/library/lztext 与 ParseEngine 的 library/lztext 是同一份实现，改一个要同步另一个。
 # 这里既构建构建期要用的 lztext_pack（tools/embed_stdlib.py 通过它压缩），
 # 也跑一遍库自检（往返一致性 + 边界用例 + 随机语料模糊测试）。
-run_step "构建 lztext 打包工具" "$MAKE" -C library/lztext pack
-run_step "编译 lztext 单元测试" g++ -std=c++17 -O1 -Ilibrary/lztext library/lztext/test_lztext.cpp library/lztext/lztext.cpp -o tmp/ci/lztext
+run_required_step "构建 lztext 打包工具" "$MAKE" -C library/lztext pack
+run_required_step "编译 lztext 单元测试" g++ -std=c++17 -O1 -Ilibrary/lztext library/lztext/test_lztext.cpp library/lztext/lztext.cpp -o tmp/ci/lztext
 run_step "运行 lztext 单元测试" tmp/ci/lztext
 fi
 
@@ -219,9 +231,9 @@ if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
     run_step "运行符号转换与 CLI 集成回归" \
         "$PYTHON" tests/test_svmb_symbols.py --build tmp/ci/stackvm --magel magel
     run_step "运行 MAGEL 与 VM panic 诊断回归" \
-        "$PYTHON" tests/test_magel_panic.py --magel magel --exports
+        "$PYTHON" tests/test_magel_panic.py --magel magel
     run_step "运行源码行号诊断回归" \
-        "$PYTHON" tests/test_magel_source_lines.py --magel magel --exports
+        "$PYTHON" tests/test_magel_source_lines.py --magel magel
     run_step "运行字符串清理与循环重入VM 多入口回归" \
         "$PYTHON" tests/magel_string_reentry.py --magel magel
     run_step "运行语言功能、值类型与引用VM 多入口回归" \
@@ -274,7 +286,7 @@ fi
 # ---- 6. Python 门禁 ----
 if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
     for t in magel_tool magel_generator magel_incremental magel_package magel_zip magel_i18n magel_development magel_package_paths magel_platform_abi_paths magel_abi_values; do
-        if [ "$t" = magel_zip ] || [ "$t" = magel_i18n ] || [ "$t" = magel_development ] || [ "$t" = ]; then
+        if [ "$t" = magel_zip ] || [ "$t" = magel_i18n ] || [ "$t" = magel_development ]; then
             run_step "python tests/$t.py" "$PYTHON" "tests/$t.py" --magel magel
         else
             run_step "python tests/$t.py" "$PYTHON" "tests/$t.py"
@@ -306,15 +318,7 @@ if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
     run_step "检查 CHANGELOG 与版本一致" "$PYTHON" tools/changelog.py --check
 fi
 
-# ---- 汇总 ----
-echo
-echo "== 汇总 =="
-if [ -z "$failed" ]; then
-    echo "  步骤：$step，全部通过"
-    echo "  版本：$(cat VERSION 2>/dev/null || echo '（无 VERSION 文件）')"
-    exit 0
-fi
-fail_count=$(printf '%s\n' "$failed" | grep -c '^  - ')
-echo "  步骤：$step，成功 $((step - fail_count))，失败 $fail_count"
-echo "  失败：$failed"
-exit 1
+# ---- 执行与汇总 ----
+# 调度前固定版本与命令清单，执行期间修改本脚本不会改变已登记步骤。
+echo "版本：$(cat VERSION)"
+exec "$PYTHON" tools/parallel_gates.py run "$manifest" --output tmp/ci/logs --jobs "$jobs" --cleanup-manifest

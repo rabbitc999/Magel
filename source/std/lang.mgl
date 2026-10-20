@@ -55,13 +55,13 @@ int64 __std_stderr_write(String text);
  * @param text 已格式化的文本。
  * @return 成功返回零。
  */
-int64 __std_eprint(String text) { return __std_stderr_write(text); }
+int64 __std_eprint(String text);
 /**
  * @brief eprintln 归一后的内部字符串入口。
  * @param text 已格式化的文本。
  * @return 成功返回零。
  */
-int64 __std_eprintln(String text) { return __std_stderr_write(text + "\n"); }
+int64 __std_eprintln(String text);
 
 String __readLine();
 String __readLines(int32 N);
