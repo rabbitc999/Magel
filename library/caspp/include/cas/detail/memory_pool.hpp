@@ -21,28 +21,32 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace Cas::Detail {
+namespace Cas::Detail
+{
 
 /** @brief 池内块头。紧随其后是 size_t 的记录偏移与对齐填充，然后是负载。 */
-struct PoolBlock {
-    std::size_t size;         ///< 整块占用字节数（含块头与对齐填充）。
-    std::size_t previousSize; ///< 前一块占用字节数，0 表示池首。
-    std::size_t payload;      ///< 块首到负载起点的字节数，0 表示空闲块。
-    std::size_t requested;    ///< 调用者请求的字节数。
-    std::size_t nextFree;     ///< 下一个空闲块偏移，kNone 表示链尾。
-    std::size_t previousFree; ///< 上一个空闲块偏移，kNone 表示链首。
+struct PoolBlock
+{
+    std::size_t size;          ///< 整块占用字节数（含块头与对齐填充）。
+    std::size_t previousSize;  ///< 前一块占用字节数，0 表示池首。
+    std::size_t payload;       ///< 块首到负载起点的字节数，0 表示空闲块。
+    std::size_t requested;     ///< 调用者请求的字节数。
+    std::size_t nextFree;      ///< 下一个空闲块偏移，kNone 表示链尾。
+    std::size_t previousFree;  ///< 上一个空闲块偏移，kNone 表示链首。
 };
 
 /** @brief 池统计。 */
-struct PoolStats {
-    std::size_t liveBytes = 0;   ///< 活动块占用（含全部管理开销）。
-    std::size_t liveBlocks = 0;  ///< 活动块数。
-    std::size_t peakBytes = 0;   ///< liveBytes 历史峰值。
-    std::size_t totalBlocks = 0; ///< 累计分配次数。
+struct PoolStats
+{
+    std::size_t liveBytes = 0;    ///< 活动块占用（含全部管理开销）。
+    std::size_t liveBlocks = 0;   ///< 活动块数。
+    std::size_t peakBytes = 0;    ///< liveBytes 历史峰值。
+    std::size_t totalBlocks = 0;  ///< 累计分配次数。
 };
 
 /** @brief 固定缓冲区上的首次适配内存池。 */
-class MemoryPool {
+class MemoryPool
+{
 public:
     /** @brief 空池；需再调用 initialize。 */
     MemoryPool() = default;
@@ -86,19 +90,20 @@ private:
     void addFree(std::size_t at, const PoolBlock &block);
     bool lookup(const void *pointer, std::size_t *at, PoolBlock *block) const;
 
-    unsigned char *m_storage = nullptr;   ///< 对齐后的池起点。
-    std::size_t m_capacity = 0;           ///< 对齐后的池容量。
-    void *m_rawStorage = nullptr;         ///< 调用者缓冲区原始地址。
-    std::size_t m_rawCapacity = 0;        ///< 调用者声明的容量。
-    std::size_t m_freeHead = kNone;       ///< 空闲链首偏移。
+    unsigned char *m_storage = nullptr;  ///< 对齐后的池起点。
+    std::size_t m_capacity = 0;          ///< 对齐后的池容量。
+    void *m_rawStorage = nullptr;        ///< 调用者缓冲区原始地址。
+    std::size_t m_rawCapacity = 0;       ///< 调用者声明的容量。
+    std::size_t m_freeHead = kNone;      ///< 空闲链首偏移。
     PoolStats m_stats{};
 };
 
 /** @brief 查询对齐量是否合法（非零且为 2 的幂）。 */
-constexpr bool memoryPoolValidAlignment(std::size_t alignment) {
+constexpr bool memoryPoolValidAlignment(std::size_t alignment)
+{
     return alignment != 0 && (alignment & (alignment - 1)) == 0;
 }
 
-} // namespace Cas::Detail
+}  // namespace Cas::Detail
 
-#endif // CAS_DETAIL_MEMORYPOOL_H
+#endif  // CAS_DETAIL_MEMORYPOOL_H

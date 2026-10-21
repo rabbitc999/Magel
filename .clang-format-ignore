@@ -7,6 +7,7 @@ source/magel_parser_user.h
 source/magel_main.cpp
 source/magel_stdlib_embedded.cpp
 source/magel_i18n.hpp
+library/caspp/core_assets.hpp
 # 这些 .inc 是前处理器输入夹具，并非 C/C++ 代码。
 library/preprocess/examples/*.inc
 tests/fixtures/package/include/*.inc

@@ -77,7 +77,7 @@ encoding RFC vectors OK
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-58"></a>`enum EncodingError` | 编码错误包含首个非法输入的字节位置；位置从零开始。 |
+| 模块 | <a id="symbol-60"></a>`enum EncodingError` | 编码错误包含首个非法输入的字节位置；位置从零开始。 |
 | EncodingError | `InvalidLength, InvalidCharacter(int64 offset), InvalidPadding, NonCanonical` | 编码错误包含首个非法输入的字节位置；位置从零开始。 变体及载荷见声明。 |
 
 ## 函数索引

@@ -1,7 +1,13 @@
 # caspp —— C++17 代数符号计算器
 
 一个从零实现的计算机代数系统（CAS）核心。符号表达式树、大整数运算、多项式算法、
-微积分、方程求解与 Groebner 基，全部基于自研内存池分配。
+微积分、方程求解与 Groebner 基。节点与符号使用 CAS 内存池，大整数由相邻的
+`../bignum` 共享后端计算，适配层不再维护独立乘法、除法或 NTT。
+
+Magel 通过 `std::cas::Expr` 暴露不可变 AST、精确四则运算与微积分变换，详见
+[符号计算说明](../../doc/34-symbolic-computation.md)。宿主入口串行保护内部引用计数与符号资源，
+共享的数值缓冲使用进程级分配器。CAS 内部整数适配保留向负无穷取整的除法约定，
+由共享后端向零截断的商和余数显式调整；该内部约定不改变语言大整数的除法语义。
 
 参考了 `gitee.com/rabbitc999/cas` 的内存分配器设计与 sympy 的算法组织方式，
 命名风格沿用 Qt 式驼峰（`Cas::Engine`、`calculate()`、`memoryStats()`）。
@@ -402,9 +408,9 @@ include/cas/
   engine.h           门面：Result / Engine（全部对外 API）
   memory.h           PoolAllocator<T> 与容器别名
   detail/
-    config.h         池大小、小整数上限、NTT 参数
-    memoryPool.h     首次适配链表池
-    bigInt.h         任意精度整数
+    config.h         CAS 节点池与解析配置
+    memory_pool.hpp     首次适配链表池
+    integer_adapter.hpp  共享大整数接口适配
     node.h           表达式树节点与引用计数 Ptr
     simplify.h       makeAdd/makeMul/makePow/makeNegate/simplify
     polynomial.h     一元多项式与 expand/factor/gcd/resultant/together
@@ -426,7 +432,7 @@ include/cas/
 
 - 节点创建时 `m_refs = 1`，由返回它的 `Ptr` 持有
 - `Ptr` 拷贝即 `retain`，析构即 `release`，计数归零时归还池
-- `Ptr::borrow(NodePtr)` 用于临时观察，不改变计数
+- `Ptr::borrow(NodePtr)` 为已有节点增加引用，返回的守卫退出作用域时释放该引用
 - 所有节点分配都走自研内存池（首次适配 + 块拆分 + 相邻空闲块双向合并），
   池未就绪时自动退回 `::operator new`
 
@@ -434,11 +440,12 @@ include/cas/
 
 ### 大整数
 
-基 `2^32` 小端 limb，符号独立存储，`±2^61` 以内走内联表示。
+`integer_adapter.hpp` 使用组合方式持有 `bigint::BigInt`，不保存另一份 limb 或内联整数布局。
 
-- 乘法分段：≤32 limb 教科书算法 → ≤96 limb Karatsuba → 更大规模走三段分解 + NTT（模数 `2013265921`，原根 31，每 limb 拆 4 段 × 8 位）
-- 除法用移位相减长除（参考 magel 的 `divmodBase`）
-- 精确开方、k 次整数根（二分）、GCD
+- 乘法复用共享后端的 Karatsuba 与 NTT，自适应算法界限由共享后端维护。
+- 除法、GCD、幂、模逆和整数根复用共享后端；CAS 内部适配显式维持向负无穷取整的商余约定。
+- 精确有理数的分子、分母均使用同一适配器，数值转换不经过浮点。
+- 十进制字面量的指数展开规模限制为 100000，避免解析无界整数常量。
 
 ## 测试
 
@@ -446,18 +453,18 @@ include/cas/
 
 | 测试 | 内容 |
 | --- | --- |
-| `bigIntFuzz` | 除法对拍 2000 例 + 乘法交叉校验 |
-| `numericTest` | 数值运算与内存池语义 |
-| `expressionTest` | 表达式树、化简、打印 |
-| `polynomialTest` | 展开、带余除法、GCD、Resultant、因式分解（含 16 项高次与多元用例）、通分 |
-| `definitionTest` | 变量替换（单/多变量、表达式代入、错误路径）、函数定义（单/多参、嵌套、与 diff/integrate/limit 组合）、常量定义、`defs`/`undef`、定义错误与隐式乘法语义不变 |
-| `printerTest` | 内部节点不外泄（`equal`→`y = x`、`list`→`[1, 2, 3]`，文本与 LaTeX 双路）、`solveSystem` 等模块入口不被「未知函数」诊断误伤、未知函数诊断本身仍生效 |
-| `systemTest` | 方程组求解：线性（含三元、不相容）、非线性两元（圆与双曲线、首项相同的二次式相减、二次+一次、乘积型、仅复根）、非线性三元（对称方程组 6 组排列、圆与坐标轴）、单变量高次、欠定参数解、非多项式方程与被空变量表报错 |
-| `diagnosticTest` | 反三角特殊值折叠（`asin(0)`/`asin(1/2)`/`acos(-1/2)` 等 14 项，表外取值原样保留）、三角方程的解不留 `x = asin(0)` 这类半成品、除以零报确切原因 |
-| `calculusTest` | 141 项：解析、化简、展开、分解、求导、积分（含三角有理式/根式/部分分式）、极限（含幂指型）、Taylor/Laurent、驻点极值、求解、不等式、三角、Groebner、LaTeX、内存 |
-| `matrixTest` | 62 项：行列式、逆、转置、迹、乘法、秩、行最简形、特征多项式、特征值、单位阵、嵌套调用、代数恒等式、LaTeX、非法输入 |
-| `specialTest` | 111 项：Γ（整数/半整数/极点）、阶乘与双阶乘、Beta、组合数、谐波数、erf、Bessel、伯努利数、`specialsimplify`、幂和、p 级数、几何与算术-几何、裂项、敛散性、`guess`、跨模块组合 |
-| `odeTest` | 49 项：一阶线性、可分离、齐次型、伯努利、二阶齐次三情形与缺项、二阶非齐次多项式/指数/三角、共振、初值问题（一阶单条件、二阶双条件、条件不足/超限）、边界报错 |
+| `big_int_fuzz` | 除法对拍 2000 例 + 乘法交叉校验 |
+| `numeric_test` | 数值运算与内存池语义 |
+| `expression_test` | 表达式树、化简、打印 |
+| `polynomial_test` | 展开、带余除法、GCD、Resultant、因式分解（含 16 项高次与多元用例）、通分 |
+| `definition_test` | 变量替换（单/多变量、表达式代入、错误路径）、函数定义（单/多参、嵌套、与 diff/integrate/limit 组合）、常量定义、`defs`/`undef`、定义错误与隐式乘法语义不变 |
+| `printer_test` | 内部节点不外泄（`equal`→`y = x`、`list`→`[1, 2, 3]`，文本与 LaTeX 双路）、`solveSystem` 等模块入口不被「未知函数」诊断误伤、未知函数诊断本身仍生效 |
+| `system_test` | 方程组求解：线性（含三元、不相容）、非线性两元（圆与双曲线、首项相同的二次式相减、二次+一次、乘积型、仅复根）、非线性三元（对称方程组 6 组排列、圆与坐标轴）、单变量高次、欠定参数解、非多项式方程与被空变量表报错 |
+| `diagnostic_test` | 反三角特殊值折叠（`asin(0)`/`asin(1/2)`/`acos(-1/2)` 等 14 项，表外取值原样保留）、三角方程的解不留 `x = asin(0)` 这类半成品、除以零报确切原因 |
+| `calculus_test` | 141 项：解析、化简、展开、分解、求导、积分（含三角有理式/根式/部分分式）、极限（含幂指型）、Taylor/Laurent、驻点极值、求解、不等式、三角、Groebner、LaTeX、内存 |
+| `matrix_test` | 62 项：行列式、逆、转置、迹、乘法、秩、行最简形、特征多项式、特征值、单位阵、嵌套调用、代数恒等式、LaTeX、非法输入 |
+| `special_test` | 111 项：Γ（整数/半整数/极点）、阶乘与双阶乘、Beta、组合数、谐波数、erf、Bessel、伯努利数、`specialsimplify`、幂和、p 级数、几何与算术-几何、裂项、敛散性、`guess`、跨模块组合 |
+| `ode_test` | 49 项：一阶线性、可分离、齐次型、伯努利、二阶齐次三情形与缺项、二阶非齐次多项式/指数/三角、共振、初值问题（一阶单条件、二阶双条件、条件不足/超限）、边界报错 |
 
 ## 已知边界
 

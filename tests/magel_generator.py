@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -59,6 +60,8 @@ def main():
         required += ["runtime/" + name for name in (ROOT / "library/stackvm/core_sources.txt").read_text().splitlines()]
         required += ["runtime/" + path.name for path in (ROOT / "library/stackvm").glob("*.hpp")]
         required += ["runtime/core_sources.txt", "toml/toml_source.cpp", "toml/toml_source.hpp"]
+        required += ["runtime/bigfloat_math.hpp", "runtime/bigfloat_math_detail.hpp", "runtime/bigfloat_transcendental.cpp", "runtime/bigfloat_trigonometry.cpp", "std/cas.mgl", "glue/std_cas.cpp", "caspp/core_sources.txt"]
+        required += ["caspp/" + name for name in (ROOT / "library/caspp/core_sources.txt").read_text().splitlines()]
         missing = [name for name in required if not (compiler / name).is_file()]
         if missing:
             raise AssertionError(f"compiler export is incomplete: {missing}")
@@ -95,6 +98,11 @@ def main():
         result = subprocess.run([str(build / ("magel" + EXE)), "run", str(probe), "--out", str(WORK / "export_probe")],
                                 cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=90)
         assert result.returncode == 0 and result.stdout == "exported compiler VM/TOML OK\n" and not result.stderr, result
+        for sample in ("cas", "math_generic"):
+            result = subprocess.run([str(build / ("magel" + EXE)), "run", str(ROOT / "example/samples" / (sample + ".mgl"))],
+                                    cwd=WORK, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=90)
+            expected = (ROOT / "example/expected" / (sample + ".txt")).read_text(encoding="utf-8")
+            assert result.returncode == 0 and result.stdout == expected and not result.stderr, (sample, result)
         shutil.rmtree(build)
         (compiler / "keep.txt").write_text("user\n", encoding="utf-8")
         command([GENERATOR, "clear", "--out-dir", compiler])
@@ -119,7 +127,8 @@ def main():
         command([GENERATOR, "vm", "--out-dir", WORK / "removed-vm"], succeeds=False)
         assert not (WORK / "removed-vm").exists()
     finally:
-        shutil.rmtree(WORK, ignore_errors=True)
+        if sys.exc_info()[0] is None:
+            shutil.rmtree(WORK, ignore_errors=True)
     print("Magel generator checks passed")
 
 

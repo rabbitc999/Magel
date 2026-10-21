@@ -1,0 +1,15 @@
+# Exact symbolic computation and high precision mathematics
+
+Import `std::cas` to use `Expr`. String input becomes an immutable, normalized AST. Integers and rational numbers use the project's existing big integer backend; CAS has no separate multiplication or division implementation. Decimal literals remain exact rational values. Arithmetic operators combine AST nodes directly, without conversion through binary floating point.
+
+`Expr::parse`, `fromInteger` and `fromDecimal` construct expressions. `ast`, `kind`, `name`, `childCount`, `child` and `children` expose the normalized tree. Retained roots and children survive destruction of the original expression. Subtraction and division may appear as addition, multiplication and powers. Original whitespace and parentheses are not retained.
+
+Transformations include simplification, expansion, factorization, combining rational expressions, differentiation, integration, substitution, limits and Taylor expansion. Derivative and Taylor orders range from 0 to 1000. An unsupported indefinite integral remains an `integrate` node; an unresolved definite integral reports an error. Equality compares normalized structures and does not prove arbitrary mathematical identities. `decimal(digits)` converts an exact numeric node to the shared decimal backend; substitute free variables first.
+
+Generic `std::math` functions accept ordinary numeric values, `BigDecimal` and symbolic expressions. Integer inputs produce `float64`; `float32` preserves its return type. Big integer inputs convert to `BigDecimal`. Big decimal functions retain their precision; symbolic inputs produce function ASTs. Angles use radians.
+
+High precision algorithms operate on decimal arithmetic: AGM for pi, series and repeated squaring for exponentials, square-root reduction and series for logarithms, and high precision period reduction and series for trigonometric functions. Guard digits precede final significant-digit rounding. `pi(digits)` accepts 1..100000 digits. Argument reduction has an additional intermediate precision budget and reports an error when exceeded. Big decimals cannot represent NaN or infinity; invalid real domains report diagnostics. Ordinary floating point retains host NaN and infinity behavior. Rounding uses ties away from zero; truncation goes toward zero; remainder has the dividend's sign.
+
+CAS calls serialize through a process-wide lock protecting its node references, symbols and pool. Expressions may be copied between threads, but CAS calls execute serially. Shared numeric buffers use the process allocator rather than the producing VM's arena. `NO_MAGEL_STD_CAS` removes the implementation. CAS requires the standard library and big integers; decimal conversion also requires the decimal backend.
+
+See the [CAS API](../library/std-cas.md), [complete example](../../example/samples/cas.mgl), [generic math example](../../example/samples/math_generic.mgl), and [Chinese algorithm notes](../34-symbolic-computation.md). `tests/cas_library.py` runs the CAS library tests. `tests/bigfloat_math.py` compares multiple precisions and edge cases with the independent mpmath implementation.

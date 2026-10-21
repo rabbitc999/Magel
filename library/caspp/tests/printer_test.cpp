@@ -9,19 +9,23 @@
 #include <cstdio>
 #include <string>
 
-namespace {
+namespace
+{
 
 int failures = 0;
 
 /** @brief 断言一次求值的文本结果。 */
-void expectText(Cas::Engine *engine, const char *input, const char *expected) {
+void expectText(Cas::Engine *engine, const char *input, const char *expected)
+{
     const Cas::Result result = engine->evaluate(input);
-    if (!result.ok) {
+    if (!result.ok)
+    {
         std::printf("FAIL %-42s ← 错误：%s\n", input, result.message.c_str());
         ++failures;
         return;
     }
-    if (result.text != expected) {
+    if (result.text != expected)
+    {
         std::printf("FAIL %-42s ← 得到 %s，期望 %s\n", input, result.text.c_str(), expected);
         ++failures;
         return;
@@ -30,14 +34,17 @@ void expectText(Cas::Engine *engine, const char *input, const char *expected) {
 }
 
 /** @brief 断言一次求值的 LaTeX 结果。 */
-void expectLatex(Cas::Engine *engine, const char *input, const char *expected) {
+void expectLatex(Cas::Engine *engine, const char *input, const char *expected)
+{
     const Cas::Result result = engine->evaluate(input);
-    if (!result.ok) {
+    if (!result.ok)
+    {
         std::printf("FAIL %-42s ← 错误：%s\n", input, result.message.c_str());
         ++failures;
         return;
     }
-    if (result.latex != expected) {
+    if (result.latex != expected)
+    {
         std::printf("FAIL %-42s ← LaTeX 得到 %s，期望 %s\n", input, result.latex.c_str(), expected);
         ++failures;
         return;
@@ -46,9 +53,11 @@ void expectLatex(Cas::Engine *engine, const char *input, const char *expected) {
 }
 
 /** @brief 断言一次求值应当失败。 */
-void expectError(Cas::Engine *engine, const char *input) {
+void expectError(Cas::Engine *engine, const char *input)
+{
     const Cas::Result result = engine->evaluate(input);
-    if (result.ok) {
+    if (result.ok)
+    {
         std::printf("FAIL %-42s ← 本应报错，却得到 %s\n", input, result.text.c_str());
         ++failures;
         return;
@@ -58,7 +67,8 @@ void expectError(Cas::Engine *engine, const char *input) {
 
 /* --------------------------------------------------- 等式不泄露 equal() */
 
-void testEqualPrinting() {
+void testEqualPrinting()
+{
     Cas::Engine engine;
 
     expectText(&engine, "y=x", "y = x");
@@ -78,7 +88,8 @@ void testEqualPrinting() {
 
 /* ------------------------------------------------- 列表不泄露 list(...) */
 
-void testListPrinting() {
+void testListPrinting()
+{
     Cas::Engine engine;
 
     expectText(&engine, "[1,2,3]", "[1, 2, 3]");
@@ -96,7 +107,8 @@ void testListPrinting() {
 
 /* ------------------------------------- 模块入口不被「未知函数」诊断误伤 */
 
-void testModuleEntries() {
+void testModuleEntries()
+{
     Cas::Engine engine;
 
     expectText(&engine, "solveSystem([x+y=3, x-y=1], [x, y])", "x = 2, y = 1");
@@ -112,7 +124,8 @@ void testModuleEntries() {
 
 /* -------------------------------- 未知函数诊断本身仍然生效（没有被放松） */
 
-void testUnknownCallStillDiagnosed() {
+void testUnknownCallStillDiagnosed()
+{
     Cas::Engine engine;
 
     // 含逗号的括号 → 用户显然想写调用，但既不是内置函数，也没有定义
@@ -129,7 +142,8 @@ void testUnknownCallStillDiagnosed() {
 
 /* ---------------------------------------- 其他命令的输出没有受到连带影响 */
 
-void testOtherPrintsUnchanged() {
+void testOtherPrintsUnchanged()
+{
     Cas::Engine engine;
 
     expectText(&engine, "diff(x^2, x)", "2*x");
@@ -139,19 +153,30 @@ void testOtherPrintsUnchanged() {
     expectLatex(&engine, "sin(x)", "\\sin\\left(x\\right)");
 }
 
-} // namespace
+}  // namespace
 
-int main() {
+/**
+ * @brief 执行文本、LaTeX 与未知函数输出回归并汇总检查结果。
+ * @return 所有检查通过时返回零，否则返回非零失败状态。
+ */
+int main()
+{
     std::printf("打印器与内部表示自检\n");
     Cas::Allocator::initialize();
 
-    testEqualPrinting();            std::printf("equal printing ok\n");
-    testListPrinting();             std::printf("list printing ok\n");
-    testModuleEntries();            std::printf("module entries ok\n");
-    testUnknownCallStillDiagnosed(); std::printf("unknown call diagnosis ok\n");
-    testOtherPrintsUnchanged();     std::printf("other prints ok\n");
+    testEqualPrinting();
+    std::printf("equal printing ok\n");
+    testListPrinting();
+    std::printf("list printing ok\n");
+    testModuleEntries();
+    std::printf("module entries ok\n");
+    testUnknownCallStillDiagnosed();
+    std::printf("unknown call diagnosis ok\n");
+    testOtherPrintsUnchanged();
+    std::printf("other prints ok\n");
 
-    if (failures == 0) {
+    if (failures == 0)
+    {
         std::printf("全部通过\n");
         return 0;
     }

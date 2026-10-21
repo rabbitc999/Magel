@@ -126,18 +126,18 @@ int64 main() {
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-22"></a>`struct Deque<T>: Iterator<T>, Index<T, int64>, Drop` | 标准集合模块：import std::collections; 后使用 std::collections::Deque 等类型。 |
-| Deque | <a id="symbol-23"></a>`std::lang::List<T> values` | 按声明顺序保存的元素存储。 |
-| 模块 | <a id="symbol-24"></a>`struct Queue<T>: Iterator<T>, Drop` | 先进先出的值队列；出队返回 Option，空队列返回 None。 |
-| Queue | <a id="symbol-25"></a>`std::lang::List<T> values` | 按声明顺序保存的元素存储。 |
-| 模块 | <a id="symbol-26"></a>`struct RingBuffer<T>: Iterator<T>, Drop` | 容量固定的环形值缓冲区；满时写入返回 false。 |
-| RingBuffer | <a id="symbol-27"></a>`std::lang::List<T> values` | 按声明顺序保存的元素存储。 |
-| RingBuffer | <a id="symbol-28"></a>`int64 capacity` | 最多可保存的元素数量。 |
-| 模块 | <a id="symbol-29"></a>`struct FixedVector<T>: Iterator<T>, Index<T, int64>, Drop` | 容量固定的顺序容器；保存的元素数量不得超过 capacity。 |
-| FixedVector | <a id="symbol-30"></a>`std::lang::List<T> values` | 按声明顺序保存的元素存储。 |
-| FixedVector | <a id="symbol-31"></a>`int64 capacity` | 最多可保存的元素数量。 |
-| 模块 | <a id="symbol-32"></a>`struct Channel<T>: Iterator<T>, Drop` | 当前执行上下文中的值消息队列，不提供跨线程同步。 |
-| Channel | <a id="symbol-33"></a>`std::lang::List<T> pending` | 等待消费的元素或队列。 |
+| 模块 | <a id="symbol-24"></a>`struct Deque<T>: Iterator<T>, Index<T, int64>, Drop` | 标准集合模块：import std::collections; 后使用 std::collections::Deque 等类型。 |
+| Deque | <a id="symbol-25"></a>`std::lang::List<T> values` | 按声明顺序保存的元素存储。 |
+| 模块 | <a id="symbol-26"></a>`struct Queue<T>: Iterator<T>, Drop` | 先进先出的值队列；出队返回 Option，空队列返回 None。 |
+| Queue | <a id="symbol-27"></a>`std::lang::List<T> values` | 按声明顺序保存的元素存储。 |
+| 模块 | <a id="symbol-28"></a>`struct RingBuffer<T>: Iterator<T>, Drop` | 容量固定的环形值缓冲区；满时写入返回 false。 |
+| RingBuffer | <a id="symbol-29"></a>`std::lang::List<T> values` | 按声明顺序保存的元素存储。 |
+| RingBuffer | <a id="symbol-30"></a>`int64 capacity` | 最多可保存的元素数量。 |
+| 模块 | <a id="symbol-31"></a>`struct FixedVector<T>: Iterator<T>, Index<T, int64>, Drop` | 容量固定的顺序容器；保存的元素数量不得超过 capacity。 |
+| FixedVector | <a id="symbol-32"></a>`std::lang::List<T> values` | 按声明顺序保存的元素存储。 |
+| FixedVector | <a id="symbol-33"></a>`int64 capacity` | 最多可保存的元素数量。 |
+| 模块 | <a id="symbol-34"></a>`struct Channel<T>: Iterator<T>, Drop` | 当前执行上下文中的值消息队列，不提供跨线程同步。 |
+| Channel | <a id="symbol-35"></a>`std::lang::List<T> pending` | 等待消费的元素或队列。 |
 
 ## 函数索引
 

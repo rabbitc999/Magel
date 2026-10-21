@@ -10,18 +10,22 @@
 #include <cstdio>
 #include <string>
 
-namespace {
+namespace
+{
 
 int failures = 0;
 
-void expectText(Cas::Engine *engine, const char *input, const char *expected) {
+void expectText(Cas::Engine *engine, const char *input, const char *expected)
+{
     const Cas::Result result = engine->evaluate(input);
-    if (!result.ok) {
+    if (!result.ok)
+    {
         std::printf("FAIL %-38s ← 错误：%s\n", input, result.message.c_str());
         ++failures;
         return;
     }
-    if (result.text != expected) {
+    if (result.text != expected)
+    {
         std::printf("FAIL %-38s ← 得到 %s，期望 %s\n", input, result.text.c_str(), expected);
         ++failures;
         return;
@@ -30,14 +34,17 @@ void expectText(Cas::Engine *engine, const char *input, const char *expected) {
 }
 
 /** @brief 断言失败，且错误信息里含某个关键字。 */
-void expectErrorWith(Cas::Engine *engine, const char *input, const char *keyword) {
+void expectErrorWith(Cas::Engine *engine, const char *input, const char *keyword)
+{
     const Cas::Result result = engine->evaluate(input);
-    if (result.ok) {
+    if (result.ok)
+    {
         std::printf("FAIL %-38s ← 本应报错，却得到 %s\n", input, result.text.c_str());
         ++failures;
         return;
     }
-    if (result.message.find(keyword) == std::string::npos) {
+    if (result.message.find(keyword) == std::string::npos)
+    {
         std::printf("FAIL %-38s ← 错误信息是 \"%s\"，不含 \"%s\"\n", input, result.message.c_str(), keyword);
         ++failures;
         return;
@@ -47,7 +54,8 @@ void expectErrorWith(Cas::Engine *engine, const char *input, const char *keyword
 
 /* ------------------------------------------------ 反三角函数特殊值折叠 */
 
-void testInverseTrigValues() {
+void testInverseTrigValues()
+{
     Cas::Engine engine;
 
     expectText(&engine, "trigsimp(asin(0))", "0");
@@ -72,7 +80,8 @@ void testInverseTrigValues() {
 
 /* ------------------------------------------ 三角方程的解不能是半成品 */
 
-void testTrigEquations() {
+void testTrigEquations()
+{
     Cas::Engine engine;
 
     expectText(&engine, "solve(sin(x)=0, x)", "x = 0");
@@ -84,7 +93,8 @@ void testTrigEquations() {
 
 /* ---------------------------------------------------------- 除以零诊断 */
 
-void testDivisionByZero() {
+void testDivisionByZero()
+{
     Cas::Engine engine;
 
     expectErrorWith(&engine, "1/0", "除以零");
@@ -96,17 +106,26 @@ void testDivisionByZero() {
     expectText(&engine, "x/2", "1/2*x");
 }
 
-} // namespace
+}  // namespace
 
-int main() {
+/**
+ * @brief 执行反三角特殊值和除零诊断回归并汇总检查结果。
+ * @return 所有检查通过时返回零，否则返回非零失败状态。
+ */
+int main()
+{
     std::printf("求解与诊断自检\n");
     Cas::Allocator::initialize();
 
-    testInverseTrigValues();  std::printf("inverse trig values ok\n");
-    testTrigEquations();      std::printf("trig equations ok\n");
-    testDivisionByZero();     std::printf("division by zero ok\n");
+    testInverseTrigValues();
+    std::printf("inverse trig values ok\n");
+    testTrigEquations();
+    std::printf("trig equations ok\n");
+    testDivisionByZero();
+    std::printf("division by zero ok\n");
 
-    if (failures == 0) {
+    if (failures == 0)
+    {
         std::printf("全部通过\n");
         return 0;
     }

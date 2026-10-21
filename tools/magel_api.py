@@ -58,7 +58,7 @@ def declarations(path, source=None, line_offset=0, root=None):
                     if tokens[body_end][0] == '{': depth += 1
                     elif tokens[body_end][0] == '}': depth -= 1
                     body_end += 1
-            kind_match = re.match(r'(?:#\s*NonCopyable\s+)?(struct|enum|interface|opcode)\s+(\w+)', signature)
+            kind_match = re.match(r'(?:(?:#\s*NonCopyable|#\s*derive\s*\([^)]*\))\s+)*(struct|enum|interface|opcode)\s+(\w+)', signature)
             function = None
             declaration_matches = list(TOKEN.finditer(signature))
             declaration_tokens = [m.group() for m in declaration_matches]

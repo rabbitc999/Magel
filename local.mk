@@ -24,6 +24,12 @@ AST_LIB := build/magel-runtime/libsimple_ast.a
 VM_BUILD := build/magel-stackvm-core
 HOST_BUILD := build/magel-host-records
 HOST_LIB := $(HOST_BUILD)/librecords.a
+CAS_BUILD := build/magel-cas
+CAS_SOURCE_NAMES := $(shell $(PYTHON) tools/cas_sources.py)
+CAS_OBJS := $(addprefix $(CAS_BUILD)/,$(CAS_SOURCE_NAMES:.cpp=.o))
+ifneq ($(filter 1,$(NO_MAGEL_STD) $(NO_MAGEL_STD_CAS) $(NO_MAGEL_BIG_INT)),)
+CAS_OBJS :=
+endif
 VM_LIB  := $(VM_BUILD)/libstackvm.a
 VM_SOURCE_NAMES := $(shell $(PYTHON) tools/stackvm_sources.py)
 VM_OBJS := $(addprefix $(VM_BUILD)/,$(VM_SOURCE_NAMES:.cpp=.o))
@@ -97,6 +103,10 @@ $(HOST_BUILD)/bigint.o: library/bignum/bigint.cpp library/bignum/bigint.hpp | $(
 $(HOST_BUILD)/bigfloat.o: library/bignum/bigfloat.cpp library/bignum/bigfloat.hpp library/bignum/bigint.hpp | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -I$(MAGEL_LIBRARY_DIR)/bignum -c $< -o $@
 
+BIGFLOAT_MATH_OBJS := $(HOST_BUILD)/bigfloat_transcendental.o $(HOST_BUILD)/bigfloat_trigonometry.o
+$(BIGFLOAT_MATH_OBJS): $(HOST_BUILD)/%.o: library/bignum/%.cpp build/magel-runtime/buildConfig.json | $(HOST_BUILD)
+	$(CXX) $(CXXFLAGS) -MMD -MP -I$(MAGEL_LIBRARY_DIR)/bignum -c $< -o $@
+
 $(HOST_BUILD)/sqlite3.o: library/sqlite/sqlite3.c library/sqlite/sqlite3.h | $(HOST_BUILD)
 	$(CC) -std=c11 -O2 -DSQLITE_THREADSAFE=1 -DSQLITE_OMIT_LOAD_EXTENSION=1 -c $< -o $@
 
@@ -109,6 +119,7 @@ MAGEL_STANDARD_SRCS := $(filter-out source/glue/std_demo.cpp,$(wildcard source/g
 MAGEL_STANDARD_OBJS := $(patsubst source/glue/%.cpp,$(HOST_BUILD)/%.o,$(MAGEL_STANDARD_SRCS))
 $(HOST_BUILD)/std_%.o: source/glue/std_%.cpp | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
+$(HOST_BUILD)/std_cas.o: private CXXFLAGS += -Ilibrary/caspp/include
 $(HOST_BUILD)/json.o: library/json/json.cpp | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
 $(HOST_BUILD)/toml.o: library/toml/toml.cpp | $(HOST_BUILD)
@@ -118,7 +129,14 @@ $(HOST_BUILD)/toml_source.o: library/toml/toml_source.cpp | $(HOST_BUILD)
 $(MAGEL_STANDARD_OBJS) $(HOST_BUILD)/json.o $(HOST_BUILD)/toml.o $(HOST_BUILD)/toml_source.o: build/magel-runtime/buildConfig.json
 -include $(wildcard $(HOST_BUILD)/*.d)
 
-$(HOST_LIB): $(HOST_BUILD)/sqlite3.o $(HOST_BUILD)/bigint.o $(HOST_BUILD)/bigfloat.o $(MAGEL_STANDARD_OBJS) $(HOST_BUILD)/json.o $(HOST_BUILD)/toml.o $(HOST_BUILD)/toml_source.o
+$(CAS_BUILD)/%.o: library/caspp/%.cpp
+	$(PYTHON) -c "from pathlib import Path; Path(r'$(@D)').mkdir(parents=True, exist_ok=True)"
+	$(CXX) $(CXXFLAGS) -Ilibrary/caspp/include -MMD -MP -c $< -o $@
+-include $(shell $(PYTHON) -c "from pathlib import Path; print(' '.join(str(p).replace(chr(92), '/') for p in Path('$(CAS_BUILD)').rglob('*.d')))")
+$(CAS_OBJS): build/magel-runtime/buildConfig.json
+
+$(HOST_LIB): $(HOST_BUILD)/sqlite3.o $(HOST_BUILD)/bigint.o $(HOST_BUILD)/bigfloat.o $(BIGFLOAT_MATH_OBJS) $(MAGEL_STANDARD_OBJS) $(HOST_BUILD)/json.o $(HOST_BUILD)/toml.o $(HOST_BUILD)/toml_source.o $(CAS_OBJS)
+	$(PYTHON) -c "from pathlib import Path; Path(r'$@').unlink(missing_ok=True)"
 	$(AR) $(ARFLAGS) $@ $^
 
 .PHONY: check samples

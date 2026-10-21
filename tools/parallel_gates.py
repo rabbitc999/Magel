@@ -9,7 +9,7 @@ import time
 
 # 已登记测试使用各自的产物路径；网络、打包、生成器和未知测试保持串行。
 PARALLEL_TESTS = frozenset("""
-bigint_arithmetic
+bigint_arithmetic bigfloat_math magel_cas_math
 magel_print_streams magel_resource_lifetime magel_lsp_closure_types
 magel_array_parameters magel_string_literals magel_opcode_declarations
 magel_range_loop_values magel_opcode_resources magel_opcode_visibility

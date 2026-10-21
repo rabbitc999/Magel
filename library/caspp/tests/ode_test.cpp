@@ -22,21 +22,25 @@
  * 输出约定与其它测试一致：每行 `ok   <描述>` 或 `FAIL <描述> ← 实际值`。
  */
 
-namespace {
+namespace
+{
 
 int g_failures = 0;
 int g_total = 0;
 
 /** @brief 断言文本结果等于期望值。 */
-void expect(Cas::Engine &engine, const char *input, const char *expected) {
+void expect(Cas::Engine &engine, const char *input, const char *expected)
+{
     ++g_total;
     const Cas::Result result = engine.evaluate(input);
-    if (!result.ok) {
+    if (!result.ok)
+    {
         std::printf("FAIL %-44s ← 错误：%s\n", input, result.message.c_str());
         ++g_failures;
         return;
     }
-    if (result.text == expected) {
+    if (result.text == expected)
+    {
         std::printf("ok   %-44s = %s\n", input, result.text.c_str());
         return;
     }
@@ -45,10 +49,12 @@ void expect(Cas::Engine &engine, const char *input, const char *expected) {
 }
 
 /** @brief 断言求值失败。 */
-void expectError(Cas::Engine &engine, const char *input) {
+void expectError(Cas::Engine &engine, const char *input)
+{
     ++g_total;
     const Cas::Result result = engine.evaluate(input);
-    if (result.ok) {
+    if (result.ok)
+    {
         std::printf("FAIL %-44s ← 本该报错，却得到 %s\n", input, result.text.c_str());
         ++g_failures;
         return;
@@ -57,15 +63,18 @@ void expectError(Cas::Engine &engine, const char *input) {
 }
 
 /** @brief 断言结果文本包含指定片段。 */
-void expectContains(Cas::Engine &engine, const char *input, const char *needle) {
+void expectContains(Cas::Engine &engine, const char *input, const char *needle)
+{
     ++g_total;
     const Cas::Result result = engine.evaluate(input);
-    if (!result.ok) {
+    if (!result.ok)
+    {
         std::printf("FAIL %-44s ← 错误：%s\n", input, result.message.c_str());
         ++g_failures;
         return;
     }
-    if (result.text.find(needle) != std::string::npos) {
+    if (result.text.find(needle) != std::string::npos)
+    {
         std::printf("ok   %-44s = %s\n", input, result.text.c_str());
         return;
     }
@@ -75,7 +84,8 @@ void expectContains(Cas::Engine &engine, const char *input, const char *needle) 
 
 /* ------------------------------------------------------ 一阶：线性 */
 
-void testLinearFirstOrder(Cas::Engine &engine) {
+void testLinearFirstOrder(Cas::Engine &engine)
+{
     std::printf("\n== 一阶线性方程 ==\n");
 
     // y' = y：最简线性，积分因子退化为 1
@@ -98,7 +108,8 @@ void testLinearFirstOrder(Cas::Engine &engine) {
 
 /* -------------------------------------------------- 一阶：可分离 */
 
-void testSeparable(Cas::Engine &engine) {
+void testSeparable(Cas::Engine &engine)
+{
     std::printf("\n== 可分离变量方程 ==\n");
 
     // 右端只含 y：∫dy/y² = ∫dx
@@ -115,7 +126,8 @@ void testSeparable(Cas::Engine &engine) {
 
 /* ---------------------------------------------------- 一阶：齐次型 */
 
-void testHomogeneous(Cas::Engine &engine) {
+void testHomogeneous(Cas::Engine &engine)
+{
     std::printf("\n== 齐次型方程 ==\n");
 
     // y' = y/x + 1：F(u) = u + 1，换元后立即退化为线性
@@ -130,7 +142,8 @@ void testHomogeneous(Cas::Engine &engine) {
 
 /* ------------------------------------------------ 一阶：伯努利方程 */
 
-void testBernoulli(Cas::Engine &engine) {
+void testBernoulli(Cas::Engine &engine)
+{
     std::printf("\n== 伯努利方程 ==\n");
 
     // y' − y = x·y²：n = 2，换元 v = 1/y 得 v' + v = −x
@@ -145,7 +158,8 @@ void testBernoulli(Cas::Engine &engine) {
 
 /* ---------------------------------------------- 二阶：齐次三情形 */
 
-void testSecondOrderHomogeneous(Cas::Engine &engine) {
+void testSecondOrderHomogeneous(Cas::Engine &engine)
+{
     std::printf("\n== 二阶常系数齐次 ==\n");
 
     // 两相异实根 r = 1, −1
@@ -167,7 +181,8 @@ void testSecondOrderHomogeneous(Cas::Engine &engine) {
 
 /* -------------------------------------------- 二阶：非齐次特解 */
 
-void testSecondOrderParticular(Cas::Engine &engine) {
+void testSecondOrderParticular(Cas::Engine &engine)
+{
     std::printf("\n== 二阶非齐次（待定系数法）==\n");
 
     // 常数右端
@@ -186,7 +201,8 @@ void testSecondOrderParticular(Cas::Engine &engine) {
 
 /* ------------------------------------------------- 二阶：共振情形 */
 
-void testSecondOrderResonance(Cas::Engine &engine) {
+void testSecondOrderResonance(Cas::Engine &engine)
+{
     std::printf("\n== 二阶共振（试探式乘 x）==\n");
 
     // y'' + y = sin x：sin x 本身是齐次解，特解要乘 x
@@ -199,7 +215,8 @@ void testSecondOrderResonance(Cas::Engine &engine) {
 
 /* ------------------------------------------------- 初值问题 */
 
-void testInitialValues(Cas::Engine &engine) {
+void testInitialValues(Cas::Engine &engine)
+{
     std::printf("\n== 初值问题（定积分常数）==\n");
 
     // 一阶线性 + 一个条件
@@ -224,7 +241,8 @@ void testInitialValues(Cas::Engine &engine) {
 
 /* --------------------------------------------------------- 边界 */
 
-void testBoundary(Cas::Engine &engine) {
+void testBoundary(Cas::Engine &engine)
+{
     std::printf("\n== 边界与报错 ==\n");
 
     // 三阶以上目前不支持
@@ -243,9 +261,14 @@ void testBoundary(Cas::Engine &engine) {
     expectContains(engine, "dsolve(y' = y/x + x*y^2)", "伯努利");
 }
 
-} // namespace
+}  // namespace
 
-int main() {
+/**
+ * @brief 执行常微分方程符号解回归并汇总检查结果。
+ * @return 所有检查通过时返回零，否则返回非零失败状态。
+ */
+int main()
+{
     Cas::Engine engine;
 
     testLinearFirstOrder(engine);

@@ -22,26 +22,26 @@ Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-89"></a>`struct Pixel` | 单个像素的颜色分量。 |
-| Pixel | <a id="symbol-90"></a>`int64 r` | 红色分量，0..255。 |
-| Pixel | <a id="symbol-91"></a>`int64 g` | 绿色分量，0..255。 |
-| Pixel | <a id="symbol-92"></a>`int64 b` | 蓝色分量，0..255。 |
-| Pixel | <a id="symbol-93"></a>`int64 a` | 透明度分量，0..255，255 为不透明。 |
-| 模块 | <a id="symbol-94"></a>`struct ImageReply` | 胶水操作的统一回执；槽布局必须与 glue/std_image.hpp 的 Reply 一致。 |
-| ImageReply | <a id="symbol-95"></a>`String error` | 本次胶水调用的错误说明；成功时为空串。 |
-| ImageReply | <a id="symbol-96"></a>`int64 width` | 结果图片宽。 |
-| ImageReply | <a id="symbol-97"></a>`int64 height` | 结果图片高。 |
-| ImageReply | <a id="symbol-98"></a>`List<uint8> pixels` | 结果 RGBA 像素缓冲。 |
-| ImageReply | <a id="symbol-99"></a>`List<uint8> bytes` | 编码得到的文件字节。 |
-| ImageReply | <a id="symbol-100"></a>`List<uint8> gray` | 灰度缓冲，长度 width*height。 |
-| ImageReply | <a id="symbol-101"></a>`List<uint32> argb` | ARGB8888 结果，每像素一个值。 |
-| ImageReply | <a id="symbol-102"></a>`List<uint16> rgb565` | RGB565 结果，每像素一个值。 |
-| ImageReply | <a id="symbol-103"></a>`int64 threshold` | 大津法阈值，0..255。 |
-| ImageReply | <a id="symbol-104"></a>`int64 r` | getPixel 请求的 x 坐标（入参槽）。 |
-| ImageReply | <a id="symbol-105"></a>`int64 g` | 保留槽，恒为 0。 |
-| ImageReply | <a id="symbol-106"></a>`int64 b` | 保留槽，恒为 0。 |
-| ImageReply | <a id="symbol-107"></a>`int64 a` | 保留槽，恒为 0。 |
-| 模块 | <a id="symbol-108"></a>`opcode Image` | RGBA 图片：width × height，像素缓冲长度恒为 width*height*4。 |
+| 模块 | <a id="symbol-91"></a>`struct Pixel` | 单个像素的颜色分量。 |
+| Pixel | <a id="symbol-92"></a>`int64 r` | 红色分量，0..255。 |
+| Pixel | <a id="symbol-93"></a>`int64 g` | 绿色分量，0..255。 |
+| Pixel | <a id="symbol-94"></a>`int64 b` | 蓝色分量，0..255。 |
+| Pixel | <a id="symbol-95"></a>`int64 a` | 透明度分量，0..255，255 为不透明。 |
+| 模块 | <a id="symbol-96"></a>`struct ImageReply` | 胶水操作的统一回执；槽布局必须与 glue/std_image.hpp 的 Reply 一致。 |
+| ImageReply | <a id="symbol-97"></a>`String error` | 本次胶水调用的错误说明；成功时为空串。 |
+| ImageReply | <a id="symbol-98"></a>`int64 width` | 结果图片宽。 |
+| ImageReply | <a id="symbol-99"></a>`int64 height` | 结果图片高。 |
+| ImageReply | <a id="symbol-100"></a>`List<uint8> pixels` | 结果 RGBA 像素缓冲。 |
+| ImageReply | <a id="symbol-101"></a>`List<uint8> bytes` | 编码得到的文件字节。 |
+| ImageReply | <a id="symbol-102"></a>`List<uint8> gray` | 灰度缓冲，长度 width*height。 |
+| ImageReply | <a id="symbol-103"></a>`List<uint32> argb` | ARGB8888 结果，每像素一个值。 |
+| ImageReply | <a id="symbol-104"></a>`List<uint16> rgb565` | RGB565 结果，每像素一个值。 |
+| ImageReply | <a id="symbol-105"></a>`int64 threshold` | 大津法阈值，0..255。 |
+| ImageReply | <a id="symbol-106"></a>`int64 r` | getPixel 请求的 x 坐标（入参槽）。 |
+| ImageReply | <a id="symbol-107"></a>`int64 g` | 保留槽，恒为 0。 |
+| ImageReply | <a id="symbol-108"></a>`int64 b` | 保留槽，恒为 0。 |
+| ImageReply | <a id="symbol-109"></a>`int64 a` | 保留槽，恒为 0。 |
+| 模块 | <a id="symbol-110"></a>`opcode Image` | RGBA 图片：width × height，像素缓冲长度恒为 width*height*4。 |
 
 ## 函数索引
 

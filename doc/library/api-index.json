@@ -1095,6 +1095,1486 @@
     "anchor": "api-34"
   },
   {
+    "module": "std::cas",
+    "name": "Expr::parse",
+    "owner": "Expr",
+    "signature": "static Expr parse(String text)",
+    "documentation": "从字符串解析表达式；整数与十进制常量均保留精确值。\n\n**返回值**：Expr。",
+    "comment": "/** 从字符串解析表达式；整数与十进制常量均保留精确值。 */",
+    "parameters": [
+      {
+        "name": "text",
+        "label": "String text",
+        "documentation": "输入文本，位置与长度通常按字节",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": "从字符串解析表达式；整数与十进制常量均保留精确值。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::cas::Expr::parse(text);",
+    "examples": [
+      "example/samples/cas.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 43,
+    "page": "std-cas.md",
+    "anchor": "api-0"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::fromInteger",
+    "owner": "Expr",
+    "signature": "static Expr fromInteger(BigInteger number)",
+    "documentation": "将现有大整数无损转换为表达式。\n\n**返回值**：Expr。",
+    "comment": "/** 将现有大整数无损转换为表达式。 */",
+    "parameters": [
+      {
+        "name": "number",
+        "label": "BigInteger number",
+        "documentation": "需要精确转换的数值",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": "将现有大整数无损转换为表达式。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::cas::Expr::fromInteger(number);",
+    "examples": [
+      "example/samples/cas.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 49,
+    "page": "std-cas.md",
+    "anchor": "api-1"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::fromDecimal",
+    "owner": "Expr",
+    "signature": "static Expr fromDecimal(BigDecimal number)",
+    "documentation": "将当前大浮点的精确十进制值转换为有理数表达式。\n\n**返回值**：Expr。",
+    "comment": "/** 将当前大浮点的精确十进制值转换为有理数表达式。 */",
+    "parameters": [
+      {
+        "name": "number",
+        "label": "BigDecimal number",
+        "documentation": "需要精确转换的数值",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": "将当前大浮点的精确十进制值转换为有理数表达式。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::cas::Expr::fromDecimal(number);",
+    "examples": [
+      "example/samples/cas.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 51,
+    "page": "std-cas.md",
+    "anchor": "api-2"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::symbol",
+    "owner": "Expr",
+    "signature": "static Expr symbol(String name)",
+    "documentation": "建立单个自变量；传入复合表达式时报告错误。\n\n**返回值**：Expr。",
+    "comment": "/** 建立单个自变量；传入复合表达式时报告错误。 */",
+    "parameters": [
+      {
+        "name": "name",
+        "label": "String name",
+        "documentation": "名称",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": "建立单个自变量；传入复合表达式时报告错误。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::cas::Expr::symbol(name);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 53,
+    "page": "std-cas.md",
+    "anchor": "api-3"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::ast",
+    "owner": "Expr",
+    "signature": "Expr ast()",
+    "documentation": "取得独立持有的 AST 根；其寿命不依赖原表达式。\n\n**返回值**：Expr。",
+    "comment": "/** 取得独立持有的 AST 根；其寿命不依赖原表达式。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "取得独立持有的 AST 根；其寿命不依赖原表达式。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.ast();",
+    "examples": [
+      "example/samples/cas.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 59,
+    "page": "std-cas.md",
+    "anchor": "api-4"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::str",
+    "owner": "Expr",
+    "signature": "String str()",
+    "documentation": "规范中缀文本，可再次解析。\n\n**返回值**：String。",
+    "comment": "/** 规范中缀文本，可再次解析。 */",
+    "parameters": [],
+    "returns": {
+      "type": "String",
+      "documentation": "规范中缀文本，可再次解析。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.str();",
+    "examples": [
+      "example/samples/cas.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 61,
+    "page": "std-cas.md",
+    "anchor": "api-5"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::toString",
+    "owner": "Expr",
+    "signature": "String toString()",
+    "documentation": "统一值文本协议使用规范中缀表示。\n\n**返回值**：String。",
+    "comment": "/** 统一值文本协议使用规范中缀表示。 */",
+    "parameters": [],
+    "returns": {
+      "type": "String",
+      "documentation": "统一值文本协议使用规范中缀表示。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.toString();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 63,
+    "page": "std-cas.md",
+    "anchor": "api-6"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::latex",
+    "owner": "Expr",
+    "signature": "String latex()",
+    "documentation": "LaTeX 数学文本。\n\n**返回值**：String。",
+    "comment": "/** LaTeX 数学文本。 */",
+    "parameters": [],
+    "returns": {
+      "type": "String",
+      "documentation": "LaTeX 数学文本。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.latex();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 65,
+    "page": "std-cas.md",
+    "anchor": "api-7"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::kind",
+    "owner": "Expr",
+    "signature": "NodeKind kind()",
+    "documentation": "根节点的语义种类。\n\n**返回值**：NodeKind。",
+    "comment": "/** 根节点的语义种类。 */",
+    "parameters": [],
+    "returns": {
+      "type": "NodeKind",
+      "documentation": "根节点的语义种类。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.kind();",
+    "examples": [
+      "example/samples/cas.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 67,
+    "page": "std-cas.md",
+    "anchor": "api-8"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::name",
+    "owner": "Expr",
+    "signature": "String name()",
+    "documentation": "符号、函数或命名常数的名称；其他节点返回空串。\n\n**返回值**：String。",
+    "comment": "/** 符号、函数或命名常数的名称；其他节点返回空串。 */",
+    "parameters": [],
+    "returns": {
+      "type": "String",
+      "documentation": "符号、函数或命名常数的名称；其他节点返回空串。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.name();",
+    "examples": [
+      "example/samples/cas.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 79,
+    "page": "std-cas.md",
+    "anchor": "api-9"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::childCount",
+    "owner": "Expr",
+    "signature": "int64 childCount()",
+    "documentation": "直接子节点数量。\n\n**返回值**：int64。",
+    "comment": "/** 直接子节点数量。 */",
+    "parameters": [],
+    "returns": {
+      "type": "int64",
+      "documentation": "直接子节点数量。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.childCount();",
+    "examples": [
+      "example/samples/cas.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 81,
+    "page": "std-cas.md",
+    "anchor": "api-10"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::child",
+    "owner": "Expr",
+    "signature": "Expr child(int64 index)",
+    "documentation": "取得独立持有的子树，检查下标范围。\n\n**返回值**：Expr。",
+    "comment": "/** 取得独立持有的子树，检查下标范围。 */",
+    "parameters": [
+      {
+        "name": "index",
+        "label": "int64 index",
+        "documentation": "从 0 开始的位置",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": "取得独立持有的子树，检查下标范围。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.child(index);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 83,
+    "page": "std-cas.md",
+    "anchor": "api-11"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::children",
+    "owner": "Expr",
+    "signature": "List<Expr> children()",
+    "documentation": "以独立列表取得全部直接子树。\n\n**返回值**：List<Expr>。",
+    "comment": "/** 以独立列表取得全部直接子树。 */",
+    "parameters": [],
+    "returns": {
+      "type": "List<Expr>",
+      "documentation": "以独立列表取得全部直接子树。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.children();",
+    "examples": [
+      "example/samples/cas.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 89,
+    "page": "std-cas.md",
+    "anchor": "api-12"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::numerator",
+    "owner": "Expr",
+    "signature": "BigInteger numerator()",
+    "documentation": "数值节点的精确分子；非数值节点报告错误。\n\n**返回值**：BigInteger。",
+    "comment": "/** 数值节点的精确分子；非数值节点报告错误。 */",
+    "parameters": [],
+    "returns": {
+      "type": "BigInteger",
+      "documentation": "数值节点的精确分子；非数值节点报告错误。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.numerator();",
+    "examples": [
+      "example/samples/cas.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 100,
+    "page": "std-cas.md",
+    "anchor": "api-13"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::denominator",
+    "owner": "Expr",
+    "signature": "BigInteger denominator()",
+    "documentation": "数值节点的正分母；整数返回 1。\n\n**返回值**：BigInteger。",
+    "comment": "/** 数值节点的正分母；整数返回 1。 */",
+    "parameters": [],
+    "returns": {
+      "type": "BigInteger",
+      "documentation": "数值节点的正分母；整数返回 1。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.denominator();",
+    "examples": [
+      "example/samples/cas.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 102,
+    "page": "std-cas.md",
+    "anchor": "api-14"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::decimal",
+    "owner": "Expr",
+    "signature": "BigDecimal decimal(int64 digits = 50)",
+    "documentation": "用现有 BigDecimal 后端按指定位数舍入精确有理数。\n\n**返回值**：BigDecimal。",
+    "comment": "/** 用现有 BigDecimal 后端按指定位数舍入精确有理数。 */",
+    "parameters": [
+      {
+        "name": "digits",
+        "label": "int64 digits = 50",
+        "documentation": "十进制有效数字精度",
+        "default": "50"
+      }
+    ],
+    "returns": {
+      "type": "BigDecimal",
+      "documentation": "用现有 BigDecimal 后端按指定位数舍入精确有理数。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.decimal(digits);",
+    "examples": [
+      "example/samples/cas.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 104,
+    "page": "std-cas.md",
+    "anchor": "api-15"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::leftAdd",
+    "owner": "Expr",
+    "signature": "Expr leftAdd(Expr other)",
+    "documentation": "四则运算直接组合 AST，常数计算保持精确有理数。\n\n**返回值**：Expr。",
+    "comment": "/** 四则运算直接组合 AST，常数计算保持精确有理数。 */",
+    "parameters": [
+      {
+        "name": "other",
+        "label": "Expr other",
+        "documentation": "另一操作数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": "四则运算直接组合 AST，常数计算保持精确有理数。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.leftAdd(other);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 106,
+    "page": "std-cas.md",
+    "anchor": "api-16"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::leftSub",
+    "owner": "Expr",
+    "signature": "Expr leftSub(Expr other)",
+    "documentation": "\n\n**返回值**：Expr。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "other",
+        "label": "Expr other",
+        "documentation": "另一操作数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": ""
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.leftSub(other);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 107,
+    "page": "std-cas.md",
+    "anchor": "api-17"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::leftMul",
+    "owner": "Expr",
+    "signature": "Expr leftMul(Expr other)",
+    "documentation": "\n\n**返回值**：Expr。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "other",
+        "label": "Expr other",
+        "documentation": "另一操作数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": ""
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.leftMul(other);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 108,
+    "page": "std-cas.md",
+    "anchor": "api-18"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::leftDiv",
+    "owner": "Expr",
+    "signature": "Expr leftDiv(Expr other)",
+    "documentation": "\n\n**返回值**：Expr。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "other",
+        "label": "Expr other",
+        "documentation": "另一操作数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": ""
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.leftDiv(other);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 109,
+    "page": "std-cas.md",
+    "anchor": "api-19"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::leftEqual",
+    "owner": "Expr",
+    "signature": "bool leftEqual(Expr other)",
+    "documentation": "两棵规范 AST 结构相等时为 true，不承诺证明任意数学恒等式。\n\n**返回值**：bool。",
+    "comment": "/** 两棵规范 AST 结构相等时为 true，不承诺证明任意数学恒等式。 */",
+    "parameters": [
+      {
+        "name": "other",
+        "label": "Expr other",
+        "documentation": "另一操作数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "bool",
+      "documentation": "两棵规范 AST 结构相等时为 true，不承诺证明任意数学恒等式。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.leftEqual(other);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 111,
+    "page": "std-cas.md",
+    "anchor": "api-20"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::negate",
+    "owner": "Expr",
+    "signature": "Expr negate(Expr operand)",
+    "documentation": "精确取负。\n\n**返回值**：Expr。",
+    "comment": "/** 精确取负。 */",
+    "parameters": [
+      {
+        "name": "operand",
+        "label": "Expr operand",
+        "documentation": "待取负的表达式",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": "精确取负。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.negate(operand);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 113,
+    "page": "std-cas.md",
+    "anchor": "api-21"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::pow",
+    "owner": "Expr",
+    "signature": "Expr pow(Expr exponent)",
+    "documentation": "组合并化简符号幂。\n\n**返回值**：Expr。",
+    "comment": "/** 组合并化简符号幂。 */",
+    "parameters": [
+      {
+        "name": "exponent",
+        "label": "Expr exponent",
+        "documentation": "指数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": "组合并化简符号幂。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.pow(exponent);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 115,
+    "page": "std-cas.md",
+    "anchor": "api-22"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::pow",
+    "owner": "Expr",
+    "signature": "Expr pow(int64 exponent)",
+    "documentation": "使用整数指数建立幂。\n\n**返回值**：Expr。",
+    "comment": "/** 使用整数指数建立幂。 */",
+    "parameters": [
+      {
+        "name": "exponent",
+        "label": "int64 exponent",
+        "documentation": "指数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": "使用整数指数建立幂。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.pow(exponent);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 117,
+    "page": "std-cas.md",
+    "anchor": "api-23"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::simplify",
+    "owner": "Expr",
+    "signature": "Expr simplify()",
+    "documentation": "递归化简并返回新的 AST。\n\n**返回值**：Expr。",
+    "comment": "/** 递归化简并返回新的 AST。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "递归化简并返回新的 AST。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.simplify();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 119,
+    "page": "std-cas.md",
+    "anchor": "api-24"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::expand",
+    "owner": "Expr",
+    "signature": "Expr expand()",
+    "documentation": "展开乘法和非负整数幂。\n\n**返回值**：Expr。",
+    "comment": "/** 展开乘法和非负整数幂。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "展开乘法和非负整数幂。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.expand();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 121,
+    "page": "std-cas.md",
+    "anchor": "api-25"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::factor",
+    "owner": "Expr",
+    "signature": "Expr factor()",
+    "documentation": "对支持的多项式进行因式分解。\n\n**返回值**：Expr。",
+    "comment": "/** 对支持的多项式进行因式分解。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "对支持的多项式进行因式分解。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.factor();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 123,
+    "page": "std-cas.md",
+    "anchor": "api-26"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::together",
+    "owner": "Expr",
+    "signature": "Expr together()",
+    "documentation": "合并有理式分母。\n\n**返回值**：Expr。",
+    "comment": "/** 合并有理式分母。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "合并有理式分母。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.together();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 125,
+    "page": "std-cas.md",
+    "anchor": "api-27"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::differentiate",
+    "owner": "Expr",
+    "signature": "Expr differentiate(String variable = \"x\", int64 order = 1)",
+    "documentation": "对单个符号求指定阶导数，阶数范围为 0..1000。\n\n**返回值**：Expr。",
+    "comment": "/** 对单个符号求指定阶导数，阶数范围为 0..1000。 */",
+    "parameters": [
+      {
+        "name": "variable",
+        "label": "String variable = \"x\"",
+        "documentation": "单个自变量的名称",
+        "default": "\"x\""
+      },
+      {
+        "name": "order",
+        "label": "int64 order = 1",
+        "documentation": "导数或展开阶数，范围 0..1000",
+        "default": "1"
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": "对单个符号求指定阶导数，阶数范围为 0..1000。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.differentiate(variable, order);",
+    "examples": [
+      "example/samples/cas.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 127,
+    "page": "std-cas.md",
+    "anchor": "api-28"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::integrate",
+    "owner": "Expr",
+    "signature": "Expr integrate(String variable = \"x\")",
+    "documentation": "求不定积分；不支持时保留 integrate 函数节点，不伪造结果。\n\n**返回值**：Expr。",
+    "comment": "/** 求不定积分；不支持时保留 integrate 函数节点，不伪造结果。 */",
+    "parameters": [
+      {
+        "name": "variable",
+        "label": "String variable = \"x\"",
+        "documentation": "单个自变量的名称",
+        "default": "\"x\""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": "求不定积分；不支持时保留 integrate 函数节点，不伪造结果。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.integrate(variable);",
+    "examples": [
+      "example/samples/cas.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 129,
+    "page": "std-cas.md",
+    "anchor": "api-29"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::substitute",
+    "owner": "Expr",
+    "signature": "Expr substitute(String variable, Expr replacement)",
+    "documentation": "精确替换变量并化简。\n\n**返回值**：Expr。",
+    "comment": "/** 精确替换变量并化简。 */",
+    "parameters": [
+      {
+        "name": "variable",
+        "label": "String variable",
+        "documentation": "单个自变量的名称",
+        "default": ""
+      },
+      {
+        "name": "replacement",
+        "label": "Expr replacement",
+        "documentation": "正则替换文本",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": "精确替换变量并化简。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.substitute(variable, replacement);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 131,
+    "page": "std-cas.md",
+    "anchor": "api-30"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::limit",
+    "owner": "Expr",
+    "signature": "Expr limit(String variable, Expr point)",
+    "documentation": "在有限点求支持的符号极限。\n\n**返回值**：Expr。",
+    "comment": "/** 在有限点求支持的符号极限。 */",
+    "parameters": [
+      {
+        "name": "variable",
+        "label": "String variable",
+        "documentation": "单个自变量的名称",
+        "default": ""
+      },
+      {
+        "name": "point",
+        "label": "Expr point",
+        "documentation": "极限或展开中心表达式",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": "在有限点求支持的符号极限。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.limit(variable, point);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 133,
+    "page": "std-cas.md",
+    "anchor": "api-31"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::taylor",
+    "owner": "Expr",
+    "signature": "Expr taylor(String variable, Expr point, int64 order)",
+    "documentation": "在指定点作 Taylor 展开，阶数范围为 0..1000。\n\n**返回值**：Expr。",
+    "comment": "/** 在指定点作 Taylor 展开，阶数范围为 0..1000。 */",
+    "parameters": [
+      {
+        "name": "variable",
+        "label": "String variable",
+        "documentation": "单个自变量的名称",
+        "default": ""
+      },
+      {
+        "name": "point",
+        "label": "Expr point",
+        "documentation": "极限或展开中心表达式",
+        "default": ""
+      },
+      {
+        "name": "order",
+        "label": "int64 order",
+        "documentation": "导数或展开阶数，范围 0..1000",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": "在指定点作 Taylor 展开，阶数范围为 0..1000。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.taylor(variable, point, order);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 135,
+    "page": "std-cas.md",
+    "anchor": "api-32"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::integrateDefinite",
+    "owner": "Expr",
+    "signature": "Expr integrateDefinite(String variable, Expr lower, Expr upper)",
+    "documentation": "求定积分，不能求值时报告错误。\n\n**返回值**：Expr。",
+    "comment": "/** 求定积分，不能求值时报告错误。 */",
+    "parameters": [
+      {
+        "name": "variable",
+        "label": "String variable",
+        "documentation": "单个自变量的名称",
+        "default": ""
+      },
+      {
+        "name": "lower",
+        "label": "Expr lower",
+        "documentation": "定积分下界表达式",
+        "default": ""
+      },
+      {
+        "name": "upper",
+        "label": "Expr upper",
+        "documentation": "定积分上界表达式",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": "求定积分，不能求值时报告错误。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.integrateDefinite(variable, lower, upper);",
+    "examples": [
+      "example/samples/cas.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 137,
+    "page": "std-cas.md",
+    "anchor": "api-33"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::sin",
+    "owner": "Expr",
+    "signature": "Expr sin()",
+    "documentation": "构建并化简 sin 数学函数的符号表达式。\n\n**返回值**：Expr。",
+    "comment": "/** 构建并化简 sin 数学函数的符号表达式。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "构建并化简 sin 数学函数的符号表达式。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.sin();",
+    "examples": [
+      "example/samples/cas.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 139,
+    "page": "std-cas.md",
+    "anchor": "api-34"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::cos",
+    "owner": "Expr",
+    "signature": "Expr cos()",
+    "documentation": "构建并化简 cos 数学函数的符号表达式。\n\n**返回值**：Expr。",
+    "comment": "/** 构建并化简 cos 数学函数的符号表达式。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "构建并化简 cos 数学函数的符号表达式。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.cos();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 141,
+    "page": "std-cas.md",
+    "anchor": "api-35"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::tan",
+    "owner": "Expr",
+    "signature": "Expr tan()",
+    "documentation": "构建并化简 tan 数学函数的符号表达式。\n\n**返回值**：Expr。",
+    "comment": "/** 构建并化简 tan 数学函数的符号表达式。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "构建并化简 tan 数学函数的符号表达式。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.tan();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 143,
+    "page": "std-cas.md",
+    "anchor": "api-36"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::asin",
+    "owner": "Expr",
+    "signature": "Expr asin()",
+    "documentation": "构建并化简 asin 数学函数的符号表达式。\n\n**返回值**：Expr。",
+    "comment": "/** 构建并化简 asin 数学函数的符号表达式。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "构建并化简 asin 数学函数的符号表达式。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.asin();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 145,
+    "page": "std-cas.md",
+    "anchor": "api-37"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::acos",
+    "owner": "Expr",
+    "signature": "Expr acos()",
+    "documentation": "构建并化简 acos 数学函数的符号表达式。\n\n**返回值**：Expr。",
+    "comment": "/** 构建并化简 acos 数学函数的符号表达式。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "构建并化简 acos 数学函数的符号表达式。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.acos();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 147,
+    "page": "std-cas.md",
+    "anchor": "api-38"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::atan",
+    "owner": "Expr",
+    "signature": "Expr atan()",
+    "documentation": "构建并化简 atan 数学函数的符号表达式。\n\n**返回值**：Expr。",
+    "comment": "/** 构建并化简 atan 数学函数的符号表达式。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "构建并化简 atan 数学函数的符号表达式。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.atan();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 149,
+    "page": "std-cas.md",
+    "anchor": "api-39"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::exp",
+    "owner": "Expr",
+    "signature": "Expr exp()",
+    "documentation": "构建并化简 exp 数学函数的符号表达式。\n\n**返回值**：Expr。",
+    "comment": "/** 构建并化简 exp 数学函数的符号表达式。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "构建并化简 exp 数学函数的符号表达式。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.exp();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 151,
+    "page": "std-cas.md",
+    "anchor": "api-40"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::ln",
+    "owner": "Expr",
+    "signature": "Expr ln()",
+    "documentation": "构建并化简 ln 数学函数的符号表达式。\n\n**返回值**：Expr。",
+    "comment": "/** 构建并化简 ln 数学函数的符号表达式。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "构建并化简 ln 数学函数的符号表达式。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.ln();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 153,
+    "page": "std-cas.md",
+    "anchor": "api-41"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::log10",
+    "owner": "Expr",
+    "signature": "Expr log10()",
+    "documentation": "构建并化简 log10 数学函数的符号表达式。\n\n**返回值**：Expr。",
+    "comment": "/** 构建并化简 log10 数学函数的符号表达式。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "构建并化简 log10 数学函数的符号表达式。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.log10();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 155,
+    "page": "std-cas.md",
+    "anchor": "api-42"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::sqrt",
+    "owner": "Expr",
+    "signature": "Expr sqrt()",
+    "documentation": "构建并化简 sqrt 数学函数的符号表达式。\n\n**返回值**：Expr。",
+    "comment": "/** 构建并化简 sqrt 数学函数的符号表达式。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "构建并化简 sqrt 数学函数的符号表达式。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.sqrt();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 157,
+    "page": "std-cas.md",
+    "anchor": "api-43"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::floor",
+    "owner": "Expr",
+    "signature": "Expr floor()",
+    "documentation": "构建并化简 floor 数学函数的符号表达式。\n\n**返回值**：Expr。",
+    "comment": "/** 构建并化简 floor 数学函数的符号表达式。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "构建并化简 floor 数学函数的符号表达式。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.floor();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 159,
+    "page": "std-cas.md",
+    "anchor": "api-44"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::ceil",
+    "owner": "Expr",
+    "signature": "Expr ceil()",
+    "documentation": "构建并化简 ceil 数学函数的符号表达式。\n\n**返回值**：Expr。",
+    "comment": "/** 构建并化简 ceil 数学函数的符号表达式。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "构建并化简 ceil 数学函数的符号表达式。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.ceil();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 161,
+    "page": "std-cas.md",
+    "anchor": "api-45"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::round",
+    "owner": "Expr",
+    "signature": "Expr round()",
+    "documentation": "构建并化简 round 数学函数的符号表达式。\n\n**返回值**：Expr。",
+    "comment": "/** 构建并化简 round 数学函数的符号表达式。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "构建并化简 round 数学函数的符号表达式。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.round();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 163,
+    "page": "std-cas.md",
+    "anchor": "api-46"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::trunc",
+    "owner": "Expr",
+    "signature": "Expr trunc()",
+    "documentation": "构建并化简 trunc 数学函数的符号表达式。\n\n**返回值**：Expr。",
+    "comment": "/** 构建并化简 trunc 数学函数的符号表达式。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Expr",
+      "documentation": "构建并化简 trunc 数学函数的符号表达式。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.trunc();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 165,
+    "page": "std-cas.md",
+    "anchor": "api-47"
+  },
+  {
+    "module": "std::cas",
+    "name": "Expr::fmod",
+    "owner": "Expr",
+    "signature": "Expr fmod(Expr other)",
+    "documentation": "构建截断余数的符号函数节点。\n\n**返回值**：Expr。",
+    "comment": "/** 构建截断余数的符号函数节点。 */",
+    "parameters": [
+      {
+        "name": "other",
+        "label": "Expr other",
+        "documentation": "另一操作数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": "构建截断余数的符号函数节点。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.fmod(other);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 167,
+    "page": "std-cas.md",
+    "anchor": "api-48"
+  },
+  {
+    "module": "std::cas",
+    "name": "parse",
+    "owner": "",
+    "signature": "Expr parse(String text)",
+    "documentation": "解析字符串为精确表达式 AST。\n\n**返回值**：Expr。",
+    "comment": "/** 解析字符串为精确表达式 AST。 */",
+    "parameters": [
+      {
+        "name": "text",
+        "label": "String text",
+        "documentation": "输入文本，位置与长度通常按字节",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Expr",
+      "documentation": "解析字符串为精确表达式 AST。"
+    },
+    "errors": {
+      "documentation": "Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::cas::parse(text);",
+    "examples": [
+      "example/samples/cas.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/cas.mgl",
+    "line": 171,
+    "page": "std-cas.md",
+    "anchor": "api-49"
+  },
+  {
     "module": "std::cli",
     "name": "CliArguments::get",
     "owner": "CliArguments",
@@ -20848,329 +22328,331 @@
   },
   {
     "module": "std::math",
-    "name": "sin",
+    "name": "pi",
     "owner": "",
-    "signature": "float64 sin(float64 value)",
-    "documentation": "计算正弦。\n\n**返回值**：float64。",
-    "comment": "/* 编译器提供只读 float64 常数 std::lang::Math::PI 与 std::lang::Math::E。 */",
+    "signature": "BigDecimal pi(int64 digits = 50)",
+    "documentation": "按指定有效十进制位数计算圆周率。\n\n**返回值**：BigDecimal。",
+    "comment": "/** 按指定有效十进制位数计算圆周率。 */",
     "parameters": [
       {
-        "name": "value",
-        "label": "float64 value",
-        "documentation": "输入值或写入的新值",
-        "default": ""
+        "name": "digits",
+        "label": "int64 digits = 50",
+        "documentation": "十进制有效数字精度",
+        "default": "50"
       }
     ],
     "returns": {
-      "type": "float64",
-      "documentation": "计算正弦。"
+      "type": "BigDecimal",
+      "documentation": "按指定有效十进制位数计算圆周率。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::math::sin(value);",
-    "examples": [],
+    "usage": "std::math::pi(digits);",
+    "examples": [
+      "example/samples/math_generic.mgl"
+    ],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 18,
+    "line": 7,
     "page": "std-math.md",
     "anchor": "api-0"
   },
   {
     "module": "std::math",
-    "name": "cos",
+    "name": "sin",
     "owner": "",
-    "signature": "float64 cos(float64 value)",
-    "documentation": "计算余弦。\n\n**返回值**：float64。",
-    "comment": "",
+    "signature": "auto sin<T>(T value)",
+    "documentation": "计算正弦。\n\n**返回值**：auto。",
+    "comment": "/** 对普通数值、大十进制或符号表达式计算 sin。 */",
     "parameters": [
       {
         "name": "value",
-        "label": "float64 value",
+        "label": "T value",
         "documentation": "输入值或写入的新值",
         "default": ""
       }
     ],
     "returns": {
-      "type": "float64",
-      "documentation": "计算余弦。"
+      "type": "auto",
+      "documentation": "计算正弦。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::math::cos(value);",
-    "examples": [],
+    "usage": "std::math::sin<T>(value);",
+    "examples": [
+      "example/samples/math_generic.mgl"
+    ],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 19,
+    "line": 10,
     "page": "std-math.md",
     "anchor": "api-1"
   },
   {
     "module": "std::math",
-    "name": "tan",
+    "name": "cos",
     "owner": "",
-    "signature": "float64 tan(float64 value)",
-    "documentation": "计算正切。\n\n**返回值**：float64。",
-    "comment": "",
+    "signature": "auto cos<T>(T value)",
+    "documentation": "计算余弦。\n\n**返回值**：auto。",
+    "comment": "/** 对普通数值、大十进制或符号表达式计算 cos。 */",
     "parameters": [
       {
         "name": "value",
-        "label": "float64 value",
+        "label": "T value",
         "documentation": "输入值或写入的新值",
         "default": ""
       }
     ],
     "returns": {
-      "type": "float64",
-      "documentation": "计算正切。"
+      "type": "auto",
+      "documentation": "计算余弦。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::math::tan(value);",
-    "examples": [],
+    "usage": "std::math::cos<T>(value);",
+    "examples": [
+      "example/samples/math_generic.mgl"
+    ],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 20,
+    "line": 26,
     "page": "std-math.md",
     "anchor": "api-2"
   },
   {
     "module": "std::math",
-    "name": "asin",
+    "name": "tan",
     "owner": "",
-    "signature": "float64 asin(float64 value)",
-    "documentation": "计算反正弦，结果为弧度。\n\n**返回值**：float64。",
-    "comment": "",
+    "signature": "auto tan<T>(T value)",
+    "documentation": "计算正切。\n\n**返回值**：auto。",
+    "comment": "/** 对普通数值、大十进制或符号表达式计算 tan。 */",
     "parameters": [
       {
         "name": "value",
-        "label": "float64 value",
+        "label": "T value",
         "documentation": "输入值或写入的新值",
         "default": ""
       }
     ],
     "returns": {
-      "type": "float64",
-      "documentation": "计算反正弦，结果为弧度。"
+      "type": "auto",
+      "documentation": "计算正切。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::math::asin(value);",
+    "usage": "std::math::tan<T>(value);",
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 21,
+    "line": 42,
     "page": "std-math.md",
     "anchor": "api-3"
   },
   {
     "module": "std::math",
-    "name": "acos",
+    "name": "asin",
     "owner": "",
-    "signature": "float64 acos(float64 value)",
-    "documentation": "计算反余弦，结果为弧度。\n\n**返回值**：float64。",
-    "comment": "",
+    "signature": "auto asin<T>(T value)",
+    "documentation": "计算反正弦，结果为弧度。\n\n**返回值**：auto。",
+    "comment": "/** 对普通数值、大十进制或符号表达式计算 asin。 */",
     "parameters": [
       {
         "name": "value",
-        "label": "float64 value",
+        "label": "T value",
         "documentation": "输入值或写入的新值",
         "default": ""
       }
     ],
     "returns": {
-      "type": "float64",
-      "documentation": "计算反余弦，结果为弧度。"
+      "type": "auto",
+      "documentation": "计算反正弦，结果为弧度。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::math::acos(value);",
+    "usage": "std::math::asin<T>(value);",
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 22,
+    "line": 58,
     "page": "std-math.md",
     "anchor": "api-4"
   },
   {
     "module": "std::math",
-    "name": "atan",
+    "name": "acos",
     "owner": "",
-    "signature": "float64 atan(float64 value)",
-    "documentation": "计算反正切，结果为弧度。\n\n**返回值**：float64。",
-    "comment": "",
+    "signature": "auto acos<T>(T value)",
+    "documentation": "计算反余弦，结果为弧度。\n\n**返回值**：auto。",
+    "comment": "/** 对普通数值、大十进制或符号表达式计算 acos。 */",
     "parameters": [
       {
         "name": "value",
-        "label": "float64 value",
+        "label": "T value",
         "documentation": "输入值或写入的新值",
         "default": ""
       }
     ],
     "returns": {
-      "type": "float64",
-      "documentation": "计算反正切，结果为弧度。"
+      "type": "auto",
+      "documentation": "计算反余弦，结果为弧度。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::math::atan(value);",
+    "usage": "std::math::acos<T>(value);",
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 23,
+    "line": 74,
     "page": "std-math.md",
     "anchor": "api-5"
   },
   {
     "module": "std::math",
-    "name": "exp",
+    "name": "atan",
     "owner": "",
-    "signature": "float64 exp(float64 value)",
-    "documentation": "计算 e 的 value 次幂。\n\n**返回值**：float64。",
-    "comment": "",
+    "signature": "auto atan<T>(T value)",
+    "documentation": "计算反正切，结果为弧度。\n\n**返回值**：auto。",
+    "comment": "/** 对普通数值、大十进制或符号表达式计算 atan。 */",
     "parameters": [
       {
         "name": "value",
-        "label": "float64 value",
+        "label": "T value",
         "documentation": "输入值或写入的新值",
         "default": ""
       }
     ],
     "returns": {
-      "type": "float64",
-      "documentation": "计算 e 的 value 次幂。"
+      "type": "auto",
+      "documentation": "计算反正切，结果为弧度。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::math::exp(value);",
+    "usage": "std::math::atan<T>(value);",
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 24,
+    "line": 90,
     "page": "std-math.md",
     "anchor": "api-6"
   },
   {
     "module": "std::math",
-    "name": "ln",
+    "name": "exp",
     "owner": "",
-    "signature": "float64 ln(float64 value)",
-    "documentation": "计算自然对数。\n\n**返回值**：float64。",
-    "comment": "",
+    "signature": "auto exp<T>(T value)",
+    "documentation": "计算 e 的 value 次幂。\n\n**返回值**：auto。",
+    "comment": "/** 对普通数值、大十进制或符号表达式计算 exp。 */",
     "parameters": [
       {
         "name": "value",
-        "label": "float64 value",
+        "label": "T value",
         "documentation": "输入值或写入的新值",
         "default": ""
       }
     ],
     "returns": {
-      "type": "float64",
-      "documentation": "计算自然对数。"
+      "type": "auto",
+      "documentation": "计算 e 的 value 次幂。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::math::ln(value);",
+    "usage": "std::math::exp<T>(value);",
     "examples": [
-      "example/samples/std_math_clock_random.mgl"
+      "example/samples/math_generic.mgl"
     ],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 25,
+    "line": 106,
     "page": "std-math.md",
     "anchor": "api-7"
   },
   {
     "module": "std::math",
-    "name": "log10",
+    "name": "ln",
     "owner": "",
-    "signature": "float64 log10(float64 value)",
-    "documentation": "计算以 10 为底的对数。\n\n**返回值**：float64。",
-    "comment": "",
+    "signature": "auto ln<T>(T value)",
+    "documentation": "计算自然对数。\n\n**返回值**：auto。",
+    "comment": "/** 对普通数值、大十进制或符号表达式计算 ln。 */",
     "parameters": [
       {
         "name": "value",
-        "label": "float64 value",
+        "label": "T value",
         "documentation": "输入值或写入的新值",
         "default": ""
       }
     ],
     "returns": {
-      "type": "float64",
-      "documentation": "计算以 10 为底的对数。"
+      "type": "auto",
+      "documentation": "计算自然对数。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::math::log10(value);",
-    "examples": [],
+    "usage": "std::math::ln<T>(value);",
+    "examples": [
+      "example/samples/math_generic.mgl"
+    ],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 26,
+    "line": 122,
     "page": "std-math.md",
     "anchor": "api-8"
   },
   {
     "module": "std::math",
-    "name": "pow",
+    "name": "log10",
     "owner": "",
-    "signature": "float64 pow(float64 value, float64 exponent)",
-    "documentation": "计算 value 的 exponent 次幂。\n\n**返回值**：float64。",
-    "comment": "",
+    "signature": "auto log10<T>(T value)",
+    "documentation": "计算以 10 为底的对数。\n\n**返回值**：auto。",
+    "comment": "/** 对普通数值、大十进制或符号表达式计算 log10。 */",
     "parameters": [
       {
         "name": "value",
-        "label": "float64 value",
+        "label": "T value",
         "documentation": "输入值或写入的新值",
-        "default": ""
-      },
-      {
-        "name": "exponent",
-        "label": "float64 exponent",
-        "documentation": "指数",
         "default": ""
       }
     ],
     "returns": {
-      "type": "float64",
-      "documentation": "计算 value 的 exponent 次幂。"
+      "type": "auto",
+      "documentation": "计算以 10 为底的对数。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::math::pow(value, exponent);",
+    "usage": "std::math::log10<T>(value);",
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 27,
+    "line": 138,
     "page": "std-math.md",
     "anchor": "api-9"
   },
@@ -21178,33 +22660,33 @@
     "module": "std::math",
     "name": "sqrt",
     "owner": "",
-    "signature": "float64 sqrt(float64 value)",
-    "documentation": "计算平方根。\n\n**返回值**：float64。",
-    "comment": "",
+    "signature": "auto sqrt<T>(T value)",
+    "documentation": "计算平方根。\n\n**返回值**：auto。",
+    "comment": "/** 对普通数值、大十进制或符号表达式计算 sqrt。 */",
     "parameters": [
       {
         "name": "value",
-        "label": "float64 value",
+        "label": "T value",
         "documentation": "输入值或写入的新值",
         "default": ""
       }
     ],
     "returns": {
-      "type": "float64",
+      "type": "auto",
       "documentation": "计算平方根。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::math::sqrt(value);",
+    "usage": "std::math::sqrt<T>(value);",
     "examples": [
-      "example/samples/std_math_clock_random.mgl"
+      "example/samples/math_generic.mgl"
     ],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 28,
+    "line": 154,
     "page": "std-math.md",
     "anchor": "api-10"
   },
@@ -21212,33 +22694,33 @@
     "module": "std::math",
     "name": "floor",
     "owner": "",
-    "signature": "float64 floor(float64 value)",
-    "documentation": "向负无穷取整。\n\n**返回值**：float64。",
-    "comment": "",
+    "signature": "auto floor<T>(T value)",
+    "documentation": "向负无穷取整。\n\n**返回值**：auto。",
+    "comment": "/** 对普通数值、大十进制或符号表达式计算 floor。 */",
     "parameters": [
       {
         "name": "value",
-        "label": "float64 value",
+        "label": "T value",
         "documentation": "输入值或写入的新值",
         "default": ""
       }
     ],
     "returns": {
-      "type": "float64",
+      "type": "auto",
       "documentation": "向负无穷取整。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::math::floor(value);",
+    "usage": "std::math::floor<T>(value);",
     "examples": [
-      "example/samples/std_math_clock_random.mgl"
+      "example/samples/math_generic.mgl"
     ],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 29,
+    "line": 170,
     "page": "std-math.md",
     "anchor": "api-11"
   },
@@ -21246,33 +22728,33 @@
     "module": "std::math",
     "name": "ceil",
     "owner": "",
-    "signature": "float64 ceil(float64 value)",
-    "documentation": "向正无穷取整。\n\n**返回值**：float64。",
-    "comment": "",
+    "signature": "auto ceil<T>(T value)",
+    "documentation": "向正无穷取整。\n\n**返回值**：auto。",
+    "comment": "/** 对普通数值、大十进制或符号表达式计算 ceil。 */",
     "parameters": [
       {
         "name": "value",
-        "label": "float64 value",
+        "label": "T value",
         "documentation": "输入值或写入的新值",
         "default": ""
       }
     ],
     "returns": {
-      "type": "float64",
+      "type": "auto",
       "documentation": "向正无穷取整。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::math::ceil(value);",
+    "usage": "std::math::ceil<T>(value);",
     "examples": [
-      "example/samples/std_math_clock_random.mgl"
+      "example/samples/math_generic.mgl"
     ],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 30,
+    "line": 186,
     "page": "std-math.md",
     "anchor": "api-12"
   },
@@ -21280,33 +22762,33 @@
     "module": "std::math",
     "name": "round",
     "owner": "",
-    "signature": "float64 round(float64 value)",
-    "documentation": "舍入到最近整数，中点远离零。\n\n**返回值**：float64。",
-    "comment": "",
+    "signature": "auto round<T>(T value)",
+    "documentation": "舍入到最近整数，中点远离零。\n\n**返回值**：auto。",
+    "comment": "/** 对普通数值、大十进制或符号表达式计算 round。 */",
     "parameters": [
       {
         "name": "value",
-        "label": "float64 value",
+        "label": "T value",
         "documentation": "输入值或写入的新值",
         "default": ""
       }
     ],
     "returns": {
-      "type": "float64",
+      "type": "auto",
       "documentation": "舍入到最近整数，中点远离零。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::math::round(value);",
+    "usage": "std::math::round<T>(value);",
     "examples": [
-      "example/samples/std_math_clock_random.mgl"
+      "example/samples/math_generic.mgl"
     ],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 31,
+    "line": 202,
     "page": "std-math.md",
     "anchor": "api-13"
   },
@@ -21314,87 +22796,125 @@
     "module": "std::math",
     "name": "trunc",
     "owner": "",
-    "signature": "float64 trunc(float64 value)",
-    "documentation": "向零截断小数部分。\n\n**返回值**：float64。",
-    "comment": "",
+    "signature": "auto trunc<T>(T value)",
+    "documentation": "向零截断小数部分。\n\n**返回值**：auto。",
+    "comment": "/** 对普通数值、大十进制或符号表达式计算 trunc。 */",
     "parameters": [
       {
         "name": "value",
-        "label": "float64 value",
+        "label": "T value",
         "documentation": "输入值或写入的新值",
         "default": ""
       }
     ],
     "returns": {
-      "type": "float64",
+      "type": "auto",
       "documentation": "向零截断小数部分。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::math::trunc(value);",
-    "examples": [
-      "example/samples/std_math_clock_random.mgl"
-    ],
+    "usage": "std::math::trunc<T>(value);",
+    "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 32,
+    "line": 218,
     "page": "std-math.md",
     "anchor": "api-14"
   },
   {
     "module": "std::math",
-    "name": "fmod",
+    "name": "pow",
     "owner": "",
-    "signature": "float64 fmod(float64 value, float64 divisor)",
-    "documentation": "计算浮点余数，结果符号与被除数一致。\n\n**返回值**：float64。",
-    "comment": "",
+    "signature": "auto pow<T, U>(T value, U other)",
+    "documentation": "计算 value 的 exponent 次幂。\n\n**返回值**：auto。",
+    "comment": "/** 根据实参类型计算 pow，大十进制保持有效位精度。 */",
     "parameters": [
       {
         "name": "value",
-        "label": "float64 value",
+        "label": "T value",
         "documentation": "输入值或写入的新值",
         "default": ""
       },
       {
-        "name": "divisor",
-        "label": "float64 divisor",
-        "documentation": "除数",
+        "name": "other",
+        "label": "U other",
+        "documentation": "另一操作数",
         "default": ""
       }
     ],
     "returns": {
-      "type": "float64",
-      "documentation": "计算浮点余数，结果符号与被除数一致。"
+      "type": "auto",
+      "documentation": "计算 value 的 exponent 次幂。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::math::fmod(value, divisor);",
+    "usage": "std::math::pow<T, U>(value, other);",
     "examples": [
-      "example/samples/std_math_clock_random.mgl"
+      "example/samples/math_generic.mgl"
     ],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 33,
+    "line": 234,
     "page": "std-math.md",
     "anchor": "api-15"
   },
   {
     "module": "std::math",
-    "name": "isNaN",
+    "name": "fmod",
     "owner": "",
-    "signature": "bool isNaN(float64 value)",
-    "documentation": "判断是否为 NaN。\n\n**返回值**：bool。",
-    "comment": "",
+    "signature": "auto fmod<T, U>(T value, U other)",
+    "documentation": "计算浮点余数，结果符号与被除数一致。\n\n**返回值**：auto。",
+    "comment": "/** 根据实参类型计算 fmod，大十进制保持有效位精度。 */",
     "parameters": [
       {
         "name": "value",
-        "label": "float64 value",
+        "label": "T value",
+        "documentation": "输入值或写入的新值",
+        "default": ""
+      },
+      {
+        "name": "other",
+        "label": "U other",
+        "documentation": "另一操作数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "auto",
+      "documentation": "计算浮点余数，结果符号与被除数一致。"
+    },
+    "errors": {
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::math::fmod<T, U>(value, other);",
+    "examples": [
+      "example/samples/math_generic.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/math.mgl",
+    "line": 383,
+    "page": "std-math.md",
+    "anchor": "api-16"
+  },
+  {
+    "module": "std::math",
+    "name": "isNaN",
+    "owner": "",
+    "signature": "bool isNaN<T>(T value)",
+    "documentation": "判断是否为 NaN。\n\n**返回值**：bool。",
+    "comment": "/** 判断数值是否为 isNaN 对应的特殊浮点值。 */",
+    "parameters": [
+      {
+        "name": "value",
+        "label": "T value",
         "documentation": "输入值或写入的新值",
         "default": ""
       }
@@ -21404,31 +22924,29 @@
       "documentation": "判断是否为 NaN。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::math::isNaN(value);",
-    "examples": [
-      "example/samples/std_math_clock_random.mgl"
-    ],
+    "usage": "std::math::isNaN<T>(value);",
+    "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 34,
+    "line": 531,
     "page": "std-math.md",
-    "anchor": "api-16"
+    "anchor": "api-17"
   },
   {
     "module": "std::math",
     "name": "isInf",
     "owner": "",
-    "signature": "bool isInf(float64 value)",
+    "signature": "bool isInf<T>(T value)",
     "documentation": "判断是否为正无穷或负无穷。\n\n**返回值**：bool。",
-    "comment": "",
+    "comment": "/** 判断数值是否为 isInf 对应的特殊浮点值。 */",
     "parameters": [
       {
         "name": "value",
-        "label": "float64 value",
+        "label": "T value",
         "documentation": "输入值或写入的新值",
         "default": ""
       }
@@ -21438,19 +22956,17 @@
       "documentation": "判断是否为正无穷或负无穷。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::math::isInf(value);",
-    "examples": [
-      "example/samples/std_math_clock_random.mgl"
-    ],
+    "usage": "std::math::isInf<T>(value);",
+    "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 35,
+    "line": 546,
     "page": "std-math.md",
-    "anchor": "api-17"
+    "anchor": "api-18"
   },
   {
     "module": "std::math",
@@ -21472,19 +22988,17 @@
       "documentation": "返回绝对值；泛型入口，整数最小值取负按位宽回绕，NaN 与负数零原样返回。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
     "usage": "std::math::abs<T>(value);",
-    "examples": [
-      "example/samples/std_math_clock_random.mgl"
-    ],
+    "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 38,
+    "line": 560,
     "page": "std-math.md",
-    "anchor": "api-18"
+    "anchor": "api-19"
   },
   {
     "module": "std::math",
@@ -21506,19 +23020,17 @@
       "documentation": "返回实参中的较小值；泛型入口，接受任意数量实参，相等时取后者。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
     "usage": "std::math::min<T>(values);",
-    "examples": [
-      "example/samples/std_math_clock_random.mgl"
-    ],
+    "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 45,
+    "line": 567,
     "page": "std-math.md",
-    "anchor": "api-19"
+    "anchor": "api-20"
   },
   {
     "module": "std::math",
@@ -21540,19 +23052,17 @@
       "documentation": "返回实参中的较大值；泛型入口，接受任意数量实参，相等时取后者。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": false
     },
     "usage": "std::math::max<T>(values);",
-    "examples": [
-      "example/samples/std_math_clock_random.mgl"
-    ],
+    "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 57,
+    "line": 579,
     "page": "std-math.md",
-    "anchor": "api-20"
+    "anchor": "api-21"
   },
   {
     "module": "std::math",
@@ -21586,19 +23096,17 @@
       "documentation": "将 value 限制在闭区间 [low,high]；low>high 时报运行错误。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": true
     },
     "usage": "std::math::clamp(value, low, high);",
-    "examples": [
-      "example/samples/std_math_clock_random.mgl"
-    ],
+    "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 69,
+    "line": 591,
     "page": "std-math.md",
-    "anchor": "api-21"
+    "anchor": "api-22"
   },
   {
     "module": "std::math",
@@ -21632,19 +23140,17 @@
       "documentation": "将 value 限制在闭区间 [low,high]；low>high 时报运行错误。"
     },
     "errors": {
-      "documentation": "三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。",
+      "documentation": "三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。",
       "preconditions": [],
       "panic": true
     },
     "usage": "std::math::clamp(value, low, high);",
-    "examples": [
-      "example/samples/std_math_clock_random.mgl"
-    ],
+    "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/math.mgl",
-    "line": 81,
+    "line": 603,
     "page": "std-math.md",
-    "anchor": "api-22"
+    "anchor": "api-23"
   },
   {
     "module": "std::memory",

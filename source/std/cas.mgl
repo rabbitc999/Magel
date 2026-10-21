@@ -1,0 +1,171 @@
+module std::cas;
+
+/** 不可变表达式的宿主记录；复制保留独立引用，变换产生新 AST。 */
+opcode __CasValue {
+    new = __std_cas_new;
+    copy = __std_cas_copy;
+    drop = __std_cas_drop;
+};
+
+__CasValue __std_cas_new();
+__CasValue __std_cas_parse(String text);
+String __std_cas_text(__CasValue value, bool latex);
+int64 __std_cas_kind(__CasValue value);
+String __std_cas_name(__CasValue value);
+int64 __std_cas_size(__CasValue value);
+__CasValue __std_cas_child(__CasValue value, int64 index);
+String __std_cas_number_part(__CasValue value, bool denominator);
+__CasValue __std_cas_binary(__CasValue left, __CasValue right, int64 operation);
+bool __std_cas_equal(__CasValue left, __CasValue right);
+__CasValue __std_cas_unary(__CasValue value, int64 operation, String variable, int64 order);
+__CasValue __std_cas_transform(__CasValue value, __CasValue point, __CasValue upper, String variable, int64 operation, int64 order);
+__CasValue __std_cas_math(__CasValue value, String name, __CasValue other);
+String __std_cas_decimal(__CasValue value, int64 digits);
+
+/** 规范化 AST 的节点种类；减法和除法规范化为加法、乘法与幂。 */
+#derive(Equal, Hash, Clone)
+enum NodeKind {
+    Integer,
+    Rational,
+    Symbol,
+    Add,
+    Multiply,
+    Power,
+    Function,
+    Constant
+};
+
+/** 精确符号表达式，同时也是可遍历的 AST 根节点。 */
+struct Expr : Add<Expr, Expr>, Subtract<Expr, Expr>, Multiply<Expr, Expr>, Divide<Expr, Expr>, Negate<Expr, Expr>, Equal<bool, Expr> {
+    __CasValue __value;
+
+    /** 从字符串解析表达式；整数与十进制常量均保留精确值。 */
+    static Expr parse(String text) {
+        Expr result;
+        result.__value = __std_cas_parse(text);
+        return result;
+    }
+    /** 将现有大整数无损转换为表达式。 */
+    static Expr fromInteger(BigInteger number) { return Expr::parse(number.str()); }
+    /** 将当前大浮点的精确十进制值转换为有理数表达式。 */
+    static Expr fromDecimal(BigDecimal number) { return Expr::parse(number.str()); }
+    /** 建立单个自变量；传入复合表达式时报告错误。 */
+    static Expr symbol(String name) {
+        Expr result = Expr::parse(name);
+        assert(result.kind() == NodeKind::Symbol, "CAS 符号名称必须是单个自变量");
+        return result;
+    }
+    /** 取得独立持有的 AST 根；其寿命不依赖原表达式。 */
+    Expr ast() { return self; }
+    /** 规范中缀文本，可再次解析。 */
+    String str() { return __std_cas_text(self.__value, false); }
+    /** 统一值文本协议使用规范中缀表示。 */
+    String toString() { return self.str(); }
+    /** LaTeX 数学文本。 */
+    String latex() { return __std_cas_text(self.__value, true); }
+    /** 根节点的语义种类。 */
+    NodeKind kind() {
+        int64 code = __std_cas_kind(self.__value);
+        if (code == 0) { return NodeKind::Integer; }
+        if (code == 1) { return NodeKind::Rational; }
+        if (code == 2) { return NodeKind::Symbol; }
+        if (code == 3) { return NodeKind::Add; }
+        if (code == 4) { return NodeKind::Multiply; }
+        if (code == 5) { return NodeKind::Power; }
+        if (code == 6) { return NodeKind::Function; }
+        return NodeKind::Constant;
+    }
+    /** 符号、函数或命名常数的名称；其他节点返回空串。 */
+    String name() { return __std_cas_name(self.__value); }
+    /** 直接子节点数量。 */
+    int64 childCount() { return __std_cas_size(self.__value); }
+    /** 取得独立持有的子树，检查下标范围。 */
+    Expr child(int64 index) {
+        Expr result;
+        result.__value = __std_cas_child(self.__value, index);
+        return result;
+    }
+    /** 以独立列表取得全部直接子树。 */
+    List<Expr> children() {
+        List<Expr> result;
+        int64 count = self.childCount();
+        int64 index = 0;
+        while (index < count) {
+            result.push(self.child(index));
+            index = index + 1;
+        }
+        return result;
+    }
+    /** 数值节点的精确分子；非数值节点报告错误。 */
+    BigInteger numerator() { String text = __std_cas_number_part(self.__value, false); return BigInteger(text); }
+    /** 数值节点的正分母；整数返回 1。 */
+    BigInteger denominator() { String text = __std_cas_number_part(self.__value, true); return BigInteger(text); }
+    /** 用现有 BigDecimal 后端按指定位数舍入精确有理数。 */
+    BigDecimal decimal(int64 digits = 50) { String text = __std_cas_decimal(self.__value, digits); BigDecimal result = BigDecimal(text); result.setPrecision(digits); return result; }
+    /** 四则运算直接组合 AST，常数计算保持精确有理数。 */
+    Expr leftAdd(Expr other) { Expr result; result.__value = __std_cas_binary(self.__value, other.__value, 0); return result; }
+    Expr leftSub(Expr other) { Expr result; result.__value = __std_cas_binary(self.__value, other.__value, 1); return result; }
+    Expr leftMul(Expr other) { Expr result; result.__value = __std_cas_binary(self.__value, other.__value, 2); return result; }
+    Expr leftDiv(Expr other) { Expr result; result.__value = __std_cas_binary(self.__value, other.__value, 3); return result; }
+    /** 两棵规范 AST 结构相等时为 true，不承诺证明任意数学恒等式。 */
+    bool leftEqual(Expr other) { return __std_cas_equal(self.__value, other.__value); }
+    /** 精确取负。 */
+    Expr negate(Expr operand) { Expr result; result.__value = __std_cas_unary(operand.__value, 0, "", 0); return result; }
+    /** 组合并化简符号幂。 */
+    Expr pow(Expr exponent) { Expr result; result.__value = __std_cas_binary(self.__value, exponent.__value, 4); return result; }
+    /** 使用整数指数建立幂。 */
+    Expr pow(int64 exponent) { return self.pow(Expr::fromInteger(BigInteger(exponent))); }
+    /** 递归化简并返回新的 AST。 */
+    Expr simplify() { Expr result; result.__value = __std_cas_unary(self.__value, 1, "", 0); return result; }
+    /** 展开乘法和非负整数幂。 */
+    Expr expand() { Expr result; result.__value = __std_cas_unary(self.__value, 2, "", 0); return result; }
+    /** 对支持的多项式进行因式分解。 */
+    Expr factor() { Expr result; result.__value = __std_cas_unary(self.__value, 3, "", 0); return result; }
+    /** 合并有理式分母。 */
+    Expr together() { Expr result; result.__value = __std_cas_unary(self.__value, 4, "", 0); return result; }
+    /** 对单个符号求指定阶导数，阶数范围为 0..1000。 */
+    Expr differentiate(String variable = "x", int64 order = 1) { Expr result; result.__value = __std_cas_unary(self.__value, 5, variable, order); return result; }
+    /** 求不定积分；不支持时保留 integrate 函数节点，不伪造结果。 */
+    Expr integrate(String variable = "x") { Expr result; result.__value = __std_cas_unary(self.__value, 6, variable, 0); return result; }
+    /** 精确替换变量并化简。 */
+    Expr substitute(String variable, Expr replacement) { Expr result; result.__value = __std_cas_transform(self.__value, replacement.__value, replacement.__value, variable, 0, 0); return result; }
+    /** 在有限点求支持的符号极限。 */
+    Expr limit(String variable, Expr point) { Expr result; result.__value = __std_cas_transform(self.__value, point.__value, point.__value, variable, 1, 0); return result; }
+    /** 在指定点作 Taylor 展开，阶数范围为 0..1000。 */
+    Expr taylor(String variable, Expr point, int64 order) { Expr result; result.__value = __std_cas_transform(self.__value, point.__value, point.__value, variable, 2, order); return result; }
+    /** 求定积分，不能求值时报告错误。 */
+    Expr integrateDefinite(String variable, Expr lower, Expr upper) { Expr result; result.__value = __std_cas_transform(self.__value, lower.__value, upper.__value, variable, 3, 0); return result; }
+    /** 构建并化简 sin 数学函数的符号表达式。 */
+    Expr sin() { Expr result; result.__value = __std_cas_math(self.__value, "sin", self.__value); return result; }
+    /** 构建并化简 cos 数学函数的符号表达式。 */
+    Expr cos() { Expr result; result.__value = __std_cas_math(self.__value, "cos", self.__value); return result; }
+    /** 构建并化简 tan 数学函数的符号表达式。 */
+    Expr tan() { Expr result; result.__value = __std_cas_math(self.__value, "tan", self.__value); return result; }
+    /** 构建并化简 asin 数学函数的符号表达式。 */
+    Expr asin() { Expr result; result.__value = __std_cas_math(self.__value, "asin", self.__value); return result; }
+    /** 构建并化简 acos 数学函数的符号表达式。 */
+    Expr acos() { Expr result; result.__value = __std_cas_math(self.__value, "acos", self.__value); return result; }
+    /** 构建并化简 atan 数学函数的符号表达式。 */
+    Expr atan() { Expr result; result.__value = __std_cas_math(self.__value, "atan", self.__value); return result; }
+    /** 构建并化简 exp 数学函数的符号表达式。 */
+    Expr exp() { Expr result; result.__value = __std_cas_math(self.__value, "exp", self.__value); return result; }
+    /** 构建并化简 ln 数学函数的符号表达式。 */
+    Expr ln() { Expr result; result.__value = __std_cas_math(self.__value, "ln", self.__value); return result; }
+    /** 构建并化简 log10 数学函数的符号表达式。 */
+    Expr log10() { Expr result; result.__value = __std_cas_math(self.__value, "log10", self.__value); return result; }
+    /** 构建并化简 sqrt 数学函数的符号表达式。 */
+    Expr sqrt() { Expr result; result.__value = __std_cas_math(self.__value, "sqrt", self.__value); return result; }
+    /** 构建并化简 floor 数学函数的符号表达式。 */
+    Expr floor() { Expr result; result.__value = __std_cas_math(self.__value, "floor", self.__value); return result; }
+    /** 构建并化简 ceil 数学函数的符号表达式。 */
+    Expr ceil() { Expr result; result.__value = __std_cas_math(self.__value, "ceil", self.__value); return result; }
+    /** 构建并化简 round 数学函数的符号表达式。 */
+    Expr round() { Expr result; result.__value = __std_cas_math(self.__value, "round", self.__value); return result; }
+    /** 构建并化简 trunc 数学函数的符号表达式。 */
+    Expr trunc() { Expr result; result.__value = __std_cas_math(self.__value, "trunc", self.__value); return result; }
+    /** 构建截断余数的符号函数节点。 */
+    Expr fmod(Expr other) { Expr result; result.__value = __std_cas_math(self.__value, "fmod", other.__value); return result; }
+};
+
+/** 解析字符串为精确表达式 AST。 */
+Expr parse(String text) { return Expr::parse(text); }

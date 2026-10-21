@@ -144,3 +144,5 @@ Magel 让业务逻辑成为一份可以独立交付的资产：写一次，从�
 - 带值退出的默认移动：[语义与清理顺序](04-language-reference.md#带值退出的移动与清理)、[资源身份和析构回归样例](../example/samples/break_move.mgl)。
 
 - [线程、通道与显式事件](29-thread-concurrency.md)
+
+- [精确符号计算与高精度数学](34-symbolic-computation.md)

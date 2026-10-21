@@ -1,5 +1,6 @@
 """库参考页对应的完整参考程序；复用正式样例，防止文档代码与测试代码分叉。"""
 EXAMPLES = {
+    'std::cas':'example/samples/cas.mgl',
     'std::encoding':'example/samples/std_encoding.mgl',
     'std::utf8':'example/samples/std_utf8.mgl',
     'std::csv':'example/samples/std_csv.mgl',
@@ -19,7 +20,7 @@ EXAMPLES = {
     'std::iter':'example/samples/iter_pipeline.mgl',
     'std::json':'example/samples/std_structured_data.mgl',
     'std::linalg':'example/samples/std_linalg_solve_glue.mgl',
-    'std::math':'example/samples/std_math_clock_random.mgl',
+    'std::math':'example/samples/math_generic.mgl',
     'std::memory':'example/samples/std_parse_random_path_memory.mgl',
     'std::message':'example/samples/typed_messages_shared.mgl',
     'std::net':'example/samples/std_net.mgl',

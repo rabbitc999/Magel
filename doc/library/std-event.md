@@ -59,13 +59,13 @@ events ok
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-59"></a>`struct Event` | 显式接收的定时或宿主事件值。 |
-| Event | <a id="symbol-60"></a>`int64 timer` | 定时事件的宿主资源。 |
-| Event | <a id="symbol-61"></a>`int64 tag` | 宿主投递的事件标签。 |
-| Event | <a id="symbol-62"></a>`int64 source` | 被适配的源游标或连续存储。 |
-| Event | <a id="symbol-63"></a>`int64 missed` | 周期通知合并时错过的周期数量。 |
-| 模块 | <a id="symbol-64"></a>`struct Timer : Drop` | 宿主定时事件的资源包装；通过方法创建、停止与释放。 |
-| Timer | <a id="symbol-65"></a>`int64 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
+| 模块 | <a id="symbol-61"></a>`struct Event` | 显式接收的定时或宿主事件值。 |
+| Event | <a id="symbol-62"></a>`int64 timer` | 定时事件的宿主资源。 |
+| Event | <a id="symbol-63"></a>`int64 tag` | 宿主投递的事件标签。 |
+| Event | <a id="symbol-64"></a>`int64 source` | 被适配的源游标或连续存储。 |
+| Event | <a id="symbol-65"></a>`int64 missed` | 周期通知合并时错过的周期数量。 |
+| 模块 | <a id="symbol-66"></a>`struct Timer : Drop` | 宿主定时事件的资源包装；通过方法创建、停止与释放。 |
+| Timer | <a id="symbol-67"></a>`int64 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
 
 ## 函数索引
 

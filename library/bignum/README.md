@@ -276,3 +276,9 @@ sqrt(2) (30) = 1.41421356237309504880168872421
 ```
 
 大整数与大浮点单元测试分别覆盖 273 与 136 项断言。
+
+## 高精度超越函数
+
+`bigfloat_math.hpp` 提供 `pi`、`exp`、`ln`、`log10`、`sin`、`cos`、`tan`、`atan`、`asin`、`acos`、实数幂和截断余数。圆周率使用 AGM，指数使用级数与缩放平方，对数使用平方根约化，三角函数使用高精度参数约化与级数；全部复用十进制 `BigFloat`，不转二进制浮点。工作精度增加保护位并检查资源预算，非法实数定义域抛出异常。
+
+Magel 的 `std::math` 使用这些函数计算 `BigDecimal` 分支，有效位数沿用实参设置，未设置时采用 34 位；显式 `pi(digits)` 支持 1..100000 位。独立参考回归为 `python tests/bigfloat_math.py`；参考值由 mpmath 生成并固化，日常测试只需 Python 标准库。更新参考值使用 `python tests/bigfloat_math.py --refresh-reference`，需要 mpmath。

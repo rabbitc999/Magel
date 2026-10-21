@@ -118,6 +118,7 @@ ASSET_ROOT = {
     "simple_ast/": "library/",
     "preprocess/": "library/",
     "bignum/": "library/",
+    "caspp/": "library/",
     "json/": "library/",
     "toml/": "library/",
     "lztext/": "library/",
@@ -197,10 +198,16 @@ GENERATOR_ASSETS = [
     "bignum/bigint.cpp",
     "bignum/bigfloat.hpp",
     "bignum/bigfloat.cpp",
+    "bignum/bigfloat_math.hpp",
+    "bignum/bigfloat_math_detail.hpp",
+    "bignum/bigfloat_transcendental.cpp",
+    "bignum/bigfloat_trigonometry.cpp",
 ]
 
 
 GENERATOR_ASSETS += ["stackvm/" + name for name in asset_names()]
+from cas_sources import asset_names as cas_asset_names
+GENERATOR_ASSETS += ["caspp/" + name for name in cas_asset_names()]
 
 # 胶水接口及实现作为同一组资产导出，固定清单不能遗漏独立编译单元。
 GENERATOR_ASSETS += [

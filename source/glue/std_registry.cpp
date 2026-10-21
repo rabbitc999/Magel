@@ -4,6 +4,7 @@
 #include "std_file.hpp"
 #include "std_print.hpp"
 #include "std_big_number.hpp"
+#include "std_cas.hpp"
 #ifndef PARSE_ENGINE_LANG_NUMERIC_HPP
 #include "std_numeric.hpp"
 #endif
@@ -95,6 +96,7 @@ bool bindStandardGlue(magel_glue::Registry &registry, Memory::String *error)
     ok = collection_glue::bind(registry.native(), error) && ok;
     ok = native_record_glue::bindString(registry.native(), error) && ok;
     ok = big_number_glue::bind(registry.native(), error) && ok;
+    ok = std_cas_glue::bind(registry.native(), error) && ok;
     ok = file_native_glue::bind(registry.native(), error) && ok;
 #ifndef GLUE_NO_STD_FILESYSTEM
     ok = std_filesystem_glue::bind(registry, error) && ok;

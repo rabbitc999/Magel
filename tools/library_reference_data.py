@@ -1,6 +1,7 @@
 """标准库参考手册的人工维护说明；声明与重载由 library_reference.py 从源码读取。"""
 
 MODULES = {
+    'std::cas': ('精确符号计算', 'Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精确整数和有理数。支持四则运算、节点遍历、化简、求导、积分、替换、极限与 Taylor 展开；不支持的积分保留符号节点。调用串行保护 CAS 内部资源，AST 可以独立复制。'),
     'std::encoding': ('文本编码', 'RFC 4648 的 Base64、Base64URL 与十六进制编解码。输入字节使用 List<uint8>，解码返回 Result；拒绝非法字符、填充与非零尾部位，不忽略空白。'),
     'std::csv': ('CSV 读写', '支持自定义单字节分隔符、引号转义和字段内换行，保留空字段与空行。错误位置从一开始，列按字节计。输出记录以 LF 结束，空记录必须含至少一个空字段。'),
     'std::datetime': ('UTC 日期时间', 'Unix 秒与公历 UTC 日期换算，年份 1..9999，秒 0..59，不表示闰秒。ISO 8601 首版只接受 YYYY-MM-DDTHH:MM:SSZ。纯换算不依赖平台时区；nowUtc 要求宿主时钟。'),
@@ -22,7 +23,7 @@ MODULES = {
     'std::json': ('JSON 只读文档', 'parse 返回 Result<JsonValue,String>。节点共享同一宿主文档；任一节点 close 都关闭整个文档，重复关闭返回 false。asXxx 返回 Option，不符合类型时为 None；asFloat64 可读取整数。含零字节的文本/键使用 asBytes/findBytes/keyBytesAt。kind：0 null、1 bool、2 int、3 float、4 string、5 array、6 object、7 date-time。'),
     'std::toml': ('TOML 只读文档', 'parse 返回 Result<TomlValue,String>。节点共享文档生命周期，close 会使所有节点失效。表对应 isTable/isObject；时间值使用 isDateTime/asDateTime。asXxx 类型不符返回 None；含零字节的文本使用字节列表接口。kind 编码与 JSON 节点一致。解析文档根节点的 dump() 保留原文注释、空白与换行；反复解析保存不丢失或重复注释。底层 C++ 等形值编辑保留布局；结构编辑保留注释内容，但可调整位置。子节点只输出值。'),
     'std::linalg': ('向量与矩阵', 'Vector<T>、Matrix<T> 保留泛型聚合外观，values 使用 ScalarArray<T>，底层 ScalarStorage opcode 拥有连续数值缓冲，不再保存通用 List。支持内建有符号/无符号整数及 float32/float64，复制得到独立缓冲。下标从 0 开始；加减、点积和乘法必须维度兼容，非法维度触发断言或宿主错误。fromArray 复制，toArray 返回独立数组；裸引用重载须提供有效 count。normalized 不接受零向量。浮点分解和 solve 使用宿主胶水，返回分解结构/解向量；奇异、非法形状或不满足算法条件时报告运行错误，不返回 Result。'),
-    'std::math': ('标量数学', '三角函数使用弧度，浮点运算转发到宿主 C++ 数学函数，定义域错误可产生 NaN/无穷。round 的中点远离零，trunc 向零。abs/min/max 是泛型入口，min/max 接受任意数量实参；折叠按成对原始顺序做（min(a,b,c)=min(min(a,b),c)），不等同于 fmin/fmax 的 NaN 规则：NaN 与任何值比较都为假，min(NaN,2.0) 仍是 2.0。clamp 保留 int64/float64 两份重载，要求 low<=high，否则停机。整数 abs 的最小负数沿用整数回绕语义。常数使用 std::lang::Math::PI/E。'),
+    'std::math': ('泛型数学', '三角函数使用弧度；普通整数返回 float64，float32 保持类型，float64 转发宿主数学库。BigInteger 转为 BigDecimal，BigDecimal 使用十进制高精度算法并沿用有效位数，Expr 组合符号 AST。pi(digits) 返回 1..100000 位圆周率。大十进制无 NaN/无穷，非法定义域报告错误；普通浮点沿用宿主特殊值。round 中点远离零，trunc 向零，fmod 余数与被除数同号。abs/min/max 保留既有泛型比较语义；clamp 检查 low<=high。'),
     'std::memory': ('内存视图与 arena', 'Span<T> 是引用加长度，不拥有缓冲区；iterator 返回元素 mut&。调用者保证底层连续存储有效。Arena.allocate 返回视图，reset/drop 后全部视图失效；不能继续解引用。Memory.stats 返回宿主分配器统计，不代表整个操作系统进程内存。'),
     'std::message': ('线程邮箱', '泛型线程消息按值复制，接收类型必须匹配；静态函数可传递，引用、独占资源、嵌套函数值和带捕获闭包不可传递。邮箱容量 256，sendThread 在满时等待；sendFor/trySend 和 receiveFor/tryReceive 返回统一操作状态。receiveThread 沿用阻塞和原始诊断；Receive<T> 仅在 READY 时读取 value。需 --threads。'),
     'std::net': ('TCP 与 HTTP', 'TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。'),
@@ -202,3 +203,4 @@ CONCURRENCY_BEHAVIOR = {
 CONCURRENCY_BEHAVIOR.update(enableTimeout='启用当前 VM 的内部超时检查，单位取决于宿主时钟配置；不注册事件回调。', enableTimeoutMillis='将毫秒转换为纳秒超时单位，拒绝非正值和溢出。')
 CONCURRENCY_BEHAVIOR['kick']='推迟当前 VM 看门狗截止时间，未启用超时返回 NotEnabled。'
 PARAMETERS['tag']='宿主事件的整数标签。'
+PARAMETERS.update(lower='定积分下界表达式', upper='定积分上界表达式', number='需要精确转换的数值', operand='待取负的表达式', order='导数或展开阶数，范围 0..1000', point='极限或展开中心表达式', variable='单个自变量的名称')

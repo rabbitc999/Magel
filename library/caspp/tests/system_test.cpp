@@ -9,19 +9,23 @@
 #include <cstdio>
 #include <string>
 
-namespace {
+namespace
+{
 
 int failures = 0;
 
 /** @brief 断言一次求值的文本结果。 */
-void expectText(Cas::Engine *engine, const char *input, const char *expected) {
+void expectText(Cas::Engine *engine, const char *input, const char *expected)
+{
     const Cas::Result result = engine->evaluate(input);
-    if (!result.ok) {
+    if (!result.ok)
+    {
         std::printf("FAIL %-52s ← 错误：%s\n", input, result.message.c_str());
         ++failures;
         return;
     }
-    if (result.text != expected) {
+    if (result.text != expected)
+    {
         std::printf("FAIL %-52s ← 得到 %s，期望 %s\n", input, result.text.c_str(), expected);
         ++failures;
         return;
@@ -32,14 +36,17 @@ void expectText(Cas::Engine *engine, const char *input, const char *expected) {
 /**
  * @brief 断言结果里含有某个子串（用于解的顺序不稳定、但集合确定的场合）。
  */
-void expectContains(Cas::Engine *engine, const char *input, const char *needle) {
+void expectContains(Cas::Engine *engine, const char *input, const char *needle)
+{
     const Cas::Result result = engine->evaluate(input);
-    if (!result.ok) {
+    if (!result.ok)
+    {
         std::printf("FAIL %-52s ← 错误：%s\n", input, result.message.c_str());
         ++failures;
         return;
     }
-    if (result.text.find(needle) == std::string::npos) {
+    if (result.text.find(needle) == std::string::npos)
+    {
         std::printf("FAIL %-52s ← 得到 %s，其中没有 %s\n", input, result.text.c_str(), needle);
         ++failures;
         return;
@@ -48,9 +55,11 @@ void expectContains(Cas::Engine *engine, const char *input, const char *needle) 
 }
 
 /** @brief 断言一次求值应当失败。 */
-void expectError(Cas::Engine *engine, const char *input) {
+void expectError(Cas::Engine *engine, const char *input)
+{
     const Cas::Result result = engine->evaluate(input);
-    if (result.ok) {
+    if (result.ok)
+    {
         std::printf("FAIL %-52s ← 本应报错，却得到 %s\n", input, result.text.c_str());
         ++failures;
         return;
@@ -60,7 +69,8 @@ void expectError(Cas::Engine *engine, const char *input) {
 
 /* ------------------------------------------------------------ 线性方程组 */
 
-void testLinearSystems() {
+void testLinearSystems()
+{
     Cas::Engine engine;
 
     expectText(&engine, "solveSystem([x+y=3, x-y=1], [x, y])", "x = 2, y = 1");
@@ -76,7 +86,8 @@ void testLinearSystems() {
 
 /* ---------------------------------------------------------- 非线性：两元 */
 
-void testNonlinearTwo() {
+void testNonlinearTwo()
+{
     Cas::Engine engine;
 
     // 圆与双曲线的交点
@@ -103,7 +114,8 @@ void testNonlinearTwo() {
 
 /* ---------------------------------------------------------- 非线性：三元 */
 
-void testNonlinearThree() {
+void testNonlinearThree()
+{
     Cas::Engine engine;
 
     // 对称方程组：三数两两组合，共 6 个排列
@@ -118,7 +130,8 @@ void testNonlinearThree() {
 
 /* ------------------------------------------------------------ 单变量方程 */
 
-void testSingleVariable() {
+void testSingleVariable()
+{
     Cas::Engine engine;
 
     expectText(&engine, "solveSystem([x^2=1], [x])", "x = 1; x = -1");
@@ -128,7 +141,8 @@ void testSingleVariable() {
 
 /* -------------------------------------------------------------- 欠定情形 */
 
-void testUnderdetermined() {
+void testUnderdetermined()
+{
     Cas::Engine engine;
 
     // 一条直线：应给出参数解而不是「无解」
@@ -147,7 +161,8 @@ void testUnderdetermined() {
 
 /* ---------------------------------------------------------------- 边界 */
 
-void testBoundaries() {
+void testBoundaries()
+{
     Cas::Engine engine;
 
     // 非多项式方程超出求解范围，要报错而不是给出错误答案
@@ -157,20 +172,32 @@ void testBoundaries() {
     expectError(&engine, "solveSystem([x=1], [])");
 }
 
-} // namespace
+}  // namespace
 
-int main() {
+/**
+ * @brief 执行线性、非线性与欠定方程组回归并汇总检查结果。
+ * @return 所有检查通过时返回零，否则返回非零失败状态。
+ */
+int main()
+{
     std::printf("方程组求解自检\n");
     Cas::Allocator::initialize();
 
-    testLinearSystems();       std::printf("linear systems ok\n");
-    testNonlinearTwo();        std::printf("nonlinear two vars ok\n");
-    testNonlinearThree();      std::printf("nonlinear three vars ok\n");
-    testSingleVariable();      std::printf("single variable ok\n");
-    testUnderdetermined();     std::printf("underdetermined ok\n");
-    testBoundaries();          std::printf("boundaries ok\n");
+    testLinearSystems();
+    std::printf("linear systems ok\n");
+    testNonlinearTwo();
+    std::printf("nonlinear two vars ok\n");
+    testNonlinearThree();
+    std::printf("nonlinear three vars ok\n");
+    testSingleVariable();
+    std::printf("single variable ok\n");
+    testUnderdetermined();
+    std::printf("underdetermined ok\n");
+    testBoundaries();
+    std::printf("boundaries ok\n");
 
-    if (failures == 0) {
+    if (failures == 0)
+    {
         std::printf("全部通过\n");
         return 0;
     }

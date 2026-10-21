@@ -11,21 +11,26 @@
 
 using namespace Cas::Detail;
 
-namespace {
+namespace
+{
 
 int failures = 0;
 
-void check(bool condition, const char *label) {
-    if (!condition) {
+void check(bool condition, const char *label)
+{
+    if (!condition)
+    {
         std::printf("FAIL %s\n", label);
         ++failures;
     }
 }
 
 /** @brief 极简结构打印：便于失败时肉眼比对。 */
-std::string describe(const NodePtr &node) {
+std::string describe(const NodePtr &node)
+{
     if (!node) return "<null>";
-    switch (node->kind()) {
+    switch (node->kind())
+    {
     case NodeKind::Integer:
         return node->numerator().toString();
     case NodeKind::Rational:
@@ -33,7 +38,8 @@ std::string describe(const NodePtr &node) {
     case NodeKind::Symbol:
         return node->name();
     case NodeKind::Constant:
-        switch (node->constant()) {
+        switch (node->constant())
+        {
         case ConstantId::Pi: return "pi";
         case ConstantId::E: return "e";
         case ConstantId::EulerGamma: return "gamma";
@@ -41,17 +47,21 @@ std::string describe(const NodePtr &node) {
         case ConstantId::NegativeInfinity: return "-inf";
         }
         return "?";
-    case NodeKind::Add: {
+    case NodeKind::Add:
+    {
         std::string text;
-        for (NodePtr child : node->operands()) {
+        for (NodePtr child : node->operands())
+        {
             if (!text.empty()) text += "+";
             text += describe(child);
         }
         return "(" + text + ")";
     }
-    case NodeKind::Mul: {
+    case NodeKind::Mul:
+    {
         std::string text;
-        for (NodePtr child : node->operands()) {
+        for (NodePtr child : node->operands())
+        {
             if (!text.empty()) text += "*";
             text += describe(child);
         }
@@ -59,9 +69,11 @@ std::string describe(const NodePtr &node) {
     }
     case NodeKind::Pow:
         return describe(node->operand(0)) + "^" + describe(node->operand(1));
-    case NodeKind::Function: {
+    case NodeKind::Function:
+    {
         std::string text = std::string(node->name()) + "(";
-        for (std::size_t i = 0; i < node->size(); ++i) {
+        for (std::size_t i = 0; i < node->size(); ++i)
+        {
             if (i) text += ",";
             text += describe(node->operand(i));
         }
@@ -72,10 +84,12 @@ std::string describe(const NodePtr &node) {
 }
 
 /** @brief 断言化简结果的结构文本等于期望。 */
-void expect(const Ptr &expression, const char *expected, const char *label) {
+void expect(const Ptr &expression, const char *expected, const char *label)
+{
     Ptr simplified = simplify(expression);
     const std::string actual = describe(simplified.get());
-    if (actual != expected) {
+    if (actual != expected)
+    {
         std::printf("FAIL %s\n     expected: %s\n     actual:   %s\n", label, expected, actual.c_str());
         ++failures;
     }
@@ -84,7 +98,8 @@ void expect(const Ptr &expression, const char *expected, const char *label) {
 Ptr sym(const char *name) { return Ptr(Node::makeSymbol(name)); }
 Ptr num(long long value) { return Ptr(Node::makeInteger(BigInt(value))); }
 
-void testNumbers() {
+void testNumbers()
+{
     expect(makeAdd(num(2), num(3)), "5", "2+3");
     expect(makeAdd(num(1), makeAdd(num(2), num(3))), "6", "1+(2+3) 展平");
     expect(makeMul(num(2), num(3)), "6", "2*3");
@@ -97,7 +112,8 @@ void testNumbers() {
     expect(makeMul(num(0), sym("x")), "0", "0*x");
 }
 
-void testLikeTerms() {
+void testLikeTerms()
+{
     Ptr x = sym("x"), y = sym("y");
     expect(makeAdd(makeMul(num(2), x), makeMul(num(3), x)), "(5*x)", "2x+3x");
     expect(makeAdd(x, x), "(2*x)", "x+x");
@@ -108,7 +124,8 @@ void testLikeTerms() {
     expect(makeMul(num(2), makeMul(num(3), x)), "(6*x)", "2*(3x)");
 }
 
-void testIdentities() {
+void testIdentities()
+{
     Ptr x = sym("x");
     expect(makeMul(num(1), x), "x", "1*x");
     expect(makeAdd(num(0), x), "x", "x+0");
@@ -119,7 +136,8 @@ void testIdentities() {
     expect(makeNegate(makeNegate(x)), "x", "-(-x)");
 }
 
-void testOrdering() {
+void testOrdering()
+{
     Ptr a = sym("a"), b = sym("b");
     Ptr left = makeAdd(a, b), right = makeAdd(b, a);
     check(left->equals(right.get()), "a+b 与 b+a 结构相同");
@@ -127,7 +145,8 @@ void testOrdering() {
     check(mleft->equals(mright.get()), "a*b 与 b*a 结构相同");
 }
 
-void testNesting() {
+void testNesting()
+{
     Ptr x = sym("x");
     Ptr squared = makePow(makeAdd(x, num(1)), num(2));
     Ptr again = simplify(squared);
@@ -136,7 +155,8 @@ void testNesting() {
     check(again->equals(twice.get()), "二次化简稳定");
 }
 
-void testQuery() {
+void testQuery()
+{
     Ptr x = sym("x"), y = sym("y");
     Ptr expression = makeAdd(makeMul(num(2), x), makeMul(num(3), y));
     const auto symbols = freeSymbols(expression.get());
@@ -148,7 +168,8 @@ void testQuery() {
     check(containsInfinity(infinity.get()), "含无穷");
 }
 
-void testPoolAccounting() {
+void testPoolAccounting()
+{
     Cas::Allocator::initialize();
     {
         Ptr x = sym("x");
@@ -160,21 +181,34 @@ void testPoolAccounting() {
     check(stats.liveBytes < 4 * 1024 * 1024, "无大额内存泄漏");
 }
 
-} // namespace
+}  // namespace
 
-int main() {
+/**
+ * @brief 执行表达式规范化、节点查询和引用释放回归并汇总检查结果。
+ * @return 所有检查通过时返回零，否则返回非零失败状态。
+ */
+int main()
+{
     std::printf("表达式树自检\n");
     Cas::Allocator::initialize();
 
-    testNumbers();   std::printf("numbers ok\n");
-    testLikeTerms(); std::printf("liketerms ok\n");
-    testIdentities(); std::printf("identities ok\n");
-    testOrdering();  std::printf("ordering ok\n");
-    testNesting();   std::printf("nesting ok\n");
-    testQuery();     std::printf("query ok\n");
-    testPoolAccounting(); std::printf("pool ok\n");
+    testNumbers();
+    std::printf("numbers ok\n");
+    testLikeTerms();
+    std::printf("liketerms ok\n");
+    testIdentities();
+    std::printf("identities ok\n");
+    testOrdering();
+    std::printf("ordering ok\n");
+    testNesting();
+    std::printf("nesting ok\n");
+    testQuery();
+    std::printf("query ok\n");
+    testPoolAccounting();
+    std::printf("pool ok\n");
 
-    if (failures == 0) {
+    if (failures == 0)
+    {
         std::printf("全部通过\n");
         return 0;
     }

@@ -174,6 +174,9 @@ run_required_step "构建 MAGEL 驱动（magel）" "$MAKE" -j4
 
 run_step "验证并行门禁调度与失败汇总" "$PYTHON" tests/test_parallel_gates.py
 run_step "验证大整数乘除法与 Python 整数差分" "$PYTHON" tests/bigint_arithmetic.py
+run_step "验证高精度数学与独立参考值" "$PYTHON" tests/bigfloat_math.py
+run_step "验证 CAS 与泛型数学语言接口" "$PYTHON" tests/magel_cas_math.py
+run_step "验证 CAS 核心全部回归" "$PYTHON" tests/cas_library.py
 run_step "验证卫生宏绑定、正则、AST 替换及生成解析器" "$PYTHON" tests/macro_foundations.py
 run_step "验证 AST 表达式宏语义与 VM 执行" "$PYTHON" tests/magel_ast_macros.py --default
 run_step "验证宏完整片段分类与正则分支" "$PYTHON" tests/magel_macro_branches.py --default

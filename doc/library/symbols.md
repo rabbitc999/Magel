@@ -67,6 +67,56 @@
 | [std::binary::BinaryReader::setBigEndian](std-binary.md#api-7) | `void setBigEndian(bool enabled)` |
 | [std::binary::BinaryReader::size](std-binary.md#api-6) | `int64 size()` |
 | [std::binary::BinaryReader::skip](std-binary.md#api-9) | `bool skip(int64 count)` |
+| [std::cas::Expr::acos](std-cas.md#api-38) | `Expr acos()` |
+| [std::cas::Expr::asin](std-cas.md#api-37) | `Expr asin()` |
+| [std::cas::Expr::ast](std-cas.md#api-4) | `Expr ast()` |
+| [std::cas::Expr::atan](std-cas.md#api-39) | `Expr atan()` |
+| [std::cas::Expr::ceil](std-cas.md#api-45) | `Expr ceil()` |
+| [std::cas::Expr::child](std-cas.md#api-11) | `Expr child(int64 index)` |
+| [std::cas::Expr::childCount](std-cas.md#api-10) | `int64 childCount()` |
+| [std::cas::Expr::children](std-cas.md#api-12) | `List<Expr> children()` |
+| [std::cas::Expr::cos](std-cas.md#api-35) | `Expr cos()` |
+| [std::cas::Expr::decimal](std-cas.md#api-15) | `BigDecimal decimal(int64 digits = 50)` |
+| [std::cas::Expr::denominator](std-cas.md#api-14) | `BigInteger denominator()` |
+| [std::cas::Expr::differentiate](std-cas.md#api-28) | `Expr differentiate(String variable = "x", int64 order = 1)` |
+| [std::cas::Expr::exp](std-cas.md#api-40) | `Expr exp()` |
+| [std::cas::Expr::expand](std-cas.md#api-25) | `Expr expand()` |
+| [std::cas::Expr::factor](std-cas.md#api-26) | `Expr factor()` |
+| [std::cas::Expr::floor](std-cas.md#api-44) | `Expr floor()` |
+| [std::cas::Expr::fmod](std-cas.md#api-48) | `Expr fmod(Expr other)` |
+| [std::cas::Expr::fromDecimal](std-cas.md#api-2) | `static Expr fromDecimal(BigDecimal number)` |
+| [std::cas::Expr::fromInteger](std-cas.md#api-1) | `static Expr fromInteger(BigInteger number)` |
+| [std::cas::Expr::integrate](std-cas.md#api-29) | `Expr integrate(String variable = "x")` |
+| [std::cas::Expr::integrateDefinite](std-cas.md#api-33) | `Expr integrateDefinite(String variable, Expr lower, Expr upper)` |
+| [std::cas::Expr::kind](std-cas.md#api-8) | `NodeKind kind()` |
+| [std::cas::Expr::latex](std-cas.md#api-7) | `String latex()` |
+| [std::cas::Expr::leftAdd](std-cas.md#api-16) | `Expr leftAdd(Expr other)` |
+| [std::cas::Expr::leftDiv](std-cas.md#api-19) | `Expr leftDiv(Expr other)` |
+| [std::cas::Expr::leftEqual](std-cas.md#api-20) | `bool leftEqual(Expr other)` |
+| [std::cas::Expr::leftMul](std-cas.md#api-18) | `Expr leftMul(Expr other)` |
+| [std::cas::Expr::leftSub](std-cas.md#api-17) | `Expr leftSub(Expr other)` |
+| [std::cas::Expr::limit](std-cas.md#api-31) | `Expr limit(String variable, Expr point)` |
+| [std::cas::Expr::ln](std-cas.md#api-41) | `Expr ln()` |
+| [std::cas::Expr::log10](std-cas.md#api-42) | `Expr log10()` |
+| [std::cas::Expr::name](std-cas.md#api-9) | `String name()` |
+| [std::cas::Expr::negate](std-cas.md#api-21) | `Expr negate(Expr operand)` |
+| [std::cas::Expr::numerator](std-cas.md#api-13) | `BigInteger numerator()` |
+| [std::cas::Expr::parse](std-cas.md#api-0) | `static Expr parse(String text)` |
+| [std::cas::Expr::pow](std-cas.md#api-22) | `Expr pow(Expr exponent)` |
+| [std::cas::Expr::pow](std-cas.md#api-23) | `Expr pow(int64 exponent)` |
+| [std::cas::Expr::round](std-cas.md#api-46) | `Expr round()` |
+| [std::cas::Expr::simplify](std-cas.md#api-24) | `Expr simplify()` |
+| [std::cas::Expr::sin](std-cas.md#api-34) | `Expr sin()` |
+| [std::cas::Expr::sqrt](std-cas.md#api-43) | `Expr sqrt()` |
+| [std::cas::Expr::str](std-cas.md#api-5) | `String str()` |
+| [std::cas::Expr::substitute](std-cas.md#api-30) | `Expr substitute(String variable, Expr replacement)` |
+| [std::cas::Expr::symbol](std-cas.md#api-3) | `static Expr symbol(String name)` |
+| [std::cas::Expr::tan](std-cas.md#api-36) | `Expr tan()` |
+| [std::cas::Expr::taylor](std-cas.md#api-32) | `Expr taylor(String variable, Expr point, int64 order)` |
+| [std::cas::Expr::toString](std-cas.md#api-6) | `String toString()` |
+| [std::cas::Expr::together](std-cas.md#api-27) | `Expr together()` |
+| [std::cas::Expr::trunc](std-cas.md#api-47) | `Expr trunc()` |
+| [std::cas::parse](std-cas.md#api-49) | `Expr parse(String text)` |
 | [std::cli::CliArguments::get](std-cli.md#api-0) | `Option<String> get(String name)` |
 | [std::cli::CliArguments::getInt](std-cli.md#api-1) | `Result<int64,CliError> getInt(String name)` |
 | [std::cli::CliParser::add](std-cli.md#api-4) | `bool add(CliOption option)` |
@@ -686,29 +736,30 @@
 | [std::linkedlist::LinkedList::reverse](std-linkedlist.md#api-9) | `void reverse()` |
 | [std::linkedlist::LinkedList::syncFrom](std-linkedlist.md#api-20) | `void syncFrom(ListReply reply)` |
 | [std::linkedlist::LinkedList::toArray](std-linkedlist.md#api-10) | `List<int64> toArray()` |
-| [std::math::abs](std-math.md#api-18) | `T abs<T>(T value)` |
-| [std::math::acos](std-math.md#api-4) | `float64 acos(float64 value)` |
-| [std::math::asin](std-math.md#api-3) | `float64 asin(float64 value)` |
-| [std::math::atan](std-math.md#api-5) | `float64 atan(float64 value)` |
-| [std::math::ceil](std-math.md#api-12) | `float64 ceil(float64 value)` |
-| [std::math::clamp](std-math.md#api-22) | `float64 clamp(float64 value, float64 low, float64 high)` |
-| [std::math::clamp](std-math.md#api-21) | `int64 clamp(int64 value, int64 low, int64 high)` |
-| [std::math::cos](std-math.md#api-1) | `float64 cos(float64 value)` |
-| [std::math::exp](std-math.md#api-6) | `float64 exp(float64 value)` |
-| [std::math::floor](std-math.md#api-11) | `float64 floor(float64 value)` |
-| [std::math::fmod](std-math.md#api-15) | `float64 fmod(float64 value, float64 divisor)` |
-| [std::math::isInf](std-math.md#api-17) | `bool isInf(float64 value)` |
-| [std::math::isNaN](std-math.md#api-16) | `bool isNaN(float64 value)` |
-| [std::math::ln](std-math.md#api-7) | `float64 ln(float64 value)` |
-| [std::math::log10](std-math.md#api-8) | `float64 log10(float64 value)` |
-| [std::math::max](std-math.md#api-20) | `T max<T>(T... values)` |
-| [std::math::min](std-math.md#api-19) | `T min<T>(T... values)` |
-| [std::math::pow](std-math.md#api-9) | `float64 pow(float64 value, float64 exponent)` |
-| [std::math::round](std-math.md#api-13) | `float64 round(float64 value)` |
-| [std::math::sin](std-math.md#api-0) | `float64 sin(float64 value)` |
-| [std::math::sqrt](std-math.md#api-10) | `float64 sqrt(float64 value)` |
-| [std::math::tan](std-math.md#api-2) | `float64 tan(float64 value)` |
-| [std::math::trunc](std-math.md#api-14) | `float64 trunc(float64 value)` |
+| [std::math::abs](std-math.md#api-19) | `T abs<T>(T value)` |
+| [std::math::acos](std-math.md#api-5) | `auto acos<T>(T value)` |
+| [std::math::asin](std-math.md#api-4) | `auto asin<T>(T value)` |
+| [std::math::atan](std-math.md#api-6) | `auto atan<T>(T value)` |
+| [std::math::ceil](std-math.md#api-12) | `auto ceil<T>(T value)` |
+| [std::math::clamp](std-math.md#api-23) | `float64 clamp(float64 value, float64 low, float64 high)` |
+| [std::math::clamp](std-math.md#api-22) | `int64 clamp(int64 value, int64 low, int64 high)` |
+| [std::math::cos](std-math.md#api-2) | `auto cos<T>(T value)` |
+| [std::math::exp](std-math.md#api-7) | `auto exp<T>(T value)` |
+| [std::math::floor](std-math.md#api-11) | `auto floor<T>(T value)` |
+| [std::math::fmod](std-math.md#api-16) | `auto fmod<T, U>(T value, U other)` |
+| [std::math::isInf](std-math.md#api-18) | `bool isInf<T>(T value)` |
+| [std::math::isNaN](std-math.md#api-17) | `bool isNaN<T>(T value)` |
+| [std::math::ln](std-math.md#api-8) | `auto ln<T>(T value)` |
+| [std::math::log10](std-math.md#api-9) | `auto log10<T>(T value)` |
+| [std::math::max](std-math.md#api-21) | `T max<T>(T... values)` |
+| [std::math::min](std-math.md#api-20) | `T min<T>(T... values)` |
+| [std::math::pi](std-math.md#api-0) | `BigDecimal pi(int64 digits = 50)` |
+| [std::math::pow](std-math.md#api-15) | `auto pow<T, U>(T value, U other)` |
+| [std::math::round](std-math.md#api-13) | `auto round<T>(T value)` |
+| [std::math::sin](std-math.md#api-1) | `auto sin<T>(T value)` |
+| [std::math::sqrt](std-math.md#api-10) | `auto sqrt<T>(T value)` |
+| [std::math::tan](std-math.md#api-3) | `auto tan<T>(T value)` |
+| [std::math::trunc](std-math.md#api-14) | `auto trunc<T>(T value)` |
 | [std::memory::Arena::allocate](std-memory.md#api-6) | `Span<char> allocate(int64 bytes)` |
 | [std::memory::Arena::create](std-memory.md#api-5) | `static Arena create()` |
 | [std::memory::Arena::drop](std-memory.md#api-8) | `void drop()` |

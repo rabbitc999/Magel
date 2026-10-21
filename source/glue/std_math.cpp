@@ -36,9 +36,43 @@ inline std::int64_t steadyClockNanos()
  */
 bool bind(magel_glue::Registry &registry, Memory::String *error)
 {
-    /* 整数/浮点的绝对值、极值与夹取已改为 Magel 实现（见 source/std/math.mgl），
-     * 这里只保留宿主不可替代的基础数学调用。 */
-    return registry.bindTyped<double, double>("std::math::sin", [](double x) { return std::sin(x); }, error) && registry.bindTyped<double, double>("std::math::cos", [](double x) { return std::cos(x); }, error) && registry.bindTyped<double, double>("std::math::tan", [](double x) { return std::tan(x); }, error) && registry.bindTyped<double, double>("std::math::asin", [](double x) { return std::asin(x); }, error) && registry.bindTyped<double, double>("std::math::acos", [](double x) { return std::acos(x); }, error) && registry.bindTyped<double, double>("std::math::atan", [](double x) { return std::atan(x); }, error) && registry.bindTyped<double, double>("std::math::exp", [](double x) { return std::exp(x); }, error) && registry.bindTyped<double, double>("std::math::ln", [](double x) { return std::log(x); }, error) && registry.bindTyped<double, double>("std::math::log10", [](double x) { return std::log10(x); }, error) && registry.bindTyped<double, double, double>("std::math::pow", [](double x, double y) { return std::pow(x, y); }, error) && registry.bindTyped<double, double>("std::math::sqrt", [](double x) { return std::sqrt(x); }, error) && registry.bindTyped<double, double>("std::math::abs", [](double x) { return std::fabs(x); }, error) && registry.bindTyped<double, double>("std::math::floor", [](double x) { return std::floor(x); }, error) && registry.bindTyped<double, double>("std::math::ceil", [](double x) { return std::ceil(x); }, error) && registry.bindTyped<double, double>("std::math::round", [](double x) { return std::round(x); }, error) && registry.bindTyped<double, double>("std::math::trunc", [](double x) { return std::trunc(x); }, error) && registry.bindTyped<double, double, double>("std::math::fmod", [](double x, double y) { return std::fmod(x, y); }, error) && registry.bindTyped<bool, double>("std::math::isNaN", [](double x) { return std::isnan(x) != 0; }, error) && registry.bindTyped<bool, double>("std::math::isInf", [](double x) { return std::isinf(x) != 0; }, error) && registry.bindTyped<std::int64_t>("std::clock::nowNanos", []() { return steadyClockNanos(); }, error) && registry.bindTyped<std::int64_t>("std::clock::nowMs", []() { return steadyClockNanos() / 1000000; }, error);
+    if (!registry.bindTyped<double, double>("std::math::sin", [](double x) { return std::sin(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::__sin64", [](double x) { return std::sin(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::cos", [](double x) { return std::cos(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::__cos64", [](double x) { return std::cos(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::tan", [](double x) { return std::tan(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::__tan64", [](double x) { return std::tan(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::asin", [](double x) { return std::asin(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::__asin64", [](double x) { return std::asin(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::acos", [](double x) { return std::acos(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::__acos64", [](double x) { return std::acos(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::atan", [](double x) { return std::atan(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::__atan64", [](double x) { return std::atan(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::exp", [](double x) { return std::exp(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::__exp64", [](double x) { return std::exp(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::ln", [](double x) { return std::log(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::__ln64", [](double x) { return std::log(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::log10", [](double x) { return std::log10(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::__log1064", [](double x) { return std::log10(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::sqrt", [](double x) { return std::sqrt(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::__sqrt64", [](double x) { return std::sqrt(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::floor", [](double x) { return std::floor(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::__floor64", [](double x) { return std::floor(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::ceil", [](double x) { return std::ceil(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::__ceil64", [](double x) { return std::ceil(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::round", [](double x) { return std::round(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::__round64", [](double x) { return std::round(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::trunc", [](double x) { return std::trunc(x); }, error)) return false;
+    if (!registry.bindTyped<double, double>("std::math::__trunc64", [](double x) { return std::trunc(x); }, error)) return false;
+    if (!registry.bindTyped<double, double, double>("std::math::pow", [](double x, double y) { return std::pow(x, y); }, error)) return false;
+    if (!registry.bindTyped<double, double, double>("std::math::__pow64", [](double x, double y) { return std::pow(x, y); }, error)) return false;
+    if (!registry.bindTyped<double, double, double>("std::math::fmod", [](double x, double y) { return std::fmod(x, y); }, error)) return false;
+    if (!registry.bindTyped<double, double, double>("std::math::__fmod64", [](double x, double y) { return std::fmod(x, y); }, error)) return false;
+    if (!registry.bindTyped<bool, double>("std::math::isNaN", [](double x) { return std::isnan(x); }, error)) return false;
+    if (!registry.bindTyped<bool, double>("std::math::__isNaN64", [](double x) { return std::isnan(x); }, error)) return false;
+    if (!registry.bindTyped<bool, double>("std::math::isInf", [](double x) { return std::isinf(x); }, error)) return false;
+    if (!registry.bindTyped<bool, double>("std::math::__isInf64", [](double x) { return std::isinf(x); }, error)) return false;
+    return registry.bindTyped<std::int64_t>("std::clock::nowNanos", []() { return steadyClockNanos(); }, error) && registry.bindTyped<std::int64_t>("std::clock::nowMs", []() { return steadyClockNanos() / 1000000; }, error);
 }
 
 }  // namespace std_math

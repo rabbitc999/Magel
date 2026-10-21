@@ -13,35 +13,44 @@
 
 using namespace Cas::Detail;
 
-namespace {
+namespace
+{
 
 int failures = 0;
 
-void check(bool condition, const char *label) {
-    if (!condition) {
+void check(bool condition, const char *label)
+{
+    if (!condition)
+    {
         std::printf("FAIL %s\n", label);
         ++failures;
     }
 }
 
-std::string describe(const NodePtr &node) {
+std::string describe(const NodePtr &node)
+{
     if (!node) return "<null>";
-    switch (node->kind()) {
+    switch (node->kind())
+    {
     case NodeKind::Integer: return node->numerator().toString();
     case NodeKind::Rational: return "(" + node->numerator().toString() + "/" + node->denominator().toString() + ")";
     case NodeKind::Symbol: return node->name();
     case NodeKind::Constant: return "<const>";
-    case NodeKind::Add: {
+    case NodeKind::Add:
+    {
         std::string text;
-        for (NodePtr child : node->operands()) {
+        for (NodePtr child : node->operands())
+        {
             if (!text.empty()) text += "+";
             text += describe(child);
         }
         return "(" + text + ")";
     }
-    case NodeKind::Mul: {
+    case NodeKind::Mul:
+    {
         std::string text;
-        for (NodePtr child : node->operands()) {
+        for (NodePtr child : node->operands())
+        {
             if (!text.empty()) text += "*";
             text += describe(child);
         }
@@ -49,9 +58,11 @@ std::string describe(const NodePtr &node) {
     }
     case NodeKind::Pow:
         return describe(node->operand(0)) + "^" + describe(node->operand(1));
-    case NodeKind::Function: {
+    case NodeKind::Function:
+    {
         std::string text = std::string(node->name()) + "(";
-        for (std::size_t i = 0; i < node->size(); ++i) {
+        for (std::size_t i = 0; i < node->size(); ++i)
+        {
             if (i) text += ",";
             text += describe(node->operand(i));
         }
@@ -64,16 +75,19 @@ std::string describe(const NodePtr &node) {
 Ptr sym(const char *name) { return Ptr(Node::makeSymbol(name)); }
 Ptr num(long long value) { return Ptr(Node::makeInteger(BigInt(value))); }
 
-void expectExpand(const Ptr &expression, const char *expected, const char *label) {
+void expectExpand(const Ptr &expression, const char *expected, const char *label)
+{
     Ptr result = expand(expression);
     const std::string actual = describe(result.get());
-    if (actual != expected) {
+    if (actual != expected)
+    {
         std::printf("FAIL %s\n     expected: %s\n     actual:   %s\n", label, expected, actual.c_str());
         ++failures;
     }
 }
 
-void testExpand() {
+void testExpand()
+{
     Ptr x = sym("x");
     expectExpand(makeMul(makeAdd(x, num(1)), makeAdd(x, num(2))), "(x^2+(3*x)+2)", "(x+1)(x+2)");
     expectExpand(makePow(makeAdd(x, num(1)), num(3)), "(x^3+(3*x^2)+(3*x)+1)", "(x+1)^3");
@@ -82,7 +96,8 @@ void testExpand() {
     expectExpand(makeMul(num(2), makeAdd(x, num(3))), "((2*x)+6)", "2(x+3)");
 }
 
-void testPolynomialConversion() {
+void testPolynomialConversion()
+{
     Ptr x = sym("x");
     const std::uint32_t id = lookupSymbol("x");
     UnivariatePoly polynomial;
@@ -94,7 +109,8 @@ void testPolynomialConversion() {
     check(rebuilt && describe(rebuilt.get()) == "(x^2+1)", "多项式往返");
 }
 
-void testDivision() {
+void testDivision()
+{
     Ptr x = sym("x");
     const std::uint32_t id = lookupSymbol("x");
     // (x^2 - 1) / (x - 1) = x + 1
@@ -108,7 +124,8 @@ void testDivision() {
     check(describe(fromPolynomial(q).get()) == "(x+1)", "(x^2-1)/(x-1) = x+1");
 }
 
-void testGcd() {
+void testGcd()
+{
     Ptr x = sym("x");
     const std::uint32_t id = lookupSymbol("x");
     // gcd(x^2-1, x^2-2x+1) = x-1
@@ -119,7 +136,8 @@ void testGcd() {
     check(text == "(x+-1)" || text == "((x+-1))", std::string("gcd(x^2-1, (x-1)^2) 应为 x-1，实际 " + text).c_str());
 }
 
-void testResultant() {
+void testResultant()
+{
     Ptr x = sym("x");
     const std::uint32_t id = lookupSymbol("x");
     // Res(x - 1, x - 2) = 1 - 2 = -1
@@ -127,13 +145,15 @@ void testResultant() {
     Ptr b = makeAdd(x, num(-2));
     Ptr r = polyResultant(a.get(), b.get(), id);
     check(r && r->isNumber(), "Res(x-1,x-2) 是数值");
-    if (r && r->isNumber()) {
+    if (r && r->isNumber())
+    {
         const std::string text = describe(r.get());
         check(text == "1" || text == "-1", std::string("Res(x-1,x-2)=±1，实际 " + text).c_str());
     }
 }
 
-void testFactor() {
+void testFactor()
+{
     Ptr x = sym("x");
     // x^2 - 1 = (x-1)(x+1)
     Ptr difference = expand(makeMul(makeAdd(x, num(1)), makeAdd(x, num(-1))));
@@ -169,16 +189,19 @@ void testFactor() {
  * 统一走 `Engine::factor`（文本输出）以便直接比对结果字符串，
  * 覆盖平方差、完全平方、Sophie Germain、偶次代换四条规则。
  */
-void testHighDegreeFactor() {
+void testHighDegreeFactor()
+{
     Cas::Engine engine;
     auto expectFactor = [&](const char *input, const char *expected) {
         const Cas::Result result = engine.factor(input);
-        if (!result.ok) {
+        if (!result.ok)
+        {
             std::printf("FAIL %-28s ← 错误：%s\n", input, result.message.c_str());
             ++failures;
             return;
         }
-        if (result.text != expected) {
+        if (result.text != expected)
+        {
             std::printf("FAIL %-28s ← 得到 %s，期望 %s\n", input, result.text.c_str(), expected);
             ++failures;
             return;
@@ -212,16 +235,19 @@ void testHighDegreeFactor() {
  * 策略是对每个变量当作一元多项式各试一次，再取因子数最多的结果，
  * 因此这里同时校验"能拆"与"不能拆时原样返回"两种情况。
  */
-void testMultivariateFactor() {
+void testMultivariateFactor()
+{
     Cas::Engine engine;
     auto expectFactor = [&](const char *input, const char *expected) {
         const Cas::Result result = engine.factor(input);
-        if (!result.ok) {
+        if (!result.ok)
+        {
             std::printf("FAIL %-28s ← 错误：%s\n", input, result.message.c_str());
             ++failures;
             return;
         }
-        if (result.text != expected) {
+        if (result.text != expected)
+        {
             std::printf("FAIL %-28s ← 得到 %s，期望 %s\n", input, result.text.c_str(), expected);
             ++failures;
             return;
@@ -245,7 +271,8 @@ void testMultivariateFactor() {
     expectFactor("x^2+y^2", "x^2 + y^2");
 }
 
-void testTogether() {
+void testTogether()
+{
     Ptr x = sym("x");
     // 1/x + 1/(x+1) = (2x+1)/(x(x+1))
     Ptr sum = makeAdd(makeDivide(num(1), x), makeDivide(num(1), makeAdd(x, num(1))));
@@ -254,23 +281,38 @@ void testTogether() {
     check(combined.get() != nullptr, "通分成功");
 }
 
-} // namespace
+}  // namespace
 
-int main() {
+/**
+ * @brief 执行多项式展开、因式分解和通分回归并汇总检查结果。
+ * @return 所有检查通过时返回零，否则返回非零失败状态。
+ */
+int main()
+{
     std::printf("多项式代数自检\n");
     Cas::Allocator::initialize();
 
-    testExpand();              std::printf("expand ok\n");
-    testPolynomialConversion(); std::printf("conversion ok\n");
-    testDivision();            std::printf("division ok\n");
-    testGcd();                 std::printf("gcd ok\n");
-    testResultant();           std::printf("resultant ok\n");
-    testFactor();              std::printf("factor ok\n");
-    testHighDegreeFactor();    std::printf("high-degree factor ok\n");
-    testMultivariateFactor();  std::printf("multivariate factor ok\n");
-    testTogether();            std::printf("together ok\n");
+    testExpand();
+    std::printf("expand ok\n");
+    testPolynomialConversion();
+    std::printf("conversion ok\n");
+    testDivision();
+    std::printf("division ok\n");
+    testGcd();
+    std::printf("gcd ok\n");
+    testResultant();
+    std::printf("resultant ok\n");
+    testFactor();
+    std::printf("factor ok\n");
+    testHighDegreeFactor();
+    std::printf("high-degree factor ok\n");
+    testMultivariateFactor();
+    std::printf("multivariate factor ok\n");
+    testTogether();
+    std::printf("together ok\n");
 
-    if (failures == 0) {
+    if (failures == 0)
+    {
         std::printf("全部通过\n");
         return 0;
     }

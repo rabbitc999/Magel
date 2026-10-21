@@ -17,6 +17,7 @@
 | 模块 | 内容 | 函数重载数 |
 | --- | --- | ---: |
 | [`std::binary`](std-binary.md) | 二进制读取 | 35 |
+| [`std::cas`](std-cas.md) | 精确符号计算 | 50 |
 | [`std::cli`](std-cli.md) | 命令行参数 | 7 |
 | [`std::clock`](std-clock.md) | 单调时钟 | 2 |
 | [`std::collections`](std-collections.md) | 集合扩展 | 40 |
@@ -35,7 +36,7 @@
 | [`std::lang`](std-lang.md) | 核心库 | 218 |
 | [`std::linalg`](std-linalg.md) | 向量与矩阵 | 56 |
 | [`std::linkedlist`](std-linkedlist.md) | 双向链表 | 21 |
-| [`std::math`](std-math.md) | 标量数学 | 23 |
+| [`std::math`](std-math.md) | 泛型数学 | 24 |
 | [`std::memory`](std-memory.md) | 内存视图与 arena | 9 |
 | [`std::message`](std-message.md) | 线程邮箱 | 6 |
 | [`std::net`](std-net.md) | TCP 与 HTTP | 37 |

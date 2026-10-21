@@ -94,6 +94,8 @@ def comment_text(comment):
 def behavior(entry):
     """合并人工语义说明、同族宿主入口与声明注释。"""
     module, owner, name = entry['module'], entry['owner'], entry['name']
+    if module == 'std::cas':
+        return comment_text(entry['comment'])
     if module in ('std::thread','std::concurrency','std::event','std::message','std::watchdog'):
         if name in CONCURRENCY_BEHAVIOR: return CONCURRENCY_BEHAVIOR[name]
         if module=='std::event' and name=='stop': return '删除定时源及其未接收通知，重复停止安全。'
@@ -171,7 +173,7 @@ def render(data):
         'core': ['std','std::lang','std::reflect'],
         'collections': ['std::collections','std::iter','std::algorithms'],
         'text': ['std::text','std::utf8','std::encoding','std::parse','std::regex','std::json','std::toml','std::csv','std::binary','std::compress'],
-        'math': ['std::math','std::complex','std::linalg','std::numerics','std::numtheory','std::signal','std::random'],
+        'math': ['std::math','std::cas','std::complex','std::linalg','std::numerics','std::numtheory','std::signal','std::random'],
         'io': ['std::io','std::path','std::cli','std::net','std::sql','std::process'],
         'concurrency': ['std::concurrency','std::thread','std::message','std::event'],
         'system': ['std::memory','std::clock','std::datetime','std::watchdog','std::probe'],

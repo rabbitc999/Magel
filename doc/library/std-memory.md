@@ -144,18 +144,18 @@ memory=ok
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-336"></a>`struct Span<T>: Iterator<T mut&>, Index<T, int64>` | `Span<T>` 是"指针 + 长度"的视图，所以它的迭代器**返回元素指针**：
+| 模块 | <a id="symbol-338"></a>`struct Span<T>: Iterator<T mut&>, Index<T, int64>` | `Span<T>` 是"指针 + 长度"的视图，所以它的迭代器**返回元素指针**：
 `for (T mut& p in span) { *p = …; }` 拿到的是可写元素地址，不复制元素；
 只要值就读 `span[i]` 或先 `T v = *p;`。 |
-| Span | <a id="symbol-337"></a>`T mut& data` | 视图引用的连续存储；视图不延长来源的生命周期。 |
-| Span | <a id="symbol-338"></a>`int64 length` | 连续存储中可访问的元素数量。 |
-| 模块 | <a id="symbol-339"></a>`struct MemoryStats` | 当前活跃分配的字节数、块数及历史字节峰值快照。 |
-| MemoryStats | <a id="symbol-340"></a>`int64 liveBytes` | 当前活跃分配的字节数。 |
-| MemoryStats | <a id="symbol-341"></a>`int64 liveBlocks` | 当前活跃分配的块数。 |
-| MemoryStats | <a id="symbol-342"></a>`int64 peakBytes` | 历史活跃分配字节数的峰值。 |
-| 模块 | <a id="symbol-343"></a>`struct Memory` | 内存统计与宿主内存管理操作的静态入口。 |
-| 模块 | <a id="symbol-344"></a>`struct Arena : Drop` | 拥有宿主 arena 句柄的资源包装，集中管理 arena 分配。 |
-| Arena | <a id="symbol-345"></a>`uint64 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
+| Span | <a id="symbol-339"></a>`T mut& data` | 视图引用的连续存储；视图不延长来源的生命周期。 |
+| Span | <a id="symbol-340"></a>`int64 length` | 连续存储中可访问的元素数量。 |
+| 模块 | <a id="symbol-341"></a>`struct MemoryStats` | 当前活跃分配的字节数、块数及历史字节峰值快照。 |
+| MemoryStats | <a id="symbol-342"></a>`int64 liveBytes` | 当前活跃分配的字节数。 |
+| MemoryStats | <a id="symbol-343"></a>`int64 liveBlocks` | 当前活跃分配的块数。 |
+| MemoryStats | <a id="symbol-344"></a>`int64 peakBytes` | 历史活跃分配字节数的峰值。 |
+| 模块 | <a id="symbol-345"></a>`struct Memory` | 内存统计与宿主内存管理操作的静态入口。 |
+| 模块 | <a id="symbol-346"></a>`struct Arena : Drop` | 拥有宿主 arena 句柄的资源包装，集中管理 arena 分配。 |
+| Arena | <a id="symbol-347"></a>`uint64 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
 
 ## 函数索引
 

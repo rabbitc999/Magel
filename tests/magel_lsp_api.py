@@ -212,7 +212,7 @@ int64 main() {
         assert '整数相加'.encode('utf-8') in result.stdout
         assert b'calc::pair' in result.stdout and module.as_uri().encode('utf-8') in result.stdout
         assert b'semanticTokensProvider' in result.stdout and b'typeParameter' in result.stdout
-        assert b'activeParameter' in result.stdout and b'float64 sqrt' in result.stdout, result.stdout.decode('utf-8', errors='replace')
+        assert b'activeParameter' in result.stdout and b'auto sqrt<T>' in result.stdout, result.stdout.decode('utf-8', errors='replace')
     print('标准库、泛型、重载、注释、跨模块定义、未保存模块、工程符号和内嵌 LSP 验证通过。')
 
 

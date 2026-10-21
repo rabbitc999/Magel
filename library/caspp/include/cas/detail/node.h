@@ -14,17 +14,19 @@
  * 中间状态；引用计数让释放时机完全确定，不需要 stop-the-world 扫描。
  */
 
-#include "cas/detail/bigInt.h"
+#include "cas/detail/integer_adapter.hpp"
 #include "cas/detail/config.h"
 #include "cas/memory.h"
 
 #include <cstddef>
 #include <cstdint>
 
-namespace Cas::Detail {
+namespace Cas::Detail
+{
 
 /** @brief 节点种类。 */
-enum class NodeKind : std::uint8_t {
+enum class NodeKind : std::uint8_t
+{
     Integer,   ///< 任意精度整数
     Rational,  ///< 有理数 p/q，q > 0，已约分
     Symbol,    ///< 符号（变量名驻留在全局符号表）
@@ -36,7 +38,8 @@ enum class NodeKind : std::uint8_t {
 };
 
 /** @brief 常数符号编号。 */
-enum class ConstantId : std::uint8_t {
+enum class ConstantId : std::uint8_t
+{
     Pi = 0,
     E = 1,
     EulerGamma = 2,
@@ -55,7 +58,8 @@ using NodePtr = Node *;
  * 操作数数组按需分配（Add/Mul 用 operands，Pow 用 operands[0..1]，
  * Function 用 operands 表示实参，Symbol/Integer/Rational/Constant 不用）。
  */
-class Node {
+class Node
+{
 public:
     /** @brief 创建整数节点。 */
     static NodePtr makeInteger(const BigInt &value);
@@ -164,7 +168,8 @@ std::uint32_t lookupSymbol(const std::string &name);
  *
  * 变换函数一律返回新节点（`Ptr`），调用方用完自动释放，避免了手工配对出错。
  */
-class Ptr {
+class Ptr
+{
 public:
     Ptr() = default;
     /**
@@ -175,22 +180,27 @@ public:
      */
     explicit Ptr(NodePtr node) : m_node(node) {}
     /** @brief 借用一颗由别处持有的子树：额外 retain 一份，形成独立持有者。 */
-    static Ptr borrow(NodePtr node) {
+    static Ptr borrow(NodePtr node)
+    {
         Node::retain(node);
         return Ptr(node);
     }
     Ptr(const Ptr &other) : m_node(other.m_node) { Node::retain(m_node); }
     Ptr(Ptr &&other) noexcept : m_node(other.m_node) { other.m_node = nullptr; }
-    Ptr &operator=(const Ptr &other) {
-        if (this != &other) {
+    Ptr &operator=(const Ptr &other)
+    {
+        if (this != &other)
+        {
             Node::retain(other.m_node);
             Node::release(m_node);
             m_node = other.m_node;
         }
         return *this;
     }
-    Ptr &operator=(Ptr &&other) noexcept {
-        if (this != &other) {
+    Ptr &operator=(Ptr &&other) noexcept
+    {
+        if (this != &other)
+        {
             Node::release(m_node);
             m_node = other.m_node;
             other.m_node = nullptr;
@@ -202,7 +212,8 @@ public:
     /** @brief 复制出一个新的持有者。 */
     Ptr share() const { return Ptr(*this); }
     /** @brief 转移所有权给裸指针调用方（不再释放）。 */
-    NodePtr detach() {
+    NodePtr detach()
+    {
         NodePtr result = m_node;
         m_node = nullptr;
         return result;
@@ -216,6 +227,6 @@ private:
     NodePtr m_node = nullptr;
 };
 
-} // namespace Cas::Detail
+}  // namespace Cas::Detail
 
-#endif // CAS_DETAIL_NODE_H
+#endif  // CAS_DETAIL_NODE_H

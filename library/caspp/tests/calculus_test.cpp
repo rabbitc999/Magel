@@ -15,21 +15,25 @@
  * 任一失败都会让进程返回 1，便于 make test 汇总。
  */
 
-namespace {
+namespace
+{
 
 int g_failures = 0;
 int g_total = 0;
 
 /** @brief 断言文本结果等于期望值。 */
-void expect(Cas::Engine &engine, const char *input, const char *expected) {
+void expect(Cas::Engine &engine, const char *input, const char *expected)
+{
     ++g_total;
     const Cas::Result result = engine.evaluate(input);
-    if (!result.ok) {
+    if (!result.ok)
+    {
         std::printf("FAIL %-42s ← 错误：%s\n", input, result.message.c_str());
         ++g_failures;
         return;
     }
-    if (result.text == expected) {
+    if (result.text == expected)
+    {
         std::printf("ok   %-42s = %s\n", input, result.text.c_str());
         return;
     }
@@ -38,10 +42,12 @@ void expect(Cas::Engine &engine, const char *input, const char *expected) {
 }
 
 /** @brief 断言求值失败（用于"应当报错"的用例）。 */
-void expectError(Cas::Engine &engine, const char *input) {
+void expectError(Cas::Engine &engine, const char *input)
+{
     ++g_total;
     const Cas::Result result = engine.evaluate(input);
-    if (!result.ok) {
+    if (!result.ok)
+    {
         std::printf("ok   %-42s 正确报错\n", input);
         return;
     }
@@ -50,10 +56,12 @@ void expectError(Cas::Engine &engine, const char *input) {
 }
 
 /** @brief 只校验解析成功（表达式可解析即可）。 */
-void expectParse(Cas::Engine &engine, const char *input) {
+void expectParse(Cas::Engine &engine, const char *input)
+{
     ++g_total;
     const Cas::Result result = engine.evaluate(input);
-    if (result.ok) {
+    if (result.ok)
+    {
         std::printf("ok   %-42s → %s\n", input, result.text.c_str());
         return;
     }
@@ -63,11 +71,12 @@ void expectParse(Cas::Engine &engine, const char *input) {
 
 /* ------------------------------------------------------------- 用例组 */
 
-void testParsing(Cas::Engine &engine) {
+void testParsing(Cas::Engine &engine)
+{
     std::printf("\n== 解析 ==\n");
     expect(engine, "2x + 3x", "5*x");
-    expect(engine, "2(x+1)", "2*(x + 1)"); // 隐式乘法，默认不展开
-    expect(engine, "(x+1)(x-1)", "(x - 1)*(x + 1)"); // 隐式乘法，默认不展开
+    expect(engine, "2(x+1)", "2*(x + 1)");            // 隐式乘法，默认不展开
+    expect(engine, "(x+1)(x-1)", "(x - 1)*(x + 1)");  // 隐式乘法，默认不展开
     expect(engine, "x^2^3", "x^8");
     expect(engine, "-x^2", "-x^2");
     expect(engine, "1/2 + 1/3", "5/6");
@@ -85,7 +94,8 @@ void testParsing(Cas::Engine &engine) {
     expectError(engine, "x + @");
 }
 
-void testSimplification(Cas::Engine &engine) {
+void testSimplification(Cas::Engine &engine)
+{
     std::printf("\n== 化简 ==\n");
     expect(engine, "simplify(x + x + x)", "3*x");
     expect(engine, "simplify(x*x*x)", "x^3");
@@ -97,7 +107,8 @@ void testSimplification(Cas::Engine &engine) {
     expect(engine, "simplify(2^10)", "1024");
 }
 
-void testExpansion(Cas::Engine &engine) {
+void testExpansion(Cas::Engine &engine)
+{
     std::printf("\n== 展开 ==\n");
     expect(engine, "expand((x+1)^2)", "x^2 + 2*x + 1");
     expect(engine, "expand((x+1)^3)", "x^3 + 3*x^2 + 3*x + 1");
@@ -113,16 +124,18 @@ void testExpansion(Cas::Engine &engine) {
                                       "56*x^3*y^5 + 56*x^5*y^3 + 70*x^4*y^4");
 }
 
-void testFactoring(Cas::Engine &engine) {
+void testFactoring(Cas::Engine &engine)
+{
     std::printf("\n== 因式分解 ==\n");
     expect(engine, "factor(x^2-1)", "(x - 1)*(x + 1)");
     expect(engine, "factor(x^2-9)", "(x - 3)*(x + 3)");
     expect(engine, "factor(x^2+2x+1)", "(x + 1)^2");
     expect(engine, "factor(2x^2+7x+3)", "(x + 3)*(2*x + 1)");
-    expect(engine, "factor(x^2+1)", "x^2 + 1"); // 有理数域上不可约
+    expect(engine, "factor(x^2+1)", "x^2 + 1");  // 有理数域上不可约
 }
 
-void testDerivative(Cas::Engine &engine) {
+void testDerivative(Cas::Engine &engine)
+{
     std::printf("\n== 求导 ==\n");
     expect(engine, "diff(x^2, x)", "2*x");
     expect(engine, "diff(x^3+2x, x)", "3*x^2 + 2");
@@ -136,7 +149,8 @@ void testDerivative(Cas::Engine &engine) {
     expect(engine, "diff(sqrt(x), x)", "1/(2*sqrt(x))");
 }
 
-void testIntegration(Cas::Engine &engine) {
+void testIntegration(Cas::Engine &engine)
+{
     std::printf("\n== 积分 ==\n");
     expect(engine, "integrate(x^2, x)", "1/3*x^3");
     expect(engine, "integrate(x, x)", "1/2*x^2");
@@ -160,7 +174,8 @@ void testIntegration(Cas::Engine &engine) {
     expect(engine, "integrate(1/x, x, 1, 2)", "log(2)");
 }
 
-void testRationalIntegration(Cas::Engine &engine) {
+void testRationalIntegration(Cas::Engine &engine)
+{
     std::printf("\n== 有理函数积分 ==\n");
     // 分母一次：多项式除法 + 对数
     expect(engine, "integrate(1/x, x)", "log(x)");
@@ -176,7 +191,8 @@ void testRationalIntegration(Cas::Engine &engine) {
     expect(engine, "integrate(1/(x^2+4), x, 0, 2)", "1/8*pi");
 }
 
-void testLimit(Cas::Engine &engine) {
+void testLimit(Cas::Engine &engine)
+{
     std::printf("\n== 极限 ==\n");
     expect(engine, "limit(sin(x)/x, x, 0)", "1");
     expect(engine, "limit((1-cos(x))/x^2, x, 0)", "1/2");
@@ -190,7 +206,8 @@ void testLimit(Cas::Engine &engine) {
     expect(engine, "limit(x^3, x, -oo)", "-inf");
 }
 
-void testTaylor(Cas::Engine &engine) {
+void testTaylor(Cas::Engine &engine)
+{
     std::printf("\n== Taylor 展开 ==\n");
     expect(engine, "taylor(exp(x), 0, 4)", "1/24*x^4 + 1/6*x^3 + 1/2*x^2 + x + 1");
     expect(engine, "taylor(sin(x), 0, 5)", "1/120*x^5 - 1/6*x^3 + x");
@@ -198,7 +215,8 @@ void testTaylor(Cas::Engine &engine) {
     expect(engine, "taylor(1/(1-x), 0, 3)", "x^3 + x^2 + x + 1");
 }
 
-void testSolve(Cas::Engine &engine) {
+void testSolve(Cas::Engine &engine)
+{
     std::printf("\n== 方程求解 ==\n");
     expect(engine, "solve(x^2-5x+6=0, x)", "x = 2, x = 3");
     expect(engine, "solve(x^2-1=0, x)", "x = -1, x = 1");
@@ -209,13 +227,15 @@ void testSolve(Cas::Engine &engine) {
     expect(engine, "solve([x+y+z=6, x-y=0, z=2], [x,y,z])", "x = 2, y = 2, z = 2");
 }
 
-void testInequality(Cas::Engine &engine) {
+void testInequality(Cas::Engine &engine)
+{
     std::printf("\n== 不等式 ==\n");
     expectParse(engine, "x^2-1>0");
     expectParse(engine, "2x+1<3");
 }
 
-void testTrig(Cas::Engine &engine) {
+void testTrig(Cas::Engine &engine)
+{
     std::printf("\n== 三角化简 ==\n");
     expect(engine, "trigsimp(sin(x)^2+cos(x)^2)", "1");
     expect(engine, "trigsimp(2sin(x)^2+2cos(x)^2)", "2");
@@ -238,37 +258,45 @@ void testTrig(Cas::Engine &engine) {
     expect(engine, "sqrt(4)", "2");
     expect(engine, "sqrt(16)", "4");
     expect(engine, "8^(1/3)", "2");
-    expect(engine, "sqrt(2)", "sqrt(2)"); // 无理数保持根式
+    expect(engine, "sqrt(2)", "sqrt(2)");  // 无理数保持根式
 }
 
-void testGroebner(Cas::Engine &engine) {
+void testGroebner(Cas::Engine &engine)
+{
     std::printf("\n== Groebner 基 ==\n");
     expectParse(engine, "groebner([x^2+y^2-1, x-y], [x, y])");
     expectParse(engine, "groebner([x*y-1, x+y-3], [x, y])");
 }
 
-void testLatex(Cas::Engine &engine) {
+void testLatex(Cas::Engine &engine)
+{
     std::printf("\n== LaTeX 输出 ==\n");
     ++g_total;
     const Cas::Result result = engine.toLatexResult("1/x + x^2");
-    const bool good = result.ok && result.latex.find("\\frac") != std::string::npos &&
-                      result.latex.find("x^{2}") != std::string::npos;
-    if (good) {
+    const bool good = result.ok && result.latex.find("\\frac") != std::string::npos && result.latex.find("x^{2}") != std::string::npos;
+    if (good)
+    {
         std::printf("ok   %-42s → %s\n", "latex(1/x + x^2)", result.latex.c_str());
-    } else {
+    }
+    else
+    {
         std::printf("FAIL %-42s ← %s\n", "latex(1/x + x^2)", result.latex.c_str());
         ++g_failures;
     }
 }
 
-void testMemory(Cas::Engine &engine) {
+void testMemory(Cas::Engine &engine)
+{
     std::printf("\n== 内存池 ==\n");
     ++g_total;
     const Cas::MemoryStats stats = engine.memoryStats();
-    if (stats.capacity > 0) {
+    if (stats.capacity > 0)
+    {
         std::printf("ok   池容量 %zu 字节，活动 %zu 字节 / %zu 块，峰值 %zu 字节\n", stats.capacity,
                     stats.liveBytes, stats.liveBlocks, stats.peakBytes);
-    } else {
+    }
+    else
+    {
         std::printf("FAIL 内存池未初始化\n");
         ++g_failures;
     }
@@ -277,9 +305,12 @@ void testMemory(Cas::Engine &engine) {
     for (int i = 0; i < 200; ++i) engine.evaluate("expand((x+1)^6)");
     ++g_total;
     const Cas::MemoryStats after = engine.memoryStats();
-    if (after.liveBytes < stats.capacity / 2) {
+    if (after.liveBytes < stats.capacity / 2)
+    {
         std::printf("ok   200 次展开后活动 %zu 字节（未泄漏）\n", after.liveBytes);
-    } else {
+    }
+    else
+    {
         std::printf("FAIL 200 次展开后活动 %zu 字节，疑似泄漏\n", after.liveBytes);
         ++g_failures;
     }
@@ -291,7 +322,8 @@ void testMemory(Cas::Engine &engine) {
  * 这一组覆盖的规则都是"旧版返回原式/报错"的场景，因此期望值都写死成闭式，
  * 一旦某条规则退化就能直接看出来。
  */
-void testCalculusExtensions(Cas::Engine &engine) {
+void testCalculusExtensions(Cas::Engine &engine)
+{
     // 三角有理式：万能代换 t = tan(u/2)
     expect(engine, "integrate(1/sin(x), x)", "log(tan(1/2*x))");
     expect(engine, "integrate(1/(1+cos(x)), x)", "tan(1/2*x)");
@@ -330,9 +362,14 @@ void testCalculusExtensions(Cas::Engine &engine) {
     expectError(engine, "critical(2*x+1)");
 }
 
-} // namespace
+}  // namespace
 
-int main() {
+/**
+ * @brief 执行解析、符号微积分和组合特性回归并汇总检查结果。
+ * @return 所有检查通过时返回零，否则返回非零失败状态。
+ */
+int main()
+{
     Cas::Engine engine;
 
     testParsing(engine);

@@ -14,7 +14,7 @@
 
 #include "allocator.h"
 #include "detail/config.h"
-#include "detail/memoryPool.h"
+#include "detail/memory_pool.hpp"
 
 #include <cstddef>
 #include <deque>
@@ -31,11 +31,13 @@
 #include <utility>
 #include <vector>
 
-namespace Cas::Memory {
+namespace Cas::Memory
+{
 
 /** @brief 记录分配归属的容器分配器；对象存活期间即使切换池也能正确归还。 */
 template <class T>
-class PoolAllocator {
+class PoolAllocator
+{
 public:
     using value_type = T;
     using size_type = std::size_t;
@@ -47,28 +49,35 @@ public:
 
     PoolAllocator() noexcept = default;
     template <class U>
-    PoolAllocator(const PoolAllocator<U> &) noexcept {}
+    PoolAllocator(const PoolAllocator<U> &) noexcept
+    {
+    }
 
     /** @brief 从进程级 CAS 池分配；池未初始化时退回标准分配。 */
-    T *allocate(std::size_t count) {
+    T *allocate(std::size_t count)
+    {
         if (count > static_cast<std::size_t>(-1) / sizeof(T)) throw std::bad_alloc();
         void *raw = Allocator::ready() ? Allocator::allocate(count * sizeof(T), alignof(T)) : nullptr;
-        if (!raw) {
+        if (!raw)
+        {
             // 池未就绪或容量不足：交给标准分配器。释放时按同一判据归还，配对不会错。
             raw = ::operator new(count * sizeof(T));
         }
         return static_cast<T *>(raw);
     }
     /** @brief 归还：池内地址回池，其余交给标准分配器。 */
-    void deallocate(T *pointer, std::size_t) noexcept {
+    void deallocate(T *pointer, std::size_t) noexcept
+    {
         if (!pointer) return;
         if (!Allocator::release(pointer)) ::operator delete(static_cast<void *>(pointer));
     }
 
     template <class U>
-    bool operator==(const PoolAllocator<U> &) const noexcept { return true; }
+    bool operator==(const PoolAllocator<U> &) const noexcept
+    { return true; }
     template <class U>
-    bool operator!=(const PoolAllocator<U> &) const noexcept { return false; }
+    bool operator!=(const PoolAllocator<U> &) const noexcept
+    { return false; }
 };
 
 template <class T>
@@ -100,10 +109,11 @@ inline std::string toStdString(const String &text) { return std::string(text.beg
 
 /** @brief 以池分配构造共享对象。 */
 template <class T, class... Args>
-std::shared_ptr<T> makeShared(Args &&...args) {
+std::shared_ptr<T> makeShared(Args &&...args)
+{
     return std::allocate_shared<T>(PoolAllocator<T>(), std::forward<Args>(args)...);
 }
 
-} // namespace Cas::Memory
+}  // namespace Cas::Memory
 
-#endif // CAS_MEMORY_H
+#endif  // CAS_MEMORY_H

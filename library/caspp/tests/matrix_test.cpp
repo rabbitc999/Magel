@@ -17,29 +17,34 @@
  * 输出约定与其它测试一致：每行 `ok   <描述>` 或 `FAIL <描述> ← 实际值`。
  */
 
-namespace {
+namespace
+{
 
 int g_failures = 0;
 int g_total = 0;
 
 /** @brief 去掉引擎内部使用的矩阵标记。 */
-std::string display(const std::string &text) {
+std::string display(const std::string &text)
+{
     std::size_t begin = 0;
     while (begin < text.size() && text[begin] == '\x1F') ++begin;
     return text.substr(begin);
 }
 
 /** @brief 断言文本结果等于期望值。 */
-void expect(Cas::Engine &engine, const char *input, const char *expected) {
+void expect(Cas::Engine &engine, const char *input, const char *expected)
+{
     ++g_total;
     const Cas::Result result = engine.evaluate(input);
-    if (!result.ok) {
+    if (!result.ok)
+    {
         std::printf("FAIL %-46s ← 错误：%s\n", input, result.message.c_str());
         ++g_failures;
         return;
     }
     const std::string actual = display(result.text);
-    if (actual == expected) {
+    if (actual == expected)
+    {
         std::printf("ok   %-46s = %s\n", input, actual.c_str());
         return;
     }
@@ -48,10 +53,12 @@ void expect(Cas::Engine &engine, const char *input, const char *expected) {
 }
 
 /** @brief 断言求值失败（用于"应当报错"的用例）。 */
-void expectError(Cas::Engine &engine, const char *input) {
+void expectError(Cas::Engine &engine, const char *input)
+{
     ++g_total;
     const Cas::Result result = engine.evaluate(input);
-    if (!result.ok) {
+    if (!result.ok)
+    {
         std::printf("ok   %-46s 正确报错\n", input);
         return;
     }
@@ -60,10 +67,12 @@ void expectError(Cas::Engine &engine, const char *input) {
 }
 
 /** @brief 断言 LaTeX 输出里包含指定片段。 */
-void expectLatexContains(Cas::Engine &engine, const char *input, const char *needle) {
+void expectLatexContains(Cas::Engine &engine, const char *input, const char *needle)
+{
     ++g_total;
     const Cas::Result result = engine.evaluate(input);
-    if (result.ok && result.latex.find(needle) != std::string::npos) {
+    if (result.ok && result.latex.find(needle) != std::string::npos)
+    {
         std::printf("ok   %-46s LaTeX 含 %s\n", input, needle);
         return;
     }
@@ -73,7 +82,8 @@ void expectLatexContains(Cas::Engine &engine, const char *input, const char *nee
 
 /* ------------------------------------------------------------- 用例组 */
 
-void testDeterminant(Cas::Engine &engine) {
+void testDeterminant(Cas::Engine &engine)
+{
     std::printf("\n== 行列式 ==\n");
     expect(engine, "det([[1,2],[3,4]])", "-2");
     expect(engine, "det([[1,2,3],[4,5,6],[7,8,10]])", "-3");
@@ -87,7 +97,8 @@ void testDeterminant(Cas::Engine &engine) {
     expect(engine, "det([[1,2,3],[0,5,6],[0,0,9]])", "45");
 }
 
-void testInverse(Cas::Engine &engine) {
+void testInverse(Cas::Engine &engine)
+{
     std::printf("\n== 逆矩阵 ==\n");
     expect(engine, "inv([[1,2],[3,4]])", "[[-2, 1], [3/2, -1/2]]");
     expect(engine, "inv([[2,0],[0,4]])", "[[1/2, 0], [0, 1/4]]");
@@ -98,7 +109,8 @@ void testInverse(Cas::Engine &engine) {
     expectError(engine, "inv([[1,2,3],[4,5,6],[7,8,9]])");
 }
 
-void testTransposeAndTrace(Cas::Engine &engine) {
+void testTransposeAndTrace(Cas::Engine &engine)
+{
     std::printf("\n== 转置与迹 ==\n");
     expect(engine, "transpose([[1,2,3],[4,5,6]])", "[[1, 4], [2, 5], [3, 6]]");
     expect(engine, "trans([[1,2],[3,4]])", "[[1, 3], [2, 4]]");
@@ -111,7 +123,8 @@ void testTransposeAndTrace(Cas::Engine &engine) {
     expectError(engine, "trace([[1,2,3],[4,5,6]])");
 }
 
-void testMultiplication(Cas::Engine &engine) {
+void testMultiplication(Cas::Engine &engine)
+{
     std::printf("\n== 矩阵乘法 ==\n");
     expect(engine, "matmul([[1,2],[3,4]],[[5,6],[7,8]])", "[[19, 22], [43, 50]]");
     // 与单位阵相乘不变
@@ -123,7 +136,8 @@ void testMultiplication(Cas::Engine &engine) {
     expectError(engine, "matmul([[1,2],[3,4]],[[1,2,3]])");
 }
 
-void testReducedRowEchelon(Cas::Engine &engine) {
+void testReducedRowEchelon(Cas::Engine &engine)
+{
     std::printf("\n== 行最简形与秩 ==\n");
     expect(engine, "rref([[1,2,3],[4,5,6]])", "[[1, 0, -1], [0, 1, 2]]");
     expect(engine, "rref([[1,1,1],[2,2,2]])", "[[1, 1, 1], [0, 0, 0]]");
@@ -134,7 +148,8 @@ void testReducedRowEchelon(Cas::Engine &engine) {
     expect(engine, "rank(identity(3))", "3");
 }
 
-void testCharacteristicPolynomial(Cas::Engine &engine) {
+void testCharacteristicPolynomial(Cas::Engine &engine)
+{
     std::printf("\n== 特征多项式 ==\n");
     expect(engine, "charpoly([[2,0],[0,1]])", "x^2 - 3*x + 2");
     expect(engine, "charpoly([[1,2],[3,4]])", "x^2 - 5*x - 2");
@@ -143,7 +158,8 @@ void testCharacteristicPolynomial(Cas::Engine &engine) {
     expect(engine, "charpoly(identity(2))", "x^2 - 2*x + 1");
 }
 
-void testEigenvalues(Cas::Engine &engine) {
+void testEigenvalues(Cas::Engine &engine)
+{
     std::printf("\n== 特征值 ==\n");
     expect(engine, "eigenvals([[2,0],[0,1]])", "{1, 2}");
     expect(engine, "eigenvalues([[1,2],[3,4]])", "{1/2*(sqrt(33) + 5), 1/2*(-sqrt(33) + 5)}");
@@ -152,7 +168,8 @@ void testEigenvalues(Cas::Engine &engine) {
     expectError(engine, "eigenvals([[0,1],[-1,0]])");
 }
 
-void testIdentity(Cas::Engine &engine) {
+void testIdentity(Cas::Engine &engine)
+{
     std::printf("\n== 单位阵 ==\n");
     expect(engine, "identity(1)", "[[1]]");
     expect(engine, "identity(2)", "[[1, 0], [0, 1]]");
@@ -160,7 +177,8 @@ void testIdentity(Cas::Engine &engine) {
     expect(engine, "eye(2)", "[[1, 0], [0, 1]]");
 }
 
-void testNestedCommands(Cas::Engine &engine) {
+void testNestedCommands(Cas::Engine &engine)
+{
     std::printf("\n== 嵌套调用 ==\n");
     // 矩阵作为中间结果参与外层标量计算
     expect(engine, "det(inv([[1,2],[3,4]]))", "-1/2");
@@ -174,7 +192,8 @@ void testNestedCommands(Cas::Engine &engine) {
     expectError(engine, "det(inv([[1,2],[2,4]]))");
 }
 
-void testIdentityProperties(Cas::Engine &engine) {
+void testIdentityProperties(Cas::Engine &engine)
+{
     std::printf("\n== 代数恒等式 ==\n");
     // det(AB) = det(A)·det(B)
     expect(engine, "det(matmul([[1,2],[3,4]],[[2,0],[1,3]]))", "-12");
@@ -186,14 +205,16 @@ void testIdentityProperties(Cas::Engine &engine) {
     expect(engine, "det(transpose([[1,2],[3,4]]))", "-2");
 }
 
-void testLatex(Cas::Engine &engine) {
+void testLatex(Cas::Engine &engine)
+{
     std::printf("\n== 矩阵 LaTeX ==\n");
     expectLatexContains(engine, "inv([[1,2],[3,4]])", "\\begin{pmatrix}");
     expectLatexContains(engine, "inv([[1,2],[3,4]])", "\\frac{3}{2}");
     expectLatexContains(engine, "transpose([[1,2,3],[4,5,6]])", "\\begin{pmatrix}1 & 4");
 }
 
-void testMalformedInput(Cas::Engine &engine) {
+void testMalformedInput(Cas::Engine &engine)
+{
     std::printf("\n== 非法输入 ==\n");
     // 行列长度不一致
     expectError(engine, "det([[1,2],[3]])");
@@ -203,9 +224,14 @@ void testMalformedInput(Cas::Engine &engine) {
     expectError(engine, "inv([[1,2,3],[4,5,6]])");
 }
 
-} // namespace
+}  // namespace
 
-int main() {
+/**
+ * @brief 执行符号矩阵运算与线性代数回归并汇总检查结果。
+ * @return 所有检查通过时返回零，否则返回非零失败状态。
+ */
+int main()
+{
     Cas::Engine engine;
 
     testDeterminant(engine);

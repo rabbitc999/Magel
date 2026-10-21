@@ -3,7 +3,7 @@
 
 // 数值层与分配器的独立自检：在接入表达式树之前先跑通这一层。
 #include "cas/allocator.h"
-#include "cas/detail/bigInt.h"
+#include "cas/detail/integer_adapter.hpp"
 #include "cas/memory.h"
 
 #include <cstdio>
@@ -12,12 +12,15 @@
 
 using Cas::Detail::BigInt;
 
-namespace {
+namespace
+{
 
 int failures = 0;
 
-void check(bool condition, const char *what) {
-    if (!condition) {
+void check(bool condition, const char *what)
+{
+    if (!condition)
+    {
         ++failures;
         std::printf("  [FAIL] %s\n", what);
     }
@@ -25,7 +28,17 @@ void check(bool condition, const char *what) {
 
 std::string big(long long v) { return BigInt(v).toString(); }
 
-void testSmall() {
+/**
+ * @brief 验证有符号整数转换边界、精确小整数四则运算与向下取整的商余约定。
+ */
+void testSmall()
+{
+    check(BigInt(-1).toLongLong() == -1, "负一转换保留符号");
+    check(BigInt(-42).toLongLong() == -42, "负数转换保留符号");
+    check(BigInt("-9223372036854775808").toLongLong() == (-9223372036854775807LL - 1), "INT64_MIN 转换");
+    check(BigInt("9223372036854775807").fitsLongLong(), "INT64_MAX 可精确转换");
+    check(!BigInt("9223372036854775808").fitsLongLong(), "超出有符号上界");
+    check(!BigInt("-9223372036854775809").fitsLongLong(), "超出有符号下界");
     check(big(0) == "0", "zero");
     check((BigInt(7) + BigInt(-3)).toString() == "4", "7 + -3");
     check((BigInt(3) - BigInt(10)).toString() == "-7", "3 - 10");
@@ -35,7 +48,8 @@ void testSmall() {
     check((BigInt(7) % BigInt(-2)).toString() == "-1", "7 % -2 == -1");
 }
 
-void testBig() {
+void testBig()
+{
     // 20! = 2432902008176640000，超过 2^61，走大数路径
     BigInt f(1);
     for (int i = 2; i <= 30; ++i) f *= BigInt(static_cast<long long>(i));
@@ -63,7 +77,8 @@ void testBig() {
     check((BigInt(-100) % BigInt(7)).toString() == "5", "-100 mod 7");
 }
 
-void testRoots() {
+void testRoots()
+{
     check(BigInt(144).isqrt().toString() == "12", "isqrt(144)");
     check(BigInt(145).isqrt().toString() == "12", "isqrt(145)");
     check(BigInt(1000000000000000000LL).isqrt().toString() == "1000000000", "isqrt(1e18)");
@@ -71,13 +86,13 @@ void testRoots() {
     check(!BigInt::power(BigInt(123456789), 2).negated().isPerfectSquare(), "负数非完全平方");
     check(BigInt(1000).nthRoot(3).toString() == "10", "1000 的立方根");
     check(BigInt::power(BigInt(97), 5).isPerfectPower(5), "97^5 是完全五次幂");
-    check(BigInt::gcd(BigInt::power(BigInt(6), 20), BigInt::power(BigInt(6), 12)).toString() ==
-              BigInt::power(BigInt(6), 12).toString(),
+    check(BigInt::gcd(BigInt::power(BigInt(6), 20), BigInt::power(BigInt(6), 12)).toString() == BigInt::power(BigInt(6), 12).toString(),
           "gcd(6^20, 6^12)");
     check(BigInt(17).modInverse(BigInt(3120)).toString() == "2753", "17 在 3120 下的逆元");
 }
 
-void testPool() {
+void testPool()
+{
     using namespace Cas::Detail;
     check(Cas::Allocator::initialize(), "池初始化");
     const auto before = Cas::Allocator::statistics();
@@ -97,7 +112,8 @@ void testPool() {
     check(Cas::Allocator::quiescent(), "池已静默");
 }
 
-void testPoolSemantics() {
+void testPoolSemantics()
+{
     using Cas::Detail::MemoryPool;
     alignas(16) unsigned char buffer[4096];
     MemoryPool pool(buffer, sizeof(buffer));
@@ -133,17 +149,33 @@ void testPoolSemantics() {
     check(!pool.allocate(100000, 8), "容量不足返回空指针");
 }
 
-} // namespace
+}  // namespace
 
-int main() {
+/**
+ * @brief 执行共享整数适配和 CAS 内存池回归并汇总检查结果。
+ * @return 所有检查通过时返回零，否则返回非零失败状态。
+ */
+int main()
+{
     std::printf("allocate/数值层自检\n");
     std::fflush(stdout);
-    testSmall(); std::printf("small ok\n"); std::fflush(stdout);
-    testBig(); std::printf("big ok\n"); std::fflush(stdout);
-    testRoots(); std::printf("roots ok\n"); std::fflush(stdout);
-    testPool(); std::printf("pool ok\n"); std::fflush(stdout);
-    testPoolSemantics(); std::printf("poolsem ok\n"); std::fflush(stdout);
-    if (failures == 0) {
+    testSmall();
+    std::printf("small ok\n");
+    std::fflush(stdout);
+    testBig();
+    std::printf("big ok\n");
+    std::fflush(stdout);
+    testRoots();
+    std::printf("roots ok\n");
+    std::fflush(stdout);
+    testPool();
+    std::printf("pool ok\n");
+    std::fflush(stdout);
+    testPoolSemantics();
+    std::printf("poolsem ok\n");
+    std::fflush(stdout);
+    if (failures == 0)
+    {
         std::printf("全部通过\n");
         return 0;
     }

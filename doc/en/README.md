@@ -99,3 +99,5 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 - Implicit moves in value breaks: [semantics and cleanup order](04-language-reference.md#moving-and-cleaning-up-value-breaks), [resource identity and destructor sample](../../example/samples/break_move.mgl).
 
 - [Threads, channels and explicit events](29-thread-concurrency.md)
+
+- [Exact symbolic computation and high precision mathematics](34-symbolic-computation.md)

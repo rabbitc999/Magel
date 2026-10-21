@@ -1,4 +1,5 @@
 #include "core_assets.hpp"
+#include "../../library/caspp/core_assets.hpp"
 #include "../magel_runtime_allocator.hpp"
 #include "../../library/template/engine.hpp"
 
@@ -549,6 +550,7 @@ int runCli(int argc, char **argv)
     const auto rewriteIncludes = [](Memory::String *content, const Memory::String &target) {
         struct Fix { const char *from; const char *to; };
         static const Fix fixes[] = {
+            {"../../library/caspp/core_assets.hpp", "caspp/core_assets.hpp"},
             {"../../library/allocator/magel_allocator.hpp", "runtime/magel_allocator.hpp"},
             {"../../source/allocator/magel_allocator.hpp", "runtime/magel_allocator.hpp"},
             {"../library/allocator/magel_allocator.hpp", "runtime/magel_allocator.hpp"},
@@ -632,10 +634,16 @@ int runCli(int argc, char **argv)
         {"bigint.hpp", root / "magel/library/bignum/bigint.hpp"},
         {"bigfloat.cpp", root / "magel/library/bignum/bigfloat.cpp"},
         {"bigfloat.hpp", root / "magel/library/bignum/bigfloat.hpp"},
+        {"bigfloat_math.hpp", root / "magel/library/bignum/bigfloat_math.hpp"},
+        {"bigfloat_math_detail.hpp", root / "magel/library/bignum/bigfloat_math_detail.hpp"},
+        {"bigfloat_transcendental.cpp", root / "magel/library/bignum/bigfloat_transcendental.cpp"},
+        {"bigfloat_trigonometry.cpp", root / "magel/library/bignum/bigfloat_trigonometry.cpp"},
     };
     for (const auto &[name, source] : runtime) ok = copy(source, "runtime/" + name) && ok;
     for (const char *name : stackvm::assets::kCoreAssets)
         ok = copy(root / "magel/library/stackvm" / name, Memory::String("runtime/") + name) && ok;
+    for (const char *name : Cas::Assets::kCoreAssets)
+        ok = copy(root / "magel/library/caspp" / name, Memory::String("caspp/") + name) && ok;
     for (const char *name : {"toml_source.hpp", "toml_source.cpp"})
         ok = copy(root / "magel/library/toml" / name, Memory::String("toml/") + name) && ok;
     for (const char *format : {"json", "toml"}) {
@@ -665,6 +673,9 @@ int runCli(int argc, char **argv)
         if (entry.is_regular_file() && (extension == ".hpp" || extension == ".h" || extension == ".cpp"))
             ok = copy(entry.path(), "glue/" + entry.path().filename().u8string()) && ok;
     }
+    for (const auto &entry : fs::directory_iterator(mc / "source/std"))
+        if (entry.is_regular_file() && entry.path().extension() == ".mgl")
+            ok = copy(entry.path(), "std/" + entry.path().filename().u8string()) && ok;
     for (const auto &entry : fs::directory_iterator(mc / "source/semantics"))
     {
         const auto extension = entry.path().extension().string();

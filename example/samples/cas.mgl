@@ -1,0 +1,36 @@
+import std::cas;
+
+int64 main()
+{
+    Expr polynomial = Expr::parse("x^3 + 2*x");
+    println("derivative = {}", polynomial.differentiate("x").str());
+    println("integral = {}", Expr::parse("x^2").integrate("x").str());
+    println("definite = {}", Expr::parse("x^2").integrateDefinite("x", Expr::parse("0"), Expr::parse("3")).str());
+
+    Expr third = Expr::parse("1/3");
+    Expr sixth = Expr::parse("1/6");
+    Expr half = third + sixth;
+    assert(half.numerator() == BigInteger(1));
+    assert(half.denominator() == BigInteger(2));
+    assert((third / sixth) == Expr::parse("2"));
+    assert((-third + third) == Expr::parse("0"));
+    println("exact = {}", half);
+    println("decimal = {}", half.decimal(50).str());
+
+    Expr huge = Expr::fromInteger(BigInteger("10000000000000000000000000000000000000001"));
+    assert((huge * huge / huge) == huge);
+    assert(Expr::fromDecimal(BigDecimal("0.1")) + Expr::fromDecimal(BigDecimal("0.2")) == Expr::parse("0.3"));
+
+    Expr tree;
+    {
+        Expr parent = Expr::parse("sin(x)");
+        tree = parent.ast();
+    }
+    assert(tree.kind() == NodeKind::Function);
+    assert(tree.name() == "sin");
+    assert(tree.childCount() == 1);
+    auto children = tree.children();
+    assert(children[0].kind() == NodeKind::Symbol);
+    println("ast = {}({})", tree.name(), children[0].name());
+    return 0;
+}

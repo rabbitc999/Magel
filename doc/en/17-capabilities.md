@@ -130,3 +130,5 @@ Threads use `std::thread::Thread` with copied initial arguments, cancellation, c
 The shared VM uses separate compilation units for quadruples, binary containers, execution, native services and concurrent communication. Builds and exports share library/stackvm/core_sources.txt. The stackvm.hpp header aggregates public interfaces; non-template implementations are linked separately.
 
 Saving a parsed std::toml document root retains its original comments and layout. In the underlying C++ value model, edits with the same container shape preserve layout. Structural edits retain all comment content, but may move comments to the beginning of the document. Parsing and saving repeatedly neither loses nor duplicates comments. See the [TOML API](../library/std-toml.md).
+
+`std::cas::Expr` provides string parsing, immutable AST traversal, exact rational arithmetic and calculus. Generic `std::math` functions support ordinary numbers, high precision decimals and symbolic expressions. See [symbolic computation and high precision mathematics](34-symbolic-computation.md) for algorithm, trimming and concurrency boundaries.

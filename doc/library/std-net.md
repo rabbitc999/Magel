@@ -108,24 +108,24 @@ response ok=1 status=200 reason=OK len=5 type=text/plain body=hello
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-346"></a>`#NonCopyable opcode TcpSocket` | 独占 TCP 连接；复制被拒绝，显式 move 转移所有权。 |
-| 模块 | <a id="symbol-347"></a>`#NonCopyable opcode TcpListener` | 独占 TCP 监听器；端口为零时由系统分配。 |
-| 模块 | <a id="symbol-348"></a>`struct Url` | 拆开的 HTTP 地址。 |
-| Url | <a id="symbol-349"></a>`bool ok` | 当前解析或请求是否成功。 |
-| Url | <a id="symbol-350"></a>`std::lang::String host` | URL 中的主机名。 |
-| Url | <a id="symbol-351"></a>`int64 port` | 网络端口。 |
-| Url | <a id="symbol-352"></a>`std::lang::String path` | 请求目标路径。 |
-| Url | <a id="symbol-353"></a>`std::lang::String error` | 最近操作的错误说明。 |
-| 模块 | <a id="symbol-354"></a>`struct HttpResponse` | HTTP 响应：状态码、原因、头部原文、正文。 |
-| HttpResponse | <a id="symbol-355"></a>`bool ok` | 当前解析或请求是否成功。 |
-| HttpResponse | <a id="symbol-356"></a>`int64 status` | HTTP 响应状态码。 |
-| HttpResponse | <a id="symbol-357"></a>`std::lang::String reason` | HTTP 状态原因文本。 |
-| HttpResponse | <a id="symbol-358"></a>`std::lang::String headers` | HTTP 响应头。 |
-| HttpResponse | <a id="symbol-359"></a>`std::lang::String body` | HTTP 响应正文。 |
-| HttpResponse | <a id="symbol-360"></a>`std::lang::String error` | 最近操作的错误说明。 |
-| 模块 | <a id="symbol-361"></a>`struct HttpClient` | 一条连接上的 HTTP 客户端；也提供一次性便捷方法 `fetch`/`submit`。 |
-| HttpClient | <a id="symbol-362"></a>`TcpSocket socket` | HTTP 客户端使用的 TCP 连接。 |
-| HttpClient | <a id="symbol-363"></a>`bool connected` | 客户端是否已建立连接。 |
+| 模块 | <a id="symbol-348"></a>`#NonCopyable opcode TcpSocket` | 独占 TCP 连接；复制被拒绝，显式 move 转移所有权。 |
+| 模块 | <a id="symbol-349"></a>`#NonCopyable opcode TcpListener` | 独占 TCP 监听器；端口为零时由系统分配。 |
+| 模块 | <a id="symbol-350"></a>`struct Url` | 拆开的 HTTP 地址。 |
+| Url | <a id="symbol-351"></a>`bool ok` | 当前解析或请求是否成功。 |
+| Url | <a id="symbol-352"></a>`std::lang::String host` | URL 中的主机名。 |
+| Url | <a id="symbol-353"></a>`int64 port` | 网络端口。 |
+| Url | <a id="symbol-354"></a>`std::lang::String path` | 请求目标路径。 |
+| Url | <a id="symbol-355"></a>`std::lang::String error` | 最近操作的错误说明。 |
+| 模块 | <a id="symbol-356"></a>`struct HttpResponse` | HTTP 响应：状态码、原因、头部原文、正文。 |
+| HttpResponse | <a id="symbol-357"></a>`bool ok` | 当前解析或请求是否成功。 |
+| HttpResponse | <a id="symbol-358"></a>`int64 status` | HTTP 响应状态码。 |
+| HttpResponse | <a id="symbol-359"></a>`std::lang::String reason` | HTTP 状态原因文本。 |
+| HttpResponse | <a id="symbol-360"></a>`std::lang::String headers` | HTTP 响应头。 |
+| HttpResponse | <a id="symbol-361"></a>`std::lang::String body` | HTTP 响应正文。 |
+| HttpResponse | <a id="symbol-362"></a>`std::lang::String error` | 最近操作的错误说明。 |
+| 模块 | <a id="symbol-363"></a>`struct HttpClient` | 一条连接上的 HTTP 客户端；也提供一次性便捷方法 `fetch`/`submit`。 |
+| HttpClient | <a id="symbol-364"></a>`TcpSocket socket` | HTTP 客户端使用的 TCP 连接。 |
+| HttpClient | <a id="symbol-365"></a>`bool connected` | 客户端是否已建立连接。 |
 
 ## 函数索引
 

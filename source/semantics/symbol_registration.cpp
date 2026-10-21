@@ -1209,42 +1209,74 @@ bool RegisterTop()
         g_nodes[static_cast<std::size_t>(topId)].i =
             static_cast<long long>(g_functionDecls.size()) - 1;
     }
-    g_inferenceFunctions.clear();
-    for (const MFunctionDecl &declaration : g_functionDecls)
-        if (declaration.signature.result)
-            g_inferenceFunctions[ModuleSymbol(declaration.module, declaration.source)] = declaration.signature;
-    for (std::size_t reverse = g_functionDecls.size(); reverse > 0u; --reverse)
     {
-        MFunctionDecl &declaration = g_functionDecls[reverse - 1u];
-        if (declaration.signature.result) continue;
-        if (declaration.source.rfind("__magel_lambda_", 0) == 0)
+        /**
+         * @brief 为 auto 返回推导临时提供完整重载目录，结束后恢复正式登记前的状态。
+         */
+        struct InferenceCatalogScope
         {
-            g_lambdaAutoReturns.insert(ModuleSymbol(declaration.module, declaration.source));
-            declaration.signature.result = SimpleType(MType::Int);
-            continue;
-        }
-        const MNode &body = N(declaration.bodyId);
-        const Memory::Vector<int> &statements = N(static_cast<int>(body.i)).kids;
-        PushScope();
-        const Memory::String savedModule = g_currentModule;
-        g_currentModule = declaration.module;
-        for (const MParam &param : declaration.signature.params)
-            g_scope.back()[param.source] = MVar{ param.type, param.source, true };
-        std::shared_ptr<MType> inferred;
-        for (const int statement : statements)
-        {
-            if (!InferAutoFunctionResult(statement, &inferred))
+            decltype(g_funcs) functions = g_funcs;
+            decltype(g_functionIndex) index = g_functionIndex;
+            /**
+             * @brief 恢复临时推导目录，正式登记随后分配最终形参名称。
+             */
+            ~InferenceCatalogScope()
             {
-                g_currentModule = savedModule;
-                PopScope();
-                return false;
+                g_funcs = std::move(functions);
+                g_functionIndex = std::move(index);
             }
+        } inferenceCatalog;
+        Memory::Map<Memory::String, std::size_t> overloadCounts;
+        for (const auto &declaration : g_functionDecls)
+            ++overloadCounts[ModuleSymbol(declaration.module, declaration.source)];
+        const auto registerInferenceSignature = [&](const MFunctionDecl &declaration) {
+            const auto key = ModuleSymbol(declaration.module, declaration.source);
+            const bool argumentsMain = declaration.source == "main" && !declaration.signature.params.empty();
+            const auto label = declaration.source == "main" ? (argumentsMain ? Memory::String("__magel_main_arguments") : Memory::String("main")) : MangledName(key, declaration.signature.params, overloadCounts[key] > 1u);
+            g_funcs[label] = declaration.signature;
+            auto &candidates = g_functionIndex[key];
+            if (std::find(candidates.begin(), candidates.end(), label) == candidates.end()) candidates.push_back(label);
+        };
+        for (const auto &declaration : g_functionDecls)
+            if (declaration.signature.result) registerInferenceSignature(declaration);
+        g_inferenceFunctions.clear();
+        for (const MFunctionDecl &declaration : g_functionDecls)
+            if (declaration.signature.result)
+                g_inferenceFunctions[ModuleSymbol(declaration.module, declaration.source)] = declaration.signature;
+        for (std::size_t reverse = g_functionDecls.size(); reverse > 0u; --reverse)
+        {
+            MFunctionDecl &declaration = g_functionDecls[reverse - 1u];
+            if (declaration.signature.result) continue;
+            if (declaration.source.rfind("__magel_lambda_", 0) == 0)
+            {
+                g_lambdaAutoReturns.insert(ModuleSymbol(declaration.module, declaration.source));
+                declaration.signature.result = SimpleType(MType::Int);
+                continue;
+            }
+            const MNode &body = N(declaration.bodyId);
+            const Memory::Vector<int> &statements = N(static_cast<int>(body.i)).kids;
+            PushScope();
+            const Memory::String savedModule = g_currentModule;
+            g_currentModule = declaration.module;
+            for (const MParam &param : declaration.signature.params)
+                g_scope.back()[param.source] = MVar{ param.type, param.source, true };
+            std::shared_ptr<MType> inferred;
+            for (const int statement : statements)
+            {
+                if (!InferAutoFunctionResult(statement, &inferred))
+                {
+                    g_currentModule = savedModule;
+                    PopScope();
+                    return false;
+                }
+            }
+            g_currentModule = savedModule;
+            PopScope();
+            if (!inferred) return Fail("auto 返回函数必须至少有一个带值 return：" + declaration.source);
+            declaration.signature.result = inferred;
+            g_inferenceFunctions[ModuleSymbol(declaration.module, declaration.source)] = declaration.signature;
+            registerInferenceSignature(declaration);
         }
-        g_currentModule = savedModule;
-        PopScope();
-        if (!inferred) return Fail("auto 返回函数必须至少有一个带值 return：" + declaration.source);
-        declaration.signature.result = inferred;
-        g_inferenceFunctions[ModuleSymbol(declaration.module, declaration.source)] = declaration.signature;
     }
     for (std::size_t index = 0; index < g_functionDecls.size(); ++index)
     {

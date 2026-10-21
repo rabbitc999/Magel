@@ -21,21 +21,25 @@
  * 输出约定与其它测试一致：每行 `ok   <描述>` 或 `FAIL <描述> ← 实际值`。
  */
 
-namespace {
+namespace
+{
 
 int g_failures = 0;
 int g_total = 0;
 
 /** @brief 断言文本结果等于期望值。 */
-void expect(Cas::Engine &engine, const char *input, const char *expected) {
+void expect(Cas::Engine &engine, const char *input, const char *expected)
+{
     ++g_total;
     const Cas::Result result = engine.evaluate(input);
-    if (!result.ok) {
+    if (!result.ok)
+    {
         std::printf("FAIL %-44s ← 错误：%s\n", input, result.message.c_str());
         ++g_failures;
         return;
     }
-    if (result.text == expected) {
+    if (result.text == expected)
+    {
         std::printf("ok   %-44s = %s\n", input, result.text.c_str());
         return;
     }
@@ -44,10 +48,12 @@ void expect(Cas::Engine &engine, const char *input, const char *expected) {
 }
 
 /** @brief 断言求值失败（用于极点、发散等应当拒绝的输入）。 */
-void expectError(Cas::Engine &engine, const char *input) {
+void expectError(Cas::Engine &engine, const char *input)
+{
     ++g_total;
     const Cas::Result result = engine.evaluate(input);
-    if (result.ok) {
+    if (result.ok)
+    {
         std::printf("FAIL %-44s ← 本该报错，却得到 %s\n", input, result.text.c_str());
         ++g_failures;
         return;
@@ -56,15 +62,18 @@ void expectError(Cas::Engine &engine, const char *input) {
 }
 
 /** @brief 断言结果文本包含指定片段（用于"收敛，和为 …"这类带说明的输出）。 */
-void expectContains(Cas::Engine &engine, const char *input, const char *needle) {
+void expectContains(Cas::Engine &engine, const char *input, const char *needle)
+{
     ++g_total;
     const Cas::Result result = engine.evaluate(input);
-    if (!result.ok) {
+    if (!result.ok)
+    {
         std::printf("FAIL %-44s ← 错误：%s\n", input, result.message.c_str());
         ++g_failures;
         return;
     }
-    if (result.text.find(needle) != std::string::npos) {
+    if (result.text.find(needle) != std::string::npos)
+    {
         std::printf("ok   %-44s = %s\n", input, result.text.c_str());
         return;
     }
@@ -74,7 +83,8 @@ void expectContains(Cas::Engine &engine, const char *input, const char *needle) 
 
 /* ------------------------------------------------------------ Gamma */
 
-void testGamma(Cas::Engine &engine) {
+void testGamma(Cas::Engine &engine)
+{
     std::printf("\n== Gamma 函数 ==\n");
     expect(engine, "gamma(1)", "1");
     expect(engine, "gamma(2)", "1");
@@ -100,7 +110,8 @@ void testGamma(Cas::Engine &engine) {
 
 /* ------------------------------------------- 阶乘 / 双阶乘 / 组合数 */
 
-void testFactorialFamily(Cas::Engine &engine) {
+void testFactorialFamily(Cas::Engine &engine)
+{
     std::printf("\n== 阶乘与组合数 ==\n");
     expect(engine, "0!", "1");
     expect(engine, "5!", "120");
@@ -127,7 +138,8 @@ void testFactorialFamily(Cas::Engine &engine) {
 
 /* ----------------------------------------- Beta / erf / Bessel / 谐波 */
 
-void testBetaAndErrorFunctions(Cas::Engine &engine) {
+void testBetaAndErrorFunctions(Cas::Engine &engine)
+{
     std::printf("\n== Beta / erf / 谐波数 ==\n");
     expect(engine, "beta(2,3)", "1/12");
     expect(engine, "beta(1,1)", "1");
@@ -145,7 +157,8 @@ void testBetaAndErrorFunctions(Cas::Engine &engine) {
     expect(engine, "harmonic(3,2)", "49/36");
 }
 
-void testBessel(Cas::Engine &engine) {
+void testBessel(Cas::Engine &engine)
+{
     std::printf("\n== Bessel 函数 ==\n");
     // J_0(0) = 1，J_n(0) = 0（n ≥ 1）
     expect(engine, "besselj(0,0)", "1");
@@ -159,7 +172,8 @@ void testBessel(Cas::Engine &engine) {
 
 /* --------------------------------------------------------- 伯努利数 */
 
-void testBernoulli(Cas::Engine &engine) {
+void testBernoulli(Cas::Engine &engine)
+{
     std::printf("\n== 伯努利数 ==\n");
     expect(engine, "bernoulli(0)", "1");
     expect(engine, "bernoulli(1)", "-1/2");
@@ -178,7 +192,8 @@ void testBernoulli(Cas::Engine &engine) {
 
 /* -------------------------------------------- specialsimplify 折叠 */
 
-void testSpecialSimplify(Cas::Engine &engine) {
+void testSpecialSimplify(Cas::Engine &engine)
+{
     std::printf("\n== specialsimplify ==\n");
     expect(engine, "specialsimplify(gamma(6))", "120");
     expect(engine, "specialsimp(gamma(1/2))", "sqrt(pi)");
@@ -189,7 +204,8 @@ void testSpecialSimplify(Cas::Engine &engine) {
 
 /* ------------------------------------------------------- 多项式求和 */
 
-void testPolynomialSum(Cas::Engine &engine) {
+void testPolynomialSum(Cas::Engine &engine)
+{
     std::printf("\n== 幂和（Faulhaber）==\n");
     expect(engine, "sum(1, i=1..n)", "n");
     expect(engine, "sum(i, i=1..n)", "1/2*n^2 + 1/2*n");
@@ -207,7 +223,8 @@ void testPolynomialSum(Cas::Engine &engine) {
 
 /* --------------------------------------------------------- p 级数 */
 
-void testPSeriesSum(Cas::Engine &engine) {
+void testPSeriesSum(Cas::Engine &engine)
+{
     std::printf("\n== p 级数与调和和 ==\n");
     expect(engine, "sum(1/i, i=1..5)", "137/60");
     expect(engine, "sum(1/i, i=1..10)", "7381/2520");
@@ -222,7 +239,8 @@ void testPSeriesSum(Cas::Engine &engine) {
 
 /* ------------------------------------------------------- 几何级数 */
 
-void testGeometricSum(Cas::Engine &engine) {
+void testGeometricSum(Cas::Engine &engine)
+{
     std::printf("\n== 几何级数 ==\n");
     expect(engine, "sum((1/2)^i, i=0..oo)", "2");
     expect(engine, "sum(2^(-i), i=0..oo)", "2");
@@ -236,7 +254,8 @@ void testGeometricSum(Cas::Engine &engine) {
 
 /* ---------------------------------------------- 算术-几何级数 */
 
-void testArithmeticGeometricSum(Cas::Engine &engine) {
+void testArithmeticGeometricSum(Cas::Engine &engine)
+{
     std::printf("\n== 算术-几何级数 ==\n");
     // Σ i q^i = q/(1-q)²
     expect(engine, "sum(i*(1/2)^i, i=0..oo)", "2");
@@ -248,7 +267,8 @@ void testArithmeticGeometricSum(Cas::Engine &engine) {
 
 /* --------------------------------------------------------- 裂项级数 */
 
-void testTelescopingSum(Cas::Engine &engine) {
+void testTelescopingSum(Cas::Engine &engine)
+{
     std::printf("\n== 裂项级数 ==\n");
     // 1/(i(i+1)) = 1/i - 1/(i+1)，无穷和只剩首项
     expect(engine, "sum(1/(i*(i+1)), i=1..oo)", "1");
@@ -266,7 +286,8 @@ void testTelescopingSum(Cas::Engine &engine) {
 
 /* --------------------------------------------------------- 敛散性 */
 
-void testConvergence(Cas::Engine &engine) {
+void testConvergence(Cas::Engine &engine)
+{
     std::printf("\n== 敛散性 ==\n");
     expectContains(engine, "converge(1/i^2, i=1..oo)", "收敛");
     expectContains(engine, "converge(1/i^2, i=1..oo)", "1/6*pi^2");
@@ -278,7 +299,8 @@ void testConvergence(Cas::Engine &engine) {
 
 /* ----------------------------------------------------- 序列识别 */
 
-void testGuess(Cas::Engine &engine) {
+void testGuess(Cas::Engine &engine)
+{
     std::printf("\n== 序列识别 ==\n");
     expect(engine, "guess([1,3,5,7,9])", "2*n + 1");
     expect(engine, "guess([1,4,9,16,25])", "n^2 + 2*n + 1");
@@ -291,7 +313,8 @@ void testGuess(Cas::Engine &engine) {
 
 /* ------------------------------------------------------- 综合 / 交互 */
 
-void testCrossFeature(Cas::Engine &engine) {
+void testCrossFeature(Cas::Engine &engine)
+{
     std::printf("\n== 跨模块组合 ==\n");
     // 求和结果可以直接进入化简 / 求值链
     expect(engine, "sum(i, i=1..10) + sum(i^2, i=1..10)", "440");
@@ -300,9 +323,14 @@ void testCrossFeature(Cas::Engine &engine) {
     expect(engine, "binomial(6,3) + harmonic(3)", "131/6");
 }
 
-} // namespace
+}  // namespace
 
-int main() {
+/**
+ * @brief 执行特殊函数、级数求和和收敛性回归并汇总检查结果。
+ * @return 所有检查通过时返回零，否则返回非零失败状态。
+ */
+int main()
+{
     Cas::Engine engine;
 
     testGamma(engine);
