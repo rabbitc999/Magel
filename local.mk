@@ -27,6 +27,7 @@ HOST_LIB := $(HOST_BUILD)/librecords.a
 CAS_BUILD := build/magel-cas
 CAS_SOURCE_NAMES := $(shell $(PYTHON) tools/cas_sources.py)
 CAS_OBJS := $(addprefix $(CAS_BUILD)/,$(CAS_SOURCE_NAMES:.cpp=.o))
+IPAGE_OBJS := $(HOST_BUILD)/ipage_sql.o $(HOST_BUILD)/ipage_dialect.o
 ifneq ($(filter 1,$(NO_MAGEL_STD) $(NO_MAGEL_STD_CAS) $(NO_MAGEL_BIG_INT)),)
 CAS_OBJS :=
 endif
@@ -135,7 +136,11 @@ $(CAS_BUILD)/%.o: library/caspp/%.cpp
 -include $(shell $(PYTHON) -c "from pathlib import Path; print(' '.join(str(p).replace(chr(92), '/') for p in Path('$(CAS_BUILD)').rglob('*.d')))")
 $(CAS_OBJS): build/magel-runtime/buildConfig.json
 
-$(HOST_LIB): $(HOST_BUILD)/sqlite3.o $(HOST_BUILD)/bigint.o $(HOST_BUILD)/bigfloat.o $(BIGFLOAT_MATH_OBJS) $(MAGEL_STANDARD_OBJS) $(HOST_BUILD)/json.o $(HOST_BUILD)/toml.o $(HOST_BUILD)/toml_source.o $(CAS_OBJS)
+$(HOST_BUILD)/ipage_%.o: library/ipage/source/ipage/%.cpp | $(HOST_BUILD)
+	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
+$(IPAGE_OBJS): build/magel-runtime/buildConfig.json
+
+$(HOST_LIB): $(HOST_BUILD)/sqlite3.o $(HOST_BUILD)/bigint.o $(HOST_BUILD)/bigfloat.o $(BIGFLOAT_MATH_OBJS) $(MAGEL_STANDARD_OBJS) $(HOST_BUILD)/json.o $(HOST_BUILD)/toml.o $(HOST_BUILD)/toml_source.o $(CAS_OBJS) $(IPAGE_OBJS)
 	$(PYTHON) -c "from pathlib import Path; Path(r'$@').unlink(missing_ok=True)"
 	$(AR) $(ARFLAGS) $@ $^
 

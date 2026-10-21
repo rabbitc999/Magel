@@ -1,0 +1,2 @@
+SELECT `t_`.`person_id` AS `person_id`, `t_`.`display_name` AS `display_name`, `t_`.`age` AS `age` FROM `people` AS `t_` WHERE `t_`.`person_id` = ? ORDER BY `t_`.`age` ASC LIMIT 10 [1]
+ipage parameter binding OK

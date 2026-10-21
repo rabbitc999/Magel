@@ -5137,7 +5137,7 @@ __Range range(int64 start, int64 stop);
 range(start, stop);
 ```
 
-**源码**：[source/magel_generic.cpp:1738](../../source/magel_generic.cpp#L1738)。
+**源码**：[source/magel_generic.cpp:1773](../../source/magel_generic.cpp#L1773)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
@@ -5178,7 +5178,7 @@ __Range range(int64 start, int64 stop, int64 step);
 range(start, stop, step);
 ```
 
-**源码**：[source/magel_generic.cpp:1746](../../source/magel_generic.cpp#L1746)。
+**源码**：[source/magel_generic.cpp:1781](../../source/magel_generic.cpp#L1781)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
@@ -5219,7 +5219,7 @@ __Interval_int64 rangeEq(int64 start, int64 stop);
 rangeEq(start, stop);
 ```
 
-**源码**：[source/magel_generic.cpp:1761](../../source/magel_generic.cpp#L1761)。
+**源码**：[source/magel_generic.cpp:1796](../../source/magel_generic.cpp#L1796)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
@@ -5255,7 +5255,7 @@ void drop();
 obj.drop();
 ```
 
-**源码**：[source/magel_generic.cpp:1968](../../source/magel_generic.cpp#L1968)。
+**源码**：[source/magel_generic.cpp:2003](../../source/magel_generic.cpp#L2003)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
@@ -5291,7 +5291,7 @@ void close();
 obj.close();
 ```
 
-**源码**：[source/magel_generic.cpp:1976](../../source/magel_generic.cpp#L1976)。
+**源码**：[source/magel_generic.cpp:2011](../../source/magel_generic.cpp#L2011)。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
@@ -6002,7 +6002,7 @@ T mut& toReference<T>(Option<T mut&> value);
 toReference<T>(value);
 ```
 
-**源码**：[source/magel_generic.cpp:1675](../../source/magel_generic.cpp#L1675)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:1710](../../source/magel_generic.cpp#L1710)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 
@@ -6040,7 +6040,7 @@ Option<T mut&> toOptional<T>(T mut& value);
 toOptional<T>(value);
 ```
 
-**源码**：[source/magel_generic.cpp:1681](../../source/magel_generic.cpp#L1681)（编译器内建，签名为等价调用形式）。
+**源码**：[source/magel_generic.cpp:1716](../../source/magel_generic.cpp#L1716)（编译器内建，签名为等价调用形式）。
 
 **完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
 

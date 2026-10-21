@@ -1,5 +1,105 @@
 module std::sql;
 
+import std::json;
+import std::reflect;
+
+/** 将模型类型映射到数据库表。 */
+@annotation ModelClass(table: String)
+/** 指定列名、存储类型和主键；kind 为 auto/int/real/text/bool。 */
+@annotation ModelField(column: String = "", kind: String = "auto", id: bool = false)
+
+String __ipageBuild(String model, String operation, String options, String values);
+int32 __sqlExecBound(int32 db, String sql, String parameters);
+
+/** 可独立保存、查看并执行的 SQL 与参数，参数为 JSON 标量数组。 */
+struct SqlStatement {
+    /** 包含占位符的 SQL 文本，不含参数值。 */
+    String sql;
+    /** 按占位符顺序保存类型的 JSON 标量数组。 */
+    String parameters;
+};
+
+/** 从反射元数据构造模型；没有 @Reflect 或 @ModelClass 时返回诊断。 */
+Result<String,String> __model<T>() {
+    std::reflect::requireReflection();
+    auto reflected = std::reflect::getStructInfo<T>();
+    if (reflected.isNone()) { return Result<String,String>::Err("SQL 模型需要 @Reflect"); }
+    auto info = reflected.unwrap();
+    auto classInfo = std::reflect::getAnnotationInfo("std::sql::ModelClass");
+    auto fieldInfo = std::reflect::getAnnotationInfo("std::sql::ModelField");
+    if (classInfo.isNone() || fieldInfo.isNone()) { return Result<String,String>::Err("SQL 注解元数据不可用"); }
+    String table;
+    for (std::reflect::Annotation annotation in info.annotations) {
+        if (annotation.annotationId == classInfo.unwrap().typeId) { table = annotation.args.at(0).asText().unwrap(); }
+    }
+    if (table == "") { return Result<String,String>::Err("SQL 模型需要 @ModelClass(table)"); }
+    String output = "{\"name\":" + std::reflect::__serdeQuote(info.name) + ",\"table\":" + std::reflect::__serdeQuote(table) + ",\"fields\":[";
+    bool first = true;
+    for (std::reflect::FieldInfo field in info.fields) {
+        String column = field.name;
+        String kind = "auto";
+        bool primary = false;
+        for (std::reflect::Annotation annotation in field.annotations) {
+            if (annotation.annotationId == fieldInfo.unwrap().typeId) {
+                String specified = annotation.args.at(0).asText().unwrap();
+                if (specified != "") { column = specified; }
+                kind = annotation.args.at(1).asText().unwrap();
+                primary = annotation.args.at(2).asBool().unwrap();
+            }
+        }
+        if (kind == "auto") {
+            if (field.typeId == std::reflect::getTypeId<String>()) { kind = "text"; }
+            elif (field.typeId == std::reflect::getTypeId<bool>()) { kind = "bool"; }
+            elif (field.typeId == std::reflect::getTypeId<float32>() || field.typeId == std::reflect::getTypeId<float64>()) { kind = "real"; }
+            elif (field.typeId == std::reflect::getTypeId<int8>() || field.typeId == std::reflect::getTypeId<int16>() || field.typeId == std::reflect::getTypeId<int32>() || field.typeId == std::reflect::getTypeId<int64>() || field.typeId == std::reflect::getTypeId<uint8>() || field.typeId == std::reflect::getTypeId<uint16>() || field.typeId == std::reflect::getTypeId<uint32>()) { kind = "int"; }
+            else { return Result<String,String>::Err("无法推断 SQL 字段存储类型：" + field.name); }
+        }
+        if (!first) { output = output + ","; }
+        first = false;
+        output = output + "{\"name\":" + std::reflect::__serdeQuote(field.name) + ",\"column\":" + std::reflect::__serdeQuote(column) + ",\"kind\":" + std::reflect::__serdeQuote(kind) + ",\"id\":" + primary.toString() + "}";
+    }
+    return Result<String,String>::Ok(output + "]}");
+}
+
+/** 值语义的动态查询；复制后可独立修改条件。 */
+struct Query {
+    /** 从反射类型与注解构造的模型元数据 JSON。 */
+    String model;
+    /** 按添加顺序合取的参数化过滤条件。 */
+    List<String> filters;
+    /** 按添加顺序使用的字段排序声明。 */
+    List<String> orders;
+    /** 显式选择的模型字段，为空时选择全部字段。 */
+    List<String> columns;
+    /** 最大返回行数，零表示不限制。 */
+    int64 limitValue;
+    /** 分页跳过的行数。 */
+    int64 offsetValue;
+
+    /** 添加排序列；列必须出现在模型中。 */
+    void orderBy(String field, bool descending = false) { self.orders.push("{\"field\":" + std::reflect::__serdeQuote(field) + ",\"desc\":" + descending.toString() + "}"); }
+    /** 选择模型字段，默认选择全部字段。 */
+    void select(String field) { self.columns.push(std::reflect::__serdeQuote(field)); }
+    /** 设置非负分页参数。 */
+    void page(int64 limit, int64 offset = 0) { self.limitValue = limit; self.offsetValue = offset; }
+    /** 生成 SQL 与参数；UPDATE/DELETE 强制要求过滤条件。 */
+    Result<SqlStatement,String> build(String operation = "select", String values = "{}") {
+        if (self.limitValue < 0 || self.offsetValue < 0) { return Result<SqlStatement,String>::Err("分页参数不能为负数"); }
+        String separator = ",";
+        String options = "{\"filters\":[" + separator.join(self.filters) + "],\"orders\":[" + separator.join(self.orders) + "],\"columns\":[" + separator.join(self.columns) + "],\"limit\":" + self.limitValue.toString() + ",\"offset\":" + self.offsetValue.toString() + "}";
+        auto parsed = std::json::parse(__ipageBuild(self.model, operation, options, values));
+        if (parsed.isErr()) { return Result<SqlStatement,String>::Err(parsed.error()); }
+        auto response = parsed.unwrap();
+        String error = response.find("error").unwrap().asString().unwrap();
+        if (error != "") { return Result<SqlStatement,String>::Err(error); }
+        SqlStatement statement;
+        statement.sql = response.find("sql").unwrap().asString().unwrap();
+        statement.parameters = response.find("params").unwrap().dump();
+        return Result<SqlStatement,String>::Ok(statement);
+    }
+
+};
+
 /*
  * std::sql —— Magel 语言连接**外部 SQL 数据库**的标准库模块（MySQL / SQLite / PostgreSQL / SQL Server）。
  *
@@ -329,6 +429,16 @@ opcode Database {
      * @return 结果集；`ok` 为假时 `error` 里是服务器给出的诊断。
      */
     ResultSet exec(std::lang::String sql) {
+        int32 rs = __sqlExec((int32)__sqlOwnerState(self.opcode, 0), sql);
+        return self.__result(rs);
+    }
+    /** 执行生成的参数化语句；值通过驱动绑定。 */
+    ResultSet exec(SqlStatement statement) {
+        int32 rs = __sqlExecBound((int32)__sqlOwnerState(self.opcode, 0), statement.sql, statement.parameters);
+        return self.__result(rs);
+    }
+    /** 从宿主结果句柄提取独立拥有的结果并更新连接状态。 */
+    ResultSet __result(int32 rs) {
         ResultSet result;
         result.ok = false;
         result.affected = 0;
@@ -337,7 +447,6 @@ opcode Database {
             __sqlOwnerUpdate(self.opcode, result.error, -1);
             return result;
         }
-        int32 rs = __sqlExec((int32)__sqlOwnerState(self.opcode, 0), sql);
         if (rs < 0) {
             result.error = __sqlError((int32)__sqlOwnerState(self.opcode, 0));
             __sqlOwnerUpdate(self.opcode, result.error, -1);
@@ -483,3 +592,39 @@ int64 displayWidth(std::lang::String text) {
     }
     return width;
 }
+
+    /** 从带模型注解的反射类型创建查询。 */
+    Result<Query,String> query<T>() {
+        auto metadata = __model<T>();
+        if (metadata.isErr()) { return Result<Query,String>::Err(metadata.error()); }
+        Query query;
+        query.model = metadata.unwrap();
+        return Result<Query,String>::Ok(query);
+    }
+    /** 添加参数化条件；操作符编号与 ipage OperatorType 一致，默认相等。 */
+    Result<bool,String> filter<V>(Query mut& query, String field, V value, int64 operation = 0) {
+        auto encoded = std::json::serialize<V>(&value);
+        if (encoded.isErr()) { return Result<bool,String>::Err(encoded.error()); }
+        query.filters.push("{\"field\":" + std::reflect::__serdeQuote(field) + ",\"op\":" + operation.toString() + ",\"values\":[" + encoded.unwrap() + "]}");
+        return Result<bool,String>::Ok(true);
+    }
+    /** 添加 IN 或 NOT IN 等多参数条件。 */
+    Result<bool,String> filterMany<V>(Query mut& query, String field, List<V> values, int64 operation = 11) {
+        auto encoded = std::json::serialize<List<V>>(&values);
+        if (encoded.isErr()) { return Result<bool,String>::Err(encoded.error()); }
+        query.filters.push("{\"field\":" + std::reflect::__serdeQuote(field) + ",\"op\":" + operation.toString() + ",\"values\":" + encoded.unwrap() + "}");
+        return Result<bool,String>::Ok(true);
+    }
+
+    /** 使用模型值生成参数化 INSERT。 */
+    Result<SqlStatement,String> insert<T>(Query mut& query, T const& value) {
+        auto encoded = std::json::serialize<T>(value);
+        if (encoded.isErr()) { return Result<SqlStatement,String>::Err(encoded.error()); }
+        return query.build("insert", encoded.unwrap());
+    }
+    /** 使用模型值生成参数化 UPDATE，主键不会被修改。 */
+    Result<SqlStatement,String> update<T>(Query mut& query, T const& value) {
+        auto encoded = std::json::serialize<T>(value);
+        if (encoded.isErr()) { return Result<SqlStatement,String>::Err(encoded.error()); }
+        return query.build("update", encoded.unwrap());
+    }

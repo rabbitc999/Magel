@@ -419,33 +419,35 @@
 | [std::iter::takeWhile](std-iter.md#api-38) | `Iter<T> takeWhile<T>(Iter<T> source, bool fn(T) predicate)` |
 | [std::iter::tryFold](std-iter.md#api-74) | `Result<A,E> tryFold<T,A,E>(Iter<T> source, A initial, Result<A,E> fn(A, T) callback)` |
 | [std::iter::zip](std-iter.md#api-53) | `Iter<(T,U)> zip<T,U>(Iter<T> left, Iter<U> right)` |
-| [std::json::JsonValue::asBool](std-json.md#api-15) | `Option<bool> asBool()` |
-| [std::json::JsonValue::asBytes](std-json.md#api-17) | `Option<std::lang::List<uint8>> asBytes()` |
-| [std::json::JsonValue::asDateTime](std-json.md#api-18) | `Option<std::lang::String> asDateTime()` |
-| [std::json::JsonValue::asFloat64](std-json.md#api-14) | `Option<float64> asFloat64()` |
-| [std::json::JsonValue::asInt](std-json.md#api-13) | `Option<int64> asInt()` |
-| [std::json::JsonValue::asString](std-json.md#api-16) | `Option<std::lang::String> asString()` |
-| [std::json::JsonValue::at](std-json.md#api-21) | `Option<JsonValue> at(int64 index)` |
-| [std::json::JsonValue::close](std-json.md#api-1) | `bool close()` |
-| [std::json::JsonValue::dump](std-json.md#api-25) | `std::lang::String dump()` |
-| [std::json::JsonValue::find](std-json.md#api-19) | `Option<JsonValue> find(std::lang::String key)` |
-| [std::json::JsonValue::findBytes](std-json.md#api-20) | `Option<JsonValue> findBytes(std::lang::List<uint8> key)` |
-| [std::json::JsonValue::isArray](std-json.md#api-8) | `bool isArray()` |
-| [std::json::JsonValue::isBool](std-json.md#api-4) | `bool isBool()` |
-| [std::json::JsonValue::isDateTime](std-json.md#api-11) | `bool isDateTime()` |
-| [std::json::JsonValue::isFloat](std-json.md#api-6) | `bool isFloat()` |
-| [std::json::JsonValue::isInt](std-json.md#api-5) | `bool isInt()` |
-| [std::json::JsonValue::isNull](std-json.md#api-3) | `bool isNull()` |
-| [std::json::JsonValue::isObject](std-json.md#api-9) | `bool isObject()` |
-| [std::json::JsonValue::isString](std-json.md#api-7) | `bool isString()` |
-| [std::json::JsonValue::isTable](std-json.md#api-10) | `bool isTable()` |
-| [std::json::JsonValue::isValid](std-json.md#api-0) | `bool isValid()` |
-| [std::json::JsonValue::iterator](std-json.md#api-22) | `Option<JsonValue> iterator(int64 index)` |
-| [std::json::JsonValue::keyAt](std-json.md#api-23) | `Option<std::lang::String> keyAt(int64 index)` |
-| [std::json::JsonValue::keyBytesAt](std-json.md#api-24) | `Option<std::lang::List<uint8>> keyBytesAt(int64 index)` |
-| [std::json::JsonValue::kind](std-json.md#api-2) | `int64 kind()` |
-| [std::json::JsonValue::len](std-json.md#api-12) | `int64 len()` |
-| [std::json::parse](std-json.md#api-26) | `Result<JsonValue, std::lang::String> parse(std::lang::String text)` |
+| [std::json::JsonValue::asBool](std-json.md#api-17) | `Option<bool> asBool()` |
+| [std::json::JsonValue::asBytes](std-json.md#api-19) | `Option<std::lang::List<uint8>> asBytes()` |
+| [std::json::JsonValue::asDateTime](std-json.md#api-20) | `Option<std::lang::String> asDateTime()` |
+| [std::json::JsonValue::asFloat64](std-json.md#api-16) | `Option<float64> asFloat64()` |
+| [std::json::JsonValue::asInt](std-json.md#api-15) | `Option<int64> asInt()` |
+| [std::json::JsonValue::asString](std-json.md#api-18) | `Option<std::lang::String> asString()` |
+| [std::json::JsonValue::at](std-json.md#api-23) | `Option<JsonValue> at(int64 index)` |
+| [std::json::JsonValue::close](std-json.md#api-3) | `bool close()` |
+| [std::json::JsonValue::dump](std-json.md#api-27) | `std::lang::String dump()` |
+| [std::json::JsonValue::find](std-json.md#api-21) | `Option<JsonValue> find(std::lang::String key)` |
+| [std::json::JsonValue::findBytes](std-json.md#api-22) | `Option<JsonValue> findBytes(std::lang::List<uint8> key)` |
+| [std::json::JsonValue::isArray](std-json.md#api-10) | `bool isArray()` |
+| [std::json::JsonValue::isBool](std-json.md#api-6) | `bool isBool()` |
+| [std::json::JsonValue::isDateTime](std-json.md#api-13) | `bool isDateTime()` |
+| [std::json::JsonValue::isFloat](std-json.md#api-8) | `bool isFloat()` |
+| [std::json::JsonValue::isInt](std-json.md#api-7) | `bool isInt()` |
+| [std::json::JsonValue::isNull](std-json.md#api-5) | `bool isNull()` |
+| [std::json::JsonValue::isObject](std-json.md#api-11) | `bool isObject()` |
+| [std::json::JsonValue::isString](std-json.md#api-9) | `bool isString()` |
+| [std::json::JsonValue::isTable](std-json.md#api-12) | `bool isTable()` |
+| [std::json::JsonValue::isValid](std-json.md#api-2) | `bool isValid()` |
+| [std::json::JsonValue::iterator](std-json.md#api-24) | `Option<JsonValue> iterator(int64 index)` |
+| [std::json::JsonValue::keyAt](std-json.md#api-25) | `Option<std::lang::String> keyAt(int64 index)` |
+| [std::json::JsonValue::keyBytesAt](std-json.md#api-26) | `Option<std::lang::List<uint8>> keyBytesAt(int64 index)` |
+| [std::json::JsonValue::kind](std-json.md#api-4) | `int64 kind()` |
+| [std::json::JsonValue::len](std-json.md#api-14) | `int64 len()` |
+| [std::json::deserialize](std-json.md#api-1) | `Result<T,String> deserialize<T>(String text)` |
+| [std::json::parse](std-json.md#api-28) | `Result<JsonValue, std::lang::String> parse(std::lang::String text)` |
+| [std::json::serialize](std-json.md#api-0) | `Result<String,String> serialize<T>(T const& value)` |
 | [std::lang::Add::leftAdd](std-lang.md#api-222) | `R leftAdd(T value)` |
 | [std::lang::And::leftBitAnd](std-lang.md#api-244) | `R leftBitAnd(T value)` |
 | [std::lang::Any::clear](std-lang.md#api-205) | `void clear()` |
@@ -903,43 +905,46 @@
 | [std::random::randomNextRange](std-random.md#api-5) | `float64 randomNextRange(uint64 handle, float64 minimum, float64 maximum)` |
 | [std::random::randomNextUInt64](std-random.md#api-2) | `uint64 randomNextUInt64(uint64 handle)` |
 | [std::random::randomWithSeed](std-random.md#api-0) | `Random randomWithSeed(uint64 seed)` |
-| [std::reflect::ReflectValue::asBool](std-reflect.md#api-1) | `Result<bool,std::reflect::ReflectError> asBool()` |
-| [std::reflect::ReflectValue::asChar](std-reflect.md#api-2) | `Result<char,std::reflect::ReflectError> asChar()` |
-| [std::reflect::ReflectValue::asF32](std-reflect.md#api-11) | `Result<float32,std::reflect::ReflectError> asF32()` |
-| [std::reflect::ReflectValue::asF64](std-reflect.md#api-12) | `Result<float64,std::reflect::ReflectError> asF64()` |
-| [std::reflect::ReflectValue::asI16](std-reflect.md#api-4) | `Result<int16,std::reflect::ReflectError> asI16()` |
-| [std::reflect::ReflectValue::asI32](std-reflect.md#api-5) | `Result<int32,std::reflect::ReflectError> asI32()` |
-| [std::reflect::ReflectValue::asI64](std-reflect.md#api-6) | `Result<int64,std::reflect::ReflectError> asI64()` |
-| [std::reflect::ReflectValue::asI8](std-reflect.md#api-3) | `Result<int8,std::reflect::ReflectError> asI8()` |
-| [std::reflect::ReflectValue::asText](std-reflect.md#api-13) | `Result<std::lang::String,std::reflect::ReflectError> asText()` |
-| [std::reflect::ReflectValue::asU16](std-reflect.md#api-8) | `Result<uint16,std::reflect::ReflectError> asU16()` |
-| [std::reflect::ReflectValue::asU32](std-reflect.md#api-9) | `Result<uint32,std::reflect::ReflectError> asU32()` |
-| [std::reflect::ReflectValue::asU64](std-reflect.md#api-10) | `Result<uint64,std::reflect::ReflectError> asU64()` |
-| [std::reflect::ReflectValue::asU8](std-reflect.md#api-7) | `Result<uint8,std::reflect::ReflectError> asU8()` |
-| [std::reflect::ReflectValue::typeId](std-reflect.md#api-0) | `uint64 typeId()` |
-| [std::reflect::call](std-reflect.md#api-27) | `Result<std::reflect::ReflectValue,std::reflect::ReflectError> call(std::lang::String name, List<std::reflect::ReflectValue> args)` |
-| [std::reflect::callEnumMethod](std-reflect.md#api-31) | `Result<std::reflect::ReflectValue,std::reflect::ReflectError> callEnumMethod<T>(T mut& obj, std::lang::String name, List<std::reflect::ReflectValue> args)` |
-| [std::reflect::callEnumMethodConst](std-reflect.md#api-32) | `Result<std::reflect::ReflectValue,std::reflect::ReflectError> callEnumMethodConst<T>(T const& obj, std::lang::String name, List<std::reflect::ReflectValue> args)` |
-| [std::reflect::callEnumStatic](std-reflect.md#api-33) | `Result<std::reflect::ReflectValue,std::reflect::ReflectError> callEnumStatic<T>(std::lang::String name, List<std::reflect::ReflectValue> args)` |
-| [std::reflect::callInterface](std-reflect.md#api-35) | `Result<std::reflect::ReflectValue,std::reflect::ReflectError> callInterface<I>(I mut& obj, std::lang::String name, List<std::reflect::ReflectValue> args)` |
-| [std::reflect::callInterfaceConst](std-reflect.md#api-36) | `Result<std::reflect::ReflectValue,std::reflect::ReflectError> callInterfaceConst<I>(I const& obj, std::lang::String name, List<std::reflect::ReflectValue> args)` |
-| [std::reflect::callMethod](std-reflect.md#api-28) | `Result<std::reflect::ReflectValue,std::reflect::ReflectError> callMethod<T>(T mut& obj, std::lang::String name, List<std::reflect::ReflectValue> args)` |
-| [std::reflect::callMethodConst](std-reflect.md#api-29) | `Result<std::reflect::ReflectValue,std::reflect::ReflectError> callMethodConst<T>(T const& obj, std::lang::String name, List<std::reflect::ReflectValue> args)` |
-| [std::reflect::callStatic](std-reflect.md#api-30) | `Result<std::reflect::ReflectValue,std::reflect::ReflectError> callStatic<T>(std::lang::String name, List<std::reflect::ReflectValue> args)` |
-| [std::reflect::construct](std-reflect.md#api-34) | `Result<T,std::reflect::ReflectError> construct<T>(List<std::reflect::ReflectValue> args)` |
-| [std::reflect::getAnnotationInfo](std-reflect.md#api-15) | `Option<std::reflect::AnnotationInfo> getAnnotationInfo(std::lang::String name)` |
-| [std::reflect::getAnnotations](std-reflect.md#api-22) | `List<std::reflect::Annotation> getAnnotations<T>()` |
-| [std::reflect::getEnumInfo](std-reflect.md#api-19) | `Option<std::reflect::EnumInfo> getEnumInfo<T>()` |
-| [std::reflect::getFieldAnnotations](std-reflect.md#api-23) | `List<std::reflect::Annotation> getFieldAnnotations<T>(std::lang::String name)` |
-| [std::reflect::getFuncAnnotations](std-reflect.md#api-24) | `List<std::reflect::Annotation> getFuncAnnotations(std::lang::String name)` |
-| [std::reflect::getFuncInfo](std-reflect.md#api-14) | `Option<std::reflect::FuncInfo> getFuncInfo(std::lang::String name)` |
-| [std::reflect::getInterfaceId](std-reflect.md#api-17) | `uint64 getInterfaceId<I>()` |
-| [std::reflect::getInterfaceInfo](std-reflect.md#api-20) | `Option<std::reflect::InterfaceInfo> getInterfaceInfo<I>()` |
-| [std::reflect::getMethodAnnotations](std-reflect.md#api-25) | `List<std::reflect::Annotation> getMethodAnnotations<T>(std::lang::String name)` |
-| [std::reflect::getStaticMemberAnnotations](std-reflect.md#api-26) | `List<std::reflect::Annotation> getStaticMemberAnnotations<T>(std::lang::String name)` |
-| [std::reflect::getStructInfo](std-reflect.md#api-18) | `Option<std::reflect::StructInfo> getStructInfo<T>()` |
-| [std::reflect::getTypeId](std-reflect.md#api-16) | `uint64 getTypeId<T>()` |
-| [std::reflect::implementsInterface](std-reflect.md#api-21) | `bool implementsInterface<T>(uint64 interfaceId)` |
+| [std::reflect::ReflectValue::asBool](std-reflect.md#api-2) | `Result<bool,std::reflect::ReflectError> asBool()` |
+| [std::reflect::ReflectValue::asChar](std-reflect.md#api-3) | `Result<char,std::reflect::ReflectError> asChar()` |
+| [std::reflect::ReflectValue::asF32](std-reflect.md#api-12) | `Result<float32,std::reflect::ReflectError> asF32()` |
+| [std::reflect::ReflectValue::asF64](std-reflect.md#api-13) | `Result<float64,std::reflect::ReflectError> asF64()` |
+| [std::reflect::ReflectValue::asI16](std-reflect.md#api-5) | `Result<int16,std::reflect::ReflectError> asI16()` |
+| [std::reflect::ReflectValue::asI32](std-reflect.md#api-6) | `Result<int32,std::reflect::ReflectError> asI32()` |
+| [std::reflect::ReflectValue::asI64](std-reflect.md#api-7) | `Result<int64,std::reflect::ReflectError> asI64()` |
+| [std::reflect::ReflectValue::asI8](std-reflect.md#api-4) | `Result<int8,std::reflect::ReflectError> asI8()` |
+| [std::reflect::ReflectValue::asText](std-reflect.md#api-14) | `Result<std::lang::String,std::reflect::ReflectError> asText()` |
+| [std::reflect::ReflectValue::asU16](std-reflect.md#api-9) | `Result<uint16,std::reflect::ReflectError> asU16()` |
+| [std::reflect::ReflectValue::asU32](std-reflect.md#api-10) | `Result<uint32,std::reflect::ReflectError> asU32()` |
+| [std::reflect::ReflectValue::asU64](std-reflect.md#api-11) | `Result<uint64,std::reflect::ReflectError> asU64()` |
+| [std::reflect::ReflectValue::asU8](std-reflect.md#api-8) | `Result<uint8,std::reflect::ReflectError> asU8()` |
+| [std::reflect::ReflectValue::typeId](std-reflect.md#api-1) | `uint64 typeId()` |
+| [std::reflect::call](std-reflect.md#api-28) | `Result<std::reflect::ReflectValue,std::reflect::ReflectError> call(std::lang::String name, List<std::reflect::ReflectValue> args)` |
+| [std::reflect::callEnumMethod](std-reflect.md#api-32) | `Result<std::reflect::ReflectValue,std::reflect::ReflectError> callEnumMethod<T>(T mut& obj, std::lang::String name, List<std::reflect::ReflectValue> args)` |
+| [std::reflect::callEnumMethodConst](std-reflect.md#api-33) | `Result<std::reflect::ReflectValue,std::reflect::ReflectError> callEnumMethodConst<T>(T const& obj, std::lang::String name, List<std::reflect::ReflectValue> args)` |
+| [std::reflect::callEnumStatic](std-reflect.md#api-34) | `Result<std::reflect::ReflectValue,std::reflect::ReflectError> callEnumStatic<T>(std::lang::String name, List<std::reflect::ReflectValue> args)` |
+| [std::reflect::callInterface](std-reflect.md#api-38) | `Result<std::reflect::ReflectValue,std::reflect::ReflectError> callInterface<I>(I mut& obj, std::lang::String name, List<std::reflect::ReflectValue> args)` |
+| [std::reflect::callInterfaceConst](std-reflect.md#api-39) | `Result<std::reflect::ReflectValue,std::reflect::ReflectError> callInterfaceConst<I>(I const& obj, std::lang::String name, List<std::reflect::ReflectValue> args)` |
+| [std::reflect::callMethod](std-reflect.md#api-29) | `Result<std::reflect::ReflectValue,std::reflect::ReflectError> callMethod<T>(T mut& obj, std::lang::String name, List<std::reflect::ReflectValue> args)` |
+| [std::reflect::callMethodConst](std-reflect.md#api-30) | `Result<std::reflect::ReflectValue,std::reflect::ReflectError> callMethodConst<T>(T const& obj, std::lang::String name, List<std::reflect::ReflectValue> args)` |
+| [std::reflect::callStatic](std-reflect.md#api-31) | `Result<std::reflect::ReflectValue,std::reflect::ReflectError> callStatic<T>(std::lang::String name, List<std::reflect::ReflectValue> args)` |
+| [std::reflect::construct](std-reflect.md#api-35) | `Result<T,std::reflect::ReflectError> construct<T>(List<std::reflect::ReflectValue> args)` |
+| [std::reflect::getAnnotationInfo](std-reflect.md#api-16) | `Option<std::reflect::AnnotationInfo> getAnnotationInfo(std::lang::String name)` |
+| [std::reflect::getAnnotations](std-reflect.md#api-23) | `List<std::reflect::Annotation> getAnnotations<T>()` |
+| [std::reflect::getEnumInfo](std-reflect.md#api-20) | `Option<std::reflect::EnumInfo> getEnumInfo<T>()` |
+| [std::reflect::getField](std-reflect.md#api-36) | `Result<F,std::reflect::ReflectError> getField<T,F>(T const& obj, std::lang::String name)` |
+| [std::reflect::getFieldAnnotations](std-reflect.md#api-24) | `List<std::reflect::Annotation> getFieldAnnotations<T>(std::lang::String name)` |
+| [std::reflect::getFuncAnnotations](std-reflect.md#api-25) | `List<std::reflect::Annotation> getFuncAnnotations(std::lang::String name)` |
+| [std::reflect::getFuncInfo](std-reflect.md#api-15) | `Option<std::reflect::FuncInfo> getFuncInfo(std::lang::String name)` |
+| [std::reflect::getInterfaceId](std-reflect.md#api-18) | `uint64 getInterfaceId<I>()` |
+| [std::reflect::getInterfaceInfo](std-reflect.md#api-21) | `Option<std::reflect::InterfaceInfo> getInterfaceInfo<I>()` |
+| [std::reflect::getMethodAnnotations](std-reflect.md#api-26) | `List<std::reflect::Annotation> getMethodAnnotations<T>(std::lang::String name)` |
+| [std::reflect::getStaticMemberAnnotations](std-reflect.md#api-27) | `List<std::reflect::Annotation> getStaticMemberAnnotations<T>(std::lang::String name)` |
+| [std::reflect::getStructInfo](std-reflect.md#api-19) | `Option<std::reflect::StructInfo> getStructInfo<T>()` |
+| [std::reflect::getTypeId](std-reflect.md#api-17) | `uint64 getTypeId<T>()` |
+| [std::reflect::implementsInterface](std-reflect.md#api-22) | `bool implementsInterface<T>(uint64 interfaceId)` |
+| [std::reflect::requireReflection](std-reflect.md#api-0) | `void requireReflection()` |
+| [std::reflect::setField](std-reflect.md#api-37) | `Result<bool,std::reflect::ReflectError> setField<T,F>(T mut& obj, std::lang::String name, F value)` |
 | [std::regex::Regex::capture](std-regex.md#api-4) | `std::lang::String capture(std::lang::String text, int64 group)` |
 | [std::regex::Regex::compile](std-regex.md#api-0) | `static Result<Regex, RegexError> compile(std::lang::String pattern)` |
 | [std::regex::Regex::contains](std-regex.md#api-2) | `bool contains(std::lang::String text)` |
@@ -947,6 +952,8 @@
 | [std::regex::Regex::fullMatch](std-regex.md#api-1) | `bool fullMatch(std::lang::String text)` |
 | [std::regex::Regex::replaceAll](std-regex.md#api-6) | `std::lang::String replaceAll(std::lang::String text, std::lang::String replacement)` |
 | [std::regex::Regex::replaceFirst](std-regex.md#api-5) | `std::lang::String replaceFirst(std::lang::String text, std::lang::String replacement)` |
+| [std::serialization::deserialize](std-serialization.md#api-1) | `Result<T,String> deserialize<T>(List<uint8> bytes)` |
+| [std::serialization::serialize](std-serialization.md#api-0) | `Result<List<uint8>,String> serialize<T>(T const& value)` |
 | [std::signal::dft](std-signal.md#api-4) | `std::lang::List<Complex<float64>> dft(std::lang::List<Complex<float64>> input)` |
 | [std::signal::fft](std-signal.md#api-6) | `std::lang::List<Complex<float64>> fft(std::lang::List<Complex<float64>> input)` |
 | [std::signal::idft](std-signal.md#api-5) | `std::lang::List<Complex<float64>> idft(std::lang::List<Complex<float64>> input)` |
@@ -955,51 +962,61 @@
 | [std::signal::signalFft](std-signal.md#api-2) | `std::lang::List<Complex<float64>> signalFft(std::lang::List<Complex<float64>> input)` |
 | [std::signal::signalIdft](std-signal.md#api-1) | `std::lang::List<Complex<float64>> signalIdft(std::lang::List<Complex<float64>> input)` |
 | [std::signal::signalIfft](std-signal.md#api-3) | `std::lang::List<Complex<float64>> signalIfft(std::lang::List<Complex<float64>> input)` |
-| [std::sql::DataCell::asInt](std-sql.md#api-3) | `int64 asInt()` |
-| [std::sql::DataCell::asReal](std-sql.md#api-4) | `float64 asReal()` |
-| [std::sql::DataCell::isNull](std-sql.md#api-0) | `bool isNull()` |
-| [std::sql::DataCell::isNumber](std-sql.md#api-1) | `bool isNumber()` |
-| [std::sql::DataCell::text](std-sql.md#api-2) | `std::lang::String text()` |
-| [std::sql::DataRow::at](std-sql.md#api-6) | `DataCell at(int64 index)` |
-| [std::sql::DataRow::size](std-sql.md#api-5) | `int64 size()` |
-| [std::sql::Database::affectedRows](std-sql.md#api-33) | `int64 affectedRows()` |
-| [std::sql::Database::backendName](std-sql.md#api-27) | `std::lang::String backendName()` |
-| [std::sql::Database::close](std-sql.md#api-34) | `void close()` |
-| [std::sql::Database::count](std-sql.md#api-38) | `int64 count(std::lang::String sql)` |
-| [std::sql::Database::driver](std-sql.md#api-25) | `Driver driver()` |
-| [std::sql::Database::exec](std-sql.md#api-35) | `ResultSet exec(std::lang::String sql)` |
-| [std::sql::Database::execOk](std-sql.md#api-36) | `bool execOk(std::lang::String sql)` |
-| [std::sql::Database::hasTable](std-sql.md#api-39) | `bool hasTable(std::lang::String tableName)` |
-| [std::sql::Database::isOpen](std-sql.md#api-31) | `bool isOpen()` |
-| [std::sql::Database::lastError](std-sql.md#api-32) | `std::lang::String lastError()` |
-| [std::sql::Database::local](std-sql.md#api-30) | `static Database local(std::lang::String database)` |
-| [std::sql::Database::maria](std-sql.md#api-29) | `static Database maria(String host, String user, String password, String database, int32 port = (int32)3306)` |
-| [std::sql::Database::mysql](std-sql.md#api-20) | `static Database mysql(String host, String user, String password, String database, int32 port)` |
-| [std::sql::Database::mysql](std-sql.md#api-28) | `static Database mysql(std::lang::String host, std::lang::String user, std::lang::String password, std::lang::String database)` |
-| [std::sql::Database::odbc](std-sql.md#api-23) | `static Database odbc(String options)` |
-| [std::sql::Database::postgres](std-sql.md#api-22) | `static Database postgres(String options)` |
-| [std::sql::Database::quote](std-sql.md#api-26) | `std::lang::String quote(std::lang::String text)` |
-| [std::sql::Database::scalar](std-sql.md#api-37) | `std::lang::String scalar(std::lang::String sql)` |
-| [std::sql::Database::sqlServer](std-sql.md#api-24) | `static Database sqlServer(String options)` |
-| [std::sql::Database::sqlite](std-sql.md#api-21) | `static Database sqlite(String path)` |
-| [std::sql::ResultSet::at](std-sql.md#api-12) | `DataCell at(int64 row, int64 column)` |
-| [std::sql::ResultSet::colCount](std-sql.md#api-8) | `int64 colCount()` |
-| [std::sql::ResultSet::columnIndex](std-sql.md#api-11) | `int64 columnIndex(std::lang::String name)` |
-| [std::sql::ResultSet::columnName](std-sql.md#api-10) | `std::lang::String columnName(int64 index)` |
-| [std::sql::ResultSet::count](std-sql.md#api-17) | `int64 count()` |
-| [std::sql::ResultSet::intAt](std-sql.md#api-14) | `int64 intAt(int64 row, int64 column)` |
-| [std::sql::ResultSet::isEmpty](std-sql.md#api-9) | `bool isEmpty()` |
-| [std::sql::ResultSet::pad](std-sql.md#api-18) | `std::lang::String pad(std::lang::String text, int64 width)` |
-| [std::sql::ResultSet::realAt](std-sql.md#api-15) | `float64 realAt(int64 row, int64 column)` |
-| [std::sql::ResultSet::render](std-sql.md#api-19) | `std::lang::String render()` |
-| [std::sql::ResultSet::rowCount](std-sql.md#api-7) | `int64 rowCount()` |
-| [std::sql::ResultSet::scalar](std-sql.md#api-16) | `std::lang::String scalar()` |
-| [std::sql::ResultSet::textAt](std-sql.md#api-13) | `std::lang::String textAt(int64 row, int64 column)` |
-| [std::sql::displayWidth](std-sql.md#api-44) | `int64 displayWidth(std::lang::String text)` |
-| [std::sql::intLiteral](std-sql.md#api-42) | `std::lang::String intLiteral(int64 value)` |
-| [std::sql::quote](std-sql.md#api-41) | `std::lang::String quote(std::lang::String text)` |
-| [std::sql::quote](std-sql.md#api-40) | `std::lang::String quote(std::lang::String text, bool escapeBackslash)` |
-| [std::sql::realLiteral](std-sql.md#api-43) | `std::lang::String realLiteral(float64 value)` |
+| [std::sql::DataCell::asInt](std-sql.md#api-7) | `int64 asInt()` |
+| [std::sql::DataCell::asReal](std-sql.md#api-8) | `float64 asReal()` |
+| [std::sql::DataCell::isNull](std-sql.md#api-4) | `bool isNull()` |
+| [std::sql::DataCell::isNumber](std-sql.md#api-5) | `bool isNumber()` |
+| [std::sql::DataCell::text](std-sql.md#api-6) | `std::lang::String text()` |
+| [std::sql::DataRow::at](std-sql.md#api-10) | `DataCell at(int64 index)` |
+| [std::sql::DataRow::size](std-sql.md#api-9) | `int64 size()` |
+| [std::sql::Database::affectedRows](std-sql.md#api-37) | `int64 affectedRows()` |
+| [std::sql::Database::backendName](std-sql.md#api-31) | `std::lang::String backendName()` |
+| [std::sql::Database::close](std-sql.md#api-38) | `void close()` |
+| [std::sql::Database::count](std-sql.md#api-43) | `int64 count(std::lang::String sql)` |
+| [std::sql::Database::driver](std-sql.md#api-29) | `Driver driver()` |
+| [std::sql::Database::exec](std-sql.md#api-40) | `ResultSet exec(SqlStatement statement)` |
+| [std::sql::Database::exec](std-sql.md#api-39) | `ResultSet exec(std::lang::String sql)` |
+| [std::sql::Database::execOk](std-sql.md#api-41) | `bool execOk(std::lang::String sql)` |
+| [std::sql::Database::hasTable](std-sql.md#api-44) | `bool hasTable(std::lang::String tableName)` |
+| [std::sql::Database::isOpen](std-sql.md#api-35) | `bool isOpen()` |
+| [std::sql::Database::lastError](std-sql.md#api-36) | `std::lang::String lastError()` |
+| [std::sql::Database::local](std-sql.md#api-34) | `static Database local(std::lang::String database)` |
+| [std::sql::Database::maria](std-sql.md#api-33) | `static Database maria(String host, String user, String password, String database, int32 port = (int32)3306)` |
+| [std::sql::Database::mysql](std-sql.md#api-24) | `static Database mysql(String host, String user, String password, String database, int32 port)` |
+| [std::sql::Database::mysql](std-sql.md#api-32) | `static Database mysql(std::lang::String host, std::lang::String user, std::lang::String password, std::lang::String database)` |
+| [std::sql::Database::odbc](std-sql.md#api-27) | `static Database odbc(String options)` |
+| [std::sql::Database::postgres](std-sql.md#api-26) | `static Database postgres(String options)` |
+| [std::sql::Database::quote](std-sql.md#api-30) | `std::lang::String quote(std::lang::String text)` |
+| [std::sql::Database::scalar](std-sql.md#api-42) | `std::lang::String scalar(std::lang::String sql)` |
+| [std::sql::Database::sqlServer](std-sql.md#api-28) | `static Database sqlServer(String options)` |
+| [std::sql::Database::sqlite](std-sql.md#api-25) | `static Database sqlite(String path)` |
+| [std::sql::Query::build](std-sql.md#api-3) | `Result<SqlStatement,String> build(String operation = "select", String values = "{}")` |
+| [std::sql::Query::orderBy](std-sql.md#api-0) | `void orderBy(String field, bool descending = false)` |
+| [std::sql::Query::page](std-sql.md#api-2) | `void page(int64 limit, int64 offset = 0)` |
+| [std::sql::Query::select](std-sql.md#api-1) | `void select(String field)` |
+| [std::sql::ResultSet::at](std-sql.md#api-16) | `DataCell at(int64 row, int64 column)` |
+| [std::sql::ResultSet::colCount](std-sql.md#api-12) | `int64 colCount()` |
+| [std::sql::ResultSet::columnIndex](std-sql.md#api-15) | `int64 columnIndex(std::lang::String name)` |
+| [std::sql::ResultSet::columnName](std-sql.md#api-14) | `std::lang::String columnName(int64 index)` |
+| [std::sql::ResultSet::count](std-sql.md#api-21) | `int64 count()` |
+| [std::sql::ResultSet::intAt](std-sql.md#api-18) | `int64 intAt(int64 row, int64 column)` |
+| [std::sql::ResultSet::isEmpty](std-sql.md#api-13) | `bool isEmpty()` |
+| [std::sql::ResultSet::pad](std-sql.md#api-22) | `std::lang::String pad(std::lang::String text, int64 width)` |
+| [std::sql::ResultSet::realAt](std-sql.md#api-19) | `float64 realAt(int64 row, int64 column)` |
+| [std::sql::ResultSet::render](std-sql.md#api-23) | `std::lang::String render()` |
+| [std::sql::ResultSet::rowCount](std-sql.md#api-11) | `int64 rowCount()` |
+| [std::sql::ResultSet::scalar](std-sql.md#api-20) | `std::lang::String scalar()` |
+| [std::sql::ResultSet::textAt](std-sql.md#api-17) | `std::lang::String textAt(int64 row, int64 column)` |
+| [std::sql::displayWidth](std-sql.md#api-49) | `int64 displayWidth(std::lang::String text)` |
+| [std::sql::filter](std-sql.md#api-51) | `Result<bool,String> filter<V>(Query mut& query, String field, V value, int64 operation = 0)` |
+| [std::sql::filterMany](std-sql.md#api-52) | `Result<bool,String> filterMany<V>(Query mut& query, String field, List<V> values, int64 operation = 11)` |
+| [std::sql::insert](std-sql.md#api-53) | `Result<SqlStatement,String> insert<T>(Query mut& query, T const& value)` |
+| [std::sql::intLiteral](std-sql.md#api-47) | `std::lang::String intLiteral(int64 value)` |
+| [std::sql::query](std-sql.md#api-50) | `Result<Query,String> query<T>()` |
+| [std::sql::quote](std-sql.md#api-46) | `std::lang::String quote(std::lang::String text)` |
+| [std::sql::quote](std-sql.md#api-45) | `std::lang::String quote(std::lang::String text, bool escapeBackslash)` |
+| [std::sql::realLiteral](std-sql.md#api-48) | `std::lang::String realLiteral(float64 value)` |
+| [std::sql::update](std-sql.md#api-54) | `Result<SqlStatement,String> update<T>(Query mut& query, T const& value)` |
 | [std::text::StringBuilder::append](std-text.md#api-25) | `void append(std::lang::String text)` |
 | [std::text::StringBuilder::appendBool](std-text.md#api-30) | `void appendBool(bool value)` |
 | [std::text::StringBuilder::appendChar](std-text.md#api-27) | `void appendChar(char value)` |
@@ -1064,33 +1081,35 @@
 | [std::thread::waitFor](std-thread.md#api-3) | `bool waitFor(Thread thread, int64 millis)` |
 | [std::thread::waitResult](std-thread.md#api-11) | `ThreadResult waitResult(Thread thread)` |
 | [std::thread::waitResultFor](std-thread.md#api-10) | `ThreadResult waitResultFor(Thread thread, int64 millis)` |
-| [std::toml::TomlValue::asBool](std-toml.md#api-15) | `Option<bool> asBool()` |
-| [std::toml::TomlValue::asBytes](std-toml.md#api-17) | `Option<std::lang::List<uint8>> asBytes()` |
-| [std::toml::TomlValue::asDateTime](std-toml.md#api-18) | `Option<std::lang::String> asDateTime()` |
-| [std::toml::TomlValue::asFloat64](std-toml.md#api-14) | `Option<float64> asFloat64()` |
-| [std::toml::TomlValue::asInt](std-toml.md#api-13) | `Option<int64> asInt()` |
-| [std::toml::TomlValue::asString](std-toml.md#api-16) | `Option<std::lang::String> asString()` |
-| [std::toml::TomlValue::at](std-toml.md#api-21) | `Option<TomlValue> at(int64 index)` |
-| [std::toml::TomlValue::close](std-toml.md#api-1) | `bool close()` |
-| [std::toml::TomlValue::dump](std-toml.md#api-25) | `std::lang::String dump()` |
-| [std::toml::TomlValue::find](std-toml.md#api-19) | `Option<TomlValue> find(std::lang::String key)` |
-| [std::toml::TomlValue::findBytes](std-toml.md#api-20) | `Option<TomlValue> findBytes(std::lang::List<uint8> key)` |
-| [std::toml::TomlValue::isArray](std-toml.md#api-8) | `bool isArray()` |
-| [std::toml::TomlValue::isBool](std-toml.md#api-4) | `bool isBool()` |
-| [std::toml::TomlValue::isDateTime](std-toml.md#api-11) | `bool isDateTime()` |
-| [std::toml::TomlValue::isFloat](std-toml.md#api-6) | `bool isFloat()` |
-| [std::toml::TomlValue::isInt](std-toml.md#api-5) | `bool isInt()` |
-| [std::toml::TomlValue::isNull](std-toml.md#api-3) | `bool isNull()` |
-| [std::toml::TomlValue::isObject](std-toml.md#api-9) | `bool isObject()` |
-| [std::toml::TomlValue::isString](std-toml.md#api-7) | `bool isString()` |
-| [std::toml::TomlValue::isTable](std-toml.md#api-10) | `bool isTable()` |
-| [std::toml::TomlValue::isValid](std-toml.md#api-0) | `bool isValid()` |
-| [std::toml::TomlValue::iterator](std-toml.md#api-22) | `Option<TomlValue> iterator(int64 index)` |
-| [std::toml::TomlValue::keyAt](std-toml.md#api-23) | `Option<std::lang::String> keyAt(int64 index)` |
-| [std::toml::TomlValue::keyBytesAt](std-toml.md#api-24) | `Option<std::lang::List<uint8>> keyBytesAt(int64 index)` |
-| [std::toml::TomlValue::kind](std-toml.md#api-2) | `int64 kind()` |
-| [std::toml::TomlValue::len](std-toml.md#api-12) | `int64 len()` |
-| [std::toml::parse](std-toml.md#api-26) | `Result<TomlValue, std::lang::String> parse(std::lang::String text)` |
+| [std::toml::TomlValue::asBool](std-toml.md#api-17) | `Option<bool> asBool()` |
+| [std::toml::TomlValue::asBytes](std-toml.md#api-19) | `Option<std::lang::List<uint8>> asBytes()` |
+| [std::toml::TomlValue::asDateTime](std-toml.md#api-20) | `Option<std::lang::String> asDateTime()` |
+| [std::toml::TomlValue::asFloat64](std-toml.md#api-16) | `Option<float64> asFloat64()` |
+| [std::toml::TomlValue::asInt](std-toml.md#api-15) | `Option<int64> asInt()` |
+| [std::toml::TomlValue::asString](std-toml.md#api-18) | `Option<std::lang::String> asString()` |
+| [std::toml::TomlValue::at](std-toml.md#api-23) | `Option<TomlValue> at(int64 index)` |
+| [std::toml::TomlValue::close](std-toml.md#api-3) | `bool close()` |
+| [std::toml::TomlValue::dump](std-toml.md#api-27) | `std::lang::String dump()` |
+| [std::toml::TomlValue::find](std-toml.md#api-21) | `Option<TomlValue> find(std::lang::String key)` |
+| [std::toml::TomlValue::findBytes](std-toml.md#api-22) | `Option<TomlValue> findBytes(std::lang::List<uint8> key)` |
+| [std::toml::TomlValue::isArray](std-toml.md#api-10) | `bool isArray()` |
+| [std::toml::TomlValue::isBool](std-toml.md#api-6) | `bool isBool()` |
+| [std::toml::TomlValue::isDateTime](std-toml.md#api-13) | `bool isDateTime()` |
+| [std::toml::TomlValue::isFloat](std-toml.md#api-8) | `bool isFloat()` |
+| [std::toml::TomlValue::isInt](std-toml.md#api-7) | `bool isInt()` |
+| [std::toml::TomlValue::isNull](std-toml.md#api-5) | `bool isNull()` |
+| [std::toml::TomlValue::isObject](std-toml.md#api-11) | `bool isObject()` |
+| [std::toml::TomlValue::isString](std-toml.md#api-9) | `bool isString()` |
+| [std::toml::TomlValue::isTable](std-toml.md#api-12) | `bool isTable()` |
+| [std::toml::TomlValue::isValid](std-toml.md#api-2) | `bool isValid()` |
+| [std::toml::TomlValue::iterator](std-toml.md#api-24) | `Option<TomlValue> iterator(int64 index)` |
+| [std::toml::TomlValue::keyAt](std-toml.md#api-25) | `Option<std::lang::String> keyAt(int64 index)` |
+| [std::toml::TomlValue::keyBytesAt](std-toml.md#api-26) | `Option<std::lang::List<uint8>> keyBytesAt(int64 index)` |
+| [std::toml::TomlValue::kind](std-toml.md#api-4) | `int64 kind()` |
+| [std::toml::TomlValue::len](std-toml.md#api-14) | `int64 len()` |
+| [std::toml::deserialize](std-toml.md#api-1) | `Result<T,String> deserialize<T>(String text)` |
+| [std::toml::parse](std-toml.md#api-28) | `Result<TomlValue, std::lang::String> parse(std::lang::String text)` |
+| [std::toml::serialize](std-toml.md#api-0) | `Result<String,String> serialize<T>(T const& value)` |
 | [std::tree::BinarySearchTree::clear](std-tree.md#api-2) | `void clear()` |
 | [std::tree::BinarySearchTree::contains](std-tree.md#api-5) | `bool contains(int64 value)` |
 | [std::tree::BinarySearchTree::create](std-tree.md#api-0) | `static BinarySearchTree create()` |

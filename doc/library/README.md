@@ -32,7 +32,7 @@
 | [`std::image`](std-image.md) | 图片处理 | 25 |
 | [`std::io`](std-io.md) | 文件与流接口 | 37 |
 | [`std::iter`](std-iter.md) | 惰性迭代器 | 109 |
-| [`std::json`](std-json.md) | JSON 只读文档 | 27 |
+| [`std::json`](std-json.md) | JSON 文档与反射编解码 | 29 |
 | [`std::lang`](std-lang.md) | 核心库 | 265 |
 | [`std::linalg`](std-linalg.md) | 向量与矩阵 | 56 |
 | [`std::linkedlist`](std-linkedlist.md) | 双向链表 | 19 |
@@ -47,13 +47,14 @@
 | [`std::probe`](std-probe.md) | 最小宿主集成探针 | 1 |
 | [`std::process`](std-process.md) | 宿主进程 | 4 |
 | [`std::random`](std-random.md) | 随机数 | 15 |
-| [`std::reflect`](std-reflect.md) | 反射 | 37 |
+| [`std::reflect`](std-reflect.md) | 反射 | 40 |
 | [`std::regex`](std-regex.md) | 正则表达式 | 7 |
+| [`std::serialization`](std-serialization.md) | 反射字节序列化 | 2 |
 | [`std::signal`](std-signal.md) | 复数信号变换 | 8 |
-| [`std::sql`](std-sql.md) | 数据库 | 45 |
+| [`std::sql`](std-sql.md) | 数据库 | 55 |
 | [`std::text`](std-text.md) | UTF-8 文本工具 | 33 |
 | [`std::thread`](std-thread.md) | 隔离线程 | 31 |
-| [`std::toml`](std-toml.md) | TOML 只读文档 | 27 |
+| [`std::toml`](std-toml.md) | TOML 文档与反射编解码 | 29 |
 | [`std::tree`](std-tree.md) | 树与堆 | 46 |
 | [`std::utf8`](std-utf8.md) | UTF-8 与码点 | 7 |
 | [`std::watchdog`](std-watchdog.md) | 软重启看门狗 | 6 |

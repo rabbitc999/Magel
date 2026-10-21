@@ -1,5 +1,13 @@
 module std::json;
 
+import std::reflect;
+import std::parse;
+
+/** 将已暴露给反射的值编码为 JSON，数字和字段类型保持精确。 */
+Result<String,String> serialize<T>(T const& value) { std::reflect::requireReflection(); return std::reflect::__serializeJson<T>(value); }
+/** 按具体类型验证并恢复拥有独立存储的值。 */
+Result<T,String> deserialize<T>(String text) { std::reflect::requireReflection(); return std::reflect::__deserializeJson<T>(text); }
+
 __JsonValueStorage __parse(std::lang::String text);
 bool __valid(int64 document);
 std::lang::String __takeError(int64 document);

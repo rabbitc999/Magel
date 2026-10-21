@@ -102,3 +102,4 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 
 - [Exact symbolic computation and high precision mathematics](34-symbolic-computation.md)
 - [Standard library ownership and string methods](35-opcode-values-strings.md)
+- [Reflection serialization and dynamic SQL](36-reflection-serialization-sql.md)

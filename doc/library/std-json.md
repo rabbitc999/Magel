@@ -1,4 +1,4 @@
-# std::json — JSON 只读文档
+# std::json — JSON 文档与反射编解码
 
 [返回库目录](README.md) · [全部符号](symbols.md)
 
@@ -208,37 +208,119 @@ JSON and TOML parsing OK
 
 | 名称 | 声明 |
 | --- | --- |
-| [JsonValue::isValid](#api-0) | `bool isValid()` |
-| [JsonValue::close](#api-1) | `bool close()` |
-| [JsonValue::kind](#api-2) | `int64 kind()` |
-| [JsonValue::isNull](#api-3) | `bool isNull()` |
-| [JsonValue::isBool](#api-4) | `bool isBool()` |
-| [JsonValue::isInt](#api-5) | `bool isInt()` |
-| [JsonValue::isFloat](#api-6) | `bool isFloat()` |
-| [JsonValue::isString](#api-7) | `bool isString()` |
-| [JsonValue::isArray](#api-8) | `bool isArray()` |
-| [JsonValue::isObject](#api-9) | `bool isObject()` |
-| [JsonValue::isTable](#api-10) | `bool isTable()` |
-| [JsonValue::isDateTime](#api-11) | `bool isDateTime()` |
-| [JsonValue::len](#api-12) | `int64 len()` |
-| [JsonValue::asInt](#api-13) | `Option<int64> asInt()` |
-| [JsonValue::asFloat64](#api-14) | `Option<float64> asFloat64()` |
-| [JsonValue::asBool](#api-15) | `Option<bool> asBool()` |
-| [JsonValue::asString](#api-16) | `Option<std::lang::String> asString()` |
-| [JsonValue::asBytes](#api-17) | `Option<std::lang::List<uint8>> asBytes()` |
-| [JsonValue::asDateTime](#api-18) | `Option<std::lang::String> asDateTime()` |
-| [JsonValue::find](#api-19) | `Option<JsonValue> find(std::lang::String key)` |
-| [JsonValue::findBytes](#api-20) | `Option<JsonValue> findBytes(std::lang::List<uint8> key)` |
-| [JsonValue::at](#api-21) | `Option<JsonValue> at(int64 index)` |
-| [JsonValue::iterator](#api-22) | `Option<JsonValue> iterator(int64 index)` |
-| [JsonValue::keyAt](#api-23) | `Option<std::lang::String> keyAt(int64 index)` |
-| [JsonValue::keyBytesAt](#api-24) | `Option<std::lang::List<uint8>> keyBytesAt(int64 index)` |
-| [JsonValue::dump](#api-25) | `std::lang::String dump()` |
-| [parse](#api-26) | `Result<JsonValue, std::lang::String> parse(std::lang::String text)` |
+| [serialize](#api-0) | `Result<String,String> serialize<T>(T const& value)` |
+| [deserialize](#api-1) | `Result<T,String> deserialize<T>(String text)` |
+| [JsonValue::isValid](#api-2) | `bool isValid()` |
+| [JsonValue::close](#api-3) | `bool close()` |
+| [JsonValue::kind](#api-4) | `int64 kind()` |
+| [JsonValue::isNull](#api-5) | `bool isNull()` |
+| [JsonValue::isBool](#api-6) | `bool isBool()` |
+| [JsonValue::isInt](#api-7) | `bool isInt()` |
+| [JsonValue::isFloat](#api-8) | `bool isFloat()` |
+| [JsonValue::isString](#api-9) | `bool isString()` |
+| [JsonValue::isArray](#api-10) | `bool isArray()` |
+| [JsonValue::isObject](#api-11) | `bool isObject()` |
+| [JsonValue::isTable](#api-12) | `bool isTable()` |
+| [JsonValue::isDateTime](#api-13) | `bool isDateTime()` |
+| [JsonValue::len](#api-14) | `int64 len()` |
+| [JsonValue::asInt](#api-15) | `Option<int64> asInt()` |
+| [JsonValue::asFloat64](#api-16) | `Option<float64> asFloat64()` |
+| [JsonValue::asBool](#api-17) | `Option<bool> asBool()` |
+| [JsonValue::asString](#api-18) | `Option<std::lang::String> asString()` |
+| [JsonValue::asBytes](#api-19) | `Option<std::lang::List<uint8>> asBytes()` |
+| [JsonValue::asDateTime](#api-20) | `Option<std::lang::String> asDateTime()` |
+| [JsonValue::find](#api-21) | `Option<JsonValue> find(std::lang::String key)` |
+| [JsonValue::findBytes](#api-22) | `Option<JsonValue> findBytes(std::lang::List<uint8> key)` |
+| [JsonValue::at](#api-23) | `Option<JsonValue> at(int64 index)` |
+| [JsonValue::iterator](#api-24) | `Option<JsonValue> iterator(int64 index)` |
+| [JsonValue::keyAt](#api-25) | `Option<std::lang::String> keyAt(int64 index)` |
+| [JsonValue::keyBytesAt](#api-26) | `Option<std::lang::List<uint8>> keyBytesAt(int64 index)` |
+| [JsonValue::dump](#api-27) | `std::lang::String dump()` |
+| [parse](#api-28) | `Result<JsonValue, std::lang::String> parse(std::lang::String text)` |
 
 <a id="api-0"></a>
 
-### JsonValue::isValid（1）
+### serialize（1）
+
+**声明**
+
+```magel
+Result<String,String> serialize<T>(T const& value);
+```
+
+**行为**
+
+按具体反射类型编码独立值，失败返回诊断。
+
+将已暴露给反射的值编码为 JSON，数字和字段类型保持精确。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `value` | `T const& value` | 输入值或写入的新值 | 无 |
+
+**返回值**
+
+`Result<String,String>`。按具体反射类型编码独立值，失败返回诊断。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+std::json::serialize<T>(value);
+```
+
+**源码**：[source/std/json.mgl:7](../../source/std/json.mgl#L7)。
+
+**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+
+<a id="api-1"></a>
+
+### deserialize（2）
+
+**声明**
+
+```magel
+Result<T,String> deserialize<T>(String text);
+```
+
+**行为**
+
+按具体反射类型严格校验并恢复独立拥有的值。
+
+按具体类型验证并恢复拥有独立存储的值。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `text` | `String text` | 输入文本，位置与长度通常按字节 | 无 |
+
+**返回值**
+
+`Result<T,String>`。按具体反射类型严格校验并恢复独立拥有的值。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+std::json::deserialize<T>(text);
+```
+
+**源码**：[source/std/json.mgl:9](../../source/std/json.mgl#L9)。
+
+**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+
+<a id="api-2"></a>
+
+### JsonValue::isValid（3）
 
 **声明**
 
@@ -270,13 +352,13 @@ bool isValid();
 obj.isValid();
 ```
 
-**源码**：[source/std/json.mgl:37](../../source/std/json.mgl#L37)。
+**源码**：[source/std/json.mgl:45](../../source/std/json.mgl#L45)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-1"></a>
+<a id="api-3"></a>
 
-### JsonValue::close（2）
+### JsonValue::close（4）
 
 **声明**
 
@@ -308,13 +390,13 @@ bool close();
 obj.close();
 ```
 
-**源码**：[source/std/json.mgl:39](../../source/std/json.mgl#L39)。
+**源码**：[source/std/json.mgl:47](../../source/std/json.mgl#L47)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-2"></a>
+<a id="api-4"></a>
 
-### JsonValue::kind（3）
+### JsonValue::kind（5）
 
 **声明**
 
@@ -344,13 +426,13 @@ int64 kind();
 obj.kind();
 ```
 
-**源码**：[source/std/json.mgl:40](../../source/std/json.mgl#L40)。
+**源码**：[source/std/json.mgl:48](../../source/std/json.mgl#L48)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-3"></a>
+<a id="api-5"></a>
 
-### JsonValue::isNull（4）
+### JsonValue::isNull（6）
 
 **声明**
 
@@ -380,13 +462,13 @@ bool isNull();
 obj.isNull();
 ```
 
-**源码**：[source/std/json.mgl:41](../../source/std/json.mgl#L41)。
+**源码**：[source/std/json.mgl:49](../../source/std/json.mgl#L49)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-4"></a>
+<a id="api-6"></a>
 
-### JsonValue::isBool（5）
+### JsonValue::isBool（7）
 
 **声明**
 
@@ -416,13 +498,13 @@ bool isBool();
 obj.isBool();
 ```
 
-**源码**：[source/std/json.mgl:42](../../source/std/json.mgl#L42)。
+**源码**：[source/std/json.mgl:50](../../source/std/json.mgl#L50)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-5"></a>
+<a id="api-7"></a>
 
-### JsonValue::isInt（6）
+### JsonValue::isInt（8）
 
 **声明**
 
@@ -452,13 +534,13 @@ bool isInt();
 obj.isInt();
 ```
 
-**源码**：[source/std/json.mgl:43](../../source/std/json.mgl#L43)。
+**源码**：[source/std/json.mgl:51](../../source/std/json.mgl#L51)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-6"></a>
+<a id="api-8"></a>
 
-### JsonValue::isFloat（7）
+### JsonValue::isFloat（9）
 
 **声明**
 
@@ -488,13 +570,13 @@ bool isFloat();
 obj.isFloat();
 ```
 
-**源码**：[source/std/json.mgl:44](../../source/std/json.mgl#L44)。
+**源码**：[source/std/json.mgl:52](../../source/std/json.mgl#L52)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-7"></a>
+<a id="api-9"></a>
 
-### JsonValue::isString（8）
+### JsonValue::isString（10）
 
 **声明**
 
@@ -524,13 +606,13 @@ bool isString();
 obj.isString();
 ```
 
-**源码**：[source/std/json.mgl:45](../../source/std/json.mgl#L45)。
+**源码**：[source/std/json.mgl:53](../../source/std/json.mgl#L53)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-8"></a>
+<a id="api-10"></a>
 
-### JsonValue::isArray（9）
+### JsonValue::isArray（11）
 
 **声明**
 
@@ -560,13 +642,13 @@ bool isArray();
 obj.isArray();
 ```
 
-**源码**：[source/std/json.mgl:46](../../source/std/json.mgl#L46)。
+**源码**：[source/std/json.mgl:54](../../source/std/json.mgl#L54)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-9"></a>
+<a id="api-11"></a>
 
-### JsonValue::isObject（10）
+### JsonValue::isObject（12）
 
 **声明**
 
@@ -596,13 +678,13 @@ bool isObject();
 obj.isObject();
 ```
 
-**源码**：[source/std/json.mgl:47](../../source/std/json.mgl#L47)。
+**源码**：[source/std/json.mgl:55](../../source/std/json.mgl#L55)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-10"></a>
+<a id="api-12"></a>
 
-### JsonValue::isTable（11）
+### JsonValue::isTable（13）
 
 **声明**
 
@@ -632,13 +714,13 @@ bool isTable();
 obj.isTable();
 ```
 
-**源码**：[source/std/json.mgl:48](../../source/std/json.mgl#L48)。
+**源码**：[source/std/json.mgl:56](../../source/std/json.mgl#L56)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-11"></a>
+<a id="api-13"></a>
 
-### JsonValue::isDateTime（12）
+### JsonValue::isDateTime（14）
 
 **声明**
 
@@ -668,13 +750,13 @@ bool isDateTime();
 obj.isDateTime();
 ```
 
-**源码**：[source/std/json.mgl:49](../../source/std/json.mgl#L49)。
+**源码**：[source/std/json.mgl:57](../../source/std/json.mgl#L57)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-12"></a>
+<a id="api-14"></a>
 
-### JsonValue::len（13）
+### JsonValue::len（15）
 
 **声明**
 
@@ -706,13 +788,13 @@ int64 len();
 obj.len();
 ```
 
-**源码**：[source/std/json.mgl:51](../../source/std/json.mgl#L51)。
+**源码**：[source/std/json.mgl:59](../../source/std/json.mgl#L59)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-13"></a>
+<a id="api-15"></a>
 
-### JsonValue::asInt（14）
+### JsonValue::asInt（16）
 
 **声明**
 
@@ -742,13 +824,13 @@ Option<int64> asInt();
 obj.asInt();
 ```
 
-**源码**：[source/std/json.mgl:52](../../source/std/json.mgl#L52)。
+**源码**：[source/std/json.mgl:60](../../source/std/json.mgl#L60)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-14"></a>
+<a id="api-16"></a>
 
-### JsonValue::asFloat64（15）
+### JsonValue::asFloat64（17）
 
 **声明**
 
@@ -778,13 +860,13 @@ Option<float64> asFloat64();
 obj.asFloat64();
 ```
 
-**源码**：[source/std/json.mgl:56](../../source/std/json.mgl#L56)。
+**源码**：[source/std/json.mgl:64](../../source/std/json.mgl#L64)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-15"></a>
+<a id="api-17"></a>
 
-### JsonValue::asBool（16）
+### JsonValue::asBool（18）
 
 **声明**
 
@@ -814,13 +896,13 @@ Option<bool> asBool();
 obj.asBool();
 ```
 
-**源码**：[source/std/json.mgl:60](../../source/std/json.mgl#L60)。
+**源码**：[source/std/json.mgl:68](../../source/std/json.mgl#L68)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-16"></a>
+<a id="api-18"></a>
 
-### JsonValue::asString（17）
+### JsonValue::asString（19）
 
 **声明**
 
@@ -852,13 +934,13 @@ Option<std::lang::String> asString();
 obj.asString();
 ```
 
-**源码**：[source/std/json.mgl:65](../../source/std/json.mgl#L65)。
+**源码**：[source/std/json.mgl:73](../../source/std/json.mgl#L73)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-17"></a>
+<a id="api-19"></a>
 
-### JsonValue::asBytes（18）
+### JsonValue::asBytes（20）
 
 **声明**
 
@@ -888,13 +970,13 @@ Option<std::lang::List<uint8>> asBytes();
 obj.asBytes();
 ```
 
-**源码**：[source/std/json.mgl:70](../../source/std/json.mgl#L70)。
+**源码**：[source/std/json.mgl:78](../../source/std/json.mgl#L78)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-18"></a>
+<a id="api-20"></a>
 
-### JsonValue::asDateTime（19）
+### JsonValue::asDateTime（21）
 
 **声明**
 
@@ -924,13 +1006,13 @@ Option<std::lang::String> asDateTime();
 obj.asDateTime();
 ```
 
-**源码**：[source/std/json.mgl:75](../../source/std/json.mgl#L75)。
+**源码**：[source/std/json.mgl:83](../../source/std/json.mgl#L83)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-19"></a>
+<a id="api-21"></a>
 
-### JsonValue::find（20）
+### JsonValue::find（22）
 
 **声明**
 
@@ -962,13 +1044,13 @@ Option<JsonValue> find(std::lang::String key);
 obj.find(key);
 ```
 
-**源码**：[source/std/json.mgl:80](../../source/std/json.mgl#L80)。
+**源码**：[source/std/json.mgl:88](../../source/std/json.mgl#L88)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-20"></a>
+<a id="api-22"></a>
 
-### JsonValue::findBytes（21）
+### JsonValue::findBytes（23）
 
 **声明**
 
@@ -1002,13 +1084,13 @@ Option<JsonValue> findBytes(std::lang::List<uint8> key);
 obj.findBytes(key);
 ```
 
-**源码**：[source/std/json.mgl:87](../../source/std/json.mgl#L87)。
+**源码**：[source/std/json.mgl:95](../../source/std/json.mgl#L95)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-21"></a>
+<a id="api-23"></a>
 
-### JsonValue::at（22）
+### JsonValue::at（24）
 
 **声明**
 
@@ -1042,13 +1124,13 @@ Option<JsonValue> at(int64 index);
 obj.at(index);
 ```
 
-**源码**：[source/std/json.mgl:94](../../source/std/json.mgl#L94)。
+**源码**：[source/std/json.mgl:102](../../source/std/json.mgl#L102)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-22"></a>
+<a id="api-24"></a>
 
-### JsonValue::iterator（23）
+### JsonValue::iterator（25）
 
 **声明**
 
@@ -1080,13 +1162,13 @@ Option<JsonValue> iterator(int64 index);
 obj.iterator(index);
 ```
 
-**源码**：[source/std/json.mgl:100](../../source/std/json.mgl#L100)。
+**源码**：[source/std/json.mgl:108](../../source/std/json.mgl#L108)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-23"></a>
+<a id="api-25"></a>
 
-### JsonValue::keyAt（24）
+### JsonValue::keyAt（26）
 
 **声明**
 
@@ -1120,13 +1202,13 @@ Option<std::lang::String> keyAt(int64 index);
 obj.keyAt(index);
 ```
 
-**源码**：[source/std/json.mgl:102](../../source/std/json.mgl#L102)。
+**源码**：[source/std/json.mgl:110](../../source/std/json.mgl#L110)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-24"></a>
+<a id="api-26"></a>
 
-### JsonValue::keyBytesAt（25）
+### JsonValue::keyBytesAt（27）
 
 **声明**
 
@@ -1158,13 +1240,13 @@ Option<std::lang::List<uint8>> keyBytesAt(int64 index);
 obj.keyBytesAt(index);
 ```
 
-**源码**：[source/std/json.mgl:107](../../source/std/json.mgl#L107)。
+**源码**：[source/std/json.mgl:115](../../source/std/json.mgl#L115)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-25"></a>
+<a id="api-27"></a>
 
-### JsonValue::dump（26）
+### JsonValue::dump（28）
 
 **声明**
 
@@ -1194,13 +1276,13 @@ std::lang::String dump();
 obj.dump();
 ```
 
-**源码**：[source/std/json.mgl:112](../../source/std/json.mgl#L112)。
+**源码**：[source/std/json.mgl:120](../../source/std/json.mgl#L120)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-26"></a>
+<a id="api-28"></a>
 
-### parse（27）
+### parse（29）
 
 **声明**
 
@@ -1234,6 +1316,6 @@ Result<JsonValue, std::lang::String> parse(std::lang::String text);
 std::json::parse(text);
 ```
 
-**源码**：[source/std/json.mgl:116](../../source/std/json.mgl#L116)。
+**源码**：[source/std/json.mgl:124](../../source/std/json.mgl#L124)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。

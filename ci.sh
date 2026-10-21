@@ -177,6 +177,7 @@ run_step "验证大整数乘除法与 Python 整数差分" "$PYTHON" tests/bigin
 run_step "验证高精度数学与独立参考值" "$PYTHON" tests/bigfloat_math.py
 run_step "验证 CAS 与泛型数学语言接口" "$PYTHON" tests/magel_cas_math.py
 run_step "验证 opcode 值语义、红黑删除与字符串方法" "$PYTHON" tests/magel_opcode_values.py
+run_step "验证反射序列化与注解动态 SQL" "$PYTHON" tests/magel_reflection_serialization.py
 run_step "验证 CAS 核心全部回归" "$PYTHON" tests/cas_library.py
 run_step "验证卫生宏绑定、正则、AST 替换及生成解析器" "$PYTHON" tests/macro_foundations.py
 run_step "验证 AST 表达式宏语义与 VM 执行" "$PYTHON" tests/magel_ast_macros.py --default

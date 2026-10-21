@@ -22,24 +22,24 @@ BinarySearchTree 是集合语义的二叉搜索树，重复插入返回 false，
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-447"></a>`struct TreeSnapshot` | 独立节点快照，live 标识有效槽；空孩子及空根使用 -1。 |
-| TreeSnapshot | <a id="symbol-448"></a>`List<int64> keys` | 节点槽键值。 |
-| TreeSnapshot | <a id="symbol-449"></a>`List<int64> lefts` | 左孩子下标，空孩子为 -1。 |
-| TreeSnapshot | <a id="symbol-450"></a>`List<int64> rights` | 右孩子下标，空孩子为 -1。 |
-| TreeSnapshot | <a id="symbol-451"></a>`List<int64> live` | 有效槽标记，1 为有效。 |
-| TreeSnapshot | <a id="symbol-452"></a>`int64 root` | 根节点下标，空树为 -1。 |
-| TreeSnapshot | <a id="symbol-453"></a>`int64 count` | 有效节点数。 |
-| 模块 | <a id="symbol-454"></a>`struct GeneralTreeSnapshot` | 独立通用树快照，首孩子与次兄弟保留原节点号。 |
-| GeneralTreeSnapshot | <a id="symbol-455"></a>`List<int64> values` | 节点槽值。 |
-| GeneralTreeSnapshot | <a id="symbol-456"></a>`List<int64> firstChild` | 首孩子下标，空孩子为 -1。 |
-| GeneralTreeSnapshot | <a id="symbol-457"></a>`List<int64> nextSibling` | 次兄弟下标，空兄弟为 -1。 |
-| GeneralTreeSnapshot | <a id="symbol-458"></a>`List<int64> live` | 有效槽标记，1 为有效。 |
-| GeneralTreeSnapshot | <a id="symbol-459"></a>`int64 root` | 根节点号，空树为 -1。 |
-| GeneralTreeSnapshot | <a id="symbol-460"></a>`int64 count` | 有效节点数。 |
-| 模块 | <a id="symbol-461"></a>`opcode BinarySearchTree` | 宿主持久二叉搜索集合，普通复制深复制，snapshot 显式导出节点。 |
-| 模块 | <a id="symbol-462"></a>`opcode RedBlackTree` | 宿主持久红黑集合，插入与删除原地修复，普通复制深复制。 |
-| 模块 | <a id="symbol-463"></a>`opcode MinHeap` | 宿主持久最小堆，普通复制深复制，snapshot 显式导出堆数组。 |
-| 模块 | <a id="symbol-464"></a>`opcode GeneralTree` | 宿主持久首孩子、次兄弟树，支持独立二叉表示转换。 |
+| 模块 | <a id="symbol-457"></a>`struct TreeSnapshot` | 独立节点快照，live 标识有效槽；空孩子及空根使用 -1。 |
+| TreeSnapshot | <a id="symbol-458"></a>`List<int64> keys` | 节点槽键值。 |
+| TreeSnapshot | <a id="symbol-459"></a>`List<int64> lefts` | 左孩子下标，空孩子为 -1。 |
+| TreeSnapshot | <a id="symbol-460"></a>`List<int64> rights` | 右孩子下标，空孩子为 -1。 |
+| TreeSnapshot | <a id="symbol-461"></a>`List<int64> live` | 有效槽标记，1 为有效。 |
+| TreeSnapshot | <a id="symbol-462"></a>`int64 root` | 根节点下标，空树为 -1。 |
+| TreeSnapshot | <a id="symbol-463"></a>`int64 count` | 有效节点数。 |
+| 模块 | <a id="symbol-464"></a>`struct GeneralTreeSnapshot` | 独立通用树快照，首孩子与次兄弟保留原节点号。 |
+| GeneralTreeSnapshot | <a id="symbol-465"></a>`List<int64> values` | 节点槽值。 |
+| GeneralTreeSnapshot | <a id="symbol-466"></a>`List<int64> firstChild` | 首孩子下标，空孩子为 -1。 |
+| GeneralTreeSnapshot | <a id="symbol-467"></a>`List<int64> nextSibling` | 次兄弟下标，空兄弟为 -1。 |
+| GeneralTreeSnapshot | <a id="symbol-468"></a>`List<int64> live` | 有效槽标记，1 为有效。 |
+| GeneralTreeSnapshot | <a id="symbol-469"></a>`int64 root` | 根节点号，空树为 -1。 |
+| GeneralTreeSnapshot | <a id="symbol-470"></a>`int64 count` | 有效节点数。 |
+| 模块 | <a id="symbol-471"></a>`opcode BinarySearchTree` | 宿主持久二叉搜索集合，普通复制深复制，snapshot 显式导出节点。 |
+| 模块 | <a id="symbol-472"></a>`opcode RedBlackTree` | 宿主持久红黑集合，插入与删除原地修复，普通复制深复制。 |
+| 模块 | <a id="symbol-473"></a>`opcode MinHeap` | 宿主持久最小堆，普通复制深复制，snapshot 显式导出堆数组。 |
+| 模块 | <a id="symbol-474"></a>`opcode GeneralTree` | 宿主持久首孩子、次兄弟树，支持独立二叉表示转换。 |
 
 ## 函数索引
 

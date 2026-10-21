@@ -12245,6 +12245,70 @@
   },
   {
     "module": "std::json",
+    "name": "serialize",
+    "owner": "",
+    "signature": "Result<String,String> serialize<T>(T const& value)",
+    "documentation": "按具体反射类型编码独立值，失败返回诊断。\n\n**返回值**：Result<String,String>。",
+    "comment": "/** 将已暴露给反射的值编码为 JSON，数字和字段类型保持精确。 */",
+    "parameters": [
+      {
+        "name": "value",
+        "label": "T const& value",
+        "documentation": "输入值或写入的新值",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Result<String,String>",
+      "documentation": "按具体反射类型编码独立值，失败返回诊断。"
+    },
+    "errors": {
+      "documentation": "parse 返回 Result<JsonValue,String>。节点由拥有型 opcode 保存独立子树；普通复制深复制，close 只关闭当前值，已取得的子值和副本继续有效，重复关闭返回 false。asXxx 返回 Option，不符合类型时为 None；asFloat64 可读取整数。含零字节的文本/键使用 asBytes/findBytes/keyBytesAt。kind：0 null、1 bool、2 int、3 float、4 string、5 array、6 object、7 date-time。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::json::serialize<T>(value);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/json.mgl",
+    "line": 7,
+    "page": "std-json.md",
+    "anchor": "api-0"
+  },
+  {
+    "module": "std::json",
+    "name": "deserialize",
+    "owner": "",
+    "signature": "Result<T,String> deserialize<T>(String text)",
+    "documentation": "按具体反射类型严格校验并恢复独立拥有的值。\n\n**返回值**：Result<T,String>。",
+    "comment": "/** 按具体类型验证并恢复拥有独立存储的值。 */",
+    "parameters": [
+      {
+        "name": "text",
+        "label": "String text",
+        "documentation": "输入文本，位置与长度通常按字节",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Result<T,String>",
+      "documentation": "按具体反射类型严格校验并恢复独立拥有的值。"
+    },
+    "errors": {
+      "documentation": "parse 返回 Result<JsonValue,String>。节点由拥有型 opcode 保存独立子树；普通复制深复制，close 只关闭当前值，已取得的子值和副本继续有效，重复关闭返回 false。asXxx 返回 Option，不符合类型时为 None；asFloat64 可读取整数。含零字节的文本/键使用 asBytes/findBytes/keyBytesAt。kind：0 null、1 bool、2 int、3 float、4 string、5 array、6 object、7 date-time。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::json::deserialize<T>(text);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/json.mgl",
+    "line": 9,
+    "page": "std-json.md",
+    "anchor": "api-1"
+  },
+  {
+    "module": "std::json",
     "name": "JsonValue::isValid",
     "owner": "JsonValue",
     "signature": "bool isValid()",
@@ -12266,9 +12330,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 37,
+    "line": 45,
     "page": "std-json.md",
-    "anchor": "api-0"
+    "anchor": "api-2"
   },
   {
     "module": "std::json",
@@ -12293,9 +12357,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 39,
+    "line": 47,
     "page": "std-json.md",
-    "anchor": "api-1"
+    "anchor": "api-3"
   },
   {
     "module": "std::json",
@@ -12318,9 +12382,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 40,
+    "line": 48,
     "page": "std-json.md",
-    "anchor": "api-2"
+    "anchor": "api-4"
   },
   {
     "module": "std::json",
@@ -12345,9 +12409,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 41,
+    "line": 49,
     "page": "std-json.md",
-    "anchor": "api-3"
+    "anchor": "api-5"
   },
   {
     "module": "std::json",
@@ -12370,9 +12434,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 42,
+    "line": 50,
     "page": "std-json.md",
-    "anchor": "api-4"
+    "anchor": "api-6"
   },
   {
     "module": "std::json",
@@ -12395,9 +12459,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 43,
+    "line": 51,
     "page": "std-json.md",
-    "anchor": "api-5"
+    "anchor": "api-7"
   },
   {
     "module": "std::json",
@@ -12420,9 +12484,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 44,
+    "line": 52,
     "page": "std-json.md",
-    "anchor": "api-6"
+    "anchor": "api-8"
   },
   {
     "module": "std::json",
@@ -12445,9 +12509,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 45,
+    "line": 53,
     "page": "std-json.md",
-    "anchor": "api-7"
+    "anchor": "api-9"
   },
   {
     "module": "std::json",
@@ -12470,9 +12534,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 46,
+    "line": 54,
     "page": "std-json.md",
-    "anchor": "api-8"
+    "anchor": "api-10"
   },
   {
     "module": "std::json",
@@ -12497,9 +12561,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 47,
+    "line": 55,
     "page": "std-json.md",
-    "anchor": "api-9"
+    "anchor": "api-11"
   },
   {
     "module": "std::json",
@@ -12524,9 +12588,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 48,
+    "line": 56,
     "page": "std-json.md",
-    "anchor": "api-10"
+    "anchor": "api-12"
   },
   {
     "module": "std::json",
@@ -12549,9 +12613,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 49,
+    "line": 57,
     "page": "std-json.md",
-    "anchor": "api-11"
+    "anchor": "api-13"
   },
   {
     "module": "std::json",
@@ -12576,9 +12640,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 51,
+    "line": 59,
     "page": "std-json.md",
-    "anchor": "api-12"
+    "anchor": "api-14"
   },
   {
     "module": "std::json",
@@ -12603,9 +12667,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 52,
+    "line": 60,
     "page": "std-json.md",
-    "anchor": "api-13"
+    "anchor": "api-15"
   },
   {
     "module": "std::json",
@@ -12630,9 +12694,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 56,
+    "line": 64,
     "page": "std-json.md",
-    "anchor": "api-14"
+    "anchor": "api-16"
   },
   {
     "module": "std::json",
@@ -12657,9 +12721,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 60,
+    "line": 68,
     "page": "std-json.md",
-    "anchor": "api-15"
+    "anchor": "api-17"
   },
   {
     "module": "std::json",
@@ -12684,9 +12748,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 65,
+    "line": 73,
     "page": "std-json.md",
-    "anchor": "api-16"
+    "anchor": "api-18"
   },
   {
     "module": "std::json",
@@ -12711,9 +12775,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 70,
+    "line": 78,
     "page": "std-json.md",
-    "anchor": "api-17"
+    "anchor": "api-19"
   },
   {
     "module": "std::json",
@@ -12738,9 +12802,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 75,
+    "line": 83,
     "page": "std-json.md",
-    "anchor": "api-18"
+    "anchor": "api-20"
   },
   {
     "module": "std::json",
@@ -12772,9 +12836,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 80,
+    "line": 88,
     "page": "std-json.md",
-    "anchor": "api-19"
+    "anchor": "api-21"
   },
   {
     "module": "std::json",
@@ -12806,9 +12870,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 87,
+    "line": 95,
     "page": "std-json.md",
-    "anchor": "api-20"
+    "anchor": "api-22"
   },
   {
     "module": "std::json",
@@ -12840,9 +12904,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 94,
+    "line": 102,
     "page": "std-json.md",
-    "anchor": "api-21"
+    "anchor": "api-23"
   },
   {
     "module": "std::json",
@@ -12872,9 +12936,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 100,
+    "line": 108,
     "page": "std-json.md",
-    "anchor": "api-22"
+    "anchor": "api-24"
   },
   {
     "module": "std::json",
@@ -12906,9 +12970,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 102,
+    "line": 110,
     "page": "std-json.md",
-    "anchor": "api-23"
+    "anchor": "api-25"
   },
   {
     "module": "std::json",
@@ -12940,9 +13004,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 107,
+    "line": 115,
     "page": "std-json.md",
-    "anchor": "api-24"
+    "anchor": "api-26"
   },
   {
     "module": "std::json",
@@ -12967,9 +13031,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 112,
+    "line": 120,
     "page": "std-json.md",
-    "anchor": "api-25"
+    "anchor": "api-27"
   },
   {
     "module": "std::json",
@@ -13001,9 +13065,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/json.mgl",
-    "line": 116,
+    "line": 124,
     "page": "std-json.md",
-    "anchor": "api-26"
+    "anchor": "api-28"
   },
   {
     "module": "std::lang",
@@ -16952,7 +17016,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1738,
+    "line": 1773,
     "page": "std-lang.md",
     "anchor": "api-121"
   },
@@ -16998,7 +17062,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1746,
+    "line": 1781,
     "page": "std-lang.md",
     "anchor": "api-122"
   },
@@ -17036,7 +17100,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1761,
+    "line": 1796,
     "page": "std-lang.md",
     "anchor": "api-123"
   },
@@ -17063,7 +17127,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1968,
+    "line": 2003,
     "page": "std-lang.md",
     "anchor": "api-124"
   },
@@ -17088,7 +17152,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1976,
+    "line": 2011,
     "page": "std-lang.md",
     "anchor": "api-125"
   },
@@ -17668,7 +17732,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1675,
+    "line": 1710,
     "page": "std-lang.md",
     "anchor": "api-144"
   },
@@ -17700,7 +17764,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1681,
+    "line": 1716,
     "page": "std-lang.md",
     "anchor": "api-145"
   },
@@ -27949,6 +28013,31 @@
   },
   {
     "module": "std::reflect",
+    "name": "requireReflection",
+    "owner": "",
+    "signature": "void requireReflection()",
+    "documentation": "检查编译器是否编入反射；缺失时 panic。\n\n**返回值**：void。",
+    "comment": "/** 反射裁剪构建调用依赖反射的高级接口时直接 panic。 */",
+    "parameters": [],
+    "returns": {
+      "type": "void",
+      "documentation": "无返回值。"
+    },
+    "errors": {
+      "documentation": "要求工具链构建时同时启用 MAGEL_WITH_REFLECTION=1 与 STACKVM_WITH_REFLECTION=1，并在编译/运行时启用 --reflection。类型信息在具体类型和布局确定后生成；动态调用只支持 ReflectValue 的封闭载荷集合。Err 区分未找到、歧义、参数数量、类型、接收者和未暴露等错误。",
+      "preconditions": [],
+      "panic": true
+    },
+    "usage": "std::reflect::requireReflection();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/reflect.mgl",
+    "line": 5,
+    "page": "std-reflect.md",
+    "anchor": "api-0"
+  },
+  {
+    "module": "std::reflect",
     "name": "ReflectValue::typeId",
     "owner": "ReflectValue",
     "signature": "uint64 typeId()",
@@ -27968,9 +28057,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 22,
+    "line": 28,
     "page": "std-reflect.md",
-    "anchor": "api-0"
+    "anchor": "api-1"
   },
   {
     "module": "std::reflect",
@@ -27993,9 +28082,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 42,
+    "line": 48,
     "page": "std-reflect.md",
-    "anchor": "api-1"
+    "anchor": "api-2"
   },
   {
     "module": "std::reflect",
@@ -28018,9 +28107,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 47,
+    "line": 53,
     "page": "std-reflect.md",
-    "anchor": "api-2"
+    "anchor": "api-3"
   },
   {
     "module": "std::reflect",
@@ -28043,9 +28132,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 52,
+    "line": 58,
     "page": "std-reflect.md",
-    "anchor": "api-3"
+    "anchor": "api-4"
   },
   {
     "module": "std::reflect",
@@ -28068,9 +28157,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 57,
+    "line": 63,
     "page": "std-reflect.md",
-    "anchor": "api-4"
+    "anchor": "api-5"
   },
   {
     "module": "std::reflect",
@@ -28093,9 +28182,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 62,
+    "line": 68,
     "page": "std-reflect.md",
-    "anchor": "api-5"
+    "anchor": "api-6"
   },
   {
     "module": "std::reflect",
@@ -28118,9 +28207,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 67,
+    "line": 73,
     "page": "std-reflect.md",
-    "anchor": "api-6"
+    "anchor": "api-7"
   },
   {
     "module": "std::reflect",
@@ -28143,9 +28232,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 72,
+    "line": 78,
     "page": "std-reflect.md",
-    "anchor": "api-7"
+    "anchor": "api-8"
   },
   {
     "module": "std::reflect",
@@ -28168,9 +28257,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 77,
+    "line": 83,
     "page": "std-reflect.md",
-    "anchor": "api-8"
+    "anchor": "api-9"
   },
   {
     "module": "std::reflect",
@@ -28193,9 +28282,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 82,
+    "line": 88,
     "page": "std-reflect.md",
-    "anchor": "api-9"
+    "anchor": "api-10"
   },
   {
     "module": "std::reflect",
@@ -28218,9 +28307,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 87,
+    "line": 93,
     "page": "std-reflect.md",
-    "anchor": "api-10"
+    "anchor": "api-11"
   },
   {
     "module": "std::reflect",
@@ -28243,9 +28332,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 92,
+    "line": 98,
     "page": "std-reflect.md",
-    "anchor": "api-11"
+    "anchor": "api-12"
   },
   {
     "module": "std::reflect",
@@ -28268,9 +28357,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 97,
+    "line": 103,
     "page": "std-reflect.md",
-    "anchor": "api-12"
+    "anchor": "api-13"
   },
   {
     "module": "std::reflect",
@@ -28293,9 +28382,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 102,
+    "line": 108,
     "page": "std-reflect.md",
-    "anchor": "api-13"
+    "anchor": "api-14"
   },
   {
     "module": "std::reflect",
@@ -28325,9 +28414,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 127,
+    "line": 133,
     "page": "std-reflect.md",
-    "anchor": "api-14"
+    "anchor": "api-15"
   },
   {
     "module": "std::reflect",
@@ -28357,9 +28446,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 128,
+    "line": 134,
     "page": "std-reflect.md",
-    "anchor": "api-15"
+    "anchor": "api-16"
   },
   {
     "module": "std::reflect",
@@ -28384,9 +28473,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 130,
+    "line": 136,
     "page": "std-reflect.md",
-    "anchor": "api-16"
+    "anchor": "api-17"
   },
   {
     "module": "std::reflect",
@@ -28409,9 +28498,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 131,
+    "line": 137,
     "page": "std-reflect.md",
-    "anchor": "api-17"
+    "anchor": "api-18"
   },
   {
     "module": "std::reflect",
@@ -28436,9 +28525,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 132,
+    "line": 138,
     "page": "std-reflect.md",
-    "anchor": "api-18"
+    "anchor": "api-19"
   },
   {
     "module": "std::reflect",
@@ -28461,9 +28550,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 133,
+    "line": 139,
     "page": "std-reflect.md",
-    "anchor": "api-19"
+    "anchor": "api-20"
   },
   {
     "module": "std::reflect",
@@ -28486,9 +28575,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 134,
+    "line": 140,
     "page": "std-reflect.md",
-    "anchor": "api-20"
+    "anchor": "api-21"
   },
   {
     "module": "std::reflect",
@@ -28518,9 +28607,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 135,
+    "line": 141,
     "page": "std-reflect.md",
-    "anchor": "api-21"
+    "anchor": "api-22"
   },
   {
     "module": "std::reflect",
@@ -28543,9 +28632,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 142,
+    "line": 148,
     "page": "std-reflect.md",
-    "anchor": "api-22"
+    "anchor": "api-23"
   },
   {
     "module": "std::reflect",
@@ -28575,9 +28664,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 148,
+    "line": 154,
     "page": "std-reflect.md",
-    "anchor": "api-23"
+    "anchor": "api-24"
   },
   {
     "module": "std::reflect",
@@ -28607,9 +28696,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 153,
+    "line": 159,
     "page": "std-reflect.md",
-    "anchor": "api-24"
+    "anchor": "api-25"
   },
   {
     "module": "std::reflect",
@@ -28639,9 +28728,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 163,
+    "line": 169,
     "page": "std-reflect.md",
-    "anchor": "api-25"
+    "anchor": "api-26"
   },
   {
     "module": "std::reflect",
@@ -28671,9 +28760,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 167,
+    "line": 173,
     "page": "std-reflect.md",
-    "anchor": "api-26"
+    "anchor": "api-27"
   },
   {
     "module": "std::reflect",
@@ -28709,9 +28798,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 176,
+    "line": 182,
     "page": "std-reflect.md",
-    "anchor": "api-27"
+    "anchor": "api-28"
   },
   {
     "module": "std::reflect",
@@ -28753,9 +28842,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 177,
+    "line": 183,
     "page": "std-reflect.md",
-    "anchor": "api-28"
+    "anchor": "api-29"
   },
   {
     "module": "std::reflect",
@@ -28797,9 +28886,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 178,
+    "line": 184,
     "page": "std-reflect.md",
-    "anchor": "api-29"
+    "anchor": "api-30"
   },
   {
     "module": "std::reflect",
@@ -28835,9 +28924,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 179,
+    "line": 185,
     "page": "std-reflect.md",
-    "anchor": "api-30"
+    "anchor": "api-31"
   },
   {
     "module": "std::reflect",
@@ -28879,9 +28968,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 180,
+    "line": 186,
     "page": "std-reflect.md",
-    "anchor": "api-31"
+    "anchor": "api-32"
   },
   {
     "module": "std::reflect",
@@ -28923,9 +29012,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 181,
+    "line": 187,
     "page": "std-reflect.md",
-    "anchor": "api-32"
+    "anchor": "api-33"
   },
   {
     "module": "std::reflect",
@@ -28961,9 +29050,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 182,
+    "line": 188,
     "page": "std-reflect.md",
-    "anchor": "api-33"
+    "anchor": "api-34"
   },
   {
     "module": "std::reflect",
@@ -28993,9 +29082,91 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 183,
+    "line": 189,
     "page": "std-reflect.md",
-    "anchor": "api-34"
+    "anchor": "api-35"
+  },
+  {
+    "module": "std::reflect",
+    "name": "getField",
+    "owner": "",
+    "signature": "Result<F,std::reflect::ReflectError> getField<T,F>(T const& obj, std::lang::String name)",
+    "documentation": "按字段名读取精确类型的独立值。\n\n**返回值**：Result<F,std::reflect::ReflectError>。",
+    "comment": "/** 按名称读取字段的独立值；字段类型必须与 F 精确一致，不返回内部引用。 */",
+    "parameters": [
+      {
+        "name": "obj",
+        "label": "T const& obj",
+        "documentation": "实例接收者，其引用可写性须匹配方法",
+        "default": ""
+      },
+      {
+        "name": "name",
+        "label": "std::lang::String name",
+        "documentation": "名称",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Result<F,std::reflect::ReflectError>",
+      "documentation": "按字段名读取精确类型的独立值。"
+    },
+    "errors": {
+      "documentation": "要求工具链构建时同时启用 MAGEL_WITH_REFLECTION=1 与 STACKVM_WITH_REFLECTION=1，并在编译/运行时启用 --reflection。类型信息在具体类型和布局确定后生成；动态调用只支持 ReflectValue 的封闭载荷集合。Err 区分未找到、歧义、参数数量、类型、接收者和未暴露等错误。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::reflect::getField<T,F>(obj, name);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/reflect.mgl",
+    "line": 191,
+    "page": "std-reflect.md",
+    "anchor": "api-36"
+  },
+  {
+    "module": "std::reflect",
+    "name": "setField",
+    "owner": "",
+    "signature": "Result<bool,std::reflect::ReflectError> setField<T,F>(T mut& obj, std::lang::String name, F value)",
+    "documentation": "按字段名写入精确类型的值。\n\n**返回值**：Result<bool,std::reflect::ReflectError>。",
+    "comment": "/** 按名称写入字段，沿用普通赋值的复制、释放与借用规则。 */",
+    "parameters": [
+      {
+        "name": "obj",
+        "label": "T mut& obj",
+        "documentation": "实例接收者，其引用可写性须匹配方法",
+        "default": ""
+      },
+      {
+        "name": "name",
+        "label": "std::lang::String name",
+        "documentation": "名称",
+        "default": ""
+      },
+      {
+        "name": "value",
+        "label": "F value",
+        "documentation": "输入值或写入的新值",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Result<bool,std::reflect::ReflectError>",
+      "documentation": "按字段名写入精确类型的值。"
+    },
+    "errors": {
+      "documentation": "要求工具链构建时同时启用 MAGEL_WITH_REFLECTION=1 与 STACKVM_WITH_REFLECTION=1，并在编译/运行时启用 --reflection。类型信息在具体类型和布局确定后生成；动态调用只支持 ReflectValue 的封闭载荷集合。Err 区分未找到、歧义、参数数量、类型、接收者和未暴露等错误。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::reflect::setField<T,F>(obj, name, value);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/reflect.mgl",
+    "line": 193,
+    "page": "std-reflect.md",
+    "anchor": "api-37"
   },
   {
     "module": "std::reflect",
@@ -29037,9 +29208,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 184,
+    "line": 194,
     "page": "std-reflect.md",
-    "anchor": "api-35"
+    "anchor": "api-38"
   },
   {
     "module": "std::reflect",
@@ -29081,9 +29252,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/reflect.mgl",
-    "line": 185,
+    "line": 195,
     "page": "std-reflect.md",
-    "anchor": "api-36"
+    "anchor": "api-39"
   },
   {
     "module": "std::regex",
@@ -29326,6 +29497,70 @@
     "line": 44,
     "page": "std-regex.md",
     "anchor": "api-6"
+  },
+  {
+    "module": "std::serialization",
+    "name": "serialize",
+    "owner": "",
+    "signature": "Result<List<uint8>,String> serialize<T>(T const& value)",
+    "documentation": "按具体反射类型编码独立值，失败返回诊断。\n\n**返回值**：Result<List<uint8>,String>。",
+    "comment": "/** 将反射值编码为带稳定类型标识和版本的独立字节流。 */",
+    "parameters": [
+      {
+        "name": "value",
+        "label": "T const& value",
+        "documentation": "输入值或写入的新值",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Result<List<uint8>,String>",
+      "documentation": "按具体反射类型编码独立值，失败返回诊断。"
+    },
+    "errors": {
+      "documentation": "serialize<T> 使用反射生成精确 JSON 载荷，并封装版本、稳定类型 ID 和长度；deserialize<T> 严格检查后恢复独立拥有的值。编译器裁剪反射时 panic，模型未暴露时返回错误。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::serialization::serialize<T>(value);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/serialization.mgl",
+    "line": 10,
+    "page": "std-serialization.md",
+    "anchor": "api-0"
+  },
+  {
+    "module": "std::serialization",
+    "name": "deserialize",
+    "owner": "",
+    "signature": "Result<T,String> deserialize<T>(List<uint8> bytes)",
+    "documentation": "按具体反射类型严格校验并恢复独立拥有的值。\n\n**返回值**：Result<T,String>。",
+    "comment": "/** 严格验证类型、版本和长度后恢复独立拥有的值。 */",
+    "parameters": [
+      {
+        "name": "bytes",
+        "label": "List<uint8> bytes",
+        "documentation": "输入或输出字节存储",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Result<T,String>",
+      "documentation": "按具体反射类型严格校验并恢复独立拥有的值。"
+    },
+    "errors": {
+      "documentation": "serialize<T> 使用反射生成精确 JSON 载荷，并封装版本、稳定类型 ID 和长度；deserialize<T> 严格检查后恢复独立拥有的值。编译器裁剪反射时 panic，模型未暴露时返回错误。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::serialization::deserialize<T>(bytes);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/serialization.mgl",
+    "line": 16,
+    "page": "std-serialization.md",
+    "anchor": "api-1"
   },
   {
     "module": "std::signal",
@@ -29593,6 +29828,152 @@
   },
   {
     "module": "std::sql",
+    "name": "Query::orderBy",
+    "owner": "Query",
+    "signature": "void orderBy(String field, bool descending = false)",
+    "documentation": "添加排序列；列必须出现在模型中。\n\n**返回值**：void。",
+    "comment": "/** 添加排序列；列必须出现在模型中。 */",
+    "parameters": [
+      {
+        "name": "field",
+        "label": "String field",
+        "documentation": "模型中声明的字段名或列名。",
+        "default": ""
+      },
+      {
+        "name": "descending",
+        "label": "bool descending = false",
+        "documentation": "为 true 时按降序排列。",
+        "default": "false"
+      }
+    ],
+    "returns": {
+      "type": "void",
+      "documentation": "无返回值。"
+    },
+    "errors": {
+      "documentation": "SQLite 静态内置，无需 sqlite3.dll，忽略 SQLITE_LIBRARY。MySQL/MariaDB 使用 MYSQL_LIBRARY；PostgreSQL 使用 POSTGRES_LIBRARY；ODBC 需要相应驱动。mysql/maria 默认端口 3306，connect 已移除。exec 返回最后一条语句的结果，失败检查 ok/error；结果已复制，不借用客户端缓冲区。事务由 SQL BEGIN/COMMIT/ROLLBACK 控制。拼字符串字面量使用 db.quote；它不转义表名/列名。目标宿主必须提供相应数据库驱动。 DataCell.asInt/asReal 只转换数值类型，其他类型返回 0/0.0；text 对 NULL 返回 \"NULL\"。ResultSet.scalar/count 在空结果上返回空串/0，at/intAt/realAt/textAt 的行列索引必须有效。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.orderBy(field, descending);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/sql.mgl",
+    "line": 80,
+    "page": "std-sql.md",
+    "anchor": "api-0"
+  },
+  {
+    "module": "std::sql",
+    "name": "Query::select",
+    "owner": "Query",
+    "signature": "void select(String field)",
+    "documentation": "选择模型字段，默认选择全部字段。\n\n**返回值**：void。",
+    "comment": "/** 选择模型字段，默认选择全部字段。 */",
+    "parameters": [
+      {
+        "name": "field",
+        "label": "String field",
+        "documentation": "模型中声明的字段名或列名。",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "void",
+      "documentation": "无返回值。"
+    },
+    "errors": {
+      "documentation": "SQLite 静态内置，无需 sqlite3.dll，忽略 SQLITE_LIBRARY。MySQL/MariaDB 使用 MYSQL_LIBRARY；PostgreSQL 使用 POSTGRES_LIBRARY；ODBC 需要相应驱动。mysql/maria 默认端口 3306，connect 已移除。exec 返回最后一条语句的结果，失败检查 ok/error；结果已复制，不借用客户端缓冲区。事务由 SQL BEGIN/COMMIT/ROLLBACK 控制。拼字符串字面量使用 db.quote；它不转义表名/列名。目标宿主必须提供相应数据库驱动。 DataCell.asInt/asReal 只转换数值类型，其他类型返回 0/0.0；text 对 NULL 返回 \"NULL\"。ResultSet.scalar/count 在空结果上返回空串/0，at/intAt/realAt/textAt 的行列索引必须有效。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.select(field);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/sql.mgl",
+    "line": 82,
+    "page": "std-sql.md",
+    "anchor": "api-1"
+  },
+  {
+    "module": "std::sql",
+    "name": "Query::page",
+    "owner": "Query",
+    "signature": "void page(int64 limit, int64 offset = 0)",
+    "documentation": "设置查询分页条数及偏移。\n\n**返回值**：void。",
+    "comment": "/** 设置非负分页参数。 */",
+    "parameters": [
+      {
+        "name": "limit",
+        "label": "int64 limit",
+        "documentation": "最大返回行数，零表示不限制。",
+        "default": ""
+      },
+      {
+        "name": "offset",
+        "label": "int64 offset = 0",
+        "documentation": "字节偏移或 seek 相对位移",
+        "default": "0"
+      }
+    ],
+    "returns": {
+      "type": "void",
+      "documentation": "无返回值。"
+    },
+    "errors": {
+      "documentation": "SQLite 静态内置，无需 sqlite3.dll，忽略 SQLITE_LIBRARY。MySQL/MariaDB 使用 MYSQL_LIBRARY；PostgreSQL 使用 POSTGRES_LIBRARY；ODBC 需要相应驱动。mysql/maria 默认端口 3306，connect 已移除。exec 返回最后一条语句的结果，失败检查 ok/error；结果已复制，不借用客户端缓冲区。事务由 SQL BEGIN/COMMIT/ROLLBACK 控制。拼字符串字面量使用 db.quote；它不转义表名/列名。目标宿主必须提供相应数据库驱动。 DataCell.asInt/asReal 只转换数值类型，其他类型返回 0/0.0；text 对 NULL 返回 \"NULL\"。ResultSet.scalar/count 在空结果上返回空串/0，at/intAt/realAt/textAt 的行列索引必须有效。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.page(limit, offset);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/sql.mgl",
+    "line": 84,
+    "page": "std-sql.md",
+    "anchor": "api-2"
+  },
+  {
+    "module": "std::sql",
+    "name": "Query::build",
+    "owner": "Query",
+    "signature": "Result<SqlStatement,String> build(String operation = \"select\", String values = \"{}\")",
+    "documentation": "生成带参数列表的动态 SQL。\n\n**返回值**：Result<SqlStatement,String>。",
+    "comment": "/** 生成 SQL 与参数；UPDATE/DELETE 强制要求过滤条件。 */",
+    "parameters": [
+      {
+        "name": "operation",
+        "label": "String operation = \"select\"",
+        "documentation": "动态 SQL 操作名称或 ipage 操作符编号，按入口声明区分。",
+        "default": "\"select\""
+      },
+      {
+        "name": "values",
+        "label": "String values = \"{}\"",
+        "documentation": "参与操作的元素序列",
+        "default": "\"{}\""
+      }
+    ],
+    "returns": {
+      "type": "Result<SqlStatement,String>",
+      "documentation": "生成带参数列表的动态 SQL。"
+    },
+    "errors": {
+      "documentation": "SQLite 静态内置，无需 sqlite3.dll，忽略 SQLITE_LIBRARY。MySQL/MariaDB 使用 MYSQL_LIBRARY；PostgreSQL 使用 POSTGRES_LIBRARY；ODBC 需要相应驱动。mysql/maria 默认端口 3306，connect 已移除。exec 返回最后一条语句的结果，失败检查 ok/error；结果已复制，不借用客户端缓冲区。事务由 SQL BEGIN/COMMIT/ROLLBACK 控制。拼字符串字面量使用 db.quote；它不转义表名/列名。目标宿主必须提供相应数据库驱动。 DataCell.asInt/asReal 只转换数值类型，其他类型返回 0/0.0；text 对 NULL 返回 \"NULL\"。ResultSet.scalar/count 在空结果上返回空串/0，at/intAt/realAt/textAt 的行列索引必须有效。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.build(operation, values);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/sql.mgl",
+    "line": 86,
+    "page": "std-sql.md",
+    "anchor": "api-3"
+  },
+  {
+    "module": "std::sql",
     "name": "DataCell::isNull",
     "owner": "DataCell",
     "signature": "bool isNull()",
@@ -29612,9 +29993,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 63,
+    "line": 163,
     "page": "std-sql.md",
-    "anchor": "api-0"
+    "anchor": "api-4"
   },
   {
     "module": "std::sql",
@@ -29637,9 +30018,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 64,
+    "line": 164,
     "page": "std-sql.md",
-    "anchor": "api-1"
+    "anchor": "api-5"
   },
   {
     "module": "std::sql",
@@ -29662,9 +30043,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 67,
+    "line": 167,
     "page": "std-sql.md",
-    "anchor": "api-2"
+    "anchor": "api-6"
   },
   {
     "module": "std::sql",
@@ -29687,9 +30068,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 72,
+    "line": 172,
     "page": "std-sql.md",
-    "anchor": "api-3"
+    "anchor": "api-7"
   },
   {
     "module": "std::sql",
@@ -29712,9 +30093,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 78,
+    "line": 178,
     "page": "std-sql.md",
-    "anchor": "api-4"
+    "anchor": "api-8"
   },
   {
     "module": "std::sql",
@@ -29737,9 +30118,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 89,
+    "line": 189,
     "page": "std-sql.md",
-    "anchor": "api-5"
+    "anchor": "api-9"
   },
   {
     "module": "std::sql",
@@ -29769,9 +30150,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 90,
+    "line": 190,
     "page": "std-sql.md",
-    "anchor": "api-6"
+    "anchor": "api-10"
   },
   {
     "module": "std::sql",
@@ -29796,9 +30177,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 101,
+    "line": 201,
     "page": "std-sql.md",
-    "anchor": "api-7"
+    "anchor": "api-11"
   },
   {
     "module": "std::sql",
@@ -29821,9 +30202,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 102,
+    "line": 202,
     "page": "std-sql.md",
-    "anchor": "api-8"
+    "anchor": "api-12"
   },
   {
     "module": "std::sql",
@@ -29846,9 +30227,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 103,
+    "line": 203,
     "page": "std-sql.md",
-    "anchor": "api-9"
+    "anchor": "api-13"
   },
   {
     "module": "std::sql",
@@ -29878,9 +30259,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 104,
+    "line": 204,
     "page": "std-sql.md",
-    "anchor": "api-10"
+    "anchor": "api-14"
   },
   {
     "module": "std::sql",
@@ -29910,9 +30291,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 107,
+    "line": 207,
     "page": "std-sql.md",
-    "anchor": "api-11"
+    "anchor": "api-15"
   },
   {
     "module": "std::sql",
@@ -29948,9 +30329,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 120,
+    "line": 220,
     "page": "std-sql.md",
-    "anchor": "api-12"
+    "anchor": "api-16"
   },
   {
     "module": "std::sql",
@@ -29988,9 +30369,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 121,
+    "line": 221,
     "page": "std-sql.md",
-    "anchor": "api-13"
+    "anchor": "api-17"
   },
   {
     "module": "std::sql",
@@ -30028,9 +30409,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 122,
+    "line": 222,
     "page": "std-sql.md",
-    "anchor": "api-14"
+    "anchor": "api-18"
   },
   {
     "module": "std::sql",
@@ -30066,9 +30447,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 123,
+    "line": 223,
     "page": "std-sql.md",
-    "anchor": "api-15"
+    "anchor": "api-19"
   },
   {
     "module": "std::sql",
@@ -30091,9 +30472,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 126,
+    "line": 226,
     "page": "std-sql.md",
-    "anchor": "api-16"
+    "anchor": "api-20"
   },
   {
     "module": "std::sql",
@@ -30116,9 +30497,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 132,
+    "line": 232,
     "page": "std-sql.md",
-    "anchor": "api-17"
+    "anchor": "api-21"
   },
   {
     "module": "std::sql",
@@ -30154,9 +30535,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 138,
+    "line": 238,
     "page": "std-sql.md",
-    "anchor": "api-18"
+    "anchor": "api-22"
   },
   {
     "module": "std::sql",
@@ -30179,9 +30560,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 152,
+    "line": 252,
     "page": "std-sql.md",
-    "anchor": "api-19"
+    "anchor": "api-23"
   },
   {
     "module": "std::sql",
@@ -30235,9 +30616,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 259,
+    "line": 359,
     "page": "std-sql.md",
-    "anchor": "api-20"
+    "anchor": "api-24"
   },
   {
     "module": "std::sql",
@@ -30269,9 +30650,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 263,
+    "line": 363,
     "page": "std-sql.md",
-    "anchor": "api-21"
+    "anchor": "api-25"
   },
   {
     "module": "std::sql",
@@ -30301,9 +30682,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 265,
+    "line": 365,
     "page": "std-sql.md",
-    "anchor": "api-22"
+    "anchor": "api-26"
   },
   {
     "module": "std::sql",
@@ -30333,9 +30714,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 267,
+    "line": 367,
     "page": "std-sql.md",
-    "anchor": "api-23"
+    "anchor": "api-27"
   },
   {
     "module": "std::sql",
@@ -30365,9 +30746,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 269,
+    "line": 369,
     "page": "std-sql.md",
-    "anchor": "api-24"
+    "anchor": "api-28"
   },
   {
     "module": "std::sql",
@@ -30390,9 +30771,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 271,
+    "line": 371,
     "page": "std-sql.md",
-    "anchor": "api-25"
+    "anchor": "api-29"
   },
   {
     "module": "std::sql",
@@ -30424,9 +30805,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 282,
+    "line": 382,
     "page": "std-sql.md",
-    "anchor": "api-26"
+    "anchor": "api-30"
   },
   {
     "module": "std::sql",
@@ -30449,9 +30830,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 292,
+    "line": 392,
     "page": "std-sql.md",
-    "anchor": "api-27"
+    "anchor": "api-31"
   },
   {
     "module": "std::sql",
@@ -30499,9 +30880,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 305,
+    "line": 405,
     "page": "std-sql.md",
-    "anchor": "api-28"
+    "anchor": "api-32"
   },
   {
     "module": "std::sql",
@@ -30555,9 +30936,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 310,
+    "line": 410,
     "page": "std-sql.md",
-    "anchor": "api-29"
+    "anchor": "api-33"
   },
   {
     "module": "std::sql",
@@ -30587,9 +30968,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 315,
+    "line": 415,
     "page": "std-sql.md",
-    "anchor": "api-30"
+    "anchor": "api-34"
   },
   {
     "module": "std::sql",
@@ -30614,9 +30995,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 319,
+    "line": 419,
     "page": "std-sql.md",
-    "anchor": "api-31"
+    "anchor": "api-35"
   },
   {
     "module": "std::sql",
@@ -30641,9 +31022,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 320,
+    "line": 420,
     "page": "std-sql.md",
-    "anchor": "api-32"
+    "anchor": "api-36"
   },
   {
     "module": "std::sql",
@@ -30666,9 +31047,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 321,
+    "line": 421,
     "page": "std-sql.md",
-    "anchor": "api-33"
+    "anchor": "api-37"
   },
   {
     "module": "std::sql",
@@ -30693,9 +31074,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 324,
+    "line": 424,
     "page": "std-sql.md",
-    "anchor": "api-34"
+    "anchor": "api-38"
   },
   {
     "module": "std::sql",
@@ -30727,9 +31108,43 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 331,
+    "line": 431,
     "page": "std-sql.md",
-    "anchor": "api-35"
+    "anchor": "api-39"
+  },
+  {
+    "module": "std::sql",
+    "name": "Database::exec",
+    "owner": "Database",
+    "signature": "ResultSet exec(SqlStatement statement)",
+    "documentation": "在 SQLite 中绑定并执行一条 SqlStatement，严格检查参数数量并返回独立结果；其他后端报告不支持参数化执行。\n\n**返回值**：ResultSet。",
+    "comment": "/** 执行生成的参数化语句；值通过驱动绑定。 */",
+    "parameters": [
+      {
+        "name": "statement",
+        "label": "SqlStatement statement",
+        "documentation": "包含 SQL 和绑定参数的语句值。",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "ResultSet",
+      "documentation": "在 SQLite 中绑定并执行一条 SqlStatement，严格检查参数数量并返回独立结果；其他后端报告不支持参数化执行。"
+    },
+    "errors": {
+      "documentation": "SQLite 静态内置，无需 sqlite3.dll，忽略 SQLITE_LIBRARY。MySQL/MariaDB 使用 MYSQL_LIBRARY；PostgreSQL 使用 POSTGRES_LIBRARY；ODBC 需要相应驱动。mysql/maria 默认端口 3306，connect 已移除。exec 返回最后一条语句的结果，失败检查 ok/error；结果已复制，不借用客户端缓冲区。事务由 SQL BEGIN/COMMIT/ROLLBACK 控制。拼字符串字面量使用 db.quote；它不转义表名/列名。目标宿主必须提供相应数据库驱动。 DataCell.asInt/asReal 只转换数值类型，其他类型返回 0/0.0；text 对 NULL 返回 \"NULL\"。ResultSet.scalar/count 在空结果上返回空串/0，at/intAt/realAt/textAt 的行列索引必须有效。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.exec(statement);",
+    "examples": [
+      "doc/examples/library/sqlite.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/sql.mgl",
+    "line": 436,
+    "page": "std-sql.md",
+    "anchor": "api-40"
   },
   {
     "module": "std::sql",
@@ -30761,9 +31176,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 395,
+    "line": 504,
     "page": "std-sql.md",
-    "anchor": "api-36"
+    "anchor": "api-41"
   },
   {
     "module": "std::sql",
@@ -30793,9 +31208,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 401,
+    "line": 510,
     "page": "std-sql.md",
-    "anchor": "api-37"
+    "anchor": "api-42"
   },
   {
     "module": "std::sql",
@@ -30825,9 +31240,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 408,
+    "line": 517,
     "page": "std-sql.md",
-    "anchor": "api-38"
+    "anchor": "api-43"
   },
   {
     "module": "std::sql",
@@ -30857,9 +31272,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 415,
+    "line": 524,
     "page": "std-sql.md",
-    "anchor": "api-39"
+    "anchor": "api-44"
   },
   {
     "module": "std::sql",
@@ -30897,9 +31312,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 442,
+    "line": 551,
     "page": "std-sql.md",
-    "anchor": "api-40"
+    "anchor": "api-45"
   },
   {
     "module": "std::sql",
@@ -30931,9 +31346,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 465,
+    "line": 574,
     "page": "std-sql.md",
-    "anchor": "api-41"
+    "anchor": "api-46"
   },
   {
     "module": "std::sql",
@@ -30963,9 +31378,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 468,
+    "line": 577,
     "page": "std-sql.md",
-    "anchor": "api-42"
+    "anchor": "api-47"
   },
   {
     "module": "std::sql",
@@ -30995,9 +31410,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 471,
+    "line": 580,
     "page": "std-sql.md",
-    "anchor": "api-43"
+    "anchor": "api-48"
   },
   {
     "module": "std::sql",
@@ -31027,9 +31442,210 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/sql.mgl",
-    "line": 474,
+    "line": 583,
     "page": "std-sql.md",
-    "anchor": "api-44"
+    "anchor": "api-49"
+  },
+  {
+    "module": "std::sql",
+    "name": "query",
+    "owner": "",
+    "signature": "Result<Query,String> query<T>()",
+    "documentation": "从模型注解与反射元数据建立 ipage 查询。\n\n**返回值**：Result<Query,String>。",
+    "comment": "/** 从带模型注解的反射类型创建查询。 */",
+    "parameters": [],
+    "returns": {
+      "type": "Result<Query,String>",
+      "documentation": "从模型注解与反射元数据建立 ipage 查询。"
+    },
+    "errors": {
+      "documentation": "SQLite 静态内置，无需 sqlite3.dll，忽略 SQLITE_LIBRARY。MySQL/MariaDB 使用 MYSQL_LIBRARY；PostgreSQL 使用 POSTGRES_LIBRARY；ODBC 需要相应驱动。mysql/maria 默认端口 3306，connect 已移除。exec 返回最后一条语句的结果，失败检查 ok/error；结果已复制，不借用客户端缓冲区。事务由 SQL BEGIN/COMMIT/ROLLBACK 控制。拼字符串字面量使用 db.quote；它不转义表名/列名。目标宿主必须提供相应数据库驱动。 DataCell.asInt/asReal 只转换数值类型，其他类型返回 0/0.0；text 对 NULL 返回 \"NULL\"。ResultSet.scalar/count 在空结果上返回空串/0，at/intAt/realAt/textAt 的行列索引必须有效。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::sql::query<T>();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/sql.mgl",
+    "line": 597,
+    "page": "std-sql.md",
+    "anchor": "api-50"
+  },
+  {
+    "module": "std::sql",
+    "name": "filter",
+    "owner": "",
+    "signature": "Result<bool,String> filter<V>(Query mut& query, String field, V value, int64 operation = 0)",
+    "documentation": "为动态 SQL 添加参数化单值条件。\n\n**返回值**：Result<bool,String>。",
+    "comment": "/** 添加参数化条件；操作符编号与 ipage OperatorType 一致，默认相等。 */",
+    "parameters": [
+      {
+        "name": "query",
+        "label": "Query mut& query",
+        "documentation": "需要配置或生成语句的查询对象引用。",
+        "default": ""
+      },
+      {
+        "name": "field",
+        "label": "String field",
+        "documentation": "模型中声明的字段名或列名。",
+        "default": ""
+      },
+      {
+        "name": "value",
+        "label": "V value",
+        "documentation": "输入值或写入的新值",
+        "default": ""
+      },
+      {
+        "name": "operation",
+        "label": "int64 operation = 0",
+        "documentation": "动态 SQL 操作名称或 ipage 操作符编号，按入口声明区分。",
+        "default": "0"
+      }
+    ],
+    "returns": {
+      "type": "Result<bool,String>",
+      "documentation": "为动态 SQL 添加参数化单值条件。"
+    },
+    "errors": {
+      "documentation": "SQLite 静态内置，无需 sqlite3.dll，忽略 SQLITE_LIBRARY。MySQL/MariaDB 使用 MYSQL_LIBRARY；PostgreSQL 使用 POSTGRES_LIBRARY；ODBC 需要相应驱动。mysql/maria 默认端口 3306，connect 已移除。exec 返回最后一条语句的结果，失败检查 ok/error；结果已复制，不借用客户端缓冲区。事务由 SQL BEGIN/COMMIT/ROLLBACK 控制。拼字符串字面量使用 db.quote；它不转义表名/列名。目标宿主必须提供相应数据库驱动。 DataCell.asInt/asReal 只转换数值类型，其他类型返回 0/0.0；text 对 NULL 返回 \"NULL\"。ResultSet.scalar/count 在空结果上返回空串/0，at/intAt/realAt/textAt 的行列索引必须有效。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::sql::filter<V>(query, field, value, operation);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/sql.mgl",
+    "line": 605,
+    "page": "std-sql.md",
+    "anchor": "api-51"
+  },
+  {
+    "module": "std::sql",
+    "name": "filterMany",
+    "owner": "",
+    "signature": "Result<bool,String> filterMany<V>(Query mut& query, String field, List<V> values, int64 operation = 11)",
+    "documentation": "为动态 SQL 添加多参数或空值条件。\n\n**返回值**：Result<bool,String>。",
+    "comment": "/** 添加 IN 或 NOT IN 等多参数条件。 */",
+    "parameters": [
+      {
+        "name": "query",
+        "label": "Query mut& query",
+        "documentation": "需要配置或生成语句的查询对象引用。",
+        "default": ""
+      },
+      {
+        "name": "field",
+        "label": "String field",
+        "documentation": "模型中声明的字段名或列名。",
+        "default": ""
+      },
+      {
+        "name": "values",
+        "label": "List<V> values",
+        "documentation": "参与操作的元素序列",
+        "default": ""
+      },
+      {
+        "name": "operation",
+        "label": "int64 operation = 11",
+        "documentation": "动态 SQL 操作名称或 ipage 操作符编号，按入口声明区分。",
+        "default": "11"
+      }
+    ],
+    "returns": {
+      "type": "Result<bool,String>",
+      "documentation": "为动态 SQL 添加多参数或空值条件。"
+    },
+    "errors": {
+      "documentation": "SQLite 静态内置，无需 sqlite3.dll，忽略 SQLITE_LIBRARY。MySQL/MariaDB 使用 MYSQL_LIBRARY；PostgreSQL 使用 POSTGRES_LIBRARY；ODBC 需要相应驱动。mysql/maria 默认端口 3306，connect 已移除。exec 返回最后一条语句的结果，失败检查 ok/error；结果已复制，不借用客户端缓冲区。事务由 SQL BEGIN/COMMIT/ROLLBACK 控制。拼字符串字面量使用 db.quote；它不转义表名/列名。目标宿主必须提供相应数据库驱动。 DataCell.asInt/asReal 只转换数值类型，其他类型返回 0/0.0；text 对 NULL 返回 \"NULL\"。ResultSet.scalar/count 在空结果上返回空串/0，at/intAt/realAt/textAt 的行列索引必须有效。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::sql::filterMany<V>(query, field, values, operation);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/sql.mgl",
+    "line": 612,
+    "page": "std-sql.md",
+    "anchor": "api-52"
+  },
+  {
+    "module": "std::sql",
+    "name": "insert",
+    "owner": "",
+    "signature": "Result<SqlStatement,String> insert<T>(Query mut& query, T const& value)",
+    "documentation": "按反射模型值生成参数化 INSERT，返回 SQL 与有序参数列表。\n\n**返回值**：Result<SqlStatement,String>。",
+    "comment": "/** 使用模型值生成参数化 INSERT。 */",
+    "parameters": [
+      {
+        "name": "query",
+        "label": "Query mut& query",
+        "documentation": "需要配置或生成语句的查询对象引用。",
+        "default": ""
+      },
+      {
+        "name": "value",
+        "label": "T const& value",
+        "documentation": "输入值或写入的新值",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Result<SqlStatement,String>",
+      "documentation": "按反射模型值生成参数化 INSERT，返回 SQL 与有序参数列表。"
+    },
+    "errors": {
+      "documentation": "SQLite 静态内置，无需 sqlite3.dll，忽略 SQLITE_LIBRARY。MySQL/MariaDB 使用 MYSQL_LIBRARY；PostgreSQL 使用 POSTGRES_LIBRARY；ODBC 需要相应驱动。mysql/maria 默认端口 3306，connect 已移除。exec 返回最后一条语句的结果，失败检查 ok/error；结果已复制，不借用客户端缓冲区。事务由 SQL BEGIN/COMMIT/ROLLBACK 控制。拼字符串字面量使用 db.quote；它不转义表名/列名。目标宿主必须提供相应数据库驱动。 DataCell.asInt/asReal 只转换数值类型，其他类型返回 0/0.0；text 对 NULL 返回 \"NULL\"。ResultSet.scalar/count 在空结果上返回空串/0，at/intAt/realAt/textAt 的行列索引必须有效。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::sql::insert<T>(query, value);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/sql.mgl",
+    "line": 620,
+    "page": "std-sql.md",
+    "anchor": "api-53"
+  },
+  {
+    "module": "std::sql",
+    "name": "update",
+    "owner": "",
+    "signature": "Result<SqlStatement,String> update<T>(Query mut& query, T const& value)",
+    "documentation": "按反射模型值生成参数化更新。\n\n**返回值**：Result<SqlStatement,String>。",
+    "comment": "/** 使用模型值生成参数化 UPDATE，主键不会被修改。 */",
+    "parameters": [
+      {
+        "name": "query",
+        "label": "Query mut& query",
+        "documentation": "需要配置或生成语句的查询对象引用。",
+        "default": ""
+      },
+      {
+        "name": "value",
+        "label": "T const& value",
+        "documentation": "输入值或写入的新值",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Result<SqlStatement,String>",
+      "documentation": "按反射模型值生成参数化更新。"
+    },
+    "errors": {
+      "documentation": "SQLite 静态内置，无需 sqlite3.dll，忽略 SQLITE_LIBRARY。MySQL/MariaDB 使用 MYSQL_LIBRARY；PostgreSQL 使用 POSTGRES_LIBRARY；ODBC 需要相应驱动。mysql/maria 默认端口 3306，connect 已移除。exec 返回最后一条语句的结果，失败检查 ok/error；结果已复制，不借用客户端缓冲区。事务由 SQL BEGIN/COMMIT/ROLLBACK 控制。拼字符串字面量使用 db.quote；它不转义表名/列名。目标宿主必须提供相应数据库驱动。 DataCell.asInt/asReal 只转换数值类型，其他类型返回 0/0.0；text 对 NULL 返回 \"NULL\"。ResultSet.scalar/count 在空结果上返回空串/0，at/intAt/realAt/textAt 的行列索引必须有效。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::sql::update<T>(query, value);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/sql.mgl",
+    "line": 626,
+    "page": "std-sql.md",
+    "anchor": "api-54"
   },
   {
     "module": "std::text",
@@ -33110,6 +33726,70 @@
   },
   {
     "module": "std::toml",
+    "name": "serialize",
+    "owner": "",
+    "signature": "Result<String,String> serialize<T>(T const& value)",
+    "documentation": "按具体反射类型编码独立值，失败返回诊断。\n\n**返回值**：Result<String,String>。",
+    "comment": "/** 将反射模型编码为 TOML 文档；根值必须是对象。 */",
+    "parameters": [
+      {
+        "name": "value",
+        "label": "T const& value",
+        "documentation": "输入值或写入的新值",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Result<String,String>",
+      "documentation": "按具体反射类型编码独立值，失败返回诊断。"
+    },
+    "errors": {
+      "documentation": "parse 返回 Result<TomlValue,String>。与 JSON 共用拥有型 opcode 协议；普通复制深复制子树，close 只影响当前值。表对应 isTable/isObject；时间值使用 isDateTime/asDateTime。asXxx 类型不符返回 None；含零字节的文本使用字节列表接口。kind 编码与 JSON 节点一致。解析文档根节点的 dump() 保留原文注释、空白与换行；反复解析保存不丢失或重复注释。底层 C++ 等形值编辑保留布局；结构编辑保留注释内容，但可调整位置。子节点只输出值。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::toml::serialize<T>(value);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/toml.mgl",
+    "line": 6,
+    "page": "std-toml.md",
+    "anchor": "api-0"
+  },
+  {
+    "module": "std::toml",
+    "name": "deserialize",
+    "owner": "",
+    "signature": "Result<T,String> deserialize<T>(String text)",
+    "documentation": "按具体反射类型严格校验并恢复独立拥有的值。\n\n**返回值**：Result<T,String>。",
+    "comment": "/** 按具体反射类型解码 TOML，不接受静默数值窄化。 */",
+    "parameters": [
+      {
+        "name": "text",
+        "label": "String text",
+        "documentation": "输入文本，位置与长度通常按字节",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Result<T,String>",
+      "documentation": "按具体反射类型严格校验并恢复独立拥有的值。"
+    },
+    "errors": {
+      "documentation": "parse 返回 Result<TomlValue,String>。与 JSON 共用拥有型 opcode 协议；普通复制深复制子树，close 只影响当前值。表对应 isTable/isObject；时间值使用 isDateTime/asDateTime。asXxx 类型不符返回 None；含零字节的文本使用字节列表接口。kind 编码与 JSON 节点一致。解析文档根节点的 dump() 保留原文注释、空白与换行；反复解析保存不丢失或重复注释。底层 C++ 等形值编辑保留布局；结构编辑保留注释内容，但可调整位置。子节点只输出值。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::toml::deserialize<T>(text);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/toml.mgl",
+    "line": 14,
+    "page": "std-toml.md",
+    "anchor": "api-1"
+  },
+  {
+    "module": "std::toml",
     "name": "TomlValue::isValid",
     "owner": "TomlValue",
     "signature": "bool isValid()",
@@ -33131,9 +33811,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 37,
+    "line": 54,
     "page": "std-toml.md",
-    "anchor": "api-0"
+    "anchor": "api-2"
   },
   {
     "module": "std::toml",
@@ -33158,9 +33838,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 39,
+    "line": 56,
     "page": "std-toml.md",
-    "anchor": "api-1"
+    "anchor": "api-3"
   },
   {
     "module": "std::toml",
@@ -33183,9 +33863,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 40,
+    "line": 57,
     "page": "std-toml.md",
-    "anchor": "api-2"
+    "anchor": "api-4"
   },
   {
     "module": "std::toml",
@@ -33210,9 +33890,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 41,
+    "line": 58,
     "page": "std-toml.md",
-    "anchor": "api-3"
+    "anchor": "api-5"
   },
   {
     "module": "std::toml",
@@ -33235,9 +33915,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 42,
+    "line": 59,
     "page": "std-toml.md",
-    "anchor": "api-4"
+    "anchor": "api-6"
   },
   {
     "module": "std::toml",
@@ -33260,9 +33940,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 43,
+    "line": 60,
     "page": "std-toml.md",
-    "anchor": "api-5"
+    "anchor": "api-7"
   },
   {
     "module": "std::toml",
@@ -33285,9 +33965,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 44,
+    "line": 61,
     "page": "std-toml.md",
-    "anchor": "api-6"
+    "anchor": "api-8"
   },
   {
     "module": "std::toml",
@@ -33310,9 +33990,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 45,
+    "line": 62,
     "page": "std-toml.md",
-    "anchor": "api-7"
+    "anchor": "api-9"
   },
   {
     "module": "std::toml",
@@ -33335,9 +34015,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 46,
+    "line": 63,
     "page": "std-toml.md",
-    "anchor": "api-8"
+    "anchor": "api-10"
   },
   {
     "module": "std::toml",
@@ -33362,9 +34042,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 47,
+    "line": 64,
     "page": "std-toml.md",
-    "anchor": "api-9"
+    "anchor": "api-11"
   },
   {
     "module": "std::toml",
@@ -33389,9 +34069,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 48,
+    "line": 65,
     "page": "std-toml.md",
-    "anchor": "api-10"
+    "anchor": "api-12"
   },
   {
     "module": "std::toml",
@@ -33414,9 +34094,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 49,
+    "line": 66,
     "page": "std-toml.md",
-    "anchor": "api-11"
+    "anchor": "api-13"
   },
   {
     "module": "std::toml",
@@ -33441,9 +34121,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 51,
+    "line": 68,
     "page": "std-toml.md",
-    "anchor": "api-12"
+    "anchor": "api-14"
   },
   {
     "module": "std::toml",
@@ -33468,9 +34148,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 52,
+    "line": 69,
     "page": "std-toml.md",
-    "anchor": "api-13"
+    "anchor": "api-15"
   },
   {
     "module": "std::toml",
@@ -33495,9 +34175,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 56,
+    "line": 73,
     "page": "std-toml.md",
-    "anchor": "api-14"
+    "anchor": "api-16"
   },
   {
     "module": "std::toml",
@@ -33522,9 +34202,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 60,
+    "line": 77,
     "page": "std-toml.md",
-    "anchor": "api-15"
+    "anchor": "api-17"
   },
   {
     "module": "std::toml",
@@ -33549,9 +34229,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 65,
+    "line": 82,
     "page": "std-toml.md",
-    "anchor": "api-16"
+    "anchor": "api-18"
   },
   {
     "module": "std::toml",
@@ -33576,9 +34256,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 70,
+    "line": 87,
     "page": "std-toml.md",
-    "anchor": "api-17"
+    "anchor": "api-19"
   },
   {
     "module": "std::toml",
@@ -33603,9 +34283,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 75,
+    "line": 92,
     "page": "std-toml.md",
-    "anchor": "api-18"
+    "anchor": "api-20"
   },
   {
     "module": "std::toml",
@@ -33637,9 +34317,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 80,
+    "line": 97,
     "page": "std-toml.md",
-    "anchor": "api-19"
+    "anchor": "api-21"
   },
   {
     "module": "std::toml",
@@ -33671,9 +34351,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 87,
+    "line": 104,
     "page": "std-toml.md",
-    "anchor": "api-20"
+    "anchor": "api-22"
   },
   {
     "module": "std::toml",
@@ -33705,9 +34385,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 94,
+    "line": 111,
     "page": "std-toml.md",
-    "anchor": "api-21"
+    "anchor": "api-23"
   },
   {
     "module": "std::toml",
@@ -33737,9 +34417,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 100,
+    "line": 117,
     "page": "std-toml.md",
-    "anchor": "api-22"
+    "anchor": "api-24"
   },
   {
     "module": "std::toml",
@@ -33771,9 +34451,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 102,
+    "line": 119,
     "page": "std-toml.md",
-    "anchor": "api-23"
+    "anchor": "api-25"
   },
   {
     "module": "std::toml",
@@ -33805,9 +34485,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 107,
+    "line": 124,
     "page": "std-toml.md",
-    "anchor": "api-24"
+    "anchor": "api-26"
   },
   {
     "module": "std::toml",
@@ -33832,9 +34512,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 112,
+    "line": 129,
     "page": "std-toml.md",
-    "anchor": "api-25"
+    "anchor": "api-27"
   },
   {
     "module": "std::toml",
@@ -33866,9 +34546,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/toml.mgl",
-    "line": 116,
+    "line": 133,
     "page": "std-toml.md",
-    "anchor": "api-26"
+    "anchor": "api-28"
   },
   {
     "module": "std::tree",
@@ -35573,7 +36253,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1789,
+    "line": 1824,
     "page": "std-algorithms.md",
     "anchor": "api-0"
   },
@@ -35611,7 +36291,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1798,
+    "line": 1833,
     "page": "std-algorithms.md",
     "anchor": "api-1"
   },
@@ -35655,7 +36335,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1818,
+    "line": 1853,
     "page": "std-algorithms.md",
     "anchor": "api-2"
   },
@@ -35693,7 +36373,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1832,
+    "line": 1867,
     "page": "std-algorithms.md",
     "anchor": "api-3"
   },
@@ -35731,7 +36411,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1862,
+    "line": 1897,
     "page": "std-algorithms.md",
     "anchor": "api-4"
   },
@@ -35769,7 +36449,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1867,
+    "line": 1902,
     "page": "std-algorithms.md",
     "anchor": "api-5"
   },
@@ -35813,7 +36493,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1880,
+    "line": 1915,
     "page": "std-algorithms.md",
     "anchor": "api-6"
   },
@@ -35857,7 +36537,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1890,
+    "line": 1925,
     "page": "std-algorithms.md",
     "anchor": "api-7"
   },
@@ -35895,7 +36575,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1902,
+    "line": 1937,
     "page": "std-algorithms.md",
     "anchor": "api-8"
   },
@@ -35933,7 +36613,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1914,
+    "line": 1949,
     "page": "std-algorithms.md",
     "anchor": "api-9"
   },
@@ -35977,7 +36657,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1926,
+    "line": 1961,
     "page": "std-algorithms.md",
     "anchor": "api-10"
   },
@@ -36017,7 +36697,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1937,
+    "line": 1972,
     "page": "std-algorithms.md",
     "anchor": "api-11"
   },

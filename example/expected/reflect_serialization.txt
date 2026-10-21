@@ -1,0 +1,2 @@
+{"name":"中文\"test","age":42,"address":{"city":"杭州"},"tags":["one"]}
+reflection serialization OK

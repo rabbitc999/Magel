@@ -782,6 +782,7 @@ bool collect(Memory::String &source, const Memory::Vector<preprocess::LineOrigin
         std::size_t nameEnd = nameAt + 1;
         while (nameEnd < source.size() && identPart(source[nameEnd])) ++nameEnd;
         item.name = source.substr(nameAt, nameEnd - nameAt);
+        item.sourceName = item.name;
         std::size_t end = 0;
         const std::size_t semicolon = source.find(';', nameEnd);
         const std::size_t body = source.find('{', nameEnd);
@@ -819,8 +820,19 @@ bool collect(Memory::String &source, const Memory::Vector<preprocess::LineOrigin
         if (line < lines.size()) item.origin = lines[line];
         if (generics.count(item.name))
         {
-            error = "重复的泛型声明 " + item.name;
-            return false;
+            if (generics.at(item.name).module == item.module)
+            {
+                error = "重复的泛型声明 " + item.name;
+                return false;
+            }
+            item.name = "__module_" + item.module + "_" + item.sourceName;
+            for (auto &character : item.name)
+                if (character == ':') character = '_';
+            if (generics.count(item.name))
+            {
+                error = "重复的泛型声明 " + item.module + "::" + item.sourceName;
+                return false;
+            }
         }
         generics.emplace(item.name, item);
         for (std::size_t erase = start; erase < end; ++erase)
@@ -1336,6 +1348,10 @@ bool rewrite(Memory::String &text, const Memory::Map<Memory::String, Generic> &g
         return false;
     }
     Memory::String output;
+    Memory::String lookupModule;
+    Memory::Map<Memory::String, Memory::String> scopedGenerics;
+    for (const auto &entry : generics)
+        scopedGenerics[entry.second.module + "::" + (entry.second.sourceName.empty() ? entry.second.name : entry.second.sourceName)] = entry.first;
     for (std::size_t at = 0; at < text.size();)
     {
         if (text.compare(at, 2, "//") == 0)
@@ -1378,13 +1394,32 @@ bool rewrite(Memory::String &text, const Memory::Map<Memory::String, Generic> &g
         const std::size_t begin = at++;
         while (at < text.size() && identPart(text[at])) ++at;
         const Memory::String name = text.substr(begin, at - begin);
-        const auto generic = generics.find(name);
+        if (name == "module")
+        {
+            auto moduleBegin = at;
+            skipSpace(text, moduleBegin);
+            auto moduleEnd = moduleBegin;
+            while (moduleEnd < text.size() && (identPart(text[moduleEnd]) || text[moduleEnd] == ':')) ++moduleEnd;
+            lookupModule = text.substr(moduleBegin, moduleEnd - moduleBegin);
+            if (lookupModule == "__root") lookupModule.clear();
+        }
+        auto generic = generics.find(name);
+        Memory::String qualifier;
+        if (begin >= 2 && text.compare(begin - 2, 2, "::") == 0)
+        {
+            auto qualifierBegin = begin - 2;
+            while (qualifierBegin > 0 && (identPart(text[qualifierBegin - 1]) || text[qualifierBegin - 1] == ':')) --qualifierBegin;
+            qualifier = text.substr(qualifierBegin, begin - qualifierBegin - 2);
+        }
+        const auto scope = qualifier.empty() ? lookupModule : qualifier;
+        const auto scoped = scopedGenerics.find(scope + "::" + name);
+        if (scoped != scopedGenerics.end()) generic = generics.find(scoped->second);
         std::size_t open = at;
         while (open < text.size() && std::isspace(static_cast<unsigned char>(text[open]))) ++open;
         const bool qualifierMatches = generic == generics.end() || generic->second.requiredQualifier.empty() || (begin >= generic->second.requiredQualifier.size() && text.compare(begin - generic->second.requiredQualifier.size(), generic->second.requiredQualifier.size(), generic->second.requiredQualifier) == 0);
         if (generic == generics.end() || !qualifierMatches || open >= text.size() || text[open] != '<')
         {
-            output += name;
+            output += generic != generics.end() && generic->second.name != name && open < text.size() && text[open] == '(' ? generic->second.name : name;
             continue;
         }
         std::size_t close = 0;
@@ -1475,7 +1510,7 @@ bool rewrite(Memory::String &text, const Memory::Map<Memory::String, Generic> &g
             if (!constraint.empty() && !rewrite(constraint, generics, implemented, made, pending, error, depth + 1u)) return false;
             constraints.push_back(std::move(constraint));
         }
-        const Memory::String specialized = mangle(name, args);
+        const Memory::String specialized = mangle(generic->second.name, args);
         if (generic->second.intrinsic) session.intrinsicArguments[specialized] = args;
         const auto existing = made.find(specialized);
         if (existing != made.end() && (existing->second.generic != &generic->second || existing->second.args != args))
@@ -2068,7 +2103,7 @@ interface Closeable { void close(); };
     for (std::size_t index = 0; index < pending.size(); ++index)
     {
         const Expansion expansion = made[pending[index]];
-        Memory::String declaration = substitute(expansion);
+        Memory::String declaration = "module " + (expansion.generic->module.empty() ? Memory::String("__root") : expansion.generic->module) + ";\n" + substitute(expansion);
         if (!rewrite(declaration, generics, implemented, made, pending, error)) return false;
         const Memory::String module = expansion.generic->module.empty() ? Memory::String("__root") : expansion.generic->module;
         generated += "\nmodule " + module + ";\n" + declaration + "\n";
@@ -2107,7 +2142,7 @@ bool instantiate(const Memory::String &name, const Memory::Vector<Memory::String
     while (session.emitted < session.pending.size())
     {
         const Expansion expansion = session.made.at(session.pending[session.emitted++]);
-        auto declaration = substitute(expansion);
+        auto declaration = "module " + (expansion.generic->module.empty() ? Memory::String("__root") : expansion.generic->module) + ";\n" + substitute(expansion);
         if (!rewrite(declaration, session.generics, session.implemented, session.made, session.pending, error)) return false;
         generated += "\nmodule " + (expansion.generic->module.empty() ? Memory::String("__root") : expansion.generic->module)
                      + ";\n" + declaration + "\n";

@@ -1,5 +1,11 @@
 module std::reflect;
 
+bool __compiledReflection();
+/** 反射裁剪构建调用依赖反射的高级接口时直接 panic。 */
+void requireReflection() {
+    if (!__compiledReflection()) { std::lang::panic("编译器未编入反射支持"); }
+}
+
 /** 反射错误是普通枚举值，不保存目标地址或拥有资源。 */
 enum ReflectError { NotFound, Ambiguous, ArgumentCount, TypeMismatch, ReceiverMismatch, UnsupportedSignature, NotExposed, InvalidTarget };
 
@@ -181,7 +187,20 @@ Result<std::reflect::ReflectValue,std::reflect::ReflectError> callEnumMethod<T>(
 Result<std::reflect::ReflectValue,std::reflect::ReflectError> callEnumMethodConst<T>(T const& obj, std::lang::String name, List<std::reflect::ReflectValue> args);
 Result<std::reflect::ReflectValue,std::reflect::ReflectError> callEnumStatic<T>(std::lang::String name, List<std::reflect::ReflectValue> args);
 Result<T,std::reflect::ReflectError> construct<T>(List<std::reflect::ReflectValue> args);
+/** 按名称读取字段的独立值；字段类型必须与 F 精确一致，不返回内部引用。 */
+Result<F,std::reflect::ReflectError> getField<T,F>(T const& obj, std::lang::String name);
+/** 按名称写入字段，沿用普通赋值的复制、释放与借用规则。 */
+Result<bool,std::reflect::ReflectError> setField<T,F>(T mut& obj, std::lang::String name, F value);
 Result<std::reflect::ReflectValue,std::reflect::ReflectError> callInterface<I>(I mut& obj, std::lang::String name, List<std::reflect::ReflectValue> args);
 Result<std::reflect::ReflectValue,std::reflect::ReflectError> callInterfaceConst<I>(I const& obj, std::lang::String name, List<std::reflect::ReflectValue> args);
 int64 __reflect_actualType<I>(I const& obj);
+/** 根据反射暴露的具体类型生成精确 JSON 编码。 */
+Result<String,String> __serializeJson<T>(T const& value);
+/** 根据反射暴露的具体类型生成校验后的 JSON 解码。 */
+Result<T,String> __deserializeJson<T>(String text);
+String __serdeQuote(String value);
+String __serdeFloat(float64 value);
+bool __serdeFinite(float64 value);
+bool __serdeNumber(String value, bool decimal);
+int64 __serdeBigPrecision(BigDecimal value);
 R __reflect_unary<I,R>(I const& obj, std::lang::String method);

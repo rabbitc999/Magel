@@ -114,6 +114,7 @@ def read(path):
 # 资产键（生成工程用的逻辑路径）保持原样，只把「真仓库里的磁盘位置」映射过去：
 # 搬进 source/ 与 library/ 之后，键与磁盘目录不再同名，这里显式对上。
 ASSET_ROOT = {
+    "ipage/": "library/ipage/source/",
     "stackvm/": "library/",
     "simple_ast/": "library/",
     "preprocess/": "library/",
@@ -131,6 +132,8 @@ ASSET_ROOT = {
 
 def asset_disk_path(relative):
     """把资产键翻成本仓库里的实际路径。"""
+    if relative == "ipage/LICENSE":
+        return "library/ipage/LICENSE"
     if relative.startswith("tools/"):
         return relative
     for prefix, root in ASSET_ROOT.items():
@@ -208,6 +211,8 @@ GENERATOR_ASSETS = [
 GENERATOR_ASSETS += ["stackvm/" + name for name in asset_names()]
 from cas_sources import asset_names as cas_asset_names
 GENERATOR_ASSETS += ["caspp/" + name for name in cas_asset_names()]
+GENERATOR_ASSETS += ["ipage/" + path.name for path in sorted(Path(MAGEL, "library/ipage/source/ipage").iterdir()) if path.suffix in (".hpp", ".cpp")]
+GENERATOR_ASSETS += ["ipage/LICENSE"]
 
 # 胶水接口及实现作为同一组资产导出，固定清单不能遗漏独立编译单元。
 GENERATOR_ASSETS += [

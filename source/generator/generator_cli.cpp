@@ -550,6 +550,9 @@ int runCli(int argc, char **argv)
     const auto rewriteIncludes = [](Memory::String *content, const Memory::String &target) {
         struct Fix { const char *from; const char *to; };
         static const Fix fixes[] = {
+            {"../../library/ipage/source/ipage/sql.hpp", "ipage/sql.hpp"},
+            {"../../library/ipage/source/ipage/dialect.hpp", "ipage/dialect.hpp"},
+            {"../../library/ipage/source/ipage/model.hpp", "ipage/model.hpp"},
             {"../../library/caspp/core_assets.hpp", "caspp/core_assets.hpp"},
             {"../../library/allocator/magel_allocator.hpp", "runtime/magel_allocator.hpp"},
             {"../../source/allocator/magel_allocator.hpp", "runtime/magel_allocator.hpp"},
@@ -618,7 +621,7 @@ int runCli(int argc, char **argv)
     for (const char *name : {"symbol_table.cpp", "type_ids.cpp", "type_ids_shared.cpp",
                              "lifetime.cpp", "aggregate_ownership.cpp", "resource_lifetime.cpp", "scope.cpp",
                              "return_expression_ast.cpp", "named_function_ast.cpp", "derive_ast.cpp", "derive.cpp",
-                             "types.cpp", "interfaces.cpp", "formatted_output.cpp", "builtins.cpp", "generic_inference.cpp", "constants.cpp", "annotation_ast.cpp", "annotations.cpp", "reflection_metadata.cpp", "reflection_queries.cpp", "reflection_calls.cpp",
+                             "types.cpp", "interfaces.cpp", "formatted_output.cpp", "builtins.cpp", "generic_inference.cpp", "constants.cpp", "annotation_ast.cpp", "annotations.cpp", "reflection_metadata.cpp", "reflection_queries.cpp", "reflection_calls.cpp", "reflection_serialization.cpp",
                              "lowering.cpp", "borrow_facts.cpp", "borrow_flow.cpp", "borrow_return_sources.cpp", "expression_effects.cpp", "interface_dispatch.cpp", "boxing.cpp",
                              "symbol_registration.cpp", "program_lowering.cpp", "artifacts.cpp"})
         ok = copy(mc / "source/semantics" / name, Memory::String("semantics/") + name) && ok;
@@ -644,6 +647,9 @@ int runCli(int argc, char **argv)
         ok = copy(root / "magel/library/stackvm" / name, Memory::String("runtime/") + name) && ok;
     for (const char *name : Cas::Assets::kCoreAssets)
         ok = copy(root / "magel/library/caspp" / name, Memory::String("caspp/") + name) && ok;
+    for (const char *name : {"sql.hpp", "sql.cpp", "dialect.hpp", "dialect.cpp", "model.hpp", "field.hpp", "schema.hpp", "session.hpp", "connection.hpp", "connection.cpp"})
+        ok = copy(root / "magel/library/ipage/source/ipage" / name, Memory::String("ipage/") + name) && ok;
+    ok = copy(root / "magel/library/ipage/LICENSE", "ipage/LICENSE") && ok;
     for (const char *name : {"toml_source.hpp", "toml_source.cpp"})
         ok = copy(root / "magel/library/toml" / name, Memory::String("toml/") + name) && ok;
     for (const char *format : {"json", "toml"}) {

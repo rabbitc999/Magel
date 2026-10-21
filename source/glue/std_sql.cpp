@@ -1,5 +1,7 @@
 #include "std_sql.hpp"
 #include "std_native_record.hpp"
+#include "std_sql_ipage.hpp"
+#include "../../library/json/json.hpp"
 
 #include "../magel_glue.hpp"
 #include "../../library/sqlite/sqlite3.h"
@@ -1288,12 +1290,14 @@ inline bool collectResult(DatabaseSlot &slot, ResultSlot &result, void *res)
  * @param slot 已打开的 SQLite 连接。
  * @param result 接收结果的槽。
  * @param sql SQL 文本。
+ * @param parameters 可选的绑定参数数组；存在时限制为一条语句。
  * @return 是否成功；失败时连接保留诊断，之前已执行的语句不自动回滚。
  */
-inline bool executeSqlite(DatabaseSlot &slot, ResultSlot &result, const String &sql)
+inline bool executeSqlite(DatabaseSlot &slot, ResultSlot &result, const String &sql, const json::Array *parameters = nullptr)
 {
     auto &table = sqliteApi();
     const char *cursor = sql.c_str();
+    bool executed = false;
     while (*cursor)
     {
         void *statement = nullptr;
@@ -1306,7 +1310,55 @@ inline bool executeSqlite(DatabaseSlot &slot, ResultSlot &result, const String &
         }
         cursor = tail;
         if (!statement) continue;  // 空白和注释不会产生语句。
+        executed = true;
         std::unique_ptr<void, int (*)(void *)> statementOwner(statement, table.finalize);
+        if (parameters)
+        {
+            void *extra = nullptr;
+            const char *remaining = cursor;
+            while (remaining && *remaining)
+            {
+                const char *next = nullptr;
+                if (table.prepare(slot.handle, remaining, -1, &extra, &next) != 0 || extra)
+                {
+                    if (extra) table.finalize(extra);
+                    setErrorText(slot.error, "参数化 SQL 只允许一条完整语句");
+                    return false;
+                }
+                remaining = next;
+            }
+            auto *prepared = static_cast<sqlite3_stmt *>(statement);
+            if (sqlite3_bind_parameter_count(prepared) != static_cast<int>(parameters->size()))
+            {
+                setErrorText(slot.error, "SQL 占位符与参数数量不一致");
+                return false;
+            }
+            int position = 1;
+            for (const auto &value : *parameters)
+            {
+                int status = SQLITE_MISMATCH;
+                if (value.isNull())
+                    status = sqlite3_bind_null(prepared, position);
+                else if (value.isBool())
+                    status = sqlite3_bind_int64(prepared, position, *value.asBool() ? 1 : 0);
+                else if (value.isInt())
+                    status = sqlite3_bind_int64(prepared, position, *value.asInt());
+                else if (value.isDouble() && std::isfinite(*value.asDouble()))
+                    status = sqlite3_bind_double(prepared, position, *value.asDouble());
+                else if (value.isString())
+                {
+                    const auto bytes = *value.asString();
+                    status = sqlite3_bind_text64(prepared, position, bytes.data(), bytes.size(), SQLITE_TRANSIENT, SQLITE_UTF8);
+                }
+                if (status != SQLITE_OK)
+                {
+                    setErrorText(slot.error, "SQL 参数类型无效或绑定失败");
+                    return false;
+                }
+                ++position;
+            }
+            cursor = nullptr;
+        }
         resetResult(result, true);
         result.cols = table.columns(statement);
         for (int c = 0; c < result.cols; ++c) result.colNames.emplace_back(table.columnName(statement, c));
@@ -1351,6 +1403,12 @@ inline bool executeSqlite(DatabaseSlot &slot, ResultSlot &result, const String &
         result.affected = readonly || table.totalChanges(slot.handle) == totalBefore ? 0 : static_cast<unsigned long long>(table.changes(slot.handle));
         statementOwner.reset();
         slot.affected = static_cast<std::int64_t>(result.affected);
+        if (parameters) break;
+    }
+    if (parameters && !executed)
+    {
+        setErrorText(slot.error, "参数化 SQL 必须包含一条语句");
+        return false;
     }
     return true;
 }
@@ -1359,9 +1417,10 @@ inline bool executeSqlite(DatabaseSlot &slot, ResultSlot &result, const String &
  * @brief 按连接后端执行 SQL 并保存结果集或受影响行数。
  * @param index 从零开始的数据库资源槽编号。
  * @param sql 需要执行的完整 SQL 文本。
+ * @param parameters SQLite 的可选绑定参数数组，空指针表示普通文本执行。
  * @return 结果集句柄；失败时返回无效句柄并保存诊断。
  */
-inline std::int32_t sqlExec(std::int32_t index, String sql)
+inline std::int32_t sqlExecPrepared(std::int32_t index, String sql, const json::Array *parameters)
 {
     DatabaseSlot *slot = databaseAt(index);
     if (slot == nullptr)
@@ -1372,6 +1431,11 @@ inline std::int32_t sqlExec(std::int32_t index, String sql)
     if (slot->handle == nullptr)
     {
         if (slot->error[0] == '\0') setErrorText(slot->error, "数据库未连接");
+        return -1;
+    }
+    if (parameters && slot->backend != SqlBackend::SQLite)
+    {
+        setErrorText(slot->error, "此后端尚未实现参数化执行，请使用 SQLite 或导出 SQL 与参数交给原生驱动");
         return -1;
     }
     int handle = -1;
@@ -1394,7 +1458,7 @@ inline std::int32_t sqlExec(std::int32_t index, String sql)
 
     if (slot->backend == SqlBackend::SQLite)
     {
-        if (executeSqlite(*slot, result, sql)) return handle;
+        if (executeSqlite(*slot, result, sql, parameters)) return handle;
         resetResult(result, false);
         return -1;
     }
@@ -1445,6 +1509,37 @@ inline std::int32_t sqlExec(std::int32_t index, String sql)
         if (status != 0) break;
     }
     return handle;
+}
+
+/**
+ * @brief 执行不带参数的 SQL，保留多语句兼容行为。
+ * @param index 数据库槽位。
+ * @param sql SQL 文本。
+ * @return 结果句柄，失败时返回负数。
+ */
+inline std::int32_t sqlExec(std::int32_t index, String sql)
+{
+    return sqlExecPrepared(index, std::move(sql), nullptr);
+}
+/**
+ * @brief 校验参数数组并执行单条参数化 SQLite 语句。
+ * @param index 数据库槽位。
+ * @param sql 包含占位符的 SQL。
+ * @param parameters 参数数组 JSON。
+ * @return 结果句柄，失败时连接保留诊断。
+ */
+inline std::int32_t sqlExecBound(std::int32_t index, String sql, String parameters)
+{
+    const auto parsed = json::parse(parameters.c_str());
+    if (!parsed.ok() || !parsed.value->isArray())
+    {
+        if (auto *slot = databaseAt(index))
+            setErrorText(slot->error, "SQL 参数必须为 JSON 标量数组");
+        else
+            setErrorText(lastErrorText(), "数据库句柄无效");
+        return -1;
+    }
+    return sqlExecPrepared(index, std::move(sql), parsed.value->asArray());
 }
 
 /**
@@ -1694,7 +1789,7 @@ bool bindDatabaseOwner(Registry &registry, String *error)
  */
 bool bind(Registry &registry, String *error)
 {
-    return bindDatabaseOwner(registry, error) && registry.bindTyped<std::int32_t, String, String, String, String, std::int32_t>("std::sql::__sqlConnect", sqlConnect, error)
+    return std_sql_ipage_glue::bind(registry, error) && registry.bindTyped<std::int32_t, std::int32_t, String, String>("std::sql::__sqlExecBound", sqlExecBound, error) && bindDatabaseOwner(registry, error) && registry.bindTyped<std::int32_t, String, String, String, String, std::int32_t>("std::sql::__sqlConnect", sqlConnect, error)
            && registry.bindTyped<std::int32_t, String>("std::sql::__sqlOpenSqlite", sqlOpenSqlite, error) && registry.bindTyped<std::int32_t, String>("std::sql::__sqlOpenPostgres", sqlOpenPostgres, error) && registry.bindTyped<std::int32_t, String>("std::sql::__sqlOpenOdbc", sqlOpenOdbc, error) && registry.bindTyped<std::int32_t, std::int32_t>("std::sql::__sqlClose", sqlClose, error) && registry.bindTyped<std::int32_t, std::int32_t, String>("std::sql::__sqlExec", sqlExec, error) && registry.bindTyped<std::int64_t, std::int32_t>("std::sql::__sqlAffected", sqlAffected, error) && registry.bindTyped<String, std::int32_t>("std::sql::__sqlError", sqlError, error) && registry.bindTyped<std::int32_t, std::int32_t>("std::sql::__sqlRowCount", sqlRowCount, error) && registry.bindTyped<std::int32_t, std::int32_t>("std::sql::__sqlColCount", sqlColCount, error) && registry.bindTyped<std::int64_t, std::int32_t>("std::sql::__sqlResultAffected", sqlResultAffected, error) && registry.bindTyped<String, std::int32_t, std::int32_t>("std::sql::__sqlColName", sqlColName, error) && registry.bindTyped<String, std::int32_t, std::int32_t, std::int32_t>("std::sql::__sqlCellText", sqlCellText, error) && registry.bindTyped<std::int64_t, std::int32_t, std::int32_t, std::int32_t>("std::sql::__sqlCellInt", sqlCellInt, error) && registry.bindTyped<double, std::int32_t, std::int32_t, std::int32_t>("std::sql::__sqlCellReal", sqlCellReal, error) && registry.bindTyped<std::int32_t, std::int32_t, std::int32_t, std::int32_t>("std::sql::__sqlCellKind", sqlCellKind, error) && registry.bindTyped<std::int32_t, std::int32_t>("std::sql::__sqlFree", sqlFree, error);
 }
 

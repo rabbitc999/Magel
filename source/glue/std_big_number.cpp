@@ -960,6 +960,18 @@ inline Value bfloatSetValuePrecision(State &ctx, const Memory::Vector<Value> &ar
     return Value::fromInt(previous);
 }
 
+/**
+ * @brief 提取序列化所需的大浮点数有效精度状态。
+ * @param ctx 原生调用上下文。
+ * @param args 包含待查询的大浮点数记录。
+ * @return 显式有效位数；零表示沿用默认精度。
+ */
+Value bfloatSerializationPrecision(State &ctx, const Memory::Vector<Value> &args)
+{
+    const auto *value = bigFloatRecord(ctx, args[0], "BigDecimal 序列化精度");
+    return Value::fromInt(value ? value->decimalPrecision : 0);
+}
+
 /* ---- 大浮点数扩展方法：幂 / 绝对值 / 取整 / 开方 ---- */
 
 /**
@@ -1229,6 +1241,7 @@ STACKVM_BFLOAT_STUB(bfloatToStr)
 STACKVM_BFLOAT_STUB(bfloatToInt)
 STACKVM_BFLOAT_STUB(bfloatToFloat)
 STACKVM_BFLOAT_STUB(bfloatSetValuePrecision)
+STACKVM_BFLOAT_STUB(bfloatSerializationPrecision)
 STACKVM_BFLOAT_STUB(bfloatPow)
 STACKVM_BFLOAT_STUB(bfloatAbs)
 STACKVM_BFLOAT_STUB(bfloatIsInteger)
@@ -1310,6 +1323,7 @@ bool bind(stackvm::NativeRegistry &registry, Memory::String *error)
     ok = native_record_glue::bind(registry, "__std_bfloat_root", 3, bfloatRoot, error) && ok;
     ok = native_record_glue::bind(registry, "__std_bfloat_to_flt", 1, bfloatToFloat, error) && ok;
     ok = native_record_glue::bind(registry, "__std_bfloat_set_value_precision", 2, bfloatSetValuePrecision, error) && ok;
+    ok = native_record_glue::bind(registry, "std::reflect::__serdeBigPrecision", 1, bfloatSerializationPrecision, error) && ok;
     ok = native_record_glue::bind(registry, "__std_read_bfloat", 0, readBigFloat, error) && ok;
     ok = native_record_glue::bind(registry, "__std_input_bfloat", 0, readBigFloat, error) && ok;
     ok = native_record_glue::bind(registry, "__std_bint_copy", 1, native_record_glue::copy, error) && ok;

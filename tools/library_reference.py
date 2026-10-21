@@ -94,6 +94,10 @@ def comment_text(comment):
 def behavior(entry):
     """合并人工语义说明、同族宿主入口与声明注释。"""
     module, owner, name = entry['module'], entry['owner'], entry['name']
+    if module == 'std::sql' and not owner and name == 'insert':
+        return '按反射模型值生成参数化 INSERT，返回 SQL 与有序参数列表。'
+    if module == 'std::sql' and owner == 'Database' and name == 'exec' and 'SqlStatement' in entry['signature']:
+        return '在 SQLite 中绑定并执行一条 SqlStatement，严格检查参数数量并返回独立结果；其他后端报告不支持参数化执行。'
     if module == 'std::cas':
         return comment_text(entry['comment'])
     if module in ('std::thread','std::concurrency','std::event','std::message','std::watchdog'):

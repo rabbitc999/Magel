@@ -1,4 +1,4 @@
-# std::toml — TOML 只读文档
+# std::toml — TOML 文档与反射编解码
 
 [返回库目录](README.md) · [全部符号](symbols.md)
 
@@ -202,43 +202,125 @@ JSON and TOML parsing OK
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-446"></a>`struct TomlValue : Iterator<TomlValue>` | 独立拥有 TOML 子树的值，关闭不影响副本，根序列化保留原文注释。 |
+| 模块 | <a id="symbol-456"></a>`struct TomlValue : Iterator<TomlValue>` | 独立拥有 TOML 子树的值，关闭不影响副本，根序列化保留原文注释。 |
 
 ## 函数索引
 
 | 名称 | 声明 |
 | --- | --- |
-| [TomlValue::isValid](#api-0) | `bool isValid()` |
-| [TomlValue::close](#api-1) | `bool close()` |
-| [TomlValue::kind](#api-2) | `int64 kind()` |
-| [TomlValue::isNull](#api-3) | `bool isNull()` |
-| [TomlValue::isBool](#api-4) | `bool isBool()` |
-| [TomlValue::isInt](#api-5) | `bool isInt()` |
-| [TomlValue::isFloat](#api-6) | `bool isFloat()` |
-| [TomlValue::isString](#api-7) | `bool isString()` |
-| [TomlValue::isArray](#api-8) | `bool isArray()` |
-| [TomlValue::isObject](#api-9) | `bool isObject()` |
-| [TomlValue::isTable](#api-10) | `bool isTable()` |
-| [TomlValue::isDateTime](#api-11) | `bool isDateTime()` |
-| [TomlValue::len](#api-12) | `int64 len()` |
-| [TomlValue::asInt](#api-13) | `Option<int64> asInt()` |
-| [TomlValue::asFloat64](#api-14) | `Option<float64> asFloat64()` |
-| [TomlValue::asBool](#api-15) | `Option<bool> asBool()` |
-| [TomlValue::asString](#api-16) | `Option<std::lang::String> asString()` |
-| [TomlValue::asBytes](#api-17) | `Option<std::lang::List<uint8>> asBytes()` |
-| [TomlValue::asDateTime](#api-18) | `Option<std::lang::String> asDateTime()` |
-| [TomlValue::find](#api-19) | `Option<TomlValue> find(std::lang::String key)` |
-| [TomlValue::findBytes](#api-20) | `Option<TomlValue> findBytes(std::lang::List<uint8> key)` |
-| [TomlValue::at](#api-21) | `Option<TomlValue> at(int64 index)` |
-| [TomlValue::iterator](#api-22) | `Option<TomlValue> iterator(int64 index)` |
-| [TomlValue::keyAt](#api-23) | `Option<std::lang::String> keyAt(int64 index)` |
-| [TomlValue::keyBytesAt](#api-24) | `Option<std::lang::List<uint8>> keyBytesAt(int64 index)` |
-| [TomlValue::dump](#api-25) | `std::lang::String dump()` |
-| [parse](#api-26) | `Result<TomlValue, std::lang::String> parse(std::lang::String text)` |
+| [serialize](#api-0) | `Result<String,String> serialize<T>(T const& value)` |
+| [deserialize](#api-1) | `Result<T,String> deserialize<T>(String text)` |
+| [TomlValue::isValid](#api-2) | `bool isValid()` |
+| [TomlValue::close](#api-3) | `bool close()` |
+| [TomlValue::kind](#api-4) | `int64 kind()` |
+| [TomlValue::isNull](#api-5) | `bool isNull()` |
+| [TomlValue::isBool](#api-6) | `bool isBool()` |
+| [TomlValue::isInt](#api-7) | `bool isInt()` |
+| [TomlValue::isFloat](#api-8) | `bool isFloat()` |
+| [TomlValue::isString](#api-9) | `bool isString()` |
+| [TomlValue::isArray](#api-10) | `bool isArray()` |
+| [TomlValue::isObject](#api-11) | `bool isObject()` |
+| [TomlValue::isTable](#api-12) | `bool isTable()` |
+| [TomlValue::isDateTime](#api-13) | `bool isDateTime()` |
+| [TomlValue::len](#api-14) | `int64 len()` |
+| [TomlValue::asInt](#api-15) | `Option<int64> asInt()` |
+| [TomlValue::asFloat64](#api-16) | `Option<float64> asFloat64()` |
+| [TomlValue::asBool](#api-17) | `Option<bool> asBool()` |
+| [TomlValue::asString](#api-18) | `Option<std::lang::String> asString()` |
+| [TomlValue::asBytes](#api-19) | `Option<std::lang::List<uint8>> asBytes()` |
+| [TomlValue::asDateTime](#api-20) | `Option<std::lang::String> asDateTime()` |
+| [TomlValue::find](#api-21) | `Option<TomlValue> find(std::lang::String key)` |
+| [TomlValue::findBytes](#api-22) | `Option<TomlValue> findBytes(std::lang::List<uint8> key)` |
+| [TomlValue::at](#api-23) | `Option<TomlValue> at(int64 index)` |
+| [TomlValue::iterator](#api-24) | `Option<TomlValue> iterator(int64 index)` |
+| [TomlValue::keyAt](#api-25) | `Option<std::lang::String> keyAt(int64 index)` |
+| [TomlValue::keyBytesAt](#api-26) | `Option<std::lang::List<uint8>> keyBytesAt(int64 index)` |
+| [TomlValue::dump](#api-27) | `std::lang::String dump()` |
+| [parse](#api-28) | `Result<TomlValue, std::lang::String> parse(std::lang::String text)` |
 
 <a id="api-0"></a>
 
-### TomlValue::isValid（1）
+### serialize（1）
+
+**声明**
+
+```magel
+Result<String,String> serialize<T>(T const& value);
+```
+
+**行为**
+
+按具体反射类型编码独立值，失败返回诊断。
+
+将反射模型编码为 TOML 文档；根值必须是对象。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `value` | `T const& value` | 输入值或写入的新值 | 无 |
+
+**返回值**
+
+`Result<String,String>`。按具体反射类型编码独立值，失败返回诊断。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+std::toml::serialize<T>(value);
+```
+
+**源码**：[source/std/toml.mgl:6](../../source/std/toml.mgl#L6)。
+
+**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+
+<a id="api-1"></a>
+
+### deserialize（2）
+
+**声明**
+
+```magel
+Result<T,String> deserialize<T>(String text);
+```
+
+**行为**
+
+按具体反射类型严格校验并恢复独立拥有的值。
+
+按具体反射类型解码 TOML，不接受静默数值窄化。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `text` | `String text` | 输入文本，位置与长度通常按字节 | 无 |
+
+**返回值**
+
+`Result<T,String>`。按具体反射类型严格校验并恢复独立拥有的值。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+std::toml::deserialize<T>(text);
+```
+
+**源码**：[source/std/toml.mgl:14](../../source/std/toml.mgl#L14)。
+
+**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+
+<a id="api-2"></a>
+
+### TomlValue::isValid（3）
 
 **声明**
 
@@ -270,13 +352,13 @@ bool isValid();
 obj.isValid();
 ```
 
-**源码**：[source/std/toml.mgl:37](../../source/std/toml.mgl#L37)。
+**源码**：[source/std/toml.mgl:54](../../source/std/toml.mgl#L54)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-1"></a>
+<a id="api-3"></a>
 
-### TomlValue::close（2）
+### TomlValue::close（4）
 
 **声明**
 
@@ -308,13 +390,13 @@ bool close();
 obj.close();
 ```
 
-**源码**：[source/std/toml.mgl:39](../../source/std/toml.mgl#L39)。
+**源码**：[source/std/toml.mgl:56](../../source/std/toml.mgl#L56)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-2"></a>
+<a id="api-4"></a>
 
-### TomlValue::kind（3）
+### TomlValue::kind（5）
 
 **声明**
 
@@ -344,13 +426,13 @@ int64 kind();
 obj.kind();
 ```
 
-**源码**：[source/std/toml.mgl:40](../../source/std/toml.mgl#L40)。
+**源码**：[source/std/toml.mgl:57](../../source/std/toml.mgl#L57)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-3"></a>
+<a id="api-5"></a>
 
-### TomlValue::isNull（4）
+### TomlValue::isNull（6）
 
 **声明**
 
@@ -380,13 +462,13 @@ bool isNull();
 obj.isNull();
 ```
 
-**源码**：[source/std/toml.mgl:41](../../source/std/toml.mgl#L41)。
+**源码**：[source/std/toml.mgl:58](../../source/std/toml.mgl#L58)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-4"></a>
+<a id="api-6"></a>
 
-### TomlValue::isBool（5）
+### TomlValue::isBool（7）
 
 **声明**
 
@@ -416,13 +498,13 @@ bool isBool();
 obj.isBool();
 ```
 
-**源码**：[source/std/toml.mgl:42](../../source/std/toml.mgl#L42)。
+**源码**：[source/std/toml.mgl:59](../../source/std/toml.mgl#L59)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-5"></a>
+<a id="api-7"></a>
 
-### TomlValue::isInt（6）
+### TomlValue::isInt（8）
 
 **声明**
 
@@ -452,13 +534,13 @@ bool isInt();
 obj.isInt();
 ```
 
-**源码**：[source/std/toml.mgl:43](../../source/std/toml.mgl#L43)。
+**源码**：[source/std/toml.mgl:60](../../source/std/toml.mgl#L60)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-6"></a>
+<a id="api-8"></a>
 
-### TomlValue::isFloat（7）
+### TomlValue::isFloat（9）
 
 **声明**
 
@@ -488,13 +570,13 @@ bool isFloat();
 obj.isFloat();
 ```
 
-**源码**：[source/std/toml.mgl:44](../../source/std/toml.mgl#L44)。
+**源码**：[source/std/toml.mgl:61](../../source/std/toml.mgl#L61)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-7"></a>
+<a id="api-9"></a>
 
-### TomlValue::isString（8）
+### TomlValue::isString（10）
 
 **声明**
 
@@ -524,13 +606,13 @@ bool isString();
 obj.isString();
 ```
 
-**源码**：[source/std/toml.mgl:45](../../source/std/toml.mgl#L45)。
+**源码**：[source/std/toml.mgl:62](../../source/std/toml.mgl#L62)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-8"></a>
+<a id="api-10"></a>
 
-### TomlValue::isArray（9）
+### TomlValue::isArray（11）
 
 **声明**
 
@@ -560,13 +642,13 @@ bool isArray();
 obj.isArray();
 ```
 
-**源码**：[source/std/toml.mgl:46](../../source/std/toml.mgl#L46)。
+**源码**：[source/std/toml.mgl:63](../../source/std/toml.mgl#L63)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-9"></a>
+<a id="api-11"></a>
 
-### TomlValue::isObject（10）
+### TomlValue::isObject（12）
 
 **声明**
 
@@ -596,13 +678,13 @@ bool isObject();
 obj.isObject();
 ```
 
-**源码**：[source/std/toml.mgl:47](../../source/std/toml.mgl#L47)。
+**源码**：[source/std/toml.mgl:64](../../source/std/toml.mgl#L64)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-10"></a>
+<a id="api-12"></a>
 
-### TomlValue::isTable（11）
+### TomlValue::isTable（13）
 
 **声明**
 
@@ -632,13 +714,13 @@ bool isTable();
 obj.isTable();
 ```
 
-**源码**：[source/std/toml.mgl:48](../../source/std/toml.mgl#L48)。
+**源码**：[source/std/toml.mgl:65](../../source/std/toml.mgl#L65)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-11"></a>
+<a id="api-13"></a>
 
-### TomlValue::isDateTime（12）
+### TomlValue::isDateTime（14）
 
 **声明**
 
@@ -668,13 +750,13 @@ bool isDateTime();
 obj.isDateTime();
 ```
 
-**源码**：[source/std/toml.mgl:49](../../source/std/toml.mgl#L49)。
+**源码**：[source/std/toml.mgl:66](../../source/std/toml.mgl#L66)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-12"></a>
+<a id="api-14"></a>
 
-### TomlValue::len（13）
+### TomlValue::len（15）
 
 **声明**
 
@@ -706,13 +788,13 @@ int64 len();
 obj.len();
 ```
 
-**源码**：[source/std/toml.mgl:51](../../source/std/toml.mgl#L51)。
+**源码**：[source/std/toml.mgl:68](../../source/std/toml.mgl#L68)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-13"></a>
+<a id="api-15"></a>
 
-### TomlValue::asInt（14）
+### TomlValue::asInt（16）
 
 **声明**
 
@@ -742,13 +824,13 @@ Option<int64> asInt();
 obj.asInt();
 ```
 
-**源码**：[source/std/toml.mgl:52](../../source/std/toml.mgl#L52)。
+**源码**：[source/std/toml.mgl:69](../../source/std/toml.mgl#L69)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-14"></a>
+<a id="api-16"></a>
 
-### TomlValue::asFloat64（15）
+### TomlValue::asFloat64（17）
 
 **声明**
 
@@ -778,13 +860,13 @@ Option<float64> asFloat64();
 obj.asFloat64();
 ```
 
-**源码**：[source/std/toml.mgl:56](../../source/std/toml.mgl#L56)。
+**源码**：[source/std/toml.mgl:73](../../source/std/toml.mgl#L73)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-15"></a>
+<a id="api-17"></a>
 
-### TomlValue::asBool（16）
+### TomlValue::asBool（18）
 
 **声明**
 
@@ -814,13 +896,13 @@ Option<bool> asBool();
 obj.asBool();
 ```
 
-**源码**：[source/std/toml.mgl:60](../../source/std/toml.mgl#L60)。
+**源码**：[source/std/toml.mgl:77](../../source/std/toml.mgl#L77)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-16"></a>
+<a id="api-18"></a>
 
-### TomlValue::asString（17）
+### TomlValue::asString（19）
 
 **声明**
 
@@ -852,13 +934,13 @@ Option<std::lang::String> asString();
 obj.asString();
 ```
 
-**源码**：[source/std/toml.mgl:65](../../source/std/toml.mgl#L65)。
+**源码**：[source/std/toml.mgl:82](../../source/std/toml.mgl#L82)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-17"></a>
+<a id="api-19"></a>
 
-### TomlValue::asBytes（18）
+### TomlValue::asBytes（20）
 
 **声明**
 
@@ -888,13 +970,13 @@ Option<std::lang::List<uint8>> asBytes();
 obj.asBytes();
 ```
 
-**源码**：[source/std/toml.mgl:70](../../source/std/toml.mgl#L70)。
+**源码**：[source/std/toml.mgl:87](../../source/std/toml.mgl#L87)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-18"></a>
+<a id="api-20"></a>
 
-### TomlValue::asDateTime（19）
+### TomlValue::asDateTime（21）
 
 **声明**
 
@@ -924,13 +1006,13 @@ Option<std::lang::String> asDateTime();
 obj.asDateTime();
 ```
 
-**源码**：[source/std/toml.mgl:75](../../source/std/toml.mgl#L75)。
+**源码**：[source/std/toml.mgl:92](../../source/std/toml.mgl#L92)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-19"></a>
+<a id="api-21"></a>
 
-### TomlValue::find（20）
+### TomlValue::find（22）
 
 **声明**
 
@@ -962,13 +1044,13 @@ Option<TomlValue> find(std::lang::String key);
 obj.find(key);
 ```
 
-**源码**：[source/std/toml.mgl:80](../../source/std/toml.mgl#L80)。
+**源码**：[source/std/toml.mgl:97](../../source/std/toml.mgl#L97)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-20"></a>
+<a id="api-22"></a>
 
-### TomlValue::findBytes（21）
+### TomlValue::findBytes（23）
 
 **声明**
 
@@ -1002,13 +1084,13 @@ Option<TomlValue> findBytes(std::lang::List<uint8> key);
 obj.findBytes(key);
 ```
 
-**源码**：[source/std/toml.mgl:87](../../source/std/toml.mgl#L87)。
+**源码**：[source/std/toml.mgl:104](../../source/std/toml.mgl#L104)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-21"></a>
+<a id="api-23"></a>
 
-### TomlValue::at（22）
+### TomlValue::at（24）
 
 **声明**
 
@@ -1042,13 +1124,13 @@ Option<TomlValue> at(int64 index);
 obj.at(index);
 ```
 
-**源码**：[source/std/toml.mgl:94](../../source/std/toml.mgl#L94)。
+**源码**：[source/std/toml.mgl:111](../../source/std/toml.mgl#L111)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-22"></a>
+<a id="api-24"></a>
 
-### TomlValue::iterator（23）
+### TomlValue::iterator（25）
 
 **声明**
 
@@ -1080,13 +1162,13 @@ Option<TomlValue> iterator(int64 index);
 obj.iterator(index);
 ```
 
-**源码**：[source/std/toml.mgl:100](../../source/std/toml.mgl#L100)。
+**源码**：[source/std/toml.mgl:117](../../source/std/toml.mgl#L117)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-23"></a>
+<a id="api-25"></a>
 
-### TomlValue::keyAt（24）
+### TomlValue::keyAt（26）
 
 **声明**
 
@@ -1120,13 +1202,13 @@ Option<std::lang::String> keyAt(int64 index);
 obj.keyAt(index);
 ```
 
-**源码**：[source/std/toml.mgl:102](../../source/std/toml.mgl#L102)。
+**源码**：[source/std/toml.mgl:119](../../source/std/toml.mgl#L119)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-24"></a>
+<a id="api-26"></a>
 
-### TomlValue::keyBytesAt（25）
+### TomlValue::keyBytesAt（27）
 
 **声明**
 
@@ -1158,13 +1240,13 @@ Option<std::lang::List<uint8>> keyBytesAt(int64 index);
 obj.keyBytesAt(index);
 ```
 
-**源码**：[source/std/toml.mgl:107](../../source/std/toml.mgl#L107)。
+**源码**：[source/std/toml.mgl:124](../../source/std/toml.mgl#L124)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-25"></a>
+<a id="api-27"></a>
 
-### TomlValue::dump（26）
+### TomlValue::dump（28）
 
 **声明**
 
@@ -1194,13 +1276,13 @@ std::lang::String dump();
 obj.dump();
 ```
 
-**源码**：[source/std/toml.mgl:112](../../source/std/toml.mgl#L112)。
+**源码**：[source/std/toml.mgl:129](../../source/std/toml.mgl#L129)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
-<a id="api-26"></a>
+<a id="api-28"></a>
 
-### parse（27）
+### parse（29）
 
 **声明**
 
@@ -1234,6 +1316,6 @@ Result<TomlValue, std::lang::String> parse(std::lang::String text);
 std::toml::parse(text);
 ```
 
-**源码**：[source/std/toml.mgl:116](../../source/std/toml.mgl#L116)。
+**源码**：[source/std/toml.mgl:133](../../source/std/toml.mgl#L133)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。

@@ -62,7 +62,7 @@ int64 main() {
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-466"></a>`enum WatchdogError` | VM 安全点直接检查超时，不依赖事件或用户回调。无宿主时钟时单位为逻辑指令。 |
+| 模块 | <a id="symbol-476"></a>`enum WatchdogError` | VM 安全点直接检查超时，不依赖事件或用户回调。无宿主时钟时单位为逻辑指令。 |
 | WatchdogError | `NotEnabled, InvalidWatermark, InvalidTimeout` | VM 安全点直接检查超时，不依赖事件或用户回调。无宿主时钟时单位为逻辑指令。 变体及载荷见声明。 |
 
 ## 函数索引
