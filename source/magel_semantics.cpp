@@ -3418,7 +3418,7 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
                                 for (const stackvm::DebugFrame &frame : executed.sourceTrace)
                                 {
                                     if (!g_debugEnabled && IsInternalQuadLocation(frame.location)) continue;
-                                    traceText += "\n  " + (frame.function.empty() ? Memory::String("(根)") : frame.function) + "  " + frame.location.toString() + " [thread " + Memory::toString(frame.threadId) + " coroutine " + Memory::toString(frame.coroutineId) + " ip " + Memory::toString(frame.instruction) + "]";
+                                    traceText += "\n  " + (frame.function.empty() ? Memory::String("(根)") : frame.function) + "  " + frame.location.toString() + " [thread " + Memory::toString(frame.threadId) + " ip " + Memory::toString(frame.instruction) + "]";
                                 }
                                 if (!traceText.empty()) g_error += MAGEL_TEXT("\n调用栈（外 → 内）：") + traceText;
                             }

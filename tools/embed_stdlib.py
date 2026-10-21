@@ -150,6 +150,8 @@ GENERATOR_ASSETS = [
     "stackvm/data_capacity_index.hpp",
     "stackvm/reflection.hpp",
     "stackvm/stackvm.cpp",
+    "stackvm/event_service.hpp",
+    "stackvm/event_service.cpp",
     "magel_glue.hpp",
     "magel_generic_name.hpp",
     "magel_runtime_allocator.hpp",

@@ -50,8 +50,7 @@
 （[`example/gui/winapi/gui.c`](../example/gui/winapi/gui.c) 或 [`example/gui/qt/gui_qt.cpp`](../example/gui/qt/gui_qt.cpp)），
 两者之间只传固定宽度整数与 UTF-8 字符串——**不传窗口指针或控件结构**。
 
-事件走的是和软件定时器同一套「异步发生、安全点交付」机制：GUI 事件经 C 回调交回胶水层，
-由运行时投递器排队，VM 在下一个执行边界交付 Magel 中断函数。
+GUI 事件经 C 回调交给弱引用运行时投递器，在有界事件队列中排队；Magel 程序显式接收事件值并处理，VM 不自动调用用户函数。队列满和运行结束时投递返回明确状态。
 
 **怎么跑**：
 

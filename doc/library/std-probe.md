@@ -59,8 +59,8 @@ process=0 probe=42
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-364"></a>`struct Probe` | 记录值并验证复制、移动与析构行为的辅助类型。 |
-| Probe | <a id="symbol-365"></a>`int64 value` | 保存的单个值。 |
+| 模块 | <a id="symbol-368"></a>`struct Probe` | 记录值并验证复制、移动与析构行为的辅助类型。 |
+| Probe | <a id="symbol-369"></a>`int64 value` | 保存的单个值。 |
 
 ## 函数索引
 

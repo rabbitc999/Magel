@@ -85,7 +85,10 @@ $(TARGET): $(AST_LIB) $(VM_LIB) $(HOST_LIB) $(PP_LIB)
 $(VM_BUILD) $(HOST_BUILD):
 	$(MAGEL_RUNTIME_MKDIR)
 
-$(VM_BUILD)/stackvm.o: $(VM_DIR)/stackvm.cpp $(wildcard $(VM_DIR)/parts/*) $(VM_DIR)/register_core.hpp $(VM_DIR)/execution_plan.hpp $(VM_DIR)/allocation_index.hpp $(VM_DIR)/data_capacity_index.hpp $(VM_DIR)/stackvm.hpp $(VM_DIR)/value_text.hpp $(VM_DIR)/reflection.hpp | $(VM_BUILD)
+$(VM_BUILD)/event_service.o: $(VM_DIR)/event_service.cpp $(VM_DIR)/event_service.hpp $(VM_DIR)/stackvm.hpp | $(VM_BUILD)
+	$(CXX) $(CXXFLAGS) -I$(VM_DIR) -c $< -o $@
+
+$(VM_BUILD)/stackvm.o: $(VM_DIR)/stackvm.cpp $(VM_DIR)/event_service.hpp $(wildcard $(VM_DIR)/parts/*) $(VM_DIR)/register_core.hpp $(VM_DIR)/execution_plan.hpp $(VM_DIR)/allocation_index.hpp $(VM_DIR)/data_capacity_index.hpp $(VM_DIR)/stackvm.hpp $(VM_DIR)/value_text.hpp $(VM_DIR)/reflection.hpp | $(VM_BUILD)
 	$(CXX) $(CXXFLAGS) -I$(VM_DIR) -c $< -o $@
 
 $(HOST_BUILD)/bigint.o: library/bignum/bigint.cpp library/bignum/bigint.hpp | $(HOST_BUILD)
@@ -97,7 +100,7 @@ $(HOST_BUILD)/bigfloat.o: library/bignum/bigfloat.cpp library/bignum/bigfloat.hp
 $(HOST_BUILD)/sqlite3.o: library/sqlite/sqlite3.c library/sqlite/sqlite3.h | $(HOST_BUILD)
 	$(CC) -std=c11 -O2 -DSQLITE_THREADSAFE=1 -DSQLITE_OMIT_LOAD_EXTENSION=1 -c $< -o $@
 
-$(VM_LIB): $(VM_BUILD)/stackvm.o
+$(VM_LIB): $(VM_BUILD)/stackvm.o $(VM_BUILD)/event_service.o
 	$(AR) $(ARFLAGS) $@ $^
 
 # 每个标准库模块独立编译；实际包含关系由编译器生成 .d 文件追踪。

@@ -12,7 +12,7 @@ void worker() {
 
 int64 main() {
     isolated = 5;
-    IsolatedThreadHandle task = std::thread::create(worker);
+    Thread task = std::thread::create(worker);
     std::thread::send(task, "hello");
     String reply = std::thread::receive();
     std::thread::wait(task);

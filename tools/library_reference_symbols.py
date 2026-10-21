@@ -240,6 +240,7 @@ OVERRIDES.update({
 def symbol_description(row):
     """返回类型或字段的实际含义；缺失人工说明时让生成门禁失败。"""
     name, owner, kind = row['name'], row['owner'], row['kind']
+    if row.get('module')=='std::concurrency' and name=='Channel' and not owner: return '跨线程有界传值通道；可复制句柄，显式关闭。'
     if kind in ('struct','enum','interface','opcode'):
         if name in TYPE_DESCRIPTIONS:
             return TYPE_DESCRIPTIONS[name]
@@ -256,3 +257,17 @@ def symbol_description(row):
     if row['comment']:
         return documentation(row['comment'])
     raise ValueError('缺少字段说明：' + owner + '::' + name)
+
+TYPE_DESCRIPTIONS.update(Receive='操作状态与载荷；仅在 READY 时读取 value。', AtomicInt64='共享 int64 原子槽，fetchAdd 返回旧值。', ThreadResult='任务完成状态、原始错误与调用栈。', ThreadGroup='拥有任务回收责任的线程组。', ThreadPool='固定工作线程和有界静态任务队列。', Event='显式接收的定时或宿主事件值。')
+FIELDS.update(status='统一操作状态码；载荷仅在 READY 时有效。', slot='显式共享的 int64 原子槽。', tasks='线程组登记并负责回收的 Thread 列表。', completed='全部任务是否已经回收。', successful='已完成线程组是否全部成功。', jobs='跨线程的有界静态任务队列。', group='统一负责工作线程生命周期的线程组。', closed='是否已停止接受任务或事件。', trace='失败任务保留的原始源码调用栈文本。', tag='宿主投递的事件标签。', missed='周期通知合并时错过的周期数量。')
+
+FIELDS.update(READY='操作已完成的状态常量。', TIMEOUT='等待预算已耗尽，目标任务仍可能运行。', CLOSED='队列已关闭且无可接收载荷。', CANCELLED='任务已取消的状态常量，数值见所属模块声明。', FULL='有界队列已满的状态常量。', FAILED='任务失败的状态常量，数值见所属模块声明。', INVALID='句柄无效的状态常量。', RUNNING='任务正在运行的状态常量。', SUCCEEDED='任务已成功完成的状态常量。')
+
+# 常见字段名按所属类型解释，不能覆盖 HTTP 状态或反射枚举标签。
+FIELDS['status'] = 'HTTP 响应状态码。'
+FIELDS['tag'] = '枚举变体的数值标签。'
+OVERRIDES.update({
+    ('Receive', 'status'): '统一操作状态码；载荷仅在 READY 时有效。',
+    ('ThreadResult', 'status'): '线程等待状态，区分完成、超时、取消与失败。',
+    ('Event', 'tag'): '宿主投递的事件标签。',
+})

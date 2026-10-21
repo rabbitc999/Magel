@@ -144,7 +144,7 @@ memory=ok
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-363"></a>`struct PathString` | 路径文本组合与拆分的静态入口。 |
+| 模块 | <a id="symbol-367"></a>`struct PathString` | 路径文本组合与拆分的静态入口。 |
 
 ## 函数索引
 

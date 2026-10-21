@@ -2385,12 +2385,12 @@
     "name": "Channel::create",
     "owner": "Channel",
     "signature": "static Channel<T> create()",
-    "documentation": "创建Channel，返回可供后续操作的值。\n\n**返回值**：Channel<T>。",
+    "documentation": "创建当前线程内的本地值队列。\n\n**返回值**：Channel<T>。",
     "comment": "",
     "parameters": [],
     "returns": {
       "type": "Channel<T>",
-      "documentation": "创建Channel，返回可供后续操作的值。"
+      "documentation": "创建当前线程内的本地值队列。"
     },
     "errors": {
       "documentation": "Deque、Queue、Channel 基于 List；Channel 是当前执行上下文的值队列，不是跨线程消息系统。FixedVector 与 RingBuffer 的容量固定，满时 push 返回 false；空时 pop/receive 返回 None。索引从 0 开始。",
@@ -2880,6 +2880,33 @@
   },
   {
     "module": "std::concurrency",
+    "name": "Receive::isReady",
+    "owner": "Receive",
+    "signature": "bool isReady()",
+    "documentation": "操作状态为 READY 时返回 true。\n\n**返回值**：bool。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "bool",
+      "documentation": "操作状态为 READY 时返回 true。"
+    },
+    "errors": {
+      "documentation": "Channel<T> 是线程组内的有界多生产者多消费者通道，容量 1..1048576；队列按值复制，关闭后排空再返回 CLOSED。句柄可复制，显式 close 负责关闭，运行结束统一释放；最多 1024 个未排空通道。Receive<T> 只有 READY 时 value 有效。状态为 READY=0、TIMEOUT=1、CLOSED=2、CANCELLED=3、FULL=4、FAILED=5、INVALID=6。millis=-1 无限、0 非阻塞、正数限时；超时不取消任务。Shared<T> 单次 get/set/swap 原子；AtomicInt64.fetchAdd 原子返回旧值，按 int64 位宽回绕。需 --threads；普通全局变量继续隔离。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.isReady();",
+    "examples": [
+      "example/samples/thread_channel.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/concurrency.mgl",
+    "line": 15,
+    "page": "std-concurrency.md",
+    "anchor": "api-0"
+  },
+  {
+    "module": "std::concurrency",
     "name": "Shared::create",
     "owner": "Shared",
     "signature": "static Shared<T> create(T value)",
@@ -2898,19 +2925,20 @@
       "documentation": "创建值为 value 的原子共享槽。"
     },
     "errors": {
-      "documentation": "Shared<T> 提供跨隔离线程的显式共享槽，get/set/swap 单次操作原子。get 后再 set 的组合不是原子事务。普通全局变量在线程间隔离；启动线程需 --threads。",
+      "documentation": "Channel<T> 是线程组内的有界多生产者多消费者通道，容量 1..1048576；队列按值复制，关闭后排空再返回 CLOSED。句柄可复制，显式 close 负责关闭，运行结束统一释放；最多 1024 个未排空通道。Receive<T> 只有 READY 时 value 有效。状态为 READY=0、TIMEOUT=1、CLOSED=2、CANCELLED=3、FULL=4、FAILED=5、INVALID=6。millis=-1 无限、0 非阻塞、正数限时；超时不取消任务。Shared<T> 单次 get/set/swap 原子；AtomicInt64.fetchAdd 原子返回旧值，按 int64 位宽回绕。需 --threads；普通全局变量继续隔离。",
       "preconditions": [],
       "panic": false
     },
     "usage": "std::concurrency::Shared<T>::create(value);",
     "examples": [
-      "example/samples/typed_messages_shared.mgl"
+      "example/samples/typed_messages_shared.mgl",
+      "example/samples/thread_channel.mgl"
     ],
     "sourceLanguage": "zh",
     "source": "source/std/concurrency.mgl",
-    "line": 8,
+    "line": 28,
     "page": "std-concurrency.md",
-    "anchor": "api-0"
+    "anchor": "api-1"
   },
   {
     "module": "std::concurrency",
@@ -2925,7 +2953,7 @@
       "documentation": "读取共享槽当前值的副本。"
     },
     "errors": {
-      "documentation": "Shared<T> 提供跨隔离线程的显式共享槽，get/set/swap 单次操作原子。get 后再 set 的组合不是原子事务。普通全局变量在线程间隔离；启动线程需 --threads。",
+      "documentation": "Channel<T> 是线程组内的有界多生产者多消费者通道，容量 1..1048576；队列按值复制，关闭后排空再返回 CLOSED。句柄可复制，显式 close 负责关闭，运行结束统一释放；最多 1024 个未排空通道。Receive<T> 只有 READY 时 value 有效。状态为 READY=0、TIMEOUT=1、CLOSED=2、CANCELLED=3、FULL=4、FAILED=5、INVALID=6。millis=-1 无限、0 非阻塞、正数限时；超时不取消任务。Shared<T> 单次 get/set/swap 原子；AtomicInt64.fetchAdd 原子返回旧值，按 int64 位宽回绕。需 --threads；普通全局变量继续隔离。",
       "preconditions": [],
       "panic": false
     },
@@ -2935,9 +2963,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/concurrency.mgl",
-    "line": 11,
+    "line": 29,
     "page": "std-concurrency.md",
-    "anchor": "api-1"
+    "anchor": "api-2"
   },
   {
     "module": "std::concurrency",
@@ -2959,7 +2987,7 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "Shared<T> 提供跨隔离线程的显式共享槽，get/set/swap 单次操作原子。get 后再 set 的组合不是原子事务。普通全局变量在线程间隔离；启动线程需 --threads。",
+      "documentation": "Channel<T> 是线程组内的有界多生产者多消费者通道，容量 1..1048576；队列按值复制，关闭后排空再返回 CLOSED。句柄可复制，显式 close 负责关闭，运行结束统一释放；最多 1024 个未排空通道。Receive<T> 只有 READY 时 value 有效。状态为 READY=0、TIMEOUT=1、CLOSED=2、CANCELLED=3、FULL=4、FAILED=5、INVALID=6。millis=-1 无限、0 非阻塞、正数限时；超时不取消任务。Shared<T> 单次 get/set/swap 原子；AtomicInt64.fetchAdd 原子返回旧值，按 int64 位宽回绕。需 --threads；普通全局变量继续隔离。",
       "preconditions": [],
       "panic": false
     },
@@ -2967,9 +2995,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/concurrency.mgl",
-    "line": 12,
+    "line": 30,
     "page": "std-concurrency.md",
-    "anchor": "api-2"
+    "anchor": "api-3"
   },
   {
     "module": "std::concurrency",
@@ -2991,7 +3019,7 @@
       "documentation": "原子替换共享槽并返回旧值。"
     },
     "errors": {
-      "documentation": "Shared<T> 提供跨隔离线程的显式共享槽，get/set/swap 单次操作原子。get 后再 set 的组合不是原子事务。普通全局变量在线程间隔离；启动线程需 --threads。",
+      "documentation": "Channel<T> 是线程组内的有界多生产者多消费者通道，容量 1..1048576；队列按值复制，关闭后排空再返回 CLOSED。句柄可复制，显式 close 负责关闭，运行结束统一释放；最多 1024 个未排空通道。Receive<T> 只有 READY 时 value 有效。状态为 READY=0、TIMEOUT=1、CLOSED=2、CANCELLED=3、FULL=4、FAILED=5、INVALID=6。millis=-1 无限、0 非阻塞、正数限时；超时不取消任务。Shared<T> 单次 get/set/swap 原子；AtomicInt64.fetchAdd 原子返回旧值，按 int64 位宽回绕。需 --threads；普通全局变量继续隔离。",
       "preconditions": [],
       "panic": false
     },
@@ -3001,228 +3029,365 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/concurrency.mgl",
-    "line": 13,
+    "line": 31,
     "page": "std-concurrency.md",
-    "anchor": "api-3"
-  },
-  {
-    "module": "std::coroutine",
-    "name": "create",
-    "owner": "",
-    "signature": "SharedCoroutineHandle create(void fn() task)",
-    "documentation": "创建共享协程，返回可供后续操作的值。\n\n**返回值**：SharedCoroutineHandle。",
-    "comment": "",
-    "parameters": [
-      {
-        "name": "task",
-        "label": "void fn() task",
-        "documentation": "无参数任务函数",
-        "default": ""
-      }
-    ],
-    "returns": {
-      "type": "SharedCoroutineHandle",
-      "documentation": "创建共享协程，返回可供后续操作的值。"
-    },
-    "errors": {
-      "documentation": "create 创建共享执行上下文的协程，yield 让出执行，wait 推进调度直到目标完成。receive 在无消息时等待调度。yelid 是保留的拼写兼容入口，推荐 yield。跨线程隔离任务使用 std::thread。",
-      "preconditions": [],
-      "panic": false
-    },
-    "usage": "std::coroutine::create(task);",
-    "examples": [
-      "example/samples/coroutine_messages.mgl"
-    ],
-    "sourceLanguage": "zh",
-    "source": "source/std/coroutine.mgl",
-    "line": 14,
-    "page": "std-coroutine.md",
-    "anchor": "api-0"
-  },
-  {
-    "module": "std::coroutine",
-    "name": "wait",
-    "owner": "",
-    "signature": "void wait(SharedCoroutineHandle coroutine)",
-    "documentation": "调度或等待目标协程/线程结束。\n\n**返回值**：void。",
-    "comment": "",
-    "parameters": [
-      {
-        "name": "coroutine",
-        "label": "SharedCoroutineHandle coroutine",
-        "documentation": "协程句柄",
-        "default": ""
-      }
-    ],
-    "returns": {
-      "type": "void",
-      "documentation": "无返回值。"
-    },
-    "errors": {
-      "documentation": "create 创建共享执行上下文的协程，yield 让出执行，wait 推进调度直到目标完成。receive 在无消息时等待调度。yelid 是保留的拼写兼容入口，推荐 yield。跨线程隔离任务使用 std::thread。",
-      "preconditions": [],
-      "panic": false
-    },
-    "usage": "std::coroutine::wait(coroutine);",
-    "examples": [
-      "example/samples/coroutine_messages.mgl"
-    ],
-    "sourceLanguage": "zh",
-    "source": "source/std/coroutine.mgl",
-    "line": 15,
-    "page": "std-coroutine.md",
-    "anchor": "api-1"
-  },
-  {
-    "module": "std::coroutine",
-    "name": "send",
-    "owner": "",
-    "signature": "void send(SharedCoroutineHandle coroutine, std::lang::String message)",
-    "documentation": "向目标任务发送字符串消息。\n\n**返回值**：void。",
-    "comment": "",
-    "parameters": [
-      {
-        "name": "coroutine",
-        "label": "SharedCoroutineHandle coroutine",
-        "documentation": "协程句柄",
-        "default": ""
-      },
-      {
-        "name": "message",
-        "label": "std::lang::String message",
-        "documentation": "诊断文本或消息载荷",
-        "default": ""
-      }
-    ],
-    "returns": {
-      "type": "void",
-      "documentation": "无返回值。"
-    },
-    "errors": {
-      "documentation": "create 创建共享执行上下文的协程，yield 让出执行，wait 推进调度直到目标完成。receive 在无消息时等待调度。yelid 是保留的拼写兼容入口，推荐 yield。跨线程隔离任务使用 std::thread。",
-      "preconditions": [],
-      "panic": false
-    },
-    "usage": "std::coroutine::send(coroutine, message);",
-    "examples": [
-      "example/samples/coroutine_messages.mgl"
-    ],
-    "sourceLanguage": "zh",
-    "source": "source/std/coroutine.mgl",
-    "line": 16,
-    "page": "std-coroutine.md",
-    "anchor": "api-2"
-  },
-  {
-    "module": "std::coroutine",
-    "name": "receive",
-    "owner": "",
-    "signature": "std::lang::String receive()",
-    "documentation": "等待并接收当前任务队列的一条字符串消息。\n\n**返回值**：std::lang::String。",
-    "comment": "",
-    "parameters": [],
-    "returns": {
-      "type": "std::lang::String",
-      "documentation": "等待并接收当前任务队列的一条字符串消息。"
-    },
-    "errors": {
-      "documentation": "create 创建共享执行上下文的协程，yield 让出执行，wait 推进调度直到目标完成。receive 在无消息时等待调度。yelid 是保留的拼写兼容入口，推荐 yield。跨线程隔离任务使用 std::thread。",
-      "preconditions": [],
-      "panic": false
-    },
-    "usage": "std::coroutine::receive();",
-    "examples": [
-      "example/samples/coroutine_messages.mgl"
-    ],
-    "sourceLanguage": "zh",
-    "source": "source/std/coroutine.mgl",
-    "line": 17,
-    "page": "std-coroutine.md",
-    "anchor": "api-3"
-  },
-  {
-    "module": "std::coroutine",
-    "name": "current",
-    "owner": "",
-    "signature": "SharedCoroutineHandle current()",
-    "documentation": "返回当前协程/线程的句柄。\n\n**返回值**：SharedCoroutineHandle。",
-    "comment": "",
-    "parameters": [],
-    "returns": {
-      "type": "SharedCoroutineHandle",
-      "documentation": "返回当前协程/线程的句柄。"
-    },
-    "errors": {
-      "documentation": "create 创建共享执行上下文的协程，yield 让出执行，wait 推进调度直到目标完成。receive 在无消息时等待调度。yelid 是保留的拼写兼容入口，推荐 yield。跨线程隔离任务使用 std::thread。",
-      "preconditions": [],
-      "panic": false
-    },
-    "usage": "std::coroutine::current();",
-    "examples": [],
-    "sourceLanguage": "zh",
-    "source": "source/std/coroutine.mgl",
-    "line": 18,
-    "page": "std-coroutine.md",
     "anchor": "api-4"
   },
   {
-    "module": "std::coroutine",
-    "name": "parent",
-    "owner": "",
-    "signature": "SharedCoroutineHandle parent()",
-    "documentation": "返回创建当前任务的父协程/线程句柄。\n\n**返回值**：SharedCoroutineHandle。",
+    "module": "std::concurrency",
+    "name": "AtomicInt64::create",
+    "owner": "AtomicInt64",
+    "signature": "static AtomicInt64 create(int64 value)",
+    "documentation": "创建 int64 原子槽。\n\n**返回值**：AtomicInt64。",
     "comment": "",
-    "parameters": [],
+    "parameters": [
+      {
+        "name": "value",
+        "label": "int64 value",
+        "documentation": "输入值或写入的新值",
+        "default": ""
+      }
+    ],
     "returns": {
-      "type": "SharedCoroutineHandle",
-      "documentation": "返回创建当前任务的父协程/线程句柄。"
+      "type": "AtomicInt64",
+      "documentation": "创建 int64 原子槽。"
     },
     "errors": {
-      "documentation": "create 创建共享执行上下文的协程，yield 让出执行，wait 推进调度直到目标完成。receive 在无消息时等待调度。yelid 是保留的拼写兼容入口，推荐 yield。跨线程隔离任务使用 std::thread。",
+      "documentation": "Channel<T> 是线程组内的有界多生产者多消费者通道，容量 1..1048576；队列按值复制，关闭后排空再返回 CLOSED。句柄可复制，显式 close 负责关闭，运行结束统一释放；最多 1024 个未排空通道。Receive<T> 只有 READY 时 value 有效。状态为 READY=0、TIMEOUT=1、CLOSED=2、CANCELLED=3、FULL=4、FAILED=5、INVALID=6。millis=-1 无限、0 非阻塞、正数限时；超时不取消任务。Shared<T> 单次 get/set/swap 原子；AtomicInt64.fetchAdd 原子返回旧值，按 int64 位宽回绕。需 --threads；普通全局变量继续隔离。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::coroutine::parent();",
+    "usage": "std::concurrency::AtomicInt64::create(value);",
     "examples": [
-      "example/samples/coroutine_messages.mgl"
+      "example/samples/typed_messages_shared.mgl",
+      "example/samples/thread_channel.mgl"
     ],
     "sourceLanguage": "zh",
-    "source": "source/std/coroutine.mgl",
-    "line": 19,
-    "page": "std-coroutine.md",
+    "source": "source/std/concurrency.mgl",
+    "line": 37,
+    "page": "std-concurrency.md",
     "anchor": "api-5"
   },
   {
-    "module": "std::coroutine",
-    "name": "yield",
-    "owner": "",
-    "signature": "void yield()",
-    "documentation": "主动让出协程执行权。\n\n**返回值**：void。",
+    "module": "std::concurrency",
+    "name": "AtomicInt64::get",
+    "owner": "AtomicInt64",
+    "signature": "int64 get()",
+    "documentation": "读取共享槽当前值的副本。\n\n**返回值**：int64。",
     "comment": "",
     "parameters": [],
     "returns": {
-      "type": "void",
-      "documentation": "无返回值。"
+      "type": "int64",
+      "documentation": "读取共享槽当前值的副本。"
     },
     "errors": {
-      "documentation": "create 创建共享执行上下文的协程，yield 让出执行，wait 推进调度直到目标完成。receive 在无消息时等待调度。yelid 是保留的拼写兼容入口，推荐 yield。跨线程隔离任务使用 std::thread。",
+      "documentation": "Channel<T> 是线程组内的有界多生产者多消费者通道，容量 1..1048576；队列按值复制，关闭后排空再返回 CLOSED。句柄可复制，显式 close 负责关闭，运行结束统一释放；最多 1024 个未排空通道。Receive<T> 只有 READY 时 value 有效。状态为 READY=0、TIMEOUT=1、CLOSED=2、CANCELLED=3、FULL=4、FAILED=5、INVALID=6。millis=-1 无限、0 非阻塞、正数限时；超时不取消任务。Shared<T> 单次 get/set/swap 原子；AtomicInt64.fetchAdd 原子返回旧值，按 int64 位宽回绕。需 --threads；普通全局变量继续隔离。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::coroutine::yield();",
-    "examples": [],
+    "usage": "obj.get();",
+    "examples": [
+      "example/samples/typed_messages_shared.mgl"
+    ],
     "sourceLanguage": "zh",
-    "source": "source/std/coroutine.mgl",
-    "line": 20,
-    "page": "std-coroutine.md",
+    "source": "source/std/concurrency.mgl",
+    "line": 38,
+    "page": "std-concurrency.md",
     "anchor": "api-6"
   },
   {
-    "module": "std::coroutine",
-    "name": "yelid",
-    "owner": "",
-    "signature": "void yelid()",
-    "documentation": "yield 的拼写兼容入口。\n\n**返回值**：void。",
+    "module": "std::concurrency",
+    "name": "AtomicInt64::set",
+    "owner": "AtomicInt64",
+    "signature": "void set(int64 value)",
+    "documentation": "将指定位置或共享槽替换为 value。\n\n**返回值**：void。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "value",
+        "label": "int64 value",
+        "documentation": "输入值或写入的新值",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "void",
+      "documentation": "无返回值。"
+    },
+    "errors": {
+      "documentation": "Channel<T> 是线程组内的有界多生产者多消费者通道，容量 1..1048576；队列按值复制，关闭后排空再返回 CLOSED。句柄可复制，显式 close 负责关闭，运行结束统一释放；最多 1024 个未排空通道。Receive<T> 只有 READY 时 value 有效。状态为 READY=0、TIMEOUT=1、CLOSED=2、CANCELLED=3、FULL=4、FAILED=5、INVALID=6。millis=-1 无限、0 非阻塞、正数限时；超时不取消任务。Shared<T> 单次 get/set/swap 原子；AtomicInt64.fetchAdd 原子返回旧值，按 int64 位宽回绕。需 --threads；普通全局变量继续隔离。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.set(value);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/concurrency.mgl",
+    "line": 39,
+    "page": "std-concurrency.md",
+    "anchor": "api-7"
+  },
+  {
+    "module": "std::concurrency",
+    "name": "AtomicInt64::fetchAdd",
+    "owner": "AtomicInt64",
+    "signature": "int64 fetchAdd(int64 delta)",
+    "documentation": "原子累加 int64 并返回旧值，溢出按 64 位回绕。\n\n**返回值**：int64。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "delta",
+        "label": "int64 delta",
+        "documentation": "原子累加的 int64 增量",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "int64",
+      "documentation": "原子累加 int64 并返回旧值，溢出按 64 位回绕。"
+    },
+    "errors": {
+      "documentation": "Channel<T> 是线程组内的有界多生产者多消费者通道，容量 1..1048576；队列按值复制，关闭后排空再返回 CLOSED。句柄可复制，显式 close 负责关闭，运行结束统一释放；最多 1024 个未排空通道。Receive<T> 只有 READY 时 value 有效。状态为 READY=0、TIMEOUT=1、CLOSED=2、CANCELLED=3、FULL=4、FAILED=5、INVALID=6。millis=-1 无限、0 非阻塞、正数限时；超时不取消任务。Shared<T> 单次 get/set/swap 原子；AtomicInt64.fetchAdd 原子返回旧值，按 int64 位宽回绕。需 --threads；普通全局变量继续隔离。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.fetchAdd(delta);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/concurrency.mgl",
+    "line": 40,
+    "page": "std-concurrency.md",
+    "anchor": "api-8"
+  },
+  {
+    "module": "std::concurrency",
+    "name": "Channel::create",
+    "owner": "Channel",
+    "signature": "static Channel<T> create(int64 capacity)",
+    "documentation": "创建指定容量的跨线程通道。\n\n**返回值**：Channel<T>。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "capacity",
+        "label": "int64 capacity",
+        "documentation": "容器的最大元素数量",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Channel<T>",
+      "documentation": "创建指定容量的跨线程通道。"
+    },
+    "errors": {
+      "documentation": "Channel<T> 是线程组内的有界多生产者多消费者通道，容量 1..1048576；队列按值复制，关闭后排空再返回 CLOSED。句柄可复制，显式 close 负责关闭，运行结束统一释放；最多 1024 个未排空通道。Receive<T> 只有 READY 时 value 有效。状态为 READY=0、TIMEOUT=1、CLOSED=2、CANCELLED=3、FULL=4、FAILED=5、INVALID=6。millis=-1 无限、0 非阻塞、正数限时；超时不取消任务。Shared<T> 单次 get/set/swap 原子；AtomicInt64.fetchAdd 原子返回旧值，按 int64 位宽回绕。需 --threads；普通全局变量继续隔离。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::concurrency::Channel<T>::create(capacity);",
+    "examples": [
+      "example/samples/typed_messages_shared.mgl",
+      "example/samples/thread_channel.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/concurrency.mgl",
+    "line": 46,
+    "page": "std-concurrency.md",
+    "anchor": "api-9"
+  },
+  {
+    "module": "std::concurrency",
+    "name": "Channel::sendFor",
+    "owner": "Channel",
+    "signature": "int64 sendFor(T value, int64 millis)",
+    "documentation": "在截止时间内复制发送载荷，返回统一操作状态。\n\n**返回值**：int64。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "value",
+        "label": "T value",
+        "documentation": "输入值或写入的新值",
+        "default": ""
+      },
+      {
+        "name": "millis",
+        "label": "int64 millis",
+        "documentation": "等待毫秒数；-1 无限、0 非阻塞，waitFor 和 sleepFor 不接受负数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "int64",
+      "documentation": "在截止时间内复制发送载荷，返回统一操作状态。"
+    },
+    "errors": {
+      "documentation": "Channel<T> 是线程组内的有界多生产者多消费者通道，容量 1..1048576；队列按值复制，关闭后排空再返回 CLOSED。句柄可复制，显式 close 负责关闭，运行结束统一释放；最多 1024 个未排空通道。Receive<T> 只有 READY 时 value 有效。状态为 READY=0、TIMEOUT=1、CLOSED=2、CANCELLED=3、FULL=4、FAILED=5、INVALID=6。millis=-1 无限、0 非阻塞、正数限时；超时不取消任务。Shared<T> 单次 get/set/swap 原子；AtomicInt64.fetchAdd 原子返回旧值，按 int64 位宽回绕。需 --threads；普通全局变量继续隔离。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.sendFor(value, millis);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/concurrency.mgl",
+    "line": 47,
+    "page": "std-concurrency.md",
+    "anchor": "api-10"
+  },
+  {
+    "module": "std::concurrency",
+    "name": "Channel::send",
+    "owner": "Channel",
+    "signature": "int64 send(T value)",
+    "documentation": "按值复制并等待发送，队列满时施加背压。\n\n**返回值**：int64。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "value",
+        "label": "T value",
+        "documentation": "输入值或写入的新值",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "int64",
+      "documentation": "按值复制并等待发送，队列满时施加背压。"
+    },
+    "errors": {
+      "documentation": "Channel<T> 是线程组内的有界多生产者多消费者通道，容量 1..1048576；队列按值复制，关闭后排空再返回 CLOSED。句柄可复制，显式 close 负责关闭，运行结束统一释放；最多 1024 个未排空通道。Receive<T> 只有 READY 时 value 有效。状态为 READY=0、TIMEOUT=1、CLOSED=2、CANCELLED=3、FULL=4、FAILED=5、INVALID=6。millis=-1 无限、0 非阻塞、正数限时；超时不取消任务。Shared<T> 单次 get/set/swap 原子；AtomicInt64.fetchAdd 原子返回旧值，按 int64 位宽回绕。需 --threads；普通全局变量继续隔离。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.send(value);",
+    "examples": [
+      "example/samples/thread_channel.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/concurrency.mgl",
+    "line": 48,
+    "page": "std-concurrency.md",
+    "anchor": "api-11"
+  },
+  {
+    "module": "std::concurrency",
+    "name": "Channel::trySend",
+    "owner": "Channel",
+    "signature": "int64 trySend(T value)",
+    "documentation": "立即尝试复制发送，队列满返回 FULL。\n\n**返回值**：int64。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "value",
+        "label": "T value",
+        "documentation": "输入值或写入的新值",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "int64",
+      "documentation": "立即尝试复制发送，队列满返回 FULL。"
+    },
+    "errors": {
+      "documentation": "Channel<T> 是线程组内的有界多生产者多消费者通道，容量 1..1048576；队列按值复制，关闭后排空再返回 CLOSED。句柄可复制，显式 close 负责关闭，运行结束统一释放；最多 1024 个未排空通道。Receive<T> 只有 READY 时 value 有效。状态为 READY=0、TIMEOUT=1、CLOSED=2、CANCELLED=3、FULL=4、FAILED=5、INVALID=6。millis=-1 无限、0 非阻塞、正数限时；超时不取消任务。Shared<T> 单次 get/set/swap 原子；AtomicInt64.fetchAdd 原子返回旧值，按 int64 位宽回绕。需 --threads；普通全局变量继续隔离。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.trySend(value);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/concurrency.mgl",
+    "line": 49,
+    "page": "std-concurrency.md",
+    "anchor": "api-12"
+  },
+  {
+    "module": "std::concurrency",
+    "name": "Channel::receiveFor",
+    "owner": "Channel",
+    "signature": "Receive<T> receiveFor(int64 millis)",
+    "documentation": "显式限时接收，只有 READY 时 value 有效；-1 无限、0 非阻塞。\n\n**返回值**：Receive<T>。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "millis",
+        "label": "int64 millis",
+        "documentation": "等待毫秒数；-1 无限、0 非阻塞，waitFor 和 sleepFor 不接受负数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Receive<T>",
+      "documentation": "显式限时接收，只有 READY 时 value 有效；-1 无限、0 非阻塞。"
+    },
+    "errors": {
+      "documentation": "Channel<T> 是线程组内的有界多生产者多消费者通道，容量 1..1048576；队列按值复制，关闭后排空再返回 CLOSED。句柄可复制，显式 close 负责关闭，运行结束统一释放；最多 1024 个未排空通道。Receive<T> 只有 READY 时 value 有效。状态为 READY=0、TIMEOUT=1、CLOSED=2、CANCELLED=3、FULL=4、FAILED=5、INVALID=6。millis=-1 无限、0 非阻塞、正数限时；超时不取消任务。Shared<T> 单次 get/set/swap 原子；AtomicInt64.fetchAdd 原子返回旧值，按 int64 位宽回绕。需 --threads；普通全局变量继续隔离。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.receiveFor(millis);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/concurrency.mgl",
+    "line": 50,
+    "page": "std-concurrency.md",
+    "anchor": "api-13"
+  },
+  {
+    "module": "std::concurrency",
+    "name": "Channel::receive",
+    "owner": "Channel",
+    "signature": "Receive<T> receive()",
+    "documentation": "等待并按值接收下一项，关闭排空后返回 CLOSED。\n\n**返回值**：Receive<T>。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "Receive<T>",
+      "documentation": "等待并按值接收下一项，关闭排空后返回 CLOSED。"
+    },
+    "errors": {
+      "documentation": "Channel<T> 是线程组内的有界多生产者多消费者通道，容量 1..1048576；队列按值复制，关闭后排空再返回 CLOSED。句柄可复制，显式 close 负责关闭，运行结束统一释放；最多 1024 个未排空通道。Receive<T> 只有 READY 时 value 有效。状态为 READY=0、TIMEOUT=1、CLOSED=2、CANCELLED=3、FULL=4、FAILED=5、INVALID=6。millis=-1 无限、0 非阻塞、正数限时；超时不取消任务。Shared<T> 单次 get/set/swap 原子；AtomicInt64.fetchAdd 原子返回旧值，按 int64 位宽回绕。需 --threads；普通全局变量继续隔离。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.receive();",
+    "examples": [
+      "example/samples/thread_channel.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/concurrency.mgl",
+    "line": 57,
+    "page": "std-concurrency.md",
+    "anchor": "api-14"
+  },
+  {
+    "module": "std::concurrency",
+    "name": "Channel::tryReceive",
+    "owner": "Channel",
+    "signature": "Receive<T> tryReceive()",
+    "documentation": "立即尝试接收，未就绪返回 TIMEOUT，只有 READY 时读取 value。\n\n**返回值**：Receive<T>。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "Receive<T>",
+      "documentation": "立即尝试接收，未就绪返回 TIMEOUT，只有 READY 时读取 value。"
+    },
+    "errors": {
+      "documentation": "Channel<T> 是线程组内的有界多生产者多消费者通道，容量 1..1048576；队列按值复制，关闭后排空再返回 CLOSED。句柄可复制，显式 close 负责关闭，运行结束统一释放；最多 1024 个未排空通道。Receive<T> 只有 READY 时 value 有效。状态为 READY=0、TIMEOUT=1、CLOSED=2、CANCELLED=3、FULL=4、FAILED=5、INVALID=6。millis=-1 无限、0 非阻塞、正数限时；超时不取消任务。Shared<T> 单次 get/set/swap 原子；AtomicInt64.fetchAdd 原子返回旧值，按 int64 位宽回绕。需 --threads；普通全局变量继续隔离。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.tryReceive();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/concurrency.mgl",
+    "line": 58,
+    "page": "std-concurrency.md",
+    "anchor": "api-15"
+  },
+  {
+    "module": "std::concurrency",
+    "name": "Channel::close",
+    "owner": "Channel",
+    "signature": "void close()",
+    "documentation": "关闭队列并停止定时源；已排队的值先排空，再返回 CLOSED。\n\n**返回值**：void。",
     "comment": "",
     "parameters": [],
     "returns": {
@@ -3230,17 +3395,19 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "create 创建共享执行上下文的协程，yield 让出执行，wait 推进调度直到目标完成。receive 在无消息时等待调度。yelid 是保留的拼写兼容入口，推荐 yield。跨线程隔离任务使用 std::thread。",
+      "documentation": "Channel<T> 是线程组内的有界多生产者多消费者通道，容量 1..1048576；队列按值复制，关闭后排空再返回 CLOSED。句柄可复制，显式 close 负责关闭，运行结束统一释放；最多 1024 个未排空通道。Receive<T> 只有 READY 时 value 有效。状态为 READY=0、TIMEOUT=1、CLOSED=2、CANCELLED=3、FULL=4、FAILED=5、INVALID=6。millis=-1 无限、0 非阻塞、正数限时；超时不取消任务。Shared<T> 单次 get/set/swap 原子；AtomicInt64.fetchAdd 原子返回旧值，按 int64 位宽回绕。需 --threads；普通全局变量继续隔离。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::coroutine::yelid();",
-    "examples": [],
+    "usage": "obj.close();",
+    "examples": [
+      "example/samples/thread_channel.mgl"
+    ],
     "sourceLanguage": "zh",
-    "source": "source/std/coroutine.mgl",
-    "line": 21,
-    "page": "std-coroutine.md",
-    "anchor": "api-7"
+    "source": "source/std/concurrency.mgl",
+    "line": 59,
+    "page": "std-concurrency.md",
+    "anchor": "api-16"
   },
   {
     "module": "std::csv",
@@ -3627,7 +3794,7 @@
       {
         "name": "delta",
         "label": "int64 delta",
-        "documentation": "时间偏移秒数。",
+        "documentation": "原子累加的 int64 增量",
         "default": ""
       }
     ],
@@ -3983,94 +4150,104 @@
   },
   {
     "module": "std::event",
-    "name": "Interrupt::of",
-    "owner": "Interrupt",
-    "signature": "static Interrupt of(EventHandle timer, int64 thread, void fn(int64) handler)",
-    "documentation": "组合事件句柄、所属线程和回调为中断描述值。\n\n**返回值**：Interrupt。",
-    "comment": "/* 按值传 `Timer` 会触发一次 Drop（把定时器销毁），所以这里只收句柄。 */",
+    "name": "receiveFor",
+    "owner": "",
+    "signature": "std::concurrency::Receive<Event> receiveFor(int64 millis)",
+    "documentation": "显式限时接收，只有 READY 时 value 有效；-1 无限、0 非阻塞。\n\n**返回值**：std::concurrency::Receive<Event>。",
+    "comment": "",
     "parameters": [
       {
-        "name": "timer",
-        "label": "EventHandle timer",
-        "documentation": "事件/定时器句柄",
-        "default": ""
-      },
-      {
-        "name": "thread",
-        "label": "int64 thread",
-        "documentation": "线程句柄或归属线程",
-        "default": ""
-      },
-      {
-        "name": "handler",
-        "label": "void fn(int64) handler",
-        "documentation": "中断回调",
+        "name": "millis",
+        "label": "int64 millis",
+        "documentation": "等待毫秒数；-1 无限、0 非阻塞，waitFor 和 sleepFor 不接受负数",
         "default": ""
       }
     ],
     "returns": {
-      "type": "Interrupt",
-      "documentation": "组合事件句柄、所属线程和回调为中断描述值。"
+      "type": "std::concurrency::Receive<Event>",
+      "documentation": "显式限时接收，只有 READY 时 value 有效；-1 无限、0 非阻塞。"
     },
     "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
+      "documentation": "事件只在 receive/receiveFor/tryReceive 显式接收时交付值，绝不自动执行用户函数。队列容量 256，post 在队列满时返回 FULL。定时源使用宿主单调纳秒时钟、创建后立即计时，最多 1024 个活动定时源；服务计算截止时间，不按定时源创建线程。周期通知合并，missed 表示错过的周期数。Timer.stop/drop 删除未接收通知；队列关闭后先排空，结束后的宿主弱引用投递器返回 CLOSED。事件操作不支持同步胶水重入。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::event::Interrupt::of(timer, thread, handler);",
-    "examples": [],
+    "usage": "std::event::receiveFor(millis);",
+    "examples": [
+      "example/samples/event_timer.mgl"
+    ],
     "sourceLanguage": "zh",
     "source": "source/std/event.mgl",
-    "line": 66,
+    "line": 19,
     "page": "std-event.md",
     "anchor": "api-0"
   },
   {
     "module": "std::event",
-    "name": "Interrupt::of",
-    "owner": "Interrupt",
-    "signature": "static Interrupt of(EventHandle timer, void fn(int64) handler)",
-    "documentation": "组合事件句柄、所属线程和回调为中断描述值。\n\n**返回值**：Interrupt。",
-    "comment": "/* 不给线程就默认归属创建该定时器的线程（某一线程创建的中断在它自己的 VM 里跑）。 */",
-    "parameters": [
-      {
-        "name": "timer",
-        "label": "EventHandle timer",
-        "documentation": "事件/定时器句柄",
-        "default": ""
-      },
-      {
-        "name": "handler",
-        "label": "void fn(int64) handler",
-        "documentation": "中断回调",
-        "default": ""
-      }
-    ],
+    "name": "receive",
+    "owner": "",
+    "signature": "std::concurrency::Receive<Event> receive()",
+    "documentation": "显式等待并消费事件，不执行隐式用户回调。\n\n**返回值**：std::concurrency::Receive<Event>。",
+    "comment": "",
+    "parameters": [],
     "returns": {
-      "type": "Interrupt",
-      "documentation": "组合事件句柄、所属线程和回调为中断描述值。"
+      "type": "std::concurrency::Receive<Event>",
+      "documentation": "显式等待并消费事件，不执行隐式用户回调。"
     },
     "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
+      "documentation": "事件只在 receive/receiveFor/tryReceive 显式接收时交付值，绝不自动执行用户函数。队列容量 256，post 在队列满时返回 FULL。定时源使用宿主单调纳秒时钟、创建后立即计时，最多 1024 个活动定时源；服务计算截止时间，不按定时源创建线程。周期通知合并，missed 表示错过的周期数。Timer.stop/drop 删除未接收通知；队列关闭后先排空，结束后的宿主弱引用投递器返回 CLOSED。事件操作不支持同步胶水重入。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::event::Interrupt::of(timer, handler);",
+    "usage": "std::event::receive();",
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/event.mgl",
-    "line": 75,
+    "line": 30,
     "page": "std-event.md",
     "anchor": "api-1"
   },
   {
     "module": "std::event",
-    "name": "Interrupt::raise",
-    "owner": "Interrupt",
-    "signature": "void raise(int64 source)",
-    "documentation": "排入一次中断事件，等待安全点交付。\n\n**返回值**：void。",
-    "comment": "/* 主动投递这个句柄：归属别的线程时是空操作，交付仍在指令边界做。 */",
+    "name": "tryReceive",
+    "owner": "",
+    "signature": "std::concurrency::Receive<Event> tryReceive()",
+    "documentation": "立即尝试接收，未就绪返回 TIMEOUT，只有 READY 时读取 value。\n\n**返回值**：std::concurrency::Receive<Event>。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "std::concurrency::Receive<Event>",
+      "documentation": "立即尝试接收，未就绪返回 TIMEOUT，只有 READY 时读取 value。"
+    },
+    "errors": {
+      "documentation": "事件只在 receive/receiveFor/tryReceive 显式接收时交付值，绝不自动执行用户函数。队列容量 256，post 在队列满时返回 FULL。定时源使用宿主单调纳秒时钟、创建后立即计时，最多 1024 个活动定时源；服务计算截止时间，不按定时源创建线程。周期通知合并，missed 表示错过的周期数。Timer.stop/drop 删除未接收通知；队列关闭后先排空，结束后的宿主弱引用投递器返回 CLOSED。事件操作不支持同步胶水重入。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::event::tryReceive();",
+    "examples": [
+      "example/samples/event_timer.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/event.mgl",
+    "line": 31,
+    "page": "std-event.md",
+    "anchor": "api-2"
+  },
+  {
+    "module": "std::event",
+    "name": "post",
+    "owner": "",
+    "signature": "int64 post(int64 tag, int64 source)",
+    "documentation": "向当前运行的有界事件队列投递 tag/source，满或关闭返回对应状态。\n\n**返回值**：int64。",
+    "comment": "",
     "parameters": [
+      {
+        "name": "tag",
+        "label": "int64 tag",
+        "documentation": "宿主事件的整数标签。",
+        "default": ""
+      },
       {
         "name": "source",
         "label": "int64 source",
@@ -4079,30 +4256,30 @@
       }
     ],
     "returns": {
-      "type": "void",
-      "documentation": "无返回值。"
+      "type": "int64",
+      "documentation": "向当前运行的有界事件队列投递 tag/source，满或关闭返回对应状态。"
     },
     "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
+      "documentation": "事件只在 receive/receiveFor/tryReceive 显式接收时交付值，绝不自动执行用户函数。队列容量 256，post 在队列满时返回 FULL。定时源使用宿主单调纳秒时钟、创建后立即计时，最多 1024 个活动定时源；服务计算截止时间，不按定时源创建线程。周期通知合并，missed 表示错过的周期数。Timer.stop/drop 删除未接收通知；队列关闭后先排空，结束后的宿主弱引用投递器返回 CLOSED。事件操作不支持同步胶水重入。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "obj.raise(source);",
+    "usage": "std::event::post(tag, source);",
     "examples": [
-      "example/samples/interrupt_arguments.mgl"
+      "example/samples/event_timer.mgl"
     ],
     "sourceLanguage": "zh",
     "source": "source/std/event.mgl",
-    "line": 84,
+    "line": 32,
     "page": "std-event.md",
-    "anchor": "api-2"
+    "anchor": "api-3"
   },
   {
     "module": "std::event",
-    "name": "Interrupt::raise",
-    "owner": "Interrupt",
-    "signature": "void raise()",
-    "documentation": "排入一次中断事件，等待安全点交付。\n\n**返回值**：void。",
+    "name": "close",
+    "owner": "",
+    "signature": "void close()",
+    "documentation": "关闭队列并停止定时源；已排队的值先排空，再返回 CLOSED。\n\n**返回值**：void。",
     "comment": "",
     "parameters": [],
     "returns": {
@@ -4110,49 +4287,15 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
+      "documentation": "事件只在 receive/receiveFor/tryReceive 显式接收时交付值，绝不自动执行用户函数。队列容量 256，post 在队列满时返回 FULL。定时源使用宿主单调纳秒时钟、创建后立即计时，最多 1024 个活动定时源；服务计算截止时间，不按定时源创建线程。周期通知合并，missed 表示错过的周期数。Timer.stop/drop 删除未接收通知；队列关闭后先排空，结束后的宿主弱引用投递器返回 CLOSED。事件操作不支持同步胶水重入。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "obj.raise();",
-    "examples": [
-      "example/samples/interrupt_arguments.mgl"
-    ],
-    "sourceLanguage": "zh",
-    "source": "source/std/event.mgl",
-    "line": 85,
-    "page": "std-event.md",
-    "anchor": "api-3"
-  },
-  {
-    "module": "std::event",
-    "name": "Timer::Timer",
-    "owner": "Timer",
-    "signature": "Timer(int64 period)",
-    "documentation": "以纳秒周期创建停止态定时器。\n\n**返回值**：Timer。",
-    "comment": "",
-    "parameters": [
-      {
-        "name": "period",
-        "label": "int64 period",
-        "documentation": "定时器周期",
-        "default": ""
-      }
-    ],
-    "returns": {
-      "type": "Timer",
-      "documentation": "以纳秒周期创建停止态定时器。"
-    },
-    "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
-      "preconditions": [],
-      "panic": false
-    },
-    "usage": "// 构造：Timer obj = new(period);",
+    "usage": "std::event::close();",
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/event.mgl",
-    "line": 91,
+    "line": 33,
     "page": "std-event.md",
     "anchor": "api-4"
   },
@@ -4160,57 +4303,87 @@
     "module": "std::event",
     "name": "Timer::everyNanos",
     "owner": "Timer",
-    "signature": "static Timer everyNanos(int64 period)",
-    "documentation": "创建纳秒周期的停止态定时器。\n\n**返回值**：Timer。",
+    "signature": "static Timer everyNanos(int64 nanos)",
+    "documentation": "创建立即开始计时的周期纳秒定时源，错过周期合并。\n\n**返回值**：Timer。",
     "comment": "",
     "parameters": [
       {
-        "name": "period",
-        "label": "int64 period",
-        "documentation": "定时器周期",
+        "name": "nanos",
+        "label": "int64 nanos",
+        "documentation": "正纳秒间隔",
         "default": ""
       }
     ],
     "returns": {
       "type": "Timer",
-      "documentation": "创建纳秒周期的停止态定时器。"
+      "documentation": "创建立即开始计时的周期纳秒定时源，错过周期合并。"
     },
     "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
+      "documentation": "事件只在 receive/receiveFor/tryReceive 显式接收时交付值，绝不自动执行用户函数。队列容量 256，post 在队列满时返回 FULL。定时源使用宿主单调纳秒时钟、创建后立即计时，最多 1024 个活动定时源；服务计算截止时间，不按定时源创建线程。周期通知合并，missed 表示错过的周期数。Timer.stop/drop 删除未接收通知；队列关闭后先排空，结束后的宿主弱引用投递器返回 CLOSED。事件操作不支持同步胶水重入。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::event::Timer::everyNanos(period);",
-    "examples": [
-      "example/samples/interrupt_arguments.mgl"
-    ],
+    "usage": "std::event::Timer::everyNanos(nanos);",
+    "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/event.mgl",
-    "line": 95,
+    "line": 37,
     "page": "std-event.md",
     "anchor": "api-5"
+  },
+  {
+    "module": "std::event",
+    "name": "Timer::afterNanos",
+    "owner": "Timer",
+    "signature": "static Timer afterNanos(int64 nanos)",
+    "documentation": "创建立即开始计时的一次性纳秒定时源。\n\n**返回值**：Timer。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "nanos",
+        "label": "int64 nanos",
+        "documentation": "正纳秒间隔",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Timer",
+      "documentation": "创建立即开始计时的一次性纳秒定时源。"
+    },
+    "errors": {
+      "documentation": "事件只在 receive/receiveFor/tryReceive 显式接收时交付值，绝不自动执行用户函数。队列容量 256，post 在队列满时返回 FULL。定时源使用宿主单调纳秒时钟、创建后立即计时，最多 1024 个活动定时源；服务计算截止时间，不按定时源创建线程。周期通知合并，missed 表示错过的周期数。Timer.stop/drop 删除未接收通知；队列关闭后先排空，结束后的宿主弱引用投递器返回 CLOSED。事件操作不支持同步胶水重入。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::event::Timer::afterNanos(nanos);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/event.mgl",
+    "line": 38,
+    "page": "std-event.md",
+    "anchor": "api-6"
   },
   {
     "module": "std::event",
     "name": "Timer::everyMillis",
     "owner": "Timer",
     "signature": "static Timer everyMillis(int64 millis)",
-    "documentation": "创建毫秒周期的停止态定时器。\n\n**返回值**：Timer。",
+    "documentation": "创建立即开始计时的周期毫秒定时源，错过周期合并。\n\n**返回值**：Timer。",
     "comment": "",
     "parameters": [
       {
         "name": "millis",
         "label": "int64 millis",
-        "documentation": "毫秒数",
+        "documentation": "等待毫秒数；-1 无限、0 非阻塞，waitFor 和 sleepFor 不接受负数",
         "default": ""
       }
     ],
     "returns": {
       "type": "Timer",
-      "documentation": "创建毫秒周期的停止态定时器。"
+      "documentation": "创建立即开始计时的周期毫秒定时源，错过周期合并。"
     },
     "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
+      "documentation": "事件只在 receive/receiveFor/tryReceive 显式接收时交付值，绝不自动执行用户函数。队列容量 256，post 在队列满时返回 FULL。定时源使用宿主单调纳秒时钟、创建后立即计时，最多 1024 个活动定时源；服务计算截止时间，不按定时源创建线程。周期通知合并，missed 表示错过的周期数。Timer.stop/drop 删除未接收通知；队列关闭后先排空，结束后的宿主弱引用投递器返回 CLOSED。事件操作不支持同步胶水重入。",
       "preconditions": [],
       "panic": false
     },
@@ -4218,98 +4391,68 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/event.mgl",
-    "line": 101,
-    "page": "std-event.md",
-    "anchor": "api-6"
-  },
-  {
-    "module": "std::event",
-    "name": "Timer::onInterrupt",
-    "owner": "Timer",
-    "signature": "void onInterrupt(void fn(int64) callback)",
-    "documentation": "生成或绑定中断回调，见具体重载。\n\n**返回值**：void。",
-    "comment": "/* 绑定中断事件函数；再绑一次就换掉上一个。 */",
-    "parameters": [
-      {
-        "name": "callback",
-        "label": "void fn(int64) callback",
-        "documentation": "事件或任务回调",
-        "default": ""
-      }
-    ],
-    "returns": {
-      "type": "void",
-      "documentation": "无返回值。"
-    },
-    "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
-      "preconditions": [],
-      "panic": false
-    },
-    "usage": "obj.onInterrupt(callback);",
-    "examples": [
-      "example/samples/interrupt_arguments.mgl"
-    ],
-    "sourceLanguage": "zh",
-    "source": "source/std/event.mgl",
-    "line": 108,
+    "line": 39,
     "page": "std-event.md",
     "anchor": "api-7"
   },
   {
     "module": "std::event",
-    "name": "Timer::onTick",
+    "name": "Timer::afterMillis",
     "owner": "Timer",
-    "signature": "void onTick(void fn(int64) callback)",
-    "documentation": "为定时器绑定接收 source 的回调。\n\n**返回值**：void。",
+    "signature": "static Timer afterMillis(int64 millis)",
+    "documentation": "创建立即开始计时的一次性毫秒定时源；无效间隔返回无效定时源。\n\n**返回值**：Timer。",
     "comment": "",
     "parameters": [
       {
-        "name": "callback",
-        "label": "void fn(int64) callback",
-        "documentation": "事件或任务回调",
+        "name": "millis",
+        "label": "int64 millis",
+        "documentation": "等待毫秒数；-1 无限、0 非阻塞，waitFor 和 sleepFor 不接受负数",
         "default": ""
       }
     ],
     "returns": {
-      "type": "void",
-      "documentation": "无返回值。"
+      "type": "Timer",
+      "documentation": "创建立即开始计时的一次性毫秒定时源；无效间隔返回无效定时源。"
     },
     "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
+      "documentation": "事件只在 receive/receiveFor/tryReceive 显式接收时交付值，绝不自动执行用户函数。队列容量 256，post 在队列满时返回 FULL。定时源使用宿主单调纳秒时钟、创建后立即计时，最多 1024 个活动定时源；服务计算截止时间，不按定时源创建线程。周期通知合并，missed 表示错过的周期数。Timer.stop/drop 删除未接收通知；队列关闭后先排空，结束后的宿主弱引用投递器返回 CLOSED。事件操作不支持同步胶水重入。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "obj.onTick(callback);",
-    "examples": [],
+    "usage": "std::event::Timer::afterMillis(millis);",
+    "examples": [
+      "example/samples/event_timer.mgl"
+    ],
     "sourceLanguage": "zh",
     "source": "source/std/event.mgl",
-    "line": 109,
+    "line": 44,
     "page": "std-event.md",
     "anchor": "api-8"
   },
   {
     "module": "std::event",
-    "name": "Timer::start",
+    "name": "Timer::isValid",
     "owner": "Timer",
-    "signature": "void start()",
-    "documentation": "启动定时器。\n\n**返回值**：void。",
+    "signature": "bool isValid()",
+    "documentation": "定时源句柄非零时返回 true。\n\n**返回值**：bool。",
     "comment": "",
     "parameters": [],
     "returns": {
-      "type": "void",
-      "documentation": "无返回值。"
+      "type": "bool",
+      "documentation": "定时源句柄非零时返回 true。"
     },
     "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
+      "documentation": "事件只在 receive/receiveFor/tryReceive 显式接收时交付值，绝不自动执行用户函数。队列容量 256，post 在队列满时返回 FULL。定时源使用宿主单调纳秒时钟、创建后立即计时，最多 1024 个活动定时源；服务计算截止时间，不按定时源创建线程。周期通知合并，missed 表示错过的周期数。Timer.stop/drop 删除未接收通知；队列关闭后先排空，结束后的宿主弱引用投递器返回 CLOSED。事件操作不支持同步胶水重入。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "obj.start();",
-    "examples": [],
+    "usage": "obj.isValid();",
+    "examples": [
+      "example/samples/event_timer.mgl"
+    ],
     "sourceLanguage": "zh",
     "source": "source/std/event.mgl",
-    "line": 111,
+    "line": 49,
     "page": "std-event.md",
     "anchor": "api-9"
   },
@@ -4318,7 +4461,7 @@
     "name": "Timer::stop",
     "owner": "Timer",
     "signature": "void stop()",
-    "documentation": "停止定时器，保留句柄。\n\n**返回值**：void。",
+    "documentation": "删除定时源及其未接收通知，重复停止安全。\n\n**返回值**：void。",
     "comment": "",
     "parameters": [],
     "returns": {
@@ -4326,153 +4469,19 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
+      "documentation": "事件只在 receive/receiveFor/tryReceive 显式接收时交付值，绝不自动执行用户函数。队列容量 256，post 在队列满时返回 FULL。定时源使用宿主单调纳秒时钟、创建后立即计时，最多 1024 个活动定时源；服务计算截止时间，不按定时源创建线程。周期通知合并，missed 表示错过的周期数。Timer.stop/drop 删除未接收通知；队列关闭后先排空，结束后的宿主弱引用投递器返回 CLOSED。事件操作不支持同步胶水重入。",
       "preconditions": [],
       "panic": false
     },
     "usage": "obj.stop();",
-    "examples": [],
+    "examples": [
+      "example/samples/event_timer.mgl"
+    ],
     "sourceLanguage": "zh",
     "source": "source/std/event.mgl",
-    "line": 112,
+    "line": 50,
     "page": "std-event.md",
     "anchor": "api-10"
-  },
-  {
-    "module": "std::event",
-    "name": "Timer::ticks",
-    "owner": "Timer",
-    "signature": "int64 ticks()",
-    "documentation": "返回累计触发计数。\n\n**返回值**：int64。",
-    "comment": "",
-    "parameters": [],
-    "returns": {
-      "type": "int64",
-      "documentation": "返回累计触发计数。"
-    },
-    "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
-      "preconditions": [],
-      "panic": false
-    },
-    "usage": "obj.ticks();",
-    "examples": [],
-    "sourceLanguage": "zh",
-    "source": "source/std/event.mgl",
-    "line": 113,
-    "page": "std-event.md",
-    "anchor": "api-11"
-  },
-  {
-    "module": "std::event",
-    "name": "Timer::running",
-    "owner": "Timer",
-    "signature": "bool running()",
-    "documentation": "判断定时器是否在运行。\n\n**返回值**：bool。",
-    "comment": "",
-    "parameters": [],
-    "returns": {
-      "type": "bool",
-      "documentation": "判断定时器是否在运行。"
-    },
-    "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
-      "preconditions": [],
-      "panic": false
-    },
-    "usage": "obj.running();",
-    "examples": [],
-    "sourceLanguage": "zh",
-    "source": "source/std/event.mgl",
-    "line": 114,
-    "page": "std-event.md",
-    "anchor": "api-12"
-  },
-  {
-    "module": "std::event",
-    "name": "Timer::thread",
-    "owner": "Timer",
-    "signature": "int64 thread()",
-    "documentation": "返回事件归属线程。\n\n**返回值**：int64。",
-    "comment": "/* 这个中断归属的线程 id（创建它的线程）；中断只在该线程的 VM 里交付。 */",
-    "parameters": [],
-    "returns": {
-      "type": "int64",
-      "documentation": "返回事件归属线程。"
-    },
-    "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
-      "preconditions": [],
-      "panic": false
-    },
-    "usage": "obj.thread();",
-    "examples": [],
-    "sourceLanguage": "zh",
-    "source": "source/std/event.mgl",
-    "line": 117,
-    "page": "std-event.md",
-    "anchor": "api-13"
-  },
-  {
-    "module": "std::event",
-    "name": "Timer::raise",
-    "owner": "Timer",
-    "signature": "void raise(int64 source)",
-    "documentation": "排入一次中断事件，等待安全点交付。\n\n**返回值**：void。",
-    "comment": "/* 主动触发一次（程序里也能用；外部胶水走 Machine::raiseInterrupt）。 */",
-    "parameters": [
-      {
-        "name": "source",
-        "label": "int64 source",
-        "documentation": "输入游标、存储或事件来源值",
-        "default": ""
-      }
-    ],
-    "returns": {
-      "type": "void",
-      "documentation": "无返回值。"
-    },
-    "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
-      "preconditions": [],
-      "panic": false
-    },
-    "usage": "obj.raise(source);",
-    "examples": [
-      "example/samples/interrupt_arguments.mgl"
-    ],
-    "sourceLanguage": "zh",
-    "source": "source/std/event.mgl",
-    "line": 120,
-    "page": "std-event.md",
-    "anchor": "api-14"
-  },
-  {
-    "module": "std::event",
-    "name": "Timer::raise",
-    "owner": "Timer",
-    "signature": "void raise()",
-    "documentation": "排入一次中断事件，等待安全点交付。\n\n**返回值**：void。",
-    "comment": "",
-    "parameters": [],
-    "returns": {
-      "type": "void",
-      "documentation": "无返回值。"
-    },
-    "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
-      "preconditions": [],
-      "panic": false
-    },
-    "usage": "obj.raise();",
-    "examples": [
-      "example/samples/interrupt_arguments.mgl"
-    ],
-    "sourceLanguage": "zh",
-    "source": "source/std/event.mgl",
-    "line": 121,
-    "page": "std-event.md",
-    "anchor": "api-15"
   },
   {
     "module": "std::event",
@@ -4487,138 +4496,17 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
+      "documentation": "事件只在 receive/receiveFor/tryReceive 显式接收时交付值，绝不自动执行用户函数。队列容量 256，post 在队列满时返回 FULL。定时源使用宿主单调纳秒时钟、创建后立即计时，最多 1024 个活动定时源；服务计算截止时间，不按定时源创建线程。周期通知合并，missed 表示错过的周期数。Timer.stop/drop 删除未接收通知；队列关闭后先排空，结束后的宿主弱引用投递器返回 CLOSED。事件操作不支持同步胶水重入。",
       "preconditions": [],
       "panic": false
     },
     "usage": "obj.drop();",
-    "examples": [
-      "example/samples/interrupt_arguments.mgl"
-    ],
+    "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/event.mgl",
-    "line": 123,
+    "line": 51,
     "page": "std-event.md",
-    "anchor": "api-16"
-  },
-  {
-    "module": "std::event",
-    "name": "bindEventArguments",
-    "owner": "",
-    "signature": "int32 bindEventArguments(EventHandle handle, void fn(int64, std::lang::List<std::lang::Any>) callback, std::lang::List<std::lang::Any> arguments)",
-    "documentation": "将自定义参数绑定到事件回调。\n\n**返回值**：int32。",
-    "comment": "/* 现成列表形式：`bindEventArguments(handle, callback, args)`。 */",
-    "parameters": [
-      {
-        "name": "handle",
-        "label": "EventHandle handle",
-        "documentation": "本模块创建且仍有效的宿主句柄",
-        "default": ""
-      },
-      {
-        "name": "callback",
-        "label": "void fn(int64, std::lang::List<std::lang::Any>) callback",
-        "documentation": "事件或任务回调",
-        "default": ""
-      },
-      {
-        "name": "arguments",
-        "label": "std::lang::List<std::lang::Any> arguments",
-        "documentation": "回调参数值",
-        "default": ""
-      }
-    ],
-    "returns": {
-      "type": "int32",
-      "documentation": "将自定义参数绑定到事件回调。"
-    },
-    "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
-      "preconditions": [],
-      "panic": false
-    },
-    "usage": "std::event::bindEventArguments(handle, callback, arguments);",
-    "examples": [
-      "example/samples/interrupt_arguments.mgl"
-    ],
-    "sourceLanguage": "zh",
-    "source": "source/std/event.mgl",
-    "line": 180,
-    "page": "std-event.md",
-    "anchor": "api-17"
-  },
-  {
-    "module": "std::event",
-    "name": "bindEventArguments",
-    "owner": "",
-    "signature": "int32 bindEventArguments(EventHandle handle, void fn(int64, std::lang::List<std::lang::Any>) callback, std::lang::Any... arguments)",
-    "documentation": "将自定义参数绑定到事件回调。\n\n**返回值**：int32。",
-    "comment": "/*\n * 变长形式：`bindEventArguments(handle, callback, a, b, c)` 或者不带参数。\n * 每个实参**必须**是 `std::lang::Any`（编译期逐项校验），空变长实参表示「没有自定义参数」。\n * 元素个数 / 类型由调用点写死，与回调里的取值一一对应。\n */",
-    "parameters": [
-      {
-        "name": "handle",
-        "label": "EventHandle handle",
-        "documentation": "本模块创建且仍有效的宿主句柄",
-        "default": ""
-      },
-      {
-        "name": "callback",
-        "label": "void fn(int64, std::lang::List<std::lang::Any>) callback",
-        "documentation": "事件或任务回调",
-        "default": ""
-      },
-      {
-        "name": "arguments",
-        "label": "std::lang::Any... arguments",
-        "documentation": "回调参数值",
-        "default": ""
-      }
-    ],
-    "returns": {
-      "type": "int32",
-      "documentation": "将自定义参数绑定到事件回调。"
-    },
-    "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
-      "preconditions": [],
-      "panic": false
-    },
-    "usage": "std::event::bindEventArguments(handle, callback, arguments);",
-    "examples": [
-      "example/samples/interrupt_arguments.mgl"
-    ],
-    "sourceLanguage": "zh",
-    "source": "source/std/event.mgl",
-    "line": 190,
-    "page": "std-event.md",
-    "anchor": "api-18"
-  },
-  {
-    "module": "std::event",
-    "name": "unbindEventArguments",
-    "owner": "",
-    "signature": "void unbindEventArguments()",
-    "documentation": "解除事件的自定义参数绑定。\n\n**返回值**：void。",
-    "comment": "/* 取消登记；之后事件不再交付带参数回调。 */",
-    "parameters": [],
-    "returns": {
-      "type": "void",
-      "documentation": "无返回值。"
-    },
-    "errors": {
-      "documentation": "事件在所属线程的 VM 指令安全点交付，不重入正在运行的宿主回调。定时器需 start 后运行；过期周期跳过，不累计补发。宿主无时钟注入时采用指令虚拟时钟。销毁后的触发为空操作。Timer 实现 Drop；Interrupt.of 接收句柄而非按值复制 Timer。",
-      "preconditions": [],
-      "panic": false
-    },
-    "usage": "std::event::unbindEventArguments();",
-    "examples": [
-      "example/samples/interrupt_arguments.mgl"
-    ],
-    "sourceLanguage": "zh",
-    "source": "source/std/event.mgl",
-    "line": 197,
-    "page": "std-event.md",
-    "anchor": "api-19"
+    "anchor": "api-11"
   },
   {
     "module": "std::graph",
@@ -17128,7 +17016,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/semantics/boxing.cpp",
-    "line": 1722,
+    "line": 1732,
     "page": "std-lang.md",
     "anchor": "api-174"
   },
@@ -22035,78 +21923,15 @@
   },
   {
     "module": "std::message",
-    "name": "sendCoroutine",
-    "owner": "",
-    "signature": "void sendCoroutine<T>(SharedCoroutineHandle coroutine, T value)",
-    "documentation": "向指定协程投递 T 类型的值副本。\n\n**返回值**：void。",
-    "comment": "/* 跨协程 / 跨线程的消息：`import std::message;`。 */",
-    "parameters": [
-      {
-        "name": "coroutine",
-        "label": "SharedCoroutineHandle coroutine",
-        "documentation": "协程句柄",
-        "default": ""
-      },
-      {
-        "name": "value",
-        "label": "T value",
-        "documentation": "输入值或写入的新值",
-        "default": ""
-      }
-    ],
-    "returns": {
-      "type": "void",
-      "documentation": "无返回值。"
-    },
-    "errors": {
-      "documentation": "泛型 send/receive 按 T 在协程或线程间传递值副本；接收类型必须与发送的类型匹配。协程与线程句柄不可混用。线程功能需 --threads；带类型消息语法及宿主交互见语言参考与正式样例。",
-      "preconditions": [],
-      "panic": false
-    },
-    "usage": "std::message::sendCoroutine<T>(coroutine, value);",
-    "examples": [],
-    "sourceLanguage": "zh",
-    "source": "source/std/message.mgl",
-    "line": 9,
-    "page": "std-message.md",
-    "anchor": "api-0"
-  },
-  {
-    "module": "std::message",
-    "name": "receiveCoroutine",
-    "owner": "",
-    "signature": "T receiveCoroutine<T>()",
-    "documentation": "等待当前协程的一条 T 类型消息。\n\n**返回值**：T。",
-    "comment": "",
-    "parameters": [],
-    "returns": {
-      "type": "T",
-      "documentation": "等待当前协程的一条 T 类型消息。"
-    },
-    "errors": {
-      "documentation": "泛型 send/receive 按 T 在协程或线程间传递值副本；接收类型必须与发送的类型匹配。协程与线程句柄不可混用。线程功能需 --threads；带类型消息语法及宿主交互见语言参考与正式样例。",
-      "preconditions": [],
-      "panic": false
-    },
-    "usage": "std::message::receiveCoroutine<T>();",
-    "examples": [],
-    "sourceLanguage": "zh",
-    "source": "source/std/message.mgl",
-    "line": 10,
-    "page": "std-message.md",
-    "anchor": "api-1"
-  },
-  {
-    "module": "std::message",
     "name": "sendThread",
     "owner": "",
-    "signature": "void sendThread<T>(IsolatedThreadHandle thread, T value)",
+    "signature": "void sendThread<T>(Thread thread, T value)",
     "documentation": "向指定线程投递 T 类型的值副本。\n\n**返回值**：void。",
-    "comment": "",
+    "comment": "/* 邮箱传值复制，静态函数可传递，借用闭包和宿主独占资源不可传递。 */",
     "parameters": [
       {
         "name": "thread",
-        "label": "IsolatedThreadHandle thread",
+        "label": "Thread thread",
         "documentation": "线程句柄或归属线程",
         "default": ""
       },
@@ -22122,17 +21947,19 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "泛型 send/receive 按 T 在协程或线程间传递值副本；接收类型必须与发送的类型匹配。协程与线程句柄不可混用。线程功能需 --threads；带类型消息语法及宿主交互见语言参考与正式样例。",
+      "documentation": "泛型线程消息按值复制，接收类型必须匹配；静态函数可传递，引用、独占资源、嵌套函数值和带捕获闭包不可传递。邮箱容量 256，sendThread 在满时等待；sendFor/trySend 和 receiveFor/tryReceive 返回统一操作状态。receiveThread 沿用阻塞和原始诊断；Receive<T> 仅在 READY 时读取 value。需 --threads。",
       "preconditions": [],
       "panic": false
     },
     "usage": "std::message::sendThread<T>(thread, value);",
-    "examples": [],
+    "examples": [
+      "example/samples/typed_messages_shared.mgl"
+    ],
     "sourceLanguage": "zh",
     "source": "source/std/message.mgl",
-    "line": 11,
+    "line": 6,
     "page": "std-message.md",
-    "anchor": "api-2"
+    "anchor": "api-0"
   },
   {
     "module": "std::message",
@@ -22147,17 +21974,158 @@
       "documentation": "等待当前线程的一条 T 类型消息。"
     },
     "errors": {
-      "documentation": "泛型 send/receive 按 T 在协程或线程间传递值副本；接收类型必须与发送的类型匹配。协程与线程句柄不可混用。线程功能需 --threads；带类型消息语法及宿主交互见语言参考与正式样例。",
+      "documentation": "泛型线程消息按值复制，接收类型必须匹配；静态函数可传递，引用、独占资源、嵌套函数值和带捕获闭包不可传递。邮箱容量 256，sendThread 在满时等待；sendFor/trySend 和 receiveFor/tryReceive 返回统一操作状态。receiveThread 沿用阻塞和原始诊断；Receive<T> 仅在 READY 时读取 value。需 --threads。",
       "preconditions": [],
       "panic": false
     },
     "usage": "std::message::receiveThread<T>();",
+    "examples": [
+      "example/samples/typed_messages_shared.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/message.mgl",
+    "line": 7,
+    "page": "std-message.md",
+    "anchor": "api-1"
+  },
+  {
+    "module": "std::message",
+    "name": "sendFor",
+    "owner": "",
+    "signature": "int64 sendFor<T>(Thread thread, T value, int64 millis)",
+    "documentation": "在截止时间内复制发送载荷，返回统一操作状态。\n\n**返回值**：int64。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "thread",
+        "label": "Thread thread",
+        "documentation": "线程句柄或归属线程",
+        "default": ""
+      },
+      {
+        "name": "value",
+        "label": "T value",
+        "documentation": "输入值或写入的新值",
+        "default": ""
+      },
+      {
+        "name": "millis",
+        "label": "int64 millis",
+        "documentation": "等待毫秒数；-1 无限、0 非阻塞，waitFor 和 sleepFor 不接受负数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "int64",
+      "documentation": "在截止时间内复制发送载荷，返回统一操作状态。"
+    },
+    "errors": {
+      "documentation": "泛型线程消息按值复制，接收类型必须匹配；静态函数可传递，引用、独占资源、嵌套函数值和带捕获闭包不可传递。邮箱容量 256，sendThread 在满时等待；sendFor/trySend 和 receiveFor/tryReceive 返回统一操作状态。receiveThread 沿用阻塞和原始诊断；Receive<T> 仅在 READY 时读取 value。需 --threads。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::message::sendFor<T>(thread, value, millis);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/message.mgl",
+    "line": 9,
+    "page": "std-message.md",
+    "anchor": "api-2"
+  },
+  {
+    "module": "std::message",
+    "name": "trySend",
+    "owner": "",
+    "signature": "int64 trySend<T>(Thread thread, T value)",
+    "documentation": "立即尝试复制发送，队列满返回 FULL。\n\n**返回值**：int64。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "thread",
+        "label": "Thread thread",
+        "documentation": "线程句柄或归属线程",
+        "default": ""
+      },
+      {
+        "name": "value",
+        "label": "T value",
+        "documentation": "输入值或写入的新值",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "int64",
+      "documentation": "立即尝试复制发送，队列满返回 FULL。"
+    },
+    "errors": {
+      "documentation": "泛型线程消息按值复制，接收类型必须匹配；静态函数可传递，引用、独占资源、嵌套函数值和带捕获闭包不可传递。邮箱容量 256，sendThread 在满时等待；sendFor/trySend 和 receiveFor/tryReceive 返回统一操作状态。receiveThread 沿用阻塞和原始诊断；Receive<T> 仅在 READY 时读取 value。需 --threads。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::message::trySend<T>(thread, value);",
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/message.mgl",
     "line": 12,
     "page": "std-message.md",
     "anchor": "api-3"
+  },
+  {
+    "module": "std::message",
+    "name": "receiveFor",
+    "owner": "",
+    "signature": "std::concurrency::Receive<T> receiveFor<T>(int64 millis)",
+    "documentation": "显式限时接收，只有 READY 时 value 有效；-1 无限、0 非阻塞。\n\n**返回值**：std::concurrency::Receive<T>。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "millis",
+        "label": "int64 millis",
+        "documentation": "等待毫秒数；-1 无限、0 非阻塞，waitFor 和 sleepFor 不接受负数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "std::concurrency::Receive<T>",
+      "documentation": "显式限时接收，只有 READY 时 value 有效；-1 无限、0 非阻塞。"
+    },
+    "errors": {
+      "documentation": "泛型线程消息按值复制，接收类型必须匹配；静态函数可传递，引用、独占资源、嵌套函数值和带捕获闭包不可传递。邮箱容量 256，sendThread 在满时等待；sendFor/trySend 和 receiveFor/tryReceive 返回统一操作状态。receiveThread 沿用阻塞和原始诊断；Receive<T> 仅在 READY 时读取 value。需 --threads。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::message::receiveFor<T>(millis);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/message.mgl",
+    "line": 13,
+    "page": "std-message.md",
+    "anchor": "api-4"
+  },
+  {
+    "module": "std::message",
+    "name": "tryReceive",
+    "owner": "",
+    "signature": "std::concurrency::Receive<T> tryReceive<T>()",
+    "documentation": "立即尝试接收，未就绪返回 TIMEOUT，只有 READY 时读取 value。\n\n**返回值**：std::concurrency::Receive<T>。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "std::concurrency::Receive<T>",
+      "documentation": "立即尝试接收，未就绪返回 TIMEOUT，只有 READY 时读取 value。"
+    },
+    "errors": {
+      "documentation": "泛型线程消息按值复制，接收类型必须匹配；静态函数可传递，引用、独占资源、嵌套函数值和带捕获闭包不可传递。邮箱容量 256，sendThread 在满时等待；sendFor/trySend 和 receiveFor/tryReceive 返回统一操作状态。receiveThread 沿用阻塞和原始诊断；Receive<T> 仅在 READY 时读取 value。需 --threads。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::message::tryReceive<T>();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/message.mgl",
+    "line": 19,
+    "page": "std-message.md",
+    "anchor": "api-5"
   },
   {
     "module": "std::net",
@@ -22191,7 +22159,7 @@
       "documentation": "连接远端 TCP/HTTP 服务。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22231,7 +22199,7 @@
       "documentation": "连接远端 TCP/HTTP 服务。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22277,7 +22245,7 @@
       "documentation": "发起数值 IPv4 的非阻塞连接；通过 pollConnect 推进，NET_PENDING 表示进行中。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22315,7 +22283,7 @@
       "documentation": "发起默认五秒超时的非阻塞数值 IPv4 连接。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22340,7 +22308,7 @@
       "documentation": "立即检查连接结果，返回 NET_PENDING、NET_OK、NET_TIMEOUT 或 NET_ERROR。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22378,7 +22346,7 @@
       "documentation": "非阻塞发送，从 offset 开始；返回本次发送字节数，未就绪返回零并设置 NET_PENDING。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22410,7 +22378,7 @@
       "documentation": "从零偏移开始执行一次非阻塞发送；长消息可能只发送一部分。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22442,7 +22410,7 @@
       "documentation": "非阻塞读取至多 maxBytes 字节；空串结合 status 区分未就绪、关闭及错误。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22467,7 +22435,7 @@
       "documentation": "非阻塞读取一行；未完成的内容保留，NET_PENDING 不丢失行缓冲。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22492,7 +22460,7 @@
       "documentation": "判断连接或监听器是否已打开。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22519,7 +22487,7 @@
       "documentation": "返回连接/网络操作最近的错误文本。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22544,7 +22512,7 @@
       "documentation": "返回最近一次网络读取状态码。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22571,7 +22539,7 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22605,7 +22573,7 @@
       "documentation": "发送 TCP 文本并返回发送结果。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22639,7 +22607,7 @@
       "documentation": "读取至多 maxBytes 字节；空串结合 status 判断原因。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22671,7 +22639,7 @@
       "documentation": "读取一行网络文本；空串时检查 status。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22717,7 +22685,7 @@
       "documentation": "绑定本机地址并开始监听，返回监听器。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22757,7 +22725,7 @@
       "documentation": "绑定本机地址并开始监听，返回监听器。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22784,7 +22752,7 @@
       "documentation": "判断连接或监听器是否已打开。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22811,7 +22779,7 @@
       "documentation": "返回连接/网络操作最近的错误文本。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22836,7 +22804,7 @@
       "documentation": "返回实际绑定的本地端口。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22870,7 +22838,7 @@
       "documentation": "接受一条 TCP 连接，可指定等待超时。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22897,7 +22865,7 @@
       "documentation": "接受一条 TCP 连接，可指定等待超时。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22924,7 +22892,7 @@
       "documentation": "非阻塞接受连接；返回未打开且状态为 NET_PENDING 的值表示暂无连接。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22949,7 +22917,7 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -22976,7 +22944,7 @@
       "documentation": "判断 HTTP 状态码是否位于 200..299。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -23008,7 +22976,7 @@
       "documentation": "按名称查找响应头。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -23035,7 +23003,7 @@
       "documentation": "返回 URL 的协议部分。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -23067,7 +23035,7 @@
       "documentation": "拆分 HTTP URL 的主机、端口和请求路径。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -23119,7 +23087,7 @@
       "documentation": "构造 HTTP 请求报文。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -23153,7 +23121,7 @@
       "documentation": "解析原始 HTTP 响应报文。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -23199,7 +23167,7 @@
       "documentation": "连接远端 TCP/HTTP 服务。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -23226,7 +23194,7 @@
       "documentation": "持续读取 HTTP 响应原始文本。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -23276,7 +23244,7 @@
       "documentation": "发送构造后的 HTTP 请求并解析响应。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -23301,7 +23269,7 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -23335,7 +23303,7 @@
       "documentation": "发出 HTTP GET 并返回响应。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -23379,7 +23347,7 @@
       "documentation": "提交 HTTP 请求体并返回响应。"
     },
     "errors": {
-      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
+      "documentation": "TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。",
       "preconditions": [],
       "panic": false
     },
@@ -29194,47 +29162,86 @@
     "module": "std::thread",
     "name": "create",
     "owner": "",
-    "signature": "IsolatedThreadHandle create(void fn() task)",
-    "documentation": "创建隔离线程，返回可供后续操作的值。\n\n**返回值**：IsolatedThreadHandle。",
+    "signature": "Thread create(void fn() task)",
+    "documentation": "创建隔离线程，返回可供后续操作的值。\n\n**返回值**：Thread。",
     "comment": "",
     "parameters": [
       {
         "name": "task",
         "label": "void fn() task",
-        "documentation": "无参数任务函数",
+        "documentation": "静态任务函数，参数由签名决定",
         "default": ""
       }
     ],
     "returns": {
-      "type": "IsolatedThreadHandle",
+      "type": "Thread",
       "documentation": "创建隔离线程，返回可供后续操作的值。"
     },
     "errors": {
-      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待并回收目标；waitFor 最多等待非负毫秒数，完成回收返回 true，超时返回 false 且不取消目标；tryWait 等价于零超时等待。目标失败仍传播原始诊断；无效、自身或已回收句柄报错。receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
       "preconditions": [],
       "panic": false
     },
     "usage": "std::thread::create(task);",
     "examples": [
-      "example/samples/thread_messages.mgl"
+      "example/samples/thread_messages.mgl",
+      "example/samples/thread_pool.mgl"
     ],
     "sourceLanguage": "zh",
     "source": "source/std/thread.mgl",
-    "line": 14,
+    "line": 11,
     "page": "std-thread.md",
     "anchor": "api-0"
   },
   {
     "module": "std::thread",
+    "name": "createWith",
+    "owner": "",
+    "signature": "Thread createWith<T>(void fn(T) task, T value)",
+    "documentation": "创建隔离线程并在创建时复制初始参数，拒绝借用闭包和不可传递载荷。\n\n**返回值**：Thread。",
+    "comment": "/* 静态入口和初始参数在创建时复制；引用、资源和借用闭包不可传递。 */",
+    "parameters": [
+      {
+        "name": "task",
+        "label": "void fn(T) task",
+        "documentation": "静态任务函数，参数由签名决定",
+        "default": ""
+      },
+      {
+        "name": "value",
+        "label": "T value",
+        "documentation": "输入值或写入的新值",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Thread",
+      "documentation": "创建隔离线程并在创建时复制初始参数，拒绝借用闭包和不可传递载荷。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::thread::createWith<T>(task, value);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 13,
+    "page": "std-thread.md",
+    "anchor": "api-1"
+  },
+  {
+    "module": "std::thread",
     "name": "wait",
     "owner": "",
-    "signature": "void wait(IsolatedThreadHandle thread)",
-    "documentation": "调度或等待目标协程/线程结束。\n\n**返回值**：void。",
+    "signature": "void wait(Thread thread)",
+    "documentation": "等待并回收目标线程，失败时保留原始诊断。\n\n**返回值**：void。",
     "comment": "",
     "parameters": [
       {
         "name": "thread",
-        "label": "IsolatedThreadHandle thread",
+        "label": "Thread thread",
         "documentation": "线程句柄或归属线程",
         "default": ""
       }
@@ -29244,7 +29251,7 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待并回收目标；waitFor 最多等待非负毫秒数，完成回收返回 true，超时返回 false 且不取消目标；tryWait 等价于零超时等待。目标失败仍传播原始诊断；无效、自身或已回收句柄报错。receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
       "preconditions": [],
       "panic": false
     },
@@ -29254,28 +29261,28 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/thread.mgl",
-    "line": 15,
+    "line": 14,
     "page": "std-thread.md",
-    "anchor": "api-1"
+    "anchor": "api-2"
   },
   {
     "module": "std::thread",
     "name": "waitFor",
     "owner": "",
-    "signature": "bool waitFor(IsolatedThreadHandle thread, int64 millis)",
+    "signature": "bool waitFor(Thread thread, int64 millis)",
     "documentation": "最多等待 millis 毫秒，完成并回收目标返回 true，超时返回 false；超时不取消目标，目标失败传播原始诊断。\n\n**返回值**：bool。",
-    "comment": "/* 最多等待 millis 毫秒；成功完成并回收返回 true，超时返回 false，不取消目标。\n * millis 必须非负；目标失败时保留 wait 的原始诊断传播规则。 */",
+    "comment": "/* 非负毫秒；超时不会取消线程或消费句柄。 */",
     "parameters": [
       {
         "name": "thread",
-        "label": "IsolatedThreadHandle thread",
+        "label": "Thread thread",
         "documentation": "线程句柄或归属线程",
         "default": ""
       },
       {
         "name": "millis",
         "label": "int64 millis",
-        "documentation": "毫秒数",
+        "documentation": "等待毫秒数；-1 无限、0 非阻塞，waitFor 和 sleepFor 不接受负数",
         "default": ""
       }
     ],
@@ -29284,7 +29291,7 @@
       "documentation": "最多等待 millis 毫秒，完成并回收目标返回 true，超时返回 false；超时不取消目标，目标失败传播原始诊断。"
     },
     "errors": {
-      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待并回收目标；waitFor 最多等待非负毫秒数，完成回收返回 true，超时返回 false 且不取消目标；tryWait 等价于零超时等待。目标失败仍传播原始诊断；无效、自身或已回收句柄报错。receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
       "preconditions": [],
       "panic": false
     },
@@ -29292,21 +29299,21 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/thread.mgl",
-    "line": 18,
+    "line": 16,
     "page": "std-thread.md",
-    "anchor": "api-2"
+    "anchor": "api-3"
   },
   {
     "module": "std::thread",
     "name": "tryWait",
     "owner": "",
-    "signature": "bool tryWait(IsolatedThreadHandle thread)",
+    "signature": "bool tryWait(Thread thread)",
     "documentation": "不阻塞地尝试等待并回收目标，尚未完成返回 false；目标失败传播原始诊断。\n\n**返回值**：bool。",
-    "comment": "/* 不阻塞地尝试等待并回收目标；目标尚未完成时返回 false。 */",
+    "comment": "",
     "parameters": [
       {
         "name": "thread",
-        "label": "IsolatedThreadHandle thread",
+        "label": "Thread thread",
         "documentation": "线程句柄或归属线程",
         "default": ""
       }
@@ -29316,7 +29323,7 @@
       "documentation": "不阻塞地尝试等待并回收目标，尚未完成返回 false；目标失败传播原始诊断。"
     },
     "errors": {
-      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待并回收目标；waitFor 最多等待非负毫秒数，完成回收返回 true，超时返回 false 且不取消目标；tryWait 等价于零超时等待。目标失败仍传播原始诊断；无效、自身或已回收句柄报错。receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
       "preconditions": [],
       "panic": false
     },
@@ -29324,27 +29331,243 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/thread.mgl",
+    "line": 17,
+    "page": "std-thread.md",
+    "anchor": "api-4"
+  },
+  {
+    "module": "std::thread",
+    "name": "requestStop",
+    "owner": "",
+    "signature": "void requestStop(Thread thread)",
+    "documentation": "请求指定任务在 VM 执行或等待安全点停止，不抢占阻塞宿主函数。\n\n**返回值**：void。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "thread",
+        "label": "Thread thread",
+        "documentation": "线程句柄或归属线程",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "void",
+      "documentation": "无返回值。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::thread::requestStop(thread);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 18,
+    "page": "std-thread.md",
+    "anchor": "api-5"
+  },
+  {
+    "module": "std::thread",
+    "name": "stopRequested",
+    "owner": "",
+    "signature": "bool stopRequested()",
+    "documentation": "查询当前任务是否已收到协作停止请求。\n\n**返回值**：bool。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "bool",
+      "documentation": "查询当前任务是否已收到协作停止请求。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::thread::stopRequested();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 19,
+    "page": "std-thread.md",
+    "anchor": "api-6"
+  },
+  {
+    "module": "std::thread",
+    "name": "state",
+    "owner": "",
+    "signature": "int64 state(Thread thread)",
+    "documentation": "查询任务状态：0 运行、1 成功、2 失败、3 已取消；不消费句柄。\n\n**返回值**：int64。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "thread",
+        "label": "Thread thread",
+        "documentation": "线程句柄或归属线程",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "int64",
+      "documentation": "查询任务状态：0 运行、1 成功、2 失败、3 已取消；不消费句柄。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::thread::state(thread);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
     "line": 20,
     "page": "std-thread.md",
-    "anchor": "api-3"
+    "anchor": "api-7"
+  },
+  {
+    "module": "std::thread",
+    "name": "sleepFor",
+    "owner": "",
+    "signature": "int64 sleepFor(int64 millis)",
+    "documentation": "可取消地睡眠非负毫秒数，成功返回 READY。\n\n**返回值**：int64。",
+    "comment": "/* 可取消睡眠，负毫秒报错，成功返回 READY。 */",
+    "parameters": [
+      {
+        "name": "millis",
+        "label": "int64 millis",
+        "documentation": "等待毫秒数；-1 无限、0 非阻塞，waitFor 和 sleepFor 不接受负数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "int64",
+      "documentation": "可取消地睡眠非负毫秒数，成功返回 READY。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::thread::sleepFor(millis);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 22,
+    "page": "std-thread.md",
+    "anchor": "api-8"
+  },
+  {
+    "module": "std::thread",
+    "name": "ThreadResult::isReady",
+    "owner": "ThreadResult",
+    "signature": "bool isReady()",
+    "documentation": "操作状态为 READY 时返回 true。\n\n**返回值**：bool。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "bool",
+      "documentation": "操作状态为 READY 时返回 true。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.isReady();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 30,
+    "page": "std-thread.md",
+    "anchor": "api-9"
+  },
+  {
+    "module": "std::thread",
+    "name": "waitResultFor",
+    "owner": "",
+    "signature": "ThreadResult waitResultFor(Thread thread, int64 millis)",
+    "documentation": "限时收集完成结果；超时不取消目标或消费句柄，-1 表示无限。\n\n**返回值**：ThreadResult。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "thread",
+        "label": "Thread thread",
+        "documentation": "线程句柄或归属线程",
+        "default": ""
+      },
+      {
+        "name": "millis",
+        "label": "int64 millis",
+        "documentation": "等待毫秒数；-1 无限、0 非阻塞，waitFor 和 sleepFor 不接受负数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "ThreadResult",
+      "documentation": "限时收集完成结果；超时不取消目标或消费句柄，-1 表示无限。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::thread::waitResultFor(thread, millis);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 32,
+    "page": "std-thread.md",
+    "anchor": "api-10"
+  },
+  {
+    "module": "std::thread",
+    "name": "waitResult",
+    "owner": "",
+    "signature": "ThreadResult waitResult(Thread thread)",
+    "documentation": "收集完成结果和原始 error/trace，普通失败返回 FAILED，panic 继续传播。\n\n**返回值**：ThreadResult。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "thread",
+        "label": "Thread thread",
+        "documentation": "线程句柄或归属线程",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "ThreadResult",
+      "documentation": "收集完成结果和原始 error/trace，普通失败返回 FAILED，panic 继续传播。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::thread::waitResult(thread);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 41,
+    "page": "std-thread.md",
+    "anchor": "api-11"
   },
   {
     "module": "std::thread",
     "name": "send",
     "owner": "",
-    "signature": "void send(IsolatedThreadHandle thread, std::lang::String message)",
+    "signature": "void send(Thread thread, String message)",
     "documentation": "向目标任务发送字符串消息。\n\n**返回值**：void。",
     "comment": "",
     "parameters": [
       {
         "name": "thread",
-        "label": "IsolatedThreadHandle thread",
+        "label": "Thread thread",
         "documentation": "线程句柄或归属线程",
         "default": ""
       },
       {
         "name": "message",
-        "label": "std::lang::String message",
+        "label": "String message",
         "documentation": "诊断文本或消息载荷",
         "default": ""
       }
@@ -29354,7 +29577,7 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待并回收目标；waitFor 最多等待非负毫秒数，完成回收返回 true，超时返回 false 且不取消目标；tryWait 等价于零超时等待。目标失败仍传播原始诊断；无效、自身或已回收句柄报错。receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
       "preconditions": [],
       "panic": false
     },
@@ -29364,24 +29587,24 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/thread.mgl",
-    "line": 21,
+    "line": 42,
     "page": "std-thread.md",
-    "anchor": "api-4"
+    "anchor": "api-12"
   },
   {
     "module": "std::thread",
     "name": "receive",
     "owner": "",
-    "signature": "std::lang::String receive()",
-    "documentation": "等待并接收当前任务队列的一条字符串消息。\n\n**返回值**：std::lang::String。",
+    "signature": "String receive()",
+    "documentation": "等待并接收当前任务队列的一条字符串消息。\n\n**返回值**：String。",
     "comment": "",
     "parameters": [],
     "returns": {
-      "type": "std::lang::String",
+      "type": "String",
       "documentation": "等待并接收当前任务队列的一条字符串消息。"
     },
     "errors": {
-      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待并回收目标；waitFor 最多等待非负毫秒数，完成回收返回 true，超时返回 false 且不取消目标；tryWait 等价于零超时等待。目标失败仍传播原始诊断；无效、自身或已回收句柄报错。receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
       "preconditions": [],
       "panic": false
     },
@@ -29391,24 +29614,24 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/thread.mgl",
-    "line": 22,
+    "line": 43,
     "page": "std-thread.md",
-    "anchor": "api-5"
+    "anchor": "api-13"
   },
   {
     "module": "std::thread",
     "name": "current",
     "owner": "",
-    "signature": "IsolatedThreadHandle current()",
-    "documentation": "返回当前协程/线程的句柄。\n\n**返回值**：IsolatedThreadHandle。",
+    "signature": "Thread current()",
+    "documentation": "返回当前线程的 Thread 句柄。\n\n**返回值**：Thread。",
     "comment": "",
     "parameters": [],
     "returns": {
-      "type": "IsolatedThreadHandle",
-      "documentation": "返回当前协程/线程的句柄。"
+      "type": "Thread",
+      "documentation": "返回当前线程的 Thread 句柄。"
     },
     "errors": {
-      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待并回收目标；waitFor 最多等待非负毫秒数，完成回收返回 true，超时返回 false 且不取消目标；tryWait 等价于零超时等待。目标失败仍传播原始诊断；无效、自身或已回收句柄报错。receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
       "preconditions": [],
       "panic": false
     },
@@ -29416,24 +29639,24 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/thread.mgl",
-    "line": 23,
+    "line": 44,
     "page": "std-thread.md",
-    "anchor": "api-6"
+    "anchor": "api-14"
   },
   {
     "module": "std::thread",
     "name": "parent",
     "owner": "",
-    "signature": "IsolatedThreadHandle parent()",
-    "documentation": "返回创建当前任务的父协程/线程句柄。\n\n**返回值**：IsolatedThreadHandle。",
+    "signature": "Thread parent()",
+    "documentation": "返回创建当前任务的父线程 Thread 句柄。\n\n**返回值**：Thread。",
     "comment": "",
     "parameters": [],
     "returns": {
-      "type": "IsolatedThreadHandle",
-      "documentation": "返回创建当前任务的父协程/线程句柄。"
+      "type": "Thread",
+      "documentation": "返回创建当前任务的父线程 Thread 句柄。"
     },
     "errors": {
-      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待并回收目标；waitFor 最多等待非负毫秒数，完成回收返回 true，超时返回 false 且不取消目标；tryWait 等价于零超时等待。目标失败仍传播原始诊断；无效、自身或已回收句柄报错。receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
       "preconditions": [],
       "panic": false
     },
@@ -29443,9 +29666,446 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/thread.mgl",
-    "line": 24,
+    "line": 45,
     "page": "std-thread.md",
-    "anchor": "api-7"
+    "anchor": "api-15"
+  },
+  {
+    "module": "std::thread",
+    "name": "receiveFor",
+    "owner": "",
+    "signature": "std::concurrency::Receive<String> receiveFor(int64 millis)",
+    "documentation": "显式限时接收，只有 READY 时 value 有效；-1 无限、0 非阻塞。\n\n**返回值**：std::concurrency::Receive<String>。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "millis",
+        "label": "int64 millis",
+        "documentation": "等待毫秒数；-1 无限、0 非阻塞，waitFor 和 sleepFor 不接受负数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "std::concurrency::Receive<String>",
+      "documentation": "显式限时接收，只有 READY 时 value 有效；-1 无限、0 非阻塞。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::thread::receiveFor(millis);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 46,
+    "page": "std-thread.md",
+    "anchor": "api-16"
+  },
+  {
+    "module": "std::thread",
+    "name": "tryReceive",
+    "owner": "",
+    "signature": "std::concurrency::Receive<String> tryReceive()",
+    "documentation": "立即尝试接收，未就绪返回 TIMEOUT，只有 READY 时读取 value。\n\n**返回值**：std::concurrency::Receive<String>。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "std::concurrency::Receive<String>",
+      "documentation": "立即尝试接收，未就绪返回 TIMEOUT，只有 READY 时读取 value。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::thread::tryReceive();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 52,
+    "page": "std-thread.md",
+    "anchor": "api-17"
+  },
+  {
+    "module": "std::thread",
+    "name": "closeInbox",
+    "owner": "",
+    "signature": "void closeInbox()",
+    "documentation": "关闭当前任务邮箱并唤醒等待者；已排队消息仍可排空。\n\n**返回值**：void。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "void",
+      "documentation": "无返回值。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::thread::closeInbox();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 53,
+    "page": "std-thread.md",
+    "anchor": "api-18"
+  },
+  {
+    "module": "std::thread",
+    "name": "ThreadGroup::create",
+    "owner": "ThreadGroup",
+    "signature": "static ThreadGroup create()",
+    "documentation": "创建负责回收子任务的线程组。\n\n**返回值**：ThreadGroup。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "ThreadGroup",
+      "documentation": "创建负责回收子任务的线程组。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::thread::ThreadGroup::create();",
+    "examples": [
+      "example/samples/thread_messages.mgl",
+      "example/samples/thread_pool.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 61,
+    "page": "std-thread.md",
+    "anchor": "api-19"
+  },
+  {
+    "module": "std::thread",
+    "name": "ThreadGroup::start",
+    "owner": "ThreadGroup",
+    "signature": "Thread start(void fn() task)",
+    "documentation": "在当前线程组中创建任务并登记统一回收责任。\n\n**返回值**：Thread。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "task",
+        "label": "void fn() task",
+        "documentation": "静态任务函数，参数由签名决定",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "Thread",
+      "documentation": "在当前线程组中创建任务并登记统一回收责任。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": true
+    },
+    "usage": "obj.start(task);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 62,
+    "page": "std-thread.md",
+    "anchor": "api-20"
+  },
+  {
+    "module": "std::thread",
+    "name": "ThreadGroup::add",
+    "owner": "ThreadGroup",
+    "signature": "void add(Thread task)",
+    "documentation": "登记已创建线程的统一等待责任，结束后的线程组拒绝新任务。\n\n**返回值**：void。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "task",
+        "label": "Thread task",
+        "documentation": "静态任务函数，参数由签名决定",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "void",
+      "documentation": "无返回值。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": true
+    },
+    "usage": "obj.add(task);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 68,
+    "page": "std-thread.md",
+    "anchor": "api-21"
+  },
+  {
+    "module": "std::thread",
+    "name": "ThreadGroup::cancelAll",
+    "owner": "ThreadGroup",
+    "signature": "void cancelAll()",
+    "documentation": "请求全部工作任务停止；线程池同时关闭并丢弃未开始的任务。\n\n**返回值**：void。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "void",
+      "documentation": "无返回值。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.cancelAll();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 77,
+    "page": "std-thread.md",
+    "anchor": "api-22"
+  },
+  {
+    "module": "std::thread",
+    "name": "ThreadGroup::waitAll",
+    "owner": "ThreadGroup",
+    "signature": "bool waitAll()",
+    "documentation": "监测全部任务，发现普通失败就取消兄弟任务，全部回收后返回是否均成功。\n\n**返回值**：bool。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "bool",
+      "documentation": "监测全部任务，发现普通失败就取消兄弟任务，全部回收后返回是否均成功。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.waitAll();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 80,
+    "page": "std-thread.md",
+    "anchor": "api-23"
+  },
+  {
+    "module": "std::thread",
+    "name": "ThreadGroup::drop",
+    "owner": "ThreadGroup",
+    "signature": "void drop()",
+    "documentation": "释放对象拥有的资源，调用后遵守本模块失效规则。\n\n**返回值**：void。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "void",
+      "documentation": "无返回值。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.drop();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 102,
+    "page": "std-thread.md",
+    "anchor": "api-24"
+  },
+  {
+    "module": "std::thread",
+    "name": "ThreadPool::create",
+    "owner": "ThreadPool",
+    "signature": "static ThreadPool create(int64 workers, int64 capacity)",
+    "documentation": "创建固定数量工作线程和有界任务队列。\n\n**返回值**：ThreadPool。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "workers",
+        "label": "int64 workers",
+        "documentation": "固定工作线程数量，1..1024",
+        "default": ""
+      },
+      {
+        "name": "capacity",
+        "label": "int64 capacity",
+        "documentation": "容器的最大元素数量",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "ThreadPool",
+      "documentation": "创建固定数量工作线程和有界任务队列。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": true
+    },
+    "usage": "std::thread::ThreadPool::create(workers, capacity);",
+    "examples": [
+      "example/samples/thread_messages.mgl",
+      "example/samples/thread_pool.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 121,
+    "page": "std-thread.md",
+    "anchor": "api-25"
+  },
+  {
+    "module": "std::thread",
+    "name": "ThreadPool::submitFor",
+    "owner": "ThreadPool",
+    "signature": "int64 submitFor(void fn() task, int64 millis)",
+    "documentation": "限时提交静态任务，超时不取消已接收任务；拒绝已关闭或失败的线程池。\n\n**返回值**：int64。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "task",
+        "label": "void fn() task",
+        "documentation": "静态任务函数，参数由签名决定",
+        "default": ""
+      },
+      {
+        "name": "millis",
+        "label": "int64 millis",
+        "documentation": "等待毫秒数；-1 无限、0 非阻塞，waitFor 和 sleepFor 不接受负数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "int64",
+      "documentation": "限时提交静态任务，超时不取消已接收任务；拒绝已关闭或失败的线程池。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": true
+    },
+    "usage": "obj.submitFor(task, millis);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 126,
+    "page": "std-thread.md",
+    "anchor": "api-26"
+  },
+  {
+    "module": "std::thread",
+    "name": "ThreadPool::submit",
+    "owner": "ThreadPool",
+    "signature": "int64 submit(void fn() task)",
+    "documentation": "向线程池提交静态任务；有界队列满时等待并监测工作线程失败。\n\n**返回值**：int64。",
+    "comment": "",
+    "parameters": [
+      {
+        "name": "task",
+        "label": "void fn() task",
+        "documentation": "静态任务函数，参数由签名决定",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "int64",
+      "documentation": "向线程池提交静态任务；有界队列满时等待并监测工作线程失败。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.submit(task);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 143,
+    "page": "std-thread.md",
+    "anchor": "api-27"
+  },
+  {
+    "module": "std::thread",
+    "name": "ThreadPool::closeAndWait",
+    "owner": "ThreadPool",
+    "signature": "bool closeAndWait()",
+    "documentation": "关闭任务队列，排空已提交任务并回收固定工作线程。\n\n**返回值**：bool。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "bool",
+      "documentation": "关闭任务队列，排空已提交任务并回收固定工作线程。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.closeAndWait();",
+    "examples": [
+      "example/samples/thread_pool.mgl"
+    ],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 144,
+    "page": "std-thread.md",
+    "anchor": "api-28"
+  },
+  {
+    "module": "std::thread",
+    "name": "ThreadPool::cancelAll",
+    "owner": "ThreadPool",
+    "signature": "void cancelAll()",
+    "documentation": "请求全部工作任务停止；线程池同时关闭并丢弃未开始的任务。\n\n**返回值**：void。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "void",
+      "documentation": "无返回值。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.cancelAll();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 148,
+    "page": "std-thread.md",
+    "anchor": "api-29"
+  },
+  {
+    "module": "std::thread",
+    "name": "ThreadPool::drop",
+    "owner": "ThreadPool",
+    "signature": "void drop()",
+    "documentation": "释放对象拥有的资源，调用后遵守本模块失效规则。\n\n**返回值**：void。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "void",
+      "documentation": "无返回值。"
+    },
+    "errors": {
+      "documentation": "公开线程类型为 Thread，模块 std::thread；运行时需 --threads。create 使用无参静态入口，createWith 在创建时复制初始参数。wait/waitFor 传播普通失败原始诊断；waitResult/For 收集状态、error 与 trace，普通失败可被调用方处理；panic 始终终止本次 VM 运行及全部隔离线程。成功收集只允许一次，超时不消费句柄。requestStop 在 VM 安全点及可取消等待处终止任务，释放 VM 持有的宿主记录和堆；不在取消途中调用用户 Drop 代码，业务收尾应在请求取消前通过消息完成。阻塞宿主调用须由宿主自行支持超时/取消，VM 无法抢占正在执行的 C++ 函数。主程序结束请求停止并回收全部子任务。ThreadGroup 等待时监测失败并取消兄弟任务，离开作用域取消并回收。ThreadPool 使用固定线程和有界静态任务队列，closeAndWait 排空后回收，cancelAll 取消工作线程并丢弃未开始任务；长期阻塞 I/O 使用专用线程。ThreadGroup、ThreadPool 和 Timer 不克隆底层任务或定时源，使用引用或 move 维持单一收尾责任，避免复制拥有者。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "obj.drop();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 154,
+    "page": "std-thread.md",
+    "anchor": "api-30"
   },
   {
     "module": "std::toml",
@@ -31670,22 +32330,22 @@
     "name": "enable",
     "owner": "",
     "signature": "Result<int64, WatchdogError> enable(int64 watermarkBytes)",
-    "documentation": "启用软重启看门狗并设置水位。\n\n**返回值**：Result<int64, WatchdogError>。`Ok(watermarkBytes)`；水位为负返回 `Err(InvalidWatermark)`。",
-    "comment": "/*\n * 打开看门狗并给出内存水位（字节）。`watermarkBytes = 0` 表示\"不按水位判\"，\n * 只等显式请求 / 分配失败。\n * @param watermarkBytes 水位。\n * @return `Ok(watermarkBytes)`；水位为负返回 `Err(InvalidWatermark)`。\n */",
+    "documentation": "启用软重启看门狗并设置水位。\n\n**返回值**：Result<int64, WatchdogError>。",
+    "comment": "",
     "parameters": [
       {
         "name": "watermarkBytes",
         "label": "int64 watermarkBytes",
-        "documentation": "水位。",
+        "documentation": "内存水位字节数，0 不按水位判断",
         "default": ""
       }
     ],
     "returns": {
       "type": "Result<int64, WatchdogError>",
-      "documentation": "`Ok(watermarkBytes)`；水位为负返回 `Err(InvalidWatermark)`。"
+      "documentation": "启用软重启看门狗并设置水位。"
     },
     "errors": {
-      "documentation": "默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主结束全部旧执行上下文、重置 arena 与分配身份后重跑；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。",
+      "documentation": "默认关闭。enable 设置内存水位字节数；requestRestart 请求 VM 安全点结束本轮，由宿主重置 arena 与分配身份后重跑。enableTimeout 的超时由 VM 内部截止时间检查，已注入时钟时单位为纳秒，否则为逻辑指令数；kick 推迟截止时间，disableTimeout 关闭超时。不依赖事件回调；不能抢占正在执行的阻塞宿主函数。",
       "preconditions": [],
       "panic": false
     },
@@ -31695,7 +32355,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/watchdog.mgl",
-    "line": 79,
+    "line": 9,
     "page": "std-watchdog.md",
     "anchor": "api-0"
   },
@@ -31703,16 +32363,16 @@
     "module": "std::watchdog",
     "name": "requestRestart",
     "owner": "",
-    "signature": "Result<bool, WatchdogError> requestRestart()",
-    "documentation": "请求宿主在安全点结束本轮并处理软重启。\n\n**返回值**：Result<bool, WatchdogError>。`Ok(true)` = 请求已记下（本轮马上会在安全点结束）。",
-    "comment": "/*\n * 显式请求一次软重启：写\"标志 + 原因\"，VM 在下一条指令边界停下本轮，宿主重置 arena 后重跑。\n * 没 `enable()` / `enableTimeout*()` 过返回 `Err(NotEnabled)`，**不产生重启**。\n * @return `Ok(true)` = 请求已记下（本轮马上会在安全点结束）。\n */",
+    "signature": "Result<int64, WatchdogError> requestRestart()",
+    "documentation": "请求宿主在安全点结束本轮并处理软重启。\n\n**返回值**：Result<int64, WatchdogError>。",
+    "comment": "",
     "parameters": [],
     "returns": {
-      "type": "Result<bool, WatchdogError>",
-      "documentation": "`Ok(true)` = 请求已记下（本轮马上会在安全点结束）。"
+      "type": "Result<int64, WatchdogError>",
+      "documentation": "请求宿主在安全点结束本轮并处理软重启。"
     },
     "errors": {
-      "documentation": "默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主结束全部旧执行上下文、重置 arena 与分配身份后重跑；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。",
+      "documentation": "默认关闭。enable 设置内存水位字节数；requestRestart 请求 VM 安全点结束本轮，由宿主重置 arena 与分配身份后重跑。enableTimeout 的超时由 VM 内部截止时间检查，已注入时钟时单位为纳秒，否则为逻辑指令数；kick 推迟截止时间，disableTimeout 关闭超时。不依赖事件回调；不能抢占正在执行的阻塞宿主函数。",
       "preconditions": [],
       "panic": false
     },
@@ -31722,7 +32382,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/watchdog.mgl",
-    "line": 95,
+    "line": 14,
     "page": "std-watchdog.md",
     "anchor": "api-1"
   },
@@ -31730,33 +32390,33 @@
     "module": "std::watchdog",
     "name": "enableTimeout",
     "owner": "",
-    "signature": "Result<int64, WatchdogError> enableTimeout(int64 timeoutUnits)",
-    "documentation": "打开 ③ 时间维度：**整整 `timeoutUnits` 个时间单位没有 `kick()`，就请求一次软重启**。 单位与 VM 时钟一致（与 `std::event::Timer` 的周期同一个口径：宿主注入过纳秒时钟时是 纳秒，否则 1 条指令 = 1 个时间单位）。 本函数同时把看门狗本体打开（等价于 `enable(0)`，即不按水位判）；**已经 `enable()` 过 就不动原来的水位**。重复调用按最后一次的超时换掉定时器，并重新开始计时。\n\n**返回值**：Result<int64, WatchdogError>。`Ok(timeoutUnits)`；不为正返回 `Err(InvalidTimeout)`。",
-    "comment": "/*\n * 打开 ③ 时间维度：**整整 `timeoutUnits` 个时间单位没有 `kick()`，就请求一次软重启**。\n * 单位与 VM 时钟一致（与 `std::event::Timer` 的周期同一个口径：宿主注入过纳秒时钟时是\n * 纳秒，否则 1 条指令 = 1 个时间单位）。\n *\n * 本函数同时把看门狗本体打开（等价于 `enable(0)`，即不按水位判）；**已经 `enable()` 过\n * 就不动原来的水位**。重复调用按最后一次的超时换掉定时器，并重新开始计时。\n * @param timeoutUnits 超时（时间单位，必须为正）。\n * @return `Ok(timeoutUnits)`；不为正返回 `Err(InvalidTimeout)`。\n */",
+    "signature": "Result<int64, WatchdogError> enableTimeout(int64 units)",
+    "documentation": "启用当前 VM 的内部超时检查，单位取决于宿主时钟配置；不注册事件回调。\n\n**返回值**：Result<int64, WatchdogError>。",
+    "comment": "",
     "parameters": [
       {
-        "name": "timeoutUnits",
-        "label": "int64 timeoutUnits",
-        "documentation": "超时（时间单位，必须为正）。",
+        "name": "units",
+        "label": "int64 units",
+        "documentation": "看门狗超时单位",
         "default": ""
       }
     ],
     "returns": {
       "type": "Result<int64, WatchdogError>",
-      "documentation": "`Ok(timeoutUnits)`；不为正返回 `Err(InvalidTimeout)`。"
+      "documentation": "启用当前 VM 的内部超时检查，单位取决于宿主时钟配置；不注册事件回调。"
     },
     "errors": {
-      "documentation": "默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主结束全部旧执行上下文、重置 arena 与分配身份后重跑；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。",
+      "documentation": "默认关闭。enable 设置内存水位字节数；requestRestart 请求 VM 安全点结束本轮，由宿主重置 arena 与分配身份后重跑。enableTimeout 的超时由 VM 内部截止时间检查，已注入时钟时单位为纳秒，否则为逻辑指令数；kick 推迟截止时间，disableTimeout 关闭超时。不依赖事件回调；不能抢占正在执行的阻塞宿主函数。",
       "preconditions": [],
       "panic": false
     },
-    "usage": "std::watchdog::enableTimeout(timeoutUnits);",
+    "usage": "std::watchdog::enableTimeout(units);",
     "examples": [
       "doc/examples/library/watchdog.mgl"
     ],
     "sourceLanguage": "zh",
     "source": "source/std/watchdog.mgl",
-    "line": 129,
+    "line": 18,
     "page": "std-watchdog.md",
     "anchor": "api-2"
   },
@@ -31765,22 +32425,22 @@
     "name": "enableTimeoutMillis",
     "owner": "",
     "signature": "Result<int64, WatchdogError> enableTimeoutMillis(int64 millis)",
-    "documentation": "毫秒版：`millis * 1000000` 个时间单位（与 `std::event::Timer::everyMillis` 同一个换算）。\n\n**返回值**：Result<int64, WatchdogError>。同 `enableTimeout`。",
-    "comment": "/*\n * 毫秒版：`millis * 1000000` 个时间单位（与 `std::event::Timer::everyMillis` 同一个换算）。\n * @param millis 超时（毫秒，必须为正）。\n * @return 同 `enableTimeout`。\n */",
+    "documentation": "将毫秒转换为纳秒超时单位，拒绝非正值和溢出。\n\n**返回值**：Result<int64, WatchdogError>。",
+    "comment": "",
     "parameters": [
       {
         "name": "millis",
         "label": "int64 millis",
-        "documentation": "超时（毫秒，必须为正）。",
+        "documentation": "等待毫秒数；-1 无限、0 非阻塞，waitFor 和 sleepFor 不接受负数",
         "default": ""
       }
     ],
     "returns": {
       "type": "Result<int64, WatchdogError>",
-      "documentation": "同 `enableTimeout`。"
+      "documentation": "将毫秒转换为纳秒超时单位，拒绝非正值和溢出。"
     },
     "errors": {
-      "documentation": "默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主结束全部旧执行上下文、重置 arena 与分配身份后重跑；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。",
+      "documentation": "默认关闭。enable 设置内存水位字节数；requestRestart 请求 VM 安全点结束本轮，由宿主重置 arena 与分配身份后重跑。enableTimeout 的超时由 VM 内部截止时间检查，已注入时钟时单位为纳秒，否则为逻辑指令数；kick 推迟截止时间，disableTimeout 关闭超时。不依赖事件回调；不能抢占正在执行的阻塞宿主函数。",
       "preconditions": [],
       "panic": false
     },
@@ -31788,7 +32448,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/watchdog.mgl",
-    "line": 156,
+    "line": 24,
     "page": "std-watchdog.md",
     "anchor": "api-3"
   },
@@ -31797,15 +32457,15 @@
     "name": "kick",
     "owner": "",
     "signature": "Result<bool, WatchdogError> kick()",
-    "documentation": "喂一口狗：告诉时间维度\"这一轮还活着\"。每个超时周期之内至少调一次。 没 `enableTimeout*()` 过返回 `Err(NotEnabled)`（没开这一维时不必喂）。\n\n**返回值**：Result<bool, WatchdogError>。`Ok(true)` = 记下了。",
-    "comment": "/*\n * 喂一口狗：告诉时间维度\"这一轮还活着\"。每个超时周期之内至少调一次。\n * 没 `enableTimeout*()` 过返回 `Err(NotEnabled)`（没开这一维时不必喂）。\n * @return `Ok(true)` = 记下了。\n */",
+    "documentation": "推迟当前 VM 看门狗截止时间，未启用超时返回 NotEnabled。\n\n**返回值**：Result<bool, WatchdogError>。",
+    "comment": "",
     "parameters": [],
     "returns": {
       "type": "Result<bool, WatchdogError>",
-      "documentation": "`Ok(true)` = 记下了。"
+      "documentation": "推迟当前 VM 看门狗截止时间，未启用超时返回 NotEnabled。"
     },
     "errors": {
-      "documentation": "默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主结束全部旧执行上下文、重置 arena 与分配身份后重跑；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。",
+      "documentation": "默认关闭。enable 设置内存水位字节数；requestRestart 请求 VM 安全点结束本轮，由宿主重置 arena 与分配身份后重跑。enableTimeout 的超时由 VM 内部截止时间检查，已注入时钟时单位为纳秒，否则为逻辑指令数；kick 推迟截止时间，disableTimeout 关闭超时。不依赖事件回调；不能抢占正在执行的阻塞宿主函数。",
       "preconditions": [],
       "panic": false
     },
@@ -31815,9 +32475,34 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/watchdog.mgl",
-    "line": 168,
+    "line": 28,
     "page": "std-watchdog.md",
     "anchor": "api-4"
+  },
+  {
+    "module": "std::watchdog",
+    "name": "disableTimeout",
+    "owner": "",
+    "signature": "void disableTimeout()",
+    "documentation": "停止当前 VM 内部看门狗超时，保留内存水位和显式重启能力。\n\n**返回值**：void。",
+    "comment": "",
+    "parameters": [],
+    "returns": {
+      "type": "void",
+      "documentation": "无返回值。"
+    },
+    "errors": {
+      "documentation": "默认关闭。enable 设置内存水位字节数；requestRestart 请求 VM 安全点结束本轮，由宿主重置 arena 与分配身份后重跑。enableTimeout 的超时由 VM 内部截止时间检查，已注入时钟时单位为纳秒，否则为逻辑指令数；kick 推迟截止时间，disableTimeout 关闭超时。不依赖事件回调；不能抢占正在执行的阻塞宿主函数。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::watchdog::disableTimeout();",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/watchdog.mgl",
+    "line": 32,
+    "page": "std-watchdog.md",
+    "anchor": "api-5"
   },
   {
     "module": "std::algorithms",

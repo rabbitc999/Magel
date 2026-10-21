@@ -7,7 +7,7 @@ void worker() {
 }
 
 int64 main() {
-    IsolatedThreadHandle task = std::thread::create(worker);
+    Thread task = std::thread::create(worker);
     std::thread::wait(task);
     return 0;
 }

@@ -38,7 +38,7 @@ assignments, returns and aggregate fields. Assignment inference must discover ca
 before recording a storage constraint. Copying a closure does not extend its sources.
 
 Asynchronous event entry signatures require static callback sources, including public
-interrupt callback fields. Capturing local variables cannot be hidden behind an ordinary
+stored callback fields. Capturing local variables cannot be hidden behind an ordinary
 function-pointer conversion of an event registration entry. Synchronous algorithm callbacks
 can borrow the caller's live variables.
 

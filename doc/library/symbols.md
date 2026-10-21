@@ -126,18 +126,23 @@
 | [std::complex::Complex::scale](std-complex.md#api-3) | `Complex<T> scale(T factor)` |
 | [std::compress::compress](std-compress.md#api-0) | `std::lang::List<uint8> compress(std::lang::String text)` |
 | [std::compress::decompress](std-compress.md#api-1) | `std::lang::String decompress(std::lang::List<uint8> bytes)` |
-| [std::concurrency::Shared::create](std-concurrency.md#api-0) | `static Shared<T> create(T value)` |
-| [std::concurrency::Shared::get](std-concurrency.md#api-1) | `T get()` |
-| [std::concurrency::Shared::set](std-concurrency.md#api-2) | `void set(T value)` |
-| [std::concurrency::Shared::swap](std-concurrency.md#api-3) | `T swap(T value)` |
-| [std::coroutine::create](std-coroutine.md#api-0) | `SharedCoroutineHandle create(void fn() task)` |
-| [std::coroutine::current](std-coroutine.md#api-4) | `SharedCoroutineHandle current()` |
-| [std::coroutine::parent](std-coroutine.md#api-5) | `SharedCoroutineHandle parent()` |
-| [std::coroutine::receive](std-coroutine.md#api-3) | `std::lang::String receive()` |
-| [std::coroutine::send](std-coroutine.md#api-2) | `void send(SharedCoroutineHandle coroutine, std::lang::String message)` |
-| [std::coroutine::wait](std-coroutine.md#api-1) | `void wait(SharedCoroutineHandle coroutine)` |
-| [std::coroutine::yelid](std-coroutine.md#api-7) | `void yelid()` |
-| [std::coroutine::yield](std-coroutine.md#api-6) | `void yield()` |
+| [std::concurrency::AtomicInt64::create](std-concurrency.md#api-5) | `static AtomicInt64 create(int64 value)` |
+| [std::concurrency::AtomicInt64::fetchAdd](std-concurrency.md#api-8) | `int64 fetchAdd(int64 delta)` |
+| [std::concurrency::AtomicInt64::get](std-concurrency.md#api-6) | `int64 get()` |
+| [std::concurrency::AtomicInt64::set](std-concurrency.md#api-7) | `void set(int64 value)` |
+| [std::concurrency::Channel::close](std-concurrency.md#api-16) | `void close()` |
+| [std::concurrency::Channel::create](std-concurrency.md#api-9) | `static Channel<T> create(int64 capacity)` |
+| [std::concurrency::Channel::receive](std-concurrency.md#api-14) | `Receive<T> receive()` |
+| [std::concurrency::Channel::receiveFor](std-concurrency.md#api-13) | `Receive<T> receiveFor(int64 millis)` |
+| [std::concurrency::Channel::send](std-concurrency.md#api-11) | `int64 send(T value)` |
+| [std::concurrency::Channel::sendFor](std-concurrency.md#api-10) | `int64 sendFor(T value, int64 millis)` |
+| [std::concurrency::Channel::tryReceive](std-concurrency.md#api-15) | `Receive<T> tryReceive()` |
+| [std::concurrency::Channel::trySend](std-concurrency.md#api-12) | `int64 trySend(T value)` |
+| [std::concurrency::Receive::isReady](std-concurrency.md#api-0) | `bool isReady()` |
+| [std::concurrency::Shared::create](std-concurrency.md#api-1) | `static Shared<T> create(T value)` |
+| [std::concurrency::Shared::get](std-concurrency.md#api-2) | `T get()` |
+| [std::concurrency::Shared::set](std-concurrency.md#api-3) | `void set(T value)` |
+| [std::concurrency::Shared::swap](std-concurrency.md#api-4) | `T swap(T value)` |
 | [std::csv::csvError](std-csv.md#api-0) | `CsvError csvError(int64 line, int64 column, String message)` |
 | [std::csv::parseCsv](std-csv.md#api-1) | `Result<List<List<String>>,CsvError> parseCsv(String text, char delimiter=',')` |
 | [std::csv::writeCsv](std-csv.md#api-2) | `Result<String,CsvError> writeCsv(List<List<String>> rows, char delimiter=',')` |
@@ -158,26 +163,18 @@
 | [std::encoding::encodeBase64Url](std-encoding.md#api-4) | `String encodeBase64Url(List<uint8> bytes, bool padding=false)` |
 | [std::encoding::encodeHex](std-encoding.md#api-0) | `String encodeHex(List<uint8> bytes, bool uppercase=false)` |
 | [std::encoding::hexDigit](std-encoding.md#api-1) | `int64 hexDigit(char value)` |
-| [std::event::Interrupt::of](std-event.md#api-0) | `static Interrupt of(EventHandle timer, int64 thread, void fn(int64) handler)` |
-| [std::event::Interrupt::of](std-event.md#api-1) | `static Interrupt of(EventHandle timer, void fn(int64) handler)` |
-| [std::event::Interrupt::raise](std-event.md#api-3) | `void raise()` |
-| [std::event::Interrupt::raise](std-event.md#api-2) | `void raise(int64 source)` |
-| [std::event::Timer::Timer](std-event.md#api-4) | `Timer(int64 period)` |
-| [std::event::Timer::drop](std-event.md#api-16) | `void drop()` |
-| [std::event::Timer::everyMillis](std-event.md#api-6) | `static Timer everyMillis(int64 millis)` |
-| [std::event::Timer::everyNanos](std-event.md#api-5) | `static Timer everyNanos(int64 period)` |
-| [std::event::Timer::onInterrupt](std-event.md#api-7) | `void onInterrupt(void fn(int64) callback)` |
-| [std::event::Timer::onTick](std-event.md#api-8) | `void onTick(void fn(int64) callback)` |
-| [std::event::Timer::raise](std-event.md#api-15) | `void raise()` |
-| [std::event::Timer::raise](std-event.md#api-14) | `void raise(int64 source)` |
-| [std::event::Timer::running](std-event.md#api-12) | `bool running()` |
-| [std::event::Timer::start](std-event.md#api-9) | `void start()` |
+| [std::event::Timer::afterMillis](std-event.md#api-8) | `static Timer afterMillis(int64 millis)` |
+| [std::event::Timer::afterNanos](std-event.md#api-6) | `static Timer afterNanos(int64 nanos)` |
+| [std::event::Timer::drop](std-event.md#api-11) | `void drop()` |
+| [std::event::Timer::everyMillis](std-event.md#api-7) | `static Timer everyMillis(int64 millis)` |
+| [std::event::Timer::everyNanos](std-event.md#api-5) | `static Timer everyNanos(int64 nanos)` |
+| [std::event::Timer::isValid](std-event.md#api-9) | `bool isValid()` |
 | [std::event::Timer::stop](std-event.md#api-10) | `void stop()` |
-| [std::event::Timer::thread](std-event.md#api-13) | `int64 thread()` |
-| [std::event::Timer::ticks](std-event.md#api-11) | `int64 ticks()` |
-| [std::event::bindEventArguments](std-event.md#api-18) | `int32 bindEventArguments(EventHandle handle, void fn(int64, std::lang::List<std::lang::Any>) callback, std::lang::Any... arguments)` |
-| [std::event::bindEventArguments](std-event.md#api-17) | `int32 bindEventArguments(EventHandle handle, void fn(int64, std::lang::List<std::lang::Any>) callback, std::lang::List<std::lang::Any> arguments)` |
-| [std::event::unbindEventArguments](std-event.md#api-19) | `void unbindEventArguments()` |
+| [std::event::close](std-event.md#api-4) | `void close()` |
+| [std::event::post](std-event.md#api-3) | `int64 post(int64 tag, int64 source)` |
+| [std::event::receive](std-event.md#api-1) | `std::concurrency::Receive<Event> receive()` |
+| [std::event::receiveFor](std-event.md#api-0) | `std::concurrency::Receive<Event> receiveFor(int64 millis)` |
+| [std::event::tryReceive](std-event.md#api-2) | `std::concurrency::Receive<Event> tryReceive()` |
 | [std::graph::Graph::addEdge](std-graph.md#api-2) | `void addEdge(int64 u, int64 v, int64 weight)` |
 | [std::graph::Graph::bfs](std-graph.md#api-3) | `List<int64> bfs(int64 start)` |
 | [std::graph::Graph::connectedComponents](std-graph.md#api-5) | `int64 connectedComponents()` |
@@ -721,10 +718,12 @@
 | [std::memory::Span::index](std-memory.md#api-1) | `T index(int64 key)` |
 | [std::memory::Span::iterator](std-memory.md#api-2) | `Option<T mut&> iterator(int64 index)` |
 | [std::memory::Span::len](std-memory.md#api-3) | `int64 len()` |
-| [std::message::receiveCoroutine](std-message.md#api-1) | `T receiveCoroutine<T>()` |
-| [std::message::receiveThread](std-message.md#api-3) | `T receiveThread<T>()` |
-| [std::message::sendCoroutine](std-message.md#api-0) | `void sendCoroutine<T>(SharedCoroutineHandle coroutine, T value)` |
-| [std::message::sendThread](std-message.md#api-2) | `void sendThread<T>(IsolatedThreadHandle thread, T value)` |
+| [std::message::receiveFor](std-message.md#api-4) | `std::concurrency::Receive<T> receiveFor<T>(int64 millis)` |
+| [std::message::receiveThread](std-message.md#api-1) | `T receiveThread<T>()` |
+| [std::message::sendFor](std-message.md#api-2) | `int64 sendFor<T>(Thread thread, T value, int64 millis)` |
+| [std::message::sendThread](std-message.md#api-0) | `void sendThread<T>(Thread thread, T value)` |
+| [std::message::tryReceive](std-message.md#api-5) | `std::concurrency::Receive<T> tryReceive<T>()` |
+| [std::message::trySend](std-message.md#api-3) | `int64 trySend<T>(Thread thread, T value)` |
 | [std::net::HttpClient::close](std-net.md#api-34) | `void close()` |
 | [std::net::HttpClient::connect](std-net.md#api-31) | `bool connect(std::lang::String host, int32 port, int32 timeoutMs)` |
 | [std::net::HttpClient::exchange](std-net.md#api-33) | `HttpResponse exchange(std::lang::String method, std::lang::String url, std::lang::String body, std::lang::String contentType)` |
@@ -934,14 +933,37 @@
 | [std::text::Text::toLower](std-text.md#api-7) | `static std::lang::String toLower(std::lang::String text)` |
 | [std::text::Text::toUpper](std-text.md#api-6) | `static std::lang::String toUpper(std::lang::String text)` |
 | [std::text::Text::trim](std-text.md#api-8) | `static std::lang::String trim(std::lang::String text)` |
-| [std::thread::create](std-thread.md#api-0) | `IsolatedThreadHandle create(void fn() task)` |
-| [std::thread::current](std-thread.md#api-6) | `IsolatedThreadHandle current()` |
-| [std::thread::parent](std-thread.md#api-7) | `IsolatedThreadHandle parent()` |
-| [std::thread::receive](std-thread.md#api-5) | `std::lang::String receive()` |
-| [std::thread::send](std-thread.md#api-4) | `void send(IsolatedThreadHandle thread, std::lang::String message)` |
-| [std::thread::tryWait](std-thread.md#api-3) | `bool tryWait(IsolatedThreadHandle thread)` |
-| [std::thread::wait](std-thread.md#api-1) | `void wait(IsolatedThreadHandle thread)` |
-| [std::thread::waitFor](std-thread.md#api-2) | `bool waitFor(IsolatedThreadHandle thread, int64 millis)` |
+| [std::thread::ThreadGroup::add](std-thread.md#api-21) | `void add(Thread task)` |
+| [std::thread::ThreadGroup::cancelAll](std-thread.md#api-22) | `void cancelAll()` |
+| [std::thread::ThreadGroup::create](std-thread.md#api-19) | `static ThreadGroup create()` |
+| [std::thread::ThreadGroup::drop](std-thread.md#api-24) | `void drop()` |
+| [std::thread::ThreadGroup::start](std-thread.md#api-20) | `Thread start(void fn() task)` |
+| [std::thread::ThreadGroup::waitAll](std-thread.md#api-23) | `bool waitAll()` |
+| [std::thread::ThreadPool::cancelAll](std-thread.md#api-29) | `void cancelAll()` |
+| [std::thread::ThreadPool::closeAndWait](std-thread.md#api-28) | `bool closeAndWait()` |
+| [std::thread::ThreadPool::create](std-thread.md#api-25) | `static ThreadPool create(int64 workers, int64 capacity)` |
+| [std::thread::ThreadPool::drop](std-thread.md#api-30) | `void drop()` |
+| [std::thread::ThreadPool::submit](std-thread.md#api-27) | `int64 submit(void fn() task)` |
+| [std::thread::ThreadPool::submitFor](std-thread.md#api-26) | `int64 submitFor(void fn() task, int64 millis)` |
+| [std::thread::ThreadResult::isReady](std-thread.md#api-9) | `bool isReady()` |
+| [std::thread::closeInbox](std-thread.md#api-18) | `void closeInbox()` |
+| [std::thread::create](std-thread.md#api-0) | `Thread create(void fn() task)` |
+| [std::thread::createWith](std-thread.md#api-1) | `Thread createWith<T>(void fn(T) task, T value)` |
+| [std::thread::current](std-thread.md#api-14) | `Thread current()` |
+| [std::thread::parent](std-thread.md#api-15) | `Thread parent()` |
+| [std::thread::receive](std-thread.md#api-13) | `String receive()` |
+| [std::thread::receiveFor](std-thread.md#api-16) | `std::concurrency::Receive<String> receiveFor(int64 millis)` |
+| [std::thread::requestStop](std-thread.md#api-5) | `void requestStop(Thread thread)` |
+| [std::thread::send](std-thread.md#api-12) | `void send(Thread thread, String message)` |
+| [std::thread::sleepFor](std-thread.md#api-8) | `int64 sleepFor(int64 millis)` |
+| [std::thread::state](std-thread.md#api-7) | `int64 state(Thread thread)` |
+| [std::thread::stopRequested](std-thread.md#api-6) | `bool stopRequested()` |
+| [std::thread::tryReceive](std-thread.md#api-17) | `std::concurrency::Receive<String> tryReceive()` |
+| [std::thread::tryWait](std-thread.md#api-4) | `bool tryWait(Thread thread)` |
+| [std::thread::wait](std-thread.md#api-2) | `void wait(Thread thread)` |
+| [std::thread::waitFor](std-thread.md#api-3) | `bool waitFor(Thread thread, int64 millis)` |
+| [std::thread::waitResult](std-thread.md#api-11) | `ThreadResult waitResult(Thread thread)` |
+| [std::thread::waitResultFor](std-thread.md#api-10) | `ThreadResult waitResultFor(Thread thread, int64 millis)` |
 | [std::toml::TomlValue::asBool](std-toml.md#api-15) | `Option<bool> asBool()` |
 | [std::toml::TomlValue::asBytes](std-toml.md#api-17) | `Option<std::lang::List<uint8>> asBytes()` |
 | [std::toml::TomlValue::asDateTime](std-toml.md#api-18) | `Option<std::lang::String> asDateTime()` |
@@ -1021,8 +1043,9 @@
 | [std::utf8::encodeUtf8Bytes](std-utf8.md#api-3) | `Result<List<uint8>,Utf8Error> encodeUtf8Bytes(List<uint32> points)` |
 | [std::utf8::isValidUtf8](std-utf8.md#api-2) | `bool isValidUtf8(String text)` |
 | [std::utf8::sliceCodePoints](std-utf8.md#api-6) | `Result<String,Utf8Error> sliceCodePoints(String text, int64 start, int64 count)` |
+| [std::watchdog::disableTimeout](std-watchdog.md#api-5) | `void disableTimeout()` |
 | [std::watchdog::enable](std-watchdog.md#api-0) | `Result<int64, WatchdogError> enable(int64 watermarkBytes)` |
-| [std::watchdog::enableTimeout](std-watchdog.md#api-2) | `Result<int64, WatchdogError> enableTimeout(int64 timeoutUnits)` |
+| [std::watchdog::enableTimeout](std-watchdog.md#api-2) | `Result<int64, WatchdogError> enableTimeout(int64 units)` |
 | [std::watchdog::enableTimeoutMillis](std-watchdog.md#api-3) | `Result<int64, WatchdogError> enableTimeoutMillis(int64 millis)` |
 | [std::watchdog::kick](std-watchdog.md#api-4) | `Result<bool, WatchdogError> kick()` |
-| [std::watchdog::requestRestart](std-watchdog.md#api-1) | `Result<bool, WatchdogError> requestRestart()` |
+| [std::watchdog::requestRestart](std-watchdog.md#api-1) | `Result<int64, WatchdogError> requestRestart()` |

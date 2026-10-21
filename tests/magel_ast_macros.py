@@ -58,6 +58,10 @@ def main():
         ("source_closure_destructure_shadow", "auto make() { int64 value = 42; return fn() { auto (value, _) = (1, 2); return value; }; } int64 main() { auto f = make(); int64 value = f(); if (value == 1) { return 0; } return 1 / (value - value); }", None),
         ("runtime_control", "int64 main() { int32 value = 2; return 1 / (value - value); }", "运行期错误"),
     ]
+    cases.append(("undefined_block_helper", "$macro VALUE\n{ yield helper; }\n$end_macro\nint64 main() { float64 helper = 1.0; float64 value = $VALUE; return 0; }", "没声明的变量：helper"))
+    if options.default:
+        cases.append(("builtin_helper_call", "$macro VALUE\n{ println(\"macro builtin\"); yield 42; }\n$end_macro\nint64 main() { return $VALUE - 42; }", None))
+        cases.append(("undefined_vec_temp", "$macro vec<T:first>[first,...arrs]\n{\n    temp.push(first);\n    $for e in arrs\n    temp.push(e);\n    $end_for\n    yield temp;\n}\n$end_macro\nvoid main() { List<int64> temp; List<int64> array = $vec[1,2,3,4,5]; println(\"list={}\", array); }", "没声明的变量：temp"))
     with tempfile.TemporaryDirectory(prefix="vm-", dir=work) as directory:
         for name, source, error in cases:
             path = Path(directory) / (name + ".mgl")
@@ -69,6 +73,9 @@ def main():
                 assert result.returncode == 0 and not result.stderr, (name, result.returncode, result.stdout, result.stderr)
             else:
                 assert result.returncode != 0 and error in result.stderr, (name, result.returncode, result.stderr)
+                if name.startswith("undefined_"):
+                    assert "分支结果类型必须一致" not in result.stderr, result.stderr
+                    assert result.stderr.count("magel:") == 1, result.stderr
                 if name == "arity":
                     at = source.rfind("$VALUE")
                     column = at - source.rfind("\n", 0, at)

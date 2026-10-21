@@ -87,19 +87,19 @@ stackvm::RunResult result = machine.run(program);
 并通过 `RunResult::error` 立即终止；
 它是 Magel `panic(String)` 的运行时入口，不把错误当成正常 `exitCode`。
 
-### 精确计时、指令钩子与协程上下文
+### 精确计时、指令钩子与线程上下文
 
 `Machine::setTimeCallback()` 接收宿主提供的单调纳秒时钟。设置后，`RunResult` 会填充
 `timingAvailable`、`startedNanoseconds`、`finishedNanoseconds` 与 `elapsedNanoseconds`；
 VM 不擅自选择平台时钟，因此桌面和嵌入式宿主可以使用各自最准确的计时源。
 
 `Machine::setInstructionHook(N, callback)` 在每完成 N 条指令后同步回调一次；`N=0` 或空回调
-表示禁用。`InstructionHookInfo` 提供累计指令数、刚执行完的 PC、协程句柄和操作码。
+表示禁用。`InstructionHookInfo` 提供累计指令数、刚执行完的 PC和操作码。
 钩子运行在 VM 执行线程中，不应在回调里递归调用同一个 `Machine::run()`。
 
-`std::coroutine::create` 返回正整数协程句柄，`wait` 等待该句柄完成，`yield` 与兼容拼写
-`yelid` 让出执行权。各上下文拥有独立求值栈、调用帧、待绑定参数和 PC，共享全局区、堆、
-数据区与对象表；`RunResult.coroutines` 给出主上下文和所有协程的最终状态。
+每个隔离线程运行一个 VM 上下文，普通全局变量不共享。Thread 使用消息和有界通道传值；
+Machine::requestStop 在执行安全点请求停止。宿主通过 NativeCallContext::eventPoster 取得有界投递器，
+显式事件接收才消费事件。运行结束后旧投递器返回 Closed，不捕获 Machine 裸地址。
 
 ### 可移植宿主胶水
 
@@ -186,7 +186,7 @@ C++ 调用帧、STL 容器、大整数或运行期对象表的宿主分配。
 
 #### 自定义求值栈上限
 
-`Machine::setStackLimit(slots)` 限制每个协程各自的求值栈槽数；`0` 表示不限制，也是默认值。
+`Machine::setStackLimit(slots)` 限制每个执行上下文的求值栈槽数；`0` 表示不限制，也是默认值。
 所有 VM 压栈指令共用这一检查，超限时 `RunResult.ok` 为 false，`error` 给出上限、指令位置
 和指令文本。该接口限制的是 StackVM 的临时求值栈，不包含函数调用帧或宿主 C++ 线程栈。
 

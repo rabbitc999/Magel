@@ -657,6 +657,8 @@ Rules and restrictions (escape checking, `MGL1204`): see
 
 `$macro A` requires `$A`; `$macro A()` requires `$A()`. Parameter groups are explicit and match the definition. The generated parser builds macro ASTs; semantic analysis performs hygienic substitution and type inference before quadruple generation. Template locals are hygienic, arguments keep caller bindings, and helpers resolve at the definition. No automatic parentheses or numbered temporary names are used.
 
+Helper names in a macro template must be visible at its definition. A caller local with the same name cannot supply a missing declaration. An undeclared helper reports an undeclared variable instead of being treated as an integer when checking block result types.
+
 ```magel
 $macro ADD<T:a>(a, b)
 cast<T>(a + b)

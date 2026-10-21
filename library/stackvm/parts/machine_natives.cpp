@@ -695,7 +695,7 @@ public:
 /**
  * @brief 调用帧：一层调用的局部变量存储 + 返回信息。
  *
- * 每个活动调用独占局部槽和返回信息，递归与协程的活动帧互不覆盖。
+ * 每个活动调用独占局部槽和返回信息，递归活动帧互不覆盖。
  * 返回时先写回结果并销毁局部值；执行优化可限量缓存已清空的小帧及其向量容量，
  * 下次调用重新准备布局、声明状态和参数。未缓存的帧由 UniquePtr 自动销毁。
  * 缓存只属于本次 Machine::run，不保留活动帧指针，也不延迟局部值的释放。
@@ -724,31 +724,6 @@ struct PendingArg
 
 struct TransferPacket;
 
-/**
- * 一个可暂停、可恢复的 VM 执行上下文。全局区、堆、数据区和对象表由所有协程共享。
- */
-struct CoroutineContext
-{
-    enum class State
-    {
-        Running,
-        Ready,
-        Suspended,
-        Waiting,
-        Receiving,
-        Done
-    };
-
-    Memory::Vector<Slot> stack;
-    Memory::Vector<Memory::UniquePtr<Frame>> frames;
-    Memory::Vector<PendingArg> pending;
-    std::size_t pc = 0;
-    State state = State::Ready;
-    std::size_t waitingFor = 0;
-    std::size_t parent = 0;
-    Memory::Vector<std::shared_ptr<TransferPacket>> inbox;
-};
-
 /* ---------------------------------------------------------------------------
  *  内部 C++ 运行时：字符串 / 格式化
  * ---------------------------------------------------------------------------
@@ -770,7 +745,12 @@ using NativeInvoker = Memory::Function<bool(std::int64_t, const Memory::Vector<N
 /**
  * 一次 run() 里的软件定时器表（`std::event::Timer` 的后端）。
  */
-struct TimerRuntime;
+struct WatchdogRuntime
+{
+    std::uint64_t period = 0;
+    std::uint64_t deadline = 0;
+    std::uint64_t now = 0;
+};
 
 /**
  * 原生函数跑起来时的环境。
@@ -788,8 +768,8 @@ struct NativeContext
     const Memory::Vector<Memory::String> *programArguments = nullptr;  ///< 程序入口参数。
     NativeInvoker *invoker = nullptr;                                  ///< 同步调用 MAGEL 函数指针。
     struct ObjectStore *objects = nullptr;                             ///< 运行期通用对象表。
-    TimerRuntime *timers = nullptr;                                    ///< 软件定时器表（中断事件）。
-    Machine *machine = nullptr;                                        ///< 正在执行 run() 的虚拟机（胶水投递中断用）。
+    WatchdogRuntime *watchdog = nullptr;                               ///< 当前执行的内部看门狗。
+    Machine *machine = nullptr;                                        ///< 正在执行 run() 的虚拟机。
     std::size_t threadId = 0u;                                         ///< 当前线程 id（定时器归属线程）。
     bool *exitRequested = nullptr;                                     ///< `exit(n)` 请求提前正常停机。
     int *exitCode = nullptr;                                           ///< `exit(n)` 提供的宿主状态码。
@@ -1079,35 +1059,17 @@ public:
      */
     void fail(const Memory::String &message) override { context_.error = message; }
 
+    /**
+     * @brief 返回弱引用事件投递器，不延长本次执行的生命周期。
+     * @return 支持时返回线程安全投递器。
+     */
+    EventPoster eventPoster() override
+    {
 #if STACKVM_WITH_THREADS
-    /**
-     * @brief 向**当前虚拟机**投递一次中断事件（交绑定在该定时器上的回调）。
-     *
-     * 这是胶水层触发 MAGEL 中断事件函数的入口，对应 `std::event::Timer` 的 `handle`。
-     * **异步 + 安全点交付**：宿主只把事件挂进邮箱就返回，回调由 VM 在**下一条指令
-     * 边界**用执行线程调用 —— 不会重入正在跑的宿主回调，也不用自己加锁保护 VM 状态。
-     * 句柄无效 / 定时器已 `destroy` / 还没绑回调时事件被丢弃（空操作）。
-     * @param timer `std::event::Timer` 的句柄。
-     * @param source 原样交给回调的来源值。
-     */
-    void raiseInterrupt(std::int64_t timer, std::int64_t source) override
-    {
-        auto post = interruptPoster();
-        if (post) post(timer, source);
-    }
-
-    /**
-     * @brief 生成借用运行时的投递器，不捕获短命的宿主调用上下文。
-     * @return 投递函数或空函数。
-     */
-    Memory::Function<void(std::int64_t, std::int64_t)> interruptPoster() override
-    {
-        if (auto *machine = context_.machine)
-            return [machine](std::int64_t timer, std::int64_t source) { machine->raiseInterrupt(timer, source); };
+        if (context_.machine) return context_.machine->eventPoster();
+#endif
         return {};
     }
-
-#endif
 
     /**
      * @brief 为 VM 安装执行钩子。
@@ -1128,8 +1090,8 @@ public:
     /**
      * @brief 当前正在执行 `run()` 的虚拟机；宿主回调之外（指令钩子 / Qt 事件循环）也能用。
      *
-     * 胶水拿到它以后可以在**宿主回调返回之后**继续工作：投递中断
-     * （`Machine::raiseInterrupt`）或挂每 N 条指令一次的钩子
+     * 胶水拿到它以后可以在**宿主回调返回之后**继续工作：投递显式事件
+     * （`eventPoster()`）或挂每 N 条指令一次的钩子
      * （`Machine::setInstructionHook`）。只在 VM 执行线程上使用；指针在 `Machine`
      * 生命周期内有效，`run()` 结束后不要再碰。
      * @return 正在运行的虚拟机；没有（例如离线编解码）返回 nullptr。
@@ -2875,6 +2837,11 @@ bool captureTransferObject(NativeContext &ctx, std::int64_t handle, TransferPack
 bool captureTransfer(NativeContext &ctx, const Slot &slot, int kind,
                      std::int64_t layout, const Memory::String &type, TransferPacket *out)
 {
+    if (kind == 0 && type.find("fn(") != Memory::String::npos && isObjectHandle(slot.integer))
+    {
+        ctx.error = "跨线程传值不支持带捕获的函数值";
+        return false;
+    }
     out->type = type;
     const std::int64_t objectFlag = kind == 4 ? layout : kind == 3 ? 1 :
                                                                      0;
@@ -3809,247 +3776,31 @@ Slot programPanic(NativeContext &ctx, const Memory::Vector<Slot> &args)
     return Slot::fromInt(0);
 }
 
-/* ---------------------------------------------------------------------------
- *  中断事件与软件定时器（`std::event::Timer`）
- *
- * 定时器句柄 = 槽下标 + 1，**单调递增、不复用**：`destroy` 之后原句柄要么被忽略、
- * 要么落到墓碑上，绝不会命中后面新建的定时器（宿主可能还攥着旧句柄）。
- * ------------------------------------------------------------------------- */
-
-struct TimerSlot
-{
-    std::int64_t period = 0;    ///< 周期（时间单位与 VM 时钟一致）；0 = 只接受 `raise`。
-    std::int64_t deadline = 0;  ///< 下次到期时刻；-1 = 还没起算（`start` 之后由主循环补）。
-    std::int64_t callback = 0;  ///< 绑定的函数指针地址；0 = 没绑。
-    std::int64_t ticks = 0;     ///< 已经交付过多少次。
-    bool running = false;       ///< 软件定时器是否在跑。
-    bool alive = false;         ///< `destroy` 之后为 false（墓碑）。
-    std::size_t thread = 0u;    ///< 创建它的线程 id：中断只在**这个线程的 VM** 里交付。
-};
-
-struct TimerRuntime
-{
-    Memory::Vector<TimerSlot> slots;         ///< 下标 + 1 = 句柄。
-    Memory::Vector<InterruptEvent> pending;  ///< 本次边界要交付的事件。
-    std::size_t running = 0u;                ///< 正在跑的定时器个数（快路径用）。
-};
-
 /**
- * @brief 按句柄查找运行时定时器。
- * @param timers 运行时定时器集合。
- * @param handle 待操作的运行时句柄。
- * @retval 匹配项的指针，未找到时为空指针。
+ * @brief 配置当前执行上下文的看门狗截止时间，不登记用户回调。
+ * @param ctx 本次执行的原生环境。
+ * @param args 正超时单位，零表示关闭超时。
+ * @return 配置成功返回零，无效参数返回一。
  */
-TimerSlot *timerFind(TimerRuntime *timers, std::int64_t handle)
+Slot watchdogTimeout(NativeContext &ctx, const Memory::Vector<Slot> &args)
 {
-    if (timers == nullptr || handle <= 0) return nullptr;
-    const std::size_t index = static_cast<std::size_t>(handle - 1);
-    if (index >= timers->slots.size()) return nullptr;
-    return &timers->slots[index];
-}
-
-/**
- * @brief 创建运行时定时器。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot timerCreate(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    if (ctx.timers == nullptr)
-    {
-        ctx.error = "这个运行上下文没有定时器表";
-        return Slot::fromInt(0);
-    }
-    TimerSlot slot;
-    slot.period = nativeInt(args[0]);
-    if (slot.period < 0) slot.period = 0;
-    slot.deadline = -1;
-    slot.alive = true;
-    slot.thread = ctx.threadId; /* 创建它的线程：中断只在这个线程的 VM 里跑。 */
-    ctx.timers->slots.push_back(slot);
-    return Slot::fromInt(static_cast<std::int64_t>(ctx.timers->slots.size()));
-}
-
-/**
- * @brief 为定时器绑定处理函数。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot timerBind(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    TimerSlot *slot = timerFind(ctx.timers, nativeInt(args[0]));
-    if (slot == nullptr || !slot->alive)
-    {
-        ctx.error = "定时器句柄无效或已经释放：" + Memory::toString(nativeInt(args[0]));
-        return Slot::fromInt(0);
-    }
-    if (nativeInt(args[1]) == 0)
-    {
-        ctx.error = "定时器回调不能是空函数指针";
-        return Slot::fromInt(0);
-    }
-    if (isObjectHandle(nativeInt(args[1])))
-    {
-        ctx.error = "定时器异步入口不支持带捕获的 lambda";
-        return Slot::fromInt(0);
-    }
-    slot->callback = nativeInt(args[1]);
+    const auto period = nativeInt(args[0]);
+    if (!ctx.watchdog || period < 0) return Slot::fromInt(1);
+    ctx.watchdog->period = static_cast<std::uint64_t>(period);
+    ctx.watchdog->deadline = 0;
     return Slot::fromInt(0);
 }
-
 /**
- * @brief 启动运行时定时器。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
+ * @brief 推迟当前执行的内部看门狗截止时间。
+ * @param ctx 当前看门狗状态。
+ * @param args 无实参。
+ * @return 已启用超时返回零，否则返回一。
  */
-Slot timerStart(NativeContext &ctx, const Memory::Vector<Slot> &args)
+Slot watchdogKick(NativeContext &ctx, const Memory::Vector<Slot> &args)
 {
-    TimerSlot *slot = timerFind(ctx.timers, nativeInt(args[0]));
-    if (slot == nullptr || !slot->alive)
-    {
-        ctx.error = "定时器句柄无效或已经释放：" + Memory::toString(nativeInt(args[0]));
-        return Slot::fromInt(0);
-    }
-    if (!slot->running)
-    {
-        slot->running = true;
-        slot->deadline = -1; /* 起算点交给主循环（它才拿得到时钟）。 */
-        if (ctx.timers != nullptr) ++ctx.timers->running;
-    }
-    return Slot::fromInt(0);
-}
-
-/**
- * @brief 停止运行时定时器。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot timerStop(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    TimerSlot *slot = timerFind(ctx.timers, nativeInt(args[0]));
-    if (slot == nullptr || !slot->alive)
-    {
-        ctx.error = "定时器句柄无效或已经释放：" + Memory::toString(nativeInt(args[0]));
-        return Slot::fromInt(0);
-    }
-    if (slot->running)
-    {
-        slot->running = false;
-        if (ctx.timers != nullptr && ctx.timers->running > 0u) --ctx.timers->running;
-    }
-    return Slot::fromInt(0);
-}
-
-/**
- * @brief 查询定时器的触发计数。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot timerTicks(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    /* 读计数对墓碑也放行：`destroy` 之后还能看到它交付过多少次（句柄不复用，不会串号）。 */
-    const TimerSlot *slot = timerFind(ctx.timers, nativeInt(args[0]));
-    return Slot::fromInt(slot == nullptr ? 0 : slot->ticks);
-}
-
-/**
- * @brief 查询定时器绑定的线程。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot timerThread(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    const TimerSlot *slot = timerFind(ctx.timers, nativeInt(args[0]));
-    return Slot::fromInt(slot == nullptr ? 0 : static_cast<std::int64_t>(slot->thread));
-}
-
-/**
- * @brief 判断定时器是否正在运行。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot timerRunning(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    const TimerSlot *slot = timerFind(ctx.timers, nativeInt(args[0]));
-    return Slot::fromInt(slot != nullptr && slot->alive && slot->running ? 1 : 0);
-}
-
-/* `destroy` 之后句柄是墓碑：`__timerAlive` 就是给"登记前校验"用的软检查，不报错。 */
-/**
- * @brief 判断定时器句柄是否仍有效。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot timerAlive(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    const TimerSlot *slot = timerFind(ctx.timers, nativeInt(args[0]));
-    return Slot::fromInt(slot != nullptr && slot->alive ? 1 : 0);
-}
-
-/**
- * @brief 将定时器事件提交为运行时中断。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot timerRaise(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    if (ctx.timers == nullptr)
-    {
-        ctx.error = "这个运行上下文没有定时器表";
-        return Slot::fromInt(0);
-    }
-    /* 程序自己触发也走"延迟到指令边界"的同一条路：处理器里再 raise 不会立刻重入。 */
-    ctx.timers->pending.push_back(
-        InterruptEvent{ nativeInt(args[0]), nativeInt(args[1]), 0, ctx.threadId });
-    return Slot::fromInt(0);
-}
-
-/**
- * @brief `Interrupt.raise(source)`：按中断句柄投递 —— 函数指针 + 定时器 + 归属线程。
- *
- * 句柄里的线程不是当前线程就**空操作**（别的线程不受影响）；`callback` 非 0 时直接
- * 跑它，所以"没 `onInterrupt` 绑过回调的定时器"也能用句柄交付。
- */
-Slot interruptRaise(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    if (ctx.timers == nullptr)
-    {
-        ctx.error = "这个运行上下文没有定时器表";
-        return Slot::fromInt(0);
-    }
-    const std::size_t thread = static_cast<std::size_t>(nativeInt(args[1]));
-    if (thread != ctx.threadId) return Slot::fromInt(0); /* 归属别的线程：忽略 */
-    ctx.timers->pending.push_back(
-        InterruptEvent{ nativeInt(args[0]), nativeInt(args[3]), nativeInt(args[2]), thread });
-    return Slot::fromInt(0);
-}
-
-/**
- * @brief 销毁运行时定时器。
- * @param ctx 原生调用上下文，提供内存访问与错误报告。
- * @param args 按接口约定顺序传入的实参列表。
- * @retval 封装为原生值的运行时结果。
- */
-Slot timerDestroy(NativeContext &ctx, const Memory::Vector<Slot> &args)
-{
-    TimerSlot *slot = timerFind(ctx.timers, nativeInt(args[0]));
-    if (slot == nullptr) return Slot::fromInt(0); /* 重复 destroy / 未知句柄都是空操作 */
-    if (slot->running)
-    {
-        slot->running = false;
-        if (ctx.timers != nullptr && ctx.timers->running > 0u) --ctx.timers->running;
-    }
-    slot->alive = false;
-    slot->callback = 0;
+    (void)args;
+    if (!ctx.watchdog || ctx.watchdog->period == 0) return Slot::fromInt(1);
+    ctx.watchdog->deadline = ctx.watchdog->period > std::numeric_limits<std::uint64_t>::max() - ctx.watchdog->now ? std::numeric_limits<std::uint64_t>::max() : ctx.watchdog->now + ctx.watchdog->period;
     return Slot::fromInt(0);
 }
 
@@ -4126,6 +3877,8 @@ const SlotNativeEntry kSlotNativeEntries[] = {
     { "std::memory::__memoryLiveBytes", { 0, memoryLiveBytes } },
     /* std::watchdog（软重启看门狗）：模块级原生函数按「模块限定名」登记；裸名一并留着，
      * 便于别的宿主 / 导出代码直接按裸名调用。 */
+    { "std::watchdog::__watchdogTimeout", { 1, watchdogTimeout } },
+    { "std::watchdog::__watchdogKick", { 0, watchdogKick } },
     { "std::watchdog::__watchdogEnable", { 1, watchdogEnable } },
     { "std::watchdog::__watchdogRequestRestart", { 0, requestRestart } },
     { "__watchdogEnable", { 1, watchdogEnable } },
@@ -4153,18 +3906,6 @@ const SlotNativeEntry kSlotNativeEntries[] = {
     { "std::lang::__readLines", { 1, inputReadLines } },
     { "__readLine", { 0, inputReadLine } },
     { "__readLines", { 1, inputReadLines } },
-    /* 中断事件 / 软件定时器（`std::event::Timer`）：交付在主循环的指令边界做。 */
-    { "std::event::__timerCreate", { 1, timerCreate } },
-    { "std::event::__timerBind", { 2, timerBind } },
-    { "std::event::__timerStart", { 1, timerStart } },
-    { "std::event::__timerStop", { 1, timerStop } },
-    { "std::event::__timerTicks", { 1, timerTicks } },
-    { "std::event::__timerRunning", { 1, timerRunning } },
-    { "std::event::__timerAlive", { 1, timerAlive } },
-    { "std::event::__timerThread", { 1, timerThread } },
-    { "std::event::__timerRaise", { 2, timerRaise } },
-    { "std::event::__interruptRaise", { 4, interruptRaise } },
-    { "std::event::__timerDestroy", { 1, timerDestroy } },
 };
 const SlotNativeTable kSlotNatives{ kSlotNativeEntries, sizeof(kSlotNativeEntries) / sizeof(kSlotNativeEntries[0]) };
 

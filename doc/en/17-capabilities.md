@@ -77,10 +77,10 @@ See the [reflection specification](../19-reflection.md).
 ## Libraries, embedded Linux and tools
 
 Libraries cover containers/algorithms, iterators, math, numerical methods, text/encoding, JSON/TOML/CSV,
-files/directories, TCP/basic HTTP, SQL drivers, coroutines, isolated threads, messages, explicit shared
+files/directories, TCP/basic HTTP, SQL drivers, isolated threads, bounded channels, messages, explicit shared
 values, events and watchdogs. The [API index](../library/README.md) defines the module list; overview
 pages do not maintain a separate module count. HTTP excludes TLS; external databases need their
-clients and services. Asynchronous event callbacks have separate lifetime contracts.
+clients and services. Events use weak host posting and explicit bounded receive; application event handlers run only when called by the receiver.
 
 Desktop and embedded Linux use the same `library/stackvm/` core. The target needs a C++17 toolchain,
 sufficient memory and the system services required by its program. Build native glue and dependencies
@@ -116,6 +116,8 @@ including keyAt, valAt, at, iteration and default text. String isolation remains
 
 Image is a deeply copied opcode whose dimensions and contiguous RGBA pixels belong to glue. width()/height() query dimensions; pixels() returns an independent list snapshot. TcpSocket and TcpListener are noncopyable opcodes that close automatically at scope exit; explicit move transfers ownership, and each connection retains its own read status and error. Generic Vector<T> and Matrix<T> retain their aggregate API; ScalarArray<T> stores built-in integer and floating-point values in a ScalarStorage opcode with independent copies. Standard glue implements string concatenation, slicing, comparison, search and numeric-to-text conversion. Internal entry points use the __std_ prefix; the VM retains execution control, memory safety and closures.
 
-Network async methods use nonblocking polling and NET_PENDING, allowing callers to yield between polls. connectAsync currently accepts numeric IPv4 addresses only; synchronous connect retains hostname resolution. sendAsync returns a partial byte count and accepts an offset; receiveLineAsync preserves incomplete lines with a 1 MiB buffer limit.
+Network async methods use nonblocking polling and NET_PENDING, with cancellable thread sleeps between polls; dedicated threads may use synchronous I/O. connectAsync currently accepts numeric IPv4 addresses only; synchronous connect retains hostname resolution. sendAsync returns a partial byte count and accepts an offset; receiveLineAsync preserves incomplete lines with a 1 MiB buffer limit.
 
 Isolated threads support `waitFor(thread, millis)` with a nonnegative millisecond timeout and `tryWait(thread)` for a zero-timeout wait. Both return `true` after completion and collection, or `false` on timeout without cancelling the target. Target failures retain their original diagnostics; a collected handle cannot be waited on again.
+
+Threads use `std::thread::Thread` with copied initial arguments, cancellation, completion results, groups and fixed pools. Bounded channels and explicit event queues replace coroutine scheduling and implicit interrupt callbacks. See [concurrency contracts](29-thread-concurrency.md) for timeouts, cleanup and blocking host I/O limits.

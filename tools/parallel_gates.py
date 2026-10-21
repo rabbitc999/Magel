@@ -16,14 +16,14 @@ opcode_core_isolation magel_collection_glue magel_map_pair_iterator
 magel_generic_constructors magel_borrow_flow magel_generic_closures
 magel_entry_signature magel_function_types magel_analysis_diagnostics
 magel_memory_guard magel_watchdog magel_generic_monomorphization
-magel_language_move magel_tuple_returns magel_thread_wait
+magel_language_move magel_tuple_returns magel_thread_wait magel_thread_model magel_gui_events
 macro_foundations magel_macro_editor magel_ast_macros magel_macro_branches magel_macro_groups magel_macro_generics
 check_doc_links export_magel_ebnf library_reference check_keywords
 check_std_naming embed_manual changelog
 """.split())
 
 PARALLEL_EXECUTABLES = frozenset(("magel-artifact-tests", "magel-stackvm-tests",
-                                  "magel-symbol-tests", "magel-panic-tests"))
+                                  "magel-symbol-tests", "magel-panic-tests", "magel-runtime-event-tests"))
 
 
 def positive_jobs(value):

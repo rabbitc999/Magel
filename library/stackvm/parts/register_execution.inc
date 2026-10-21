@@ -1,10 +1,6 @@
 /* 新核心只在无观察者的同步区间运行；复杂操作返回既有运行时服务。
  * 每批最多 4096 次分派，再次经过 panic / restart / 中断安全点。 */
-if (registerExecution_ && optimizeExecution_ && !trace_ && !debugHook_ && !instructionHook_ && !timeCallback_ &&
-#if !defined(STACKVM_WITH_THREADS) || STACKVM_WITH_THREADS
-    !interruptMailbox_ && !threadsEnabled_ &&
-#endif
-    timers.running == 0 && timers.pending.empty() && (plan.code[pc].internal != absent || instruction.op == Op::Jmp || instruction.op == Op::Load || instruction.op == Op::PushInt))
+if (registerExecution_ && optimizeExecution_ && !trace_ && !debugHook_ && !instructionHook_ && !timeCallback_ && watchdog.period == 0 && (plan.code[pc].internal != absent || instruction.op == Op::Jmp || instruction.op == Op::Load || instruction.op == Op::PushInt))
 {
     const auto &region = registerEngine.region(pc);
     if (Memory::restartSignal().pending())

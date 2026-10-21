@@ -86,7 +86,6 @@ int main(int argc, char **argv)
     {
         std::cerr << stopped.error << "\n";
         for (const auto &frame : stopped.sourceTrace) std::cerr << frame.function << " thread=" << frame.threadId << "\n";
-        for (const auto &c : stopped.coroutines) std::cerr << c.id << " " << c.state << "\n";
         return 16;
     }
     if (STACKVM_WITH_PANIC_TRACE && (stopped.sourceTrace.empty() || stopped.sourceTrace.back().threadId != 2 || stopped.sourceTrace.back().function != "inner")) return 17;

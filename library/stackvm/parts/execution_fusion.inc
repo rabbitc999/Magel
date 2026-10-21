@@ -1,10 +1,6 @@
 /* 两端共用的整数四指令融合；原始 PC、逻辑步数、栈深及错误位置保持不变。
  * 有指令边界观察者时逐条执行，避免跨过断点、钩子、计时器或异步中断安全点。 */
-if (optimizeExecution_ && plan.code[pc].internal != execution_detail::absent && !trace_ && debugHook_ == nullptr && !instructionHook_ && !timeCallback_ &&
-#if !defined(STACKVM_WITH_THREADS) || STACKVM_WITH_THREADS
-    !interruptMailbox_ && !threadsEnabled_ &&
-#endif
-    timers.running == 0 && timers.pending.empty() && (stepLimit == 0 || stepLimit - result.steps >= plan.registers[plan.code[pc].internal].span) && (stackLimit_ == 0 || (stack.size() <= stackLimit_ && stackLimit_ - stack.size() >= 2)))
+if (optimizeExecution_ && plan.code[pc].internal != execution_detail::absent && !trace_ && debugHook_ == nullptr && !instructionHook_ && !timeCallback_ && watchdog.period == 0 && (stepLimit == 0 || stepLimit - result.steps >= plan.registers[plan.code[pc].internal].span) && (stackLimit_ == 0 || (stack.size() <= stackLimit_ && stackLimit_ - stack.size() >= 2)))
 {
     const auto &internal = plan.registers[plan.code[pc].internal];
     const Slot *left = readPrepared(internal.left);

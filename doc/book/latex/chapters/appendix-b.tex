@@ -115,22 +115,22 @@ sum=10
 
 \subsection{并发与协作}
 
-\begin{center}
-\begin{tabular}{ll}
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.170\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.810\linewidth-2\tabcolsep\relax}}
 \toprule
 模块 & 能干什么 \\
 \midrule
-\texttt{std:\allowbreak{}:\allowbreak{}coroutine} & 共享协程 \\
-\texttt{std:\allowbreak{}:\allowbreak{}thread} & 隔离线程 \texttt{Isolated\allowbreak{}Thread} \\
-\texttt{std:\allowbreak{}:\allowbreak{}message} & 跨协程 / 跨线程的消息 \\
-\texttt{std:\allowbreak{}:\allowbreak{}concurrency} & 显式共享槽 \texttt{Shared<\allowbreak{}T>\allowbreak{}}（普通全局变量在线程间仍是隔离的） \\
-\texttt{std:\allowbreak{}:\allowbreak{}event} & 中断事件与软件定时器；\texttt{start(\allowbreak{})\allowbreak{}} 后按周期在指令边界触发 \\
+\endhead
+\texttt{std:\allowbreak{}:\allowbreak{}thread} & 隔离线程 \texttt{Thread}、取消、结果、线程组和固定线程池 \\
+\texttt{std:\allowbreak{}:\allowbreak{}message} & 跨线程的消息 \\
+\texttt{std:\allowbreak{}:\allowbreak{}concurrency} & 有界跨线程 \texttt{Channel<\allowbreak{}T>\allowbreak{}}、显式共享槽 \texttt{Shared<\allowbreak{}T>\allowbreak{}} 和 \texttt{Atomic\allowbreak{}Int64}（普通全局变量仍隔离） \\
+\texttt{std:\allowbreak{}:\allowbreak{}event} & 显式事件与定时源；通过 receive 接收，周期积压合并 \\
 \bottomrule
-\end{tabular}
-\end{center}
+\end{longtable}
+}
 
 \begin{tip}{提示}
-\texttt{Shared\allowbreak{}Coroutine} / \texttt{Isolated\allowbreak{}Thread} / \texttt{Message} 是三个独立模块，不能合并——它们各自有同名的宿主函数 \texttt{create} / \texttt{wait} / \texttt{receive}。
+线程执行、通道通信和显式事件分别由 std::thread、std::concurrency 和 std::event 提供。
 \end{tip}
 
 \subsection{系统与环境}

@@ -7,7 +7,7 @@ find_package(Threads REQUIRED)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_library(magel_vm_core STATIC runtime/stackvm.cpp)
+add_library(magel_vm_core STATIC runtime/stackvm.cpp runtime/event_service.cpp)
 file(GLOB MAGEL_STANDARD_SOURCES CONFIGURE_DEPENDS glue/std_*.cpp)
 list(REMOVE_ITEM MAGEL_STANDARD_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/glue/std_demo.cpp")
 add_library(magel_host_records STATIC ${MAGEL_STANDARD_SOURCES} runtime/bigint.cpp runtime/bigfloat.cpp

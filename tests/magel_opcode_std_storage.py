@@ -18,15 +18,16 @@ def main():
     with tempfile.TemporaryDirectory(prefix='opcode-std-', dir=ROOT / 'build') as directory:
         work = Path(directory)
 
-        def run(source, success=True):
-            result = subprocess.run([str(compiler), 'run', str(source), '--out', str(work / 'output')], cwd=ROOT,
+        def run(source, success=True, threads=False):
+            result = subprocess.run([str(compiler), 'run', str(source), '--out', str(work / 'output'),
+                                     *(['--threads'] if threads else [])], cwd=ROOT,
                 env=dict(os.environ, MAGEL_LANG='zh'), capture_output=True, text=True, encoding='utf-8', timeout=180)
             assert (result.returncode == 0) == success, (result.stdout, result.stderr)
             return result
 
         result = run(ROOT / 'example/samples/opcode_std_storage.mgl')
         assert result.stdout == 'opcode standard storage OK\n' and not result.stderr, result
-        async_result = run(ROOT / 'example/samples/std_net_async.mgl')
+        async_result = run(ROOT / 'example/samples/std_net_async.mgl', threads=True)
         assert async_result.stdout == 'nonblocking network OK\n' and not async_result.stderr, async_result
         for body, marker in [
             ('import std::net; int64 main(){TcpSocket a; TcpSocket b=a; return 0;}', 'NonCopyable'),

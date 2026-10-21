@@ -40,7 +40,7 @@ int64 main()
 magel: 运行期错误：整数除零
 出错位置：hello.mgl:4（main）
 调用栈（外 → 内）：
-  main  hello.mgl:4 [thread 0 coroutine 0 ip 12]
+  main  hello.mgl:4 [thread 0 ip 12]
 ```
 
 从上往下读：先是「整数除零」，再是出错的行号，最后是一份调用栈——

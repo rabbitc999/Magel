@@ -1,0 +1,25 @@
+import gui;
+import std::event;
+int64 main() {
+    gui::open((int32)360, (int32)200, "Qt 显式事件");
+    assert(gui::bindEvents(77) == 1);
+    gui::startEventTimer((int32)0);
+    gui::pump();
+    gui::stopEventTimer();
+    gui::postEvent((int32)1);
+    gui::postEvent((int32)-1);
+    int64 clicks = 0;
+    int64 ticks = 0;
+    int64 closed = 0;
+    while (true) {
+        auto next = std::event::tryReceive();
+        if (!next.isReady()) { break; }
+        if (next.value.source > 0) { clicks = clicks + 1; }
+        if (next.value.source == 0) { ticks = 1; }
+        if (next.value.source == -1) { closed = closed + 1; }
+    }
+    gui::unbindEvents();
+    gui::close();
+    println("clicks={} ticks={} closed={}", clicks, ticks, closed);
+    return 0;
+}

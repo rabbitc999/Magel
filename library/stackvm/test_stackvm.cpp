@@ -968,55 +968,6 @@ void testFunctionPointer()
 }
 
 /**
- * @brief 协程拥有独立调用帧，可在 yield 后恢复，并由 wait 等待完成。
- */
-void testCoroutines()
-{
-    stackvm::DataArea data;
-    const Memory::String functionBytes =
-        Memory::String(8u, '\0') + Memory::String("task_a\0task_b\0", 14u);
-    data.binary.assign(functionBytes.begin(), functionBytes.end());
-    data.symbols["task_a_name"] = 8u;
-    data.symbols["task_b_name"] = 15u;
-
-    const stackvm::QuadFile file = stackvm::parseQuads(
-        "0: (addr, task_a_name, _, task_a_ptr)\n"
-        "1: (param, task_a_ptr, _, task)\n"
-        "2: (call, std::coroutine::create, _, first)\n"
-        "3: (addr, task_b_name, _, task_b_ptr)\n"
-        "4: (param, task_b_ptr, _, task)\n"
-        "5: (call, std::coroutine::create, _, second)\n"
-        "6: (param, first, _, coroutine)\n"
-        "7: (call, std::coroutine::wait, _, _)\n"
-        "8: (param, second, _, coroutine)\n"
-        "9: (call, std::coroutine::wait, _, _)\n"
-        "10: (halt, _, _, _)\n"
-        "11: (label, _, _, task_a)\n"
-        "12: (putc, 65, _, _)\n"
-        "13: (call, std::coroutine::yield, _, _)\n"
-        "14: (putc, 67, _, _)\n"
-        "15: (ret, 0, _, _)\n"
-        "16: (label, _, _, task_b)\n"
-        "17: (putc, 66, _, _)\n"
-        "18: (call, std::coroutine::yield, _, _)\n"
-        "19: (putc, 68, _, _)\n"
-        "20: (ret, 0, _, _)\n",
-        "<coroutines>");
-    stackvm::Program program;
-    CHECK(stackvm::assemble(file, program));
-    stackvm::Machine machine;
-    machine.setNativeRegistry(&collectionRegistry());
-    machine.setData(&data);
-    const stackvm::RunResult result = machine.run(program);
-    CHECK(result.ok);
-    CHECK(result.text == "ABCD");
-    CHECK(result.coroutines.size() == 3u);
-    CHECK(result.coroutines[0].state == "done");
-    CHECK(result.coroutines[1].state == "done");
-    CHECK(result.coroutines[2].state == "done");
-}
-
-/**
  * @brief 宿主时钟与每 N 条指令钩子使用稳定的累计指令计数。
  */
 void testTimingAndInstructionHook()
@@ -1977,7 +1928,6 @@ int main(int argc, char **argv)
     testRemovedMathNatives();
     testBoundsCheck();
     testFunctionPointer();
-    testCoroutines();
     testTimingAndInstructionHook();
     testDataArea();
     testObj();

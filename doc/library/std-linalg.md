@@ -177,29 +177,29 @@ LU glue solve OK
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-288"></a>`opcode ScalarStorage` | 线性代数专用数值存储，缓冲在宿主胶水中深复制和释放。 |
-| 模块 | <a id="symbol-289"></a>`struct ScalarArray<T>: Index<T, int64>, Iterator<T>` | 为内建数值类型提供泛型索引外观，元素保存在 opcode 中。 |
-| ScalarArray | <a id="symbol-290"></a>`ScalarStorage storage` | 独占此数组数值缓冲的 opcode 记录；复制时深复制。 |
-| 模块 | <a id="symbol-291"></a>`struct Vector<T>: Add<Vector<T>, Vector<T>>, Subtract<Vector<T>, Vector<T>>, Multiply<Vector<T>, T>, Index<T, int64>, Iterator<T>, Drop` | 稠密数值向量，元素按顺序存储。 |
-| Vector | <a id="symbol-292"></a>`ScalarArray<T> values` | 按声明顺序保存的元素存储。 |
-| 模块 | <a id="symbol-293"></a>`struct Matrix<T>: Add<Matrix<T>, Matrix<T>>, Subtract<Matrix<T>, Matrix<T>>, Multiply<Matrix<T>, Matrix<T>>, Multiply<Vector<T>, Vector<T>>, Multiply<Matrix<T>, T>, Index<Vector<T>, int64>, Iterator<Vector<T>>, Drop` | 行主元 LU 满足 P*A=L*U；矩阵求解的主元判断适用于 float32/float64。 |
-| Matrix | <a id="symbol-294"></a>`int64 rows` | 矩阵的行数。 |
-| Matrix | <a id="symbol-295"></a>`int64 cols` | 矩阵的列数。 |
-| Matrix | <a id="symbol-296"></a>`ScalarArray<T> values` | 按声明顺序保存的元素存储。 |
-| 模块 | <a id="symbol-297"></a>`struct LuFactorization` | LU 分解结果，包含下三角、上三角及置换矩阵。 |
-| LuFactorization | <a id="symbol-298"></a>`Matrix<float64> lower` | LU 分解的下三角矩阵。 |
-| LuFactorization | <a id="symbol-299"></a>`Matrix<float64> upper` | LU 分解的上三角矩阵。 |
-| LuFactorization | <a id="symbol-300"></a>`Matrix<float64> permutation` | LU 分解的置换矩阵。 |
-| 模块 | <a id="symbol-301"></a>`struct EigenDecomposition` | 特征分解结果，包含特征值与对应特征向量。 |
-| EigenDecomposition | <a id="symbol-302"></a>`Vector<float64> eigenvalues` | 分解得到的特征值。 |
-| EigenDecomposition | <a id="symbol-303"></a>`Matrix<float64> eigenvectors` | 与特征值对应的特征向量。 |
-| 模块 | <a id="symbol-304"></a>`struct SingularValueDecomposition` | 奇异值分解结果，包含 U、奇异值及 V 的转置。 |
-| SingularValueDecomposition | <a id="symbol-305"></a>`Matrix<float64> u` | 奇异值分解的左奇异向量矩阵。 |
-| SingularValueDecomposition | <a id="symbol-306"></a>`Vector<float64> singularValues` | 分解得到的奇异值。 |
-| SingularValueDecomposition | <a id="symbol-307"></a>`Matrix<float64> vTranspose` | 右奇异向量矩阵 V 的转置。 |
-| 模块 | <a id="symbol-308"></a>`struct JordanDecomposition` | Jordan 分解结果，包含 Jordan 矩阵与变换基。 |
-| JordanDecomposition | <a id="symbol-309"></a>`Matrix<float64> basis` | 将原矩阵转换到分解形式的基矩阵。 |
-| JordanDecomposition | <a id="symbol-310"></a>`Matrix<float64> jordan` | Jordan 标准形矩阵。 |
+| 模块 | <a id="symbol-292"></a>`opcode ScalarStorage` | 线性代数专用数值存储，缓冲在宿主胶水中深复制和释放。 |
+| 模块 | <a id="symbol-293"></a>`struct ScalarArray<T>: Index<T, int64>, Iterator<T>` | 为内建数值类型提供泛型索引外观，元素保存在 opcode 中。 |
+| ScalarArray | <a id="symbol-294"></a>`ScalarStorage storage` | 独占此数组数值缓冲的 opcode 记录；复制时深复制。 |
+| 模块 | <a id="symbol-295"></a>`struct Vector<T>: Add<Vector<T>, Vector<T>>, Subtract<Vector<T>, Vector<T>>, Multiply<Vector<T>, T>, Index<T, int64>, Iterator<T>, Drop` | 稠密数值向量，元素按顺序存储。 |
+| Vector | <a id="symbol-296"></a>`ScalarArray<T> values` | 按声明顺序保存的元素存储。 |
+| 模块 | <a id="symbol-297"></a>`struct Matrix<T>: Add<Matrix<T>, Matrix<T>>, Subtract<Matrix<T>, Matrix<T>>, Multiply<Matrix<T>, Matrix<T>>, Multiply<Vector<T>, Vector<T>>, Multiply<Matrix<T>, T>, Index<Vector<T>, int64>, Iterator<Vector<T>>, Drop` | 行主元 LU 满足 P*A=L*U；矩阵求解的主元判断适用于 float32/float64。 |
+| Matrix | <a id="symbol-298"></a>`int64 rows` | 矩阵的行数。 |
+| Matrix | <a id="symbol-299"></a>`int64 cols` | 矩阵的列数。 |
+| Matrix | <a id="symbol-300"></a>`ScalarArray<T> values` | 按声明顺序保存的元素存储。 |
+| 模块 | <a id="symbol-301"></a>`struct LuFactorization` | LU 分解结果，包含下三角、上三角及置换矩阵。 |
+| LuFactorization | <a id="symbol-302"></a>`Matrix<float64> lower` | LU 分解的下三角矩阵。 |
+| LuFactorization | <a id="symbol-303"></a>`Matrix<float64> upper` | LU 分解的上三角矩阵。 |
+| LuFactorization | <a id="symbol-304"></a>`Matrix<float64> permutation` | LU 分解的置换矩阵。 |
+| 模块 | <a id="symbol-305"></a>`struct EigenDecomposition` | 特征分解结果，包含特征值与对应特征向量。 |
+| EigenDecomposition | <a id="symbol-306"></a>`Vector<float64> eigenvalues` | 分解得到的特征值。 |
+| EigenDecomposition | <a id="symbol-307"></a>`Matrix<float64> eigenvectors` | 与特征值对应的特征向量。 |
+| 模块 | <a id="symbol-308"></a>`struct SingularValueDecomposition` | 奇异值分解结果，包含 U、奇异值及 V 的转置。 |
+| SingularValueDecomposition | <a id="symbol-309"></a>`Matrix<float64> u` | 奇异值分解的左奇异向量矩阵。 |
+| SingularValueDecomposition | <a id="symbol-310"></a>`Vector<float64> singularValues` | 分解得到的奇异值。 |
+| SingularValueDecomposition | <a id="symbol-311"></a>`Matrix<float64> vTranspose` | 右奇异向量矩阵 V 的转置。 |
+| 模块 | <a id="symbol-312"></a>`struct JordanDecomposition` | Jordan 分解结果，包含 Jordan 矩阵与变换基。 |
+| JordanDecomposition | <a id="symbol-313"></a>`Matrix<float64> basis` | 将原矩阵转换到分解形式的基矩阵。 |
+| JordanDecomposition | <a id="symbol-314"></a>`Matrix<float64> jordan` | Jordan 标准形矩阵。 |
 
 ## 函数索引
 

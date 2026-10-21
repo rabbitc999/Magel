@@ -1448,7 +1448,7 @@ static Channel<T> create();
 
 **行为**
 
-创建Channel，返回可供后续操作的值。
+创建当前线程内的本地值队列。
 
 **参数**
 
@@ -1456,7 +1456,7 @@ static Channel<T> create();
 
 **返回值**
 
-`Channel<T>`。创建Channel，返回可供后续操作的值。
+`Channel<T>`。创建当前线程内的本地值队列。
 
 **错误与边界**
 

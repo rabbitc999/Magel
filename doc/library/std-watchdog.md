@@ -10,7 +10,7 @@ import std::watchdog;
 
 ## 公共约定与错误边界
 
-默认关闭。enable 水位单位字节，0 只保留显式请求/分配失败路径，负水位返回 Err(InvalidWatermark)。requestRestart 在安全点结束当前轮，由宿主结束全部旧执行上下文、重置 arena 与分配身份后重跑；未启用返回 Err(NotEnabled)。时间维度同样默认关闭：enableTimeout* 之后整整一个超时周期没有 kick() 就转成显式重启请求，非正超时返回 Err(InvalidTimeout)。不是硬件看门狗，也不承诺宿主一定重启。
+默认关闭。enable 设置内存水位字节数；requestRestart 请求 VM 安全点结束本轮，由宿主重置 arena 与分配身份后重跑。enableTimeout 的超时由 VM 内部截止时间检查，已注入时钟时单位为纳秒，否则为逻辑指令数；kick 推迟截止时间，disableTimeout 关闭超时。不依赖事件回调；不能抢占正在执行的阻塞宿主函数。
 
 ## 参考代码
 
@@ -62,18 +62,19 @@ int64 main() {
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-508"></a>`enum WatchdogError` | 看门狗错误。 |
-| WatchdogError | `NotEnabled, InvalidWatermark, InvalidTimeout` | 看门狗错误。 变体及载荷见声明。 |
+| 模块 | <a id="symbol-525"></a>`enum WatchdogError` | VM 安全点直接检查超时，不依赖事件或用户回调。无宿主时钟时单位为逻辑指令。 |
+| WatchdogError | `NotEnabled, InvalidWatermark, InvalidTimeout` | VM 安全点直接检查超时，不依赖事件或用户回调。无宿主时钟时单位为逻辑指令。 变体及载荷见声明。 |
 
 ## 函数索引
 
 | 名称 | 声明 |
 | --- | --- |
 | [enable](#api-0) | `Result<int64, WatchdogError> enable(int64 watermarkBytes)` |
-| [requestRestart](#api-1) | `Result<bool, WatchdogError> requestRestart()` |
-| [enableTimeout](#api-2) | `Result<int64, WatchdogError> enableTimeout(int64 timeoutUnits)` |
+| [requestRestart](#api-1) | `Result<int64, WatchdogError> requestRestart()` |
+| [enableTimeout](#api-2) | `Result<int64, WatchdogError> enableTimeout(int64 units)` |
 | [enableTimeoutMillis](#api-3) | `Result<int64, WatchdogError> enableTimeoutMillis(int64 millis)` |
 | [kick](#api-4) | `Result<bool, WatchdogError> kick()` |
+| [disableTimeout](#api-5) | `void disableTimeout()` |
 
 <a id="api-0"></a>
 
@@ -89,17 +90,15 @@ Result<int64, WatchdogError> enable(int64 watermarkBytes);
 
 启用软重启看门狗并设置水位。
 
-打开看门狗并给出内存水位（字节）。`watermarkBytes = 0` 表示"不按水位判"， 只等显式请求 / 分配失败。
-
 **参数**
 
 | 参数 | 类型／声明 | 含义 | 默认值 |
 | --- | --- | --- | --- |
-| `watermarkBytes` | `int64 watermarkBytes` | 水位。 | 无 |
+| `watermarkBytes` | `int64 watermarkBytes` | 内存水位字节数，0 不按水位判断 | 无 |
 
 **返回值**
 
-`Result<int64, WatchdogError>`。`Ok(watermarkBytes)`；水位为负返回 `Err(InvalidWatermark)`。
+`Result<int64, WatchdogError>`。启用软重启看门狗并设置水位。
 
 **错误与边界**
 
@@ -111,7 +110,7 @@ Result<int64, WatchdogError> enable(int64 watermarkBytes);
 std::watchdog::enable(watermarkBytes);
 ```
 
-**源码**：[source/std/watchdog.mgl:79](../../source/std/watchdog.mgl#L79)。
+**源码**：[source/std/watchdog.mgl:9](../../source/std/watchdog.mgl#L9)。
 
 **完整示例**：[doc/examples/library/watchdog.mgl](../../doc/examples/library/watchdog.mgl)。
 
@@ -122,14 +121,12 @@ std::watchdog::enable(watermarkBytes);
 **声明**
 
 ```magel
-Result<bool, WatchdogError> requestRestart();
+Result<int64, WatchdogError> requestRestart();
 ```
 
 **行为**
 
 请求宿主在安全点结束本轮并处理软重启。
-
-显式请求一次软重启：写"标志 + 原因"，VM 在下一条指令边界停下本轮，宿主重置 arena 后重跑。 没 `enable()` / `enableTimeout*()` 过返回 `Err(NotEnabled)`，**不产生重启**。
 
 **参数**
 
@@ -137,7 +134,7 @@ Result<bool, WatchdogError> requestRestart();
 
 **返回值**
 
-`Result<bool, WatchdogError>`。`Ok(true)` = 请求已记下（本轮马上会在安全点结束）。
+`Result<int64, WatchdogError>`。请求宿主在安全点结束本轮并处理软重启。
 
 **错误与边界**
 
@@ -149,7 +146,7 @@ Result<bool, WatchdogError> requestRestart();
 std::watchdog::requestRestart();
 ```
 
-**源码**：[source/std/watchdog.mgl:95](../../source/std/watchdog.mgl#L95)。
+**源码**：[source/std/watchdog.mgl:14](../../source/std/watchdog.mgl#L14)。
 
 **完整示例**：[doc/examples/library/watchdog.mgl](../../doc/examples/library/watchdog.mgl)。
 
@@ -160,22 +157,22 @@ std::watchdog::requestRestart();
 **声明**
 
 ```magel
-Result<int64, WatchdogError> enableTimeout(int64 timeoutUnits);
+Result<int64, WatchdogError> enableTimeout(int64 units);
 ```
 
 **行为**
 
-打开 ③ 时间维度：**整整 `timeoutUnits` 个时间单位没有 `kick()`，就请求一次软重启**。 单位与 VM 时钟一致（与 `std::event::Timer` 的周期同一个口径：宿主注入过纳秒时钟时是 纳秒，否则 1 条指令 = 1 个时间单位）。 本函数同时把看门狗本体打开（等价于 `enable(0)`，即不按水位判）；**已经 `enable()` 过 就不动原来的水位**。重复调用按最后一次的超时换掉定时器，并重新开始计时。
+启用当前 VM 的内部超时检查，单位取决于宿主时钟配置；不注册事件回调。
 
 **参数**
 
 | 参数 | 类型／声明 | 含义 | 默认值 |
 | --- | --- | --- | --- |
-| `timeoutUnits` | `int64 timeoutUnits` | 超时（时间单位，必须为正）。 | 无 |
+| `units` | `int64 units` | 看门狗超时单位 | 无 |
 
 **返回值**
 
-`Result<int64, WatchdogError>`。`Ok(timeoutUnits)`；不为正返回 `Err(InvalidTimeout)`。
+`Result<int64, WatchdogError>`。启用当前 VM 的内部超时检查，单位取决于宿主时钟配置；不注册事件回调。
 
 **错误与边界**
 
@@ -184,10 +181,10 @@ Result<int64, WatchdogError> enableTimeout(int64 timeoutUnits);
 **调用形式**
 
 ```magel
-std::watchdog::enableTimeout(timeoutUnits);
+std::watchdog::enableTimeout(units);
 ```
 
-**源码**：[source/std/watchdog.mgl:129](../../source/std/watchdog.mgl#L129)。
+**源码**：[source/std/watchdog.mgl:18](../../source/std/watchdog.mgl#L18)。
 
 **完整示例**：[doc/examples/library/watchdog.mgl](../../doc/examples/library/watchdog.mgl)。
 
@@ -203,17 +200,17 @@ Result<int64, WatchdogError> enableTimeoutMillis(int64 millis);
 
 **行为**
 
-毫秒版：`millis * 1000000` 个时间单位（与 `std::event::Timer::everyMillis` 同一个换算）。
+将毫秒转换为纳秒超时单位，拒绝非正值和溢出。
 
 **参数**
 
 | 参数 | 类型／声明 | 含义 | 默认值 |
 | --- | --- | --- | --- |
-| `millis` | `int64 millis` | 超时（毫秒，必须为正）。 | 无 |
+| `millis` | `int64 millis` | 等待毫秒数；-1 无限、0 非阻塞，waitFor 和 sleepFor 不接受负数 | 无 |
 
 **返回值**
 
-`Result<int64, WatchdogError>`。同 `enableTimeout`。
+`Result<int64, WatchdogError>`。将毫秒转换为纳秒超时单位，拒绝非正值和溢出。
 
 **错误与边界**
 
@@ -225,7 +222,7 @@ Result<int64, WatchdogError> enableTimeoutMillis(int64 millis);
 std::watchdog::enableTimeoutMillis(millis);
 ```
 
-**源码**：[source/std/watchdog.mgl:156](../../source/std/watchdog.mgl#L156)。
+**源码**：[source/std/watchdog.mgl:24](../../source/std/watchdog.mgl#L24)。
 
 **完整示例**：[doc/examples/library/watchdog.mgl](../../doc/examples/library/watchdog.mgl)。
 
@@ -241,7 +238,7 @@ Result<bool, WatchdogError> kick();
 
 **行为**
 
-喂一口狗：告诉时间维度"这一轮还活着"。每个超时周期之内至少调一次。 没 `enableTimeout*()` 过返回 `Err(NotEnabled)`（没开这一维时不必喂）。
+推迟当前 VM 看门狗截止时间，未启用超时返回 NotEnabled。
 
 **参数**
 
@@ -249,7 +246,7 @@ Result<bool, WatchdogError> kick();
 
 **返回值**
 
-`Result<bool, WatchdogError>`。`Ok(true)` = 记下了。
+`Result<bool, WatchdogError>`。推迟当前 VM 看门狗截止时间，未启用超时返回 NotEnabled。
 
 **错误与边界**
 
@@ -261,6 +258,42 @@ Result<bool, WatchdogError> kick();
 std::watchdog::kick();
 ```
 
-**源码**：[source/std/watchdog.mgl:168](../../source/std/watchdog.mgl#L168)。
+**源码**：[source/std/watchdog.mgl:28](../../source/std/watchdog.mgl#L28)。
+
+**完整示例**：[doc/examples/library/watchdog.mgl](../../doc/examples/library/watchdog.mgl)。
+
+<a id="api-5"></a>
+
+### disableTimeout（6）
+
+**声明**
+
+```magel
+void disableTimeout();
+```
+
+**行为**
+
+停止当前 VM 内部看门狗超时，保留内存水位和显式重启能力。
+
+**参数**
+
+无显式参数。实例方法使用当前接收者。
+
+**返回值**
+
+无返回值。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+std::watchdog::disableTimeout();
+```
+
+**源码**：[source/std/watchdog.mgl:32](../../source/std/watchdog.mgl#L32)。
 
 **完整示例**：[doc/examples/library/watchdog.mgl](../../doc/examples/library/watchdog.mgl)。

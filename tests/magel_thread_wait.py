@@ -37,7 +37,7 @@ void worker() {
 }
 '''
         body = '''int64 main() {
-    IsolatedThreadHandle task = std::thread::create(worker);
+    Thread task = std::thread::create(worker);
     if (std::thread::tryWait(task)) { return 11; }
     int64 started = std::clock::nowNanos();
     if (std::thread::waitFor(task, 20)) { return 12; }
@@ -67,8 +67,8 @@ void worker() {
                 ('std::thread::waitFor(invalid, 0)', '无效、自身或已等待'),
             ):
                 result = run(prelude + '''int64 main() {
-    IsolatedThreadHandle task = std::thread::create(worker);
-    IsolatedThreadHandle invalid;
+    Thread task = std::thread::create(worker);
+    Thread invalid;
     ''' + expression + ''';
     return 0;
 }
@@ -78,7 +78,7 @@ void worker() {
             result = run('''import std::thread;
 void leaf() { std::lang::panic("wait failure"); }
 int64 main() {
-    IsolatedThreadHandle task = std::thread::create(leaf);
+    Thread task = std::thread::create(leaf);
     std::thread::waitFor(task, 5000);
     return 0;
 }
@@ -89,7 +89,7 @@ int64 main() {
             result = run('''import std::thread;
 void worker() {}
 int64 main() {
-    IsolatedThreadHandle task = std::thread::create(worker);
+    Thread task = std::thread::create(worker);
     if (!std::thread::waitFor(task, 5000)) { return 14; }
     std::thread::tryWait(task);
     return 0;

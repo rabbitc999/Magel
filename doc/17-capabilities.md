@@ -71,10 +71,10 @@ Magel 可通过 `abi` 调用 C 动态库，或调用 Registry 注册的 C++ 胶�
 ## 标准库、目标宿主与工具
 
 标准库覆盖容器算法、迭代器、数学与数值分析、文本与编码、JSON/TOML/CSV、文件与目录、
-TCP/基础 HTTP、SQL 驱动、协程、隔离线程、消息、显式共享值、事件和看门狗。
+TCP/基础 HTTP、SQL 驱动、隔离线程、有界通道、消息、显式共享值、显式事件和看门狗。
 模块与重载清单以[API 索引](library/README.md)为准，不在总览手工维护模块总数。
-HTTP 接口不包含 TLS；外部数据库需要相应客户端和服务。异步事件有独立的回调寿命契约，
-不能由同步函数包装获得任意异步调用能力。
+HTTP 接口不包含 TLS；外部数据库需要相应客户端和服务。线程使用 `std::thread::Thread`，支持复制初始参数、取消、状态、完成结果、线程组和固定线程池；跨线程通信有容量与等待预算，事件仅显式接收。
+宿主事件投递器使用弱引用，旧协程与中断回调已删除；阻塞宿主调用的取消受其超时约束。详见[并发模型](29-thread-concurrency.md)。
 
 桌面与嵌入式 Linux 共用 `library/stackvm/` VM 核心。目标需具备 C++17 工具链、足够的内存和
 所需系统服务；原生胶水与依赖库必须按目标架构构建。Linux 设备使用普通宿主，
@@ -105,6 +105,6 @@ Map、Set 的 keyAt、valAt、at、遍历及默认文本均不承诺排序或插
 
 Image 使用可深复制的 opcode，宽高与连续 RGBA 像素由胶水拥有；width()/height() 查询尺寸，pixels() 导出独立列表快照。TcpSocket、TcpListener 使用不可复制的 opcode，作用域退出自动关闭，显式 move 转移所有权，各连接独立保存读状态与错误。线性代数 Vector<T>、Matrix<T> 保留泛型聚合外观，ScalarArray<T> 的 ScalarStorage opcode 保存内建整数与浮点数值，复制缓冲互不影响。字符串拼接、切片、比较、查找及数值转文本由标准胶水实现；内部入口统一使用 __std_ 前缀，VM 保留执行控制、内存安全与闭包等核心机制。
 
-网络异步入口使用非阻塞轮询和 NET_PENDING，配合协程让出执行权；connectAsync 首批仅接受数值 IPv4，域名解析保留在同步 connect。sendAsync 返回部分发送字节数并接受 offset；receiveLineAsync 保留未完成行，缓冲上限为 1 MiB。
+网络异步入口使用非阻塞轮询和 NET_PENDING，未就绪时采用可取消线程睡眠或在专用线程使用同步 I/O，避免忙轮询；connectAsync 首批仅接受数值 IPv4，域名解析保留在同步 connect。sendAsync 返回部分发送字节数并接受 offset；receiveLineAsync 保留未完成行，缓冲上限为 1 MiB。
 
 隔离线程的 `waitFor(thread, millis)` 支持非负毫秒超时，`tryWait(thread)` 提供零超时等待；成功完成并回收返回 `true`，超时返回 `false` 且不取消目标。目标失败仍传播原始诊断；句柄成功回收后不能再次等待。

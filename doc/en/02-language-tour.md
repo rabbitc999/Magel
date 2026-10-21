@@ -468,7 +468,7 @@ The tour stops here. The other half of Magel has its own documents:
 | Resource management without a GC | `Drop` / `Closeable`, deterministic release at end of scope | [Core concepts](03-core-concepts.md) |
 | `abi` blocks and the C ABI | Declare external functions / export Magel functions to C | [Host integration and C ABI](08-host-integration.md) |
 | Annotations and reflection | Compile-time metadata, queryable and callable at run time | [Language reference](04-language-reference.md) |
-| Coroutines and concurrency | `std::coroutine`, `std::thread` | [Standard library overview](07-stdlib-overview.md) |
+| Threads and concurrency | `std::thread`, `std::concurrency` | [Standard library overview](07-stdlib-overview.md) |
 | Bytecode delivery | `.svmb`, symbol compression | [Delivery security](05-delivery-security.md) |
 
 ---

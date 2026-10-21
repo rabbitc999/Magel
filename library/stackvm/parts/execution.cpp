@@ -826,71 +826,40 @@ OptimizationReport optimize(QuadFile &file, std::size_t maxRounds, bool collectT
     return report;
 }
 
+/**
+ * @brief 建立虚拟机独立的协作停止标志。
+ * @param trace 是否记录逐指令执行轨迹。
+ */
+Machine::Machine(bool trace) : control_(std::make_shared<ExecutionControl>()), trace_(trace) {}
+/**
+ * @brief 设置协作停止请求，执行与等待安全点将观察此原子标志。
+ */
+void Machine::requestStop() { control_->requested.store(true, std::memory_order_release); }
 #if STACKVM_WITH_THREADS
 /**
- * @brief 宿主投递的中断邮箱（`Machine::raiseInterrupt`）。
- *
- * `posted` 是**无锁快路径**计数：没有宿主投递时，VM 每条指令只读一个原子量，
- * 不加锁；有投递时取锁把队列整体搬走。**跨线程才需要这把锁**，所以裁剪配置
- * （`STACKVM_WITH_THREADS=0`）整段裁掉，只剩 VM 自己的软件定时器。
+ * @brief 返回当前运行的弱引用投递器，不捕获 Machine 裸指针。
+ * @return 运行结束后稳定返回关闭状态的投递器。
  */
-struct InterruptMailbox
+EventPoster Machine::eventPoster()
 {
-    std::mutex mutex;
-    std::atomic<std::size_t> posted{ 0u };
-    Memory::Vector<InterruptEvent> queue;
-};
-
-/**
- * @brief 向**当前虚拟机**投递一次中断事件（交绑定在该定时器上的回调）。
- *
- * 这是胶水层触发 MAGEL 中断事件函数的入口，对应 `std::event::Timer` 的 `handle`。
- * **异步 + 安全点交付**：宿主只把事件挂进邮箱就返回，回调由 VM 在**下一条指令
- * 边界**用执行线程调用 —— 不会重入正在跑的宿主回调，也不用自己加锁保护 VM 状态。
- * 句柄无效 / 定时器已 `destroy` / 还没绑回调时事件被丢弃（空操作）。
- * @param timer `std::event::Timer` 的句柄。
- * @param source 原样交给回调的来源值。
- */
-void Machine::raiseInterrupt(std::int64_t timer, std::int64_t source)
-{
-    if (interruptMailbox_ == nullptr) interruptMailbox_ = std::make_shared<InterruptMailbox>();
-    std::lock_guard<std::mutex> guard(interruptMailbox_->mutex);
-    interruptMailbox_->queue.push_back(InterruptEvent{ timer, source, 0, threadId_ });
-    interruptMailbox_->posted.fetch_add(1u, std::memory_order_relaxed);
+    const std::weak_ptr<EventQueue> target = events_;
+    return [target](RuntimeEvent event) { return postEvent(target, event); };
 }
-
 /**
- * @brief 按中断句柄投递：函数指针 + 定时器 + 归属线程。
- *
- * `handle.thread` 不是本 VM 的线程时**忽略**（调用方不用自己判断，投错线程是空操作）；
- * `handle.callback` 非 0 时直接跑它，所以宿主不用先让 MAGEL 侧 `onInterrupt` 绑回调；
- * `handle.timer` 仍然参与"句柄无效 / 定时器已经 destroy"的判定（那种情况照样丢弃）。
- * @param handle 中断句柄（见 @ref InterruptHandle）。
- * @param source 交给回调的来源值。
+ * @brief 将非负毫秒等待转换为饱和截止时间；负一表示无限。
+ * @param millis 等待预算。
+ * @return 单调截止时间。
  */
-void Machine::raiseInterrupt(const InterruptHandle &handle, std::int64_t source)
+static std::chrono::steady_clock::time_point threadDeadline(std::int64_t millis)
 {
-    /* 只投给归属线程的 VM：别的线程的同名句柄不会误触发。 */
-    if (handle.thread != threadId_) return;
-    if (handle.timer == 0 && handle.callback == 0) return;
-    if (interruptMailbox_ == nullptr) interruptMailbox_ = std::make_shared<InterruptMailbox>();
-    std::lock_guard<std::mutex> guard(interruptMailbox_->mutex);
-    interruptMailbox_->queue.push_back(
-        InterruptEvent{ handle.timer, source, handle.callback, handle.thread });
-    interruptMailbox_->posted.fetch_add(1u, std::memory_order_relaxed);
+    const auto limit = std::chrono::steady_clock::time_point::max();
+    const auto now = std::chrono::steady_clock::now();
+    const auto available = std::chrono::duration_cast<std::chrono::milliseconds>(limit - now).count();
+    return millis < 0 || millis >= available ? limit : now + std::chrono::milliseconds(millis);
 }
+#endif
 
-/**
- * @brief 清除虚拟机待处理的中断。
- */
-void Machine::clearInterrupts()
-{
-    if (interruptMailbox_ == nullptr) return;
-    std::lock_guard<std::mutex> guard(interruptMailbox_->mutex);
-    interruptMailbox_->queue.clear();
-    interruptMailbox_->posted.store(0u, std::memory_order_relaxed);
-}
-
+#if STACKVM_WITH_THREADS
 /**
  * @brief 线程运行时：每个隔离宿主线程一个 VM，消息在它们之间复制传递。
  *
@@ -905,6 +874,11 @@ struct ThreadRuntime
         std::thread host;
         Memory::Deque<std::shared_ptr<TransferPacket>> inbox;
         RunResult result;
+        std::shared_ptr<ExecutionControl> control = std::make_shared<ExecutionControl>();
+        std::shared_ptr<TransferPacket> initial;
+        std::shared_ptr<TransferPacket> reserved;
+        bool inboxClosed = false;
+        bool externalWaiting = false;
         bool done = false;
         bool joined = false;
         bool reported = false;
@@ -918,7 +892,16 @@ struct ThreadRuntime
     std::condition_variable changed;
     Memory::Map<std::size_t, std::shared_ptr<Worker>> workers;
     std::size_t nextId = 1u;
-    bool closing = false;
+    struct Channel
+    {
+        Memory::Deque<std::shared_ptr<TransferPacket>> values;
+        Memory::String type;
+        std::size_t capacity = 0;
+        bool closed = false;
+    };
+    Memory::Map<std::int64_t, std::shared_ptr<Channel>> channels;
+    std::int64_t nextChannel = 1;
+    std::atomic<bool> closing{ false };
     std::atomic<bool> panicked{ false };  ///< 发布快照后置位，所有 VM 安全点检查。
     Memory::String panicError;
     std::size_t panicThread = 0;
@@ -939,7 +922,7 @@ struct ThreadRuntime
             const Worker &worker = *item.second;
             if (worker.done) continue;
             live = true;
-            if (worker.timedWaiting) return false;
+            if (worker.timedWaiting || worker.externalWaiting) return false;
             if (!worker.inbox.empty()) return false;
             if (worker.receiving) continue;
             if (!worker.joining) return false;
@@ -985,6 +968,17 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         result.error = featureErrors.front();
         return result;
     }
+    // 已请求重启时不再分配线程或事件资源，保证提前返回的投递器保持关闭。
+    if (Memory::restartSignal().pending())
+    {
+        result.recoverable = true;
+        result.recoverableReason = static_cast<int>(Memory::restartSignal().reason());
+        return result;
+    }
+    if (threadId_ == 0u) control_->requested.store(false, std::memory_order_release);
+#if STACKVM_WITH_THREADS
+    events_ = std::make_shared<EventQueue>();
+#endif
     // 本次运行生效的调试表：调用方临时挂的优先，其次是程序自带的那张。
     debugInfo_ = debugOverride_ != nullptr ? debugOverride_ : (program.debug.empty() ? nullptr : &program.debug);
     currentLocation_ = SourceLocation{};
@@ -995,6 +989,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
     {
         threadRuntime_ = Memory::makeShared<ThreadRuntime>();
         threadRuntime_->workers.emplace(0u, Memory::makeShared<ThreadRuntime::Worker>());
+        threadRuntime_->workers.at(0u)->control = control_;
     }
 #endif
     if (timeCallback_)
@@ -1010,24 +1005,21 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
     Memory::Vector<std::int64_t *> registerSlots;
     execution_detail::DataCapacityIndex dataCapacity(data_);
     const register_core::Region *boundRegion = nullptr;
-    if (Memory::restartSignal().pending())
-    {
-        result.recoverable = true;
-        result.recoverableReason = static_cast<int>(Memory::restartSignal().reason());
-        return result;
-    }
     Memory::Vector<Slot> globalSlots(plan.types.size());
     Memory::Vector<bool> globalBound(plan.types.size(), false);
     // 只对内部固定入口预绑定；宿主入口额外校验注册表版本。
     Memory::Vector<const SlotNativeEntry *> internalEntries(plan.types.size(), nullptr);
     Memory::Vector<const NativeRegistry::Entry *> externalEntries(plan.types.size(), nullptr);
     Memory::Vector<std::size_t> externalRevisions(plan.types.size(), absent);
-    /* 中断事件 / 软件定时器：表按 run() 一份，句柄随 run() 失效（`.svmb` 重新运行时重新建）。 */
-    TimerRuntime timers;
+    /* 看门狗状态按运行保存，用户事件仅在显式接收时消费。 */
+    WatchdogRuntime watchdog;
+#if STACKVM_WITH_THREADS
+    RuntimeEvent receivedEvent;
+#endif
     // 调用帧栈：每个活动调用独占一帧，返回后清空值并可限量缓存存储，
     // 递归的每层因此各有各的局部变量存储。
     Memory::Vector<Memory::UniquePtr<Frame>> frames;
-    // 只缓存已返回的小帧；活动递归帧和协程帧始终独占存储。
+    // 只缓存已返回的小帧；活动递归帧始终独占存储。
     Memory::Vector<Memory::UniquePtr<Frame>> returnedFrames;
     Memory::Vector<PendingArg> pending;
     // 堆：紧跟在数据区后面长（没有数据区时从地址 1 开始，0 留给空指针）。
@@ -1059,7 +1051,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             (void)ignored;
             nativeNames.emplace(program.symbolKey(name), name);
         }
-        for (const char *name : { "__std_message_receive_coroutine", "__std_message_receive_thread", "__std_message_send_coroutine", "__std_message_send_thread", "__std_shared_create", "__std_shared_get", "__std_shared_set", "__std_shared_swap", "main", "std::coroutine::create", "std::coroutine::current", "std::coroutine::parent", "std::coroutine::receive", "std::coroutine::send", "std::coroutine::wait", "std::coroutine::yelid", "std::coroutine::yield", "std::thread::create", "std::thread::current", "std::thread::parent", "std::thread::receive", "std::thread::send", "std::thread::wait", "std::thread::waitFor" })
+        for (const char *name : { "__std_thread_create", "__std_channel_send", "__std_channel_take", "__std_mail_send", "std::concurrency::__channelCreate", "std::concurrency::__channelClose", "std::concurrency::__poll", "std::concurrency::__fetchAdd", "std::event::__receive", "std::event::__timer", "std::event::__destroy", "std::event::__source", "std::event::__tag", "std::event::__missed", "std::event::__id", "std::event::__post", "std::event::__close", "std::thread::requestStop", "std::thread::stopRequested", "std::thread::state", "std::thread::__error", "std::thread::__trace", "std::thread::sleepFor", "std::thread::__waitResult", "__std_message_receive_thread", "__std_message_send_thread", "__std_shared_create", "__std_shared_get", "__std_shared_set", "__std_shared_swap", "main", "std::thread::create", "std::thread::current", "std::thread::parent", "std::thread::receive", "std::thread::send", "std::thread::wait", "std::thread::waitFor" })
             nativeNames.emplace(program.symbolKey(Memory::String(name)), name);
         if (data_)
             for (const auto &[name, offset] : data_->symbols)
@@ -1073,7 +1065,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             const auto symbol = item.second;
             const auto alias = nativeNames.find(item.first);
             const auto &name = alias == nativeNames.end() ? item.first : alias->second;
-            specialEntries[symbol] = name.compare(0, 15, "std::coroutine::") == 0 || name.compare(0, 13, "std::thread::") == 0 || name.compare(0, 13, "__std_message_") == 0 || name.compare(0, 12, "__std_shared_") == 0;
+            specialEntries[symbol] = name.compare(0, 14, "std::event::__") == 0 || name.compare(0, 20, "std::concurrency::__") == 0 || name.compare(0, 6, "__std_") == 0 || name.compare(0, 13, "std::thread::") == 0 || name.compare(0, 13, "__std_message_") == 0 || name.compare(0, 12, "__std_shared_") == 0;
             internalEntries[symbol] = kSlotNatives.find(name);
             if (alias != nativeNames.end()) nativeAliases[symbol] = &alias->second;
         }
@@ -1099,40 +1091,6 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
     bool entryPending = !entryLabel_.empty();
     bool jumped = false;                     ///< 本步是否改过 pc（跳转 / 调用 / 返回）
     Memory::Vector<Memory::String> numbers;  // write 的数值：多个值之间一个空格
-    Memory::Vector<CoroutineContext> coroutines(1u);
-    std::size_t currentCoroutine = 0u;
-    coroutines[0].state = CoroutineContext::State::Running;
-
-    auto saveCoroutine = [&](std::size_t resumePc, CoroutineContext::State state) {
-        CoroutineContext &context = coroutines[currentCoroutine];
-        context.stack = std::move(stack);
-        context.frames = std::move(frames);
-        context.pending = std::move(pending);
-        context.pc = resumePc;
-        context.state = state;
-    };
-    auto loadCoroutine = [&](std::size_t index) {
-        currentCoroutine = index;
-        CoroutineContext &context = coroutines[index];
-        stack = std::move(context.stack);
-        frames = std::move(context.frames);
-        pending = std::move(context.pending);
-        pc = context.pc;
-        context.state = CoroutineContext::State::Running;
-        jumped = true;
-    };
-    auto nextRunnable = [&](std::size_t after) -> std::size_t {
-        if (coroutines.size() <= 1u) return coroutines.size();
-        for (std::size_t offset = 1u; offset <= coroutines.size(); ++offset)
-        {
-            const std::size_t index = (after + offset) % coroutines.size();
-            const CoroutineContext::State state = coroutines[index].state;
-            if (state == CoroutineContext::State::Ready || state == CoroutineContext::State::Suspended)
-                return index;
-        }
-        return coroutines.size();
-    };
-
     /**
      * @brief 地址空间：低地址是数据区（编译期布局），再往后是堆。
      *
@@ -1412,7 +1370,6 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         {
             DebugFrame entry;
             entry.threadId = threadId_;
-            entry.coroutineId = currentCoroutine;
             if (frame)
             {
                 /* 帧里存的是**返回地址**（调用指令的下一条），往回退一条才是调用点本身。 */
@@ -1433,7 +1390,6 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         }
         DebugFrame current;
         current.threadId = threadId_;
-        current.coroutineId = currentCoroutine;
         current.instruction = at;
         if (debugInfo_ != nullptr)
             if (const SourceLocation *where = debugInfo_->lookup(at)) current.location = *where;
@@ -1624,36 +1580,27 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
 
     Memory::Function<bool()> executeOne;
     Memory::Function<bool(const Memory::String &, const Memory::String &)> callNative;
-    /* 中断交付（定义在 executeOne 之前，见下面的注释）：线程等待 / 收消息的循环也要用它。 */
-    Memory::Function<void()> deliverInterrupts;
+    /* 等待与执行共用停止和看门狗检查。 */
+    Memory::Function<void()> checkExecution;
 
-    /*
-     * 等线程 / 收消息时**中断优先**：不能"睡到条件成立才醒"，否则定时器和宿主投递的
-     * 中断会被线程等待卡住。改成小步等待，每步先交付一轮中断。
-     *
-     * 交付时**必须释放线程锁**：处理器里可能再调线程 / 共享值函数（它们要同一把锁），
-     * 持锁交付就是自锁。谓词在放锁前后各查一次，避免丢掉唤醒。
-     *
-     * 只有线程等待才需要它（裁剪配置 `STACKVM_WITH_THREADS=0` 时整段裁掉）。
-     */
 #if STACKVM_WITH_THREADS
     /**
-     * @brief 在条件成立、执行失败或单调时钟截止时间到达前等待线程通知，并保持现有中断交付。
-     * @param guard 调用方持有的线程运行时锁；交付回调时暂时释放。
+     * @brief 在条件成立、执行失败或单调时钟截止时间到达前等待线程通知，并检查取消和看门狗。
+     * @param guard 调用方持有的线程运行时锁；检查安全点时暂时释放。
      * @param ready 持锁检查的完成条件，唤醒后重新检查以处理虚假唤醒。
      * @param deadline 最晚等待时间；默认最大时间点表示不限制等待时间。
      * @note 返回时仍持有 guard，调用方负责区分完成、超时和失败。
      */
-    const auto waitWithInterrupts = [&](std::unique_lock<std::mutex> &guard,
-                                        const Memory::Function<bool()> &ready,
-                                        std::chrono::steady_clock::time_point deadline = std::chrono::steady_clock::time_point::max()) {
-        if (ready()) return;
+    const auto waitForChange = [&](std::unique_lock<std::mutex> &guard,
+                                   const Memory::Function<bool()> &ready,
+                                   std::chrono::steady_clock::time_point deadline = std::chrono::steady_clock::time_point::max()) {
+        if (ready() || std::chrono::steady_clock::now() >= deadline) return;
         for (;;)
         {
             guard.unlock();
-            deliverInterrupts();
+            checkExecution();
             guard.lock();
-            if (ready() || !result.error.empty()) return;
+            if (ready() || !result.error.empty() || result.cancelled || result.recoverable) return;
             const auto now = std::chrono::steady_clock::now();
             if (now >= deadline) return;
             threadRuntime_->changed.wait_until(guard, std::min(deadline, now + std::chrono::milliseconds(1)));
@@ -1662,8 +1609,6 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
 #endif /* STACKVM_WITH_THREADS */
     NativeCallContextImpl::Invoker invokeFunction;
     std::size_t nativeCallbackDepth = 0u;
-    /* 中断处理器运行中：放宽消息 / 协程 / 共享值限制（见 deliverInterrupts）。 */
-    bool interruptDelivery = false;
 
     invokeFunction = [&](std::int64_t functionPointer,
                          const Memory::Vector<NativeValue> &arguments,
@@ -1783,7 +1728,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         context.programArguments = &programArguments_;
         context.invoker = &invokeFunction;
         context.objects = &objects;
-        context.timers = &timers;
+        context.watchdog = &watchdog;
         context.machine = this;
         context.threadId = threadId_;
         context.exitRequested = &exitRequested;
@@ -1817,18 +1762,348 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         if (optimizeExecution_ && symbol != absent && !specialEntries[symbol] && pc < program.code.size() && &rawName == &program.code[pc].name && plan.code[pc].target != absent && !resolveExternal(symbol, rawName)) return false;
         const auto alias = nativeNames.find(rawName);
         const Memory::String &name = alias == nativeNames.end() ? rawName : alias->second;
+        std::shared_ptr<TransferPacket> startupPacket;
+        const bool typedCreate = name == "__std_thread_create";
+#if STACKVM_WITH_THREADS
+        if (typedCreate || name == "__std_channel_send" || name == "__std_mail_send" || name == "__std_channel_take")
+        {
+            const bool take = name == "__std_channel_take";
+            const bool mail = name == "__std_mail_send";
+            const std::size_t expected = take ? 3 : typedCreate ? 5 :
+                                                                  6;
+            if (!threadsEnabled_ || !threadRuntime_ || nativeCallbackDepth || pending.size() != expected)
+            {
+                fail("跨线程传值需要启用线程、正确参数且不位于同步胶水回调内");
+                pending.clear();
+                return true;
+            }
+            NativeContext context;
+            context.heap = &heap;
+            context.data = data_;
+            context.objects = &objects;
+            const std::size_t base = take ? 0 : 1;
+            Memory::String type;
+            if (!nativeReadCString(context, static_cast<std::size_t>(pending[base + 2].value.integer), &type))
+            {
+                fail(context.error);
+                pending.clear();
+                return true;
+            }
+            if (take)
+            {
+                std::shared_ptr<TransferPacket> packet;
+                {
+                    std::lock_guard<std::mutex> lock(threadRuntime_->mutex);
+                    packet = threadRuntime_->workers.at(threadId_)->reserved;
+                }
+                pending.clear();
+                if (!packet || packet->type != type)
+                {
+                    fail("线程或通道消息类型不匹配：期望 " + type);
+                    return true;
+                }
+                Slot value;
+                if (!restoreTransfer(context, *packet, &value))
+                    fail(context.error);
+                else if (!returnDest.empty())
+                    assign(returnDest, value);
+                {
+                    std::lock_guard<std::mutex> lock(threadRuntime_->mutex);
+                    threadRuntime_->workers.at(threadId_)->reserved.reset();
+                }
+                return true;
+            }
+            const auto target = pending[0].value.integer;
+            const auto timeout = typedCreate ? -1 : pending[5].value.integer;
+            auto packet = Memory::makeShared<TransferPacket>();
+            if (timeout < -1 || !captureTransfer(context, pending[4].value, static_cast<int>(pending[1].value.integer), pending[2].value.integer, type, packet.get()))
+            {
+                fail(context.error.empty() ? Memory::String("等待毫秒数不能小于 -1") : context.error);
+                pending.clear();
+                return true;
+            }
+            if (packet->value.objectIdentity == 0 && type.find("fn(") != Memory::String::npos && isObjectHandle(packet->value.integer))
+            {
+                fail("异步任务与消息不能传递带捕获的函数值");
+                pending.clear();
+                return true;
+            }
+            if (typedCreate)
+            {
+                startupPacket = packet;
+                pending.resize(1);
+            }
+            else
+            {
+                pending.clear();
+                std::unique_lock<std::mutex> lock(threadRuntime_->mutex);
+                const auto self = threadRuntime_->workers.at(threadId_);
+                std::shared_ptr<ThreadRuntime::Channel> channel;
+                std::shared_ptr<ThreadRuntime::Worker> worker;
+                if (mail)
+                {
+                    const auto found = target < 0 ? threadRuntime_->workers.end() : threadRuntime_->workers.find(static_cast<std::size_t>(target));
+                    if (found != threadRuntime_->workers.end()) worker = found->second;
+                }
+                else
+                {
+                    const auto found = threadRuntime_->channels.find(target);
+                    if (found != threadRuntime_->channels.end()) channel = found->second;
+                }
+                if ((!mail && !channel) || (mail && !worker))
+                {
+                    if (!returnDest.empty()) assign(returnDest, Slot::fromInt(!mail && target > 0 && target < threadRuntime_->nextChannel ? 2 : 6));
+                    return true;
+                }
+                self->externalWaiting = true;
+                waitForChange(lock, [&] { return mail ? worker->done || worker->inboxClosed || worker->inbox.size() < 256 || threadRuntime_->closing : channel->closed || channel->values.size() < channel->capacity || threadRuntime_->closing; }, threadDeadline(timeout));
+                self->externalWaiting = false;
+                std::int64_t status = 0;
+                if (result.cancelled)
+                    status = 3;
+                else if (threadRuntime_->closing || (mail ? worker->done || worker->inboxClosed : channel->closed))
+                    status = 2;
+                else if (mail ? worker->inbox.size() >= 256 : channel->values.size() >= channel->capacity)
+                    status = timeout == 0 ? 4 : 1;
+                else if (!mail && !channel->type.empty() && channel->type != type)
+                {
+                    fail("通道消息类型不匹配");
+                    return true;
+                }
+                else if (mail)
+                    worker->inbox.push_back(std::move(packet));
+                else
+                {
+                    channel->type = type;
+                    channel->values.push_back(std::move(packet));
+                }
+                threadRuntime_->changed.notify_all();
+                if (!returnDest.empty()) assign(returnDest, Slot::fromInt(status));
+                return true;
+            }
+        }
+        if (name == "std::concurrency::__channelCreate" || name == "std::concurrency::__channelClose" || name == "std::concurrency::__poll" || name == "std::concurrency::__fetchAdd")
+        {
+            const bool create = name == "std::concurrency::__channelCreate";
+            const bool close = name == "std::concurrency::__channelClose";
+            const bool add = name == "std::concurrency::__fetchAdd";
+            if (!threadsEnabled_ || !threadRuntime_ || nativeCallbackDepth || pending.size() != (create || close ? 1u : 2u))
+            {
+                fail("通道与共享原子操作的运行环境或参数无效");
+                pending.clear();
+                return true;
+            }
+            const auto handle = pending[0].value.integer;
+            const auto millis = create || close ? 0 : pending[1].value.integer;
+            pending.clear();
+            if (add)
+            {
+                std::lock_guard<std::mutex> lock(sharedRuntime_->mutex);
+                const auto found = sharedRuntime_->values.find(handle);
+                if (found == sharedRuntime_->values.end() || found->second->type != "int64")
+                {
+                    fail("fetchAdd 仅支持有效的 Shared<int64> 槽");
+                    return true;
+                }
+                const auto old = found->second->value.integer;
+                auto replacement = Memory::makeShared<TransferPacket>(*found->second);
+                replacement->value.integer = static_cast<std::int64_t>(static_cast<std::uint64_t>(old) + static_cast<std::uint64_t>(millis));
+                found->second = std::move(replacement);
+                if (!returnDest.empty()) assign(returnDest, Slot::fromInt(old));
+                return true;
+            }
+            std::unique_lock<std::mutex> lock(threadRuntime_->mutex);
+            if (create)
+            {
+                if (handle <= 0 || handle > 1048576 || threadRuntime_->channels.size() >= 1024)
+                {
+                    fail("通道容量须为 1..1048576，活动通道预算为 1024");
+                    return true;
+                }
+                const auto id = threadRuntime_->nextChannel++;
+                auto channel = Memory::makeShared<ThreadRuntime::Channel>();
+                channel->capacity = static_cast<std::size_t>(handle);
+                threadRuntime_->channels.emplace(id, std::move(channel));
+                if (!returnDest.empty()) assign(returnDest, Slot::fromInt(id));
+                return true;
+            }
+            const auto self = threadRuntime_->workers.at(threadId_);
+            std::shared_ptr<ThreadRuntime::Channel> channel;
+            if (handle != 0)
+            {
+                const auto found = threadRuntime_->channels.find(handle);
+                if (found == threadRuntime_->channels.end())
+                {
+                    if (!returnDest.empty()) assign(returnDest, Slot::fromInt(handle > 0 && handle < threadRuntime_->nextChannel ? 2 : 6));
+                    return true;
+                }
+                channel = found->second;
+            }
+            if (close)
+            {
+                if (channel)
+                {
+                    channel->closed = true;
+                    if (channel->values.empty()) threadRuntime_->channels.erase(handle);
+                }
+                else
+                    self->inboxClosed = true;
+                threadRuntime_->changed.notify_all();
+                return true;
+            }
+            if (millis < -1)
+            {
+                fail("等待毫秒数不能小于 -1");
+                return true;
+            }
+            self->externalWaiting = true;
+            waitForChange(lock, [&] { return channel ? !channel->values.empty() || channel->closed || threadRuntime_->closing : !self->inbox.empty() || self->inboxClosed || threadRuntime_->closing; }, threadDeadline(millis));
+            self->externalWaiting = false;
+            std::int64_t status = 0;
+            if (result.cancelled)
+                status = 3;
+            else if (channel ? !channel->values.empty() : !self->inbox.empty())
+            {
+                auto &values = channel ? channel->values : self->inbox;
+                self->reserved = values.front();
+                values.pop_front();
+                if (channel && channel->closed && values.empty()) threadRuntime_->channels.erase(handle);
+            }
+            else
+                status = (threadRuntime_->closing || (channel ? channel->closed : self->inboxClosed)) ? 2 : 1;
+            threadRuntime_->changed.notify_all();
+            if (!returnDest.empty()) assign(returnDest, Slot::fromInt(status));
+            return true;
+        }
+        if (name.rfind("std::event::__", 0) == 0)
+        {
+            const bool receive = name == "std::event::__receive";
+            const bool timer = name == "std::event::__timer";
+            const bool destroy = name == "std::event::__destroy";
+            const bool source = name == "std::event::__source";
+            const bool tag = name == "std::event::__tag";
+            const bool missed = name == "std::event::__missed";
+            const bool id = name == "std::event::__id";
+            const bool post = name == "std::event::__post";
+            const bool close = name == "std::event::__close";
+            if (!receive && !timer && !destroy && !source && !tag && !missed && !id && !post && !close) return false;
+            const auto wanted = timer || post ? 2u : receive || destroy ? 1u :
+                                                                          0u;
+            if (nativeCallbackDepth || pending.size() != wanted)
+            {
+                fail("事件操作的参数或同步回调上下文无效");
+                pending.clear();
+                return true;
+            }
+            const auto first = wanted ? pending[0].value.integer : 0;
+            const auto second = wanted > 1 ? pending[1].value.integer : 0;
+            pending.clear();
+            std::int64_t value = 0;
+            if (receive)
+            {
+                if (first < -1)
+                {
+                    fail("事件等待毫秒数不能小于 -1");
+                    return true;
+                }
+                value = static_cast<std::int64_t>(receiveEvent(events_, receivedEvent, first, [&] { checkExecution(); return !result.error.empty() || result.cancelled || result.recoverable; }));
+                checkExecution();
+            }
+            else if (timer)
+                value = createEventTimer(events_, first, second != 0);
+            else if (destroy)
+                destroyEventTimer(events_, first);
+            else if (post)
+                value = static_cast<std::int64_t>(postEvent(events_, RuntimeEvent{ 0, first, second, 0 }));
+            else if (close)
+                closeEventQueue(events_);
+            else if (source)
+                value = receivedEvent.source;
+            else if (tag)
+                value = receivedEvent.tag;
+            else if (missed)
+                value = static_cast<std::int64_t>(receivedEvent.missed);
+            else
+                value = receivedEvent.timer;
+            if (!returnDest.empty()) assign(returnDest, Slot::fromInt(value));
+            return true;
+        }
+        if (name == "std::thread::requestStop" || name == "std::thread::stopRequested" || name == "std::thread::state" || name == "std::thread::__error" || name == "std::thread::__trace" || name == "std::thread::sleepFor")
+        {
+            const bool requested = name == "std::thread::stopRequested";
+            if (!threadsEnabled_ || !threadRuntime_ || nativeCallbackDepth || pending.size() != (requested ? 0u : 1u))
+            {
+                fail("线程控制操作的环境或参数无效");
+                pending.clear();
+                return true;
+            }
+            const auto target = requested ? static_cast<std::int64_t>(threadId_) : pending[0].value.integer;
+            pending.clear();
+            if (name == "std::thread::sleepFor")
+            {
+                if (target < 0)
+                {
+                    fail("睡眠毫秒数不能为负数");
+                    return true;
+                }
+                std::unique_lock<std::mutex> lock(threadRuntime_->mutex);
+                const auto self = threadRuntime_->workers.at(threadId_);
+                self->externalWaiting = true;
+                waitForChange(lock, [&] { return threadRuntime_->closing.load(); }, threadDeadline(target));
+                self->externalWaiting = false;
+                if (!returnDest.empty()) assign(returnDest, Slot::fromInt(result.cancelled ? 3 : 0));
+                return true;
+            }
+            std::lock_guard<std::mutex> lock(threadRuntime_->mutex);
+            const auto found = target < 0 ? threadRuntime_->workers.end() : threadRuntime_->workers.find(static_cast<std::size_t>(target));
+            if (found == threadRuntime_->workers.end())
+            {
+                fail("线程控制操作收到无效句柄");
+                return true;
+            }
+            const auto worker = found->second;
+            if (name == "std::thread::requestStop")
+            {
+                if (!worker->done) worker->control->requested.store(true, std::memory_order_release);
+                threadRuntime_->changed.notify_all();
+                return true;
+            }
+            if (name == "std::thread::__error" || name == "std::thread::__trace")
+            {
+                Memory::String message = worker->done ? worker->result.error : Memory::String();
+                if (name == "std::thread::__trace")
+                {
+                    message.clear();
+                    if (worker->done)
+                        for (const auto &frame : worker->result.sourceTrace) message += frame.function + " " + frame.location.toString() + "\n";
+                }
+                NativeContext context;
+                context.heap = &heap;
+                const auto address = nativeAllocString(context, message);
+                if (!context.error.empty())
+                    fail(context.error);
+                else if (!returnDest.empty())
+                    assign(returnDest, Slot::fromInt(static_cast<std::int64_t>(address)));
+                return true;
+            }
+            const auto value = requested ? (worker->control->requested.load(std::memory_order_acquire) ? 1 : 0) : !worker->done        ? 0 :
+                                                                                                              worker->result.cancelled ? 3 :
+                                                                                                              worker->result.ok        ? 1 :
+                                                                                                                                         2;
+            if (!returnDest.empty()) assign(returnDest, Slot::fromInt(value));
+            return true;
+        }
+#endif
         const bool messageSendThread = name == "__std_message_send_thread";
         const bool messageReceiveThread = name == "__std_message_receive_thread";
-        const bool messageSendCoroutine = name == "__std_message_send_coroutine";
-        const bool messageReceiveCoroutine = name == "__std_message_receive_coroutine";
         const bool sharedCreate = name == "__std_shared_create";
         const bool sharedGet = name == "__std_shared_get";
         const bool sharedSet = name == "__std_shared_set";
         const bool sharedSwap = name == "__std_shared_swap";
-        if (messageSendThread || messageReceiveThread || messageSendCoroutine || messageReceiveCoroutine || sharedCreate || sharedGet || sharedSet || sharedSwap)
+        if (messageSendThread || messageReceiveThread || sharedCreate || sharedGet || sharedSet || sharedSwap)
         {
-            const bool send = messageSendThread || messageSendCoroutine;
-            const bool receive = messageReceiveThread || messageReceiveCoroutine;
+            const bool send = messageSendThread;
+            const bool receive = messageReceiveThread;
             const bool withTarget = send || sharedGet || sharedSet || sharedSwap;
             const bool withValue = send || sharedCreate || sharedSet || sharedSwap;
             const std::size_t wanted = (withTarget ? 1u : 0u) + 3u + (withValue ? 1u : 0u);
@@ -1847,7 +2122,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             }
 #else
             /* 裁剪配置不编线程运行时与线程共享值（`STACKVM_WITH_THREADS=0`）：这几个名字明确报
-             * "这个构建没有"，而不是掉到"函数入口不存在"。协程消息继续往下走。 */
+             * "这个构建没有"，而不是掉到"函数入口不存在"。不提供其他执行上下文。 */
             if (messageSendThread || messageReceiveThread || sharedCreate || sharedGet || sharedSet || sharedSwap)
             {
                 fail("这个构建没有多线程 / 线程共享值（STACKVM_WITH_THREADS=0）：" + name);
@@ -1855,15 +2130,13 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                 return true;
             }
 #endif
-            if (nativeCallbackDepth != 0u && !interruptDelivery && (send || receive))
+            if (nativeCallbackDepth != 0u && (send || receive))
             {
                 fail("同步胶水回调中不能执行消息操作");
                 pending.clear();
                 return true;
             }
             const std::size_t base = withTarget ? 1u : 0u;
-            const Memory::Vector<PendingArg> suspendedArgs = messageReceiveCoroutine ? pending :
-                                                                                       Memory::Vector<PendingArg>{};
             const std::int64_t target = withTarget ? pending[0].value.integer : 0;
             const int kind = static_cast<int>(pending[base].value.integer);
             const std::int64_t layout = pending[base + 1u].value.integer;
@@ -1938,7 +2211,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             if (messageSendThread)
             {
                 {
-                    std::lock_guard<std::mutex> guard(threadRuntime_->mutex);
+                    std::unique_lock<std::mutex> guard(threadRuntime_->mutex);
                     const auto found = target < 0 ? threadRuntime_->workers.end() :
                                                     threadRuntime_->workers.find(static_cast<std::size_t>(target));
                     if (found == threadRuntime_->workers.end() || found->second->done || threadRuntime_->closing)
@@ -1946,7 +2219,18 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                         fail("发送消息的线程句柄无效或已结束");
                         return true;
                     }
-                    found->second->inbox.push_back(std::move(packet));
+                    const auto receiver = found->second;
+                    const auto sender = threadRuntime_->workers.at(threadId_);
+                    sender->externalWaiting = true;
+                    waitForChange(guard, [&] { return receiver->inbox.size() < 256 || receiver->done || receiver->inboxClosed || threadRuntime_->closing; });
+                    sender->externalWaiting = false;
+                    if (!result.error.empty() || result.cancelled || result.recoverable) return true;
+                    if (receiver->done || receiver->inboxClosed || threadRuntime_->closing)
+                    {
+                        fail("线程收件箱已关闭");
+                        return true;
+                    }
+                    receiver->inbox.push_back(std::move(packet));
                 }
                 threadRuntime_->changed.notify_all();
                 return true;
@@ -1958,16 +2242,16 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                     const auto self = threadRuntime_->workers.at(threadId_);
                     self->receiving = true;
                     threadRuntime_->changed.notify_all();
-                    waitWithInterrupts(guard, [&] {
-                        return !self->inbox.empty() || threadRuntime_->closing || threadRuntime_->deadlocked();
+                    waitForChange(guard, [&] {
+                        return !self->inbox.empty() || self->inboxClosed || threadRuntime_->closing || threadRuntime_->deadlocked();
                     });
                     self->receiving = false;
                     threadRuntime_->changed.notify_all();
-                    if (!result.error.empty()) return true;
+                    if (!result.error.empty() || result.cancelled || result.recoverable) return true;
                     if (self->inbox.empty())
                     {
-                        Memory::String error = threadRuntime_->closing ? "线程收件箱已关闭" :
-                                                                         "线程接收消息形成死锁";
+                        Memory::String error = threadRuntime_->closing || self->inboxClosed ? "线程收件箱已关闭" :
+                                                                                              "线程接收消息形成死锁";
                         for (const auto &worker : threadRuntime_->workers)
                             if (worker.second->done && !worker.second->result.ok && !worker.second->result.error.empty())
                             {
@@ -1985,46 +2269,10 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                         return true;
                     }
                     self->inbox.pop_front();
+                    threadRuntime_->changed.notify_all();
                 }
             }
 #endif /* STACKVM_WITH_THREADS */
-            if (messageSendCoroutine)
-            {
-                if (target < 0 || static_cast<std::size_t>(target) >= coroutines.size() || coroutines[static_cast<std::size_t>(target)].state == CoroutineContext::State::Done)
-                {
-                    fail("发送消息的协程句柄无效或已结束");
-                    return true;
-                }
-                CoroutineContext &receiver = coroutines[static_cast<std::size_t>(target)];
-                receiver.inbox.push_back(std::move(packet));
-                if (receiver.state == CoroutineContext::State::Receiving)
-                    receiver.state = CoroutineContext::State::Ready;
-                return true;
-            }
-            if (messageReceiveCoroutine)
-            {
-                CoroutineContext &self = coroutines[currentCoroutine];
-                if (self.inbox.empty())
-                {
-                    const std::size_t next = nextRunnable(currentCoroutine);
-                    if (next == coroutines.size())
-                        fail("协程接收消息形成死锁");
-                    else
-                    {
-                        pending = suspendedArgs;
-                        saveCoroutine(pc, CoroutineContext::State::Receiving);
-                        loadCoroutine(next);
-                    }
-                    return true;
-                }
-                packet = self.inbox.front();
-                if (packet->type != type)
-                {
-                    fail("协程消息类型不匹配：期望 " + type + "，收到 " + packet->type);
-                    return true;
-                }
-                self.inbox.erase(self.inbox.begin());
-            }
             if (receive)
             {
                 Slot value;
@@ -2036,12 +2284,14 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             }
         }
 #if STACKVM_WITH_THREADS
-        if (name.rfind("std::thread::", 0u) == 0u)
+        if (name.rfind("std::thread::", 0u) == 0u || typedCreate)
         {
-            const bool timedWait = name == "std::thread::waitFor";
-            const std::size_t wanted = name == "std::thread::create" || name == "std::thread::wait" ? 1u : name == "std::thread::send" || timedWait ? 2u :
-                                                                                                                                                      0u;
-            if (name != "std::thread::create" && name != "std::thread::wait" && !timedWait && name != "std::thread::send" && name != "std::thread::receive" && name != "std::thread::current" && name != "std::thread::parent")
+            const bool resultWait = name == "std::thread::__waitResult";
+            const bool timedWait = name == "std::thread::waitFor" || resultWait;
+            const bool create = name == "std::thread::create" || typedCreate;
+            const std::size_t wanted = create || name == "std::thread::wait" ? 1u : name == "std::thread::send" || timedWait ? 2u :
+                                                                                                                               0u;
+            if (!create && name != "std::thread::wait" && !timedWait && name != "std::thread::send" && name != "std::thread::receive" && name != "std::thread::current" && name != "std::thread::parent")
                 return false;
             if (!threadsEnabled_ || threadRuntime_ == nullptr)
             {
@@ -2068,7 +2318,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                                                                 static_cast<std::int64_t>(name == "std::thread::current" ? threadId_ : parentThreadId_)));
                 return true;
             }
-            if (name == "std::thread::create")
+            if (create)
             {
                 if (heapAllocator_ != nullptr && !threadHeapFactory_)
                 {
@@ -2096,6 +2346,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                 }
                 DataArea snapshot = *data_;
                 const auto worker = Memory::makeShared<ThreadRuntime::Worker>();
+                worker->initial = startupPacket;
                 std::size_t id = 0u;
                 std::unique_lock<std::mutex> creationGuard(threadRuntime_->mutex);
                 if (threadRuntime_->closing)
@@ -2112,18 +2363,23 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                 auto *const workerAllocator = Memory::currentRuntimeAllocator();
                 const std::size_t parentId = threadId_;
                 const std::size_t slots = stackLimit_;
+                const auto services = hostServices_;
+                const auto clock = timeCallback_;
                 const bool childPanicDetails = panicDetailsEnabled_;
                 try
                 {
                     worker->host = std::thread([worker, group, shared, registry, heapFactory, &program, label,
                                                 snapshot = std::move(snapshot), parentId, id,
-                                                slots, stepLimit, workerAllocator, childPanicDetails]() mutable {
+                                                slots, stepLimit, workerAllocator, childPanicDetails, services, clock]() mutable {
                         Memory::AllocationScope allocationScope(workerAllocator);
                         RunResult childResult;
                         try
                         {
                             Machine child;
                             child.setPanicDetailsEnabled(childPanicDetails);
+                            child.control_ = worker->control;
+                            child.setHostServices(services);
+                            child.setTimeCallback(clock);
                             Memory::UniquePtr<HeapAllocator> workerHeap = heapFactory ? heapFactory() : nullptr;
                             child.setHeapAllocator(workerHeap.get());
                             child.setThreadHeapFactory(heapFactory);
@@ -2177,7 +2433,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                     return true;
                 }
                 {
-                    std::lock_guard<std::mutex> guard(threadRuntime_->mutex);
+                    std::unique_lock<std::mutex> guard(threadRuntime_->mutex);
                     const auto found = target < 0 ? threadRuntime_->workers.end() :
                                                     threadRuntime_->workers.find(static_cast<std::size_t>(target));
                     if (found == threadRuntime_->workers.end() || found->second->done || threadRuntime_->closing)
@@ -2186,10 +2442,21 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                         return true;
                     }
                     auto packet = Memory::makeShared<TransferPacket>();
-                    packet->type = "string";
+                    packet->type = "std::lang::String";
                     packet->value.isText = true;
                     packet->value.text = std::move(message);
-                    found->second->inbox.push_back(std::move(packet));
+                    const auto receiver = found->second;
+                    const auto sender = threadRuntime_->workers.at(threadId_);
+                    sender->externalWaiting = true;
+                    waitForChange(guard, [&] { return receiver->inbox.size() < 256 || receiver->done || receiver->inboxClosed || threadRuntime_->closing; });
+                    sender->externalWaiting = false;
+                    if (!result.error.empty() || result.cancelled || result.recoverable) return true;
+                    if (receiver->done || receiver->inboxClosed || threadRuntime_->closing)
+                    {
+                        fail("线程收件箱已关闭");
+                        return true;
+                    }
+                    receiver->inbox.push_back(std::move(packet));
                 }
                 threadRuntime_->changed.notify_all();
                 return true;
@@ -2203,16 +2470,16 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                     const auto self = threadRuntime_->workers.at(threadId_);
                     self->receiving = true;
                     threadRuntime_->changed.notify_all();
-                    /* 收消息也按"中断优先"：小步等待，每步先交付一轮中断。 */
-                    waitWithInterrupts(guard, [&] {
-                        return !self->inbox.empty() || threadRuntime_->closing || threadRuntime_->deadlocked();
+                    /* 等待期间继续观察停止、panic 和看门狗。 */
+                    waitForChange(guard, [&] {
+                        return !self->inbox.empty() || self->inboxClosed || threadRuntime_->closing || threadRuntime_->deadlocked();
                     });
                     self->receiving = false;
                     threadRuntime_->changed.notify_all();
-                    if (!result.error.empty()) return true;
+                    if (!result.error.empty() || result.cancelled || result.recoverable) return true;
                     if (self->inbox.empty())
                     {
-                        if (threadRuntime_->closing)
+                        if (threadRuntime_->closing || self->inboxClosed)
                         {
                             fail("线程收件箱已关闭");
                             return true;
@@ -2233,13 +2500,14 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                         fail("线程接收消息形成死锁");
                         return true;
                     }
-                    if (self->inbox.front()->type != "string")
+                    if (self->inbox.front()->type != "std::lang::String")
                     {
                         fail("线程消息类型不匹配：期望 string，收到 " + self->inbox.front()->type);
                         return true;
                     }
                     message = self->inbox.front()->value.text;
                     self->inbox.pop_front();
+                    threadRuntime_->changed.notify_all();
                 }
                 NativeContext context;
                 context.heap = &heap;
@@ -2255,7 +2523,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             const std::int64_t raw = pending[0].value.integer;
             const std::int64_t millis = timedWait ? pending[1].value.integer : 0;
             pending.clear();
-            if (timedWait && millis < 0)
+            if (timedWait && millis < (resultWait ? -1 : 0))
             {
                 fail("std::thread::waitFor 的超时毫秒数不能为负数");
                 return true;
@@ -2265,7 +2533,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             {
                 const auto now = std::chrono::steady_clock::now();
                 const auto available = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - now).count();
-                if (millis < available) deadline = now + std::chrono::milliseconds(millis);
+                if (millis >= 0 && millis < available) deadline = now + std::chrono::milliseconds(millis);
             }
             std::shared_ptr<ThreadRuntime::Worker> worker;
             {
@@ -2284,18 +2552,22 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                 self->timedWaiting = timedWait;
                 self->joinTarget = static_cast<std::size_t>(raw);
                 threadRuntime_->changed.notify_all();
-                waitWithInterrupts(guard, [&] { return worker->done || threadRuntime_->closing || (threadRuntime_->deadlocked() && !worker->receiving); }, deadline);
+                waitForChange(guard, [&] { return worker->done || threadRuntime_->closing || (threadRuntime_->deadlocked() && !worker->receiving); }, deadline);
                 self->joining = false;
                 self->timedWaiting = false;
                 self->joinTarget = 0u;
                 threadRuntime_->changed.notify_all();
-                if (!result.error.empty()) return true;
+                if (!result.error.empty() || result.cancelled || result.recoverable)
+                {
+                    worker->joined = false;
+                    return true;
+                }
                 if (!worker->done)
                 {
                     worker->joined = false;
                     if (timedWait && !threadRuntime_->closing)
                     {
-                        if (!returnDest.empty()) assign(returnDest, Slot::fromInt(0));
+                        if (!returnDest.empty()) assign(returnDest, Slot::fromInt(resultWait ? 1 : 0));
                         return true;
                     }
                     fail(threadRuntime_->closing ? "线程等待被主程序结束中断" : "线程等待形成死锁");
@@ -2309,182 +2581,22 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                 if (!result.output.empty()) result.output += ' ';
                 result.output += worker->result.output;
             }
-            worker->reported = true;
-            if (!worker->result.ok)
+            {
+                std::lock_guard<std::mutex> guard(threadRuntime_->mutex);
+                worker->reported = true;
+            }
+            if (resultWait)
+            {
+                if (!returnDest.empty()) assign(returnDest, Slot::fromInt(worker->result.cancelled ? 3 : worker->result.ok ? 0 :
+                                                                                                                             5));
+            }
+            else if (!worker->result.ok && !worker->result.cancelled)
                 failFromThread("线程 " + Memory::toString(raw) + " 失败：" + worker->result.error, worker->result);
             else if (timedWait && !returnDest.empty())
                 assign(returnDest, Slot::fromInt(1));
             return true;
         }
 #endif /* STACKVM_WITH_THREADS */
-        const bool coroutineCreate = name == "std::coroutine::create";
-        const bool coroutineWait = name == "std::coroutine::wait";
-        const bool coroutineYield = name == "std::coroutine::yield" || name == "std::coroutine::yelid";
-        const bool coroutineSend = name == "std::coroutine::send";
-        const bool coroutineReceive = name == "std::coroutine::receive";
-        const bool coroutineIdentity = name == "std::coroutine::current" || name == "std::coroutine::parent";
-        if (coroutineCreate || coroutineWait || coroutineYield || coroutineSend || coroutineReceive || coroutineIdentity)
-        {
-            if (nativeCallbackDepth != 0u && !interruptDelivery)
-            {
-                fail("同步胶水回调中不能创建、等待或切换协程");
-                pending.clear();
-                return true;
-            }
-            const std::size_t wanted = coroutineSend ? 2u :
-                                                       (coroutineYield || coroutineReceive || coroutineIdentity ? 0u : 1u);
-            if (pending.size() != wanted)
-            {
-                fail("协程函数 " + name + " 需要 " + Memory::toString(wanted) + " 个参数，实到 " + Memory::toString(pending.size()) + " 个");
-                pending.clear();
-                return true;
-            }
-            if (coroutineCreate)
-            {
-                const std::size_t address = static_cast<std::size_t>(nativeInt(pending[0].value));
-                pending.clear();
-                if (isObjectHandle(static_cast<std::int64_t>(address)))
-                {
-                    fail("协程异步入口不支持带捕获的 lambda");
-                    return true;
-                }
-                if (address == 0u || data_ == nullptr)
-                {
-                    fail("std::coroutine::create 收到了空函数指针");
-                    return true;
-                }
-                const Memory::String label = program.symbolKey(data_->readCString(address));
-                const auto target = program.labels.find(program.symbolKey(label));
-                if (label.empty() || target == program.labels.end())
-                {
-                    fail("std::coroutine::create 找不到协程入口：" + label);
-                    return true;
-                }
-                CoroutineContext context;
-                context.pc = target->second;
-                context.state = CoroutineContext::State::Ready;
-                context.parent = currentCoroutine;
-                context.frames.push_back(Memory::makeUnique<Frame>());
-                prepareFrame(*context.frames.back(), context.pc);
-                coroutines.push_back(std::move(context));
-                if (!returnDest.empty())
-                    assign(returnDest, Slot::fromInt(static_cast<std::int64_t>(coroutines.size() - 1u)));
-                return true;
-            }
-
-            if (coroutineIdentity)
-            {
-                pending.clear();
-                const std::size_t id = name == "std::coroutine::current" ? currentCoroutine : coroutines[currentCoroutine].parent;
-                if (!returnDest.empty()) assign(returnDest, Slot::fromInt(static_cast<std::int64_t>(id)));
-                return true;
-            }
-
-            if (coroutineSend)
-            {
-                const std::int64_t raw = pending[0].value.integer;
-                NativeContext context;
-                context.heap = &heap;
-                context.data = data_;
-                Memory::String message;
-                const bool validText = nativeReadCString(context,
-                                                         static_cast<std::size_t>(pending[1].value.integer), &message);
-                pending.clear();
-                if (raw < 0 || static_cast<std::size_t>(raw) >= coroutines.size() || coroutines[static_cast<std::size_t>(raw)].state == CoroutineContext::State::Done || !validText)
-                {
-                    fail("std::coroutine::send 收到了无效句柄或字符串");
-                    return true;
-                }
-                CoroutineContext &target = coroutines[static_cast<std::size_t>(raw)];
-                auto packet = Memory::makeShared<TransferPacket>();
-                packet->type = "string";
-                packet->value.isText = true;
-                packet->value.text = std::move(message);
-                target.inbox.push_back(std::move(packet));
-                if (target.state == CoroutineContext::State::Receiving)
-                    target.state = CoroutineContext::State::Ready;
-                return true;
-            }
-
-            if (coroutineReceive)
-            {
-                pending.clear();
-                CoroutineContext &self = coroutines[currentCoroutine];
-                if (self.inbox.empty())
-                {
-                    const std::size_t next = nextRunnable(currentCoroutine);
-                    if (next == coroutines.size())
-                    {
-                        fail("协程接收消息形成死锁");
-                        return true;
-                    }
-                    saveCoroutine(pc, CoroutineContext::State::Receiving);
-                    loadCoroutine(next);
-                    return true;
-                }
-                if (self.inbox.front()->type != "string")
-                {
-                    fail("协程消息类型不匹配：期望 string，收到 " + self.inbox.front()->type);
-                    return true;
-                }
-                Memory::String message = self.inbox.front()->value.text;
-                self.inbox.erase(self.inbox.begin());
-                NativeContext context;
-                context.heap = &heap;
-                const std::size_t address = nativeAllocString(context, message);
-                if (address == 0u)
-                {
-                    fail(context.error);
-                    return true;
-                }
-                if (!returnDest.empty()) assign(returnDest, Slot::fromInt(static_cast<std::int64_t>(address)));
-                return true;
-            }
-
-            if (coroutineWait)
-            {
-                const std::int64_t raw = pending[0].value.integer;
-                pending.clear();
-                if (raw <= 0 || static_cast<std::size_t>(raw) >= coroutines.size())
-                {
-                    fail("std::coroutine::wait 收到了无效句柄：" + Memory::toString(raw));
-                    return true;
-                }
-                const std::size_t target = static_cast<std::size_t>(raw);
-                if (target == currentCoroutine)
-                {
-                    fail("协程不能等待自己");
-                    return true;
-                }
-                if (!returnDest.empty()) assign(returnDest, Slot::fromInt(0));
-                if (coroutines[target].state == CoroutineContext::State::Done) return true;
-                coroutines[currentCoroutine].waitingFor = target;
-                saveCoroutine(pc + 1u, CoroutineContext::State::Waiting);
-                const CoroutineContext::State targetState = coroutines[target].state;
-                const std::size_t next =
-                    (targetState == CoroutineContext::State::Ready || targetState == CoroutineContext::State::Suspended) ? target : nextRunnable(currentCoroutine);
-                if (next == coroutines.size())
-                {
-                    fail("协程等待形成死锁");
-                    loadCoroutine(currentCoroutine);
-                    return true;
-                }
-                loadCoroutine(next);
-                return true;
-            }
-
-            pending.clear();
-            const std::size_t next = nextRunnable(currentCoroutine);
-            if (next == coroutines.size())
-            {
-                if (!returnDest.empty()) assign(returnDest, Slot::fromInt(0));
-                return true;
-            }
-            if (!returnDest.empty()) assign(returnDest, Slot::fromInt(0));
-            saveCoroutine(pc + 1u, CoroutineContext::State::Suspended);
-            loadCoroutine(next);
-            return true;
-        }
         /* 内部 C++ 运行时（字符串 / 容器）：参数与结果都按 Slot 走。 */
         const auto internal = optimizeExecution_ && symbol != absent ? internalEntries[symbol] : kSlotNatives.find(name);
         if (internal == kSlotNatives.end())
@@ -2514,7 +2626,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             runtime.inputIndex = &inputIndex;
             runtime.programArguments = &programArguments_;
             runtime.objects = &objects;
-            runtime.timers = &timers;
+            runtime.watchdog = &watchdog;
             runtime.machine = this;
             runtime.threadId = threadId_;
             runtime.exitRequested = &exitRequested;
@@ -2560,105 +2672,28 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         return applyInternal(internal, name, returnDest);
     };
 
-    /*
-     * 中断交付：宿主投递（`Machine::raiseInterrupt`，可能来自别的线程）与到期的软件定时器
-     * 都在**指令边界**调绑定的回调 —— 像硬件 IRQ 那样"异步发生、在安全点交付"。
-     *
-     * 交付是**队列**语义：一次边界把队列排空，先入先出。同一次触发里排在前面的
-     * （先 `raise` 的、先创建的定时器）先执行；处理器运行期间新 `raise` 的追加到队尾，
-     * 这一轮继续按顺序执行（不会套娃进处理器，但也不会被推到下一条指令）。
-     *
-     * 交付用 `invokeFunction`（和胶水层同步回调同一套机制），所以回调里容器、大数、
-     * 宿主胶水都能正常用。`interruptDelivery` 让处理器里也能做消息 / 协程 / 共享值
-     * 操作：普通胶水同步回调挡这些是因为当时 VM 正停在胶水栈上；中断交付发生在指令
-     * 边界、胶水栈是干净的，没有这个限制。
-     *
-     * 软件定时器的时间源：宿主注入过时钟就用它；没有就用**虚拟时钟**（1 条指令 = 1 个
-     * 时间单位），所以解释器和导出程序不接时钟也能得到确定的定时行为。
-     */
-    std::size_t boundaryCount = 0u;
-    bool interruptActive = false;  ///< 队列排空中：不再重入。
-    deliverInterrupts = [&]() {
-        if (interruptActive) return;
-#if STACKVM_WITH_THREADS
-        const bool mailboxPosted = interruptMailbox_ != nullptr && interruptMailbox_->posted.load(std::memory_order_relaxed) != 0u;
-#else
-        /* 裁剪配置不编宿主中断邮箱（跨线程才需要）：只剩 VM 自己的软件定时器。 */
-        const bool mailboxPosted = false;
-#endif
-        /* 快路径：没有投递、没有在跑的定时器、队列也空 → 什么都不做。 */
-        if (!mailboxPosted && timers.running == 0u && timers.pending.empty()) return;
-        ++boundaryCount;
-        /* 定时器按 16 条指令一次节流，省掉每条指令读时钟的开销。 */
-        const bool checkTimers = timers.running != 0u && (boundaryCount & 0xfu) == 0u;
-        const std::uint64_t now = checkTimers ? (timeCallback_ ? timeCallback_() : static_cast<std::uint64_t>(result.steps)) : 0u;
-        interruptActive = true;
-        std::size_t head = 0u;
-        for (;;)
+    checkExecution = [&]() {
+        if (stopForPanic()) return;
+        if (control_->requested.load(std::memory_order_acquire) && result.error.empty() && !result.recoverable)
         {
-#if STACKVM_WITH_THREADS
-            /* 宿主投递：按投递顺序接到队尾（可能边处理边有新投递）。 */
-            if (interruptMailbox_ != nullptr && interruptMailbox_->posted.load(std::memory_order_relaxed) != 0u)
-            {
-                std::lock_guard<std::mutex> guard(interruptMailbox_->mutex);
-                timers.pending.insert(timers.pending.end(), interruptMailbox_->queue.begin(),
-                                      interruptMailbox_->queue.end());
-                interruptMailbox_->queue.clear();
-                interruptMailbox_->posted.store(0u, std::memory_order_relaxed);
-            }
-#endif
-            /* 软件定时器到期：一个边界只查一次，按句柄（创建）顺序入队。 */
-            if (checkTimers)
-            {
-                for (std::size_t index = 0; index < timers.slots.size(); ++index)
-                {
-                    TimerSlot &slot = timers.slots[index];
-                    if (!slot.alive || !slot.running || slot.period <= 0) continue;
-                    if (slot.thread != threadId_) continue; /* 只跑本线程的定时器 */
-                    if (slot.deadline < 0)
-                        slot.deadline = static_cast<std::int64_t>(now) + slot.period;
-                    if (static_cast<std::uint64_t>(slot.deadline) > now) continue;
-                    /* 一次边界至多补一次：错过的周期直接跳过，不让回调一下补跑一串。 */
-                    slot.deadline = static_cast<std::int64_t>(now) + slot.period;
-                    timers.pending.push_back(
-                        InterruptEvent{ static_cast<std::int64_t>(index + 1u), 0, 0, slot.thread });
-                }
-            }
-            if (head >= timers.pending.size()) break;
-            const InterruptEvent event = timers.pending[head++];
-            /* 归属线程校验：投错线程的中断（宿主句柄 / 别的线程的表）在这里丢掉。 */
-            if (event.thread != threadId_) continue;
-            /* 函数指针优先取事件自带的（句柄里带的那个），没有才用定时器槽绑定的。 */
-            std::int64_t callback = event.callback;
-            if (event.timer > 0)
-            {
-                const std::size_t index = static_cast<std::size_t>(event.timer - 1);
-                if (index >= timers.slots.size()) continue; /* 未知句柄 */
-                TimerSlot &slot = timers.slots[index];
-                if (!slot.alive) continue;                   /* destroy 之后是空操作 */
-                if (slot.thread != threadId_) continue;      /* 只跑本线程的定时器 */
-                if (callback == 0) callback = slot.callback; /* 句柄没带就用绑定的 */
-                if (callback == 0) continue;                 /* 没绑回调 */
-                ++slot.ticks;
-            }
-            else if (callback == 0)
-            {
-                continue; /* 既没有定时器也没有函数指针：丢弃 */
-            }
-            NativeValue ignored;
-            interruptDelivery = true;
-            const bool delivered =
-                invokeFunction(callback, { NativeValue::fromInt(event.source) }, ignored);
-            interruptDelivery = false;
-            /* 处理器里 push 进来的新事件在队列后面；这一轮按顺序继续跑。 */
-            if (!delivered || !result.error.empty()) break;
+            result.cancelled = true;
+            result.error = "执行已取消";
         }
-        timers.pending.clear();
-        interruptActive = false;
+        if (watchdog.period != 0)
+        {
+            watchdog.now = timeCallback_ ? timeCallback_() : static_cast<std::uint64_t>(result.steps);
+            if (watchdog.deadline == 0) watchdog.deadline = watchdog.period > std::numeric_limits<std::uint64_t>::max() - watchdog.now ? std::numeric_limits<std::uint64_t>::max() : watchdog.now + watchdog.period;
+            if (watchdog.now >= watchdog.deadline)
+            {
+                Memory::restartSignal().requestRestart();
+                stopForRestart();
+            }
+        }
     };
 
     executeOne = [&]() -> bool {
-        if (stopForPanic()) return false;
+        checkExecution();
+        if (result.cancelled || result.recoverable || !result.error.empty()) return false;
         if (pc >= program.code.size()) return false;
         /* 下一条指令边界：分配失败在这里被消费成"可恢复终止"。
          * panic 判定（上面那行）与它自己的错误串都排在前面，所以 panic 永远优先。 */
@@ -2667,7 +2702,6 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             stopForRestart();
             return false;
         }
-        deliverInterrupts();
         if (!result.error.empty()) return false;
         if (stepLimit != 0u && result.steps >= stepLimit)
         {
@@ -2676,7 +2710,6 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         }
         const Instruction &instruction = program.code[pc];
         const std::size_t executedPc = pc;
-        const std::size_t executedCoroutine = currentCoroutine;
 
         // 调试：断点命中或单步模式下，**先回调再执行**（所以断点看到的是"即将执行的那条"）。
         // 没挂调试回调时"停下"没有意义，直接跳过，普通运行零开销。
@@ -2685,7 +2718,6 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             DebugEvent event;
             event.instruction = pc;
             event.steps = result.steps;
-            event.coroutine = currentCoroutine;
             event.opcode = instruction.toString();
             if (debugInfo_ != nullptr)
             {
@@ -2713,7 +2745,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             result.trace.push_back("[" + Memory::toString(pc) + "] " + instruction.toString());
         }
 
-        // 所有压栈统一经过容量检查；上限按协程分别计算。
+        // 所有压栈统一经过容量检查；上限按执行上下文分别计算。
         auto push = [&](Slot value) -> bool {
             if (stackLimit_ != 0u && stack.size() >= stackLimit_)
             {
@@ -3297,7 +3329,25 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             if (entryPending && frames.empty() && instruction.name == program.symbolKey("main"))
             {
                 entryPending = false;
-                if (!enterFunction(entryLabel_, instruction.name2, false)) break;
+                pending.clear();
+#if STACKVM_WITH_THREADS
+                if (threadRuntime_ && threadRuntime_->workers.at(threadId_)->initial)
+                {
+                    NativeContext context;
+                    context.heap = &heap;
+                    context.data = data_;
+                    context.objects = &objects;
+                    Slot initial;
+                    if (!restoreTransfer(context, *threadRuntime_->workers.at(threadId_)->initial, &initial))
+                    {
+                        fail(context.error);
+                        break;
+                    }
+                    pending.clear();
+                    pending.push_back(PendingArg{ "", initial });
+                }
+#endif
+                if (!enterFunction(entryLabel_, instruction.name2, true)) break;
                 break;
             }
             if (callNative(instruction.name, instruction.name2)) break;
@@ -3340,34 +3390,6 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         {
             Slot value;
             if (!pop(value)) break;
-            if (currentCoroutine != 0u && frames.size() == 1u)
-            {
-                frames.clear();
-                stack.clear();
-                pending.clear();
-                coroutines[currentCoroutine].state = CoroutineContext::State::Done;
-                std::size_t next = coroutines.size();
-                for (std::size_t index = 0; index < coroutines.size(); ++index)
-                {
-                    CoroutineContext &candidate = coroutines[index];
-                    if (candidate.state == CoroutineContext::State::Waiting && candidate.waitingFor == currentCoroutine)
-                    {
-                        candidate.state = CoroutineContext::State::Ready;
-                        candidate.waitingFor = 0u;
-                        if (next == coroutines.size()) next = index;
-                    }
-                }
-                if (next == coroutines.size()) next = nextRunnable(currentCoroutine);
-                if (next == coroutines.size())
-                {
-                    result.ok = true;
-                    pc = program.code.size();
-                    jumped = true;
-                    break;
-                }
-                loadCoroutine(next);
-                break;
-            }
             if (frames.empty())
             {
                 pc = program.code.size();
@@ -3459,16 +3481,15 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         }
         }
 
-        /* 交付中断时不跑指令钩子：钩子里的宿主泵（Qt 事件循环）可能再 raise 中断，
-         * 那会在"处理器 → 钩子 → 新中断 → 处理器"之间无限套娃。ISR 里只跑回调本身。 */
-        if (hookInterval_ != 0u && instructionHook_ && !interruptDelivery && result.steps % hookInterval_ == 0u)
+        /* 指令钩子是同步宿主观测入口；事件投递不会隐式执行用户函数。 */
+        if (hookInterval_ != 0u && instructionHook_ && result.steps % hookInterval_ == 0u)
         {
             const Memory::String text = instruction.toString();
             const std::size_t separator = text.find(' ');
             instructionHook_(InstructionHookInfo{
-                result.steps, executedPc, executedCoroutine, text.substr(0u, separator) });
+                result.steps, executedPc, text.substr(0u, separator) });
         }
-        if (!result.error.empty()) return false;
+        if (!result.error.empty() || result.cancelled || result.recoverable) return false;
         if (!jumped) ++pc;
         return pc < program.code.size();
     };
@@ -3481,6 +3502,8 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         {
             std::lock_guard<std::mutex> guard(threadRuntime_->mutex);
             threadRuntime_->closing = true;
+            for (const auto &item : threadRuntime_->workers)
+                if (item.first != 0u && !item.second->done) item.second->control->requested.store(true, std::memory_order_release);
         }
         threadRuntime_->changed.notify_all();
         for (;;)
@@ -3508,7 +3531,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                     if (!result.output.empty()) result.output += ' ';
                     result.output += worker->result.output;
                 }
-                if (!worker->result.ok && result.error.empty())
+                if (!worker->result.ok && !worker->result.cancelled && result.error.empty())
                     failFromThread("线程 " + Memory::toString(id) + " 失败：" + worker->result.error, worker->result);
             }
         }
@@ -3524,7 +3547,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
      * 也算可恢复终止，除非那是 panic —— panic 绝不能走软重启。 */
     if (restartPending() && !result.recoverable && result.error.rfind("panic", 0u) != 0u)
         stopForRestart();
-    if (result.error.empty() && !result.ok && !result.recoverable)
+    if (result.error.empty() && !result.ok && !result.recoverable && !result.cancelled)
     {
         // 掉出程序尾也算正常结束（组装时补过 Halt，这里兜底）。
         result.ok = true;
@@ -3545,7 +3568,6 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         result.finishedNanoseconds = timeCallback_();
         result.elapsedNanoseconds = result.finishedNanoseconds >= result.startedNanoseconds ? result.finishedNanoseconds - result.startedNanoseconds : 0u;
     }
-    coroutines[currentCoroutine].pc = pc;
     // 收尾：把最后的位置与调用栈留成快照（出错时 fail() 已经填过，这里补成功停机的场合）。
     if (debugInfo_ != nullptr && result.ok && result.sourceTrace.empty())
     {
@@ -3554,29 +3576,10 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         currentLocation_ = result.failureLocation;
         debugFrames_ = result.sourceTrace;
     }
-    coroutines[currentCoroutine].state = result.ok ? CoroutineContext::State::Done : coroutines[currentCoroutine].state;
-    coroutines[currentCoroutine].stack = std::move(stack);
-    coroutines[currentCoroutine].frames = std::move(frames);
-    coroutines[currentCoroutine].pending = std::move(pending);
-    const auto stateName = [](CoroutineContext::State state) {
-        switch (state)
-        {
-        case CoroutineContext::State::Running: return "running";
-        case CoroutineContext::State::Ready: return "ready";
-        case CoroutineContext::State::Suspended: return "suspended";
-        case CoroutineContext::State::Waiting: return "waiting";
-        case CoroutineContext::State::Receiving: return "receiving";
-        case CoroutineContext::State::Done: return "done";
-        }
-        return "unknown";
-    };
-    for (std::size_t index = 0; index < coroutines.size(); ++index)
-    {
-        const CoroutineContext &context = coroutines[index];
-        result.coroutines.push_back(CoroutineInfo{ index, stateName(context.state), context.pc,
-                                                   context.frames.size(), context.stack.size(),
-                                                   context.waitingFor });
-    }
+#if STACKVM_WITH_THREADS
+    closeEventQueue(events_);
+    events_.reset();
+#endif
     // 本轮全部执行上下文已停下，下一轮 reset 清空分配与物理槽。
     return result;
 }

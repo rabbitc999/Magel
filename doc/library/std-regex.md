@@ -66,10 +66,10 @@ int64 main() {
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-433"></a>`enum RegexError` | 正则表达式在宿主注册表里按模式缓存；Magel 值只保存整数句柄，Result 的载荷不持有堆对象。 |
+| 模块 | <a id="symbol-437"></a>`enum RegexError` | 正则表达式在宿主注册表里按模式缓存；Magel 值只保存整数句柄，Result 的载荷不持有堆对象。 |
 | RegexError | `Invalid` | 正则表达式在宿主注册表里按模式缓存；Magel 值只保存整数句柄，Result 的载荷不持有堆对象。 变体及载荷见声明。 |
-| 模块 | <a id="symbol-434"></a>`struct Regex` | 拥有已编译正则表达式句柄的资源包装。 |
-| Regex | <a id="symbol-435"></a>`int64 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
+| 模块 | <a id="symbol-438"></a>`struct Regex` | 拥有已编译正则表达式句柄的资源包装。 |
+| Regex | <a id="symbol-439"></a>`int64 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
 
 ## 函数索引
 

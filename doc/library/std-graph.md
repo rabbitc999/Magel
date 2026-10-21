@@ -22,29 +22,29 @@ Graph 使用链式前向星存储：head 是每顶点首条边，edgeTo/edgeNext
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-62"></a>`struct GraphReply` | 图算法胶水回执；槽布局必须与 glue/std_graph.hpp 的 GraphReply 一致。 |
-| GraphReply | <a id="symbol-63"></a>`String error` | 本次胶水调用的错误说明；成功时为空串。 |
-| GraphReply | <a id="symbol-64"></a>`int64 value` | 标量结果：连通分量个数或生成树总权值。 |
-| GraphReply | <a id="symbol-65"></a>`int64 flag` | 布尔结果：按入口语义表示无环 / 有环。 |
-| GraphReply | <a id="symbol-66"></a>`List<int64> order` | 访问序或拓扑序。 |
-| GraphReply | <a id="symbol-67"></a>`List<int64> dist` | 单源最短路距离表，不可达顶点为 -1。 |
-| 模块 | <a id="symbol-68"></a>`struct DsuReply` | 并查集胶水回执；槽布局必须与 glue/std_graph.hpp 的 DsuReply 一致。 |
-| DsuReply | <a id="symbol-69"></a>`List<int64> parent` | 更新后的父指针数组。 |
-| DsuReply | <a id="symbol-70"></a>`List<int64> sizes` | 更新后的集合大小数组。 |
-| DsuReply | <a id="symbol-71"></a>`int64 root` | 本次查找或合并后的根下标。 |
-| DsuReply | <a id="symbol-72"></a>`int64 flag` | 布尔结果：合并 1 = 发生了合并。 |
-| 模块 | <a id="symbol-73"></a>`struct Graph : Drop` | 带权图：有向 / 无向由构造时的 directed 决定；重边与自环都允许。 |
-| Graph | <a id="symbol-74"></a>`int64 vertexCount` | 顶点数，编号 0..vertexCount-1。 |
-| Graph | <a id="symbol-75"></a>`bool directed` | 是否为有向图。 |
-| Graph | <a id="symbol-76"></a>`List<int64> head` | 每个顶点的首条边下标，无出边为 -1。 |
-| Graph | <a id="symbol-77"></a>`List<int64> edgeTo` | 边终点表。 |
-| Graph | <a id="symbol-78"></a>`List<int64> edgeNext` | 同起点下一条边表。 |
-| Graph | <a id="symbol-79"></a>`List<int64> edgeWeight` | 边权表。 |
-| Graph | <a id="symbol-80"></a>`int64 edgeCount` | 当前边数，按 addEdge 调用次数计。 |
-| 模块 | <a id="symbol-81"></a>`struct UnionFind : Drop` | 并查集：路径压缩 + 按大小合并；find / union 返回后内部数组已更新。 |
-| UnionFind | <a id="symbol-82"></a>`List<int64> parent` | 父指针数组。 |
-| UnionFind | <a id="symbol-83"></a>`List<int64> sizes` | 各根对应的集合大小。 |
-| UnionFind | <a id="symbol-84"></a>`int64 components` | 当前集合（连通分量）个数。 |
+| 模块 | <a id="symbol-66"></a>`struct GraphReply` | 图算法胶水回执；槽布局必须与 glue/std_graph.hpp 的 GraphReply 一致。 |
+| GraphReply | <a id="symbol-67"></a>`String error` | 本次胶水调用的错误说明；成功时为空串。 |
+| GraphReply | <a id="symbol-68"></a>`int64 value` | 标量结果：连通分量个数或生成树总权值。 |
+| GraphReply | <a id="symbol-69"></a>`int64 flag` | 布尔结果：按入口语义表示无环 / 有环。 |
+| GraphReply | <a id="symbol-70"></a>`List<int64> order` | 访问序或拓扑序。 |
+| GraphReply | <a id="symbol-71"></a>`List<int64> dist` | 单源最短路距离表，不可达顶点为 -1。 |
+| 模块 | <a id="symbol-72"></a>`struct DsuReply` | 并查集胶水回执；槽布局必须与 glue/std_graph.hpp 的 DsuReply 一致。 |
+| DsuReply | <a id="symbol-73"></a>`List<int64> parent` | 更新后的父指针数组。 |
+| DsuReply | <a id="symbol-74"></a>`List<int64> sizes` | 更新后的集合大小数组。 |
+| DsuReply | <a id="symbol-75"></a>`int64 root` | 本次查找或合并后的根下标。 |
+| DsuReply | <a id="symbol-76"></a>`int64 flag` | 布尔结果：合并 1 = 发生了合并。 |
+| 模块 | <a id="symbol-77"></a>`struct Graph : Drop` | 带权图：有向 / 无向由构造时的 directed 决定；重边与自环都允许。 |
+| Graph | <a id="symbol-78"></a>`int64 vertexCount` | 顶点数，编号 0..vertexCount-1。 |
+| Graph | <a id="symbol-79"></a>`bool directed` | 是否为有向图。 |
+| Graph | <a id="symbol-80"></a>`List<int64> head` | 每个顶点的首条边下标，无出边为 -1。 |
+| Graph | <a id="symbol-81"></a>`List<int64> edgeTo` | 边终点表。 |
+| Graph | <a id="symbol-82"></a>`List<int64> edgeNext` | 同起点下一条边表。 |
+| Graph | <a id="symbol-83"></a>`List<int64> edgeWeight` | 边权表。 |
+| Graph | <a id="symbol-84"></a>`int64 edgeCount` | 当前边数，按 addEdge 调用次数计。 |
+| 模块 | <a id="symbol-85"></a>`struct UnionFind : Drop` | 并查集：路径压缩 + 按大小合并；find / union 返回后内部数组已更新。 |
+| UnionFind | <a id="symbol-86"></a>`List<int64> parent` | 父指针数组。 |
+| UnionFind | <a id="symbol-87"></a>`List<int64> sizes` | 各根对应的集合大小。 |
+| UnionFind | <a id="symbol-88"></a>`int64 components` | 当前集合（连通分量）个数。 |
 
 ## 函数索引
 

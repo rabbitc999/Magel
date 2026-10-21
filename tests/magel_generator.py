@@ -45,7 +45,7 @@ def main():
             "magel_parser.cpp", "magel_main.cpp", "magel_incremental.hpp",
             "magel_borrow_checker.hpp", "magel_borrow_flow.hpp", "magel_resource_cleanup.hpp", "magel_resource_cleanup.cpp", "semantics/resource_lifetime.cpp", "semantics/borrow_flow.cpp", "semantics/borrow_return_sources.cpp", "semantics/borrow_facts.cpp", "semantics/expression_effects.cpp",
             "magel_package.hpp", "magel_project.hpp", "magel_cli.hpp", "magel_i18n.hpp", "console/utf8.hpp",
-            "runtime/stackvm.cpp", "runtime/execution_plan.hpp", "runtime/register_core.hpp", "runtime/allocation_index.hpp",
+            "runtime/stackvm.cpp", "runtime/event_service.cpp", "runtime/event_service.hpp", "runtime/execution_plan.hpp", "runtime/register_core.hpp", "runtime/allocation_index.hpp",
             "runtime/data_capacity_index.hpp", "runtime/parts/optimization_flow.inc",
             "runtime/parts/execution_fusion.inc", "runtime/parts/register_execution.inc", "runtime/magel_pool.c", "runtime/magel_pool.h",
             "runtime/magel_allocator.hpp", "magel_runtime_allocator.hpp",

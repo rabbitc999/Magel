@@ -1,12 +1,19 @@
 module std::message;
-
 import std::concurrency;
-/* 注意：`SharedCoroutine` / `IsolatedThread` / `Message` 各自是**独立模块**，
- * 不能合成一个 `std::concurrency` —— 它们都有 `create/wait/receive` 这些同名宿主函数，
- * 塞进同一个模块会撞"宿主函数不能重名"。 */
+import std::thread;
 
-/* 跨协程 / 跨线程的消息：`import std::message;`。 */
-void sendCoroutine<T>(SharedCoroutineHandle coroutine, T value);
-T receiveCoroutine<T>();
-void sendThread<T>(IsolatedThreadHandle thread, T value);
+/* 邮箱传值复制，静态函数可传递，借用闭包和宿主独占资源不可传递。 */
+void sendThread<T>(Thread thread, T value);
 T receiveThread<T>();
+int64 __mailSend<T>(Thread thread, int64 millis, T value);
+int64 sendFor<T>(Thread thread, T value, int64 millis) {
+    return __mailSend<T>(thread, millis, value);
+}
+int64 trySend<T>(Thread thread, T value) { return sendFor<T>(thread, value, 0); }
+std::concurrency::Receive<T> receiveFor<T>(int64 millis) {
+    std::concurrency::Receive<T> result;
+    result.status = std::concurrency::__poll(0, millis);
+    if (result.isReady()) { result.value = std::concurrency::__channelTake<T>(); }
+    return result;
+}
+std::concurrency::Receive<T> tryReceive<T>() { return receiveFor<T>(0); }

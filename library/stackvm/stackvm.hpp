@@ -85,19 +85,8 @@
 
 /**
  * @def STACKVM_WITH_THREADS
- * @brief 是否编入 **OS 线程 / 互斥 / 条件变量 / 线程共享值 / 宿主中断邮箱**；目标宿主口径默认 0。
- *
- * `1`（缺省，桌面行为）= 编入 `std::thread` 那套线程运行时、`std::thread::*` 与
- * `std::concurrency::Shared` 原生函数、宿主投递中断的邮箱，以及运行内存池的互斥锁。
- * `0`（目标宿主）= 整段裁掉：**不出现 `std::thread` / `std::mutex` / `std::condition_variable`
- * / `std::chrono`**，`setThreadsEnabled` / `setThreadHeapFactory` / `raiseInterrupt` /
- * `clearInterrupts` 不存在，`std::thread::*` 与 `Shared` 走"函数入口不存在"的普通错误。
- *
- * **协程不受影响**：`std::coroutine::*` 与 `__std_message_*_coroutine` 是 VM 自己的状态机
- * （在求值循环里切换，不需要 OS 线程），目标宿主照常可用 —— 这就是"目标宿主不需要线程"的那条线。
- *
- * 关线程是**零成本裁剪**：桌面构建不用改代码，目标宿主 `-DSTACKVM_WITH_THREADS=0` 即可
- * （目标宿主按需要显式配置）。默认字节堆同理走 `STACKVM_WITH_DEFAULT_HEAP`。
+ * @brief 是否编入宿主线程、共享槽、有界通道和显式事件服务，默认开启。
+ * @note 关闭后保留单执行上下文、同步宿主调用、执行预算、停止与看门狗检查。
  */
 #ifndef STACKVM_WITH_THREADS
 #define STACKVM_WITH_THREADS 1
@@ -287,9 +276,37 @@ struct SymbolRecord
     Memory::String original;
 };
 
+/**
+ * @brief 跨线程操作状态，超时不表示目标任务已停止。
+ */
+enum class TransferStatus : std::int64_t
+{
+    Ready = 0,
+    Timeout = 1,
+    Closed = 2,
+    Cancelled = 3,
+    Full = 4,
+    Failed = 5,
+    Invalid = 6
+};
+/**
+ * @brief 宿主或定时源按值投递的事件，不保存用户函数指针。
+ */
+struct RuntimeEvent
+{
+    std::int64_t timer = 0;
+    std::int64_t tag = 0;
+    std::int64_t source = 0;
+    std::uint64_t missed = 0;
+};
+/**
+ * @brief 宿主持有的投递函数；不使用 VM 内存池，允许在运行和内存池结束后释放。
+ */
+using EventPoster = std::function<TransferStatus(RuntimeEvent)>;
+struct EventQueue;
+struct ExecutionControl;
 struct ThreadRuntime;
 struct SharedRuntime;
-struct InterruptMailbox;
 class Machine;
 
 /**
@@ -816,26 +833,12 @@ struct OptimizationReport
 // ---------------------------------------------------------------------------
 
 /**
- * 一次运行结束时保留的协程上下文摘要。id=0 是主上下文。
- */
-struct CoroutineInfo
-{
-    std::size_t id = 0;
-    Memory::String state;
-    std::size_t instruction = 0;
-    std::size_t frameDepth = 0;
-    std::size_t stackDepth = 0;
-    std::size_t waitingFor = 0;
-};
-
-/**
  * 指令钩子收到的只读执行快照。
  */
 struct InstructionHookInfo
 {
     std::size_t steps = 0;        ///< 本次 run() 已完成的指令总数。
     std::size_t instruction = 0;  ///< 刚执行完的程序计数器。
-    std::size_t coroutine = 0;    ///< 执行该指令的协程句柄；0 是主上下文。
     Memory::String opcode;        ///< 指令操作码。
 };
 
@@ -854,42 +857,6 @@ using InstructionHook = Memory::Function<void(const InstructionHookInfo &)>;
 using OutputSink = void (*)(void *user, const char *bytes, std::size_t count);
 
 /**
- * @brief 一次待交付的中断事件（`Machine::raiseInterrupt` 投递）。
- *
- * `timer` 是 `std::event::Timer` 的句柄，`callback` 是事件自带的函数指针（`0` 表示用
- * 定时器槽里绑的那个），`thread` 是它归属的线程；`source` 原样透传给回调。
- * 事件**不在投递线程上执行**：VM 记住它，在下一条指令边界（安全点）交付，而且只由
- * `thread` 那个线程的 VM 交付。
- */
-struct InterruptEvent
-{
-    std::int64_t timer = 0;     ///< 定时器句柄（`std::event::Timer` 的 `handle`）；0 = 无定时器。
-    std::int64_t source = 0;    ///< 触发来源，交给回调。
-    std::int64_t callback = 0;  ///< 事件自带的函数指针；0 = 用 `timer` 槽里绑的那个。
-    std::size_t thread = 0u;    ///< 归属线程 id；只有这个线程的 VM 会交付它。
-};
-
-/**
- * @brief 中断句柄：函数指针 + 定时器 + **归属哪个线程**。
- *
- * 每个线程有**自己的** VM 求值循环与中断队列；`raiseInterrupt(句柄, source)` 只把事件
- * 投给句柄里记的那个线程的 VM —— 别的线程不受影响。`std::event::Timer` 在创建时就把
- * 创建者的线程 id 记进定时器槽（`Timer.thread()` 可读），所以"某一线程创建的中断默认
- * 在这个线程的 VM 里执行"。宿主胶水可以拿着这个句柄跨线程投递。
- *
- * 三个字段都能只用一部分：
- *   * `callback == 0`：投递时用 `timer` 槽里 `onInterrupt` 绑好的回调；
- *   * `callback != 0`：直接跑这个函数指针（`timer` 仍参与"释放过就丢弃"的判定）；
- *   * `timer == 0`：没有定时器，只靠 `callback` 交付（宿主自己在 C++ 侧抓到的函数指针）。
- */
-struct InterruptHandle
-{
-    std::int64_t timer = 0;     ///< `std::event::Timer` 的句柄；0 = 不经过定时器。
-    std::int64_t callback = 0;  ///< 中断事件函数指针；0 = 用定时器槽里绑的那个。
-    std::size_t thread = 0u;    ///< 归属线程 id；0 = 入口线程。
-};
-
-/**
  * 调试回调请 VM 接下来怎么做。
  */
 enum class DebugAction
@@ -906,7 +873,6 @@ struct DebugFrame
 {
     Memory::String function;      ///< 函数 / 标签名；空表示根。
     std::size_t threadId = 0;     ///< 发生调用的隔离线程编号；0 为主线程。
-    std::size_t coroutineId = 0;  ///< VM 当前协程编号。
     std::size_t instruction = 0;  ///< VM 调用点/当前指令；没有源码表也有效。
     SourceLocation location;      ///< 该帧的位置：被调函数是"当前指令"，调用者记"调用点"。
 };
@@ -918,7 +884,6 @@ struct DebugEvent
 {
     std::size_t instruction = 0;        ///< **即将执行**的指令下标。
     std::size_t steps = 0;              ///< 本次 run 已经执行过的指令数。
-    std::size_t coroutine = 0;          ///< 所属协程；0 是主上下文。
     Memory::String opcode;              ///< 指令操作码文本。
     SourceLocation location;            ///< 该指令的源码位置。
     Memory::Vector<DebugFrame> frames;  ///< 调用栈，从外到内；最后一帧是当前函数。
@@ -932,7 +897,8 @@ using DebugHook = Memory::Function<DebugAction(const DebugEvent &)>;
  */
 struct RunResult
 {
-    bool ok = false;  ///< 是否正常停机。
+    bool ok = false;         ///< 是否正常停机。
+    bool cancelled = false;  ///< 是否响应协作停止而结束。
     /**
      * @brief 是不是"可恢复终止"（分配失败等来自 VM 外部的停止原因）。
      *
@@ -946,26 +912,25 @@ struct RunResult
      * @brief 可恢复终止的原因（`Memory::WatchdogReason` 的整数值）；不可恢复时为 0。
      */
     int recoverableReason = 0;
-    int exitCode = 0;                          ///< 正常停机状态码（`exit(n)`；普通 halt 为 0）。
-    Memory::String output;                     ///< `write` 的数值输出（多个值之间一个空格）。
-    Memory::String text;                       ///< `print` / `putc` 的文本输出（按顺序拼接）。
-    Memory::String error;                      ///< 运行时错误（越界、未定义变量等）。
-    std::size_t registerDispatches = 0;        ///< 新寄存器核心实际执行的指令数。
-    std::size_t registerEntries = 0;           ///< 新寄存器核心进入次数。
-    std::size_t fusedGroups = 0;               ///< 执行的四指令融合组数；steps 仍按原始指令计数。
-    std::size_t steps = 0;                     ///< 执行的指令条数。
-    bool timingAvailable = false;              ///< 是否由宿主时钟提供了精确计时。
-    std::uint64_t startedNanoseconds = 0;      ///< 开始时的宿主单调时钟值。
-    std::uint64_t finishedNanoseconds = 0;     ///< 结束时的宿主单调时钟值。
-    std::uint64_t elapsedNanoseconds = 0;      ///< 本次执行耗时；时钟倒退时保守记 0。
-    std::size_t maxStackDepth = 0;             ///< 求值栈的最大深度。
-    std::size_t heapPeakBytes = 0;             ///< 堆上同时在用字节数的峰值。
-    std::size_t heapLiveBytes = 0;             ///< 停机时还有多少字节没 `free`（≠ 0 就是漏了）。
-    std::size_t heapLiveBlocks = 0;            ///< 停机时还挂着几块（配合 `heapLiveBytes` 看）。
-    std::size_t liveObjects = 0;               ///< 停机时还有几个运行期对象（`bint` / 容器 / `obj` / 资源句柄）没释放。
-    Memory::Vector<CoroutineInfo> coroutines;  ///< 主上下文及各协程的最终状态摘要。
-    Memory::Vector<Memory::String> trace;      ///< 打开 trace 时每条指令一行。
-    SourceLocation failureLocation;            ///< 出错（或被调试器中止）处对应的源码位置。
+    int exitCode = 0;                       ///< 正常停机状态码（`exit(n)`；普通 halt 为 0）。
+    Memory::String output;                  ///< `write` 的数值输出（多个值之间一个空格）。
+    Memory::String text;                    ///< `print` / `putc` 的文本输出（按顺序拼接）。
+    Memory::String error;                   ///< 运行时错误（越界、未定义变量等）。
+    std::size_t registerDispatches = 0;     ///< 新寄存器核心实际执行的指令数。
+    std::size_t registerEntries = 0;        ///< 新寄存器核心进入次数。
+    std::size_t fusedGroups = 0;            ///< 执行的四指令融合组数；steps 仍按原始指令计数。
+    std::size_t steps = 0;                  ///< 执行的指令条数。
+    bool timingAvailable = false;           ///< 是否由宿主时钟提供了精确计时。
+    std::uint64_t startedNanoseconds = 0;   ///< 开始时的宿主单调时钟值。
+    std::uint64_t finishedNanoseconds = 0;  ///< 结束时的宿主单调时钟值。
+    std::uint64_t elapsedNanoseconds = 0;   ///< 本次执行耗时；时钟倒退时保守记 0。
+    std::size_t maxStackDepth = 0;          ///< 求值栈的最大深度。
+    std::size_t heapPeakBytes = 0;          ///< 堆上同时在用字节数的峰值。
+    std::size_t heapLiveBytes = 0;          ///< 停机时还有多少字节没 `free`（≠ 0 就是漏了）。
+    std::size_t heapLiveBlocks = 0;         ///< 停机时还挂着几块（配合 `heapLiveBytes` 看）。
+    std::size_t liveObjects = 0;            ///< 停机时还有几个运行期对象（`bint` / 容器 / `obj` / 资源句柄）没释放。
+    Memory::Vector<Memory::String> trace;   ///< 打开 trace 时每条指令一行。
+    SourceLocation failureLocation;         ///< 出错（或被调试器中止）处对应的源码位置。
     /**
      * 出错处的源码级调用栈，从外到内；最后一帧是出错函数。
      * STACKVM_WITH_PANIC_TRACE=1 时自动记录；无调试表则提供函数符号及指令位置。
@@ -1193,25 +1158,10 @@ public:
                         NativeValue &result) = 0;
     [[nodiscard]] virtual std::int64_t makeString(const Memory::String &text) = 0;
     /**
-     * @brief 向**当前虚拟机**投递一次中断事件（交绑定在该定时器上的回调）。
-     *
-     * 这是胶水层触发 MAGEL 中断事件函数的入口，对应 `std::event::Timer` 的 `handle`。
-     * **异步 + 安全点交付**：宿主只把事件挂进邮箱就返回，回调由 VM 在**下一条指令
-     * 边界**用执行线程调用 —— 不会重入正在跑的宿主回调，也不用自己加锁保护 VM 状态。
-     * 句柄无效 / 定时器已 `destroy` / 还没绑回调时事件被丢弃（空操作）。
-     * @param timer `std::event::Timer` 的句柄。
-     * @param source 原样交给回调的来源值。
+     * @brief 取得当前运行的事件投递器，宿主回调结束后仍可安全使用。
+     * @return 不支持时返回空函数，目标运行结束后投递返回关闭。
      */
-    virtual void raiseInterrupt(std::int64_t timer, std::int64_t source)
-    {
-        (void)timer;
-        (void)source;
-    }
-    /**
-     * @brief 取得可在本次宿主调用结束后使用的中断投递器。
-     * @return 不支持时为空；仅可在所属运行时的执行线程及运行期内调用。
-     */
-    virtual Memory::Function<void(std::int64_t, std::int64_t)> interruptPoster() { return {}; }
+    virtual EventPoster eventPoster() { return {}; }
     /**
      * @brief 安装执行边界钩子；按 VM 指令边界计数。
      * @param interval 调用间隔，零表示取消。
@@ -1227,8 +1177,8 @@ public:
     /**
      * @brief 当前正在执行 `run()` 的虚拟机；宿主回调之外（指令钩子 / Qt 事件循环）也能用。
      *
-     * 胶水拿到它以后可以在**宿主回调返回之后**继续工作：投递中断
-     * （`Machine::raiseInterrupt`）或挂每 N 条指令一次的钩子
+     * 胶水拿到它以后可以在**宿主回调返回之后**继续工作：投递显式事件
+     * （`eventPoster()`）或挂每 N 条指令一次的钩子
      * （`Machine::setInstructionHook`）。只在 VM 执行线程上使用；指针在 `Machine`
      * 生命周期内有效，`run()` 结束后不要再碰。
      * @return 正在运行的虚拟机；没有（例如离线编解码）返回 nullptr。
@@ -1385,10 +1335,22 @@ class Machine
 {
 public:
     /**
+     * @brief 从任意宿主线程请求本虚拟机协作停止，在下一安全点生效。
+     */
+    void requestStop();
+#if STACKVM_WITH_THREADS
+    /**
+     * @brief 取得当前运行的有界宿主事件投递器，运行结束后返回关闭状态。
+     * @return 不捕获虚拟机裸地址的线程安全投递器。
+     */
+    EventPoster eventPoster();
+#endif
+
+    /**
      * @brief 构造。
      * @param trace 是否记录执行轨迹。
      */
-    explicit Machine(bool trace = false) : trace_(trace) {}
+    explicit Machine(bool trace = false);
 
     /**
      * @brief 挂上数据区；不挂时 `AddrOf` / `LoadAt` / `StoreAt` 会报"没有数据区"。
@@ -1419,7 +1381,7 @@ public:
 #endif
 
     /**
-     * 设置每个协程的求值栈槽数上限；0 表示不限制。
+     * 设置每个执行上下文的求值栈槽数上限；0 表示不限制。
      * 超限会让 run() 返回“求值栈超过上限”诊断，不会抛出宿主异常。
      */
     void setStackLimit(std::size_t slots) { stackLimit_ = slots; }
@@ -1467,7 +1429,7 @@ public:
     void setExecutionOptimization(bool enabled) { optimizeExecution_ = enabled; }
 
     /**
-     * 当前每协程求值栈槽数上限；0 表示不限制。
+     * 当前执行上下文的求值栈槽数上限；0 表示不限制。
      */
     [[nodiscard]] std::size_t stackLimit() const { return stackLimit_; }
 
@@ -1538,39 +1500,6 @@ public:
     void setDebugHook(DebugHook hook) { debugHook_ = std::move(hook); }
 
     /**
-     * @brief 从任意线程投递一次中断事件，交给绑定在该定时器上的回调。
-     *
-     * **异步 + 安全点交付**：调用方（宿主 / 胶水）只把事件挂进邮箱就返回，真正的
-     * 回调由 VM 在**下一条指令边界**用执行线程调用 —— 所以不会重入正在跑的宿主回调，
-     * 也不用自己加锁保护 VM 状态。可以在 `run()` 之前或期间、甚至别的线程上调用。
-     *
-     * 句柄无效 / 定时器已经 `destroy` / 还没绑定回调时，事件被丢弃（空操作）。
-     *
-     * @param timer `std::event::Timer` 的句柄。
-     * @param source 交给回调的来源值（程序自己触发时是 `raise(source)` 的实参）。
-     */
-#if STACKVM_WITH_THREADS
-    void raiseInterrupt(std::int64_t timer, std::int64_t source = 0);
-
-    /**
-     * @brief 按中断句柄投递：函数指针 + 定时器 + 归属线程。
-     *
-     * `handle.thread` 不是本 VM 的线程时**忽略**（调用方不用自己判断，投错线程是空操作）；
-     * `handle.callback` 非 0 时直接跑它，所以宿主不用先让 MAGEL 侧 `onInterrupt` 绑回调；
-     * `handle.timer` 仍然参与"句柄无效 / 定时器已经 destroy"的判定（那种情况照样丢弃）。
-     *
-     * @param handle 中断句柄（见 @ref InterruptHandle）。
-     * @param source 交给回调的来源值。
-     */
-    void raiseInterrupt(const InterruptHandle &handle, std::int64_t source = 0);
-
-    /**
-     * 丢弃还没交付的中断事件。
-     */
-    void clearInterrupts();
-#endif /* STACKVM_WITH_THREADS */
-
-    /**
      * @brief 设置断点集合（指令下标）。
      * @param instructions 断点位置；重复项会被忽略，空表等于清空。
      */
@@ -1636,6 +1565,11 @@ public:
                                 std::size_t stepLimit = 0u);
 
 private:
+    std::shared_ptr<ExecutionControl> control_;
+#if STACKVM_WITH_THREADS
+    std::shared_ptr<EventQueue> events_;
+#endif
+
     bool panicDetailsEnabled_ = true;                 ///< 错误详情策略，不能覆盖压缩容器的隐私限制。
     bool trace_ = false;                              ///< 是否记录轨迹。
     OutputSink outputSink_ = nullptr;                 ///< 文本输出下沉；空 = 只累积进 `RunResult::text`。
@@ -1652,14 +1586,13 @@ private:
     bool registerJumpFolding_ = true, registerSpecialization_ = true, registerBlockExecution_ = true;
     bool registerThreadedDispatch_ = true;             ///< 支持的编译器默认使用标签分派，其余回退 switch。
     bool optimizeExecution_ = true;                    ///< 不改变字节码的运行期优化开关。
-    std::size_t stackLimit_ = 0u;                      ///< 每个协程的求值栈槽数上限；0 表示不限制。
+    std::size_t stackLimit_ = 0u;                      ///< 每个执行上下文的求值栈槽数上限；0 表示不限制。
     const NativeServices *hostServices_ = nullptr;     ///< 宿主注入的通用不透明服务。
     Memory::Vector<Memory::String> programArguments_;  ///< 传给语言入口的命令行参数。
 #if STACKVM_WITH_THREADS
     bool threadsEnabled_ = false;
     std::shared_ptr<ThreadRuntime> threadRuntime_;
     std::shared_ptr<SharedRuntime> sharedRuntime_;
-    std::shared_ptr<InterruptMailbox> interruptMailbox_;  ///< 宿主投递的中断（跨线程，懒建）。
 #endif
     std::size_t threadId_ = 0u;
     std::size_t parentThreadId_ = 0u;

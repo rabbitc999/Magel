@@ -1,24 +1,155 @@
 module std::thread;
-
 import std::concurrency;
-/* 注意：`SharedCoroutine` / `IsolatedThread` / `Message` 各自是**独立模块**，
- * 不能合成一个 `std::concurrency` —— 它们都有 `create/wait/receive` 这些同名宿主函数，
- * 塞进同一个模块会撞"宿主函数不能重名"。 */
+import std::clock;
 
-/* 隔离线程：`import std::thread;`。 */
-type IsolatedThreadHandle = int64;
+type Thread = int64;
+const int64 RUNNING = 0;
+const int64 SUCCEEDED = 1;
+const int64 FAILED = 2;
+const int64 CANCELLED = 3;
 
+Thread create(void fn() task);
+/* 静态入口和初始参数在创建时复制；引用、资源和借用闭包不可传递。 */
+Thread createWith<T>(void fn(T) task, T value);
+void wait(Thread thread);
+/* 非负毫秒；超时不会取消线程或消费句柄。 */
+bool waitFor(Thread thread, int64 millis);
+bool tryWait(Thread thread) { return waitFor(thread, 0); }
+void requestStop(Thread thread);
+bool stopRequested();
+int64 state(Thread thread);
+/* 可取消睡眠，负毫秒报错，成功返回 READY。 */
+int64 sleepFor(int64 millis);
+int64 __waitResult(Thread thread, int64 millis);
+String __error(Thread thread);
+String __trace(Thread thread);
+struct ThreadResult {
+    int64 status;
+    String error;
+    String trace;
+    bool isReady() { return self.status == std::concurrency::READY; }
+};
+ThreadResult waitResultFor(Thread thread, int64 millis) {
+    ThreadResult result;
+    result.status = __waitResult(thread, millis);
+    if (result.status == std::concurrency::FAILED) {
+        result.error = __error(thread);
+        result.trace = __trace(thread);
+    }
+    return result;
+}
+ThreadResult waitResult(Thread thread) { return waitResultFor(thread, -1); }
+void send(Thread thread, String message);
+String receive();
+Thread current();
+Thread parent();
+std::concurrency::Receive<String> receiveFor(int64 millis) {
+    std::concurrency::Receive<String> result;
+    result.status = std::concurrency::__poll(0, millis);
+    if (result.isReady()) { result.value = std::concurrency::__channelTake<String>(); }
+    return result;
+}
+std::concurrency::Receive<String> tryReceive() { return receiveFor(0); }
+void closeInbox() { std::concurrency::__channelClose(0); }
 
+/* 线程组拥有任务的等待责任；离开作用域请求取消并回收全部任务。 */
+struct ThreadGroup : Drop {
+    List<Thread> tasks;
+    bool completed;
+    bool successful;
+    String error;
+    static ThreadGroup create() { }
+    Thread start(void fn() task) {
+        if (self.completed) { std::lang::panic("线程组已结束"); }
+        Thread handle = std::thread::create(task);
+        self.tasks.push(handle);
+        return handle;
+    }
+    void add(Thread task) {
+        if (self.completed) { std::lang::panic("线程组已结束"); }
+        Thread root;
+        if (task == root || task == current()) { std::lang::panic("线程组不能接管自身或主线程"); }
+        for (int64 i in std::lang::range(0, self.tasks.len())) {
+            if (self.tasks.at(i) == task) { std::lang::panic("线程组不能重复登记任务"); }
+        }
+        self.tasks.push(task);
+    }
+    void cancelAll() {
+        for (int64 i in std::lang::range(0, self.tasks.len())) { requestStop(self.tasks.at(i)); }
+    }
+    bool waitAll() {
+        if (self.completed) { return self.successful; }
+        bool running = true;
+        bool failure = false;
+        while (running) {
+            running = false;
+            for (int64 i in std::lang::range(0, self.tasks.len())) {
+                int64 value = state(self.tasks.at(i));
+                if (value == RUNNING) { running = true; }
+                if (value == FAILED && !failure) { failure = true; self.cancelAll(); }
+            }
+            if (running) { sleepFor(1); }
+        }
+        self.successful = true;
+        for (int64 i in std::lang::range(0, self.tasks.len())) {
+            ThreadResult result = waitResult(self.tasks.at(i));
+            if (result.status != std::concurrency::READY) { self.successful = false; }
+            if (result.status == std::concurrency::FAILED && self.error == "") { self.error = result.error; }
+        }
+        self.completed = true;
+        return self.successful;
+    }
+    void drop() {
+        if (!self.completed) { self.cancelAll(); self.waitAll(); }
+    }
+};
 
+/* 工作线程只接受静态任务，任务函数与参数都沿用统一传值协议。 */
+inline void __poolWorker(std::concurrency::Channel<void fn()> jobs) {
+    while (true) {
+        std::concurrency::Receive<void fn()> next = jobs.receive();
+        if (!next.isReady()) { return; }
+        next.value();
+    }
+}
 
-IsolatedThreadHandle create(void fn() task);
-void wait(IsolatedThreadHandle thread);
-/* 最多等待 millis 毫秒；成功完成并回收返回 true，超时返回 false，不取消目标。
- * millis 必须非负；目标失败时保留 wait 的原始诊断传播规则。 */
-bool waitFor(IsolatedThreadHandle thread, int64 millis);
-/* 不阻塞地尝试等待并回收目标；目标尚未完成时返回 false。 */
-bool tryWait(IsolatedThreadHandle thread) { return waitFor(thread, 0); }
-void send(IsolatedThreadHandle thread, std::lang::String message);
-std::lang::String receive();
-IsolatedThreadHandle current();
-IsolatedThreadHandle parent();
+/* 固定工作线程池：有界队列；closeAndWait 先排空再回收，cancelAll 丢弃未开始任务。 */
+struct ThreadPool : Drop {
+    std::concurrency::Channel<void fn()> jobs;
+    ThreadGroup group;
+    bool closed;
+    static ThreadPool create(int64 workers, int64 capacity) {
+        if (workers < 1 || workers > 1024) { std::lang::panic("线程池工作线程数须为 1..1024"); }
+        self.jobs = std::concurrency::Channel<void fn()>::create(capacity);
+        for (int64 i in std::lang::range(0, workers)) { self.group.add(std::thread::createWith<std::concurrency::Channel<void fn()>>(__poolWorker, self.jobs)); }
+    }
+    int64 submitFor(void fn() task, int64 millis) {
+        if (self.closed) { return std::concurrency::CLOSED; }
+        if (millis < -1) { std::lang::panic("线程池提交超时不能小于 -1"); }
+        int64 started = std::clock::nowMs();
+        while (true) {
+            for (int64 i in std::lang::range(0, self.group.tasks.len())) {
+                int64 status = state(self.group.tasks.at(i));
+                if (status != RUNNING) { self.cancelAll(); return std::concurrency::FAILED; }
+            }
+            int64 status = self.jobs.trySend(task);
+            if (status != std::concurrency::FULL) { return status; }
+            if (millis == 0) { return status; }
+            if (millis > 0 && std::clock::nowMs() - started >= millis) { return std::concurrency::TIMEOUT; }
+            sleepFor(1);
+        }
+        return std::concurrency::CLOSED;
+    }
+    int64 submit(void fn() task) { return self.submitFor(task, -1); }
+    bool closeAndWait() {
+        if (!self.closed) { self.jobs.close(); self.closed = true; }
+        return self.group.waitAll();
+    }
+    void cancelAll() {
+        self.closed = true;
+        self.group.cancelAll();
+        self.jobs.close();
+        while (self.jobs.tryReceive().isReady()) { }
+    }
+    void drop() { if (!self.group.completed) { self.cancelAll(); self.group.waitAll(); } }
+};

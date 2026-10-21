@@ -559,7 +559,7 @@ break 写法 ok
 \par
 \medskip
 
-\texttt{yield} 只在带值退出里是关键字：作为普通标识符仍可用（例如 \texttt{std:\allowbreak{}:\allowbreak{}coroutine:\allowbreak{}:\allowbreak{}yield(\allowbreak{})\allowbreak{}} 不受影响），但不能写成 \texttt{yield(\allowbreak{}参数)\allowbreak{}} 这种调用形式。\texttt{break level} 后面必须跟正整数字面量层数或 \texttt{all}；\texttt{break level foo;}、\texttt{break level 0;}、\texttt{break level -1;} 都是错的。\texttt{all} 仍是普通变量名，只有在这里的层级参数位置才被识别为「全部循环」，所以你照样可以写 \texttt{int64 all =\allowbreak{} 0;}。
+\texttt{yield} 只在带值退出里是关键字：作为普通标识符仍可用（例如用户自定义的 \texttt{yield(\allowbreak{})\allowbreak{}} 不受影响），但不能写成 \texttt{yield(\allowbreak{}参数)\allowbreak{}} 这种调用形式。\texttt{break level} 后面必须跟正整数字面量层数或 \texttt{all}；\texttt{break level foo;}、\texttt{break level 0;}、\texttt{break level -1;} 都是错的。\texttt{all} 仍是普通变量名，只有在这里的层级参数位置才被识别为「全部循环」，所以你照样可以写 \texttt{int64 all =\allowbreak{} 0;}。
 
 \section{复合赋值与自增减}
 

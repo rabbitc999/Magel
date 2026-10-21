@@ -73,14 +73,12 @@ No `import` needed.
 
 | Module | Contents |
 | --- | --- |
-| `std::coroutine` | shared coroutines |
-| `std::thread` | isolated threads (`IsolatedThread`) |
-| `std::message` | messages across coroutines / threads |
+| `std::thread` | isolated threads (`Thread`) |
+| `std::message` | messages across threads |
 | `std::concurrency` | explicit shared slots `Shared<T>`; ordinary globals stay isolated between threads |
-| `std::event` | interrupt events and software timers; after `start()` they fire periodically at instruction boundaries |
+| `std::event` | explicit events and timers; receive consumes notifications and coalesces missed periods |
 
-> `SharedCoroutine` / `IsolatedThread` / `Message` are **three separate modules** and cannot be
-> merged — they have same-named host functions `create` / `wait` / `receive`.
+> std::thread executes tasks, std::concurrency provides channels, and std::event provides explicit events.
 
 ### System and environment
 

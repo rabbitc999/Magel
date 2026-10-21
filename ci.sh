@@ -149,8 +149,9 @@ if [ "$full" = 1 ]; then
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="$root/tmp/ci/stackvm" \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE="$root/tmp/ci/stackvm"
     run_required_step "构建 stackvm（CLI + 单测）" \
-        cmake --build tmp/ci/stackvm --config Release --target magel-stackvm magel-stackvm-tests magel-artifact-tests magel-symbol-tests magel-panic-tests svmb_symtool -j4
+        cmake --build tmp/ci/stackvm --config Release --target magel-stackvm magel-stackvm-tests magel-artifact-tests magel-symbol-tests magel-panic-tests magel-runtime-event-tests svmb_symtool -j4
     run_step "运行二进制中间产物等价性与损坏输入回归" tmp/ci/stackvm/magel-artifact-tests
+    run_step "运行宿主事件、定时合并与取消回归" tmp/ci/stackvm/magel-runtime-event-tests
     run_step "运行 stackvm 单测" \
         tmp/ci/stackvm/magel-stackvm-tests library/stackvm/examples
     run_step "运行变长符号与十万符号回归" \
@@ -184,6 +185,7 @@ run_step "MAGEL 样例回归（check.sh）" \
 run_step "运行 std::image 与 StringBuilder 回归" "$PYTHON" tests/magel_image.py --magel magel
 run_step "运行标准错误流与文件打印回归" "$PYTHON" tests/magel_print_streams.py --magel magel
 run_step "运行线程超时与非阻塞等待回归" "$PYTHON" tests/magel_thread_wait.py --magel magel
+run_step "运行隔离线程与有界并发模型回归" "$PYTHON" tests/magel_thread_model.py --magel magel
 run_step "运行临时值与资源释放合并回归" "$PYTHON" tests/magel_resource_lifetime.py --magel magel
 run_step "运行闭包自动类型与嵌套返回语言服务回归" "$PYTHON" tests/magel_lsp_closure_types.py --magel magel
 run_required_step "编译无墓碑分配身份回归" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=1 -Isource -Ilibrary -Isource/allocator tests/allocation_identity.cpp -o tmp/ci/allocation-identity
@@ -226,6 +228,7 @@ run_step "运行 lztext 单元测试" tmp/ci/lztext
 fi
 
 if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
+    run_step "验证线程字节码往返" "$PYTHON" tests/magel_thread_model.py --magel magel --vm tmp/ci/stackvm/magel-stackvm
     run_step "运行符号转换与 CLI 集成回归" \
         "$PYTHON" tests/test_svmb_symbols.py --build tmp/ci/stackvm --magel magel
     run_step "运行 MAGEL 与 VM panic 诊断回归" \
@@ -308,6 +311,7 @@ if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
     run_step "运行新增书本示例与 LaTeX 同步回归" "$PYTHON" tests/magel_book_updates.py
     run_step "运行嵌套函数值的内联 fn 实参回归" "$PYTHON" tests/magel_inline_fn_arguments.py
     run_step "运行胶水调用 Magel 函数的 VM回归" "$PYTHON" tests/magel_native_callbacks.py
+    run_step "运行 GUI 显式事件桥接回归" "$PYTHON" tests/magel_gui_events.py --magel magel
     run_step "运行卫生宏高阶闭包编辑器回归" "$PYTHON" tests/magel_macro_editor.py --magel magel
     run_step "运行共享语义、宏分组提示与安全重构回归" "$PYTHON" tests/magel_lsp_semantic_features.py
     run_step "运行 pause 终端输出顺序回归" "$PYTHON" tests/magel_pause_output.py

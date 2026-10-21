@@ -429,7 +429,7 @@ detail square5=25
 | 无 GC 的资源管理 | `Drop` / `Closeable`，离开作用域确定性释放 | [核心概念](03-core-concepts.md) |
 | `abi` 块与 C ABI | 声明外部函数 / 导出 Magel 函数给 C | [宿主集成与 C ABI](08-host-integration.md) |
 | 注解与反射 | 编译期元数据，运行期可查询、可按名调用 | [语言参考](04-language-reference.md) |
-| 协程与并发 | `std::coroutine`、`std::thread` | [标准库概览](07-stdlib-overview.md) |
+| 线程与并发 | `std::thread`、`std::concurrency` | [标准库概览](07-stdlib-overview.md) |
 | 字节码交付 | `.svmb`、符号压缩 | [交付安全](05-delivery-security.md) |
 
 ---

@@ -3,7 +3,7 @@
  * 与 WinAPI 后端同名（`mcgui_*`），所以 `gui.mgl` 与 `glue.cpp` 的绑定方式不变；
  * MAGEL 与 DLL/so 之间同样只传定宽整数和 UTF-8 字符串。Qt 侧额外提供事件回调：
  * 按钮点击 / 关窗 / Qt 周期事件发生时，通过注册的 C 回调交回胶水层，由胶水
- * 转成 `Machine::raiseInterrupt`，最终在 VM 的指令边界交付 MAGEL 中断处理函数。
+ * 转成 `EventPoster`，最终在 VM 的指令边界交付 MAGEL 显式事件处理。
  */
 #ifndef MAGEL_GUI_QT_H
 #define MAGEL_GUI_QT_H

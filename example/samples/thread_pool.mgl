@@ -1,0 +1,7 @@
+import std::thread;
+int64 main() {
+    ThreadPool pool = ThreadPool::create(2, 4);
+    assert(pool.closeAndWait());
+    println("pool ok");
+    return 0;
+}

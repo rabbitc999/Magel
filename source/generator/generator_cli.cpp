@@ -624,6 +624,8 @@ int runCli(int argc, char **argv)
         {"preprocess.cpp", root / "magel/library/preprocess/preprocess.cpp"},
         {"preprocess.hpp", root / "magel/library/preprocess/preprocess.hpp"},
         {"stackvm.cpp", root / "magel/library/stackvm/stackvm.cpp"},
+        {"event_service.cpp", root / "magel/library/stackvm/event_service.cpp"},
+        {"event_service.hpp", root / "magel/library/stackvm/event_service.hpp"},
         {"stackvm.hpp", root / "magel/library/stackvm/stackvm.hpp"},
         {"value_text.hpp", root / "magel/library/stackvm/value_text.hpp"},
         {"reflection.hpp", root / "magel/library/stackvm/reflection.hpp"},

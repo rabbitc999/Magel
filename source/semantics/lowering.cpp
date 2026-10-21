@@ -4277,6 +4277,8 @@ simple_ast::NodePtr LowerLoop(int id, Memory::String *valueName)
     // 语句位置的 loop 在外层已有值出口时不再截获带值 break。
     const bool transparent = valueName == nullptr && node.s.empty() && FindBreakContext(true) != nullptr;
     const std::shared_ptr<MType> type = transparent ? T(M_TypeVoid()) : LoopValueType(id);
+    // 结果收集已报告名称或分支错误时，不再进入块体制造后续诊断。
+    if (!g_error.empty()) return Bad();
     const Memory::String loopLabel = NewBlockLabel("loop");
     const Memory::String breakLabel = NewBlockLabel("brk");
     Memory::Vector<simple_ast::NodePtr> out;
@@ -4543,16 +4545,22 @@ simple_ast::NodePtr LowerForeach(int id)
     const Memory::String continueLabel = NewBlockLabel("foreach_next");
     const Memory::String breakLabel = NewBlockLabel("foreach_end");
     const Memory::String breakCleanup = NewBlockLabel("foreach_break_cleanup");
-    Memory::Vector<simple_ast::NodePtr> out{
-        simple_ast::Node::declare(source, LowerType(sourceType, source)),
-        simple_ast::Node::assign(source, LowerExpr(node.kids[0])),
-        simple_ast::Node::declare(index, simple_ast::Type::i64()),
-        simple_ast::Node::assign(index, simple_ast::Node::i(0)),
-        simple_ast::Node::declare(result, LowerType(iterator->result, result)),
-    };
-
     PushScope();
     PushOwnedScope();
+    Memory::Vector<simple_ast::NodePtr> out{
+        simple_ast::Node::declare(source, LowerType(sourceType, source))
+    };
+    if (sourceType->kind == MType::Struct && IsFreshValue(node.kids[0]))
+    {
+        // 返回暂存属于被调函数，嵌套迭代可能再次调用同一工厂；立即接管到独立存储。
+        out.push_back(DefaultInit(source, sourceType, false));
+        out.push_back(MoveStructValue(simple_ast::Node::var(source), LowerExpr(node.kids[0]), sourceType));
+    }
+    else
+        out.push_back(simple_ast::Node::assign(source, LowerExpr(node.kids[0])));
+    out.push_back(simple_ast::Node::declare(index, simple_ast::Type::i64()));
+    out.push_back(simple_ast::Node::assign(index, simple_ast::Node::i(0)));
+    out.push_back(simple_ast::Node::declare(result, LowerType(iterator->result, result)));
     if (IsFreshValue(node.kids[0])) MarkDestructor(source, sourceType);
     const Memory::String item = DeclareVar(node.s, element, Memory::String(), false, NodeBindingKey(node), node.bindingIdentity);
     const bool captureStorage = !reference && element->kind == MType::Int && g_addressTakenNames.count(node.s);

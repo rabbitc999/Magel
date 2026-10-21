@@ -481,15 +481,26 @@ bool RegisterTop()
         if (kind != MType::Bool && kind != MType::Int && kind != MType::Double && !IsStandardOpcode(item.second, "String") && kind != MType::Ptr)
             return Fail("宿主类型 " + item.first + " 的 ABI 必须是 bool、整数、浮点、std::lang::String 或引用；复杂对象请用 uint64 句柄");
     }
-    /* 普通类型引用保留名义身份，只有宿主类型声明右侧被展开为真实 ABI。 */
-    for (const std::shared_ptr<MType> &type : g_types)
-    {
-        if (!type || type->kind != MType::Struct) continue;
-        const auto alias = g_hostTypes.find(type->name);
-        if (alias == g_hostTypes.end()) continue;
-        type->kind = MType::Host;
-        type->elem = alias->second;
-    }
+    /* 泛型参数和字段中的宿主类型同样保留名义身份，并递归绑定 ABI。 */
+    Memory::Set<const MType *> boundHostTypes;
+    Memory::Function<void(const std::shared_ptr<MType> &)> bindHostType;
+    bindHostType = [&](const std::shared_ptr<MType> &type) {
+        if (!type || !boundHostTypes.insert(type.get()).second) return;
+        if (type->kind == MType::Struct)
+        {
+            const auto alias = g_hostTypes.find(type->name);
+            if (alias != g_hostTypes.end())
+            {
+                type->kind = MType::Host;
+                type->elem = alias->second;
+            }
+        }
+        bindHostType(type->elem);
+        bindHostType(type->elem2);
+        for (const auto &parameter : type->paramTypes) bindHostType(parameter);
+        for (const auto &argument : type->genericArguments) bindHostType(argument);
+    };
+    for (const auto &type : g_types) bindHostType(type);
 
     /* ---- 0. 全局变量先占名字：降级名要求"全程序唯一"，形参与局部变量都排在它后面 ---- */
     for (const int topId : g_top)
@@ -919,7 +930,6 @@ bool RegisterTop()
             MFuncSig signature;
             signature.result = method.result;
             signature.params = method.params;
-            signature.staticCallbacks = method.module == "std::event";
             g_funcs[item.first + "." + method.name] = signature;
             if (method.isNamedConstructor)
             {
@@ -1283,7 +1293,6 @@ bool RegisterTop()
                 return Fail("main 只允许无参数，或单个 std::lang::List<std::lang::String> 参数");
             }
         }
-        declaration.signature.staticCallbacks = declaration.module == "std::event";
         g_funcs[declaration.label] = declaration.signature;
         if (!superseded)
             g_functionIndex[ModuleSymbol(declaration.module, declaration.source)].push_back(declaration.label);
