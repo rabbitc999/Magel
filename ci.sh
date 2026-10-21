@@ -174,6 +174,7 @@ run_required_step "构建 MAGEL 驱动（magel）" "$MAKE" -j4
 
 run_step "验证并行门禁调度与失败汇总" "$PYTHON" tests/test_parallel_gates.py
 run_step "验证大整数乘除法与 Python 整数差分" "$PYTHON" tests/bigint_arithmetic.py
+run_step "验证已确认的编译器安全边界" "$PYTHON" tests/magel_compiler_safety.py
 run_step "验证高精度数学与独立参考值" "$PYTHON" tests/bigfloat_math.py
 run_step "验证 CAS 与泛型数学语言接口" "$PYTHON" tests/magel_cas_math.py
 run_step "验证 opcode 值语义、红黑删除与字符串方法" "$PYTHON" tests/magel_opcode_values.py

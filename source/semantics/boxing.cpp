@@ -2092,7 +2092,8 @@ simple_ast::NodePtr LowerEnumCtor(int id)
              */
             const Memory::String temp = AllocateName("__magel_ctor_arg");
             pre.push_back(simple_ast::Node::declare(temp, LowerType(payload.type, temp)));
-            pre.push_back(simple_ast::Node::assign(temp, argument));
+            // ? 等表达式已登记拥有型临时值，交给构造参数后清空原槽，避免两处清理同一资源。
+            pre.push_back(simple_ast::Node::assign(temp, TakeExpressionTempValue(argument, payload.type)));
             post.push_back(MakeDrop(temp, false));
             argument = simple_ast::Node::var(temp);
         }

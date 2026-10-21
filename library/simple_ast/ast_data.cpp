@@ -4,6 +4,7 @@
  */
 #include "ast_storage_detail.hpp"
 #include <cstdlib>
+#include <cerrno>
 #include <cstring>
 #include <cmath>
 #include <iomanip>
@@ -137,11 +138,23 @@ bool numberText(const Memory::String &text, bool &isFloat, std::int64_t &intValu
 {
     if (text.empty()) return false;
     char *end = nullptr;
-    doubleValue = std::strtod(text.c_str(), &end);
-    if (end == nullptr || *end != '\0') return false;
-    isFloat = (text.find_first_of(".eE") != Memory::String::npos);
-    intValue = static_cast<std::int64_t>(doubleValue);
-    return true;
+    isFloat = text.find_first_of(".eE") != Memory::String::npos;
+    if (isFloat)
+    {
+        doubleValue = std::strtod(text.c_str(), &end);
+        if (end == text.c_str() || *end != '\0' || !std::isfinite(doubleValue)) return false;
+        intValue = doubleValue >= -9223372036854775808.0 && doubleValue < 9223372036854775808.0 ? static_cast<std::int64_t>(doubleValue) : 0;
+        return true;
+    }
+    errno = 0;
+    if (text.front() == '-')
+        intValue = std::strtoll(text.c_str(), &end, 10);
+    else
+    {
+        const std::uint64_t bits = std::strtoull(text.c_str(), &end, 10);
+        std::memcpy(&intValue, &bits, sizeof(intValue));
+    }
+    return end != text.c_str() && *end == '\0' && errno != ERANGE;
 }
 
 }  // namespace

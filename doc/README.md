@@ -148,3 +148,5 @@ Magel 让业务逻辑成为一份可以独立交付的资产：写一次，从�
 - [精确符号计算与高精度数学](34-symbolic-computation.md)
 - [标准库存储、复制与字符串方法](35-opcode-values-strings.md)
 - [反射序列化与动态 SQL](36-reflection-serialization-sql.md)
+
+- [编译器安全边界与定向回归](37-compiler-safety.md)

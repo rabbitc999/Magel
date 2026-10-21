@@ -92,7 +92,7 @@ struct NetApi
     SelectFn select = nullptr;
     AddrInfoFn getaddrinfo = nullptr;
     FreeAddrInfoFn freeaddrinfo = nullptr;
-    HtonsFn htons = nullptr;
+    HtonsFn hostToNetwork16 = nullptr;
     InetAddrFn inet_addr = nullptr;
     LastErrorFn last_error = nullptr;
     IoctlFn ioctl = nullptr;
@@ -379,7 +379,7 @@ inline bool initNet()
     table.select = reinterpret_cast<SelectFn>(reinterpret_cast<void *>(::GetProcAddress(library, "select")));
     table.getaddrinfo = reinterpret_cast<AddrInfoFn>(reinterpret_cast<void *>(::GetProcAddress(library, "getaddrinfo")));
     table.freeaddrinfo = reinterpret_cast<FreeAddrInfoFn>(reinterpret_cast<void *>(::GetProcAddress(library, "freeaddrinfo")));
-    table.htons = reinterpret_cast<HtonsFn>(reinterpret_cast<void *>(::GetProcAddress(library, "htons")));
+    table.hostToNetwork16 = reinterpret_cast<HtonsFn>(reinterpret_cast<void *>(::GetProcAddress(library, "htons")));
     table.inet_addr = reinterpret_cast<InetAddrFn>(reinterpret_cast<void *>(::GetProcAddress(library, "inet_addr")));
     table.last_error = reinterpret_cast<LastErrorFn>(reinterpret_cast<void *>(::GetProcAddress(library, "WSAGetLastError")));
     table.ioctl = reinterpret_cast<IoctlFn>(reinterpret_cast<void *>(::GetProcAddress(library, "ioctlsocket")));
@@ -412,7 +412,7 @@ inline bool initNet()
     table.select = unixSelect;
     table.getaddrinfo = unixGetAddrInfo;
     table.freeaddrinfo = unixFreeAddrInfo;
-    table.htons = unixHtons;
+    table.hostToNetwork16 = unixHtons;
     table.inet_addr = unixInetAddr;
     table.last_error = unixLastError;
     table.ioctl = unixIoctl;
@@ -716,7 +716,7 @@ inline int resolveAddress(const std::string &host, int port, unsigned char *buff
         /* sa_family 是 2 字节小端值：AF_INET = 2 → 字节序列 02 00 */
         buffer[0] = 2;
         buffer[1] = 0;
-        const unsigned short networkPort = api().htons(static_cast<unsigned short>(port));
+        const unsigned short networkPort = api().hostToNetwork16(static_cast<unsigned short>(port));
         std::memcpy(buffer + 2, &networkPort, 2);
         const unsigned long address = target.empty() ? 0u : api().inet_addr(target.c_str());
         if (target.empty())
@@ -748,7 +748,7 @@ inline int resolveAddress(const std::string &host, int port, unsigned char *buff
         if (family != 2 && family != 10) continue; /* AF_INET / AF_INET6 */
         const int size = addressLength(family);
         std::memcpy(buffer, addrInfoAddr(info), static_cast<std::size_t>(size));
-        const unsigned short networkPort = api().htons(static_cast<unsigned short>(port));
+        const unsigned short networkPort = api().hostToNetwork16(static_cast<unsigned short>(port));
         std::memcpy(buffer + 2, &networkPort, 2); /* 端口在 sockaddr 的第 2、3 字节 */
         length = size;
         break;
@@ -1115,7 +1115,7 @@ inline std::int32_t netLocalPort(std::int32_t handle)
     if (reinterpret_cast<GetSockNameFn>(getSockName)(slot->fd, address, &length) != 0) return 0;
     unsigned short networkPort = 0;
     std::memcpy(&networkPort, address + 2, 2);
-    return static_cast<std::int32_t>(api().htons(networkPort));
+    return static_cast<std::int32_t>(api().hostToNetwork16(networkPort));
 #else
     struct sockaddr_in address;
     socklen_t length = sizeof(address);

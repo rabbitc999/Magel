@@ -64,12 +64,13 @@ BigFloat BigFloat::sqrt(int digits) const
 BigFloat BigFloat::pow(std::uint64_t exponent) const
 {
     if (exponent == 0u) return BigFloat::fromInt(bigint::BigInt(1));
-    /* 指数相乘可能超 int：先在 64 位上检查 */
-    const long long product = static_cast<long long>(exp10_) * static_cast<long long>(exponent);
-    if (product > std::numeric_limits<int>::max() / 2 || product < std::numeric_limits<int>::min() / 2)
+    if (exp10_ != 0)
     {
-        throw std::overflow_error("bigfloat: 幂运算的十进制指数溢出");
+        const std::uint64_t magnitude = exp10_ < 0 ? -static_cast<std::int64_t>(exp10_) : exp10_;
+        const std::uint64_t limit = exp10_ < 0 ? -static_cast<std::int64_t>(std::numeric_limits<int>::min() / 2) : std::numeric_limits<int>::max() / 2;
+        if (exponent > limit / magnitude) throw std::overflow_error("bigfloat: 幂运算的十进制指数溢出");
     }
+    const int product = exp10_ == 0 ? 0 : exp10_ * static_cast<int>(exponent);
     BigFloat out;
     out.mant_ = mant_.pow(exponent);
     out.exp10_ = static_cast<int>(product);
@@ -152,6 +153,8 @@ bigint::BigInt BigFloat::ceil() const
 BigFloat BigFloat::root(std::uint64_t k, int digits) const
 {
     if (k == 0u) throw std::invalid_argument("bigfloat: 根次必须为正");
+    if (digits > (std::numeric_limits<int>::max() - 6) / 2)
+        throw std::overflow_error("bigfloat: 方根精度超出内部计算范围");
     if (digits <= 0) throw std::invalid_argument("bigfloat: 有效位数必须是正数");
     if (mant_.sign() < 0) throw std::domain_error("bigfloat: 负数不能开 k 次方");
     if (isZero()) return BigFloat();
@@ -163,7 +166,7 @@ BigFloat BigFloat::root(std::uint64_t k, int digits) const
     BigFloat guess;
     guess.mant_ = bigint::integerRoot(mant_.abs(), k);
     if (guess.mant_.isZero()) guess.mant_ = bigint::BigInt(1);
-    guess.exp10_ = static_cast<int>(static_cast<long long>(exp10_) / static_cast<long long>(k));
+    guess.exp10_ = k > static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()) ? 0 : static_cast<int>(static_cast<std::int64_t>(exp10_) / static_cast<std::int64_t>(k));
     guess.normalize();
 
     const BigFloat target = abs();
@@ -185,7 +188,7 @@ BigFloat BigFloat::root(std::uint64_t k, int digits) const
     int precision = 8; /* 预热后至少有 8 位正确数字 */
     while (precision < targetDigits)
     {
-        precision = std::min(precision * 2, targetDigits);
+        precision += std::min(precision, targetDigits - precision);
         const BigFloat quotient = target.divide(x.pow(k - 1u), precision + 2);
         x = (km1 * x + quotient).divide(kBig, precision + 2);
     }
