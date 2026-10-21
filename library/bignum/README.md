@@ -17,9 +17,9 @@
 同一个库里还有 `bigfloat::BigFloat`（`bigfloat.hpp` / `bigfloat.cpp`）：**十进制浮点**，
 `值 = 尾数 × 10^指数`、尾数就是上面的 `BigInt` —— 对应参考实现的 `BigFloat_T`。
 所以 `0.1 + 0.2` 精确等于 `0.3`（二进制浮点那套表示误差这里不存在），
-大整数乘法和除法直接吃到下面的 NTT 内核。
+大整数乘除法的优化也会用于浮点尾数运算。
 
-目录名是 `big_number`（一个库装下整数与浮点），C++ 里的名字仍按类型走：
+目录名是 `bignum`（一个库装下整数与浮点），C++ 里的名字仍按类型走：
 整数是 `bigint::BigInt`（`bigint.hpp`）、十进制浮点是 `bigfloat::BigFloat`
 （`bigfloat.hpp`）—— 头文件名与命名空间说的都是"类型"，不是库目录。
 
@@ -135,11 +135,10 @@ X 为科学记数法指数（`值 = d.ddd × 10^X`），则 `X < -4 || X >= P` �
 | 操作 | 做法 | 复杂度 |
 | --- | --- | --- |
 | 加 / 减 | limb 级带进位 / 借位（符号交叉在 `operator±` 里分派） | O(n) |
-| 乘（小规模） | **学校算法**（`uint64_t` 承接 32×32 位乘积） | O(n×m) |
-| 乘（默认） | **Karatsuba**：`z0 + ((z1-z0-z2) << m) + (z2 << 2m)`，递归基线为较短操作数 96 limb | O(n^log2(3)) |
+| 乘（默认） | **Karatsuba**：`z0 + ((z1-z0-z2) << m) + (z2 << 2m)`，一次分配工作区，递归终点为原生整数乘法 | O(n^log2(3)) |
 | 乘（超大规模） | **双素数 NTT + CRT 重建**（15 位数字，`p1 = 998244353`、`p2 = 1004535809`，原根 3） | **O(n log n)** |
 | 除 / 取余（默认） | **Burnikel-Ziegler**：递归求解 `2n/1n` 与 `3n/2n` 子问题 | 分治复杂度，取决于乘法内核 |
-| 除 / 取余（小规模） | 移位相减长除法，作为不超过 56 limb 的默认递归基线 | O(位数 × n) |
+| 除 / 取余（小规模） | **Knuth D 分块长除法**，默认递归基线不超过 256 limb；单块除数线性扫描 | O((n−m+1)×m) |
 | 幂 / 同余幂 | 二进制快速幂 | O(log e) 次乘法 |
 | gcd | 欧几里得（相除取余） | O(log min(a,b)) 次除法 |
 | 十进制互转 | 每 9 位一段，反复乘 / 除 10^9 | O(段数 × n) |
@@ -148,18 +147,61 @@ X 为科学记数法指数（`值 = d.ddd × 10^X`），则 `X < -4 || X >= P` �
 | 浮点除 | 放大被除数到 `digits + 2` 位有效数字，整数除 + 舍入 | 一次大整数除法 |
 | 浮点平方根 | 指数凑成偶数、尾数放大到 `2×digits + 2` 位，`integerSqrt` + 舍入 | 一次整数开方 |
 
-乘法内核现在是三级分派：较短操作数不超过 **96 limb** 时走学校算法，超过后默认走
-Karatsuba；两边 limb 个数之和达到 **48,000**（等长时每边约 23 万位十进制）再切到 NTT。
-`BigInt::setKaratsubaThreshold()` 调整递归基线，`setMultiplicationThreshold()` 调整 NTT
-阈值。单元测试会分别强制三条路径并**逐位对比**，还覆盖
-`2^4096 × 2^4096 == 2^8192` 与大数除法 `q×b+r == a`。
+乘法仅保留 Karatsuba 与 NTT。Karatsuba 使用差值形式，工作区一次分配，递归分支复用；
+长短操作数按较短一侧的补齐宽度分块，避免将短数扩展到长数宽度。
+递归终点是 32 位原生乘法；支持 `unsigned __int128` 时，两块使用一次 64 位原生乘法，
+四块使用三个 64 位乘积展开的 Karatsuba，不使用学校乘法双循环。
 
-除法默认使用 Burnikel-Ziegler：先把除数补齐到 2 的幂 limb 块，再通过标准的
-`2n/1n`、`3n/2n` 递归分解计算商块；除数不超过 **56 limb** 时回退到移位相减的长除法。
-`BigInt::setDivisionThreshold()` 可调整递归基线。测试会强制两条路径处理同一组非 2 次幂
-长度及不对称输入，并核对商、余数、`q×b+r == a` 和负数向零截断语义。
+NTT 将 32 位块以滑动窗口转换为 15 位数字，每级预计算并复用旋转因子；
+平方在每个素数域只做一次正变换，CRT 只重建实际乘积系数。
+共同支持的变换长度上限是 **2^21**，超过时使用 Karatsuba，避免执行无效变换。
 
-三个默认值在当前机器上用 MinGW g++ 11.2 `-O2`、稠密平衡操作数、5 轮中位数重新标定。
+NTT 的候选下限与实际分派区分如下：
+
+- 支持原生 128 位乘积时，两侧块数合计至少 **3,072**；可移植递归路径为 **768**。
+- 较短操作数不超过 **96** 块时保留 Karatsuba，避免为长短悬殊的乘法启动大变换。
+- 设 `w` 为较短操作数补齐到 2 的幂后的宽度，`k = log2(w)`，长侧为 `L`，
+  Karatsuba 工作量取 `3^k × ceil(L/w)`；NTT 工作量取按块数上界推算的补齐变换长度 `t × log2(t)`。
+  支持原生 128 位乘积时比较 `2 × Karatsuba工作量` 与 `4 × NTT工作量`，
+  平方将后者权重改为 3；可移植路径的 Karatsuba 权重为 6。估计 NTT 较快时才切换。
+
+这些规则保留变换长度的阶梯效应：当前原生宽度配置下，等长的 1,536 块普通乘法走
+Karatsuba、平方走 NTT；3,072 块普通乘法走 NTT，4,096 块又优先 Karatsuba，
+6,144 块走 NTT。它们不是按十进制位数划出一个永不回退的界限。
+`setMultiplicationThreshold()` 调整候选下限，设为 `1` 强制支持范围内的多块输入走 NTT；
+`setKaratsubaThreshold()` 保留接口，现表示短侧的 Karatsuba 保护区，不再控制学校算法基线。
+
+除法将 Knuth D 作为 Burnikel–Ziegler 的递归基线：归一化后，每次估计一个 32 位商块，
+根据次高块校正估商，减乘结果为负时回加除数。单块除数直接扫描，最多两块商的输入也直接
+使用 Knuth D。大规模输入仍递归处理 `2n/1n`、`3n/2n` 子问题。
+`setDivisionThreshold()` 默认 **256**、最小 **32**；设很大可以强制 Knuth 路径。
+向零截断、余数符号及除零行为保持不变。
+
+当前测量使用 AMD Ryzen 5 5600X、MinGW g++ 11.2 `-O2`、固定种子稠密输入和五轮中位数；
+优化前基线为提交 `9388cf0`。完整前后数据、强制算法交叉区和除法阈值测量见
+[原始 JSON](../../doc/benchmarks/bigint-arithmetic.json)。删除学校算法后，部分小规模乘法可能
+慢于基线；数据保留这些退化点，不以超大输入的加速代表所有输入。
+
+可复现命令（从仓库根目录执行）：
+
+```sh
+g++ -std=c++17 -O2 tests/bigint_benchmark.cpp library/bignum/bigint.cpp -o tmp/bigint-benchmark
+tmp/bigint-benchmark
+tmp/bigint-benchmark --tune
+tmp/bigint-benchmark --division
+python tests/bigint_arithmetic.py
+python tests/bigint_arithmetic.py --portable --binary tmp/bigint-portable/arithmetic.exe
+```
+
+差分测试使用 Python 整数独立验证默认、强制 NTT、强制 Karatsuba 三种配置，覆盖估商回加、
+归一化边界、正负商和余数、平方、输入输出别名、乘法及除法切换边界。
+可移植路径通过仅供回归的 `BIGINT_FORCE_PORTABLE_MULTIPLY` 验证，日常构建不定义此宏。
+
+### 历史测量
+
+下列数据来自优化前的三级内核，保留其实际算法和配置，用于历史对照，不代表当前界限。
+
+当时的三个默认值在测量机器上用 MinGW g++ 11.2 `-O2`、稠密平衡操作数、5 轮中位数重新标定。
 学校算法与 Karatsuba 在约 **96–120 limb** 进入交叉区（下表单位为毫秒）：
 
 | 每边 limb | 学校算法 | Karatsuba（基线 96） |
@@ -180,7 +222,7 @@ NTT 长度取 2 的幂，因此耗时会阶梯式跳变，不存在对所有形�
 | 32,768 | **55.4** | 58.8 |
 | 40,961 | 79.3 | **60.4** |
 
-除法的平衡 `2n / n` 交叉区在除数 **48–56 limb**；默认取 56，避免短商场景过早进入
+历史移位相减除法的平衡 `2n / n` 交叉区在除数 **48–56 limb**；默认取 56，避免短商场景过早进入
 分治。除数为 41 / 49 / 57 limb 时，长除法与 Burnikel-Ziegler 分别为
 `0.242/0.252`、`0.321/0.296`、`0.411/0.330` ms。不同 CPU、编译器与操作数比例会移动
 交叉点，所以三个阈值都保留公开调节接口。
@@ -203,13 +245,13 @@ NTT 的细节（与参考实现的思路一致）：
 
 ## 构建与自检
 
-```text
-make -C library/big_number          # libbig_number.a + big_number-demo + bigint-tests + bigfloat-tests
-make -C library/big_number check    # 跑单元测试（119 + 86 项断言）与演示
-make -C library/big_number clean
+```sh
+cmake -S library/bignum -B build/bignum -DCMAKE_BUILD_TYPE=Release
+cmake --build build/bignum --config Release
+ctest --test-dir build/bignum -C Release --output-on-failure
 ```
 
-产物在 `build/big_number/`。演示（`big_number-demo`）打印固定内容，`check` 会顺带跑它：
+演示（`big_number-demo`）打印固定内容，`check` 会顺带跑它：
 
 ```text
 2^100      = 1267650600228229401496703205376
@@ -233,4 +275,4 @@ sqrt(2) (30) = 1.41421356237309504880168872421
 2^200 17 位  = 1.6069380442589903e+60
 ```
 
-也可以用 CMake：`cmake -S library/big_number -B build/big_number-cmake && cmake --build build/big_number-cmake && ctest --test-dir build/big_number-cmake -C Debug`。
+大整数与大浮点单元测试分别覆盖 273 与 136 项断言。

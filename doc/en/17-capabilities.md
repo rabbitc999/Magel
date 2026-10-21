@@ -103,6 +103,9 @@ API manuals require `magel man api`; omitting `api` produces a usage error. `mag
 
 `opcode T { new = create; drop = destroy; copy = clone; };` declares an opaque glue object.
 Copies call the declared glue function. `#NonCopyable` disables copying and omits copy.
+BigInteger multiplication selects Karatsuba or dual-prime NTT by padded operation cost, reuses forward transforms for squares, and has no schoolbook kernel.
+Division combines Knuth limb division with Burnikel–Ziegler recursion, truncating toward zero with the dividend's remainder sign.
+Algorithm boundaries, tuning interfaces and reproducible benchmarks are described in the [big-number library guide](../../library/bignum/README.md) and [raw measurements](../benchmarks/bigint-arithmetic.json).
 A struct may declare multiple opcode fields. BigInteger, BigDecimal, File and Process
 records and operations reside in standard library glue; the VM core manages generic NativeRecord
 shells and a host service table. File and Process are noncopyable. Process is the public type name.

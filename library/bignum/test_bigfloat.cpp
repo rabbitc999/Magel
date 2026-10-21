@@ -158,10 +158,11 @@ void testSqrt()
 }
 
 /**
- * @brief 大规模尾数运算：确认 BigFloat 真的吃到 `BigInt` 的 NTT 内核（与学校算法逐位比对）。
+ * @brief 大规模尾数运算：确认 BigFloat 真的吃到 `BigInt` 的 NTT 内核（与 Karatsuba 逐位比对）。
  */
 void testLargePrecision()
 {
+    const std::size_t defaultMultiplication = bigint::BigInt::multiplicationThreshold();
     const bigint::BigInt x = bigint::pow10(1500u) + bigint::BigInt(3); /* 1501 位十进制 */
     const bigint::BigInt y = bigint::pow10(1400u) - bigint::BigInt(5);
     /* (10^1500 + 3) × (10^1400 − 5) = 10^2900 − 5×10^1500 + 3×10^1400 − 15 */
@@ -171,17 +172,17 @@ void testLargePrecision()
     const BigFloat ntt = BigFloat::fromInt(x) * BigFloat::fromInt(y);
     const BigFloat nttRoot = BigFloat::fromInt(bigint::pow10(200u)).sqrt(60);
     bigint::BigInt::setMultiplicationThreshold(1000000u); /* 先关闭 NTT */
-    bigint::BigInt::setKaratsubaThreshold(1000000u);      /* 再关闭 Karatsuba */
-    const BigFloat schoolbook = BigFloat::fromInt(x) * BigFloat::fromInt(y);
+    bigint::BigInt::setKaratsubaThreshold(1000000u);      /* 扩大 Karatsuba 保护区 */
+    const BigFloat karatsuba = BigFloat::fromInt(x) * BigFloat::fromInt(y);
 
-    CHECK(ntt == schoolbook);
+    CHECK(ntt == karatsuba);
     CHECK(ntt.toPlainString() == expected.toString());
     CHECK(nttRoot.toPlainString() == bigint::pow10(100u).toString()); /* sqrt(10^200) == 10^100 */
     CHECK(ntt.mantissa().limbCount() >= 150u);                        /* 尾数确实很大（约 2900 位十进制） */
 
-    bigint::BigInt::setMultiplicationThreshold(48000u); /* 换回实测缺省值 */
+    bigint::BigInt::setMultiplicationThreshold(defaultMultiplication); /* 换回实测缺省值 */
     bigint::BigInt::setKaratsubaThreshold(96u);
-    CHECK(bigint::BigInt::multiplicationThreshold() == 48000u);
+    CHECK(bigint::BigInt::multiplicationThreshold() == defaultMultiplication);
     CHECK(bigint::BigInt::karatsubaThreshold() == 96u);
 }
 

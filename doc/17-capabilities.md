@@ -94,6 +94,9 @@ API 手册通过 `magel man api` 查询，省略 `api` 会给出用法错误；`
 
 `opcode T { new = create; drop = destroy; copy = clone; };` 声明不透明胶水对象。
 复制经声明的胶水函数完成；`#NonCopyable` 类型禁止复制，并省略 copy。
+BigInteger 乘法在 Karatsuba 与双素数 NTT 之间按补齐成本选择，平方复用正变换，不保留学校乘法内核。
+除法使用 Knuth 分块长除法与 Burnikel–Ziegler 分治，保持向零截断及余数跟随被除数符号。
+算法界限、可调接口及可复现基准见[大数库说明](../library/bignum/README.md)和[原始测量](benchmarks/bigint-arithmetic.json)。
 struct 可以拥有多个 opcode 字段。BigInteger、BigDecimal、File、Process 的记录及操作位于
 标准库胶水，VM 核心只管理通用 NativeRecord 壳及宿主服务表。File、Process 不可复制；
 公开进程类型名为 Process。List、Map、Set 使用参数化 opcode 类型和标准库不透明记录，
