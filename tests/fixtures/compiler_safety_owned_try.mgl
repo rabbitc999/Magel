@@ -1,0 +1,38 @@
+/** 验证 ? 的拥有型成功结果在枚举构造器中只释放一次。 */
+Result<String, String> safetyText(bool fail)
+{
+    if (fail)
+    {
+        return Result<String, String>::Err("原始错误");
+    }
+    return Result<String, String>::Ok("hello");
+}
+
+Result<String, String> safetyNested(bool fail)
+{
+    return Result<String, String>::Ok(safetyText(fail)?);
+}
+
+Result<List<String>, String> safetyValues()
+{
+    List<String> values = ["one", "two"];
+    return Result<List<String>, String>::Ok(values);
+}
+
+Result<List<String>, String> safetyNestedValues()
+{
+    return Result<List<String>, String>::Ok(safetyValues()?);
+}
+
+int64 main()
+{
+    for (int64 index in std::lang::range(0, 100))
+    {
+        assert(safetyNested(false).unwrap() == "hello");
+        assert(safetyNested(true).error() == "原始错误");
+        auto values = safetyNestedValues().unwrap();
+        assert(values.len() == 2 && values[0] == "one" && values[1] == "two");
+    }
+    println("owned propagation cleanup OK");
+    return 0;
+}

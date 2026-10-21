@@ -19,6 +19,7 @@
 #include "bigint.hpp"
 
 #include <cstdint>
+#include <climits>
 #include <string>
 
 namespace bigfloat
@@ -53,10 +54,13 @@ public:
      */
     BigFloat(int value) { *this = fromInt(bigint::BigInt(static_cast<std::int64_t>(value))); }
 
+#if LONG_MAX != INT64_MAX
     /**
-     * @brief `long` 直通版：同上。
+     * @brief 在 long 与 int64_t 不同宽度的平台上避免整数到浮点构造的二义性。
+     * @param value 要精确转换为十进制浮点的 long 整数。
      */
     BigFloat(long value) { *this = fromInt(bigint::BigInt(static_cast<std::int64_t>(value))); }
+#endif
 
     /**
      * @brief 从 double **隐式**构造（取能往返的最短十进制写法，语义同 `fromDouble`）。

@@ -99,12 +99,17 @@ $(VM_BUILD)/%.o: $(VM_DIR)/%.cpp | $(VM_BUILD)
 -include $(wildcard $(VM_BUILD)/*.d)
 
 $(HOST_BUILD)/bigint.o: library/bignum/bigint.cpp library/bignum/bigint.hpp | $(HOST_BUILD)
-	$(CXX) $(CXXFLAGS) -I$(MAGEL_LIBRARY_DIR)/bignum -c $< -o $@
+	$(CXX) $(CXXFLAGS) -MMD -MP -I$(MAGEL_LIBRARY_DIR)/bignum -c $< -o $@
 
 $(HOST_BUILD)/bigfloat.o: library/bignum/bigfloat.cpp library/bignum/bigfloat.hpp library/bignum/bigint.hpp | $(HOST_BUILD)
-	$(CXX) $(CXXFLAGS) -I$(MAGEL_LIBRARY_DIR)/bignum -c $< -o $@
+	$(CXX) $(CXXFLAGS) -MMD -MP -I$(MAGEL_LIBRARY_DIR)/bignum -c $< -o $@
 
-BIGFLOAT_MATH_OBJS := $(HOST_BUILD)/bigfloat_transcendental.o $(HOST_BUILD)/bigfloat_trigonometry.o
+BIGINT_MODULE_OBJS := $(HOST_BUILD)/bigint_multiplication.o $(HOST_BUILD)/bigint_division.o $(HOST_BUILD)/bigint_number_theory.o $(HOST_BUILD)/bigint_bits.o $(HOST_BUILD)/bigint_modular.o $(HOST_BUILD)/bigint_conversion.o
+$(BIGINT_MODULE_OBJS): $(HOST_BUILD)/%.o: library/bignum/%.cpp build/magel-runtime/buildConfig.json | $(HOST_BUILD)
+	$(CXX) $(CXXFLAGS) -MMD -MP -I$(MAGEL_LIBRARY_DIR)/bignum -c $< -o $@
+-include $(BIGINT_MODULE_OBJS:.o=.d) $(HOST_BUILD)/bigint.d $(HOST_BUILD)/bigfloat.d
+
+BIGFLOAT_MATH_OBJS := $(HOST_BUILD)/bigfloat_roots.o $(HOST_BUILD)/bigfloat_transcendental.o $(HOST_BUILD)/bigfloat_trigonometry.o
 $(BIGFLOAT_MATH_OBJS): $(HOST_BUILD)/%.o: library/bignum/%.cpp build/magel-runtime/buildConfig.json | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I$(MAGEL_LIBRARY_DIR)/bignum -c $< -o $@
 
@@ -140,7 +145,7 @@ $(HOST_BUILD)/ipage_%.o: library/ipage/source/ipage/%.cpp | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
 $(IPAGE_OBJS): build/magel-runtime/buildConfig.json
 
-$(HOST_LIB): $(HOST_BUILD)/sqlite3.o $(HOST_BUILD)/bigint.o $(HOST_BUILD)/bigfloat.o $(BIGFLOAT_MATH_OBJS) $(MAGEL_STANDARD_OBJS) $(HOST_BUILD)/json.o $(HOST_BUILD)/toml.o $(HOST_BUILD)/toml_source.o $(CAS_OBJS) $(IPAGE_OBJS)
+$(HOST_LIB): $(BIGINT_MODULE_OBJS) $(HOST_BUILD)/sqlite3.o $(HOST_BUILD)/bigint.o $(HOST_BUILD)/bigfloat.o $(BIGFLOAT_MATH_OBJS) $(MAGEL_STANDARD_OBJS) $(HOST_BUILD)/json.o $(HOST_BUILD)/toml.o $(HOST_BUILD)/toml_source.o $(CAS_OBJS) $(IPAGE_OBJS)
 	$(PYTHON) -c "from pathlib import Path; Path(r'$@').unlink(missing_ok=True)"
 	$(AR) $(ARFLAGS) $@ $^
 
@@ -166,11 +171,13 @@ samples: $(TARGET)
 # Keep allocator-specialized dependencies separate from the generic libraries.
 build/magel-runtime:
 	$(MAGEL_RUNTIME_MKDIR)
-build/magel-runtime/simple_ast.o: $(AST_DIR)/simple_ast.cpp $(AST_DIR)/simple_ast.hpp source/allocator/magel_allocator.hpp source/allocator/magel_pool.c | build/magel-runtime
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+AST_OBJS := build/magel-runtime/simple_ast.o build/magel-runtime/ast_type.o build/magel-runtime/ast_node.o build/magel-runtime/ast_data.o
+$(AST_OBJS): build/magel-runtime/%.o: $(AST_DIR)/%.cpp build/magel-runtime/buildConfig.json | build/magel-runtime
+	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
+-include $(AST_OBJS:.o=.d)
 build/magel-runtime/preprocess.o: $(PP_DIR)/preprocess.cpp $(PP_DIR)/preprocess.hpp source/allocator/magel_allocator.hpp source/allocator/magel_pool.c | build/magel-runtime
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-$(AST_LIB): build/magel-runtime/simple_ast.o
+$(AST_LIB): $(AST_OBJS)
 	$(AR) $(ARFLAGS) $@ $^
 $(PP_LIB): build/magel-runtime/preprocess.o
 	$(AR) $(ARFLAGS) $@ $^

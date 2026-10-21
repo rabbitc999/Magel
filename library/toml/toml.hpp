@@ -257,10 +257,7 @@ public:
      * @return 成员引用。
      */
     template <typename... Args>
-    Member &emplace(std::string key, Args &&...args)
-    {
-        return insert(std::move(key), Value(std::forward<Args>(args)...));
-    }
+    Member &emplace(std::string key, Args &&...args);
 
     /**
      * @brief 删除一个成员。
@@ -782,6 +779,18 @@ struct Member
     std::string key;  ///< 成员名。
     Value value;      ///< 成员值。
 };
+
+/**
+ * @brief 在成员和值类型均完整后实例化对象成员的就地构造。
+ * @param key 要插入或覆盖的成员名称。
+ * @param args 转发给值类型构造函数的实参。
+ * @return 插入后对象中对应成员的引用。
+ */
+template <typename... Args>
+Member &Object::emplace(std::string key, Args &&...args)
+{
+    return insert(std::move(key), Value(std::forward<Args>(args)...));
+}
 
 /**
  * @brief 把值写进输出流（用内联写法）。

@@ -56,3 +56,7 @@ is not rewritten. Exported compiler projects also link these implementations as 
 A host includes `magel_glue.hpp` and the required `std_xxx.hpp`, then links the matching `.cpp` files or host-record
 library. Registration headers do not implicitly include all implementations. A complete command is provided in
 the [synchronous callback example](../../example/native-callbacks/README.md).
+
+## Independently compiled library modules
+
+`library/simple_ast` compiles types, node construction, quadruple generation and data export separately. `library/bignum` separates integer multiplication, division, number theory, bit operations, conversion and decimal roots. Public headers retain the interfaces; Make dependency files track actual includes. Embedded assets and exported compiler projects carry all implementation units. Each library also provides a CMake target for independent builds. See the [AST library](../../library/simple_ast/README.md) and [big-number library](../../library/bignum/README.md) for file responsibilities.

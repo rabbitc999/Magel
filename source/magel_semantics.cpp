@@ -3269,6 +3269,10 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
         }
     }
     if (run == 0) return 0;
+    // 本次生成的数据映像直接交给 VM；其他进程覆盖同前缀产物不影响正在执行的程序。
+    const auto dataBytes = result.exportDataBinary();
+    Memory::String dataLayout;
+    for (const auto &row : result.exportDataLayout()) dataLayout += row + "\n";
     g_runtimePeak = 0;
     try
     {
@@ -3297,7 +3301,7 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
                 runtimeStatus = [&]() {
                     stackvm::DataArea data;
                     Memory::Vector<Memory::String> problems;
-                    if (!data.load(binaryPath, layoutPath, &problems))
+                    if (!data.loadFromBytes(dataBytes.data(), dataBytes.size(), dataLayout, &problems))
                     {
                         Fail("数据区加载失败：" + JoinMessages(problems));
                         return 1;
