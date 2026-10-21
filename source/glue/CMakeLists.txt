@@ -1,7 +1,8 @@
 # 标准库的实现只编入宿主胶水库；VM 核心继续使用通用原生记录协议。
 file(GLOB MAGEL_STANDARD_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/std_*.cpp")
 list(REMOVE_ITEM MAGEL_STANDARD_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/std_demo.cpp")
-list(APPEND MAGEL_STANDARD_SOURCES ../../library/bignum/bigint.cpp ../../library/bignum/bigfloat.cpp
+file(GLOB MAGEL_BIGNUM_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/../../library/bignum/bigint*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/../../library/bignum/bigfloat*.cpp")
+list(APPEND MAGEL_STANDARD_SOURCES ${MAGEL_BIGNUM_SOURCES}
     ../../library/json/json.cpp ../../library/toml/toml.cpp ../../library/toml/toml_source.cpp)
 add_library(magel_standard_records STATIC ${MAGEL_STANDARD_SOURCES})
 target_include_directories(magel_standard_records PUBLIC

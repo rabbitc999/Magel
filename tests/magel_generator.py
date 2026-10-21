@@ -62,6 +62,7 @@ def main():
         required += ["runtime/core_sources.txt", "toml/toml_source.cpp", "toml/toml_source.hpp"]
         required += ["runtime/bigfloat_math.hpp", "runtime/bigfloat_math_detail.hpp", "runtime/bigfloat_transcendental.cpp", "runtime/bigfloat_trigonometry.cpp", "std/cas.mgl", "glue/std_cas.cpp", "caspp/core_sources.txt"]
         required += ["caspp/" + name for name in (ROOT / "library/caspp/core_sources.txt").read_text().splitlines()]
+        required += ["runtime/" + name for name in ["ast_type.cpp", "ast_node.cpp", "ast_data.cpp", "ast_storage_detail.hpp", "bigint_multiplication.cpp", "bigint_division.cpp", "bigint_bits.cpp", "bigint_number_theory.cpp", "bigint_modular.cpp", "bigint_conversion.cpp", "bigfloat_roots.cpp"]]
         missing = [name for name in required if not (compiler / name).is_file()]
         if missing:
             raise AssertionError(f"compiler export is incomplete: {missing}")

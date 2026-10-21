@@ -91,10 +91,17 @@ const CodegenResult result = generate(program, "demo");
 ## 构建与自检
 
 ```text
-make -C library/simple_ast            # libsimple_ast.a + simple_ast + simple_ast-tests
-make -C library/simple_ast check      # 64 项断言 + 生成一份全特性演示
+cmake -S library/simple_ast -B build/simple-ast
+cmake --build build/simple-ast
+ctest --test-dir build/simple-ast --output-on-failure
 ```
 
 断言覆盖：类型描述与 `quadType()` 映射、引用限制、数组 meta、方法标签与隐式 `self`、
 运算符重载（含链式）、泛型记号字段、带载荷枚举的 tag、字符串进数据区、二进制长度 / 对齐 /
 偏移表 / C 头，以及 `lambda_N` 闭包句柄。
+
+## 源码组织
+
+`simple_ast.hpp` 保留公开类型和接口；`ast_type.cpp` 实现类型构造与描述，`ast_node.cpp` 实现节点工厂，`simple_ast.cpp` 负责类型推导和四元式生成，`ast_data.cpp` 负责数据布局与二进制/C 头导出。`ast_storage_detail.hpp` 仅共享轻量标量存储宽度查询。各 `.cpp` 均独立编译，没有包含实现文件。
+
+CMake 的 `parseengine_simple_ast` 目标、Magel Makefile、门禁直接编译入口与导出工程模板均链接全部实现；修改单个实现只重编对应对象及重新链接。当前修改限于本仓库副本。

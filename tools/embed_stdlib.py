@@ -199,14 +199,18 @@ GENERATOR_ASSETS = [
     "allocator/magel_allocator.hpp",
     "bignum/bigint.hpp",
     "bignum/bigint.cpp",
+    "bignum/bigint_multiplication.cpp",
     "bignum/bigfloat.hpp",
     "bignum/bigfloat.cpp",
+    "bignum/bigfloat_roots.cpp",
     "bignum/bigfloat_math.hpp",
     "bignum/bigfloat_math_detail.hpp",
     "bignum/bigfloat_transcendental.cpp",
     "bignum/bigfloat_trigonometry.cpp",
 ]
 
+
+GENERATOR_ASSETS += ['simple_ast/ast_type.cpp', 'simple_ast/ast_node.cpp', 'simple_ast/ast_data.cpp', 'simple_ast/ast_storage_detail.hpp', 'bignum/bigint_division.cpp', 'bignum/bigint_number_theory.cpp', 'bignum/bigint_bits.cpp', 'bignum/bigint_modular.cpp', 'bignum/bigint_conversion.cpp']
 
 GENERATOR_ASSETS += ["stackvm/" + name for name in asset_names()]
 from cas_sources import asset_names as cas_asset_names

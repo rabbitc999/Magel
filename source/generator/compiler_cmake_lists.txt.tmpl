@@ -19,9 +19,9 @@ list(TRANSFORM MAGEL_CAS_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/caspp/")
 if(NO_MAGEL_STD OR NO_MAGEL_STD_CAS OR NO_MAGEL_BIG_INT)
     set(MAGEL_CAS_SOURCES "")
 endif()
-add_library(magel_host_records STATIC ${MAGEL_STANDARD_SOURCES} ${MAGEL_CAS_SOURCES} ipage/sql.cpp ipage/dialect.cpp runtime/bigint.cpp runtime/bigfloat.cpp runtime/bigfloat_transcendental.cpp runtime/bigfloat_trigonometry.cpp
+add_library(magel_host_records STATIC ${MAGEL_STANDARD_SOURCES} ${MAGEL_CAS_SOURCES} ipage/sql.cpp ipage/dialect.cpp runtime/bigint.cpp runtime/bigint_multiplication.cpp runtime/bigint_division.cpp runtime/bigint_number_theory.cpp runtime/bigint_bits.cpp runtime/bigint_modular.cpp runtime/bigint_conversion.cpp runtime/bigfloat.cpp runtime/bigfloat_roots.cpp runtime/bigfloat_transcendental.cpp runtime/bigfloat_trigonometry.cpp
     sqlite/sqlite3.c json/json.cpp toml/toml.cpp toml/toml_source.cpp)
-add_library(magel_runtime STATIC runtime/simple_ast.cpp runtime/preprocess.cpp lztext/lztext.cpp
+add_library(magel_runtime STATIC runtime/simple_ast.cpp runtime/ast_type.cpp runtime/ast_node.cpp runtime/ast_data.cpp runtime/preprocess.cpp lztext/lztext.cpp
     miniz/miniz_tinfl.c dap/dap_server.cpp)
 target_link_libraries(magel_runtime PUBLIC magel_vm_core magel_host_records Threads::Threads)
 

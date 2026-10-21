@@ -197,7 +197,7 @@ run_step "运行闭包自动类型与嵌套返回语言服务回归" "$PYTHON" t
 run_required_step "编译无墓碑分配身份回归" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=1 -Isource -Ilibrary -Isource/allocator tests/allocation_identity.cpp -o tmp/ci/allocation-identity
 run_step "运行百万次分配身份回归" tmp/ci/allocation-identity
 run_step "运行数组按值传参与引用回归" "$PYTHON" tests/magel_array_parameters.py --magel magel
-run_required_step "编译字面量数据合并单元测试" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=0 -DMAGEL_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 library/simple_ast/test_simple_ast.cpp library/simple_ast/simple_ast.cpp -o tmp/ci/simple-ast-literals
+run_required_step "编译字面量数据合并单元测试" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=0 -DMAGEL_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 library/simple_ast/test_simple_ast.cpp library/simple_ast/simple_ast.cpp library/simple_ast/ast_type.cpp library/simple_ast/ast_node.cpp library/simple_ast/ast_data.cpp -o tmp/ci/simple-ast-literals
 run_step "运行字面量数据合并单元测试" tmp/ci/simple-ast-literals
 run_step "检查诊断摘录与 TOML 注释往返" "$PYTHON" tests/magel_diagnostic_layout.py --magel magel
 run_step "运行字面量合并与字符串副本回归" "$PYTHON" tests/magel_string_literals.py --magel magel

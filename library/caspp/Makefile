@@ -28,9 +28,11 @@ endif
 # 库源文件（不含 main.cpp）
 LIB_SOURCES := $(shell python -c "from pathlib import Path; print(' '.join(Path('core_sources.txt').read_text().splitlines()))")
 LIB_OBJECTS := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(LIB_SOURCES))
-LIB_OBJECTS += $(BUILD_DIR)/shared_bigint.o
+SHARED_BIGINT_SOURCES := $(wildcard ../bignum/bigint*.cpp)
+SHARED_BIGINT_OBJECTS := $(patsubst ../bignum/%.cpp,$(BUILD_DIR)/shared_%.o,$(SHARED_BIGINT_SOURCES))
+LIB_OBJECTS += $(SHARED_BIGINT_OBJECTS)
 
-$(BUILD_DIR)/shared_bigint.o: ../bignum/bigint.cpp ../bignum/bigint.hpp
+$(SHARED_BIGINT_OBJECTS): $(BUILD_DIR)/shared_%.o: ../bignum/%.cpp ../bignum/bigint.hpp
 	@python -c "from pathlib import Path; Path('$(dir $@)').mkdir(parents=True, exist_ok=True)"
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -c $< -o $@
 

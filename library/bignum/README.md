@@ -185,7 +185,7 @@ Karatsuba、平方走 NTT；3,072 块普通乘法走 NTT，4,096 块又优先 Ka
 可复现命令（从仓库根目录执行）：
 
 ```sh
-g++ -std=c++17 -O2 tests/bigint_benchmark.cpp library/bignum/bigint.cpp -o tmp/bigint-benchmark
+g++ -std=c++17 -O2 tests/bigint_benchmark.cpp library/bignum/bigint*.cpp -o tmp/bigint-benchmark
 tmp/bigint-benchmark
 tmp/bigint-benchmark --tune
 tmp/bigint-benchmark --division
@@ -282,3 +282,17 @@ sqrt(2) (30) = 1.41421356237309504880168872421
 `bigfloat_math.hpp` 提供 `pi`、`exp`、`ln`、`log10`、`sin`、`cos`、`tan`、`atan`、`asin`、`acos`、实数幂和截断余数。圆周率使用 AGM，指数使用级数与缩放平方，对数使用平方根约化，三角函数使用高精度参数约化与级数；全部复用十进制 `BigFloat`，不转二进制浮点。工作精度增加保护位并检查资源预算，非法实数定义域抛出异常。
 
 Magel 的 `std::math` 使用这些函数计算 `BigDecimal` 分支，有效位数沿用实参设置，未设置时采用 34 位；显式 `pi(digits)` 支持 1..100000 位。独立参考回归为 `python tests/bigfloat_math.py`；参考值由 mpmath 生成并固化，日常测试只需 Python 标准库。更新参考值使用 `python tests/bigfloat_math.py --refresh-reference`，需要 mpmath。
+
+## 源码组织
+
+公开接口保留在 `bigint.hpp`、`bigfloat.hpp` 与 `bigfloat_math.hpp`；实现按职责独立编译：
+
+- `bigint.cpp`：构造、规范化、基础幅值与有符号算术、整数方根。
+- `bigint_multiplication.cpp`：Karatsuba/NTT 内核与算法阈值。
+- `bigint_division.cpp`：Knuth 与 Burnikel-Ziegler 幅值除法。
+- `bigint_bits.cpp`、`bigint_number_theory.cpp`、`bigint_modular.cpp`、`bigint_conversion.cpp`：位操作、幂与公约数、模运算与素性、文本与机器数值转换。
+- `bigfloat.cpp`：解析、格式化、舍入、比较和四则运算。
+- `bigfloat_roots.cpp`：幂、方根和取整。
+- `bigfloat_transcendental.cpp`、`bigfloat_trigonometry.cpp`：高精度数学。
+
+使用 CMake 静态库目标链接全部实现；不要只编译 `bigint.cpp` 或 `bigfloat.cpp`。Magel 的 Makefile、内嵌资产与导出编译器模板包含相同单元，保留大数裁剪宏。当前修改限于本仓库副本。
