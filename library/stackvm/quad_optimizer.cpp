@@ -313,17 +313,21 @@ OptimizationReport optimize(QuadFile &file, std::size_t maxRounds, bool collectT
                             type.bits);
                         quad.op = ":=";
                         quad.args = { formatFloatLiteral(value), "_", quad.arg(2) };
+                        remember(quad);
+                        folded = true;
                     }
-                    else
+                    else if (!leftIsFloat || floatFitsInteger(leftDouble, type))
                     {
                         const std::int64_t value = leftIsFloat ? static_cast<std::int64_t>(leftDouble) : leftInt;
                         quad.op = ":=";
                         quad.args = { Memory::toString(normalizeInt(
                                           value, type)),
                                       "_", quad.arg(2) };
+                        remember(quad);
+                        folded = true;
                     }
-                    remember(quad);
-                    folded = true;
+                    /* 浮点转整数越界：C++ 的 static_cast 是未定义行为，这里不折叠，
+                     * 保留 cvt 交给运行期的范围检查报错。 */
                 }
             }
             if (folded)

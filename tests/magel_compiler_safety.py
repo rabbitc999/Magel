@@ -50,7 +50,9 @@ def run_snapshot(compiler, work, env):
         prefix.with_suffix('.data.bin').write_bytes(b'\0' * 16)
         prefix.with_suffix('.layout').write_bytes(b'')
         output, error = process.communicate(timeout=120)
-        assert process.returncode == 0 and output == b'snapshot-safe\n' * count, (process.returncode, output[:200], error[-2000:])
+        # Windows 控制台走文本模式给出 CRLF；比对前归一化，避免把换行差异当成失败。
+        normalized = output.replace(b'\r\n', b'\n')
+        assert process.returncode == 0 and normalized == b'snapshot-safe\n' * count, (process.returncode, normalized[:200], error[-2000:])
         assert b'AddressSanitizer' not in error and b'runtime error:' not in error, error[-2000:]
     finally:
         if process.poll() is None:

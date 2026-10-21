@@ -97,4 +97,13 @@ python tools/embed_stdlib.py
 expanded=source/.magel-build.gram
 trap 'rm -f "$expanded"' EXIT HUP INT TERM
 python tools/expand_grammar.py source/magel.gram "$expanded"
-"$ENGINE" "$expanded" --mode ielr --cpp-lexer std --no-build-files --out-dir source
+
+# 增量生成：默认复用持久化的文法分析缓存（--cache-dir 同时启用增量生成），
+# 文法没变时省掉 LR/IELR 重算。需要强制全量重算时用 `REBUILD=1 sh gen.sh`。
+CACHE_DIR=build/parse-engine-cache
+if [ -n "${REBUILD:-}" ]; then
+    "$ENGINE" "$expanded" --mode ielr --cpp-lexer std --no-build-files --out-dir source --rebuild
+else
+    mkdir -p "$CACHE_DIR"
+    "$ENGINE" "$expanded" --mode ielr --cpp-lexer std --no-build-files --out-dir source --incremental --cache-dir "$CACHE_DIR"
+fi

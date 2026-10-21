@@ -178,6 +178,22 @@ std::int64_t normalizeInt(std::int64_t value, const TypeInfo &type)
 }
 
 /**
+ * @brief 判断浮点值是否落在目标整数类型的可表示范围内。
+ * @param value 待转换的浮点值。
+ * @param type 目标整数类型（位宽与是否有符号）。
+ * @retval 可以安全转换时返回 true；非有限值或超出范围时返回 false。
+ * @note 浮点转整数越界在宿主上是未定义行为，调用方应在转换前先过这一关。
+ */
+bool floatFitsInteger(double value, const TypeInfo &type)
+{
+    if (!std::isfinite(value)) return false;
+    if (type.bits <= 0 || type.bits > 64) return true;
+    const double magnitude = std::ldexp(1.0, type.isUnsigned ? type.bits : type.bits - 1);
+    if (type.isUnsigned) return value >= 0.0 && value < magnitude;
+    return value >= -magnitude && value < magnitude;
+}
+
+/**
  * @brief f32 在每次带类型的运算或转换后按 IEEE-754 单精度舍入，f64 保持 double。
  * @param value 待转换、保存或参与计算的值。
  * @param bits 数值类型的位宽。

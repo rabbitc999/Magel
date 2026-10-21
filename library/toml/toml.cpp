@@ -407,6 +407,56 @@ public:
     }
 
 private:
+    /** 嵌套深度上限：超过即记诊断并停止解析，避免递归下降把宿主栈打爆。 */
+    static constexpr std::size_t kMaxDepth = 256u;
+
+    /**
+     * @brief 进入一层嵌套容器。
+     * @return 未超过深度上限返回 true；超过时记一条诊断并返回 false。
+     * @note 诊断只保留第一条，重复超限不会覆盖已有的诊断。
+     */
+    bool enterDepth()
+    {
+        if (depth_ >= kMaxDepth)
+        {
+            fail("nesting-too-deep", "TOML 嵌套层数超过预算（上限 256 层）");
+            return false;
+        }
+        ++depth_;
+        return true;
+    }
+
+    /**
+     * @brief 嵌套深度守卫：进入容器时加一，离开时无论成败都减一。
+     */
+    class DepthScope
+    {
+    public:
+        /**
+         * @brief 尝试进入一层嵌套容器。
+         * @param parser 所属的解析器。
+         */
+        explicit DepthScope(Parser *parser) : parser_(parser), entered_(parser->enterDepth()) {}
+
+        /**
+         * @brief 离开一层嵌套容器并恢复深度。
+         */
+        ~DepthScope()
+        {
+            if (entered_) --parser_->depth_;
+        }
+
+        /**
+         * @brief 是否成功进入这一层嵌套。
+         * @return 未超过深度上限返回 true。
+         */
+        bool ok() const noexcept { return entered_; }
+
+    private:
+        Parser *parser_;  ///< 所属解析器。
+        bool entered_;    ///< 是否真的进入了这一层。
+    };
+
     // ---- 元数据树 ---------------------------------------------------------
 
     /**
@@ -1409,6 +1459,8 @@ private:
      */
     bool parseArray(Value &out)
     {
+        DepthScope scope(this);
+        if (!scope.ok()) return false;
         get();  // '['
         Array items;
         while (true)
@@ -1499,6 +1551,8 @@ private:
      */
     bool parseInlineTable(Value &out)
     {
+        DepthScope scope(this);
+        if (!scope.ok()) return false;
         get();  // '{'
         Object table;
         skipHorizontal();
@@ -1990,6 +2044,7 @@ private:
     std::size_t index_ = 0u;   ///< 当前字节偏移。
     std::size_t line_ = 1u;    ///< 当前行号。
     std::size_t column_ = 1u;  ///< 当前列号。
+    std::size_t depth_ = 0u;   ///< 当前嵌套深度（进入数组或内联表加一）。
     Diagnostic diagnostic_;    ///< 第一条诊断。
 
     Value root_{};                 ///< 顶层表。

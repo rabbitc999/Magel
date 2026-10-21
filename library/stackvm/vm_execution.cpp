@@ -1457,8 +1457,15 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             TypeInfo type;
             type.bits = static_cast<int>(instruction.intValue);
             type.isUnsigned = instruction.unsignedOp;
+            // 浮点转整数越界在宿主上是未定义行为（x86 上会得到 INT64_MIN 这种无效值），
+            // 这里一律报运行期错误，而不是静默取回绕后的值。
+            if (slot.isFloat && !floatFitsInteger(slot.real, type))
+            {
+                fail("浮点转整数超出目标范围");
+                break;
+            }
             push(Slot::fromInt(
-                normalizeInt(slot.isFloat ? static_cast<std::int64_t>(nativeInt(slot)) : slot.integer, type)));
+                normalizeInt(slot.isFloat ? static_cast<std::int64_t>(slot.real) : slot.integer, type)));
             break;
         }
         case Op::MulWide:

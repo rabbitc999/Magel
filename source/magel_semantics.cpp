@@ -2870,7 +2870,18 @@ int M_TokenValue(int tokenType, double number, const char *pName, Memory::String
     {
         if (!text.empty())
         {
-            const int id = M_Int(std::strtoll(text.c_str(), nullptr, 10));
+            const char *begin = text.c_str();
+            char *end = nullptr;
+            errno = 0;
+            const long long parsed = std::strtoll(begin, &end, 10);
+            // 超出 int64 时 strtoll 静默返回饱和值，源码与结果会不符；这里必须报错。
+            // 需要表示更大的正整数时使用 u 后缀，由 ULIT 分支按 64 位位模式保留。
+            if (errno == ERANGE || end != begin + text.size())
+            {
+                PushParseDiagnostic("十进制整数超出 int64 范围：" + text);
+                return M_Int(0);
+            }
+            const int id = M_Int(parsed);
             g_nodes[id].s = text;
             return id;
         }
@@ -2933,6 +2944,12 @@ int M_TokenValue(int tokenType, double number, const char *pName, Memory::String
         {
             const bool single = text.back() == 'f';
             const double value = single ? static_cast<double>(std::strtof(text.c_str(), nullptr)) : std::strtod(text.c_str(), nullptr);
+            // 溢出成 inf 后会被当成标识符参与解析并给出无关诊断；这里直接拒绝。
+            if (!std::isfinite(value))
+            {
+                PushParseDiagnostic("浮点字面量超出可表示范围：" + text);
+                return M_Float(0);
+            }
             const int id = M_Float(value);
             if (single) g_nodes[id].type = M_TypeFloatBits(32);
             return id;

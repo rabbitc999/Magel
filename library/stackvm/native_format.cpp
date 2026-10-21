@@ -16,7 +16,13 @@ namespace runtimeDetail
  */
 std::int64_t nativeInt(const Slot &slot)
 {
-    return slot.isFloat ? static_cast<std::int64_t>(slot.real) : slot.integer;
+    if (!slot.isFloat) return slot.integer;
+    // 浮点槽转整数是未定义行为；越界时按方向取饱和值，不让宿主拿到无效值。
+    TypeInfo type;
+    type.bits = 64;
+    if (floatFitsInteger(slot.real, type)) return static_cast<std::int64_t>(slot.real);
+    if (!std::isfinite(slot.real)) return 0;
+    return slot.real > 0.0 ? std::numeric_limits<std::int64_t>::max() : std::numeric_limits<std::int64_t>::min();
 }
 
 /**
