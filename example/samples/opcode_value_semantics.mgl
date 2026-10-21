@@ -1,0 +1,99 @@
+import std::graph;
+import std::tree;
+import std::linkedlist;
+import std::random;
+import std::json;
+import std::toml;
+import std::regex;
+import std::sql;
+import std::memory;
+
+int64 main()
+{
+    UnionFind sets = UnionFind::create(10000);
+    sets.unionSets(2, 3);
+    UnionFind copiedSets = sets;
+    copiedSets.unionSets(3, 4);
+    assert(!sets.connected(2, 4) && copiedSets.connected(2, 4));
+    List<int64> parents = sets.parents();
+    parents[2] = 99;
+    assert(sets.find(2) != 99 && sets.count() == 9999);
+
+    Graph graph = Graph::create(3, false);
+    graph.addEdge(0, 1, 5);
+    Graph graphCopy = graph;
+    graphCopy.addEdge(1, 2, 7);
+    assert(graph.len() == 1 && graphCopy.len() == 2);
+    assert(graph.connectedComponents() == 2 && graphCopy.connectedComponents() == 1);
+    GraphSnapshot graphState = graph.snapshot();
+    graphState.head[0] = 0 - 1;
+    assert(graph.bfs(0).len() == 2);
+
+    BinarySearchTree bst = BinarySearchTree::create();
+    bst.insert(2); bst.insert(1); bst.insert(3);
+    BinarySearchTree bstCopy = bst;
+    bst.remove(2);
+    assert(!bst.contains(2) && bstCopy.contains(2));
+    TreeSnapshot bstState = bst.snapshot();
+    bstState.keys[bstState.root] = 99;
+    assert(!bst.contains(99));
+    MinHeap queue = MinHeap::create(); queue.push(2); queue.push(1);
+    MinHeap heapCopy = queue;
+    queue.pop(); assert(queue.peek().unwrap() == 2 && heapCopy.peek().unwrap() == 1);
+    GeneralTree general = GeneralTree::create();
+    int64 root = general.addRoot(10); general.addChild(root, 20);
+    GeneralTree generalCopy = general;
+    generalCopy.addChild(root, 30);
+    assert(general.len() == 2 && generalCopy.len() == 3);
+
+    LinkedList list = LinkedList::create();
+    int64 old = list.pushBack(10);
+    LinkedList listCopy = list;
+    assert(list.removeAt(old).unwrap() == 10);
+    list.pushBack(20);
+    assert(list.removeAt(old).isNone());
+    assert(listCopy.removeAt(old).unwrap() == 10);
+    int64 beforeClear = list.find(20);
+    list.clear(); list.pushBack(30);
+    assert(list.removeAt(beforeClear).isNone());
+    List<int64> listState = list.toArray(); listState[0] = 999;
+    assert(list.front().unwrap() == 30);
+
+    Random random = Random::withSeed((uint64)123);
+    Random randomCopy = random;
+    assert(random.nextUInt64() == randomCopy.nextUInt64());
+    random.nextUInt64();
+    Random position = randomCopy;
+    assert(randomCopy.nextUInt64() == position.nextUInt64());
+
+    auto parsed = std::json::parse("{\"child\":[1,2]}");
+    auto json = parsed.unwrap(); auto jsonCopy = json;
+    auto child = json.find("child").unwrap();
+    json.close();
+    assert(!json.isValid() && jsonCopy.isValid() && child.isValid());
+    child.close(); assert(jsonCopy.find("child").unwrap().len() == 2);
+    auto tomlParsed = std::toml::parse("# comment\nvalue = 1 # inline\n");
+    auto toml = tomlParsed.unwrap(); auto tomlCopy = toml;
+    String saved = toml.dump(); toml.close();
+    assert(tomlCopy.dump() == saved);
+    auto reparsed = std::toml::parse(saved);
+    assert(reparsed.unwrap().dump() == saved);
+
+    auto compiled = Regex::compile("[a-z]+");
+    Regex regex = compiled.unwrap(); Regex regexCopy = regex;
+    assert(regexCopy.fullMatch("abc") && regex.fullMatch("xyz"));
+    assert(Regex::compile("[").isErr());
+    Database database = Database::sqlite(":memory:");
+    assert(database.isOpen());
+    database.exec("create table t(value integer)");
+    database.exec("insert into t values(42)");
+    assert(database.exec("select value from t").count() == 42);
+    database.close(); database.close(); assert(!database.isOpen());
+    Arena arena = Arena::create();
+    auto span = arena.allocate(16);
+    char mut& first = span.iterator(0).unwrap();
+    first = 'a'; assert(span[0] == 'a');
+    arena.reset();
+    println("opcode values: copy isolation, snapshots, cursors and owners OK");
+    return 0;
+}

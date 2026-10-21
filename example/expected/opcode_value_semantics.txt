@@ -1,0 +1,1 @@
+opcode values: copy isolation, snapshots, cursors and owners OK

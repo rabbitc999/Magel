@@ -6,7 +6,7 @@ int64 main() {
     Timer timer = Timer::afterMillis(2);
     assert(timer.isValid());
     auto tick = std::event::receiveFor(1000);
-    assert(tick.isReady() && tick.value.timer == timer.handle);
+    assert(tick.isReady() && tick.value.timer == timer.id());
     timer.stop();
     assert(std::event::tryReceive().status == 1);
     println("events ok");

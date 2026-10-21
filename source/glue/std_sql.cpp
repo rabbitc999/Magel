@@ -1,4 +1,5 @@
 #include "std_sql.hpp"
+#include "std_native_record.hpp"
 
 #include "../magel_glue.hpp"
 #include "../../library/sqlite/sqlite3.h"
@@ -1590,6 +1591,102 @@ inline std::int32_t sqlCellKind(std::int32_t handle, std::int32_t row, std::int3
 }
 
 /**
+ * @brief 独占一个 SQL 连接槽及其公开状态，销毁时自动关闭连接。
+ */
+struct DatabaseOwner
+{
+    std::int32_t connection = -1;
+    std::int64_t driver = 0;
+    std::int64_t affected = 0;
+    String error;
+    /**
+     * @brief 关闭仍由本记录拥有的连接，包括记录分配失败时的临时所有者。
+     */
+    ~DatabaseOwner()
+    {
+        if (connection >= 0) sqlClose(connection);
+    }
+};
+/**
+ * @brief 释放独占连接，并清理所属状态。
+ * @param value 待销毁的数据库所有者。
+ */
+void destroyDatabaseOwner(void *value)
+{
+    delete static_cast<DatabaseOwner *>(value);
+}
+const stackvm::NativeRecordType databaseOwnerType{ "std::sql::Database", nullptr, destroyDatabaseOwner, nullptr };
+/**
+ * @brief 校验并借用仍存活的连接所有者。
+ * @param context 当前胶水上下文。
+ * @param handle 所有者记录句柄。
+ * @return 对应状态；类型错误或已释放时报告错误并返回空。
+ */
+DatabaseOwner *databaseOwner(magel_glue::Context &context, std::int64_t handle)
+{
+    auto *owner = static_cast<DatabaseOwner *>(context.nativeRecord(handle, databaseOwnerType));
+    if (!owner) context.fail("Database 连接所有者已经释放或类型无效");
+    return owner;
+}
+/**
+ * @brief 接管连接槽，使其生命周期随不可复制的 opcode 管理。
+ * @param context 当前胶水上下文。
+ * @param connection 连接槽编号，失败时为负数。
+ * @param driver 公开数据库驱动编号。
+ * @return 新建所有者的原生记录句柄。
+ */
+std::int64_t ownDatabase(magel_glue::Context &context, std::int32_t connection, std::int64_t driver)
+{
+    auto owner = std::make_unique<DatabaseOwner>();
+    owner->connection = connection;
+    owner->driver = driver;
+    if (connection < 0) owner->error = sqlError(connection);
+    const auto handle = context.makeNativeRecord(databaseOwnerType, owner.get());
+    if (handle)
+        owner.release();
+    else if (connection >= 0)
+        sqlClose(connection);
+    return handle;
+}
+/**
+ * @brief 默认构造未连接的独占数据库值。
+ * @param context 当前胶水上下文。
+ * @return 拥有空连接状态的记录句柄。
+ */
+std::int64_t newDatabaseOwner(magel_glue::Context &context)
+{
+    auto owner = std::make_unique<DatabaseOwner>();
+    const auto handle = context.makeNativeRecord(databaseOwnerType, owner.get());
+    if (handle) owner.release();
+    return handle;
+}
+/**
+ * @brief 注册连接所有者的访问、状态更新和关闭协议。
+ * @param registry 当前宿主函数注册表。
+ * @param error 接收注册失败的诊断。
+ * @return 所有入口注册成功时返回 true。
+ */
+bool bindDatabaseOwner(Registry &registry, String *error)
+{
+    return registry.bindTypedWithContext<std::int64_t>("std::sql::__sqlOwnerNew", newDatabaseOwner, error)
+           && registry.bindTypedWithContext<std::int64_t, std::int32_t, std::int64_t>("std::sql::__sqlOwn", ownDatabase, error)
+           && native_record_glue::bind(registry.native(), "std::sql::__sqlOwnerDrop", 1, native_record_glue::drop, error)
+           && registry.bindTypedWithContext<std::int64_t, std::int64_t, std::int64_t>("std::sql::__sqlOwnerState", [](magel_glue::Context &context, std::int64_t handle, std::int64_t operation) {
+                auto *owner = databaseOwner(context, handle);
+                if (!owner) return std::int64_t(0);
+                if (operation == 0) return std::int64_t(owner->connection);
+                if (operation == 1) return owner->driver;
+                if (operation == 2) return owner->affected;
+                if (operation == 3) {
+                    auto *slot = databaseAt(owner->connection);
+                    return std::int64_t(slot && slot->handle);
+                }
+                if (operation == 4) { if (owner->connection >= 0) sqlClose(owner->connection); owner->connection = -1; return std::int64_t(0); }
+                context.fail("Database 状态操作编号无效");
+                return std::int64_t(0); }, error) && registry.bindTypedWithContext<String, std::int64_t>("std::sql::__sqlOwnerError", [](magel_glue::Context &context, std::int64_t handle) { auto *owner = databaseOwner(context, handle); return owner ? owner->error : String(); }, error) && registry.bindTypedWithContext<void, std::int64_t, String, std::int64_t>("std::sql::__sqlOwnerUpdate", [](magel_glue::Context &context, std::int64_t handle, String text, std::int64_t affected) { auto *owner = databaseOwner(context, handle); if (owner) { owner->error = std::move(text); if (affected >= 0) owner->affected = affected; } }, error);
+}
+
+/**
  * @brief 为宿主注册 std_sql 模块的标准库接口。
  * @param registry 接收类型化函数绑定的宿主注册表。
  * @param error 绑定失败时接收原始诊断，可为空。
@@ -1597,8 +1694,7 @@ inline std::int32_t sqlCellKind(std::int32_t handle, std::int32_t row, std::int3
  */
 bool bind(Registry &registry, String *error)
 {
-    return registry.bindTyped<std::int32_t, String, String, String, String, std::int32_t>(
-               "std::sql::__sqlConnect", sqlConnect, error)
+    return bindDatabaseOwner(registry, error) && registry.bindTyped<std::int32_t, String, String, String, String, std::int32_t>("std::sql::__sqlConnect", sqlConnect, error)
            && registry.bindTyped<std::int32_t, String>("std::sql::__sqlOpenSqlite", sqlOpenSqlite, error) && registry.bindTyped<std::int32_t, String>("std::sql::__sqlOpenPostgres", sqlOpenPostgres, error) && registry.bindTyped<std::int32_t, String>("std::sql::__sqlOpenOdbc", sqlOpenOdbc, error) && registry.bindTyped<std::int32_t, std::int32_t>("std::sql::__sqlClose", sqlClose, error) && registry.bindTyped<std::int32_t, std::int32_t, String>("std::sql::__sqlExec", sqlExec, error) && registry.bindTyped<std::int64_t, std::int32_t>("std::sql::__sqlAffected", sqlAffected, error) && registry.bindTyped<String, std::int32_t>("std::sql::__sqlError", sqlError, error) && registry.bindTyped<std::int32_t, std::int32_t>("std::sql::__sqlRowCount", sqlRowCount, error) && registry.bindTyped<std::int32_t, std::int32_t>("std::sql::__sqlColCount", sqlColCount, error) && registry.bindTyped<std::int64_t, std::int32_t>("std::sql::__sqlResultAffected", sqlResultAffected, error) && registry.bindTyped<String, std::int32_t, std::int32_t>("std::sql::__sqlColName", sqlColName, error) && registry.bindTyped<String, std::int32_t, std::int32_t, std::int32_t>("std::sql::__sqlCellText", sqlCellText, error) && registry.bindTyped<std::int64_t, std::int32_t, std::int32_t, std::int32_t>("std::sql::__sqlCellInt", sqlCellInt, error) && registry.bindTyped<double, std::int32_t, std::int32_t, std::int32_t>("std::sql::__sqlCellReal", sqlCellReal, error) && registry.bindTyped<std::int32_t, std::int32_t, std::int32_t, std::int32_t>("std::sql::__sqlCellKind", sqlCellKind, error) && registry.bindTyped<std::int32_t, std::int32_t>("std::sql::__sqlFree", sqlFree, error);
 }
 

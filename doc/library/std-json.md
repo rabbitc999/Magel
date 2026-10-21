@@ -10,7 +10,7 @@ import std::json;
 
 ## 公共约定与错误边界
 
-parse 返回 Result<JsonValue,String>。节点共享同一宿主文档；任一节点 close 都关闭整个文档，重复关闭返回 false。asXxx 返回 Option，不符合类型时为 None；asFloat64 可读取整数。含零字节的文本/键使用 asBytes/findBytes/keyBytesAt。kind：0 null、1 bool、2 int、3 float、4 string、5 array、6 object、7 date-time。
+parse 返回 Result<JsonValue,String>。节点由拥有型 opcode 保存独立子树；普通复制深复制，close 只关闭当前值，已取得的子值和副本继续有效，重复关闭返回 false。asXxx 返回 Option，不符合类型时为 None；asFloat64 可读取整数。含零字节的文本/键使用 asBytes/findBytes/keyBytesAt。kind：0 null、1 bool、2 int、3 float、4 string、5 array、6 object、7 date-time。
 
 ## 参考代码
 
@@ -29,7 +29,7 @@ magel run example/samples/std_structured_data.mgl
  *
  * 本例将 find / keyAt / asString 的结果分别保存，方便逐层检查 Result/Option。
  * 当前语言也支持 root.find("x").unwrap() 等持资源结果的链式访问；编译器在完整
- * 表达式结束后清理中间值。文档节点是共享视图，close 后同文档的节点一起失效。
+ * 表达式结束后清理中间值。节点拥有独立子树，close 不影响副本及已提取的子值。
  */
 import std::json;
 import std::toml;
@@ -85,7 +85,7 @@ int64 main() {
     Option<String> reloadedText = reloadedNameValue.asString();
     assert(reloadedText.unwrap() == "中文");
     assert(reloaded.close());
-    assert(root.close() && !items.isValid() && !root.close());
+    assert(root.close() && items.isValid() && !root.close());
 
     Result<std::json::JsonValue, String> parsedZero =
     std::json::parse("{\"a\\u0000b\":\"x\\u0000y\"}");
@@ -160,7 +160,7 @@ int64 main() {
     std::toml::TomlValue copyPortValue = copyPort.unwrap();
     Option<int64> copyPortNumber = copyPortValue.asInt();
     assert(copyPortNumber.unwrap() == 8080);
-    assert(copy.close() && config.close() && !server.isValid());
+    assert(copy.close() && config.close() && server.isValid());
     Result<std::toml::TomlValue, String> duplicate = std::toml::parse("x = 1\nx = 2\n");
     assert(duplicate.isErr() && len(duplicate.error()) > 0);
     {
@@ -202,9 +202,7 @@ JSON and TOML parsing OK
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-224"></a>`struct JsonValue : Iterator<JsonValue>` | 只读节点视图；同一文档的节点共享生命周期，close 关闭整个文档。 |
-| JsonValue | <a id="symbol-225"></a>`int64 document` | 拥有底层解析文档的宿主句柄。 |
-| JsonValue | <a id="symbol-226"></a>`int64 node` | 当前值在解析文档中的节点标识。 |
+| 模块 | <a id="symbol-215"></a>`struct JsonValue : Iterator<JsonValue>` | 独立拥有 JSON 子树的值，关闭不影响副本或已提取子值。 |
 
 ## 函数索引
 
@@ -252,7 +250,7 @@ bool isValid();
 
 判断共享文档是否仍有效。
 
-检查文档是否仍打开。
+检查当前值是否有效。
 
 **参数**
 
@@ -272,7 +270,7 @@ bool isValid();
 obj.isValid();
 ```
 
-**源码**：[source/std/json.mgl:29](../../source/std/json.mgl#L29)。
+**源码**：[source/std/json.mgl:37](../../source/std/json.mgl#L37)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -290,7 +288,7 @@ bool close();
 
 关闭底层资源；文档节点会使同文档所有视图失效。
 
-显式释放文档及其所有节点；重复关闭返回 false。
+关闭当前值；副本与已提取的子值继续有效，重复关闭返回 false。
 
 **参数**
 
@@ -310,7 +308,7 @@ bool close();
 obj.close();
 ```
 
-**源码**：[source/std/json.mgl:31](../../source/std/json.mgl#L31)。
+**源码**：[source/std/json.mgl:39](../../source/std/json.mgl#L39)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -346,7 +344,7 @@ int64 kind();
 obj.kind();
 ```
 
-**源码**：[source/std/json.mgl:32](../../source/std/json.mgl#L32)。
+**源码**：[source/std/json.mgl:40](../../source/std/json.mgl#L40)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -382,7 +380,7 @@ bool isNull();
 obj.isNull();
 ```
 
-**源码**：[source/std/json.mgl:33](../../source/std/json.mgl#L33)。
+**源码**：[source/std/json.mgl:41](../../source/std/json.mgl#L41)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -418,7 +416,7 @@ bool isBool();
 obj.isBool();
 ```
 
-**源码**：[source/std/json.mgl:34](../../source/std/json.mgl#L34)。
+**源码**：[source/std/json.mgl:42](../../source/std/json.mgl#L42)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -454,7 +452,7 @@ bool isInt();
 obj.isInt();
 ```
 
-**源码**：[source/std/json.mgl:35](../../source/std/json.mgl#L35)。
+**源码**：[source/std/json.mgl:43](../../source/std/json.mgl#L43)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -490,7 +488,7 @@ bool isFloat();
 obj.isFloat();
 ```
 
-**源码**：[source/std/json.mgl:36](../../source/std/json.mgl#L36)。
+**源码**：[source/std/json.mgl:44](../../source/std/json.mgl#L44)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -526,7 +524,7 @@ bool isString();
 obj.isString();
 ```
 
-**源码**：[source/std/json.mgl:37](../../source/std/json.mgl#L37)。
+**源码**：[source/std/json.mgl:45](../../source/std/json.mgl#L45)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -562,7 +560,7 @@ bool isArray();
 obj.isArray();
 ```
 
-**源码**：[source/std/json.mgl:38](../../source/std/json.mgl#L38)。
+**源码**：[source/std/json.mgl:46](../../source/std/json.mgl#L46)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -598,7 +596,7 @@ bool isObject();
 obj.isObject();
 ```
 
-**源码**：[source/std/json.mgl:39](../../source/std/json.mgl#L39)。
+**源码**：[source/std/json.mgl:47](../../source/std/json.mgl#L47)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -634,7 +632,7 @@ bool isTable();
 obj.isTable();
 ```
 
-**源码**：[source/std/json.mgl:40](../../source/std/json.mgl#L40)。
+**源码**：[source/std/json.mgl:48](../../source/std/json.mgl#L48)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -670,7 +668,7 @@ bool isDateTime();
 obj.isDateTime();
 ```
 
-**源码**：[source/std/json.mgl:41](../../source/std/json.mgl#L41)。
+**源码**：[source/std/json.mgl:49](../../source/std/json.mgl#L49)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -708,7 +706,7 @@ int64 len();
 obj.len();
 ```
 
-**源码**：[source/std/json.mgl:43](../../source/std/json.mgl#L43)。
+**源码**：[source/std/json.mgl:51](../../source/std/json.mgl#L51)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -744,7 +742,7 @@ Option<int64> asInt();
 obj.asInt();
 ```
 
-**源码**：[source/std/json.mgl:44](../../source/std/json.mgl#L44)。
+**源码**：[source/std/json.mgl:52](../../source/std/json.mgl#L52)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -780,7 +778,7 @@ Option<float64> asFloat64();
 obj.asFloat64();
 ```
 
-**源码**：[source/std/json.mgl:48](../../source/std/json.mgl#L48)。
+**源码**：[source/std/json.mgl:56](../../source/std/json.mgl#L56)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -816,7 +814,7 @@ Option<bool> asBool();
 obj.asBool();
 ```
 
-**源码**：[source/std/json.mgl:52](../../source/std/json.mgl#L52)。
+**源码**：[source/std/json.mgl:60](../../source/std/json.mgl#L60)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -854,7 +852,7 @@ Option<std::lang::String> asString();
 obj.asString();
 ```
 
-**源码**：[source/std/json.mgl:57](../../source/std/json.mgl#L57)。
+**源码**：[source/std/json.mgl:65](../../source/std/json.mgl#L65)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -890,7 +888,7 @@ Option<std::lang::List<uint8>> asBytes();
 obj.asBytes();
 ```
 
-**源码**：[source/std/json.mgl:62](../../source/std/json.mgl#L62)。
+**源码**：[source/std/json.mgl:70](../../source/std/json.mgl#L70)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -926,7 +924,7 @@ Option<std::lang::String> asDateTime();
 obj.asDateTime();
 ```
 
-**源码**：[source/std/json.mgl:67](../../source/std/json.mgl#L67)。
+**源码**：[source/std/json.mgl:75](../../source/std/json.mgl#L75)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -964,7 +962,7 @@ Option<JsonValue> find(std::lang::String key);
 obj.find(key);
 ```
 
-**源码**：[source/std/json.mgl:72](../../source/std/json.mgl#L72)。
+**源码**：[source/std/json.mgl:80](../../source/std/json.mgl#L80)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -1004,7 +1002,7 @@ Option<JsonValue> findBytes(std::lang::List<uint8> key);
 obj.findBytes(key);
 ```
 
-**源码**：[source/std/json.mgl:79](../../source/std/json.mgl#L79)。
+**源码**：[source/std/json.mgl:87](../../source/std/json.mgl#L87)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -1044,7 +1042,7 @@ Option<JsonValue> at(int64 index);
 obj.at(index);
 ```
 
-**源码**：[source/std/json.mgl:86](../../source/std/json.mgl#L86)。
+**源码**：[source/std/json.mgl:94](../../source/std/json.mgl#L94)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -1082,7 +1080,7 @@ Option<JsonValue> iterator(int64 index);
 obj.iterator(index);
 ```
 
-**源码**：[source/std/json.mgl:92](../../source/std/json.mgl#L92)。
+**源码**：[source/std/json.mgl:100](../../source/std/json.mgl#L100)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -1122,7 +1120,7 @@ Option<std::lang::String> keyAt(int64 index);
 obj.keyAt(index);
 ```
 
-**源码**：[source/std/json.mgl:94](../../source/std/json.mgl#L94)。
+**源码**：[source/std/json.mgl:102](../../source/std/json.mgl#L102)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -1160,7 +1158,7 @@ Option<std::lang::List<uint8>> keyBytesAt(int64 index);
 obj.keyBytesAt(index);
 ```
 
-**源码**：[source/std/json.mgl:99](../../source/std/json.mgl#L99)。
+**源码**：[source/std/json.mgl:107](../../source/std/json.mgl#L107)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -1196,7 +1194,7 @@ std::lang::String dump();
 obj.dump();
 ```
 
-**源码**：[source/std/json.mgl:104](../../source/std/json.mgl#L104)。
+**源码**：[source/std/json.mgl:112](../../source/std/json.mgl#L112)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -1236,6 +1234,6 @@ Result<JsonValue, std::lang::String> parse(std::lang::String text);
 std::json::parse(text);
 ```
 
-**源码**：[source/std/json.mgl:108](../../source/std/json.mgl#L108)。
+**源码**：[source/std/json.mgl:116](../../source/std/json.mgl#L116)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。

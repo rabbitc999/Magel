@@ -1,4 +1,5 @@
 #include "std_regex.hpp"
+#include "std_native_record.hpp"
 #include "../allocator/magel_allocator.hpp"
 
 #include "../magel_glue.hpp"
@@ -15,35 +16,59 @@
 namespace std_regex
 {
 
-// The registry owns compiled patterns. Regex values only carry an integer ID.
-struct Cache
-{
-    std::mutex mutex;
-    Memory::Map<Memory::String, std::int64_t> byPattern;
-    Memory::Vector<std::regex> patterns;
-    /* 限制已尽量放开：不设模式字节数上限，也不设编译条数上限。
-     * `Vector` 与 `byPattern` 按需增长，程序用多少就存多少（内存由宿主注册表按句柄持有，
-     * MAGEL 侧仍只存整数槽，复制/忽略/离开作用域都不需要手动释放）。 */
-};
-
 /**
- * @brief 在锁内校验正则句柄并复制已编译的模式。
- * @param ctx 提供内存访问、资源创建和诊断的当前调用上下文。
- * @param cache 拥有已编译正则模式的共享缓存。
- * @param handle 当前模块中的资源句柄。
- * @return 有效模式的副本；无效句柄返回空并报告诊断。
+ * @brief 拥有不可变编译模式的引用；复制共享模式而不共享可变匹配状态。
  */
-inline std::optional<std::regex> get(magel_glue::Context &ctx,
-                                     const std::shared_ptr<Cache> &cache,
-                                     std::int64_t handle)
+struct Pattern
 {
-    std::lock_guard<std::mutex> lock(cache->mutex);
-    if (handle <= 0 || static_cast<std::size_t>(handle) > cache->patterns.size())
+    std::shared_ptr<const std::regex> compiled;
+};
+/**
+ * @brief 复制模式引用，共享不可变的编译结果。
+ * @param source 原模式引用。
+ * @param error 本操作不产生可恢复诊断。
+ * @return 新分配的模式引用。
+ */
+void *clonePattern(const void *source, Memory::String &error)
+{
+    (void)error;
+    return new Pattern(*static_cast<const Pattern *>(source));
+}
+/**
+ * @brief 释放模式引用，最后一个引用释放编译结果。
+ * @param value 要释放的模式引用。
+ */
+void destroyPattern(void *value) { delete static_cast<Pattern *>(value); }
+const stackvm::NativeRecordType patternType{ "std::regex::Regex", clonePattern, destroyPattern, nullptr };
+/**
+ * @brief 创建一个拥有独立生命周期的模式引用。
+ * @param ctx 当前调用上下文。
+ * @param compiled 编译结果，空值表示未初始化或编译失败。
+ * @return 原生记录句柄。
+ */
+std::int64_t makePattern(magel_glue::Context &ctx, std::shared_ptr<const std::regex> compiled = {})
+{
+    auto value = std::make_unique<Pattern>();
+    value->compiled = std::move(compiled);
+    auto handle = ctx.makeNativeRecord(patternType, value.get());
+    if (handle) value.release();
+    return handle;
+}
+/**
+ * @brief 取得不可变模式的共享引用，调用结束即可释放引用。
+ * @param ctx 当前调用上下文。
+ * @param handle 拥有模式引用的原生记录。
+ * @return 编译模式；记录无效时报告诊断并返回空。
+ */
+std::shared_ptr<const std::regex> get(magel_glue::Context &ctx, std::int64_t handle)
+{
+    auto *value = static_cast<Pattern *>(ctx.nativeRecord(handle, patternType));
+    if (!value || !value->compiled)
     {
-        ctx.fail("正则表达式句柄无效；请先调用 std::lang::Regex::compile");
-        return std::nullopt;
+        ctx.fail("正则表达式无效；请先调用 std::regex::Regex::compile");
+        return {};
     }
-    return cache->patterns[static_cast<std::size_t>(handle) - 1u];
+    return value->compiled;
 }
 
 /**
@@ -55,46 +80,32 @@ inline std::optional<std::regex> get(magel_glue::Context &ctx,
 bool bind(magel_glue::Registry &registry, Memory::String *error)
 {
     using magel_glue::Context;
-    const auto cache = Memory::makeShared<Cache>();
-    return registry.bindTypedWithContext<std::int64_t, Memory::String>(
-               "std::regex::__regexCompileHandle", [cache](Context &, Memory::String pattern) {
-                   std::lock_guard<std::mutex> lock(cache->mutex);
-                   const auto existing = cache->byPattern.find(pattern);
-                   if (existing != cache->byPattern.end()) return existing->second;
-                   try
-                   {
-                       std::regex compiled(pattern, std::regex::ECMAScript);
-                       const std::int64_t id = static_cast<std::int64_t>(cache->patterns.size() + 1u);
-                       cache->patterns.push_back(std::move(compiled));
-                       Memory::String stored(pattern.data(), pattern.size(),
-                                             Memory::ContainerAllocator<char>(cache->byPattern.get_allocator()));
-                       cache->byPattern.emplace(std::move(stored), id);
-                       return id;
-                   } catch (const std::regex_error &)
-                   {
-                       return std::int64_t{ -1 };
-                   }
-               },
-               error)
-           && registry.bindTypedWithContext<bool, std::int64_t, Memory::String>("std::regex::__regexFullMatch", [cache](Context &ctx, std::int64_t handle, Memory::String text) {
-                   auto regex = get(ctx, cache, handle);
-                   return regex && std::regex_match(text, *regex); }, error) && registry.bindTypedWithContext<bool, std::int64_t, Memory::String>("std::regex::__regexContains", [cache](Context &ctx, std::int64_t handle, Memory::String text) {
-                   auto regex = get(ctx, cache, handle);
-                   return regex && std::regex_search(text, *regex); }, error) && registry.bindTypedWithContext<std::int64_t, std::int64_t, Memory::String>("std::regex::__regexFindByteIndex", [cache](Context &ctx, std::int64_t handle, Memory::String text) {
-                   auto regex = get(ctx, cache, handle);
+    auto &native = registry.native();
+    bool hooks = native_record_glue::bind(native, "std::regex::__regexCopy", 1, native_record_glue::copy, error)
+                 && native_record_glue::bind(native, "std::regex::__regexDrop", 1, native_record_glue::drop, error);
+    return hooks && registry.bindTypedWithContext<std::int64_t>("std::regex::__regexNew", [](Context &ctx) { return makePattern(ctx); }, error) && registry.bindTypedWithContext<bool, std::int64_t>("std::regex::__regexValid", [](Context &ctx, std::int64_t handle) {
+            auto *value = static_cast<Pattern *>(ctx.nativeRecord(handle, patternType));
+            return value && static_cast<bool>(value->compiled); }, error) && registry.bindTypedWithContext<std::int64_t, Memory::String>("std::regex::__regexCompileHandle", [](Context &ctx, Memory::String pattern) {
+                   try { return makePattern(ctx, std::make_shared<const std::regex>(pattern, std::regex::ECMAScript)); }
+                   catch (const std::regex_error &) { return makePattern(ctx); } }, error) && registry.bindTypedWithContext<bool, std::int64_t, Memory::String>("std::regex::__regexFullMatch", [](Context &ctx, std::int64_t handle, Memory::String text) {
+                   auto regex = get(ctx, handle);
+                   return regex && std::regex_match(text, *regex); }, error) && registry.bindTypedWithContext<bool, std::int64_t, Memory::String>("std::regex::__regexContains", [](Context &ctx, std::int64_t handle, Memory::String text) {
+                   auto regex = get(ctx, handle);
+                   return regex && std::regex_search(text, *regex); }, error) && registry.bindTypedWithContext<std::int64_t, std::int64_t, Memory::String>("std::regex::__regexFindByteIndex", [](Context &ctx, std::int64_t handle, Memory::String text) {
+                   auto regex = get(ctx, handle);
                    std::match_results<Memory::String::const_iterator> match;
                    return regex && std::regex_search(text, match, *regex)
-                              ? static_cast<std::int64_t>(match.position()) : std::int64_t{-1}; }, error) && registry.bindTypedWithContext<Memory::String, std::int64_t, Memory::String, int>("std::regex::__regexCapture", [cache](Context &ctx, std::int64_t handle, Memory::String text, int group) {
-                   auto regex = get(ctx, cache, handle);
+                              ? static_cast<std::int64_t>(match.position()) : std::int64_t{-1}; }, error) && registry.bindTypedWithContext<Memory::String, std::int64_t, Memory::String, int>("std::regex::__regexCapture", [](Context &ctx, std::int64_t handle, Memory::String text, int group) {
+                   auto regex = get(ctx, handle);
                    std::match_results<Memory::String::const_iterator> match;
                    if (!regex || !std::regex_search(text, match, *regex) ||
                        group < 0 || static_cast<std::size_t>(group) >= match.size())
                        return Memory::String{};
-                   return Memory::String(match[static_cast<std::size_t>(group)].str()); }, error) && registry.bindTypedWithContext<Memory::String, std::int64_t, Memory::String, Memory::String>("std::regex::__regexReplaceFirst", [cache](Context &ctx, std::int64_t handle, Memory::String text, Memory::String replacement) {
-                   auto regex = get(ctx, cache, handle);
+                   return Memory::String(match[static_cast<std::size_t>(group)].str()); }, error) && registry.bindTypedWithContext<Memory::String, std::int64_t, Memory::String, Memory::String>("std::regex::__regexReplaceFirst", [](Context &ctx, std::int64_t handle, Memory::String text, Memory::String replacement) {
+                   auto regex = get(ctx, handle);
                    return regex ? std::regex_replace(text, *regex, replacement,
-                       std::regex_constants::format_first_only) : Memory::String{}; }, error) && registry.bindTypedWithContext<Memory::String, std::int64_t, Memory::String, Memory::String>("std::regex::__regexReplaceAll", [cache](Context &ctx, std::int64_t handle, Memory::String text, Memory::String replacement) {
-                   auto regex = get(ctx, cache, handle);
+                       std::regex_constants::format_first_only) : Memory::String{}; }, error) && registry.bindTypedWithContext<Memory::String, std::int64_t, Memory::String, Memory::String>("std::regex::__regexReplaceAll", [](Context &ctx, std::int64_t handle, Memory::String text, Memory::String replacement) {
+                   auto regex = get(ctx, handle);
                    return regex ? std::regex_replace(text, *regex, replacement) : Memory::String{}; }, error);
 }
 

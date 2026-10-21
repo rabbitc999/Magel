@@ -139,7 +139,7 @@ int64 main() {
     assert(next.isReady() && next.value.tag == 3 && next.value.source == 8);
     Timer timer = Timer::afterMillis(2);
     auto tick = std::event::receiveFor(5000);
-    assert(tick.isReady() && tick.value.timer == timer.handle);
+    assert(tick.isReady() && tick.value.timer == timer.id());
     timer.stop();
     assert(std::event::tryReceive().status == 1);
     std::event::close();

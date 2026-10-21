@@ -1,62 +1,8 @@
-#include "std_graph.hpp"
-
-#include "../magel_glue.hpp"
-
+#include "std_graph_algorithms.hpp"
 #include <algorithm>
 #include <cstdint>
-#include <cstring>
-#include <string>
-
-/**
- * @brief MAGEL 图论胶水：BFS / DFS / 连通分量 / 拓扑排序 / Dijkstra /
- *        环检测 / Kruskal 最小生成树与并查集的全部算法实现。
- *
- * 图采用"链式前向星"邻接存储：head[v] 是顶点 v 的第一条边下标（-1 表示没有），
- * edgeTo[e] / edgeNext[e] / edgeWeight[e] 分别是边 e 的终点、同起点下一条边与边权。
- * 顶点编号 0..n-1，全部为 int64。
- *
- * GraphReply 槽布局与 std::graph::GraphReply 一致：
- *   0 error(String)  1 value  2 flag  3 order(List<int64>)  4 dist(List<int64>)
- * DsuReply 槽布局与 std::graph::DsuReply 一致：
- *   0 parent(List<int64>)  1 sizes(List<int64>)  2 root  3 flag
- *
- * Dijkstra 输出距离表，不可达顶点为 -1；要求边权非负。
- * 拓扑排序输出一个合法序列，有环时 order 为空、flag = 0。
- * 最小生成树只对无向图有意义，图不连通时返回 -1。
- */
 namespace std_graph_glue
 {
-using Context = magel_glue::Context;
-using Ints = Memory::Vector<std::int64_t>;
-
-struct GraphReplyTag
-{
-};
-using GraphReply = magel_glue::Record<GraphReplyTag>;
-
-struct DsuReplyTag
-{
-};
-using DsuReply = magel_glue::Record<DsuReplyTag>;
-
-/**
- * @brief 读取传入的 int64 列表。
- * @param ctx 调用上下文。
- * @param handle 列表句柄。
- * @param out 输出缓冲。
- */
-inline void readInts(Context &ctx, std::int64_t handle, Ints &out)
-{
-    Memory::Vector<magel_glue::Value> raw;
-    if (!collection_glue::readList(ctx, handle, raw))
-    {
-        ctx.fail("图论：列表参数无效");
-        return;
-    }
-    out.resize(raw.size());
-    for (std::size_t i = 0; i < raw.size(); ++i) out[i] = raw[i].asInt();
-}
-
 /**
  * @brief 把列表写入回执的指定槽。
  * @param ctx 调用上下文。
@@ -80,9 +26,9 @@ inline void writeInts(Context &ctx, GraphReply reply, std::size_t slot, const In
  * @param ctx 调用上下文。
  * @param reply 回执视图：order 槽输出访问序。
  */
-inline void graphBfs(const Ints &head, const Ints &edgeTo, const Ints &edgeNext,
-                     std::int64_t vertexCount, std::int64_t start, Context &ctx,
-                     GraphReply reply)
+void graphBfs(const Ints &head, const Ints &edgeTo, const Ints &edgeNext,
+              std::int64_t vertexCount, std::int64_t start, Context &ctx,
+              GraphReply reply)
 {
     Ints order;
     Ints visited(static_cast<std::size_t>(vertexCount), 0);
@@ -120,9 +66,9 @@ inline void graphBfs(const Ints &head, const Ints &edgeTo, const Ints &edgeNext,
  * @param ctx 调用上下文。
  * @param reply 回执视图：order 槽输出访问序。
  */
-inline void graphDfs(const Ints &head, const Ints &edgeTo, const Ints &edgeNext,
-                     std::int64_t vertexCount, std::int64_t start, Context &ctx,
-                     GraphReply reply)
+void graphDfs(const Ints &head, const Ints &edgeTo, const Ints &edgeNext,
+              std::int64_t vertexCount, std::int64_t start, Context &ctx,
+              GraphReply reply)
 {
     Ints order;
     Ints visited(static_cast<std::size_t>(vertexCount), 0);
@@ -159,8 +105,8 @@ inline void graphDfs(const Ints &head, const Ints &edgeTo, const Ints &edgeNext,
  * @param vertexCount 顶点数。
  * @param reply 回执视图：value 为分量个数。
  */
-inline void graphComponents(const Ints &head, const Ints &edgeTo, const Ints &edgeNext,
-                            std::int64_t vertexCount, GraphReply reply)
+void graphComponents(const Ints &head, const Ints &edgeTo, const Ints &edgeNext,
+                     std::int64_t vertexCount, GraphReply reply)
 {
     Ints visited(static_cast<std::size_t>(vertexCount), 0);
     Ints queue;
@@ -199,8 +145,8 @@ inline void graphComponents(const Ints &head, const Ints &edgeTo, const Ints &ed
  * @param ctx 调用上下文。
  * @param reply 回执视图：flag = 1 表示无环，order 槽输出序列（有环时为空）。
  */
-inline void graphTopo(const Ints &head, const Ints &edgeTo, const Ints &edgeNext,
-                      std::int64_t vertexCount, Context &ctx, GraphReply reply)
+void graphTopo(const Ints &head, const Ints &edgeTo, const Ints &edgeNext,
+               std::int64_t vertexCount, Context &ctx, GraphReply reply)
 {
     Ints indegree(static_cast<std::size_t>(vertexCount), 0);
     for (std::int64_t edge = 0; edge < static_cast<std::int64_t>(edgeTo.size()); ++edge)
@@ -241,9 +187,9 @@ inline void graphTopo(const Ints &head, const Ints &edgeTo, const Ints &edgeNext
  * @param ctx 调用上下文。
  * @param reply 回执视图：dist 槽输出距离表，不可达为 -1。
  */
-inline void graphDijkstra(const Ints &head, const Ints &edgeTo, const Ints &edgeWeight,
-                          const Ints &edgeNext, std::int64_t vertexCount,
-                          std::int64_t start, Context &ctx, GraphReply reply)
+void graphDijkstra(const Ints &head, const Ints &edgeTo, const Ints &edgeWeight,
+                   const Ints &edgeNext, std::int64_t vertexCount,
+                   std::int64_t start, Context &ctx, GraphReply reply)
 {
     for (std::int64_t edge = 0; edge < static_cast<std::int64_t>(edgeWeight.size()); ++edge)
     {
@@ -295,8 +241,8 @@ inline void graphDijkstra(const Ints &head, const Ints &edgeTo, const Ints &edge
  * @param directed 是否有向。
  * @param reply 回执视图：flag = 1 表示有环。
  */
-inline void graphHasCycle(const Ints &head, const Ints &edgeTo, const Ints &edgeNext,
-                          std::int64_t vertexCount, bool directed, GraphReply reply)
+void graphHasCycle(const Ints &head, const Ints &edgeTo, const Ints &edgeNext,
+                   std::int64_t vertexCount, bool directed, GraphReply reply)
 {
     if (directed)
     {
@@ -377,8 +323,8 @@ inline void graphHasCycle(const Ints &head, const Ints &edgeTo, const Ints &edge
  * @param vertexCount 顶点数。
  * @param reply 回执视图：value 为生成树总权值，不连通时为 -1。
  */
-inline void graphMstWeight(const Ints &head, const Ints &edgeTo, const Ints &edgeWeight,
-                           const Ints &edgeNext, std::int64_t vertexCount, GraphReply reply)
+void graphMstWeight(const Ints &head, const Ints &edgeTo, const Ints &edgeWeight,
+                    const Ints &edgeNext, std::int64_t vertexCount, GraphReply reply)
 {
     // 收集边（无向图每条只收一次：u < v），三元组平行数组。
     Ints edgeU;
@@ -455,157 +401,4 @@ inline void graphMstWeight(const Ints &head, const Ints &edgeTo, const Ints &edg
     reply.set<std::int64_t>(1, used + 1 == vertexCount ? totalWeight : -1);
 }
 
-/**
- * @brief 并查集查找（带路径压缩）。
- * @param parent 父指针数组。
- * @param x 目标元素。
- * @param ctx 调用上下文。
- * @param reply 回执视图：root 为根，parent 槽输出压缩后的父指针数组。
- */
-inline void dsuFind(Ints &parent, std::int64_t x, Context &ctx, DsuReply reply)
-{
-    Ints compressed = parent;
-    if (x < 0 || x >= static_cast<std::int64_t>(compressed.size()))
-    {
-        ctx.fail("图论：并查集下标越界");
-        return;
-    }
-    std::int64_t root = x;
-    Ints path;
-    while (compressed[static_cast<std::size_t>(root)] != root)
-    {
-        path.push_back(root);
-        root = compressed[static_cast<std::size_t>(root)];
-    }
-    for (std::int64_t hop : path) compressed[static_cast<std::size_t>(hop)] = root;
-    reply.set<std::int64_t>(2, root);
-    reply.set<std::int64_t>(3, 1);
-    const std::int64_t parentHandle = reply.field<std::int64_t>(0);
-    for (std::int64_t value : compressed) collection_glue::listPush(ctx, parentHandle, magel_glue::Value::fromInt(value));
-}
-
-/**
- * @brief 并查集按大小合并。
- * @param parent 父指针数组。
- * @param sizes 大小数组。
- * @param a 元素一。
- * @param b 元素二。
- * @param ctx 调用上下文。
- * @param reply 回执视图：flag = 1 表示发生了合并，parent / sizes 槽输出更新后的数组，
- *               root 为合并后的根。
- */
-inline void dsuUnion(Ints &parent, Ints &sizes, std::int64_t a, std::int64_t b,
-                     Context &ctx, DsuReply reply)
-{
-    const std::int64_t count = static_cast<std::int64_t>(parent.size());
-    if (a < 0 || a >= count || b < 0 || b >= count)
-    {
-        ctx.fail("图论：并查集下标越界");
-        return;
-    }
-    Ints compressed = parent;
-    std::int64_t rootA = a;
-    Ints path;
-    while (compressed[static_cast<std::size_t>(rootA)] != rootA)
-    {
-        path.push_back(rootA);
-        rootA = compressed[static_cast<std::size_t>(rootA)];
-    }
-    for (std::int64_t hop : path) compressed[static_cast<std::size_t>(hop)] = rootA;
-    std::int64_t rootB = b;
-    path.clear();
-    while (compressed[static_cast<std::size_t>(rootB)] != rootB)
-    {
-        path.push_back(rootB);
-        rootB = compressed[static_cast<std::size_t>(rootB)];
-    }
-    for (std::int64_t hop : path) compressed[static_cast<std::size_t>(hop)] = rootB;
-    if (rootA == rootB)
-    {
-        reply.set<std::int64_t>(2, rootA);
-        reply.set<std::int64_t>(3, 0);
-        const std::int64_t parentHandle = reply.field<std::int64_t>(0);
-        for (std::int64_t value : compressed) collection_glue::listPush(ctx, parentHandle, magel_glue::Value::fromInt(value));
-        const std::int64_t sizesHandle = reply.field<std::int64_t>(1);
-        for (std::int64_t value : sizes) collection_glue::listPush(ctx, sizesHandle, magel_glue::Value::fromInt(value));
-        return;
-    }
-    if (sizes[static_cast<std::size_t>(rootA)] < sizes[static_cast<std::size_t>(rootB)])
-    {
-        const std::int64_t swap = rootA;
-        rootA = rootB;
-        rootB = swap;
-    }
-    compressed[static_cast<std::size_t>(rootB)] = rootA;
-    sizes[static_cast<std::size_t>(rootA)] += sizes[static_cast<std::size_t>(rootB)];
-    reply.set<std::int64_t>(2, rootA);
-    reply.set<std::int64_t>(3, 1);
-    const std::int64_t parentHandle = reply.field<std::int64_t>(0);
-    for (std::int64_t value : compressed) collection_glue::listPush(ctx, parentHandle, magel_glue::Value::fromInt(value));
-    const std::int64_t sizesHandle = reply.field<std::int64_t>(1);
-    for (std::int64_t value : sizes) collection_glue::listPush(ctx, sizesHandle, magel_glue::Value::fromInt(value));
-}
-
-/**
- * @brief 注册 std::graph 的全部胶水入口。
- * @param registry 函数注册表。
- * @param error 注册失败时的错误说明。
- * @return 全部注册成功返回 true。
- */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
-{
-    bool ok = true;
-    ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, std::int64_t, std::int64_t, GraphReply>(
-             "std::graph::__bfs",
-             [](Context &ctx, Ints head, Ints to, Ints next, std::int64_t n, std::int64_t start,
-                GraphReply reply) { graphBfs(head, to, next, n, start, ctx, reply); })
-         && ok;
-    ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, std::int64_t, std::int64_t, GraphReply>(
-             "std::graph::__dfs",
-             [](Context &ctx, Ints head, Ints to, Ints next, std::int64_t n, std::int64_t start,
-                GraphReply reply) { graphDfs(head, to, next, n, start, ctx, reply); })
-         && ok;
-    ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, std::int64_t, GraphReply>(
-             "std::graph::__components",
-             [](Context &, Ints head, Ints to, Ints next, std::int64_t n, GraphReply reply) {
-                 graphComponents(head, to, next, n, reply);
-             })
-         && ok;
-    ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, std::int64_t, GraphReply>(
-             "std::graph::__topo",
-             [](Context &ctx, Ints head, Ints to, Ints next, std::int64_t n, GraphReply reply) {
-                 graphTopo(head, to, next, n, ctx, reply);
-             })
-         && ok;
-    ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, Ints, std::int64_t, std::int64_t, GraphReply>(
-             "std::graph::__dijkstra",
-             [](Context &ctx, Ints head, Ints to, Ints weight, Ints next, std::int64_t n,
-                std::int64_t start, GraphReply reply) {
-                 graphDijkstra(head, to, weight, next, n, start, ctx, reply);
-             })
-         && ok;
-    ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, std::int64_t, std::int64_t, GraphReply>(
-             "std::graph::__hasCycle",
-             [](Context &, Ints head, Ints to, Ints next, std::int64_t n, std::int64_t directed,
-                GraphReply reply) { graphHasCycle(head, to, next, n, directed != 0, reply); })
-         && ok;
-    ok = registry.bindTypedWithContext<void, Ints, Ints, Ints, Ints, std::int64_t, GraphReply>(
-             "std::graph::__mstWeight",
-             [](Context &, Ints head, Ints to, Ints weight, Ints next, std::int64_t n,
-                GraphReply reply) { graphMstWeight(head, to, weight, next, n, reply); })
-         && ok;
-    ok = registry.bindTypedWithContext<void, Ints, std::int64_t, DsuReply>(
-             "std::graph::__dsuFind",
-             [](Context &ctx, Ints parent, std::int64_t x, DsuReply reply) {
-                 dsuFind(parent, x, ctx, reply);
-             })
-         && ok;
-    ok = registry.bindTypedWithContext<void, Ints, Ints, std::int64_t, std::int64_t, DsuReply>(
-             "std::graph::__dsuUnion",
-             [](Context &ctx, Ints parent, Ints sizes, std::int64_t a, std::int64_t b,
-                DsuReply reply) { dsuUnion(parent, sizes, a, b, ctx, reply); })
-         && ok;
-    if (!ok && error) *error = Memory::String("std::graph 胶水注册失败", std::strlen("std::graph 胶水注册失败"));
-    return ok;
-}
 }  // namespace std_graph_glue

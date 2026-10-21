@@ -1,298 +1,71 @@
 module std::linkedlist;
-
-/* 双向链表标准库：LinkedList 的全部结构操作实现在宿主胶水（glue/std_linkedlist.hpp）。
- *
- * 游标存储：values / prevs / nexts 三个平行列表，`0 - 1` 表示空指针；
- * 被删节点回收进 free 列表复用；head / tail 是首尾节点下标。
- * push 系列返回新节点游标，insert 系列在游标前后插入，removeAt 按游标摘除。
- * 游标在未发生指向它的删除操作前一直有效。
- */
-
-/* ---- 胶水声明：实现见 glue/std_linkedlist.hpp；槽布局与 ListReply 一致 ---- */
-void __pushFront(List<int64> values, List<int64> prevs, List<int64> nexts, List<int64> freeSlots,
-                 int64 head, int64 tail, int64 count, int64 value, ListReply mut& reply);
-void __pushBack(List<int64> values, List<int64> prevs, List<int64> nexts, List<int64> freeSlots,
-                int64 head, int64 tail, int64 count, int64 value, ListReply mut& reply);
-void __popFront(List<int64> values, List<int64> prevs, List<int64> nexts, List<int64> freeSlots,
-                int64 head, int64 tail, int64 count, ListReply mut& reply);
-void __popBack(List<int64> values, List<int64> prevs, List<int64> nexts, List<int64> freeSlots,
-               int64 head, int64 tail, int64 count, ListReply mut& reply);
-void __insertBefore(List<int64> values, List<int64> prevs, List<int64> nexts, List<int64> freeSlots,
-                    int64 head, int64 tail, int64 count, int64 cursor, int64 value,
-                    ListReply mut& reply);
-void __insertAfter(List<int64> values, List<int64> prevs, List<int64> nexts, List<int64> freeSlots,
-                   int64 head, int64 tail, int64 count, int64 cursor, int64 value,
-                   ListReply mut& reply);
-void __removeAt(List<int64> values, List<int64> prevs, List<int64> nexts, List<int64> freeSlots,
-                int64 head, int64 tail, int64 count, int64 cursor, ListReply mut& reply);
-void __reverse(List<int64> values, List<int64> freeSlots, List<int64> prevs, List<int64> nexts, int64 head,
-               int64 tail, int64 count, ListReply mut& reply);
-void __toArray(List<int64> values, List<int64> nexts, int64 head, int64 count,
-               ListReply mut& reply);
-void __contains(List<int64> values, List<int64> nexts, int64 head, int64 value,
-                ListReply mut& reply);
-
-/** 链表胶水回执；槽布局必须与 glue/std_linkedlist.hpp 的 Reply 一致。 */
-struct ListReply {
-    String error; ///< 错误说明；成功时为空串。
-    int64 cursor; ///< 新分配节点的游标。
-    int64 flag; ///< 布尔结果：1 = 成功 / 非空 / 存在。
-    int64 value; ///< 弹出或查到的值。
-    int64 head; ///< 更新后的首节点下标。
-    int64 tail; ///< 更新后的尾节点下标。
-    int64 count; ///< 更新后的有效节点数。
-    List<int64> outValues; ///< 更新后的值列表。
-    List<int64> outPrevs; ///< 更新后的前驱列表。
-    List<int64> outNexts; ///< 更新后的后继列表。
-    List<int64> outFree; ///< 更新后的空闲槽列表。
-    List<int64> out; ///< toArray 的输出序列。
-}
-
-/** 双向链表：首尾两端 O(1) 插删，游标位置 O(1) 插删与摘除。 */
-struct LinkedList : Iterator<int64>, Drop {
-    List<int64> values; ///< 各节点值，下标即槽号。
-    List<int64> prevs; ///< 前驱下标，无前驱为 -1。
-    List<int64> nexts; ///< 后继下标，无后继为 -1。
-    List<int64> freeSlots; ///< 已删除可复用的槽号。
-    int64 head; ///< 首节点下标，空表为 -1。
-    int64 tail; ///< 尾节点下标，空表为 -1。
-    int64 count; ///< 有效节点数。
-
-    void drop() { self.values.drop(); self.prevs.drop(); self.nexts.drop(); self.freeSlots.drop(); }
-
-    /**
-     * @brief 创建空链表。
-     */
-    static LinkedList create() {
-        List<int64> empty;
-        self.values = empty;
-        List<int64> prevs;
-        self.prevs = prevs;
-        List<int64> nexts;
-        self.nexts = nexts;
-        List<int64> freeSlots;
-        self.freeSlots = freeSlots;
-        self.head = 0 - 1;
-        self.tail = 0 - 1;
-        self.count = 0;
-    }
-
-    /**
-     * @brief 头插一个值。
-     * @param value 要插入的值。
-     * @retval 新节点的游标。
-     */
-    int64 pushFront(int64 value) {
-        ListReply reply;
-        __pushFront(self.values, self.prevs, self.nexts, self.freeSlots, self.head, self.tail,
-                    self.count, value, &reply);
-        self.syncFrom(reply);
-        return reply.cursor;
-    }
-
-    /**
-     * @brief 尾插一个值。
-     * @param value 要插入的值。
-     * @retval 新节点的游标。
-     */
-    int64 pushBack(int64 value) {
-        ListReply reply;
-        __pushBack(self.values, self.prevs, self.nexts, self.freeSlots, self.head, self.tail,
-                   self.count, value, &reply);
-        self.syncFrom(reply);
-        return reply.cursor;
-    }
-
-    /**
-     * @brief 弹出首节点。
-     * @retval 空表返回 None；否则返回首节点的 Value。
-     */
-    Option<int64> popFront() {
-        ListReply reply;
-        __popFront(self.values, self.prevs, self.nexts, self.freeSlots, self.head, self.tail,
-                   self.count, &reply);
-        self.syncFrom(reply);
-        if (reply.flag == 0) { return Option<int64>::None; }
-        return Option<int64>::Value(reply.value);
-    }
-
-    /**
-     * @brief 弹出尾节点。
-     * @retval 空表返回 None；否则返回尾节点的 Value。
-     */
-    Option<int64> popBack() {
-        ListReply reply;
-        __popBack(self.values, self.prevs, self.nexts, self.freeSlots, self.head, self.tail,
-                  self.count, &reply);
-        self.syncFrom(reply);
-        if (reply.flag == 0) { return Option<int64>::None; }
-        return Option<int64>::Value(reply.value);
-    }
-
-    /**
-     * @brief 在指定游标前插入。
-     * @param cursor 目标节点游标。
-     * @param value 要插入的值。
-     * @retval 新节点游标；cursor 无效时返回 -1。
-     */
-    int64 insertBefore(int64 cursor, int64 value) {
-        ListReply reply;
-        __insertBefore(self.values, self.prevs, self.nexts, self.freeSlots, self.head, self.tail,
-                       self.count, cursor, value, &reply);
-        self.syncFrom(reply);
-        if (reply.flag == 0) { return 0 - 1; }
-        return reply.cursor;
-    }
-
-    /**
-     * @brief 在指定游标后插入。
-     * @param cursor 目标节点游标。
-     * @param value 要插入的值。
-     * @retval 新节点游标；cursor 无效时返回 -1。
-     */
-    int64 insertAfter(int64 cursor, int64 value) {
-        ListReply reply;
-        __insertAfter(self.values, self.prevs, self.nexts, self.freeSlots, self.head, self.tail,
-                      self.count, cursor, value, &reply);
-        self.syncFrom(reply);
-        if (reply.flag == 0) { return 0 - 1; }
-        return reply.cursor;
-    }
-
-    /**
-     * @brief 摘除指定游标的节点。
-     * @param cursor 节点游标。
-     * @retval 摘除的值；cursor 无效时返回 None。
-     */
+int64 __listNew();
+__ListStorage __listMake();
+int64 __listCopy(int64 handle);
+void __listDrop(int64 handle);
+int64 __listOp(int64 handle, int64 operation, int64 cursor, int64 value);
+List<int64> __listSnapshot(int64 handle);
+/** 独立拥有双向节点和游标索引，普通复制深复制。 */
+opcode __ListStorage {
+    new = std::linkedlist::__listNew;
+    copy = std::linkedlist::__listCopy;
+    drop = std::linkedlist::__listDrop;
+};
+/** 双向链表，删除或 clear 后旧游标永久失效，副本内保留对应游标。 */
+struct LinkedList : Iterator<int64> {
+    __ListStorage __storage;
+    /** 创建空链表。 */
+    static LinkedList create() { self.__storage = __listMake(); }
+    /** 头插并返回新节点游标。 */
+    int64 pushFront(int64 value) { return __listOp(self.__storage.opcode, 1, 0, value); }
+    /** 尾插并返回新节点游标。 */
+    int64 pushBack(int64 value) { return __listOp(self.__storage.opcode, 2, 0, value); }
+    /** 在游标前插入，无效时返回 -1。 */
+    int64 insertBefore(int64 cursor, int64 value) { return __listOp(self.__storage.opcode, 3, cursor, value); }
+    /** 在游标后插入，无效时返回 -1。 */
+    int64 insertAfter(int64 cursor, int64 value) { return __listOp(self.__storage.opcode, 4, cursor, value); }
+    /** 摘除游标节点并返回其值，无效时返回 None。 */
     Option<int64> removeAt(int64 cursor) {
-        ListReply reply;
-        __removeAt(self.values, self.prevs, self.nexts, self.freeSlots, self.head, self.tail,
-                   self.count, cursor, &reply);
-        self.syncFrom(reply);
-        if (reply.flag == 0) { return Option<int64>::None; }
-        return Option<int64>::Value(reply.value);
+        if (__listOp(self.__storage.opcode, 5, cursor, 0) == 0) { return Option<int64>::None; }
+        return Option<int64>::Value(__listOp(self.__storage.opcode, 7, cursor, 0));
     }
-
-    /**
-     * @brief 原地反转链表。
-     */
-    void reverse() {
-        ListReply reply;
-        __reverse(self.values, self.freeSlots, self.prevs, self.nexts, self.head, self.tail, self.count, &reply);
-        self.syncFrom(reply);
-    }
-
-    /**
-     * @brief 按链表顺序导出值序列。
-     * @retval 值列表，拥有独立存储。
-     */
-    List<int64> toArray() {
-        ListReply reply;
-        __toArray(self.values, self.nexts, self.head, self.count, &reply);
-        return reply.out;
-    }
-
-    /**
-     * @brief 从值序列构建链表（按序尾插）。
-     * @param items 源值列表。
-     * @retval 新链表。
-     */
+    /** 弹出首节点，空表返回 None。 */
+    Option<int64> popFront() { return self.removeAt(__listOp(self.__storage.opcode, 8, 0, 0)); }
+    /** 弹出尾节点，空表返回 None。 */
+    Option<int64> popBack() { return self.removeAt(__listOp(self.__storage.opcode, 9, 0, 0)); }
+    /** 原地反转，不使游标失效。 */
+    void reverse() { __listOp(self.__storage.opcode, 10, 0, 0); }
+    /** 显式导出独立顺序快照。 */
+    List<int64> toArray() { return __listSnapshot(self.__storage.opcode); }
+    /** 从顺序值列表建立独立链表。 */
     static LinkedList fromArray(List<int64> items) {
         LinkedList list = LinkedList::create();
-        {
-            int64 index = 0;
-            while (index < items.len()) {
-
-            list.pushBack(items[index]);
-        
-                index = index + 1;
-            }
-        }
-        return list;
+        int64 index = 0;
+        while (index < items.len()) { list.pushBack(items[index]); index = index + 1; }
+        return std::lang::move(&list);
     }
-
-    /**
-     * @brief 按链表顺序查找值。
-     * @param value 目标值。
-     * @retval 存在返回其首个节点的游标；不存在返回 -1。
-     */
-    int64 find(int64 value) {
-        ListReply reply;
-        __contains(self.values, self.nexts, self.head, value, &reply);
-        if (reply.flag == 0) { return 0 - 1; }
-        return reply.value;
-    }
-
-    /**
-     * @brief 含不含某值。
-     */
-    bool contains(int64 value) { return self.find(value) != 0 - 1; }
-
-    /**
-     * @brief 首节点的值。
-     * @retval 空表返回 None。
-     */
-    Option<int64> front() {
-        if (self.head == 0 - 1) { return Option<int64>::None; }
-        return Option<int64>::Value(self.values[self.head]);
-    }
-
-    /**
-     * @brief 尾节点的值。
-     * @retval 空表返回 None。
-     */
+    /** 首个匹配节点游标，不存在时为 -1。 */
+    int64 find(int64 value) { return __listOp(self.__storage.opcode, 11, 0, value); }
+    /** 是否包含值。 */
+    bool contains(int64 value) { return self.find(value) >= 0; }
+    /** 首节点值，空表返回 None。 */
+    Option<int64> front() { return self.iterator(0); }
+    /** 尾节点值，空表返回 None。 */
     Option<int64> back() {
-        if (self.tail == 0 - 1) { return Option<int64>::None; }
-        return Option<int64>::Value(self.values[self.tail]);
+        int64 cursor = __listOp(self.__storage.opcode, 9, 0, 0);
+        if (cursor < 0) { return Option<int64>::None; }
+        return Option<int64>::Value(__listOp(self.__storage.opcode, 6, cursor, 0));
     }
-
-    /**
-     * @brief 当前节点数。
-     */
-    int64 len() { return self.count; }
-
-    /**
-     * @brief 是否为空表。
-     */
-    bool isEmpty() { return self.count == 0; }
-
-    /**
-     * @brief 按链表顺序迭代（Iterator 接口）。
-     * @param index 迭代序号。
-     * @retval 第 index 个值；越界返回 None。
-     */
+    /** 有效节点数。 */
+    int64 len() { return __listOp(self.__storage.opcode, 0, 0, 0); }
+    /** 是否为空。 */
+    bool isEmpty() { return self.len() == 0; }
+    /** 第 index 个值，越界返回 None。 */
     Option<int64> iterator(int64 index) {
-        int64 node = self.head;
-        int64 position = 0;
-        while (node != 0 - 1) {
-            if (position == index) { return Option<int64>::Value(self.values[node]); }
-            position = position + 1;
-            node = self.nexts[node];
-        }
-        return Option<int64>::None;
+        int64 cursor = __listOp(self.__storage.opcode, 12, index, 0);
+        if (cursor < 0) { return Option<int64>::None; }
+        return Option<int64>::Value(__listOp(self.__storage.opcode, 6, cursor, 0));
     }
-
-    /**
-     * @brief 清空链表。
-     */
-    void clear() {
-        self.values.clear();
-        self.prevs.clear();
-        self.nexts.clear();
-        self.freeSlots.clear();
-        self.head = 0 - 1;
-        self.tail = 0 - 1;
-        self.count = 0;
-    }
-
-    /* 把胶水回执里的更新状态同步回自身字段。 */
-    void syncFrom(ListReply reply) {
-        self.values = reply.outValues;
-        self.prevs = reply.outPrevs;
-        self.nexts = reply.outNexts;
-        self.freeSlots = reply.outFree;
-        self.head = reply.head;
-        self.tail = reply.tail;
-        self.count = reply.count;
-    }
+    /** 清空节点并使旧游标永久失效。 */
+    void clear() { __listOp(self.__storage.opcode, 13, 0, 0); }
 };

@@ -261,7 +261,7 @@ std::optional<bool> Machine::callTransferService(runtimeDetail::ConcurrentCallSt
         const bool id = name == "std::event::__id";
         const bool post = name == "std::event::__post";
         const bool close = name == "std::event::__close";
-        if (!receive && !timer && !destroy && !source && !tag && !missed && !id && !post && !close) return false;
+        if (!receive && !timer && !destroy && !source && !tag && !missed && !id && !post && !close) return std::nullopt;
         const auto wanted = timer || post ? 2u : receive || destroy ? 1u :
                                                                       0u;
         if (nativeCallbackDepth || pending.size() != wanted)

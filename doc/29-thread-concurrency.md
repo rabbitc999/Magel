@@ -46,7 +46,7 @@
 
 ## 线程组与线程池
 
-`ThreadGroup.start(task)` 创建并登记线程，`add(thread)` 接管已有线程的等待责任，`cancelAll()` 请求停止。`waitAll()` 等待全部目标，发现普通失败后取消其余任务，返回是否全部成功，并在 error 中保留首个失败诊断。重复 waitAll 返回缓存结果。结束后的组不能再添加任务；离开作用域时取消并等待尚未回收的任务。组拥有等待责任，调用方不要再单独等待其中的句柄；拒绝重复登记、自身和主线程。ThreadGroup、ThreadPool 和 Timer 的普通值复制不会克隆底层任务或定时源，调用方须使用引用或 move 保持单一收尾责任，避免复制拥有者。
+`ThreadGroup.start(task)` 创建并登记线程，`add(thread)` 接管已有线程的等待责任，`cancelAll()` 请求停止。`waitAll()` 等待全部目标，发现普通失败后取消其余任务，返回是否全部成功，并在 error 中保留首个失败诊断。重复 waitAll 返回缓存结果。结束后的组不能再添加任务；离开作用域时取消并等待尚未回收的任务。组拥有等待责任，调用方不要再单独等待其中的句柄；拒绝重复登记、自身和主线程。ThreadGroup 和 ThreadPool 的普通值复制不会克隆底层任务，调用方须使用引用或 move 保持单一收尾责任。Timer 经不可复制的私有 opcode 独占定时源，普通复制在编译期拒绝；id() 和 Event.timer 只作来源标识。
 
 `ThreadPool::create(workers, capacity)` 建立固定工作线程和有界静态任务队列。`submit` / `submitFor` 提交无捕获的 `void fn()`。`closeAndWait()` 关闭提交、排空排队任务并回收线程；任务失败使组停止。`cancelAll()` 取消工作线程并丢弃未开始的任务，随后 closeAndWait 可收集结果。析构取消并回收。工作线程数量为 1..1024，实际创建还受宿主资源限制。
 
@@ -58,7 +58,7 @@
 
 宿主通过 `NativeCallContext::eventPoster()` 或 `Machine::eventPoster()` 获取弱引用投递器。投递不执行用户回调，目标关闭、运行结束或销毁后返回 CLOSED；投递器可在宿主回调返回后继续使用。投递器和有界队列使用宿主存储，不延长 VM 内存池的生命周期。不得将原始 VM 指针当作跨线程异步调用入口。
 
-`Timer::afterMillis/afterNanos` 创建一次性定时源，`everyMillis/everyNanos` 创建周期源，创建后立即运行。时间参数必须为正，失败得到无效定时源；每个上下文最多 1024 个定时源。共用队列在显式接收时按单调时钟计算到期，不为每个定时器创建 OS 线程，不承诺硬实时。积压周期合并为一次通知，missed 报告额外错过次数；stop 或 Drop 删除定时源及其待处理通知。event.close 关闭定时源，已排队事件仍可排空。
+`Timer::afterMillis/afterNanos` 创建一次性定时源，`everyMillis/everyNanos` 创建周期源，创建后立即运行。时间参数必须为正，失败得到无效定时源；每个上下文最多 1024 个定时源。共用队列在显式接收时按单调时钟计算到期，不为每个定时器创建 OS 线程，不承诺硬实时。积压周期合并为一次通知，missed 报告额外错过次数；stop 或作用域退出删除定时源及其待处理通知。event.close 关闭定时源，已排队事件仍可排空。
 
 `std::watchdog` 直接在 VM 执行检查中维护超时和喂狗，不调用用户事件处理器。提供宿主纳秒时钟时预算单位为纳秒，否则为执行指令数；禁用时保留默认最高优化路径。
 

@@ -62,10 +62,10 @@ CSV quoting, delimiters and positions OK
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-48"></a>`struct CsvError` | CSV 错误位置从一开始，column 是该行的字节列。 |
-| CsvError | <a id="symbol-49"></a>`int64 line` | 错误所在行号，从 1 开始。 |
-| CsvError | <a id="symbol-50"></a>`int64 column` | 错误所在列号，从 1 开始。 |
-| CsvError | <a id="symbol-51"></a>`String message` | 供用户阅读的错误原因。 |
+| 模块 | <a id="symbol-47"></a>`struct CsvError` | CSV 错误位置从一开始，column 是该行的字节列。 |
+| CsvError | <a id="symbol-48"></a>`int64 line` | 错误所在行号，从 1 开始。 |
+| CsvError | <a id="symbol-49"></a>`int64 column` | 错误所在列号，从 1 开始。 |
+| CsvError | <a id="symbol-50"></a>`String message` | 供用户阅读的错误原因。 |
 
 ## 函数索引
 

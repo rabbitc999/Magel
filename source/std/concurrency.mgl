@@ -22,13 +22,28 @@ int64 __channelSend<T>(int64 handle, int64 millis, T value);
 T __channelTake<T>();
 int64 __fetchAdd(int64 handle, int64 delta);
 
-/* 共享槽每次 get/set/swap 原子；组合调用不构成原子事务。 */
+int64 __referenceNew();
+int64 __referenceId(int64 handle);
+int64 __referenceCopy(int64 identity);
+void __referenceDrop(int64 identity);
+__SharedReference __referenceFrom(int64 identity);
+
+/** 线程组拥有共享槽；复制引用标识保持访问同一个槽。 */
+opcode __SharedReference {
+    new = std::concurrency::__referenceNew;
+    copy = std::concurrency::__referenceCopy;
+    drop = std::concurrency::__referenceDrop;
+};
+
+/* 每次 get/set/swap 原子；组合调用不构成原子事务。 */
 struct Shared<T> {
-    int64 handle;
-    static Shared<T> create(T value) { self.handle = std::lang::__sharedCreate<T>(value); }
-    T get() { return std::lang::__sharedGet<T>(self.handle); }
-    void set(T value) { std::lang::__sharedSet<T>(self.handle, value); }
-    T swap(T value) { return std::lang::__sharedSwap<T>(self.handle, value); }
+    __SharedReference __reference;
+    static Shared<T> create(T value) { self.__reference = __referenceFrom(std::lang::__sharedCreate<T>(value)); }
+    T get() { return std::lang::__sharedGet<T>(__referenceId(self.__reference.opcode)); }
+    void set(T value) { std::lang::__sharedSet<T>(__referenceId(self.__reference.opcode), value); }
+    T swap(T value) { return std::lang::__sharedSwap<T>(__referenceId(self.__reference.opcode), value); }
+    /** 共享槽的引用标识，不拥有槽内值。 */
+    int64 id() { return __referenceId(self.__reference.opcode); }
 };
 
 /* 整数原子更新单独提供，避免给任意 Shared<T> 承诺算术语义。 */
@@ -37,7 +52,7 @@ struct AtomicInt64 {
     static AtomicInt64 create(int64 value) { self.slot = Shared<int64>::create(value); }
     int64 get() { return self.slot.get(); }
     void set(int64 value) { self.slot.set(value); }
-    int64 fetchAdd(int64 delta) { return __fetchAdd(self.slot.handle, delta); }
+    int64 fetchAdd(int64 delta) { return __fetchAdd(self.slot.id(), delta); }
 };
 
 /* 可复制句柄指向线程组内同一有界队列，传输载荷按值复制。显式 close 后先排空再返回 CLOSED。 */

@@ -1,6 +1,6 @@
 module std::json;
 
-int64 __parse(std::lang::String text);
+__JsonValueStorage __parse(std::lang::String text);
 bool __valid(int64 document);
 std::lang::String __takeError(int64 document);
 bool __close(int64 document);
@@ -14,22 +14,30 @@ std::lang::String __string(int64 document, int64 node);
 std::lang::List<uint8> __bytes(int64 document, int64 node);
 std::lang::String __dateTime(int64 document, int64 node);
 std::lang::String __dump(int64 document, int64 node);
-int64 __find(int64 document, int64 node, std::lang::String key);
-int64 __findBytes(int64 document, int64 node, std::lang::List<uint8> key);
-int64 __at(int64 document, int64 node, int64 index);
+__JsonValueStorage __find(int64 document, int64 node, std::lang::String key);
+__JsonValueStorage __findBytes(int64 document, int64 node, std::lang::List<uint8> key);
+__JsonValueStorage __at(int64 document, int64 node, int64 index);
 bool __keyAvailable(int64 document, int64 node, int64 index);
 std::lang::String __key(int64 document, int64 node, int64 index);
 std::lang::List<uint8> __keyBytes(int64 document, int64 node, int64 index);
 
-/** 只读节点视图；同一文档的节点共享生命周期，close 关闭整个文档。 */
+int64 __valueNew();
+int64 __valueCopy(int64 handle);
+void __valueDrop(int64 handle);
+opcode __JsonValueStorage {
+    new = std::json::__valueNew;
+    copy = std::json::__valueCopy;
+    drop = std::json::__valueDrop;
+};
+
+/** 拥有独立子树的值；复制深复制，关闭只影响当前值。 */
 struct JsonValue : Iterator<JsonValue> {
-    int64 document;
-    int64 node;
-    /** 检查文档是否仍打开。 */
-    bool isValid() { return __valid(self.document); }
-    /** 显式释放文档及其所有节点；重复关闭返回 false。 */
-    bool close() { return __close(self.document); }
-    int64 kind() { return __kind(self.document, self.node); }
+    __JsonValueStorage __storage;
+    /** 检查当前值是否有效。 */
+    bool isValid() { return __valid(self.__storage.opcode); }
+    /** 关闭当前值；副本与已提取的子值继续有效，重复关闭返回 false。 */
+    bool close() { return __close(self.__storage.opcode); }
+    int64 kind() { return __kind(self.__storage.opcode, 0); }
     bool isNull() { return self.kind() == 0; }
     bool isBool() { return self.kind() == 1; }
     bool isInt() { return self.kind() == 2; }
@@ -40,74 +48,74 @@ struct JsonValue : Iterator<JsonValue> {
     bool isTable() { return self.isObject(); }
     bool isDateTime() { return self.kind() == 7; }
     /** 数组元素数或对象成员数，标量为零。 */
-    int64 len() { return __size(self.document, self.node); }
+    int64 len() { return __size(self.__storage.opcode, 0); }
     Option<int64> asInt() {
         if (!self.isInt()) { return Option<int64>::None; }
-        return Option<int64>::Value(__int(self.document, self.node));
+        return Option<int64>::Value(__int(self.__storage.opcode, 0));
     }
     Option<float64> asFloat64() {
         if (!self.isInt() && !self.isFloat()) { return Option<float64>::None; }
-        return Option<float64>::Value(__float(self.document, self.node));
+        return Option<float64>::Value(__float(self.__storage.opcode, 0));
     }
     Option<bool> asBool() {
         if (!self.isBool()) { return Option<bool>::None; }
-        return Option<bool>::Value(__bool(self.document, self.node));
+        return Option<bool>::Value(__bool(self.__storage.opcode, 0));
     }
     /** 非字符串或含零字节时返回 None；含零字节的文本使用 asBytes。 */
     Option<std::lang::String> asString() {
-        if (!__textAvailable(self.document, self.node)) { return Option<std::lang::String>::None; }
-        std::lang::String result = __string(self.document, self.node);
+        if (!__textAvailable(self.__storage.opcode, 0)) { return Option<std::lang::String>::None; }
+        std::lang::String result = __string(self.__storage.opcode, 0);
         return Option<std::lang::String>::Value(result);
     }
     Option<std::lang::List<uint8>> asBytes() {
         if (!self.isString()) { return Option<std::lang::List<uint8>>::None; }
-        std::lang::List<uint8> result = __bytes(self.document, self.node);
+        std::lang::List<uint8> result = __bytes(self.__storage.opcode, 0);
         return Option<std::lang::List<uint8>>::Value(result);
     }
     Option<std::lang::String> asDateTime() {
         if (!self.isDateTime()) { return Option<std::lang::String>::None; }
-        std::lang::String result = __dateTime(self.document, self.node);
+        std::lang::String result = __dateTime(self.__storage.opcode, 0);
         return Option<std::lang::String>::Value(result);
     }
     Option<JsonValue> find(std::lang::String key) {
-        int64 index = __find(self.document, self.node, key);
-        if (index < 0) { return Option<JsonValue>::None; }
-        JsonValue value; value.document = self.document; value.node = index;
-        return Option<JsonValue>::Value(value);
+        __JsonValueStorage child = __find(self.__storage.opcode, 0, key);
+        if (!__valid(child.opcode)) { return Option<JsonValue>::None; }
+        JsonValue value; value.__storage = std::lang::move(&child);
+        return Option<JsonValue>::Value(std::lang::move(&value));
     }
     /** 允许包含零字节的 UTF-8 键名。 */
     Option<JsonValue> findBytes(std::lang::List<uint8> key) {
-        int64 index = __findBytes(self.document, self.node, key);
-        if (index < 0) { return Option<JsonValue>::None; }
-        JsonValue value; value.document = self.document; value.node = index;
-        return Option<JsonValue>::Value(value);
+        __JsonValueStorage child = __findBytes(self.__storage.opcode, 0, key);
+        if (!__valid(child.opcode)) { return Option<JsonValue>::None; }
+        JsonValue value; value.__storage = std::lang::move(&child);
+        return Option<JsonValue>::Value(std::lang::move(&value));
     }
     /** 数组按索引读取；对象按插入顺序读取成员值。 */
     Option<JsonValue> at(int64 index) {
-        int64 child = __at(self.document, self.node, index);
-        if (child < 0) { return Option<JsonValue>::None; }
-        JsonValue value; value.document = self.document; value.node = child;
-        return Option<JsonValue>::Value(value);
+        __JsonValueStorage child = __at(self.__storage.opcode, 0, index);
+        if (!__valid(child.opcode)) { return Option<JsonValue>::None; }
+        JsonValue value; value.__storage = std::lang::move(&child);
+        return Option<JsonValue>::Value(std::lang::move(&value));
     }
     Option<JsonValue> iterator(int64 index) { return self.at(index); }
     /** 对象成员的键名；越界或键中含零字节时返回 None。 */
     Option<std::lang::String> keyAt(int64 index) {
-        if (!__keyAvailable(self.document, self.node, index)) { return Option<std::lang::String>::None; }
-        std::lang::String result = __key(self.document, self.node, index);
+        if (!__keyAvailable(self.__storage.opcode, 0, index)) { return Option<std::lang::String>::None; }
+        std::lang::String result = __key(self.__storage.opcode, 0, index);
         return Option<std::lang::String>::Value(result);
     }
     Option<std::lang::List<uint8>> keyBytesAt(int64 index) {
         if (!self.isObject() || index < 0 || index >= self.len()) { return Option<std::lang::List<uint8>>::None; }
-        std::lang::List<uint8> result = __keyBytes(self.document, self.node, index);
+        std::lang::List<uint8> result = __keyBytes(self.__storage.opcode, 0, index);
         return Option<std::lang::List<uint8>>::Value(result);
     }
-    std::lang::String dump() { return __dump(self.document, self.node); }
+    std::lang::String dump() { return __dump(self.__storage.opcode, 0); }
 };
 
 /** 解析文本；失败返回包含行列信息的诊断。 */
 Result<JsonValue, std::lang::String> parse(std::lang::String text) {
-    int64 handle = __parse(text);
-    if (!__valid(handle)) { std::lang::String message = __takeError(handle); return Result<JsonValue, std::lang::String>::Err(message); }
-    JsonValue value; value.document = handle; value.node = 0;
-    return Result<JsonValue, std::lang::String>::Ok(value);
+    __JsonValueStorage handle = __parse(text);
+    if (!__valid(handle.opcode)) { std::lang::String message = __takeError(handle.opcode); return Result<JsonValue, std::lang::String>::Err(message); }
+    JsonValue value; value.__storage = std::lang::move(&handle);
+    return Result<JsonValue, std::lang::String>::Ok(std::lang::move(&value));
 }

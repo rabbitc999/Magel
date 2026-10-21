@@ -1,0 +1,28 @@
+{
+  "version": "0.24.1",
+  "date": "2026-10-21",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "compilerSHA256": "63e5b242a97b66dd6022741d42be517cc5de1065ca5afc7f05046994a67a7a0e",
+  "configuration": {
+    "frontendReflection": true,
+    "vmReflection": true,
+    "optimization": "default highest",
+    "hostCompiler": "GCC 11.2.0, C++17, -O2, static"
+  },
+  "command": "MAGEL_COMPILER=<compiler> python tests/magel_opcode_values.py",
+  "seed": 20261021,
+  "targetedAndSpotCases": 29,
+  "stringDifferentialAssertions": 1050,
+  "redBlackMixedMutations": 12000,
+  "unionFind": {
+    "smallCapacity": 1000,
+    "largeCapacity": 1000000,
+    "queriesPerCapacity": 30000,
+    "constructionIncluded": false,
+    "smallQueryNanoseconds": 57461300,
+    "largeQueryNanoseconds": 56922900,
+    "largeToSmallRatio": 0.9906302154667577,
+    "note": "单次测量用于核对容量增长趋势，不是跨机器的性能承诺。"
+  },
+  "fullRepositorySuiteRun": false
+}

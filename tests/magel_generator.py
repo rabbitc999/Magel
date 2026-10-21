@@ -98,7 +98,7 @@ def main():
         result = subprocess.run([str(build / ("magel" + EXE)), "run", str(probe), "--out", str(WORK / "export_probe")],
                                 cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=90)
         assert result.returncode == 0 and result.stdout == "exported compiler VM/TOML OK\n" and not result.stderr, result
-        for sample in ("cas", "math_generic"):
+        for sample in ("cas", "math_generic", "string_methods", "opcode_value_semantics", "std_red_black_delete"):
             result = subprocess.run([str(build / ("magel" + EXE)), "run", str(ROOT / "example/samples" / (sample + ".mgl"))],
                                     cwd=WORK, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=90)
             expected = (ROOT / "example/expected" / (sample + ".txt")).read_text(encoding="utf-8")

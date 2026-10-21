@@ -242,74 +242,45 @@ struct ResultSet {
 /** @brief std::sql 支持的数据库引擎。 */
 enum Driver { MySQL, SQLite, PostgreSQL, SqlServer, Odbc, MariaDB };
 
-/** @brief 一个 SQL 数据库连接（MySQL / SQLite / PostgreSQL / SQL Server / ODBC）。 */
-struct Database {
-    int32 handle;      /**< 宿主句柄；-1 表示没有连接 */
-    bool opened;
-    Driver driver;
-    std::lang::String error;
-    int64 affected;
+int64 __sqlOwnerNew();
+void __sqlOwnerDrop(int64 owner);
+Database __sqlOwn(int32 connection, int64 driver);
+int64 __sqlOwnerState(int64 owner, int64 operation);
+String __sqlOwnerError(int64 owner);
+void __sqlOwnerUpdate(int64 owner, String text, int64 affected);
 
-    /** @brief 连接指定主机与库；database 为空表示先不选库（用 `USE` 选）。 */
-    static Database mysql(std::lang::String host, std::lang::String user, std::lang::String password, std::lang::String database, int32 port) {
-        Database db;
-        db.handle = __sqlConnect(host, user, password, database, port);
-        db.opened = db.handle >= 0;
-        db.driver = Driver::MySQL;
-        db.affected = 0;
-        if (db.opened) { db.error = ""; }
-        else {
-            db.error = __sqlError(db.handle);
-        }
-        return db;
+/** 独占数据库连接；借用可观察同一状态，普通赋值或传参不能复制连接。 */
+#NonCopyable
+opcode Database {
+    new = std::sql::__sqlOwnerNew;
+    drop = std::sql::__sqlOwnerDrop;
+
+    /** 连接 MySQL，返回拥有连接或失败诊断的独占值。 */
+    static Database mysql(String host, String user, String password, String database, int32 port) {
+        return __sqlOwn(__sqlConnect(host, user, password, database, port), 0);
     }
-
-    /** @brief 打开 SQLite 文件；:memory: 创建不落盘的内存库。 */
-    static Database sqlite(std::lang::String path) {
-        Database db;
-        db.handle = __sqlOpenSqlite(path);
-        db.opened = db.handle >= 0;
-        db.driver = Driver::SQLite;
-        db.affected = 0;
-        if (db.opened) { db.error = ""; }
-        else { db.error = __sqlError(db.handle); }
-        return db;
-    }
-
-    /** @brief 通过 libpq 连接串或 URI 连接 PostgreSQL。 */
-    static Database postgres(std::lang::String options) {
-        Database db;
-        db.handle = __sqlOpenPostgres(options);
-        db.opened = db.handle >= 0;
-        db.driver = Driver::PostgreSQL;
-        db.affected = 0;
-        if (db.opened) { db.error = ""; }
-        else { db.error = __sqlError(db.handle); }
-        return db;
-    }
-
-    /** @brief 通过 ODBC Unicode 连接串连接通用数据源。 */
-    static Database odbc(std::lang::String options) {
-        Database db;
-        db.handle = __sqlOpenOdbc(options);
-        db.opened = db.handle >= 0;
-        db.driver = Driver::Odbc;
-        db.affected = 0;
-        if (db.opened) { db.error = ""; }
-        else { db.error = __sqlError(db.handle); }
-        return db;
-    }
-
-    /** @brief 通过已安装的 Microsoft ODBC 驱动连接 SQL Server。 */
-    static Database sqlServer(std::lang::String options) {
-        Database db = Database::odbc(options);
-        db.driver = Driver::SqlServer;
-        return db;
+    /** 打开 SQLite 文件或独立的内存数据库。 */
+    static Database sqlite(String path) { return __sqlOwn(__sqlOpenSqlite(path), 1); }
+    /** 使用连接串打开 PostgreSQL。 */
+    static Database postgres(String options) { return __sqlOwn(__sqlOpenPostgres(options), 2); }
+    /** 使用 Unicode ODBC 连接串连接数据源。 */
+    static Database odbc(String options) { return __sqlOwn(__sqlOpenOdbc(options), 4); }
+    /** 使用已安装的 ODBC 驱动连接 SQL Server。 */
+    static Database sqlServer(String options) { return __sqlOwn(__sqlOpenOdbc(options), 3); }
+    /** 当前连接声明的数据库驱动。 */
+    Driver driver() {
+        int64 value = __sqlOwnerState(self.opcode, 1);
+        if (value == 1) { return Driver::SQLite; }
+        if (value == 2) { return Driver::PostgreSQL; }
+        if (value == 3) { return Driver::SqlServer; }
+        if (value == 4) { return Driver::Odbc; }
+        if (value == 5) { return Driver::MariaDB; }
+        return Driver::MySQL;
     }
 
     /** @brief 按当前数据库规则生成字符串字面量。 */
     std::lang::String quote(std::lang::String text) {
-        match (self.driver) {
+        match (self.driver()) {
             Driver::MySQL => { return std::sql::quote(text, true); }
             Driver::MariaDB => { return std::sql::quote(text, true); }
             Driver::SqlServer => { return "N" + std::sql::quote(text, false); }
@@ -319,7 +290,7 @@ struct Database {
 
     /** @brief 返回当前数据库后端名称。 */
     std::lang::String backendName() {
-        match (self.driver) {
+        match (self.driver()) {
             Driver::MySQL => { return "mysql"; }
             Driver::MariaDB => { return "mariadb"; }
             Driver::SQLite => { return "sqlite"; }
@@ -336,10 +307,8 @@ struct Database {
     }
 
     /** @brief 使用兼容的 MySQL/MariaDB 客户端连接 MariaDB，默认端口 3306。 */
-    static Database maria(std::lang::String host, std::lang::String user, std::lang::String password, std::lang::String database, int32 port = (int32)3306) {
-        Database db = Database::mysql(host, user, password, database, port);
-        db.driver = Driver::MariaDB;
-        return db;
+    static Database maria(String host, String user, String password, String database, int32 port = (int32)3306) {
+        return __sqlOwn(__sqlConnect(host, user, password, database, port), 5);
     }
 
     /** @brief 本机开发用的默认连接：127.0.0.1:3306，用户 root，口令 123456。 */
@@ -347,18 +316,12 @@ struct Database {
         return Database::mysql("127.0.0.1", "root", "123456", database, (int32)3306);
     }
 
-    bool isOpen() { return self.opened; }
-    std::lang::String lastError() { return self.error; }
-    int64 affectedRows() { return self.affected; }
+    bool isOpen() { return __sqlOwnerState(self.opcode, 3) != 0; }
+    std::lang::String lastError() { return __sqlOwnerError(self.opcode); }
+    int64 affectedRows() { return __sqlOwnerState(self.opcode, 2); }
 
     /** @brief 关闭连接；重复调用安全。 */
-    void close() {
-        if (self.opened) {
-            __sqlClose(self.handle);
-            self.opened = false;
-            self.handle = (int32)(0 - 1);
-        }
-    }
+    void close() { int64 ignored = __sqlOwnerState(self.opcode, 4); }
 
     /**
      * @brief 执行一条（或一段）SQL。
@@ -369,22 +332,22 @@ struct Database {
         ResultSet result;
         result.ok = false;
         result.affected = 0;
-        if (!self.opened) {
+        if (!self.isOpen()) {
             result.error = "数据库未连接";
-            self.error = result.error;
+            __sqlOwnerUpdate(self.opcode, result.error, -1);
             return result;
         }
-        int32 rs = __sqlExec(self.handle, sql);
+        int32 rs = __sqlExec((int32)__sqlOwnerState(self.opcode, 0), sql);
         if (rs < 0) {
-            result.error = __sqlError(self.handle);
-            self.error = result.error;
+            result.error = __sqlError((int32)__sqlOwnerState(self.opcode, 0));
+            __sqlOwnerUpdate(self.opcode, result.error, -1);
             return result;
         }
         result.ok = true;
         result.error = "";
-        self.error = "";
+        __sqlOwnerUpdate(self.opcode, "", -1);
         result.affected = (int64)__sqlResultAffected(rs);
-        self.affected = result.affected;
+        __sqlOwnerUpdate(self.opcode, "", result.affected);
 
         int64 columns = (int64)__sqlColCount(rs);
         int64 rows = (int64)__sqlRowCount(rs);
@@ -451,7 +414,7 @@ struct Database {
     /** @brief 当前所选库里表是否存在。 */
     bool hasTable(std::lang::String tableName) {
         std::lang::String name = self.quote(tableName);
-        match (self.driver) {
+        match (self.driver()) {
             Driver::SQLite => {
                 return self.count("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = " + name) > 0;
             }
@@ -462,7 +425,7 @@ struct Database {
                 return self.count("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = SCHEMA_NAME() AND table_name = " + name) > 0;
             }
             Driver::Odbc => {
-                self.error = "通用 ODBC 的表元数据随数据库而异，请执行对应的元数据查询";
+                __sqlOwnerUpdate(self.opcode, "通用 ODBC 的表元数据随数据库而异，请执行对应的元数据查询", -1);
                 return false;
             }
             _ => { }

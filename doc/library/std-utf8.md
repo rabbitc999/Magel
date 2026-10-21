@@ -63,7 +63,7 @@ UTF-8 validation and code points OK
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-526"></a>`enum Utf8Error` | 非法 UTF-8 的首个字节位置，或非法码点的位置。 |
+| 模块 | <a id="symbol-465"></a>`enum Utf8Error` | 非法 UTF-8 的首个字节位置，或非法码点的位置。 |
 | Utf8Error | `InvalidSequence(int64 offset), InvalidCodePoint(int64 index), InvalidRange, ZeroByteText` | 非法 UTF-8 的首个字节位置，或非法码点的位置。 变体及载荷见声明。 |
 
 ## 函数索引

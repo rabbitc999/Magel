@@ -819,7 +819,7 @@ bool RegisterTop()
                     MMethod method;
                     method.isStatic = member.type2 == 1;
                     method.isConstructor = member.type2 == 2;
-                    method.isNamedConstructor = method.isStatic && member.s == "create";
+                    method.isNamedConstructor = !opcodeOwner && method.isStatic && member.s == "create";
                     method.isConstructor = method.isConstructor || method.isNamedConstructor;
                     method.bodyId = member.kids.size() > 1u ? member.kids[1] : -1;
                     method.module = top.module;

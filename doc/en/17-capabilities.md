@@ -132,3 +132,5 @@ The shared VM uses separate compilation units for quadruples, binary containers,
 Saving a parsed std::toml document root retains its original comments and layout. In the underlying C++ value model, edits with the same container shape preserve layout. Structural edits retain all comment content, but may move comments to the beginning of the document. Parsing and saving repeatedly neither loses nor duplicates comments. See the [TOML API](../library/std-toml.md).
 
 `std::cas::Expr` provides string parsing, immutable AST traversal, exact rational arithmetic and calculus. Generic `std::math` functions support ordinary numbers, high precision decimals and symbolic expressions. See [symbolic computation and high precision mathematics](34-symbolic-computation.md) for algorithm, trimming and concurrency boundaries.
+
+Connections, arenas and timer sources have exclusive owners; containers and random generators copy their state, and JSON/TOML values own independent subtrees. String includes common text methods and explicit UTF-8 code point operations. See [ownership, snapshots and string boundaries](35-opcode-values-strings.md).

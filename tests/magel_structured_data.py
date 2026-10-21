@@ -25,6 +25,6 @@ def main():
         result = run(executable, succeeds=False)
         assert 'std::' + name.lower() + '::' in result.stdout + result.stderr
     result = run(MAGEL, 'run', ROOT / 'example/samples-error/structured_closed.mgl', '--out', work / 'closed', succeeds=False)
-    assert '结构化数据：文档已关闭或节点无效' in result.stderr
+    assert 'JsonValue.kind' in result.stderr
 if __name__ == '__main__':
     main()

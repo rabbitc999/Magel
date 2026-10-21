@@ -88,12 +88,11 @@ int64 main() {
 | 模块 | <a id="symbol-39"></a>`struct Receive<T>` | 操作状态与载荷；仅在 READY 时读取 value。 |
 | Receive | <a id="symbol-40"></a>`int64 status` | 统一操作状态码；载荷仅在 READY 时有效。 |
 | Receive | <a id="symbol-41"></a>`T value` | 保存的单个值。 |
-| 模块 | <a id="symbol-42"></a>`struct Shared<T>` | 共享槽每次 get/set/swap 原子；组合调用不构成原子事务。 |
-| Shared | <a id="symbol-43"></a>`int64 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
-| 模块 | <a id="symbol-44"></a>`struct AtomicInt64` | 共享 int64 原子槽，fetchAdd 返回旧值。 |
-| AtomicInt64 | <a id="symbol-45"></a>`Shared<int64> slot` | 显式共享的 int64 原子槽。 |
-| 模块 | <a id="symbol-46"></a>`struct Channel<T>` | 跨线程有界传值通道；可复制句柄，显式关闭。 |
-| Channel | <a id="symbol-47"></a>`int64 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
+| 模块 | <a id="symbol-42"></a>`struct Shared<T>` | 每次 get/set/swap 原子；组合调用不构成原子事务。 |
+| 模块 | <a id="symbol-43"></a>`struct AtomicInt64` | 共享 int64 原子槽，fetchAdd 返回旧值。 |
+| AtomicInt64 | <a id="symbol-44"></a>`Shared<int64> slot` | 显式共享的 int64 原子槽。 |
+| 模块 | <a id="symbol-45"></a>`struct Channel<T>` | 跨线程有界传值通道；可复制句柄，显式关闭。 |
+| Channel | <a id="symbol-46"></a>`int64 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
 
 ## 函数索引
 
@@ -104,18 +103,19 @@ int64 main() {
 | [Shared::get](#api-2) | `T get()` |
 | [Shared::set](#api-3) | `void set(T value)` |
 | [Shared::swap](#api-4) | `T swap(T value)` |
-| [AtomicInt64::create](#api-5) | `static AtomicInt64 create(int64 value)` |
-| [AtomicInt64::get](#api-6) | `int64 get()` |
-| [AtomicInt64::set](#api-7) | `void set(int64 value)` |
-| [AtomicInt64::fetchAdd](#api-8) | `int64 fetchAdd(int64 delta)` |
-| [Channel::create](#api-9) | `static Channel<T> create(int64 capacity)` |
-| [Channel::sendFor](#api-10) | `int64 sendFor(T value, int64 millis)` |
-| [Channel::send](#api-11) | `int64 send(T value)` |
-| [Channel::trySend](#api-12) | `int64 trySend(T value)` |
-| [Channel::receiveFor](#api-13) | `Receive<T> receiveFor(int64 millis)` |
-| [Channel::receive](#api-14) | `Receive<T> receive()` |
-| [Channel::tryReceive](#api-15) | `Receive<T> tryReceive()` |
-| [Channel::close](#api-16) | `void close()` |
+| [Shared::id](#api-5) | `int64 id()` |
+| [AtomicInt64::create](#api-6) | `static AtomicInt64 create(int64 value)` |
+| [AtomicInt64::get](#api-7) | `int64 get()` |
+| [AtomicInt64::set](#api-8) | `void set(int64 value)` |
+| [AtomicInt64::fetchAdd](#api-9) | `int64 fetchAdd(int64 delta)` |
+| [Channel::create](#api-10) | `static Channel<T> create(int64 capacity)` |
+| [Channel::sendFor](#api-11) | `int64 sendFor(T value, int64 millis)` |
+| [Channel::send](#api-12) | `int64 send(T value)` |
+| [Channel::trySend](#api-13) | `int64 trySend(T value)` |
+| [Channel::receiveFor](#api-14) | `Receive<T> receiveFor(int64 millis)` |
+| [Channel::receive](#api-15) | `Receive<T> receive()` |
+| [Channel::tryReceive](#api-16) | `Receive<T> tryReceive()` |
+| [Channel::close](#api-17) | `void close()` |
 
 <a id="api-0"></a>
 
@@ -187,7 +187,7 @@ static Shared<T> create(T value);
 std::concurrency::Shared<T>::create(value);
 ```
 
-**源码**：[source/std/concurrency.mgl:28](../../source/std/concurrency.mgl#L28)。
+**源码**：[source/std/concurrency.mgl:41](../../source/std/concurrency.mgl#L41)。
 
 **完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
 
@@ -223,7 +223,7 @@ T get();
 obj.get();
 ```
 
-**源码**：[source/std/concurrency.mgl:29](../../source/std/concurrency.mgl#L29)。
+**源码**：[source/std/concurrency.mgl:42](../../source/std/concurrency.mgl#L42)。
 
 **完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
 
@@ -261,7 +261,7 @@ void set(T value);
 obj.set(value);
 ```
 
-**源码**：[source/std/concurrency.mgl:30](../../source/std/concurrency.mgl#L30)。
+**源码**：[source/std/concurrency.mgl:43](../../source/std/concurrency.mgl#L43)。
 
 **完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
 
@@ -299,13 +299,49 @@ T swap(T value);
 obj.swap(value);
 ```
 
-**源码**：[source/std/concurrency.mgl:31](../../source/std/concurrency.mgl#L31)。
+**源码**：[source/std/concurrency.mgl:44](../../source/std/concurrency.mgl#L44)。
 
 **完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
 
 <a id="api-5"></a>
 
-### AtomicInt64::create（6）
+### Shared::id（6）
+
+**声明**
+
+```magel
+int64 id();
+```
+
+**行为**
+
+共享槽的引用标识，不拥有槽内值。
+
+**参数**
+
+无显式参数。实例方法使用当前接收者。
+
+**返回值**
+
+`int64`。共享槽的引用标识，不拥有槽内值。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.id();
+```
+
+**源码**：[source/std/concurrency.mgl:46](../../source/std/concurrency.mgl#L46)。
+
+**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+
+<a id="api-6"></a>
+
+### AtomicInt64::create（7）
 
 **声明**
 
@@ -337,13 +373,13 @@ static AtomicInt64 create(int64 value);
 std::concurrency::AtomicInt64::create(value);
 ```
 
-**源码**：[source/std/concurrency.mgl:37](../../source/std/concurrency.mgl#L37)。
+**源码**：[source/std/concurrency.mgl:52](../../source/std/concurrency.mgl#L52)。
 
 **完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
 
-<a id="api-6"></a>
+<a id="api-7"></a>
 
-### AtomicInt64::get（7）
+### AtomicInt64::get（8）
 
 **声明**
 
@@ -373,13 +409,13 @@ int64 get();
 obj.get();
 ```
 
-**源码**：[source/std/concurrency.mgl:38](../../source/std/concurrency.mgl#L38)。
+**源码**：[source/std/concurrency.mgl:53](../../source/std/concurrency.mgl#L53)。
 
 **完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
 
-<a id="api-7"></a>
+<a id="api-8"></a>
 
-### AtomicInt64::set（8）
+### AtomicInt64::set（9）
 
 **声明**
 
@@ -411,13 +447,13 @@ void set(int64 value);
 obj.set(value);
 ```
 
-**源码**：[source/std/concurrency.mgl:39](../../source/std/concurrency.mgl#L39)。
+**源码**：[source/std/concurrency.mgl:54](../../source/std/concurrency.mgl#L54)。
 
 **完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
 
-<a id="api-8"></a>
+<a id="api-9"></a>
 
-### AtomicInt64::fetchAdd（9）
+### AtomicInt64::fetchAdd（10）
 
 **声明**
 
@@ -449,13 +485,13 @@ int64 fetchAdd(int64 delta);
 obj.fetchAdd(delta);
 ```
 
-**源码**：[source/std/concurrency.mgl:40](../../source/std/concurrency.mgl#L40)。
+**源码**：[source/std/concurrency.mgl:55](../../source/std/concurrency.mgl#L55)。
 
 **完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
 
-<a id="api-9"></a>
+<a id="api-10"></a>
 
-### Channel::create（10）
+### Channel::create（11）
 
 **声明**
 
@@ -487,13 +523,13 @@ static Channel<T> create(int64 capacity);
 std::concurrency::Channel<T>::create(capacity);
 ```
 
-**源码**：[source/std/concurrency.mgl:46](../../source/std/concurrency.mgl#L46)。
+**源码**：[source/std/concurrency.mgl:61](../../source/std/concurrency.mgl#L61)。
 
 **完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
 
-<a id="api-10"></a>
+<a id="api-11"></a>
 
-### Channel::sendFor（11）
+### Channel::sendFor（12）
 
 **声明**
 
@@ -526,13 +562,13 @@ int64 sendFor(T value, int64 millis);
 obj.sendFor(value, millis);
 ```
 
-**源码**：[source/std/concurrency.mgl:47](../../source/std/concurrency.mgl#L47)。
+**源码**：[source/std/concurrency.mgl:62](../../source/std/concurrency.mgl#L62)。
 
 **完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
 
-<a id="api-11"></a>
+<a id="api-12"></a>
 
-### Channel::send（12）
+### Channel::send（13）
 
 **声明**
 
@@ -564,13 +600,13 @@ int64 send(T value);
 obj.send(value);
 ```
 
-**源码**：[source/std/concurrency.mgl:48](../../source/std/concurrency.mgl#L48)。
+**源码**：[source/std/concurrency.mgl:63](../../source/std/concurrency.mgl#L63)。
 
 **完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
 
-<a id="api-12"></a>
+<a id="api-13"></a>
 
-### Channel::trySend（13）
+### Channel::trySend（14）
 
 **声明**
 
@@ -602,13 +638,13 @@ int64 trySend(T value);
 obj.trySend(value);
 ```
 
-**源码**：[source/std/concurrency.mgl:49](../../source/std/concurrency.mgl#L49)。
+**源码**：[source/std/concurrency.mgl:64](../../source/std/concurrency.mgl#L64)。
 
 **完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
 
-<a id="api-13"></a>
+<a id="api-14"></a>
 
-### Channel::receiveFor（14）
+### Channel::receiveFor（15）
 
 **声明**
 
@@ -640,13 +676,13 @@ Receive<T> receiveFor(int64 millis);
 obj.receiveFor(millis);
 ```
 
-**源码**：[source/std/concurrency.mgl:50](../../source/std/concurrency.mgl#L50)。
+**源码**：[source/std/concurrency.mgl:65](../../source/std/concurrency.mgl#L65)。
 
 **完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
 
-<a id="api-14"></a>
+<a id="api-15"></a>
 
-### Channel::receive（15）
+### Channel::receive（16）
 
 **声明**
 
@@ -676,13 +712,13 @@ Receive<T> receive();
 obj.receive();
 ```
 
-**源码**：[source/std/concurrency.mgl:57](../../source/std/concurrency.mgl#L57)。
+**源码**：[source/std/concurrency.mgl:72](../../source/std/concurrency.mgl#L72)。
 
 **完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
 
-<a id="api-15"></a>
+<a id="api-16"></a>
 
-### Channel::tryReceive（16）
+### Channel::tryReceive（17）
 
 **声明**
 
@@ -712,13 +748,13 @@ Receive<T> tryReceive();
 obj.tryReceive();
 ```
 
-**源码**：[source/std/concurrency.mgl:58](../../source/std/concurrency.mgl#L58)。
+**源码**：[source/std/concurrency.mgl:73](../../source/std/concurrency.mgl#L73)。
 
 **完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
 
-<a id="api-16"></a>
+<a id="api-17"></a>
 
-### Channel::close（17）
+### Channel::close（18）
 
 **声明**
 
@@ -748,7 +784,7 @@ void close();
 obj.close();
 ```
 
-**源码**：[source/std/concurrency.mgl:59](../../source/std/concurrency.mgl#L59)。
+**源码**：[source/std/concurrency.mgl:74](../../source/std/concurrency.mgl#L74)。
 
 **完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
 

@@ -146,3 +146,4 @@ Magel 让业务逻辑成为一份可以独立交付的资产：写一次，从�
 - [线程、通道与显式事件](29-thread-concurrency.md)
 
 - [精确符号计算与高精度数学](34-symbolic-computation.md)
+- [标准库存储、复制与字符串方法](35-opcode-values-strings.md)

@@ -617,7 +617,9 @@ void markContainerTypeArguments(Memory::String &source, bool typeFragment)
                 type = false;
                 break;
             }
-            if (ch == ';' || ch == '{' || ch == '}' || ch == '=' || ch == '+' || ch == '/' || ch == '"' || ch == '\'')
+            if (ch == ';' || ch == '{' || ch == '}' || ch == '=' || ch == '+' || ch == '/' || ch == '"' || ch == '\''
+                || (ch == '&' && i + 1 < close && source[i + 1] == '&')
+                || (ch == '|' && i + 1 < close && source[i + 1] == '|'))
             {
                 type = false;
                 break;
@@ -1386,7 +1388,31 @@ bool rewrite(Memory::String &text, const Memory::Map<Memory::String, Generic> &g
             continue;
         }
         std::size_t close = 0;
-        if (!balanced(text, open, '<', '>', close))
+        const auto &declaration = generic->second.declaration;
+        const bool functionTemplate = !generic->second.intrinsic && !wordAt(declaration, 0, "struct")
+                                      && !wordAt(declaration, 0, "enum") && !wordAt(declaration, 0, "interface")
+                                      && !wordAt(declaration, 0, "type");
+        const bool closed = balanced(text, open, '<', '>', close);
+        // 同名局部值的比较不能跨越语句或函数体寻找模板右括号。
+        if (functionTemplate)
+        {
+            const auto boundary = text.find_first_of(";{}", open + 1);
+            if (!closed || (boundary != Memory::String::npos && boundary < close))
+            {
+                output += name;
+                continue;
+            }
+            auto after = close + 1;
+            skipSpace(text, after);
+            const auto arguments = text.substr(open + 1, close - open - 1);
+            if ((after < text.size() && identStart(text[after]))
+                || arguments.find("&&") != Memory::String::npos || arguments.find("||") != Memory::String::npos)
+            {
+                output += name;
+                continue;
+            }
+        }
+        if (!closed)
         {
             error = name + " 的类型实参缺少 >";
             return false;

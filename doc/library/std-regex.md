@@ -10,7 +10,7 @@ import std::regex;
 
 ## 公共约定与错误边界
 
-模式在宿主注册表按文本缓存，compile 失败返回 RegexError::Invalid。find 返回首个匹配的字节下标或 None。capture 的 group=0 表示完整匹配。语法和 replacement 捕获组替换规则采用宿主 std::regex 的默认 ECMAScript 规则。
+Regex 是 opcode；复制共享不可变编译模式，每次匹配使用独立状态，最后一个值释放时回收模式。compile 失败返回 RegexError::Invalid。find 返回首个匹配的字节下标或 None。capture 的 group=0 表示完整匹配。语法和 replacement 捕获组替换规则采用宿主 std::regex 的默认 ECMAScript 规则。
 
 ## 参考代码
 
@@ -66,10 +66,9 @@ int64 main() {
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-439"></a>`enum RegexError` | 正则表达式在宿主注册表里按模式缓存；Magel 值只保存整数句柄，Result 的载荷不持有堆对象。 |
-| RegexError | `Invalid` | 正则表达式在宿主注册表里按模式缓存；Magel 值只保存整数句柄，Result 的载荷不持有堆对象。 变体及载荷见声明。 |
-| 模块 | <a id="symbol-440"></a>`struct Regex` | 拥有已编译正则表达式句柄的资源包装。 |
-| Regex | <a id="symbol-441"></a>`int64 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
+| 模块 | <a id="symbol-406"></a>`enum RegexError` | 复制共享不可变编译模式；匹配状态属于每次调用，最后一个值释放时回收模式。 |
+| RegexError | `Invalid` | 复制共享不可变编译模式；匹配状态属于每次调用，最后一个值释放时回收模式。 变体及载荷见声明。 |
+| 模块 | <a id="symbol-407"></a>`opcode Regex` | 共享不可变编译模式的 opcode，匹配状态按每次调用独立。 |
 
 ## 函数索引
 
@@ -117,7 +116,7 @@ static Result<Regex, RegexError> compile(std::lang::String pattern);
 std::regex::Regex::compile(pattern);
 ```
 
-**源码**：[source/std/regex.mgl:18](../../source/std/regex.mgl#L18)。
+**源码**：[source/std/regex.mgl:25](../../source/std/regex.mgl#L25)。
 
 **完整示例**：[example/samples/std_glue_edges.mgl](../../example/samples/std_glue_edges.mgl)。
 
@@ -155,7 +154,7 @@ bool fullMatch(std::lang::String text);
 obj.fullMatch(text);
 ```
 
-**源码**：[source/std/regex.mgl:26](../../source/std/regex.mgl#L26)。
+**源码**：[source/std/regex.mgl:31](../../source/std/regex.mgl#L31)。
 
 **完整示例**：[example/samples/std_glue_edges.mgl](../../example/samples/std_glue_edges.mgl)。
 
@@ -193,7 +192,7 @@ bool contains(std::lang::String text);
 obj.contains(text);
 ```
 
-**源码**：[source/std/regex.mgl:27](../../source/std/regex.mgl#L27)。
+**源码**：[source/std/regex.mgl:32](../../source/std/regex.mgl#L32)。
 
 **完整示例**：[example/samples/std_glue_edges.mgl](../../example/samples/std_glue_edges.mgl)。
 
@@ -231,7 +230,7 @@ Option<int64> find(std::lang::String text);
 obj.find(text);
 ```
 
-**源码**：[source/std/regex.mgl:28](../../source/std/regex.mgl#L28)。
+**源码**：[source/std/regex.mgl:33](../../source/std/regex.mgl#L33)。
 
 **完整示例**：[example/samples/std_glue_edges.mgl](../../example/samples/std_glue_edges.mgl)。
 
@@ -270,7 +269,7 @@ std::lang::String capture(std::lang::String text, int64 group);
 obj.capture(text, group);
 ```
 
-**源码**：[source/std/regex.mgl:33](../../source/std/regex.mgl#L33)。
+**源码**：[source/std/regex.mgl:38](../../source/std/regex.mgl#L38)。
 
 **完整示例**：[example/samples/std_glue_edges.mgl](../../example/samples/std_glue_edges.mgl)。
 
@@ -309,7 +308,7 @@ std::lang::String replaceFirst(std::lang::String text, std::lang::String replace
 obj.replaceFirst(text, replacement);
 ```
 
-**源码**：[source/std/regex.mgl:36](../../source/std/regex.mgl#L36)。
+**源码**：[source/std/regex.mgl:41](../../source/std/regex.mgl#L41)。
 
 **完整示例**：[example/samples/std_glue_edges.mgl](../../example/samples/std_glue_edges.mgl)。
 
@@ -348,6 +347,6 @@ std::lang::String replaceAll(std::lang::String text, std::lang::String replaceme
 obj.replaceAll(text, replacement);
 ```
 
-**源码**：[source/std/regex.mgl:39](../../source/std/regex.mgl#L39)。
+**源码**：[source/std/regex.mgl:44](../../source/std/regex.mgl#L44)。
 
 **完整示例**：[example/samples/std_glue_edges.mgl](../../example/samples/std_glue_edges.mgl)。

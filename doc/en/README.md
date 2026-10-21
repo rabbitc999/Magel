@@ -101,3 +101,4 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 - [Threads, channels and explicit events](29-thread-concurrency.md)
 
 - [Exact symbolic computation and high precision mathematics](34-symbolic-computation.md)
+- [Standard library ownership and string methods](35-opcode-values-strings.md)

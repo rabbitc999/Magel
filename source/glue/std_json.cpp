@@ -14,6 +14,7 @@ namespace std_json_glue
 struct Traits
 {
     using Value = json::Value;
+    static constexpr const char *recordName = "std::json::JsonValue";
     /**
      * @brief 解析文本。
      * @param text UTF-8 文本。

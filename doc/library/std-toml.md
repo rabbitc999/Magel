@@ -10,7 +10,7 @@ import std::toml;
 
 ## 公共约定与错误边界
 
-parse 返回 Result<TomlValue,String>。节点共享文档生命周期，close 会使所有节点失效。表对应 isTable/isObject；时间值使用 isDateTime/asDateTime。asXxx 类型不符返回 None；含零字节的文本使用字节列表接口。kind 编码与 JSON 节点一致。解析文档根节点的 dump() 保留原文注释、空白与换行；反复解析保存不丢失或重复注释。底层 C++ 等形值编辑保留布局；结构编辑保留注释内容，但可调整位置。子节点只输出值。
+parse 返回 Result<TomlValue,String>。与 JSON 共用拥有型 opcode 协议；普通复制深复制子树，close 只影响当前值。表对应 isTable/isObject；时间值使用 isDateTime/asDateTime。asXxx 类型不符返回 None；含零字节的文本使用字节列表接口。kind 编码与 JSON 节点一致。解析文档根节点的 dump() 保留原文注释、空白与换行；反复解析保存不丢失或重复注释。底层 C++ 等形值编辑保留布局；结构编辑保留注释内容，但可调整位置。子节点只输出值。
 
 ## 参考代码
 
@@ -29,7 +29,7 @@ magel run example/samples/std_structured_data.mgl
  *
  * 本例将 find / keyAt / asString 的结果分别保存，方便逐层检查 Result/Option。
  * 当前语言也支持 root.find("x").unwrap() 等持资源结果的链式访问；编译器在完整
- * 表达式结束后清理中间值。文档节点是共享视图，close 后同文档的节点一起失效。
+ * 表达式结束后清理中间值。节点拥有独立子树，close 不影响副本及已提取的子值。
  */
 import std::json;
 import std::toml;
@@ -85,7 +85,7 @@ int64 main() {
     Option<String> reloadedText = reloadedNameValue.asString();
     assert(reloadedText.unwrap() == "中文");
     assert(reloaded.close());
-    assert(root.close() && !items.isValid() && !root.close());
+    assert(root.close() && items.isValid() && !root.close());
 
     Result<std::json::JsonValue, String> parsedZero =
     std::json::parse("{\"a\\u0000b\":\"x\\u0000y\"}");
@@ -160,7 +160,7 @@ int64 main() {
     std::toml::TomlValue copyPortValue = copyPort.unwrap();
     Option<int64> copyPortNumber = copyPortValue.asInt();
     assert(copyPortNumber.unwrap() == 8080);
-    assert(copy.close() && config.close() && !server.isValid());
+    assert(copy.close() && config.close() && server.isValid());
     Result<std::toml::TomlValue, String> duplicate = std::toml::parse("x = 1\nx = 2\n");
     assert(duplicate.isErr() && len(duplicate.error()) > 0);
     {
@@ -202,9 +202,7 @@ JSON and TOML parsing OK
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-485"></a>`struct TomlValue : Iterator<TomlValue>` | 只读节点视图；同一文档的节点共享生命周期，close 关闭整个文档。 |
-| TomlValue | <a id="symbol-486"></a>`int64 document` | 拥有底层解析文档的宿主句柄。 |
-| TomlValue | <a id="symbol-487"></a>`int64 node` | 当前值在解析文档中的节点标识。 |
+| 模块 | <a id="symbol-446"></a>`struct TomlValue : Iterator<TomlValue>` | 独立拥有 TOML 子树的值，关闭不影响副本，根序列化保留原文注释。 |
 
 ## 函数索引
 
@@ -252,7 +250,7 @@ bool isValid();
 
 判断共享文档是否仍有效。
 
-检查文档是否仍打开。
+检查当前值是否有效。
 
 **参数**
 
@@ -272,7 +270,7 @@ bool isValid();
 obj.isValid();
 ```
 
-**源码**：[source/std/toml.mgl:29](../../source/std/toml.mgl#L29)。
+**源码**：[source/std/toml.mgl:37](../../source/std/toml.mgl#L37)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -290,7 +288,7 @@ bool close();
 
 关闭底层资源；文档节点会使同文档所有视图失效。
 
-显式释放文档及其所有节点；重复关闭返回 false。
+关闭当前值；副本与已提取的子值继续有效，重复关闭返回 false。
 
 **参数**
 
@@ -310,7 +308,7 @@ bool close();
 obj.close();
 ```
 
-**源码**：[source/std/toml.mgl:31](../../source/std/toml.mgl#L31)。
+**源码**：[source/std/toml.mgl:39](../../source/std/toml.mgl#L39)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -346,7 +344,7 @@ int64 kind();
 obj.kind();
 ```
 
-**源码**：[source/std/toml.mgl:32](../../source/std/toml.mgl#L32)。
+**源码**：[source/std/toml.mgl:40](../../source/std/toml.mgl#L40)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -382,7 +380,7 @@ bool isNull();
 obj.isNull();
 ```
 
-**源码**：[source/std/toml.mgl:33](../../source/std/toml.mgl#L33)。
+**源码**：[source/std/toml.mgl:41](../../source/std/toml.mgl#L41)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -418,7 +416,7 @@ bool isBool();
 obj.isBool();
 ```
 
-**源码**：[source/std/toml.mgl:34](../../source/std/toml.mgl#L34)。
+**源码**：[source/std/toml.mgl:42](../../source/std/toml.mgl#L42)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -454,7 +452,7 @@ bool isInt();
 obj.isInt();
 ```
 
-**源码**：[source/std/toml.mgl:35](../../source/std/toml.mgl#L35)。
+**源码**：[source/std/toml.mgl:43](../../source/std/toml.mgl#L43)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -490,7 +488,7 @@ bool isFloat();
 obj.isFloat();
 ```
 
-**源码**：[source/std/toml.mgl:36](../../source/std/toml.mgl#L36)。
+**源码**：[source/std/toml.mgl:44](../../source/std/toml.mgl#L44)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -526,7 +524,7 @@ bool isString();
 obj.isString();
 ```
 
-**源码**：[source/std/toml.mgl:37](../../source/std/toml.mgl#L37)。
+**源码**：[source/std/toml.mgl:45](../../source/std/toml.mgl#L45)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -562,7 +560,7 @@ bool isArray();
 obj.isArray();
 ```
 
-**源码**：[source/std/toml.mgl:38](../../source/std/toml.mgl#L38)。
+**源码**：[source/std/toml.mgl:46](../../source/std/toml.mgl#L46)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -598,7 +596,7 @@ bool isObject();
 obj.isObject();
 ```
 
-**源码**：[source/std/toml.mgl:39](../../source/std/toml.mgl#L39)。
+**源码**：[source/std/toml.mgl:47](../../source/std/toml.mgl#L47)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -634,7 +632,7 @@ bool isTable();
 obj.isTable();
 ```
 
-**源码**：[source/std/toml.mgl:40](../../source/std/toml.mgl#L40)。
+**源码**：[source/std/toml.mgl:48](../../source/std/toml.mgl#L48)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -670,7 +668,7 @@ bool isDateTime();
 obj.isDateTime();
 ```
 
-**源码**：[source/std/toml.mgl:41](../../source/std/toml.mgl#L41)。
+**源码**：[source/std/toml.mgl:49](../../source/std/toml.mgl#L49)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -708,7 +706,7 @@ int64 len();
 obj.len();
 ```
 
-**源码**：[source/std/toml.mgl:43](../../source/std/toml.mgl#L43)。
+**源码**：[source/std/toml.mgl:51](../../source/std/toml.mgl#L51)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -744,7 +742,7 @@ Option<int64> asInt();
 obj.asInt();
 ```
 
-**源码**：[source/std/toml.mgl:44](../../source/std/toml.mgl#L44)。
+**源码**：[source/std/toml.mgl:52](../../source/std/toml.mgl#L52)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -780,7 +778,7 @@ Option<float64> asFloat64();
 obj.asFloat64();
 ```
 
-**源码**：[source/std/toml.mgl:48](../../source/std/toml.mgl#L48)。
+**源码**：[source/std/toml.mgl:56](../../source/std/toml.mgl#L56)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -816,7 +814,7 @@ Option<bool> asBool();
 obj.asBool();
 ```
 
-**源码**：[source/std/toml.mgl:52](../../source/std/toml.mgl#L52)。
+**源码**：[source/std/toml.mgl:60](../../source/std/toml.mgl#L60)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -854,7 +852,7 @@ Option<std::lang::String> asString();
 obj.asString();
 ```
 
-**源码**：[source/std/toml.mgl:57](../../source/std/toml.mgl#L57)。
+**源码**：[source/std/toml.mgl:65](../../source/std/toml.mgl#L65)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -890,7 +888,7 @@ Option<std::lang::List<uint8>> asBytes();
 obj.asBytes();
 ```
 
-**源码**：[source/std/toml.mgl:62](../../source/std/toml.mgl#L62)。
+**源码**：[source/std/toml.mgl:70](../../source/std/toml.mgl#L70)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -926,7 +924,7 @@ Option<std::lang::String> asDateTime();
 obj.asDateTime();
 ```
 
-**源码**：[source/std/toml.mgl:67](../../source/std/toml.mgl#L67)。
+**源码**：[source/std/toml.mgl:75](../../source/std/toml.mgl#L75)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -964,7 +962,7 @@ Option<TomlValue> find(std::lang::String key);
 obj.find(key);
 ```
 
-**源码**：[source/std/toml.mgl:72](../../source/std/toml.mgl#L72)。
+**源码**：[source/std/toml.mgl:80](../../source/std/toml.mgl#L80)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -1004,7 +1002,7 @@ Option<TomlValue> findBytes(std::lang::List<uint8> key);
 obj.findBytes(key);
 ```
 
-**源码**：[source/std/toml.mgl:79](../../source/std/toml.mgl#L79)。
+**源码**：[source/std/toml.mgl:87](../../source/std/toml.mgl#L87)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -1044,7 +1042,7 @@ Option<TomlValue> at(int64 index);
 obj.at(index);
 ```
 
-**源码**：[source/std/toml.mgl:86](../../source/std/toml.mgl#L86)。
+**源码**：[source/std/toml.mgl:94](../../source/std/toml.mgl#L94)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -1082,7 +1080,7 @@ Option<TomlValue> iterator(int64 index);
 obj.iterator(index);
 ```
 
-**源码**：[source/std/toml.mgl:92](../../source/std/toml.mgl#L92)。
+**源码**：[source/std/toml.mgl:100](../../source/std/toml.mgl#L100)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -1122,7 +1120,7 @@ Option<std::lang::String> keyAt(int64 index);
 obj.keyAt(index);
 ```
 
-**源码**：[source/std/toml.mgl:94](../../source/std/toml.mgl#L94)。
+**源码**：[source/std/toml.mgl:102](../../source/std/toml.mgl#L102)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -1160,7 +1158,7 @@ Option<std::lang::List<uint8>> keyBytesAt(int64 index);
 obj.keyBytesAt(index);
 ```
 
-**源码**：[source/std/toml.mgl:99](../../source/std/toml.mgl#L99)。
+**源码**：[source/std/toml.mgl:107](../../source/std/toml.mgl#L107)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -1196,7 +1194,7 @@ std::lang::String dump();
 obj.dump();
 ```
 
-**源码**：[source/std/toml.mgl:104](../../source/std/toml.mgl#L104)。
+**源码**：[source/std/toml.mgl:112](../../source/std/toml.mgl#L112)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
 
@@ -1236,6 +1234,6 @@ Result<TomlValue, std::lang::String> parse(std::lang::String text);
 std::toml::parse(text);
 ```
 
-**源码**：[source/std/toml.mgl:108](../../source/std/toml.mgl#L108)。
+**源码**：[source/std/toml.mgl:116](../../source/std/toml.mgl#L116)。
 
 **完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。

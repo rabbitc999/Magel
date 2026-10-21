@@ -177,7 +177,7 @@ T choiceValue<T>(std::lang::List<T> items, uint64 seed);
 std::algorithms::choiceValue<T>(items, seed);
 ```
 
-**源码**：[source/magel_generic.cpp:1763](../../source/magel_generic.cpp#L1763)。
+**源码**：[source/magel_generic.cpp:1789](../../source/magel_generic.cpp#L1789)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -216,7 +216,7 @@ Fisher-Yates 洗牌，返回**打乱后的副本**（原表不动）。 从后�
 std::algorithms::shuffleValue<T>(items, seed);
 ```
 
-**源码**：[source/magel_generic.cpp:1772](../../source/magel_generic.cpp#L1772)。
+**源码**：[source/magel_generic.cpp:1798](../../source/magel_generic.cpp#L1798)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -256,7 +256,7 @@ Fisher-Yates 洗牌的**引用形式**：直接在 `data` 里 `count` 个元素�
 std::algorithms::shuffleReference<T>(data, count, seed);
 ```
 
-**源码**：[source/magel_generic.cpp:1792](../../source/magel_generic.cpp#L1792)。
+**源码**：[source/magel_generic.cpp:1818](../../source/magel_generic.cpp#L1818)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -297,7 +297,7 @@ Pair corresponding elements; excess elements in the longer list are ignored.
 std::algorithms::zipValue<T, U>(left, right);
 ```
 
-**源码**：[source/magel_generic.cpp:1806](../../source/magel_generic.cpp#L1806)。
+**源码**：[source/magel_generic.cpp:1832](../../source/magel_generic.cpp#L1832)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -336,7 +336,7 @@ void sortReference<T>(T mut& data, int64 count);
 std::algorithms::sortReference<T>(data, count);
 ```
 
-**源码**：[source/magel_generic.cpp:1836](../../source/magel_generic.cpp#L1836)。
+**源码**：[source/magel_generic.cpp:1862](../../source/magel_generic.cpp#L1862)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -375,7 +375,7 @@ void reverseReference<T>(T mut& data, int64 count);
 std::algorithms::reverseReference<T>(data, count);
 ```
 
-**源码**：[source/magel_generic.cpp:1841](../../source/magel_generic.cpp#L1841)。
+**源码**：[source/magel_generic.cpp:1867](../../source/magel_generic.cpp#L1867)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -415,7 +415,7 @@ int64 findReference<T>(T const& data, int64 count, T value);
 std::algorithms::findReference<T>(data, count, value);
 ```
 
-**源码**：[source/magel_generic.cpp:1854](../../source/magel_generic.cpp#L1854)。
+**源码**：[source/magel_generic.cpp:1880](../../source/magel_generic.cpp#L1880)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -455,7 +455,7 @@ int64 binarySearchReference<T>(T const& data, int64 count, T value);
 std::algorithms::binarySearchReference<T>(data, count, value);
 ```
 
-**源码**：[source/magel_generic.cpp:1864](../../source/magel_generic.cpp#L1864)。
+**源码**：[source/magel_generic.cpp:1890](../../source/magel_generic.cpp#L1890)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -494,7 +494,7 @@ Option<T mut&> minReference<T>(T mut& data, int64 count);
 std::algorithms::minReference<T>(data, count);
 ```
 
-**源码**：[source/magel_generic.cpp:1876](../../source/magel_generic.cpp#L1876)。
+**源码**：[source/magel_generic.cpp:1902](../../source/magel_generic.cpp#L1902)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -533,7 +533,7 @@ Option<T mut&> maxReference<T>(T mut& data, int64 count);
 std::algorithms::maxReference<T>(data, count);
 ```
 
-**源码**：[source/magel_generic.cpp:1888](../../source/magel_generic.cpp#L1888)。
+**源码**：[source/magel_generic.cpp:1914](../../source/magel_generic.cpp#L1914)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -573,7 +573,7 @@ int64 countReference<T>(T const& data, int64 count, T value);
 std::algorithms::countReference<T>(data, count, value);
 ```
 
-**源码**：[source/magel_generic.cpp:1900](../../source/magel_generic.cpp#L1900)。
+**源码**：[source/magel_generic.cpp:1926](../../source/magel_generic.cpp#L1926)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 
@@ -613,7 +613,7 @@ T sumReference<T>(T mut& data, int64 count);
 std::algorithms::sumReference<T>(data, count);
 ```
 
-**源码**：[source/magel_generic.cpp:1911](../../source/magel_generic.cpp#L1911)。
+**源码**：[source/magel_generic.cpp:1937](../../source/magel_generic.cpp#L1937)。
 
 **完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
 

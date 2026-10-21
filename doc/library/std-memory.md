@@ -10,7 +10,7 @@ import std::memory;
 
 ## 公共约定与错误边界
 
-Span<T> 是引用加长度，不拥有缓冲区；iterator 返回元素 mut&。调用者保证底层连续存储有效。Arena.allocate 返回视图，reset/drop 后全部视图失效；不能继续解引用。Memory.stats 返回宿主分配器统计，不代表整个操作系统进程内存。
+Span<T> 是引用加长度，不拥有缓冲区；iterator 返回元素 mut&。调用者保证底层连续存储有效。Arena 是不可复制的拥有型 opcode，显式 move 转移所有权；allocate 返回视图，reset/drop 后全部视图失效，不能继续解引用。Memory.stats 返回宿主分配器统计，不代表整个操作系统进程内存。
 
 ## 参考代码
 
@@ -144,18 +144,17 @@ memory=ok
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-338"></a>`struct Span<T>: Iterator<T mut&>, Index<T, int64>` | `Span<T>` 是"指针 + 长度"的视图，所以它的迭代器**返回元素指针**：
+| 模块 | <a id="symbol-307"></a>`struct Span<T>: Iterator<T mut&>, Index<T, int64>` | `Span<T>` 是"指针 + 长度"的视图，所以它的迭代器**返回元素指针**：
 `for (T mut& p in span) { *p = …; }` 拿到的是可写元素地址，不复制元素；
 只要值就读 `span[i]` 或先 `T v = *p;`。 |
-| Span | <a id="symbol-339"></a>`T mut& data` | 视图引用的连续存储；视图不延长来源的生命周期。 |
-| Span | <a id="symbol-340"></a>`int64 length` | 连续存储中可访问的元素数量。 |
-| 模块 | <a id="symbol-341"></a>`struct MemoryStats` | 当前活跃分配的字节数、块数及历史字节峰值快照。 |
-| MemoryStats | <a id="symbol-342"></a>`int64 liveBytes` | 当前活跃分配的字节数。 |
-| MemoryStats | <a id="symbol-343"></a>`int64 liveBlocks` | 当前活跃分配的块数。 |
-| MemoryStats | <a id="symbol-344"></a>`int64 peakBytes` | 历史活跃分配字节数的峰值。 |
-| 模块 | <a id="symbol-345"></a>`struct Memory` | 内存统计与宿主内存管理操作的静态入口。 |
-| 模块 | <a id="symbol-346"></a>`struct Arena : Drop` | 拥有宿主 arena 句柄的资源包装，集中管理 arena 分配。 |
-| Arena | <a id="symbol-347"></a>`uint64 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
+| Span | <a id="symbol-308"></a>`T mut& data` | 视图引用的连续存储；视图不延长来源的生命周期。 |
+| Span | <a id="symbol-309"></a>`int64 length` | 连续存储中可访问的元素数量。 |
+| 模块 | <a id="symbol-310"></a>`struct MemoryStats` | 当前活跃分配的字节数、块数及历史字节峰值快照。 |
+| MemoryStats | <a id="symbol-311"></a>`int64 liveBytes` | 当前活跃分配的字节数。 |
+| MemoryStats | <a id="symbol-312"></a>`int64 liveBlocks` | 当前活跃分配的块数。 |
+| MemoryStats | <a id="symbol-313"></a>`int64 peakBytes` | 历史活跃分配字节数的峰值。 |
+| 模块 | <a id="symbol-314"></a>`struct Memory` | 内存统计与宿主内存管理操作的静态入口。 |
+| 模块 | <a id="symbol-315"></a>`#NonCopyable opcode Arena` | 不可复制的内存分配区 opcode，reset 或释放后视图失效。 |
 
 ## 函数索引
 
@@ -169,7 +168,6 @@ memory=ok
 | [Arena::create](#api-5) | `static Arena create()` |
 | [Arena::allocate](#api-6) | `Span<char> allocate(int64 bytes)` |
 | [Arena::reset](#api-7) | `void reset()` |
-| [Arena::drop](#api-8) | `void drop()` |
 
 <a id="api-0"></a>
 
@@ -392,7 +390,7 @@ static Arena create();
 std::memory::Arena::create();
 ```
 
-**源码**：[source/std/memory.mgl:57](../../source/std/memory.mgl#L57)。
+**源码**：[source/std/memory.mgl:60](../../source/std/memory.mgl#L60)。
 
 **完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
 
@@ -431,7 +429,7 @@ Span<char> allocate(int64 bytes);
 obj.allocate(bytes);
 ```
 
-**源码**：[source/std/memory.mgl:61](../../source/std/memory.mgl#L61)。
+**源码**：[source/std/memory.mgl:62](../../source/std/memory.mgl#L62)。
 
 **完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
 
@@ -465,42 +463,6 @@ void reset();
 
 ```magel
 obj.reset();
-```
-
-**源码**：[source/std/memory.mgl:67](../../source/std/memory.mgl#L67)。
-
-**完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
-
-<a id="api-8"></a>
-
-### Arena::drop（9）
-
-**声明**
-
-```magel
-void drop();
-```
-
-**行为**
-
-释放对象拥有的资源，调用后遵守本模块失效规则。
-
-**参数**
-
-无显式参数。实例方法使用当前接收者。
-
-**返回值**
-
-无返回值。
-
-**错误与边界**
-
-遵循本页“公共约定与错误边界”。
-
-**调用形式**
-
-```magel
-obj.drop();
 ```
 
 **源码**：[source/std/memory.mgl:68](../../source/std/memory.mgl#L68)。

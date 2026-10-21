@@ -32,7 +32,7 @@ int64 main() {
     Timer timer = Timer::afterMillis(2);
     assert(timer.isValid());
     auto tick = std::event::receiveFor(1000);
-    assert(tick.isReady() && tick.value.timer == timer.handle);
+    assert(tick.isReady() && tick.value.timer == timer.id());
     timer.stop();
     assert(std::event::tryReceive().status == 1);
     println("events ok");
@@ -59,13 +59,12 @@ events ok
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-61"></a>`struct Event` | 显式接收的定时或宿主事件值。 |
-| Event | <a id="symbol-62"></a>`int64 timer` | 定时事件的宿主资源。 |
-| Event | <a id="symbol-63"></a>`int64 tag` | 宿主投递的事件标签。 |
-| Event | <a id="symbol-64"></a>`int64 source` | 被适配的源游标或连续存储。 |
-| Event | <a id="symbol-65"></a>`int64 missed` | 周期通知合并时错过的周期数量。 |
-| 模块 | <a id="symbol-66"></a>`struct Timer : Drop` | 宿主定时事件的资源包装；通过方法创建、停止与释放。 |
-| Timer | <a id="symbol-67"></a>`int64 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
+| 模块 | <a id="symbol-60"></a>`struct Event` | 显式接收的定时或宿主事件值。 |
+| Event | <a id="symbol-61"></a>`int64 timer` | 定时事件的宿主资源。 |
+| Event | <a id="symbol-62"></a>`int64 tag` | 宿主投递的事件标签。 |
+| Event | <a id="symbol-63"></a>`int64 source` | 被适配的源游标或连续存储。 |
+| Event | <a id="symbol-64"></a>`int64 missed` | 周期通知合并时错过的周期数量。 |
+| 模块 | <a id="symbol-65"></a>`struct Timer` | 不可复制的定时源所有者，事件中的 timer 仅为来源标识。 |
 
 ## 函数索引
 
@@ -81,8 +80,8 @@ events ok
 | [Timer::everyMillis](#api-7) | `static Timer everyMillis(int64 millis)` |
 | [Timer::afterMillis](#api-8) | `static Timer afterMillis(int64 millis)` |
 | [Timer::isValid](#api-9) | `bool isValid()` |
-| [Timer::stop](#api-10) | `void stop()` |
-| [Timer::drop](#api-11) | `void drop()` |
+| [Timer::id](#api-10) | `int64 id()` |
+| [Timer::stop](#api-11) | `void stop()` |
 
 <a id="api-0"></a>
 
@@ -118,7 +117,7 @@ std::concurrency::Receive<Event> receiveFor(int64 millis);
 std::event::receiveFor(millis);
 ```
 
-**源码**：[source/std/event.mgl:19](../../source/std/event.mgl#L19)。
+**源码**：[source/std/event.mgl:20](../../source/std/event.mgl#L20)。
 
 **完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
 
@@ -154,7 +153,7 @@ std::concurrency::Receive<Event> receive();
 std::event::receive();
 ```
 
-**源码**：[source/std/event.mgl:30](../../source/std/event.mgl#L30)。
+**源码**：[source/std/event.mgl:31](../../source/std/event.mgl#L31)。
 
 **完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
 
@@ -190,7 +189,7 @@ std::concurrency::Receive<Event> tryReceive();
 std::event::tryReceive();
 ```
 
-**源码**：[source/std/event.mgl:31](../../source/std/event.mgl#L31)。
+**源码**：[source/std/event.mgl:32](../../source/std/event.mgl#L32)。
 
 **完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
 
@@ -229,7 +228,7 @@ int64 post(int64 tag, int64 source);
 std::event::post(tag, source);
 ```
 
-**源码**：[source/std/event.mgl:32](../../source/std/event.mgl#L32)。
+**源码**：[source/std/event.mgl:33](../../source/std/event.mgl#L33)。
 
 **完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
 
@@ -265,7 +264,7 @@ void close();
 std::event::close();
 ```
 
-**源码**：[source/std/event.mgl:33](../../source/std/event.mgl#L33)。
+**源码**：[source/std/event.mgl:34](../../source/std/event.mgl#L34)。
 
 **完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
 
@@ -303,7 +302,7 @@ static Timer everyNanos(int64 nanos);
 std::event::Timer::everyNanos(nanos);
 ```
 
-**源码**：[source/std/event.mgl:37](../../source/std/event.mgl#L37)。
+**源码**：[source/std/event.mgl:45](../../source/std/event.mgl#L45)。
 
 **完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
 
@@ -341,7 +340,7 @@ static Timer afterNanos(int64 nanos);
 std::event::Timer::afterNanos(nanos);
 ```
 
-**源码**：[source/std/event.mgl:38](../../source/std/event.mgl#L38)。
+**源码**：[source/std/event.mgl:49](../../source/std/event.mgl#L49)。
 
 **完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
 
@@ -379,7 +378,7 @@ static Timer everyMillis(int64 millis);
 std::event::Timer::everyMillis(millis);
 ```
 
-**源码**：[source/std/event.mgl:39](../../source/std/event.mgl#L39)。
+**源码**：[source/std/event.mgl:53](../../source/std/event.mgl#L53)。
 
 **完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
 
@@ -417,7 +416,7 @@ static Timer afterMillis(int64 millis);
 std::event::Timer::afterMillis(millis);
 ```
 
-**源码**：[source/std/event.mgl:44](../../source/std/event.mgl#L44)。
+**源码**：[source/std/event.mgl:58](../../source/std/event.mgl#L58)。
 
 **完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
 
@@ -453,13 +452,49 @@ bool isValid();
 obj.isValid();
 ```
 
-**源码**：[source/std/event.mgl:49](../../source/std/event.mgl#L49)。
+**源码**：[source/std/event.mgl:63](../../source/std/event.mgl#L63)。
 
 **完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
 
 <a id="api-10"></a>
 
-### Timer::stop（11）
+### Timer::id（11）
+
+**声明**
+
+```magel
+int64 id();
+```
+
+**行为**
+
+只返回来源标识，不转移释放责任。
+
+**参数**
+
+无显式参数。实例方法使用当前接收者。
+
+**返回值**
+
+`int64`。只返回来源标识，不转移释放责任。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+obj.id();
+```
+
+**源码**：[source/std/event.mgl:65](../../source/std/event.mgl#L65)。
+
+**完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
+
+<a id="api-11"></a>
+
+### Timer::stop（12）
 
 **声明**
 
@@ -489,42 +524,6 @@ void stop();
 obj.stop();
 ```
 
-**源码**：[source/std/event.mgl:50](../../source/std/event.mgl#L50)。
-
-**完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
-
-<a id="api-11"></a>
-
-### Timer::drop（12）
-
-**声明**
-
-```magel
-void drop();
-```
-
-**行为**
-
-释放对象拥有的资源，调用后遵守本模块失效规则。
-
-**参数**
-
-无显式参数。实例方法使用当前接收者。
-
-**返回值**
-
-无返回值。
-
-**错误与边界**
-
-遵循本页“公共约定与错误边界”。
-
-**调用形式**
-
-```magel
-obj.drop();
-```
-
-**源码**：[source/std/event.mgl:51](../../source/std/event.mgl#L51)。
+**源码**：[source/std/event.mgl:66](../../source/std/event.mgl#L66)。
 
 **完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
