@@ -20,7 +20,7 @@ namespace ipage
 namespace
 {
 
-/** 主表别名（与 Java 版一致）。 */
+/** 主表别名。 */
 constexpr std::string_view kMainAlias = "t_";
 
 /**

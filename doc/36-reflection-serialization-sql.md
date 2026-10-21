@@ -83,3 +83,5 @@ struct Person {
 完整可运行样例见 [反射字段](../example/samples/reflect_fields.mgl)、
 [反射序列化](../example/samples/reflect_serialization.mgl) 和
 [动态 SQL](../example/samples/sql_ipage.mgl)。
+
+ipage 副本仅保留依赖 C++17 标准库的 SQL 生成核心；Java/Maven、重复数据库源码及连接、会话和模式同步层已移除。SQLite 方言与执行适配由 Magel 的 std::sql 胶水维护。

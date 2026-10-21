@@ -62,3 +62,5 @@ execution. They never interpolate parameter values as a fallback.
 Runnable examples: [fields](../../example/samples/reflect_fields.mgl),
 [serialization](../../example/samples/reflect_serialization.mgl), and
 [SQL](../../example/samples/sql_ipage.mgl).
+
+The ipage copy contains only the C++17 SQL generation core. Java/Maven, duplicate database sources, connections, sessions, and schema synchronization have been removed. SQLite dialect and execution adapters belong to Magel std::sql glue.

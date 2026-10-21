@@ -647,7 +647,7 @@ int runCli(int argc, char **argv)
         ok = copy(root / "magel/library/stackvm" / name, Memory::String("runtime/") + name) && ok;
     for (const char *name : Cas::Assets::kCoreAssets)
         ok = copy(root / "magel/library/caspp" / name, Memory::String("caspp/") + name) && ok;
-    for (const char *name : {"sql.hpp", "sql.cpp", "dialect.hpp", "dialect.cpp", "model.hpp", "field.hpp", "schema.hpp", "session.hpp", "connection.hpp", "connection.cpp"})
+    for (const char *name : {"sql.hpp", "sql.cpp", "dialect.hpp", "dialect.cpp", "model.hpp", "field.hpp"})
         ok = copy(root / "magel/library/ipage/source/ipage" / name, Memory::String("ipage/") + name) && ok;
     ok = copy(root / "magel/library/ipage/LICENSE", "ipage/LICENSE") && ok;
     for (const char *name : {"toml_source.hpp", "toml_source.cpp"})
