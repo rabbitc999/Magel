@@ -61,7 +61,7 @@ def generate():
     macro_sections = re.split(r'(?=^## )', (ROOT / macro_source).read_text(encoding='utf-8'), flags=re.M)
     keywords['macro'] = dict(name='macro', token='$macro', syntax='$macro NAME<T:arg>[..Attrs](arg, ..Args){Body}\n...\n$end_macro',
                              documentation='\n\n'.join(section for section in macro_sections if section.startswith(('## 编译期卫生', '## 参数组', '## 宏泛型', '## 五类', '## 正则'))), source=macro_source)
-    assert 'break' in keywords and 'struct' in keywords and len(book) >= 28
+    assert 'break' in keywords and 'struct' in keywords and len(book) >= 25
     images = [dict(path='images/' + path.name, hex=path.read_bytes().hex())
               for path in sorted((ROOT / 'doc/book/images').glob('*')) if path.is_file()]
     api_pages = {path.name: path.read_text(encoding='utf-8') for path in sorted((ROOT / 'doc/library').glob('*.md'))}

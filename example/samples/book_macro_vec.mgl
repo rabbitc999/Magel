@@ -1,0 +1,19 @@
+$macro vec<T:first>[first,...rest]
+{
+    List<T> result;
+    result.push(first);
+    $for element in rest
+    result.push(element);
+    $end_for
+    yield result;
+}
+$end_macro
+
+int64 main()
+{
+    List<int64> result;
+    result.push(99);
+    List<int64> values = $vec[1, 2, 3];
+    println("{} {} {}", values.len(), values.at(2), result.at(0));
+    return 0;
+}

@@ -21,12 +21,11 @@ See [current capabilities](doc/en/17-capabilities.md) for implemented features, 
 
 ## Compilation
 
-It completes type checking, generic monomorphisation and an independent borrow
-check before emitting quadruple IR and assembling VM instructions. The `.svmb` format 5
+Conditional preprocessing precedes the generated parser. Hygienic AST macros expand during semantic analysis alongside type inference. After name, type, generic and borrow checks, the compiler generates and optimizes quadruples before assembling VM instructions. The `.svmb` format 5
 stores VM instructions, a lowered internal execution sequence and required metadata; it contains
 no quadruple text. Older bytecode must be recompiled.
 
-![Magel compilation: source, preprocessing, parsing, checking, VM assembly and three outputs](doc/images/magel-compilation-en.png)
+![Magel compilation: conditional preprocessing, parsing, semantic macro expansion, borrow checks, quadruple optimization and VM assembly](doc/images/magel-compilation-en.png)
 
 ## Execution
 
@@ -74,7 +73,7 @@ Companion resources:
 
 - [`example/samples/`](example/samples/) — runnable formal samples; expected stdout in [`example/expected/`](example/expected/).
 - [`example/samples-error/`](example/samples-error/) — samples expected to fail; diagnostics in [`example/expected-error/`](example/expected-error/).
-- [`doc/examples/`](doc/examples/) — examples that need a companion project layout (ABI, SQLite, svmb, GUI).
+- [`doc/examples/`](doc/examples/) — examples that need a companion project layout (ABI, SQLite, svmb).
 - [Full grammar reference (EBNF)](doc/14-grammar-ebnf.md) — the authoritative form of the grammar.
 
 The 36 old developer-facing chapters have been removed; the 7 that are standalone specs
@@ -261,11 +260,10 @@ magel/
 ├── doc/                            user-facing documentation (00–20, 99)
 │   ├── en/                         English edition (index + 00–11, 13, 99; 15 files)
 │   └── library/                    library API reference (one page per module)
-├── example/                        examples (samples, error samples, web-students, …)
+├── example/                        examples (samples, error samples, calculator, …)
 ├── tests/                          Python acceptance scripts
 ├── tools/                          helper scripts (icon, overview figure, …)
-├── gui/                            cross-platform GUI example
-└── sql-magel/                      student information management sample project
+└── sql-magel/                      minimal SQL usage example
 ```
 
 Full details live in the README of each directory and in the [documentation](#documentation)

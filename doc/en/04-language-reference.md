@@ -624,7 +624,7 @@ import std::text;
 ```
 
 - A module is declared with `module name::subname;`, usually on the first line.
-- After `import` you can write fully qualified paths.
+- After `import`, use fully qualified names or uniquely visible short names; qualify a name explicitly when imports conflict.
 - The core module `std::lang` (`println` / `format` / `assert` / `len` / `Any` …) is loaded
   automatically and needs no `import`.
 - Visibility, exports and cross-module generics: see

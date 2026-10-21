@@ -322,7 +322,6 @@ if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
     run_step "运行新增书本示例与 LaTeX 同步回归" "$PYTHON" tests/magel_book_updates.py
     run_step "运行嵌套函数值的内联 fn 实参回归" "$PYTHON" tests/magel_inline_fn_arguments.py
     run_step "运行胶水调用 Magel 函数的 VM回归" "$PYTHON" tests/magel_native_callbacks.py
-    run_step "运行 GUI 显式事件桥接回归" "$PYTHON" tests/magel_gui_events.py --magel magel
     run_step "运行卫生宏高阶闭包编辑器回归" "$PYTHON" tests/magel_macro_editor.py --magel magel
     run_step "运行共享语义、宏分组提示与安全重构回归" "$PYTHON" tests/magel_lsp_semantic_features.py
     run_step "运行 pause 终端输出顺序回归" "$PYTHON" tests/magel_pause_output.py

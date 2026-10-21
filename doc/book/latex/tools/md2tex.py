@@ -12,7 +12,7 @@ import re
 HERE = os.path.dirname(os.path.abspath(__file__))
 BOOK = os.path.normpath(os.path.join(HERE, '..', '..'))     # doc/book
 OUT = os.path.join(BOOK, 'latex', 'chapters')
-REPO_WEB = 'https://github.com/rabbitc999/Magel'
+REPO_WEB = 'https://gitee.com/rabbitc999/magel'
 
 FILES = [
     ('01-第一个程序.md', 'ch01.tex'),
@@ -37,9 +37,6 @@ FILES = [
     ('20-注解与反射.md', 'ch20.tex'),
     ('21-与C互操作.md', 'ch21.tex'),
     ('22-交付与部署.md', 'ch22.tex'),
-    ('23-综合项目.md', 'ch23.tex'),
-    ('24-学生信息管理系统.md', 'ch24.tex'),
-    ('25-嵌入式Linux部署.md', 'ch25.tex'),
     ('A-常见错误速查.md', 'appendix-a.tex'),
     ('B-标准库速查.md', 'appendix-b.tex'),
     ('README.md', 'preface.tex'),

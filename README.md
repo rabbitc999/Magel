@@ -15,10 +15,10 @@ Magel 编译器由本仓库的 `source/magel.gram` 经 [ParseEngine](https://git
 
 ## 编译过程
 
-类型检查、泛型单态化与独立借用检查完成后，编译器生成四元式中间产物，再组装 VM 指令。
+条件预处理之后，文法生成的前端构建 AST；卫生宏在语义分析期间展开，并与类型推导配合。名称、类型、泛型和独立借用检查完成后，生成并优化四元式，再组装 VM 指令。
 `.svmb` 保存 VM 指令、预先降低的内部执行序列及必要元数据；四元式文本不进入字节码文件。
 
-![Magel 编译流程：源码、预处理、解析、语义与借用检查、VM 指令及三种输出](doc/images/magel-compilation.png)
+![Magel 编译流程：源码、条件预处理、解析、语义期宏展开、借用检查、四元式优化与 VM 装配](doc/images/magel-compilation.png)
 
 ## 运行过程
 
@@ -62,7 +62,7 @@ Magel 编译器由本仓库的 `source/magel.gram` 经 [ParseEngine](https://git
 
 - [`example/samples/`](example/samples/) —— 可运行的正式样例，标准输出在 [`example/expected/`](example/expected/)。
 - [`example/samples-error/`](example/samples-error/) —— 预期报错的样例，诊断文本在 [`example/expected-error/`](example/expected-error/)。
-- [`doc/examples/`](doc/examples/) —— 需要配套工程布局的示例（ABI、SQLite、svmb、GUI）。
+- [`doc/examples/`](doc/examples/) —— 需要配套工程布局的示例（ABI、SQLite、svmb）。
 - [完整语法参考（EBNF）](doc/14-grammar-ebnf.md) —— 文法的权威形式。
 
 旧的开发者向 36 章已删除，其中属独立规格的 7 篇（[14 EBNF](doc/14-grammar-ebnf.md)–[20 内存分配器](doc/20-memory-allocator.md)）
@@ -215,11 +215,10 @@ magel/
 ├── doc/                            面向使用者的文档（00–20、99）
 │   ├── en/                         英文版（入口 + 00–11、13、99，共 15 篇）
 │   └── library/                    库函数 API 参考（按模块分页）
-├── example/                        示例（samples、错误样例、web-students 等）
+├── example/                        示例（samples、错误样例、calculator 等）
 ├── tests/                          Python 验收脚本
 ├── tools/                          图标与总览图等辅助脚本
-├── gui/                            跨平台 GUI 示例
-└── sql-magel/                      学生信息管理示例工程
+└── sql-magel/                      SQL 最小用法示例
 ```
 
 完整说明见对应目录下的 README 与上面的[文档](#文档)章节。

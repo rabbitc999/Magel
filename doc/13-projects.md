@@ -11,11 +11,7 @@
 
 | 示例 | 位置 | 演示什么 | 前置 |
 | --- | --- | --- | --- |
-| [简易 GUI](#31-简易-gui-gui) | [`example/gui/`](../example/gui) | 窗口与控件、事件回调经运行时投递器交付 | Windows + MinGW，或 Qt5 |
-| [海龟绘图](#32-海龟绘图-turtle_winapi) | [`doc/examples/turtle_winapi/`](examples/turtle_winapi/) | `abi` 块 + 动态库 + GDI 画布 | Windows + MinGW |
-| [Web 学生信息管理](#41-web-学生信息管理) | [`example/web-students/`](../example/web-students/) | `std::net` 起 HTTP、`std::sql` 访问 SQLite、同源页面 | 无 |
-| [学生成绩管理 · 控制台版](#42-学生成绩管理--控制台版) | [`example/sql-magel/example/ipage-student/`](../example/sql-magel/example/ipage-student) | 真实 MySQL 库、四角色权限矩阵、菜单回收 | MySQL |
-| [学生成绩管理 · 前后端分离版](#43-学生成绩管理--前后端分离版) | [`example/sql-magel/example/ipage-student-server/`](../example/sql-magel/example/ipage-student-server) | 后端只出 JSON API、前端独立托管、跨源 CORS | MySQL + 静态服务器 |
+| [海龟绘图](#31-海龟绘图-turtle_winapi) | [`doc/examples/turtle_winapi/`](examples/turtle_winapi/) | `abi` 块 + 动态库 + GDI 画布 | Windows + MinGW |
 | [计算器（两种 AST）](#51-计算器两种-ast) | [`example/calculator/`](../example/calculator/) | 递归下降解析、值语义下的递归拥有 | 无 |
 | [注解与反射](#53-注解与反射) | [`example/reflection/`](../example/reflection/) | 编译期注解、运行期元数据查询 | 需开启反射构建宏 |
 | [标准库配套程序](#54-标准库配套程序) | [`doc/examples/library/`](examples/library/) | io / sqlite / watchdog / reflect 四段可跑程序 | 部分需反射 |
@@ -35,41 +31,16 @@
 - **怎么验证** —— 对应的专项回归脚本（跑得过才有资格叫"示例"）；
 - **边界** —— 前置条件，以及它**故意没做**的事。
 
-示例分两类，别混：**应用型**（GUI、Web 学生管理、成绩管理）演示"能拿它做出什么"；
+示例分两类，别混：**应用型**（学生信息管理、绘图）演示"能拿它做出什么"；
 **能力型**（计算器、反射、模块编译、标准库配套）演示"某个语言/库特性长什么样"。
 
 ---
 
-## 3. 桌面与 GUI
+## 3. 桌面绘图与游戏
 
-这三个都要求**有可用的交互桌面**（无头环境请用各节的 Qt 无头路径）。
+桌面示例需要可用的交互桌面；无头验证方式见各示例说明。
 
-### 3.1 简易 GUI（gui）
-
-**演示什么**：Magel 侧只写 [`gui.mgl`](../example/gui/gui.mgl) 的声明，窗口与控件在宿主库里实现
-（[`example/gui/winapi/gui.c`](../example/gui/winapi/gui.c) 或 [`example/gui/qt/gui_qt.cpp`](../example/gui/qt/gui_qt.cpp)），
-两者之间只传固定宽度整数与 UTF-8 字符串——**不传窗口指针或控件结构**。
-
-GUI 事件经 C 回调交给弱引用运行时投递器，在有界事件队列中排队；Magel 程序显式接收事件值并处理，VM 不自动调用用户函数。队列满和运行结束时投递返回明确状态。
-
-**怎么跑**：
-
-```powershell
-python tests/magel_desktop.py        # WinAPI：出 GUI 与海龟两个产物
-```
-
-```sh
-python gui/test_qt.py                # Qt 离屏：构建、UTF-8 往返、事件注入、pumpEvery
-```
-
-**怎么验证**：`tests/magel_desktop.py`（WinAPI）、`example/gui/test_qt.py`（Qt 离屏）、
-`example/gui/test_winapi.py`、`example/gui/test_program.py`。
-
-**边界**：客户区尺寸限 100–4096 像素，控件 ID 在 1–65535 之间且不可重复；
-共享库必须与可执行文件处于同一工作目录（胶水按相对路径定位）；
-事件值约定为「按钮点击 = 控件 ID（>0）、关窗 = -1、Qt 周期事件 = 0」。
-
-### 3.2 海龟绘图（turtle_winapi）
+### 3.1 海龟绘图（turtle_winapi）
 
 **怎么跑**：
 
@@ -88,96 +59,9 @@ Set-Location .\build\magel-turtle-winapi
 
 ---
 
-## 4. Web 与服务端
+## 4. 数据库示例
 
-### 4.1 Web 学生信息管理
-
-**演示什么**：Magel 自己当服务端——`std::net` 监听 HTTP、`std::sql` 访问真实 SQLite，
-浏览器调**同源** JSON 接口，不需要任何 Web 框架或前端依赖。支持新增、查看、编辑、删除，
-页面可按学号 / 姓名 / 邮箱过滤，服务端做唯一性与范围校验。
-
-**怎么跑**：
-
-```powershell
-.\magel.exe run example/web-students/main.mgl --out build/web-students -- build/students.db 8080
-```
-
-然后访问 `http://127.0.0.1:8080/`。SQLite 已静态内置，无需准备 DLL。
-`--` 之后的参数直接传给 Magel `main`（依次是库文件、端口、请求上限、页面路径、就绪文件）；
-SQLite **不会**自动建目录，`build/` 要事先存在。
-
-**怎么验证**：
-
-后者用真实浏览器操作表单，并核对 HTML 注入防护与落盘 SQL 行数。
-
-**边界**：本地单连接顺序处理的文本 HTTP；不支持 TLS、分块传输、长连接、文件上传、
-登录与权限管理。建表语句、自增主键与 `last_insert_rowid()` 是 SQLite 方言，
-换后端时要一并改写这些 SQL。
-
-### 4.2 学生成绩管理 · 控制台版
-
-**演示什么**：把 ipage-student（Java + Spring MVC + MyBatis 的实训工程）的登录与增删查改
-用 Magel 重写成控制台程序，**不依赖 ipage 框架**，直接读写它自己的 `student` 库。
-四角色权限矩阵（学生 3 / 教师 5 / 管理员 5 / 超管 6 个菜单项）、菜单先过滤再判两次、
-删除前打印影响面，都在一个文件里。
-
-**怎么跑**：
-
-```sh
-magel sql-magel/example/ipage-student/main.mgl                      # 库已存在
-magel sql-magel/example/ipage-student/main.mgl -- --init ../ipage-student/student.sql
-magel sql-magel/example/ipage-student/main.mgl -- --answers sql-magel/tests/input_ipage.txt
-```
-
-`--answers` 是脚本化回答，用于自检与演示。
-
-**怎么验证**：`sh sql-magel/tests/check-ipage.sh`（输出应为 `ok ipage` / 检查通过）。
-自检**不碰真实库**：在独立库 `student_check` 里用 `example/sql-magel/tests/fixture_ipage.sql`
-配合 `--reinit` 重建，自增主键每次从 1 开始，脚本跑完后测试库回到初始状态。
-
-**边界**：口令明文比对（`student.sql` 里就是明文），**样式对齐优先于安全增强**；
-详见 [SQL 接口](../example/sql-magel/doc/01-sql-library.md)。
-
-### 4.3 学生成绩管理 · 前后端分离版
-
-**演示什么**：把控制台版升格成**前后端分离**的应用。后端
-[`main.mgl`](../example/sql-magel/example/ipage-student-server/main.mgl) 只提供 `/api/*` 的 JSON 接口
-（`/`、`/index.html` 一律 404），前端 [`web/`](../example/sql-magel/example/ipage-student-server/web)
-是纯静态资源、由**另一个进程**托管，两者不同源，靠 CORS 通信。
-
-| 关注点 | 做法 |
-| --- | --- |
-| 页面归属 | 后端不返回页面，静态资源独立部署 |
-| 跨源 | 每个响应（含 `OPTIONS` 预检）都带 CORS 头，可用 `--allow-origin` 收窄 |
-| 身份 | `Authorization: Bearer <64 位十六进制令牌>`；会话在内存，重启即失效 |
-| 权限 | 权限表是唯一来源，后端逐动作判定；前端菜单与按钮只按 `/api/session` 返回的门槛渲染 |
-| 注入 | 前端一律 `textContent` 写用户数据，不拼 HTML |
-
-**怎么跑**（两个终端）：
-
-```sh
-# ① 后端（库已存在；不存在就加 -- --init ../ipage-student/student.sql）
-magel run sql-magel/example/ipage-student-server/main.mgl --out build/ipage-server -- \
-    --listen-port 8080
-
-# ② 前端静态服务器
-python -m http.server 5500 --directory sql-magel/example/ipage-student-server/web
-```
-
-访问 `http://127.0.0.1:5500/`；后端不在默认 8080 时用
-`http://127.0.0.1:5500/?api=http://127.0.0.1:9000` 覆盖（前端连哪儿只写在
-`web/config.js` 一处）。
-
-**怎么验证**：
-
-接口脚本覆盖登录 / 注销 / 坏令牌、四种权限的模块可见性与动作门槛、五模块增删查改与
-聚合统计、CORS 预检、后端不返回页面、HTTP 报文边界。浏览器脚本另起一个线程内静态服务器，
-**真的跨源**跑一遍登录、按权限收放菜单与按钮、增改查删、统计页与注入防护。
-
-**边界**：无状态 HTTP 上的「最多 3 次登录」由前端计数，绕过前端直连接口就没有次数限制；
-会话没有过期时间与刷新机制；口令仍是明文比对。真要上线必须补哈希、TLS、会话过期与限流。
-
----
+数据库基础用法见[SQL 示例](../example/sql-magel/README.md)，反射与参数化查询见[动态 SQL 说明](36-reflection-serialization-sql.md)。原有学生项目已移除。
 
 ## 5. 语言与库能力示例
 
@@ -273,7 +157,7 @@ python doc/examples/svmb/collect.py --parser ./magel.exe
 
 使用目标 Linux 的 C++17 工具链构建 `library/stackvm/` 和原生胶水，随程序交付
 `.svmb`、数据区及布局文件，并提供宿主使用的系统库。资源预算与执行边界见
-[部署说明](06-deployment.md)及[书稿第 25 章](book/25-嵌入式Linux部署.md)。
+[部署说明](06-deployment.md)及[书稿交付与部署章节](book/22-交付与部署.md)。
 
 ### 7.2 编辑器语言服务器与 VS Code 插件
 
@@ -301,19 +185,13 @@ VS Code 插件在 [`vscode/`](../vscode/)，语法高亮、补全、跳转与断
 | 命令 | 覆盖 |
 | --- | --- |
 | `sh check.sh` | `example/samples/` 全部样例 + 预期输出比对 |
-| `python tests/magel_desktop.py [--turtle-only]` | WinAPI GUI / 海龟两套桌面产物 |
-| `python gui/test_qt.py <目录>`（Linux） | Qt 后端的构建、UTF-8、事件注入与 `pumpEvery` |
-| `python tests/magel_web_students_browser.py --browser …` | Web 学生管理的真浏览器流程 |
-| `sh sql-magel/tests/check-ipage.sh` | 成绩管理控制台版（不碰真实库） |
-| `python tests/magel_ipage_student_server.py` | 成绩管理前后端分离版接口 |
-| `python tests/magel_ipage_student_server_browser.py --browser …` | 前后端分离版的跨源浏览器流程 |
+| `python tests/magel_desktop.py [--turtle-only]` | 海龟绘图的 WinAPI 产物 |
 | `python tests/magel_recursive_ownership.py` | 计算器的两种 AST 表示 |
 | `python tests/magel_annotations.py` | 注解与反射 |
 | `python tests/magel_library_reference.py` | 标准库配套程序 |
 | `python tests/magel_abi_values.py` | C ABI 配套示例 |
 
-需要图形环境或数据库的那几条**不在 `ci.sh` 里**，属于专项回归：桌面类要 Windows + MinGW
-（或 Qt5），成绩管理要本机 MySQL 在跑。
+需要图形环境或数据库的检查属于专项回归：桌面绘图需要 Windows 与 MinGW，外部数据库示例需要对应服务和客户端库。
 
 ---
 

@@ -33,9 +33,9 @@ def main():
         assert run().stdout==run('help').stdout==run('--help').stdout
         assert json.loads(run('--json').stdout)['kind']=='help'
         book=query('book')
-        assert len(book['chapters'])==28,book
+        assert len(book['chapters'])==25,book
         exported=work/'book'
-        assert Path(book['directory'])==exported and book['exportedFiles']==35,book
+        assert Path(book['directory'])==exported and book['exportedFiles']==len(list((ROOT/'doc/book').glob('*.md')))+len(list((ROOT/'doc/book/images').glob('*'))),book
         for path in (ROOT/'doc/book').glob('*.md'):
             assert (exported/path.name).read_text(encoding='utf-8')==path.read_text(encoding='utf-8')
         for path in (ROOT/'doc/book/images').glob('*'):
@@ -43,11 +43,12 @@ def main():
         sentinel=exported/'my-notes.txt';sentinel.write_text('keep',encoding='utf-8')
         query('book')
         assert sentinel.read_text(encoding='utf-8')=='keep'
-        chapter=query('book','24')['chapter']
-        assert chapter['content']==(ROOT/'doc/book/24-学生信息管理系统.md').read_text(encoding='utf-8')
-        assert 'student-system-login.png' in chapter['content']
-        rendered=run('book','24').stdout
-        assert '[图片](images/student-system-login.png)' in rendered and '![' not in rendered,rendered
+        chapter=query('book','1')['chapter']
+        assert chapter['content']==(ROOT/'doc/book/01-第一个程序.md').read_text(encoding='utf-8')
+        assert 'magel-compilation.png' in chapter['content'] and 'magel-execution.png' in chapter['content']
+        rendered=run('book','1').stdout
+        assert '[图片](images/magel-compilation.png)' in rendered and '[图片](images/magel-execution.png)' in rendered,rendered
+        query('book','23',code=1)
         assert query('book','6')['chapter']['id']=='06'
         assert query('book','A')['chapter']['id']=='A'
         assert query('book','不存在',code=1)['diagnostics'][0]['code']=='MGL1701'

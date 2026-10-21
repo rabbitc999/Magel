@@ -1,4 +1,4 @@
-"""构建并验证 WinAPI GUI、海龟绘图及 MAGEL 胶水；产物统一放在 build 下。"""
+"""构建并验证海龟绘图及 MAGEL 胶水；产物统一放在 build 下。"""
 from pathlib import Path
 import argparse
 import os
@@ -29,23 +29,9 @@ def main():
     args = parser.parse_args()
     MAGEL = args.magel.resolve()
     if os.name != 'nt':
-        raise SystemExit('本测试需要 Windows 桌面与 MinGW；Qt 后端使用各库的 test_qt.py')
-    if args.turtle_only:
-        test_turtle()
-        return
-    gui = ROOT / 'example/gui'
-    gui_out = ROOT / 'build/magel-gui-winapi'
-    gui_out.mkdir(parents=True, exist_ok=True)
-    run('gcc', '-std=c11', '-O2', '-Wall', '-Wextra', '-shared', gui / 'winapi/gui.c', '-o', gui_out / 'mcgui.dll', '-luser32', '-lgdi32')
-    run(sys.executable, gui / 'test_winapi.py', gui_out / 'mcgui.dll')
-    run(sys.executable, gui / 'test_program.py', gui_out)
-    override = subprocess.run([str(gui_out / 'counter.exe'), 'close'], cwd=gui_out, env=dict(os.environ, MAGEL_GUI_LIBRARY=str(gui_out / 'mcgui.dll')), capture_output=True, text=True, encoding='utf-8', timeout=30)
-    assert override.returncode == 0 and '你好，Magel' in override.stdout and (not override.stderr), override
-    result = subprocess.run([str(gui_out / 'qt_events.exe')], cwd=gui_out, capture_output=True, text=True, encoding='utf-8', timeout=30)
-    assert result.returncode == 0 and 'clicks=1 ticks=1 closed=1' in result.stdout and (not result.stderr), result
-    print('GUI 事件：clicks=1 ticks=1 closed=1，无运行错误或资源诊断', flush=True)
+        raise SystemExit('本测试需要 Windows 桌面与 MinGW；请在 Windows 桌面运行')
     test_turtle()
-    print('GUI 与海龟的 WinAPI 端到端测试通过', flush=True)
+    print("海龟的 WinAPI 端到端测试通过", flush=True)
 
 def test_turtle():
     """验证海龟 C ABI 胶水及实际输出画布。"""

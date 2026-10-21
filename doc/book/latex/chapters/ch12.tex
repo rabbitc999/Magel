@@ -593,7 +593,7 @@ int64 main()
 
 导入 \texttt{std:\allowbreak{}:\allowbreak{}io} 后，\texttt{File\allowbreak{}Stream.\allowbreak{}read\allowbreak{}String(\allowbreak{}count)\allowbreak{}} 从当前游标读至多 count 个字节，\texttt{read\allowbreak{}Line(\allowbreak{})\allowbreak{}} 读一行，\texttt{read\allowbreak{}All\allowbreak{}String(\allowbreak{}max\allowbreak{}Bytes)\allowbreak{}} 读到 EOF。三者返回 \texttt{Result<\allowbreak{}String,\allowbreak{}Io\allowbreak{}Error>\allowbreak{}}；全读默认预算 16 MiB，保留文件换行字节，零字节文本报错。已有按路径的 \texttt{read\allowbreak{}All\allowbreak{}Text(\allowbreak{}path)\allowbreak{}} 继续可用。直接持有 File 句柄时有 \texttt{file\allowbreak{}Read\allowbreak{}String}、\texttt{file\allowbreak{}Read\allowbreak{}Line}、\texttt{file\allowbreak{}Read\allowbreak{}All\allowbreak{}String} 包装，错误会 panic。
 
-完整验证程序见 \href{https://github.com/rabbitc999/Magel/blob/master/example/samples/std_read_lines.mgl}{行输入} 与 \href{https://github.com/rabbitc999/Magel/blob/master/example/samples/std_file_strings.mgl}{文件读取}。
+完整验证程序见 \href{https://gitee.com/rabbitc999/magel/blob/master/example/samples/std_read_lines.mgl}{行输入} 与 \href{https://gitee.com/rabbitc999/magel/blob/master/example/samples/std_file_strings.mgl}{文件读取}。
 
 \section{小结}
 
@@ -625,3 +625,53 @@ int64 main()
 第五部分讲抽象——怎么写出「不关心具体类型」的代码。第一个是接口，它解决「一堆类型都有同一个动作」的问题。
 
 翻到\hyperref[ch:13]{第 13 章 接口与运行期多态}。
+
+\section{边界与验证}
+
+String 的长度、下标和切片按当前 API 规定的单位使用。本章基础 String 操作按字节；处理 UTF-8 时不能任意截断多字节编码，也不能把代码点直接等同于视觉字形。
+
+\section{习题}
+
+前两题用于理解和基本实现，第三题检查边界，最后一题为综合挑战。先独立完成，再核对参考解答。
+
+\begin{enumerate}
+
+\item ASCII 文本与中文文本的显示字数能否直接预测字节长度？
+
+\item 拼接姓名和欢迎语，保留输入中的中文与引号。
+
+\item 为输入设计字节长度限制，并在错误提示中明确单位。
+
+\item 挑战：比较单次拼接和循环累计拼接的用途与成本。
+
+\end{enumerate}
+
+\subsection{参考解答与验收要点}
+
+\begin{enumerate}
+
+\item ASCII 的单字节性质不能推广到中文 UTF-8；分别测量实际字节数并说明使用的 API。
+
+\item 只按字符串数据处理；输出验证内容，不额外插入或删除原始文本。
+
+\item 边界为上限字节数，测试恰好到边界与超出；如果还要求完整 UTF-8，必须单独检查。
+
+\item 反复构造不可变值可能复制已有内容，优先使用适合的收集或连接接口；用相同输入验证结果一致。
+
+\end{enumerate}
+
+\section{番外：施氏数“字符”}
+
+改编自赵元任《施氏食狮史》的同音构思，以下为编程主题的独立改写。
+
+施先生收来一份中文名单，账房要他限制长度。他见屏幕上只有三个字，便将上限设为三。程序却报告超长，先生以为电脑不识字。
+
+学徒找来同样写着三个符号的另一张纸，一张全是字母，一张全是汉字。两张纸看起来一样长，存下的字节数却不一样。先生问能否每隔一个字节切开，学徒照做，结果只剩一串破碎的字形。
+
+先生说自己读书多年，从没把一个字读成几片。学徒答屏幕负责显示，字节负责存储，中间还隔着编码。若要限制人读到的文字，必须先说明按字节、代码点还是更接近视觉的单位计数。
+
+后来施先生在验收表上添了一栏“长度单位”。别人笑他连数到三都要写说明，他却再也不肯只听一句“三个字符，肯定放得下”。
+
+\subsection{技术对照}
+
+String 的长度、下标和切片按当前 API 规定的单位使用。本章基础 String 操作按字节；处理 UTF-8 时不能任意截断多字节编码，也不能把代码点直接等同于视觉字形。
