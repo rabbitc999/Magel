@@ -281,7 +281,7 @@ int64 main()
 
 \texttt{match (\allowbreak{}self)\allowbreak{}} 就是「看看我自己是哪个变体」。把「一个形状的面积」这件事放在形状自己身上，用起来是 \texttt{shape.\allowbreak{}area(\allowbreak{})\allowbreak{}} ——这正是前面说的「把行为和数据放在一起」。
 
-\subsection{为枚举派生接口}
+\subsection*{为枚举派生接口}
 
 枚举也能使用 \texttt{\#derive}。相等判断先区分变体，再比较当前活动变体的载荷；哈希同时计入变体和载荷，克隆保留变体并克隆载荷。
 
@@ -380,7 +380,7 @@ int64 main()
 
 区间匹配只支持整数和 \texttt{char}，不接受浮点、String 或自定义类型的区间。实现 \texttt{Equal<\allowbreak{}T>\allowbreak{}} 的自定义类型可以使用普通值模式，编译器通过相等协议比较。需要对浮点或 String 判断上下界时，在分支守卫中写出比较条件。
 
-\subsection{区间重叠的警告}
+\subsection*{区间重叠的警告}
 
 整数区间与区间、单值与区间的静态重叠会产生 \texttt{MGL1601} 警告，程序仍可编译。编译器按开闭端点和完整的 int64/uint64 精度判断相交，不会把警告改成类型错误，也不会重排分支；运行时仍按原顺序和守卫选择。重复的无守卫单值模式则沿用错误规则。命令行、JSON 与编辑器使用同一警告级别。
 
@@ -454,7 +454,7 @@ int64 main()
 
 一条经验：当「分支条件是某个值的形状/范围」时用 \texttt{match}；当「分支条件是几个东西的组合判断」时用 \texttt{if}。
 
-\subsection{\texttt{match} 表达式}
+\subsection*{\texttt{match} 表达式}
 
 可以直接把匹配结果用于声明、赋值或调用。所有分支必须产生同类型值；枚举仍要求穷尽，守卫不算覆盖。
 
@@ -555,7 +555,7 @@ copy original
 
 \end{enumerate}
 
-\subsection{参考解答与验收要点}
+\subsection*{参考解答与验收要点}
 
 \begin{enumerate}
 
@@ -581,6 +581,6 @@ copy original
 
 大灰狼想添一句“遇见麻烦便算木屋”，小猪不同意。它只好重新写下砖屋的处理结果：当前不能拆，必须明确返回。那天它少赚了一单，却终于知道“有一个兜底”与“认真处理了每一种情况”并不是同一回事。
 
-\subsection{技术对照}
+\subsection*{技术对照}
 
 枚举变体表达有限分类。match 的覆盖与守卫需要一起考虑；兜底分支可能隐藏新增变体，重叠警告也不应被误写成所有场合都拒绝编译。

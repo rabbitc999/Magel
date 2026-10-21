@@ -92,7 +92,7 @@ magel: if 条件必须是 bool，现在给的是 int64（数值条件请显式�
 Magel 没有三目运算符。 \texttt{cond ? a :\allowbreak{} b} 是语法错误（第 3 章提过）。简单替换就用 \texttt{if /\allowbreak{} else} 赋值；分支多了，第 10 章的 \texttt{match} 更好读。可以使用 \texttt{if (\allowbreak{}条件)\allowbreak{} \{ 值一 \} else \{ 值二 \}} 条件表达式；只求值命中的分支。
 \end{tip}
 
-\subsection{条件也能产生值}
+\subsection*{条件也能产生值}
 
 \texttt{if} 可以出现在变量定义、赋值、函数实参和其他表达式里。只执行选中的分支，条件和分支都按短路规则求值。
 
@@ -466,7 +466,7 @@ int64 main()
 
 两个都只作用于最内层那一圈循环。想从两层里一次跳出来，得靠 \texttt{loop} 带值或者加个标志变量——Magel 没有「带标签的 break」。
 
-\subsection{指定退出哪一层循环}
+\subsection*{指定退出哪一层循环}
 
 \texttt{break;} 退出最近一层循环。\texttt{break level 2;} 退出两层，\texttt{break all;} 退出当前函数里所有包围它的循环。\texttt{level} 与 \texttt{all} 只在这个语法位置识别，其他地方仍是普通变量名。
 
@@ -514,7 +514,7 @@ int64 main()
 
 层级退出不能携带结果，也不能跳出另一个函数的循环；离开路径上的清理照常执行。带值的 \texttt{yield value;} 则交给最近接收结果的值表达式，无值循环不会把这个值截走。返回表达式中禁止 \texttt{break level} / \texttt{break all}，详见第 4 章。
 
-\subsection{带值退出与层级写法小结}
+\subsection*{带值退出与层级写法小结}
 
 \begin{center}
 \begin{tabular}{ll}
@@ -620,7 +620,7 @@ int64 main()
 \par
 \medskip
 
-\subsection{但 Magel 对「一个表达式里读写同一个对象」管得很严}
+\subsection*{但 Magel 对「一个表达式里读写同一个对象」管得很严}
 
 这是 Magel 和 C 差异最大的地方之一。同一个完整表达式里，一个自增减的目标不能再被别的操作读写：
 
@@ -760,7 +760,7 @@ break 和 continue 的目标由语法和所在循环决定。修改嵌套结构�
 
 \end{enumerate}
 
-\subsection{参考解答与验收要点}
+\subsection*{参考解答与验收要点}
 
 \begin{enumerate}
 
@@ -786,6 +786,6 @@ break 和 continue 的目标由语法和所在循环决定。修改嵌套结构�
 
 临走时，他在路上刻下标记。后来再来的人照着走，却仍须先看当前站在哪一层循环里。纸上的门再清楚，也不会替一个没有写出的条件自行打开。
 
-\subsection{技术对照}
+\subsection*{技术对照}
 
 break 和 continue 的目标由语法和所在循环决定。修改嵌套结构后必须重新核对目标；带值退出还需要满足所在表达式的结果类型要求。

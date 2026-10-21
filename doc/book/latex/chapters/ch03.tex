@@ -329,7 +329,7 @@ int64 main()
 二进制的前缀是 \texttt{b} 而不是 \texttt{0b}：\texttt{b1010} 是 10，写 \texttt{0b1010} 会报词法错误。这条容易记混，见本章最后的表。\par 带指数的就是浮点。 \texttt{1e9} 和 \texttt{2.\allowbreak{}5e3} 一样是 \texttt{float64}，所以 \texttt{int64 x =\allowbreak{} 1e9;} 会报「不能隐式转换：float64 -> int64」——浮点往整数里放要签字（见 3.9 节）。
 \end{tip}
 
-\subsection{数字后缀：\texttt{1u} 与 \texttt{1.\allowbreak{}0f}}
+\subsection*{数字后缀：\texttt{1u} 与 \texttt{1.\allowbreak{}0f}}
 
 小写 \texttt{u} 表示无符号整数；没有类型上下文时默认是 \texttt{uint64}。无符号目标类型可以按自己的位宽接收这个字面量，并检查取值范围。它不会隐式变成有符号整数，也不能对无符号字面量直接写一元负号。
 
@@ -536,7 +536,7 @@ int64 main()
 
 反过来 \texttt{(\allowbreak{}int64)\allowbreak{}3.\allowbreak{}9} 得到 \texttt{1}：浮点转整数是直接砍掉小数位，不是四舍五入。要四舍五入得自己想办法（\texttt{std:\allowbreak{}:\allowbreak{}math} 里有取整函数，第 12 章提）。
 
-\subsection{\texttt{cast<\allowbreak{}T>\allowbreak{}(\allowbreak{}value)\allowbreak{}}：把目标类型写清楚}
+\subsection*{\texttt{cast<\allowbreak{}T>\allowbreak{}(\allowbreak{}value)\allowbreak{}}：把目标类型写清楚}
 
 除了前面的 C 风格强转，也可以写 \texttt{cast<\allowbreak{}目标类型>\allowbreak{}(\allowbreak{}值)\allowbreak{}}。这是显式转换，不是允许普通赋值偷偷缩窄。
 
@@ -690,7 +690,7 @@ magel: 整数字面量 200 超出 int8 的取值范围（-128..127）
 
 \end{enumerate}
 
-\subsection{参考解答与验收要点}
+\subsection*{参考解答与验收要点}
 
 \begin{enumerate}
 
@@ -716,6 +716,6 @@ magel: 整数字面量 200 超出 int8 的取值范围（-128..127）
 
 蜩仍说大桶多占地方。先生点头，将一滴水倒进小杯，再问：“那么，这一杯的量法，可以不问范围就拿去量海么？”
 
-\subsection{技术对照}
+\subsection*{技术对照}
 
 数值类型同时规定表示范围和运算行为。显式转换表明转换意图，并不自动证明输入落在目标范围内；先检查边界，再选择表示类型。

@@ -101,7 +101,7 @@ else
 \par
 \medskip
 
-\subsection{越界会被抓到}
+\subsection*{越界会被抓到}
 
 \par
 \medskip
@@ -408,7 +408,7 @@ void addOne(List<int64> mut& numbers)
 
 这也是性能上的关键点：容器一般都有一份堆上的数据，按值传一次就是整份复制。容器参数默认写 \texttt{const\&} 或 \texttt{mut\&}，除非你确实想要一份独立副本。
 
-\subsection{容器里的东西也是副本}
+\subsection*{容器里的东西也是副本}
 
 \par
 \medskip
@@ -457,7 +457,7 @@ int64 main()
 字符串元素也一样：取出来的是新的一份，所以容器活得比某根字符串久也没关系。
 \end{tip}
 
-\subsection{容器归声明它的那一层}
+\subsection*{容器归声明它的那一层}
 
 容器在离开作用域时自动释放（第 8 章）：
 
@@ -548,7 +548,7 @@ for (int64 i in std::lang::range(0, scores.len()))
 遍历时不要增删元素。 \texttt{for-in} 途中 \texttt{push} / \texttt{remove} 会让「下一个是谁」变得不可预测。要筛要删，用第 17 章的迭代器 \texttt{filter} / \texttt{collect} 造一张新表，或者先记下要删的下标再统一删。
 \end{tip}
 
-\subsection{用 \texttt{Any} 保存不同类型的元素}
+\subsection*{用 \texttt{Any} 保存不同类型的元素}
 
 \texttt{List<\allowbreak{}Any>\allowbreak{}} 明确要求元素装箱；\texttt{Set<\allowbreak{}Any>\allowbreak{}} 和 \texttt{Map} 的键或值槽也可以明确写成 \texttt{Any}。普通的 \texttt{List<\allowbreak{}int64>\allowbreak{}} 仍只接受能转换为 \texttt{int64} 的值。
 
@@ -664,7 +664,7 @@ int64 main()
 
 \end{enumerate}
 
-\subsection{参考解答与验收要点}
+\subsection*{参考解答与验收要点}
 
 \begin{enumerate}
 
@@ -690,6 +690,6 @@ int64 main()
 
 楚人仍舍不得那道刻痕，便把它留在船上纪念。后来每当有人指着刻痕问剑在哪里，他就先让人看一眼今天的装货清单。
 
-\subsection{技术对照}
+\subsection*{技术对照}
 
 索引表示当前排列中的位置，不等于稳定业务标识。插入、删除和结构修改后，旧位置与元素引用的有效性要按具体容器协议判断。

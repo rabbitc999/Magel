@@ -443,7 +443,7 @@ struct Wrap<T, U = T>
 
 \end{itemize}
 
-\subsection{编译期整数参数}
+\subsection*{编译期整数参数}
 
 泛型支持 \texttt{N:\allowbreak{} int64} 等整数泛型参数，长度参与单态化，不能传入运行期变量。结构体的一维和二维定长数组字段使用这些常量确定布局。
 
@@ -492,7 +492,7 @@ struct Matrix<T, rows: int64, cols: int64>
 
 长度可以有默认值，仍须是可在编译期求值的 int64 常量；运行期长度继续用 \texttt{T a[\allowbreak{}]\allowbreak{} =\allowbreak{} new[\allowbreak{}n]\allowbreak{}}。
 
-\subsection{关联类型}
+\subsection*{关联类型}
 
 接口体内的 \texttt{type Item;} 声明关联类型，实现者用 \texttt{type Item =\allowbreak{} T;} 提供具体类型，受约束泛型可以写 \texttt{C.\allowbreak{}Item}。
 
@@ -536,7 +536,7 @@ int64 main()
 
 接口内是关联类型产生式，模块层的 \texttt{type} 仍是类型别名，原有类型参数 \texttt{<\allowbreak{}T:\allowbreak{} Valued>\allowbreak{}} 保持可用。
 
-\subsection{泛型返回控制表达式}
+\subsection*{泛型返回控制表达式}
 
 返回块、\texttt{if}、\texttt{match} 和 \texttt{loop} 同样可以使用类型参数 T。具体类型确定后，编译器再按该类型检查每条结果路径。
 
@@ -634,7 +634,7 @@ generic generic 9
 
 \end{enumerate}
 
-\subsection{参考解答与验收要点}
+\subsection*{参考解答与验收要点}
 
 \begin{enumerate}
 
@@ -660,6 +660,6 @@ generic generic 9
 
 郑人又拿来一块没有尺寸的石头，要求既然“通用”便也能做。店主给他看清约束：通用有前提，模板不会替缺失的能力凭空造出脚来。等他再回家取尺，集市已经散了，这回连错误信息都没来得及听完。
 
-\subsection{技术对照}
+\subsection*{技术对照}
 
 泛型复用算法结构，并通过类型参数和约束表达所需能力。推导失败需要明确类型信息或调整调用，不等于运行期尝试任意类型。

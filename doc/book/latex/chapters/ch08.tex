@@ -161,7 +161,7 @@ drop inner x
 如果你写过 C++，注意这里和 C++ 是反的：C++ 先析构成员再跑析构体。Magel 先跑你自己的 \texttt{drop(\allowbreak{})\allowbreak{}}，之后字段自动清理。\par 这个顺序有个实际后果：\texttt{drop(\allowbreak{})\allowbreak{}} 里还能安全地用字段（\texttt{o.\allowbreak{}field} 那时还活着）。这在「关闭连接时要写日志」「释放前要刷缓冲」这类场景里很有用。
 \end{tip}
 
-\subsection{一个必须记住的禁忌}
+\subsection*{一个必须记住的禁忌}
 
 结构体的 \texttt{drop(\allowbreak{})\allowbreak{}} 里不要手写 \texttt{self.\allowbreak{}字段.\allowbreak{}drop(\allowbreak{})\allowbreak{}}。
 
@@ -256,7 +256,7 @@ after
 
 \texttt{close} 只出现了一次。 这条保证让「提前关闭」变成一件可以随手做的事——不用记「我关过了吗」，也不用写一堆标志位。
 
-\subsection{两个都实现的时候，顺序固定}
+\subsection*{两个都实现的时候，顺序固定}
 
 \par
 \medskip
@@ -330,7 +330,7 @@ Point mut& c = heap new Point(5, 6);   // 糖：heap new T(args) 等价于 new(5
 
 忘记 \texttt{drop} 会怎样？ 手动分配的对象不会因为引用变量离开作用域而自动释放。运行结束时会报告仍未释放的堆块；应显式 drop，或将分配封装进有明确 Drop/Closeable 契约的拥有类型。遗留分配会占用预算，长期运行可能耗尽内存。堆对象的最佳实践还是让它的生命周期和某层花括号对齐，别让 \texttt{new} 和 \texttt{drop} 离得太远。
 
-\subsection{编译器合并已知的重复终结}
+\subsection*{编译器合并已知的重复终结}
 
 \par
 \medskip
@@ -441,7 +441,7 @@ magel: [MGL1205] 借用来源已释放，不能继续访问：表达式
 
 剩下的逻辑错误仍然是你自己的责任。 比如「算错了平均值」「把用户的年龄存成了负数」「该关的连接关了两次但业务上不允许」——这些语言帮不了你，只能靠第 16 章的错误处理和第 18 章的测试。
 
-\subsection{\texttt{defer} 和 \texttt{scope(\allowbreak{}exit)\allowbreak{}}}
+\subsection*{\texttt{defer} 和 \texttt{scope(\allowbreak{}exit)\allowbreak{}}}
 
 \texttt{defer stmt;} 登记当前作用域离开时执行的动作，\texttt{scope(\allowbreak{}exit)\allowbreak{} \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} \}} 是块形式。普通结束和 \texttt{return}、\texttt{panic}、\texttt{break}、\texttt{continue} 都执行已登记动作一次；同一作用域按登记的逆序执行。
 
@@ -526,7 +526,7 @@ first
 
 \end{enumerate}
 
-\subsection{参考解答与验收要点}
+\subsection*{参考解答与验收要点}
 
 \begin{enumerate}
 
@@ -552,6 +552,6 @@ first
 
 王生还想求一个永不失效的法诀。师父让他先学会在离开房间时收拾自己负责的物件。妻子听了，把钥匙收进抽屉，墙仍旧好好地立在那里。
 
-\subsection{技术对照}
+\subsection*{技术对照}
 
 作用域结束、显式关闭和拥有关系转移会影响资源可用性。析构协议只处理由当前对象负责的资源；裸内存与宿主句柄仍需遵守各自接口约定。

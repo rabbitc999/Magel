@@ -318,7 +318,7 @@ int64 main()
 
 缩进统一成 4 空格、层级对齐好。注意它只管空白和换行，不动代码内容 （\texttt{x=\allowbreak{}1} 里没有空格、\texttt{"\{\}",\allowbreak{}    x} 里那串多余空格，都原样留着）——格式化器不替你做美学判断，只保证结构清楚。
 
-\subsection{终端查手册}
+\subsection*{终端查手册}
 
 \texttt{magel man} 是终端手册入口，从同一可执行文件中的标准库数据查询。无目标时按能力域列模块，模块目标列符号，类型和方法目标显示签名、参数、返回值、错误边界及已有完整示例。
 
@@ -339,13 +339,13 @@ magel man std::text::Text::split --run
 
 完整命令和 JSON 结构见 \href{https://gitee.com/rabbitc999/magel/blob/master/doc/man/README.md}{doc/man}，标准库 API 说明仍在 \href{https://gitee.com/rabbitc999/magel/blob/master/doc/library/README.md}{doc/library}。
 
-\subsection{编辑器增量提示}
+\subsection*{编辑器增量提示}
 
 LSP 将补全、悬停、语义着色、工作区查询、宏预览、编译诊断交给不同工作队列。修改按 UTF-16 编辑范围同步，同一源码版本复用索引。诊断延迟 250 毫秒合并连续编辑，保存立即检查；取消过期任务，并且不把旧版本结果写回编辑器。
 
 缓存在 magel 可执行文件旁的 \texttt{build/\allowbreak{}lsp/\allowbreak{}}，与工程目录无关。未保存的依赖修改和关闭会刷新引用者，不写回源文件。缓存自动清理七天未使用的普通文件，超过 256 MiB 时淘汰到 192 MiB，保护最近十分钟的文件；活跃任务可以暂时超过额度。索引内存也有淘汰阈值，缓存损坏或不可写会退回分析。详细策略见 \href{https://gitee.com/rabbitc999/magel/blob/master/doc/man/lsp.md}{LSP 增量提示与缓存}。
 
-\subsection{\texttt{inline}：函数定义的内联属性}
+\subsection*{\texttt{inline}：函数定义的内联属性}
 
 \texttt{inline} 写在模块级函数定义前，参数、返回类型与函数体仍按普通函数规则检查。
 
@@ -404,7 +404,7 @@ int64 main()
 
 书稿与关键字帮助也在程序内部：\texttt{magel man book} 导出书稿与图片到当前目录的 \texttt{book/\allowbreak{}} 并列出章节，\texttt{magel man book 6} 查看第 6 章，\texttt{magel man keyword break} 查看关键字语法与示例。\texttt{magel man skill} 输出 AI SKILL，可保存并交给支持 SKILL 的 AI 工具；VS Code 包也携带同一份 \texttt{skills/\allowbreak{}magel-programming/\allowbreak{}SKILL.\allowbreak{}md}。
 
-\subsection{终端手册的入口}
+\subsection*{终端手册的入口}
 
 \par
 \medskip
@@ -483,7 +483,7 @@ int64 main()
 
 \end{enumerate}
 
-\subsection{参考解答与验收要点}
+\subsection*{参考解答与验收要点}
 
 \begin{enumerate}
 
@@ -509,6 +509,6 @@ int64 main()
 
 后来梁山又添了一位同名人物，旧账册没有因此自动换人。掌柜把每次导入的模块和使用的符号一并核查。李逵仍嫌这些规矩啰嗦，却再没有让别人只凭同名就领走他的工钱。
 
-\subsection{技术对照}
+\subsection*{技术对照}
 
 模块名、文件搜索路径和符号名称共同决定解析。唯一短名便于调用，同名冲突时使用限定名；本地声明的遮蔽也需要明确检查。

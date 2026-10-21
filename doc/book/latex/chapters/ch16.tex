@@ -74,7 +74,7 @@ int64 main()
 \texttt{Option} 和 \texttt{Result} 都属于核心模块 \texttt{lang}，不用 \texttt{import}，拿来就用。
 \end{tip}
 
-\subsection{简写：\texttt{Value(\allowbreak{}v)\allowbreak{}} / \texttt{None} 可以省掉 \texttt{Option<\allowbreak{}int64>\allowbreak{}:\allowbreak{}:\allowbreak{}}}
+\subsection*{简写：\texttt{Value(\allowbreak{}v)\allowbreak{}} / \texttt{None} 可以省掉 \texttt{Option<\allowbreak{}int64>\allowbreak{}:\allowbreak{}:\allowbreak{}}}
 
 上面的例子都写了全称 \texttt{Option<\allowbreak{}int64>\allowbreak{}:\allowbreak{}:\allowbreak{}Value(\allowbreak{}x)\allowbreak{}}——清楚，但啰嗦。上下文能看出类型时，简写也合法：返回类型是 \texttt{Option<\allowbreak{}int64>\allowbreak{}} 的函数体里，直接写 \texttt{Value(\allowbreak{}x)\allowbreak{}} 和 \texttt{None}；\texttt{match} 的分支模式里同样可以直接写 \texttt{Value(\allowbreak{}v)\allowbreak{}} / \texttt{None}，不用带类型前缀：
 
@@ -527,7 +527,7 @@ magel: 运行期错误：panic：x 必须为正
 
 \texttt{assert} 是开发期的工具：它帮你抓「我以为是这样，其实是那样」。上线时可以保留（成本很低），也可以视情况删掉——但别拿它处理正常业务错误。
 
-\subsection{用户自定义传播}
+\subsection*{用户自定义传播}
 
 \texttt{?} 不限于标准库的 \texttt{Option} 和 \texttt{Result}。自定义类型也可以规定“怎样取出成功值，怎样向调用者传播失败”。这需要两端配合：操作数类型实现 \texttt{Try<\allowbreak{}T,\allowbreak{} R>\allowbreak{}}，当前函数的返回类型实现匹配的 \texttt{From\allowbreak{}Residual<\allowbreak{}F,\allowbreak{} R>\allowbreak{}}。
 
@@ -681,7 +681,7 @@ Option 表达存在与否，Result 表达成功或失败。错误传播不等于
 
 \end{enumerate}
 
-\subsection{参考解答与验收要点}
+\subsection*{参考解答与验收要点}
 
 \begin{enumerate}
 
@@ -707,6 +707,6 @@ Option 表达存在与否，Result 表达成功或失败。错误传播不等于
 
 先生重新订了传话办法：有结果就带结果，没有对象就说明没有，操作失败就带原因。牧人仍须决定重试还是求援，但至少不再从一个零里猜三种意思。狼没有因为表格改好就消失，错误也终于不必装成成功才能进门。
 
-\subsection{技术对照}
+\subsection*{技术对照}
 
 Option 表达存在与否，Result 表达成功或失败。错误传播不等于已经恢复；unwrap、assert 和 panic 适合的前提需要由调用位置明确保证。

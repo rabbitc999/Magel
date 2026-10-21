@@ -734,7 +734,7 @@ int64 main()
 
 逐个看：\texttt{a} 拷了一份（外面改 100 不影响它），\texttt{b} 借用（闭包加 1 后外面就是 4），\texttt{c} 只读借用（不能改，但能看到新值 10），\texttt{d} 被搬进闭包（外面重新赋成 200 是另一回事）。
 
-\subsection{列表后面还能写「其余变量的默认方式」}
+其余变量的默认捕获方式。 列表后面还能指定未单独列出的变量采用什么方式捕获。
 
 \par
 \medskip
@@ -1272,7 +1272,7 @@ int64 main()
 
 函数值本身可以复制；复制闭包时到底复制了什么，见 15.9 节。
 
-\subsection{移动后访问诊断}
+\subsection*{移动后访问诊断}
 
 下面的闭包将 a 的所有权搬进自身，创建之后读取源变量 a 会报 MGL1205：
 
@@ -1646,6 +1646,73 @@ int64 main()
 
 特化沿用主定义的捕获方式；要获得另一份独立状态，复制整个闭包。默认借用、\texttt{mut}、\texttt{copy}、\texttt{move} 仍按本章前面的规则处理，来源作废后使用借用闭包仍会被拒绝。
 
+\section{小结}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+你会了 & 关键点 \\
+\midrule
+函数类型 & \texttt{R fn(\allowbreak{}A,\allowbreak{} B)\allowbreak{}}，和别的类型一样能当变量/字段/参数 \\
+函数当值 & \texttt{int64 fn(\allowbreak{}int64,\allowbreak{} int64)\allowbreak{} op =\allowbreak{} add;}，可重新指向 \\
+传函数 & 把函数名或 \texttt{fn} 当实参传，实现回调 \\
+\texttt{fn} & \texttt{返回类型 fn(\allowbreak{}参数)\allowbreak{} \{ 体 \}}，返回类型可省 \\
+上下文推断 & 目标类型已知时，参数类型也能省 \\
+闭包 & 记住定义处的变量；默认 \texttt{const\&} 只读借用 \\
+四种捕获 & \texttt{const\&} 只读、\texttt{mut\&} 写回、\texttt{copy} 独立副本、\texttt{move} 转移所有权 \\
+捕获列表 & \texttt{fn copy[\allowbreak{}a]\allowbreak{} mut[\allowbreak{}b]\allowbreak{} const[\allowbreak{}c]\allowbreak{} move[\allowbreak{}d]\allowbreak{}(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}}；列表后可加默认方式 \\
+复制闭包 & 拥有状态各复制一份，借用仍指向同一来源 \\
+生命周期 & 借用的闭包（及其副本）不能比来源活得更久 \\
+返回闭包 & 只有 \texttt{copy} / \texttt{move}、或借调用方的指针，才能安全带出函数 \\
+\texttt{Drop} & \texttt{copy} 两份各销毁一次，\texttt{move} 只在闭包销毁时销毁一次 \\
+体例坑 & 表达式体别加分号；用 \texttt{return} 就要加分号 \\
+工厂 & 返回闭包，配不同的「料」造出不同的函数 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{下一步}
+
+\texttt{filter}、\texttt{map} 这类「把函数当参数」的操作，写起来越来越顺手了。但你自己写 \texttt{filter} 还得手搓 \texttt{List}、手搓 \texttt{for-in}——一不小心就写出一堆模板代码。
+
+第 16 章讲错误处理，先把「出错了怎么办」这件事说清楚；之后第六部分的迭代器，会把 \texttt{map} / \texttt{filter} 这些套路做成一条能直接用的链。
+
+翻到\hyperref[ch:16]{第 16 章 错误处理}。
+
+\section{边界与验证}
+
+拥有捕获与借用捕获影响返回和保存闭包的合法性。可变闭包、闭包副本和多次调用的状态变化分别验证；返回闭包不等于允许返回对局部对象的借用。
+
+\section{习题}
+
+前两题用于理解和基本实现，第三题检查边界，最后一题为综合挑战。先独立完成，再核对参考解答。
+
+\begin{enumerate}
+
+\item 默认捕获、mut、copy 和 move 分别表达什么关系？
+
+\item 用 copy 捕获构造可返回的加法闭包。
+
+\item 复制一个有状态闭包，再分别调用并比较状态。
+
+\item 挑战：将一个捕获局部变量而逃逸的反例修复为合法版本。
+
+\end{enumerate}
+
+\subsection*{参考解答与验收要点}
+
+\begin{enumerate}
+
+\item 默认读取来源，mut 允许借用写回，copy 拥有独立副本，move 转移拥有关系；仍需遵守各自类型和生命周期要求。
+
+\item 让返回结果拥有所需状态，离开构造函数后调用仍有效；不要以延长局部变量存活作为解释。
+
+\item 记录两份闭包各自的返回序列；与显式共享对象的捕获情形分开。
+
+\item 先证明反例因借用来源失效被拒绝，再根据需要选择拥有副本或转移，验证调用结果。
+
+\end{enumerate}
+
 \section{番外：孔乙己与闭包}
 
 改写自鲁迅《孔乙己》，正文采用本书读者提供的改编稿。人物对白中的判断不代替本章的语言规则。
@@ -1790,73 +1857,6 @@ int64 main()
 
 我到现在终于没有见——大约孔乙己的确死了。
 
-\subsection{技术对照}
+\subsection*{技术对照}
 
 返回闭包本身合法；问题是它是否携带活得不够久的借用。默认只读借用、mut 写回借用、copy 拥有副本和 move 转移拥有关系各有规则。循环持有与借用逃逸也不是同一个问题，应按实际所有权图和宿主资源协议分析，不能从人物对白推断存在通用追踪式回收器。
-
-\section{小结}
-
-\begin{center}
-\begin{tabular}{ll}
-\toprule
-你会了 & 关键点 \\
-\midrule
-函数类型 & \texttt{R fn(\allowbreak{}A,\allowbreak{} B)\allowbreak{}}，和别的类型一样能当变量/字段/参数 \\
-函数当值 & \texttt{int64 fn(\allowbreak{}int64,\allowbreak{} int64)\allowbreak{} op =\allowbreak{} add;}，可重新指向 \\
-传函数 & 把函数名或 \texttt{fn} 当实参传，实现回调 \\
-\texttt{fn} & \texttt{返回类型 fn(\allowbreak{}参数)\allowbreak{} \{ 体 \}}，返回类型可省 \\
-上下文推断 & 目标类型已知时，参数类型也能省 \\
-闭包 & 记住定义处的变量；默认 \texttt{const\&} 只读借用 \\
-四种捕获 & \texttt{const\&} 只读、\texttt{mut\&} 写回、\texttt{copy} 独立副本、\texttt{move} 转移所有权 \\
-捕获列表 & \texttt{fn copy[\allowbreak{}a]\allowbreak{} mut[\allowbreak{}b]\allowbreak{} const[\allowbreak{}c]\allowbreak{} move[\allowbreak{}d]\allowbreak{}(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}}；列表后可加默认方式 \\
-复制闭包 & 拥有状态各复制一份，借用仍指向同一来源 \\
-生命周期 & 借用的闭包（及其副本）不能比来源活得更久 \\
-返回闭包 & 只有 \texttt{copy} / \texttt{move}、或借调用方的指针，才能安全带出函数 \\
-\texttt{Drop} & \texttt{copy} 两份各销毁一次，\texttt{move} 只在闭包销毁时销毁一次 \\
-体例坑 & 表达式体别加分号；用 \texttt{return} 就要加分号 \\
-工厂 & 返回闭包，配不同的「料」造出不同的函数 \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\section{下一步}
-
-\texttt{filter}、\texttt{map} 这类「把函数当参数」的操作，写起来越来越顺手了。但你自己写 \texttt{filter} 还得手搓 \texttt{List}、手搓 \texttt{for-in}——一不小心就写出一堆模板代码。
-
-第 16 章讲错误处理，先把「出错了怎么办」这件事说清楚；之后第六部分的迭代器，会把 \texttt{map} / \texttt{filter} 这些套路做成一条能直接用的链。
-
-翻到\hyperref[ch:16]{第 16 章 错误处理}。
-
-\section{边界与验证}
-
-拥有捕获与借用捕获影响返回和保存闭包的合法性。可变闭包、闭包副本和多次调用的状态变化分别验证；返回闭包不等于允许返回对局部对象的借用。
-
-\section{习题}
-
-前两题用于理解和基本实现，第三题检查边界，最后一题为综合挑战。先独立完成，再核对参考解答。
-
-\begin{enumerate}
-
-\item 默认捕获、mut、copy 和 move 分别表达什么关系？
-
-\item 用 copy 捕获构造可返回的加法闭包。
-
-\item 复制一个有状态闭包，再分别调用并比较状态。
-
-\item 挑战：将一个捕获局部变量而逃逸的反例修复为合法版本。
-
-\end{enumerate}
-
-\subsection{参考解答与验收要点}
-
-\begin{enumerate}
-
-\item 默认读取来源，mut 允许借用写回，copy 拥有独立副本，move 转移拥有关系；仍需遵守各自类型和生命周期要求。
-
-\item 让返回结果拥有所需状态，离开构造函数后调用仍有效；不要以延长局部变量存活作为解释。
-
-\item 记录两份闭包各自的返回序列；与显式共享对象的捕获情形分开。
-
-\item 先证明反例因借用来源失效被拒绝，再根据需要选择拥有副本或转移，验证调用结果。
-
-\end{enumerate}
