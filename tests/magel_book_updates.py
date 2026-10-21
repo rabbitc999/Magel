@@ -18,6 +18,16 @@ def main():
     book=(ROOT/'doc/book/latex/book.tex').read_text(encoding='utf-8')
     assert not re.search(r'^\s*\\part\*?\{',book,re.M), '书稿直接按章节排列，不使用 part 分组'
     assert len(re.findall(r'\\input\{chapters/ch\d+\}',book))==22
+    headings=Converter().convert('## 3.7 字面量\n\n### 数字后缀\n\n说明。')
+    assert r'\subsection*{数字后缀}' in headings and r'\subsection{数字后缀}' not in headings
+    numbered=Converter().convert('## 15.7 捕获\n\n### 15.7.1 借用\n\n正文。\n\n### 15.7.2 拥有\n\n正文。')
+    assert r'\subsection{借用}' in numbered and r'\subsection{拥有}' in numbered
+    try:
+        Converter().convert('## 3.7 字面量\n\n### 3.7.1 唯一子节\n\n正文。')
+    except ValueError as error:
+        assert '孤立编号子节' in str(error)
+    else:
+        raise AssertionError('转换器不能重新引入孤立编号子节')
     for image in ('magel-compilation.png', 'magel-execution.png'):
         assert (ROOT/'doc/book/images'/image).read_bytes()==(ROOT/'doc/images'/image).read_bytes(),image
     fixture = "1. 先声明：\n\n   ```magel\n   int64 value = 1;\n   ```\n\n2. 再读取：\n\n   ```magel\n   println(\"{}\", value);\n   ```\n\n- 无序说明：\n\n  ```text\n  output\n  ```"
@@ -55,6 +65,7 @@ def main():
             if re.match(r'^\d\d-', source):
                 assert '参考解答与验收要点' in text and '番外：' in text, source
                 assert len(re.findall(r'^\d+\. ', text[text.index('参考解答与验收要点'):], re.M)) >= 4, source
+                assert '番外：' in re.findall(r'^## (.+)$', text, re.M)[-1], source
             mode='preface' if source=='README.md' else 'appendix' if source.startswith(('A-','B-')) else 'chapter'
             expected=Converter(mode).convert(text)
             assert (ROOT/'doc/book/latex/chapters'/target).read_text(encoding='utf-8')==expected,target

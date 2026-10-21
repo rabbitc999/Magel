@@ -189,7 +189,7 @@ hello from C
 
 \end{enumerate}
 
-\subsection{支持的类型一览}
+\subsection*{支持的类型一览}
 
 {\small\setlength{\tabcolsep}{4pt}
 \begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.586\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.394\linewidth-2\tabcolsep\relax}}
@@ -300,7 +300,7 @@ int64 main()
 
 宿主类型的名字是编译期就绑死的，所以这条路比 \texttt{abi} 强类型、报错也早，胶水编入 VM 宿主，并在运行程序前注册。
 
-\subsection{\texttt{impl}：把宿主函数绑定到协议}
+\subsection*{\texttt{impl}：把宿主函数绑定到协议}
 
 结构体用继承列表声明普通接口实现；\texttt{impl 类型 :\allowbreak{} 接口 =\allowbreak{} 宿主绑定名;} 则把宿主函数接到单方法接口或转换协议。它不是一套任意 \texttt{impl Type \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} \}} 语法。
 
@@ -400,7 +400,7 @@ ABI 一致只是互操作的前提之一。指针、字符串、回调上下文�
 
 \end{enumerate}
 
-\subsection{参考解答与验收要点}
+\subsection*{参考解答与验收要点}
 
 \begin{enumerate}
 
@@ -426,6 +426,6 @@ ABI 一致只是互操作的前提之一。指针、字符串、回调上下文�
 
 道士收起铲子，让他们将取得、使用和释放的约定写在一起。跨过一道语言边界，不会令生命周期凭空消失。卖梨人最后只带走一篮真实归自己的梨，再没把一串地址当成果园的契约。
 
-\subsection{技术对照}
+\subsection*{技术对照}
 
 ABI 一致只是互操作的前提之一。指针、字符串、回调上下文的拥有与有效期必须明确；同步回调走统一 VM 调用协议，运行时地址不是可直接执行的机器函数指针。

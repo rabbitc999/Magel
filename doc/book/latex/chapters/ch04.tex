@@ -139,7 +139,7 @@ int64 clamp(int64 value)
 
 如果一条路忘了返回呢？ 编译期就会报错，不会让你跑到一半发现「这个函数返回了垃圾」。
 
-\subsection{返回一个带值的控制表达式}
+\subsection*{返回一个带值的控制表达式}
 
 \texttt{return} 后面既可以写普通值，也可以写块、\texttt{if}、\texttt{match} 或 \texttt{loop}。它们先给出一个结果，函数再返回这个结果。
 
@@ -580,7 +580,7 @@ magel run app.mgl -- Alice "two words"
 
 \end{enumerate}
 
-\subsection{参考解答与验收要点}
+\subsection*{参考解答与验收要点}
 
 \begin{enumerate}
 
@@ -606,6 +606,6 @@ magel run app.mgl -- Alice "two words"
 
 八戒仍不服，说自己的函数也能调用，也有返回值。沙僧收起三份记录，答道：“正因为都能调用，才更要看每次给了它什么，以及它凭什么答。”山风吹过，旧的判断并没有替新的来者显出原形。
 
-\subsection{技术对照}
+\subsection*{技术对照}
 
 局部变量只在其作用域内有效。按值参数修改的是自己的值；要修改调用者对象，接口必须明确使用相应可写引用。返回值应覆盖函数承诺返回的路径。

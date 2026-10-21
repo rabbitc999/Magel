@@ -473,7 +473,7 @@ int64 main()
 
 记住一句话：迭代器是一次性的，链子要走第二遍就重新造起点。
 
-\subsection{从列表造起点：\texttt{from\allowbreak{}List}}
+\subsection*{从列表造起点：\texttt{from\allowbreak{}List}}
 
 \texttt{std:\allowbreak{}:\allowbreak{}iter:\allowbreak{}:\allowbreak{}from\allowbreak{}List<\allowbreak{}T>\allowbreak{}(\allowbreak{}list)\allowbreak{}} 也是一条起点：把列表的元素复制进迭代器，原来的列表完好无损：
 
@@ -507,7 +507,7 @@ int64 main()
 \par
 \medskip
 
-\subsection{\texttt{Set.\allowbreak{}iter(\allowbreak{})\allowbreak{}} 与 \texttt{Map.\allowbreak{}iter(\allowbreak{})\allowbreak{}}}
+\subsection*{\texttt{Set.\allowbreak{}iter(\allowbreak{})\allowbreak{}} 与 \texttt{Map.\allowbreak{}iter(\allowbreak{})\allowbreak{}}}
 
 \texttt{Set<\allowbreak{}T>\allowbreak{}} 和 \texttt{Map<\allowbreak{}K,\allowbreak{}V>\allowbreak{}} 同样有 \texttt{.\allowbreak{}iter(\allowbreak{})\allowbreak{}}：借用快照——把元素（Map 只能是 \texttt{Pair<\allowbreak{}K,\allowbreak{} V>\allowbreak{}}，用 \texttt{first} 读取键、\texttt{second} 读取值）复制进迭代器，来源容器保持不变；对应的 \texttt{.\allowbreak{}into\allowbreak{}Iter(\allowbreak{})\allowbreak{}} 则把容器搬空。
 
@@ -671,7 +671,7 @@ list: 5 6
 
 不少语言里 \texttt{for (\allowbreak{}x in xs)\allowbreak{}} 的 \texttt{x} 是一份拷贝，改它不影响容器 —— Magel 正好相反。想"只读地看一遍"就别给它赋值；想原地改，这反而是最省事的写法，连下标都不用写。
 
-\subsection{\texttt{mut\&}：拿地址，而不是元素}
+\subsection*{\texttt{mut\&}：拿地址，而不是元素}
 
 \texttt{Span<\allowbreak{}T>\allowbreak{}} 这类"引用 + 长度"的视图，迭代器返回的是 \texttt{Option<\allowbreak{}T mut\&>\allowbreak{}}。这时用 \texttt{T mut\&} 形态能直接拿到元素地址，改结构体字段特别顺手：
 
@@ -770,7 +770,7 @@ magel: for-in 变量类型与 Vector<T> 元素不一致：写的是 int64 mut&�
 
 \end{enumerate}
 
-\subsection{参考解答与验收要点}
+\subsection*{参考解答与验收要点}
 
 \begin{enumerate}
 
@@ -796,6 +796,6 @@ magel: for-in 变量类型与 Vector<T> 元素不一致：写的是 int64 mut&�
 
 唐僧问能否用更短的一条链完成。悟空说可以研究，但惰性链只有真正被消费才会工作。若只是把纸条写得漂亮，湿经书仍躺在河边，半页也不会自己翻干。
 
-\subsection{技术对照}
+\subsection*{技术对照}
 
 惰性迭代器通常在消费时执行工作。修改当前元素与改变集合结构不是同一操作；遍历中的引用、源集合存活和结构修改按具体接口规则处理。

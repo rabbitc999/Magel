@@ -353,6 +353,9 @@ class Converter:
         if level == 2:
             text = re.sub(r'^(\d+\.\d+|[AB]\.\d+)\s+', '', text)
             return '\\section%s{%s}' % (star, text)
+        numbered = re.match(r'^(\d+\.\d+\.\d+|[AB]\.\d+\.\d+)\s+', text)
+        if not numbered:
+            star = '*'
         text = re.sub(r'^(\d+\.\d+\.\d+|[AB]\.\d+\.\d+)\s+', '', text)
         return '\\subsection%s{%s}' % (star, text)
 
@@ -458,8 +461,18 @@ class Converter:
         return items, i
 
     def convert(self, text):
+        blocks = self.parse_blocks(text.split('\n'))
+        numbered_children = {}
+        for block in blocks:
+            if block[0] == 'h' and block[1] >= 3:
+                match = re.match(r'^((?:\d+|[AB])\.\d+)\.\d+\s+', block[2])
+                if match:
+                    numbered_children[match[1]] = numbered_children.get(match[1], 0) + 1
+        for parent, count in numbered_children.items():
+            if count == 1:
+                raise ValueError('孤立编号子节应合并或改为不编号标题：' + parent)
         out = []
-        for blk in self.parse_blocks(text.split('\n')):
+        for blk in blocks:
             kind = blk[0]
             if kind == 'h':
                 out.append(self.heading(blk[1], blk[2]))

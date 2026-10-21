@@ -154,7 +154,7 @@ int64 main()
 
 调用的写法是 \texttt{p.\allowbreak{}shift(\allowbreak{}10)\allowbreak{}} —— 用 \texttt{.\allowbreak{}}，因为 \texttt{p} 是一个具体的对象。（\texttt{:\allowbreak{}:\allowbreak{}} 是留给「属于类型、不属于对象」的东西的，下一节。）
 
-\subsection{\texttt{return self;}：让方法可以链着写}
+\subsection*{\texttt{return self;}：让方法可以链着写}
 
 方法可以把 \texttt{self} 返回——返回类型写结构体自己，\texttt{return self;} 一行。惯用形状是「每个方法都返回自己」，这样就能链式调用：
 
@@ -517,7 +517,7 @@ void resize(Rect mut& rect)
 
 结构体还能实现 \texttt{Drop} / \texttt{Closeable} 来管理资源，那些第 8 章讲过了。
 
-\subsection{从字段派生 Equal、Hash 和 Clone}
+\subsection*{从字段派生 Equal、Hash 和 Clone}
 
 比较、哈希和显式克隆通常要逐个处理字段。可以在结构体前写 \texttt{\#derive(\allowbreak{}Equal,\allowbreak{} Hash,\allowbreak{} Clone)\allowbreak{}}，让编译器生成这些重复的方法。
 
@@ -656,7 +656,7 @@ left changed
 
 \end{enumerate}
 
-\subsection{参考解答与验收要点}
+\subsection*{参考解答与验收要点}
 
 \begin{enumerate}
 
@@ -682,6 +682,6 @@ left changed
 
 战马不会因为箱上写着“齐全”就长出马鞍，检查还得落到实际字段上。
 
-\subsection{技术对照}
+\subsection*{技术对照}
 
 结构体组织相关字段和行为，但不会自动获得业务有效性。默认值、构造方式和方法应共同维持不变量；派生能力只覆盖对应协议。

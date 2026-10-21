@@ -332,7 +332,7 @@ len(s) = 6
 
 \texttt{(\allowbreak{}int64)\allowbreak{}s[\allowbreak{}0]\allowbreak{}} 得到的 \texttt{228}（十六进制 \texttt{0x\allowbreak{}E4}）是「中」这个字的第一个字节，\texttt{(\allowbreak{}int64)\allowbreak{}s[\allowbreak{}3]\allowbreak{}} 得到的 \texttt{230}（\texttt{0x\allowbreak{}E6}）是「文」的第一个字节。
 
-\subsection{取到「半个字」会怎样}
+\subsection*{取到「半个字」会怎样}
 
 \texttt{s[\allowbreak{}1]\allowbreak{}}、\texttt{s[\allowbreak{}2]\allowbreak{}} 落在「中」这个字中间，语言不允许你这么读：
 
@@ -359,7 +359,7 @@ magel: 运行期错误：切片端点落在多字节字符中间（String 的切
 
 注意这不报「越界」而是报「落在了多字节字符中间」——说明它知道你在处理 UTF-8，只是拒绝给你半个字。这是个明确的设计：要么给你一个完整的字节序列边界，要么明确拒绝，不给你一段乱码。
 
-\subsection{所以中文怎么按字处理？}
+\subsection*{所以中文怎么按字处理？}
 
 别用下标切中文。 三种办法：
 
@@ -543,7 +543,7 @@ int64 main()
 
 一条经验：循环里拼字符串，先攒 \texttt{List}，出循环再 \texttt{join}。
 
-\subsection{插值字符串}
+\subsection*{插值字符串}
 
 插值字符串写成 \texttt{f".\allowbreak{}.\allowbreak{}.\allowbreak{}"}，只有 f 后紧跟双引号才识别为插值，单独的 f 仍是标识符。花括号里是完整表达式，每个实参按顺序求值一次，最终沿用 \texttt{format} 的语义。
 
@@ -571,7 +571,7 @@ count=4, inner=3, {literal}
 
 \texttt{\textbackslash\{\}\{} 和 \texttt{\textbackslash\{\}\}} 输出字面大括号。嵌套插值由内到外展开；没有花括号包围的文本不求值。
 
-\subsection{整行输入和文件文本}
+\subsection*{整行输入和文件文本}
 
 \texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}read\allowbreak{}Line(\allowbreak{})\allowbreak{}} 读取一行，保留空格和空行，去掉 LF/CRLF；EOF 返回空串。\texttt{std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}read\allowbreak{}Lines(\allowbreak{}int32 N)\allowbreak{}} 最多读 N 行，用 LF 连接，EOF 提前结束，不额外追加行末换行。另有 int64 重载接受普通整数实参，检查后转为 int32。N 为零时不读输入，负数或超出 int32 正范围触发错误。\texttt{String} 不能包含内嵌零字节。
 
@@ -646,7 +646,7 @@ String 的长度、下标和切片按当前 API 规定的单位使用。本章�
 
 \end{enumerate}
 
-\subsection{参考解答与验收要点}
+\subsection*{参考解答与验收要点}
 
 \begin{enumerate}
 
@@ -672,6 +672,6 @@ String 的长度、下标和切片按当前 API 规定的单位使用。本章�
 
 后来施先生在验收表上添了一栏“长度单位”。别人笑他连数到三都要写说明，他却再也不肯只听一句“三个字符，肯定放得下”。
 
-\subsection{技术对照}
+\subsection*{技术对照}
 
 String 的长度、下标和切片按当前 API 规定的单位使用。本章基础 String 操作按字节；处理 UTF-8 时不能任意截断多字节编码，也不能把代码点直接等同于视觉字形。
