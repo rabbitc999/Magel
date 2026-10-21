@@ -11,6 +11,37 @@
 namespace std_sql_ipage_glue
 {
 /**
+ * @brief 为 Magel 内置数据库提供 SQLite SQL 适配，保持 ipage 核心独立于数据库实现。
+ */
+class SqliteDialect final : public ipage::Dialect
+{
+public:
+    /**
+     * @brief 返回宿主数据库方言名称。
+     * @return SQLite 方言标识。
+     */
+    std::string_view name() const noexcept override { return "sqlite"; }
+    /**
+     * @brief 按现有动态 SQL 协议引用已校验的标识符。
+     * @param identifier 已通过模型白名单校验的表名或列名。
+     * @return 反引号包围的标识符。
+     */
+    std::string quote(std::string_view identifier) const override { return "`" + std::string(identifier) + "`"; }
+    /**
+     * @brief 将模型字段映射到 SQLite 存储类型。
+     * @param fieldType ipage 字段语义分类。
+     * @param memberKind 标量存储分类。
+     * @return 建表使用的类型名称。
+     */
+    std::string columnType(int fieldType, int memberKind) const override
+    {
+        const auto type = static_cast<ipage::FieldType>(fieldType);
+        if (type == ipage::FieldType::ModelId || type == ipage::FieldType::AssociationId || type == ipage::FieldType::Boolean) return "INTEGER";
+        if (type == ipage::FieldType::Number) return memberKind == static_cast<int>(ipage::ColumnKind::Integer) ? "INTEGER" : "REAL";
+        return "TEXT";
+    }
+};
+/**
  * @brief 验证元数据标识符，拒绝改变 SQL 结构的标点和空白。
  * @param name 表名或列名。
  */
@@ -130,7 +161,7 @@ Memory::String build(Memory::String modelText, Memory::String operation, Memory:
         }
         if (primaryCount != 1) throw std::invalid_argument("SQL 模型必须且只能有一个主键");
         meta.seal();
-        ipage::SqliteDialect dialect;
+        SqliteDialect dialect;
         ipage::Query query(meta, dialect);
         if (const auto *filters = options.value->find("filters"))
             for (const auto &filter : array(*filters))

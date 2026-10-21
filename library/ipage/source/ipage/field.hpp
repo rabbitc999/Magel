@@ -1,20 +1,6 @@
 /**
  * @file field.hpp
- * @brief 字段语义、单元格值（`Cell`）、操作符与排序：ipage 的元数据层。
- *
- * 这一层对应 Java 版的 `enums/FieldType`、`enums/OperatorType`、`enums/SortType`、
- * `enums/SqlFunction` 与 `reflect/FieldDescriptor`，只是把「注解 + 反射」换成了
- * **成员指针表**（与 `library/json/bind.hpp`、`library/toml/bind.hpp`、
- * `library/template/bind.hpp` 同一套设计）。
- *
- * 为什么不用反射：C++ 没有（C++26 之前的）静态反射，而 ipage 需要的元数据是
- * 「字段名、列名、语义类型、是否主键、关联到哪个模型」——这些本来就是模型作者
- * 要声明的东西。写成一张 constexpr 表，比宏展开生成代码更直白，而且能在
- * `static_assert` 里校验。
- *
- * @author 小兔糖糖OvO
- * @version 1.0
- * @since 1.0
+ * @brief 字段语义、精确参数单元格、过滤操作符和排序类型。
  */
 
 #ifndef IPAGE_FIELD_HPP
@@ -38,7 +24,7 @@ namespace ipage
  * @brief 字段语义类型。
  *
  * 决定该字段是否落库、SQL 中如何选取、写入时是否参与 INSERT / UPDATE。
- * 与 Java 版 `FieldType` 一一对应。
+ * 字段类型决定列选择与参数写入规则。
  */
 enum class FieldType
 {
@@ -88,7 +74,7 @@ enum class FieldType
 /**
  * @brief 过滤 / 排序操作符。
  *
- * 对应 Java 版 `OperatorType`。**封闭枚举**：SQL 片段只从表里取，
+ * 过滤操作符采用**封闭枚举**：SQL 片段只从表里取，
  * 没有任何一条路径会把外部字符串拼进 SQL。
  */
 enum class OperatorType
@@ -256,7 +242,7 @@ enum class CheckerType
  * @brief 一个数据库单元格 / 绑定参数。
  *
  * 只覆盖 SQL 里真正会出现的几种：NULL、整数、浮点、文本、布尔。
- * 日期一律以 ISO-8601 文本传递（SQLite 没有原生日期类型，PostgreSQL 也接受文本）。
+ * 日期一律以 ISO-8601 文本传递。
  *
  * 刻意不用 `std::variant<..., std::monostate>`：`Null` 单独一个类型，
  * `asInt()` 之类就不必先判断 `monostate`，也能在 `visit` 里明确区分

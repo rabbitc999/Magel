@@ -1,23 +1,6 @@
 /**
  * @file sql.hpp
- * @brief SQL 构建：`Condition` / `Order` / `SelectedField` / `Query` / `SqlStatement`。
- *
- * 对应 Java 版的 `sql/SqlCondition`、`sql/JoinCondition`、`sql/SelectedField`、
- * `sql/Query`、`sql/SqlStatement`、`sql/Order`。
- *
- * ## 设计要点
- *
- *   - **条件树**：`Condition` 是 `Field / Value / And / Or / Not` 的递归结构，
- *     `toSql()` 遍历时把值推进 `std::vector<Cell> &`，SQL 与参数一次成型，
- *     不存在「先拼字符串再补参数」的顺序错位。
- *   - **别名**：主表别名固定 `t_`，关联表别名 `t_2`、`t_3`……（与 Java 版一致）。
- *   - **列白名单**：`Field` 条件里的列名只能来自 `ModelMeta`，外部输入无法进入 SQL。
- *   - **`&` / `|` 运算符**：`ipage::field("age") > 18 && ipage::field("age") < 30`，
- *     比 `and_(gt(...), lt(...))` 好读得多。
- *
- * @author 小兔糖糖OvO
- * @version 1.0
- * @since 1.0
+ * @brief 条件树、选择列、连接与参数化查询生成。
  */
 
 #ifndef IPAGE_SQL_HPP
@@ -222,12 +205,12 @@ struct SelectedField
 /**
  * @brief 一条 SELECT 的完整描述（不含分页）。
  *
- * 由 `Query<Model>::of(...)` 起步，链式配置后交给 `Session` 执行。
+ * 由 `Query<Model>::of(...)` 起步，链式配置后交给宿主执行器处理。
  */
 class Query
 {
 public:
-    /** 主表别名（与 Java 版一致）。 */
+    /** 主表别名。 */
     static constexpr std::string_view kMainAlias = "t_";
 
     /**
@@ -324,7 +307,7 @@ public:
     /**
      * @brief 按关联字段名装配：自动 LEFT JOIN 并选中关联表的全部列。
      *
-     * 列别名形如 `sclass.id`，`Session` 装配时按同一前缀回填进嵌套成员。
+     * 列别名形如 `sclass.id`，宿主装配时按同一前缀回填进嵌套成员。
      * 字段必须以 `ipage::association(...)` 声明（类型 `AssociationModel`、
      * 带 `related` 元数据），否则抛 `std::invalid_argument`。
      *

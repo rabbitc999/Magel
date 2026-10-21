@@ -1,15 +1,6 @@
 /**
  * @file dialect.hpp
- * @brief 数据库方言：标识符引号、占位符、建表语句、分页语法。
- *
- * 对应 Java 版的 `dialect/Dialect`、`dialect/DefaultDialect`、`dialect/SqliteDialect`。
- *
- * 这一层只做**字符串拼接**，不碰连接、不碰参数绑定。所有 SQL 都经由 `Dialect`
- * 生成，因此换数据库只需要换一个方言实现，`Query` / `Session` 一行不改。
- *
- * @author 小兔糖糖OvO
- * @version 1.0
- * @since 1.0
+ * @brief 数据库无关的 SQL 方言接口与默认标准 SQL 实现。
  */
 
 #ifndef IPAGE_DIALECT_HPP
@@ -26,14 +17,14 @@ namespace ipage
 /**
  * @brief 数据库方言接口。
  *
- * 派生类只需覆盖有差异的方法；默认实现按标准 SQL / SQLite 的写法给出。
+ * 派生类只需覆盖有差异的方法；默认实现按标准 SQL 的写法给出。
  */
 class Dialect
 {
 public:
     virtual ~Dialect() = default;
 
-    /** @brief 方言名（`sqlite` / `mysql` / `postgresql`）。 */
+    /** @brief 方言名。 */
     [[nodiscard]] virtual std::string_view name() const noexcept { return "default"; }
 
     /**
@@ -111,29 +102,10 @@ public:
  */
 enum class ColumnKind
 {
-    Integer, ///< 整型。
-    Real,    ///< 浮点型。
-    Text,    ///< 字符串。
-    Boolean, ///< 布尔。
-};
-
-/**
- * @brief SQLite 方言。
- *
- * SQLite 的引号是双引号、占位符是 `?`、分页是 `LIMIT x OFFSET y`，
- * 与 `Dialect` 默认实现一致，这里只覆写类型映射和方言名。
- */
-class SqliteDialect final : public Dialect
-{
-public:
-    [[nodiscard]] std::string_view name() const noexcept override { return "sqlite"; }
-
-    [[nodiscard]] std::string quote(std::string_view identifier) const override
-    {
-        return "`" + std::string(identifier) + "`";
-    }
-
-    [[nodiscard]] std::string columnType(int fieldType, int memberKind) const override;
+    Integer,  ///< 整型。
+    Real,     ///< 浮点型。
+    Text,     ///< 字符串。
+    Boolean,  ///< 布尔。
 };
 
 /**
@@ -146,18 +118,18 @@ public:
 };
 
 /**
- * @brief 取进程级的默认方言（SQLite）。
+ * @brief 取进程级的默认标准 SQL 方言。
  * @return 方言引用，静态生命周期。
  */
 [[nodiscard]] const Dialect &defaultDialect();
 
 /**
  * @brief 按名字取方言。
- * @param name 方言名（`sqlite` / `default`），不区分大小写。
+ * @param name 方言名（`default` / `standard` / `ansi`），不区分大小写。
  * @return 方言指针，未知名返回 `nullptr`。
  */
 [[nodiscard]] const Dialect *findDialect(std::string_view name) noexcept;
 
-} // namespace ipage
+}  // namespace ipage
 
-#endif // IPAGE_DIALECT_HPP
+#endif  // IPAGE_DIALECT_HPP

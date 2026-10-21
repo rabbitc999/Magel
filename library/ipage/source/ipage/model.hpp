@@ -1,42 +1,6 @@
 /**
  * @file model.hpp
- * @brief 模型元数据：`field` / `IPAGE_MODEL` / `metaOf<T>()`。
- *
- * 对应 Java 版的 `annotation` 包、`reflect/FieldDescriptor`、`reflect/ModelMeta`。
- * 绑定方式沿用 `library/json/bind.hpp`、`library/template/bind.hpp` 的**成员指针表**：
- *
- * ```cpp
- * struct Student
- * {
- *     int         id = 0;
- *     std::string name;
- *     int         sclassId = 0;
- * };
- *
- * IPAGE_MODEL(Student,
- *     ipage::id("id", &Student::id),
- *     ipage::text("name", &Student::name),
- *     ipage::foreignKey("sclassId", &Student::sclassId));
- *
- * const ipage::ModelMeta &meta = ipage::metaOf<Student>();
- * ```
- *
- * ## 两层结构
- *
- *   - **声明期**：`Field<T, M>` 持有成员指针，类型精确，`writeCell` 会做 `static_assert`。
- *   - **运行期**：`metaOf<T>()` 把字段表擦成 `std::vector<FieldInfo>`，每个字段带一对
- *     `std::function`（读 / 写，签名只跟 `Cell` 有关）。于是 `Query`、`SqlStatement`、
- *     `Session` 都不必是模板，代码量比「整条链路模板化」少一个数量级。
- *
- * 与 Java 版的差别（语言带来的，不是设计走样）：
- *
- *   - Java 用 `@ModelField(byModel = Sclass.class)` 指向一个类；C++ 在声明期拿不到
- *     另一个类的元数据，所以关联 / 聚合改为传 `Sclass::meta()`。
- *   - 列的 C++ 类型由成员指针推导，不必再写一次。
- *
- * @author 小兔糖糖OvO
- * @version 1.0
- * @since 1.0
+ * @brief 模型声明期成员绑定与运行期字段元数据。
  */
 
 #ifndef IPAGE_MODEL_HPP
@@ -547,7 +511,7 @@ constexpr Field<T, M> readonly(Field<T, M> one) noexcept
  * @brief 运行期的字段描述（类型无关）。
  *
  * 由 `IPAGE_MODEL` 在注册时从 `Field<T, M>` 生成：成员指针被包成两个 `std::function`，
- * 于是 `Query`、`SqlStatement`、`Session` 都不必是模板。
+ * 于是 `Query`、`SqlStatement`、宿主执行器都不必是模板。
  */
 struct FieldInfo
 {
@@ -763,7 +727,7 @@ FieldInfo erase(const Field<T, M> &one)
     if constexpr (hasBinding<M>::value)
     {
         // 成员本身是一个已绑定模型：关联字段。标量读写不适用，留空；
-        // 提供整体写入，供 Session 的 JOIN 装配使用。
+        // 提供整体写入，供宿主的 JOIN 装配使用。
         info.read = nullptr;
         info.write = nullptr;
         info.memberAddress = [member = one.member](void *instance) -> void * {
