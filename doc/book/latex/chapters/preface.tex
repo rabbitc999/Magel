@@ -7,7 +7,7 @@
 你不需要会 C，也不需要懂编译原理。这本书从头讲起，每章只解决一个问题，代码都能直接粘下来跑。读完它，你能独立写出结构清楚、资源管得干净的 Magel 程序，并且知道遇到问题时该去查哪一篇官方文档。
 
 \begin{tip}{提示}
-本书内容与 Magel 的当前\href{https://github.com/rabbitc999/Magel/tree/master/VERSION}{语言版本}和\href{https://github.com/rabbitc999/Magel/blob/master/doc/17-capabilities.md}{能力说明}保持同步。你可以按下方目录在线阅读，也可以下载 \href{https://github.com/rabbitc999/Magel/blob/master/doc/book/latex/book.pdf}{PDF 电子书}，离线阅读或打印。
+本书内容与 Magel 的当前\href{https://gitee.com/rabbitc999/magel/tree/master/VERSION}{语言版本}和\href{https://gitee.com/rabbitc999/magel/blob/master/doc/17-capabilities.md}{能力说明}保持同步。你可以按下方目录在线阅读，也可以下载 \href{https://gitee.com/rabbitc999/magel/blob/master/doc/book/latex/book.pdf}{PDF 电子书}，离线阅读或打印。
 \end{tip}
 
 \section*{这本书写给谁}
@@ -22,7 +22,7 @@
 
 \end{itemize}
 
-如果你只是想要一份语法清单，那你该看 \href{https://github.com/rabbitc999/Magel/blob/master/doc/04-language-reference.md}{语言参考}；这本书的目标不一样——它想让你读懂一门语言的设计，而不只是记住写法。
+如果你只是想要一份语法清单，那你该看 \href{https://gitee.com/rabbitc999/magel/blob/master/doc/04-language-reference.md}{语言参考}；这本书的目标不一样——它想让你读懂一门语言的设计，而不只是记住写法。
 
 \section*{怎么读}
 
@@ -58,10 +58,10 @@ Windows 上程序名是 \texttt{magel.\allowbreak{}exe}。在 Git Bash / MSYS �
 
 \section*{章节地图}
 
-全书按第 1 至第 25 章顺序展开，难度逐步提升。第 6 至第 8 章集中介绍值语义、引用和资源管理，建议连贯阅读。
+全书按第 1 至第 22 章顺序展开，难度逐步提升。第 6 至第 8 章集中介绍值语义、引用和资源管理，建议连贯阅读。
 
 {\small\setlength{\tabcolsep}{4pt}
-\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.229\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.196\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.555\linewidth-2\tabcolsep\relax}}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.245\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.140\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.595\linewidth-2\tabcolsep\relax}}
 \toprule
 章 & 标题 & 你会得到什么 \\
 \midrule
@@ -88,9 +88,6 @@ Windows 上程序名是 \texttt{magel.\allowbreak{}exe}。在 Git Bash / MSYS �
 \hyperref[ch:20]{20} & 注解与反射 & \texttt{@annotation}、运行期查元数据、按名调用 \\
 \hyperref[ch:21]{21} & 与 C 互操作 & \texttt{abi} 块，调 C 的库、把自己的函数交给 C \\
 \hyperref[ch:22]{22} & 交付与部署 & \texttt{.\allowbreak{}svmb}、VM 宿主、符号压缩、嵌入式与看门狗 \\
-\hyperref[ch:23]{23} & 综合项目：命令行待办清单 & 把前面二十章的东西拼成一个能用的程序 \\
-\hyperref[ch:24]{24} & 学生信息管理系统 & MySQL、HTTP API、跨源前端、会话与权限，配真实界面截图 \\
-\hyperref[ch:25]{25} & 嵌入式 Linux 部署 & 目标工具链、共享 VM、字节码交付、宿主依赖与进程恢复 \\
 \bottomrule
 \end{longtable}
 }
@@ -118,11 +115,11 @@ Windows 上程序名是 \texttt{magel.\allowbreak{}exe}。在 Git Bash / MSYS �
 你想 & 去哪 \\
 \midrule
 跟着书学语言 & 就是这儿 \\
-查某个语法怎么写 & \href{https://github.com/rabbitc999/Magel/blob/master/doc/04-language-reference.md}{语言参考} \\
-理解这些设计为什么这么做 & \href{https://github.com/rabbitc999/Magel/blob/master/doc/03-core-concepts.md}{核心概念} \\
-5 分钟跑起来 & \href{https://github.com/rabbitc999/Magel/blob/master/doc/01-quickstart.md}{快速开始} \\
-查某个标准库函数 & \href{https://github.com/rabbitc999/Magel/blob/master/doc/library/README.md}{库函数 API 参考} \\
-看官方给的可运行样例 & \href{https://github.com/rabbitc999/Magel/tree/master/example/samples}{\texttt{example/\allowbreak{}samples/\allowbreak{}}} \\
+查某个语法怎么写 & \href{https://gitee.com/rabbitc999/magel/blob/master/doc/04-language-reference.md}{语言参考} \\
+理解这些设计为什么这么做 & \href{https://gitee.com/rabbitc999/magel/blob/master/doc/03-core-concepts.md}{核心概念} \\
+5 分钟跑起来 & \href{https://gitee.com/rabbitc999/magel/blob/master/doc/01-quickstart.md}{快速开始} \\
+查某个标准库函数 & \href{https://gitee.com/rabbitc999/magel/blob/master/doc/library/README.md}{库函数 API 参考} \\
+看官方给的可运行样例 & \href{https://gitee.com/rabbitc999/magel/tree/master/example/samples}{\texttt{example/\allowbreak{}samples/\allowbreak{}}} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -135,7 +132,7 @@ Windows 上程序名是 \texttt{magel.\allowbreak{}exe}。在 Git Bash / MSYS �
 
 \item 工具链：见 \hyperref[ch:01]{第 1 章}。
 
-\item 编辑器：推荐装 \href{https://github.com/rabbitc999/Magel/tree/master/vscode}{\texttt{vscode/\allowbreak{}}} 下的 Magel 插件，有语法高亮、补全、跳转与断点调试；不装也能读完整本书。
+\item 编辑器：推荐装 \href{https://gitee.com/rabbitc999/magel/tree/master/vscode}{\texttt{vscode/\allowbreak{}}} 下的 Magel 插件，有语法高亮、补全、跳转与断点调试；不装也能读完整本书。
 
 \item 心里准备：第 6 到第 8 章会请你改掉一些习惯。别急着问“为什么不直接给我”，作者在那三章里把取舍写清楚了。
 

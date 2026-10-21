@@ -1,10 +1,10 @@
 \chapter{标准库速查}
 \label{ch:appB}
 
-Magel 的「标准库」不是一堆函数，而是一组模块：除核心 \texttt{std:\allowbreak{}:\allowbreak{}lang} 自动加载外，其余都得先 \texttt{import}。这份附录按能力域把它们列一遍，让你知道「想干这件事，该去 \texttt{import} 谁」；每个模块的完整签名与错误边界，去\href{https://github.com/rabbitc999/Magel/blob/master/doc/library/README.md}{库函数 API 参考}查。
+Magel 的「标准库」不是一堆函数，而是一组模块：除核心 \texttt{std:\allowbreak{}:\allowbreak{}lang} 自动加载外，其余都得先 \texttt{import}。这份附录按能力域把它们列一遍，让你知道「想干这件事，该去 \texttt{import} 谁」；每个模块的完整签名与错误边界，去\href{https://gitee.com/rabbitc999/magel/blob/master/doc/library/README.md}{库函数 API 参考}查。
 
 \begin{tip}{提示}
-模块名与方法对齐 Magel 0.21.1。终端中可以直接用 \texttt{magel man} 查模块，用\texttt{magel man 模块:\allowbreak{}:\allowbreak{}符号} 查签名、说明和示例；命令说明见 \href{https://github.com/rabbitc999/Magel/blob/master/doc/man/README.md}{doc/man}。
+模块名与方法对齐 Magel 0.21.1。终端中可以直接用 \texttt{magel man} 查模块，用\texttt{magel man 模块:\allowbreak{}:\allowbreak{}符号} 查签名、说明和示例；命令说明见 \href{https://gitee.com/rabbitc999/magel/blob/master/doc/man/README.md}{doc/man}。
 \end{tip}
 
 \section{先看一个例子}
@@ -184,11 +184,11 @@ sum=10
 你想查 & 去哪 \\
 \midrule
 \endhead
-某个函数的确切签名、默认值、返回与错误 & \href{https://github.com/rabbitc999/Magel/blob/master/doc/library/README.md}{库函数 API 参考} 与\href{https://github.com/rabbitc999/Magel/blob/master/doc/library/symbols.md}{全部函数索引} \\
-按能力域通读一遍标准库 & \href{https://github.com/rabbitc999/Magel/blob/master/doc/07-stdlib-overview.md}{07 标准库概览} \\
-标准库源码（每个模块头部都有能力说明） & \href{https://github.com/rabbitc999/Magel/tree/master/source/std}{\texttt{source/\allowbreak{}std/\allowbreak{}}} 下的 \texttt{source/\allowbreak{}std/\allowbreak{}<\allowbreak{}名字>\allowbreak{}.\allowbreak{}mgl} \\
-宿主侧绑定（\texttt{std:\allowbreak{}:\allowbreak{}*} 的真正实现） & \href{https://github.com/rabbitc999/Magel/tree/master/source/glue}{\texttt{source/\allowbreak{}glue/\allowbreak{}}} 下的 \texttt{source/\allowbreak{}glue/\allowbreak{}std\_*.\allowbreak{}hpp} \\
-可直接运行的标准库样例 & \href{https://github.com/rabbitc999/Magel/tree/master/example/samples}{\texttt{example/\allowbreak{}samples/\allowbreak{}}} \\
+某个函数的确切签名、默认值、返回与错误 & \href{https://gitee.com/rabbitc999/magel/blob/master/doc/library/README.md}{库函数 API 参考} 与\href{https://gitee.com/rabbitc999/magel/blob/master/doc/library/symbols.md}{全部函数索引} \\
+按能力域通读一遍标准库 & \href{https://gitee.com/rabbitc999/magel/blob/master/doc/07-stdlib-overview.md}{07 标准库概览} \\
+标准库源码（每个模块头部都有能力说明） & \href{https://gitee.com/rabbitc999/magel/tree/master/source/std}{\texttt{source/\allowbreak{}std/\allowbreak{}}} 下的 \texttt{source/\allowbreak{}std/\allowbreak{}<\allowbreak{}名字>\allowbreak{}.\allowbreak{}mgl} \\
+宿主侧绑定（\texttt{std:\allowbreak{}:\allowbreak{}*} 的真正实现） & \href{https://gitee.com/rabbitc999/magel/tree/master/source/glue}{\texttt{source/\allowbreak{}glue/\allowbreak{}}} 下的 \texttt{source/\allowbreak{}glue/\allowbreak{}std\_*.\allowbreak{}hpp} \\
+可直接运行的标准库样例 & \href{https://gitee.com/rabbitc999/magel/tree/master/example/samples}{\texttt{example/\allowbreak{}samples/\allowbreak{}}} \\
 \bottomrule
 \end{longtable}
 }
@@ -205,7 +205,7 @@ sum=10
 
 \item 想先复习报错怎么读：翻回\hyperref[ch:appA]{附录 A}；
 
-\item 想把整本书的东西拼成一个完整程序：\hyperref[ch:23]{第 23 章 综合项目}；
+\item 想练习模型、编解码与参数化查询的组合：\href{https://gitee.com/rabbitc999/magel/blob/master/doc/36-reflection-serialization-sql.md}{反射编解码与动态 SQL}；
 
 \item 想把这门语言接到你自己的 C/C++ 代码上：\hyperref[ch:21]{第 21 章 与 C 互操作}。
 

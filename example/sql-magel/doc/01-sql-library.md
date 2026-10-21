@@ -15,7 +15,7 @@
 
 ### 静态 SQLite 的构建与交付
 
-官方 amalgamation 源码固定为 SQLite 3.54.0，位于 `sqlite/`，来源与校验值见 [依赖说明](../../sqlite/README.md)。以 C 编译，启用 `SQLITE_THREADSAFE=1`、禁用动态扩展加载；MySQL/MariaDB、PostgreSQL、ODBC 仍使用动态客户端。
+官方 amalgamation 源码固定为 SQLite 3.54.0，位于 `sqlite/`，来源与校验值见 [依赖说明](../../../library/sqlite/README.md)。以 C 编译，启用 `SQLITE_THREADSAFE=1`、禁用动态扩展加载；MySQL/MariaDB、PostgreSQL、ODBC 仍使用动态客户端。
 
 默认清理 SQLite 中间源码和目标文件。`--cpp-output-dir` 保留 C++ 源码及配套 `<exe>.sqlite3.c`，手动重建时须用 C 编译器编译该 C 文件（采用上述宏），然后与 C++ 目标文件一起链接；交付最终可执行文件时无需这些源码。`--keep-intermediate` 可保留目标文件。
 
@@ -55,7 +55,7 @@ python tests/magel_sql_backends.py
 
 实现契约参考 [SQLite prepare](https://www.sqlite.org/c3ref/prepare.html)、[PostgreSQL libpq 执行](https://www.postgresql.org/docs/current/libpq-exec.html)、[ODBC SQLDriverConnect](https://learn.microsoft.com/en-us/sql/odbc/reference/syntax/sqldriverconnect-function) 与 [SQLGetData](https://learn.microsoft.com/en-us/sql/odbc/reference/syntax/sqlgetdata-function)。
 
-以下保留原 MySQL 实现与学生管理示例的详细说明。MySQL 专有符号、加载规则和实现细节只适用于该后端；多数据库统一行为以上文、当前源码及 [`doc/library/std-sql.md`](../../doc/library/std-sql.md) 为准。
+以下保留MySQL 基础实现的详细说明。MySQL 专有符号、加载规则和实现细节只适用于该后端；多数据库统一行为以上文、当前源码及 [`doc/library/std-sql.md`](../../../doc/library/std-sql.md) 为准。
 
 ## 1. 分层
 
@@ -160,34 +160,4 @@ Magel 一侧以宿主句柄表示这些连接和结果集；Magel 本身同时�
 
 字符串遵循值语义。`String copy = text;` 可以从形参取得独立副本，`pad(result.textAt(r, c), 12)` 也可以直接传入拥有型临时结果；调用点负责临时实参的生命周期。早期的形参复制和临时实参缺陷已修复，不应继续把规避写法描述为当前限制。
 
-SQL 客户端提供的借用缓冲区仍须由胶水复制为拥有型字符串，不能让结果集释放后的原生地址逃入语言值。连接和结果资源的清理需分别验证；语言字符串没有泄漏不等于数据库客户端句柄已经释放。当前规则见[核心概念 §1–4](../../doc/03-core-concepts.md)，实库回归入口为 `tests/magel_sqlite.py` 和 `tests/magel_sql_backends.py`。
-
-## 6. 示例：学生信息管理系统
-
-[`../example/student/main.mgl`](../example/student/main.mgl) 是需求里的学生信息管理系统：
-
-* 启动时连 MySQL、建库 `student_db`、执行 `sql/schema.sql` 与 `sql/seed.sql`；
-* 学生 / 班级 / 成绩三套子菜单，增删改查、显示全部、成绩统计；
-* 成绩列表用一条 `LEFT JOIN` + `CASE WHEN` 算出等级，统计用
-  `COUNT/AVG/MAX/MIN/SUM(CASE …)` 一次取回；
-* `--answers 文件` 从 UTF-8 文件读回答，自检脚本据此对 stdout 逐行比对。
-
-[`../example/ipage-student/main.mgl`](../example/ipage-student/main.mgl) 是**同类需求的第二份实现**，
-数据换成外部工程：它读写 ipage-student（Java + Spring MVC + MyBatis）自己的 `student` 库，
-不依赖那一侧的框架，并把后者的登录与权限门限搬了过来：
-
-* 登录核对 `user` 表，按 `user_permission` 的四个值决定可见菜单；
-* 权限判定沿用「用户等级 >= 门槛等级」，门限取自对方各模型 `@ModelClass` 的
-  `look` / `edit` / `delete`（学生/成绩的门限是学生，班级/课程是教师，用户管理是超级管理员）；
-* 班级、课程、学生三张列表分别带 `COUNT` / `AVG` 聚合列，成绩列表连表算等级，另有按课程与
-  按班级两组统计；
-* `--init <student.sql>` 在库里缺表时就地建库灌数据，`--reinit` 强制重导入。
-
-两份示例各带一个冒烟自检：`tests/check.sh`（`student_db`）与 `tests/check-ipage.sh`
-（独立测试库 `student_check` + `tests/fixture_ipage.sql` 确定性夹具，不碰真实库）。
-
-## 7. 本机数据库集成回归
-
-`tests/magel_sql_live.py` 通过环境变量 `MAGEL_SQL_TEST_PASSWORD` 读取密码，并通过标准输入传给测试程序；源码不写连接密码。默认连接本机 MySQL 的 `root` 用户、`mysql` 数据库，以及 PostgreSQL 的 `postgres` 用户、`postgres` 数据库。客户端库可通过 `MYSQL_LIBRARY`、`POSTGRES_LIBRARY` 指定。
-
-回归仅创建连接内的临时表，验证 VM 的 CRUD、事务提交与回滚、64 位整数、数值外观文本、中文/emoji、NULL、重复主键后的恢复与重复关闭。临时表在连接关闭后删除。MariaDB 的入口和默认端口由 `tests/magel_sql_connections.py` 的 ABI 夹具验证；夹具通过不代表真实 MariaDB 服务通过。
+SQL 客户端提供的借用缓冲区仍须由胶水复制为拥有型字符串，不能让结果集释放后的原生地址逃入语言值。连接和结果资源的清理需分别验证；语言字符串没有泄漏不等于数据库客户端句柄已经释放。当前规则见[核心概念 §1–4](../../../doc/03-core-concepts.md)，实库回归入口为 `tests/magel_sqlite.py` 和 `tests/magel_sql_backends.py`。

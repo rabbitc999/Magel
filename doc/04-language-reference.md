@@ -631,7 +631,7 @@ import std::text;
 ```
 
 - 模块用 `module 名字::子名字;` 声明，通常放在文件首行。
-- `import` 后可写完整路径，也可用 `import_names` 类机制引入短名。
+- `import` 后可写完整限定名，也可使用唯一可见的短名；同名冲突时使用限定名明确归属。
 - 核心模块 `std::lang`（`println` / `format` / `assert` / `len` / `Any` …）自动加载，无需 `import`。
 - 可见性、导出与跨模块泛型见 [`example/samples/import_names.mgl`](../example/samples/import_names.mgl)。
 

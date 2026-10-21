@@ -82,7 +82,7 @@ Magel 让业务逻辑成为一份可以独立交付的资产：写一次，从�
 - [`doc/examples/`](examples/) —— 需要配套工程布局的示例（ABI、SQLite、svmb、GUI）。
 - [`doc/examples/`](examples/) 里的配套工程总览见 [13 示例项目](13-projects.md)。
 - [项目 README](../README.md) —— 构建、快速使用、调试、配置。
-- [入门书《玩转 Magel 语言》](book/README.md) —— 从零开始的 25 章教程与附录，含前后端分离学生系统（配截图）和 嵌入式 Linux 部署；完整示例与生成内容按对应回归核验。
+- [入门书《玩转 Magel 语言》](book/README.md) —— 从零开始的 22 章教程与附录，含分层习题、经典作品改编番外，以及编译和 VM 执行流程图；完整示例与生成内容按对应回归核验。
 - [完整语法参考（EBNF）](14-grammar-ebnf.md) —— 文法的权威形式，由 [`source/magel.gram`](../source/magel.gram) 生成。
 
 ## 英文文档

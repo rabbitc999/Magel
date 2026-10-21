@@ -245,7 +245,7 @@ abi "./native.dll"
 
 \texttt{packed} 结构体用于对接 C 侧 \texttt{\#pragma pack} 的紧凑布局——C 里用\texttt{\#pragma pack(\allowbreak{}push,\allowbreak{} 1)\allowbreak{}} 压过的地方，Magel 侧就声明成 \texttt{struct X packed \{ … \}}。
 
-完整例子见 \href{https://github.com/rabbitc999/Magel/tree/master/doc/examples/abi_buffers}{\texttt{doc/\allowbreak{}examples/\allowbreak{}abi\_buffers/\allowbreak{}}}——它覆盖了结构体嵌套、紧凑布局、数组读写、可空引用、返回值长度等全部边界情况。
+完整例子见 \href{https://gitee.com/rabbitc999/magel/tree/master/doc/examples/abi_buffers}{\texttt{doc/\allowbreak{}examples/\allowbreak{}abi\_buffers/\allowbreak{}}}——它覆盖了结构体嵌套、紧凑布局、数组读写、可空引用、返回值长度等全部边界情况。
 
 \section{宿主胶水：把 C++ 函数注册进来}
 
@@ -340,7 +340,7 @@ int64 main()
 \par
 \medskip
 
-接口签名、宿主参数和返回值必须一致。同步回调通过 \texttt{Native\allowbreak{}Call\allowbreak{}Context:\allowbreak{}:\allowbreak{}invoke} 与 \texttt{magel\_glue:\allowbreak{}:\allowbreak{}Function} 使用同一套 VM 规则；不要把函数值中的运行时地址当作宿主机器函数指针。完整胶水约定见\href{https://github.com/rabbitc999/Magel/blob/master/doc/08-host-integration.md}{宿主集成}。
+接口签名、宿主参数和返回值必须一致。同步回调通过 \texttt{Native\allowbreak{}Call\allowbreak{}Context:\allowbreak{}:\allowbreak{}invoke} 与 \texttt{magel\_glue:\allowbreak{}:\allowbreak{}Function} 使用同一套 VM 规则；不要把函数值中的运行时地址当作宿主机器函数指针。完整胶水约定见\href{https://gitee.com/rabbitc999/magel/blob/master/doc/08-host-integration.md}{宿主集成}。
 
 \section{反方向：宿主调用 Magel}
 
@@ -348,7 +348,7 @@ int64 main()
 
 在宿主原生函数内，可以通过 \texttt{magel\_glue:\allowbreak{}:\allowbreak{}Function} 或 \texttt{Native\allowbreak{}Call\allowbreak{}Context:\allowbreak{}:\allowbreak{}invoke} 同步调用 Magel 函数和闭包。它们支持高阶函数、引用和同步重入，并保留 VM 的错误传播与所有权约定。函数值中的运行时地址不能转换为宿主机器函数指针。
 
-Magel 通过 VM 宿主加载胶水。完整接口和代码见\href{https://github.com/rabbitc999/Magel/blob/master/doc/08-host-integration.md}{宿主集成}及\href{https://github.com/rabbitc999/Magel/blob/master/example/native-callbacks/README.md}{VM 回调示例}。
+Magel 通过 VM 宿主加载胶水。完整接口和代码见\href{https://gitee.com/rabbitc999/magel/blob/master/doc/08-host-integration.md}{宿主集成}及\href{https://gitee.com/rabbitc999/magel/blob/master/example/native-callbacks/README.md}{VM 回调示例}。
 
 \section{小结}
 
@@ -379,3 +379,53 @@ Magel 通过 VM 宿主加载胶水。完整接口和代码见\href{https://githu
 第 22 章讲交付与部署：\texttt{.\allowbreak{}svmb}、VM 宿主、符号压缩，以及嵌入式与看门狗。
 
 翻到\hyperref[ch:22]{第 22 章 交付与部署}。
+
+\section{边界与验证}
+
+ABI 一致只是互操作的前提之一。指针、字符串、回调上下文的拥有与有效期必须明确；同步回调走统一 VM 调用协议，运行时地址不是可直接执行的机器函数指针。
+
+\section{习题}
+
+前两题用于理解和基本实现，第三题检查边界，最后一题为综合挑战。先独立完成，再核对参考解答。
+
+\begin{enumerate}
+
+\item 为什么两边函数名相同仍可能无法安全调用？
+
+\item 列出传入 UTF-8 字符串时宿主必须明确的三个约定。
+
+\item 说明宿主保存一次同步调用的临时上下文为何可能出错。
+
+\item 挑战：为一个宿主函数设计参数数目、返回类型和错误传播测试。
+
+\end{enumerate}
+
+\subsection{参考解答与验收要点}
+
+\begin{enumerate}
+
+\item 还需要调用约定、参数宽度、布局、返回协议及生命周期一致。
+
+\item 编码、长度或终止方式、缓冲区有效期与释放责任至少说明清楚。
+
+\item 调用结束后上下文不再有效，后续使用不受原同步调用保证，需使用实际支持的长期注册协议。
+
+\item 覆盖合法调用与不匹配调用，保留原始错误来源，检查没有把 VM 值地址强转成机器入口。
+
+\end{enumerate}
+
+\section{番外：借来的梨树与指针}
+
+改编自《聊斋志异·种梨》，以下为编程主题的独立改写。
+
+道士种下一粒梨核，转眼长成一树梨。他请众人取食，卖梨人忙着记下树的位置，想着等道士走后，每日都能来摘。
+
+散场时树已不见，位置还在纸上。卖梨人照着旧地址伸手，只摸到空地，便怪纸上的数字变了。道士说，地址可能丝毫未变，那里也未必还存在原先的对象。
+
+另有客人把枝条交给一个外乡木匠。木匠答应只在眼前这段时间使用，客人却把这个保证写成“随时可以回调”。等他回家关门，远处再来敲门，已没有有效的上下文接待。
+
+道士收起铲子，让他们将取得、使用和释放的约定写在一起。跨过一道语言边界，不会令生命周期凭空消失。卖梨人最后只带走一篮真实归自己的梨，再没把一串地址当成果园的契约。
+
+\subsection{技术对照}
+
+ABI 一致只是互操作的前提之一。指针、字符串、回调上下文的拥有与有效期必须明确；同步回调走统一 VM 调用协议，运行时地址不是可直接执行的机器函数指针。

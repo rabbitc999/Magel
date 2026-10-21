@@ -13,11 +13,7 @@ is written `magel`).
 
 | Example | Location | What it demonstrates | Requires |
 | --- | --- | --- | --- |
-| [Minimal GUI](#31-minimal-gui-gui) | [`example/gui/`](../../example/gui) | Windows, widgets, and events delivered through the runtime poster | Windows + MinGW, or Qt5 |
-| [Turtle graphics](#32-turtle-graphics-turtle_winapi) | [`doc/examples/turtle_winapi/`](../examples/turtle_winapi/) | `abi` blocks + shared library + GDI canvas | Windows + MinGW |
-| [Web student records](#41-web-student-records) | [`example/web-students/`](../../example/web-students/) | HTTP via `std::net`, SQLite via `std::sql`, same-origin page | none |
-| [Gradebook · console](#42-gradebook--console-edition) | [`example/sql-magel/example/ipage-student/`](../../example/sql-magel/example/ipage-student) | A real MySQL database, a four-role permission matrix, menu pruning | MySQL |
-| [Gradebook · split front end and back end](#43-gradebook--split-front-end-and-back-end) | [`example/sql-magel/example/ipage-student-server/`](../../example/sql-magel/example/ipage-student-server) | A JSON-only back end, separately hosted front end, cross-origin CORS | MySQL + static server |
+| [Turtle graphics](#31-turtle-graphics-turtle_winapi) | [`doc/examples/turtle_winapi/`](../examples/turtle_winapi/) | `abi` blocks + shared library + GDI canvas | Windows + MinGW |
 | [Calculator (two ASTs)](#51-calculator-two-asts) | [`example/calculator/`](../../example/calculator/) | Recursive-descent parsing, recursive ownership under value semantics | none |
 | [Annotations and reflection](#53-annotations-and-reflection) | [`example/reflection/`](../../example/reflection/) | Compile-time annotations, runtime metadata queries | reflection build macros |
 | [Standard library companions](#54-standard-library-companions) | [`doc/examples/library/`](../examples/library/) | Four runnable programs: io / sqlite / watchdog / reflect | some need reflection |
@@ -37,46 +33,17 @@ Every example uses the same four headings:
 - **How it is verified** — the dedicated regression script (an example only earns the name if it passes);
 - **Boundaries** — prerequisites, and what it deliberately does *not* do.
 
-The examples fall into two groups; do not confuse them. **Application** examples (GUI, web
-student records, gradebook) show *what you can build*. **Capability** examples (calculator,
+The examples fall into two groups; do not confuse them. **Application** examples (student records and graphics) show *what you can build*. **Capability** examples (calculator,
 reflection, module compilation, standard-library companions) show *what a language or library
 feature looks like*.
 
 ---
 
-## 3. Desktop and GUI
+## 3. Desktop graphics and games
 
-All three need **a usable interactive desktop** (headless environments should use the Qt offscreen
-path given in each section).
+Desktop examples require an interactive desktop; see each example for headless verification.
 
-### 3.1 Minimal GUI (gui)
-
-**What it demonstrates**: the Magel side only declares [`gui.mgl`](../../example/gui/gui.mgl); windows and
-widgets live in a host library ([`example/gui/winapi/gui.c`](../../example/gui/winapi/gui.c) or
-[`example/gui/qt/gui_qt.cpp`](../../example/gui/qt/gui_qt.cpp)). Only fixed-width integers and UTF-8 strings cross
-the boundary — **no window handles or widget structures are passed**.
-
-GUI events pass through a C callback to a weak runtime poster and enter a bounded queue. Magel code explicitly receives event values; the VM never inserts a user callback. Posting reports full or closed queues.
-
-**How to run it**:
-
-```powershell
-python tests/magel_desktop.py        # WinAPI：出 GUI 与海龟两个产物
-```
-
-```sh
-python gui/test_qt.py                # Qt offscreen: build, UTF-8 round trip, event injection, pumpEvery
-```
-
-**How it is verified**: `tests/magel_desktop.py` (WinAPI), `example/gui/test_qt.py` (Qt offscreen),
-`example/gui/test_winapi.py`, `example/gui/test_program.py`.
-
-**Boundaries**: the client area is limited to 100–4096 pixels and widget IDs range from 1 to 65535
-and must be unique; the shared library has to sit in the same working directory as the executable
-(the glue locates it by a relative path); the event convention is "button click = widget ID (>0),
-window close = -1, Qt periodic event = 0".
-
-### 3.2 Turtle graphics (turtle_winapi)
+### 3.1 Turtle graphics (turtle_winapi)
 
 **How to run it**:
 
@@ -95,109 +62,9 @@ C ABI boundary error — background in [Host integration](08-host-integration.md
 
 ---
 
-## 4. Web and server side
+## 4. Database examples
 
-### 4.1 Web student records
-
-**What it demonstrates**: Magel as its own server — `std::net` listens for HTTP, `std::sql` talks to
-a real SQLite file, and the browser calls **same-origin** JSON endpoints. No web framework and no
-front-end dependencies. It supports create, list, edit and drop, filtering by student number,
-name or e-mail, with uniqueness and range checks on the server.
-
-**How to run it**:
-
-```powershell
-.\magel.exe run example/web-students/main.mgl --out build/web-students -- build/students.db 8080
-```
-
-Then open `http://127.0.0.1:8080/`. SQLite is statically built in — no DLL to prepare.
-Arguments after `--` go straight to the Magel `main` (in order: database file, port, request limit,
-page path, ready file); SQLite does **not** create directories, so `build/` has to exist first.
-
-**How it is verified**:
-
-The second one drives the form in a real browser and checks HTML-injection protection plus the
-actual SQL rows on disk.
-
-**Boundaries**: a local, single-connection, sequential text HTTP server. No TLS, chunked transfer,
-keep-alive, file upload, login or permission management. The `CREATE TABLE` statements, auto
-increment and `last_insert_rowid()` are SQLite dialect — switching back ends means rewriting those
-SQL statements too.
-
-### 4.2 Gradebook · console edition
-
-**What it demonstrates**: the login and CRUD of ipage-student (a Java + Spring MVC + MyBatis course
-project) rewritten in Magel as a console program, **without the ipage framework**, reading and
-writing ipage-student's own `student` database. The four-role permission matrix (3 / 5 / 5 / 6 menu
-entries for student, teacher, administrator and super administrator), the "filter the menu first,
-then check again on selection" rule, and printing the blast radius before a drop all live in a
-single file.
-
-**How to run it**:
-
-```sh
-magel sql-magel/example/ipage-student/main.mgl                      # 库已存在
-magel sql-magel/example/ipage-student/main.mgl -- --init ../ipage-student/student.sql
-magel sql-magel/example/ipage-student/main.mgl -- --answers sql-magel/tests/input_ipage.txt
-```
-
-`--answers` feeds scripted replies, which is how the self-check and the demo run it.
-
-**How it is verified**: `sh sql-magel/tests/check-ipage.sh` (it should print `ok ipage`).
-The self-check **never touches the real database**: it rebuilds an isolated `student_check` database
-from `example/sql-magel/tests/fixture_ipage.sql` with `--reinit`, so auto-increment keys start at 1 every
-time, and the test database is back to its initial state when the script finishes.
-
-**Boundaries**: passwords are compared in plaintext (that is how they are stored in `student.sql`) —
-**matching the existing style takes priority over hardening**. See the
-[SQL interface](../../example/sql-magel/doc/01-sql-library.md).
-
-### 4.3 Gradebook · split front end and back end
-
-**What it demonstrates**: the console edition upgraded into a **split front end and back end**
-application. The back end [`main.mgl`](../../example/sql-magel/example/ipage-student-server/main.mgl) serves
-only `/api/*` JSON endpoints (`/` and `/index.html` return 404), while the front end
-[`web/`](../../example/sql-magel/example/ipage-student-server/web) is plain static assets hosted by **a
-separate process**. The two are not same-origin and talk over CORS.
-
-| Concern | Approach |
-| --- | --- |
-| Who serves the page | The back end serves no pages; static assets are deployed separately |
-| Cross-origin | Every response (including the `OPTIONS` preflight) carries CORS headers, narrowable with `--allow-origin` |
-| Identity | `Authorization: Bearer <64 hex digits>`; sessions live in memory and die on restart |
-| Permissions | The permission table is the single source of truth and the back end checks every action; the front end only renders what `/api/session` reports |
-| Injection | The front end writes user data with `textContent` only, never by building HTML |
-
-**How to run it** (two terminals):
-
-```sh
-# ① 后端（库已存在；不存在就加 -- --init ../ipage-student/student.sql）
-magel run sql-magel/example/ipage-student-server/main.mgl --out build/ipage-server -- \
-    --listen-port 8080
-
-# ② 前端静态服务器
-python -m http.server 5500 --directory sql-magel/example/ipage-student-server/web
-```
-
-Open `http://127.0.0.1:5500/`; if the back end is not on the default 8080, override with
-`http://127.0.0.1:5500/?api=http://127.0.0.1:9000` (the front end's only coupling point is
-`web/config.js`).
-
-**How it is verified**:
-
-The API script covers login / logout / bad tokens, the visible modules and per-action thresholds of
-all four roles, CRUD plus aggregate statistics for the five modules, the CORS preflight, the fact
-that the back end serves no pages, and HTTP message boundaries. The browser script starts another
-static server in a thread and runs the whole flow **genuinely cross-origin**: sign in, menus and
-buttons appearing or disappearing by permission, create/edit/find/drop, the statistics page, and
-injection protection.
-
-**Boundaries**: the "3 attempts" limit on a stateless HTTP back end is counted by the front end, so
-calling the API directly has no attempt limit; sessions have no expiry and no refresh mechanism;
-passwords are still compared in plaintext. Shipping this for real would require hashing, TLS,
-session expiry and rate limiting.
-
----
+See the [SQL examples](../../example/sql-magel/README.md) and [reflection / dynamic SQL guide](36-reflection-serialization-sql.md). The previous student projects have been removed.
 
 ## 5. Language and library capability examples
 
@@ -329,20 +196,13 @@ and breakpoint debugging are described in its [README](../../vscode/README.md).
 | Command | Covers |
 | --- | --- |
 | `sh check.sh` | Every sample in `example/samples/` against its expected output |
-| `python tests/magel_desktop.py [--turtle-only]` | Two desktop artifacts: WinAPI GUI / turtle |
-| `python gui/test_qt.py <dir>` (Linux) | Qt back end: build, UTF-8, event injection and `pumpEvery` |
-| `python tests/magel_web_students_browser.py --browser …` | Web student records in a real browser |
-| `sh sql-magel/tests/check-ipage.sh` | Gradebook console edition (never touches the real database) |
-| `python tests/magel_ipage_student_server.py` | Gradebook split edition: the API |
-| `python tests/magel_ipage_student_server_browser.py --browser …` | Gradebook split edition: cross-origin browser flow |
+| `python tests/magel_desktop.py [--turtle-only]` | Turtle graphics through WinAPI |
 | `python tests/magel_recursive_ownership.py` | Calculator, both AST representations |
 | `python tests/magel_annotations.py` | Annotations and reflection |
 | `python tests/magel_library_reference.py` | Standard library companions |
 | `python tests/magel_abi_values.py` | C ABI companions |
 
-The entries that need a graphical environment or a database are **not part of `ci.sh`**; they are
-dedicated regressions: the desktop ones want Windows + MinGW (or Qt5), and the gradebook wants a
-local MySQL running.
+Checks requiring a graphical environment or database are dedicated regressions: desktop graphics need Windows and MinGW, while external database examples need their corresponding service and client library.
 
 ---
 

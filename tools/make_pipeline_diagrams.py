@@ -56,37 +56,41 @@ def title(canvas, heading, detail):
 
 
 def compilation(english=False):
-    """绘制编译阶段与三类交付出口。"""
+    """区分条件预处理、语义期宏展开、四元式优化及 VM 装配出口。"""
     c = Canvas()
     title(c, "Magel · Compilation" if english else "Magel · 编译过程",
-          "Source → generated front end → checked IR → execution / bytecode / quadruples" if english else
-          "源码 → 文法生成的前端 → 检查与中间产物 → VM 执行 / 字节码 / 四元式")
+          "Generated front end → checked and optimized quadruples → shared VM" if english else
+          "文法生成前端 → 语义与借用检查 → 四元式生成及优化 → 共享 VM")
     nodes = [
-        (40, 145, "1  Source" if english else "1  源码输入", [".mgl + imports", "Embedded standard library"] if english else [".mgl 与导入模块", "内嵌标准库"]),
-        (560, 145, "2  Preprocessing" if english else "2  预处理", ["Macros and conditional compilation", "Source locations retained"] if english else ["宏展开与条件编译", "保留源码位置"]),
-        (1080, 145, "3  Parsing" if english else "3  词法与语法解析", ["magel.gram → generated parser", "Build syntax nodes"] if english else ["magel.gram → 生成的解析器", "构造语法节点"]),
-        (1080, 335, "4  Semantic lowering" if english else "4  语义降级与泛型", ["Types, overloads, monomorphisation", "Nested types and tuples"] if english else ["类型、重载与泛型单态化", "嵌套类型与元组"]),
-        (560, 335, "5  Borrow checking" if english else "5  独立借用检查", ["Control flow and reference origins", "Collect diagnostics"] if english else ["控制流、引用来源与生命周期", "收集诊断"]),
-        (40, 335, "6  Intermediate output" if english else "6  生成中间产物", ["Quadruples and data layout", "Compiler IR, absent from .svmb"] if english else ["四元式与数据布局", "四元式不写入 .svmb"]),
+        (40, 145, "1  Source" if english else "1  源码与模块", [".mgl + imports", "Embedded standard library"] if english else [".mgl 与模块依赖", "内嵌标准库"]),
+        (560, 145, "2  Preprocessing" if english else "2  条件预处理", ["%define / %if / %ifdef", "Source locations retained"] if english else ["%define / %if / %ifdef", "保留源文件与行号"]),
+        (1080, 145, "3  Lexing and parsing" if english else "3  词法与语法解析", ["Generated from magel.gram", "Build AST, including macro templates"] if english else ["由 magel.gram 生成的前端", "构建 AST 与宏模板"]),
+        (1080, 315, "4  Semantic analysis" if english else "4  语义分析与宏展开", ["Hygienic expansion + type inference", "Overloads and monomorphisation"] if english else ["卫生 AST 宏展开与类型推导", "名称、重载与泛型单态化"]),
+        (560, 315, "5  Borrow checking" if english else "5  独立借用检查", ["Control flow and reference origins", "Ownership and lifetime diagnostics"] if english else ["控制流与引用来源", "拥有关系及生命周期诊断"]),
+        (40, 315, "6  Generate quadruples" if english else "6  生成四元式", ["Compiler IR + data + layout", "Source locations retained"] if english else ["四元式 IR、数据区与布局", "保留诊断来源"]),
     ]
     for x, y, heading, lines in nodes:
         box(c, x, y, 440, heading, lines)
     for points in [((480, 205), (560, 205)), ((1000, 205), (1080, 205)),
-                   ((1300, 265), (1300, 335)), ((1080, 395), (1000, 395)),
-                   ((560, 395), (480, 395)), ((260, 455), (260, 535))]:
+                   ((1300, 265), (1300, 315)), ((1080, 375), (1000, 375)),
+                   ((560, 375), (480, 375)), ((260, 435), (260, 485))]:
         arrow(c, points)
-    box(c, 40, 535, 1480, "7  Assemble VM instructions" if english else "7  组装 VM 指令",
-        ["Bind types and labels; lower integer operations and comparison branches for bytecode" if english else
-         "建立基础 VM 指令、类型与标签；字节码路径预先降低整数运算与比较跳转",
-         "Keep source-PC mapping for diagnostics and precise execution" if english else
-         "保留源码与原始 PC 映射，用于诊断和精确执行"], green=True)
+    box(c, 40, 485, 720, "7  Optimize quadruples" if english else "7  四元式优化",
+        ["Full stackvm::optimize pipeline" if english else "完整 stackvm::optimize 优化流程",
+         "Standard iteration budget before VM assembly" if english else "标准迭代预算；优化结果送入 VM 装配"], green=True)
+    arrow(c, ((760, 545), (800, 545)))
+    box(c, 800, 485, 720, "8  Assemble VM instructions" if english else "8  组装 VM 指令",
+        ["Types, labels, integer and comparison lowering" if english else "类型与标签、整数及比较跳转降低",
+         "Keep source / PC mapping; prepare execution" if english else "保留源码 / PC 映射，准备执行"], green=True)
     outputs = [
-        (40, "In-memory execution" if english else "内存执行", ["Program → desktop VM", "No bytecode file required"] if english else ["Program → 桌面 VM", "无需先写字节码文件"]),
-        (560, ".svmb · format 5" if english else ".svmb · 格式 5", ["VM code + internal execution sequence", "Desktop / Linux VM"] if english else ["VM 指令与内部执行序列", "桌面 / Linux VM"]),
-        (1080, "Quadruple artifacts" if english else "四元式产物", ["Quadruples + data + layout", "Inspection or VM assembly"] if english else ["四元式、数据区与布局", "用于检查或 VM 装配"]),
+        (40, "Quadruple artifacts" if english else "四元式产物", ["Generated IR + data + layout", "Optimized view: MAGEL_DUMP_OPT"] if english else ["生成的四元式、数据区与布局", "优化检查：MAGEL_DUMP_OPT"]),
+        (560, "In-memory execution" if english else "内存执行", ["Program → shared VM", "No bytecode file required"] if english else ["Program → 共享 VM", "无需先写字节码文件"]),
+        (1080, ".svmb bytecode" if english else ".svmb 字节码", ["VM code + execution metadata", "Loaded by a compatible VM"] if english else ["VM 指令与执行元数据", "由兼容版本的共享 VM 加载"]),
     ]
+    arrow(c, ((40, 375), (20, 375), (20, 675), (260, 675), (260, 720)))
+    arrow(c, ((1100, 605), (1100, 665), (780, 665), (780, 720)))
+    arrow(c, ((1300, 605), (1300, 720)))
     for x, heading, lines in outputs:
-        arrow(c, ((x + 220, 655), (x + 220, 720)))
         box(c, x, 720, 440, heading, lines, green=True)
     return c
 
@@ -138,6 +142,10 @@ def main():
         for name, draw in (("compilation", compilation), ("execution", execution)):
             path = OUT / f"magel-{name}{'-en' if english else ''}"
             draw(english).save(str(path.with_suffix('.png')), str(path.with_suffix('.svg')))
+            if not english:
+                book_path = ROOT / 'doc/book/images' / path.with_suffix('.png').name
+                book_path.parent.mkdir(parents=True, exist_ok=True)
+                book_path.write_bytes(path.with_suffix('.png').read_bytes())
             print(path.name)
 
 

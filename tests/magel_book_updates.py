@@ -5,9 +5,10 @@ import re
 import subprocess
 import sys
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 
 ROOT=Path(__file__).resolve().parents[1]
-COMPILER=ROOT/('magel.exe' if os.name=='nt' else 'magel')
+COMPILER=Path(os.environ.get('MAGEL_BIN',str(ROOT/('magel.exe' if os.name=='nt' else 'magel'))))
 sys.path.insert(0,str(ROOT/'doc/book/latex/tools'))
 from md2tex import Converter, FILES
 
@@ -16,7 +17,9 @@ def main():
     """新章节示例须产生所列输出，生成章节须与 Markdown 一致。"""
     book=(ROOT/'doc/book/latex/book.tex').read_text(encoding='utf-8')
     assert not re.search(r'^\s*\\part\*?\{',book,re.M), '书稿直接按章节排列，不使用 part 分组'
-    assert len(re.findall(r'\\input\{chapters/ch\d+\}',book))==25
+    assert len(re.findall(r'\\input\{chapters/ch\d+\}',book))==22
+    for image in ('magel-compilation.png', 'magel-execution.png'):
+        assert (ROOT/'doc/book/images'/image).read_bytes()==(ROOT/'doc/images'/image).read_bytes(),image
     fixture = "1. 先声明：\n\n   ```magel\n   int64 value = 1;\n   ```\n\n2. 再读取：\n\n   ```magel\n   println(\"{}\", value);\n   ```\n\n- 无序说明：\n\n  ```text\n  output\n  ```"
     rendered = Converter().convert(fixture)
     assert r'\begin{enumerate}[start=2]' in rendered
@@ -40,14 +43,18 @@ def main():
     double = Converter().convert('| 指令 | 作用 |\n| --- | --- |\n| `` $macro N((a)) `` | 说明 |')
     assert '`' not in double and r'\texttt{ \$macro N(' in double, double
     preface=(ROOT/'doc/book/latex/chapters/preface.tex').read_text(encoding='utf-8')
-    for chapter in range(1, 26):
+    for chapter in range(1, 23):
         assert preface.count(r'\hyperref[ch:%02d]{%02d} &' % (chapter, chapter)) == 1, chapter
     count=0
+    programs=[]
     with tempfile.TemporaryDirectory(prefix='magel-book-') as folder:
         work=Path(folder)
         for source,target in FILES:
             path=ROOT/'doc/book'/source
             text=path.read_text(encoding='utf-8')
+            if re.match(r'^\d\d-', source):
+                assert '参考解答与验收要点' in text and '番外：' in text, source
+                assert len(re.findall(r'^\d+\. ', text[text.index('参考解答与验收要点'):], re.M)) >= 4, source
             mode='preface' if source=='README.md' else 'appendix' if source.startswith(('A-','B-')) else 'chapter'
             expected=Converter(mode).convert(text)
             assert (ROOT/'doc/book/latex/chapters'/target).read_text(encoding='utf-8')==expected,target
@@ -62,10 +69,23 @@ def main():
             assert list_depth == 0, target
             for code,output in re.findall(r'<!-- verify-book -->\s*```magel\n(.*?)```\s*```text\n(.*?)```',text,re.S):
                 count+=1;file=work/f'example{count}.mgl';file.write_text(code,encoding='utf-8')
-                result=subprocess.run([str(COMPILER),'run',str(file),'--out',str(work/f'output{count}')],cwd=work,
-                    env=dict(os.environ,MAGEL_LANG='zh',MAGEL_NO_STDIN_INPUT='1'),capture_output=True,encoding='utf-8',timeout=60)
-                assert result.returncode==0 and result.stdout.replace('\r\n','\n')==output,(source,result.stdout,result.stderr,output)
-    assert count>=26,count
+                programs.append((source,file,work/f'output{count}',output))
+        def execute(program):
+            """在独立产物路径并行验证一个书稿完整程序。"""
+            source,file,prefix,output=program
+            result=subprocess.run([str(COMPILER),'run',str(file),'--out',str(prefix)],cwd=work,
+                env=dict(os.environ,MAGEL_LANG='zh',MAGEL_NO_STDIN_INPUT='1'),capture_output=True,encoding='utf-8',timeout=180)
+            assert result.returncode==0 and result.stdout.replace('\r\n','\n')==output,(source,result.stdout,result.stderr,output)
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            list(pool.map(execute, programs))
+        chapter=(ROOT/'doc/book/19-预处理与宏.md').read_text(encoding='utf-8')
+        invalid=re.search(r'<!-- verify-book-error: temp -->\s*```magel\n(.*?)```',chapter,re.S)[1]
+        bad=work/'invalid_macro.mgl';bad.write_text(invalid,encoding='utf-8')
+        result=subprocess.run([str(COMPILER),'check',str(bad)],cwd=work,capture_output=True,encoding='utf-8',timeout=60)
+        assert result.returncode!=0 and 'temp' in result.stderr and '分支结果类型必须一致' not in result.stderr,result
+        kong=(ROOT/'doc/book/15-函数值与闭包.md').read_text(encoding='utf-8')
+        assert '鲁镇的码栈' in kong and '违约金零头' in kong and not re.search(r'^\[\d+\]',kong,re.M)
+    assert count>=22,count
     print(f'新增 {count} 个书本完整程序输出与全部 LaTeX 生成章节一致。')
 
 

@@ -374,3 +374,97 @@ magel svmb app.mgl --no-reflection --out build/board-app
 第七部分开始「走出去」：让 Magel 跟外部世界打交道。第一个是与 C 互操作——调用现成的 C 库、把自己的函数交给 C 调用。
 
 翻到\hyperref[ch:21]{第 21 章 与 C 互操作}。
+
+\section{元数据之后：精确类型的字段读写}
+
+查询到字段名，并不意味着可以把它按任意类型取出。\texttt{get\allowbreak{}Field<\allowbreak{}T,\allowbreak{} F>\allowbreak{}} 和 \texttt{set\allowbreak{}Field<\allowbreak{}T,\allowbreak{} F>\allowbreak{}} 同时指定模型与字段类型；字段不存在、类型不同或模型未暴露时检查错误分支。
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+import std::reflect;
+
+@Reflect
+struct Profile
+{
+    String name;
+    int64 score;
+};
+
+int64 main()
+{
+    Profile profile;
+    profile.name = "原名";
+    profile.score = 80;
+    assert(std::reflect::setField<Profile, String>(&profile, "name", "新名").unwrap());
+    assert(std::reflect::getField<Profile, String>(&profile, "score").isErr());
+    assert(std::reflect::getField<Profile, int64>(&profile, "missing").isErr());
+    int64 score = std::reflect::getField<Profile, int64>(&profile, "score").unwrap();
+    println("{} {}", profile.name, score);
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+新名 80
+\end{lstlisting}
+\par
+\medskip
+
+读取得到字段的独立值，修改模型通过写入接口进行。对容器、嵌套值和资源的支持边界仍须遵守实际接口；反射不会将不可复制资源自动转换成普通可复制值。
+
+本章负责说明元数据及访问规则；模型与 JSON/TOML、字节序列化和动态 SQL 的组合见\href{https://gitee.com/rabbitc999/magel/blob/master/doc/36-reflection-serialization-sql.md}{反射编解码与动态 SQL}。
+
+\section{边界与验证}
+
+注解提供元数据，不自动实现业务逻辑。模型未暴露、字段缺失或类型不匹配，与编译器裁剪掉反射能力是不同情况；高级入口的 panic 边界按实际构建约定处理。
+
+\section{习题}
+
+前两题用于理解和基本实现，第三题检查边界，最后一题为综合挑战。先独立完成，再核对参考解答。
+
+\begin{enumerate}
+
+\item 加了注解是否就等于实现了注解名所描述的业务？
+
+\item 定义 @Reflect 模型，按字段名读取一个整数。
+
+\item 分别测试不存在字段和错误字段类型。
+
+\item 挑战：对同一模型执行 JSON 与字节往返，检查副本独立性。
+
+\end{enumerate}
+
+\subsection{参考解答与验收要点}
+
+\begin{enumerate}
+
+\item 不等于；必须有读取该元数据并执行相应规则的代码。
+
+\item 使用精确字段类型并检查 Result，验证返回值等于原字段。
+
+\item 两者都应进入错误路径，且不会修改模型或进行隐式转换。
+
+\item 比较关键值，再修改解码结果；源对象必须保持原值，错误载荷应明确拒绝。
+
+\end{enumerate}
+
+\section{番外：榜上有名，方可查验}
+
+改编自《封神演义》封神榜，以下为编程主题的独立改写。
+
+姜子牙开榜，众人排队查询各自的职司。守榜人照登记册按名取值，办得很快。忽然有人指着榜外一名过客，说他既然也长着手脚，应当能查到同样字段。
+
+守榜人要看暴露的元数据，那人却递来一张画像。画像再像，也没有字段名称、类型与注解。另一个人找到了字段，仍执意把数字按字符串读取，声称自己反正会认字。
+
+姜子牙将榜、画像和实际任职分开放好：榜告诉你允许查什么，类型告诉你如何理解取出的值，任职是否合理还须另作判断。仅有一条登记记录，不会自动完成业务校验。
+
+临近散场，守榜人发现整座查验台根本没有装进这次裁剪后的工具。姜子牙便让入口直接报告能力缺失，不能再拿“此人不在榜上”混作同一种错误。队伍这才知道，该补的是模型标记，还是整个工具的能力。
+
+\subsection{技术对照}
+
+注解提供元数据，不自动实现业务逻辑。模型未暴露、字段缺失或类型不匹配，与编译器裁剪掉反射能力是不同情况；高级入口的 panic 边界按实际构建约定处理。

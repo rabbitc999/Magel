@@ -30,7 +30,7 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 | Want to understand value semantics and references | [Core concepts](03-core-concepts.md) |
 | Handing the program to a customer / flashing a device | [Delivery security](05-delivery-security.md) → [Cross-platform deployment](06-deployment.md) |
 | Want to know what the standard library has | [Standard library overview](07-stdlib-overview.md) |
-| Looking for something to run right away | [Example projects](13-projects.md) (GUI, web, gradebook, board-side VM…) |
+| Looking for something to run right away | [Example projects](13-projects.md) (student records, graphics, host VM…) |
 | Need to talk to a C/C++ host | [Host integration and C ABI](08-host-integration.md) |
 | Looking up commands, config, tests | [Toolchain](09-toolchain.md) |
 | Querying APIs in a terminal or checking editor caches | [Command line manual](../man/en/README.md) → [LSP incremental hints and caching](../man/en/lsp.md) |
@@ -103,3 +103,5 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 - [Exact symbolic computation and high precision mathematics](34-symbolic-computation.md)
 - [Standard library ownership and string methods](35-opcode-values-strings.md)
 - [Reflection serialization and dynamic SQL](36-reflection-serialization-sql.md)
+
+The [22-chapter beginner book](../book/README.md) includes exercises with reference answers, literary adaptations and compilation / VM execution diagrams. The Chinese book is the maintained source for this material.

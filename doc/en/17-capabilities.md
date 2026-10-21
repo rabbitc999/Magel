@@ -136,3 +136,5 @@ Saving a parsed std::toml document root retains its original comments and layout
 Connections, arenas and timer sources have exclusive owners; containers and random generators copy their state, and JSON/TOML values own independent subtrees. String includes common text methods and explicit UTF-8 code point operations. See [ownership, snapshots and string boundaries](35-opcode-values-strings.md).
 
 Reflection provides exact typed field access and generates codecs for JSON, TOML, byte serialization, and annotated std::sql models. Dynamic SQL generation and direct binding currently support SQLite; bound execution on other backends reports an explicit error. See [reflection serialization and dynamic SQL](36-reflection-serialization-sql.md).
+
+The companion book contains 22 chapters, exercises with reference answers, literary adaptations and compilation / VM execution diagrams. The previous GUI example library has been removed. General host callbacks and event APIs retain their documented protocols.
