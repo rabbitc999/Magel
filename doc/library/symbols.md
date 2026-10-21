@@ -935,11 +935,13 @@
 | [std::text::Text::toUpper](std-text.md#api-6) | `static std::lang::String toUpper(std::lang::String text)` |
 | [std::text::Text::trim](std-text.md#api-8) | `static std::lang::String trim(std::lang::String text)` |
 | [std::thread::create](std-thread.md#api-0) | `IsolatedThreadHandle create(void fn() task)` |
-| [std::thread::current](std-thread.md#api-4) | `IsolatedThreadHandle current()` |
-| [std::thread::parent](std-thread.md#api-5) | `IsolatedThreadHandle parent()` |
-| [std::thread::receive](std-thread.md#api-3) | `std::lang::String receive()` |
-| [std::thread::send](std-thread.md#api-2) | `void send(IsolatedThreadHandle thread, std::lang::String message)` |
+| [std::thread::current](std-thread.md#api-6) | `IsolatedThreadHandle current()` |
+| [std::thread::parent](std-thread.md#api-7) | `IsolatedThreadHandle parent()` |
+| [std::thread::receive](std-thread.md#api-5) | `std::lang::String receive()` |
+| [std::thread::send](std-thread.md#api-4) | `void send(IsolatedThreadHandle thread, std::lang::String message)` |
+| [std::thread::tryWait](std-thread.md#api-3) | `bool tryWait(IsolatedThreadHandle thread)` |
 | [std::thread::wait](std-thread.md#api-1) | `void wait(IsolatedThreadHandle thread)` |
+| [std::thread::waitFor](std-thread.md#api-2) | `bool waitFor(IsolatedThreadHandle thread, int64 millis)` |
 | [std::toml::TomlValue::asBool](std-toml.md#api-15) | `Option<bool> asBool()` |
 | [std::toml::TomlValue::asBytes](std-toml.md#api-17) | `Option<std::lang::List<uint8>> asBytes()` |
 | [std::toml::TomlValue::asDateTime](std-toml.md#api-18) | `Option<std::lang::String> asDateTime()` |

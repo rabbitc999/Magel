@@ -910,6 +910,7 @@ struct ThreadRuntime
         bool reported = false;
         bool receiving = false;
         bool joining = false;
+        bool timedWaiting = false;  ///< 等待有截止时间，不能按永久等待判定死锁。
         std::size_t joinTarget = 0u;
     };
 
@@ -938,6 +939,7 @@ struct ThreadRuntime
             const Worker &worker = *item.second;
             if (worker.done) continue;
             live = true;
+            if (worker.timedWaiting) return false;
             if (!worker.inbox.empty()) return false;
             if (worker.receiving) continue;
             if (!worker.joining) return false;
@@ -1057,7 +1059,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             (void)ignored;
             nativeNames.emplace(program.symbolKey(name), name);
         }
-        for (const char *name : { "__std_message_receive_coroutine", "__std_message_receive_thread", "__std_message_send_coroutine", "__std_message_send_thread", "__std_shared_create", "__std_shared_get", "__std_shared_set", "__std_shared_swap", "main", "std::coroutine::create", "std::coroutine::current", "std::coroutine::parent", "std::coroutine::receive", "std::coroutine::send", "std::coroutine::wait", "std::coroutine::yelid", "std::coroutine::yield", "std::thread::create", "std::thread::current", "std::thread::parent", "std::thread::receive", "std::thread::send", "std::thread::wait" })
+        for (const char *name : { "__std_message_receive_coroutine", "__std_message_receive_thread", "__std_message_send_coroutine", "__std_message_send_thread", "__std_shared_create", "__std_shared_get", "__std_shared_set", "__std_shared_swap", "main", "std::coroutine::create", "std::coroutine::current", "std::coroutine::parent", "std::coroutine::receive", "std::coroutine::send", "std::coroutine::wait", "std::coroutine::yelid", "std::coroutine::yield", "std::thread::create", "std::thread::current", "std::thread::parent", "std::thread::receive", "std::thread::send", "std::thread::wait", "std::thread::waitFor" })
             nativeNames.emplace(program.symbolKey(Memory::String(name)), name);
         if (data_)
             for (const auto &[name, offset] : data_->symbols)
@@ -1635,8 +1637,16 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
      * 只有线程等待才需要它（裁剪配置 `STACKVM_WITH_THREADS=0` 时整段裁掉）。
      */
 #if STACKVM_WITH_THREADS
+    /**
+     * @brief 在条件成立、执行失败或单调时钟截止时间到达前等待线程通知，并保持现有中断交付。
+     * @param guard 调用方持有的线程运行时锁；交付回调时暂时释放。
+     * @param ready 持锁检查的完成条件，唤醒后重新检查以处理虚假唤醒。
+     * @param deadline 最晚等待时间；默认最大时间点表示不限制等待时间。
+     * @note 返回时仍持有 guard，调用方负责区分完成、超时和失败。
+     */
     const auto waitWithInterrupts = [&](std::unique_lock<std::mutex> &guard,
-                                        const Memory::Function<bool()> &ready) {
+                                        const Memory::Function<bool()> &ready,
+                                        std::chrono::steady_clock::time_point deadline = std::chrono::steady_clock::time_point::max()) {
         if (ready()) return;
         for (;;)
         {
@@ -1644,7 +1654,9 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             deliverInterrupts();
             guard.lock();
             if (ready() || !result.error.empty()) return;
-            threadRuntime_->changed.wait_for(guard, std::chrono::milliseconds(1));
+            const auto now = std::chrono::steady_clock::now();
+            if (now >= deadline) return;
+            threadRuntime_->changed.wait_until(guard, std::min(deadline, now + std::chrono::milliseconds(1)));
         }
     };
 #endif /* STACKVM_WITH_THREADS */
@@ -2026,9 +2038,10 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
 #if STACKVM_WITH_THREADS
         if (name.rfind("std::thread::", 0u) == 0u)
         {
-            const std::size_t wanted = name == "std::thread::create" || name == "std::thread::wait" ? 1u : name == "std::thread::send" ? 2u :
-                                                                                                                                         0u;
-            if (name != "std::thread::create" && name != "std::thread::wait" && name != "std::thread::send" && name != "std::thread::receive" && name != "std::thread::current" && name != "std::thread::parent")
+            const bool timedWait = name == "std::thread::waitFor";
+            const std::size_t wanted = name == "std::thread::create" || name == "std::thread::wait" ? 1u : name == "std::thread::send" || timedWait ? 2u :
+                                                                                                                                                      0u;
+            if (name != "std::thread::create" && name != "std::thread::wait" && !timedWait && name != "std::thread::send" && name != "std::thread::receive" && name != "std::thread::current" && name != "std::thread::parent")
                 return false;
             if (!threadsEnabled_ || threadRuntime_ == nullptr)
             {
@@ -2240,7 +2253,20 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                 return true;
             }
             const std::int64_t raw = pending[0].value.integer;
+            const std::int64_t millis = timedWait ? pending[1].value.integer : 0;
             pending.clear();
+            if (timedWait && millis < 0)
+            {
+                fail("std::thread::waitFor 的超时毫秒数不能为负数");
+                return true;
+            }
+            auto deadline = std::chrono::steady_clock::time_point::max();
+            if (timedWait)
+            {
+                const auto now = std::chrono::steady_clock::now();
+                const auto available = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - now).count();
+                if (millis < available) deadline = now + std::chrono::milliseconds(millis);
+            }
             std::shared_ptr<ThreadRuntime::Worker> worker;
             {
                 std::unique_lock<std::mutex> guard(threadRuntime_->mutex);
@@ -2255,18 +2281,23 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                 worker->joined = true;
                 const auto self = threadRuntime_->workers.at(threadId_);
                 self->joining = true;
+                self->timedWaiting = timedWait;
                 self->joinTarget = static_cast<std::size_t>(raw);
                 threadRuntime_->changed.notify_all();
-                waitWithInterrupts(guard, [&] {
-                    return worker->done || threadRuntime_->closing || (threadRuntime_->deadlocked() && !worker->receiving);
-                });
+                waitWithInterrupts(guard, [&] { return worker->done || threadRuntime_->closing || (threadRuntime_->deadlocked() && !worker->receiving); }, deadline);
                 self->joining = false;
+                self->timedWaiting = false;
                 self->joinTarget = 0u;
                 threadRuntime_->changed.notify_all();
                 if (!result.error.empty()) return true;
                 if (!worker->done)
                 {
                     worker->joined = false;
+                    if (timedWait && !threadRuntime_->closing)
+                    {
+                        if (!returnDest.empty()) assign(returnDest, Slot::fromInt(0));
+                        return true;
+                    }
                     fail(threadRuntime_->closing ? "线程等待被主程序结束中断" : "线程等待形成死锁");
                     return true;
                 }
@@ -2279,7 +2310,10 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                 result.output += worker->result.output;
             }
             worker->reported = true;
-            if (!worker->result.ok) failFromThread("线程 " + Memory::toString(raw) + " 失败：" + worker->result.error, worker->result);
+            if (!worker->result.ok)
+                failFromThread("线程 " + Memory::toString(raw) + " 失败：" + worker->result.error, worker->result);
+            else if (timedWait && !returnDest.empty())
+                assign(returnDest, Slot::fromInt(1));
             return true;
         }
 #endif /* STACKVM_WITH_THREADS */

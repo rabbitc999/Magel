@@ -10,7 +10,7 @@ import std::thread;
 
 ## 公共约定与错误边界
 
-运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待目标完成；receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。
+运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待并回收目标；waitFor 最多等待非负毫秒数，完成回收返回 true，超时返回 false 且不取消目标；tryWait 等价于零超时等待。目标失败仍传播原始诊断；无效、自身或已回收句柄报错。receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。
 
 ## 参考代码
 
@@ -73,10 +73,12 @@ ack:hello 5
 | --- | --- |
 | [create](#api-0) | `IsolatedThreadHandle create(void fn() task)` |
 | [wait](#api-1) | `void wait(IsolatedThreadHandle thread)` |
-| [send](#api-2) | `void send(IsolatedThreadHandle thread, std::lang::String message)` |
-| [receive](#api-3) | `std::lang::String receive()` |
-| [current](#api-4) | `IsolatedThreadHandle current()` |
-| [parent](#api-5) | `IsolatedThreadHandle parent()` |
+| [waitFor](#api-2) | `bool waitFor(IsolatedThreadHandle thread, int64 millis)` |
+| [tryWait](#api-3) | `bool tryWait(IsolatedThreadHandle thread)` |
+| [send](#api-4) | `void send(IsolatedThreadHandle thread, std::lang::String message)` |
+| [receive](#api-5) | `std::lang::String receive()` |
+| [current](#api-6) | `IsolatedThreadHandle current()` |
+| [parent](#api-7) | `IsolatedThreadHandle parent()` |
 
 <a id="api-0"></a>
 
@@ -156,7 +158,88 @@ std::thread::wait(thread);
 
 <a id="api-2"></a>
 
-### send（3）
+### waitFor（3）
+
+**声明**
+
+```magel
+bool waitFor(IsolatedThreadHandle thread, int64 millis);
+```
+
+**行为**
+
+最多等待 millis 毫秒，完成并回收目标返回 true，超时返回 false；超时不取消目标，目标失败传播原始诊断。
+
+最多等待 millis 毫秒；成功完成并回收返回 true，超时返回 false，不取消目标。 millis 必须非负；目标失败时保留 wait 的原始诊断传播规则。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `thread` | `IsolatedThreadHandle thread` | 线程句柄或归属线程 | 无 |
+| `millis` | `int64 millis` | 毫秒数 | 无 |
+
+**返回值**
+
+`bool`。最多等待 millis 毫秒，完成并回收目标返回 true，超时返回 false；超时不取消目标，目标失败传播原始诊断。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+std::thread::waitFor(thread, millis);
+```
+
+**源码**：[source/std/thread.mgl:18](../../source/std/thread.mgl#L18)。
+
+**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+
+<a id="api-3"></a>
+
+### tryWait（4）
+
+**声明**
+
+```magel
+bool tryWait(IsolatedThreadHandle thread);
+```
+
+**行为**
+
+不阻塞地尝试等待并回收目标，尚未完成返回 false；目标失败传播原始诊断。
+
+不阻塞地尝试等待并回收目标；目标尚未完成时返回 false。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `thread` | `IsolatedThreadHandle thread` | 线程句柄或归属线程 | 无 |
+
+**返回值**
+
+`bool`。不阻塞地尝试等待并回收目标，尚未完成返回 false；目标失败传播原始诊断。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+std::thread::tryWait(thread);
+```
+
+**源码**：[source/std/thread.mgl:20](../../source/std/thread.mgl#L20)。
+
+**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+
+<a id="api-4"></a>
+
+### send（5）
 
 **声明**
 
@@ -189,13 +272,13 @@ void send(IsolatedThreadHandle thread, std::lang::String message);
 std::thread::send(thread, message);
 ```
 
-**源码**：[source/std/thread.mgl:16](../../source/std/thread.mgl#L16)。
+**源码**：[source/std/thread.mgl:21](../../source/std/thread.mgl#L21)。
 
 **完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
 
-<a id="api-3"></a>
+<a id="api-5"></a>
 
-### receive（4）
+### receive（6）
 
 **声明**
 
@@ -225,13 +308,13 @@ std::lang::String receive();
 std::thread::receive();
 ```
 
-**源码**：[source/std/thread.mgl:17](../../source/std/thread.mgl#L17)。
+**源码**：[source/std/thread.mgl:22](../../source/std/thread.mgl#L22)。
 
 **完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
 
-<a id="api-4"></a>
+<a id="api-6"></a>
 
-### current（5）
+### current（7）
 
 **声明**
 
@@ -261,13 +344,13 @@ IsolatedThreadHandle current();
 std::thread::current();
 ```
 
-**源码**：[source/std/thread.mgl:18](../../source/std/thread.mgl#L18)。
+**源码**：[source/std/thread.mgl:23](../../source/std/thread.mgl#L23)。
 
 **完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
 
-<a id="api-5"></a>
+<a id="api-7"></a>
 
-### parent（6）
+### parent（8）
 
 **声明**
 
@@ -297,6 +380,6 @@ IsolatedThreadHandle parent();
 std::thread::parent();
 ```
 
-**源码**：[source/std/thread.mgl:19](../../source/std/thread.mgl#L19)。
+**源码**：[source/std/thread.mgl:24](../../source/std/thread.mgl#L24)。
 
 **完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。

@@ -13,6 +13,11 @@ type IsolatedThreadHandle = int64;
 
 IsolatedThreadHandle create(void fn() task);
 void wait(IsolatedThreadHandle thread);
+/* 最多等待 millis 毫秒；成功完成并回收返回 true，超时返回 false，不取消目标。
+ * millis 必须非负；目标失败时保留 wait 的原始诊断传播规则。 */
+bool waitFor(IsolatedThreadHandle thread, int64 millis);
+/* 不阻塞地尝试等待并回收目标；目标尚未完成时返回 false。 */
+bool tryWait(IsolatedThreadHandle thread) { return waitFor(thread, 0); }
 void send(IsolatedThreadHandle thread, std::lang::String message);
 std::lang::String receive();
 IsolatedThreadHandle current();

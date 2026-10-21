@@ -52,7 +52,7 @@
 | [`std::signal`](std-signal.md) | 复数信号变换 | 8 |
 | [`std::sql`](std-sql.md) | 数据库 | 44 |
 | [`std::text`](std-text.md) | UTF-8 文本工具 | 33 |
-| [`std::thread`](std-thread.md) | 隔离线程 | 6 |
+| [`std::thread`](std-thread.md) | 隔离线程 | 8 |
 | [`std::toml`](std-toml.md) | TOML 只读文档 | 27 |
 | [`std::tree`](std-tree.md) | 树与堆 | 45 |
 | [`std::utf8`](std-utf8.md) | UTF-8 与码点 | 7 |

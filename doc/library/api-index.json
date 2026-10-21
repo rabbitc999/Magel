@@ -29210,7 +29210,7 @@
       "documentation": "创建隔离线程，返回可供后续操作的值。"
     },
     "errors": {
-      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待目标完成；receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
+      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待并回收目标；waitFor 最多等待非负毫秒数，完成回收返回 true，超时返回 false 且不取消目标；tryWait 等价于零超时等待。目标失败仍传播原始诊断；无效、自身或已回收句柄报错。receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
       "preconditions": [],
       "panic": false
     },
@@ -29244,7 +29244,7 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待目标完成；receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
+      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待并回收目标；waitFor 最多等待非负毫秒数，完成回收返回 true，超时返回 false 且不取消目标；tryWait 等价于零超时等待。目标失败仍传播原始诊断；无效、自身或已回收句柄报错。receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
       "preconditions": [],
       "panic": false
     },
@@ -29257,6 +29257,76 @@
     "line": 15,
     "page": "std-thread.md",
     "anchor": "api-1"
+  },
+  {
+    "module": "std::thread",
+    "name": "waitFor",
+    "owner": "",
+    "signature": "bool waitFor(IsolatedThreadHandle thread, int64 millis)",
+    "documentation": "最多等待 millis 毫秒，完成并回收目标返回 true，超时返回 false；超时不取消目标，目标失败传播原始诊断。\n\n**返回值**：bool。",
+    "comment": "/* 最多等待 millis 毫秒；成功完成并回收返回 true，超时返回 false，不取消目标。\n * millis 必须非负；目标失败时保留 wait 的原始诊断传播规则。 */",
+    "parameters": [
+      {
+        "name": "thread",
+        "label": "IsolatedThreadHandle thread",
+        "documentation": "线程句柄或归属线程",
+        "default": ""
+      },
+      {
+        "name": "millis",
+        "label": "int64 millis",
+        "documentation": "毫秒数",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "bool",
+      "documentation": "最多等待 millis 毫秒，完成并回收目标返回 true，超时返回 false；超时不取消目标，目标失败传播原始诊断。"
+    },
+    "errors": {
+      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待并回收目标；waitFor 最多等待非负毫秒数，完成回收返回 true，超时返回 false 且不取消目标；tryWait 等价于零超时等待。目标失败仍传播原始诊断；无效、自身或已回收句柄报错。receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::thread::waitFor(thread, millis);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 18,
+    "page": "std-thread.md",
+    "anchor": "api-2"
+  },
+  {
+    "module": "std::thread",
+    "name": "tryWait",
+    "owner": "",
+    "signature": "bool tryWait(IsolatedThreadHandle thread)",
+    "documentation": "不阻塞地尝试等待并回收目标，尚未完成返回 false；目标失败传播原始诊断。\n\n**返回值**：bool。",
+    "comment": "/* 不阻塞地尝试等待并回收目标；目标尚未完成时返回 false。 */",
+    "parameters": [
+      {
+        "name": "thread",
+        "label": "IsolatedThreadHandle thread",
+        "documentation": "线程句柄或归属线程",
+        "default": ""
+      }
+    ],
+    "returns": {
+      "type": "bool",
+      "documentation": "不阻塞地尝试等待并回收目标，尚未完成返回 false；目标失败传播原始诊断。"
+    },
+    "errors": {
+      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待并回收目标；waitFor 最多等待非负毫秒数，完成回收返回 true，超时返回 false 且不取消目标；tryWait 等价于零超时等待。目标失败仍传播原始诊断；无效、自身或已回收句柄报错。receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
+      "preconditions": [],
+      "panic": false
+    },
+    "usage": "std::thread::tryWait(thread);",
+    "examples": [],
+    "sourceLanguage": "zh",
+    "source": "source/std/thread.mgl",
+    "line": 20,
+    "page": "std-thread.md",
+    "anchor": "api-3"
   },
   {
     "module": "std::thread",
@@ -29284,7 +29354,7 @@
       "documentation": "无返回值。"
     },
     "errors": {
-      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待目标完成；receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
+      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待并回收目标；waitFor 最多等待非负毫秒数，完成回收返回 true，超时返回 false 且不取消目标；tryWait 等价于零超时等待。目标失败仍传播原始诊断；无效、自身或已回收句柄报错。receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
       "preconditions": [],
       "panic": false
     },
@@ -29294,9 +29364,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/thread.mgl",
-    "line": 16,
+    "line": 21,
     "page": "std-thread.md",
-    "anchor": "api-2"
+    "anchor": "api-4"
   },
   {
     "module": "std::thread",
@@ -29311,7 +29381,7 @@
       "documentation": "等待并接收当前任务队列的一条字符串消息。"
     },
     "errors": {
-      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待目标完成；receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
+      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待并回收目标；waitFor 最多等待非负毫秒数，完成回收返回 true，超时返回 false 且不取消目标；tryWait 等价于零超时等待。目标失败仍传播原始诊断；无效、自身或已回收句柄报错。receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
       "preconditions": [],
       "panic": false
     },
@@ -29321,9 +29391,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/thread.mgl",
-    "line": 17,
+    "line": 22,
     "page": "std-thread.md",
-    "anchor": "api-3"
+    "anchor": "api-5"
   },
   {
     "module": "std::thread",
@@ -29338,7 +29408,7 @@
       "documentation": "返回当前协程/线程的句柄。"
     },
     "errors": {
-      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待目标完成；receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
+      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待并回收目标；waitFor 最多等待非负毫秒数，完成回收返回 true，超时返回 false 且不取消目标；tryWait 等价于零超时等待。目标失败仍传播原始诊断；无效、自身或已回收句柄报错。receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
       "preconditions": [],
       "panic": false
     },
@@ -29346,9 +29416,9 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/std/thread.mgl",
-    "line": 18,
+    "line": 23,
     "page": "std-thread.md",
-    "anchor": "api-4"
+    "anchor": "api-6"
   },
   {
     "module": "std::thread",
@@ -29363,7 +29433,7 @@
       "documentation": "返回创建当前任务的父协程/线程句柄。"
     },
     "errors": {
-      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待目标完成；receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
+      "documentation": "运行和导出时需 --threads。任务有独立全局变量视图；共享值用 Shared<T>，通信使用消息。wait 等待并回收目标；waitFor 最多等待非负毫秒数，完成回收返回 true，超时返回 false 且不取消目标；tryWait 等价于零超时等待。目标失败仍传播原始诊断；无效、自身或已回收句柄报错。receive 等待当前线程消息。线程句柄不是 OS 原生线程句柄，不得交给外部系统 API。",
       "preconditions": [],
       "panic": false
     },
@@ -29373,9 +29443,9 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/std/thread.mgl",
-    "line": 19,
+    "line": 24,
     "page": "std-thread.md",
-    "anchor": "api-5"
+    "anchor": "api-7"
   },
   {
     "module": "std::toml",

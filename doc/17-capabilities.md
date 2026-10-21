@@ -106,3 +106,5 @@ Map、Set 的 keyAt、valAt、at、遍历及默认文本均不承诺排序或插
 Image 使用可深复制的 opcode，宽高与连续 RGBA 像素由胶水拥有；width()/height() 查询尺寸，pixels() 导出独立列表快照。TcpSocket、TcpListener 使用不可复制的 opcode，作用域退出自动关闭，显式 move 转移所有权，各连接独立保存读状态与错误。线性代数 Vector<T>、Matrix<T> 保留泛型聚合外观，ScalarArray<T> 的 ScalarStorage opcode 保存内建整数与浮点数值，复制缓冲互不影响。字符串拼接、切片、比较、查找及数值转文本由标准胶水实现；内部入口统一使用 __std_ 前缀，VM 保留执行控制、内存安全与闭包等核心机制。
 
 网络异步入口使用非阻塞轮询和 NET_PENDING，配合协程让出执行权；connectAsync 首批仅接受数值 IPv4，域名解析保留在同步 connect。sendAsync 返回部分发送字节数并接受 offset；receiveLineAsync 保留未完成行，缓冲上限为 1 MiB。
+
+隔离线程的 `waitFor(thread, millis)` 支持非负毫秒超时，`tryWait(thread)` 提供零超时等待；成功完成并回收返回 `true`，超时返回 `false` 且不取消目标。目标失败仍传播原始诊断；句柄成功回收后不能再次等待。

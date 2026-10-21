@@ -183,6 +183,7 @@ run_step "MAGEL 样例回归（check.sh）" \
     sh -c 'cd "$1" && MAGEL_TMP="$1/tmp/ci/check" sh check.sh' sh "$root"
 run_step "运行 std::image 与 StringBuilder 回归" "$PYTHON" tests/magel_image.py --magel magel
 run_step "运行标准错误流与文件打印回归" "$PYTHON" tests/magel_print_streams.py --magel magel
+run_step "运行线程超时与非阻塞等待回归" "$PYTHON" tests/magel_thread_wait.py --magel magel
 run_step "运行临时值与资源释放合并回归" "$PYTHON" tests/magel_resource_lifetime.py --magel magel
 run_step "运行闭包自动类型与嵌套返回语言服务回归" "$PYTHON" tests/magel_lsp_closure_types.py --magel magel
 run_required_step "编译无墓碑分配身份回归" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=1 -Isource -Ilibrary -Isource/allocator tests/allocation_identity.cpp -o tmp/ci/allocation-identity
