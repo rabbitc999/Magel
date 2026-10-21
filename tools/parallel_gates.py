@@ -9,6 +9,7 @@ import time
 
 # 已登记测试使用各自的产物路径；网络、打包、生成器和未知测试保持串行。
 PARALLEL_TESTS = frozenset("""
+bigint_arithmetic bigfloat_math magel_cas_math
 magel_print_streams magel_resource_lifetime magel_lsp_closure_types
 magel_array_parameters magel_string_literals magel_opcode_declarations
 magel_range_loop_values magel_opcode_resources magel_opcode_visibility
@@ -16,14 +17,14 @@ opcode_core_isolation magel_collection_glue magel_map_pair_iterator
 magel_generic_constructors magel_borrow_flow magel_generic_closures
 magel_entry_signature magel_function_types magel_analysis_diagnostics
 magel_memory_guard magel_watchdog magel_generic_monomorphization
-magel_language_move magel_tuple_returns
+magel_language_move magel_tuple_returns magel_thread_wait magel_thread_model magel_gui_events
 macro_foundations magel_macro_editor magel_ast_macros magel_macro_branches magel_macro_groups magel_macro_generics
 check_doc_links export_magel_ebnf library_reference check_keywords
 check_std_naming embed_manual changelog
 """.split())
 
 PARALLEL_EXECUTABLES = frozenset(("magel-artifact-tests", "magel-stackvm-tests",
-                                  "magel-symbol-tests", "magel-panic-tests"))
+                                  "magel-symbol-tests", "magel-panic-tests", "magel-runtime-event-tests"))
 
 
 def positive_jobs(value):

@@ -1,0 +1,28 @@
+import std::reflect;
+
+@Reflect
+struct Address { String city; };
+@Reflect
+struct Person { String name; int64 age; Address address; List<String> tags; };
+
+int64 main()
+{
+    Person person;
+    person.name = "original";
+    person.age = 42;
+    person.address.city = "杭州";
+    person.tags.push("one");
+    assert(std::reflect::getField<Person,int64>(&person, "age").unwrap() == 42);
+    assert(std::reflect::getField<Person,String>(&person, "age").isErr());
+    assert(std::reflect::getField<Person,String>(&person, "missing").isErr());
+    Address copy = std::reflect::getField<Person,Address>(&person, "address").unwrap();
+    copy.city = "北京";
+    assert(person.address.city == "杭州");
+    assert(std::reflect::setField<Person,String>(&person, "name", "updated").unwrap());
+    assert(person.name == "updated");
+    List<String> tags = std::reflect::getField<Person,List<String>>(&person, "tags").unwrap();
+    tags.push("two");
+    assert(person.tags.len() == 1);
+    println("reflection fields: exact types, owned copies and writes OK");
+    return 0;
+}

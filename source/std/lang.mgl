@@ -1,5 +1,11 @@
 module std::lang;
 
+int64 __stringQuery(String text, String needle, int64 operation, int64 from);
+String __stringTransform(String text, String first, String second, int64 operation, int64 offset, int64 count);
+List<String> __stringSplit(String text, String separator, int64 operation, bool keepEmpty);
+String __stringJoinParts(String separator, List<String> items);
+
+
 opcode String {
     new = std::lang::__stringNew;
     drop = std::lang::__stringDrop;
@@ -7,6 +13,147 @@ opcode String {
     /** @brief 返回 UTF-8 文本的字节长度。
      * @return 不包括终止零字节的长度。 */
     int64 length() { return std::lang::len(self); }
+    /** 返回 UTF-8 字节数，与 length 一致。 */
+    int64 size() { return self.length(); }
+
+    /** 返回字节数，不包含终止零字节。 */
+    int64 byteLength() { return self.length(); }
+
+    /** 是否为空字符串。 */
+    bool isEmpty() { return self.length() == 0; }
+
+    /** 是否仅含 ASCII 空白；空字符串也返回 true。 */
+    bool isBlank() { return __stringQuery(self, "", 7, 0) != 0; }
+
+    /** 是否为非空 ASCII 十进制数字串。 */
+    bool isDigit() { return __stringQuery(self, "", 8, 0) != 0; }
+
+    /** 是否为非空 ASCII 字母串。 */
+    bool isAlpha() { return __stringQuery(self, "", 9, 0) != 0; }
+
+    /** 是否为非空 ASCII 字母数字串。 */
+    bool isAlnum() { return __stringQuery(self, "", 10, 0) != 0; }
+
+    /** 所有字节是否均小于 128；空串返回 true。 */
+    bool isAscii() { return __stringQuery(self, "", 11, 0) != 0; }
+
+    /** 严格解码 UTF-8 后的 Unicode 码点数，非字素簇数。 */
+    int64 charLength() { return __stringQuery(self, "", 13, 0); }
+
+    /** 从 start 字节起搜索，未找到返回 -1；负起点按零处理。 */
+    int64 indexOf(String text, int64 start = 0) { return __stringQuery(self, text, 0, start); }
+
+    /** 从 start 字节向前搜索，负起点表示从末尾开始。 */
+    int64 lastIndexOf(String text, int64 start = 0 - 1) { return __stringQuery(self, text, 1, start); }
+
+    /** 是否包含指定字节序列；空搜索串总是匹配。 */
+    bool contains(String text) { return __stringQuery(self, text, 2, 0) != 0; }
+
+    /** 是否以指定文本开头；空前缀总是匹配。 */
+    bool startsWith(String text) { return __stringQuery(self, text, 3, 0) != 0; }
+
+    /** 是否以指定文本结尾；空后缀总是匹配。 */
+    bool endsWith(String text) { return __stringQuery(self, text, 4, 0) != 0; }
+
+    /** 统计不重叠匹配数；空搜索串返回字节数加一。 */
+    int64 count(String text) { return __stringQuery(self, text, 5, 0); }
+
+    /** 按字节字典序比较，返回 -1、0 或 1。 */
+    int64 compare(String text) { return __stringQuery(self, text, 6, 0); }
+
+    /** 读取字节，越界返回 None。 */
+    Option<uint8> byteAt(int64 index) { if (index < 0 || index >= self.length()) { return Option<uint8>::None; } return Option<uint8>::Value((uint8)__stringQuery(self, "", 12, index)); }
+
+    /** 按字节起点及长度截取，越界截断，负起点按零，负长度表示至末尾。 */
+    String substring(int64 start, int64 count = 0 - 1) { return __stringTransform(self, "", "", 0, start, count); }
+
+    /** 按半开字节范围截取；结束不大于起点时返回空串。 */
+    String slice(int64 start, int64 end) { if (start < 0) { start = 0; } if (end > self.length()) { end = self.length(); } if (end <= start) { return ""; } return self.substring(start, end - start); }
+
+    /** 取前 count 字节，负数按零。 */
+    String left(int64 count) { if (count < 0) { return ""; } return __stringTransform(self, "", "", 0, 0, count); }
+
+    /** 取后 count 字节，负数按零，超出长度取全部。 */
+    String right(int64 count) { return __stringTransform(self, "", "", 16, 0, count); }
+
+    /** 去除两端 ASCII 空白，保留内部文本。 */
+    String trim() { return __stringTransform(self, "", "", 1, 0, 0); }
+
+    /** 去除起始 ASCII 空白。 */
+    String trimStart() { return __stringTransform(self, "", "", 2, 0, 0); }
+
+    /** 去除末尾 ASCII 空白。 */
+    String trimEnd() { return __stringTransform(self, "", "", 3, 0, 0); }
+
+    /** 将 ASCII 大写字母转小写，其他字节保持原样。 */
+    String toLower() { return __stringTransform(self, "", "", 4, 0, 0); }
+
+    /** 将 ASCII 小写字母转大写，其他字节保持原样。 */
+    String toUpper() { return __stringTransform(self, "", "", 5, 0, 0); }
+
+    /** 替换第一个精确匹配；空搜索串保持原值。 */
+    String replaceFirst(String before, String after) { return __stringTransform(self, before, after, 6, 0, 0); }
+
+    /** 替换全部不重叠精确匹配；空搜索串保持原值。 */
+    String replaceAll(String before, String after) { return __stringTransform(self, before, after, 7, 0, 0); }
+
+    /** 替换全部不重叠匹配，与 replaceAll 一致。 */
+    String replace(String before, String after) { return self.replaceAll(before, after); }
+
+    /** 重复 count 次，零次返回空串，负数报错。 */
+    String repeat(int64 count) { return __stringTransform(self, "", "", 8, 0, count); }
+
+    /** 按 Unicode 码点反转，保持每个 UTF-8 编码完整。 */
+    String reverse() { return __stringTransform(self, "", "", 9, 0, 0); }
+
+    /** 按字节目标长度向左循环填充；空填充串保持原值。 */
+    String padStart(int64 length, String fill = " ") { return __stringTransform(self, fill, "", 10, length, 0); }
+
+    /** 按字节目标长度向右循环填充；空填充串保持原值。 */
+    String padEnd(int64 length, String fill = " ") { return __stringTransform(self, fill, "", 11, length, 0); }
+
+    /** 仅去除匹配的起始前缀一次。 */
+    String removePrefix(String prefix) { return __stringTransform(self, prefix, "", 12, 0, 0); }
+
+    /** 仅去除匹配的末尾后缀一次。 */
+    String removeSuffix(String suffix) { return __stringTransform(self, suffix, "", 13, 0, 0); }
+
+    /** 在截断到有效范围的字节位置插入文本，返回新值。 */
+    String insert(int64 index, String text) { return __stringTransform(self, text, "", 14, index, 0); }
+
+    /** 移除指定字节段；负长度表示删除余下全部。 */
+    String remove(int64 start, int64 count = 0 - 1) { return __stringTransform(self, "", "", 15, start, count); }
+
+    /** 按 Unicode 码点截取，严格验证 UTF-8，不按字素簇处理。 */
+    String utf8Substring(int64 start, int64 count = 0 - 1) { return __stringTransform(self, "", "", 17, start, count); }
+
+    /** 读取一个完整 Unicode 码点，越界返回 None。 */
+    Option<String> charAt(int64 index) { if (index < 0 || index >= self.charLength()) { return Option<String>::None; } return Option<String>::Value(self.utf8Substring(index, 1)); }
+
+    /** 按精确分隔文本分割，默认保留空项；空分隔符按 UTF-8 码点分割。 */
+    List<String> split(String separator, bool keepEmpty = true) { return __stringSplit(self, separator, 0, keepEmpty); }
+
+    /** 按连续 ASCII 空白分词并忽略空项。 */
+    List<String> splitWhitespace() { return __stringSplit(self, "", 1, false); }
+
+    /** 按 LF、CRLF 或 CR 分行，默认保留空行和末尾空项。 */
+    List<String> lines(bool keepEmpty = true) { return __stringSplit(self, "", 2, keepEmpty); }
+
+    /** 严格按 UTF-8 Unicode 码点拆分，空串产生空列表。 */
+    List<String> unicodeChars() { return __stringSplit(self, "", 3, false); }
+
+    /** 导出独立字节列表，修改列表不影响原字符串。 */
+    List<uint8> bytes() { return __stringBytes(self); }
+
+    /** 以当前字符串为分隔符连接值列表，空列表返回空串。 */
+    String join(List<String> items) { return __stringJoinParts(self, items); }
+
+    /** 返回两段文本的连接，不修改当前值。 */
+    String concat(String text) { return self + text; }
+
+    /** 返回在当前值前添加文本的新字符串。 */
+    String prepend(String text) { return text + self; }
+
 };
 
 opcode BigInteger {

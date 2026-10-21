@@ -5,8 +5,8 @@
  * 进程存活期间不会卸载。MAGEL 与库之间只传定宽整数和 UTF-8 字符串。
  *
  * 事件回调那条链：GUI 事件 → `mcgui_callback_t` 桥（本文件）→
- * 运行时投递器 → VM 在下一个执行边界交付 MAGEL 中断
- * 处理函数。桥只缓存运行时投递器与定时器句柄，不缓存 `NativeCallContext`，所以
+ * 运行时投递器 → VM 在显式接收时交付 MAGEL 显式事件
+ * 值。桥只缓存弱引用运行时投递器与事件标签，不缓存 `NativeCallContext`，所以
  * 指令钩子（GUI 泵）在宿主回调之外触发也安全。
  */
 #include <cstdint>
@@ -22,21 +22,27 @@ namespace
 using GuiCallback = void (*)(std::int64_t event, std::int64_t source, void *user);
 
 /**
- * 当前登记的事件中断源；只在 VM 执行线程上读写。
+ * 当前登记的事件标签；只在 VM 执行线程上读写。
  */
-std::int64_t g_eventTimer = 0;
-Memory::Function<void(std::int64_t, std::int64_t)> g_eventPost;
+std::int64_t g_eventTag = 0;
+stackvm::EventPoster g_eventPost;
+std::int64_t g_droppedEvents = 0;
 
 /**
- * @brief GUI 事件 → VM 中断：交给 MAGEL 的是**事件值**。
+ * @brief GUI 事件 → VM 显式事件：交给 MAGEL 的是**事件值**。
  *
  * 约定：按钮点击 = 控件 ID（>0），关窗 = -1，GUI 周期事件 = 0。周期事件的 `source`
- * 是第几次，C ABI 里有；MAGEL 处理函数只看事件值，所以这里原样传 `event`。
+ * 是第几次，C ABI 里有；MAGEL 事件载荷原样使用 event。
+ * @param event 控件事件编码。
+ * @param source GUI 后端携带的序号，此桥不使用。
+ * @param user GUI 回调用户数据，此桥不使用。
  */
-void guiEventBridge(std::int64_t event, std::int64_t, void *)
+void guiEventBridge(std::int64_t event, std::int64_t source, void *user)
 {
-    if (!g_eventPost || g_eventTimer == 0) return;
-    g_eventPost(g_eventTimer, event);
+    (void)source;
+    (void)user;
+    if (!g_eventPost) return;
+    if (g_eventPost(stackvm::RuntimeEvent{ 0, g_eventTag, event, 0 }) != stackvm::TransferStatus::Ready) ++g_droppedEvents;
 }
 
 }  // namespace
@@ -95,15 +101,16 @@ bool bindMagelGlue(magel_glue::Registry &registry, Memory::String *error)
             registry, "gui::stopEventTimer", "mcgui_stop_timer", error))
         return false;
 
-    /* 登记 / 注销事件中断源。 */
+    /* 登记 / 注销事件显式事件源。 */
     if (!registry.bindTypedWithContext<i32, i64>(
             "gui::bindEvents",
             [setCallback](Context &context, i64 timer) {
-                g_eventTimer = timer;
-                g_eventPost = context.interruptPoster();
+                g_eventTag = timer;
+                g_eventPost = context.eventPoster();
+                g_droppedEvents = 0;
                 if (!g_eventPost)
                 {
-                    g_eventTimer = 0;
+                    g_eventTag = 0;
                     return 0;
                 }
                 setCallback(&guiEventBridge, nullptr);
@@ -115,12 +122,14 @@ bool bindMagelGlue(magel_glue::Registry &registry, Memory::String *error)
             "gui::unbindEvents",
             [setCallback](Context &) {
                 setCallback(nullptr, nullptr);
-                g_eventTimer = 0;
+                g_eventTag = 0;
                 g_eventPost = {};
                 return 1;
             },
             error))
         return false;
+
+    if (!registry.bindTypedWithContext<i64>("gui::droppedEvents", [](Context &) { return g_droppedEvents; }, error)) return false;
 
     /* 非阻塞 GUI 泵。 */
     if (!registry.bindTypedWithContext<i32>(
@@ -131,7 +140,7 @@ bool bindMagelGlue(magel_glue::Registry &registry, Memory::String *error)
 
     /*
      * 每 N 个执行边界泵一次 GUI：指令钩子在 VM 执行线程、执行边界同步触发（VM 指令），所以这里能直接
-     * 通过统一运行时接口安装钩子；钩子里派发的 GUI 事件再经 `guiEventBridge` 投递中断。
+     * 通过统一运行时接口安装钩子；钩子里派发的 GUI 事件再经 `guiEventBridge` 投递显式事件。
      */
     if (!registry.bindTypedWithContext<i32, i64>(
             "gui::pumpEvery",

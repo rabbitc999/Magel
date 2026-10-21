@@ -1,5 +1,6 @@
 """库参考页对应的完整参考程序；复用正式样例，防止文档代码与测试代码分叉。"""
 EXAMPLES = {
+    'std::cas':'example/samples/cas.mgl',
     'std::encoding':'example/samples/std_encoding.mgl',
     'std::utf8':'example/samples/std_utf8.mgl',
     'std::csv':'example/samples/std_csv.mgl',
@@ -14,15 +15,14 @@ EXAMPLES = {
     'std::complex':'example/samples/std_complex_fft.mgl',
     'std::compress':'example/samples/std_compress.mgl',
     'std::concurrency':'example/samples/typed_messages_shared.mgl',
-    'std::coroutine':'example/samples/coroutine_messages.mgl',
-    'std::event':'example/samples/interrupt_arguments.mgl',
+    'std::event':'example/samples/event_timer.mgl',
     'std::io':'doc/examples/library/io.mgl',
     'std::iter':'example/samples/iter_pipeline.mgl',
     'std::json':'example/samples/std_structured_data.mgl',
     'std::linalg':'example/samples/std_linalg_solve_glue.mgl',
-    'std::math':'example/samples/std_math_clock_random.mgl',
+    'std::math':'example/samples/math_generic.mgl',
     'std::memory':'example/samples/std_parse_random_path_memory.mgl',
-    'std::message':'example/samples/coroutine_messages.mgl',
+    'std::message':'example/samples/typed_messages_shared.mgl',
     'std::net':'example/samples/std_net.mgl',
     'std::numerics':'example/samples/std_numerics_number_theory.mgl',
     'std::numtheory':'example/samples/std_numerics_number_theory.mgl',
@@ -42,6 +42,8 @@ EXAMPLES = {
 
 # 同模块的新接口复用正式样例，仍由同一生成器写入网页和内嵌数据。
 SUPPLEMENTAL = {
+    'std::thread': ['example/samples/thread_pool.mgl'],
+    'std::concurrency': ['example/samples/thread_channel.mgl'],
     'std::lang': ['example/samples/std_read_lines.mgl'],
     'std::io': ['example/samples/std_file_strings.mgl'],
 }

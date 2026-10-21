@@ -56,7 +56,7 @@ const int64 NET_OK = 0;
 const int64 NET_CLOSED = 1;
 const int64 NET_TIMEOUT = 2;
 const int64 NET_ERROR = 3;
-/** @brief 非阻塞操作尚未就绪，调用方可让出协程后继续轮询。 */
+/** @brief 非阻塞操作尚未就绪，调用方可用 std::thread::sleepFor 有界暂停后继续轮询。 */
 const int64 NET_PENDING = 4;
 
 /** @brief 独占 TCP 连接；复制被拒绝，显式 move 转移所有权。 */

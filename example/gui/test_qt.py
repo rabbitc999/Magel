@@ -4,8 +4,8 @@
 覆盖：
   * `libmcguiqt.so` 构建；
   * `counter.mgl` 的 `close` 分支（控件创建 + UTF-8 文本往返 + 关窗）；
-  * `qt_interrupt.mgl` 的事件回调链：Qt 周期事件 / 注入事件 → 胶水桥 →
-    `Machine::raiseInterrupt` → 指令边界交付 MAGEL 中断处理函数；
+  * `qt_events.mgl` 的事件回调链：Qt 周期事件 / 注入事件 → 胶水桥 →
+    `EventPoster` → MAGEL 显式接收事件；
   * `gui::pumpEvery(n)`：长循环里每 N 条指令泵一次 Qt。
 
 用法：
@@ -60,7 +60,9 @@ def main() -> None:
          "-DMAGEL_WITH_REFLECTION=1", "-DSTACKVM_WITH_REFLECTION=1",
          "-DSTACKVM_WITH_BIGINT=0", "-DSTACKVM_WITH_BIGFLOAT=0",
          "-Isource", "-Ilibrary", "-Ilibrary/stackvm", str(host_source),
-         "library/stackvm/stackvm.cpp", "-ldl", "-o", str(host)], cwd=repo)
+         *[str(repo / "library/stackvm" / name) for name in (repo / "library/stackvm/core_sources.txt").read_text().splitlines()],
+         "source/glue/std_collection.cpp", "source/glue/std_collection_storage.cpp",
+         "source/glue/std_native_record.cpp", "-ldl", "-o", str(host)], cwd=repo)
 
     def build_example(source: Path, name: str) -> list[str]:
         prefix = out / name
@@ -77,15 +79,15 @@ def main() -> None:
     first = result.stdout.splitlines()[0] if result.stdout.splitlines() else ""
     assert first == "你好，Magel", f"counter close 输出不对：{result.stdout!r}"
 
-    # 3) qt_interrupt.mgl：事件回调 + 每 N 条指令泵一次。
-    interrupt = build_example(gui_dir / "examples" / "qt_interrupt.mgl", "qt_interrupt")
-    result = subprocess.run(interrupt, cwd=out, env=env,
+    # 3) qt_events.mgl：事件投递和显式接收。
+    events = build_example(gui_dir / "examples" / "qt_events.mgl", "qt_events")
+    result = subprocess.run(events, cwd=out, env=env,
                             capture_output=True, text=True)
     assert result.returncode == 0, (result.stdout, result.stderr)
     line = result.stdout.strip().splitlines()[-1] if result.stdout.strip() else ""
-    assert line == "clicks=1 ticks=1 closed=1", f"qt_interrupt 输出不对：{result.stdout!r}"
+    assert line == "clicks=1 ticks=1 closed=1", f"qt_events 输出不对：{result.stdout!r}"
 
-    print("Qt GUI 事件回调检查通过")
+    print("Qt GUI 显式事件检查通过")
 
 
 if __name__ == "__main__":

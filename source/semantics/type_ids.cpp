@@ -48,7 +48,6 @@ struct MFuncSig
 {
     std::shared_ptr<MType> result;
     Memory::Vector<MParam> params;
-    bool staticCallbacks = false;  ///< 异步事件入口只接受不借用局部环境的回调。
 };
 
 /**

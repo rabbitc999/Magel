@@ -1,174 +1,32 @@
 module std::watchdog;
-
-/*
- * std::watchdog —— **软重启看门狗**（默认关闭）。
- *
- * 桌面与嵌入式 Linux 宿主**共用这一份**。它管的不是"多线程看门狗定时器"，
- * 而是"这一轮跑不下去了 / 该重来一遍了，请宿主清干净、复用缓冲区重跑"（软重启）。
- * 宿主完整重启时：结束旧执行上下文、重置 arena、重置分配身份，再重跑逻辑。
- * 三个触发：
- *
- *   ① **内存水位**：`enable(watermarkBytes)` 打开看门狗并给出水位；宿主每轮跑完自己量
- *      （VM 字节池 / 运行时 arena / 元数据 arena 的峰值与活跃），超过水位就重置 arena 重跑。
- *      水位由**宿主**量，VM 只负责把它记下来、并在显式请求时写"标志 + 原因"。
- *   ② **显式请求**：`requestRestart()` —— 程序自己判断"现在应当重来一遍"（配置变了、
- *      这一轮的脏状态不想要了……），VM 在**下一条指令边界（安全点）**以"可恢复终止"结束本轮。
- *   ③ **超时未喂狗**（可选，默认**不开**）：`enableTimeout*()` 之后，程序每隔一段就 `kick()`
- *      一口；整整一个超时周期没喂，就当成"这一轮卡住了"，转成 ② 的显式请求。不调
- *      `enableTimeout*()` 就没有这一维，前两个触发照旧。
- *
- * 默认**关闭**：没 `enable()` / `enableTimeout*()` 过时 `requestRestart()` 返回
- * `Err(NotEnabled)`，**不产生任何重启**。三条路都**不抛异常、不 longjmp、不在失败点跳走**
- * —— 目标宿主（`-fno-exceptions`）与桌面共用同一套机制：触发点只写标志，VM 在安全点消费它。
- *
- * ③ 用 `std::event` 的**软件定时器**计时，时间源跟它一致：宿主注入过时钟（`Machine::
- * setTimeCallback`）就是真实时间，没有就是虚拟时钟（1 条指令 = 1 个时间单位）——所以
- * 解释器与导出程序不接时钟也能得到确定行为。**它不是硬件看门狗**：不喂狗只是"重跑一轮
- * 逻辑"，不复位芯片，也救不了死循环（那是 `--step-limit` 的活）与跑飞（那要宿主 / 芯片的
- * 硬件看门狗）。
- *
- * 用法：
- *
- *   import std::watchdog;
- *
- *   int64 main() {
- *       match (std::watchdog::enable(64 * 1024)) {   // 水位 64 KB
- *           Result<int64, std::watchdog::WatchdogError>::Ok(_) => { }
- *           Result<int64, std::watchdog::WatchdogError>::Err(_) => { }
- *       }
- *       std::watchdog::enableTimeout(1000);          // 1000 个时间单位没喂就重启
- *       // …干一段活，然后喂一口：
- *       std::watchdog::kick();
- *       return 0;
- *   }
- */
-
-import std::event;   /* ③ 的计时用它的软件定时器。 */
-
-/* 看门狗错误。 */
-enum WatchdogError {
-    NotEnabled,        /* 没 `enable()` / `enableTimeout*()` 过：请求被拒绝，不产生重启 */
-    InvalidWatermark,  /* 水位为负 */
-    InvalidTimeout     /* 超时不为正 */
-};
-
-/* 下面两个是 VM 原生函数：`enable` 记水位，`requestRestart` 写"标志 + 原因"。
- * 返回 0 = 成功；非 0 = 错误（码值与上面 `WatchdogError` 的顺序一致）。
- * （名字不能带 `__std_` 前缀：那是虚拟机内部运行时的保留名，用户面/标准库都不许声明。）
- * 原生表里的键是 `std::watchdog::__watchdogEnable` / `std::watchdog::__watchdogRequestRestart`。 */
+/* VM 安全点直接检查超时，不依赖事件或用户回调。无宿主时钟时单位为逻辑指令。 */
+enum WatchdogError { NotEnabled, InvalidWatermark, InvalidTimeout };
 int64 __watchdogEnable(int64 watermarkBytes);
 int64 __watchdogRequestRestart();
-
-/* ---- ③ 时间维度的模块级状态 -------------------------------------------------
- * 全是标量与**模块级 `Timer` 值**：`import` 本模块不分配任何 `lang` 运行期对象，也不建
- * 计时槽（`Timer::everyNanos(0)` 的周期是 0 = 不自动跑）——所以不启用这一维的程序，
- * 停机时不会多出"没释放"的提示（`std/event.mgl` 里有同类说明）。真定时器只在
- * `enableTimeout*()` 被调用时才换上。 */
-Timer __wdTimer = Timer::everyNanos(0);   /* 占位：周期 0 不触发，enableTimeout 时换掉 */
-bool __wdTimeoutOn = false;   /* 这一维开了没有（`kick()` 与回调都看它） */
-int64 __wdKickSeq = 0;        /* 程序一共喂了几口（`kick()` 累加） */
-int64 __wdSeenSeq = 0;        /* 上一次检查时看到第几口 */
-bool __wdOn = false;          /* `enable()` / `enableTimeout*()` 成功过 */
-
-/*
- * 打开看门狗并给出内存水位（字节）。`watermarkBytes = 0` 表示"不按水位判"，
- * 只等显式请求 / 分配失败。
- * @param watermarkBytes 水位。
- * @return `Ok(watermarkBytes)`；水位为负返回 `Err(InvalidWatermark)`。
- */
+int64 __watchdogTimeout(int64 units);
+int64 __watchdogKick();
+bool __wdOn;
 Result<int64, WatchdogError> enable(int64 watermarkBytes) {
-    if (watermarkBytes < 0) {
-        return Result<int64, WatchdogError>::Err(WatchdogError::InvalidWatermark);
-    }
-    if (__watchdogEnable(watermarkBytes) != 0) {
-        return Result<int64, WatchdogError>::Err(WatchdogError::InvalidWatermark);
-    }
+    if (watermarkBytes < 0 || __watchdogEnable(watermarkBytes) != 0) { return Result<int64, WatchdogError>::Err(WatchdogError::InvalidWatermark); }
     __wdOn = true;
     return Result<int64, WatchdogError>::Ok(watermarkBytes);
 }
-
-/*
- * 显式请求一次软重启：写"标志 + 原因"，VM 在下一条指令边界停下本轮，宿主重置 arena 后重跑。
- * 没 `enable()` / `enableTimeout*()` 过返回 `Err(NotEnabled)`，**不产生重启**。
- * @return `Ok(true)` = 请求已记下（本轮马上会在安全点结束）。
- */
-Result<bool, WatchdogError> requestRestart() {
-    if (__watchdogRequestRestart() != 0) {
-        return Result<bool, WatchdogError>::Err(WatchdogError::NotEnabled);
-    }
-    return Result<bool, WatchdogError>::Ok(true);
+Result<int64, WatchdogError> requestRestart() {
+    if (!__wdOn || __watchdogRequestRestart() != 0) { return Result<int64, WatchdogError>::Err(WatchdogError::NotEnabled); }
+    return Result<int64, WatchdogError>::Ok(0);
 }
-
-/*
- * 时间维度的定时器回调：**整整一个超时周期没见到新的 `kick()`** 就把这一轮转成显式请求。
- *
- * 回调必须是**不带捕获的普通函数**（VM 的异步入口不支持带捕获的 fn），所以状态放在
- * 模块级变量里。这里只比一个"见到第几口"的水位：喂过了就重新计时，没喂就交给 ②。
- * 中断在**指令边界**交付，所以换定时器换到一半时可能正好进来一次：`__wdTimeoutOn`
- * 在换的过程中是 false，那种陈旧触发直接丢掉。
- * 只给本模块的定时器当回调，加 `inline` 让语言层面就挡住跨模块引用。 */
-inline void __wdOnTick(int64 source) {
-    if (!__wdTimeoutOn) { return; }
-    bool fed = __wdKickSeq != __wdSeenSeq;
-    __wdSeenSeq = __wdKickSeq;
-    if (fed) { return; }
-    /* 委托给 ②：时间维度只在看门狗已经打开之后才可能触发，所以这里必然是 Ok。 */
-    if (requestRestart().isErr()) { return; }
+Result<int64, WatchdogError> enableTimeout(int64 units) {
+    if (units <= 0) { return Result<int64, WatchdogError>::Err(WatchdogError::InvalidTimeout); }
+    if (!__wdOn) { enable(0); }
+    __watchdogTimeout(units);
+    return Result<int64, WatchdogError>::Ok(units);
 }
-
-/*
- * 打开 ③ 时间维度：**整整 `timeoutUnits` 个时间单位没有 `kick()`，就请求一次软重启**。
- * 单位与 VM 时钟一致（与 `std::event::Timer` 的周期同一个口径：宿主注入过纳秒时钟时是
- * 纳秒，否则 1 条指令 = 1 个时间单位）。
- *
- * 本函数同时把看门狗本体打开（等价于 `enable(0)`，即不按水位判）；**已经 `enable()` 过
- * 就不动原来的水位**。重复调用按最后一次的超时换掉定时器，并重新开始计时。
- * @param timeoutUnits 超时（时间单位，必须为正）。
- * @return `Ok(timeoutUnits)`；不为正返回 `Err(InvalidTimeout)`。
- */
-Result<int64, WatchdogError> enableTimeout(int64 timeoutUnits) {
-    if (timeoutUnits <= 0) {
-        return Result<int64, WatchdogError>::Err(WatchdogError::InvalidTimeout);
-    }
-    if (!__wdOn) {
-        if (__watchdogEnable(0) != 0) {
-            return Result<int64, WatchdogError>::Err(WatchdogError::InvalidWatermark);
-        }
-        __wdOn = true;
-    }
-    /* 换定时器：赋值会先还掉旧值（旧定时器随之销毁），再接管新的。换的这一小段里
-     * 先关掉判定，免得旧定时器的陈旧触发把这一轮重启掉。 */
-    __wdTimeoutOn = false;
-    __wdTimer = Timer::everyNanos(timeoutUnits);
-    __wdTimer.onTick(__wdOnTick);
-    __wdTimer.start();
-    __wdKickSeq = 0;
-    __wdSeenSeq = 0;
-    __wdTimeoutOn = true;
-    return Result<int64, WatchdogError>::Ok(timeoutUnits);
-}
-
-/*
- * 毫秒版：`millis * 1000000` 个时间单位（与 `std::event::Timer::everyMillis` 同一个换算）。
- * @param millis 超时（毫秒，必须为正）。
- * @return 同 `enableTimeout`。
- */
 Result<int64, WatchdogError> enableTimeoutMillis(int64 millis) {
-    if (millis <= 0) {
-        return Result<int64, WatchdogError>::Err(WatchdogError::InvalidTimeout);
-    }
+    if (millis <= 0 || millis > 9223372036854) { return Result<int64, WatchdogError>::Err(WatchdogError::InvalidTimeout); }
     return enableTimeout(millis * 1000000);
 }
-
-/*
- * 喂一口狗：告诉时间维度"这一轮还活着"。每个超时周期之内至少调一次。
- * 没 `enableTimeout*()` 过返回 `Err(NotEnabled)`（没开这一维时不必喂）。
- * @return `Ok(true)` = 记下了。
- */
 Result<bool, WatchdogError> kick() {
-    if (!__wdTimeoutOn) {
-        return Result<bool, WatchdogError>::Err(WatchdogError::NotEnabled);
-    }
-    __wdKickSeq = __wdKickSeq + 1;
+    if (__watchdogKick() != 0) { return Result<bool, WatchdogError>::Err(WatchdogError::NotEnabled); }
     return Result<bool, WatchdogError>::Ok(true);
 }
+void disableTimeout() { __watchdogTimeout(0); }

@@ -1,0 +1,28 @@
+import std::json;
+
+@Reflect
+struct SerdeAddress { String city; };
+@Reflect
+struct SerdePerson { String name; int64 age; SerdeAddress address; List<String> tags; };
+
+int64 main()
+{
+    SerdePerson person;
+    person.name = "中文\"test";
+    person.age = 42;
+    person.address.city = "杭州";
+    person.tags.push("one");
+    auto encoded = std::json::serialize<SerdePerson>(&person);
+    assert(encoded.isOk());
+    println("{}", encoded.unwrap());
+    auto decoded = std::json::deserialize<SerdePerson>(encoded.unwrap());
+    assert(decoded.isOk());
+    SerdePerson copy = decoded.unwrap();
+    assert(copy.name == person.name);
+    assert(copy.address.city == "杭州");
+    assert(copy.tags.at(0) == "one");
+    copy.tags.push("two");
+    assert(person.tags.len() == 1);
+    println("reflection serialization OK");
+    return 0;
+}

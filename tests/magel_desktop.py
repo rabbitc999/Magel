@@ -41,7 +41,7 @@ def main():
     run(sys.executable, gui / 'test_program.py', gui_out)
     override = subprocess.run([str(gui_out / 'counter.exe'), 'close'], cwd=gui_out, env=dict(os.environ, MAGEL_GUI_LIBRARY=str(gui_out / 'mcgui.dll')), capture_output=True, text=True, encoding='utf-8', timeout=30)
     assert override.returncode == 0 and '你好，Magel' in override.stdout and (not override.stderr), override
-    result = subprocess.run([str(gui_out / 'qt_interrupt.exe')], cwd=gui_out, capture_output=True, text=True, encoding='utf-8', timeout=30)
+    result = subprocess.run([str(gui_out / 'qt_events.exe')], cwd=gui_out, capture_output=True, text=True, encoding='utf-8', timeout=30)
     assert result.returncode == 0 and 'clicks=1 ticks=1 closed=1' in result.stdout and (not result.stderr), result
     print('GUI 事件：clicks=1 ticks=1 closed=1，无运行错误或资源诊断', flush=True)
     test_turtle()

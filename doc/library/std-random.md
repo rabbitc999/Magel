@@ -10,7 +10,7 @@ import std::random;
 
 ## 公共约定与错误边界
 
-固定种子采用确定性 LCG，可复现；不用于密码学。nextInt/nextRange 区间为 [minimum,maximum)，要求 maximum>minimum；nextFloat64 为 [0,1)。Random 实现 Drop，裸 handle 接口需要配对 randomDrop。
+固定种子采用确定性 LCG，可复现；不用于密码学。nextInt/nextRange 区间为 [minimum,maximum)，要求 maximum>minimum；nextFloat64 为 [0,1)。Random 是拥有序列状态的 opcode，普通复制保留当前位置并独立推进，作用域退出自动释放。
 
 ## 参考代码
 
@@ -126,15 +126,14 @@ int64 main() {
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-366"></a>`struct Random : Drop` | 拥有伪随机生成器状态的资源包装，可指定种子。 |
-| Random | <a id="symbol-367"></a>`uint64 handle` | 宿主资源句柄；应通过所属类型的方法操作。 |
+| 模块 | <a id="symbol-340"></a>`opcode Random` | 拥有独立随机序列位置的 opcode，普通复制后独立推进。 |
 
 ## 函数索引
 
 | 名称 | 声明 |
 | --- | --- |
-| [randomWithSeed](#api-0) | `uint64 randomWithSeed(uint64 seed)` |
-| [randomFromEntropy](#api-1) | `uint64 randomFromEntropy()` |
+| [randomWithSeed](#api-0) | `Random randomWithSeed(uint64 seed)` |
+| [randomFromEntropy](#api-1) | `Random randomFromEntropy()` |
 | [randomNextUInt64](#api-2) | `uint64 randomNextUInt64(uint64 handle)` |
 | [randomNextInt](#api-3) | `int64 randomNextInt(uint64 handle, int64 minimum, int64 maximum)` |
 | [randomNextFloat64](#api-4) | `float64 randomNextFloat64(uint64 handle)` |
@@ -148,7 +147,6 @@ int64 main() {
 | [Random::nextFloat64](#api-12) | `float64 nextFloat64()` |
 | [Random::nextRange](#api-13) | `float64 nextRange(float64 minimum, float64 maximum)` |
 | [Random::nextBool](#api-14) | `bool nextBool()` |
-| [Random::drop](#api-15) | `void drop()` |
 
 <a id="api-0"></a>
 
@@ -157,14 +155,12 @@ int64 main() {
 **声明**
 
 ```magel
-uint64 randomWithSeed(uint64 seed);
+Random randomWithSeed(uint64 seed);
 ```
 
 **行为**
 
 宿主入口：用固定 seed 创建随机数状态。
-
-随机数生成器。实现下沉到宿主 C++（glue/std_random.hpp，确定性 LCG 与拆分前逐位一致）， 本文件只留宿主签名 + 极薄 wrapper。句柄型状态，实现 Drop。
 
 **参数**
 
@@ -174,7 +170,7 @@ uint64 randomWithSeed(uint64 seed);
 
 **返回值**
 
-`uint64`。宿主入口：用固定 seed 创建随机数状态。
+`Random`。宿主入口：用固定 seed 创建随机数状态。
 
 **错误与边界**
 
@@ -186,7 +182,7 @@ uint64 randomWithSeed(uint64 seed);
 std::random::randomWithSeed(seed);
 ```
 
-**源码**：[source/std/random.mgl:5](../../source/std/random.mgl#L5)。
+**源码**：[source/std/random.mgl:3](../../source/std/random.mgl#L3)。
 
 **完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
 
@@ -197,7 +193,7 @@ std::random::randomWithSeed(seed);
 **声明**
 
 ```magel
-uint64 randomFromEntropy();
+Random randomFromEntropy();
 ```
 
 **行为**
@@ -210,7 +206,7 @@ uint64 randomFromEntropy();
 
 **返回值**
 
-`uint64`。宿主入口：用宿主熵源播种随机数状态。
+`Random`。宿主入口：用宿主熵源播种随机数状态。
 
 **错误与边界**
 
@@ -222,7 +218,7 @@ uint64 randomFromEntropy();
 std::random::randomFromEntropy();
 ```
 
-**源码**：[source/std/random.mgl:6](../../source/std/random.mgl#L6)。
+**源码**：[source/std/random.mgl:4](../../source/std/random.mgl#L4)。
 
 **完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
 
@@ -260,7 +256,7 @@ uint64 randomNextUInt64(uint64 handle);
 std::random::randomNextUInt64(handle);
 ```
 
-**源码**：[source/std/random.mgl:7](../../source/std/random.mgl#L7)。
+**源码**：[source/std/random.mgl:5](../../source/std/random.mgl#L5)。
 
 **完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
 
@@ -300,7 +296,7 @@ int64 randomNextInt(uint64 handle, int64 minimum, int64 maximum);
 std::random::randomNextInt(handle, minimum, maximum);
 ```
 
-**源码**：[source/std/random.mgl:8](../../source/std/random.mgl#L8)。
+**源码**：[source/std/random.mgl:6](../../source/std/random.mgl#L6)。
 
 **完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
 
@@ -338,7 +334,7 @@ float64 randomNextFloat64(uint64 handle);
 std::random::randomNextFloat64(handle);
 ```
 
-**源码**：[source/std/random.mgl:9](../../source/std/random.mgl#L9)。
+**源码**：[source/std/random.mgl:7](../../source/std/random.mgl#L7)。
 
 **完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
 
@@ -378,7 +374,7 @@ float64 randomNextRange(uint64 handle, float64 minimum, float64 maximum);
 std::random::randomNextRange(handle, minimum, maximum);
 ```
 
-**源码**：[source/std/random.mgl:10](../../source/std/random.mgl#L10)。
+**源码**：[source/std/random.mgl:8](../../source/std/random.mgl#L8)。
 
 **完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
 
@@ -416,7 +412,7 @@ bool randomNextBool(uint64 handle);
 std::random::randomNextBool(handle);
 ```
 
-**源码**：[source/std/random.mgl:11](../../source/std/random.mgl#L11)。
+**源码**：[source/std/random.mgl:9](../../source/std/random.mgl#L9)。
 
 **完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
 
@@ -454,7 +450,7 @@ void randomDrop(uint64 handle);
 std::random::randomDrop(handle);
 ```
 
-**源码**：[source/std/random.mgl:12](../../source/std/random.mgl#L12)。
+**源码**：[source/std/random.mgl:10](../../source/std/random.mgl#L10)。
 
 **完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
 
@@ -471,6 +467,8 @@ static Random withSeed(uint64 seed);
 **行为**
 
 用固定 seed 创建随机数状态。
+
+使用可复现的种子建立独立生成器。
 
 **参数**
 
@@ -492,7 +490,7 @@ static Random withSeed(uint64 seed);
 std::random::Random::withSeed(seed);
 ```
 
-**源码**：[source/std/random.mgl:17](../../source/std/random.mgl#L17)。
+**源码**：[source/std/random.mgl:20](../../source/std/random.mgl#L20)。
 
 **完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
 
@@ -509,6 +507,8 @@ static Random fromEntropy();
 **行为**
 
 用宿主熵源播种随机数状态。
+
+使用宿主熵源建立独立生成器。
 
 **参数**
 
@@ -528,7 +528,7 @@ static Random fromEntropy();
 std::random::Random::fromEntropy();
 ```
 
-**源码**：[source/std/random.mgl:18](../../source/std/random.mgl#L18)。
+**源码**：[source/std/random.mgl:22](../../source/std/random.mgl#L22)。
 
 **完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
 
@@ -564,7 +564,7 @@ uint64 nextUInt64();
 obj.nextUInt64();
 ```
 
-**源码**：[source/std/random.mgl:20](../../source/std/random.mgl#L20)。
+**源码**：[source/std/random.mgl:23](../../source/std/random.mgl#L23)。
 
 **完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
 
@@ -603,7 +603,7 @@ int64 nextInt(int64 minimum, int64 maximum);
 obj.nextInt(minimum, maximum);
 ```
 
-**源码**：[source/std/random.mgl:21](../../source/std/random.mgl#L21)。
+**源码**：[source/std/random.mgl:24](../../source/std/random.mgl#L24)。
 
 **完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
 
@@ -639,7 +639,7 @@ float64 nextFloat64();
 obj.nextFloat64();
 ```
 
-**源码**：[source/std/random.mgl:22](../../source/std/random.mgl#L22)。
+**源码**：[source/std/random.mgl:25](../../source/std/random.mgl#L25)。
 
 **完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
 
@@ -678,7 +678,7 @@ float64 nextRange(float64 minimum, float64 maximum);
 obj.nextRange(minimum, maximum);
 ```
 
-**源码**：[source/std/random.mgl:23](../../source/std/random.mgl#L23)。
+**源码**：[source/std/random.mgl:26](../../source/std/random.mgl#L26)。
 
 **完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
 
@@ -714,42 +714,6 @@ bool nextBool();
 obj.nextBool();
 ```
 
-**源码**：[source/std/random.mgl:24](../../source/std/random.mgl#L24)。
-
-**完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
-
-<a id="api-15"></a>
-
-### Random::drop（16）
-
-**声明**
-
-```magel
-void drop();
-```
-
-**行为**
-
-释放对象拥有的资源，调用后遵守本模块失效规则。
-
-**参数**
-
-无显式参数。实例方法使用当前接收者。
-
-**返回值**
-
-无返回值。
-
-**错误与边界**
-
-遵循本页“公共约定与错误边界”。
-
-**调用形式**
-
-```magel
-obj.drop();
-```
-
-**源码**：[source/std/random.mgl:25](../../source/std/random.mgl#L25)。
+**源码**：[source/std/random.mgl:27](../../source/std/random.mgl#L27)。
 
 **完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。

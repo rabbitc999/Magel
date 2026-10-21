@@ -5,7 +5,7 @@ import re
 import json
 import argparse
 import sys
-from library_reference_data import MODULES, BEHAVIOR, ITER, PARAMETERS, BIG_BEHAVIOR
+from library_reference_data import MODULES, BEHAVIOR, ITER, PARAMETERS, BIG_BEHAVIOR, CONCURRENCY_BEHAVIOR
 
 ROOT = Path(__file__).resolve().parents[1]
 from magel_api import TOKEN, without_comments, parameters, declarations as scan_declarations
@@ -94,6 +94,20 @@ def comment_text(comment):
 def behavior(entry):
     """合并人工语义说明、同族宿主入口与声明注释。"""
     module, owner, name = entry['module'], entry['owner'], entry['name']
+    if module == 'std::sql' and not owner and name == 'insert':
+        return '按反射模型值生成参数化 INSERT，返回 SQL 与有序参数列表。'
+    if module == 'std::sql' and owner == 'Database' and name == 'exec' and 'SqlStatement' in entry['signature']:
+        return '在 SQLite 中绑定并执行一条 SqlStatement，严格检查参数数量并返回独立结果；其他后端报告不支持参数化执行。'
+    if module == 'std::cas':
+        return comment_text(entry['comment'])
+    if module in ('std::thread','std::concurrency','std::event','std::message','std::watchdog'):
+        if name in CONCURRENCY_BEHAVIOR: return CONCURRENCY_BEHAVIOR[name]
+        if module=='std::event' and name=='stop': return '删除定时源及其未接收通知，重复停止安全。'
+        if name=='close': return '关闭队列并停止定时源；已排队的值先排空，再返回 CLOSED。'
+        if module=='std::concurrency' and owner=='Channel' and name in ('send','receive'):
+            return '按值复制并等待发送，队列满时施加背压。' if name=='send' else '等待并按值接收下一项，关闭排空后返回 CLOSED。'
+        if module=='std::event' and name=='receive': return '显式等待并消费事件，不执行隐式用户回调。'
+
     if owner+'::'+name in BIG_BEHAVIOR: return BIG_BEHAVIOR[owner+'::'+name]
     if module=='std::iter' and name in ITER: return ITER[name]
     if module=='std::linalg' and name=='add': return '返回同维向量/矩阵逐项相加的新值。'
@@ -106,8 +120,9 @@ def behavior(entry):
     if name in ('drop', 'close'):
         return ('释放对象拥有的资源，调用后遵守本模块失效规则。' if name=='drop' else '关闭底层资源；文档节点会使同文档所有视图失效。')
     if name=='create' or name==owner:
-        return {'Shared':'创建值为 value 的原子共享槽。', 'Arena':'创建独立 arena。', 'Timer':'以纳秒周期创建停止态定时器。'}.get(owner, '创建'+(owner or ('共享协程' if module=='std::coroutine' else '隔离线程'))+'，返回可供后续操作的值。')
-    if name=='of': return {'Pair':'按 first、second 创建二元值。', 'Complex':'按 real、imag 创建复数值。', 'Interrupt':'组合事件句柄、所属线程和回调为中断描述值。'}.get(owner,'组合给定字段创建值。')
+        if owner=='Channel' and module=='std::collections': return '创建当前线程内的本地值队列。'
+        return {'Channel':'创建指定容量的跨线程通道。', 'AtomicInt64':'创建 int64 原子槽。', 'ThreadPool':'创建固定数量工作线程和有界任务队列。', 'ThreadGroup':'创建负责回收子任务的线程组。', 'Shared':'创建值为 value 的原子共享槽。', 'Arena':'创建独立 arena。', 'Timer':'以纳秒周期创建停止态定时器。'}.get(owner, '创建'+(owner or '隔离线程')+'，返回可供后续操作的值。')
+    if name=='of': return {'Pair':'按 first、second 创建二元值。', 'Complex':'按 real、imag 创建复数值。'}.get(owner,'组合给定字段创建值。')
     if name in ('send','receive','push','pop','open','read','write','flush','seek','parse'):
         if module=='std::net': return {'send':'发送 TCP 文本并返回发送结果。','receive':'读取至多 maxBytes 字节；空串结合 status 判断原因。'}[name]
         if module in ('std::json','std::toml'): return '解析'+('JSON' if module.endswith('json') else 'TOML')+' 文本；成功返回根节点，失败返回诊断字符串。'
@@ -115,7 +130,7 @@ def behavior(entry):
         if owner in ('FixedVector','RingBuffer') and name=='push': return '追加 value；容量已满时返回 false，成功为 true。'
         if owner in ('Deque','Queue','FixedVector','RingBuffer','Channel'):
             return {'push':'追加元素。','pop':'移除并返回下一元素；空容器返回 None。','send':'将 value 加入本地值队列。','receive':'取出队首值；空队列返回 None。'}[name]
-        if module in ('std::thread','std::coroutine'): return '向目标任务发送字符串消息。' if name=='send' else '等待并接收当前任务队列的一条字符串消息。'
+        if module == 'std::thread': return '向目标任务发送字符串消息。' if name=='send' else '等待并接收当前任务队列的一条字符串消息。'
     for prefix in ('numerics','numtheory','random','signal'):
         if name.startswith(prefix) and len(name)>len(prefix):
             short=name[len(prefix):]; short=short[0].lower()+short[1:]
@@ -162,9 +177,9 @@ def render(data):
         'core': ['std','std::lang','std::reflect'],
         'collections': ['std::collections','std::iter','std::algorithms'],
         'text': ['std::text','std::utf8','std::encoding','std::parse','std::regex','std::json','std::toml','std::csv','std::binary','std::compress'],
-        'math': ['std::math','std::complex','std::linalg','std::numerics','std::numtheory','std::signal','std::random'],
+        'math': ['std::math','std::cas','std::complex','std::linalg','std::numerics','std::numtheory','std::signal','std::random'],
         'io': ['std::io','std::path','std::cli','std::net','std::sql','std::process'],
-        'concurrency': ['std::concurrency','std::coroutine','std::thread','std::message','std::event'],
+        'concurrency': ['std::concurrency','std::thread','std::message','std::event'],
         'system': ['std::memory','std::clock','std::datetime','std::watchdog','std::probe'],
     }.items() for name in names}
     index=['# 库函数 API 参考手册', '', '采用 C/C++ 参考手册常见的组织方式：模块 → 类型 → 函数/重载，逐项列出声明、参数、返回值、行为、边界及调用形式。语法仍为 Magel，不是 C++。', '',
@@ -188,7 +203,7 @@ def render(data):
             flags=' --threads' if expected.with_suffix('.threads').exists() else ' --reflection' if module=='std::reflect' else ''
             if module=='std::io': flags+=' -- build/library-example.txt'
             lines += [f'完整程序：[{example}](../../{example})。', '', '```powershell', 'magel run '+example+flags, '```', '']
-            if module=='std::net': lines += ['非阻塞与协程配合的完整程序：[std_net_async.mgl](../../example/samples/std_net_async.mgl)。', '']
+            if module=='std::net': lines += ['非阻塞与可取消线程配合的完整程序：[std_net_async.mgl](../../example/samples/std_net_async.mgl)。', '']
             if module=='std::io': lines+=['先创建 `build` 目录；示例会覆盖给定路径，请使用专用测试文件。','']
             if module=='std::reflect': lines+=['需先用 `make reflection` 构建支持反射的工具链；当前二进制未编入支持时，上述命令会明确报缺失宏。','']
             path=ROOT/example

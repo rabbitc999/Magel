@@ -244,7 +244,6 @@ private:
      * @brief 为函数登记一个稠密槽。
      * @param layout 函数布局。
      * @param symbol 符号身份。
-     * @return 无。
      */
     static void bind(FrameLayout &layout, std::size_t symbol)
     {

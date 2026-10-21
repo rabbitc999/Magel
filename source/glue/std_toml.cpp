@@ -14,6 +14,7 @@ namespace std_toml_glue
 struct Traits
 {
     using Value = toml::Value;
+    static constexpr const char *recordName = "std::toml::TomlValue";
     /**
      * @brief 解析文本。
      * @param text UTF-8 文本。

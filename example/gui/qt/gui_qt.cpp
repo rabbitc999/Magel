@@ -6,7 +6,7 @@
  *
  * 与 WinAPI 后端的区别只有事件循环：Qt 版把事件处理拆成可重入的短时片
  * （`mcgui_pump` / `mcgui_wait_event`），这样 VM 能频繁拿回控制权、在指令边界
- * 交付中断；Qt 侧周期事件和 GUI 事件都通过 `mcgui_callback_t` 同步交回胶水层。
+ * 显式接收事件；Qt 侧周期事件和 GUI 事件都通过 `mcgui_callback_t` 同步交回胶水层。
  *
  * 只要传定宽整数与 UTF-8 字符串，不把 QWidget 暴露给 MAGEL。
  */
@@ -83,7 +83,7 @@ void pushEvent(std::int32_t event)
 /**
  * @brief 向语言客户端发送通知消息。
  *
- * 入队事件并就地通知回调（回调 → 胶水 → Machine::raiseInterrupt）。
+ * 入队事件并就地通知回调（回调 → 胶水 → EventPoster）。
  * @param event 待处理的界面事件或事件编号。
  * @param source 提供输入数据的来源。
  */
@@ -122,7 +122,7 @@ bool ensureApplication()
 /**
  * @brief Qt 周期事件：到点就回调一次。
  *
- * 不用 QTimer：0ms 的 QTimer 会在一次 `processEvents` 里连着补跑一串，把中断队列打爆。
+ * 不用 QTimer：0ms 的 QTimer 会在一次 `processEvents` 里连着补跑一串，把事件队列打爆。
  * 这里改成由泵**显式**决定：interval==0 表示每个泵回合一次，>0 用单调时钟限速。
  */
 void tickIfDue()
@@ -337,7 +337,7 @@ int32_t mcgui_wait_event(void)
 {
     if (g_window == nullptr) return -1;
     /* 分片等待：每片最多 2ms，期间照常派发 Qt 事件与回调。超时就返回 0，
-     * 把控制权交回 VM，让它在指令边界交付中断（Qt 版 wait 不无限阻塞）。 */
+     * 把控制权交回 VM，让调用方显式接收事件（Qt 版 wait 不无限阻塞）。 */
     for (std::size_t slice = 0; slice < kWaitSlices; ++slice)
     {
         if (g_app == nullptr || g_window == nullptr) return -1;

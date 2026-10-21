@@ -11,7 +11,7 @@ else()
     add_compile_options(-Wall -Wextra -Wpedantic -finput-charset=UTF-8 -fexec-charset=UTF-8)
 endif()
 
-add_library(big_number STATIC bigint.cpp bigfloat.cpp)
+add_library(big_number STATIC bigint.cpp bigfloat.cpp bigfloat_transcendental.cpp bigfloat_trigonometry.cpp)
 target_include_directories(big_number PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(big_number-demo main.cpp)

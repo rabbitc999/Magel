@@ -1,0 +1,17 @@
+src/allocator.cpp
+src/detail/calculus.cpp
+src/detail/integer_adapter.cpp
+src/detail/matrix.cpp
+src/detail/memory_pool.cpp
+src/detail/multivariate.cpp
+src/detail/node.cpp
+src/detail/ode.cpp
+src/detail/parser.cpp
+src/detail/polynomial.cpp
+src/detail/printer.cpp
+src/detail/series.cpp
+src/detail/simplify.cpp
+src/detail/solver.cpp
+src/detail/special.cpp
+src/detail/trigonometry.cpp
+src/engine.cpp

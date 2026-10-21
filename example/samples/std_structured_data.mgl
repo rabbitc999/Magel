@@ -3,7 +3,7 @@
  *
  * 本例将 find / keyAt / asString 的结果分别保存，方便逐层检查 Result/Option。
  * 当前语言也支持 root.find("x").unwrap() 等持资源结果的链式访问；编译器在完整
- * 表达式结束后清理中间值。文档节点是共享视图，close 后同文档的节点一起失效。
+ * 表达式结束后清理中间值。节点拥有独立子树，close 不影响副本及已提取的子值。
  */
 import std::json;
 import std::toml;
@@ -59,7 +59,7 @@ int64 main() {
     Option<String> reloadedText = reloadedNameValue.asString();
     assert(reloadedText.unwrap() == "中文");
     assert(reloaded.close());
-    assert(root.close() && !items.isValid() && !root.close());
+    assert(root.close() && items.isValid() && !root.close());
 
     Result<std::json::JsonValue, String> parsedZero =
     std::json::parse("{\"a\\u0000b\":\"x\\u0000y\"}");
@@ -134,7 +134,7 @@ int64 main() {
     std::toml::TomlValue copyPortValue = copyPort.unwrap();
     Option<int64> copyPortNumber = copyPortValue.asInt();
     assert(copyPortNumber.unwrap() == 8080);
-    assert(copy.close() && config.close() && !server.isValid());
+    assert(copy.close() && config.close() && server.isValid());
     Result<std::toml::TomlValue, String> duplicate = std::toml::parse("x = 1\nx = 2\n");
     assert(duplicate.isErr() && len(duplicate.error()) > 0);
     {

@@ -24,6 +24,25 @@ def declarations(path, source=None, line_offset=0, root=None):
     def visit(begin, end, owner='', owner_kind=''):
         i = begin
         while i < end:
+            if tokens[i][0] == '@':
+                # 注解定义及使用没有分号；其括号不能并入后续函数声明。
+                i += 1
+                if i < end and tokens[i][0] == 'annotation':
+                    i += 1
+                if i < end:
+                    i += 1
+                while i + 1 < end and tokens[i][0] == '::':
+                    i += 2
+                if i < end and tokens[i][0] == '(':
+                    depth = 1
+                    i += 1
+                    while i < end and depth:
+                        if tokens[i][0] == '(':
+                            depth += 1
+                        elif tokens[i][0] == ')':
+                            depth -= 1
+                        i += 1
+                continue
             if tokens[i][0] == ';':
                 i += 1
                 continue
@@ -58,7 +77,7 @@ def declarations(path, source=None, line_offset=0, root=None):
                     if tokens[body_end][0] == '{': depth += 1
                     elif tokens[body_end][0] == '}': depth -= 1
                     body_end += 1
-            kind_match = re.match(r'(?:#\s*NonCopyable\s+)?(struct|enum|interface|opcode)\s+(\w+)', signature)
+            kind_match = re.match(r'(?:(?:#\s*NonCopyable|#\s*derive\s*\([^)]*\))\s+)*(struct|enum|interface|opcode)\s+(\w+)', signature)
             function = None
             declaration_matches = list(TOKEN.finditer(signature))
             declaration_tokens = [m.group() for m in declaration_matches]

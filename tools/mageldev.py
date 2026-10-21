@@ -571,9 +571,6 @@ _MESSAGES = {
   "线程异步入口不支持带捕获的 lambda": [
     "Thread entry points do not support capturing lambdas"
   ],
-  "协程异步入口不支持带捕获的 lambda": [
-    "Coroutine entry points do not support capturing lambdas"
-  ],
   "用法：magel fmt 路径... [--check|--write]\n": [
     "Usage: magel fmt PATH... [--check|--write]\n"
   ],
@@ -723,6 +720,39 @@ _MESSAGES = {
   ],
   "运行示例输出 `Hello, Magel!`。开发命令原生内建，无需 Python；程序通过 VM 执行。\n": [
     "The example prints `Hello, Magel!`. Development commands are built in and need no Python; programs execute in the VM.\n"
+  ],
+  "执行已取消": [
+    "Execution cancelled"
+  ],
+  "跨线程传值不支持带捕获的函数值": [
+    "Capturing function values cannot be transferred across threads"
+  ],
+  "通道消息类型不匹配": [
+    "Channel message type mismatch"
+  ],
+  "线程控制操作的环境或参数无效": [
+    "Invalid environment or arguments for thread control"
+  ],
+  "线程控制操作收到无效句柄": [
+    "Thread control received an invalid handle"
+  ],
+  "等待毫秒数不能小于 -1": [
+    "Wait milliseconds cannot be less than -1"
+  ],
+  "睡眠毫秒数不能为负数": [
+    "Sleep milliseconds cannot be negative"
+  ],
+  "线程收件箱已关闭": [
+    "Thread inbox is closed"
+  ],
+  "线程组已结束": [
+    "Thread group has finished"
+  ],
+  "线程池工作线程数须为 1..1024": [
+    "Thread pool worker count must be 1..1024"
+  ],
+  "线程池提交超时不能小于 -1": [
+    "Thread pool submission timeout cannot be less than -1"
   ]
 }
 # MAGEL_CATALOG_END
@@ -736,7 +766,7 @@ def _text(original):
     return _MESSAGES.get(original, (original, original))[0]
 
 
-VERSION = "0.23.1"
+VERSION = "0.24.1"
 IGNORED = {".git", ".magel", "build", "tmp", "node_modules", "__pycache__"}
 EXTENSIONS = {".mgl", ".inc", ".h", ".hpp", ".c", ".cpp", ".toml", ".json"}
 KEYWORDS = "_ abi auto bool break cast char const continue copy defer drop elif else enum false float32 float64 fn for heap if impl import in inline int16 int32 int64 int8 interface loop match module move mut new opcode return scope static struct true type uint16 uint32 uint64 uint8 void while yield".split()

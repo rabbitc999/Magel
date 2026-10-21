@@ -65,24 +65,24 @@ CLI options, defaults and validation OK
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-4"></a>`struct CliError` | 参数错误保留原始参数及可供用户阅读的原因。 |
-| CliError | <a id="symbol-5"></a>`String argument` | 导致错误的命令行实参。 |
-| CliError | <a id="symbol-6"></a>`String message` | 供用户阅读的错误原因。 |
-| 模块 | <a id="symbol-7"></a>`struct CliOption` | 一个选项；shortName 为零时没有短名称，takesValue=false 表示布尔开关。 |
-| CliOption | <a id="symbol-8"></a>`String name` | 声明或选项的名称。 |
-| CliOption | <a id="symbol-9"></a>`char shortName` | 单字符短选项名称。 |
-| CliOption | <a id="symbol-10"></a>`bool takesValue` | 选项是否需要附加值。 |
-| CliOption | <a id="symbol-11"></a>`bool required` | 是否要求调用方显式提供该选项。 |
-| CliOption | <a id="symbol-12"></a>`String defaultValue` | 没有显式提供值时使用的默认值。 |
-| CliOption | <a id="symbol-13"></a>`String description` | 用于帮助或展示的说明文本。 |
-| 模块 | <a id="symbol-14"></a>`struct CliArguments` | 解析结果；选项使用长名称作为键，位置参数保持输入顺序。 |
-| CliArguments | <a id="symbol-15"></a>`Map<String,String> options` | 已解析的选项名称与值。 |
-| CliArguments | <a id="symbol-16"></a>`List<String> positional` | 按输入顺序保存的位置实参。 |
-| CliArguments | <a id="symbol-17"></a>`bool helpRequested` | 输入是否请求显示帮助。 |
-| 模块 | <a id="symbol-18"></a>`struct CliParser` | 命令行选项定义与解析器；不调用 exit、不打印帮助，由应用决定交互行为。 |
-| CliParser | <a id="symbol-19"></a>`String program` | 帮助文本中显示的程序名称。 |
-| CliParser | <a id="symbol-20"></a>`String description` | 用于帮助或展示的说明文本。 |
-| CliParser | <a id="symbol-21"></a>`List<CliOption> definitions` | 解析器登记的选项定义。 |
+| 模块 | <a id="symbol-6"></a>`struct CliError` | 参数错误保留原始参数及可供用户阅读的原因。 |
+| CliError | <a id="symbol-7"></a>`String argument` | 导致错误的命令行实参。 |
+| CliError | <a id="symbol-8"></a>`String message` | 供用户阅读的错误原因。 |
+| 模块 | <a id="symbol-9"></a>`struct CliOption` | 一个选项；shortName 为零时没有短名称，takesValue=false 表示布尔开关。 |
+| CliOption | <a id="symbol-10"></a>`String name` | 声明或选项的名称。 |
+| CliOption | <a id="symbol-11"></a>`char shortName` | 单字符短选项名称。 |
+| CliOption | <a id="symbol-12"></a>`bool takesValue` | 选项是否需要附加值。 |
+| CliOption | <a id="symbol-13"></a>`bool required` | 是否要求调用方显式提供该选项。 |
+| CliOption | <a id="symbol-14"></a>`String defaultValue` | 没有显式提供值时使用的默认值。 |
+| CliOption | <a id="symbol-15"></a>`String description` | 用于帮助或展示的说明文本。 |
+| 模块 | <a id="symbol-16"></a>`struct CliArguments` | 解析结果；选项使用长名称作为键，位置参数保持输入顺序。 |
+| CliArguments | <a id="symbol-17"></a>`Map<String,String> options` | 已解析的选项名称与值。 |
+| CliArguments | <a id="symbol-18"></a>`List<String> positional` | 按输入顺序保存的位置实参。 |
+| CliArguments | <a id="symbol-19"></a>`bool helpRequested` | 输入是否请求显示帮助。 |
+| 模块 | <a id="symbol-20"></a>`struct CliParser` | 命令行选项定义与解析器；不调用 exit、不打印帮助，由应用决定交互行为。 |
+| CliParser | <a id="symbol-21"></a>`String program` | 帮助文本中显示的程序名称。 |
+| CliParser | <a id="symbol-22"></a>`String description` | 用于帮助或展示的说明文本。 |
+| CliParser | <a id="symbol-23"></a>`List<CliOption> definitions` | 解析器登记的选项定义。 |
 
 ## 函数索引
 

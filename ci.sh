@@ -149,8 +149,9 @@ if [ "$full" = 1 ]; then
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="$root/tmp/ci/stackvm" \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE="$root/tmp/ci/stackvm"
     run_required_step "构建 stackvm（CLI + 单测）" \
-        cmake --build tmp/ci/stackvm --config Release --target magel-stackvm magel-stackvm-tests magel-artifact-tests magel-symbol-tests magel-panic-tests svmb_symtool -j4
+        cmake --build tmp/ci/stackvm --config Release --target magel-stackvm magel-stackvm-tests magel-artifact-tests magel-symbol-tests magel-panic-tests magel-runtime-event-tests svmb_symtool -j4
     run_step "运行二进制中间产物等价性与损坏输入回归" tmp/ci/stackvm/magel-artifact-tests
+    run_step "运行宿主事件、定时合并与取消回归" tmp/ci/stackvm/magel-runtime-event-tests
     run_step "运行 stackvm 单测" \
         tmp/ci/stackvm/magel-stackvm-tests library/stackvm/examples
     run_step "运行变长符号与十万符号回归" \
@@ -172,6 +173,12 @@ run_required_step "生成 MAGEL 解析器（gen.sh）" sh gen.sh
 run_required_step "构建 MAGEL 驱动（magel）" "$MAKE" -j4
 
 run_step "验证并行门禁调度与失败汇总" "$PYTHON" tests/test_parallel_gates.py
+run_step "验证大整数乘除法与 Python 整数差分" "$PYTHON" tests/bigint_arithmetic.py
+run_step "验证高精度数学与独立参考值" "$PYTHON" tests/bigfloat_math.py
+run_step "验证 CAS 与泛型数学语言接口" "$PYTHON" tests/magel_cas_math.py
+run_step "验证 opcode 值语义、红黑删除与字符串方法" "$PYTHON" tests/magel_opcode_values.py
+run_step "验证反射序列化与注解动态 SQL" "$PYTHON" tests/magel_reflection_serialization.py
+run_step "验证 CAS 核心全部回归" "$PYTHON" tests/cas_library.py
 run_step "验证卫生宏绑定、正则、AST 替换及生成解析器" "$PYTHON" tests/macro_foundations.py
 run_step "验证 AST 表达式宏语义与 VM 执行" "$PYTHON" tests/magel_ast_macros.py --default
 run_step "验证宏完整片段分类与正则分支" "$PYTHON" tests/magel_macro_branches.py --default
@@ -183,6 +190,8 @@ run_step "MAGEL 样例回归（check.sh）" \
     sh -c 'cd "$1" && MAGEL_TMP="$1/tmp/ci/check" sh check.sh' sh "$root"
 run_step "运行 std::image 与 StringBuilder 回归" "$PYTHON" tests/magel_image.py --magel magel
 run_step "运行标准错误流与文件打印回归" "$PYTHON" tests/magel_print_streams.py --magel magel
+run_step "运行线程超时与非阻塞等待回归" "$PYTHON" tests/magel_thread_wait.py --magel magel
+run_step "运行隔离线程与有界并发模型回归" "$PYTHON" tests/magel_thread_model.py --magel magel
 run_step "运行临时值与资源释放合并回归" "$PYTHON" tests/magel_resource_lifetime.py --magel magel
 run_step "运行闭包自动类型与嵌套返回语言服务回归" "$PYTHON" tests/magel_lsp_closure_types.py --magel magel
 run_required_step "编译无墓碑分配身份回归" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=1 -Isource -Ilibrary -Isource/allocator tests/allocation_identity.cpp -o tmp/ci/allocation-identity
@@ -190,11 +199,16 @@ run_step "运行百万次分配身份回归" tmp/ci/allocation-identity
 run_step "运行数组按值传参与引用回归" "$PYTHON" tests/magel_array_parameters.py --magel magel
 run_required_step "编译字面量数据合并单元测试" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=0 -DMAGEL_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 library/simple_ast/test_simple_ast.cpp library/simple_ast/simple_ast.cpp -o tmp/ci/simple-ast-literals
 run_step "运行字面量数据合并单元测试" tmp/ci/simple-ast-literals
+run_step "检查诊断摘录与 TOML 注释往返" "$PYTHON" tests/magel_diagnostic_layout.py --magel magel
 run_step "运行字面量合并与字符串副本回归" "$PYTHON" tests/magel_string_literals.py --magel magel
 run_step "检查 opcode 声明与不可复制限制" "$PYTHON" tests/magel_opcode_declarations.py --magel magel
 run_step "检查区间与循环值表达式" "$PYTHON" tests/magel_range_loop_values.py --magel magel
 run_step "检查 opcode 资源所有权与借用" "$PYTHON" tests/magel_opcode_resources.py --magel magel
 run_step "检查 opcode 反射与语言服务隐藏" "$PYTHON" tests/magel_opcode_visibility.py --magel magel
+run_step "检查 VM 构建与导出清单同步" "$PYTHON" tools/stackvm_sources.py --check
+run_required_step "检查 VM 模块组织与实现增量重编" "$PYTHON" tests/stackvm_module_layout.py
+run_required_step "编译 TOML 注释保存回归" g++ -std=c++17 -O2 library/toml/test_toml.cpp library/toml/toml.cpp library/toml/toml_source.cpp -o tmp/ci/toml-comments
+run_step "运行 TOML 注释保存回归" tmp/ci/toml-comments
 run_step "检查标准对象与 VM 核心隔离" "$PYTHON" tests/opcode_core_isolation.py
 run_step "检查 VM 集合宿主胶水与同步回调" "$PYTHON" tests/magel_collection_glue.py --magel magel
 run_step "检查 Map Pair 迭代元素类型" "$PYTHON" tests/magel_map_pair_iterator.py --magel magel
@@ -225,6 +239,7 @@ run_step "运行 lztext 单元测试" tmp/ci/lztext
 fi
 
 if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
+    run_step "验证线程字节码往返" "$PYTHON" tests/magel_thread_model.py --magel magel --vm tmp/ci/stackvm/magel-stackvm
     run_step "运行符号转换与 CLI 集成回归" \
         "$PYTHON" tests/test_svmb_symbols.py --build tmp/ci/stackvm --magel magel
     run_step "运行 MAGEL 与 VM panic 诊断回归" \
@@ -307,6 +322,7 @@ if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
     run_step "运行新增书本示例与 LaTeX 同步回归" "$PYTHON" tests/magel_book_updates.py
     run_step "运行嵌套函数值的内联 fn 实参回归" "$PYTHON" tests/magel_inline_fn_arguments.py
     run_step "运行胶水调用 Magel 函数的 VM回归" "$PYTHON" tests/magel_native_callbacks.py
+    run_step "运行 GUI 显式事件桥接回归" "$PYTHON" tests/magel_gui_events.py --magel magel
     run_step "运行卫生宏高阶闭包编辑器回归" "$PYTHON" tests/magel_macro_editor.py --magel magel
     run_step "运行共享语义、宏分组提示与安全重构回归" "$PYTHON" tests/magel_lsp_semantic_features.py
     run_step "运行 pause 终端输出顺序回归" "$PYTHON" tests/magel_pause_output.py

@@ -44,6 +44,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <memory>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -56,6 +57,11 @@ namespace toml
 {
 
 class Value;
+class Parser;
+namespace source_detail
+{
+struct Document;
+}
 
 /**
  * 数组：`std::vector<Value>`，标准迭代器，STL 算法直接可用。
@@ -725,6 +731,8 @@ public:
      * 顶层不是表时输出该值的内联写法（例如数组 / 内联表）。
      *
      * @return TOML 文本。
+     * @note 解析文档的根值保留原文；等形编辑替换值区间，结构编辑保留全部注释内容并可能移动位置。
+     * @note 手工构造的值及子节点使用规范输出；反复解析保存根值不会丢失或重复注释。
      */
     [[nodiscard]] std::string dump() const;
 
@@ -754,7 +762,12 @@ public:
     }
 
 private:
-    Storage storage_;  ///< 值本体。
+    Storage storage_;                                                ///< 值本体。
+    std::shared_ptr<const source_detail::Document> sourceDocument_;  ///< 解析来源，共享只读原文快照。
+    std::size_t sourceBegin_ = 0;                                    ///< 值在原文中的起始字节。
+    std::size_t sourceEnd_ = 0;                                      ///< 值在原文中的结束字节。
+    friend class Parser;
+    friend struct source_detail::Document;
 };
 
 /**

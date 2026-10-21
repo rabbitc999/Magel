@@ -455,7 +455,7 @@ simple_ast::NodePtr LowerAlgorithmCall(const Memory::String &name, const Memory:
 /**
  * @brief 这个声明落在**编译器内嵌的标准库**里吗（`lang` / `std::*` / 文法登记的标准模块）？
  *
- * 标准库里那些"只有签名"的宿主函数由 VM 内建提供（`std::coroutine::yield`、
+ * 标准库里那些"只有签名"的宿主函数由 VM 内建提供（`std::thread::wait`、
  * `std::io::__fileTryRead`、`std::memory::__memoryLiveBytes`…），不一定挂在
  * `NativeRegistry` 上，所以不做"注册表里必须有"的校验。用户 / 胶水层声明落在入口模块，
  * 照常校验（`Declarations::hostFunction` 追加的也正是入口模块）。
@@ -1605,17 +1605,16 @@ simple_ast::NodePtr LowerCall(int id)
     if ((callee.kind == MNode::Member || callee.kind == MNode::Arrow) && !CheckMethodReceiver(callee.kids[0], label)) return Bad();
     const auto signature = g_funcs.find(label);
     if (signature == g_funcs.end()) return Fail("内部错误：调用签名不存在 " + label), Bad();
-    if (signature->second.staticCallbacks && g_currentModule != "std::event")
-        for (std::size_t i = 0; i < args.size() && i < signature->second.params.size(); ++i)
-            if (signature->second.params[i].type->kind == MType::Func && BorrowSourceDepth(args[i]) != 0u)
-                return Fail("[MGL1204] 异步事件回调不能捕获局部变量，其生命周期必须覆盖事件登记"), Bad();
     const auto transferCall = [&](const Memory::String &name) {
         return label.rfind(name + "__", 0u) == 0u;
     };
     const bool sendThread = transferCall("std::message::sendThread");
     const bool receiveThread = transferCall("std::message::receiveThread");
-    const bool sendCoroutine = transferCall("std::message::sendCoroutine");
-    const bool receiveCoroutine = transferCall("std::message::receiveCoroutine");
+    const bool channelSend = transferCall("std::concurrency::__channelSend");
+    const bool mailSend = transferCall("std::message::__mailSend");
+    const bool channelTake = transferCall("std::concurrency::__channelTake");
+    const bool typedCreate = transferCall("std::thread::createWith");
+
     /* 共享槽原语是**编译器注入的泛型宿主签名**（`magel_generic.hpp` 里 `module lang` 下
      * 那四个 `__shared*<T>`），不是用户可见的标准库 API —— `Shared<T>` 这个 struct
      * 已经搬到 std::concurrency，但这些 `__` 前缀的 ABI 名字仍挂在 std::lang:: 下，改名要与
@@ -1624,11 +1623,11 @@ simple_ast::NodePtr LowerCall(int id)
     const bool sharedGet = transferCall("std::lang::__sharedGet");
     const bool sharedSet = transferCall("std::lang::__sharedSet");
     const bool sharedSwap = transferCall("std::lang::__sharedSwap");
-    if (sendThread || receiveThread || sendCoroutine || receiveCoroutine || sharedCreate || sharedGet || sharedSet || sharedSwap)
+    if (sendThread || receiveThread || channelSend || mailSend || channelTake || typedCreate || sharedCreate || sharedGet || sharedSet || sharedSwap)
     {
         const std::shared_ptr<MType> type =
-            (receiveThread || receiveCoroutine || sharedGet || sharedSwap) ? result :
-                                                                             signature->second.params.back().type;
+            (receiveThread || channelTake || sharedGet || sharedSwap) ? result :
+                                                                        signature->second.params.back().type;
         Memory::Set<Memory::String> seen;
         Memory::Function<bool(const std::shared_ptr<MType> &)> supported =
             [&](const std::shared_ptr<MType> &item) -> bool {
@@ -1639,18 +1638,22 @@ simple_ast::NodePtr LowerCall(int id)
             case MType::Char:
             case MType::Int:
             case MType::Double:
-
                 return true;
+            case MType::Host:
+                return supported(item->elem);
+            case MType::Func:
+                return item == type;
             case MType::Opcode:
                 return IsContainer(item) ? supported(item->elem) && (!item->elem2 || supported(item->elem2)) : !OpcodeNonCopyable(item);
             case MType::Struct:
             {
+                if (StructHasInterface(item->name, "Drop") || StructHasInterface(item->name, "Closeable")) return false;
                 EnsureTupleLayout(item);
                 const MStructDef *definition = FindStruct(item->name);
                 if (!definition || !definition->flattened) return false;
                 if (!seen.insert(item->name).second) return false;
-                for (const auto &leaf : definition->leaves)
-                    if (!supported(leaf.second)) return false;
+                for (const auto &field : definition->fields)
+                    if (!supported(field.type)) return false;
                 seen.erase(item->name);
                 return true;
             }
@@ -1661,12 +1664,13 @@ simple_ast::NodePtr LowerCall(int id)
             return Fail("消息与 std::lang::Shared 不支持 " + Describe(type) + "：请改用标量、字符串、普通值结构体或容器；引用、数组、资源和 std::lang::Any 不能跨线程传递"), Bad();
         const int kind = IsStandardOpcode(type, "String") ? 2 :
                          type->kind == MType::Struct      ? 4 :
+                         type->kind == MType::Func        ? 0 :
                          IsObjectLike(type)               ? 3 :
                          type->kind == MType::Double      ? 1 :
                                                             0;
         Memory::Vector<Memory::String> intrinsicNames;
         Memory::Vector<simple_ast::NodePtr> intrinsicValues;
-        if (sendThread || sendCoroutine || sharedGet || sharedSet || sharedSwap)
+        if (sendThread || channelSend || mailSend || typedCreate || sharedGet || sharedSet || sharedSwap)
         {
             intrinsicNames.push_back("__magel_target");
             intrinsicValues.push_back(LowerExpr(args[0]));
@@ -1677,20 +1681,26 @@ simple_ast::NodePtr LowerCall(int id)
         intrinsicValues.push_back(ContainerStorageFlag(type));
         intrinsicNames.push_back("__magel_type");
         intrinsicValues.push_back(simple_ast::Node::str(Describe(type)));
-        if (sendThread || sendCoroutine || sharedCreate || sharedSet || sharedSwap)
+        if (sendThread || channelSend || mailSend || typedCreate || sharedCreate || sharedSet || sharedSwap)
         {
             const int valueId = args.back();
             intrinsicNames.push_back("__magel_value");
             intrinsicValues.push_back(IsStandardOpcode(type, "String") && NeedsOwnedTemp(valueId) ? OwnedStringTemp(valueId) : LowerValueForType(valueId, type));
         }
-        const Memory::String native = sendThread       ? "__std_message_send_thread" :
-                                      receiveThread    ? "__std_message_receive_thread" :
-                                      sendCoroutine    ? "__std_message_send_coroutine" :
-                                      receiveCoroutine ? "__std_message_receive_coroutine" :
-                                      sharedCreate     ? "__std_shared_create" :
-                                      sharedGet        ? "__std_shared_get" :
-                                      sharedSet        ? "__std_shared_set" :
-                                                         "__std_shared_swap";
+        if (channelSend || mailSend)
+        {
+            intrinsicNames.push_back("__magel_timeout");
+            intrinsicValues.push_back(LowerExpr(args[1]));
+        }
+        const Memory::String native = typedCreate ? "__std_thread_create" : channelSend ? "__std_channel_send" :
+                                                                        mailSend        ? "__std_mail_send" :
+                                                                        channelTake     ? "__std_channel_take" :
+                                                                        sendThread      ? "__std_message_send_thread" :
+                                                                        receiveThread   ? "__std_message_receive_thread" :
+                                                                        sharedCreate    ? "__std_shared_create" :
+                                                                        sharedGet       ? "__std_shared_get" :
+                                                                        sharedSet       ? "__std_shared_set" :
+                                                                                          "__std_shared_swap";
         return simple_ast::Node::call(native, intrinsicNames, intrinsicValues);
     }
     // 引用迭代租约携带元素布局，绑定到统一 VM 原生操作。
@@ -2589,11 +2599,6 @@ simple_ast::NodePtr LowerUncheckedExpr(int id)
             const Memory::String label =
                 ResolveFunctionValue(node.module, node.s, g_expectedFuncType);
             if (label.empty()) return Bad();
-            const auto signature = g_funcs.find(label);
-            if (signature != g_funcs.end() && signature->second.staticCallbacks)
-                for (const auto &param : signature->second.params)
-                    if (param.type && param.type->kind == MType::Func)
-                        return Fail("异步事件登记入口的回调生命周期契约不能通过普通函数指针擦除"), Bad();
             using simple_ast::Node;
             const auto key = ModuleSymbol(node.module, node.s);
             const auto captures = g_lambdaCaptures.find(key);
@@ -3630,10 +3635,6 @@ simple_ast::NodePtr LowerStaticQualified(int id)
     if (!PickOverload(candidates, argTypes, &chosen, &reason))
         return Fail("调用 static 函数 " + key + " 找不到匹配的重载：" + DescribeTypes(argTypes) + "；" + reason), Bad();
     const MFuncSig &signature = g_funcs[chosen];
-    if (signature.staticCallbacks && g_currentModule != "std::event")
-        for (std::size_t i = 0; i < node.kids.size() && i < signature.params.size(); ++i)
-            if (signature.params[i].type->kind == MType::Func && BorrowSourceDepth(node.kids[i]) != 0u)
-                return Fail("[MGL1204] 异步事件回调不能捕获局部变量，其生命周期必须覆盖事件登记"), Bad();
     Memory::Vector<Memory::String> names;
     Memory::Vector<simple_ast::NodePtr> values;
     const bool variadic = !signature.params.empty() && signature.params.back().variadic;
@@ -4058,7 +4059,7 @@ simple_ast::Function LowerFunction(const Memory::String &name, const Memory::Str
         if (ContainsBorrowedReferences(param.type, &borrowedTypes))
             var.borrowDepth = HasOpaqueObjectBorrow(param.type) ? 0u : 1u;
         // 事件模块入口已在调用点检查回调环境；内部转送保持静态寿命契约。
-        if (module == "std::event" && param.type->kind == MType::Func) var.borrowDepth = 0u;
+
         var.bindingIdentity = param.bindingIdentity;
         g_scope.back()[parameterKey] = var;
         function.parameters.emplace_back(param.emitted, LowerType(param.type, param.emitted));

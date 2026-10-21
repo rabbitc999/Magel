@@ -255,6 +255,12 @@ bool ValidateAnnotations()
         Memory::Function<bool(int)> check;
         check = [&](int id) {
             const auto &node = N(id);
+            // 标准库的模型注解声明不妨碍无反射配置使用普通数据库接口。
+            if (node.kind == MNode::AnnotationDecl && node.module == "std::sql") return true;
+#if !MAGEL_WITH_REFLECTION || !STACKVM_WITH_REFLECTION
+            // 裁剪构建不生成元数据；高级入口保留到 VM 执行时统一报告 panic。
+            if (node.kind == MNode::AnnotationDecl || !node.annotations.empty()) return true;
+#endif
             if (node.kind == MNode::AnnotationDecl || !node.annotations.empty())
                 return AnnotationFail(node.kind == MNode::AnnotationDecl ? node : N(node.annotations[0]),
                                       "注解与反射功能未开启，请使用支持该能力的工具链及 --reflection");
@@ -265,8 +271,6 @@ bool ValidateAnnotations()
         };
         for (int id : g_top)
         {
-            if (N(id).module == "std::reflect" || (N(id).kind == MNode::ModuleDecl && N(id).s == "std::reflect"))
-                return AnnotationFail(N(id), "注解与反射功能未开启，请使用 --reflection");
             if (!check(id)) return false;
         }
         return true;

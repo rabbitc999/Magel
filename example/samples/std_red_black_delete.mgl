@@ -1,0 +1,90 @@
+import std::tree;
+
+int64 main()
+{
+    RedBlackTree tree = RedBlackTree::create();
+    assert(tree.validate() && !tree.remove(9));
+    assert(tree.insert(9) && tree.remove(9));
+    assert(tree.len() == 0 && tree.height() == 0 && tree.validate());
+
+    List<bool> present;
+    int64 index = 0;
+    while (index < 257)
+    {
+        present.push(false);
+        index = index + 1;
+    }
+    int64 seed = 20261021;
+    int64 expected = 0;
+    int64 step = 0;
+    while (step < 12000)
+    {
+        seed = (seed * 48271) % 2147483647;
+        int64 key = seed % 257;
+        seed = (seed * 48271) % 2147483647;
+        bool insert = (seed % 2) == 0;
+        if (insert)
+        {
+            assert(tree.insert(key) == !present[key]);
+            if (!present[key]) { expected = expected + 1; }
+            present[key] = true;
+        }
+        else
+        {
+            assert(tree.remove(key) == present[key]);
+            if (present[key]) { expected = expected - 1; }
+            present[key] = false;
+        }
+        assert(tree.validate() && tree.len() == expected);
+        assert(tree.contains(key) == present[key]);
+        if (step % 31 == 0)
+        {
+            List<int64> ordered = tree.inorder();
+            int64 offset = 0;
+            index = 0;
+            while (index < 257)
+            {
+                if (present[index])
+                {
+                    assert(ordered[offset] == index);
+                    offset = offset + 1;
+                }
+                index = index + 1;
+            }
+            assert(ordered.len() == offset);
+        }
+        step = step + 1;
+    }
+    RedBlackTree copy = tree;
+    List<int64> snapshot = tree.inorder();
+    index = 0;
+    while (index < snapshot.len())
+    {
+        assert(tree.remove(snapshot[index]));
+        assert(!tree.remove(snapshot[index]));
+        assert(tree.validate());
+        assert(copy.contains(snapshot[index]));
+        index = index + 1;
+    }
+    assert(tree.len() == 0 && copy.len() == snapshot.len());
+    index = 256;
+    while (index >= 0)
+    {
+        assert(tree.insert(index) && tree.validate());
+        index = index - 1;
+    }
+    index = 0;
+    while (index < 257)
+    {
+        assert(tree.min().unwrap() == index);
+        assert(tree.remove(index) && tree.validate());
+        index = index + 1;
+    }
+    tree.insert(0 - 9223372036854775807 - 1);
+    tree.insert(9223372036854775807);
+    assert(tree.validate() && tree.len() == 2);
+    assert(tree.remove(0 - 9223372036854775807 - 1));
+    assert(tree.remove(9223372036854775807) && tree.validate());
+    println("red-black delete: 12000 mixed operations, copy and snapshot OK");
+    return 0;
+}

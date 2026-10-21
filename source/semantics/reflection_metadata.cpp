@@ -182,7 +182,9 @@ struct MReflectionBuilder
             const auto decl = declarations.find(name);
             if (decl == declarations.end()) return nullptr;
             const auto &top = *decl->second;
-            const auto list = top.kind == MNode::EnumDecl ? top.kids[1] : top.kids[0];
+            const std::size_t memberIndex = top.kind == MNode::EnumDecl ? 1u : 0u;
+            if (top.kids.size() <= memberIndex) return nullptr;
+            const auto list = top.kids[memberIndex];
             for (int memberId : N(list).kids)
             {
                 const auto &member = N(memberId);
@@ -300,7 +302,9 @@ struct MReflectionBuilder
     Memory::Vector<mr::StaticMemberInfo> statics(const MNode &top)
     {
         Memory::Vector<mr::StaticMemberInfo> result;
-        const auto list = top.kind == MNode::EnumDecl ? top.kids[1] : top.kids[0];
+        const std::size_t memberIndex = top.kind == MNode::EnumDecl ? 1u : 0u;
+        if (top.kids.size() <= memberIndex) return result;
+        const auto list = top.kids[memberIndex];
         for (int id : N(list).kids)
         {
             const auto &member = N(id);

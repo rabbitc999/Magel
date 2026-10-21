@@ -21,9 +21,9 @@
  *   - 除以零：`divmod` 返回 false；`operator/`、`operator%` 抛 `std::domain_error`
  *     （不想处理异常就用 `divmod`）。
  *
- * 乘法内核按规模自动切换：小规模走学校算法，中等规模默认走 **Karatsuba**，超大规模走
- * **双素数 NTT + CRT**（O(n log n)）。
- * 除法默认走 **Burnikel-Ziegler**，除数不超过 56 limb 时回退移位相减长除法。
+ * 乘法内核在 **Karatsuba** 和 **双素数 NTT + CRT** 间按补齐规模选择；
+ * 递归终点仅使用单个原生整数乘法，不保留学校乘法内核。
+ * 除法使用 **Burnikel-Ziegler**，除数不超过 256 limb 时使用 Knuth 分块长除法。
  *
  * 同一个库里还有十进制浮点 `bigfloat::BigFloat`（`bigfloat.hpp`，尾数就是这个 `BigInt`）。
  * 明确不做（参考实现里有、这里不做）：**分数 / 大有理数**
@@ -124,35 +124,41 @@ public:
     [[nodiscard]] std::size_t limbCount() const { return limbs_.size(); }
 
     /**
-     * @brief NTT 切换阈值：两边 limb 个数之和达到它就改用 NTT。
+     * @brief NTT 候选下限：两边 limb 数之和达到它后再比较补齐成本。
      *
-     * 默认 48000；测试和调参可以直接改（`1` = 永远走 NTT）。
+     * 支持原生 128 位乘积时默认 3072，否则为 768；`1` 强制可支持的多块输入走 NTT。
+     * @param limbs 两侧块数之和的候选下限。
      */
     static void setMultiplicationThreshold(std::size_t limbs);
     /**
      * @brief 当前 NTT 阈值。
+     * @return 自动分派开始比较 NTT 成本的两侧合计块数。
      */
     [[nodiscard]] static std::size_t multiplicationThreshold();
 
     /**
-     * @brief Karatsuba 基线阈值：较短操作数超过该 limb 数时使用 Karatsuba。
+     * @brief Karatsuba 保护阈值：较短操作数不超过该 limb 数时保留 Karatsuba。
      *
-     * 默认 96；设置为很大可强制使用学校算法，0 会按最小安全值 1 处理。
+     * 默认 96；不再控制学校算法基线，0 按 1 处理；强制 NTT 模式优先。
+     * @param limbs 较短操作数优先保留 Karatsuba 的最大块数。
      */
     static void setKaratsubaThreshold(std::size_t limbs);
     /**
-     * @brief 当前 Karatsuba 基线阈值。
+     * @brief 当前 Karatsuba 保护阈值。
+     * @return 自动分派保留 Karatsuba 的短侧块数上限。
      */
     [[nodiscard]] static std::size_t karatsubaThreshold();
 
     /**
      * @brief Burnikel-Ziegler 除法的递归基线；除数不超过该 limb 数时使用长除法。
      *
-     * 默认 56、最小 32；设置为很大可强制使用长除法。
+     * 默认 256、最小 32；设置为很大可强制使用长除法。
+     * @param limbs 使用 Knuth 长除法的最大除数块数。
      */
     static void setDivisionThreshold(std::size_t limbs);
     /**
      * @brief 当前 Burnikel-Ziegler 递归基线。
+     * @return 使用 Knuth 长除法的除数块数上限。
      */
     [[nodiscard]] static std::size_t divisionThreshold();
 
@@ -419,16 +425,27 @@ private:
      */
     static BigInt subMagnitude(const BigInt &left, const BigInt &right);
     /**
-     * @brief 幅值乘法（学校算法，O(n×m)）。
+     * @brief 按补齐成本选择 Karatsuba 或 NTT 计算幅值乘积。
+     * @param left 左操作数，仅使用其幅值。
+     * @param right 右操作数，仅使用其幅值。
+     * @return 非负的幅值乘积。
      */
     static BigInt mulMagnitude(const BigInt &left, const BigInt &right);
     /**
-     * @brief 幅值除取整（默认 Burnikel-Ziegler，小规模回退长除法）。
+     * @brief 幅值除取整（Burnikel-Ziegler 分治，小规模使用 Knuth 分块长除法）。
+     * @param left 被除数，仅使用其幅值。
+     * @param right 非零除数，仅使用其幅值。
+     * @param quotient 非空时接收非负商。
+     * @param remainder 非空时接收非负余数。
      */
     static void divmodMagnitude(const BigInt &left, const BigInt &right,
                                 BigInt *quotient, BigInt *remainder);
     /**
-     * @brief 长除法递归基线。
+     * @brief 归一化后按 32 位块估商、校正的 Knuth 长除法基线。
+     * @param left 被除数，仅使用其幅值。
+     * @param right 非零除数，仅使用其幅值。
+     * @param quotient 非空时接收非负商。
+     * @param remainder 非空时接收非负余数。
      */
     static void divmodBase(const BigInt &left, const BigInt &right,
                            BigInt *quotient, BigInt *remainder);

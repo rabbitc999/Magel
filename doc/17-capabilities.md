@@ -31,7 +31,7 @@
 
 语言无 GC，拥有值按作用域确定性清理。引用、资源句柄及含引用的聚合仍受各自契约约束；
 手动 `new` 的存储需要按接口释放。静态检查不覆盖任意原始内存操作、外部宿主行为或所有并发失效。
-字符串下标和切片以 UTF-8 字节为单位，码点操作使用 `std::utf8`。
+字符串下标和普通切片以 UTF-8 字节为单位，String 另提供显式 UTF-8 码点方法；编码工具见 `std::utf8`。
 普通字符串字面量按字节内容合并生成期数据，字面量不能直接修改或可变借用；独立 String 值仍按值复制。
 运行时数组形参 `T[]` 复制长度及元素；`T[] &` / `T[] const&` 只读借用，
 `T[] mut&` 可变借用。数组引用保留元素布局、运行时长度及来源生命周期。
@@ -71,10 +71,10 @@ Magel 可通过 `abi` 调用 C 动态库，或调用 Registry 注册的 C++ 胶�
 ## 标准库、目标宿主与工具
 
 标准库覆盖容器算法、迭代器、数学与数值分析、文本与编码、JSON/TOML/CSV、文件与目录、
-TCP/基础 HTTP、SQL 驱动、协程、隔离线程、消息、显式共享值、事件和看门狗。
+TCP/基础 HTTP、SQL 驱动、隔离线程、有界通道、消息、显式共享值、显式事件和看门狗。
 模块与重载清单以[API 索引](library/README.md)为准，不在总览手工维护模块总数。
-HTTP 接口不包含 TLS；外部数据库需要相应客户端和服务。异步事件有独立的回调寿命契约，
-不能由同步函数包装获得任意异步调用能力。
+HTTP 接口不包含 TLS；外部数据库需要相应客户端和服务。线程使用 `std::thread::Thread`，支持复制初始参数、取消、状态、完成结果、线程组和固定线程池；跨线程通信有容量与等待预算，事件仅显式接收。
+宿主事件投递器使用弱引用，旧协程与中断回调已删除；阻塞宿主调用的取消受其超时约束。详见[并发模型](29-thread-concurrency.md)。
 
 桌面与嵌入式 Linux 共用 `library/stackvm/` VM 核心。目标需具备 C++17 工具链、足够的内存和
 所需系统服务；原生胶水与依赖库必须按目标架构构建。Linux 设备使用普通宿主，
@@ -94,6 +94,9 @@ API 手册通过 `magel man api` 查询，省略 `api` 会给出用法错误；`
 
 `opcode T { new = create; drop = destroy; copy = clone; };` 声明不透明胶水对象。
 复制经声明的胶水函数完成；`#NonCopyable` 类型禁止复制，并省略 copy。
+BigInteger 乘法在 Karatsuba 与双素数 NTT 之间按补齐成本选择，平方复用正变换，不保留学校乘法内核。
+除法使用 Knuth 分块长除法与 Burnikel–Ziegler 分治，保持向零截断及余数跟随被除数符号。
+算法界限、可调接口及可复现基准见[大数库说明](../library/bignum/README.md)和[原始测量](benchmarks/bigint-arithmetic.json)。
 struct 可以拥有多个 opcode 字段。BigInteger、BigDecimal、File、Process 的记录及操作位于
 标准库胶水，VM 核心只管理通用 NativeRecord 壳及宿主服务表。File、Process 不可复制；
 公开进程类型名为 Process。List、Map、Set 使用参数化 opcode 类型和标准库不透明记录，
@@ -105,4 +108,18 @@ Map、Set 的 keyAt、valAt、at、遍历及默认文本均不承诺排序或插
 
 Image 使用可深复制的 opcode，宽高与连续 RGBA 像素由胶水拥有；width()/height() 查询尺寸，pixels() 导出独立列表快照。TcpSocket、TcpListener 使用不可复制的 opcode，作用域退出自动关闭，显式 move 转移所有权，各连接独立保存读状态与错误。线性代数 Vector<T>、Matrix<T> 保留泛型聚合外观，ScalarArray<T> 的 ScalarStorage opcode 保存内建整数与浮点数值，复制缓冲互不影响。字符串拼接、切片、比较、查找及数值转文本由标准胶水实现；内部入口统一使用 __std_ 前缀，VM 保留执行控制、内存安全与闭包等核心机制。
 
-网络异步入口使用非阻塞轮询和 NET_PENDING，配合协程让出执行权；connectAsync 首批仅接受数值 IPv4，域名解析保留在同步 connect。sendAsync 返回部分发送字节数并接受 offset；receiveLineAsync 保留未完成行，缓冲上限为 1 MiB。
+网络异步入口使用非阻塞轮询和 NET_PENDING，未就绪时采用可取消线程睡眠或在专用线程使用同步 I/O，避免忙轮询；connectAsync 首批仅接受数值 IPv4，域名解析保留在同步 connect。sendAsync 返回部分发送字节数并接受 offset；receiveLineAsync 保留未完成行，缓冲上限为 1 MiB。
+
+隔离线程的 `waitFor(thread, millis)` 支持非负毫秒超时，`tryWait(thread)` 提供零超时等待；成功完成并回收返回 `true`，超时返回 `false` 且不取消目标。目标失败仍传播原始诊断；句柄成功回收后不能再次等待。
+
+## VM 模块与 TOML 保存
+
+共享 VM 按四元式、二进制容器、执行器、原生服务与并发通信组织独立编译单元；构建和导出使用 library/stackvm/core_sources.txt。公开接口由 stackvm.hpp 汇总，非模板实现独立链接。
+
+std::toml 文档根节点保存时保留原文注释。底层 C++ 值模型的等形编辑保留布局；结构编辑保留注释内容并可调整位置。重复解析保存不丢失或重复注释，详见 [TOML 接口](library/std-toml.md)。
+
+精确符号计算由 `std::cas::Expr` 提供，支持字符串 AST、精确有理数四则运算、微积分和节点遍历。`std::math` 支持普通数值、大十进制与符号表达式；高精度函数使用共享十进制后端。算法、裁剪与线程边界见[符号计算与高精度数学](34-symbolic-computation.md)。
+
+标准库的连接、arena 和定时源使用独占拥有关系，容器和随机数保持值复制，JSON/TOML 子值独立拥有。String 提供常用文本方法及显式 UTF-8 码点接口；存储语义、快照和边界见[标准库存储、复制与字符串方法](35-opcode-values-strings.md)。
+
+反射提供按名称读取、写入精确类型字段，并为 JSON、TOML、字节序列化和 std::sql 模型注解生成具体类型桥接。动态 SQL 生成与直接参数绑定当前支持 SQLite；其他后端的参数化执行返回明确诊断。详见 [反射序列化与动态 SQL](36-reflection-serialization-sql.md)。

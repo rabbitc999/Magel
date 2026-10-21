@@ -77,10 +77,10 @@ See the [reflection specification](../19-reflection.md).
 ## Libraries, embedded Linux and tools
 
 Libraries cover containers/algorithms, iterators, math, numerical methods, text/encoding, JSON/TOML/CSV,
-files/directories, TCP/basic HTTP, SQL drivers, coroutines, isolated threads, messages, explicit shared
+files/directories, TCP/basic HTTP, SQL drivers, isolated threads, bounded channels, messages, explicit shared
 values, events and watchdogs. The [API index](../library/README.md) defines the module list; overview
 pages do not maintain a separate module count. HTTP excludes TLS; external databases need their
-clients and services. Asynchronous event callbacks have separate lifetime contracts.
+clients and services. Events use weak host posting and explicit bounded receive; application event handlers run only when called by the receiver.
 
 Desktop and embedded Linux use the same `library/stackvm/` core. The target needs a C++17 toolchain,
 sufficient memory and the system services required by its program. Build native glue and dependencies
@@ -103,6 +103,9 @@ API manuals require `magel man api`; omitting `api` produces a usage error. `mag
 
 `opcode T { new = create; drop = destroy; copy = clone; };` declares an opaque glue object.
 Copies call the declared glue function. `#NonCopyable` disables copying and omits copy.
+BigInteger multiplication selects Karatsuba or dual-prime NTT by padded operation cost, reuses forward transforms for squares, and has no schoolbook kernel.
+Division combines Knuth limb division with Burnikel–Ziegler recursion, truncating toward zero with the dividend's remainder sign.
+Algorithm boundaries, tuning interfaces and reproducible benchmarks are described in the [big-number library guide](../../library/bignum/README.md) and [raw measurements](../benchmarks/bigint-arithmetic.json).
 A struct may declare multiple opcode fields. BigInteger, BigDecimal, File and Process
 records and operations reside in standard library glue; the VM core manages generic NativeRecord
 shells and a host service table. File and Process are noncopyable. Process is the public type name.
@@ -116,4 +119,20 @@ including keyAt, valAt, at, iteration and default text. String isolation remains
 
 Image is a deeply copied opcode whose dimensions and contiguous RGBA pixels belong to glue. width()/height() query dimensions; pixels() returns an independent list snapshot. TcpSocket and TcpListener are noncopyable opcodes that close automatically at scope exit; explicit move transfers ownership, and each connection retains its own read status and error. Generic Vector<T> and Matrix<T> retain their aggregate API; ScalarArray<T> stores built-in integer and floating-point values in a ScalarStorage opcode with independent copies. Standard glue implements string concatenation, slicing, comparison, search and numeric-to-text conversion. Internal entry points use the __std_ prefix; the VM retains execution control, memory safety and closures.
 
-Network async methods use nonblocking polling and NET_PENDING, allowing callers to yield between polls. connectAsync currently accepts numeric IPv4 addresses only; synchronous connect retains hostname resolution. sendAsync returns a partial byte count and accepts an offset; receiveLineAsync preserves incomplete lines with a 1 MiB buffer limit.
+Network async methods use nonblocking polling and NET_PENDING, with cancellable thread sleeps between polls; dedicated threads may use synchronous I/O. connectAsync currently accepts numeric IPv4 addresses only; synchronous connect retains hostname resolution. sendAsync returns a partial byte count and accepts an offset; receiveLineAsync preserves incomplete lines with a 1 MiB buffer limit.
+
+Isolated threads support `waitFor(thread, millis)` with a nonnegative millisecond timeout and `tryWait(thread)` for a zero-timeout wait. Both return `true` after completion and collection, or `false` on timeout without cancelling the target. Target failures retain their original diagnostics; a collected handle cannot be waited on again.
+
+Threads use `std::thread::Thread` with copied initial arguments, cancellation, completion results, groups and fixed pools. Bounded channels and explicit event queues replace coroutine scheduling and implicit interrupt callbacks. See [concurrency contracts](29-thread-concurrency.md) for timeouts, cleanup and blocking host I/O limits.
+
+## VM modules and TOML saving
+
+The shared VM uses separate compilation units for quadruples, binary containers, execution, native services and concurrent communication. Builds and exports share library/stackvm/core_sources.txt. The stackvm.hpp header aggregates public interfaces; non-template implementations are linked separately.
+
+Saving a parsed std::toml document root retains its original comments and layout. In the underlying C++ value model, edits with the same container shape preserve layout. Structural edits retain all comment content, but may move comments to the beginning of the document. Parsing and saving repeatedly neither loses nor duplicates comments. See the [TOML API](../library/std-toml.md).
+
+`std::cas::Expr` provides string parsing, immutable AST traversal, exact rational arithmetic and calculus. Generic `std::math` functions support ordinary numbers, high precision decimals and symbolic expressions. See [symbolic computation and high precision mathematics](34-symbolic-computation.md) for algorithm, trimming and concurrency boundaries.
+
+Connections, arenas and timer sources have exclusive owners; containers and random generators copy their state, and JSON/TOML values own independent subtrees. String includes common text methods and explicit UTF-8 code point operations. See [ownership, snapshots and string boundaries](35-opcode-values-strings.md).
+
+Reflection provides exact typed field access and generates codecs for JSON, TOML, byte serialization, and annotated std::sql models. Dynamic SQL generation and direct binding currently support SQLite; bound execution on other backends reports an explicit error. See [reflection serialization and dynamic SQL](36-reflection-serialization-sql.md).

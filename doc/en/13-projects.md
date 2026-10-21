@@ -56,9 +56,7 @@ widgets live in a host library ([`example/gui/winapi/gui.c`](../../example/gui/w
 [`example/gui/qt/gui_qt.cpp`](../../example/gui/qt/gui_qt.cpp)). Only fixed-width integers and UTF-8 strings cross
 the boundary — **no window handles or widget structures are passed**.
 
-Events travel the same "happen asynchronously, deliver at a safe point" path as software timers:
-a GUI event returns through a C callback to the glue layer, the runtime poster queues it, and the
-VM delivers it to a Magel interrupt function at the next execution boundary.
+GUI events pass through a C callback to a weak runtime poster and enter a bounded queue. Magel code explicitly receives event values; the VM never inserts a user callback. Posting reports full or closed queues.
 
 **How to run it**:
 

@@ -1,555 +1,171 @@
 module std::tree;
+int64 __bstNew();
+int64 __generalNew();
+int64 __heapNew();
+int64 __treeCopy(int64 handle);
+void __treeDrop(int64 handle);
+int64 __treeOp(int64 handle, int64 operation, int64 value, int64 extra);
+List<int64> __treeValues(int64 handle, int64 mode, int64 start);
+BinarySearchTree __treeAsBinary(int64 handle);
+GeneralTree __treeAsGeneral(int64 handle);
 
-/* 二叉树与通用树标准库：二叉搜索树（BinarySearchTree）、红黑树（RedBlackTree）、
- * 二叉最小堆（MinHeap，可当优先队列用）与通用树（GeneralTree）。
- *
- * 全部算法实现在宿主胶水（glue/std_tree.hpp），本文件只做公开 API 壳：
- * 节点存放在平行列表里（keys / lefts / rights，红黑树另有 colors），
- * `0 - 1` 表示空指针；红黑树颜色约定 0 = 红、1 = 黑。
- *
- * 通用树按"第一个孩子 / 下一个兄弟"存储，与二叉表示一一对应：
- * 左孩子 = 第一个孩子，右孩子 = 下一个兄弟。toBinary / fromBinary 按该映射互转，
- * 转换本身不排序，不保证 BST 有序性。
- *
- * 红黑树只支持插入（含双红修复），删除用 BinarySearchTree::remove。
- * 所有键为 int64。
- */
-
-/* ---- 胶水声明：实现见 glue/std_tree.hpp；槽布局与 Reply / GeneralReply 一致 ---- */
-void __bstInsert(List<int64> keys, List<int64> lefts, List<int64> rights, int64 root,
-                 int64 value, TreeReply mut& reply);
-void __bstContains(List<int64> keys, List<int64> lefts, List<int64> rights, int64 root,
-                   int64 value, TreeReply mut& reply);
-void __bstRemove(List<int64> keys, List<int64> lefts, List<int64> rights, int64 root,
-                 int64 value, TreeReply mut& reply);
-void __bstMin(List<int64> keys, List<int64> lefts, int64 root, TreeReply mut& reply);
-void __bstMax(List<int64> keys, List<int64> rights, int64 root, TreeReply mut& reply);
-void __bstHeight(List<int64> lefts, List<int64> rights, int64 root, TreeReply mut& reply);
-void __bstTraverse(List<int64> keys, List<int64> lefts, List<int64> rights, int64 root,
-                   int64 mode, TreeReply mut& reply);
-void __heapPush(List<int64> values, int64 value, TreeReply mut& reply);
-void __heapPop(List<int64> values, TreeReply mut& reply);
-void __heapPeek(List<int64> values, TreeReply mut& reply);
-void __rbtInsert(List<int64> keys, List<int64> lefts, List<int64> rights, List<int64> colors,
-                 int64 root, int64 value, TreeReply mut& reply);
-void __gtAddChild(List<int64> values, List<int64> firstChild, List<int64> nextSibling,
-                  int64 count, int64 cursor, int64 value, GeneralReply mut& reply);
-void __gtChildren(List<int64> firstChild, List<int64> nextSibling, int64 cursor,
-                  GeneralReply mut& reply);
-void __gtPreorder(List<int64> firstChild, List<int64> nextSibling, int64 root,
-                  GeneralReply mut& reply);
-void __gtLevelOrder(List<int64> firstChild, List<int64> nextSibling, int64 root,
-                    GeneralReply mut& reply);
-void __gtHeight(List<int64> firstChild, List<int64> nextSibling, int64 root,
-                GeneralReply mut& reply);
-
-/** 胶水操作的统一回执；槽布局必须与 glue/std_tree.hpp 的 Reply 一致。 */
-struct TreeReply {
-    String error; ///< 错误说明；成功时为空串。
-    int64 flag; ///< 布尔结果：1 = 成功 / 存在 / 非空。
-    int64 value; ///< 标量结果：查到的值、弹出的堆顶或树高。
-    int64 root; ///< 更新后的根下标，空树为 -1。
-    List<int64> outKeys; ///< 更新后的键列表。
-    List<int64> outLefts; ///< 更新后的左孩子列表。
-    List<int64> outRights; ///< 更新后的右孩子列表。
-    List<int64> values; ///< 遍历序列或更新后的堆数组。
-    List<int64> colors; ///< 红黑树更新后的颜色列表（0 红 1 黑）。
-}
-
-/** 通用树胶水回执；槽布局必须与 glue/std_tree.hpp 的 GeneralReply 一致。 */
-struct GeneralReply {
-    String error; ///< 错误说明；成功时为空串。
-    int64 value; ///< 新节点下标或树高。
-    int64 flag; ///< 布尔结果：1 = 成功。
-    List<int64> values; ///< 更新后的值列表。
-    List<int64> firstChild; ///< 更新后的首孩子列表。
-    List<int64> nextSibling; ///< 更新后的下一兄弟列表。
-    List<int64> out; ///< 遍历序列或孩子下标列表。
-}
-
-/** 二叉搜索树：集合语义，重复插入返回 false；中序即升序。 */
-struct BinarySearchTree : Drop {
-    List<int64> keys; ///< 节点键值，下标即节点号。
-    List<int64> lefts; ///< 左孩子下标，无孩子为 -1。
-    List<int64> rights; ///< 右孩子下标，无孩子为 -1。
+/** 独立节点快照，live 标识有效槽；空孩子及空根使用 -1。 */
+struct TreeSnapshot {
+    List<int64> keys; ///< 各节点槽的键值。
+    List<int64> lefts; ///< 左孩子下标，空孩子为 -1。
+    List<int64> rights; ///< 右孩子下标，空孩子为 -1。
+    List<int64> live; ///< 有效节点槽标记，1 表示有效。
     int64 root; ///< 根下标，空树为 -1。
-    int64 count; ///< 当前有效节点数。
-
-    void drop() { self.keys.drop(); self.lefts.drop(); self.rights.drop(); }
-
-    /**
-     * @brief 创建一棵空搜索树。
-     */
-    static BinarySearchTree create() {
-        List<int64> keys;
-        self.keys = keys;
-        List<int64> lefts;
-        self.lefts = lefts;
-        List<int64> rights;
-        self.rights = rights;
-        self.root = 0 - 1;
-        self.count = 0;
-    }
-
-    /**
-     * @brief 插入一个键。
-     * @param value 要插入的键。
-     * @retval 键不存在且已插入返回 true；键已存在返回 false。
-     */
-    bool insert(int64 value) {
-        TreeReply reply;
-        __bstInsert(self.keys, self.lefts, self.rights, self.root, value, &reply);
-        self.keys = reply.outKeys;
-        self.lefts = reply.outLefts;
-        self.rights = reply.outRights;
-        self.root = reply.root;
-        if (reply.flag == 1) { self.count = self.count + 1; }
-        return reply.flag == 1;
-    }
-
-    /**
-     * @brief 判断树里有没有这个键。
-     * @param value 要查的键。
-     * @retval 存在返回 true。
-     */
-    bool contains(int64 value) {
-        TreeReply reply;
-        __bstContains(self.keys, self.lefts, self.rights, self.root, value, &reply);
-        return reply.flag == 1;
-    }
-
-    /**
-     * @brief 删除一个键。
-     * @param value 要删除的键。
-     * @retval 删除成功返回 true；键不存在返回 false。
-     * @note 双孩子节点取中序后继替换后拼接；被删节点存储保留但不可达。
-     */
-    bool remove(int64 value) {
-        TreeReply reply;
-        __bstRemove(self.keys, self.lefts, self.rights, self.root, value, &reply);
-        self.keys = reply.outKeys;
-        self.lefts = reply.outLefts;
-        self.rights = reply.outRights;
-        self.root = reply.root;
-        if (reply.flag == 1) { self.count = self.count - 1; }
-        return reply.flag == 1;
-    }
-
-    /**
-     * @brief 最小键。
-     * @retval 空树返回 None；否则返回最小键的 Value。
-     */
-    Option<int64> min() {
-        TreeReply reply;
-        __bstMin(self.keys, self.lefts, self.root, &reply);
-        if (reply.flag == 0) { return Option<int64>::None; }
-        return Option<int64>::Value(reply.value);
-    }
-
-    /**
-     * @brief 最大键。
-     * @retval 空树返回 None；否则返回最大键的 Value。
-     */
-    Option<int64> max() {
-        TreeReply reply;
-        __bstMax(self.keys, self.rights, self.root, &reply);
-        if (reply.flag == 0) { return Option<int64>::None; }
-        return Option<int64>::Value(reply.value);
-    }
-
-    /**
-     * @brief 树高（节点数口径：单节点 1，空树 0）。
-     */
-    int64 height() {
-        TreeReply reply;
-        __bstHeight(self.lefts, self.rights, self.root, &reply);
-        return reply.value;
-    }
-
-    /**
-     * @brief 中序遍历（升序序列）。
-     */
-    List<int64> inorder() {
-        TreeReply reply;
-        __bstTraverse(self.keys, self.lefts, self.rights, self.root, 0, &reply);
-        return reply.values;
-    }
-
-    /**
-     * @brief 前序遍历（根 - 左 - 右）。
-     */
-    List<int64> preorder() {
-        TreeReply reply;
-        __bstTraverse(self.keys, self.lefts, self.rights, self.root, 1, &reply);
-        return reply.values;
-    }
-
-    /**
-     * @brief 后序遍历（左 - 右 - 根）。
-     */
-    List<int64> postorder() {
-        TreeReply reply;
-        __bstTraverse(self.keys, self.lefts, self.rights, self.root, 2, &reply);
-        return reply.values;
-    }
-
-    /**
-     * @brief 当前有效节点数。
-     */
-    int64 len() { return self.count; }
-
-    /**
-     * @brief 清空整棵树。
-     */
-    void clear() {
-        self.keys.clear();
-        self.lefts.clear();
-        self.rights.clear();
-        self.root = 0 - 1;
-        self.count = 0;
-    }
+    int64 count; ///< 有效节点数量。
 };
-
-/** 红黑树：平衡二叉搜索树，插入含双红修复；只支持插入不支持删除。 */
-struct RedBlackTree : Drop {
-    List<int64> keys; ///< 节点键值，下标即节点号。
-    List<int64> lefts; ///< 左孩子下标，无孩子为 -1。
-    List<int64> rights; ///< 右孩子下标，无孩子为 -1。
-    List<int64> colors; ///< 颜色列表：0 = 红，1 = 黑。
+/** 独立通用树快照，首孩子与次兄弟保留原节点号。 */
+struct GeneralTreeSnapshot {
+    List<int64> values; ///< 各节点槽的值。
+    List<int64> firstChild; ///< 首孩子下标，空孩子为 -1。
+    List<int64> nextSibling; ///< 次兄弟下标，空兄弟为 -1。
+    List<int64> live; ///< 有效节点槽标记，1 表示有效。
     int64 root; ///< 根下标，空树为 -1。
-    int64 count; ///< 当前有效节点数。
-
-    void drop() { self.keys.drop(); self.lefts.drop(); self.rights.drop(); self.colors.drop(); }
-
-    /**
-     * @brief 创建一棵空红黑树。
-     */
-    static RedBlackTree create() {
-        List<int64> keys;
-        self.keys = keys;
-        List<int64> lefts;
-        self.lefts = lefts;
-        List<int64> rights;
-        self.rights = rights;
-        List<int64> colors;
-        self.colors = colors;
-        self.root = 0 - 1;
-        self.count = 0;
+    int64 count; ///< 有效节点数量。
+};
+/** 独立拥有宿主节点的二叉搜索集合，普通复制深复制。 */
+opcode BinarySearchTree {
+    new = std::tree::__bstNew;
+    copy = std::tree::__treeCopy;
+    drop = std::tree::__treeDrop;
+    /** 创建空容器。 */
+    static BinarySearchTree create() { return BinarySearchTree::new(); }
+    /** 有效元素数。 */
+    int64 len() { return __treeOp(self.opcode, 0, 0, 0); }
+    /** 清空所有节点和回收槽。 */
+    void clear() { __treeOp(self.opcode, 1, 0, 0); }
+    /** 插入键，重复键返回 false。 */
+    bool insert(int64 value) { return __treeOp(self.opcode, 2, value, 0) != 0; }
+    /** 删除键，不存在返回 false。 */
+    bool remove(int64 value) { return __treeOp(self.opcode, 3, value, 0) != 0; }
+    /** 查询键是否存在。 */
+    bool contains(int64 value) { return __treeOp(self.opcode, 4, value, 0) != 0; }
+    /** 最小键，空树返回 None。 */
+    Option<int64> min() { if (self.len() == 0) { return Option<int64>::None; } return Option<int64>::Value(__treeOp(self.opcode, 5, 0, 0)); }
+    /** 最大键，空树返回 None。 */
+    Option<int64> max() { if (self.len() == 0) { return Option<int64>::None; } return Option<int64>::Value(__treeOp(self.opcode, 6, 0, 0)); }
+    /** 最大路径节点数，空树为零。 */
+    int64 height() { return __treeOp(self.opcode, 7, 0, 0); }
+    /** 独立中序键快照。 */
+    List<int64> inorder() { return __treeValues(self.opcode, 0, 0); }
+    /** 独立先序键快照。 */
+    List<int64> preorder() { return __treeValues(self.opcode, 1, 0); }
+    /** 独立后序键快照。 */
+    List<int64> postorder() { return __treeValues(self.opcode, 2, 0); }
+    /** 显式导出独立节点结构。 */
+    TreeSnapshot snapshot() {
+        TreeSnapshot result;
+        result.keys = __treeValues(self.opcode, 10, 0); result.lefts = __treeValues(self.opcode, 11, 0);
+        result.rights = __treeValues(self.opcode, 12, 0); result.live = __treeValues(self.opcode, 13, 0);
+        result.root = __treeOp(self.opcode, 14, 0, 0); result.count = self.len(); return result;
     }
+};
 
-    /**
-     * @brief 插入一个键，插入后做双红修复保持平衡。
-     * @param value 要插入的键。
-     * @retval 键不存在且已插入返回 true；键已存在返回 false。
-     */
-    bool insert(int64 value) {
-        TreeReply reply;
-        __rbtInsert(self.keys, self.lefts, self.rights, self.colors, self.root, value, &reply);
-        self.keys = reply.outKeys;
-        self.lefts = reply.outLefts;
-        self.rights = reply.outRights;
-        self.colors = reply.colors;
-        self.root = reply.root;
-        if (reply.flag == 1) { self.count = self.count + 1; }
-        return reply.flag == 1;
-    }
+int64 __redBlackNew();
+int64 __redBlackCopy(int64 handle);
+void __redBlackDrop(int64 handle);
+int64 __redBlackOp(int64 handle, int64 operation, int64 key);
+List<int64> __redBlackSnapshot(int64 handle);
 
-    /**
-     * @brief 判断树里有没有这个键。
-     * @param value 要查的键。
-     * @retval 存在返回 true。
-     */
-    bool contains(int64 value) {
-        TreeReply reply;
-        __bstContains(self.keys, self.lefts, self.rights, self.root, value, &reply);
-        return reply.flag == 1;
-    }
+/** 独立拥有宿主节点的红黑集合，插入和删除原地修复，普通复制深复制状态。 */
+opcode RedBlackTree {
+    new = std::tree::__redBlackNew;
+    copy = std::tree::__redBlackCopy;
+    drop = std::tree::__redBlackDrop;
 
-    /**
-     * @brief 最小键。
-     * @retval 空树返回 None；否则返回最小键的 Value。
-     */
+    /** 创建空红黑树。 */
+    static RedBlackTree create() { return RedBlackTree::new(); }
+    /** 插入不存在的键；重复键返回 false。 */
+    bool insert(int64 value) { return __redBlackOp(self.opcode, 0, value) != 0; }
+    /** 删除键并修复黑高与颜色；不存在时返回 false。 */
+    bool remove(int64 value) { return __redBlackOp(self.opcode, 1, value) != 0; }
+    /** 查询键是否存在。 */
+    bool contains(int64 value) { return __redBlackOp(self.opcode, 2, value) != 0; }
+    /** 当前有效键数。 */
+    int64 len() { return __redBlackOp(self.opcode, 3, 0); }
+    /** 树高，空树为零。 */
+    int64 height() { return __redBlackOp(self.opcode, 4, 0); }
+    /** 清空节点及回收槽。 */
+    void clear() { __redBlackOp(self.opcode, 5, 0); }
+    /** 最小键；空树返回 None。 */
     Option<int64> min() {
-        TreeReply reply;
-        __bstMin(self.keys, self.lefts, self.root, &reply);
-        if (reply.flag == 0) { return Option<int64>::None; }
-        return Option<int64>::Value(reply.value);
+        if (self.len() == 0) { return Option<int64>::None; }
+        return Option<int64>::Value(__redBlackOp(self.opcode, 6, 0));
     }
-
-    /**
-     * @brief 最大键。
-     * @retval 空树返回 None；否则返回最大键的 Value。
-     */
+    /** 最大键；空树返回 None。 */
     Option<int64> max() {
-        TreeReply reply;
-        __bstMax(self.keys, self.rights, self.root, &reply);
-        if (reply.flag == 0) { return Option<int64>::None; }
-        return Option<int64>::Value(reply.value);
+        if (self.len() == 0) { return Option<int64>::None; }
+        return Option<int64>::Value(__redBlackOp(self.opcode, 7, 0));
     }
-
-    /**
-     * @brief 树高（节点数口径；红黑性质保证不超过 2*log2(n+1)）。
-     */
-    int64 height() {
-        TreeReply reply;
-        __bstHeight(self.lefts, self.rights, self.root, &reply);
-        return reply.value;
-    }
-
-    /**
-     * @brief 中序遍历（升序序列）。
-     */
-    List<int64> inorder() {
-        TreeReply reply;
-        __bstTraverse(self.keys, self.lefts, self.rights, self.root, 0, &reply);
-        return reply.values;
-    }
-
-    /**
-     * @brief 当前有效节点数。
-     */
-    int64 len() { return self.count; }
-
-    /**
-     * @brief 清空整棵树。
-     */
-    void clear() {
-        self.keys.clear();
-        self.lefts.clear();
-        self.rights.clear();
-        self.colors.clear();
-        self.root = 0 - 1;
-        self.count = 0;
-    }
+    /** 检查排序、父指针、根颜色、连续红节点和黑高约束。 */
+    bool validate() { return __redBlackOp(self.opcode, 8, 0) != 0; }
+    /** 显式导出独立升序键快照。 */
+    List<int64> inorder() { return __redBlackSnapshot(self.opcode); }
 };
 
-/** 二叉最小堆：可当优先队列用，pop 恒返回当前最小值；相等键出堆顺序不保证插入序。 */
-struct MinHeap : Drop {
-    List<int64> values; ///< 堆数组，下标 0 是最小值。
-
-    void drop() { self.values.drop(); }
-
-    /**
-     * @brief 创建一个空最小堆。
-     */
-    static MinHeap create() {
-        List<int64> empty;
-        self.values = empty;
-    }
-
-    /**
-     * @brief 入堆一个值。
-     * @param value 要入堆的值。
-     */
-    void push(int64 value) {
-        TreeReply reply;
-        __heapPush(self.values, value, &reply);
-        self.values = reply.values;
-    }
-
-    /**
-     * @brief 出堆当前最小值。
-     * @retval 空堆返回 None；否则弹出最小值的 Value。
-     */
-    Option<int64> pop() {
-        TreeReply reply;
-        __heapPop(self.values, &reply);
-        self.values = reply.values;
-        if (reply.flag == 0) { return Option<int64>::None; }
-        return Option<int64>::Value(reply.value);
-    }
-
-    /**
-     * @brief 查看当前最小值但不出堆。
-     * @retval 空堆返回 None；否则返回最小值的 Value。
-     */
-    Option<int64> peek() {
-        TreeReply reply;
-        __heapPeek(self.values, &reply);
-        if (reply.flag == 0) { return Option<int64>::None; }
-        return Option<int64>::Value(reply.value);
-    }
-
-    /**
-     * @brief 当前元素个数。
-     */
-    int64 len() { return self.values.len(); }
-
-    /**
-     * @brief 堆是否为空。
-     */
-    bool isEmpty() { return self.values.len() == 0; }
-
-    /**
-     * @brief 清空堆。
-     */
-    void clear() { self.values.clear(); }
+/** 独立拥有宿主堆数组的最小优先队列。 */
+opcode MinHeap {
+    new = std::tree::__heapNew;
+    copy = std::tree::__treeCopy;
+    drop = std::tree::__treeDrop;
+    /** 创建空容器。 */
+    static MinHeap create() { return MinHeap::new(); }
+    /** 有效元素数。 */
+    int64 len() { return __treeOp(self.opcode, 0, 0, 0); }
+    /** 清空所有节点和回收槽。 */
+    void clear() { __treeOp(self.opcode, 1, 0, 0); }
+    /** 原地插入一个值。 */
+    void push(int64 value) { __treeOp(self.opcode, 8, value, 0); }
+    /** 弹出最小值，空堆返回 None。 */
+    Option<int64> pop() { if (self.len() == 0) { return Option<int64>::None; } return Option<int64>::Value(__treeOp(self.opcode, 9, 0, 0)); }
+    /** 读取最小值，空堆返回 None。 */
+    Option<int64> peek() { if (self.len() == 0) { return Option<int64>::None; } return Option<int64>::Value(__treeOp(self.opcode, 10, 0, 0)); }
+    /** 是否为空。 */
+    bool isEmpty() { return self.len() == 0; }
+    /** 显式导出独立堆数组。 */
+    List<int64> snapshot() { return __treeValues(self.opcode, 14, 0); }
 };
 
-/** 通用树（n 叉树）：第一个孩子 / 下一个兄弟存储，与二叉表示可按映射互转。 */
-struct GeneralTree : Drop {
-    List<int64> values; ///< 节点值，下标即节点号。
-    List<int64> firstChild; ///< 第一个孩子下标，无孩子为 -1。
-    List<int64> nextSibling; ///< 下一个兄弟下标，无兄弟为 -1。
-    int64 count; ///< 当前节点数。
-
-    void drop() { self.values.drop(); self.firstChild.drop(); self.nextSibling.drop(); }
-
-    /**
-     * @brief 创建一棵空通用树。
-     */
-    static GeneralTree create() {
-        List<int64> values;
-        self.values = values;
-        List<int64> firstChildren;
-        self.firstChild = firstChildren;
-        List<int64> nextSiblings;
-        self.nextSibling = nextSiblings;
-        self.count = 0;
-    }
-
-    /**
-     * @brief 建根（仅空树可用）。
-     * @param value 根节点的值。
-     * @retval 新根节点下标；树非空时返回 -1。
-     */
-    int64 addRoot(int64 value) {
-        GeneralReply reply;
-        __gtAddChild(self.values, self.firstChild, self.nextSibling, self.count, 0 - 1, value, &reply);
-        self.values = reply.values;
-        self.firstChild = reply.firstChild;
-        self.nextSibling = reply.nextSibling;
-        if (reply.flag == 1) { self.count = self.count + 1; }
-        if (reply.flag == 0) { return 0 - 1; }
-        return reply.value;
-    }
-
-    /**
-     * @brief 给指定节点追加一个孩子（排在已有孩子末尾）。
-     * @param cursor 父节点下标。
-     * @param value 孩子的值。
-     * @retval 新孩子节点下标；cursor 无效时返回 -1。
-     */
-    int64 addChild(int64 cursor, int64 value) {
-        GeneralReply reply;
-        __gtAddChild(self.values, self.firstChild, self.nextSibling, self.count, cursor, value, &reply);
-        self.values = reply.values;
-        self.firstChild = reply.firstChild;
-        self.nextSibling = reply.nextSibling;
-        if (reply.flag == 1) { self.count = self.count + 1; }
-        if (reply.flag == 0) { return 0 - 1; }
-        return reply.value;
-    }
-
-    /**
-     * @brief 读取节点值。
-     * @param cursor 节点下标。
-     * @retval 节点的值；下标越界报错。
-     */
-    int64 valueAt(int64 cursor) { return self.values[cursor]; }
-
-    /**
-     * @brief 列出某节点的全部孩子下标（按插入序）。
-     * @param cursor 节点下标。
-     * @retval 孩子下标列表，拥有独立存储。
-     */
-    List<int64> children(int64 cursor) {
-        GeneralReply reply;
-        __gtChildren(self.firstChild, self.nextSibling, cursor, &reply);
-        return reply.out;
-    }
-
-    /**
-     * @brief 先序遍历（节点 - 各孩子依次）。
-     */
-    List<int64> preorder() {
-        GeneralReply reply;
-        __gtPreorder(self.firstChild, self.nextSibling, self.rootNode(), &reply);
-        return reply.out;
-    }
-
-    /**
-     * @brief 层序遍历。
-     */
-    List<int64> levelOrder() {
-        GeneralReply reply;
-        __gtLevelOrder(self.firstChild, self.nextSibling, self.rootNode(), &reply);
-        return reply.out;
-    }
-
-    /**
-     * @brief 树高（节点数口径：单节点 1，空树 0）。
-     */
-    int64 height() {
-        GeneralReply reply;
-        __gtHeight(self.firstChild, self.nextSibling, self.rootNode(), &reply);
-        return reply.value;
-    }
-
-    /**
-     * @brief 当前节点数。
-     */
-    int64 len() { return self.count; }
-
-    /**
-     * @brief 转成二叉表示：左孩子 = 第一个孩子，右孩子 = 下一个兄弟。
-     * @return 结构等价的二叉树；注意 BST 有序性不因此成立。
-     */
-    BinarySearchTree toBinary() {
-        BinarySearchTree tree = BinarySearchTree::create();
-        {
-            int64 index = 0;
-            while (index < self.values.len()) {
-
-            tree.keys.push(self.values[index]);
-            tree.lefts.push(self.firstChild[index]);
-            tree.rights.push(self.nextSibling[index]);
-        
-                index = index + 1;
-            }
-        }
-        tree.root = self.rootNode();
-        tree.count = self.count;
-        return tree;
-    }
-
-    /**
-     * @brief 从二叉表示构造通用树：第一个孩子 = 左孩子，下一个兄弟 = 右孩子。
-     * @param tree 源二叉树（如 BinarySearchTree / toBinary 的产物）。
-     * @retval 结构等价的通用树；源树为空时得到空通用树。
-     */
-    static GeneralTree fromBinary(BinarySearchTree tree) {
-        GeneralTree result = GeneralTree::create();
-        if (tree.root != 0 - 1) {
-            {
-                int64 index = 0;
-                while (index < tree.keys.len()) {
-
-                result.values.push(tree.keys[index]);
-                result.firstChild.push(tree.lefts[index]);
-                result.nextSibling.push(tree.rights[index]);
-            
-                    index = index + 1;
-                }
-            }
-            result.count = tree.len();
-        }
-        return result;
-    }
-
-    /**
-     * @brief 清空整棵树。
-     */
-    void clear() {
-        self.values.clear();
-        self.firstChild.clear();
-        self.nextSibling.clear();
-        self.count = 0;
-    }
-
-    /* 根下标：非空树恒为 0（节点按分配顺序从 0 编号，首个节点是根）。 */
-    int64 rootNode() {
-        if (self.count == 0) { return 0 - 1; }
-        return 0;
+/** 独立拥有首孩子、次兄弟表示的通用树。 */
+opcode GeneralTree {
+    new = std::tree::__generalNew;
+    copy = std::tree::__treeCopy;
+    drop = std::tree::__treeDrop;
+    /** 创建空容器。 */
+    static GeneralTree create() { return GeneralTree::new(); }
+    /** 有效元素数。 */
+    int64 len() { return __treeOp(self.opcode, 0, 0, 0); }
+    /** 清空所有节点和回收槽。 */
+    void clear() { __treeOp(self.opcode, 1, 0, 0); }
+    /** 仅空树可建立根，否则返回 -1。 */
+    int64 addRoot(int64 value) { return __treeOp(self.opcode, 11, value, 0); }
+    /** 在父节点末尾追加孩子，无效父节点返回 -1。 */
+    int64 addChild(int64 cursor, int64 value) { return __treeOp(self.opcode, 12, cursor, value); }
+    /** 读取有效节点值，越界报错。 */
+    int64 valueAt(int64 cursor) { return __treeOp(self.opcode, 13, cursor, 0); }
+    /** 当前根节点号，空树为 -1。 */
+    int64 rootNode() { return __treeOp(self.opcode, 14, 0, 0); }
+    /** 独立孩子节点号列表，无效节点返回空列表。 */
+    List<int64> children(int64 cursor) { return __treeValues(self.opcode, 5, cursor); }
+    /** 独立先序节点号列表。 */
+    List<int64> preorder() { return __treeValues(self.opcode, 3, 0); }
+    /** 独立层序节点号列表。 */
+    List<int64> levelOrder() { return __treeValues(self.opcode, 4, 0); }
+    /** 根到叶的最大节点数，空树为零。 */
+    int64 height() { return __treeOp(self.opcode, 7, 0, 0); }
+    /** 独立转换首孩子为左孩子、次兄弟为右孩子；不保证键有序。 */
+    BinarySearchTree toBinary() { return __treeAsBinary(self.opcode); }
+    /** 独立复制二叉表示，保持源根节点号及有效槽。 */
+    static GeneralTree fromBinary(BinarySearchTree tree) { return __treeAsGeneral(tree.opcode); }
+    /** 显式导出独立首孩子、次兄弟结构。 */
+    GeneralTreeSnapshot snapshot() {
+        GeneralTreeSnapshot result;
+        result.values = __treeValues(self.opcode, 10, 0); result.firstChild = __treeValues(self.opcode, 11, 0);
+        result.nextSibling = __treeValues(self.opcode, 12, 0); result.live = __treeValues(self.opcode, 13, 0);
+        result.root = self.rootNode(); result.count = self.len(); return result;
     }
 };

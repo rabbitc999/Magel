@@ -31,7 +31,7 @@ def main():
     host_source = WORK / 'vm_host.cpp'
     host_source.write_text((EXAMPLE / 'vm_host.cpp').read_text(encoding='utf-8'), encoding='utf-8')
     host = WORK / ('vm-host' + EXE)
-    run(os.environ.get('CXX', 'g++'), '-std=c++17', '-O2', '-pthread', '-DMAGEL_WITH_REFLECTION=1', '-DSTACKVM_WITH_REFLECTION=1', '-DSTACKVM_WITH_BIGINT=0', '-DSTACKVM_WITH_BIGFLOAT=0', '-Isource', '-Ilibrary', '-Ilibrary/stackvm', host_source, ROOT / 'library/stackvm/stackvm.cpp', *[ROOT / 'source/glue' / name for name in ('std_collection.cpp', 'std_collection_storage.cpp', 'std_native_record.cpp')], '-o', host)
+    run(os.environ.get('CXX', 'g++'), '-std=c++17', '-O2', '-pthread', '-DMAGEL_WITH_REFLECTION=1', '-DSTACKVM_WITH_REFLECTION=1', '-DSTACKVM_WITH_BIGINT=0', '-DSTACKVM_WITH_BIGFLOAT=0', '-Isource', '-Ilibrary', '-Ilibrary/stackvm', host_source, *[ROOT / 'library/stackvm' / name for name in (ROOT / 'library/stackvm/core_sources.txt').read_text().splitlines()], *[ROOT / 'source/glue' / name for name in ('std_collection.cpp', 'std_collection_storage.cpp', 'std_native_record.cpp')], '-o', host)
     for level in (2,):
         images = emit(EXAMPLE / 'demo.mgl', f'demo-O{level}', level)
         vm = run(host, *images)

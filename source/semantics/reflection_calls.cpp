@@ -58,6 +58,60 @@ struct MReflectionCalls
         return false;
     }
     /**
+     * @brief 生成保持静态类型与拥有关系的字段读取或赋值桥接。
+     * @param decl 已单态化的反射入口。
+     * @param owner 已解析的接收类型名。
+     * @param write 是否生成可写字段访问。
+     */
+    void generateField(const MFunctionDecl &decl, const Memory::String &owner, bool write)
+    {
+        const auto result = InferenceTypeText(decl.signature.result);
+        Memory::String body = result + " " + decl.source + "(";
+        for (std::size_t index = 0; index < decl.signature.params.size(); ++index)
+        {
+            if (index) body += ",";
+            body += InferenceTypeText(decl.signature.params[index].type) + " " + decl.signature.params[index].source;
+        }
+        body += "){";
+        const auto error = [&](const char *name) {
+            return "return " + result + "::Err(std::reflect::ReflectError::" + name + ");";
+        };
+        if (!exposed(owner))
+            body += error("NotExposed");
+        else
+        {
+            const auto *definition = FindStruct(owner);
+            std::shared_ptr<MType> expected;
+            if (write)
+                expected = decl.signature.params.back().type;
+            else
+            {
+                const auto enumeration = g_enums.find(decl.signature.result->name);
+                if (enumeration != g_enums.end())
+                    for (const auto &variant : enumeration->second.variants)
+                        if (variant.name == "Ok" && !variant.payloads.empty()) expected = variant.payloads.front().type;
+            }
+            if (definition && g_enums.count(owner) == 0)
+                for (const auto &field : definition->fields)
+                {
+                    body += "if(name==" + queries.quote(field.name) + "){";
+                    if (!expected || !SameType(expected, field.type))
+                        body += error("TypeMismatch");
+                    else if (field.type->kind == MType::Ptr || field.type->kind == MType::Func
+                             || field.type->kind == MType::Array || HasNonCopyableValue(field.type))
+                        body += error("UnsupportedSignature");
+                    else if (write)
+                        body += "obj." + field.name + "=value;return " + result + "::Ok(true);";
+                    else
+                        body += "return " + result + "::Ok(obj." + field.name + ");";
+                    body += "}";
+                }
+            body += error("NotFound");
+        }
+        queries.functions += body + "}\n";
+        queries.replaced.insert(decl.source);
+    }
+    /**
      * @brief 生成一个已使用的具体入口。
      * @param decl 占位声明。
      * @param api 原始 API 名。
@@ -268,7 +322,7 @@ struct MReflectionCalls
      */
     void build()
     {
-        const Memory::Set<Memory::String> apis = { "call", "callMethod", "callMethodConst", "callStatic", "callEnumMethod", "callEnumMethodConst", "callEnumStatic", "construct", "callInterface", "callInterfaceConst" };
+        const Memory::Set<Memory::String> apis = { "call", "callMethod", "callMethodConst", "callStatic", "callEnumMethod", "callEnumMethodConst", "callEnumStatic", "construct", "callInterface", "callInterfaceConst", "getField", "setField" };
         for (const auto &decl : g_functionDecls)
         {
             if (decl.module != "std::reflect" || !decl.external || decl.superseded) continue;
@@ -296,7 +350,10 @@ struct MReflectionCalls
                     Fail("反射调用要求已单态化的具体类型");
                     return;
                 }
-                generate(decl, expansion.generic->name, owner);
+                if (expansion.generic->name == "getField" || expansion.generic->name == "setField")
+                    generateField(decl, owner, expansion.generic->name == "setField");
+                else
+                    generate(decl, expansion.generic->name, owner);
                 break;
             }
         }

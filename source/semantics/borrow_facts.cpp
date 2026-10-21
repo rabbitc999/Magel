@@ -307,16 +307,6 @@ void RecordBorrowStore(int target, int value, bool container)
     const bool binding = !container && rawTarget && rawTarget->kind == MType::Ptr && ((right.kind == MNode::Un && right.s == "&") || right.kind == MNode::NewPtr);
     if (!binding && !HasBorrowedValue(ExprType(target))) return;
     const auto depth = BorrowSourceDepth(value);
-    // Interrupt 的回调可能由宿主延后执行；公开字段赋值同样遵守登记入口的静态契约。
-    if ((N(target).kind == MNode::Member || N(target).kind == MNode::Arrow) && N(target).s == "callback" && !N(target).kids.empty())
-    {
-        const auto owner = StructNameOf(ExprType(N(target).kids[0]));
-        const auto definition = g_structs.find(owner);
-        const bool eventInterrupt = definition != g_structs.end() && std::any_of(definition->second.methods.begin(), definition->second.methods.end(), [](const MMethod &method) { return method.module == "std::event"; });
-        if (eventInterrupt && depth != 0u)
-            g_borrowFacts.push_back({ magel_borrow_checker::Fact::Store, depth, 0u, g_reductionLine,
-                                      "（异步事件回调必须具有静态来源）" });
-    }
     auto variable = BorrowRootVariable(target);
     auto targetDepth = binding && N(target).kind == MNode::Var ? BorrowVariableDepth(variable) : BorrowStorageDepth(variable);
     if (!variable) targetDepth = BorrowSourceDepth(target, true);

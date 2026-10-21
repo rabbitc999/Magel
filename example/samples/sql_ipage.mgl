@@ -1,0 +1,45 @@
+import std::sql;
+
+@Reflect
+@std::sql::ModelClass("people")
+struct SqlPerson {
+    @std::sql::ModelField(column: "person_id", id: true)
+    int64 id;
+    @std::sql::ModelField(column: "display_name")
+    String name;
+    int64 age;
+};
+
+int64 main()
+{
+    auto model = std::sql::query<SqlPerson>();
+    assert(model.isOk());
+    auto query = model.unwrap();
+    auto database = std::sql::Database::sqlite(":memory:");
+    auto schema = query.build("create");
+    assert(schema.isOk());
+    auto created = database.exec(schema.unwrap());
+    assert(created.ok);
+    SqlPerson person;
+    person.id = 1;
+    person.name = "张三'); DROP TABLE people; --";
+    person.age = 28;
+    auto insert = std::sql::insert<SqlPerson>(&query, &person);
+    assert(insert.isOk());
+    assert(!insert.unwrap().sql.contains(person.name));
+    assert(database.exec(insert.unwrap()).ok);
+    assert(std::sql::filter<int64>(&query, "id", 1).isOk());
+    query.orderBy("age");
+    query.page(10);
+    auto statement = query.build();
+    assert(statement.isOk());
+    println("{} {}", statement.unwrap().sql, statement.unwrap().parameters);
+    auto result = database.exec(statement.unwrap());
+    assert(result.ok);
+    assert(result.rowCount() == 1);
+    assert(result.textAt(0, 1) == person.name);
+    assert(result.intAt(0, 2) == 28);
+    database.close();
+    println("ipage parameter binding OK");
+    return 0;
+}

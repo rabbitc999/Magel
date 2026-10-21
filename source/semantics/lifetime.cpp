@@ -65,8 +65,8 @@ Memory::Map<Memory::String, std::size_t> g_ownedHome;
  * @brief 停机清理用的"这个函数累计登记过哪些所有权变量"清单。
  *
  * 与 `g_ownedScopes` 的区别：那个只记**当前位置**还没释放的（出块 / `return` 就摘了），
- * 而协程可能停在中间的某次 `yield` 上 —— 那时函数根本走不到出块 / `return`，所以停机清理
- * 必须认得"这个函数可能还挂着什么"。清单在 `LowerFunction` 与全局那一段开头清空。
+ * 这份清单保存函数可能持有的所有者，用于生成显式帧清理块；失败和取消不执行任意用户析构。
+ * 清单在 `LowerFunction` 与全局那一段开头清空。
  */
 struct MCleanupItem
 {

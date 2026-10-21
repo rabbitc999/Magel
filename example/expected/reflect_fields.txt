@@ -1,0 +1,1 @@
+reflection fields: exact types, owned copies and writes OK

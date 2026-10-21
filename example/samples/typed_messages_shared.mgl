@@ -26,7 +26,7 @@ int64 main() {
     List<int64> readings;
     readings.push(4);
     original.readings = readings;
-    IsolatedThreadHandle task = std::thread::create(typedWorker);
+    Thread task = std::thread::create(typedWorker);
     std::message::sendThread<std::concurrency::Shared<int64>>(task, sharedCounter);
     std::message::sendThread<Parcel>(task, original);
     original.id = 8;

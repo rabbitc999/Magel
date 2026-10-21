@@ -28,6 +28,7 @@ struct Generic
 {
     Memory::String name;
     Memory::String module;
+    Memory::String sourceName;  ///< 模块内原始名称，用于隔离不同模块的同名模板。
     Memory::Vector<Parameter> params;
     Memory::String declaration;
     std::size_t nameOffset = 0;

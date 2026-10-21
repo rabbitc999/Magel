@@ -83,6 +83,14 @@ void CollectLoopBreakValues(int statementId, Memory::Vector<std::shared_ptr<MTyp
             *hasPlain = *hasPlain || (statement.i == 0 && loopDepth == 0);
         else
         {
+            const MNode value = N(statement.kids[0]);
+            // 值出口先验证宏辅助变量，避免占位整数类型掩盖名字错误；调用目标另走函数解析。
+            if (value.kind == MNode::Var && NodeUsesDefinitionLookup(value) && !FindNodeVar(value)
+                && !FindInferenceFunction(value.module, value.s) && !FindFunctionOverloads(value.module, value.s))
+            {
+                Fail("引用了没声明的变量：" + value.s);
+                return;
+            }
             if (expected)
             {
                 InferExpression(statement.kids[0], expected);

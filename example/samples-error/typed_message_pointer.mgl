@@ -1,9 +1,9 @@
 
-import std::coroutine;
+import std::thread;
 import std::message;
 
 int64 main() {
     int64 value = 1;
-    std::message::sendCoroutine<int64 mut&>(std::coroutine::current(), &value);
+    std::message::sendThread<int64 mut&>(std::thread::current(), &value);
     return 0;
 }

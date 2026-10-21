@@ -1,9 +1,12 @@
 #include "std_native_record.hpp"
 #include "std_registry.hpp"
+#include "std_reference.hpp"
+#include "std_string_methods.hpp"
 #include "std_collection.hpp"
 #include "std_file.hpp"
 #include "std_print.hpp"
 #include "std_big_number.hpp"
+#include "std_cas.hpp"
 #ifndef PARSE_ENGINE_LANG_NUMERIC_HPP
 #include "std_numeric.hpp"
 #endif
@@ -91,10 +94,13 @@ namespace std_registry
 bool bindStandardGlue(magel_glue::Registry &registry, Memory::String *error)
 {
     bool ok = lang_numeric_glue::bind(registry, error);
+    ok = std_string_methods_glue::bind(registry, error) && ok;
+    ok = std_reference_glue::bind(registry, error) && ok;
     ok = std_print_glue::bind(registry, error) && ok;
     ok = collection_glue::bind(registry.native(), error) && ok;
     ok = native_record_glue::bindString(registry.native(), error) && ok;
     ok = big_number_glue::bind(registry.native(), error) && ok;
+    ok = std_cas_glue::bind(registry.native(), error) && ok;
     ok = file_native_glue::bind(registry.native(), error) && ok;
 #ifndef GLUE_NO_STD_FILESYSTEM
     ok = std_filesystem_glue::bind(registry, error) && ok;

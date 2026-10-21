@@ -15,7 +15,8 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace Cas::Detail {
+namespace Cas::Detail
+{
 
 /* ============================ 内存池参数 ============================ */
 
@@ -44,19 +45,6 @@ inline constexpr int kMaxRecursionDepth = 1024;
 /** @brief 符号哈希表初始桶数。 */
 inline constexpr std::size_t kSymbolTableBuckets = 4096;
 
-/* ============================== 大整数 ============================== */
+}  // namespace Cas::Detail
 
-/** @brief 大整数转浮点时的有效位数（十进制）。 */
-inline constexpr int kDefaultDigits = 15;
-
-/** @brief NTT 模数（支持 2^24 长度的变换）。 */
-inline constexpr std::uint32_t kNttPrime = 2013265921u;
-/** @brief 上述模数的原根。 */
-inline constexpr std::uint32_t kNttRoot = 31u;
-
-/** @brief 低于该值（绝对值）的整数用 64 位内联存储，不分配大数缓冲区。 */
-inline constexpr long long kSmallIntLimit = (1LL << 61);
-
-} // namespace Cas::Detail
-
-#endif // CAS_DETAIL_CONFIG_H
+#endif  // CAS_DETAIL_CONFIG_H

@@ -10,7 +10,7 @@ import std::net;
 
 ## 公共约定与错误边界
 
-TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可让出协程后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。
+TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，作用域退出自动关闭；所有权通过 move 转移，先检查 isOpen/lastError。receive/receiveLine 的空串需结合 status 区分关闭、超时和错误。端口 0 可让系统分配监听端口。HTTP 仅支持 http://，不支持 TLS；HTTP 状态码与传输错误分别检查。close 可提前关闭，重复调用安全；每条连接独立保存最近读状态与错误。connectAsync/pollConnect、acceptAsync、sendAsync、receiveAsync、receiveLineAsync 采用非阻塞轮询，未就绪返回 NET_PENDING；调用方可用 std::thread::sleepFor 有界暂停后重试。connectAsync 只接受数值 IPv4，默认五秒超时，域名使用同步 connect；sendAsync 返回本次部分发送字节数，调用方推进 offset；异步行缓冲上限 1 MiB，待完成数据保留至下次轮询。
 
 ## 参考代码
 
@@ -20,7 +20,7 @@ TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，�
 magel run example/samples/std_net.mgl
 ```
 
-非阻塞与协程配合的完整程序：[std_net_async.mgl](../../example/samples/std_net_async.mgl)。
+非阻塞与可取消线程配合的完整程序：[std_net_async.mgl](../../example/samples/std_net_async.mgl)。
 
 <details>
 <summary>展开完整参考代码</summary>
@@ -108,24 +108,24 @@ response ok=1 status=200 reason=OK len=5 type=text/plain body=hello
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-342"></a>`#NonCopyable opcode TcpSocket` | 独占 TCP 连接；复制被拒绝，显式 move 转移所有权。 |
-| 模块 | <a id="symbol-343"></a>`#NonCopyable opcode TcpListener` | 独占 TCP 监听器；端口为零时由系统分配。 |
-| 模块 | <a id="symbol-344"></a>`struct Url` | 拆开的 HTTP 地址。 |
-| Url | <a id="symbol-345"></a>`bool ok` | 当前解析或请求是否成功。 |
-| Url | <a id="symbol-346"></a>`std::lang::String host` | URL 中的主机名。 |
-| Url | <a id="symbol-347"></a>`int64 port` | 网络端口。 |
-| Url | <a id="symbol-348"></a>`std::lang::String path` | 请求目标路径。 |
-| Url | <a id="symbol-349"></a>`std::lang::String error` | 最近操作的错误说明。 |
-| 模块 | <a id="symbol-350"></a>`struct HttpResponse` | HTTP 响应：状态码、原因、头部原文、正文。 |
-| HttpResponse | <a id="symbol-351"></a>`bool ok` | 当前解析或请求是否成功。 |
-| HttpResponse | <a id="symbol-352"></a>`int64 status` | HTTP 响应状态码。 |
-| HttpResponse | <a id="symbol-353"></a>`std::lang::String reason` | HTTP 状态原因文本。 |
-| HttpResponse | <a id="symbol-354"></a>`std::lang::String headers` | HTTP 响应头。 |
-| HttpResponse | <a id="symbol-355"></a>`std::lang::String body` | HTTP 响应正文。 |
-| HttpResponse | <a id="symbol-356"></a>`std::lang::String error` | 最近操作的错误说明。 |
-| 模块 | <a id="symbol-357"></a>`struct HttpClient` | 一条连接上的 HTTP 客户端；也提供一次性便捷方法 `fetch`/`submit`。 |
-| HttpClient | <a id="symbol-358"></a>`TcpSocket socket` | HTTP 客户端使用的 TCP 连接。 |
-| HttpClient | <a id="symbol-359"></a>`bool connected` | 客户端是否已建立连接。 |
+| 模块 | <a id="symbol-316"></a>`#NonCopyable opcode TcpSocket` | 独占 TCP 连接；复制被拒绝，显式 move 转移所有权。 |
+| 模块 | <a id="symbol-317"></a>`#NonCopyable opcode TcpListener` | 独占 TCP 监听器；端口为零时由系统分配。 |
+| 模块 | <a id="symbol-318"></a>`struct Url` | 拆开的 HTTP 地址。 |
+| Url | <a id="symbol-319"></a>`bool ok` | 当前解析或请求是否成功。 |
+| Url | <a id="symbol-320"></a>`std::lang::String host` | URL 中的主机名。 |
+| Url | <a id="symbol-321"></a>`int64 port` | 网络端口。 |
+| Url | <a id="symbol-322"></a>`std::lang::String path` | 请求目标路径。 |
+| Url | <a id="symbol-323"></a>`std::lang::String error` | 最近操作的错误说明。 |
+| 模块 | <a id="symbol-324"></a>`struct HttpResponse` | HTTP 响应：状态码、原因、头部原文、正文。 |
+| HttpResponse | <a id="symbol-325"></a>`bool ok` | 当前解析或请求是否成功。 |
+| HttpResponse | <a id="symbol-326"></a>`int64 status` | HTTP 响应状态码。 |
+| HttpResponse | <a id="symbol-327"></a>`std::lang::String reason` | HTTP 状态原因文本。 |
+| HttpResponse | <a id="symbol-328"></a>`std::lang::String headers` | HTTP 响应头。 |
+| HttpResponse | <a id="symbol-329"></a>`std::lang::String body` | HTTP 响应正文。 |
+| HttpResponse | <a id="symbol-330"></a>`std::lang::String error` | 最近操作的错误说明。 |
+| 模块 | <a id="symbol-331"></a>`struct HttpClient` | 一条连接上的 HTTP 客户端；也提供一次性便捷方法 `fetch`/`submit`。 |
+| HttpClient | <a id="symbol-332"></a>`TcpSocket socket` | HTTP 客户端使用的 TCP 连接。 |
+| HttpClient | <a id="symbol-333"></a>`bool connected` | 客户端是否已建立连接。 |
 
 ## 函数索引
 

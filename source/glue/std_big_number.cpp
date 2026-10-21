@@ -14,10 +14,13 @@
 #endif
 #if STACKVM_WITH_BIGFLOAT
 #include "bigfloat.hpp"
+#include "bigfloat_math.hpp"
 #endif
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <exception>
+#include <stdexcept>
 
 /**
  * @brief 大数的宿主记录、复制协议与操作实现，VM 不持有其数值布局。
@@ -957,6 +960,18 @@ inline Value bfloatSetValuePrecision(State &ctx, const Memory::Vector<Value> &ar
     return Value::fromInt(previous);
 }
 
+/**
+ * @brief 提取序列化所需的大浮点数有效精度状态。
+ * @param ctx 原生调用上下文。
+ * @param args 包含待查询的大浮点数记录。
+ * @return 显式有效位数；零表示沿用默认精度。
+ */
+Value bfloatSerializationPrecision(State &ctx, const Memory::Vector<Value> &args)
+{
+    const auto *value = bigFloatRecord(ctx, args[0], "BigDecimal 序列化精度");
+    return Value::fromInt(value ? value->decimalPrecision : 0);
+}
+
 /* ---- 大浮点数扩展方法：幂 / 绝对值 / 取整 / 开方 ---- */
 
 /**
@@ -1120,6 +1135,83 @@ inline Value readBigFloat(State &ctx, const Memory::Vector<Value> &)
     return nativeNewBigFloat(ctx, value);
 }
 
+/**
+ * @brief 使用共享十进制数学后端计算泛型 std::math 的大浮点分支。
+ * @param ctx 当前宿主状态，保留定义域或精度错误。
+ * @param args 依次包含左数值、运算编号、右数值；一元调用复用左数值作为右参数。
+ * @return 新建的 BigDecimal，保持实际计算有效位数。
+ */
+Value bfloatMath(State &ctx, const Memory::Vector<Value> &args)
+{
+    auto *left = bigFloatRecord(ctx, args[0], "高精度数学");
+    auto *right = bigFloatRecord(ctx, args[2], "高精度数学");
+    if (!left || !right) return Value::fromInt(0);
+    const int precision = std::max(left->decimalPrecision, right->decimalPrecision);
+    const int digits = precision ? precision : 34;
+    try
+    {
+        bigfloat::BigFloat result;
+        bool exact = false;
+        switch (args[1].asInt())
+        {
+        case 0: result = bigfloat::sin(left->decimal, digits); break;
+        case 1: result = bigfloat::cos(left->decimal, digits); break;
+        case 2: result = bigfloat::tan(left->decimal, digits); break;
+        case 3: result = bigfloat::asin(left->decimal, digits); break;
+        case 4: result = bigfloat::acos(left->decimal, digits); break;
+        case 5: result = bigfloat::atan(left->decimal, digits); break;
+        case 6: result = bigfloat::exp(left->decimal, digits); break;
+        case 7: result = bigfloat::ln(left->decimal, digits); break;
+        case 8: result = bigfloat::log10(left->decimal, digits); break;
+        case 9: result = left->decimal.sqrt(digits); break;
+        case 10:
+            result = bigfloat::BigFloat::fromInt(left->decimal.floor());
+            exact = true;
+            break;
+        case 11:
+            result = bigfloat::BigFloat::fromInt(left->decimal.ceil());
+            exact = true;
+            break;
+        case 12:
+            result = bigfloat::BigFloat::fromInt(left->decimal.sign() < 0 ? (left->decimal - bigfloat::BigFloat("0.5")).ceil() : (left->decimal + bigfloat::BigFloat("0.5")).floor());
+            exact = true;
+            break;
+        case 13:
+            result = bigfloat::BigFloat::fromInt(left->decimal.trunc());
+            exact = true;
+            break;
+        case 14: result = bigfloat::pow(left->decimal, right->decimal, digits); break;
+        case 15:
+            result = bigfloat::fmod(left->decimal, right->decimal);
+            exact = true;
+            break;
+        default: throw std::invalid_argument("高精度数学运算编号无效");
+        }
+        return nativeNewBigFloat(ctx, std::move(result), exact ? precision : digits);
+    } catch (const std::exception &error)
+    {
+        ctx.error = Memory::String("std::math 高精度计算：") + error.what();
+        return Value::fromInt(0);
+    }
+}
+
+/**
+ * @brief 构造指定有效位数的高精度圆周率。
+ * @param ctx 当前宿主调用状态。
+ * @param args 包含 1..100000 范围的有效位数。
+ * @return 保留对应计算精度的 BigDecimal 记录。
+ */
+Value bfloatPi(State &ctx, const Memory::Vector<Value> &args)
+{
+    const auto digits = args[0].asInt();
+    if (digits < 1 || digits > 100000)
+    {
+        ctx.error = "圆周率有效位数必须在 1..100000 之间";
+        return Value::fromInt(0);
+    }
+    return nativeNewBigFloat(ctx, bigfloat::pi(static_cast<int>(digits)), static_cast<int>(digits));
+}
+
 #else
 
 /**
@@ -1149,6 +1241,7 @@ STACKVM_BFLOAT_STUB(bfloatToStr)
 STACKVM_BFLOAT_STUB(bfloatToInt)
 STACKVM_BFLOAT_STUB(bfloatToFloat)
 STACKVM_BFLOAT_STUB(bfloatSetValuePrecision)
+STACKVM_BFLOAT_STUB(bfloatSerializationPrecision)
 STACKVM_BFLOAT_STUB(bfloatPow)
 STACKVM_BFLOAT_STUB(bfloatAbs)
 STACKVM_BFLOAT_STUB(bfloatIsInteger)
@@ -1158,6 +1251,8 @@ STACKVM_BFLOAT_STUB(bfloatTrunc)
 STACKVM_BFLOAT_STUB(bfloatSqrt)
 STACKVM_BFLOAT_STUB(bfloatRoot)
 STACKVM_BFLOAT_STUB(readBigFloat)
+STACKVM_BFLOAT_STUB(bfloatMath)
+STACKVM_BFLOAT_STUB(bfloatPi)
 #undef STACKVM_BFLOAT_STUB
 
 #endif
@@ -1213,6 +1308,10 @@ bool bind(stackvm::NativeRegistry &registry, Memory::String *error)
     ok = native_record_glue::bind(registry, "__std_bfloat_neg", 1, bfloatNeg, error) && ok;
     ok = native_record_glue::bind(registry, "__std_bfloat_cmp", 2, bfloatCmp, error) && ok;
     ok = native_record_glue::bind(registry, "__std_bfloat_str", 1, bfloatToStr, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_math", 3, bfloatMath, error) && ok;
+    ok = native_record_glue::bind(registry, "std::math::__std_bfloat_math", 3, bfloatMath, error) && ok;
+    ok = native_record_glue::bind(registry, "__std_bfloat_pi", 1, bfloatPi, error) && ok;
+    ok = native_record_glue::bind(registry, "std::math::__std_bfloat_pi", 1, bfloatPi, error) && ok;
     ok = native_record_glue::bind(registry, "__std_bfloat_to_int", 1, bfloatToInt, error) && ok;
     ok = native_record_glue::bind(registry, "__std_bfloat_pow", 2, bfloatPow, error) && ok;
     ok = native_record_glue::bind(registry, "__std_bfloat_abs", 1, bfloatAbs, error) && ok;
@@ -1224,6 +1323,7 @@ bool bind(stackvm::NativeRegistry &registry, Memory::String *error)
     ok = native_record_glue::bind(registry, "__std_bfloat_root", 3, bfloatRoot, error) && ok;
     ok = native_record_glue::bind(registry, "__std_bfloat_to_flt", 1, bfloatToFloat, error) && ok;
     ok = native_record_glue::bind(registry, "__std_bfloat_set_value_precision", 2, bfloatSetValuePrecision, error) && ok;
+    ok = native_record_glue::bind(registry, "std::reflect::__serdeBigPrecision", 1, bfloatSerializationPrecision, error) && ok;
     ok = native_record_glue::bind(registry, "__std_read_bfloat", 0, readBigFloat, error) && ok;
     ok = native_record_glue::bind(registry, "__std_input_bfloat", 0, readBigFloat, error) && ok;
     ok = native_record_glue::bind(registry, "__std_bint_copy", 1, native_record_glue::copy, error) && ok;

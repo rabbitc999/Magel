@@ -24,7 +24,16 @@ AST_LIB := build/magel-runtime/libsimple_ast.a
 VM_BUILD := build/magel-stackvm-core
 HOST_BUILD := build/magel-host-records
 HOST_LIB := $(HOST_BUILD)/librecords.a
+CAS_BUILD := build/magel-cas
+CAS_SOURCE_NAMES := $(shell $(PYTHON) tools/cas_sources.py)
+CAS_OBJS := $(addprefix $(CAS_BUILD)/,$(CAS_SOURCE_NAMES:.cpp=.o))
+IPAGE_OBJS := $(HOST_BUILD)/ipage_sql.o $(HOST_BUILD)/ipage_dialect.o
+ifneq ($(filter 1,$(NO_MAGEL_STD) $(NO_MAGEL_STD_CAS) $(NO_MAGEL_BIG_INT)),)
+CAS_OBJS :=
+endif
 VM_LIB  := $(VM_BUILD)/libstackvm.a
+VM_SOURCE_NAMES := $(shell $(PYTHON) tools/stackvm_sources.py)
+VM_OBJS := $(addprefix $(VM_BUILD)/,$(VM_SOURCE_NAMES:.cpp=.o))
 PP_LIB  := build/magel-runtime/libpreprocess.a
 
 ifeq ($(OS),Windows_NT)
@@ -85,8 +94,9 @@ $(TARGET): $(AST_LIB) $(VM_LIB) $(HOST_LIB) $(PP_LIB)
 $(VM_BUILD) $(HOST_BUILD):
 	$(MAGEL_RUNTIME_MKDIR)
 
-$(VM_BUILD)/stackvm.o: $(VM_DIR)/stackvm.cpp $(wildcard $(VM_DIR)/parts/*) $(VM_DIR)/register_core.hpp $(VM_DIR)/execution_plan.hpp $(VM_DIR)/allocation_index.hpp $(VM_DIR)/data_capacity_index.hpp $(VM_DIR)/stackvm.hpp $(VM_DIR)/value_text.hpp $(VM_DIR)/reflection.hpp | $(VM_BUILD)
-	$(CXX) $(CXXFLAGS) -I$(VM_DIR) -c $< -o $@
+$(VM_BUILD)/%.o: $(VM_DIR)/%.cpp | $(VM_BUILD)
+	$(CXX) $(CXXFLAGS) -MMD -MP -I$(VM_DIR) -c $< -o $@
+-include $(wildcard $(VM_BUILD)/*.d)
 
 $(HOST_BUILD)/bigint.o: library/bignum/bigint.cpp library/bignum/bigint.hpp | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -I$(MAGEL_LIBRARY_DIR)/bignum -c $< -o $@
@@ -94,10 +104,15 @@ $(HOST_BUILD)/bigint.o: library/bignum/bigint.cpp library/bignum/bigint.hpp | $(
 $(HOST_BUILD)/bigfloat.o: library/bignum/bigfloat.cpp library/bignum/bigfloat.hpp library/bignum/bigint.hpp | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -I$(MAGEL_LIBRARY_DIR)/bignum -c $< -o $@
 
+BIGFLOAT_MATH_OBJS := $(HOST_BUILD)/bigfloat_transcendental.o $(HOST_BUILD)/bigfloat_trigonometry.o
+$(BIGFLOAT_MATH_OBJS): $(HOST_BUILD)/%.o: library/bignum/%.cpp build/magel-runtime/buildConfig.json | $(HOST_BUILD)
+	$(CXX) $(CXXFLAGS) -MMD -MP -I$(MAGEL_LIBRARY_DIR)/bignum -c $< -o $@
+
 $(HOST_BUILD)/sqlite3.o: library/sqlite/sqlite3.c library/sqlite/sqlite3.h | $(HOST_BUILD)
 	$(CC) -std=c11 -O2 -DSQLITE_THREADSAFE=1 -DSQLITE_OMIT_LOAD_EXTENSION=1 -c $< -o $@
 
-$(VM_LIB): $(VM_BUILD)/stackvm.o
+$(VM_LIB): $(VM_OBJS)
+	$(PYTHON) -c "from pathlib import Path; Path(r'$@').unlink(missing_ok=True)"
 	$(AR) $(ARFLAGS) $@ $^
 
 # 每个标准库模块独立编译；实际包含关系由编译器生成 .d 文件追踪。
@@ -105,14 +120,28 @@ MAGEL_STANDARD_SRCS := $(filter-out source/glue/std_demo.cpp,$(wildcard source/g
 MAGEL_STANDARD_OBJS := $(patsubst source/glue/%.cpp,$(HOST_BUILD)/%.o,$(MAGEL_STANDARD_SRCS))
 $(HOST_BUILD)/std_%.o: source/glue/std_%.cpp | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
+$(HOST_BUILD)/std_cas.o: private CXXFLAGS += -Ilibrary/caspp/include
 $(HOST_BUILD)/json.o: library/json/json.cpp | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
 $(HOST_BUILD)/toml.o: library/toml/toml.cpp | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
-$(MAGEL_STANDARD_OBJS) $(HOST_BUILD)/json.o $(HOST_BUILD)/toml.o: build/magel-runtime/buildConfig.json
+$(HOST_BUILD)/toml_source.o: library/toml/toml_source.cpp | $(HOST_BUILD)
+	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
+$(MAGEL_STANDARD_OBJS) $(HOST_BUILD)/json.o $(HOST_BUILD)/toml.o $(HOST_BUILD)/toml_source.o: build/magel-runtime/buildConfig.json
 -include $(wildcard $(HOST_BUILD)/*.d)
 
-$(HOST_LIB): $(HOST_BUILD)/sqlite3.o $(HOST_BUILD)/bigint.o $(HOST_BUILD)/bigfloat.o $(MAGEL_STANDARD_OBJS) $(HOST_BUILD)/json.o $(HOST_BUILD)/toml.o
+$(CAS_BUILD)/%.o: library/caspp/%.cpp
+	$(PYTHON) -c "from pathlib import Path; Path(r'$(@D)').mkdir(parents=True, exist_ok=True)"
+	$(CXX) $(CXXFLAGS) -Ilibrary/caspp/include -MMD -MP -c $< -o $@
+-include $(shell $(PYTHON) -c "from pathlib import Path; print(' '.join(str(p).replace(chr(92), '/') for p in Path('$(CAS_BUILD)').rglob('*.d')))")
+$(CAS_OBJS): build/magel-runtime/buildConfig.json
+
+$(HOST_BUILD)/ipage_%.o: library/ipage/source/ipage/%.cpp | $(HOST_BUILD)
+	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
+$(IPAGE_OBJS): build/magel-runtime/buildConfig.json
+
+$(HOST_LIB): $(HOST_BUILD)/sqlite3.o $(HOST_BUILD)/bigint.o $(HOST_BUILD)/bigfloat.o $(BIGFLOAT_MATH_OBJS) $(MAGEL_STANDARD_OBJS) $(HOST_BUILD)/json.o $(HOST_BUILD)/toml.o $(HOST_BUILD)/toml_source.o $(CAS_OBJS) $(IPAGE_OBJS)
+	$(PYTHON) -c "from pathlib import Path; Path(r'$@').unlink(missing_ok=True)"
 	$(AR) $(ARFLAGS) $@ $^
 
 .PHONY: check samples
@@ -145,12 +174,12 @@ $(AST_LIB): build/magel-runtime/simple_ast.o
 	$(AR) $(ARFLAGS) $@ $^
 $(PP_LIB): build/magel-runtime/preprocess.o
 	$(AR) $(ARFLAGS) $@ $^
-$(FRONTEND_BUILD)/magel_main.o $(FRONTEND_BUILD)/magel_parser.o $(VM_BUILD)/stackvm.o $(HOST_BUILD)/bigint.o $(HOST_BUILD)/bigfloat.o: source/magel_runtime_allocator.hpp source/allocator/magel_allocator.hpp source/allocator/magel_pool.c source/allocator/magel_pool.h
+$(FRONTEND_BUILD)/magel_main.o $(FRONTEND_BUILD)/magel_parser.o $(VM_OBJS) $(HOST_BUILD)/bigint.o $(HOST_BUILD)/bigfloat.o: source/magel_runtime_allocator.hpp source/allocator/magel_allocator.hpp source/allocator/magel_pool.c source/allocator/magel_pool.h
 
 .PHONY: config-force
 build/magel-runtime/buildConfig.json: config-force
 	$(PYTHON) tools/write_build_config.py $@ "$(CXX)" "$(CXXFLAGS)" "$(LDLIBS)" "$(LDFLAGS)"
-$(LIB_OBJS) $(DEMO_OBJS) $(VM_BUILD)/stackvm.o $(HOST_BUILD)/bigint.o $(HOST_BUILD)/bigfloat.o build/magel-runtime/simple_ast.o build/magel-runtime/preprocess.o: build/magel-runtime/buildConfig.json
+$(LIB_OBJS) $(DEMO_OBJS) $(VM_OBJS) $(HOST_BUILD)/bigint.o $(HOST_BUILD)/bigfloat.o build/magel-runtime/simple_ast.o build/magel-runtime/preprocess.o: build/magel-runtime/buildConfig.json
 
 # JSON 与 TOML 实现由宿主库单独编译，包含依赖由 .d 文件维护。
 
@@ -172,7 +201,7 @@ DEMO_OBJS += $(MAGEL_LSP_OBJS)
 $(TARGET): $(MAGEL_LSP_OBJS)
 
 # 静态消息表变更后所有相关翻译单元必须一致，避免旧消息表混入链接。
-$(LIB_OBJS) $(DEMO_OBJS) $(VM_BUILD)/stackvm.o: source/magel_i18n.hpp library/console/utf8.hpp
+$(LIB_OBJS) $(DEMO_OBJS) $(VM_OBJS): source/magel_i18n.hpp library/console/utf8.hpp
 
 # 单态化符号由前端与宿主胶水共享；更新编码时必须重编相关目标。
 $(FRONTEND_BUILD)/magel_main.o $(FRONTEND_BUILD)/magel_parser.o: source/magel_generic_name.hpp

@@ -7,11 +7,20 @@ find_package(Threads REQUIRED)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_library(magel_vm_core STATIC runtime/stackvm.cpp)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/runtime/core_sources.txt")
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/runtime/core_sources.txt" STACKVM_CORE_SOURCES)
+list(TRANSFORM STACKVM_CORE_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/runtime/")
+add_library(magel_vm_core STATIC ${STACKVM_CORE_SOURCES})
 file(GLOB MAGEL_STANDARD_SOURCES CONFIGURE_DEPENDS glue/std_*.cpp)
 list(REMOVE_ITEM MAGEL_STANDARD_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/glue/std_demo.cpp")
-add_library(magel_host_records STATIC ${MAGEL_STANDARD_SOURCES} runtime/bigint.cpp runtime/bigfloat.cpp
-    sqlite/sqlite3.c json/json.cpp toml/toml.cpp)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/caspp/core_sources.txt")
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/caspp/core_sources.txt" MAGEL_CAS_SOURCES)
+list(TRANSFORM MAGEL_CAS_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/caspp/")
+if(NO_MAGEL_STD OR NO_MAGEL_STD_CAS OR NO_MAGEL_BIG_INT)
+    set(MAGEL_CAS_SOURCES "")
+endif()
+add_library(magel_host_records STATIC ${MAGEL_STANDARD_SOURCES} ${MAGEL_CAS_SOURCES} ipage/sql.cpp ipage/dialect.cpp runtime/bigint.cpp runtime/bigfloat.cpp runtime/bigfloat_transcendental.cpp runtime/bigfloat_trigonometry.cpp
+    sqlite/sqlite3.c json/json.cpp toml/toml.cpp toml/toml_source.cpp)
 add_library(magel_runtime STATIC runtime/simple_ast.cpp runtime/preprocess.cpp lztext/lztext.cpp
     miniz/miniz_tinfl.c dap/dap_server.cpp)
 target_link_libraries(magel_runtime PUBLIC magel_vm_core magel_host_records Threads::Threads)
@@ -21,14 +30,14 @@ option(MAGEL_WITH_REFLECTION "启用注解与反射前端支持" ON)
 option(STACKVM_WITH_REFLECTION "启用注解与反射运行时支持" ON)
 foreach(target magel_vm_core magel_host_records magel_runtime)
     target_include_directories(${target} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/runtime
-        ${CMAKE_CURRENT_SOURCE_DIR}/json ${CMAKE_CURRENT_SOURCE_DIR}/toml)
+        ${CMAKE_CURRENT_SOURCE_DIR}/json ${CMAKE_CURRENT_SOURCE_DIR}/toml ${CMAKE_CURRENT_SOURCE_DIR}/caspp/include)
     target_compile_definitions(${target} PUBLIC MAGEL_CUSTOM_ALLOCATOR=1
         MAGEL_WITH_REFLECTION=$<BOOL:${MAGEL_WITH_REFLECTION}>
         STACKVM_WITH_REFLECTION=$<BOOL:${STACKVM_WITH_REFLECTION}>)
 endforeach()
 
 # 裁剪定义 PUBLIC 传播到前端和运行时，避免配置不一致。
-foreach(feature NO_MAGEL_BIG_INT NO_MAGEL_BIG_FLOAT NO_MAGEL_DEFAULT_POOL NO_MAGEL_STD NO_MAGEL_STD_MATH NO_MAGEL_STD_RANDOM NO_MAGEL_STD_REGEX NO_MAGEL_STD_SIGNAL NO_MAGEL_STD_JSON NO_MAGEL_STD_TOML NO_MAGEL_STD_BINARY NO_MAGEL_STD_LINALG NO_MAGEL_STD_PARSE NO_MAGEL_STD_PROCESS)
+foreach(feature NO_MAGEL_BIG_INT NO_MAGEL_BIG_FLOAT NO_MAGEL_DEFAULT_POOL NO_MAGEL_STD NO_MAGEL_STD_CAS NO_MAGEL_STD_MATH NO_MAGEL_STD_RANDOM NO_MAGEL_STD_REGEX NO_MAGEL_STD_SIGNAL NO_MAGEL_STD_JSON NO_MAGEL_STD_TOML NO_MAGEL_STD_BINARY NO_MAGEL_STD_LINALG NO_MAGEL_STD_PARSE NO_MAGEL_STD_PROCESS)
     option(${feature} "裁剪 ${feature} 对应功能" OFF)
     if(${feature})
         target_compile_definitions(magel_runtime PUBLIC ${feature})

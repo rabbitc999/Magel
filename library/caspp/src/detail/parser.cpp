@@ -7,19 +7,23 @@
 #include <cctype>
 #include <cmath>
 #include <cstring>
+#include <stdexcept>
 
-namespace Cas::Detail {
-namespace {
+namespace Cas::Detail
+{
+namespace
+{
 
 /** @brief 快捷构造整数。 */
 Ptr integer(long long value) { return Ptr(Node::makeInteger(BigInt(value))); }
 
 /** @brief 词法单元种类。 */
-enum class TokenKind {
+enum class TokenKind
+{
     End,
     Number,
     Identifier,
-    Operator, // + - * / ^ ! ' = ,
+    Operator,  // + - * / ^ ! ' = ,
     LeftParen,
     RightParen,
     LeftBracket,
@@ -28,46 +32,52 @@ enum class TokenKind {
 };
 
 /** @brief 词法单元。 */
-struct Token {
+struct Token
+{
     TokenKind kind = TokenKind::End;
-    std::string text;   ///< 标识符名字/运算符文本/数字原文
+    std::string text;  ///< 标识符名字/运算符文本/数字原文
     std::size_t start = 0;
     std::size_t end = 0;
-    bool isInteger = true; ///< 数字是否为整数
-    BigInt integerValue;   ///< 整数值
-    BigInt floatNumerator;  ///< 小数转成的有理数分子
-    BigInt floatDenominator;///< 小数转成的有理数分母
+    bool isInteger = true;    ///< 数字是否为整数
+    BigInt integerValue;      ///< 整数值
+    BigInt floatNumerator;    ///< 小数转成的有理数分子
+    BigInt floatDenominator;  ///< 小数转成的有理数分母
 };
 
 /** @brief 递归下降解析器。 */
-class Parser {
+class Parser
+{
 public:
-    Parser(const std::string &text, bool allowUnknownCalls = false)
-        : m_text(text), m_allowUnknownCalls(allowUnknownCalls) {
+    Parser(const std::string &text, bool allowUnknownCalls = false) : m_text(text), m_allowUnknownCalls(allowUnknownCalls)
+    {
         m_position = 0;
     }
 
-    Parser(const std::string &text, const ParseOptions &options, bool allowUnknownCalls = false)
-        : m_text(text), m_allowUnknownCalls(allowUnknownCalls), m_options(options) {
+    Parser(const std::string &text, const ParseOptions &options, bool allowUnknownCalls = false) : m_text(text), m_allowUnknownCalls(allowUnknownCalls), m_options(options)
+    {
         m_position = 0;
     }
 
     /** @brief 解析整个表达式。 */
-    ParseResult run() {
+    ParseResult run()
+    {
         ParseResult result;
         advance();
-        if (m_token.kind == TokenKind::End) {
+        if (m_token.kind == TokenKind::End)
+        {
             result.message = "表达式为空";
             return result;
         }
 
         Ptr expression = parseAssignment();
-        if (!expression) {
+        if (!expression)
+        {
             result.message = m_error.empty() ? "无法解析表达式" : m_error;
             result.position = m_errorPosition;
             return result;
         }
-        if (m_token.kind != TokenKind::End) {
+        if (m_token.kind != TokenKind::End)
+        {
             result.message = "多余的输入：'" + m_token.text + "'";
             result.position = m_token.start;
             return result;
@@ -81,17 +91,21 @@ public:
 private:
     /* ------------------------------------------------------ 词法 */
 
-    void skipSpace() {
-        while (m_position < m_text.size() && std::isspace(static_cast<unsigned char>(m_text[m_position]))) {
+    void skipSpace()
+    {
+        while (m_position < m_text.size() && std::isspace(static_cast<unsigned char>(m_text[m_position])))
+        {
             ++m_position;
         }
     }
 
-    void advance() {
+    void advance()
+    {
         skipSpace();
         m_token = Token();
         m_token.start = m_position;
-        if (m_position >= m_text.size()) {
+        if (m_position >= m_text.size())
+        {
             m_token.kind = TokenKind::End;
             m_token.end = m_position;
             return;
@@ -102,42 +116,77 @@ private:
         // 区间运算符 `..`（sum(i^2, i=1..n) 的上下限分隔）要先于数字识别，
         // 否则 `.` 会被当成小数点送进 readNumber，遇到 `..` 又没有字符可读，
         // 结果既不产出 token 也不推进位置——死循环。
-        if (c == '.' && m_position + 1 < m_text.size() && m_text[m_position + 1] == '.') {
+        if (c == '.' && m_position + 1 < m_text.size() && m_text[m_position + 1] == '.')
+        {
             m_token.kind = TokenKind::Operator;
             m_token.text = "..";
             m_position += 2;
             m_token.end = m_position;
             return;
         }
-        if (std::isdigit(static_cast<unsigned char>(c)) || c == '.') {
+        if (std::isdigit(static_cast<unsigned char>(c)) || c == '.')
+        {
             readNumber();
             return;
         }
-        if (std::isalpha(static_cast<unsigned char>(c))) {
+        if (std::isalpha(static_cast<unsigned char>(c)))
+        {
             readIdentifier();
             return;
         }
         // UTF-8 多字节：√ 与 π 需要整体识别
-        if (static_cast<unsigned char>(c) >= 0x80) {
+        if (static_cast<unsigned char>(c) >= 0x80)
+        {
             readUtf8Symbol();
             return;
         }
 
-        switch (c) {
-        case '(': m_token.kind = TokenKind::LeftParen; m_token.text = "("; m_position += 1; break;
-        case ')': m_token.kind = TokenKind::RightParen; m_token.text = ")"; m_position += 1; break;
-        case '[': m_token.kind = TokenKind::LeftBracket; m_token.text = "["; m_position += 1; break;
-        case ']': m_token.kind = TokenKind::RightBracket; m_token.text = "]"; m_position += 1; break;
-        case '|': m_token.kind = TokenKind::Bar; m_token.text = "|"; m_position += 1; break;
-        case '+': case '-': case '*': case '/': case '^': case '!': case '\'': case ',':
+        switch (c)
+        {
+        case '(':
+            m_token.kind = TokenKind::LeftParen;
+            m_token.text = "(";
+            m_position += 1;
+            break;
+        case ')':
+            m_token.kind = TokenKind::RightParen;
+            m_token.text = ")";
+            m_position += 1;
+            break;
+        case '[':
+            m_token.kind = TokenKind::LeftBracket;
+            m_token.text = "[";
+            m_position += 1;
+            break;
+        case ']':
+            m_token.kind = TokenKind::RightBracket;
+            m_token.text = "]";
+            m_position += 1;
+            break;
+        case '|':
+            m_token.kind = TokenKind::Bar;
+            m_token.text = "|";
+            m_position += 1;
+            break;
+        case '+':
+        case '-':
+        case '*':
+        case '/':
+        case '^':
+        case '!':
+        case '\'':
+        case ',':
             m_token.kind = TokenKind::Operator;
             m_token.text = std::string(1, c);
             m_position += 1;
             // ** 与 := 当作单 token
-            if (c == '*' && m_position < m_text.size() && m_text[m_position] == '*') {
+            if (c == '*' && m_position < m_text.size() && m_text[m_position] == '*')
+            {
                 m_token.text = "^";
                 m_position += 1;
-            } else if (c == ':' && m_position < m_text.size() && m_text[m_position] == '=') {
+            }
+            else if (c == ':' && m_position < m_text.size() && m_text[m_position] == '=')
+            {
                 m_token.text = "=";
                 m_position += 1;
             }
@@ -171,25 +220,28 @@ private:
         m_token.end = m_position;
     }
 
-    void readNumber() {
+    void readNumber()
+    {
         const std::size_t begin = m_position;
         bool seenDot = false, seenExponent = false;
-        while (m_position < m_text.size()) {
+        while (m_position < m_text.size())
+        {
             const char c = m_text[m_position];
-            if (std::isdigit(static_cast<unsigned char>(c))) { ++m_position; continue; }
+            if (std::isdigit(static_cast<unsigned char>(c)))
+            {
+                ++m_position;
+                continue;
+            }
             // `..` 是区间运算符（`1..n`），不是小数点，禁止在这里吞掉它
-            if (c == '.' && !seenDot && !seenExponent) {
+            if (c == '.' && !seenDot && !seenExponent)
+            {
                 if (m_position + 1 < m_text.size() && m_text[m_position + 1] == '.') break;
                 seenDot = true;
                 ++m_position;
                 continue;
             }
-            if ((c == 'e' || c == 'E') && !seenExponent &&
-                m_position + 1 < m_text.size() &&
-                (std::isdigit(static_cast<unsigned char>(m_text[m_position + 1])) ||
-                 ((m_text[m_position + 1] == '+' || m_text[m_position + 1] == '-') &&
-                  m_position + 2 < m_text.size() &&
-                  std::isdigit(static_cast<unsigned char>(m_text[m_position + 2]))))) {
+            if ((c == 'e' || c == 'E') && !seenExponent && m_position + 1 < m_text.size() && (std::isdigit(static_cast<unsigned char>(m_text[m_position + 1])) || ((m_text[m_position + 1] == '+' || m_text[m_position + 1] == '-') && m_position + 2 < m_text.size() && std::isdigit(static_cast<unsigned char>(m_text[m_position + 2])))))
+            {
                 seenExponent = true;
                 m_position += 1;
                 if (m_text[m_position] == '+' || m_text[m_position] == '-') ++m_position;
@@ -202,7 +254,8 @@ private:
         m_token.end = m_position;
         m_token.isInteger = !seenDot && !seenExponent;
 
-        if (m_token.isInteger) {
+        if (m_token.isInteger)
+        {
             m_token.integerValue = BigInt(m_token.text, 10);
             return;
         }
@@ -213,14 +266,20 @@ private:
         int fractionalDigits = 0;
         bool afterDot = false;
         std::size_t cursor = 0;
-        for (; cursor < m_token.text.size(); ++cursor) {
+        for (; cursor < m_token.text.size(); ++cursor)
+        {
             const char c = m_token.text[cursor];
-            if (std::isdigit(static_cast<unsigned char>(c))) {
+            if (std::isdigit(static_cast<unsigned char>(c)))
+            {
                 digits.push_back(c);
                 if (afterDot) ++fractionalDigits;
-            } else if (c == '.') {
+            }
+            else if (c == '.')
+            {
                 afterDot = true;
-            } else if (c == 'e' || c == 'E') {
+            }
+            else if (c == 'e' || c == 'E')
+            {
                 exponentShift = std::stoi(m_token.text.substr(cursor + 1));
                 break;
             }
@@ -229,21 +288,31 @@ private:
         BigInt numerator(digits, 10);
         BigInt denominator(1);
         const long long scale = static_cast<long long>(fractionalDigits) - exponentShift;
-        if (scale > 0) denominator = BigInt::power(BigInt(10), static_cast<unsigned long long>(scale));
-        else if (scale < 0) numerator = numerator * BigInt::power(BigInt(10), static_cast<unsigned long long>(-scale));
+        if (scale > 100000 || scale < -100000) throw std::out_of_range("CAS 十进制常量的指数规模不能超过 100000");
+        if (scale > 0)
+            denominator = BigInt::power(BigInt(10), static_cast<unsigned long long>(scale));
+        else if (scale < 0)
+            numerator = numerator * BigInt::power(BigInt(10), static_cast<unsigned long long>(-scale));
         m_token.floatNumerator = numerator;
         m_token.floatDenominator = denominator;
     }
 
-    void readIdentifier() {
+    void readIdentifier()
+    {
         const std::size_t begin = m_position;
-        while (m_position < m_text.size()) {
+        while (m_position < m_text.size())
+        {
             const unsigned char c = static_cast<unsigned char>(m_text[m_position]);
-            if (std::isalnum(c) || m_text[m_position] == '_' || c >= 0x80) {
+            if (std::isalnum(c) || m_text[m_position] == '_' || c >= 0x80)
+            {
                 ++m_position;
-            } else if (m_text[m_position] == '\'' && m_position == begin) {
+            }
+            else if (m_text[m_position] == '\'' && m_position == begin)
+            {
                 break;
-            } else {
+            }
+            else
+            {
                 break;
             }
         }
@@ -252,23 +321,27 @@ private:
         m_token.end = m_position;
     }
 
-    void readUtf8Symbol() {
+    void readUtf8Symbol()
+    {
         const std::size_t begin = m_position;
         // 识别常见的单字符 UTF-8 记号
-        static const struct {
+        static const struct
+        {
             const char *utf8;
             std::size_t length;
             const char *ascii;
         } kSymbols[] = {
-            {"\xE2\x88\x9A", 3, "sqrt"}, // √
-            {"\xCF\x80", 2, "pi"},       // π
-            {"\xE2\x88\x9E", 3, "infinity"}, // ∞
-            {"\xC3\xB7", 2, "/"},        // ÷
-            {"\xC3\x97", 2, "*"},        // ×
-            {"\xE2\x88\x92", 3, "-"},    // −
+            { "\xE2\x88\x9A", 3, "sqrt" },      // √
+            { "\xCF\x80", 2, "pi" },            // π
+            { "\xE2\x88\x9E", 3, "infinity" },  // ∞
+            { "\xC3\xB7", 2, "/" },             // ÷
+            { "\xC3\x97", 2, "*" },             // ×
+            { "\xE2\x88\x92", 3, "-" },         // −
         };
-        for (const auto &symbol : kSymbols) {
-            if (m_text.compare(begin, symbol.length, symbol.utf8) == 0) {
+        for (const auto &symbol : kSymbols)
+        {
+            if (m_text.compare(begin, symbol.length, symbol.utf8) == 0)
+            {
                 m_position += symbol.length;
                 m_token.kind = TokenKind::Identifier;
                 m_token.text = symbol.ascii;
@@ -284,14 +357,17 @@ private:
 
     /* ------------------------------------------------------ 语法 */
 
-    void fail(const std::string &message) {
-        if (m_error.empty()) {
+    void fail(const std::string &message)
+    {
+        if (m_error.empty())
+        {
             m_error = message;
             m_errorPosition = m_token.start;
         }
     }
 
-    bool isOperator(const char *text) const {
+    bool isOperator(const char *text) const
+    {
         return m_token.kind == TokenKind::Operator && m_token.text == text;
     }
 
@@ -300,8 +376,10 @@ private:
      * `,` `)` `]` `|` 都不会开启原子，因此 `diff(f, x)` 里的逗号不会
      * 被误当成隐式乘法——这是手写解析器最容易踩的坑。
      */
-    bool startsAtom() const {
-        switch (m_token.kind) {
+    bool startsAtom() const
+    {
+        switch (m_token.kind)
+        {
         case TokenKind::Number:
         case TokenKind::LeftParen:
         case TokenKind::LeftBracket:
@@ -311,32 +389,37 @@ private:
         }
     }
 
-    Ptr parseAssignment() {
+    Ptr parseAssignment()
+    {
         Ptr left = parseAdditive();
         if (!left) return Ptr();
-        if (isOperator("=")) {
+        if (isOperator("="))
+        {
             advance();
             Ptr right = parseAdditive();
             if (!right) return Ptr();
             // 区间写法 `i=1..n`（求和/敛散性判别的上下限）→ range(i, 1, n)
-            if (isOperator("..")) {
+            if (isOperator(".."))
+            {
                 advance();
                 Ptr upper = parseAdditive();
                 if (!upper) return Ptr();
-                Memory::Vector<NodePtr> arguments{left.get(), right.get(), upper.get()};
+                Memory::Vector<NodePtr> arguments{ left.get(), right.get(), upper.get() };
                 return Ptr(Node::makeFunction("range", arguments));
             }
             // 等式表示为 equal(left, right)，供 solve 直接使用
-            Memory::Vector<NodePtr> arguments{left.get(), right.get()};
+            Memory::Vector<NodePtr> arguments{ left.get(), right.get() };
             return Ptr(Node::makeFunction("equal", arguments));
         }
         return left;
     }
 
-    Ptr parseAdditive() {
+    Ptr parseAdditive()
+    {
         Ptr left = parseMultiplicative();
         if (!left) return Ptr();
-        while (m_token.kind == TokenKind::Operator && (m_token.text == "+" || m_token.text == "-")) {
+        while (m_token.kind == TokenKind::Operator && (m_token.text == "+" || m_token.text == "-"))
+        {
             const bool minus = m_token.text == "-";
             advance();
             Ptr right = parseMultiplicative();
@@ -347,21 +430,26 @@ private:
         return left;
     }
 
-    Ptr parseMultiplicative() {
+    Ptr parseMultiplicative()
+    {
         Ptr left = parseUnary();
         if (!left) return Ptr();
-        for (;;) {
-            if (m_token.kind == TokenKind::Operator && (m_token.text == "*" || m_token.text == "/")) {
+        for (;;)
+        {
+            if (m_token.kind == TokenKind::Operator && (m_token.text == "*" || m_token.text == "/"))
+            {
                 const bool divide = m_token.text == "/";
                 const std::size_t operatorAt = m_token.start;
                 advance();
                 Ptr right = parseUnary();
                 if (!right) return Ptr();
                 left = divide ? makeDivide(left, right) : makeMul(left, right);
-                if (!left) {
+                if (!left)
+                {
                     // makeDivide 只在除数为零时返回空。这里要给出确切原因，
                     // 否则会一路冒泡成"无法解析表达式"，用户看不出是除以零。
-                    if (m_error.empty()) {
+                    if (m_error.empty())
+                    {
                         m_error = "除以零";
                         m_errorPosition = operatorAt;
                     }
@@ -369,7 +457,8 @@ private:
                 }
                 continue;
             }
-            if (startsAtom()) {
+            if (startsAtom())
+            {
                 Ptr right = parseUnary();
                 if (!right) return Ptr();
                 left = makeMul(left, right);
@@ -381,8 +470,10 @@ private:
         return left;
     }
 
-    Ptr parseUnary() {
-        if (m_token.kind == TokenKind::Operator && (m_token.text == "-" || m_token.text == "+")) {
+    Ptr parseUnary()
+    {
+        if (m_token.kind == TokenKind::Operator && (m_token.text == "-" || m_token.text == "+"))
+        {
             const bool minus = m_token.text == "-";
             advance();
             Ptr operand = parseUnary();
@@ -392,10 +483,12 @@ private:
         return parsePower();
     }
 
-    Ptr parsePower() {
+    Ptr parsePower()
+    {
         Ptr base = parsePostfix();
         if (!base) return Ptr();
-        if (isOperator("^")) {
+        if (isOperator("^"))
+        {
             advance();
             // 右结合，且允许 2^-1
             Ptr exponent = parseUnary();
@@ -406,25 +499,30 @@ private:
     }
 
     /** @brief 把 `callee(...)` 的括号部分接到 callee 上，生成函数调用节点。 */
-    Ptr parseCallOn(const Ptr &callee) {
+    Ptr parseCallOn(const Ptr &callee)
+    {
         if (!callee || m_token.kind != TokenKind::LeftParen) return Ptr();
         const char *name = callee->name();
         if (callee->kind() != NodeKind::Symbol || !name) return Ptr();
         advance();
         Memory::Vector<Ptr> arguments;
-        if (m_token.kind != TokenKind::RightParen) {
-            for (;;) {
+        if (m_token.kind != TokenKind::RightParen)
+        {
+            for (;;)
+            {
                 Ptr argument = parseAssignment();
                 if (!argument) return Ptr();
                 arguments.push_back(argument);
-                if (m_token.kind == TokenKind::Operator && m_token.text == ",") {
+                if (m_token.kind == TokenKind::Operator && m_token.text == ",")
+                {
                     advance();
                     continue;
                 }
                 break;
             }
         }
-        if (m_token.kind != TokenKind::RightParen) {
+        if (m_token.kind != TokenKind::RightParen)
+        {
             fail("函数调用缺少右括号");
             return Ptr();
         }
@@ -435,36 +533,45 @@ private:
         return Ptr(Node::makeFunction(name, raw));
     }
 
-    Ptr parsePostfix() {
+    Ptr parsePostfix()
+    {
         Ptr value = parseAtom();
         if (!value) return Ptr();
-        for (;;) {
-            if (isOperator("!")) {
+        for (;;)
+        {
+            if (isOperator("!"))
+            {
                 advance();
                 // `!!` 是双阶乘（一次消费两个 `!`），不能当成两次阶乘
                 const bool doubleFactorial = isOperator("!");
                 if (doubleFactorial) advance();
                 // 阶乘只对非负整数求值
                 long long number = 0;
-                if (doubleFactorial) {
-                    Memory::Vector<NodePtr> arguments{value.get()};
+                if (doubleFactorial)
+                {
+                    Memory::Vector<NodePtr> arguments{ value.get() };
                     value = Ptr(Node::makeFunction("factorial2", arguments));
                     continue;
                 }
-                if (value->isSmallInteger(&number) && number >= 0 && number <= 20) {
+                if (value->isSmallInteger(&number) && number >= 0 && number <= 20)
+                {
                     long long product = 1;
                     for (long long k = 2; k <= number; ++k) product *= k;
                     value = integer(product);
-                } else {
-                    Memory::Vector<NodePtr> arguments{value.get()};
+                }
+                else
+                {
+                    Memory::Vector<NodePtr> arguments{ value.get() };
                     value = Ptr(Node::makeFunction("factorial", arguments));
                 }
                 continue;
             }
-            if (isOperator("'")) {
+            if (isOperator("'"))
+            {
                 // 连续撇号 `y''` 表示二阶导，整段一次消费
                 int order = 0;
-                while (isOperator("'")) {
+                while (isOperator("'"))
+                {
                     advance();
                     ++order;
                 }
@@ -474,9 +581,11 @@ private:
                 // `y'(0)` 这种"导数在某点取值"：撇号后面紧跟括号时，括号归属于
                 // 被求导的函数本身，于是生成 Derivative(y(0), x, n)——初值条件
                 // 的解析就靠这个形状识别。
-                if (value->kind() == NodeKind::Symbol && order <= 3) {
+                if (value->kind() == NodeKind::Symbol && order <= 3)
+                {
                     Ptr target = value;
-                    if (m_allowUnknownCalls && m_token.kind == TokenKind::LeftParen) {
+                    if (m_allowUnknownCalls && m_token.kind == TokenKind::LeftParen)
+                    {
                         Ptr call = parseCallOn(value);
                         if (!call) return Ptr();
                         target = call;
@@ -485,12 +594,13 @@ private:
                     const std::uint32_t variableId = internSymbol("x");
                     Ptr variablePtr = Ptr(Node::makeSymbolById(variableId));
                     Ptr orderPtr = integer(order);
-                    Memory::Vector<NodePtr> arguments{target.get(), variablePtr.get(), orderPtr.get()};
+                    Memory::Vector<NodePtr> arguments{ target.get(), variablePtr.get(), orderPtr.get() };
                     value = Ptr(Node::makeFunction("Derivative", arguments));
                     continue;
                 }
-                for (int k = 0; k < order; ++k) {
-                    Memory::Vector<NodePtr> arguments{value.get()};
+                for (int k = 0; k < order; ++k)
+                {
+                    Memory::Vector<NodePtr> arguments{ value.get() };
                     value = Ptr(Node::makeFunction("diff", arguments));
                 }
                 continue;
@@ -500,46 +610,59 @@ private:
         return value;
     }
 
-    Ptr parseAtom() {
-        switch (m_token.kind) {
-        case TokenKind::Number: {
+    Ptr parseAtom()
+    {
+        switch (m_token.kind)
+        {
+        case TokenKind::Number:
+        {
             Ptr value;
-            if (m_token.isInteger) {
+            if (m_token.isInteger)
+            {
                 value = Ptr(Node::makeInteger(m_token.integerValue));
-            } else {
+            }
+            else
+            {
                 value = makeNumber(m_token.floatNumerator, m_token.floatDenominator);
             }
             advance();
             return value;
         }
-        case TokenKind::LeftParen: {
+        case TokenKind::LeftParen:
+        {
             advance();
             Ptr inner = parseAssignment();
             if (!inner) return Ptr();
-            if (m_token.kind != TokenKind::RightParen) {
+            if (m_token.kind != TokenKind::RightParen)
+            {
                 fail("缺少右括号");
                 return Ptr();
             }
             advance();
             return inner;
         }
-        case TokenKind::LeftBracket: {
+        case TokenKind::LeftBracket:
+        {
             // 方括号列表：[a, b, c] → list(a, b, c)
             advance();
             Memory::Vector<Ptr> elements;
-            if (m_token.kind != TokenKind::RightBracket) {
-                for (;;) {
+            if (m_token.kind != TokenKind::RightBracket)
+            {
+                for (;;)
+                {
                     Ptr element = parseAssignment();
                     if (!element) return Ptr();
                     elements.push_back(element);
-                    if (m_token.kind == TokenKind::Operator && m_token.text == ",") {
+                    if (m_token.kind == TokenKind::Operator && m_token.text == ",")
+                    {
                         advance();
                         continue;
                     }
                     break;
                 }
             }
-            if (m_token.kind != TokenKind::RightBracket) {
+            if (m_token.kind != TokenKind::RightBracket)
+            {
                 fail("列表缺少右方括号 ]");
                 return Ptr();
             }
@@ -549,16 +672,18 @@ private:
             for (const Ptr &element : elements) raw.push_back(element.get());
             return Ptr(Node::makeFunction("list", raw));
         }
-        case TokenKind::Bar: {
+        case TokenKind::Bar:
+        {
             advance();
             Ptr inner = parseAssignment();
             if (!inner) return Ptr();
-            if (m_token.kind != TokenKind::Bar) {
+            if (m_token.kind != TokenKind::Bar)
+            {
                 fail("缺少配对的竖线 |");
                 return Ptr();
             }
             advance();
-            Memory::Vector<NodePtr> arguments{inner.get()};
+            Memory::Vector<NodePtr> arguments{ inner.get() };
             return Ptr(Node::makeFunction("abs", arguments));
         }
         case TokenKind::Identifier: return parseIdentifier();
@@ -568,7 +693,8 @@ private:
         }
     }
 
-    Ptr parseIdentifier() {
+    Ptr parseIdentifier()
+    {
         const std::string name = m_token.text;
         advance();
 
@@ -585,21 +711,23 @@ private:
         // `define(f(x), ...)`：第一个参数是"函数签名"，需要按调用解析。
         // 这个开关只在这个括号内打开，不影响后续参数与其它位置。
         // 必须放在通用函数调用分支之前，否则会被 builtin 分支按普通参数解析。
-        if (m_options.allowSignature && m_token.kind == TokenKind::LeftParen &&
-            (name == "define" || name == "let")) {
+        if (m_options.allowSignature && m_token.kind == TokenKind::LeftParen && (name == "define" || name == "let"))
+        {
             advance();
             ++m_signatureDepth;
             Ptr signature = parseAssignment();
             --m_signatureDepth;
             if (!signature) return Ptr();
-            Memory::Vector<Ptr> arguments{signature};
-            while (m_token.kind == TokenKind::Operator && m_token.text == ",") {
+            Memory::Vector<Ptr> arguments{ signature };
+            while (m_token.kind == TokenKind::Operator && m_token.text == ",")
+            {
                 advance();
                 Ptr argument = parseAssignment();
                 if (!argument) return Ptr();
                 arguments.push_back(argument);
             }
-            if (m_token.kind != TokenKind::RightParen) {
+            if (m_token.kind != TokenKind::RightParen)
+            {
                 fail("define 缺少右括号");
                 return Ptr();
             }
@@ -611,32 +739,39 @@ private:
         }
 
         // 函数调用：内置名字，或用户已登记的定义名（`f(2)` 不再读作 f 乘 2）
-        if (m_token.kind == TokenKind::LeftParen && (isFunctionName(name) || isUserFunction(name))) {
+        if (m_token.kind == TokenKind::LeftParen && (isFunctionName(name) || isUserFunction(name)))
+        {
             advance();
             Memory::Vector<Ptr> arguments;
-            if (m_token.kind != TokenKind::RightParen) {
-                for (;;) {
+            if (m_token.kind != TokenKind::RightParen)
+            {
+                for (;;)
+                {
                     Ptr argument = parseAssignment();
                     if (!argument) return Ptr();
                     arguments.push_back(argument);
-                    if (m_token.kind == TokenKind::Operator && m_token.text == ",") {
+                    if (m_token.kind == TokenKind::Operator && m_token.text == ",")
+                    {
                         advance();
                         continue;
                     }
                     break;
                 }
             }
-            if (m_token.kind != TokenKind::RightParen) {
+            if (m_token.kind != TokenKind::RightParen)
+            {
                 fail("函数调用缺少右括号");
                 return Ptr();
             }
             advance();
 
             // 语法糖：sqrt → ^(1/2)，cbrt → ^(1/3)，ln → log
-            if (name == "sqrt" && arguments.size() == 1) {
+            if (name == "sqrt" && arguments.size() == 1)
+            {
                 return makePow(arguments.front(), makeNumber(BigInt(1), BigInt(2)));
             }
-            if (name == "cbrt" && arguments.size() == 1) {
+            if (name == "cbrt" && arguments.size() == 1)
+            {
                 return makePow(arguments.front(), makeNumber(BigInt(1), BigInt(3)));
             }
             const char *canonical = name == "ln" ? "log" : name.c_str();
@@ -649,24 +784,27 @@ private:
         // 未知函数调用：仅初值条件、define 签名这类场景需要（`y(0)` 是"函数在 0 点取值"，
         // `f(x)` 在 define 的第一个参数里是"函数签名"，而不是 y 乘 0 / f 乘 x）。
         // 默认关闭，避免 `x(1)` 这类写法被误读成函数。
-        if ((m_allowUnknownCalls || m_options.allowAnyCall ||
-             (m_options.allowSignature && m_signatureDepth > 0)) &&
-            m_token.kind == TokenKind::LeftParen) {
+        if ((m_allowUnknownCalls || m_options.allowAnyCall || (m_options.allowSignature && m_signatureDepth > 0)) && m_token.kind == TokenKind::LeftParen)
+        {
             advance();
             Memory::Vector<Ptr> arguments;
-            if (m_token.kind != TokenKind::RightParen) {
-                for (;;) {
+            if (m_token.kind != TokenKind::RightParen)
+            {
+                for (;;)
+                {
                     Ptr argument = parseAssignment();
                     if (!argument) return Ptr();
                     arguments.push_back(argument);
-                    if (m_token.kind == TokenKind::Operator && m_token.text == ",") {
+                    if (m_token.kind == TokenKind::Operator && m_token.text == ",")
+                    {
                         advance();
                         continue;
                     }
                     break;
                 }
             }
-            if (m_token.kind != TokenKind::RightParen) {
+            if (m_token.kind != TokenKind::RightParen)
+            {
                 fail("函数调用缺少右括号");
                 return Ptr();
             }
@@ -681,10 +819,9 @@ private:
         // 但这个名字不在内置表里、也不是已登记的定义（否则上面就处理了）。
         // 这时按乘法解释只会得到"缺少右括号"这类误导性诊断，直接点明原因。
         // 只针对含逗号的形式：`f(x)` 仍保留隐式乘法（`f*x`）的既有语义。
-        if (m_token.kind == TokenKind::LeftParen && !isFunctionName(name) && !isUserFunction(name) &&
-            parenthesizedHasComma()) {
-            fail("`" + name + "` 不是已知函数：若要用 " + name +
-                 "(a, b) 这种写法，请先 define(" + name + "(x, y), ...) 声明它的参数");
+        if (m_token.kind == TokenKind::LeftParen && !isFunctionName(name) && !isUserFunction(name) && parenthesizedHasComma())
+        {
+            fail("`" + name + "` 不是已知函数：若要用 " + name + "(a, b) 这种写法，请先 define(" + name + "(x, y), ...) 声明它的参数");
             return Ptr();
         }
 
@@ -698,19 +835,26 @@ private:
      * 只看括号深度为 1 处的逗号，`((a), (b))` 这类嵌套不影响外层判断。
      * 不消耗 token。
      */
-    bool parenthesizedHasComma() const {
+    bool parenthesizedHasComma() const
+    {
         if (m_token.kind != TokenKind::LeftParen) return false;
         int depth = 0;
         // 从左括号自身开始扫（m_token.start 指向当前 token 起点）
         std::size_t index = m_token.start;
-        for (; index < m_text.size(); ++index) {
+        for (; index < m_text.size(); ++index)
+        {
             const char character = m_text[index];
-            if (character == '(') {
+            if (character == '(')
+            {
                 ++depth;
-            } else if (character == ')') {
+            }
+            else if (character == ')')
+            {
                 --depth;
-                if (depth == 0) return false; // 找到配对右括号，期间没有逗号
-            } else if (character == ',' && depth == 1) {
+                if (depth == 0) return false;  // 找到配对右括号，期间没有逗号
+            }
+            else if (character == ',' && depth == 1)
+            {
                 return true;
             }
         }
@@ -718,48 +862,175 @@ private:
     }
 
     /** @brief 已知函数名表：决定 `name(...)` 是调用还是乘法。 */
-    static bool isFunctionName(const std::string &name) {
+    static bool isFunctionName(const std::string &name)
+    {
         static const char *kNames[] = {
-            "sin", "cos", "tan", "cot", "sec", "csc", "asin", "acos", "atan", "acot",
-            "sinh", "cosh", "tanh", "asinh", "acosh", "atanh",
-            "exp", "log", "ln", "sqrt", "cbrt", "abs", "sign", "floor", "ceil", "round",
-            "factorial", "gamma", "max", "min", "gcd", "lcm",
+            "sin",
+            "cos",
+            "tan",
+            "cot",
+            "sec",
+            "csc",
+            "asin",
+            "acos",
+            "atan",
+            "acot",
+            "sinh",
+            "cosh",
+            "tanh",
+            "asinh",
+            "acosh",
+            "atanh",
+            "exp",
+            "log",
+            "ln",
+            "sqrt",
+            "cbrt",
+            "abs",
+            "sign",
+            "floor",
+            "ceil",
+            "round",
+            "factorial",
+            "gamma",
+            "max",
+            "min",
+            "gcd",
+            "lcm",
             // 命令名：让 `expand((x+1)^3)` 走函数调用而不是当成 expand*(x+1)^3
-            "simplify", "simp", "expand", "factor", "together", "trigsimp", "trigs",
-            "subs", "substitute", "replace", "eval",
-            "define", "let", "undef", "undefine", "forget", "defs", "definitions",
-            "latex", "diff", "differentiate", "derivative", "integrate", "int", "integral",
-            "limit", "lim", "taylor", "series", "solve", "solveSystem", "solvesystem", "system",
-            "groebner", "gb", "resultant", "res",
-            "critical", "extremum", "criticalpoints",
+            "simplify",
+            "simp",
+            "expand",
+            "factor",
+            "together",
+            "trigsimp",
+            "trigs",
+            "subs",
+            "substitute",
+            "replace",
+            "eval",
+            "define",
+            "let",
+            "undef",
+            "undefine",
+            "forget",
+            "defs",
+            "definitions",
+            "latex",
+            "diff",
+            "differentiate",
+            "derivative",
+            "integrate",
+            "int",
+            "integral",
+            "limit",
+            "lim",
+            "taylor",
+            "series",
+            "solve",
+            "solveSystem",
+            "solvesystem",
+            "system",
+            "groebner",
+            "gb",
+            "resultant",
+            "res",
+            "critical",
+            "extremum",
+            "criticalpoints",
             // 由 Engine 直接提供的模块入口（不在内置名单里就会被当成隐式乘法）
-            "determinant", "inverse", "transpose", "trace", "matmul", "dot", "rank", "rref",
-            "charpoly", "eigenvalues", "identity", "simplifyTrig", "specialSimplify",
-            "summation", "converges", "bernoulli", "guess",
-            "odeClassify", "odeSolve", "parse", "evaluate", "help", "quit", "exit",
-            "setprecision", "setPrecision", "unicode", "settings",
-            "list", "equal", "range",
+            "determinant",
+            "inverse",
+            "transpose",
+            "trace",
+            "matmul",
+            "dot",
+            "rank",
+            "rref",
+            "charpoly",
+            "eigenvalues",
+            "identity",
+            "simplifyTrig",
+            "specialSimplify",
+            "summation",
+            "converges",
+            "bernoulli",
+            "guess",
+            "odeClassify",
+            "odeSolve",
+            "parse",
+            "evaluate",
+            "help",
+            "quit",
+            "exit",
+            "setprecision",
+            "setPrecision",
+            "unicode",
+            "settings",
+            "list",
+            "equal",
+            "range",
             // 级数与特殊函数
-            "sum", "summation", "converge", "converges", "bernoulli", "guess",
-            "specialsimplify", "specialsimp", "spsimp",
-            "gamma", "factorial", "factorial2", "doublefactorial", "beta", "binomial",
-            "harmonic", "erf", "erfc", "erfi", "Ei", "li",
-            "besselj", "bessely", "besseli", "besselk",
+            "sum",
+            "summation",
+            "converge",
+            "converges",
+            "bernoulli",
+            "guess",
+            "specialsimplify",
+            "specialsimp",
+            "spsimp",
+            "gamma",
+            "factorial",
+            "factorial2",
+            "doublefactorial",
+            "beta",
+            "binomial",
+            "harmonic",
+            "erf",
+            "erfc",
+            "erfi",
+            "Ei",
+            "li",
+            "besselj",
+            "bessely",
+            "besseli",
+            "besselk",
             // 线性代数
-            "det", "determinant", "inv", "inverse", "invert", "transpose", "trans",
-            "trace", "tr", "matmul", "dot", "rank", "rref", "charpoly",
-            "eigenvals", "eigenvalues", "identity", "eye",
+            "det",
+            "determinant",
+            "inv",
+            "inverse",
+            "invert",
+            "transpose",
+            "trans",
+            "trace",
+            "tr",
+            "matmul",
+            "dot",
+            "rank",
+            "rref",
+            "charpoly",
+            "eigenvals",
+            "eigenvalues",
+            "identity",
+            "eye",
             // 常微分方程
-            "dsolve", "ode", "Derivative", "odeclassify",
+            "dsolve",
+            "ode",
+            "Derivative",
+            "odeclassify",
         };
-        for (const char *candidate : kNames) {
+        for (const char *candidate : kNames)
+        {
             if (name == candidate) return true;
         }
         return false;
     }
 
     /** @brief 名字是否是用户已登记的定义函数（由解析选项提供判据）。 */
-    bool isUserFunction(const std::string &name) const {
+    bool isUserFunction(const std::string &name) const
+    {
         if (!m_options.isUserFunction) return false;
         return m_options.isUserFunction(name);
     }
@@ -776,14 +1047,15 @@ private:
     std::size_t m_errorPosition = 0;
 };
 
-} // namespace
+}  // namespace
 
-bool isReservedConstantName(const std::string &name) {
-    return name == "pi" || name == "PI" || name == "Pi" || name == "e" || name == "E" || name == "oo" ||
-           name == "inf" || name == "infinity" || name == "EulerGamma" || name == "eulergamma";
+bool isReservedConstantName(const std::string &name)
+{
+    return name == "pi" || name == "PI" || name == "Pi" || name == "e" || name == "E" || name == "oo" || name == "inf" || name == "infinity" || name == "EulerGamma" || name == "eulergamma";
 }
 
-namespace {
+namespace
+{
 
 /**
  * @brief 判断输入是否以 `dsolve(` / `ode(` 开头。
@@ -791,10 +1063,12 @@ namespace {
  * 这两个命令的参数里可能带初值条件 `y(0) = 1`，需要把裸符号后跟括号读成函数调用；
  * 其它场景保持"隐式乘法"的直觉读法。
  */
-bool startsWithOdeCommand(const std::string &text) {
+bool startsWithOdeCommand(const std::string &text)
+{
     std::size_t index = 0;
     while (index < text.size() && std::isspace(static_cast<unsigned char>(text[index]))) ++index;
-    for (const char *name : {"dsolve", "ode"}) {
+    for (const char *name : { "dsolve", "ode" })
+    {
         const std::size_t length = std::strlen(name);
         if (text.compare(index, length, name) != 0) continue;
         std::size_t after = index + length;
@@ -804,21 +1078,24 @@ bool startsWithOdeCommand(const std::string &text) {
     return false;
 }
 
-} // namespace
+}  // namespace
 
-ParseResult parseExpression(const std::string &text) {
+ParseResult parseExpression(const std::string &text)
+{
     Parser parser(text, startsWithOdeCommand(text));
     return parser.run();
 }
 
-ParseResult parseExpression(const std::string &text, const ParseOptions &options) {
+ParseResult parseExpression(const std::string &text, const ParseOptions &options)
+{
     Parser parser(text, options, startsWithOdeCommand(text));
     return parser.run();
 }
 
-ParseResult parseInitialConditionText(const std::string &text) {
+ParseResult parseInitialConditionText(const std::string &text)
+{
     Parser parser(text, /*allowUnknownCalls=*/true);
     return parser.run();
 }
 
-} // namespace Cas::Detail
+}  // namespace Cas::Detail

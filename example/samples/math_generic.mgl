@@ -1,0 +1,32 @@
+import std::math;
+import std::cas;
+
+int64 main()
+{
+    float32 single = sin((float32)0);
+    float64 integer = cos(0);
+    assert(single == 0.0f);
+    assert(integer == 1.0);
+    BigDecimal value = BigDecimal(1);
+    value.setPrecision(100);
+    println("sin(1) = {}", sin(value).str());
+    println("exp(1) = {}", exp(value).str());
+    println("pi = {}", pi(100).str());
+    assert(sin(BigDecimal(0)) == BigDecimal(0));
+    assert(cos(BigDecimal(0)) == BigDecimal(1));
+    assert(ln(BigDecimal(1)) == BigDecimal(0));
+    assert(pow(BigDecimal(-2), 3) == BigDecimal(-8));
+    assert(fmod(BigDecimal("-5.5"), BigDecimal(2)) == BigDecimal("-1.5"));
+    assert(floor(BigDecimal("-1.5")) == BigDecimal(-2));
+    assert(ceil(BigDecimal("-1.5")) == BigDecimal(-1));
+    assert(round(BigDecimal("-1.5")) == BigDecimal(-2));
+    Expr x = Expr::symbol("x");
+    println("symbolic = {}", sin(x).differentiate().str());
+    assert(sin(x).str() == "sin(x)");
+    assert(sin(Expr::parse("pi/6")) == Expr::parse("1/2"));
+    assert(sqrt(Expr::parse("4")) == Expr::parse("2"));
+    assert(floor(Expr::parse("-3/2")) == Expr::parse("-2"));
+    assert(round(Expr::parse("-3/2")) == Expr::parse("-2"));
+    assert(fmod(Expr::parse("-11/2"), Expr::parse("2")) == Expr::parse("-3/2"));
+    return 0;
+}

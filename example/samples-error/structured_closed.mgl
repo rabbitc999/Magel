@@ -6,6 +6,7 @@ int64 main() {
     Option<std::json::JsonValue> childOption = root.at(0);
     std::json::JsonValue child = childOption.unwrap();
     root.close();
+    child.close();
     child.asInt();
     return 0;
 }

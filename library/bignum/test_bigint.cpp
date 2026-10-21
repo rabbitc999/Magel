@@ -130,6 +130,7 @@ void testArithmetic()
  */
 void testDivision()
 {
+    const std::size_t defaultDivision = BigInt::divisionThreshold();
     BigInt quotient;
     BigInt remainder;
     CHECK(BigInt(7).divmod(BigInt(2), &quotient, &remainder));
@@ -183,25 +184,26 @@ void testDivision()
     CHECK(bzRemainder == baseRemainder && bzRemainder == expectedRemainder);
     CHECK((-bzDividend) / bzDivisor == -expectedQuotient);
     CHECK((-bzDividend) % bzDivisor == -expectedRemainder);
-    BigInt::setDivisionThreshold(56u);
-    CHECK(BigInt::divisionThreshold() == 56u);
+    BigInt::setDivisionThreshold(defaultDivision);
+    CHECK(BigInt::divisionThreshold() == defaultDivision);
 }
 
 /**
  * 幂、gcd / lcm、同余幂。
  */
 /**
- * @brief 乘法内核：学校算法、Karatsuba 与 NTT 三条路径必须逐位一致（阈值可调）。
+ * @brief 乘法内核：Karatsuba 与 NTT 必须逐位一致，并验证保护阈值不会改变结果。
  */
 void testNtt()
 {
+    const std::size_t defaultMultiplication = BigInt::multiplicationThreshold();
     /* 造几个"够大"的数：2^1000、10^100、随机形状的 limb 序列 */
     const BigInt big = BigInt(2).pow(1000);
     const BigInt ten = BigInt(10).pow(100);
     BigInt randomish("1234567890123456789012345678901234567890123456789012345678901234567890"
                      "9876543210987654321098765432109876543210987654321098765432109876543210");
 
-    /* 依次强制 NTT、Karatsuba、学校算法，三批结果逐位比对。 */
+    /* 依次强制 NTT、Karatsuba 和扩大的 Karatsuba 保护区，逐位比对。 */
     BigInt::setMultiplicationThreshold(1u);
     const BigInt ntt1 = big * ten;
     const BigInt ntt2 = big * randomish;
@@ -214,14 +216,14 @@ void testNtt()
     const BigInt karatsuba3 = randomish * randomish;
     const BigInt karatsuba4 = BigInt(2).pow(4096) * BigInt(2).pow(4096);
     BigInt::setKaratsubaThreshold(1000000u);
-    const BigInt schoolbook1 = big * ten;
-    const BigInt schoolbook2 = big * randomish;
-    const BigInt schoolbook3 = randomish * randomish;
-    const BigInt schoolbook4 = BigInt(2).pow(4096) * BigInt(2).pow(4096);
-    CHECK(ntt1 == karatsuba1 && karatsuba1 == schoolbook1);
-    CHECK(ntt2 == karatsuba2 && karatsuba2 == schoolbook2);
-    CHECK(ntt3 == karatsuba3 && karatsuba3 == schoolbook3);
-    CHECK(ntt4 == karatsuba4 && karatsuba4 == schoolbook4);
+    const BigInt protectedKaratsuba1 = big * ten;
+    const BigInt protectedKaratsuba2 = big * randomish;
+    const BigInt protectedKaratsuba3 = randomish * randomish;
+    const BigInt protectedKaratsuba4 = BigInt(2).pow(4096) * BigInt(2).pow(4096);
+    CHECK(ntt1 == karatsuba1 && karatsuba1 == protectedKaratsuba1);
+    CHECK(ntt2 == karatsuba2 && karatsuba2 == protectedKaratsuba2);
+    CHECK(ntt3 == karatsuba3 && karatsuba3 == protectedKaratsuba3);
+    CHECK(ntt4 == karatsuba4 && karatsuba4 == protectedKaratsuba4);
 
     /* NTT 路径也要和"人工已知值"一致 */
     BigInt::setMultiplicationThreshold(1u);
@@ -238,9 +240,9 @@ void testNtt()
     CHECK(remainder < divisor);
 
     /* 换回默认阈值，后面的用例不受影响 */
-    BigInt::setMultiplicationThreshold(48000u);
+    BigInt::setMultiplicationThreshold(defaultMultiplication);
     BigInt::setKaratsubaThreshold(96u);
-    CHECK(BigInt::multiplicationThreshold() == 48000u);
+    CHECK(BigInt::multiplicationThreshold() == defaultMultiplication);
     CHECK(BigInt::karatsubaThreshold() == 96u);
 }
 

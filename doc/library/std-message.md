@@ -1,4 +1,4 @@
-# std::message — 消息路由
+# std::message — 线程邮箱
 
 [返回库目录](README.md) · [全部符号](symbols.md)
 
@@ -10,35 +10,58 @@ import std::message;
 
 ## 公共约定与错误边界
 
-泛型 send/receive 按 T 在协程或线程间传递值副本；接收类型必须与发送的类型匹配。协程与线程句柄不可混用。线程功能需 --threads；带类型消息语法及宿主交互见语言参考与正式样例。
+泛型线程消息按值复制，接收类型必须匹配；静态函数可传递，引用、独占资源、嵌套函数值和带捕获闭包不可传递。邮箱容量 256，sendThread 在满时等待；sendFor/trySend 和 receiveFor/tryReceive 返回统一操作状态。receiveThread 沿用阻塞和原始诊断；Receive<T> 仅在 READY 时读取 value。需 --threads。
 
 ## 参考代码
 
-完整程序：[example/samples/coroutine_messages.mgl](../../example/samples/coroutine_messages.mgl)。
+完整程序：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
 
 ```powershell
-magel run example/samples/coroutine_messages.mgl
+magel run example/samples/typed_messages_shared.mgl --threads
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
 ```magel
+import std::concurrency;
 
-import std::coroutine;
 
-void worker() {
-    String message = std::coroutine::receive();
-    String reply = "ack:" + message;
-    std::coroutine::send(std::coroutine::parent(), reply);
+import std::message;
+import std::thread;
+
+struct Parcel { int64 id; String name; List<int64> readings; };
+
+int64 isolatedCounter;
+
+void typedWorker() {
+    std::concurrency::Shared<int64> sharedCounter = std::message::receiveThread<std::concurrency::Shared<int64>>();
+    Parcel received = std::message::receiveThread<Parcel>();
+    int64 old = sharedCounter.swap(20);
+    isolatedCounter = 99;
+    std::message::sendThread<Parcel>(std::thread::parent(), received);
+    std::message::sendThread<int64>(std::thread::parent(), old);
 }
 
 int64 main() {
-    SharedCoroutineHandle task = std::coroutine::create(worker);
-    std::coroutine::send(task, "hello");
-    String reply = std::coroutine::receive();
-    std::coroutine::wait(task);
-    println("{}", reply);
+    std::concurrency::Shared<int64> sharedCounter = std::concurrency::Shared<int64>::create(10);
+    isolatedCounter = 3;
+    Parcel original;
+    original.id = 7;
+    original.name = "before";
+    List<int64> readings;
+    readings.push(4);
+    original.readings = readings;
+    Thread task = std::thread::create(typedWorker);
+    std::message::sendThread<std::concurrency::Shared<int64>>(task, sharedCounter);
+    std::message::sendThread<Parcel>(task, original);
+    original.id = 8;
+    original.readings.push(6);
+    Parcel reply = std::message::receiveThread<Parcel>();
+    int64 previous = std::message::receiveThread<int64>();
+    std::thread::wait(task);
+    println("{} {} {} {} {} {}", reply.id, reply.name, reply.readings.len(),
+    previous, sharedCounter.get(), isolatedCounter);
     return 0;
 }
 ```
@@ -49,7 +72,7 @@ int64 main() {
 <summary>示例输出</summary>
 
 ```text
-ack:hello
+7 before 1 10 20 3
 ```
 
 </details>
@@ -60,107 +83,34 @@ ack:hello
 
 | 名称 | 声明 |
 | --- | --- |
-| [sendCoroutine](#api-0) | `void sendCoroutine<T>(SharedCoroutineHandle coroutine, T value)` |
-| [receiveCoroutine](#api-1) | `T receiveCoroutine<T>()` |
-| [sendThread](#api-2) | `void sendThread<T>(IsolatedThreadHandle thread, T value)` |
-| [receiveThread](#api-3) | `T receiveThread<T>()` |
+| [sendThread](#api-0) | `void sendThread<T>(Thread thread, T value)` |
+| [receiveThread](#api-1) | `T receiveThread<T>()` |
+| [sendFor](#api-2) | `int64 sendFor<T>(Thread thread, T value, int64 millis)` |
+| [trySend](#api-3) | `int64 trySend<T>(Thread thread, T value)` |
+| [receiveFor](#api-4) | `std::concurrency::Receive<T> receiveFor<T>(int64 millis)` |
+| [tryReceive](#api-5) | `std::concurrency::Receive<T> tryReceive<T>()` |
 
 <a id="api-0"></a>
 
-### sendCoroutine（1）
+### sendThread（1）
 
 **声明**
 
 ```magel
-void sendCoroutine<T>(SharedCoroutineHandle coroutine, T value);
-```
-
-**行为**
-
-向指定协程投递 T 类型的值副本。
-
-跨协程 / 跨线程的消息：`import std::message;`。
-
-**参数**
-
-| 参数 | 类型／声明 | 含义 | 默认值 |
-| --- | --- | --- | --- |
-| `coroutine` | `SharedCoroutineHandle coroutine` | 协程句柄 | 无 |
-| `value` | `T value` | 输入值或写入的新值 | 无 |
-
-**返回值**
-
-无返回值。
-
-**错误与边界**
-
-遵循本页“公共约定与错误边界”。
-
-**调用形式**
-
-```magel
-std::message::sendCoroutine<T>(coroutine, value);
-```
-
-**源码**：[source/std/message.mgl:9](../../source/std/message.mgl#L9)。
-
-**完整示例**：[example/samples/coroutine_messages.mgl](../../example/samples/coroutine_messages.mgl)。
-
-<a id="api-1"></a>
-
-### receiveCoroutine（2）
-
-**声明**
-
-```magel
-T receiveCoroutine<T>();
-```
-
-**行为**
-
-等待当前协程的一条 T 类型消息。
-
-**参数**
-
-无显式参数。实例方法使用当前接收者。
-
-**返回值**
-
-`T`。等待当前协程的一条 T 类型消息。
-
-**错误与边界**
-
-遵循本页“公共约定与错误边界”。
-
-**调用形式**
-
-```magel
-std::message::receiveCoroutine<T>();
-```
-
-**源码**：[source/std/message.mgl:10](../../source/std/message.mgl#L10)。
-
-**完整示例**：[example/samples/coroutine_messages.mgl](../../example/samples/coroutine_messages.mgl)。
-
-<a id="api-2"></a>
-
-### sendThread（3）
-
-**声明**
-
-```magel
-void sendThread<T>(IsolatedThreadHandle thread, T value);
+void sendThread<T>(Thread thread, T value);
 ```
 
 **行为**
 
 向指定线程投递 T 类型的值副本。
 
+邮箱传值复制，静态函数可传递，借用闭包和宿主独占资源不可传递。
+
 **参数**
 
 | 参数 | 类型／声明 | 含义 | 默认值 |
 | --- | --- | --- | --- |
-| `thread` | `IsolatedThreadHandle thread` | 线程句柄或归属线程 | 无 |
+| `thread` | `Thread thread` | 线程句柄或归属线程 | 无 |
 | `value` | `T value` | 输入值或写入的新值 | 无 |
 
 **返回值**
@@ -177,13 +127,13 @@ void sendThread<T>(IsolatedThreadHandle thread, T value);
 std::message::sendThread<T>(thread, value);
 ```
 
-**源码**：[source/std/message.mgl:11](../../source/std/message.mgl#L11)。
+**源码**：[source/std/message.mgl:6](../../source/std/message.mgl#L6)。
 
-**完整示例**：[example/samples/coroutine_messages.mgl](../../example/samples/coroutine_messages.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
 
-<a id="api-3"></a>
+<a id="api-1"></a>
 
-### receiveThread（4）
+### receiveThread（2）
 
 **声明**
 
@@ -213,6 +163,159 @@ T receiveThread<T>();
 std::message::receiveThread<T>();
 ```
 
+**源码**：[source/std/message.mgl:7](../../source/std/message.mgl#L7)。
+
+**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+
+<a id="api-2"></a>
+
+### sendFor（3）
+
+**声明**
+
+```magel
+int64 sendFor<T>(Thread thread, T value, int64 millis);
+```
+
+**行为**
+
+在截止时间内复制发送载荷，返回统一操作状态。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `thread` | `Thread thread` | 线程句柄或归属线程 | 无 |
+| `value` | `T value` | 输入值或写入的新值 | 无 |
+| `millis` | `int64 millis` | 等待毫秒数；-1 无限、0 非阻塞，waitFor 和 sleepFor 不接受负数 | 无 |
+
+**返回值**
+
+`int64`。在截止时间内复制发送载荷，返回统一操作状态。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+std::message::sendFor<T>(thread, value, millis);
+```
+
+**源码**：[source/std/message.mgl:9](../../source/std/message.mgl#L9)。
+
+**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+
+<a id="api-3"></a>
+
+### trySend（4）
+
+**声明**
+
+```magel
+int64 trySend<T>(Thread thread, T value);
+```
+
+**行为**
+
+立即尝试复制发送，队列满返回 FULL。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `thread` | `Thread thread` | 线程句柄或归属线程 | 无 |
+| `value` | `T value` | 输入值或写入的新值 | 无 |
+
+**返回值**
+
+`int64`。立即尝试复制发送，队列满返回 FULL。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+std::message::trySend<T>(thread, value);
+```
+
 **源码**：[source/std/message.mgl:12](../../source/std/message.mgl#L12)。
 
-**完整示例**：[example/samples/coroutine_messages.mgl](../../example/samples/coroutine_messages.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+
+<a id="api-4"></a>
+
+### receiveFor（5）
+
+**声明**
+
+```magel
+std::concurrency::Receive<T> receiveFor<T>(int64 millis);
+```
+
+**行为**
+
+显式限时接收，只有 READY 时 value 有效；-1 无限、0 非阻塞。
+
+**参数**
+
+| 参数 | 类型／声明 | 含义 | 默认值 |
+| --- | --- | --- | --- |
+| `millis` | `int64 millis` | 等待毫秒数；-1 无限、0 非阻塞，waitFor 和 sleepFor 不接受负数 | 无 |
+
+**返回值**
+
+`std::concurrency::Receive<T>`。显式限时接收，只有 READY 时 value 有效；-1 无限、0 非阻塞。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+std::message::receiveFor<T>(millis);
+```
+
+**源码**：[source/std/message.mgl:13](../../source/std/message.mgl#L13)。
+
+**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+
+<a id="api-5"></a>
+
+### tryReceive（6）
+
+**声明**
+
+```magel
+std::concurrency::Receive<T> tryReceive<T>();
+```
+
+**行为**
+
+立即尝试接收，未就绪返回 TIMEOUT，只有 READY 时读取 value。
+
+**参数**
+
+无显式参数。实例方法使用当前接收者。
+
+**返回值**
+
+`std::concurrency::Receive<T>`。立即尝试接收，未就绪返回 TIMEOUT，只有 READY 时读取 value。
+
+**错误与边界**
+
+遵循本页“公共约定与错误边界”。
+
+**调用形式**
+
+```magel
+std::message::tryReceive<T>();
+```
+
+**源码**：[source/std/message.mgl:19](../../source/std/message.mgl#L19)。
+
+**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。

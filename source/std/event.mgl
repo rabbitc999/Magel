@@ -1,201 +1,67 @@
 module std::event;
-
-/*
- * 中断事件与软件定时器（`import std::event;` 才能用）。
- *
- * 一条**中断事件函数**（函数指针）有两个触发源：
- *   * 系统内部的**软件定时器**：`start()` 之后按周期在 VM 的指令边界自动触发；
- *   * 外部胶水 / 宿主：`Machine::raiseInterrupt(InterruptHandle, 来源)`，或程序里
- *     `Interrupt.raise(来源)` / `Timer.raise(来源)`。
- *
- * 中断的归属、回调与定时器打包在**中断句柄** `Interrupt` 里：`callback` 是要调的
- * 函数指针，`timer` 是可选的定时器句柄（管"释放过就丢弃"和线程归属），`thread` 是
- * 归属线程。某一线程创建的中断默认在这个线程的 VM 里执行，别的线程不受影响。
- *
- * 交付语义是"异步发生、在安全点交付"：触发只是排进队列，回调由 VM 在**下一条指令
- * 边界**用执行线程调用（像硬件中断进 ISR），所以不会重入正在跑的宿主回调，也不用自己
- * 加锁保护 VM 状态。中断**优先于线程与协程的推进**：主循环、线程等待 / 收消息、协程
- * 调度每走一步都先交付一轮中断。
- *
- * 时间源：宿主注入过时钟（`Machine::setTimeCallback`）就用真实时间；没有就用虚拟时钟
- * （1 条指令 = 1 个时间单位），所以解释器与导出程序不接时钟也能得到确定行为。
- * 一次边界至多补一次：错过的周期直接跳过（不补跑一串）。
- * 回调会跨越登记调用保存，因此必须具有静态来源：具名函数或不借用局部变量的 fn。
- * 捕获局部变量的 fn 在登记调用处报 MGL1204；同步算法回调不受此限制。
- */
-
-/* 事件句柄：VM 侧事件源槽位，**单调递增、不复用**；`destroy` 之后再触发是空操作。
- * 软件定时器（`Timer`）与 GUI / 宿主事件（`bindEvents`、`raiseInterrupt`）共用它：
- * 槽位记住归属线程与绑定回调，所以"事件回调"和"定时器"在 API 上统一叫事件句柄。 */
-type EventHandle = int64;
-
-/* 中断事件函数：`source` 是触发方给的值（软件定时器自动触发时是 0）。 */
-
-
-EventHandle __timerCreate(int64 period);
-void __timerBind(EventHandle handle, void fn(int64) callback);
-void __timerStart(EventHandle handle);
-void __timerStop(EventHandle handle);
-int64 __timerTicks(EventHandle handle);
-bool __timerRunning(EventHandle handle);
-/* 句柄还活着（没 `destroy`）返回 true；登记自定义参数回调前用它校验。 */
-bool __timerAlive(EventHandle handle);
-int64 __timerThread(EventHandle handle);
-void __timerRaise(EventHandle handle, int64 source);
-void __timerDestroy(EventHandle handle);
-void __interruptRaise(EventHandle timer, int64 thread, void fn(int64) callback, int64 source);
-
-/*
- * 中断句柄：一个中断事件函数 + 它归属的线程（+ 可选的定时器句柄）。
- *
- * 每个线程有**自己的**虚拟机求值循环与中断队列；中断只在**创建它的那个线程**里交付，
- * 别的线程不受影响。`Timer` 创建时就把创建者的线程 id 记进定时器槽，`Timer.thread()`
- * 可以读出来，`Interrupt.of(timer, handler)` 默认就用它当归属线程（也就是创建定时器的
- * 那个线程）；宿主胶水拿这个句柄就能跨线程投递，投错线程是空操作
- * （见 `Machine::raiseInterrupt(InterruptHandle)`）。
- *
- * 句柄自带函数指针，所以定时器**没绑过**回调也能交付；`timer` 只负责"释放过就丢弃"
- * 和线程归属。`raise()` 从 Magel 侧投递，等价于宿主调 `Machine::raiseInterrupt(句柄, source)`。
- */
-struct Interrupt {
-    void fn(int64) callback;
-    EventHandle timer;
-    int64 thread;
-
-    /* 按值传 `Timer` 会触发一次 Drop（把定时器销毁），所以这里只收句柄。 */
-    static Interrupt of(EventHandle timer, int64 thread, void fn(int64) handler) {
-        Interrupt result;
-        result.callback = handler;
-        result.timer = timer;
-        result.thread = thread;
-        return result;
+import std::concurrency;
+/* 事件只在显式 receive 时返回，绝不自动调用用户代码。默认邮箱容量 256。 */
+int64 __receive(int64 millis);
+__TimerSource __timer(int64 nanos, bool repeat);
+__TimerSource __emptySource();
+void __destroy(int64 handle);
+int64 __source();
+int64 __tag();
+int64 __missed();
+int64 __id();
+int64 __post(int64 tag, int64 source);
+void __close();
+struct Event {
+    int64 timer;
+    int64 tag;
+    int64 source;
+    int64 missed;
+};
+std::concurrency::Receive<Event> receiveFor(int64 millis) {
+    std::concurrency::Receive<Event> result;
+    result.status = __receive(millis);
+    if (result.isReady()) {
+        result.value.timer = __id();
+        result.value.tag = __tag();
+        result.value.source = __source();
+        result.value.missed = __missed();
     }
-
-    /* 不给线程就默认归属创建该定时器的线程（某一线程创建的中断在它自己的 VM 里跑）。 */
-    static Interrupt of(EventHandle timer, void fn(int64) handler) {
-        Interrupt result;
-        result.callback = handler;
-        result.timer = timer;
-        result.thread = __timerThread(timer);
-        return result;
-    }
-
-    /* 主动投递这个句柄：归属别的线程时是空操作，交付仍在指令边界做。 */
-    void raise(int64 source) { __interruptRaise(self.timer, self.thread, self.callback, source); }
-    void raise() { __interruptRaise(self.timer, self.thread, self.callback, 0); }
+    return result;
+}
+std::concurrency::Receive<Event> receive() { return receiveFor(-1); }
+std::concurrency::Receive<Event> tryReceive() { return receiveFor(0); }
+int64 post(int64 tag, int64 source) { return __post(tag, source); }
+void close() { __close(); }
+/** 定时源由当前值独占；事件中的 timer 字段只作来源标识。 */
+#NonCopyable
+opcode __TimerSource {
+    new = std::event::__emptySource;
+    drop = std::event::__destroy;
 };
 
-struct Timer : Drop {
-    EventHandle handle;
-
-    Timer(int64 period) {
-        self.handle = __timerCreate(period);
+/** 不可复制的定时源所有者，作用域退出或 stop 时取消定时源。 */
+struct Timer {
+    __TimerSource __source;
+    static Timer everyNanos(int64 nanos) {
+        Timer result; result.__source = __timer(nanos, true);
+        return std::lang::move(&result);
     }
-
-    static Timer everyNanos(int64 period) {
-        Timer result;
-        result.handle = __timerCreate(period);
-        return result;
+    static Timer afterNanos(int64 nanos) {
+        Timer result; result.__source = __timer(nanos, false);
+        return std::lang::move(&result);
     }
-
     static Timer everyMillis(int64 millis) {
         Timer result;
-        result.handle = __timerCreate(millis * 1000000);
-        return result;
+        if (millis > 0 && millis <= 9223372036854) { result.__source = __timer(millis * 1000000, true); }
+        return std::lang::move(&result);
     }
-
-    /* 绑定中断事件函数；再绑一次就换掉上一个。 */
-    void onInterrupt(void fn(int64) callback) { __timerBind(self.handle, callback); }
-    void onTick(void fn(int64) callback) { __timerBind(self.handle, callback); }
-
-    void start() { __timerStart(self.handle); }
-    void stop() { __timerStop(self.handle); }
-    int64 ticks() { return __timerTicks(self.handle); }
-    bool running() { return __timerRunning(self.handle); }
-
-    /* 这个中断归属的线程 id（创建它的线程）；中断只在该线程的 VM 里交付。 */
-    int64 thread() { return __timerThread(self.handle); }
-
-    /* 主动触发一次（程序里也能用；外部胶水走 Machine::raiseInterrupt）。 */
-    void raise(int64 source) { __timerRaise(self.handle, source); }
-    void raise() { __timerRaise(self.handle, 0); }
-
-    void drop() { __timerDestroy(self.handle); }
+    static Timer afterMillis(int64 millis) {
+        Timer result;
+        if (millis > 0 && millis <= 9223372036854) { result.__source = __timer(millis * 1000000, false); }
+        return std::lang::move(&result);
+    }
+    bool isValid() { return self.__source.opcode != 0; }
+    /** 只返回来源标识，不转移释放责任。 */
+    int64 id() { return self.__source.opcode; }
+    void stop() { self.__source = __emptySource(); }
 };
-
-/*
- * ---- 带自定义参数的事件回调 ----
- *
- * `void fn(int64)` 只带一个 `int64 source`；更多参数使用 `void fn(int64, List<Any>)`
- * 把参数统一打包成 `std::lang::List<std::lang::Any>`。参数列表由 Magel 侧构造，元素类型在**编译期**
- * 按普通重载规则逐项校验，登记时再校验回调与句柄，无效登记返回 0（不会打断程序）。
- * 交付仍走同一套「下一条指令边界」的中断机制。
- *
- * 参数按值复制进登记表；`bindEventArguments` 之后**调用点手里的列表仍归调用点**，
- * 要释放就自己 `drop`。多个事件源请分别建 `Timer` 并只对其中一个调用本函数
- * （后登记覆盖前一个）。
- *
- * ⚠ 元素类型要真写成 `std::lang::Any`：Magel 把 `std::lang::Any` 当泛型通配符，所以
- * `std::lang::List<int64>` 这类列表**编译器会放行**、要到回调取元素时才炸。列表形式没有
- * 逐元素检查，变长形式（每个实参必须是 `std::lang::Any`）才是编译期兜得住的写法。
- */
-
-
-/*
- * 当前登记的回调与参数。放进**模块级结构体**而不是裸容器全局：裸 `std::lang::List` 全局
- * 一 `import` 就分配一个运行期对象，程序不登记也会在停机时报"没释放"；结构体的
- * 容器字段只在真正登记时才分配。
- */
-struct EventBinding {
-    void fn(int64, std::lang::List<std::lang::Any>) callback;
-    std::lang::List<std::lang::Any> arguments;
-    bool bound;
-};
-EventBinding __eventBinding;
-
-/* 事件句柄的中断蹦床：事件值透传给用户回调，自定义参数从登记表取。
- * 只给本模块的 `__timerBind` 当回调，加 `inline` 让语言层面就挡住跨模块引用。 */
-inline void __eventTrampoline(int64 event) {
-    if (!__eventBinding.bound) { return; }
-    __eventBinding.callback(event, __eventBinding.arguments);
-}
-
-/* 登记主体：先校验再落表。回调没绑定（函数指针为 0）或句柄已释放时返回 0，不做任何事。
- * 只给本模块的两个 `bindEventArguments` 重载用，加 `inline` 让语言层面就挡住跨模块引用。 */
-inline int32 __bindEventArguments(EventHandle handle, void fn(int64, std::lang::List<std::lang::Any>) callback,
-                                  std::lang::List<std::lang::Any> arguments) {
-    if (!__timerAlive(handle)) { return 0; }   /* 句柄无效 / 已释放 */
-    if (callback == 0) { return 0; }           /* 没给回调函数 */
-    if (__eventBinding.bound) { __eventBinding.arguments.drop(); }
-    __eventBinding.callback = callback;
-    /* 结构体字段直接接一个具名容器会**别名**（不复制），调用点 `drop` 后登记表就悬空；
-     * `.copy()` 造一个只归登记表的副本，重新登记 / `unbindEventArguments` 时安全释放。 */
-    __eventBinding.arguments = arguments.copy();
-    __eventBinding.bound = true;
-    __timerBind(handle, __eventTrampoline);
-    return 1;
-}
-
-/* 现成列表形式：`bindEventArguments(handle, callback, args)`。 */
-int32 bindEventArguments(EventHandle handle, void fn(int64, std::lang::List<std::lang::Any>) callback,
-                         std::lang::List<std::lang::Any> arguments) {
-    return __bindEventArguments(handle, callback, arguments);
-}
-
-/*
- * 变长形式：`bindEventArguments(handle, callback, a, b, c)` 或者不带参数。
- * 每个实参**必须**是 `std::lang::Any`（编译期逐项校验），空变长实参表示「没有自定义参数」。
- * 元素个数 / 类型由调用点写死，与回调里的取值一一对应。
- */
-int32 bindEventArguments(EventHandle handle, void fn(int64, std::lang::List<std::lang::Any>) callback,
-                         std::lang::Any... arguments) {
-    std::lang::List<std::lang::Any> packed = arguments;
-    return __bindEventArguments(handle, callback, packed);
-}
-
-/* 取消登记；之后事件不再交付带参数回调。 */
-void unbindEventArguments() {
-    if (!__eventBinding.bound) { return; }
-    __eventBinding.bound = false;
-    __eventBinding.arguments.drop();
-}

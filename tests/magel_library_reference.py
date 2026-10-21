@@ -43,6 +43,9 @@ int64 __hidden();
     extra=reference.declarations(ROOT/'source/std/lang.mgl','module fixture; int64 fn(int64) make(String s="a,  b"); int64 constant=other();')
     assert [r['name'] for r in extra if r['kind']=='function']==['make']
     assert reference.parameters(extra[0]['signature'])==[('s','String s','"a,  b"')]
+    derived=reference.declarations(ROOT/'source/std/lang.mgl','module fixture;\n#derive(Equal, Hash, Clone)\nenum Kind { Integer, Symbol };')
+    assert any(r['kind']=='enum' and r['name']=='Kind' for r in derived)
+    assert not any(r['kind']=='function' and r['name']=='derive' for r in derived)
     assert functions[2]['result']=='(int64, Option<T>)'
     assert reference.parameters(functions[3]['signature'])[-1]==('url','String url','"http://localhost/"')
     assert any(r['signature']=='Bad, Empty' for r in entries)

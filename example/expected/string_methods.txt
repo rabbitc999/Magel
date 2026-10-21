@@ -1,0 +1,1 @@
+string methods: byte, UTF-8, empty, bounds and value semantics OK

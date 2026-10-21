@@ -51,19 +51,19 @@ struct Memory {
     }
 };
 
-struct Arena : Drop {
-    uint64 handle;
+/** 独占运行时分配区；普通复制被禁止，释放或重置使已分配视图失效。 */
+#NonCopyable
+opcode Arena {
+    new = std::memory::__arenaCreate;
+    drop = std::memory::__arenaDrop;
 
-    static Arena create() {
-        self.handle = __arenaCreate();
-    }
+    static Arena create() { return Arena::new(); }
 
     Span<char> allocate(int64 bytes) {
         std::lang::assert(bytes >= 0);
-        char mut& data = __arenaAllocate(self.handle, bytes);
+        char mut& data = __arenaAllocate((uint64)self.opcode, bytes);
         return Span<char>::from(data, bytes);
     }
 
-    void reset() { __arenaReset(self.handle); }
-    void drop() { __arenaDrop(self.handle); }
+    void reset() { __arenaReset((uint64)self.opcode); }
 };

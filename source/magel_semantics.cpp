@@ -3000,6 +3000,7 @@ namespace
 #include "semantics/reflection_metadata.cpp"
 #include "semantics/reflection_queries.cpp"
 #include "semantics/reflection_calls.cpp"
+#include "semantics/reflection_serialization.cpp"
 #include "semantics/derive.cpp"
 #include "semantics/macro_fragments.cpp"
 #include "semantics/ast_generic_closures.cpp"
@@ -3058,7 +3059,7 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
             g_freshSink = nullptr;
             program = simple_ast::Program{};
             // 第一轮只发现具体签名，不执行生成前的占位宿主；最终重放恢复全部绑定检查。
-            g_executeNow = run != 0 && !(g_reflectionEnabled && !reflectionQueriesReady && HasReflectionQueries());
+            g_executeNow = run != 0 && !(!reflectionQueriesReady && HasReflectionQueries());
             if (!RegisterTop())
             {
                 RestoreFirstDiagnostic();
@@ -3078,14 +3079,16 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
                 return 1;
             }
             g_executeNow = run != 0;
-            if (g_reflectionEnabled && !reflectionQueriesReady && HasReflectionQueries())
+            if (!reflectionQueriesReady && HasReflectionQueries())
             {
                 MReflectionBuilder table;
-                if (!table.build()) return 1;
+                if (g_reflectionEnabled && !table.build()) return 1;
                 MReflectionQueries queries{ table };
                 auto generated = queries.build();
                 MReflectionCalls calls{ queries, table };
                 calls.build();
+                MReflectionSerialization serialization{ queries, table };
+                serialization.build();
                 generated = "module std::reflect;\n" + queries.helpers + queries.functions;
                 if (!g_error.empty()) return 1;
                 g_nodes = parsedNodes;
@@ -3418,7 +3421,7 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
                                 for (const stackvm::DebugFrame &frame : executed.sourceTrace)
                                 {
                                     if (!g_debugEnabled && IsInternalQuadLocation(frame.location)) continue;
-                                    traceText += "\n  " + (frame.function.empty() ? Memory::String("(根)") : frame.function) + "  " + frame.location.toString() + " [thread " + Memory::toString(frame.threadId) + " coroutine " + Memory::toString(frame.coroutineId) + " ip " + Memory::toString(frame.instruction) + "]";
+                                    traceText += "\n  " + (frame.function.empty() ? Memory::String("(根)") : frame.function) + "  " + frame.location.toString() + " [thread " + Memory::toString(frame.threadId) + " ip " + Memory::toString(frame.instruction) + "]";
                                 }
                                 if (!traceText.empty()) g_error += MAGEL_TEXT("\n调用栈（外 → 内）：") + traceText;
                             }

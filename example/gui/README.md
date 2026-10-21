@@ -19,7 +19,7 @@ python tests/magel_desktop.py --magel C:/path/to/magel.exe
 产物分别位于 `build/magel-gui-winapi` 和 `build/magel-turtle-winapi`，无需 Qt。
 Windows 胶水默认加载工作目录的 `mcgui.dll`；设置 `MAGEL_GUI_LIBRARY` 可指定 Qt DLL
 或其他兼容库的路径。其他平台默认使用 `libmcguiqt.so`。`startEventTimer` 返回 `void`。
-`waitEvent` 只等待有限时间片，超时返回 0，让 VM 继续交付中断。
+`waitEvent` 只等待有限时间片，超时返回 0，让 VM 继续显式接收事件。
 
 ## 运行示例（Linux）
 
@@ -30,7 +30,7 @@ Windows 胶水默认加载工作目录的 `mcgui.dll`；设置 `MAGEL_GUI_LIBRAR
 python magel/example/gui/test_qt.py            # 用 QT_QPA_PLATFORM=offscreen
 ```
 
-脚本会构建 `libmcguiqt.so`、编译两个示例、跑 `counter close` 与 `qt_interrupt` 并比对输出。
+脚本会构建 `libmcguiqt.so`、编译两个示例、跑 `counter close` 与 `qt_events` 并比对输出。
 
 有交互桌面时手动跑：
 
@@ -48,50 +48,16 @@ python magel/example/gui/test_qt.py            # 用 QT_QPA_PLATFORM=offscreen
 | `gui::label/button/textBox(id,x,y,width,height,text)` | 添加控件；成功 1，失败 0。ID 在 1–65535 且不可重复。 |
 | `gui::setText(id,text)` / `gui::getText(id)` | 设置或读取控件文本；`getText` 失败时返回空串。 |
 | `gui::pollEvent()` | 处理当前待决事件；无事件 0，按钮点击返回其 ID，窗口关闭 -1。 |
-| `gui::waitEvent()` | 泵一小段时间片；有事件返回事件，超时返回 0（让 VM 回去交付中断）。 |
+| `gui::waitEvent()` | 泵一小段时间片；有事件返回事件，超时返回 0（返回程序显式处理事件）。 |
 | `gui::close()` | 主动关闭窗口。 |
 
 事件回调（Qt 后端）：
 
-中断处理函数收到的事件值约定：按钮点击 = 控件 ID（>0），窗口关闭 = -1，Qt 周期事件 = 0。
+显式接收的 source 值约定：按钮点击 = 控件 ID（>0），窗口关闭 = -1，Qt 周期事件 = 0。
 
-## 事件回调示例
+## 显式事件示例
 
-[`examples/qt_interrupt.mgl`](examples/qt_interrupt.mgl) 把三样东西串起来：
-
-```c
-import gui;
-import std::event;
-
-int64 clicks = 0; int64 ticks = 0; int64 closed = 0;
-void onGuiEvent(int64 source) {
-    if (source == -1) { closed = closed + 1; }
-    if (source == 0) { ticks = ticks + 1; }
-    if (source > 0) { clicks = clicks + 1; }
-}
-
-int64 main() {
-    gui::open((int32)360, (int32)200, "Qt 事件回调");
-    Timer events = Timer::everyNanos(0);        /* 只收 GUI 事件，不自动触发 */
-    events.onInterrupt(onGuiEvent);
-    gui::bindEvents(events.handle);
-    gui::startEventTimer((int32)0);             /* 每个泵回合一次周期事件 */
-    gui::pumpEvery((int64)64);                  /* 长循环里每 64 条指令泵一次 */
-    int64 i = 0;
-    while (i < 20000) { i = i + 1; }
-    gui::pumpEvery((int64)0);
-    gui::postEvent((int32)1);                   /* 注入点击 */
-    gui::postEvent((int32)-1);                  /* 注入关窗 */
-    gui::stopEventTimer();
-    gui::unbindEvents();
-    gui::close();
-    return 0;
-}
-```
-
-事件链是：GUI 事件 → `mcgui_callback_t` → `glue.cpp` 的桥 → 运行时中断队列 →
-下一个执行边界交付 `onGuiEvent`。周期事件只在 `pump()` 里派发，而 `pumpEvery` 让指令
-钩子定期调用 `pump()`，所以纯计算循环也能收到事件；钩子在中断交付期间不运行，避免套娃。
+[examples/qt_events.mgl](examples/qt_events.mgl) 登记一个事件标签，通过 std::event::tryReceive() 显式处理按钮、周期和关窗事件。GUI 泵只收集宿主事件，不调用 Magel 用户函数。队列容量固定为 256，gui::droppedEvents() 报告满队列或运行结束后的投递失败；需要保留逐条业务数据时应在宿主侧施加背压。
 
 ## ABI 与验证
 

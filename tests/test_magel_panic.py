@@ -38,14 +38,14 @@ def main():
         result, stderr = command([compiler, 'run', source, '--no-compress-symbols'])
         assert result.returncode != 0 and '调用栈' in stderr
         threaded = directory / 'threaded.mgl'
-        threaded.write_text('import std::thread;\nvoid spin() { while (true) {} }\nvoid blocked() { std::lang::String x = std::thread::receive(); }\nvoid leaf() { std::lang::panic("worker failure"); }\nvoid crash() { leaf(); }\nint64 main() { IsolatedThreadHandle a = std::thread::create(spin); IsolatedThreadHandle b = std::thread::create(blocked); IsolatedThreadHandle c = std::thread::create(crash); while (true) {} return 0; }\n', encoding='utf-8')
+        threaded.write_text('import std::thread;\nvoid spin() { while (true) {} }\nvoid blocked() { std::lang::String x = std::thread::receive(); }\nvoid leaf() { std::lang::panic("worker failure"); }\nvoid crash() { leaf(); }\nint64 main() { Thread a = std::thread::create(spin); Thread b = std::thread::create(blocked); Thread c = std::thread::create(crash); while (true) {} return 0; }\n', encoding='utf-8')
         for compressed in (False, True):
             result, stderr = command([compiler, 'run', threaded, '--threads', '--compress-symbols' if compressed else '--no-compress-symbols'])
             assert result.returncode != 0 and 'worker failure' in stderr and ('线程 3' in stderr), stderr
             assert ('调用栈' in stderr) == (not compressed), stderr
             if not compressed:
                 assert 'leaf' in stderr and '[thread 3' in stderr, stderr
-        for mode, body in (('mainpanic', 'IsolatedThreadHandle a = std::thread::create(spin); std::lang::panic("main failure"); return 0;'), ('autojoin', 'IsolatedThreadHandle a = std::thread::create(spin); IsolatedThreadHandle c = std::thread::create(crash); return 0;'), ('wait', 'IsolatedThreadHandle a = std::thread::create(spin); IsolatedThreadHandle c = std::thread::create(crash); std::thread::wait(c); return 0;'), ('receive', 'IsolatedThreadHandle a = std::thread::create(spin); IsolatedThreadHandle c = std::thread::create(crash); std::lang::String x = std::thread::receive(); return 0;')):
+        for mode, body in (('mainpanic', 'Thread a = std::thread::create(spin); std::lang::panic("main failure"); return 0;'), ('autojoin', 'Thread a = std::thread::create(spin); Thread c = std::thread::create(crash); while (std::thread::state(c) == std::thread::RUNNING) { std::thread::sleepFor(1); } return 0;'), ('wait', 'Thread a = std::thread::create(spin); Thread c = std::thread::create(crash); std::thread::wait(c); return 0;'), ('receive', 'Thread a = std::thread::create(spin); Thread c = std::thread::create(crash); std::lang::String x = std::thread::receive(); return 0;')):
             threaded.write_text('import std::thread;\nvoid spin() { while (true) {} }\nvoid leaf() { std::lang::panic("worker failure"); }\nvoid crash() { leaf(); }\nint64 main() { ' + body + ' }\n', encoding='utf-8')
             result, stderr = command([compiler, 'run', threaded, '--threads', '--no-compress-symbols'])
             assert result.returncode != 0 and ('main failure' if mode == 'mainpanic' else 'worker failure') in stderr, stderr

@@ -1,0 +1,6 @@
+derivative = 3*x^2 + 2
+integral = 1/3*x^3
+definite = 9
+exact = 1/2
+decimal = 0.5
+ast = sin(x)

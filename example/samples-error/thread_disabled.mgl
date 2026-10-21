@@ -3,7 +3,7 @@ import std::thread;
 
 void work() {}
 int64 main() {
-    IsolatedThreadHandle task = std::thread::create(work);
+    Thread task = std::thread::create(work);
     std::thread::wait(task);
     return 0;
 }

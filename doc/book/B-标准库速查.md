@@ -96,14 +96,12 @@ sum=10
 
 | 模块 | 能干什么 |
 | --- | --- |
-| `std::coroutine` | 共享协程 |
-| `std::thread` | 隔离线程 `IsolatedThread` |
-| `std::message` | 跨协程 / 跨线程的消息 |
-| `std::concurrency` | 显式共享槽 `Shared<T>`（普通全局变量在线程间仍是隔离的） |
-| `std::event` | 中断事件与软件定时器；`start()` 后按周期在指令边界触发 |
+| `std::thread` | 隔离线程 `Thread`、取消、结果、线程组和固定线程池 |
+| `std::message` | 跨线程的消息 |
+| `std::concurrency` | 有界跨线程 `Channel<T>`、显式共享槽 `Shared<T>` 和 `AtomicInt64`（普通全局变量仍隔离） |
+| `std::event` | 显式事件与定时源；通过 receive 接收，周期积压合并 |
 
-> `SharedCoroutine` / `IsolatedThread` / `Message` 是**三个独立模块**，不能合并——
-> 它们各自有同名的宿主函数 `create` / `wait` / `receive`。
+> 线程执行、通道通信和显式事件分别由 std::thread、std::concurrency 和 std::event 提供。
 
 ### 系统与环境
 

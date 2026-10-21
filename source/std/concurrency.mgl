@@ -1,14 +1,75 @@
 module std::concurrency;
 
-/* 从 lang.mgl 原样迁出：符号名不变，只换了模块归属（现在必须 `import std::concurrency;` 才能用）。 */
-/* 显式共享槽：普通全局变量在线程之间仍然隔离。每次 get/set/swap 都是原子操作。 */
-struct Shared<T> {
-    int64 handle;
+/* 统一跨线程结果：0 完成，1 超时，2 关闭，3 取消，4 队列满，5 失败，6 无效句柄。 */
+const int64 READY = 0;
+const int64 TIMEOUT = 1;
+const int64 CLOSED = 2;
+const int64 CANCELLED = 3;
+const int64 FULL = 4;
+const int64 FAILED = 5;
+const int64 INVALID = 6;
 
-    static Shared<T> create(T value) {
-        self.handle = std::lang::__sharedCreate<T>(value);
+struct Receive<T> {
+    int64 status;
+    T value;
+    bool isReady() { return self.status == READY; }
+};
+
+int64 __channelCreate(int64 capacity);
+void __channelClose(int64 handle);
+int64 __poll(int64 handle, int64 millis);
+int64 __channelSend<T>(int64 handle, int64 millis, T value);
+T __channelTake<T>();
+int64 __fetchAdd(int64 handle, int64 delta);
+
+int64 __referenceNew();
+int64 __referenceId(int64 handle);
+int64 __referenceCopy(int64 identity);
+void __referenceDrop(int64 identity);
+__SharedReference __referenceFrom(int64 identity);
+
+/** 线程组拥有共享槽；复制引用标识保持访问同一个槽。 */
+opcode __SharedReference {
+    new = std::concurrency::__referenceNew;
+    copy = std::concurrency::__referenceCopy;
+    drop = std::concurrency::__referenceDrop;
+};
+
+/* 每次 get/set/swap 原子；组合调用不构成原子事务。 */
+struct Shared<T> {
+    __SharedReference __reference;
+    static Shared<T> create(T value) { self.__reference = __referenceFrom(std::lang::__sharedCreate<T>(value)); }
+    T get() { return std::lang::__sharedGet<T>(__referenceId(self.__reference.opcode)); }
+    void set(T value) { std::lang::__sharedSet<T>(__referenceId(self.__reference.opcode), value); }
+    T swap(T value) { return std::lang::__sharedSwap<T>(__referenceId(self.__reference.opcode), value); }
+    /** 共享槽的引用标识，不拥有槽内值。 */
+    int64 id() { return __referenceId(self.__reference.opcode); }
+};
+
+/* 整数原子更新单独提供，避免给任意 Shared<T> 承诺算术语义。 */
+struct AtomicInt64 {
+    Shared<int64> slot;
+    static AtomicInt64 create(int64 value) { self.slot = Shared<int64>::create(value); }
+    int64 get() { return self.slot.get(); }
+    void set(int64 value) { self.slot.set(value); }
+    int64 fetchAdd(int64 delta) { return __fetchAdd(self.slot.id(), delta); }
+};
+
+/* 可复制句柄指向线程组内同一有界队列，传输载荷按值复制。显式 close 后先排空再返回 CLOSED。 */
+struct Channel<T> {
+    int64 handle;
+    static Channel<T> create(int64 capacity) { self.handle = __channelCreate(capacity); }
+    int64 sendFor(T value, int64 millis) { return __channelSend<T>(self.handle, millis, value); }
+    int64 send(T value) { return self.sendFor(value, -1); }
+    int64 trySend(T value) { return self.sendFor(value, 0); }
+    Receive<T> receiveFor(int64 millis) {
+        Receive<T> result;
+        if (self.handle <= 0) { result.status = INVALID; return result; }
+        result.status = __poll(self.handle, millis);
+        if (result.status == READY) { result.value = __channelTake<T>(); }
+        return result;
     }
-    T get() { return std::lang::__sharedGet<T>(self.handle); }
-    void set(T value) { std::lang::__sharedSet<T>(self.handle, value); }
-    T swap(T value) { return std::lang::__sharedSwap<T>(self.handle, value); }
+    Receive<T> receive() { return self.receiveFor(-1); }
+    Receive<T> tryReceive() { return self.receiveFor(0); }
+    void close() { if (self.handle > 0) { __channelClose(self.handle); } }
 };
