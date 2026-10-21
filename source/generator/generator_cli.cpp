@@ -1,3 +1,4 @@
+#include "core_assets.hpp"
 #include "../magel_runtime_allocator.hpp"
 #include "../../library/template/engine.hpp"
 
@@ -572,6 +573,10 @@ int runCli(int argc, char **argv)
             {"../toml/toml.hpp", "toml/toml.hpp"},
             {"../../library/toml/toml.cpp", "toml/toml.cpp"},
             {"../toml/toml.cpp", "toml/toml.cpp"},
+            {"../../library/toml/toml_source.cpp", "toml/toml_source.cpp"},
+            {"../toml/toml_source.cpp", "toml/toml_source.cpp"},
+            {"../../library/toml/toml_source.hpp", "toml/toml_source.hpp"},
+            {"../toml/toml_source.hpp", "toml/toml_source.hpp"},
         };
         for (const Fix &fix : fixes) {
             /* 只在 `#include "..."` 的引号里匹配：否则裸的 `allocator/magel_allocator.hpp`
@@ -623,28 +628,16 @@ int runCli(int argc, char **argv)
         {"simple_ast.hpp", root / "magel/library/simple_ast/simple_ast.hpp"},
         {"preprocess.cpp", root / "magel/library/preprocess/preprocess.cpp"},
         {"preprocess.hpp", root / "magel/library/preprocess/preprocess.hpp"},
-        {"stackvm.cpp", root / "magel/library/stackvm/stackvm.cpp"},
-        {"event_service.cpp", root / "magel/library/stackvm/event_service.cpp"},
-        {"event_service.hpp", root / "magel/library/stackvm/event_service.hpp"},
-        {"stackvm.hpp", root / "magel/library/stackvm/stackvm.hpp"},
-        {"value_text.hpp", root / "magel/library/stackvm/value_text.hpp"},
-        {"reflection.hpp", root / "magel/library/stackvm/reflection.hpp"},
-        {"execution_plan.hpp", root / "magel/library/stackvm/execution_plan.hpp"},
-        {"register_core.hpp", root / "magel/library/stackvm/register_core.hpp"},
-        {"allocation_index.hpp", root / "magel/library/stackvm/allocation_index.hpp"},
-        {"data_capacity_index.hpp", root / "magel/library/stackvm/data_capacity_index.hpp"},
         {"bigint.cpp", root / "magel/library/bignum/bigint.cpp"},
         {"bigint.hpp", root / "magel/library/bignum/bigint.hpp"},
         {"bigfloat.cpp", root / "magel/library/bignum/bigfloat.cpp"},
         {"bigfloat.hpp", root / "magel/library/bignum/bigfloat.hpp"},
     };
     for (const auto &[name, source] : runtime) ok = copy(source, "runtime/" + name) && ok;
-    /* `stackvm.cpp` 同样拆成 `parts/` 下的 `.cpp`，随 runtime/stackvm.cpp 一起复制。 */
-    for (const char *name : {"symbol_build.cpp", "symbol_container.cpp",
-                             "machine_natives.cpp", "machine_value_text.cpp", "quads.cpp", "assembly.cpp",
-                             "execution.cpp", "execution_fusion.inc", "register_execution.inc", "optimization_flow.inc"})
-        ok = copy(root / "magel/library/stackvm/parts" / name,
-                  Memory::String("runtime/parts/") + name) && ok;
+    for (const char *name : stackvm::assets::kCoreAssets)
+        ok = copy(root / "magel/library/stackvm" / name, Memory::String("runtime/") + name) && ok;
+    for (const char *name : {"toml_source.hpp", "toml_source.cpp"})
+        ok = copy(root / "magel/library/toml" / name, Memory::String("toml/") + name) && ok;
     for (const char *format : {"json", "toml"}) {
         for (const char *extension : {"hpp", "cpp"}) {
             const Memory::String relative = Memory::String(format) + "/" + format + "." + extension;
@@ -671,13 +664,6 @@ int runCli(int argc, char **argv)
         const auto extension = entry.path().extension().string();
         if (entry.is_regular_file() && (extension == ".hpp" || extension == ".h" || extension == ".cpp"))
             ok = copy(entry.path(), "glue/" + entry.path().filename().u8string()) && ok;
-    }
-    for (const auto &entry : fs::directory_iterator(mc / "library/stackvm/parts"))
-    {
-        const auto extension = entry.path().extension().string();
-        if (entry.is_regular_file() && (extension == ".hpp" || extension == ".h" ||
-                                      extension == ".cpp" || extension == ".inc"))
-            ok = copy(entry.path(), "runtime/parts/" + entry.path().filename().u8string()) && ok;
     }
     for (const auto &entry : fs::directory_iterator(mc / "source/semantics"))
     {

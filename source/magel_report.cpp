@@ -540,7 +540,6 @@ Memory::String renderSnippet(const Memory::String &file, std::size_t line,
     const std::string number = std::to_string(line);
     const std::string bar(number.size() + 2u, ' '); /* 行号栏：与下面 "|" 对齐。 */
     Memory::String out;
-    out += Memory::String((bar + "|\n").data(), (bar + "|\n").size());
     out += Memory::String((" " + number + " | " + shown + "\n").data(),
                           (" " + number + " | " + shown + "\n").size());
     const std::string underline = bar + "| " + std::string(indent, ' ') + std::string(width, '~');

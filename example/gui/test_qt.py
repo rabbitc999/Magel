@@ -60,7 +60,7 @@ def main() -> None:
          "-DMAGEL_WITH_REFLECTION=1", "-DSTACKVM_WITH_REFLECTION=1",
          "-DSTACKVM_WITH_BIGINT=0", "-DSTACKVM_WITH_BIGFLOAT=0",
          "-Isource", "-Ilibrary", "-Ilibrary/stackvm", str(host_source),
-         "library/stackvm/stackvm.cpp", "library/stackvm/event_service.cpp",
+         *[str(repo / "library/stackvm" / name) for name in (repo / "library/stackvm/core_sources.txt").read_text().splitlines()],
          "source/glue/std_collection.cpp", "source/glue/std_collection_storage.cpp",
          "source/glue/std_native_record.cpp", "-ldl", "-o", str(host)], cwd=repo)
 

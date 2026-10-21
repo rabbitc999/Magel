@@ -5,7 +5,7 @@
 读取（路径都以本项目根为基准）：
   * lang.mgl、std/*.mgl —— 一张
     {模块名 → 源码} 静态表（加载器 magel_module.hpp 先查它，命中就不读文件）；
-  * 生成独立程序要用的运行时资产（stackvm 源码与 parts、胶水、C
+  * 生成独立程序要用的运行时资产（stackvm 独立模块、胶水、C
     分配器、大数后端）—— 一张 {仓库相对路径 → 源码} 静态表。独立编译器生成器读磁盘失败时
     回退到这张表，于是**单个生成器二进制不依赖仓库目录**也能导出完整程序。
 
@@ -20,6 +20,7 @@
 """
 
 import io
+from stackvm_sources import asset_names
 from pathlib import Path
 import os
 import shutil
@@ -142,16 +143,6 @@ def asset_disk_path(relative):
 GENERATOR_ASSETS = [
     "tools/magel_manual.json",
     "tools/magel_stdlib_api.json",
-    "stackvm/stackvm.hpp",
-    "stackvm/value_text.hpp",
-    "stackvm/execution_plan.hpp",
-    "stackvm/register_core.hpp",
-    "stackvm/allocation_index.hpp",
-    "stackvm/data_capacity_index.hpp",
-    "stackvm/reflection.hpp",
-    "stackvm/stackvm.cpp",
-    "stackvm/event_service.hpp",
-    "stackvm/event_service.cpp",
     "magel_glue.hpp",
     "magel_generic_name.hpp",
     "magel_runtime_allocator.hpp",
@@ -179,6 +170,8 @@ GENERATOR_ASSETS = [
     "json/json.cpp",
     "toml/toml.hpp",
     "toml/toml.cpp",
+    "toml/toml_source.cpp",
+    "toml/toml_source.hpp",
     "glue/std_binary.hpp",
     "glue/std_compress.hpp",
     "lztext/lztext.hpp",
@@ -207,6 +200,8 @@ GENERATOR_ASSETS = [
 ]
 
 
+GENERATOR_ASSETS += ["stackvm/" + name for name in asset_names()]
+
 # 胶水接口及实现作为同一组资产导出，固定清单不能遗漏独立编译单元。
 GENERATOR_ASSETS += [
     directory + "/" + path.name
@@ -224,11 +219,6 @@ def collect_generator_assets():
     assets = []
     for relative in GENERATOR_ASSETS:
         assets.append((relative, read(os.path.join(MAGEL, asset_disk_path(relative)))))
-    parts_dir = os.path.join(MAGEL, "library", "stackvm", "parts")
-    for name in sorted(os.listdir(parts_dir)):
-        if name.endswith((".cpp", ".inc")):
-            assets.append(("stackvm/parts/" + name,
-                           read(os.path.join(parts_dir, name))))
     return assets
 
 
@@ -246,11 +236,9 @@ def dependencies():
     from pathlib import Path
     root = Path(MAGEL)
     paths = {Path(asset_disk_path(name)) for name in GENERATOR_ASSETS}
-    paths.update(path.relative_to(root) for path in (root / "library/stackvm/parts").iterdir()
-                 if path.suffix in (".cpp", ".inc"))
     for pattern in ("source/std/*.mgl", "doc/book/*.md", "doc/book/images/*", "doc/library/*.md"):
         paths.update(path.relative_to(root) for path in root.glob(pattern) if path.is_file())
-    paths.update(map(Path, ("tools/embed_stdlib.py", "tools/embed_manual.py", "source/magel.gram",
+    paths.update(map(Path, ("tools/embed_stdlib.py", "tools/stackvm_sources.py", "tools/embed_manual.py", "source/magel.gram",
                            "source/magel_token.gram", "doc/04-language-reference.md",
                            "doc/24-literals-operators-macros.md", "skills/magel-programming/SKILL.md")))
     names = sorted(path.as_posix() for path in paths)

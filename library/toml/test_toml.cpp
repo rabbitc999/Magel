@@ -557,6 +557,65 @@ void testBindDiagnostics()
     CHECK(!ok.value->scale.has_value());
 }
 
+/**
+ * @brief 检查原文、真实注释和值区间编辑，并验证结构变动后的保存幂等性。
+ */
+void testCommentPreservation()
+{
+    const std::string source =
+        "\xEF\xBB\xBF# document\r\n"
+        "title = \"literal # text\" # title\r\n"
+        "multiline = \"\"\"first # string\nsecond\"\"\" # multiline\r\n"
+        "values = [\r\n"
+        "    1, # first\r\n"
+        "    2, # second\r\n"
+        "] # array\r\n"
+        "[owner] # table\r\n"
+        "name = 'Alice' # owner\r\n"
+        "[[servers]] # table array\r\n"
+        "port = 80 # port\r\n";
+    toml::Value value = parseOk(source);
+    CHECK(value.dump() == source);
+    CHECK(parseOk(value.dump()).dump() == source);
+    value["title"] = toml::Value("updated # literal");
+    (*value["values"].asArray())[1] = toml::Value(std::int64_t(20));
+    value["owner"]["name"] = toml::Value("Bob");
+    const std::string edited = value.dump();
+    CHECK(edited.find("title = \"updated # literal\" # title\r\n") != std::string::npos);
+    CHECK(edited.find("    20, # second\r\n") != std::string::npos);
+    CHECK(edited.find("name = \"Bob\" # owner\r\n") != std::string::npos);
+    CHECK(edited.find("[[servers]] # table array\r\n") != std::string::npos);
+    CHECK(parseOk(edited)["owner"]["name"].asString().has_value());
+    CHECK(parseOk(edited).dump() == edited);
+    value["added"] = toml::Value(true);
+    value.asTable()->erase("title");
+    value["values"] = toml::Value(std::int64_t(9));
+    const std::string changed = value.dump();
+    for (const char *comment : { "# document", "# title", "# multiline", "# first", "# second", "# array", "# table\n", "# owner", "# table array", "# port" })
+    {
+        const auto position = changed.find(comment);
+        CHECK(position != std::string::npos);
+        CHECK(changed.find(comment, position + std::string(comment).size()) == std::string::npos);
+    }
+    std::string saved = changed;
+    for (int cycle = 0; cycle < 3; ++cycle)
+    {
+        toml::Value reparsed = parseOk(saved);
+        CHECK(reparsed["values"].asInt() && *reparsed["values"].asInt() == 9);
+        CHECK(reparsed.dump() == changed);
+        saved = reparsed.dump();
+    }
+    toml::Value reordered = parseOk("# order\nfirst = 1 # one\nsecond = 2 # two\n");
+    const toml::Value first = reordered["first"];
+    reordered.asTable()->erase("first");
+    reordered["first"] = first;
+    const std::string reorderedText = reordered.dump();
+    CHECK(reorderedText.find("second = 2") < reorderedText.find("first = 1"));
+    CHECK(reorderedText.find("# one") != std::string::npos);
+    CHECK(reorderedText.find("# two") != std::string::npos);
+    CHECK(parseOk(reorderedText).dump() == reorderedText);
+}
+
 }  // namespace
 
 /**
@@ -574,6 +633,7 @@ int main()
     testArrays();
     testErrors();
     testDump();
+    testCommentPreservation();
     testCompare();
     testValueApi();
     testIteration();

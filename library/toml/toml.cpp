@@ -4,6 +4,7 @@
  */
 
 #include "toml.hpp"
+#include "toml_source.hpp"
 
 #include <algorithm>
 #include <charconv>
@@ -332,6 +333,8 @@ bool equalsValue(const Value &left, const Value &right)
     return true;
 }
 
+}  // namespace
+
 /**
  * @brief TOML 解析器（手写、逐行驱动）。
  *
@@ -340,6 +343,8 @@ bool equalsValue(const Value &left, const Value &right)
  */
 class Parser
 {
+    std::vector<source_detail::Comment> comments_;
+
 public:
     /**
      * @brief 构造。
@@ -392,6 +397,11 @@ public:
             }
         }
 
+        auto document = std::make_shared<source_detail::Document>();
+        document->text = std::string(text_);
+        document->original = root_;
+        document->comments = std::move(comments_);
+        root_.sourceDocument_ = std::move(document);
         result.value = std::move(root_);
         return result;
     }
@@ -493,9 +503,11 @@ private:
     /**
      * @brief 跳过一个 `#` 注释（不消费换行）。
      */
-    void skipComment() noexcept
+    void skipComment()
     {
+        const auto begin = index_;
         while (!atEnd() && (peek() != '\n') && (peek() != '\r')) get();
+        comments_.push_back({ begin, index_ });
     }
 
     /**
@@ -527,7 +539,7 @@ private:
     /**
      * @brief 跳过数组里的空白、换行与注释。
      */
-    void skipArraySpace() noexcept
+    void skipArraySpace()
     {
         while (!atEnd())
         {
@@ -1547,6 +1559,21 @@ private:
     bool parseValue(Value &out)
     {
         skipHorizontal();
+        const auto begin = index_;
+        if (!parseValueContent(out)) return false;
+        out.sourceBegin_ = begin;
+        out.sourceEnd_ = index_;
+        return true;
+    }
+
+    /**
+     * @brief 根据起始字符解析值，不包含外层的原文区间登记。
+     * @param out 接收解析后的值。
+     * @return 解析成功返回真。
+     */
+    bool parseValueContent(Value &out)
+    {
+        skipHorizontal();
         if (atEnd())
         {
             fail("unexpected-end", "内容在值之前就结束了");
@@ -1969,8 +1996,6 @@ private:
     MetaNode rootMeta_{};          ///< 顶层表的定义信息。
     std::vector<Step> current_{};  ///< 当前表在值树里的路径。
 };
-
-}  // namespace
 
 // ---------------------------------------------------------------------------
 //  DateTime
@@ -2684,6 +2709,7 @@ Value::iterator Value::end() noexcept
  */
 std::string Value::dump() const
 {
+    if (sourceDocument_) return sourceDocument_->render(*this);
     std::string out;
     if (const Object *table = asTable())
     {

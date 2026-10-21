@@ -87,6 +87,7 @@ echo "文法生成器：$ENGINE"
 # 先把标准库 .mgl 源码内嵌进编译器（magel_stdlib_embedded.cpp），
 # 这样 exe 自包含，import std::xxx 不依赖磁盘上的 .mgl 文件。
 python tools/embed_i18n.py
+python tools/stackvm_sources.py --build-assets
 python tools/embed_stdlib.py
 
 # --no-build-files：本目录的 Makefile 是手写、纳入版本管理的「生成代码 → 构建」

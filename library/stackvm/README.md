@@ -201,7 +201,7 @@ C++ 调用帧、STL 容器、大整数或运行期对象表的宿主分配。
 下列 CPU 对照与 `magel-stackvm-performance-preallocator.svg` 那张图为切换显式分配器前的历史记录，
 当前数字以新报告为准。
 
-`benchmark_stackvm.cpp` 测量 VM 的整数循环；`benchmark_mc.cpp` 加载由
+`benchmark_stackvm.cpp` 测量 VM 的整数循环；`benchmark_magel.cpp` 加载由
 [`benchmarks/loop.mgl`](../benchmarks/loop.mgl) 生成的同一份 `.svmb` 与数据区，
 测量真实 Magel 程序的 VM 执行。两者都在组装与加载之外计时，先预热一次，再报告七次
 `Machine::run` 的中位数、实际指令数、MIPS 与求值栈峰值。
@@ -419,7 +419,7 @@ v4 再在 exports 之后追加**调试信息表**（指令下标 → 源码位�
 `compile --no-debug` 把调试节写成 0 条（v4 里合法，加载器照常接受）：**只丢位置表**，
 操作码、立即数、标签、类型、形参、导出一个不动——所以程序行为完全一样，省下来的是体积，
 代价是 `run --debug` / 出错位置 / 源码级调用栈都没有了。剥掉调试节之后文件里还剩什么，
-见 [`.svmb` 二进制格式解剖与逆向难度](../doc/15-svmb-format.md)。
+见 [`.svmb` 二进制格式解剖与逆向难度](../../doc/15-svmb-format.md)。
 
 ## 调试
 
@@ -511,8 +511,9 @@ std::cout << machine.run(program).steps;                       // 指令条数
 ## 构建与自检
 
 ```text
-make -C library/stackvm            # libstackvm.a + stackvm + stackvm-tests
-make -C library/stackvm check      # 单元测试 + 示例套件 + 反汇编演示
+cmake -S library/stackvm -B build/stackvm -DCMAKE_BUILD_TYPE=Release
+cmake --build build/stackvm --config Release -j4
+ctest --test-dir build/stackvm -C Release --output-on-failure
 ```
 
 产物在 `build/stackvm`。`check` 跑 239 项断言：类型回绕与符号、无符号比较、浮点与
@@ -529,12 +530,19 @@ make -C library/stackvm check      # 单元测试 + 示例套件 + 反汇编演�
 
 ```text
 library/stackvm/
-├── stackvm.hpp / stackvm.cpp   四元式解析、组装、二进制程序、栈式执行、四元式化简
+├── stackvm.hpp / vm_machine.hpp   兼容入口与机器公开接口
+├── quad_*.cpp / quad_*.hpp     四元式模型、解析、组装与优化
+├── program_*.cpp / binary_*.cpp 程序模型与二进制容器
+├── vm_execution.cpp           指令执行与快速路径
+├── native_*.cpp               原生服务与注册表
+├── thread_service.cpp / mailbox_service.cpp / transfer_service.cpp  并发服务
+├── runtime_*.hpp / runtime_heap.cpp  执行状态与字节堆
+├── core_sources.txt / core_assets.hpp  构建及导出清单
 ├── main.cpp                    命令行工具（compile / run / disasm / check）
 ├── test_stackvm.cpp            单元测试 + 示例套件
 ├── examples/                   与 library/transfer/core/example 同一批 .quad
 │                               加上本库自己的 13_heap（堆与运行时函数）
-├── Makefile / CMakeLists.txt   两种构建方式
+├── CMakeLists.txt              独立核心、命令行工具及测试构建
 └── README.md
 ```
 
@@ -596,6 +604,10 @@ $ stackvm run out/demo.quad --data out/demo.data.bin --layout out/demo.layout
 
 ## 无名变长符号格式
 
-`compile --compress-symbols` 写 MCVM0004 无名容器；`--symbol-map FILE` 指定 PC 映射。`svmb_symtool` 支持 dump、stats、lookup、compress，Python 转换器在 `magel/tools/svmb_compress.py`。详情见[符号压缩文档](../doc/16-compact-symbols.md)。
+`compile --compress-symbols` 写 MCVM0004 无名容器；`--symbol-map FILE` 指定 PC 映射。`svmb_symtool` 支持 dump、stats、lookup、compress，Python 转换器在 `magel/tools/svmb_compress.py`。详情见[符号压缩文档](../../doc/16-compact-symbols.md)。
 
-可选 panic 调用栈默认开启，`STACKVM_WITH_PANIC_TRACE=0` 或 `NO_MAGEL_PANIC_TRACE` 可裁剪；压缩符号容器始终不记录失败路径或调用记录。详见 [panic 调用栈](../doc/18-panic-trace.md)。
+可选 panic 调用栈默认开启，`STACKVM_WITH_PANIC_TRACE=0` 或 `NO_MAGEL_PANIC_TRACE` 可裁剪；压缩符号容器始终不记录失败路径或调用记录。详见 [panic 调用栈](../../doc/18-panic-trace.md)。
+
+核心源文件统一记录在 core_sources.txt，每个实现单独编译，自动依赖由编译器维护。公开头保留接口及必要模板；修改实现不会经由拼接文件触发全部核心重编。新增编译单元后运行 python tools/stackvm_sources.py --build-assets 同步导出资产清单。
+
+vm_execution.cpp 维护执行上下文、指令主循环与共享局部状态的快速分派。原生服务、线程通信、字节堆、四元式优化、反射与容器编码各有独立实现。寄存器核心的模板留在头文件，非模板区域准备与缓存实现位于 register_core.cpp。

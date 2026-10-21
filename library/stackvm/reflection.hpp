@@ -31,16 +31,8 @@ inline constexpr std::uint32_t kMaximumRecords = 4096;
  * @param key 规范身份文本。
  * @return 稳定编号；碰撞由表校验拒绝。
  */
-inline std::uint64_t stableId(std::string_view key)
-{
-    std::uint64_t id = 14695981039346656037ull;
-    for (unsigned char ch : key)
-    {
-        id ^= ch;
-        id *= 1099511628211ull;
-    }
-    return id;
-}
+std::uint64_t stableId(std::string_view key);
+
 /**
  * @brief 为所有记录提供统一字段访问，不存储函数指针或对象地址。
  */
@@ -301,208 +293,15 @@ inline auto getFuncInfo(const Table &table, std::string_view name) { return find
  * @return 只读定义或空。
  */
 inline auto getAnnotationInfo(const Table &table, std::string_view name) { return findByName(table.annotations, name); }
-namespace detail
-{
-/**
- * @brief 内部小端写入器，限制总长度及列表长度。
- */
-struct Writer
-{
-    Memory::Vector<std::uint8_t> bytes;
-    template <class... T>
-    bool operator()(const T &...values)
-    { return (write(values) && ...); }
-    template <class T>
-    std::enable_if_t<std::is_unsigned_v<T>, bool> write(T value)
-    {
-        if (bytes.size() > kMaximumBytes - sizeof(T)) return false;
-        for (std::size_t i = 0; i < sizeof(T); ++i) bytes.push_back(static_cast<std::uint8_t>(value >> (8 * i)));
-        return true;
-    }
-    bool write(bool value) { return write(std::uint8_t(value)); }
-    bool write(const Memory::String &value)
-    {
-        if (value.size() > 1024u * 1024u || !write(std::uint32_t(value.size())) || value.size() > kMaximumBytes - bytes.size()) return false;
-        bytes.insert(bytes.end(), value.begin(), value.end());
-        return true;
-    }
-    template <class T>
-    bool write(const Memory::Vector<T> &values)
-    {
-        if (values.size() > kMaximumRecords || !write(std::uint32_t(values.size()))) return false;
-        for (const auto &value : values)
-            if (!write(value)) return false;
-        return true;
-    }
-    template <class T>
-    bool write(const std::optional<T> &value)
-    {
-        return write(bool(value)) && (!value || write(*value));
-    }
-    template <class T>
-    auto write(const T &value) -> decltype(value.visit(*this))
-    { return value.visit(*this); }
-};
-/**
- * @brief 内部有界读取器，在分配前检查输入剩余字节。
- */
-struct Reader
-{
-    const std::uint8_t *data;
-    std::size_t size, position = 0;
-    template <class... T>
-    bool operator()(T &...values)
-    { return (read(values) && ...); }
-    template <class T>
-    std::enable_if_t<std::is_unsigned_v<T>, bool> read(T &value)
-    {
-        if (sizeof(T) > size - position) return false;
-        value = 0;
-        for (std::size_t i = 0; i < sizeof(T); ++i) value |= T(data[position++]) << (8 * i);
-        return true;
-    }
-    bool read(bool &value)
-    {
-        std::uint8_t raw = 0;
-        if (!read(raw) || raw > 1) return false;
-        value = raw != 0;
-        return true;
-    }
-    bool read(Memory::String &value)
-    {
-        std::uint32_t count = 0;
-        if (!read(count) || count > 1024u * 1024u || count > size - position) return false;
-        value.assign(reinterpret_cast<const char *>(data + position), count);
-        position += count;
-        return true;
-    }
-    template <class T>
-    bool read(Memory::Vector<T> &values)
-    {
-        std::uint32_t count = 0;
-        if (!read(count) || count > kMaximumRecords || count > size - position) return false;
-        // 本格式每个列表元素至少占一个字节；逐项构造避免长度前缀触发一次性巨额分配。
-        for (std::uint32_t i = 0; i < count; ++i)
-        {
-            T value{};
-            if (!read(value)) return false;
-            values.push_back(std::move(value));
-        }
-        return true;
-    }
-    template <class T>
-    bool read(std::optional<T> &value)
-    {
-        bool present = false;
-        if (!read(present)) return false;
-        if (present)
-        {
-            T item{};
-            if (!read(item)) return false;
-            value = std::move(item);
-        }
-        return true;
-    }
-    template <class T>
-    auto read(T &value) -> decltype(value.visit(*this))
-    { return value.visit(*this); }
-};
-/**
- * @brief 内部表验证器，检查身份及所有交叉引用。
- */
-struct Validator
-{
-    const Table &table;
-    Memory::Set<std::uint64_t> ids, definitions;
-    bool reference(std::uint64_t id) const { return ids.count(id) != 0; }
-    template <class... T>
-    bool operator()(const T &...values)
-    { return (check(values) && ...); }
-    bool check(const Constant &v) const { return reference(v.typeId); }
-    bool check(const Parameter &v) const { return !v.name.empty() && reference(v.typeId); }
-    bool check(const AnnotationParameter &v) const
-    {
-        return !v.name.empty() && reference(v.typeId) && (!v.defaultValue || (v.defaultValue->typeId == v.typeId && check(*v.defaultValue)));
-    }
-    bool check(const Annotation &v) const
-    {
-        const auto info = findById(table.annotations, v.annotationId);
-        if (!info || info->get().params.size() != v.args.size()) return false;
-        for (std::size_t i = 0; i < v.args.size(); ++i)
-            if (!check(v.args[i]) || v.args[i].typeId != info->get().params[i].typeId) return false;
-        return true;
-    }
-    template <class T>
-    bool check(const Memory::Vector<T> &values) const
-    {
-        if (values.size() > kMaximumRecords) return false;
-        for (const auto &value : values)
-            if (!check(value)) return false;
-        return true;
-    }
-    bool check(std::uint64_t id) const { return reference(id); }
-    template <class T>
-    bool named(const T &v)
-    {
-        return !v.name.empty() && reference(v.typeId) && definitions.insert(v.typeId).second;
-    }
-    template <class T>
-    bool uniqueNames(const Memory::Vector<T> &values) const
-    {
-        Memory::Set<Memory::String> names;
-        for (const auto &v : values)
-            if (!names.insert(v.name).second) return false;
-        return true;
-    }
-    bool check(const FuncInfo &v) { return named(v) && reference(v.returnTypeId) && uniqueNames(v.params) && (*this)(v.params, v.annotations); }
-    bool check(const MethodInfo &v)
-    {
-        // static T new 是无显式接收者的构造入口；构造体的 self 不属于公开签名。
-        return !(v.isConst && (v.isStatic || v.isConstructor)) && check(v.function);
-    }
-    bool check(const FieldInfo &v) const { return !v.name.empty() && reference(v.typeId) && check(v.annotations); }
-    bool check(const StaticMemberInfo &v) const { return !v.name.empty() && reference(v.typeId) && check(v.annotations); }
-    bool check(const VariantInfo &v) const { return !v.name.empty() && uniqueNames(v.payloads) && check(v.payloads); }
-    bool check(const AnnotationInfo &v) { return named(v) && uniqueNames(v.params) && check(v.params); }
-    bool check(const StructInfo &v)
-    {
-        return named(v) && uniqueNames(v.fields) && uniqueNames(v.staticMembers) && (*this)(v.fields, v.methods, v.staticMembers, v.implementedInterfaces, v.annotations);
-    }
-    bool check(const EnumInfo &v)
-    {
-        Memory::Set<std::uint32_t> tags;
-        for (const auto &variant : v.variants)
-            if (!tags.insert(variant.tag).second) return false;
-        return named(v) && uniqueNames(v.variants) && uniqueNames(v.staticMembers) && (*this)(v.variants, v.methods, v.staticMembers, v.implementedInterfaces, v.annotations);
-    }
-    bool check(const InterfaceInfo &v) { return named(v) && (*this)(v.methods, v.implementedBy, v.annotations); }
-    // 含定义的列表需要更新重复编号集合。
-    template <class T>
-    bool check(const Memory::Vector<T> &values)
-    {
-        if (values.size() > kMaximumRecords) return false;
-        for (const auto &value : values)
-            if (!check(value)) return false;
-        return true;
-    }
-};
-}  // namespace detail
+
 /**
  * @brief 校验身份碰撞、声明重复和精确类型引用。
  * @param table 元数据。
  * @param error 失败时写入错误文本。
  * @return 合法返回真。
  */
-inline bool validate(const Table &table, Memory::String *error = nullptr)
-{
-    detail::Validator validator{ table, {}, {} };
-    bool ok = table.identities.size() <= kMaximumRecords;
-    for (const auto &identity : table.identities)
-        ok = ok && !identity.key.empty() && identity.id != 0 && identity.id == stableId(identity.key) && validator.ids.insert(identity.id).second;
-    ok = ok && validator(table.structs, table.enums, table.interfaces, table.functions, table.annotations, table.moduleAnnotations);
-    if (!ok && error) *error = "反射元数据身份、签名或交叉引用无效";
-    return ok;
-}
+bool validate(const Table &table, Memory::String *error = nullptr);
+
 /**
  * @brief 编码独立元数据段；失败不修改输出。
  * @param table 元数据。
@@ -510,18 +309,8 @@ inline bool validate(const Table &table, Memory::String *error = nullptr)
  * @param error 错误文本。
  * @return 成功为真。
  */
-inline bool encode(const Table &table, Memory::Vector<std::uint8_t> &output, Memory::String *error = nullptr)
-{
-    if (!validate(table, error)) return false;
-    detail::Writer writer;
-    if (!writer(std::uint32_t(0x4652434d), kSchemaVersion, table))
-    {
-        if (error) *error = "反射元数据超过格式容量限制";
-        return false;
-    }
-    output = std::move(writer.bytes);
-    return true;
-}
+bool encode(const Table &table, Memory::Vector<std::uint8_t> &output, Memory::String *error = nullptr);
+
 /**
  * @brief 解码并校验整个段；失败不修改现有表。
  * @param data 字节起点。
@@ -530,89 +319,28 @@ inline bool encode(const Table &table, Memory::Vector<std::uint8_t> &output, Mem
  * @param error 错误文本。
  * @return 成功为真；不接受未知版本、尾部数据或截断输入。
  */
-inline bool decode(const std::uint8_t *data, std::size_t size, Table &output, Memory::String *error = nullptr)
-{
-    if (size > kMaximumBytes || size < 8 || data == nullptr)
-    {
-        if (error) *error = "反射元数据段长度无效";
-        return false;
-    }
-    detail::Reader reader{ data, size };
-    std::uint32_t magic = 0, version = 0;
-    Table decoded;
-    if (!reader(magic, version) || magic != 0x4652434d || version != kSchemaVersion || !reader(decoded) || reader.position != size)
-    {
-        if (error) *error = "反射元数据段损坏或版本不受支持";
-        return false;
-    }
-    if (!validate(decoded, error)) return false;
-    output = std::move(decoded);
-    return true;
-}
+bool decode(const std::uint8_t *data, std::size_t size, Table &output, Memory::String *error = nullptr);
+
 /**
  * @brief 将元数据编码为四元式注释所用的十六进制文本。
  * @param table 表。
  * @return 编码文本；非法表返回空。
  */
-inline std::optional<Memory::String> toHex(const Table &table)
-{
-    Memory::Vector<std::uint8_t> bytes;
-    if (!encode(table, bytes)) return std::nullopt;
-    const char *digits = "0123456789abcdef";
-    Memory::String result;
-    result.reserve(bytes.size() * 2);
-    for (auto byte : bytes)
-    {
-        result += digits[byte >> 4];
-        result += digits[byte & 15];
-    }
-    return result;
-}
+std::optional<Memory::String> toHex(const Table &table);
+
 /**
  * @brief 解码四元式注释的十六进制元数据，失败不修改输出。
  * @param text 编码文本。
  * @param output 输出表。
  * @return 合法返回真。
  */
-inline bool fromHex(std::string_view text, Table &output)
-{
-    if (text.size() > kMaximumBytes * 2 || text.size() % 2) return false;
-    auto digit = [](char ch) -> int {
-        if (ch >= '0' && ch <= '9') return ch - '0';
-        if (ch >= 'a' && ch <= 'f') return ch - 'a' + 10;
-        if (ch >= 'A' && ch <= 'F') return ch - 'A' + 10;
-        return -1;
-    };
-    Memory::Vector<std::uint8_t> bytes;
-    for (std::size_t i = 0; i < text.size(); i += 2)
-    {
-        const int high = digit(text[i]), low = digit(text[i + 1]);
-        if (high < 0 || low < 0) return false;
-        bytes.push_back(static_cast<std::uint8_t>(high * 16 + low));
-    }
-    return decode(bytes.data(), bytes.size(), output);
-}
+bool fromHex(std::string_view text, Table &output);
+
 /**
  * @brief 生成自包含导出的静态编码数据及拥有型表工厂。
  * @param table 表。
  * @return C++ 定义；非法表返回空。
  */
-inline std::optional<Memory::String> cppDefinition(const Table &table)
-{
-    Memory::Vector<std::uint8_t> bytes;
-    if (!encode(table, bytes)) return std::nullopt;
-    Memory::String code = "\n/** @brief 在调用方分配域构造本产物的元数据。 @return 拥有型表，查询返回只读引用。 */\n"
-                          "stackvm::reflection::Table magel_reflection_metadata() {\n"
-                          "        static const std::uint8_t bytes[] = {\n";
-    for (std::size_t i = 0; i < bytes.size(); ++i)
-    {
-        code += Memory::toString(static_cast<unsigned>(bytes[i])) + ",";
-        if (i % 24 == 23) code += "\n";
-    }
-    code += "\n        };\n        stackvm::reflection::Table result;\n"
-            "        if (!stackvm::reflection::decode(bytes, sizeof(bytes), result)) std::abort();\n"
-            "        return result;\n}\n";
-    return code;
-}
+std::optional<Memory::String> cppDefinition(const Table &table);
 }  // namespace stackvm::reflection
 #endif

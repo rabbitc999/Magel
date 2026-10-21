@@ -110,7 +110,6 @@ public:
     /**
      * @brief 重置整个运行的槽与活跃分配。
      * @param base 数据区之后的堆基址。
-     * @return 无。
      */
     void reset(std::size_t base)
     {

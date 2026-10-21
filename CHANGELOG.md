@@ -1,6 +1,13 @@
 # Magel 变更记录
 
-版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.24.0**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.24.1**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+
+
+## 0.24.1 — VM 模块拆分、TOML 注释保存与诊断排版
+
+- 按四元式、程序容器、执行核心、原生服务、线程通信与内存职责拆分 StackVM；非模板实现从公开头和拼接片段迁入独立编译单元，构建、裁剪、内嵌与导出工程使用统一源文件清单和自动依赖。
+- TOML 解析后保存保留原始注释。未编辑文档保留原文，等形值编辑替换原区间；结构变动保留全部真实注释内容，重复解析保存不丢失、不重复。
+- 删除源码诊断摘录前多余的空竖线行，保留源码、位置与波浪线标记；同步诊断回归、文档和交付产物。
 
 
 ## 0.24.0 — 线程并发模型与显式事件

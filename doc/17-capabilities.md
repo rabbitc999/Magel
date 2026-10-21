@@ -108,3 +108,9 @@ Image 使用可深复制的 opcode，宽高与连续 RGBA 像素由胶水拥有�
 网络异步入口使用非阻塞轮询和 NET_PENDING，未就绪时采用可取消线程睡眠或在专用线程使用同步 I/O，避免忙轮询；connectAsync 首批仅接受数值 IPv4，域名解析保留在同步 connect。sendAsync 返回部分发送字节数并接受 offset；receiveLineAsync 保留未完成行，缓冲上限为 1 MiB。
 
 隔离线程的 `waitFor(thread, millis)` 支持非负毫秒超时，`tryWait(thread)` 提供零超时等待；成功完成并回收返回 `true`，超时返回 `false` 且不取消目标。目标失败仍传播原始诊断；句柄成功回收后不能再次等待。
+
+## VM 模块与 TOML 保存
+
+共享 VM 按四元式、二进制容器、执行器、原生服务与并发通信组织独立编译单元；构建和导出使用 library/stackvm/core_sources.txt。公开接口由 stackvm.hpp 汇总，非模板实现独立链接。
+
+std::toml 文档根节点保存时保留原文注释。底层 C++ 值模型的等形编辑保留布局；结构编辑保留注释内容并可调整位置。重复解析保存不丢失或重复注释，详见 [TOML 接口](library/std-toml.md)。

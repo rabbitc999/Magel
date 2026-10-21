@@ -20,7 +20,7 @@ Fresh string arguments borrowed by printing, formatting and file writes are firs
 
 ## VM and restart
 
-The VM heap in `library/stackvm/parts/machine_natives.cpp` splits free intervals and merges adjacent released intervals. A watchdog restart ends every old execution context before resetting arenas and allocation identities. There is no sweeping API or implicit garbage collection.
+The VM heap in `library/stackvm/runtime_heap.cpp` splits free intervals and merges adjacent released intervals. A watchdog restart ends every old execution context before resetting arenas and allocation identities. There is no sweeping API or implicit garbage collection.
 
 ## fn borrowing research
 

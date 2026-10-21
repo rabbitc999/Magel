@@ -7,11 +7,14 @@ find_package(Threads REQUIRED)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_library(magel_vm_core STATIC runtime/stackvm.cpp runtime/event_service.cpp)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/runtime/core_sources.txt")
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/runtime/core_sources.txt" STACKVM_CORE_SOURCES)
+list(TRANSFORM STACKVM_CORE_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/runtime/")
+add_library(magel_vm_core STATIC ${STACKVM_CORE_SOURCES})
 file(GLOB MAGEL_STANDARD_SOURCES CONFIGURE_DEPENDS glue/std_*.cpp)
 list(REMOVE_ITEM MAGEL_STANDARD_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/glue/std_demo.cpp")
 add_library(magel_host_records STATIC ${MAGEL_STANDARD_SOURCES} runtime/bigint.cpp runtime/bigfloat.cpp
-    sqlite/sqlite3.c json/json.cpp toml/toml.cpp)
+    sqlite/sqlite3.c json/json.cpp toml/toml.cpp toml/toml_source.cpp)
 add_library(magel_runtime STATIC runtime/simple_ast.cpp runtime/preprocess.cpp lztext/lztext.cpp
     miniz/miniz_tinfl.c dap/dap_server.cpp)
 target_link_libraries(magel_runtime PUBLIC magel_vm_core magel_host_records Threads::Threads)

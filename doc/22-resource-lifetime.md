@@ -20,7 +20,7 @@
 
 ## VM 与软重启
 
-默认 VM 堆在 `library/stackvm/parts/machine_natives.cpp` 中首次适配空闲块、拆分余量并在释放时合并相邻空闲区间。watchdog 重启结束全部旧执行上下文，再重置 arena 和分配身份；没有清扫 API，也没有隐式垃圾回收。
+默认 VM 堆在 `library/stackvm/runtime_heap.cpp` 中首次适配空闲块、拆分余量并在释放时合并相邻空闲区间。watchdog 重启结束全部旧执行上下文，再重置 arena 和分配身份；没有清扫 API，也没有隐式垃圾回收。
 
 ## fn 闭包借用规则的参考与实现
 

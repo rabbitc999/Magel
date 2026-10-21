@@ -136,12 +136,22 @@ int main(int argc, char **argv)
     auto invalid = encoded;
     invalid[4] = 2;
     CHECK(!r::decode(invalid.data(), invalid.size(), decoded));
-    r::detail::Writer signatureBytes;
-    CHECK(signatureBytes(table.structs[0].methods[0].function));
+    auto changedMethod = table;
+    changedMethod.structs[0].methods[2].isStatic = !changedMethod.structs[0].methods[2].isStatic;
+    Memory::Vector<std::uint8_t> changedMethodBytes;
+    CHECK(r::encode(changedMethod, changedMethodBytes));
+    CHECK(changedMethodBytes.size() == encoded.size());
+    std::size_t flagPosition = encoded.size();
+    std::size_t flagDifferences = 0;
+    for (std::size_t index = 0; index < encoded.size(); ++index)
+        if (encoded[index] != changedMethodBytes[index])
+        {
+            flagPosition = index;
+            ++flagDifferences;
+        }
+    CHECK(flagDifferences == 1);
     invalid = encoded;
-    const auto signatureAt = std::search(invalid.begin(), invalid.end(), signatureBytes.bytes.begin(), signatureBytes.bytes.end());
-    CHECK(signatureAt != invalid.end());
-    *(signatureAt + signatureBytes.bytes.size()) = 2;  // isStatic 只接受规范布尔值。
+    if (flagPosition < invalid.size()) invalid[flagPosition] = 2;  // isStatic 只接受规范布尔值。
     CHECK(!r::decode(invalid.data(), invalid.size(), decoded));
     invalid = encoded;
     invalid.push_back(0);

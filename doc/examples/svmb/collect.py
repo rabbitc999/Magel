@@ -43,7 +43,7 @@ def run(args, cwd=ROOT):
 
 
 def fnv1a(data):
-    """与 stackvm.cpp 的 binaryChecksum 相同：FNV-1a 32 位。"""
+    """与 binary_stream.cpp 的 binaryChecksum 相同：FNV-1a 32 位。"""
     value = 2166136261
     for byte in data:
         value = ((value ^ byte) * 16777619) & 0xFFFFFFFF

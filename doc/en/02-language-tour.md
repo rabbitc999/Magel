@@ -439,7 +439,6 @@ Compile-time errors give a line and column and draw a squiggle under the source:
 
 ```text
 語法錯誤：hello.mgl 第 2 行第 8 列：期望 标识符 / 常量(const) / 可变(mut) / 新建(new) 等 17 个之一，实际是 实现(impl)
-   |
  2 | impl Foo { }
    |        ~~~~
 ```
@@ -450,7 +449,6 @@ Diagnostics follow the environment language (`zh` / `en` / `ja`), overridable vi
 
 ```text
 Syntax error: hello.mgl:2:8: expected one of identifier / constant(const) / mutable(mut) / new(new) (17 candidates), found impl(impl)
-   |
  2 | impl Foo { }
    |        ~~~~
 ```

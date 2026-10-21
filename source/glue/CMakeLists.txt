@@ -2,7 +2,7 @@
 file(GLOB MAGEL_STANDARD_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/std_*.cpp")
 list(REMOVE_ITEM MAGEL_STANDARD_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/std_demo.cpp")
 list(APPEND MAGEL_STANDARD_SOURCES ../../library/bignum/bigint.cpp ../../library/bignum/bigfloat.cpp
-    ../../library/json/json.cpp ../../library/toml/toml.cpp)
+    ../../library/json/json.cpp ../../library/toml/toml.cpp ../../library/toml/toml_source.cpp)
 add_library(magel_standard_records STATIC ${MAGEL_STANDARD_SOURCES})
 target_include_directories(magel_standard_records PUBLIC
     .. ../../library ../../library/stackvm ../../library/bignum)

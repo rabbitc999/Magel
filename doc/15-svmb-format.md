@@ -10,8 +10,8 @@
 普通头部仍为 24 字节，保存版本、特征位、payload 长度与 FNV-1a 32 校验。
 VM 指令、标签、类型、形参、导出及调试记录之后还有内部执行序列；
 反射特征位启用时，内部执行序列后保存反射元数据段。四元式文本不写进 `.svmb`。
-权威实现见 [普通容器编解码](../library/stackvm/stackvm.cpp) 和
-[紧凑容器编解码](../library/stackvm/parts/symbol_container.cpp)。
+权威实现见 [普通容器编解码](../library/stackvm/program_binary.cpp) 和
+[紧凑容器编解码](../library/stackvm/symbol_container.cpp)。
 
 下文 v4 的七节布局、标本字节、操作码数、空间比例与历史采集脚本只用于理解旧证据。
 现行产物不能直接交给只识别 v4 的标本解析脚本；分析时先核对魔数和格式版本。

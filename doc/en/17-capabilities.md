@@ -121,3 +121,9 @@ Network async methods use nonblocking polling and NET_PENDING, with cancellable 
 Isolated threads support `waitFor(thread, millis)` with a nonnegative millisecond timeout and `tryWait(thread)` for a zero-timeout wait. Both return `true` after completion and collection, or `false` on timeout without cancelling the target. Target failures retain their original diagnostics; a collected handle cannot be waited on again.
 
 Threads use `std::thread::Thread` with copied initial arguments, cancellation, completion results, groups and fixed pools. Bounded channels and explicit event queues replace coroutine scheduling and implicit interrupt callbacks. See [concurrency contracts](29-thread-concurrency.md) for timeouts, cleanup and blocking host I/O limits.
+
+## VM modules and TOML saving
+
+The shared VM uses separate compilation units for quadruples, binary containers, execution, native services and concurrent communication. Builds and exports share library/stackvm/core_sources.txt. The stackvm.hpp header aggregates public interfaces; non-template implementations are linked separately.
+
+Saving a parsed std::toml document root retains its original comments and layout. In the underlying C++ value model, edits with the same container shape preserve layout. Structural edits retain all comment content, but may move comments to the beginning of the document. Parsing and saving repeatedly neither loses nor duplicates comments. See the [TOML API](../library/std-toml.md).

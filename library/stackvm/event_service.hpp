@@ -2,6 +2,13 @@
 #define MAGEL_EVENT_SERVICE_HPP
 #include "stackvm.hpp"
 #include <atomic>
+#if STACKVM_WITH_THREADS
+#include <chrono>
+#include <condition_variable>
+#include <deque>
+#include <mutex>
+#include <vector>
+#endif
 namespace stackvm
 {
 /**
@@ -11,11 +18,6 @@ struct ExecutionControl
 { std::atomic<bool> requested{ false }; };
 }  // namespace stackvm
 #if STACKVM_WITH_THREADS
-#include <chrono>
-#include <condition_variable>
-#include <deque>
-#include <mutex>
-#include <vector>
 namespace stackvm
 {
 /**

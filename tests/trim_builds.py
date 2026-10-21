@@ -33,7 +33,7 @@ def main():
     run(['g++', '-std=c++17', '-O3', '-pthread', '-ffunction-sections', '-fdata-sections',
          '-Wl,--gc-sections', '-DMAGEL_CUSTOM_ALLOCATOR=1', '-DSTACKVM_WITH_DEFAULT_HEAP=0',
          '-DSTACKVM_WITH_THREADS=0', *flags, '-Isource', '-Ilibrary', '-Ilibrary/stackvm',
-         ROOT / 'tests/vm_trim.cpp', ROOT / 'library/stackvm/stackvm.cpp', ROOT / 'library/stackvm/event_service.cpp', '-o', binary])
+         ROOT / 'tests/vm_trim.cpp', *[ROOT / 'library/stackvm' / name for name in (ROOT / 'library/stackvm/core_sources.txt').read_text().splitlines()], '-o', binary])
     actual = run([binary])
     assert actual.stdout == 'trimmed VM and explicit static runtime pool passed\n' and not actual.stderr, actual
     symbols = run(['nm', '-C', binary]).stdout

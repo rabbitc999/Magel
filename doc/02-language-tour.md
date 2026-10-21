@@ -409,7 +409,6 @@ detail square5=25
 
 ```text
 语法错误：hello.mgl 第 2 行第 8 列：期望 标识符 / 常量(const) / 可变(mut) / 新建(new) 等 17 个之一，实际是 实现(impl)
-   |
  2 | impl Foo { }
    |        ~~~~
 ```

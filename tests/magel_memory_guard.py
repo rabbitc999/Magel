@@ -25,7 +25,7 @@ def main():
     result = execute(unit)
     assert result.returncode == 0 and result.stdout == 'custom heap memory guard OK\n', result
     unchecked_unit = WORK / ('unit-unchecked' + suffix)
-    result = execute(args.cxx, '-std=c++17', '-pthread', '-DMAGEL_CUSTOM_ALLOCATOR=1', '-DSTACKVM_WITH_BIGINT=0', '-DSTACKVM_WITH_BIGFLOAT=0', '-DSTACKVM_WITH_ALLOCATION_GUARDS=0', '-DMAGEL_WITH_REFLECTION=1', '-DSTACKVM_WITH_REFLECTION=1', '-Ilibrary', '-Isource', '-Ilibrary/stackvm', 'tests/magel_memory_guard_test.cpp', 'library/stackvm/stackvm.cpp', 'library/stackvm/event_service.cpp', '-lm', '-o', unchecked_unit)
+    result = execute(args.cxx, '-std=c++17', '-pthread', '-DMAGEL_CUSTOM_ALLOCATOR=1', '-DSTACKVM_WITH_BIGINT=0', '-DSTACKVM_WITH_BIGFLOAT=0', '-DSTACKVM_WITH_ALLOCATION_GUARDS=0', '-DMAGEL_WITH_REFLECTION=1', '-DSTACKVM_WITH_REFLECTION=1', '-Ilibrary', '-Isource', '-Ilibrary/stackvm', 'tests/magel_memory_guard_test.cpp', *[str(ROOT / 'library/stackvm' / name) for name in (ROOT / 'library/stackvm/core_sources.txt').read_text().splitlines()], '-lm', '-o', unchecked_unit)
     assert result.returncode == 0, result
     result = execute(unchecked_unit)
     assert result.returncode == 0 and result.stdout == 'custom heap unchecked OK\n', result
