@@ -264,7 +264,9 @@ OptimizationReport optimize(QuadFile &file, std::size_t maxRounds, bool collectT
                     remember(quad);
                     folded = true;
                 }
-                else if (isBitwise && hasLeft && hasRight && leftIsNumber && rightIsNumber && !leftIsFloat && !rightIsFloat)
+                else if (isBitwise && hasLeft && hasRight && leftIsNumber && rightIsNumber && !leftIsFloat && !rightIsFloat &&
+                         /* 移位量超出位宽是未定义行为，不在这里折叠，留给运行期报错。 */
+                         !((base == "<<" || base == ">>") && (rightInt < 0 || rightInt >= 64)))
                 {
                     std::int64_t value = 0;
                     if (base == "&")

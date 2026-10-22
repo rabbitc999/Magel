@@ -1,5 +1,15 @@
-# Reflection-based student manager draft
+# Reflection-based student manager
 
-This is an unaccepted handoff draft. It uses reflection metadata, SQL model annotations, reflection JSON codecs and parameterized SQLite. Empty listing, insertion, lookup and persistent listing were exercised through the shared VM. Update, delete, search, sorting, invalid input and full cleanup validation remain pending.
+A command-line student information manager. The model is declared with `@Reflect`
+and SQL model annotations, the field list is read through reflection, JSON encoding
+and decoding use the reflection serializer, and every database access is
+parameterized SQLite.
 
-Run source with `magel main.mgl DATABASE COMMAND [ARGS]`. Commands: `add JSON`, `update JSON`, `get ID`, `delete ID`, `list [FIELD [asc|desc]]`, `search NAME`, `schema`. Record fields: `id`, `name`, `age`, `className`, `score`. See [TASK.md](../../TASK.md) for the remaining work.
+Verified commands: `schema`, `add`, `update`, `get`, `delete`, `list` (with optional
+field sorting) and `search`, plus validation of id, name, class, age and score, and
+the error paths for malformed JSON, unknown sort fields, bad sort directions and
+missing ids.
+
+Run the source with `magel main.mgl DATABASE COMMAND [ARGS]`. Commands: `add JSON`,
+`update JSON`, `get ID`, `delete ID`, `list [FIELD [asc|desc]]`, `search NAME`,
+`schema`. Record fields: `id`, `name`, `age`, `className`, `score`.

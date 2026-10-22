@@ -24,7 +24,10 @@
    `Makefile` 是手写的，`gen.sh` 不会覆盖它。
 3. **引用到的库各自拷一份进本项目**：`library/` 下的库是 ParseEngine 仓库 `library/` 同名目录的副本；
    控制台头 `library/console/utf8.hpp` 在本仓库独立维护。
-   本项目要能单独克隆、单独构建，**不依赖 `library/`**；改副本时想清楚要不要一起改外面的原件（反之亦然）。
+   本项目要能单独克隆、单独构建，**不依赖 `library/`**。
+   **`library/` 副本只在本仓库演进，不同步回 `D:/Desktop/Workspace/ParseEngine/library/`**：
+   两个仓库的库已经分叉，往回同步属于多余动作，也不要顺手改外面那份（反之亦然）。
+   只有 `library/console/utf8.hpp` 这类本仓库独立维护的文件例外。
 4. **固化生成资产**：标准库 `.mgl` 与生成器运行时资产在构建期内嵌成 C++ 源
    （[`tools/embed_stdlib.py`](tools/embed_stdlib.py) → `source/magel_stdlib_embedded.cpp`），
    运行时不读磁盘，保证单个可执行文件可用。改了任何 `.mgl` 或胶水头后必须重跑内嵌、重建编译器，再跑测试。

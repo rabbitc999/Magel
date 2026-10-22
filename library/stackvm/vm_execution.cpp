@@ -1328,12 +1328,19 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             }
             else
             {
+                if (instruction.op == Op::Div && a == INT64_MIN && b == -1)
+                {
+                    /* 最小负数除以 -1 的结果超出 int64，C++ 里是未定义行为，
+                     * 这里按运行期错误报出来，而不是悄悄给出一个错误的值。 */
+                    fail("整数除法溢出：最小负数除以 -1 的结果超出 int64 范围");
+                    break;
+                }
                 switch (instruction.op)
                 {
                 case Op::Add: value = static_cast<std::int64_t>(static_cast<std::uint64_t>(a) + static_cast<std::uint64_t>(b)); break;
                 case Op::Sub: value = static_cast<std::int64_t>(static_cast<std::uint64_t>(a) - static_cast<std::uint64_t>(b)); break;
                 case Op::Mul: value = static_cast<std::int64_t>(static_cast<std::uint64_t>(a) * static_cast<std::uint64_t>(b)); break;
-                case Op::Div: value = (a == INT64_MIN && b == -1) ? a : a / b; break;
+                case Op::Div: value = a / b; break;
                 default: value = (a == INT64_MIN && b == -1) ? 0 : a % b; break;
                 }
             }
@@ -1350,7 +1357,14 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             Slot right;
             Slot left;
             if (!pop(right) || !pop(left)) break;
-            const int shift = static_cast<int>(right.integer & 63);
+            if (right.integer < 0 || right.integer >= 64)
+            {
+                /* 移位量超出位宽在 C++ 里是未定义行为，不能靠 & 63 静默回绕
+                 * （那样 1 << 64 会算成 1），直接报运行期错误。 */
+                fail("移位位数超出整数位宽（有效范围 0..63）");
+                break;
+            }
+            const int shift = static_cast<int>(right.integer);
             const auto bits = static_cast<std::uint64_t>(left.integer);
             const auto value = instruction.op == Op::Shl ? static_cast<std::int64_t>(bits << shift) :
                                instruction.op == Op::Shr ? (left.integer >> shift) :

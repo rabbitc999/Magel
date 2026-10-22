@@ -291,6 +291,8 @@ private:
                         const auto b = (instruction->flags & Literal) ? instruction->immediate : *registers[instruction->right];
                         const auto operation = static_cast<Op>(instruction->operation);
                         if ((operation == Op::Div || operation == Op::Mod) && !b) goto finished;
+                        if (operation == Op::Div && a == INT64_MIN && b == -1) goto finished;
+                        if ((operation == Op::Shl || operation == Op::Shr || operation == Op::ShrU) && (b < 0 || b >= 64)) goto finished;
                         switch (operation)
                         {
                         case Op::Add: value = binary<Op::Add>(a, b); break;

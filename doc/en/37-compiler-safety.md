@@ -1,6 +1,6 @@
 # Compiler safety boundaries and focused regression tests
 
-> Handoff status: the changes below are in source, and parser regeneration plus compiler rebuilding are done; the focused regression passes locally. Penetration testing continues; see [TASK.md](../../TASK.md) for pending items.
+> Status: the changes below are in source, and parser regeneration plus compiler rebuilding are done; both the focused regression and the penetration suite pass locally. No penetration case is classified UB / CRASH / TIMEOUT any more — only diagnosable failures and normal output remain.
 
 This page records protection for confirmed defects. It does not claim that the compiler has no other defects.
 
@@ -15,6 +15,13 @@ This page records protection for confirmed defects. It does not claim that the c
 | Decimal integer literal beyond int64 | Compile-time diagnostic (previously saturated silently to `INT64_MAX`) |
 | Floating literal overflowing to inf / NaN | Compile-time diagnostic (previously produced "undefined variable: inf.0") |
 | JSON / TOML nesting depth | Beyond 256 levels is a parse diagnostic (previously overflowed the host stack) |
+| Local fixed-size arrays | Compile-time "fixed array exceeds the current memory budget" (previously `std::bad_alloc` escaped as `terminate`), matching struct fields |
+| Fixed-array dimension product | Accumulated in 64 bits and clamped at the int bound (previously `int` overflow produced wrong loop bounds and slot offsets) |
+| Negative string slice endpoints | Runtime diagnostic (previously `"abcdef"[0:-2]` silently returned `abcdef`); `end == -1` remains the built-in ABI's "to the end" convention |
+| Re-entrant container callbacks | `vecFold` / `vecMap` / `vecFilter` and predicate callbacks lease the iterator; `push` / `clear` inside them is rejected |
+| Mutation during iteration | `push` / `set` share the "cannot move or remove list elements while a for-in reference is active" guard with `remove` |
+| `INT64_MIN / -1` | Runtime overflow diagnostic (previously returned `-9223372036854775808`) |
+| Shift amount beyond width | Runtime diagnostic; the valid range is 0..63 (previously masked with `& 63`, so `1 << 64` yielded `1`) |
 
 Platform fixes avoid duplicate long/int64 constructors on LP64, delay JSON/TOML member template definitions until value types are complete, and avoid a glibc htons macro collision. The standalone VM CMake target declares its CAS, SQL generation, SQLite, compression, include and host dependencies.
 

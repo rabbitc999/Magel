@@ -37,6 +37,7 @@ FILES = [
     ('20-注解与反射.md', 'ch20.tex'),
     ('21-与C互操作.md', 'ch21.tex'),
     ('22-交付与部署.md', 'ch22.tex'),
+    ('23-学生信息管理系统.md', 'ch23.tex'),
     ('A-常见错误速查.md', 'appendix-a.tex'),
     ('B-标准库速查.md', 'appendix-b.tex'),
     ('README.md', 'preface.tex'),

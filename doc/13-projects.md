@@ -61,7 +61,29 @@ Set-Location .\build\magel-turtle-winapi
 
 ## 4. 数据库示例
 
-数据库基础用法见[SQL 示例](../example/sql-magel/README.md)，反射与参数化查询见[动态 SQL 说明](36-reflection-serialization-sql.md)。原有学生项目已移除。
+### 4.1 反射版学生管理系统
+
+**演示什么**：`@Reflect` 与 SQL 模型注解派生出建表语句、查询列、JSON 键和排序字段检查；
+所有用户输入绑成 SQL 参数；字段清单只在模型里声明一次。
+
+**怎么跑**（在 `example/reflection-students` 目录里）：
+
+```sh
+magel main.mgl students.db add '{"id":1,"name":"张伟","age":18,"className":"高一(3)班","score":92}'
+magel main.mgl students.db list score desc
+magel main.mgl students.db schema
+```
+
+**怎么验证**：逐条跑 `add` / `update` / `get` / `delete` / `list` / `search` / `schema`，
+以及非法 JSON、越界年龄成绩、未知排序字段和不存在的学号。
+
+**边界**：需要反射版工具链；模型字段变化会影响既有数据库（旧库缺列会被「数据库缺少字段」拦下）。
+
+入门讲解见书稿[第 23 章 学生信息管理系统](book/23-学生信息管理系统.md)。
+
+### 4.2 其他数据库示例
+
+数据库基础用法见[SQL 示例](../example/sql-magel/README.md)，反射与参数化查询见[动态 SQL 说明](36-reflection-serialization-sql.md)。
 
 ## 5. 语言与库能力示例
 

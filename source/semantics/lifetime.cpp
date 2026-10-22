@@ -1,6 +1,32 @@
 /* ---------- 生命周期：块作用域所有 ---------- */
 
 /**
+ * @brief 定长数组的元素总个数（各维连乘）。
+ * @param dims 各维长度。
+ * @return 连乘结果。
+ *
+ * 以前各处都写 `int count = 1; for (dim) count *= dim;`，维数一多就溢出成
+ * 负数或 0，循环上界和槽偏移跟着变成错值。这里统一用 64 位累加，
+ * 并在超过 int 上界时夹住，保证下游 `int` 转换不会拿到负数。
+ * 真正的入口拒绝在声明处（`ReadDims` 之后的预算检查）完成，那个检查用的
+ * 也是本函数，所以能通过声明的总个数一定在 int 范围内。
+ */
+long long FixedArrayElementCount(const Memory::Vector<int> &dims)
+{
+    long long count = 1;
+    for (const int dim : dims)
+    {
+        count *= static_cast<long long>(dim);
+        if (count > 0x7fffffffLL)
+        {
+            count = 0x7fffffffLL;
+            break;
+        }
+    }
+    return count;
+}
+
+/**
  * @brief 一个语句块里"自动释放"的变量（离开块时按**声明逆序**软释放）。
  *
  * 所有权分三档（README 的"生命周期"一节）：
@@ -201,9 +227,7 @@ void MarkOwnedArray(const Memory::String &emitted, const std::shared_ptr<MType> 
         MarkOwned(emitted, true);
         return;
     }
-    int count = 1;
-    for (const int dim : type->dims) count *= dim;
-    g_arrayFixedCounts[emitted] = count;
+    g_arrayFixedCounts[emitted] = static_cast<int>(FixedArrayElementCount(type->dims));
     MarkOwned(emitted, true);
 }
 

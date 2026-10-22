@@ -270,8 +270,16 @@ Value strSub(State &ctx, const Memory::Vector<Value> &args)
     const std::int64_t length = static_cast<std::int64_t>(text.size());
     std::int64_t begin = nativeInt(args[1]);
     std::int64_t end = nativeInt(args[2]);
-    if (end < 0) end = length;
-    if (begin < 0) begin = 0;
+    /* `end == -1` 是内建 ABI 里"到末尾"的约定（数组复制、Text.split 等都走这条路），
+     * 必须保留。除此之外负端点不再静默当成"到末尾"或"从头开始"：切片按字节算，
+     * 负索引的语义会随多字节字符变化，静默吞掉只会把错误藏起来
+     * ——否则 `"abcdef"[0:-2]` 会静默得到整个 `abcdef`。 */
+    if (end == -1) end = length;
+    if (begin < 0 || end < 0)
+    {
+        ctx.error = "切片端点不能为负数（String 的切片按字节算）：begin " + Memory::toString(begin) + "，end " + Memory::toString(end);
+        return Value::fromInt(0);
+    }
     if (begin > length) begin = length;
     if (end < begin) end = begin;
     if (end > length) end = length;

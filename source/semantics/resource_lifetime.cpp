@@ -341,8 +341,7 @@ void AppendDestruction(Memory::Vector<simple_ast::NodePtr> *out, const simple_as
     {
         if (it->type && it->type->kind == MType::Array && !it->type->dims.empty() && it->type->elem->kind == MType::Struct)
         {
-            int count = 1;
-            for (const auto dim : it->type->dims) count *= dim;
+            const int count = static_cast<int>(FixedArrayElementCount(it->type->dims));
             const auto element = it->type->elem;
             for (int index = count; index-- > 0;) AppendDestruction(out,
                                                                     simple_ast::Node::offset(value, simple_ast::Node::i(it->slot + index * (StructStride(element) / 8)), 8),
@@ -566,9 +565,7 @@ void AppendOwnedDrop(const Memory::String &name, const std::shared_ptr<MType> &t
     g_arrayElementTypes[name] = type->elem;
     if (!runtimeArray)
     {
-        int count = 1;
-        for (const int dim : type->dims) count *= dim;
-        g_arrayFixedCounts[name] = count;
+        g_arrayFixedCounts[name] = static_cast<int>(FixedArrayElementCount(type->dims));
     }
     AppendOwnedDropByName(name, runtimeArray, out);
 }

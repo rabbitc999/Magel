@@ -64,7 +64,31 @@ C ABI boundary error — background in [Host integration](08-host-integration.md
 
 ## 4. Database examples
 
-See the [SQL examples](../../example/sql-magel/README.md) and [reflection / dynamic SQL guide](36-reflection-serialization-sql.md). The previous student projects have been removed.
+### 4.1 Reflection-based student manager
+
+**What it demonstrates**: `@Reflect` plus SQL model annotations derive the create-table
+statement, query columns, JSON keys and sort-field validation; every user value is bound
+as an SQL parameter; the field list is declared exactly once, in the model.
+
+**How to run it** (from `example/reflection-students`):
+
+```sh
+magel main.mgl students.db add '{"id":1,"name":"Zhang Wei","age":18,"className":"Class 3","score":92}'
+magel main.mgl students.db list score desc
+magel main.mgl students.db schema
+```
+
+**How it is verified**: exercise `add` / `update` / `get` / `delete` / `list` / `search` /
+`schema`, plus malformed JSON, out-of-range age and score, unknown sort fields and a
+missing id.
+
+**Boundaries**: requires a reflection-enabled toolchain; changing model fields affects
+existing databases (an old database missing the column is rejected with a "missing field"
+diagnostic).
+
+### 4.2 Other database examples
+
+See the [SQL examples](../../example/sql-magel/README.md) and [reflection / dynamic SQL guide](36-reflection-serialization-sql.md).
 
 ## 5. Language and library capability examples
 

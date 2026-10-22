@@ -928,8 +928,7 @@ simple_ast::NodePtr CopyRuntimeArrayValue(const simple_ast::NodePtr &source, con
     const int stride = ElementBytes(element);
     const auto from = Node::offset(Node::var(input), Node::var(index), stride);
     const auto into = Node::offset(Node::var(result), Node::var(index), stride);
-    int fixedCount = 1;
-    for (const int dimension : type->dims) fixedCount *= dimension;
+    const std::int64_t fixedCount = FixedArrayElementCount(type->dims);
     const auto countValue = IsRuntimeArray(type) ? Node::loadInt(Node::binary("-", Node::var(input), Node::i(8))) : Node::i(fixedCount);
     g_usesNewArray = true;
     Memory::Vector<simple_ast::NodePtr> out{

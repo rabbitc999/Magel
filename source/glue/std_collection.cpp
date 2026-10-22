@@ -799,6 +799,13 @@ inline Slot vecPush(State &ctx, const Memory::Vector<Slot> &args)
 {
     Record *object = nativeObject(ctx, args[0], StorageKind::Vector, "vec.push");
     if (object == nullptr) return Slot::fromInt(0);
+    /* 与 vec.insert / vec.remove 同一口径：push 可能让底层存储扩容，已有引用会失效；
+     * 而按长度每轮重取的 for-in 会因此无限增长，直到耗尽运行内存。 */
+    if (object->iteratorLeases || !object->elementViews.empty())
+    {
+        ctx.error = "活跃 for-in 引用期间不能移动或删除列表元素";
+        return Slot::fromInt(0);
+    }
     ObjectValue value;
     if (!nativeValue(ctx, args[1], nativeInt(args[2]) != 0, nativeInt(args[3]), true,
                      &value)) return Slot::fromInt(0);
@@ -1017,6 +1024,13 @@ inline Slot vecSet(State &ctx, const Memory::Vector<Slot> &args)
 {
     Record *object = nativeObject(ctx, args[0], StorageKind::Vector, "vec 改元素");
     if (object == nullptr) return Slot::fromInt(0);
+    /* 迭代租约期间改写元素会让正在遍历的游标看到不一致的内容；
+     * 元素视图（下标引用）由下面的分支按引用写入，不在这一条限制内。 */
+    if (object->iteratorLeases)
+    {
+        ctx.error = "活跃 for-in 引用期间不能改写列表元素";
+        return Slot::fromInt(0);
+    }
     std::size_t index = 0u;
     if (!vecIndex(ctx, object, nativeInt(args[1]), &index, "vec")) return Slot::fromInt(0);
     ObjectValue value;
@@ -1274,6 +1288,40 @@ inline bool vecCallbackValue(State &ctx, const ObjectValue &value, NativeValue *
 }
 
 /**
+ * @brief 迭代租约守卫：进入时给容器加一份租约，离开时无论成败都释放。
+ *
+ * 高阶算法（fold / map / filter / all / any）持引用遍历元素并**重入 VM 调用回调**，
+ * 回调里 push / clear / remove 会让引用与游标失效；持有租约后这些操作会撞上各自的
+ * for-in 守卫并给出明确错误，而不是读到已经失效的内存。
+ */
+class IteratorLeaseScope
+{
+public:
+    /**
+     * @brief 给容器加一份迭代租约。
+     * @param object 待保护的容器；为空时不做任何事。
+     */
+    explicit IteratorLeaseScope(Record *object) : object_(object)
+    {
+        if (object_ != nullptr) ++object_->iteratorLeases;
+    }
+
+    /**
+     * @brief 释放迭代租约。
+     */
+    ~IteratorLeaseScope()
+    {
+        if (object_ != nullptr && object_->iteratorLeases > 0u) --object_->iteratorLeases;
+    }
+
+    IteratorLeaseScope(const IteratorLeaseScope &) = delete;
+    IteratorLeaseScope &operator=(const IteratorLeaseScope &) = delete;
+
+private:
+    Record *object_;  ///< 被保护的容器。
+};
+
+/**
  * @brief 调用谓词回调并取得布尔结果。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
@@ -1290,6 +1338,7 @@ inline Slot vecPredicate(State &ctx, const Memory::Vector<Slot> &args, bool all)
         ctx.error = "当前 VM 上下文不能从算法胶水调用函数指针";
         return Slot::fromInt(0);
     }
+    IteratorLeaseScope lease(object);
     for (const ObjectValue &item : object->items)
     {
         NativeValue argument;
@@ -1345,6 +1394,7 @@ inline Slot vecFold(State &ctx, const Memory::Vector<Slot> &args)
         return Slot::fromInt(0);
     }
     NativeValue accumulated = args[1].isFloat ? NativeValue::fromFloat(args[1].real) : NativeValue::fromInt(args[1].integer);
+    IteratorLeaseScope lease(object);
     for (const ObjectValue &item : object->items)
     {
         NativeValue value;
@@ -1494,6 +1544,7 @@ inline Slot vecMap(State &ctx, const Memory::Vector<Slot> &args)
     const std::int64_t kind = nativeInt(args[2]);
     Memory::Vector<ObjectValue> items;
     items.reserve(object->items.size());
+    IteratorLeaseScope lease(object);
     for (const ObjectValue &item : object->items)
     {
         NativeValue argument;
@@ -1538,6 +1589,7 @@ inline Slot vecFilter(State &ctx, const Memory::Vector<Slot> &args)
     const bool isText = nativeInt(args[2]) != 0;
     const bool isObject = nativeInt(args[3]) != 0;
     Memory::Vector<ObjectValue> items;
+    IteratorLeaseScope lease(object);
     for (const ObjectValue &item : object->items)
     {
         NativeValue argument;

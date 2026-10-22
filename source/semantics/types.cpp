@@ -66,9 +66,8 @@ simple_ast::TypePtr LowerType(const std::shared_ptr<MType> &type, const Memory::
         return Type::i64();
     case MType::Array:
     {
-        int count = 1;
-        for (const int dim : type->dims) count *= dim;
-        const int length = count;
+        const int length = static_cast<int>(FixedArrayElementCount(type->dims));
+        int count = length;
         /* 元素是结构体：数据区里按字段铺开（每个元素占"字段数 × 8"字节），
          * 所以 count 要乘上字段数 —— 与下标用的 stride（StructStride）对齐。 */
         const int stride = StructStride(type->elem);

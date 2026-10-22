@@ -17,7 +17,11 @@ def main():
     """新章节示例须产生所列输出，生成章节须与 Markdown 一致。"""
     book=(ROOT/'doc/book/latex/book.tex').read_text(encoding='utf-8')
     assert not re.search(r'^\s*\\part\*?\{',book,re.M), '书稿直接按章节排列，不使用 part 分组'
-    assert len(re.findall(r'\\input\{chapters/ch\d+\}',book))==22
+    # 章节数跟随 md2tex 的映射表，加章时只改那一处，不用再改这里的常数。
+    chapterCount = sum(1 for _, name in FILES if name.startswith('ch'))
+    assert len(re.findall(r'\\input\{chapters/ch\d+\}',book))==chapterCount
+    for name in (name for _, name in FILES if name.startswith('ch')):
+        assert re.search(r'\\input\{chapters/%s\}' % name[:-4], book), name
     headings=Converter().convert('## 3.7 字面量\n\n### 数字后缀\n\n说明。')
     assert r'\subsection*{数字后缀}' in headings and r'\subsection{数字后缀}' not in headings
     numbered=Converter().convert('## 15.7 捕获\n\n### 15.7.1 借用\n\n正文。\n\n### 15.7.2 拥有\n\n正文。')

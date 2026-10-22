@@ -1,0 +1,505 @@
+\chapter{学生信息管理系统：让程序认识自己的结构}
+\label{ch:23}
+
+前面 22 章把语言讲完了。这一章反过来做一件「用」的事：把结构体、注解、反射、JSON、SQL 和 \texttt{Result} / \texttt{?} 拼成一个能真正存数据的命令行程序。
+
+它只有两百多行，却覆盖了日常业务程序最核心的那几件事：
+
+\begin{itemize}
+
+\item 一份模型（学生有学号、姓名、年龄、班级、成绩）；
+
+\item 一张表（模型直接变成 SQLite 的表）；
+
+\item 一组命令（增删查改、排序、搜索）；
+
+\item 一条校验规则（学号必须是正整数、年龄在 1 到 150、成绩在 0 到 100）；
+
+\item 一条出错的路（所有失败都变成可读的诊断，而不是崩溃）。
+
+\end{itemize}
+
+最关键的那一句话是：这个程序从来没有手写过「学生有哪些字段」的清单。 字段列表是它运行期从自己身上读出来的——这就是第 20 章的反射真正派上用场的地方。
+
+示例就在仓库里：\href{https://gitee.com/rabbitc999/magel/blob/master/example/reflection-students/main.mgl}{\texttt{example/\allowbreak{}reflection-students/\allowbreak{}main.\allowbreak{}mgl}}。
+
+\section{先看看它能做什么}
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel main.mgl students.db schema
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+Student: id, name, age, className, score
+\end{lstlisting}
+\par
+\medskip
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+命令 & 作用 \\
+\midrule
+\texttt{schema} & 打印模型有哪些字段 \\
+\texttt{add JSON} & 新增一名学生 \\
+\texttt{update JSON} & 按学号更新（JSON 里必须带 \texttt{id}） \\
+\texttt{get 学号} & 按学号查 \\
+\texttt{delete 学号} & 按学号删 \\
+\texttt{list [\allowbreak{}字段 [\allowbreak{}asc 或 desc]\allowbreak{}]\allowbreak{}} & 列出全部，可按字段排序 \\
+\texttt{search 姓名} & 按姓名模糊查 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+第一个参数是数据库文件路径（不存在时 SQLite 会自动建），后面才是命令。整个程序是「跑一次做一件事」，没有常驻进程，也没有 HTTP——先把业务逻辑写对，再谈套界面，这是本章刻意的选择。
+
+\section{模型：一份声明，三处复用}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+import std::sql;
+import std::reflect;
+import std::json;
+import std::parse;
+
+@Reflect
+@std::sql::ModelClass("students")
+struct Student
+{
+    @std::sql::ModelField(id: true)
+    int64 id;
+    String name;
+    int64 age;
+    String className;
+    int64 score;
+};
+\end{lstlisting}
+\par
+\medskip
+
+三个注解各管一件事：
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.404\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.115\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.461\linewidth-2\tabcolsep\relax}}
+\toprule
+注解 & 谁在读它 & 读了做什么 \\
+\midrule
+\endhead
+\texttt{@Reflect} & 反射运行期 & 让 \texttt{get\allowbreak{}Struct\allowbreak{}Info<\allowbreak{}Student>\allowbreak{}(\allowbreak{})\allowbreak{}} 能列出字段 \\
+\texttt{@std:\allowbreak{}:\allowbreak{}sql:\allowbreak{}:\allowbreak{}Model\allowbreak{}Class(\allowbreak{}"students")\allowbreak{}} & \texttt{std:\allowbreak{}:\allowbreak{}sql} & 决定表名，并据此生成建表 / 增删改查语句 \\
+\texttt{@std:\allowbreak{}:\allowbreak{}sql:\allowbreak{}:\allowbreak{}Model\allowbreak{}Field(\allowbreak{}id:\allowbreak{} true)\allowbreak{}} & \texttt{std:\allowbreak{}:\allowbreak{}sql} & 标出主键，\texttt{update} / \texttt{delete} 用它定位 \\
+\bottomrule
+\end{longtable}
+}
+
+这就是本章最省力的地方：加一个字段只要在这一处加一行，建表语句、查询列、JSON 的键、排序字段的合法性检查，全都跟着变。如果在三个地方各写一遍字段清单，那三处迟早会对不上。
+
+\begin{tip}{提示}
+反射版工具链默认开启。要显式控制，用 \texttt{--reflection} / \texttt{--no-reflection}；\texttt{--hard-realtime} 会整份禁用反射。
+\end{tip}
+
+\section{校验单独写一个函数}
+
+业务规则不要散落在各个分支里，收成一个函数，返回空字符串表示通过：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+String validate(Student const& student)
+{
+    if (student.id <= 0)
+    {
+        return "学号必须是正整数";
+    }
+    if (student.name.trim().isEmpty() || len(student.name) > 120)
+    {
+        return "姓名必须为 1 到 120 字节的非空文本";
+    }
+    if (student.className.trim().isEmpty() || len(student.className) > 120)
+    {
+        return "班级必须为 1 到 120 字节的非空文本";
+    }
+    if (student.age < 1 || student.age > 150)
+    {
+        return "年龄必须在 1 到 150 之间";
+    }
+    if (student.score < 0 || student.score > 100)
+    {
+        return "成绩必须在 0 到 100 之间";
+    }
+    return "";
+}
+\end{lstlisting}
+\par
+\medskip
+
+参数是 \texttt{Student const\&}：引用，不复制（第 7 章），而且只读。本书到第 11 章反复说过容器和结构体都是值，按值传一次就是整份复制；只读的大对象一律写 \texttt{const\&}。
+
+注意字节长度：\texttt{len(\allowbreak{})\allowbreak{}} 数的是字节不是字符（第 12 章），所以「120」是 120 个字节，中文姓名大约 40 个字。这个上限要和数据库列长度对得上。
+
+\section{反射：把结果集变成 JSON}
+
+数据库返回的是「行 \ensuremath{\times} 列」的文本网格，而我们要的是 JSON。字段清单从反射里拿，不在代码里再抄一遍：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+Result<String, String> encodeRows(std::sql::ResultSet const& rows)
+{
+    auto fields = std::reflect::getStructInfo<Student>().unwrap().fields;
+    List<String> records;
+    for (int64 row in std::lang::range(0, rows.rowCount()))
+    {
+        List<String> values;
+        for (auto field in fields)
+        {
+            int64 column = rows.columnIndex(field.name);
+            if (column < 0)
+            {
+                return Result<String, String>::Err("数据库缺少字段：" + field.name);
+            }
+            String value = rows.textAt(row, column);
+            if (field.typeId == std::reflect::getTypeId<String>())
+            {
+                value = std::reflect::__serdeQuote(value);
+            }
+            values.push(std::reflect::__serdeQuote(field.name) + ":" + value);
+        }
+        String separator = ",";
+        String text = "{" + separator.join(values) + "}";
+        auto checked = std::json::deserialize<Student>(text);
+        if (checked.isErr())
+        {
+            return Result<String, String>::Err("数据库记录不符合学生模型：" + checked.error());
+        }
+        Student student = checked.unwrap();
+        String error = validate(&student);
+        if (error != "")
+        {
+            return Result<String, String>::Err(error);
+        }
+        String encoded = std::json::serialize<Student>(&student)?;
+        records.push(encoded);
+    }
+    String separator = ",";
+    return Result<String, String>::Ok("[" + separator.join(records) + "]");
+}
+\end{lstlisting}
+\par
+\medskip
+
+这里有三个值得单独看的点：
+
+\begin{enumerate}
+
+\item \texttt{field.\allowbreak{}type\allowbreak{}Id =\allowbreak{}=\allowbreak{} std:\allowbreak{}:\allowbreak{}reflect:\allowbreak{}:\allowbreak{}get\allowbreak{}Type\allowbreak{}Id<\allowbreak{}String>\allowbreak{}(\allowbreak{})\allowbreak{}} —— 运行期判断字段是不是字符串，是才加引号。数字字段加了引号就不是合法 JSON 数字了。
+
+\item 反序列化再序列化 —— 先 \texttt{deserialize<\allowbreak{}Student>\allowbreak{}} 让解析器和模型对一遍，再 \texttt{serialize<\allowbreak{}Student>\allowbreak{}} 输出。这样「数据库里存了什么脏东西」会在这一关被拦住，而不是一路带进输出。同一段文本走 \texttt{validate} 再走一遍，保证读出的数据也合规。
+
+\item \texttt{serialize<\allowbreak{}Student>\allowbreak{}(\allowbreak{}\&student)\allowbreak{}?} —— 这一句返回 \texttt{Result}，用 \texttt{?} 向外传播。第 16 章说过，\texttt{?} 只能用在返回 \texttt{Result} / \texttt{Option} 的函数里；\texttt{encode\allowbreak{}Rows} 的返回类型正好是 \texttt{Result<\allowbreak{}String,\allowbreak{} String>\allowbreak{}}，所以成立。\texttt{?} 的结果先落到局部变量 \texttt{encoded} 再 \texttt{push}，不要嵌在更外层的表达式里——嵌套的 \texttt{?} 会让「哪个 \texttt{?} 在往哪里传」变得难读，也更容易触发编译期的传播规则报错。
+
+\end{enumerate}
+
+返回类型写成 \texttt{Result<\allowbreak{}String,\allowbreak{} String>\allowbreak{}}：成功是 JSON 文本，失败是诊断文本。没有用异常，也没有用返回码——第 16 章那条规则在这里就是全部的出错机制。
+
+\section{命令分派：参数化查询}
+
+\texttt{execute} 负责「读命令 \ensuremath{\rightarrow} 拼查询 \ensuremath{\rightarrow} 执行 \ensuremath{\rightarrow} 返回文本」。看 \texttt{add} / \texttt{update} 这一段：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+if ((command == "add" || command == "update") && args.len() == 3)
+{
+    Student student = std::json::deserialize<Student>(args[2])?;
+    String error = validate(&student);
+    if (error != "")
+    {
+        return Result<String, String>::Err(error);
+    }
+    if (command == "update")
+    {
+        std::sql::filter<int64>(&query, "id", student.id)?;
+    }
+    auto statement = std::sql::insert<Student>(&query, &student);
+    if (command == "update")
+    {
+        statement = std::sql::update<Student>(&query, &student);
+    }
+    auto prepared = statement?;
+    auto rows = database.exec(prepared);
+    if (!rows.ok)
+    {
+        return Result<String, String>::Err(rows.error);
+    }
+    if (rows.affected != 1)
+    {
+        return Result<String, String>::Err("学生不存在");
+    }
+    String encoded = std::json::serialize<Student>(&student)?;
+    return Result<String, String>::Ok(encoded);
+}
+\end{lstlisting}
+\par
+\medskip
+
+所有用户值都交给 \texttt{std:\allowbreak{}:\allowbreak{}sql} 绑成 SQL 参数，没有一处字符串拼接。 \texttt{filter<\allowbreak{}int64>\allowbreak{}(\allowbreak{}\&query,\allowbreak{} "id",\allowbreak{} student.\allowbreak{}id)\allowbreak{}} 里的学号是绑定进去的，不是 \texttt{".\allowbreak{}.\allowbreak{}.\allowbreak{} WHERE id =\allowbreak{} " + 学号}。这是 SQL 注入的唯一正解：不要「转义引号」，而是根本不让用户输入成为 SQL 文本的一部分。
+
+\texttt{insert} / \texttt{update} 的字段和值由生成器按模型产出，同样不经过字符串拼接。\texttt{rows.\allowbreak{}affected !=\allowbreak{} 1} 用来判断「到底有没有改到那一行」——\texttt{update} 一个不存在的学号时，SQLite 不会报错，只会影响 0 行，所以必须自己查。
+
+\texttt{list} 的排序字段也走同一套模型信息：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+query.orderBy(field, descending);
+auto prepared = query.build()?;
+\end{lstlisting}
+\par
+\medskip
+
+字段名不是模型的字段时，\texttt{build(\allowbreak{})\allowbreak{}} 直接拒绝：
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+错误：模型 Student 没有字段 badfield
+\end{lstlisting}
+\par
+\medskip
+
+排序方向也要自己查：\texttt{asc} / \texttt{desc} 之外的输入会被拒绝，不会静默当成默认排序。
+
+\section{入口：开库、建表、跑一次}
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+int64 main(List<String> args)
+{
+    if (args.len() < 2)
+    {
+        println("用法：magel main.mgl 数据库路径 命令 [参数]");
+        return 1;
+    }
+    auto database = std::sql::Database::sqlite(args[0]);
+    if (!database.isOpen())
+    {
+        println("错误：{}", database.lastError());
+        return 1;
+    }
+    auto query = std::sql::query<Student>().unwrap();
+    auto created = database.exec(query.build("create").unwrap());
+    if (!created.ok)
+    {
+        println("错误：{}", created.error);
+        database.close();
+        return 1;
+    }
+    auto result = execute(&database, &args);
+    database.close();
+    if (result.isErr())
+    {
+        println("错误：{}", result.error());
+        return 1;
+    }
+    println("{}", result.unwrap());
+    return 0;
+}
+\end{lstlisting}
+\par
+\medskip
+
+结构很直白：先建表，再执行，最后一定 \texttt{close(\allowbreak{})\allowbreak{}}。两条失败路径都各自关库再返回——手工管理资源时，「出错的那条路最容易忘掉清理」，所以要把 \texttt{close(\allowbreak{})\allowbreak{}} 写在每一条退出路径上，而不是只写在正常路径末尾。
+
+\texttt{return 1} / \texttt{return 0}：业务失败和成功用退出码区分，这样 shell 脚本能判断这一步有没有做成。
+
+\section{跑一遍}
+
+从 \texttt{example/\allowbreak{}reflection-students} 目录运行（Windows 上程序名是 \texttt{magel.\allowbreak{}exe}）：
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel main.mgl students.db add '{"id":1,"name":"张伟","age":18,"className":"高一(3)班","score":92}'
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+{"id":1,"name":"张伟","age":18,"className":"高一(3)班","score":92}
+\end{lstlisting}
+\par
+\medskip
+
+再存一个，然后列出来：
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel main.mgl students.db add '{"id":2,"name":"李娜","age":17,"className":"高一(3)班","score":88}'
+magel main.mgl students.db list
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+[{"id":1,"name":"张伟","age":18,"className":"高一(3)班","score":92},{"id":2,"name":"李娜","age":17,"className":"高一(3)班","score":88}]
+\end{lstlisting}
+\par
+\medskip
+
+改成绩、按姓名查、按成绩倒序、删除：
+
+\par
+\medskip
+\begin{lstlisting}[style=sh]
+magel main.mgl students.db update '{"id":1,"name":"张伟","age":19,"className":"高一(3)班","score":95}'
+magel main.mgl students.db search 李娜
+magel main.mgl students.db list score desc
+magel main.mgl students.db delete 2
+\end{lstlisting}
+\par
+\medskip
+
+\par
+\medskip
+\begin{lstlisting}[style=out]
+{"id":1,"name":"张伟","age":19,"className":"高一(3)班","score":95}
+[{"id":2,"name":"李娜","age":17,"className":"高一(3)班","score":88}]
+[{"id":1,"name":"张伟","age":19,"className":"高一(3)班","score":95},{"id":2,"name":"李娜","age":17,"className":"高一(3)班","score":88}]
+已删除
+\end{lstlisting}
+\par
+\medskip
+
+关掉终端再列一次，数据还在——它存在 \texttt{students.\allowbreak{}db} 里，不在内存里。
+
+\section{出错时它说什么}
+
+这一章最值得模仿的不是「成功路径」，而是每一条失败都有话说：
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.247\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.733\linewidth-2\tabcolsep\relax}}
+\toprule
+输入 & 输出 \\
+\midrule
+\endhead
+\texttt{get 999} & \texttt{错误：学生不存在} \\
+\texttt{delete 999} & \texttt{错误：学生不存在} \\
+\texttt{add '\{"id":\allowbreak{}0,\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{}\}'} & \texttt{错误：学号必须是正整数} \\
+\texttt{add '\{"id":\allowbreak{}3,\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{},\allowbreak{}"age":\allowbreak{}200,\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{}\}'} & \texttt{错误：年龄必须在 1 到 150 之间} \\
+\texttt{add '\{"id":\allowbreak{}5,\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{},\allowbreak{}"score":\allowbreak{}101\}'} & \texttt{错误：成绩必须在 0 到 100 之间} \\
+\texttt{add '\{"id":\allowbreak{}4,\allowbreak{}"name":\allowbreak{}"",\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{}\}'} & \texttt{错误：姓名必须为 1 到 120 字节的非空文本} \\
+\texttt{add 'not-json'} & \texttt{错误：1:\allowbreak{}1:\allowbreak{} 这里只认 true /\allowbreak{} false /\allowbreak{} null [\allowbreak{}unexpected-token]\allowbreak{}} \\
+\texttt{list badfield} & \texttt{错误：模型 Student 没有字段 badfield} \\
+\texttt{list id sideways} & \texttt{错误：排序方向必须是 asc 或 desc} \\
+\texttt{bogus} & \texttt{错误：命令或参数错误：add/\allowbreak{}update JSON；get/\allowbreak{}delete 学号；list [\allowbreak{}字段 [\allowbreak{}排序方向]\allowbreak{}]\allowbreak{}；search 姓名；schema} \\
+\bottomrule
+\end{longtable}
+}
+
+四类错误分得清清楚楚：
+
+\begin{itemize}
+
+\item JSON 解析错误来自 \texttt{std:\allowbreak{}:\allowbreak{}json}，带行列位置和期望；
+
+\item 业务校验错误来自 \texttt{validate}，是人话；
+
+\item 模型 / SQL 错误来自 \texttt{std:\allowbreak{}:\allowbreak{}sql}，说明哪个字段不对；
+
+\item 命令用法错误在最后兜底，顺便把用法打出来。
+
+\end{itemize}
+
+没有一种是「崩了」或者「静默什么都没做」。
+
+\section{小结}
+
+\begin{itemize}
+
+\item 一份模型声明，三处复用：建表、查询列、JSON 键、排序字段检查都由它派生；
+
+\item 校验收成一个函数，成功返回空串，失败返回人话；
+
+\item 字段清单从反射读，不要在代码里抄第二遍；
+
+\item 所有用户输入绑成 SQL 参数，不要拼字符串；
+
+\item 每条失败路径都要有诊断，并且都要记得关库；
+
+\item \texttt{?} 的结果先落局部变量，别嵌进更外层的表达式。
+
+\end{itemize}
+
+\section{下一步}
+
+这个程序还只是命令行。要把它变成服务，看\href{https://gitee.com/rabbitc999/magel/blob/master/doc/36-reflection-serialization-sql.md}{动态 SQL 说明}和\href{https://gitee.com/rabbitc999/magel/blob/master/example/sql-magel/README.md}{SQL 示例}；要把它交付出去，翻回\hyperref[ch:22]{第 22 章 交付与部署}。
+
+语言的全部细节在\href{https://gitee.com/rabbitc999/magel/blob/master/doc/04-language-reference.md}{语言参考}，反射的 API 全貌在\hyperref[ch:20]{第 20 章 注解与反射}。
+
+\section{边界与验证}
+
+反射元数据取决于编译期的注解与反射开关；换用 \texttt{--no-reflection} 或 \texttt{--hard-realtime} 构建时，\texttt{get\allowbreak{}Struct\allowbreak{}Info} 一族不可用，本示例需要反射版工具链。
+
+模型字段变化会影响既有数据库：新增字段后旧库缺少该列，\texttt{encode\allowbreak{}Rows} 会报「数据库缺少字段」，需要迁移或重建。文本长度按字节计，与数据库列长度要对齐。
+
+排序与搜索依赖数据库实现；\texttt{search} 使用模糊匹配，匹配规则与排序的稳定性由SQLite 决定，不要把当前排列当成业务上可靠的次序。
+
+\section{习题}
+
+前两题用于理解和基本实现，第三题检查边界，最后一题为综合挑战。先独立完成，再核对参考解答。
+
+\begin{enumerate}
+
+\item 给模型新增一个 \texttt{String phone} 字段，需要改几处代码？
+
+\item 用 \texttt{add} 连续存两名学生，再用 \texttt{list score desc} 核对顺序。
+
+\item \texttt{update} 一个不存在的学号会发生什么？为什么必须检查 \texttt{rows.\allowbreak{}affected}？
+
+\item 挑战：把 \texttt{search} 改成同时匹配姓名和班级，并保持参数绑定。
+
+\end{enumerate}
+
+\subsection*{参考解答与验收要点}
+
+\begin{enumerate}
+
+\item 只改 \texttt{struct Student} 一处；建表、查询列、JSON 键、\texttt{schema} 输出都由反射派生。旧库会缺列并被「数据库缺少字段」拦下，需要迁移。
+
+\item 以 \texttt{list} 的 JSON 数组为准核对顺序，不看插入先后。
+
+\item SQL 不报错但影响 0 行；不检查 \texttt{rows.\allowbreak{}affected} 会把「没改到」误报成成功。
+
+\item 用 \texttt{std:\allowbreak{}:\allowbreak{}sql:\allowbreak{}:\allowbreak{}filter<\allowbreak{}String>\allowbreak{}} 加两个条件，值始终由生成器绑定，不拼接 SQL 文本；同时覆盖空结果和多条件同时命中的情况。
+
+\end{enumerate}
+
+\section{番外：目无全牛}
+
+改编自《庄子·养生主》庖丁解牛，以下为编程主题的独立改写。
+
+庖丁替文惠君解牛，手碰的地方、肩靠的地方、脚踩的地方、膝顶的地方，都合着节拍。文惠君问他技艺何以至此。庖丁说，他喜欢的不是手法，是条理。
+
+起初他看见的是一整头牛，不知道该从哪里下刀。三年之后，他不再看见整头牛。他说的不是牛消失了，而是眼里换成了骨节与缝隙：该走哪里、哪里要绕，都在下刀之前就清楚了。
+
+有人请他改一改刀法。他只问一句：骨节还是那些骨节吗？对方说骨节没变，只是想让刀走得快些。庖丁便照着骨节重新排了一遍下刀的次序，并不去记「第一刀在哪、第二刀在哪」。因为他记的从来不是刀数，是结构。
+
+后来换了牛，骨节的位置也变了。旁人翻出旧次序照着走，刀就卡住了。庖丁说他并没有记次序，他看的是这一头牛的骨节；次序是看清楚之后自己长出来的。
+
+\subsection*{技术对照}
+
+反射给出的是结构信息：字段有哪些、各是什么类型、主键是谁。建表语句、查询列、JSON 键、排序字段的合法性检查，都应当从这份信息派生，而不是在代码里各抄一份清单。抄来的清单会随模型改动而失效——正如照着旧次序下刀，换一头牛就会卡住。

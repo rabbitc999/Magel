@@ -1848,8 +1848,7 @@ simple_ast::NodePtr ReplaceFixedArrayValue(const simple_ast::NodePtr &address, i
                                            const simple_ast::NodePtr &value, const std::shared_ptr<MType> &type)
 {
     using simple_ast::Node;
-    int count = 1;
-    for (const int dimension : type->dims) count *= dimension;
+    const int count = static_cast<int>(FixedArrayElementCount(type->dims));
     const auto destination = AllocateName("__magel_fixed_destination");
     const auto replacement = AllocateName("__magel_fixed_replacement");
     const auto index = AllocateName("__magel_fixed_index");
@@ -2604,8 +2603,7 @@ void InitializeDefaultContainers(const simple_ast::NodePtr &address, const Memor
             InitializeDefaultContainers(target, field.type->name, out);
         else if (field.type->kind == MType::Array && !IsRuntimeArray(field.type))
         {
-            int count = 1;
-            for (const auto dim : field.type->dims) count *= dim;
+            const int count = static_cast<int>(FixedArrayElementCount(field.type->dims));
             out->push_back(simple_ast::Node::storeAt(
                 simple_ast::Node::offset(target, simple_ast::Node::i(-1), 8), simple_ast::Node::i(count), simple_ast::Type::i64()));
             const auto element = field.type->elem;
@@ -2672,8 +2670,7 @@ simple_ast::NodePtr DefaultInit(const Memory::String &emitted, const std::shared
     };
     if (type->kind == MType::Array)
     {
-        int count = 1;
-        for (const int dim : type->dims) count *= dim;
+        const int count = static_cast<int>(FixedArrayElementCount(type->dims));
         const int stride = StructStride(type->elem);
         const int slots = (stride > 0) ? count * (stride / 8) : count;
         const int unit = IsByteStorageType(type->elem) ? 1 : 8;
@@ -3029,6 +3026,17 @@ simple_ast::NodePtr LowerLocalDecl(int id)
         if (decl.i >= 0)
         {
             if (!ReadDims(static_cast<int>(decl.i), &dims)) return nullptr;
+            /* 定长数组的槽数在编译期就定死：维数乘积超出运行内存预算时直接拒绝。
+             * 否则它会一路走到运行期分配失败（arena 用尽后 bad_alloc 逃逸成 terminate），
+             * 而 struct 字段的同类声明早就有这条预算检查，两者口径要一致。 */
+            Memory::String shape;
+            for (const int dimension : dims) shape += "[" + Memory::toString(dimension) + "]";
+            const long long count = FixedArrayElementCount(dims);
+            if (count > static_cast<long long>(g_runtimeMemory))
+            {
+                Fail("定长数组超出当前内存预算：" + decl.s + shape + "（" + Memory::toString(count) + " 个元素，预算 " + Memory::toString(g_runtimeMemory) + "）");
+                return nullptr;
+            }
             type = ArrayType(type, dims);
         }
         else if (decl.i == -2)
