@@ -252,6 +252,6 @@ $end_macro
 
 `$stringify(value)` returns original argument text without evaluating or expanding it. `$concat(left, right)` produces a single identifier only. A template-generated identifier keeps its definition context and cannot capture a caller's local binding. Direct source concatenation uses that source context. `$line`, `$file` and `$module` are available directly and refer to the invocation inside a template; forwarding retains original argument origins.
 
-`$replace ADD(a, b) a + b` is a single-line definition using the same AST mechanism. Expansion has recursion and size budgets. Diagnostics retain invocation, definition and argument chains. The editor previews hygienic ASTs and obtains type hints from final static types without exposing internal binding identifiers.
+`$replace ADD(a, b) a + b` is a single-line definition using the same AST mechanism. Expansion has recursion and size budgets. Diagnostics retain invocation, definition and argument chains. The editor previews hygienic ASTs one graph per macro call; each graph is a self-contained page that can be embedded in a web page. Type hints come from final static types without exposing internal binding identifiers.
 
 See [AST tests](../../tests/magel_ast_macros.py), [groups and origins](../../tests/magel_macro_groups.py), [static types](../../tests/magel_macro_generics.py) and [syntax and regex branches](../../tests/magel_macro_branches.py).

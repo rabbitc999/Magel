@@ -1,6 +1,14 @@
 # Magel 变更记录
 
-版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.24.1**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.24.2**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+
+
+## 0.24.2 — 宏展开预览改为一宏一图
+
+- 「Magel: 预览宏展开」改为每个宏调用单独生成一张 AST 展开图：每次展开按调用处开一组 Webview 面板，标题带宏名与调用行号，不再在编辑器里打开 JSON 文档。
+- 每张预览图都是自包含 HTML：样式内联、颜色带兜底值并跟随浅色/深色系统主题，脚本只保留展开与折叠，脱离编辑器用浏览器直接打开即可，便于后续放进网页展示。
+- 展开树按节点类型、名称、成员、类型与字面值着色，实参来源节点单独高亮，节点带子项计数；双击图头回到源码调用处，重复执行命令会先关闭上一组预览图。
+- 程序版本更新为 0.24.2，VS Code 插件保持 1.0.0，内嵌编译器与语言服务器版本同步。
 
 
 ## 0.24.1 — VM 模块拆分、TOML 注释保存与诊断排版

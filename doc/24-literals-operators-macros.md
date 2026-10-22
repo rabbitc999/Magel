@@ -253,6 +253,6 @@ $end_macro
 
 `$stringify(value)` 返回实参原文的字符串，不先执行或展开参数。`$concat(left, right)` 只生成单个标识符，不能生成任意代码；模板中生成的名字保持定义处上下文，不能借拼名捕获调用者局部变量。直接源码中的拼名按该源码上下文查找。`$line`、`$file`、`$module` 可直接使用；模板内取调用处来源，嵌套参数转发保留原始来源。
 
-`$replace ADD(a, b) a + b` 是同一 AST 机制的单行定义。宏递归与规模有预算，失败诊断保留调用、定义和参数来源链。编辑器宏预览显示卫生 AST，类型提示读取最终静态类型，不显示内部绑定编号。
+`$replace ADD(a, b) a + b` 是同一 AST 机制的单行定义。宏递归与规模有预算，失败诊断保留调用、定义和参数来源链。编辑器宏预览按宏调用逐张生成卫生 AST 展开图，每张图都是自包含页面，可直接放进网页；类型提示读取最终静态类型，不显示内部绑定编号。
 
 回归见 [宏 AST](../tests/magel_ast_macros.py)、[分组与来源](../tests/magel_macro_groups.py)、[静态类型](../tests/magel_macro_generics.py) 和 [语法及正则](../tests/magel_macro_branches.py)。

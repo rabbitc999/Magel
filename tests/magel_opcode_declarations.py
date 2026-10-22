@@ -39,15 +39,15 @@ opcode Second { new = __std_bint_from_int; drop = __std_bint_drop; copy = __std_
         ('noncopyable_move_return', unique + 'Unique relay(Unique value) { return move(&value); }', None),
         ('noncopyable_moved_read', unique + 'void transfer() { Unique first; Unique second = move(&first); Unique const& invalid = &first; }', 'MGL1205'),
         ('noncopyable_moved_twice', unique + 'void transfer() { Unique first; Unique second = move(&first); Unique third = move(&first); }', 'MGL1205'),
-        ('noncopyable_container', unique + 'void invalid() { Unique value; List<Unique> items; items.push(value); }', '禁止复制 #NonCopyable opcode'),
+        ('noncopyable_container', unique + 'void invalid() { Unique value; List<Unique> items; items.push(value); }', '禁止复制不可复制的值'),
         ('noncopyable_const_move', unique + 'void invalid(Unique const& value) { Unique moved = move(value); }', '只接受可写引用'),
         ('noncopyable_value_argument', unique + 'void consume(Unique value) {} void invalid() { Unique value; consume(value); }', '禁止按值复制实参'),
         ('file_field_copy', 'struct Box { File handle; }; void invalid() { File original; Box box; box.handle = original; }', '禁止复制到字段或数组元素'),
         ('file_array_copy', 'void invalid() { File original; File handles[1]; handles[0] = original; }', '禁止复制到字段或数组元素'),
         ('noncopyable_copy', unique + 'Unique original; Unique copied = original;', '禁止复制初始化或赋值'),
         ('noncopyable_return', unique + 'Unique borrowed(Unique const& value) { return value; }', '禁止复制返回借用值'),
-        ('noncopyable_aggregate', unique + 'struct Box { Unique value; }; Box original; Box copied = original;', '聚合包含 #NonCopyable opcode'),
-        ('noncopyable_member_fields', '#NonCopyable opcode Unique {new=__std_bint_from_int;drop=__std_bint_drop;int64 count;String label;}; Unique original; Unique copied=original;', '聚合包含 #NonCopyable opcode'),
+        ('noncopyable_aggregate', unique + 'struct Box { Unique value; }; Box original; Box copied = original;', '不可复制的值禁止复制：'),
+        ('noncopyable_member_fields', '#NonCopyable opcode Unique {new=__std_bint_from_int;drop=__std_bint_drop;int64 count;String label;}; Unique original; Unique copied=original;', '不可复制的值禁止复制：'),
     ]
     with tempfile.TemporaryDirectory(prefix='magel-opcode-') as directory:
         for name, source, diagnostic in cases:

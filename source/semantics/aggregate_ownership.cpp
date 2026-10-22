@@ -780,7 +780,7 @@ extern bool g_usesNewArray;
 simple_ast::NodePtr MaterializeStringValue(int valueId, const std::shared_ptr<MType> &target)
 {
     if (OpcodeNonCopyable(target) && valueId >= 0 && !IsFreshValue(valueId))
-        return Fail("不可复制的值禁止复制初始化或赋值，请显式 move、传引用或改用临时值"), Bad();
+        return Fail("不可复制的值禁止复制初始化或赋值（实现 Closeable 或声明了 #NonCopyable），请显式 move、传引用或改用临时值"), Bad();
     const simple_ast::NodePtr value = LowerValueForType(valueId, target);
     if (target && target->kind == MType::Array && valueId >= 0 && !IsFreshValue(valueId)) return CopyRuntimeArrayValue(value, target);
     if (!target || !IsStandardOpcode(target, "String")) return value;
@@ -815,7 +815,7 @@ simple_ast::NodePtr MaterializeReturnStringValue(int valueId, const std::shared_
         const auto &source = N(valueId);
         const auto *variable = source.kind == MNode::Var ? FindNodeVar(source) : nullptr;
         if (!variable || keep.count(variable->emitted) == 0u)
-            return Fail("不可复制的值禁止复制返回借用值，请显式 move 拥有值或返回引用"), Bad();
+            return Fail("不可复制的值禁止复制返回借用值（实现 Closeable 或声明了 #NonCopyable），请显式 move 拥有值或返回引用"), Bad();
     }
     const simple_ast::NodePtr value = LowerValueForType(valueId, target);
     if (IsImplicitConversionValue(valueId, target)) return TakeExpressionTempValue(value, target);
@@ -1194,7 +1194,7 @@ bool IsFreshValue(int exprId)
 simple_ast::NodePtr MaterializeObjectValue(int valueId, const std::shared_ptr<MType> &target)
 {
     if (OpcodeNonCopyable(target) && valueId >= 0 && !IsFreshValue(valueId))
-        return Fail("不可复制的值禁止复制初始化或赋值，请显式 move、传引用或改用临时值"), Bad();
+        return Fail("不可复制的值禁止复制初始化或赋值（实现 Closeable 或声明了 #NonCopyable），请显式 move、传引用或改用临时值"), Bad();
     if (!IsObjectLike(target)) return LowerValueForType(valueId, target);
     if (IsFreshValue(valueId) || IsImplicitConversionValue(valueId, target))
         return TakeExpressionTempValue(LowerValueForType(valueId, target), target);
