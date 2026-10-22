@@ -602,7 +602,7 @@ String renderInts(List<int64> xs) {
     return out;
 }
 
-int64 main(List<String> args) {
+void main(List<String> args) {
     List<String> program;
     if (args.len() > 0) {
         {
@@ -712,5 +712,5 @@ int64 main(List<String> args) {
     .collect();
     println("functional demo: squares 1..5 = {}", renderInts(squares));
 
-    return 0;
+
 }

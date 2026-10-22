@@ -7,7 +7,7 @@ let make_adder() {
     return fn (int32 n) { n + 10 };
 }
 
-int64 main() {
+void main() {
     let add32 = int32 fn(int32 x, int32 y) { x + y };
     let mul32 = fn(int32 x, int32 y) { x * y };
     let sub32 = fn (int32 x, int32 y) { x - y };
@@ -34,5 +34,5 @@ int64 main() {
     println("{} {} {} {} {} {} {} {} {} {} {}", add32(a, b), mul32(a, b), sub32(a, b),
     answer, literal_add(4, 5), multi(a, b), explicit_bias(2, saved_bias), add_ten(four), divided(a, b),
     global_value, untouched);
-    return 0;
+
 }

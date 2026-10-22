@@ -1,0 +1,7 @@
+有 amy：1 值=11
+没有 zoe：isNone=1 兜底=-1
+match 拿到 22
+match 走 None 分支
+结构体值：42
+整数键：ada 有 9 吗=0
+形参：11

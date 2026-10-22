@@ -1,7 +1,7 @@
-int64 main() {
+void main() {
     let bad = fn (int64 x) {
         int64 y = x + 1;
         y + 1;
     };
-    return bad(1);
+    let __ignored1 = bad(1);
 }

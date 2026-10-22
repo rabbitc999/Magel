@@ -5,7 +5,7 @@ int64 read(Cell & cell) { return cell.value; }
 int64 & relay(int64 & value) { return value; }
 Cell & relayCell(Cell & value) { return value; }
 
-int64 main() {
+void main() {
     int64 value = 7;
     int64 & a = &value;
     int64 const& b = a;
@@ -43,5 +43,5 @@ int64 main() {
     int64 other = bits & value;
     assert(bits == 6 && other == 6);
     println("reference sugar OK");
-    return 0;
+
 }

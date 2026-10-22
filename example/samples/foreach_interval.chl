@@ -4,7 +4,7 @@ int64 low(){calls+=1;return 0;}
 int64 high(){calls+=1;return 3;}
 int64 inferredKind(int32 value){return 32;}
 int64 inferredKind(int64 value){return 64;}
-int64 main(){
+void main(){
     List<int32> inferred;inferred.push(cast<int32>(3));inferred.push(cast<int32>(4));
     int64 inferredSum=0;for(let item in inferred){assert(inferredKind(item)==32);inferredSum+=item;}
     assert(inferredSum==7);
@@ -39,5 +39,5 @@ int64 main(){
     assert(saved[0]()==1 && saved[3]()==4);
     int64 rounds=0;for(int8 x in std::lang::rangeEq<int8>(0,2)){let moved=int8 fn move[x](){x};assert(moved()==rounds);rounds+=1;}
     assert(rounds==3);
-    println("for intervals OK");return 0;
+    println("for intervals OK");
 }

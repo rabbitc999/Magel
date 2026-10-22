@@ -10,7 +10,7 @@ struct Box<T: Valued> {
     T value;
 };
 
-int64 main() {
+void main() {
     Box<Plain> bad;
-    return 0;
+
 }

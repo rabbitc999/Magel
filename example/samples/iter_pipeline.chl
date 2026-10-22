@@ -41,7 +41,7 @@ struct Flaky : IterNext<int64> {
     }
     (int64,Option<int64>) sizeHint() { return (0,Option<int64>::None); }
 };
-int64 main() {
+void main() {
     let values = std::iter::range(1, 5);
     let hint = values.sizeHint();
     assert((hint.0) == (4));
@@ -174,5 +174,5 @@ int64 main() {
     assert((std::iter::range(9223372036854775806, 9223372036854775807, 2).count()) == (1));
     assert((std::iter::range(-(int64)9223372036854775807, -(int64)9223372036854775807 - (int64)1, -2).count()) == (1));
     println("iterator pipelines OK");
-    return 0;
+
 }

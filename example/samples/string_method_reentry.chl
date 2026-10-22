@@ -29,7 +29,7 @@ struct Headers {
         return "";
     }
 };
-int64 main() {
+void main() {
     /* VM 必须注册网络与 SQL 宿主接口；关闭未打开的连接不需要外部服务。 */
     assert(std::sql::__sqlClose((int32)0) == (int32)-1);
     std::net::TcpSocket unopened;
@@ -68,5 +68,5 @@ int64 main() {
             i = i + 1;
         }
     }
-    return 0;
+
 }

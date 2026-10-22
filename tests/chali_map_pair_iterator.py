@@ -20,12 +20,12 @@ def main():
         assert not result.stderr, result.stderr
         for kind in ['(String, int64)', 'String', 'int64']:
             source = work / 'invalid.chl'
-            source.write_text('import std::iter;\nint64 main() { Map<String, int64> values = {"a": 1}; '
-                              + 'for (' + kind + ' entry in values.iter()) {} return 0; }', encoding='utf-8')
+            source.write_text('import std::iter;\nvoid main() { Map<String, int64> values = {"a": 1}; '
+                              + 'for (' + kind + ' entry in values.iter()) {} return; }', encoding='utf-8')
             result = subprocess.run([compiler, '--check', str(source)], capture_output=True,
                                     encoding='utf-8', errors='replace', timeout=90)
             assert result.returncode != 0 and 'Iterator<R>' in result.stdout + result.stderr, result.stdout + result.stderr
-        source.write_text('int64 main() { Pair<String, int64> value = Pair<String, int64>::from(("a", 1)); return 0; }', encoding='utf-8')
+        source.write_text('void main() { Pair<String, int64> value = Pair<String, int64>::from(("a", 1)); }', encoding='utf-8')
         result = subprocess.run([compiler, '--check', str(source)], capture_output=True,
                                 encoding='utf-8', errors='replace', timeout=90)
         assert result.returncode != 0, result.stdout + result.stderr

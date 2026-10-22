@@ -25,7 +25,7 @@ List<int64> filter(List<int64> xs, bool fn(int64) keep)
     return out;
 }
 
-int64 main()
+void main()
 {
     List<int64> xs;
     xs.push(3);
@@ -42,7 +42,7 @@ int64 main()
     });
     println("{} {}", evens[0], evens[1]);
     println("{}", big.len());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -98,14 +98,14 @@ int64 apply(int64 fn(int64, int64) f, int64 a, int64 b)
     return f(a, b);
 }
 
-int64 main()
+void main()
 {
     int64 fn(int64, int64) op = add;
     println("{}", op(3, 4));
     op = sub;
     println("{}", op(3, 4));
     println("{}", apply(add, 20, 22));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -152,7 +152,7 @@ int64 mul(int64 a, int64 b)
     return a * b;
 }
 
-int64 main()
+void main()
 {
     Calculator c;
     c.op = mul;
@@ -162,7 +162,7 @@ int64 main()
     table[0] = add;
     table[1] = mul;
     println("{} {}", table[0](6, 7), table[1](6, 7));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -186,7 +186,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 fn(int64) square = int64 fn(int64 x)
     {
@@ -199,7 +199,7 @@ int64 main()
         x * x * x
     };
     println("{}", cube(3));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -242,7 +242,7 @@ int64 apply(int64 fn(int64, int64) f, int64 a, int64 b)
     return f(a, b);
 }
 
-int64 main()
+void main()
 {
     println("{}", apply(fn(x, y)
     {
@@ -252,7 +252,7 @@ int64 main()
     {
         x * y
     }, 3, 4));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -280,7 +280,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 base = 10;
     let addBase = fn(int64 x)
@@ -289,7 +289,7 @@ int64 main()
     };
     base = 100;
     println("{}", addBase(5));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -338,7 +338,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 n = 1;
     let implicit = int64 fn()
@@ -353,7 +353,7 @@ int64 main()
     /* 写全，同一个意思 */
     n = 2;
     println("{} {}", implicit(), explicit());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -372,7 +372,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 base = 10;
     let bump = fn(int64 x)
@@ -381,7 +381,7 @@ int64 main()
         return base;
     };
     println("{}", bump(1));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -400,7 +400,7 @@ chali: 不可变变量（const）不能再赋值：base
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 counter = 0;
     let tick = fn mut()
@@ -410,7 +410,7 @@ int64 main()
     };
     println("{} {}", tick(), tick());
     println("outside {}", counter);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -432,7 +432,7 @@ outside 2
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 n = 5;
     let independent = int64 fn copy(int64 x)
@@ -442,7 +442,7 @@ int64 main()
     };
     n = 100;
     println("{} {} {}", independent(2), independent(1), n);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -463,7 +463,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     String text = "old";
     let grow = String fn copy()
@@ -473,7 +473,7 @@ int64 main()
     };
     text = "outside";
     println("{} / {} / {}", grow(), grow(), text);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -490,7 +490,7 @@ old! / old!! / outside
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     List<int64> values;
     values.push(4);
@@ -500,7 +500,7 @@ int64 main()
         return values[0];
     };
     println("{} {} {}", bump(), bump(), values[0]);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -519,7 +519,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     const int64 fixed = 7;
     let change = int64 fn copy()
@@ -528,7 +528,7 @@ int64 main()
         return fixed;
     };
     println("{} / {}", change(), fixed);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -547,7 +547,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     String moved = "payload";
     let take = String fn move()
@@ -556,7 +556,7 @@ int64 main()
     };
     String moved = "reset";
     println("{} / {}", take(), moved);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -577,7 +577,7 @@ payload-in / reset
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     String moved = "payload";
     let take = String fn move()
@@ -585,7 +585,7 @@ int64 main()
         return moved;
     };
     println("{}", moved);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -636,7 +636,7 @@ void main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 n = 1;
     let f = int64 fn mut(int64 x)
@@ -650,7 +650,7 @@ int64 main()
         return x * n;
     };
     println("{}", g(3));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -670,13 +670,13 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 n = 1;
     let f = fn mut(x) { n = x + n };
     let g = fn copy(x) { x * n };
     println("{} {} {}", f(1), g(1), n);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -699,7 +699,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 a = 2;
     int64 b = 3;
@@ -717,7 +717,7 @@ int64 main()
     d = 200;
     println("{} | a={} b={} c={} d={}", mixed(1), a, b, c, d);
     println("{} | b={}", mixed(1), b);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -752,7 +752,7 @@ fn copy[a, b] mut(int64 x)
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 left = 1;
     int64 right = 2;
@@ -765,7 +765,7 @@ int64 main()
         return left + right + shared;
     };
     println("{} | left={} right={} shared={}", f(1), left, right, shared);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -786,7 +786,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 a = 1;
     let f = int64 fn copy[a] mut const()
@@ -794,7 +794,7 @@ int64 main()
         a
     };
     println("{}", f());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -813,7 +813,7 @@ chali: lambda：lambda 默认捕获方式只能声明一次：mut 与 const
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 bias = 9;
     let empty = int64 fn copy[]()
@@ -822,7 +822,7 @@ int64 main()
     };
     bias = 10;
     println("{}", empty());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -845,7 +845,7 @@ int64 apply(int64 fn(int64) f, int64 x)
 {
     return f(x);
 }
-int64 main()
+void main()
 {
     int64 bias = 9;
     println("{} / {}", apply(fn copy[bias](x)
@@ -853,7 +853,7 @@ int64 main()
         bias += x;
         return bias;
     }, 2), bias);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -878,7 +878,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 n = 5;
     let a = int64 fn copy(int64 x)
@@ -888,7 +888,7 @@ int64 main()
     };
     let b = a;
     println("b={} a={} b={}", b(3), a(1), b(1));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -909,7 +909,7 @@ b=8 a=6 b=9
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 n = 0;
     let a = int64 fn mut(int64 x)
@@ -919,7 +919,7 @@ int64 main()
     };
     let b = a;
     println("a={} b={} outside={}", a(1), b(1), n);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -957,11 +957,11 @@ int64 fn() counter()
         return n;
     };
 }
-int64 main()
+void main()
 {
     let c = counter();
     println("{}", c());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -991,11 +991,11 @@ int64 fn() counter()
         return n;
     };
 }
-int64 main()
+void main()
 {
     let c = counter();
     println("{} {}", c(), c());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -1023,11 +1023,11 @@ int64 fn() counter()
         return n;
     };
 }
-int64 main()
+void main()
 {
     let c = counter();
     println("{} {}", c(), c());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -1064,7 +1064,7 @@ struct Record: Drop
         drops += 1;
     }
 };
-int64 main()
+void main()
 {
     Record record;
     record.text = "owned";
@@ -1083,7 +1083,7 @@ int64 main()
         println("drops={}", drops);
     }
     println("drops={} outside={}", drops, record.values[0]);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -1117,7 +1117,7 @@ struct Record: Drop
         drops += 1;
     }
 };
-int64 main()
+void main()
 {
     Record record;
     record.text = "moved";
@@ -1131,7 +1131,7 @@ int64 main()
         println("own={} drops={}", own(), drops);
     }
     println("drops={}", drops);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -1210,14 +1210,14 @@ let g = fn(int64 x)
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     let g = int64 fn(int64 x)
     {
         x * 3;
     };
     println("{}", g(5));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -1247,14 +1247,14 @@ int64 fn(int64) makeAdder(int64 mut& amount)
         value + amount
     };
 }
-int64 main()
+void main()
 {
     int64 one = 1;
     int64 ten = 10;
     let plus1 = makeAdder(&one);
     let plus10 = makeAdder(&ten);
     println("{} {}", plus1(5), plus10(5));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -1279,7 +1279,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     String a = "1";
     String fn() b = fn move()
@@ -1287,7 +1287,7 @@ int64 main()
         a
     };
     println("{}", a);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -1298,7 +1298,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     String a = "1";
     String fn() b = fn copy()
@@ -1306,7 +1306,7 @@ int64 main()
         a
     };
     println("{} {}", a, b());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -1340,7 +1340,7 @@ int64 fn() makeNamedCounter()
     return next;
 }
 
-int64 main()
+void main()
 {
     int64 base = 10;
     int64 read()
@@ -1373,7 +1373,7 @@ int64 main()
         return value + 1;
     };
     println("{}", callback(5));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -1467,7 +1467,7 @@ int64 hello(
     return finish(pipeline(level4));
 }
 
-int64 main()
+void main()
 {
     int64 factor = 2;
     int64 finish(int64 value)
@@ -1475,7 +1475,7 @@ int64 main()
         return value * factor;
     }
     println("{}", hello(level5, finish));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -1520,7 +1520,7 @@ let combine = (int64 fn(int64)) fn(int64 fn(int64) a, int64 fn(int64) b)
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     let combine = (int64 fn(int64)) fn(int64 fn(int64) a, int64 fn(int64) b)
     {
@@ -1538,7 +1538,7 @@ int64 main()
 
     let c3 = combine(fn(x) { x * 5 }, fn(x) { x - 1 });
     println("{}", c3(5));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -1587,7 +1587,7 @@ int64 apply<F>(F operation, int64 value)
     return operation(value);
 }
 
-int64 main()
+void main()
 {
     let identity = fn<T>(T value)
     {
@@ -1595,7 +1595,7 @@ int64 main()
     };
     Mapper mapper;
     println("{} {} {}", mapper.transform(2), mapper.transform<String>("member"), apply(identity, 4));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -1616,7 +1616,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 count = 0;
     let next = fn<T> copy[count](T value)
@@ -1630,7 +1630,7 @@ int64 main()
         return count;
     };
     println("{} {} {} {}", next(true), next(2), next("text"), count);
-    return 0;
+
 }
 \end{lstlisting}
 \par

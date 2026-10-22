@@ -7,7 +7,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 COMPILER = ROOT / ('ChaLi.exe' if os.name == 'nt' else 'chali')
-SOURCE = 'int64 main() { println("VM command OK"); return 0; }\n'
+SOURCE = 'void main() { println("VM command OK"); }\n'
 
 
 def run(*arguments, cwd=ROOT, success=True, language='zh'):

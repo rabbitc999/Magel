@@ -2,7 +2,7 @@ import std::image;
 import std::linalg;
 import std::net;
 
-int64 main() {
+void main() {
     Image original = Image::make(2, 2).unwrap();
     original.setPixel(0, 0, 10, 20, 30, 255).unwrap();
     Image copied = original;
@@ -43,5 +43,5 @@ int64 main() {
     moved.close();
     assert(!moved.isOpen() && peer.status() == NET_OK);
     println("opcode standard storage OK");
-    return 0;
+
 }

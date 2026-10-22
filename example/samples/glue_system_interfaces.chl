@@ -20,11 +20,11 @@
  * 宿主按 `<impl 符号>.<方法名>` 注册 `glue_demo_buffer.{size,index,leftMul,explicitConvert}`。
  * `GlueDemoAddable` 是单方法接口（只有继承来的 `leftAdd`），按原符号名绑。
  */
-int64 main()
+void main()
 {
     GlueDemoBuffer buffer;
     buffer.base = 6;
     println("size={} at={} mul={} cast={} add={}", buffer.size(), buffer[3], buffer * 4,
     cast<int64>(buffer), buffer + 5);
-    return 0;
+
 }

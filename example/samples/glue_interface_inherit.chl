@@ -15,11 +15,11 @@
  * `scaled` 和自己的 `unit`（宿主符号按 `glue_demo_cube.area` / `.scaled` / `.unit`
  * 注册）。只要少实现一条，编译器就会照着继承来的要求报缺方法。
  */
-int64 main()
+void main()
 {
     GlueDemoCube cube;
     cube.edge = 3;
     cube.unitScale = 7;
     println("cube area={} scaled={} unit={}", cube.area(), cube.scaled(2), cube.unit());
-    return 0;
+
 }

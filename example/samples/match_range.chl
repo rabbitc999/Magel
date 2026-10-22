@@ -23,7 +23,7 @@ float64 classifyF(float64 x) {
     }
 }
 
-int64 main() {
+void main() {
     println("5 -> {}", classify(5));
     println("10 -> {}", classify(10));
     println("20 -> {}", classify(20));
@@ -34,5 +34,5 @@ int64 main() {
     println("0.5 -> {}", classifyF(0.5));
     println("1.0 -> {}", classifyF(1.0));
     println("1.5 -> {}", classifyF(1.5));
-    return 0;
+
 }

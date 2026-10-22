@@ -44,9 +44,9 @@ def main():
     for name, body, count, expected in loop_cases:
         source = WORK / (name + ".chl")
         source.write_text("int64 mix(int64 x){return x*17;}\n"
-                          "int64 main(){int64 n=std::lang::inputInt(),total=0;"
+                          "void main(){int64 n=std::lang::inputInt(),total=0;"
                           "for(int64 i in std::lang::range(0,n)){" + body + "}"
-                          "std::lang::println(\"{}\",total);return 0;}\n", encoding="utf-8")
+                          "std::lang::println(\"{}\",total);return;}\n", encoding="utf-8")
         cases.append((name, source, str(count), str(expected)))
     cases.append(("structures", ROOT / "tests/fixtures/borrow_algorithms.chl", "32 42\n", structures(32,42)))
     n = 128

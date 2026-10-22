@@ -1,2 +1,2 @@
 int64 mut& value;
-int64 main() { return 0; }
+void main() { }

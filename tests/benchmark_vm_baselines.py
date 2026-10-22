@@ -47,9 +47,9 @@ def prepare(name):
     }
     body, lua_body, python_body = bodies[name]
     chl_decl = "int64 values[4];values[0]=1;values[1]=2;values[2]=3;values[3]=4;" if name == "array_reads" else ""
-    (WORK / (name+".chl")).write_text("int64 mix(int64 x){return x*17;}\nint64 main(){int64 n=inputInt(),i=0;"
+    (WORK / (name+".chl")).write_text("int64 mix(int64 x){return x*17;}\nvoid main(){int64 n=inputInt(),i=0;"
         + ("float64" if floating else "int64") + " total=0;"+chl_decl+"while(i<n){"+body
-        +"i+=1;}println(\"{}\",total);return 0;}\n", encoding="utf-8")
+        +"i+=1;}println(\"{}\",total);return;}\n", encoding="utf-8")
     (WORK / (name+".lua")).write_text("local n=tonumber(arg[1])\nlocal function mix(x) return x*17 end\n"
         "local function calculate(n)\nlocal i,total=0,"+("0.0" if floating else "0")
         +"\nlocal values={1,2,3,4}\nwhile i<n do "+lua_body+";i=i+1 end\nreturn total end\n"

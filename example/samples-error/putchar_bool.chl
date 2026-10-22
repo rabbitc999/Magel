@@ -1,4 +1,4 @@
-int64 main() {
+void main() {
     putchar(true);
-    return 0;
+
 }

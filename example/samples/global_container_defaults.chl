@@ -20,7 +20,7 @@ NestedResourceOwner nestedResource;
 NestedResourceOwner makeNestedResource() {
     NestedResourceOwner owner; owner.value.live=1; owner.value.text="owned"; return owner;
 }
-int64 main() {
+void main() {
     assert(globalBag.values.len()==0 && globalBag.keys.len()==0 && globalBag.names.len()==0);
     globalBag.values.push(7); globalBag.keys.add(8); globalBag.names.put(9,"name");
     assert(globalBag.values[0]==7 && globalBag.keys.has(8)!=0 && globalBag.names[9]=="name");
@@ -50,5 +50,5 @@ resource=makeGlobalResource();
     nestedResource=makeNestedResource();
     nestedResource.drop();
     nestedResource=makeNestedResource();
-    println("global container defaults OK"); return 0;
+    println("global container defaults OK");
 }

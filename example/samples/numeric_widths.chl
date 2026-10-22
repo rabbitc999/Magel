@@ -1,6 +1,6 @@
 /* 固定位宽数值类型：窄整数按位宽回绕，float32 每步按单精度舍入。 */
 
-int64 main() {
+void main() {
     int8 i8 = 127;
     int16 i16 = 32767;
     int32 i32 = 2147483647;
@@ -27,5 +27,5 @@ int64 main() {
     single = single + (float32)1;
     wide = wide + (float64)1;
     println("float64={:3F},{:3F}", single, wide);
-    return 0;
+
 }

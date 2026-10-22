@@ -1,2 +1,2 @@
 generic<T> T identity(T value) { return value; }
-int64 main() { return 0; }
+void main() { }

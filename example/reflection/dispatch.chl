@@ -14,7 +14,7 @@ struct Hidden : View {int64 unused;};
 @Reflect enum State {Ready, Named(String text);
     String name(){String result="ready";match(self){Named(text)=>{result=text;}Ready=>{}}return result;}
 };
-int64 main(){
+void main(){
     List<std::reflect::ReflectValue> empty;List<std::reflect::ReflectValue> args;args.push(std::reflect::ReflectValue::I64(2));
     Actual mut& actual=new Actual("actual",20);Any actualBox;actualBox.set(&actual);View mut& view=actualBox.getReference();
     assert(std::reflect::callInterfaceConst<View>(view,"name",empty).unwrap().asText().unwrap()=="actual");
@@ -34,5 +34,5 @@ int64 main(){
     state=State::Ready;state=State::Named("finished");
     assert(snapshot=="working" && std::reflect::callEnumMethodConst<State>(&state,"name",empty).unwrap().asText().unwrap()=="finished");
     hidden.drop();fallback.drop();actual.drop();
-    println("reflection dispatch OK");return 0;
+    println("reflection dispatch OK");
 }

@@ -65,13 +65,13 @@ def main():
             manifest.write_text(invalid, encoding='utf-8')
             assert run(args, success=False).stderr
         manifest.write_text(original, encoding='utf-8')
-        stdin = run([COMPILER, '-I', ROOT, '--out', work / 'stdin'], cwd=project, input='int64 main() { std::lang::println("{}", packageValue()); return 0; }\n')
+        stdin = run([COMPILER, '-I', ROOT, '--out', work / 'stdin'], cwd=project, input='void main() { std::lang::println("{}", packageValue()); }\n')
         assert stdin.stdout == '40\n', stdin.stdout + stdin.stderr
         nested = project / 'src/nested'
         nested.mkdir()
         (nested / 'chali.toml').write_text('[package]\nname="nested"\nversion="1.0.0"\nauthor="A"\n', encoding='utf-8')
         nested_source = nested / 'main.chl'
-        nested_source.write_text('int64 main() { return 0; }\n', encoding='utf-8')
+        nested_source.write_text('void main() { }\n', encoding='utf-8')
         assert run([COMPILER, 'run', nested_source, '--out', work / 'nested']).stdout == ''
         binary = work / 'binary'
         run([COMPILER, 'run', source, '--out', binary, '--emit', '--svmb'])

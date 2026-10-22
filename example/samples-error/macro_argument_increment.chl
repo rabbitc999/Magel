@@ -2,8 +2,8 @@
  * 重复修改同一个 x，编译期报错。 */
 $replace A(x) x + x
 
-int64 main() {
+void main() {
     int64 x = 1;
     int64 y = $A(x++);
-    return 0;
+
 }

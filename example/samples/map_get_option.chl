@@ -1,0 +1,50 @@
+/* map_get_option.chl —— `getOption` 给的是 `Option<V>`：键不在就拿到 `None`，不报错。
+ *
+ * 下标 `m[k]` 读不存在的键会**直接报运行期错误**（见错误样例 `map_missing_key`），
+ * 所以"这个键可能没有、我想自己决定怎么办"的场合走 `getOption`：
+ * 有就 `Value(v)`，没有就 `None`，由调用方分支处理。
+ *
+ *   ./chali samples/map_get_option.chl
+ */
+struct Box { int64 n; }
+
+Option<int64> pick(Map<String,int64> const& m, String k)
+{
+    return m.getOption(k);
+}
+
+void main()
+{
+    Map<String, int64> ages;
+    ages.put("amy", 11);
+    ages.put("bob", 22);
+
+    println("有 amy：{} 值={}",
+    ages.getOption("amy").isValue(), ages.getOption("amy").unwrapOr(0));
+    println("没有 zoe：isNone={} 兜底={}",
+    ages.getOption("zoe").isNone(), ages.getOption("zoe").unwrapOr(-1));
+
+    match (ages.getOption("bob")) {
+        Option<int64>::Value(v) => { println("match 拿到 {}", v); }
+        Option<int64>::None => { println("不该走到这里"); }
+    }
+    match (ages.getOption("zoe")) {
+        Option<int64>::Value(v) => { println("不该拿到 {}", v); }
+        Option<int64>::None => { println("match 走 None 分支"); }
+    }
+
+    /* 结构体当值、整数当键、字面量建的 map，问法都一样 */
+    Map<String, Box> boxes;
+    Box made;
+    made.n = 42;
+    boxes.put("b", made);
+    println("结构体值：{}", boxes.getOption("b").unwrapOr(made).n);
+
+    Map<int64, String> names = {7: "ada"};
+    println("整数键：{} 有 9 吗={}",
+    names.getOption(7).unwrapOr("-"), names.getOption(9).isValue());
+
+    /* 把 map 传进函数再问，也照样能拿到 Option */
+    println("形参：{}", pick(&ages, "amy").unwrapOr(0));
+
+}

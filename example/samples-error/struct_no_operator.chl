@@ -4,11 +4,11 @@ struct Money {
     int64 cents;
 };
 
-int64 main() {
+void main() {
     Money a;
     Money b;
     a.cents = 1;
     b.cents = 2;
     std::lang::println("{}", (a + b).cents);
-    return 0;
+
 }

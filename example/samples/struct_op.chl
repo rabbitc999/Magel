@@ -19,7 +19,7 @@ struct Money : Add<int64, int64>, Add<Money, Money>, RightAdd<int64, int64> {
     int64 rightAdd(int64 left) { return left + self.cents; }
 };
 
-int64 main() {
+void main() {
     Money a;
     Money b;
     a.setCents(120);
@@ -32,5 +32,5 @@ int64 main() {
     println("5 + a = {}", 5 + a);                 /* RightAdd<int64,int64> */
     println("add(a, 5) = {}", add(a, 5));         /* 内置函数走同一条路 */
     println("add(5, a) = {}", add(5, a));
-    return 0;
+
 }

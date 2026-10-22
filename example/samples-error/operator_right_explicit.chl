@@ -8,9 +8,9 @@ struct A : Add<int64,int64>, RightAdd<int64,int32> {
     int64 rightAdd(int32 other) { return 99; }
 };
 
-int64 main() {
+void main() {
     A a;
     a.v = 5;
     println("5 + a = {}", 5 + a);
-    return 0;
+
 }

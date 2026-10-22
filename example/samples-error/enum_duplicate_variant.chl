@@ -1,4 +1,4 @@
 enum State { Ready, Ready };
-int64 main() {
-    return 0;
+void main() {
+
 }

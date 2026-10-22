@@ -112,7 +112,7 @@ void replaceWithFresh(String[] mut& texts) {
     texts = makeTexts();
 }
 
-int64 main() {
+void main() {
     char bytes[] = new[3];
     bytes[0] = 'a';
     bytes[1] = 'b';
@@ -168,5 +168,5 @@ int64 main() {
     copyEmpty(empty);
     deleteTexts(&texts);
     println("array parameter values OK");
-    return 0;
+
 }

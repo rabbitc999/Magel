@@ -48,7 +48,7 @@ BigInteger fibonacci(int64 n) {
     return a;
 }
 
-int64 main() {
+void main() {
     /* 1) 阶乘：小的一眼能对，大的才是 BigInteger 的意义 */
     println("5!  = {}", factorial(5).str());
     println("20! = {}", factorial(20).str());
@@ -85,5 +85,5 @@ int64 main() {
     /* 6) 和字符串配合：拼接、格式化都行 */
     String text = "100! = " + hundred;
     println("拼出来：{}（共 {} 字节）", text, len(text));
-    return 0;
+
 }

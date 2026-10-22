@@ -10,7 +10,7 @@ Unique relay(Unique value) {
 
 void consume(Unique value) {}
 
-int64 main() {
+void main() {
     Unique original = Unique::new(7);
     int64 before;
     memcpy(&before, &original, 8);
@@ -26,5 +26,5 @@ int64 main() {
     };
     release();
     println("opcode move ok");
-    return 0;
+
 }

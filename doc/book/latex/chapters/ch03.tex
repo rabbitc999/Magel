@@ -75,14 +75,14 @@ int64 score = 30;
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int8 tiny = 127;
     int32 normal = 70000;
     int64 huge = 9000000000;
     uint8 byte = 255;
     println("{} {} {} {}", tiny, normal, huge, byte);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -126,12 +126,12 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     float64 ratio = 3.25;
     float32 single =(float32)1.5;
     println("{} {}", ratio, single);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -158,14 +158,14 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     bool ready = true;
     bool done = false;
     char initial = 'M';
     String word = "ChaLi";
     println("{} {} {} {}", ready, done, initial, word);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -184,7 +184,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     bool ready = true;
     String label;
@@ -197,7 +197,7 @@ int64 main()
         label = "no";
     }
     println("{}", label);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -244,12 +244,12 @@ chali: if 条件必须是 bool，现在给的是 int64（数值条件请显式�
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     const int64 LIMIT = 100;
     let inferred = LIMIT;
     println("{} {}", LIMIT, inferred);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -287,12 +287,12 @@ let picked = range(1, 6).map(square).collect();
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     println("{} {} {}", 0xFF, b1010, 3.14);
     println("{} {}", 2.5e3, 2.5e - 3);
     println("{}", 1e9);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -353,7 +353,7 @@ uint64 unsignedValue(uint64 value)
     return value;
 }
 
-int64 main()
+void main()
 {
     let one = 1u;
     let single = 1.0f;
@@ -362,7 +362,7 @@ int64 main()
     println("{} {} {} {}", unsignedValue(one), floatingKind(single),
             floatingKind(1.0), narrow);
     println("{}", maximum);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -388,7 +388,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int32 a = 100;
     int64 b = a;
@@ -399,7 +399,7 @@ int64 main()
     float64 c = b;
     // 整型 -> 浮点，放行
     println("{} {} {}", b, m, c);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -434,13 +434,13 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 big = 70000;
     int32 small = big;
     // 缩窄：位宽变小
     println("{}", small);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -495,14 +495,14 @@ chali: 不能隐式转换：int64 -> int32（请显式强转）
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 big = 70000;
     int32 normal =(int32)big;
     uint8 byte =(uint8)300;
     char letter =(char)65;
     println("{} {} {}", normal, byte, letter);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -543,12 +543,12 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 original = 42;
     int32 narrowed = cast<int32>(original);
     println("{}", narrowed);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -575,13 +575,13 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int16 small = -300;
     // -300 落在 int16（-32768..32767）里
     int8 tiny = -100;
     println("{} {}", small, tiny);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -600,11 +600,11 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int8 overflow = 200;
     // int8 只到 127
-    return 0;
+
 }
 \end{lstlisting}
 \par

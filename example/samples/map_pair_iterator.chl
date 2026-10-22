@@ -1,6 +1,6 @@
 import std::iter;
 
-int64 main() {
+void main() {
     Map<String, List<int64>> values = {"first": [1, 2], "second": [3]};
     Pair<String, List<int64>> converted = Pair<String, List<int64>>::create(("tuple", [4, 5]));
     let tuple = converted.toTuple();
@@ -30,5 +30,5 @@ int64 main() {
     }
     assert(sum == 3);
     println("Map Pair iterator OK");
-    return 0;
+
 }

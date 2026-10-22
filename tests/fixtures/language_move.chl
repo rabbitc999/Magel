@@ -9,7 +9,7 @@ struct Owner:Drop {int64 mut& value;void drop(){self.value.drop();resourceDrops=
 Item mut& sourceRef(Item mut& source){reads=reads+1;return source;}
 Item consume(Item mut& source){return move(source);}
 List<int64> takeList(List<int64> mut& source){return move(source);}
-int64 main(){
+void main(){
  {Item source;source.value=7;source.text="original";source.values.push(3);
   int64 textHandle;memcpy(&textHandle,&source.text,8);int64 listHandle;memcpy(&listHandle,&source.values,8);
   Item result=consume(sourceRef(&source));assert(reads==1 && drops==0 && closes==0);
@@ -56,5 +56,5 @@ Item items[1];items[0].value=i;Item result=move(&items[0]);assert(result.value==
  {int64 mut& storage = heap int64;*storage=42;Owner source;source.value=&storage;Owner result=move(&source);
   assert(resourceDrops==0 && *result.value==42);}
  assert(resourceDrops==1);
- println("move ok");return 0;
+ println("move ok");
 }

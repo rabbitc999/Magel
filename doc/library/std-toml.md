@@ -34,7 +34,7 @@ chali run example/samples/std_structured_data.chl
 import std::json;
 import std::toml;
 
-int64 main() {
+void main() {
     Result<std::json::JsonValue, String> parsed = std::json::parse(
     "{\"name\":\"中文\",\"items\":[1,2,3],\"active\":true,\"nothing\":null,"
     "\"ratio\":1.5,\"min\":-9223372036854775808}");
@@ -179,7 +179,7 @@ int64 main() {
     Result<std::json::JsonValue, String> trailingOk = std::json::parse("true");
     assert(trailingOk.isOk()); // 注册表结束时清理未显式关闭的文档
     println("JSON and TOML parsing OK");
-    return 0;
+
 }
 ```
 

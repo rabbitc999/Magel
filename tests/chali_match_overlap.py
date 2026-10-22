@@ -24,7 +24,7 @@ def main():
             return subprocess.run(list(map(str, args)), cwd=ROOT, env=env, capture_output=True, encoding='utf-8', errors='replace', timeout=240)
         for name, declaration, patterns, count in cases:
             source = work / (name + '.chl')
-            source.write_text('int64 main(){\n' + declaration + '\nmatch(x){\n' + patterns.replace('} ', '}\n') + '\n_=>{}\n}return 0;}\n', encoding='utf-8')
+            source.write_text('void main(){\n' + declaration + '\nmatch(x){\n' + patterns.replace('} ', '}\n') + '\n_=>{}\n}}\n', encoding='utf-8')
             result = invoke(compiler, 'check', source, 'json')
             assert result.returncode == 0, (name, result)
             diagnostics = json.loads(result.stdout)['diagnostics']
@@ -35,17 +35,17 @@ def main():
                 assert diagnostic['span']['line'] == 5, (name, diagnostic)
             print('[通过] ' + name, flush=True)
         source = work / 'execution.chl'
-        source.write_text('int64 main(){int64 hits=0;match(17){std::lang::rangeEq(15,25)=>{hits=1;} std::lang::rangeEq(10,20)=>{hits=2;} _=>{}}assert(hits==1);println("match overlap OK");return 0;}', encoding='utf-8')
+        source.write_text('void main(){int64 hits=0;match(17){std::lang::rangeEq(15,25)=>{hits=1;} std::lang::rangeEq(10,20)=>{hits=2;} _=>{}}assert(hits==1);println("match overlap OK");}', encoding='utf-8')
         for backend in ('run',):
             output = work / (backend + '.exe')
             result = invoke(compiler, backend, source, '--out', output)
             assert result.returncode == 0 and 'CHL1601' in result.stderr, result
             assert result.returncode == 0 and result.stdout == 'match overlap OK\n', result
-        source.write_text('int64 main(){match(1){std::lang::rangeEq(0,2)=>{} 1=>{missing();} _=>{}}return 0;}', encoding='utf-8')
+        source.write_text('void main(){match(1){std::lang::rangeEq(0,2)=>{} 1=>{missing();} _=>{}}}', encoding='utf-8')
         result = invoke(compiler, 'check', source, 'json')
         diagnostics = json.loads(result.stdout)['diagnostics']
         assert result.returncode != 0 and {d['severity'] for d in diagnostics} == {'warning', 'error'}, result
-        source.write_text('int64 main(){match(17){std::lang::rangeEq(15,25)=>{} std::lang::rangeEq(10,20)=>{} _=>{}}return 0;}', encoding='utf-8')
+        source.write_text('void main(){match(17){std::lang::rangeEq(15,25)=>{} std::lang::rangeEq(10,20)=>{} _=>{}}}', encoding='utf-8')
         process = subprocess.Popen([str(compiler), 'lsp'], cwd=work, env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         messages = queue.Queue()
 

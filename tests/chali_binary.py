@@ -35,7 +35,7 @@ def main(names=('std_binary', 'lang_float_to_int', 'lang_float_bytes', 'lang_flo
     for value, label in [(float('nan'), 'nan'), (float('inf'), 'inf'), (-float('inf'), 'negative-inf'), (-0.0, 'negative-zero')]:
         for fmt, chali_type in [('f', 'Float32'), ('d', 'Float64')]:
             raw = struct.pack('<' + fmt, value)
-            setup = ['import std::binary;', 'int64 main() {', f'uint8 bytes[{len(raw)}];']
+            setup = ['import std::binary;', 'void main() {', f'uint8 bytes[{len(raw)}];']
             setup += [f'bytes[{i}] = (uint8){b};' for i, b in enumerate(raw)]
             setup += [f'std::binary::BinaryReader r = std::binary::BinaryReader::fromArray(bytes, {len(raw)});', f'{chali_type.lower()} value = r.read{chali_type}();']
             source = work / f'{label}-{fmt}.chl'
@@ -44,7 +44,7 @@ def main(names=('std_binary', 'lang_float_to_int', 'lang_float_bytes', 'lang_flo
                     check = 'std::lang::assert(std::lang::toInt32(value).unwrap() == (int32)0);' if label == 'negative-zero' else 'std::lang::assert(std::lang::toInt32(value).isNone());'
                 else:
                     check = 'std::lang::toInt64(value);'
-                source.write_text('\n'.join(setup + [check + ' return 0; }']), encoding='utf-8')
+                source.write_text('\n'.join(setup + [check + ' }']), encoding='utf-8')
                 result = run(CHALI, 'run', source, '--out', work / 'special', succeeds=width == 32 or label == 'negative-zero')
                 if width == 64 and label != 'negative-zero':
                     assert 'std::lang::toInt64：浮点值不是有限数或超出 int64 范围' in result.stderr

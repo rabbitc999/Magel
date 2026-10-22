@@ -24,7 +24,7 @@ struct Counter {
     }
 };
 
-int64 main() {
+void main() {
     int64 empty = sum();
     int64 many = sum(1, 2, 3, 4);
     int64 prefixed = addFrom(10, 2, 3);
@@ -36,5 +36,5 @@ int64 main() {
     int64 fn(int64...) variadic = sum;
     int64 pointer = variadic(8, 9);
     println("{} {} {} {} {}", empty, many, prefixed, method, pointer);
-    return 0;
+
 }

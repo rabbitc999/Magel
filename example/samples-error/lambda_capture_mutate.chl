@@ -1,5 +1,5 @@
-int64 main() {
+void main() {
     const int64 value = 1;
     let callback = int64 fn() { value += 1; return value; };
-    return callback();
+    let __ignored1 = callback();
 }

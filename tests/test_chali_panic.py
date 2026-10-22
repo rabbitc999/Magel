@@ -15,7 +15,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix='chali-panic-') as folder:
         directory = Path(folder)
         source = directory / 'nested.chl'
-        source.write_text('int64 inner() { std::lang::panic("nested failure"); return 0; }\nint64 outer() { return inner(); }\nint64 main() { return outer(); }\n', encoding='utf-8')
+        source.write_text('int64 inner() { std::lang::panic("nested failure"); return 0; }\nint64 outer() { return inner(); }\nvoid main() { let __boom = outer(); }\n', encoding='utf-8')
 
         def command(items):
             result = subprocess.run([str(x) for x in items], cwd=directory, capture_output=True, timeout=15 if len(items) > 1 and items[1] == 'run' else 180)
@@ -38,7 +38,7 @@ def main():
         result, stderr = command([compiler, 'run', source, '--no-compress-symbols'])
         assert result.returncode != 0 and '调用栈' in stderr
         threaded = directory / 'threaded.chl'
-        threaded.write_text('import std::thread;\nvoid spin() { while (true) {} }\nvoid blocked() { std::lang::String x = std::thread::receive(); }\nvoid leaf() { std::lang::panic("worker failure"); }\nvoid crash() { leaf(); }\nint64 main() { Thread a = std::thread::create(spin); Thread b = std::thread::create(blocked); Thread c = std::thread::create(crash); while (true) {} return 0; }\n', encoding='utf-8')
+        threaded.write_text('import std::thread;\nvoid spin() { while (true) {} }\nvoid blocked() { std::lang::String x = std::thread::receive(); }\nvoid leaf() { std::lang::panic("worker failure"); }\nvoid crash() { leaf(); }\nvoid main() { Thread a = std::thread::create(spin); Thread b = std::thread::create(blocked); Thread c = std::thread::create(crash); while (true) {} return; }\n', encoding='utf-8')
         for compressed in (False, True):
             result, stderr = command([compiler, 'run', threaded, '--threads', '--compress-symbols' if compressed else '--no-compress-symbols'])
             assert result.returncode != 0 and 'worker failure' in stderr and ('线程 3' in stderr), stderr
@@ -46,7 +46,7 @@ def main():
             if not compressed:
                 assert 'leaf' in stderr and '[thread 3' in stderr, stderr
         for mode, body in (('mainpanic', 'Thread a = std::thread::create(spin); std::lang::panic("main failure"); return 0;'), ('autojoin', 'Thread a = std::thread::create(spin); Thread c = std::thread::create(crash); while (std::thread::state(c) == std::thread::RUNNING) { std::thread::sleepFor(1); } return 0;'), ('wait', 'Thread a = std::thread::create(spin); Thread c = std::thread::create(crash); std::thread::wait(c); return 0;'), ('receive', 'Thread a = std::thread::create(spin); Thread c = std::thread::create(crash); std::lang::String x = std::thread::receive(); return 0;')):
-            threaded.write_text('import std::thread;\nvoid spin() { while (true) {} }\nvoid leaf() { std::lang::panic("worker failure"); }\nvoid crash() { leaf(); }\nint64 main() { ' + body + ' }\n', encoding='utf-8')
+            threaded.write_text('import std::thread;\nvoid spin() { while (true) {} }\nvoid leaf() { std::lang::panic("worker failure"); }\nvoid crash() { leaf(); }\nvoid main() { ' + body + ' }\n', encoding='utf-8')
             result, stderr = command([compiler, 'run', threaded, '--threads', '--no-compress-symbols'])
             assert result.returncode != 0 and ('main failure' if mode == 'mainpanic' else 'worker failure') in stderr, stderr
 if __name__ == '__main__':

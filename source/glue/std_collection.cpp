@@ -2231,7 +2231,7 @@ inline Slot mapPut(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__std_map_get(map, 键, 键是不是字符串, 键是不是对象句柄, 值是不是字符串, 值是不是对象句柄) -> 值`（没有这个键给"零值"）。
+ * @brief `__std_map_get(map, 键, 键是不是字符串, 键是不是对象句柄, 值是不是字符串, 值是不是对象句柄) -> 值`（没有这个键直接报错）。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -2248,8 +2248,14 @@ inline Slot mapGet(State &ctx, const Memory::Vector<Slot> &args)
     if (!ctx.error.empty()) return Slot::fromInt(0);
     if (found == object->entries.end())
     {
-        /* 没有这个键：给"零"（数值 0 / 空串），拿 has() 判断在不在。 */
-        return (nativeInt(args[4]) != 0) ? Slot::fromInt(static_cast<std::int64_t>(nativeAllocString(ctx, Memory::String()))) : Slot::fromInt(0);
+        /* 没有这个键：**直接报错**，不再给"零值"。
+         * 静默返回 0 / 空串会把"键拼错了"变成一个看不出错的结果 —— 初学者最难查的那类坑。
+         * 要"不在就走另一条路"，先用 `has()` 判断。 */
+        const Memory::String shown = key.isText ? key.text
+                                    : key.isStruct ? Memory::String("<复合键>")
+                                                   : Memory::toString(key.integer);
+        ctx.error = "map 下标键不存在：" + shown;
+        return Slot::fromInt(0);
     }
     Slot out;
     if (!nativeSlot(ctx, found->second, &out)) return Slot::fromInt(0);

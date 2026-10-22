@@ -16,7 +16,7 @@
 
 源码与宏通过 `module` / `import` 复用；宏定义登记在定义它的模块里，调用按模块可见性解析，`std::lang` 始终可见，也可以写限定名（`$std::lang::assert(...)`）直接点名。生成解析器建立宏 AST，语义分析进行卫生替换与静态类型推导，四元式生成前完成。支持严格有序的三种参数组、类型参数、变长片段、五类完整语法匹配及 ECMAScript 正则。详见[卫生 AST 宏](24-literals-operators-macros.md#编译期卫生-ast-宏)。
 
-入口支持 `int64 main` 和 `void main`，无参或接收 `List<String>`；void 入口正常退出码为 0，panic 仍失败。`struct`、`enum`、`interface` 声明的尾分号可选。
+入口只支持 `void main`，无参或接收 `List<String>`；正常退出码为 0，panic 仍失败。`struct`、`enum`、`interface` 声明的尾分号可选。
 
 | 范围 | 当前能力与约束 |
 | --- | --- |

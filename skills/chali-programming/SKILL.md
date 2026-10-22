@@ -28,7 +28,7 @@ description: 编写、修改与调试 ChaLi (.chl) 程序，依据实际文法�
 
 ## 常见决策
 
-- 程序入口支持 `int64 main()` 或 `void main()`；void 正常完成的退出码为 0，panic 仍失败。结构体、枚举和接口声明在 `}` 结束，尾分号可选。普通函数写 `int32 add(int32 a, int32 b) { return a + b; }`。
+- 程序入口支持 `void main()` 或 `void main()`；void 正常完成的退出码为 0，panic 仍失败。结构体、枚举和接口声明在 `}` 结束，尾分号可选。普通函数写 `int32 add(int32 a, int32 b) { return a + b; }`。
 - 核心 `std::lang` 自动加载，可直接使用 `String`、`List<T>`、`println`、`assert`。其他模块按实际文档导入，查到真实 API 再调用。
 - `int32`、`int64`、`uint64`、`float32` 等是具体类型。未标记整数字面量可按上下文定型；浮点无后缀默认 `float64`，`1.25f` 为 `float32`，`1u` 为无符号整数。`-1u` 和 `-(1u)` 是编译错误，不用它们表示回绕；按需求选择有符号值、显式转换或无符号减法。
 - 普通赋值和按值传参复制值；字符串、列表和聚合也遵守值语义。避免不必要的大对象复制时查引用参数规则，明确需要转移资源时才使用 `move`。移动后原绑定禁止读取、写入或重新绑定；需要继续使用同名变量时，必须二次声明建立新绑定，普通赋值不能恢复。引用的可变性与生命周期受检查，不能返回局部变量的引用。
@@ -54,12 +54,12 @@ $end_for
 }
 $end_macro
 
-int64 main() {
+void main() {
     List<int32> values = $vec(int32, 1, 2, 3);
     values = $vec(int32, 4, 5);
     assert(len(values) == 2 && values[0] == 4);
     println(f"count={len(values)}");
-    return 0;
+
 }
 ```
 

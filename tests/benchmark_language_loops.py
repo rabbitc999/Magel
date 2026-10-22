@@ -107,7 +107,7 @@ end
     }}
     return total;
 }}
-int64 main() {{ std::lang::println("{{}}", calculate(std::lang::inputInt())); return 0; }}
+void main() {{ std::lang::println("{{}}", calculate(std::lang::inputInt())); return; }}
 """
     pyfile, luafile, chlfile = (WORK / ("loop" + ext) for ext in (".py", ".lua", ".chl"))
     pyfile.write_text(python_source, encoding="utf-8")

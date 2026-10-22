@@ -9,4 +9,4 @@ enum Status : Code {
     int64 code() { return 1; }
 };
 
-int64 main() { return 0; }
+void main() { }

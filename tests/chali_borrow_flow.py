@@ -110,7 +110,7 @@ def main():
     for reject, cases in ((True, rejected), (False, accepted)):
         for name, body in cases.items():
             path = WORK / (name + ".chl")
-            path.write_text(PREFIX + "void test(bool flag){" + body + "}int64 main(){return 0;}\n", encoding="utf-8")
+            path.write_text(PREFIX + "void test(bool flag){" + body + "}void main(){}\n", encoding="utf-8")
             result = subprocess.run([str(compiler), "--diagnostics=json", str(path)], cwd=ROOT,
                                     env=env, capture_output=True, encoding="utf-8", timeout=120)
             assert bool(result.returncode) == reject, (name, result.returncode, result.stdout, result.stderr)
@@ -120,7 +120,7 @@ def main():
             else:
                 assert not payload["diagnostics"], (name, payload)
     path = WORK / "multiple.chl"
-    path.write_text(PREFIX + "void test(){\nS mut& p = heap nS;p.drop();\nint64 a=p.value;\nint64 b=p.value;\n}int64 main(){return 0;}\n", encoding="utf-8")
+    path.write_text(PREFIX + "void test(){\nS mut& p = heap nS;p.drop();\nint64 a=p.value;\nint64 b=p.value;\n}void main(){}\n", encoding="utf-8")
     result = subprocess.run([str(compiler), "--diagnostics=json", str(path)], cwd=ROOT, env=env,
                             capture_output=True, encoding="utf-8", timeout=120)
     diagnostics = json.loads(result.stdout)["diagnostics"]

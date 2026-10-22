@@ -6,7 +6,7 @@ int64 nestedLoop(bool stop) {
 float32 identity32(float32 value) { return value; }
 uint64 maximumValue() { return 0xFFFFFFFFFFFFFFFF; }
 float64 identity64(float64 value) { return value; }
-int64 main() {
+void main() {
     int64 x = 2147483647 + 1;
     int64 y = 100000 * 100000;
     assert(x == 2147483648);
@@ -76,5 +76,5 @@ int64 main() {
     assert(empty.len() == 0);
     empty.drop();
     println("numeric v1.0.1 OK");
-    return 0;
+
 }

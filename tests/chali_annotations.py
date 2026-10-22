@@ -47,7 +47,7 @@ def main():
             assert not list(directory.glob('absent*')), '检查模式生成了产物'
             checks += 1
             return result
-        main_fn = 'int64 main(){return 0;}\n'
+        main_fn = 'void main(){}\n'
         check('@annotation DefaultEnabled\n@DefaultEnabled\n' + main_fn, reflection=None)
         check('@annotation Tag\n@Tag\n' + main_fn)
         check('@annotation Empty()\n@Empty()\n' + main_fn)
@@ -96,7 +96,7 @@ def main():
         check('@annotation A\n@A int64 n=1;\n' + main_fn, '不支持注解')
         check('@annotation A\n' + main_fn, '功能未开启', reflection=False, location=(1, 1))
         check('@A\n' + main_fn, '功能未开启', reflection=False, location=(1, 1))
-        for text in ('@annotation A\nint64 main(){@A int64 x=1;return 0;}', 'int64 main(){@annotation A return 0;}', '@annotation A\nstruct S{@annotation B int64 x;};\n' + main_fn, '@annotation A\nint64 main(){@A {return 0;}}'):
+        for text in ('@annotation A\nvoid main(){@A int64 x=1;return;}', 'void main(){@annotation A}', '@annotation A\nstruct S{@annotation B int64 x;};\n' + main_fn, '@annotation A\nvoid main(){@A {return;}}'):
             check(text, '语法错误')
         check('@annotation A\nstruct Box<T>{T value;};\n@A\nint64 f(Box<int64> x){return x.value;}\n' + main_fn)
         check('@annotation A\n@A\nstruct Box<T>{T value;};\n' + main_fn, '语法错误')
@@ -114,7 +114,7 @@ def main():
         assert Path(diagnostic['span']['file']).resolve() == included.resolve(), diagnostic
         assert (diagnostic['span']['line'], diagnostic['span']['column']) == (1, 4), diagnostic
         checks += 1
-        check('@annotation A(v:String="ok")\n@A\nint64 main(){const int64 x=1;x=2;return 0;}', '不可变变量')
+        check('@annotation A(v:String="ok")\n@A\nvoid main(){const int64 x=1;x=2;return;}', '不可变变量')
         check('@annotation A(v:String="ok")\n@A\n' + main_fn)
         check('@annotation A(v:std::lang::String="ok")\n@A\n' + main_fn)
         check('type F = uint64;\n@annotation F\n' + main_fn, '名称与类型冲突')

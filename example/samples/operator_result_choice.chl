@@ -22,12 +22,12 @@ struct A : Add<int64,int64>, Add<Vec,int64> {
     }
 };
 
-int64 main() {
+void main() {
     A a;
     a.v = 5;
     int64 x = a + 3;      /* 返回 int64 的那条：5 + 3 */
     println("x = {}", x);
     Vec y = a + 3;        /* 返回 Vec 的那条：5 * 3 */
     println("y = {}", y.v);
-    return 0;
+
 }

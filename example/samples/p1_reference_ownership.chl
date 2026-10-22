@@ -49,7 +49,7 @@ struct Factory {
     static String echo(String input) { return input; }
     static Set<int64> echoSet(Set<int64> input) { return input; }
 };
-int64 main() {
+void main() {
     {
         int64 round = 0;
         while (round < 3) {
@@ -163,6 +163,6 @@ int64 main() {
     assert(globalText == "global" && (globalValues.has(7) == 0));
     assert(globalValue.text == "abc" && (globalValue.values.has(7) == 0));
     println("P1 regressions passed");
-    return 0;
+
 }
 

@@ -45,7 +45,7 @@ class ReleaseTests(unittest.TestCase):
             for name in ('VERSION', 'LICENSE', 'CHANGELOG.md'):
                 (root / name).write_text('0.21.0', encoding='utf-8')
             for name in release.SAMPLES:
-                (root / f'example/samples/{name}.chl').write_text('int64 main(){return 0;}', encoding='utf-8')
+                (root / f'example/samples/{name}.chl').write_text('void main(){}', encoding='utf-8')
             binary, vsix = root / 'ChaLi.exe', root / 'chali-editor-1.0.0.vsix'
             binary.write_bytes(b'compiler')
             vsix.write_bytes(b'extension')

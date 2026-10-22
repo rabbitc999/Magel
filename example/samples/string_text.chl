@@ -2,7 +2,7 @@
 
 import std::text;
 
-int64 main() {
+void main() {
     String csv = "  alpha,beta,,gamma  ";
 
     /* trim → split → join */
@@ -23,5 +23,5 @@ int64 main() {
     println("{}", std::text::Text::replace(text, "ab", "X"));
     println("{}{}", std::text::Text::repeat("=", 3), std::text::Text::padStart("7", 3, '0'));
     println("[{}]", std::text::Text::padEnd("ab", 5, '.'));
-    return 0;
+
 }

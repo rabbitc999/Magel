@@ -29,9 +29,9 @@ enum State {
     static int64 answer() { return 7; }
 };
 @Route(path: "/main")
-int64 main() {
+void main() {
     Service service = new Service(42);
     State state = State::Ready;
     println("annotations {} {}", service.read(), state.code());
-    return 0;
+
 }

@@ -52,7 +52,7 @@ opcode Second { new = __std_bint_from_int; drop = __std_bint_drop; copy = __std_
     with tempfile.TemporaryDirectory(prefix='chali-opcode-') as directory:
         for name, source, diagnostic in cases:
             path = Path(directory, name + '.chl')
-            path.write_text(source + '\nint64 main() { return 0; }\n', encoding='utf-8')
+            path.write_text(source + '\nvoid main() { return; }\n', encoding='utf-8')
             result = subprocess.run([compiler, '--check', str(path)], capture_output=True,
                                     encoding='utf-8', errors='replace', timeout=60)
             output = result.stdout + result.stderr
@@ -63,7 +63,7 @@ opcode Second { new = __std_bint_from_int; drop = __std_bint_drop; copy = __std_
         module = Path(directory, 'vault.chl')
         module.write_text('module vault;\nopcode Secret {new=__std_bint_from_int;drop=__std_bint_drop;copy=__std_bint_copy;int64 count;}; int64 read(Secret const& value){return value.opcode;}', encoding='utf-8')
         source = Path(directory, 'private_handle.chl')
-        source.write_text('import vault;\nint64 main(){vault::Secret value; return value.opcode;}', encoding='utf-8')
+        source.write_text('import vault;\nvoid main(){vault::Secret value; let __boom = value.opcode;}', encoding='utf-8')
         result = subprocess.run([compiler, '--check', str(source)], capture_output=True,encoding='utf-8', errors='replace',timeout=60)
         assert result.returncode != 0 and '内部句柄仅允许在声明模块中访问' in result.stdout+result.stderr, result.stdout+result.stderr
     print(f'opcode declarations: {len(cases) + 1} checks passed')

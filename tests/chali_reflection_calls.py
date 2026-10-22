@@ -27,15 +27,15 @@ def main():
         assert '未开启' in rejected.stderr, rejected.stderr
         for body in ('std::reflect::callStatic<Unknown>("missing",args)', 'std::reflect::callStatic<Box<T>>("missing",args)'):
             source = work / 'invalid.chl'
-            source.write_text('import std::reflect;\nstruct Box<T>{T value;};\nint64 main(){List<std::reflect::ReflectValue> args;' + body + ';return 0;}\n', encoding='utf-8')
+            source.write_text('import std::reflect;\nstruct Box<T>{T value;};\nvoid main(){List<std::reflect::ReflectValue> args;' + body + ';return;}\n', encoding='utf-8')
             run([args.chali, 'run', source, '--reflection', '--check'], False)
         for body in ('std::reflect::__reflect_actualType<Reader>(reader)', 'std::reflect::__reflect_unary<Reader,int64>(reader,"read")'):
             source = work / 'internal.chl'
-            source.write_text('import std::reflect;\ninterface Reader {int64 read();};\nint64 probe(Reader const& reader){return ' + body + ';}\nint64 main(){return 0;}\n', encoding='utf-8')
+            source.write_text('import std::reflect;\ninterface Reader {int64 read();};\nint64 probe(Reader const& reader){return ' + body + ';}\nvoid main(){return;}\n', encoding='utf-8')
             rejected = run([args.chali, 'run', source, '--reflection', '--check'], False)
             assert '仅供编译器' in rejected.stderr, rejected.stderr
         source = work / 'ordinary.chl'
-        source.write_text('int64 main(){int64 string=3;assert(string==3);return 0;}\n', encoding='utf-8')
+        source.write_text('void main(){int64 string=3;assert(string==3);}\n', encoding='utf-8')
         run([args.chali, 'run', source, '--hard-realtime', '--check'])
         hard = run([args.chali, 'run', sample, '--reflection', '--hard-realtime', '--check'], False)
         assert '硬实时' in hard.stderr, hard.stderr

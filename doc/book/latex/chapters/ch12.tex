@@ -47,7 +47,7 @@ String word = "ChaLi";
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     String first = "ChaLi";
     String second = " 2026";
@@ -58,7 +58,7 @@ int64 main()
 
     println("切片 [0:5] = {}", joined[0: 5]);
     println("切片 [5:]  = {}", joined[5:]);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -94,13 +94,13 @@ len=10 首个字符=M
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     String word = "hello";
     word[0] =(char)72;
     // 72 就是 'H'
     println("{}", word);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -135,7 +135,7 @@ copy[0] = (char)72;      // 只改 copy
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 count = 42;
 
@@ -148,7 +148,7 @@ int64 main()
     // 浮点要写成 {索引:小数位数F}，索引从 1 数起
     println("{}", format("圆周率约 {1:2F}", 3.14159));
 
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -213,7 +213,7 @@ struct Pair
     String right;
 };
 
-int64 main()
+void main()
 {
     Pair pair;
     pair.left = "one";
@@ -228,7 +228,7 @@ int64 main()
     println("{}", set.toString());
     println("{}", map.toString());
     println("{}", tuple.toString());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -261,14 +261,14 @@ struct Named
     String toString() { return "name=" + self.name; }
 };
 
-int64 main()
+void main()
 {
     Named value;
     value.name = "ChaLi";
     String text = value;
     println("{}", text);
     println("{}", cast<String>(value));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -294,13 +294,13 @@ name=ChaLi
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     String s = "中文";
     println("len(s) = {}", len(s));
     println("第 0 个字节 = {}", (int64)s[0]);
     println("第 3 个字节 = {}", (int64)s[3]);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -380,10 +380,10 @@ chali: 运行期错误：切片端点落在多字节字符中间（String 的切
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     println("{} {} {}", "abc" == "abd", "abc" < "abd", "abc" > "abd");
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -427,7 +427,7 @@ if (name != expected)
 \begin{lstlisting}[style=chali]
 import std::text;
 
-int64 main()
+void main()
 {
     String raw = "  Hello, ChaLi!  ";
 
@@ -443,7 +443,7 @@ int64 main()
     println("[{}]", std::text::Text::replace("aaa", "a", "b"));
     println("[{}][{}]", std::text::Text::padStart("7", 3, (char)48),
         std::text::Text::repeat("ab", 3));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -516,7 +516,7 @@ for (String line in lines)
 \begin{lstlisting}[style=chali]
 import std::text;
 
-int64 main()
+void main()
 {
     List<String> lines;
     lines.push("第一行");
@@ -525,7 +525,7 @@ int64 main()
 
     String text = std::text::Text::join(lines, "\n");
     println("{}", text);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -550,12 +550,12 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 count = 3;
     String text = f"count={count + 1}, {f"inner={count}"}, \{literal\}";
     println("{}", text);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -578,12 +578,12 @@ count=4, inner=3, {literal}
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     String name = std::lang::readLine();
     String notes = std::lang::readLines(2);
     println("name=[{}], notes=[{}]", name, notes);
-    return 0;
+
 }
 \end{lstlisting}
 \par

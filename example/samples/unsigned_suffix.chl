@@ -3,7 +3,7 @@ uint8 narrowReturn() { return 7u; }
 uint8 narrowArgument(uint8 value) { return value; }
 const uint64 MAXIMUM = 18446744073709551615u;
 const uint64 WRAPPED = 0u - 1u;
-int64 main() {
+void main() {
     let one = 1u;
     let zero = 0u;
     assert(~zero == MAXIMUM);
@@ -34,5 +34,5 @@ int64 main() {
     assert(dynamic.len() == 3 && dynamic[2] == 42);
     dynamic.drop();
     println("unsigned suffix OK");
-    return 0;
+
 }

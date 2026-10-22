@@ -6,7 +6,7 @@ String loopText() { return "fresh"; }
 List<int64> loopList() { List<int64> value; value.push(7); return value; }
 LoopItem loopItem() { LoopItem value; value.text="item"; return value; }
 String returnLoopText() { return loop { String local="returned"; yield (local); }; }
-int64 main() {
+void main() {
     {
         int64 i=0;
         while (i<10) {
@@ -45,5 +45,5 @@ int64 main() {
     String value=loop { String source="inner"; yield (source); };
     assert(value=="inner" && source=="unchanged");
     println("loop owned values OK");
-    return 0;
+
 }

@@ -2,7 +2,7 @@ void wrong() {
     return 7;
 }
 
-int64 main() {
+void main() {
     wrong();
-    return 0;
+
 }

@@ -13,7 +13,7 @@
  * （离开块时自动释放，要提前还就 `drop 变量`）。
  */
 
-int64 main() {
+void main() {
     String name = "";
     int64 times = 0;
 
@@ -29,5 +29,5 @@ int64 main() {
     println("前两个字节：{}", shout[0:2]);
     println("从第 3 个字节到最后：{}", shout[2:]);
     println("跟原来的名字比（字典序）：{}", shout > name);
-    return 0;
+
 }

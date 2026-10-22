@@ -6,7 +6,7 @@
 import std::cas;
 import std::math;
 
-int64 main()
+void main()
 {
     Expr x = Expr::symbol("x");
     Expr expression = Expr::parse("x^3 + 2*x");
@@ -17,7 +17,7 @@ int64 main()
     number.setPrecision(100);
     println("{}", sin(number).str());
     println("{}", pi(100).str());
-    return 0;
+
 }
 ```
 

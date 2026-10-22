@@ -68,7 +68,7 @@ BigInteger piScaled(int64 digits) {
     return withGuard / power10(guard);
 }
 
-int64 main(List<String> arguments) {
+void main(List<String> arguments) {
     int64 digits = 20;
     if (arguments.len() > 1) { panic("用法：pi_digits [小数位数]"); }
     if (arguments.len() == 1) {
@@ -95,5 +95,5 @@ int64 main(List<String> arguments) {
         }
     }
     println("");
-    return 0;
+
 }

@@ -27,7 +27,7 @@ chali run example/samples/std_binary.chl
 import std::binary;
 
 /* 固定测试字节由 Python struct.pack 的大小端编码得到。 */
-int64 main() {
+void main() {
     uint8 data[97];
     data[0] = (uint8)128;
     data[1] = (uint8)255;
@@ -198,7 +198,7 @@ int64 main() {
     List<int16> pair = reader.readInt16Array(2);
     assert(pair[0] == (int16)-128 && pair[1] == (int16)-32768);
     println("binary reader OK");
-    return 0;
+
 }
 ```
 

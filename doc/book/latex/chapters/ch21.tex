@@ -78,10 +78,10 @@ abi "./native.dll"
     String native_name() = "abi_name";
 }
 
-int64 main()
+void main()
 {
     println("{} {}", native_add((int32)20, (int32)22), native_name());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -148,7 +148,7 @@ abi "./abi_demo.dll"
     String greet() = "greet";
 }
 
-int64 main()
+void main()
 {
     Point p;
     p.x = 1;
@@ -161,7 +161,7 @@ int64 main()
     println("{}", n);
 
     println("{}", greet());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -279,10 +279,10 @@ ChaLi 侧就像声明普通函数：
 \begin{lstlisting}[style=chali]
 int32 demo_cpp_text_size(String text);
 
-int64 main()
+void main()
 {
     println("{}", demo_cpp_text_size("hello"));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -320,13 +320,13 @@ interface HostValue
 impl HostHandle<int32> : HostValue = demo_counter_to_uint;
 HostHandle<int32> demo_cpp_add(HostHandle<int32> left, HostHandle<int32> right);
 
-int64 main()
+void main()
 {
     HostHandle<int32> left = cast<HostHandle<int32>>((uint64)20);
     HostHandle<int32> right = cast<HostHandle<int32>>((uint64)22);
     HostHandle<int32> total = demo_cpp_add(left, right);
     println("{} {}", cast<uint64>(total), total.hostValue());
-    return 0;
+
 }
 \end{lstlisting}
 \par

@@ -1081,6 +1081,40 @@ bool RewriteErrorAdapter(int id)
 }
 
 /**
+ * @brief 把 `map.getOption(键)` 归一为 std::lang 的泛型函数，结果就是 `Option<V>`。
+ *
+ * 下标 `m[k]` 读不存在的键会报错（0.27.1 起），所以"键可能不在、想自己处理"的
+ * 场合要有另一条路：这里改写成 `__mapGetOptionImpl(&m, k)`，实现写在
+ * `source/std/lang.chl` 里（先 `has` 再取值），Option 的构造因此全部走 ChaLi 源码，
+ * 不用在 opcode 侧碰泛型枚举的运行时布局。
+ *
+ * @param id 待归一的调用表达式。
+ * @return 已重写返回 true；不是 map 上的 getOption 返回 false。
+ */
+bool RewriteMapGetOption(int id)
+{
+    const auto node = N(id);
+    if (node.kind != MNode::Call || node.kids.size() != 2u) return false;
+    const auto callee = N(node.kids[0]);
+    if (callee.kind != MNode::Member || callee.kids.empty() || callee.s != "getOption") return false;
+    const auto type = ExprType(callee.kids[0]);
+    if (!IsContainer(type) || type->name != "map") return false;
+    if (N(node.kids[1]).kids.size() != 1u) return false;   /* getOption 只收一个键 */
+    if (chali_generic::session.generics.find("__mapGetOptionImpl") == chali_generic::session.generics.end())
+        return false;
+    const int source = M_New(MNode::Un, "&");
+    g_nodes[source].kids = { callee.kids[0] };
+    const int arguments = M_New(MNode::List);
+    g_nodes[arguments].kids = N(node.kids[1]).kids;
+    g_nodes[arguments].kids.insert(g_nodes[arguments].kids.begin(), source);
+    const int target = M_New(MNode::EnumCtor, "std::lang");
+    g_nodes[target].s2 = "__mapGetOptionImpl";
+    g_nodes[target].type2 = 0;
+    g_nodes[id].kids = { target, arguments };
+    return true;
+}
+
+/**
  * @brief 将标准区间调用归一为整数区间节点或自定义前进协议工厂。
  * @param id 待归一的调用表达式。
  * @param pattern 是否处于 match 模式位置；该位置只允许整数和 char 区间。
@@ -1468,6 +1502,7 @@ void InferExpression(int id, const std::shared_ptr<MType> &expected)
     RewriteRangeCall(id);
     RewriteErrorAdapter(id);
     RewriteIteratorCall(id);
+    RewriteMapGetOption(id);
     if (InferGenericConstructor(id)) return;
     const auto node = N(id);
     if (node.kind == MNode::Int && node.unsignedLiteral && expected && expected->kind == MType::Int)

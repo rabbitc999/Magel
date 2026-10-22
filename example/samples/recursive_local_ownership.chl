@@ -37,7 +37,7 @@ int64 visit(List<RecursiveNode> const& nodes, List<int64> const& children, int64
     return total;
 }
 
-int64 main() {
+void main() {
     List<RecursiveNode> nodes;
     List<int64> children;
     children.push(1); children.push(2); children.push(0); children.push(3);
@@ -57,5 +57,5 @@ int64 main() {
     }
     assert(nodes[4].text == "+");
     println("recursive local ownership OK");
-    return 0;
+
 }

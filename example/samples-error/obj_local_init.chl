@@ -1,7 +1,7 @@
 struct Pair { int64 x; int64 y; };
 
-int64 main() {
+void main() {
     Pair local;
     std::lang::Any box = local;
-    return 0;
+
 }

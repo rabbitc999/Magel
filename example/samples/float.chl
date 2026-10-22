@@ -4,7 +4,7 @@ float64 average(int64 total, int64 count) {
     return (float64)total / (float64)count;
 }
 
-int64 main() {
+void main() {
     /* 浮点字面量在四元式 / 数据区正文里都带小数点：`2.0` 写成 `2` 的话，
      * 后端会按整数解释这 8 个字节；隐式转换也一样（`float64 x = 2;` → `2.0`）。 */
     float64 half = 1.5 + 0.5;          /* 常量折叠 → 2.0 */
@@ -30,5 +30,5 @@ int64 main() {
     println("avg = {:3F}", avg);
     println("half = {:3F}", avg / 2.0);
     println("int64(avg) = {}", (int64)avg);
-    return 0;
+
 }

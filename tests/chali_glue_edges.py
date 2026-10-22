@@ -30,7 +30,7 @@ def main():
         module = 'std::math::' if macro.endswith('MATH') else 'std::text::'
     for expression in ('std::math::clamp(1, 2, 0)', 'std::math::clamp(1.0, 2.0, 0.0)', 'std::math::clamp(1.0, std::math::sqrt(-1.0), 2.0)'):
         invalid = WORK / 'invalid.chl'
-        invalid.write_text('import std::math;\nint64 main() { ' + expression + '; return 0; }', encoding='utf-8')
+        invalid.write_text('import std::math;\nvoid main() { ' + expression + '; return; }', encoding='utf-8')
         result = run(CHALI, 'run', invalid, '--out', WORK / 'invalid', succeeds=False)
         assert 'low 不能大于 high' in result.stdout + result.stderr, result.stdout + result.stderr
 if __name__ == '__main__':

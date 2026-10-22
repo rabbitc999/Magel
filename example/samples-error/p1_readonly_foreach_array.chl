@@ -1,1 +1,1 @@
-int64 main(){const int64 values[] = new[2]; for(int64 item in values){item=9;} return 0;}
+void main(){const int64 values[] = new[2]; for(int64 item in values){item=9;}}

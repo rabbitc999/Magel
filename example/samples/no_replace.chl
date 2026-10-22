@@ -14,9 +14,9 @@ struct Vec : Add<int64, int64> {
     int64 leftAdd(int64 other) { return self.v + other; }
 };
 
-int64 main() {
+void main() {
     Vec a;
     a.v = 10;
     println("left={}", a + 5);
-    return 0;
+
 }

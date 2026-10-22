@@ -23,7 +23,7 @@ int64 eventValue(Event event) {
     }
     return -1;
 }
-int64 main() {
+void main() {
     assert(classify("a") == 1 && classify("y") == 1 && classify("z") == 0);
     assert(classify("A") == 1 && classify("Z") == 1 && classify("zz") == 0);
     assert(classify("") == 0 && classify("none") == 2 && classify("other") == 2);
@@ -54,5 +54,5 @@ int64 main() {
     assert(eventValue(first) == 7 && eventValue(second) == 9);
     assert(eventValue(Event::C) == 0 && eventValue(Event::D) == 0);
     println("match alternatives and string guards OK");
-    return 0;
+
 }

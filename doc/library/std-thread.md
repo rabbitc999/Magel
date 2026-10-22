@@ -36,14 +36,14 @@ void worker() {
     std::thread::send(std::thread::parent(), reply);
 }
 
-int64 main() {
+void main() {
     isolated = 5;
     Thread task = std::thread::create(worker);
     std::thread::send(task, "hello");
     String reply = std::thread::receive();
     std::thread::wait(task);
     println("{} {}", reply, isolated);
-    return 0;
+
 }
 ```
 
@@ -1288,10 +1288,10 @@ obj.drop();
 
 ```chali
 import std::thread;
-int64 main() {
+void main() {
     ThreadPool pool = ThreadPool::create(2, 4);
     assert(pool.closeAndWait());
     println("pool ok");
-    return 0;
+
 }
 ```

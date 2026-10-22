@@ -26,7 +26,7 @@ def main():
                    'robot::kinematics', 'robot::localization', 'robot::pointcloud', 'car', 'utils', 'reflect']
         for module in modules:
             source = work / 'main.chl'
-            source.write_text('import '+module+';\nint64 main(){return 0;}\n', encoding='utf-8')
+            source.write_text('import '+module+';\nvoid main(){return;}\n', encoding='utf-8')
             result = subprocess.run([str(standalone), 'check', str(source), 'json'],
                                     cwd=work, env=env, capture_output=True,
                                     encoding='utf-8', timeout=120)
@@ -35,7 +35,7 @@ def main():
         # 删除的是内置库，不占用或禁止用户自己定义的同名模块。
         for module in ('robot', 'car'):
             (work / (module+'.chl')).write_text('module '+module+';\nint64 value(){return 7;}\n', encoding='utf-8')
-            source.write_text('import '+module+';\nint64 main(){assert('+module+'::value()==7);return 0;}\n', encoding='utf-8')
+            source.write_text('import '+module+';\nvoid main(){assert('+module+'::value()==7);return;}\n', encoding='utf-8')
             result = subprocess.run([str(standalone), 'run', str(source), 'out', str(work/'program')],
                                     cwd=work, env=env, capture_output=True,
                                     encoding='utf-8', timeout=120)

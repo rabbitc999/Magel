@@ -2,4 +2,4 @@
 $macro BAD(value)
 $concat(value, +)
 $end_macro
-int64 main() { return $BAD(x); }
+void main() { return $BAD(x); }

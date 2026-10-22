@@ -91,12 +91,12 @@ void show(Message message)
     }
 }
 
-int64 main()
+void main()
 {
     show(Message::Quit);
     show(Message::Move((int32)3, (int32)7));
     show(Message::Text("hello"));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -188,9 +188,9 @@ int64 name(Color color)
     return 0;
 }
 
-int64 main()
+void main()
 {
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -262,10 +262,10 @@ enum Shape
     }
 };
 
-int64 main()
+void main()
 {
     println("{}", Shape::Circle(2).area());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -295,13 +295,13 @@ enum BookPacket
     Text(String text)
 }
 
-int64 main()
+void main()
 {
     BookPacket first = BookPacket::Text("value");
     BookPacket second = first.clone();
     assert(!(first == BookPacket::Empty));
     println("{} {}", first == second, first.hash(first) == second.hash(second));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -348,10 +348,10 @@ int64 grade(int64 score)
     return 0;
 }
 
-int64 main()
+void main()
 {
     println("{} {} {} {}", grade(100), grade(95), grade(60), grade(59));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -412,10 +412,10 @@ int64 kind(Choice choice)
     return -1;
 }
 
-int64 main()
+void main()
 {
     println("{} {}", kind(Choice::Value("good")), kind(Choice::Value("bad")));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -465,7 +465,7 @@ enum Packet
 {
     Data(String text), Empty
 };
-int64 main()
+void main()
 {
     Packet packet = Packet::Data("original");
     String label = match (packet)
@@ -492,7 +492,7 @@ int64 main()
         }
     };
     println("{} {}", label, original);
-    return 0;
+
 }
 \end{lstlisting}
 \par

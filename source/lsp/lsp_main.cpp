@@ -70,7 +70,7 @@ std::string readFile(const std::string &path, bool &ok)
  */
 void printHelp()
 {
-    std::cout << "chali-lsp 0.27.0 —— ChaLi 宏 / 块的编辑期语言服务器\n"
+    std::cout << "chali-lsp 0.27.1 —— ChaLi 宏 / 块的编辑期语言服务器\n"
                  "\n"
                  "用法：\n"
                  "  chali-lsp --stdio            在标准输入输出上跑 LSP（编辑器默认用法）\n"
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
         }
         if (arg == "--version" || arg == "-v")
         {
-            std::cout << "chali-lsp 0.27.0\n";
+            std::cout << "chali-lsp 0.27.1\n";
             return 0;
         }
         if (arg == "--check")

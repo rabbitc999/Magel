@@ -1,6 +1,6 @@
 import std::tree;
 
-int64 main()
+void main()
 {
     RedBlackTree tree = RedBlackTree::create();
     assert(tree.validate() && !tree.remove(9));
@@ -86,5 +86,5 @@ int64 main()
     assert(tree.remove(0 - 9223372036854775807 - 1));
     assert(tree.remove(9223372036854775807) && tree.validate());
     println("red-black delete: 12000 mixed operations, copy and snapshot OK");
-    return 0;
+
 }

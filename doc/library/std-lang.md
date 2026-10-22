@@ -33,7 +33,7 @@ import std::algorithms;
 bool positive(int64 value) { return value > 0; }
 int64 addValues(int64 left, int64 right) { return left + right; }
 
-int64 main() {
+void main() {
     List<int64> values;
     values.push(4);
     values.push(1);
@@ -91,7 +91,7 @@ int64 main() {
     Pair<int64, String> pair = Pair<int64, String>::create(7, "seven");
     println("{} {}", pair.first, pair.second);
     raw.drop();
-    return 0;
+
 }
 ```
 
@@ -4305,7 +4305,7 @@ TryBranch<T, ErrorResidual<E>> branch();
 obj.branch();
 ```
 
-**源码**：[source/std/lang.chl:450](../../source/std/lang.chl#L450)。
+**源码**：[source/std/lang.chl:458](../../source/std/lang.chl#L458)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -4341,7 +4341,7 @@ TryBranch<T, ErrorResidual<E>> intoBranch();
 obj.intoBranch();
 ```
 
-**源码**：[source/std/lang.chl:460](../../source/std/lang.chl#L460)。
+**源码**：[source/std/lang.chl:468](../../source/std/lang.chl#L468)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -4379,7 +4379,7 @@ static Result<T,E> fromResidual(ErrorResidual<E> residual);
 Result<T, E>::fromResidual(residual);
 ```
 
-**源码**：[source/std/lang.chl:466](../../source/std/lang.chl#L466)。
+**源码**：[source/std/lang.chl:474](../../source/std/lang.chl#L474)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -4415,7 +4415,7 @@ Option<T> ok();
 obj.ok();
 ```
 
-**源码**：[source/std/lang.chl:467](../../source/std/lang.chl#L467)。
+**源码**：[source/std/lang.chl:475](../../source/std/lang.chl#L475)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -4451,7 +4451,7 @@ bool isOk();
 obj.isOk();
 ```
 
-**源码**：[source/std/lang.chl:473](../../source/std/lang.chl#L473)。
+**源码**：[source/std/lang.chl:481](../../source/std/lang.chl#L481)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -4487,7 +4487,7 @@ bool isErr();
 obj.isErr();
 ```
 
-**源码**：[source/std/lang.chl:482](../../source/std/lang.chl#L482)。
+**源码**：[source/std/lang.chl:490](../../source/std/lang.chl#L490)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -4524,7 +4524,7 @@ T take();
 obj.take();
 ```
 
-**源码**：[source/std/lang.chl:485](../../source/std/lang.chl#L485)。
+**源码**：[source/std/lang.chl:493](../../source/std/lang.chl#L493)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -4561,7 +4561,7 @@ T unwrap();
 obj.unwrap();
 ```
 
-**源码**：[source/std/lang.chl:495](../../source/std/lang.chl#L495)。
+**源码**：[source/std/lang.chl:503](../../source/std/lang.chl#L503)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -4599,7 +4599,7 @@ T unwrapOr(T fallback);
 obj.unwrapOr(fallback);
 ```
 
-**源码**：[source/std/lang.chl:504](../../source/std/lang.chl#L504)。
+**源码**：[source/std/lang.chl:512](../../source/std/lang.chl#L512)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -4638,7 +4638,7 @@ T expect(std::lang::String message);
 obj.expect(message);
 ```
 
-**源码**：[source/std/lang.chl:513](../../source/std/lang.chl#L513)。
+**源码**：[source/std/lang.chl:521](../../source/std/lang.chl#L521)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -4675,7 +4675,7 @@ E takeError();
 obj.takeError();
 ```
 
-**源码**：[source/std/lang.chl:523](../../source/std/lang.chl#L523)。
+**源码**：[source/std/lang.chl:531](../../source/std/lang.chl#L531)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -4712,7 +4712,7 @@ E error();
 obj.error();
 ```
 
-**源码**：[source/std/lang.chl:533](../../source/std/lang.chl#L533)。
+**源码**：[source/std/lang.chl:541](../../source/std/lang.chl#L541)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -4750,7 +4750,7 @@ Result<T, E> transform(T fn(T) mapper);
 obj.transform(mapper);
 ```
 
-**源码**：[source/std/lang.chl:542](../../source/std/lang.chl#L542)。
+**源码**：[source/std/lang.chl:550](../../source/std/lang.chl#L550)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -4788,7 +4788,7 @@ Result<T, E> andThen(Result<T, E> fn(T) mapper);
 obj.andThen(mapper);
 ```
 
-**源码**：[source/std/lang.chl:551](../../source/std/lang.chl#L551)。
+**源码**：[source/std/lang.chl:559](../../source/std/lang.chl#L559)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -4829,7 +4829,7 @@ Option<T> nextValue(T end, bool inclusive);
 obj.nextValue(end, inclusive);
 ```
 
-**源码**：[source/std/lang.chl:572](../../source/std/lang.chl#L572)。
+**源码**：[source/std/lang.chl:580](../../source/std/lang.chl#L580)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -4870,7 +4870,7 @@ static Pair<K, V> create(K first, V second);
 Pair<K, V>::create(first, second);
 ```
 
-**源码**：[source/std/lang.chl:628](../../source/std/lang.chl#L628)。
+**源码**：[source/std/lang.chl:636](../../source/std/lang.chl#L636)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -4910,7 +4910,7 @@ static Pair<K, V> create((K, V) value);
 Pair<K, V>::create(value);
 ```
 
-**源码**：[source/std/lang.chl:638](../../source/std/lang.chl#L638)。
+**源码**：[source/std/lang.chl:646](../../source/std/lang.chl#L646)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -4946,7 +4946,7 @@ Pair<K, V>::create(value);
 obj.toTuple();
 ```
 
-**源码**：[source/std/lang.chl:647](../../source/std/lang.chl#L647)。
+**源码**：[source/std/lang.chl:655](../../source/std/lang.chl#L655)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -4984,7 +4984,7 @@ Option<T> tryGet<T>(Any const& value);
 tryGet<T>(value);
 ```
 
-**源码**：[source/std/lang.chl:671](../../source/std/lang.chl#L671)。
+**源码**：[source/std/lang.chl:679](../../source/std/lang.chl#L679)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -5022,7 +5022,7 @@ Option<T const&> tryGetReference<T>(Any const& value);
 tryGetReference<T>(value);
 ```
 
-**源码**：[source/std/lang.chl:677](../../source/std/lang.chl#L677)。
+**源码**：[source/std/lang.chl:685](../../source/std/lang.chl#L685)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -5060,7 +5060,7 @@ Option<T mut&> tryGetMut<T>(Any mut& value);
 tryGetMut<T>(value);
 ```
 
-**源码**：[source/std/lang.chl:682](../../source/std/lang.chl#L682)。
+**源码**：[source/std/lang.chl:690](../../source/std/lang.chl#L690)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -5098,7 +5098,7 @@ List<uint8> stringBytes(String text);
 stringBytes(text);
 ```
 
-**源码**：[source/std/lang.chl:689](../../source/std/lang.chl#L689)。
+**源码**：[source/std/lang.chl:697](../../source/std/lang.chl#L697)。
 
 **完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
@@ -10571,13 +10571,13 @@ obj.okOrElse<E>(factory);
 [example/samples/std_read_lines.chl](../../example/samples/std_read_lines.chl)。
 
 ```chali
-int64 main() {
+void main() {
     String first=std::lang::readLine();
     String rest=std::lang::readLines(3);
     println("[{}]",first);
     println("[{}]",rest);
     assert(std::lang::readLines(0)=="");
     assert(std::lang::readLine()=="");
-    return 0;
+
 }
 ```

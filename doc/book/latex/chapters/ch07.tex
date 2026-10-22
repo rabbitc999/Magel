@@ -34,7 +34,7 @@ T &         和 T const& 完全等价（简写）
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 value = 7;
     int64 mut& alias = &value;
@@ -42,7 +42,7 @@ int64 main()
     alias = 9;
     // 写引用 = 写 value
     println("{} {}", value, alias);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -67,12 +67,12 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 value = 7;
     int64 const& view = &value;
     view = 9;
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -100,12 +100,12 @@ void bump(int64 mut& counter)
     counter = counter + 1;
 }
 
-int64 main()
+void main()
 {
     int64 number = 5;
     bump(&number);
     println("{}", number);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -158,14 +158,14 @@ int64 total(Player const& player)
     return sum;
 }
 
-int64 main()
+void main()
 {
     Player p;
     p.name = "amy";
     p.scores.push(10);
     p.scores.push(20);
     println("{} 的总分 {}", p.name, total(&p));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -234,11 +234,11 @@ int64 mut& keep = &first;
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 value = 1;
     int64 mut& bad = &(value + 1);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -305,11 +305,11 @@ Holder make()
     return holder;
 }
 
-int64 main()
+void main()
 {
     Holder h = make();
     println("{}", h.slot);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -341,14 +341,14 @@ int64 mut& larger(int64 mut& a, int64 mut& b)
     return b;
 }
 
-int64 main()
+void main()
 {
     int64 x = 3;
     int64 y = 8;
     larger(&x,&y) = 99;
     // 把大的那个改成 99
     println("{} {}", x, y);
-    return 0;
+
 }
 \end{lstlisting}
 \par

@@ -1,4 +1,4 @@
-int64 main()
+void main()
 {
     String text = "  Hello, ChaLi!\r\n";
     assert(text.length() == 17 && text.size() == 17 && text.byteLength() == 17);
@@ -66,5 +66,5 @@ int64 main()
     copy = copy.replaceAll("s", "g");
     assert(original == "same" && copy == "game");
     println("string methods: byte, UTF-8, empty, bounds and value semantics OK");
-    return 0;
+
 }

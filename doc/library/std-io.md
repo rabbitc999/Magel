@@ -30,7 +30,7 @@ import std::io;
 
 /** @brief 在调用者指定的测试文件中演示 FileStream 的 Result 错误处理。
  * @param args 仅一个文件路径，该文件会被覆盖。 @return 成功为 0。 */
-int64 main(List<String> args) {
+void main(List<String> args) {
     assert(args.len() == 1, "请提供允许覆盖的示例文件路径");
     Result<FileStream,IoError> opened = FileStream::open(args[0],"w+");
     assert(opened.isOk(), "打开失败");
@@ -45,7 +45,7 @@ int64 main(List<String> args) {
     assert(first.isOk() && first.unwrap() == "alpha");
     stream.close();
     println("io API ok");
-    return 0;
+
 }
 ```
 
@@ -1543,7 +1543,7 @@ std::io::renamePath(from, to);
 ```chali
 import std::io;
 
-int64 main(List<String> args) {
+void main(List<String> args) {
     String path=args[0];
     FileStream output=FileStream::open(path,"wb").take();
     output.write("abc\r\nline two\nlast").unwrap();
@@ -1560,6 +1560,6 @@ int64 main(List<String> args) {
     assert(fileReadLine(&handle)=="");
     assert(fileReadAllString(&handle)=="line two\nlast");
     fileClose(&handle);
-    println("file strings ok");return 0;
+    println("file strings ok");
 }
 ```

@@ -1,4 +1,4 @@
-int64 main() {
+void main() {
     BigInteger number = BigInteger(12);
     List<int64> values;
     Set<int64> keys;
@@ -8,5 +8,5 @@ int64 main() {
     keys.copy();
     table.copy();
     println("discarded");
-    return 0;
+
 }

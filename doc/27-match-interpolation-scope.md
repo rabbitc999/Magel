@@ -73,12 +73,12 @@ N、rows、cols 是编译期整数，不是运行时函数实参。整数表达�
 ## defer 与 scope(exit)
 
 ```chali
-int64 main() {
+void main() {
     int64 value = 1;
     defer println("last {}", value);
     scope(exit) { println("first"); }
     value = 2;
-    return 0;
+
 }
 ```
 

@@ -42,7 +42,7 @@ def main():
                 assert 'error' in response and response['error']['code'] == -32602, response
 
             text = '''struct Box<T> { T item; };
-    int64 main() {
+    void main() {
         List<int32> values;
         for(let item in values) { println("{}", item); }
         Box<int32> box;
@@ -51,7 +51,7 @@ def main():
             int64 fn copy(int64 x) { a(b(x)) }
         };
         let c3 = combine(fn(x) { x * 5 }, fn(x) { x - 1 });
-        return 0;
+
     }
     '''
             open_text(text)
@@ -78,7 +78,7 @@ def main():
             generic = '''T identity<T>(T value){return value;}
     int64 pick(int64 value){return value;}
     String pick(String value){return value;}
-    int64 main(){int32 small=1; let first=identity<int32>(small); let second=identity(small); let selected=pick(1); return 0;}
+    void main(){int32 small=1; let first=identity<int32>(small); let second=identity(small); let selected=pick(1);}
     '''
             open_text(generic)
             for marker, expected in [('first=', 'int32 first'), ('second=', 'int32 second'), ('selected=', 'int64 selected')]:
@@ -86,13 +86,13 @@ def main():
                 assert expected in hover['contents']['value'], (marker, hover)
             refs = query('references', generic, generic.index('pick(int64'), context=dict(includeDeclaration=True))
             assert len(refs) == 2, refs
-            detailed = 'int64 main(){let                                       values=List<List<int32>>(); let unknown=missing(); return 0;}'
+            detailed = 'void main(){let                                       values=List<List<int32>>(); let unknown=missing();}'
             open_text(detailed)
             detail = query('hover', detailed, detailed.index('let'))['contents']['value']
             assert 'List<List<int32>>' in detail and '泛型实参 1' in detail, detail
             detail = query('hover', detailed, detailed.index('unknown='))['contents']['value']
             assert '尚不能唯一确定类型' in detail, detail
-            incomplete = 'struct Entry{int64 value;}; int64 main(){List<Entry> values;for(let item in values){item.'
+            incomplete = 'struct Entry{int64 value;}; void main(){List<Entry> values;for(let item in values){item.'
             open_text(incomplete)
             completions = query('completion', incomplete, len(incomplete))
             assert any(item['label'] == 'value' for item in completions), completions
@@ -107,7 +107,7 @@ def main():
         $end_for
     }
     $end_macro
-    int64 main() { $example(1,2,3,4,5,6)(3,2,4,1); return 0; }
+    void main() { $example(1,2,3,4,5,6)(3,2,4,1); }
     '''
             open_text(macro)
             help = query('signatureHelp', macro, macro.index('(3,2,4,1)') + 5)
@@ -135,7 +135,7 @@ def main():
         yield next;
     }
     $end_macro
-    int64 main(){int64 value=$make(); return 0;}
+    void main(){int64 value=$make();}
     """
             open_text(hygienic)
             preview = server.query('chali/expandMacro', dict(textDocument=dict(uri=uri)))
@@ -145,13 +145,13 @@ def main():
             assert 'temporaries' not in preview, preview
 
             text = '''int64 inc(int64 x) { return x + 1; }
-    int64 main() {
+    void main() {
         // 😀 x inc "x"
         int64 x = 1;
         { int64 x = 2; println("{}", x); }
         println("{}", x);
         let callback = int64 fn(int64 x) { x + 1 };
-        return inc(x);
+        let __boom = inc(x);
     }
     '''
             open_text(text)
@@ -164,21 +164,21 @@ def main():
             assert len(edit['documentChanges'][0]['edits']) == 3, edit
             rejected('rename', text, at, newName='return')
             rejected('rename', text, at, newName='inc')
-            duplicate = 'int64 main(){int64 source=1; println("{}",source); int64 later=2; return 0;}'
+            duplicate = 'void main(){int64 source=1; println("{}",source); int64 later=2;}'
             open_text(duplicate)
             rejected('rename', duplicate, duplicate.index('source'), newName='later')
-            loops = 'int64 main(){{\n    int64 index=0;\n    while (index<2) {\nprintln("{}",index);\n        index++;\n    }\n} int64 index=9; return index;}'
+            loops = 'void main(){{\n    int64 index=0;\n    while (index<2) {\nprintln("{}",index);\n        index++;\n    }\n} int64 index=9; let __boom = index;}'
             open_text(loops)
             refs = query('references', loops, loops.index('index=0'), context=dict(includeDeclaration=True))
             assert len(refs) == 4, refs
             refs = query('references', loops, loops.index('index=9'), context=dict(includeDeclaration=True))
             assert len(refs) == 2, refs
-            prototype = 'int64 declared(int64 value); int64 main(){int64 value=3; return value;}'
+            prototype = 'int64 declared(int64 value); void main(){int64 value=3; let __boom = value;}'
             open_text(prototype)
             refs = query('references', prototype, prototype.index('value);'), context=dict(includeDeclaration=True))
             assert len(refs) == 1, refs
 
-            fields = 'struct Counter{int64 value; int64 read(){return value;}}; int64 main(){Counter c; c.value=1; Counter d; d.value=2; int64 value=3; return c.read()+value;}'
+            fields = 'struct Counter{int64 value; int64 read(){return value;}}; void main(){Counter c; c.value=1; Counter d; d.value=2; int64 value=3; let __boom = c.read()+value;}'
             open_text(fields)
             refs = query('references', fields, fields.index('value;'), context=dict(includeDeclaration=True))
             assert len(refs) == 4, refs
@@ -188,24 +188,24 @@ def main():
             assert len(refs) == 3, refs
             refs = query('references', fields, fields.index('read()'), context=dict(includeDeclaration=True))
             assert len(refs) == 2, refs
-            captures = 'int64 main(){String label="😀";int64 number=1;let callback=int64 fn(){number+1};return callback()+number;}'
+            captures = 'void main(){String label="😀";int64 number=1;let callback=int64 fn(){number+1};let __boom = callback()+number;}'
             open_text(captures)
             refs = query('references', captures, captures.index('number=1'), context=dict(includeDeclaration=True))
             assert len(refs) == 3 and refs[0]['range']['start'] == position(captures, captures.index('number=1')), refs
-            opaque = '$macro use(x)\nprintln("{}",number);\n$end_macro\nint64 main(){int64 number=1;$use(number);return 0;}'
+            opaque = '$macro use(x)\nprintln("{}",number);\n$end_macro\nvoid main(){int64 number=1;$use(number);return;}'
             open_text(opaque)
             rejected('rename', opaque, opaque.index('number=1'), newName='input')
-            opaque_macro = '$macro first(x)\nx\n$end_macro\n$macro second(x)\n$first(x)\n$end_macro\nint64 main(){int64 value=$second(1);return 0;}'
+            opaque_macro = '$macro first(x)\nx\n$end_macro\n$macro second(x)\n$first(x)\n$end_macro\nvoid main(){int64 value=$second(1);return;}'
             open_text(opaque_macro)
             rejected('rename', opaque_macro, opaque_macro.index('first(x)'), newName='renamed')
-            simple_macro = '$macro only(x)\nx\n$end_macro\nint64 main(){int64 value=$only(1);return 0;}'
+            simple_macro = '$macro only(x)\nx\n$end_macro\nvoid main(){int64 value=$only(1);return;}'
             open_text(simple_macro)
             edit = query('rename', simple_macro, simple_macro.index('only(x)'), newName='renamed')
             assert len(edit['documentChanges'][0]['edits']) == 2, edit
 
             module = root / 'alpha.chl'
             module.write_text('module alpha; int64 compute(int64 value) { return value; }', encoding='utf-8')
-            text = 'import alpha; int64 main(){ return alpha::compute(1); }'
+            text = 'import alpha; void main(){ let __boom = alpha::compute(1); }'
             open_text(text)
             refs = query('references', text, text.index('compute'), context=dict(includeDeclaration=True))
             assert len(refs) == 2 and {r['uri'] for r in refs} == {uri, module.as_uri()}, refs
@@ -220,16 +220,16 @@ def main():
 
             text = '''int64 pick(int64 value){return value;}
     String pick(String value){return value;}
-    int64 main(){let callback = pick; return 0;}
+    void main(){let callback = pick;}
     '''
             open_text(text)
             rejected('rename', text, text.rindex('pick'), newName='choose')
 
-            text = '''int64 main() {
+            text = '''void main() {
         String value = "owned";
         String fn() closure = fn move() { value };
         println("{}", value);
-        return 0;
+
     }
     '''
             open_text(text)
@@ -243,13 +243,13 @@ def main():
             yield (value);
         };
     }
-    int64 main(){return 0;}
+    void main(){}
     '''
             open_text(text)
             diagnostic = server.diagnostic(uri, version, lambda ds: any('延迟清理仍借用' in d['message'] for d in ds))
             conflict = next(d for d in diagnostic['diagnostics'] if '延迟清理仍借用' in d['message'])
             assert any('defer' in item['message'] for item in conflict.get('relatedInformation', [])), conflict
-            large = 'int64 main(){int64 target=1;\n' + 'target = target + 1;\n' * 1000 + 'return 0;}'
+            large = 'void main(){int64 target=1;\n' + 'target = target + 1;\n' * 1000 + '}'
             open_text(large)
             started = time.monotonic()
             refs = query('references', large, large.index('target'), context=dict(includeDeclaration=True))

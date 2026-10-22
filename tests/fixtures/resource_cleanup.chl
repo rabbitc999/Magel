@@ -12,7 +12,7 @@ void conditional(bool dispose) {
     value.drop();
     value.drop();
 }
-int64 main() {
+void main() {
     {
         Item value;
         value.text = "owned";
@@ -49,5 +49,5 @@ int64 main() {
     list.drop();
     list.drop();
     println("resource cleanup ok {}", drops);
-    return 0;
+
 }

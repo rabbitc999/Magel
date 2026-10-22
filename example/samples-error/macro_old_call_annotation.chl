@@ -1,2 +1,2 @@
 $replace ADD(a, b) a + b
-int64 main() { return $!ADD(1, 2); }
+void main() { return $!ADD(1, 2); }

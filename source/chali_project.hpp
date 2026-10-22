@@ -99,8 +99,8 @@ inline int runCli(int argc, char **argv)
             if (!output) throw std::runtime_error(CHALI_TEXT("无法写入工程文件：") + file.u8string());
         };
         write("chali.toml", "[package]\nname = \"" + name + "\"\nversion = \"0.1.0\"\n\n[chali]\nrun = \"interpret\"\nmain = \"src/main.chl\"\n");
-        write("src/main.chl", "int64 main() {\n    std::lang::println(\"Hello, ChaLi!\");\n    return 0;\n}\n");
-        write("tests/test_main.chl", "int64 main() {\n    std::lang::assert(1 + 1 == 2);\n    return 0;\n}\n");
+        write("src/main.chl", "void main() {\n    std::lang::println(\"Hello, ChaLi!\");\n    return;\n}\n");
+        write("tests/test_main.chl", "void main() {\n    std::lang::assert(1 + 1 == 2);\n    return;\n}\n");
         write(".gitignore", "/build/\n/.chali/\n/chali_out*\n*.exe\n");
         write("README.md", "# " + name + CHALI_TEXT("\n\nChaLi 应用工程。以下命令在工程根目录执行：\n\n") + "```sh\nchali run src/main.chl\nchali check src/main.chl\nchali test tests\nchali svmb src/main.chl out build/main\n```\n\n" + CHALI_TEXT("运行示例输出 `Hello, ChaLi!`。开发命令原生内建，无需 Python；程序通过 VM 执行。\n") + CHALI_TEXT("`chali.toml` 配置项目包；`src/` 放应用源码，`tests/` 放普通 main 测试。\n"));
         /* 系统里装了 git 就顺手 `git init`，方便后续版本管理。

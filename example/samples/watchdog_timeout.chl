@@ -15,7 +15,7 @@
  */
 import std::watchdog;
 
-int64 main() {
+void main() {
     match (std::watchdog::enableTimeout(1000)) {
         Result<int64, std::watchdog::WatchdogError>::Ok(units) => { println("timeout on {}", units); }
         Result<int64, std::watchdog::WatchdogError>::Err(reason) => {
@@ -34,5 +34,5 @@ int64 main() {
         done = done + 1;
     }
     println("done {}", done);
-    return 0;
+
 }

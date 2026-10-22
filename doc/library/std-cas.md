@@ -26,7 +26,7 @@ chali run example/samples/cas.chl
 ```chali
 import std::cas;
 
-int64 main()
+void main()
 {
     Expr polynomial = Expr::parse("x^3 + 2*x");
     println("derivative = {}", polynomial.differentiate("x").str());
@@ -58,7 +58,7 @@ int64 main()
     let children = tree.children();
     assert(children[0].kind() == NodeKind::Symbol);
     println("ast = {}({})", tree.name(), children[0].name());
-    return 0;
+
 }
 ```
 

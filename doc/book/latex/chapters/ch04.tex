@@ -22,11 +22,11 @@ void log(String message)
     println("[log] {}", message);
 }
 
-int64 main()
+void main()
 {
     log("start");
     println("{}", add(1, 2));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -87,12 +87,12 @@ void shout(String text)
     text = text + "!";
 }
 
-int64 main()
+void main()
 {
     String word = "hi";
     shout(word);
     println("{}", word);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -184,10 +184,10 @@ int64 fromLoop()
     };
 }
 
-int64 main()
+void main()
 {
     println("{} {} {} {}", fromBlock(), choose(false), fromMatch(0), fromLoop());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -224,10 +224,10 @@ float64 add(float64 a, float64 b)
     return a + b;
 }
 
-int64 main()
+void main()
 {
     println("{} {}", add(1, 2), add(1.5, 2.5));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -255,10 +255,10 @@ int64 add(int64 a, int64 b)
     return a + b;
 }
 
-int64 main()
+void main()
 {
     println("{}", add(1, 2.5));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -286,10 +286,10 @@ int64 add(int64 a, int64 b = 10)
     return a + b;
 }
 
-int64 main()
+void main()
 {
     println("{} {}", add(2), add(2, 3));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -356,10 +356,10 @@ int64 total(int64... items)
     return sum;
 }
 
-int64 main()
+void main()
 {
     println("{} {}", total(1, 2, 3), total(5));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -389,11 +389,11 @@ ChaLi 的返回值可以是一个元组（tuple）——把几个值打包起来
     return(id, "player");
 }
 
-int64 main()
+void main()
 {
     let info = describe(7);
     println("{} {}", info.0, info.1);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -429,13 +429,13 @@ int64 main()
     return key, name;
 }
 
-int64 main()
+void main()
 {
     int32 key;
     String name;
     key, name = pair((int32)7, "player");
     println("{} {}", key, name);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -462,7 +462,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     ...
 }
@@ -475,14 +475,14 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main(List<String> arguments)
+void main(List<String> arguments)
 {
     println("收到 {} 个参数", arguments.len());
     for (String item in arguments)
     {
         println("  {}", item);
     }
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -537,7 +537,7 @@ chali run app.chl -- Alice "two words"
 默认参数 & \texttt{int64 b =\allowbreak{} 10}，只能从尾部连续省略 \\
 变长参数 & \texttt{int64.\allowbreak{}.\allowbreak{}.\allowbreak{} items}，放最后一项，用 \texttt{for-in} 遍历 \\
 多值返回 & 返回类型写元组 \texttt{(\allowbreak{}A,\allowbreak{} B)\allowbreak{}}，用 \texttt{.\allowbreak{}0} / \texttt{.\allowbreak{}1} 取或拆开接 \\
-入口 & \texttt{int64 main(\allowbreak{})\allowbreak{}} 或 \texttt{int64 main(\allowbreak{}std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}List<\allowbreak{}std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}String>\allowbreak{} arguments)\allowbreak{}} \\
+入口 & \texttt{void main(\allowbreak{})\allowbreak{}} 或 \texttt{void main(\allowbreak{}std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}List<\allowbreak{}std:\allowbreak{}:\allowbreak{}lang:\allowbreak{}:\allowbreak{}String>\allowbreak{} arguments)\allowbreak{}} \\
 \bottomrule
 \end{tabular}
 \end{center}

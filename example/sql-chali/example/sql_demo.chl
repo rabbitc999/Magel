@@ -9,11 +9,11 @@ module sqlDemo;
 
 import std::sql;
 
-int64 main() {
+void main() {
     std::sql::Database db = std::sql::Database::local("");
     if (!db.isOpen()) {
         println("连接数据库失败：{}", db.lastError());
-        return 1;
+        return;
     }
     println("已连接：{}", db.scalar("SELECT VERSION()"));
 
@@ -47,5 +47,5 @@ int64 main() {
     println("故意写错：ok={} error={}", bad.ok, bad.error);
 
     db.close();
-    return 0;
+
 }

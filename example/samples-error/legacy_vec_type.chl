@@ -1,4 +1,4 @@
-int64 main() {
+void main() {
     vec<int64> values;
-    return 0;
+
 }

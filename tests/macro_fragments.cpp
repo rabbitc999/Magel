@@ -8,16 +8,16 @@
 int main()
 {
     chali_macro::SourceFragments fragments;
-    Memory::String source = "$macro A(x)\nx\n$end_macro\nint64 main() { return $A(a + /* raw */ b); }\n";
+    Memory::String source = "$macro A(x)\nx\n$end_macro\nvoid main() { $A(a + /* raw */ b); }\n";
     const auto original = source;
     std::string error;
     if (!fragments.capture(source, error) || !error.empty()) return 1;
     if (source.size() != original.size()) return 2;
-    const auto index = fragments.find(4, 23);
+    const auto index = fragments.find(4, 15);
     if (index == static_cast<std::size_t>(-1)) return 3;
     const auto &call = fragments.at(index);
     if (call.name != "A" || call.groups.size() != 1 || call.groups[0].opening != '(' || call.groups[0].arguments.size() != 1) return 4;
-    if (call.groups[0].arguments[0].text != "a + /* raw */ b" || call.groups[0].arguments[0].line != 4 || call.groups[0].arguments[0].column != 26) return 5;
+    if (call.groups[0].arguments[0].text != "a + /* raw */ b" || call.groups[0].arguments[0].line != 4 || call.groups[0].arguments[0].column != 18) return 5;
     Memory::String multiple = "$F<int64>[name](\"a,b\", $OTHER(1, 2)){ { a(); } }";
     if (!fragments.capture(multiple, error)) return 6;
     const auto &grouped = fragments.at(fragments.find(1, 1));

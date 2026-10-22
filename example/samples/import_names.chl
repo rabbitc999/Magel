@@ -5,7 +5,7 @@ int64 duplicate(int64 value) { return value + 1000; }
 int64 len(int64 value) { return value + 100; }
 int64 increment(int64 value) { return value + 1; }
 
-int64 main() {
+void main() {
     List<int64> values; values.push(3);
     Set<int64> unique = {1,2};
     Map<String,int64> entries = {"one":1};
@@ -36,5 +36,5 @@ int64 main() {
     assert(UNIQUE_NUMBER == 17 && PI > 3.14 && PI < 3.15);
     { int64 UNIQUE_NUMBER = 9; assert(UNIQUE_NUMBER == 9); }
     println("implicit imports OK");
-    return 0;
+
 }

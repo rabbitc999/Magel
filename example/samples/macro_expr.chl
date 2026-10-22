@@ -18,7 +18,7 @@ $macro FIRST(a, b)
 if (true) { a } else { b }
 $end_macro
 
-int64 main() {
+void main() {
     std::lang::String label = "expr";
     std::lang::List<int64> values;
     values.push(3);
@@ -29,5 +29,5 @@ int64 main() {
         $PRODUCT(1 + 2, 4 + 1),
         $FIRST(values[0] + 1, 5 * 2));
     $PRINT(1 + 2, $ADD(2, 3));
-    return 0;
+
 }

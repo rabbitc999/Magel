@@ -16,7 +16,7 @@ List<int64> make(int64 value) {
     return list;
 }
 
-int64 main() {
+void main() {
     Bag b;
     b.items.push(7);
     b.items.push(8);
@@ -32,5 +32,5 @@ int64 main() {
     other.push(6);
 
     println("{} {} {} {}", b.items.len(), b.items[0], c.items[0], d.items.len());
-    return 0;
+
 }

@@ -14,7 +14,7 @@ struct ChainStart {
 };
 ChainMiddle mut& borrowed(ChainMiddle mut& value) { return &value; }
 int64 combined(ChainResult left, ChainResult right) { return left.number + right.number; }
-int64 main() {
+void main() {
     ChainStart start;
     {
         int64 i = 0;
@@ -44,5 +44,5 @@ int64 main() {
     assert((source.number) == (7));
     assert((source.text) == ("source"));
     println("chained temporaries OK");
-    return 0;
+
 }

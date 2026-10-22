@@ -27,7 +27,7 @@ chali run doc/examples/library/sqlite.chl
 import std::sql;
 
 /** @brief 使用内置 SQLite，在内存库中演示执行、转义、结果与错误处理。 */
-int64 main() {
+void main() {
     Database db = Database::sqlite(":memory:");
     if (!db.isOpen()) { panic(db.lastError()); }
     assert(db.execOk("CREATE TABLE people(id INTEGER PRIMARY KEY, name TEXT)"));
@@ -41,7 +41,7 @@ int64 main() {
     assert(!duplicate.ok);
     db.close();
     println("sqlite API ok");
-    return 0;
+
 }
 ```
 

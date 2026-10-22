@@ -24,7 +24,7 @@ List 使用 ArrayList。Map、Set 对内建哈希键或实现 \texttt{Hash} 的�
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     List<int64> scores;
     scores.push(30);
@@ -45,7 +45,7 @@ int64 main()
 
     scores.clear();
     println("clear 后：len={}", scores.len());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -106,12 +106,12 @@ else
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     List<int64> numbers;
     numbers.push(1);
     println("{}", numbers[5]);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -135,7 +135,7 @@ chali: 运行期错误：vec 下标越界：5（长度 1）
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     Map<String, int64> ages;
     ages.put("amy", 11);
@@ -144,13 +144,13 @@ int64 main()
     println("len={} amy={} hasBob={} cid={}",
         ages.len(), ages["amy"], ages.has("bob"), ages["cid"]);
 
-    println("查一个没有的键：{}", ages["zoe"]);
+    println("有 zoe 吗：{}", ages.has("zoe"));
 
     for (int64 i in std::lang::range(0, ages.len()))
     {
         println("{} -> {}", ages.keyAt(i), ages.valAt(i));
     }
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -160,7 +160,7 @@ int64 main()
 \medskip
 \begin{lstlisting}[style=out]
 len=2 amy=11 hasBob=0 cid=33
-查一个没有的键：0
+有 zoe 吗：0
 amy -> 11
 cid -> 33
 \end{lstlisting}
@@ -173,22 +173,43 @@ cid -> 33
 
 \item \texttt{put(\allowbreak{}k,\allowbreak{} v)\allowbreak{}} 和 \texttt{m[\allowbreak{}k]\allowbreak{} =\allowbreak{} v} 是一回事，后者顺手一点；
 
-\item \texttt{m[\allowbreak{}k]\allowbreak{}} 读；\texttt{has(\allowbreak{}k)\allowbreak{}} 判断有没有；\texttt{remove(\allowbreak{}k)\allowbreak{}} 删掉并返回是否删到了；
+\item \texttt{m[\allowbreak{}k]\allowbreak{}} 读（键不在就报错）；\texttt{has(\allowbreak{}k)\allowbreak{}} 判断有没有；\texttt{get\allowbreak{}Option(\allowbreak{}k)\allowbreak{}} 一次拿到 \texttt{Option<\allowbreak{}V>\allowbreak{}}（键不在给 \texttt{None}，不报错）；\texttt{remove(\allowbreak{}k)\allowbreak{}} 删掉并返回是否删到了；
 
 \item 遍历用 \texttt{key\allowbreak{}At(\allowbreak{}i)\allowbreak{}} / \texttt{val\allowbreak{}At(\allowbreak{}i)\allowbreak{}} 按下标走，\texttt{i} 从 0 到 \texttt{len(\allowbreak{})\allowbreak{} - 1}。Map 不保证排序或插入顺序；上面的输出只是一种可能的顺序。
 
 \end{itemize}
 
 \begin{tip}{提示}
-小心「查不存在的键」。 上面 \texttt{ages[\allowbreak{}"zoe"]\allowbreak{}} 返回了 \texttt{0}，而不是报错。因为 \texttt{V} 是 \texttt{int64}，缺省值就是 0。这不是「没有这个键」的意思，而是「我按 0 处理了」——想知道键在不在，先用 \texttt{has(\allowbreak{}k)\allowbreak{}} 问一次。这是 Map 最容易埋 bug 的地方。
+读不存在的键会直接报错。 \texttt{ages[\allowbreak{}"zoe"]\allowbreak{}} 不是返回 \texttt{0}，而是运行期错误\texttt{map 下标键不存在：zoe}。以前给"零值"看着省事，实际上把"键拼错了"藏成了一个看不出错的结果——想知道键在不在，先用 \texttt{has(\allowbreak{}k)\allowbreak{}} 问一次，再决定取还是走别的路。
 \end{tip}
+
+"可能没有"就写成 \texttt{Option}。 一件事两种写法别混：确定有就下标读（没有=程序写错了，当场报错好查）；可能没有就 \texttt{get\allowbreak{}Option}，拿到的 \texttt{Option<\allowbreak{}V>\allowbreak{}} 自己分支处理：
+
+\par
+\medskip
+\begin{lstlisting}[style=chali]
+Map<String, int64> ages;
+ages.put("amy", 11);
+
+println("{}", ages.getOption("amy").unwrapOr(0));    /* 有 → 11 */
+println("{}", ages.getOption("zoe").isNone());       /* 没有 → 1（true） */
+
+match (ages.getOption("zoe")) {
+    Option<int64>::Value(v) => { println("有 {}", v); }
+    Option<int64>::None => { println("没有这个键"); }
+}
+\end{lstlisting}
+\par
+\medskip
+
+这样"键缺失"变成一个类型里写着的事实，不会被悄悄换成 0。
 
 \section{\texttt{Set<\allowbreak{}T>\allowbreak{}}：不重复，不保证顺序}
 
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     Set<int64> unique;
     unique.add(5);
@@ -199,7 +220,7 @@ int64 main()
     println("len={} has5={} has9={}", unique.len(), unique.has(5), unique.has(9));
     println("元素之和={}", unique.at(0) + unique.at(1));
     println("remove(5) 拿回 {}，现在 len={}", unique.remove(5), unique.len());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -234,7 +255,7 @@ remove(5) 拿回 1，现在 len=1
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     List<int64> order =
     [
@@ -253,7 +274,7 @@ int64 main()
         "a": 1, "b": 2
     };
     println("{} {}", table.len(), table["b"]);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -304,7 +325,7 @@ chali: 集合字面量类型不匹配：map 不能初始化 List<int64>
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 fixed[3];
     // 长度写在类型里
@@ -317,7 +338,7 @@ int64 main()
     // 长度运行时决定
     runtime[0] = 10;
     println("{} {}", len(fixed), len(runtime));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -354,7 +375,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     List<int64> original;
     original.push(1);
@@ -364,7 +385,7 @@ int64 main()
     copy.push(2);
 
     println("original={} copy={}", original.len(), copy.len());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -419,7 +440,7 @@ struct Player
     int64 score;
 };
 
-int64 main()
+void main()
 {
     List<Player> players;
     Player p;
@@ -436,7 +457,7 @@ int64 main()
     // 取出来的也是副本
     back.score = 1;
     println("表里还是 {}", players[0].score);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -464,7 +485,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     {
         List<int64> inner;
@@ -474,7 +495,7 @@ int64 main()
     }
     // ← 这里把 inner 还回去了
     println("done");
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -498,7 +519,7 @@ done
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     List<int64> scores;
     scores.push(12);
@@ -516,7 +537,7 @@ int64 main()
         }
     }
     println("总和 {} 最高 {}", total, best);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -555,7 +576,7 @@ for (int64 i in std::lang::range(0, scores.len()))
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     List<Any> values = [1, "two", true];
     values.push(1.5);
@@ -580,7 +601,7 @@ int64 main()
     println("{}", tryGet<int64>(&count).unwrap());
     saved.clear();
     println("{}", saved.isEmpty());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -612,7 +633,7 @@ int64 main()
 容器 & 常用操作 \\
 \midrule
 \texttt{List<\allowbreak{}T>\allowbreak{}} & \texttt{push} \texttt{pop} \texttt{insert} \texttt{remove} \texttt{clear} \texttt{len} \texttt{at} \texttt{[\allowbreak{}]\allowbreak{}} \texttt{has} \texttt{index\allowbreak{}Of} \\
-\texttt{Map<\allowbreak{}K,\allowbreak{}V>\allowbreak{}} & \texttt{put} \texttt{[\allowbreak{}]\allowbreak{}} \texttt{has} \texttt{remove} \texttt{len} \texttt{key\allowbreak{}At} \texttt{val\allowbreak{}At} \\
+\texttt{Map<\allowbreak{}K,\allowbreak{}V>\allowbreak{}} & \texttt{put} \texttt{[\allowbreak{}]\allowbreak{}} \texttt{get\allowbreak{}Option} \texttt{has} \texttt{remove} \texttt{len} \texttt{key\allowbreak{}At} \texttt{val\allowbreak{}At} \\
 \texttt{Set<\allowbreak{}T>\allowbreak{}} & \texttt{add} \texttt{has} \texttt{remove} \texttt{len} \texttt{at} \\
 \bottomrule
 \end{tabular}
@@ -626,7 +647,7 @@ int64 main()
 
 \item 越界是明确的运行期错误，不是未定义行为；
 
-\item \texttt{Map} 读不存在的键得到缺省值（不报错），先 \texttt{has} 再取；
+\item \texttt{Map} 读不存在的键也是明确的运行期错误，先 \texttt{has} 再取；
 
 \item 容器是值：赋值、传参、存取元素都是复制；传参默认写 \texttt{const\&} / \texttt{mut\&}；
 

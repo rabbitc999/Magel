@@ -8,7 +8,7 @@ import std::regex;
 import std::sql;
 import std::memory;
 
-int64 main()
+void main()
 {
     UnionFind sets = UnionFind::create(10000);
     sets.unionSets(2, 3);
@@ -95,5 +95,5 @@ int64 main()
     first = 'a'; assert(span[0] == 'a');
     arena.reset();
     println("opcode values: copy isolation, snapshots, cursors and owners OK");
-    return 0;
+
 }

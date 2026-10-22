@@ -20,7 +20,7 @@ int64 mod_pow(int64 base, int64 exp, int64 mod) {
     return result;
 }
 
-int64 main() {
+void main() {
     int64 base = 0;
     int64 exp = 0;
     int64 mod = 0;
@@ -29,5 +29,5 @@ int64 main() {
     mod = inputInt();
 
     println("{}^{} mod {} = {}", base, exp, mod, mod_pow(base, exp, mod));
-    return 0;
+
 }

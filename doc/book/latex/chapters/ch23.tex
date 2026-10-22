@@ -107,7 +107,7 @@ void consume(Handle handle)
     println("consume {}", handle.id);
 }
 
-int64 main()
+void main()
 {
     Handle first;
     first.id = 1;
@@ -118,7 +118,7 @@ int64 main()
     Handle third = move(&second);
     println("third={}", third.id);
 
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -156,7 +156,7 @@ struct Point
     String label;
 };
 
-int64 main()
+void main()
 {
     Point origin;
     origin.x = 0;
@@ -170,7 +170,7 @@ int64 main()
     copy.label = "O2";
     println("afterChange={}", origin == copy);
     println("original={}", origin.label);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -237,12 +237,12 @@ struct Vec : Add<int64, int64>
     }
 };
 
-int64 main()
+void main()
 {
     Vec a;
     a.v = 10;
     println("left={}", a + 5);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -288,12 +288,12 @@ struct Chain : Add<int64, int64>
     }
 };
 
-int64 main()
+void main()
 {
     Chain chain;
     chain.v = 7;
     println("chain + 1 = {}", chain + 1);
-    return 0;
+
 }
 \end{lstlisting}
 \par

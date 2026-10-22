@@ -32,7 +32,7 @@ Series make_series() {
     return value;
 }
 
-int64 main() {
+void main() {
     Series values = make_series();
     int64 total = values;
     float64 average = (float64)values;
@@ -57,5 +57,5 @@ int64 main() {
     for (number in range(5, 1, 1)) { mismatched = mismatched + 1; }
     println("for={} typed={} builds={} range={}/{}/{}",
     automatic, typed, builds, ascending, descending, mismatched);
-    return 0;
+
 }

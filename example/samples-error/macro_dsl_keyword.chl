@@ -2,4 +2,4 @@
 $macro for(x)
 x
 $end_macro
-int64 main() { return 0; }
+void main() { }

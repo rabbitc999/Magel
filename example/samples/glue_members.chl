@@ -14,12 +14,12 @@
  * `struct` / `interface` / `impl`，直接调成员即可。两条 `area` 同名不同参，靠各自的
  * 宿主符号区分 —— 这是 `<impl 符号>.<方法名>` 约定做不到的。
  */
-int64 main()
+void main()
 {
     GlueDemoRect rect;
     rect.width = 3;
     rect.height = 5;
     println("rect area={} scaled={} perimeter={}", rect.area(), rect.area(2),
     rect.perimeter());
-    return 0;
+
 }

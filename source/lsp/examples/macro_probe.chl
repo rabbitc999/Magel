@@ -10,8 +10,7 @@ std::lang::println("{}", item);
 $end_for
 $end_macro
 
-int64 main() {
+void main() {
     int64 total = $ADD(1, 2);
     $DESCRIBE(total);
-    return total;
 }

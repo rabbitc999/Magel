@@ -41,7 +41,7 @@ int64 sumInterval(int64 total, int64 value)
     return total + value;
 }
 
-int64 main()
+void main()
 {
     assert(std::lang::range(1, 5).intoIter().fold(0, sumInterval) == 10);
     let narrow = std::lang::rangeEq<uint8>(254, 255).intoIter();
@@ -162,5 +162,5 @@ int64 main()
     }
     assert(maximumCount == 1);
     println("range and loop values ok");
-    return 0;
+
 }

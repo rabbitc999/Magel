@@ -23,7 +23,7 @@ void free_list(Option<Cell mut&> head) {
         node.drop();
     }
 }
-int64 main() {
+void main() {
     Option<Cell mut&> head = Option<Cell mut&>::None;
     head = push_front(head, 1); head = push_front(head, 2); head = push_front(head, 3);
     print("链表：");
@@ -40,5 +40,5 @@ int64 main() {
     first.drop();
     println("剩下的元素和 = {}", sum_of(head));
     free_list(head);
-    return 0;
+
 }

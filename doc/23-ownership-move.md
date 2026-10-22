@@ -6,7 +6,7 @@
 
 ```chali
 struct Packet { String text; List<int64> values; };
-int64 main() {
+void main() {
     Packet source;
     source.text = "payload";
     source.values.push(42);
@@ -14,7 +14,7 @@ int64 main() {
     Packet source;
     source.text = "next";
     println("{} {}", result.text, result.values[0]);
-    return 0;
+
 }
 ```
 

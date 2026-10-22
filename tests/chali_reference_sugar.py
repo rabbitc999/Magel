@@ -16,7 +16,7 @@ def main():
     parser.add_argument('--chali', type=Path, default=ROOT / 'ChaLi.exe')
     compiler = parser.parse_args().chali.resolve()
     WORK.mkdir(parents=True, exist_ok=True)
-    cases = {'write': ('int64 main(){int64 x=1;int64 & a=&x;a=2;return 0;}', '只读'), 'field': ('struct S{int64 x;};int64 main(){S s;S & a=&s;a.x=2;return 0;}', '只读'), 'container': ('int64 main(){List<int64> xs;List<int64> & a=&xs;a.push(2);return 0;}', '只读'), 'mutable_argument': ('void write(int64 mut& a){a=2;}int64 main(){int64 x=1;int64 & a=&x;write(a);return 0;}', 'const&'), 'escape': ('int64 & bad(){int64 x=1;return &x;}int64 main(){return 0;}', 'CHL1204'), 'unbound': ('int64 main(){int64 & a;return 0;}', '初始化')}
+    cases = {'write': ('void main(){int64 x=1;int64 & a=&x;a=2;}', '只读'), 'field': ('struct S{int64 x;};void main(){S s;S & a=&s;a.x=2;}', '只读'), 'container': ('void main(){List<int64> xs;List<int64> & a=&xs;a.push(2);}', '只读'), 'mutable_argument': ('void write(int64 mut& a){a=2;}void main(){int64 x=1;int64 & a=&x;write(a);}', 'const&'), 'escape': ('int64 & bad(){int64 x=1;return &x;}void main(){}', 'CHL1204'), 'unbound': ('void main(){int64 & a;}', '初始化')}
     for name, (text, expected) in cases.items():
         source = WORK / (name + '.chl')
         source.write_text(text, encoding='utf-8')

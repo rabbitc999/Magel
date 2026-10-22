@@ -7,7 +7,7 @@
 ```chali
 import std::math;
 import std::json;
-int64 main() {
+void main() {
     println("sin0={} sqrt16={}", std::math::sin(0.0), std::math::sqrt(16.0));
     match (std::json::parse("{\"a\": 1}")) {
         Result<std::json::JsonValue, String>::Ok(doc) => {
@@ -15,7 +15,7 @@ int64 main() {
         }
         Result<std::json::JsonValue, String>::Err(e) => { println("err={}", e); }
     }
-    return 0;
+
 }
 ```
 

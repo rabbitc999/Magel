@@ -3,7 +3,7 @@
 import std::memory;
 import std::regex;
 
-int64 main() {
+void main() {
     String oversized = "";
     {
         int64 i = 0;
@@ -34,5 +34,5 @@ int64 main() {
     Result<std::regex::Regex, std::regex::RegexError> bad = std::regex::Regex::compile("[");
     assert(bad.isErr());
     println("regex limits OK");
-    return 0;
+
 }

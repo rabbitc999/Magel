@@ -1,5 +1,5 @@
 /* 编号临时变量语法已删除。 */
-int64 main() {
+void main() {
     int64 x = $1;
-    return 0;
+
 }

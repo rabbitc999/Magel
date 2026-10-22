@@ -24,7 +24,7 @@ struct Wrapper {
     Inner inner;
 };
 
-int64 main() {
+void main() {
     {
         Outer item;
         item.inner.id = 7;
@@ -38,5 +38,5 @@ int64 main() {
         wrapped.inner.id = 9;
     }
     println("after wrapper block");
-    return 0;
+
 }

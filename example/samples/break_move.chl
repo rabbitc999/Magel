@@ -13,7 +13,7 @@ struct Packet : Drop, Closeable {
     void drop() { assert(self.values[0] == 7); drops++; trace = trace * 10 + 2; }
     Packet copy() { Packet value; value.text = self.text; value.values = self.values; return value; }
 };
-int64 main() {
+void main() {
     String fresh = loop { yield (makeText()); };
     assert(fresh == "made" && calls == 1);
     int64 textHandle = 0;
@@ -96,5 +96,5 @@ int64 main() {
     int64 constant = loop { const int64 local = 4; yield (local); };
     assert(constant == 4);
     println("break move OK");
-    return 0;
+
 }

@@ -5,7 +5,7 @@
  * 地址可以复用，但借用身份不会复活；释放前建立的旧别名禁止再解引用。
  * 此处从新分配的引用读取 22；旧别名的拒绝场景见 samples-error/heap_stale_alias.chl。
  */
-int64 main() {
+void main() {
     int64 mut& first = heap int64;
     *first = 11;
     first.drop();
@@ -14,5 +14,5 @@ int64 main() {
     *second = 22;
     println("{}", *second);
     second.drop();
-    return 0;
+
 }

@@ -36,7 +36,7 @@ def main():
                 assert data.count('literal-pool-data-你好'.encode('utf-8')) == 1, '重复字面量未合并'
         for index, statement in enumerate(('"hello"[0] = \'H\';', '"hello"[0]++;', 'char mut& byte = &"hello"[0];')):
             invalid = work / f'readonly-{index}.chl'
-            invalid.write_text('int64 main() { ' + statement + ' return 0; }\n', encoding='utf-8')
+            invalid.write_text('void main() { ' + statement + ' }\n', encoding='utf-8')
             result = subprocess.run([str(compiler), '--check', str(invalid)], cwd=ROOT, capture_output=True, text=True, encoding='utf-8', timeout=120)
             assert result.returncode != 0 and ('只读' in result.stderr or 'const&' in result.stderr), result.stderr
 if __name__ == '__main__':

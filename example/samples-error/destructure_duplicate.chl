@@ -1,1 +1,1 @@
-int64 main() { let (a,a) = (1,2); return 0; }
+void main() { let (a,a) = (1,2); }

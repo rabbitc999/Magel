@@ -1,9 +1,9 @@
 interface Reader {int64 read();};
 struct Value : Reader {int64 data;String label;Value(int64 data){self.data=data;self.label="owned";}int64 read(){return self.data;}};
 Reader const& viewOf(Any box){Reader const& view=box.getReference();return view;}
-int64 main(){
+void main(){
     Value mut& value = heap Value;value.data=7;value.label="owned";
     Any box;box.set(&value);
     {Reader const& first=viewOf(box);Reader const& second=first;assert(first.read()==7 && second.read()==7);}
-    value.drop();println("interface view ownership OK");return 0;
+    value.drop();println("interface view ownership OK");
 }

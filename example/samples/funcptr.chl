@@ -26,7 +26,7 @@ struct Calculator {
     int64 fn(int64, int64) op;
 };
 
-int64 main() {
+void main() {
     int64 fn(int64, int64) fp = add;         /* 声明 + 初始化 */
     println("fp(3, 4) = {}", fp(3, 4));
     fp = sub;                                   /* 换成另一个同签名的函数 */
@@ -47,5 +47,5 @@ int64 main() {
     Point fn(int64, int64) maker = make_point;
     Point p = maker(3, 4);
     println("maker(3, 4) = ({}, {})", p.x, p.y);
-    return 0;
+
 }

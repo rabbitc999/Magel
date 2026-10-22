@@ -1,5 +1,5 @@
 import std::cli;
-int64 main(){
+void main(){
     CliParser parser;parser.program="demo";parser.description="sample tool";
     CliOption count;count.name="count";count.shortName='n';count.takesValue=true;count.defaultValue="3";count.description="number of items";
     CliOption verbose;verbose.name="verbose";verbose.shortName='v';
@@ -16,5 +16,5 @@ int64 main(){
     List<String> required;assert(!parser.parse(required).isOk());
     List<String> invalid;invalid.push("-oout");invalid.push("-nabc");assert(!parser.parse(invalid).unwrap().getInt("count").isOk());
     assert(len(parser.help())>40);
-    println("CLI options, defaults and validation OK");return 0;
+    println("CLI options, defaults and validation OK");
 }

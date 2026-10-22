@@ -55,7 +55,7 @@ struct Service {
 @Flag enum State { Ready; @Flag int64 code() { return 7; } };
 @Flag interface Value { @Flag int64 read(); };
 @http::Route("/main")
-int64 main(){return 0;}
+void main(){}
 @Flag module tail;
 )CHALI");
     require(M_Compile("unit", "unused", 0, 0, "") == 0, M_LastError());
@@ -83,10 +83,10 @@ int64 main(){return 0;}
     require(M_ParsedNode(tops[3]).annotations.size() == 1 && M_ParsedNode(tops[4]).annotations.size() == 1 && M_ParsedNode(tops[6]).annotations.size() == 1, "枚举、接口或模块注解丢失");
     require(M_LastErrorColumn() == 0, "成功常量解析污染错误列号");
     require(M_SetReflectionEnabled(false), "关闭能力失败");
-    parse("module __root; int64 main(){return 0;}");
+    parse("module __root; void main(){}");
     require(M_Compile("unit", "unused", 0, 0, "") == 0, "历史注解污染关闭开关的新编译");
     require(M_SetReflectionEnabled(true), "重新开启失败");
-    parse("module __root; @annotation Flag @Flag int64 main(){return 0;}");
+    parse("module __root; @annotation Flag @Flag void main(){}");
     require(M_Compile("unit", "unused", 0, 0, "") == 0, "历史符号污染新编译");
     bool threw = false;
     try

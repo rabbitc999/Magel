@@ -7,9 +7,9 @@
 [`assert_failure.chl`](../example/samples-error/assert_failure.chl) 的完整输入为：
 
 ```mc
-int64 main() {
+void main() {
     assert(2 < 1);
-    return 0;
+
 }
 ```
 

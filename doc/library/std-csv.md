@@ -25,7 +25,7 @@ chali run example/samples/std_csv.chl
 
 ```chali
 import std::csv;
-int64 main(){
+void main(){
     String text="name,note,empty\r\n小兔,\"a,b\",\r\n糖糖,\"line1\nline2 \"\"quoted\"\"\",end\n";
     List<List<String>> rows=parseCsv(text).unwrap();
     assert(rows.len()==3 && rows[1][0]=="小兔" && rows[1][1]=="a,b" && rows[1][2]=="");
@@ -39,7 +39,7 @@ int64 main(){
     CsvError error=failure.error();assert(error.line==2 && error.column==1);
     assert(!parseCsv("\"x\"tail").isOk() && !parseCsv("x\"y").isOk());
     assert(!parseCsv("a,b",'"').isOk());
-    println("CSV quoting, delimiters and positions OK");return 0;
+    println("CSV quoting, delimiters and positions OK");
 }
 ```
 

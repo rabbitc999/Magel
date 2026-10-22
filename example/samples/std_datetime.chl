@@ -1,5 +1,5 @@
 import std::datetime;
-int64 main(){
+void main(){
     assert(formatUtc(fromUnixSeconds(0).unwrap()).unwrap()=="1970-01-01T00:00:00Z");
     assert(formatUtc(fromUnixSeconds(-1).unwrap()).unwrap()=="1969-12-31T23:59:59Z");
     DateTime leap=parseUtc("2024-02-29T12:34:56Z").unwrap();
@@ -15,5 +15,5 @@ int64 main(){
     List<int64> inputs1;inputs1.push(-62135596800);inputs1.push(-2208988800);inputs1.push(-86401);inputs1.push(-1);inputs1.push(0);inputs1.push(86400);inputs1.push(1709210096);inputs1.push(253402300799);for(int64 seconds in inputs1){
         assert(toUnixSeconds(fromUnixSeconds(seconds).unwrap()).unwrap()==seconds);
     }
-    println("UTC dates, epochs and arithmetic OK");return 0;
+    println("UTC dates, epochs and arithmetic OK");
 }

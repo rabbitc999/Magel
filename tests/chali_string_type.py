@@ -25,18 +25,18 @@ def main():
         work = Path(temporary)
         source = work / 'case.chl'
         for declaration in ('string value="old";', 'List<string> values;', '(string,int64) value=("old",(int64)1);', 'string const& value=&"old";'):
-            source.write_text('int64 main(){' + declaration + 'return 0;}\n', encoding='utf-8')
+            source.write_text('void main(){' + declaration + '}\n', encoding='utf-8')
             result = run([args.chali, '--diagnostics=json', source], False)
             report = json.loads(result.stdout)
             assert report['diagnostics'], report
         for expression in ('(int64,2)', '(std::lang::String,2)', '(1,2,3]'):
-            source.write_text('int64 main(){let invalid=' + expression + ';return 0;}\n', encoding='utf-8')
+            source.write_text('void main(){let invalid=' + expression + ';}\n', encoding='utf-8')
             run([args.chali, '--check', source], False)
-        source.write_text('struct string{int64 value;}; int64 main(){string x;x.value=4;assert(x.value==4);return 0;}\n', encoding='utf-8')
+        source.write_text('struct string{int64 value;}; void main(){string x;x.value=4;assert(x.value==4);}\n', encoding='utf-8')
         run([args.chali, 'run', source, '--out', work / 'ordinary'])
-        source.write_text('struct String{int64 value;int64 extra;}; struct Box<T>{T value;};\nint64 main(){String local;local.value=7;std::lang::String core="text";Box<String> first;first.value=local;Box<std::lang::String> second;second.value=core;assert(first.value.value==7 && second.value=="text");return 0;}\n', encoding='utf-8')
+        source.write_text('struct String{int64 value;int64 extra;}; struct Box<T>{T value;};\nvoid main(){String local;local.value=7;std::lang::String core="text";Box<String> first;first.value=local;Box<std::lang::String> second;second.value=core;assert(first.value.value==7 && second.value=="text");return;}\n', encoding='utf-8')
         run([args.chali, 'run', source, '--out', work / 'shadow'])
-        source.write_text('struct Box<T>{T value;}; int64 identity(int64 value){return value;} int64 main(){Box<int64 fn(int64)> box;box.value=identity;assert(box.value(7)==7);return 0;}\n', encoding='utf-8')
+        source.write_text('struct Box<T>{T value;}; int64 identity(int64 value){return value;} void main(){Box<int64 fn(int64)> box;box.value=identity;assert(box.value(7)==7);}\n', encoding='utf-8')
         run([args.chali, 'run', source, '--out', work / 'function-type'])
         sample = ROOT / 'example/samples/string_type_name.chl'
         for backend in ('',):

@@ -54,7 +54,7 @@ def main():
         ]
         for number, body in enumerate(programs):
             path = Path(folder) / f'runtime_{number}.chl'
-            path.write_text('int64 increment(int64 x) { return x + 1; }\nint64 main() { ' + body + ' return 0; }', encoding='utf-8')
+            path.write_text('int64 increment(int64 x) { return x + 1; }\nvoid main() { ' + body + ' return; }', encoding='utf-8')
             result = subprocess.run([str(compiler), 'run', str(path), '--out', str(Path(folder) / f'out_{number}')], capture_output=True, text=True, encoding='utf-8', env=dict(os.environ, CHALI_LANG='zh'))
             assert result.returncode == 0 and not result.stderr, (body, result)
         server = Transport(compiler, folder)
@@ -63,7 +63,7 @@ def main():
         assert initialized['serverInfo']['version'] == version, initialized
         try:
             for number, (initializer, expected) in enumerate(cases):
-                text = 'String textIdentity(String x) { return x; }\nint64 increment(int64 x) { return x + 1; }\nint64 main() { int64 seed = 1; let closure = ' + initializer + '; closure; return 0; }'
+                text = 'String textIdentity(String x) { return x; }\nint64 increment(int64 x) { return x + 1; }\nvoid main() { int64 seed = 1; let closure = ' + initializer + '; closure; return; }'
                 uri = (Path(folder) / f'case_{number}.chl').as_uri()
                 server.send(dict(method='textDocument/didOpen', params={'textDocument':dict(uri=uri, text=text, version=1)}))
                 for offset in (text.index('let') + 1, text.rindex('closure') + 2):
@@ -84,7 +84,7 @@ def main():
                 ('fn<T>(T x) { x }', 'closure<int32>(3)', 'int32'),
             ]
             for number, (initializer, call, expected) in enumerate(calls):
-                text = 'int64 increment(int64 x) { return x + 1; }\nint64 main() { let closure = ' + initializer + '; let result = ' + call + '; result; return 0; }'
+                text = 'int64 increment(int64 x) { return x + 1; }\nvoid main() { let closure = ' + initializer + '; let result = ' + call + '; result; return; }'
                 uri = (Path(folder) / f'call_{number}.chl').as_uri()
                 server.send(dict(method='textDocument/didOpen', params={'textDocument':dict(uri=uri, text=text, version=1)}))
                 hover = server.query('textDocument/hover', dict(textDocument=dict(uri=uri), position=position(text, text.rindex('result') + 2)))
@@ -97,12 +97,12 @@ def main():
                 ('fn<T>(T x) { x }', 'T fn<T>(T)'),
                 ('fn() { increment }', '(int64 fn(int64)) fn()'),
             ]):
-                text = 'int64 increment(int64 x) { return x + 1; }\nstruct Holder { let callback = ' + member + '; };\nint64 main() { Holder holder; let result = holder.callback; result; return 0; }'
+                text = 'int64 increment(int64 x) { return x + 1; }\nstruct Holder { let callback = ' + member + '; };\nvoid main() { Holder holder; let result = holder.callback; result; return; }'
                 uri = (Path(folder) / f'member_{number}.chl').as_uri()
                 server.send(dict(method='textDocument/didOpen', params={'textDocument':dict(uri=uri, text=text, version=1)}))
                 hover = server.query('textDocument/hover', dict(textDocument=dict(uri=uri), position=position(text, text.rindex('result') + 2)))
                 assert hover and expected + ' result' in hover['contents']['value'], (member, expected, hover)
-            signature_text = 'int64 main() { let outer = fn(int64 x) { fn(int32 y) { y } }; let inner = outer(1); inner('
+            signature_text = 'void main() { let outer = fn(int64 x) { fn(int32 y) { y } }; let inner = outer(1); inner('
             uri = (Path(folder) / 'signature.chl').as_uri()
             server.send(dict(method='textDocument/didOpen', params={'textDocument':dict(uri=uri, text=signature_text, version=1)}))
             signature = server.query('textDocument/signatureHelp', dict(textDocument=dict(uri=uri), position=position(signature_text, len(signature_text))))

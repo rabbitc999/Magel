@@ -2,7 +2,7 @@ import std::image;
 import std::text;
 
 /* std::image 冒烟样例：像素读写、卷积、池化、格式转换、大津法与 BMP 往返。 */
-int64 main() {
+void main() {
     /* 1. 创建 4x2 图片，写入已知颜色。 */
     Result<Image, String> created = Image::make(4, 2);
     Image image = created.unwrap();
@@ -103,5 +103,5 @@ int64 main() {
     List<uint8> pgm = image.encodePgm().unwrap();
     Image pgmBack = Image::decode(pgm).unwrap();
     print("pgm gray={}", pgmBack.toGray().unwrap()[0]);
-    return 0;
+
 }

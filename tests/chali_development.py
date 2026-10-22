@@ -25,17 +25,17 @@ def main():
             assert result.returncode == expected, (arguments, result.returncode, result.stdout, result.stderr)
             return result
         source = directory / 'check.chl'
-        source.write_text('int64 main() { while(true) {} return 0; }\n', encoding='utf-8')
+        source.write_text('void main() { while(true) {} }\n', encoding='utf-8')
         report = json.loads(run('--check', '--diagnostics=json', source, '--out', directory / 'absent').stdout)
         assert report == {'schemaVersion': 1, 'diagnostics': []}
         assert not list(directory.glob('absent*')), '检查模式生成了产物'
-        source.write_text('int64 main() {\n const int64 n=3; n=4; return 0;\n}\n', encoding='utf-8')
+        source.write_text('void main() {\n const int64 n=3; n=4; return;\n}\n', encoding='utf-8')
         error = json.loads(run('--diagnostics=json', source, expected=1).stdout)['diagnostics'][0]
         assert error['code'] == 'CHL1203' and Path(error['span']['file']).resolve() == source.resolve()
-        source.write_text('int64 main() { int64 x = ; return 0; }\n', encoding='utf-8')
+        source.write_text('void main() { int64 x = ; }\n', encoding='utf-8')
         syntax = json.loads(run('--diagnostics=json', source, expected=1).stdout)['diagnostics'][0]
         assert syntax['code'] == 'CHL1001' and syntax['span']['column'] > 1
-        for body in ('int64 main(){int64 a[(int64)(false && 3)+1];return 0;}', 'int64 main(){int64 a[(int64)(false < true)+1];return 0;}', 'const int64 n=1; int64 main(){int64 a[(int64)(false && (bool)&n)+1];return 0;}', 'bool side(){return true;} int64 main(){int64 a[(int64)(false && side())+1];return 0;}', 'int64 main(){const int64 n=3;{const int64 n=n;int64 a[n];}return 0;}'):
+        for body in ('void main(){int64 a[(int64)(false && 3)+1];}', 'void main(){int64 a[(int64)(false < true)+1];}', 'const int64 n=1; void main(){int64 a[(int64)(false && (bool)&n)+1];}', 'bool side(){return true;} void main(){int64 a[(int64)(false && side())+1];}', 'void main(){const int64 n=3;{const int64 n=n;int64 a[n];}}'):
             source.write_text(body, encoding='utf-8')
             run('--check', source, expected=1)
         for name in ('constant_expressions', 'destructuring_guards', 'generic_inherited_constraint'):
@@ -47,29 +47,29 @@ def main():
                 assert result.stderr.count('[CHL1601]') == 1, result.stderr
             else:
                 assert not result.stderr, result.stderr
-        source.write_text('int64 main(){std::lang::println("{} {}",1);return 0;}', encoding='utf-8')
+        source.write_text('void main(){std::lang::println("{} {}",1);}', encoding='utf-8')
         formatting_error = json.loads(run('--diagnostics=json', source, expected=1).stdout)['diagnostics'][0]
         assert formatting_error['code'] == 'CHL1400', formatting_error
         cli_project = directory / 'cli-project'
         cli_project.mkdir()
         (cli_project / 'chali.toml').write_text('[chali]\nrun="svmb"\n', encoding='utf-8')
         cli_source = cli_project / 'main.chl'
-        cli_source.write_text('int64 main(){std::lang::println("executed");return 0;}', encoding='utf-8')
+        cli_source.write_text('void main(){std::lang::println("executed");}', encoding='utf-8')
         cli_prefix = directory / 'cli-arguments'
         result = run('--out', cli_prefix, cli_source, '--', '--check')
         assert result.stdout == '' and cli_prefix.with_suffix('.svmb').exists(), result
         print('[通过] 检查模式、JSON 诊断、格式检查、程序参数边界与三个功能样例', flush=True)
-        source.write_text('int64 main() {\nstd::lang::println("{}", "{ literal }"); // } comment\nif (true) {\nreturn 0;\n}\nreturn 1;\n}\n', encoding='utf-8')
+        source.write_text('void main() {\nstd::lang::println("{}", "{ literal }"); // } comment\nif (true) {\nreturn;\n}\nreturn;\n}\n', encoding='utf-8')
         run('fmt', source, '--check', expected=1)
         run('fmt', source, '--write')
         run('fmt', source, '--check')
         formatted = source.read_text(encoding='utf-8')
         assert '    std::lang::println("{}", "{ literal }"); // } comment' in formatted
-        assert '        return 0;' in formatted
+        assert '        return;' in formatted
         run('run', source, '--out', directory / 'formatted')
         tests = directory / 'tests'
         tests.mkdir()
-        (tests / 'test_pass.chl').write_text('int64 main(){ std::lang::println("ok"); return 0; }', encoding='utf-8')
+        (tests / 'test_pass.chl').write_text('void main(){ std::lang::println("ok"); }', encoding='utf-8')
         (tests / 'test_pass.expected').write_text('ok\n', encoding='utf-8')
         (tests / 'skip_test.chl').write_text('invalid code', encoding='utf-8')
         (tests / 'skip_test.test.toml').write_text('skip = "fixture"\n', encoding='utf-8')
@@ -77,10 +77,10 @@ def main():
         assert summary == {'passed': 1, 'failed': 0, 'skipped': 1}, summary
         summary = json.loads(run('test', tests, '--json', '--filter', 'test_pass').stdout)['summary']
         assert summary == {'passed': 1, 'failed': 0, 'skipped': 0}
-        (tests / 'test_fail.chl').write_text('int64 main(){ std::lang::assert(false); return 0; }', encoding='utf-8')
+        (tests / 'test_fail.chl').write_text('void main(){ std::lang::assert(false); }', encoding='utf-8')
         summary = json.loads(run('test', tests, '--json', expected=1).stdout)['summary']
         assert summary['failed'] == 1
-        (tests / 'timeout_test.chl').write_text('int64 main(){while(true){}return 0;}', encoding='utf-8')
+        (tests / 'timeout_test.chl').write_text('void main(){while(true){}}', encoding='utf-8')
         summary = json.loads(run('test', tests, '--filter', 'timeout_test', '--timeout', '0.2', '--json', expected=1).stdout)
         assert summary['summary']['failed'] == 1 and 'timed out' in summary['tests'][0]['message'], summary
         print('[通过] 格式化幂等、测试发现、过滤、跳过、超时与失败退出', flush=True)
@@ -92,7 +92,7 @@ def main():
         (library / 'values.chl').write_text('module values;\nint64 answer() { return 42; }\n', encoding='utf-8')
         (app / 'chali.toml').write_text('[package]\nname="app"\nversion="0.1.0"\ncompiler=">=0.7.0"\n[dependencies]\nvalues="path:../lib"\n', encoding='utf-8')
         app_source = app / 'main.chl'
-        app_source.write_text('import values;\nint64 main(){std::lang::assert(values::answer()==42);return 0;}\n', encoding='utf-8')
+        app_source.write_text('import values;\nvoid main(){std::lang::assert(values::answer()==42);return;}\n', encoding='utf-8')
         run('--check', app_source, expected=1)
         run('deps', 'lock', '--offline', '--project', app)
         lock = (app / 'chali.lock').read_bytes()
@@ -131,15 +131,15 @@ def main():
         git_app.mkdir()
         (git_app / 'chali.toml').write_text('[package]\nname="gitapp"\nversion="0.1.0"\n[dependencies]\ngitlib="git+' + git_library.as_uri() + '#' + commit + '"\n', encoding='utf-8')
         git_source = git_app / 'main.chl'
-        git_source.write_text('import gitvalue;\nint64 main(){return 0;}\n', encoding='utf-8')
+        git_source.write_text('import gitvalue;\nvoid main(){return;}\n', encoding='utf-8')
         run('deps', 'lock', '--offline', '--project', git_app, expected=1)
         run('deps', 'lock', '--project', git_app)
         run('deps', 'check', '--offline', '--project', git_app)
         run('--check', git_source)
         print('[通过] 固定 Git 提交、本地下载及离线缓存', flush=True)
-        source.write_text('int64 main(){ return 0; }\n', encoding='utf-8')
+        source.write_text('void main(){ }\n', encoding='utf-8')
         uri = source.as_uri()
-        messages = [{'id': 1, 'method': 'initialize', 'params': {}}, {'method': 'textDocument/didOpen', 'params': {'textDocument': {'uri': uri, 'version': 1, 'languageId': 'chali', 'text': 'int64 main() {\n int64 value=3;\n return value;\n}\n'}}}, {'id': 2, 'method': 'textDocument/completion', 'params': {'textDocument': {'uri': uri}, 'position': {'line': 2, 'character': 8}}}, {'id': 3, 'method': 'textDocument/definition', 'params': {'textDocument': {'uri': uri}, 'position': {'line': 2, 'character': 9}}}, {'id': 5, 'method': 'textDocument/hover', 'params': {'textDocument': {'uri': uri}, 'position': {'line': 2, 'character': 9}}}, {'id': 6, 'method': 'textDocument/formatting', 'params': {'textDocument': {'uri': uri}, 'options': {'tabSize': 4, 'insertSpaces': True}}}, {'id': 7, 'method': 'textDocument/documentSymbol', 'params': {'textDocument': {'uri': uri}}}, {'method': 'textDocument/didChange', 'params': {'textDocument': {'uri': uri, 'version': 2}, 'contentChanges': [{'text': 'int64 main(){ int64 value = ; return 0; }'}]}}, {'id': 4, 'method': 'shutdown', 'params': {}}, {'method': 'exit', 'params': {}}]
+        messages = [{'id': 1, 'method': 'initialize', 'params': {}}, {'method': 'textDocument/didOpen', 'params': {'textDocument': {'uri': uri, 'version': 1, 'languageId': 'chali', 'text': 'void main() {\n int64 value=3;\n std::lang::println("{}", value);\n}\n'}}}, {'id': 2, 'method': 'textDocument/completion', 'params': {'textDocument': {'uri': uri}, 'position': {'line': 2, 'character': 26}}}, {'id': 3, 'method': 'textDocument/definition', 'params': {'textDocument': {'uri': uri}, 'position': {'line': 2, 'character': 27}}}, {'id': 5, 'method': 'textDocument/hover', 'params': {'textDocument': {'uri': uri}, 'position': {'line': 2, 'character': 27}}}, {'id': 6, 'method': 'textDocument/formatting', 'params': {'textDocument': {'uri': uri}, 'options': {'tabSize': 4, 'insertSpaces': True}}}, {'id': 7, 'method': 'textDocument/documentSymbol', 'params': {'textDocument': {'uri': uri}}}, {'method': 'textDocument/didChange', 'params': {'textDocument': {'uri': uri, 'version': 2}, 'contentChanges': [{'text': 'void main(){ int64 value = ; }'}]}}, {'id': 4, 'method': 'shutdown', 'params': {}}, {'method': 'exit', 'params': {}}]
         from native_lsp_transport import Transport
         transport = Transport(compiler, cwd=directory)
         responses = []
@@ -165,7 +165,7 @@ def main():
         diagnostics = [r['params'] for r in responses if r.get('method') == 'textDocument/publishDiagnostics']
         assert diagnostics[0]['diagnostics'] == []
         assert diagnostics[-1]['version'] == 2 and diagnostics[-1]['diagnostics'][0]['code'] == 'CHL1001'
-        assert source.read_text(encoding='utf-8') == 'int64 main(){ return 0; }\n'
+        assert source.read_text(encoding='utf-8') == 'void main(){ }\n'
         print('[通过] LSP 初始化、未保存诊断、补全、定义与关闭协议', flush=True)
     print('P1/P2 开发工具集成回归全部通过')
 if __name__ == '__main__':

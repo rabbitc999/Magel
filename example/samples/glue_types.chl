@@ -18,7 +18,7 @@
  * 所以 C++ 侧注册的是 `glue_demo_inspect.area` / `glue_demo_inspect.scaled`
  * （`registry.bindTypedMethod`）；单方法接口沿用原符号名。
  */
-int64 main()
+void main()
 {
     GlueDemoPoint point;
     point.x = 3;
@@ -32,5 +32,5 @@ int64 main()
         GlueDemoSignal::Idle => { println("idle"); }
         GlueDemoSignal::Tone(hz) => { println("tone hz={}", hz); }
     }
-    return 0;
+
 }

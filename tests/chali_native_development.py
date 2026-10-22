@@ -31,12 +31,12 @@ def main():
         run('deps', 'lock', '--offline')
         run('deps', 'check', '--offline')
         source = root / 'main.chl'
-        source.write_text('int64 main(){\nreturn 0;\n}\n', encoding='utf-8')
+        source.write_text('void main(){\nreturn;\n}\n', encoding='utf-8')
         run('fmt', source, '--check', code=1)
         run('fmt', source, '--write')
         run('fmt', source, '--check')
         test = root / 'test_pass.chl'
-        test.write_text('int64 main(){std::lang::println("通过");return 0;}', encoding='utf-8')
+        test.write_text('void main(){std::lang::println("通过");}', encoding='utf-8')
         test.with_suffix('.expected').write_text('通过\n', encoding='utf-8')
         skipped = root / 'test_skip.chl'
         skipped.write_text('invalid', encoding='utf-8')
@@ -44,14 +44,14 @@ def main():
         report = json.loads(run('test', root, '--json').stdout)
         assert report['summary'] == dict(passed=1, failed=0, skipped=1), report
         timed = root / 'test_timeout.chl'
-        timed.write_text('int64 main(){while(true){}return 0;}', encoding='utf-8')
+        timed.write_text('void main(){while(true){}}', encoding='utf-8')
         report = json.loads(run('test', timed, '--timeout', '0.1', '--json', code=1).stdout)
         assert 'timed out' in report['tests'][0]['message'], report
         module = root / 'calc.chl'
         module.write_text('module calc;\n/// 整数文档\nint64 add(int64 a,int64 b=1){return a+b;}\n/// 浮点文档\nfloat64 add(float64 a,float64 b){return a+b;}\nstruct Box { /// 字段文档\nint64 value; };\n', encoding='utf-8')
         included = root / 'macros.chl'
         included.write_text('module macros;\n/// 包含宏文档\n$macro TWICE(x)\n((x)+(x))\n$end_macro\n', encoding='utf-8')
-        text = 'import calc;\nimport std::math;\nimport macros;\n/// 平方宏文档\n$macro SQUARE(x)\nx*x\n$end_macro\n/// 单行宏文档\n$replace PLUS(x,y) x+y\n$macro ANSWER\n3\n$end_macro\nint64 main(){\n    String emoji="😀";\n    calc::Box box;\n    box.value;\n    calc::add(1,2);\n    std::math::sqrt(4.0);\n    int64 answer=$SQUARE($TWICE(2))+$PLUS(1,2)+$ANSWER;\n    return answer;\n}\n'
+        text = 'import calc;\nimport std::math;\nimport macros;\n/// 平方宏文档\n$macro SQUARE(x)\nx*x\n$end_macro\n/// 单行宏文档\n$replace PLUS(x,y) x+y\n$macro ANSWER\n3\n$end_macro\nvoid main(){\n    String emoji="😀";\n    calc::Box box;\n    box.value;\n    calc::add(1,2);\n    std::math::sqrt(4.0);\n    int64 answer=$SQUARE($TWICE(2))+$PLUS(1,2)+$ANSWER;\n    let __boom = answer;\n}\n'
         source.write_text(text, encoding='utf-8')
 
         def position(at):

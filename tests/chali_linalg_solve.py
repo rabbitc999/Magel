@@ -33,7 +33,7 @@ def main():
     executable = WORK / ('trimmed' + EXE)
     for setup, message in (('a.set(0, 0, 0.0);', '奇异或近奇异矩阵'), ('a.set(0, 0, 0.000000000001);', '奇异或近奇异矩阵'), ('a.rows = 2;', '维度不匹配'), ('a.rows = -1; a.cols = -1;', '维度不匹配'), ('a.values.clear();', '维度不匹配'), ('std::linalg::Vector<float64> col = a[-1];', '列索引越界'), ('std::linalg::Vector<float64> col = a[1];', '列索引越界'), ('float64 value = rhs[1];', '越界'), ('float64 raw[2]; std::linalg::Matrix<float64> bad = std::linalg::Matrix<float64>::fromArray(raw, 2, 2, 2);', '维度不匹配')):
         invalid = WORK / 'invalid.chl'
-        invalid.write_text('import std::linalg;\nint64 main() { std::linalg::Matrix<float64> a = std::linalg::Matrix<float64>::identity(1); std::linalg::Vector<float64> rhs = std::linalg::Vector<float64>::zeros(1); ' + setup + ' std::linalg::Vector<float64> x = a.solve(rhs); return 0; }', encoding='utf-8')
+        invalid.write_text('import std::linalg;\nvoid main() { std::linalg::Matrix<float64> a = std::linalg::Matrix<float64>::identity(1); std::linalg::Vector<float64> rhs = std::linalg::Vector<float64>::zeros(1); ' + setup + ' std::linalg::Vector<float64> x = a.solve(rhs); return; }', encoding='utf-8')
         result = run(CHALI, 'run', invalid, '--out', WORK / 'invalid', succeeds=False)
         assert message in result.stdout + result.stderr, result.stdout + result.stderr
 if __name__ == '__main__':

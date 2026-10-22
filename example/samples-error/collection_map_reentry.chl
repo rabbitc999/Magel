@@ -5,8 +5,8 @@ struct Key : Equal<bool, Key> {
 };
 std::lang::Map<Key, int64> values;
 int64 touches() { return values.len(); }
-int64 main() {
+void main() {
     Key key; key.id = 1;
     values.put(key, 7);
-    return values.has(key);
+    let __ignored1 = values.has(key);
 }

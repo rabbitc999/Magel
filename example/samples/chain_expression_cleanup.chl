@@ -33,7 +33,7 @@ List<int64> mappedLife(List<int64> values) {
     return std::algorithms::mapValue<int64>(values, doubleLifeNumber);
 }
 struct LifeBox { List<int64> values; };
-int64 main() {
+void main() {
     {
         int64 i = 0;
         while (i < 5) {
@@ -106,5 +106,5 @@ int64 main() {
         }
     }
     println("chain expression cleanup OK");
-    return 0;
+
 }

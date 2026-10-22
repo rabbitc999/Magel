@@ -24,13 +24,13 @@
 \begin{lstlisting}[style=chali]
 %define DEBUG 1
 
-int64 main() {
+void main() {
 %if DEBUG
     println("debug on");
 %else
     println("debug off");
 %endif
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -51,13 +51,13 @@ debug on
 \begin{lstlisting}[style=chali]
 %define DEBUG 0
 
-int64 main() {
+void main() {
 %if DEBUG
     println("debug on");
 %else
     println("debug off");
 %endif
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -98,13 +98,13 @@ debug off
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main() {
+void main() {
 %ifdef FEATURE
     println("有 FEATURE");
 %else
     println("没有 FEATURE");
 %endif
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -182,10 +182,10 @@ $end_macro
 $macro EMPTY()
 42
 $end_macro
-int64 main() {
+void main() {
     int64 temporary = 10;
     println("{} {} {}", $SQUARE(1 + 2), $ANSWER, $EMPTY());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -206,12 +206,12 @@ int64 temporary = value;
 out += temporary;
 $end_for
 $end_macro
-int64 main() {
+void main() {
     int64 temporary = 100;
     int64 total = 0;
     $ACCUMULATE(total)[1, 2, 3];
     println("{} {}", total, temporary);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -232,12 +232,12 @@ $end_macro
 $macro RESULT<T>(value)
 cast<T>(value)
 $end_macro
-int64 main() {
+void main() {
     int32 source = 42;
     let same = $CONVERT(source);
     int32 expected = $RESULT(42);
     int64 explicitValue = $RESULT<int64>(42);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -319,13 +319,13 @@ $macro vec<T:first>[first,...rest]
 }
 $end_macro
 
-int64 main()
+void main()
 {
     List<int64> result;
     result.push(99);
     List<int64> values = $vec[1, 2, 3];
     println("{} {} {}", values.len(), values.at(2), result.at(0));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -361,11 +361,11 @@ $macro broken(value)
 }
 $end_macro
 
-int64 main()
+void main()
 {
     List<int64> temp;
     List<int64> values = $broken(1);
-    return 0;
+
 }
 \end{lstlisting}
 \par

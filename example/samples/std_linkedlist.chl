@@ -1,5 +1,5 @@
 import std::linkedlist;
-int64 main(){
+void main(){
     LinkedList list=LinkedList::create();
     assert(list.isEmpty() && list.len()==0);
     int64 c1=list.pushBack(10);
@@ -28,5 +28,5 @@ int64 main(){
     LinkedList copy=LinkedList::fromArray(items);
     assert(copy.len()==3 && copy.contains(8) && copy.back().unwrap()==9);
     println("linkedlist OK");
-    return 0;
+
 }

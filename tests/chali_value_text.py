@@ -22,13 +22,13 @@ def main():
             result = subprocess.run([str(compiler), backend, str(source), '--no-reflection', '--out', str(output)], cwd=ROOT, env=dict(os.environ, CHALI_LANG='zh'), capture_output=True, encoding='utf-8', timeout=300)
             assert result.returncode == 0, (backend, result.stdout, result.stderr)
             assert (result.returncode, result.stdout, result.stderr) == (0, expected, ''), (backend, result)
-        negative = {'invalid_signature': ('struct Bad { int64 toString(){return 1;} }; int64 main(){return 0;}', 'toString()'), 'static_method': ('struct Bad { static String toString(){return "bad";} }; int64 main(){return 0;}', 'toString()'), 'interface_shadow': ('interface ToString { int64 required(); }; String text<T:ToString>(T value){return "bad";} int64 main(){text(42);return 0;}', 'ToString')}
+        negative = {'invalid_signature': ('struct Bad { int64 toString(){return 1;} }; void main(){}', 'toString()'), 'static_method': ('struct Bad { static String toString(){return "bad";} }; void main(){}', 'toString()'), 'interface_shadow': ('interface ToString { int64 required(); }; String text<T:ToString>(T value){return "bad";} void main(){text(42);}', 'ToString')}
         for name, (code, diagnostic) in negative.items():
             file = work / (name + '.chl')
             file.write_text(code, encoding='utf-8')
             result = subprocess.run([str(compiler), 'check', str(file)], cwd=ROOT, env=dict(os.environ, CHALI_LANG='zh'), capture_output=True, encoding='utf-8', timeout=60)
             assert result.returncode != 0 and diagnostic in result.stdout + result.stderr, (name, result)
-        for name, code, diagnostic in (('mutable_nested', 'struct Mutable { int64 value; String toString(){self.value=self.value+1;return "bad";} };\nint64 main(){Mutable value;List<Mutable> values=[value];println("{}",values.toString());return 0;}', 'toString 必须只读'), ('callback_failure', 'struct Failing { String toString(){panic("value-text-callback");return "bad";} };\nint64 main(){Failing value;List<Failing> values=[value];println("{}",values.toString());return 0;}', 'value-text-callback')):
+        for name, code, diagnostic in (('mutable_nested', 'struct Mutable { int64 value; String toString(){self.value=self.value+1;return "bad";} };\nvoid main(){Mutable value;List<Mutable> values=[value];println("{}",values.toString());return;}', 'toString 必须只读'), ('callback_failure', 'struct Failing { String toString(){panic("value-text-callback");return "bad";} };\nvoid main(){Failing value;List<Failing> values=[value];println("{}",values.toString());return;}', 'value-text-callback')):
             file = work / (name + '.chl')
             file.write_text(code, encoding='utf-8')
             result = subprocess.run([str(compiler), 'run', str(file), '--no-reflection', '--out', str(work / name)], cwd=ROOT, env=dict(os.environ, CHALI_LANG='zh'), capture_output=True, encoding='utf-8', timeout=60)
@@ -36,7 +36,7 @@ def main():
         server = Transport(compiler, work)
         try:
             server.query('initialize', dict(rootUri=work.as_uri()))
-            text = 'int64 main(){int64 value=42;let text=value.toString();value.;return 0;}'
+            text = 'void main(){int64 value=42;let text=value.toString();value.;}'
             uri = (work / 'editor.chl').as_uri()
             server.send(dict(method='textDocument/didOpen', params=dict(textDocument=dict(uri=uri, text=text, version=1))))
             hover = server.query('textDocument/hover', dict(textDocument=dict(uri=uri), position=position(text, text.index('text='))))

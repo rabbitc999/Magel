@@ -6,7 +6,7 @@ bytes.push((uint8)text[i]);
         i=i+1;
     }
 }return bytes;}
-int64 main(){
+void main(){
     List<String> texts;texts.push("");texts.push("f");texts.push("fo");texts.push("foo");texts.push("foob");texts.push("fooba");texts.push("foobar");
     List<String> encoded;encoded.push("");encoded.push("Zg==");encoded.push("Zm8=");encoded.push("Zm9v");encoded.push("Zm9vYg==");encoded.push("Zm9vYmE=");encoded.push("Zm9vYmFy");
     {
@@ -28,5 +28,5 @@ int64 main(){
     assert(!decodeHex("0").isOk() && !decodeHex("xz").isOk());
     List<String> inputs1;inputs1.push("A");inputs1.push("A===");inputs1.push("Zg=");inputs1.push("Z=g=");inputs1.push("Zh==");inputs1.push("Zm9=");inputs1.push("Zg==\n");inputs1.push("====");for(String invalid in inputs1){assert(!decodeBase64(invalid).isOk());}
     assert(!decodeBase64Url("APv/").isOk() && !decodeBase64("APv_").isOk());
-    println("encoding RFC vectors OK");return 0;
+    println("encoding RFC vectors OK");
 }

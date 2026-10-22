@@ -49,7 +49,7 @@ int64 auditImported<T:generic_monomorphization_models::Value>(T value){return va
 T auditImportedInner<T>(generic_monomorphization_models::Inner<T,Fixed> value){return value.first;}
 T auditBareInner<T>(Inner<T,Fixed> value){return value.first;}
 
-int64 main(){
+void main(){
     AuditOuter<int64> a;a.item.first=7;a.item.second.value=9;
     assert(a.get()==7 && a.item.second.value==9 && a.borrow().first==7);
     AuditPair<int64,AuditFixed> replacement;replacement.first=7;replacement.second.value=9;
@@ -113,5 +113,5 @@ int64 main(){
     }
     // 每个 Outer 还含一个 deep.first.first，两个实例共析构四个载荷。
     assert(AuditTracked<String>::drops==4);
-    println("generic monomorphization ok");return 0;
+    println("generic monomorphization ok");
 }

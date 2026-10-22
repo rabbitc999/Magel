@@ -24,7 +24,7 @@ def main():
                 assert result.returncode == 0 and result.stdout == expected and (not result.stderr), (sample_name, backend, result.stdout, result.stderr)
         for name, declaration in rejected.items():
             source = work / (name + '.chl')
-            source.write_text(declaration + '\nint64 main() { return 0; }\n', encoding='utf-8')
+            source.write_text(declaration + '\nvoid main() { return; }\n', encoding='utf-8')
             result = subprocess.run([str(compiler), '--check', str(source)], cwd=ROOT, capture_output=True, text=True, encoding='utf-8', timeout=120)
             assert result.returncode != 0, (name, '错误的数组引用被接受')
             assert '语法' not in result.stderr and 'Syntax error' not in result.stderr, (name, result.stderr)

@@ -34,10 +34,10 @@ int64 health()
     return 200;
 }
 
-int64 main()
+void main()
 {
     println("{}", health());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -105,13 +105,13 @@ struct Point
     int64 y;
 };
 
-int64 main()
+void main()
 {
     Option<std::reflect::StructInfo> info = std::reflect::getStructInfo<Point>();
     println("{}", info.isValue());
     std::reflect::StructInfo s = info.unwrap();
     println("{} {}", s.name, s.fields.len());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -154,12 +154,12 @@ int64 health()
     return 200;
 }
 
-int64 main()
+void main()
 {
     List<std::reflect::Annotation> anns = std::reflect::getFuncAnnotations("health");
     println("{} {}", anns.len(), anns[1].args.len());
     println("{}", anns[1].args[0].asText().unwrap());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -203,13 +203,13 @@ int64 plusOne(int64 x)
     return x + 1;
 }
 
-int64 main()
+void main()
 {
     List<std::reflect::ReflectValue> args;
     args.push(std::reflect::ReflectValue::I64(41));
     Result<std::reflect::ReflectValue, std::reflect::ReflectError> r = std::reflect::call("plusOne", args);
     println("{}", r.isOk());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -243,7 +243,7 @@ struct Counter
     }
 };
 
-int64 main()
+void main()
 {
     Counter c;
     c.n = 0;
@@ -251,7 +251,7 @@ int64 main()
     Result<std::reflect::ReflectValue, std::reflect::ReflectError> r =
     std::reflect::callMethod<Counter>(&c, "bump", args);
     println("{} {}", r.isOk(), c.n);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -282,10 +282,10 @@ int64 health()
     return 200;
 }
 
-int64 main()
+void main()
 {
     println("{}", health());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -392,7 +392,7 @@ struct Profile
     int64 score;
 };
 
-int64 main()
+void main()
 {
     Profile profile;
     profile.name = "原名";
@@ -402,7 +402,7 @@ int64 main()
     assert(std::reflect::getField<Profile, int64>(&profile, "missing").isErr());
     int64 score = std::reflect::getField<Profile, int64>(&profile, "score").unwrap();
     println("{} {}", profile.name, score);
-    return 0;
+
 }
 \end{lstlisting}
 \par

@@ -1,6 +1,18 @@
 # ChaLi 变更记录
 
-版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.27.0**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.27.1**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+
+
+## 0.27.1 — main 只保留 void 一种入口
+
+- 入口函数只保留 `void main()` 一种：`int64 main()` 不再合法，编译器直接报错（原先的口径是「main 返回类型必须为 int64 或 void」，现在只认 void）。程序不再靠 main 的返回值带退出码，要带就用 `std::process::exit`。
+- 全仓跟随：`int64 main(` 改为 `void main(`，main 函数体末尾的 `return 0;` 整条删掉，出现在中间（提前返回）的改成 `return;`——共改 874 个文件、1907 处 main 签名、去掉 1571 处 `return 0;`。
+- 新建工程的模板（`chali new`）同步为 `void main()`；文档、书稿第 24 章与中英能力页里关于「int64 main 返回值」的表述一并改掉。
+- Map 读不存在的键不再返回缺省值，改成**运行期报错**：`m[k]` 读一个没放进去的键直接报 `map 下标键不存在：<键>`，并给出出错位置与调用栈——键拼错不再被悄悄吞成一个看不出错的 `0` / 空串。要「不在就走另一条路」就先用 `has(k)` 问一次。新增错误样例 `map_missing_key`（字符串键）与 `map_missing_key_int`（整数键）；`containers` 样例与书稿第 11 章同步改为报错口径。
+- 新增 `Map.getOption(k)`：读一个**可能不存在**的键，返回 `Option<V>`——有就 `Value(v)`、没有就 `None`，和「下标读缺失键直接报错」配成一对：确定有就下标读（没有说明程序写错了），可能没有就 `getOption` 自己分支处理。实现是 `source/std/lang.chl` 里的泛型函数 `__mapGetOptionImpl`（先 `has` 再取值，Option 的构造全在 ChaLi 源码里完成），`m.getOption(k)` 在类型推导期改写过去；键为 `Any` 时借用检查照旧按 `CHL1204` 拦住。新增样例 `map_get_option`，书稿第 11 章与小结表格同步。
+- 修一处被「main 只认 void」顶出来的清理漏洞：全局停机清理原先只插在 `main` 的每条 `return` 前面，而函数没有局部清理项时编译器不会补结尾那句 `ret`，于是 `void main()` 末尾不写 `return;` 的程序（现在这是常态；以前 `int64 main` 的 `return 0;` 正好挡着）一条 `return` 都没有，全局变量持有的容器 / 大数就不会在停机时释放，运行期打出「还有 N 个容器对象没释放」。现在落到末尾那条出口也会补上清理。
+- 程序版本更新为 0.27.1，VS Code 插件的 `chaliCompilerVersion`、语言服务器与 `chali-dev` 版本号同步（插件 `version` 保持 1.0.0）。
+- 语义契约页与测试夹具一并跟随：[`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 里「入口 main 返回 int64 或 void」改为「只返回 void」，并写明要带进程退出码就调 `std::process::exit`；`tests/*.py` 内联源码里的 main 签名、`return 0;` 与「void 函数返回值」写法同步改成 void 口径（含 lambda、宏分组、内存护栏、LSP 补全/定义/悬停三处按新文本重算列号），`chali_entry_signature` 改为只认 void 的新口径；样例之外的四个 `.chl`（反射学生管理、SQL 演示、两个语言服务示例）也跟着去掉 main 里的返回值。
 
 
 ## 0.27.0 — 语言改名 ChaLi 与名称冻结

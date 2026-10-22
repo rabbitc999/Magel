@@ -444,6 +444,14 @@ enum Option<T> : Try<T, NoneResidual>, TryMove<T, NoneResidual>, FromResidual<Op
     }
 };
 
+/**
+ * @brief 读映射里键对应的值：有就给出 `Value`，没有就给出 `None`（不像下标那样报错）。
+ */
+Option<V> __mapGetOptionImpl<K,V>(std::lang::Map<K,V> const& source, K key) {
+    if (source.has(key)==0) { return Option<V>::None; }
+    return Option<V>::Value(source[key]);
+}
+
 enum Result<T, E> : Try<T, ErrorResidual<E>>, TryMove<T, ErrorResidual<E>>, FromResidual<Result<T, E>, ErrorResidual<E>> {
     Ok(T value), Err(E error);
 

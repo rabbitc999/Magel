@@ -92,7 +92,7 @@ JVM 两种模式独立列出，不合并为一个 JVM 数字。
 
 ```cpp
 int64 mix(int64 x){return x*17;}
-int64 main(){int64 n=inputInt(),i=0;int64 total=0;while(i<n){total+=i;i+=1;}println("{}",total);return 0;}
+void main(){int64 n=inputInt(),i=0;int64 total=0;while(i<n){total+=i;i+=1;}println("{}",total);}
 ```
 
 ### 4.2 JVM：同一 Java 代码，分别执行两种模式

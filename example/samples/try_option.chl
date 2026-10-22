@@ -30,7 +30,7 @@ Result<int64, String> scale(int64 value) {
     return Result<int64, String>::Ok(parsed + 1);
 }
 
-int64 main() {
+void main() {
     match (scale(3)) {
         Result<int64, String>::Ok(number) => { println("ok {}", number); }
         Result<int64, String>::Err(message) => { println("err {}", message); }
@@ -51,5 +51,5 @@ int64 main() {
         Option<String>::Value(text) => { println("value {}", text); }
         Option<String>::None => { println("none"); }
     }
-    return 0;
+
 }

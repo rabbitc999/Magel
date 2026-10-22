@@ -1,4 +1,4 @@
-"""检查入口 main 接受 int64 或 void 返回类型，覆盖带参数入口及检查模式。"""
+"""检查入口 main 只接受 void 返回类型，覆盖带参数入口及检查模式。"""
 import argparse
 import os
 from pathlib import Path
@@ -23,11 +23,11 @@ def main():
             source.write_text(f"{result_type} main({params}){{{body}}}\n", encoding="utf-8")
             result = subprocess.run([str(args.chali.resolve()), "--check", str(source)], cwd=ROOT,
                                     env=env, capture_output=True, encoding="utf-8", errors="replace", timeout=120)
-            if result_type in ("int64", "void"):
+            if result_type == "void":
                 assert result.returncode == 0, result.stderr
             else:
-                assert result.returncode != 0 and "main 返回类型必须为 int64" in result.stderr, result
-    print("入口签名：无参数及 List<String> 参数的 int64/void 正例、八项错误返回类型通过")
+                assert result.returncode != 0 and "main 返回类型必须为 void" in result.stderr, result
+    print("入口签名：无参数及 List<String> 参数的 void 正例、十项错误返回类型通过")
 
 
 if __name__ == "__main__":

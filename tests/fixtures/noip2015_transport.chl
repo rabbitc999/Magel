@@ -129,7 +129,7 @@ int64 solve(WeightedTree const& tree,Plan const& plans,int64 planCount,int64 max
     }
     return low;
 }
-int64 main(){
+void main(){
     int64 n=std::lang::inputInt(),m=std::lang::inputInt();
     int64 levels=1;while((1<<levels)<=n){levels+=1;}
     int64 storage[]=new[(n+1)*(12+levels)];
@@ -160,5 +160,5 @@ int64 main(){
             i++;
         }
     }
-    std::lang::println("{}",solve(&tree,plans,m,maximum));plans.drop();storage.drop();return 0;
+    std::lang::println("{}",solve(&tree,plans,m,maximum));plans.drop();storage.drop();
 }

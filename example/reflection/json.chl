@@ -8,7 +8,7 @@ int64 constructed=0;int64 dropped=0;
     void rename(String name){self.name=name;}
     void drop(){dropped++;}
 };
-int64 main(){
+void main(){
     let document=std::json::parse("{\"name\":\"alice\",\"id\":7}").unwrap();
     List<std::reflect::ReflectValue> args;
     args.push(std::reflect::ReflectValue::Text(document.find("name").unwrap().asString().unwrap()));
@@ -30,5 +30,5 @@ int64 main(){
         assert(std::reflect::construct<User>(args).isErr());assert(constructed==1 && dropped==savedDrops);
         assert(std::reflect::callMethod<User>(&user,"drop",empty).isErr());
     }
-    assert(dropped>0);println("reflection json OK");return 0;
+    assert(dropped>0);println("reflection json OK");
 }

@@ -1,2 +1,2 @@
 $replace EMPTY
-int64 main() { return 0; }
+void main() { }

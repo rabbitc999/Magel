@@ -105,7 +105,7 @@ distance.push(-1);
     }
     return distance;
 }
-int64 main(){
+void main(){
     int64 n=std::lang::inputInt(),seed=std::lang::inputInt();
     List<int64> values;Option<Link mut&> head=Option<Link mut&>::None;Option<Tree mut&> tree=Option<Tree mut&>::None;
     {
@@ -197,5 +197,5 @@ reached.push(0);
             start++;
         }
     }
-    std::lang::println("{} {} {} {}",sum,checksum,listDrops,treeDrops);return 0;
+    std::lang::println("{} {} {} {}",sum,checksum,listDrops,treeDrops);
 }

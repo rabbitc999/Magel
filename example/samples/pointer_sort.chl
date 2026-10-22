@@ -26,7 +26,7 @@ struct Item : Greater<bool, Item> {
     }
 };
 
-int64 main() {
+void main() {
     /* &raw[0] 是首元素引用，len(raw) 是元素个数；两个下标 1 的元素排完都在前两位。 */
     int64 raw[] = new[5];
     raw[0] = 4; raw[1] = 1; raw[2] = 3; raw[3] = 1; raw[4] = 2;
@@ -58,5 +58,5 @@ int64 main() {
     std::algorithms::sortReference<Item>(items, len(items));
     println("{} {} {}", items[0].name, items[1].name, items[2].name);
     items.drop();
-    return 0;
+
 }

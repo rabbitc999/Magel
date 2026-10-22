@@ -135,7 +135,7 @@ void checkArrays() {
     float64 emptyArray[] = emptyColumn.toArray();
     assert(len(emptyArray) == 0);
 }
-int64 main() {
+void main() {
     checkArrays();
     checkSolve<float32>();
     checkSolve<float64>();
@@ -154,7 +154,7 @@ int64 main() {
     std::linalg::Vector<int64> answer = ints.solve(rhs);
     assert(answer.at(0) == -5 && answer.at(1) == 7);
     println("LU glue solve OK");
-    return 0;
+
 }
 ```
 

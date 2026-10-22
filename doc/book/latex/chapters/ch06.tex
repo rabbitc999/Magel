@@ -18,7 +18,7 @@ struct Point
     int64 y;
 };
 
-int64 main()
+void main()
 {
     Point a;
     a.x = 1;
@@ -30,7 +30,7 @@ int64 main()
     // 改 b
 
     println("a=({}, {}) b=({}, {})", a.x, a.y, b.x, b.y);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -70,7 +70,7 @@ struct Bag
     List<int64> items;
 };
 
-int64 main()
+void main()
 {
     Bag original;
     original.items.push(1);
@@ -80,7 +80,7 @@ int64 main()
     copy.items.push(2);
 
     println("original={} copy={}", original.items.len(), copy.items.len());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -101,7 +101,7 @@ original=1 copy=2
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     String original = "hello";
     String copy = original;
@@ -110,7 +110,7 @@ int64 main()
     // 72 就是 'H'
 
     println("{} {}", original, copy);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -146,7 +146,7 @@ void shift(Point point)
     point.x = point.x + 10;
 }
 
-int64 main()
+void main()
 {
     Point a;
     a.x = 1;
@@ -154,7 +154,7 @@ int64 main()
 
     shift(a);
     println("a=({}, {})", a.x, a.y);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -255,14 +255,14 @@ struct Message
     String text;
 };
 
-int64 main()
+void main()
 {
     Message source;
     source.text = "hello";
 
     Message result = move(&source);
     println("{}", result.text);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -306,13 +306,13 @@ struct Message
   String text;
 };
 
-int64 main()
+void main()
 {
   Message source;
   source.text = "hello";
   Message result = move(&source);
   println("[{}] [{}]", source.text, result.text);
-  return 0;
+
 }
 \end{lstlisting}
 \par

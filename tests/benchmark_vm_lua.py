@@ -84,9 +84,9 @@ def main():
     for name, count, value_type, chl_body, lua_body, expected in cases:
         declaration = "int64 values[4];values[0]=1;values[1]=2;values[2]=3;values[3]=4;" if name == "array_reads" else ""
         source = WORK / (name + ".chl")
-        source.write_text("int64 mix(int64 x){return x*17;}\nint64 main(){int64 n=std::lang::inputInt(),i=0;"
+        source.write_text("int64 mix(int64 x){return x*17;}\nvoid main(){int64 n=std::lang::inputInt(),i=0;"
                           + value_type + " total=0;" + declaration + "while(i<n){" + chl_body
-                          + "i+=1;}std::lang::println(\"{}\",total);return 0;}\n", encoding="utf-8")
+                          + "i+=1;}std::lang::println(\"{}\",total);return;}\n", encoding="utf-8")
         lua_file = WORK / (name + ".lua")
         lua_file.write_text("local n=tonumber(arg[1])\nlocal function mix(x) return x*17 end\n"
                             "local function calculate()\nlocal i,total=0," + ("0.0" if value_type == "float64" else "0")

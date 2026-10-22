@@ -63,7 +63,7 @@ int64 merge(int64 x, int64 m1, int64 r2, int64 m2) {
     return result;
 }
 
-int64 main() {
+void main() {
     int64 count = 0;
     count = inputInt();
 
@@ -90,5 +90,5 @@ int64 main() {
     }
 
     println("x = {} (mod {})", x, m);
-    return 0;
+
 }

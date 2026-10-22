@@ -34,7 +34,7 @@ def run_snapshot(compiler, work, env):
     """在优化转储管道阻塞期间覆盖磁盘映像，验证 VM 使用当前编译的内存快照。"""
     source = work / 'snapshot.chl'
     count = 2000
-    source.write_text('int64 main()\n{\n' + '    println("snapshot-safe");\n' * count + '    return 0;\n}\n', encoding='utf-8')
+    source.write_text('void main()\n{\n' + '    println("snapshot-safe");\n' * count + '    return;\n}\n', encoding='utf-8')
     prefix = work / 'snapshot'
     process = subprocess.Popen([str(compiler), 'run', str(source), '--out', str(prefix)], cwd=work, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=dict(env, CHALI_DUMP_OPT='1'))
     try:

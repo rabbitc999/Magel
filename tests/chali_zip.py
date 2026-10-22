@@ -51,7 +51,7 @@ def main():
         defaults=[p for p in work.glob(f'chali-{version}-*.zip')]
         assert len(defaults)==1,defaults
         source=work/'日本語 示例.chl'
-        source.write_text('import std::text;\nint64 main(){std::lang::println("ZIP 中文 / 日本語");return 0;}\n',encoding='utf-8')
+        source.write_text('import std::text;\nvoid main(){std::lang::println("ZIP 中文 / 日本語");return;}\n',encoding='utf-8')
         result=run(extracted/name,'lang','en',source,cwd=extracted)
         assert result.returncode==0 and result.stdout=='ZIP 中文 / 日本語\n' and not result.stderr,result
         result=run(extracted/name,'help','lang','en',cwd=extracted)

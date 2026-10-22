@@ -11,7 +11,7 @@ String awaitLine(TcpSocket mut& socket) {
     return "";
 }
 
-int64 main() {
+void main() {
     TcpListener listener = TcpListener::listen("127.0.0.1", (int32)0);
     assert(listener.isOpen());
     {
@@ -83,5 +83,5 @@ int64 main() {
     assert(!noListener.isOpen() && noListener.status() == NET_ERROR);
 
     println("nonblocking network OK");
-    return 0;
+
 }

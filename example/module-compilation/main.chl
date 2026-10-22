@@ -1,6 +1,6 @@
 import calc::left;
 import calc::right;
-int64 main() {
+void main() {
     println("result:{}", twice(add(20)));
     {
         Box mut& box = heap Box; box.value = 7;
@@ -15,5 +15,5 @@ int64 main() {
     List<String> texts; texts.push("a"); texts.push("b");
     String original = "a"; String const& text = &original;
     assert(text[0] == 'a' && texts.len() == 2);
-    return 0;
+
 }

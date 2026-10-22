@@ -11,9 +11,9 @@ $macro REPORT(...rest)
 println("three {} {} {}", rest);
 $end_macro
 
-int64 main() {
+void main() {
     $REPORT(7);
     $REPORT(1, 2);
     $REPORT(1, 2, 3);
-    return 0;
+
 }

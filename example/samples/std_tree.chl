@@ -1,5 +1,5 @@
 import std::tree;
-int64 main(){
+void main(){
     BinarySearchTree bst=BinarySearchTree::create();
     assert(bst.insert(50) && bst.insert(30) && bst.insert(70) && bst.insert(20));
     assert(bst.insert(40) && bst.insert(60) && bst.insert(80));
@@ -51,5 +51,5 @@ int64 main(){
     GeneralTree back=GeneralTree::fromBinary(binary);
     assert(back.len()==6 && back.height()==3 && back.valueAt(back.children(0)[0])==2);
     println("tree conversion OK");
-    return 0;
+
 }

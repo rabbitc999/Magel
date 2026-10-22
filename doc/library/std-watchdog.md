@@ -27,7 +27,7 @@ chali run doc/examples/library/watchdog.chl
 import std::watchdog;
 
 /** @brief 验证看门狗默认关闭、启用结果，以及时间维度（超时未喂狗）同样默认关闭；不请求实际重启。 */
-int64 main() {
+void main() {
     Result<bool,WatchdogError> disabled = std::watchdog::requestRestart();
     assert(disabled.isErr());
     Result<int64,WatchdogError> invalid = std::watchdog::enable(-1);
@@ -48,7 +48,7 @@ int64 main() {
     assert(fed.isOk());
 
     println("watchdog API ok");
-    return 0;
+
 }
 ```
 

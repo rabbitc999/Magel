@@ -1,6 +1,6 @@
 import std::io;
 
-int64 main() {
+void main() {
     List<uint8> bytes;
     bytes.push((uint8)0); bytes.push((uint8)10); bytes.push((uint8)255); bytes.push((uint8)13);
     FileStream writer = FileStream::open("build/std-file-bytes.bin", "wb").take();
@@ -16,5 +16,5 @@ int64 main() {
     reader.close();
     assert(!reader.readBytes(1).isOk());
     println("Binary FileStream bytes and EOF OK");
-    return 0;
+
 }

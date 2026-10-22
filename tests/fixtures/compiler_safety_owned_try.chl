@@ -24,7 +24,7 @@ Result<List<String>, String> safetyNestedValues()
     return Result<List<String>, String>::Ok(safetyValues()?);
 }
 
-int64 main()
+void main()
 {
     for (int64 index in std::lang::range(0, 100))
     {
@@ -34,5 +34,5 @@ int64 main()
         assert(values.len() == 2 && values[0] == "one" && values[1] == "two");
     }
     println("owned propagation cleanup OK");
-    return 0;
+
 }

@@ -22,7 +22,7 @@ enum State : ImplicitConvert<int64>, ExplicitConvert<int64> {
 int64 useNumber(int64 value) { return value; }
 int64 returnNumber(Number value) { return value; }
 
-int64 main() {
+void main() {
     Number number;
     number.value = 7;
     int64 implicit = number;
@@ -43,5 +43,5 @@ int64 main() {
     int64 stateValue = state;
     assert(stateValue == 1 && cast<int64>(state) == 2);
     println("conversions: implicit={} explicit={} generic={}", implicit, explicit, generic);
-    return 0;
+
 }

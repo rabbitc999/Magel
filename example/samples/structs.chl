@@ -13,7 +13,7 @@ struct Item {
     }
 };
 
-int64 main() {
+void main() {
     Item items[3];       /* 结构体数组：每个元素占 2 个字段 = 16 字节 */
 
     int64 i = 0;
@@ -40,5 +40,5 @@ int64 main() {
     first = items[0];
     first.id = 99;
     println("first.id={} items[0].id={}（两份独立）", first.id, items[0].id);
-    return 0;
+
 }

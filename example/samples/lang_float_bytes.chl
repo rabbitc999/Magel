@@ -41,7 +41,7 @@ void checkWord(uint32 word, bool bigEndian) {
     }
 }
 
-int64 main() {
+void main() {
     List<uint8> little = float32ToBytes((float32)1.5);
     assert(little.len() == 4 && little[0] == (uint8)0 && little[1] == (uint8)0);
     assert(little[2] == (uint8)192 && little[3] == (uint8)63);
@@ -94,5 +94,5 @@ int64 main() {
     assert(bytesToFloat32(fixed, 5).unwrap() == (float32)1.5);
     assert(bytesToFloat32(fixed, -1).isNone());
     println("float32 bytes OK");
-    return 0;
+
 }

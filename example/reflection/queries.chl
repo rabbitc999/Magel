@@ -24,7 +24,7 @@ struct Box<T>{T value;};
 struct Hidden{int64 value;};
 // 核对标准库内部完全限定泛型参数，不受根模块同名类型影响。
 struct StructInfo{int64 sentinel;};
-int64 main(){
+void main(){
     let info=std::reflect::getStructInfo<Counter>();assert(info.isValue());
     let snapshot=info.unwrap();assert(snapshot.name=="Counter" && snapshot.fields.len()==2);
     assert(snapshot.typeId==std::reflect::getTypeId<Counter>());
@@ -54,6 +54,6 @@ int64 main(){
     assert(std::reflect::getTypeId<Box<String>>()==std::reflect::getTypeId<Box<String>>());
     assert(std::reflect::getTypeId<int32>()!=std::reflect::getTypeId<int64>());
     assert(std::reflect::getTypeId<String>()==std::reflect::getTypeId<String>());
-    println("reflection queries OK");return 0;
+    println("reflection queries OK");
 }
 

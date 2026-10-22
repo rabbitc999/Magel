@@ -12,11 +12,11 @@ struct Resource : Drop {
     }
 };
 
-int64 main() {
+void main() {
     Resource first = new Resource(1);
     Resource second = new Resource(2);
     first.drop();                       /* 显式 drop：调用 drop() 并取消本块的自动析构 */
     println("after delete first");
     second.value = 22;
-    return 0;                           /* 出块：second 自动析构一次 */
+    return;                           /* 出块：second 自动析构一次 */
 }

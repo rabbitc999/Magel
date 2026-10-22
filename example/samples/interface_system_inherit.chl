@@ -50,7 +50,7 @@ struct Adder : BothAdd {
     int64 rightAdd(int64 value) { return value + self.base; }
 };
 
-int64 main()
+void main()
 {
     Table table;
     table.base = 7;
@@ -64,5 +64,5 @@ int64 main()
     Adder adder;
     adder.base = 5;
     println("sum={} both={} {} {}", total, adder.tag(), adder + 1, 4 + adder);
-    return 0;
+
 }

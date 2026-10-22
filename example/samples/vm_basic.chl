@@ -65,7 +65,7 @@ int64 matchClassify(int64 x) {
     }
 }
 
-int64 main() {
+void main() {
     /* 1. 纯整数循环：1..5 求和 = 15 */
     int64 sum = 0;
     {
@@ -155,5 +155,5 @@ int64 main() {
     pr.drop();
     pq.drop();
 
-    return 0;
+
 }

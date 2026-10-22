@@ -66,7 +66,7 @@ def string_differential():
             f'assert({literal(text)}.reverse() == {literal(text[::-1])});',
             f'assert("".join({literal(text)}.unicodeChars()) == {literal(text)});',
         ])
-    return 'int64 main() {\n' + '\n'.join(statements) + '\nreturn 0;\n}'
+    return 'void main() {\n' + '\n'.join(statements) + '\nreturn;\n}'
 
 
 def main():
@@ -81,7 +81,7 @@ def main():
     cases.append(('string_differential', string_differential(), {}))
     cases.append(('generic_function_comparisons', '''import std::math;
 T identity<T>(T value) { return value; }
-int64 main() {
+void main() {
     int64 round = 1; int64 powers = 7;
     while (round < powers) { round = round + 1; }
     assert(round == 7);
@@ -90,12 +90,12 @@ int64 main() {
     let function = identity<int64>;
     assert(function(3) == 3);
     assert(std::math::round<float64>(1.5) == 2.0);
-    return 0;
+
 }''', {}))
     cases.append(('owner_move_and_scope', '''import std::sql;
 import std::memory;
 import std::event;
-int64 main() {
+void main() {
     int64 index = 0;
     while (index < 1100) {
         Database connection = Database::sqlite(":memory:");
@@ -108,28 +108,28 @@ int64 main() {
     assert(moved.allocate(8).len() == 8); moved.reset();
     Timer timer = Timer::afterMillis(60000); Timer timerMoved = move(&timer);
     assert(timerMoved.isValid()); timerMoved.stop(); timerMoved.stop();
-    assert(!timerMoved.isValid()); return 0;
+    assert(!timerMoved.isValid());
 }''', {}))
     for name, module, declaration in (
         ('database_copy', 'std::sql', 'Database original = Database::sqlite(":memory:"); Database duplicate = original;'),
         ('arena_copy', 'std::memory', 'Arena original = Arena::create(); Arena duplicate = original;'),
         ('timer_copy', 'std::event', 'Timer original = Timer::afterMillis(10); Timer duplicate = original;'),
     ):
-        cases.append((name, f'import {module};\nint64 main() {{ {declaration} return 0; }}',
+        cases.append((name, f'import {module};\nvoid main() {{ {declaration} return; }}',
                       {'failure': ('NonCopyable', '不可复制', '不能复制', 'move')}))
     for name, expression in (('negative_repeat', '"a".repeat(0 - 1)'), ('negative_padding', '"a".padStart(0 - 1)')):
-        cases.append((name, f'int64 main() {{ String value = {expression}; return 0; }}', {'failure': ('String',)}))
+        cases.append((name, f'void main() {{ String value = {expression}; return; }}', {'failure': ('String',)}))
     cases.append(('structured_closed', ROOT / 'example/samples-error/structured_closed.chl', {'failure': ('JsonValue.kind',)}))
-    cases.append(('invalid_utf8', 'int64 main() { String text = "你".substring(1); int64 count = text.charLength(); return 0; }', {'failure': ('UTF-8',)}))
+    cases.append(('invalid_utf8', 'void main() { String text = "你".substring(1); int64 count = text.charLength(); }', {'failure': ('UTF-8',)}))
     cases.append(('arena_reset_invalidates', '''import std::memory;
-int64 main() {
+void main() {
     Arena arena = Arena::create(); let span = arena.allocate(8);
     char mut& first = span.iterator(0).unwrap(); first = 'x';
-    arena.reset(); println("{}", first); return 0;
+    arena.reset(); println("{}", first);
 }''', {'failure': ('180143985', 'free', '越界')}))
-    cases.append(('union_find_bounds', 'import std::graph;\nint64 main() { UnionFind sets = UnionFind::create(2); sets.find(2); return 0; }', {'failure': ('UnionFind.find',)}))
-    cases.append(('graph_bounds', 'import std::graph;\nint64 main() { Graph graph = Graph::create(2, false); graph.addEdge(0, 2, 1); return 0; }', {'failure': ('Graph.addEdge',)}))
-    cases.append(('random_range', 'import std::random;\nint64 main() { Random value = Random::withSeed((uint64)1); value.nextInt(3, 3); return 0; }', {'failure': ('Random.nextInt',)}))
+    cases.append(('union_find_bounds', 'import std::graph;\nvoid main() { UnionFind sets = UnionFind::create(2); sets.find(2); return; }', {'failure': ('UnionFind.find',)}))
+    cases.append(('graph_bounds', 'import std::graph;\nvoid main() { Graph graph = Graph::create(2, false); graph.addEdge(0, 2, 1); return; }', {'failure': ('Graph.addEdge',)}))
+    cases.append(('random_range', 'import std::random;\nvoid main() { Random value = Random::withSeed((uint64)1); value.nextInt(3, 3); return; }', {'failure': ('Random.nextInt',)}))
     rng = random.Random(20261021)
     for name in rng.sample(['std_algorithms_extra', 'std_complex_fft', 'std_linalg_solve_glue',
                             'std_numerics_number_theory', 'std_binary', 'std_collections_algorithms'], 3):
@@ -148,7 +148,7 @@ int64 measure(int64 count) {
     while (index < 30000) { sum = sum + sets.find(count - 1); index = index + 1; }
     int64 elapsed = std::clock::nowNanos() - started; assert(sum == 0); return elapsed;
 }
-int64 main() { println("union-find query ns: small={} large={}", measure(1000), measure(1000000)); return 0; }
+void main() { println("union-find query ns: small={} large={}", measure(1000), measure(1000000)); }
 '''
     _, timing = execute('union_find_capacity', source)
     (WORK / 'capacity.txt').write_text(timing + '\n', encoding='utf-8')

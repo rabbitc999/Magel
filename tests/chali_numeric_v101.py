@@ -46,11 +46,11 @@ def main():
                 print(f'[通过] {backend} opt={level} 数值、f 后缀及 loop', flush=True)
         for name, value in [('string', '"x"'), ('float', '1.9'), ('bool', 'true')]:
             source = work / (name + '.chl')
-            source.write_text(f'int64 main() {{ int64 a[]=new[{value}]; a.drop(); return 0; }}', encoding='utf-8')
+            source.write_text(f'void main() {{ int64 a[]=new[{value}]; a.drop(); return; }}', encoding='utf-8')
             check(invoke([compiler, '--check', source]), False, '数组长度必须是整数')
             print(f'[通过] 拒绝 {name} 数组长度', flush=True)
         source = work / 'invalid-allocation.chl'
-        source.write_text('int64 main() {\n            int64 n=inputInt(); int64 a[]=new[n];\n            println("unexpected allocation: {}", a.len()); a.drop(); return 0;\n        }', encoding='utf-8')
+        source.write_text('void main() {\n            int64 n=inputInt(); int64 a[]=new[n];\n            println("unexpected allocation: {}", a.len()); a.drop(); return;\n        }', encoding='utf-8')
         for backend in ('run',):
             output = work / ('invalid-' + backend + EXE)
             for length, diagnostic in [(-1, '数组长度为负数或分配字节数溢出'), (-4294967295, '数组长度为负数或分配字节数溢出'), (9223372036854775807, '数组长度为负数或分配字节数溢出'), (4294967297, '堆内存不足'), (536870913, '堆内存不足')]:
@@ -61,11 +61,11 @@ def main():
                 print(f'[通过] {backend} 拒绝数组长度 {length}', flush=True)
         for body in ('loop { break; };', 'loop { if (true) { break; } else { return 1; } };'):
             source = work / 'missing-return.chl'
-            source.write_text('int64 f(){' + body + '} int64 main(){return 0;}', encoding='utf-8')
+            source.write_text('int64 f(){' + body + '} void main(){}', encoding='utf-8')
             check(invoke([compiler, '--check', source]), False, '不是所有路径都有 return')
         print('[通过] 循环可退出时仍检查缺失返回路径', flush=True)
         source = work / 'no-suffix-narrowing.chl'
-        source.write_text('float32 f(float32 x){return x;} int64 main(){let x=f(1.25);return 0;}', encoding='utf-8')
+        source.write_text('float32 f(float32 x){return x;} void main(){let x=f(1.25);}', encoding='utf-8')
         check(invoke([compiler, '--check', source]), False)
         print('[通过] 无后缀 float64 不隐式缩窄', flush=True)
 if __name__ == '__main__':

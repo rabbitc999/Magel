@@ -41,26 +41,26 @@ def main():
         (folder/'a/iter').mkdir()
         (folder/'a/iter/child.chl').write_text('module a::iter::child; int64 hidden(){return 1;}\n', encoding='utf-8')
         (folder/'a/iter.chl').write_text('module a::iter;\nstruct LocalType { int64 field; int64 method(){return 1;} };\nint64 localFunction(){return 1;}\n', encoding='utf-8')
-        bad = '/* 😀 */ struct bad_type { int64 Bad_Method(){return 1;} }; int64 Bad_Function(){return 0;} int64 main(){return 0;}'
+        bad = '/* 😀 */ struct bad_type { int64 Bad_Method(){return 1;} }; int64 Bad_Function(){return 0;} void main(){}'
         document(folder, 'bad.chl', bad)
-        good = 'struct GoodType { GoodType() {} int64 goodMethod(){return 1;} }; int64 main(){return 0;}'
+        good = 'struct GoodType { GoodType() {} int64 goodMethod(){return 1;} }; void main(){}'
         requests.append(dict(method='textDocument/didChange', params=dict(
             textDocument=dict(uri=documents['bad.chl'], version=2), contentChanges=[dict(text=good)])))
         document(folder, 'good.chl', good)
         imports = document(folder, 'imports.chl', 'import std::', 'completion', 'std::')
         import_root = document(folder, 'import-root.chl', 'import ', 'completion', 'import ')
         import_local = document(folder, 'import-local.chl', 'import a::iter::', 'completion', 'a::iter::')
-        std = document(folder, 'std.chl', 'int64 main(){std::', 'completion', 'std::')
+        std = document(folder, 'std.chl', 'void main(){std::', 'completion', 'std::')
         # `__` 前缀是编译器/宿主协议：标准库模块补全一个都不该带出来。
         private = [document(folder, 'private-%d.chl' % index,
-                            'import %s;\nint64 main(){ %s::' % (module, module), 'completion', module + '::')
+                            'import %s;\nvoid main(){ %s::' % (module, module), 'completion', module + '::')
                    for index, module in enumerate(('std::lang', 'std::iter', 'std::math',
                                                    'std::numtheory', 'std::numerics', 'std::text', 'std::path'))]
-        local = document(folder, 'local.chl', 'import a::iter;\nint64 main(){a::iter::', 'completion', 'a::iter::')
-        unrelated = document(folder, 'unrelated.chl', 'import a::iter;\nint64 main(){b::iter::', 'completion', 'b::iter::')
-        member = document(folder, 'member.chl', 'import a::iter;\nint64 main(){a::iter::LocalType::', 'completion', 'LocalType::')
-        field = document(folder, 'field.chl', 'import std::datetime;\nint64 main(){DateTime date; date.year; return 0;}', 'hover', 'date.year')
-        type_hover = document(folder, 'type.chl', 'import std::linalg;\nint64 main(){LuFactorization value;return 0;}', 'hover', 'LuFactorization')
+        local = document(folder, 'local.chl', 'import a::iter;\nvoid main(){a::iter::', 'completion', 'a::iter::')
+        unrelated = document(folder, 'unrelated.chl', 'import a::iter;\nvoid main(){b::iter::', 'completion', 'b::iter::')
+        member = document(folder, 'member.chl', 'import a::iter;\nvoid main(){a::iter::LocalType::', 'completion', 'LocalType::')
+        field = document(folder, 'field.chl', 'import std::datetime;\nvoid main(){DateTime date; date.year; return;}', 'hover', 'date.year')
+        type_hover = document(folder, 'type.chl', 'import std::linalg;\nvoid main(){LuFactorization value;return;}', 'hover', 'LuFactorization')
         requests += [dict(id=sequence, method='shutdown'), dict(method='exit')]
         server = Transport(ROOT/'ChaLi.exe', folder)
         try:

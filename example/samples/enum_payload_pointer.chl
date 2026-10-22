@@ -16,7 +16,7 @@ enum Slot<T> {
     Empty;
 };
 
-int64 main() {
+void main() {
     Box box;
     box.value = 9;
 
@@ -40,5 +40,5 @@ int64 main() {
         }
         Slot<int64>::Empty => { println("空槽"); }
     }
-    return 0;
+
 }

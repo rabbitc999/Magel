@@ -1,5 +1,5 @@
 enum Option { None, Some(int64 value) };
-int64 main() {
+void main() {
     Option value = Option::Some;
-    return 0;
+
 }

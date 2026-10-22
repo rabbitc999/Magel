@@ -1055,6 +1055,18 @@ void ResetState()
         if (receiver.kind == MNode::Var) g_addressTakenNames.insert(receiver.s);
         if (receiver.kind == MNode::EnumCtor) g_addressTakenNames.insert(receiver.s2);
     }
+    /* `map.getOption(k)` 在类型推导期改写成 `__mapGetOptionImpl(&m, k)`（见
+     * `RewriteMapGetOption`）：那个 `&m` 是推导时才造出来的，这里扫不到，
+     * 所以接收者的引用槽必须提前准备好，否则降级时会报"取不了地址"。 */
+    for (const auto &node : g_nodes)
+    {
+        if (node.kind != MNode::Call || node.kids.empty()) continue;
+        const auto &callee = N(node.kids[0]);
+        if (callee.kind != MNode::Member || callee.kids.empty() || callee.s != "getOption") continue;
+        const auto &receiver = N(callee.kids[0]);
+        if (receiver.kind == MNode::Var) g_addressTakenNames.insert(receiver.s);
+        if (receiver.kind == MNode::EnumCtor) g_addressTakenNames.insert(receiver.s2);
+    }
     g_structs.clear();
     g_tupleElements.clear();
     g_staticFields.clear();

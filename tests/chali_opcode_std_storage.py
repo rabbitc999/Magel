@@ -30,13 +30,13 @@ def main():
         async_result = run(ROOT / 'example/samples/std_net_async.chl', threads=True)
         assert async_result.stdout == 'nonblocking network OK\n' and not async_result.stderr, async_result
         for body, marker in [
-            ('import std::net; int64 main(){TcpSocket a; TcpSocket b=a; return 0;}', 'NonCopyable'),
-            ('import std::net; int64 main(){TcpListener a; TcpListener b=a; return 0;}', 'NonCopyable'),
-            ('import std::image; int64 main(){Image a; int64 handle=a.opcode; return 0;}', '内部句柄'),
-            ('import std::image; void reject(Image const& image){image.setPixel(0,0,1,2,3,4);} int64 main(){return 0;}', '只读'),
-            ('import std::linalg; void reject(ScalarArray<float64> const& values){values.clear();} int64 main(){return 0;}', '只读'),
-            ('import std::net; void reject(TcpSocket const& socket){socket.receiveAsync((int32)1);} int64 main(){return 0;}', '只读'),
-            ('int64 __std_user(){return 1;} int64 main(){return 0;}', '__std_'),
+            ('import std::net; void main(){TcpSocket a; TcpSocket b=a;}', 'NonCopyable'),
+            ('import std::net; void main(){TcpListener a; TcpListener b=a;}', 'NonCopyable'),
+            ('import std::image; void main(){Image a; int64 handle=a.opcode;}', '内部句柄'),
+            ('import std::image; void reject(Image const& image){image.setPixel(0,0,1,2,3,4);} void main(){}', '只读'),
+            ('import std::linalg; void reject(ScalarArray<float64> const& values){values.clear();} void main(){}', '只读'),
+            ('import std::net; void reject(TcpSocket const& socket){socket.receiveAsync((int32)1);} void main(){}', '只读'),
+            ('int64 __std_user(){return 1;} void main(){}', '__std_'),
         ]:
             source = work / 'rejected.chl'
             source.write_text(body.replace('; ', ';\n', 1) if body.startswith('import ') else body, encoding='utf-8')

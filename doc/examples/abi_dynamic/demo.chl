@@ -3,7 +3,7 @@ abi "./native.dll" {
     String native_name() = "abi_name";
 }
 
-int64 main() {
+void main() {
     println("{} {}", native_add((int32)20, (int32)22), native_name());
-    return 0;
+
 }

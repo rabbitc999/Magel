@@ -8,7 +8,7 @@
 
 ```cpp
 int64 mix(int64 x){return x*17;}
-int64 main(){int64 n=inputInt(),i=0;int64 total=0;while(i<n){total+=i;i+=1;}println("{}",total);return 0;}
+void main(){int64 n=inputInt(),i=0;int64 total=0;while(i<n){total+=i;i+=1;}println("{}",total);}
 ```
 
 ### Java / JVM
@@ -104,7 +104,7 @@ int main() {
 
 ```cpp
 int64 mix(int64 x){return x*17;}
-int64 main(){int64 n=inputInt(),i=0;int64 total=0;while(i<n){if((i&1)==0){total+=i;}else{total-=i;}i+=1;}println("{}",total);return 0;}
+void main(){int64 n=inputInt(),i=0;int64 total=0;while(i<n){if((i&1)==0){total+=i;}else{total-=i;}i+=1;}println("{}",total);}
 ```
 
 ### Java / JVM
@@ -200,7 +200,7 @@ int main() {
 
 ```cpp
 int64 mix(int64 x){return x*17;}
-int64 main(){int64 n=inputInt(),i=0;float64 total=0;while(i<n){total+=0.5;i+=1;}println("{}",total);return 0;}
+void main(){int64 n=inputInt(),i=0;float64 total=0;while(i<n){total+=0.5;i+=1;}println("{}",total);}
 ```
 
 ### Java / JVM
@@ -296,7 +296,7 @@ int main() {
 
 ```cpp
 int64 mix(int64 x){return x*17;}
-int64 main(){int64 n=inputInt(),i=0;int64 total=0;while(i<n){total+=mix(i);i+=1;}println("{}",total);return 0;}
+void main(){int64 n=inputInt(),i=0;int64 total=0;while(i<n){total+=mix(i);i+=1;}println("{}",total);}
 ```
 
 ### Java / JVM
@@ -392,7 +392,7 @@ int main() {
 
 ```cpp
 int64 mix(int64 x){return x*17;}
-int64 main(){int64 n=inputInt(),i=0;int64 total=0;int64 values[4];values[0]=1;values[1]=2;values[2]=3;values[3]=4;while(i<n){total+=values[i%4];i+=1;}println("{}",total);return 0;}
+void main(){int64 n=inputInt(),i=0;int64 total=0;int64 values[4];values[0]=1;values[1]=2;values[2]=3;values[3]=4;while(i<n){total+=values[i%4];i+=1;}println("{}",total);}
 ```
 
 ### Java / JVM

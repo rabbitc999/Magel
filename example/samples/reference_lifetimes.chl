@@ -27,7 +27,7 @@ int64 mut& globalViaAlias() {
     ReferenceBox mut& alias = &box;
     return alias.value;
 }
-int64 main() {
+void main() {
     int64 value = 7;
     int64 mut& first = identity(&value);
     first = 8;
@@ -51,5 +51,5 @@ int64 main() {
     { saved = Option<int64 mut&>::Value(&global); }
     assert(saved.unwrap() == 10);
     println("reference lifetimes OK");
-    return 0;
+
 }

@@ -11,10 +11,10 @@ int64 is_even(int64 n) {
     return is_odd(n - 1);       /* 回头调用上面那个，互相递归 */
 }
 
-int64 main() {
+void main() {
     println("is_even(10) = {}, is_odd(7) = {}", is_even(10), is_odd(7));
     println("later(5) = {}", later(5));     /* later 定义在 main 后面 */
-    return 0;
+
 }
 
 /* ---- 定义在 main 之后的函数 ---- */

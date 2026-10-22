@@ -9,7 +9,7 @@ abi "./native.dll" {
     float64 applyDouble(float64 fn(float64) callback, float64 value) = "apply_double";
 }
 
-int64 main() {
+void main() {
     String value = text();
     int32 values[] = numbers((int32)3);
     assert(value == "owned" && len(values) == 3 && values[2] == 12);
@@ -24,5 +24,5 @@ int64 main() {
     let nested = int32 fn(int32 n) { return apply(int32 fn(int32 x) { x * 2 }, n); };
     assert(apply(nested, (int32)1) == 16);
     println("ABI contracts OK");
-    return 0;
+
 }

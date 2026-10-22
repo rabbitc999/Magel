@@ -50,12 +50,12 @@ Fixed array fields are stored inline; two-dimensional arrays use row-major order
 ## Defer and scope(exit)
 
 ```chali
-int64 main() {
+void main() {
     int64 value = 1;
     defer println("last {}", value);
     scope(exit) { println("first"); }
     value = 2;
-    return 0;
+
 }
 ```
 

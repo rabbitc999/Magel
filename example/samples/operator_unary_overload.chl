@@ -33,7 +33,7 @@ struct Money : Negate<Money, Money>, BitNot<Money, Money>, Positive<Money, Money
     }
 };
 
-int64 main() {
+void main() {
     Money price;
     price.cents = 250;
 
@@ -44,5 +44,5 @@ int64 main() {
 
     println("{} {} {}", owed.cents, flipped.cents, same.cents);
     println("{} {}", back.cents, price.cents);   /* 原值不变 */
-    return 0;
+
 }

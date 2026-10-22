@@ -4,11 +4,11 @@ struct Vec {
     int64 v;
 };
 
-int64 main() {
+void main() {
     Vec a;
     a.v = 1;
     Vec b;
     b.v = 2;
     println("a && b = {}", a && b);
-    return 0;
+
 }

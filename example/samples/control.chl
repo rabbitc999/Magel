@@ -10,7 +10,7 @@ int64 classify(int64 value) {
     }
 }
 
-int64 main() {
+void main() {
     int64 i = 0;
     int64 sum = 0;
     {
@@ -31,5 +31,5 @@ int64 main() {
     }
     println("classify(7) = {}, classify(0) = {}", classify(7), classify(0));
     println("!false = {}, !true = {}", !false, !true);
-    return 0;
+
 }

@@ -26,10 +26,10 @@ String classify(int64 value)
     }
 }
 
-int64 main()
+void main()
 {
     println("{} {} {}", classify(-3), classify(0), classify(8));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -62,13 +62,13 @@ else { ... }
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     if (1)
     {
         println("x");
     }
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -99,7 +99,7 @@ ChaLi 没有三目运算符。 \texttt{cond ? a :\allowbreak{} b} 是语法错�
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int32 p = 5;
     bool odd = if (p % 2 == 1)
@@ -132,7 +132,7 @@ int64 main()
         yield value;
     };
     println("{} {}", odd, category);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -155,7 +155,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 countdown = 3;
     while (countdown > 0)
@@ -164,7 +164,7 @@ int64 main()
         countdown = countdown - 1;
     }
     println("起飞！");
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -190,7 +190,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 total = 0;
     for (int64 k in std::lang::range(0, 5))
@@ -198,7 +198,7 @@ int64 main()
         total = total + k;
     }
     println("{}", total);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -221,7 +221,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 found = for (int64 value in std::lang::range(0, 10))
     {
@@ -243,7 +243,7 @@ int64 main()
         "结束"
     };
     println("{} {}", found, label);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -264,7 +264,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 attempts = 0;
     loop
@@ -276,7 +276,7 @@ int64 main()
         }
     }
     println("{}", attempts);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -325,7 +325,7 @@ int64 firstEven = loop
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 count = 0;
     loop
@@ -342,7 +342,7 @@ int64 main()
         yield count * 2;
     };
     println("{} {}", count, doubled);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -363,7 +363,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     List<int64> scores;
     scores.push(30);
@@ -379,7 +379,7 @@ int64 main()
         }
     }
     println("最高分 {}", best);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -424,7 +424,7 @@ for ( 元素类型 名字 in 容器 ) { ... }
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     List<int64> scores;
     scores.push(12);
@@ -446,7 +446,7 @@ int64 main()
         }
         println("分数 {}", score);
     }
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -473,7 +473,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 visited = 0;
     loop
@@ -496,7 +496,7 @@ int64 main()
         total += item;
     }
     println("{} {}", visited, total);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -532,7 +532,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main() {
+void main() {
     // yield 值;（写在接收结果的值表达式里）
     int64 v = loop { yield 42; };
     assert(v == 42);
@@ -545,7 +545,7 @@ int64 main() {
     loop { loop { a++; break all; } assert(false); }
     assert(a == 1);
     println("break 写法 ok");
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -568,7 +568,7 @@ break 写法 ok
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 value = 17;
     value += 3;
@@ -576,7 +576,7 @@ int64 main()
     value -= 1;
     value *= 2;
     println("{}", value);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -597,7 +597,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 i = 5;
     i++;
@@ -605,7 +605,7 @@ int64 main()
     i--;
     ++i;
     println("{}", i);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -627,11 +627,11 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 i = 0;
     i = i++;
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -652,13 +652,13 @@ C 程序员会心头一紧——\texttt{i =\allowbreak{} i++} 在 C 里是未定
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 i = 0;
     int64 j = 0;
     int64 sum =(i++) +(j++);
     println("{} {} {}", sum, i, j);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -677,7 +677,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     List<int64> store;
     store.push(10);
@@ -685,7 +685,7 @@ int64 main()
     int64 i = 0;
     store[i] += 1;
     println("{} {}", store[0], i);
-    return 0;
+
 }
 \end{lstlisting}
 \par

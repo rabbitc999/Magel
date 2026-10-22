@@ -1,7 +1,7 @@
 import std::sql;
 
 /** @brief 验证 SQLite 的真实执行、结果类型、事务、错误恢复和文件持久化。 */
-int64 main(List<String> arguments) {
+void main(List<String> arguments) {
     assert(arguments.len() == 1);
     Database db = Database::sqlite(":memory:");
     if (!db.isOpen()) { panic(db.lastError()); }
@@ -65,5 +65,5 @@ int64 main(List<String> arguments) {
     Database badPath = Database::sqlite(arguments[0] + "/cannot.db");
     assert(!badPath.isOpen() && len(badPath.lastError()) > 0);
     println("sqlite database checks passed");
-    return 0;
+
 }

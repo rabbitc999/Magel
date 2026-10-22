@@ -282,7 +282,7 @@ let prepared = query.build()?;
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main(List<String> args)
+void main(List<String> args)
 {
     if (args.len() < 2)
     {
@@ -311,7 +311,7 @@ int64 main(List<String> args)
         return 1;
     }
     println("{}", result.unwrap());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -319,7 +319,7 @@ int64 main(List<String> args)
 
 结构很直白：先建表，再执行，最后一定 \texttt{close(\allowbreak{})\allowbreak{}}。两条失败路径都各自关库再返回——手工管理资源时，「出错的那条路最容易忘掉清理」，所以要把 \texttt{close(\allowbreak{})\allowbreak{}} 写在每一条退出路径上，而不是只写在正常路径末尾。
 
-\texttt{return 1} / \texttt{return 0} 首先是给读代码的人看的：\texttt{int64 main} 的返回值不会成为进程退出码——\texttt{chali} 只在编译失败或 panic 时才非 0 退出（文档只约定 \texttt{void main} 正常完成时退出码为 0）。所以要在脚本里判断这一步做没做成，得看程序自己给出的信号：本程序把所有失败都打印成 \texttt{错误：…} 开头的一行，成功则打印 JSON 或 \texttt{已删除}。别指望靠 \texttt{\$?} 区分业务成败，这是写外壳脚本时最容易想当然的地方。
+\texttt{return 1} / \texttt{return 0} 首先是给读代码的人看的：\texttt{void main} 不返回值，也就没有业务退出码可用——\texttt{chali} 只在编译失败或 panic 时才非 0 退出（文档只约定 \texttt{void main} 正常完成时退出码为 0）。所以要在脚本里判断这一步做没做成，得看程序自己给出的信号：本程序把所有失败都打印成 \texttt{错误：…} 开头的一行，成功则打印 JSON 或 \texttt{已删除}。别指望靠 \texttt{\$?} 区分业务成败，这是写外壳脚本时最容易想当然的地方。
 
 \section{跑一遍}
 

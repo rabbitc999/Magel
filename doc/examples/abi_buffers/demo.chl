@@ -30,7 +30,7 @@ abi "./native.dll" {
     Packet[] get_packets(int32 count) = "get_packets" [count];
     void fill_packets(Packet[] values, int32 count) = "fill_packets";
 }
-int64 main() {
+void main() {
     Packet p;
     p.inner.tag = (int8)2;
     p.inner.weight = (float32)1.5;
@@ -118,5 +118,5 @@ int64 main() {
     NormalOuter normalCopy = normal_outer(normal);
     assert(normalCopy.lead == 3 && normalCopy.packed.count == 10 && normalCopy.tail == 5.0);
     println("abi-values-ok");
-    return 0;
+
 }

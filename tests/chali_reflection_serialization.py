@@ -41,7 +41,7 @@ def main():
         (directory / "beta.chl").write_text("module beta;\nT echo<T>(T value) { return value + value; }\n", encoding="utf-8")
         enqueue(compiler, '''import alpha;
 import beta;
-int64 main() { assert(alpha::echo<int64>(3) == 3); assert(beta::echo<int64>(3) == 6); assert(beta::echo(4) == 8); return 0; }
+void main() { assert(alpha::echo<int64>(3) == 3); assert(beta::echo<int64>(3) == 6); assert(beta::echo(4) == 8); }
 ''', directory)
         for sample in ("reflect_fields", "reflect_serialization", "sql_ipage"):
             enqueue(compiler, (ROOT / "example/samples" / f"{sample}.chl").read_text(encoding="utf-8"), directory)
@@ -60,7 +60,7 @@ struct Record {
     Option<String> optional;
     Choice choice;
 };
-int64 main() {
+void main() {
     Record value;
     value.maximum = 18446744073709551615u;
     value.integer = BigInteger("123456789012345678901234567890");
@@ -107,12 +107,12 @@ int64 main() {
     assert(std::json::deserialize<BigInteger>("\"01\"").isErr());
     assert(std::json::deserialize<BigDecimal>("{\"$decimal\":\"1e1000001\",\"$precision\":0}").isErr());
     println("precision, containers, enums, TOML and binary OK");
-    return 0;
+
 }
 ''', directory)
         enqueue(compiler, '''import std::json;
 struct Hidden { int64 value; };
-int64 main() { Hidden value; assert(std::json::serialize<Hidden>(&value).isErr()); return 0; }
+void main() { Hidden value; assert(std::json::serialize<Hidden>(&value).isErr()); }
 ''', directory)
         enqueue(compiler, r'''
 import std::sql;
@@ -125,7 +125,7 @@ struct Row {
     bool active;
     float64 score;
 };
-int64 main() {
+void main() {
     let base = std::sql::query<Row>().unwrap();
     let db = std::sql::Database::sqlite(":memory:");
     assert(db.exec(base.build("create").unwrap()).ok);
@@ -173,11 +173,11 @@ int64 main() {
     db.close();
     assert(!db.exec(filtered.build().unwrap()).ok);
     println("SQL CRUD, validation, copy isolation and parameters OK");
-    return 0;
+
 }
 ''', directory)
         output = enqueue(compiler, '''import std::json;
-int64 main() { int64 value = 1; std::json::serialize<int64>(&value); return 0; }
+void main() { int64 value = 1; std::json::serialize<int64>(&value); }
 ''', directory, expected=False, flags=("--no-reflection",))
         output = output.result()
         for future in futures:

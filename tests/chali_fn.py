@@ -29,16 +29,16 @@ def main():
                 output = Path(directory) / (name + ('.exe' if os.name == 'nt' else ''))
         legacy = Path(directory) / 'legacy.chl'
         for spelling in ('lambda(int64 x){x+1}', 'int64 lambda(int64 x){return x+1;}', 'lambda copy(int64 x){return x+1;}', 'lambda move[x](){return x;}'):
-            legacy.write_text('int64 main(){int64 x=1;let f=' + spelling + ';return 0;}', encoding='utf-8')
+            legacy.write_text('void main(){int64 x=1;let f=' + spelling + ';}', encoding='utf-8')
             result = invoke([compiler, 'run', legacy])
             assert result.returncode != 0, (spelling, result.stdout, result.stderr)
-        legacy.write_text('int64 main(){int64 lambda=3;assert(lambda==3);return 0;}', encoding='utf-8')
+        legacy.write_text('void main(){int64 lambda=3;assert(lambda==3);}', encoding='utf-8')
         result = invoke([compiler, 'run', legacy])
         assert result.returncode == 0, (result.stdout, result.stderr)
         for keyword in ('fn', 'lambda'):
             for fragment in ('int64 x=1; let f=KEY const(){x+=1;return x;};', 'int64 x=1; let f=KEY copy[x] move[x](){return x;};', 'let f=KEY(int64 x) -> int64 {return x;};'):
                 source = Path(directory) / 'invalid.chl'
-                source.write_text('int64 main(){' + fragment.replace('KEY', keyword) + 'return 0;}', encoding='utf-8')
+                source.write_text('void main(){' + fragment.replace('KEY', keyword) + '}', encoding='utf-8')
                 result = invoke([compiler, '--check', source])
                 assert result.returncode != 0, (keyword, fragment, result.stdout, result.stderr)
             print(f'[通过] {keyword} 非法捕获与箭头返回类型诊断', flush=True)

@@ -13,7 +13,7 @@ void initial(int64 value) { std::message::sendThread<int64>(std::thread::parent(
 void spin() { while (true) { } }
 void blocked() { String value = std::thread::receive(); }
 void sleeping() { std::thread::sleepFor(60000); }
-int64 main() {
+void main() {
     Thread task = std::thread::createWith<int64>(initial, 41);
     let message = std::message::receiveFor<int64>(5000);
     assert(message.isReady() && message.value == 42);
@@ -35,14 +35,14 @@ int64 main() {
     assert(std::thread::state(joined) == std::thread::CANCELLED);
     assert(std::thread::tryReceive().status == 1);
     println("ok");
-    return 0;
+
 }
 ''',
     'channel_bounds': '''
 import std::thread;
 import std::concurrency;
 import std::clock;
-int64 main() {
+void main() {
     let channel = std::concurrency::Channel<int64>::create(1);
     assert(channel.trySend(7) == 0);
     assert(channel.trySend(8) == 4);
@@ -60,7 +60,7 @@ int64 main() {
     std::thread::closeInbox();
     assert(std::thread::tryReceive().status == 2);
     println("ok");
-    return 0;
+
 }
 ''',
     'channel_parallel': '''
@@ -74,7 +74,7 @@ void consume(Work work) {
         work.sum.fetchAdd(item.value);
     }
 }
-int64 main() {
+void main() {
     Work work;
     work.jobs = std::concurrency::Channel<int64>::create(3);
     work.sum = std::concurrency::AtomicInt64::create(0);
@@ -85,14 +85,14 @@ int64 main() {
     assert(group.waitAll());
     assert(work.sum.get() == 5050);
     println("ok");
-    return 0;
+
 }
 ''',
     'group_failure': '''
 import std::thread;
 void spin() { while (true) {} }
 void bad() { List<int64> values; values.at(9); }
-int64 main() {
+void main() {
     ThreadGroup group;
     Thread other = group.start(spin);
     group.start(bad);
@@ -101,13 +101,13 @@ int64 main() {
     assert(std::thread::state(other) == std::thread::CANCELLED);
     assert(!group.waitAll());
     println("ok");
-    return 0;
+
 }
 ''',
     'pool_drain': '''
 import std::thread;
 void job() { std::thread::send(std::thread::parent(), "job"); }
-int64 main() {
+void main() {
     ThreadPool pool = ThreadPool::create(3, 2);
     for (int64 i in std::lang::range(0, 12)) { assert(pool.submit(job) == 0); }
     assert(pool.closeAndWait());
@@ -117,23 +117,23 @@ int64 main() {
     }
     assert(pool.submit(job) == 2);
     println("ok");
-    return 0;
+
 }
 ''',
     'pool_failure': '''
 import std::thread;
 void bad() { List<int64> values; values.at(9); }
-int64 main() {
+void main() {
     ThreadPool pool = ThreadPool::create(2, 2);
     assert(pool.submit(bad) == 0);
     assert(!pool.closeAndWait());
     println("ok");
-    return 0;
+
 }
 ''',
     'events': '''
 import std::event;
-int64 main() {
+void main() {
     assert(std::event::post(3, 8) == 0);
     let next = std::event::tryReceive();
     assert(next.isReady() && next.value.tag == 3 && next.value.source == 8);
@@ -145,21 +145,21 @@ int64 main() {
     std::event::close();
     assert(std::event::post(0, 1) == 2);
     println("ok");
-    return 0;
+
 }
 ''',
 }
 
 CASES['main_exit'] = '''import std::thread;
 void spin() { while (true) {} }
-int64 main() { Thread t = std::thread::create(spin); println("ok"); return 0; }'''
+void main() { Thread t = std::thread::create(spin); println("ok"); }'''
 
 CASES['waiter_cancel'] = r'''
 import std::thread;
 import std::message;
 void spin() { while (true) {} }
 void waiter(Thread target) { std::thread::wait(target); }
-int64 main() {
+void main() {
     for (int64 i in std::lang::range(0, 12)) {
         Thread target = std::thread::create(spin);
         Thread joining = std::thread::createWith<Thread>(waiter, target);
@@ -170,14 +170,14 @@ int64 main() {
         assert(std::thread::waitResult(target).status == 3);
     }
     println("ok");
-    return 0;
+
 }
 '''
 CASES['mailbox_capacity'] = r'''
 import std::thread;
 import std::message;
 void spin() { while (true) {} }
-int64 main() {
+void main() {
     Thread target = std::thread::create(spin);
     for (int64 i in std::lang::range(0, 256)) { assert(std::message::trySend<int64>(target, i) == 0); }
     assert(std::message::trySend<int64>(target, 257) == 4);
@@ -186,7 +186,7 @@ int64 main() {
     assert(std::thread::waitResult(target).status == 3);
     assert(std::message::trySend<int64>(target, 0) == 2);
     println("ok");
-    return 0;
+
 }
 '''
 CASES['channel_close_waiters'] = r'''
@@ -199,7 +199,7 @@ void producer(std::concurrency::Channel<int64> queue) {
 void consumer(std::concurrency::Channel<int64> queue) {
     std::message::sendThread<int64>(std::thread::parent(), queue.receive().status);
 }
-int64 main() {
+void main() {
     for (int64 i in std::lang::range(0, 10)) {
         let full = std::concurrency::Channel<int64>::create(1);
         full.send(1);
@@ -221,7 +221,7 @@ int64 main() {
     invalid.close();
     assert(std::thread::tryReceive().status == 1);
     println("ok");
-    return 0;
+
 }
 '''
 
@@ -242,7 +242,7 @@ void eventWait() {
     std::message::sendThread<int64>(std::thread::parent(), 1);
     std::event::receive();
 }
-int64 main() {
+void main() {
     let full = std::concurrency::Channel<int64>::create(1);
     full.send(1);
     Thread writer = std::thread::createWith<std::concurrency::Channel<int64>>(send, full);
@@ -265,7 +265,7 @@ int64 main() {
     assert(full.receive().value == 1);
     empty.close();
     println("ok");
-    return 0;
+
 }
 '''
 
@@ -309,15 +309,15 @@ def main():
                                         env=environment, timeout=60)
                 assert loaded.returncode == 0 and 'ok' in loaded.stdout, (name, loaded.stdout, loaded.stderr)
         rejected = {
-            'group_self': 'import std::thread; int64 main() { ThreadGroup g; g.add(std::thread::current()); return 0; }',
-            'group_duplicate': 'import std::thread; void f() {} int64 main() { ThreadGroup g; Thread t = g.start(f); g.add(t); return 0; }',
-            'nominal_handle': 'import std::thread; int64 main() { Thread task = 1; return 0; }',
-            'nested_owner_transfer': 'import std::thread; import std::event; struct Box { Timer timer; }; void f(Box b) {} int64 main() { Box b; std::thread::createWith<Box>(f, b); return 0; }',
-            'owner_transfer': 'import std::thread; void f(ThreadGroup g) {} int64 main() { ThreadGroup g; std::thread::createWith<ThreadGroup>(f, g); return 0; }',
-            'resource_transfer': 'import std::thread; import std::net; void f(TcpSocket s) {} int64 main() { TcpSocket s; std::thread::createWith<TcpSocket>(f, s); return 0; }',
-            'removed_module': 'import std::coroutine; int64 main() { return 0; }',
-            'removed_callback': 'import std::event; int64 main() { Timer t; t.onTick(void fn(int64 value) {}); return 0; }',
-            'borrowed_entry': 'import std::thread; int64 main() { int64 x=1; let f=void fn(){println("{}",x);}; std::thread::create(f); return 0; }',
+            'group_self': 'import std::thread; void main() { ThreadGroup g; g.add(std::thread::current()); }',
+            'group_duplicate': 'import std::thread; void f() {} void main() { ThreadGroup g; Thread t = g.start(f); g.add(t); }',
+            'nominal_handle': 'import std::thread; void main() { Thread task = 1; }',
+            'nested_owner_transfer': 'import std::thread; import std::event; struct Box { Timer timer; }; void f(Box b) {} void main() { Box b; std::thread::createWith<Box>(f, b); }',
+            'owner_transfer': 'import std::thread; void f(ThreadGroup g) {} void main() { ThreadGroup g; std::thread::createWith<ThreadGroup>(f, g); }',
+            'resource_transfer': 'import std::thread; import std::net; void f(TcpSocket s) {} void main() { TcpSocket s; std::thread::createWith<TcpSocket>(f, s); }',
+            'removed_module': 'import std::coroutine; void main() { }',
+            'removed_callback': 'import std::event; void main() { Timer t; t.onTick(void fn(int64 value) {}); }',
+            'borrowed_entry': 'import std::thread; void main() { int64 x=1; let f=void fn(){println("{}",x);}; std::thread::create(f); }',
         }
         for name, code in rejected.items():
             source = directory / (name + '.chl')

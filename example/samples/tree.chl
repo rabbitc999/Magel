@@ -76,7 +76,7 @@ String inorder(Option<Node mut&> optional) {
     return inorder(node.left) + format("{}", (char)node.value) + inorder(node.right);
 }
 
-int64 main() {
+void main() {
     String pre = "ABDECFG";
     String inorder_text = "DBEAFCG";
 
@@ -89,5 +89,5 @@ int64 main() {
     println("后序：{}", post);
 
     release(root);
-    return 0;
+
 }

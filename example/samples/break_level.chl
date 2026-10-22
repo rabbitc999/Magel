@@ -10,7 +10,7 @@ int64 afterLoops() {
     loop { loop { break level 2; }; };
     return 7;
 }
-int64 main() {
+void main() {
     int64 count = 0;
     {
         int64 i = 0;
@@ -108,5 +108,5 @@ int64 main() {
     loop { loop { all++; break level ALL; }; assert(false); };
     assert(all == 8);
     println("break level OK");
-    return 0;
+
 }

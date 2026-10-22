@@ -148,7 +148,7 @@ void dft(float64 const& signal, String title) {
     }
 }
 
-int64 main() {
+void main() {
     /* 1) 单位冲激：频谱是平的，每个 X[k] 都是 (1.000, 0.000) */
     float64 impulse[8];
     impulse[0] = 1.0;
@@ -184,5 +184,5 @@ int64 main() {
     dft(impulse, impulse_title);
     dft(alternating, alternating_title);
     dft(square, square_title);
-    return 0;
+
 }

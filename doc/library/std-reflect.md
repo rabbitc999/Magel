@@ -32,14 +32,14 @@ import std::reflect;
 @Reflect
 struct ReferenceRecord { int64 id; String name; };
 
-int64 main() {
+void main() {
     uint64 id = std::reflect::getTypeId<ReferenceRecord>();
     Option<std::reflect::StructInfo> info = std::reflect::getStructInfo<ReferenceRecord>();
     assert(info.isValue());
     std::reflect::StructInfo record = info.unwrap();
     assert(record.typeId == id && record.fields.len() == 2);
     println("reflect API ok");
-    return 0;
+
 }
 ```
 

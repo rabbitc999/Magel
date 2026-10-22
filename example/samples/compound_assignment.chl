@@ -16,7 +16,7 @@ struct Counter : Add<Counter, int64> {
         return result;
     }
 };
-int64 main() {
+void main() {
     int64 expressionLeft = 1;
     int64 expressionRight = 2;
     expressionLeft += expressionRight * 3 + 4;
@@ -124,5 +124,5 @@ int64 main() {
     }
     assert(total == 6);
     println("compound assignment OK");
-    return 0;
+
 }

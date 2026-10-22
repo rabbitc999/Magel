@@ -29,11 +29,11 @@ def main():
     assert result.returncode == 0, result
     result = execute(unchecked_unit)
     assert result.returncode == 0 and result.stdout == 'custom heap unchecked OK\n', result
-    cases = {'read': ('int64', 'int64 leaf(int64 & p) { return p; }', 'return outer(stale);'), 'write': ('int64', 'int64 leaf(int64 mut& p) { p = 9; return 0; }', 'return outer(stale);'), 'float': ('float64', 'int64 leaf(float64 & p) { float64 value = p; return 0; }', 'return outer(stale);'), 'char': ('char', 'int64 leaf(char & p) { char value = p; return 0; }', 'return outer(stale);'), 'char_write': ('char', "int64 leaf(char mut& p) { p = 'A'; return 0; }", 'return outer(stale);')}
+    cases = {'read': ('int64', 'int64 leaf(int64 & p) { return p; }', 'let __boom = outer(stale);'), 'write': ('int64', 'int64 leaf(int64 mut& p) { p = 9; return 0; }', 'let __boom = outer(stale);'), 'float': ('float64', 'int64 leaf(float64 & p) { float64 value = p; return 0; }', 'let __boom = outer(stale);'), 'char': ('char', 'int64 leaf(char & p) { char value = p; return 0; }', 'let __boom = outer(stale);'), 'char_write': ('char', "int64 leaf(char mut& p) { p = 'A'; return 0; }", 'let __boom = outer(stale);')}
     for name, (type_name, leaf, body) in cases.items():
         permission = 'mut&' if name in ('write', 'char_write') else '&'
         source = WORK / (name + '.chl')
-        source.write_text(leaf + '\nint64 outer(' + type_name + ' ' + permission + ' p) { return leaf(p); }\nvoid dispose(' + type_name + ' mut& p) { p.drop(); }\nint64 main() {\n' + type_name + ' mut& owner = heap ' + type_name + ';\n' + type_name + ' ' + permission + ' stale = owner;\ndispose(owner);\n' + body + '\n}\n', encoding='utf-8')
+        source.write_text(leaf + '\nint64 outer(' + type_name + ' ' + permission + ' p) { return leaf(p); }\nvoid dispose(' + type_name + ' mut& p) { p.drop(); }\nvoid main() {\n' + type_name + ' mut& owner = heap ' + type_name + ';\n' + type_name + ' ' + permission + ' stale = owner;\ndispose(owner);\n' + body + '\n}\n', encoding='utf-8')
         result = execute(compiler, '--lang', 'zh', 'run', source, '--out', WORK / (name + '-interpret'))
         results = [('解释执行', result)]
         for backend, result in results:

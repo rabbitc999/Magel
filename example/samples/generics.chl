@@ -37,7 +37,7 @@ T add<T>(T left, T right) {
     return left + right;
 }
 
-int64 main() {
+void main() {
     Number number;
     number.n = 42;
 
@@ -61,5 +61,5 @@ int64 main() {
     println("{} {} {} {}", row.third, row.second,
     read_value<Number>(nested.second), defaults.second);
     println("specialized {} {}", specialized(6), specialized_auto(7));
-    return 0;
+
 }

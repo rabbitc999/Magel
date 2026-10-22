@@ -10,7 +10,7 @@ enum Box<T: Valued> {
     Value(T item)
 };
 
-int64 main() {
+void main() {
     Box<Plain> value;
-    return 0;
+
 }

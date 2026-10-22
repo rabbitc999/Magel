@@ -1,6 +1,6 @@
 import std::sql;
 // 仅创建会话临时表，连接关闭后自动删除，不修改业务表。
-int64 main(){
+void main(){
     String engine=std::lang::inputLine(), credential=std::lang::inputLine();
     Database db;
     if(engine=="mysql"){db=Database::mysql("127.0.0.1","root",credential,"mysql");}
@@ -31,5 +31,5 @@ int64 main(){
     String version=db.scalar("SELECT version()");
     db.close();db.close();
     std::lang::assert(!db.exec("SELECT 1").ok);
-    std::lang::println("{} live database checks passed: {}",engine,version);return 0;
+    std::lang::println("{} live database checks passed: {}",engine,version);
 }

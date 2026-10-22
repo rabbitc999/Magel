@@ -1,6 +1,6 @@
-int64 main() {
+void main() {
     int64 value = 1;
     int64 const& reference = &value;
     let callback = fn mut() { reference };
-    return callback();
+    let __ignored1 = callback();
 }

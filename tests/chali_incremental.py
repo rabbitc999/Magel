@@ -33,7 +33,7 @@ def main() -> None:
         body = module
         source = work / "app.chl"
         source.write_text("module demo;\nimport math::ops;\n"
-                          "int64 main() { std::lang::println(\"{}\", math::ops::twice(2)); return 0; }\n",
+                          "void main() { std::lang::println(\"{}\", math::ops::twice(2)); return; }\n",
                           encoding="utf-8")
         body.write_text("module math::ops;\nint64 twice(int64 x) { return x + x; }\n", encoding="utf-8")
         output = work / "build" / "app"

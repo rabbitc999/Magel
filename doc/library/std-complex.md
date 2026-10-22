@@ -33,7 +33,7 @@ import std::math;
 bool lessFloat(float64 left, float64 right) { return left < right; }
 
 
-int64 main() {
+void main() {
     bool fn(float64, float64) compare = lessFloat;
     assert(compare(1.25, 1.75) && !compare(2.0, 1.0));
     std::complex::Complex<float64> a=std::complex::Complex<float64>::of(3.0,4.0);
@@ -79,7 +79,7 @@ int64 main() {
     oddLength.drop();
     oddSpectrum.drop();
     oddBack.drop();
-    return 0;
+
 }
 ```
 

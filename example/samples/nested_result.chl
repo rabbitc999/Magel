@@ -198,7 +198,7 @@ Result<String, TransportError> requireText(String endpoint, bool online, String 
     return Result<String, TransportError>::Ok(value);
 }
 
-int64 main() {
+void main() {
     report("ok", loadField("count", "fast", true, "42"));
     report("empty", loadField("count", "fast", true, ""));
     report("text", loadField("count", "fast", true, "abc"));
@@ -245,5 +245,5 @@ int64 main() {
             println("require err {}", describeTransport(error));
         }
     }
-    return 0;
+
 }

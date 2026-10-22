@@ -23,7 +23,7 @@ EXE = ".exe" if os.name == "nt" else ""
 
 PROBE = """import std::watchdog;
 
-int64 main() {
+void main() {
     match (std::watchdog::enable(0)) {
         Result<int64, std::watchdog::WatchdogError>::Ok(w) => { std::lang::println("on {}", w); }
         Result<int64, std::watchdog::WatchdogError>::Err(reason) => {
@@ -38,14 +38,14 @@ int64 main() {
     retired.drop();
     std::watchdog::requestRestart();
     std::lang::println("tail");
-    return 0;
+
 }
 """
 
 # 时间维度②：开了超时却一直不喂狗 —— 一整段没有 `kick()`，看门狗自己把这一轮重启掉。
 TIMEOUT_PROBE = """import std::watchdog;
 
-int64 main() {
+void main() {
     match (std::watchdog::enableTimeout(500)) {
         Result<int64, std::watchdog::WatchdogError>::Ok(units) => { std::lang::println("on {}", units); }
         Result<int64, std::watchdog::WatchdogError>::Err(reason) => {
@@ -59,14 +59,14 @@ int64 main() {
     int64 i = 0;
     while (i < 100000) { i = i + 1; }
     std::lang::println("tail");
-    return 0;
+
 }
 """
 
 # 时间维度①：默认关（kick 报 NotEnabled、非法超时被拒）；②：定时喂狗则一次都不触发。
 KICK_PROBE = """import std::watchdog;
 
-int64 main() {
+void main() {
     Result<bool, std::watchdog::WatchdogError> before = std::watchdog::kick();
     std::lang::println("kick-before-enable isErr={}", before.isErr());
 
@@ -93,7 +93,7 @@ int64 main() {
     }
     Result<bool, std::watchdog::WatchdogError> after = std::watchdog::kick();
     std::lang::println("kicked {} isOk={}", done, after.isOk());
-    return 0;
+
 }
 """
 

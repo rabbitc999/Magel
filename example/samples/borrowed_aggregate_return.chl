@@ -10,7 +10,7 @@ enum BorrowedChoice { Empty, Text(String value); };
 BorrowedChoice choice;
 BorrowedChoice const& borrowedChoice() { return &choice; }
 BorrowedChoice copiedChoice() { return borrowedChoice(); }
-int64 main() {
+void main() {
     original.text="source";
     original.numbers.push(7);
     {
@@ -36,5 +36,5 @@ int64 main() {
         }
     }
     println("borrowed aggregate return OK");
-    return 0;
+
 }

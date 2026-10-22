@@ -1,4 +1,4 @@
-int64 main() {
+void main() {
     bool value = 0 || false;
-    return 0;
+
 }

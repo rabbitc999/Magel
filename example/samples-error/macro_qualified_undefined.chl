@@ -1,2 +1,2 @@
 /* 限定名调用的模块路径找不到对应宏定义时，按未定义宏报（位置指向调用点）。 */
-int64 main() { $std::nope::foo(1); return 0; }
+void main() { $std::nope::foo(1); }

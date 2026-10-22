@@ -8,7 +8,7 @@ struct DefaultOwned {
     String fn() callback;
 };
 String fn() retained(String mut& text) { return fn() { text }; }
-int64 main() {
+void main() {
     {
         int64 i = 0;
         while (i < 20) {
@@ -43,5 +43,5 @@ int64 main() {
         }
     }
     println("allocated default ownership OK");
-    return 0;
+
 }

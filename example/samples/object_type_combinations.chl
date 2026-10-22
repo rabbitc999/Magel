@@ -19,7 +19,7 @@ int64 bias1=1,bias10=10,bias20=20,bias30=30,bias40=40,bias50=50,bias60=60,bias70
 Any duplicate(Any box){return box.copy();}
 int64 readBox<T>(Any box){T value=box.getValue();return value.read();}
 Record extractRecord(Any box){return box.getValue();}
-int64 main(){
+void main(){
     Any box; assert(box.isEmpty());
     {int64 local=5;Any localBox;localBox.set(&local);int64 mut& alias=localBox.getReference();alias=6;assert(local==6);}
     box.set((int32)7);assert(isType<int32>(&box));int32 small=box.getValue();assert(small==(int32)7);
@@ -76,5 +76,5 @@ int64 main(){
     (int64 fn(int64)) const& borrowed=functionReference.getReference();assert(borrowed(2)==62);
     globalCallback=add;assert(borrowed(2)==3);
     Option<(int64 fn(int64)) const&> optionalFunction=functionReference.getOptional();assert(optionalFunction.unwrap()(3)==4);
-    println("object type combinations OK");return 0;
+    println("object type combinations OK");
 }

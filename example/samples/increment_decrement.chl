@@ -5,7 +5,7 @@ int64 calls = 0;
 int64 position() { calls += 1; return 0; }
 int64 sum(int64 first, int64 second) { return first + second; }
 struct Counter { int64 value; };
-int64 main() {
+void main() {
     int64 i = 3;
     int64 a = i++;
     assert(a == 3 && i == 4);
@@ -101,5 +101,5 @@ int64 main() {
         }
     }
     println("increment decrement OK");
-    return 0;
+
 }

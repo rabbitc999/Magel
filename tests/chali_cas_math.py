@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CASES = {
     'numeric_types': '''import std::math;
 import std::cas;
-int64 main() {
+void main() {
     BigDecimal value = BigDecimal(1);
     value.setPrecision(100);
     BigDecimal converted = Expr::parse("1").decimal(100);
@@ -31,10 +31,10 @@ int64 main() {
     BigDecimal inversePower = BigDecimal("1e-12345");
     inversePower.setPrecision(2);
     assert(log10(inversePower) == BigDecimal(-12000));
-    println("ok"); return 0;
+    println("ok");
 }''',
     'transforms': '''import std::cas;
-int64 main() {
+void main() {
     Expr x = Expr::symbol("x");
     assert(Expr::parse("(x+1)^2").expand() == Expr::parse("x^2+2*x+1"));
     assert(Expr::parse("x^2-1").factor().expand() == Expr::parse("x^2-1"));
@@ -43,7 +43,7 @@ int64 main() {
     assert(Expr::parse("x^3").differentiate("x", 2) == Expr::parse("6*x"));
     assert(Expr::parse("sin(x)").taylor("x", Expr::parse("0"), 3) == Expr::parse("x-x^3/6"));
     assert(Expr::parse("-7/3").numerator() == BigInteger(-7));
-    println("ok"); return 0;
+    println("ok");
 }''',
     'thread_copy': '''import std::cas;
 import std::thread;
@@ -52,7 +52,7 @@ void worker(Expr expression) {
     Expr result = expression.differentiate();
     std::message::sendThread<Expr>(std::thread::parent(), result);
 }
-int64 main() {
+void main() {
     Thread task;
     { Expr value = Expr::parse("123456789012345678901234567890*x^2");
       task = std::thread::createWith<Expr>(worker, value); }
@@ -62,13 +62,13 @@ int64 main() {
     Expr result = reply.value;
     assert(result == Expr::parse("246913578024691357802469135780*x"));
     assert(result.childCount() > 0);
-    println("ok"); return 0;
+    println("ok");
 }''',
     'auto_overloads': '''float64 choose(float64 x) { return x; }
 float32 choose(float32 x) { return x; }
 int64 choose(int64 x) { return x; }
 let forward<T>(T x) { return choose(x); }
-int64 main() { float32 single = forward(1.0f); float64 real = forward(1.0); int64 integer = forward(1); assert(single == 1.0f && real == 1.0 && integer == 1); println("ok"); return 0; }''',
+void main() { float32 single = forward(1.0f); float64 real = forward(1.0); int64 integer = forward(1); assert(single == 1.0f && real == 1.0 && integer == 1); println("ok"); }''',
 }
 ERRORS = {
     'parse': ('let result = Expr::parse("x+");', '解析失败'),
@@ -109,7 +109,7 @@ def main():
     for sample in random.Random(241).sample(candidates,4):
         run(sample,(ROOT/f'example/samples/{sample}.chl').read_text(encoding='utf-8'),(ROOT/f'example/expected/{sample}.txt').read_text(encoding='utf-8'))
     for name,source in CASES.items(): run(name,source,'ok\n')
-    for name,(body,error) in ERRORS.items(): run(name,'import std::cas;\nimport std::math;\nint64 main() { '+body+' return 0; }',error=error)
+    for name,(body,error) in ERRORS.items(): run(name,'import std::cas;\nimport std::math;\nvoid main() { '+body+' return; }',error=error)
     (work/'results.json').write_text(json.dumps(reports,ensure_ascii=False,indent=2),encoding='utf-8')
     print(f'CAS / 泛型数学语言回归通过：{len(reports)} 项')
 

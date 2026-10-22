@@ -43,7 +43,7 @@ Set<int64> mut& set, Map<String, int64> mut& map,
     map["seven"] = 7;
     tuple = (7, "seven");
 }
-int64 main() {
+void main() {
     {
         int64 round = 0;
         while (round < 4) {
@@ -146,6 +146,6 @@ int64 main() {
     globalSetRef.add(8);
     assert((globalSet.has(8) != 0));
     println("reference value types OK");
-    return 0;
+
 }
 

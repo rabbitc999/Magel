@@ -43,9 +43,9 @@ ChaLi 的"坐标"也只认**整数**：数组下标、列表下标、字符串�
 世界上第一块方块叫 **hello**。
 
 ```chl
-int64 main() {
+void main() {
     println("hello, ChaLi");
-    return 0;
+
 }
 ```
 
@@ -62,10 +62,10 @@ int64 main() {
 ```chl
 import std::text;
 
-int64 main() {
+void main() {
     String slab = std::text::Text::toUpper("magic-c");
     println("{} 命名方块：草方块", slab);
-    return 0;
+
 }
 ```
 
@@ -114,10 +114,10 @@ MAGIC-C 命名方块：草方块
 宽度是有代价的。**塞不进去的方块，不许硬塞**：
 
 ```chl
-int64 main() {
+void main() {
     int8 lantern = 200;
     println("{}", lantern);
-    return 0;
+
 }
 ```
 
@@ -137,13 +137,13 @@ int64 main() {
 新手最容易踩的坑，是把"复制"当成"共享"。
 
 ```chl
-int64 main() {
+void main() {
     List<int64> one;
     one.push(1);
     List<int64> two = one;
     two.push(99);
     println("{} {}", one.len(), two.len());
-    return 0;
+
 }
 ```
 
@@ -160,12 +160,12 @@ int64 main() {
 覆盖之前先把旧值还回去。
 
 ```chl
-int64 main() {
+void main() {
     String a = "left";
     String b = a;
     b = "right";
     println("a={} b={}", a, b);
-    return 0;
+
 }
 ```
 
@@ -207,12 +207,12 @@ ChaLi 把这条路封死了：
 - 地址算术**删除**。要看一眼地址，只能用 `address`。
 
 ```chl
-int64 main() {
+void main() {
     int64 sky = 1;
     int64 mut& roof = &sky;
     roof = roof + 41;
     println("sky={} roof={}", sky, roof);
-    return 0;
+
 }
 ```
 
@@ -238,7 +238,7 @@ sky=42 roof=42
 
 ```chl
 int64 mut& grab(int64 v) { return &v; }
-int64 main() { return 0; }
+void main() { }
 ```
 
 编译器直接拦住：
@@ -267,7 +267,7 @@ struct Block : Drop {
     void drop() { println("{} 被收走", self.name); }
 }
 
-int64 main() {
+void main() {
     {
         int64 i = 0;
         while (i < 3) {
@@ -280,7 +280,7 @@ int64 main() {
         }
     }
     println("一圈走完，地上没留下任何东西");
-    return 0;
+
 }
 ```
 
@@ -321,9 +321,9 @@ List<int64> make() {
     return xs;
 }
 
-int64 main() {
+void main() {
     println("len={}", make().len());
-    return 0;
+
 }
 ```
 
@@ -339,12 +339,12 @@ int64 main() {
 import std::iter;
 import std::text;
 
-int64 main() {
+void main() {
     String label = std::text::Text::toUpper("magic-c");
     let chute = std::iter::range(0, 100).take(3);
     List<int64> into = chute.collect();
     println("{} {}", label, into.len());
-    return 0;
+
 }
 ```
 
@@ -367,11 +367,11 @@ import std::iter;
 
 int64 twice(int64 v) { return v * 2; }
 
-int64 main() {
+void main() {
     let line = std::iter::range(0, 3).map(twice);
     List<int64> got = line.collect();
     println("{} {} {}", got.len(), got[0], got[2]);
-    return 0;
+
 }
 ```
 
@@ -393,11 +393,11 @@ struct Vec : Add<int64, int64> {
     int64 leftAdd(int64 other) { return self.v + other; }
 };
 
-int64 main() {
+void main() {
     Vec a;
     a.v = 10;
     println("{} {}", a + 5, 5 + a);
-    return 0;
+
 }
 ```
 
@@ -423,13 +423,13 @@ int64 main() {
 ```chl
 enum Signal { Off, Weak(int64 value), Strong(int64 value) };
 
-int64 main() {
+void main() {
     match (Signal::Weak(3)) {
         Signal::Off => { println("灭"); }
         Signal::Weak(power) => { println("弱 {}", power); }
         Signal::Strong(power) => { println("强 {}", power); }
     }
-    return 0;
+
 }
 ```
 

@@ -1,1 +1,1 @@
-int64 main() { let value = {"key": {}}; return 0; }
+void main() { let value = {"key": {}}; }

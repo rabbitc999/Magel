@@ -44,7 +44,7 @@ import std::algorithms;
 
 import std::clock;
 
-int64 main() {
+void main() {
     /* --- Math：float64 取整 / 取余 / 特殊值判定（宿主 <cmath>） --- */
     println("{} {} {} {}", std::math::floor(2.7), std::math::ceil(2.1),
     std::math::round(2.5), std::math::trunc(-2.7));
@@ -93,7 +93,7 @@ int64 main() {
     List<int64> again = std::algorithms::shuffleValue<int64>(items, (uint64)4242);
     println("{} {} {}", again[0] == mixed[0], again[1] == mixed[1],
     again[2] == mixed[2]);
-    return 0;
+
 }
 ```
 

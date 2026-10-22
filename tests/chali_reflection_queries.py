@@ -26,7 +26,7 @@ def main():
         assert '未开启' in rejected.stderr, rejected.stderr
         for body in ('std::reflect::getTypeId<Unknown>()', 'std::reflect::getTypeId<Box<T>>()'):
             source = work / 'invalid.chl'
-            source.write_text('import std::reflect;\nstruct Box<T>{T value;};\nint64 main(){' + body + ';return 0;}\n', encoding='utf-8')
+            source.write_text('import std::reflect;\nstruct Box<T>{T value;};\nvoid main(){' + body + ';return;}\n', encoding='utf-8')
             run([args.chali, 'run', source, '--reflection', '--check'], False)
         for backend in ('',):
             output = work / ((backend or 'direct') + EXE)

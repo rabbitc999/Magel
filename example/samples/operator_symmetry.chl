@@ -28,7 +28,7 @@ struct Key : Equal<bool, int64> {
     bool leftEqual(int64 other) { return self.v == other; }
 };
 
-int64 main() {
+void main() {
     Vec a;
     a.v = 10;
     println("a + 5 = {}", a + 5);
@@ -49,5 +49,5 @@ int64 main() {
     println("k == 7 = {}", k == 7);
     println("k != 7 = {}", k != 7);    /* 取反：!(k == 7) */
     println("k != 9 = {}", k != 9);
-    return 0;
+
 }

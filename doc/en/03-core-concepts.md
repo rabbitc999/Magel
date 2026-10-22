@@ -9,7 +9,7 @@ provenance/control-flow checking. See [current capabilities](17-capabilities.md)
 ```chali
 struct Point { int64 x; int64 y; };
 void shift(Point p) { p.x = p.x + 10; }
-int64 main() {
+void main() {
     Point a;
     a.x = 1;
     a.y = 2;
@@ -17,7 +17,7 @@ int64 main() {
     b.x = 99;
     shift(a);
     println("a=({}, {}) b=({}, {})", a.x, a.y, b.x, b.y);
-    return 0;
+
 }
 ```
 
@@ -83,14 +83,14 @@ struct Resource : Drop {
     String name;
     void drop() { println("drop {}", self.name); }
 };
-int64 main() {
+void main() {
     {
         Resource r;
         r.name = "conn";
         println("using");
     }
     println("after block");
-    return 0;
+
 }
 ```
 

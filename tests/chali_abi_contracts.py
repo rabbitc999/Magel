@@ -42,15 +42,15 @@ def main():
         invoke([compiler, 'gen', 'abi', ROOT / 'doc/examples/abi_contracts/import.h',
                 '--library', library.as_posix(), '--out', imported])
         with imported.open('a', encoding='utf-8') as stream:
-            stream.write('\nint64 main(){assert(c_identity((int32)7)==C_FIRST);'
+            stream.write('\nvoid main(){assert(c_identity((int32)7)==C_FIRST);'
                          'let cb=int32 fn(int32 x){return x;};'
-                         'assert(c_apply(cb,(int32)3)==7);return 0;}\n')
+                         'assert(c_apply(cb,(int32)3)==7);return;}\n')
         invoke([compiler, 'run', imported])
         failure = work / 'callback-failure.chl'
         failure.write_text('abi "' + library.as_posix() + '" { '
                            'String owned(int32 fn(int32) cb) = "callback_owned" ["free_owned"]; } '
-                           'int64 main(){let cb=int32 fn(int32 x){panic("callback failure");return x;};'
-                           'String text=owned(cb);return 0;}', encoding='utf-8')
+                           'void main(){let cb=int32 fn(int32 x){panic("callback failure");return x;};'
+                           'String text=owned(cb);}', encoding='utf-8')
         marker = work / 'released.txt'
         env['CHALI_ABI_FREE_MARKER'] = str(marker)
         result = subprocess.run([str(compiler), 'run', str(failure)], cwd=ROOT, env=env,

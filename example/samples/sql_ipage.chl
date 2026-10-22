@@ -10,7 +10,7 @@ struct SqlPerson {
     int64 age;
 };
 
-int64 main()
+void main()
 {
     let model = std::sql::query<SqlPerson>();
     assert(model.isOk());
@@ -41,5 +41,5 @@ int64 main()
     assert(result.intAt(0, 2) == 28);
     database.close();
     println("ipage parameter binding OK");
-    return 0;
+
 }

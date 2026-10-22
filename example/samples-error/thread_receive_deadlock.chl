@@ -1,8 +1,8 @@
 
 import std::thread;
 
-int64 main() {
+void main() {
     String message = std::thread::receive();
     std::lang::println("{}", message);
-    return 0;
+
 }

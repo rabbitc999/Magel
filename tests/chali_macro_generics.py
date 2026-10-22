@@ -16,24 +16,24 @@ def main():
     options = parser.parse_args()
     compiler = options.chali.resolve()
     cases = [
-        ("explicit", "$macro ID<T>(x)\ncast<T>(x)\n$end_macro\nint64 main() { int32 a = $ID<int32>(42); return a - 42; }", None),
-        ("argument", "$macro ID<T:x>(x)\ncast<T>(x)\n$end_macro\nint64 main() { int32 x = 42; let a = $ID(x); return a - 42; }", None),
-        ("expected", "$macro ID<T>(x)\ncast<T>(x)\n$end_macro\nint64 main() { int32 a = $ID(42); return a - 42; }", None),
-        ("return_expected", "$macro ID<T>(x)\ncast<T>(x)\n$end_macro\nint32 test() { return $ID(42); } int64 main() { return test() - 42; }", None),
-        ("explicit_wins", "$macro ID<T:x>(x)\ncast<T>(x)\n$end_macro\nint64 main() { int64 x = 42; int32 a = $ID<int32>(x); return a - 42; }", None),
-        ("no_execution", "$macro ZERO<T:x>(x)\ncast<T>(0)\n$end_macro\nint64 counter = 0; int64 next() { counter += 1; return 42; } int64 main() { int64 a = $ZERO(next()); return counter + a; }", None),
-        ("statement", "$macro SET<T:x>(name, x)\nT name = x;\n$end_macro\nint64 main() { int32 x = 42; $SET(value, x); return value - 42; }", None),
-        ("reference_type", "$macro ID<T:x>(x)\ncast<T>(x)\n$end_macro\nint64 main() { int32 x = 42; let p = $ID(&x); return *p - 42; }", None),
-        ("nested", "$macro ID<T:x>(x)\ncast<T>(x)\n$end_macro\nint64 main() { int32 x = 42; let y = $ID($ID(x)); return y - 42; }", None),
-        ("closure_type", "$macro ID<T:x>(x)\ncast<T>(x)\n$end_macro\nint64 main() { let f = $ID(fn(int64 value) { value + 40 }); return f(2) - 42; }", None),
-        ("unused_semantics", "$macro ZERO<T>(x)\ncast<T>(0)\n$end_macro\nint64 main() { int32 value = $ZERO(cast<Missing>(1)); return value; }", None),
-        ("ordinary_generic_expression", "$macro ID(x)\nx\n$end_macro\nT identity<T>(T value) { return value; } int64 main() { int32 value = 42; return $ID(identity<int32>(value)) - 42; }", None),
-        ("generic_type_qualifier", "$macro ID(x)\nx\n$end_macro\nstruct Box<T> { static int64 get() { return 42; } } int64 main() { return $ID(Box<int32>::get()) - 42; }", None),
-        ("outer_generic_type", "$macro ID(x)\nx\n$end_macro\nT outer<T>(T value) { return $ID(cast<T>(value)); } int64 main() { int32 value = 42; return outer<int32>(value) - 42; }", None),
-        ("outer_generic_explicit", "$macro ID<T>(x)\ncast<T>(x)\n$end_macro\nT outer<T>(T value) { return $ID<T>(value); } int64 main() { int32 value = 42; return outer<int32>(value) - 42; }", None),
-        ("no_fallback", "$macro ID<T>(x)\ncast<T>(x)\n$end_macro\nint64 main() { let a = $ID(42); return a; }", "缺少静态类型约束"),
-        ("bad_source", "$macro ID<T:y>(x)\ncast<T>(x)\n$end_macro\nint64 main() { return $ID(42); }", "推导来源不是形参"),
-        ("wrong_count", "$macro ID<T>(x)\ncast<T>(x)\n$end_macro\nint64 main() { return $ID<int64,int32>(42); }", "类型实参数量"),
+        ("explicit", "$macro ID<T>(x)\ncast<T>(x)\n$end_macro\nvoid main() { int32 a = $ID<int32>(42); let __boom = a - 42; }", None),
+        ("argument", "$macro ID<T:x>(x)\ncast<T>(x)\n$end_macro\nvoid main() { int32 x = 42; let a = $ID(x); let __boom = a - 42; }", None),
+        ("expected", "$macro ID<T>(x)\ncast<T>(x)\n$end_macro\nvoid main() { int32 a = $ID(42); let __boom = a - 42; }", None),
+        ("return_expected", "$macro ID<T>(x)\ncast<T>(x)\n$end_macro\nint32 test() { return $ID(42); } void main() { let __boom = test() - 42; }", None),
+        ("explicit_wins", "$macro ID<T:x>(x)\ncast<T>(x)\n$end_macro\nvoid main() { int64 x = 42; int32 a = $ID<int32>(x); let __boom = a - 42; }", None),
+        ("no_execution", "$macro ZERO<T:x>(x)\ncast<T>(0)\n$end_macro\nint64 counter = 0; int64 next() { counter += 1; return 42; } void main() { int64 a = $ZERO(next()); let __boom = counter + a; }", None),
+        ("statement", "$macro SET<T:x>(name, x)\nT name = x;\n$end_macro\nvoid main() { int32 x = 42; $SET(value, x); let __boom = value - 42; }", None),
+        ("reference_type", "$macro ID<T:x>(x)\ncast<T>(x)\n$end_macro\nvoid main() { int32 x = 42; let p = $ID(&x); let __boom = *p - 42; }", None),
+        ("nested", "$macro ID<T:x>(x)\ncast<T>(x)\n$end_macro\nvoid main() { int32 x = 42; let y = $ID($ID(x)); let __boom = y - 42; }", None),
+        ("closure_type", "$macro ID<T:x>(x)\ncast<T>(x)\n$end_macro\nvoid main() { let f = $ID(fn(int64 value) { value + 40 }); let __boom = f(2) - 42; }", None),
+        ("unused_semantics", "$macro ZERO<T>(x)\ncast<T>(0)\n$end_macro\nvoid main() { int32 value = $ZERO(cast<Missing>(1)); let __boom = value; }", None),
+        ("ordinary_generic_expression", "$macro ID(x)\nx\n$end_macro\nT identity<T>(T value) { return value; } void main() { int32 value = 42; let __boom = $ID(identity<int32>(value)) - 42; }", None),
+        ("generic_type_qualifier", "$macro ID(x)\nx\n$end_macro\nstruct Box<T> { static int64 get() { return 42; } } void main() { let __boom = $ID(Box<int32>::get()) - 42; }", None),
+        ("outer_generic_type", "$macro ID(x)\nx\n$end_macro\nT outer<T>(T value) { return $ID(cast<T>(value)); } void main() { int32 value = 42; let __boom = outer<int32>(value) - 42; }", None),
+        ("outer_generic_explicit", "$macro ID<T>(x)\ncast<T>(x)\n$end_macro\nT outer<T>(T value) { return $ID<T>(value); } void main() { int32 value = 42; let __boom = outer<int32>(value) - 42; }", None),
+        ("no_fallback", "$macro ID<T>(x)\ncast<T>(x)\n$end_macro\nvoid main() { let a = $ID(42); let __boom = a; }", "缺少静态类型约束"),
+        ("bad_source", "$macro ID<T:y>(x)\ncast<T>(x)\n$end_macro\nvoid main() { let __boom = $ID(42); }", "推导来源不是形参"),
+        ("wrong_count", "$macro ID<T>(x)\ncast<T>(x)\n$end_macro\nvoid main() { let __boom = $ID<int64,int32>(42); }", "类型实参数量"),
     ]
     work = ROOT / "build/macro-hygiene"
     work.mkdir(parents=True, exist_ok=True)
@@ -44,9 +44,10 @@ def main():
                 continue
             executed += 1
             if error is None:
-                at = source.rfind("return ")
+                marker = "let __boom = "
+                at = source.rfind(marker)
                 end = source.index(";", at)
-                source = source[:at] + "return macroTestZero(" + source[at + 7:end] + ")" + source[end:]
+                source = source[:at] + "macroTestZero(" + source[at + len(marker):end] + ")" + source[end:]
                 source += "\nint64 macroTestZero(int64 value) { if (value == 0) { return 0; } return 1 / (value - value); }\n"
             path = Path(directory) / (name + ".chl")
             path.write_text(source + "\n", encoding="utf-8")

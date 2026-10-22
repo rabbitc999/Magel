@@ -1,1 +1,1 @@
-int64 main() { std::lang::Set<int64> value; std::lang::Set<int64> const& ref = &value; ref.clear(); return 0; }
+void main() { std::lang::Set<int64> value; std::lang::Set<int64> const& ref = &value; ref.clear(); }

@@ -38,11 +38,11 @@ def main():
             print(backend + (' 关闭优化' if no_opt else '') + '：括号元组交换通过', flush=True)
         cases = {'parenthesized_arity': ('int64 a,b;(a,b)=(1,2,3);', '数量'), 'parenthesized_const': ('const int64 a=1;int64 b;(a,b)=(2,3);', '不可变'), 'arity': ('int64 a,b;a,b=(1,2,3);', '数量'), 'shape': ('int64 a,b,c;a,(b,c)=(1,2);', '形状'), 'not_tuple': ('int64 a,b;a,b=1;', '必须是元组'), 'const_target': ('const int64 a=1;int64 b;a,b=(2,3);', '不可变'), 'readonly': ('int64 a=1;int64 const& r=&a;int64 b;r,b=(2,3);', '只读'), 'type_mismatch': ('int64 a,b;a,b=(1,"wrong");', '不能隐式转换'), 'invalid_target': ('int64 b;1,b=(1,2);', '赋值'), 'unknown_target': ('int64 b;missing,b=(1,2);', 'missing'), 'return_mismatch': ('', '不能隐式转换'), 'missing_assignment': ('int64 a,b;a,b;', '必须使用'), 'tuple_readonly': ('(int64,int64) pair=(1,2);int64 b;pair.0,b=(3,4);', '元组'), 'return_borrow': ('', '生命周期'), 'capture_write': ('const int64 a=0;int64 b;let f=void fn(){a,b=(1,2);};f();', '不可变')}
         for name, (body, diagnostic) in cases.items():
-            code = 'int64 main(){' + body + 'return 0;}'
+            code = 'void main(){' + body + '}'
             if name == 'return_mismatch':
-                code = '(int64,String) bad(){return 1,2;}int64 main(){return 0;}'
+                code = '(int64,String) bad(){return 1,2;}void main(){}'
             if name == 'return_borrow':
-                code = '(int64 mut&,int64) bad(){int64 local=1;return &local,1;}int64 main(){return 0;}'
+                code = '(int64 mut&,int64) bad(){int64 local=1;return &local,1;}void main(){}'
             source = work / (name + '.chl')
             source.write_text(code, encoding='utf-8')
             result = run(compiler, 'check', source, 'json')

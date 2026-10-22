@@ -41,16 +41,16 @@ def main():
             result = run([args.chali, *(['--reflection'] if enabled else ['--no-reflection']), '--check', source], success=error is None)
             if error:
                 assert error in result.stderr, result.stderr
-        check('@Reflect(1) int64 f(){return 1;} int64 main(){return 0;}', '不接受参数')
-        check('@Reflect struct S{@Reflect int64 x;}; int64 main(){return 0;}', '成员随类型暴露')
-        check('@Reflect int64 main(){return 0;}', '功能未开启', enabled=False)
-        check('@std::reflect::Reflect int64 main(){return 0;}')
-        check('@annotation Reflect(x:int32)\n@Reflect(1) int64 main(){return 0;}')
-        check('struct Box<T>{T value;};\n@Reflect int64 read(Box<int64> x){return x.value;}\nint64 main(){return 0;}')
+        check('@Reflect(1) int64 f(){return 1;} void main(){}', '不接受参数')
+        check('@Reflect struct S{@Reflect int64 x;}; void main(){}', '成员随类型暴露')
+        check('@Reflect void main(){}', '功能未开启', enabled=False)
+        check('@std::reflect::Reflect void main(){}')
+        check('@annotation Reflect(x:int32)\n@Reflect(1) void main(){}')
+        check('struct Box<T>{T value;};\n@Reflect int64 read(Box<int64> x){return x.value;}\nvoid main(){return;}')
         (work / 'chali.toml').write_text('[package]\nname="reflection"\nversion="0.1.0"\n[chali]\nimport_paths=["."]\n', encoding='utf-8')
         for module in ('one', 'two'):
             (work / (module + '.chl')).write_text('module ' + module + ';\n@Reflect struct Same{int64 value;};\n', encoding='utf-8')
-        source.write_text('import one;\nimport two;\nint64 main(){return 0;}\n', encoding='utf-8')
+        source.write_text('import one;\nimport two;\nvoid main(){return;}\n', encoding='utf-8')
         run([args.chali, '--reflection', '--emit', source, '--out', work / 'names'], cwd=work)
 
         def identities(prefix):
@@ -89,7 +89,7 @@ def main():
         snapshots = []
         for index, alias in enumerate(('String', 'std::lang::String')):
             extra = 'struct Unrelated{int32 x;};\n' if index else ''
-            source.write_text(extra + 'struct Box<T>{T value;};\n@Reflect String read(Box<' + alias + '> value){return value.value;}\nint64 main(){return 0;}\n', encoding='utf-8')
+            source.write_text(extra + 'struct Box<T>{T value;};\n@Reflect String read(Box<' + alias + '> value){return value.value;}\nvoid main(){return;}\n', encoding='utf-8')
             prefix = work / ('identity' + str(index))
             run([args.chali, '--reflection', '--emit', source, '--out', prefix])
             snapshots.append(identities(prefix))

@@ -1,5 +1,5 @@
 import std::text;
-int64 main(){
+void main(){
     assert(Text::kmpFind("hello chali","chali")==6);
     assert(Text::kmpFind("hello","hello")==0);
     assert(Text::kmpFind("hello","x")==0-1);
@@ -19,5 +19,5 @@ int64 main(){
     assert(selfOverlap.len()==3);
     println("kmp hits {} {} table {}", hits.len(), overlap.len(), table[3]);
     println("KMP search OK");
-    return 0;
+
 }

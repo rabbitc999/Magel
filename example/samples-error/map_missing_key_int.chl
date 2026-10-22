@@ -1,0 +1,7 @@
+/* Map 读不存在的键（整数键）：报错文案里给出的是键本身的文本。 */
+void main() {
+    Map<int64, String> names;
+    names.put(7, "ada");
+    std::lang::println("{}", names[9]);      /* 没有这个键 → 运行期错误 */
+
+}

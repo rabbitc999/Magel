@@ -7,7 +7,7 @@ import std::algorithms;
 bool positive(int64 value) { return value > 0; }
 int64 addValues(int64 left, int64 right) { return left + right; }
 
-int64 main() {
+void main() {
     List<int64> values;
     values.push(4);
     values.push(1);
@@ -65,5 +65,5 @@ int64 main() {
     Pair<int64, String> pair = Pair<int64, String>::create(7, "seven");
     println("{} {}", pair.first, pair.second);
     raw.drop();
-    return 0;
+
 }

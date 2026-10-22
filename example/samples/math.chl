@@ -6,7 +6,7 @@
 
 import std::math;
 
-int64 main() {
+void main() {
     println("pi = {:3F}", std::math::PI);
     println("e = {:3F}", std::math::E);
     println("sin(pi/2) = {:3F}", std::math::sin(std::math::PI / 2.0));
@@ -34,5 +34,5 @@ int64 main() {
         k = k + 1;
     }
     println("|cos 采样和| = {:3F}", std::math::abs(total));
-    return 0;
+
 }

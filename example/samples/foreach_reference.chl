@@ -21,7 +21,7 @@ struct Fibonacci : Iterator<int64 mut&> {
 int64 read(int64 const& value) { return *value; }
 int64 const& readOnly(int64 mut& value) { return value; }
 
-int64 main() {
+void main() {
     Fibonacci sequence;
     sequence.count = 10;
     int64 sum = 0;
@@ -51,5 +51,5 @@ int64 main() {
     explicitWrite = 9;
     assert(data[0] == 9);
     for (int64 value in sequence) { value = 100; assert(sequence.current == 100); break; }
-    return 0;
+
 }

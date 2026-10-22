@@ -46,7 +46,7 @@ std::iter::Iter<int64 const&> localLease() {
     return values.iter().rev();
 }
 
-int64 main() {
+void main() {
     assert(staticMethodReference() == 90);
     int64 value = 5;
     BorrowBox<int64 mut&> box = relay(wrap(&value));
@@ -128,5 +128,5 @@ int64 main() {
     allocated.drop();
     assert(OwnedNumber::drops == 8);
     println("reference combinations OK");
-    return 0;
+
 }

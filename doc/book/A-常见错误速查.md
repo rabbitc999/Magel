@@ -27,12 +27,12 @@ ChaLi 的报错分三类，看**开头几个字**就能分清：
 
 <!-- fail -->
 ```chali
-int64 main()
+void main()
 {
     int64 a = 1;
     int64 b = 0;
     println("{}", a / b);
-    return 0;
+
 }
 ```
 
@@ -90,13 +90,13 @@ chali: 运行期错误：整数除零
 
 <!-- fail -->
 ```chali
-int64 main()
+void main()
 {
     int64 big = 70000;
     int32 small = big;
     // 缩窄：位宽变小
     println("{}", small);
-    return 0;
+
 }
 ```
 
@@ -118,11 +118,11 @@ chali: 不能隐式转换：int64 -> int32（请显式强转）
 
 <!-- fail -->
 ```chali
-int64 main()
+void main()
 {
     uint8 b = 256;
     // uint8 只到 255
-    return 0;
+
 }
 ```
 
@@ -145,11 +145,11 @@ chali: 整数字面量 256 超出 uint8 的取值范围（0..255）
 
 <!-- fail -->
 ```chali
-int64 main()
+void main()
 {
     int64 mut& r = 5;
     // 引用要从对象身上取地址，不能绑字面量
-    return 0;
+
 }
 ```
 
@@ -163,11 +163,11 @@ chali: 不能隐式转换：int64 -> int64 mut&（请显式强转）
 
 <!-- fail -->
 ```chali
-int64 main()
+void main()
 {
     int64 mut& r;
     println("{}", r);
-    return 0;
+
 }
 ```
 
@@ -206,11 +206,11 @@ struct Point
     int64 y;
 }
 
-int64 main()
+void main()
 {
     Point point;
     println("{}", point.x);
-    return 0;
+
 }
 ```
 
@@ -249,11 +249,11 @@ int64 main()
 
 <!-- fail -->
 ```chali
-int64 main()
+void main()
 {
     Option<int64> none = None;
     println("{}", none.unwrap());
-    return 0;
+
 }
 ```
 

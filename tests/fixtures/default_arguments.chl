@@ -23,7 +23,7 @@ int64 twice(int64 x){return x*2;}
 int64 apply(int64 x, int64 fn(int64) callback=twice){return callback(x);}
 int64 nested(int64 n=add(1)){return n;}
 struct StaticPack {static int64 count(int64 x=4,int64... rest){return x+rest.len();}};
-int64 main(){
+void main(){
  int64 seed=100;
  assert(add(1)==4 && count==1);
  assert(add(1,9)==10 && count==1);
@@ -46,5 +46,5 @@ assert(text()=="ok");
  int64 moduleSeed=100;
  assert(fromModule()==21 && fromModule(9)==9);
  assert(StaticPack::count()==4 && StaticPack::count(7,1,2)==9);
- println("defaults ok");return 0;
+ println("defaults ok");
 }

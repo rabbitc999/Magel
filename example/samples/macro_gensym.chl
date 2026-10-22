@@ -61,7 +61,7 @@ $macro SHOW(x)
     $stringify(x)
 $end_macro
 
-int64 main() {
+void main() {
     int64 tmp = 111;
     int64 x = 1;
     int64 y = 2;
@@ -85,5 +85,5 @@ int64 main() {
 
     $LITERAL;
     println("show={}", $SHOW("$0"));
-    return 0;
+
 }

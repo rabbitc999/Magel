@@ -11,7 +11,7 @@ enum Signal {
 
 int64 triple(int64 value) { return value * 3; }
 
-int64 main() {
+void main() {
     int64 applied = demo_cpp_apply(triple, 7);
     Signal idle = Signal::Idle();
     Signal source = Signal::Value(9);
@@ -24,5 +24,5 @@ int64 main() {
     println("{} {} {} {} {}", applied, demo_cpp_enum_tag(idle),
     demo_cpp_enum_tag(copied),
     demo_cpp_enum_payload(copied), payload);
-    return 0;
+
 }

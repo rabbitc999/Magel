@@ -1,1 +1,1 @@
-chali: example/samples-error/macro_arity.chl 第 4 行第 23 列：宏实参数量与形参不一致：ADD
+chali: example/samples-error/macro_arity.chl 第 4 行第 22 列：宏实参数量与形参不一致：ADD

@@ -8,7 +8,7 @@ Metric negateMetric(Metric item) {
     return result;
 }
 
-int64 main() {
+void main() {
     List<Metric> measured;
     Metric source;
     source.amount = -2.5;
@@ -16,5 +16,5 @@ int64 main() {
     List<Metric> negated = std::algorithms::mapValue<Metric>(measured, negateMetric);
     Metric first = negated[0];
     println("{}", first.amount);
-    return 0;
+
 }

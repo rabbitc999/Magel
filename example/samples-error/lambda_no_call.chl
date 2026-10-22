@@ -1,4 +1,4 @@
-int64 main() {
+void main() {
     let pending = fn (x) { x };
-    return 0;
+
 }

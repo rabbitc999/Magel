@@ -6,8 +6,8 @@ void worker() {
     std::lang::println("{}", message);
 }
 
-int64 main() {
+void main() {
     Thread task = std::thread::create(worker);
     std::thread::wait(task);
-    return 0;
+
 }

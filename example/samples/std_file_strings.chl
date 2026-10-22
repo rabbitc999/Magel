@@ -1,6 +1,6 @@
 import std::io;
 
-int64 main(List<String> args) {
+void main(List<String> args) {
     String path=args[0];
     FileStream output=FileStream::open(path,"wb").take();
     output.write("abc\r\nline two\nlast").unwrap();
@@ -17,5 +17,5 @@ int64 main(List<String> args) {
     assert(fileReadLine(&handle)=="");
     assert(fileReadAllString(&handle)=="line two\nlast");
     fileClose(&handle);
-    println("file strings ok");return 0;
+    println("file strings ok");
 }

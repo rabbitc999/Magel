@@ -4,6 +4,6 @@ int64 choose(bool take) {
     }
 }
 
-int64 main() {
+void main() {
     return choose(false);
 }

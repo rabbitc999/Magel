@@ -6,10 +6,10 @@ struct Diff : Subtract<int64, int64> {
     int64 leftSub(int64 other) { return self.v - other; }
 };
 
-int64 main() {
+void main() {
     Diff d;
     d.v = 10;
     println("d - 4 = {}", d - 4);
     println("4 - d = {}", 4 - d);
-    return 0;
+
 }

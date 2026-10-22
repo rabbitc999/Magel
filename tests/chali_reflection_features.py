@@ -35,7 +35,7 @@ def build_matrix(work, vm_off, vm_on, cxx):
 def check_module_contract(work, chali):
     """模块公共声明及运行时配置切换必须失效缓存，同配置可复用。"""
     source = work / 'modules.chl'
-    source.write_text('int64 main() { std::lang::println("module:42"); return 0; }\n', encoding='utf-8')
+    source.write_text('void main() { std::lang::println("module:42"); }\n', encoding='utf-8')
     cache = work / 'module-cache'
     executable = work / ('modules' + EXE)
     for active in (False, True):
@@ -60,9 +60,9 @@ def main():
             return
         matrix = build_matrix(work, vm_off, vm_on, args.cxx)
         source = work / 'main.chl'
-        source.write_text('int64 main() { std::lang::println("feature:42"); return 0; }\n', encoding='utf-8')
+        source.write_text('void main() { std::lang::println("feature:42"); }\n', encoding='utf-8')
         annotated = work / 'annotated.chl'
-        annotated.write_text('@annotation Label(text:String="ok")\n@Label\nint64 main(){return 0;}\n', encoding='utf-8')
+        annotated.write_text('@annotation Label(text:String="ok")\n@Label\nvoid main(){return;}\n', encoding='utf-8')
         for (frontend, vm), compiler in matrix.items():
             prefix = work / f'config-{frontend}{vm}'
             assert run([compiler, 'run', source, '--out', prefix]).stdout == 'feature:42\n'

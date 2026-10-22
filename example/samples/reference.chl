@@ -10,7 +10,7 @@ enum State { Ready(int64 value), Empty;
 struct ReferenceBox { int64 mut& value; };
 struct Point { int64 x; int64 y; };
 int64 read(int64 const& p) { return p; }
-int64 main() {
+void main() {
     int64 mut& globalRef = &globalValue;
     globalRef = globalRef + 1;
     assert(globalValue == 31);
@@ -49,5 +49,5 @@ int64 main() {
     stateRef = State::Empty;
     assert(!state.ready());
     println("reference OK {} {}", a, p);
-    return 0;
+
 }

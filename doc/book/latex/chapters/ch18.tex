@@ -56,10 +56,10 @@ String shout(String s)
 module app;
 import util::text;
 
-int64 main()
+void main()
 {
     println("{}", shout("hi"));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -127,10 +127,10 @@ demo/
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     println("Hello, ChaLi!");
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -214,10 +214,10 @@ chali check src/main.chl   # 只检查，不运行
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     assert(1 + 1 == 2);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -285,14 +285,14 @@ chali fmt src/messy.chl --check
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 x = 1;
     if (x>0)
     {
         println("{}", x);
     }
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -303,14 +303,14 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 x = 1;
     if (x>0)
     {
         println("{}", x);
     }
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -357,10 +357,10 @@ inline int64 square(int64 value)
     return value * value;
 }
 
-int64 main()
+void main()
 {
     println("{}", square(3));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -452,10 +452,10 @@ int64 twice(int64 value)
 \begin{lstlisting}[style=chali]
 import util::math;
 
-int64 main()
+void main()
 {
     println("{}", util::math::twice(21));
-    return 0;
+
 }
 \end{lstlisting}
 \par

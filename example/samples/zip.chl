@@ -2,7 +2,7 @@ import std::algorithms;
 
 struct Item { int64 value; };
 
-int64 main() {
+void main() {
     List<int64> left;
     left.push(2);
     left.push(4);
@@ -26,5 +26,5 @@ int64 main() {
     items[0] = original;
     words[0] = "green";
     println("{} {}:{}", records.len(), ((records[0]).0).value, (records[0]).1);
-    return 0;
+
 }

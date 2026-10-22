@@ -1,6 +1,6 @@
 import std::regex;
 
-int64 main() {
+void main() {
     int64 hex = 0xFF;
     int64 binary = b0010_0011;
     int64 binaryWithSeparator = b_00100011;
@@ -65,5 +65,5 @@ int64 main() {
     assert(format("{:b}", binary) == "100011");
     println("hex={:x} HEX={:X} bin={:b}", hex, hex, binary);
     println("radix regex OK");
-    return 0;
+
 }

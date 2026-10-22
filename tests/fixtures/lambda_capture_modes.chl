@@ -4,7 +4,7 @@ int64 apply(int64 fn(int64) f,int64 x){return f(x);}
 struct Record:Drop { String text; List<int64> values; void drop(){drops+=1;} };
 int64 fn() counter(){int64 n=4;return int64 fn copy(){n+=1;return n;};}
 int64 fn() movedCounter(){int64 n=8;return int64 fn move(){n+=1;return n;};}
-int64 main(){
+void main(){
     int64 n=1;
     let read=int64 fn(){n};
     let explicitRead=int64 fn const(){n};
@@ -82,5 +82,5 @@ int64 main(){
         assert(drops==6);
     }
     assert(drops==7);
-    println("fn capture modes OK");return 0;
+    println("fn capture modes OK");
 }

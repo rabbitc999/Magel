@@ -9,7 +9,7 @@ int64 pick(float64 a, int64 b) {
     return 2;
 }
 
-int64 main() {
+void main() {
     std::lang::println("{}", pick(1, 1));
-    return 0;
+
 }

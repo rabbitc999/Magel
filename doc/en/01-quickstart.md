@@ -41,9 +41,9 @@ chali help
 Create `hello.chl`:
 
 ```chali
-int64 main() {
+void main() {
     println("Hello, ChaLi!");
-    return 0;
+
 }
 ```
 
@@ -79,9 +79,9 @@ chali hello.chl Alice "two words"
 When you need arguments, write the entry as:
 
 ```chali
-int64 main(List<String> arguments) {
+void main(List<String> arguments) {
     println("hello, {}", arguments[0]);
-    return 0;
+
 }
 ```
 

@@ -1,6 +1,6 @@
-int64 main() {
+void main() {
     if (1) {
-        return 1;
+        let __ignored1 = 1;
     }
-    return 0;
+
 }

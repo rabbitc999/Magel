@@ -4,7 +4,7 @@ struct Box {
     int64 value;
 };
 
-int64 main() {
+void main() {
     Box mut& pointer = heap Box;
     pointer->value = 7;
     Option<Box mut&> optional = toOptional<Box>(pointer);
@@ -29,5 +29,5 @@ int64 main() {
         Option<Box mut&>::None => { println("none"); }
     }
     pointer.drop();
-    return 0;
+
 }

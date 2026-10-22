@@ -1,4 +1,4 @@
-int64 main()
+void main()
 {
     File out = fopen("tmp/chali_file_proc.txt", "w");
     fwrite(out, "alpha\nbeta\n");
@@ -16,5 +16,5 @@ int64 main()
     String line = pread(child);
     int64 code = pclose(child);
     println("{}:{}", line, code);
-    return 0;
+
 }

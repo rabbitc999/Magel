@@ -2,7 +2,7 @@
 int64 calls=0;
 int64 index(){ calls+=1; return 0; }
 struct Pair { int64 left; int64 right; };
-int64 main(){
+void main(){
     int64 a[4]; int64 i=0,j=2,result=0;
     a[index()]+=1;
     assert(calls==1 && a[0]==1);
@@ -28,5 +28,5 @@ int64 main(){
     assert(i==1 && list[0]==7);
     bool skipped=false && (a[index()]++ > 0);
     assert(!skipped && calls==1 && a[0]==6);
-    println("expression effects OK"); return 0;
+    println("expression effects OK");
 }

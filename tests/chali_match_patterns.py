@@ -28,14 +28,14 @@ def main():
     for name, subject, lo, hi in (('integer', '1', '0', '2'), ('float', '1.0', '0.0', '2.0'), ('string', '"m"', '"a"', '"z"')):
         for close in (')', ']'):
             source = work / (name + ('-open' if close == ')' else '-right-closed') + '.chl')
-            source.write_text('int64 main(){match(' + subject + '){(' + lo + ',' + hi + close + '=>{return 1;} _=>{return 0;}}return 0;}\n', encoding='utf-8')
+            source.write_text('void main(){match(' + subject + '){(' + lo + ',' + hi + close + '=>{let __boom = 1;} _=>{return;}}}\n', encoding='utf-8')
             result = run(compiler, '--check', source)
             assert result.returncode != 0 and result.stderr, result
             if close == ')':
                 assert 'match 区间' in result.stderr or '语法错误' in result.stderr, result
             rejected += 1
     source = work / 'boundaries.chl'
-    source.write_text('int64 main(){\n        let pair=(1,2);assert(pair.0==1 && pair.1==2);\n        match(0){std::lang::rangeEq(0,0)=>{} _=>{assert(false);}}\n        match(0){std::lang::range(0,0)=>{assert(false);} _=>{}}\n        match(1.0){_ if 0.0 <= 1.0 && 1.0 < 1.0 =>{assert(false);} _=>{}}\n        match(1.0){1.0=>{} _=>{assert(false);}}\n        match(""){""=>{} _=>{assert(false);}}\n        match(""){_ if false=>{assert(false);} _=>{}}\n        return 0;\n    }\n', encoding='utf-8')
+    source.write_text('void main(){\n        let pair=(1,2);assert(pair.0==1 && pair.1==2);\n        match(0){std::lang::rangeEq(0,0)=>{} _=>{assert(false);}}\n        match(0){std::lang::range(0,0)=>{assert(false);} _=>{}}\n        match(1.0){_ if 0.0 <= 1.0 && 1.0 < 1.0 =>{assert(false);} _=>{}}\n        match(1.0){1.0=>{} _=>{assert(false);}}\n        match(""){""=>{} _=>{assert(false);}}\n        match(""){_ if false=>{assert(false);} _=>{}}\n        return;\n    }\n', encoding='utf-8')
     result = run(compiler, 'run', source, 'out', work / 'boundaries')
     assert result.returncode == 0 and (not result.stderr), result
 if __name__ == '__main__':

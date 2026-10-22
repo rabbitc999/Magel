@@ -2,7 +2,7 @@ $replace ECHO(value) $stringify(value)
 $replace f "prefix"
 int64 counter=0;
 int64 next(){counter=counter+1;return counter;}
-int64 main(){
+void main(){
     int64 f=7;String ordinary="{f}";assert(ordinary=="{f}");
     String text=f"value {f+1} {next()} {next()} \{literal\} {f"inner {3}"}";
     assert(text=="value 8 1 2 {literal} inner 3");assert(counter==2);
@@ -12,5 +12,5 @@ int64 main(){
     String plain=$f + "suffix";assert(plain=="prefixsuffix");
     String multiline=f"first
 second";assert(multiline=="first\nsecond");
-    println("interpolation ok");return 0;
+    println("interpolation ok");
 }

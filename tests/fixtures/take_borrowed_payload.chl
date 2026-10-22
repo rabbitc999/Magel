@@ -1,7 +1,7 @@
 struct Record {
     int64 value;
 };
-int64 main() {
+void main() {
     Record original;
     original.value = 7;
     Option<Record mut&> record = Option<Record mut&>::Value(&original);
@@ -13,5 +13,5 @@ int64 main() {
     String const& view = message.take();
     assert(view == "borrowed" && text == "borrowed");
     println("borrowed take ok");
-    return 0;
+
 }

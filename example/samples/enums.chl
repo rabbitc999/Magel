@@ -19,7 +19,7 @@ void print_message(Message message) {
     }
 }
 
-int64 main() {
+void main() {
     Message first = Message::Quit;
     Message second = Message::Move(3, 7);
     Message third = Message::Text("hello");
@@ -63,5 +63,5 @@ int64 main() {
             }
         }
     }
-    return 0;
+
 }

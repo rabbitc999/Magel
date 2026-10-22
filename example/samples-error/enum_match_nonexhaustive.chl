@@ -1,8 +1,8 @@
 enum Option { None, Some(int64 value) };
-int64 main() {
+void main() {
     Option value = Option::None;
     match (value) {
-        Option::None => { return 0; }
+        Option::None => { return; }
     }
-    return 1;
+    let __ignored1 = 1;
 }

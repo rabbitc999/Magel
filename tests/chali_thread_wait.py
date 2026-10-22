@@ -36,16 +36,16 @@ void worker() {
     println("worker:{}", value);
 }
 '''
-        body = '''int64 main() {
+        body = '''void main() {
     Thread task = std::thread::create(worker);
-    if (std::thread::tryWait(task)) { return 11; }
+    if (std::thread::tryWait(task)) { let __boom = 11; }
     int64 started = std::clock::nowNanos();
-    if (std::thread::waitFor(task, 20)) { return 12; }
-    if (std::clock::nowNanos() - started < 20000000) { return 15; }
+    if (std::thread::waitFor(task, 20)) { let __boom = 12; }
+    if (std::clock::nowNanos() - started < 20000000) { let __boom = 15; }
     std::thread::send(task, "alive");
-    if (!std::thread::waitFor(task, 9223372036854775807)) { return 13; }
+    if (!std::thread::waitFor(task, 9223372036854775807)) { let __boom = 13; }
     println("done");
-    return 0;
+
 }
 '''
         for compressed in (False, True):
@@ -66,21 +66,21 @@ void worker() {
                 ('std::thread::waitFor(std::thread::current(), 0)', '无效、自身或已等待'),
                 ('std::thread::waitFor(invalid, 0)', '无效、自身或已等待'),
             ):
-                result = run(prelude + '''int64 main() {
+                result = run(prelude + '''void main() {
     Thread task = std::thread::create(worker);
     Thread invalid;
     ''' + expression + ''';
-    return 0;
+
 }
 ''', compressed)
                 assert result.returncode != 0 and error in result.stderr, result.stderr
 
             result = run('''import std::thread;
 void leaf() { std::lang::panic("wait failure"); }
-int64 main() {
+void main() {
     Thread task = std::thread::create(leaf);
     std::thread::waitFor(task, 5000);
-    return 0;
+
 }
 ''', compressed)
             assert result.returncode != 0 and '线程 1' in result.stderr and 'wait failure' in result.stderr, result.stderr
@@ -88,11 +88,11 @@ int64 main() {
 
             result = run('''import std::thread;
 void worker() {}
-int64 main() {
+void main() {
     Thread task = std::thread::create(worker);
-    if (!std::thread::waitFor(task, 5000)) { return 14; }
+    if (!std::thread::waitFor(task, 5000)) { let __boom = 14; }
     std::thread::tryWait(task);
-    return 0;
+
 }
 ''', compressed)
             assert result.returncode != 0 and '已等待' in result.stderr, result.stderr

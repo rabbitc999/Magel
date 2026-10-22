@@ -17,7 +17,7 @@ String maybe(bool take, int64 n) {
     return result;
 }
 
-int64 main() {
+void main() {
     println("{} / {}", maybe(false, 1), maybe(true, 1));
 
     /* 循环体里每轮的串都当场还回去：不管跑多少轮，占用都是常数。 */
@@ -34,5 +34,5 @@ int64 main() {
         println("{}", scoped);
     }
     println("结束");
-    return 0;
+
 }

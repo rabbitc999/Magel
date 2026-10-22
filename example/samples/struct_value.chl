@@ -19,7 +19,7 @@ Point make_point(int64 x, int64 y) {
     return p;
 }
 
-int64 main() {
+void main() {
     /* 返回值赋给变量时拷贝：同一个函数两次调用的结果是两个独立对象 */
     Point a = make_point(1, 2);
     Point b = make_point(3, 4);
@@ -52,5 +52,5 @@ int64 main() {
     /* 指向数据区里的元素：读得到（只读引用），要写就用可写引用 */
     Point const& view = &items[0];
     println("view->x={}", view->x);
-    return 0;
+
 }

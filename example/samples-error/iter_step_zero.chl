@@ -1,2 +1,2 @@
 import std::iter;
-int64 main() { let cursor = std::iter::range(0,5).stepBy(0); return 0; }
+void main() { let cursor = std::iter::range(0,5).stepBy(0); }

@@ -1,7 +1,7 @@
 int32 counter = 0;
 int32 next() { counter += 1; return counter; }
 
-int64 main() {
+void main() {
     int32 value = 3;
     print(f"value={value};");
     println(f"next={next()} {next()};literal=\{x\};percent=100%");
@@ -10,5 +10,5 @@ int64 main() {
     String text = f"saved={value}";
     println(text);
     println("interpolation print OK");
-    return 0;
+
 }

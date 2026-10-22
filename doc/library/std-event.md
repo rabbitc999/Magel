@@ -25,7 +25,7 @@ chali run example/samples/event_timer.chl
 
 ```chali
 import std::event;
-int64 main() {
+void main() {
     assert(std::event::post(7, 19) == 0);
     let posted = std::event::tryReceive();
     assert(posted.isReady() && posted.value.tag == 7 && posted.value.source == 19);
@@ -36,7 +36,7 @@ int64 main() {
     timer.stop();
     assert(std::event::tryReceive().status == 1);
     println("events ok");
-    return 0;
+
 }
 ```
 

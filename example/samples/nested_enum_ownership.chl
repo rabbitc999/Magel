@@ -32,7 +32,7 @@ int64 sum(Tree value) {
     return -1;
 }
 
-int64 main() {
+void main() {
     {
         int64 repeat = 0;
         while (repeat < 8) {
@@ -60,5 +60,5 @@ int64 main() {
         }
     }
     println("nested enum ownership OK");
-    return 0;
+
 }

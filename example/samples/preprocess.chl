@@ -6,7 +6,7 @@ import include::shapes;
 
 %define DETAIL 1                    /* 等价命令行 `-D DETAIL`；下面用它挑分支 */
 
-int64 main() {
+void main() {
     include::shapes::Rect rect;
     rect.width = 3;
     rect.height = 4;
@@ -27,5 +27,5 @@ int64 main() {
 
     /* 打百分号要写 %%；指令只在**行首**才算，字符串里的 % 不是指令 */
     println("源文件里写 %define 不会当成指令（行首才算）");
-    return 0;
+
 }

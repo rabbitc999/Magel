@@ -2,7 +2,7 @@ int64 calls=0;
 int32 next(){calls=calls+1;return 2;}
 int32 select(bool good){return if(good){1}else{2};}
 int32 take(int32 x){return x;}
-int64 main(){
+void main(){
     int32 p=1;
     bool odd=if(p%2==1){true}else{false};
     int32 x=if(p%3==1){1}elif(next()==2){2}else{3};
@@ -17,5 +17,5 @@ int64 main(){
     int64 count=0;
     while(count<3){int32 value=if(count==0){count=count+1;continue;}else{2};assert(value==2);break;}
     assert(count==1);
-    println("if ok");return 0;
+    println("if ok");
 }

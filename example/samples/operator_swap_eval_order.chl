@@ -27,8 +27,8 @@ A makeA() {
     return x;
 }
 
-int64 main() {
+void main() {
     println("bump() + makeA() = {}", bump() + makeA());
     println("steps = {}", steps);
-    return 0;
+
 }

@@ -96,7 +96,7 @@ def main():
         entry=symbol['symbols'][0]
         assert entry['parameters']==records[0]['parameters']
         assert entry['returns']==records[0]['returns'] and entry['errors']==records[0]['errors']
-        assert entry['examples'] and 'int64 main()' in entry['examples'][0]['code']
+        assert entry['examples'] and 'void main()' in entry['examples'][0]['code']
         text=run('api','std::text::Text::split').stdout
         assert all(word in text for word in ('参数','返回值','错误与边界','完整示例')) and '\x1b' not in text,text
         assert query('--search','SPLIT')['symbols']

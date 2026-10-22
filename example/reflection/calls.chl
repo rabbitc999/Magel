@@ -24,7 +24,7 @@ import std::reflect;
 @Reflect bool flag(bool value){return value;}
 @Reflect char character(char value){return value;}
 struct Hidden {int64 read(){return 99;}};
-int64 main(){
+void main(){
     List<std::reflect::ReflectValue> args;List<std::reflect::ReflectValue> empty;
     args.push(std::reflect::ReflectValue::I64(2));
     assert(std::reflect::call("plus",args).unwrap().asI64().unwrap()==3);
@@ -79,6 +79,6 @@ int64 main(){
     match(std::reflect::callMethod<Hidden>(&hidden,"read",empty).error()){std::reflect::ReflectError::NotExposed=>{} _=>{assert(false);}}
 
     interfaceObj.drop();
-    println("reflection calls OK");return 0;
+    println("reflection calls OK");
 }
 

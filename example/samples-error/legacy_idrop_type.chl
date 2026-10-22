@@ -2,7 +2,7 @@ struct Holder : IDrop {
     void drop() { }
 };
 
-int64 main() {
+void main() {
     Holder holder;
-    return 0;
+
 }

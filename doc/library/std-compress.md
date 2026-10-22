@@ -29,7 +29,7 @@ import std::text;
 
 /* std::compress —— 文本压成字节序列、再解回来（底层是仓库自带的 lztext）。
  * 压缩结果是二进制（含 NUL 字节），类型是 List<uint8>，不要当字符串拼接。 */
-int64 main() {
+void main() {
     /* 高重复度文本：应该明显变小 */
     String text = std::text::Text::repeat("chali 文本压缩往返测试；", 40);
     List<uint8> packed = std::compress::compress(text);
@@ -51,7 +51,7 @@ int64 main() {
     List<uint8> packedNoise = std::compress::compress(noise);
     assert(std::compress::decompress(packedNoise) == noise);
     println("噪声 原文 {} 压缩后 {}", len(noise), packedNoise.len());
-    return 0;
+
 }
 ```
 

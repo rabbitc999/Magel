@@ -16,7 +16,7 @@ int64 area(Box mut& rect) {
     return rect->width * rect->height;
 }
 
-int64 main() {
+void main() {
     /* ---- 运行时数组 + 引用算术 ---- */
     int64 n = 4;
     int64 a[] = new[n];
@@ -56,5 +56,5 @@ int64 main() {
     row.drop();
     rect.drop();
     a.drop();
-    return 0;
+
 }

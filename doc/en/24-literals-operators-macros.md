@@ -11,12 +11,12 @@ Literals are no longer always `int64`. The target type of an assignment, initial
 
 ```chali
 int32 twice(int32 value) { return value * 2; }
-int64 main() {
+void main() {
     int32 a = 1;
     int32 b = a + 1;                 /* 1 is int32 here; no (int32)1 needed */
     int32 sum = 1 + 2;               /* both sides literal: typed by the int32 slot */
     println("{} {} {}", a, b, sum);
-    return 0;
+
 }
 ```
 
@@ -27,10 +27,10 @@ int64 main() {
 A decimal literal that does not fit the target type falls back to the default type and is rejected by the existing "narrowing requires a cast" diagnostic — **it is never silently truncated**:
 
 ```chali
-int64 main() {
+void main() {
     int8 x = 200;
     println("{}", x);
-    return 0;
+
 }
 ```
 
@@ -52,13 +52,13 @@ struct Vec : Add<int64, int64>, Less<bool, int64> {
     int64 leftAdd(int64 other) { return self.v + other; }
     bool leftLess(int64 other) { return self.v < other; }
 };
-int64 main() {
+void main() {
     Vec a;
     a.v = 10;
     println("{} {}", a + 5, 5 + a);     /* commutativity */
     println("{} {}", a < 5, 5 > a);     /* dual */
     println("{} {}", a >= 5, 5 <= a);   /* negated / dual + negated */
-    return 0;
+
 }
 ```
 
@@ -89,14 +89,14 @@ struct Forbid : Add<int64, int64> {
     int64 v;
     int64 leftAdd(int64 other) { return self.v + other; }
 };
-int64 main() {
+void main() {
     Money m;
     m.cents = 120;
     println("{} {}", m + 5, 5 + m);
     Forbid f;
     f.v = 7;
     println("{}", f + 5);
-    return 0;
+
 }
 ```
 
@@ -126,13 +126,13 @@ struct A : Add<int64,int64>, Add<Vec,int64> {
         return r;
     }
 };
-int64 main() {
+void main() {
     A a;
     a.v = 5;
     int64 x = a + 3;                 /* the int64 one: 5 + 3 */
     Vec y = a + 3;                   /* the Vec one: 5 * 3 */
     println("{} {}", x, y.v);
-    return 0;
+
 }
 ```
 
@@ -162,9 +162,9 @@ $end_macro
 $macro EMPTY()
 42
 $end_macro
-int64 main() {
+void main() {
     println("{} {} {}", $SQUARE(1 + 2), $ANSWER, $EMPTY());
-    return 0;
+
 }
 ```
 
@@ -181,12 +181,12 @@ int64 temporary = value;
 out += temporary;
 $end_for
 $end_macro
-int64 main() {
+void main() {
     int64 temporary = 100;
     int64 total = 0;
     $ACCUMULATE(total)[1, 2, 3];
     println("{} {}", total, temporary);
-    return 0;
+
 }
 ```
 
@@ -203,12 +203,12 @@ $end_macro
 $macro RESULT<T>(value)
 cast<T>(value)
 $end_macro
-int64 main() {
+void main() {
     int32 source = 42;
     let same = $CONVERT(source);
     int32 expected = $RESULT(42);
     int64 explicitValue = $RESULT<int64>(42);
-    return 0;
+
 }
 ```
 

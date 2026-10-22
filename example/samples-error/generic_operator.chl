@@ -6,9 +6,9 @@ T add<T>(T left, T right) {
     return left + right;
 }
 
-int64 main() {
+void main() {
     Plain a;
     Plain b;
     Plain c = add<Plain>(a, b);
-    return c.value;
+    let __ignored1 = c.value;
 }

@@ -18,8 +18,8 @@ def main():
     compiler = args.chali.resolve()
     work = ROOT / "build/chali-update-restrictions"
     work.mkdir(parents=True, exist_ok=True)
-    prefix = "struct Pair{int64 x;int64 y;};\nint64 sum(int64 x,int64 y) { return x+y; }\nint64 main() { int64 a=3,b=2,i=1; int64 data[4]; "
-    suffix = " return 0; }\n"
+    prefix = "struct Pair{int64 x;int64 y;};\nint64 sum(int64 x,int64 y) { return x+y; }\nvoid main() { int64 a=3,b=2,i=1; int64 data[4]; "
+    suffix = " return; }\n"
     cases = []
     legal = []
     for operator in ("+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>="):

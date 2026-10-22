@@ -25,7 +25,7 @@ chali run example/samples/std_utf8.chl
 
 ```chali
 import std::utf8;
-int64 main(){
+void main(){
     String text="A中文😀";
     List<uint32> points=decodeUtf8(text).unwrap();
     assert(points.len()==4 && points[0]==(uint32)65 && points[3]==(uint32)128512);
@@ -40,7 +40,7 @@ int64 main(){
     List<uint32> zero;zero.push((uint32)0);assert(encodeUtf8Bytes(zero).unwrap()[0]==(uint8)0 && !encodeUtf8(zero).isOk());
     List<uint32> surrogate;surrogate.push((uint32)55296);assert(!encodeUtf8(surrogate).isOk());
     assert(codePointCount("é").unwrap()==2);
-    println("UTF-8 validation and code points OK");return 0;
+    println("UTF-8 validation and code points OK");
 }
 ```
 

@@ -5,9 +5,9 @@ bool touch() {
     return true;
 }
 
-int64 main() {
+void main() {
     bool left_false = false && touch();
     bool left_true = true || touch();
     println("calls={} values={},{}", calls, left_false, left_true);
-    return 0;
+
 }

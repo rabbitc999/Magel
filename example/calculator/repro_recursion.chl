@@ -41,7 +41,7 @@ Node mk(int64 kind, float64 num, String text, int64 a, int64 b) {
     return n;
 }
 
-int64 main() {
+void main() {
     List<Node> nodes;
     List<int64> kids;
     nodes.push(mk(0, 3.0, "", 0, 0));
@@ -52,5 +52,5 @@ int64 main() {
     int64 s2 = kids.len(); kids.push(0); kids.push(3);
     nodes.push(mk(3, 0.0, "+", s2, 2));
     walk(&nodes, &kids, 4);
-    return 0;
+
 }

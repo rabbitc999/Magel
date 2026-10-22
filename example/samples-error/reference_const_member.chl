@@ -1,2 +1,2 @@
 struct Point { int64 x; };
-int64 main() { Point p; Point const& view = &p; int64 mut& writable = &view.x; return 0; }
+void main() { Point p; Point const& view = &p; int64 mut& writable = &view.x; }

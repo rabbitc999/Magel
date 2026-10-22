@@ -1,1 +1,1 @@
-语法错误：example/samples-error/syntax_pointer_star_removed.chl 第 1 行第 21 列：期望 标识符 / MACRO_IS / MACRO_EXPR / MACRO_IDENT 等 25 个之一，实际是 星号(*)
+语法错误：example/samples-error/syntax_pointer_star_removed.chl 第 1 行第 20 列：期望 标识符 / MACRO_IS / MACRO_EXPR / MACRO_IDENT 等 25 个之一，实际是 星号(*)

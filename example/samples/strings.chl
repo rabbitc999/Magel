@@ -6,7 +6,7 @@
  * 样例演示字符串比较、布尔与空字符串。
  */
 
-int64 main() {
+void main() {
     String greeting = "hello";
     String target = "world";
     String space = " ";
@@ -29,5 +29,5 @@ int64 main() {
     println("empty is empty : {}", empty == "");
     println("!true={} !false={}", !true, !false);
     println("true && false = {}, true || false = {}", true && false, true || false);
-    return 0;
+
 }

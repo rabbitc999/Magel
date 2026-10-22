@@ -8,10 +8,10 @@ struct Handle : Closeable {
     void close() { println("close {}", self.id); }
 };
 
-int64 main() {
+void main() {
     Handle a;
     a.id = 1;
     Handle b = a;
     println("{}", b.id);
-    return 0;
+
 }

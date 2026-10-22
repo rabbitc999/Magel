@@ -25,7 +25,7 @@ struct Pair : Equal<bool, Pair>, Hash<Pair> {
 
 Pair p;
 
-int64 main() {
+void main() {
     /* ---------- List<T>：有序表，按下标增删改查 ---------- */
     List<int64> v;
     v.push(30);
@@ -65,8 +65,8 @@ int64 main() {
     ages["cid"] = 33;                             /* `m[k] = v` 等价于 put */
     println("map: len={} amy={} has(bob)={} cid={}",
     len(ages), ages["amy"], ages.has("bob"), ages["cid"]);
-    println("没这个键：has(zoe)={} 下标读出来={}",
-    ages.has("zoe"), ages["zoe"]);
+    println("没这个键：has(zoe)={}",
+    ages.has("zoe"));
     println("remove(bob) 拿回 {}，现在 len={}", ages.remove("bob"), len(ages));
 
     /* ---------- 遍历：List 按下标，Map 不保证顺序 ---------- */
@@ -155,5 +155,5 @@ int64 main() {
     List<int64> b = a;                               /* 值语义：复制一份 */
     b.push(2);
     println("值语义：a={} b={}（a 没被 b 改动）", len(a), len(b));
-    return 0;
+
 }

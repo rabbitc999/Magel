@@ -7,10 +7,10 @@
 
 module qualified;
 
-int64 main() {
+void main() {
     int64 n = 3;
     $std::lang::assert(n > 0);
     $std::lang::assert(n < 10, "n 得是个位数");
     println("跨模块宏调用都过了，{}", n);
-    return 0;
+
 }

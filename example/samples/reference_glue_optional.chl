@@ -2,7 +2,7 @@ Option<int64 mut&> demo_reference_optional(bool present, int64 mut& value);
 int64 demo_reference_read(Option<int64 const&> value);
 void demo_reference_write(Option<int64 mut&> value);
 
-int64 main() {
+void main() {
     int64 value = 41;
     Option<int64 mut&> present = demo_reference_optional(true, &value);
     Option<int64 mut&> missing = demo_reference_optional(false, &value);
@@ -16,5 +16,5 @@ int64 main() {
     assert(demo_reference_read(readOnly) == 42);
     assert(demo_reference_read(Option<int64 const&>::None) == -1);
     println("optional reference glue OK");
-    return 0;
+
 }

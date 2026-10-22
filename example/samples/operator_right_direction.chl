@@ -26,7 +26,7 @@ struct Forbid : Add<int64,int64> {
     int64 leftAdd(int64 other) { return self.v + other; }
 };
 
-int64 main() {
+void main() {
     Loose a;
     a.v = 10;
     println("a + 5 = {}", a + 5);
@@ -40,5 +40,5 @@ int64 main() {
     Forbid f;
     f.v = 10;
     println("f + 5 = {}", f + 5);      /* 左向不受 #NoRightAdd 影响 */
-    return 0;
+
 }

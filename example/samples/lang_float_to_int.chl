@@ -1,5 +1,5 @@
 /* 核心 lang 转换无需 import，向零截断并检查结果范围。 */
-int64 main() {
+void main() {
     assert(toInt32(12.75).unwrap() == (int32)12);
     assert(toInt32(-12.75).unwrap() == (int32)-12);
     assert(toInt64(12.75) == 12);
@@ -22,5 +22,5 @@ int64 main() {
         Option<int32>::None => { assert(false); }
     }
     println("float to integer OK");
-    return 0;
+
 }

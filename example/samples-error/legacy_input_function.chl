@@ -1,5 +1,5 @@
-int64 main() {
+void main() {
     int64 value = 0;
     input_number(value);
-    return value;
+    let __ignored1 = value;
 }

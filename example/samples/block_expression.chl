@@ -14,7 +14,7 @@ int32 next() { counter += 1; return counter; }
 int32 identity(int32 value) { return value; }
 int32 result() { return { int32 local = 11; yield (local); }; }
 
-int64 main() {
+void main() {
     int32 a = { int32 b = 3; yield (b); };
     assert(a == 3);
     a = { int32 b = 4; yield (b); };
@@ -46,5 +46,5 @@ int64 main() {
     }
     assert(sum == 2);
     println("block expression OK");
-    return 0;
+
 }

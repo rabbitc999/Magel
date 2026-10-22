@@ -17,12 +17,12 @@ struct Resource : Drop {
     }
 };
 
-int64 main() {
+void main() {
     int64 scalar = 3;
     {
         Resource value = new Resource(7);
         println("inside {} {}", Resource::count(), scalar);
     }
     println("outside {}", Resource::count());
-    return 0;
+
 }

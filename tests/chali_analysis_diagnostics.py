@@ -17,9 +17,9 @@ def main():
     work = ROOT / "build/chali-analysis-diagnostics"
     work.mkdir(parents=True, exist_ok=True)
     sources = {
-        "effects": ("int64 main(){\n int64 i=1,j=2;\n i=i++;\n j+=j++;\n return 0;\n}\n", {3: "CHL1301", 4: "CHL1301"}),
-        "borrow": ("int64 mut& first(){\n int64 x=1;\n return &x;\n}\nint64 mut& second(){\n int64 y=2;\n return &y;\n}\nint64 main(){return 0;}\n", {3: "CHL1204", 7: "CHL1204"}),
-        "mixed": ("int64 mut& first(){\n int64 x=1;\n x=x++;\n return &x;\n}\nint64 main(){\n missingOne();\n missingTwo();\n return 0;\n}\n", {3: "CHL1301", 4: "CHL1204", 7: "CHL1200", 8: "CHL1200"}),
+        "effects": ("void main(){\n int64 i=1,j=2;\n i=i++;\n j+=j++;\n return;\n}\n", {3: "CHL1301", 4: "CHL1301"}),
+        "borrow": ("int64 mut& first(){\n int64 x=1;\n return &x;\n}\nint64 mut& second(){\n int64 y=2;\n return &y;\n}\nvoid main(){return;}\n", {3: "CHL1204", 7: "CHL1204"}),
+        "mixed": ("int64 mut& first(){\n int64 x=1;\n x=x++;\n return &x;\n}\nvoid main(){\n missingOne();\n missingTwo();\n return;\n}\n", {3: "CHL1301", 4: "CHL1204", 7: "CHL1200", 8: "CHL1200"}),
     }
     for name, (text, expected) in sources.items():
         source = work / (name + ".chl")

@@ -180,13 +180,13 @@ VS Code 装了 `vscode/` 下的插件后，在「运行与调试」里选 **ChaL
 ```c
 struct Item { int64 value; };
 
-int64 main() {
+void main() {
     List<Item> items;
     Item item;
     item.value = 7;
     items.push(item);
     println("{}", items.len());
-    return 0;
+
 }
 ```
 

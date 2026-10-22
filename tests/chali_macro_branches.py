@@ -52,16 +52,16 @@ def main():
                                   text=True, encoding="utf-8", errors="replace", timeout=90)
 
         for name, body, argument, expected in cases:
-            source = "$macro CHOOSE(A)\n" + body + "\n$end_macro\nint64 main() { int64 result = $CHOOSE(" + argument + "); if (result == " + str(expected) + ") { return 0; } return 1 / (result - result); }"
+            source = "$macro CHOOSE(A)\n" + body + "\n$end_macro\nvoid main() { int64 result = $CHOOSE(" + argument + "); if (result == " + str(expected) + ") { return; } let __boom = 1 / (result - result); }"
             result = execute(name, source)
             assert result.returncode == 0 and not result.stderr, (name, result.returncode, result.stdout, result.stderr)
-        source = "$macro EMIT(A)\n$match A is stmt\nA;\n$end_match\n$end_macro\nint64 main() { $EMIT(return 0;); }"
+        source = "$macro EMIT(A)\n$match A is stmt\nA;\n$end_match\n$end_macro\nvoid main() { $EMIT(return;); }"
         result = execute("emit_statement", source)
         assert result.returncode == 0 and not result.stderr, result.stderr
-        source = "$macro EMPTY(A)\n$match A is stmt\nA;\n$end_match\n$end_macro\nint64 main() { $EMPTY(1 +); return 0; }"
+        source = "$macro EMPTY(A)\n$match A is stmt\nA;\n$end_match\n$end_macro\nvoid main() { $EMPTY(1 +); return; }"
         result = execute("no_match", source)
         assert result.returncode == 0 and not result.stderr, result.stderr
-        result = execute("invalid_regex", '$macro BAD(A)\n$regex A is "["\n1\n$else\n0\n$end_regex\n$end_macro\nint64 main() { return $BAD(123); }')
+        result = execute("invalid_regex", '$macro BAD(A)\n$regex A is "["\n1\n$else\n0\n$end_regex\n$end_macro\nvoid main() { let __boom = $BAD(123); }')
         assert result.returncode != 0 and "宏正则模式非法" in result.stderr, result.stderr
     print(f"宏语法分类与正则分支：{len(cases) + 3} 项 VM 回归通过", flush=True)
 

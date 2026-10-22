@@ -15,7 +15,7 @@ struct map {
     }
 };
 
-int64 main() {
+void main() {
     List<int64> numbers = [3, 1];
     List<int64> copy = numbers;
     numbers.clear();
@@ -27,5 +27,5 @@ int64 main() {
     assert(values.toString() != "user map");
     assert(unique.has(1) != 0 && values[3] == 30);
     println("collection names OK");
-    return 0;
+
 }

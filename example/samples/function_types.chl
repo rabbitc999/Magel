@@ -32,7 +32,7 @@ int64 apply(int64 fn(int64, int64) f, int64 a, int64 b) {
     return f(a, b);
 }
 
-int64 main() {
+void main() {
     ops[0] = add;
     ops[1] = sub;
     ops[2] = mul;
@@ -51,5 +51,5 @@ int64 main() {
     Point fn(int64, int64) at = point_at;                   /* 返回结构体的函数指针 */
     Point p = at(3, 4);
     println("at(3, 4) = ({}, {})", p.x, p.y);
-    return 0;
+
 }

@@ -23,7 +23,7 @@ bool odd(int64 value) { return value % 2 != 0; }
 int64 addInt(int64 total, int64 value) { return total + value; }
 float64 addReal(float64 total, float64 value) { return total + value; }
 
-int64 main() {
+void main() {
     List<int64> values;
     values.push(3);
     values.push(1);
@@ -62,5 +62,5 @@ int64 main() {
     reals.push(1.5);
     reals.push(2.25);
     println("float64    {}", std::algorithms::reduceValue<float64>(reals, addReal));
-    return 0;
+
 }

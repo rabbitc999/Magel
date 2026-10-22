@@ -4,4 +4,4 @@ Number operator+(Number left, Number right) {
     return left;
 }
 
-int64 main() { return 0; }
+void main() { }

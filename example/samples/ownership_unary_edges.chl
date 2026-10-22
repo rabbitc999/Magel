@@ -19,7 +19,7 @@ Positive<UnaryValue,UnaryValue>, BitNot<UnaryValue,UnaryValue> {
     int64 read(){return self.number;}
     void drop(){UnaryValue::drops=UnaryValue::drops+1;}
 };
-int64 main(){
+void main(){
     {
         int64 i=0;
         while (i<32) {
@@ -47,5 +47,5 @@ int64 main(){
         }
     }
     println("ownership unary edges OK");
-    return 0;
+
 }

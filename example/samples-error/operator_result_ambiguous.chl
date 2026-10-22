@@ -17,10 +17,10 @@ struct A : Add<int64,int64>, Add<Vec,int64> {
     }
 };
 
-int64 main() {
+void main() {
     A a;
     a.v = 5;
     let z = a + 3;
     println("z = {}", z);
-    return 0;
+
 }

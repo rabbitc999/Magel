@@ -34,7 +34,7 @@ ArrayKey linear(int64 id) {
     return key;
 }
 
-int64 main() {
+void main() {
     Map<HashedKey, String> hashMap;
     Set<HashedKey> hashSet;
     Map<ArrayKey, String> arrayMap;
@@ -86,5 +86,5 @@ int64 main() {
     List<int64> stored = nestedCopy.at(0);
     assert(stored[0] == 7 && stored[1] == 8);
     println("collection storage OK");
-    return 0;
+
 }

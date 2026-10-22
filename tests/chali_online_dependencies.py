@@ -81,7 +81,7 @@ def main():
             top = publish('top.zip', {'chali.toml': config('top', 'middle=' + json.dumps(middle) + '\nleaf=' + json.dumps(leaf) + '\n'), 'modules/lib/top.chl': 'module lib::top;\nimport lib::middle;\nimport lib::leaf;\nint64 value(){return lib::middle::value()+lib::leaf::value();}\n'}, prefix='top-0.1.0/')
             (app / 'chali.toml').write_text(config('app', 'top=' + json.dumps(top) + '\n'), encoding='utf-8')
             source = app / 'main.chl'
-            source.write_text('import lib::top;\nint64 main(){std::lang::println("{}",lib::top::value());return 0;}\n', encoding='utf-8')
+            source.write_text('import lib::top;\nvoid main(){std::lang::println("{}",lib::top::value());return;}\n', encoding='utf-8')
             env = dict(os.environ, CHALI_LANG='zh')
 
             def run(*command, success=True):
@@ -129,7 +129,7 @@ def main():
             sys.path.insert(0, str(ROOT / 'tools'))
             from chalidev import LanguageServer, position
             language = LanguageServer(compiler)
-            text = 'import lib::top;\nint64 main(){return lib::leaf::value();}'
+            text = 'import lib::top;\nvoid main(){let __boom = lib::leaf::value();}'
             uri = source.as_uri()
             language.documents[uri] = {'text': text, 'version': 1}
             hover = language.query('textDocument/hover', {'textDocument': {'uri': uri}, 'position': position(text, text.index('value') + 1)})
@@ -158,7 +158,7 @@ def main():
             assert (libraries / ('gitlib-' + commit)).is_dir()
             if not args.unit_only:
                 gitmain = gitapp / 'main.chl'
-                gitmain.write_text('import gitvalue;\nint64 main(){return gitvalue::value()-7;}', encoding='utf-8')
+                gitmain.write_text('import gitvalue;\nvoid main(){let __boom = gitvalue::value()-7;}', encoding='utf-8')
                 run(compiler, 'run', gitmain, 'out', work / 'gitvm')
             localapp = work / 'local-app'
             localapp.mkdir()
@@ -176,7 +176,7 @@ def main():
             if not args.unit_only:
                 for project in (localapp, legacyapp):
                     main = project / 'main.chl'
-                    main.write_text('import gitvalue;\nint64 main(){return gitvalue::value()-7;}', encoding='utf-8')
+                    main.write_text('import gitvalue;\nvoid main(){let __boom = gitvalue::value()-7;}', encoding='utf-8')
                     run(compiler, '--check', main)
             print('递归 LSP 注释、锁文件确定性、内容变更诊断、路径依赖及新旧 Git 缓存通过。', flush=True)
     finally:

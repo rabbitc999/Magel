@@ -13,7 +13,7 @@ int64 toInt(BigDecimal value) { return (int64)value; }
 int64 countBig(BigDecimal... values) { return len(values); }
 int64 countText(String... texts) { return len(texts); }
 
-int64 main() {
+void main() {
     BigDecimal a = BigDecimal("1.5");
     BigDecimal b = BigDecimal("2.5");
 
@@ -29,5 +29,5 @@ int64 main() {
     /* 变量实参是借来的，不该被临时变量多收一次。 */
     println("{}", countBig(a, b));
     println("{}", toInt(scale(BigDecimal("7.9"))));
-    return 0;
+
 }

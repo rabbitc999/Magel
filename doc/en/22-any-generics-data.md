@@ -36,7 +36,7 @@ The public boxed type `Object` is now `Any`, available from the automatically lo
 | Borrowed extraction | `tryGetReference<T>(&value)` or `tryGetMut<T>(&value)` |
 
 ```chali
-int64 main() {
+void main() {
     Any value;
     assert(value.isEmpty());
     value.set((int64)7);
@@ -45,7 +45,7 @@ int64 main() {
     assert(number.unwrap() == 7);
     assert(!tryGet<String>(&value).isValue());
     println("Any: {}", number.unwrap());
-    return 0;
+
 }
 ```
 
@@ -59,7 +59,7 @@ An explicit `Any` target automatically boxes supported concrete values. This app
 
 ```chali
 T identity<T>(T value) { return value; }
-int64 main()
+void main()
 {
     List<Any> values = [1, "two", true];
     values.push(1.5);
@@ -72,7 +72,7 @@ int64 main()
     assert(unique.len() == 1);
     value.clear();
     assert(value.isEmpty());
-    return 0;
+
 }
 ```
 
@@ -92,13 +92,13 @@ struct Counter : Readable
     int64 read() { return self.value; }
 };
 int64 consume(Readable const& view) { return view.read(); }
-int64 main()
+void main()
 {
     Counter counter;
     counter.value = 7;
     Readable const& view = &counter;
     println("{} {}", view.read(), consume(&counter));
-    return 0;
+
 }
 ```
 
@@ -111,14 +111,14 @@ Missing type arguments no longer default to Any. Function inference and defaults
 ```chali
 struct Box<T> { T value; };
 struct ExplicitDefault<T = Any> { T value; };
-int64 main() {
+void main() {
     Box<int64> number;
     number.value = 7;
     Box<Any> dynamic;
     dynamic.value.set("explicit");
     ExplicitDefault<> chosen;
     chosen.value.set(true);
-    return 0;
+
 }
 ```
 
@@ -141,13 +141,13 @@ Use short names when unambiguous. Module reference pages link to complete execut
 import std::encoding;
 import std::datetime;
 import std::utf8;
-int64 main() {
+void main() {
     List<uint8> bytes = decodeHex("666f6f").unwrap();
     println("{}", encodeBase64(bytes));
     DateTime utc = parseUtc("2024-02-29T12:34:56Z").unwrap();
     println("{}", formatUtc(addDays(utc, 1).unwrap()).unwrap());
     println("{}", sliceCodePoints("A中文😀", 1, 2).unwrap());
-    return 0;
+
 }
 ```
 

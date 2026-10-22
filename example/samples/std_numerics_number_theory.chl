@@ -8,7 +8,7 @@ float64 square(float64 x) { return x*x; }
 float64 rootFunction(float64 x) { return x*x-2.0; }
 float64 exponentialRate(float64 time, float64 value) { return value; }
 
-int64 main() {
+void main() {
     std::linalg::Vector<float32> left=std::linalg::Vector<float32>::zeros(2);
     left.set(0,(float32)3.0); left.set(1,(float32)4.0);
     std::linalg::Vector<float32> right=left+left;
@@ -51,5 +51,5 @@ int64 main() {
     assert(std::numtheory::mulMod(largePrime-1,largePrime-1,largePrime)==1);
     assert(std::numtheory::isPrime((uint64)65537));
     println("generic matrix numerics number theory OK");
-    return 0;
+
 }

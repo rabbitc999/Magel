@@ -56,7 +56,7 @@ struct Resources
     UniqueCounter second;
 };
 
-int64 main()
+void main()
 {
     Counter::new(1);
     Counter first = Counter::new(17);
@@ -97,5 +97,5 @@ int64 main()
     assert(resources.first.label == "owned");
     assert(resources.second.read() == 4);
     println("opcode members ok");
-    return 0;
+
 }

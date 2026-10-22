@@ -25,17 +25,17 @@ def main():
         for _ in range(1):
             result = run(code, 'hello world\r\n\r\n中文 空格\r\nlast')
             assert result.returncode == 0 and result.stdout.replace('\r\n', '\n') == expected, (result.stdout, result.stderr)
-            result = run('int64 main(){assert(readLines(0)=="");assert(readLines(9)=="one\\n\\ntwo");assert(readLine()=="");return 0;}', 'one\n\ntwo')
+            result = run('void main(){assert(readLines(0)=="");assert(readLines(9)=="one\\n\\ntwo");assert(readLine()=="");}', 'one\n\ntwo')
             assert result.returncode == 0, result.stderr
             result = run((ROOT / 'example/samples/std_file_strings.chl').read_text(encoding='utf-8'), arguments=[work / 'file.txt'])
             assert result.returncode == 0 and result.stdout.strip() == 'file strings ok', result.stderr
-        result = run('int64 main(){assert(readLine()=="one");assert(readLines(2)=="two\\nthree");return 0;}', options=['--input', 'one two three'])
+        result = run('void main(){assert(readLine()=="one");assert(readLines(2)=="two\\nthree");}', options=['--input', 'one two three'])
         assert result.returncode == 0, result.stderr
-        result = run('int64 main(){readLines(-1);return 0;}')
+        result = run('void main(){readLines(-1);}')
         assert result.returncode != 0 and 'nonnegative' in result.stderr, result.stderr
         (work / 'raw.bin').write_bytes(b'ab\x00cd')
         (work / 'exact.txt').write_bytes(b'abcd')
-        code = 'import std::io;\nint64 main(){\n FileStream exact=FileStream::open("exact.txt","rb").take();\n assert(exact.readAllString(4).unwrap()=="abcd");exact.close();\n FileStream short=FileStream::open("exact.txt","rb").take();assert(short.readAllString(3).isErr());short.close();\n FileStream zero=FileStream::open("raw.bin","rb").take();assert(zero.readString(5).isErr());zero.close();\n FileStream zeroLine=FileStream::open("raw.bin","rb").take();assert(zeroLine.readLine().isErr());zeroLine.close();\n FileStream bad=FileStream::open("exact.txt","rb").take();assert(bad.readString(-1).isErr());bad.close();assert(bad.readLine().isErr());\n return 0;\n}'
+        code = 'import std::io;\nvoid main(){\n FileStream exact=FileStream::open("exact.txt","rb").take();\n assert(exact.readAllString(4).unwrap()=="abcd");exact.close();\n FileStream short=FileStream::open("exact.txt","rb").take();assert(short.readAllString(3).isErr());short.close();\n FileStream zero=FileStream::open("raw.bin","rb").take();assert(zero.readString(5).isErr());zero.close();\n FileStream zeroLine=FileStream::open("raw.bin","rb").take();assert(zeroLine.readLine().isErr());zeroLine.close();\n FileStream bad=FileStream::open("exact.txt","rb").take();assert(bad.readString(-1).isErr());bad.close();assert(bad.readLine().isErr());\n return;\n}'
         result = run(code)
         assert result.returncode == 0, result.stderr
         result = subprocess.run([str(COMPILER), 'man', 'api', '--json', 'std::lang::readLines'], capture_output=True, encoding='utf-8')

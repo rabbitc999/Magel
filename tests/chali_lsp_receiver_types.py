@@ -35,27 +35,27 @@ Leaf makeLeaf(){Leaf result; return result;}
 
             cases = [
                 ('void use(Leaf const& item){item.', 'item.'),
-                ('int64 main(){Leaf item;item.', 'item.'),
-                ('int64 main(){let item=Leaf();item.', 'item.'),
-                ('int64 main(){let item=makeLeaf();item.', 'item.'),
-                ('int64 main(){Leaf original;let item=original;item.', 'item.'),
-                ('int64 main(){Wrapper holder;let item=holder.leaf;item.', 'item.'),
-                ('int64 main(){Wrapper holder;holder.leaf.', 'holder.leaf.'),
-                ('int64 main(){Wrapper holder;holder.get().', 'holder.get().'),
-                ('int64 main(){makeLeaf().', 'makeLeaf().'),
-                ('int64 main(){Box<Leaf> holder;holder.item.', 'holder.item.'),
-                ('int64 main(){Box<Leaf> holder;let item=holder.get();item.', 'item.'),
-                ('int64 main(){Leaf item;{Other item;item.check();}item.', 'item.'),
+                ('void main(){Leaf item;item.', 'item.'),
+                ('void main(){let item=Leaf();item.', 'item.'),
+                ('void main(){let item=makeLeaf();item.', 'item.'),
+                ('void main(){Leaf original;let item=original;item.', 'item.'),
+                ('void main(){Wrapper holder;let item=holder.leaf;item.', 'item.'),
+                ('void main(){Wrapper holder;holder.leaf.', 'holder.leaf.'),
+                ('void main(){Wrapper holder;holder.get().', 'holder.get().'),
+                ('void main(){makeLeaf().', 'makeLeaf().'),
+                ('void main(){Box<Leaf> holder;holder.item.', 'holder.item.'),
+                ('void main(){Box<Leaf> holder;let item=holder.get();item.', 'item.'),
+                ('void main(){Leaf item;{Other item;item.check();}item.', 'item.'),
             ]
             for body,marker in cases:
                 result = query(body,marker)
                 labels = {r['label'] for r in result}
                 assert labels == {'read','value','toString'}, (body,result)
-            result = query('int64 main(){Leaf item;{Other item;item.', 'item.')
+            result = query('void main(){Leaf item;{Other item;item.', 'item.')
             assert {r['label'] for r in result}=={'check','flag','toString'}, result
-            assert query('int64 main(){let item=missing();item.', 'item.')==[]
+            assert query('void main(){let item=missing();item.', 'item.')==[]
             for initializer, expected in [('makeLeaf()','Leaf'), ('42','int64'), ('1.25','float64'), ('true','bool'), ('"hello"','String')]:
-                body=f'int64 main(){{let item={initializer};item;}}'
+                body=f'void main(){{let item={initializer};item;}}'
                 hover=query(body,'item','hover')
                 assert expected+' item' in hover['contents']['value'], (body,hover)
                 hover=query(body,'let','hover')
@@ -69,9 +69,9 @@ Leaf makeLeaf(){Leaf result; return result;}
                 (folder/f'{module}.chl').write_text(f'module {module};struct Same {{int64 {method}(){{return 0;}}}};',encoding='utf-8')
             head='import a;import b;\n'
             for module,method in [('a','onlyA'),('b','onlyB')]:
-                result=query(f'int64 main(){{{module}::Same item;item.', 'item.',head=head)
+                result=query(f'void main(){{{module}::Same item;item.', 'item.',head=head)
                 assert {r['label'] for r in result}=={method,'toString'},result
-            result=query('int64 main(){Same item;item.', 'item.',head=head)
+            result=query('void main(){Same item;item.', 'item.',head=head)
             # 同名类型未确定时仅提供两者共有的通用 toString，不泄漏具体模块成员。
             assert {item['label'] for item in result}=={'toString'},result
     finally:

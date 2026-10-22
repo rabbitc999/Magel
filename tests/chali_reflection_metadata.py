@@ -29,7 +29,7 @@ def main() -> None:
             result = run([vm.resolve(), work])
             print(result.stdout.strip())
         plain = work / 'plain.chl'
-        plain.write_text('int64 main(){return 0;}\n', encoding='utf-8')
+        plain.write_text('void main(){}\n', encoding='utf-8')
         chali = ROOT / ('chali' + EXE)
         prefix = work / 'plain'
         run([chali, 'run', plain, '--emit', '--svmb', '--no-reflection', '--no-compress-symbols', '--out', prefix])

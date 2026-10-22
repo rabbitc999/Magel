@@ -1,4 +1,4 @@
-int64 main() {
+void main() {
     bool zero = (bool)0;
     bool nonzero = (bool)-3;
     bool fraction = (bool)0.5;
@@ -12,5 +12,5 @@ int64 main() {
     println("bool={},{},{} int64={},{},{},{} float64={:3F},{:3F}",
     zero, nonzero, fraction, from_true, wrapped, signed_wrap, truncated,
     single, from_false);
-    return 0;
+
 }

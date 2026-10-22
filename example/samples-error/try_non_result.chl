@@ -1,4 +1,4 @@
-int64 main() {
+void main() {
     int64 value = 7?;
-    return value;
+    let __ignored1 = value;
 }

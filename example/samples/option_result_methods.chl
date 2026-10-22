@@ -10,7 +10,7 @@ Result<int64, String> keepSmall(int64 value) {
     return Result<int64, String>::Err("too large");
 }
 
-int64 main() {
+void main() {
     Option<int64> some = Option<int64>::Value(4);
     Option<int64> none = Option<int64>::None;
     println("{} {} {} {}", some.isValue(), none.isNone(),
@@ -27,5 +27,5 @@ int64 main() {
      * 先落进变量，复制与释放都由它所在的块负责。 */
     Result<int64, String> kept = ok.andThen(keepSmall);
     println("{} {}", kept.expect("expected value"), bad.error());
-    return 0;
+
 }

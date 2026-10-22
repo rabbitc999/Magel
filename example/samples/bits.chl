@@ -34,7 +34,7 @@ int64 findProduct(int64 target) {
     return 0;
 }
 
-int64 main() {
+void main() {
     int64 value = 0;
     int64 shift = 0;
     value = inputInt();
@@ -70,5 +70,5 @@ int64 main() {
     /* 要从两层循环里跳出来：把这段循环包成一个函数，找到就 return。 */
     int64 found = findProduct(21);
     println("return: 3*7 = {}", found);
-    return 0;
+
 }

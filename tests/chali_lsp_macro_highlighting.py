@@ -28,7 +28,7 @@ def main():
     println("$for var in A $end_macro");
 }
 $end_macro
-int64 main(){int64 A=1;int64 var=2;$example(A)(var);return A+var;}
+void main(){int64 A=1;int64 var=2;$example(A)(var);let __boom = A+var;}
 '''
     with tempfile.TemporaryDirectory(prefix='chali-macro-colors-') as folder:
         root = Path(folder)
@@ -67,7 +67,7 @@ int64 main(){int64 A=1;int64 var=2;$example(A)(var);return A+var;}
             assert token('$end_macro', text.index('\n$end_macro'))[1] == 'keyword'
             assert token('// $for')[1] == 'comment'
             assert token('"$for var')[1] == 'string'
-            outside = text.index('int64 main')
+            outside = text.index('void main')
             assert token('A=1', outside)[1:] == ('variable', 1)
             assert token('var=2', outside)[1:] == ('variable', 1)
             assert token('$example', outside)[1] == 'function'

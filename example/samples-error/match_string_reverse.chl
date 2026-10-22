@@ -1,1 +1,1 @@
-int64 main() { match ("a") { std::lang::rangeEq("z", "a") => { } _ => { } } return 0; }
+void main() { match ("a") { std::lang::rangeEq("z", "a") => { } _ => { } } }

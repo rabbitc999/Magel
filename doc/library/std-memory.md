@@ -29,7 +29,7 @@ import std::parse;
 import std::path;
 import std::random;
 
-int64 main() {
+void main() {
     Result<int64, std::parse::ParseError> integer = std::parse::Parse::parseInt64("-42");
     Result<uint64, std::parse::ParseError> natural = std::parse::Parse::parseUInt64("18446744073709551615");
     Result<float64, std::parse::ParseError> real = std::parse::Parse::parseFloat64("12.5");
@@ -110,7 +110,7 @@ int64 main() {
     int64 after = std::memory::Memory::stats().liveBytes;
     assert(after <= during - 16);
     println("memory=ok");
-    return 0;
+
 }
 ```
 

@@ -48,9 +48,9 @@ int64 recurse(int64 depth) {
     allocated.drop();
     return total;
 }
-int64 main() {
+void main() {
     assert(recurse(5) == 15);
     assert(recurse(3) == 6);
     println("recursive callable ownership OK");
-    return 0;
+
 }

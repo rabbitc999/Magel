@@ -40,7 +40,7 @@ struct Box {
     }
 };
 
-int64 main() {
+void main() {
     int64 i = 7;
     Box rect;
     rect.value = 10;
@@ -53,5 +53,5 @@ int64 main() {
     println("max2(i, 2.5) = {:3F}", max2(i, 2.5));    /* int64 加宽成 float64 后交给 float64 版 */
     println("rect.show(5) = {}", rect.show(5));      /* 方法重载：选 show$int64 */
     println("rect.show(0.5) = {:3F}", rect.show(0.5));  /* 方法重载：选 show$float64 */
-    return 0;
+
 }

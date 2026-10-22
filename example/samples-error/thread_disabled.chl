@@ -2,8 +2,8 @@
 import std::thread;
 
 void work() {}
-int64 main() {
+void main() {
     Thread task = std::thread::create(work);
     std::thread::wait(task);
-    return 0;
+
 }

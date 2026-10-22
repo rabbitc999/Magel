@@ -6,7 +6,7 @@ int64 fn(int64) makeAdder(int64 mut& amount) {
     return fn(int64 value) { value + amount };
 }
 int64 apply(int64 fn(int64) callback,int64 value){return callback(value);}
-int64 main(){
+void main(){
     int64 amount=7;
     let add=fn(int64 value){value+amount};
     amount=100; assert(add(3)==103);
@@ -44,5 +44,5 @@ int64 main(){
             i+=1;
         }
     }
-    println("fn captures OK");return 0;
+    println("fn captures OK");
 }

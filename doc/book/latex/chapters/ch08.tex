@@ -20,7 +20,7 @@ ChaLi 的答案很短：离开作用域的时候，自动释放。
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 outer = 1;
     {
@@ -28,7 +28,7 @@ int64 main()
         println("里面能看到 {} 和 {}", outer, inner);
     }
     println("外面只剩 {}", outer);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -79,7 +79,7 @@ struct Resource: Drop
     }
 };
 
-int64 main()
+void main()
 {
     {
         Resource r;
@@ -87,7 +87,7 @@ int64 main()
         println("using");
     }
     println("after block");
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -134,12 +134,12 @@ struct Outer: Drop
     }
 };
 
-int64 main()
+void main()
 {
     Outer o;
     o.field.tag = "x";
     println("using");
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -185,7 +185,7 @@ struct Handle: Closeable
     }
 };
 
-int64 main()
+void main()
 {
     {
         Handle h;
@@ -193,7 +193,7 @@ int64 main()
         println("using");
     }
     println("after block");
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -228,7 +228,7 @@ struct Handle: Closeable
     }
 };
 
-int64 main()
+void main()
 {
     {
         Handle h;
@@ -238,7 +238,7 @@ int64 main()
     }
     // 这里不会再关一次
     println("after");
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -281,7 +281,7 @@ struct Point
     int64 y;
 };
 
-int64 main()
+void main()
 {
     Point mut& p = heap Point;
     p.x = 3;
@@ -289,7 +289,7 @@ int64 main()
     println("{},{}", p.x, p.y);
     p.drop();
     println("deleted");
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -344,14 +344,14 @@ struct Box: Drop
     }
 };
 
-int64 main()
+void main()
 {
     Box mut& b = heap Box;
     b.id = 7;
     b.drop();
     b.drop();
     println("twice ok");
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -379,13 +379,13 @@ struct Point
     int64 y;
 };
 
-int64 main()
+void main()
 {
     Point mut& p = heap Point;
     p.x = 1;
     p.drop();
     p.x = 2;
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -448,7 +448,7 @@ chali: [CHL1205] 借用来源已释放，不能继续访问：表达式
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     {
         defer println("first");
@@ -458,7 +458,7 @@ int64 main()
         }
         println("body");
     }
-    return 0;
+
 }
 \end{lstlisting}
 \par

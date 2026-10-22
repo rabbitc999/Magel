@@ -20,10 +20,10 @@
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     println("我想好了一个 1 到 100 的数，你猜是多少？");
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -46,12 +46,12 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     println("我想好了一个 1 到 100 的数，你猜是多少？");
     int64 guess = inputInt();
     println("你猜的是 {}。", guess);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -95,7 +95,7 @@ chali run guess.chl --input "42"
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 secret = 42;
     println("我想好了一个 1 到 100 的数，你猜是多少？");
@@ -112,7 +112,7 @@ int64 main()
     {
         println("猜对了！");
     }
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -150,7 +150,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 secret = 42;
     println("我想好了一个 1 到 100 的数，你猜是多少？");
@@ -171,7 +171,7 @@ int64 main()
             break;
         }
     }
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -209,12 +209,12 @@ int64 main()
 \begin{lstlisting}[style=chali]
 import std::random;
 
-int64 main()
+void main()
 {
     Random gen = Random::withSeed((uint64)2026);
     int64 secret = gen.nextInt(1, 100);
     println("答案是 {}。", secret);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -269,7 +269,7 @@ Random gen = Random::fromEntropy();
 \begin{lstlisting}[style=chali]
 import std::random;
 
-int64 main()
+void main()
 {
     Random gen = Random::withSeed((uint64)2026);
     int64 secret = gen.nextInt(1, 100);
@@ -294,7 +294,7 @@ int64 main()
             break;
         }
     }
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -334,12 +334,12 @@ chali run guess.chl --input "50 75 62"
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 first = inputInt();
     int64 second = inputInt();
     println("{} {}", first, second);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -361,11 +361,11 @@ chali: 运行期错误：输入不够（第 2 项缺失）
 \par
 \medskip
 \begin{lstlisting}[style=chali]
-int64 main()
+void main()
 {
     int64 value = inputInt();
     println("{}", value);
-    return 0;
+
 }
 \end{lstlisting}
 \par

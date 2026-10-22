@@ -2,6 +2,6 @@ int64 wrong() {
     return;
 }
 
-int64 main() {
+void main() {
     return wrong();
 }

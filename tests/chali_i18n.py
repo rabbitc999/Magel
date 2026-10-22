@@ -55,12 +55,12 @@ def main():
     result = execute(compiler, '--lang')
     assert result.returncode == 2, result
     source = WORK / '中日文路径.chl'
-    source.write_text('int64 main(){std::lang::println("中文 / 日本語 / ChaLi");return 0;}\n', encoding='utf-8')
+    source.write_text('void main(){std::lang::println("中文 / 日本語 / ChaLi");}\n', encoding='utf-8')
     for language in expected:
         result = execute(compiler, source, '--lang', 'ja', language=language)
         assert result.returncode == 0 and result.stdout == '中文 / 日本語 / ChaLi\n' and (not result.stderr), result
     bad = WORK / 'readonly.chl'
-    bad.write_text('int64 main(){int64 x=1;int64 & r=&x;r=2;return 0;}\n', encoding='utf-8')
+    bad.write_text('void main(){int64 x=1;int64 & r=&x;r=2;}\n', encoding='utf-8')
     codes = []
     for language, word in {'zh': '只读', 'en': 'read-only'}.items():
         result = execute(compiler, 'check', bad, 'json', 'lang', language)
@@ -71,7 +71,7 @@ def main():
         codes.append(report['code'])
     assert codes == ['CHL1203'] * 2, codes
     unknown = WORK / 'unknown.chl'
-    unknown.write_text('int64 main(){string x;return 0;}\n', encoding='utf-8')
+    unknown.write_text('void main(){string x;}\n', encoding='utf-8')
     for language, word in {'zh': '没有声明的类型', 'en': 'Undeclared type'}.items():
         result = execute(compiler, 'check', unknown, 'json', 'lang', language)
         assert result.returncode != 0 and word in result.stdout and ('string' in result.stdout), result
@@ -85,7 +85,7 @@ def main():
         assert result.returncode != 0 and 'already exists' in result.stderr, result
     native = WORK / 'native.exe'
     panic = WORK / 'panic.chl'
-    panic.write_text('void leaf(){panic("USER 中文 / 日本語");}\nint64 main(){leaf();return 0;}\n', encoding='utf-8')
+    panic.write_text('void leaf(){panic("USER 中文 / 日本語");}\nvoid main(){leaf();return;}\n', encoding='utf-8')
     for language, word in {'zh': '调用栈', 'en': 'Call stack'}.items():
         result = execute(compiler, 'run', panic, language=language)
         assert result.returncode != 0 and 'USER 中文 / 日本語' in result.stderr and (word in result.stderr), result

@@ -20,7 +20,7 @@ $for item in rest
 if (item > 0) { out += item; }
 $end_for
 $end_macro
-int64 main() {
+void main() {
     assert($CLASSIFY(name) == 1);
     assert($CLASSIFY(1 + 2) == 2);
     assert($NUMBER(42) == 42);
@@ -29,5 +29,5 @@ int64 main() {
     $POSITIVE(total, 1, -2, 3);
     assert(total == 4);
     println("macros ok");
-    return 0;
+
 }

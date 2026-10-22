@@ -1,6 +1,6 @@
 // 右侧必须完整保存后再写回，禁止复制传播把交换退化为覆盖。
 (T, T) reverse<T>(T first, T second){return second, first;}
-int64 main(){
+void main(){
     int64 x=7,y=42;
     (x,y)=(y,x);
     assert(x==42 && y==7);
@@ -22,5 +22,5 @@ int64 main(){
     assert(left=="right" && right=="left");
     (left,right)=reverse<String>(left,right);
     assert(left=="left" && right=="right");
-    println("tuple swap OK"); return 0;
+    println("tuple swap OK");
 }

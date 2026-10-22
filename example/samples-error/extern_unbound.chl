@@ -3,7 +3,7 @@
  * （`--emit` / `--svmb` 只产出 .quad，绑定由目标程序的 bindChaLiGlue 负责，那条路不查。） */
 int32 cpp_missing(int32 value);
 
-int64 main()
+void main()
 {
-    return cpp_missing((int32)1);
+    let __ignored1 = cpp_missing((int32)1);
 }

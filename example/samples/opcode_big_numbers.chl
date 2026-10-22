@@ -1,5 +1,5 @@
 /* 使用 opcode 声明中的 new / copy / drop 验证大数拥有值。 */
-int64 main() {
+void main() {
     BigInteger original = BigInteger::new(17);
     BigInteger copied = original;
     copied = copied + BigInteger::new(5);
@@ -7,5 +7,5 @@ int64 main() {
     BigDecimal decimalCopy = decimal;
     decimalCopy = decimalCopy + BigDecimal::new(2);
     println("{} {} {} {}", original.str(), copied.str(), decimal.str(), decimalCopy.str());
-    return 0;
+
 }

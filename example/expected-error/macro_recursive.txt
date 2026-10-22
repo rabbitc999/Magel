@@ -1,1 +1,1 @@
-chali: example/samples-error/macro_recursive.chl 第 4 行第 23 列：宏展开超过深度或规模预算
+chali: example/samples-error/macro_recursive.chl 第 4 行第 22 列：宏展开超过深度或规模预算

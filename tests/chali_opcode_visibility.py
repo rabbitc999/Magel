@@ -21,7 +21,7 @@ def main():
         try:
             server.query('initialize',dict(rootUri=root.as_uri()))
             uri=(root/'main.chl').as_uri()
-            text='opcode Secret {new=__std_bint_from_int;drop=__std_bint_drop;copy=__std_bint_copy;}; Secret hidden; int64 main(){return 0;}\n'
+            text='opcode Secret {new=__std_bint_from_int;drop=__std_bint_drop;copy=__std_bint_copy;}; Secret hidden; void main(){}\n'
             server.send(dict(method='textDocument/didOpen',params=dict(textDocument=dict(uri=uri,text=text,version=1))))
             symbols=server.query('textDocument/documentSymbol',dict(textDocument=dict(uri=uri)))
             assert {item['name'] for item in symbols} == {'main'}, symbols

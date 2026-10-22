@@ -6,7 +6,7 @@ int32 incrementGlobal() {
     T = T + (int32)1;
     return T;
 }
-int64 main() {
+void main() {
     int64 T = 1;
     T = T + 1;
     int32 fn(int32) callback = next;
@@ -17,5 +17,5 @@ int64 main() {
         println("{} {}", T, nestedCallback(T));
     }
     println("{}", T);
-    return 0;
+
 }

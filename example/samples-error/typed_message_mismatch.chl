@@ -2,9 +2,9 @@
 import std::thread;
 import std::message;
 
-int64 main() {
+void main() {
     std::message::sendThread<int64>(std::thread::current(), 4);
     String value = std::message::receiveThread<String>();
     std::lang::println("{}", value);
-    return 0;
+
 }

@@ -14,11 +14,11 @@ def main():
     parser.add_argument('--chali', type=Path, default=ROOT / ('ChaLi.exe' if os.name == 'nt' else 'chali'))
     compiler = parser.parse_args().chali.resolve()
     cases = [
-        ('int64 main() { let a = Pair::create("key", (int64)7); let b = Pair::create(("value", (int64)9)); let t = a.toTuple(); assert(t.0 == "key" && t.1 == 7 && b.second == 9); return 0; }', True),
-        ('int64 main() { let p = std::lang::Pair::create((int64)1, "one"); assert(p.first == 1 && p.second == "one"); return 0; }', True),
-        ('struct Cell<T> { T value; static Cell<T> create(T value) { self.value = value; } }; int64 main() { let c = Cell::create((int64)42); assert(c.value == 42); return 0; }', True),
-        ('struct Choice<T,U> { static Choice<T,U> create(T a,U b) {} static Choice<T,U> create(U a,T b) {} }; int64 main() { let c = Choice::create((int64)1,"a"); return 0; }', False),
-        ('int64 main() { let p = Pair::create(); return 0; }', False),
+        ('void main() { let a = Pair::create("key", (int64)7); let b = Pair::create(("value", (int64)9)); let t = a.toTuple(); assert(t.0 == "key" && t.1 == 7 && b.second == 9); }', True),
+        ('void main() { let p = std::lang::Pair::create((int64)1, "one"); assert(p.first == 1 && p.second == "one"); }', True),
+        ('struct Cell<T> { T value; static Cell<T> create(T value) { self.value = value; } }; void main() { let c = Cell::create((int64)42); assert(c.value == 42); }', True),
+        ('struct Choice<T,U> { static Choice<T,U> create(T a,U b) {} static Choice<T,U> create(U a,T b) {} }; void main() { let c = Choice::create((int64)1,"a"); }', False),
+        ('void main() { let p = Pair::create(); }', False),
     ]
     with tempfile.TemporaryDirectory(prefix='chali-inferred-create-') as directory:
         work = Path(directory)

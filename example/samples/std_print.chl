@@ -9,7 +9,7 @@ struct Point {
     }
 };
 
-int64 main() {
+void main() {
     Point point;
     point.x = 2;
     point.y = 3;
@@ -17,5 +17,5 @@ int64 main() {
     print("UTF-8: {}", "中文");
     putChar('!');
     putChar('\n');
-    return 0;
+
 }

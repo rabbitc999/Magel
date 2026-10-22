@@ -85,7 +85,7 @@ int64[] freshArray()
 String genericText<T : ToString>(T const& value) { return value.toString(); }
 String genericConversion<T : ImplicitConvert<String>>(T value) { return value; }
 enum Message { Empty, Text(String value); };
-int64 main()
+void main()
 {
     int64 number = 42;
     String numeric = number;
@@ -187,5 +187,5 @@ int64 main()
     assert(message.toString() == "Text(\"payload\")");
     assert(number == 42 && pair.left == "one" && list.len() == 3);
     println("done");
-    return 0;
+
 }

@@ -24,7 +24,7 @@ void koch(int64 depth, float64 distance) {
     koch(depth - 1, third);
 }
 
-int64 main(List<String> arguments) {
+void main(List<String> arguments) {
     if (turtle_open((int32)900, (int32)700) == 0) {
         panic("无法打开 WinAPI 海龟窗口");
     }
@@ -51,5 +51,5 @@ int64 main(List<String> arguments) {
     println("已保存 turtle.bmp；关闭窗口结束程序");
     if (arguments.len() == 0) { turtle_wait(); }
     else { turtle_close(); }  // 自动化验收：demo.exe close
-    return 0;
+
 }

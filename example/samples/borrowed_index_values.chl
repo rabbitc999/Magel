@@ -10,7 +10,7 @@ struct CopiedValues : Index<String, int64> {
     String text;
     String index(int64 key) { return self.text; }
 };
-int64 main() {
+void main() {
     IndexedValues source; source.text="source";
     IndexedLists lists; lists.values.push(7);
     CopiedValues copied; copied.text="copied";
@@ -30,5 +30,5 @@ int64 main() {
     }
     source.text="still alive";
     assert(source[0]=="still alive");
-    println("borrowed index values OK"); return 0;
+    println("borrowed index values OK");
 }

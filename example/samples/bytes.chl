@@ -7,7 +7,7 @@
  * 字符串按**字节**下标（步长 1）；`int8/uint8` 数组按数据区的每槽 8 字节布局。
  */
 
-int64 main() {
+void main() {
     String text = "Hello";
 
     /* 1) 字符串按字节读：`text[i]` 得到 0..255 的字节值 */
@@ -61,5 +61,5 @@ int64 main() {
 
     /* 4) `&` 出来的是地址：相邻元素差 8（语言里每个槽位 8 字节） */
     println("array stride={}", address(&shifted[1]) - address(&shifted[0]));
-    return 0;
+
 }

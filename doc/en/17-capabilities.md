@@ -17,7 +17,7 @@ Generic closures support `fn<T>`, inference from argument types, full specializa
 
 Sources and macros are shared through `module` / `import`; a macro definition is registered in the module that defines it and calls resolve by module visibility, with `std::lang` always visible and qualified names (`$std::lang::assert(...)`) naming a module directly. The generated parser builds macro ASTs; semantic analysis performs hygienic substitution and static type inference before quadruple generation. Ordered round, square and curly groups, type parameters, variadic fragments, five complete syntax categories and ECMAScript regex matching are supported. See [hygienic AST macros](24-literals-operators-macros.md#compile-time-hygienic-ast-macros).
 
-Entry points support `int64 main` and `void main`, with no parameters or `List<String>` arguments. A void entry exits with code 0 on normal completion; panic still fails. Trailing semicolons on `struct`, `enum`, and `interface` declarations are optional.
+Entry points support only `void main`, with no parameters or `List<String>` arguments. It exits with code 0 on normal completion; panic still fails. Trailing semicolons on `struct`, `enum`, and `interface` declarations are optional.
 
 | Area | Implemented capability and contract |
 | --- | --- |

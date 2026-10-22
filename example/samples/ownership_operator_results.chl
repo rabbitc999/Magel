@@ -10,7 +10,7 @@ struct Borrower : Negate<String const&,Borrower> {
     String text;
     String const& negate(Borrower value){return &self.text;}
 };
-int64 main(){
+void main(){
     Producer source;source.text="live";
     Borrower owner;owner.text="borrow";
     {
@@ -36,5 +36,5 @@ int64 main(){
         }
     }
     println("ownership operator results OK");
-    return 0;
+
 }

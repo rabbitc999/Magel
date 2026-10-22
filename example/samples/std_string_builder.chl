@@ -1,7 +1,7 @@
 import std::text;
 
 /* StringBuilder 冒烟样例：追加、清空与 toString。 */
-int64 main() {
+void main() {
     StringBuilder builder = StringBuilder::create();
     builder.append("hello");
     builder.appendChar(' ');
@@ -16,5 +16,5 @@ int64 main() {
     print("after clear len={} empty={}", builder.len(), builder.isEmpty());
     builder.appendInt(7);
     print("tail={}", builder.toString());
-    return 0;
+
 }

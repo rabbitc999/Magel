@@ -61,7 +61,7 @@ def main():
         work = Path(directory)
         source = work / 'expressions.chl'
         checks = '\n'.join((f'    assert(({expr})==({value}));' for expr, value in cases))
-        source.write_text('int64 main(){\n' + checks + '\n    println("expression differential OK");\n    return 0;\n}\n', encoding='utf-8')
+        source.write_text('void main(){\n' + checks + '\n    println("expression differential OK");\n    return;\n}\n', encoding='utf-8')
         for backend in ('run',):
             output = work / (backend + EXE)
             command = [compiler, backend, source, '--out', output]

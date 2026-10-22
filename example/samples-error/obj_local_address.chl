@@ -1,8 +1,8 @@
 struct Pair { int64 x; int64 y; };
 
-int64 main() {
+void main() {
     std::lang::Any box;
     Pair local;
     box.set(local);
-    return 0;
+
 }

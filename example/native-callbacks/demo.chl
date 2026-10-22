@@ -17,7 +17,7 @@ int64 reenter(int64 depth) {
     return hostApply(reenter, depth - 1) + 1;
 }
 
-int64 main() {
+void main() {
     assert(hostApply(triple, 7) == 21);
     assert(hostApply(int64 fn(int64 x) { x + 1 }, 7) == 8);
     int64 offset = 5;
@@ -37,5 +37,5 @@ int64 main() {
     assert(hostCompose(compose, triple, 7) == 22);
     assert(hostApply(reenter, 12) == 13);
     println("callbacks: named inline copy move float32 bool void reference higher-order reentry OK");
-    return 0;
+
 }

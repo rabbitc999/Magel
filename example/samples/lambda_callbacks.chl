@@ -9,7 +9,7 @@ T applyGeneric<T>(T fn(T) callback, T value) { return callback(value); }
 void action(void fn() callback) { callback(); }
 int64 observed = 0;
 
-int64 main() {
+void main() {
     assert((apply(fn(value) { value + 3 }, 7)) == (10));
     assert((applyAlias(fn(value) { value * 2 }, 7)) == (14));
     assert((applyGeneric(fn(value) { value + 2 }, 7)) == (9));
@@ -100,5 +100,5 @@ int64 main() {
     observed = 20;
     assert((readGlobal()) == (20));
     println("fn callbacks OK");
-    return 0;
+
 }

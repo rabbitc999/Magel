@@ -40,7 +40,7 @@ chali run example/samples/std_net.chl
 
 import std::net;
 
-int64 main() {
+void main() {
     /* ---- 1. 回环 TCP：监听 / 连接 / 接受 / 收发 ---- */
     std::net::TcpListener listener = std::net::TcpListener::listen("127.0.0.1", (int32)0, (int32)8);
     println("listener open={} port>0={}", listener.isOpen(), listener.localPort() > 0);
@@ -77,7 +77,7 @@ int64 main() {
     println("response ok={} status={} reason={} len={} type={} body={}",
     response.ok, response.status, response.reason,
     response.header("Content-Length"), response.header("content-type"), response.body);
-    return 0;
+
 }
 ```
 

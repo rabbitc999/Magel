@@ -37,7 +37,7 @@ void checkDouble(uint32 high, uint32 low, bool bigEndian) {
     }
 }
 
-int64 main() {
+void main() {
     uint32 high[9]; uint32 low[9];
     high[0] = (uint32)0; low[0] = (uint32)0;
     high[1] = (uint32)2147483648; low[1] = (uint32)0; // -0
@@ -80,5 +80,5 @@ int64 main() {
     assert(!float64ToBytes(1.5, fixed, -1));
     assert(bytesToFloat64(fixed, -1).isNone());
     println("float64 bytes OK");
-    return 0;
+
 }

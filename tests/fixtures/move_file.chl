@@ -1,6 +1,6 @@
 import std::io;
 
-int64 main() {
+void main() {
     File source = fileOpen("build/move-file.bin", "wb").take();
     int64 before; memcpy(&before, &source, 8);
     File target = move(&source);
@@ -26,5 +26,5 @@ int64 main() {
     };
     assert(writeStream("owned") == 5);
     println("file move ok");
-    return 0;
+
 }

@@ -50,7 +50,7 @@ void release(Option<Node mut&> head) {
     }
 }
 
-int64 main() {
+void main() {
     int64 x = 1;
     String tag = "外层";
 
@@ -103,5 +103,5 @@ int64 main() {
     Option<Node mut&> head = chain(4);
     println("链：{}", show(head));
     release(head);
-    return 0;
+
 }

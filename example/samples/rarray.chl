@@ -21,7 +21,7 @@ int64 sum(int64 x[]) {
     return total;
 }
 
-int64 main() {
+void main() {
     int64 n = 5;                      /* 长度是变量：运行时决定 */
     int64 a[] = new[n];
     int64 i = 0;
@@ -53,5 +53,5 @@ int64 main() {
     b.drop();
     pts.drop();
     a.drop();
-    return 0;
+
 }

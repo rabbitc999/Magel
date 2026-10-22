@@ -36,7 +36,7 @@ Holder makeHolder(int64 value) {
 
 String greeting() { return "he" + "llo"; }
 
-int64 main() {
+void main() {
     greeting();                     /* 忽略 String 返回值：自动释放 */
     makeHolder(1);                  /* 忽略 Drop 结构体返回值：自动析构 */
     println("after-ignored");
@@ -45,5 +45,5 @@ int64 main() {
     holder = holder.clone();        /* 旧 holder 当场析构，不泄漏 */
     holder = holder.clone();
     println("len={}", holder.items.len());
-    return 0;                       /* 出块：holder 再析构一次 */
+    return;                       /* 出块：holder 再析构一次 */
 }

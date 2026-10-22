@@ -1,7 +1,7 @@
 // 元组元素及嵌套来源只读；整体替换和独立值副本保持可写。
 struct Record { int64 number; String text; };
 int64 readNumber(int64 const& value) { return value; }
-int64 main() {
+void main() {
     (int64, String) pair = (1, "one");
     (int64, String) mut& whole = &pair;
     int64 const& number = &pair.0;
@@ -35,5 +35,5 @@ int64 main() {
     explicitWrite = 6;
     assert(pair.0 == 6);
     println("tuple readonly references OK");
-    return 0;
+
 }

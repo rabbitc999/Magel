@@ -18,7 +18,7 @@ int64 double_of(int64 x) { return x * 2; }
 
 int64 triple_of(int64 x) { return x * 3; }
 
-int64 main() {
+void main() {
     $DECLARE(localCount, 11);
     $DECLARE(partTwo, 7);
     $DECLARE(tripleTwo, 6);
@@ -29,5 +29,5 @@ int64 main() {
     println("call={}", $CALL(double, 21));
     println("call2={}", $CALL(triple, 5));
     println("macro-call={}", $DOUBLE(4));
-    return 0;
+
 }

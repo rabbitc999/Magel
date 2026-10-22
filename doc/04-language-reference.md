@@ -132,12 +132,12 @@ void log(String message) { println("{}", message); }
     int32 a = 1;
     return a, value;
 }
-int64 main() {
+void main() {
     String str1 = "aaa", str2;
     int32 c;
     c, str2 = func<String>(str1);
     assert(c == 1 && str2 == "aaa");
-    return 0;
+
 }
 ```
 
@@ -157,12 +157,12 @@ int64 main() {
 
 ```chali
 struct Message { String text; };
-int64 main() {
+void main() {
     Message source;
     source.text = "hello";
     Message result = move(&source);
     println("{}", result.text);
-    return 0;
+
 }
 ```
 
@@ -209,10 +209,10 @@ struct Counter {
     Counter(int64 value) { self.value = value; Counter::alive = Counter::alive + 1; }
     static int64 count() { return Counter::alive; }
 };
-int64 main() {
+void main() {
     Counter c = new Counter(7);
     println("value={} alive={}", c.value, Counter::count());
-    return 0;
+
 }
 ```
 
@@ -238,13 +238,13 @@ struct Point {
     Point(int64 x, int64 y) { self.x = x; self.y = y; }             // 真构造器
     static Point create(int64 x, int64 y) { self.x = x * 10; self.y = y * 10; }  // 具名构造入口
 };
-int64 main() {
+void main() {
     Point o = new Point(3, 4);          // 真构造器 → 3,4
     Point mut& p = heap new Point(1, 2);  // 真构造器 + 堆 → 1,2
     Point q = Point::create(3, 4);        // 具名构造入口 → 30,40
     println("{},{} {} {} {} {}", o.x, o.y, p.x, p.y, q.x, q.y);
     p.drop();
-    return 0;
+
 }
 ```
 
@@ -274,13 +274,13 @@ struct Point {
     Point(int64 x, int64 y) { self.x = x; self.y = y; }
     static Point create(int64 x, int64 y) { self.x = x; self.y = y; }
 };
-int64 main() {
+void main() {
     Point mut& a = heap Point;            // heap T
     Point mut& b = new Point(3, 4);       // new T(args)
     Point mut& c = heap new Point(5, 6);  // heap new T(args)
     println("{} {} {} {}", a.x, b.x, b.y, c.y);
     a.drop(); b.drop(); c.drop();
-    return 0;
+
 }
 ```
 
@@ -293,7 +293,7 @@ int64 main() {
 ## 5. 运算符
 
 ```chali
-int64 main() {
+void main() {
     int64 a = 17;
     int64 b = 5;
     println("{} {} {} {} {}", a + b, a - b, a * b, a / b, a % b);
@@ -302,7 +302,7 @@ int64 main() {
     println("{} {} {}", a > b, a == b, (a > 10 && b < 10) || false);
     a += 3;
     println("{}", a);
-    return 0;
+
 }
 ```
 
@@ -525,12 +525,12 @@ struct TypeC { int64 value; };
 struct TypeA<T, V> { T first; V second; };
 struct TypeB<T> { TypeA<T, TypeC> item; };
 
-int64 main() {
+void main() {
     TypeB<String> b;
     b.item.first = "nested";
     b.item.second.value = 7;
     assert(b.item.first == "nested" && b.item.second.value == 7);
-    return 0;
+
 }
 ```
 
@@ -556,7 +556,7 @@ int64 main() {
 ## 10. 控制流
 
 ```chali
-int64 main() {
+void main() {
     int64 i = 0;
     while (i < 3) { i = i + 1; }
     println("while={}", i);
@@ -578,7 +578,7 @@ int64 main() {
         }
     }
     println("for={}", total);
-    return 0;
+
 }
 ```
 
@@ -604,7 +604,7 @@ for=9
 ## 11. 容器
 
 ```chali
-int64 main() {
+void main() {
     List<int64> xs;
     xs.push(1);
     xs.push(2);
@@ -613,7 +613,7 @@ int64 main() {
     Map<String, int64> m;
     m["a"] = 1;
     println("m={}", m["a"]);
-    return 0;
+
 }
 ```
 
@@ -679,10 +679,10 @@ owned.drop();                  // 释放
 $macro ADD<T:a>(a, b)
 cast<T>(a + b)
 $end_macro
-int64 main() {
+void main() {
     int32 value = 1;
     int32 result = $ADD(value, 2);
-    return 0;
+
 }
 ```
 
@@ -876,7 +876,7 @@ int32 useCallbacks<T>(int32 c) {
 `for-in` 与 `while` 可以作为初始化、赋值、实参或返回位置的值表达式，必须提供 `else` 结果。循环体中的 `yield value;` 结束整个值表达式并交出结果；没有交出值时，遍历结束、条件不成立或无值 break 会进入 else。`continue` 开始下一轮。单一值分支可写 `{ value }`，复杂分支用 `yield value;`。
 
 ```chali
-int64 main()
+void main()
 {
     int64 first = for (let value in std::lang::range(1, 8))
     {
@@ -888,7 +888,7 @@ int64 main()
     else { -1 };
     int64 fallback = while (false) { 1 } else { 7 };
     assert(first == 2 && fallback == 7);
-    return 0;
+
 }
 ```
 
@@ -947,12 +947,12 @@ void main() {
 非空语句块可以产生一个值，用于初始化、已有变量赋值、实参或返回值。每条正常完成的路径必须通过 `yield 值;` 退出；普通语句块仍按原有规则执行，空 `{}` 保留集合字面量含义。`yield` 只在该糖里作关键字，作为普通标识符仍可用（如用户自定义的 `yield()`），但不能写成 `yield(参数)` 调用形式。
 
 ```chali
-int64 main() {
+void main() {
     int32 a = { int32 b = 3; yield b; };
     a = { int32 b = 4; yield b; };
     print(f"a={a};");
     println(f"next={a + 1}");
-    return 0;
+
 }
 ```
 

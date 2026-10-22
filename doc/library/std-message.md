@@ -43,7 +43,7 @@ void typedWorker() {
     std::message::sendThread<int64>(std::thread::parent(), old);
 }
 
-int64 main() {
+void main() {
     std::concurrency::Shared<int64> sharedCounter = std::concurrency::Shared<int64>::create(10);
     isolatedCounter = 3;
     Parcel original;
@@ -62,7 +62,7 @@ int64 main() {
     std::thread::wait(task);
     println("{} {} {} {} {} {}", reply.id, reply.name, reply.readings.len(),
     previous, sharedCounter.get(), isolatedCounter);
-    return 0;
+
 }
 ```
 

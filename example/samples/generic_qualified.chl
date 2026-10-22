@@ -31,7 +31,7 @@ struct Point {
     int64 x;
 };
 
-int64 main() {
+void main() {
     Box<int64> plain = Box<int64>::of(1);                    /* 裸名 + 静态方法 */
     custom::Box<int64> qualified = custom::Box<int64>::of(2); /* 限定名 + 静态方法 */
     custom::Box<int64>::of(28).set(9);                     /* 限定名调用实例方法 */
@@ -46,5 +46,5 @@ int64 main() {
 
     println("{} {} {} {}", plain.value, qualified.get(), real.value, letter.value);
     println("{} {} {}", point.x, Point::origin, custom::Point::origin);
-    return 0;
+
 }

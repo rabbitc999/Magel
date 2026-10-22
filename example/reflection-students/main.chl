@@ -210,20 +210,19 @@ Result<String, String> execute(std::sql::Database mut& database, List<String> co
 /**
  * @brief 打开 SQLite，创建反射学生模型对应的表并执行单次命令。
  * @param args 数据库路径与操作参数。
- * @return 成功返回零，业务或参数错误返回一。
  */
-int64 main(List<String> args)
+void main(List<String> args)
 {
     if (args.len() < 2)
     {
         println("用法：chali main.chl 数据库路径 命令 [参数]");
-        return 1;
+        return;
     }
     let database = std::sql::Database::sqlite(args[0]);
     if (!database.isOpen())
     {
         println("错误：{}", database.lastError());
-        return 1;
+        return;
     }
     let query = std::sql::query<Student>().unwrap();
     let created = database.exec(query.build("create").unwrap());
@@ -231,15 +230,15 @@ int64 main(List<String> args)
     {
         println("错误：{}", created.error);
         database.close();
-        return 1;
+        return;
     }
     let result = execute(&database, &args);
     database.close();
     if (result.isErr())
     {
         println("错误：{}", result.error());
-        return 1;
+        return;
     }
     println("{}", result.unwrap());
-    return 0;
+
 }

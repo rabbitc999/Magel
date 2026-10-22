@@ -1,5 +1,5 @@
-int64 main() {
+void main() {
     String text = "x";
     text[0] = true;
-    return 0;
+
 }

@@ -23,7 +23,7 @@ int64[] returnNumbers() {
     return values;
 }
 
-int64 main() {
+void main() {
     int64 first[2];
     first[0] = 7;
     first[1] = 11;
@@ -100,5 +100,5 @@ int64 main() {
     copiedBox.values = box.values;
     assert(copiedBox.values[0] == "left" && copiedBox.sentinel == 123);
     println("fixed array values OK");
-    return 0;
+
 }

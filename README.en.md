@@ -216,13 +216,13 @@ syntax error: example/samples-error/syntax_extern_impl_removed.chl line 2 col 8:
 ```c
 struct Item { int64 value; };
 
-int64 main() {
+void main() {
     List<Item> items;
     Item item;
     item.value = 7;
     items.push(item);
     println("{}", items.len());
-    return 0;
+
 }
 ```
 

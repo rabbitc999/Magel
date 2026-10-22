@@ -1,7 +1,7 @@
 import std::iter;
 import std::linalg;
 
-int64 main() {
+void main() {
     List<int64> values;
     values.push(3);
     values.push(7);
@@ -30,5 +30,5 @@ int64 main() {
     LuFactorization factorization;
     std::lang::pause();
     println("camelCase PascalCase");
-    return 0;
+
 }

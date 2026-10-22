@@ -51,7 +51,7 @@ String tell(Shape mut& shape) {
     return shape.describe() + "（面积 " + format("{}", shape.area()) + "）";
 }
 
-int64 main() {
+void main() {
     /* ---- 静态调用：编译期就知道接收者是哪个结构体 ---- */
     Circle c;
     c.r = 2;
@@ -87,5 +87,5 @@ int64 main() {
 
     pc.drop();
     ps.drop();
-    return 0;
+
 }

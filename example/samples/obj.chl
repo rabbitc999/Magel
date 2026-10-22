@@ -2,7 +2,7 @@
 struct Record { String text; int64 number; };
 Record globalRecord;
 int64 increment(int64 value){return value+1;}
-int64 main(){
+void main(){
     Any box;
     assert(box.isEmpty() && !isType<int64>(&box));
     assert(!tryGet<int64>(&box).isValue());
@@ -24,5 +24,5 @@ int64 main(){
     Record mut& view=borrowed.unwrap();view->number=11;assert(globalRecord.number==11);
     assert(!tryGetReference<String>(&box).isValue());
     println("Any type checks and safe extraction OK");
-    return 0;
+
 }

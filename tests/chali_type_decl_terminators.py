@@ -9,7 +9,7 @@ def main():
     work = ROOT / 'build/type-decl-terminators'
     work.mkdir(parents=True, exist_ok=True)
     declarations = 'interface Value { int64 get(); }END\ninterface Derived : Value {}END\nstruct Cell : Derived { int64 n; int64 get(){return self.n;} }END\nstruct Box<T> { T item; }END\nenum State { Empty, Full(int64 value) }END\nenum Flag { Off, On; int64 number(){return 1;} }END\n'
-    body = 'int64 main(){Cell c;c.n=7;Box<int64> b;b.item=c.get();\nState s=State::Full(b.item);println("{}",b.item);return 0;}'
+    body = 'void main(){Cell c;c.n=7;Box<int64> b;b.item=c.get();\nState s=State::Full(b.item);println("{}",b.item);}'
     compiler = ROOT / ('ChaLi.exe' if os.name == 'nt' else 'chali')
     for ending in (';', ''):
         source = work / ('with.chl' if ending else 'without.chl')

@@ -12,7 +12,7 @@
  *     `.floor()` `.ceil()` `.trunc()`（取整返回 BigInteger）
  */
 
-int64 main() {
+void main() {
     /* 1) 幂与数论 */
     BigInteger a = BigInteger("1000000000000000000000000000000");
     BigInteger big = a.pow(3);
@@ -46,5 +46,5 @@ int64 main() {
             BigDecimal("-2.7").floor().str(), BigDecimal("-2.7").trunc().str());
     println("-2.5 的绝对值 = {}，5.5 是整数？ {}", BigDecimal("-2.5").abs().str(),
             BigDecimal("5.5").isInteger());
-    return 0;
+
 }

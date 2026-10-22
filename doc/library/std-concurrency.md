@@ -43,7 +43,7 @@ void typedWorker() {
     std::message::sendThread<int64>(std::thread::parent(), old);
 }
 
-int64 main() {
+void main() {
     std::concurrency::Shared<int64> sharedCounter = std::concurrency::Shared<int64>::create(10);
     isolatedCounter = 3;
     Parcel original;
@@ -62,7 +62,7 @@ int64 main() {
     std::thread::wait(task);
     println("{} {} {} {} {} {}", reply.id, reply.name, reply.readings.len(),
     previous, sharedCounter.get(), isolatedCounter);
-    return 0;
+
 }
 ```
 
@@ -799,7 +799,7 @@ void worker(std::concurrency::Channel<int64> values) {
     values.send(42);
     values.close();
 }
-int64 main() {
+void main() {
     let values = std::concurrency::Channel<int64>::create(2);
     Thread task = std::thread::createWith<std::concurrency::Channel<int64>>(worker, values);
     let next = values.receive();
@@ -808,6 +808,6 @@ int64 main() {
     let completed = std::thread::waitResult(task);
     assert(completed.isReady());
     println("channel {}", next.value);
-    return 0;
+
 }
 ```

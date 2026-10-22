@@ -137,12 +137,12 @@ Existing assignment targets also provide context for generic return-type inferen
     int32 a = 1;
     return a, value;
 }
-int64 main() {
+void main() {
     String str1 = "aaa", str2;
     int32 c;
     c, str2 = func<String>(str1);
     assert(c == 1 && str2 == "aaa");
-    return 0;
+
 }
 ```
 
@@ -159,12 +159,12 @@ The language intrinsic has the signature `T move(T mut& source)`. Its result typ
 
 ```chali
 struct Message { String text; };
-int64 main() {
+void main() {
     Message source;
     source.text = "hello";
     Message result = move(&source);
     println("{}", result.text);
-    return 0;
+
 }
 ```
 
@@ -213,10 +213,10 @@ struct Counter {
     Counter(int64 value) { self.value = value; Counter::alive = Counter::alive + 1; }
     static int64 count() { return Counter::alive; }
 };
-int64 main() {
+void main() {
     Counter c = new Counter(7);
     println("value={} alive={}", c.value, Counter::count());
-    return 0;
+
 }
 ```
 
@@ -244,13 +244,13 @@ struct Point {
     Point(int64 x, int64 y) { self.x = x; self.y = y; }             // real constructor
     static Point create(int64 x, int64 y) { self.x = x * 10; self.y = y * 10; }  // named entry point
 };
-int64 main() {
+void main() {
     Point o = new Point(3, 4);    // real constructor → 3,4
     Point mut& p = heap new Point(1, 2);  // real constructor + heap → 1,2
     Point q = Point::create(3, 4);  // named constructor entry point → 30,40
     println("{},{} {} {} {} {}", o.x, o.y, p.x, p.y, q.x, q.y);
     p.drop();
-    return 0;
+
 }
 ```
 
@@ -269,7 +269,7 @@ A generic struct’s `create` entry can infer the owner’s type arguments from 
 ## 5. Operators
 
 ```chali
-int64 main() {
+void main() {
     int64 a = 17;
     int64 b = 5;
     println("{} {} {} {} {}", a + b, a - b, a * b, a / b, a % b);
@@ -278,7 +278,7 @@ int64 main() {
     println("{} {} {}", a > b, a == b, (a > 10 && b < 10) || false);
     a += 3;
     println("{}", a);
-    return 0;
+
 }
 ```
 
@@ -512,12 +512,12 @@ struct TypeC { int64 value; };
 struct TypeA<T, V> { T first; V second; };
 struct TypeB<T> { TypeA<T, TypeC> item; };
 
-int64 main() {
+void main() {
     TypeB<String> b;
     b.item.first = "nested";
     b.item.second.value = 7;
     assert(b.item.first == "nested" && b.item.second.value == 7);
-    return 0;
+
 }
 ```
 
@@ -546,7 +546,7 @@ covers VM execution, instance reuse and invalid programs.
 ## 10. Control flow
 
 ```chali
-int64 main() {
+void main() {
     int64 i = 0;
     while (i < 3) { i = i + 1; }
     println("while={}", i);
@@ -568,7 +568,7 @@ int64 main() {
         }
     }
     println("for={}", total);
-    return 0;
+
 }
 ```
 
@@ -595,7 +595,7 @@ for=9
 ## 11. Containers
 
 ```chali
-int64 main() {
+void main() {
     List<int64> xs;
     xs.push(1);
     xs.push(2);
@@ -604,7 +604,7 @@ int64 main() {
     Map<String, int64> m;
     m["a"] = 1;
     println("m={}", m["a"]);
-    return 0;
+
 }
 ```
 
@@ -674,10 +674,10 @@ Helper names in a macro template must be visible at its definition. A caller loc
 $macro ADD<T:a>(a, b)
 cast<T>(a + b)
 $end_macro
-int64 main() {
+void main() {
     int32 value = 1;
     int32 result = $ADD(value, 2);
-    return 0;
+
 }
 ```
 
@@ -890,7 +890,7 @@ Other value types implement `NextValue<T>`, whose method is `Option<T> nextValue
 For-in and while can produce values in initializers, assignments, arguments and return positions. An else result is required. `yield value;` exits the entire value expression with a result. Exhaustion, a false condition or a plain break reaches else if no value has been yielded. Continue starts the next iteration. A single-value branch may use `{ value }`; complex branches use `yield value;`.
 
 ```chali
-int64 main()
+void main()
 {
     int64 first = for (let value in std::lang::range(1, 8))
     {
@@ -902,7 +902,7 @@ int64 main()
     else { -1 };
     int64 fallback = while (false) { 1 } else { 7 };
     assert(first == 2 && fallback == 7);
-    return 0;
+
 }
 ```
 
@@ -963,12 +963,12 @@ void main() {
 A nonempty statement block can produce a value in an initializer, assignment, argument or return. Every normally completing path must exit using `yield value;`. Ordinary statement blocks retain their behavior; empty `{}` remains a collection literal.
 
 ```chali
-int64 main() {
+void main() {
     int32 a = { int32 b = 3; yield b; };
     a = { int32 b = 4; yield b; };
     print(f"a={a};");
     println(f"next={a + 1}");
-    return 0;
+
 }
 ```
 

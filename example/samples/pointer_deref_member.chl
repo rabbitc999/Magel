@@ -12,7 +12,7 @@ struct Box {
     int64 total() { return value + other; }
 };
 
-int64 main() {
+void main() {
     Box box;
     box.value = 9;
     box.other = 4;
@@ -35,5 +35,5 @@ int64 main() {
     int64 mut & number = &values[0];
     *number = 6;                                      /* 标量引用：*p 就是那个值 */
     println("标量解引用 {}", *number);
-    return 0;
+
 }

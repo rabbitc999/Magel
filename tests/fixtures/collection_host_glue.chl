@@ -6,7 +6,7 @@ int64 doubleValue(int64 value) {
     return value * 2;
 }
 
-int64 main() {
+void main() {
     List<int64> source = [1, 2, 3];
     List<int64> transformed = collectionTransform(source, doubleValue);
     assert(source[0] == 1 && transformed[0] == 2 && transformed[2] == 6);
@@ -23,5 +23,5 @@ int64 main() {
     inputSet.clear();
     assert(outputSet.len() == 2 && outputSet.has(3) != 0 && outputSet.has(1) != 0);
     println("collection host glue OK");
-    return 0;
+
 }

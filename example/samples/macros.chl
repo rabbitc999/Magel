@@ -46,7 +46,7 @@ $end_macro
  * 所以函数 `SQUARE` 与宏 `$SQUARE` 可以同名共存，各走各的。 */
 int64 SQUARE(int64 x) { return x * x; }
 
-int64 main() {
+void main() {
     int64 n = 4;
     $DECLARE(localCount, 11);
     $PRINT("square={}", $SQUARE(n + 1));
@@ -63,5 +63,5 @@ int64 main() {
     $REPORT($SQUARE(2), 3);
     println("SQUARE(9) is text");
     // SQUARE(8) is a comment.
-    return 0;
+
 }

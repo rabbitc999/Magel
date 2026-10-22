@@ -25,7 +25,7 @@ struct Numbers
     BigDecimal decimal;
 };
 
-int64 main()
+void main()
 {
     String empty = String::new();
     assert(len(empty) == 0);
@@ -68,5 +68,5 @@ int64 main()
     BigInteger copied = original;
     copied = copied + BigInteger(1);
     assert(format("{} {}", original, copied) == "55 56");
-    return 0;
+
 }

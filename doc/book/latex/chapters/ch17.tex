@@ -54,11 +54,11 @@ import std::iter;
 \begin{lstlisting}[style=chali]
 import std::iter;
 
-int64 main()
+void main()
 {
     let xs = std::iter::range(1, 6).collect();
     println("{} {}", xs.len(), xs[4]);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -87,14 +87,14 @@ int64 main()
 \begin{lstlisting}[style=chali]
 import std::iter;
 
-int64 main()
+void main()
 {
     let ys = std::iter::range(1, 6).map(fn(int64 x)
     {
         x * x
     }).collect();
     println("{} {} {}", ys[0], ys[1], ys[4]);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -115,7 +115,7 @@ int64 main()
 \begin{lstlisting}[style=chali]
 import std::iter;
 
-int64 main()
+void main()
 {
     let evens = std::iter::range(1, 11)
     .filter(fn(int64 x)
@@ -124,7 +124,7 @@ int64 main()
     })
     .collect();
     println("{} -> {} {} {}", evens.len(), evens[0], evens[1], evens[4]);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -161,7 +161,7 @@ int64 main()
 \begin{lstlisting}[style=chali]
 import std::iter;
 
-int64 main()
+void main()
 {
     int64 s = std::iter::range(1, 101).fold(0, fn(int64 acc, int64 x)
     {
@@ -169,7 +169,7 @@ int64 main()
     });
     println("{}", s);
     println("{}", std::iter::range(1, 101).count());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -193,7 +193,7 @@ int64 main()
 \begin{lstlisting}[style=chali]
 import std::iter;
 
-int64 main()
+void main()
 {
     println("{}", std::iter::range(1, 6).all(fn(int64 x)
     {
@@ -207,7 +207,7 @@ int64 main()
     {
         x % 2 == 0
     }).unwrap());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -240,7 +240,7 @@ int64 main()
 \begin{lstlisting}[style=chali]
 import std::iter;
 
-int64 main()
+void main()
 {
     let ys = std::iter::range(1, 100)
     .map(fn(int64 x)
@@ -254,7 +254,7 @@ int64 main()
     .take(3)
     .collect();
     println("{} {} {} {}", ys.len(), ys[0], ys[1], ys[2]);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -286,7 +286,7 @@ void note(int64 x)
     seen = seen + 1;
 }
 
-int64 main()
+void main()
 {
     let lazy = std::iter::range(1, 6)
     .inspect(note)
@@ -298,7 +298,7 @@ int64 main()
 
     let got = lazy.collect();
     println("{} {}", seen, got[0]);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -346,7 +346,7 @@ int64 main()
 \begin{lstlisting}[style=chali]
 import std::iter;
 
-int64 main()
+void main()
 {
     List<int64> xs;
     xs.push(10);
@@ -357,7 +357,7 @@ int64 main()
         acc + x
     });
     println("{}", total);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -385,7 +385,7 @@ void bump(int64 mut& x)
     x = x * 10;
 }
 
-int64 main()
+void main()
 {
     List<int64> xs;
     xs.push(1);
@@ -393,7 +393,7 @@ int64 main()
     xs.push(3);
     xs.iterMut().forEach(bump);
     println("{} {} {}", xs[0], xs[1], xs[2]);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -432,7 +432,7 @@ int64 main()
 \begin{lstlisting}[style=chali]
 import std::iter;
 
-int64 main()
+void main()
 {
     List<int64> xs;
     xs.push(1);
@@ -453,7 +453,7 @@ int64 main()
     {
         x > 2
     }));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -482,7 +482,7 @@ int64 main()
 \begin{lstlisting}[style=chali]
 import std::iter;
 
-int64 main()
+void main()
 {
     List<int64> xs;
     xs.push(2);
@@ -493,7 +493,7 @@ int64 main()
         acc + x
     });
     println("{} {}", total, xs.len());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -516,7 +516,7 @@ int64 main()
 \begin{lstlisting}[style=chali]
 import std::iter;
 
-int64 main()
+void main()
 {
     Set<int64> s;
     s.add(1);
@@ -547,7 +547,7 @@ int64 main()
         }
     }
     println("doubled = {} len = {}", doubled, m.len());
-    return 0;
+
 }
 \end{lstlisting}
 \par

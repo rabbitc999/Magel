@@ -108,7 +108,7 @@ def verify(build, chali=None):
         project = folder / "chali"; project.mkdir(exist_ok=True)
         source = project / "main.chl"
         source.write_text("int64 calculate(int64 x) { return x + 1; }\n"
-            'int64 main() { std::lang::println("{}", calculate(41)); return 0; }\n', encoding="utf-8")
+            'void main() { std::lang::println("{}", calculate(41)); }\n', encoding="utf-8")
         manifest = project / "chali.toml"
         manifest.write_text('[package]\nname = "symbols"\nversion = "1"\n[chali]\n'
             'run = "svmb"\ncompress_symbols = true\nsymbol_map = "custom.json"\n', encoding="utf-8")

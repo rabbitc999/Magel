@@ -1,1 +1,1 @@
-chali: example/samples-error/collection_set_hash_without_equal.chl 第 5 行第 38 列：Set 自定义键 HashOnly 必须实现 Equal<bool,T> 等于重载接口；Hash<T> 哈希接口可选
+chali: example/samples-error/collection_set_hash_without_equal.chl 第 5 行第 1 列：Set 自定义键 HashOnly 必须实现 Equal<bool,T> 等于重载接口；Hash<T> 哈希接口可选

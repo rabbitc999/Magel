@@ -47,7 +47,7 @@ Result<String, String> twice(int64 value) {
     return Result<String, String>::Ok(text + "!");
 }
 
-int64 main() {
+void main() {
     Lookup hit = find("id", "42");
     println("{}", describe(hit));
     Lookup miss = find("id", "");
@@ -66,5 +66,5 @@ int64 main() {
         Result<String, String>::Ok(text) => { println("ok {}", text); }
         Result<String, String>::Err(error) => { println("err {}", error); }
     }
-    return 0;
+
 }

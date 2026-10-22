@@ -2,8 +2,8 @@
  * 链式赋值只允许纯 `=`，所以编译期报错；加括号（`$replace expr B(x)`）也一样被拒。 */
 $replace B(x) x += x
 
-int64 main() {
+void main() {
     int64 x = 1;
     x += $B(x);
-    return 0;
+
 }

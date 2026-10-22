@@ -18,7 +18,7 @@ struct TupleBox<T> { T value; };
 }
 let inferred<T>(T value) { return value, value; }
 (int64, int64, int64) three() { return 1, 2, 3; }
-int64 main() {
+void main() {
     String str1 = "aaa", str2;
     int32 c;
     c, str2 = func<String>(str1);
@@ -84,5 +84,5 @@ int64 main() {
     c, str2 = operation("callback");
     assert(c == 1 && str2 == "callback");
     println("tuple returns ok");
-    return 0;
+
 }

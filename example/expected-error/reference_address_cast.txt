@@ -1,1 +1,1 @@
-chali: example/samples-error/reference_address_cast.chl 第 1 行第 55 列：引用不能与整数地址互转；查看地址请使用 std::lang::address
+chali: example/samples-error/reference_address_cast.chl 第 1 行第 54 列：引用不能与整数地址互转；查看地址请使用 std::lang::address

@@ -23,7 +23,7 @@ int64 demo_pointer_sum(PointerBox const& box);                       /* 读结�
 void  demo_pointer_offset(PointerBox mut& box, int64 dx, int64 dy);  /* 写结构体字段 */
 int64 demo_pointer_at(int64 mut& data, int64 index);                 /* 按槽下标读 */
 
-int64 main() {
+void main() {
     /* 定长数组 → int64 mut&：数组名就是首元素地址。 */
     int64 cell[2];
     cell[0] = 41;
@@ -52,5 +52,5 @@ int64 main() {
     demo_pointer_offset(boxes, 100, 200);
     println("offset(boxes)={} {} / {} {}", boxes[0].x, boxes[0].y,
     boxes[1].x, boxes[1].y);
-    return 0;
+
 }

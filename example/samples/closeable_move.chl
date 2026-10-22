@@ -21,7 +21,7 @@ Handle makeHandle(int64 id) {
     return h;
 }
 
-int64 main() {
+void main() {
     Handle first;
     first.id = 1;
     consume(move(&first));
@@ -32,5 +32,5 @@ int64 main() {
     println("third={}", third.id);
 
     consume(makeHandle(3));
-    return 0;
+
 }

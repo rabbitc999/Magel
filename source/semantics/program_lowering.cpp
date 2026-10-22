@@ -952,17 +952,46 @@ simple_ast::NodePtr InsertGlobalCleanupBeforeReturns(
 }
 
 /**
+ * @brief 判断一段语句的最后一条是不是 `return`（决定会不会"落到函数末尾"退出）。
+ *
+ * `AppendCleanupBlock` 在没有局部清理项时**根本不会**补那句结尾的 `ret`，
+ * 于是 `void main()` 末尾什么都不写就结束的程序，一条 `return` 都没有——
+ * 全局停机清理只能插在 `return` 前面，这种程序就整个漏掉。
+ *
+ * @param node 语句或语句块。
+ * @return 该段一定以 `return` 结束时为 true。
+ */
+bool EndsWithReturn(const simple_ast::NodePtr &node)
+{
+    if (node == nullptr) return false;
+    if (node->kind == simple_ast::Node::Kind::Return) return true;
+    if (node->kind == simple_ast::Node::Kind::Block && !node->kids.empty())
+        return EndsWithReturn(node->kids.back());
+    return false;
+}
+
+/**
  * @brief 给程序里每个入口 `main` 的每条出口补上全局停机清理（只对无主的 `main`）。
  * @param program 待生成或执行的程序。
  */
 void AppendGlobalCleanupToEntryMain(simple_ast::Program &program)
 {
+    using simple_ast::Node;
     const Memory::Vector<simple_ast::NodePtr> cleanup = EmitGlobalCleanupStatements();
     if (cleanup.empty()) return;
     for (simple_ast::Function &function : program.functions)
     {
         if (function.name != "main" || !function.owner.empty()) continue;
         function.body = InsertGlobalCleanupBeforeReturns(function.body, cleanup);
+        /* 落到末尾那条出口也要清理：`void main()` 现在不给写返回值，末尾不写
+         * `return;` 是常态（以前 `int64 main` 的 `return 0;` 正好挡住了这个洞）。 */
+        if (EndsWithReturn(function.body)) continue;
+        Memory::Vector<simple_ast::NodePtr> tail(cleanup.begin(), cleanup.end());
+        tail.push_back(Node::ret(Node::i(0)));
+        if (function.body != nullptr && function.body->kind == Node::Kind::Block)
+            for (const simple_ast::NodePtr &statement : tail) function.body->kids.push_back(statement);
+        else
+            function.body = Node::block({ function.body, Node::block(tail) });
     }
 }
 

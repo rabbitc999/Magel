@@ -10,7 +10,7 @@ Result<String,String> propagate(bool ok){
     String value=step(ok)?;
     return Result<String,String>::Ok(owned[0]+value);
 }
-int64 main(){
+void main(){
     {
         int64 iteration=0;
         while (iteration<64) {
@@ -54,5 +54,5 @@ int64 main(){
         }
     }
     println("ownership exit edges OK");
-    return 0;
+
 }

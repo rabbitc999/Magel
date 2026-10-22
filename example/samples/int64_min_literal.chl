@@ -1,6 +1,6 @@
 /* int64 最小值直接写成 -9223372036854775808：
  * 幅值 2^63 本身放不进 int64，紧跟一元负号时才由负号参与定型，取负后正好是最小值。 */
-int64 main() {
+void main() {
     int64 minimum = -9223372036854775808;
     println("{}", minimum);
     println("{}", minimum + 1);
@@ -11,5 +11,5 @@ int64 main() {
         if (item == minimum) { seen += 1; }
     }
     println("{}", seen);
-    return 0;
+
 }

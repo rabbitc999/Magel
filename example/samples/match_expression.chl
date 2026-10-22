@@ -2,7 +2,7 @@ struct Payload { int64 value; String text; };
 enum Packet { Data(Payload value), Empty };
 int64 side=0;
 int32 fallback(){side=side+1;return 0;}
-int64 main(){
+void main(){
     Payload p;p.value=4;p.text="original";Packet packet=Packet::Data(p);
     int64 value=match(packet){Packet::Data(copy)=>{copy.value=7;copy.text="changed";yield (copy.value);}Packet::Empty=>{0}};
     assert(value==7);
@@ -12,5 +12,5 @@ int64 main(){
     String text=match(packet){Packet::Data(copy)=>{copy.text+"!"}Packet::Empty=>{"none"}};
     assert(text=="original!");
     small=match(4){3 if fallback()==0=>{1}std::lang::range(4,6)=>{int32 local=9;yield (local);}_=>{0}};assert(small==9);assert(side==0);
-    println("match ok");return 0;
+    println("match ok");
 }

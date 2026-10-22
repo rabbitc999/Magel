@@ -27,7 +27,7 @@ chali run example/samples/math_generic.chl
 import std::math;
 import std::cas;
 
-int64 main()
+void main()
 {
     float32 single = sin((float32)0);
     float64 integer = cos(0);
@@ -54,7 +54,7 @@ int64 main()
     assert(floor(Expr::parse("-3/2")) == Expr::parse("-2"));
     assert(round(Expr::parse("-3/2")) == Expr::parse("-2"));
     assert(fmod(Expr::parse("-11/2"), Expr::parse("2")) == Expr::parse("-3/2"));
-    return 0;
+
 }
 ```
 

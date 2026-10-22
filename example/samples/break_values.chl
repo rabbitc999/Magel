@@ -10,7 +10,7 @@ struct Tracked : Drop {
     void drop() { assert(self.text == "owned"); drops++; }
 };
 
-int64 main() {
+void main() {
     int64 a = {
         int64 n = 1;
         loop {
@@ -123,5 +123,5 @@ int64 main() {
     };
     assert(matched.0 == 12 && matched.1 == "match");
     println("break values OK");
-    return 0;
+
 }

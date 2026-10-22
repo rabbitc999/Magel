@@ -4,7 +4,7 @@ void worker(std::concurrency::Channel<int64> values) {
     values.send(42);
     values.close();
 }
-int64 main() {
+void main() {
     let values = std::concurrency::Channel<int64>::create(2);
     Thread task = std::thread::createWith<std::concurrency::Channel<int64>>(worker, values);
     let next = values.receive();
@@ -13,5 +13,5 @@ int64 main() {
     let completed = std::thread::waitResult(task);
     assert(completed.isReady());
     println("channel {}", next.value);
-    return 0;
+
 }

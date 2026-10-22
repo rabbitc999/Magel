@@ -1,0 +1,11 @@
+/* Map 读不存在的键：不再悄悄返回 0，而是直接报运行期错误。
+ *
+ * 以前 `ages["zoe"]` 会给出一个"零值"，键拼错了也看不出来；
+ * 现在明确报错，要"不在就走另一条路"就先用 `has(k)` 判断。 */
+void main() {
+    Map<String, int64> ages;
+    ages.put("amy", 11);
+    std::lang::println("{}", ages["amy"]);
+    std::lang::println("{}", ages["zoe"]);   /* 没有这个键 → 运行期错误 */
+
+}

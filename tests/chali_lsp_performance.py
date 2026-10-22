@@ -36,7 +36,7 @@ def main():
         dependency = project / 'dep.chl'
         dependency.write_text('module dep;\nint64 read(){return 1;}', encoding='utf-8')
         path = project / 'main.chl'; uri = path.as_uri()
-        text = 'import dep;\nint64 main(){String emoji="😀";int64 value=dep::read();return 0;}\n'
+        text = 'import dep;\nvoid main(){String emoji="😀";int64 value=dep::read();return;}\n'
         path.write_text(text, encoding='utf-8')
         server = Transport(binary, project)
         server.query('initialize', dict(rootUri=project.as_uri()))
@@ -74,7 +74,7 @@ def main():
         assert 'bool value' in hover['contents']['value'], hover
         server.diagnostic(uri, 2, lambda values: not values)
         # 未保存依赖改变返回类型，未改动的入口也必须重新诊断。
-        text = 'import dep;\nint64 main(){int64 value=dep::read();return 0;}\n'
+        text = 'import dep;\nvoid main(){int64 value=dep::read();return;}\n'
         server.send(dict(method='textDocument/didChange',params=dict(textDocument=dict(uri=uri,version=3),contentChanges=[dict(text=text)])))
         server.diagnostic(uri, 3, lambda values: not values)
         before = len(server.notifications)
@@ -89,7 +89,7 @@ def main():
         for version in range(4, 24):
             server.send(dict(method='textDocument/didChange',params=dict(textDocument=dict(uri=uri,version=version),contentChanges=[dict(text=text)])))
         server.diagnostic(uri, 23, lambda values: not values)
-        assert path.read_text(encoding='utf-8').startswith('import dep;\nint64 main(){String emoji='), '未保存内容写回磁盘'
+        assert path.read_text(encoding='utf-8').startswith('import dep;\nvoid main(){String emoji='), '未保存内容写回磁盘'
         cached_files = list((cache/'index').glob('*.json'))
         assert cached_files
         server.close()

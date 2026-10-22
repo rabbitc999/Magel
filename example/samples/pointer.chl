@@ -6,7 +6,7 @@ struct Point {
     int64 y;
 };
 
-int64 main() {
+void main() {
     int64 m[4];
     m[0] = 10;
     m[1] = 20;
@@ -23,5 +23,5 @@ int64 main() {
     Point const& q = (Point const&)origin;   /* 借用原结构体的存储 */
     println("q->x={} q->y={}", q->x, q->y);
     println("origin.x={}", origin.x);
-    return 0;
+
 }

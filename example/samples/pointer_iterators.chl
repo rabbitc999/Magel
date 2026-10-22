@@ -24,7 +24,7 @@ struct Item : Greater<bool, Item> {
     bool leftGreater(Item right) { return self.weight > right.weight; }
 };
 
-int64 main() {
+void main() {
     int64 raw[] = new[6];
     raw[0] = 4; raw[1] = 1; raw[2] = 3; raw[3] = 1; raw[4] = 5; raw[5] = 2;
 
@@ -80,5 +80,5 @@ int64 main() {
     println("items  {} {} {}", items[0].tag, items[1].tag, items[2].tag);
     println("first  {}", items[0].weight);
     items.drop();
-    return 0;
+
 }

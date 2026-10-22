@@ -12,7 +12,7 @@ String returnCopy(String value) {
     return value;
 }
 
-int64 main() {
+void main() {
     String first = "literal-pool-data-你好";
     String second = "literal-pool-data-你好";
     String returned = repeatedText();
@@ -39,5 +39,5 @@ int64 main() {
     assert(len("") == 0);
     assert(len("") == 0);
     println("string literal pool OK");
-    return 0;
+
 }

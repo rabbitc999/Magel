@@ -27,7 +27,7 @@ chali run example/samples/std_process_probe.chl
 import std::process;
 import std::probe;
 
-int64 main() {
+void main() {
     Process process = std::process::processRun("echo chali-process-ok");
     String output = std::process::processRead(&process);
     int64 status = std::process::processClose(&process);
@@ -36,7 +36,7 @@ int64 main() {
     std::probe::Probe value;
     value.value = std::probe::twice(21);
     println("process={} probe={}", status, value.value);
-    return 0;
+
 }
 ```
 

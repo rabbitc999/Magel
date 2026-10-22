@@ -39,9 +39,9 @@ chali help
 新建 `hello.chl`：
 
 ```chali
-int64 main() {
+void main() {
     println("Hello, ChaLi!");
-    return 0;
+
 }
 ```
 
@@ -74,9 +74,9 @@ chali hello.chl Alice "two words"
 需要参数时把入口写成：
 
 ```chali
-int64 main(List<String> arguments) {
+void main(List<String> arguments) {
     println("hello, {}", arguments[0]);
-    return 0;
+
 }
 ```
 

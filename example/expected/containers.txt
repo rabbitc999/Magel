@@ -8,7 +8,7 @@ set: len=2 has(5)=1 has(9)=0
 按位置取出：和=8 元素互异=1
 remove(5) 拿回 1，现在 len=1
 map: len=3 amy=11 has(bob)=1 cid=33
-没这个键：has(zoe)=0 下标读出来=0
+没这个键：has(zoe)=0
 remove(bob) 拿回 1，现在 len=2
 std::lang::List<string> 遍历：ada bob cid （len=3，contains(bob)=1）
 map 遍历：已核对键值关联（不保证顺序）

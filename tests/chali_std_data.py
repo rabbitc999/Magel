@@ -20,7 +20,7 @@ def main():
     compiler = parser.parse_args().chali.resolve()
     rng = random.Random(220)
     quote = lambda s: json.dumps(s, ensure_ascii=False)
-    blocks = ['import std::encoding;', 'import std::datetime;', 'import std::csv;', 'import std::utf8;', 'int64 main(){']
+    blocks = ['import std::encoding;', 'import std::datetime;', 'import std::csv;', 'import std::utf8;', 'void main(){']
     checks = 0
     for size in (0, 1, 2, 3, 4, 5, 7, 16, 31, 32, 63, 64, 127):
         data = rng.randbytes(size)
@@ -55,7 +55,7 @@ def main():
         blocks.append(f'assert(codePointCount({quote(value)}).unwrap()=={len(value)});')
         blocks.append(f'assert(encodeUtf8(decodeUtf8({quote(value)}).unwrap()).unwrap()=={quote(value)});')
         checks += 2
-    blocks.append('return 0;}')
+    blocks.append('return;}')
     with tempfile.TemporaryDirectory(prefix='std-data-', dir=ROOT/'build') as directory:
         source = Path(directory)/'crosscheck.chl'
         source.write_text('\n'.join(blocks), encoding='utf-8')

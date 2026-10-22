@@ -148,7 +148,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix='chali-pause-') as directory:
         folder = Path(directory)
         source = folder / 'main.chl'
-        source.write_text('int64 main(){String a="1";int64 count=len(a);println("{} {}",a,count);pause();return 0;}', encoding='utf-8')
+        source.write_text('void main(){String a="1";int64 count=len(a);println("{} {}",a,count);pause();}', encoding='utf-8')
         terminal([COMPILER, 'run', source], folder)
         executable = folder / ('pause.exe' if os.name == 'nt' else 'pause')
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 Any global_box = 11;
 
-int64 main() {
+void main() {
     int64 a = 0;
     Any b = a;
     a = 5;
@@ -20,5 +20,5 @@ int64 main() {
     b.set(9);
     println("set={}", (int64)b.getValue());
     global_box.drop();
-    return 0;
+
 }

@@ -7,7 +7,7 @@ Result<int64, int64> target() {
     return Result<int64, int64>::Ok(value);
 }
 
-int64 main() {
+void main() {
     target();
-    return 0;
+
 }

@@ -7,7 +7,7 @@ int64 helper(int64 n) {
     return n * 2;
 }
 
-int64 main() {
+void main() {
     std::lang::println("{}", helper(-3));
-    return 0;
+
 }

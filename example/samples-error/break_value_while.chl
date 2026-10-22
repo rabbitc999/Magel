@@ -1,6 +1,6 @@
-int64 main() {
+void main() {
     while (true) {
         yield (7);
     }
-    return 0;
+
 }

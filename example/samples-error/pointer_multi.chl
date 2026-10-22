@@ -17,7 +17,7 @@ struct Slot<T> {
     T mut& link;
 };
 
-int64 main() {
+void main() {
     Holder holder;
     int32 mut& block = heap int32;
     *block = 3;
@@ -36,5 +36,5 @@ int64 main() {
     std::lang::println("{} {}", *block, **nested.link);
 
     block.drop();
-    return 0;
+
 }

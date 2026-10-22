@@ -1,4 +1,4 @@
-int64 main() {
+void main() {
     BigInteger number = BigInteger(12);
     BigInteger number_copy = number.copy();
     number = number + 1;
@@ -37,5 +37,5 @@ int64 main() {
     values.copy();
     keys.copy();
     table.copy();
-    return 0;
+
 }

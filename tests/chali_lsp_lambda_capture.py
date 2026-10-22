@@ -11,12 +11,12 @@ def main():
     """闭包捕获模式不显示普通 move 函数，移后访问定位到实际变量。"""
     with tempfile.TemporaryDirectory(prefix='chali-lsp-capture-') as directory:
         root=Path(directory);uri=(root/'main.chl').as_uri()
-        text='''int64 main() {
+        text='''void main() {
     String a = "1";
     int64 len = std::lang::len(a);
     String fn() b = fn move() { a };
     println("{} {}", a, len);
-    return 0;
+
 }
 '''
         server=Transport(ROOT/('ChaLi.exe' if os.name=='nt' else 'chali'),root)

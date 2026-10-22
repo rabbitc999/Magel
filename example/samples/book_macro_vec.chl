@@ -9,11 +9,11 @@ $macro vec<T:first>[first,...rest]
 }
 $end_macro
 
-int64 main()
+void main()
 {
     List<int64> result;
     result.push(99);
     List<int64> values = $vec[1, 2, 3];
     println("{} {} {}", values.len(), values.at(2), result.at(0));
-    return 0;
+
 }

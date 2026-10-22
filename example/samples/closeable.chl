@@ -28,7 +28,7 @@ Handle makeHandle(int64 id) {
     return h;
 }
 
-int64 main() {
+void main() {
     {
         Handle scoped;
         scoped.id = 1;
@@ -49,5 +49,5 @@ int64 main() {
     explicitDrop.drop();        /* 先补 close，再 drop；之后不再自动收尾 */
 
     println("end");
-    return 0;
+
 }

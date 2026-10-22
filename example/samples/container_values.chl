@@ -20,7 +20,7 @@ struct Boxed : Equal<bool, Boxed> {
 
 bool positiveMetric(Metric item) { return item.amount > 0.0; }
 
-int64 main() {
+void main() {
     List<Entry> values;
     Set<Entry> unique;
     Map<Entry, Entry> lookup;
@@ -84,5 +84,5 @@ int64 main() {
     Boxed setKey = boxedSet.at(0);
     Boxed mapKey = boxedMap.keyAt(0);
     println("{} {} {}", answer, boxedSet.has(setKey), boxedMap[mapKey]);
-    return 0;
+
 }

@@ -29,7 +29,7 @@ def main():
         paths = [library.as_posix(), str(library).replace('/', '\\'), str(library).replace('/', '\\').replace('\\', '\\\\'), library.relative_to(work).as_posix().replace('/', '\\')]
         for index, path in enumerate(paths):
             source = work / f'path-{index}.chl'
-            source.write_text('abi "' + path + '" { int32 identity(int32 n) = "identity"; }\nint64 main() { std::lang::println("{}", identity((int32)7)); return 0; }\n', encoding='utf-8')
+            source.write_text('abi "' + path + '" { int32 identity(int32 n) = "identity"; }\nvoid main() { std::lang::println("{}", identity((int32)7)); return; }\n', encoding='utf-8')
             prefix = work / f'path-{index}'
             result = run([compiler, 'run', source, '--out', prefix])
             assert result.stdout == '7\n' and (not result.stderr), result.stdout + result.stderr
@@ -42,9 +42,9 @@ def main():
         (nested / 'api.chl').write_text('module nested::api;\n' + signature, encoding='utf-8')
         (nested / 'second.chl').write_text('module nested::second;\n' + signature, encoding='utf-8')
         imported = work / 'imported.chl'
-        imported.write_text('import nested::api;\nint64 main() { std::lang::println("{}", nested::api::identity((int32)8)); return 0; }\n', encoding='utf-8')
+        imported.write_text('import nested::api;\nvoid main() { std::lang::println("{}", nested::api::identity((int32)8)); return; }\n', encoding='utf-8')
         included = work / 'included.chl'
-        included.write_text('import nested::second;\nint64 main() { std::lang::println("{}", nested::second::identity((int32)8)); return 0; }\n', encoding='utf-8')
+        included.write_text('import nested::second;\nvoid main() { std::lang::println("{}", nested::second::identity((int32)8)); return; }\n', encoding='utf-8')
         for source in (imported, included):
             prefix = work / source.stem
             result = run([compiler, 'run', source, '--out', prefix])
@@ -52,12 +52,12 @@ def main():
             run([compiler, 'run', source, '--emit', '--out', prefix])
             assert library.as_posix() in prefix.with_suffix('.abi.cpp').read_text(encoding='utf-8')
         raw = work / 'raw.chl'
-        raw.write_text('abi "./native paths/' + library.name + '" { int32 identity(int32 n) = "identity"; }\nint64 main() { std::lang::println("{}", identity((int32)8)); return 0; }\n', encoding='utf-8')
+        raw.write_text('abi "./native paths/' + library.name + '" { int32 identity(int32 n) = "identity"; }\nvoid main() { std::lang::println("{}", identity((int32)8)); return; }\n', encoding='utf-8')
         assert run([compiler, 'run', raw, '--raw', '--out', work / 'raw']).stdout == '8\n'
         module = work / 'probe.chl'
         module.write_text('module probe;\n%if CHALI_OS == other && CHALI_BITS == 32 && CUSTOM == 9\nint64 value() { return 9; }\n%else\nint64 value() { return 1; }\n%endif\n', encoding='utf-8')
         source = work / 'platform.chl'
-        source.write_text('module app;\nimport probe;\nint64 main() {\n%if CHALI_OS == windows\nstd::lang::println("windows");\n%elif CHALI_OS == linux\nstd::lang::println("linux");\n%elif CHALI_OS == macos\nstd::lang::println("macos");\n%else\nstd::lang::println("other");\n%endif\n%if CHALI_BITS == 64\nstd::lang::println("64");\n%elif CHALI_BITS == 32\nstd::lang::println("32");\n%else\n%error unexpected bits\n%endif\nstd::lang::println("{}", probe::value()); return 0; }\n', encoding='utf-8')
+        source.write_text('module app;\nimport probe;\nvoid main() {\n%if CHALI_OS == windows\nstd::lang::println("windows");\n%elif CHALI_OS == linux\nstd::lang::println("linux");\n%elif CHALI_OS == macos\nstd::lang::println("macos");\n%else\nstd::lang::println("other");\n%endif\n%if CHALI_BITS == 64\nstd::lang::println("64");\n%elif CHALI_BITS == 32\nstd::lang::println("32");\n%else\n%error unexpected bits\n%endif\nstd::lang::println("{}", probe::value()); return; }\n', encoding='utf-8')
         default = run([compiler, 'run', source, '--out', work / 'default'])
         expected_os = 'windows' if os.name == 'nt' else 'macos' if __import__('sys').platform == 'darwin' else 'linux'
         lines = default.stdout.splitlines()
@@ -66,7 +66,7 @@ def main():
         assert override.stdout == 'other\n32\n9\n', override.stdout
         include = work / 'conditions.inc'
         include.write_text('%if USER_VALUE == 42 && CHALI_OS == other && CHALI_BITS == 32\nint64 selected() { return 42; }\n%else\n%error user definitions missing\n%endif\n', encoding='utf-8')
-        source.write_text('%define CHALI_OS other\n%define CHALI_BITS 32\n%define USER_VALUE 42\n' + include.read_text(encoding='utf-8') + 'int64 main() { std::lang::println("{}", selected()); return 0; }\n', encoding='utf-8')
+        source.write_text('%define CHALI_OS other\n%define CHALI_BITS 32\n%define USER_VALUE 42\n' + include.read_text(encoding='utf-8') + 'void main() { std::lang::println("{}", selected()); }\n', encoding='utf-8')
         user = run([compiler, 'run', source, '--out', work / 'user'])
         assert user.stdout == '42\n', user.stdout
     print('CHALI platform and ABI path checks passed')

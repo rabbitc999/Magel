@@ -28,10 +28,10 @@ $end_for
 $end_for
 $end_macro
 
-int64 main() {
+void main() {
     $PRINT_ALL("值={}", 1);
     $PRINT_ALL("值={}", 2, 3, 4);
     $SUM_SQUARES(2, 3, 4);
     $PAIRS(1, 2);
-    return 0;
+
 }

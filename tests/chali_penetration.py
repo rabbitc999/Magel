@@ -16,130 +16,130 @@ ROOT = Path(__file__).resolve().parents[1]
 # 每个用例：(名称, 是否由生成器展开, 源码)。generated 为 True 时源码取自 GENERATORS。
 CASES = [
     # ---- 数值转换与字面量 ----
-    ("float_to_int_overflow", False, """int64 main()
+    ("float_to_int_overflow", False, """void main()
 {
     float64 big = 1e300;
     int64 value = (int64)big;
     println("{}", value);
-    return 0;
+
 }
 """),
-    ("float_nan_to_int", False, """int64 main()
+    ("float_nan_to_int", False, """void main()
 {
     float64 nan = std::math::sqrt(-1.0);
     int64 value = (int64)nan;
     println("{}", value);
-    return 0;
+
 }
 """),
-    ("float_negative_overflow_to_int", False, """int64 main()
+    ("float_negative_overflow_to_int", False, """void main()
 {
     float64 big = -1e300;
     int64 value = (int64)big;
     println("{}", value);
-    return 0;
+
 }
 """),
-    ("int_literal_overflow", False, """int64 main()
+    ("int_literal_overflow", False, """void main()
 {
     int64 value = 99999999999999999999;
     println("{}", value);
-    return 0;
+
 }
 """),
-    ("int_literal_overflow_negative", False, """int64 main()
+    ("int_literal_overflow_negative", False, """void main()
 {
     int64 value = -99999999999999999999;
     println("{}", value);
-    return 0;
+
 }
 """),
-    ("float_literal_overflow", False, """int64 main()
+    ("float_literal_overflow", False, """void main()
 {
     float64 value = 1e999;
     println("{}", value);
-    return 0;
+
 }
 """),
-    ("int_div_min_over_minus_one", False, """int64 main()
+    ("int_div_min_over_minus_one", False, """void main()
 {
     int64 low = -9223372036854775807 - 1;
     int64 value = low / (-1);
     println("{}", value);
-    return 0;
+
 }
 """),
-    ("int_mod_min_over_minus_one", False, """int64 main()
+    ("int_mod_min_over_minus_one", False, """void main()
 {
     int64 low = -9223372036854775807 - 1;
     int64 value = low % (-1);
     println("{}", value);
-    return 0;
+
 }
 """),
-    ("shift_beyond_width", False, """int64 main()
+    ("shift_beyond_width", False, """void main()
 {
     int64 value = 1 << 64;
     println("{}", value);
-    return 0;
+
 }
 """),
     # ---- 字符串与容器边界 ----
-    ("string_negative_slice", False, """int64 main()
+    ("string_negative_slice", False, """void main()
 {
     String text = "abcdef";
     String head = text[0:-2];
     println("{}", head);
-    return 0;
+
 }
 """),
-    ("string_large_index", False, """int64 main()
+    ("string_large_index", False, """void main()
 {
     String text = "abcdef";
     String part = text[100:200];
     println("{}", part);
-    return 0;
+
 }
 """),
-    ("utf8_mid_char_slice", False, """int64 main()
+    ("utf8_mid_char_slice", False, """void main()
 {
     String text = "中文字符串";
     String part = text[1:2];
     println("{}", part);
-    return 0;
+
 }
 """),
-    ("array_negative_index", False, """int64 main()
+    ("array_negative_index", False, """void main()
 {
     int64 data[4];
     data[0] = 10;
     int64 value = data[-1];
     println("{}", value);
-    return 0;
+
 }
 """),
-    ("array_large_index", False, """int64 main()
+    ("array_large_index", False, """void main()
 {
     int64 data[4];
     data[0] = 10;
     int64 value = data[1000000];
     println("{}", value);
-    return 0;
+
 }
 """),
-    ("new_negative_length", False, """int64 main()
+    ("new_negative_length", False, """void main()
 {
     int64 data[] = new[-1];
     println("{}", data.len());
-    return 0;
+
 }
 """),
-    ("empty_list_pop", False, """int64 main()
+    ("empty_list_pop", False, """void main()
 {
     List<int64> values;
     int64 value = values.pop();
     println("{}", value);
-    return 0;
+
 }
 """),
     ("fold_callback_mutates_list", False, """import std::algorithms;
@@ -149,7 +149,7 @@ int64 grow(int64 acc, int64 item)
     values.push(item);
     return acc + item;
 }
-int64 main()
+void main()
 {
     values.push(1);
     values.push(2);
@@ -157,7 +157,7 @@ int64 main()
     values.push(4);
     int64 total = std::algorithms::foldValue<int64>(values, 0, grow);
     println("{}", total);
-    return 0;
+
 }
 """),
     ("map_callback_clears_list", False, """import std::algorithms;
@@ -167,17 +167,17 @@ int64 clear(int64 item)
     values.clear();
     return item;
 }
-int64 main()
+void main()
 {
     values.push(1);
     values.push(2);
     values.push(3);
     let mapped = std::algorithms::mapValue<int64>(values, clear);
     println("done");
-    return 0;
+
 }
 """),
-    ("foreach_push", False, """int64 main()
+    ("foreach_push", False, """void main()
 {
     List<int64> values;
     values.push(1);
@@ -187,10 +187,10 @@ int64 main()
         values.push(item * 2);
     }
     println("{}", values.len());
-    return 0;
+
 }
 """),
-    ("foreach_set", False, """int64 main()
+    ("foreach_set", False, """void main()
 {
     List<int64> values;
     values.push(1);
@@ -200,10 +200,10 @@ int64 main()
         values[0] = item;
     }
     println("{}", values[0]);
-    return 0;
+
 }
 """),
-    ("foreach_remove", False, """int64 main()
+    ("foreach_remove", False, """void main()
 {
     List<int64> values;
     values.push(1);
@@ -214,7 +214,7 @@ int64 main()
         values.remove(0);
     }
     println("{}", values.len());
-    return 0;
+
 }
 """),
     # ---- 所有权与错误传播 ----
@@ -222,12 +222,12 @@ int64 main()
 {
     return text + "!";
 }
-int64 main()
+void main()
 {
     String a = "x";
     String b = (a = bump(a));
     println("{} {}", a, b);
-    return 0;
+
 }
 """),
     ("try_in_logical_right", False, """Result<String, String> pick(bool ok)
@@ -238,11 +238,11 @@ int64 main()
     }
     return Result<String, String>::Err("原始错误");
 }
-int64 main()
+void main()
 {
     bool flag = false && (pick(true)?.length() > 0);
     println("{}", flag);
-    return 0;
+
 }
 """),
     ("nested_try_three_levels", False, """Result<String, String> level3(bool fail)
@@ -261,7 +261,7 @@ Result<String, String> level1(bool fail)
 {
     return Result<String, String>::Ok(level2(fail)?);
 }
-int64 main()
+void main()
 {
     for (int64 index in std::lang::range(0, 100))
     {
@@ -269,7 +269,7 @@ int64 main()
         assert(level1(true).error() == "深层错误");
     }
     println("nested try OK");
-    return 0;
+
 }
 """),
     ("try_inside_container_literal", False, """Result<String, String> pick(bool ok)
@@ -280,11 +280,11 @@ int64 main()
     }
     return Result<String, String>::Err("元素错误");
 }
-int64 main()
+void main()
 {
     List<String> items = [pick(true)?, pick(true)?];
     println("{}", items.len());
-    return 0;
+
 }
 """),
     ("try_in_loop_with_break", False, """Result<String, String> pick(bool ok)
@@ -307,10 +307,10 @@ Result<String, String> scan()
     }
     return Result<String, String>::Ok("scan 完成");
 }
-int64 main()
+void main()
 {
     println("{}", scan().unwrap());
-    return 0;
+
 }
 """),
     # ---- 规模与深度预算 ----
@@ -318,20 +318,20 @@ int64 main()
 {
     String cells[65536][65536];
 };
-int64 main()
+void main()
 {
     Grid grid;
     println("declared");
-    return 0;
+
 }
 """),
-    ("huge_local_array_assign", False, """int64 main()
+    ("huge_local_array_assign", False, """void main()
 {
     String left[40000][40000];
     String right[40000][40000];
     left = right;
     println("assigned");
-    return 0;
+
 }
 """),
     ("deep_recursion", False, """int64 descend(int64 depth)
@@ -342,31 +342,31 @@ int64 main()
     }
     return descend(depth - 1);
 }
-int64 main()
+void main()
 {
     int64 value = descend(10000000);
     println("{}", value);
-    return 0;
+
 }
 """),
     ("deep_json_nesting", True, ""),
     ("deep_expression_chain", True, ""),
     ("deep_paren_constant", True, ""),
     ("bigfloat_huge_exponent_to_int", False, """import std::lang;
-int64 main()
+void main()
 {
     BigDecimal value = BigDecimal("1E2000000000");
     int64 converted = (int64)value;
     println("{}", converted);
-    return 0;
+
 }
 """),
     ("bint_from_huge_float", False, """import std::lang;
-int64 main()
+void main()
 {
     BigInteger value = bint(1e30);
     println("{}", value.str());
-    return 0;
+
 }
 """),
 ]
@@ -376,7 +376,7 @@ def deep_json_nesting():
     """构造超深嵌套的 JSON 文本，检验解析器是否有深度预算。"""
     depth = 20000
     return ("import std::json;\n"
-            "int64 main()\n{\n"
+            "void main()\n{\n"
             "    String text = \"\";\n"
             "    for (int64 index in std::lang::range(0, %d))\n    {\n"
             "        text = text + \"[\";\n    }\n"
@@ -384,22 +384,22 @@ def deep_json_nesting():
             "        text = text + \"]\";\n    }\n"
             "    let parsed = std::json::parse(text);\n"
             "    println(\"{}\", parsed.isOk());\n"
-            "    return 0;\n}\n" % (depth, depth))
+            "    return;\n}\n" % (depth, depth))
 
 
 def deep_expression_chain():
     """构造超长左结合加法链，检验语义递归是否有深度上限。"""
     terms = " + ".join(["1"] * 20000)
-    return "int64 main()\n{\n    int64 value = %s;\n    println(\"{}\", value);\n    return 0;\n}\n" % terms
+    return "void main()\n{\n    int64 value = %s;\n    println(\"{}\", value);\n    return;\n}\n" % terms
 
 
 def deep_paren_constant():
     """构造深嵌套括号的常量表达式，检验常量求值递归深度。"""
     depth = 20000
-    return ("int64 main()\n{\n"
+    return ("void main()\n{\n"
             "    const int64 VALUE = %s1%s;\n"
             "    println(\"{}\", VALUE);\n"
-            "    return 0;\n}\n" % ("(" * depth, ")" * depth))
+            "    return;\n}\n" % ("(" * depth, ")" * depth))
 
 
 GENERATORS = {

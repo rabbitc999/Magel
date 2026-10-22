@@ -1,6 +1,6 @@
 const int64 BASE = 3;
 const int64 WIDTH = BASE * 2 + 1;
-int64 main() {
+void main() {
     int64 data[WIDTH]; data[6] = 42;
     const int64 size = BASE + 1;
     { const int64 BASE = 20; int64 local[size]; local[3] = 7; assert(local[3] == 7); }
@@ -13,5 +13,5 @@ int64 main() {
     assert(len(precise) == 1);
     int64 comparison[(int64)(rounded < 16777217) + 1];
     assert(len(comparison) == 1);
-    println("constant expressions OK"); return 0;
+    println("constant expressions OK");
 }

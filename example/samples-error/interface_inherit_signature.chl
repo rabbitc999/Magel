@@ -5,4 +5,4 @@ interface A {
 interface B : A {
     int64 m(String x);
 };
-int64 main() { return 0; }
+void main() { }

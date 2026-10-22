@@ -1,1 +1,1 @@
-int64 main() { match(1) { 1 if 3 => { return 1; } _ => { return 0; } } return 0; }
+void main() { match(1) { 1 if 3 => { let __ignored1 = 1; } _ => { return; } } }

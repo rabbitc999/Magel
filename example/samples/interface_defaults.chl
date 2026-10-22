@@ -23,7 +23,7 @@ struct CustomScore : Score {
     int64 doubled() { return number * 3; }
 };
 
-int64 main() {
+void main() {
     BaseScore base;
     base.number = 3;
     CustomScore custom;
@@ -45,5 +45,5 @@ int64 main() {
     println("dispatch={}/{}", a.doubled(), b.doubled());
     basePointer.drop();
     customPointer.drop();
-    return 0;
+
 }

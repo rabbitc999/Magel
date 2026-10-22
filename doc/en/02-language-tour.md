@@ -16,7 +16,7 @@ ChaLi borrows C-family expression and block syntax so the learning cost lands on
 ## 1. Types and variables
 
 ```chali
-int64 main() {
+void main() {
     int8 small = 127;
     int64 count = 0;
     float64 ratio = 3.5;
@@ -24,7 +24,7 @@ int64 main() {
     char initial = 'M';
     String name = "ChaLi";
     println("{} {} {} {} {} {}", small, count, ratio, ready, initial, name);
-    return 0;
+
 }
 ```
 
@@ -66,7 +66,7 @@ int64 classify(int64 value) {
     elif (value == 0) { return 0; }
     else { return 1; }
 }
-int64 main() {
+void main() {
     int64 sum = 0;
     {
         int64 i = 1;
@@ -76,7 +76,7 @@ int64 main() {
         }
     }
     println("sum={} classify(7)={}", sum, classify(7));
-    return 0;
+
 }
 ```
 
@@ -108,11 +108,11 @@ void show(Message message) {
         Message::Text(text) => { println("text {}", text); }
     }
 }
-int64 main() {
+void main() {
     show(Message::Quit);
     show(Message::Move(3, 7));
     show(Message::Text("hello"));
-    return 0;
+
 }
 ```
 
@@ -130,7 +130,7 @@ Enum variants can carry fields (algebraic data types). `match` supports literals
 ## 4. Value semantics and references (a first look)
 
 ```chali
-int64 main() {
+void main() {
     String original = "hello";
     String copy = original;
     copy[0] = 'H';
@@ -139,7 +139,7 @@ int64 main() {
     int64 mut& ref = &value;
     ref = 9;
     println("{}", value);
-    return 0;
+
 }
 ```
 
@@ -167,12 +167,12 @@ Option<int64> find_even(int64 value) {
     if (value % 2 == 0) { return Option<int64>::Value(value); }
     return Option<int64>::None;
 }
-int64 main() {
+void main() {
     match (find_even(3)) {
         Option<int64>::Value(v) => { println("value {}", v); }
         Option<int64>::None => { println("none"); }
     }
-    return 0;
+
 }
 ```
 
@@ -193,12 +193,12 @@ Result<int64, String> doubled(bool valid) {
     int64 value = parse_value(valid)?;
     return Result<int64, String>::Ok(value * 2);
 }
-int64 main() {
+void main() {
     match (doubled(true)) {
         Result<int64, String>::Ok(v) => { println("ok={}", v); }
         Result<int64, String>::Err(e) => { println("err={}", e); }
     }
-    return 0;
+
 }
 ```
 
@@ -224,13 +224,13 @@ struct Square : Shape {
     int64 area() { return side * side; }
 };
 int64 total<T: Shape>(T shape) { return shape.area(); }
-int64 main() {
+void main() {
     Circle c;
     c.r = 2;
     Square s;
     s.side = 3;
     println("{} {}", total<Circle>(c), total<Square>(s));
-    return 0;
+
 }
 ```
 
@@ -257,7 +257,7 @@ struct Player {
     String name;
     int64 score;
 };
-int64 main() {
+void main() {
     List<Player> players;
     Player a;
     a.name = "amy";
@@ -272,7 +272,7 @@ int64 main() {
         if (p.score > best) { best = p.score; }
     }
     println("best={} count={}", best, players.len());
-    return 0;
+
 }
 ```
 
@@ -289,10 +289,10 @@ Chained iteration needs `import std::iter;`:
 import std::iter;
 int64 square(int64 value) { return value * value; }
 bool even(int64 value) { return value % 2 == 0; }
-int64 main() {
+void main() {
     let picked = std::iter::range(1, 6).map(square).filter(even).collect();
     println("{} {}", picked.len(), picked[0]);
-    return 0;
+
 }
 ```
 
@@ -307,7 +307,7 @@ int64 main() {
 ## 8. Arrays and tuples
 
 ```chali
-int64 main() {
+void main() {
     int64 fixed[3];
     fixed[0] = 1;
     fixed[1] = 2;
@@ -323,7 +323,7 @@ int64 main() {
     int64 runtime[] = new[4];
     runtime[0] = 10;
     println("fixed={} runtime0={}", total, runtime[0]);
-    return 0;
+
 }
 ```
 
@@ -341,10 +341,10 @@ Tuples use parentheses and members are read via `.0` / `.1`:
 (int64, String) describe(int64 id) {
     return (id, "player");
 }
-int64 main() {
+void main() {
     let info = describe(7);
     println("{} {}", info.0, info.1);
-    return 0;
+
 }
 ```
 
@@ -357,12 +357,12 @@ int64 main() {
 ## 9. Function types and fn closures
 
 ```chali
-int64 main() {
+void main() {
     int64 fn(int64) square = int64 fn(int64 x) { x * x };
     int64 base = 5;
     let offset = fn(int64 x) { x + base };
     println("{} {}", square(4), offset(4));
-    return 0;
+
 }
 ```
 
@@ -379,12 +379,12 @@ int64 main() {
 
 ```chali
 import std::text;
-int64 main() {
+void main() {
     String name = "ChaLi";
     String joined = name + " " + format("{}", 2026);
     println("{}", joined);
     println("first={} upper={}", name[0], std::text::Text::toUpper(name));
-    return 0;
+
 }
 ```
 
@@ -406,13 +406,13 @@ conversion and trimming live in `std::text::Text` (`find` / `split` / `join` / `
 $macro SQUARE(x)
 ((x) * (x))
 $end_macro
-int64 main() {
+void main() {
 %if DETAIL
     println("detail square5={}", $SQUARE(5));
 %else
     println("brief");
 %endif
-    return 0;
+
 }
 ```
 

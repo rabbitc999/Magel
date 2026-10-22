@@ -12,7 +12,7 @@ int64 classify(Choice value) {
     }
     return -1;
 }
-int64 main() {
+void main() {
     let (text, (number, _)) = makePair();
     assert(text == "hello" && number == 7 && calls == 1);
     assert(inferred() == 7 && calls == 2);
@@ -31,5 +31,5 @@ int64 main() {
             i++;
         }
     }
-    println("destructuring guards OK"); return 0;
+    println("destructuring guards OK");
 }

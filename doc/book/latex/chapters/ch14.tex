@@ -61,11 +61,11 @@ T maxOf<T>(T a, T b)
     return b;
 }
 
-int64 main()
+void main()
 {
     println("{}", maxOf(3, 9));
     println("{}", maxOf("apple", "pear"));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -112,11 +112,11 @@ T maxOf<T>(T a, T b)
     return b;
 }
 
-int64 main()
+void main()
 {
     println("{}", maxOf<int64>(3, 9));
     println("{}", maxOf<String>("apple", "pear"));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -145,10 +145,10 @@ T maxOf<T>(T a, T b)
     return b;
 }
 
-int64 main()
+void main()
 {
     println("{}", maxOf(1, 2.0));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -180,13 +180,13 @@ struct Duo<T, U>
     U second;
 };
 
-int64 main()
+void main()
 {
     Duo<int64, String> d;
     d.first = 1;
     d.second = "a";
     println("{} {}", d.first, d.second);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -224,7 +224,7 @@ struct Box<T>
     }
 };
 
-int64 main()
+void main()
 {
     Box<int64> b;
     b.put(41);
@@ -232,7 +232,7 @@ int64 main()
     Box<String> s;
     s.put("hi");
     println("{}", s.get());
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -277,12 +277,12 @@ int64 read_value<T: Valued>(T item)
     return item.value();
 }
 
-int64 main()
+void main()
 {
     Num x;
     x.n = 42;
     println("{}", read_value(x));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -313,10 +313,10 @@ int64 read_value<T: Valued>(T item)
     return item.value();
 }
 
-int64 main()
+void main()
 {
     println("{}", read_value(3));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -361,12 +361,12 @@ struct P
  int64 x;
 };
 
-int64 main()
+void main()
 {
  P p;
  p.x = 1;
  println("{}", twiceOf(p).x);
- return 0;
+
 }
 \end{lstlisting}
 \par
@@ -458,12 +458,12 @@ struct Buffer<T, N: int64>
         return N;
     }
 };
-int64 main()
+void main()
 {
     Buffer<int64, 4> buffer;
     buffer.data[0] = 7;
     println("{} {}", buffer.len(), buffer.data[0]);
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -516,11 +516,11 @@ C.Item first<C: Container>(C value)
 {
     return value.get(0);
 }
-int64 main()
+void main()
 {
     Numbers numbers;
     println("{}", first<Numbers>(numbers));
-    return 0;
+
 }
 \end{lstlisting}
 \par
@@ -565,13 +565,13 @@ T chooseValue<T>(bool first, T left, T right)
     };
 }
 
-int64 main()
+void main()
 {
     String word = "generic";
     String copied = fromLocal<String>(word);
     int64 number = chooseValue<int64>(false, 4, 9);
     println("{} {} {}", word, copied, number);
-    return 0;
+
 }
 \end{lstlisting}
 \par

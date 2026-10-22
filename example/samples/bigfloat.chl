@@ -1,6 +1,6 @@
 /* bigfloat.chl - arbitrary precision decimal floating point. */
 
-int64 main() {
+void main() {
     BigDecimal a = BigDecimal("0.1");
     BigDecimal b = BigDecimal("0.2");
     BigDecimal third = BigDecimal(1) / 7;
@@ -32,5 +32,5 @@ int64 main() {
     BigDecimal typed;
     typed = inputBigDecimal();
     println("input + 0.5 = {}", (typed + BigDecimal("0.5")).str());
-    return 0;
+
 }

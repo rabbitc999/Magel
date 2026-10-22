@@ -28,7 +28,7 @@ SetKey key(int64 id, String text) {
     result.id = id; result.text = text; result.data.push(id);
     return result;
 }
-int64 main() {
+void main() {
     {
         int64 i = 0;
         while (i < 8) {
@@ -70,5 +70,5 @@ int64 main() {
         }
     }
     println("set key protocol OK");
-    return 0;
+
 }

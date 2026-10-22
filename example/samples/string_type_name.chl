@@ -6,7 +6,7 @@ struct TextBorrow{
 String const& borrowText(String const& value){return value;}
 
 String copyText(String value){return value;}
-int64 main(){
+void main(){
     String original="abcd";
     String copied=original;
     String mut& writable=&copied;
@@ -38,5 +38,5 @@ int64 main(){
     assert(__typeTag(String)==__typeTag(String));
     int64 string=3;assert(string==3);
     println("String type OK");
-    return 0;
+
 }

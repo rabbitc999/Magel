@@ -21,14 +21,14 @@ def main():
                               capture_output=True, encoding="utf-8", errors="replace", timeout=60)
 
     cases = {
-        "zero_args": 'int64 f(int64 number=1){return 1;}int64 f(String text="x"){return 2;}int64 main(){return f();}',
-        "same_prefix": 'int64 f(int64 x,int64 number=1){return 1;}int64 f(int64 x,String text="x"){return 2;}int64 main(){return f(1);}',
-        "exact_arity": 'int64 f(int64 x){return 1;}int64 f(int64 x,int64 number=1){return 2;}int64 main(){return f(1);}',
-        "instance": 'struct S{int64 f(int64 number=1){return 1;}int64 f(String text="x"){return 2;}};int64 main(){S s;return s.f();}',
-        "static": 'struct S{static int64 f(int64 number=1){return 1;}static int64 f(String text="x"){return 2;}};int64 main(){return S::f();}',
-        "constructor": 'struct S{S(int64 number=1){}S(String text="x"){}};int64 main(){S s=new S();return 0;}',
-        "variadic": 'int64 f(int64 number=1,int64... rest){return 1;}int64 f(String text="x"){return 2;}int64 main(){return f();}',
-        "named_constructor": 'struct S{static S create(int64 number=1){}static S create(String text="x"){}};int64 main(){S s=S::create();return 0;}',
+        "zero_args": 'int64 f(int64 number=1){return 1;}int64 f(String text="x"){return 2;}void main(){let __boom = f();}',
+        "same_prefix": 'int64 f(int64 x,int64 number=1){return 1;}int64 f(int64 x,String text="x"){return 2;}void main(){let __boom = f(1);}',
+        "exact_arity": 'int64 f(int64 x){return 1;}int64 f(int64 x,int64 number=1){return 2;}void main(){let __boom = f(1);}',
+        "instance": 'struct S{int64 f(int64 number=1){return 1;}int64 f(String text="x"){return 2;}};void main(){S s;let __boom = s.f();}',
+        "static": 'struct S{static int64 f(int64 number=1){return 1;}static int64 f(String text="x"){return 2;}};void main(){let __boom = S::f();}',
+        "constructor": 'struct S{S(int64 number=1){}S(String text="x"){}};void main(){S s=new S();}',
+        "variadic": 'int64 f(int64 number=1,int64... rest){return 1;}int64 f(String text="x"){return 2;}void main(){let __boom = f();}',
+        "named_constructor": 'struct S{static S create(int64 number=1){}static S create(String text="x"){}};void main(){S s=S::create();}',
     }
     with tempfile.TemporaryDirectory(prefix="chali-default-ambiguity-") as directory:
         work = Path(directory)
@@ -53,11 +53,11 @@ def main():
             if name == "variadic":
                 assert "... rest" in message, message
         ordinary = work / "ordinary.chl"
-        ordinary.write_text('int64 f(float64 x,int64 y){return 1;}int64 f(int64 x,float64 y){return 2;}int64 main(){return f(1,2);}', encoding="utf-8")
+        ordinary.write_text('int64 f(float64 x,int64 y){return 1;}int64 f(int64 x,float64 y){return 2;}void main(){let __boom = f(1,2);}', encoding="utf-8")
         result = run(compiler, "check", ordinary, "json")
         assert result.returncode != 0 and "多个重载同样匹配" in result.stdout and "默认参数歧义" not in result.stdout, result
         valid = work / "valid.chl"
-        valid.write_text('int64 f(int64 x,int64 number=1){return 1;}int64 f(int64 x,String text="x"){return 2;}int64 pick(int64 x,int64 n=1){return 3;}int64 pick(float64 x,int64 n=1){return 4;}int64 main(){assert(f(1,2)==1 && f(1,"x")==2 && pick(1)==3 && pick(1.0)==4);return 0;}', encoding="utf-8")
+        valid.write_text('int64 f(int64 x,int64 number=1){return 1;}int64 f(int64 x,String text="x"){return 2;}int64 pick(int64 x,int64 n=1){return 3;}int64 pick(float64 x,int64 n=1){return 4;}void main(){assert(f(1,2)==1 && f(1,"x")==2 && pick(1)==3 && pick(1.0)==4);}', encoding="utf-8")
         result = run(compiler, "run", valid, "out", work / "valid")
         assert (result.returncode, result.stdout, result.stderr) == (0, "", ""), result
     print("默认参数歧义诊断回归通过（8 类歧义、普通歧义兼容、显式消歧与匹配优先级）")
