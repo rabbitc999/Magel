@@ -12,6 +12,6 @@ int64 main(){
     {Nested empty=Nested::Empty;Nested nested=Nested::Wrapped(Result<Resource,int64>::Err(1));}
     assert(drops==0);
     {Resource resource = new Resource("active");Result<Resource,int64> value=Result<Resource,int64>::Ok(resource);assert(value.isOk());}
-    {auto value=makeResource();assert(value.isOk());}
+    {let value=makeResource();assert(value.isOk());}
     assert(drops>0);println("active payload Drop OK");return 0;
 }

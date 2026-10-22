@@ -11,6 +11,6 @@ int64 main(){Buffer<int64,4> a;a.data[0]=3;a.data[3]=7;
     Buffer<int64,size> named;assert(named.len()==4);
     Defaults<2+2> derived;assert(derived.len()==12);assert(length(a)==4);
     Matrix<int64,2,3> matrix;matrix.data[1][2]=8;assert(matrix.data[1][2]==8);assert(matrix.size()==6);
-    DefaultBuffer<String> texts;texts.data[0]="zero";texts.data[1]="one";auto other=texts;other.data[0]="changed";
+    DefaultBuffer<String> texts;texts.data[0]="zero";texts.data[1]="one";let other=texts;other.data[0]="changed";
     assert(texts.data[0]=="zero");assert(other.data[0]=="changed");
     println("const generics ok");return 0;}

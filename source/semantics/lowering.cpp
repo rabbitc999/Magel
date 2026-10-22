@@ -3018,7 +3018,7 @@ simple_ast::NodePtr LowerLocalDecl(int id)
         if (!decl.kids.empty() && decl.type >= 0) InferExpression(decl.kids[0], T(decl.type));
         if (decl.type < 0 && decl.kids[0] < 0)
         {
-            Fail("auto 变量必须给初值：" + decl.s);
+            Fail("let 变量必须给初值：" + decl.s);
             return nullptr;
         }
         std::shared_ptr<MType> type = (decl.type < 0) ? ExprType(decl.kids[0]) : T(decl.type);

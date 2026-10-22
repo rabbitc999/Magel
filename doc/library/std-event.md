@@ -27,11 +27,11 @@ magel run example/samples/event_timer.mgl
 import std::event;
 int64 main() {
     assert(std::event::post(7, 19) == 0);
-    auto posted = std::event::tryReceive();
+    let posted = std::event::tryReceive();
     assert(posted.isReady() && posted.value.tag == 7 && posted.value.source == 19);
     Timer timer = Timer::afterMillis(2);
     assert(timer.isValid());
-    auto tick = std::event::receiveFor(1000);
+    let tick = std::event::receiveFor(1000);
     assert(tick.isReady() && tick.value.timer == timer.id());
     timer.stop();
     assert(std::event::tryReceive().status == 1);

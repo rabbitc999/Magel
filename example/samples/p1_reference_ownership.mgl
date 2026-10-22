@@ -90,7 +90,7 @@ int64 main() {
         values.add(1);
         changeSet(values);
         assert((values.has(1) != 0) && (values.has(7) == 0));
-        auto fromStaticSet = Factory::echoSet(values.copy());
+        let fromStaticSet = Factory::echoSet(values.copy());
         fromStaticSet.add(2);
         assert((values.has(2) == 0));
         Value original;
@@ -101,7 +101,7 @@ int64 main() {
         Value recursiveValue = recurseValue(original, 3);
         assert(recursiveValue.text == "abc" && original.text == "abc");
         { String copy = borrowField(&original); copy[0] = 'Q'; }
-        { auto copy = borrowSetField(&original); copy.add(9); }
+        { let copy = borrowSetField(&original); copy.add(9); }
         assert(original.text == "abc" && (original.values.has(9) == 0));
         Value const& readonly = &original;
         assert(readonly.read() == 1 && readonly.readText() == "abc");
@@ -124,13 +124,13 @@ int64 main() {
             words[0] = "replacement";
             assert(item == "replacement");
             String snapshot = words[0];
-            auto listSnapshot = words.copy();
+            let listSnapshot = words.copy();
             item[0] = 'Q';
             assert(snapshot == "replacement" && listSnapshot[0] == "replacement" && words[0] == "Qeplacement");
             break;
         }
         List<Set<int64> > sets; sets.push(values);
-        for (Set<int64> item in sets) { item.add(7); auto copy = sets[0]; assert((copy.has(7) != 0)); }
+        for (Set<int64> item in sets) { item.add(7); let copy = sets[0]; assert((copy.has(7) != 0)); }
         assert((values.has(7) == 0));
         List<Value> records; records.push(original);
         for (Value item in records) { item.number = 42; item.text[0] = 'R'; item.values.add(7); }
@@ -158,7 +158,7 @@ int64 main() {
     globalValues.add(1);
     globalValue.number = 1; globalValue.text = "abc"; globalValue.values = globalValues;
     { String copy = globalCopy(); copy[0] = 'X'; }
-    { auto copy = globalSetCopy(); copy.add(7); }
+    { let copy = globalSetCopy(); copy.add(7); }
     { Value copy = globalStructCopy(); copy.text[0] = 'X'; copy.values.add(7); }
     assert(globalText == "global" && (globalValues.has(7) == 0));
     assert(globalValue.text == "abc" && (globalValue.values.has(7) == 0));

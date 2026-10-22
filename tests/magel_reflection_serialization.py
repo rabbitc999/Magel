@@ -71,13 +71,13 @@ int64 main() {
     value.unique.add(7);
     value.optional = Option<String>::Value("owned");
     value.choice = Choice::Text("enum");
-    auto json = std::json::serialize<Record>(&value);
+    let json = std::json::serialize<Record>(&value);
     if (json.isErr()) { println("{}", json.error()); }
     assert(json.isOk());
-    auto decoded = std::json::deserialize<Record>(json.unwrap());
+    let decoded = std::json::deserialize<Record>(json.unwrap());
     if (decoded.isErr()) { println("{}", decoded.error()); }
     assert(decoded.isOk());
-    auto copy = decoded.unwrap();
+    let copy = decoded.unwrap();
     assert(copy.maximum == value.maximum);
     assert(copy.integer == value.integer);
     assert(copy.decimal == value.decimal);
@@ -86,13 +86,13 @@ int64 main() {
     assert(copy.names.valAt(0) == "quote\"\\\n");
     assert(copy.unique.has(7) != 0);
     assert(copy.optional.unwrap() == "owned");
-    auto toml = std::toml::serialize<Record>(&value);
+    let toml = std::toml::serialize<Record>(&value);
     if (toml.isErr()) { println("{}", toml.error()); }
     assert(toml.isOk());
-    auto fromToml = std::toml::deserialize<Record>(toml.unwrap());
+    let fromToml = std::toml::deserialize<Record>(toml.unwrap());
     if (fromToml.isErr()) { println("{}", fromToml.error()); }
     assert(fromToml.isOk());
-    auto bytes = std::serialization::serialize<Record>(&value).unwrap();
+    let bytes = std::serialization::serialize<Record>(&value).unwrap();
     assert(std::serialization::deserialize<Record>(bytes).isOk());
     assert(std::serialization::deserialize<int64>(bytes).isErr());
     bytes.push((uint8)1);
@@ -126,15 +126,15 @@ struct Row {
     float64 score;
 };
 int64 main() {
-    auto base = std::sql::query<Row>().unwrap();
-    auto db = std::sql::Database::sqlite(":memory:");
+    let base = std::sql::query<Row>().unwrap();
+    let db = std::sql::Database::sqlite(":memory:");
     assert(db.exec(base.build("create").unwrap()).ok);
     Row value;
     value.id = 1; value.name = "a'\\b\n中文"; value.active = true; value.score = 1.25;
     assert(db.exec(std::sql::insert<Row>(&base, &value).unwrap()).ok);
     value.id = 2; value.name = "second";
     assert(db.exec(std::sql::insert<Row>(&base, &value).unwrap()).ok);
-    auto filtered = base;
+    let filtered = base;
     assert(std::sql::filter<int64>(&filtered, "id", 1).isOk());
     assert(db.exec(filtered.build().unwrap()).rowCount() == 1);
     assert(db.exec(base.build().unwrap()).rowCount() == 2);
@@ -143,11 +143,11 @@ int64 main() {
     value.name = "updated";
     assert(db.exec(std::sql::update<Row>(&filtered, &value).unwrap()).ok);
     assert(db.exec(filtered.build().unwrap()).textAt(0, 1) == "updated");
-    auto unknown = base;
+    let unknown = base;
     std::sql::filter<int64>(&unknown, "missing; DROP TABLE records", 1);
     assert(unknown.build().isErr());
     List<int64> ids; ids.push(1); ids.push(2);
-    auto inside = base;
+    let inside = base;
     assert(std::sql::filterMany<int64>(&inside, "id", ids).isOk());
     assert(db.exec(inside.build("count").unwrap()).count() == 2);
     base.page(1, 1); base.orderBy("id");
@@ -157,7 +157,7 @@ int64 main() {
     std::sql::SqlStatement manual;
     manual.sql = "SELECT ? AS n, ? AS t, ? AS z";
     manual.parameters = "[9223372036854775807,\"text\",null]";
-    auto result = db.exec(manual);
+    let result = db.exec(manual);
     assert(result.ok && result.intAt(0, 0) == 9223372036854775807);
     assert(result.textAt(0, 1) == "text" && result.at(0, 2).isNull());
     manual.parameters = "[]";

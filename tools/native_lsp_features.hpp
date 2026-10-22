@@ -226,12 +226,12 @@ J inlayHints(const std::string &text, const std::vector<Record> &records, const 
     const auto begin = offsetAt(text, get(requested, "start")), end = offsetAt(text, get(requested, "end"));
     for (const auto &binding : bindings(text, types))
     {
-        if (binding.type != "auto" || binding.offset < begin || binding.end > end || inMacroTemplate(text, binding.offset)) continue;
+        if (binding.type != "let" || binding.offset < begin || binding.end > end || inMacroTemplate(text, binding.offset)) continue;
         auto type = resolver.bindingType(binding, binding.end);
         const auto initializerEnd = text.find(';', binding.end);
         const bool macroInitializer = text.substr(binding.end, initializerEnd == text.npos ? text.size() - binding.end : initializerEnd - binding.end).find('$') != text.npos;
         const auto complete = get(analysis, "complete").asBool();
-        if (complete && *complete && (macroInitializer || type.empty() || type == "auto"))
+        if (complete && *complete && (macroInitializer || type.empty() || type == "let"))
         {
             const auto declaration = position(text, binding.offset);
             const auto declarationEnd = position(text, binding.end);
@@ -249,7 +249,7 @@ J inlayHints(const std::string &text, const std::vector<Record> &records, const 
                 }
             }
         }
-        if (type.empty() || type == "auto") continue;
+        if (type.empty() || type == "let") continue;
         hints.push_back(object({ { "position", position(text, binding.end) }, { "label", ": " + type }, { "kind", 1 }, { "paddingLeft", false }, { "tooltip", markup(lspTypeDescription(type) + "\n\n提示不修改源代码。") } }));
     }
     return hints;

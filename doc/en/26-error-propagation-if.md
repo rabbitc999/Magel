@@ -39,7 +39,7 @@ The propagation operator works in conditional branches and still exits the enclo
 
 The standard choose and chooseLazy functions are removed. Replace them with `if (condition) { a } else { b }`. The new expression evaluates only the selected branch; review side effects when migrating eager choose calls. User-defined functions with those names remain ordinary functions.
 
-The LSP infers conditional and propagation results for auto hover and member completion. Hover over ? to inspect source, output, residual and the enclosing return type.
+The LSP infers conditional and propagation results for let hover and member completion. Hover over ? to inspect source, output, residual and the enclosing return type.
 
 Interactive terminal output is streamed before the pause prompt. std::lang::pause flushes stdout and stderr before waiting; non-interactive input never waits for Enter. Pipeline output retains the host's buffered collection behavior.
 

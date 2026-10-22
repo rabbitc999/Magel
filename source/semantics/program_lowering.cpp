@@ -183,7 +183,7 @@ bool LowerGlobals(simple_ast::Program &program)
             /* 名字在 RegisterTop 里已经分配好（全局先占，形参 / 局部变量排在后面）。 */
             const Memory::String emitted = (g_globalNames.count(declId) != 0u) ? g_globalNames[declId] : decl.s;
             if (decl.type < 0 && decl.kids[0] < 0)
-                return Fail("auto 变量必须给初值：" + decl.s);
+                return Fail("let 变量必须给初值：" + decl.s);
             std::shared_ptr<MType> type = (decl.type < 0) ? ExprType(decl.kids[0]) : T(decl.type);
             Memory::Vector<int> dims;
             if (decl.i >= 0)

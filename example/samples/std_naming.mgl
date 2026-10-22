@@ -9,12 +9,12 @@ int64 main() {
     Map<int64, int64> table;
     table.put(4, 9);
     assert(table.keyAt(0) == 4 && table.valAt(0) == 9);
-    { auto cursor = values.iterMut(); assert(cursor.sizeHint().0 == 2); }
-    auto owned = values.intoIter();
+    { let cursor = values.iterMut(); assert(cursor.sizeHint().0 == 2); }
+    let owned = values.intoIter();
     assert(owned.count() == 2);
     List<int64> seed;
     seed.push(1); seed.push(2); seed.push(3);
-    auto pipeline = std::iter::fromList<int64>(seed).stepBy(2);
+    let pipeline = std::iter::fromList<int64>(seed).stepBy(2);
     assert(pipeline.count() == 2);
     assert(std::lang::add(3, 4) == 7);
     assert(std::lang::sub(7, 4) == 3);

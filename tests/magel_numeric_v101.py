@@ -65,7 +65,7 @@ def main():
             check(invoke([compiler, '--check', source]), False, '不是所有路径都有 return')
         print('[通过] 循环可退出时仍检查缺失返回路径', flush=True)
         source = work / 'no-suffix-narrowing.mgl'
-        source.write_text('float32 f(float32 x){return x;} int64 main(){auto x=f(1.25);return 0;}', encoding='utf-8')
+        source.write_text('float32 f(float32 x){return x;} int64 main(){let x=f(1.25);return 0;}', encoding='utf-8')
         check(invoke([compiler, '--check', source]), False)
         print('[通过] 无后缀 float64 不隐式缩窄', flush=True)
 if __name__ == '__main__':

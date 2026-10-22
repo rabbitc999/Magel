@@ -816,7 +816,7 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
             PopScope();
             g_currentModule = savedModule;
             g_owner = savedOwner;
-            if (!ok || !result) return ok ? Fail("auto lambda 必须返回值") : false;
+            if (!ok || !result) return ok ? Fail("let 闭包必须返回值") : false;
             declaration.signature.result = result;
             g_inferenceFunctions[key] = declaration.signature;
             if (!declaration.label.empty()) g_funcs[declaration.label] = declaration.signature;

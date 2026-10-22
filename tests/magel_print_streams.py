@@ -87,9 +87,9 @@ def main():
         assert not result.stdout and not result.stderr
         result = run('''import std::io;
         void main() {
-            auto filePrint = fn(int64 value) { value + 4 };
-            auto filePrintln = fn(int64 value) { value + 5 };
-            auto eprintln = fn(int64 value) { value + 6 };
+            let filePrint = fn(int64 value) { value + 4 };
+            let filePrintln = fn(int64 value) { value + 5 };
+            let eprintln = fn(int64 value) { value + 6 };
             assert(filePrint(1) == 5);
             assert(filePrintln(1) == 6);
             assert(eprintln(1) == 7);
@@ -97,8 +97,8 @@ def main():
         assert not result.stdout and not result.stderr
         result = run('''import std::io;
         void main() {
-            auto filePrint = fn<T>(T value) { value };
-            auto eprint = fn<T>(T value) { value };
+            let filePrint = fn<T>(T value) { value };
+            let eprint = fn<T>(T value) { value };
             assert(filePrint(5) == 5);
             assert(eprint("value") == "value");
         }''')

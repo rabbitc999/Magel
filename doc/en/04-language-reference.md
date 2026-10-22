@@ -56,6 +56,11 @@ the access width of a byte field does not imply that the whole structure is pack
 **No implicit narrowing.** `int64 -> int32` and `int64 -> char` both need an explicit cast:
 `(int32)x` / `(char)x`.
 
+A decimal literal's magnitude tops out at `9223372036854775807`, with one exception:
+`-9223372036854775808`. The 2^63 magnitude does not fit in `int64` and is only valid directly
+behind a unary minus, where it is exactly the minimum; a bare `9223372036854775808` still reports
+that the decimal integer is out of int64 range.
+
 An integer literal with no type context defaults to `int64`, but inside an expression it takes
 its type from context:
 
@@ -64,7 +69,7 @@ its type from context:
 - in binary arithmetic / bitwise operators the **other operand's type** counts too — with
   `int32 x = 1;`, the `1` in `x + 1` is `int32`, so no `(int32)1` is needed;
 - comparisons and logical operators do not propagate (their result is not an operand type), and
-  with no context at all (`auto n = 1 + 2;`) the literal stays `int64`;
+  with no context at all (`let n = 1 + 2;`) the literal stays `int64`;
 - pinning happens only when the value fits: an out-of-range literal falls back to `int64` and is
   reported by the usual "narrowing needs a cast" rule — never silently truncated.
 
@@ -91,7 +96,7 @@ Runnable check: [`literal_context_type.mgl`](../../example/samples/literal_conte
 ```magel
 const int64 LIMIT = 100;   // constant
 int64 counter = 0;         // variable
-auto inferred = LIMIT;     // inferred type
+let inferred = LIMIT;      // inferred type
 ```
 
 - Top-level declarations are global; declarations inside a function are local.
@@ -141,7 +146,7 @@ int64 main() {
 }
 ```
 
-`c, str2 = ...;` and `(c, str2) = ...;` assign to existing writable targets. Declare new bindings with `auto (c, str2) = ...;`.
+`c, str2 = ...;` and `(c, str2) = ...;` assign to existing writable targets. Declare new bindings with `let (c, str2) = ...;`.
 The complete source tuple is evaluated and saved once before targets are assigned from left to right, so
 `a, b = (b, a);` or `(a, b) = (b, a);` swaps values. Variables, writable fields, array or container elements, and writable references
 are supported; `a, (b, c) = ...;` matches nested tuples. Element counts, shapes and target types must match.
@@ -344,7 +349,7 @@ interfaces** such as `RightAdd` (method `rightAdd`). Type arguments are written
   disambiguate), so operator interfaces **make an exception**: the mangled name carries the
   return type, and both survive. Which one is picked is decided by the **target type** —
   `int64 x = a + 3;` takes the `int64`-returning one, `Vec y = a + 3;` takes the `Vec`-returning
-  one. With no target type (`auto z = a + 3;`) it is an error that asks you to say which —
+  one. With no target type (`let z = a + 3;`) it is an error that asks you to say which —
   the compiler never silently picks one.
 
 Runnable checks: [`operator_symmetry.mgl`](../../example/samples/operator_symmetry.mgl),
@@ -792,7 +797,7 @@ More capabilities (`json` / `toml` / `regex` / `sql` / `net` / `linalg` …): se
 
 Use `value.drop()` for explicit release of heap references, arrays and resource values. There is no standalone release statement; structs implementing Drop keep their protocol method. All forms share cleanup and coalescing; runtime release is not idempotent. The compiler coalesces visible drop operations for one lifecycle using control-flow analysis and still rejects use after release; runtime checks report `MGL1205` for cases that cannot be proven statically. Assignment starts a new lifecycle; `const &` still cannot call `drop()`. Reads and writes after release, and reads after move, produce `MGL1205`; a moved binding cannot be written or rebound; a new declaration is required. The default heap reuses physical memory without reusing logical allocation identities, so deletion through an old reference fails without affecting a new object. Release removes the active record immediately, without tombstones or a sweeping API. Fresh string arguments to printing, formatting and file writes are held by owning temporaries until the full expression completes. Ownership transfer clears the source slot, and releasing on one branch does not cancel cleanup on another branch. See [borrow control flow and algorithm validation](11-algorithm-validation.md).
 
-The program entry `main` must return `int64` or `void`. Function pointers can be array elements: `int64 fn(int64) a[] = new[2];`; assign elements before calling `auto callback = a[0]; callback(value);`. Function types compose with arrays, tuples, containers and nested function types. Write an array-returning function type as `(int64[]) fn()` to distinguish it from an array of function pointers.
+The program entry `main` must return `int64` or `void`. Function pointers can be array elements: `int64 fn(int64) a[] = new[2];`; assign elements before calling `let callback = a[0]; callback(value);`. Function types compose with arrays, tuples, containers and nested function types. Write an array-returning function type as `(int64[]) fn()` to distinguish it from an array of function pointers.
 
 Prefer return-first syntax: `int64 fn(int64, int64) callback` and `int64 fn(int64 x) { x + 1 }`. Starting with **0.12.0**, the old arrow forms are rejected. Omit the arrow for inferred results: `fn(int64 x) { x + 1 }`. Regenerate generic host glue and rebuild old caches when upgrading.
 
@@ -808,10 +813,10 @@ External locals are captured by `const&` by default; `fn const(...)` is equivale
 
 ```magel
 int64 n = 1;
-auto read = int64 fn() { n };
-auto write = int64 fn mut(int64 x) { n += x; return n; };
-auto counter = int64 fn copy[n]() { n += 1; return n; };
-auto transferred = int64 fn move[n]() { n += 1; return n; };
+let read = int64 fn() { n };
+let write = int64 fn mut(int64 x) { n += x; return n; };
+let counter = int64 fn copy[n]() { n += 1; return n; };
+let transferred = int64 fn move[n]() { n += 1; return n; };
 n = 10;
 assert(read() == 10);
 assert(write(1) == 11);
@@ -825,12 +830,12 @@ Capturing a variable by reference (implicit `const&` or `fn mut`) and later movi
 
 ## Generic closures and specialization
 
-`auto f = fn<T>(T value) { value };` declares a closure with type parameters. Calls such as `f(1)` and `f("text")` infer `T` from their arguments; `f<int64>(1)` supplies it explicitly. The concrete implementation determines its return type. Parameters without inference evidence or an explicit default are rejected rather than replaced with Any.
+`let f = fn<T>(T value) { value };` declares a closure with type parameters. Calls such as `f(1)` and `f("text")` infer `T` from their arguments; `f<int64>(1)` supplies it explicitly. The concrete implementation determines its return type. Parameters without inference evidence or an explicit default are rejected rather than replaced with Any.
 
 Full and partial specializations use the same closure name. Argument types are determined before selecting the uniquely most specific matching implementation:
 
 ```magel
-auto f = fn<T, U>(T first, U second) { 0 };
+let f = fn<T, U>(T first, U second) { 0 };
 f<T, int64> = fn(T first, int64 second) { 1 };
 f<int64, int64> = fn(int64 first, int64 second) { 2 };
 assert(f(true, false) == 0);
@@ -840,7 +845,7 @@ assert(f(2, 3) == 2);
 
 Specializations are selected at compile time, rather than replaced at run time. Duplicate declarations and ambiguous partial specializations are rejected. Implementations inherit the primary declaration's capture modes and reuse its environment. Calls with different types share the same captured state. Copying the entire closure independently copies owned state while preserving borrowed sources.
 
-A struct may directly declare an `auto f = fn<T>(T value) { value };` member and specialize it within the struct. Instances call it as `s.f(1)` or `s.f<String>("text")`. Default initialization resolves captures in the member's declaration scope, preserving isolation from same-named locals in the constructing caller. Existing restrictions on implicit captures of `self` and receiver fields remain applicable.
+A struct may directly declare an `let f = fn<T>(T value) { value };` member and specialize it within the struct. Instances call it as `s.f(1)` or `s.f<String>("text")`. Default initialization resolves captures in the member's declaration scope, preserving isolation from same-named locals in the constructing caller. Existing restrictions on implicit captures of `self` and receiver fields remain applicable.
 
 Both ordinary and generic closure values can serve as a generic type parameter `F`, for example `int64 apply<F>(F f) { return f(3); }`; `apply(callback)` infers `F`. Generic aggregates such as `Box<F>` can store closure values. A generic closure retains its declaration identity and capture environment, without erasure to a single ordinary function-pointer signature. Borrow and move rules continue to apply.
 
@@ -871,7 +876,7 @@ support fields with concrete function signatures. Generic declarations such as `
 
 ## Ranges and the advancement protocol
 
-`for (auto item in source)`, `for (item in source)` and explicitly typed bindings share the iteration protocol. `std::lang::range(a, b)` excludes the upper endpoint; `std::lang::rangeEq(a, b)` includes both endpoints. Either call accepts an explicit `<T>`.
+`for (let item in source)`, `for (item in source)` and explicitly typed bindings share the iteration protocol. `std::lang::range(a, b)` excludes the upper endpoint; `std::lang::rangeEq(a, b)` includes both endpoints. Either call accepts an explicit `<T>`.
 
 The eight fixed-width integer types and `char` support direct range calculations. `for (uint8 x in std::lang::rangeEq<uint8>(0, 255)) { ... }` yields 256 items; `range<uint8>` yields 255. Bounds are evaluated once each, from left to right, and both must fit T, including an exclusive upper endpoint. Foldable integer violations are rejected at compile time; dynamic endpoints are checked before iteration. Reversed ranges are errors. `range(a, a)` is empty; `rangeEq(a, a)` yields one item. A closed maximum endpoint terminates without calculating maximum plus one.
 
@@ -884,7 +889,7 @@ For-in and while can produce values in initializers, assignments, arguments and 
 ```magel
 int64 main()
 {
-    int64 first = for (auto value in std::lang::range(1, 8))
+    int64 first = for (let value in std::lang::range(1, 8))
     {
         if (value % 2 == 0)
         {
@@ -1006,7 +1011,7 @@ $end_macro
 
 Use `List<int32> values = $vec(int32, 1, 2, 3);` or `values = $vec(int32, 4, 5);`. Ordinary local declarations are hygienic. Each argument is evaluated once, received using the requested type and appended in order with `push`. No elements produces an empty list. See the runnable [block example](../../example/samples/block_expression.mgl) and [output example](../../example/samples/print_interpolation.mgl).
 
-Use `fn` for anonymous functions; the old `lambda` syntax has been removed: `auto add = fn(int32 x) { x + 1 };`. An explicit result type precedes `fn`: `auto add = int32 fn(int32 x) { return x + 1; };`. Capture modes and lists use `fn`. `int32 fn(int32)` still denotes a function type.
+Use `fn` for anonymous functions; the old `lambda` syntax has been removed: `let add = fn(int32 x) { x + 1 };`. An explicit result type precedes `fn`: `let add = int32 fn(int32 x) { return x + 1; };`. Capture modes and lists use `fn`. `int32 fn(int32)` still denotes a function type.
 
 A `fn` expression can be passed directly to a named function or a function value. Each callback is
 checked against its parameter's function type, which also provides context for omitted parameter

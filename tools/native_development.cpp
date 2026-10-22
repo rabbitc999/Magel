@@ -564,11 +564,11 @@ J range(const std::string &s, size_t a, size_t b)
 }
 const std::set<std::string> keywords = {
     "defer", "scope", "heap",
-    "_", "abi", "auto", "bool", "break", "cast", "char",
+    "_", "abi", "bool", "break", "cast", "char",
     "const", "continue", "copy", "drop", "elif", "else",
     "enum", "false", "float32", "float64", "fn", "for",
     "if", "impl", "import", "in", "inline", "int16", "int32",
-    "int64", "int8", "interface", "loop", "match", "module",
+    "int64", "int8", "interface", "let", "loop", "match", "module",
     "move", "mut", "new", "opcode", "return", "static", "struct",
     "true", "type", "uint16", "uint32", "uint64", "uint8", "void",
     "while", "yield"
@@ -1113,7 +1113,7 @@ std::vector<Binding> scanBindings(const std::string &s,
     hiddenTypes.erase("String");
     types.insert(primitives.begin(), primitives.end());
     for (auto n :
-         { "String", "List", "Set", "Map", "Option", "Result", "Any", "auto" })
+         { "String", "List", "Set", "Map", "Option", "Result", "Any", "let" })
         types.insert(n);
     std::vector<std::vector<int>> scopes;
     std::vector<int> scope{ 0 };
@@ -1219,7 +1219,7 @@ std::vector<Binding> scanBindings(const std::string &s,
                 if (t[j].word != "," && j + 1 != end) continue;
                 if (j == begin + 1 && identifier(t[begin].word) && !keywords.count(t[begin].word))
                 {
-                    Binding b{ t[begin].word, "auto", "parameter", t[begin].a, t[begin].b, scopes[end] };
+                    Binding b{ t[begin].word, "let", "parameter", t[begin].a, t[begin].b, scopes[end] };
                     b.context = t[i].a;
                     b.parameter = ordinal;
                     b.limit = lspBlockLimit(t, end);
@@ -1277,7 +1277,7 @@ std::vector<Binding> scanBindings(const std::string &s,
             auto found = std::find_if(out.begin(), out.end(), [&](const Binding &b) { return b.offset == name.a; });
             if (found == out.end())
             {
-                out.push_back({ name.word, "auto", "variable", name.a, name.b, scopes[i] });
+                out.push_back({ name.word, "let", "variable", name.a, name.b, scopes[i] });
                 found = out.end() - 1;
             }
             found->iterable = s.substr(t[in].b, t[end - 1].a - t[in].b);
@@ -1528,7 +1528,7 @@ class ReceiverTypes
                     break;
                 }
         }
-        if (type == "auto" && r.kind == "member")
+        if (type == "let" && r.kind == "member")
             for (const auto &binding : vars)
                 if (binding.offset == r.offset && binding.name == r.name)
                 {
@@ -1616,7 +1616,7 @@ public:
             if (!end || end > tokens.size()) return "";
             return lspFunctionText(lspFunctionShape(binding.type + " fn" + source.substr(binding.end + tokens[open].a, tokens[end - 1].b - tokens[open].a)));
         }
-        if (base(binding.type) != "auto") return qualify(binding.type);
+        if (base(binding.type) != "let") return qualify(binding.type);
         if (activeCompilerTypes)
         {
             const auto found = activeCompilerTypes->find(binding.offset);
@@ -1681,7 +1681,7 @@ public:
     {
         if (depth > 24) return "";
         for (const auto &binding : vars)
-            if (binding.end < at && base(binding.type) != "auto" && trim(source.substr(binding.end, at - binding.end)) == "=") return binding.type;
+            if (binding.end < at && base(binding.type) != "let" && trim(source.substr(binding.end, at - binding.end)) == "=") return binding.type;
         auto tokens = valueTokens(source.substr(0, at));
         struct Frame
         {
@@ -1829,12 +1829,12 @@ public:
         auto shape = lspFunctionShape(value);
         if (shape.valid)
         {
-            if (!shape.result.empty() && shape.result != "auto") return lspFunctionText(shape);
+            if (!shape.result.empty() && shape.result != "let") return lspFunctionText(shape);
             auto at = source.find(value, cursor);
             if (at == source.npos) at = source.find(value);
             const auto expected = at == source.npos ? "" : contextualType(at, depth + 1);
             const auto context = lspFunctionShape(expected);
-            if (context.valid && !context.result.empty() && context.result != "auto") return expected;
+            if (context.valid && !context.result.empty() && context.result != "let") return expected;
             size_t body = 0;
             while (body < t.size() && t[body].word != "{") ++body;
             if (body == t.size()) return "";
@@ -2101,7 +2101,7 @@ public:
             if (r.kind == "function" && (r.qualified == name || (r.owner.empty() && r.name == name) || ends(r.qualified, "::" + name)))
             {
                 auto type = instantiateResult(r, resultType(r, ""), value, arguments, cursor, depth + 1);
-                if (!type.empty() && base(type) != "auto") results.insert(type);
+                if (!type.empty() && base(type) != "let") results.insert(type);
             }
         return results.size() == 1 ? *results.begin() : "";
     }
@@ -3926,7 +3926,7 @@ class Server
                 if (complete && *complete)
                     for (const auto &binding : vars)
                     {
-                        if (!starts(binding.type, "auto")) continue;
+                        if (!starts(binding.type, "let")) continue;
                         const auto declaration = position(s, binding.offset);
                         long long distance = std::numeric_limits<long long>::max();
                         for (const auto &hint : array(get(analysis, "typeHints")))
@@ -4298,7 +4298,7 @@ class Server
         }
         if (method == "textDocument/hover")
         {
-            if (token->word == "auto")
+            if (token->word == "let")
                 for (auto &b : vars)
                     if (b.offset >= token->b && std::all_of(tokens.begin(), tokens.end(), [&](const Token &part) { return part.a < token->b || part.a >= b.offset || part.word == "const" || part.word == "mut" || part.word == "&"; }))
                     {
@@ -4315,13 +4315,13 @@ class Server
             if (content.empty() && binding)
             {
                 auto type = binding->type;
-                if (starts(type, "auto") || binding->kind == "function")
+                if (starts(type, "let") || binding->kind == "function")
                 {
                     auto inferred = ReceiverTypes(records, s, types).bindingType(*binding, std::max(cursor, binding->end));
                     if (!inferred.empty()) type = inferred;
                 }
                 content = "```magel\n" + type + " " + binding->name + "\n```";
-                if (starts(binding->type, "auto"))
+                if (starts(binding->type, "let"))
                 {
                     content += "\n\n" + lspTypeDescription(type);
                     content += binding->context ? "\n\n推断来源：外层调用的参数类型。" : !binding->iterable.empty() ? "\n\n推断来源：遍历对象的元素类型。" :

@@ -241,7 +241,7 @@ member_list := %empty { $$ = M_List(); }
 member := annotation_list member_decl { $$ = M_Annotated($1, $2); }
   | member_decl { $$ = $1; } ;
 
-member_decl := AUTO name_token ASSIGN expr SEMI { $$ = M_ClosureField($2, $4); }
+member_decl := LET name_token ASSIGN expr SEMI { $$ = M_ClosureField($2, $4); }
         | type name_token SEMI            { $$ = M_Field($1, $2); }
         | type name_token LBRACKET expr RBRACKET SEMI { $$ = M_ArrayField($1, $2, M_Dims1($4)); }
         | type name_token LBRACKET expr RBRACKET LBRACKET expr RBRACKET SEMI { $$ = M_ArrayField($1, $2, M_Dims2($4, $7)); }
@@ -288,7 +288,7 @@ func_def := type name_token LPAREN param_list RPAREN block
     { $$ = M_Func($1, $2, $4, $6); }
   | array_type name_token LPAREN param_list RPAREN block
     { $$ = M_Func($1, $2, $4, $6); }
-  | AUTO name_token LPAREN param_list RPAREN block
+  | LET name_token LPAREN param_list RPAREN block
     { $$ = M_Func(-1, $2, $4, $6); } ;
 
 /* ---- C++ 胶水声明 ---- */
@@ -382,7 +382,7 @@ global_decl := type declarator_list SEMI
                  { M_SetDeclType($3, $2, 1); $$ = M_GlobalDecl($2, $3, 1); }
              | CONST ptr_type declarator_list SEMI
                  { M_SetDeclType($3, $2, 1); $$ = M_GlobalDecl($2, $3, 1); }
-             | AUTO declarator_list SEMI
+             | LET declarator_list SEMI
                  { M_SetDeclType($2, -1, 0); $$ = M_GlobalDecl(-1, $2, 0); } ;
 
 declarator_list := declarator                          { $$ = M_List1($1); }
@@ -461,7 +461,7 @@ match_patterns := match_pattern { $$ = M_List1($1); }
 match_pattern := bxor_expr { $$ = $1; } ;
 
 /* 局部变量 */
-decl_stmt := AUTO LPAREN destructure_items RPAREN ASSIGN expr SEMI
+decl_stmt := LET LPAREN destructure_items RPAREN ASSIGN expr SEMI
                { $$ = M_Destructure($3, $6); }
            /* 具名闭包只属于声明语句；返回类型是参数和函数体的类型锚点。 */
            | type name_token LPAREN param_list RPAREN block
@@ -491,10 +491,10 @@ decl_stmt := AUTO LPAREN destructure_items RPAREN ASSIGN expr SEMI
                { M_SetDeclType($3, $2, 1); $$ = M_LocalDecl($2, $3, 1); }
            | CONST ptr_type declarator_list SEMI
                { M_SetDeclType($3, $2, 1); $$ = M_LocalDecl($2, $3, 1); }
-           | AUTO declarator_list SEMI
+           | LET declarator_list SEMI
                { M_SetDeclType($2, -1, 0); $$ = M_LocalDecl(-1, $2, 0); } ;
 
-/* 解构使用现有 auto；只声明局部变量，嵌套括号对应嵌套元组。 */
+/* 解构使用现有 let；只声明局部变量，嵌套括号对应嵌套元组。 */
 destructure_items := destructure_binding COMMA destructure_binding { $$ = M_List2($1, $3); }
                    | destructure_items COMMA destructure_binding { M_ListAdd($1, $3); $$ = $1; } ;
 destructure_binding := name_token { $$ = M_Var($1); }
@@ -522,17 +522,17 @@ loop_expr := LOOP block { $$ = M_Loop($2); }
                { $$ = M_BlockValue(M_Block(M_List2(M_While($3, $5), $7))); }
            | FOR LPAREN name_token IN for_in_source RPAREN if_block ELSE if_block
                { $$ = M_BlockValue(M_Block(M_List2(M_Foreach(-1, $3, -1, $5, $7), $9))); }
-           | FOR LPAREN AUTO name_token IN for_in_source RPAREN if_block ELSE if_block
+           | FOR LPAREN LET name_token IN for_in_source RPAREN if_block ELSE if_block
                { $$ = M_BlockValue(M_Block(M_List2(M_Foreach(-1, $4, -1, $6, $8), $10))); }
            | FOR LPAREN type name_token IN for_in_source RPAREN if_block ELSE if_block
                { $$ = M_BlockValue(M_Block(M_List2(M_Foreach($3, $4, -1, $6, $8), $10))); }
            | FOR LPAREN ptr_type name_token IN for_in_source RPAREN if_block ELSE if_block
                { $$ = M_BlockValue(M_Block(M_List2(M_Foreach($3, $4, -1, $6, $8), $10))); } ;
 
-/* for (x in src) / for (auto x in src) / for (T x in src) / for (T* x in src) */
+/* for (x in src) / for (let x in src) / for (T x in src) / for (T* x in src) */
 for_in_stmt := FOR LPAREN name_token IN for_in_source RPAREN block
                   { $$ = M_Foreach(-1, $3, -1, $5, $7); }
-  | FOR LPAREN AUTO name_token IN for_in_source RPAREN block
+  | FOR LPAREN LET name_token IN for_in_source RPAREN block
                   { $$ = M_Foreach(-1, $4, -1, $6, $8); }
   | FOR LPAREN type name_token IN for_in_source RPAREN block
                   { $$ = M_Foreach($3, $4, -1, $6, $8); }

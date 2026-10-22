@@ -14,14 +14,14 @@ int64 main() {
     destination.close();
     File captured = fileOpen("build/move-closure-file.bin", "wb").take();
     int64 capturedIdentity; memcpy(&capturedIdentity, &captured, 8);
-    auto write = int64 fn move[captured](String text) {
+    let write = int64 fn move[captured](String text) {
         int64 identity; memcpy(&identity, &captured, 8);
         assert(identity == capturedIdentity);
         return fileWrite(&captured, text);
     };
     assert(write("closure") == 7);
     FileStream capturedStream = FileStream::open("build/move-closure-stream.bin", "wb").take();
-    auto writeStream = int64 fn move[capturedStream](String text) {
+    let writeStream = int64 fn move[capturedStream](String text) {
         return capturedStream.write(text).unwrap();
     };
     assert(writeStream("owned") == 5);

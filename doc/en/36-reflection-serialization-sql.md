@@ -39,7 +39,7 @@ and unsupported resource values.
 The maintained source is `library/ipage/source/ipage`; exported projects use embedded assets.
 Declare `@Reflect` and `@std::sql::ModelClass("table")` on the model, and optionally
 `@std::sql::ModelField(column: "column", kind: "auto", id: true)` on fields.
-Kinds are `auto`, `int`, `real`, `text`, and `bool`; every model needs a primary key.
+Kinds are `let`, `int`, `real`, `text`, and `bool`; every model needs a primary key.
 
 `std::sql::query<T>()` creates a value-semantic query. Configure it with `std::sql::filter<V>`,
 `std::sql::filterMany<V>`, `orderBy`, `select`, and `page`. `build()` returns a `SqlStatement`

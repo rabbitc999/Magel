@@ -6,7 +6,7 @@ int64 main() {
     (int64, String) mut& whole = &pair;
     int64 const& number = &pair.0;
     String const& text = &whole.1;
-    auto inferred = &whole.0;
+    let inferred = &whole.0;
     assert(readNumber(inferred) == 1 && text[0] == 'o');
     whole = (2, "two");
     assert(number == 2 && text == "two" && inferred == 2);
@@ -18,14 +18,14 @@ int64 main() {
     char const& character = &(nested.0).1[0];
     assert(inner == 7 && character == 's');
     Record record; record.number = 3; record.text = "record";
-    auto records = (record, 4);
+    let records = (record, 4);
     Record const& borrowed = &records.0;
     int64 const& field = &(records.0).number;
     Record detached = records.0;
     detached.number = 9;
     assert(borrowed.number == 3 && field == 3 && detached.number == 9);
     List<String> list; list.push("entry");
-    auto lists = (list, 5);
+    let lists = (list, 5);
     for (String item in lists.0) { assert(item == "entry"); }
     List<String> listCopy = lists.0;
     listCopy.push("copy");

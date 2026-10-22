@@ -789,29 +789,29 @@
 | [std::linkedlist::LinkedList::reverse](std-linkedlist.md#api-8) | `void reverse()` |
 | [std::linkedlist::LinkedList::toArray](std-linkedlist.md#api-9) | `List<int64> toArray()` |
 | [std::math::abs](std-math.md#api-19) | `T abs<T>(T value)` |
-| [std::math::acos](std-math.md#api-5) | `auto acos<T>(T value)` |
-| [std::math::asin](std-math.md#api-4) | `auto asin<T>(T value)` |
-| [std::math::atan](std-math.md#api-6) | `auto atan<T>(T value)` |
-| [std::math::ceil](std-math.md#api-12) | `auto ceil<T>(T value)` |
+| [std::math::acos](std-math.md#api-5) | `let acos<T>(T value)` |
+| [std::math::asin](std-math.md#api-4) | `let asin<T>(T value)` |
+| [std::math::atan](std-math.md#api-6) | `let atan<T>(T value)` |
+| [std::math::ceil](std-math.md#api-12) | `let ceil<T>(T value)` |
 | [std::math::clamp](std-math.md#api-23) | `float64 clamp(float64 value, float64 low, float64 high)` |
 | [std::math::clamp](std-math.md#api-22) | `int64 clamp(int64 value, int64 low, int64 high)` |
-| [std::math::cos](std-math.md#api-2) | `auto cos<T>(T value)` |
-| [std::math::exp](std-math.md#api-7) | `auto exp<T>(T value)` |
-| [std::math::floor](std-math.md#api-11) | `auto floor<T>(T value)` |
-| [std::math::fmod](std-math.md#api-16) | `auto fmod<T, U>(T value, U other)` |
+| [std::math::cos](std-math.md#api-2) | `let cos<T>(T value)` |
+| [std::math::exp](std-math.md#api-7) | `let exp<T>(T value)` |
+| [std::math::floor](std-math.md#api-11) | `let floor<T>(T value)` |
+| [std::math::fmod](std-math.md#api-16) | `let fmod<T, U>(T value, U other)` |
 | [std::math::isInf](std-math.md#api-18) | `bool isInf<T>(T value)` |
 | [std::math::isNaN](std-math.md#api-17) | `bool isNaN<T>(T value)` |
-| [std::math::ln](std-math.md#api-8) | `auto ln<T>(T value)` |
-| [std::math::log10](std-math.md#api-9) | `auto log10<T>(T value)` |
+| [std::math::ln](std-math.md#api-8) | `let ln<T>(T value)` |
+| [std::math::log10](std-math.md#api-9) | `let log10<T>(T value)` |
 | [std::math::max](std-math.md#api-21) | `T max<T>(T... values)` |
 | [std::math::min](std-math.md#api-20) | `T min<T>(T... values)` |
 | [std::math::pi](std-math.md#api-0) | `BigDecimal pi(int64 digits = 50)` |
-| [std::math::pow](std-math.md#api-15) | `auto pow<T, U>(T value, U other)` |
-| [std::math::round](std-math.md#api-13) | `auto round<T>(T value)` |
-| [std::math::sin](std-math.md#api-1) | `auto sin<T>(T value)` |
-| [std::math::sqrt](std-math.md#api-10) | `auto sqrt<T>(T value)` |
-| [std::math::tan](std-math.md#api-3) | `auto tan<T>(T value)` |
-| [std::math::trunc](std-math.md#api-14) | `auto trunc<T>(T value)` |
+| [std::math::pow](std-math.md#api-15) | `let pow<T, U>(T value, U other)` |
+| [std::math::round](std-math.md#api-13) | `let round<T>(T value)` |
+| [std::math::sin](std-math.md#api-1) | `let sin<T>(T value)` |
+| [std::math::sqrt](std-math.md#api-10) | `let sqrt<T>(T value)` |
+| [std::math::tan](std-math.md#api-3) | `let tan<T>(T value)` |
+| [std::math::trunc](std-math.md#api-14) | `let trunc<T>(T value)` |
 | [std::memory::Arena::allocate](std-memory.md#api-6) | `Span<char> allocate(int64 bytes)` |
 | [std::memory::Arena::create](std-memory.md#api-5) | `static Arena create()` |
 | [std::memory::Arena::reset](std-memory.md#api-7) | `void reset()` |

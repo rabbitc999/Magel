@@ -43,8 +43,8 @@ int64 main(){
                 i=i+1;
             }
         }
-        auto success=propagate(true);assert(success.unwrap()=="localscratch!");
-        auto failure=propagate(false);assert(failure.isErr());
+        let success=propagate(true);assert(success.unwrap()=="localscratch!");
+        let failure=propagate(false);assert(failure.isErr());
         match(failure){
             Result<String,String>::Err(error)=>{assert(error=="failure");}
             Result<String,String>::Ok(value)=>{assert(false);}

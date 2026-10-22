@@ -98,7 +98,7 @@ int64 main() {
         LifeBox box;
         box.values = std::algorithms::mapValue<int64>(numbers, doubleLifeNumber);
         assert((box.values[0]) == (6));
-        auto moved = std::algorithms::mapValue<int64>(numbers, doubleLifeNumber).intoIter();
+        let moved = std::algorithms::mapValue<int64>(numbers, doubleLifeNumber).intoIter();
         List<int64> saved = moved.collect();
         assert((saved[0]) == (6));
     

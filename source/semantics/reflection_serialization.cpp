@@ -119,7 +119,7 @@ struct MReflectionSerialization
             if (decimal)
             {
                 encode = "return \"{\\\"$decimal\\\":\"+__serdeQuote(value.toString())+\",\\\"$precision\\\":\"+__serdeBigPrecision(value).toString()+\"}\";";
-                decode = "if(!node.isObject() || node.find(\"$decimal\").isNone() || node.find(\"$precision\").isNone()){" + decodeError("大数需要数值与精度对象") + "}auto digitsNode=node.find(\"$decimal\").unwrap();auto precisionNode=node.find(\"$precision\").unwrap();if(!digitsNode.isString() || !precisionNode.isInt()){" + decodeError("无效大数精度对象") + "}String digits=digitsNode.asString().unwrap();int64 precision=precisionNode.asInt().unwrap();if(!__serdeNumber(digits,true) || precision<0 || precision>100000){" + decodeError("无效大数数值或精度") + "}value=" + text + "(digits);if(precision>0){value.setPrecision(precision);}return true;";
+                decode = "if(!node.isObject() || node.find(\"$decimal\").isNone() || node.find(\"$precision\").isNone()){" + decodeError("大数需要数值与精度对象") + "}let digitsNode=node.find(\"$decimal\").unwrap();let precisionNode=node.find(\"$precision\").unwrap();if(!digitsNode.isString() || !precisionNode.isInt()){" + decodeError("无效大数精度对象") + "}String digits=digitsNode.asString().unwrap();int64 precision=precisionNode.asInt().unwrap();if(!__serdeNumber(digits,true) || precision<0 || precision>100000){" + decodeError("无效大数数值或精度") + "}value=" + text + "(digits);if(precision>0){value.setPrecision(precision);}return true;";
             }
         }
         else if (IsContainer(type) && type->name != "map")
@@ -127,13 +127,13 @@ struct MReflectionSerialization
             const auto child = ensure(type->elem);
             const auto item = InferenceTypeText(type->elem);
             encode = "String output=\"[\";int64 index=0;while(index<value.len()){if(index>0){output=output+\",\";}" + item + " entry=value.at(index);output=output+" + child + "Encode(&entry,&error,depth+1);if(error!=\"\"){return \"\";}index=index+1;}return output+\"]\";";
-            decode = "if(!node.isArray()){" + decodeError("需要数组") + "}value.clear();int64 index=0;while(index<node.len()){auto part=node.at(index).unwrap();" + item + " entry;if(!" + child + "Decode(&part,&entry,&error,depth+1)){return false;}value." + Memory::String(type->name == "vec" ? "push" : "add") + "(std::lang::move(&entry));index=index+1;}return true;";
+            decode = "if(!node.isArray()){" + decodeError("需要数组") + "}value.clear();int64 index=0;while(index<node.len()){let part=node.at(index).unwrap();" + item + " entry;if(!" + child + "Decode(&part,&entry,&error,depth+1)){return false;}value." + Memory::String(type->name == "vec" ? "push" : "add") + "(std::lang::move(&entry));index=index+1;}return true;";
         }
         else if (IsContainer(type) && type->name == "map" && IsStandardOpcode(type->elem, "String"))
         {
             const auto child = ensure(type->elem2), item = InferenceTypeText(type->elem2);
             encode = "String output=\"{\";int64 index=0;while(index<value.len()){if(index>0){output=output+\",\";}String key=value.keyAt(index);" + item + " entry=value.valAt(index);output=output+__serdeQuote(key)+\":\"+" + child + "Encode(&entry,&error,depth+1);if(error!=\"\"){return \"\";}index=index+1;}return output+\"}\";";
-            decode = "if(!node.isObject()){" + decodeError("需要对象") + "}value.clear();int64 index=0;while(index<node.len()){if(node.keyAt(index).isNone()){" + decodeError("对象键无法表示为 String") + "}String key=node.keyAt(index).unwrap();auto part=node.at(index).unwrap();" + item + " entry;if(!" + child + "Decode(&part,&entry,&error,depth+1)){return false;}value.put(key,std::lang::move(&entry));index=index+1;}return true;";
+            decode = "if(!node.isObject()){" + decodeError("需要对象") + "}value.clear();int64 index=0;while(index<node.len()){if(node.keyAt(index).isNone()){" + decodeError("对象键无法表示为 String") + "}String key=node.keyAt(index).unwrap();let part=node.at(index).unwrap();" + item + " entry;if(!" + child + "Decode(&part,&entry,&error,depth+1)){return false;}value.put(key,std::lang::move(&entry));index=index+1;}return true;";
         }
         else if (type->kind == MType::Struct && exposed(type) && !HasNonCopyableValue(type))
         {
@@ -141,7 +141,7 @@ struct MReflectionSerialization
             if (enumeration != g_enums.end())
             {
                 encode = "match(value){";
-                decode = "if(!node.isObject() || node.find(\"$variant\").isNone() || node.find(\"$values\").isNone()){" + decodeError("需要枚举变体对象") + "}auto variantNode=node.find(\"$variant\").unwrap();auto parts=node.find(\"$values\").unwrap();if(!variantNode.isString() || !parts.isArray()){" + decodeError("无效枚举变体") + "}String variant=variantNode.asString().unwrap();";
+                decode = "if(!node.isObject() || node.find(\"$variant\").isNone() || node.find(\"$values\").isNone()){" + decodeError("需要枚举变体对象") + "}let variantNode=node.find(\"$variant\").unwrap();let parts=node.find(\"$values\").unwrap();if(!variantNode.isString() || !parts.isArray()){" + decodeError("无效枚举变体") + "}String variant=variantNode.asString().unwrap();";
                 for (const auto &variant : enumeration->second.variants)
                 {
                     Memory::String pattern = variant.name, output = "String output=" + queries.quote("{\"$variant\":" + std::string(queries.quote(variant.name).c_str()) + ",\"$values\":[") + ";";
@@ -164,7 +164,7 @@ struct MReflectionSerialization
                         pattern += variable;
                         construction += "std::lang::move(&" + variable + ")";
                         output += "output=output+" + child + "Encode(&" + variable + ",&error,depth+1);if(error!=\"\"){return \"\";}";
-                        decode += InferenceTypeText(variant.payloads[index].type) + " " + variable + ";auto part" + Memory::toString(index) + "=parts.at(" + Memory::toString(index) + ").unwrap();if(!" + child + "Decode(&part" + Memory::toString(index) + ",&" + variable + ",&error,depth+1)){return false;}";
+                        decode += InferenceTypeText(variant.payloads[index].type) + " " + variable + ";let part" + Memory::toString(index) + "=parts.at(" + Memory::toString(index) + ").unwrap();if(!" + child + "Decode(&part" + Memory::toString(index) + ",&" + variable + ",&error,depth+1)){return false;}";
                     }
                     if (!variant.payloads.empty())
                     {
@@ -190,7 +190,7 @@ struct MReflectionSerialization
                         if (!first) encode += "output=output+\",\";";
                         first = false;
                         encode += "output=output+" + queries.quote(std::string(queries.quote(field.name).c_str()) + ":") + "+" + child + "Encode(&value." + field.name + ",&error,depth+1);if(error!=\"\"){return \"\";}";
-                        decode += "{if(node.find(" + fieldName + ").isNone()){" + decodeError("缺少字段：" + field.name) + "}auto part=node.find(" + fieldName + ").unwrap();if(!" + child + "Decode(&part,&value." + field.name + ",&error,depth+1)){error=" + queries.quote(field.name + ": ") + "+error;return false;}}";
+                        decode += "{if(node.find(" + fieldName + ").isNone()){" + decodeError("缺少字段：" + field.name) + "}let part=node.find(" + fieldName + ").unwrap();if(!" + child + "Decode(&part,&value." + field.name + ",&error,depth+1)){error=" + queries.quote(field.name + ": ") + "+error;return false;}}";
                     }
                 encode += "return output+\"}\";";
                 decode += "return true;";
@@ -236,7 +236,7 @@ struct MReflectionSerialization
                 else if (encoding)
                     entries += "String text=" + helper + "Encode(&value,&error,0);if(error!=\"\"){return " + result + "::Err(error);}return " + result + "::Ok(text);}\n";
                 else
-                    entries += "auto parsed=std::json::parse(text);if(parsed.isErr()){return " + result + "::Err(parsed.error());}auto node=parsed.unwrap();" + InferenceTypeText(type) + " value;if(!" + helper + "Decode(&node,&value,&error,0)){return " + result + "::Err(error);}return " + result + "::Ok(std::lang::move(&value));}\n";
+                    entries += "let parsed=std::json::parse(text);if(parsed.isErr()){return " + result + "::Err(parsed.error());}let node=parsed.unwrap();" + InferenceTypeText(type) + " value;if(!" + helper + "Decode(&node,&value,&error,0)){return " + result + "::Err(error);}return " + result + "::Ok(std::lang::move(&value));}\n";
                 queries.replaced.insert(decl.source);
                 break;
             }

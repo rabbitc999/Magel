@@ -72,13 +72,13 @@ int64 main() {
     borrowed = 11;
     assert(value == 11);
     (int64 const&, int64) pair = (&value, 2);
-    auto (first, second) = pair;
+    let (first, second) = pair;
     assert(first + second == 13);
 
     List<int64> numbers;
     numbers.push(2);
     numbers.push(4);
-    auto mutableCursor = numbers.iterMut();
+    let mutableCursor = numbers.iterMut();
     mutableCursor.forEach(void fn(int64 mut& p) { p = p + 1; });
     assert(numbers[0] == 3 && numbers[1] == 5);
     int64 sum = numbers.iter().map(fn(p) { p * 2 }).fold(0, fn(a, b) { a + b });
@@ -87,7 +87,7 @@ int64 main() {
     List<String> copied = labels;
     copied[0] = "changed";
     assert(labels[0] == "item:3" && copied[0] == "changed");
-    auto lease = localLease();
+    let lease = localLease();
     assert(lease.next().unwrap() == 7);
     assert(lease.next().unwrap() == 3);
     assert(lease.next().isNone());

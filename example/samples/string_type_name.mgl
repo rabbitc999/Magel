@@ -30,7 +30,7 @@ int64 main(){
     TextBox<String> first;first.value=original;
     TextBox<String> second=first;
     assert(second.value=="abcd");
-    auto inferred=fn (value){value};
+    let inferred=fn (value){value};
     assert(inferred("inferred")=="inferred");
     String fn(String) transform=copyText;
     assert(transform(original)=="abcd");

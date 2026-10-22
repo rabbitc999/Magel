@@ -53,7 +53,7 @@ int64 main() {
     assert(small + 10 == (uint8)4);
     assert(fromLoop() == 42);
     assert(nestedLoop(true) == 7);
-    auto f = 1.25f;
+    let f = 1.25f;
     assert(identity32(f) == 1.25f);
     assert(1f == 1.0f);
     assert(125e-2f == 1.25f);

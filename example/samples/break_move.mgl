@@ -59,7 +59,7 @@ int64 main() {
         assert(received != listHandle);
     }
     assert(drops == 3 && closes == 3);
-    auto pair = {
+    let pair = {
         String first = "first";
         List<int64> second; second.push(7);
         yield (first, second);

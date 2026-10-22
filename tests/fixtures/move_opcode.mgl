@@ -21,7 +21,7 @@ int64 main() {
     assert(before == after);
     consume(move(&returned));
     Unique captured = Unique::new(9);
-    auto release = void fn move[captured]() {
+    let release = void fn move[captured]() {
         consume(move(&captured));
     };
     release();

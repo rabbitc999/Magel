@@ -14,7 +14,7 @@ with tempfile.TemporaryDirectory() as directory:
     source = 'module types;\n/// 文档类型\nstruct Box {\n/// 字段说明\nint64 value;\n};\n'
     (root/'types.mgl').write_text(source, encoding='utf-8')
     uri=(root/'main.mgl').as_uri()
-    text='import types;\nint64 main(){ Box box; box.value; auto narrow=1.25e-2f; auto wide=1.25; auto bits=0xff; auto unsignedValue=1u; auto hexadecimal=0xffu; auto binary=b_101u; return 0; }\n'
+    text='import types;\nint64 main(){ Box box; box.value; let narrow=1.25e-2f; let wide=1.25; let bits=0xff; let unsignedValue=1u; let hexadecimal=0xffu; let binary=b_101u; return 0; }\n'
     server=LanguageServer(COMPILER)
     server.query('initialize', {'workspaceFolders':[{'uri':root.as_uri()}]})
     server.documents[uri]={'text':text,'version':1}

@@ -1,4 +1,4 @@
-/* 同一对操作数配了两个返回类型，而表达式没有目标类型（`auto`）—— 按规则报错，
+/* 同一对操作数配了两个返回类型，而表达式没有目标类型（`let`）—— 按规则报错，
  * 而不是悄悄挑一个。 */
 
 struct Vec {
@@ -20,7 +20,7 @@ struct A : Add<int64,int64>, Add<Vec,int64> {
 int64 main() {
     A a;
     a.v = 5;
-    auto z = a + 3;
+    let z = a + 3;
     println("z = {}", z);
     return 0;
 }

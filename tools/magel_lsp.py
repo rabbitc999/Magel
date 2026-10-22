@@ -332,7 +332,7 @@ def inferred_type(records, name, text, cursor=None, depth=0):
         if found:
             binding=max(found,key=lambda item:item[:2])[2]
             declared=binding.group(1).strip()
-            if base(declared)!='auto': return qualify(declared)
+            if base(declared)!='let': return qualify(declared)
             suffix=text[binding.end():].lstrip()
             if not suffix.startswith('='): return ''
             nesting=0; end=len(suffix)
@@ -365,7 +365,7 @@ def inferred_type(records, name, text, cursor=None, depth=0):
                     for param,arg in zip(params.group(1).split(','),args.group(1).split(',')):
                         value=re.sub(r'\b'+re.escape(param.strip())+r'\b',lambda _:arg.strip(),value)
         value=qualify(value,entry.get('module',''))
-        if value and base(value)!='auto': results.add(value)
+        if value and base(value)!='let': results.add(value)
     return next(iter(results)) if len(results)==1 else ''
 
 
@@ -491,7 +491,7 @@ def semantic_tokens(text, records, keywords, pos, extra_types=()):
                 if not depth:return j+1
         return len(words)
     for i,word in enumerate(words):
-        if word not in types and word!='auto':continue
+        if word not in types and word!='let':continue
         if i and words[i-1] in ('struct','enum','interface','opcode','type','.'):continue
         j=i+1
         while j+1<len(words) and words[j]=='::':j+=2

@@ -21,10 +21,10 @@ int64 main() {
     assert(hostApply(triple, 7) == 21);
     assert(hostApply(int64 fn(int64 x) { x + 1 }, 7) == 8);
     int64 offset = 5;
-    auto captured = int64 fn copy(int64 x) { x + offset };
+    let captured = int64 fn copy(int64 x) { x + offset };
     assert(hostApply(captured, 7) == 12);
     int64 moved = 9;
-    auto owned = int64 fn move(int64 x) { x + moved };
+    let owned = int64 fn move(int64 x) { x + moved };
     assert(hostApply(owned, 7) == 16);
     assert(hostFloat(float32 fn(float32 x) { x + 0.5f }, 1.25f) == 1.75f);
     assert(hostBool(bool fn(bool value) { !value }, false));

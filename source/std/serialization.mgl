@@ -8,7 +8,7 @@ String __unpack(List<uint8> bytes, uint64 typeId);
 
 /** 将反射值编码为带稳定类型标识和版本的独立字节流。 */
 Result<List<uint8>,String> serialize<T>(T const& value) {
-    auto encoded = std::json::serialize<T>(value);
+    let encoded = std::json::serialize<T>(value);
     if (encoded.isErr()) { return Result<List<uint8>,String>::Err(encoded.error()); }
     return Result<List<uint8>,String>::Ok(__pack(encoded.unwrap(), std::reflect::getTypeId<T>()));
 }

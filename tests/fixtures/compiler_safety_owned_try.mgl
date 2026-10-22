@@ -30,7 +30,7 @@ int64 main()
     {
         assert(safetyNested(false).unwrap() == "hello");
         assert(safetyNested(true).error() == "原始错误");
-        auto values = safetyNestedValues().unwrap();
+        let values = safetyNestedValues().unwrap();
         assert(values.len() == 2 && values[0] == "one" && values[1] == "two");
     }
     println("owned propagation cleanup OK");

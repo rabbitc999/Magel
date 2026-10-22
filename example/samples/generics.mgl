@@ -49,7 +49,7 @@ int64 main() {
     Number copied = identity<Number>(row.first);
     Number summed = add<Number>(copied, number);
     int64 fn(int64) specialized = identity<int64>;
-    auto specialized_auto = identity<int64>;
+    let specialized_auto = identity<int64>;
     Triple<Number, int64, String> defaults;
     defaults.first = copied;
     defaults.second = 24;

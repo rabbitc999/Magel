@@ -80,10 +80,10 @@ bool InferAutoFunctionResult(int statementId, std::shared_ptr<MType> *result)
     const MNode &statement = N(statementId);
     if (statement.kind == MNode::Return)
     {
-        if (statement.kids.empty()) return Fail("auto 返回函数的 return 必须带值");
+        if (statement.kids.empty()) return Fail("let 返回函数的 return 必须带值");
         const std::shared_ptr<MType> current = ExprType(statement.kids[0]);
         if (*result && !SameType(*result, current))
-            return Fail("auto 返回函数的多个 return 类型不一致：" + Describe(*result) + " 与 " + Describe(current));
+            return Fail("let 返回函数的多个 return 类型不一致：" + Describe(*result) + " 与 " + Describe(current));
         *result = current;
         return true;
     }
@@ -94,7 +94,7 @@ bool InferAutoFunctionResult(int statementId, std::shared_ptr<MType> *result)
             const MNode &decl = N(declId);
             if (decl.kids.empty() || decl.kids[0] < 0)
             {
-                if (decl.type < 0) return Fail("auto 变量必须给初值：" + decl.s);
+                if (decl.type < 0) return Fail("let 变量必须给初值：" + decl.s);
                 MVar binding{ T(decl.type), decl.s, decl.type2 != 0 };
                 binding.bindingIdentity = decl.bindingIdentity;
                 g_scope.back()[NodeBindingKey(decl)] = binding;
@@ -849,7 +849,7 @@ bool RegisterTop()
                     if (member.type < 0)
                     {
                         if (member.kids.size() != 1 || N(member.kids[0]).kind != MNode::Var || !FindGenericClosureDefinition(N(member.kids[0]).s))
-                            return Fail("auto 字段需要泛型闭包初始化式：" + member.s);
+                            return Fail("let 字段需要泛型闭包初始化式：" + member.s);
                         field = GenericClosureType(N(member.kids[0]).s);
                     }
                     else
@@ -1332,7 +1332,7 @@ bool RegisterTop()
             }
             g_currentModule = savedModule;
             PopScope();
-            if (!inferred) return Fail("auto 返回函数必须至少有一个带值 return：" + declaration.source);
+            if (!inferred) return Fail("let 返回函数必须至少有一个带值 return：" + declaration.source);
             declaration.signature.result = inferred;
             g_inferenceFunctions[ModuleSymbol(declaration.module, declaration.source)] = declaration.signature;
             registerInferenceSignature(declaration);

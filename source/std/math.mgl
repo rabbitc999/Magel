@@ -7,7 +7,7 @@ BigDecimal __std_bfloat_pi(int64 digits);
 BigDecimal pi(int64 digits = 50) { return __std_bfloat_pi(digits); }
 float64 __sin64(float64 value);
 /** 对普通数值、大十进制或符号表达式计算 sin。 */
-auto sin<T>(T value) { return __mathSin(value); }
+let sin<T>(T value) { return __mathSin(value); }
 inline float64 __mathSin(int8 value) { return (float64)__sin64((float64)value); }
 inline float64 __mathSin(uint8 value) { return (float64)__sin64((float64)value); }
 inline float64 __mathSin(int16 value) { return (float64)__sin64((float64)value); }
@@ -23,7 +23,7 @@ inline BigDecimal __mathSin(BigDecimal value) { return __std_bfloat_math(value, 
 inline Expr __mathSin(Expr value) { return value.sin(); }
 float64 __cos64(float64 value);
 /** 对普通数值、大十进制或符号表达式计算 cos。 */
-auto cos<T>(T value) { return __mathCos(value); }
+let cos<T>(T value) { return __mathCos(value); }
 inline float64 __mathCos(int8 value) { return (float64)__cos64((float64)value); }
 inline float64 __mathCos(uint8 value) { return (float64)__cos64((float64)value); }
 inline float64 __mathCos(int16 value) { return (float64)__cos64((float64)value); }
@@ -39,7 +39,7 @@ inline BigDecimal __mathCos(BigDecimal value) { return __std_bfloat_math(value, 
 inline Expr __mathCos(Expr value) { return value.cos(); }
 float64 __tan64(float64 value);
 /** 对普通数值、大十进制或符号表达式计算 tan。 */
-auto tan<T>(T value) { return __mathTan(value); }
+let tan<T>(T value) { return __mathTan(value); }
 inline float64 __mathTan(int8 value) { return (float64)__tan64((float64)value); }
 inline float64 __mathTan(uint8 value) { return (float64)__tan64((float64)value); }
 inline float64 __mathTan(int16 value) { return (float64)__tan64((float64)value); }
@@ -55,7 +55,7 @@ inline BigDecimal __mathTan(BigDecimal value) { return __std_bfloat_math(value, 
 inline Expr __mathTan(Expr value) { return value.tan(); }
 float64 __asin64(float64 value);
 /** 对普通数值、大十进制或符号表达式计算 asin。 */
-auto asin<T>(T value) { return __mathAsin(value); }
+let asin<T>(T value) { return __mathAsin(value); }
 inline float64 __mathAsin(int8 value) { return (float64)__asin64((float64)value); }
 inline float64 __mathAsin(uint8 value) { return (float64)__asin64((float64)value); }
 inline float64 __mathAsin(int16 value) { return (float64)__asin64((float64)value); }
@@ -71,7 +71,7 @@ inline BigDecimal __mathAsin(BigDecimal value) { return __std_bfloat_math(value,
 inline Expr __mathAsin(Expr value) { return value.asin(); }
 float64 __acos64(float64 value);
 /** 对普通数值、大十进制或符号表达式计算 acos。 */
-auto acos<T>(T value) { return __mathAcos(value); }
+let acos<T>(T value) { return __mathAcos(value); }
 inline float64 __mathAcos(int8 value) { return (float64)__acos64((float64)value); }
 inline float64 __mathAcos(uint8 value) { return (float64)__acos64((float64)value); }
 inline float64 __mathAcos(int16 value) { return (float64)__acos64((float64)value); }
@@ -87,7 +87,7 @@ inline BigDecimal __mathAcos(BigDecimal value) { return __std_bfloat_math(value,
 inline Expr __mathAcos(Expr value) { return value.acos(); }
 float64 __atan64(float64 value);
 /** 对普通数值、大十进制或符号表达式计算 atan。 */
-auto atan<T>(T value) { return __mathAtan(value); }
+let atan<T>(T value) { return __mathAtan(value); }
 inline float64 __mathAtan(int8 value) { return (float64)__atan64((float64)value); }
 inline float64 __mathAtan(uint8 value) { return (float64)__atan64((float64)value); }
 inline float64 __mathAtan(int16 value) { return (float64)__atan64((float64)value); }
@@ -103,7 +103,7 @@ inline BigDecimal __mathAtan(BigDecimal value) { return __std_bfloat_math(value,
 inline Expr __mathAtan(Expr value) { return value.atan(); }
 float64 __exp64(float64 value);
 /** 对普通数值、大十进制或符号表达式计算 exp。 */
-auto exp<T>(T value) { return __mathExp(value); }
+let exp<T>(T value) { return __mathExp(value); }
 inline float64 __mathExp(int8 value) { return (float64)__exp64((float64)value); }
 inline float64 __mathExp(uint8 value) { return (float64)__exp64((float64)value); }
 inline float64 __mathExp(int16 value) { return (float64)__exp64((float64)value); }
@@ -119,7 +119,7 @@ inline BigDecimal __mathExp(BigDecimal value) { return __std_bfloat_math(value, 
 inline Expr __mathExp(Expr value) { return value.exp(); }
 float64 __ln64(float64 value);
 /** 对普通数值、大十进制或符号表达式计算 ln。 */
-auto ln<T>(T value) { return __mathLn(value); }
+let ln<T>(T value) { return __mathLn(value); }
 inline float64 __mathLn(int8 value) { return (float64)__ln64((float64)value); }
 inline float64 __mathLn(uint8 value) { return (float64)__ln64((float64)value); }
 inline float64 __mathLn(int16 value) { return (float64)__ln64((float64)value); }
@@ -135,7 +135,7 @@ inline BigDecimal __mathLn(BigDecimal value) { return __std_bfloat_math(value, 7
 inline Expr __mathLn(Expr value) { return value.ln(); }
 float64 __log1064(float64 value);
 /** 对普通数值、大十进制或符号表达式计算 log10。 */
-auto log10<T>(T value) { return __mathLog10(value); }
+let log10<T>(T value) { return __mathLog10(value); }
 inline float64 __mathLog10(int8 value) { return (float64)__log1064((float64)value); }
 inline float64 __mathLog10(uint8 value) { return (float64)__log1064((float64)value); }
 inline float64 __mathLog10(int16 value) { return (float64)__log1064((float64)value); }
@@ -151,7 +151,7 @@ inline BigDecimal __mathLog10(BigDecimal value) { return __std_bfloat_math(value
 inline Expr __mathLog10(Expr value) { return value.log10(); }
 float64 __sqrt64(float64 value);
 /** 对普通数值、大十进制或符号表达式计算 sqrt。 */
-auto sqrt<T>(T value) { return __mathSqrt(value); }
+let sqrt<T>(T value) { return __mathSqrt(value); }
 inline float64 __mathSqrt(int8 value) { return (float64)__sqrt64((float64)value); }
 inline float64 __mathSqrt(uint8 value) { return (float64)__sqrt64((float64)value); }
 inline float64 __mathSqrt(int16 value) { return (float64)__sqrt64((float64)value); }
@@ -167,7 +167,7 @@ inline BigDecimal __mathSqrt(BigDecimal value) { return __std_bfloat_math(value,
 inline Expr __mathSqrt(Expr value) { return value.sqrt(); }
 float64 __floor64(float64 value);
 /** 对普通数值、大十进制或符号表达式计算 floor。 */
-auto floor<T>(T value) { return __mathFloor(value); }
+let floor<T>(T value) { return __mathFloor(value); }
 inline float64 __mathFloor(int8 value) { return (float64)__floor64((float64)value); }
 inline float64 __mathFloor(uint8 value) { return (float64)__floor64((float64)value); }
 inline float64 __mathFloor(int16 value) { return (float64)__floor64((float64)value); }
@@ -183,7 +183,7 @@ inline BigDecimal __mathFloor(BigDecimal value) { return __std_bfloat_math(value
 inline Expr __mathFloor(Expr value) { return value.floor(); }
 float64 __ceil64(float64 value);
 /** 对普通数值、大十进制或符号表达式计算 ceil。 */
-auto ceil<T>(T value) { return __mathCeil(value); }
+let ceil<T>(T value) { return __mathCeil(value); }
 inline float64 __mathCeil(int8 value) { return (float64)__ceil64((float64)value); }
 inline float64 __mathCeil(uint8 value) { return (float64)__ceil64((float64)value); }
 inline float64 __mathCeil(int16 value) { return (float64)__ceil64((float64)value); }
@@ -199,7 +199,7 @@ inline BigDecimal __mathCeil(BigDecimal value) { return __std_bfloat_math(value,
 inline Expr __mathCeil(Expr value) { return value.ceil(); }
 float64 __round64(float64 value);
 /** 对普通数值、大十进制或符号表达式计算 round。 */
-auto round<T>(T value) { return __mathRound(value); }
+let round<T>(T value) { return __mathRound(value); }
 inline float64 __mathRound(int8 value) { return (float64)__round64((float64)value); }
 inline float64 __mathRound(uint8 value) { return (float64)__round64((float64)value); }
 inline float64 __mathRound(int16 value) { return (float64)__round64((float64)value); }
@@ -215,7 +215,7 @@ inline BigDecimal __mathRound(BigDecimal value) { return __std_bfloat_math(value
 inline Expr __mathRound(Expr value) { return value.round(); }
 float64 __trunc64(float64 value);
 /** 对普通数值、大十进制或符号表达式计算 trunc。 */
-auto trunc<T>(T value) { return __mathTrunc(value); }
+let trunc<T>(T value) { return __mathTrunc(value); }
 inline float64 __mathTrunc(int8 value) { return (float64)__trunc64((float64)value); }
 inline float64 __mathTrunc(uint8 value) { return (float64)__trunc64((float64)value); }
 inline float64 __mathTrunc(int16 value) { return (float64)__trunc64((float64)value); }
@@ -231,7 +231,7 @@ inline BigDecimal __mathTrunc(BigDecimal value) { return __std_bfloat_math(value
 inline Expr __mathTrunc(Expr value) { return value.trunc(); }
 float64 __pow64(float64 value, float64 other);
 /** 根据实参类型计算 pow，大十进制保持有效位精度。 */
-auto pow<T, U>(T value, U other) { return __mathPow(value, other); }
+let pow<T, U>(T value, U other) { return __mathPow(value, other); }
 inline float64 __mathPow(int8 value, int8 other) { return (float64)__pow64((float64)value, (float64)other); }
 inline float64 __mathPow(int8 value, uint8 other) { return (float64)__pow64((float64)value, (float64)other); }
 inline float64 __mathPow(int8 value, int16 other) { return (float64)__pow64((float64)value, (float64)other); }
@@ -380,7 +380,7 @@ inline Expr __mathPow(Expr value, Expr other) { return value.pow(other); }
 inline Expr __mathPow(Expr value, int64 other) { return value.pow(other); }
 float64 __fmod64(float64 value, float64 other);
 /** 根据实参类型计算 fmod，大十进制保持有效位精度。 */
-auto fmod<T, U>(T value, U other) { return __mathFmod(value, other); }
+let fmod<T, U>(T value, U other) { return __mathFmod(value, other); }
 inline float64 __mathFmod(int8 value, int8 other) { return (float64)__fmod64((float64)value, (float64)other); }
 inline float64 __mathFmod(int8 value, uint8 other) { return (float64)__fmod64((float64)value, (float64)other); }
 inline float64 __mathFmod(int8 value, int16 other) { return (float64)__fmod64((float64)value, (float64)other); }

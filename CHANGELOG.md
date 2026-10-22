@@ -1,6 +1,16 @@
 # Magel 变更记录
 
-版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.24.2**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.25.0**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+
+
+## 0.25.0 — auto 关键字更名为 let
+
+- 类型推导关键字由 `auto` 改为 `let`：局部声明、解构声明、`for (let x in ...)`、结构体闭包成员与推导返回类型的函数声明统一写成 `let`，词法 token 同步更名为 `LET`。
+- 词法表与文法里不再有 `auto` token，`auto` 回到普通标识符，不再当作关键字参与解析，也不产生任何迁移提示。
+- 标准库 42 个内嵌模块、全部样例与夹具、期望输出，以及书稿、中英文文档、EBNF 附录与 VS Code 语法高亮全量迁移；样例 `fn_auto` / `lambda_auto` / `auto_no_init` 改名为 `fn_let` / `lambda_let` / `let_no_init`。
+- 程序版本更新为 0.25.0，VS Code 插件保持 1.0.0，内嵌编译器、语言服务器与 `magel-dev` 的版本号同步。
+- 负号参与十进制字面量定型：`-9223372036854775808` 可直接书写，幅值 2^63 只在一元负号后成立，取负后就是 int64 最小值；单独写 `9223372036854775808` 仍报越界。
+- 语言服务同步到 `let`：原生 LSP 与 Python 版 `mageldev` 的悬停、行内类型、类型推导判断全部改用 `let` 哨兵，`let x = ...` 的悬停与补全恢复显示推断类型；`AGENTS.md` 补一条门禁口径——只改 LSP 时不跑全量样例与整套 `ci.sh`，跑对应语言服务回归即可。
 
 
 ## 0.24.2 — 宏展开预览改为一宏一图

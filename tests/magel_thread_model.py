@@ -15,7 +15,7 @@ void blocked() { String value = std::thread::receive(); }
 void sleeping() { std::thread::sleepFor(60000); }
 int64 main() {
     Thread task = std::thread::createWith<int64>(initial, 41);
-    auto message = std::message::receiveFor<int64>(5000);
+    let message = std::message::receiveFor<int64>(5000);
     assert(message.isReady() && message.value == 42);
     assert(std::thread::waitResult(task).isReady());
     Thread a = std::thread::create(spin);
@@ -43,7 +43,7 @@ import std::thread;
 import std::concurrency;
 import std::clock;
 int64 main() {
-    auto channel = std::concurrency::Channel<int64>::create(1);
+    let channel = std::concurrency::Channel<int64>::create(1);
     assert(channel.trySend(7) == 0);
     assert(channel.trySend(8) == 4);
     int64 started = std::clock::nowNanos();
@@ -54,7 +54,7 @@ int64 main() {
     assert(channel.tryReceive().status == 2);
     assert(channel.trySend(1) == 2);
     for (int64 i in std::lang::range(0, 1100)) {
-        auto next = std::concurrency::Channel<int64>::create(1);
+        let next = std::concurrency::Channel<int64>::create(1);
         next.close();
     }
     std::thread::closeInbox();
@@ -69,7 +69,7 @@ import std::concurrency;
 struct Work { std::concurrency::Channel<int64> jobs; std::concurrency::AtomicInt64 sum; };
 void consume(Work work) {
     while (true) {
-        auto item = work.jobs.receive();
+        let item = work.jobs.receive();
         if (!item.isReady()) { return; }
         work.sum.fetchAdd(item.value);
     }
@@ -112,7 +112,7 @@ int64 main() {
     for (int64 i in std::lang::range(0, 12)) { assert(pool.submit(job) == 0); }
     assert(pool.closeAndWait());
     for (int64 i in std::lang::range(0, 12)) {
-        auto result = std::thread::tryReceive();
+        let result = std::thread::tryReceive();
         assert(result.isReady() && result.value == "job");
     }
     assert(pool.submit(job) == 2);
@@ -135,10 +135,10 @@ int64 main() {
 import std::event;
 int64 main() {
     assert(std::event::post(3, 8) == 0);
-    auto next = std::event::tryReceive();
+    let next = std::event::tryReceive();
     assert(next.isReady() && next.value.tag == 3 && next.value.source == 8);
     Timer timer = Timer::afterMillis(2);
-    auto tick = std::event::receiveFor(5000);
+    let tick = std::event::receiveFor(5000);
     assert(tick.isReady() && tick.value.timer == timer.id());
     timer.stop();
     assert(std::event::tryReceive().status == 1);
@@ -201,7 +201,7 @@ void consumer(std::concurrency::Channel<int64> queue) {
 }
 int64 main() {
     for (int64 i in std::lang::range(0, 10)) {
-        auto full = std::concurrency::Channel<int64>::create(1);
+        let full = std::concurrency::Channel<int64>::create(1);
         full.send(1);
         Thread writer = std::thread::createWith<std::concurrency::Channel<int64>>(producer, full);
         std::thread::sleepFor(2);
@@ -209,7 +209,7 @@ int64 main() {
         assert(full.receive().value == 1);
         assert(std::message::receiveFor<int64>(5000).value == 2);
         assert(std::thread::waitResult(writer).isReady());
-        auto empty = std::concurrency::Channel<int64>::create(1);
+        let empty = std::concurrency::Channel<int64>::create(1);
         Thread reader = std::thread::createWith<std::concurrency::Channel<int64>>(consumer, empty);
         std::thread::sleepFor(2);
         empty.close();
@@ -243,14 +243,14 @@ void eventWait() {
     std::event::receive();
 }
 int64 main() {
-    auto full = std::concurrency::Channel<int64>::create(1);
+    let full = std::concurrency::Channel<int64>::create(1);
     full.send(1);
     Thread writer = std::thread::createWith<std::concurrency::Channel<int64>>(send, full);
     assert(std::message::receiveFor<int64>(5000).isReady());
     std::thread::sleepFor(2);
     std::thread::requestStop(writer);
     assert(std::thread::waitResultFor(writer, 5000).status == 3);
-    auto empty = std::concurrency::Channel<int64>::create(1);
+    let empty = std::concurrency::Channel<int64>::create(1);
     Thread reader = std::thread::createWith<std::concurrency::Channel<int64>>(receive, empty);
     assert(std::message::receiveFor<int64>(5000).isReady());
     std::thread::sleepFor(2);
@@ -317,7 +317,7 @@ def main():
             'resource_transfer': 'import std::thread; import std::net; void f(TcpSocket s) {} int64 main() { TcpSocket s; std::thread::createWith<TcpSocket>(f, s); return 0; }',
             'removed_module': 'import std::coroutine; int64 main() { return 0; }',
             'removed_callback': 'import std::event; int64 main() { Timer t; t.onTick(void fn(int64 value) {}); return 0; }',
-            'borrowed_entry': 'import std::thread; int64 main() { int64 x=1; auto f=void fn(){println("{}",x);}; std::thread::create(f); return 0; }',
+            'borrowed_entry': 'import std::thread; int64 main() { int64 x=1; let f=void fn(){println("{}",x);}; std::thread::create(f); return 0; }',
         }
         for name, code in rejected.items():
             source = directory / (name + '.mgl')

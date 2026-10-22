@@ -12,10 +12,10 @@ int64 main()
     person.age = 42;
     person.address.city = "杭州";
     person.tags.push("one");
-    auto encoded = std::json::serialize<SerdePerson>(&person);
+    let encoded = std::json::serialize<SerdePerson>(&person);
     assert(encoded.isOk());
     println("{}", encoded.unwrap());
-    auto decoded = std::json::deserialize<SerdePerson>(encoded.unwrap());
+    let decoded = std::json::deserialize<SerdePerson>(encoded.unwrap());
     assert(decoded.isOk());
     SerdePerson copy = decoded.unwrap();
     assert(copy.name == person.name);

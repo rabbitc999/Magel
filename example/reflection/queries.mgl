@@ -25,22 +25,22 @@ struct Hidden{int64 value;};
 // 核对标准库内部完全限定泛型参数，不受根模块同名类型影响。
 struct StructInfo{int64 sentinel;};
 int64 main(){
-    auto info=std::reflect::getStructInfo<Counter>();assert(info.isValue());
-    auto snapshot=info.unwrap();assert(snapshot.name=="Counter" && snapshot.fields.len()==2);
+    let info=std::reflect::getStructInfo<Counter>();assert(info.isValue());
+    let snapshot=info.unwrap();assert(snapshot.name=="Counter" && snapshot.fields.len()==2);
     assert(snapshot.typeId==std::reflect::getTypeId<Counter>());
     assert(snapshot.fields[0].name=="label" && snapshot.fields[0].isOwned);
     assert(snapshot.fields[1].offset==(uint32)8 && snapshot.fields[1].typeId==std::reflect::getTypeId<int64>());
     assert(snapshot.methods.len()==4 && snapshot.staticMembers.len()==1);
     snapshot.name="changed";assert(std::reflect::getStructInfo<Counter>().unwrap().name=="Counter");
     assert(std::reflect::getStructInfo<Hidden>().isNone() && std::reflect::getStructInfo<int64>().isNone());
-    auto e=std::reflect::getEnumInfo<Choice>();assert(e.isValue() && e.unwrap().variants.len()==2);
+    let e=std::reflect::getEnumInfo<Choice>();assert(e.isValue() && e.unwrap().variants.len()==2);
     assert(e.unwrap().variants[1].payloads[0].typeId==std::reflect::getTypeId<int64>());
-    auto i=std::reflect::getInterfaceInfo<Reader>();assert(i.isValue() && i.unwrap().implementedBy.len()==1);
+    let i=std::reflect::getInterfaceInfo<Reader>();assert(i.isValue() && i.unwrap().implementedBy.len()==1);
     assert(std::reflect::implementsInterface<Counter>(std::reflect::getInterfaceId<Reader>()));
     assert(!std::reflect::implementsInterface<Choice>(std::reflect::getInterfaceId<Reader>()));
     assert(std::reflect::getFuncInfo("plus").unwrap().params[0].typeId==std::reflect::getTypeId<int64>());
     assert(std::reflect::getFuncInfo("missing").isNone() && std::reflect::getFuncInfo("overloaded").isNone());
-    auto tag=std::reflect::getAnnotationInfo("Tag");assert(tag.isValue());
+    let tag=std::reflect::getAnnotationInfo("Tag");assert(tag.isValue());
     assert(tag.unwrap().params[0].defaultValue.unwrap().asText().unwrap()=="hello");
     assert(tag.unwrap().params[1].defaultValue.unwrap().asI32().unwrap()==(int32)2);
     assert(std::reflect::getAnnotationInfo("missing").isNone());

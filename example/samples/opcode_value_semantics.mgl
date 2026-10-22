@@ -66,20 +66,20 @@ int64 main()
     Random position = randomCopy;
     assert(randomCopy.nextUInt64() == position.nextUInt64());
 
-    auto parsed = std::json::parse("{\"child\":[1,2]}");
-    auto json = parsed.unwrap(); auto jsonCopy = json;
-    auto child = json.find("child").unwrap();
+    let parsed = std::json::parse("{\"child\":[1,2]}");
+    let json = parsed.unwrap(); let jsonCopy = json;
+    let child = json.find("child").unwrap();
     json.close();
     assert(!json.isValid() && jsonCopy.isValid() && child.isValid());
     child.close(); assert(jsonCopy.find("child").unwrap().len() == 2);
-    auto tomlParsed = std::toml::parse("# comment\nvalue = 1 # inline\n");
-    auto toml = tomlParsed.unwrap(); auto tomlCopy = toml;
+    let tomlParsed = std::toml::parse("# comment\nvalue = 1 # inline\n");
+    let toml = tomlParsed.unwrap(); let tomlCopy = toml;
     String saved = toml.dump(); toml.close();
     assert(tomlCopy.dump() == saved);
-    auto reparsed = std::toml::parse(saved);
+    let reparsed = std::toml::parse(saved);
     assert(reparsed.unwrap().dump() == saved);
 
-    auto compiled = Regex::compile("[a-z]+");
+    let compiled = Regex::compile("[a-z]+");
     Regex regex = compiled.unwrap(); Regex regexCopy = regex;
     assert(regexCopy.fullMatch("abc") && regex.fullMatch("xyz"));
     assert(Regex::compile("[").isErr());
@@ -90,7 +90,7 @@ int64 main()
     assert(database.exec("select value from t").count() == 42);
     database.close(); database.close(); assert(!database.isOpen());
     Arena arena = Arena::create();
-    auto span = arena.allocate(16);
+    let span = arena.allocate(16);
     char mut& first = span.iterator(0).unwrap();
     first = 'a'; assert(span[0] == 'a');
     arena.reset();

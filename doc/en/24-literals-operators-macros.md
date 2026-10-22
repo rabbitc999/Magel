@@ -140,7 +140,7 @@ int64 main() {
 8 15
 ```
 
-With no target type (`auto z = a + 3;`) the compiler reports the candidates:
+With no target type (`let z = a + 3;`) the compiler reports the candidates:
 
 ```text
 magel: 运算符 + 有多条声明匹配同一对操作数 A / int64，返回类型分别是 int64、Vec（先强转再算；若它们只是返回类型不同，给表达式一个目标类型就能定）
@@ -205,14 +205,14 @@ cast<T>(value)
 $end_macro
 int64 main() {
     int32 source = 42;
-    auto same = $CONVERT(source);
+    let same = $CONVERT(source);
     int32 expected = $RESULT(42);
     int64 explicitValue = $RESULT<int64>(42);
     return 0;
 }
 ```
 
-`T:value` uses only that argument's static type. A parameter without a source uses only the expected result type. Explicit types take priority. Inference does not evaluate arguments, insert conversions or switch sources. `auto x = $RESULT(42)` fails because no expected type is available. Macro value parameters, specialization, partial specialization and arbitrary compile-time function execution are outside this interface.
+`T:value` uses only that argument's static type. A parameter without a source uses only the expected result type. Explicit types take priority. Inference does not evaluate arguments, insert conversions or switch sources. `let x = $RESULT(42)` fails because no expected type is available. Macro value parameters, specialization, partial specialization and arbitrary compile-time function execution are outside this interface.
 
 ## Complete syntax matching
 

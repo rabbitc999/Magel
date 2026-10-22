@@ -269,7 +269,7 @@ bool run(preprocess::Result &result, Memory::String &error)
     {
         const Memory::String type = trim((*it)[1].str());
         if (type == "return" || type == "struct" || type == "interface" || type == "enum" || type == "module" || type == "import" || type == "fn") continue;
-        if (type != "auto") variables[(*it)[2].str()] = type;
+        if (type != "let") variables[(*it)[2].str()] = type;
     }
 
     Memory::String output;
@@ -366,7 +366,7 @@ bool run(preprocess::Result &result, Memory::String &error)
         }
         std::size_t bodyOpen = close + 1u;
         while (bodyOpen < result.text.size() && std::isspace(static_cast<unsigned char>(result.text[bodyOpen]))) ++bodyOpen;
-        Memory::String resultType = "auto";
+        Memory::String resultType = "let";
         if (result.text.compare(bodyOpen, 2u, "->") == 0)
         {
             error = "0.12.0 已移除 lambda 箭头返回类型，请迁移为 int64 fn(int64 x) { ... }；推导返回类型时省略箭头";
@@ -415,7 +415,7 @@ bool run(preprocess::Result &result, Memory::String &error)
                                                          at - (statement == Memory::String::npos ? 0u : statement + 1u));
         std::match_results<Memory::String::const_iterator> assignment;
         if (std::regex_search(prefix, assignment,
-                              std::regex("auto[ \\t]+([A-Za-z_][A-Za-z0-9_]*)[ \\t]*=[ \\t]*$")))
+                              std::regex("let[ \\t]+([A-Za-z_][A-Za-z0-9_]*)[ \\t]*=[ \\t]*$")))
             assigned = assignment[1].str();
         Memory::String genericParameters;
         if (needsContext && assigned.empty())

@@ -36,7 +36,7 @@ def main():
         server = Transport(compiler, work)
         try:
             server.query('initialize', dict(rootUri=work.as_uri()))
-            text = 'int64 main(){int64 value=42;auto text=value.toString();value.;return 0;}'
+            text = 'int64 main(){int64 value=42;let text=value.toString();value.;return 0;}'
             uri = (work / 'editor.mgl').as_uri()
             server.send(dict(method='textDocument/didOpen', params=dict(textDocument=dict(uri=uri, text=text, version=1))))
             hover = server.query('textDocument/hover', dict(textDocument=dict(uri=uri), position=position(text, text.index('text='))))

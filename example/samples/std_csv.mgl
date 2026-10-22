@@ -9,7 +9,7 @@ int64 main(){
     assert(parseCsv("a;b\n\"c;d\";e",';').unwrap()[1][0]=="c;d");
     assert(parseCsv("").unwrap().len()==0 && parseCsv("\n").unwrap().len()==1);
     assert(parseCsv("a,").unwrap()[0].len()==2);
-    auto failure=parseCsv("a,b\n\"unfinished");assert(!failure.isOk());
+    let failure=parseCsv("a,b\n\"unfinished");assert(!failure.isOk());
     CsvError error=failure.error();assert(error.line==2 && error.column==1);
     assert(!parseCsv("\"x\"tail").isOk() && !parseCsv("x\"y").isOk());
     assert(!parseCsv("a,b",'"').isOk());

@@ -6,7 +6,7 @@ int64 main(){
     assert(std::reflect::call("close",args).isOk());
     Plain plain=std::reflect::construct<Plain>(args).unwrap();
     assert(plain.value==0 && plain.label=="");
-    auto info=std::reflect::getStructInfo<Plain>().unwrap();
+    let info=std::reflect::getStructInfo<Plain>().unwrap();
     assert(info.methods.len()==2 && info.methods[1].isConstructor && info.methods[1].function.params.len()==0);
     args.push(std::reflect::ReflectValue::I64(1));
     assert(std::reflect::construct<Plain>(args).isErr());

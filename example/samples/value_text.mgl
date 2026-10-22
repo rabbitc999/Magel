@@ -101,7 +101,7 @@ int64 main()
     println("{}", set.toString());
     Map<String, Any> map = {"name": "Magel", "count": 3};
     println("{}", map.toString());
-    auto tuple = (1, "two", list);
+    let tuple = (1, "two", list);
     println("{}", tuple.toString());
     println("{}", format("{}", pair));
     Named named;
@@ -136,7 +136,7 @@ int64 main()
     assert(mixedSet.toString() == "{1, \"two\", true}");
     Map<Any, Any> mixedMap = {1: "one", "two": 2};
     assert(mixedMap.toString() == "{1: \"one\", \"two\": 2}");
-    auto nestedTuple = ((1, "one"), (2, "two"));
+    let nestedTuple = ((1, "one"), (2, "two"));
     assert(nestedTuple.toString() == "((1, \"one\"), (2, \"two\"))");
     int64 fixed[2];
     fixed[0] = 3;

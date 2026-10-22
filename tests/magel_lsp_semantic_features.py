@@ -44,13 +44,13 @@ def main():
             text = '''struct Box<T> { T item; };
     int64 main() {
         List<int32> values;
-        for(auto item in values) { println("{}", item); }
+        for(let item in values) { println("{}", item); }
         Box<int32> box;
-        auto number = box.item;
-        auto combine = (int64 fn(int64)) fn(int64 fn(int64) a, int64 fn(int64) b) {
+        let number = box.item;
+        let combine = (int64 fn(int64)) fn(int64 fn(int64) a, int64 fn(int64) b) {
             int64 fn copy(int64 x) { a(b(x)) }
         };
-        auto c3 = combine(fn(x) { x * 5 }, fn(x) { x - 1 });
+        let c3 = combine(fn(x) { x * 5 }, fn(x) { x - 1 });
         return 0;
     }
     '''
@@ -70,7 +70,7 @@ def main():
             assert sum(h['label'] == ': int64' and h['position']['line'] == 9 for h in hints) == 2, hints
             detail = query('hover', text, text.index('combine ='))['contents']['value']
             assert '完整类型' in detail and '参数 1' in detail and '返回的函数' in detail, detail
-            detail = query('hover', text, text.index('auto combine'))['contents']['value']
+            detail = query('hover', text, text.index('let combine'))['contents']['value']
             assert '完整类型' in detail and '返回的函数' in detail, detail
             completions = query('completion', text, text.index('item);'))
             assert any(c['label'] == 'item' and c['detail'] == 'int32 item' for c in completions), completions
@@ -78,7 +78,7 @@ def main():
             generic = '''T identity<T>(T value){return value;}
     int64 pick(int64 value){return value;}
     String pick(String value){return value;}
-    int64 main(){int32 small=1; auto first=identity<int32>(small); auto second=identity(small); auto selected=pick(1); return 0;}
+    int64 main(){int32 small=1; let first=identity<int32>(small); let second=identity(small); let selected=pick(1); return 0;}
     '''
             open_text(generic)
             for marker, expected in [('first=', 'int32 first'), ('second=', 'int32 second'), ('selected=', 'int64 selected')]:
@@ -86,13 +86,13 @@ def main():
                 assert expected in hover['contents']['value'], (marker, hover)
             refs = query('references', generic, generic.index('pick(int64'), context=dict(includeDeclaration=True))
             assert len(refs) == 2, refs
-            detailed = 'int64 main(){auto                                       values=List<List<int32>>(); auto unknown=missing(); return 0;}'
+            detailed = 'int64 main(){let                                       values=List<List<int32>>(); let unknown=missing(); return 0;}'
             open_text(detailed)
-            detail = query('hover', detailed, detailed.index('auto'))['contents']['value']
+            detail = query('hover', detailed, detailed.index('let'))['contents']['value']
             assert 'List<List<int32>>' in detail and '泛型实参 1' in detail, detail
             detail = query('hover', detailed, detailed.index('unknown='))['contents']['value']
             assert '尚不能唯一确定类型' in detail, detail
-            incomplete = 'struct Entry{int64 value;}; int64 main(){List<Entry> values;for(auto item in values){item.'
+            incomplete = 'struct Entry{int64 value;}; int64 main(){List<Entry> values;for(let item in values){item.'
             open_text(incomplete)
             completions = query('completion', incomplete, len(incomplete))
             assert any(item['label'] == 'value' for item in completions), completions
@@ -150,7 +150,7 @@ def main():
         int64 x = 1;
         { int64 x = 2; println("{}", x); }
         println("{}", x);
-        auto callback = int64 fn(int64 x) { x + 1 };
+        let callback = int64 fn(int64 x) { x + 1 };
         return inc(x);
     }
     '''
@@ -188,7 +188,7 @@ def main():
             assert len(refs) == 3, refs
             refs = query('references', fields, fields.index('read()'), context=dict(includeDeclaration=True))
             assert len(refs) == 2, refs
-            captures = 'int64 main(){String label="😀";int64 number=1;auto callback=int64 fn(){number+1};return callback()+number;}'
+            captures = 'int64 main(){String label="😀";int64 number=1;let callback=int64 fn(){number+1};return callback()+number;}'
             open_text(captures)
             refs = query('references', captures, captures.index('number=1'), context=dict(includeDeclaration=True))
             assert len(refs) == 3 and refs[0]['range']['start'] == position(captures, captures.index('number=1')), refs
@@ -220,7 +220,7 @@ def main():
 
             text = '''int64 pick(int64 value){return value;}
     String pick(String value){return value;}
-    int64 main(){auto callback = pick; return 0;}
+    int64 main(){let callback = pick; return 0;}
     '''
             open_text(text)
             rejected('rename', text, text.rindex('pick'), newName='choose')

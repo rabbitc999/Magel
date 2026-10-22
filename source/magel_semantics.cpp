@@ -903,6 +903,21 @@ int M_Un(const char *op, int operand)
             literal = g_nodes[literal].kids[0];
         if (literal >= 0 && g_nodes[literal].kind == MNode::Int && g_nodes[literal].unsignedLiteral)
             PushParseDiagnostic("u 后缀整数字面量不能使用一元负号；需要有符号负数时请去掉 u 后缀");
+        /* `-9223372036854775808`：幅值 2^63 本身超出 int64，直接取负才落回最小值。
+         * 字面量节点在词法阶段按"待取负"登记，这里折成真正的负数并清掉标记。 */
+        if (literal >= 0 && g_nodes[literal].kind == MNode::Int && g_nodes[literal].intMinMagnitude)
+        {
+            /* 先把要用的字段抄出来：M_Int 会往节点池里追加，引用随即失效。 */
+            const Memory::String magnitude = g_nodes[static_cast<std::size_t>(literal)].s;
+            const std::size_t line = g_nodes[static_cast<std::size_t>(literal)].sourceLine;
+            const std::size_t column = g_nodes[static_cast<std::size_t>(literal)].sourceColumn;
+            g_nodes[static_cast<std::size_t>(literal)].intMinMagnitude = false;
+            const int folded = M_Int(LLONG_MIN);
+            g_nodes[static_cast<std::size_t>(folded)].s = "-" + magnitude;
+            g_nodes[static_cast<std::size_t>(folded)].sourceLine = line;
+            g_nodes[static_cast<std::size_t>(folded)].sourceColumn = column;
+            return folded;
+        }
     }
     const int id = M_New(MNode::Un, op);
     g_nodes[static_cast<std::size_t>(id)].kids = { operand };
@@ -2878,8 +2893,23 @@ int M_TokenValue(int tokenType, double number, const char *pName, Memory::String
             // 需要表示更大的正整数时使用 u 后缀，由 ULIT 分支按 64 位位模式保留。
             if (errno == ERANGE || end != begin + text.size())
             {
-                PushParseDiagnostic("十进制整数超出 int64 范围：" + text);
-                return M_Int(0);
+                /* 唯一例外是 `-9223372036854775808`：幅值 2^63 本身放不进 int64，
+                 * 取负后正好是 int64 最小值。这里先按"待取负"登记这个幅值，
+                 * 由一元负号在 M_Un 里折成真正的负数；没被负号消费的字面量
+                 * 仍在 M_Compile 开头按越界报错。 */
+                char *magnitudeEnd = nullptr;
+                errno = 0;
+                const unsigned long long magnitude = std::strtoull(begin, &magnitudeEnd, 10);
+                const bool digitsOnly = magnitudeEnd == begin + text.size() && text.find_first_not_of("0123456789") == Memory::String::npos;
+                if (!digitsOnly || errno == ERANGE || magnitude != static_cast<unsigned long long>(LLONG_MAX) + 1ull)
+                {
+                    PushParseDiagnostic("十进制整数超出 int64 范围：" + text);
+                    return M_Int(0);
+                }
+                const int id = M_Int(LLONG_MAX);
+                g_nodes[static_cast<std::size_t>(id)].s = text;
+                g_nodes[static_cast<std::size_t>(id)].intMinMagnitude = true;
+                return id;
             }
             const int id = M_Int(parsed);
             g_nodes[id].s = text;
@@ -3043,6 +3073,14 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
     {
         for (const auto &item : g_parseDiagnostics) AddDiagnostic(item.message, item.line, item.column);
         g_parseDiagnostics.clear();
+        RestoreFirstDiagnostic();
+        return 1;
+    }
+    /* 幅值 2^63 的字面量只有被一元负号消费才成立；剩下的仍按越界报错。 */
+    for (const auto &node : g_nodes)
+    {
+        if (node.kind != MNode::Int || !node.intMinMagnitude) continue;
+        AddDiagnostic("十进制整数超出 int64 范围：" + node.s, node.sourceLine, node.sourceColumn);
         RestoreFirstDiagnostic();
         return 1;
     }

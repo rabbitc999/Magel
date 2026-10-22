@@ -34,7 +34,7 @@ List<int64> madeValues(int64 depth) {
     return values;
 }
 int64 recurseTemporary(int64 depth) {
-    auto cursor = madeValues(depth).iter();
+    let cursor = madeValues(depth).iter();
     if (depth > 0) { recurseTemporary(depth - 1); }
     int64 value = cursor.next().unwrap();
     assert(value == depth);

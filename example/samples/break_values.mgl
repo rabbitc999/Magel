@@ -41,14 +41,14 @@ int64 main() {
         yield (-1, "missing");
     };
     assert(pair.0 == 2 && pair.1 == "found");
-    auto owned = {
+    let owned = {
         loop {
             List<String> local; local.push("kept");
             yield ("tuple", local);
         };
     };
     assert(owned.0 == "tuple" && owned.1[0] == "kept");
-    auto (first, second, nested) = loop {
+    let (first, second, nested) = loop {
         yield (next(), next(), (next(), "tuple"));
     };
     assert(first == 1 && second == 2 && nested.0 == 3 && nested.1 == "tuple" && evaluations == 3);
@@ -113,11 +113,11 @@ int64 main() {
     };
     assert(saved == "saved" && cleanup == 321 && drops == 1);
 
-    auto branch = if (true) {
+    let branch = if (true) {
         loop { yield (11, "if"); };
     } else { (0, "else") };
     assert(branch.0 == 11 && branch.1 == "if");
-    auto matched = match (1) {
+    let matched = match (1) {
         1 => { loop { yield (12, "match"); }; }
         _ => { (0, "other") }
     };

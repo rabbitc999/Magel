@@ -234,7 +234,7 @@ cast<T>(value)
 $end_macro
 int64 main() {
     int32 source = 42;
-    auto same = $CONVERT(source);
+    let same = $CONVERT(source);
     int32 expected = $RESULT(42);
     int64 explicitValue = $RESULT<int64>(42);
     return 0;
@@ -243,7 +243,7 @@ int64 main() {
 \par
 \medskip
 
-\texttt{T:\allowbreak{}value} 只从指定实参的静态类型推导；未指定来源的 \texttt{T} 只从外层期望结果类型推导。显式类型优先，不执行参数、不自动转换、不改换推导来源。\texttt{auto x =\allowbreak{} \$RESULT(\allowbreak{}42)\allowbreak{}} 缺少期望类型，编译失败。首版不支持宏泛型值参数、特化、偏特化或任意函数的编译期执行。
+\texttt{T:\allowbreak{}value} 只从指定实参的静态类型推导；未指定来源的 \texttt{T} 只从外层期望结果类型推导。显式类型优先，不执行参数、不自动转换、不改换推导来源。\texttt{let x =\allowbreak{} \$RESULT(\allowbreak{}42)\allowbreak{}} 缺少期望类型，编译失败。首版不支持宏泛型值参数、特化、偏特化或任意函数的编译期执行。
 
 \section{五类完整语法匹配}
 

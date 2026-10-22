@@ -1,1 +1,1 @@
-int64 main() { auto (a,b) = 3; return 0; }
+int64 main() { let (a,b) = 3; return 0; }

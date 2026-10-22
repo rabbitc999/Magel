@@ -6,7 +6,7 @@
   "publisher": "rabbitc999",
   "devDependencies": {
     "vscode-oniguruma": "^2.0.1",
-    "vscode-textmate": "^9.2.0"
+    "vscode-textmate": "^9.3.2"
   },
   "author": {
     "name": "小兔糖糖OvO",
@@ -197,7 +197,7 @@
         "magel.inlayHints.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "显示 auto、for-in 元素与上下文匿名函数参数的推断类型；仍受编辑器内联提示设置控制。"
+          "description": "显示 let、for-in 元素与上下文匿名函数参数的推断类型；仍受编辑器内联提示设置控制。"
         }
       }
     },
@@ -259,5 +259,5 @@
     "type": "git",
     "url": "https://github.com/rabbitc999/Magel.git"
   },
-  "magelCompilerVersion": "0.24.2"
+  "magelCompilerVersion": "0.25.0"
 }

@@ -34,7 +34,7 @@ int64 main() {
     List<int64 &> values; values.push(&value);
     assert(values[0] == 7);
     (int64 &, int64) pair = (&value, 2);
-    auto (first, second) = pair;
+    let (first, second) = pair;
     assert(first + second == 9);
     int64 & fn(int64 &) callback = int64 & fn(int64 & x) { return x; };
     int64 & result = callback(relay(&value));

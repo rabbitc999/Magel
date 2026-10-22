@@ -39,7 +39,7 @@ int64 main() {
     words[0] = "pear"; words[1] = "apple"; words[2] = "fig";
     std::algorithms::sortReference<String>(&words[0], len(words));
     println("{} {} {}", words[0], words[1], words[2]);
-    auto view = std::memory::Span<String>::from(&words[0], len(words));
+    let view = std::memory::Span<String>::from(&words[0], len(words));
     assert(view[0] == "apple" && view[2] == "pear");
     for (String mut& item in view) {
         item[0] = 'X';

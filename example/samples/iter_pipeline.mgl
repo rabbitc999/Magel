@@ -3,7 +3,7 @@ int64 observed = 0;
 int64 addRefs((int64 const&,int64 const&) value) { return value.0 + value.1; }
 bool smallRef(int64 const& value) { return value < 3; }
 Iter<int64 const&> reversedLocal() { List<int64> values; values.push(2); values.push(4); return values.iter().rev(); }
-Iter<int64 const&> prefixLocal() { List<int64> values; values.push(2); values.push(4); auto split = values.iter().peekingTakeWhile(smallRef); return split.0; }
+Iter<int64 const&> prefixLocal() { List<int64> values; values.push(2); values.push(4); let split = values.iter().peekingTakeWhile(smallRef); return split.0; }
 struct IterRecord { String text; int64 number; };
 void updateRecord(IterRecord mut& value) { value.text = value.text + "!"; value.number = value.number + 1; }
 void replaceText(String mut& value) { value = "changed"; }
@@ -42,8 +42,8 @@ struct Flaky : IterNext<int64> {
     (int64,Option<int64>) sizeHint() { return (0,Option<int64>::None); }
 };
 int64 main() {
-    auto values = std::iter::range(1, 5);
-    auto hint = values.sizeHint();
+    let values = std::iter::range(1, 5);
+    let hint = values.sizeHint();
     assert((hint.0) == (4));
     assert(((hint.1).unwrap()) == (4));
     assert((values.next().unwrap()) == (1));
@@ -54,9 +54,9 @@ int64 main() {
     assert((std::iter::range(1,5).all(positive)) == (true));
     assert((std::iter::range(1,5).any(even)) == (true));
     assert((std::iter::range(1,5).find(even).unwrap()) == (2));
-    auto lazy = std::iter::range(1,6).inspect(observe).map(squared).filter(even).take(2);
+    let lazy = std::iter::range(1,6).inspect(observe).map(squared).filter(even).take(2);
     assert((observed) == (0));
-    auto selected = lazy.collect();
+    let selected = lazy.collect();
     assert((observed) == (10));
     assert((selected.len()) == (2));
     assert((selected[0]) == (4));
@@ -75,28 +75,28 @@ int64 main() {
     assert((std::iter::range(1,3).chain(std::iter::range(3,5)).fold(0,sum)) == (10));
     assert((std::iter::range(1,4).sameItems(std::iter::range(1,4))) == (true));
     assert((std::iter::range(1,4).sameItems(std::iter::range(1,5))) == (false));
-    auto indexed = std::iter::range(5,7).enumerate().next().unwrap();
+    let indexed = std::iter::range(5,7).enumerate().next().unwrap();
     assert((indexed.0) == (0));
     assert((indexed.1) == (5));
-    auto zipped = std::iter::range(1,4).zip("ab".chars()).collect();
+    let zipped = std::iter::range(1,4).zip("ab".chars()).collect();
     assert((zipped.len()) == (2));
     assert(((zipped[1]).0) == (2));
     assert(((zipped[1]).1) == ('b'));
-    auto split = std::iter::range(1,7).peekingTakeWhile(belowFour);
-    auto first = split.0; auto rest = split.1;
+    let split = std::iter::range(1,7).peekingTakeWhile(belowFour);
+    let first = split.0; let rest = split.1;
     assert((first.count()) == (3));
     assert((rest.next().unwrap()) == (4));
     assert((rest.next().unwrap()) == (5));
-    auto scanned = std::iter::range(1,5).scan(0,running).collect();
+    let scanned = std::iter::range(1,5).scan(0,running).collect();
     assert((scanned[3]) == (10));
-    auto failed = std::iter::range(1,5).tryFold(0,checkedSum);
+    let failed = std::iter::range(1,5).tryFold(0,checkedSum);
     assert((failed.isErr()) == (true));
     assert((failed.error()) == ("three"));
     Flaky state;
-    auto nonFused = std::iter::fromState<int64,Flaky>(state);
+    let nonFused = std::iter::fromState<int64,Flaky>(state);
     assert((nonFused.next().isNone()) == (true));
     assert((nonFused.next().unwrap()) == (9));
-    auto fused = std::iter::fromState<int64,Flaky>(state).fuse();
+    let fused = std::iter::fromState<int64,Flaky>(state).fuse();
     assert((fused.next().isNone()) == (true));
     assert((fused.next().isNone()) == (true));
     List<int64> empty;
@@ -107,12 +107,12 @@ int64 main() {
 
         List<int64> source; source.push(1); source.push(2); source.push(3);
         {
-            auto readonly = source.iter();
+            let readonly = source.iter();
             assert((readonly.map(read).fold(0,sum)) == (6));
-            auto collectedRefs = readonly.collect();
+            let collectedRefs = readonly.collect();
             assert((collectedRefs[0]) == (1));
             assert((readonly.zip(source.iter()).map(addRefs).fold(0,sum)) == (12));
-            auto mutable = source.iterMut();
+            let mutable = source.iterMut();
             mutable.forEach(bump);
             assert((source[0]) == (11));
             assert((source[2]) == (13));
@@ -120,15 +120,15 @@ int64 main() {
             assert((saved) == (11));
         }
         source.push(4);
-        auto owned = source.intoIter();
+        let owned = source.intoIter();
         assert((source.len()) == (0));
         assert((owned.map(label).collect()[0]) == ("n11"));
         assert((owned.count()) == (4));
-        auto set = {3,1,3};
+        let set = {3,1,3};
         assert((set.intoIter().fold(0,sum)) == (4));
         assert((set.len()) == (0));
-        auto map = {"a":"one","b":"two"};
-        auto entries = map.intoIter().collect();
+        let map = {"a":"one","b":"two"};
+        let entries = map.intoIter().collect();
         assert((map.len()) == (0));
         for (Pair<String, String> entry in entries) {
             assert((entry.first == "a" && entry.second == "one")
@@ -136,15 +136,15 @@ int64 main() {
         }
         List<String> words; words.push("one"); words.push("two");
         {
-            auto textRefs = words.iterMut(); textRefs.forEach(replaceText);
+            let textRefs = words.iterMut(); textRefs.forEach(replaceText);
             assert((words[0]) == ("changed"));
             assert((words.iter().map(textLength).fold(0,sum)) == (14));
         }
         List<IterRecord> records; IterRecord record; record.text = "record"; record.number = 4; records.push(record);
-        { auto refs = records.iterMut(); refs.forEach(updateRecord); }
+        { let refs = records.iterMut(); refs.forEach(updateRecord); }
         assert(((records[0]).text) == ("record!"));
         assert(((records[0]).number) == (5));
-        auto text = std::iter::range(1,4).map(label).collect();
+        let text = std::iter::range(1,4).map(label).collect();
         assert((text[2]) == ("n3"));
     
             round = round + 1;
@@ -159,16 +159,16 @@ int64 main() {
     assert((std::iter::range(5,1,-1).fold(0,sum)) == (14));
     assert((madeList().intoIter().fold(0,sum)) == (5));
     assert((madeList().iter().map(read).fold(0,sum)) == (5));
-    auto kept = localBorrow();
+    let kept = localBorrow();
     assert((kept.map(read).fold(0,sum)) == (6));
-    auto reversedRefs = reversedLocal();
+    let reversedRefs = reversedLocal();
     assert((reversedRefs.map(read).fold(0,sum)) == (6));
-    auto prefixRefs = prefixLocal();
+    let prefixRefs = prefixLocal();
     assert((prefixRefs.map(read).fold(0,sum)) == (2));
     assert((std::iter::range(1,1).cycle().next().isNone()) == (true));
     assert((std::iter::range(1,5).take(0).count()) == (0));
-    auto extreme = std::iter::range(-(int64)9223372036854775807 - (int64)1, 9223372036854775807);
-    auto extremeHint = extreme.sizeHint();
+    let extreme = std::iter::range(-(int64)9223372036854775807 - (int64)1, 9223372036854775807);
+    let extremeHint = extreme.sizeHint();
     assert((extremeHint.0) == (0));
     assert(((extremeHint.1).isNone()) == (true));
     assert((std::iter::range(9223372036854775806, 9223372036854775807, 2).count()) == (1));

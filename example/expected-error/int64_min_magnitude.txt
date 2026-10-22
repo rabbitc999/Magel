@@ -1,0 +1,1 @@
+magel: example/samples-error/int64_min_magnitude.mgl 第 3 行第 20 列：十进制整数超出 int64 范围：9223372036854775808

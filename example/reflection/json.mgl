@@ -9,7 +9,7 @@ int64 constructed=0;int64 dropped=0;
     void drop(){dropped++;}
 };
 int64 main(){
-    auto document=std::json::parse("{\"name\":\"alice\",\"id\":7}").unwrap();
+    let document=std::json::parse("{\"name\":\"alice\",\"id\":7}").unwrap();
     List<std::reflect::ReflectValue> args;
     args.push(std::reflect::ReflectValue::Text(document.find("name").unwrap().asString().unwrap()));
     args.push(std::reflect::ReflectValue::I32((int32)7));
@@ -18,7 +18,7 @@ int64 main(){
     document.close();
     List<std::reflect::ReflectValue> empty;
     {
-        auto result=std::reflect::construct<User>(args);assert(result.isOk() && constructed==1);
+        let result=std::reflect::construct<User>(args);assert(result.isOk() && constructed==1);
         User user=result.unwrap();
         String before=std::reflect::callMethodConst<User>(&user,"describe",empty).unwrap().asText().unwrap();
         assert(before=="alice:7" && user.name=="alice");

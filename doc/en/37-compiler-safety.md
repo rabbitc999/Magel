@@ -12,7 +12,7 @@ This page records protection for confirmed defects. It does not claim that the c
 | Owning `?` result as an enum constructor argument | The constructor takes the temporary and clears the original owning slot |
 | Concurrent writers on one output prefix | Direct source execution loads its generated data from an in-memory snapshot |
 | Float-to-integer conversion out of range | Runtime reports "float to integer out of range"; constant folding refuses out-of-range values |
-| Decimal integer literal beyond int64 | Compile-time diagnostic (previously saturated silently to `INT64_MAX`) |
+| Decimal integer literal beyond int64 | Compile-time diagnostic (previously saturated silently to `INT64_MAX`); `-9223372036854775808` is the exception, where the unary minus types the 2^63 magnitude as the minimum |
 | Floating literal overflowing to inf / NaN | Compile-time diagnostic (previously produced "undefined variable: inf.0") |
 | JSON / TOML nesting depth | Beyond 256 levels is a parse diagnostic (previously overflowed the host stack) |
 | Local fixed-size arrays | Compile-time "fixed array exceeds the current memory budget" (previously `std::bad_alloc` escaped as `terminate`), matching struct fields |

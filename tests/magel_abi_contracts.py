@@ -43,13 +43,13 @@ def main():
                 '--library', library.as_posix(), '--out', imported])
         with imported.open('a', encoding='utf-8') as stream:
             stream.write('\nint64 main(){assert(c_identity((int32)7)==C_FIRST);'
-                         'auto cb=int32 fn(int32 x){return x;};'
+                         'let cb=int32 fn(int32 x){return x;};'
                          'assert(c_apply(cb,(int32)3)==7);return 0;}\n')
         invoke([compiler, 'run', imported])
         failure = work / 'callback-failure.mgl'
         failure.write_text('abi "' + library.as_posix() + '" { '
                            'String owned(int32 fn(int32) cb) = "callback_owned" ["free_owned"]; } '
-                           'int64 main(){auto cb=int32 fn(int32 x){panic("callback failure");return x;};'
+                           'int64 main(){let cb=int32 fn(int32 x){panic("callback failure");return x;};'
                            'String text=owned(cb);return 0;}', encoding='utf-8')
         marker = work / 'released.txt'
         env['MAGEL_ABI_FREE_MARKER'] = str(marker)

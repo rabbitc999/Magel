@@ -32,14 +32,14 @@ External locals are captured by `const&` by default; `fn const(...)` is equivale
 
 ```magel
 int64 n = 1;
-auto read = int64 fn() { n };
-auto write = int64 fn mut(int64 x) { n += x; return n; };
-auto counter = int64 fn copy[n]() { n += 1; return n; };
+let read = int64 fn() { n };
+let write = int64 fn mut(int64 x) { n += x; return n; };
+let counter = int64 fn copy[n]() { n += 1; return n; };
 n = 10;
 assert(read() == 10);
 assert(write(1) == 11);
 assert(counter() == 2);
-auto transferred = int64 fn move[n]() { n += 1; return n; };
+let transferred = int64 fn move[n]() { n += 1; return n; };
 int64 n = 20;
 assert(transferred() == 12);
 assert(n == 20);

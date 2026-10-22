@@ -17,7 +17,7 @@ struct CliArguments {
     Result<int64,CliError> getInt(String name) {
         CliError error; error.argument=name; error.message="expected an integer option";
         if (self.options.has(name)==0) { return Result<int64,CliError>::Err(error); }
-        auto parsed=Parse::parseInt64(self.options[name]);
+        let parsed=Parse::parseInt64(self.options[name]);
         if (!parsed.isOk()) { return Result<int64,CliError>::Err(error); }
         return Result<int64,CliError>::Ok(parsed.unwrap());
     }

@@ -30,7 +30,7 @@ def main():
             report = json.loads(result.stdout)
             assert report['diagnostics'], report
         for expression in ('(int64,2)', '(std::lang::String,2)', '(1,2,3]'):
-            source.write_text('int64 main(){auto invalid=' + expression + ';return 0;}\n', encoding='utf-8')
+            source.write_text('int64 main(){let invalid=' + expression + ';return 0;}\n', encoding='utf-8')
             run([args.magel, '--check', source], False)
         source.write_text('struct string{int64 value;}; int64 main(){string x;x.value=4;assert(x.value==4);return 0;}\n', encoding='utf-8')
         run([args.magel, 'run', source, '--out', work / 'ordinary'])

@@ -23,7 +23,7 @@ void main() {
     DerivedFloat negative; negative.value = -0.0;
     assert(positive == negative && positive.hash(positive) == negative.hash(negative));
     DerivedBox<DerivedLeaf> box; box.value = left.leaf;
-    auto boxCopy = box.clone();
+    let boxCopy = box.clone();
     assert(box == boxCopy && box.hash(box) == boxCopy.hash(boxCopy));
     println("derive interfaces OK");
 }

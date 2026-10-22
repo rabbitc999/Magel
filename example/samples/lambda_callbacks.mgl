@@ -15,12 +15,12 @@ int64 main() {
     assert((applyGeneric(fn(value) { value + 2 }, 7)) == (9));
     int64 fn(int64) increment = fn(value) { value + 1 };
     assert((increment(8)) == (9));
-    auto typed = fn(int64 value) { value * 3 };
+    let typed = fn(int64 value) { value * 3 };
     assert((apply(typed, 4)) == (12));
     List<int64> eager; eager.push(2); eager.push(3);
-    auto mapped = std::algorithms::mapValue<int64>(eager, fn(int64 value) { value * 2 });
+    let mapped = std::algorithms::mapValue<int64>(eager, fn(int64 value) { value * 2 });
     assert((mapped[1]) == (6));
-    auto selected = std::iter::range(1, 6)
+    let selected = std::iter::range(1, 6)
     .map(fn(value) { value * 2 })
     .filter(bool fn(int64 value) { value > 4 })
     .inspect(void fn(int64 value) {})
@@ -28,8 +28,8 @@ int64 main() {
     assert((selected.len()) == (3));
     assert((selected[0]) == (6));
     assert((selected[2]) == (10));
-    auto localWork = int64 fn(int64 seed) {
-        auto (a,b) = (seed,2);
+    let localWork = int64 fn(int64 seed) {
+        let (a,b) = (seed,2);
         match(Option<int64>::Value(a)) {
             Option<int64>::Value(selected) => { return selected+b; }
             Option<int64>::None => { return 0; }
@@ -47,7 +47,7 @@ int64 main() {
         if (value % 2 == 0) { return Option<int64>::Value(value * 2); }
         return Option<int64>::None;
     }).count()) == (2));
-    auto scanned = std::iter::range(1, 4).scan(0, Option<int64> fn(int64 mut& acc, int64 value) {
+    let scanned = std::iter::range(1, 4).scan(0, Option<int64> fn(int64 mut& acc, int64 value) {
         acc = acc + value;
         return Option<int64>::Value(acc);
     }).collect();
@@ -62,18 +62,18 @@ int64 main() {
         if (value == 3) { return Option<int64>::Value(value * 2); }
         return Option<int64>::None;
     }).unwrap()) == (6));
-    auto checked = std::iter::range(1, 4).tryFold(0, Result<int64,String> fn(int64 acc,int64 value) {
+    let checked = std::iter::range(1, 4).tryFold(0, Result<int64,String> fn(int64 acc,int64 value) {
         return Result<int64,String>::Ok(acc+value);
     });
     assert((checked.unwrap()) == (6));
-    auto split = std::iter::range(1, 5).peekingTakeWhile(fn(value) { value < 3 });
-    auto prefix = split.0;
-    auto rest = split.1;
+    let split = std::iter::range(1, 5).peekingTakeWhile(fn(value) { value < 3 });
+    let prefix = split.0;
+    let rest = split.1;
     assert((prefix.count()) == (2));
     assert((rest.next().unwrap()) == (3));
     List<int64> numbers; numbers.push(1); numbers.push(2);
     {
-        auto refs = numbers.iterMut();
+        let refs = numbers.iterMut();
         refs.forEach(void fn(int64 mut& value) { value = value + 10; });
         assert((numbers[0]) == (11));
         assert((numbers.iter().map(fn(value) { value * 2 }).fold(0, fn(a,b) { a+b })) == (46));
@@ -82,13 +82,13 @@ int64 main() {
         int64 round = 0;
         while (round < 4) {
 
-        auto labels = std::iter::range(1, 4).map(fn(value) { format("n{};", value) }).collect();
+        let labels = std::iter::range(1, 4).map(fn(value) { format("n{};", value) }).collect();
         assert((labels[2]) == ("n3;"));
     
             round = round + 1;
         }
     }
-    auto punctuation = fn() { "a;b" };
+    let punctuation = fn() { "a;b" };
     assert((punctuation()) == ("a;b"));
     action(void fn() {});
     action(void fn() { assert(true) });
@@ -96,7 +96,7 @@ int64 main() {
     std::iter::range(1, 4).forEach(void fn(int64 value) { observed = observed + value; });
     assert((observed) == (6));
     observed = 10;
-    auto readGlobal = fn() { observed };
+    let readGlobal = fn() { observed };
     observed = 20;
     assert((readGlobal()) == (20));
     println("fn callbacks OK");

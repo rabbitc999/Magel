@@ -61,7 +61,7 @@
 %token DROP "drop"
 %token STATIC "static"
 %token FN "fn"
-%token AUTO "auto"
+%token LET "let"
 %token COPY "copy"
 %token MOVE "move"
 %token INLINE "inline"

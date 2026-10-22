@@ -14,8 +14,8 @@ def invoke(*arguments):
 def main():
     """解释执行和 VM 验证直接、推导、命名及捕获回调，并拒绝不匹配的签名。"""
     source = SAMPLE.read_text(encoding='utf-8')
-    original = 'auto tt = ff(int64 fn(int64 x) { x + 1 }, int64 fn(int64 x) { x + 2 });'
-    variants = {'direct': original, 'inferred': 'auto tt = ff(fn(x) { x + 1 }, fn(x) { x + 2 });', 'variables': 'int64 fn(int64) a=int64 fn(int64 x){x+1};\n            int64 fn(int64) b=int64 fn(int64 x){x+2};auto tt=ff(a,b);', 'mixed': 'int64 fn(int64) a=int64 fn(int64 x){x+1};\n            auto tt=ff(a,int64 fn(int64 x){x+2});', 'named': 'int64 fn(int64) a=increment;\n            auto tt=ff(increment,int64 fn(int64 x){x+2});', 'capture': 'int64 one=1;List<int64> increments;increments.push(2);\n            auto tt=ff(int64 fn copy(int64 x){x+one},\n                       int64 fn copy(int64 x){x+increments[0]});'}
+    original = 'let tt = ff(int64 fn(int64 x) { x + 1 }, int64 fn(int64 x) { x + 2 });'
+    variants = {'direct': original, 'inferred': 'let tt = ff(fn(x) { x + 1 }, fn(x) { x + 2 });', 'variables': 'int64 fn(int64) a=int64 fn(int64 x){x+1};\n            int64 fn(int64) b=int64 fn(int64 x){x+2};let tt=ff(a,b);', 'mixed': 'int64 fn(int64) a=int64 fn(int64 x){x+1};\n            let tt=ff(a,int64 fn(int64 x){x+2});', 'named': 'int64 fn(int64) a=increment;\n            let tt=ff(increment,int64 fn(int64 x){x+2});', 'capture': 'int64 one=1;List<int64> increments;increments.push(2);\n            let tt=ff(int64 fn copy(int64 x){x+one},\n                       int64 fn copy(int64 x){x+increments[0]});'}
     with tempfile.TemporaryDirectory(prefix='magel-inline-fn-') as directory:
         work = Path(directory)
         for name, statement in variants.items():

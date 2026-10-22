@@ -75,15 +75,15 @@ int64 main()
     holder.b = move(&second);
     assert(holder.a.read() == 19);
     assert(holder.b.read() == 20);
-    auto holderInfo = std::reflect::getStructInfo<Holder>().unwrap();
+    let holderInfo = std::reflect::getStructInfo<Holder>().unwrap();
     assert(holderInfo.fields.len() == 2);
     assert(holderInfo.fields[0].name == "a");
-    auto counterInfo = std::reflect::getStructInfo<Counter>().unwrap();
+    let counterInfo = std::reflect::getStructInfo<Counter>().unwrap();
     assert(counterInfo.fields.len() == 2);
     assert(counterInfo.fields[0].name == "count");
     assert(counterInfo.fields[1].name == "label");
     List<std::reflect::ReflectValue> args;
-    auto reflected = std::reflect::callMethodConst<Counter>(&holder.a, "read", args).unwrap();
+    let reflected = std::reflect::callMethodConst<Counter>(&holder.a, "read", args).unwrap();
     assert(reflected.asI64().unwrap() == 19);
     UniqueCounter unique = UniqueCounter::new(9);
     unique.count = 12;

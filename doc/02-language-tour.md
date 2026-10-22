@@ -31,7 +31,7 @@ int64 main() {
 整数显式标宽：`int8` / `int16` / `int32` / `int64`，无符号是 `uint8` … `uint64`；浮点是 `float32` / `float64`。隐式转换只放行**变宽**（`int8 -> int64`、`uint8 -> int16`、整型 → 浮点、`float32 -> float64`）；缩窄和换符号要显式强转 `(int32)x`。
 
 浮点字面量无后缀时为 `float64`；从 v0.18.1 起，小写 `f` 后缀固定为 `float32`，
-例如 `1f`、`1.25f`、`1e2f`。`auto value = 1.25f;` 推导为 `float32`，
+例如 `1f`、`1.25f`、`1e2f`。`let value = 1.25f;` 推导为 `float32`，
 可直接传给 `float32` 参数。带后缀的字面量先按 32 位浮点舍入，之后即使扩宽为
 `float64` 也不会恢复精度，例如 `float64 rounded = 16777217f;` 的值为 `16777216`。
 大写 `F` 不属于此后缀语法；十六进制整数中的 `f` 仍是十六进制数字。
@@ -270,7 +270,7 @@ import std::iter;
 int64 square(int64 value) { return value * value; }
 bool even(int64 value) { return value % 2 == 0; }
 int64 main() {
-    auto picked = std::iter::range(1, 6).map(square).filter(even).collect();
+    let picked = std::iter::range(1, 6).map(square).filter(even).collect();
     println("{} {}", picked.len(), picked[0]);
     return 0;
 }
@@ -320,7 +320,7 @@ fixed=6 runtime0=10
     return (id, "player");
 }
 int64 main() {
-    auto info = describe(7);
+    let info = describe(7);
     println("{} {}", info.0, info.1);
     return 0;
 }
@@ -338,7 +338,7 @@ int64 main() {
 int64 main() {
     int64 fn(int64) square = int64 fn(int64 x) { x * x };
     int64 base = 5;
-    auto offset = fn(int64 x) { x + base };
+    let offset = fn(int64 x) { x + base };
     println("{} {}", square(4), offset(4));
     return 0;
 }

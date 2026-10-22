@@ -22,9 +22,9 @@ int64 main() {
         assert(item.text=="owned");
         LoopItem made=loop { yield (loopItem()); };
         assert(made.text=="item");
-        auto nested=loop { yield (loop { String text="nested"; yield (text); }); };
+        let nested=loop { yield (loop { String text="nested"; yield (text); }); };
         assert(nested=="nested");
-        auto pair=loop { auto (text, number)=("tuple",7); yield (text); };
+        let pair=loop { let (text, number)=("tuple",7); yield (text); };
         assert(pair=="tuple");
         String matched=loop {
             Option<String> option=Option<String>::Value("match");
@@ -39,7 +39,7 @@ int64 main() {
         }
     }
     assert(returnLoopText()=="returned");
-    auto narrow=loop { int32 local=7; yield (local); };
+    let narrow=loop { int32 local=7; yield (local); };
     assert(narrow==7);
     String source="unchanged";
     String value=loop { String source="inner"; yield (source); };

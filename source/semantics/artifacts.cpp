@@ -694,7 +694,7 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
             const auto name = "a" + Memory::toString(j);
             source += CAbiType(parameters[i][j]->type) + " " + name + "{}; std::memcpy(&" + name + ", args[" + Memory::toString(j) + "], sizeof(" + name + "));\n";
         }
-        if (results[i]->type->kind != MType::Void) source += "auto returned = ";
+        if (results[i]->type->kind != MType::Void) source += "let returned = ";
         source += "reinterpret_cast<Fn>(function)(";
         for (std::size_t j = 0; j < parameters[i].size(); ++j)
         {

@@ -79,22 +79,22 @@ symbolic = cos(x)
 | 名称 | 声明 |
 | --- | --- |
 | [pi](#api-0) | `BigDecimal pi(int64 digits = 50)` |
-| [sin](#api-1) | `auto sin<T>(T value)` |
-| [cos](#api-2) | `auto cos<T>(T value)` |
-| [tan](#api-3) | `auto tan<T>(T value)` |
-| [asin](#api-4) | `auto asin<T>(T value)` |
-| [acos](#api-5) | `auto acos<T>(T value)` |
-| [atan](#api-6) | `auto atan<T>(T value)` |
-| [exp](#api-7) | `auto exp<T>(T value)` |
-| [ln](#api-8) | `auto ln<T>(T value)` |
-| [log10](#api-9) | `auto log10<T>(T value)` |
-| [sqrt](#api-10) | `auto sqrt<T>(T value)` |
-| [floor](#api-11) | `auto floor<T>(T value)` |
-| [ceil](#api-12) | `auto ceil<T>(T value)` |
-| [round](#api-13) | `auto round<T>(T value)` |
-| [trunc](#api-14) | `auto trunc<T>(T value)` |
-| [pow](#api-15) | `auto pow<T, U>(T value, U other)` |
-| [fmod](#api-16) | `auto fmod<T, U>(T value, U other)` |
+| [sin](#api-1) | `let sin<T>(T value)` |
+| [cos](#api-2) | `let cos<T>(T value)` |
+| [tan](#api-3) | `let tan<T>(T value)` |
+| [asin](#api-4) | `let asin<T>(T value)` |
+| [acos](#api-5) | `let acos<T>(T value)` |
+| [atan](#api-6) | `let atan<T>(T value)` |
+| [exp](#api-7) | `let exp<T>(T value)` |
+| [ln](#api-8) | `let ln<T>(T value)` |
+| [log10](#api-9) | `let log10<T>(T value)` |
+| [sqrt](#api-10) | `let sqrt<T>(T value)` |
+| [floor](#api-11) | `let floor<T>(T value)` |
+| [ceil](#api-12) | `let ceil<T>(T value)` |
+| [round](#api-13) | `let round<T>(T value)` |
+| [trunc](#api-14) | `let trunc<T>(T value)` |
+| [pow](#api-15) | `let pow<T, U>(T value, U other)` |
+| [fmod](#api-16) | `let fmod<T, U>(T value, U other)` |
 | [isNaN](#api-17) | `bool isNaN<T>(T value)` |
 | [isInf](#api-18) | `bool isInf<T>(T value)` |
 | [abs](#api-19) | `T abs<T>(T value)` |
@@ -148,7 +148,7 @@ std::math::pi(digits);
 **声明**
 
 ```magel
-auto sin<T>(T value);
+let sin<T>(T value);
 ```
 
 **行为**
@@ -165,7 +165,7 @@ auto sin<T>(T value);
 
 **返回值**
 
-`auto`。计算正弦。
+`let`。计算正弦。
 
 **错误与边界**
 
@@ -188,7 +188,7 @@ std::math::sin<T>(value);
 **声明**
 
 ```magel
-auto cos<T>(T value);
+let cos<T>(T value);
 ```
 
 **行为**
@@ -205,7 +205,7 @@ auto cos<T>(T value);
 
 **返回值**
 
-`auto`。计算余弦。
+`let`。计算余弦。
 
 **错误与边界**
 
@@ -228,7 +228,7 @@ std::math::cos<T>(value);
 **声明**
 
 ```magel
-auto tan<T>(T value);
+let tan<T>(T value);
 ```
 
 **行为**
@@ -245,7 +245,7 @@ auto tan<T>(T value);
 
 **返回值**
 
-`auto`。计算正切。
+`let`。计算正切。
 
 **错误与边界**
 
@@ -268,7 +268,7 @@ std::math::tan<T>(value);
 **声明**
 
 ```magel
-auto asin<T>(T value);
+let asin<T>(T value);
 ```
 
 **行为**
@@ -285,7 +285,7 @@ auto asin<T>(T value);
 
 **返回值**
 
-`auto`。计算反正弦，结果为弧度。
+`let`。计算反正弦，结果为弧度。
 
 **错误与边界**
 
@@ -308,7 +308,7 @@ std::math::asin<T>(value);
 **声明**
 
 ```magel
-auto acos<T>(T value);
+let acos<T>(T value);
 ```
 
 **行为**
@@ -325,7 +325,7 @@ auto acos<T>(T value);
 
 **返回值**
 
-`auto`。计算反余弦，结果为弧度。
+`let`。计算反余弦，结果为弧度。
 
 **错误与边界**
 
@@ -348,7 +348,7 @@ std::math::acos<T>(value);
 **声明**
 
 ```magel
-auto atan<T>(T value);
+let atan<T>(T value);
 ```
 
 **行为**
@@ -365,7 +365,7 @@ auto atan<T>(T value);
 
 **返回值**
 
-`auto`。计算反正切，结果为弧度。
+`let`。计算反正切，结果为弧度。
 
 **错误与边界**
 
@@ -388,7 +388,7 @@ std::math::atan<T>(value);
 **声明**
 
 ```magel
-auto exp<T>(T value);
+let exp<T>(T value);
 ```
 
 **行为**
@@ -405,7 +405,7 @@ auto exp<T>(T value);
 
 **返回值**
 
-`auto`。计算 e 的 value 次幂。
+`let`。计算 e 的 value 次幂。
 
 **错误与边界**
 
@@ -428,7 +428,7 @@ std::math::exp<T>(value);
 **声明**
 
 ```magel
-auto ln<T>(T value);
+let ln<T>(T value);
 ```
 
 **行为**
@@ -445,7 +445,7 @@ auto ln<T>(T value);
 
 **返回值**
 
-`auto`。计算自然对数。
+`let`。计算自然对数。
 
 **错误与边界**
 
@@ -468,7 +468,7 @@ std::math::ln<T>(value);
 **声明**
 
 ```magel
-auto log10<T>(T value);
+let log10<T>(T value);
 ```
 
 **行为**
@@ -485,7 +485,7 @@ auto log10<T>(T value);
 
 **返回值**
 
-`auto`。计算以 10 为底的对数。
+`let`。计算以 10 为底的对数。
 
 **错误与边界**
 
@@ -508,7 +508,7 @@ std::math::log10<T>(value);
 **声明**
 
 ```magel
-auto sqrt<T>(T value);
+let sqrt<T>(T value);
 ```
 
 **行为**
@@ -525,7 +525,7 @@ auto sqrt<T>(T value);
 
 **返回值**
 
-`auto`。计算平方根。
+`let`。计算平方根。
 
 **错误与边界**
 
@@ -548,7 +548,7 @@ std::math::sqrt<T>(value);
 **声明**
 
 ```magel
-auto floor<T>(T value);
+let floor<T>(T value);
 ```
 
 **行为**
@@ -565,7 +565,7 @@ auto floor<T>(T value);
 
 **返回值**
 
-`auto`。向负无穷取整。
+`let`。向负无穷取整。
 
 **错误与边界**
 
@@ -588,7 +588,7 @@ std::math::floor<T>(value);
 **声明**
 
 ```magel
-auto ceil<T>(T value);
+let ceil<T>(T value);
 ```
 
 **行为**
@@ -605,7 +605,7 @@ auto ceil<T>(T value);
 
 **返回值**
 
-`auto`。向正无穷取整。
+`let`。向正无穷取整。
 
 **错误与边界**
 
@@ -628,7 +628,7 @@ std::math::ceil<T>(value);
 **声明**
 
 ```magel
-auto round<T>(T value);
+let round<T>(T value);
 ```
 
 **行为**
@@ -645,7 +645,7 @@ auto round<T>(T value);
 
 **返回值**
 
-`auto`。舍入到最近整数，中点远离零。
+`let`。舍入到最近整数，中点远离零。
 
 **错误与边界**
 
@@ -668,7 +668,7 @@ std::math::round<T>(value);
 **声明**
 
 ```magel
-auto trunc<T>(T value);
+let trunc<T>(T value);
 ```
 
 **行为**
@@ -685,7 +685,7 @@ auto trunc<T>(T value);
 
 **返回值**
 
-`auto`。向零截断小数部分。
+`let`。向零截断小数部分。
 
 **错误与边界**
 
@@ -708,7 +708,7 @@ std::math::trunc<T>(value);
 **声明**
 
 ```magel
-auto pow<T, U>(T value, U other);
+let pow<T, U>(T value, U other);
 ```
 
 **行为**
@@ -726,7 +726,7 @@ auto pow<T, U>(T value, U other);
 
 **返回值**
 
-`auto`。计算 value 的 exponent 次幂。
+`let`。计算 value 的 exponent 次幂。
 
 **错误与边界**
 
@@ -749,7 +749,7 @@ std::math::pow<T, U>(value, other);
 **声明**
 
 ```magel
-auto fmod<T, U>(T value, U other);
+let fmod<T, U>(T value, U other);
 ```
 
 **行为**
@@ -767,7 +767,7 @@ auto fmod<T, U>(T value, U other);
 
 **返回值**
 
-`auto`。计算浮点余数，结果符号与被除数一致。
+`let`。计算浮点余数，结果符号与被除数一致。
 
 **错误与边界**
 

@@ -391,7 +391,7 @@ Magel 的返回值可以是一个元组（tuple）——把几个值打包起来
 
 int64 main()
 {
-    auto info = describe(7);
+    let info = describe(7);
     println("{} {}", info.0, info.1);
     return 0;
 }
@@ -449,7 +449,7 @@ int64 main()
 \par
 \medskip
 
-这行 \texttt{key,\allowbreak{} name =\allowbreak{} pair(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} 的意思是：把右边元组按位置拆给左边的每一个目标。左边必须是已经声明过的变量——声明新变量请写 \texttt{auto (\allowbreak{}key,\allowbreak{} name)\allowbreak{} =\allowbreak{} pair(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{};}。
+这行 \texttt{key,\allowbreak{} name =\allowbreak{} pair(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} 的意思是：把右边元组按位置拆给左边的每一个目标。左边必须是已经声明过的变量——声明新变量请写 \texttt{let (\allowbreak{}key,\allowbreak{} name)\allowbreak{} =\allowbreak{} pair(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{};}。
 
 \begin{tip}{提示}
 元组还能用来交换两个变量，而且不用中间变量：\texttt{x,\allowbreak{} y =\allowbreak{} (\allowbreak{}y,\allowbreak{} x)\allowbreak{};} —— 右边先整个求值一次，再逐个写回去。注意右边那个括号不能省，\texttt{x,\allowbreak{} y =\allowbreak{} y,\allowbreak{} x;} 会报「多目标解构赋值必须使用 \texttt{=\allowbreak{}} 和一个元组来源」。

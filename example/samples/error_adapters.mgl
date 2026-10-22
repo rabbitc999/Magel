@@ -2,8 +2,8 @@ int64 errors=0;
 String errorText(int64 code){errors=errors+1;return "error";}
 String missing(){errors=errors+1;return "missing";}
 Result<int64,String> run(bool good){
-    auto x=if(good){Result<int64,int64>::Ok(4)}else{Result<int64,int64>::Err(2)};
-    auto value=x.mapErr<String>(errorText)?;
+    let x=if(good){Result<int64,int64>::Ok(4)}else{Result<int64,int64>::Err(2)};
+    let value=x.mapErr<String>(errorText)?;
     return Result<int64,String>::Ok(value+1);
 }
 int64 main(){assert(run(true).unwrap()==5);assert(errors==0);assert(run(false).error()=="error");assert(errors==1);

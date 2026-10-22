@@ -52,12 +52,12 @@ String validate(Student const& student)
  */
 Result<String, String> encodeRows(std::sql::ResultSet const& rows)
 {
-    auto fields = std::reflect::getStructInfo<Student>().unwrap().fields;
+    let fields = std::reflect::getStructInfo<Student>().unwrap().fields;
     List<String> records;
     for (int64 row in std::lang::range(0, rows.rowCount()))
     {
         List<String> values;
-        for (auto field in fields)
+        for (let field in fields)
         {
             int64 column = rows.columnIndex(field.name);
             if (column < 0)
@@ -73,7 +73,7 @@ Result<String, String> encodeRows(std::sql::ResultSet const& rows)
         }
         String separator = ",";
         String text = "{" + separator.join(values) + "}";
-        auto checked = std::json::deserialize<Student>(text);
+        let checked = std::json::deserialize<Student>(text);
         if (checked.isErr())
         {
             return Result<String, String>::Err("数据库记录不符合学生模型：" + checked.error());
@@ -99,13 +99,13 @@ Result<String, String> encodeRows(std::sql::ResultSet const& rows)
  */
 Result<String, String> execute(std::sql::Database mut& database, List<String> const& args)
 {
-    auto query = std::sql::query<Student>()?;
+    let query = std::sql::query<Student>()?;
     String command = args[1];
     if (command == "schema" && args.len() == 2)
     {
-        auto fields = std::reflect::getStructInfo<Student>().unwrap().fields;
+        let fields = std::reflect::getStructInfo<Student>().unwrap().fields;
         List<String> names;
-        for (auto field in fields)
+        for (let field in fields)
         {
             names.push(field.name);
         }
@@ -124,13 +124,13 @@ Result<String, String> execute(std::sql::Database mut& database, List<String> co
         {
             std::sql::filter<int64>(&query, "id", student.id)?;
         }
-        auto statement = std::sql::insert<Student>(&query, &student);
+        let statement = std::sql::insert<Student>(&query, &student);
         if (command == "update")
         {
             statement = std::sql::update<Student>(&query, &student);
         }
-        auto prepared = statement?;
-        auto rows = database.exec(prepared);
+        let prepared = statement?;
+        let rows = database.exec(prepared);
         if (!rows.ok)
         {
             return Result<String, String>::Err(rows.error);
@@ -144,7 +144,7 @@ Result<String, String> execute(std::sql::Database mut& database, List<String> co
     }
     if ((command == "get" || command == "delete") && args.len() == 3)
     {
-        auto parsed = std::parse::Parse::parseInt64(args[2]);
+        let parsed = std::parse::Parse::parseInt64(args[2]);
         if (parsed.isErr() || parsed.unwrap() <= 0)
         {
             return Result<String, String>::Err("学号必须是正整数");
@@ -155,8 +155,8 @@ Result<String, String> execute(std::sql::Database mut& database, List<String> co
         {
             operation = "delete";
         }
-        auto prepared = query.build(operation)?;
-        auto rows = database.exec(prepared);
+        let prepared = query.build(operation)?;
+        let rows = database.exec(prepared);
         if (!rows.ok)
         {
             return Result<String, String>::Err(rows.error);
@@ -196,8 +196,8 @@ Result<String, String> execute(std::sql::Database mut& database, List<String> co
             descending = args[3] == "desc";
         }
         query.orderBy(field, descending);
-        auto prepared = query.build()?;
-        auto rows = database.exec(prepared);
+        let prepared = query.build()?;
+        let rows = database.exec(prepared);
         if (!rows.ok)
         {
             return Result<String, String>::Err(rows.error);
@@ -219,21 +219,21 @@ int64 main(List<String> args)
         println("用法：magel main.mgl 数据库路径 命令 [参数]");
         return 1;
     }
-    auto database = std::sql::Database::sqlite(args[0]);
+    let database = std::sql::Database::sqlite(args[0]);
     if (!database.isOpen())
     {
         println("错误：{}", database.lastError());
         return 1;
     }
-    auto query = std::sql::query<Student>().unwrap();
-    auto created = database.exec(query.build("create").unwrap());
+    let query = std::sql::query<Student>().unwrap();
+    let created = database.exec(query.build("create").unwrap());
     if (!created.ok)
     {
         println("错误：{}", created.error);
         database.close();
         return 1;
     }
-    auto result = execute(&database, &args);
+    let result = execute(&database, &args);
     database.close();
     if (result.isErr())
     {

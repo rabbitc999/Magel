@@ -89,7 +89,7 @@ mode or front-end module blacklist. Memory and instruction budgets use the gener
 [deployment](06-deployment.md). Microcontroller, bare-metal firmware and board SDKs are outside the support scope.
 
 The CLI provides projects, checks, formatting, tests and dependency locks/caches. LSP provides diagnostics,
-completion, hover, signatures and cross-file navigation, plus complete inferred `auto` type hover, optional type inlays,
+completion, hover, signatures and cross-file navigation, plus complete inferred `let` type hover, optional type inlays,
 grouped macro signatures, expansion origins, references and rename based on unique bindings. Ownership diagnostics
 can link related declarations and cleanup locations. Ambiguous overloads or macro template bindings reject refactoring;
 see [LSP details](../man/en/lsp.md). DAP provides breakpoints, stepping and stacks;

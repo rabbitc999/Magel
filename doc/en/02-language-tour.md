@@ -37,7 +37,7 @@ Integers carry their width explicitly: `int8` / `int16` / `int32` / `int64`; uns
 
 Floating literals without a suffix have type `float64`. Since v0.18.1, the lowercase
 `f` suffix fixes the type to `float32`: `1f`, `1.25f`, and `1e2f` are examples.
-`auto value = 1.25f;` infers `float32` and can be passed directly to a `float32`
+`let value = 1.25f;` infers `float32` and can be passed directly to a `float32`
 parameter. The literal is rounded to 32-bit precision before any widening:
 `float64 rounded = 16777217f;` therefore stores `16777216`.
 Uppercase `F` is not a suffix; `f` in a hexadecimal integer remains a hexadecimal digit.
@@ -290,7 +290,7 @@ import std::iter;
 int64 square(int64 value) { return value * value; }
 bool even(int64 value) { return value % 2 == 0; }
 int64 main() {
-    auto picked = std::iter::range(1, 6).map(square).filter(even).collect();
+    let picked = std::iter::range(1, 6).map(square).filter(even).collect();
     println("{} {}", picked.len(), picked[0]);
     return 0;
 }
@@ -342,7 +342,7 @@ Tuples use parentheses and members are read via `.0` / `.1`:
     return (id, "player");
 }
 int64 main() {
-    auto info = describe(7);
+    let info = describe(7);
     println("{} {}", info.0, info.1);
     return 0;
 }
@@ -360,7 +360,7 @@ int64 main() {
 int64 main() {
     int64 fn(int64) square = int64 fn(int64 x) { x * x };
     int64 base = 5;
-    auto offset = fn(int64 x) { x + base };
+    let offset = fn(int64 x) { x + base };
     println("{} {}", square(4), offset(4));
     return 0;
 }

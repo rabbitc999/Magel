@@ -87,7 +87,7 @@ int64 main() {
     assert(round == 7);
     if (round < 9 && powers > 2) { powers = powers + 1; }
     assert(powers == 8);
-    auto function = identity<int64>;
+    let function = identity<int64>;
     assert(function(3) == 3);
     assert(std::math::round<float64>(1.5) == 2.0);
     return 0;
@@ -123,7 +123,7 @@ int64 main() {
     cases.append(('invalid_utf8', 'int64 main() { String text = "你".substring(1); int64 count = text.charLength(); return 0; }', {'failure': ('UTF-8',)}))
     cases.append(('arena_reset_invalidates', '''import std::memory;
 int64 main() {
-    Arena arena = Arena::create(); auto span = arena.allocate(8);
+    Arena arena = Arena::create(); let span = arena.allocate(8);
     char mut& first = span.iterator(0).unwrap(); first = 'x';
     arena.reset(); println("{}", first); return 0;
 }''', {'failure': ('180143985', 'free', '越界')}))

@@ -57,6 +57,10 @@
 「整数字面量超出取值范围」（不再静默回绕）；十六进制 / 二进制字面量（`0xFF` / `b1010`）
 按**位模式**处理，不做范围检查。
 
+十进制字面量的幅值上限是 `9223372036854775807`，唯一例外是 `-9223372036854775808`：
+幅值 2^63 本身放不进 `int64`，只有紧跟一元负号时才成立（取负后正好是最小值）；
+单独写 `9223372036854775808` 仍报「十进制整数超出 int64 范围」。
+
 **没有类型上下文的整数字面量默认是 `int64`，一进表达式就按上下文定型**：
 
 - 赋值 / 初始化 / 实参 / `return` 的目标类型会往下传：`int32 a = 1 + 2;` 里的两个字面量
@@ -64,7 +68,7 @@
 - 二元算术 / 位运算里**另一侧操作数的类型**也说了算：`int32 x = 1;` 之后 `x + 1` 里的
   `1` 取 `int32`，不必写 `(int32)1`；`int8 n = 100; n + 20` 同理。
 - 比较与逻辑不参与这层定型（结果不是操作数类型），没有上下文、两边都是字面量时
-  （`auto n = 1 + 2;`）仍是 `int64`。
+  （`let n = 1 + 2;`）仍是 `int64`。
 - 定型只看**装不装得下**：字面量超出目标类型范围就退回默认 `int64`，由「缩窄要强转」
   报错，不会静默截断。
 
@@ -91,7 +95,7 @@
 ```magel
 const int64 LIMIT = 100;   // 常量
 int64 counter = 0;         // 变量
-auto inferred = LIMIT;     // 类型推导
+let inferred = LIMIT;      // 类型推导
 ```
 
 - 顶层声明是全局的，函数内是局部的。
@@ -137,7 +141,7 @@ int64 main() {
 }
 ```
 
-`c, str2 = ...;` 和 `(c, str2) = ...;` 向**已有左值**赋值；声明新变量仍写 `auto (c, str2) = ...;`。
+`c, str2 = ...;` 和 `(c, str2) = ...;` 向**已有左值**赋值；声明新变量仍写 `let (c, str2) = ...;`。
 右侧完整元组先求值并保存一次，再按从左到右的顺序写入各目标，因此 `a, b = (b, a);` 和 `(a, b) = (b, a);` 都可以交换值。
 目标可以是变量、可写字段、数组或容器元素、可写引用；`a, (b, c) = ...;` 对应嵌套元组。
 元组的数量、嵌套形状和每个目标的类型必须匹配，const 变量与只读引用不能写入。
@@ -361,7 +365,7 @@ int64 main() {
   `Add<Vec,int64>` —— 两个 `leftAdd(int64)` 只在返回类型上不同。普通方法重载做不到这件事
   （C++ 也一样，光靠返回类型分不开），运算符接口**开了这个口子**：方法修饰名会带上返回
   类型，两条都活下来。挑哪条由**目标类型**定 —— `int64 x = a + 3;` 走返回 `int64` 的，
-  `Vec y = a + 3;` 走返回 `Vec` 的。没有目标类型（`auto z = a + 3;`）会报错让你指明，
+  `Vec y = a + 3;` 走返回 `Vec` 的。没有目标类型（`let z = a + 3;`）会报错让你指明，
   **不会悄悄挑一条**。
 
 可运行验证见 [`operator_symmetry.mgl`](../example/samples/operator_symmetry.mgl)、
@@ -784,7 +788,7 @@ abi "./native.dll" {
 
 显式释放统一调用 `value.drop()`：堆引用、数组及资源值使用同一调用形式，不提供独立释放语句；实现 Drop 的结构体继续沿用协议方法。它们共用资源终结与合并机制。底层释放是非幂等的操作，不能重复销毁同一生命周期。编译器在控制流图上自动合并可证明属于同一生命周期的重复 drop，释放后读写仍报错；跨调用等无法静态判定且未合并的重复释放由运行时报告 `MGL1205`。重新赋值开始新生命周期；`const &` 仍不能调用 `drop()`。释放后读写以及移动后读取产生 `MGL1205`；已移动的原绑定也禁止写入，只有新的声明可以创建可用绑定。默认堆复用物理内存但不复用逻辑分配身份，未被编译器合并的旧引用再次释放会报错且不影响新对象。释放立即移除活跃记录，不生成墓碑，也没有清扫 API。打印、格式化和文件写入等借用实参的调用会将新建字符串保存在完整表达式的拥有型临时变量中，调用完成后清理；所有权转移则清空源槽。分支上的显式释放不会取消其他路径的自动清理。详见[借用控制流与算法验证](11-algorithm-validation.md)。
 
-函数入口 `main` 的返回类型必须是 `int64` 或 `void`，不接受 `uint64`、较窄整数、浮点数或引用。函数指针可作数组元素：`int64 fn(int64) a[] = new[2];`，赋值后可用 `auto callback = a[0]; callback(value);` 调用。固定数组、元组、容器和嵌套函数类型可组合；返回运行时数组的函数类型写作 `(int64[]) fn()`，圆括号将数组返回类型与函数指针数组区分开。
+函数入口 `main` 的返回类型必须是 `int64` 或 `void`，不接受 `uint64`、较窄整数、浮点数或引用。函数指针可作数组元素：`int64 fn(int64) a[] = new[2];`，赋值后可用 `let callback = a[0]; callback(value);` 调用。固定数组、元组、容器和嵌套函数类型可组合；返回运行时数组的函数类型写作 `(int64[]) fn()`，圆括号将数组返回类型与函数指针数组区分开。
 
 函数类型和匿名函数的返回类型统一前置：`int64 fn(int64, int64) callback`、`int64 fn(int64 x) { x + 1 }`。旧 `fn(int64, int64) -> int64` 与 `fn(int64 x) -> int64 { x + 1 }` 已移除并报错；推导返回类型使用 `fn(int64 x) { x + 1 }`，不写箭头。升级后重新生成泛型宿主胶水并重建旧缓存。
 
@@ -798,10 +802,10 @@ abi "./native.dll" {
 
 ```magel
 int64 n = 1;
-auto read = int64 fn() { n };
-auto write = int64 fn mut(int64 x) { n += x; return n; };
-auto counter = int64 fn copy[n]() { n += 1; return n; };
-auto transferred = int64 fn move[n]() { n += 1; return n; };
+let read = int64 fn() { n };
+let write = int64 fn mut(int64 x) { n += x; return n; };
+let counter = int64 fn copy[n]() { n += 1; return n; };
+let transferred = int64 fn move[n]() { n += 1; return n; };
 n = 10;
 assert(read() == 10);
 assert(write(1) == 11);
@@ -815,12 +819,12 @@ assert(transferred() == 2);
 
 ## 泛型闭包与特化
 
-`auto f = fn<T>(T value) { value };` 定义一个带类型参数的闭包。`f(1)`、`f("text")` 从实参推导 `T`，`f<int64>(1)` 显式选择类型；返回类型由具体实现体推导。不能从实参确定且没有默认值的类型参数会报错，不自动退化为 Any。
+`let f = fn<T>(T value) { value };` 定义一个带类型参数的闭包。`f(1)`、`f("text")` 从实参推导 `T`，`f<int64>(1)` 显式选择类型；返回类型由具体实现体推导。不能从实参确定且没有默认值的类型参数会报错，不自动退化为 Any。
 
 完整特化和偏特化使用同一个闭包名称声明，实参先确定类型，再选择唯一最具体的匹配：
 
 ```magel
-auto f = fn<T, U>(T first, U second) { 0 };
+let f = fn<T, U>(T first, U second) { 0 };
 f<T, int64> = fn(T first, int64 second) { 1 };
 f<int64, int64> = fn(int64 first, int64 second) { 2 };
 assert(f(true, false) == 0);
@@ -830,7 +834,7 @@ assert(f(2, 3) == 2);
 
 特化在编译期选择，不能在运行时替换实现。重复定义和无法确定唯一最具体匹配的偏特化会报错。各实现沿用主定义的捕获方式，不重新捕获；同一个闭包在不同类型调用之间共享捕获状态。复制整个闭包时，拥有的状态独立复制，借用仍关联原来源。
 
-结构体允许直接声明 `auto f = fn<T>(T value) { value };` 成员，并在结构体内声明该成员的特化；实例使用 `s.f(1)` 或 `s.f<String>("text")`。默认初始化按成员的声明作用域解析捕获，不捕获构造调用者的同名局部变量。现有闭包规则仍禁止隐式捕获 `self` 和接收者字段。
+结构体允许直接声明 `let f = fn<T>(T value) { value };` 成员，并在结构体内声明该成员的特化；实例使用 `s.f(1)` 或 `s.f<String>("text")`。默认初始化按成员的声明作用域解析捕获，不捕获构造调用者的同名局部变量。现有闭包规则仍禁止隐式捕获 `self` 和接收者字段。
 
 普通闭包和泛型闭包都可以作为泛型类型参数 `F` 的值，例如 `int64 apply<F>(F f) { return f(3); }`，调用 `apply(callback)` 自动推导 `F`。`Box<F>` 等泛型聚合可保存闭包值；泛型闭包保留声明身份及捕获环境，不被擦除为一个固定签名的普通函数指针。所有借用和移动限制继续适用。
 
@@ -859,7 +863,7 @@ int32 useCallbacks<T>(int32 c) {
 
 ## for-in 区间与前进协议
 
-`for (auto item in source)`、`for (item in source)` 与显式类型写法共用迭代协议。`std::lang::range(a, b)` 表示左闭右开区间，`std::lang::rangeEq(a, b)` 包含两端；两种调用均可显式指定 `<T>`。
+`for (let item in source)`、`for (item in source)` 与显式类型写法共用迭代协议。`std::lang::range(a, b)` 表示左闭右开区间，`std::lang::rangeEq(a, b)` 包含两端；两种调用均可显式指定 `<T>`。
 
 整数的八种固定宽度类型和 `char` 直接支持区间计算。`for (uint8 x in std::lang::rangeEq<uint8>(0, 255)) { ... }` 依次产生 256 项；换为 `range<uint8>` 则产生 255 项。两个端点从左到右各求值一次，均须能由 T 表示，包括半开区间的上端点。可折叠整数常量错误在编译期拒绝，动态端点在循环前检查；反向区间报错。`range(a, a)` 为空，`rangeEq(a, a)` 恰好产生一项。到达最大闭上界后直接结束，不计算最大值加一。
 
@@ -872,7 +876,7 @@ int32 useCallbacks<T>(int32 c) {
 ```magel
 int64 main()
 {
-    int64 first = for (auto value in std::lang::range(1, 8))
+    int64 first = for (let value in std::lang::range(1, 8))
     {
         if (value % 2 == 0)
         {
@@ -992,7 +996,7 @@ $end_macro
 
 调用 `List<int32> values = $vec(int32, 1, 2, 3);` 或 `values = $vec(int32, 4, 5);`。普通局部声明自动卫生；局部暂存按指定类型接收实参，每个元素只求值一次，再通过 `push` 顺序追加。省略元素得到空列表。完整可运行测试见 [块表达式样例](../example/samples/block_expression.mgl)与[插值输出样例](../example/samples/print_interpolation.mgl)。
 
-匿名函数使用 `fn`，旧 `lambda` 语法已移除：`auto add = fn(int32 x) { x + 1 };`，显式返回类型写 `auto add = int32 fn(int32 x) { return x + 1; };`。`fn const`、`fn mut`、`fn copy`、`fn move` 及显式捕获列表沿用匿名函数规则；`int32 fn(int32)` 仍表示函数类型。
+匿名函数使用 `fn`，旧 `lambda` 语法已移除：`let add = fn(int32 x) { x + 1 };`，显式返回类型写 `let add = int32 fn(int32 x) { return x + 1; };`。`fn const`、`fn mut`、`fn copy`、`fn move` 及显式捕获列表沿用匿名函数规则；`int32 fn(int32)` 仍表示函数类型。
 
 `fn` 表达式可以直接作为普通函数或函数值调用的实参，无须先保存到变量。每个回调按对应形参的
 函数类型检查；省略的参数类型从该形参推导。嵌套函数返回值与元组组合见

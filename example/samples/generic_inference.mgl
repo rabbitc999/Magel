@@ -41,7 +41,7 @@ int64 main() {
     absent = Value1(3);
     absent = None1;
     text = emptyText();
-    auto payload = Value1("text");
+    let payload = Value1("text");
     println("{} {} {} {} {}", identity(8), apply(callback, 9), readBox(box), tag(present), tag(None1));
     match (payload) {
         None1 => { println("empty"); }
@@ -54,8 +54,8 @@ int64 main() {
     int64 fn(Choice<int64>) consumer = tag;
     println("{} {} {}", handler.take(None1), consumer(None1), identity("hello"));
     if (identity(2.5) != 2.5) { return 3; }
-    auto copiedCallback = identity(callback);
-    auto copiedFunction = identity(increment);
+    let copiedCallback = identity(callback);
+    let copiedFunction = identity(increment);
     println("{} {}", copiedCallback(20), copiedFunction(30));
     return 0;
 }

@@ -23948,8 +23948,8 @@
     "module": "std::math",
     "name": "sin",
     "owner": "",
-    "signature": "auto sin<T>(T value)",
-    "documentation": "计算正弦。\n\n**返回值**：auto。",
+    "signature": "let sin<T>(T value)",
+    "documentation": "计算正弦。\n\n**返回值**：let。",
     "comment": "/** 对普通数值、大十进制或符号表达式计算 sin。 */",
     "parameters": [
       {
@@ -23960,7 +23960,7 @@
       }
     ],
     "returns": {
-      "type": "auto",
+      "type": "let",
       "documentation": "计算正弦。"
     },
     "errors": {
@@ -23982,8 +23982,8 @@
     "module": "std::math",
     "name": "cos",
     "owner": "",
-    "signature": "auto cos<T>(T value)",
-    "documentation": "计算余弦。\n\n**返回值**：auto。",
+    "signature": "let cos<T>(T value)",
+    "documentation": "计算余弦。\n\n**返回值**：let。",
     "comment": "/** 对普通数值、大十进制或符号表达式计算 cos。 */",
     "parameters": [
       {
@@ -23994,7 +23994,7 @@
       }
     ],
     "returns": {
-      "type": "auto",
+      "type": "let",
       "documentation": "计算余弦。"
     },
     "errors": {
@@ -24016,8 +24016,8 @@
     "module": "std::math",
     "name": "tan",
     "owner": "",
-    "signature": "auto tan<T>(T value)",
-    "documentation": "计算正切。\n\n**返回值**：auto。",
+    "signature": "let tan<T>(T value)",
+    "documentation": "计算正切。\n\n**返回值**：let。",
     "comment": "/** 对普通数值、大十进制或符号表达式计算 tan。 */",
     "parameters": [
       {
@@ -24028,7 +24028,7 @@
       }
     ],
     "returns": {
-      "type": "auto",
+      "type": "let",
       "documentation": "计算正切。"
     },
     "errors": {
@@ -24048,8 +24048,8 @@
     "module": "std::math",
     "name": "asin",
     "owner": "",
-    "signature": "auto asin<T>(T value)",
-    "documentation": "计算反正弦，结果为弧度。\n\n**返回值**：auto。",
+    "signature": "let asin<T>(T value)",
+    "documentation": "计算反正弦，结果为弧度。\n\n**返回值**：let。",
     "comment": "/** 对普通数值、大十进制或符号表达式计算 asin。 */",
     "parameters": [
       {
@@ -24060,7 +24060,7 @@
       }
     ],
     "returns": {
-      "type": "auto",
+      "type": "let",
       "documentation": "计算反正弦，结果为弧度。"
     },
     "errors": {
@@ -24080,8 +24080,8 @@
     "module": "std::math",
     "name": "acos",
     "owner": "",
-    "signature": "auto acos<T>(T value)",
-    "documentation": "计算反余弦，结果为弧度。\n\n**返回值**：auto。",
+    "signature": "let acos<T>(T value)",
+    "documentation": "计算反余弦，结果为弧度。\n\n**返回值**：let。",
     "comment": "/** 对普通数值、大十进制或符号表达式计算 acos。 */",
     "parameters": [
       {
@@ -24092,7 +24092,7 @@
       }
     ],
     "returns": {
-      "type": "auto",
+      "type": "let",
       "documentation": "计算反余弦，结果为弧度。"
     },
     "errors": {
@@ -24112,8 +24112,8 @@
     "module": "std::math",
     "name": "atan",
     "owner": "",
-    "signature": "auto atan<T>(T value)",
-    "documentation": "计算反正切，结果为弧度。\n\n**返回值**：auto。",
+    "signature": "let atan<T>(T value)",
+    "documentation": "计算反正切，结果为弧度。\n\n**返回值**：let。",
     "comment": "/** 对普通数值、大十进制或符号表达式计算 atan。 */",
     "parameters": [
       {
@@ -24124,7 +24124,7 @@
       }
     ],
     "returns": {
-      "type": "auto",
+      "type": "let",
       "documentation": "计算反正切，结果为弧度。"
     },
     "errors": {
@@ -24144,8 +24144,8 @@
     "module": "std::math",
     "name": "exp",
     "owner": "",
-    "signature": "auto exp<T>(T value)",
-    "documentation": "计算 e 的 value 次幂。\n\n**返回值**：auto。",
+    "signature": "let exp<T>(T value)",
+    "documentation": "计算 e 的 value 次幂。\n\n**返回值**：let。",
     "comment": "/** 对普通数值、大十进制或符号表达式计算 exp。 */",
     "parameters": [
       {
@@ -24156,7 +24156,7 @@
       }
     ],
     "returns": {
-      "type": "auto",
+      "type": "let",
       "documentation": "计算 e 的 value 次幂。"
     },
     "errors": {
@@ -24178,8 +24178,8 @@
     "module": "std::math",
     "name": "ln",
     "owner": "",
-    "signature": "auto ln<T>(T value)",
-    "documentation": "计算自然对数。\n\n**返回值**：auto。",
+    "signature": "let ln<T>(T value)",
+    "documentation": "计算自然对数。\n\n**返回值**：let。",
     "comment": "/** 对普通数值、大十进制或符号表达式计算 ln。 */",
     "parameters": [
       {
@@ -24190,7 +24190,7 @@
       }
     ],
     "returns": {
-      "type": "auto",
+      "type": "let",
       "documentation": "计算自然对数。"
     },
     "errors": {
@@ -24212,8 +24212,8 @@
     "module": "std::math",
     "name": "log10",
     "owner": "",
-    "signature": "auto log10<T>(T value)",
-    "documentation": "计算以 10 为底的对数。\n\n**返回值**：auto。",
+    "signature": "let log10<T>(T value)",
+    "documentation": "计算以 10 为底的对数。\n\n**返回值**：let。",
     "comment": "/** 对普通数值、大十进制或符号表达式计算 log10。 */",
     "parameters": [
       {
@@ -24224,7 +24224,7 @@
       }
     ],
     "returns": {
-      "type": "auto",
+      "type": "let",
       "documentation": "计算以 10 为底的对数。"
     },
     "errors": {
@@ -24244,8 +24244,8 @@
     "module": "std::math",
     "name": "sqrt",
     "owner": "",
-    "signature": "auto sqrt<T>(T value)",
-    "documentation": "计算平方根。\n\n**返回值**：auto。",
+    "signature": "let sqrt<T>(T value)",
+    "documentation": "计算平方根。\n\n**返回值**：let。",
     "comment": "/** 对普通数值、大十进制或符号表达式计算 sqrt。 */",
     "parameters": [
       {
@@ -24256,7 +24256,7 @@
       }
     ],
     "returns": {
-      "type": "auto",
+      "type": "let",
       "documentation": "计算平方根。"
     },
     "errors": {
@@ -24278,8 +24278,8 @@
     "module": "std::math",
     "name": "floor",
     "owner": "",
-    "signature": "auto floor<T>(T value)",
-    "documentation": "向负无穷取整。\n\n**返回值**：auto。",
+    "signature": "let floor<T>(T value)",
+    "documentation": "向负无穷取整。\n\n**返回值**：let。",
     "comment": "/** 对普通数值、大十进制或符号表达式计算 floor。 */",
     "parameters": [
       {
@@ -24290,7 +24290,7 @@
       }
     ],
     "returns": {
-      "type": "auto",
+      "type": "let",
       "documentation": "向负无穷取整。"
     },
     "errors": {
@@ -24312,8 +24312,8 @@
     "module": "std::math",
     "name": "ceil",
     "owner": "",
-    "signature": "auto ceil<T>(T value)",
-    "documentation": "向正无穷取整。\n\n**返回值**：auto。",
+    "signature": "let ceil<T>(T value)",
+    "documentation": "向正无穷取整。\n\n**返回值**：let。",
     "comment": "/** 对普通数值、大十进制或符号表达式计算 ceil。 */",
     "parameters": [
       {
@@ -24324,7 +24324,7 @@
       }
     ],
     "returns": {
-      "type": "auto",
+      "type": "let",
       "documentation": "向正无穷取整。"
     },
     "errors": {
@@ -24346,8 +24346,8 @@
     "module": "std::math",
     "name": "round",
     "owner": "",
-    "signature": "auto round<T>(T value)",
-    "documentation": "舍入到最近整数，中点远离零。\n\n**返回值**：auto。",
+    "signature": "let round<T>(T value)",
+    "documentation": "舍入到最近整数，中点远离零。\n\n**返回值**：let。",
     "comment": "/** 对普通数值、大十进制或符号表达式计算 round。 */",
     "parameters": [
       {
@@ -24358,7 +24358,7 @@
       }
     ],
     "returns": {
-      "type": "auto",
+      "type": "let",
       "documentation": "舍入到最近整数，中点远离零。"
     },
     "errors": {
@@ -24380,8 +24380,8 @@
     "module": "std::math",
     "name": "trunc",
     "owner": "",
-    "signature": "auto trunc<T>(T value)",
-    "documentation": "向零截断小数部分。\n\n**返回值**：auto。",
+    "signature": "let trunc<T>(T value)",
+    "documentation": "向零截断小数部分。\n\n**返回值**：let。",
     "comment": "/** 对普通数值、大十进制或符号表达式计算 trunc。 */",
     "parameters": [
       {
@@ -24392,7 +24392,7 @@
       }
     ],
     "returns": {
-      "type": "auto",
+      "type": "let",
       "documentation": "向零截断小数部分。"
     },
     "errors": {
@@ -24412,8 +24412,8 @@
     "module": "std::math",
     "name": "pow",
     "owner": "",
-    "signature": "auto pow<T, U>(T value, U other)",
-    "documentation": "计算 value 的 exponent 次幂。\n\n**返回值**：auto。",
+    "signature": "let pow<T, U>(T value, U other)",
+    "documentation": "计算 value 的 exponent 次幂。\n\n**返回值**：let。",
     "comment": "/** 根据实参类型计算 pow，大十进制保持有效位精度。 */",
     "parameters": [
       {
@@ -24430,7 +24430,7 @@
       }
     ],
     "returns": {
-      "type": "auto",
+      "type": "let",
       "documentation": "计算 value 的 exponent 次幂。"
     },
     "errors": {
@@ -24452,8 +24452,8 @@
     "module": "std::math",
     "name": "fmod",
     "owner": "",
-    "signature": "auto fmod<T, U>(T value, U other)",
-    "documentation": "计算浮点余数，结果符号与被除数一致。\n\n**返回值**：auto。",
+    "signature": "let fmod<T, U>(T value, U other)",
+    "documentation": "计算浮点余数，结果符号与被除数一致。\n\n**返回值**：let。",
     "comment": "/** 根据实参类型计算 fmod，大十进制保持有效位精度。 */",
     "parameters": [
       {
@@ -24470,7 +24470,7 @@
       }
     ],
     "returns": {
-      "type": "auto",
+      "type": "let",
       "documentation": "计算浮点余数，结果符号与被除数一致。"
     },
     "errors": {

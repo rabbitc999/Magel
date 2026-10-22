@@ -20,7 +20,7 @@ int64 main(){
     int64 fn(int64) callback=tryGet<int64 fn(int64)>(&box).unwrap();assert(callback(8)==9);
     globalRecord.text="record";globalRecord.number=10;box.set(&globalRecord);
     assert(isType<Record mut&>(&box));
-    auto borrowed=tryGetMut<Record>(&box);assert(borrowed.isValue());
+    let borrowed=tryGetMut<Record>(&box);assert(borrowed.isValue());
     Record mut& view=borrowed.unwrap();view->number=11;assert(globalRecord.number==11);
     assert(!tryGetReference<String>(&box).isValue());
     println("Any type checks and safe extraction OK");

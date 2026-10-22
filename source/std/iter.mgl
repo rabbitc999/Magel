@@ -51,7 +51,7 @@ struct Iter<T> : Iterator<T> {
      */
     (int64, Option<int64>) sizeHint() {
         IterNext<T> mut& cursor = self.state.getReference();
-        auto hint = cursor.sizeHint();
+        let hint = cursor.sizeHint();
         if (!self.buffered || self.pending.isNone()) {
             return hint;
         }
@@ -430,7 +430,7 @@ struct IterFilterState<T> : IterNext<T> {
      * @return 操作结果。
      */
     (int64, Option<int64>) sizeHint() {
-        auto hint = self.source.sizeHint();
+        let hint = self.source.sizeHint();
         return (0, hint.1);
     }
 };
@@ -475,7 +475,7 @@ struct IterFilterMapState<T,U> : IterNext<U> {
      * @return 操作结果。
      */
     (int64, Option<int64>) sizeHint() {
-        auto hint = self.source.sizeHint();
+        let hint = self.source.sizeHint();
         return (0, hint.1);
     }
 };
@@ -523,7 +523,7 @@ struct IterMapWhileState<T,U> : IterNext<U> {
      * @return 操作结果。
      */
     (int64, Option<int64>) sizeHint() {
-        auto hint = self.source.sizeHint();
+        let hint = self.source.sizeHint();
         return (0, hint.1);
     }
 };
@@ -571,7 +571,7 @@ struct IterTakeWhileState<T> : IterNext<T> {
      * @return 操作结果。
      */
     (int64, Option<int64>) sizeHint() {
-        auto hint = self.source.sizeHint();
+        let hint = self.source.sizeHint();
         return (0, hint.1);
     }
 };
@@ -617,7 +617,7 @@ struct IterSkipWhileState<T> : IterNext<T> {
      * @return 操作结果。
      */
     (int64, Option<int64>) sizeHint() {
-        auto hint = self.source.sizeHint();
+        let hint = self.source.sizeHint();
         return (0, hint.1);
     }
 };
@@ -657,7 +657,7 @@ struct IterTakeState<T> : IterNext<T> {
      * @return 操作结果。
      */
     (int64, Option<int64>) sizeHint() {
-        auto hint = self.source.sizeHint();
+        let hint = self.source.sizeHint();
         int64 lower = hint.0;
         if (lower > self.remaining) {
             lower = self.remaining;
@@ -709,7 +709,7 @@ struct IterSkipState<T> : IterNext<T> {
      * @return 操作结果。
      */
     (int64, Option<int64>) sizeHint() {
-        auto hint = self.source.sizeHint();
+        let hint = self.source.sizeHint();
         int64 lower = hint.0 - self.remaining;
         if (lower < 0) {
             lower = 0;
@@ -1050,7 +1050,7 @@ struct IterScanState<T,A,U> : IterNext<U> {
      * @return 操作结果。
      */
     (int64, Option<int64>) sizeHint() {
-        auto hint = self.source.sizeHint();
+        let hint = self.source.sizeHint();
         return (0, hint.1);
     }
 };

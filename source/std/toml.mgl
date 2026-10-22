@@ -4,7 +4,7 @@ import std::serialization;
 
 /** 将反射模型编码为 TOML 文档；根值必须是对象。 */
 Result<String,String> serialize<T>(T const& value) {
-    auto encoded = std::json::serialize<T>(value);
+    let encoded = std::json::serialize<T>(value);
     if (encoded.isErr()) { return Result<String,String>::Err(encoded.error()); }
     String converted = std::serialization::__transcode(encoded.unwrap(), true);
     if (!converted.startsWith("1")) { return Result<String,String>::Err(converted.removePrefix("0")); }

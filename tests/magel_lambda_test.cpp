@@ -44,11 +44,11 @@ int main()
     auto text = lower("apply(fn(value) {value+1}, 2);");
     require(text.find("<McLambdaParameter0>") != Memory::String::npos, "内联回调未保留待推导参数");
     text = lower("module helpers; apply(fn(value){helper(value)},2); module __root;");
-    require(text.find("module helpers;\nauto __magel_lambda_") != Memory::String::npos, "提升后的回调丢失声明模块");
+    require(text.find("module helpers;\nlet __magel_lambda_") != Memory::String::npos, "提升后的回调丢失声明模块");
     text = lower("action(void fn() {});");
     require(text == "action(void fn() {});", "显式签名应交给权威文法解析");
     preprocess::Result legacy;
-    legacy.text = "action(fn(x) -> auto {x});";
+    legacy.text = "action(fn(x) -> let {x});";
     Memory::String migration;
     require(!magel_lambda::run(legacy, migration) && migration.find("0.12.0") != Memory::String::npos,
             "省略形参类型的旧箭头 lambda 绕过了迁移检查");
@@ -59,10 +59,10 @@ int main()
     text = lower("apply(fn(x) {\n return x;\n}, 2);\nnext();");
     require(text.find("__magel_lambda_const_1\n\n, 2);\nnext();") != Memory::String::npos, "多行提升破坏原行数");
     preprocess::Result invalid;
-    invalid.text = "auto f=fn(int64 x){int64 y=x;};";
+    invalid.text = "let f=fn(int64 x){int64 y=x;};";
     Memory::String error;
     require(magel_lambda::run(invalid, error), "显式形参应交给文法及返回类型检查");
-    require(invalid.text == "auto f=fn(int64 x){int64 y=x;};", "预处理不应改写显式签名");
+    require(invalid.text == "let f=fn(int64 x){int64 y=x;};", "预处理不应改写显式签名");
     std::puts("lambda unit tests OK");
     return 0;
 }

@@ -134,9 +134,9 @@ bool normalizeGenericClosures(preprocess::Result &result, Memory::String &error)
             while (prefixEnd && std::isspace(static_cast<unsigned char>(mask[prefixEnd - 1]))) --prefixEnd;
             auto prefix = prefixEnd;
             while (prefix && ident(mask[prefix - 1])) --prefix;
-            if (mask.substr(prefix, prefixEnd - prefix) != "auto")
+            if (mask.substr(prefix, prefixEnd - prefix) != "let")
             {
-                error = "泛型闭包使用 auto 名称 = fn<T>(...) 声明";
+                error = "泛型闭包使用 let 名称 = fn<T>(...) 声明";
                 return false;
             }
             seed = "__magel_lambda_generic_" + Memory::toString(++serial);
@@ -271,7 +271,7 @@ bool normalizeGenericClosures(preprocess::Result &result, Memory::String &error)
         const bool expressionBody = !trim(bodyMask).empty() && bodyMask.find(';') == Memory::String::npos;
         const bool returnsValue = expressionBody || std::regex_search(bodyMask, std::regex("\\breturn[ \\t\\r\\n]+[^; \\t\\r\\n]"));
         if (expressionBody) bodyText = "return " + bodyText + "\n;";
-        const auto resultType = returnsValue ? "auto " : "void ";
+        const auto resultType = returnsValue ? "let " : "void ";
         const auto generatedBegin = generated.size();
         generated += "\nmodule " + (module.empty() ? Memory::String("__root") : module) + ";\n" + resultType + function + definition.parameters
                      + result.text.substr(open, close - open + 1) + " {\n" + bodyText + "\n}\n";

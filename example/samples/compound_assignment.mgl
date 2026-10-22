@@ -58,7 +58,7 @@ int64 main() {
     List<int64> list; list.push(2); list[0] *= 3;
     for (int64 element in list) { element += 1; }
     assert(list[0] == 7);
-    auto map = {"key": 2}; map["key"] <<= 2;
+    let map = {"key": 2}; map["key"] <<= 2;
     assert(map["key"] == 8);
     Counter counter; counter.value = 10; counter.label = "kept";
     counter.value += 2;

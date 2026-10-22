@@ -19,7 +19,7 @@ def main():
     """对解释执行 和 VM 校验相同输出以及资源泄漏诊断。"""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--magel', type=Path, default=MAGEL, help='待验证的 MAGEL 工具链路径')
-    parser.add_argument('--samples', nargs='+', default=['reference_sugar', 'reference_combinations', 'reference_lifetimes', 'ownership_unary_edges', 'ownership_operator_results', 'ownership_exit_edges', 'static_new', 'conversion_interfaces', 'constant_expressions', 'destructuring_guards', 'generic_inherited_constraint', 'compound_assignment', 'increment_decrement', 'reference_value_types', 'pointer_sort', 'p1_reference_ownership', 'p2_tuple_readonly', 'collection_literals', 'chained_temporaries', 'chain_expression_cleanup', 'iter_pipeline', 'lambda_callbacks', 'lambda_auto', 'import_names', 'core_name_shadow', 'deprecated_identifiers'], help='指定本次验证的综合样例')
+    parser.add_argument('--samples', nargs='+', default=['reference_sugar', 'reference_combinations', 'reference_lifetimes', 'ownership_unary_edges', 'ownership_operator_results', 'ownership_exit_edges', 'static_new', 'conversion_interfaces', 'constant_expressions', 'destructuring_guards', 'generic_inherited_constraint', 'compound_assignment', 'increment_decrement', 'reference_value_types', 'pointer_sort', 'p1_reference_ownership', 'p2_tuple_readonly', 'collection_literals', 'chained_temporaries', 'chain_expression_cleanup', 'iter_pipeline', 'lambda_callbacks', 'lambda_let', 'import_names', 'core_name_shadow', 'deprecated_identifiers'], help='指定本次验证的综合样例')
     args = parser.parse_args()
     compiler = args.magel.resolve()
     WORK.mkdir(parents=True, exist_ok=True)

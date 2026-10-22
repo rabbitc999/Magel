@@ -28,7 +28,7 @@ def main():
         ("full_ident", "$match A is ident\n1\n$else\n0\n$end_match", "a + b", 0),
         ("branch_order", "$match A is expr\n1\n$else is ident\n2\n$end_match", "missing", 1),
         ("inactive_semantics", "$match A is ident\n1\n$else\nmissingFunction();\nint64 invalid = unknown;\n0\n$end_match", "anything", 1),
-        ("inactive_closure", "$match A is ident\n1\n$else\nauto unused = fn(int64 x) { missingFunction(); return x; };\n0\n$end_match", "anything", 1),
+        ("inactive_closure", "$match A is ident\n1\n$else\nlet unused = fn(int64 x) { missingFunction(); return x; };\n0\n$end_match", "anything", 1),
         ("regex_digits", '$regex A is "[0-9]+"\n1\n$else\n0\n$end_regex', "  123  ", 1),
         ("regex_full", '$regex A is "[0-9]+"\n1\n$else\n0\n$end_regex', "abc123", 0),
         ("regex_quotes", '$regex A is "[0-9]+"\n1\n$else\n0\n$end_regex', '"123"', 0),

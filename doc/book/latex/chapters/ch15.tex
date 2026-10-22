@@ -194,7 +194,7 @@ int64 main()
     };
     println("{}", square(6));
 
-    auto cube = fn(int64 x)
+    let cube = fn(int64 x)
     {
         x * x * x
     };
@@ -228,7 +228,7 @@ int64 main()
 
 \end{itemize}
 
-\texttt{auto cube =\allowbreak{} …} 让编译器根据右边推出 \texttt{cube} 的类型——省得手写一长串 \texttt{int64 fn(\allowbreak{}int64)\allowbreak{}}。
+\texttt{let cube =\allowbreak{} …} 让编译器根据右边推出 \texttt{cube} 的类型——省得手写一长串 \texttt{int64 fn(\allowbreak{}int64)\allowbreak{}}。
 
 \section{省略参数类型：靠上下文推}
 
@@ -283,7 +283,7 @@ int64 main()
 int64 main()
 {
     int64 base = 10;
-    auto addBase = fn(int64 x)
+    let addBase = fn(int64 x)
     {
         x + base
     };
@@ -341,12 +341,12 @@ int64 main()
 int64 main()
 {
     int64 n = 1;
-    auto implicit = int64 fn()
+    let implicit = int64 fn()
     {
         n
     };
     /* 默认：const& */
-    auto explicit = int64 fn const()
+    let explicit = int64 fn const()
     {
         n
     };
@@ -375,7 +375,7 @@ int64 main()
 int64 main()
 {
     int64 base = 10;
-    auto bump = fn(int64 x)
+    let bump = fn(int64 x)
     {
         base += x;
         return base;
@@ -403,7 +403,7 @@ magel: 不可变变量（const）不能再赋值：base
 int64 main()
 {
     int64 counter = 0;
-    auto tick = fn mut()
+    let tick = fn mut()
     {
         counter += 1;
         return counter;
@@ -435,7 +435,7 @@ outside 2
 int64 main()
 {
     int64 n = 5;
-    auto independent = int64 fn copy(int64 x)
+    let independent = int64 fn copy(int64 x)
     {
         n += x;
         return n;
@@ -466,7 +466,7 @@ int64 main()
 int64 main()
 {
     String text = "old";
-    auto grow = String fn copy()
+    let grow = String fn copy()
     {
         text = text + "!";
         return text;
@@ -494,7 +494,7 @@ int64 main()
 {
     List<int64> values;
     values.push(4);
-    auto bump = int64 fn copy()
+    let bump = int64 fn copy()
     {
         values[0] += 1;
         return values[0];
@@ -522,7 +522,7 @@ int64 main()
 int64 main()
 {
     const int64 fixed = 7;
-    auto change = int64 fn copy()
+    let change = int64 fn copy()
     {
         fixed += 1;
         return fixed;
@@ -550,7 +550,7 @@ int64 main()
 int64 main()
 {
     String moved = "payload";
-    auto take = String fn move()
+    let take = String fn move()
     {
         return moved + "-in";
     };
@@ -580,7 +580,7 @@ payload-in / reset
 int64 main()
 {
     String moved = "payload";
-    auto take = String fn move()
+    let take = String fn move()
     {
         return moved;
     };
@@ -613,12 +613,12 @@ magel: [MGL1205] 借用来源已移动或销毁，不能继续访问（源对象
 void main()
 {
     int64 n = 1;
-    auto f = int64 fn mut(int64 x)
+    let f = int64 fn mut(int64 x)
     {
         n += x;
         return n;
     };
-    auto g = int64 fn move(int64 x)
+    let g = int64 fn move(int64 x)
     {
         return x * n;
     };
@@ -639,13 +639,13 @@ void main()
 int64 main()
 {
     int64 n = 1;
-    auto f = int64 fn mut(int64 x)
+    let f = int64 fn mut(int64 x)
     {
         n += x;
         return n;
     };
     println("{}", f(1));
-    auto g = int64 fn move(int64 x)
+    let g = int64 fn move(int64 x)
     {
         return x * n;
     };
@@ -673,8 +673,8 @@ int64 main()
 int64 main()
 {
     int64 n = 1;
-    auto f = fn mut(x) { n = x + n };
-    auto g = fn copy(x) { x * n };
+    let f = fn mut(x) { n = x + n };
+    let g = fn copy(x) { x * n };
     println("{} {} {}", f(1), g(1), n);
     return 0;
 }
@@ -705,7 +705,7 @@ int64 main()
     int64 b = 3;
     int64 c = 4;
     int64 d = 5;
-    auto mixed = int64 fn copy[a] mut[b] const[c] move[d](int64 x)
+    let mixed = int64 fn copy[a] mut[b] const[c] move[d](int64 x)
     {
         a += x;
         b += x;
@@ -757,7 +757,7 @@ int64 main()
     int64 left = 1;
     int64 right = 2;
     int64 shared = 3;
-    auto f = int64 fn copy[left, right] mut(int64 x)
+    let f = int64 fn copy[left, right] mut(int64 x)
     {
         left += x;
         right += x;
@@ -789,7 +789,7 @@ int64 main()
 int64 main()
 {
     int64 a = 1;
-    auto f = int64 fn copy[a] mut const()
+    let f = int64 fn copy[a] mut const()
     {
         a
     };
@@ -816,7 +816,7 @@ magel: lambda：lambda 默认捕获方式只能声明一次：mut 与 const
 int64 main()
 {
     int64 bias = 9;
-    auto empty = int64 fn copy[]()
+    let empty = int64 fn copy[]()
     {
         bias
     };
@@ -881,12 +881,12 @@ int64 main()
 int64 main()
 {
     int64 n = 5;
-    auto a = int64 fn copy(int64 x)
+    let a = int64 fn copy(int64 x)
     {
         n += x;
         return n;
     };
-    auto b = a;
+    let b = a;
     println("b={} a={} b={}", b(3), a(1), b(1));
     return 0;
 }
@@ -912,12 +912,12 @@ b=8 a=6 b=9
 int64 main()
 {
     int64 n = 0;
-    auto a = int64 fn mut(int64 x)
+    let a = int64 fn mut(int64 x)
     {
         n += x;
         return n;
     };
-    auto b = a;
+    let b = a;
     println("a={} b={} outside={}", a(1), b(1), n);
     return 0;
 }
@@ -959,7 +959,7 @@ int64 fn() counter()
 }
 int64 main()
 {
-    auto c = counter();
+    let c = counter();
     println("{}", c());
     return 0;
 }
@@ -993,7 +993,7 @@ int64 fn() counter()
 }
 int64 main()
 {
-    auto c = counter();
+    let c = counter();
     println("{} {}", c(), c());
     return 0;
 }
@@ -1025,7 +1025,7 @@ int64 fn() counter()
 }
 int64 main()
 {
-    auto c = counter();
+    let c = counter();
     println("{} {}", c(), c());
     return 0;
 }
@@ -1070,14 +1070,14 @@ int64 main()
     record.text = "owned";
     record.values.push(1);
     {
-        auto own = int64 fn copy()
+        let own = int64 fn copy()
         {
             record.values[0] += 1;
             return record.values[0];
         };
         println("own={}", own());
         {
-            auto second = own;
+            let second = own;
             println("second={} drops={}", second(), drops);
         }
         println("drops={}", drops);
@@ -1123,7 +1123,7 @@ int64 main()
     record.text = "moved";
     record.values.push(10);
     {
-        auto own = int64 fn move()
+        let own = int64 fn move()
         {
             record.values[0] += 1;
             return record.values[0];
@@ -1191,12 +1191,12 @@ drops=1
 \par
 \medskip
 \begin{lstlisting}[style=magel]
-auto f = fn(int64 x)
+let f = fn(int64 x)
 {
     x * 2
 };
 // 表达式体：没有分号
-auto g = fn(int64 x)
+let g = fn(int64 x)
 {
     return x * 2;
 };
@@ -1212,7 +1212,7 @@ auto g = fn(int64 x)
 \begin{lstlisting}[style=magel]
 int64 main()
 {
-    auto g = int64 fn(int64 x)
+    let g = int64 fn(int64 x)
     {
         x * 3;
     };
@@ -1251,8 +1251,8 @@ int64 main()
 {
     int64 one = 1;
     int64 ten = 10;
-    auto plus1 = makeAdder(&one);
-    auto plus10 = makeAdder(&ten);
+    let plus1 = makeAdder(&one);
+    let plus10 = makeAdder(&ten);
     println("{} {}", plus1(5), plus10(5));
     return 0;
 }
@@ -1362,7 +1362,7 @@ int64 main()
     int64 snapshot = isolated();
     println("{} {} {} {}", initial, changed, snapshot, base);
 
-    auto counter = makeNamedCounter();
+    let counter = makeNamedCounter();
     int64 first = counter();
     int64 second = counter();
     println("{} {}", first, second);
@@ -1500,7 +1500,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=magel]
-auto combine = (int64 fn(int64)) fn(int64 fn(int64) a, int64 fn(int64) b)
+let combine = (int64 fn(int64)) fn(int64 fn(int64) a, int64 fn(int64) b)
 {
     int64 fn copy(int64 x)
     {
@@ -1522,7 +1522,7 @@ auto combine = (int64 fn(int64)) fn(int64 fn(int64) a, int64 fn(int64) b)
 \begin{lstlisting}[style=magel]
 int64 main()
 {
-    auto combine = (int64 fn(int64)) fn(int64 fn(int64) a, int64 fn(int64) b)
+    let combine = (int64 fn(int64)) fn(int64 fn(int64) a, int64 fn(int64) b)
     {
         int64 fn copy(int64 x)
         {
@@ -1530,13 +1530,13 @@ int64 main()
         }
     };
 
-    auto f1 = int64 fn(int64 x) { x + 1 };
-    auto f2 = int64 fn(int64 x) { x * 2 };
-    auto c1 = combine(f1, f2);
-    auto c2 = combine(f2, f1);
+    let f1 = int64 fn(int64 x) { x + 1 };
+    let f2 = int64 fn(int64 x) { x * 2 };
+    let c1 = combine(f1, f2);
+    let c2 = combine(f2, f1);
     println("{} {}", c1(5), c2(5));
 
-    auto c3 = combine(fn(x) { x * 5 }, fn(x) { x - 1 });
+    let c3 = combine(fn(x) { x * 5 }, fn(x) { x - 1 });
     println("{}", c3(5));
     return 0;
 }
@@ -1572,7 +1572,7 @@ int64 main()
 \begin{lstlisting}[style=magel]
 struct Mapper
 {
-    auto transform = fn<T>(T value)
+    let transform = fn<T>(T value)
     {
         value
     };
@@ -1589,7 +1589,7 @@ int64 apply<F>(F operation, int64 value)
 
 int64 main()
 {
-    auto identity = fn<T>(T value)
+    let identity = fn<T>(T value)
     {
         value
     };
@@ -1619,7 +1619,7 @@ int64 main()
 int64 main()
 {
     int64 count = 0;
-    auto next = fn<T> copy[count](T value)
+    let next = fn<T> copy[count](T value)
     {
         count += 1;
         return count;

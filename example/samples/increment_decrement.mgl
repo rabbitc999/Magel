@@ -62,7 +62,7 @@ int64 main() {
     globalList.push(12);
     a = borrowedList()[0]++;
     assert(a == 12 && globalList[0] == 13);
-    auto map = {"key": 7};
+    let map = {"key": 7};
     a = --map["key"];
     assert(a == 6 && map["key"] == 6);
     float64 real = 1.5;

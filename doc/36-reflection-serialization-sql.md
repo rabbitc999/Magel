@@ -62,7 +62,7 @@ struct Person {
 ```
 
 `std::sql::query<Person>()` 返回查询对象。`ModelField` 的 `column` 指定列名，`id`
-指定主键，`kind` 指定 `auto`、`int`、`real`、`text` 或 `bool` 存储类型。
+指定主键，`kind` 指定 `let`、`int`、`real`、`text` 或 `bool` 存储类型。
 默认从反射字段类型推导；模型必须有主键。
 
 查询支持 `std::sql::filter<V>`、`std::sql::filterMany<V>`、`orderBy`、`select` 与 `page`。

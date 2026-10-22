@@ -109,7 +109,7 @@ void CollectLoopBreakValues(int statementId, Memory::Vector<std::shared_ptr<MTyp
             if (initializer >= 0) InferExpression(initializer, decl.type < 0 ? nullptr : T(decl.type));
             if (decl.type < 0 && initializer < 0)
             {
-                Fail("auto 变量必须给初值：" + decl.s);
+                Fail("let 变量必须给初值：" + decl.s);
                 return;
             }
             auto type = decl.type < 0 ? ExprType(initializer) : T(decl.type);

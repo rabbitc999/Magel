@@ -22,11 +22,11 @@ struct SqlStatement {
 /** 从反射元数据构造模型；没有 @Reflect 或 @ModelClass 时返回诊断。 */
 Result<String,String> __model<T>() {
     std::reflect::requireReflection();
-    auto reflected = std::reflect::getStructInfo<T>();
+    let reflected = std::reflect::getStructInfo<T>();
     if (reflected.isNone()) { return Result<String,String>::Err("SQL 模型需要 @Reflect"); }
-    auto info = reflected.unwrap();
-    auto classInfo = std::reflect::getAnnotationInfo("std::sql::ModelClass");
-    auto fieldInfo = std::reflect::getAnnotationInfo("std::sql::ModelField");
+    let info = reflected.unwrap();
+    let classInfo = std::reflect::getAnnotationInfo("std::sql::ModelClass");
+    let fieldInfo = std::reflect::getAnnotationInfo("std::sql::ModelField");
     if (classInfo.isNone() || fieldInfo.isNone()) { return Result<String,String>::Err("SQL 注解元数据不可用"); }
     String table;
     for (std::reflect::Annotation annotation in info.annotations) {
@@ -87,9 +87,9 @@ struct Query {
         if (self.limitValue < 0 || self.offsetValue < 0) { return Result<SqlStatement,String>::Err("分页参数不能为负数"); }
         String separator = ",";
         String options = "{\"filters\":[" + separator.join(self.filters) + "],\"orders\":[" + separator.join(self.orders) + "],\"columns\":[" + separator.join(self.columns) + "],\"limit\":" + self.limitValue.toString() + ",\"offset\":" + self.offsetValue.toString() + "}";
-        auto parsed = std::json::parse(__ipageBuild(self.model, operation, options, values));
+        let parsed = std::json::parse(__ipageBuild(self.model, operation, options, values));
         if (parsed.isErr()) { return Result<SqlStatement,String>::Err(parsed.error()); }
-        auto response = parsed.unwrap();
+        let response = parsed.unwrap();
         String error = response.find("error").unwrap().asString().unwrap();
         if (error != "") { return Result<SqlStatement,String>::Err(error); }
         SqlStatement statement;
@@ -595,7 +595,7 @@ int64 displayWidth(std::lang::String text) {
 
     /** 从带模型注解的反射类型创建查询。 */
     Result<Query,String> query<T>() {
-        auto metadata = __model<T>();
+        let metadata = __model<T>();
         if (metadata.isErr()) { return Result<Query,String>::Err(metadata.error()); }
         Query query;
         query.model = metadata.unwrap();
@@ -603,14 +603,14 @@ int64 displayWidth(std::lang::String text) {
     }
     /** 添加参数化条件；操作符编号与 ipage OperatorType 一致，默认相等。 */
     Result<bool,String> filter<V>(Query mut& query, String field, V value, int64 operation = 0) {
-        auto encoded = std::json::serialize<V>(&value);
+        let encoded = std::json::serialize<V>(&value);
         if (encoded.isErr()) { return Result<bool,String>::Err(encoded.error()); }
         query.filters.push("{\"field\":" + std::reflect::__serdeQuote(field) + ",\"op\":" + operation.toString() + ",\"values\":[" + encoded.unwrap() + "]}");
         return Result<bool,String>::Ok(true);
     }
     /** 添加 IN 或 NOT IN 等多参数条件。 */
     Result<bool,String> filterMany<V>(Query mut& query, String field, List<V> values, int64 operation = 11) {
-        auto encoded = std::json::serialize<List<V>>(&values);
+        let encoded = std::json::serialize<List<V>>(&values);
         if (encoded.isErr()) { return Result<bool,String>::Err(encoded.error()); }
         query.filters.push("{\"field\":" + std::reflect::__serdeQuote(field) + ",\"op\":" + operation.toString() + ",\"values\":" + encoded.unwrap() + "}");
         return Result<bool,String>::Ok(true);
@@ -618,13 +618,13 @@ int64 displayWidth(std::lang::String text) {
 
     /** 使用模型值生成参数化 INSERT。 */
     Result<SqlStatement,String> insert<T>(Query mut& query, T const& value) {
-        auto encoded = std::json::serialize<T>(value);
+        let encoded = std::json::serialize<T>(value);
         if (encoded.isErr()) { return Result<SqlStatement,String>::Err(encoded.error()); }
         return query.build("insert", encoded.unwrap());
     }
     /** 使用模型值生成参数化 UPDATE，主键不会被修改。 */
     Result<SqlStatement,String> update<T>(Query mut& query, T const& value) {
-        auto encoded = std::json::serialize<T>(value);
+        let encoded = std::json::serialize<T>(value);
         if (encoded.isErr()) { return Result<SqlStatement,String>::Err(encoded.error()); }
         return query.build("update", encoded.unwrap());
     }

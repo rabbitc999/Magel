@@ -1,4 +1,4 @@
 int64 main() {
-    auto value;
+    let value;
     return 0;
 }

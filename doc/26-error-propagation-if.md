@@ -47,8 +47,8 @@ interface FromResidual<F,R> { static F fromResidual(R residual); };
 - `result.ok()`：明确丢弃错误信息，得到 Option。
 
 ```magel
-auto value = operation().mapErr<AppError>(toAppError)?;
-auto user = findUser(id).okOr<AppError>(AppError::UserMissing)?;
+let value = operation().mapErr<AppError>(toAppError)?;
+let user = findUser(id).okOr<AppError>(AppError::UserMissing)?;
 ```
 
 `?` 可以写在 if 分支及条件中，其失败出口仍然是当前函数，不是 if 表达式。完整回归见 [条件表达式](../example/samples/if_expression.mgl) 与 [错误适配](../example/samples/error_adapters.mgl) 两个样例（由 `sh check.sh` 跑 VM 双后端）。
@@ -57,7 +57,7 @@ auto user = findUser(id).okOr<AppError>(AppError::UserMissing)?;
 
 移除标准库 `choose` 和 `chooseLazy`，改用 `if (condition) { a } else { b }`。新写法只计算被选中的分支；迁移旧 choose 时，需要确认原来依赖两侧提前执行的副作用。用户自己声明的同名函数仍是普通函数。
 
-LSP 显示 if 和传播表达式的成功类型，并支持 auto 悬停与成员补全。悬停 `?` 可查看来源、成功类型、失败载荷和当前函数返回出口。
+LSP 显示 if 和传播表达式的成功类型，并支持 let 悬停与成员补全。悬停 `?` 可查看来源、成功类型、失败载荷和当前函数返回出口。
 
 交互终端的程序文本实时输出，`std::lang::pause()` 在提示前刷新 stdout 与 stderr；非交互输入不等待回车。管道输出仍按宿主既有收集方式返回。
 

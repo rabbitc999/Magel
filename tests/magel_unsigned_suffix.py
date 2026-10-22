@@ -46,13 +46,13 @@ def main():
             assert (result.returncode == 0) == succeeds, (code, result.stdout, result.stderr)
             assert diagnostic in result.stdout + result.stderr, (code, diagnostic, result.stdout, result.stderr)
         for expression in ('-1u', '-(1u)', '-+1u', '-0u', '-0xffu', '-b_1u'):
-            check(f'int64 main(){{auto x={expression};return 0;}}', False, 'u 后缀整数字面量不能使用一元负号')
+            check(f'int64 main(){{let x={expression};return 0;}}', False, 'u 后缀整数字面量不能使用一元负号')
             print(f'[通过] 拒绝 {expression}', flush=True)
         for declaration in ('uint8 x=256u;', 'uint8 x=0x100u;', 'uint8 x=b_100000000u;', 'int64 x=1u;', 'uint8 x=1u;x=256u;'):
             check('int64 main(){' + declaration + 'return 0;}', False)
-        check('int64 main(){auto x=18446744073709551616u;return 0;}', False, '超出 64 位')
+        check('int64 main(){let x=18446744073709551616u;return 0;}', False, '超出 64 位')
         for expression in ('1.0u', '0x1_uu'):
-            check(f'int64 main(){{auto x={expression};return 0;}}', False)
+            check(f'int64 main(){{let x={expression};return 0;}}', False)
         check('@annotation U(value:uint64=18446744073709551615u)\n@U struct Tagged {};\n@annotation Small(value:uint8)\n@Small(255u) struct Narrow {};\nint64 main(){return 0;}', True)
         check('@annotation Signed(value:int64)\n@Signed(1u) struct Tagged {};\nint64 main(){return 0;}', False, 'u 后缀整数字面量只能用于无符号注解参数')
         check('@annotation Small(value:uint8)\n@Small(256u) struct Tagged {};\nint64 main(){return 0;}', False, '超出声明类型范围')

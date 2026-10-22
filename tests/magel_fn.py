@@ -19,7 +19,7 @@ def main():
         def invoke(command):
             """执行编译或测试程序，捕获可比较的输出。"""
             return subprocess.run(list(map(str, command)), cwd=ROOT, env=env, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=240)
-        for name in ('fn_auto', 'fn_capture_modes', 'lambda_auto', 'lambda_capture_modes'):
+        for name in ('fn_let', 'fn_capture_modes', 'lambda_let', 'lambda_capture_modes'):
             expected = (ROOT / 'example/expected' / (name + '.txt')).read_text(encoding='utf-8')
             for level in (0, 2):
                 result = invoke([compiler, 'run', ROOT / 'example/samples' / (name + '.mgl')])
@@ -29,14 +29,14 @@ def main():
                 output = Path(directory) / (name + ('.exe' if os.name == 'nt' else ''))
         legacy = Path(directory) / 'legacy.mgl'
         for spelling in ('lambda(int64 x){x+1}', 'int64 lambda(int64 x){return x+1;}', 'lambda copy(int64 x){return x+1;}', 'lambda move[x](){return x;}'):
-            legacy.write_text('int64 main(){int64 x=1;auto f=' + spelling + ';return 0;}', encoding='utf-8')
+            legacy.write_text('int64 main(){int64 x=1;let f=' + spelling + ';return 0;}', encoding='utf-8')
             result = invoke([compiler, 'run', legacy])
             assert result.returncode != 0, (spelling, result.stdout, result.stderr)
         legacy.write_text('int64 main(){int64 lambda=3;assert(lambda==3);return 0;}', encoding='utf-8')
         result = invoke([compiler, 'run', legacy])
         assert result.returncode == 0, (result.stdout, result.stderr)
         for keyword in ('fn', 'lambda'):
-            for fragment in ('int64 x=1; auto f=KEY const(){x+=1;return x;};', 'int64 x=1; auto f=KEY copy[x] move[x](){return x;};', 'auto f=KEY(int64 x) -> int64 {return x;};'):
+            for fragment in ('int64 x=1; let f=KEY const(){x+=1;return x;};', 'int64 x=1; let f=KEY copy[x] move[x](){return x;};', 'let f=KEY(int64 x) -> int64 {return x;};'):
                 source = Path(directory) / 'invalid.mgl'
                 source.write_text('int64 main(){' + fragment.replace('KEY', keyword) + 'return 0;}', encoding='utf-8')
                 result = invoke([compiler, '--check', source])

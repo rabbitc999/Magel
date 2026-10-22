@@ -270,6 +270,12 @@ struct MNode
     double d = 0.0;
     int guard = -1;                  ///< match 分支的可选 bool 守卫。
     bool unsignedLiteral = false;    ///< 整数字面量是否显式带有小写 u 后缀。
+    /**
+     * 幅值为 2^63 的十进制字面量（`9223372036854775808`）：本身放不进 int64，
+     * 只能被一元负号消费成 int64 最小值（`M_Un` 折叠时清掉此标记）；
+     * 没有被取负的字面量在 `M_Compile` 开头仍报越界。
+     */
+    bool intMinMagnitude = false;
     bool checkedExpression = false;  ///< 完整表达式的副作用检查边界。
     bool returnExpression = false;   ///< return 带值控制表达式的隐藏结果声明或值出口。
     bool implicitExitMove = false;   ///< 编译器在离开内部拥有者作用域时生成的消费操作。

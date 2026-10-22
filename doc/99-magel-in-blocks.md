@@ -341,7 +341,7 @@ import std::text;
 
 int64 main() {
     String label = std::text::Text::toUpper("magic-c");
-    auto chute = std::iter::range(0, 100).take(3);
+    let chute = std::iter::range(0, 100).take(3);
     List<int64> into = chute.collect();
     println("{} {}", label, into.len());
     return 0;
@@ -368,7 +368,7 @@ import std::iter;
 int64 twice(int64 v) { return v * 2; }
 
 int64 main() {
-    auto line = std::iter::range(0, 3).map(twice);
+    let line = std::iter::range(0, 3).map(twice);
     List<int64> got = line.collect();
     println("{} {} {}", got.len(), got[0], got[2]);
     return 0;

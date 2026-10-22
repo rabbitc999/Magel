@@ -27,7 +27,7 @@ int64 matched(int64 number) {
     return match (number) { 1 => { yield (21); } _ => { yield (22); } };
 }
 int64 looped() { return loop { yield (31); }; }
-int64 callback() { return { auto work = int64 fn() { return 41; }; yield (work()); }; }
+int64 callback() { return { let work = int64 fn() { return 41; }; yield (work()); }; }
 String cleanup() { return { String local = "cleanup"; defer { closes++; } yield (local); }; }
 struct ReturnPayload { String text; }
 T genericBlock<T>(T value) { return { T local = value; yield (local); }; }
@@ -56,7 +56,7 @@ String[] matchedArray() {
 T[] genericArray<T>(T value) { return { T values[] = new[1]; values[0] = value; yield (values); }; }
 String[] externalArray() {
     String original[] = new[2]; original[0] = "left"; original[1] = "right";
-    auto copied = { yield (original); };
+    let copied = { yield (original); };
     copied[0] = "changed";
     assert(original[0] == "left" && original[1] == "right");
     return copied;
@@ -86,16 +86,16 @@ void main() {
     assert(genericLoop<ReturnPayload>(payload).text == payload.text);
     assert(genericIf<ReturnPayload>(true, payload, payload).text == payload.text);
     assert(genericMatch<ReturnPayload>(1, payload).text == payload.text);
-    auto array = internalArray(); assert(array[0] == "first" && array[1] == "second");
-    auto copiedArray = externalArray(); assert(copiedArray[0] == "changed" && copiedArray[1] == "right");
-    auto returnedCopy = returnedExternalArray(); assert(returnedCopy[0] == "copied");
-    auto yesArray = conditionalArray(true); auto noArray = conditionalArray(false);
+    let array = internalArray(); assert(array[0] == "first" && array[1] == "second");
+    let copiedArray = externalArray(); assert(copiedArray[0] == "changed" && copiedArray[1] == "right");
+    let returnedCopy = returnedExternalArray(); assert(returnedCopy[0] == "copied");
+    let yesArray = conditionalArray(true); let noArray = conditionalArray(false);
     assert(yesArray[0] == 3 && noArray[0] == 4);
-    auto matchArray = matchedArray(); assert(matchArray[0] == "matched");
-    auto genericValues = genericArray<String>("generic array"); assert(genericValues[0] == "generic array");
-    auto noElements = emptyArray(); assert(len(noElements) == 0);
+    let matchArray = matchedArray(); assert(matchArray[0] == "matched");
+    let genericValues = genericArray<String>("generic array"); assert(genericValues[0] == "generic array");
+    let noElements = emptyArray(); assert(len(noElements) == 0);
     int64 previousDrops = drops; int64 previousCloses = closes;
-    { auto owners = ownedArray(); assert(owners[0].text == "owner" && drops == previousDrops && closes == previousCloses); }
+    { let owners = ownedArray(); assert(owners[0].text == "owner" && drops == previousDrops && closes == previousCloses); }
     assert(drops == previousDrops + 1 && closes == previousCloses + 1);
     println("return expressions OK");
 }

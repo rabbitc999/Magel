@@ -123,7 +123,7 @@ std::string lspFunctionText(const LspFunctionShape &shape)
  */
 std::string lspTypeDescription(const std::string &type, unsigned depth = 0)
 {
-    if (type.empty() || type == "auto") return "尚不能唯一确定类型；以完整编译检查结果为准。";
+    if (type.empty() || type == "let") return "尚不能唯一确定类型；以完整编译检查结果为准。";
     std::string description = "完整类型：`" + type + "`";
     if (depth >= 8) return description;
     const auto function = lspFunctionShape(type);

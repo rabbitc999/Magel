@@ -46,7 +46,7 @@
    向它推送任何分支或 tag 之前，**必须先取得用户明确同意**；未经同意不得推送，
    也不要把它当成 `origin` 的自动镜像顺手同步。
 8. **程序与插件分别记录版本**：根目录 [`VERSION`](VERSION) 是 Magel 程序版本，当前为
-   `0.24.2`；[`vscode/package.json`](vscode/package.json) 的插件 `version` 独立保持 `1.0.0`，
+   `0.25.0`；[`vscode/package.json`](vscode/package.json) 的插件 `version` 独立保持 `1.0.0`，
    `magelCompilerVersion` 必须与 `VERSION` 一致。内嵌编译器报告程序版本，VSIX 清单和包名
    使用插件版本。交付前在 `vscode/` 执行 `npm run package`，生成
    `vscode/dist/magel-editor-1.0.0.vsix`，核对两种版本及内嵌编译器字节。
@@ -76,6 +76,13 @@
     改动一旦涉及文法、语义、标准库、内嵌资产、文档正文或测试，按改动大小跑对应门禁
     （日常用 `sh ci.sh` 快速门禁，发版用 `sh ci.sh --full`）；
     同一次改动里混了注释以外的内容就整体按代码改动处理，不能借「只改注释」跳过门禁。
+    **只改语言服务（LSP）时不要跑全量验证**：`tools/native_development.cpp`、
+    `tools/native_lsp_type_shapes.hpp`、`tools/magel_lsp.py`、`source/lsp/` 这些只服务编辑器
+    的诊断 / 悬停 / 补全 / 跳转代码，构造编译器并跑对应的 LSP 回归即可
+    （`tests/magel_lsp_*.py`、`tests/magel_native_development.py`、`vscode/` 下的
+    `node test/<名字>.js`），不必跑 `sh check.sh` 或整套 `sh ci.sh`——样例回归验的是
+    编译器语义，LSP 改动不会改变它。LSP 改动一旦同时碰到文法、语义、标准库或内嵌资产，
+    仍按代码改动跑完整门禁。
     独立回归默认并行运行，`--jobs 1` 可用于串行复核；新增并行登记前检查临时目录、端口、
     生成资产与构建依赖。共享资源、生成与构建任务保留串行屏障，不为提速省略检查。
 
@@ -180,7 +187,7 @@ Markdown 与 LaTeX/PDF 保持相同的编号意图：不编号的小标题不得
 
 ## CHANGELOG 与版本口径
 
-语言尚未发布，当前开发版本为 **0.24.2**。此前累计的 1.0.0 开发记录细分为
+语言尚未发布，当前开发版本为 **0.25.0**。此前累计的 1.0.0 开发记录细分为
 `0.19.0`–`0.19.15` 与 `0.20.0`–`0.20.16`；更早的 1.x 已重排为 `0.18.0`–`0.18.6`。
 历史版本都使用三段 `0.x.x`；VS Code 扩展包独立使用 `1.0.0`。
 

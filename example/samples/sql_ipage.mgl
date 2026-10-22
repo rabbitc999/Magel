@@ -12,29 +12,29 @@ struct SqlPerson {
 
 int64 main()
 {
-    auto model = std::sql::query<SqlPerson>();
+    let model = std::sql::query<SqlPerson>();
     assert(model.isOk());
-    auto query = model.unwrap();
-    auto database = std::sql::Database::sqlite(":memory:");
-    auto schema = query.build("create");
+    let query = model.unwrap();
+    let database = std::sql::Database::sqlite(":memory:");
+    let schema = query.build("create");
     assert(schema.isOk());
-    auto created = database.exec(schema.unwrap());
+    let created = database.exec(schema.unwrap());
     assert(created.ok);
     SqlPerson person;
     person.id = 1;
     person.name = "张三'); DROP TABLE people; --";
     person.age = 28;
-    auto insert = std::sql::insert<SqlPerson>(&query, &person);
+    let insert = std::sql::insert<SqlPerson>(&query, &person);
     assert(insert.isOk());
     assert(!insert.unwrap().sql.contains(person.name));
     assert(database.exec(insert.unwrap()).ok);
     assert(std::sql::filter<int64>(&query, "id", 1).isOk());
     query.orderBy("age");
     query.page(10);
-    auto statement = query.build();
+    let statement = query.build();
     assert(statement.isOk());
     println("{} {}", statement.unwrap().sql, statement.unwrap().parameters);
-    auto result = database.exec(statement.unwrap());
+    let result = database.exec(statement.unwrap());
     assert(result.ok);
     assert(result.rowCount() == 1);
     assert(result.textAt(0, 1) == person.name);

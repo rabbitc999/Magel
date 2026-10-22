@@ -43,7 +43,7 @@ def main():
         stream = io.StringIO(newline='')
         # CR inside a field must be quoted even with LF record endings.
         csv.writer(stream, delimiter=delimiter, lineterminator='\r\n').writerows(rows)
-        blocks.append('{auto rows=parseCsv('+quote(stream.getvalue())+','+quote(delimiter).replace('"', "'")+').unwrap();')
+        blocks.append('{let rows=parseCsv('+quote(stream.getvalue())+','+quote(delimiter).replace('"', "'")+').unwrap();')
         blocks.append(f'assert(rows.len()=={len(rows)});')
         for i,row in enumerate(rows):
             blocks.append(f'assert(rows[{i}].len()=={len(row)});')

@@ -56,7 +56,7 @@ int64 main() {
     Thread task;
     { Expr value = Expr::parse("123456789012345678901234567890*x^2");
       task = std::thread::createWith<Expr>(worker, value); }
-    auto reply = std::message::receiveFor<Expr>(5000);
+    let reply = std::message::receiveFor<Expr>(5000);
     assert(reply.isReady());
     assert(std::thread::waitResult(task).isReady());
     Expr result = reply.value;
@@ -67,20 +67,20 @@ int64 main() {
     'auto_overloads': '''float64 choose(float64 x) { return x; }
 float32 choose(float32 x) { return x; }
 int64 choose(int64 x) { return x; }
-auto forward<T>(T x) { return choose(x); }
+let forward<T>(T x) { return choose(x); }
 int64 main() { float32 single = forward(1.0f); float64 real = forward(1.0); int64 integer = forward(1); assert(single == 1.0f && real == 1.0 && integer == 1); println("ok"); return 0; }''',
 }
 ERRORS = {
-    'parse': ('auto result = Expr::parse("x+");', '解析失败'),
-    'child': ('Expr x = Expr::parse("sin(x)"); auto result = x.child(1);', '子节点'),
-    'number': ('auto result = Expr::symbol("x").numerator();', '数值'),
-    'decimal': ('auto result = Expr::symbol("x").decimal();', '自由变量'),
-    'order': ('auto result = Expr::symbol("x").differentiate("x", -1);', '0..1000'),
-    'precision': ('auto result = pi(0);', '1..100000'),
-    'log_domain': ('auto result = ln(BigDecimal(-1));', '对数'),
-    'asin_domain': ('auto result = asin(BigDecimal(2));', '[-1,1]'),
-    'pow_domain': ('auto result = pow(BigDecimal(-2), BigDecimal("0.5"));', '负'),
-    'zero_mod': ('auto result = fmod(BigDecimal(1), BigDecimal(0));', '零'),
+    'parse': ('let result = Expr::parse("x+");', '解析失败'),
+    'child': ('Expr x = Expr::parse("sin(x)"); let result = x.child(1);', '子节点'),
+    'number': ('let result = Expr::symbol("x").numerator();', '数值'),
+    'decimal': ('let result = Expr::symbol("x").decimal();', '自由变量'),
+    'order': ('let result = Expr::symbol("x").differentiate("x", -1);', '0..1000'),
+    'precision': ('let result = pi(0);', '1..100000'),
+    'log_domain': ('let result = ln(BigDecimal(-1));', '对数'),
+    'asin_domain': ('let result = asin(BigDecimal(2));', '[-1,1]'),
+    'pow_domain': ('let result = pow(BigDecimal(-2), BigDecimal("0.5"));', '负'),
+    'zero_mod': ('let result = fmod(BigDecimal(1), BigDecimal(0));', '零'),
 }
 
 

@@ -39,7 +39,7 @@ def main():
         ("replace_string", "$replace URL() \"https://example\" // keep comment\nint64 main() { String s = $URL(); if (s == \"https://example\") { return 0; } return 1; }", None),
         ("type_parameter", "$macro DECLARE(T, name, value)\nT name = value;\n$end_macro\nint64 main() { $DECLARE(int32, value, 42); return value - 42; }", None),
         ("variadic_call", "$macro ADD(...xs)\nadd(xs)\n$end_macro\nint64 add(int64 a, int64 b) { return a + b; } int64 main() { return $ADD(40, 2) - 42; }", None),
-        ("variadic_tuple", "$macro PAIR(first, ...rest)\n(first, rest)\n$end_macro\nint64 main() { auto pair = $PAIR(1 + 1, 2 + 2); return pair.0 * 10 + pair.1 - 24; }", None),
+        ("variadic_tuple", "$macro PAIR(first, ...rest)\n(first, rest)\n$end_macro\nint64 main() { let pair = $PAIR(1 + 1, 2 + 2); return pair.0 * 10 + pair.1 - 24; }", None),
         ("empty_variadic_call", "$macro CALL(...xs)\nzero(xs)\n$end_macro\nint64 zero() { return 0; } int64 main() { return $CALL(); }", None),
         ("type_required", "$macro DECLARE(T, name)\nT name;\n$end_macro\nint64 main() { $DECLARE(1 + 2, value); return 0; }", "类型位置"),
         ("type_iteration", "$macro ADD(out, ...Types)\n$for T in Types\nT temp = 1; out += temp;\n$end_for\n$end_macro\nint64 main() { int64 out = 0; $ADD(out, int32, int64); return out - 2; }", None),

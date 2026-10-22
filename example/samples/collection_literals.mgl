@@ -26,11 +26,11 @@ Map<String, int64> emptyMap() { return {}; }
 int64 count(Set<int64> values) { return values.len(); }
 int64 mapCount(Map<String, int64> values) { return values.len(); }
 int64 main() {
-    auto set = {3, 1, 3, 2,};
+    let set = {3, 1, 3, 2,};
     assert(set.len() == 3 && set.has(1) != 0 && set.has(2) != 0 && set.has(3) != 0);
-    auto map = {"a": 1, "b": 2, "a": 3,};
+    let map = {"a": 1, "b": 2, "a": 3,};
     assert(map.len() == 2 && map["a"] == 3 && map["b"] == 2);
-    auto ordered = {step(): step(), step(): step()};
+    let ordered = {step(): step(), step(): step()};
     assert(evaluations == 4 && ordered[1] == 2 && ordered[3] == 4);
     List<int64> emptyList = [];
     List<int64> numbers = [3, 1, 3, 2];
@@ -49,9 +49,9 @@ int64 main() {
     assert(set.len() == 0 && map.len() == 0);
     Set<uint8> small = {1, 2, 3};
     Set<float64> real = {1, 2.5};
-    auto inferredReal = {1, 2.5};
+    let inferredReal = {1, 2.5};
     assert(small.len() == 3 && real.has(1.0) != 0 && inferredReal.has(2.5) != 0);
-    auto nested = {"filled": {1, 2}, "empty": {}};
+    let nested = {"filled": {1, 2}, "empty": {}};
     Map<String, Set<int64> > typedNested = {"empty": {}, "filled": {3, 4}};
     Set<int64> inner = nested["filled"];
     Set<int64> innerCopy = typedNested["filled"];
@@ -64,22 +64,22 @@ int64 main() {
     int64 before = evaluations;
     bool skipped = false && ({step(): step()}).len() > 0;
     assert(!skipped && evaluations == before);
-    auto tupleSet = {(1, "one"), (2, "two"), (1, "one")};
+    let tupleSet = {(1, "one"), (2, "two"), (1, "one")};
     assert(tupleSet.len() == 2);
     {
         int64 round = 0;
         while (round < 8) {
 
-        auto textSet = {"first", "sec" + "ond", "first"};
-        auto textMap = makeMap();
+        let textSet = {"first", "sec" + "ond", "first"};
+        let textMap = makeMap();
         Map<String, String> copied = textMap;
         textMap["first"] = "changed";
         assert(textSet.len() == 2 && copied["first"] == "one");
         assert(makeSet().len() == 3 && ({"x": "value"})["x"] == "value");
-        auto big = {1: BigInteger("12345678901234567890")};
+        let big = {1: BigInteger("12345678901234567890")};
         BigInteger number = big[1];
         assert(number == BigInteger("12345678901234567890"));
-        auto keyed = {key(1, "first"): "one", key(3, "collision"): "three", key(1, "duplicate"): "updated"};
+        let keyed = {key(1, "first"): "one", key(3, "collision"): "three", key(1, "duplicate"): "updated"};
         assert(keyed.len() == 2 && keyed[key(1, "query")] == "updated" && keyed[key(3, "query")] == "three");
         int64 position = 0;
         bool foundOriginal = false;
@@ -103,12 +103,12 @@ int64 main() {
         holder.values.put(key(4, "field"), "four");
         assert(holder.values[key(4, "query")] == "four");
         PlainKey first; first.id = 1; PlainKey duplicate; duplicate.id = 11;
-        auto plain = {first: "first", duplicate: "last"};
+        let plain = {first: "first", duplicate: "last"};
         assert(plain.len() == 1 && plain[first] == "last" && plain.has(duplicate) != 0);
-        auto plainCopy = plain.copy();
+        let plainCopy = plain.copy();
         assert(plainCopy.remove(duplicate) != 0 && plainCopy.len() == 0 && plain.len() == 1);
         DerivedKey inherited; inherited.id = 5;
-        auto derived = {inherited: 55};
+        let derived = {inherited: 55};
         assert(derived[inherited] == 55);
     
             round = round + 1;

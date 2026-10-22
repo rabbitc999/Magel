@@ -5,7 +5,7 @@ struct Holder { Secret hidden; int64 visible; };
 @Reflect
 Secret makeSecret() { return Secret::new(7); }
 int64 main() {
-    auto info = std::reflect::getStructInfo<Holder>().unwrap();
+    let info = std::reflect::getStructInfo<Holder>().unwrap();
     assert(info.fields.len() == 2);
     assert(info.fields[0].name == "hidden");
     assert(info.fields[1].name == "visible");

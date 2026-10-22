@@ -172,7 +172,7 @@ int64 main()
     values.push(1);
     values.push(2);
     values.push(3);
-    auto mapped = std::algorithms::mapValue<int64>(values, clear);
+    let mapped = std::algorithms::mapValue<int64>(values, clear);
     println("done");
     return 0;
 }
@@ -382,7 +382,7 @@ def deep_json_nesting():
             "        text = text + \"[\";\n    }\n"
             "    for (int64 index in std::lang::range(0, %d))\n    {\n"
             "        text = text + \"]\";\n    }\n"
-            "    auto parsed = std::json::parse(text);\n"
+            "    let parsed = std::json::parse(text);\n"
             "    println(\"{}\", parsed.isOk());\n"
             "    return 0;\n}\n" % (depth, depth))
 

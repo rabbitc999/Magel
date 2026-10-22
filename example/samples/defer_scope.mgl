@@ -4,11 +4,11 @@ struct Owned : Drop { void drop(){add(9);} };
 struct Receiver { int64 value; void finish(){defer self.value=self.value+1;scope(exit){value=value+2;}} };
 int64 run(){int64 n=1;defer add(n);n=3;scope(exit){add(2);}return 7;}
 String snapshot(){String text="before";defer text="after";return text;}
-Option<int64> fail(){defer add(6);Option<int64> missing=Option<int64>::None;auto value=missing?;return Option<int64>::Value(value);}
+Option<int64> fail(){defer add(6);Option<int64> missing=Option<int64>::None;let value=missing?;return Option<int64>::Value(value);}
 int64 main(){assert(run()==7);assert(sequence==23);int64 c=0;
     while(c<3){defer add(4);c=c+1;if(c<3){continue;}break;}assert(sequence==23444);
     {Owned owner;defer add(5);}assert(sequence==2344459);
-    auto result=fail();assert(result.isNone());assert(sequence==23444596);
+    let result=fail();assert(result.isNone());assert(sequence==23444596);
     const int64 n=8;{defer add(n);}assert(sequence==234445968);
     Receiver receiver;receiver.finish();assert(receiver.value==3);
     assert(snapshot()=="before");

@@ -3,7 +3,7 @@
  * `Add<int64,int64>` 与 `Add<Vec,int64>` 共存时，两个 `leftAdd(int64)` 只在返回类型上
  * 不同 —— 普通方法重载做不到这件事，运算符接口开了这个口子。挑哪条由**目标类型**定：
  * `int64 x = a + 3;` 走返回 int64 的那条，`Vec y = a + 3;` 走返回 Vec 的那条。
- * 没有目标类型（`auto`）会报错，见 samples-error/operator_result_ambiguous.mgl。
+ * 没有目标类型（`let`）会报错，见 samples-error/operator_result_ambiguous.mgl。
  */
 
 struct Vec {

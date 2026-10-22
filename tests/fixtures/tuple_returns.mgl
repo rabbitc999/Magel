@@ -16,7 +16,7 @@ struct TupleBox<T> { T value; };
     List<T> list; list.push(value);
     return box, list;
 }
-auto inferred<T>(T value) { return value, value; }
+let inferred<T>(T value) { return value, value; }
 (int64, int64, int64) three() { return 1, 2, 3; }
 int64 main() {
     String str1 = "aaa", str2;
@@ -28,7 +28,7 @@ int64 main() {
     (int32, String) saved = func<String>(str1);
     assert(saved.0 == 1 && saved.1 == "aaa");
     assert(tupleSecond(saved) == "aaa");
-    auto (declared, text) = func("declaration");
+    let (declared, text) = func("declaration");
     assert(declared == 1 && text == "declaration");
     String left = "left", right = "right";
     left, right = (right, left);
@@ -56,14 +56,14 @@ int64 main() {
     assert(slots[0] == 8 && slots[1] == 9);
     a, a = (41, 42);
     assert(a == 42);
-    auto loopValue = loop {
+    let loopValue = loop {
         const int64 immutable = 5;
         int64 writable;
         writable, b = (6, 7);
         yield (immutable);
     };
     assert(loopValue == 5 && b == 7);
-    auto capturedAssignment = int64 fn () {
+    let capturedAssignment = int64 fn () {
         int64 x, y;
         x, y = (a, b);
         return x + y;

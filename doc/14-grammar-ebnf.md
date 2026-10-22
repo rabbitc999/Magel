@@ -90,7 +90,7 @@ Box<int64 fn(int64)> box;
 
 - 接口只包含方法；文法中能读取的接口字段会被语义层拒绝。接口实现及默认方法分派须满足编译期契约。
 - `static T create(...)` 这类返回所属类型的具名静态方法是拥有值构造入口，提供 self；丢弃构造结果会报错。普通默认声明不强制调用构造函数。
-- `auto`、fn 参数、枚举简写与空集合须有足够上下文。元组的共享类型项不能在值上下文冒充普通表达式。
+- `let`、fn 参数、枚举简写与空集合须有足够上下文。元组的共享类型项不能在值上下文冒充普通表达式。
 - `=` 可以形成纯普通赋值链；复合赋值不能组成或混入赋值链。完整表达式按实际目标检查自增减的读写冲突，独立目标可组合；赋值目标只求值一次。
 - 运算符重载通过接口实现。附录保留的 `operator_def` 名称是内部产生式名，其具体分支以 `.gram` 为准；它不代表允许动态声明运算协议。
 - 引用可写性、逃逸、临时值存活、资源复制与 Drop 由类型与生命周期检查控制，不能由 EBNF 单独保证。
@@ -105,7 +105,7 @@ Box<int64 fn(int64)> box;
 
 <!-- BEGIN GENERATED MAGEL EBNF -->
 
-以下 150 条产生式由 `source/magel.gram` 导出，语义动作及解析优先级指令省略。
+以下 151 条产生式由 `source/magel.gram` 导出，语义动作及解析优先级指令省略。
 
 ### 终结符登记
 
@@ -154,7 +154,7 @@ Box<int64 fn(int64)> box;
 | `DROP` | `drop` |
 | `STATIC` | `static` |
 | `FN` | `fn` |
-| `AUTO` | `auto` |
+| `LET` | `let` |
 | `COPY` | `copy` |
 | `MOVE` | `move` |
 | `INLINE` | `inline` |
@@ -250,6 +250,8 @@ Box<int64 fn(int64)> box;
 NUMBER = ? 正则 "[0-9]+" ? ;
 MACRO_NAME = ? 正则 "\\$[A-Za-z_][A-Za-z0-9_]*(@![0-9]+)?" ? ;
 MACRO_FRAGMENT = ? 正则 "@!macrofragment[0-9]+_[0-9]+" ? ;
+NO_REPLACE = ? 正则 "#No[A-Za-z][A-Za-z0-9]*Replace" ? ;
+NO_RIGHT = ? 正则 "#NoRight[A-Za-z][A-Za-z0-9]*" ? ;
 FLIT = ? 正则 "[0-9]+(\\.[0-9]+([eE][-+]?[0-9]+)?|[eE][-+]?[0-9]+)[f]?|[0-9]+f" ? ;
 ULIT = ? 正则 "[0-9]+u" ? ;
 HEXLIT = ? 正则 "0[xX][A-Za-z0-9_]*" ? ;
@@ -280,7 +282,9 @@ top_decl = struct_decl, type_decl_end
     | macro_call, ";"
     | opcode_decl, type_decl_end
     | "#NonCopyable", opcode_decl, type_decl_end
+    | switch_directives, struct_decl, type_decl_end
     | derive_directive, struct_decl, type_decl_end
+    | switch_directives, derive_directive, struct_decl, type_decl_end
     | derive_directive, enum_decl, type_decl_end
     | "module", module_name, ";"
     | "import", module_name, ";"
@@ -299,6 +303,11 @@ type_decl_end = ""
     | ";" ;
 
 derive_directive = "#derive", "(", iface_list, ")" ;
+
+switch_directives = NO_REPLACE
+    | NO_RIGHT
+    | switch_directives, NO_REPLACE
+    | switch_directives, NO_RIGHT ;
 
 opcode_decl = "opcode", name_token, "{", opcode_methods, "}" ;
 
@@ -435,7 +444,7 @@ member_list = ""
 member = annotation_list, member_decl
     | member_decl ;
 
-member_decl = "auto", name_token, "=", expr, ";"
+member_decl = "let", name_token, "=", expr, ";"
     | type, name_token, ";"
     | type, name_token, "[", expr, "]", ";"
     | type, name_token, "[", expr, "]", "[", expr, "]", ";"
@@ -474,7 +483,7 @@ operator_def = type, name_token, OPNAME, "(", param, ",", param, ")", block ;
 func_def = type, name_token, "(", param_list, ")", block
     | ptr_type, name_token, "(", param_list, ")", block
     | array_type, name_token, "(", param_list, ")", block
-    | "auto", name_token, "(", param_list, ")", block ;
+    | "let", name_token, "(", param_list, ")", block ;
 
 host_type_decl = "type", name_token, "=", type, ";"
     | "type", name_token, "=", ptr_type, ";" ;
@@ -543,7 +552,7 @@ global_decl = type, declarator_list, ";"
     | ptr_type, declarator_list, ";"
     | "const", type, declarator_list, ";"
     | "const", ptr_type, declarator_list, ";"
-    | "auto", declarator_list, ";" ;
+    | "let", declarator_list, ";" ;
 
 declarator_list = declarator
     | declarator_list, ",", declarator ;
@@ -605,7 +614,7 @@ match_patterns = match_pattern
 
 match_pattern = bxor_expr ;
 
-decl_stmt = "auto", "(", destructure_items, ")", "=", expr, ";"
+decl_stmt = "let", "(", destructure_items, ")", "=", expr, ";"
     | type, name_token, "(", param_list, ")", block
     | type, name_token, "(", param_list, ")", "mut", block
     | type, name_token, "(", param_list, ")", "copy", block
@@ -619,7 +628,7 @@ decl_stmt = "auto", "(", destructure_items, ")", "=", expr, ";"
     | ptr_type, declarator_list, ";"
     | "const", type, declarator_list, ";"
     | "const", ptr_type, declarator_list, ";"
-    | "auto", declarator_list, ";" ;
+    | "let", declarator_list, ";" ;
 
 destructure_items = destructure_binding, ",", destructure_binding
     | destructure_items, ",", destructure_binding ;
@@ -646,12 +655,12 @@ loop_stmt = "loop", block ;
 loop_expr = "loop", block
     | "while", "(", expr, ")", if_block, "else", if_block
     | "for", "(", name_token, "in", for_in_source, ")", if_block, "else", if_block
-    | "for", "(", "auto", name_token, "in", for_in_source, ")", if_block, "else", if_block
+    | "for", "(", "let", name_token, "in", for_in_source, ")", if_block, "else", if_block
     | "for", "(", type, name_token, "in", for_in_source, ")", if_block, "else", if_block
     | "for", "(", ptr_type, name_token, "in", for_in_source, ")", if_block, "else", if_block ;
 
 for_in_stmt = "for", "(", name_token, "in", for_in_source, ")", block
-    | "for", "(", "auto", name_token, "in", for_in_source, ")", block
+    | "for", "(", "let", name_token, "in", for_in_source, ")", block
     | "for", "(", type, name_token, "in", for_in_source, ")", block
     | "for", "(", ptr_type, name_token, "in", for_in_source, ")", block ;
 

@@ -62,10 +62,10 @@ int64 main(){
     assert(text.item.first=="original" && text.deep.first.first=="deep");
     assert(copied.item.first=="copy" && copied.deep.first.first=="changed");
     assert(auditDeepRead(text.deep)=="deep" && auditRead(a)==7);
-    auto inferred=auditWrap("inferred");assert(inferred.item.first=="inferred");
+    let inferred=auditWrap("inferred");assert(inferred.item.first=="inferred");
     AuditLayer<AuditLayer<AuditLayer<AuditLayer<AuditLayer<AuditLayer<AuditLayer<AuditLayer<String>>>>>>>> layers;layers.value.value.value.value.value.value.value.value="eight layers";
     AuditLayer<AuditLayer<AuditLayer<AuditLayer<AuditLayer<AuditLayer<AuditLayer<AuditLayer<String>>>>>>>> layerCopy=layers;layerCopy.value.value.value.value.value.value.value.value="changed";
-    auto peeled=auditPeel(layers);
+    let peeled=auditPeel(layers);
     assert(layers.value.value.value.value.value.value.value.value=="eight layers" && layerCopy.value.value.value.value.value.value.value.value=="changed" && peeled.value.value.value.value.value.value.value=="eight layers");
     AuditOuter<AuditPair<int64,String>> wider;wider.item.first.first=53;wider.item.first.second="wide";
     assert(wider.item.first.first==53 && a.item.second.value==9 && wider.item.first.second=="wide");
@@ -75,7 +75,7 @@ int64 main(){
     defaults.nested.first="three";defaults.nested.second="four";
     assert(defaults.second=="two" && defaults.nested.first=="three" && defaults.nested.second=="four");
     assert(auditDefault((int64)11)==11);
-    auto nestedDefault=auditNestedDefault("default");assert(nestedDefault.first=="default");
+    let nestedDefault=auditNestedDefault("default");assert(nestedDefault.first=="default");
     AuditValueBox<int64> valued;valued.value=13;
     AuditChecked<AuditValueBox<int64>> checked;checked.value=valued;
     assert(checked.read()==13 && auditNumber(valued)==13 && auditNumber<AuditValueBox<int64>>(valued)==13);

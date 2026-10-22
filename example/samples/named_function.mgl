@@ -17,6 +17,6 @@ void main() {
     String text = "owned"; int64 identity = 0; memcpy(&identity, &text, 8);
     int64 take() move { int64 actual = 0; memcpy(&actual, &text, 8); return actual; }
     String text = "reset"; assert(take() == identity && text == "reset");
-    auto counter = makeCounter(); assert(counter() == 8 && counter() == 9);
+    let counter = makeCounter(); assert(counter() == 8 && counter() == 9);
     println("named functions OK");
 }

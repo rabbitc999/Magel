@@ -766,10 +766,10 @@ def _text(original):
     return _MESSAGES.get(original, (original, original))[0]
 
 
-VERSION = "0.24.2"
+VERSION = "0.25.0"
 IGNORED = {".git", ".magel", "build", "tmp", "node_modules", "__pycache__"}
 EXTENSIONS = {".mgl", ".inc", ".h", ".hpp", ".c", ".cpp", ".toml", ".json"}
-KEYWORDS = "_ abi auto bool break cast char const continue copy defer drop elif else enum false float32 float64 fn for heap if impl import in inline int16 int32 int64 int8 interface loop match module move mut new opcode return scope static struct true type uint16 uint32 uint64 uint8 void while yield".split()
+KEYWORDS = "_ abi let bool break cast char const continue copy defer drop elif else enum false float32 float64 fn for heap if impl import in inline int16 int32 int64 int8 interface loop match module move mut new opcode return scope static struct true type uint16 uint32 uint64 uint8 void while yield".split()
 
 
 def invoke(args, **kwargs):
@@ -1144,7 +1144,7 @@ def declarations(uri, text):
             previous = stream[index - 1][0]
             following = stream[index + 1][0] if index + 1 < len(stream) else ''
             type_decl = previous in ('struct', 'enum', 'interface', 'module')
-            typed = previous in ('auto','bool','char','float32','float64','int8','int16','int32','int64','uint8','uint16','uint32','uint64','void') or (re.fullmatch(r'[A-Za-z_]\w*', previous) and previous not in ('return', 'import', 'throw', 'new'))
+            typed = previous in ('let','bool','char','float32','float64','int8','int16','int32','int64','uint8','uint16','uint32','uint64','void') or (re.fullmatch(r'[A-Za-z_]\w*', previous) and previous not in ('return', 'import', 'throw', 'new'))
             if previous=='>':
                 angle=1;at=index-2
                 while at>=0 and angle:
@@ -1374,7 +1374,7 @@ class LanguageServer:
                 locations.append({'uri': target, 'range': {'start': position(source, r['offset']), 'end': position(source, r['offset']+len(r['name']))}})
             if locations:
                 return locations
-        if method == 'textDocument/hover' and token[0]=='auto':
+        if method == 'textDocument/hover' and token[0]=='let':
             following=re.match(r'\s*(?:(?:const|mut)\s*)?&?\s*(\w+)',text[token.end():])
             if following:
                 name=following.group(1)
@@ -1393,7 +1393,7 @@ class LanguageServer:
         if method == 'textDocument/definition':
             return {'uri': uri, 'range': symbol['range']}
         if method == 'textDocument/hover':
-            inferred = inferred_type(records, token[0], text, cursor) if re.search(r'\bauto\b',symbol['signature']) else ''
+            inferred = inferred_type(records, token[0], text, cursor) if re.search(r'\blet\b',symbol['signature']) else ''
             signature = inferred+' '+token[0] if inferred else symbol['signature']
             return {'contents': {'kind': 'markdown', 'value': '```magel\n' + signature + '\n```'}, 'range': {'start': position(text, token.start()), 'end': position(text, token.end())}}
         raise LookupError(method)

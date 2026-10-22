@@ -12,7 +12,7 @@ int64 main() {
     int32 a = 1;
     println("a = {}", a);
 
-    auto ff = fn move () { a = 2; return a; };
+    let ff = fn move () { a = 2; return a; };
     int32 b = ff();
     int32 c = ff() + 1;              /* 等价于 ff() + (int32)(1) */
     println("b = {}", b);
@@ -21,7 +21,7 @@ int64 main() {
     int32 sum = 1 + 2;               /* 两边都是字面量：按 int32 槽位定型 */
     println("sum = {}", sum);
 
-    auto scaled = twice(b) + 3;      /* 相邻操作数是 int32，结果也是 int32 */
+    let scaled = twice(b) + 3;      /* 相邻操作数是 int32，结果也是 int32 */
     int32 keep = scaled;
     println("scaled = {}", keep);
 

@@ -68,7 +68,7 @@ const std::map<std::string, TokenName> &tokenDisplayNames()
         { "DROP", { "丢弃(drop)", "drop(drop)" } },
         { "STATIC", { "静态(static)", "static(static)" } },
         { "FN", { "函数(fn)", "function(fn)" } },
-        { "AUTO", { "自动类型(auto)", "auto type(auto)" } },
+        { "LET", { "自动类型(let)", "let type(let)" } },
         { "COPY", { "拷贝(copy)", "copy(copy)" } },
         { "MOVE", { "移动(move)", "move(move)" } },
         { "INLINE", { "内联(inline)", "inline(inline)" } },

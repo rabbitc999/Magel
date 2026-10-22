@@ -28,7 +28,7 @@ def main():
         server.query("initialize", dict(rootUri=Path(folder).as_uri()))
         try:
             for index, (body, expected) in enumerate(cases):
-                text = "$macro MAKE\n" + body + "\n$end_macro\nint64 identity(int64 x) { return x; }\nint64 main() { auto outer = $MAKE; auto middle = outer(); auto inner = middle(); inner; return 0; }"
+                text = "$macro MAKE\n" + body + "\n$end_macro\nint64 identity(int64 x) { return x; }\nint64 main() { let outer = $MAKE; let middle = outer(); let inner = middle(); inner; return 0; }"
                 uri = (Path(folder) / f"case_{index}.mgl").as_uri()
                 server.send(dict(method="textDocument/didOpen", params=dict(textDocument=dict(uri=uri, text=text, version=1))))
                 hints = server.query("textDocument/inlayHint", dict(textDocument=dict(uri=uri), range=dict(start=position(text, 0), end=position(text, len(text)))))
@@ -44,7 +44,7 @@ def main():
                 tree = json.loads(preview["text"])
                 assert tree["format"] == "hygienic-ast" and any(item["name"] == "MAKE" for item in tree["expansions"]), tree
                 assert preview["mappings"] and "bindingIdentity" not in preview["text"] and "temporaries" not in preview, preview
-            text = "$macro MAKE\nfn<T>(T value) { value }\n$end_macro\nint64 main() { auto closure = $MAKE; auto result = closure(42); return 0; }"
+            text = "$macro MAKE\nfn<T>(T value) { value }\n$end_macro\nint64 main() { let closure = $MAKE; let result = closure(42); return 0; }"
             uri = (Path(folder) / "generic.mgl").as_uri()
             server.send(dict(method="textDocument/didOpen", params=dict(textDocument=dict(uri=uri, text=text, version=1))))
             hints = server.query("textDocument/inlayHint", dict(textDocument=dict(uri=uri), range=dict(start=position(text, 0), end=position(text, len(text)))))

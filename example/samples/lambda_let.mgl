@@ -1,21 +1,21 @@
-/* auto 声明，以及显式、auto、缺省返回类型和上下文参数推导 fn。
+/* let 声明，以及显式、let、缺省返回类型和上下文参数推导 fn。
  * 注释里的 fn (x, y) { x + y } 不能被提升器误认。 */
 
-auto global_value = 9;
+let global_value = 9;
 
-auto make_adder() {
+let make_adder() {
     return fn (int32 n) { n + 10 };
 }
 
 int64 main() {
-    auto add32 = int32 fn(int32 x, int32 y) { x + y };
-    auto mul32 = fn(int32 x, int32 y) { x * y };
-    auto sub32 = fn (int32 x, int32 y) { x - y };
-    auto inferred = fn (x, y) { x + y };
-    auto literal_add = fn (x, y) { x + y };
-    auto multi = fn(int32 x, int32 y) {
+    let add32 = int32 fn(int32 x, int32 y) { x + y };
+    let mul32 = fn(int32 x, int32 y) { x * y };
+    let sub32 = fn (int32 x, int32 y) { x - y };
+    let inferred = fn (x, y) { x + y };
+    let literal_add = fn (x, y) { x + y };
+    let multi = fn(int32 x, int32 y) {
         int32 sum = x + y;
-        auto doubled = sum * 2;
+        let doubled = sum * 2;
         return doubled;
     };
     int32 fn(int32, int32) divided =
@@ -26,10 +26,10 @@ int64 main() {
     int32 four = 4;
     int32 bias = 5;
     int32 saved_bias = bias;
-    auto explicit_bias = fn (int32 value, int32 bias) { value + bias };
-    auto add_ten = make_adder();
+    let explicit_bias = fn (int32 value, int32 bias) { value + bias };
+    let add_ten = make_adder();
     bias = 20;
-    auto answer = inferred(a, b);
+    let answer = inferred(a, b);
     String untouched = "fn (not code)";
     println("{} {} {} {} {} {} {} {} {} {} {}", add32(a, b), mul32(a, b), sub32(a, b),
     answer, literal_add(4, 5), multi(a, b), explicit_bias(2, saved_bias), add_ten(four), divided(a, b),

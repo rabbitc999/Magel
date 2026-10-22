@@ -1,4 +1,4 @@
-"""验证真实 LSP 的接收者类型、auto 悬停和同名类型隔离。"""
+"""验证真实 LSP 的接收者类型、let 悬停和同名类型隔离。"""
 from pathlib import Path
 import sys
 import tempfile
@@ -36,15 +36,15 @@ Leaf makeLeaf(){Leaf result; return result;}
             cases = [
                 ('void use(Leaf const& item){item.', 'item.'),
                 ('int64 main(){Leaf item;item.', 'item.'),
-                ('int64 main(){auto item=Leaf();item.', 'item.'),
-                ('int64 main(){auto item=makeLeaf();item.', 'item.'),
-                ('int64 main(){Leaf original;auto item=original;item.', 'item.'),
-                ('int64 main(){Wrapper holder;auto item=holder.leaf;item.', 'item.'),
+                ('int64 main(){let item=Leaf();item.', 'item.'),
+                ('int64 main(){let item=makeLeaf();item.', 'item.'),
+                ('int64 main(){Leaf original;let item=original;item.', 'item.'),
+                ('int64 main(){Wrapper holder;let item=holder.leaf;item.', 'item.'),
                 ('int64 main(){Wrapper holder;holder.leaf.', 'holder.leaf.'),
                 ('int64 main(){Wrapper holder;holder.get().', 'holder.get().'),
                 ('int64 main(){makeLeaf().', 'makeLeaf().'),
                 ('int64 main(){Box<Leaf> holder;holder.item.', 'holder.item.'),
-                ('int64 main(){Box<Leaf> holder;auto item=holder.get();item.', 'item.'),
+                ('int64 main(){Box<Leaf> holder;let item=holder.get();item.', 'item.'),
                 ('int64 main(){Leaf item;{Other item;item.check();}item.', 'item.'),
             ]
             for body,marker in cases:
@@ -53,12 +53,12 @@ Leaf makeLeaf(){Leaf result; return result;}
                 assert labels == {'read','value','toString'}, (body,result)
             result = query('int64 main(){Leaf item;{Other item;item.', 'item.')
             assert {r['label'] for r in result}=={'check','flag','toString'}, result
-            assert query('int64 main(){auto item=missing();item.', 'item.')==[]
+            assert query('int64 main(){let item=missing();item.', 'item.')==[]
             for initializer, expected in [('makeLeaf()','Leaf'), ('42','int64'), ('1.25','float64'), ('true','bool'), ('"hello"','String')]:
-                body=f'int64 main(){{auto item={initializer};item;}}'
+                body=f'int64 main(){{let item={initializer};item;}}'
                 hover=query(body,'item','hover')
                 assert expected+' item' in hover['contents']['value'], (body,hover)
-                hover=query(body,'auto','hover')
+                hover=query(body,'let','hover')
                 assert expected+' item' in hover['contents']['value'], (body,hover)
                 # Python 参考实现共用同样的初始化类型约定。
                 index=ApiIndex(); entries=index.scan(uri,prelude+body)
@@ -76,7 +76,7 @@ Leaf makeLeaf(){Leaf result; return result;}
             assert {item['label'] for item in result}=={'toString'},result
     finally:
         server.close()
-    print('LSP 实例成员、auto 具体类型、泛型字段与返回值、局部遮蔽及模块同名隔离全部通过。')
+    print('LSP 实例成员、let 具体类型、泛型字段与返回值、局部遮蔽及模块同名隔离全部通过。')
 
 
 if __name__ == '__main__':

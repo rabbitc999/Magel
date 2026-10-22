@@ -4,8 +4,8 @@ uint8 narrowArgument(uint8 value) { return value; }
 const uint64 MAXIMUM = 18446744073709551615u;
 const uint64 WRAPPED = 0u - 1u;
 int64 main() {
-    auto one = 1u;
-    auto zero = 0u;
+    let one = 1u;
+    let zero = 0u;
     assert(~zero == MAXIMUM);
     assert(one < MAXIMUM);
     assert(MAXIMUM == 0xFFFFFFFFFFFFFFFFu);
