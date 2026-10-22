@@ -66,3 +66,17 @@ __pycache__/
 /source/magel_main.cpp
 /source/.parseengine-manifest
 /source/.magel-build.gram
+
+# 内嵌资产（压缩字节）：`python tools/embed_stdlib.py` 把 std/*.mgl、source/glue 与手册
+# 数据压成一张 lztext 表写进这个 .cpp，改了标准库或胶水就重跑 `sh gen.sh`；产物二十多 MB，
+# 能重建，不入库。
+/source/magel_stdlib_embedded.cpp
+# 内嵌手册数据：`python tools/embed_manual.py` 从 doc/ 生成，是上面那条内嵌资产的输入，
+# 由 `sh gen.sh` 一并重建，不入库。
+/tools/magel_manual.json
+# 书稿 PDF 随其它 LaTeX 产物一起忽略（原先在 doc/book/latex/.gitignore 里被 `!book.pdf`
+# 单独放行）：用该目录 README.md 里的 xelatex 命令构建，属发布产物；跑文档链接门禁前要先构建。
+# 独立程序的资产清单：`python tools/stackvm_sources.py --build-assets` 与
+# `python tools/cas_sources.py --build-assets` 生成（`--check` 卡同步），不入库。
+/library/stackvm/core_assets.hpp
+/library/caspp/core_assets.hpp

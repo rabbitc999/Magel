@@ -199,6 +199,40 @@ inline preprocess::Result embeddedUnit(const Memory::String &name, const Memory:
     return result;
 }
 
+/**
+ * @brief 标准库段与用户代码段的分界标记行。
+ *
+ * `Loader::load` 在把**入口单元**追加进合并源码之前插入这一行：它前面的所有内容都来自
+ * 标准库（内嵌的 `std::lang` 与本次 `import` 的 `std::xxx`），同一份标准库在同一支编译器
+ * 下每次编译都逐字节相同，可以只解析一次（见 `magel_precompiled.hpp`）。
+ * 写成行注释：词法当空白处理，前处理与宏 / 插值 / 泛型各道文本 pass 都不改写它。
+ */
+inline const char *standardBoundaryLine() { return "// magel-standard-boundary\n"; }
+
+/**
+ * @brief 在合并源码里定位标准库段的分界行。
+ * @param text 已经跑完整道文本 pass 的合并源码。
+ * @retval 分界行的起始下标；没有分界行时返回 `Memory::String::npos`。
+ * @note 返回的下标处正好是一行的开头，调用方按它把文本切成两半，后半段保留标记行，
+ *       于是后半段第一行的行号天然等于它在合并源码里的行号。
+ */
+inline std::size_t findStandardBoundary(const Memory::String &text)
+{
+    const Memory::String marker = "// magel-standard-boundary";
+    std::size_t at = text.find(marker);
+    while (at != Memory::String::npos)
+    {
+        /* 必须是**独立一行**：前面只能是行首或换行，后面只能是换行或文本结束，
+         * 免得标准库或用户代码里出现同形文字（比如字符串字面量）时切错位置。 */
+        const bool lineStart = at == 0 || text[at - 1u] == '\n';
+        const std::size_t end = at + marker.size();
+        const bool lineEnd = end >= text.size() || text[end] == '\n' || text[end] == '\r';
+        if (lineStart && lineEnd) return at;
+        at = text.find(marker, end);
+    }
+    return Memory::String::npos;
+}
+
 class Loader
 {
 public:
@@ -478,6 +512,15 @@ private:
         }
         visiting_.erase(key);
         loaded_.insert(key);
+        if (root)
+        {
+            /* 分界标记：到此为止（含本行之前）都是标准库，后面才是入口单元。
+             * 放 `module __root;` 合成声明之前，用户侧补模块名不会越过这条线。 */
+            preprocess::Result marker;
+            marker.text = standardBoundaryLine();
+            marker.lineMap.push_back(preprocess::LineOrigin{ "<标准库分界>", 1u });
+            append(output, marker);
+        }
         if (root && !info.hasModule && !output.text.empty())
         {
             preprocess::Result reset;

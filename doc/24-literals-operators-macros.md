@@ -255,4 +255,28 @@ $end_macro
 
 `$replace ADD(a, b) a + b` 是同一 AST 机制的单行定义。宏递归与规模有预算，失败诊断保留调用、定义和参数来源链。编辑器宏预览按宏调用逐张生成卫生 AST 展开图，每张图都是自包含页面，可直接放进网页；类型提示读取最终静态类型，不显示内部绑定编号。
 
+### 跨模块调用与限定名
+
+宏定义登记在**定义它的模块**里，调用按模块可见性解析：
+
+- 未限定写法（`$assert(...)`）：先查调用所在模块，再查 `import` 进来的模块；`std::lang`
+  始终可见，所以标准库提供的宏不用 import。可见范围内出现多个同名定义时报错。
+- 限定写法（`$std::lang::assert(...)`）：直接点名「模块 + 宏名」，模块路径从最长前缀往下试。
+  名字被同名的函数 / 变量挡住，或者想明确指定用哪个模块的宏时用这种写法。限定调用同样
+  受可见性约束：`std::lang` 始终可见，其余模块必须先 `import`。
+- 两种方式展开出的 AST 完全一致，`$line` / `$file` / `$module` 取的都是调用点。
+
+```magel
+module qualified;
+
+int64 main() {
+    int64 n = 3;
+    $std::lang::assert(n > 0);              /* 限定名：直接点 std::lang 的宏 */
+    $std::lang::assert(n < 10, "n 得是个位数");
+    return 0;
+}
+```
+
+限定名找不到对应定义时报「未定义宏」，位置指向调用点。
+
 回归见 [宏 AST](../tests/magel_ast_macros.py)、[分组与来源](../tests/magel_macro_groups.py)、[静态类型](../tests/magel_macro_generics.py) 和 [语法及正则](../tests/magel_macro_branches.py)。

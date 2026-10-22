@@ -703,14 +703,16 @@ int64 health() { return 200; }
 - 注解可贴在结构体、接口、枚举、字段、方法、构造器、函数上。
 - 运行期可查询声明上的注解、按名调用函数、做接口分派。
 
-**构建要求**：根目录工具链默认同时编入 `MAGEL_WITH_REFLECTION=1` 与
-`STACKVM_WITH_REFLECTION=1`，单次编译默认启用反射。`make reflection` 保留为显式启用入口。
+**构建要求**：反射是语言的固定组成，**不可裁剪** —— 根目录工具链固定编入
+`MAGEL_WITH_REFLECTION=1` 与 `STACKVM_WITH_REFLECTION=1`，反射前端与运行时始终存在，
+编译流程也始终执行完整的反射处理。
 
-- `--reflection` 显式要求支持；前端或运行时缺少能力时按配置报错。
-- `--no-reflection` 显式关闭，关闭后使用注解或反射会被拒绝。
-- 显式裁剪构建才覆盖两项宏为 0；不能用根目录默认值推断所有独立生成工程和 embedded Linux 宿主的配置。
+- `--reflection` 显式要求本次产物写入反射元数据（缺省即开启）。
+- `--no-reflection` 不写反射元数据；关闭后使用注解或反射会被拒绝。它只影响这次的产物，
+  不减少编译期工作量。
+- 两项宏置 0 的构建只用于验证编译器自身，不是受支持的裁剪配置。
 
-反射产物要求目标 VM 编入反射；目标显式关闭反射时，编译源程序须使用 `--no-reflection`。反射当前的签名及动态调用边界见[反射说明](19-reflection.md)。
+反射产物要求目标 VM 编入反射；目标 VM 没有反射支持时，编译源程序须使用 `--no-reflection`。反射当前的签名及动态调用边界见[反射说明](19-reflection.md)。
 
 完整例子见 [`example/reflection/`](../example/reflection/)（`annotations.mgl`、`calls.mgl`、`dispatch.mgl`、`queries.mgl`）。
 

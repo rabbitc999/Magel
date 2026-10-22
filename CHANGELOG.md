@@ -1,6 +1,19 @@
 # Magel 变更记录
 
-版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.25.1**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.26.0**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+
+
+## 0.26.0 — 标准库预编译单元、反射不可裁剪与跨模块宏调用
+
+- 新增标准库预编译单元：标准库段（`std::lang` 加本次实际 `import` 的 `std::xxx`）由一行分界标记在合并源码里划出，与用户段分两次解析；标准库段那份解析产物（语法节点、类型池、标识符池、顶层声明）序列化进 `build/magel-stdlib-cache`，键 = 标准库段文本哈希 + 编译器版本 + 构建戳，后续编译直接装回竞技场，跳过标准库段的词法 / LR 解析与节点构建。
+- 预编译单元的开关与观测：`--no-stdlib-cache` 或 `MAGEL_NO_STDLIB_CACHE=1` 关闭（与一次性解析整段源码等价），`--stdlib-cache-dir DIR` 指定缓存目录，`--stats` 打印「命中 / 回写 / 未启用」；单元读不回来只当这份缓存用不了，静默退回全量解析，不在 stderr 上多一句话。
+- 反射改为语言的固定组成、**不可裁剪**：`features.mk` 用 `override` 把 `MAGEL_WITH_REFLECTION` 与 `STACKVM_WITH_REFLECTION` 钉死为 1（`make` 命令行改不动），反射前端与运行时始终编入、编译流程始终执行完整的反射处理。
+- `--no-reflection` 与 `--hard-realtime` 的口径收敛为「只决定这次产物写不写反射元数据、这次程序能不能用注解与反射」——它们不改变编译器组成，也不减少编译期工作量（实测 `import std::json` 的程序加不加 `--no-reflection` 耗时相同）。中英文文档、书稿第 20 / 24 章、`--reflection` / `--no-reflection` 帮助文案与 i18n 消息同步改为这一口径。
+- 宏定义可以跨模块调用：宏调用名支持限定名（`$std::lang::assert(...)`），`MACRO_NAME` 词法正则、`SourceFragments::capture` 的片段捕获与宏注册表查表三处同步；查表从最长的模块前缀往下试，可见性沿用既有规则（`std::lang` 始终可见，其余模块须先 `import`）。名字被同名的函数 / 变量挡住，或想明确点名某个模块时用。
+- 新增样例 `macro_qualified`（限定名调用 `std::lang` 的断言宏）与错误样例 `macro_qualified_undefined`（限定名找不到定义时报「未定义宏」并指向调用点）。
+- `.gitignore` 忽略可生成的产物：`source/magel_stdlib_embedded.cpp`（25 MB 内嵌压缩字节）、`tools/magel_manual.json`、`doc/book/latex/book.pdf`、`library/stackvm/core_assets.hpp`、`library/caspp/core_assets.hpp` 移出版本库；`gen.sh` 补上 `embed_manual.py`、`stackvm_sources.py --build-assets`、`cas_sources.py --build-assets`，新克隆能重建全部忽略项。
+- `doc/book/latex/.gitignore` 去掉放行 `book.pdf` 的那条，该目录 README 改为「生成的 `.tex` 章节入库，PDF 与其它 LaTeX 产物不入库」；`doc/09-toolchain.md` 新增「标准库预编译单元」一节，`doc/README.md` 索引同步。
+- 程序版本更新为 0.26.0，VS Code 插件的 `magelCompilerVersion`、语言服务器与 `magel-dev` 版本号同步（插件 `version` 保持 1.0.0）。
 
 
 ## 0.25.1 — 修复局部变量名撞上生成器临时名的内存泄漏，口径改为一次编写处处运行

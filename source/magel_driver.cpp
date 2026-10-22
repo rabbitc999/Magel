@@ -312,8 +312,8 @@ void PrintUsage(std::FILE *out)
              "  --out 前缀             生成产物的文件名前缀（缺省 build/magel_out）\n",
              "  --check                仅检查，不执行、不生成产物\n",
              "  --hard-realtime        禁止整个编译单元使用反射\n",
-             "  --reflection           启用注解与反射（要求前端和运行时均编入支持）\n",
-             "  --no-reflection        关闭注解与反射（注解与反射缺省已开启）\n",
+             "  --reflection           写入反射元数据（缺省已写入；反射不可裁剪）\n",
+             "  --no-reflection        不写反射元数据（反射不可裁剪，编译期处理照常）\n",
              "  --diagnostics=json     检查并输出稳定 JSON 诊断\n",
              "  test|fmt|lsp|deps      测试、格式化、语言服务与依赖锁定（原生内建）\n",
              "  --emit                 只生成 .quad / .data.bin / .layout，不执行\n",
@@ -327,6 +327,7 @@ void PrintUsage(std::FILE *out)
              "  --raw                  跳过前处理：源文件原样喂给解析器\n",
              "  --deps                 只列出 import 模块与工程依赖文件（构建脚本用）\n",
              "  --incremental          跨次复用模块预处理与完整编译产物\n",
+             "  --no-stdlib-cache      关闭标准库预编译单元（每次都完整解析标准库）\n",
              "  --threads              启用隔离的宿主线程执行\n",
              "  --no-debug             （兼容别名）显式不带调试信息；现在也是缺省\n",
              "  --stats                打印运行时及增量文件校验统计\n",
@@ -367,6 +368,34 @@ const char *magel_development_tool(const char *name)
  * @param argv 命令行参数指针数组。
  * @retval 进程退出状态，0 表示成功，非零表示失败。
  */
+/**
+ * @brief 计算标准库预编译单元的文件路径。
+ * @param directory 缓存目录。
+ * @param standardText 标准库段源码（分界行之前的那一整段）。
+ * @return 单元文件路径。
+ * @note 键里带编译器版本、构建戳与标准库段内容：换编译器或改了 `std/*.mgl` 都自动失效，
+ *       不需要额外的版本号维护。
+ */
+static Memory::String StandardUnitPath(const Memory::String &directory, const Memory::String &standardText)
+{
+    std::uint64_t key = magel_incremental::hashBytes(standardText);
+    key = magel_incremental::hashBytes(magel_package::compilerVersion, key);
+    key = magel_incremental::hashBytes(__DATE__ __TIME__, key);
+    return (std::filesystem::path(directory) / (Memory::toString(key) + ".unit")).string();
+}
+/**
+ * @brief 把标准库段的解析产物写成预编译单元。
+ * @param path 单元文件路径（原子替换写盘）。
+ * @param nodeLimit 标准库段的节点数上限（不含用户节点）。
+ * @note 写单元失败（例如解析期已经攒下诊断）时整份作废，不留半截文件。
+ */
+static void SaveStandardUnit(const Memory::String &path, std::size_t nodeLimit)
+{
+    magel_incremental::replaceCacheFile(std::filesystem::path(path), [nodeLimit](std::ostream &out) {
+        if (!M_WriteStandardUnit(out, nodeLimit)) out.setstate(std::ios::badbit);
+    });
+}
+
 int magel_main_entry(int argc, char **argv)
 {
 #ifndef MAGEL_FRONT_END_NO_MAIN
@@ -422,6 +451,9 @@ int magel_main_entry(int argc, char **argv)
     std::size_t stepLimit = 0u; /* --step-limit：0 表示不设上限（缺省） */
     bool runtimeStats = false;
     bool incremental = false;  /* --incremental：跨次复用模块预处理及完整编译产物 */
+    /* 标准库预编译单元：跨次复用标准库段的解析产物；`--no-stdlib-cache` 关掉。 */
+    bool standardUnit = std::getenv("MAGEL_NO_STDLIB_CACHE") == nullptr;
+    Memory::String standardCacheDirectory;
     bool sourceStdin = false;  ///< 编辑器用真实文件身份读取标准输入中的未保存内容。
     Memory::String cacheDirectory, overlayPath, analysisDependencies, analysisTypes;
     Memory::Vector<Memory::String> includeDirs;
@@ -622,6 +654,17 @@ int magel_main_entry(int argc, char **argv)
         if (argument == "--source-stdin")
         {
             sourceStdin = true;
+            continue;
+        }
+        if (argument == "--no-stdlib-cache")
+        {
+            standardUnit = false;
+            continue;
+        }
+        if (argument == "--stdlib-cache-dir")
+        {
+            if (!NeedValue(index, argc, argument.c_str())) return 2;
+            standardCacheDirectory = argv[++index];
             continue;
         }
         if (argument == "--cache-dir" || argument == "--source-overlays" || argument == "--analysis-deps" || argument == "--analysis-types")
@@ -1101,13 +1144,79 @@ int magel_main_entry(int argc, char **argv)
     magel_lambda::markClosureTypeArguments(text);
     magel_generic::markContainerTypeArguments(text);
     magel_macro::markHeaderBoundaries(text);
-    const Status status = engine.runText(text, &value);
+    /* 标准库预编译单元：分界行之前那一整段（`std::lang` 加本次 `import` 的 `std` 模块）
+     * 在同一支编译器下每次编译都逐字节相同，于是它的解析产物只算一次 —— 命中缓存就直接
+     * 装载成竞技场前缀，用户源码照常解析，行号整体平移标准库的行数，落回同一张行映射表。
+     * 命中不了时按「标准库段 + 用户段」两次解析，并把标准库段那份产物写回缓存。 */
+    std::size_t boundary = Memory::String::npos;
+    std::size_t standardLines = 0;
+    std::size_t firstUserNode = 0;
+    Memory::Vector<int> standardTop;   ///< 标准库段的顶层声明，解析完用户段后补回前面
+    std::size_t firstUserDiagnostic = 0;  ///< 标准库段解析结束后已积累的解析期诊断条数
+    std::size_t errorLineOffset = 0;   ///< 解析期报错的行号偏移：第二段解析出来的行号要加回标准库的行数
+    Memory::String standardUnitPath;
+    bool standardUnitLoaded = false;
+    if (standardUnit && !raw)
+    {
+        boundary = magel_module::findStandardBoundary(text);
+        if (boundary != Memory::String::npos)
+        {
+            if (standardCacheDirectory.empty())
+            {
+                const char *configured = std::getenv("MAGEL_STDLIB_CACHE_DIR");
+                standardCacheDirectory = (configured != nullptr && *configured != '\0')
+                                             ? Memory::String(configured)
+                                             : Memory::String("build/magel-stdlib-cache");
+            }
+            for (std::size_t i = 0; i < boundary; ++i)
+                if (text[i] == '\n') ++standardLines;
+            standardUnitPath = StandardUnitPath(standardCacheDirectory, text.substr(0, boundary));
+            std::ifstream unit(std::filesystem::path(standardUnitPath), std::ios::binary);
+            if (unit.is_open())
+            {
+                standardUnitLoaded = M_ReadStandardUnit(unit);
+                /* 读不回来只是"这份缓存用不了"：静默退回全量解析，结果完全一致。
+                 * 缓存是纯加速手段，不能因为它坏了就在 stderr 上多一句话（会污染诊断比对）；
+                 * 想看命中情况用 `--stats`。 */
+                if (!standardUnitLoaded && runtimeStats)
+                    std::fprintf(stderr, "标准库预编译：单元不可用，本次按全量解析\n");
+            }
+        }
+    }
+    Status status = Status::Ok;
+    if (boundary == Memory::String::npos)
+    {
+        status = engine.runText(text, &value);
+    }
+    else
+    {
+        if (!standardUnitLoaded) status = engine.runText(text.substr(0, boundary), &value);
+        /* 标准库段自己解析出来的行号就是合并源码里的行号，不需要偏移。 */
+        errorLineOffset = 0;
+        firstUserNode = M_NodeCount();
+        /* 顶层表在后一段解析里会被 `M_SetProgram` 清空，先把标准库段的声明抄下来。 */
+        standardTop = M_TopLevelIds();
+        /* 解析期诊断也划一道线：这道线之后落下的都属于用户段，行号要平移。 */
+        firstUserDiagnostic = M_ParseDiagnosticCount();
+        if (status == Status::Ok && !standardUnitPath.empty())
+            SaveStandardUnit(standardUnitPath, firstUserNode);
+        if (status == Status::Ok)
+        {
+            /* 用户段是单独解析的，行号从 1 重新开始数；报错时要加回标准库占掉的行数，
+             * 才能翻到 `processed.lineMap` 里真正的那一行。 */
+            errorLineOffset = standardLines;
+            status = engine.runText(text.substr(boundary), &value);
+            M_ShiftNodeLines(firstUserNode, standardLines);
+            M_ShiftParseDiagnostics(firstUserDiagnostic, standardLines);
+            M_PrefixTopLevel(standardTop);
+        }
+    }
     if (status != Status::Ok)
     {
         const Error *error = engine.lastError();
         if (jsonDiagnostics)
         {
-            const auto line = error ? error->line() : 1;
+            const auto line = error ? error->line() + errorLineOffset : 1;
             const auto original = line && line <= processed.lineMap.size() ? processed.lineMap[line - 1] : preprocess::LineOrigin{ sourceLabel, line };
             /* JSON 诊断（编辑器里划波浪线）也走一遍呈现层：否则编辑器显示的是
              * `SEMI` / `IMPL` 这种内部名，跟终端里看到的两套说法。 */
@@ -1120,7 +1229,7 @@ int magel_main_entry(int argc, char **argv)
         {
             /* 行号是**预处理之后**的行号：有映射就翻回源文件（模块展开的位置
              * 尤其需要 —— 报错要指向真正写错的那个文件）。 */
-            const std::size_t line = error->line();
+            const std::size_t line = error->line() + errorLineOffset;
             /* 消息里写的是 Token 内部名（`SEMI` / `IMPL`…），换成「分号(;)」这种
              * 用户看得懂的说法；外层已经写了「语法错误：」，消息里那句前缀要剥掉。
              * 整句骨架也按当前显示语言重建（英文是 `expected … , found …` 的语序）。 */
@@ -1219,6 +1328,15 @@ int magel_main_entry(int argc, char **argv)
     }
     if (runtimeStats && run && !Memory::runtimeMemoryStatsAvailable) std::fputs("运行时分配器：malloc/free，峰值内存不可用\n", stderr);
     if (runtimeStats && run && Memory::runtimeMemoryStatsAvailable) std::fprintf(stderr, "运行时分配器：峰值 %zu 字节（容量 %zu 字节；运行后已清零）\n", M_RuntimePeakBytes(), memoryBytes);
+    if (runtimeStats)
+    {
+        if (boundary == Memory::String::npos)
+            std::fprintf(stderr, "标准库预编译：未启用（%s）\n", standardUnit ? "没有标准库分界" : "已用 --no-stdlib-cache 关闭");
+        else if (standardUnitLoaded)
+            std::fprintf(stderr, "标准库预编译：命中（%zu 个节点，省掉标准库段解析）\n", firstUserNode);
+        else
+            std::fprintf(stderr, "标准库预编译：回写（%zu 个节点，%zu 行）\n", firstUserNode, standardLines);
+    }
     if (code != 0)
     {
         Memory::Vector<magel_diagnostics::Diagnostic> diagnostics;

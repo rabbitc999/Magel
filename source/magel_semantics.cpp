@@ -4,6 +4,7 @@
 #else
 #include <unistd.h>
 #endif
+#include "magel_incremental.hpp"
 /* ============================================================
  * 实现：节点池 / 类型池 / 降级（C 语法树 → simple_ast） / 生成与执行
  * ============================================================ */
@@ -3639,4 +3640,487 @@ void M_SetProgramArguments(int argc, const char *const *argv)
     g_programArguments.reserve(static_cast<std::size_t>(argc));
     for (int index = 0; index < argc; ++index)
         g_programArguments.emplace_back(argv[index] == nullptr ? "" : argv[index]);
+}
+
+/* ============================================================
+ * 标准库预编译单元：解析产物的落盘与装载
+ *
+ * 标准库段（`std::lang` 加本次 `import` 的 `std::xxx`）在同一支编译器下每次编译都逐字节
+ * 相同，于是它的解析产物可以只算一次：节点竞技场、类型池、标识符池、顶层表，连同解析期
+ * 的游标（`g_reductionLine` 等）一起落盘，下次直接装载成竞技场前缀，再解析用户源码。
+ *
+ * 单元只在**同一支编译器写的字节**下可信：调用方（`magel_driver.cpp`）把编译器版本、
+ * 构建戳、标准库段内容与预处理定义一起算进缓存键，这里只认文件头与结构完整性。
+ * ============================================================ */
+namespace
+{
+constexpr std::uint64_t kStandardUnitMagic = 0x4d47535444494e54ull; /* "MGSTDINT" */
+constexpr std::uint64_t kStandardUnitVersion = 1;
+
+/**
+ * @brief 一个类型的引用字段在单元里的原始下标。
+ */
+struct UnitTypeRefs
+{
+    Memory::Vector<std::uint64_t> arguments;   ///< 泛型实参类型。
+    Memory::Vector<std::uint64_t> parameters;  ///< 函数指针形参类型。
+    std::uint64_t elem = 0;                    ///< 元素类型 / 引用目标 / 函数返回类型。
+    std::uint64_t elem2 = 0;                   ///< `Map<K,V>` 的 V 等第二个类型参数。
+};
+
+/**
+ * @brief 写出一组节点编号（加一后写成无符号，`-1` 落为 0）。
+ * @param out 输出流。
+ * @param values 节点编号。
+ */
+void WriteUnitInts(std::ostream &out, const Memory::Vector<int> &values)
+{
+    magel_incremental::writeNumber(out, values.size());
+    for (const int value : values)
+        /* 按补码直写：`kids` / `annotations` 里 `-1` 是合法值（表示"没有"），
+         * 不能靠"加一"编码，否则 -1 会落成一个看起来非法的 0。 */
+        magel_incremental::writeNumber(out, static_cast<std::uint64_t>(static_cast<std::int64_t>(value)));
+}
+/**
+ * @brief 读入一组节点编号。
+ * @param in 输入流。
+ * @param values 输出编号。
+ * @retval 结构完整时返回 true。
+ */
+bool ReadUnitInts(std::istream &in, Memory::Vector<int> &values)
+{
+    std::uint64_t count = 0;
+    if (!magel_incremental::readNumber(in, count) || count > (1ull << 26)) return false;
+    values.resize(static_cast<std::size_t>(count));
+    for (auto &value : values)
+    {
+        std::uint64_t stored = 0;
+        if (!magel_incremental::readNumber(in, stored)) return false;
+        value = static_cast<int>(static_cast<std::int64_t>(stored));
+    }
+    return true;
+}
+/**
+ * @brief 写出一个双精度值（按位搬运，不做文本转换）。
+ * @param out 输出流。
+ * @param value 待写出的值。
+ */
+void WriteUnitDouble(std::ostream &out, double value)
+{
+    std::uint64_t bits = 0;
+    std::memcpy(&bits, &value, sizeof(bits));
+    magel_incremental::writeNumber(out, bits);
+}
+/**
+ * @brief 读入一个双精度值。
+ * @param in 输入流。
+ * @param value 输出值。
+ * @retval 读够八字节时返回 true。
+ */
+bool ReadUnitDouble(std::istream &in, double &value)
+{
+    std::uint64_t bits = 0;
+    if (!magel_incremental::readNumber(in, bits)) return false;
+    std::memcpy(&value, &bits, sizeof(value));
+    return true;
+}
+/**
+ * @brief 读入一个引用下标。
+ * @param in 输入流。
+ * @param value 输出下标；`0` 表示空引用，其余为「池下标 + 1」。
+ * @retval 读够八字节时返回 true。
+ */
+bool ReadUnitRef(std::istream &in, std::uint64_t &value)
+{
+    return magel_incremental::readNumber(in, value);
+}
+/**
+ * @brief 写出一个语法节点。
+ * @param out 输出流。
+ * @param node 待写出的节点。
+ */
+void WriteUnitNode(std::ostream &out, const MNode &node)
+{
+    magel_incremental::writeNumber(out, static_cast<std::uint64_t>(node.kind));
+    magel_incremental::writeNumber(out, node.sourceLine);
+    magel_incremental::writeNumber(out, node.sourceColumn);
+    magel_incremental::writeNumber(out, node.syntaxContext);
+    magel_incremental::writeNumber(out, node.bindingIdentity);
+    magel_incremental::writeNumber(out, node.nameParameter);
+    magel_incremental::writeNumber(out, node.bindingContext);
+    magel_incremental::writeNumber(out, node.expansionLine);
+    magel_incremental::writeNumber(out, node.expansionColumn);
+    magel_incremental::writeString(out, node.expansionModule);
+    magel_incremental::writeNumber(out, static_cast<std::uint64_t>(static_cast<std::int64_t>(node.macroExpansion)));
+    WriteUnitInts(out, node.annotations);
+    magel_incremental::writeStrings(out, node.derives);
+    magel_incremental::writeStrings(out, node.noReplace);
+    magel_incremental::writeStrings(out, node.noRight);
+    magel_incremental::writeNumber(out, node.derivesExpanded ? 1u : 0u);
+    magel_incremental::writeNumber(out, node.annotationValues.size());
+    for (const auto &value : node.annotationValues)
+    {
+        magel_incremental::writeNumber(out, static_cast<std::uint64_t>(static_cast<std::int64_t>(value.type)));
+        magel_incremental::writeNumber(out, static_cast<std::uint64_t>(value.integer));
+        WriteUnitDouble(out, value.floating);
+        magel_incremental::writeString(out, value.text);
+    }
+    magel_incremental::writeString(out, node.s);
+    magel_incremental::writeString(out, node.s2);
+    magel_incremental::writeString(out, node.abiLibrary);
+    magel_incremental::writeString(out, node.abiSourceFile);
+    magel_incremental::writeString(out, node.abiLength);
+    magel_incremental::writeString(out, node.abiRelease);
+    magel_incremental::writeNumber(out, node.abiPacked ? 1u : 0u);
+    magel_incremental::writeString(out, node.module);
+    std::uint64_t flags = 0;
+    if (node.moduleLocal) flags |= 1u << 0;
+    if (node.reflectionBridge) flags |= 1u << 1;
+    if (node.generatedDeclaration) flags |= 1u << 2;
+    if (node.nonCopyable) flags |= 1u << 3;
+    if (node.unsignedLiteral) flags |= 1u << 4;
+    if (node.intMinMagnitude) flags |= 1u << 5;
+    if (node.checkedExpression) flags |= 1u << 6;
+    if (node.returnExpression) flags |= 1u << 7;
+    if (node.implicitExitMove) flags |= 1u << 8;
+    magel_incremental::writeNumber(out, flags);
+    magel_incremental::writeNumber(out, static_cast<std::uint64_t>(node.i));
+    WriteUnitDouble(out, node.d);
+    magel_incremental::writeNumber(out, static_cast<std::uint64_t>(static_cast<std::int64_t>(node.guard)));
+    magel_incremental::writeNumber(out, static_cast<std::uint64_t>(static_cast<std::int64_t>(node.type)));
+    magel_incremental::writeNumber(out, static_cast<std::uint64_t>(static_cast<std::int64_t>(node.type2)));
+    WriteUnitInts(out, node.kids);
+}
+/**
+ * @brief 读入一个语法节点。
+ * @param in 输入流。
+ * @param node 输出节点。
+ * @retval 结构完整时返回 true。
+ */
+bool ReadUnitNode(std::istream &in, MNode &node)
+{
+    std::uint64_t kind = 0, flags = 0, count = 0;
+    if (!magel_incremental::readNumber(in, kind) || kind > static_cast<std::uint64_t>(MNode::MacroFor)) return false;
+    node = MNode{};
+    node.kind = static_cast<MNode::Kind>(kind);
+    if (!magel_incremental::readNumber(in, node.sourceLine)) return false;
+    if (!magel_incremental::readNumber(in, node.sourceColumn)) return false;
+    std::uint64_t context = 0, identity = 0, parameter = 0, binding = 0;
+    if (!magel_incremental::readNumber(in, context)) return false;
+    if (!magel_incremental::readNumber(in, identity)) return false;
+    if (!magel_incremental::readNumber(in, parameter)) return false;
+    if (!magel_incremental::readNumber(in, binding)) return false;
+    node.syntaxContext = static_cast<std::uint32_t>(context);
+    node.bindingIdentity = static_cast<std::uint32_t>(identity);
+    node.nameParameter = static_cast<std::uint32_t>(parameter);
+    node.bindingContext = static_cast<std::uint32_t>(binding);
+    if (!magel_incremental::readNumber(in, node.expansionLine)) return false;
+    if (!magel_incremental::readNumber(in, node.expansionColumn)) return false;
+    if (!magel_incremental::readString(in, node.expansionModule)) return false;
+    std::uint64_t frame = 0;
+    if (!magel_incremental::readNumber(in, frame) ) return false;
+    node.macroExpansion = static_cast<int>(static_cast<std::int64_t>(frame));
+    if (!ReadUnitInts(in, node.annotations)) return false;
+    if (!magel_incremental::readStrings(in, node.derives)) return false;
+    if (!magel_incremental::readStrings(in, node.noReplace)) return false;
+    if (!magel_incremental::readStrings(in, node.noRight)) return false;
+    std::uint64_t derived = 0;
+    if (!magel_incremental::readNumber(in, derived)) return false;
+    node.derivesExpanded = derived != 0;
+    if (!magel_incremental::readNumber(in, count) || count > (1ull << 20)) return false;
+    node.annotationValues.resize(static_cast<std::size_t>(count));
+    for (auto &value : node.annotationValues)
+    {
+        std::uint64_t type = 0, integer = 0;
+        if (!magel_incremental::readNumber(in, type) ) return false;
+        if (!magel_incremental::readNumber(in, integer)) return false;
+        value.type = static_cast<int>(static_cast<std::int64_t>(type));
+        value.integer = static_cast<long long>(integer);
+        if (!ReadUnitDouble(in, value.floating)) return false;
+        if (!magel_incremental::readString(in, value.text)) return false;
+    }
+    if (!magel_incremental::readString(in, node.s)) return false;
+    if (!magel_incremental::readString(in, node.s2)) return false;
+    if (!magel_incremental::readString(in, node.abiLibrary)) return false;
+    if (!magel_incremental::readString(in, node.abiSourceFile)) return false;
+    if (!magel_incremental::readString(in, node.abiLength)) return false;
+    if (!magel_incremental::readString(in, node.abiRelease)) return false;
+    std::uint64_t packed = 0;
+    if (!magel_incremental::readNumber(in, packed)) return false;
+    node.abiPacked = packed != 0;
+    if (!magel_incremental::readString(in, node.module)) return false;
+    if (!magel_incremental::readNumber(in, flags)) return false;
+    node.moduleLocal = (flags & (1u << 0)) != 0;
+    node.reflectionBridge = (flags & (1u << 1)) != 0;
+    node.generatedDeclaration = (flags & (1u << 2)) != 0;
+    node.nonCopyable = (flags & (1u << 3)) != 0;
+    node.unsignedLiteral = (flags & (1u << 4)) != 0;
+    node.intMinMagnitude = (flags & (1u << 5)) != 0;
+    node.checkedExpression = (flags & (1u << 6)) != 0;
+    node.returnExpression = (flags & (1u << 7)) != 0;
+    node.implicitExitMove = (flags & (1u << 8)) != 0;
+    std::uint64_t integerValue = 0, guard = 0, type = 0, type2 = 0;
+    if (!magel_incremental::readNumber(in, integerValue)) return false;
+    node.i = static_cast<long long>(integerValue);
+    if (!ReadUnitDouble(in, node.d)) return false;
+    if (!magel_incremental::readNumber(in, guard) ) return false;
+    node.guard = static_cast<int>(static_cast<std::int64_t>(guard));
+    if (!magel_incremental::readNumber(in, type) ) return false;
+    node.type = static_cast<int>(static_cast<std::int64_t>(type));
+    if (!magel_incremental::readNumber(in, type2) ) return false;
+    node.type2 = static_cast<int>(static_cast<std::int64_t>(type2));
+    return ReadUnitInts(in, node.kids);
+}
+/**
+ * @brief 写出一个类型的标量字段。
+ * @param out 输出流。
+ * @param type 待写出的类型。
+ */
+void WriteUnitTypeBody(std::ostream &out, const MType &type)
+{
+    magel_incremental::writeNumber(out, static_cast<std::uint64_t>(type.kind));
+    magel_incremental::writeString(out, type.name);
+    magel_incremental::writeString(out, type.lookupModule);
+    magel_incremental::writeNumber(out, type.unresolvedName ? 1u : 0u);
+    magel_incremental::writeString(out, type.genericBase);
+    magel_incremental::writeString(out, type.genericMember);
+    magel_incremental::writeNumber(out, type.macroBinding);
+    magel_incremental::writeNumber(out, static_cast<std::uint64_t>(static_cast<std::int64_t>(type.bits)));
+    magel_incremental::writeNumber(out, type.isUnsigned ? 1u : 0u);
+    WriteUnitInts(out, type.dims);
+    magel_incremental::writeNumber(out, type.readOnly ? 1u : 0u);
+    magel_incremental::writeNumber(out, type.variadic ? 1u : 0u);
+}
+/**
+ * @brief 写出一个类型的引用字段（写成「池下标 + 1」，空引用写 0）。
+ * @param out 输出流。
+ * @param type 待写出的类型。
+ * @param index 类型指针到池下标的映射。
+ */
+void WriteUnitTypeRefs(std::ostream &out, const MType &type, const Memory::Map<const MType *, std::size_t> &index)
+{
+    const auto write = [&](const std::shared_ptr<MType> &target) {
+        if (!target) return magel_incremental::writeNumber(out, std::uint64_t{ 0 });
+        const auto found = index.find(target.get());
+        magel_incremental::writeNumber(out, found == index.end() ? std::uint64_t{ 0 } : static_cast<std::uint64_t>(found->second) + 1);
+    };
+    magel_incremental::writeNumber(out, type.genericArguments.size());
+    for (const auto &argument : type.genericArguments) write(argument);
+    write(type.elem);
+    magel_incremental::writeNumber(out, type.paramTypes.size());
+    for (const auto &parameter : type.paramTypes) write(parameter);
+    write(type.elem2);
+}
+/**
+ * @brief 读入一个类型的标量字段与引用下标。
+ * @param in 输入流。
+ * @param type 输出类型对象（引用字段此时还是空的）。
+ * @param refs 输出引用下标。
+ * @retval 结构完整时返回 true。
+ */
+bool ReadUnitTypeBody(std::istream &in, std::shared_ptr<MType> &type, UnitTypeRefs &refs)
+{
+    std::uint64_t kind = 0, flag = 0, bits = 0, count = 0;
+    if (!magel_incremental::readNumber(in, kind) || kind > static_cast<std::uint64_t>(MType::Obj)) return false;
+    type = std::make_shared<MType>();
+    type->kind = static_cast<MType::Kind>(kind);
+    if (!magel_incremental::readString(in, type->name)) return false;
+    if (!magel_incremental::readString(in, type->lookupModule)) return false;
+    if (!magel_incremental::readNumber(in, flag)) return false;
+    type->unresolvedName = flag != 0;
+    if (!magel_incremental::readString(in, type->genericBase)) return false;
+    if (!magel_incremental::readString(in, type->genericMember)) return false;
+    std::uint64_t binding = 0;
+    if (!magel_incremental::readNumber(in, binding)) return false;
+    type->macroBinding = static_cast<std::uint32_t>(binding);
+    if (!magel_incremental::readNumber(in, bits) ) return false;
+    type->bits = static_cast<int>(static_cast<std::int64_t>(bits));
+    if (!magel_incremental::readNumber(in, flag)) return false;
+    type->isUnsigned = flag != 0;
+    if (!ReadUnitInts(in, type->dims)) return false;
+    if (!magel_incremental::readNumber(in, flag)) return false;
+    type->readOnly = flag != 0;
+    if (!magel_incremental::readNumber(in, flag)) return false;
+    type->variadic = flag != 0;
+    if (!magel_incremental::readNumber(in, count) || count > (1ull << 20)) return false;
+    refs.arguments.resize(static_cast<std::size_t>(count));
+    for (auto &value : refs.arguments)
+        if (!ReadUnitRef(in, value)) return false;
+    if (!ReadUnitRef(in, refs.elem)) return false;
+    std::uint64_t parameterCount = 0;
+    if (!magel_incremental::readNumber(in, parameterCount) || parameterCount > (1ull << 20)) return false;
+    refs.parameters.resize(static_cast<std::size_t>(parameterCount));
+    for (auto &value : refs.parameters)
+        if (!ReadUnitRef(in, value)) return false;
+    return ReadUnitRef(in, refs.elem2);
+}
+}  // namespace
+
+Memory::Vector<int> M_TopLevelIds()
+{
+    return g_top;
+}
+
+void M_PrefixTopLevel(const Memory::Vector<int> &prefix)
+{
+    if (prefix.empty()) return;
+    Memory::Vector<int> merged = prefix;
+    merged.insert(merged.end(), g_top.begin(), g_top.end());
+    g_top = std::move(merged);
+}
+
+std::size_t M_NodeCount()
+{
+    return g_nodes.size();
+}
+
+bool M_WriteStandardUnit(std::ostream &out, std::size_t nodeLimit)
+{
+    /* 解析期已经攒下诊断的标准库段不固化：固化下来等于把一次带错的解析结果留到以后。 */
+    if (!g_parseDiagnostics.empty() || !g_error.empty()) return false;
+    if (nodeLimit == 0 || nodeLimit > g_nodes.size()) return false;
+    Memory::Map<const MType *, std::size_t> index;
+    for (std::size_t i = 0; i < g_types.size(); ++i)
+        if (g_types[i]) index[g_types[i].get()] = i;
+    magel_incremental::writeNumber(out, kStandardUnitMagic);
+    magel_incremental::writeNumber(out, kStandardUnitVersion);
+    magel_incremental::writeNumber(out, nodeLimit);
+    for (std::size_t i = 0; i < nodeLimit; ++i) WriteUnitNode(out, g_nodes[i]);
+    magel_incremental::writeNumber(out, g_types.size());
+    for (const auto &type : g_types)
+    {
+        WriteUnitTypeBody(out, type ? *type : MType{});
+        WriteUnitTypeRefs(out, type ? *type : MType{}, index);
+    }
+    magel_incremental::writeStrings(out, g_names);
+    WriteUnitInts(out, g_top);
+    Memory::Vector<int> rawNames, stringNodes;
+    Memory::Vector<std::size_t> rawFragments;
+    Memory::Vector<Memory::String> stringValues;
+    for (const auto &entry : g_rawMacroNames)
+        if (static_cast<std::size_t>(entry.first) < nodeLimit)
+        {
+            rawNames.push_back(entry.first);
+            rawFragments.push_back(entry.second);
+        }
+    for (const auto &entry : g_stringSources)
+        if (static_cast<std::size_t>(entry.first) < nodeLimit)
+        {
+            stringNodes.push_back(entry.first);
+            stringValues.push_back(entry.second);
+        }
+    WriteUnitInts(out, rawNames);
+    magel_incremental::writeNumber(out, rawFragments.size());
+    for (const auto value : rawFragments) magel_incremental::writeNumber(out, value);
+    WriteUnitInts(out, stringNodes);
+    magel_incremental::writeStrings(out, stringValues);
+    magel_incremental::writeNumber(out, static_cast<std::uint64_t>(static_cast<std::int64_t>(g_globalType)));
+    magel_incremental::writeNumber(out, g_reductionLine);
+    magel_incremental::writeNumber(out, g_reductionColumn);
+    magel_incremental::writeNumber(out, g_macroFragmentFirstLine);
+    magel_incremental::writeNumber(out, g_macroFragmentFirstColumn);
+    magel_incremental::writeString(out, g_parseModule);
+    return true;
+}
+
+bool M_ReadStandardUnit(std::istream &in)
+{
+    std::uint64_t magic = 0, version = 0, nodeLimit = 0, typeCount = 0, globalType = 0;
+    if (!magel_incremental::readNumber(in, magic) || magic != kStandardUnitMagic) return false;
+    if (!magel_incremental::readNumber(in, version) || version != kStandardUnitVersion) return false;
+    if (!magel_incremental::readNumber(in, nodeLimit) || nodeLimit == 0 || nodeLimit > (1ull << 26)) return false;
+    Memory::Deque<MNode> nodes;
+    nodes.resize(static_cast<std::size_t>(nodeLimit));
+    for (auto &node : nodes)
+        if (!ReadUnitNode(in, node)) return false;
+    if (!magel_incremental::readNumber(in, typeCount) || typeCount > (1ull << 24)) return false;
+    Memory::Vector<std::shared_ptr<MType>> types;
+    Memory::Vector<UnitTypeRefs> references(static_cast<std::size_t>(typeCount));
+    types.resize(static_cast<std::size_t>(typeCount));
+    for (std::size_t i = 0; i < types.size(); ++i)
+        if (!ReadUnitTypeBody(in, types[i], references[i])) return false;
+    /* 第二趟接引用：先建好全部对象，再按「池下标 + 1」回填，共享与自指都不丢。 */
+    const auto resolve = [&](std::uint64_t value) -> std::shared_ptr<MType> {
+        if (value == 0 || value > types.size()) return nullptr;
+        return types[static_cast<std::size_t>(value) - 1u];
+    };
+    for (std::size_t i = 0; i < types.size(); ++i)
+    {
+        for (const auto value : references[i].arguments) types[i]->genericArguments.push_back(resolve(value));
+        types[i]->elem = resolve(references[i].elem);
+        for (const auto value : references[i].parameters) types[i]->paramTypes.push_back(resolve(value));
+        types[i]->elem2 = resolve(references[i].elem2);
+    }
+    Memory::Vector<Memory::String> names;
+    if (!magel_incremental::readStrings(in, names)) return false;
+    Memory::Vector<int> top;
+    if (!ReadUnitInts(in, top)) return false;
+    Memory::Vector<int> rawNames, stringNodes;
+    if (!ReadUnitInts(in, rawNames)) return false;
+    std::uint64_t fragmentCount = 0;
+    if (!magel_incremental::readNumber(in, fragmentCount) || fragmentCount != rawNames.size()) return false;
+    Memory::Vector<std::size_t> rawFragments(fragmentCount);
+    for (std::size_t i = 0; i < rawFragments.size(); ++i)
+    {
+        std::uint64_t value = 0;
+        if (!magel_incremental::readNumber(in, value)) return false;
+        rawFragments[i] = static_cast<std::size_t>(value);
+    }
+    if (!ReadUnitInts(in, stringNodes)) return false;
+    Memory::Vector<Memory::String> stringValues;
+    if (!magel_incremental::readStrings(in, stringValues) || stringValues.size() != stringNodes.size()) return false;
+    if (!magel_incremental::readNumber(in, globalType) ) return false;
+    std::size_t reductionLine = 0, reductionColumn = 0, fragmentLine = 0, fragmentColumn = 0;
+    if (!magel_incremental::readNumber(in, reductionLine)) return false;
+    if (!magel_incremental::readNumber(in, reductionColumn)) return false;
+    if (!magel_incremental::readNumber(in, fragmentLine)) return false;
+    if (!magel_incremental::readNumber(in, fragmentColumn)) return false;
+    Memory::String parseModule;
+    if (!magel_incremental::readString(in, parseModule)) return false;
+    /* 装载前先自检：只挡明显离谱的编号（结构错位才会读出天文数字）。
+     * **不能**把"暂时越界"当单元损坏：标准库段解析里存在回滚（`nodes_.resize`）收回节点后
+     * 没清掉的旧子节点编号，它当下确实超出竞技场末尾 —— 但这与一次性解析整段源码时的
+     * 情形完全一致（等用户段把节点补上来，编号又落回范围内）。挡下它等于改了行为。 */
+    for (const auto &node : nodes)
+        for (const int kid : node.kids)
+            if (kid >= (1 << 26)) return false;
+    for (const int id : top)
+        if (id < 0 || static_cast<std::size_t>(id) >= nodeLimit) return false;
+    g_nodes = std::move(nodes);
+    g_types = std::move(types);
+    g_names = std::move(names);
+    g_top = std::move(top);
+    g_rawMacroNames.clear();
+    for (std::size_t i = 0; i < rawNames.size(); ++i) g_rawMacroNames[rawNames[i]] = rawFragments[i];
+    g_stringSources.clear();
+    for (std::size_t i = 0; i < stringNodes.size(); ++i) g_stringSources[stringNodes[i]] = stringValues[i];
+    g_globalType = static_cast<int>(static_cast<std::int64_t>(globalType));
+    g_reductionLine = reductionLine;
+    g_reductionColumn = reductionColumn;
+    g_macroFragmentFirstLine = fragmentLine;
+    g_macroFragmentFirstColumn = fragmentColumn;
+    g_parseModule = parseModule;
+    return true;
+}
+
+void M_ShiftNodeLines(std::size_t from, std::size_t lines)
+{
+    if (lines == 0 || from >= g_nodes.size()) return;
+    for (std::size_t i = from; i < g_nodes.size(); ++i)
+    {
+        g_nodes[i].sourceLine += lines;
+        if (g_nodes[i].expansionLine != 0) g_nodes[i].expansionLine += lines;
+    }
+}
+
+std::size_t M_ParseDiagnosticCount() { return g_parseDiagnostics.size(); }
+
+void M_ShiftParseDiagnostics(std::size_t from, std::size_t lines)
+{
+    if (lines == 0) return;
+    for (std::size_t i = from; i < g_parseDiagnostics.size(); ++i)
+        if (g_parseDiagnostics[i].line != 0) g_parseDiagnostics[i].line += lines;
+    /* 解析期 `Fail` 落下的行号同样是按用户段重新数出来的（标准库段解析失败会提前退出，
+     * 所以走到这里时 `g_error` 只可能是用户段留下的），一起平移。 */
+    if (g_errorLine != 0) g_errorLine += lines;
 }

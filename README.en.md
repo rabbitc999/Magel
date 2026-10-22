@@ -129,14 +129,17 @@ make                # defaults to MAGEL_WITH_REFLECTION=1 STACKVM_WITH_REFLECTIO
 make reflection     # retained as an explicit enable target
 ```
 
-Both the front end (`MAGEL_WITH_REFLECTION`) and the runtime (`STACKVM_WITH_REFLECTION`) must be
-enabled; if either is missing, `--reflection` reports a missing macro. After that `--reflection`
-works, and `--no-reflection` turns it off explicitly.
+Reflection is a fixed part of the language and is **not trimmable**: `MAGEL_WITH_REFLECTION` and
+`STACKVM_WITH_REFLECTION` are pinned to `1` (unlike the `NO_MAGEL_*` trim options these are not
+switches), so the reflection front end and runtime are always built in and compilation always runs
+the full reflection pass.
 
-With reflection support built in, source compilation emits reflection metadata and its artifact
-feature flag by default. Explicitly use `--no-reflection` when targeting a board VM without
-reflection support. To test a trimmed toolchain, explicitly build with
-`make MAGEL_WITH_REFLECTION=0 STACKVM_WITH_REFLECTION=0`.
+Source compilation emits reflection metadata and its artifact feature flag by default;
+`--no-reflection` omits that metadata and rejects annotations/reflection use in the program. It
+decides this artifact only and reduces no compiler workload (metadata and query-source generation
+still run). Use `--no-reflection` when targeting a board VM without reflection support.
+`make` pins both macros to 1; only a hand-written `-D` build can turn reflection off, and that path
+exists solely to validate the compiler itself — it is not a supported trim configuration.
 
 ## Quick usage
 

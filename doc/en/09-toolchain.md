@@ -27,7 +27,7 @@ magel clear out build/compiler
 
 The generator creates standalone compiler projects. Hosts integrate through bytecode, `stackvm::Machine` and native registries.
 
-Front-end and VM reflection are enabled together by default; `--no-reflection` disables it for one compilation. Quadruples and VM execution use the highest supported optimizations by default. `--memory-size`, `--step-limit` and `--threads` configure VM resources and isolated threads.
+Reflection is a fixed, non-trimmable part of the language: the front end and VM always build it in and compilation always runs the full reflection pass; `--no-reflection` only decides whether this artifact carries reflection metadata and reduces no workload. Quadruples and VM execution use the highest supported optimizations by default. `--memory-size`, `--step-limit` and `--threads` configure VM resources and isolated threads.
 
 Project execution modes are `interpret` and `svmb`. Native output and native compiler settings are unsupported. See [projects](13-projects.md), [deployment](06-deployment.md) and the [SVMB specification](../15-svmb-format.md).
 

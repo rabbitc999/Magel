@@ -106,11 +106,11 @@ _MESSAGES = {
   "  --hard-realtime        禁止整个编译单元使用反射\n": [
     "  --hard-realtime        Forbid reflection throughout the compilation unit\n"
   ],
-  "  --reflection           启用注解与反射（要求前端和运行时均编入支持）\n": [
-    "  --reflection           Enable annotations/reflection (compiler and VM support required)\n"
+  "  --reflection           写入反射元数据（缺省已写入；反射不可裁剪）\n": [
+    "  --reflection           Write reflection metadata (default; reflection is not trimmable)\n"
   ],
-  "  --no-reflection        关闭注解与反射（注解与反射缺省已开启）\n": [
-    "  --no-reflection        Disable annotations/reflection (enabled by default)\n"
+  "  --no-reflection        不写反射元数据（反射不可裁剪，编译期处理照常）\n": [
+    "  --no-reflection        Omit reflection metadata (reflection is not trimmable; still processed)\n"
   ],
   "  --diagnostics=json     检查并输出稳定 JSON 诊断\n": [
     "  --diagnostics=json     Check and emit structured JSON diagnostics\n"
@@ -766,7 +766,7 @@ def _text(original):
     return _MESSAGES.get(original, (original, original))[0]
 
 
-VERSION = "0.25.1"
+VERSION = "0.26.0"
 IGNORED = {".git", ".magel", "build", "tmp", "node_modules", "__pycache__"}
 EXTENSIONS = {".mgl", ".inc", ".h", ".hpp", ".c", ".cpp", ".toml", ".json"}
 KEYWORDS = "_ abi let bool break cast char const continue copy defer drop elif else enum false float32 float64 fn for heap if impl import in inline int16 int32 int64 int8 interface loop match module move mut new opcode return scope static struct true type uint16 uint32 uint64 uint8 void while yield".split()

@@ -107,11 +107,14 @@ make                # 默认 MAGEL_WITH_REFLECTION=1 STACKVM_WITH_REFLECTION=1
 make reflection     # 保留的显式启用入口
 ```
 
-前端（`MAGEL_WITH_REFLECTION`）与运行时（`STACKVM_WITH_REFLECTION`）必须同时开启，缺一个 `--reflection` 就报缺宏。之后 `--reflection` 生效，`--no-reflection` 可显式关闭。
+反射是语言的固定组成，**不可裁剪**：`MAGEL_WITH_REFLECTION` 与 `STACKVM_WITH_REFLECTION`
+固定为 `1`（`features.mk` 里不是裁剪项，与 `NO_MAGEL_*` 那套可选能力无关），反射前端与运行时
+始终编入，编译流程始终执行完整的反射处理。
 
-工具链编入反射能力后，单次源码编译默认生成反射元数据及对应产物特征位。
-部署到未编入反射的目标宿主 VM 时，必须使用 `--no-reflection` 显式关闭。
-验证裁剪配置时可显式执行 `make MAGEL_WITH_REFLECTION=0 STACKVM_WITH_REFLECTION=0`。
+单次源码编译默认生成反射元数据及对应产物特征位；`--no-reflection` 不写这份元数据并拒绝程序里的
+注解与反射使用 —— 它只决定这次的产物，**不减少编译期工作量**（元数据与查询源码那一轮照跑）。
+部署到未编入反射的目标宿主 VM 时，必须使用 `--no-reflection`。
+`make` 已把两项钉死为 1；只有直接 `-D` 手编才能关掉反射，那条路只用于验证编译器自身，不是受支持的裁剪配置。
 
 ## 快速使用
 
@@ -141,7 +144,6 @@ VS Code 装了 `vscode/` 下的插件后，在「运行与调试」里选 **Mage
 
 ```text
 语法错误：example/samples-error/syntax_extern_impl_removed.mgl 第 2 行第 8 列：期望 标识符 / 常量(const) / 可变(mut) / 新建(new) 等 17 个之一，实际是 实现(impl)
-   |
  2 | extern impl Value : Some = binding;
    |        ~~~~
 ```

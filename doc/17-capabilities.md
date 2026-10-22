@@ -14,7 +14,7 @@
 
 泛型闭包支持 `fn<T>`、实参类型推导、完整特化及唯一最具体的偏特化；可以直接作为结构体成员，并作为泛型类型参数 `F` 的值传递或保存。不同类型调用共享同一闭包的捕获状态，复制与借用规则沿用普通闭包。见[语言参考](04-language-reference.md)。
 
-源码与宏通过 `module` / `import` 复用。生成解析器建立宏 AST，语义分析进行卫生替换与静态类型推导，四元式生成前完成。支持严格有序的三种参数组、类型参数、变长片段、五类完整语法匹配及 ECMAScript 正则。详见[卫生 AST 宏](24-literals-operators-macros.md#编译期卫生-ast-宏)。
+源码与宏通过 `module` / `import` 复用；宏定义登记在定义它的模块里，调用按模块可见性解析，`std::lang` 始终可见，也可以写限定名（`$std::lang::assert(...)`）直接点名。生成解析器建立宏 AST，语义分析进行卫生替换与静态类型推导，四元式生成前完成。支持严格有序的三种参数组、类型参数、变长片段、五类完整语法匹配及 ECMAScript 正则。详见[卫生 AST 宏](24-literals-operators-macros.md#编译期卫生-ast-宏)。
 
 入口支持 `int64 main` 和 `void main`，无参或接收 `List<String>`；void 入口正常退出码为 0，panic 仍失败。`struct`、`enum`、`interface` 声明的尾分号可选。
 
@@ -63,9 +63,12 @@ Magel 可通过 `abi` 调用 C 动态库，或调用 Registry 注册的 C++ 胶�
 函数包装与上下文仅在所属宿主回调期间、同一线程同步使用；资源值仍按 Codec 管理所有权。
 详见[宿主集成](08-host-integration.md)和[回调示例](../example/native-callbacks/README.md)。
 
-根目录工具链默认同时启用 `MAGEL_WITH_REFLECTION=1` 与 `STACKVM_WITH_REFLECTION=1`，
-单次编译也默认启用反射；`--no-reflection` 显式关闭。独立生成编译器工程与目标宿主的默认值
-按各自构建配置描述，不能从根目录默认值推断所有消费者。
+**反射是语言的固定组成，不可裁剪**：根目录工具链固定 `MAGEL_WITH_REFLECTION=1` 与
+`STACKVM_WITH_REFLECTION=1`（`features.mk` 里这两项不是裁剪项，与 `NO_MAGEL_*` 那套可选能力
+无关），反射前端与运行时始终编入，编译流程始终执行完整的反射处理。
+`--no-reflection` 与 `--hard-realtime` 只决定**这次编译的程序**能不能用注解与反射、产物里
+写不写反射元数据；它们不改变编译器的组成，也不减少编译期工作量（元数据与查询源码那一轮照跑）。
+独立生成的编译器工程与目标宿主同样固定编入反射，不提供关闭开关。
 反射支持注解、显式暴露声明的元数据及受限动态调用，不支持任意动态类型创建、一般字段写入
 或任意资源类型的动态调用；不承诺硬实时。完整范围见[反射说明](19-reflection.md)。
 

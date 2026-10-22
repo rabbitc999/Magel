@@ -88,9 +88,9 @@ $(FRONTEND_BUILD)/lztext.o: library/lztext/lztext.cpp $(HDRS) | $(FRONTEND_BUILD
 $(FRONTEND_BUILD)/dap_server.o: source/dap/dap_server.cpp $(HDRS) | $(FRONTEND_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
 
-# 编入注解与反射：前端（MAGEL_WITH_REFLECTION）与运行时（STACKVM_WITH_REFLECTION）
-# 默认同时开启，缺一个 `--reflection` 就会报缺宏；本目标保留为显式启用入口。
-# 单次源码编译默认启用反射，可用 --no-reflection 关闭。
+# 反射是语言的固定组成、不可裁剪：前端（MAGEL_WITH_REFLECTION）与运行时
+# （STACKVM_WITH_REFLECTION）由 features.mk 钉死为 1，本目标只是同义的显式入口。
+# 单次源码编译的 --no-reflection 只决定产物写不写反射元数据，不减少编译期工作量。
 reflection:
 	$(MAKE) MAGEL_WITH_REFLECTION=1 STACKVM_WITH_REFLECTION=1
 

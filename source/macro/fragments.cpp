@@ -221,6 +221,15 @@ bool SourceFragments::capture(Memory::String &source, std::string &error, std::s
         }
         ++at;
         while (at < text.size() && identifierChar(text[at])) ++at;
+        /* 限定名宏调用（`$std::lang::assert`）：模块路径要一起吃进来。否则片段捕获把
+         * `$std` 当成完整名字、在它后面插 `@!编号`，`::lang::assert` 留在原文里挨着，
+         * 词法只能切成「宏名 + 作用域」两个 token，解析必然报错。 */
+        while (at + 1 < text.size() && text[at] == ':' && text[at + 1] == ':' &&
+               (std::isalpha(static_cast<unsigned char>(text[at + 2])) || text[at + 2] == '_'))
+        {
+            at += 2;
+            while (at < text.size() && identifierChar(text[at])) ++at;
+        }
         const auto name = text.substr(start + 1, at - start - 1);
         if (text.compare(at, 2, "@!") == 0)
         {

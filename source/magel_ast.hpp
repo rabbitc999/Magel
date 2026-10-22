@@ -1006,6 +1006,61 @@ void M_SetProgram(int topList);
 int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBinary,
               const char *inputText);
 /**
+ * @brief 当前竞技场里的语法节点数（装完预编译单元后即为标准库段的节点数）。
+ * @return 节点数。
+ */
+std::size_t M_NodeCount();
+/**
+ * @brief 把竞技场里 `[0, nodeLimit)` 这一段解析产物写成标准库预编译单元。
+ * @param out 接收单元字节的输出流。
+ * @param nodeLimit 只序列化编号小于它的节点，其余（用户代码）不进单元。
+ * @retval 写入成功返回 true；解析期已经攒下诊断时不写单元（返回 false），
+ *         免得把一次带错的解析结果固化下来。
+ */
+bool M_WriteStandardUnit(std::ostream &out, std::size_t nodeLimit);
+/**
+ * @brief 读入标准库预编译单元，把它装载成当前竞技场的前缀。
+ * @param in 单元字节输入流。
+ * @retval 装载成功返回 true；字节不是本版编译器写的单元时返回 false，竞技场保持原样。
+ * @note 之后解析用户源码得到的节点编号从装载后的节点数往后排，与一次性解析整段源码一致。
+ */
+bool M_ReadStandardUnit(std::istream &in);
+/**
+ * @brief 取当前顶层声明编号表。
+ * @return 顶层声明节点编号，按声明顺序。
+ */
+Memory::Vector<int> M_TopLevelIds();
+/**
+ * @brief 把一段顶层声明放回当前顶层表的前面。
+ * @param prefix 要前置的顶层声明编号。
+ * @note 分两段解析时，后一段的语义动作会清空顶层表（`M_SetProgram`），靠这一笔把前一段
+ *       （标准库段或预编译单元）的声明补回前面，顺序与一次性解析整段源码一致。
+ */
+void M_PrefixTopLevel(const Memory::Vector<int> &prefix);
+/**
+ * @brief 给 `[from, 末尾)` 的节点整体加上行号偏移。
+ * @param from 起始节点编号（含）。
+ * @param lines 要加的行数：等于预编译单元对应的标准库行数。
+ * @note 分两段解析时，后一段自己从第一行开始数行号，要靠这一笔翻回合并源码里的行号。
+ */
+void M_ShiftNodeLines(std::size_t from, std::size_t lines);
+/**
+ * @brief 取当前尚未转入诊断表的解析期诊断条数。
+ * @return 条数。
+ * @note 分两段解析时用它在标准库段解析结束后划一道线：这道线之后的诊断都属于用户段，
+ *       行号要按标准库的行数平移。
+ */
+std::size_t M_ParseDiagnosticCount();
+/**
+ * @brief 给第 `from` 条及之后的解析期诊断整体加上行号偏移。
+ * @param from 起始诊断下标（含）。
+ * @param lines 要加的行数。
+ * @note 解析期诊断（`PushParseDiagnostic` / 解析期 `Fail`）记的是当时语法动作的行号，
+ *       用户段单独解析时从 1 重新数；降级期的诊断走节点行号（已被 `M_ShiftNodeLines`
+ *       平移过），不能再动，所以这里只平移解析期落下的那部分。
+ */
+void M_ShiftParseDiagnostics(std::size_t from, std::size_t lines);
+/**
  * 设置下一次 M_Compile 执行时传给 `main(std::lang::List<std::lang::String>)` 的参数。
  */
 void M_SetSourceFiles(const Memory::Vector<Memory::String> &files, const Memory::String &fallback);

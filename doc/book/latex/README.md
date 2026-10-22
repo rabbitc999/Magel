@@ -17,7 +17,7 @@ xelatex -interaction=nonstopmode -halt-on-error book.tex
 xelatex -interaction=nonstopmode -halt-on-error book.tex
 ```
 
-生成的 `.tex` 章节和 `book.pdf` 入库，编译日志及辅助文件不入库。完整程序用 `<!-- verify-book -->` 标记，紧接 Magel 代码和预期输出；[书稿回归](../../../tests/magel_book_updates.py) 执行这些程序并检查全部生成章节一致。
+生成的 `.tex` 章节入库，`book.pdf` 与其它 LaTeX 产物（`.aux` / `.log` / `.toc` / `.synctex.gz` 等）不入库，需要时按上面的命令构建；跑文档链接门禁前先构建出 PDF，`doc/book/README.md` 的电子书链接指向它。完整程序用 `<!-- verify-book -->` 标记，紧接 Magel 代码和预期输出；[书稿回归](../../../tests/magel_book_updates.py) 执行这些程序并检查全部生成章节一致。
 
 正文包括表达式、插值、关联类型、整数泛型、作用域清理、宏补全、捕获错误诊断、行输入、文件文本读取和终端手册，调整表格列宽及行内代码换行，避免长签名挤出页边。
 

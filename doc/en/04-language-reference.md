@@ -699,11 +699,14 @@ int64 health() { return 200; }
 - At run time you can query annotations on declarations, call functions by name, and dispatch
   through interfaces.
 
-**Build requirement**: the root toolchain defaults to `MAGEL_WITH_REFLECTION=1` and
-`STACKVM_WITH_REFLECTION=1`; source compilation enables reflection by default. `make reflection`
-remains an explicit enable target. `--reflection` explicitly requires support and `--no-reflection`
-disables it, rejecting annotations/reflection use. Only explicit trimmed builds set both macros to 0.
-Generated compiler projects and embedded Linux hosts have their own build configuration.
+**Build requirement**: reflection is a fixed part of the language and is **not trimmable** — the root
+toolchain pins `MAGEL_WITH_REFLECTION=1` and `STACKVM_WITH_REFLECTION=1`, the reflection front end and
+runtime are always present, and compilation always runs the full reflection pass. `--reflection`
+explicitly asks the artifact to carry reflection metadata (it is on by default); `--no-reflection`
+omits that metadata and rejects annotations/reflection use. It affects that artifact only and reduces
+no compiler workload. Builds that set both macros to 0 exist only to validate the compiler itself and
+are not a supported trim configuration. Generated compiler projects and embedded Linux hosts pin
+reflection the same way.
 
 Reflection artifacts require a capable target VM. Compile explicitly with `--no-reflection` for
 a VM built without reflection. Dynamic-call and signature limits are specified in the [reflection document](../19-reflection.md).

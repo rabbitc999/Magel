@@ -114,15 +114,30 @@ int Registry::instantiate(int call, std::string &error,
         return -1;
     }
     const auto node = nodes_[call];
-    const auto key = std::make_pair(std::string(node.module.data(), node.module.size()), std::string(node.s.data(), node.s.size()));
-    auto found = definitions_.find(key);
+    const auto name = std::string(node.s.data(), node.s.size());
+    const auto callModule = std::string(node.module.data(), node.module.size());
+    const auto key = std::make_pair(callModule, name);
+    auto found = definitions_.end();
+    /* 限定名调用（`$std::lang::assert`）：按「模块 + 宏名」直接定位。模块路径从最长的
+     * 前缀往下试（`std::lang::assert` 先试 `std::lang` + `assert`），第一个命中的算数。 */
+    for (std::size_t at = name.rfind("::"); at != std::string::npos && at != 0; at = name.rfind("::", at - 1))
+    {
+        const auto qualifier = name.substr(0, at);
+        /* 限定调用也走可见性：`std::lang` 始终可见，其余必须先 import。 */
+        if (qualifier != callModule && qualifier != "std::lang" && imports_[callModule].count(qualifier) == 0) continue;
+        const auto candidate = definitions_.find({ qualifier, name.substr(at + 2) });
+        if (candidate == definitions_.end()) continue;
+        found = candidate;
+        break;
+    }
+    if (found == definitions_.end()) found = definitions_.find(key);
     if (found == definitions_.end())
     {
         auto visible = imports_[key.first];
         visible.insert("std::lang");
-        for (const auto &module : visible)
+        for (const auto &imported : visible)
         {
-            const auto candidate = definitions_.find({ module, key.second });
+            const auto candidate = definitions_.find({ imported, key.second });
             if (candidate == definitions_.end()) continue;
             if (found != definitions_.end())
             {

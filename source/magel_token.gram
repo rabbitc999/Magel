@@ -32,7 +32,9 @@
 %token MACRO_PARSE_TYPE "@!macroparse_type"
 %token MACRO_PARSE_BLOCK "@!macroparse_block"
 %token MACRO_PARSE_STMT "@!macroparse_stmt"
-%token regex MACRO_NAME "\\$[A-Za-z_][A-Za-z0-9_]*(@![0-9]+)?"
+/* 宏调用名：支持限定名（`$std::lang::assert`）—— 名字被同名的函数 / 变量挡住，或者想
+ * 明确点名某个模块时用。模块路径怎么切由语义层决定（从最长的模块前缀往下试）。 */
+%token regex MACRO_NAME "\\$[A-Za-z_][A-Za-z0-9_]*(::[A-Za-z_][A-Za-z0-9_]*)*(@![0-9]+)?"
 %token regex MACRO_FRAGMENT "@!macrofragment[0-9]+_[0-9]+"
 
 %token STRUCT "struct"

@@ -1,9 +1,11 @@
 # NO_MAGEL_* = 1 时加入对应宏；省略或 0 保持启用。直接 -D 定义按存在性裁剪。
 MAGEL_TRIM_OPTIONS := NO_MAGEL_BIG_INT NO_MAGEL_BIG_FLOAT NO_MAGEL_DEFAULT_POOL NO_MAGEL_STD NO_MAGEL_STD_CAS NO_MAGEL_STD_MATH NO_MAGEL_STD_RANDOM NO_MAGEL_STD_REGEX NO_MAGEL_STD_SIGNAL NO_MAGEL_STD_JSON NO_MAGEL_STD_TOML NO_MAGEL_STD_BINARY NO_MAGEL_STD_LINALG NO_MAGEL_STD_PARSE NO_MAGEL_STD_PROCESS
-# 工具链默认编入注解与反射前端及 VM 支持；构建配置指纹负责切换后的重编译。
-# 仅在显式验证裁剪配置时将两项设为 0；单次源码编译可用 --no-reflection 关闭。
-MAGEL_WITH_REFLECTION ?= 1
-STACKVM_WITH_REFLECTION ?= 1
+# 反射是语言的固定组成、不可裁剪：两项固定为 1，与上面 NO_MAGEL_* 那套可选能力不同，
+# 命令行或环境变量都改不动（override）。要编译"没有反射"的编译器只能直接 -D 手编，
+# 那条路只用于验证编译器自身，不是受支持的裁剪配置。构建配置指纹负责切换后的重编译。
+# 单次源码编译的 --no-reflection 只决定这次产物写不写反射元数据，不减少编译期工作量。
+override MAGEL_WITH_REFLECTION := 1
+override STACKVM_WITH_REFLECTION := 1
 MAGEL_FEATURE_FLAGS = -DMAGEL_WITH_REFLECTION=$(MAGEL_WITH_REFLECTION) -DSTACKVM_WITH_REFLECTION=$(STACKVM_WITH_REFLECTION)
 MAGEL_TRIM_FLAGS = $(MAGEL_FEATURE_FLAGS) $(foreach option,$(MAGEL_TRIM_OPTIONS),$(if $(filter 1,$($(option))),-D$(option)))
 

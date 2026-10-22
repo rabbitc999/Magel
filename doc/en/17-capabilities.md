@@ -15,7 +15,7 @@ Support includes [return control expressions, statement-level named closures and
 
 Generic closures support `fn<T>`, inference from argument types, full specialization and uniquely most specific partial specialization. They can be direct struct members and can be passed or stored as values of a generic type parameter `F`. Calls with different types share one closure environment, preserving ordinary capture, copy and borrow rules. See the [language reference](04-language-reference.md).
 
-Sources and macros are shared through `module` / `import`. The generated parser builds macro ASTs; semantic analysis performs hygienic substitution and static type inference before quadruple generation. Ordered round, square and curly groups, type parameters, variadic fragments, five complete syntax categories and ECMAScript regex matching are supported. See [hygienic AST macros](24-literals-operators-macros.md#compile-time-hygienic-ast-macros).
+Sources and macros are shared through `module` / `import`; a macro definition is registered in the module that defines it and calls resolve by module visibility, with `std::lang` always visible and qualified names (`$std::lang::assert(...)`) naming a module directly. The generated parser builds macro ASTs; semantic analysis performs hygienic substitution and static type inference before quadruple generation. Ordered round, square and curly groups, type parameters, variadic fragments, five complete syntax categories and ECMAScript regex matching are supported. See [hygienic AST macros](24-literals-operators-macros.md#compile-time-hygienic-ast-macros).
 
 Entry points support `int64 main` and `void main`, with no parameters or `List<String>` arguments. A void entry exits with code 0 on normal completion; panic still fails. Trailing semicolons on `struct`, `enum`, and `interface` declarations are optional.
 
@@ -67,9 +67,14 @@ and error propagation. Wrappers and contexts are valid only synchronously, on th
 the enclosing host callback. Resource values retain their Codec ownership requirements.
 See [host integration](08-host-integration.md) and the [callback example](../../example/native-callbacks/README.md).
 
-The root toolchain defaults to `MAGEL_WITH_REFLECTION=1` and `STACKVM_WITH_REFLECTION=1`, with reflection
-enabled for source compilation; use `--no-reflection` to disable it. Generated compiler projects and embedded Linux
-hosts have their own documented build defaults. Reflection supports annotations, explicitly exposed
+**Reflection is a fixed part of the language and is not trimmable.** The root toolchain pins
+`MAGEL_WITH_REFLECTION=1` and `STACKVM_WITH_REFLECTION=1` (unlike the `NO_MAGEL_*` trim options these
+two are not switches), so the reflection front end and runtime are always built in and compilation
+always runs the full reflection pass. `--no-reflection` and `--hard-realtime` only decide whether
+**the program being compiled** may use annotations/reflection and whether the artifact carries
+reflection metadata; they change neither the compiler's composition nor its workload (metadata and
+query-source generation still run). Generated compiler projects and embedded hosts pin reflection
+the same way and offer no switch to turn it off. Reflection supports annotations, explicitly exposed
 metadata and restricted dynamic calls; it does not create arbitrary runtime types or offer general field
 writes and arbitrary resource-value invocation. It carries no hard-real-time guarantee.
 See the [reflection specification](../19-reflection.md).

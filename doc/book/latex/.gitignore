@@ -8,7 +8,6 @@
 *.log
 *.out
 *.pdf
-!book.pdf
 *.run.xml
 *.synctex.gz
 *.toc
