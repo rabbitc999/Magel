@@ -10,7 +10,7 @@ using namespace runtimeDetail;
 namespace runtimeDetail
 {
 /**
- * @brief `MAGEL_NO_STDIN_INPUT=1` 时不做标准输入兜底。
+ * @brief `CHALI_NO_STDIN_INPUT=1` 时不做标准输入兜底。
  *
  * 门禁（`check.sh` 等）靠它保证确定性：样例缺输入时必须照旧报"输入不够"，
  * 而不是停下来等标准输入。
@@ -18,14 +18,14 @@ namespace runtimeDetail
  */
 bool stdinInputDisabled()
 {
-    const char *flag = std::getenv("MAGEL_NO_STDIN_INPUT");
+    const char *flag = std::getenv("CHALI_NO_STDIN_INPUT");
     return flag != nullptr && flag[0] != '\0' && flag[0] != '0';
 }
 
 /**
  * 取下一项输入：先用 `--input "a b c"` 给的项，用完了就**从标准输入读一项**。
  *
- * 于是调试时可以直接敲，也可以 `echo "abc 3" | magel run x.mgl` 喂进去；两项之间按空白
+ * 于是调试时可以直接敲，也可以 `echo "abc 3" | chali run x.chl` 喂进去；两项之间按空白
  * 切分，跟 `--input` 一个口径。读到 EOF 返回 false，调用方照旧报"输入不够"。
  *
  * @param ctx 原生调用上下文。

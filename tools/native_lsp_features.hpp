@@ -94,7 +94,7 @@ SymbolIdentity resolveSymbol(const std::string &u, const std::string &text, cons
         {
             Memory::Vector<Memory::String> args;
             size_t ignored = 0;
-            if (magel_syntax::groupArguments(text.substr(tokens[next].a, tokens[stop - 1].b - tokens[next].a).c_str(), 0, args, ignored))
+            if (chali_syntax::groupArguments(text.substr(tokens[next].a, tokens[stop - 1].b - tokens[next].a).c_str(), 0, args, ignored))
             {
                 ReceiverTypes resolver(records, text, types);
                 entries = resolver.selectedCalls(entries, args, at);
@@ -132,7 +132,7 @@ J refactor(const std::string &method, const J &params, const std::string &u, con
         if (renaming) throw std::runtime_error("无法安全重命名：符号未知、重载有歧义或没有可编辑的原始声明");
         return A{};
     }
-    if (target.name == "main" || starts(target.name, "__magel"))
+    if (target.name == "main" || starts(target.name, "__chali"))
     {
         if (renaming) throw std::runtime_error("入口和编译器保留符号不能重命名");
     }
@@ -143,7 +143,7 @@ J refactor(const std::string &method, const J &params, const std::string &u, con
         return J();
     }
     const auto newName = str(params, "newName");
-    if (renaming && (!identifier(newName) || keywords.count(newName) || starts(newName, "__magel"))) throw std::runtime_error("新名称必须是非保留的标识符");
+    if (renaming && (!identifier(newName) || keywords.count(newName) || starts(newName, "__chali"))) throw std::runtime_error("新名称必须是非保留的标识符");
     if (renaming)
     {
         const auto declarationText = source(target.source);
@@ -265,7 +265,7 @@ J inlayHints(const std::string &text, const std::vector<Record> &records, const 
 J ownershipInformation(const std::string &text, const std::string &u, J diagnostic)
 {
     const auto message = str(diagnostic, "message");
-    const bool moved = str(diagnostic, "code") == "MGL1205";
+    const bool moved = str(diagnostic, "code") == "CHL1205";
     if (!moved && message.find("借用") == message.npos && message.find("生命周期") == message.npos) return diagnostic;
     const auto at = offsetAt(text, get(get(diagnostic, "range"), "start"));
     auto records = collect(u, text);

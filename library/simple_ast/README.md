@@ -1,6 +1,6 @@
-# 简单 AST 构建（`magel/library/simple_ast`）
+# 简单 AST 构建（`chali/library/simple_ast`）
 
-> **这份是 magel 自带的副本**：源在 `library/simple_ast`，magel 用这里的一份。
+> **这份是 chali 自带的副本**：源在 `library/simple_ast`，chali 用这里的一份。
 > 两份是**独立维护**的 —— 改了一边不会自动同步。
 
 用 C++ 代码搭一棵 AST，再落成 **四元式**（喂给 `library/transfer` 或 `library/stackvm`）
@@ -31,7 +31,7 @@
 | 常量文本输出 | `Node::print("ok\n")` → `(print, "ok\\n", _, _)`（数值输出仍是 `Node::write`） |
 | 单字符输出 | `Node::putc(Node::i(10))` → `(putc, 10, _, _)`：数值转文本时逐字符打 |
 | 带形参名的调用 | `Node::call("f", {"a", "b"}, {x, y})` → `(param, x, _, a)` `(param, y, _, b)` `(call, f, _, t)`；`param` 是**按名字**绑定的，多参调用必须把形参名逐个写出来 |
-| 间接调用（函数指针） | `Node::callPointer(值, {"__magel_p0", …}, {实参})` → `(param …)` + `(callptr, 值, _, t)`：值是「数据区里存着函数标签那串字节」的地址，栈机按**位置**绑实参 |
+| 间接调用（函数指针） | `Node::callPointer(值, {"__chali_p0", …}, {实参})` → `(param …)` + `(callptr, 值, _, t)`：值是「数据区里存着函数标签那串字节」的地址，栈机按**位置**绑实参 |
 | 浮点字面量 | `Node::f(2.0)` 在四元式里一定写成 `2.0`（不是 `2`），免得被后端当成整数槽 |
 | 堆：分配 / 释放 | `Node::alloc(字节数)` → `(alloc, 字节数, _, t)`（表达式的值是拿到的地址）；`Node::freeMemory(地址)` → `(free, 地址, _, _)`（当语句用）。给"运行期才知道要多少"的对象用，与数据区（编译期布局）分开 |
 | 按地址读整数 | `Node::loadInt(地址)` → `(load:i64, 地址, _, t)`：`index()` 的取值宽度跟着基址的**元素类型**走，而"运行时数组的长度"这类值必须按整数读，所以单独给一个原语 |
@@ -104,4 +104,4 @@ ctest --test-dir build/simple-ast --output-on-failure
 
 `simple_ast.hpp` 保留公开类型和接口；`ast_type.cpp` 实现类型构造与描述，`ast_node.cpp` 实现节点工厂，`simple_ast.cpp` 负责类型推导和四元式生成，`ast_data.cpp` 负责数据布局与二进制/C 头导出。`ast_storage_detail.hpp` 仅共享轻量标量存储宽度查询。各 `.cpp` 均独立编译，没有包含实现文件。
 
-CMake 的 `parseengine_simple_ast` 目标、Magel Makefile、门禁直接编译入口与导出工程模板均链接全部实现；修改单个实现只重编对应对象及重新链接。当前修改限于本仓库副本。
+CMake 的 `parseengine_simple_ast` 目标、ChaLi Makefile、门禁直接编译入口与导出工程模板均链接全部实现；修改单个实现只重编对应对象及重新链接。当前修改限于本仓库副本。

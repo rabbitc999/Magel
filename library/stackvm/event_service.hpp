@@ -1,5 +1,5 @@
-#ifndef MAGEL_EVENT_SERVICE_HPP
-#define MAGEL_EVENT_SERVICE_HPP
+#ifndef CHALI_EVENT_SERVICE_HPP
+#define CHALI_EVENT_SERVICE_HPP
 #include "stackvm.hpp"
 #include <atomic>
 #if STACKVM_WITH_THREADS

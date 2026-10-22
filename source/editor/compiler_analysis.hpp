@@ -1,11 +1,11 @@
-#ifndef MAGEL_EDITOR_COMPILER_ANALYSIS_HPP
-#define MAGEL_EDITOR_COMPILER_ANALYSIS_HPP
+#ifndef CHALI_EDITOR_COMPILER_ANALYSIS_HPP
+#define CHALI_EDITOR_COMPILER_ANALYSIS_HPP
 #include <cstddef>
 #include <string>
 #include <string_view>
 #include <vector>
 
-namespace magel_editor
+namespace chali_editor
 {
 /**
  * @brief 对原始源码声明给出的已完成语义推导结果。
@@ -78,5 +78,5 @@ private:
  * @brief 当前编译进程的编辑器分析收集器，不保存运行时地址或闭包环境。
  */
 extern CompilerAnalysis compilerAnalysis;
-}  // namespace magel_editor
+}  // namespace chali_editor
 #endif

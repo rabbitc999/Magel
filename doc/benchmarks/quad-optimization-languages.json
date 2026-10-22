@@ -14,7 +14,7 @@
   "lua_url": "https://www.lua.org/ftp/lua-5.5.1.tar.gz",
   "lua_sha256": "1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce",
   "compiler": "gcc (x86_64-posix-seh-rev3, Built by MinGW-W64 project) 11.2.0",
-  "compiler_flags": "Lua -O2; Magel -O2 -DNDEBUG MAGEL_CUSTOM_ALLOCATOR=1",
+  "compiler_flags": "Lua -O2; ChaLi -O2 -DNDEBUG CHALI_CUSTOM_ALLOCATOR=1",
   "results": {
     "Python": {
       "median_ms": 408.2006,
@@ -42,7 +42,7 @@
       ],
       "checksum": "49999995000000"
     },
-    "Magel VM optimized": {
+    "ChaLi VM optimized": {
       "median_ms": 129.422,
       "samples_ms": [
         130.052,

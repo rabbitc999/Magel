@@ -1,0 +1,18 @@
+module stdFileResult;
+
+import std::io;
+
+int64 main() {
+    Result<File, String> opened =
+    std::io::fileOpen("missing-file-for-chali-tests.txt", "r");
+    match (opened) {
+        Result<File, String>::Ok(handle) => {
+            std::io::fileClose(&handle);
+            println("opened");
+        }
+        Result<File, String>::Err(message) => {
+            println("{}", message);
+        }
+    }
+    return 0;
+}

@@ -195,13 +195,13 @@ int main(int argc, char **argv)
     const auto hex = r::toHex(table);
     CHECK(hex && r::fromHex(*hex, decoded));
     CHECK(!r::fromHex("x0", decoded) && !r::fromHex("f", decoded));
-    auto quads = stackvm::parseQuads("# magel-features: reflection\n# magel-reflection: " + *hex + "\n(write, 42, _, _)\n(halt, _, _, _)\n", "metadata.quad");
+    auto quads = stackvm::parseQuads("# chali-features: reflection\n# chali-reflection: " + *hex + "\n(write, 42, _, _)\n(halt, _, _, _)\n", "metadata.quad");
     CHECK(quads.ok() && !quads.reflection.empty());
     const auto optimization = stackvm::optimize(quads);
     (void)optimization;
     CHECK(r::toHex(quads.reflection) == hex);
-    CHECK(!stackvm::parseQuads("# magel-reflection: " + *hex, "missing-flag").ok());
-    CHECK(!stackvm::parseQuads("# magel-features: reflection\n# magel-reflection: " + *hex + "\n# magel-reflection: " + *hex, "duplicate").ok());
+    CHECK(!stackvm::parseQuads("# chali-reflection: " + *hex, "missing-flag").ok());
+    CHECK(!stackvm::parseQuads("# chali-features: reflection\n# chali-reflection: " + *hex + "\n# chali-reflection: " + *hex, "duplicate").ok());
     stackvm::Program program;
     CHECK(stackvm::assemble(quads, program) == bool(STACKVM_WITH_REFLECTION));
     if (!STACKVM_WITH_REFLECTION)
@@ -271,9 +271,9 @@ int main(int argc, char **argv)
         CHECK(stackvm::loadProgramBinary(directory + "/legacy-capability.svmb", loaded) && loaded.reflection.empty());
         // 为真实 VM 查询测试保留输入和宿主断言。
         std::ofstream quad(directory + "/metadata.quad", std::ios::binary);
-        quad << "# magel-features: reflection\n# magel-reflection: " << *hex << "\n(write, 42, _, _)\n(halt, _, _, _)\n";
+        quad << "# chali-features: reflection\n# chali-reflection: " << *hex << "\n(write, 42, _, _)\n(halt, _, _, _)\n";
         std::ofstream header(directory + "/query.inc", std::ios::binary);
-        header << "int main() { const auto &table = magel_reflection_metadata(); auto s = stackvm::reflection::getStructInfo(table, " << serviceId << "ull);\n"
+        header << "int main() { const auto &table = chali_reflection_metadata(); auto s = stackvm::reflection::getStructInfo(table, " << serviceId << "ull);\n"
                                                                                                                                                       "if (!s || s->get().methods.size() != 3 || s->get().fields[1].isOwned != true) return 1;\n"
                                                                                                                                                       "auto a = stackvm::reflection::getAnnotationInfo(table, \"http::Route\");\n"
                                                                                                                                                       "if (!a || a->get().params[1].defaultValue->bits != 60 || table.enums[0].variants[1].payloads.size() != 2) return 2; return 0; }\n";

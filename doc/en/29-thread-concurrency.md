@@ -64,4 +64,4 @@ std::watchdog checks deadlines and kicks directly at VM execution checks without
 
 The coroutine module, coroutine handles/scheduling and old interrupt-handler registration/implicit callback delivery are removed. Language block-expression yield and level break keep their value semantics. Migrate callback consumers to explicit receive loops. Retry NET_PENDING with bounded waits or sleepFor instead of busy polling.
 
-Runnable samples: [channel](../../example/samples/thread_channel.mgl), [pool](../../example/samples/thread_pool.mgl), [events](../../example/samples/event_timer.mgl). API: [threads](../library/std-thread.md), [communication](../library/std-concurrency.md), [events](../library/std-event.md).
+Runnable samples: [channel](../../example/samples/thread_channel.chl), [pool](../../example/samples/thread_pool.chl), [events](../../example/samples/event_timer.chl). API: [threads](../library/std-thread.md), [communication](../library/std-concurrency.md), [events](../library/std-event.md).

@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::memory;
 ```
 
@@ -14,16 +14,16 @@ Span<T> 是引用加长度，不拥有缓冲区；iterator 返回元素 mut&。�
 
 ## 参考代码
 
-完整程序：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+完整程序：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。
 
 ```powershell
-magel run example/samples/std_parse_random_path_memory.mgl
+chali run example/samples/std_parse_random_path_memory.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::memory;
 import std::parse;
 import std::path;
@@ -175,7 +175,7 @@ memory=ok
 
 **声明**
 
-```magel
+```chali
 static Span<T> from(T mut& data, int64 length);
 ```
 
@@ -201,13 +201,13 @@ static Span<T> from(T mut& data, int64 length);
 
 **调用形式**
 
-```magel
+```chali
 std::memory::Span<T>::from(data, length);
 ```
 
-**源码**：[source/std/memory.mgl:11](../../source/std/memory.mgl#L11)。
+**源码**：[source/std/memory.chl:11](../../source/std/memory.chl#L11)。
 
-**完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+**完整示例**：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。
 
 <a id="api-1"></a>
 
@@ -215,7 +215,7 @@ std::memory::Span<T>::from(data, length);
 
 **声明**
 
-```magel
+```chali
 T index(int64 key);
 ```
 
@@ -240,13 +240,13 @@ T index(int64 key);
 
 **调用形式**
 
-```magel
+```chali
 obj.index(key);
 ```
 
-**源码**：[source/std/memory.mgl:19](../../source/std/memory.mgl#L19)。
+**源码**：[source/std/memory.chl:19](../../source/std/memory.chl#L19)。
 
-**完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+**完整示例**：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。
 
 <a id="api-2"></a>
 
@@ -254,7 +254,7 @@ obj.index(key);
 
 **声明**
 
-```magel
+```chali
 Option<T mut&> iterator(int64 index);
 ```
 
@@ -278,13 +278,13 @@ Option<T mut&> iterator(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.iterator(index);
 ```
 
-**源码**：[source/std/memory.mgl:23](../../source/std/memory.mgl#L23)。
+**源码**：[source/std/memory.chl:23](../../source/std/memory.chl#L23)。
 
-**完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+**完整示例**：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。
 
 <a id="api-3"></a>
 
@@ -292,7 +292,7 @@ obj.iterator(index);
 
 **声明**
 
-```magel
+```chali
 int64 len();
 ```
 
@@ -314,13 +314,13 @@ int64 len();
 
 **调用形式**
 
-```magel
+```chali
 obj.len();
 ```
 
-**源码**：[source/std/memory.mgl:27](../../source/std/memory.mgl#L27)。
+**源码**：[source/std/memory.chl:27](../../source/std/memory.chl#L27)。
 
-**完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+**完整示例**：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。
 
 <a id="api-4"></a>
 
@@ -328,7 +328,7 @@ obj.len();
 
 **声明**
 
-```magel
+```chali
 static MemoryStats stats();
 ```
 
@@ -350,13 +350,13 @@ static MemoryStats stats();
 
 **调用形式**
 
-```magel
+```chali
 std::memory::Memory::stats();
 ```
 
-**源码**：[source/std/memory.mgl:45](../../source/std/memory.mgl#L45)。
+**源码**：[source/std/memory.chl:45](../../source/std/memory.chl#L45)。
 
-**完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+**完整示例**：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。
 
 <a id="api-5"></a>
 
@@ -364,7 +364,7 @@ std::memory::Memory::stats();
 
 **声明**
 
-```magel
+```chali
 static Arena create();
 ```
 
@@ -386,13 +386,13 @@ static Arena create();
 
 **调用形式**
 
-```magel
+```chali
 std::memory::Arena::create();
 ```
 
-**源码**：[source/std/memory.mgl:60](../../source/std/memory.mgl#L60)。
+**源码**：[source/std/memory.chl:60](../../source/std/memory.chl#L60)。
 
-**完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+**完整示例**：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。
 
 <a id="api-6"></a>
 
@@ -400,7 +400,7 @@ std::memory::Arena::create();
 
 **声明**
 
-```magel
+```chali
 Span<char> allocate(int64 bytes);
 ```
 
@@ -425,13 +425,13 @@ Span<char> allocate(int64 bytes);
 
 **调用形式**
 
-```magel
+```chali
 obj.allocate(bytes);
 ```
 
-**源码**：[source/std/memory.mgl:62](../../source/std/memory.mgl#L62)。
+**源码**：[source/std/memory.chl:62](../../source/std/memory.chl#L62)。
 
-**完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+**完整示例**：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。
 
 <a id="api-7"></a>
 
@@ -439,7 +439,7 @@ obj.allocate(bytes);
 
 **声明**
 
-```magel
+```chali
 void reset();
 ```
 
@@ -461,10 +461,10 @@ void reset();
 
 **调用形式**
 
-```magel
+```chali
 obj.reset();
 ```
 
-**源码**：[source/std/memory.mgl:68](../../source/std/memory.mgl#L68)。
+**源码**：[source/std/memory.chl:68](../../source/std/memory.chl#L68)。
 
-**完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+**完整示例**：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。

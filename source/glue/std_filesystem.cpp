@@ -1,5 +1,5 @@
 #include "std_filesystem.hpp"
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include <chrono>
 #include <algorithm>
 #include <filesystem>
@@ -14,7 +14,7 @@ namespace std_filesystem_glue
 struct ReplyTag
 {
 };
-using Reply = magel_glue::Record<ReplyTag>;
+using Reply = chali_glue::Record<ReplyTag>;
 using Bytes = Memory::Vector<std::uint8_t>;
 /**
  * @brief 写入可恢复错误。
@@ -31,10 +31,10 @@ inline void fail(Reply reply, const std::string &message)
  * @param error 绑定失败说明。
  * @return 是否全部成功。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     namespace fs = std::filesystem;
-    bool ok = registry.bindTypedWithContext<void, Memory::String, std::int64_t, Reply>("std::io::__readAllBytes", [](magel_glue::Context &ctx, Memory::String path, std::int64_t limit, Reply reply) {
+    bool ok = registry.bindTypedWithContext<void, Memory::String, std::int64_t, Reply>("std::io::__readAllBytes", [](chali_glue::Context &ctx, Memory::String path, std::int64_t limit, Reply reply) {
             if (limit<0) { fail(reply,"negative byte limit"); return; }
             std::ifstream input(Memory::u8path(path),std::ios::binary);
             if (!input) { fail(reply,"cannot open file for reading"); return; }
@@ -48,7 +48,7 @@ bool bind(magel_glue::Registry &registry, Memory::String *error)
             }
             if (input.bad()) { fail(reply,"file read failed"); return; }
             const auto handle=reply.field<std::int64_t>(1);
-            for (auto byte:bytes) collection_glue::listPush(ctx, handle,magel_glue::Value::fromInt(byte)); }, error);
+            for (auto byte:bytes) collection_glue::listPush(ctx, handle,chali_glue::Value::fromInt(byte)); }, error);
     ok = registry.bindTyped<void, Memory::String, Bytes, Reply>("std::io::__writeAllBytes", [](Memory::String path, Bytes bytes, Reply reply) {
             std::ofstream output(Memory::u8path(path),std::ios::binary|std::ios::trunc);
             if (!output) { fail(reply,"cannot open file for writing"); return; }
@@ -56,7 +56,7 @@ bool bind(magel_glue::Registry &registry, Memory::String *error)
             output.close();
             if (!output) { fail(reply,"file write or close failed"); return; }
             reply.set<std::int64_t>(3,static_cast<std::int64_t>(bytes.size())); }, error) && ok;
-    ok = registry.bindTypedWithContext<void, Memory::String, Reply>("std::io::__listDirectory", [](magel_glue::Context &ctx, Memory::String path, Reply reply) {
+    ok = registry.bindTypedWithContext<void, Memory::String, Reply>("std::io::__listDirectory", [](chali_glue::Context &ctx, Memory::String path, Reply reply) {
             std::error_code ec; fs::directory_iterator it(Memory::u8path(path),ec),end;
             if (ec) { fail(reply,ec.message()); return; }
             Memory::Vector<Memory::String> paths;
@@ -66,7 +66,7 @@ bool bind(magel_glue::Registry &registry, Memory::String *error)
             }
             if (ec) { fail(reply,ec.message()); return; }
             std::sort(paths.begin(),paths.end()); const auto handle=reply.field<std::int64_t>(2);
-            for (const auto &path:paths) collection_glue::listPush(ctx, handle,magel_glue::Value::fromText(path)); }, error) && ok;
+            for (const auto &path:paths) collection_glue::listPush(ctx, handle,chali_glue::Value::fromText(path)); }, error) && ok;
     ok = registry.bindTyped<void, Memory::String, Reply>("std::io::__fileInfo", [](Memory::String path, Reply reply) {
             std::error_code ec; const auto p=Memory::u8path(path); const auto status=fs::status(p,ec);
             if (ec || !fs::exists(status)) { fail(reply,ec?ec.message():"path does not exist"); return; }

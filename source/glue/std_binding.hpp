@@ -1,10 +1,10 @@
 #pragma once
-#include "../allocator/magel_allocator.hpp"
+#include "../allocator/chali_allocator.hpp"
 
-namespace magel_glue
+namespace chali_glue
 {
 /**
- * @brief 标准库绑定接口使用的宿主注册表，完整定义由 magel_glue.hpp 提供。
+ * @brief 标准库绑定接口使用的宿主注册表，完整定义由 chali_glue.hpp 提供。
  */
 class Registry;
-}  // namespace magel_glue
+}  // namespace chali_glue

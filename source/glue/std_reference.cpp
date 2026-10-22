@@ -1,6 +1,6 @@
 #include "std_reference.hpp"
 #include "std_native_record.hpp"
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include <memory>
 namespace std_reference_glue
 {
@@ -29,7 +29,7 @@ const stackvm::NativeRecordType referenceType{ "std::concurrency::SharedReferenc
  * @param identity 线程组拥有的共享槽标识。
  * @return 引用记录句柄。
  */
-std::int64_t create(magel_glue::Context &ctx, std::int64_t identity)
+std::int64_t create(chali_glue::Context &ctx, std::int64_t identity)
 {
     auto value = std::make_unique<std::int64_t>(identity);
     auto handle = ctx.makeNativeRecord(referenceType, value.get());
@@ -44,9 +44,9 @@ std::int64_t create(magel_glue::Context &ctx, std::int64_t identity)
  * @return 所有入口绑定成功时返回 true。
  * @note 引用的复制不复制或销毁线程组拥有的槽内值。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
-    return registry.bindTyped<std::int64_t>("std::event::__emptySource", [] { return std::int64_t{ 0 }; }, error) && registry.bindTypedWithContext<std::int64_t>("std::concurrency::__referenceNew", [](magel_glue::Context &ctx) { return create(ctx, 0); }, error) && native_record_glue::bind(registry.native(), "std::concurrency::__referenceCopy", 1, native_record_glue::copy, error) && native_record_glue::bind(registry.native(), "std::concurrency::__referenceDrop", 1, native_record_glue::drop, error) && registry.bindTypedWithContext<std::int64_t, std::int64_t>("std::concurrency::__referenceFrom", create, error) && registry.bindTypedWithContext<std::int64_t, std::int64_t>("std::concurrency::__referenceId", [](magel_glue::Context &ctx, std::int64_t handle) {
+    return registry.bindTyped<std::int64_t>("std::event::__emptySource", [] { return std::int64_t{ 0 }; }, error) && registry.bindTypedWithContext<std::int64_t>("std::concurrency::__referenceNew", [](chali_glue::Context &ctx) { return create(ctx, 0); }, error) && native_record_glue::bind(registry.native(), "std::concurrency::__referenceCopy", 1, native_record_glue::copy, error) && native_record_glue::bind(registry.native(), "std::concurrency::__referenceDrop", 1, native_record_glue::drop, error) && registry.bindTypedWithContext<std::int64_t, std::int64_t>("std::concurrency::__referenceFrom", create, error) && registry.bindTypedWithContext<std::int64_t, std::int64_t>("std::concurrency::__referenceId", [](chali_glue::Context &ctx, std::int64_t handle) {
             auto *value = static_cast<const std::int64_t *>(ctx.nativeRecord(handle, referenceType)); return value ? *value : 0; }, error);
 }
 }  // namespace std_reference_glue

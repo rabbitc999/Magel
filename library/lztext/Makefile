@@ -1,4 +1,4 @@
-# lztext（magel/library/lztext）：构建 + 自检
+# lztext（chali/library/lztext）：构建 + 自检
 #
 # 与 ParseEngine 的 library/lztext 是同一份库，只是目录层级不同（本仓库放在 `library/` 下），
 # 所以构建目录指向仓库根的 build/lztext（相对本目录要回一级）。算法与容器格式两边完全一致。

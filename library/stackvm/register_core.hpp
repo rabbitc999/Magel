@@ -32,7 +32,7 @@ enum Flag : std::uint8_t
     CopyResult = 16,
     End = 32
 };
-#define MAGEL_REGISTER_OPS(X) \
+#define CHALI_REGISTER_OPS(X) \
     X(Generic)                \
     X(Copy64)                 \
     X(CopyImm64)              \
@@ -57,9 +57,9 @@ enum Flag : std::uint8_t
  */
 enum class Opcode : std::uint8_t
 {
-#define MAGEL_REGISTER_ENUM(name) name,
-    MAGEL_REGISTER_OPS(MAGEL_REGISTER_ENUM)
-#undef MAGEL_REGISTER_ENUM
+#define CHALI_REGISTER_ENUM(name) name,
+    CHALI_REGISTER_OPS(CHALI_REGISTER_ENUM)
+#undef CHALI_REGISTER_ENUM
 };
 /**
  * @brief 热指令，仅保存操作数、紧凑类型编码及区域后继。
@@ -265,19 +265,19 @@ private:
 #if defined(__GNUC__) && !defined(STACKVM_REGISTER_NO_THREADED)
             if constexpr (threaded)
             {
-#define MAGEL_REGISTER_ADDRESS(name) &&handler_##name,
-                static const void *const handlers[] = { MAGEL_REGISTER_OPS(MAGEL_REGISTER_ADDRESS) };
-#undef MAGEL_REGISTER_ADDRESS
+#define CHALI_REGISTER_ADDRESS(name) &&handler_##name,
+                static const void *const handlers[] = { CHALI_REGISTER_OPS(CHALI_REGISTER_ADDRESS) };
+#undef CHALI_REGISTER_ADDRESS
                 goto *handlers[static_cast<std::uint8_t>(instruction->opcode)];
             }
-#define MAGEL_REGISTER_CASE(name) \
+#define CHALI_REGISTER_CASE(name) \
     case Opcode::name: handler_##name : __attribute__((unused));
 #else
-#define MAGEL_REGISTER_CASE(name) case Opcode::name:
+#define CHALI_REGISTER_CASE(name) case Opcode::name:
 #endif
             switch (instruction->opcode)
             {
-                MAGEL_REGISTER_CASE(Generic)
+                CHALI_REGISTER_CASE(Generic)
                 {
                     if (instruction->kind == Kind::Service)
                     {
@@ -334,43 +334,43 @@ private:
                     take = instruction->kind == Kind::Jump || ((instruction->flags & Branch) && ((value == 0) == bool(instruction->flags & Zero)));
                     goto nodeDone;
                 }
-                MAGEL_REGISTER_CASE(Copy64) * registers[instruction->destination] = *registers[instruction->left];
+                CHALI_REGISTER_CASE(Copy64) * registers[instruction->destination] = *registers[instruction->left];
                 goto nodeDone;
-                MAGEL_REGISTER_CASE(CopyImm64) * registers[instruction->destination] = instruction->immediate;
+                CHALI_REGISTER_CASE(CopyImm64) * registers[instruction->destination] = instruction->immediate;
                 goto nodeDone;
-                MAGEL_REGISTER_CASE(Jump)
+                CHALI_REGISTER_CASE(Jump)
                 take = true;
                 goto nodeDone;
-                MAGEL_REGISTER_CASE(Branch)
+                CHALI_REGISTER_CASE(Branch)
                 take = (*registers[instruction->left] == 0) == bool(instruction->flags & Zero);
                 goto nodeDone;
-#define MAGEL_REGISTER_BINARY(name, operation)                                                                               \
-    MAGEL_REGISTER_CASE(name##RR)                                                                                            \
+#define CHALI_REGISTER_BINARY(name, operation)                                                                               \
+    CHALI_REGISTER_CASE(name##RR)                                                                                            \
     *registers[instruction->destination] = binary<operation>(*registers[instruction->left], *registers[instruction->right]); \
     goto nodeDone;                                                                                                           \
-    MAGEL_REGISTER_CASE(name##Imm)                                                                                           \
+    CHALI_REGISTER_CASE(name##Imm)                                                                                           \
     *registers[instruction->destination] = binary<operation>(*registers[instruction->left], instruction->immediate);         \
     goto nodeDone;                                                                                                           \
-    MAGEL_REGISTER_CASE(name##CopyRR)                                                                                        \
+    CHALI_REGISTER_CASE(name##CopyRR)                                                                                        \
     value = binary<operation>(*registers[instruction->left], *registers[instruction->right]);                                \
     *registers[instruction->destination] = value;                                                                            \
     *registers[instruction->copyDestination] = value;                                                                        \
     goto nodeDone;                                                                                                           \
-    MAGEL_REGISTER_CASE(name##CopyImm)                                                                                       \
+    CHALI_REGISTER_CASE(name##CopyImm)                                                                                       \
     value = binary<operation>(*registers[instruction->left], instruction->immediate);                                        \
     *registers[instruction->destination] = value;                                                                            \
     *registers[instruction->copyDestination] = value;                                                                        \
     goto nodeDone;
-                MAGEL_REGISTER_BINARY(Add64, Op::Add)
-                MAGEL_REGISTER_BINARY(Sub64, Op::Sub)
-                MAGEL_REGISTER_BINARY(Mul64, Op::Mul)
-#undef MAGEL_REGISTER_BINARY
-                MAGEL_REGISTER_CASE(Lt64BranchRR)
+                CHALI_REGISTER_BINARY(Add64, Op::Add)
+                CHALI_REGISTER_BINARY(Sub64, Op::Sub)
+                CHALI_REGISTER_BINARY(Mul64, Op::Mul)
+#undef CHALI_REGISTER_BINARY
+                CHALI_REGISTER_CASE(Lt64BranchRR)
                 value = *registers[instruction->left] < *registers[instruction->right];
                 *registers[instruction->destination] = value;
                 take = (value == 0) == bool(instruction->flags & Zero);
                 goto nodeDone;
-                MAGEL_REGISTER_CASE(Lt64BranchImm)
+                CHALI_REGISTER_CASE(Lt64BranchImm)
                 value = *registers[instruction->left] < instruction->immediate;
                 *registers[instruction->destination] = value;
                 take = (value == 0) == bool(instruction->flags & Zero);
@@ -390,7 +390,7 @@ private:
             }
         }
     finished:
-#undef MAGEL_REGISTER_CASE
+#undef CHALI_REGISTER_CASE
         return progress;
     }
     /**
@@ -428,6 +428,6 @@ private:
     bool foldJumps_ = true, specialize_ = true, services_ = true;
     Memory::Map<std::size_t, Memory::UniquePtr<Region>> regions_;
 };
-#undef MAGEL_REGISTER_OPS
+#undef CHALI_REGISTER_OPS
 }  // namespace register_core
 }  // namespace stackvm

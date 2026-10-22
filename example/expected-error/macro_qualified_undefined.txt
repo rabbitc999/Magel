@@ -1,1 +1,1 @@
-magel: example/samples-error/macro_qualified_undefined.mgl 第 2 行第 16 列：未定义宏：std::nope::foo
+chali: example/samples-error/macro_qualified_undefined.chl 第 2 行第 16 列：未定义宏：std::nope::foo

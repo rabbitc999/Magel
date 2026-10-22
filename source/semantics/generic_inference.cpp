@@ -25,7 +25,7 @@ bool ResolveAstGenericType(const std::shared_ptr<MType> &type, std::size_t depth
         }
         return true;
     }
-    const auto &generics = magel_generic::session.generics;
+    const auto &generics = chali_generic::session.generics;
     auto found = generics.find(type->lookupModule.empty() ? type->genericBase : type->lookupModule + "::" + type->genericBase);
     if (found == generics.end()) found = generics.find(type->genericBase);
     if (found == generics.end()) found = generics.find("std::lang::" + type->genericBase);
@@ -44,8 +44,8 @@ bool ResolveAstGenericType(const std::shared_ptr<MType> &type, std::size_t depth
     if (found == generics.end()) return Fail("没有声明的泛型类型：" + type->genericBase);
     Memory::Vector<Memory::String> arguments;
     for (const auto &argument : type->genericArguments) arguments.push_back(Describe(argument));
-    const auto name = magel_generic::mangle(found->second.name, arguments);
-    if (!magel_generic::session.made.count(name)) throw MInstantiationRequest{ found->second.name, arguments };
+    const auto name = chali_generic::mangle(found->second.name, arguments);
+    if (!chali_generic::session.made.count(name)) throw MInstantiationRequest{ found->second.name, arguments };
     type->name = found->second.module.empty() ? name : found->second.module + "::" + name;
     if (!type->genericMember.empty()) type->name += "::" + type->genericMember;
     type->unresolvedName = false;
@@ -78,7 +78,7 @@ struct MGenericSignature
     Memory::Vector<MGenericConstructor> constructors;
 };
 Memory::Map<Memory::String, MGenericSignature> g_genericSignatures;
-Memory::Map<Memory::String, magel_generic::Expansion> g_genericPatterns;
+Memory::Map<Memory::String, chali_generic::Expansion> g_genericPatterns;
 Memory::Set<int> g_inferringExpressions;
 Memory::Vector<std::shared_ptr<MType>> g_genericPatternTypes;
 
@@ -137,7 +137,7 @@ Memory::String InferenceTypeText(const std::shared_ptr<MType> &type)
  */
 Memory::String GenericArgumentText(const std::shared_ptr<MType> &type)
 {
-    return magel_generic::canonicalType(InferenceTypeText(type));
+    return chali_generic::canonicalType(InferenceTypeText(type));
 }
 
 Memory::Map<Memory::String, Memory::String> g_inferenceCanonicalNames;
@@ -153,7 +153,7 @@ const Memory::String &CanonicalInferenceName(const Memory::String &text)
 {
     auto found = g_inferenceCanonicalNames.find(text);
     if (found == g_inferenceCanonicalNames.end())
-        found = g_inferenceCanonicalNames.emplace(text, magel_generic::canonicalType(text)).first;
+        found = g_inferenceCanonicalNames.emplace(text, chali_generic::canonicalType(text)).first;
     return found->second;
 }
 
@@ -188,15 +188,15 @@ void CollectGenericClosureNames(int id, Memory::Set<Memory::String> &locals, Mem
     if (node.kind == MNode::Var)
     {
         if (!locals.count(node.s)) names.insert(node.s);
-        if (node.s.rfind("__magel_lambda_", 0) == 0)
+        if (node.s.rfind("__chali_lambda_", 0) == 0)
             for (const auto top : g_top)
             {
                 const auto nested = N(top);
                 if (nested.kind != MNode::FuncDef || nested.s != node.s) continue;
                 auto inner = locals;
                 for (const auto param : N(nested.kids[0]).kids) inner.insert(N(param).s);
-                const auto specification = magel_lambda::captureSpecifications.find(nested.s);
-                if (specification != magel_lambda::captureSpecifications.end())
+                const auto specification = chali_lambda::captureSpecifications.find(nested.s);
+                if (specification != chali_lambda::captureSpecifications.end())
                     for (const auto &capture : specification->second)
                         if (!inner.count(capture.first)) names.insert(capture.first);
                 CollectGenericClosureNames(nested.kids[1], inner, names);
@@ -266,17 +266,17 @@ bool PrepareGenericSignatures()
     const auto savedTop = g_top;
     const auto savedModule = g_parseModule;
     const auto nodeCount = g_nodes.size(), typeCount = g_types.size(), nameCount = g_names.size();
-    for (const auto &entry : magel_generic::session.generics)
+    for (const auto &entry : chali_generic::session.generics)
     {
         const auto &generic = entry.second;
-        const auto head = magel_generic::trim(generic.declaration);
-        const bool enumeration = magel_generic::wordAt(head, 0, "enum");
-        const bool structure = magel_generic::wordAt(head, 0, "struct");
-        if (magel_generic::wordAt(head, 0, "interface") || magel_generic::wordAt(head, 0, "type")) continue;
+        const auto head = chali_generic::trim(generic.declaration);
+        const bool enumeration = chali_generic::wordAt(head, 0, "enum");
+        const bool structure = chali_generic::wordAt(head, 0, "struct");
+        if (chali_generic::wordAt(head, 0, "interface") || chali_generic::wordAt(head, 0, "type")) continue;
         if (structure && head.find("create") == Memory::String::npos) continue;
-        magel_generic::Generic probe = generic;
-        const auto closureBody = magel_lambda::genericClosureBodies.find(generic.name);
-        if (!enumeration && !structure && closureBody == magel_lambda::genericClosureBodies.end())
+        chali_generic::Generic probe = generic;
+        const auto closureBody = chali_lambda::genericClosureBodies.find(generic.name);
+        if (!enumeration && !structure && closureBody == chali_lambda::genericClosureBodies.end())
         {
             const auto body = probe.declaration.find('{');
             if (body != Memory::String::npos)
@@ -291,13 +291,13 @@ bool PrepareGenericSignatures()
         Memory::Vector<Memory::String> arguments;
         for (std::size_t i = 0; i < generic.params.size(); ++i)
             arguments.push_back("McInferenceParameter" + Memory::toString(i));
-        magel_generic::Expansion expansion{ &probe, arguments, "McInferenceProbe" };
-        auto source = magel_generic::substitute(expansion);
-        Memory::Map<Memory::String, magel_generic::Expansion> patterns;
+        chali_generic::Expansion expansion{ &probe, arguments, "McInferenceProbe" };
+        auto source = chali_generic::substitute(expansion);
+        Memory::Map<Memory::String, chali_generic::Expansion> patterns;
         Memory::Vector<Memory::String> pending;
         Memory::Map<Memory::String, Memory::Set<Memory::String>> unchecked;
         // 符号签名不执行约束检查，具体实例在展开全部嵌套声明后统一检查约束。
-        auto templates = magel_generic::session.generics;
+        auto templates = chali_generic::session.generics;
         for (auto &item : templates)
             for (auto &param : item.second.params)
             {
@@ -305,20 +305,20 @@ bool PrepareGenericSignatures()
                 param.constant = false;
             }
         Memory::String error;
-        if (!magel_generic::rewrite(source, templates, unchecked, patterns, pending, error))
+        if (!chali_generic::rewrite(source, templates, unchecked, patterns, pending, error))
             return Fail(error);
         for (const auto &item : patterns)
         {
             auto pattern = item.second;
-            pattern.generic = &magel_generic::session.generics.at(pattern.generic->name);
+            pattern.generic = &chali_generic::session.generics.at(pattern.generic->name);
             g_genericPatterns[item.first] = std::move(pattern);
         }
-        const auto savedCaptureSpecifications = magel_lambda::captureSpecifications;
-        magel::Engine parser;
+        const auto savedCaptureSpecifications = chali_lambda::captureSpecifications;
+        chali::Engine parser;
         int value = 0;
         g_parseModule.clear();
-        magel_generic::markContainerTypeArguments(source);
-        if (parser.runText(source, &value) != magel::Status::Ok)
+        chali_generic::markContainerTypeArguments(source);
+        if (parser.runText(source, &value) != chali::Status::Ok)
             return Fail("泛型声明的签名无法解析：" + generic.name);
         MGenericSignature signature;
         for (int top : g_top)
@@ -327,7 +327,7 @@ bool PrepareGenericSignatures()
             if (node.s != "McInferenceProbe") continue;
             if (node.kind == MNode::FuncDef)
             {
-                if (closureBody != magel_lambda::genericClosureBodies.end())
+                if (closureBody != chali_lambda::genericClosureBodies.end())
                 {
                     Memory::Set<Memory::String> locals;
                     for (const auto param : N(node.kids[0]).kids) locals.insert(N(param).s);
@@ -373,7 +373,7 @@ bool PrepareGenericSignatures()
         g_nodes.resize(nodeCount);
         g_types.resize(typeCount);
         g_names.resize(nameCount);
-        magel_lambda::captureSpecifications = savedCaptureSpecifications;
+        chali_lambda::captureSpecifications = savedCaptureSpecifications;
     }
     g_top = savedTop;
     g_parseModule = savedModule;
@@ -417,8 +417,8 @@ bool UnifyGenericType(const std::shared_ptr<MType> &pattern, const std::shared_p
     if (pattern->kind == MType::Struct)
     {
         const auto symbolic = g_genericPatterns.find(CanonicalInferenceName(pattern->name));
-        const auto concrete = magel_generic::session.made.find(CanonicalInferenceName(actual->name));
-        if (symbolic != g_genericPatterns.end() && concrete != magel_generic::session.made.end())
+        const auto concrete = chali_generic::session.made.find(CanonicalInferenceName(actual->name));
+        if (symbolic != g_genericPatterns.end() && concrete != chali_generic::session.made.end())
         {
             if (symbolic->second.generic->name != concrete->second.generic->name) return false;
             for (std::size_t i = 0; i < symbolic->second.args.size(); ++i)
@@ -454,7 +454,7 @@ bool UnifyGenericType(const std::shared_ptr<MType> &pattern, const std::shared_p
 /**
  * @brief 从绑定生成完整实参表；没有信息的类型参数绝不隐式退化成 Any。
  */
-bool CompleteGenericArguments(const magel_generic::Generic &generic,
+bool CompleteGenericArguments(const chali_generic::Generic &generic,
                               const Memory::Map<Memory::String, std::shared_ptr<MType>> &bindings, Memory::Vector<Memory::String> &args)
 {
     Memory::Map<Memory::String, Memory::String> resolved;
@@ -465,20 +465,20 @@ bool CompleteGenericArguments(const magel_generic::Generic &generic,
         if (found == bindings.end())
         {
             if (!generic.params[i].hasDefault) return false;
-            argument = magel_generic::substituteIdentifiers(generic.params[i].fallback, resolved);
-            auto made = magel_generic::session.made;
+            argument = chali_generic::substituteIdentifiers(generic.params[i].fallback, resolved);
+            auto made = chali_generic::session.made;
             Memory::Vector<Memory::String> pending;
             Memory::String error;
-            if (!magel_generic::checkTypeNesting(argument, error)) return Fail(error);
-            if (!magel_generic::rewrite(argument, magel_generic::session.generics,
-                                        magel_generic::session.implemented, made, pending, error)) return Fail(error);
+            if (!chali_generic::checkTypeNesting(argument, error)) return Fail(error);
+            if (!chali_generic::rewrite(argument, chali_generic::session.generics,
+                                        chali_generic::session.implemented, made, pending, error)) return Fail(error);
             // 先请求默认类型中的内层实例，重放后再实例化外层函数或枚举。
             if (!pending.empty())
             {
                 const auto &inner = made.at(pending.front());
                 throw MInstantiationRequest{ inner.generic->name, inner.args };
             }
-            argument = magel_generic::canonicalType(argument);
+            argument = chali_generic::canonicalType(argument);
         }
         else
             argument = GenericArgumentText(found->second);
@@ -546,8 +546,8 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
     {
         if (declaration.source != name || declaration.module != module || declaration.bodyId < 0) continue;
         FindGenericClosureDefinition(name);
-        const auto genericClosure = magel_lambda::genericClosures.find(name);
-        const int captureMode = genericClosure != magel_lambda::genericClosures.end() ? genericClosure->second.captureMode : name.find("_mut_") != Memory::String::npos ? 1 :
+        const auto genericClosure = chali_lambda::genericClosures.find(name);
+        const int captureMode = genericClosure != chali_lambda::genericClosures.end() ? genericClosure->second.captureMode : name.find("_mut_") != Memory::String::npos ? 1 :
                                                                                                                          name.find("_copy_") != Memory::String::npos    ? 2 :
                                                                                                                          name.find("_move_") != Memory::String::npos    ? 3 :
                                                                                                                                                                           0;
@@ -561,7 +561,7 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
         }
         const Memory::Map<Memory::String, int> *specifications = nullptr;
         std::size_t specificationLength = 0;
-        for (const auto &entry : magel_lambda::captureSpecifications)
+        for (const auto &entry : chali_lambda::captureSpecifications)
             if ((name == entry.first || name.rfind(entry.first + "__", 0) == 0) && entry.first.size() > specificationLength)
             {
                 specifications = &entry.second;
@@ -615,7 +615,7 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
                         if (&entry.second == variable) local = true;
                 if (local && !addCapture(syntax.s, variable, captureMode)) return false;
             }
-        if (genericClosure != magel_lambda::genericClosures.end())
+        if (genericClosure != chali_lambda::genericClosures.end())
         {
             specifications = &genericClosure->second.captures;
             for (const auto &source : g_genericClosureCaptureNames[genericClosure->second.sourceSeed])
@@ -676,7 +676,7 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
                 }
                 if (!NodeUsesDefinitionLookup(node) && (node.s == "self" || (!resolved && !g_owner.empty() && FieldType(g_owner, node.s))))
                     return Fail("lambda 不能隐式捕获 self 或接收者字段：" + node.s);
-                if (node.s.rfind("__magel_lambda_", 0) == 0)
+                if (node.s.rfind("__chali_lambda_", 0) == 0)
                 {
                     for (const auto &nested : g_functionDecls)
                     {
@@ -687,7 +687,7 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
                             inner.insert(param.bindingIdentity ? Memory::String("binding:") + Memory::toString(param.bindingIdentity) : param.source);
                             if (param.bindingKey.empty() || param.bindingKey == param.source) inner.insert(param.source);
                         }
-                        for (const auto &specification : magel_lambda::captureSpecifications)
+                        for (const auto &specification : chali_lambda::captureSpecifications)
                         {
                             if (nested.source != specification.first && nested.source.rfind(specification.first + "__", 0) != 0) continue;
                             for (const auto &entry : specification.second)
@@ -769,19 +769,19 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
             captures = environment->second;
             genericImplementation = true;
         }
-        const auto expansion = magel_generic::session.made.find(name);
-        if (expansion != magel_generic::session.made.end())
+        const auto expansion = chali_generic::session.made.find(name);
+        if (expansion != chali_generic::session.made.end())
         {
-            const auto genericBody = magel_lambda::genericClosureBodies.find(expansion->second.generic->name);
-            if (genericBody != magel_lambda::genericClosureBodies.end())
+            const auto genericBody = chali_lambda::genericClosureBodies.find(expansion->second.generic->name);
+            if (genericBody != chali_lambda::genericClosureBodies.end())
             {
-                const auto &source = magel_lambda::genericClosures.at(genericBody->second);
+                const auto &source = chali_lambda::genericClosures.at(genericBody->second);
                 auto environmentName = source.seed;
                 if (!source.outerNames.empty())
                 {
                     if (expansion->second.args.size() < source.outerNames.size()) return Fail("泛型闭包缺少外层类型参数");
                     Memory::Vector<Memory::String> outer(expansion->second.args.begin(), expansion->second.args.begin() + source.outerNames.size());
-                    environmentName = magel_generic::mangle(source.seed, outer);
+                    environmentName = chali_generic::mangle(source.seed, outer);
                 }
                 const auto environment = g_lambdaCaptures.find(ModuleSymbol(module, environmentName));
                 if (environment == g_lambdaCaptures.end()) return Fail("泛型闭包的捕获环境尚未构造");
@@ -835,10 +835,10 @@ bool CheckLambdaCaptures(const Memory::String &name, const Memory::String &modul
 bool InferLambdaCallback(int id, const std::shared_ptr<MType> &expected)
 {
     const auto node = N(id);
-    if (node.kind != MNode::Var || node.s.rfind("__magel_lambda_", 0) != 0) return false;
-    const auto generic = magel_generic::session.generics.find(node.s);
+    if (node.kind != MNode::Var || node.s.rfind("__chali_lambda_", 0) != 0) return false;
+    const auto generic = chali_generic::session.generics.find(node.s);
     const auto signature = g_genericSignatures.find(node.s);
-    if (generic == magel_generic::session.generics.end() || signature == g_genericSignatures.end())
+    if (generic == chali_generic::session.generics.end() || signature == g_genericSignatures.end())
         return false;
     if (!expected || expected->kind != MType::Func) return true;
     if (signature->second.params.size() != expected->paramTypes.size())
@@ -866,8 +866,8 @@ bool InferLambdaCallback(int id, const std::shared_ptr<MType> &expected)
         Fail("无法从函数指针上下文推导 lambda 的全部形参类型");
         return true;
     }
-    const auto specialized = magel_generic::mangle(node.s, args);
-    if (!magel_generic::session.made.count(specialized)) throw MInstantiationRequest{ node.s, args };
+    const auto specialized = chali_generic::mangle(node.s, args);
+    if (!chali_generic::session.made.count(specialized)) throw MInstantiationRequest{ node.s, args };
     g_nodes[id].s = specialized;
     CheckLambdaCaptures(specialized, node.module);
     return true;
@@ -967,8 +967,8 @@ bool RewriteIteratorCall(int id)
     const auto type = ExprType(receiver);
     Memory::String function;
     bool address = false;
-    const auto made = magel_generic::session.made.find(type->name);
-    if (made != magel_generic::session.made.end() && made->second.generic->module == "std::iter" && made->second.generic->name == "Iter")
+    const auto made = chali_generic::session.made.find(type->name);
+    if (made != chali_generic::session.made.end() && made->second.generic->module == "std::iter" && made->second.generic->name == "Iter")
     {
         static const Memory::Set<Memory::String> adapters{
             "map", "filter", "filterMap", "mapWhile", "takeWhile", "skipWhile", "findMap",
@@ -1000,15 +1000,15 @@ bool RewriteIteratorCall(int id)
     {
         const auto iterator = FindIterator(type);
         const Memory::Vector<Memory::String> arguments{ GenericArgumentText(iterator->element), GenericArgumentText(type) };
-        const auto specialized = magel_generic::mangle("fromIterator", arguments);
-        if (!magel_generic::session.generics.count("fromIterator"))
+        const auto specialized = chali_generic::mangle("fromIterator", arguments);
+        if (!chali_generic::session.generics.count("fromIterator"))
             return Fail("迭代器方法需要先 import std::iter：" + callee.s);
-        if (!magel_generic::session.made.count(specialized)) throw MInstantiationRequest{ "fromIterator", arguments };
+        if (!chali_generic::session.made.count(specialized)) throw MInstantiationRequest{ "fromIterator", arguments };
         function = specialized;
     }
     if (function.empty()) return false;
-    const auto generic = magel_generic::session.generics.find(function);
-    if (!magel_generic::session.made.count(function) && (generic == magel_generic::session.generics.end() || generic->second.module != "std::iter") && FindFunctionOverloads("std::iter", function) == nullptr)
+    const auto generic = chali_generic::session.generics.find(function);
+    if (!chali_generic::session.made.count(function) && (generic == chali_generic::session.generics.end() || generic->second.module != "std::iter") && FindFunctionOverloads("std::iter", function) == nullptr)
     {
         Fail("迭代器方法需要先 import std::iter：" + callee.s);
         return false;
@@ -1041,18 +1041,18 @@ bool RewriteErrorAdapter(int id)
     const auto callee = N(node.kids[0]);
     if (callee.kind != MNode::Member || callee.kids.empty()) return false;
     const auto type = ExprType(callee.kids[0]);
-    const auto source = magel_generic::session.made.find(type->name);
-    if (source == magel_generic::session.made.end() || source->second.generic->module != "std::lang") return false;
+    const auto source = chali_generic::session.made.find(type->name);
+    if (source == chali_generic::session.made.end() || source->second.generic->module != "std::lang") return false;
     Memory::String method = callee.s, explicitType;
-    auto marker = magel_generic::session.made.find(method);
-    if (marker != magel_generic::session.made.end() && marker->second.generic->module == "std::lang")
+    auto marker = chali_generic::session.made.find(method);
+    if (marker != chali_generic::session.made.end() && marker->second.generic->module == "std::lang")
     {
         auto name = marker->second.generic->name;
-        if (name == "__magelMapErr")
+        if (name == "__chaliMapErr")
             method = "mapErr";
-        else if (name == "__magelOkOr")
+        else if (name == "__chaliOkOr")
             method = "okOr";
-        else if (name == "__magelOkOrElse")
+        else if (name == "__chaliOkOrElse")
             method = "okOrElse";
         else
             return false;
@@ -1067,8 +1067,8 @@ bool RewriteErrorAdapter(int id)
     {
         auto arguments = source->second.args;
         arguments.push_back(explicitType);
-        const auto specialized = magel_generic::mangle(function, arguments);
-        if (!magel_generic::session.made.count(specialized)) throw MInstantiationRequest{ function, arguments };
+        const auto specialized = chali_generic::mangle(function, arguments);
+        if (!chali_generic::session.made.count(specialized)) throw MInstantiationRequest{ function, arguments };
         function = specialized;
     }
     const int arguments = M_New(MNode::List);
@@ -1098,8 +1098,8 @@ bool RewriteRangeCall(int id, bool pattern = false)
         name = callee.s;
     else
         return false;
-    const auto explicitArguments = magel_generic::session.intrinsicArguments.find(name);
-    const bool typed = explicitArguments != magel_generic::session.intrinsicArguments.end();
+    const auto explicitArguments = chali_generic::session.intrinsicArguments.find(name);
+    const bool typed = explicitArguments != chali_generic::session.intrinsicArguments.end();
     if (typed)
     {
         if (name.compare(0u, 7u, "range__") == 0)
@@ -1193,9 +1193,9 @@ bool InferGenericConstructor(int id)
     const auto owner = N(ownerId);
     if (owner.kind != MNode::EnumCtor || owner.s2 != "create" || FindStruct(owner.s)) return false;
     const auto name = BareTypeName(owner.s);
-    const auto generic = magel_generic::session.generics.find(name);
+    const auto generic = chali_generic::session.generics.find(name);
     const auto signature = g_genericSignatures.find(name);
-    if (generic == magel_generic::session.generics.end() || signature == g_genericSignatures.end()
+    if (generic == chali_generic::session.generics.end() || signature == g_genericSignatures.end()
         || signature->second.constructors.empty()) return false;
     if (owner.s != name && owner.s != ModuleSymbol(generic->second.module, name)) return false;
     Memory::Vector<Memory::String> selected;
@@ -1221,8 +1221,8 @@ bool InferGenericConstructor(int id)
         found = true;
     }
     if (!found) return false;
-    const auto specialized = magel_generic::mangle(name, selected);
-    if (!magel_generic::session.made.count(specialized)) throw MInstantiationRequest{ name, selected };
+    const auto specialized = chali_generic::mangle(name, selected);
+    if (!chali_generic::session.made.count(specialized)) throw MInstantiationRequest{ name, selected };
     g_nodes[ownerId].s = ModuleSymbol(generic->second.module, specialized);
     return true;
 }
@@ -1247,9 +1247,9 @@ bool ResolveGenericClosureCall(int id)
     if (!definition) return false;
     if (node.type >= 0 && !node.s.empty()) return true;
     const auto &closure = *definition;
-    const auto primary = magel_generic::session.generics.find(closure.primary);
+    const auto primary = chali_generic::session.generics.find(closure.primary);
     const auto signature = g_genericSignatures.find(closure.primary);
-    if (primary == magel_generic::session.generics.end() || signature == g_genericSignatures.end())
+    if (primary == chali_generic::session.generics.end() || signature == g_genericSignatures.end())
         return Fail("泛型闭包缺少主实现签名"), true;
     Memory::Vector<Memory::String> arguments;
     Memory::Vector<std::shared_ptr<MType>> types;
@@ -1313,9 +1313,9 @@ bool ResolveGenericClosureCall(int id)
             }
         }
     }
-    const magel_lambda::GenericClosureBranch *chosen = nullptr;
+    const chali_lambda::GenericClosureBranch *chosen = nullptr;
     Memory::Map<Memory::String, std::shared_ptr<MType>> chosenBindings;
-    Memory::Vector<std::pair<const magel_lambda::GenericClosureBranch *, Memory::Map<Memory::String, std::shared_ptr<MType>>>> candidates;
+    Memory::Vector<std::pair<const chali_lambda::GenericClosureBranch *, Memory::Map<Memory::String, std::shared_ptr<MType>>>> candidates;
     for (const auto &branch : closure.branches)
     {
         const auto matcher = g_genericSignatures.find(branch.matcher);
@@ -1357,8 +1357,8 @@ bool ResolveGenericClosureCall(int id)
             const auto matched = chosenBindings.find("McInferenceParameter" + Memory::toString(index));
             if (matched != chosenBindings.end()) specializationArguments[index] = GenericArgumentText(matched->second);
         }
-    const auto specialized = magel_generic::mangle(function, specializationArguments);
-    if (!magel_generic::session.made.count(specialized)) throw MInstantiationRequest{ function, specializationArguments };
+    const auto specialized = chali_generic::mangle(function, specializationArguments);
+    if (!chali_generic::session.made.count(specialized)) throw MInstantiationRequest{ function, specializationArguments };
     if (!CheckLambdaCaptures(specialized, closure.module)) return true;
     const auto resolved = FindInferenceFunction(closure.module, specialized);
     if (!resolved) return Fail("泛型闭包实例没有可调用的实现"), true;
@@ -1413,8 +1413,8 @@ bool ResolveExplicitAstGenericCall(int id)
     const auto base = N(selection.kids[0]);
     if ((base.kind != MNode::Var && base.kind != MNode::EnumCtor) || (base.kind == MNode::Var && FindNodeVar(base))) return false;
     const auto spelling = base.kind == MNode::Var ? base.s : base.s2;
-    auto generic = magel_generic::session.generics.find(spelling);
-    if (generic == magel_generic::session.generics.end()) return false;
+    auto generic = chali_generic::session.generics.find(spelling);
+    if (generic == chali_generic::session.generics.end()) return false;
     if (base.kind == MNode::EnumCtor && base.s != generic->second.module) return false;
     const auto &items = N(selection.kids[1]).kids;
     if (items.size() != generic->second.params.size())
@@ -1427,8 +1427,8 @@ bool ResolveExplicitAstGenericCall(int id)
         if (!ResolveAstGenericType(type)) return true;
         arguments.push_back(GenericArgumentText(type));
     }
-    const auto specialized = magel_generic::mangle(generic->second.name, arguments);
-    if (!magel_generic::session.made.count(specialized)) throw MInstantiationRequest{ generic->second.name, arguments };
+    const auto specialized = chali_generic::mangle(generic->second.name, arguments);
+    if (!chali_generic::session.made.count(specialized)) throw MInstantiationRequest{ generic->second.name, arguments };
     auto &callee = g_nodes[call.kids[0]];
     callee = base;
     callee.kind = MNode::Var;
@@ -1499,7 +1499,7 @@ void InferExpression(int id, const std::shared_ptr<MType> &expected)
         return;
     }
     if (InferLambdaCallback(id, expected)) return;
-    if (node.kind == MNode::Var && node.s.rfind("__magel_lambda_", 0) == 0 && !CheckLambdaCaptures(node.s, node.module)) return;
+    if (node.kind == MNode::Var && node.s.rfind("__chali_lambda_", 0) == 0 && !CheckLambdaCaptures(node.s, node.module)) return;
     if (node.kind == MNode::CollectionLiteral)
     {
         InferCollectionLiteral(id, expected);
@@ -1534,9 +1534,9 @@ void InferExpression(int id, const std::shared_ptr<MType> &expected)
         InferKnownCallArguments(callee, arguments);
         if (callee.kind != MNode::Var && callee.kind != MNode::EnumCtor) return;
         name = callee.kind == MNode::Var ? callee.s : callee.s2;
-        const auto generic = magel_generic::session.generics.find(name);
+        const auto generic = chali_generic::session.generics.find(name);
         const auto signature = g_genericSignatures.find(name);
-        if (generic != magel_generic::session.generics.end() && signature != g_genericSignatures.end() && signature->second.variants.empty() && (callee.kind != MNode::Var || !HasOrdinaryName(callee)) && (callee.kind != MNode::EnumCtor || callee.s == generic->second.module))
+        if (generic != chali_generic::session.generics.end() && signature != g_genericSignatures.end() && signature->second.variants.empty() && (callee.kind != MNode::Var || !HasOrdinaryName(callee)) && (callee.kind != MNode::EnumCtor || callee.s == generic->second.module))
         {
             auto &sig = signature->second;
             if ((!sig.variadic && arguments.size() > sig.params.size()) || arguments.size() < sig.required)
@@ -1580,8 +1580,8 @@ void InferExpression(int id, const std::shared_ptr<MType> &expected)
                 Fail("无法推导泛型函数 " + name + " 的全部类型实参，请显式指定\nnote: 未绑定类型参数：" + missing);
                 return;
             }
-            const auto specialized = magel_generic::mangle(name, args);
-            if (!magel_generic::session.made.count(specialized)) throw MInstantiationRequest{ name, args };
+            const auto specialized = chali_generic::mangle(name, args);
+            if (!chali_generic::session.made.count(specialized)) throw MInstantiationRequest{ name, args };
             auto &target = g_nodes[static_cast<std::size_t>(calleeId)];
             if (target.kind == MNode::Var)
                 target.s = specialized;
@@ -1629,7 +1629,7 @@ void InferExpression(int id, const std::shared_ptr<MType> &expected)
         for (const auto &entry : g_enums)
         {
             if (!enumOwner.empty()) continue;
-            if (magel_generic::session.made.count(entry.first)) continue;
+            if (chali_generic::session.made.count(entry.first)) continue;
             const auto *variant = FindEnumVariant(entry.first, name);
             if (variant && variant->payloads.size() == arguments.size())
             {
@@ -1649,8 +1649,8 @@ void InferExpression(int id, const std::shared_ptr<MType> &expected)
             for (std::size_t i = 0; i < arguments.size(); ++i)
                 if (!UnifyGenericType(found->second[i], found->second[i]->kind == MType::Ptr ? RawExprType(arguments[i]) : ExprType(arguments[i]), bindings)) match = false;
             Memory::Vector<Memory::String> args;
-            if (!match || !CompleteGenericArguments(magel_generic::session.generics.at(entry.first), bindings, args)) continue;
-            const auto specialized = magel_generic::mangle(entry.first, args);
+            if (!match || !CompleteGenericArguments(chali_generic::session.generics.at(entry.first), bindings, args)) continue;
+            const auto specialized = chali_generic::mangle(entry.first, args);
             candidates.push_back(specialized);
         }
     }
@@ -1675,7 +1675,7 @@ void InferExpression(int id, const std::shared_ptr<MType> &expected)
             for (std::size_t i = 0; i < arguments.size(); ++i)
                 if (!UnifyGenericType(found->second[i], found->second[i]->kind == MType::Ptr ? RawExprType(arguments[i]) : ExprType(arguments[i]), bindings)) matches = false;
             Memory::Vector<Memory::String> args;
-            if (matches && CompleteGenericArguments(magel_generic::session.generics.at(entry.first), bindings, args) && magel_generic::mangle(entry.first, args) == candidates[0]) throw MInstantiationRequest{ entry.first, args };
+            if (matches && CompleteGenericArguments(chali_generic::session.generics.at(entry.first), bindings, args) && chali_generic::mangle(entry.first, args) == candidates[0]) throw MInstantiationRequest{ entry.first, args };
         }
     }
     auto &target = g_nodes[static_cast<std::size_t>(id)];

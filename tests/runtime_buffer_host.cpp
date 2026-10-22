@@ -1,5 +1,5 @@
-#define MAGEL_NO_MAIN
-#include MAGEL_EXPORTED_SOURCE
+#define CHALI_NO_MAIN
+#include CHALI_EXPORTED_SOURCE
 #include <cassert>
 static unsigned char buffer[32 * 1024 * 1024];
 /**
@@ -13,14 +13,14 @@ int main()
     {
         std::memset(buffer, 0xa5, sizeof(buffer));
         std::size_t peak = 0;
-        int status = runMagel(0, nullptr, false, iteration == 2 ? 1 : 1000000, buffer, sizeof(buffer), &peak);
+        int status = runChaLi(0, nullptr, false, iteration == 2 ? 1 : 1000000, buffer, sizeof(buffer), &peak);
         assert(status == (iteration == 2 ? 1 : 0) && peak > 0);
         for (unsigned char b : buffer) assert(b == 0);
         assert(Memory::defaultRuntimeAllocatorIfCreated() == nullptr);
     }
     std::memset(buffer, 0xa5, 4096);
     std::size_t peak = 0;
-    assert(runMagel(0, nullptr, false, 1000000, buffer, 4096, &peak) == 1);
+    assert(runChaLi(0, nullptr, false, 1000000, buffer, 4096, &peak) == 1);
     for (std::size_t i = 0; i < 4096; ++i) assert(buffer[i] == 0);
     assert(Memory::defaultRuntimeAllocatorIfCreated() == nullptr);
 }

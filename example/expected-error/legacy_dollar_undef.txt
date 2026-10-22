@@ -1,1 +1,1 @@
-语法错误：example/samples-error/legacy_dollar_undef.mgl 第 5 行第 11 列：期望 MACRO_END / MACRO_ELSE / MACRO_END_MATCH / MACRO_END_REGEX 等 52 个之一，实际是 标识符
+语法错误：example/samples-error/legacy_dollar_undef.chl 第 5 行第 11 列：期望 MACRO_END / MACRO_ELSE / MACRO_END_MATCH / MACRO_END_REGEX 等 52 个之一，实际是 标识符

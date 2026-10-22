@@ -1,6 +1,6 @@
 # .svmb 二进制格式与逆向分析
 
-从 control.mgl 的已知输出开始，再检查其编译产物，才有依据解释指令、标签、类型和调试记录。
+从 control.chl 的已知输出开始，再检查其编译产物，才有依据解释指令、标签、类型和调试记录。
 本文的逐字节分析针对历史 PESVMB v4 标本，不是当前产物格式；压缩格式见[无名变长符号表](16-compact-symbols.md)。
 
 ## 当前格式与历史标本的区别
@@ -18,25 +18,25 @@ VM 指令、标签、类型、形参、导出及调试记录之后还有内部�
 
 ## 先知道源程序做了什么
 
-[control.mgl](../example/samples/control.mgl) 累加 1–5，并按负数、零、正数分支。正式输出第一行为 `sum 1..5 = 15`，完整输出见 [control.txt](../example/expected/control.txt)。先运行，再生成两份字节码：
+[control.chl](../example/samples/control.chl) 累加 1–5，并按负数、零、正数分支。正式输出第一行为 `sum 1..5 = 15`，完整输出见 [control.txt](../example/expected/control.txt)。先运行，再生成两份字节码：
 
 ```sh
 mkdir -p build/doc-example
-./magel svmb example/samples/control.mgl --no-compress-symbols --out build/doc-example/control
-./magel svmb example/samples/control.mgl --no-compress-symbols --debug --out build/doc-example/control-debug
+./chali svmb example/samples/control.chl --no-compress-symbols --out build/doc-example/control
+./chali svmb example/samples/control.chl --no-compress-symbols --debug --out build/doc-example/control-debug
 ```
 
 两份程序的语义相同，第二份额外保存来源位置。观察产物时区分指令、数据、布局与调试记录；“能反汇编”不等于恢复原注释、表达式拼写和全部类型声明。
 
 ## 源码行为如何对应字节码
 
-for 初始化、比较、累加和更新分别降级为赋值、条件跳转、算术和回跳；classify 的 if/elif/else 变为条件与返回路径。函数和变量名保存在普通格式的符号信息中，可能降低分析成本；当前源码行号链路可保留 .mgl 来源，但默认不写调试记录。
+for 初始化、比较、累加和更新分别降级为赋值、条件跳转、算术和回跳；classify 的 if/elif/else 变为条件与返回路径。函数和变量名保存在普通格式的符号信息中，可能降低分析成本；当前源码行号链路可保留 .chl 来源，但默认不写调试记录。
 
 ## 如何阅读下方历史标本
 
-[`examples/svmb/`](examples/svmb/README.md) 保存旧 control.svmb 标本、解析脚本和 evidence 原始输出。标本为 662750 字节，SHA-256 前后缀 CF30A3C8…7ABE；其条目数、调试比例和 9700X 性能属于采样时环境，不是重新编译当前 control.mgl 必须得到的固定值。
+[`examples/svmb/`](examples/svmb/README.md) 保存旧 control.svmb 标本、解析脚本和 evidence 原始输出。标本为 662750 字节，SHA-256 前后缀 CF30A3C8…7ABE；其条目数、调试比例和 9700X 性能属于采样时环境，不是重新编译当前 control.chl 必须得到的固定值。
 
-复现时应检查当前文件自身的长度、节数、校验及对应源码，不因体积不同就判定格式错误。下面的七节布局、逐字节解码与逆向成本保留为该标本的完整格式参考；源码行号的现行规则见 [panic 调用栈](18-panic-trace.md#magel-行级来源)。
+复现时应检查当前文件自身的长度、节数、校验及对应源码，不因体积不同就判定格式错误。下面的七节布局、逐字节解码与逆向成本保留为该标本的完整格式参考；源码行号的现行规则见 [panic 调用栈](18-panic-trace.md#chali-行级来源)。
 
 ## 1. 结论先给
 
@@ -95,7 +95,7 @@ payload 里的基本编码原语，全部小端：
 
 | 节 | 条目 | 字节 | 占比 | 内容 |
 | --- | ---: | ---: | ---: | --- |
-| 程序名 | 1 | 11 | 0.0% | 固定 `magel` |
+| 程序名 | 1 | 11 | 0.0% | 固定 `chali` |
 | 指令 | 16 728 | 164 122 | 24.8% | 每条一条指令记录（见第 4 节） |
 | 标签表 | 1 263 | 31 340 | 4.7% | `名字 → 指令下标`（函数/方法/内部跳转标签） |
 | 类型表 | 1 135 | 39 717 | 6.0% | `名字 → 类型名 / 位宽 / 有无符号 / 是否浮点 / 字节数` |
@@ -106,10 +106,10 @@ payload 里的基本编码原语，全部小端：
 三点值得注意：
 
 - **调试节占了大头**（六成以上），体积主要由它决定。
-- `control.mgl` 只有 29 行，却有 16 728 条指令、1 263 个标签、5 726 个不同字符串：在标本生成时
+- `control.chl` 只有 29 行，却有 16 728 条指令、1 263 个标签、5 726 个不同字符串：在标本生成时
   （2026-10-01，标准库尚未拆分），编译器把整个标准库（含矩阵、复数、正则、大整数/大浮点后端）
   连同用户代码一起编进同一份字节码，所以 `.svmb` 带着标准库的全部符号，这也是"名字泄漏"看起来
-  格外夸张的原因。标准库后来拆成核心 `source/std/lang.mgl`（自动加载）+ 按需 `import std::xxx;` 后，只用核心
+  格外夸张的原因。标准库后来拆成核心 `source/std/lang.chl`（自动加载）+ 按需 `import std::xxx;` 后，只用核心
   prelude 的程序，`.svmb` 就只带核心符号了；标本保留它生成时的形态。
 - 调试节**给每条指令都存了一份编译时的 `.quad` 路径字符串**。换个目录用同样的源码重编，
   七节条目数全都一样、调试节之前的 payload 逐字节一致，但文件会长出"路径长度差 × 8204 条"
@@ -145,7 +145,7 @@ payload 里的基本编码原语，全部小端：
 | 4 | 76..83 | `op=5(Declare)` `mask=00100000` `name='i$451'` |
 | 5 | 84..85 | `op=0(PushInt)` `mask=00000000`——立即数为 0 时连值字节都省了 |
 
-这和 `magel-stackvm disasm` 的输出逐条对得上（`0: CALL main` / `1: HALT` /
+这和 `chali-stackvm disasm` 的输出逐条对得上（`0: CALL main` / `1: HALT` /
 `2: PUSH 3.1415926535897931` / `3: STORE std::math::PI` / `4: DECLARE i$451`）。
 `intValue` 是"随操作码变含义"的整数字段（`(decl …)` 存位宽、`(checkptr …)` 存元素步长），
 上面第 2 条里的 `6` 与该指令来源的四元式下标一致（`.quad` 第 6 条正是
@@ -159,9 +159,9 @@ payload 里的基本编码原语，全部小端：
 | 全部函数与方法名 | 标签表 1 263 项：`Arena.allocate`、`Matrix__f64.solve`、`Complex__f64.leftMul` … |
 | 泛型单态化后的签名 | 名字里带类型参数与重载区分，如 `Matrix__f64.leftMul$double`、`std::math::max$int$int` |
 | 局部变量名 | 指令里直接出现 `i$451`、`sum$452`、`value$194`（`$` 后是作用域内的唯一编号，同一名字在不同位置编号不同） |
-| 变量类型 | 类型表：`('i', 'i64', 64, 0, 8)`、`('__magel_enum_arg_Option__int_Value_0', 'i64', 64, 0, 8)` |
-| 枚举/结构体内部命名 | `__magel_enum_arg_IoError_ReadFailed_0`、`Option__char` 这类编译器合成名 |
-| 控制流结构线索 | 编译器自带标签名 `else_1`、`endif_2`、`__magel_loop_101`、`__magel_brk_103` 直接标出循环与分支边界 |
+| 变量类型 | 类型表：`('i', 'i64', 64, 0, 8)`、`('__chali_enum_arg_Option__int_Value_0', 'i64', 64, 0, 8)` |
+| 枚举/结构体内部命名 | `__chali_enum_arg_IoError_ReadFailed_0`、`Option__char` 这类编译器合成名 |
+| 控制流结构线索 | 编译器自带标签名 `else_1`、`endif_2`、`__chali_loop_101`、`__chali_brk_103` 直接标出循环与分支边界 |
 | 逐条指令的源码位置线索 | 调试节 8 204 条：函数名 927 个 + `.quad` 行号（实测 40~10 675） |
 
 也就是说：反汇编是零成本的（`disasm` 一条命令），而**恢复"谁的代码"也几乎零成本**——
@@ -173,8 +173,8 @@ payload 里的基本编码原语，全部小端：
 | --- | --- |
 | 注释 | 显然不在 |
 | 源表达式结构 | 已经降级成栈式指令，`sum = sum + i` 只剩 `LOAD/LOAD/ADD/STORE` 加临时变量 `t2` |
-| `.mgl` 文件名与行号 | 调试节的 `file` 实测是 `…/control.quad`、`line` 恒为 0。`.mgl` 行号链路**还没打通**，现在能拿到的只有 `.quad` 行号 |
-| 真正的源码作用域 | 类型表是 `名字 → 类型` 的**全局映射**（1 135 条、无重名），同一名字在别处被重新声明会覆盖：`sum` 在 `main` 里是 `int64`，表里却是 `float64`，因为 `source/std/lang.mgl` 里另有 `float64 sum = 0.0;`。所以类型表能当符号表用，但不能当成"每个使用点的精确类型" |
+| `.chl` 文件名与行号 | 调试节的 `file` 实测是 `…/control.quad`、`line` 恒为 0。`.chl` 行号链路**还没打通**，现在能拿到的只有 `.quad` 行号 |
+| 真正的源码作用域 | 类型表是 `名字 → 类型` 的**全局映射**（1 135 条、无重名），同一名字在别处被重新声明会覆盖：`sum` 在 `main` 里是 `int64`，表里却是 `float64`，因为 `source/std/lang.chl` 里另有 `float64 sum = 0.0;`。所以类型表能当符号表用，但不能当成"每个使用点的精确类型" |
 | 字符串字面量 | 不在 `.svmb` 里。数据区是独立的 `.data.bin`（5736 字节），而且占位符已经编译成格式化模板：源码 `"sum 1..5 = {}"` 在数据区里是 `sum 1..5 = %d`。只看 `.svmb` 拿不到用户字符串 |
 | 类型/函数的完整定义 | 只有名字、位宽、字节数、形参名；结构体字段布局在 `.layout` 里，不在 `.svmb` 里 |
 
@@ -212,17 +212,17 @@ LOADAT / STOREAT
 另外，VM 命令行自带三种取向的观察手段，对逆向同样好用：
 
 ```sh
-magel-stackvm disasm prog.svmb          # 静态：得到可读汇编清单
-magel-stackvm run prog.svmb --trace     # 动态：逐条打印执行的指令
-magel-stackvm run prog.svmb --debug     # 动态 + 位置：按四元式行号打印
-magel-stackvm check prog.svmb           # 只校验容器与程序合法性
+chali-stackvm disasm prog.svmb          # 静态：得到可读汇编清单
+chali-stackvm run prog.svmb --trace     # 动态：逐条打印执行的指令
+chali-stackvm run prog.svmb --debug     # 动态 + 位置：按四元式行号打印
+chali-stackvm check prog.svmb           # 只校验容器与程序合法性
 ```
 
 ## 8. 逆向难度分级
 
 ### 8.1 有源码（基准）
 
-`magel-stackvm disasm` 一条命令得到 16 728 行汇编清单，标签、变量名、操作码全在。
+`chali-stackvm disasm` 一条命令得到 16 728 行汇编清单，标签、变量名、操作码全在。
 这是"格式完全已知"的上界，后面每一档都在往这个方向上靠。
 
 ### 8.2 只有 `.svmb`
@@ -233,7 +233,7 @@ magel-stackvm check prog.svmb           # 只校验容器与程序合法性
 就能判断哪些是加载/存储/跳转。第 11 节给了一份 40 行的解析器，这就是全部前置成本。
 
 真正的工作量在"把栈式指令还原成表达式与控制流"：需要模拟求值栈、把 `t1/t2` 临时变量折叠回
-表达式、用跳转目标重建基本块。而这部分也有捷径——`else_1`/`endif_2`/`__magel_loop_101` 这些
+表达式、用跳转目标重建基本块。而这部分也有捷径——`else_1`/`endif_2`/`__chali_loop_101` 这些
 标签名本身就是控制流注释。综合判断：**比反编译优化过的 native 代码容易一个档次**，
 最接近的类比是"未优化、且带着 LocalVariableTable / LineNumberTable 的 JVM `.class`"，
 但比 `.class` 还多一样东西：类型表里带位宽与符号性。
@@ -276,11 +276,11 @@ magel-stackvm check prog.svmb           # 只校验容器与程序合法性
 
 | 入口 | 带上调试节 | 缺省（不带） |
 | --- | --- | --- |
-| Magel 编译器 | `magel run app.mgl --emit --svmb --debug` | 不传 `--debug`（或兼容别名 `--no-debug`） |
-| 项目级默认 | `magel.toml` 里 `[magel] debug = true`（缺省 `false`，见 [09 工具链 §3](09-toolchain.md)） | 缺省 / `debug = false` |
-| StackVM CLI | `magel-stackvm compile app.quad --debug` | 不传（或兼容别名 `--no-debug`） |
+| ChaLi 编译器 | `chali run app.chl --emit --svmb --debug` | 不传 `--debug`（或兼容别名 `--no-debug`） |
+| 项目级默认 | `chali.toml` 里 `[chali] debug = true`（缺省 `false`，见 [09 工具链 §3](09-toolchain.md)） | 缺省 / `debug = false` |
+| StackVM CLI | `chali-stackvm compile app.quad --debug` | 不传（或兼容别名 `--no-debug`） |
 
-写出来的仍然是合法的 v4——调试节在场、但 0 条。同一份 `control.mgl` 的实测对照：
+写出来的仍然是合法的 v4——调试节在场、但 0 条。同一份 `control.chl` 的实测对照：
 
 | 节 | 带调试节（`--debug`） | 缺省（`--no-debug`） |
 | --- | ---: | ---: |
@@ -325,9 +325,9 @@ magel-stackvm check prog.svmb           # 只校验容器与程序合法性
 字节完全一致（SHA-256 `08554811…`，见
 [`evidence-07-strip-debug.txt`](examples/svmb/evidence-07-strip-debug.txt)）。
 
-不经过 Magel 编译器、直接用 `magel-stackvm compile` 打包一份 `.quad` 时同理：同一份
+不经过 ChaLi 编译器、直接用 `chali-stackvm compile` 打包一份 `.quad` 时同理：同一份
 `control.quad` 缺省（不带调试节）是 270 143 字节，加 `--debug` 才 773 456 字节（这里的
-exports 是全部 1263 个标签，所以两份都比 Magel 前端产出的略大）。
+exports 是全部 1263 个标签，所以两份都比 ChaLi 前端产出的略大）。
 
 ## 9. 容器能力标志
 
@@ -343,9 +343,9 @@ exports 是全部 1263 个标签，所以两份都比 Magel 前端产出的略�
 | 2 恢复操作码名 | exe 里 `strings` 捞 54 个助记符，按序对齐即可 | 低 |
 | 3 恢复函数边界与调用图 | 标签表 + `Call`/`Ret` 指令 | 低 |
 | 4 恢复变量与类型 | 类型表 + 指令里的 `名字$编号` | 低 |
-| 5 恢复控制流 | 跳转目标聚类成基本块；`else_*`/`endif_*`/`__magel_loop_*` 名字直接帮忙 | 中 |
+| 5 恢复控制流 | 跳转目标聚类成基本块；`else_*`/`endif_*`/`__chali_loop_*` 名字直接帮忙 | 中 |
 | 6 恢复表达式 | 模拟求值栈、折叠临时变量 `t1/t2` | 中 |
-| 7 恢复源码位置 | 本文旧标本仅记录四元式行号；当前 `--debug` 已支持 `.mgl` 来源，见 [panic 调用栈](18-panic-trace.md) | 取决于产物是否保留调试信息 |
+| 7 恢复源码位置 | 本文旧标本仅记录四元式行号；当前 `--debug` 已支持 `.chl` 来源，见 [panic 调用栈](18-panic-trace.md) | 取决于产物是否保留调试信息 |
 | 8 还原结构体/枚举定义 | 需要 `.layout`（不在 `.svmb` 里）或从类型表的名字推断 | 中 |
 
 ## 12. 最小解析器
@@ -410,13 +410,13 @@ def parse(path):
 本文所有原始输出都由一个脚本重新生成，改完标本或换了 VM 就重跑一遍：
 
 ```sh
-python magel/doc/examples/svmb/collect.py --parser magel/magel.exe \
-    --vm tmp/vm-9700x-pool/x64/Release/magel-stackvm.exe \
-    --vm-opcode tmp/vm-9700x-pool/gcc64/magel-stackvm.exe \
+python chali/doc/examples/svmb/collect.py --parser chali/ChaLi.exe \
+    --vm tmp/vm-9700x-pool/x64/Release/chali-stackvm.exe \
+    --vm-opcode tmp/vm-9700x-pool/gcc64/chali-stackvm.exe \
     --exported tmp/svmb-study/export/program.exe
 ```
 
-`magel-stackvm` 用 `magel/library/stackvm` 的 CMake 工程构建（MSVC Win32/x64、GCC x64 三档），
+`chali-stackvm` 用 `chali/library/stackvm` 的 CMake 工程构建（MSVC Win32/x64、GCC x64 三档），
 `tmp/vm-9700x-pool/` 下就是本文用的两份；`.svmb` 可以跨 32/64 位加载，
 但可执行文件必须与宿主位数一致。
 
@@ -432,5 +432,5 @@ python magel/doc/examples/svmb/collect.py --parser magel/magel.exe \
 把七节拆开。真正的逆向成本不在格式，而在最后那一步——把栈式指令重新组织成人类可读的
 表达式与控制流，而这一步因为标签名、变量名、类型表的存在而大幅缩短。
 本文历史标本中，**调试节**占 62.3%，省去调试记录后文件约小六成；这不是所有程序的固定比例。调试开关为：
-**默认就不带**，要带上才写 `--debug`（Magel 编译器 / VM CLI）或 `[magel] debug = true`
+**默认就不带**，要带上才写 `--debug`（ChaLi 编译器 / VM CLI）或 `[chali] debug = true`
 （项目级；`--no-debug` 是"不带"的兼容别名），代价只有一个——位置信息没了；普通格式仍保留变量名与类型表。当前也支持无名变长符号容器，加载器会识别相应格式；具体能力与限制见[无名变长符号表](16-compact-symbols.md)。

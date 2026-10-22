@@ -1,1 +1,1 @@
-magel: example/samples-error/syntax_using_removed.mgl 第 1 行第 1 列：没有声明的类型：using（lang）
+chali: example/samples-error/syntax_using_removed.chl 第 1 行第 1 列：没有声明的类型：using（lang）

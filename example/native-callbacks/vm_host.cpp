@@ -1,4 +1,4 @@
-#include "magel_glue.hpp"
+#include "chali_glue.hpp"
 #include "glue/std_collection.hpp"
 #include "glue/std_native_record.hpp"
 #include "glue.cpp"
@@ -6,9 +6,9 @@
 #include <cstdio>
 
 /**
- * @brief 加载 Magel 字节码，注册宿主胶水并在默认最高优化 VM 中运行。
+ * @brief 加载 ChaLi 字节码，注册宿主胶水并在默认最高优化 VM 中运行。
  * @param argc 参数个数，至少为四个。
- * @param argv 依次为宿主路径、字节码、数据区和布局文件路径，其余参数传给 Magel main。
+ * @param argv 依次为宿主路径、字节码、数据区和布局文件路径，其余参数传给 ChaLi main。
  * @return 正常完成返回程序退出码；参数或加载失败返回 2，运行失败返回 1。
  */
 int main(int argc, char **argv)
@@ -17,13 +17,13 @@ int main(int argc, char **argv)
     stackvm::Program program;
     stackvm::DataArea data;
     Memory::Vector<Memory::String> diagnostics;
-    magel_glue::Registry registry;
+    chali_glue::Registry registry;
     Memory::String error;
     if (!stackvm::loadProgramBinary(argv[1], program, &diagnostics)
         || !data.load(argv[2], argv[3], &diagnostics)
         || !collection_glue::bind(registry.native(), &error)
         || !native_record_glue::bindString(registry.native(), &error)
-        || !bindMagelGlue(registry, &error))
+        || !bindChaLiGlue(registry, &error))
     {
         for (const auto &message : diagnostics) std::fprintf(stderr, "%s\n", message.c_str());
         if (!error.empty()) std::fprintf(stderr, "%s\n", error.c_str());

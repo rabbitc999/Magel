@@ -1,6 +1,6 @@
 #include "std_numeric.hpp"
 
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include <cmath>
 #include <cstdint>
 #include <cstring>
@@ -20,7 +20,7 @@ namespace lang_numeric_glue
  * @return 整数结果，失败时报告运行错误。
  */
 template <class T>
-T toInteger(magel_glue::Context &ctx, double value, double bound, const char *message)
+T toInteger(chali_glue::Context &ctx, double value, double bound, const char *message)
 {
     const double truncated = std::trunc(value);
     if (!std::isfinite(value) || truncated < -bound || truncated >= bound)
@@ -75,7 +75,7 @@ T bytesFloat(const std::uint8_t *bytes, bool bigEndian)
  * @return 是否成功。
  */
 template <std::size_t N>
-bool readArrayBytes(magel_glue::Context &ctx, std::int64_t address, std::uint8_t (&bytes)[N])
+bool readArrayBytes(chali_glue::Context &ctx, std::int64_t address, std::uint8_t (&bytes)[N])
 {
     if (address <= 0 || address > std::numeric_limits<std::int64_t>::max() - static_cast<std::int64_t>(sizeof(bytes)) || !ctx.readBytes(address, reinterpret_cast<char *>(bytes), sizeof(bytes)))
     {
@@ -93,11 +93,11 @@ bool readArrayBytes(magel_glue::Context &ctx, std::int64_t address, std::uint8_t
  * @return 是否成功。
  */
 template <class T, class U>
-bool bindFloatBytes(magel_glue::Registry &registry, const char *suffix, Memory::String *error)
+bool bindFloatBytes(chali_glue::Registry &registry, const char *suffix, Memory::String *error)
 {
     using Bytes = Memory::Vector<std::uint8_t>;
-    using Reference = magel_glue::Reference<std::uint8_t>;
-    using Context = magel_glue::Context;
+    using Reference = chali_glue::Reference<std::uint8_t>;
+    using Context = chali_glue::Context;
     const Memory::String number = suffix;
     return registry.bindTyped<Bytes, T, bool>("std::lang::__float" + number + "ToBytes", [](T value, bool bigEndian) { return floatBytes<T, U>(value, bigEndian); }, error) && registry.bindTypedWithContext<T, Bytes, bool>("std::lang::__bytesToFloat" + number, [](Context &ctx, Bytes bytes, bool bigEndian) {
             if (bytes.size() < sizeof(T)) { ctx.fail("IEEE 754 转换：字节不足"); return T{}; }
@@ -120,14 +120,14 @@ bool bindFloatBytes(magel_glue::Registry &registry, const char *suffix, Memory::
  * @param error 注册错误。
  * @return 是否成功。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     // int64 中的 2^31 作为失败哨兵，与所有有效 int32 结果严格区分。
     return registry.bindTyped<std::int64_t, double>("std::lang::__tryToInt32", [](double value) -> std::int64_t {
             const double truncated = std::trunc(value);
             if (!std::isfinite(value) || truncated < -2147483648.0 || truncated >= 2147483648.0)
                 return INT64_C(2147483648);
-            return static_cast<std::int64_t>(truncated); }, error) && registry.bindTypedWithContext<std::int64_t, double>("std::lang::__toInt64", [](magel_glue::Context &ctx, double value) { return toInteger<std::int64_t>(ctx, value, 9223372036854775808.0,
+            return static_cast<std::int64_t>(truncated); }, error) && registry.bindTypedWithContext<std::int64_t, double>("std::lang::__toInt64", [](chali_glue::Context &ctx, double value) { return toInteger<std::int64_t>(ctx, value, 9223372036854775808.0,
                                                                                                                                                                                                                                                                                        "std::lang::toInt64：浮点值不是有限数或超出 int64 范围"); }, error) && bindFloatBytes<float, std::uint32_t>(registry, "32", error) && bindFloatBytes<double, std::uint64_t>(registry, "64", error);
 }
 }  // namespace lang_numeric_glue

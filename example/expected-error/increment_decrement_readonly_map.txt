@@ -1,1 +1,1 @@
-magel: example/samples-error/increment_decrement_readonly_map.mgl 第 2 行第 95 列：只读引用（`T const&`）只能读，不能写入元素或成员
+chali: example/samples-error/increment_decrement_readonly_map.chl 第 2 行第 95 列：只读引用（`T const&`）只能读，不能写入元素或成员

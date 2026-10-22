@@ -9,5 +9,5 @@ namespace std_filesystem_glue
  * @param error 绑定失败说明。
  * @return 是否全部成功。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr);
+bool bind(chali_glue::Registry &registry, Memory::String *error = nullptr);
 }  // namespace std_filesystem_glue

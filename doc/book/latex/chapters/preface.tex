@@ -2,12 +2,12 @@
 \markboth{前\hspace{1em}言}{前\hspace{1em}言}
 \phantomsection\label{ch:preface}
 
-一本从零开始、一章只讲一件事的 Magel 入门书。
+一本从零开始、一章只讲一件事的 ChaLi 入门书。
 
-你不需要会 C，也不需要懂编译原理。这本书从头讲起，每章只解决一个问题，代码都能直接粘下来跑。读完它，你能独立写出结构清楚、资源管得干净的 Magel 程序，并且知道遇到问题时该去查哪一篇官方文档。
+你不需要会 C，也不需要懂编译原理。这本书从头讲起，每章只解决一个问题，代码都能直接粘下来跑。读完它，你能独立写出结构清楚、资源管得干净的 ChaLi 程序，并且知道遇到问题时该去查哪一篇官方文档。
 
 \begin{tip}{提示}
-本书内容与 Magel 的当前\href{https://gitee.com/rabbitc999/magel/tree/master/VERSION}{语言版本}和\href{https://gitee.com/rabbitc999/magel/blob/master/doc/17-capabilities.md}{能力说明}保持同步。你可以按下方目录在线阅读，也可以下载 \href{https://gitee.com/rabbitc999/magel/blob/master/doc/book/latex/book.pdf}{PDF 电子书}，离线阅读或打印。
+本书内容与 ChaLi 的当前\href{https://gitee.com/rabbitc999/chali/tree/master/VERSION}{语言版本}和\href{https://gitee.com/rabbitc999/chali/blob/master/doc/17-capabilities.md}{能力说明}保持同步。你可以按下方目录在线阅读，也可以下载 \href{https://gitee.com/rabbitc999/chali/blob/master/doc/book/latex/book.pdf}{PDF 电子书}，离线阅读或打印。
 \end{tip}
 
 \section*{这本书写给谁}
@@ -16,13 +16,13 @@
 
 \item 刚开始学编程，想找一门“看得清楚”的语言入门；
 
-\item 写过 C / Java / Go / Python，想快速知道 Magel 和它们哪里不一样；
+\item 写过 C / Java / Go / Python，想快速知道 ChaLi 和它们哪里不一样；
 
 \item 要维护一份逻辑、同时跑在服务端和嵌入式板子上，想知道这门语言能不能扛。
 
 \end{itemize}
 
-如果你只是想要一份语法清单，那你该看 \href{https://gitee.com/rabbitc999/magel/blob/master/doc/04-language-reference.md}{语言参考}；这本书的目标不一样——它想让你读懂一门语言的设计，而不只是记住写法。
+如果你只是想要一份语法清单，那你该看 \href{https://gitee.com/rabbitc999/chali/blob/master/doc/04-language-reference.md}{语言参考}；这本书的目标不一样——它想让你读懂一门语言的设计，而不只是记住写法。
 
 \section*{怎么读}
 
@@ -30,7 +30,7 @@
 
 \begin{enumerate}
 
-\item 一定要动手。 每章的代码都短，敲一遍的收益远大于读十遍。随便建一个目录，把代码存成 \texttt{x.\allowbreak{}mgl}，然后 \texttt{magel run x.\allowbreak{}mgl}。
+\item 一定要动手。 每章的代码都短，敲一遍的收益远大于读十遍。随便建一个目录，把代码存成 \texttt{x.\allowbreak{}chl}，然后 \texttt{chali run x.\allowbreak{}chl}。
 
 \item 按顺序读，别跳。 这本书是层层递进的：第 6 章解释为什么第 3 章的赋值那么“笨”，第 7 章的引用规则又是从第 6 章长出来的。跳着读，你会觉得语言在无理取闹。
 
@@ -47,13 +47,13 @@
 \midrule
 完整的 \texttt{main} 函数 & 可以整段复制出去跑，输出的内容就写在代码下面 \\
 只有几行的片段 & 声明、表达式、语法示意，要放进程序里才能跑 \\
-命令行 & 以 \texttt{magel} 开头，直接敲 \\
+命令行 & 以 \texttt{chali} 开头，直接敲 \\
 \bottomrule
 \end{tabular}
 \end{center}
 
 \begin{tip}{提示}
-Windows 上程序名是 \texttt{magel.\allowbreak{}exe}。在 Git Bash / MSYS 里写 \texttt{.\allowbreak{}/\allowbreak{}magel} 能自动找到它；光写 \texttt{magel} 会走 PATH 查找，可能找不到当前目录里这份。
+Windows 上程序名是 \texttt{Cha\allowbreak{}Li.\allowbreak{}exe}。在 Git Bash / MSYS 里写 \texttt{.\allowbreak{}/\allowbreak{}chali} 能自动找到它；光写 \texttt{chali} 会走 PATH 查找，可能找不到当前目录里这份。
 \end{tip}
 
 \section*{章节地图}
@@ -66,9 +66,9 @@ Windows 上程序名是 \texttt{magel.\allowbreak{}exe}。在 Git Bash / MSYS �
 章 & 标题 & 你会得到什么 \\
 \midrule
 \endhead
-\hyperref[ch:01]{01} & 第一个程序 & 装好工具链，跑出 \texttt{Hello,\allowbreak{} Magel!}，知道 \texttt{run} 和 \texttt{check} 的区别 \\
+\hyperref[ch:01]{01} & 第一个程序 & 装好工具链，跑出 \texttt{Hello,\allowbreak{} Cha\allowbreak{}Li!}，知道 \texttt{run} 和 \texttt{check} 的区别 \\
 \hyperref[ch:02]{02} & 猜数字 & 用一个小游戏把「变量、输入、循环、分支」串成一个能跑的程序 \\
-\hyperref[ch:03]{03} & 变量与类型 & 变量、常量、\texttt{let}，以及 Magel 为什么不肯帮你偷偷转类型 \\
+\hyperref[ch:03]{03} & 变量与类型 & 变量、常量、\texttt{let}，以及 ChaLi 为什么不肯帮你偷偷转类型 \\
 \hyperref[ch:04]{04} & 函数 & 定义、参数、返回控制表达式、多值返回、重载与默认参数 \\
 \hyperref[ch:05]{05} & 控制流 & \texttt{if} / \texttt{while} / \texttt{for} / \texttt{loop} / \texttt{for-in}，以及把 \texttt{loop} 当表达式用 \\
 \hyperref[ch:06]{06} & 值语义 & 赋值就是复制。为什么不移动也能保证安全 \\
@@ -83,7 +83,7 @@ Windows 上程序名是 \texttt{magel.\allowbreak{}exe}。在 Git Bash / MSYS �
 \hyperref[ch:15]{15} & 函数值与闭包 & \texttt{fn} 类型、具名局部闭包与四种捕获方式 \\
 \hyperref[ch:16]{16} & 错误处理 & \texttt{Option} / \texttt{Result} / \texttt{?}，以及 \texttt{assert} 该用在哪 \\
 \hyperref[ch:17]{17} & 迭代器 & \texttt{std:\allowbreak{}:\allowbreak{}iter} 的惰性链：\texttt{range} / \texttt{map} / \texttt{filter} / \texttt{collect} \\
-\hyperref[ch:18]{18} & 模块与工程 & \texttt{module} / \texttt{import}、\texttt{magel new}、\texttt{magel.\allowbreak{}toml}、测试与格式化 \\
+\hyperref[ch:18]{18} & 模块与工程 & \texttt{module} / \texttt{import}、\texttt{chali new}、\texttt{chali.\allowbreak{}toml}、测试与格式化 \\
 \hyperref[ch:19]{19} & 预处理与宏 & 条件编译、卫生 AST 宏、类型推导与语法匹配 \\
 \hyperref[ch:20]{20} & 注解与反射 & \texttt{@annotation}、运行期查元数据、按名调用 \\
 \hyperref[ch:21]{21} & 与 C 互操作 & \texttt{abi} 块，调 C 的库、把自己的函数交给 C \\
@@ -117,11 +117,11 @@ Windows 上程序名是 \texttt{magel.\allowbreak{}exe}。在 Git Bash / MSYS �
 你想 & 去哪 \\
 \midrule
 跟着书学语言 & 就是这儿 \\
-查某个语法怎么写 & \href{https://gitee.com/rabbitc999/magel/blob/master/doc/04-language-reference.md}{语言参考} \\
-理解这些设计为什么这么做 & \href{https://gitee.com/rabbitc999/magel/blob/master/doc/03-core-concepts.md}{核心概念} \\
-5 分钟跑起来 & \href{https://gitee.com/rabbitc999/magel/blob/master/doc/01-quickstart.md}{快速开始} \\
-查某个标准库函数 & \href{https://gitee.com/rabbitc999/magel/blob/master/doc/library/README.md}{库函数 API 参考} \\
-看官方给的可运行样例 & \href{https://gitee.com/rabbitc999/magel/tree/master/example/samples}{\texttt{example/\allowbreak{}samples/\allowbreak{}}} \\
+查某个语法怎么写 & \href{https://gitee.com/rabbitc999/chali/blob/master/doc/04-language-reference.md}{语言参考} \\
+理解这些设计为什么这么做 & \href{https://gitee.com/rabbitc999/chali/blob/master/doc/03-core-concepts.md}{核心概念} \\
+5 分钟跑起来 & \href{https://gitee.com/rabbitc999/chali/blob/master/doc/01-quickstart.md}{快速开始} \\
+查某个标准库函数 & \href{https://gitee.com/rabbitc999/chali/blob/master/doc/library/README.md}{库函数 API 参考} \\
+看官方给的可运行样例 & \href{https://gitee.com/rabbitc999/chali/tree/master/example/samples}{\texttt{example/\allowbreak{}samples/\allowbreak{}}} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -134,7 +134,7 @@ Windows 上程序名是 \texttt{magel.\allowbreak{}exe}。在 Git Bash / MSYS �
 
 \item 工具链：见 \hyperref[ch:01]{第 1 章}。
 
-\item 编辑器：推荐装 \href{https://gitee.com/rabbitc999/magel/tree/master/vscode}{\texttt{vscode/\allowbreak{}}} 下的 Magel 插件，有语法高亮、补全、跳转与断点调试；不装也能读完整本书。
+\item 编辑器：推荐装 \href{https://gitee.com/rabbitc999/chali/tree/master/vscode}{\texttt{vscode/\allowbreak{}}} 下的 ChaLi 插件，有语法高亮、补全、跳转与断点调试；不装也能读完整本书。
 
 \item 心里准备：第 6 到第 8 章会请你改掉一些习惯。别急着问“为什么不直接给我”，作者在那三章里把取舍写清楚了。
 

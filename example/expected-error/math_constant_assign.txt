@@ -1,1 +1,1 @@
-magel: example/samples-error/math_constant_assign.mgl 第 4 行第 5 列：不可变变量（const）不能再赋值：std::math::PI
+chali: example/samples-error/math_constant_assign.chl 第 4 行第 5 列：不可变变量（const）不能再赋值：std::math::PI

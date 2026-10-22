@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::cas;
 ```
 
@@ -14,16 +14,16 @@ Expr 从字符串解析为不可变 AST，使用共享大整数后端保存精�
 
 ## 参考代码
 
-完整程序：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+完整程序：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 ```powershell
-magel run example/samples/cas.mgl
+chali run example/samples/cas.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::cas;
 
 int64 main()
@@ -151,7 +151,7 @@ ast = sin(x)
 
 **声明**
 
-```magel
+```chali
 static Expr parse(String text);
 ```
 
@@ -175,13 +175,13 @@ static Expr parse(String text);
 
 **调用形式**
 
-```magel
+```chali
 std::cas::Expr::parse(text);
 ```
 
-**源码**：[source/std/cas.mgl:43](../../source/std/cas.mgl#L43)。
+**源码**：[source/std/cas.chl:43](../../source/std/cas.chl#L43)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-1"></a>
 
@@ -189,7 +189,7 @@ std::cas::Expr::parse(text);
 
 **声明**
 
-```magel
+```chali
 static Expr fromInteger(BigInteger number);
 ```
 
@@ -213,13 +213,13 @@ static Expr fromInteger(BigInteger number);
 
 **调用形式**
 
-```magel
+```chali
 std::cas::Expr::fromInteger(number);
 ```
 
-**源码**：[source/std/cas.mgl:49](../../source/std/cas.mgl#L49)。
+**源码**：[source/std/cas.chl:49](../../source/std/cas.chl#L49)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-2"></a>
 
@@ -227,7 +227,7 @@ std::cas::Expr::fromInteger(number);
 
 **声明**
 
-```magel
+```chali
 static Expr fromDecimal(BigDecimal number);
 ```
 
@@ -251,13 +251,13 @@ static Expr fromDecimal(BigDecimal number);
 
 **调用形式**
 
-```magel
+```chali
 std::cas::Expr::fromDecimal(number);
 ```
 
-**源码**：[source/std/cas.mgl:51](../../source/std/cas.mgl#L51)。
+**源码**：[source/std/cas.chl:51](../../source/std/cas.chl#L51)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-3"></a>
 
@@ -265,7 +265,7 @@ std::cas::Expr::fromDecimal(number);
 
 **声明**
 
-```magel
+```chali
 static Expr symbol(String name);
 ```
 
@@ -289,13 +289,13 @@ static Expr symbol(String name);
 
 **调用形式**
 
-```magel
+```chali
 std::cas::Expr::symbol(name);
 ```
 
-**源码**：[source/std/cas.mgl:53](../../source/std/cas.mgl#L53)。
+**源码**：[source/std/cas.chl:53](../../source/std/cas.chl#L53)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-4"></a>
 
@@ -303,7 +303,7 @@ std::cas::Expr::symbol(name);
 
 **声明**
 
-```magel
+```chali
 Expr ast();
 ```
 
@@ -325,13 +325,13 @@ Expr ast();
 
 **调用形式**
 
-```magel
+```chali
 obj.ast();
 ```
 
-**源码**：[source/std/cas.mgl:59](../../source/std/cas.mgl#L59)。
+**源码**：[source/std/cas.chl:59](../../source/std/cas.chl#L59)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-5"></a>
 
@@ -339,7 +339,7 @@ obj.ast();
 
 **声明**
 
-```magel
+```chali
 String str();
 ```
 
@@ -361,13 +361,13 @@ String str();
 
 **调用形式**
 
-```magel
+```chali
 obj.str();
 ```
 
-**源码**：[source/std/cas.mgl:61](../../source/std/cas.mgl#L61)。
+**源码**：[source/std/cas.chl:61](../../source/std/cas.chl#L61)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-6"></a>
 
@@ -375,7 +375,7 @@ obj.str();
 
 **声明**
 
-```magel
+```chali
 String toString();
 ```
 
@@ -397,13 +397,13 @@ String toString();
 
 **调用形式**
 
-```magel
+```chali
 obj.toString();
 ```
 
-**源码**：[source/std/cas.mgl:63](../../source/std/cas.mgl#L63)。
+**源码**：[source/std/cas.chl:63](../../source/std/cas.chl#L63)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-7"></a>
 
@@ -411,7 +411,7 @@ obj.toString();
 
 **声明**
 
-```magel
+```chali
 String latex();
 ```
 
@@ -433,13 +433,13 @@ LaTeX 数学文本。
 
 **调用形式**
 
-```magel
+```chali
 obj.latex();
 ```
 
-**源码**：[source/std/cas.mgl:65](../../source/std/cas.mgl#L65)。
+**源码**：[source/std/cas.chl:65](../../source/std/cas.chl#L65)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-8"></a>
 
@@ -447,7 +447,7 @@ obj.latex();
 
 **声明**
 
-```magel
+```chali
 NodeKind kind();
 ```
 
@@ -469,13 +469,13 @@ NodeKind kind();
 
 **调用形式**
 
-```magel
+```chali
 obj.kind();
 ```
 
-**源码**：[source/std/cas.mgl:67](../../source/std/cas.mgl#L67)。
+**源码**：[source/std/cas.chl:67](../../source/std/cas.chl#L67)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-9"></a>
 
@@ -483,7 +483,7 @@ obj.kind();
 
 **声明**
 
-```magel
+```chali
 String name();
 ```
 
@@ -505,13 +505,13 @@ String name();
 
 **调用形式**
 
-```magel
+```chali
 obj.name();
 ```
 
-**源码**：[source/std/cas.mgl:79](../../source/std/cas.mgl#L79)。
+**源码**：[source/std/cas.chl:79](../../source/std/cas.chl#L79)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-10"></a>
 
@@ -519,7 +519,7 @@ obj.name();
 
 **声明**
 
-```magel
+```chali
 int64 childCount();
 ```
 
@@ -541,13 +541,13 @@ int64 childCount();
 
 **调用形式**
 
-```magel
+```chali
 obj.childCount();
 ```
 
-**源码**：[source/std/cas.mgl:81](../../source/std/cas.mgl#L81)。
+**源码**：[source/std/cas.chl:81](../../source/std/cas.chl#L81)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-11"></a>
 
@@ -555,7 +555,7 @@ obj.childCount();
 
 **声明**
 
-```magel
+```chali
 Expr child(int64 index);
 ```
 
@@ -579,13 +579,13 @@ Expr child(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.child(index);
 ```
 
-**源码**：[source/std/cas.mgl:83](../../source/std/cas.mgl#L83)。
+**源码**：[source/std/cas.chl:83](../../source/std/cas.chl#L83)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-12"></a>
 
@@ -593,7 +593,7 @@ obj.child(index);
 
 **声明**
 
-```magel
+```chali
 List<Expr> children();
 ```
 
@@ -615,13 +615,13 @@ List<Expr> children();
 
 **调用形式**
 
-```magel
+```chali
 obj.children();
 ```
 
-**源码**：[source/std/cas.mgl:89](../../source/std/cas.mgl#L89)。
+**源码**：[source/std/cas.chl:89](../../source/std/cas.chl#L89)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-13"></a>
 
@@ -629,7 +629,7 @@ obj.children();
 
 **声明**
 
-```magel
+```chali
 BigInteger numerator();
 ```
 
@@ -651,13 +651,13 @@ BigInteger numerator();
 
 **调用形式**
 
-```magel
+```chali
 obj.numerator();
 ```
 
-**源码**：[source/std/cas.mgl:100](../../source/std/cas.mgl#L100)。
+**源码**：[source/std/cas.chl:100](../../source/std/cas.chl#L100)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-14"></a>
 
@@ -665,7 +665,7 @@ obj.numerator();
 
 **声明**
 
-```magel
+```chali
 BigInteger denominator();
 ```
 
@@ -687,13 +687,13 @@ BigInteger denominator();
 
 **调用形式**
 
-```magel
+```chali
 obj.denominator();
 ```
 
-**源码**：[source/std/cas.mgl:102](../../source/std/cas.mgl#L102)。
+**源码**：[source/std/cas.chl:102](../../source/std/cas.chl#L102)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-15"></a>
 
@@ -701,7 +701,7 @@ obj.denominator();
 
 **声明**
 
-```magel
+```chali
 BigDecimal decimal(int64 digits = 50);
 ```
 
@@ -725,13 +725,13 @@ BigDecimal decimal(int64 digits = 50);
 
 **调用形式**
 
-```magel
+```chali
 obj.decimal(digits);
 ```
 
-**源码**：[source/std/cas.mgl:104](../../source/std/cas.mgl#L104)。
+**源码**：[source/std/cas.chl:104](../../source/std/cas.chl#L104)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-16"></a>
 
@@ -739,7 +739,7 @@ obj.decimal(digits);
 
 **声明**
 
-```magel
+```chali
 Expr leftAdd(Expr other);
 ```
 
@@ -763,13 +763,13 @@ Expr leftAdd(Expr other);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftAdd(other);
 ```
 
-**源码**：[source/std/cas.mgl:106](../../source/std/cas.mgl#L106)。
+**源码**：[source/std/cas.chl:106](../../source/std/cas.chl#L106)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-17"></a>
 
@@ -777,7 +777,7 @@ obj.leftAdd(other);
 
 **声明**
 
-```magel
+```chali
 Expr leftSub(Expr other);
 ```
 
@@ -801,13 +801,13 @@ Expr leftSub(Expr other);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftSub(other);
 ```
 
-**源码**：[source/std/cas.mgl:107](../../source/std/cas.mgl#L107)。
+**源码**：[source/std/cas.chl:107](../../source/std/cas.chl#L107)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-18"></a>
 
@@ -815,7 +815,7 @@ obj.leftSub(other);
 
 **声明**
 
-```magel
+```chali
 Expr leftMul(Expr other);
 ```
 
@@ -839,13 +839,13 @@ Expr leftMul(Expr other);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftMul(other);
 ```
 
-**源码**：[source/std/cas.mgl:108](../../source/std/cas.mgl#L108)。
+**源码**：[source/std/cas.chl:108](../../source/std/cas.chl#L108)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-19"></a>
 
@@ -853,7 +853,7 @@ obj.leftMul(other);
 
 **声明**
 
-```magel
+```chali
 Expr leftDiv(Expr other);
 ```
 
@@ -877,13 +877,13 @@ Expr leftDiv(Expr other);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftDiv(other);
 ```
 
-**源码**：[source/std/cas.mgl:109](../../source/std/cas.mgl#L109)。
+**源码**：[source/std/cas.chl:109](../../source/std/cas.chl#L109)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-20"></a>
 
@@ -891,7 +891,7 @@ obj.leftDiv(other);
 
 **声明**
 
-```magel
+```chali
 bool leftEqual(Expr other);
 ```
 
@@ -915,13 +915,13 @@ bool leftEqual(Expr other);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftEqual(other);
 ```
 
-**源码**：[source/std/cas.mgl:111](../../source/std/cas.mgl#L111)。
+**源码**：[source/std/cas.chl:111](../../source/std/cas.chl#L111)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-21"></a>
 
@@ -929,7 +929,7 @@ obj.leftEqual(other);
 
 **声明**
 
-```magel
+```chali
 Expr negate(Expr operand);
 ```
 
@@ -953,13 +953,13 @@ Expr negate(Expr operand);
 
 **调用形式**
 
-```magel
+```chali
 obj.negate(operand);
 ```
 
-**源码**：[source/std/cas.mgl:113](../../source/std/cas.mgl#L113)。
+**源码**：[source/std/cas.chl:113](../../source/std/cas.chl#L113)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-22"></a>
 
@@ -967,7 +967,7 @@ obj.negate(operand);
 
 **声明**
 
-```magel
+```chali
 Expr pow(Expr exponent);
 ```
 
@@ -991,13 +991,13 @@ Expr pow(Expr exponent);
 
 **调用形式**
 
-```magel
+```chali
 obj.pow(exponent);
 ```
 
-**源码**：[source/std/cas.mgl:115](../../source/std/cas.mgl#L115)。
+**源码**：[source/std/cas.chl:115](../../source/std/cas.chl#L115)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-23"></a>
 
@@ -1005,7 +1005,7 @@ obj.pow(exponent);
 
 **声明**
 
-```magel
+```chali
 Expr pow(int64 exponent);
 ```
 
@@ -1029,13 +1029,13 @@ Expr pow(int64 exponent);
 
 **调用形式**
 
-```magel
+```chali
 obj.pow(exponent);
 ```
 
-**源码**：[source/std/cas.mgl:117](../../source/std/cas.mgl#L117)。
+**源码**：[source/std/cas.chl:117](../../source/std/cas.chl#L117)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-24"></a>
 
@@ -1043,7 +1043,7 @@ obj.pow(exponent);
 
 **声明**
 
-```magel
+```chali
 Expr simplify();
 ```
 
@@ -1065,13 +1065,13 @@ Expr simplify();
 
 **调用形式**
 
-```magel
+```chali
 obj.simplify();
 ```
 
-**源码**：[source/std/cas.mgl:119](../../source/std/cas.mgl#L119)。
+**源码**：[source/std/cas.chl:119](../../source/std/cas.chl#L119)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-25"></a>
 
@@ -1079,7 +1079,7 @@ obj.simplify();
 
 **声明**
 
-```magel
+```chali
 Expr expand();
 ```
 
@@ -1101,13 +1101,13 @@ Expr expand();
 
 **调用形式**
 
-```magel
+```chali
 obj.expand();
 ```
 
-**源码**：[source/std/cas.mgl:121](../../source/std/cas.mgl#L121)。
+**源码**：[source/std/cas.chl:121](../../source/std/cas.chl#L121)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-26"></a>
 
@@ -1115,7 +1115,7 @@ obj.expand();
 
 **声明**
 
-```magel
+```chali
 Expr factor();
 ```
 
@@ -1137,13 +1137,13 @@ Expr factor();
 
 **调用形式**
 
-```magel
+```chali
 obj.factor();
 ```
 
-**源码**：[source/std/cas.mgl:123](../../source/std/cas.mgl#L123)。
+**源码**：[source/std/cas.chl:123](../../source/std/cas.chl#L123)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-27"></a>
 
@@ -1151,7 +1151,7 @@ obj.factor();
 
 **声明**
 
-```magel
+```chali
 Expr together();
 ```
 
@@ -1173,13 +1173,13 @@ Expr together();
 
 **调用形式**
 
-```magel
+```chali
 obj.together();
 ```
 
-**源码**：[source/std/cas.mgl:125](../../source/std/cas.mgl#L125)。
+**源码**：[source/std/cas.chl:125](../../source/std/cas.chl#L125)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-28"></a>
 
@@ -1187,7 +1187,7 @@ obj.together();
 
 **声明**
 
-```magel
+```chali
 Expr differentiate(String variable = "x", int64 order = 1);
 ```
 
@@ -1212,13 +1212,13 @@ Expr differentiate(String variable = "x", int64 order = 1);
 
 **调用形式**
 
-```magel
+```chali
 obj.differentiate(variable, order);
 ```
 
-**源码**：[source/std/cas.mgl:127](../../source/std/cas.mgl#L127)。
+**源码**：[source/std/cas.chl:127](../../source/std/cas.chl#L127)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-29"></a>
 
@@ -1226,7 +1226,7 @@ obj.differentiate(variable, order);
 
 **声明**
 
-```magel
+```chali
 Expr integrate(String variable = "x");
 ```
 
@@ -1250,13 +1250,13 @@ Expr integrate(String variable = "x");
 
 **调用形式**
 
-```magel
+```chali
 obj.integrate(variable);
 ```
 
-**源码**：[source/std/cas.mgl:129](../../source/std/cas.mgl#L129)。
+**源码**：[source/std/cas.chl:129](../../source/std/cas.chl#L129)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-30"></a>
 
@@ -1264,7 +1264,7 @@ obj.integrate(variable);
 
 **声明**
 
-```magel
+```chali
 Expr substitute(String variable, Expr replacement);
 ```
 
@@ -1289,13 +1289,13 @@ Expr substitute(String variable, Expr replacement);
 
 **调用形式**
 
-```magel
+```chali
 obj.substitute(variable, replacement);
 ```
 
-**源码**：[source/std/cas.mgl:131](../../source/std/cas.mgl#L131)。
+**源码**：[source/std/cas.chl:131](../../source/std/cas.chl#L131)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-31"></a>
 
@@ -1303,7 +1303,7 @@ obj.substitute(variable, replacement);
 
 **声明**
 
-```magel
+```chali
 Expr limit(String variable, Expr point);
 ```
 
@@ -1328,13 +1328,13 @@ Expr limit(String variable, Expr point);
 
 **调用形式**
 
-```magel
+```chali
 obj.limit(variable, point);
 ```
 
-**源码**：[source/std/cas.mgl:133](../../source/std/cas.mgl#L133)。
+**源码**：[source/std/cas.chl:133](../../source/std/cas.chl#L133)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-32"></a>
 
@@ -1342,7 +1342,7 @@ obj.limit(variable, point);
 
 **声明**
 
-```magel
+```chali
 Expr taylor(String variable, Expr point, int64 order);
 ```
 
@@ -1368,13 +1368,13 @@ Expr taylor(String variable, Expr point, int64 order);
 
 **调用形式**
 
-```magel
+```chali
 obj.taylor(variable, point, order);
 ```
 
-**源码**：[source/std/cas.mgl:135](../../source/std/cas.mgl#L135)。
+**源码**：[source/std/cas.chl:135](../../source/std/cas.chl#L135)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-33"></a>
 
@@ -1382,7 +1382,7 @@ obj.taylor(variable, point, order);
 
 **声明**
 
-```magel
+```chali
 Expr integrateDefinite(String variable, Expr lower, Expr upper);
 ```
 
@@ -1408,13 +1408,13 @@ Expr integrateDefinite(String variable, Expr lower, Expr upper);
 
 **调用形式**
 
-```magel
+```chali
 obj.integrateDefinite(variable, lower, upper);
 ```
 
-**源码**：[source/std/cas.mgl:137](../../source/std/cas.mgl#L137)。
+**源码**：[source/std/cas.chl:137](../../source/std/cas.chl#L137)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-34"></a>
 
@@ -1422,7 +1422,7 @@ obj.integrateDefinite(variable, lower, upper);
 
 **声明**
 
-```magel
+```chali
 Expr sin();
 ```
 
@@ -1444,13 +1444,13 @@ Expr sin();
 
 **调用形式**
 
-```magel
+```chali
 obj.sin();
 ```
 
-**源码**：[source/std/cas.mgl:139](../../source/std/cas.mgl#L139)。
+**源码**：[source/std/cas.chl:139](../../source/std/cas.chl#L139)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-35"></a>
 
@@ -1458,7 +1458,7 @@ obj.sin();
 
 **声明**
 
-```magel
+```chali
 Expr cos();
 ```
 
@@ -1480,13 +1480,13 @@ Expr cos();
 
 **调用形式**
 
-```magel
+```chali
 obj.cos();
 ```
 
-**源码**：[source/std/cas.mgl:141](../../source/std/cas.mgl#L141)。
+**源码**：[source/std/cas.chl:141](../../source/std/cas.chl#L141)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-36"></a>
 
@@ -1494,7 +1494,7 @@ obj.cos();
 
 **声明**
 
-```magel
+```chali
 Expr tan();
 ```
 
@@ -1516,13 +1516,13 @@ Expr tan();
 
 **调用形式**
 
-```magel
+```chali
 obj.tan();
 ```
 
-**源码**：[source/std/cas.mgl:143](../../source/std/cas.mgl#L143)。
+**源码**：[source/std/cas.chl:143](../../source/std/cas.chl#L143)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-37"></a>
 
@@ -1530,7 +1530,7 @@ obj.tan();
 
 **声明**
 
-```magel
+```chali
 Expr asin();
 ```
 
@@ -1552,13 +1552,13 @@ Expr asin();
 
 **调用形式**
 
-```magel
+```chali
 obj.asin();
 ```
 
-**源码**：[source/std/cas.mgl:145](../../source/std/cas.mgl#L145)。
+**源码**：[source/std/cas.chl:145](../../source/std/cas.chl#L145)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-38"></a>
 
@@ -1566,7 +1566,7 @@ obj.asin();
 
 **声明**
 
-```magel
+```chali
 Expr acos();
 ```
 
@@ -1588,13 +1588,13 @@ Expr acos();
 
 **调用形式**
 
-```magel
+```chali
 obj.acos();
 ```
 
-**源码**：[source/std/cas.mgl:147](../../source/std/cas.mgl#L147)。
+**源码**：[source/std/cas.chl:147](../../source/std/cas.chl#L147)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-39"></a>
 
@@ -1602,7 +1602,7 @@ obj.acos();
 
 **声明**
 
-```magel
+```chali
 Expr atan();
 ```
 
@@ -1624,13 +1624,13 @@ Expr atan();
 
 **调用形式**
 
-```magel
+```chali
 obj.atan();
 ```
 
-**源码**：[source/std/cas.mgl:149](../../source/std/cas.mgl#L149)。
+**源码**：[source/std/cas.chl:149](../../source/std/cas.chl#L149)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-40"></a>
 
@@ -1638,7 +1638,7 @@ obj.atan();
 
 **声明**
 
-```magel
+```chali
 Expr exp();
 ```
 
@@ -1660,13 +1660,13 @@ Expr exp();
 
 **调用形式**
 
-```magel
+```chali
 obj.exp();
 ```
 
-**源码**：[source/std/cas.mgl:151](../../source/std/cas.mgl#L151)。
+**源码**：[source/std/cas.chl:151](../../source/std/cas.chl#L151)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-41"></a>
 
@@ -1674,7 +1674,7 @@ obj.exp();
 
 **声明**
 
-```magel
+```chali
 Expr ln();
 ```
 
@@ -1696,13 +1696,13 @@ Expr ln();
 
 **调用形式**
 
-```magel
+```chali
 obj.ln();
 ```
 
-**源码**：[source/std/cas.mgl:153](../../source/std/cas.mgl#L153)。
+**源码**：[source/std/cas.chl:153](../../source/std/cas.chl#L153)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-42"></a>
 
@@ -1710,7 +1710,7 @@ obj.ln();
 
 **声明**
 
-```magel
+```chali
 Expr log10();
 ```
 
@@ -1732,13 +1732,13 @@ Expr log10();
 
 **调用形式**
 
-```magel
+```chali
 obj.log10();
 ```
 
-**源码**：[source/std/cas.mgl:155](../../source/std/cas.mgl#L155)。
+**源码**：[source/std/cas.chl:155](../../source/std/cas.chl#L155)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-43"></a>
 
@@ -1746,7 +1746,7 @@ obj.log10();
 
 **声明**
 
-```magel
+```chali
 Expr sqrt();
 ```
 
@@ -1768,13 +1768,13 @@ Expr sqrt();
 
 **调用形式**
 
-```magel
+```chali
 obj.sqrt();
 ```
 
-**源码**：[source/std/cas.mgl:157](../../source/std/cas.mgl#L157)。
+**源码**：[source/std/cas.chl:157](../../source/std/cas.chl#L157)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-44"></a>
 
@@ -1782,7 +1782,7 @@ obj.sqrt();
 
 **声明**
 
-```magel
+```chali
 Expr floor();
 ```
 
@@ -1804,13 +1804,13 @@ Expr floor();
 
 **调用形式**
 
-```magel
+```chali
 obj.floor();
 ```
 
-**源码**：[source/std/cas.mgl:159](../../source/std/cas.mgl#L159)。
+**源码**：[source/std/cas.chl:159](../../source/std/cas.chl#L159)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-45"></a>
 
@@ -1818,7 +1818,7 @@ obj.floor();
 
 **声明**
 
-```magel
+```chali
 Expr ceil();
 ```
 
@@ -1840,13 +1840,13 @@ Expr ceil();
 
 **调用形式**
 
-```magel
+```chali
 obj.ceil();
 ```
 
-**源码**：[source/std/cas.mgl:161](../../source/std/cas.mgl#L161)。
+**源码**：[source/std/cas.chl:161](../../source/std/cas.chl#L161)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-46"></a>
 
@@ -1854,7 +1854,7 @@ obj.ceil();
 
 **声明**
 
-```magel
+```chali
 Expr round();
 ```
 
@@ -1876,13 +1876,13 @@ Expr round();
 
 **调用形式**
 
-```magel
+```chali
 obj.round();
 ```
 
-**源码**：[source/std/cas.mgl:163](../../source/std/cas.mgl#L163)。
+**源码**：[source/std/cas.chl:163](../../source/std/cas.chl#L163)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-47"></a>
 
@@ -1890,7 +1890,7 @@ obj.round();
 
 **声明**
 
-```magel
+```chali
 Expr trunc();
 ```
 
@@ -1912,13 +1912,13 @@ Expr trunc();
 
 **调用形式**
 
-```magel
+```chali
 obj.trunc();
 ```
 
-**源码**：[source/std/cas.mgl:165](../../source/std/cas.mgl#L165)。
+**源码**：[source/std/cas.chl:165](../../source/std/cas.chl#L165)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-48"></a>
 
@@ -1926,7 +1926,7 @@ obj.trunc();
 
 **声明**
 
-```magel
+```chali
 Expr fmod(Expr other);
 ```
 
@@ -1950,13 +1950,13 @@ Expr fmod(Expr other);
 
 **调用形式**
 
-```magel
+```chali
 obj.fmod(other);
 ```
 
-**源码**：[source/std/cas.mgl:167](../../source/std/cas.mgl#L167)。
+**源码**：[source/std/cas.chl:167](../../source/std/cas.chl#L167)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。
 
 <a id="api-49"></a>
 
@@ -1964,7 +1964,7 @@ obj.fmod(other);
 
 **声明**
 
-```magel
+```chali
 Expr parse(String text);
 ```
 
@@ -1988,10 +1988,10 @@ Expr parse(String text);
 
 **调用形式**
 
-```magel
+```chali
 std::cas::parse(text);
 ```
 
-**源码**：[source/std/cas.mgl:171](../../source/std/cas.mgl#L171)。
+**源码**：[source/std/cas.chl:171](../../source/std/cas.chl#L171)。
 
-**完整示例**：[example/samples/cas.mgl](../../example/samples/cas.mgl)。
+**完整示例**：[example/samples/cas.chl](../../example/samples/cas.chl)。

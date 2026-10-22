@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::compress;
 ```
 
@@ -14,16 +14,16 @@ compress 输入文本，输出二进制 List<uint8>；不能把压缩结果当 U
 
 ## 参考代码
 
-完整程序：[example/samples/std_compress.mgl](../../example/samples/std_compress.mgl)。
+完整程序：[example/samples/std_compress.chl](../../example/samples/std_compress.chl)。
 
 ```powershell
-magel run example/samples/std_compress.mgl
+chali run example/samples/std_compress.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::compress;
 import std::text;
 
@@ -31,7 +31,7 @@ import std::text;
  * 压缩结果是二进制（含 NUL 字节），类型是 List<uint8>，不要当字符串拼接。 */
 int64 main() {
     /* 高重复度文本：应该明显变小 */
-    String text = std::text::Text::repeat("magel 文本压缩往返测试；", 40);
+    String text = std::text::Text::repeat("chali 文本压缩往返测试；", 40);
     List<uint8> packed = std::compress::compress(text);
     println("原文 {} 压缩后 {} 变小 {}", len(text), packed.len(),
     packed.len() < len(text));
@@ -84,7 +84,7 @@ int64 main() {
 
 **声明**
 
-```magel
+```chali
 std::lang::List<uint8> compress(std::lang::String text);
 ```
 
@@ -108,13 +108,13 @@ std::lang::List<uint8> compress(std::lang::String text);
 
 **调用形式**
 
-```magel
+```chali
 std::compress::compress(text);
 ```
 
-**源码**：[source/std/compress.mgl:12](../../source/std/compress.mgl#L12)。
+**源码**：[source/std/compress.chl:12](../../source/std/compress.chl#L12)。
 
-**完整示例**：[example/samples/std_compress.mgl](../../example/samples/std_compress.mgl)。
+**完整示例**：[example/samples/std_compress.chl](../../example/samples/std_compress.chl)。
 
 <a id="api-1"></a>
 
@@ -122,7 +122,7 @@ std::compress::compress(text);
 
 **声明**
 
-```magel
+```chali
 std::lang::String decompress(std::lang::List<uint8> bytes);
 ```
 
@@ -146,10 +146,10 @@ std::lang::String decompress(std::lang::List<uint8> bytes);
 
 **调用形式**
 
-```magel
+```chali
 std::compress::decompress(bytes);
 ```
 
-**源码**：[source/std/compress.mgl:13](../../source/std/compress.mgl#L13)。
+**源码**：[source/std/compress.chl:13](../../source/std/compress.chl#L13)。
 
-**完整示例**：[example/samples/std_compress.mgl](../../example/samples/std_compress.mgl)。
+**完整示例**：[example/samples/std_compress.chl](../../example/samples/std_compress.chl)。

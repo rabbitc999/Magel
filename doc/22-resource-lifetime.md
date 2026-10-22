@@ -12,7 +12,7 @@
 
 实现 `Closeable` 的结构体自动按不可复制处理（`MStructDef::nonCopyable`，与 `#NonCopyable opcode` 共用 `TypeNonCopyable` 判定）：复制一份就是两份所有权，`close()` 会跑两遍。复制初始化、赋值、按值传参和返回值复制全部拒绝并给出“实现 Closeable 或声明了 #NonCopyable”的诊断；转移用 `move(&x)`，共用改传引用，返回函数内局部拥有值不需要额外 `move`。这条规则沿字段与元素传递：含不可复制字段的聚合整体不可复制，数组按元素复制、容器按值存放同类元素同样被拒（容器请存引用或托管值）。
 
-`source/magel_resource_cleanup.cpp` 是独立编译的资源合并模块。它消费借用控制流的来源与初始化事实，按精确存储身份合并 drop：所有到达路径均已终结时移除后续操作，只有部分路径终结时保留执行路径守卫。重新初始化、重绑和分配更新证明条件。动态下标、来源不唯一或不透明的跨调用副作用不作为合并证明。运行时释放保持非幂等，无法合并的重复释放报告 MGL1205；普通读写仍检查释放后使用。
+`source/chali_resource_cleanup.cpp` 是独立编译的资源合并模块。它消费借用控制流的来源与初始化事实，按精确存储身份合并 drop：所有到达路径均已终结时移除后续操作，只有部分路径终结时保留执行路径守卫。重新初始化、重绑和分配更新证明条件。动态下标、来源不唯一或不透明的跨调用副作用不作为合并证明。运行时释放保持非幂等，无法合并的重复释放报告 CHL1205；普通读写仍检查释放后使用。
 
 已命名聚合的显式 close 使用编译器局部关闭标志，实际关闭后更新标志，每次构造时重置；自动关闭和显式 drop 复用此标志，分支不会取消其他路径的清理。该标志保存在调用帧中，不增加运行时墓碑接口。
 
@@ -26,7 +26,7 @@
 
 ## fn 闭包借用规则的参考与实现
 
-参考 Rust 编译器 [upvar.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_hir_typeck/src/upvar.rs) 的捕获分析流程，以及 [constraint_conversion.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/type_check/constraint_conversion.rs) 的寿命约束转换。Magel 使用自己的作用域来源事实与控制流检查器，不引入 Rust 的类型系统。0.15.0 默认捕获为 `const&`，显式 `mut` 使用可写借用；`copy` 和 `move` 持有内部状态。复制引用捕获的闭包不延长来源寿命。
+参考 Rust 编译器 [upvar.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_hir_typeck/src/upvar.rs) 的捕获分析流程，以及 [constraint_conversion.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/type_check/constraint_conversion.rs) 的寿命约束转换。ChaLi 使用自己的作用域来源事实与控制流检查器，不引入 Rust 的类型系统。0.15.0 默认捕获为 `const&`，显式 `mut` 使用可写借用；`copy` 和 `move` 持有内部状态。复制引用捕获的闭包不延长来源寿命。
 
 捕获发现位于 `source/semantics/generic_inference.cpp::CheckLambdaCaptures`；地址存储在 `source/semantics/artifacts.cpp` 预登记，经 `source/semantics/boxing.cpp` 建立和恢复闭包环境；来源寿命经 `source/semantics/borrow_facts.cpp` 传播到赋值、返回与聚合字段。`LowerAssign` 必须先完成右值推导、发现 lambda 捕获，再记录保存约束。
 
@@ -34,9 +34,9 @@
 
 ## 借用检查与 Rust 源码对照
 
-本轮参考 Rust 编译器的三个入口，采用适合 Magel 现有语义的规则：
+本轮参考 Rust 编译器的三个入口，采用适合 ChaLi 现有语义的规则：
 
-| Rust 源码 | Magel 中的对应处理 |
+| Rust 源码 | ChaLi 中的对应处理 |
 | --- | --- |
 | [move_paths/mod.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_mir_dataflow/src/move_paths/mod.rs)：记录存储位置、移动与初始化 | `Place` 使用变量存储身份加字段、下标和解引用路径；整体移动与局部字段移动分别影响对应路径 |
 | [places_conflict.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/places_conflict.rs)：逐层比较投影的重叠关系 | 不同结构体字段和已知不同下标互不影响；动态下标保守视为可能重叠 |
@@ -44,13 +44,13 @@
 
 闭包建立时将捕获来源的读取和 move 捕获写入同一张控制流图。引用槽与其所指对象分别检查：移动引用变量使其槽失效；重新绑定只恢复该槽，不复活旧的已释放对象。copy/move 捕获的内部引用仍须通过寿命检查，拥有闭包不会延长外部被引用对象的寿命。
 
-这是一套 Magel 自身的来源与移动分析，并未实现 Rust 的完整 NLL 区域推导、可变借用唯一性或 Polonius。引用资料用于规则对照，现有 Magel 允许的别名关系保持其语言契约。
+这是一套 ChaLi 自身的来源与移动分析，并未实现 Rust 的完整 NLL 区域推导、可变借用唯一性或 Polonius。引用资料用于规则对照，现有 ChaLi 允许的别名关系保持其语言契约。
 
 
 ## 闭包后续使用的来源检查
 
 捕获发现和后续使用分别建模。`FlowState::captures` 保存函数值及聚合字段持有的外部借用来源；复制、赋值、元组和枚举载荷传递该集合，拥有捕获中的引用字段仍关联外部对象。调用函数值时读取其存储路径，并检查捕获来源是否在某条可达路径上已释放、移动或销毁。实参求值完成后再次检查闭包本身和捕获来源，避免 `callback(move(&source))` 在调用前使环境失效。返回函数值的调用保守继承接收者和实参已知的外部借用来源。重新赋值替换原有捕获集合，闭包最后一次使用后的销毁允许通过。
 
-该处理参考 Rust 的 [borrow_set.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/borrow_set.rs) 对借用的显式登记、[upvar.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_hir_typeck/src/upvar.rs) 对捕获方式的区分，以及 [places_conflict.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/places_conflict.rs) 的存储路径重叠分析。实现沿用 Magel 的字段路径和控制流检查器，不移植 Rust 源码。
+该处理参考 Rust 的 [borrow_set.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/borrow_set.rs) 对借用的显式登记、[upvar.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_hir_typeck/src/upvar.rs) 对捕获方式的区分，以及 [places_conflict.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/places_conflict.rs) 的存储路径重叠分析。实现沿用 ChaLi 的字段路径和控制流检查器，不移植 Rust 源码。
 
 检查覆盖当前函数内可见的来源失效与传播；不透明宿主代码、原始内存写入及被擦除的跨函数副作用仍需要对应接口的生命周期契约。此分析不等于消除了所有未定义行为。

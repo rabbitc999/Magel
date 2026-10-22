@@ -1,15 +1,15 @@
 # 06 VM deployment
 
-Magel programs always execute in the shared VM, **write once, run anywhere**: the same source compiles to bytecode that desktop, server and supported embedded Linux hosts can load. Deploy source for compilation on the host, or export `.svmb` in advance.
+ChaLi programs always execute in the shared VM, **write once, run anywhere**: the same source compiles to bytecode that desktop, server and supported embedded Linux hosts can load. Deploy source for compilation on the host, or export `.svmb` in advance.
 
 ```sh
-magel run app.mgl
-magel svmb app.mgl out build/app
+chali run app.chl
+chali svmb app.chl out build/app
 ```
 
 Bytecode deployment includes `.svmb`, `.data.bin`, `.layout` and application resources. The host validates format and feature bits, installs native bindings, and runs the program. `emit` provides quadruples for inspection or assembly; quadruples are not machine code.
 
-A host application may itself be compiled into a native executable and embed bytecode. Magel code executes through `stackvm::Machine`.
+A host application may itself be compiled into a native executable and embed bytecode. ChaLi code executes through `stackvm::Machine`.
 
 The compiler embeds its standard library and runtime assets. Operating-system services, external libraries, databases and peripherals remain deployment dependencies when used.
 

@@ -1,1 +1,1 @@
-语法错误：example/samples-error/macro_end_for_unpaired.mgl 第 4 行第 1 列：期望 MACRO_END，实际是 MACRO_END_FOR
+语法错误：example/samples-error/macro_end_for_unpaired.chl 第 4 行第 1 列：期望 MACRO_END，实际是 MACRO_END_FOR

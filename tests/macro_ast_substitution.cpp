@@ -1,4 +1,4 @@
-#include "magel_ast.hpp"
+#include "chali_ast.hpp"
 #include "macro/ast_substitution.hpp"
 #include <iostream>
 
@@ -35,7 +35,7 @@ int main()
     product.s = "*";
     product.kids = { 3, 3 };
     nodes.push_back(product);
-    magel_macro::AstSubstitution substitute(nodes);
+    chali_macro::AstSubstitution substitute(nodes);
     std::string error;
     const int expanded = substitute.instantiate(4, { { 42, 0 } }, 99, error);
     if (expanded < 0 || !error.empty()) return 1;
@@ -51,7 +51,7 @@ int main()
     if (nodes[4].kids != product.kids || nodes[0].kids != argument.kids) return 6;
     const auto saved = nodes.size();
     if (substitute.instantiate(4, {}, 100, error) >= 0 || error.empty() || nodes.size() != saved) return 7;
-    magel_macro::AstSubstitution limited(nodes, 2);
+    chali_macro::AstSubstitution limited(nodes, 2);
     if (limited.instantiate(4, { { 42, 0 } }, 100, error) >= 0 || error.empty() || nodes.size() != saved) return 8;
     if (substitute.instantiate(999999, {}, 100, error) >= 0 || error.empty() || nodes.size() != saved) return 9;
     MNode declarations;

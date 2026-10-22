@@ -3,7 +3,7 @@
 前面各篇讲「怎么写」。这一篇讲**仓库里已经有什么能跑的东西**——每个示例给出位置、
 演示的能力、运行命令、验证入口，以及跑起来需要的前置条件。
 
-所有命令都**在仓库根目录**执行（Windows 上是 `magel.exe`，下面统一写 `magel`）。
+所有命令都**在仓库根目录**执行（Windows 上是 `ChaLi.exe`，下面统一写 `chali`）。
 
 ---
 
@@ -45,8 +45,8 @@
 **怎么跑**：
 
 ```powershell
-python tests/magel_desktop.py --turtle-only
-Set-Location .\build\magel-turtle-winapi
+python tests/chali_desktop.py --turtle-only
+Set-Location .\build\chali-turtle-winapi
 .\demo.exe            # 绘制 Koch 雪花；关窗退出
 .\demo.exe close      # 绘制并保存后直接关闭（自动验收用）
 ```
@@ -54,7 +54,7 @@ Set-Location .\build\magel-turtle-winapi
 程序在当前目录写出 `turtle.bmp`。
 
 **边界**：需要 Windows 与可用的交互桌面；DLL 必须与 exe 同目录。
-若 Magel 声明、C 函数签名或调用约定不一致，属于 C ABI 边界错误——
+若 ChaLi 声明、C 函数签名或调用约定不一致，属于 C ABI 边界错误——
 背景见[宿主集成](08-host-integration.md)。
 
 ---
@@ -69,9 +69,9 @@ Set-Location .\build\magel-turtle-winapi
 **怎么跑**（在 `example/reflection-students` 目录里）：
 
 ```sh
-magel main.mgl students.db add '{"id":1,"name":"张伟","age":18,"className":"高一(3)班","score":92}'
-magel main.mgl students.db list score desc
-magel main.mgl students.db schema
+chali main.chl students.db add '{"id":1,"name":"张伟","age":18,"className":"高一(3)班","score":92}'
+chali main.chl students.db list score desc
+chali main.chl students.db schema
 ```
 
 **怎么验证**：逐条跑 `add` / `update` / `get` / `delete` / `list` / `search` / `schema`，
@@ -83,7 +83,7 @@ magel main.mgl students.db schema
 
 ### 4.2 其他数据库示例
 
-数据库基础用法见[SQL 示例](../example/sql-magel/README.md)，反射与参数化查询见[动态 SQL 说明](36-reflection-serialization-sql.md)。
+数据库基础用法见[SQL 示例](../example/sql-chali/README.md)，反射与参数化查询见[动态 SQL 说明](36-reflection-serialization-sql.md)。
 
 ## 5. 语言与库能力示例
 
@@ -102,7 +102,7 @@ magel main.mgl students.db schema
 
 **怎么跑**：
 
-**怎么验证**：`python tests/magel_module_compilation.py`。
+**怎么验证**：`python tests/chali_module_compilation.py`。
 相关选项（`--separate-modules` / `--module-cache`）见[跨平台部署](06-deployment.md)。
 
 ### 5.3 注解与反射
@@ -113,10 +113,10 @@ magel main.mgl students.db schema
 **怎么跑**：根目录工具链默认已同时开启编译器与 VM 反射，直接执行：
 
 ```sh
-magel --reflection example/reflection/annotations.mgl --out build/annotation-example
+chali --reflection example/reflection/annotations.chl --out build/annotation-example
 ```
 
-**怎么验证**：`python tests/magel_annotations.py`（会生成并实际运行 VM 两种独立程序）。
+**怎么验证**：`python tests/chali_annotations.py`（会生成并实际运行 VM 两种独立程序）。
 
 **边界**：注解保存于编译器 AST 并完成类型检查；`std::reflect::` 的完整运行期 API 见
 [库函数参考](library/README.md)。
@@ -124,25 +124,25 @@ magel --reflection example/reflection/annotations.mgl --out build/annotation-exa
 ### 5.4 标准库配套程序
 
 **演示什么**：需要一点工程布局才跑得起来的库用法。[`doc/examples/library/`](examples/library/)
-下有四个：`io.mgl`（文件创建/写入/刷新/定位）、`sqlite.mgl`（内置 SQLite 内存库与
-Unicode 字符串）、`watchdog.mgl`（未启用与错误水位分支）、`source/std/reflect.mgl`（类型与结构字段查询）。
+下有四个：`io.chl`（文件创建/写入/刷新/定位）、`sqlite.chl`（内置 SQLite 内存库与
+Unicode 字符串）、`watchdog.chl`（未启用与错误水位分支）、`source/std/reflect.chl`（类型与结构字段查询）。
 
 **怎么跑**：
 
 ```sh
-magel run doc/examples/library/io.mgl -- build/library-example.txt
-magel run doc/examples/library/sqlite.mgl
+chali run doc/examples/library/io.chl -- build/library-example.txt
+chali run doc/examples/library/sqlite.chl
 ```
 
-**怎么验证**：`python tests/magel_library_reference.py`——核对声明、链接并执行 23 个完整程序。
+**怎么验证**：`python tests/chali_library_reference.py`——核对声明、链接并执行 23 个完整程序。
 
 ### 5.5 C ABI 配套示例
 
 **演示什么**：两种绑定姿势。[`abi_buffers/`](examples/abi_buffers/) 传静态缓冲，
-[`abi_dynamic/`](examples/abi_dynamic/) 走动态库 + 胶水。两份都是 `native.c` + `demo.mgl`
+[`abi_dynamic/`](examples/abi_dynamic/) 走动态库 + 胶水。两份都是 `native.c` + `demo.chl`
 的小组合，适合当自己写绑定时对着抄的最小骨架。
 
-**怎么验证**：`python tests/magel_abi_values.py`。
+**怎么验证**：`python tests/chali_abi_values.py`。
 类型映射与 `abi` 块语法见[宿主集成与 C ABI](08-host-integration.md)。
 
 ---
@@ -161,8 +161,8 @@ magel run doc/examples/library/sqlite.mgl
 **怎么跑**：
 
 ```sh
-magel run example/samples/control.mgl --emit --svmb --out tmp/svmb-study/control
-python doc/examples/svmb/collect.py --parser ./magel.exe
+chali run example/samples/control.chl --emit --svmb --out tmp/svmb-study/control
+python doc/examples/svmb/collect.py --parser ./ChaLi.exe
 ```
 
 （`collect.py` 还可接 `--vm` / `--vm-opcode` / `--exported` 补上 VM 与导出程序的证据。）
@@ -183,22 +183,22 @@ python doc/examples/svmb/collect.py --parser ./magel.exe
 
 ### 7.2 编辑器语言服务器与 VS Code 插件
 
-**演示什么**：两条互补的路子。工具链自带的 `magel lsp`（内嵌在编译器里，跑真前端，
+**演示什么**：两条互补的路子。工具链自带的 `chali lsp`（内嵌在编译器里，跑真前端，
 给真实错误码与精确位置）负责完整前端；[`source/lsp/`](../source/lsp) 这个 C++17 小程序**不依赖编译器**，
 离线检查 `$macro` / `$replace` / `$for` 的配对、参数、调用与嵌套，另给语义高亮。
 
 **怎么跑**：
 
 ```sh
-magel lsp                      # 工具链自带
+chali lsp                      # 工具链自带
 make -C lsp                    # 独立的宏编辑器语言服务器
 ```
 
 VS Code 插件在 [`vscode/`](../vscode/)，语法高亮、补全、跳转与断点调试见其
 [README](../vscode/README.md)。
 
-**怎么验证**：`python tests/magel_lsp_api.py`、`python tests/magel_lsp_symbols.py`、
-`python tests/magel_native_lsp_parity.py`。
+**怎么验证**：`python tests/chali_lsp_api.py`、`python tests/chali_lsp_symbols.py`、
+`python tests/chali_native_lsp_parity.py`。
 
 ---
 
@@ -207,11 +207,11 @@ VS Code 插件在 [`vscode/`](../vscode/)，语法高亮、补全、跳转与断
 | 命令 | 覆盖 |
 | --- | --- |
 | `sh check.sh` | `example/samples/` 全部样例 + 预期输出比对 |
-| `python tests/magel_desktop.py [--turtle-only]` | 海龟绘图的 WinAPI 产物 |
-| `python tests/magel_recursive_ownership.py` | 计算器的两种 AST 表示 |
-| `python tests/magel_annotations.py` | 注解与反射 |
-| `python tests/magel_library_reference.py` | 标准库配套程序 |
-| `python tests/magel_abi_values.py` | C ABI 配套示例 |
+| `python tests/chali_desktop.py [--turtle-only]` | 海龟绘图的 WinAPI 产物 |
+| `python tests/chali_recursive_ownership.py` | 计算器的两种 AST 表示 |
+| `python tests/chali_annotations.py` | 注解与反射 |
+| `python tests/chali_library_reference.py` | 标准库配套程序 |
+| `python tests/chali_abi_values.py` | C ABI 配套示例 |
 
 需要图形环境或数据库的检查属于专项回归：桌面绘图需要 Windows 与 MinGW，外部数据库示例需要对应服务和客户端库。
 
@@ -222,7 +222,7 @@ VS Code 插件在 [`vscode/`](../vscode/)，语法高亮、补全、跳转与断
 | 你想 | 去哪 |
 | --- | --- |
 | 自己写一个能部署的程序 | [交付安全](05-delivery-security.md) → [跨平台部署](06-deployment.md) |
-| 把 Magel 接到 C/C++ 宿主 | [宿主集成与 C ABI](08-host-integration.md) |
-| 跟着书从零学语言 | [《玩转 Magel 语言》](book/README.md) |
+| 把 ChaLi 接到 C/C++ 宿主 | [宿主集成与 C ABI](08-host-integration.md) |
+| 跟着书从零学语言 | [《玩转 ChaLi 语言》](book/README.md) |
 | 查某个库函数 | [库函数参考](library/README.md) |
 | 查命令行与工程配置 | [工具链使用](09-toolchain.md) |

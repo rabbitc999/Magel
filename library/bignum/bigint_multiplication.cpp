@@ -2,7 +2,7 @@
  * @file bigint_multiplication.cpp
  * @brief Karatsuba 与 NTT 乘法内核及算法阈值配置。
  */
-#if !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_BIG_INT)
 #include "bigint.hpp"
 #include <algorithm>
 #include <limits>

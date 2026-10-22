@@ -9,7 +9,7 @@
     "optimization": "default highest",
     "hostCompiler": "GCC 11.2.0, C++17, -O2, static"
   },
-  "command": "MAGEL_COMPILER=<compiler> python tests/magel_opcode_values.py",
+  "command": "CHALI_COMPILER=<compiler> python tests/chali_opcode_values.py",
   "seed": 20261021,
   "targetedAndSpotCases": 29,
   "stringDifferentialAssertions": 1050,

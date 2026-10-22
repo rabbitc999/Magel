@@ -1,6 +1,6 @@
-# 模板引擎（magel/library/template）：构建 + 自检
+# 模板引擎（chali/library/template）：构建 + 自检
 #
-#   make            构建 build/magel-template 下的 template-tests、template-demo 并跑一遍
+#   make            构建 build/chali-template 下的 template-tests、template-demo 并跑一遍
 #   make check      自检（单元测试）
 #   make clean
 #
@@ -15,7 +15,7 @@ UTF8FLAGS := -finput-charset=UTF-8 -fexec-charset=UTF-8
 endif
 
 ROOT_DIR  := ../../..
-BUILD_DIR ?= $(ROOT_DIR)/build/magel-template
+BUILD_DIR ?= $(ROOT_DIR)/build/chali-template
 DEMO      := $(BUILD_DIR)/template-demo
 TESTS     := $(BUILD_DIR)/template-tests
 

@@ -60,7 +60,7 @@ struct Map<K,V> {
     Map<K,V> copy(); int64 put(K key,V value); int64 has(K key); int64 contains(K key);
     int64 remove(K key); K keyAt(int64 index); V valAt(int64 index); int64 clear(); int64 len();
 };
-/** 任意精度整数：算术、数论、素性、位运算与进制互转，详见 example/samples/bigint_methods.mgl。 */
+/** 任意精度整数：算术、数论、素性、位运算与进制互转，详见 example/samples/bigint_methods.chl。 */
 struct BigInteger {
     String str(); BigInteger copy();
     /** 非负整数次幂（快速幂）。 */

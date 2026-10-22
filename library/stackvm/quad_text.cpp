@@ -58,7 +58,7 @@ QuadFile parseQuads(std::string_view text, Memory::String label)
             if (colon == Memory::String::npos) continue;
             const Memory::String key = trim(body.substr(0u, colon));
             const Memory::String value = trim(body.substr(colon + 1u));
-            if (key == "magel-source")
+            if (key == "chali-source")
             {
                 Memory::InputStringStream marker(value);
                 std::int32_t number = 0;
@@ -74,14 +74,14 @@ QuadFile parseQuads(std::string_view text, Memory::String label)
                     sourceFile.clear();
                 }
             }
-            else if (key == "magel-features")
+            else if (key == "chali-features")
             {
                 if (value == "reflection")
                     file.requiredFeatures |= kFeatureReflection;
                 else
-                    file.diagnostics.push_back("第 " + Memory::toString(lineNumber) + " 行：不支持的 magel-features 标志：" + value);
+                    file.diagnostics.push_back("第 " + Memory::toString(lineNumber) + " 行：不支持的 chali-features 标志：" + value);
             }
-            else if (key == "magel-reflection")
+            else if (key == "chali-reflection")
             {
                 if (seenReflection || !reflection::fromHex(value, file.reflection))
                     file.diagnostics.push_back("第 " + Memory::toString(lineNumber) + " 行：反射元数据无效或重复");
@@ -210,7 +210,7 @@ TypeInfo typeOf(std::string_view name)
         type.size = 8;
         type.isUnsigned = true;
     }
-    /* MAGEL 语言只写 float32 / float64；`f32` / `f64` 是**四元式层面**的旧名字，
+    /* CHALI 语言只写 float32 / float64；`f32` / `f64` 是**四元式层面**的旧名字，
      * 仓库里手写的 .quad 还在用，所以 VM 两个都认（VM 不是语言表面）。 */
     else if (name == "float32" || name == "f32")
     {

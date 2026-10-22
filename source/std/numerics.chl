@@ -1,0 +1,208 @@
+module std::numerics;
+
+/* 标量数值方法。导数 / 辛普森 / 二分 / RK4 / 牛顿与两个 ODE 求解器原本全部下沉在宿主
+ * C++（glue/std_numerics.hpp），现已改由本文件用 ChaLi 表达，宿主签名 `numericsDerivative`
+ * 等一并删除——公开入口只剩 `std::numerics::Numerics::*`。
+ *
+ * 数值语义逐条照搬原实现，仅两处有意差异：
+ *   - 分段数 / 迭代次数 / 步数不再收窄到宿主 `int`，超过 INT_MAX 时不再静默回绕；
+ *   - 前置条件失败改走 std::lang::panic，文案与原 ctx.fail 相同，停机前缀由运行时统一添加。 */
+
+import std::math;
+
+/** 中心差分求导；调用者保证 `step > 0`。 */
+inline float64 __numericsDerivative(float64 fn(float64) function, float64 x, float64 step)
+{
+    return (function(x + step) - function(x - step)) / (2.0 * step);
+}
+
+/** 复合辛普森积分；调用者保证 `intervals` 为正偶数。 */
+inline float64 __numericsSimpson(float64 fn(float64) function, float64 begin, float64 end, int64 intervals)
+{
+    float64 step = (end - begin) / (float64)intervals;
+    float64 total = function(begin) + function(end);
+    int64 index = 1;
+    while (index < intervals) {
+        if (index % 2 == 0) { total = total + 2.0 * function(begin + step * (float64)index); }
+        else { total = total + 4.0 * function(begin + step * (float64)index); }
+        index = index + 1;
+    }
+    return total * step / 3.0;
+}
+
+/** 二分求根；调用者保证区间、精度、迭代次数合法且端点异号。 */
+inline float64 __numericsBisect(float64 fn(float64) function, float64 left, float64 right,
+                                float64 tolerance, int64 maxIterations)
+{
+    float64 low = function(left);
+    float64 high = function(right);
+    if (low == 0.0) { return left; }
+    if (high == 0.0) { return right; }
+    int64 index = 0;
+    while (index < maxIterations) {
+        float64 middle = left + (right - left) / 2.0;
+        float64 value = function(middle);
+        if (std::math::abs(value) <= tolerance || (right - left) / 2.0 <= tolerance) { return middle; }
+        if ((value < 0.0 && low < 0.0) || (value > 0.0 && low > 0.0)) {
+            left = middle;
+            low = value;
+        } else {
+            right = middle;
+            high = value;
+        }
+        index = index + 1;
+    }
+    std::lang::panic("bisect 在迭代上限内未收敛");
+    return 0.0;
+}
+
+/** 单步经典四阶龙格-库塔；调用者保证 `step > 0`。 */
+inline float64 __numericsRk4Step(float64 fn(float64, float64) derivative,
+                                 float64 time, float64 value, float64 step)
+{
+    float64 k1 = derivative(time, value);
+    float64 k2 = derivative(time + step / 2.0, value + step * k1 / 2.0);
+    float64 k3 = derivative(time + step / 2.0, value + step * k2 / 2.0);
+    float64 k4 = derivative(time + step, value + step * k3);
+    return value + step * (k1 + 2.0 * k2 + 2.0 * k3 + k4) / 6.0;
+}
+
+/** 牛顿法求根；调用者保证精度与迭代次数为正；导数过平或未收敛时停机。 */
+inline float64 __numericsNewton(float64 fn(float64) function, float64 initial,
+                                float64 tolerance, int64 maxIterations)
+{
+    float64 current = initial;
+    int64 index = 0;
+    while (index < maxIterations) {
+        float64 value = function(current);
+        if (std::math::abs(value) <= tolerance) { return current; }
+        float64 scale = std::math::abs(current);
+        if (scale < 1.0) { scale = 1.0; }
+        float64 slope = __numericsDerivative(function, current, 0.000001 * scale);
+        float64 slopeSize = std::math::abs(slope);
+        if (!(slopeSize > 0.000000000001)) {
+            std::lang::panic("newton 导数太接近零");
+            return 0.0;
+        }
+        current = current - value / slope;
+        index = index + 1;
+    }
+    std::lang::panic("newton 在迭代上限内未收敛");
+    return 0.0;
+}
+
+/** 显式欧拉法解一维 ODE；调用者保证 `step > 0` 且 `steps >= 0`。 */
+inline std::lang::List<float64> __numericsSolveOdeEuler(
+    float64 fn(float64, float64) rate,
+    float64 initialTime, float64 initialValue, float64 step, int64 steps)
+{
+    std::lang::List<float64> values;
+    values.push(initialValue);
+    float64 time = initialTime;
+    float64 value = initialValue;
+    int64 index = 0;
+    while (index < steps) {
+        value = value + step * rate(time, value);
+        time = time + step;
+        values.push(value);
+        index = index + 1;
+    }
+    return values;
+}
+
+/** 四阶龙格-库塔解一维 ODE；调用者保证 `step > 0` 且 `steps >= 0`。 */
+inline std::lang::List<float64> __numericsSolveOdeRK4(
+    float64 fn(float64, float64) rate,
+    float64 initialTime, float64 initialValue, float64 step, int64 steps)
+{
+    std::lang::List<float64> values;
+    values.push(initialValue);
+    float64 time = initialTime;
+    float64 value = initialValue;
+    int64 index = 0;
+    while (index < steps) {
+        value = __numericsRk4Step(rate, time, value, step);
+        time = time + step;
+        values.push(value);
+        index = index + 1;
+    }
+    return values;
+}
+
+struct Numerics {
+    /** 中心差分求导；`step` 不为正时停机。 */
+    static float64 derivative(float64 fn(float64) function, float64 x, float64 step) {
+        if (!(step > 0.0)) {
+            std::lang::panic("derivative 步长必须为正");
+            return 0.0;
+        }
+        return __numericsDerivative(function, x, step);
+    }
+    /** 复合辛普森积分；分段数必须为正偶数，否则停机。 */
+    static float64 integrateSimpson(float64 fn(float64) function,
+                                    float64 begin, float64 end, int64 intervals) {
+        if (!(intervals > 0 && intervals % 2 == 0)) {
+            std::lang::panic("Simpson 分段数必须为正偶数");
+            return 0.0;
+        }
+        return __numericsSimpson(function, begin, end, intervals);
+    }
+    /** 二分求根；区间 / 精度 / 迭代次数不合法或端点同号时停机。 */
+    static float64 bisect(float64 fn(float64) function, float64 left, float64 right,
+                          float64 tolerance, int64 maxIterations) {
+        if (!(left < right && tolerance > 0.0 && maxIterations > 0)) {
+            std::lang::panic("bisect 区间、精度或迭代次数不合法");
+            return 0.0;
+        }
+        float64 low = function(left);
+        float64 high = function(right);
+        if (low == 0.0) { return left; }
+        if (high == 0.0) { return right; }
+        if (!((low < 0.0 && high > 0.0) || (low > 0.0 && high < 0.0))) {
+            std::lang::panic("bisect 端点必须异号");
+            return 0.0;
+        }
+        return __numericsBisect(function, left, right, tolerance, maxIterations);
+    }
+    /** 单步四阶龙格-库塔；`step` 不为正时停机。 */
+    static float64 rk4Step(float64 fn(float64, float64) derivative,
+                           float64 time, float64 value, float64 step) {
+        if (!(step > 0.0)) {
+            std::lang::panic("rk4Step 步长必须为正");
+            return 0.0;
+        }
+        return __numericsRk4Step(derivative, time, value, step);
+    }
+    /** 牛顿法求根；精度 / 迭代次数不合法、导数过平或未收敛时停机。 */
+    static float64 newton(float64 fn(float64) function, float64 initial,
+                          float64 tolerance, int64 maxIterations) {
+        if (!(tolerance > 0.0 && maxIterations > 0)) {
+            std::lang::panic("newton 精度和迭代次数必须为正");
+            return 0.0;
+        }
+        return __numericsNewton(function, initial, tolerance, maxIterations);
+    }
+
+    /** 显式欧拉法；步长或步数不合法时停机。 */
+    static std::lang::List<float64> solveOdeEuler(
+        float64 fn(float64, float64) rate,
+        float64 initialTime, float64 initialValue, float64 step, int64 steps) {
+        if (!(step > 0.0 && steps >= 0)) {
+            std::lang::panic("Euler 步长或步数不合法");
+            std::lang::List<float64> empty;
+            return empty;
+        }
+        return __numericsSolveOdeEuler(rate, initialTime, initialValue, step, steps);
+    }
+    /** 四阶龙格-库塔；步长或步数不合法时停机。 */
+    static std::lang::List<float64> solveOdeRK4(
+        float64 fn(float64, float64) rate,
+        float64 initialTime, float64 initialValue, float64 step, int64 steps) {
+        if (!(step > 0.0 && steps >= 0)) {
+            std::lang::panic("RK4 步长或步数不合法");
+            std::lang::List<float64> empty;
+            return empty;
+        }
+        return __numericsSolveOdeRK4(rate, initialTime, initialValue, step, steps);
+    }
+};

@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""把 Magel 标准库 .mgl 源码 + 生成器运行时资产内嵌进编译器。
+"""把 ChaLi 标准库 .chl 源码 + 生成器运行时资产内嵌进编译器。
 
 读取（路径都以本项目根为基准）：
-  * lang.mgl、std/*.mgl —— 一张
-    {模块名 → 源码} 静态表（加载器 magel_module.hpp 先查它，命中就不读文件）；
+  * lang.chl、std/*.chl —— 一张
+    {模块名 → 源码} 静态表（加载器 chali_module.hpp 先查它，命中就不读文件）；
   * 生成独立程序要用的运行时资产（stackvm 独立模块、胶水、C
     分配器、大数后端）—— 一张 {仓库相对路径 → 源码} 静态表。独立编译器生成器读磁盘失败时
     回退到这张表，于是**单个生成器二进制不依赖仓库目录**也能导出完整程序。
 
-生成 magel_stdlib_embedded.cpp（两张表 + 查询函数），由
-独立编译单元编入，声明位于 magel_stdlib.hpp。
+生成 chali_stdlib_embedded.cpp（两张表 + 查询函数），由
+独立编译单元编入，声明位于 chali_stdlib.hpp。
 
 文本不再以原始字符串字面量摊在 `.rodata` 里，而是**整体拼接后用 lztext 压缩**，
 只把压缩后的字节内联进来，运行时由 table() / generatorAssetTable() 解压重建
@@ -31,7 +31,7 @@ import tempfile
 DELIM = "PGX"
 CHUNK_SIZE = 8000
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MAGEL = ROOT
+CHALI = ROOT
 
 
 def raw_chunks(content):
@@ -142,15 +142,15 @@ def asset_disk_path(relative):
     return "source/" + relative
 
 
-# 生成器（magel-generator）在运行期需要的运行时资产。相对路径键与仓库布局一致，
+# 生成器（chali-generator）在运行期需要的运行时资产。相对路径键与仓库布局一致，
 # 磁盘读失败时按"整段后缀"或"唯一 basename"回退到这里的文本。
 GENERATOR_ASSETS = [
-    "tools/magel_manual.json",
-    "tools/magel_stdlib_api.json",
-    "magel_glue.hpp",
-    "magel_generic_name.hpp",
-    "magel_runtime_allocator.hpp",
-    "magel_i18n.hpp",
+    "tools/chali_manual.json",
+    "tools/chali_stdlib_api.json",
+    "chali_glue.hpp",
+    "chali_generic_name.hpp",
+    "chali_runtime_allocator.hpp",
+    "chali_i18n.hpp",
     "console/utf8.hpp",
     "glue/std_glue.cpp",
     "glue/std_demo.cpp",
@@ -194,9 +194,9 @@ GENERATOR_ASSETS = [
     "glue/std_kmp.hpp",
     "glue/std_registry.hpp",
     "glue/std_filesystem.hpp",
-    "allocator/magel_pool.h",
-    "allocator/magel_pool.c",
-    "allocator/magel_allocator.hpp",
+    "allocator/chali_pool.h",
+    "allocator/chali_pool.c",
+    "allocator/chali_allocator.hpp",
     "bignum/bigint.hpp",
     "bignum/bigint.cpp",
     "bignum/bigint_multiplication.cpp",
@@ -215,18 +215,18 @@ GENERATOR_ASSETS += ['simple_ast/ast_type.cpp', 'simple_ast/ast_node.cpp', 'simp
 GENERATOR_ASSETS += ["stackvm/" + name for name in asset_names()]
 from cas_sources import asset_names as cas_asset_names
 GENERATOR_ASSETS += ["caspp/" + name for name in cas_asset_names()]
-GENERATOR_ASSETS += ["ipage/" + path.name for path in sorted(Path(MAGEL, "library/ipage/source/ipage").iterdir()) if path.suffix in (".hpp", ".cpp")]
+GENERATOR_ASSETS += ["ipage/" + path.name for path in sorted(Path(CHALI, "library/ipage/source/ipage").iterdir()) if path.suffix in (".hpp", ".cpp")]
 GENERATOR_ASSETS += ["ipage/LICENSE"]
 
 # 胶水接口及实现作为同一组资产导出，固定清单不能遗漏独立编译单元。
 GENERATOR_ASSETS += [
     directory + "/" + path.name
     for directory in ("macro", "literals", "syntax", "editor")
-    for path in sorted(Path(MAGEL, "source", directory).iterdir())
+    for path in sorted(Path(CHALI, "source", directory).iterdir())
     if path.suffix in (".cpp", ".hpp")
 ]
 GENERATOR_ASSETS = list(dict.fromkeys(GENERATOR_ASSETS + [
-    "glue/" + path.name for path in sorted(Path(MAGEL, "source/glue").iterdir())
+    "glue/" + path.name for path in sorted(Path(CHALI, "source/glue").iterdir())
     if path.suffix in (".cpp", ".hpp", ".h", ".c")
 ]))
 
@@ -234,15 +234,15 @@ GENERATOR_ASSETS = list(dict.fromkeys(GENERATOR_ASSETS + [
 def collect_generator_assets():
     assets = []
     for relative in GENERATOR_ASSETS:
-        assets.append((relative, read(os.path.join(MAGEL, asset_disk_path(relative)))))
+        assets.append((relative, read(os.path.join(CHALI, asset_disk_path(relative)))))
     return assets
 
 
 def collect():
     modules = []  # (name, content)
-    std_dir = os.path.join(MAGEL, "source", "std")
+    std_dir = os.path.join(CHALI, "source", "std")
     for name in sorted(os.listdir(std_dir)):
-        if name.endswith(".mgl"):
+        if name.endswith(".chl"):
             modules.append(("std::" + os.path.splitext(name)[0], read(os.path.join(std_dir, name))))
     return modules
 
@@ -250,18 +250,18 @@ def collect():
 def dependencies():
     """列出内嵌资产的生成输入，供增量构建精确追踪。"""
     from pathlib import Path
-    root = Path(MAGEL)
+    root = Path(CHALI)
     paths = {Path(asset_disk_path(name)) for name in GENERATOR_ASSETS}
-    for pattern in ("source/std/*.mgl", "doc/book/*.md", "doc/book/images/*", "doc/library/*.md"):
+    for pattern in ("source/std/*.chl", "doc/book/*.md", "doc/book/images/*", "doc/library/*.md"):
         paths.update(path.relative_to(root) for path in root.glob(pattern) if path.is_file())
-    paths.update(map(Path, ("tools/embed_stdlib.py", "tools/stackvm_sources.py", "tools/embed_manual.py", "source/magel.gram",
-                           "source/magel_token.gram", "doc/04-language-reference.md",
-                           "doc/24-literals-operators-macros.md", "skills/magel-programming/SKILL.md")))
+    paths.update(map(Path, ("tools/embed_stdlib.py", "tools/stackvm_sources.py", "tools/embed_manual.py", "source/chali.gram",
+                           "source/chali_token.gram", "doc/04-language-reference.md",
+                           "doc/24-literals-operators-macros.md", "skills/chali-programming/SKILL.md")))
     names = sorted(path.as_posix() for path in paths)
     # Windows GNU make 无法可靠打开非 ASCII 前置文件名，改用固定 ASCII 路径
     # 记录这些文件的精确时间与大小，保持增量依赖可追踪。
     indirect = [name for name in names if not name.isascii() or any(ch.isspace() for ch in name)]
-    marker = root / "build/magel-frontend/stdlib_manual_inputs.json"
+    marker = root / "build/chali-frontend/stdlib_manual_inputs.json"
     import json
     payload = json.dumps([(name, (root / name).stat().st_mtime_ns, (root / name).stat().st_size)
                           for name in indirect], ensure_ascii=False, separators=(",", ":")) + "\n"
@@ -284,18 +284,18 @@ def main():
     modules_packed = compress_bundle(modules_blob)
     assets_blob, assets_slices = bundle(assets)
     assets_packed = compress_bundle(assets_blob)
-    out_path = os.path.join(MAGEL, "source", "magel_stdlib_embedded.cpp")
+    out_path = os.path.join(CHALI, "source", "chali_stdlib_embedded.cpp")
     with io.StringIO() as handle:
         handle.write("// 本文件由 tools/embed_stdlib.py 生成，请勿手工修改。\n")
         handle.write("// 生成命令：python tools/embed_stdlib.py\n\n")
-        handle.write('#include "magel_stdlib.hpp"\n')
+        handle.write('#include "chali_stdlib.hpp"\n')
         handle.write("\n")
         handle.write("// 文本以 lztext 压缩形式内联（运行时解压），算法见 lztext/README.md。\n")
         handle.write("#include <cstddef>\n")
         handle.write("#include <string>\n")
         handle.write("#include <vector>\n\n")
         handle.write('#include "lztext/lztext.hpp"\n\n')
-        handle.write("namespace magel_module\n{\nnamespace embedded\n{\n\n")
+        handle.write("namespace chali_module\n{\nnamespace embedded\n{\n\n")
 
         handle.write("namespace\n{\n\n")
         handle.write("// 全部模块源码按顺序拼接（每段以 '\\0' 结尾）后压缩的结果："
@@ -405,7 +405,7 @@ bool findGeneratorAssetByPath(const Memory::String &path, Memory::String *out)
 
 """)
         handle.write("} // namespace embedded\n")
-        handle.write("} // namespace magel_module\n")
+        handle.write("} // namespace chali_module\n")
 
         payload = handle.getvalue().encode("utf-8")
     try:
@@ -416,7 +416,7 @@ bool findGeneratorAssetByPath(const Memory::String &path, Memory::String *out)
     if not unchanged:
         temporary = None
         try:
-            with tempfile.NamedTemporaryFile(prefix=".magel-stdlib-", suffix=".tmp",
+            with tempfile.NamedTemporaryFile(prefix=".chali-stdlib-", suffix=".tmp",
                                              dir=os.path.dirname(out_path), delete=False) as output:
                 temporary = output.name
                 output.write(payload)

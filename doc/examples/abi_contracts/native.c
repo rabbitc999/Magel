@@ -56,7 +56,7 @@ API Packet *owned_packet(void)
  */
 API void free_owned(void *pointer)
 {
-    const char *marker = getenv("MAGEL_ABI_FREE_MARKER");
+    const char *marker = getenv("CHALI_ABI_FREE_MARKER");
     ++releases;
     if (marker)
     {

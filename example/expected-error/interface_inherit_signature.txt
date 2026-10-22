@@ -1,1 +1,1 @@
-magel: example/samples-error/interface_inherit_signature.mgl 第 5 行第 1 列：接口 B 里 m 有两个不同签名的声明：m(std::lang::String) -> int64 与 m(int64) -> int64
+chali: example/samples-error/interface_inherit_signature.chl 第 5 行第 1 列：接口 B 里 m 有两个不同签名的声明：m(std::lang::String) -> int64 与 m(int64) -> int64

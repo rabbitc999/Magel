@@ -1,0 +1,307 @@
+module std::linalg;
+
+/* 从 lang.chl 原样迁出：符号名不变，只换了模块归属（现在必须 `import std::linalg;` 才能用）。
+ * 6 个非泛型顶层算法（luDecompose / lurDecompose / symmetricEigen / svd / jordan2 /
+ * diagonalize2）下沉到宿主 C++ 胶水（glue/std_linalg.hpp），本文件只留宿主签名；
+ * Matrix<T>::solve 同样转发到胶水；泛型结构体定义与其他运算符 trait 保留在此。 */
+/* 稠密向量：T 为支持算术的标量；norm/normalized 适用于 float32/float64。 */
+import std::math;
+
+/** @brief 线性代数专用数值存储，缓冲在宿主胶水中深复制和释放。 */
+opcode ScalarStorage {
+    new = std::linalg::__std_scalarNew;
+    drop = std::linalg::__std_scalarDrop;
+    copy = std::linalg::__std_scalarCopy;
+};
+int64 __std_scalarLen(int64 handle);
+void __std_scalarClear(ScalarStorage mut& storage);
+T __std_scalarAt<T>(int64 handle, int64 index);
+void __std_scalarSet<T>(ScalarStorage mut& storage, int64 index, T value);
+void __std_scalarPush<T>(ScalarStorage mut& storage, T value);
+
+/** @brief 为内建数值类型提供泛型索引外观，元素保存在 opcode 中。 */
+struct ScalarArray<T>: Index<T, int64>, Iterator<T> {
+    /** @brief 独占此数组数值缓冲的 opcode 记录；复制时深复制。 */
+    ScalarStorage storage;
+    int64 len() {
+        if (self.storage.opcode == 0) { return 0; }
+        return __std_scalarLen(self.storage.opcode);
+    }
+    void clear() { if (self.storage.opcode == 0) { self.storage = ScalarStorage::new(); } __std_scalarClear(&self.storage); }
+    T at(int64 index) { assert(index >= 0 && index < self.len(), "线性代数存储下标越界"); return __std_scalarAt<T>(self.storage.opcode, index); }
+    T index(int64 key) { return self.at(key); }
+    void set(int64 index, T value) { if (self.storage.opcode == 0) { self.storage = ScalarStorage::new(); } __std_scalarSet<T>(&self.storage, index, value); }
+    void push(T value) { if (self.storage.opcode == 0) { self.storage = ScalarStorage::new(); } __std_scalarPush<T>(&self.storage, value); }
+    ScalarArray<T> copy() { return self; }
+    Option<T> iterator(int64 position) {
+        if (position >= 0 && position < self.len()) { return Option<T>::Value(self.at(position)); }
+        return Option<T>::None;
+    }
+};
+
+struct Vector<T>: Add<Vector<T>, Vector<T>>,
+                           Subtract<Vector<T>, Vector<T>>,
+                           Multiply<Vector<T>, T>, Index<T, int64>, Iterator<T>, Drop {
+    ScalarArray<T> values;
+    void drop() { self.values.drop(); }
+
+    static Vector<T> zeros(int64 n) {
+        std::lang::assert(n >= 0, "Vector 长度必须非负");
+        Vector<T> result;
+        ScalarArray<T> values;
+        result.values = values.copy();
+        T zero;
+        int64 i = 0;
+        while (i < n) { result.values.push(zero); i = i + 1; }
+        return result;
+    }
+    /** 从数组复制数据；指针形式同时接受固定数组与运行时数组。 */
+    static Vector<T> fromArray(T const& data, int64 count) {
+        std::lang::assert(count >= 0, "Vector.fromArray 长度必须非负");
+        Vector<T> result = Vector<T>::zeros(count);
+        int64 i = 0;
+        while (i < count) { result.set(i, std::lang::index(data, i)); i = i + 1; }
+        return result;
+    }
+    static Vector<T> fromArray(T data[]) { return Vector<T>::fromArray(data, std::lang::len(data)); }
+    /** 返回独立的运行时数组，由调用者作用域管理。 */
+    T[] toArray() {
+        T result[] = new[self.len()];
+        int64 i = 0;
+        while (i < self.len()) { result[i] = self.at(i); i = i + 1; }
+        return result;
+    }
+    T index(int64 key) { return self.at(key); }
+    Option<T> iterator(int64 position) {
+        if (position >= 0 && position < self.len()) { return Option<T>::Value(self.at(position)); }
+        return Option<T>::None;
+    }
+    int64 len() { return self.values.len(); }
+    T at(int64 i) { return self.values.at(i); }
+    void set(int64 i, T value) { self.values.set(i, value); }
+    T dot(Vector<T> other) {
+        std::lang::assert(self.len() == other.len(), "Vector.dot 维度不匹配");
+        T sum;
+        int64 i = 0;
+        while (i < self.len()) { sum = sum + self.at(i) * other.at(i); i = i + 1; }
+        return sum;
+    }
+    float64 norm() { return std::math::sqrt((float64)self.dot(self)); }
+    Vector<T> normalized() {
+        float64 length = self.norm();
+        std::lang::assert(length > 0.000000000001, "零向量不能归一化");
+        return self.scale((T)(1.0/length));
+    }
+    Vector<T> add(Vector<T> other) {
+        std::lang::assert(self.len() == other.len(), "Vector.add 维度不匹配");
+        Vector<T> result = Vector<T>::zeros(self.len());
+        int64 i = 0;
+        while (i < self.len()) { result.set(i, self.at(i) + other.at(i)); i = i + 1; }
+        return result;
+    }
+    Vector<T> subtract(Vector<T> other) {
+        std::lang::assert(self.len() == other.len(), "Vector.subtract 维度不匹配");
+        Vector<T> result = Vector<T>::zeros(self.len());
+        int64 i=0;
+        while (i<self.len()) { result.set(i,self.at(i)-other.at(i)); i=i+1; }
+        return result;
+    }
+    Vector<T> scale(T amount) {
+        Vector<T> result = Vector<T>::zeros(self.len());
+        int64 i = 0;
+        while (i < self.len()) { result.set(i, self.at(i) * amount); i = i + 1; }
+        return result;
+    }
+    Vector<T> leftAdd(Vector<T> right) { return self.add(right); }
+    Vector<T> leftSub(Vector<T> right) { return self.subtract(right); }
+    Vector<T> leftMul(T right) { return self.scale(right); }
+};
+
+/* 行主元 LU 满足 P*A=L*U；矩阵求解的主元判断适用于 float32/float64。 */
+struct Matrix<T>: Add<Matrix<T>, Matrix<T>>,
+                           Subtract<Matrix<T>, Matrix<T>>,
+                           Multiply<Matrix<T>, Matrix<T>>,
+                           Multiply<Vector<T>, Vector<T>>,
+                           Multiply<Matrix<T>, T>, Index<Vector<T>, int64>, Iterator<Vector<T>>, Drop {
+    int64 rows;
+    int64 cols;
+    ScalarArray<T> values;
+    void drop() { self.values.drop(); }
+
+    static Matrix<T> zeros(int64 rows, int64 cols) {
+        std::lang::assert(rows >= 0 && cols >= 0, "Matrix 维度必须非负");
+        Matrix<T> result;
+        result.rows = rows; result.cols = cols;
+        ScalarArray<T> values;
+        result.values = values.copy();
+        T zero;
+        int64 i = 0;
+        while (i < rows * cols) { result.values.push(zero); i = i + 1; }
+        return result;
+    }
+    /** 按行优先顺序从一维数组复制，元素数必须等于 rows * cols。 */
+    static Matrix<T> fromArray(T const& data, int64 count, int64 rows, int64 cols) {
+        std::lang::assert(rows >= 0 && cols >= 0 && count >= 0, "Matrix.fromArray 维度不匹配");
+        if (rows == 0 || cols == 0) { std::lang::assert(count == 0, "Matrix.fromArray 维度不匹配"); }
+        else { std::lang::assert(count / rows == cols && count % rows == 0, "Matrix.fromArray 维度不匹配"); }
+        Matrix<T> result = Matrix<T>::zeros(rows, cols);
+        int64 i = 0;
+        while (i < count) { result.values.set(i, std::lang::index(data, i)); i = i + 1; }
+        return result;
+    }
+    static Matrix<T> fromArray(T data[], int64 rows, int64 cols) {
+        return Matrix<T>::fromArray(data, std::lang::len(data), rows, cols);
+    }
+    /** 返回独立的行优先运行时数组。 */
+    T[] toArray() {
+        T result[] = new[self.values.len()];
+        int64 i = 0;
+        while (i < self.values.len()) { result[i] = self.values[i]; i = i + 1; }
+        return result;
+    }
+    /** 按零起始列索引返回独立列向量。 */
+    Vector<T> column(int64 key) { return __matrixColumn<T>(self, key); }
+    Vector<T> index(int64 key) { return self.column(key); }
+    Option<Vector<T>> iterator(int64 position) {
+        if (position >= 0 && position < self.cols) {
+            return Option<Vector<T>>::Value(self.column(position));
+        }
+        return Option<Vector<T>>::None;
+    }
+    static Matrix<T> identity(int64 n) {
+        Matrix<T> result = Matrix<T>::zeros(n,n);
+        int64 i = 0;
+        while (i < n) { result.set(i,i,(T)1); i = i + 1; }
+        return result;
+    }
+    T at(int64 row, int64 col) {
+        std::lang::assert(row >= 0 && row < self.rows && col >= 0 && col < self.cols, "Matrix.at 越界");
+        return self.values.at(row * self.cols + col);
+    }
+    void set(int64 row, int64 col, T value) {
+        std::lang::assert(row >= 0 && row < self.rows && col >= 0 && col < self.cols, "Matrix.set 越界");
+        self.values.set(row * self.cols + col, value);
+    }
+    Matrix<T> transpose() {
+        Matrix<T> result = Matrix<T>::zeros(self.cols,self.rows);
+        int64 i = 0;
+        while (i < self.rows) {
+            int64 j = 0;
+            while (j < self.cols) { result.set(j,i,self.at(i,j)); j = j + 1; }
+            i = i + 1;
+        }
+        return result;
+    }
+    Matrix<T> add(Matrix<T> other) {
+        std::lang::assert(self.rows == other.rows && self.cols == other.cols, "Matrix.add 维度不匹配");
+        Matrix<T> result = Matrix<T>::zeros(self.rows,self.cols);
+        int64 i = 0;
+        while (i < self.rows) {
+            int64 j = 0;
+            while (j < self.cols) { result.set(i,j,self.at(i,j)+other.at(i,j)); j = j + 1; }
+            i = i + 1;
+        }
+        return result;
+    }
+    Matrix<T> subtract(Matrix<T> other) {
+        std::lang::assert(self.rows == other.rows && self.cols == other.cols, "Matrix.subtract 维度不匹配");
+        Matrix<T> result=Matrix<T>::zeros(self.rows,self.cols);
+        int64 i=0;
+        while (i<self.rows) {
+            int64 j=0;
+            while (j<self.cols) { result.set(i,j,self.at(i,j)-other.at(i,j)); j=j+1; }
+            i=i+1;
+        }
+        return result;
+    }
+    Matrix<T> scale(T factor) {
+        Matrix<T> result=Matrix<T>::zeros(self.rows,self.cols);
+        int64 i=0;
+        while (i<self.rows) {
+            int64 j=0;
+            while (j<self.cols) { result.set(i,j,self.at(i,j)*factor); j=j+1; }
+            i=i+1;
+        }
+        return result;
+    }
+    Matrix<T> multiply(Matrix<T> other) {
+        std::lang::assert(self.cols == other.rows, "Matrix.multiply 维度不匹配");
+        Matrix<T> result = Matrix<T>::zeros(self.rows,other.cols);
+        int64 i = 0;
+        while (i < self.rows) {
+            int64 j = 0;
+            while (j < other.cols) {
+                T sum;
+                int64 k = 0;
+                while (k < self.cols) { sum = sum + self.at(i,k)*other.at(k,j); k = k + 1; }
+                result.set(i,j,sum); j = j + 1;
+            }
+            i = i + 1;
+        }
+        return result;
+    }
+    Vector<T> apply(Vector<T> vector) {
+        std::lang::assert(self.cols == vector.len(), "Matrix.apply 维度不匹配");
+        Vector<T> result = Vector<T>::zeros(self.rows);
+        int64 i = 0;
+        while (i < self.rows) {
+            T sum;
+            int64 j = 0;
+            while (j < self.cols) { sum = sum + self.at(i,j)*vector.at(j); j = j + 1; }
+            result.set(i,sum); i = i + 1;
+        }
+        return result;
+    }
+    /* 带部分主元的 LU 求解；复制系数矩阵，不修改调用者。 */
+    Vector<T> solve(Vector<T> rhs) {
+        return __matrixSolve<T>(self, rhs);
+    }
+    Matrix<T> leftAdd(Matrix<T> right) { return self.add(right); }
+    Matrix<T> leftSub(Matrix<T> right) { return self.subtract(right); }
+    Matrix<T> leftMul(Matrix<T> right) { return self.multiply(right); }
+    Vector<T> leftMul(Vector<T> right) { return self.apply(right); }
+    Matrix<T> leftMul(T right) { return self.scale(right); }
+};
+
+/* 求解由宿主按标量类型绑定，返回独立向量。 */
+Vector<T> __matrixSolve<T>(Matrix<T> input, Vector<T> rhs);
+Vector<T> __matrixColumn<T>(Matrix<T> input, int64 key);
+
+struct LuFactorization {
+    Matrix<float64> lower;
+    Matrix<float64> upper;
+    Matrix<float64> permutation;
+};
+
+/* 部分行主元分解，满足 permutation * input == lower * upper。 */
+LuFactorization luDecompose(Matrix<float64> input);
+
+/* LUR 在本库中指带行置换的 LU；返回的 permutation 满足 P*A=L*U。 */
+LuFactorization lurDecompose(Matrix<float64> input);
+
+struct EigenDecomposition {
+    Vector<float64> eigenvalues;
+    Matrix<float64> eigenvectors; /* 第 j 列对应 eigenvalues[j] */
+};
+
+/* 实对称矩阵的 Jacobi 特征分解；A=V*diag(values)*V^T。 */
+EigenDecomposition symmetricEigen(Matrix<float64> input);
+
+struct SingularValueDecomposition {
+    Matrix<float64> u;
+    Vector<float64> singularValues;
+    Matrix<float64> vTranspose;
+};
+
+/* 薄 SVD：A=U*diag(sigma)*V^T；适合小规模矩阵。 */
+SingularValueDecomposition svd(Matrix<float64> input);
+
+struct JordanDecomposition {
+    Matrix<float64> basis;
+    Matrix<float64> jordan;
+};
+
+/* 实数 2x2 矩阵的 Jordan/对角化；复特征值须由复数后端处理。 */
+JordanDecomposition jordan2(Matrix<float64> input);
+
+JordanDecomposition diagonalize2(Matrix<float64> input);

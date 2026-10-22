@@ -1,5 +1,5 @@
 #include "std_print.hpp"
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include <cstdio>
 #include <mutex>
 #include <utility>
@@ -15,7 +15,7 @@ namespace
  * @return 写入成功返回零，失败时通过上下文保留错误。
  * @note 同一进程中的本入口按整次调用串行输出，不接入 VM 标准输出桶。
  */
-std::int64_t writeError(magel_glue::Context &context, Memory::String text)
+std::int64_t writeError(chali_glue::Context &context, Memory::String text)
 {
     static std::mutex outputMutex;
     const std::lock_guard<std::mutex> lock(outputMutex);
@@ -29,7 +29,7 @@ std::int64_t writeError(magel_glue::Context &context, Memory::String text)
  * @param text 由胶水拥有的文本副本，追加换行后自动回收。
  * @return 写入成功返回零，失败通过上下文保留诊断。
  */
-std::int64_t writeErrorLine(magel_glue::Context &context, Memory::String text)
+std::int64_t writeErrorLine(chali_glue::Context &context, Memory::String text)
 {
     text += '\n';
     return writeError(context, std::move(text));
@@ -42,7 +42,7 @@ std::int64_t writeErrorLine(magel_glue::Context &context, Memory::String text)
  * @param error 绑定失败时接收原始诊断，可为空。
  * @return 注册成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     return registry.bindTypedWithContext<std::int64_t, Memory::String>("std::lang::__std_stderr_write", writeError, error) && registry.bindTypedWithContext<std::int64_t, Memory::String>("std::lang::__std_eprint", writeError, error) && registry.bindTypedWithContext<std::int64_t, Memory::String>("std::lang::__std_eprintln", writeErrorLine, error);
 }

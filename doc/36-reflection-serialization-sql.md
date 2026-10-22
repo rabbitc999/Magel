@@ -9,7 +9,7 @@
 
 ## 编解码
 
-```mgl
+```chl
 import std::json;
 import std::toml;
 import std::serialization;
@@ -49,7 +49,7 @@ TOML 要求对象根节点；它使用相同的类型校验和精确数字表示
 `std::sql` 将反射元数据转换为 ipage 的 `ModelMeta` 和 `Query`。
 源码在 `library/ipage/source/ipage` 直接维护，导出工程使用内嵌资产。
 
-```mgl
+```chl
 import std::sql;
 
 @Reflect
@@ -80,8 +80,8 @@ struct Person {
 一条语句。其他已有数据库后端继续支持原来的文本执行接口；它们的参数化执行明确报错。
 不会将参数插入 SQL 文本作为后备执行方式。
 
-完整可运行样例见 [反射字段](../example/samples/reflect_fields.mgl)、
-[反射序列化](../example/samples/reflect_serialization.mgl) 和
-[动态 SQL](../example/samples/sql_ipage.mgl)。
+完整可运行样例见 [反射字段](../example/samples/reflect_fields.chl)、
+[反射序列化](../example/samples/reflect_serialization.chl) 和
+[动态 SQL](../example/samples/sql_ipage.chl)。
 
-ipage 副本仅保留依赖 C++17 标准库的 SQL 生成核心；Java/Maven、重复数据库源码及连接、会话和模式同步层已移除。SQLite 方言与执行适配由 Magel 的 std::sql 胶水维护。
+ipage 副本仅保留依赖 C++17 标准库的 SQL 生成核心；Java/Maven、重复数据库源码及连接、会话和模式同步层已移除。SQLite 方言与执行适配由 ChaLi 的 std::sql 胶水维护。

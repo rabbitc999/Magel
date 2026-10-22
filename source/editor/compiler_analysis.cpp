@@ -3,7 +3,7 @@
 #include <fstream>
 #include <utility>
 
-namespace magel_editor
+namespace chali_editor
 {
 CompilerAnalysis compilerAnalysis;
 
@@ -120,4 +120,4 @@ bool CompilerAnalysis::write(const std::string &path, bool complete, std::string
     }
     return true;
 }
-}  // namespace magel_editor
+}  // namespace chali_editor

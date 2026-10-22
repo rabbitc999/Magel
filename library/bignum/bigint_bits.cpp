@@ -3,7 +3,7 @@
  * @brief 非负整数的位运算与位修改。
  */
 
-#if !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_BIG_INT)
 #include "bigint.hpp"
 #include <algorithm>
 #include <limits>

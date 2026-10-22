@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::io;
 ```
 
@@ -14,10 +14,10 @@ FileStream 返回 Result，失败载荷是 IoError；read/write/seek 之前检�
 
 ## 参考代码
 
-完整程序：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+完整程序：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 ```powershell
-magel run doc/examples/library/io.mgl -- build/library-example.txt
+chali run doc/examples/library/io.chl -- build/library-example.txt
 ```
 
 先创建 `build` 目录；示例会覆盖给定路径，请使用专用测试文件。
@@ -25,7 +25,7 @@ magel run doc/examples/library/io.mgl -- build/library-example.txt
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::io;
 
 /** @brief 在调用者指定的测试文件中演示 FileStream 的 Result 错误处理。
@@ -59,8 +59,8 @@ int64 main(List<String> args) {
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-102"></a>`enum IoError` | 从 lang.mgl 原样迁出：符号名不变，只换了模块归属（现在必须 `import std::io;` 才能用）。 |
-| IoError | `OpenFailed(std::lang::String message), ReadFailed(std::lang::String message), WriteFailed(std::lang::String message), SeekFailed(std::lang::String message), Closed` | 从 lang.mgl 原样迁出：符号名不变，只换了模块归属（现在必须 `import std::io;` 才能用）。 变体及载荷见声明。 |
+| 模块 | <a id="symbol-102"></a>`enum IoError` | 从 lang.chl 原样迁出：符号名不变，只换了模块归属（现在必须 `import std::io;` 才能用）。 |
+| IoError | `OpenFailed(std::lang::String message), ReadFailed(std::lang::String message), WriteFailed(std::lang::String message), SeekFailed(std::lang::String message), Closed` | 从 lang.chl 原样迁出：符号名不变，只换了模块归属（现在必须 `import std::io;` 才能用）。 变体及载荷见声明。 |
 | 模块 | <a id="symbol-103"></a>`enum SeekOrigin` | 文件定位的基准：文件开始、当前位置或文件末尾。 |
 | SeekOrigin | `Begin, Current, End` | 文件定位的基准：文件开始、当前位置或文件末尾。 变体及载荷见声明。 |
 | 模块 | <a id="symbol-104"></a>`interface Reader` | 按字节读取数据的接口。 |
@@ -133,7 +133,7 @@ int64 main(List<String> args) {
 
 **声明**
 
-```magel
+```chali
 Result<std::lang::String, IoError> read();
 ```
 
@@ -155,13 +155,13 @@ Result<std::lang::String, IoError> read();
 
 **调用形式**
 
-```magel
+```chali
 obj.read();
 ```
 
-**源码**：[source/std/io.mgl:11](../../source/std/io.mgl#L11)。
+**源码**：[source/std/io.chl:11](../../source/std/io.chl#L11)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-1"></a>
 
@@ -169,7 +169,7 @@ obj.read();
 
 **声明**
 
-```magel
+```chali
 Result<int64, IoError> write(std::lang::String text);
 ```
 
@@ -193,13 +193,13 @@ Result<int64, IoError> write(std::lang::String text);
 
 **调用形式**
 
-```magel
+```chali
 obj.write(text);
 ```
 
-**源码**：[source/std/io.mgl:13](../../source/std/io.mgl#L13)。
+**源码**：[source/std/io.chl:13](../../source/std/io.chl#L13)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-2"></a>
 
@@ -207,7 +207,7 @@ obj.write(text);
 
 **声明**
 
-```magel
+```chali
 Result<int64, IoError> flush();
 ```
 
@@ -229,13 +229,13 @@ Result<int64, IoError> flush();
 
 **调用形式**
 
-```magel
+```chali
 obj.flush();
 ```
 
-**源码**：[source/std/io.mgl:14](../../source/std/io.mgl#L14)。
+**源码**：[source/std/io.chl:14](../../source/std/io.chl#L14)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-3"></a>
 
@@ -243,7 +243,7 @@ obj.flush();
 
 **声明**
 
-```magel
+```chali
 Result<int64, IoError> seek(int64 offset, SeekOrigin origin);
 ```
 
@@ -268,13 +268,13 @@ Result<int64, IoError> seek(int64 offset, SeekOrigin origin);
 
 **调用形式**
 
-```magel
+```chali
 obj.seek(offset, origin);
 ```
 
-**源码**：[source/std/io.mgl:16](../../source/std/io.mgl#L16)。
+**源码**：[source/std/io.chl:16](../../source/std/io.chl#L16)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-4"></a>
 
@@ -282,7 +282,7 @@ obj.seek(offset, origin);
 
 **声明**
 
-```magel
+```chali
 std::lang::String toString();
 ```
 
@@ -304,13 +304,13 @@ std::lang::String toString();
 
 **调用形式**
 
-```magel
+```chali
 obj.toString();
 ```
 
-**源码**：[source/std/io.mgl:17](../../source/std/io.mgl#L17)。
+**源码**：[source/std/io.chl:17](../../source/std/io.chl#L17)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-5"></a>
 
@@ -318,7 +318,7 @@ obj.toString();
 
 **声明**
 
-```magel
+```chali
 std::lang::String toString(std::lang::String style);
 ```
 
@@ -342,13 +342,13 @@ std::lang::String toString(std::lang::String style);
 
 **调用形式**
 
-```magel
+```chali
 obj.toString(style);
 ```
 
-**源码**：[source/std/io.mgl:18](../../source/std/io.mgl#L18)。
+**源码**：[source/std/io.chl:18](../../source/std/io.chl#L18)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-6"></a>
 
@@ -356,7 +356,7 @@ obj.toString(style);
 
 **声明**
 
-```magel
+```chali
 static Result<FileStream, IoError> open(std::lang::String path, std::lang::String mode);
 ```
 
@@ -381,13 +381,13 @@ static Result<FileStream, IoError> open(std::lang::String path, std::lang::Strin
 
 **调用形式**
 
-```magel
+```chali
 std::io::FileStream::open(path, mode);
 ```
 
-**源码**：[source/std/io.mgl:34](../../source/std/io.mgl#L34)。
+**源码**：[source/std/io.chl:34](../../source/std/io.chl#L34)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-7"></a>
 
@@ -395,7 +395,7 @@ std::io::FileStream::open(path, mode);
 
 **声明**
 
-```magel
+```chali
 Result<std::lang::String, IoError> read();
 ```
 
@@ -417,13 +417,13 @@ Result<std::lang::String, IoError> read();
 
 **调用形式**
 
-```magel
+```chali
 obj.read();
 ```
 
-**源码**：[source/std/io.mgl:46](../../source/std/io.mgl#L46)。
+**源码**：[source/std/io.chl:46](../../source/std/io.chl#L46)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-8"></a>
 
@@ -431,7 +431,7 @@ obj.read();
 
 **声明**
 
-```magel
+```chali
 Result<String,IoError> readLine();
 ```
 
@@ -453,13 +453,13 @@ Result<String,IoError> readLine();
 
 **调用形式**
 
-```magel
+```chali
 obj.readLine();
 ```
 
-**源码**：[source/std/io.mgl:57](../../source/std/io.mgl#L57)。
+**源码**：[source/std/io.chl:57](../../source/std/io.chl#L57)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-9"></a>
 
@@ -467,7 +467,7 @@ obj.readLine();
 
 **声明**
 
-```magel
+```chali
 Result<String,IoError> readString(int64 count);
 ```
 
@@ -491,13 +491,13 @@ Result<String,IoError> readString(int64 count);
 
 **调用形式**
 
-```magel
+```chali
 obj.readString(count);
 ```
 
-**源码**：[source/std/io.mgl:65](../../source/std/io.mgl#L65)。
+**源码**：[source/std/io.chl:65](../../source/std/io.chl#L65)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-10"></a>
 
@@ -505,7 +505,7 @@ obj.readString(count);
 
 **声明**
 
-```magel
+```chali
 Result<String,IoError> readAllString(int64 maxBytes=16777216);
 ```
 
@@ -529,13 +529,13 @@ Result<String,IoError> readAllString(int64 maxBytes=16777216);
 
 **调用形式**
 
-```magel
+```chali
 obj.readAllString(maxBytes);
 ```
 
-**源码**：[source/std/io.mgl:77](../../source/std/io.mgl#L77)。
+**源码**：[source/std/io.chl:77](../../source/std/io.chl#L77)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-11"></a>
 
@@ -543,7 +543,7 @@ obj.readAllString(maxBytes);
 
 **声明**
 
-```magel
+```chali
 Result<int64, IoError> write(std::lang::String text);
 ```
 
@@ -567,13 +567,13 @@ Result<int64, IoError> write(std::lang::String text);
 
 **调用形式**
 
-```magel
+```chali
 obj.write(text);
 ```
 
-**源码**：[source/std/io.mgl:91](../../source/std/io.mgl#L91)。
+**源码**：[source/std/io.chl:91](../../source/std/io.chl#L91)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-12"></a>
 
@@ -581,7 +581,7 @@ obj.write(text);
 
 **声明**
 
-```magel
+```chali
 Result<int64, IoError> print(String text);
 ```
 
@@ -605,13 +605,13 @@ Result<int64, IoError> print(String text);
 
 **调用形式**
 
-```magel
+```chali
 obj.print(text);
 ```
 
-**源码**：[source/std/io.mgl:105](../../source/std/io.mgl#L105)。
+**源码**：[source/std/io.chl:105](../../source/std/io.chl#L105)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-13"></a>
 
@@ -619,7 +619,7 @@ obj.print(text);
 
 **声明**
 
-```magel
+```chali
 Result<int64, IoError> println(String text = "");
 ```
 
@@ -643,13 +643,13 @@ Result<int64, IoError> println(String text = "");
 
 **调用形式**
 
-```magel
+```chali
 obj.println(text);
 ```
 
-**源码**：[source/std/io.mgl:111](../../source/std/io.mgl#L111)。
+**源码**：[source/std/io.chl:111](../../source/std/io.chl#L111)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-14"></a>
 
@@ -657,7 +657,7 @@ obj.println(text);
 
 **声明**
 
-```magel
+```chali
 Result<List<uint8>,IoError> readBytes(int64 count);
 ```
 
@@ -681,13 +681,13 @@ Result<List<uint8>,IoError> readBytes(int64 count);
 
 **调用形式**
 
-```magel
+```chali
 obj.readBytes(count);
 ```
 
-**源码**：[source/std/io.mgl:114](../../source/std/io.mgl#L114)。
+**源码**：[source/std/io.chl:114](../../source/std/io.chl#L114)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-15"></a>
 
@@ -695,7 +695,7 @@ obj.readBytes(count);
 
 **声明**
 
-```magel
+```chali
 Result<int64,IoError> writeBytes(List<uint8> bytes);
 ```
 
@@ -719,13 +719,13 @@ Result<int64,IoError> writeBytes(List<uint8> bytes);
 
 **调用形式**
 
-```magel
+```chali
 obj.writeBytes(bytes);
 ```
 
-**源码**：[source/std/io.mgl:120](../../source/std/io.mgl#L120)。
+**源码**：[source/std/io.chl:120](../../source/std/io.chl#L120)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-16"></a>
 
@@ -733,7 +733,7 @@ obj.writeBytes(bytes);
 
 **声明**
 
-```magel
+```chali
 Result<int64, IoError> flush();
 ```
 
@@ -755,13 +755,13 @@ Result<int64, IoError> flush();
 
 **调用形式**
 
-```magel
+```chali
 obj.flush();
 ```
 
-**源码**：[source/std/io.mgl:126](../../source/std/io.mgl#L126)。
+**源码**：[source/std/io.chl:126](../../source/std/io.chl#L126)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-17"></a>
 
@@ -769,7 +769,7 @@ obj.flush();
 
 **声明**
 
-```magel
+```chali
 Result<int64, IoError> seek(int64 offset, SeekOrigin origin);
 ```
 
@@ -794,13 +794,13 @@ Result<int64, IoError> seek(int64 offset, SeekOrigin origin);
 
 **调用形式**
 
-```magel
+```chali
 obj.seek(offset, origin);
 ```
 
-**源码**：[source/std/io.mgl:135](../../source/std/io.mgl#L135)。
+**源码**：[source/std/io.chl:135](../../source/std/io.chl#L135)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-18"></a>
 
@@ -808,7 +808,7 @@ obj.seek(offset, origin);
 
 **声明**
 
-```magel
+```chali
 int64 close();
 ```
 
@@ -830,13 +830,13 @@ int64 close();
 
 **调用形式**
 
-```magel
+```chali
 obj.close();
 ```
 
-**源码**：[source/std/io.mgl:150](../../source/std/io.mgl#L150)。
+**源码**：[source/std/io.chl:150](../../source/std/io.chl#L150)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-19"></a>
 
@@ -844,7 +844,7 @@ obj.close();
 
 **声明**
 
-```magel
+```chali
 Result<std::lang::File, std::lang::String> fileOpen(std::lang::String path, std::lang::String mode);
 ```
 
@@ -869,13 +869,13 @@ Result<std::lang::File, std::lang::String> fileOpen(std::lang::String path, std:
 
 **调用形式**
 
-```magel
+```chali
 std::io::fileOpen(path, mode);
 ```
 
-**源码**：[source/std/io.mgl:155](../../source/std/io.mgl#L155)。
+**源码**：[source/std/io.chl:155](../../source/std/io.chl#L155)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-20"></a>
 
@@ -883,7 +883,7 @@ std::io::fileOpen(path, mode);
 
 **声明**
 
-```magel
+```chali
 std::lang::String fileRead(file const& handle);
 ```
 
@@ -907,13 +907,13 @@ std::lang::String fileRead(file const& handle);
 
 **调用形式**
 
-```magel
+```chali
 std::io::fileRead(handle);
 ```
 
-**源码**：[source/std/io.mgl:163](../../source/std/io.mgl#L163)。
+**源码**：[source/std/io.chl:163](../../source/std/io.chl#L163)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-21"></a>
 
@@ -921,7 +921,7 @@ std::io::fileRead(handle);
 
 **声明**
 
-```magel
+```chali
 String fileReadLine(File const& handle);
 ```
 
@@ -946,13 +946,13 @@ String fileReadLine(File const& handle);
 
 **调用形式**
 
-```magel
+```chali
 std::io::fileReadLine(handle);
 ```
 
-**源码**：[source/std/io.mgl:166](../../source/std/io.mgl#L166)。
+**源码**：[source/std/io.chl:166](../../source/std/io.chl#L166)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-22"></a>
 
@@ -960,7 +960,7 @@ std::io::fileReadLine(handle);
 
 **声明**
 
-```magel
+```chali
 String fileReadString(File const& handle, int64 count);
 ```
 
@@ -986,13 +986,13 @@ String fileReadString(File const& handle, int64 count);
 
 **调用形式**
 
-```magel
+```chali
 std::io::fileReadString(handle, count);
 ```
 
-**源码**：[source/std/io.mgl:172](../../source/std/io.mgl#L172)。
+**源码**：[source/std/io.chl:172](../../source/std/io.chl#L172)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-23"></a>
 
@@ -1000,7 +1000,7 @@ std::io::fileReadString(handle, count);
 
 **声明**
 
-```magel
+```chali
 String fileReadAllString(File const& handle, int64 maxBytes = 16777216);
 ```
 
@@ -1026,13 +1026,13 @@ String fileReadAllString(File const& handle, int64 maxBytes = 16777216);
 
 **调用形式**
 
-```magel
+```chali
 std::io::fileReadAllString(handle, maxBytes);
 ```
 
-**源码**：[source/std/io.mgl:184](../../source/std/io.mgl#L184)。
+**源码**：[source/std/io.chl:184](../../source/std/io.chl#L184)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-24"></a>
 
@@ -1040,7 +1040,7 @@ std::io::fileReadAllString(handle, maxBytes);
 
 **声明**
 
-```magel
+```chali
 int64 fileWrite(file const& handle, std::lang::String text);
 ```
 
@@ -1065,13 +1065,13 @@ int64 fileWrite(file const& handle, std::lang::String text);
 
 **调用形式**
 
-```magel
+```chali
 std::io::fileWrite(handle, text);
 ```
 
-**源码**：[source/std/io.mgl:198](../../source/std/io.mgl#L198)。
+**源码**：[source/std/io.chl:198](../../source/std/io.chl#L198)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-25"></a>
 
@@ -1079,7 +1079,7 @@ std::io::fileWrite(handle, text);
 
 **声明**
 
-```magel
+```chali
 int64 filePrint(file const& handle, String text);
 ```
 
@@ -1104,13 +1104,13 @@ int64 filePrint(file const& handle, String text);
 
 **调用形式**
 
-```magel
+```chali
 std::io::filePrint(handle, text);
 ```
 
-**源码**：[source/std/io.mgl:205](../../source/std/io.mgl#L205)。
+**源码**：[source/std/io.chl:205](../../source/std/io.chl#L205)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-26"></a>
 
@@ -1118,7 +1118,7 @@ std::io::filePrint(handle, text);
 
 **声明**
 
-```magel
+```chali
 int64 filePrintln(file const& handle, String text = "");
 ```
 
@@ -1143,13 +1143,13 @@ int64 filePrintln(file const& handle, String text = "");
 
 **调用形式**
 
-```magel
+```chali
 std::io::filePrintln(handle, text);
 ```
 
-**源码**：[source/std/io.mgl:212](../../source/std/io.mgl#L212)。
+**源码**：[source/std/io.chl:212](../../source/std/io.chl#L212)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-27"></a>
 
@@ -1157,7 +1157,7 @@ std::io::filePrintln(handle, text);
 
 **声明**
 
-```magel
+```chali
 int64 fileEof(file const& handle);
 ```
 
@@ -1181,13 +1181,13 @@ int64 fileEof(file const& handle);
 
 **调用形式**
 
-```magel
+```chali
 std::io::fileEof(handle);
 ```
 
-**源码**：[source/std/io.mgl:215](../../source/std/io.mgl#L215)。
+**源码**：[source/std/io.chl:215](../../source/std/io.chl#L215)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-28"></a>
 
@@ -1195,7 +1195,7 @@ std::io::fileEof(handle);
 
 **声明**
 
-```magel
+```chali
 int64 fileClose(file const& handle);
 ```
 
@@ -1219,13 +1219,13 @@ int64 fileClose(file const& handle);
 
 **调用形式**
 
-```magel
+```chali
 std::io::fileClose(handle);
 ```
 
-**源码**：[source/std/io.mgl:216](../../source/std/io.mgl#L216)。
+**源码**：[source/std/io.chl:216](../../source/std/io.chl#L216)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-29"></a>
 
@@ -1233,7 +1233,7 @@ std::io::fileClose(handle);
 
 **声明**
 
-```magel
+```chali
 Result<List<uint8>,IoError> readAllBytes(String path, int64 maxBytes=16777216);
 ```
 
@@ -1258,13 +1258,13 @@ Result<List<uint8>,IoError> readAllBytes(String path, int64 maxBytes=16777216);
 
 **调用形式**
 
-```magel
+```chali
 std::io::readAllBytes(path, maxBytes);
 ```
 
-**源码**：[source/std/io.mgl:232](../../source/std/io.mgl#L232)。
+**源码**：[source/std/io.chl:232](../../source/std/io.chl#L232)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-30"></a>
 
@@ -1272,7 +1272,7 @@ std::io::readAllBytes(path, maxBytes);
 
 **声明**
 
-```magel
+```chali
 Result<int64,IoError> writeAllBytes(String path, List<uint8> bytes);
 ```
 
@@ -1297,13 +1297,13 @@ Result<int64,IoError> writeAllBytes(String path, List<uint8> bytes);
 
 **调用形式**
 
-```magel
+```chali
 std::io::writeAllBytes(path, bytes);
 ```
 
-**源码**：[source/std/io.mgl:238](../../source/std/io.mgl#L238)。
+**源码**：[source/std/io.chl:238](../../source/std/io.chl#L238)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-31"></a>
 
@@ -1311,7 +1311,7 @@ std::io::writeAllBytes(path, bytes);
 
 **声明**
 
-```magel
+```chali
 Result<String,IoError> readAllText(String path, int64 maxBytes=16777216);
 ```
 
@@ -1336,13 +1336,13 @@ Result<String,IoError> readAllText(String path, int64 maxBytes=16777216);
 
 **调用形式**
 
-```magel
+```chali
 std::io::readAllText(path, maxBytes);
 ```
 
-**源码**：[source/std/io.mgl:244](../../source/std/io.mgl#L244)。
+**源码**：[source/std/io.chl:244](../../source/std/io.chl#L244)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-32"></a>
 
@@ -1350,7 +1350,7 @@ std::io::readAllText(path, maxBytes);
 
 **声明**
 
-```magel
+```chali
 Result<int64,IoError> writeAllText(String path, String text);
 ```
 
@@ -1375,13 +1375,13 @@ Result<int64,IoError> writeAllText(String path, String text);
 
 **调用形式**
 
-```magel
+```chali
 std::io::writeAllText(path, text);
 ```
 
-**源码**：[source/std/io.mgl:253](../../source/std/io.mgl#L253)。
+**源码**：[source/std/io.chl:253](../../source/std/io.chl#L253)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-33"></a>
 
@@ -1389,7 +1389,7 @@ std::io::writeAllText(path, text);
 
 **声明**
 
-```magel
+```chali
 Result<List<String>,IoError> listDirectory(String path);
 ```
 
@@ -1413,13 +1413,13 @@ Result<List<String>,IoError> listDirectory(String path);
 
 **调用形式**
 
-```magel
+```chali
 std::io::listDirectory(path);
 ```
 
-**源码**：[source/std/io.mgl:258](../../source/std/io.mgl#L258)。
+**源码**：[source/std/io.chl:258](../../source/std/io.chl#L258)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-34"></a>
 
@@ -1427,7 +1427,7 @@ std::io::listDirectory(path);
 
 **声明**
 
-```magel
+```chali
 Result<FileInfo,IoError> fileInfo(String path);
 ```
 
@@ -1451,13 +1451,13 @@ Result<FileInfo,IoError> fileInfo(String path);
 
 **调用形式**
 
-```magel
+```chali
 std::io::fileInfo(path);
 ```
 
-**源码**：[source/std/io.mgl:264](../../source/std/io.mgl#L264)。
+**源码**：[source/std/io.chl:264](../../source/std/io.chl#L264)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-35"></a>
 
@@ -1465,7 +1465,7 @@ std::io::fileInfo(path);
 
 **声明**
 
-```magel
+```chali
 Result<int64,IoError> createDirectories(String path);
 ```
 
@@ -1489,13 +1489,13 @@ Result<int64,IoError> createDirectories(String path);
 
 **调用形式**
 
-```magel
+```chali
 std::io::createDirectories(path);
 ```
 
-**源码**：[source/std/io.mgl:272](../../source/std/io.mgl#L272)。
+**源码**：[source/std/io.chl:272](../../source/std/io.chl#L272)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 <a id="api-36"></a>
 
@@ -1503,7 +1503,7 @@ std::io::createDirectories(path);
 
 **声明**
 
-```magel
+```chali
 Result<int64,IoError> renamePath(String from, String to);
 ```
 
@@ -1528,19 +1528,19 @@ Result<int64,IoError> renamePath(String from, String to);
 
 **调用形式**
 
-```magel
+```chali
 std::io::renamePath(from, to);
 ```
 
-**源码**：[source/std/io.mgl:278](../../source/std/io.mgl#L278)。
+**源码**：[source/std/io.chl:278](../../source/std/io.chl#L278)。
 
-**完整示例**：[doc/examples/library/io.mgl](../../doc/examples/library/io.mgl)。
+**完整示例**：[doc/examples/library/io.chl](../../doc/examples/library/io.chl)。
 
 ## 补充完整示例
 
-[example/samples/std_file_strings.mgl](../../example/samples/std_file_strings.mgl)。
+[example/samples/std_file_strings.chl](../../example/samples/std_file_strings.chl)。
 
-```magel
+```chali
 import std::io;
 
 int64 main(List<String> args) {

@@ -15,7 +15,7 @@ UTF8FLAGS := -finput-charset=UTF-8 -fexec-charset=UTF-8
 endif
 
 ROOT_DIR  := ../../..
-BUILD_DIR ?= $(ROOT_DIR)/build/magel-preprocess
+BUILD_DIR ?= $(ROOT_DIR)/build/chali-preprocess
 LIB       := $(BUILD_DIR)/libpreprocess.a
 CLI       := $(BUILD_DIR)/preprocess
 TESTS     := $(BUILD_DIR)/preprocess-tests

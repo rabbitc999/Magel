@@ -6,42 +6,42 @@
   "java_flags": "-Xbatch; 20 full-loop warmups; runtime long input; volatile result sink",
   "java_interpreter_flags": "-Xint; JIT disabled; 1 full-loop warmup; runtime long input; volatile result sink",
   "register_core_variants": {
-    "Magel register switch": [
+    "ChaLi register switch": [
       "1",
       "0",
       "1",
       "1",
       "1"
     ],
-    "Magel register labels": [
+    "ChaLi register labels": [
       "1",
       "1",
       "1",
       "1",
       "1"
     ],
-    "Magel register no jump folding": [
+    "ChaLi register no jump folding": [
       "1",
       "0",
       "0",
       "1",
       "1"
     ],
-    "Magel register generic opcodes": [
+    "ChaLi register generic opcodes": [
       "1",
       "0",
       "1",
       "0",
       "1"
     ],
-    "Magel register per instruction": [
+    "ChaLi register per instruction": [
       "1",
       "0",
       "1",
       "1",
       "0"
     ],
-    "Magel register compact only": [
+    "ChaLi register compact only": [
       "1",
       "0",
       "0",
@@ -57,7 +57,7 @@
   "lua_url": "https://www.lua.org/ftp/lua-5.5.1.tar.gz",
   "lua_sha256": "1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce",
   "compiler": "gcc (x86_64-posix-seh-rev3, Built by MinGW-W64 project) 11.2.0",
-  "compiler_flags": "Lua -O2; Magel -O2 -DNDEBUG MAGEL_CUSTOM_ALLOCATOR=1",
+  "compiler_flags": "Lua -O2; ChaLi -O2 -DNDEBUG CHALI_CUSTOM_ALLOCATOR=1",
   "results": {
     "Python": {
       "median_ms": 407.4363,
@@ -85,7 +85,7 @@
       ],
       "checksum": "49999995000000"
     },
-    "Magel VM optimized": {
+    "ChaLi VM optimized": {
       "median_ms": 132.064,
       "samples_ms": [
         132.042,
@@ -99,7 +99,7 @@
       "checksum": "49999995000000",
       "logical_steps": 200000034
     },
-    "Magel register switch": {
+    "ChaLi register switch": {
       "median_ms": 138.369,
       "samples_ms": [
         138.369,
@@ -113,7 +113,7 @@
       "checksum": "49999995000000",
       "logical_steps": 200000034
     },
-    "Magel register labels": {
+    "ChaLi register labels": {
       "median_ms": 133.975,
       "samples_ms": [
         138.501,
@@ -127,7 +127,7 @@
       "checksum": "49999995000000",
       "logical_steps": 200000034
     },
-    "Magel register no jump folding": {
+    "ChaLi register no jump folding": {
       "median_ms": 188.002,
       "samples_ms": [
         189.08,
@@ -141,7 +141,7 @@
       "checksum": "49999995000000",
       "logical_steps": 200000034
     },
-    "Magel register generic opcodes": {
+    "ChaLi register generic opcodes": {
       "median_ms": 167.006,
       "samples_ms": [
         166.875,
@@ -155,7 +155,7 @@
       "checksum": "49999995000000",
       "logical_steps": 200000034
     },
-    "Magel register per instruction": {
+    "ChaLi register per instruction": {
       "median_ms": 172.242,
       "samples_ms": [
         173.785,
@@ -169,7 +169,7 @@
       "checksum": "49999995000000",
       "logical_steps": 200000034
     },
-    "Magel register compact only": {
+    "ChaLi register compact only": {
       "median_ms": 296.176,
       "samples_ms": [
         294.59,
@@ -183,7 +183,7 @@
       "checksum": "49999995000000",
       "logical_steps": 200000034
     },
-    "Magel VM before": {
+    "ChaLi VM before": {
       "median_ms": 175.716,
       "samples_ms": [
         175.716,
@@ -239,11 +239,11 @@
           "checksum": "-500000",
           "counters": "register dispatches=8999999 entries=4000001",
           "command": [
-            "G:\\Desktop\\magel\\build\\tier-five-benchmark.exe",
-            "G:\\Desktop\\magel\\build\\register-dispatch\\branches",
+            "G:\\Desktop\\chali\\build\\tier-five-benchmark.exe",
+            "G:\\Desktop\\chali\\build\\register-dispatch\\branches",
             "1",
             "1",
-            "@G:\\Desktop\\magel\\build\\register-dispatch\\branches.in",
+            "@G:\\Desktop\\chali\\build\\register-dispatch\\branches.in",
             "1",
             "0",
             "1",
@@ -266,11 +266,11 @@
           "checksum": "-500000",
           "counters": "register dispatches=8999999 entries=4000001",
           "command": [
-            "G:\\Desktop\\magel\\build\\tier-five-benchmark.exe",
-            "G:\\Desktop\\magel\\build\\register-dispatch\\branches",
+            "G:\\Desktop\\chali\\build\\tier-five-benchmark.exe",
+            "G:\\Desktop\\chali\\build\\register-dispatch\\branches",
             "1",
             "1",
-            "@G:\\Desktop\\magel\\build\\register-dispatch\\branches.in",
+            "@G:\\Desktop\\chali\\build\\register-dispatch\\branches.in",
             "1",
             "1",
             "1",
@@ -295,11 +295,11 @@
           "checksum": "849915000",
           "counters": "register dispatches=80002 entries=50002",
           "command": [
-            "G:\\Desktop\\magel\\build\\tier-five-benchmark.exe",
-            "G:\\Desktop\\magel\\build\\register-dispatch\\calls",
+            "G:\\Desktop\\chali\\build\\tier-five-benchmark.exe",
+            "G:\\Desktop\\chali\\build\\register-dispatch\\calls",
             "1",
             "1",
-            "@G:\\Desktop\\magel\\build\\register-dispatch\\calls.in",
+            "@G:\\Desktop\\chali\\build\\register-dispatch\\calls.in",
             "1",
             "0",
             "1",
@@ -322,11 +322,11 @@
           "checksum": "849915000",
           "counters": "register dispatches=80002 entries=50002",
           "command": [
-            "G:\\Desktop\\magel\\build\\tier-five-benchmark.exe",
-            "G:\\Desktop\\magel\\build\\register-dispatch\\calls",
+            "G:\\Desktop\\chali\\build\\tier-five-benchmark.exe",
+            "G:\\Desktop\\chali\\build\\register-dispatch\\calls",
             "1",
             "1",
-            "@G:\\Desktop\\magel\\build\\register-dispatch\\calls.in",
+            "@G:\\Desktop\\chali\\build\\register-dispatch\\calls.in",
             "1",
             "1",
             "1",
@@ -351,11 +351,11 @@
           "checksum": "18811 977069 32 31",
           "counters": "register dispatches=91029 entries=62655",
           "command": [
-            "G:\\Desktop\\magel\\build\\tier-five-benchmark.exe",
-            "G:\\Desktop\\magel\\build\\register-dispatch\\structures",
+            "G:\\Desktop\\chali\\build\\tier-five-benchmark.exe",
+            "G:\\Desktop\\chali\\build\\register-dispatch\\structures",
             "1",
             "1",
-            "@G:\\Desktop\\magel\\build\\register-dispatch\\structures.in",
+            "@G:\\Desktop\\chali\\build\\register-dispatch\\structures.in",
             "1",
             "0",
             "1",
@@ -378,11 +378,11 @@
           "checksum": "18811 977069 32 31",
           "counters": "register dispatches=91029 entries=62655",
           "command": [
-            "G:\\Desktop\\magel\\build\\tier-five-benchmark.exe",
-            "G:\\Desktop\\magel\\build\\register-dispatch\\structures",
+            "G:\\Desktop\\chali\\build\\tier-five-benchmark.exe",
+            "G:\\Desktop\\chali\\build\\register-dispatch\\structures",
             "1",
             "1",
-            "@G:\\Desktop\\magel\\build\\register-dispatch\\structures.in",
+            "@G:\\Desktop\\chali\\build\\register-dispatch\\structures.in",
             "1",
             "1",
             "1",
@@ -407,11 +407,11 @@
           "checksum": "126000",
           "counters": "register dispatches=219798 entries=140426",
           "command": [
-            "G:\\Desktop\\magel\\build\\tier-five-benchmark.exe",
-            "G:\\Desktop\\magel\\build\\register-dispatch\\transport",
+            "G:\\Desktop\\chali\\build\\tier-five-benchmark.exe",
+            "G:\\Desktop\\chali\\build\\register-dispatch\\transport",
             "1",
             "1",
-            "@G:\\Desktop\\magel\\build\\register-dispatch\\transport.in",
+            "@G:\\Desktop\\chali\\build\\register-dispatch\\transport.in",
             "1",
             "0",
             "1",
@@ -434,11 +434,11 @@
           "checksum": "126000",
           "counters": "register dispatches=219798 entries=140426",
           "command": [
-            "G:\\Desktop\\magel\\build\\tier-five-benchmark.exe",
-            "G:\\Desktop\\magel\\build\\register-dispatch\\transport",
+            "G:\\Desktop\\chali\\build\\tier-five-benchmark.exe",
+            "G:\\Desktop\\chali\\build\\register-dispatch\\transport",
             "1",
             "1",
-            "@G:\\Desktop\\magel\\build\\register-dispatch\\transport.in",
+            "@G:\\Desktop\\chali\\build\\register-dispatch\\transport.in",
             "1",
             "1",
             "1",
@@ -480,11 +480,11 @@
           "checksum": "-500000",
           "counters": "register dispatches=8999999 entries=4000001",
           "command": [
-            "G:\\Desktop\\magel\\build\\tier-five-benchmark.exe",
-            "G:\\Desktop\\magel\\build\\register-dispatch\\branches",
+            "G:\\Desktop\\chali\\build\\tier-five-benchmark.exe",
+            "G:\\Desktop\\chali\\build\\register-dispatch\\branches",
             "7",
             "1",
-            "@G:\\Desktop\\magel\\build\\register-dispatch\\branches.in",
+            "@G:\\Desktop\\chali\\build\\register-dispatch\\branches.in",
             "1",
             "0",
             "1",
@@ -507,11 +507,11 @@
           "checksum": "-500000",
           "counters": "register dispatches=8999999 entries=4000001",
           "command": [
-            "G:\\Desktop\\magel\\build\\tier-five-benchmark.exe",
-            "G:\\Desktop\\magel\\build\\register-dispatch\\branches",
+            "G:\\Desktop\\chali\\build\\tier-five-benchmark.exe",
+            "G:\\Desktop\\chali\\build\\register-dispatch\\branches",
             "7",
             "1",
-            "@G:\\Desktop\\magel\\build\\register-dispatch\\branches.in",
+            "@G:\\Desktop\\chali\\build\\register-dispatch\\branches.in",
             "1",
             "1",
             "1",
@@ -536,11 +536,11 @@
           "checksum": "849915000",
           "counters": "register dispatches=80002 entries=50002",
           "command": [
-            "G:\\Desktop\\magel\\build\\tier-five-benchmark.exe",
-            "G:\\Desktop\\magel\\build\\register-dispatch\\calls",
+            "G:\\Desktop\\chali\\build\\tier-five-benchmark.exe",
+            "G:\\Desktop\\chali\\build\\register-dispatch\\calls",
             "7",
             "1",
-            "@G:\\Desktop\\magel\\build\\register-dispatch\\calls.in",
+            "@G:\\Desktop\\chali\\build\\register-dispatch\\calls.in",
             "1",
             "0",
             "1",
@@ -563,11 +563,11 @@
           "checksum": "849915000",
           "counters": "register dispatches=80002 entries=50002",
           "command": [
-            "G:\\Desktop\\magel\\build\\tier-five-benchmark.exe",
-            "G:\\Desktop\\magel\\build\\register-dispatch\\calls",
+            "G:\\Desktop\\chali\\build\\tier-five-benchmark.exe",
+            "G:\\Desktop\\chali\\build\\register-dispatch\\calls",
             "7",
             "1",
-            "@G:\\Desktop\\magel\\build\\register-dispatch\\calls.in",
+            "@G:\\Desktop\\chali\\build\\register-dispatch\\calls.in",
             "1",
             "1",
             "1",
@@ -592,11 +592,11 @@
           "checksum": "18811 977069 32 31",
           "counters": "register dispatches=91029 entries=62655",
           "command": [
-            "G:\\Desktop\\magel\\build\\tier-five-benchmark.exe",
-            "G:\\Desktop\\magel\\build\\register-dispatch\\structures",
+            "G:\\Desktop\\chali\\build\\tier-five-benchmark.exe",
+            "G:\\Desktop\\chali\\build\\register-dispatch\\structures",
             "7",
             "1",
-            "@G:\\Desktop\\magel\\build\\register-dispatch\\structures.in",
+            "@G:\\Desktop\\chali\\build\\register-dispatch\\structures.in",
             "1",
             "0",
             "1",
@@ -619,11 +619,11 @@
           "checksum": "18811 977069 32 31",
           "counters": "register dispatches=91029 entries=62655",
           "command": [
-            "G:\\Desktop\\magel\\build\\tier-five-benchmark.exe",
-            "G:\\Desktop\\magel\\build\\register-dispatch\\structures",
+            "G:\\Desktop\\chali\\build\\tier-five-benchmark.exe",
+            "G:\\Desktop\\chali\\build\\register-dispatch\\structures",
             "7",
             "1",
-            "@G:\\Desktop\\magel\\build\\register-dispatch\\structures.in",
+            "@G:\\Desktop\\chali\\build\\register-dispatch\\structures.in",
             "1",
             "1",
             "1",
@@ -648,11 +648,11 @@
           "checksum": "126000",
           "counters": "register dispatches=219798 entries=140426",
           "command": [
-            "G:\\Desktop\\magel\\build\\tier-five-benchmark.exe",
-            "G:\\Desktop\\magel\\build\\register-dispatch\\transport",
+            "G:\\Desktop\\chali\\build\\tier-five-benchmark.exe",
+            "G:\\Desktop\\chali\\build\\register-dispatch\\transport",
             "7",
             "1",
-            "@G:\\Desktop\\magel\\build\\register-dispatch\\transport.in",
+            "@G:\\Desktop\\chali\\build\\register-dispatch\\transport.in",
             "1",
             "0",
             "1",
@@ -675,11 +675,11 @@
           "checksum": "126000",
           "counters": "register dispatches=219798 entries=140426",
           "command": [
-            "G:\\Desktop\\magel\\build\\tier-five-benchmark.exe",
-            "G:\\Desktop\\magel\\build\\register-dispatch\\transport",
+            "G:\\Desktop\\chali\\build\\tier-five-benchmark.exe",
+            "G:\\Desktop\\chali\\build\\register-dispatch\\transport",
             "7",
             "1",
-            "@G:\\Desktop\\magel\\build\\register-dispatch\\transport.in",
+            "@G:\\Desktop\\chali\\build\\register-dispatch\\transport.in",
             "1",
             "1",
             "1",
@@ -700,7 +700,7 @@
   "label_dispatch_code_bytes": {
     "text_section": 2480,
     "address_table_section": 160,
-    "measurement": "objdump -h build/magel-stackvm/stackvm.o; .text$...executeImplILb1E and .rdata$...handlers"
+    "measurement": "objdump -h build/chali-stackvm/stackvm.o; .text$...executeImplILb1E and .rdata$...handlers"
   },
   "runner_sha256": {
     "build/tier-five-benchmark.exe": "030981ff075e72be1eb9c4e8a7e883ca403190d89c9c6a52b05e3c0de73621ea",

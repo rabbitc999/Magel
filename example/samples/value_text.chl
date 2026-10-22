@@ -1,0 +1,191 @@
+import std::io;
+struct Pair
+{
+    String left;
+    String right;
+};
+struct Mixed
+{
+    int8 small;
+    float32 fraction;
+    bool flag;
+    char letter;
+};
+struct Named
+{
+    String name;
+    String toString() { return "named:" + self.name; }
+};
+struct Converted : ImplicitConvert<String>
+{
+    String implicitConvert() { return "converted"; }
+};
+struct Promised : ImplicitConvert<String>
+{
+    String toString() { return "promised"; }
+};
+struct Dual : ImplicitConvert<String>, ExplicitConvert<String>
+{
+    String toString() { return "display"; }
+    String implicitConvert() { return "implicit"; }
+    String explicitConvert() { return "explicit"; }
+};
+struct Styled : Formattable
+{
+    String toString(String style)
+    {
+        if (style == "") { return "plain"; }
+        return style;
+    }
+};
+struct Reentrant
+{
+    int64 value;
+    String toString()
+    {
+        reentrantValues.clear();
+        return format("item{}", self.value);
+    }
+};
+struct DynamicReentrant
+{
+    int64 value;
+    String toString()
+    {
+        dynamicValues.clear();
+        return format("dynamic{}", self.value);
+    }
+};
+List<Any> dynamicValues;
+DynamicReentrant globalFirst;
+DynamicReentrant globalSecond;
+List<Reentrant> reentrantValues;
+Named globalNamed;
+int64 drops = 0;
+struct Tracked : Drop
+{
+    String value;
+    void drop() { drops = drops + 1; }
+};
+Tracked freshTracked()
+{
+    return {
+        Tracked value;
+        value.value = "tracked";
+        yield (value);
+    };
+}
+int64[] freshArray()
+{
+    int64 values[] = new[2];
+    values[0] = 7;
+    values[1] = 8;
+    return values;
+}
+String genericText<T : ToString>(T const& value) { return value.toString(); }
+String genericConversion<T : ImplicitConvert<String>>(T value) { return value; }
+enum Message { Empty, Text(String value); };
+int64 main()
+{
+    int64 number = 42;
+    String numeric = number;
+    assert(numeric == "42");
+    assert(number.toString() == "42");
+    Pair pair;
+    pair.left = "one";
+    pair.right = "two";
+    println("{}", pair.toString());
+    List<Any> list = [1, "two", true];
+    println("{}", list.toString());
+    Set<int64> set = {3, 1, 2};
+    println("{}", set.toString());
+    Map<String, Any> map = {"name": "ChaLi", "count": 3};
+    println("{}", map.toString());
+    let tuple = (1, "two", list);
+    println("{}", tuple.toString());
+    println("{}", format("{}", pair));
+    Named named;
+    named.name = "test";
+    String namedText = named;
+    assert(namedText == "named:test");
+    Converted converted;
+    assert(converted.toString() == "converted");
+    Promised promised;
+    String promisedText = promised;
+    assert(promisedText == "promised");
+    List<Pair> pairs = [pair];
+    assert(pairs.toString() == "[{\"one\", \"two\"}]");
+    List<Named> namedValues = [named];
+    assert(namedValues.toString() == "[named:test]");
+    globalNamed.name = "global";
+    Any boxed = globalNamed;
+    assert(boxed.toString() == "named:global");
+    Pair escaped;
+    escaped.left = "a\"b";
+    escaped.right = "line\nnext";
+    assert(escaped.toString() == "{\"a\\\"b\", \"line\\nnext\"}");
+    List<Any> nested = [list, list];
+    assert(nested.toString() == "[[1, \"two\", true], [1, \"two\", true]]");
+    List<int64> emptyList;
+    Set<int64> emptySet;
+    Map<String, int64> emptyMap;
+    assert(emptyList.toString() == "[]");
+    assert(emptySet.toString() == "{}");
+    assert(emptyMap.toString() == "{}");
+    Set<Any> mixedSet = {1, "two", true};
+    assert(mixedSet.toString() == "{1, \"two\", true}");
+    Map<Any, Any> mixedMap = {1: "one", "two": 2};
+    assert(mixedMap.toString() == "{1: \"one\", \"two\": 2}");
+    let nestedTuple = ((1, "one"), (2, "two"));
+    assert(nestedTuple.toString() == "((1, \"one\"), (2, \"two\"))");
+    int64 fixed[2];
+    fixed[0] = 3;
+    fixed[1] = 4;
+    assert(fixed.toString() == "[3, 4]");
+    Mixed mixed;
+    mixed.small = -7;
+    mixed.fraction = 1.5f;
+    mixed.flag = true;
+    mixed.letter = 'A';
+    assert(mixed.toString() == "{-7, 1.5, true, 'A'}");
+    float32 fractions[2];
+    fractions[0] = 1.5f;
+    fractions[1] = 2.5f;
+    assert(fractions.toString() == "[1.5, 2.5]");
+    uint64 maximum = 18446744073709551615u;
+    assert(maximum.toString() == "18446744073709551615");
+    assert(freshArray().toString() == "[7, 8]");
+    assert(freshTracked().toString() == "{\"tracked\"}");
+    assert(drops == 1);
+    assert(genericText(&number) == "42");
+    assert(genericText(&pair) == "{\"one\", \"two\"}");
+    assert(genericConversion(42) == "42");
+    Dual dual;
+    String implicitText = dual;
+    assert(implicitText == "implicit");
+    assert(dual.toString() == "display");
+    assert(cast<String>(dual) == "explicit");
+    assert(format("{}", dual) == "display");
+    Styled styled;
+    assert(styled.toString() == "plain");
+    assert(format("{1:custom}", styled) == "custom");
+    Reentrant first;
+    first.value = 1;
+    Reentrant second;
+    second.value = 2;
+    reentrantValues.push(first);
+    reentrantValues.push(second);
+    assert(reentrantValues.toString() == "[item1, item2]");
+    assert(reentrantValues.len() == 0);
+    globalFirst.value = 1;
+    globalSecond.value = 2;
+    dynamicValues.push(globalFirst);
+    dynamicValues.push(globalSecond);
+    assert(dynamicValues.toString() == "[dynamic1, dynamic2]");
+    assert(dynamicValues.len() == 0);
+    Message message = Message::Text("payload");
+    assert(message.toString() == "Text(\"payload\")");
+    assert(number == 42 && pair.left == "one" && list.len() == 3);
+    println("done");
+    return 0;
+}

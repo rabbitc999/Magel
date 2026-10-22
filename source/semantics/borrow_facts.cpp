@@ -63,7 +63,7 @@ bool HasOpaqueObjectBorrow(const std::shared_ptr<MType> &type)
 void RecordObjectArgumentBorrow(int id, const std::shared_ptr<MType> &type)
 {
     if (HasOpaqueObjectBorrow(type))
-        g_borrowFacts.push_back({ magel_borrow_checker::Fact::ObjectArgument, BorrowSourceDepth(id), 0u,
+        g_borrowFacts.push_back({ chali_borrow_checker::Fact::ObjectArgument, BorrowSourceDepth(id), 0u,
                                   g_reductionLine, "（" + NameOfExpr(id) + "，目标 " + Describe(type) + "，所属类型 " + g_owner + "）" });
 }
 
@@ -241,8 +241,8 @@ std::size_t BorrowSourceDepth(int id, bool address)
             {
                 const auto valueType = receiver->kind == MType::Ptr ? receiver->elem : receiver;
                 const bool enumeration = valueType && valueType->kind == MType::Struct && g_enums.count(valueType->name);
-                const auto instance = valueType ? magel_generic::session.made.find(valueType->name) : magel_generic::session.made.end();
-                const bool stateIterator = instance != magel_generic::session.made.end() && instance->second.generic->module == "std::iter" && instance->second.generic->name == "Iter";
+                const auto instance = valueType ? chali_generic::session.made.find(valueType->name) : chali_generic::session.made.end();
+                const bool stateIterator = instance != chali_generic::session.made.end() && instance->second.generic->module == "std::iter" && instance->second.generic->name == "Iter";
                 // 标准游标返回状态中的元素，来源是状态已有借用而非游标局部槽。
                 depth = BorrowSourceDepth(callee.kids[0], !enumeration && !stateIterator);
             }
@@ -256,8 +256,8 @@ std::size_t BorrowSourceDepth(int id, bool address)
     if (node.kind == MNode::Try && !node.kids.empty())
     {
         const auto sourceType = ExprType(node.kids[0]);
-        const auto instance = magel_generic::session.made.find(sourceType->name);
-        const bool standard = instance != magel_generic::session.made.end() && instance->second.generic->module == "std::lang" && (instance->second.generic->name == "Result" || instance->second.generic->name == "Option");
+        const auto instance = chali_generic::session.made.find(sourceType->name);
+        const bool standard = instance != chali_generic::session.made.end() && instance->second.generic->module == "std::lang" && (instance->second.generic->name == "Result" || instance->second.generic->name == "Option");
         Memory::Set<Memory::String> references;
         if (!standard && PropagationBorrowsStorage(RawExprType(id), references))
         {
@@ -312,7 +312,7 @@ void RecordBorrowStore(int target, int value, bool container)
     if (!variable) targetDepth = BorrowSourceDepth(target, true);
     if (variable && variable->allocatedReference && N(target).kind != MNode::Var)
         targetDepth = std::max<std::size_t>(1u, targetDepth);
-    g_borrowFacts.push_back({ magel_borrow_checker::Fact::Store, depth, targetDepth, g_reductionLine, {} });
+    g_borrowFacts.push_back({ chali_borrow_checker::Fact::Store, depth, targetDepth, g_reductionLine, {} });
     // 分支按来源寿命的交集保守合并，后续赋值不能洗掉较短的借用。
     if (variable)
     {

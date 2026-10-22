@@ -1,6 +1,6 @@
 #include "std_red_black_tree.hpp"
 #include "std_native_record.hpp"
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include <algorithm>
 #include <memory>
 #include <stdexcept>
@@ -321,7 +321,7 @@ Value snapshot(State &state, const Memory::Vector<Value> &arguments)
         keys.push_back(tree->nodes[x].key);
         x = tree->nodes[x].child[1];
     }
-    return magel_glue::Codec<Memory::Vector<std::int64_t>>::encode(state.host, keys);
+    return chali_glue::Codec<Memory::Vector<std::int64_t>>::encode(state.host, keys);
 }
 }  // namespace
 /**
@@ -330,7 +330,7 @@ Value snapshot(State &state, const Memory::Vector<Value> &arguments)
  * @param error 接收注册失败的诊断。
  * @return 所有入口注册成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     auto &native = registry.native();
     return native_record_glue::bind(native, "std::tree::__redBlackNew", 0, create, error)

@@ -1,5 +1,5 @@
 {
-  "magel_version": "0.18.3",
+  "chali_version": "0.18.3",
   "measured_at_utc": "2026-10-15T03:43:22.344445+00:00",
   "base_commit": "3eb732deade7583aa074a8821d4992c3f12f2fb2",
   "source_diff_sha256": "2e970c33c993ecbcd6bbd1aeec871c9338c5457dccbff17ddbb6eb39315359b9",
@@ -9,7 +9,7 @@
   "lua_version": "Lua 5.5.1  Copyright (C) 1994-2026 Lua.org, PUC-Rio",
   "lua_url": "https://www.lua.org/ftp/lua-5.5.1.tar.gz",
   "lua_sha256": "1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce",
-  "flags": "Lua official mingw/linux Makefile -O2; Magel VM runner -O2 -DNDEBUG MAGEL_CUSTOM_ALLOCATOR=1; all VM optimizations enabled",
+  "flags": "Lua official mingw/linux Makefile -O2; ChaLi VM runner -O2 -DNDEBUG CHALI_CUSTOM_ALLOCATOR=1; all VM optimizations enabled",
   "warmups_per_process": 1,
   "repeats": 7,
   "timing": "one measured sample per process, alternate configuration order each round; VM steady_clock includes execution preparation and checksum output, excludes source compilation and bytecode loading; Lua os.clock includes loop function only; both exclude process startup",
@@ -18,7 +18,7 @@
     "integer_loop": {
       "iterations": 10000000,
       "configurations": {
-        "Magel 0.18.2": {
+        "ChaLi 0.18.2": {
           "samples_ms": [
             133.941,
             134.442,
@@ -32,7 +32,7 @@
           "logical_steps": 150000030,
           "median_ms": 134.442
         },
-        "Magel 0.18.3": {
+        "ChaLi 0.18.3": {
           "samples_ms": [
             134.637,
             139.191,
@@ -61,11 +61,11 @@
         }
       },
       "compilation_observation": {
-        "Magel 0.18.3": {
+        "ChaLi 0.18.3": {
           "single_compile_ms": 545.0794999997015,
           "bytecode_bytes": 235461
         },
-        "Magel 0.18.2": {
+        "ChaLi 0.18.2": {
           "single_compile_ms": 507.03429999884975,
           "bytecode_bytes": 236626
         }
@@ -74,7 +74,7 @@
     "branches": {
       "iterations": 1000000,
       "configurations": {
-        "Magel 0.18.2": {
+        "ChaLi 0.18.2": {
           "samples_ms": [
             33.2456,
             32.6609,
@@ -88,7 +88,7 @@
           "logical_steps": 25500030,
           "median_ms": 32.831
         },
-        "Magel 0.18.3": {
+        "ChaLi 0.18.3": {
           "samples_ms": [
             32.8802,
             33.2055,
@@ -117,11 +117,11 @@
         }
       },
       "compilation_observation": {
-        "Magel 0.18.3": {
+        "ChaLi 0.18.3": {
           "single_compile_ms": 539.3647000000783,
           "bytecode_bytes": 235615
         },
-        "Magel 0.18.2": {
+        "ChaLi 0.18.2": {
           "single_compile_ms": 500.4611999993358,
           "bytecode_bytes": 236780
         }
@@ -130,7 +130,7 @@
     "float64_loop": {
       "iterations": 2000000,
       "configurations": {
-        "Magel 0.18.2": {
+        "ChaLi 0.18.2": {
           "samples_ms": [
             489.05,
             492.759,
@@ -144,7 +144,7 @@
           "logical_steps": 30000030,
           "median_ms": 492.759
         },
-        "Magel 0.18.3": {
+        "ChaLi 0.18.3": {
           "samples_ms": [
             351.534,
             351.363,
@@ -173,11 +173,11 @@
         }
       },
       "compilation_observation": {
-        "Magel 0.18.3": {
+        "ChaLi 0.18.3": {
           "single_compile_ms": 540.3908999996929,
           "bytecode_bytes": 235459
         },
-        "Magel 0.18.2": {
+        "ChaLi 0.18.2": {
           "single_compile_ms": 498.7725999999384,
           "bytecode_bytes": 236624
         }
@@ -186,7 +186,7 @@
     "calls": {
       "iterations": 1000000,
       "configurations": {
-        "Magel 0.18.2": {
+        "ChaLi 0.18.2": {
           "samples_ms": [
             627.175,
             634.839,
@@ -200,7 +200,7 @@
           "logical_steps": 27000030,
           "median_ms": 638.543
         },
-        "Magel 0.18.3": {
+        "ChaLi 0.18.3": {
           "samples_ms": [
             615.086,
             606.875,
@@ -229,11 +229,11 @@
         }
       },
       "compilation_observation": {
-        "Magel 0.18.3": {
+        "ChaLi 0.18.3": {
           "single_compile_ms": 543.973100000585,
           "bytecode_bytes": 235484
         },
-        "Magel 0.18.2": {
+        "ChaLi 0.18.2": {
           "single_compile_ms": 507.7802000014344,
           "bytecode_bytes": 236649
         }
@@ -242,7 +242,7 @@
     "array_reads": {
       "iterations": 1000000,
       "configurations": {
-        "Magel 0.18.2": {
+        "ChaLi 0.18.2": {
           "samples_ms": [
             83.6373,
             84.1526,
@@ -256,7 +256,7 @@
           "logical_steps": 33000140,
           "median_ms": 83.9716
         },
-        "Magel 0.18.3": {
+        "ChaLi 0.18.3": {
           "samples_ms": [
             85.4462,
             85.4929,
@@ -285,11 +285,11 @@
         }
       },
       "compilation_observation": {
-        "Magel 0.18.3": {
+        "ChaLi 0.18.3": {
           "single_compile_ms": 533.632900000157,
           "bytecode_bytes": 236393
         },
-        "Magel 0.18.2": {
+        "ChaLi 0.18.2": {
           "single_compile_ms": 510.0536000009015,
           "bytecode_bytes": 237570
         }
@@ -297,10 +297,10 @@
     }
   },
   "binaries": {
-    "magel.exe": "f076b18b5e267bae2b49eaeab52f252a66cc65c19ce27d9ae351b127a5bcb3f3",
+    "ChaLi.exe": "f076b18b5e267bae2b49eaeab52f252a66cc65c19ce27d9ae351b127a5bcb3f3",
     "tmp\\optimization103\\runner.exe": "4fb1a098a548c7737e46f72c246cb3c25fc84cff30885285e41edab3942792e8",
-    "G:\\Desktop\\magel\\build\\vm-lua-benchmark\\lua-5.5.1\\src\\lua.exe": "d63d43f5c45e719621600ae7b3858b2d257534e4561a4a82ccc788aaceef705f",
-    "tmp\\optimization103\\magel-1.0.2.exe": "68ab33e51d6be37918890cc8244d3c25503429911db3b62ead45447f712cfa14",
+    "G:\\Desktop\\chali\\build\\vm-lua-benchmark\\lua-5.5.1\\src\\lua.exe": "d63d43f5c45e719621600ae7b3858b2d257534e4561a4a82ccc788aaceef705f",
+    "tmp\\optimization103\\chali-1.0.2.exe": "68ab33e51d6be37918890cc8244d3c25503429911db3b62ead45447f712cfa14",
     "tmp\\optimization103\\baseline-runner.exe": "4764183a5a575d9758344f55d53b25d00436a34211eac98f7067175cecdbaf14"
   },
   "baseline_commit": "320108bfda7c0b7035ed019a0010a87b43fe0e71",

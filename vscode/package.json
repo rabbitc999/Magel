@@ -1,7 +1,7 @@
 {
-  "name": "magel-editor",
-  "displayName": "Magel",
-  "description": "Magel（.mgl）语言支持：用编译器自带的 `magel lsp` 提供诊断、悬停、补全、跳转定义、文档大纲、格式化与宏块折叠。 支持在线模块依赖下载、共享缓存与离线校验。",
+  "name": "chali-editor",
+  "displayName": "ChaLi",
+  "description": "ChaLi（.chl）语言支持：用编译器自带的 `chali lsp` 提供诊断、悬停、补全、跳转定义、文档大纲、格式化与宏块折叠。 支持在线模块依赖下载、共享缓存与离线校验。",
   "version": "1.0.0",
   "publisher": "rabbitc999",
   "devDependencies": {
@@ -22,8 +22,8 @@
     "Formatters"
   ],
   "keywords": [
-    "magel",
-    "mgl",
+    "chali",
+    "chl",
     "parseengine",
     "stackvm"
   ],
@@ -37,31 +37,31 @@
   },
   "icon": "icon.png",
   "activationEvents": [
-    "onLanguage:magel",
-    "onDebugResolve:magel",
-    "onCommand:magel.installDependencies",
-    "onCommand:magel.checkDependencies",
-    "onCommand:magel.openLibraries",
-    "onCommand:magel.previewMacroExpansion"
+    "onLanguage:chali",
+    "onDebugResolve:chali",
+    "onCommand:chali.installDependencies",
+    "onCommand:chali.checkDependencies",
+    "onCommand:chali.openLibraries",
+    "onCommand:chali.previewMacroExpansion"
   ],
   "contributes": {
     "languages": [
       {
-        "id": "magel",
+        "id": "chali",
         "aliases": [
-          "Magel",
-          "magel"
+          "ChaLi",
+          "chali"
         ],
         "extensions": [
-          ".mgl"
+          ".chl"
         ],
-        "configuration": "./magel-language-configuration.json"
+        "configuration": "./chali-language-configuration.json"
       },
       {
-        "id": "magel-svmb",
+        "id": "chali-svmb",
         "aliases": [
-          "Magel 字节码",
-          "Magel Bytecode"
+          "ChaLi 字节码",
+          "ChaLi Bytecode"
         ],
         "extensions": [
           ".svmb"
@@ -70,17 +70,17 @@
     ],
     "grammars": [
       {
-        "language": "magel",
-        "scopeName": "source.magel",
-        "path": "./syntaxes/magel.tmLanguage.json"
+        "language": "chali",
+        "scopeName": "source.chali",
+        "path": "./syntaxes/chali.tmLanguage.json"
       }
     ],
     "debuggers": [
       {
-        "type": "magel",
-        "label": "Magel",
+        "type": "chali",
+        "label": "ChaLi",
         "languages": [
-          "magel"
+          "chali"
         ],
         "configurationAttributes": {
           "launch": {
@@ -90,7 +90,7 @@
             "properties": {
               "program": {
                 "type": "string",
-                "description": "要调试的 .mgl 文件（缺省是当前打开的文件）。",
+                "description": "要调试的 .chl 文件（缺省是当前打开的文件）。",
                 "default": "${file}"
               },
               "args": {
@@ -111,21 +111,21 @@
         },
         "initialConfigurations": [
           {
-            "type": "magel",
+            "type": "chali",
             "request": "launch",
-            "name": "Magel：调试当前文件",
+            "name": "ChaLi：调试当前文件",
             "program": "${file}",
             "cwd": "${fileDirname}"
           }
         ],
         "configurationSnippets": [
           {
-            "label": "Magel：调试当前文件",
-            "description": "用编译器自带的调试器跑当前 .mgl。",
+            "label": "ChaLi：调试当前文件",
+            "description": "用编译器自带的调试器跑当前 .chl。",
             "body": {
-              "type": "magel",
+              "type": "chali",
               "request": "launch",
-              "name": "Magel：调试当前文件",
+              "name": "ChaLi：调试当前文件",
               "program": "^\"\\${file}\"",
               "cwd": "^\"\\${fileDirname}\""
             }
@@ -134,7 +134,7 @@
       }
     ],
     "configurationDefaults": {
-      "[magel]": {
+      "[chali]": {
         "editor.tabSize": 4,
         "editor.insertSpaces": true,
         "editor.detectIndentation": false,
@@ -144,57 +144,57 @@
     },
     "commands": [
       {
-        "command": "magel.restartServer",
-        "title": "Magel: 重启语言服务器"
+        "command": "chali.restartServer",
+        "title": "ChaLi: 重启语言服务器"
       },
       {
-        "command": "magel.showServerLog",
-        "title": "Magel: 显示语言服务器日志"
+        "command": "chali.showServerLog",
+        "title": "ChaLi: 显示语言服务器日志"
       },
       {
-        "command": "magel.openDoc",
-        "title": "Magel: 打开语言文档"
+        "command": "chali.openDoc",
+        "title": "ChaLi: 打开语言文档"
       },
       {
-        "command": "magel.run",
-        "title": "Magel: 运行当前文件",
+        "command": "chali.run",
+        "title": "ChaLi: 运行当前文件",
         "icon": "$(play)"
       },
       {
-        "command": "magel.installDependencies",
-        "title": "Magel: 下载并锁定模块依赖"
+        "command": "chali.installDependencies",
+        "title": "ChaLi: 下载并锁定模块依赖"
       },
       {
-        "command": "magel.checkDependencies",
-        "title": "Magel: 离线校验模块依赖"
+        "command": "chali.checkDependencies",
+        "title": "ChaLi: 离线校验模块依赖"
       },
       {
-        "command": "magel.openLibraries",
-        "title": "Magel: 打开在线依赖缓存"
+        "command": "chali.openLibraries",
+        "title": "ChaLi: 打开在线依赖缓存"
       },
       {
-        "command": "magel.previewMacroExpansion",
-        "title": "Magel: 预览宏展开"
+        "command": "chali.previewMacroExpansion",
+        "title": "ChaLi: 预览宏展开"
       }
     ],
     "configuration": {
-      "title": "Magel",
+      "title": "ChaLi",
       "properties": {
-        "magel.path": {
+        "chali.path": {
           "type": "string",
           "default": "",
-          "description": "magel 编译器路径（语言服务器内嵌在它里面：`magel lsp`）；留空时先用插件自带的 `bin/magel`（打包时内嵌），再在工作区与 PATH 里自动探测。"
+          "description": "chali 编译器路径（语言服务器内嵌在它里面：`chali lsp`）；留空时先用插件自带的 `bin/chali`（打包时内嵌），再在工作区与 PATH 里自动探测。"
         },
-        "magel.traceServer": {
+        "chali.traceServer": {
           "type": "string",
           "default": "off",
           "enum": [
             "off",
             "messages"
           ],
-          "description": "把与 magel lsp 的协议消息写进输出面板，排查问题时打开。"
+          "description": "把与 chali lsp 的协议消息写进输出面板，排查问题时打开。"
         },
-        "magel.inlayHints.enabled": {
+        "chali.inlayHints.enabled": {
           "type": "boolean",
           "default": true,
           "description": "显示 let、for-in 元素与上下文匿名函数参数的推断类型；仍受编辑器内联提示设置控制。"
@@ -204,60 +204,60 @@
     "menus": {
       "editor/title/run": [
         {
-          "command": "magel.run",
-          "when": "resourceLangId == magel",
+          "command": "chali.run",
+          "when": "resourceLangId == chali",
           "group": "navigation@1"
         }
       ],
       "editor/context": [
         {
-          "command": "magel.run",
-          "when": "resourceLangId == magel",
+          "command": "chali.run",
+          "when": "resourceLangId == chali",
           "group": "navigation@1"
         },
         {
-          "command": "magel.installDependencies",
-          "when": "resourceFilename == magel.toml",
-          "group": "magelDependencies"
+          "command": "chali.installDependencies",
+          "when": "resourceFilename == chali.toml",
+          "group": "chaliDependencies"
         },
         {
-          "command": "magel.checkDependencies",
-          "when": "resourceFilename == magel.toml",
-          "group": "magelDependencies"
+          "command": "chali.checkDependencies",
+          "when": "resourceFilename == chali.toml",
+          "group": "chaliDependencies"
         },
         {
-          "command": "magel.openLibraries",
-          "when": "resourceFilename == magel.toml",
-          "group": "magelDependencies"
+          "command": "chali.openLibraries",
+          "when": "resourceFilename == chali.toml",
+          "group": "chaliDependencies"
         },
         {
-          "command": "magel.previewMacroExpansion",
-          "when": "editorLangId == magel && resourceScheme == file",
-          "group": "magel@2"
+          "command": "chali.previewMacroExpansion",
+          "when": "editorLangId == chali && resourceScheme == file",
+          "group": "chali@2"
         }
       ],
       "explorer/context": [
         {
-          "command": "magel.installDependencies",
-          "when": "resourceFilename == magel.toml",
-          "group": "magelDependencies"
+          "command": "chali.installDependencies",
+          "when": "resourceFilename == chali.toml",
+          "group": "chaliDependencies"
         },
         {
-          "command": "magel.checkDependencies",
-          "when": "resourceFilename == magel.toml",
-          "group": "magelDependencies"
+          "command": "chali.checkDependencies",
+          "when": "resourceFilename == chali.toml",
+          "group": "chaliDependencies"
         },
         {
-          "command": "magel.openLibraries",
-          "when": "resourceFilename == magel.toml",
-          "group": "magelDependencies"
+          "command": "chali.openLibraries",
+          "when": "resourceFilename == chali.toml",
+          "group": "chaliDependencies"
         }
       ]
     }
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/rabbitc999/Magel.git"
+    "url": "https://github.com/rabbitc999/ChaLi.git"
   },
-  "magelCompilerVersion": "0.26.0"
+  "chaliCompilerVersion": "0.27.0"
 }

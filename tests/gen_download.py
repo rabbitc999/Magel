@@ -22,7 +22,7 @@ class DownloadTests(unittest.TestCase):
         if attempts is None:
             attempts = 1 if expected is None else len(SOURCES)
         previous = Path.cwd()
-        with tempfile.TemporaryDirectory(prefix="magel-generator-") as directory:
+        with tempfile.TemporaryDirectory(prefix="chali-generator-") as directory:
             try:
                 os.chdir(directory)
                 executable = Path("ParseEngine.exe")

@@ -1,11 +1,11 @@
 ﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""生成 Magel 的语言图标（魔术棒 + 「C」+「Value」）。
+"""生成 ChaLi 的语言图标（魔术棒 + 「C」+「Value」）。
 
 产物（都重新生成，随时可重跑）：
-  * `doc/images/magel-logo.png` —— 512×512，语言自己的标志（README / 文档用）
+  * `doc/images/chali-logo.png` —— 512×512，语言自己的标志（README / 文档用）
   * `vscode/icon.png`           —— 256×256，VS Code 插件图标（市场要求 ≥128×128）
-  * `doc/images/magel.ico`      —— 16/24/32/48/64/128/256 多尺寸，Windows 资源用
+  * `doc/images/chali.ico`      —— 16/24/32/48/64/128/256 多尺寸，Windows 资源用
 
 画法：先在 3 倍逻辑画布上画（1536×1536），再用 LANCZOS 降采样，
 这样细笔画与小字号在 128 尺寸下也不糊。只用标准库 + Pillow。
@@ -140,9 +140,9 @@ def main():
     logo, icon = build()
     images = ROOT / "doc" / "images"
     images.mkdir(parents=True, exist_ok=True)
-    logo_path = images / "magel-logo.png"
+    logo_path = images / "chali-logo.png"
     icon_path = ROOT / "vscode" / "icon.png"
-    ico_path = images / "magel.ico"
+    ico_path = images / "chali.ico"
     logo.save(logo_path)
     icon.save(icon_path)
     logo.save(ico_path, sizes=ICO_SIZES)

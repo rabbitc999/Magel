@@ -116,7 +116,7 @@ Slot heapDropLive(NativeContext &ctx, const Memory::Vector<Slot> &args)
     const auto address = static_cast<std::size_t>(nativeInt(args[0]));
     std::size_t capacity = 0;
     if (ctx.heap->capacityAt(address, capacity)) return Slot::fromInt(1);
-    ctx.error = "panic：[MGL1205] drop 的来源已经释放、为空或不是有效块首";
+    ctx.error = "panic：[CHL1205] drop 的来源已经释放、为空或不是有效块首";
     return Slot::fromInt(0);
 }
 /**

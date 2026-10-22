@@ -1,14 +1,14 @@
 'use strict';
 
 /**
- * 把 magel 编译器内嵌进插件包（复制到本扩展的 bin/ 下）。
+ * 把 chali 编译器内嵌进插件包（复制到本扩展的 bin/ 下）。
  *
  * `vsce package` 会通过 `vscode:prepublish` 自动跑它，所以打出来的 .vsix 自带编译器：
  * 装完就能用诊断 / 补全，不需要用户先构建工具链。
  *
  * 用法（在 vscode/ 里或任意目录都行）：
- *   node tools/embed-compiler.js                 # 自动找：--from → MAGEL_BIN → ../magel[.exe] → PATH
- *   node tools/embed-compiler.js --from ../magel.exe
+ *   node tools/embed-compiler.js                 # 自动找：--from → CHALI_BIN → ../chali[.exe] → PATH
+ *   node tools/embed-compiler.js --from ../ChaLi.exe
  *
  * 找不到就退出 2，并说明怎么构建（在项目根目录跑 make）。
  */
@@ -20,9 +20,9 @@ const locator = require('../src/locator');
 
 const EXT_ROOT = path.join(__dirname, '..');
 const TARGET_DIR = path.join(EXT_ROOT, 'bin');
-const TARGET = path.join(TARGET_DIR, 'magel' + locator.EXE);
-const SKILL_SOURCE = path.join(EXT_ROOT, '..', 'skills', 'magel-programming', 'SKILL.md');
-const SKILL_TARGET = path.join(EXT_ROOT, 'skills', 'magel-programming', 'SKILL.md');
+const TARGET = path.join(TARGET_DIR, 'chali' + locator.EXE);
+const SKILL_SOURCE = path.join(EXT_ROOT, '..', 'skills', 'chali-programming', 'SKILL.md');
+const SKILL_TARGET = path.join(EXT_ROOT, 'skills', 'chali-programming', 'SKILL.md');
 
 /**
  * 取 `--from <路径>`。
@@ -46,23 +46,23 @@ function fromArgument() {
  * @returns {{file: string|null, from: string}} 源文件与来源说明。
  */
 function findSource() {
-  const explicit = fromArgument() || (process.env.MAGEL_BIN || '').trim();
+  const explicit = fromArgument() || (process.env.CHALI_BIN || '').trim();
   if (explicit) {
     if (!locator.isFile(explicit)) {
       console.error(`找不到指定的编译器：${explicit}`);
       process.exit(2);
     }
-    return { file: explicit, from: '参数 / MAGEL_BIN' };
+    return { file: explicit, from: '参数 / CHALI_BIN' };
   }
   const projectRoot = path.join(EXT_ROOT, '..');
   const candidates = [
-    path.join(projectRoot, 'magel' + locator.EXE),
-    path.join(projectRoot, 'build', 'bin', 'magel' + locator.EXE),
+    path.join(projectRoot, 'chali' + locator.EXE),
+    path.join(projectRoot, 'build', 'bin', 'chali' + locator.EXE),
   ];
   for (const candidate of candidates) {
     if (locator.isFile(candidate)) return { file: candidate, from: '项目根目录' };
   }
-  const onPath = locator.findOnPath('magel');
+  const onPath = locator.findOnPath('chali');
   if (onPath) return { file: onPath, from: 'PATH' };
   return { file: null, from: '' };
 }
@@ -73,8 +73,8 @@ function main() {
   fs.copyFileSync(SKILL_SOURCE, SKILL_TARGET);
   const source = findSource();
   if (!source.file) {
-    console.error('找不到 magel 编译器：先在项目根目录跑 make（产出 ./magel[.exe]），');
-    console.error('或用 `--from <路径>` / 环境变量 MAGEL_BIN 指定。');
+    console.error('找不到 chali 编译器：先在项目根目录跑 make（产出 ./chali[.exe]），');
+    console.error('或用 `--from <路径>` / 环境变量 CHALI_BIN 指定。');
     process.exit(2);
   }
   fs.mkdirSync(TARGET_DIR, { recursive: true });

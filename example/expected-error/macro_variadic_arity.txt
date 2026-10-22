@@ -1,1 +1,1 @@
-magel: example/samples-error/macro_variadic_arity.mgl 第 4 行第 16 列：宏实参数量与形参不一致：CALL
+chali: example/samples-error/macro_variadic_arity.chl 第 4 行第 16 列：宏实参数量与形参不一致：CALL

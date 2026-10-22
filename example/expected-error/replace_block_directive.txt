@@ -1,1 +1,1 @@
-语法错误：example/samples-error/replace_block_directive.mgl 第 1 行第 42 列：期望 MACRO_BODY，实际是 MACRO_END_FOR
+语法错误：example/samples-error/replace_block_directive.chl 第 1 行第 42 列：期望 MACRO_BODY，实际是 MACRO_END_FOR

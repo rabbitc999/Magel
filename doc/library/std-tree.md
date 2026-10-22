@@ -4,13 +4,13 @@
 
 ## 引入
 
-```magel
+```chali
 import std::tree;
 ```
 
 ## 公共约定与错误边界
 
-BinarySearchTree 是集合语义的二叉搜索树，重复插入返回 false，中序即升序；删除双孩子节点取中序后继替换，被删节点槽回收复用。RedBlackTree 使用宿主持久红黑节点，insert/remove 原地旋转及变色修复；重复插入或删除不存在的键返回 false，validate 校验排序、父指针、根颜色、红节点约束及黑高，删除节点槽回收复用。MinHeap 是最小二叉堆，可当优先队列用，相等键的出堆顺序不保证插入序。GeneralTree 用"第一个孩子 / 下一个兄弟"存储，toBinary 与 fromBinary 按"左孩子 = 第一个孩子、右孩子 = 下一个兄弟"互转，转换本身不排序、不保证 BST 有序性。树高按节点数计（单节点 1，空树 0）；树与堆由 opcode 独立拥有持久状态，普通复制深复制；snapshot 显式导出独立节点或堆数组，遍历只导出结果。裁剪宏 NO_MAGEL_STD_TREE。
+BinarySearchTree 是集合语义的二叉搜索树，重复插入返回 false，中序即升序；删除双孩子节点取中序后继替换，被删节点槽回收复用。RedBlackTree 使用宿主持久红黑节点，insert/remove 原地旋转及变色修复；重复插入或删除不存在的键返回 false，validate 校验排序、父指针、根颜色、红节点约束及黑高，删除节点槽回收复用。MinHeap 是最小二叉堆，可当优先队列用，相等键的出堆顺序不保证插入序。GeneralTree 用"第一个孩子 / 下一个兄弟"存储，toBinary 与 fromBinary 按"左孩子 = 第一个孩子、右孩子 = 下一个兄弟"互转，转换本身不排序、不保证 BST 有序性。树高按节点数计（单节点 1，空树 0）；树与堆由 opcode 独立拥有持久状态，普通复制深复制；snapshot 显式导出独立节点或堆数组，遍历只导出结果。裁剪宏 NO_CHALI_STD_TREE。
 
 ## 参考代码
 
@@ -98,7 +98,7 @@ BinarySearchTree 是集合语义的二叉搜索树，重复插入返回 false，
 
 **声明**
 
-```magel
+```chali
 static BinarySearchTree create();
 ```
 
@@ -122,11 +122,11 @@ static BinarySearchTree create();
 
 **调用形式**
 
-```magel
+```chali
 std::tree::BinarySearchTree::create();
 ```
 
-**源码**：[source/std/tree.mgl:36](../../source/std/tree.mgl#L36)。
+**源码**：[source/std/tree.chl:36](../../source/std/tree.chl#L36)。
 
 <a id="api-1"></a>
 
@@ -134,7 +134,7 @@ std::tree::BinarySearchTree::create();
 
 **声明**
 
-```magel
+```chali
 int64 len();
 ```
 
@@ -158,11 +158,11 @@ int64 len();
 
 **调用形式**
 
-```magel
+```chali
 obj.len();
 ```
 
-**源码**：[source/std/tree.mgl:38](../../source/std/tree.mgl#L38)。
+**源码**：[source/std/tree.chl:38](../../source/std/tree.chl#L38)。
 
 <a id="api-2"></a>
 
@@ -170,7 +170,7 @@ obj.len();
 
 **声明**
 
-```magel
+```chali
 void clear();
 ```
 
@@ -194,11 +194,11 @@ void clear();
 
 **调用形式**
 
-```magel
+```chali
 obj.clear();
 ```
 
-**源码**：[source/std/tree.mgl:40](../../source/std/tree.mgl#L40)。
+**源码**：[source/std/tree.chl:40](../../source/std/tree.chl#L40)。
 
 <a id="api-3"></a>
 
@@ -206,7 +206,7 @@ obj.clear();
 
 **声明**
 
-```magel
+```chali
 bool insert(int64 value);
 ```
 
@@ -232,11 +232,11 @@ bool insert(int64 value);
 
 **调用形式**
 
-```magel
+```chali
 obj.insert(value);
 ```
 
-**源码**：[source/std/tree.mgl:42](../../source/std/tree.mgl#L42)。
+**源码**：[source/std/tree.chl:42](../../source/std/tree.chl#L42)。
 
 <a id="api-4"></a>
 
@@ -244,7 +244,7 @@ obj.insert(value);
 
 **声明**
 
-```magel
+```chali
 bool remove(int64 value);
 ```
 
@@ -270,11 +270,11 @@ bool remove(int64 value);
 
 **调用形式**
 
-```magel
+```chali
 obj.remove(value);
 ```
 
-**源码**：[source/std/tree.mgl:44](../../source/std/tree.mgl#L44)。
+**源码**：[source/std/tree.chl:44](../../source/std/tree.chl#L44)。
 
 <a id="api-5"></a>
 
@@ -282,7 +282,7 @@ obj.remove(value);
 
 **声明**
 
-```magel
+```chali
 bool contains(int64 value);
 ```
 
@@ -308,11 +308,11 @@ bool contains(int64 value);
 
 **调用形式**
 
-```magel
+```chali
 obj.contains(value);
 ```
 
-**源码**：[source/std/tree.mgl:46](../../source/std/tree.mgl#L46)。
+**源码**：[source/std/tree.chl:46](../../source/std/tree.chl#L46)。
 
 <a id="api-6"></a>
 
@@ -320,7 +320,7 @@ obj.contains(value);
 
 **声明**
 
-```magel
+```chali
 Option<int64> min();
 ```
 
@@ -344,11 +344,11 @@ Option<int64> min();
 
 **调用形式**
 
-```magel
+```chali
 obj.min();
 ```
 
-**源码**：[source/std/tree.mgl:48](../../source/std/tree.mgl#L48)。
+**源码**：[source/std/tree.chl:48](../../source/std/tree.chl#L48)。
 
 <a id="api-7"></a>
 
@@ -356,7 +356,7 @@ obj.min();
 
 **声明**
 
-```magel
+```chali
 Option<int64> max();
 ```
 
@@ -380,11 +380,11 @@ Option<int64> max();
 
 **调用形式**
 
-```magel
+```chali
 obj.max();
 ```
 
-**源码**：[source/std/tree.mgl:50](../../source/std/tree.mgl#L50)。
+**源码**：[source/std/tree.chl:50](../../source/std/tree.chl#L50)。
 
 <a id="api-8"></a>
 
@@ -392,7 +392,7 @@ obj.max();
 
 **声明**
 
-```magel
+```chali
 int64 height();
 ```
 
@@ -414,11 +414,11 @@ int64 height();
 
 **调用形式**
 
-```magel
+```chali
 obj.height();
 ```
 
-**源码**：[source/std/tree.mgl:52](../../source/std/tree.mgl#L52)。
+**源码**：[source/std/tree.chl:52](../../source/std/tree.chl#L52)。
 
 <a id="api-9"></a>
 
@@ -426,7 +426,7 @@ obj.height();
 
 **声明**
 
-```magel
+```chali
 List<int64> inorder();
 ```
 
@@ -448,11 +448,11 @@ List<int64> inorder();
 
 **调用形式**
 
-```magel
+```chali
 obj.inorder();
 ```
 
-**源码**：[source/std/tree.mgl:54](../../source/std/tree.mgl#L54)。
+**源码**：[source/std/tree.chl:54](../../source/std/tree.chl#L54)。
 
 <a id="api-10"></a>
 
@@ -460,7 +460,7 @@ obj.inorder();
 
 **声明**
 
-```magel
+```chali
 List<int64> preorder();
 ```
 
@@ -482,11 +482,11 @@ List<int64> preorder();
 
 **调用形式**
 
-```magel
+```chali
 obj.preorder();
 ```
 
-**源码**：[source/std/tree.mgl:56](../../source/std/tree.mgl#L56)。
+**源码**：[source/std/tree.chl:56](../../source/std/tree.chl#L56)。
 
 <a id="api-11"></a>
 
@@ -494,7 +494,7 @@ obj.preorder();
 
 **声明**
 
-```magel
+```chali
 List<int64> postorder();
 ```
 
@@ -516,11 +516,11 @@ List<int64> postorder();
 
 **调用形式**
 
-```magel
+```chali
 obj.postorder();
 ```
 
-**源码**：[source/std/tree.mgl:58](../../source/std/tree.mgl#L58)。
+**源码**：[source/std/tree.chl:58](../../source/std/tree.chl#L58)。
 
 <a id="api-12"></a>
 
@@ -528,7 +528,7 @@ obj.postorder();
 
 **声明**
 
-```magel
+```chali
 TreeSnapshot snapshot();
 ```
 
@@ -550,11 +550,11 @@ TreeSnapshot snapshot();
 
 **调用形式**
 
-```magel
+```chali
 obj.snapshot();
 ```
 
-**源码**：[source/std/tree.mgl:60](../../source/std/tree.mgl#L60)。
+**源码**：[source/std/tree.chl:60](../../source/std/tree.chl#L60)。
 
 <a id="api-13"></a>
 
@@ -562,7 +562,7 @@ obj.snapshot();
 
 **声明**
 
-```magel
+```chali
 static RedBlackTree create();
 ```
 
@@ -586,11 +586,11 @@ static RedBlackTree create();
 
 **调用形式**
 
-```magel
+```chali
 std::tree::RedBlackTree::create();
 ```
 
-**源码**：[source/std/tree.mgl:81](../../source/std/tree.mgl#L81)。
+**源码**：[source/std/tree.chl:81](../../source/std/tree.chl#L81)。
 
 <a id="api-14"></a>
 
@@ -598,7 +598,7 @@ std::tree::RedBlackTree::create();
 
 **声明**
 
-```magel
+```chali
 bool insert(int64 value);
 ```
 
@@ -624,11 +624,11 @@ bool insert(int64 value);
 
 **调用形式**
 
-```magel
+```chali
 obj.insert(value);
 ```
 
-**源码**：[source/std/tree.mgl:83](../../source/std/tree.mgl#L83)。
+**源码**：[source/std/tree.chl:83](../../source/std/tree.chl#L83)。
 
 <a id="api-15"></a>
 
@@ -636,7 +636,7 @@ obj.insert(value);
 
 **声明**
 
-```magel
+```chali
 bool remove(int64 value);
 ```
 
@@ -662,11 +662,11 @@ bool remove(int64 value);
 
 **调用形式**
 
-```magel
+```chali
 obj.remove(value);
 ```
 
-**源码**：[source/std/tree.mgl:85](../../source/std/tree.mgl#L85)。
+**源码**：[source/std/tree.chl:85](../../source/std/tree.chl#L85)。
 
 <a id="api-16"></a>
 
@@ -674,7 +674,7 @@ obj.remove(value);
 
 **声明**
 
-```magel
+```chali
 bool contains(int64 value);
 ```
 
@@ -700,11 +700,11 @@ bool contains(int64 value);
 
 **调用形式**
 
-```magel
+```chali
 obj.contains(value);
 ```
 
-**源码**：[source/std/tree.mgl:87](../../source/std/tree.mgl#L87)。
+**源码**：[source/std/tree.chl:87](../../source/std/tree.chl#L87)。
 
 <a id="api-17"></a>
 
@@ -712,7 +712,7 @@ obj.contains(value);
 
 **声明**
 
-```magel
+```chali
 int64 len();
 ```
 
@@ -736,11 +736,11 @@ int64 len();
 
 **调用形式**
 
-```magel
+```chali
 obj.len();
 ```
 
-**源码**：[source/std/tree.mgl:89](../../source/std/tree.mgl#L89)。
+**源码**：[source/std/tree.chl:89](../../source/std/tree.chl#L89)。
 
 <a id="api-18"></a>
 
@@ -748,7 +748,7 @@ obj.len();
 
 **声明**
 
-```magel
+```chali
 int64 height();
 ```
 
@@ -770,11 +770,11 @@ int64 height();
 
 **调用形式**
 
-```magel
+```chali
 obj.height();
 ```
 
-**源码**：[source/std/tree.mgl:91](../../source/std/tree.mgl#L91)。
+**源码**：[source/std/tree.chl:91](../../source/std/tree.chl#L91)。
 
 <a id="api-19"></a>
 
@@ -782,7 +782,7 @@ obj.height();
 
 **声明**
 
-```magel
+```chali
 void clear();
 ```
 
@@ -806,11 +806,11 @@ void clear();
 
 **调用形式**
 
-```magel
+```chali
 obj.clear();
 ```
 
-**源码**：[source/std/tree.mgl:93](../../source/std/tree.mgl#L93)。
+**源码**：[source/std/tree.chl:93](../../source/std/tree.chl#L93)。
 
 <a id="api-20"></a>
 
@@ -818,7 +818,7 @@ obj.clear();
 
 **声明**
 
-```magel
+```chali
 Option<int64> min();
 ```
 
@@ -842,11 +842,11 @@ Option<int64> min();
 
 **调用形式**
 
-```magel
+```chali
 obj.min();
 ```
 
-**源码**：[source/std/tree.mgl:95](../../source/std/tree.mgl#L95)。
+**源码**：[source/std/tree.chl:95](../../source/std/tree.chl#L95)。
 
 <a id="api-21"></a>
 
@@ -854,7 +854,7 @@ obj.min();
 
 **声明**
 
-```magel
+```chali
 Option<int64> max();
 ```
 
@@ -878,11 +878,11 @@ Option<int64> max();
 
 **调用形式**
 
-```magel
+```chali
 obj.max();
 ```
 
-**源码**：[source/std/tree.mgl:100](../../source/std/tree.mgl#L100)。
+**源码**：[source/std/tree.chl:100](../../source/std/tree.chl#L100)。
 
 <a id="api-22"></a>
 
@@ -890,7 +890,7 @@ obj.max();
 
 **声明**
 
-```magel
+```chali
 bool validate();
 ```
 
@@ -912,11 +912,11 @@ bool validate();
 
 **调用形式**
 
-```magel
+```chali
 obj.validate();
 ```
 
-**源码**：[source/std/tree.mgl:105](../../source/std/tree.mgl#L105)。
+**源码**：[source/std/tree.chl:105](../../source/std/tree.chl#L105)。
 
 <a id="api-23"></a>
 
@@ -924,7 +924,7 @@ obj.validate();
 
 **声明**
 
-```magel
+```chali
 List<int64> inorder();
 ```
 
@@ -946,11 +946,11 @@ List<int64> inorder();
 
 **调用形式**
 
-```magel
+```chali
 obj.inorder();
 ```
 
-**源码**：[source/std/tree.mgl:107](../../source/std/tree.mgl#L107)。
+**源码**：[source/std/tree.chl:107](../../source/std/tree.chl#L107)。
 
 <a id="api-24"></a>
 
@@ -958,7 +958,7 @@ obj.inorder();
 
 **声明**
 
-```magel
+```chali
 static MinHeap create();
 ```
 
@@ -982,11 +982,11 @@ static MinHeap create();
 
 **调用形式**
 
-```magel
+```chali
 std::tree::MinHeap::create();
 ```
 
-**源码**：[source/std/tree.mgl:116](../../source/std/tree.mgl#L116)。
+**源码**：[source/std/tree.chl:116](../../source/std/tree.chl#L116)。
 
 <a id="api-25"></a>
 
@@ -994,7 +994,7 @@ std::tree::MinHeap::create();
 
 **声明**
 
-```magel
+```chali
 int64 len();
 ```
 
@@ -1018,11 +1018,11 @@ int64 len();
 
 **调用形式**
 
-```magel
+```chali
 obj.len();
 ```
 
-**源码**：[source/std/tree.mgl:118](../../source/std/tree.mgl#L118)。
+**源码**：[source/std/tree.chl:118](../../source/std/tree.chl#L118)。
 
 <a id="api-26"></a>
 
@@ -1030,7 +1030,7 @@ obj.len();
 
 **声明**
 
-```magel
+```chali
 void clear();
 ```
 
@@ -1054,11 +1054,11 @@ void clear();
 
 **调用形式**
 
-```magel
+```chali
 obj.clear();
 ```
 
-**源码**：[source/std/tree.mgl:120](../../source/std/tree.mgl#L120)。
+**源码**：[source/std/tree.chl:120](../../source/std/tree.chl#L120)。
 
 <a id="api-27"></a>
 
@@ -1066,7 +1066,7 @@ obj.clear();
 
 **声明**
 
-```magel
+```chali
 void push(int64 value);
 ```
 
@@ -1092,11 +1092,11 @@ void push(int64 value);
 
 **调用形式**
 
-```magel
+```chali
 obj.push(value);
 ```
 
-**源码**：[source/std/tree.mgl:122](../../source/std/tree.mgl#L122)。
+**源码**：[source/std/tree.chl:122](../../source/std/tree.chl#L122)。
 
 <a id="api-28"></a>
 
@@ -1104,7 +1104,7 @@ obj.push(value);
 
 **声明**
 
-```magel
+```chali
 Option<int64> pop();
 ```
 
@@ -1128,11 +1128,11 @@ Option<int64> pop();
 
 **调用形式**
 
-```magel
+```chali
 obj.pop();
 ```
 
-**源码**：[source/std/tree.mgl:124](../../source/std/tree.mgl#L124)。
+**源码**：[source/std/tree.chl:124](../../source/std/tree.chl#L124)。
 
 <a id="api-29"></a>
 
@@ -1140,7 +1140,7 @@ obj.pop();
 
 **声明**
 
-```magel
+```chali
 Option<int64> peek();
 ```
 
@@ -1164,11 +1164,11 @@ Option<int64> peek();
 
 **调用形式**
 
-```magel
+```chali
 obj.peek();
 ```
 
-**源码**：[source/std/tree.mgl:126](../../source/std/tree.mgl#L126)。
+**源码**：[source/std/tree.chl:126](../../source/std/tree.chl#L126)。
 
 <a id="api-30"></a>
 
@@ -1176,7 +1176,7 @@ obj.peek();
 
 **声明**
 
-```magel
+```chali
 bool isEmpty();
 ```
 
@@ -1200,11 +1200,11 @@ bool isEmpty();
 
 **调用形式**
 
-```magel
+```chali
 obj.isEmpty();
 ```
 
-**源码**：[source/std/tree.mgl:128](../../source/std/tree.mgl#L128)。
+**源码**：[source/std/tree.chl:128](../../source/std/tree.chl#L128)。
 
 <a id="api-31"></a>
 
@@ -1212,7 +1212,7 @@ obj.isEmpty();
 
 **声明**
 
-```magel
+```chali
 List<int64> snapshot();
 ```
 
@@ -1234,11 +1234,11 @@ List<int64> snapshot();
 
 **调用形式**
 
-```magel
+```chali
 obj.snapshot();
 ```
 
-**源码**：[source/std/tree.mgl:130](../../source/std/tree.mgl#L130)。
+**源码**：[source/std/tree.chl:130](../../source/std/tree.chl#L130)。
 
 <a id="api-32"></a>
 
@@ -1246,7 +1246,7 @@ obj.snapshot();
 
 **声明**
 
-```magel
+```chali
 static GeneralTree create();
 ```
 
@@ -1270,11 +1270,11 @@ static GeneralTree create();
 
 **调用形式**
 
-```magel
+```chali
 std::tree::GeneralTree::create();
 ```
 
-**源码**：[source/std/tree.mgl:139](../../source/std/tree.mgl#L139)。
+**源码**：[source/std/tree.chl:139](../../source/std/tree.chl#L139)。
 
 <a id="api-33"></a>
 
@@ -1282,7 +1282,7 @@ std::tree::GeneralTree::create();
 
 **声明**
 
-```magel
+```chali
 int64 len();
 ```
 
@@ -1306,11 +1306,11 @@ int64 len();
 
 **调用形式**
 
-```magel
+```chali
 obj.len();
 ```
 
-**源码**：[source/std/tree.mgl:141](../../source/std/tree.mgl#L141)。
+**源码**：[source/std/tree.chl:141](../../source/std/tree.chl#L141)。
 
 <a id="api-34"></a>
 
@@ -1318,7 +1318,7 @@ obj.len();
 
 **声明**
 
-```magel
+```chali
 void clear();
 ```
 
@@ -1342,11 +1342,11 @@ void clear();
 
 **调用形式**
 
-```magel
+```chali
 obj.clear();
 ```
 
-**源码**：[source/std/tree.mgl:143](../../source/std/tree.mgl#L143)。
+**源码**：[source/std/tree.chl:143](../../source/std/tree.chl#L143)。
 
 <a id="api-35"></a>
 
@@ -1354,7 +1354,7 @@ obj.clear();
 
 **声明**
 
-```magel
+```chali
 int64 addRoot(int64 value);
 ```
 
@@ -1378,11 +1378,11 @@ int64 addRoot(int64 value);
 
 **调用形式**
 
-```magel
+```chali
 obj.addRoot(value);
 ```
 
-**源码**：[source/std/tree.mgl:145](../../source/std/tree.mgl#L145)。
+**源码**：[source/std/tree.chl:145](../../source/std/tree.chl#L145)。
 
 <a id="api-36"></a>
 
@@ -1390,7 +1390,7 @@ obj.addRoot(value);
 
 **声明**
 
-```magel
+```chali
 int64 addChild(int64 cursor, int64 value);
 ```
 
@@ -1415,11 +1415,11 @@ int64 addChild(int64 cursor, int64 value);
 
 **调用形式**
 
-```magel
+```chali
 obj.addChild(cursor, value);
 ```
 
-**源码**：[source/std/tree.mgl:147](../../source/std/tree.mgl#L147)。
+**源码**：[source/std/tree.chl:147](../../source/std/tree.chl#L147)。
 
 <a id="api-37"></a>
 
@@ -1427,7 +1427,7 @@ obj.addChild(cursor, value);
 
 **声明**
 
-```magel
+```chali
 int64 valueAt(int64 cursor);
 ```
 
@@ -1451,11 +1451,11 @@ int64 valueAt(int64 cursor);
 
 **调用形式**
 
-```magel
+```chali
 obj.valueAt(cursor);
 ```
 
-**源码**：[source/std/tree.mgl:149](../../source/std/tree.mgl#L149)。
+**源码**：[source/std/tree.chl:149](../../source/std/tree.chl#L149)。
 
 <a id="api-38"></a>
 
@@ -1463,7 +1463,7 @@ obj.valueAt(cursor);
 
 **声明**
 
-```magel
+```chali
 int64 rootNode();
 ```
 
@@ -1485,11 +1485,11 @@ int64 rootNode();
 
 **调用形式**
 
-```magel
+```chali
 obj.rootNode();
 ```
 
-**源码**：[source/std/tree.mgl:151](../../source/std/tree.mgl#L151)。
+**源码**：[source/std/tree.chl:151](../../source/std/tree.chl#L151)。
 
 <a id="api-39"></a>
 
@@ -1497,7 +1497,7 @@ obj.rootNode();
 
 **声明**
 
-```magel
+```chali
 List<int64> children(int64 cursor);
 ```
 
@@ -1521,11 +1521,11 @@ List<int64> children(int64 cursor);
 
 **调用形式**
 
-```magel
+```chali
 obj.children(cursor);
 ```
 
-**源码**：[source/std/tree.mgl:153](../../source/std/tree.mgl#L153)。
+**源码**：[source/std/tree.chl:153](../../source/std/tree.chl#L153)。
 
 <a id="api-40"></a>
 
@@ -1533,7 +1533,7 @@ obj.children(cursor);
 
 **声明**
 
-```magel
+```chali
 List<int64> preorder();
 ```
 
@@ -1555,11 +1555,11 @@ List<int64> preorder();
 
 **调用形式**
 
-```magel
+```chali
 obj.preorder();
 ```
 
-**源码**：[source/std/tree.mgl:155](../../source/std/tree.mgl#L155)。
+**源码**：[source/std/tree.chl:155](../../source/std/tree.chl#L155)。
 
 <a id="api-41"></a>
 
@@ -1567,7 +1567,7 @@ obj.preorder();
 
 **声明**
 
-```magel
+```chali
 List<int64> levelOrder();
 ```
 
@@ -1589,11 +1589,11 @@ List<int64> levelOrder();
 
 **调用形式**
 
-```magel
+```chali
 obj.levelOrder();
 ```
 
-**源码**：[source/std/tree.mgl:157](../../source/std/tree.mgl#L157)。
+**源码**：[source/std/tree.chl:157](../../source/std/tree.chl#L157)。
 
 <a id="api-42"></a>
 
@@ -1601,7 +1601,7 @@ obj.levelOrder();
 
 **声明**
 
-```magel
+```chali
 int64 height();
 ```
 
@@ -1623,11 +1623,11 @@ int64 height();
 
 **调用形式**
 
-```magel
+```chali
 obj.height();
 ```
 
-**源码**：[source/std/tree.mgl:159](../../source/std/tree.mgl#L159)。
+**源码**：[source/std/tree.chl:159](../../source/std/tree.chl#L159)。
 
 <a id="api-43"></a>
 
@@ -1635,7 +1635,7 @@ obj.height();
 
 **声明**
 
-```magel
+```chali
 BinarySearchTree toBinary();
 ```
 
@@ -1657,11 +1657,11 @@ BinarySearchTree toBinary();
 
 **调用形式**
 
-```magel
+```chali
 obj.toBinary();
 ```
 
-**源码**：[source/std/tree.mgl:161](../../source/std/tree.mgl#L161)。
+**源码**：[source/std/tree.chl:161](../../source/std/tree.chl#L161)。
 
 <a id="api-44"></a>
 
@@ -1669,7 +1669,7 @@ obj.toBinary();
 
 **声明**
 
-```magel
+```chali
 static GeneralTree fromBinary(BinarySearchTree tree);
 ```
 
@@ -1693,11 +1693,11 @@ static GeneralTree fromBinary(BinarySearchTree tree);
 
 **调用形式**
 
-```magel
+```chali
 std::tree::GeneralTree::fromBinary(tree);
 ```
 
-**源码**：[source/std/tree.mgl:163](../../source/std/tree.mgl#L163)。
+**源码**：[source/std/tree.chl:163](../../source/std/tree.chl#L163)。
 
 <a id="api-45"></a>
 
@@ -1705,7 +1705,7 @@ std::tree::GeneralTree::fromBinary(tree);
 
 **声明**
 
-```magel
+```chali
 GeneralTreeSnapshot snapshot();
 ```
 
@@ -1727,8 +1727,8 @@ GeneralTreeSnapshot snapshot();
 
 **调用形式**
 
-```magel
+```chali
 obj.snapshot();
 ```
 
-**源码**：[source/std/tree.mgl:165](../../source/std/tree.mgl#L165)。
+**源码**：[source/std/tree.chl:165](../../source/std/tree.chl#L165)。

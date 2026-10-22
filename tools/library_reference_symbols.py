@@ -1,5 +1,5 @@
 """标准库类型与字段的人工说明，供参考手册及编辑器共用。"""
-from magel_lsp import documentation
+from chali_lsp import documentation
 
 TYPE_DESCRIPTIONS = {
     'String': '拥有 UTF-8 文本的 opcode 值，复制产生独立可写缓冲。',

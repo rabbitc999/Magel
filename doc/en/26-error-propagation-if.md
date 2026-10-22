@@ -4,7 +4,7 @@
 
 Use `if` in initializers, assignments, arguments, returns and nested expressions. A simple branch contains one expression without a semicolon. A statement branch produces its result using `yield value;`.
 
-```magel
+```chali
 int32 value;
 value = if (ready) { 1 } elif (cached) { 2 } else {
     int32 fallback = 3;
@@ -24,7 +24,7 @@ The automatically imported std::lang module defines TryBranch<T,R>, Try<T,R>, Tr
 
 A named value uses the read-only branch method. Explicit `move(&value)?` uses intoBranch. Owned temporaries prefer the move protocol and may fall back to the read protocol. The source is evaluated once. Propagation performs normal cleanup and exits the current function or lambda.
 
-Result<T,E> uses ErrorResidual<E>; Option<T> uses NoneResidual. Different success types can share an error exit without confusing errors with absence. Custom sources can produce ErrorResidual<E> to propagate into a standard Result; custom return types can accept the same residual to receive standard errors. See the [custom propagation example](../../example/samples/try_custom.mgl).
+Result<T,E> uses ErrorResidual<E>; Option<T> uses NoneResidual. Different success types can share an error exit without confusing errors with absence. Custom sources can produce ErrorResidual<E> to propagate into a standard Result; custom return types can accept the same residual to receive standard errors. See the [custom propagation example](../../example/samples/try_custom.chl).
 
 ## Error adapters
 
@@ -33,7 +33,7 @@ Result<T,E> uses ErrorResidual<E>; Option<T> uses NoneResidual. Different succes
 - `option.okOrElse<E>(factory)` calls the error factory only for None.
 - `result.ok()` explicitly discards error information.
 
-The propagation operator works in conditional branches and still exits the enclosing function. See the [conditional expressions](../../example/samples/if_expression.mgl) and [error adapters](../../example/samples/error_adapters.mgl) samples, which `sh check.sh` runs on both VM.
+The propagation operator works in conditional branches and still exits the enclosing function. See the [conditional expressions](../../example/samples/if_expression.chl) and [error adapters](../../example/samples/error_adapters.chl) samples, which `sh check.sh` runs on both VM.
 
 ## Migration and tooling
 

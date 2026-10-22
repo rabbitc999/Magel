@@ -1,9 +1,9 @@
-#ifndef MAGEL_DAP_SERVER_HPP
-#define MAGEL_DAP_SERVER_HPP
+#ifndef CHALI_DAP_SERVER_HPP
+#define CHALI_DAP_SERVER_HPP
 
 /* DAP（Debug Adapter Protocol）调试服务端。
  *
- * VS Code 侧用 stdio 起一个 `magel --dap` 进程，双方按 DAP 收发 JSON。
+ * VS Code 侧用 stdio 起一个 `chali --dap` 进程，双方按 DAP 收发 JSON。
  * VM 侧本来就带断点与单步（`Machine::setBreakpoints` / `setSingleStep`），
  * 调试回调返回 `DebugAction` 决定下一步，所以"停在断点上等命令"是直接支持的：
  * 每次停下时发 `stopped` 事件，然后**嵌套读**下一条命令再返回动作。
@@ -54,4 +54,4 @@ bool finished();
 
 }  // namespace dap
 
-#endif  // MAGEL_DAP_SERVER_HPP
+#endif  // CHALI_DAP_SERVER_HPP

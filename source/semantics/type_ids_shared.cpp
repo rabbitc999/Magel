@@ -221,7 +221,7 @@ Memory::String EnumPayloadParameterName(const Memory::String &enumName,
                                         const Memory::String &variantName,
                                         std::size_t index)
 {
-    return "__magel_enum_arg_" + enumName + "_" + variantName + "_" + Memory::toString(index);
+    return "__chali_enum_arg_" + enumName + "_" + variantName + "_" + Memory::toString(index);
 }
 
 /**
@@ -296,14 +296,14 @@ bool StructHasInterface(const Memory::String &owner, const Memory::String &iface
 }
 
 /**
- * @brief 接口方法的**分派函数**名（编译器生成，`__magel_` 前缀用户用不了）。
+ * @brief 接口方法的**分派函数**名（编译器生成，`__chali_` 前缀用户用不了）。
  * @param iface 待查找或校验的接口名称。
  * @param method 压缩方法编号或目标方法名称。
  * @retval 生成或读取的结果文本。
  */
 Memory::String InterfaceLabel(const Memory::String &iface, const Memory::String &method)
 {
-    return "__magel_iface." + iface + "." + method;
+    return "__chali_iface." + iface + "." + method;
 }
 
 /**
@@ -431,7 +431,7 @@ bool Fail(const Memory::String &message)
  */
 void Note(const Memory::String &message)
 {
-    std::fprintf(stderr, "magel: 提示：%s\n", message.c_str());
+    std::fprintf(stderr, "chali: 提示：%s\n", message.c_str());
 }
 
 /**
@@ -619,7 +619,7 @@ const MFuncSig *FindInferenceFunction(const Memory::String &module, const Memory
 bool IsIndirectCallee(int calleeId)
 {
     const MNode &callee = N(calleeId);
-    if (callee.kind == MNode::Var && callee.s.rfind("__magel_lambda_", 0) == 0) return true;
+    if (callee.kind == MNode::Var && callee.s.rfind("__chali_lambda_", 0) == 0) return true;
     if ((callee.kind == MNode::Var) && (FindNodeVar(callee) == nullptr) && (FindFunctionOverloads(callee.module, callee.s) != nullptr))
     {
         return false; /* 函数名：直接调用 */
@@ -703,18 +703,18 @@ bool ResolveAstGenericClosureCall(int id, const Memory::String &seed);
  * @param name 原闭包入口或其具体外层实例名称。
  * @return 相关声明；普通类型与函数返回空指针。
  */
-const magel_lambda::GenericClosure *FindGenericClosureDefinition(const Memory::String &name)
+const chali_lambda::GenericClosure *FindGenericClosureDefinition(const Memory::String &name)
 {
-    const auto found = magel_lambda::genericClosures.find(name);
-    if (found != magel_lambda::genericClosures.end()) return &found->second;
-    const auto expansion = magel_generic::session.made.find(name);
-    if (expansion == magel_generic::session.made.end()) return nullptr;
-    const auto source = magel_lambda::genericClosures.find(expansion->second.generic->name);
-    if (source == magel_lambda::genericClosures.end() || source->second.outerNames.size() != expansion->second.args.size()) return nullptr;
+    const auto found = chali_lambda::genericClosures.find(name);
+    if (found != chali_lambda::genericClosures.end()) return &found->second;
+    const auto expansion = chali_generic::session.made.find(name);
+    if (expansion == chali_generic::session.made.end()) return nullptr;
+    const auto source = chali_lambda::genericClosures.find(expansion->second.generic->name);
+    if (source == chali_lambda::genericClosures.end() || source->second.outerNames.size() != expansion->second.args.size()) return nullptr;
     auto definition = source->second;
     definition.seed = name;
     definition.outerArguments = expansion->second.args;
-    return &magel_lambda::genericClosures.emplace(name, std::move(definition)).first->second;
+    return &chali_lambda::genericClosures.emplace(name, std::move(definition)).first->second;
 }
 
 /**
@@ -753,7 +753,7 @@ Memory::String ResolveFunctionValue(const Memory::String &module, const Memory::
 {
     const Memory::Vector<Memory::String> *found = FindFunctionOverloads(module, name);
     if (found == nullptr || found->empty()) return Memory::String();
-    if (found->size() == 1u && expected && expected->name == name && magel_lambda::genericClosures.count(name)) return (*found)[0];
+    if (found->size() == 1u && expected && expected->name == name && chali_lambda::genericClosures.count(name)) return (*found)[0];
     if (found->size() == 1u && (!expected || expected->kind != MType::Func)) return (*found)[0];
     if (expected != nullptr && expected->kind == MType::Func)
     {
@@ -849,7 +849,7 @@ struct MBlockContext
 };
 Memory::Vector<MBlockContext> g_blockStack;
 /**
- * 生成循环 / match 分支用的标签名（`__magel_loop_7` 这种，和用户标签不撞）。
+ * 生成循环 / match 分支用的标签名（`__chali_loop_7` 这种，和用户标签不撞）。
  */
 int g_blockSerial = 0;
 /**
@@ -859,7 +859,7 @@ int g_blockSerial = 0;
  */
 Memory::String NewBlockLabel(const Memory::String &kind)
 {
-    return "__magel_" + kind + "_" + Memory::toString(++g_blockSerial);
+    return "__chali_" + kind + "_" + Memory::toString(++g_blockSerial);
 }
 
 /**

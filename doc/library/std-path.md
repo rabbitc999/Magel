@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::path;
 ```
 
@@ -14,16 +14,16 @@ import std::path;
 
 ## 参考代码
 
-完整程序：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+完整程序：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。
 
 ```powershell
-magel run example/samples/std_parse_random_path_memory.mgl
+chali run example/samples/std_parse_random_path_memory.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::memory;
 import std::parse;
 import std::path;
@@ -161,7 +161,7 @@ memory=ok
 
 **声明**
 
-```magel
+```chali
 static std::lang::String join(std::lang::String left, std::lang::String right);
 ```
 
@@ -186,13 +186,13 @@ static std::lang::String join(std::lang::String left, std::lang::String right);
 
 **调用形式**
 
-```magel
+```chali
 std::path::PathString::join(left, right);
 ```
 
-**源码**：[source/std/path.mgl:137](../../source/std/path.mgl#L137)。
+**源码**：[source/std/path.chl:137](../../source/std/path.chl#L137)。
 
-**完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+**完整示例**：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。
 
 <a id="api-1"></a>
 
@@ -200,7 +200,7 @@ std::path::PathString::join(left, right);
 
 **声明**
 
-```magel
+```chali
 static std::lang::String fileName(std::lang::String path);
 ```
 
@@ -224,13 +224,13 @@ static std::lang::String fileName(std::lang::String path);
 
 **调用形式**
 
-```magel
+```chali
 std::path::PathString::fileName(path);
 ```
 
-**源码**：[source/std/path.mgl:138](../../source/std/path.mgl#L138)。
+**源码**：[source/std/path.chl:138](../../source/std/path.chl#L138)。
 
-**完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+**完整示例**：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。
 
 <a id="api-2"></a>
 
@@ -238,7 +238,7 @@ std::path::PathString::fileName(path);
 
 **声明**
 
-```magel
+```chali
 static std::lang::String extension(std::lang::String path);
 ```
 
@@ -262,13 +262,13 @@ static std::lang::String extension(std::lang::String path);
 
 **调用形式**
 
-```magel
+```chali
 std::path::PathString::extension(path);
 ```
 
-**源码**：[source/std/path.mgl:139](../../source/std/path.mgl#L139)。
+**源码**：[source/std/path.chl:139](../../source/std/path.chl#L139)。
 
-**完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+**完整示例**：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。
 
 <a id="api-3"></a>
 
@@ -276,7 +276,7 @@ std::path::PathString::extension(path);
 
 **声明**
 
-```magel
+```chali
 static std::lang::String normalize(std::lang::String path);
 ```
 
@@ -300,10 +300,10 @@ static std::lang::String normalize(std::lang::String path);
 
 **调用形式**
 
-```magel
+```chali
 std::path::PathString::normalize(path);
 ```
 
-**源码**：[source/std/path.mgl:140](../../source/std/path.mgl#L140)。
+**源码**：[source/std/path.chl:140](../../source/std/path.chl#L140)。
 
-**完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+**完整示例**：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。

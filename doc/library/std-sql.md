@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::sql;
 ```
 
@@ -14,16 +14,16 @@ SQLite 静态内置，无需 sqlite3.dll，忽略 SQLITE_LIBRARY。MySQL/MariaDB
 
 ## 参考代码
 
-完整程序：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+完整程序：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 ```powershell
-magel run doc/examples/library/sqlite.mgl
+chali run doc/examples/library/sqlite.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::sql;
 
 /** @brief 使用内置 SQLite，在内存库中演示执行、转义、结果与错误处理。 */
@@ -148,7 +148,7 @@ int64 main() {
 
 **声明**
 
-```magel
+```chali
 void orderBy(String field, bool descending = false);
 ```
 
@@ -173,13 +173,13 @@ void orderBy(String field, bool descending = false);
 
 **调用形式**
 
-```magel
+```chali
 obj.orderBy(field, descending);
 ```
 
-**源码**：[source/std/sql.mgl:80](../../source/std/sql.mgl#L80)。
+**源码**：[source/std/sql.chl:80](../../source/std/sql.chl#L80)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-1"></a>
 
@@ -187,7 +187,7 @@ obj.orderBy(field, descending);
 
 **声明**
 
-```magel
+```chali
 void select(String field);
 ```
 
@@ -211,13 +211,13 @@ void select(String field);
 
 **调用形式**
 
-```magel
+```chali
 obj.select(field);
 ```
 
-**源码**：[source/std/sql.mgl:82](../../source/std/sql.mgl#L82)。
+**源码**：[source/std/sql.chl:82](../../source/std/sql.chl#L82)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-2"></a>
 
@@ -225,7 +225,7 @@ obj.select(field);
 
 **声明**
 
-```magel
+```chali
 void page(int64 limit, int64 offset = 0);
 ```
 
@@ -252,13 +252,13 @@ void page(int64 limit, int64 offset = 0);
 
 **调用形式**
 
-```magel
+```chali
 obj.page(limit, offset);
 ```
 
-**源码**：[source/std/sql.mgl:84](../../source/std/sql.mgl#L84)。
+**源码**：[source/std/sql.chl:84](../../source/std/sql.chl#L84)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-3"></a>
 
@@ -266,7 +266,7 @@ obj.page(limit, offset);
 
 **声明**
 
-```magel
+```chali
 Result<SqlStatement,String> build(String operation = "select", String values = "{}");
 ```
 
@@ -293,13 +293,13 @@ Result<SqlStatement,String> build(String operation = "select", String values = "
 
 **调用形式**
 
-```magel
+```chali
 obj.build(operation, values);
 ```
 
-**源码**：[source/std/sql.mgl:86](../../source/std/sql.mgl#L86)。
+**源码**：[source/std/sql.chl:86](../../source/std/sql.chl#L86)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-4"></a>
 
@@ -307,7 +307,7 @@ obj.build(operation, values);
 
 **声明**
 
-```magel
+```chali
 bool isNull();
 ```
 
@@ -329,13 +329,13 @@ bool isNull();
 
 **调用形式**
 
-```magel
+```chali
 obj.isNull();
 ```
 
-**源码**：[source/std/sql.mgl:163](../../source/std/sql.mgl#L163)。
+**源码**：[source/std/sql.chl:163](../../source/std/sql.chl#L163)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-5"></a>
 
@@ -343,7 +343,7 @@ obj.isNull();
 
 **声明**
 
-```magel
+```chali
 bool isNumber();
 ```
 
@@ -365,13 +365,13 @@ bool isNumber();
 
 **调用形式**
 
-```magel
+```chali
 obj.isNumber();
 ```
 
-**源码**：[source/std/sql.mgl:164](../../source/std/sql.mgl#L164)。
+**源码**：[source/std/sql.chl:164](../../source/std/sql.chl#L164)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-6"></a>
 
@@ -379,7 +379,7 @@ obj.isNumber();
 
 **声明**
 
-```magel
+```chali
 std::lang::String text();
 ```
 
@@ -403,13 +403,13 @@ std::lang::String text();
 
 **调用形式**
 
-```magel
+```chali
 obj.text();
 ```
 
-**源码**：[source/std/sql.mgl:167](../../source/std/sql.mgl#L167)。
+**源码**：[source/std/sql.chl:167](../../source/std/sql.chl#L167)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-7"></a>
 
@@ -417,7 +417,7 @@ obj.text();
 
 **声明**
 
-```magel
+```chali
 int64 asInt();
 ```
 
@@ -439,13 +439,13 @@ int64 asInt();
 
 **调用形式**
 
-```magel
+```chali
 obj.asInt();
 ```
 
-**源码**：[source/std/sql.mgl:172](../../source/std/sql.mgl#L172)。
+**源码**：[source/std/sql.chl:172](../../source/std/sql.chl#L172)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-8"></a>
 
@@ -453,7 +453,7 @@ obj.asInt();
 
 **声明**
 
-```magel
+```chali
 float64 asReal();
 ```
 
@@ -475,13 +475,13 @@ float64 asReal();
 
 **调用形式**
 
-```magel
+```chali
 obj.asReal();
 ```
 
-**源码**：[source/std/sql.mgl:178](../../source/std/sql.mgl#L178)。
+**源码**：[source/std/sql.chl:178](../../source/std/sql.chl#L178)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-9"></a>
 
@@ -489,7 +489,7 @@ obj.asReal();
 
 **声明**
 
-```magel
+```chali
 int64 size();
 ```
 
@@ -511,13 +511,13 @@ int64 size();
 
 **调用形式**
 
-```magel
+```chali
 obj.size();
 ```
 
-**源码**：[source/std/sql.mgl:189](../../source/std/sql.mgl#L189)。
+**源码**：[source/std/sql.chl:189](../../source/std/sql.chl#L189)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-10"></a>
 
@@ -525,7 +525,7 @@ obj.size();
 
 **声明**
 
-```magel
+```chali
 DataCell at(int64 index);
 ```
 
@@ -549,13 +549,13 @@ DataCell at(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.at(index);
 ```
 
-**源码**：[source/std/sql.mgl:190](../../source/std/sql.mgl#L190)。
+**源码**：[source/std/sql.chl:190](../../source/std/sql.chl#L190)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-11"></a>
 
@@ -563,7 +563,7 @@ obj.at(index);
 
 **声明**
 
-```magel
+```chali
 int64 rowCount();
 ```
 
@@ -585,13 +585,13 @@ int64 rowCount();
 
 **调用形式**
 
-```magel
+```chali
 obj.rowCount();
 ```
 
-**源码**：[source/std/sql.mgl:201](../../source/std/sql.mgl#L201)。
+**源码**：[source/std/sql.chl:201](../../source/std/sql.chl#L201)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-12"></a>
 
@@ -599,7 +599,7 @@ obj.rowCount();
 
 **声明**
 
-```magel
+```chali
 int64 colCount();
 ```
 
@@ -621,13 +621,13 @@ int64 colCount();
 
 **调用形式**
 
-```magel
+```chali
 obj.colCount();
 ```
 
-**源码**：[source/std/sql.mgl:202](../../source/std/sql.mgl#L202)。
+**源码**：[source/std/sql.chl:202](../../source/std/sql.chl#L202)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-13"></a>
 
@@ -635,7 +635,7 @@ obj.colCount();
 
 **声明**
 
-```magel
+```chali
 bool isEmpty();
 ```
 
@@ -657,13 +657,13 @@ bool isEmpty();
 
 **调用形式**
 
-```magel
+```chali
 obj.isEmpty();
 ```
 
-**源码**：[source/std/sql.mgl:203](../../source/std/sql.mgl#L203)。
+**源码**：[source/std/sql.chl:203](../../source/std/sql.chl#L203)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-14"></a>
 
@@ -671,7 +671,7 @@ obj.isEmpty();
 
 **声明**
 
-```magel
+```chali
 std::lang::String columnName(int64 index);
 ```
 
@@ -695,13 +695,13 @@ std::lang::String columnName(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.columnName(index);
 ```
 
-**源码**：[source/std/sql.mgl:204](../../source/std/sql.mgl#L204)。
+**源码**：[source/std/sql.chl:204](../../source/std/sql.chl#L204)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-15"></a>
 
@@ -709,7 +709,7 @@ obj.columnName(index);
 
 **声明**
 
-```magel
+```chali
 int64 columnIndex(std::lang::String name);
 ```
 
@@ -735,13 +735,13 @@ int64 columnIndex(std::lang::String name);
 
 **调用形式**
 
-```magel
+```chali
 obj.columnIndex(name);
 ```
 
-**源码**：[source/std/sql.mgl:207](../../source/std/sql.mgl#L207)。
+**源码**：[source/std/sql.chl:207](../../source/std/sql.chl#L207)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-16"></a>
 
@@ -749,7 +749,7 @@ obj.columnIndex(name);
 
 **声明**
 
-```magel
+```chali
 DataCell at(int64 row, int64 column);
 ```
 
@@ -774,13 +774,13 @@ DataCell at(int64 row, int64 column);
 
 **调用形式**
 
-```magel
+```chali
 obj.at(row, column);
 ```
 
-**源码**：[source/std/sql.mgl:220](../../source/std/sql.mgl#L220)。
+**源码**：[source/std/sql.chl:220](../../source/std/sql.chl#L220)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-17"></a>
 
@@ -788,7 +788,7 @@ obj.at(row, column);
 
 **声明**
 
-```magel
+```chali
 std::lang::String textAt(int64 row, int64 column);
 ```
 
@@ -813,13 +813,13 @@ std::lang::String textAt(int64 row, int64 column);
 
 **调用形式**
 
-```magel
+```chali
 obj.textAt(row, column);
 ```
 
-**源码**：[source/std/sql.mgl:221](../../source/std/sql.mgl#L221)。
+**源码**：[source/std/sql.chl:221](../../source/std/sql.chl#L221)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-18"></a>
 
@@ -827,7 +827,7 @@ obj.textAt(row, column);
 
 **声明**
 
-```magel
+```chali
 int64 intAt(int64 row, int64 column);
 ```
 
@@ -852,13 +852,13 @@ int64 intAt(int64 row, int64 column);
 
 **调用形式**
 
-```magel
+```chali
 obj.intAt(row, column);
 ```
 
-**源码**：[source/std/sql.mgl:222](../../source/std/sql.mgl#L222)。
+**源码**：[source/std/sql.chl:222](../../source/std/sql.chl#L222)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-19"></a>
 
@@ -866,7 +866,7 @@ obj.intAt(row, column);
 
 **声明**
 
-```magel
+```chali
 float64 realAt(int64 row, int64 column);
 ```
 
@@ -891,13 +891,13 @@ float64 realAt(int64 row, int64 column);
 
 **调用形式**
 
-```magel
+```chali
 obj.realAt(row, column);
 ```
 
-**源码**：[source/std/sql.mgl:223](../../source/std/sql.mgl#L223)。
+**源码**：[source/std/sql.chl:223](../../source/std/sql.chl#L223)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-20"></a>
 
@@ -905,7 +905,7 @@ obj.realAt(row, column);
 
 **声明**
 
-```magel
+```chali
 std::lang::String scalar();
 ```
 
@@ -929,13 +929,13 @@ std::lang::String scalar();
 
 **调用形式**
 
-```magel
+```chali
 obj.scalar();
 ```
 
-**源码**：[source/std/sql.mgl:226](../../source/std/sql.mgl#L226)。
+**源码**：[source/std/sql.chl:226](../../source/std/sql.chl#L226)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-21"></a>
 
@@ -943,7 +943,7 @@ obj.scalar();
 
 **声明**
 
-```magel
+```chali
 int64 count();
 ```
 
@@ -967,13 +967,13 @@ int64 count();
 
 **调用形式**
 
-```magel
+```chali
 obj.count();
 ```
 
-**源码**：[source/std/sql.mgl:232](../../source/std/sql.mgl#L232)。
+**源码**：[source/std/sql.chl:232](../../source/std/sql.chl#L232)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-22"></a>
 
@@ -981,7 +981,7 @@ obj.count();
 
 **声明**
 
-```magel
+```chali
 std::lang::String pad(std::lang::String text, int64 width);
 ```
 
@@ -1008,13 +1008,13 @@ std::lang::String pad(std::lang::String text, int64 width);
 
 **调用形式**
 
-```magel
+```chali
 obj.pad(text, width);
 ```
 
-**源码**：[source/std/sql.mgl:238](../../source/std/sql.mgl#L238)。
+**源码**：[source/std/sql.chl:238](../../source/std/sql.chl#L238)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-23"></a>
 
@@ -1022,7 +1022,7 @@ obj.pad(text, width);
 
 **声明**
 
-```magel
+```chali
 std::lang::String render();
 ```
 
@@ -1046,13 +1046,13 @@ std::lang::String render();
 
 **调用形式**
 
-```magel
+```chali
 obj.render();
 ```
 
-**源码**：[source/std/sql.mgl:252](../../source/std/sql.mgl#L252)。
+**源码**：[source/std/sql.chl:252](../../source/std/sql.chl#L252)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-24"></a>
 
@@ -1060,7 +1060,7 @@ obj.render();
 
 **声明**
 
-```magel
+```chali
 static Database mysql(String host, String user, String password, String database, int32 port);
 ```
 
@@ -1090,13 +1090,13 @@ static Database mysql(String host, String user, String password, String database
 
 **调用形式**
 
-```magel
+```chali
 std::sql::Database::mysql(host, user, password, database, port);
 ```
 
-**源码**：[source/std/sql.mgl:359](../../source/std/sql.mgl#L359)。
+**源码**：[source/std/sql.chl:359](../../source/std/sql.chl#L359)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-25"></a>
 
@@ -1104,7 +1104,7 @@ std::sql::Database::mysql(host, user, password, database, port);
 
 **声明**
 
-```magel
+```chali
 static Database sqlite(String path);
 ```
 
@@ -1130,13 +1130,13 @@ static Database sqlite(String path);
 
 **调用形式**
 
-```magel
+```chali
 std::sql::Database::sqlite(path);
 ```
 
-**源码**：[source/std/sql.mgl:363](../../source/std/sql.mgl#L363)。
+**源码**：[source/std/sql.chl:363](../../source/std/sql.chl#L363)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-26"></a>
 
@@ -1144,7 +1144,7 @@ std::sql::Database::sqlite(path);
 
 **声明**
 
-```magel
+```chali
 static Database postgres(String options);
 ```
 
@@ -1170,13 +1170,13 @@ static Database postgres(String options);
 
 **调用形式**
 
-```magel
+```chali
 std::sql::Database::postgres(options);
 ```
 
-**源码**：[source/std/sql.mgl:365](../../source/std/sql.mgl#L365)。
+**源码**：[source/std/sql.chl:365](../../source/std/sql.chl#L365)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-27"></a>
 
@@ -1184,7 +1184,7 @@ std::sql::Database::postgres(options);
 
 **声明**
 
-```magel
+```chali
 static Database odbc(String options);
 ```
 
@@ -1210,13 +1210,13 @@ static Database odbc(String options);
 
 **调用形式**
 
-```magel
+```chali
 std::sql::Database::odbc(options);
 ```
 
-**源码**：[source/std/sql.mgl:367](../../source/std/sql.mgl#L367)。
+**源码**：[source/std/sql.chl:367](../../source/std/sql.chl#L367)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-28"></a>
 
@@ -1224,7 +1224,7 @@ std::sql::Database::odbc(options);
 
 **声明**
 
-```magel
+```chali
 static Database sqlServer(String options);
 ```
 
@@ -1250,13 +1250,13 @@ static Database sqlServer(String options);
 
 **调用形式**
 
-```magel
+```chali
 std::sql::Database::sqlServer(options);
 ```
 
-**源码**：[source/std/sql.mgl:369](../../source/std/sql.mgl#L369)。
+**源码**：[source/std/sql.chl:369](../../source/std/sql.chl#L369)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-29"></a>
 
@@ -1264,7 +1264,7 @@ std::sql::Database::sqlServer(options);
 
 **声明**
 
-```magel
+```chali
 Driver driver();
 ```
 
@@ -1286,13 +1286,13 @@ Driver driver();
 
 **调用形式**
 
-```magel
+```chali
 obj.driver();
 ```
 
-**源码**：[source/std/sql.mgl:371](../../source/std/sql.mgl#L371)。
+**源码**：[source/std/sql.chl:371](../../source/std/sql.chl#L371)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-30"></a>
 
@@ -1300,7 +1300,7 @@ obj.driver();
 
 **声明**
 
-```magel
+```chali
 std::lang::String quote(std::lang::String text);
 ```
 
@@ -1326,13 +1326,13 @@ std::lang::String quote(std::lang::String text);
 
 **调用形式**
 
-```magel
+```chali
 obj.quote(text);
 ```
 
-**源码**：[source/std/sql.mgl:382](../../source/std/sql.mgl#L382)。
+**源码**：[source/std/sql.chl:382](../../source/std/sql.chl#L382)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-31"></a>
 
@@ -1340,7 +1340,7 @@ obj.quote(text);
 
 **声明**
 
-```magel
+```chali
 std::lang::String backendName();
 ```
 
@@ -1364,13 +1364,13 @@ std::lang::String backendName();
 
 **调用形式**
 
-```magel
+```chali
 obj.backendName();
 ```
 
-**源码**：[source/std/sql.mgl:392](../../source/std/sql.mgl#L392)。
+**源码**：[source/std/sql.chl:392](../../source/std/sql.chl#L392)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-32"></a>
 
@@ -1378,7 +1378,7 @@ obj.backendName();
 
 **声明**
 
-```magel
+```chali
 static Database mysql(std::lang::String host, std::lang::String user, std::lang::String password, std::lang::String database);
 ```
 
@@ -1407,13 +1407,13 @@ static Database mysql(std::lang::String host, std::lang::String user, std::lang:
 
 **调用形式**
 
-```magel
+```chali
 std::sql::Database::mysql(host, user, password, database);
 ```
 
-**源码**：[source/std/sql.mgl:405](../../source/std/sql.mgl#L405)。
+**源码**：[source/std/sql.chl:405](../../source/std/sql.chl#L405)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-33"></a>
 
@@ -1421,7 +1421,7 @@ std::sql::Database::mysql(host, user, password, database);
 
 **声明**
 
-```magel
+```chali
 static Database maria(String host, String user, String password, String database, int32 port = (int32)3306);
 ```
 
@@ -1451,13 +1451,13 @@ static Database maria(String host, String user, String password, String database
 
 **调用形式**
 
-```magel
+```chali
 std::sql::Database::maria(host, user, password, database, port);
 ```
 
-**源码**：[source/std/sql.mgl:410](../../source/std/sql.mgl#L410)。
+**源码**：[source/std/sql.chl:410](../../source/std/sql.chl#L410)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-34"></a>
 
@@ -1465,7 +1465,7 @@ std::sql::Database::maria(host, user, password, database, port);
 
 **声明**
 
-```magel
+```chali
 static Database local(std::lang::String database);
 ```
 
@@ -1491,13 +1491,13 @@ static Database local(std::lang::String database);
 
 **调用形式**
 
-```magel
+```chali
 std::sql::Database::local(database);
 ```
 
-**源码**：[source/std/sql.mgl:415](../../source/std/sql.mgl#L415)。
+**源码**：[source/std/sql.chl:415](../../source/std/sql.chl#L415)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-35"></a>
 
@@ -1505,7 +1505,7 @@ std::sql::Database::local(database);
 
 **声明**
 
-```magel
+```chali
 bool isOpen();
 ```
 
@@ -1527,13 +1527,13 @@ bool isOpen();
 
 **调用形式**
 
-```magel
+```chali
 obj.isOpen();
 ```
 
-**源码**：[source/std/sql.mgl:419](../../source/std/sql.mgl#L419)。
+**源码**：[source/std/sql.chl:419](../../source/std/sql.chl#L419)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-36"></a>
 
@@ -1541,7 +1541,7 @@ obj.isOpen();
 
 **声明**
 
-```magel
+```chali
 std::lang::String lastError();
 ```
 
@@ -1563,13 +1563,13 @@ std::lang::String lastError();
 
 **调用形式**
 
-```magel
+```chali
 obj.lastError();
 ```
 
-**源码**：[source/std/sql.mgl:420](../../source/std/sql.mgl#L420)。
+**源码**：[source/std/sql.chl:420](../../source/std/sql.chl#L420)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-37"></a>
 
@@ -1577,7 +1577,7 @@ obj.lastError();
 
 **声明**
 
-```magel
+```chali
 int64 affectedRows();
 ```
 
@@ -1599,13 +1599,13 @@ int64 affectedRows();
 
 **调用形式**
 
-```magel
+```chali
 obj.affectedRows();
 ```
 
-**源码**：[source/std/sql.mgl:421](../../source/std/sql.mgl#L421)。
+**源码**：[source/std/sql.chl:421](../../source/std/sql.chl#L421)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-38"></a>
 
@@ -1613,7 +1613,7 @@ obj.affectedRows();
 
 **声明**
 
-```magel
+```chali
 void close();
 ```
 
@@ -1637,13 +1637,13 @@ void close();
 
 **调用形式**
 
-```magel
+```chali
 obj.close();
 ```
 
-**源码**：[source/std/sql.mgl:424](../../source/std/sql.mgl#L424)。
+**源码**：[source/std/sql.chl:424](../../source/std/sql.chl#L424)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-39"></a>
 
@@ -1651,7 +1651,7 @@ obj.close();
 
 **声明**
 
-```magel
+```chali
 ResultSet exec(std::lang::String sql);
 ```
 
@@ -1677,13 +1677,13 @@ ResultSet exec(std::lang::String sql);
 
 **调用形式**
 
-```magel
+```chali
 obj.exec(sql);
 ```
 
-**源码**：[source/std/sql.mgl:431](../../source/std/sql.mgl#L431)。
+**源码**：[source/std/sql.chl:431](../../source/std/sql.chl#L431)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-40"></a>
 
@@ -1691,7 +1691,7 @@ obj.exec(sql);
 
 **声明**
 
-```magel
+```chali
 ResultSet exec(SqlStatement statement);
 ```
 
@@ -1717,13 +1717,13 @@ ResultSet exec(SqlStatement statement);
 
 **调用形式**
 
-```magel
+```chali
 obj.exec(statement);
 ```
 
-**源码**：[source/std/sql.mgl:436](../../source/std/sql.mgl#L436)。
+**源码**：[source/std/sql.chl:436](../../source/std/sql.chl#L436)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-41"></a>
 
@@ -1731,7 +1731,7 @@ obj.exec(statement);
 
 **声明**
 
-```magel
+```chali
 bool execOk(std::lang::String sql);
 ```
 
@@ -1757,13 +1757,13 @@ bool execOk(std::lang::String sql);
 
 **调用形式**
 
-```magel
+```chali
 obj.execOk(sql);
 ```
 
-**源码**：[source/std/sql.mgl:504](../../source/std/sql.mgl#L504)。
+**源码**：[source/std/sql.chl:504](../../source/std/sql.chl#L504)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-42"></a>
 
@@ -1771,7 +1771,7 @@ obj.execOk(sql);
 
 **声明**
 
-```magel
+```chali
 std::lang::String scalar(std::lang::String sql);
 ```
 
@@ -1797,13 +1797,13 @@ std::lang::String scalar(std::lang::String sql);
 
 **调用形式**
 
-```magel
+```chali
 obj.scalar(sql);
 ```
 
-**源码**：[source/std/sql.mgl:510](../../source/std/sql.mgl#L510)。
+**源码**：[source/std/sql.chl:510](../../source/std/sql.chl#L510)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-43"></a>
 
@@ -1811,7 +1811,7 @@ obj.scalar(sql);
 
 **声明**
 
-```magel
+```chali
 int64 count(std::lang::String sql);
 ```
 
@@ -1837,13 +1837,13 @@ int64 count(std::lang::String sql);
 
 **调用形式**
 
-```magel
+```chali
 obj.count(sql);
 ```
 
-**源码**：[source/std/sql.mgl:517](../../source/std/sql.mgl#L517)。
+**源码**：[source/std/sql.chl:517](../../source/std/sql.chl#L517)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-44"></a>
 
@@ -1851,7 +1851,7 @@ obj.count(sql);
 
 **声明**
 
-```magel
+```chali
 bool hasTable(std::lang::String tableName);
 ```
 
@@ -1877,13 +1877,13 @@ bool hasTable(std::lang::String tableName);
 
 **调用形式**
 
-```magel
+```chali
 obj.hasTable(tableName);
 ```
 
-**源码**：[source/std/sql.mgl:524](../../source/std/sql.mgl#L524)。
+**源码**：[source/std/sql.chl:524](../../source/std/sql.chl#L524)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-45"></a>
 
@@ -1891,7 +1891,7 @@ obj.hasTable(tableName);
 
 **声明**
 
-```magel
+```chali
 std::lang::String quote(std::lang::String text, bool escapeBackslash);
 ```
 
@@ -1918,13 +1918,13 @@ std::lang::String quote(std::lang::String text, bool escapeBackslash);
 
 **调用形式**
 
-```magel
+```chali
 std::sql::quote(text, escapeBackslash);
 ```
 
-**源码**：[source/std/sql.mgl:551](../../source/std/sql.mgl#L551)。
+**源码**：[source/std/sql.chl:551](../../source/std/sql.chl#L551)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-46"></a>
 
@@ -1932,7 +1932,7 @@ std::sql::quote(text, escapeBackslash);
 
 **声明**
 
-```magel
+```chali
 std::lang::String quote(std::lang::String text);
 ```
 
@@ -1958,13 +1958,13 @@ std::lang::String quote(std::lang::String text);
 
 **调用形式**
 
-```magel
+```chali
 std::sql::quote(text);
 ```
 
-**源码**：[source/std/sql.mgl:574](../../source/std/sql.mgl#L574)。
+**源码**：[source/std/sql.chl:574](../../source/std/sql.chl#L574)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-47"></a>
 
@@ -1972,7 +1972,7 @@ std::sql::quote(text);
 
 **声明**
 
-```magel
+```chali
 std::lang::String intLiteral(int64 value);
 ```
 
@@ -1998,13 +1998,13 @@ std::lang::String intLiteral(int64 value);
 
 **调用形式**
 
-```magel
+```chali
 std::sql::intLiteral(value);
 ```
 
-**源码**：[source/std/sql.mgl:577](../../source/std/sql.mgl#L577)。
+**源码**：[source/std/sql.chl:577](../../source/std/sql.chl#L577)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-48"></a>
 
@@ -2012,7 +2012,7 @@ std::sql::intLiteral(value);
 
 **声明**
 
-```magel
+```chali
 std::lang::String realLiteral(float64 value);
 ```
 
@@ -2038,13 +2038,13 @@ std::lang::String realLiteral(float64 value);
 
 **调用形式**
 
-```magel
+```chali
 std::sql::realLiteral(value);
 ```
 
-**源码**：[source/std/sql.mgl:580](../../source/std/sql.mgl#L580)。
+**源码**：[source/std/sql.chl:580](../../source/std/sql.chl#L580)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-49"></a>
 
@@ -2052,7 +2052,7 @@ std::sql::realLiteral(value);
 
 **声明**
 
-```magel
+```chali
 int64 displayWidth(std::lang::String text);
 ```
 
@@ -2078,13 +2078,13 @@ int64 displayWidth(std::lang::String text);
 
 **调用形式**
 
-```magel
+```chali
 std::sql::displayWidth(text);
 ```
 
-**源码**：[source/std/sql.mgl:583](../../source/std/sql.mgl#L583)。
+**源码**：[source/std/sql.chl:583](../../source/std/sql.chl#L583)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-50"></a>
 
@@ -2092,7 +2092,7 @@ std::sql::displayWidth(text);
 
 **声明**
 
-```magel
+```chali
 Result<Query,String> query<T>();
 ```
 
@@ -2116,13 +2116,13 @@ Result<Query,String> query<T>();
 
 **调用形式**
 
-```magel
+```chali
 std::sql::query<T>();
 ```
 
-**源码**：[source/std/sql.mgl:597](../../source/std/sql.mgl#L597)。
+**源码**：[source/std/sql.chl:597](../../source/std/sql.chl#L597)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-51"></a>
 
@@ -2130,7 +2130,7 @@ std::sql::query<T>();
 
 **声明**
 
-```magel
+```chali
 Result<bool,String> filter<V>(Query mut& query, String field, V value, int64 operation = 0);
 ```
 
@@ -2159,13 +2159,13 @@ Result<bool,String> filter<V>(Query mut& query, String field, V value, int64 ope
 
 **调用形式**
 
-```magel
+```chali
 std::sql::filter<V>(query, field, value, operation);
 ```
 
-**源码**：[source/std/sql.mgl:605](../../source/std/sql.mgl#L605)。
+**源码**：[source/std/sql.chl:605](../../source/std/sql.chl#L605)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-52"></a>
 
@@ -2173,7 +2173,7 @@ std::sql::filter<V>(query, field, value, operation);
 
 **声明**
 
-```magel
+```chali
 Result<bool,String> filterMany<V>(Query mut& query, String field, List<V> values, int64 operation = 11);
 ```
 
@@ -2202,13 +2202,13 @@ Result<bool,String> filterMany<V>(Query mut& query, String field, List<V> values
 
 **调用形式**
 
-```magel
+```chali
 std::sql::filterMany<V>(query, field, values, operation);
 ```
 
-**源码**：[source/std/sql.mgl:612](../../source/std/sql.mgl#L612)。
+**源码**：[source/std/sql.chl:612](../../source/std/sql.chl#L612)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-53"></a>
 
@@ -2216,7 +2216,7 @@ std::sql::filterMany<V>(query, field, values, operation);
 
 **声明**
 
-```magel
+```chali
 Result<SqlStatement,String> insert<T>(Query mut& query, T const& value);
 ```
 
@@ -2243,13 +2243,13 @@ Result<SqlStatement,String> insert<T>(Query mut& query, T const& value);
 
 **调用形式**
 
-```magel
+```chali
 std::sql::insert<T>(query, value);
 ```
 
-**源码**：[source/std/sql.mgl:620](../../source/std/sql.mgl#L620)。
+**源码**：[source/std/sql.chl:620](../../source/std/sql.chl#L620)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。
 
 <a id="api-54"></a>
 
@@ -2257,7 +2257,7 @@ std::sql::insert<T>(query, value);
 
 **声明**
 
-```magel
+```chali
 Result<SqlStatement,String> update<T>(Query mut& query, T const& value);
 ```
 
@@ -2284,10 +2284,10 @@ Result<SqlStatement,String> update<T>(Query mut& query, T const& value);
 
 **调用形式**
 
-```magel
+```chali
 std::sql::update<T>(query, value);
 ```
 
-**源码**：[source/std/sql.mgl:626](../../source/std/sql.mgl#L626)。
+**源码**：[source/std/sql.chl:626](../../source/std/sql.chl#L626)。
 
-**完整示例**：[doc/examples/library/sqlite.mgl](../../doc/examples/library/sqlite.mgl)。
+**完整示例**：[doc/examples/library/sqlite.chl](../../doc/examples/library/sqlite.chl)。

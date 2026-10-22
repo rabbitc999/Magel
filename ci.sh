@@ -1,11 +1,11 @@
 #!/bin/sh
-# magel/ci.sh —— Magel 的门禁：分两档。
+# chali/ci.sh —— ChaLi 的门禁：分两档。
 #
 # 用法（在本目录跑）：
 #   sh ci.sh                 快速门禁（默认）：构建 + 样例回归 + 核心测试 + 文档门禁
 #   sh ci.sh --full          发布门禁：在快速门禁之外，再跑全部 stackvm / Python 回归
 #   sh ci.sh --no-python     （只对 --full 有意义）只编 / 跑工具链，不跑 tests/*.py
-#   sh ci.sh --jobs 4       并行独立回归；--jobs 1 串行（也可设 MAGEL_GATE_JOBS）
+#   sh ci.sh --jobs 4       并行独立回归；--jobs 1 串行（也可设 CHALI_GATE_JOBS）
 #   sh ci.sh --help
 #
 # 环境要求：g++ / gcc / make / python3.11+ 必需；cmake 仅发布门禁需要。
@@ -16,7 +16,7 @@
 
 set -u
 # 诊断与样例输出都是中文，显示语言固定，免得随执行主机变化。
-export MAGEL_LANG=zh
+export CHALI_LANG=zh
 export PARSEENGINE_LANG=zh
 export PYTHONUTF8=1
 export PYTHONIOENCODING=utf-8
@@ -26,7 +26,7 @@ cd "$root" || exit 2
 
 run_python=1
 full=0
-jobs=${MAGEL_GATE_JOBS:-4}
+jobs=${CHALI_GATE_JOBS:-4}
 while [ "$#" -gt 0 ]; do
     arg=$1
     shift
@@ -91,7 +91,7 @@ if [ "$full" = 1 ]; then
 fi
 PYTHON=''
 for candidate in python3 python; do
-    if have "$candidate" && [ "$("$candidate" -c 'import sys; print("MAGEL-PYTHON-OK" if sys.version_info >= (3, 11) else "too-old")' 2>/dev/null)" = "MAGEL-PYTHON-OK" ]; then PYTHON="$candidate"; break; fi
+    if have "$candidate" && [ "$("$candidate" -c 'import sys; print("CHALI-PYTHON-OK" if sys.version_info >= (3, 11) else "too-old")' 2>/dev/null)" = "CHALI-PYTHON-OK" ]; then PYTHON="$candidate"; break; fi
 done
 if [ -n "$PYTHON" ]; then
     printf '  %-8s %s\n' python "$(command -v "$PYTHON")"
@@ -149,89 +149,89 @@ if [ "$full" = 1 ]; then
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="$root/tmp/ci/stackvm" \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE="$root/tmp/ci/stackvm"
     run_required_step "构建 stackvm（CLI + 单测）" \
-        cmake --build tmp/ci/stackvm --config Release --target magel-stackvm magel-stackvm-tests magel-artifact-tests magel-symbol-tests magel-panic-tests magel-runtime-event-tests svmb_symtool -j4
-    run_step "运行二进制中间产物等价性与损坏输入回归" tmp/ci/stackvm/magel-artifact-tests
-    run_step "运行宿主事件、定时合并与取消回归" tmp/ci/stackvm/magel-runtime-event-tests
+        cmake --build tmp/ci/stackvm --config Release --target chali-stackvm chali-stackvm-tests chali-artifact-tests chali-symbol-tests chali-panic-tests chali-runtime-event-tests svmb_symtool -j4
+    run_step "运行二进制中间产物等价性与损坏输入回归" tmp/ci/stackvm/chali-artifact-tests
+    run_step "运行宿主事件、定时合并与取消回归" tmp/ci/stackvm/chali-runtime-event-tests
     run_step "运行 stackvm 单测" \
-        tmp/ci/stackvm/magel-stackvm-tests library/stackvm/examples
+        tmp/ci/stackvm/chali-stackvm-tests library/stackvm/examples
     run_step "运行变长符号与十万符号回归" \
-        tmp/ci/stackvm/magel-symbol-tests tmp/ci/stackvm/symbol-fixtures
+        tmp/ci/stackvm/chali-symbol-tests tmp/ci/stackvm/symbol-fixtures
     run_step "运行 panic 调用栈与压缩隐私回归" \
-        tmp/ci/stackvm/magel-panic-tests tmp/ci/stackvm/panic-compact.svmb
+        tmp/ci/stackvm/chali-panic-tests tmp/ci/stackvm/panic-compact.svmb
     run_required_step "配置无 panic 栈构建" \
         cmake -S library/stackvm -B tmp/ci/panic-off -DCMAKE_BUILD_TYPE=Release \
               -DSTACKVM_WITH_REFLECTION=ON \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="$root/tmp/ci/panic-off" \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE="$root/tmp/ci/panic-off" \
               -DSTACKVM_WITH_PANIC_TRACE=OFF -DSTACKVM_WITH_BIGINT=OFF -DSTACKVM_WITH_BIGFLOAT=OFF
-    run_required_step "构建无 panic 栈测试" cmake --build tmp/ci/panic-off --config Release --target magel-panic-tests -j4
-    run_step "运行无 panic 栈测试" tmp/ci/panic-off/magel-panic-tests tmp/ci/panic-off/panic-compact.svmb
+    run_required_step "构建无 panic 栈测试" cmake --build tmp/ci/panic-off --config Release --target chali-panic-tests -j4
+    run_step "运行无 panic 栈测试" tmp/ci/panic-off/chali-panic-tests tmp/ci/panic-off/panic-compact.svmb
 fi
 
-# ---- 3. Magel：由文法生成解析器，再编驱动 ----
-run_required_step "生成 MAGEL 解析器（gen.sh）" sh gen.sh
-run_required_step "构建 MAGEL 驱动（magel）" "$MAKE" -j4
+# ---- 3. ChaLi：由文法生成解析器，再编驱动 ----
+run_required_step "生成 CHALI 解析器（gen.sh）" sh gen.sh
+run_required_step "构建 CHALI 驱动（chali）" "$MAKE" -j4
 
 run_step "验证并行门禁调度与失败汇总" "$PYTHON" tests/test_parallel_gates.py
 run_step "验证大整数乘除法与 Python 整数差分" "$PYTHON" tests/bigint_arithmetic.py
-run_step "验证已确认的编译器安全边界" "$PYTHON" tests/magel_compiler_safety.py
+run_step "验证已确认的编译器安全边界" "$PYTHON" tests/chali_compiler_safety.py
 run_step "验证高精度数学与独立参考值" "$PYTHON" tests/bigfloat_math.py
-run_step "验证 CAS 与泛型数学语言接口" "$PYTHON" tests/magel_cas_math.py
-run_step "验证 opcode 值语义、红黑删除与字符串方法" "$PYTHON" tests/magel_opcode_values.py
-run_step "验证反射序列化与注解动态 SQL" "$PYTHON" tests/magel_reflection_serialization.py
+run_step "验证 CAS 与泛型数学语言接口" "$PYTHON" tests/chali_cas_math.py
+run_step "验证 opcode 值语义、红黑删除与字符串方法" "$PYTHON" tests/chali_opcode_values.py
+run_step "验证反射序列化与注解动态 SQL" "$PYTHON" tests/chali_reflection_serialization.py
 run_step "验证 CAS 核心全部回归" "$PYTHON" tests/cas_library.py
 run_step "验证卫生宏绑定、正则、AST 替换及生成解析器" "$PYTHON" tests/macro_foundations.py
-run_step "验证 AST 表达式宏语义与 VM 执行" "$PYTHON" tests/magel_ast_macros.py --default
-run_step "验证宏完整片段分类与正则分支" "$PYTHON" tests/magel_macro_branches.py --default
-run_step "验证卫生宏参数分组、片段循环与调用来源" "$PYTHON" tests/magel_macro_groups.py --default
-run_step "验证卫生宏静态类型参数推导" "$PYTHON" tests/magel_macro_generics.py --default
+run_step "验证 AST 表达式宏语义与 VM 执行" "$PYTHON" tests/chali_ast_macros.py --default
+run_step "验证宏完整片段分类与正则分支" "$PYTHON" tests/chali_macro_branches.py --default
+run_step "验证卫生宏参数分组、片段循环与调用来源" "$PYTHON" tests/chali_macro_groups.py --default
+run_step "验证卫生宏静态类型参数推导" "$PYTHON" tests/chali_macro_generics.py --default
 
 # ---- 快速门禁核心三件套：样例回归 + 本次新增能力测试 + 文档同步 ----
-run_step "MAGEL 样例回归（check.sh）" \
-    sh -c 'cd "$1" && MAGEL_TMP="$1/tmp/ci/check" sh check.sh' sh "$root"
-run_step "运行 std::image 与 StringBuilder 回归" "$PYTHON" tests/magel_image.py --magel magel
-run_step "运行标准错误流与文件打印回归" "$PYTHON" tests/magel_print_streams.py --magel magel
-run_step "运行线程超时与非阻塞等待回归" "$PYTHON" tests/magel_thread_wait.py --magel magel
-run_step "运行隔离线程与有界并发模型回归" "$PYTHON" tests/magel_thread_model.py --magel magel
-run_step "运行临时值与资源释放合并回归" "$PYTHON" tests/magel_resource_lifetime.py --magel magel
-run_step "运行闭包自动类型与嵌套返回语言服务回归" "$PYTHON" tests/magel_lsp_closure_types.py --magel magel
-run_required_step "编译无墓碑分配身份回归" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=1 -Isource -Ilibrary -Isource/allocator tests/allocation_identity.cpp -o tmp/ci/allocation-identity
+run_step "CHALI 样例回归（check.sh）" \
+    sh -c 'cd "$1" && CHALI_TMP="$1/tmp/ci/check" sh check.sh' sh "$root"
+run_step "运行 std::image 与 StringBuilder 回归" "$PYTHON" tests/chali_image.py --chali chali
+run_step "运行标准错误流与文件打印回归" "$PYTHON" tests/chali_print_streams.py --chali chali
+run_step "运行线程超时与非阻塞等待回归" "$PYTHON" tests/chali_thread_wait.py --chali chali
+run_step "运行隔离线程与有界并发模型回归" "$PYTHON" tests/chali_thread_model.py --chali chali
+run_step "运行临时值与资源释放合并回归" "$PYTHON" tests/chali_resource_lifetime.py --chali chali
+run_step "运行闭包自动类型与嵌套返回语言服务回归" "$PYTHON" tests/chali_lsp_closure_types.py --chali chali
+run_required_step "编译无墓碑分配身份回归" g++ -std=c++17 -O2 -DCHALI_CUSTOM_ALLOCATOR=1 -Isource -Ilibrary -Isource/allocator tests/allocation_identity.cpp -o tmp/ci/allocation-identity
 run_step "运行百万次分配身份回归" tmp/ci/allocation-identity
-run_step "运行数组按值传参与引用回归" "$PYTHON" tests/magel_array_parameters.py --magel magel
-run_required_step "编译字面量数据合并单元测试" g++ -std=c++17 -O2 -DMAGEL_CUSTOM_ALLOCATOR=0 -DMAGEL_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 library/simple_ast/test_simple_ast.cpp library/simple_ast/simple_ast.cpp library/simple_ast/ast_type.cpp library/simple_ast/ast_node.cpp library/simple_ast/ast_data.cpp -o tmp/ci/simple-ast-literals
+run_step "运行数组按值传参与引用回归" "$PYTHON" tests/chali_array_parameters.py --chali chali
+run_required_step "编译字面量数据合并单元测试" g++ -std=c++17 -O2 -DCHALI_CUSTOM_ALLOCATOR=0 -DCHALI_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 library/simple_ast/test_simple_ast.cpp library/simple_ast/simple_ast.cpp library/simple_ast/ast_type.cpp library/simple_ast/ast_node.cpp library/simple_ast/ast_data.cpp -o tmp/ci/simple-ast-literals
 run_step "运行字面量数据合并单元测试" tmp/ci/simple-ast-literals
-run_step "检查诊断摘录与 TOML 注释往返" "$PYTHON" tests/magel_diagnostic_layout.py --magel magel
-run_step "运行字面量合并与字符串副本回归" "$PYTHON" tests/magel_string_literals.py --magel magel
-run_step "检查 opcode 声明与不可复制限制" "$PYTHON" tests/magel_opcode_declarations.py --magel magel
-run_step "检查区间与循环值表达式" "$PYTHON" tests/magel_range_loop_values.py --magel magel
-run_step "检查 opcode 资源所有权与借用" "$PYTHON" tests/magel_opcode_resources.py --magel magel
-run_step "检查 opcode 反射与语言服务隐藏" "$PYTHON" tests/magel_opcode_visibility.py --magel magel
+run_step "检查诊断摘录与 TOML 注释往返" "$PYTHON" tests/chali_diagnostic_layout.py --chali chali
+run_step "运行字面量合并与字符串副本回归" "$PYTHON" tests/chali_string_literals.py --chali chali
+run_step "检查 opcode 声明与不可复制限制" "$PYTHON" tests/chali_opcode_declarations.py --chali chali
+run_step "检查区间与循环值表达式" "$PYTHON" tests/chali_range_loop_values.py --chali chali
+run_step "检查 opcode 资源所有权与借用" "$PYTHON" tests/chali_opcode_resources.py --chali chali
+run_step "检查 opcode 反射与语言服务隐藏" "$PYTHON" tests/chali_opcode_visibility.py --chali chali
 run_step "检查 VM 构建与导出清单同步" "$PYTHON" tools/stackvm_sources.py --check
 run_required_step "检查 VM 模块组织与实现增量重编" "$PYTHON" tests/stackvm_module_layout.py
 run_required_step "编译 TOML 注释保存回归" g++ -std=c++17 -O2 library/toml/test_toml.cpp library/toml/toml.cpp library/toml/toml_source.cpp -o tmp/ci/toml-comments
 run_step "运行 TOML 注释保存回归" tmp/ci/toml-comments
 run_step "检查标准对象与 VM 核心隔离" "$PYTHON" tests/opcode_core_isolation.py
-run_step "检查 VM 集合宿主胶水与同步回调" "$PYTHON" tests/magel_collection_glue.py --magel magel
-run_step "检查 Map Pair 迭代元素类型" "$PYTHON" tests/magel_map_pair_iterator.py --magel magel
-run_step "检查泛型命名构造入口推导" "$PYTHON" tests/magel_generic_constructors.py --magel magel
-run_step "检查标准库 opcode 存储与资源边界" "$PYTHON" tests/magel_opcode_std_storage.py --magel magel
-run_step "运行闭包来源与借用控制流回归" "$PYTHON" tests/magel_borrow_flow.py --magel magel
-run_step "运行泛型闭包与特化回归" "$PYTHON" tests/magel_generic_closures.py --magel magel
-run_step "检查模块路径与文本包含指令删除" "$PYTHON" tests/magel_package_paths.py
-run_step "检查 VM 命令与未知文件" "$PYTHON" tests/magel_tool.py
+run_step "检查 VM 集合宿主胶水与同步回调" "$PYTHON" tests/chali_collection_glue.py --chali chali
+run_step "检查 Map Pair 迭代元素类型" "$PYTHON" tests/chali_map_pair_iterator.py --chali chali
+run_step "检查泛型命名构造入口推导" "$PYTHON" tests/chali_generic_constructors.py --chali chali
+run_step "检查标准库 opcode 存储与资源边界" "$PYTHON" tests/chali_opcode_std_storage.py --chali chali
+run_step "运行闭包来源与借用控制流回归" "$PYTHON" tests/chali_borrow_flow.py --chali chali
+run_step "运行泛型闭包与特化回归" "$PYTHON" tests/chali_generic_closures.py --chali chali
+run_step "检查模块路径与文本包含指令删除" "$PYTHON" tests/chali_package_paths.py
+run_step "检查 VM 命令与未知文件" "$PYTHON" tests/chali_tool.py
 run_step "检查手册与标准库共享索引同步" "$PYTHON" tools/library_reference.py --check
 
 # ---- 以下均为发布门禁（--full）扩展步骤 ----
 if [ "$full" = 1 ]; then
-run_step "运行整数区间端点与溢出回归" "$PYTHON" tests/magel_foreach_intervals.py --magel magel
-run_required_step "编译场景命令单元测试" g++ -std=c++17 -O1 tests/magel_cli_test.cpp -o tmp/ci/magel-cli
-run_step "运行场景命令单元测试" tmp/ci/magel-cli
-run_step "验证独立原始路径的宏分组与来源" "$PYTHON" tests/magel_macro_groups.py
-run_step "验证返回表达式、具名闭包与字段派生" "$PYTHON" tests/magel_declaration_sugars.py
+run_step "运行整数区间端点与溢出回归" "$PYTHON" tests/chali_foreach_intervals.py --chali chali
+run_required_step "编译场景命令单元测试" g++ -std=c++17 -O1 tests/chali_cli_test.cpp -o tmp/ci/chali-cli
+run_step "运行场景命令单元测试" tmp/ci/chali-cli
+run_step "验证独立原始路径的宏分组与来源" "$PYTHON" tests/chali_macro_groups.py
+run_step "验证返回表达式、具名闭包与字段派生" "$PYTHON" tests/chali_declaration_sugars.py
 
 
 # ---- lztext：内嵌标准库/运行时资产的压缩存储与运行时解压 ----
-# magel/library/lztext 与 ParseEngine 的 library/lztext 是同一份实现，改一个要同步另一个。
+# chali/library/lztext 与 ParseEngine 的 library/lztext 是同一份实现，改一个要同步另一个。
 # 这里既构建构建期要用的 lztext_pack（tools/embed_stdlib.py 通过它压缩），
 # 也跑一遍库自检（往返一致性 + 边界用例 + 随机语料模糊测试）。
 run_required_step "构建 lztext 打包工具" "$MAKE" -C library/lztext pack
@@ -240,52 +240,52 @@ run_step "运行 lztext 单元测试" tmp/ci/lztext
 fi
 
 if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
-    run_step "验证线程字节码往返" "$PYTHON" tests/magel_thread_model.py --magel magel --vm tmp/ci/stackvm/magel-stackvm
+    run_step "验证线程字节码往返" "$PYTHON" tests/chali_thread_model.py --chali chali --vm tmp/ci/stackvm/chali-stackvm
     run_step "运行符号转换与 CLI 集成回归" \
-        "$PYTHON" tests/test_svmb_symbols.py --build tmp/ci/stackvm --magel magel
-    run_step "运行 MAGEL 与 VM panic 诊断回归" \
-        "$PYTHON" tests/test_magel_panic.py --magel magel
+        "$PYTHON" tests/test_svmb_symbols.py --build tmp/ci/stackvm --chali chali
+    run_step "运行 CHALI 与 VM panic 诊断回归" \
+        "$PYTHON" tests/test_chali_panic.py --chali chali
     run_step "运行源码行号诊断回归" \
-        "$PYTHON" tests/test_magel_source_lines.py --magel magel
+        "$PYTHON" tests/test_chali_source_lines.py --chali chali
     run_step "运行字符串清理与循环重入VM 多入口回归" \
-        "$PYTHON" tests/magel_string_reentry.py --magel magel
+        "$PYTHON" tests/chali_string_reentry.py --chali chali
     run_step "运行语言功能、值类型与引用VM 多入口回归" \
-        "$PYTHON" tests/magel_reference_values.py --magel magel
+        "$PYTHON" tests/chali_reference_values.py --chali chali
 fi
 
 if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
     run_step "验证最新生成器下载与失败清理" "$PYTHON" tests/gen_download.py
-    run_step "运行 match 两种区间与或模式回归" "$PYTHON" tests/magel_match_patterns.py --magel magel
-    run_step "运行 lambda 捕获与回调回归" "$PYTHON" tests/magel_lambdas.py --magel magel --vm tmp/ci/stackvm/magel-stackvm
-    run_step "运行泛型单态化与嵌套组合回归" "$PYTHON" tests/magel_generic_monomorphization.py --magel magel
-    run_step "运行函数默认参数回归" "$PYTHON" tests/magel_default_arguments.py --magel magel
-    run_step "验证旧库删除与标准模块迁移" "$PYTHON" tests/magel_removed_libraries.py --magel magel
-    run_step "运行语言移动与只读析构限制回归" "$PYTHON" tests/magel_language_move.py --magel magel
-    run_step "运行默认参数歧义诊断回归" "$PYTHON" tests/magel_default_ambiguity.py --magel magel
-    run_step "运行构造函数与资源清理回归" "$PYTHON" tests/magel_constructors.py --magel magel
-    run_step "运行转换接口与资源清理回归" "$PYTHON" tests/magel_conversions.py --magel magel
-    run_step "运行数值、数组安全与 float32 后缀回归" "$PYTHON" tests/magel_numeric_v101.py --magel magel
-    run_step "运行 match 整数模式重叠警告回归" "$PYTHON" tests/magel_match_overlap.py --magel magel
-    run_step "运行 fn 匿名函数与 lambda 兼容回归" "$PYTHON" tests/magel_fn.py --magel magel
+    run_step "运行 match 两种区间与或模式回归" "$PYTHON" tests/chali_match_patterns.py --chali chali
+    run_step "运行 lambda 捕获与回调回归" "$PYTHON" tests/chali_lambdas.py --chali chali --vm tmp/ci/stackvm/chali-stackvm
+    run_step "运行泛型单态化与嵌套组合回归" "$PYTHON" tests/chali_generic_monomorphization.py --chali chali
+    run_step "运行函数默认参数回归" "$PYTHON" tests/chali_default_arguments.py --chali chali
+    run_step "验证旧库删除与标准模块迁移" "$PYTHON" tests/chali_removed_libraries.py --chali chali
+    run_step "运行语言移动与只读析构限制回归" "$PYTHON" tests/chali_language_move.py --chali chali
+    run_step "运行默认参数歧义诊断回归" "$PYTHON" tests/chali_default_ambiguity.py --chali chali
+    run_step "运行构造函数与资源清理回归" "$PYTHON" tests/chali_constructors.py --chali chali
+    run_step "运行转换接口与资源清理回归" "$PYTHON" tests/chali_conversions.py --chali chali
+    run_step "运行数值、数组安全与 float32 后缀回归" "$PYTHON" tests/chali_numeric_v101.py --chali chali
+    run_step "运行 match 整数模式重叠警告回归" "$PYTHON" tests/chali_match_overlap.py --chali chali
+    run_step "运行 fn 匿名函数与 lambda 兼容回归" "$PYTHON" tests/chali_fn.py --chali chali
     # 软重启看门狗（PC 宿主）：--watchdog 打开前后的行为、输出回滚与重启上限。
-    run_step "运行内存访问护栏回归" "$PYTHON" tests/magel_memory_guard.py --magel magel
-    run_step "运行软重启看门狗回归" "$PYTHON" tests/magel_watchdog.py --magel magel
-    # 总览图（各项目的 make_*_overview.py → 各自 overview 目录；Magel 那张由 magel 自己
+    run_step "运行内存访问护栏回归" "$PYTHON" tests/chali_memory_guard.py --chali chali
+    run_step "运行软重启看门狗回归" "$PYTHON" tests/chali_watchdog.py --chali chali
+    # 总览图（各项目的 make_*_overview.py → 各自 overview 目录；ChaLi 那张由 chali 自己
     # 绘制，落在 doc/overview/）：能重跑、成对产出、重复生成一致。
-    run_step "运行简短场景指令与拖入文件回归" "$PYTHON" tests/magel_scenes.py --magel magel
-    run_step "运行新建工程回归" "$PYTHON" tests/magel_project.py --magel magel
+    run_step "运行简短场景指令与拖入文件回归" "$PYTHON" tests/chali_scenes.py --chali chali
+    run_step "运行新建工程回归" "$PYTHON" tests/chali_project.py --chali chali
     run_step "运行表达式对象冲突及目标求值回归" \
-        "$PYTHON" tests/magel_update_restrictions.py --magel magel
+        "$PYTHON" tests/chali_update_restrictions.py --chali chali
     run_step "运行多诊断与独立借用检查回归" \
-        "$PYTHON" tests/magel_analysis_diagnostics.py --magel magel
+        "$PYTHON" tests/chali_analysis_diagnostics.py --chali chali
     run_step "运行数据结构及 NOIP 算法鲁棒性回归" \
-        "$PYTHON" tests/magel_algorithm_robustness.py --magel magel
+        "$PYTHON" tests/chali_algorithm_robustness.py --chali chali
     run_step "运行多值返回与泛型元组回归" \
-        "$PYTHON" tests/magel_tuple_returns.py --magel magel
-    # 裁剪构建：单文件导出在 NO_MAGEL_* 定义下仍能跑，且大数符号真的被裁掉。
-    run_step "运行裁剪构建回归" "$PYTHON" tests/trim_builds.py --magel magel
+        "$PYTHON" tests/chali_tuple_returns.py --chali chali
+    # 裁剪构建：单文件导出在 NO_CHALI_* 定义下仍能跑，且大数符号真的被裁掉。
+    run_step "运行裁剪构建回归" "$PYTHON" tests/trim_builds.py --chali chali
     # 关键字三处对齐（补全表 / 文法登记 / 语法高亮），谁加了关键字忘了同步就红。
-    run_step "运行编码、CSV、UTC 日期的 Python 交叉验证" "$PYTHON" tests/magel_std_data.py --magel magel
+    run_step "运行编码、CSV、UTC 日期的 Python 交叉验证" "$PYTHON" tests/chali_std_data.py --chali chali
     run_step "检查补全关键字与高亮关键字一致" "$PYTHON" tools/check_keywords.py
 fi
 
@@ -298,9 +298,9 @@ fi
 
 # ---- 6. Python 门禁 ----
 if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
-    for t in magel_tool magel_generator magel_incremental magel_package magel_zip magel_i18n magel_development magel_package_paths magel_platform_abi_paths magel_abi_values; do
-        if [ "$t" = magel_zip ] || [ "$t" = magel_i18n ] || [ "$t" = magel_development ]; then
-            run_step "python tests/$t.py" "$PYTHON" "tests/$t.py" --magel magel
+    for t in chali_tool chali_generator chali_incremental chali_package chali_zip chali_i18n chali_development chali_package_paths chali_platform_abi_paths chali_abi_values; do
+        if [ "$t" = chali_zip ] || [ "$t" = chali_i18n ] || [ "$t" = chali_development ]; then
+            run_step "python tests/$t.py" "$PYTHON" "tests/$t.py" --chali chali
         else
             run_step "python tests/$t.py" "$PYTHON" "tests/$t.py"
         fi
@@ -313,21 +313,21 @@ if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
     run_step "检查文档相对链接" "$PYTHON" tools/check_doc_links.py
     run_step "检查标准库公开符号命名" "$PYTHON" tools/check_std_naming.py
     run_step "检查手册与标准库共享索引同步" "$PYTHON" tools/library_reference.py --check
-    run_step "运行原生命令行手册回归" "$PYTHON" tests/magel_man.py
-    run_step "运行行输入与文件文本读取回归" "$PYTHON" tests/magel_text_readers.py
+    run_step "运行原生命令行手册回归" "$PYTHON" tests/chali_man.py
+    run_step "运行行输入与文件文本读取回归" "$PYTHON" tests/chali_text_readers.py
     run_step "检查内嵌书稿关键字与 SKILL 同步" "$PYTHON" tools/embed_manual.py --check
-    run_step "运行格式化多行字符串保真回归" "$PYTHON" tests/magel_formatter_literals.py
-    run_step "运行 void main 的 VM 回归" "$PYTHON" tests/magel_void_main.py
-    run_step "运行类型声明可选尾分号回归" "$PYTHON" tests/magel_type_decl_terminators.py
-    run_step "运行发布脚本与归档一致性回归" "$PYTHON" tests/magel_release.py
-    run_step "运行新增书本示例与 LaTeX 同步回归" "$PYTHON" tests/magel_book_updates.py
-    run_step "运行嵌套函数值的内联 fn 实参回归" "$PYTHON" tests/magel_inline_fn_arguments.py
-    run_step "运行胶水调用 Magel 函数的 VM回归" "$PYTHON" tests/magel_native_callbacks.py
-    run_step "运行卫生宏高阶闭包编辑器回归" "$PYTHON" tests/magel_macro_editor.py --magel magel
-    run_step "运行共享语义、宏分组提示与安全重构回归" "$PYTHON" tests/magel_lsp_semantic_features.py
-    run_step "运行 pause 终端输出顺序回归" "$PYTHON" tests/magel_pause_output.py
-    # EBNF 附录由 magel.gram 生成：改了文法忘了重生成附录，这里就红（--check 不改文件）。
-    run_step "检查 EBNF 附录与文法同步" "$PYTHON" tools/export_magel_ebnf.py --check
+    run_step "运行格式化多行字符串保真回归" "$PYTHON" tests/chali_formatter_literals.py
+    run_step "运行 void main 的 VM 回归" "$PYTHON" tests/chali_void_main.py
+    run_step "运行类型声明可选尾分号回归" "$PYTHON" tests/chali_type_decl_terminators.py
+    run_step "运行发布脚本与归档一致性回归" "$PYTHON" tests/chali_release.py
+    run_step "运行新增书本示例与 LaTeX 同步回归" "$PYTHON" tests/chali_book_updates.py
+    run_step "运行嵌套函数值的内联 fn 实参回归" "$PYTHON" tests/chali_inline_fn_arguments.py
+    run_step "运行胶水调用 ChaLi 函数的 VM回归" "$PYTHON" tests/chali_native_callbacks.py
+    run_step "运行卫生宏高阶闭包编辑器回归" "$PYTHON" tests/chali_macro_editor.py --chali chali
+    run_step "运行共享语义、宏分组提示与安全重构回归" "$PYTHON" tests/chali_lsp_semantic_features.py
+    run_step "运行 pause 终端输出顺序回归" "$PYTHON" tests/chali_pause_output.py
+    # EBNF 附录由 chali.gram 生成：改了文法忘了重生成附录，这里就红（--check 不改文件）。
+    run_step "检查 EBNF 附录与文法同步" "$PYTHON" tools/export_chali_ebnf.py --check
     # CHANGELOG 与 VERSION / 发布 tag 对齐：改了版本忘写一节、打了 tag 没有记录，这里就红。
     run_step "检查 CHANGELOG 与版本一致" "$PYTHON" tools/changelog.py --check
 fi

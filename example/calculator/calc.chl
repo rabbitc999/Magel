@@ -1,0 +1,805 @@
+/*
+ * ChaLiCalc -- a tiny expression-language toolchain written entirely in ChaLi.
+ *
+ * Pipeline:  source text  ->  lexer  ->  recursive-descent parser
+ *                        ->  linearised AST arena  ->  bytecode compiler
+ *                        ->  stack virtual machine
+ *
+ * Language: numbers, variables, + - * / , unary minus, parentheses and the
+ * built-ins sqrt / abs / min / max / pow.  Every stage reports failure as
+ * Result<T,String>; the driver prints a per-line report plus summary stats.
+ *
+ * The AST is stored in a flat arena (a List of fixed-shape nodes) and children
+ * are referenced by index instead of by nested containers.  That keeps the
+ * whole compiler free of recursive value types.
+ *
+ * Usage:
+ *   ChaLi.exe run calc.chl
+ *   ChaLi.exe run calc.chl -- "x = 3 + 4 * 2" "sqrt(x) + abs(-5)"
+ */
+
+import std::algorithms;
+import std::iter;
+
+/* ---------------- VM opcodes ---------------- */
+int64 OP_PUSH  = 0;
+int64 OP_LOAD  = 1;
+int64 OP_STORE = 2;
+int64 OP_NEG   = 3;
+int64 OP_ADD   = 4;
+int64 OP_SUB   = 5;
+int64 OP_MUL   = 6;
+int64 OP_DIV   = 7;
+int64 OP_CALL  = 8;
+int64 OP_HALT  = 9;
+
+/* ---------------- AST node kinds ---------------- */
+int64 K_NUM    = 0;
+int64 K_VAR    = 1;
+int64 K_NEG    = 2;
+int64 K_BINARY = 3;
+int64 K_CALL   = 4;
+
+/* ============================================================================
+ * Lexer
+ * ========================================================================== */
+enum Token {
+    TkNum(float64 value),
+    TkIdent(String name),
+    TkOp(String op),
+    TkLParen,
+    TkRParen,
+    TkEnd;
+};
+
+bool isDigitChar(char c) { return c >= '0' && c <= '9'; }
+bool isAlphaChar(char c) {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+}
+bool isSpaceChar(char c) { return c == ' ' || c == '\t' || c == '\n' || c == '\r'; }
+bool isOpChar(char c) {
+    return c == '+' || c == '-' || c == '*' || c == '/' || c == '=' || c == ',';
+}
+
+/* Turn the lexeme of a numeric literal into a float64 without a host parser. */
+Result<float64, String> parseNumberLexeme(String s) {
+    bool seenDot = false;
+    float64 intPart = 0.0;
+    float64 frac = 0.0;
+    float64 scale = 1.0;
+    int64 n = s.chars().count();
+    {
+        int64 k = 0;
+        while (k < n) {
+
+        char c = s[k];
+        if (c == '.') {
+            if (seenDot) { return Result<float64, String>::Err("malformed number: two dots"); }
+            seenDot = true;
+        } else {
+            int64 d = (int64)c - (int64)'0';
+            if (d < 0 || d > 9) {
+                return Result<float64, String>::Err("malformed number digit");
+            }
+            if (seenDot) {
+                scale = scale / 10.0;
+                frac = frac + (float64)d * scale;
+            } else {
+                intPart = intPart * 10.0 + (float64)d;
+            }
+        }
+    
+            k = k + 1;
+        }
+    }
+    return Result<float64, String>::Ok(intPart + frac);
+}
+
+struct Lexer {
+    String src;
+    int64 pos;
+    int64 n;
+
+    Result<List<Token>, String> lex() {
+        List<Token> out;
+        while (self.pos < self.n) {
+            char c = self.src[self.pos];
+            if (isSpaceChar(c)) {
+                self.pos = self.pos + 1;
+            } elif (isDigitChar(c)) {
+                String buf = "";
+                while (self.pos < self.n &&
+                (isDigitChar(self.src[self.pos]) || self.src[self.pos] == '.')) {
+                    buf = buf + format("{}", self.src[self.pos]);
+                    self.pos = self.pos + 1;
+                }
+                float64 value = parseNumberLexeme(buf)?;
+                out.push(Token::TkNum(value));
+            } elif (isAlphaChar(c)) {
+                String buf = "";
+                while (self.pos < self.n &&
+                (isAlphaChar(self.src[self.pos]) || isDigitChar(self.src[self.pos]))) {
+                    buf = buf + format("{}", self.src[self.pos]);
+                    self.pos = self.pos + 1;
+                }
+                out.push(Token::TkIdent(buf));
+            } elif (c == '(') {
+                out.push(Token::TkLParen);
+                self.pos = self.pos + 1;
+            } elif (c == ')') {
+                out.push(Token::TkRParen);
+                self.pos = self.pos + 1;
+            } elif (isOpChar(c)) {
+                out.push(Token::TkOp(format("{}", c)));
+                self.pos = self.pos + 1;
+            } else {
+                return Result<List<Token>, String>::Err(
+                format("unexpected character '{}'", c));
+            }
+        }
+        out.push(Token::TkEnd);
+        return Result<List<Token>, String>::Ok(out);
+    }
+};
+
+/* ============================================================================
+ * Flat AST arena.
+ *
+ * Every node has the same fixed shape; `a` is the offset of its first child in
+ * the shared `kids` list and `b` is the child count (for calls it is the
+ * argument count).  NUM and VAR have no children.
+ * ========================================================================== */
+struct Node {
+    int64 kind;
+    float64 num;
+    String text;
+    int64 a;
+    int64 b;
+};
+
+/* ============================================================================
+ * Recursive-descent parser.  It fills the arena and returns the root index.
+ * ========================================================================== */
+struct Parser {
+    List<Token> toks;
+    int64 pos;
+    List<Node> nodes;
+    List<int64> kids;
+    bool isLet;
+    String letName;
+
+    bool isEnd(int64 k) {
+        if (k >= self.toks.len()) { return true; }
+        match (self.toks[k]) {
+            Token::TkEnd => { return true; }
+            _ => { return false; }
+        }
+    }
+    bool isLParen(int64 k) {
+        if (k >= self.toks.len()) { return false; }
+        match (self.toks[k]) {
+            Token::TkLParen => { return true; }
+            _ => { return false; }
+        }
+    }
+    bool isRParen(int64 k) {
+        if (k >= self.toks.len()) { return false; }
+        match (self.toks[k]) {
+            Token::TkRParen => { return true; }
+            _ => { return false; }
+        }
+    }
+    bool isNum(int64 k) {
+        if (k >= self.toks.len()) { return false; }
+        match (self.toks[k]) {
+            Token::TkNum(v) => { return true; }
+            _ => { return false; }
+        }
+    }
+    bool isIdent(int64 k) {
+        if (k >= self.toks.len()) { return false; }
+        match (self.toks[k]) {
+            Token::TkIdent(nm) => { return true; }
+            _ => { return false; }
+        }
+    }
+    bool isOp(int64 k, String op) {
+        if (k >= self.toks.len()) { return false; }
+        match (self.toks[k]) {
+            Token::TkOp(o) => { return o == op; }
+            _ => { return false; }
+        }
+    }
+    float64 numAt(int64 k) {
+        match (self.toks[k]) {
+            Token::TkNum(v) => { return v; }
+            _ => { return 0.0; }
+        }
+    }
+    String identAt(int64 k) {
+        match (self.toks[k]) {
+            Token::TkIdent(nm) => { return nm; }
+            _ => { return ""; }
+        }
+    }
+    String opAt(int64 k) {
+        match (self.toks[k]) {
+            Token::TkOp(o) => { return o; }
+            _ => { return ""; }
+        }
+    }
+
+    int64 emit(int64 kind, float64 num, String text, int64 start, int64 count) {
+        Node n;
+        n.kind = kind;
+        n.num = num;
+        n.text = text;
+        n.a = start;
+        n.b = count;
+        self.nodes.push(n);
+        return self.nodes.len() - 1;
+    }
+    int64 emitUnary(int64 child) {
+        int64 start = self.kids.len();
+        self.kids.push(child);
+        return self.emit(K_NEG, 0.0, "-", start, 1);
+    }
+    int64 emitBinary(String op, int64 left, int64 right) {
+        int64 start = self.kids.len();
+        self.kids.push(left);
+        self.kids.push(right);
+        return self.emit(K_BINARY, 0.0, op, start, 2);
+    }
+
+    /* Count the top-level comma-separated arguments of a call whose '(' has
+     * already been consumed and whose cursor sits on the first argument. */
+    int64 countArgs() {
+        if (self.isRParen(self.pos)) { return 0; }
+        int64 depth = 0;
+        int64 count = 1;
+        int64 k = self.pos;
+        while (!self.isEnd(k)) {
+            if (self.isLParen(k)) {
+                depth = depth + 1;
+            } elif (self.isRParen(k)) {
+                if (depth == 0) { break; }
+                depth = depth - 1;
+            } elif (self.isOp(k, ",") && depth == 0) {
+                count = count + 1;
+            }
+            k = k + 1;
+        }
+        return count;
+    }
+
+    Result<int64, String> parseExpr() {
+        int64 left = self.parseTerm()?;
+        while (self.isOp(self.pos, "+") || self.isOp(self.pos, "-")) {
+            int64 opTok = self.pos;
+            self.pos = self.pos + 1;
+            int64 right = self.parseTerm()?;
+            left = self.emitBinary(self.opAt(opTok), left, right);
+        }
+        return Result<int64, String>::Ok(left);
+    }
+    Result<int64, String> parseTerm() {
+        int64 left = self.parseFactor()?;
+        while (self.isOp(self.pos, "*") || self.isOp(self.pos, "/")) {
+            int64 opTok = self.pos;
+            self.pos = self.pos + 1;
+            int64 right = self.parseFactor()?;
+            left = self.emitBinary(self.opAt(opTok), left, right);
+        }
+        return Result<int64, String>::Ok(left);
+    }
+    Result<int64, String> parseFactor() {
+        if (self.isOp(self.pos, "-")) {
+            self.pos = self.pos + 1;
+            int64 inner = self.parseFactor()?;
+            return Result<int64, String>::Ok(self.emitUnary(inner));
+        }
+        return self.parsePrimary();
+    }
+    Result<int64, String> parsePrimary() {
+        if (self.isNum(self.pos)) {
+            float64 v = self.numAt(self.pos);
+            self.pos = self.pos + 1;
+            return Result<int64, String>::Ok(self.emit(K_NUM, v, "", 0, 0));
+        }
+        if (self.isIdent(self.pos)) {
+            int64 nameTok = self.pos;
+            self.pos = self.pos + 1;
+            if (self.isLParen(self.pos)) {
+                self.pos = self.pos + 1;
+                int64 start = self.kids.len();
+                int64 argc = self.countArgs();
+                /* Reserve the argument region first so that the children the
+                 * arguments append cannot interleave with it. */
+                {
+                    int64 k = 0;
+                    while (k < argc) {
+ self.kids.push(-1); 
+                        k = k + 1;
+                    }
+                }
+                {
+                    int64 k = 0;
+                    while (k < argc) {
+
+                    int64 child = self.parseExpr()?;
+                    self.kids[start + k] = child;
+                    if (k + 1 < argc) {
+                        if (!self.isOp(self.pos, ",")) {
+                            return Result<int64, String>::Err("expected ',' between arguments");
+                        }
+                        self.pos = self.pos + 1;
+                    }
+                
+                        k = k + 1;
+                    }
+                }
+                if (!self.isRParen(self.pos)) {
+                    return Result<int64, String>::Err("expected ')' after call arguments");
+                }
+                self.pos = self.pos + 1;
+                return Result<int64, String>::Ok(
+                self.emit(K_CALL, 0.0, self.identAt(nameTok), start, argc));
+            }
+            return Result<int64, String>::Ok(self.emit(K_VAR, 0.0, self.identAt(nameTok), 0, 0));
+        }
+        if (self.isLParen(self.pos)) {
+            self.pos = self.pos + 1;
+            int64 inner = self.parseExpr()?;
+            if (!self.isRParen(self.pos)) {
+                return Result<int64, String>::Err("expected ')'");
+            }
+            self.pos = self.pos + 1;
+            return Result<int64, String>::Ok(inner);
+        }
+        return Result<int64, String>::Err("unexpected token in expression");
+    }
+
+    Result<int64, String> parseLine() {
+        self.isLet = false;
+        self.letName = "";
+        if (self.isIdent(self.pos) && self.isOp(self.pos + 1, "=")) {
+            int64 nameTok = self.pos;
+            self.isLet = true;
+            self.pos = self.pos + 2;
+            int64 root = self.parseExpr()?;
+            self.letName = self.identAt(nameTok);
+            if (!self.isEnd(self.pos)) {
+                return Result<int64, String>::Err("unexpected token after assignment");
+            }
+            return Result<int64, String>::Ok(root);
+        }
+        int64 root = self.parseExpr()?;
+        if (!self.isEnd(self.pos)) {
+            return Result<int64, String>::Err("unexpected token after expression");
+        }
+        return Result<int64, String>::Ok(root);
+    }
+};
+
+/* ============================================================================
+ * Bytecode + its Describable protocol implementation.
+ * ========================================================================== */
+interface Describable {
+    String describe();
+};
+
+struct Instr : Describable {
+    int64 op;
+    float64 num;
+    String text;
+
+    String describe() {
+        if (self.op == OP_PUSH)  { return format("PUSH {}", self.num); }
+        if (self.op == OP_LOAD)  { return format("LOAD {}", self.text); }
+        if (self.op == OP_STORE) { return format("STORE {}", self.text); }
+        if (self.op == OP_NEG)   { return "NEG"; }
+        if (self.op == OP_ADD)   { return "ADD"; }
+        if (self.op == OP_SUB)   { return "SUB"; }
+        if (self.op == OP_MUL)   { return "MUL"; }
+        if (self.op == OP_DIV)   { return "DIV"; }
+        if (self.op == OP_CALL)  { return format("CALL {}/{}", self.text, (int64)self.num); }
+        return "HALT";
+    }
+};
+
+Instr makeInstr(int64 op, float64 num, String text) {
+    Instr x;
+    x.op = op;
+    x.num = num;
+    x.text = text;
+    return x;
+}
+
+/* Generic renderer constrained by an interface. */
+String renderAll<T: Describable>(List<T> items) {
+    String out = "";
+    {
+        int64 i = 0;
+        while (i < items.len()) {
+
+        if (i > 0) { out = out + " "; }
+        out = out + items[i].describe();
+    
+            i = i + 1;
+        }
+    }
+    return out;
+}
+
+int64 arithOpcode(String op) {
+    if (op == "+") { return OP_ADD; }
+    if (op == "-") { return OP_SUB; }
+    if (op == "*") { return OP_MUL; }
+    return OP_DIV;
+}
+
+/* Post-order walk of the arena: children first, then the node's own opcode. */
+void compileNode(List<Node> const& nodes,
+List<int64> const& kids,
+List<Instr> mut& code,
+int64 idx) {
+    /* 当前帧保存独立节点值，递归返回后继续使用其字符串和字段。 */
+    Node current = nodes[idx];
+    int64 kind = current.kind;
+    int64 start = current.a;
+    int64 count = current.b;
+    {
+        int64 i = 0;
+        while (i < count) {
+
+        compileNode(nodes, kids, code, kids[start + i]);
+    
+            i = i + 1;
+        }
+    }
+    if (kind == K_NUM) {
+        code.push(makeInstr(OP_PUSH, current.num, ""));
+    } elif (kind == K_VAR) {
+        code.push(makeInstr(OP_LOAD, 0.0, current.text));
+    } elif (kind == K_NEG) {
+        code.push(makeInstr(OP_NEG, 0.0, ""));
+    } elif (kind == K_BINARY) {
+        code.push(makeInstr(arithOpcode(current.text), 0.0, ""));
+    } else {
+        code.push(makeInstr(OP_CALL, (float64)count, current.text));
+    }
+}
+
+/* ============================================================================
+ * Stack virtual machine.
+ * ========================================================================== */
+struct VM {
+    List<Instr> code;
+    List<float64> stack;
+    Map<String, float64> vars;
+
+    float64 pop() {
+        float64 v = self.stack[self.stack.len() - 1];
+        self.stack.pop();
+        return v;
+    }
+
+    Result<float64, String> callBuiltin(String name, int64 argc) {
+        if (name == "sqrt") {
+            if (argc != 1) { return Result<float64, String>::Err("sqrt expects 1 argument"); }
+            float64 a = self.pop();
+            if (a < 0.0) { return Result<float64, String>::Err("sqrt of negative number"); }
+            if (a == 0.0) { return Result<float64, String>::Ok(0.0); }
+            float64 x = a;
+            {
+                int64 k = 0;
+                while (k < 60) {
+
+                x = 0.5 * (x + a / x);
+            
+                    k = k + 1;
+                }
+            }
+            return Result<float64, String>::Ok(x);
+        }
+        if (name == "abs") {
+            if (argc != 1) { return Result<float64, String>::Err("abs expects 1 argument"); }
+            float64 a = self.pop();
+            if (a < 0.0) { return Result<float64, String>::Ok(0.0 - a); }
+            return Result<float64, String>::Ok(a);
+        }
+        if (name == "min") {
+            if (argc != 2) { return Result<float64, String>::Err("min expects 2 arguments"); }
+            float64 b = self.pop();
+            float64 a = self.pop();
+            if (a < b) { return Result<float64, String>::Ok(a); }
+            return Result<float64, String>::Ok(b);
+        }
+        if (name == "max") {
+            if (argc != 2) { return Result<float64, String>::Err("max expects 2 arguments"); }
+            float64 b = self.pop();
+            float64 a = self.pop();
+            if (a > b) { return Result<float64, String>::Ok(a); }
+            return Result<float64, String>::Ok(b);
+        }
+        if (name == "pow") {
+            if (argc != 2) { return Result<float64, String>::Err("pow expects 2 arguments"); }
+            float64 e = self.pop();
+            float64 base = self.pop();
+            int64 n = (int64)e;
+            int64 m = n;
+            if (m < 0) { m = 0 - m; }
+            float64 r = 1.0;
+            {
+                int64 k = 0;
+                while (k < m) {
+ r = r * base; 
+                    k = k + 1;
+                }
+            }
+            if (n < 0) {
+                if (r == 0.0) { return Result<float64, String>::Err("pow: division by zero"); }
+                r = 1.0 / r;
+            }
+            return Result<float64, String>::Ok(r);
+        }
+        return Result<float64, String>::Err(format("unknown function '{}'", name));
+    }
+
+    Result<float64, String> run() {
+        int64 pc = 0;
+        while (pc < self.code.len()) {
+            Instr ins = self.code[pc];
+            pc = pc + 1;
+            if (ins.op == OP_PUSH) {
+                self.stack.push(ins.num);
+            } elif (ins.op == OP_LOAD) {
+                if (self.vars.has(ins.text) == 0) {
+                    return Result<float64, String>::Err(
+                    format("undefined variable '{}'", ins.text));
+                }
+                self.stack.push(self.vars[ins.text]);
+            } elif (ins.op == OP_STORE) {
+                float64 v = self.pop();
+                self.vars.put(ins.text, v);
+                self.stack.push(v);
+            } elif (ins.op == OP_NEG) {
+                self.stack.push(0.0 - self.pop());
+            } elif (ins.op == OP_ADD) {
+                float64 b = self.pop();
+                float64 a = self.pop();
+                self.stack.push(a + b);
+            } elif (ins.op == OP_SUB) {
+                float64 b = self.pop();
+                float64 a = self.pop();
+                self.stack.push(a - b);
+            } elif (ins.op == OP_MUL) {
+                float64 b = self.pop();
+                float64 a = self.pop();
+                self.stack.push(a * b);
+            } elif (ins.op == OP_DIV) {
+                float64 b = self.pop();
+                float64 a = self.pop();
+                if (b == 0.0) {
+                    return Result<float64, String>::Err("division by zero");
+                }
+                self.stack.push(a / b);
+            } elif (ins.op == OP_CALL) {
+                Result<float64, String> r = self.callBuiltin(ins.text, (int64)ins.num);
+                match (r) {
+                    Result<float64, String>::Ok(v) => { self.stack.push(v); }
+                    Result<float64, String>::Err(e) => {
+                        return Result<float64, String>::Err(e);
+                    }
+                }
+            } else {
+                if (self.stack.len() == 0) {
+                    return Result<float64, String>::Err("empty result stack");
+                }
+                return Result<float64, String>::Ok(self.stack[self.stack.len() - 1]);
+            }
+        }
+        if (self.stack.len() == 0) { return Result<float64, String>::Err("no result"); }
+        return Result<float64, String>::Ok(self.stack[self.stack.len() - 1]);
+    }
+};
+
+/* ============================================================================
+ * One-line driver: lex, parse, compile, run.
+ * ========================================================================== */
+struct LineReport {
+    String source;
+    int64 tokens;
+    int64 nodes;
+    int64 instrs;
+    bool ok;
+    String defined;
+    String detail;
+    String disasm;
+};
+
+Result<LineReport, String> analyze(String src, Map<String, float64> mut& vars) {
+    LineReport rep;
+    rep.source = src;
+    rep.tokens = 0;
+    rep.nodes = 0;
+    rep.instrs = 0;
+    rep.ok = false;
+    rep.defined = "";
+    rep.detail = "";
+    rep.disasm = "";
+
+    Lexer lx;
+    lx.src = src;
+    lx.pos = 0;
+    lx.n = src.chars().count();
+    List<Token> toks = lx.lex()?;
+    rep.tokens = toks.len();
+
+    Parser p;
+    p.toks = toks;
+    p.pos = 0;
+    int64 root = p.parseLine()?;
+    rep.nodes = p.nodes.len();
+
+    List<Instr> code;
+    compileNode(&p.nodes, &p.kids, &code, root);
+    if (p.isLet) {
+        code.push(makeInstr(OP_STORE, 0.0, p.letName));
+        rep.defined = p.letName;
+    }
+    code.push(makeInstr(OP_HALT, 0.0, ""));
+    rep.instrs = code.len();
+    rep.disasm = renderAll<Instr>(code);
+
+    VM vm;
+    vm.code = code;
+    vm.vars = vars;
+    float64 value = vm.run()?;
+    vars = vm.vars;
+
+    rep.ok = true;
+    rep.detail = fmtNum(value);
+    return Result<LineReport, String>::Ok(rep);
+}
+
+int64 addInts(int64 a, int64 b) { return a + b; }
+
+/* Render a float64 as an integer when it is exact, otherwise with 6 decimals. */
+String fmtNum(float64 v) {
+    if (v == (float64)(int64)v) { return format("{:0F}", v); }
+    return format("{:6F}", v);
+}
+
+String renderInts(List<int64> xs) {
+    String out = "";
+    {
+        int64 i = 0;
+        while (i < xs.len()) {
+
+        if (i > 0) { out = out + ", "; }
+        out = out + format("{}", xs[i]);
+    
+            i = i + 1;
+        }
+    }
+    return out;
+}
+
+int64 main(List<String> args) {
+    List<String> program;
+    if (args.len() > 0) {
+        {
+            int64 i = 0;
+            while (i < args.len()) {
+ program.push(args[i]); 
+                i = i + 1;
+            }
+        }
+    } else {
+        program.push("x = 3 + 4 * 2");
+        program.push("y = x * x - 5");
+        program.push("(x + y) / 2");
+        program.push("z = -x + 100");
+        program.push("sqrt(z) + abs(-4)");
+        program.push("pow(2, 10) - max(x, y)");
+        program.push("min(x, y, z)");
+        program.push("q = (x + 1) * (y - 2)");
+        program.push("q / (x - 11)");
+        program.push("2 * * 3");
+        program.push("w = unknown + 1");
+        program.push("w + q");
+    }
+
+    println("=== ChaLiCalc :: lexer + parser + compiler + stack VM ===");
+    println("{} source line(s) to process", program.len());
+
+    Map<String, float64> vars;
+    List<int64> okInstrs;
+    Set<String> names;
+    int64 okCount = 0;
+    int64 errCount = 0;
+    int64 totalTokens = 0;
+    int64 totalNodes = 0;
+
+    {
+        int64 i = 0;
+        while (i < program.len()) {
+
+        Result<LineReport, String> r = analyze(program[i], &vars);
+        match (r) {
+            Result<LineReport, String>::Ok(rep) => {
+                okCount = okCount + 1;
+                totalTokens = totalTokens + rep.tokens;
+                totalNodes = totalNodes + rep.nodes;
+                okInstrs.push(rep.instrs);
+                if (rep.defined != "") { names.add(rep.defined); }
+                println("[{}] ok    {}   =>   {}", i + 1, rep.source, rep.detail);
+                println("      tokens={} nodes={} instrs={}",
+                rep.tokens, rep.nodes, rep.instrs);
+                println("      [{}]", rep.disasm);
+            }
+            Result<LineReport, String>::Err(msg) => {
+                errCount = errCount + 1;
+                println("[{}] error {}   =>   {}", i + 1, program[i], msg);
+            }
+        }
+    
+            i = i + 1;
+        }
+    }
+
+    println("");
+    println("=== summary ===");
+    println("lines ok={} errors={}", okCount, errCount);
+    println("total tokens={} total AST nodes={}", totalTokens, totalNodes);
+    if (okInstrs.len() > 0) {
+        int64 totalInstr = std::algorithms::foldValue<int64>(okInstrs, 0, addInts);
+        int64 lo = okInstrs[0];
+        int64 hi = okInstrs[0];
+        {
+            int64 i = 1;
+            while (i < okInstrs.len()) {
+
+            if (okInstrs[i] < lo) { lo = okInstrs[i]; }
+            if (okInstrs[i] > hi) { hi = okInstrs[i]; }
+        
+                i = i + 1;
+            }
+        }
+        List<int64> sorted = std::algorithms::sortValue<int64>(okInstrs);
+        println("instructions over ok lines: total={} min={} max={}", totalInstr, lo, hi);
+        println("sorted instruction counts: {}", renderInts(sorted));
+    }
+
+    String nameList = "";
+    {
+        int64 i = 0;
+        while (i < names.len()) {
+
+        if (i > 0) { nameList = nameList + ", "; }
+        nameList = nameList + names.at(i);
+    
+            i = i + 1;
+        }
+    }
+    println("variables assigned ({}): {}", names.len(), nameList);
+    println("live variables in VM ({}):", vars.len());
+    {
+        int64 i = 0;
+        while (i < vars.len()) {
+
+        String k = vars.keyAt(i);
+        println("  {} = {}", k, fmtNum(vars[k]));
+    
+            i = i + 1;
+        }
+    }
+
+    List<int64> squares = std::iter::range(1, 6)
+    .map(fn(value) { value * value })
+    .collect();
+    println("functional demo: squares 1..5 = {}", renderInts(squares));
+
+    return 0;
+}

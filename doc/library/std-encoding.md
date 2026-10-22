@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::encoding;
 ```
 
@@ -14,16 +14,16 @@ RFC 4648 的 Base64、Base64URL 与十六进制编解码。输入字节使用 Li
 
 ## 参考代码
 
-完整程序：[example/samples/std_encoding.mgl](../../example/samples/std_encoding.mgl)。
+完整程序：[example/samples/std_encoding.chl](../../example/samples/std_encoding.chl)。
 
 ```powershell
-magel run example/samples/std_encoding.mgl
+chali run example/samples/std_encoding.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::encoding;
 List<uint8> bytesOf(String text){List<uint8> bytes;{
     int64 i=0;
@@ -98,7 +98,7 @@ encoding RFC vectors OK
 
 **声明**
 
-```magel
+```chali
 String encodeHex(List<uint8> bytes, bool uppercase=false);
 ```
 
@@ -123,13 +123,13 @@ String encodeHex(List<uint8> bytes, bool uppercase=false);
 
 **调用形式**
 
-```magel
+```chali
 std::encoding::encodeHex(bytes, uppercase);
 ```
 
-**源码**：[source/std/encoding.mgl:7](../../source/std/encoding.mgl#L7)。
+**源码**：[source/std/encoding.chl:7](../../source/std/encoding.chl#L7)。
 
-**完整示例**：[example/samples/std_encoding.mgl](../../example/samples/std_encoding.mgl)。
+**完整示例**：[example/samples/std_encoding.chl](../../example/samples/std_encoding.chl)。
 
 <a id="api-1"></a>
 
@@ -137,7 +137,7 @@ std::encoding::encodeHex(bytes, uppercase);
 
 **声明**
 
-```magel
+```chali
 int64 hexDigit(char value);
 ```
 
@@ -161,13 +161,13 @@ int64 hexDigit(char value);
 
 **调用形式**
 
-```magel
+```chali
 std::encoding::hexDigit(value);
 ```
 
-**源码**：[source/std/encoding.mgl:17](../../source/std/encoding.mgl#L17)。
+**源码**：[source/std/encoding.chl:17](../../source/std/encoding.chl#L17)。
 
-**完整示例**：[example/samples/std_encoding.mgl](../../example/samples/std_encoding.mgl)。
+**完整示例**：[example/samples/std_encoding.chl](../../example/samples/std_encoding.chl)。
 
 <a id="api-2"></a>
 
@@ -175,7 +175,7 @@ std::encoding::hexDigit(value);
 
 **声明**
 
-```magel
+```chali
 Result<List<uint8>,EncodingError> decodeHex(String text);
 ```
 
@@ -199,13 +199,13 @@ Result<List<uint8>,EncodingError> decodeHex(String text);
 
 **调用形式**
 
-```magel
+```chali
 std::encoding::decodeHex(text);
 ```
 
-**源码**：[source/std/encoding.mgl:24](../../source/std/encoding.mgl#L24)。
+**源码**：[source/std/encoding.chl:24](../../source/std/encoding.chl#L24)。
 
-**完整示例**：[example/samples/std_encoding.mgl](../../example/samples/std_encoding.mgl)。
+**完整示例**：[example/samples/std_encoding.chl](../../example/samples/std_encoding.chl)。
 
 <a id="api-3"></a>
 
@@ -213,7 +213,7 @@ std::encoding::decodeHex(text);
 
 **声明**
 
-```magel
+```chali
 String encodeBase64(List<uint8> bytes, bool url=false, bool padding=true);
 ```
 
@@ -239,13 +239,13 @@ Base64 编码；URL 字母表可选，padding 控制尾部等号。
 
 **调用形式**
 
-```magel
+```chali
 std::encoding::encodeBase64(bytes, url, padding);
 ```
 
-**源码**：[source/std/encoding.mgl:43](../../source/std/encoding.mgl#L43)。
+**源码**：[source/std/encoding.chl:43](../../source/std/encoding.chl#L43)。
 
-**完整示例**：[example/samples/std_encoding.mgl](../../example/samples/std_encoding.mgl)。
+**完整示例**：[example/samples/std_encoding.chl](../../example/samples/std_encoding.chl)。
 
 <a id="api-4"></a>
 
@@ -253,7 +253,7 @@ std::encoding::encodeBase64(bytes, url, padding);
 
 **声明**
 
-```magel
+```chali
 String encodeBase64Url(List<uint8> bytes, bool padding=false);
 ```
 
@@ -278,13 +278,13 @@ URL 安全 Base64，默认省略填充。
 
 **调用形式**
 
-```magel
+```chali
 std::encoding::encodeBase64Url(bytes, padding);
 ```
 
-**源码**：[source/std/encoding.mgl:66](../../source/std/encoding.mgl#L66)。
+**源码**：[source/std/encoding.chl:66](../../source/std/encoding.chl#L66)。
 
-**完整示例**：[example/samples/std_encoding.mgl](../../example/samples/std_encoding.mgl)。
+**完整示例**：[example/samples/std_encoding.chl](../../example/samples/std_encoding.chl)。
 
 <a id="api-5"></a>
 
@@ -292,7 +292,7 @@ std::encoding::encodeBase64Url(bytes, padding);
 
 **声明**
 
-```magel
+```chali
 Result<List<uint8>,EncodingError> decodeBase64(String text, bool url=false);
 ```
 
@@ -317,13 +317,13 @@ Result<List<uint8>,EncodingError> decodeBase64(String text, bool url=false);
 
 **调用形式**
 
-```magel
+```chali
 std::encoding::decodeBase64(text, url);
 ```
 
-**源码**：[source/std/encoding.mgl:68](../../source/std/encoding.mgl#L68)。
+**源码**：[source/std/encoding.chl:68](../../source/std/encoding.chl#L68)。
 
-**完整示例**：[example/samples/std_encoding.mgl](../../example/samples/std_encoding.mgl)。
+**完整示例**：[example/samples/std_encoding.chl](../../example/samples/std_encoding.chl)。
 
 <a id="api-6"></a>
 
@@ -331,7 +331,7 @@ std::encoding::decodeBase64(text, url);
 
 **声明**
 
-```magel
+```chali
 Result<List<uint8>,EncodingError> decodeBase64Url(String text);
 ```
 
@@ -355,10 +355,10 @@ Result<List<uint8>,EncodingError> decodeBase64Url(String text);
 
 **调用形式**
 
-```magel
+```chali
 std::encoding::decodeBase64Url(text);
 ```
 
-**源码**：[source/std/encoding.mgl:103](../../source/std/encoding.mgl#L103)。
+**源码**：[source/std/encoding.chl:103](../../source/std/encoding.chl#L103)。
 
-**完整示例**：[example/samples/std_encoding.mgl](../../example/samples/std_encoding.mgl)。
+**完整示例**：[example/samples/std_encoding.chl](../../example/samples/std_encoding.chl)。

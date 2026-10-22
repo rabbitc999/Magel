@@ -9,8 +9,8 @@ namespace lsp
 namespace
 {
 
-const char *kServerName = "magel-lsp";
-const char *kServerVersion = "0.26.0";
+const char *kServerName = "chali-lsp";
+const char *kServerVersion = "0.27.0";
 
 /**
  * 语义 token 的 legend：与 `macro_analyzer.cpp` 里写进 token 的类型名一一对应。
@@ -221,7 +221,7 @@ json::Value Server::publishDiagnostics(const std::string &uri,
         Set(item, "range", rangeJson(diagnostic.range));
         Set(item, "severity", json::Value(static_cast<std::int64_t>(diagnostic.severity)));
         Set(item, "code", json::Value(diagnostic.code));
-        Set(item, "source", json::Value(std::string("magel")));
+        Set(item, "source", json::Value(std::string("chali")));
         Set(item, "message", json::Value(diagnostic.message));
         items.asArray()->push_back(std::move(item));
     }

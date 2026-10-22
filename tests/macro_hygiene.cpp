@@ -8,7 +8,7 @@
  */
 int main()
 {
-    magel_macro::HygieneResolver resolver;
+    chali_macro::HygieneResolver resolver;
     const auto definition = resolver.createScope(0);
     const auto helper = resolver.declare("helper", definition, 0);
     const auto caller = resolver.createScope(0);

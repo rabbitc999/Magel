@@ -1,5 +1,5 @@
-#ifndef MAGEL_MACRO_AST_HPP
-#define MAGEL_MACRO_AST_HPP
+#ifndef CHALI_MACRO_AST_HPP
+#define CHALI_MACRO_AST_HPP
 
 /**
  * @brief 构造宏形参组，保留有无圆括号的区别。

@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::algorithms;
 ```
 
@@ -14,17 +14,17 @@ import std::algorithms;
 
 ## 参考代码
 
-完整程序：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+完整程序：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 ```powershell
-magel run example/samples/std_algorithms_extra.mgl
+chali run example/samples/std_algorithms_extra.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
-/* std_algorithms_extra.mgl —— `algorithms` 的 map / filter / reduce / sum / count。
+```chali
+/* std_algorithms_extra.chl —— `algorithms` 的 map / filter / reduce / sum / count。
  *
  * 这一批和 `fold` / `all` / `any` 是同一套"回调式内建"：源码里写
  * `std::algorithms::mapValue<T>(表, 回调)`，泛型预处理器只负责吃掉 `<T>`，
@@ -151,7 +151,7 @@ float64    3.75
 
 **声明**
 
-```magel
+```chali
 T choiceValue<T>(std::lang::List<T> items, uint64 seed);
 ```
 
@@ -177,13 +177,13 @@ T choiceValue<T>(std::lang::List<T> items, uint64 seed);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::choiceValue<T>(items, seed);
 ```
 
-**源码**：[source/magel_generic.cpp:1890](../../source/magel_generic.cpp#L1890)。
+**源码**：[source/chali_generic.cpp:1890](../../source/chali_generic.cpp#L1890)。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-1"></a>
 
@@ -191,7 +191,7 @@ std::algorithms::choiceValue<T>(items, seed);
 
 **声明**
 
-```magel
+```chali
 std::lang::List<T> shuffleValue<T>(std::lang::List<T> items, uint64 seed);
 ```
 
@@ -216,13 +216,13 @@ Fisher-Yates 洗牌，返回**打乱后的副本**（原表不动）。 从后�
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::shuffleValue<T>(items, seed);
 ```
 
-**源码**：[source/magel_generic.cpp:1899](../../source/magel_generic.cpp#L1899)。
+**源码**：[source/chali_generic.cpp:1899](../../source/chali_generic.cpp#L1899)。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-2"></a>
 
@@ -230,7 +230,7 @@ std::algorithms::shuffleValue<T>(items, seed);
 
 **声明**
 
-```magel
+```chali
 void shuffleReference<T>(T mut& data, int64 count, uint64 seed);
 ```
 
@@ -256,13 +256,13 @@ Fisher-Yates 洗牌的**引用形式**：直接在 `data` 里 `count` 个元素�
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::shuffleReference<T>(data, count, seed);
 ```
 
-**源码**：[source/magel_generic.cpp:1919](../../source/magel_generic.cpp#L1919)。
+**源码**：[source/chali_generic.cpp:1919](../../source/chali_generic.cpp#L1919)。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-3"></a>
 
@@ -270,7 +270,7 @@ std::algorithms::shuffleReference<T>(data, count, seed);
 
 **声明**
 
-```magel
+```chali
 std::lang::List<(T, U)> zipValue<T, U>(std::lang::List<T> left, std::lang::List<U> right);
 ```
 
@@ -297,13 +297,13 @@ Pair corresponding elements; excess elements in the longer list are ignored.
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::zipValue<T, U>(left, right);
 ```
 
-**源码**：[source/magel_generic.cpp:1933](../../source/magel_generic.cpp#L1933)。
+**源码**：[source/chali_generic.cpp:1933](../../source/chali_generic.cpp#L1933)。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-4"></a>
 
@@ -311,7 +311,7 @@ std::algorithms::zipValue<T, U>(left, right);
 
 **声明**
 
-```magel
+```chali
 void sortReference<T>(T mut& data, int64 count);
 ```
 
@@ -336,13 +336,13 @@ void sortReference<T>(T mut& data, int64 count);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::sortReference<T>(data, count);
 ```
 
-**源码**：[source/magel_generic.cpp:1963](../../source/magel_generic.cpp#L1963)。
+**源码**：[source/chali_generic.cpp:1963](../../source/chali_generic.cpp#L1963)。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-5"></a>
 
@@ -350,7 +350,7 @@ std::algorithms::sortReference<T>(data, count);
 
 **声明**
 
-```magel
+```chali
 void reverseReference<T>(T mut& data, int64 count);
 ```
 
@@ -375,13 +375,13 @@ void reverseReference<T>(T mut& data, int64 count);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::reverseReference<T>(data, count);
 ```
 
-**源码**：[source/magel_generic.cpp:1968](../../source/magel_generic.cpp#L1968)。
+**源码**：[source/chali_generic.cpp:1968](../../source/chali_generic.cpp#L1968)。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-6"></a>
 
@@ -389,7 +389,7 @@ std::algorithms::reverseReference<T>(data, count);
 
 **声明**
 
-```magel
+```chali
 int64 findReference<T>(T const& data, int64 count, T value);
 ```
 
@@ -415,13 +415,13 @@ int64 findReference<T>(T const& data, int64 count, T value);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::findReference<T>(data, count, value);
 ```
 
-**源码**：[source/magel_generic.cpp:1981](../../source/magel_generic.cpp#L1981)。
+**源码**：[source/chali_generic.cpp:1981](../../source/chali_generic.cpp#L1981)。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-7"></a>
 
@@ -429,7 +429,7 @@ std::algorithms::findReference<T>(data, count, value);
 
 **声明**
 
-```magel
+```chali
 int64 binarySearchReference<T>(T const& data, int64 count, T value);
 ```
 
@@ -455,13 +455,13 @@ int64 binarySearchReference<T>(T const& data, int64 count, T value);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::binarySearchReference<T>(data, count, value);
 ```
 
-**源码**：[source/magel_generic.cpp:1991](../../source/magel_generic.cpp#L1991)。
+**源码**：[source/chali_generic.cpp:1991](../../source/chali_generic.cpp#L1991)。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-8"></a>
 
@@ -469,7 +469,7 @@ std::algorithms::binarySearchReference<T>(data, count, value);
 
 **声明**
 
-```magel
+```chali
 Option<T mut&> minReference<T>(T mut& data, int64 count);
 ```
 
@@ -494,13 +494,13 @@ Option<T mut&> minReference<T>(T mut& data, int64 count);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::minReference<T>(data, count);
 ```
 
-**源码**：[source/magel_generic.cpp:2003](../../source/magel_generic.cpp#L2003)。
+**源码**：[source/chali_generic.cpp:2003](../../source/chali_generic.cpp#L2003)。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-9"></a>
 
@@ -508,7 +508,7 @@ std::algorithms::minReference<T>(data, count);
 
 **声明**
 
-```magel
+```chali
 Option<T mut&> maxReference<T>(T mut& data, int64 count);
 ```
 
@@ -533,13 +533,13 @@ Option<T mut&> maxReference<T>(T mut& data, int64 count);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::maxReference<T>(data, count);
 ```
 
-**源码**：[source/magel_generic.cpp:2015](../../source/magel_generic.cpp#L2015)。
+**源码**：[source/chali_generic.cpp:2015](../../source/chali_generic.cpp#L2015)。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-10"></a>
 
@@ -547,7 +547,7 @@ std::algorithms::maxReference<T>(data, count);
 
 **声明**
 
-```magel
+```chali
 int64 countReference<T>(T const& data, int64 count, T value);
 ```
 
@@ -573,13 +573,13 @@ int64 countReference<T>(T const& data, int64 count, T value);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::countReference<T>(data, count, value);
 ```
 
-**源码**：[source/magel_generic.cpp:2027](../../source/magel_generic.cpp#L2027)。
+**源码**：[source/chali_generic.cpp:2027](../../source/chali_generic.cpp#L2027)。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-11"></a>
 
@@ -587,7 +587,7 @@ std::algorithms::countReference<T>(data, count, value);
 
 **声明**
 
-```magel
+```chali
 T sumReference<T>(T mut& data, int64 count);
 ```
 
@@ -613,13 +613,13 @@ T sumReference<T>(T mut& data, int64 count);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::sumReference<T>(data, count);
 ```
 
-**源码**：[source/magel_generic.cpp:2038](../../source/magel_generic.cpp#L2038)。
+**源码**：[source/chali_generic.cpp:2038](../../source/chali_generic.cpp#L2038)。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-12"></a>
 
@@ -627,7 +627,7 @@ std::algorithms::sumReference<T>(data, count);
 
 **声明**
 
-```magel
+```chali
 List<T> sortValue<T>(List<T> items);
 ```
 
@@ -651,13 +651,13 @@ List<T> sortValue<T>(List<T> items);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::sortValue<T>(items);
 ```
 
 **源码**：[source/semantics/boxing.cpp:401](../../source/semantics/boxing.cpp#L401)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-13"></a>
 
@@ -665,7 +665,7 @@ std::algorithms::sortValue<T>(items);
 
 **声明**
 
-```magel
+```chali
 int64 findValue<T>(List<T> items,T value);
 ```
 
@@ -690,13 +690,13 @@ int64 findValue<T>(List<T> items,T value);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::findValue<T>(items, value);
 ```
 
 **源码**：[source/semantics/boxing.cpp:429](../../source/semantics/boxing.cpp#L429)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-14"></a>
 
@@ -704,7 +704,7 @@ std::algorithms::findValue<T>(items, value);
 
 **声明**
 
-```magel
+```chali
 int64 binarySearchValue<T>(List<T> items,T value);
 ```
 
@@ -729,13 +729,13 @@ int64 binarySearchValue<T>(List<T> items,T value);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::binarySearchValue<T>(items, value);
 ```
 
 **源码**：[source/semantics/boxing.cpp:429](../../source/semantics/boxing.cpp#L429)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-15"></a>
 
@@ -743,7 +743,7 @@ std::algorithms::binarySearchValue<T>(items, value);
 
 **声明**
 
-```magel
+```chali
 T minValue<T>(T first,T rest...);
 ```
 
@@ -768,13 +768,13 @@ T minValue<T>(T first,T rest...);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::minValue<T>(first, rest);
 ```
 
 **源码**：[source/semantics/boxing.cpp:283](../../source/semantics/boxing.cpp#L283)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-16"></a>
 
@@ -782,7 +782,7 @@ std::algorithms::minValue<T>(first, rest);
 
 **声明**
 
-```magel
+```chali
 T maxValue<T>(T first,T rest...);
 ```
 
@@ -807,13 +807,13 @@ T maxValue<T>(T first,T rest...);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::maxValue<T>(first, rest);
 ```
 
 **源码**：[source/semantics/boxing.cpp:283](../../source/semantics/boxing.cpp#L283)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-17"></a>
 
@@ -821,7 +821,7 @@ std::algorithms::maxValue<T>(first, rest);
 
 **声明**
 
-```magel
+```chali
 T clampValue<T>(T value,T low,T high);
 ```
 
@@ -847,13 +847,13 @@ T clampValue<T>(T value,T low,T high);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::clampValue<T>(value, low, high);
 ```
 
 **源码**：[source/semantics/boxing.cpp:401](../../source/semantics/boxing.cpp#L401)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-18"></a>
 
@@ -861,7 +861,7 @@ std::algorithms::clampValue<T>(value, low, high);
 
 **声明**
 
-```magel
+```chali
 bool allValue<T>(List<T> items,bool fn(T) predicate);
 ```
 
@@ -886,13 +886,13 @@ bool allValue<T>(List<T> items,bool fn(T) predicate);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::allValue<T>(items, predicate);
 ```
 
 **源码**：[source/semantics/boxing.cpp:440](../../source/semantics/boxing.cpp#L440)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-19"></a>
 
@@ -900,7 +900,7 @@ std::algorithms::allValue<T>(items, predicate);
 
 **声明**
 
-```magel
+```chali
 bool anyValue<T>(List<T> items,bool fn(T) predicate);
 ```
 
@@ -925,13 +925,13 @@ bool anyValue<T>(List<T> items,bool fn(T) predicate);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::anyValue<T>(items, predicate);
 ```
 
 **源码**：[source/semantics/boxing.cpp:440](../../source/semantics/boxing.cpp#L440)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-20"></a>
 
@@ -939,7 +939,7 @@ std::algorithms::anyValue<T>(items, predicate);
 
 **声明**
 
-```magel
+```chali
 T foldValue<T>(List<T> items,T initial,T fn(T,T) folder);
 ```
 
@@ -965,13 +965,13 @@ T foldValue<T>(List<T> items,T initial,T fn(T,T) folder);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::foldValue<T>(items, initial, folder);
 ```
 
 **源码**：[source/semantics/boxing.cpp:401](../../source/semantics/boxing.cpp#L401)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-21"></a>
 
@@ -979,7 +979,7 @@ std::algorithms::foldValue<T>(items, initial, folder);
 
 **声明**
 
-```magel
+```chali
 List<R> mapValue<T>(List<T> items,R fn(T) mapper);
 ```
 
@@ -1004,13 +1004,13 @@ List<R> mapValue<T>(List<T> items,R fn(T) mapper);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::mapValue<T>(items, mapper);
 ```
 
 **源码**：[source/semantics/boxing.cpp:318](../../source/semantics/boxing.cpp#L318)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-22"></a>
 
@@ -1018,7 +1018,7 @@ std::algorithms::mapValue<T>(items, mapper);
 
 **声明**
 
-```magel
+```chali
 List<T> filterValue<T>(List<T> items,bool fn(T) predicate);
 ```
 
@@ -1043,13 +1043,13 @@ List<T> filterValue<T>(List<T> items,bool fn(T) predicate);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::filterValue<T>(items, predicate);
 ```
 
 **源码**：[source/semantics/boxing.cpp:340](../../source/semantics/boxing.cpp#L340)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-23"></a>
 
@@ -1057,7 +1057,7 @@ std::algorithms::filterValue<T>(items, predicate);
 
 **声明**
 
-```magel
+```chali
 T reduceValue<T>(List<T> items,T fn(T,T) folder);
 ```
 
@@ -1082,13 +1082,13 @@ T reduceValue<T>(List<T> items,T fn(T,T) folder);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::reduceValue<T>(items, folder);
 ```
 
 **源码**：[source/semantics/boxing.cpp:378](../../source/semantics/boxing.cpp#L378)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-24"></a>
 
@@ -1096,7 +1096,7 @@ std::algorithms::reduceValue<T>(items, folder);
 
 **声明**
 
-```magel
+```chali
 T reduceValue<T>(List<T> items,T initial,T fn(T,T) folder);
 ```
 
@@ -1122,13 +1122,13 @@ T reduceValue<T>(List<T> items,T initial,T fn(T,T) folder);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::reduceValue<T>(items, initial, folder);
 ```
 
 **源码**：[source/semantics/boxing.cpp:378](../../source/semantics/boxing.cpp#L378)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-25"></a>
 
@@ -1136,7 +1136,7 @@ std::algorithms::reduceValue<T>(items, initial, folder);
 
 **声明**
 
-```magel
+```chali
 T sumValue<T>(List<T> items);
 ```
 
@@ -1160,13 +1160,13 @@ T sumValue<T>(List<T> items);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::sumValue<T>(items);
 ```
 
 **源码**：[source/semantics/boxing.cpp:305](../../source/semantics/boxing.cpp#L305)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-26"></a>
 
@@ -1174,7 +1174,7 @@ std::algorithms::sumValue<T>(items);
 
 **声明**
 
-```magel
+```chali
 int64 countValue<T>(List<T> items,T value);
 ```
 
@@ -1199,13 +1199,13 @@ int64 countValue<T>(List<T> items,T value);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::countValue<T>(items, value);
 ```
 
 **源码**：[source/semantics/boxing.cpp:355](../../source/semantics/boxing.cpp#L355)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。
 
 <a id="api-27"></a>
 
@@ -1213,7 +1213,7 @@ std::algorithms::countValue<T>(items, value);
 
 **声明**
 
-```magel
+```chali
 int64 countValue<T>(List<T> items,bool fn(T) predicate);
 ```
 
@@ -1238,10 +1238,10 @@ int64 countValue<T>(List<T> items,bool fn(T) predicate);
 
 **调用形式**
 
-```magel
+```chali
 std::algorithms::countValue<T>(items, predicate);
 ```
 
 **源码**：[source/semantics/boxing.cpp:355](../../source/semantics/boxing.cpp#L355)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_algorithms_extra.mgl](../../example/samples/std_algorithms_extra.mgl)。
+**完整示例**：[example/samples/std_algorithms_extra.chl](../../example/samples/std_algorithms_extra.chl)。

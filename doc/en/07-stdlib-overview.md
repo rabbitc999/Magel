@@ -1,9 +1,9 @@
 # 07 Standard library overview
 
-Magel's built-in modules, grouped by capability. Everything needs an `import` except the core module
+ChaLi's built-in modules, grouped by capability. Everything needs an `import` except the core module
 `std::lang`.
 
-```magel
+```chali
 import std::math;
 import std::json;
 int64 main() {
@@ -63,7 +63,7 @@ No `import` needed.
 | `std::text` | `Text::find` `split` `join` `replace` `trim` `toUpper` `padStart` … |
 | `std::json` | `parse` → `Result<JsonValue, String>`; `isInt` `isObject` `len` `asInt` `asString` … |
 | `std::toml` | TOML document access, isomorphic to the JSON API |
-| `std::regex` | patterns are cached host-side by string; Magel holds only an integer handle |
+| `std::regex` | patterns are cached host-side by string; ChaLi holds only an integer handle |
 | `std::parse` | string → integer parsing with `ParseError` |
 | `std::binary` | fixed-width decoding, byte order and bounds checking |
 | `std::path` | path joining, file name, extension, normalisation |
@@ -85,8 +85,8 @@ No `import` needed.
 | Module | Contents |
 | --- | --- |
 | `std::io` | file I/O with error type `IoError` (`OpenFailed` `ReadFailed` `WriteFailed` `SeekFailed` `Closed`) |
-| `std::net` | TCP plus a minimal HTTP client; sockets live in host glue, Magel sees only an `int32` handle |
-| `std::sql` | MySQL / SQLite / PostgreSQL / SQL Server; SQL is executed by the engine, Magel sends and fetches |
+| `std::net` | TCP plus a minimal HTTP client; sockets live in host glue, ChaLi sees only an `int32` handle |
+| `std::sql` | MySQL / SQLite / PostgreSQL / SQL Server; SQL is executed by the engine, ChaLi sends and fetches |
 | `std::process` | processes and system calls; command pipes are held by a host handle pool |
 | `std::clock` | monotonic clock `steady_clock`; take differences only, never treat it as wall time |
 | `std::memory` | `Span<T>` (pointer + length view); its iterator returns **element pointers**, so `for (T mut& p in span)` writes directly |
@@ -114,7 +114,7 @@ it. Closing twice returns `false` and does not crash.
 Module availability follows the target host bindings, system libraries and build configuration. Embedded Linux uses ordinary Linux hosts without a separate module-blocking deployment mode. See [deployment](06-deployment.md).
 
 **Migrated modules now need `import`.** These symbols used to be visible automatically through
-`source/std/lang.mgl`'s injected body; now everything except core `std::lang` must be imported explicitly.
+`source/std/lang.chl`'s injected body; now everything except core `std::lang` must be imported explicitly.
 
 ---
 
@@ -123,7 +123,7 @@ Module availability follows the target host bindings, system libraries and build
 The standard library source is itself the best reference, and each module header documents its
 capabilities:
 
-- [`source/std/`](../../source/std) — all module sources, `source/std/<name>.mgl`
+- [`source/std/`](../../source/std) — all module sources, `source/std/<name>.chl`
 - [`source/glue/`](../../source/glue) — host-side C++ glue; `source/glue/std_*.hpp` is authoritative for each module's
   bindings
 - [`example/samples/`](../../example/samples/) — runnable samples organised by feature
@@ -137,7 +137,7 @@ capabilities:
 
 | You want | Where |
 | --- | --- |
-| Call your own C/C++ from Magel | [Host integration and C ABI](08-host-integration.md) |
+| Call your own C/C++ from ChaLi | [Host integration and C ABI](08-host-integration.md) |
 | Capabilities beyond the standard library | [Language reference](04-language-reference.md) |
 | Runnable samples for a feature | [`example/samples/`](../../example/samples/) |
 

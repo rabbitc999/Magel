@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <limits>
 
-namespace magel_syntax
+namespace chali_syntax
 {
 /**
  * @brief 编译期常量表达式解析器；不执行语言运行时表达式。
@@ -263,4 +263,4 @@ CompileTimeConstant evaluateConstant(const Memory::String &source, const Memory:
     return evaluator.run();
 }
 
-}  // namespace magel_syntax
+}  // namespace chali_syntax

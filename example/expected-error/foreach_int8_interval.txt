@@ -1,1 +1,1 @@
-magel: example/samples-error/foreach_int8_interval.mgl 第 1 行第 1 列：for-in 区间端点超出 int8 的取值范围（-128..127）
+chali: example/samples-error/foreach_int8_interval.chl 第 1 行第 1 列：for-in 区间端点超出 int8 的取值范围（-128..127）

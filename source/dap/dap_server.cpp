@@ -53,7 +53,7 @@ std::vector<std::size_t> g_instructionBreaks;
 struct StoppedFrame
 {
     std::string function;   ///< 函数名；空表示入口。
-    std::string file;       ///< 源文件（`.mgl`）；空表示没有位置。
+    std::string file;       ///< 源文件（`.chl`）；空表示没有位置。
     std::int32_t line = 0;  ///< 行号（1 基）；0 表示未知。
 };
 
@@ -222,7 +222,7 @@ std::string toStd(const Memory::String &text) { return std::string(text.data(), 
 /**
  * @brief 路径归一化：统一分隔符，Windows 上再统一大小写。
  *
- * 前端给的是绝对路径（`D:\...\a.mgl`），调试表里可能是相对路径（`example/a.mgl`），
+ * 前端给的是绝对路径（`D:\...\a.chl`），调试表里可能是相对路径（`example/a.chl`），
  * 分隔符还可能是 `/`：不做归一化的话后缀比对永远失败，断点就一个也下不上。
  */
 std::string normalizePath(const std::string &path)

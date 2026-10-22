@@ -6,7 +6,7 @@
  * @param budget 本次编译剩余的节点遍历预算。
  * @return 展开成功返回真，失败记录编译诊断。
  */
-bool ExpandAstMacroNode(int id, magel_macro::Registry &registry, std::size_t depth, std::size_t &budget);
+bool ExpandAstMacroNode(int id, chali_macro::Registry &registry, std::size_t depth, std::size_t &budget);
 
 /**
  * @brief 为未完成实例化的调用错误保留定义位置及已有嵌套展开链。
@@ -243,7 +243,7 @@ void RebindAstMacroExports(int root, const Memory::Map<Memory::String, std::uint
         for (const int annotation : node.annotations) visit(annotation, argument, collect, depth + 1);
         visit(node.guard, argument, collect, depth + 1);
         const bool group = node.kind == MNode::Declare && node.kids.size() == 1 && node.kids[0] >= 0 && N(node.kids[0]).kind == MNode::List;
-        const bool indexed = node.kind == MNode::Block || node.kind == MNode::Case || node.kind == MNode::NewPtr || ((node.kind == MNode::Declare || node.kind == MNode::Field) && !group && node.i >= 0) || (node.kind == MNode::Index && node.s2 == "__magel_bare_index");
+        const bool indexed = node.kind == MNode::Block || node.kind == MNode::Case || node.kind == MNode::NewPtr || ((node.kind == MNode::Declare || node.kind == MNode::Field) && !group && node.i >= 0) || (node.kind == MNode::Index && node.s2 == "__chali_bare_index");
         if (indexed) visit(static_cast<int>(node.i), argument, collect, depth + 1);
     };
     visit(root, false, true, 0);
@@ -259,7 +259,7 @@ void RebindAstMacroExports(int root, const Memory::Map<Memory::String, std::uint
  * @param budget 剩余遍历预算。
  * @return 拼接及嵌套展开成功时返回真。
  */
-bool ExpandAstMacroStatements(int id, magel_macro::Registry &registry, std::size_t depth, std::size_t &budget)
+bool ExpandAstMacroStatements(int id, chali_macro::Registry &registry, std::size_t depth, std::size_t &budget)
 {
     if (depth >= 256 || budget == 0) return Fail("宏展开超过深度或规模预算"), false;
     --budget;
@@ -332,7 +332,7 @@ bool ExpandAstMacroStatements(int id, magel_macro::Registry &registry, std::size
  * @param budget 剩余节点预算。
  * @return 展开成功返回真。
  */
-bool ExpandAstMacroNode(int id, magel_macro::Registry &registry, std::size_t depth, std::size_t &budget)
+bool ExpandAstMacroNode(int id, chali_macro::Registry &registry, std::size_t depth, std::size_t &budget)
 {
     if (id < 0) return true;
     if (depth >= 256 || budget == 0) return Fail("宏展开超过深度或规模预算"), false;
@@ -369,7 +369,7 @@ bool ExpandAstMacroNode(int id, magel_macro::Registry &registry, std::size_t dep
         if (!ExpandAstMacroNode(annotation, registry, depth + 1, budget)) return false;
     if (!ExpandAstMacroNode(node.guard, registry, depth + 1, budget)) return false;
     const bool declarationGroup = node.kind == MNode::Declare && node.kids.size() == 1 && node.kids[0] >= 0 && g_nodes[node.kids[0]].kind == MNode::List;
-    const bool indexedChild = node.kind == MNode::Block || node.kind == MNode::Case || node.kind == MNode::NewPtr || ((node.kind == MNode::Declare || node.kind == MNode::Field) && !declarationGroup && node.i >= 0) || (node.kind == MNode::Index && node.s2 == "__magel_bare_index");
+    const bool indexedChild = node.kind == MNode::Block || node.kind == MNode::Case || node.kind == MNode::NewPtr || ((node.kind == MNode::Declare || node.kind == MNode::Field) && !declarationGroup && node.i >= 0) || (node.kind == MNode::Index && node.s2 == "__chali_bare_index");
     return !indexedChild || ExpandAstMacroNode(static_cast<int>(node.i), registry, depth + 1, budget);
 }
 
@@ -387,8 +387,8 @@ bool ExpandAstMacros()
     for (const int id : g_top)
         if (!MaterializeMacroFragments(id, fragmentsSeen, 0)) return false;
     g_macroRegistry.reset();
-    g_macroResolver = std::make_unique<magel_macro::HygieneResolver>();
-    g_macroRegistry = std::make_unique<magel_macro::Registry>(g_nodes, *g_macroResolver, &g_types);
+    g_macroResolver = std::make_unique<chali_macro::HygieneResolver>();
+    g_macroRegistry = std::make_unique<chali_macro::Registry>(g_nodes, *g_macroResolver, &g_types);
     auto &registry = *g_macroRegistry;
     for (const int id : g_top)
         if (g_nodes[id].kind == MNode::ImportDecl)
@@ -485,7 +485,7 @@ bool ApplyAstMacroTypes(int root, const std::map<std::string, int> &arguments, s
             if (!visit(annotation, depth + 1)) return false;
         if (!visit(node.guard, depth + 1)) return false;
         const bool group = node.kind == MNode::Declare && node.kids.size() == 1 && node.kids[0] >= 0 && N(node.kids[0]).kind == MNode::List;
-        const bool indexed = node.kind == MNode::Block || node.kind == MNode::Case || node.kind == MNode::NewPtr || ((node.kind == MNode::Declare || node.kind == MNode::Field) && !group && node.i >= 0) || (node.kind == MNode::Index && node.s2 == "__magel_bare_index");
+        const bool indexed = node.kind == MNode::Block || node.kind == MNode::Case || node.kind == MNode::NewPtr || ((node.kind == MNode::Declare || node.kind == MNode::Field) && !group && node.i >= 0) || (node.kind == MNode::Index && node.s2 == "__chali_bare_index");
         return !indexed || visit(static_cast<int>(node.i), depth + 1);
     };
     return visit(root, 0);

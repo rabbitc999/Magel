@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::binary;
 ```
 
@@ -14,16 +14,16 @@ BinaryReader 拥有输入的副本，默认小端。位置、长度均按字节�
 
 ## 参考代码
 
-完整程序：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+完整程序：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 ```powershell
-magel run example/samples/std_binary.mgl
+chali run example/samples/std_binary.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::binary;
 
 /* 固定测试字节由 Python struct.pack 的大小端编码得到。 */
@@ -272,7 +272,7 @@ binary reader OK
 
 **声明**
 
-```magel
+```chali
 void drop();
 ```
 
@@ -294,13 +294,13 @@ void drop();
 
 **调用形式**
 
-```magel
+```chali
 obj.drop();
 ```
 
-**源码**：[source/std/binary.mgl:16](../../source/std/binary.mgl#L16)。
+**源码**：[source/std/binary.chl:16](../../source/std/binary.chl#L16)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-1"></a>
 
@@ -308,7 +308,7 @@ obj.drop();
 
 **声明**
 
-```magel
+```chali
 static BinaryReader fromBytes(std::lang::List<uint8> bytes);
 ```
 
@@ -334,13 +334,13 @@ static BinaryReader fromBytes(std::lang::List<uint8> bytes);
 
 **调用形式**
 
-```magel
+```chali
 std::binary::BinaryReader::fromBytes(bytes);
 ```
 
-**源码**：[source/std/binary.mgl:18](../../source/std/binary.mgl#L18)。
+**源码**：[source/std/binary.chl:18](../../source/std/binary.chl#L18)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-2"></a>
 
@@ -348,7 +348,7 @@ std::binary::BinaryReader::fromBytes(bytes);
 
 **声明**
 
-```magel
+```chali
 static BinaryReader fromArray(uint8 const& bytes, int64 count);
 ```
 
@@ -375,13 +375,13 @@ static BinaryReader fromArray(uint8 const& bytes, int64 count);
 
 **调用形式**
 
-```magel
+```chali
 std::binary::BinaryReader::fromArray(bytes, count);
 ```
 
-**源码**：[source/std/binary.mgl:26](../../source/std/binary.mgl#L26)。
+**源码**：[source/std/binary.chl:26](../../source/std/binary.chl#L26)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-3"></a>
 
@@ -389,7 +389,7 @@ std::binary::BinaryReader::fromArray(bytes, count);
 
 **声明**
 
-```magel
+```chali
 static BinaryReader fromArray(uint8 bytes[]);
 ```
 
@@ -415,13 +415,13 @@ static BinaryReader fromArray(uint8 bytes[]);
 
 **调用形式**
 
-```magel
+```chali
 std::binary::BinaryReader::fromArray(bytes);
 ```
 
-**源码**：[source/std/binary.mgl:34](../../source/std/binary.mgl#L34)。
+**源码**：[source/std/binary.chl:34](../../source/std/binary.chl#L34)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-4"></a>
 
@@ -429,7 +429,7 @@ std::binary::BinaryReader::fromArray(bytes);
 
 **声明**
 
-```magel
+```chali
 int64 position();
 ```
 
@@ -451,13 +451,13 @@ int64 position();
 
 **调用形式**
 
-```magel
+```chali
 obj.position();
 ```
 
-**源码**：[source/std/binary.mgl:35](../../source/std/binary.mgl#L35)。
+**源码**：[source/std/binary.chl:35](../../source/std/binary.chl#L35)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-5"></a>
 
@@ -465,7 +465,7 @@ obj.position();
 
 **声明**
 
-```magel
+```chali
 int64 remaining();
 ```
 
@@ -487,13 +487,13 @@ int64 remaining();
 
 **调用形式**
 
-```magel
+```chali
 obj.remaining();
 ```
 
-**源码**：[source/std/binary.mgl:36](../../source/std/binary.mgl#L36)。
+**源码**：[source/std/binary.chl:36](../../source/std/binary.chl#L36)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-6"></a>
 
@@ -501,7 +501,7 @@ obj.remaining();
 
 **声明**
 
-```magel
+```chali
 int64 size();
 ```
 
@@ -523,13 +523,13 @@ int64 size();
 
 **调用形式**
 
-```magel
+```chali
 obj.size();
 ```
 
-**源码**：[source/std/binary.mgl:37](../../source/std/binary.mgl#L37)。
+**源码**：[source/std/binary.chl:37](../../source/std/binary.chl#L37)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-7"></a>
 
@@ -537,7 +537,7 @@ obj.size();
 
 **声明**
 
-```magel
+```chali
 void setBigEndian(bool enabled);
 ```
 
@@ -561,13 +561,13 @@ void setBigEndian(bool enabled);
 
 **调用形式**
 
-```magel
+```chali
 obj.setBigEndian(enabled);
 ```
 
-**源码**：[source/std/binary.mgl:38](../../source/std/binary.mgl#L38)。
+**源码**：[source/std/binary.chl:38](../../source/std/binary.chl#L38)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-8"></a>
 
@@ -575,7 +575,7 @@ obj.setBigEndian(enabled);
 
 **声明**
 
-```magel
+```chali
 bool seek(int64 position);
 ```
 
@@ -599,13 +599,13 @@ bool seek(int64 position);
 
 **调用形式**
 
-```magel
+```chali
 obj.seek(position);
 ```
 
-**源码**：[source/std/binary.mgl:40](../../source/std/binary.mgl#L40)。
+**源码**：[source/std/binary.chl:40](../../source/std/binary.chl#L40)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-9"></a>
 
@@ -613,7 +613,7 @@ obj.seek(position);
 
 **声明**
 
-```magel
+```chali
 bool skip(int64 count);
 ```
 
@@ -639,13 +639,13 @@ bool skip(int64 count);
 
 **调用形式**
 
-```magel
+```chali
 obj.skip(count);
 ```
 
-**源码**：[source/std/binary.mgl:46](../../source/std/binary.mgl#L46)。
+**源码**：[source/std/binary.chl:46](../../source/std/binary.chl#L46)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-10"></a>
 
@@ -653,7 +653,7 @@ obj.skip(count);
 
 **声明**
 
-```magel
+```chali
 int8 readInt8();
 ```
 
@@ -675,13 +675,13 @@ int8 readInt8();
 
 **调用形式**
 
-```magel
+```chali
 obj.readInt8();
 ```
 
-**源码**：[source/std/binary.mgl:52](../../source/std/binary.mgl#L52)。
+**源码**：[source/std/binary.chl:52](../../source/std/binary.chl#L52)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-11"></a>
 
@@ -689,7 +689,7 @@ obj.readInt8();
 
 **声明**
 
-```magel
+```chali
 std::lang::List<int8> readInt8Array(int64 count);
 ```
 
@@ -713,13 +713,13 @@ std::lang::List<int8> readInt8Array(int64 count);
 
 **调用形式**
 
-```magel
+```chali
 obj.readInt8Array(count);
 ```
 
-**源码**：[source/std/binary.mgl:58](../../source/std/binary.mgl#L58)。
+**源码**：[source/std/binary.chl:58](../../source/std/binary.chl#L58)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-12"></a>
 
@@ -727,7 +727,7 @@ obj.readInt8Array(count);
 
 **声明**
 
-```magel
+```chali
 uint8 readUint8();
 ```
 
@@ -749,13 +749,13 @@ uint8 readUint8();
 
 **调用形式**
 
-```magel
+```chali
 obj.readUint8();
 ```
 
-**源码**：[source/std/binary.mgl:64](../../source/std/binary.mgl#L64)。
+**源码**：[source/std/binary.chl:64](../../source/std/binary.chl#L64)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-13"></a>
 
@@ -763,7 +763,7 @@ obj.readUint8();
 
 **声明**
 
-```magel
+```chali
 std::lang::List<uint8> readUint8Array(int64 count);
 ```
 
@@ -787,13 +787,13 @@ std::lang::List<uint8> readUint8Array(int64 count);
 
 **调用形式**
 
-```magel
+```chali
 obj.readUint8Array(count);
 ```
 
-**源码**：[source/std/binary.mgl:70](../../source/std/binary.mgl#L70)。
+**源码**：[source/std/binary.chl:70](../../source/std/binary.chl#L70)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-14"></a>
 
@@ -801,7 +801,7 @@ obj.readUint8Array(count);
 
 **声明**
 
-```magel
+```chali
 int16 readInt16();
 ```
 
@@ -823,13 +823,13 @@ int16 readInt16();
 
 **调用形式**
 
-```magel
+```chali
 obj.readInt16();
 ```
 
-**源码**：[source/std/binary.mgl:76](../../source/std/binary.mgl#L76)。
+**源码**：[source/std/binary.chl:76](../../source/std/binary.chl#L76)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-15"></a>
 
@@ -837,7 +837,7 @@ obj.readInt16();
 
 **声明**
 
-```magel
+```chali
 std::lang::List<int16> readInt16Array(int64 count);
 ```
 
@@ -861,13 +861,13 @@ std::lang::List<int16> readInt16Array(int64 count);
 
 **调用形式**
 
-```magel
+```chali
 obj.readInt16Array(count);
 ```
 
-**源码**：[source/std/binary.mgl:82](../../source/std/binary.mgl#L82)。
+**源码**：[source/std/binary.chl:82](../../source/std/binary.chl#L82)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-16"></a>
 
@@ -875,7 +875,7 @@ obj.readInt16Array(count);
 
 **声明**
 
-```magel
+```chali
 uint16 readUint16();
 ```
 
@@ -897,13 +897,13 @@ uint16 readUint16();
 
 **调用形式**
 
-```magel
+```chali
 obj.readUint16();
 ```
 
-**源码**：[source/std/binary.mgl:88](../../source/std/binary.mgl#L88)。
+**源码**：[source/std/binary.chl:88](../../source/std/binary.chl#L88)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-17"></a>
 
@@ -911,7 +911,7 @@ obj.readUint16();
 
 **声明**
 
-```magel
+```chali
 std::lang::List<uint16> readUint16Array(int64 count);
 ```
 
@@ -935,13 +935,13 @@ std::lang::List<uint16> readUint16Array(int64 count);
 
 **调用形式**
 
-```magel
+```chali
 obj.readUint16Array(count);
 ```
 
-**源码**：[source/std/binary.mgl:94](../../source/std/binary.mgl#L94)。
+**源码**：[source/std/binary.chl:94](../../source/std/binary.chl#L94)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-18"></a>
 
@@ -949,7 +949,7 @@ obj.readUint16Array(count);
 
 **声明**
 
-```magel
+```chali
 int32 readInt32();
 ```
 
@@ -971,13 +971,13 @@ int32 readInt32();
 
 **调用形式**
 
-```magel
+```chali
 obj.readInt32();
 ```
 
-**源码**：[source/std/binary.mgl:100](../../source/std/binary.mgl#L100)。
+**源码**：[source/std/binary.chl:100](../../source/std/binary.chl#L100)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-19"></a>
 
@@ -985,7 +985,7 @@ obj.readInt32();
 
 **声明**
 
-```magel
+```chali
 std::lang::List<int32> readInt32Array(int64 count);
 ```
 
@@ -1009,13 +1009,13 @@ std::lang::List<int32> readInt32Array(int64 count);
 
 **调用形式**
 
-```magel
+```chali
 obj.readInt32Array(count);
 ```
 
-**源码**：[source/std/binary.mgl:106](../../source/std/binary.mgl#L106)。
+**源码**：[source/std/binary.chl:106](../../source/std/binary.chl#L106)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-20"></a>
 
@@ -1023,7 +1023,7 @@ obj.readInt32Array(count);
 
 **声明**
 
-```magel
+```chali
 uint32 readUint32();
 ```
 
@@ -1045,13 +1045,13 @@ uint32 readUint32();
 
 **调用形式**
 
-```magel
+```chali
 obj.readUint32();
 ```
 
-**源码**：[source/std/binary.mgl:112](../../source/std/binary.mgl#L112)。
+**源码**：[source/std/binary.chl:112](../../source/std/binary.chl#L112)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-21"></a>
 
@@ -1059,7 +1059,7 @@ obj.readUint32();
 
 **声明**
 
-```magel
+```chali
 std::lang::List<uint32> readUint32Array(int64 count);
 ```
 
@@ -1083,13 +1083,13 @@ std::lang::List<uint32> readUint32Array(int64 count);
 
 **调用形式**
 
-```magel
+```chali
 obj.readUint32Array(count);
 ```
 
-**源码**：[source/std/binary.mgl:118](../../source/std/binary.mgl#L118)。
+**源码**：[source/std/binary.chl:118](../../source/std/binary.chl#L118)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-22"></a>
 
@@ -1097,7 +1097,7 @@ obj.readUint32Array(count);
 
 **声明**
 
-```magel
+```chali
 int64 readInt64();
 ```
 
@@ -1119,13 +1119,13 @@ int64 readInt64();
 
 **调用形式**
 
-```magel
+```chali
 obj.readInt64();
 ```
 
-**源码**：[source/std/binary.mgl:124](../../source/std/binary.mgl#L124)。
+**源码**：[source/std/binary.chl:124](../../source/std/binary.chl#L124)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-23"></a>
 
@@ -1133,7 +1133,7 @@ obj.readInt64();
 
 **声明**
 
-```magel
+```chali
 std::lang::List<int64> readInt64Array(int64 count);
 ```
 
@@ -1157,13 +1157,13 @@ std::lang::List<int64> readInt64Array(int64 count);
 
 **调用形式**
 
-```magel
+```chali
 obj.readInt64Array(count);
 ```
 
-**源码**：[source/std/binary.mgl:130](../../source/std/binary.mgl#L130)。
+**源码**：[source/std/binary.chl:130](../../source/std/binary.chl#L130)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-24"></a>
 
@@ -1171,7 +1171,7 @@ obj.readInt64Array(count);
 
 **声明**
 
-```magel
+```chali
 uint64 readUint64();
 ```
 
@@ -1193,13 +1193,13 @@ uint64 readUint64();
 
 **调用形式**
 
-```magel
+```chali
 obj.readUint64();
 ```
 
-**源码**：[source/std/binary.mgl:136](../../source/std/binary.mgl#L136)。
+**源码**：[source/std/binary.chl:136](../../source/std/binary.chl#L136)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-25"></a>
 
@@ -1207,7 +1207,7 @@ obj.readUint64();
 
 **声明**
 
-```magel
+```chali
 std::lang::List<uint64> readUint64Array(int64 count);
 ```
 
@@ -1231,13 +1231,13 @@ std::lang::List<uint64> readUint64Array(int64 count);
 
 **调用形式**
 
-```magel
+```chali
 obj.readUint64Array(count);
 ```
 
-**源码**：[source/std/binary.mgl:142](../../source/std/binary.mgl#L142)。
+**源码**：[source/std/binary.chl:142](../../source/std/binary.chl#L142)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-26"></a>
 
@@ -1245,7 +1245,7 @@ obj.readUint64Array(count);
 
 **声明**
 
-```magel
+```chali
 float32 readFloat32();
 ```
 
@@ -1267,13 +1267,13 @@ float32 readFloat32();
 
 **调用形式**
 
-```magel
+```chali
 obj.readFloat32();
 ```
 
-**源码**：[source/std/binary.mgl:148](../../source/std/binary.mgl#L148)。
+**源码**：[source/std/binary.chl:148](../../source/std/binary.chl#L148)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-27"></a>
 
@@ -1281,7 +1281,7 @@ obj.readFloat32();
 
 **声明**
 
-```magel
+```chali
 std::lang::List<float32> readFloat32Array(int64 count);
 ```
 
@@ -1305,13 +1305,13 @@ std::lang::List<float32> readFloat32Array(int64 count);
 
 **调用形式**
 
-```magel
+```chali
 obj.readFloat32Array(count);
 ```
 
-**源码**：[source/std/binary.mgl:154](../../source/std/binary.mgl#L154)。
+**源码**：[source/std/binary.chl:154](../../source/std/binary.chl#L154)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-28"></a>
 
@@ -1319,7 +1319,7 @@ obj.readFloat32Array(count);
 
 **声明**
 
-```magel
+```chali
 float64 readFloat64();
 ```
 
@@ -1341,13 +1341,13 @@ float64 readFloat64();
 
 **调用形式**
 
-```magel
+```chali
 obj.readFloat64();
 ```
 
-**源码**：[source/std/binary.mgl:160](../../source/std/binary.mgl#L160)。
+**源码**：[source/std/binary.chl:160](../../source/std/binary.chl#L160)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-29"></a>
 
@@ -1355,7 +1355,7 @@ obj.readFloat64();
 
 **声明**
 
-```magel
+```chali
 std::lang::List<float64> readFloat64Array(int64 count);
 ```
 
@@ -1379,13 +1379,13 @@ std::lang::List<float64> readFloat64Array(int64 count);
 
 **调用形式**
 
-```magel
+```chali
 obj.readFloat64Array(count);
 ```
 
-**源码**：[source/std/binary.mgl:166](../../source/std/binary.mgl#L166)。
+**源码**：[source/std/binary.chl:166](../../source/std/binary.chl#L166)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-30"></a>
 
@@ -1393,7 +1393,7 @@ obj.readFloat64Array(count);
 
 **声明**
 
-```magel
+```chali
 bool readBool();
 ```
 
@@ -1415,13 +1415,13 @@ bool readBool();
 
 **调用形式**
 
-```magel
+```chali
 obj.readBool();
 ```
 
-**源码**：[source/std/binary.mgl:172](../../source/std/binary.mgl#L172)。
+**源码**：[source/std/binary.chl:172](../../source/std/binary.chl#L172)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-31"></a>
 
@@ -1429,7 +1429,7 @@ obj.readBool();
 
 **声明**
 
-```magel
+```chali
 std::lang::List<bool> readBoolArray(int64 count);
 ```
 
@@ -1453,13 +1453,13 @@ std::lang::List<bool> readBoolArray(int64 count);
 
 **调用形式**
 
-```magel
+```chali
 obj.readBoolArray(count);
 ```
 
-**源码**：[source/std/binary.mgl:178](../../source/std/binary.mgl#L178)。
+**源码**：[source/std/binary.chl:178](../../source/std/binary.chl#L178)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-32"></a>
 
@@ -1467,7 +1467,7 @@ obj.readBoolArray(count);
 
 **声明**
 
-```magel
+```chali
 std::lang::List<uint8> readBytes(int64 count);
 ```
 
@@ -1491,13 +1491,13 @@ std::lang::List<uint8> readBytes(int64 count);
 
 **调用形式**
 
-```magel
+```chali
 obj.readBytes(count);
 ```
 
-**源码**：[source/std/binary.mgl:184](../../source/std/binary.mgl#L184)。
+**源码**：[source/std/binary.chl:184](../../source/std/binary.chl#L184)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-33"></a>
 
@@ -1505,7 +1505,7 @@ obj.readBytes(count);
 
 **声明**
 
-```magel
+```chali
 std::lang::String readString(int64 length);
 ```
 
@@ -1529,13 +1529,13 @@ std::lang::String readString(int64 length);
 
 **调用形式**
 
-```magel
+```chali
 obj.readString(length);
 ```
 
-**源码**：[source/std/binary.mgl:186](../../source/std/binary.mgl#L186)。
+**源码**：[source/std/binary.chl:186](../../source/std/binary.chl#L186)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。
 
 <a id="api-34"></a>
 
@@ -1543,7 +1543,7 @@ obj.readString(length);
 
 **声明**
 
-```magel
+```chali
 std::lang::List<std::lang::String> readStringArray(int64 count, int64 width);
 ```
 
@@ -1568,10 +1568,10 @@ std::lang::List<std::lang::String> readStringArray(int64 count, int64 width);
 
 **调用形式**
 
-```magel
+```chali
 obj.readStringArray(count, width);
 ```
 
-**源码**：[source/std/binary.mgl:192](../../source/std/binary.mgl#L192)。
+**源码**：[source/std/binary.chl:192](../../source/std/binary.chl#L192)。
 
-**完整示例**：[example/samples/std_binary.mgl](../../example/samples/std_binary.mgl)。
+**完整示例**：[example/samples/std_binary.chl](../../example/samples/std_binary.chl)。

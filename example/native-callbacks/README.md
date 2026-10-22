@@ -1,16 +1,16 @@
-# 胶水同步调用 Magel 函数
+# 胶水同步调用 ChaLi 函数
 
-同一份 [`glue.cpp`](glue.cpp) 用于 VM。Magel 侧把具名函数或 `fn` 值作为参数传给宿主，
-C++ 侧接收 `magel_glue::Function<Result(Args...)>` 并直接调用。支持捕获闭包，不需要 `export`。
-[`demo.mgl`](demo.mgl) 包含具名函数、内联函数、copy/move 捕获、float32、bool、void、
-可变引用、高阶函数及 Magel → C++ → Magel 多层重入，并通过断言检查结果。
+同一份 [`glue.cpp`](glue.cpp) 用于 VM。ChaLi 侧把具名函数或 `fn` 值作为参数传给宿主，
+C++ 侧接收 `chali_glue::Function<Result(Args...)>` 并直接调用。支持捕获闭包，不需要 `export`。
+[`demo.chl`](demo.chl) 包含具名函数、内联函数、copy/move 捕获、float32、bool、void、
+可变引用、高阶函数及 ChaLi → C++ → ChaLi 多层重入，并通过断言检查结果。
 
 VM 宿主显式安装相同注册表；编译器的 `run` 命令没有加载任意 C++ 源文件的入口。
 下面用仓库共享核心构建最小宿主，再加载编译器输出的程序：
 
 ```sh
-g++ -std=c++17 -O2 -pthread -DMAGEL_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 -DSTACKVM_WITH_BIGINT=0 -DSTACKVM_WITH_BIGFLOAT=0 -Isource -Ilibrary -Ilibrary/stackvm example/native-callbacks/vm_host.cpp library/stackvm/stackvm.cpp source/glue/std_collection.cpp source/glue/std_collection_storage.cpp source/glue/std_native_record.cpp -o build/native-callbacks-vm
-./magel emit example/native-callbacks/demo.mgl --svmb --out build/native-callbacks-program
+g++ -std=c++17 -O2 -pthread -DCHALI_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 -DSTACKVM_WITH_BIGINT=0 -DSTACKVM_WITH_BIGFLOAT=0 -Isource -Ilibrary -Ilibrary/stackvm example/native-callbacks/vm_host.cpp library/stackvm/stackvm.cpp source/glue/std_collection.cpp source/glue/std_collection_storage.cpp source/glue/std_native_record.cpp -o build/native-callbacks-vm
+./chali emit example/native-callbacks/demo.chl --svmb --out build/native-callbacks-program
 ./build/native-callbacks-vm build/native-callbacks-program.svmb build/native-callbacks-program.data.bin build/native-callbacks-program.layout
 ```
 
@@ -32,5 +32,5 @@ callbacks: named inline copy move float32 bool void reference higher-order reent
 数值、布尔、引用与函数值由相应 `Codec` 传递；字符串、列表、聚合等拥有资源的值还须遵守
 其 Codec 和语言所有权约定，本例不提供任意资源类型的自动所有权转移。
 
-回归命令 `python tests/magel_native_callbacks.py` 在默认最高优化 VM 中执行成功程序，
-并检查空函数、参数数量错误、Magel panic 和宿主错误传播。
+回归命令 `python tests/chali_native_callbacks.py` 在默认最高优化 VM 中执行成功程序，
+并检查空函数、参数数量错误、ChaLi panic 和宿主错误传播。

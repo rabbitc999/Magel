@@ -1,1 +1,1 @@
-magel: example/samples-error/macro_argument_increment.mgl 第 7 行：[MGL1301] 同一表达式中，自增减目标与其他读写冲突：x
+chali: example/samples-error/macro_argument_increment.chl 第 7 行：[CHL1301] 同一表达式中，自增减目标与其他读写冲突：x

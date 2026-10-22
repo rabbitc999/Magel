@@ -1,7 +1,7 @@
 #include "registry.hpp"
-#include "../magel_ast.hpp"
+#include "../chali_ast.hpp"
 
-namespace magel_macro
+namespace chali_macro
 {
 /**
  * @brief 保存当前编译的节点池和卫生解析器。
@@ -371,4 +371,4 @@ bool Registry::normalizeTemplate(int root, std::size_t depth, std::string &error
     nodes_[node.kids[0]].kids = std::move(statements);
     return true;
 }
-}  // namespace magel_macro
+}  // namespace chali_macro

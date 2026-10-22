@@ -2,11 +2,11 @@
 
 [文档索引](README.md) · [English](en/28-declaration-sugars.md)
 
-权威产生式在 [`source/magel.gram`](../source/magel.gram)。ParseEngine 只负责由文法生成解析器；语义动作调用 Magel 自己的 AST 构造与降级函数。以下 IR 均指四元式。
+权威产生式在 [`source/chali.gram`](../source/chali.gram)。ParseEngine 只负责由文法生成解析器；语义动作调用 ChaLi 自己的 AST 构造与降级函数。以下 IR 均指四元式。
 
 ## return 接控制表达式
 
-```magel
+```chali
 String make() {
     return {
         String local = "owned";
@@ -77,13 +77,13 @@ lowerReturnControl(E):
 
 这里的 transfer/copy 是编译器伪操作，不新增 VM 操作码。已有 `LowerLanguageMove` 使用存活内存检查、地址读取、源槽清零及聚合移动标记；复制仍使用现有字符串、对象与结构体复制路径。Drop 保留在相应控制流上，由移动状态保护，不能在遇到一条移动分支时全局删除另一条分支的清理。清理回调若仍访问已消费的来源，必须由借用检查拒绝，不能靠悬垂别名访问搬走的资源。
 
-核心代码见 [`M_ReturnValue`](../source/semantics/return_expression_ast.cpp)、[`PrepareBreakValue` 与 `LowerLanguageMove`](../source/semantics/boxing.cpp)、[`LowerLoop`](../source/semantics/lowering.cpp) 和[借用控制流](../source/magel_borrow_flow.hpp)。
+核心代码见 [`M_ReturnValue`](../source/semantics/return_expression_ast.cpp)、[`PrepareBreakValue` 与 `LowerLanguageMove`](../source/semantics/boxing.cpp)、[`LowerLoop`](../source/semantics/lowering.cpp) 和[借用控制流](../source/chali_borrow_flow.hpp)。
 
 运行时数组也沿用该规则：`return { String values[] = new[2]; ... yield values; };` 的内部数组连同长度头一起转移，源句柄清零，清理时跳过源元素。外部运行时数组则重新分配长度相同的存储，字符串、对象和聚合元素逐项深复制。隐藏结果槽接受带长度的块、if、match 与 loop 结果，不再只接受 new 或函数调用。此编译器内部消费不开放为源码中的 `move(&array)`；定长数组仍按原有存储和返回类型约束处理，不透明宿主类型也不会被推断成拥有资源。
 
 ## 语句级具名函数
 
-```magel
+```chali
 void main() {
     int64 value = 2;
     int64 read(int64 amount) { return value + amount; }
@@ -115,7 +115,7 @@ NamedFunction(T, name, params, body, capture)
 
 ## 字段派生指令
 
-```magel
+```chali
 #derive(Equal, Hash, Clone)
 struct Point { int64 x; String label; }
 
@@ -163,7 +163,7 @@ LowerProgram()          // ordinary typed methods -> ordinary quadruples
 两个指令式约定：实现 `Closeable` 的结构体自动获得 `#NonCopyable`；声明前写 `#No<接口>Replace`
 关掉该接口的自动推导。
 
-```magel
+```chali
 struct Handle : Closeable { int64 id; void close() { println("close {}", self.id); } }
 
 #NoAddReplace
@@ -208,6 +208,6 @@ FindOperator(op, left, right):
 
 
 
-- [返回表达式与资源清理](../example/samples/return_expression.mgl)、[具名闭包](../example/samples/named_function.mgl)、[结构体和枚举派生](../example/samples/derive.mgl)。
-- 运算符推导开关：[`no_replace.mgl`](../example/samples/no_replace.mgl) 与报错例 [`operator_no_add_replace.mgl`](../example/samples-error/operator_no_add_replace.mgl)；Closeable 自动不可复制：[`closeable_move.mgl`](../example/samples/closeable_move.mgl) 与报错例 [`closeable_copy.mgl`](../example/samples-error/closeable_copy.mgl)。
-- [语义及生命周期门禁](../tests/magel_declaration_sugars.py)检查分支类型、嵌套返回、层级跳转、只读捕获、引用逃逸、表达式位置声明、Drop 派生和缺失字段协议。
+- [返回表达式与资源清理](../example/samples/return_expression.chl)、[具名闭包](../example/samples/named_function.chl)、[结构体和枚举派生](../example/samples/derive.chl)。
+- 运算符推导开关：[`no_replace.chl`](../example/samples/no_replace.chl) 与报错例 [`operator_no_add_replace.chl`](../example/samples-error/operator_no_add_replace.chl)；Closeable 自动不可复制：[`closeable_move.chl`](../example/samples/closeable_move.chl) 与报错例 [`closeable_copy.chl`](../example/samples-error/closeable_copy.chl)。
+- [语义及生命周期门禁](../tests/chali_declaration_sugars.py)检查分支类型、嵌套返回、层级跳转、只读捕获、引用逃逸、表达式位置声明、Drop 派生和缺失字段协议。

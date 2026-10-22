@@ -1,35 +1,35 @@
 # 02 Language tour
 
-Fourteen runnable snippets walking through what Magel looks like.
+Fourteen runnable snippets walking through what ChaLi looks like.
 
 - Each one is compiled and executed for real; the output is printed below it. To run one yourself,
-  save it as `x.mgl` and run `magel run x.mgl`.
+  save it as `x.chl` and run `chali run x.chl`.
 - This tour shows **surface syntax only**. Why value semantics are designed this way, when a reference
   is rejected, when resources are released — all in [Core concepts](03-core-concepts.md). The complete
   syntax entries are in [Language reference](04-language-reference.md).
 
 If you have written C, Java, Go or Rust, most of this will look familiar at a glance — deliberately so.
-Magel borrows C-family expression and block syntax so the learning cost lands on what you already know.
+ChaLi borrows C-family expression and block syntax so the learning cost lands on what you already know.
 
 ---
 
 ## 1. Types and variables
 
-```magel
+```chali
 int64 main() {
     int8 small = 127;
     int64 count = 0;
     float64 ratio = 3.5;
     bool ready = true;
     char initial = 'M';
-    String name = "Magel";
+    String name = "ChaLi";
     println("{} {} {} {} {} {}", small, count, ratio, ready, initial, name);
     return 0;
 }
 ```
 
 ```text
-127 0 3.5 1 M Magel
+127 0 3.5 1 M ChaLi
 ```
 
 Integers carry their width explicitly: `int8` / `int16` / `int32` / `int64`; unsigned is `uint8` …
@@ -60,7 +60,7 @@ prefix when there is no name clash.
 
 ## 2. Control flow
 
-```magel
+```chali
 int64 classify(int64 value) {
     if (value < 0) { return -1; }
     elif (value == 0) { return 0; }
@@ -95,7 +95,7 @@ Conditions use `if / elif / else`; loops use `while`, `for-in`, and `loop`. The 
 
 ## 3. Enums and pattern matching
 
-```magel
+```chali
 enum Message {
     Quit,
     Move(int32 x, int32 y),
@@ -129,7 +129,7 @@ Enum variants can carry fields (algebraic data types). `match` supports literals
 
 ## 4. Value semantics and references (a first look)
 
-```magel
+```chali
 int64 main() {
     String original = "hello";
     String copy = original;
@@ -162,7 +162,7 @@ outlives its target), and how move/release control-flow checking works: [Core co
 
 ## 5. A value that may be absent: Option and Result
 
-```magel
+```chali
 Option<int64> find_even(int64 value) {
     if (value % 2 == 0) { return Option<int64>::Value(value); }
     return Option<int64>::None;
@@ -184,7 +184,7 @@ none
 
 The version whose failure carries information is `Result<T, E>`, with `?` for early return:
 
-```magel
+```chali
 Result<int64, String> parse_value(bool valid) {
     if (valid) { return Result<int64, String>::Ok(20); }
     return Result<int64, String>::Err("bad input");
@@ -213,7 +213,7 @@ no exceptions; errors are part of the return value.
 
 ## 6. Structs, interfaces and generics
 
-```magel
+```chali
 interface Shape { int64 area(); };
 struct Circle : Shape {
     int64 r;
@@ -243,7 +243,7 @@ resolved statically, with no vtable overhead.
 
 For **runtime** polymorphism, box the object into `std::lang::Any` and take an interface reference out
 (`Shape mut& view = boxed.getReference();`); the concrete type is decided at run time. See
-[`example/samples/interface.mgl`](../../example/samples/interface.mgl).
+[`example/samples/interface.chl`](../../example/samples/interface.chl).
 
 Structs can also declare constructors (called as `T v = new T(...)`), `Drop` destructors and operator
 overloads — see [Language reference](04-language-reference.md).
@@ -252,7 +252,7 @@ overloads — see [Language reference](04-language-reference.md).
 
 ## 7. Collections and iterators
 
-```magel
+```chali
 struct Player {
     String name;
     int64 score;
@@ -285,7 +285,7 @@ friends. `for-in` iterates by value.
 
 Chained iteration needs `import std::iter;`:
 
-```magel
+```chali
 import std::iter;
 int64 square(int64 value) { return value * value; }
 bool even(int64 value) { return value % 2 == 0; }
@@ -306,7 +306,7 @@ int64 main() {
 
 ## 8. Arrays and tuples
 
-```magel
+```chali
 int64 main() {
     int64 fixed[3];
     fixed[0] = 1;
@@ -337,7 +337,7 @@ undefined behaviour.
 
 Tuples use parentheses and members are read via `.0` / `.1`:
 
-```magel
+```chali
 (int64, String) describe(int64 id) {
     return (id, "player");
 }
@@ -356,7 +356,7 @@ int64 main() {
 
 ## 9. Function types and fn closures
 
-```magel
+```chali
 int64 main() {
     int64 fn(int64) square = int64 fn(int64 x) { x * x };
     int64 base = 5;
@@ -377,10 +377,10 @@ int64 main() {
 
 ## 10. Strings
 
-```magel
+```chali
 import std::text;
 int64 main() {
-    String name = "Magel";
+    String name = "ChaLi";
     String joined = name + " " + format("{}", 2026);
     println("{}", joined);
     println("first={} upper={}", name[0], std::text::Text::toUpper(name));
@@ -389,8 +389,8 @@ int64 main() {
 ```
 
 ```text
-Magel 2026
-first=M upper=MAGEL
+ChaLi 2026
+first=M upper=CHALI
 ```
 
 `+` concatenates, `[]` indexes a character, `format` formats. Splitting, searching, case
@@ -401,7 +401,7 @@ conversion and trimming live in `std::text::Text` (`find` / `split` / `join` / `
 
 ## 11. Preprocessing and macros
 
-```magel
+```chali
 %define DETAIL 1
 $macro SQUARE(x)
 ((x) * (x))
@@ -438,17 +438,17 @@ body you can also use `$stringify(...)`, `$concat(a, b)` and `$line`.
 Compile-time errors give a line and column and draw a squiggle under the source:
 
 ```text
-語法錯誤：hello.mgl 第 2 行第 8 列：期望 标识符 / 常量(const) / 可变(mut) / 新建(new) 等 17 个之一，实际是 实现(impl)
+語法錯誤：hello.chl 第 2 行第 8 列：期望 标识符 / 常量(const) / 可变(mut) / 新建(new) 等 17 个之一，实际是 实现(impl)
  2 | impl Foo { }
    |        ~~~~
 ```
 
 Internal token names are translated into plain language: `分号(;)`, `左圆括号(()`, `右花括号(})`.
-Diagnostics follow the environment language (`zh` / `en` / `ja`), overridable via `MAGEL_LANG`; see
-[Toolchain](09-toolchain.md). With `MAGEL_LANG=en` the same error reads:
+Diagnostics follow the environment language (`zh` / `en` / `ja`), overridable via `CHALI_LANG`; see
+[Toolchain](09-toolchain.md). With `CHALI_LANG=en` the same error reads:
 
 ```text
-Syntax error: hello.mgl:2:8: expected one of identifier / constant(const) / mutable(mut) / new(new) (17 candidates), found impl(impl)
+Syntax error: hello.chl:2:8: expected one of identifier / constant(const) / mutable(mut) / new(new) (17 candidates), found impl(impl)
  2 | impl Foo { }
    |        ~~~~
 ```
@@ -457,14 +457,14 @@ Syntax error: hello.mgl:2:8: expected one of identifier / constant(const) / muta
 
 ## 13. What is not covered here
 
-The tour stops here. The other half of Magel has its own documents:
+The tour stops here. The other half of ChaLi has its own documents:
 
 | Feature | One line | Where |
 | --- | --- | --- |
 | Value semantics and ownership | Ordinary assignment copies; `move` explicitly transfers ownership from the source | [Core concepts](03-core-concepts.md) |
 | Non-null references and escape checking | A reference cannot outlive its target | [Core concepts](03-core-concepts.md) |
 | Resource management without a GC | `Drop` / `Closeable`, deterministic release at end of scope | [Core concepts](03-core-concepts.md) |
-| `abi` blocks and the C ABI | Declare external functions / export Magel functions to C | [Host integration and C ABI](08-host-integration.md) |
+| `abi` blocks and the C ABI | Declare external functions / export ChaLi functions to C | [Host integration and C ABI](08-host-integration.md) |
 | Annotations and reflection | Compile-time metadata, queryable and callable at run time | [Language reference](04-language-reference.md) |
 | Threads and concurrency | `std::thread`, `std::concurrency` | [Standard library overview](07-stdlib-overview.md) |
 | Bytecode deployment | `.svmb`, symbol compression | [Delivery security](05-delivery-security.md) |
@@ -478,4 +478,4 @@ The tour stops here. The other half of Magel has its own documents:
 | Understand value semantics and references | [Core concepts](03-core-concepts.md) |
 | Look up how to write something | [Language reference](04-language-reference.md) |
 | More runnable samples | [`example/samples/`](../../example/samples/) |
-| Start a real project | `magel new my-app`; see [Toolchain](09-toolchain.md) |
+| Start a real project | `chali new my-app`; see [Toolchain](09-toolchain.md) |

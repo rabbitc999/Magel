@@ -3,9 +3,9 @@
 /**
  * 「运行当前文件」的命令行构造。
  *
- * 真正跑的是编译器自带的场景命令 `magel run <文件>`；只依赖 Node 标准库、不引用 `vscode`，
+ * 真正跑的是编译器自带的场景命令 `chali run <文件>`；只依赖 Node 标准库、不引用 `vscode`，
  * 所以能在纯 Node 下单独测试。工作目录由调用方设成文件所在目录 —— 这样程序里的相对路径
- * （数据区、输入文件）跟手工跑 `magel` 时一致。
+ * （数据区、输入文件）跟手工跑 `chali` 时一致。
  */
 
 /**
@@ -23,12 +23,12 @@ function quote(value) {
 /**
  * 拼出一行运行命令。
  *
- * @param {string} magelPath 编译器路径。
- * @param {string} filePath 要运行的 `.mgl` 文件。
+ * @param {string} chaliPath 编译器路径。
+ * @param {string} filePath 要运行的 `.chl` 文件。
  * @returns {string} 一行命令。
  */
-function buildRunCommand(magelPath, filePath) {
-  return `${quote(magelPath)} run ${quote(filePath)}`;
+function buildRunCommand(chaliPath, filePath) {
+  return `${quote(chaliPath)} run ${quote(filePath)}`;
 }
 
 module.exports = { buildRunCommand, quote };

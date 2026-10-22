@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::datetime;
 ```
 
@@ -14,16 +14,16 @@ Unix 秒与公历 UTC 日期换算，年份 1..9999，秒 0..59，不表示闰�
 
 ## 参考代码
 
-完整程序：[example/samples/std_datetime.mgl](../../example/samples/std_datetime.mgl)。
+完整程序：[example/samples/std_datetime.chl](../../example/samples/std_datetime.chl)。
 
 ```powershell
-magel run example/samples/std_datetime.mgl
+chali run example/samples/std_datetime.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::datetime;
 int64 main(){
     assert(formatUtc(fromUnixSeconds(0).unwrap()).unwrap()=="1970-01-01T00:00:00Z");
@@ -95,7 +95,7 @@ UTC dates, epochs and arithmetic OK
 
 **声明**
 
-```magel
+```chali
 bool isLeapYear(int64 year);
 ```
 
@@ -119,13 +119,13 @@ bool isLeapYear(int64 year);
 
 **调用形式**
 
-```magel
+```chali
 std::datetime::isLeapYear(year);
 ```
 
-**源码**：[source/std/datetime.mgl:7](../../source/std/datetime.mgl#L7)。
+**源码**：[source/std/datetime.chl:7](../../source/std/datetime.chl#L7)。
 
-**完整示例**：[example/samples/std_datetime.mgl](../../example/samples/std_datetime.mgl)。
+**完整示例**：[example/samples/std_datetime.chl](../../example/samples/std_datetime.chl)。
 
 <a id="api-1"></a>
 
@@ -133,7 +133,7 @@ std::datetime::isLeapYear(year);
 
 **声明**
 
-```magel
+```chali
 int64 daysInMonth(int64 year, int64 month);
 ```
 
@@ -158,13 +158,13 @@ int64 daysInMonth(int64 year, int64 month);
 
 **调用形式**
 
-```magel
+```chali
 std::datetime::daysInMonth(year, month);
 ```
 
-**源码**：[source/std/datetime.mgl:9](../../source/std/datetime.mgl#L9)。
+**源码**：[source/std/datetime.chl:9](../../source/std/datetime.chl#L9)。
 
-**完整示例**：[example/samples/std_datetime.mgl](../../example/samples/std_datetime.mgl)。
+**完整示例**：[example/samples/std_datetime.chl](../../example/samples/std_datetime.chl)。
 
 <a id="api-2"></a>
 
@@ -172,7 +172,7 @@ std::datetime::daysInMonth(year, month);
 
 **声明**
 
-```magel
+```chali
 Result<int64,DateTimeError> toUnixSeconds(DateTime value);
 ```
 
@@ -196,13 +196,13 @@ Result<int64,DateTimeError> toUnixSeconds(DateTime value);
 
 **调用形式**
 
-```magel
+```chali
 std::datetime::toUnixSeconds(value);
 ```
 
-**源码**：[source/std/datetime.mgl:16](../../source/std/datetime.mgl#L16)。
+**源码**：[source/std/datetime.chl:16](../../source/std/datetime.chl#L16)。
 
-**完整示例**：[example/samples/std_datetime.mgl](../../example/samples/std_datetime.mgl)。
+**完整示例**：[example/samples/std_datetime.chl](../../example/samples/std_datetime.chl)。
 
 <a id="api-3"></a>
 
@@ -210,7 +210,7 @@ std::datetime::toUnixSeconds(value);
 
 **声明**
 
-```magel
+```chali
 Result<DateTime,DateTimeError> fromUnixSeconds(int64 seconds);
 ```
 
@@ -234,13 +234,13 @@ Result<DateTime,DateTimeError> fromUnixSeconds(int64 seconds);
 
 **调用形式**
 
-```magel
+```chali
 std::datetime::fromUnixSeconds(seconds);
 ```
 
-**源码**：[source/std/datetime.mgl:31](../../source/std/datetime.mgl#L31)。
+**源码**：[source/std/datetime.chl:31](../../source/std/datetime.chl#L31)。
 
-**完整示例**：[example/samples/std_datetime.mgl](../../example/samples/std_datetime.mgl)。
+**完整示例**：[example/samples/std_datetime.chl](../../example/samples/std_datetime.chl)。
 
 <a id="api-4"></a>
 
@@ -248,7 +248,7 @@ std::datetime::fromUnixSeconds(seconds);
 
 **声明**
 
-```magel
+```chali
 String dateDigits(int64 value, int64 width);
 ```
 
@@ -273,13 +273,13 @@ String dateDigits(int64 value, int64 width);
 
 **调用形式**
 
-```magel
+```chali
 std::datetime::dateDigits(value, width);
 ```
 
-**源码**：[source/std/datetime.mgl:45](../../source/std/datetime.mgl#L45)。
+**源码**：[source/std/datetime.chl:45](../../source/std/datetime.chl#L45)。
 
-**完整示例**：[example/samples/std_datetime.mgl](../../example/samples/std_datetime.mgl)。
+**完整示例**：[example/samples/std_datetime.chl](../../example/samples/std_datetime.chl)。
 
 <a id="api-5"></a>
 
@@ -287,7 +287,7 @@ std::datetime::dateDigits(value, width);
 
 **声明**
 
-```magel
+```chali
 Result<String,DateTimeError> formatUtc(DateTime value);
 ```
 
@@ -311,13 +311,13 @@ Result<String,DateTimeError> formatUtc(DateTime value);
 
 **调用形式**
 
-```magel
+```chali
 std::datetime::formatUtc(value);
 ```
 
-**源码**：[source/std/datetime.mgl:57](../../source/std/datetime.mgl#L57)。
+**源码**：[source/std/datetime.chl:57](../../source/std/datetime.chl#L57)。
 
-**完整示例**：[example/samples/std_datetime.mgl](../../example/samples/std_datetime.mgl)。
+**完整示例**：[example/samples/std_datetime.chl](../../example/samples/std_datetime.chl)。
 
 <a id="api-6"></a>
 
@@ -325,7 +325,7 @@ std::datetime::formatUtc(value);
 
 **声明**
 
-```magel
+```chali
 Result<DateTime,DateTimeError> parseUtc(String text);
 ```
 
@@ -349,13 +349,13 @@ Result<DateTime,DateTimeError> parseUtc(String text);
 
 **调用形式**
 
-```magel
+```chali
 std::datetime::parseUtc(text);
 ```
 
-**源码**：[source/std/datetime.mgl:63](../../source/std/datetime.mgl#L63)。
+**源码**：[source/std/datetime.chl:63](../../source/std/datetime.chl#L63)。
 
-**完整示例**：[example/samples/std_datetime.mgl](../../example/samples/std_datetime.mgl)。
+**完整示例**：[example/samples/std_datetime.chl](../../example/samples/std_datetime.chl)。
 
 <a id="api-7"></a>
 
@@ -363,7 +363,7 @@ std::datetime::parseUtc(text);
 
 **声明**
 
-```magel
+```chali
 Result<DateTime,DateTimeError> addSeconds(DateTime value, int64 delta);
 ```
 
@@ -388,13 +388,13 @@ Result<DateTime,DateTimeError> addSeconds(DateTime value, int64 delta);
 
 **调用形式**
 
-```magel
+```chali
 std::datetime::addSeconds(value, delta);
 ```
 
-**源码**：[source/std/datetime.mgl:89](../../source/std/datetime.mgl#L89)。
+**源码**：[source/std/datetime.chl:89](../../source/std/datetime.chl#L89)。
 
-**完整示例**：[example/samples/std_datetime.mgl](../../example/samples/std_datetime.mgl)。
+**完整示例**：[example/samples/std_datetime.chl](../../example/samples/std_datetime.chl)。
 
 <a id="api-8"></a>
 
@@ -402,7 +402,7 @@ std::datetime::addSeconds(value, delta);
 
 **声明**
 
-```magel
+```chali
 Result<DateTime,DateTimeError> addDays(DateTime value, int64 days);
 ```
 
@@ -427,13 +427,13 @@ Result<DateTime,DateTimeError> addDays(DateTime value, int64 days);
 
 **调用形式**
 
-```magel
+```chali
 std::datetime::addDays(value, days);
 ```
 
-**源码**：[source/std/datetime.mgl:95](../../source/std/datetime.mgl#L95)。
+**源码**：[source/std/datetime.chl:95](../../source/std/datetime.chl#L95)。
 
-**完整示例**：[example/samples/std_datetime.mgl](../../example/samples/std_datetime.mgl)。
+**完整示例**：[example/samples/std_datetime.chl](../../example/samples/std_datetime.chl)。
 
 <a id="api-9"></a>
 
@@ -441,7 +441,7 @@ std::datetime::addDays(value, days);
 
 **声明**
 
-```magel
+```chali
 Result<DateTime,DateTimeError> nowUtc();
 ```
 
@@ -463,10 +463,10 @@ Result<DateTime,DateTimeError> nowUtc();
 
 **调用形式**
 
-```magel
+```chali
 std::datetime::nowUtc();
 ```
 
-**源码**：[source/std/datetime.mgl:102](../../source/std/datetime.mgl#L102)。
+**源码**：[source/std/datetime.chl:102](../../source/std/datetime.chl#L102)。
 
-**完整示例**：[example/samples/std_datetime.mgl](../../example/samples/std_datetime.mgl)。
+**完整示例**：[example/samples/std_datetime.chl](../../example/samples/std_datetime.chl)。

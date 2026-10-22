@@ -1,31 +1,31 @@
 # 09 工具链与命令行
 
-Magel 只通过共享 VM 执行程序。源码经过前处理、语法与语义检查，再降级为四元式和 VM 指令；支持导出四元式与 `.svmb` 字节码。
+ChaLi 只通过共享 VM 执行程序。源码经过前处理、语法与语义检查，再降级为四元式和 VM 指令；支持导出四元式与 `.svmb` 字节码。
 
 ## 执行与检查
 
 ```sh
-magel run app.mgl
-magel check app.mgl
-magel check app.mgl json
-magel emit app.mgl out build/app
-magel svmb app.mgl out build/app
+chali run app.chl
+chali check app.chl
+chali check app.chl json
+chali emit app.chl out build/app
+chali svmb app.chl out build/app
 ```
 
-直接传入 `.mgl` 文件也会运行，文件后的参数传给程序；显式 `run` 可配置产物前缀。
+直接传入 `.chl` 文件也会运行，文件后的参数传给程序；显式 `run` 可配置产物前缀。
 `emit` 输出 `.quad`、`.data.bin` 和 `.layout`；`svmb` 还输出 VM 字节码。运行时资产与标准库内嵌在编译器中。
 
 ## 开发工具
 
 ```sh
-magel new demo name demo
-magel test tests backend interpret
-magel fmt check src
-magel deps lock project . offline
-magel man List
-magel lsp
-magel gen compiler out build/compiler
-magel clear out build/compiler
+chali new demo name demo
+chali test tests backend interpret
+chali fmt check src
+chali deps lock project . offline
+chali man List
+chali lsp
+chali gen compiler out build/compiler
+chali clear out build/compiler
 ```
 
 生成器用于独立编译器工程；宿主集成通过共享 VM、宿主注册表和字节码加载接口完成。
@@ -46,19 +46,19 @@ magel clear out build/compiler
 算法实现在对应 `.cpp` 独立编译。`std_binding.hpp` 只提供注册表前置声明；模板需要的
 结构化数据与类型转换定义保留在头文件中。VM 核心继续使用通用宿主协议。
 
-泛型、闭包、工程清单和诊断分别由 `magel_generic.cpp`、`magel_lambda.cpp`、
-`magel_generic_closure.cpp`、`magel_package.cpp` 和 `magel_report.cpp` 编译。
+泛型、闭包、工程清单和诊断分别由 `chali_generic.cpp`、`chali_lambda.cpp`、
+`chali_generic_closure.cpp`、`chali_package.cpp` 和 `chali_report.cpp` 编译。
 `macro/` 独立编译卫生绑定、结构化替换、宏注册、正则匹配、原始片段和编辑器宏头模型；
 `syntax/` 提供普通源码分组及常量求值，`editor/` 输出真实编译分析。
-AST 声明位于 `magel_ast.hpp`；`semantics/` 中的符号登记、卫生展开、泛型闭包和程序降级
+AST 声明位于 `chali_ast.hpp`；`semantics/` 中的符号登记、卫生展开、泛型闭包和程序降级
 由权威文法装配进生成解析器。语言服务位于 `lsp/`，工程生成器位于 `generator/`。
 
 修改文法后执行 `sh gen.sh`，然后执行 `make -j4`。普通 C++ 实现变化由 `.d` 文件追踪实际包含关系。
 `make` 自动检查标准库、胶水及手册的内嵌输入，内容由 `tools/embed_stdlib.py` 生成并单独编译为
-`magel_stdlib_embedded.o`；压缩数据不再被公共头包含。生成输入使用时间戳记录，内容未变化时不重复写入
+`chali_stdlib_embedded.o`；压缩数据不再被公共头包含。生成输入使用时间戳记录，内容未变化时不重复写入
 生成源码。独立导出的编译器工程也将这些实现作为单独的 CMake 源文件链接。
 
-宿主接入胶水时同时包含 `magel_glue.hpp` 与所需 `std_xxx.hpp`，并链接对应 `.cpp` 或宿主记录库。
+宿主接入胶水时同时包含 `chali_glue.hpp` 与所需 `std_xxx.hpp`，并链接对应 `.cpp` 或宿主记录库。
 只有绑定接口的头文件不会隐式带入全部实现；完整构建命令见[同步回调示例](../example/native-callbacks/README.md)。
 
 ## 标准库预编译单元
@@ -68,10 +68,10 @@ AST 声明位于 `magel_ast.hpp`；`semantics/` 中的符号登记、卫生展�
 两次解析，并把标准库段那份解析产物（语法节点、类型池、标识符池、顶层声明）序列化成**预编译单元**
 写进缓存目录；下次遇到同一份标准库段时直接装回竞技场，跳过标准库段的词法 / LR 解析与节点构建。
 
-- 缓存目录默认 `build/magel-stdlib-cache`；`--stdlib-cache-dir DIR` 或环境变量
-  `MAGEL_STDLIB_CACHE_DIR` 指定别处。
-- `--no-stdlib-cache` 或 `MAGEL_NO_STDLIB_CACHE=1` 关闭；关闭后与一次性解析整段源码等价。
-- 单元键 = 标准库段文本哈希 + 编译器版本 + 构建戳（`__DATE__ __TIME__`）：改了 `source/std/*.mgl`
+- 缓存目录默认 `build/chali-stdlib-cache`；`--stdlib-cache-dir DIR` 或环境变量
+  `CHALI_STDLIB_CACHE_DIR` 指定别处。
+- `--no-stdlib-cache` 或 `CHALI_NO_STDLIB_CACHE=1` 关闭；关闭后与一次性解析整段源码等价。
+- 单元键 = 标准库段文本哈希 + 编译器版本 + 构建戳（`__DATE__ __TIME__`）：改了 `source/std/*.chl`
   （重建内嵌资产后）或换了编译器二进制，缓存自动失效。写盘走原子替换；读不回来只是"这份缓存用
   不了"，静默退回全量解析，结果与不用缓存完全一致。
 - `--stats` 打印「命中 / 回写 / 未启用」。

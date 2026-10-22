@@ -4,26 +4,26 @@
 
 ## 引入
 
-```magel
+```chali
 import std::numerics;
 ```
 
 ## 公共约定与错误边界
 
-回调应满足算法的连续性/可微性条件。实现已全部由 std::numerics 模块用 Magel 表达（原宿主胶水已删除），前置条件（导数步长、辛普森区间数、二分区间与容限、最大迭代次数、ODE 步数）在模块内校验并以 std::lang::panic 停机。二分需端点异号或端点为根；ODE 输出包含初值和后续 steps 个点。迭代次数按 int64 计数，不再收窄到宿主 int。数值结果是近似值，不保证任意模型收敛。 二分要求 left<right、tolerance>0、maxIterations>0；导数与 rk4Step 要求 step>0；Simpson 要求 intervals 为正偶数；ODE 要求 steps>=0。
+回调应满足算法的连续性/可微性条件。实现已全部由 std::numerics 模块用 ChaLi 表达（原宿主胶水已删除），前置条件（导数步长、辛普森区间数、二分区间与容限、最大迭代次数、ODE 步数）在模块内校验并以 std::lang::panic 停机。二分需端点异号或端点为根；ODE 输出包含初值和后续 steps 个点。迭代次数按 int64 计数，不再收窄到宿主 int。数值结果是近似值，不保证任意模型收敛。 二分要求 left<right、tolerance>0、maxIterations>0；导数与 rk4Step 要求 step>0；Simpson 要求 intervals 为正偶数；ODE 要求 steps>=0。
 
 ## 参考代码
 
-完整程序：[example/samples/std_numerics_number_theory.mgl](../../example/samples/std_numerics_number_theory.mgl)。
+完整程序：[example/samples/std_numerics_number_theory.chl](../../example/samples/std_numerics_number_theory.chl)。
 
 ```powershell
-magel run example/samples/std_numerics_number_theory.mgl
+chali run example/samples/std_numerics_number_theory.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::linalg;
 import std::numerics;
 import std::numtheory;
@@ -120,7 +120,7 @@ generic matrix numerics number theory OK
 
 **声明**
 
-```magel
+```chali
 static float64 derivative(float64 fn(float64) function, float64 x, float64 step);
 ```
 
@@ -149,13 +149,13 @@ static float64 derivative(float64 fn(float64) function, float64 x, float64 step)
 
 **调用形式**
 
-```magel
+```chali
 std::numerics::Numerics::derivative(function, x, step);
 ```
 
-**源码**：[source/std/numerics.mgl:134](../../source/std/numerics.mgl#L134)。
+**源码**：[source/std/numerics.chl:134](../../source/std/numerics.chl#L134)。
 
-**完整示例**：[example/samples/std_numerics_number_theory.mgl](../../example/samples/std_numerics_number_theory.mgl)。
+**完整示例**：[example/samples/std_numerics_number_theory.chl](../../example/samples/std_numerics_number_theory.chl)。
 
 <a id="api-1"></a>
 
@@ -163,7 +163,7 @@ std::numerics::Numerics::derivative(function, x, step);
 
 **声明**
 
-```magel
+```chali
 static float64 integrateSimpson(float64 fn(float64) function, float64 begin, float64 end, int64 intervals);
 ```
 
@@ -193,13 +193,13 @@ static float64 integrateSimpson(float64 fn(float64) function, float64 begin, flo
 
 **调用形式**
 
-```magel
+```chali
 std::numerics::Numerics::integrateSimpson(function, begin, end, intervals);
 ```
 
-**源码**：[source/std/numerics.mgl:142](../../source/std/numerics.mgl#L142)。
+**源码**：[source/std/numerics.chl:142](../../source/std/numerics.chl#L142)。
 
-**完整示例**：[example/samples/std_numerics_number_theory.mgl](../../example/samples/std_numerics_number_theory.mgl)。
+**完整示例**：[example/samples/std_numerics_number_theory.chl](../../example/samples/std_numerics_number_theory.chl)。
 
 <a id="api-2"></a>
 
@@ -207,7 +207,7 @@ std::numerics::Numerics::integrateSimpson(function, begin, end, intervals);
 
 **声明**
 
-```magel
+```chali
 static float64 bisect(float64 fn(float64) function, float64 left, float64 right, float64 tolerance, int64 maxIterations);
 ```
 
@@ -238,13 +238,13 @@ static float64 bisect(float64 fn(float64) function, float64 left, float64 right,
 
 **调用形式**
 
-```magel
+```chali
 std::numerics::Numerics::bisect(function, left, right, tolerance, maxIterations);
 ```
 
-**源码**：[source/std/numerics.mgl:151](../../source/std/numerics.mgl#L151)。
+**源码**：[source/std/numerics.chl:151](../../source/std/numerics.chl#L151)。
 
-**完整示例**：[example/samples/std_numerics_number_theory.mgl](../../example/samples/std_numerics_number_theory.mgl)。
+**完整示例**：[example/samples/std_numerics_number_theory.chl](../../example/samples/std_numerics_number_theory.chl)。
 
 <a id="api-3"></a>
 
@@ -252,7 +252,7 @@ std::numerics::Numerics::bisect(function, left, right, tolerance, maxIterations)
 
 **声明**
 
-```magel
+```chali
 static float64 rk4Step(float64 fn(float64, float64) derivative, float64 time, float64 value, float64 step);
 ```
 
@@ -282,13 +282,13 @@ static float64 rk4Step(float64 fn(float64, float64) derivative, float64 time, fl
 
 **调用形式**
 
-```magel
+```chali
 std::numerics::Numerics::rk4Step(derivative, time, value, step);
 ```
 
-**源码**：[source/std/numerics.mgl:168](../../source/std/numerics.mgl#L168)。
+**源码**：[source/std/numerics.chl:168](../../source/std/numerics.chl#L168)。
 
-**完整示例**：[example/samples/std_numerics_number_theory.mgl](../../example/samples/std_numerics_number_theory.mgl)。
+**完整示例**：[example/samples/std_numerics_number_theory.chl](../../example/samples/std_numerics_number_theory.chl)。
 
 <a id="api-4"></a>
 
@@ -296,7 +296,7 @@ std::numerics::Numerics::rk4Step(derivative, time, value, step);
 
 **声明**
 
-```magel
+```chali
 static float64 newton(float64 fn(float64) function, float64 initial, float64 tolerance, int64 maxIterations);
 ```
 
@@ -326,13 +326,13 @@ static float64 newton(float64 fn(float64) function, float64 initial, float64 tol
 
 **调用形式**
 
-```magel
+```chali
 std::numerics::Numerics::newton(function, initial, tolerance, maxIterations);
 ```
 
-**源码**：[source/std/numerics.mgl:177](../../source/std/numerics.mgl#L177)。
+**源码**：[source/std/numerics.chl:177](../../source/std/numerics.chl#L177)。
 
-**完整示例**：[example/samples/std_numerics_number_theory.mgl](../../example/samples/std_numerics_number_theory.mgl)。
+**完整示例**：[example/samples/std_numerics_number_theory.chl](../../example/samples/std_numerics_number_theory.chl)。
 
 <a id="api-5"></a>
 
@@ -340,7 +340,7 @@ std::numerics::Numerics::newton(function, initial, tolerance, maxIterations);
 
 **声明**
 
-```magel
+```chali
 static std::lang::List<float64> solveOdeEuler( float64 fn(float64, float64) rate, float64 initialTime, float64 initialValue, float64 step, int64 steps);
 ```
 
@@ -371,13 +371,13 @@ static std::lang::List<float64> solveOdeEuler( float64 fn(float64, float64) rate
 
 **调用形式**
 
-```magel
+```chali
 std::numerics::Numerics::solveOdeEuler(rate, initialTime, initialValue, step, steps);
 ```
 
-**源码**：[source/std/numerics.mgl:187](../../source/std/numerics.mgl#L187)。
+**源码**：[source/std/numerics.chl:187](../../source/std/numerics.chl#L187)。
 
-**完整示例**：[example/samples/std_numerics_number_theory.mgl](../../example/samples/std_numerics_number_theory.mgl)。
+**完整示例**：[example/samples/std_numerics_number_theory.chl](../../example/samples/std_numerics_number_theory.chl)。
 
 <a id="api-6"></a>
 
@@ -385,7 +385,7 @@ std::numerics::Numerics::solveOdeEuler(rate, initialTime, initialValue, step, st
 
 **声明**
 
-```magel
+```chali
 static std::lang::List<float64> solveOdeRK4( float64 fn(float64, float64) rate, float64 initialTime, float64 initialValue, float64 step, int64 steps);
 ```
 
@@ -416,10 +416,10 @@ static std::lang::List<float64> solveOdeRK4( float64 fn(float64, float64) rate, 
 
 **调用形式**
 
-```magel
+```chali
 std::numerics::Numerics::solveOdeRK4(rate, initialTime, initialValue, step, steps);
 ```
 
-**源码**：[source/std/numerics.mgl:198](../../source/std/numerics.mgl#L198)。
+**源码**：[source/std/numerics.chl:198](../../source/std/numerics.chl#L198)。
 
-**完整示例**：[example/samples/std_numerics_number_theory.mgl](../../example/samples/std_numerics_number_theory.mgl)。
+**完整示例**：[example/samples/std_numerics_number_theory.chl](../../example/samples/std_numerics_number_theory.chl)。

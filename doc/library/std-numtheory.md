@@ -4,26 +4,26 @@
 
 ## 引入
 
-```magel
+```chali
 import std::numtheory;
 ```
 
 ## 公共约定与错误边界
 
-实现已全部迁到 .mgl，公开入口是模块级泛型自由函数（不再有 NumberTheory 静态方法包装，也没有给胶水用的宿主私有名）。gcd/lcm/addMod/mulMod/powMod/modInverse/isPrime 对任意整数类型 T 成立，含无符号与窄整型；gcd/lcm 接受任意数量实参，逐个折叠，结果非负。模运算要求 modulus>0；模乘通过逐位加法避免乘法中间溢出。isPrime 内部加宽到 uint64，使用七个底数的确定性 Miller-Rabin。modInverse 要求 modulus>1 且与 value 互素；不存在逆元时停机。lcm 溢出也停机。
+实现已全部迁到 .chl，公开入口是模块级泛型自由函数（不再有 NumberTheory 静态方法包装，也没有给胶水用的宿主私有名）。gcd/lcm/addMod/mulMod/powMod/modInverse/isPrime 对任意整数类型 T 成立，含无符号与窄整型；gcd/lcm 接受任意数量实参，逐个折叠，结果非负。模运算要求 modulus>0；模乘通过逐位加法避免乘法中间溢出。isPrime 内部加宽到 uint64，使用七个底数的确定性 Miller-Rabin。modInverse 要求 modulus>1 且与 value 互素；不存在逆元时停机。lcm 溢出也停机。
 
 ## 参考代码
 
-完整程序：[example/samples/std_numerics_number_theory.mgl](../../example/samples/std_numerics_number_theory.mgl)。
+完整程序：[example/samples/std_numerics_number_theory.chl](../../example/samples/std_numerics_number_theory.chl)。
 
 ```powershell
-magel run example/samples/std_numerics_number_theory.mgl
+chali run example/samples/std_numerics_number_theory.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::linalg;
 import std::numerics;
 import std::numtheory;
@@ -112,7 +112,7 @@ generic matrix numerics number theory OK
 
 **声明**
 
-```magel
+```chali
 T gcd<T>(T... values);
 ```
 
@@ -138,13 +138,13 @@ T gcd<T>(T... values);
 
 **调用形式**
 
-```magel
+```chali
 std::numtheory::gcd<T>(values);
 ```
 
-**源码**：[source/std/numtheory.mgl:96](../../source/std/numtheory.mgl#L96)。
+**源码**：[source/std/numtheory.chl:96](../../source/std/numtheory.chl#L96)。
 
-**完整示例**：[example/samples/std_numerics_number_theory.mgl](../../example/samples/std_numerics_number_theory.mgl)。
+**完整示例**：[example/samples/std_numerics_number_theory.chl](../../example/samples/std_numerics_number_theory.chl)。
 
 <a id="api-1"></a>
 
@@ -152,7 +152,7 @@ std::numtheory::gcd<T>(values);
 
 **声明**
 
-```magel
+```chali
 T lcm<T>(T... values);
 ```
 
@@ -178,13 +178,13 @@ T lcm<T>(T... values);
 
 **调用形式**
 
-```magel
+```chali
 std::numtheory::lcm<T>(values);
 ```
 
-**源码**：[source/std/numtheory.mgl:108](../../source/std/numtheory.mgl#L108)。
+**源码**：[source/std/numtheory.chl:108](../../source/std/numtheory.chl#L108)。
 
-**完整示例**：[example/samples/std_numerics_number_theory.mgl](../../example/samples/std_numerics_number_theory.mgl)。
+**完整示例**：[example/samples/std_numerics_number_theory.chl](../../example/samples/std_numerics_number_theory.chl)。
 
 <a id="api-2"></a>
 
@@ -192,7 +192,7 @@ std::numtheory::lcm<T>(values);
 
 **声明**
 
-```magel
+```chali
 T addMod<T>(T left, T right, T modulus);
 ```
 
@@ -221,13 +221,13 @@ T addMod<T>(T left, T right, T modulus);
 
 **调用形式**
 
-```magel
+```chali
 std::numtheory::addMod<T>(left, right, modulus);
 ```
 
-**源码**：[source/std/numtheory.mgl:120](../../source/std/numtheory.mgl#L120)。
+**源码**：[source/std/numtheory.chl:120](../../source/std/numtheory.chl#L120)。
 
-**完整示例**：[example/samples/std_numerics_number_theory.mgl](../../example/samples/std_numerics_number_theory.mgl)。
+**完整示例**：[example/samples/std_numerics_number_theory.chl](../../example/samples/std_numerics_number_theory.chl)。
 
 <a id="api-3"></a>
 
@@ -235,7 +235,7 @@ std::numtheory::addMod<T>(left, right, modulus);
 
 **声明**
 
-```magel
+```chali
 T mulMod<T>(T left, T right, T modulus);
 ```
 
@@ -264,13 +264,13 @@ T mulMod<T>(T left, T right, T modulus);
 
 **调用形式**
 
-```magel
+```chali
 std::numtheory::mulMod<T>(left, right, modulus);
 ```
 
-**源码**：[source/std/numtheory.mgl:130](../../source/std/numtheory.mgl#L130)。
+**源码**：[source/std/numtheory.chl:130](../../source/std/numtheory.chl#L130)。
 
-**完整示例**：[example/samples/std_numerics_number_theory.mgl](../../example/samples/std_numerics_number_theory.mgl)。
+**完整示例**：[example/samples/std_numerics_number_theory.chl](../../example/samples/std_numerics_number_theory.chl)。
 
 <a id="api-4"></a>
 
@@ -278,7 +278,7 @@ std::numtheory::mulMod<T>(left, right, modulus);
 
 **声明**
 
-```magel
+```chali
 T powMod<T>(T base, T exponent, T modulus);
 ```
 
@@ -307,13 +307,13 @@ T powMod<T>(T base, T exponent, T modulus);
 
 **调用形式**
 
-```magel
+```chali
 std::numtheory::powMod<T>(base, exponent, modulus);
 ```
 
-**源码**：[source/std/numtheory.mgl:140](../../source/std/numtheory.mgl#L140)。
+**源码**：[source/std/numtheory.chl:140](../../source/std/numtheory.chl#L140)。
 
-**完整示例**：[example/samples/std_numerics_number_theory.mgl](../../example/samples/std_numerics_number_theory.mgl)。
+**完整示例**：[example/samples/std_numerics_number_theory.chl](../../example/samples/std_numerics_number_theory.chl)。
 
 <a id="api-5"></a>
 
@@ -321,7 +321,7 @@ std::numtheory::powMod<T>(base, exponent, modulus);
 
 **声明**
 
-```magel
+```chali
 T modInverse<T>(T value, T modulus);
 ```
 
@@ -349,13 +349,13 @@ T modInverse<T>(T value, T modulus);
 
 **调用形式**
 
-```magel
+```chali
 std::numtheory::modInverse<T>(value, modulus);
 ```
 
-**源码**：[source/std/numtheory.mgl:150](../../source/std/numtheory.mgl#L150)。
+**源码**：[source/std/numtheory.chl:150](../../source/std/numtheory.chl#L150)。
 
-**完整示例**：[example/samples/std_numerics_number_theory.mgl](../../example/samples/std_numerics_number_theory.mgl)。
+**完整示例**：[example/samples/std_numerics_number_theory.chl](../../example/samples/std_numerics_number_theory.chl)。
 
 <a id="api-6"></a>
 
@@ -363,7 +363,7 @@ std::numtheory::modInverse<T>(value, modulus);
 
 **声明**
 
-```magel
+```chali
 bool isPrime<T>(T value);
 ```
 
@@ -389,10 +389,10 @@ bool isPrime<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::numtheory::isPrime<T>(value);
 ```
 
-**源码**：[source/std/numtheory.mgl:179](../../source/std/numtheory.mgl#L179)。
+**源码**：[source/std/numtheory.chl:179](../../source/std/numtheory.chl#L179)。
 
-**完整示例**：[example/samples/std_numerics_number_theory.mgl](../../example/samples/std_numerics_number_theory.mgl)。
+**完整示例**：[example/samples/std_numerics_number_theory.chl](../../example/samples/std_numerics_number_theory.chl)。

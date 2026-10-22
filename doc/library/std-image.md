@@ -4,13 +4,13 @@
 
 ## 引入
 
-```magel
+```chali
 import std::image;
 ```
 
 ## 公共约定与错误边界
 
-Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_MAGEL_STD_IMAGE。
+Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主记录拥有；width()/height() 返回尺寸，pixels() 返回独立列表快照。decode/open 支持无压缩 24/32 位 BMP 与二进制 P5/P6，按魔数自动识别；encodeBmp/encodePpm/encodePgm 与 saveBmp/savePpm/savePgm 生成对应文件字节或写盘。getPixel/setPixel 越界或分量超 0..255 返回错误，不 panic。卷积要求核边长为不超过 15 的奇数，边缘复制填充；池化窗口 0=最大 1=平均，输出尺寸向下取整。灰度采用 BT.601 亮度；ARGB8888 每像素一个 uint32，RGB565 每像素一个 uint16，还原时按高位复制扩展。大津法返回 0..255 阈值，二值化大于阈值给 255。重活由宿主胶水 glue/std_image.hpp 提供，裁剪宏 NO_CHALI_STD_IMAGE。
 
 ## 参考代码
 
@@ -79,7 +79,7 @@ Image 是可深复制的 opcode，尺寸与连续 RGBA8888 像素存储由宿主
 
 **声明**
 
-```magel
+```chali
 int64 width();
 ```
 
@@ -101,11 +101,11 @@ int64 width();
 
 **调用形式**
 
-```magel
+```chali
 obj.width();
 ```
 
-**源码**：[source/std/image.mgl:78](../../source/std/image.mgl#L78)。
+**源码**：[source/std/image.chl:78](../../source/std/image.chl#L78)。
 
 <a id="api-1"></a>
 
@@ -113,7 +113,7 @@ obj.width();
 
 **声明**
 
-```magel
+```chali
 int64 height();
 ```
 
@@ -135,11 +135,11 @@ int64 height();
 
 **调用形式**
 
-```magel
+```chali
 obj.height();
 ```
 
-**源码**：[source/std/image.mgl:80](../../source/std/image.mgl#L80)。
+**源码**：[source/std/image.chl:80](../../source/std/image.chl#L80)。
 
 <a id="api-2"></a>
 
@@ -147,7 +147,7 @@ obj.height();
 
 **声明**
 
-```magel
+```chali
 List<uint8> pixels();
 ```
 
@@ -169,11 +169,11 @@ List<uint8> pixels();
 
 **调用形式**
 
-```magel
+```chali
 obj.pixels();
 ```
 
-**源码**：[source/std/image.mgl:82](../../source/std/image.mgl#L82)。
+**源码**：[source/std/image.chl:82](../../source/std/image.chl#L82)。
 
 <a id="api-3"></a>
 
@@ -181,7 +181,7 @@ obj.pixels();
 
 **声明**
 
-```magel
+```chali
 static Result<Image, String> make(int64 width, int64 height);
 ```
 
@@ -206,11 +206,11 @@ static Result<Image, String> make(int64 width, int64 height);
 
 **调用形式**
 
-```magel
+```chali
 std::image::Image::make(width, height);
 ```
 
-**源码**：[source/std/image.mgl:90](../../source/std/image.mgl#L90)。
+**源码**：[source/std/image.chl:90](../../source/std/image.chl#L90)。
 
 <a id="api-4"></a>
 
@@ -218,7 +218,7 @@ std::image::Image::make(width, height);
 
 **声明**
 
-```magel
+```chali
 static Result<Image, String> decode(List<uint8> bytes);
 ```
 
@@ -242,11 +242,11 @@ static Result<Image, String> decode(List<uint8> bytes);
 
 **调用形式**
 
-```magel
+```chali
 std::image::Image::decode(bytes);
 ```
 
-**源码**：[source/std/image.mgl:102](../../source/std/image.mgl#L102)。
+**源码**：[source/std/image.chl:102](../../source/std/image.chl#L102)。
 
 <a id="api-5"></a>
 
@@ -254,7 +254,7 @@ std::image::Image::decode(bytes);
 
 **声明**
 
-```magel
+```chali
 static Result<Image, String> open(String path);
 ```
 
@@ -278,11 +278,11 @@ static Result<Image, String> open(String path);
 
 **调用形式**
 
-```magel
+```chali
 std::image::Image::open(path);
 ```
 
-**源码**：[source/std/image.mgl:116](../../source/std/image.mgl#L116)。
+**源码**：[source/std/image.chl:116](../../source/std/image.chl#L116)。
 
 <a id="api-6"></a>
 
@@ -290,7 +290,7 @@ std::image::Image::open(path);
 
 **声明**
 
-```magel
+```chali
 Result<List<uint8>, String> encodeBmp();
 ```
 
@@ -312,11 +312,11 @@ Result<List<uint8>, String> encodeBmp();
 
 **调用形式**
 
-```magel
+```chali
 obj.encodeBmp();
 ```
 
-**源码**：[source/std/image.mgl:127](../../source/std/image.mgl#L127)。
+**源码**：[source/std/image.chl:127](../../source/std/image.chl#L127)。
 
 <a id="api-7"></a>
 
@@ -324,7 +324,7 @@ obj.encodeBmp();
 
 **声明**
 
-```magel
+```chali
 Result<List<uint8>, String> encodePpm();
 ```
 
@@ -346,11 +346,11 @@ Result<List<uint8>, String> encodePpm();
 
 **调用形式**
 
-```magel
+```chali
 obj.encodePpm();
 ```
 
-**源码**：[source/std/image.mgl:138](../../source/std/image.mgl#L138)。
+**源码**：[source/std/image.chl:138](../../source/std/image.chl#L138)。
 
 <a id="api-8"></a>
 
@@ -358,7 +358,7 @@ obj.encodePpm();
 
 **声明**
 
-```magel
+```chali
 Result<List<uint8>, String> encodePgm();
 ```
 
@@ -380,11 +380,11 @@ Result<List<uint8>, String> encodePgm();
 
 **调用形式**
 
-```magel
+```chali
 obj.encodePgm();
 ```
 
-**源码**：[source/std/image.mgl:150](../../source/std/image.mgl#L150)。
+**源码**：[source/std/image.chl:150](../../source/std/image.chl#L150)。
 
 <a id="api-9"></a>
 
@@ -392,7 +392,7 @@ obj.encodePgm();
 
 **声明**
 
-```magel
+```chali
 Result<int64, String> saveBmp(String path);
 ```
 
@@ -416,11 +416,11 @@ Result<int64, String> saveBmp(String path);
 
 **调用形式**
 
-```magel
+```chali
 obj.saveBmp(path);
 ```
 
-**源码**：[source/std/image.mgl:162](../../source/std/image.mgl#L162)。
+**源码**：[source/std/image.chl:162](../../source/std/image.chl#L162)。
 
 <a id="api-10"></a>
 
@@ -428,7 +428,7 @@ obj.saveBmp(path);
 
 **声明**
 
-```magel
+```chali
 Result<int64, String> savePpm(String path);
 ```
 
@@ -452,11 +452,11 @@ Result<int64, String> savePpm(String path);
 
 **调用形式**
 
-```magel
+```chali
 obj.savePpm(path);
 ```
 
-**源码**：[source/std/image.mgl:175](../../source/std/image.mgl#L175)。
+**源码**：[source/std/image.chl:175](../../source/std/image.chl#L175)。
 
 <a id="api-11"></a>
 
@@ -464,7 +464,7 @@ obj.savePpm(path);
 
 **声明**
 
-```magel
+```chali
 Result<int64, String> savePgm(String path);
 ```
 
@@ -488,11 +488,11 @@ Result<int64, String> savePgm(String path);
 
 **调用形式**
 
-```magel
+```chali
 obj.savePgm(path);
 ```
 
-**源码**：[source/std/image.mgl:188](../../source/std/image.mgl#L188)。
+**源码**：[source/std/image.chl:188](../../source/std/image.chl#L188)。
 
 <a id="api-12"></a>
 
@@ -500,7 +500,7 @@ obj.savePgm(path);
 
 **声明**
 
-```magel
+```chali
 Result<Pixel, String> getPixel(int64 x, int64 y);
 ```
 
@@ -525,11 +525,11 @@ Result<Pixel, String> getPixel(int64 x, int64 y);
 
 **调用形式**
 
-```magel
+```chali
 obj.getPixel(x, y);
 ```
 
-**源码**：[source/std/image.mgl:202](../../source/std/image.mgl#L202)。
+**源码**：[source/std/image.chl:202](../../source/std/image.chl#L202)。
 
 <a id="api-13"></a>
 
@@ -537,7 +537,7 @@ obj.getPixel(x, y);
 
 **声明**
 
-```magel
+```chali
 Result<int64, String> setPixel(int64 x, int64 y, int64 r, int64 g, int64 b, int64 a);
 ```
 
@@ -566,11 +566,11 @@ Result<int64, String> setPixel(int64 x, int64 y, int64 r, int64 g, int64 b, int6
 
 **调用形式**
 
-```magel
+```chali
 obj.setPixel(x, y, r, g, b, a);
 ```
 
-**源码**：[source/std/image.mgl:225](../../source/std/image.mgl#L225)。
+**源码**：[source/std/image.chl:225](../../source/std/image.chl#L225)。
 
 <a id="api-14"></a>
 
@@ -578,7 +578,7 @@ obj.setPixel(x, y, r, g, b, a);
 
 **声明**
 
-```magel
+```chali
 Result<Image, String> convolve(List<float64> kernel, int64 kw, int64 kh);
 ```
 
@@ -604,11 +604,11 @@ Result<Image, String> convolve(List<float64> kernel, int64 kw, int64 kh);
 
 **调用形式**
 
-```magel
+```chali
 obj.convolve(kernel, kw, kh);
 ```
 
-**源码**：[source/std/image.mgl:248](../../source/std/image.mgl#L248)。
+**源码**：[source/std/image.chl:248](../../source/std/image.chl#L248)。
 
 <a id="api-15"></a>
 
@@ -616,7 +616,7 @@ obj.convolve(kernel, kw, kh);
 
 **声明**
 
-```magel
+```chali
 Result<Image, String> pool(int64 mode, int64 kw, int64 kh);
 ```
 
@@ -642,11 +642,11 @@ Result<Image, String> pool(int64 mode, int64 kw, int64 kh);
 
 **调用形式**
 
-```magel
+```chali
 obj.pool(mode, kw, kh);
 ```
 
-**源码**：[source/std/image.mgl:263](../../source/std/image.mgl#L263)。
+**源码**：[source/std/image.chl:263](../../source/std/image.chl#L263)。
 
 <a id="api-16"></a>
 
@@ -654,7 +654,7 @@ obj.pool(mode, kw, kh);
 
 **声明**
 
-```magel
+```chali
 Result<List<uint8>, String> toGray();
 ```
 
@@ -676,11 +676,11 @@ Result<List<uint8>, String> toGray();
 
 **调用形式**
 
-```magel
+```chali
 obj.toGray();
 ```
 
-**源码**：[source/std/image.mgl:275](../../source/std/image.mgl#L275)。
+**源码**：[source/std/image.chl:275](../../source/std/image.chl#L275)。
 
 <a id="api-17"></a>
 
@@ -688,7 +688,7 @@ obj.toGray();
 
 **声明**
 
-```magel
+```chali
 static Result<Image, String> fromGray(int64 width, int64 height, List<uint8> gray);
 ```
 
@@ -714,11 +714,11 @@ static Result<Image, String> fromGray(int64 width, int64 height, List<uint8> gra
 
 **调用形式**
 
-```magel
+```chali
 std::image::Image::fromGray(width, height, gray);
 ```
 
-**源码**：[source/std/image.mgl:289](../../source/std/image.mgl#L289)。
+**源码**：[source/std/image.chl:289](../../source/std/image.chl#L289)。
 
 <a id="api-18"></a>
 
@@ -726,7 +726,7 @@ std::image::Image::fromGray(width, height, gray);
 
 **声明**
 
-```magel
+```chali
 Result<List<uint32>, String> toARGB();
 ```
 
@@ -748,11 +748,11 @@ Result<List<uint32>, String> toARGB();
 
 **调用形式**
 
-```magel
+```chali
 obj.toARGB();
 ```
 
-**源码**：[source/std/image.mgl:301](../../source/std/image.mgl#L301)。
+**源码**：[source/std/image.chl:301](../../source/std/image.chl#L301)。
 
 <a id="api-19"></a>
 
@@ -760,7 +760,7 @@ obj.toARGB();
 
 **声明**
 
-```magel
+```chali
 static Result<Image, String> fromARGB(int64 width, int64 height, List<uint32> argb);
 ```
 
@@ -786,11 +786,11 @@ static Result<Image, String> fromARGB(int64 width, int64 height, List<uint32> ar
 
 **调用形式**
 
-```magel
+```chali
 std::image::Image::fromARGB(width, height, argb);
 ```
 
-**源码**：[source/std/image.mgl:315](../../source/std/image.mgl#L315)。
+**源码**：[source/std/image.chl:315](../../source/std/image.chl#L315)。
 
 <a id="api-20"></a>
 
@@ -798,7 +798,7 @@ std::image::Image::fromARGB(width, height, argb);
 
 **声明**
 
-```magel
+```chali
 Result<List<uint16>, String> toRGB565();
 ```
 
@@ -820,11 +820,11 @@ Result<List<uint16>, String> toRGB565();
 
 **调用形式**
 
-```magel
+```chali
 obj.toRGB565();
 ```
 
-**源码**：[source/std/image.mgl:327](../../source/std/image.mgl#L327)。
+**源码**：[source/std/image.chl:327](../../source/std/image.chl#L327)。
 
 <a id="api-21"></a>
 
@@ -832,7 +832,7 @@ obj.toRGB565();
 
 **声明**
 
-```magel
+```chali
 static Result<Image, String> fromRGB565(int64 width, int64 height, List<uint16> rgb565);
 ```
 
@@ -858,11 +858,11 @@ static Result<Image, String> fromRGB565(int64 width, int64 height, List<uint16> 
 
 **调用形式**
 
-```magel
+```chali
 std::image::Image::fromRGB565(width, height, rgb565);
 ```
 
-**源码**：[source/std/image.mgl:341](../../source/std/image.mgl#L341)。
+**源码**：[source/std/image.chl:341](../../source/std/image.chl#L341)。
 
 <a id="api-22"></a>
 
@@ -870,7 +870,7 @@ std::image::Image::fromRGB565(width, height, rgb565);
 
 **声明**
 
-```magel
+```chali
 Result<int64, String> otsuThreshold();
 ```
 
@@ -892,11 +892,11 @@ Result<int64, String> otsuThreshold();
 
 **调用形式**
 
-```magel
+```chali
 obj.otsuThreshold();
 ```
 
-**源码**：[source/std/image.mgl:353](../../source/std/image.mgl#L353)。
+**源码**：[source/std/image.chl:353](../../source/std/image.chl#L353)。
 
 <a id="api-23"></a>
 
@@ -904,7 +904,7 @@ obj.otsuThreshold();
 
 **声明**
 
-```magel
+```chali
 static Result<List<uint8>, String> binarize(int64 width, int64 height, List<uint8> gray, int64 threshold);
 ```
 
@@ -931,11 +931,11 @@ static Result<List<uint8>, String> binarize(int64 width, int64 height, List<uint
 
 **调用形式**
 
-```magel
+```chali
 std::image::Image::binarize(width, height, gray, threshold);
 ```
 
-**源码**：[source/std/image.mgl:369](../../source/std/image.mgl#L369)。
+**源码**：[source/std/image.chl:369](../../source/std/image.chl#L369)。
 
 <a id="api-24"></a>
 
@@ -943,7 +943,7 @@ std::image::Image::binarize(width, height, gray, threshold);
 
 **声明**
 
-```magel
+```chali
 Result<List<uint8>, String> otsuBinarize();
 ```
 
@@ -965,8 +965,8 @@ Result<List<uint8>, String> otsuBinarize();
 
 **调用形式**
 
-```magel
+```chali
 obj.otsuBinarize();
 ```
 
-**源码**：[source/std/image.mgl:380](../../source/std/image.mgl#L380)。
+**源码**：[source/std/image.chl:380](../../source/std/image.chl#L380)。

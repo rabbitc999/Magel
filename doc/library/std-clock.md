@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::clock;
 ```
 
@@ -14,25 +14,25 @@ import std::clock;
 
 ## 参考代码
 
-完整程序：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+完整程序：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。
 
 ```powershell
-magel run example/samples/std_math_clock_random.mgl
+chali run example/samples/std_math_clock_random.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
-/* std_math_clock_random.mgl —— 第二档：Math 补齐、Clock、Random 扩展。
+```chali
+/* std_math_clock_random.chl —— 第二档：Math 补齐、Clock、Random 扩展。
  *
  * 三条路线各不相同，改这块前先分清：
  *   * Math 的 float64 取整 / 判定走**宿主胶水**（glue/std_math.hpp 绑 <cmath>）；
- *   * Math 的 int64 版是**Magel 重载转发到宿主胶水**（写在同一模块里，实参完全匹配优先于 int64→float64 放宽）；
+ *   * Math 的 int64 版是**ChaLi 重载转发到宿主胶水**（写在同一模块里，实参完全匹配优先于 int64→float64 放宽）；
  *   * Clock 是宿主胶水（chrono 的 steady_clock）；
  *   * Random 的 nextRange / nextBool 是 宿主胶水的薄封装。
  *
- * `choice` / `shuffle` 不在 `Random::` 下：Magel 没有泛型方法，而 `std::random::Random` 这个
+ * `choice` / `shuffle` 不在 `Random::` 下：ChaLi 没有泛型方法，而 `std::random::Random` 这个
  * 名字已经被同名的 struct 占着（再开同名模块会让 `Random::withSeed` 找不到）。
  * 它们放在 `algorithms`，调用写 `std::algorithms::choiceValue<int64>(表, 种子)`。
  */
@@ -50,14 +50,14 @@ int64 main() {
     std::math::round(2.5), std::math::trunc(-2.7));
     println("{} {}", std::math::fmod(7.5, 2.0), std::math::fmod(-7.5, 2.0));
 
-    /* Magel 里浮点除零是运行期错误，所以 NaN / Inf 从宿主函数拿：
+    /* ChaLi 里浮点除零是运行期错误，所以 NaN / Inf 从宿主函数拿：
      * sqrt(-1) = NaN、ln(0) = -Inf。 */
     float64 notNumber = std::math::sqrt(-1.0);
     float64 infinite = std::math::ln(0.0);
     println("{} {} {} {}", std::math::isNaN(notNumber), std::math::isNaN(1.0),
     std::math::isInf(infinite), std::math::isInf(1.0));
 
-    /* --- Math：int64 版（Magel 重载转发到宿主胶水）+ float64 版 abs 仍然可用 --- */
+    /* --- Math：int64 版（ChaLi 重载转发到宿主胶水）+ float64 版 abs 仍然可用 --- */
     println("{} {} {} {}", std::math::abs(-5), std::math::min(3, 8),
     std::math::max(3, 8), std::math::clamp(12, 0, 10));
     println("{}", std::math::abs(-2.5));
@@ -133,7 +133,7 @@ int64 main() {
 
 **声明**
 
-```magel
+```chali
 int64 nowMs();
 ```
 
@@ -157,13 +157,13 @@ int64 nowMs();
 
 **调用形式**
 
-```magel
+```chali
 std::clock::nowMs();
 ```
 
-**源码**：[source/std/clock.mgl:10](../../source/std/clock.mgl#L10)。
+**源码**：[source/std/clock.chl:10](../../source/std/clock.chl#L10)。
 
-**完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+**完整示例**：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。
 
 <a id="api-1"></a>
 
@@ -171,7 +171,7 @@ std::clock::nowMs();
 
 **声明**
 
-```magel
+```chali
 int64 nowNanos();
 ```
 
@@ -193,10 +193,10 @@ int64 nowNanos();
 
 **调用形式**
 
-```magel
+```chali
 std::clock::nowNanos();
 ```
 
-**源码**：[source/std/clock.mgl:11](../../source/std/clock.mgl#L11)。
+**源码**：[source/std/clock.chl:11](../../source/std/clock.chl#L11)。
 
-**完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+**完整示例**：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。

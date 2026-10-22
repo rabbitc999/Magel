@@ -1,17 +1,17 @@
 #include "std_binary.hpp"
 
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include <cstring>
 #include <limits>
 #include <type_traits>
 
 /**
- * @brief MAGEL 二进制流的字节序解码与边界检查。
+ * @brief CHALI 二进制流的字节序解码与边界检查。
  */
 namespace std_binary_glue
 {
 using Bytes = Memory::Vector<std::uint8_t>;
-using Context = magel_glue::Context;
+using Context = chali_glue::Context;
 
 /**
  * @brief 校验读取范围，先除后乘避免长度溢出。
@@ -76,16 +76,16 @@ T decode(const std::uint8_t *data, bool bigEndian)
 /**
  * @brief 注册一种数值的标量与数组读取。
  * @param registry 胶水注册表。
- * @param name MAGEL 类型名。
+ * @param name CHALI 类型名。
  * @param error 注册错误。
  * @return 是否成功。
  */
 template <class T>
-bool bindNumber(magel_glue::Registry &registry, const char *name, Memory::String *error)
+bool bindNumber(chali_glue::Registry &registry, const char *name, Memory::String *error)
 {
     constexpr std::size_t width = std::is_same_v<T, bool> ? 1 : sizeof(T);
-    const auto scalar = magel_glue::specialize("std::binary::__read", { name });
-    const auto array = magel_glue::specialize("std::binary::__readArray", { name });
+    const auto scalar = chali_glue::specialize("std::binary::__read", { name });
+    const auto array = chali_glue::specialize("std::binary::__readArray", { name });
     return registry.bindTypedWithContext<T, Bytes, std::int64_t, bool>(scalar, [width](Context &ctx, Bytes data, std::int64_t offset, bool bigEndian) -> T {
             if (!checkRange(ctx, data, offset, 1, width)) return T{};
             if constexpr (std::is_same_v<T, bool>) {
@@ -128,7 +128,7 @@ inline Memory::String textAt(const Bytes &data, std::size_t offset, std::size_t 
  * @param error 注册错误。
  * @return 是否成功。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     bool ok = bindNumber<std::int8_t>(registry, "int8", error) && bindNumber<std::uint8_t>(registry, "uint8", error) && bindNumber<std::int16_t>(registry, "int16", error) && bindNumber<std::uint16_t>(registry, "uint16", error) && bindNumber<std::int32_t>(registry, "int32", error) && bindNumber<std::uint32_t>(registry, "uint32", error) && bindNumber<std::int64_t>(registry, "int64", error) && bindNumber<std::uint64_t>(registry, "uint64", error) && bindNumber<float>(registry, "float32", error) && bindNumber<double>(registry, "float64", error) && bindNumber<bool>(registry, "bool", error);
     return ok && registry.bindTypedWithContext<Memory::String, Bytes, std::int64_t, std::int64_t>("std::binary::__readString", [](Context &ctx, Bytes data, std::int64_t offset, std::int64_t length) {
@@ -141,7 +141,7 @@ bool bind(magel_glue::Registry &registry, Memory::String *error)
             for (std::int64_t i = 0; i < count; ++i)
                 values.push_back(textAt(data, static_cast<std::size_t>(offset) +
                     static_cast<std::size_t>(i) * static_cast<std::size_t>(width), static_cast<std::size_t>(width)));
-            return values; }, error) && registry.bindTypedWithContext<Bytes, magel_glue::Reference<std::uint8_t>, std::int64_t>("std::binary::__fromArray", [](Context &ctx, magel_glue::Reference<std::uint8_t> data, std::int64_t count) {
+            return values; }, error) && registry.bindTypedWithContext<Bytes, chali_glue::Reference<std::uint8_t>, std::int64_t>("std::binary::__fromArray", [](Context &ctx, chali_glue::Reference<std::uint8_t> data, std::int64_t count) {
             Bytes values;
             if (count < 0 ||
                 data.address < 0 || (count > 0 && data.address == 0) ||

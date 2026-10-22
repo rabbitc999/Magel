@@ -12,5 +12,5 @@ namespace std_print_glue
  * @param error 注册失败时接收诊断，可为空。
  * @return 绑定成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error);
+bool bind(chali_glue::Registry &registry, Memory::String *error);
 }  // namespace std_print_glue

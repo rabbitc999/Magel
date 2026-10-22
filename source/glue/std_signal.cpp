@@ -1,13 +1,13 @@
 #include "std_signal.hpp"
 
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include <cmath>
 #include <complex>
 #include <vector>
 
 namespace std_signal_glue
 {
-using Context = magel_glue::Context;
+using Context = chali_glue::Context;
 
 inline constexpr double kPi = 3.14159265358979323846;
 
@@ -45,7 +45,7 @@ inline std::int64_t writeComplexes(Context &ctx, const std::vector<std::complex<
     const std::int64_t list = collection_glue::makeList(ctx);
     for (const std::complex<double> &value : values)
     {
-        const std::int64_t address = magel_glue::makeStruct(ctx, { value.real(), value.imag() });
+        const std::int64_t address = chali_glue::makeStruct(ctx, { value.real(), value.imag() });
         collection_glue::listPushStruct(ctx, list, address, 2u);
     }
     return list;
@@ -153,7 +153,7 @@ inline std::vector<std::complex<double>> ifft(std::vector<std::complex<double>> 
  * @param error 绑定失败时接收原始诊断，可为空。
  * @return 全部入口绑定成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     return registry.bindTypedWithContext<std::int64_t, std::int64_t>(
                "std::signal::signalDft",

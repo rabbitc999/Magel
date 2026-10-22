@@ -6,8 +6,8 @@
  * @param error 失败时接收诊断。
  * @return 注册成功返回 true。
  */
-bool bindMagelGlue(magel_glue::Registry &registry, Memory::String *error)
+bool bindChaLiGlue(chali_glue::Registry &registry, Memory::String *error)
 {
-    using Operation = magel_glue::Function<std::int64_t(std::int64_t)>;
+    using Operation = chali_glue::Function<std::int64_t(std::int64_t)>;
     return registry.bindTypedGeneric<Operation, Operation>("auditHost", { "int64 fn(int64)" }, [](Operation operation) { return operation; }, error);
 }

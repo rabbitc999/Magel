@@ -1,6 +1,6 @@
 #include "std_tree_storage.hpp"
 #include "std_native_record.hpp"
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include <algorithm>
 #include <functional>
 #include <memory>
@@ -152,7 +152,7 @@ const stackvm::NativeRecordType treeType{ "std::tree::TreeStorage", cloneTree, d
  * @param value 待接管的容器。
  * @return 原生记录句柄。
  */
-std::int64_t own(magel_glue::Context &ctx, std::unique_ptr<Tree> value)
+std::int64_t own(chali_glue::Context &ctx, std::unique_ptr<Tree> value)
 {
     auto handle = ctx.makeNativeRecord(treeType, value.get());
     if (handle) value.release();
@@ -164,7 +164,7 @@ std::int64_t own(magel_glue::Context &ctx, std::unique_ptr<Tree> value)
  * @param kind 零为二叉搜索树、一为通用树、二为最小堆。
  * @return 拥有空容器的句柄。
  */
-std::int64_t create(magel_glue::Context &ctx, std::int64_t kind)
+std::int64_t create(chali_glue::Context &ctx, std::int64_t kind)
 {
     auto tree = std::make_unique<Tree>();
     tree->kind = kind;
@@ -315,7 +315,7 @@ Value values(State &state, const Memory::Vector<Value> &arguments)
             if (mode == 1 || mode == 3) stack.emplace_back(x, true);
         }
     }
-    return magel_glue::Codec<Ints>::encode(state.host, result);
+    return chali_glue::Codec<Ints>::encode(state.host, result);
 }
 /**
  * @brief 独立复制二叉和首孩子次兄弟表示，重建通用树的末孩子索引。
@@ -324,7 +324,7 @@ Value values(State &state, const Memory::Vector<Value> &arguments)
  * @param kind 目标树种类。
  * @return 拥有独立转换结果的句柄。
  */
-std::int64_t convert(magel_glue::Context &ctx, std::int64_t handle, std::int64_t kind)
+std::int64_t convert(chali_glue::Context &ctx, std::int64_t handle, std::int64_t kind)
 {
     const auto *source = static_cast<const Tree *>(ctx.nativeRecord(handle, treeType));
     if (!source) return 0;
@@ -345,9 +345,9 @@ std::int64_t convert(magel_glue::Context &ctx, std::int64_t handle, std::int64_t
  * @param error 接收绑定失败的诊断。
  * @return 所有入口注册成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     auto &native = registry.native();
-    return registry.bindTypedWithContext<std::int64_t>("std::tree::__bstNew", [](magel_glue::Context &ctx) { return create(ctx, 0); }, error) && registry.bindTypedWithContext<std::int64_t>("std::tree::__generalNew", [](magel_glue::Context &ctx) { return create(ctx, 1); }, error) && registry.bindTypedWithContext<std::int64_t>("std::tree::__heapNew", [](magel_glue::Context &ctx) { return create(ctx, 2); }, error) && native_record_glue::bind(native, "std::tree::__treeCopy", 1, copy, error) && native_record_glue::bind(native, "std::tree::__treeDrop", 1, drop, error) && native_record_glue::bind(native, "std::tree::__treeOp", 4, operate, error) && native_record_glue::bind(native, "std::tree::__treeValues", 3, values, error) && registry.bindTypedWithContext<std::int64_t, std::int64_t>("std::tree::__treeAsBinary", [](magel_glue::Context &ctx, std::int64_t handle) { return convert(ctx, handle, 0); }, error) && registry.bindTypedWithContext<std::int64_t, std::int64_t>("std::tree::__treeAsGeneral", [](magel_glue::Context &ctx, std::int64_t handle) { return convert(ctx, handle, 1); }, error);
+    return registry.bindTypedWithContext<std::int64_t>("std::tree::__bstNew", [](chali_glue::Context &ctx) { return create(ctx, 0); }, error) && registry.bindTypedWithContext<std::int64_t>("std::tree::__generalNew", [](chali_glue::Context &ctx) { return create(ctx, 1); }, error) && registry.bindTypedWithContext<std::int64_t>("std::tree::__heapNew", [](chali_glue::Context &ctx) { return create(ctx, 2); }, error) && native_record_glue::bind(native, "std::tree::__treeCopy", 1, copy, error) && native_record_glue::bind(native, "std::tree::__treeDrop", 1, drop, error) && native_record_glue::bind(native, "std::tree::__treeOp", 4, operate, error) && native_record_glue::bind(native, "std::tree::__treeValues", 3, values, error) && registry.bindTypedWithContext<std::int64_t, std::int64_t>("std::tree::__treeAsBinary", [](chali_glue::Context &ctx, std::int64_t handle) { return convert(ctx, handle, 0); }, error) && registry.bindTypedWithContext<std::int64_t, std::int64_t>("std::tree::__treeAsGeneral", [](chali_glue::Context &ctx, std::int64_t handle) { return convert(ctx, handle, 1); }, error);
 }
 }  // namespace std_tree_storage_glue

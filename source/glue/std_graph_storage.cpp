@@ -70,7 +70,7 @@ void appendEdge(GraphState &graph, std::int64_t from, std::int64_t to, std::int6
  * @param error 接收绑定失败的诊断。
  * @return 所有入口绑定成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     using namespace native_record_glue;
     auto &native = registry.native();

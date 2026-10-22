@@ -1,6 +1,6 @@
 # 标准库存储、复制与字符串方法
 
-标准库按实际拥有关系管理宿主状态。连接、分配区和定时源只有一个所有者；容器和随机序列使用值复制；共享槽明确保留共享语义。相关接口见[API 索引](library/README.md)，回归入口为 [opcode 与字符串测试](../tests/magel_opcode_values.py)。
+标准库按实际拥有关系管理宿主状态。连接、分配区和定时源只有一个所有者；容器和随机序列使用值复制；共享槽明确保留共享语义。相关接口见[API 索引](library/README.md)，回归入口为 [opcode 与字符串测试](../tests/chali_opcode_values.py)。
 
 ## 拥有与复制
 
@@ -56,4 +56,4 @@ replace 与 replaceAll 相同，均替换不重叠匹配；空搜索串保持原
 
 split 默认保留中间、起始和末尾空项，空 separator 按严格 UTF-8 码点拆分。splitWhitespace 忽略连续空白产生的空项。lines 将 CRLF 视为一次换行，也接受独立 CR 与 LF，默认保留末尾空项。join 把当前字符串作为分隔符，空列表生成空字符串。已有 `chars()` 惰性迭代入口仍由 `std::iter` 提供；unicodeChars 直接返回独立 `List<String>`。
 
-完整示例见[字符串方法](../example/samples/string_methods.mgl)、[值语义](../example/samples/opcode_value_semantics.mgl)及[红黑树删除](../example/samples/std_red_black_delete.mgl)。
+完整示例见[字符串方法](../example/samples/string_methods.chl)、[值语义](../example/samples/opcode_value_semantics.chl)及[红黑树删除](../example/samples/std_red_black_delete.chl)。

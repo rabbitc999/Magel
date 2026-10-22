@@ -9,5 +9,5 @@ namespace lang_numeric_glue
  * @param error 注册错误。
  * @return 是否成功。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr);
+bool bind(chali_glue::Registry &registry, Memory::String *error = nullptr);
 }  // namespace lang_numeric_glue

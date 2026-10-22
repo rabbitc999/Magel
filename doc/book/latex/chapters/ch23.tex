@@ -36,7 +36,7 @@
 
 \end{itemize}
 
-本章只讲中间那一行。Magel 目前有四个编译器指令：
+本章只讲中间那一行。ChaLi 目前有四个编译器指令：
 
 \begin{center}
 \begin{tabular}{ll}
@@ -59,7 +59,7 @@
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 opcode Number {
     new = createNumber;
     drop = destroyNumber;
@@ -79,7 +79,7 @@ opcode FileHandle {
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 FileHandle handle = FileHandle::new("log.txt");
 FileHandle moved = move(&handle);      // 可以：转移
 // FileHandle copied = handle;         // 报错：不可复制的值禁止复制
@@ -91,7 +91,7 @@ FileHandle moved = move(&handle);      // 可以：转移
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Handle : Closeable
 {
     int64 id;
@@ -147,7 +147,7 @@ close 2
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 #derive(Equal, Hash, Clone)
 struct Point
 {
@@ -225,7 +225,7 @@ original=O
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 #NoAddReplace
 struct Vec : Add<int64, int64>
 {
@@ -261,7 +261,7 @@ left=15
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: samples-error/operator_no_add_replace.mgl 第 16 行第 5 列：运算符 + 的自动推导被 #NoAddReplace 关闭：int64 + Vec（直接写出与实现匹配的运算符，或显式实现 RightAdd<R,T> 这类右接口）
+chali: samples-error/operator_no_add_replace.chl 第 16 行第 5 列：运算符 + 的自动推导被 #NoAddReplace 关闭：int64 + Vec（直接写出与实现匹配的运算符，或显式实现 RightAdd<R,T> 这类右接口）
 \end{lstlisting}
 \par
 \medskip
@@ -276,7 +276,7 @@ magel: samples-error/operator_no_add_replace.mgl 第 16 行第 5 列：运算符
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 #NoRightAdd
 struct Chain : Add<int64, int64>
 {
@@ -312,7 +312,7 @@ chain + 1 = 8
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: samples-error/operator_right_forbidden.mgl 第 13 行第 5 列：右向被编译器指令关闭：Vec 声明了 #NoRightAdd，int64 + Vec 不再推导；要去掉该指令，或改为实现 RightAdd<R,T>
+chali: samples-error/operator_right_forbidden.chl 第 13 行第 5 列：右向被编译器指令关闭：Vec 声明了 #NoRightAdd，int64 + Vec 不再推导；要去掉该指令，或改为实现 RightAdd<R,T>
 \end{lstlisting}
 \par
 \medskip
@@ -356,7 +356,7 @@ magel: samples-error/operator_right_forbidden.mgl 第 13 行第 5 列：右向�
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 #NoAddReplace
 struct Wrapper<T> { T value; };
 \end{lstlisting}
@@ -399,7 +399,7 @@ struct Wrapper<T> { T value; };
 
 \item \texttt{Closeable} 自动等价于"不可复制"，无需再写 \texttt{\#Non\allowbreak{}Copyable}；\texttt{opcode} 的不可复制由声明体里有没有 \texttt{copy} 决定，\texttt{\#Non\allowbreak{}Copyable} 是可读性标记。
 
-\item 可运行验证见 \texttt{example/\allowbreak{}samples/\allowbreak{}derive.\allowbreak{}mgl}、\texttt{no\_replace.\allowbreak{}mgl}、\texttt{closeable\_move.\allowbreak{}mgl}、\texttt{operator\_right\_direction.\allowbreak{}mgl}；报错例见 \texttt{example/\allowbreak{}samples-error/\allowbreak{}operator\_no\_add\_replace.\allowbreak{}mgl}、\texttt{operator\_right\_forbidden.\allowbreak{}mgl}、\texttt{closeable\_copy.\allowbreak{}mgl}。
+\item 可运行验证见 \texttt{example/\allowbreak{}samples/\allowbreak{}derive.\allowbreak{}chl}、\texttt{no\_replace.\allowbreak{}chl}、\texttt{closeable\_move.\allowbreak{}chl}、\texttt{operator\_right\_direction.\allowbreak{}chl}；报错例见 \texttt{example/\allowbreak{}samples-error/\allowbreak{}operator\_no\_add\_replace.\allowbreak{}chl}、\texttt{operator\_right\_forbidden.\allowbreak{}chl}、\texttt{closeable\_copy.\allowbreak{}chl}。
 
 \end{itemize}
 
@@ -469,7 +469,7 @@ struct Wrapper<T> { T value; };
 
 新来的主簿翻开库房，一眼看出问题：借条是写给取东西的人看的，规矩是写给管库房的人 看的。他把借条一张张揭下来，换成簿子上正经的条目——哪几类物件不得出库、哪几类出库要两个人签字、哪几类本来就该就地封存。从此取东西的人不必再猜哪张条子算数。
 
-Magel 的编译器指令就是这簿子上的条目：它写在声明上，交给编译器读，读的人都一样、位置都在同一处。注解才是那张贴给外人看的借条，它不改变库房的规矩，只是告诉来办事的人里面装的是什么。
+ChaLi 的编译器指令就是这簿子上的条目：它写在声明上，交给编译器读，读的人都一样、位置都在同一处。注解才是那张贴给外人看的借条，它不改变库房的规矩，只是告诉来办事的人里面装的是什么。
 
 \subsection*{技术对照}
 

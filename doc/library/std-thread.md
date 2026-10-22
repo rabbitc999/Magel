@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::thread;
 ```
 
@@ -14,16 +14,16 @@ import std::thread;
 
 ## 参考代码
 
-完整程序：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+完整程序：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 ```powershell
-magel run example/samples/thread_messages.mgl --threads
+chali run example/samples/thread_messages.chl --threads
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 
 import std::thread;
 
@@ -122,7 +122,7 @@ ack:hello 5
 
 **声明**
 
-```magel
+```chali
 Thread create(void fn() task);
 ```
 
@@ -146,13 +146,13 @@ Thread create(void fn() task);
 
 **调用形式**
 
-```magel
+```chali
 std::thread::create(task);
 ```
 
-**源码**：[source/std/thread.mgl:11](../../source/std/thread.mgl#L11)。
+**源码**：[source/std/thread.chl:11](../../source/std/thread.chl#L11)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-1"></a>
 
@@ -160,7 +160,7 @@ std::thread::create(task);
 
 **声明**
 
-```magel
+```chali
 Thread createWith<T>(void fn(T) task, T value);
 ```
 
@@ -187,13 +187,13 @@ Thread createWith<T>(void fn(T) task, T value);
 
 **调用形式**
 
-```magel
+```chali
 std::thread::createWith<T>(task, value);
 ```
 
-**源码**：[source/std/thread.mgl:13](../../source/std/thread.mgl#L13)。
+**源码**：[source/std/thread.chl:13](../../source/std/thread.chl#L13)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-2"></a>
 
@@ -201,7 +201,7 @@ std::thread::createWith<T>(task, value);
 
 **声明**
 
-```magel
+```chali
 void wait(Thread thread);
 ```
 
@@ -225,13 +225,13 @@ void wait(Thread thread);
 
 **调用形式**
 
-```magel
+```chali
 std::thread::wait(thread);
 ```
 
-**源码**：[source/std/thread.mgl:14](../../source/std/thread.mgl#L14)。
+**源码**：[source/std/thread.chl:14](../../source/std/thread.chl#L14)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-3"></a>
 
@@ -239,7 +239,7 @@ std::thread::wait(thread);
 
 **声明**
 
-```magel
+```chali
 bool waitFor(Thread thread, int64 millis);
 ```
 
@@ -266,13 +266,13 @@ bool waitFor(Thread thread, int64 millis);
 
 **调用形式**
 
-```magel
+```chali
 std::thread::waitFor(thread, millis);
 ```
 
-**源码**：[source/std/thread.mgl:16](../../source/std/thread.mgl#L16)。
+**源码**：[source/std/thread.chl:16](../../source/std/thread.chl#L16)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-4"></a>
 
@@ -280,7 +280,7 @@ std::thread::waitFor(thread, millis);
 
 **声明**
 
-```magel
+```chali
 bool tryWait(Thread thread);
 ```
 
@@ -304,13 +304,13 @@ bool tryWait(Thread thread);
 
 **调用形式**
 
-```magel
+```chali
 std::thread::tryWait(thread);
 ```
 
-**源码**：[source/std/thread.mgl:17](../../source/std/thread.mgl#L17)。
+**源码**：[source/std/thread.chl:17](../../source/std/thread.chl#L17)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-5"></a>
 
@@ -318,7 +318,7 @@ std::thread::tryWait(thread);
 
 **声明**
 
-```magel
+```chali
 void requestStop(Thread thread);
 ```
 
@@ -342,13 +342,13 @@ void requestStop(Thread thread);
 
 **调用形式**
 
-```magel
+```chali
 std::thread::requestStop(thread);
 ```
 
-**源码**：[source/std/thread.mgl:18](../../source/std/thread.mgl#L18)。
+**源码**：[source/std/thread.chl:18](../../source/std/thread.chl#L18)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-6"></a>
 
@@ -356,7 +356,7 @@ std::thread::requestStop(thread);
 
 **声明**
 
-```magel
+```chali
 bool stopRequested();
 ```
 
@@ -378,13 +378,13 @@ bool stopRequested();
 
 **调用形式**
 
-```magel
+```chali
 std::thread::stopRequested();
 ```
 
-**源码**：[source/std/thread.mgl:19](../../source/std/thread.mgl#L19)。
+**源码**：[source/std/thread.chl:19](../../source/std/thread.chl#L19)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-7"></a>
 
@@ -392,7 +392,7 @@ std::thread::stopRequested();
 
 **声明**
 
-```magel
+```chali
 int64 state(Thread thread);
 ```
 
@@ -416,13 +416,13 @@ int64 state(Thread thread);
 
 **调用形式**
 
-```magel
+```chali
 std::thread::state(thread);
 ```
 
-**源码**：[source/std/thread.mgl:20](../../source/std/thread.mgl#L20)。
+**源码**：[source/std/thread.chl:20](../../source/std/thread.chl#L20)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-8"></a>
 
@@ -430,7 +430,7 @@ std::thread::state(thread);
 
 **声明**
 
-```magel
+```chali
 int64 sleepFor(int64 millis);
 ```
 
@@ -456,13 +456,13 @@ int64 sleepFor(int64 millis);
 
 **调用形式**
 
-```magel
+```chali
 std::thread::sleepFor(millis);
 ```
 
-**源码**：[source/std/thread.mgl:22](../../source/std/thread.mgl#L22)。
+**源码**：[source/std/thread.chl:22](../../source/std/thread.chl#L22)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-9"></a>
 
@@ -470,7 +470,7 @@ std::thread::sleepFor(millis);
 
 **声明**
 
-```magel
+```chali
 bool isReady();
 ```
 
@@ -492,13 +492,13 @@ bool isReady();
 
 **调用形式**
 
-```magel
+```chali
 obj.isReady();
 ```
 
-**源码**：[source/std/thread.mgl:30](../../source/std/thread.mgl#L30)。
+**源码**：[source/std/thread.chl:30](../../source/std/thread.chl#L30)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-10"></a>
 
@@ -506,7 +506,7 @@ obj.isReady();
 
 **声明**
 
-```magel
+```chali
 ThreadResult waitResultFor(Thread thread, int64 millis);
 ```
 
@@ -531,13 +531,13 @@ ThreadResult waitResultFor(Thread thread, int64 millis);
 
 **调用形式**
 
-```magel
+```chali
 std::thread::waitResultFor(thread, millis);
 ```
 
-**源码**：[source/std/thread.mgl:32](../../source/std/thread.mgl#L32)。
+**源码**：[source/std/thread.chl:32](../../source/std/thread.chl#L32)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-11"></a>
 
@@ -545,7 +545,7 @@ std::thread::waitResultFor(thread, millis);
 
 **声明**
 
-```magel
+```chali
 ThreadResult waitResult(Thread thread);
 ```
 
@@ -569,13 +569,13 @@ ThreadResult waitResult(Thread thread);
 
 **调用形式**
 
-```magel
+```chali
 std::thread::waitResult(thread);
 ```
 
-**源码**：[source/std/thread.mgl:41](../../source/std/thread.mgl#L41)。
+**源码**：[source/std/thread.chl:41](../../source/std/thread.chl#L41)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-12"></a>
 
@@ -583,7 +583,7 @@ std::thread::waitResult(thread);
 
 **声明**
 
-```magel
+```chali
 void send(Thread thread, String message);
 ```
 
@@ -608,13 +608,13 @@ void send(Thread thread, String message);
 
 **调用形式**
 
-```magel
+```chali
 std::thread::send(thread, message);
 ```
 
-**源码**：[source/std/thread.mgl:42](../../source/std/thread.mgl#L42)。
+**源码**：[source/std/thread.chl:42](../../source/std/thread.chl#L42)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-13"></a>
 
@@ -622,7 +622,7 @@ std::thread::send(thread, message);
 
 **声明**
 
-```magel
+```chali
 String receive();
 ```
 
@@ -644,13 +644,13 @@ String receive();
 
 **调用形式**
 
-```magel
+```chali
 std::thread::receive();
 ```
 
-**源码**：[source/std/thread.mgl:43](../../source/std/thread.mgl#L43)。
+**源码**：[source/std/thread.chl:43](../../source/std/thread.chl#L43)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-14"></a>
 
@@ -658,7 +658,7 @@ std::thread::receive();
 
 **声明**
 
-```magel
+```chali
 Thread current();
 ```
 
@@ -680,13 +680,13 @@ Thread current();
 
 **调用形式**
 
-```magel
+```chali
 std::thread::current();
 ```
 
-**源码**：[source/std/thread.mgl:44](../../source/std/thread.mgl#L44)。
+**源码**：[source/std/thread.chl:44](../../source/std/thread.chl#L44)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-15"></a>
 
@@ -694,7 +694,7 @@ std::thread::current();
 
 **声明**
 
-```magel
+```chali
 Thread parent();
 ```
 
@@ -716,13 +716,13 @@ Thread parent();
 
 **调用形式**
 
-```magel
+```chali
 std::thread::parent();
 ```
 
-**源码**：[source/std/thread.mgl:45](../../source/std/thread.mgl#L45)。
+**源码**：[source/std/thread.chl:45](../../source/std/thread.chl#L45)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-16"></a>
 
@@ -730,7 +730,7 @@ std::thread::parent();
 
 **声明**
 
-```magel
+```chali
 std::concurrency::Receive<String> receiveFor(int64 millis);
 ```
 
@@ -754,13 +754,13 @@ std::concurrency::Receive<String> receiveFor(int64 millis);
 
 **调用形式**
 
-```magel
+```chali
 std::thread::receiveFor(millis);
 ```
 
-**源码**：[source/std/thread.mgl:46](../../source/std/thread.mgl#L46)。
+**源码**：[source/std/thread.chl:46](../../source/std/thread.chl#L46)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-17"></a>
 
@@ -768,7 +768,7 @@ std::thread::receiveFor(millis);
 
 **声明**
 
-```magel
+```chali
 std::concurrency::Receive<String> tryReceive();
 ```
 
@@ -790,13 +790,13 @@ std::concurrency::Receive<String> tryReceive();
 
 **调用形式**
 
-```magel
+```chali
 std::thread::tryReceive();
 ```
 
-**源码**：[source/std/thread.mgl:52](../../source/std/thread.mgl#L52)。
+**源码**：[source/std/thread.chl:52](../../source/std/thread.chl#L52)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-18"></a>
 
@@ -804,7 +804,7 @@ std::thread::tryReceive();
 
 **声明**
 
-```magel
+```chali
 void closeInbox();
 ```
 
@@ -826,13 +826,13 @@ void closeInbox();
 
 **调用形式**
 
-```magel
+```chali
 std::thread::closeInbox();
 ```
 
-**源码**：[source/std/thread.mgl:53](../../source/std/thread.mgl#L53)。
+**源码**：[source/std/thread.chl:53](../../source/std/thread.chl#L53)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-19"></a>
 
@@ -840,7 +840,7 @@ std::thread::closeInbox();
 
 **声明**
 
-```magel
+```chali
 static ThreadGroup create();
 ```
 
@@ -862,13 +862,13 @@ static ThreadGroup create();
 
 **调用形式**
 
-```magel
+```chali
 std::thread::ThreadGroup::create();
 ```
 
-**源码**：[source/std/thread.mgl:61](../../source/std/thread.mgl#L61)。
+**源码**：[source/std/thread.chl:61](../../source/std/thread.chl#L61)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-20"></a>
 
@@ -876,7 +876,7 @@ std::thread::ThreadGroup::create();
 
 **声明**
 
-```magel
+```chali
 Thread start(void fn() task);
 ```
 
@@ -901,13 +901,13 @@ Thread start(void fn() task);
 
 **调用形式**
 
-```magel
+```chali
 obj.start(task);
 ```
 
-**源码**：[source/std/thread.mgl:62](../../source/std/thread.mgl#L62)。
+**源码**：[source/std/thread.chl:62](../../source/std/thread.chl#L62)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-21"></a>
 
@@ -915,7 +915,7 @@ obj.start(task);
 
 **声明**
 
-```magel
+```chali
 void add(Thread task);
 ```
 
@@ -940,13 +940,13 @@ void add(Thread task);
 
 **调用形式**
 
-```magel
+```chali
 obj.add(task);
 ```
 
-**源码**：[source/std/thread.mgl:68](../../source/std/thread.mgl#L68)。
+**源码**：[source/std/thread.chl:68](../../source/std/thread.chl#L68)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-22"></a>
 
@@ -954,7 +954,7 @@ obj.add(task);
 
 **声明**
 
-```magel
+```chali
 void cancelAll();
 ```
 
@@ -976,13 +976,13 @@ void cancelAll();
 
 **调用形式**
 
-```magel
+```chali
 obj.cancelAll();
 ```
 
-**源码**：[source/std/thread.mgl:77](../../source/std/thread.mgl#L77)。
+**源码**：[source/std/thread.chl:77](../../source/std/thread.chl#L77)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-23"></a>
 
@@ -990,7 +990,7 @@ obj.cancelAll();
 
 **声明**
 
-```magel
+```chali
 bool waitAll();
 ```
 
@@ -1012,13 +1012,13 @@ bool waitAll();
 
 **调用形式**
 
-```magel
+```chali
 obj.waitAll();
 ```
 
-**源码**：[source/std/thread.mgl:80](../../source/std/thread.mgl#L80)。
+**源码**：[source/std/thread.chl:80](../../source/std/thread.chl#L80)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-24"></a>
 
@@ -1026,7 +1026,7 @@ obj.waitAll();
 
 **声明**
 
-```magel
+```chali
 void drop();
 ```
 
@@ -1048,13 +1048,13 @@ void drop();
 
 **调用形式**
 
-```magel
+```chali
 obj.drop();
 ```
 
-**源码**：[source/std/thread.mgl:102](../../source/std/thread.mgl#L102)。
+**源码**：[source/std/thread.chl:102](../../source/std/thread.chl#L102)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-25"></a>
 
@@ -1062,7 +1062,7 @@ obj.drop();
 
 **声明**
 
-```magel
+```chali
 static ThreadPool create(int64 workers, int64 capacity);
 ```
 
@@ -1088,13 +1088,13 @@ static ThreadPool create(int64 workers, int64 capacity);
 
 **调用形式**
 
-```magel
+```chali
 std::thread::ThreadPool::create(workers, capacity);
 ```
 
-**源码**：[source/std/thread.mgl:121](../../source/std/thread.mgl#L121)。
+**源码**：[source/std/thread.chl:121](../../source/std/thread.chl#L121)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-26"></a>
 
@@ -1102,7 +1102,7 @@ std::thread::ThreadPool::create(workers, capacity);
 
 **声明**
 
-```magel
+```chali
 int64 submitFor(void fn() task, int64 millis);
 ```
 
@@ -1128,13 +1128,13 @@ int64 submitFor(void fn() task, int64 millis);
 
 **调用形式**
 
-```magel
+```chali
 obj.submitFor(task, millis);
 ```
 
-**源码**：[source/std/thread.mgl:126](../../source/std/thread.mgl#L126)。
+**源码**：[source/std/thread.chl:126](../../source/std/thread.chl#L126)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-27"></a>
 
@@ -1142,7 +1142,7 @@ obj.submitFor(task, millis);
 
 **声明**
 
-```magel
+```chali
 int64 submit(void fn() task);
 ```
 
@@ -1166,13 +1166,13 @@ int64 submit(void fn() task);
 
 **调用形式**
 
-```magel
+```chali
 obj.submit(task);
 ```
 
-**源码**：[source/std/thread.mgl:143](../../source/std/thread.mgl#L143)。
+**源码**：[source/std/thread.chl:143](../../source/std/thread.chl#L143)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-28"></a>
 
@@ -1180,7 +1180,7 @@ obj.submit(task);
 
 **声明**
 
-```magel
+```chali
 bool closeAndWait();
 ```
 
@@ -1202,13 +1202,13 @@ bool closeAndWait();
 
 **调用形式**
 
-```magel
+```chali
 obj.closeAndWait();
 ```
 
-**源码**：[source/std/thread.mgl:144](../../source/std/thread.mgl#L144)。
+**源码**：[source/std/thread.chl:144](../../source/std/thread.chl#L144)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-29"></a>
 
@@ -1216,7 +1216,7 @@ obj.closeAndWait();
 
 **声明**
 
-```magel
+```chali
 void cancelAll();
 ```
 
@@ -1238,13 +1238,13 @@ void cancelAll();
 
 **调用形式**
 
-```magel
+```chali
 obj.cancelAll();
 ```
 
-**源码**：[source/std/thread.mgl:148](../../source/std/thread.mgl#L148)。
+**源码**：[source/std/thread.chl:148](../../source/std/thread.chl#L148)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 <a id="api-30"></a>
 
@@ -1252,7 +1252,7 @@ obj.cancelAll();
 
 **声明**
 
-```magel
+```chali
 void drop();
 ```
 
@@ -1274,19 +1274,19 @@ void drop();
 
 **调用形式**
 
-```magel
+```chali
 obj.drop();
 ```
 
-**源码**：[source/std/thread.mgl:154](../../source/std/thread.mgl#L154)。
+**源码**：[source/std/thread.chl:154](../../source/std/thread.chl#L154)。
 
-**完整示例**：[example/samples/thread_messages.mgl](../../example/samples/thread_messages.mgl)。
+**完整示例**：[example/samples/thread_messages.chl](../../example/samples/thread_messages.chl)。
 
 ## 补充完整示例
 
-[example/samples/thread_pool.mgl](../../example/samples/thread_pool.mgl)。
+[example/samples/thread_pool.chl](../../example/samples/thread_pool.chl)。
 
-```magel
+```chali
 import std::thread;
 int64 main() {
     ThreadPool pool = ThreadPool::create(2, 4);

@@ -1,4 +1,4 @@
-#include "../../source/allocator/magel_allocator.hpp"
+#include "../../source/allocator/chali_allocator.hpp"
 /**
  * @file simple_ast.hpp
  * @brief 简单 AST 构建：常用类型 / 运算符 / 数组（带 meta）/ 可空引用 / 复合类型 /
@@ -166,7 +166,7 @@ struct Node
         CallPointer,
     };
 
-    Memory::String sourceFile;             ///< 原始 MAGEL 文件或宏定义来源。
+    Memory::String sourceFile;             ///< 原始 CHALI 文件或宏定义来源。
     std::size_t sourceLine = 0;            ///< 原始源码行号，零为未知。
     Kind kind = Kind::IntLit;              ///< 种类。
     Memory::String text;                   ///< 名字 / 运算符 / 类型名 / 字符串内容。
@@ -294,7 +294,7 @@ struct Node
      *
      * 与 `freeMemory` 的区别是"还不了就当没这回事"：地址是 0（空指针）、指向数据区
      * （静态字面量）、或者那块堆内存**已经还过**了，都不算错。编译器在语句块出口插的
-     * 自动释放走这一条（见 magel 的"生命周期"），显式 `delete` 仍用 `freeMemory`。
+     * 自动释放走这一条（见 chali 的"生命周期"），显式 `delete` 仍用 `freeMemory`。
      */
     static NodePtr release(NodePtr pointer);
     /**

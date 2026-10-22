@@ -1,1 +1,1 @@
-语法错误：example/samples-error/extern_cast_forbidden.mgl 第 2 行第 8 列：期望 数字 / 标识符 / 注解声明(@annotation) / at(@) 等 107 个之一，实际是 类型转换(cast)
+语法错误：example/samples-error/extern_cast_forbidden.chl 第 2 行第 8 列：期望 数字 / 标识符 / 注解声明(@annotation) / at(@) 等 107 个之一，实际是 类型转换(cast)

@@ -11,7 +11,7 @@
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 add(int64 a, int64 b)
 {
     return a + b;
@@ -57,7 +57,7 @@ int64        add      ( int64 a , int64 b )   { ... }
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 void trace(int64 number)
 {
     if (number < 0)
@@ -71,7 +71,7 @@ void trace(int64 number)
 \par
 \medskip
 
-函数可以写在 \texttt{main} 前面或后面，Magel 不要求「先声明后使用」。这一点比 C 舒服——不用再维护一份头文件里的原型。
+函数可以写在 \texttt{main} 前面或后面，ChaLi 不要求「先声明后使用」。这一点比 C 舒服——不用再维护一份头文件里的原型。
 
 函数的顺序也有讲究，但不是给编译器的，是给读代码的人的：把「先读的放前面」。一般先放小工具，再放用它的人，最后才是 \texttt{main}。
 
@@ -81,7 +81,7 @@ void trace(int64 number)
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 void shout(String text)
 {
     text = text + "!";
@@ -108,19 +108,19 @@ hi
 
 \texttt{shout} 里改了 \texttt{text}，\texttt{main} 里的 \texttt{word} 一点没变。
 
-从 C++ / Java / Python 过来的人最容易在这里栽跟头：那些语言里字符串、对象传进去往往是「共享的引用」，函数里一改外面就变了。Magel 不是——传进去的是一份完整的副本。
+从 C++ / Java / Python 过来的人最容易在这里栽跟头：那些语言里字符串、对象传进去往往是「共享的引用」，函数里一改外面就变了。ChaLi 不是——传进去的是一份完整的副本。
 
 想真的改到外面那个，得显式要求传引用（\texttt{T mut\&}），这是第 7 章的内容。现在你只要记住：函数的参数表就是「我复制这些值过来用」。
 
 \begin{tip}{提示}
-那大对象传进去岂不是很贵？是的，会很贵。这正是 Magel 让你自己决定的地方：不想复制就写 \texttt{String const\&}——一次显式的选择，而不是编译器偷偷替你优化。第 7 章会给出这几条写法的完整对照。
+那大对象传进去岂不是很贵？是的，会很贵。这正是 ChaLi 让你自己决定的地方：不想复制就写 \texttt{String const\&}——一次显式的选择，而不是编译器偷偷替你优化。第 7 章会给出这几条写法的完整对照。
 \end{tip}
 
 \section{返回值}
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 clamp(int64 value)
 {
     if (value < 0)
@@ -145,7 +145,7 @@ int64 clamp(int64 value)
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 fromBlock()
 {
     return
@@ -213,7 +213,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 add(int64 a, int64 b)
 {
     return a + b;
@@ -243,13 +243,13 @@ int64 main()
 
 选哪个是编译期定下来的，看实参类型：\texttt{add(\allowbreak{}1,\allowbreak{} 2)\allowbreak{}} 两个都是 \texttt{int64}，走第一份；\texttt{add(\allowbreak{}1.\allowbreak{}5,\allowbreak{} 2.\allowbreak{}5)\allowbreak{}} 两个都是 \texttt{float64}，走第二份。
 
-这和第 3 章那条「没有隐式转换」是配套的：因为不做隐式转换，重载的挑选才是准的。 如果 \texttt{int64} 能自动变 \texttt{float64}，\texttt{add(\allowbreak{}1,\allowbreak{} 2.\allowbreak{}5)\allowbreak{}} 到底该走哪一份就得靠一套复杂的「谁更优」规则去猜了。Magel 的选择是：不猜，让你把类型写对。
+这和第 3 章那条「没有隐式转换」是配套的：因为不做隐式转换，重载的挑选才是准的。 如果 \texttt{int64} 能自动变 \texttt{float64}，\texttt{add(\allowbreak{}1,\allowbreak{} 2.\allowbreak{}5)\allowbreak{}} 到底该走哪一份就得靠一套复杂的「谁更优」规则去猜了。ChaLi 的选择是：不猜，让你把类型写对。
 
 找不到匹配的重载时，报错会把它拿到了什么类型和有哪些候选都列出来。比如只定义了 \texttt{int64} 的 \texttt{add}，却拿一个 \texttt{int64} 加一个 \texttt{float64} 去调：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 add(int64 a, int64 b)
 {
     return a + b;
@@ -267,7 +267,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 调用 函数 add 找不到匹配的重载：(int64, float64)；没有参数类型能对上的重载（候选：add）
+chali: 调用 函数 add 找不到匹配的重载：(int64, float64)；没有参数类型能对上的重载（候选：add）
 \end{lstlisting}
 \par
 \medskip
@@ -280,7 +280,7 @@ magel: 调用 函数 add 找不到匹配的重载：(int64, float64)；没有参
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 add(int64 a, int64 b = 10)
 {
     return a + b;
@@ -314,7 +314,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 函数 add 的默认参数后不能有必填参数
+chali: 函数 add 的默认参数后不能有必填参数
 \end{lstlisting}
 \par
 \medskip
@@ -328,7 +328,7 @@ magel: 函数 add 的默认参数后不能有必填参数
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 调用 函数 add 找不到匹配的重载：()；没有参数类型能对上的重载（候选：add）
+chali: 调用 函数 add 找不到匹配的重载：()；没有参数类型能对上的重载（候选：add）
 \end{lstlisting}
 \par
 \medskip
@@ -345,7 +345,7 @@ magel: 调用 函数 add 找不到匹配的重载：()；没有参数类型能�
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 total(int64... items)
 {
     int64 sum = 0;
@@ -379,11 +379,11 @@ int64 main()
 
 \section{一次返回多个值}
 
-Magel 的返回值可以是一个元组（tuple）——把几个值打包起来：
+ChaLi 的返回值可以是一个元组（tuple）——把几个值打包起来：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 (int64, String) describe(int64 id)
 {
     return(id, "player");
@@ -423,7 +423,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 (int32, String) pair(int32 key, String name)
 {
     return key, name;
@@ -461,7 +461,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     ...
@@ -474,7 +474,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main(List<String> arguments)
 {
     println("收到 {} 个参数", arguments.len());
@@ -505,7 +505,7 @@ int64 main(List<String> arguments)
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel app.mgl Alice "two words"
+chali app.chl Alice "two words"
 \end{lstlisting}
 \par
 \medskip
@@ -515,7 +515,7 @@ magel app.mgl Alice "two words"
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel run app.mgl -- Alice "two words"
+chali run app.chl -- Alice "two words"
 \end{lstlisting}
 \par
 \medskip

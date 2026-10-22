@@ -1,0 +1,222 @@
+{
+  "name": "ChaLi",
+  "scopeName": "source.chali",
+  "patterns": [
+    {
+      "include": "#macroDefinition"
+    },
+    {
+      "include": "#language"
+    }
+  ],
+  "repository": {
+    "interpolationBlock": {
+      "name": "meta.block.chali",
+      "begin": "\\{",
+      "end": "\\}",
+      "patterns": [
+        {
+          "include": "#interpolationBlock"
+        },
+        {
+          "include": "$self"
+        }
+      ]
+    },
+    "language": {
+      "patterns": [
+        {
+          "name": "keyword.control.chali",
+          "match": "#level\\s*\\(\\s*[aA][lL][lL]\\s*\\)|#level\\b|#derive\\b|#NonCopyable\\b"
+        },
+        {
+          "name": "comment.block.chali",
+          "begin": "/\\*",
+          "end": "\\*/"
+        },
+        {
+          "name": "comment.line.double-slash.chali",
+          "match": "//.*$"
+        },
+        {
+          "name": "string.interpolated.chali",
+          "begin": "\\bf\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "match": "\\\\.",
+              "name": "constant.character.escape.chali"
+            },
+            {
+              "begin": "(?<!\\\\)\\{",
+              "end": "\\}",
+              "name": "meta.interpolation.chali",
+              "patterns": [
+                {
+                  "include": "#interpolationBlock"
+                },
+                {
+                  "include": "$self"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.double.chali",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "match": "\\\\.",
+              "name": "constant.character.escape.chali"
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.chali",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "match": "\\\\.",
+              "name": "constant.character.escape.chali"
+            }
+          ]
+        },
+        {
+          "match": "^(\\s*)(\\$replace)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "2": {
+              "name": "keyword.control.macro.chali"
+            },
+            "3": {
+              "name": "entity.name.function.macro.chali"
+            }
+          }
+        },
+        {
+          "name": "keyword.control.macro.chali",
+          "match": "\\$(?:end_macro|end_for|match|regex|else|end_match|end_regex)\\b"
+        },
+        {
+          "name": "keyword.control.for.chali",
+          "match": "^\\s*\\$for\\b"
+        },
+        {
+          "name": "variable.language.chali",
+          "match": "\\$(?:line|file|module|concat|stringify|argc|count|typecheck)\\b"
+        },
+        {
+          "name": "keyword.control.preprocessor.chali",
+          "match": "^\\s*%(?:if|ifdef|ifndef|elif|else|endif|define|undefine|symbol|unsymbol|warning|error)\\b"
+        },
+        {
+          "name": "keyword.control.chali",
+          "match": "\\b(?:_|abi|break|cast|const|continue|copy|defer|drop|elif|else|enum|fn|for|heap|if|impl|import|in|inline|interface|let|loop|match|module|move|mut|new|opcode|return|scope|static|struct|type|while|yield)\\b"
+        },
+        {
+          "name": "keyword.declaration.annotation.chali",
+          "match": "@annotation\\b"
+        },
+        {
+          "match": "(@[A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "entity.name.tag.chali"
+            }
+          }
+        },
+        {
+          "name": "storage.type.chali",
+          "match": "\\b(?:bool|char|float32|float64|int8|int16|int32|int64|uint8|uint16|uint32|uint64|void)\\b"
+        },
+        {
+          "name": "constant.language.chali",
+          "match": "\\b(?:true|false)\\b"
+        },
+        {
+          "name": "constant.numeric.chali",
+          "match": "\\b(?:0[xX][0-9A-Fa-f_]+u?|[bB]_?[01][01_]*u?|\\d+u|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?f?)\\b"
+        }
+      ]
+    },
+    "macroParameters": {
+      "patterns": [
+        {
+          "name": "variable.parameter.macro.chali",
+          "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
+        },
+        {
+          "name": "keyword.operator.variadic.macro.chali",
+          "match": "\\.{2,3}"
+        },
+        {
+          "name": "punctuation.definition.parameters.macro.chali",
+          "match": "[<>()\\[\\]{},]"
+        }
+      ]
+    },
+    "macroDefinition": {
+      "name": "meta.preprocessor.macro.chali",
+      "contentName": "meta.preprocessor.macro.body.chali",
+      "begin": "^(\\s*)(\\$macro)\\b(?:\\s+([A-Za-z_][A-Za-z0-9_]*))?([^\\r\\n]*)$",
+      "beginCaptures": {
+        "2": {
+          "name": "keyword.control.macro.chali"
+        },
+        "3": {
+          "name": "entity.name.function.macro.chali"
+        },
+        "4": {
+          "name": "meta.parameters.macro.chali",
+          "patterns": [
+            {
+              "include": "#macroParameters"
+            }
+          ]
+        }
+      },
+      "end": "^\\s*(\\$end_macro)\\b",
+      "endCaptures": {
+        "1": {
+          "name": "keyword.control.macro.chali"
+        }
+      },
+      "patterns": [
+        {
+          "match": "^(\\s*)(\\$for)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+(in)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "2": {
+              "name": "keyword.control.macro.chali"
+            },
+            "3": {
+              "name": "variable.other.macro-loop.chali"
+            },
+            "4": {
+              "name": "keyword.control.macro.chali"
+            },
+            "5": {
+              "name": "variable.parameter.macro.chali"
+            }
+          }
+        },
+        {
+          "include": "#language"
+        },
+        {
+          "name": "entity.name.function.macro-body.chali",
+          "match": "\\b[A-Za-z_][A-Za-z0-9_]*(?=\\s*\\()"
+        },
+        {
+          "name": "variable.function.macro.chali",
+          "match": "\\$[A-Za-z_][A-Za-z0-9_]*"
+        },
+        {
+          "name": "variable.other.macro-body.chali",
+          "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
+        }
+      ]
+    }
+  }
+}

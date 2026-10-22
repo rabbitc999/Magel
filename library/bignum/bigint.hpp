@@ -1,4 +1,4 @@
-#include "../../source/allocator/magel_allocator.hpp"
+#include "../../source/allocator/chali_allocator.hpp"
 /**
  * @file bigint.hpp
  * @brief 任意精度大整数：加 / 减 / 乘 / 除 / 取余 / 幂 / 最大公约数，十进制字符串互转。

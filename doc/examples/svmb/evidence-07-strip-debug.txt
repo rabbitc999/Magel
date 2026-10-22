@@ -2,8 +2,8 @@
 ==============================================================================
 两份入库标本
 ==============================================================================
-  带调试节         magel\doc\examples\svmb\control.svmb  662750 字节  SHA-256 CF30A3C8718DFB2C564D347AD35DE2D991F64FB9B983228A5EDBEEE93A757ABE
-  --no-debug   magel\doc\examples\svmb\control-stripped.svmb  249681 字节  SHA-256 08554811E6DF5ECCF564B72F3CDACCFD2179DA6C696A06599EDBB33A6007476D
+  带调试节         chali\doc\examples\svmb\control.svmb  662750 字节  SHA-256 CF30A3C8718DFB2C564D347AD35DE2D991F64FB9B983228A5EDBEEE93A757ABE
+  --no-debug   chali\doc\examples\svmb\control-stripped.svmb  249681 字节  SHA-256 08554811E6DF5ECCF564B72F3CDACCFD2179DA6C696A06599EDBB33A6007476D
 
 ==============================================================================
 逐节对照
@@ -31,7 +31,7 @@
 ==============================================================================
 丢的是什么：位置
 ==============================================================================
-  $ magel-stackvm run control-stripped.svmb --limit 6 --debug → 退出码 1
+  $ chali-stackvm run control-stripped.svmb --limit 6 --debug → 退出码 1
     提示：这个程序没有带调试信息，只能显示指令下标
     调试[0] ?
     运行失败：指令条数超过上限（6），可能是死循环

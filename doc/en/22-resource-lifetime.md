@@ -12,7 +12,7 @@ Explicit release uses `value.drop()` for heap references, arrays and owned resou
 
 A struct that implements `Closeable` is automatically non-copyable (`MStructDef::nonCopyable`, sharing `TypeNonCopyable` with `#NonCopyable opcode`): a copy would mean two owners and two `close()` calls. Copy initialization, assignment, value arguments and return copies are rejected with a diagnostic naming both origins; transfer with `move(&x)`, share through a reference, and return local owned values directly. The rule follows fields and elements: an aggregate with a non-copyable field is non-copyable, and arrays or containers that copy such elements are rejected.
 
-The independently compiled `source/magel_resource_cleanup.cpp` consumes borrow control-flow facts. It merges drop for the same precise storage identity: remove a later operation when all incoming paths have terminated the resource, or guard it when only some paths have. Reinitialization, rebinding and allocation update the proof. Dynamic indices, ambiguous origins and opaque cross-call effects do not prove identity. Runtime release remains non-idempotent and reports MGL1205 for unmerged repeated releases; ordinary reads and writes still reject use after release.
+The independently compiled `source/chali_resource_cleanup.cpp` consumes borrow control-flow facts. It merges drop for the same precise storage identity: remove a later operation when all incoming paths have terminated the resource, or guard it when only some paths have. Reinitialization, rebinding and allocation update the proof. Dynamic indices, ambiguous origins and opaque cross-call effects do not prove identity. Runtime release remains non-idempotent and reports CHL1205 for unmerged repeated releases; ordinary reads and writes still reject use after release.
 
 Explicit close on a named aggregate uses a compiler-local closed flag, updated on the executed path and reset at construction. Automatic close and explicit drop share that flag without adding a runtime tombstone API.
 
@@ -30,7 +30,7 @@ The capture-analysis organization was checked against Rust's
 [upvar.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_hir_typeck/src/upvar.rs)
 and lifetime-constraint conversion against
 [constraint_conversion.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/type_check/constraint_conversion.rs).
-Magel retains its own scope-source facts and control-flow checker, with mutable borrowing
+ChaLi retains its own scope-source facts and control-flow checker, with mutable borrowing
 as its requested default capture rule.
 
 Capture discovery lives in `CheckLambdaCaptures` in `source/semantics/generic_inference.cpp`;
@@ -49,6 +49,6 @@ can borrow the caller's live variables.
 
 Capture discovery and later uses are modeled separately. `FlowState::captures` records external borrowed places held by function values and aggregate fields. Copies, assignments, tuples and enum payloads propagate these sets; reference fields inside owned captures still depend on their external referents. Reading a callable checks whether a captured place was freed, moved or dropped on a reachable path. The callable itself and its captured sources are checked again after argument evaluation, preventing `callback(move(&source))` from invalidating its environment before invocation. Callable results conservatively inherit known external borrows from arguments and receivers. Reassignment replaces the previous capture set, and destruction after the closure's final use remains valid.
 
-The design follows the explicit loan registration in Rust's [borrow_set.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/borrow_set.rs), capture-mode distinctions in [upvar.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_hir_typeck/src/upvar.rs), and projection conflicts in [places_conflict.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/places_conflict.rs). It uses Magel's own place and control-flow analysis without copying Rust implementation code.
+The design follows the explicit loan registration in Rust's [borrow_set.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/borrow_set.rs), capture-mode distinctions in [upvar.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_hir_typeck/src/upvar.rs), and projection conflicts in [places_conflict.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/places_conflict.rs). It uses ChaLi's own place and control-flow analysis without copying Rust implementation code.
 
 Checks cover invalidation and propagation visible within the current function. Opaque host code, raw memory writes and erased interprocedural side effects still depend on interface lifetime contracts. This analysis does not establish the absence of all undefined behavior.

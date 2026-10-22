@@ -1,1 +1,1 @@
-magel: example/samples-error/operator_right_forbidden.mgl 第 13 行第 5 列：右向被编译器指令关闭：Vec 声明了 #NoRightAdd，int64 + Vec 不再推导；要去掉该指令，或改为实现 RightAdd<R,T>
+chali: example/samples-error/operator_right_forbidden.chl 第 13 行第 5 列：右向被编译器指令关闭：Vec 声明了 #NoRightAdd，int64 + Vec 不再推导；要去掉该指令，或改为实现 RightAdd<R,T>

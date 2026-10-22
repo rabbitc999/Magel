@@ -1,6 +1,6 @@
 #pragma once
 
-// Magel 宏/块的编辑期文档模型（`$macro` / `$replace` / `$for` … 的配对、参数与引用）。
+// ChaLi 宏/块的编辑期文档模型（`$macro` / `$replace` / `$for` … 的配对、参数与引用）。
 //
 // 共用的值类型（Position / Range / Diagnostic / HoverResult … ）来自 ParseEngine 的
 // 语言服务器共用类型 `protocol_types.hpp`：本目录自带的副本（原本来自 ParseEngine 的
@@ -26,7 +26,7 @@ public:
     std::vector<CodeAction> codeActions() const { return {}; }
     const std::string &format() const { return text_; }
     /**
-     * `magel-lsp --check FILE` 的文本报告：每条诊断一行
+     * `chali-lsp --check FILE` 的文本报告：每条诊断一行
      * `路径:行:列: 级别: 消息 [码]`（行列从 1 起，编辑器以外的地方用）。
      *
      * @param path 报告里显示的文件路径。

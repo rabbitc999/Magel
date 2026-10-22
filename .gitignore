@@ -3,10 +3,10 @@
 # 注意 1：`Makefile` 是手写的、纳入版本管理（gen.sh 用 --no-build-files 不覆盖它）。
 #
 # 注意 2：解析器生成物遵循 AGENTS.md，不入库；首次构建先执行 `sh gen.sh`。
-/magel_parser.cpp
-/magel_parser.hpp
-/magel_parser_user.h
-/magel_main.cpp
+/chali_parser.cpp
+/chali_parser.hpp
+/chali_parser_user.h
+/chali_main.cpp
 /.parseengine-manifest
 #
 # 下面才是 make 的产物的忽略项：
@@ -14,26 +14,26 @@
 RESULT.md
 *.o
 libparser.a
-magel
-magel.exe
-magel-reflection
-magel-reflection.exe
+chali
+ChaLi.exe
+chali-reflection
+chali-reflection.exe
 # 统一入口的旧名字：留着忽略，免得工作区里残留的旧二进制被误提交。
 parser_demo
 parser_demo.exe
 tmp/
-*.magel-cache/
+*.chali-cache/
 
 # 驱动默认的产物前缀（四元式 / 数据区 / 布局表 / ABI 源码 …）。
 # 用通配一次盖住：加一种新产物不用回来补一行。
-magel_out.*
+chali_out.*
 
 # Python 缓存：tools/ 下的脚本（make_overview.py 等）跑过就会生成。
 __pycache__/
 *.py[cod]
 
 # 构建产物：make / cmake 与测试都往这里写（原先落在父仓库的 build/）。
-# 驱动默认的产物前缀也在这里（build/magel_out.*），中间产物不混进源码目录。
+# 驱动默认的产物前缀也在这里（build/chali_out.*），中间产物不混进源码目录。
 /build/
 
 # 测试与验证的输出（Python / C++ 结果文件），按约定落在这里备查，不进版本库。
@@ -60,20 +60,20 @@ __pycache__/
 /.workbuddy/
 
 # source/ 下的解析器生成资产不入库。
-/source/magel_parser.cpp
-/source/magel_parser.hpp
-/source/magel_parser_user.h
-/source/magel_main.cpp
+/source/chali_parser.cpp
+/source/chali_parser.hpp
+/source/chali_parser_user.h
+/source/chali_main.cpp
 /source/.parseengine-manifest
-/source/.magel-build.gram
+/source/.chali-build.gram
 
-# 内嵌资产（压缩字节）：`python tools/embed_stdlib.py` 把 std/*.mgl、source/glue 与手册
+# 内嵌资产（压缩字节）：`python tools/embed_stdlib.py` 把 std/*.chl、source/glue 与手册
 # 数据压成一张 lztext 表写进这个 .cpp，改了标准库或胶水就重跑 `sh gen.sh`；产物二十多 MB，
 # 能重建，不入库。
-/source/magel_stdlib_embedded.cpp
+/source/chali_stdlib_embedded.cpp
 # 内嵌手册数据：`python tools/embed_manual.py` 从 doc/ 生成，是上面那条内嵌资产的输入，
 # 由 `sh gen.sh` 一并重建，不入库。
-/tools/magel_manual.json
+/tools/chali_manual.json
 # 书稿 PDF 随其它 LaTeX 产物一起忽略（原先在 doc/book/latex/.gitignore 里被 `!book.pdf`
 # 单独放行）：用该目录 README.md 里的 xelatex 命令构建，属发布产物；跑文档链接门禁前要先构建。
 # 独立程序的资产清单：`python tools/stackvm_sources.py --build-assets` 与

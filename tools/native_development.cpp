@@ -1,4 +1,4 @@
-#include "../source/magel_i18n.hpp"
+#include "../source/chali_i18n.hpp"
 /**
  * @file native_development.cpp
  * @brief 原生 LSP、格式化及开发进程服务，复用编译器诊断和宏展开。
@@ -10,9 +10,9 @@
 #include "../source/macro/signature.hpp"
 #include <limits>
 #include <cstdlib>
-#include "../source/magel_package.hpp"
-#include "../source/magel_module.hpp"
-#include "../source/magel_diagnostics.hpp"
+#include "../source/chali_package.hpp"
+#include "../source/chali_module.hpp"
+#include "../source/chali_diagnostics.hpp"
 #include "../library/miniz/miniz_tinfl.h"
 #include "../library/toml/toml.hpp"
 #include <algorithm>
@@ -49,8 +49,8 @@
 #include <unistd.h>
 #endif
 
-const char *magel_development_tool(const char *name);
-namespace magel_development
+const char *chali_development_tool(const char *name);
+namespace chali_development
 {
 namespace
 {
@@ -236,7 +236,7 @@ struct Temporary
     {
         for (int i = 0; i < 100; ++i)
         {
-            path = fs::temp_directory_path() / ("magel-native-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()) + "-" + std::to_string(i));
+            path = fs::temp_directory_path() / ("chali-native-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()) + "-" + std::to_string(i));
             if (fs::create_directory(path))
                 return;
         }
@@ -1780,7 +1780,7 @@ public:
         {
             Memory::Vector<Memory::String> actual;
             size_t end = open;
-            if (magel_syntax::groupArguments(callee.c_str(), open, actual, end) && actual.size() == names.size())
+            if (chali_syntax::groupArguments(callee.c_str(), open, actual, end) && actual.size() == names.size())
                 for (size_t i = 0; i < names.size(); ++i) values[names[i]] = trim(actual[i].c_str());
         }
         else
@@ -1971,7 +1971,7 @@ public:
             }
             value = trim(value.substr(0, t[open].a));
             size_t ignored = 0;
-            magel_syntax::groupArguments(originalValue.c_str(), t[open].a, arguments, ignored);
+            chali_syntax::groupArguments(originalValue.c_str(), t[open].a, arguments, ignored);
             if (value.empty()) return "";
         }
         int level = 0;
@@ -2247,7 +2247,7 @@ std::vector<Record> matching(const std::vector<Record> &records,
     return out;
 }
 /**
- * @brief 按 Magel 源码格式规则重新排版文本。
+ * @brief 按 ChaLi 源码格式规则重新排版文本。
  * @param s 待处理的文本或节点文本值。
  * @retval 生成或读取的结果文本。
  */
@@ -2442,7 +2442,7 @@ std::string download(const std::string &url)
         path.append(parts.lpszExtraInfo, parts.dwExtraInfoLength);
     if (path.empty())
         path = L"/";
-    const auto agent = std::string("Magel/") + magel_package::compilerVersion;
+    const auto agent = std::string("ChaLi/") + chali_package::compilerVersion;
     const std::wstring wideAgent(agent.begin(), agent.end());
     Http session{ WinHttpOpen(wideAgent.c_str(), WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
                               WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0) };
@@ -2663,16 +2663,16 @@ fs::path extract(std::string data, const fs::path &destination)
             at += 512 + ((size + 511) / 512) * 512;
         }
     }
-    if (fs::is_regular_file(destination / "magel.toml"))
+    if (fs::is_regular_file(destination / "chali.toml"))
         return destination;
     std::vector<fs::path> children;
     for (auto &child : fs::directory_iterator(destination))
         children.push_back(child.path());
-    if (children.size() == 1 && fs::is_directory(children[0]) && fs::is_regular_file(children[0] / "magel.toml"))
+    if (children.size() == 1 && fs::is_directory(children[0]) && fs::is_regular_file(children[0] / "chali.toml"))
         return children[0];
-    throw std::runtime_error("在线依赖压缩包根目录或唯一顶层目录需要 magel.toml");
+    throw std::runtime_error("在线依赖压缩包根目录或唯一顶层目录需要 chali.toml");
 }
-const std::string toolVersion = magel_package::compilerVersion;
+const std::string toolVersion = chali_package::compilerVersion;
 /**
  * @brief 校验下载依赖的版本信息。
  * @param data 输入或待写入的字节数据。
@@ -2743,7 +2743,7 @@ fs::path dependencyRoot(const fs::path &base, const std::string &name,
         if (fs::exists(root))
             return normalizedPath(root);
         if (offline || !refresh)
-            throw std::runtime_error("离线缓存缺失：" + name + "；请先运行 magel deps lock");
+            throw std::runtime_error("离线缓存缺失：" + name + "；请先运行 chali deps lock");
         fs::create_directories(libraries);
         Temporary tmp;
         auto bytes = download(match[1]);
@@ -2764,7 +2764,7 @@ fs::path dependencyRoot(const fs::path &base, const std::string &name,
             }
         } cleanup{ staging };
         auto package = extract(std::move(bytes), staging);
-        manifest(package / "magel.toml");
+        manifest(package / "chali.toml");
         std::error_code ec;
         fs::rename(package, root, ec);
         if (ec && !fs::is_directory(root))
@@ -2789,13 +2789,13 @@ fs::path dependencyRoot(const fs::path &base, const std::string &name,
     };
     if (!fs::exists(root))
     {
-        auto legacy = base / ".magel" / "deps" / (name + "-" + commit);
+        auto legacy = base / ".chali" / "deps" / (name + "-" + commit);
         if (fs::exists(legacy))
             root = legacy;
         else
         {
             if (offline || !refresh)
-                throw std::runtime_error("离线缓存缺失：" + name + "；请先运行 magel deps lock");
+                throw std::runtime_error("离线缓存缺失：" + name + "；请先运行 chali deps lock");
             fs::create_directories(libraries);
             Temporary tmp;
             auto staging =
@@ -2850,7 +2850,7 @@ fs::path lockProject(const fs::path &requested, bool offline, bool refresh,
          */
         ~Remove() { active.erase(p); }
     } cleanup{ active, base };
-    auto data = manifest(base / "magel.toml");
+    auto data = manifest(base / "chali.toml");
     checkVersion(data);
     std::map<std::string, A> records;
     auto dependencies = field(data, "dependencies");
@@ -2860,15 +2860,15 @@ fs::path lockProject(const fs::path &requested, bool offline, bool refresh,
             auto source = text(entry.value);
             auto root =
                 dependencyRoot(base, entry.key, source, offline, refresh, libraries);
-            auto child = manifest(root / "magel.toml");
+            auto child = manifest(root / "chali.toml");
             if (auto nested = field(child, "dependencies").asTable())
             {
                 if (!nested->members().empty())
                     lockProject(root, offline, refresh, libraries, active);
-                else if (fs::exists(root / "magel.lock"))
+                else if (fs::exists(root / "chali.lock"))
                     lockProject(root, offline, refresh, libraries, active);
             }
-            else if (fs::exists(root / "magel.lock"))
+            else if (fs::exists(root / "chali.lock"))
                 lockProject(root, offline, refresh, libraries, active);
             checkVersion(child);
             auto relative = root.lexically_relative(base);
@@ -2877,18 +2877,18 @@ fs::path lockProject(const fs::path &requested, bool offline, bool refresh,
             records[entry.key] =
                 A{ source, relative.generic_u8string(),
                    text(field(field(child, "package"), "version")),
-                   std::string(magel_package::dependencyFingerprint(root).c_str()) };
+                   std::string(chali_package::dependencyFingerprint(root).c_str()) };
         }
     else if (data.find("dependencies"))
         throw std::runtime_error("dependencies 必须是表");
-    auto path = base / "magel.lock";
+    auto path = base / "chali.lock";
     if (refresh)
     {
         std::string output = "[lock]\nversion = \"1\"\ncompiler = \"" + toolVersion + "\"\n\n[dependencies]\n";
         for (auto &entry : records)
             output += entry.first + " = " + J(entry.second).dump() + "\n";
         auto temp =
-            base / (".magel-lock-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+            base / (".chali-lock-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
         try
         {
             write(temp, output);
@@ -2922,7 +2922,7 @@ fs::path lockProject(const fs::path &requested, bool offline, bool refresh,
                         equal = false;
             }
         if (!equal)
-            throw std::runtime_error("锁文件与来源或内容不符：" + path.u8string() + "；运行 magel deps lock");
+            throw std::runtime_error("锁文件与来源或内容不符：" + path.u8string() + "；运行 chali deps lock");
     }
     return path;
 }
@@ -2939,12 +2939,12 @@ int deps(int argc, char **argv, const fs::path &compiler)
     fs::path base = fs::current_path();
     if (argc < 3)
         throw std::runtime_error(
-            "用法：magel deps lock|check [--project 目录] [--offline]");
+            "用法：chali deps lock|check [--project 目录] [--offline]");
     std::string action = argv[2];
     if (action == "--help" || action == "-h")
     {
-        std::cout << MAGEL_TEXT(
-            "用法：magel deps lock|check [--project 目录] [--offline]\n");
+        std::cout << CHALI_TEXT(
+            "用法：chali deps lock|check [--project 目录] [--offline]\n");
         return 0;
     }
     if (action != "lock" && action != "check")
@@ -2962,11 +2962,11 @@ int deps(int argc, char **argv, const fs::path &compiler)
     base = normalizedPath(base);
     if (fs::is_regular_file(base))
         base = base.parent_path();
-    while (!fs::exists(base / "magel.toml"))
+    while (!fs::exists(base / "chali.toml"))
     {
         auto next = base.parent_path();
         if (base == next || base.empty())
-            throw std::runtime_error("找不到 magel.toml");
+            throw std::runtime_error("找不到 chali.toml");
         base = next;
     }
     std::set<fs::path> active;
@@ -3004,8 +3004,8 @@ int tests(int argc, char **argv, const fs::path &compiler)
             timeout = std::stod(argv[++i]);
         else if (arg == "--help" || arg == "-h")
         {
-            std::cout << MAGEL_TEXT(
-                "用法：magel test [路径...] [--filter 文本] [--backend "
+            std::cout << CHALI_TEXT(
+                "用法：chali test [路径...] [--filter 文本] [--backend "
                 "interpret] [--timeout 秒] [--json|--list]\n");
             return 0;
         }
@@ -3026,10 +3026,10 @@ int tests(int argc, char **argv, const fs::path &compiler)
         if (fs::is_directory(path))
         {
             for (auto &entry : fs::recursive_directory_iterator(path))
-                if (entry.is_regular_file() && entry.path().extension() == ".mgl" && (starts(entry.path().filename().u8string(), "test_") || ends(entry.path().filename().u8string(), "_test.mgl")))
+                if (entry.is_regular_file() && entry.path().extension() == ".chl" && (starts(entry.path().filename().u8string(), "test_") || ends(entry.path().filename().u8string(), "_test.chl")))
                     files.insert(normalizedPath(entry.path()));
         }
-        else if (path.extension() == ".mgl")
+        else if (path.extension() == ".chl")
             files.insert(normalizedPath(path));
     }
     A results;
@@ -3131,7 +3131,7 @@ int tests(int argc, char **argv, const fs::path &compiler)
     if (list)
         return 0;
     if (results.empty())
-        throw std::runtime_error("没有找到测试文件（test_*.mgl 或 *_test.mgl）");
+        throw std::runtime_error("没有找到测试文件（test_*.chl 或 *_test.chl）");
     if (json)
         std::cout << object({ { "schemaVersion", 1 },
                               { "tests", results },
@@ -3214,14 +3214,14 @@ class Server
         out.push_back(p / "modules");
         try
         {
-            auto data = manifest(p / "magel.toml");
+            auto data = manifest(p / "chali.toml");
             for (auto key : { "search_paths", "import_paths", "include_paths" })
-                if (auto a = field(field(data, "magel"), key).asArray())
+                if (auto a = field(field(data, "chali"), key).asArray())
                     for (auto &v : *a)
                         out.push_back(p / fs::u8path(text(v)));
-            if (fs::is_regular_file(p / "magel.lock"))
+            if (fs::is_regular_file(p / "chali.lock"))
             {
-                auto lock = manifest(p / "magel.lock");
+                auto lock = manifest(p / "chali.lock");
                 if (auto table = field(lock, "dependencies").asTable())
                     for (auto &entry : table->members())
                         if (auto a = entry.value.asArray())
@@ -3243,7 +3243,7 @@ class Server
         std::set<fs::path> visited;
         for (auto p = file.parent_path(); !p.empty();)
         {
-            if (fs::exists(p / "magel.toml"))
+            if (fs::exists(p / "chali.toml"))
             {
                 paths(p, out, visited);
                 break;
@@ -3290,7 +3290,7 @@ class Server
                     if (standardImports.count(module))
                         continue;
                     auto relative =
-                        std::regex_replace(module, std::regex("::"), "/") + ".mgl";
+                        std::regex_replace(module, std::regex("::"), "/") + ".chl";
                     for (auto &root : lookup)
                     {
                         auto target = uri(root / fs::u8path(relative));
@@ -3350,12 +3350,12 @@ class Server
                 }
                 if (requestCancelled && requestCancelled->load()) throw std::runtime_error("请求已取消");
                 auto name = it->path().filename().u8string();
-                if (it->is_directory(ec) && (name == ".git" || name == "build" || name == "node_modules" || name == ".magel" || name == "tmp" || name == "libraries" || name == "bin"))
+                if (it->is_directory(ec) && (name == ".git" || name == "build" || name == "node_modules" || name == ".chali" || name == "tmp" || name == "libraries" || name == "bin"))
                 {
                     it.disable_recursion_pending();
                     continue;
                 }
-                if (it->is_regular_file(ec) && it->path().extension() == ".mgl")
+                if (it->is_regular_file(ec) && it->path().extension() == ".chl")
                     try
                     {
                         sources[uri(it->path())] = cache->source(it->path());
@@ -3508,7 +3508,7 @@ class Server
         try
         {
             const auto entry = parse(read(saved));
-            bool valid = integer(get(entry, "schema")) == 2 && integer(get(entry, "language"), -1) == int(magel_i18n::language()) && str(entry, "input") == lspHash(body) && str(entry, "graph") == analysisGraph && get(entry, "dependencies").asObject();
+            bool valid = integer(get(entry, "schema")) == 2 && integer(get(entry, "language"), -1) == int(chali_i18n::language()) && str(entry, "input") == lspHash(body) && str(entry, "graph") == analysisGraph && get(entry, "dependencies").asObject();
             if (valid)
                 for (const auto &dependency : get(entry, "dependencies").asObject()->members())
                     if (fingerprint(std::string(dependency.key)) != str(dependency.value))
@@ -3565,7 +3565,7 @@ class Server
                 // 配置和锁文件的创建、删除也必须使已缓存的诊断失效。
                 for (auto parent = file.parent_path(); !parent.empty();)
                 {
-                    for (const auto name : { "magel.toml", "magel.lock" })
+                    for (const auto name : { "chali.toml", "chali.lock" })
                     {
                         const auto config = (parent / name).u8string();
                         hashes[config] = fingerprint(config);
@@ -3574,7 +3574,7 @@ class Server
                     if (next == parent) break;
                     parent = next;
                 }
-                cache->save(saved, object({ { "schema", 2 }, { "language", int(magel_i18n::language()) }, { "input", lspHash(body) }, { "graph", analysisGraph }, { "dependencies", J(std::move(hashes)) }, { "report", report } }));
+                cache->save(saved, object({ { "schema", 2 }, { "language", int(chali_i18n::language()) }, { "input", lspHash(body) }, { "graph", analysisGraph }, { "dependencies", J(std::move(hashes)) }, { "report", report } }));
             }
         } catch (...) {}
         return report;
@@ -3608,7 +3608,7 @@ class Server
                      b = position(document.first,
                                   std::min(document.first.size(), start + size_t(end)));
                 auto filename = str(span, "file"), message = str(entry, "message");
-                if (str(entry, "code") == "MGL1205")
+                if (str(entry, "code") == "CHL1205")
                 {
                     static const std::regex nameAtEnd("[:：][ \\t]*([A-Za-z_][A-Za-z0-9_]*)[ \\t]*$");
                     std::smatch name;
@@ -3634,7 +3634,7 @@ class Server
                 diagnostics.push_back(
                     object({ { "range", object({ { "start", a }, { "end", b } }) },
                              { "severity", str(entry, "severity") == "warning" ? 2 : 1 },
-                             { "source", "magel" },
+                             { "source", "chali" },
                              { "code", get(entry, "code") },
                              { "message", message } }));
             }
@@ -3644,7 +3644,7 @@ class Server
                 object({ { "range", range(document.first, 0,
                                           std::min<size_t>(1, document.first.size())) },
                          { "severity", 1 },
-                         { "source", "magel" },
+                         { "source", "chali" },
                          { "message", std::string("编译器检查失败：") + e.what() } }));
         }
         // 命名风格只产生编辑器警告，和编译器错误独立，不改变程序是否可编译。
@@ -3660,8 +3660,8 @@ class Server
             if (std::regex_match(record.name, type ? typeName : methodName)) continue;
             diagnostics.push_back(object({ { "range", range(document.first, record.offset, record.offset + record.name.size()) },
                                            { "severity", 2 },
-                                           { "source", "magel" },
-                                           { "code", type ? "MGL2101" : "MGL2102" },
+                                           { "source", "chali" },
+                                           { "code", type ? "CHL2101" : "CHL2102" },
                                            { "message", (type ? "类型名应使用大驼峰（PascalCase）：" :
                                                                 "函数或方法名应使用小驼峰（camelCase）：")
                                                             + record.name } }));
@@ -3895,7 +3895,7 @@ class Server
                                      { "full", true } }) },
                           { "experimental",
                             object({ { "macroExpansionProvider", true } }) } }) },
-                  { "serverInfo", object({ { "name", "Magel" }, { "version", magel_package::compilerVersion } }) } });
+                  { "serverInfo", object({ { "name", "ChaLi" }, { "version", chali_package::compilerVersion } }) } });
         }
         if (method == "shutdown")
         {
@@ -3904,7 +3904,7 @@ class Server
         }
         if (method == "workspace/symbol")
             return symbols(str(params, "query"));
-        if (method == "magel/lspStats") return cache->stats();
+        if (method == "chali/lspStats") return cache->stats();
         auto u = str(get(params, "textDocument"), "uri");
         auto d = documents.find(u);
         if (d == documents.end())
@@ -3954,7 +3954,7 @@ class Server
             const auto report = checkReport(u, [] { return false; });
             return inlayHints(s, records, get(params, "range"), get(report, "analysis"), u);
         }
-        if (method == "magel/expandMacro")
+        if (method == "chali/expandMacro")
             return preview(u, s);
         if (method == "textDocument/semanticTokens/full")
             return semantic(s, records);
@@ -4228,11 +4228,11 @@ class Server
                 const auto &token = tokens[at];
                 if (token.a <= cursor && cursor <= token.b && tokens[at - 1].word == "fn" && (token.word == "move" || token.word == "copy" || token.word == "const" || token.word == "mut"))
                 {
-                    const auto message = token.word == "move"  ? MAGEL_TEXT("按值捕获并转移外部变量所有权；创建闭包后，被移出的源变量不能继续读取。") :
-                                         token.word == "copy"  ? MAGEL_TEXT("按值捕获外部变量的副本；原变量仍可继续使用。") :
-                                         token.word == "const" ? MAGEL_TEXT("按只读借用捕获外部变量；借用来源必须在闭包使用期间保持有效。") :
-                                                                 MAGEL_TEXT("按可写借用捕获外部变量；闭包读写当前值，借用来源必须保持有效。");
-                    return object({ { "contents", markup("```magel\n" + tokens[at - 1].word + " " + token.word + "(...) { ... }\n```\n\n" + message) },
+                    const auto message = token.word == "move"  ? CHALI_TEXT("按值捕获并转移外部变量所有权；创建闭包后，被移出的源变量不能继续读取。") :
+                                         token.word == "copy"  ? CHALI_TEXT("按值捕获外部变量的副本；原变量仍可继续使用。") :
+                                         token.word == "const" ? CHALI_TEXT("按只读借用捕获外部变量；借用来源必须在闭包使用期间保持有效。") :
+                                                                 CHALI_TEXT("按可写借用捕获外部变量；闭包读写当前值，借用来源必须保持有效。");
+                    return object({ { "contents", markup("```chali\n" + tokens[at - 1].word + " " + token.word + "(...) { ... }\n```\n\n" + message) },
                                     { "range", range(s, token.a, token.b) } });
                 }
             }
@@ -4310,7 +4310,7 @@ class Server
             {
                 if (!content.empty())
                     content += "\n\n---\n\n";
-                content += "```magel\n" + r.signature + "\n```\n\n" + r.documentation;
+                content += "```chali\n" + r.signature + "\n```\n\n" + r.documentation;
             }
             if (content.empty() && binding)
             {
@@ -4320,7 +4320,7 @@ class Server
                     auto inferred = ReceiverTypes(records, s, types).bindingType(*binding, std::max(cursor, binding->end));
                     if (!inferred.empty()) type = inferred;
                 }
-                content = "```magel\n" + type + " " + binding->name + "\n```";
+                content = "```chali\n" + type + " " + binding->name + "\n```";
                 if (starts(binding->type, "let"))
                 {
                     content += "\n\n" + lspTypeDescription(type);
@@ -4390,7 +4390,7 @@ class Server
             folders = roots;
             version = revision;
         }
-        const size_t lane = method == "workspace/symbol" ? 3 : method == "magel/expandMacro"                                               ? 4 :
+        const size_t lane = method == "workspace/symbol" ? 3 : method == "chali/expandMacro"                                               ? 4 :
                                                            (method == "textDocument/completion" || method == "textDocument/signatureHelp") ? 0 :
                                                            (method == "textDocument/hover" || method == "textDocument/definition")         ? 1 :
                                                                                                                                              2;
@@ -4451,7 +4451,7 @@ public:
                                      standard(library->standard), standardImports(library->imports), baseTypes(library->types),
                                      cache(std::make_shared<LspCache>(compiler)), outputMutex(std::make_shared<std::mutex>())
     {
-        auto data = parse(magel_development_tool("tools/magel_stdlib_api.json"));
+        auto data = parse(chali_development_tool("tools/chali_stdlib_api.json"));
         // `__` 前缀是编译器/宿主协议：标准库里带这个前缀的函数与类型不进补全。
         // 工程内同名符号属于用户自己的命名空间，不受此限。
         for (auto &v : array(get(data, "types")))
@@ -4553,7 +4553,7 @@ public:
             }
             if (message.find("id"))
             {
-                if (method != "initialize" && method != "shutdown" && method != "magel/lspStats")
+                if (method != "initialize" && method != "shutdown" && method != "chali/lspStats")
                 {
                     dispatch(message);
                     continue;
@@ -4704,7 +4704,7 @@ int fmt(int argc, char **argv)
             save = true;
         else if (arg == "--help" || arg == "-h")
         {
-            std::cout << MAGEL_TEXT("用法：magel fmt 路径... [--check|--write]\n");
+            std::cout << CHALI_TEXT("用法：chali fmt 路径... [--check|--write]\n");
             return 0;
         }
         else if (starts(arg, "--"))
@@ -4715,7 +4715,7 @@ int fmt(int argc, char **argv)
             if (fs::is_directory(path))
             {
                 for (auto &entry : fs::recursive_directory_iterator(path))
-                    if (entry.is_regular_file() && entry.path().extension() == ".mgl")
+                    if (entry.is_regular_file() && entry.path().extension() == ".chl")
                         files.insert(entry.path());
             }
             else
@@ -4764,11 +4764,11 @@ int run(int argc, char **argv, const fs::path &compiler)
             return tests(argc, argv, compiler);
         if (argc > 2 && (std::string(argv[2]) == "--help" || std::string(argv[2]) == "-h"))
         {
-            std::cout << MAGEL_TEXT("用法：magel lsp [--macros]\n");
+            std::cout << CHALI_TEXT("用法：chali lsp [--macros]\n");
             return 0;
         }
         if (argc > 2)
-            throw std::runtime_error("用法：magel lsp [--macros]");
+            throw std::runtime_error("用法：chali lsp [--macros]");
 #ifdef _WIN32
         _setmode(_fileno(stdin), _O_BINARY);
         _setmode(_fileno(stdout), _O_BINARY);
@@ -4777,8 +4777,8 @@ int run(int argc, char **argv, const fs::path &compiler)
         return server.run();
     } catch (const std::exception &e)
     {
-        std::cerr << "magel: " << e.what() << "\n";
+        std::cerr << "chali: " << e.what() << "\n";
         return 1;
     }
 }
-}  // namespace magel_development
+}  // namespace chali_development

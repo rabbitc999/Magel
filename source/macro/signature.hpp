@@ -1,8 +1,8 @@
-#ifndef MAGEL_MACRO_SIGNATURE_HPP
-#define MAGEL_MACRO_SIGNATURE_HPP
+#ifndef CHALI_MACRO_SIGNATURE_HPP
+#define CHALI_MACRO_SIGNATURE_HPP
 #include "../syntax/source_text.hpp"
 
-namespace magel_macro
+namespace chali_macro
 {
 /**
  * @brief 编辑器显示的单个形参组，不执行或展开宏体。
@@ -31,5 +31,5 @@ struct Signature
  * @return 宏头结构有效时返回真；不替代实际编译诊断。
  */
 bool readSignature(const Memory::String &source, Signature &signature, Memory::String &error);
-}  // namespace magel_macro
+}  // namespace chali_macro
 #endif

@@ -21,14 +21,14 @@
 
 最关键的那一句话是：这个程序从来没有手写过「学生有哪些字段」的清单。 字段列表是它运行期从自己身上读出来的——这就是第 20 章的反射真正派上用场的地方。
 
-示例就在仓库里：\href{https://gitee.com/rabbitc999/magel/blob/master/example/reflection-students/main.mgl}{\texttt{example/\allowbreak{}reflection-students/\allowbreak{}main.\allowbreak{}mgl}}。
+示例就在仓库里：\href{https://gitee.com/rabbitc999/chali/blob/master/example/reflection-students/main.chl}{\texttt{example/\allowbreak{}reflection-students/\allowbreak{}main.\allowbreak{}chl}}。
 
 \section{先看看它能做什么}
 
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel main.mgl students.db schema
+chali main.chl students.db schema
 \end{lstlisting}
 \par
 \medskip
@@ -63,7 +63,7 @@ Student: id, name, age, className, score
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 import std::sql;
 import std::reflect;
 import std::json;
@@ -102,7 +102,7 @@ struct Student
 这就是本章最省力的地方：加一个字段只要在这一处加一行，建表语句、查询列、JSON 的键、排序字段的合法性检查，全都跟着变。如果在三个地方各写一遍字段清单，那三处迟早会对不上。
 
 \begin{tip}{提示}
-反射版工具链默认开启。要显式控制，用 \texttt{--reflection} / \texttt{--no-reflection}；\texttt{--hard-realtime} 会整份禁用反射。
+反射是语言的固定组成、不可裁剪：工具链始终编入，编译流程也始终跑完整反射处理。要控制产物写不写反射元数据，用 \texttt{--reflection} / \texttt{--no-reflection}；\texttt{--hard-realtime} 会禁止整个编译单元使用反射。
 \end{tip}
 
 \section{校验单独写一个函数}
@@ -111,7 +111,7 @@ struct Student
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 String validate(Student const& student)
 {
     if (student.id <= 0)
@@ -150,7 +150,7 @@ String validate(Student const& student)
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 Result<String, String> encodeRows(std::sql::ResultSet const& rows)
 {
     let fields = std::reflect::getStructInfo<Student>().unwrap().fields;
@@ -215,7 +215,7 @@ Result<String, String> encodeRows(std::sql::ResultSet const& rows)
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 if ((command == "add" || command == "update") && args.len() == 3)
 {
     Student student = std::json::deserialize<Student>(args[2])?;
@@ -258,7 +258,7 @@ if ((command == "add" || command == "update") && args.len() == 3)
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 query.orderBy(field, descending);
 let prepared = query.build()?;
 \end{lstlisting}
@@ -281,12 +281,12 @@ let prepared = query.build()?;
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main(List<String> args)
 {
     if (args.len() < 2)
     {
-        println("用法：magel main.mgl 数据库路径 命令 [参数]");
+        println("用法：chali main.chl 数据库路径 命令 [参数]");
         return 1;
     }
     let database = std::sql::Database::sqlite(args[0]);
@@ -319,16 +319,16 @@ int64 main(List<String> args)
 
 结构很直白：先建表，再执行，最后一定 \texttt{close(\allowbreak{})\allowbreak{}}。两条失败路径都各自关库再返回——手工管理资源时，「出错的那条路最容易忘掉清理」，所以要把 \texttt{close(\allowbreak{})\allowbreak{}} 写在每一条退出路径上，而不是只写在正常路径末尾。
 
-\texttt{return 1} / \texttt{return 0} 首先是给读代码的人看的：\texttt{int64 main} 的返回值不会成为进程退出码——\texttt{magel} 只在编译失败或 panic 时才非 0 退出（文档只约定 \texttt{void main} 正常完成时退出码为 0）。所以要在脚本里判断这一步做没做成，得看程序自己给出的信号：本程序把所有失败都打印成 \texttt{错误：…} 开头的一行，成功则打印 JSON 或 \texttt{已删除}。别指望靠 \texttt{\$?} 区分业务成败，这是写外壳脚本时最容易想当然的地方。
+\texttt{return 1} / \texttt{return 0} 首先是给读代码的人看的：\texttt{int64 main} 的返回值不会成为进程退出码——\texttt{chali} 只在编译失败或 panic 时才非 0 退出（文档只约定 \texttt{void main} 正常完成时退出码为 0）。所以要在脚本里判断这一步做没做成，得看程序自己给出的信号：本程序把所有失败都打印成 \texttt{错误：…} 开头的一行，成功则打印 JSON 或 \texttt{已删除}。别指望靠 \texttt{\$?} 区分业务成败，这是写外壳脚本时最容易想当然的地方。
 
 \section{跑一遍}
 
-从 \texttt{example/\allowbreak{}reflection-students} 目录运行（Windows 上程序名是 \texttt{magel.\allowbreak{}exe}）：
+从 \texttt{example/\allowbreak{}reflection-students} 目录运行（Windows 上程序名是 \texttt{Cha\allowbreak{}Li.\allowbreak{}exe}）：
 
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel main.mgl students.db add '{"id":1,"name":"张伟","age":18,"className":"高一(3)班","score":92}'
+chali main.chl students.db add '{"id":1,"name":"张伟","age":18,"className":"高一(3)班","score":92}'
 \end{lstlisting}
 \par
 \medskip
@@ -346,8 +346,8 @@ magel main.mgl students.db add '{"id":1,"name":"张伟","age":18,"className":"�
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel main.mgl students.db add '{"id":2,"name":"李娜","age":17,"className":"高一(3)班","score":88}'
-magel main.mgl students.db list
+chali main.chl students.db add '{"id":2,"name":"李娜","age":17,"className":"高一(3)班","score":88}'
+chali main.chl students.db list
 \end{lstlisting}
 \par
 \medskip
@@ -365,10 +365,10 @@ magel main.mgl students.db list
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel main.mgl students.db update '{"id":1,"name":"张伟","age":19,"className":"高一(3)班","score":95}'
-magel main.mgl students.db search 李娜
-magel main.mgl students.db list score desc
-magel main.mgl students.db delete 2
+chali main.chl students.db update '{"id":1,"name":"张伟","age":19,"className":"高一(3)班","score":95}'
+chali main.chl students.db search 李娜
+chali main.chl students.db list score desc
+chali main.chl students.db delete 2
 \end{lstlisting}
 \par
 \medskip
@@ -446,13 +446,13 @@ magel main.mgl students.db delete 2
 
 \section{下一步}
 
-这个程序还只是命令行。要把它变成服务，看\href{https://gitee.com/rabbitc999/magel/blob/master/doc/36-reflection-serialization-sql.md}{动态 SQL 说明}和\href{https://gitee.com/rabbitc999/magel/blob/master/example/sql-magel/README.md}{SQL 示例}；要把它部署出去，翻回\hyperref[ch:22]{第 22 章 部署字节码}。
+这个程序还只是命令行。要把它变成服务，看\href{https://gitee.com/rabbitc999/chali/blob/master/doc/36-reflection-serialization-sql.md}{动态 SQL 说明}和\href{https://gitee.com/rabbitc999/chali/blob/master/example/sql-chali/README.md}{SQL 示例}；要把它部署出去，翻回\hyperref[ch:22]{第 22 章 部署字节码}。
 
-语言的全部细节在\href{https://gitee.com/rabbitc999/magel/blob/master/doc/04-language-reference.md}{语言参考}，反射的 API 全貌在\hyperref[ch:20]{第 20 章 注解与反射}。
+语言的全部细节在\href{https://gitee.com/rabbitc999/chali/blob/master/doc/04-language-reference.md}{语言参考}，反射的 API 全貌在\hyperref[ch:20]{第 20 章 注解与反射}。
 
 \section{边界与验证}
 
-反射元数据取决于编译期的注解与反射开关；换用 \texttt{--no-reflection} 或 \texttt{--hard-realtime} 构建时，\texttt{get\allowbreak{}Struct\allowbreak{}Info} 一族不可用，本示例需要反射版工具链。
+反射元数据取决于编译期的注解与产物开关；换用 \texttt{--no-reflection} 或 \texttt{--hard-realtime} 构建时，\texttt{get\allowbreak{}Struct\allowbreak{}Info} 一族不可用，本示例需要写入反射元数据的产物。
 
 模型字段变化会影响既有数据库：新增字段后旧库缺少该列，\texttt{encode\allowbreak{}Rows} 会报「数据库缺少字段」，需要迁移或重建。文本长度按字节计，与数据库列长度要对齐。
 

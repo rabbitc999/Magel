@@ -9,5 +9,5 @@ namespace std_math
  * @param error 绑定失败时接收原始诊断，可为空。
  * @return 全部入口绑定成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr);
+bool bind(chali_glue::Registry &registry, Memory::String *error = nullptr);
 }  // namespace std_math

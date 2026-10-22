@@ -30,7 +30,7 @@ void require(bool ok, int line)
  */
 int main(int argc, char **argv)
 {
-    Memory::String text = "# 名称: artifact\n# 输入: x\n# magel-source: 12 \"中文.mgl\"\n0: (write, 42, _, _)\n1: (halt, _, _, _)\n";
+    Memory::String text = "# 名称: artifact\n# 输入: x\n# chali-source: 12 \"中文.chl\"\n0: (write, 42, _, _)\n1: (halt, _, _, _)\n";
     Memory::String layout = "message offset=0 size=8 type=i64 stride=8\n";
     if (argc > 1)
     {

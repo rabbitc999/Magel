@@ -1,0 +1,36 @@
+/* bigfloat.chl - arbitrary precision decimal floating point. */
+
+int64 main() {
+    BigDecimal a = BigDecimal("0.1");
+    BigDecimal b = BigDecimal("0.2");
+    BigDecimal third = BigDecimal(1) / 7;
+    BigInteger huge = BigInteger("10000000000000000000000000000000000000001");
+    BigDecimal exact = BigDecimal(huge) + BigDecimal("0.25");
+
+    println("0.1 + 0.2 = {}", (a + b).str());
+    println("1 / 7 = {}", third.str());
+    BigDecimal tenDigits = BigDecimal(1);
+    tenDigits.setPrecision(10);
+    println("1 / 7 (10 digits) = {}", (tenDigits / 7).str());
+    BigDecimal shortValue = BigDecimal(1);
+    BigDecimal longValue = shortValue.copy();
+    shortValue.setPrecision(5);
+    longValue.setPrecision(12);
+    println("short 1 / 7 = {}", (shortValue / 7).str());
+    println("long 1 / 7 = {}", (longValue / 7).str());
+    println("short 1 / 7 again = {}", (shortValue / 7).str());
+    BigDecimal rightPrecision = BigDecimal(7);
+    rightPrecision.setPrecision(6);
+    println("right precision = {}", (BigDecimal(1) / rightPrecision).str());
+    BigDecimal rounded = BigDecimal("1.234567");
+    rounded.setPrecision(4);
+    println("rounded = {}, rounded + 0.001 = {}", rounded.str(),
+    (rounded + BigDecimal("0.001")).str());
+    println("huge + 0.25 = {}", exact.str());
+    println("compare = {}, int64 = {}, float64 = {:3F}",
+    exact > huge, (int64)BigDecimal("42.9"), (float64)BigDecimal("1.25"));
+    BigDecimal typed;
+    typed = inputBigDecimal();
+    println("input + 0.5 = {}", (typed + BigDecimal("0.5")).str());
+    return 0;
+}

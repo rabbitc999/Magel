@@ -176,7 +176,7 @@ bool Heap::release(std::size_t address, Memory::String *reason)
     }
     if (reason != nullptr)
     {
-        *reason = "[MGL1205] 无效或已经释放的身份：地址 " + Memory::toString(address) + " 不在堆里（堆区从 " + Memory::toString(base_) + " 起）";
+        *reason = "[CHL1205] 无效或已经释放的身份：地址 " + Memory::toString(address) + " 不在堆里（堆区从 " + Memory::toString(base_) + " 起）";
     }
     return false;
 }

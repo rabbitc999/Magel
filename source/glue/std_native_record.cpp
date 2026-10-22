@@ -23,7 +23,7 @@ Value copy(State &state, const Memory::Vector<Value> &arguments)
 Value drop(State &state, const Memory::Vector<Value> &arguments)
 {
     if (!state.host.releaseNativeRecord(arguments[0].asInt()))
-        state.error = "[MGL1205] drop 的对象已经释放或句柄无效";
+        state.error = "[CHL1205] drop 的对象已经释放或句柄无效";
     return Value::fromInt(0);
 }
 

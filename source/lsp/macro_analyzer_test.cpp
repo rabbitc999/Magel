@@ -1,4 +1,4 @@
-// 单元测试：LSP 帧、Magel 宏模型（诊断 / 悬停 / 补全 / 跳转 / 大纲 / 语义高亮）
+// 单元测试：LSP 帧、ChaLi 宏模型（诊断 / 悬停 / 补全 / 跳转 / 大纲 / 语义高亮）
 // 与一次完整的服务器会话。
 #include "language_server.hpp"
 
@@ -91,13 +91,13 @@ void testSession()
     const std::string initResponse =
         server.handleMessage("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{}}");
     CHECK(initResponse.find("semanticTokensProvider") != std::string::npos);
-    CHECK(initResponse.find("magel-lsp") != std::string::npos);
+    CHECK(initResponse.find("chali-lsp") != std::string::npos);
     CHECK(server.handleMessage("{\"jsonrpc\":\"2.0\",\"method\":\"initialized\",\"params\":{}}").empty());
 
     // 1. didOpen：宏定义与调用都配对（参数个数一致）→ 没有诊断。
     const std::string open =
         "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":"
-        "{\"uri\":\"file:///demo.mgl\",\"languageId\":\"magel\",\"version\":1,"
+        "{\"uri\":\"file:///demo.chl\",\"languageId\":\"chali\",\"version\":1,"
         "\"text\":\"$macro A(x, y)\\n((x) + (y))\\n$end_macro\\nint main() { return $A(1, 2); }\\n\"}}}";
     const std::string opened = server.handleMessage(open);
     CHECK(opened.find("publishDiagnostics") != std::string::npos);
@@ -106,22 +106,22 @@ void testSession()
     // 2. 悬停：调用处应给出宏声明。
     const std::string hover =
         "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"textDocument/hover\",\"params\":"
-        "{\"textDocument\":{\"uri\":\"file:///demo.mgl\"},\"position\":{\"line\":3,\"character\":20}}}";
+        "{\"textDocument\":{\"uri\":\"file:///demo.chl\"},\"position\":{\"line\":3,\"character\":20}}}";
     CHECK(server.handleMessage(hover).find("contents") != std::string::npos);
 
-    // 3. didChange（未保存内容）：实参个数不符 → 报 magel-macro-arity。
+    // 3. didChange（未保存内容）：实参个数不符 → 报 chali-macro-arity。
     const std::string change =
         "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didChange\",\"params\":{\"textDocument\":"
-        "{\"uri\":\"file:///demo.mgl\",\"version\":2},\"contentChanges\":[{\"text\":"
+        "{\"uri\":\"file:///demo.chl\",\"version\":2},\"contentChanges\":[{\"text\":"
         "\"$macro A(x, y)\\n((x) + (y))\\n$end_macro\\nint main() { return $A(1); }\\n\"}]}}";
     const std::string changed = server.handleMessage(change);
-    CHECK(changed.find("magel-macro-arity") != std::string::npos);
-    CHECK(changed.find("\"source\":\"magel\"") != std::string::npos);
-    CHECK(changed.find("\"source\":\"magel\"") != std::string::npos);
+    CHECK(changed.find("chali-macro-arity") != std::string::npos);
+    CHECK(changed.find("\"source\":\"chali\"") != std::string::npos);
+    CHECK(changed.find("\"source\":\"chali\"") != std::string::npos);
 
     const std::string unknownMethod =
         "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"textDocument/unknown\",\"params\":"
-        "{\"textDocument\":{\"uri\":\"file:///demo.mgl\"}}}";
+        "{\"textDocument\":{\"uri\":\"file:///demo.chl\"}}}";
     CHECK(server.handleMessage(unknownMethod).find("-32601") != std::string::npos);
     CHECK(server.handleMessage("{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"shutdown\"}").find("\"result\"") != std::string::npos);
     CHECK(server.handleMessage("{\"jsonrpc\":\"2.0\",\"method\":\"exit\"}").empty());
@@ -142,7 +142,7 @@ int main()
     testSession();
     if (failures == 0)
     {
-        std::cout << "magel-lsp tests：全部通过\n";
+        std::cout << "chali-lsp tests：全部通过\n";
         return 0;
     }
     std::cerr << "失败 " << failures << " 项\n";

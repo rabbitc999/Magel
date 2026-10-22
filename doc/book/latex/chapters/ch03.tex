@@ -7,21 +7,21 @@
 
 \item 变量是什么、为什么每个变量都要写类型；
 
-\item Magel 有哪些基础类型；
+\item ChaLi 有哪些基础类型；
 
 \item 数字、字符、字符串分别怎么写；
 
-\item 以及本章的重头戏：Magel 什么时候替你转类型、什么时候非要你签字。
+\item 以及本章的重头戏：ChaLi 什么时候替你转类型、什么时候非要你签字。
 
 \end{itemize}
 
-这一章会让你第一次觉得 Magel「有点死板」。请忍着别关页面——第 3.8 节会把这份死板值不值讲清楚。
+这一章会让你第一次觉得 ChaLi「有点死板」。请忍着别关页面——第 3.8 节会把这份死板值不值讲清楚。
 
 \section{变量：给值起个名字}
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 score = 30;
 \end{lstlisting}
 \par
@@ -42,13 +42,13 @@ int64 score = 30;
 \end{tabular}
 \end{center}
 
-类型写在名字前面，这是 C / Java / C++ 的习惯，不是 Rust / TypeScript 那种\texttt{score:\allowbreak{} int64} 或者 \texttt{let score}。和 C 系一样的写法是故意的：Magel 不打算让你重新学一遍已经会的东西。
+类型写在名字前面，这是 C / Java / C++ 的习惯，不是 Rust / TypeScript 那种\texttt{score:\allowbreak{} int64} 或者 \texttt{let score}。和 C 系一样的写法是故意的：ChaLi 不打算让你重新学一遍已经会的东西。
 
 三个必须记住的细节：
 
 \begin{enumerate}
 
-\item 分号结尾。Magel 不用换行来表示语句结束，写成一整行也行。
+\item 分号结尾。ChaLi 不用换行来表示语句结束，写成一整行也行。
 
 \item 区分大小写。\texttt{score} 和 \texttt{Score} 是两个不同的名字。
 
@@ -58,13 +58,13 @@ int64 score = 30;
 
 \section{为什么非要写类型}
 
-很多现代语言会帮你推：\texttt{let score =\allowbreak{} 30} 就够了。Magel 能推（下一节就讲 \texttt{let}），但声明时默认要求你写出来。理由和它的整体性格一致：
+很多现代语言会帮你推：\texttt{let score =\allowbreak{} 30} 就够了。ChaLi 能推（下一节就讲 \texttt{let}），但声明时默认要求你写出来。理由和它的整体性格一致：
 
 \begin{itemize}
 
 \item 读代码的人不用猜。 \texttt{int64 score =\allowbreak{} get\allowbreak{}Score(\allowbreak{})\allowbreak{};} 一眼就知道这里是整数；\texttt{let score =\allowbreak{} get\allowbreak{}Score(\allowbreak{})\allowbreak{}} 得跳去看 \texttt{get\allowbreak{}Score} 的签名。
 
-\item 它不猜你的意思。 记住第 2 章那条报错——\texttt{2026} 不能直接交给要 \texttt{uint64} 的函数。Magel 宁可让你写一个 \texttt{(\allowbreak{}uint64)\allowbreak{}}，也不愿意在某处悄悄换一下。
+\item 它不猜你的意思。 记住第 2 章那条报错——\texttt{2026} 不能直接交给要 \texttt{uint64} 的函数。ChaLi 宁可让你写一个 \texttt{(\allowbreak{}uint64)\allowbreak{}}，也不愿意在某处悄悄换一下。
 
 \item 出错点离原因近。 类型写错，报错就在那一行；不写类型，错可能传到十层外面才炸。
 
@@ -74,7 +74,7 @@ int64 score = 30;
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int8 tiny = 127;
@@ -125,7 +125,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     float64 ratio = 3.25;
@@ -157,13 +157,13 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     bool ready = true;
     bool done = false;
     char initial = 'M';
-    String word = "Magel";
+    String word = "ChaLi";
     println("{} {} {} {}", ready, done, initial, word);
     return 0;
 }
@@ -174,7 +174,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-1 0 M Magel
+1 0 M ChaLi
 \end{lstlisting}
 \par
 \medskip
@@ -183,7 +183,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     bool ready = true;
@@ -212,7 +212,7 @@ yes
 \medskip
 
 \begin{tip}{C 程序员注意}
-Magel 没有三目运算符。写 \texttt{ready ? "yes" :\allowbreak{} "no"} 是语法错误，老老实实用 \texttt{if /\allowbreak{} else}。可以使用 \texttt{if (\allowbreak{}条件)\allowbreak{} \{ 值一 \} else \{ 值二 \}} 条件表达式；只求值命中的分支。
+ChaLi 没有三目运算符。写 \texttt{ready ? "yes" :\allowbreak{} "no"} 是语法错误，老老实实用 \texttt{if /\allowbreak{} else}。可以使用 \texttt{if (\allowbreak{}条件)\allowbreak{} \{ 值一 \} else \{ 值二 \}} 条件表达式；只求值命中的分支。
 \end{tip}
 
 \begin{itemize}
@@ -224,7 +224,7 @@ Magel 没有三目运算符。写 \texttt{ready ? "yes" :\allowbreak{} "no"} 是
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: if 条件必须是 bool，现在给的是 int64（数值条件请显式写成 `(bool)值` 或比较表达式）
+chali: if 条件必须是 bool，现在给的是 int64（数值条件请显式写成 `(bool)值` 或比较表达式）
 \end{lstlisting}
 \par
 \medskip
@@ -243,7 +243,7 @@ magel: if 条件必须是 bool，现在给的是 int64（数值条件请显式�
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     const int64 LIMIT = 100;
@@ -269,7 +269,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 let info = describe(7);
 // 想省一次手写类型
 let picked = range(1, 6).map(square).collect();
@@ -286,7 +286,7 @@ let picked = range(1, 6).map(square).collect();
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     println("{} {} {}", 0xFF, b1010, 3.14);
@@ -337,7 +337,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 floatingKind(float32 value)
 {
     return 32;
@@ -383,11 +383,11 @@ int64 main()
 
 这是本章最重要的一节。
 
-先说结论，别被别的语言带偏：Magel 只放行一类转换——「变宽」，也就是「目标装得下源、不会悄悄丢东西」的方向。反过来（变窄、有符号放进无符号、浮点放进整数、\texttt{char}/\texttt{bool} 跟整数互放）一律要你签字。所以准确的说法不是「没有隐式转换」，而是只放行「装得下」的那半边。
+先说结论，别被别的语言带偏：ChaLi 只放行一类转换——「变宽」，也就是「目标装得下源、不会悄悄丢东西」的方向。反过来（变窄、有符号放进无符号、浮点放进整数、\texttt{char}/\texttt{bool} 跟整数互放）一律要你签字。所以准确的说法不是「没有隐式转换」，而是只放行「装得下」的那半边。
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int32 a = 100;
@@ -433,7 +433,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 big = 70000;
@@ -449,7 +449,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 不能隐式转换：int64 -> int32（请显式强转）
+chali: 不能隐式转换：int64 -> int32（请显式强转）
 \end{lstlisting}
 \par
 \medskip
@@ -465,7 +465,7 @@ magel: 不能隐式转换：int64 -> int32（请显式强转）
 \end{itemize}
 
 \begin{tip}{提示}
-一句话记法：装得下的方向，Magel 自动帮你；装不下、或者换符号/大类，必须你亲自签字。
+一句话记法：装得下的方向，ChaLi 自动帮你；装不下、或者换符号/大类，必须你亲自签字。
 \end{tip}
 
 这么一管，麻烦是麻烦了点，但它买到的是三件事：
@@ -476,7 +476,7 @@ magel: 不能隐式转换：int64 -> int32（请显式强转）
 
 \item 重载能被准确选中。 第 2 章那条「找不到匹配的重载 \texttt{(\allowbreak{}int64)\allowbreak{}}」就是这套规则的副产品：因为不替你「凑合着转」，编译器只能说「你要 \texttt{uint64}，给我的是 \texttt{int64}」——它把真相告诉你了，而不是塞进某个它认为差不多的重载。
 
-\item 跨平台的结果是确定的。 在 32 位板子上 \texttt{long} 是 4 字节、PC 上是 8 字节，这种「同一个表达式换台机器结果不同」的坑，Magel 用「类型必须对上」堵掉了。
+\item 跨平台的结果是确定的。 在 32 位板子上 \texttt{long} 是 4 字节、PC 上是 8 字节，这种「同一个表达式换台机器结果不同」的坑，ChaLi 用「类型必须对上」堵掉了。
 
 \end{enumerate}
 
@@ -494,7 +494,7 @@ magel: 不能隐式转换：int64 -> int32（请显式强转）
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 big = 70000;
@@ -542,7 +542,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 original = 42;
@@ -574,7 +574,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int16 small = -300;
@@ -599,7 +599,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int8 overflow = 200;
@@ -613,7 +613,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 整数字面量 200 超出 int8 的取值范围（-128..127）
+chali: 整数字面量 200 超出 int8 的取值范围（-128..127）
 \end{lstlisting}
 \par
 \medskip
@@ -660,7 +660,7 @@ magel: 整数字面量 200 超出 int8 的取值范围（-128..127）
 \end{longtable}
 }
 
-一句话总结这一章：Magel 要把「类型在哪里变了」留成一件看得见的事。
+一句话总结这一章：ChaLi 要把「类型在哪里变了」留成一件看得见的事。
 
 \section{下一步}
 

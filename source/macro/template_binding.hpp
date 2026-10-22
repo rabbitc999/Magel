@@ -1,10 +1,10 @@
-#ifndef MAGEL_MACRO_TEMPLATE_BINDING_HPP
-#define MAGEL_MACRO_TEMPLATE_BINDING_HPP
+#ifndef CHALI_MACRO_TEMPLATE_BINDING_HPP
+#define CHALI_MACRO_TEMPLATE_BINDING_HPP
 #include "ast_substitution.hpp"
 #include "regex_matcher.hpp"
 #include <set>
 
-namespace magel_macro
+namespace chali_macro
 {
 /**
  * @brief 保存已绑定模板及形参身份，供调用展开按身份替换。
@@ -83,5 +83,5 @@ private:
     std::map<std::string, int> iterationInputs_;
     Memory::Vector<std::shared_ptr<MType>> *types_ = nullptr;
 };
-}  // namespace magel_macro
+}  // namespace chali_macro
 #endif

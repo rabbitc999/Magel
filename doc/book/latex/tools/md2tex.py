@@ -12,7 +12,7 @@ import re
 HERE = os.path.dirname(os.path.abspath(__file__))
 BOOK = os.path.normpath(os.path.join(HERE, '..', '..'))     # doc/book
 OUT = os.path.join(BOOK, 'latex', 'chapters')
-REPO_WEB = 'https://gitee.com/rabbitc999/magel'
+REPO_WEB = 'https://gitee.com/rabbitc999/chali'
 
 FILES = [
     ('01-第一个程序.md', 'ch01.tex'),
@@ -45,7 +45,7 @@ FILES = [
 ]
 
 CODE_STYLE = {
-    'magel': 'magel', 'text': 'out', 'sh': 'sh',
+    'chali': 'chali', 'text': 'out', 'sh': 'sh',
     'toml': 'cfg', 'json': 'cfg', 'c': 'c', 'cpp': 'cpp',
 }
 

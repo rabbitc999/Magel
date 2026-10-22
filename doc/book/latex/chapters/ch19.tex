@@ -1,7 +1,7 @@
 \chapter{预处理与宏}
 \label{ch:19}
 
-本章介绍以 \texttt{\%} 和 \texttt{\$} 开头的两类源码加工工具：Magel 的预处理和卫生宏。预处理控制源码是否参与编译，宏由解析器建立 AST 并在语义分析期间展开。
+本章介绍以 \texttt{\%} 和 \texttt{\$} 开头的两类源码加工工具：ChaLi 的预处理和卫生宏。预处理控制源码是否参与编译，宏由解析器建立 AST 并在语义分析期间展开。
 
 这一章分两半：
 
@@ -21,7 +21,7 @@
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 %define DEBUG 1
 
 int64 main() {
@@ -48,7 +48,7 @@ debug on
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 %define DEBUG 0
 
 int64 main() {
@@ -97,7 +97,7 @@ debug off
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main() {
 %ifdef FEATURE
     println("有 FEATURE");
@@ -135,7 +135,7 @@ int64 main() {
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel run app.mgl -D FEATURE
+chali run app.chl -D FEATURE
 \end{lstlisting}
 \par
 \medskip
@@ -152,9 +152,9 @@ magel run app.mgl -D FEATURE
 
 \begin{itemize}
 
-\item \texttt{magel run app.\allowbreak{}mgl} \ensuremath{\rightarrow} 「没有 FEATURE」；
+\item \texttt{chali run app.\allowbreak{}chl} \ensuremath{\rightarrow} 「没有 FEATURE」；
 
-\item \texttt{magel run app.\allowbreak{}mgl -D FEATURE} \ensuremath{\rightarrow} 「有 FEATURE」。
+\item \texttt{chali run app.\allowbreak{}chl -D FEATURE} \ensuremath{\rightarrow} 「有 FEATURE」。
 
 \end{itemize}
 
@@ -172,7 +172,7 @@ magel run app.mgl -D FEATURE
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 $macro SQUARE(x)
 x * x
 $end_macro
@@ -199,7 +199,7 @@ int64 main() {
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 $macro ACCUMULATE(out)[...values]
 $for value in values
 int64 temporary = value;
@@ -225,7 +225,7 @@ int64 main() {
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 $macro CONVERT<T:value>(value)
 cast<T>(value)
 $end_macro
@@ -249,7 +249,7 @@ int64 main() {
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 $macro CLASSIFY(value)
 $match value is ident
 1
@@ -275,7 +275,7 @@ $end_macro
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 $macro DECIMAL(value)
 $regex value is "[0-9]+"
 value
@@ -293,7 +293,7 @@ $end_macro
 
 \texttt{\$replace ADD(\allowbreak{}a,\allowbreak{} b)\allowbreak{} a + b} 是同一 AST 机制的单行定义。宏递归与规模有预算，失败诊断保留调用、定义和参数来源链。编辑器宏预览显示卫生 AST，类型提示读取最终静态类型，不显示内部绑定编号。
 
-回归见 \href{https://gitee.com/rabbitc999/magel/blob/master/tests/magel_ast_macros.py}{宏 AST}、\href{https://gitee.com/rabbitc999/magel/blob/master/tests/magel_macro_groups.py}{分组与来源}、\href{https://gitee.com/rabbitc999/magel/blob/master/tests/magel_macro_generics.py}{静态类型} 和 \href{https://gitee.com/rabbitc999/magel/blob/master/tests/magel_macro_branches.py}{语法及正则}。
+回归见 \href{https://gitee.com/rabbitc999/chali/blob/master/tests/chali_ast_macros.py}{宏 AST}、\href{https://gitee.com/rabbitc999/chali/blob/master/tests/chali_macro_groups.py}{分组与来源}、\href{https://gitee.com/rabbitc999/chali/blob/master/tests/chali_macro_generics.py}{静态类型} 和 \href{https://gitee.com/rabbitc999/chali/blob/master/tests/chali_macro_branches.py}{语法及正则}。
 
 \section{函数、泛型与宏如何选择}
 
@@ -307,7 +307,7 @@ $end_macro
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 $macro vec<T:first>[first,...rest]
 {
     List<T> result;
@@ -353,7 +353,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 $macro broken(value)
 {
     temp.push(value);

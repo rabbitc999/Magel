@@ -1,12 +1,12 @@
 # 05 Delivery security
 
-Bytecode encryption has been removed. `--encrypt` and `[magel] encrypt` are no longer supported. Rebuild historical encrypted artifacts from source.
+Bytecode encryption has been removed. `--encrypt` and `[chali] encrypt` are no longer supported. Rebuild historical encrypted artifacts from source.
 
 ## Delivery forms
 
 | Artifact | Recipient needs | Typical use |
 | --- | --- | --- |
-| `.mgl` source | Magel compiler | Source sharing and joint development |
+| `.chl` source | ChaLi compiler | Source sharing and joint development |
 | Ordinary `.svmb` | StackVM host with matching capabilities | Device loading and portable deployment |
 | Compact `.svmb` | StackVM host supporting compact symbols | Smaller files and removal of readable symbol names |
 
@@ -15,13 +15,13 @@ Bytecode encryption has been removed. `--encrypt` and `[magel] encrypt` are no l
 Ordinary bytecode:
 
 ```sh
-magel svmb src/main.mgl out build/app
+chali svmb src/main.chl out build/app
 ```
 
 Compact bytecode:
 
 ```sh
-magel svmb src/main.mgl out build/app --compress-symbols
+chali svmb src/main.chl out build/app --compress-symbols
 ```
 
 The compact command generates `build/app.svmb` and `build/app.symbol_map.json`. Keep the mapping on the development side; use `--symbol-map FILE` to select its path. Running the program does not require the mapping.
@@ -38,7 +38,7 @@ Source locations are omitted by default; request debug records with `--debug`. P
 
 | File | Kept by | Purpose |
 | --- | --- | --- |
-| `.mgl` | Developer or collaborators | Source and rebuilds |
+| `.chl` | Developer or collaborators | Source and rebuilds |
 | `.svmb` | Runtime recipient | VM loading |
 | `.symbol_map.json` | Developer | Offline diagnosis |
 | Debug builds and build records | Developer | Reproduction and troubleshooting |

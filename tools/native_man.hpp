@@ -1,4 +1,4 @@
-#include "../source/magel_i18n.hpp"
+#include "../source/chali_i18n.hpp"
 /**
  * @brief 手册字符串的大小写归一化。
  * @param text 文本。
@@ -15,8 +15,8 @@ std::string manLower(std::string text)
  */
 std::string manLanguage()
 {
-    const auto language = magel_i18n::language();
-    return language == magel_i18n::Language::Zh ? "zh" : "en";
+    const auto language = chali_i18n::language();
+    return language == chali_i18n::Language::Zh ? "zh" : "en";
 }
 /**
  * @brief 手册能力域名称，翻译来自工具链消息目录。
@@ -25,13 +25,13 @@ std::string manLanguage()
  */
 std::string manGroup(const std::string &name)
 {
-    if (name == "core") return MAGEL_TEXT("核心与类型");
-    if (name == "collections") return MAGEL_TEXT("容器与迭代");
-    if (name == "text") return MAGEL_TEXT("文本与数据");
-    if (name == "math") return MAGEL_TEXT("数学与数值");
-    if (name == "io") return MAGEL_TEXT("输入输出与集成");
-    if (name == "concurrency") return MAGEL_TEXT("并发与事件");
-    return MAGEL_TEXT("内存与系统");
+    if (name == "core") return CHALI_TEXT("核心与类型");
+    if (name == "collections") return CHALI_TEXT("容器与迭代");
+    if (name == "text") return CHALI_TEXT("文本与数据");
+    if (name == "math") return CHALI_TEXT("数学与数值");
+    if (name == "io") return CHALI_TEXT("输入输出与集成");
+    if (name == "concurrency") return CHALI_TEXT("并发与事件");
+    return CHALI_TEXT("内存与系统");
 }
 /**
  * @brief 计算候选符号名称距离。
@@ -167,7 +167,7 @@ int man(int argc, char **argv, const fs::path &compiler)
         {
             if (at + 1 >= argc)
             {
-                std::cerr << MAGEL_TEXT("--search 后需要关键词") << '\n';
+                std::cerr << CHALI_TEXT("--search 后需要关键词") << '\n';
                 return 2;
             }
             query = argv[++at];
@@ -180,7 +180,7 @@ int man(int argc, char **argv, const fs::path &compiler)
             selector = arg;
         else if (starts(arg, "--") || !target.empty())
         {
-            std::cerr << MAGEL_TEXT("手册参数无效：") << arg << '\n';
+            std::cerr << CHALI_TEXT("手册参数无效：") << arg << '\n';
             return 2;
         }
         else
@@ -188,30 +188,49 @@ int man(int argc, char **argv, const fs::path &compiler)
     }
     if (target == "help" || (target.empty() && query.empty() && !update))
     {
-        const std::string usage = manLanguage() == "en" ? "Usage: magel man api <API> [--json] [--run]\n"
-                                                          "       magel man api --search <TEXT> [--exact] [--json]\n"
-                                                          "       magel man book [CHAPTER] [--json]\n"
-                                                          "       magel man keyword [KEYWORD] [--json]\n"
-                                                          "       magel man macro [--json]\n"
-                                                          "       magel man skill [--json]\n"
-                                                          "       magel man api\n"
-                                                          "       magel man help [--lang zh|en] [--json]\n\n"
+        /* ChaLi 五个字母的契约：手册与 `--help` 都把这段顶在前面。 */
+        const std::string banner = manLanguage() == "en" ? "--------------------------------------------------------\n"
+                                                          "ChaLi Compiler\n"
+                                                          "--------------------------------------------------------\n"
+                                                          "C -- Copy (deep-copy value semantics): assignment copies in full, never shares memory. Large objects go by explicit reference.\n"
+                                                          "H -- Hygienic (hygienic macros): compile-time substitution that never captures or pollutes outer variables by accident.\n"
+                                                          "A -- Any (universal box / type erasure): holds any type when no generic constraint applies.\n"
+                                                          "L -- Lifetime (borrow checker): a reference never outlives its source; otherwise it fails to compile (CHL1204).\n"
+                                                          "I -- Interface (runtime polymorphism): a shared contract dispatched on the object's real type at run time.\n"
+                                                          "--------------------------------------------------------\n" :
+                                                          "--------------------------------------------------------\n"
+                                                          "ChaLi 编译器\n"
+                                                          "--------------------------------------------------------\n"
+                                                          "C -- Copy（深拷贝值语义）：赋值就是彻底的复制，绝不共享内存。大对象必须显式用引用传。\n"
+                                                          "H -- Hygienic（卫生宏）：在编译期做安全的代码替换，绝不意外捕获或污染外部变量。\n"
+                                                          "A -- Any（万能盒子 / 类型擦除）：没有泛型约束时，可以装下任何类型的数据。\n"
+                                                          "L -- Lifetime（生命周期 / 借用检查器）：引用永远不能活得比它的数据源更久，否则编译直接报错（CHL1204）。\n"
+                                                          "I -- Interface（接口 / 运行期多态）：定义一组共同的“契约”，运行期根据对象的实际类型进行分派。\n"
+                                                          "--------------------------------------------------------\n";
+        const std::string usage = banner + (manLanguage() == "en" ? "Usage: chali man api <API> [--json] [--run]\n"
+                                                          "       chali man api --search <TEXT> [--exact] [--json]\n"
+                                                          "       chali man book [CHAPTER] [--json]\n"
+                                                          "       chali man keyword [KEYWORD] [--json]\n"
+                                                          "       chali man macro [--json]\n"
+                                                          "       chali man skill [--json]\n"
+                                                          "       chali man api\n"
+                                                          "       chali man help [--lang zh|en] [--json]\n\n"
                                                           "API queries must include the api command.\n"
-                                                          "API examples: magel man api std::text; magel man api std::text::Text\n"
+                                                          "API examples: chali man api std::text; chali man api std::text::Text\n"
                                                           "API documentation: embedded doc/library/.\n"
                                                           "man book exports Markdown and images to ./book.\n" :
-                                                          "用法：magel man api <API> [--json] [--run]\n"
-                                                          "      magel man api --search <关键词> [--exact] [--json]\n"
-                                                          "      magel man book [章节] [--json]\n"
-                                                          "      magel man keyword [关键字] [--json]\n"
-                                                          "      magel man macro [--json]\n"
-                                                          "      magel man skill [--json]\n"
-                                                          "      magel man api\n"
-                                                          "      magel man help [--lang zh|en] [--json]\n\n"
+                                                          "用法：chali man api <API> [--json] [--run]\n"
+                                                          "      chali man api --search <关键词> [--exact] [--json]\n"
+                                                          "      chali man book [章节] [--json]\n"
+                                                          "      chali man keyword [关键字] [--json]\n"
+                                                          "      chali man macro [--json]\n"
+                                                          "      chali man skill [--json]\n"
+                                                          "      chali man api\n"
+                                                          "      chali man help [--lang zh|en] [--json]\n\n"
                                                           "查询 API 时必须显式写 api 子命令。\n"
-                                                          "API 示例：magel man api std::text；magel man api std::text::Text\n"
+                                                          "API 示例：chali man api std::text；chali man api std::text::Text\n"
                                                           "API 文档来源：内嵌的 doc/library/。\n"
-                                                          "man book 将 Markdown 和图片导出到当前目录的 book 文件夹。\n";
+                                                          "man book 将 Markdown 和图片导出到当前目录的 book 文件夹。\n");
         if (machine)
             std::cout << object({ { "schemaVersion", 1 }, { "kind", "help" }, { "language", manLanguage() }, { "content", usage }, { "diagnostics", A{} } }).dump() << '\n';
         else
@@ -220,18 +239,18 @@ int man(int argc, char **argv, const fs::path &compiler)
     }
     if (!update && target != "api" && target != "book" && target != "keyword" && target != "macro" && target != "skill")
     {
-        const std::string example = "magel man api" + (target.empty() ? " --search " + query : " " + target);
+        const std::string example = "chali man api" + (target.empty() ? " --search " + query : " " + target);
         const std::string message = manLanguage() == "en" ? "API queries require the api command. Use: " + example : "查询 API 需要显式添加 api 子命令，请使用：" + example;
-        const auto diagnostic = parse(magel_diagnostics::toolDiagnostic("MGL1701", message.c_str()).c_str());
+        const auto diagnostic = parse(chali_diagnostics::toolDiagnostic("CHL1701", message.c_str()).c_str());
         if (machine)
             std::cout << object({ { "schemaVersion", 1 }, { "kind", "usage" }, { "language", manLanguage() }, { "target", target }, { "diagnostics", A{ diagnostic } } }).dump() << '\n';
         else
-            std::cerr << "MGL1701: " << message << '\n';
+            std::cerr << "CHL1701: " << message << '\n';
         return 2;
     }
     if ((!query.empty() && !target.empty() && target != "api") || (update && (runExample || !query.empty() || !target.empty())))
     {
-        std::cerr << MAGEL_TEXT("手册参数不能组合使用") << '\n';
+        std::cerr << CHALI_TEXT("手册参数不能组合使用") << '\n';
         return 2;
     }
     if (update)
@@ -251,15 +270,15 @@ int man(int argc, char **argv, const fs::path &compiler)
             }
         if (repository.empty())
         {
-            std::cerr << MAGEL_TEXT("--update 需要 Magel 源码仓库和 Python 构建环境") << '\n';
+            std::cerr << CHALI_TEXT("--update 需要 ChaLi 源码仓库和 Python 构建环境") << '\n';
             return 1;
         }
-        const char *python = std::getenv("MAGEL_PYTHON");
+        const char *python = std::getenv("CHALI_PYTHON");
         const auto result = execute({ python ? python : "python", "tools/library_reference.py" }, repository, "", 120);
         if (machine)
             std::cout << object({ { "schemaVersion", 1 }, { "kind", "update" }, { "language", manLanguage() }, { "exitCode", result.code }, { "stdout", result.output }, { "stderr", result.error }, { "diagnostics", A{} } }).dump() << '\n';
         else
-            std::cout << result.output << result.error << (result.code == 0 ? MAGEL_TEXT("手册数据已生成；重新构建后进入可执行文件。\n") : "");
+            std::cout << result.output << result.error << (result.code == 0 ? CHALI_TEXT("手册数据已生成；重新构建后进入可执行文件。\n") : "");
         return result.code;
     }
     if (target == "macro")
@@ -272,10 +291,10 @@ int man(int argc, char **argv, const fs::path &compiler)
     {
         if (runExample || exact)
         {
-            std::cerr << MAGEL_TEXT("手册参数不能组合使用") << '\n';
+            std::cerr << CHALI_TEXT("手册参数不能组合使用") << '\n';
             return 2;
         }
-        const auto manual = parse(magel_development_tool("tools/magel_manual.json"));
+        const auto manual = parse(chali_development_tool("tools/chali_manual.json"));
         J result = object({ { "schemaVersion", 1 }, { "kind", target }, { "language", manLanguage() }, { "sourceLanguage", "zh" }, { "diagnostics", A{} } });
         std::string output;
         bool found = true;
@@ -345,7 +364,7 @@ int man(int argc, char **argv, const fs::path &compiler)
                 result["chapters"] = chapters;
                 result["directory"] = root.u8string();
                 result["exportedFiles"] = static_cast<int>(files.size());
-                output = (manLanguage() == "zh" ? "书稿与图片已导出：" : "Book Markdown and images exported: ") + root.u8string() + "\n\n" + output + "\nmagel man book 6\nmagel man book 24\nmagel man book A\n";
+                output = (manLanguage() == "zh" ? "书稿与图片已导出：" : "Book Markdown and images exported: ") + root.u8string() + "\n\n" + output + "\nchali man book 6\nchali man book 24\nchali man book A\n";
             }
             else
                 found = !output.empty();
@@ -374,8 +393,8 @@ int man(int argc, char **argv, const fs::path &compiler)
         }
         if (!found)
         {
-            const auto message = std::string(MAGEL_TEXT("未找到手册目标：")) + target + " " + selector;
-            result["diagnostics"] = A{ object({ { "code", "MGL1701" }, { "severity", "error" }, { "message", message } }) };
+            const auto message = std::string(CHALI_TEXT("未找到手册目标：")) + target + " " + selector;
+            result["diagnostics"] = A{ object({ { "code", "CHL1701" }, { "severity", "error" }, { "message", message } }) };
             if (!machine) std::cerr << message << '\n';
         }
         if (machine)
@@ -384,7 +403,7 @@ int man(int argc, char **argv, const fs::path &compiler)
             ManTerminal().print(output);
         return found ? 0 : 1;
     }
-    const auto data = parse(magel_development_tool("tools/magel_stdlib_api.json"));
+    const auto data = parse(chali_development_tool("tools/chali_stdlib_api.json"));
     const auto &reference = get(data, "reference"), &modules = get(reference, "modules"), &examples = get(reference, "examples");
     A catalog = array(get(data, "functions"));
     for (auto &symbol : catalog)
@@ -465,7 +484,7 @@ int man(int argc, char **argv, const fs::path &compiler)
                 notes.push_back(candidates[at].second.c_str());
             }
             result["candidates"] = suggestions;
-            result["diagnostics"] = A{ parse(magel_diagnostics::toolDiagnostic("MGL1701", Memory::String(MAGEL_TEXT("未找到手册目标：")) + target.c_str(), notes).c_str()) };
+            result["diagnostics"] = A{ parse(chali_diagnostics::toolDiagnostic("CHL1701", Memory::String(CHALI_TEXT("未找到手册目标：")) + target.c_str(), notes).c_str()) };
         }
     }
     result["kind"] = kind;
@@ -478,7 +497,7 @@ int man(int argc, char **argv, const fs::path &compiler)
     {
         std::string filename = target;
         for (std::size_t pos = 0; (pos = filename.find("::", pos)) != std::string::npos;) filename.replace(pos, 2, "-");
-        const auto manual = parse(magel_development_tool("tools/magel_manual.json"));
+        const auto manual = parse(chali_development_tool("tools/chali_manual.json"));
         documentation = str(get(manual, "apiPages"), (filename + ".md").c_str());
         result["documentation"] = documentation;
     }
@@ -499,14 +518,14 @@ int man(int argc, char **argv, const fs::path &compiler)
         if (programIds.empty())
         {
             status = 1;
-            result["diagnostics"] = A{ parse(magel_diagnostics::toolDiagnostic("MGL1702", MAGEL_TEXT("该目标没有可运行示例")).c_str()) };
+            result["diagnostics"] = A{ parse(chali_diagnostics::toolDiagnostic("CHL1702", CHALI_TEXT("该目标没有可运行示例")).c_str()) };
         }
         else
         {
             const auto *program = examples.find(str(programIds[0]));
             if (!program) throw std::runtime_error("内嵌示例引用不存在");
             Temporary temporary;
-            const auto source = temporary.path / "example.mgl";
+            const auto source = temporary.path / "example.chl";
             write(source, str(*program, "code"));
             std::vector<std::string> command{ compiler.u8string(), "run", source.u8string(), "--out", (temporary.path / "example").u8string(), "--lang", manLanguage() };
             for (const auto &flag : array(get(*program, "flags"))) command.push_back(str(flag));
@@ -523,7 +542,7 @@ int man(int argc, char **argv, const fs::path &compiler)
             const auto execution = execute(command, temporary.path, "", 60);
             status = execution.code ? 1 : 0;
             result["execution"] = object({ { "example", str(*program, "id") }, { "exitCode", execution.code }, { "stdout", execution.output }, { "stderr", execution.error } });
-            if (status) result["diagnostics"] = A{ parse(magel_diagnostics::toolDiagnostic("MGL1703", MAGEL_TEXT("手册示例执行失败")).c_str()) };
+            if (status) result["diagnostics"] = A{ parse(chali_diagnostics::toolDiagnostic("CHL1703", CHALI_TEXT("手册示例执行失败")).c_str()) };
         }
     }
     if (machine)
@@ -536,7 +555,7 @@ int man(int argc, char **argv, const fs::path &compiler)
     if (!documentation.empty()) output << documentation << "\n";
     if (kind == "modules")
     {
-        output << terminal.title(MAGEL_TEXT("Magel 标准库手册")) << '\n';
+        output << terminal.title(CHALI_TEXT("ChaLi 标准库手册")) << '\n';
         for (const auto &group : array(get(result, "groups")))
         {
             output << '\n'
@@ -558,30 +577,30 @@ int man(int argc, char **argv, const fs::path &compiler)
             }
             output << terminal.title(qualified(symbol)) << '\n'
                    << str(symbol, "signature") << "\n\n"
-                   << MAGEL_TEXT("说明") << ":\n"
+                   << CHALI_TEXT("说明") << ":\n"
                    << str(symbol, "documentation") << "\n\n";
-            if (manLanguage() != "zh") output << MAGEL_TEXT("说明原文语言：zh") << "\n\n";
+            if (manLanguage() != "zh") output << CHALI_TEXT("说明原文语言：zh") << "\n\n";
             if (!array(get(symbol, "parameters")).empty())
             {
-                output << terminal.title(MAGEL_TEXT("参数")) << '\n';
-                for (const auto &param : array(get(symbol, "parameters"))) output << "  " << str(param, "label") << " — " << str(param, "documentation") << (str(param, "default").empty() ? "" : " [" + std::string(MAGEL_TEXT("默认值")) + ": " + str(param, "default") + "]") << '\n';
+                output << terminal.title(CHALI_TEXT("参数")) << '\n';
+                for (const auto &param : array(get(symbol, "parameters"))) output << "  " << str(param, "label") << " — " << str(param, "documentation") << (str(param, "default").empty() ? "" : " [" + std::string(CHALI_TEXT("默认值")) + ": " + str(param, "default") + "]") << '\n';
             }
             if (symbol.find("returns")) output << '\n'
-                                               << terminal.title(MAGEL_TEXT("返回值")) << "\n"
+                                               << terminal.title(CHALI_TEXT("返回值")) << "\n"
                                                << str(get(symbol, "returns"), "type") << " — " << str(get(symbol, "returns"), "documentation") << '\n';
             if (symbol.find("errors"))
             {
                 const auto &errors = get(symbol, "errors");
                 output << '\n'
-                       << terminal.title(MAGEL_TEXT("错误与边界")) << '\n'
+                       << terminal.title(CHALI_TEXT("错误与边界")) << '\n'
                        << str(errors, "documentation") << '\n';
                 for (const auto &check : array(get(errors, "preconditions"))) output << "  assert(" << str(check) << ")\n";
             }
             if (symbol.find("usage")) output << '\n'
-                                             << terminal.title(MAGEL_TEXT("调用形式")) << '\n'
+                                             << terminal.title(CHALI_TEXT("调用形式")) << '\n'
                                              << str(symbol, "usage") << '\n';
             for (const auto &program : array(get(symbol, "examples"))) output << '\n'
-                                                                              << terminal.title(MAGEL_TEXT("完整示例")) << " (" << str(program, "source") << ")\n"
+                                                                              << terminal.title(CHALI_TEXT("完整示例")) << " (" << str(program, "source") << ")\n"
                                                                               << str(program, "code") << '\n';
             output << '\n';
         }
@@ -589,11 +608,11 @@ int man(int argc, char **argv, const fs::path &compiler)
     for (const auto &diagnostic : array(get(result, "diagnostics"))) output << str(diagnostic, "code") << ": " << str(diagnostic, "message") << '\n';
     if (result.find("candidates"))
     {
-        output << MAGEL_TEXT("候选目标") << ":\n";
+        output << CHALI_TEXT("候选目标") << ":\n";
         for (const auto &candidate : array(get(result, "candidates"))) output << "  " << str(candidate) << '\n';
     }
     if (result.find("execution")) output << '\n'
-                                         << terminal.title(MAGEL_TEXT("示例输出")) << '\n'
+                                         << terminal.title(CHALI_TEXT("示例输出")) << '\n'
                                          << str(get(result, "execution"), "stdout") << str(get(result, "execution"), "stderr");
     terminal.print(output.str());
     return status;

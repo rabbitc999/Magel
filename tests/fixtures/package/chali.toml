@@ -1,0 +1,12 @@
+[package]
+name = "chali-demo"
+version = "0.1.0"
+author = "示例作者"
+
+[chali]
+
+import_paths = ["modules", "include"]
+import = ["tools::math", "shared"]
+commands = [
+    'import extra;',
+]

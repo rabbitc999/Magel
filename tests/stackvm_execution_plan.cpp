@@ -334,7 +334,7 @@ int main(int argc, char **argv)
         {
             machine.setExecutionOptimization(prepared);
             const auto failure = machine.run(repeatedRelease);
-            check(!failure.ok && failure.error.find("MGL1205") != Memory::String::npos, "基础与优化 VM 均拒绝重复释放");
+            check(!failure.ok && failure.error.find("CHL1205") != Memory::String::npos, "基础与优化 VM 均拒绝重复释放");
         }
     }
     stackvm::execution_detail::AllocationIndex index;

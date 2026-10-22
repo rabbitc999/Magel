@@ -2,11 +2,11 @@
 
 [Documentation index](README.md) · [中文](../28-declaration-sugars.md)
 
-The authoritative productions are in [`source/magel.gram`](../../source/magel.gram). ParseEngine generates the parser; Magel semantic functions construct and lower the AST. IR here means quadruples.
+The authoritative productions are in [`source/chali.gram`](../../source/chali.gram). ParseEngine generates the parser; ChaLi semantic functions construct and lower the AST. IR here means quadruples.
 
 ## Returning a control expression
 
-```magel
+```chali
 String make() {
     return {
         String local = "owned";
@@ -69,13 +69,13 @@ lowerReturnControl(E):
 
 Transfer/copy are compiler pseudocode, not new VM opcodes. Existing `LowerLanguageMove` performs live-memory checks, storage reads, source clearing and aggregate move marking. Existing string, object and aggregate paths perform copies. Cleanup remains on its control-flow edges and is protected by move state; consuming on one branch must not globally erase another branch's cleanup. Deferred callbacks cannot access an already consumed source through a dangling alias.
 
-See [`M_ReturnValue`](../../source/semantics/return_expression_ast.cpp), [`PrepareBreakValue` and `LowerLanguageMove`](../../source/semantics/boxing.cpp), [`LowerLoop`](../../source/semantics/lowering.cpp), and [borrow dataflow](../../source/magel_borrow_flow.hpp).
+See [`M_ReturnValue`](../../source/semantics/return_expression_ast.cpp), [`PrepareBreakValue` and `LowerLanguageMove`](../../source/semantics/boxing.cpp), [`LowerLoop`](../../source/semantics/lowering.cpp), and [borrow dataflow](../../source/chali_borrow_flow.hpp).
 
 Runtime arrays follow the same rule. An internal array in `return { String values[] = new[2]; ... yield values; };` transfers its length-bearing allocation; the source handle is cleared and source element cleanup is skipped. An external runtime array receives a new allocation and per-element deep copies of strings, objects and aggregates. Hidden result bindings accept length-bearing block, if, match and loop expressions as well as allocations and calls. This compiler-only consumption does not enable source-level `move(&array)`; fixed arrays retain their existing storage/return constraints, and opaque host types are not assumed to own resources.
 
 ## Statement-level named functions
 
-```magel
+```chali
 void main() {
     int64 value = 2;
     int64 read(int64 amount) { return value + amount; }
@@ -106,7 +106,7 @@ Named closures reuse `fn` ownership and lifetime analysis. Returning or storing 
 
 ## Field derivation
 
-```magel
+```chali
 #derive(Equal, Hash, Clone)
 struct Point { int64 x; String label; }
 #derive(Equal, Hash, Clone)
@@ -148,7 +148,7 @@ Two conventions live in compiler directives: a struct that implements `Closeable
 automatically `#NonCopyable`, and `#No<Interface>Replace` before a declaration removes that
 interface's automatic derivation.
 
-```magel
+```chali
 struct Handle : Closeable { int64 id; void close() { println("close {}", self.id); } }
 
 #NoAddReplace
@@ -185,4 +185,4 @@ no longer exist as empty marker interfaces. Generic templates keep their directi
 
 ## Regressions
 
-See [return ownership](../../example/samples/return_expression.mgl), [named closures](../../example/samples/named_function.mgl), [struct and enum derivation](../../example/samples/derive.mgl), and the [semantic/lifetime gate](../../tests/magel_declaration_sugars.py).
+See [return ownership](../../example/samples/return_expression.chl), [named closures](../../example/samples/named_function.chl), [struct and enum derivation](../../example/samples/derive.chl), and the [semantic/lifetime gate](../../tests/chali_declaration_sugars.py).

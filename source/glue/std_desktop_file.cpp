@@ -9,7 +9,7 @@
 #include <fstream>
 #include <algorithm>
 
-namespace magel_file
+namespace chali_file
 {
 namespace
 {
@@ -223,4 +223,4 @@ FileApi &defaultFileApi()
     return api;
 }
 
-}  // namespace magel_file
+}  // namespace chali_file

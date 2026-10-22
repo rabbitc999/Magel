@@ -3,7 +3,7 @@
  * @brief 整数幅值的分块长除法与 Burnikel-Ziegler 递归。
  */
 
-#if !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_BIG_INT)
 #include "bigint.hpp"
 #include <algorithm>
 #include <limits>

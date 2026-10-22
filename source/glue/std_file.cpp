@@ -16,7 +16,7 @@ using namespace native_record_glue;
  */
 struct FileRecord
 {
-    std::shared_ptr<magel_file::FileHandle> file;
+    std::shared_ptr<chali_file::FileHandle> file;
     Memory::String filePath;
     Memory::String fileError;
     bool fileSucceeded = true;
@@ -71,15 +71,15 @@ inline Value fileOpen(State &ctx, const Memory::Vector<Value> &args)
         ctx.error = "fopen 读不到模式字符串";
         return Value::fromInt(0);
     }
-    auto *api = static_cast<magel_file::FileApi *>(ctx.host.hostService(magel_file::serviceName));
-    if (!api) api = &magel_file::defaultFileApi();
+    auto *api = static_cast<chali_file::FileApi *>(ctx.host.hostService(chali_file::serviceName));
+    if (!api) api = &chali_file::defaultFileApi();
     if (!api)
     {
         ctx.error = "没有文件系统适配器";
         return Value::fromInt(0);
     }
     Memory::String openError;
-    std::shared_ptr<magel_file::FileHandle> stream = api->open(path, mode, openError);
+    std::shared_ptr<chali_file::FileHandle> stream = api->open(path, mode, openError);
     if (!stream || !stream->isOpen())
     {
         ctx.error = openError.empty() ? "打不开文件：" + path : openError;

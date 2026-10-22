@@ -8,7 +8,7 @@
     "optimization":  "MSVC Release /O2 /DNDEBUG; GCC Release -O3 -DNDEBUG; C++17",
     "allocator":  "C malloc/free; peak unavailable",
     "pool_capacity_bytes":  null,
-    "magel_program":  "magel/benchmarks/loop.mgl",
+    "chali_program":  "chali/benchmarks/loop.chl",
     "svmb_sha256":  "E5352EE783026C351475227A368876D519B6CE9C0FC6CDA3F82CA82D39D38FF3",
     "cross_bitness_svmb_sha256":  "9A9341030CD901F9F0CC0E845078BE5B9AAF4EDF957D8B12CE02A04AEEB5E80F",
     "unit_assertions_each":  288,

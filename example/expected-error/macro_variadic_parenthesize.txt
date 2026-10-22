@@ -1,1 +1,1 @@
-语法错误：example/samples-error/macro_variadic_parenthesize.mgl 第 1 行第 12 列：认不出来的字符
+语法错误：example/samples-error/macro_variadic_parenthesize.chl 第 1 行第 12 列：认不出来的字符

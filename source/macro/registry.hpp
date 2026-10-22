@@ -1,12 +1,12 @@
-#ifndef MAGEL_MACRO_REGISTRY_HPP
-#define MAGEL_MACRO_REGISTRY_HPP
+#ifndef CHALI_MACRO_REGISTRY_HPP
+#define CHALI_MACRO_REGISTRY_HPP
 #include "template_binding.hpp"
 #include "../literals/string_escape.hpp"
 #include <vector>
 #include <set>
 #include <functional>
 
-namespace magel_macro
+namespace chali_macro
 {
 /**
  * @brief 在单次编译中注册宏定义，按调用签名实例化已绑定 AST。
@@ -86,5 +86,5 @@ private:
     std::size_t remainingNodes_ = 1000000;
     std::map<std::pair<std::string, std::string>, std::vector<Definition>> definitions_;
 };
-}  // namespace magel_macro
+}  // namespace chali_macro
 #endif

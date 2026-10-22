@@ -1,21 +1,21 @@
 # Command line manual
 
-API queries require the explicit `api` command: `magel man api std` lists standard-library modules, and `magel man api std::text::Text` describes a type. Commands such as `magel man std` or `magel man std::text::Text` report a usage error and show the corrected command.
+API queries require the explicit `api` command: `chali man api std` lists standard-library modules, and `chali man api std::text::Text` describes a type. Commands such as `chali man std` or `chali man std::text::Text` report a usage error and show the corrected command.
 
-`magel man` queries the standard library index embedded in the executable. Normal queries need neither a network connection, Python, nor the source repository. The full library reference remains in [doc/library](../../library/README.md). This directory documents command behaviour, the JSON structure, and [LSP incremental hints and caching](lsp.md). [中文](../README.md)
+`chali man` queries the standard library index embedded in the executable. Normal queries need neither a network connection, Python, nor the source repository. The full library reference remains in [doc/library](../../library/README.md). This directory documents command behaviour, the JSON structure, and [LSP incremental hints and caching](lsp.md). [中文](../README.md)
 
 ## Queries
 
 ```sh
-magel man
-magel man api std::text
-magel man api std::text::Text
-magel man api std::text::Text::split
-magel man api --search delimiter
-magel man api --search split --exact
-magel man --json std::text::Text::split
-magel man api std::text::Text::split --run
-magel man --lang en std::text::Text::split
+chali man
+chali man api std::text
+chali man api std::text::Text
+chali man api std::text::Text::split
+chali man api --search delimiter
+chali man api --search split --exact
+chali man --json std::text::Text::split
+chali man api std::text::Text::split --run
+chali man --lang en std::text::Text::split
 ```
 
 | Form | Output |
@@ -40,7 +40,7 @@ Library prose currently retains its existing Chinese source. English mode transl
 
 Examples come from existing regression samples, including inputs, arguments, compiler flags, and expected output. `--run` writes and runs the complete sample in a temporary directory and removes the directory afterwards. A sample may cover several APIs; a short webpage fragment is not treated as a complete program.
 
-Missing examples produce MGL1702. Compilation failure, runtime failure, or a 60 second timeout produces MGL1703. JSON `execution` contains `example`, `exitCode`, `stdout`, and `stderr`; stdout preserves platform line endings. Missing targets produce MGL1701 with suggestions in `candidates` and diagnostic notes. Invalid command arguments exit with status 2.
+Missing examples produce CHL1702. Compilation failure, runtime failure, or a 60 second timeout produces CHL1703. JSON `execution` contains `example`, `exitCode`, `stdout`, and `stderr`; stdout preserves platform line endings. Missing targets produce CHL1701 with suggestions in `candidates` and diagnostic notes. Invalid command arguments exit with status 2.
 
 ## JSON structure
 
@@ -62,29 +62,29 @@ Function parameters provide name, type, documentation, and default, with an empt
 ## Maintaining the data
 
 ```sh
-magel man --update
+chali man --update
 python tools/library_reference.py --check
 sh gen.sh
 make -j4
 ```
 
-`--update` is a development path requiring the source repository and Python. It runs [tools/library_reference.py](../../../tools/library_reference.py) to regenerate the [library reference](../../library/README.md), API indices, and the declarations shared with LSP. Rebuild magel to embed the result. Normal queries never launch Python.
+`--update` is a development path requiring the source repository and Python. It runs [tools/library_reference.py](../../../tools/library_reference.py) to regenerate the [library reference](../../library/README.md), API indices, and the declarations shared with LSP. Rebuild chali to embed the result. Normal queries never launch Python.
 
-CI checks generated data with `--check`. [tests/magel_man.py](../../../tests/magel_man.py) covers modules, types, methods, search, JSON, three display languages, suggestions, and examples. `magel help` explains toolchain commands; `magel man` documents library APIs.
+CI checks generated data with `--check`. [tests/chali_man.py](../../../tests/chali_man.py) covers modules, types, methods, search, JSON, three display languages, suggestions, and examples. `chali help` explains toolchain commands; `chali man` documents library APIs.
 
 [Documentation index](../../en/README.md)
 
 ## Embedded book, keywords and AI SKILL
 
-`magel man book` exports all book Markdown and images into `book/` under the calling directory, preserving relative image paths and listing chapters; `magel man book 6` displays one. Appendix IDs `A` and `B`, file names, and full titles are accepted. `magel man keyword` lists keywords; `magel man keyword break` displays grammar, explanations, and examples generated from the authoritative grammar and language reference. `magel man skill` emits the complete AI SKILL, suitable for redirecting to `SKILL.md`. The VS Code package carries identical content at `skills/magel-programming/SKILL.md`.
+`chali man book` exports all book Markdown and images into `book/` under the calling directory, preserving relative image paths and listing chapters; `chali man book 6` displays one. Appendix IDs `A` and `B`, file names, and full titles are accepted. `chali man keyword` lists keywords; `chali man keyword break` displays grammar, explanations, and examples generated from the authoritative grammar and language reference. `chali man skill` emits the complete AI SKILL, suitable for redirecting to `SKILL.md`. The VS Code package carries identical content at `skills/chali-programming/SKILL.md`.
 
-Data is compressed into the executable at build time. Queries require neither a repository nor network access. Book and SKILL prose remains Chinese; terminal Markdown retains image references, while the PDF includes the images. All three query forms accept `--json`; `--run` and `--exact` are rejected. Missing chapters or keywords return MGL1701. Run `python tools/embed_manual.py` after source changes; `--check` verifies synchronization and `gen.sh` refreshes the embedded assets.
+Data is compressed into the executable at build time. Queries require neither a repository nor network access. Book and SKILL prose remains Chinese; terminal Markdown retains image references, while the PDF includes the images. All three query forms accept `--json`; `--run` and `--exact` are rejected. Missing chapters or keywords return CHL1701. Run `python tools/embed_manual.py` after source changes; `--check` verifies synchronization and `gen.sh` refreshes the embedded assets.
 
 Export updates embedded book files without deleting unrelated files; output paths must stay within the calling directory’s book folder.
 
 Single-chapter terminal output renders images as `[图片]\(images/name)` links. JSON and exported Markdown retain the original image syntax.
 
-`magel man` and `magel man help` show usage. `magel man api` lists API categories; `magel man api XXX` queries the embedded `doc/library/` reference.
+`chali man` and `chali man help` show usage. `chali man api` lists API categories; `chali man api XXX` queries the embedded `doc/library/` reference.
 
 
-`magel man macro` displays embedded help for definitions, invocations, ordered bracket groups, independent variadic parameters and multiline braces. It also supports `--json`.
+`chali man macro` displays embedded help for definitions, invocations, ordered bracket groups, independent variadic parameters and multiline braces. It also supports `--json`.

@@ -1,0 +1,719 @@
+module std::lang;
+
+int64 __stringQuery(String text, String needle, int64 operation, int64 from);
+String __stringTransform(String text, String first, String second, int64 operation, int64 offset, int64 count);
+List<String> __stringSplit(String text, String separator, int64 operation, bool keepEmpty);
+String __stringJoinParts(String separator, List<String> items);
+
+
+opcode String {
+    new = std::lang::__stringNew;
+    drop = std::lang::__stringDrop;
+    copy = std::lang::__stringCopy;
+    /** @brief 返回 UTF-8 文本的字节长度。
+     * @return 不包括终止零字节的长度。 */
+    int64 length() { return std::lang::len(self); }
+    /** 返回 UTF-8 字节数，与 length 一致。 */
+    int64 size() { return self.length(); }
+
+    /** 返回字节数，不包含终止零字节。 */
+    int64 byteLength() { return self.length(); }
+
+    /** 是否为空字符串。 */
+    bool isEmpty() { return self.length() == 0; }
+
+    /** 是否仅含 ASCII 空白；空字符串也返回 true。 */
+    bool isBlank() { return __stringQuery(self, "", 7, 0) != 0; }
+
+    /** 是否为非空 ASCII 十进制数字串。 */
+    bool isDigit() { return __stringQuery(self, "", 8, 0) != 0; }
+
+    /** 是否为非空 ASCII 字母串。 */
+    bool isAlpha() { return __stringQuery(self, "", 9, 0) != 0; }
+
+    /** 是否为非空 ASCII 字母数字串。 */
+    bool isAlnum() { return __stringQuery(self, "", 10, 0) != 0; }
+
+    /** 所有字节是否均小于 128；空串返回 true。 */
+    bool isAscii() { return __stringQuery(self, "", 11, 0) != 0; }
+
+    /** 严格解码 UTF-8 后的 Unicode 码点数，非字素簇数。 */
+    int64 charLength() { return __stringQuery(self, "", 13, 0); }
+
+    /** 从 start 字节起搜索，未找到返回 -1；负起点按零处理。 */
+    int64 indexOf(String text, int64 start = 0) { return __stringQuery(self, text, 0, start); }
+
+    /** 从 start 字节向前搜索，负起点表示从末尾开始。 */
+    int64 lastIndexOf(String text, int64 start = 0 - 1) { return __stringQuery(self, text, 1, start); }
+
+    /** 是否包含指定字节序列；空搜索串总是匹配。 */
+    bool contains(String text) { return __stringQuery(self, text, 2, 0) != 0; }
+
+    /** 是否以指定文本开头；空前缀总是匹配。 */
+    bool startsWith(String text) { return __stringQuery(self, text, 3, 0) != 0; }
+
+    /** 是否以指定文本结尾；空后缀总是匹配。 */
+    bool endsWith(String text) { return __stringQuery(self, text, 4, 0) != 0; }
+
+    /** 统计不重叠匹配数；空搜索串返回字节数加一。 */
+    int64 count(String text) { return __stringQuery(self, text, 5, 0); }
+
+    /** 按字节字典序比较，返回 -1、0 或 1。 */
+    int64 compare(String text) { return __stringQuery(self, text, 6, 0); }
+
+    /** 读取字节，越界返回 None。 */
+    Option<uint8> byteAt(int64 index) { if (index < 0 || index >= self.length()) { return Option<uint8>::None; } return Option<uint8>::Value((uint8)__stringQuery(self, "", 12, index)); }
+
+    /** 按字节起点及长度截取，越界截断，负起点按零，负长度表示至末尾。 */
+    String substring(int64 start, int64 count = 0 - 1) { return __stringTransform(self, "", "", 0, start, count); }
+
+    /** 按半开字节范围截取；结束不大于起点时返回空串。 */
+    String slice(int64 start, int64 end) { if (start < 0) { start = 0; } if (end > self.length()) { end = self.length(); } if (end <= start) { return ""; } return self.substring(start, end - start); }
+
+    /** 取前 count 字节，负数按零。 */
+    String left(int64 count) { if (count < 0) { return ""; } return __stringTransform(self, "", "", 0, 0, count); }
+
+    /** 取后 count 字节，负数按零，超出长度取全部。 */
+    String right(int64 count) { return __stringTransform(self, "", "", 16, 0, count); }
+
+    /** 去除两端 ASCII 空白，保留内部文本。 */
+    String trim() { return __stringTransform(self, "", "", 1, 0, 0); }
+
+    /** 去除起始 ASCII 空白。 */
+    String trimStart() { return __stringTransform(self, "", "", 2, 0, 0); }
+
+    /** 去除末尾 ASCII 空白。 */
+    String trimEnd() { return __stringTransform(self, "", "", 3, 0, 0); }
+
+    /** 将 ASCII 大写字母转小写，其他字节保持原样。 */
+    String toLower() { return __stringTransform(self, "", "", 4, 0, 0); }
+
+    /** 将 ASCII 小写字母转大写，其他字节保持原样。 */
+    String toUpper() { return __stringTransform(self, "", "", 5, 0, 0); }
+
+    /** 替换第一个精确匹配；空搜索串保持原值。 */
+    String replaceFirst(String before, String after) { return __stringTransform(self, before, after, 6, 0, 0); }
+
+    /** 替换全部不重叠精确匹配；空搜索串保持原值。 */
+    String replaceAll(String before, String after) { return __stringTransform(self, before, after, 7, 0, 0); }
+
+    /** 替换全部不重叠匹配，与 replaceAll 一致。 */
+    String replace(String before, String after) { return self.replaceAll(before, after); }
+
+    /** 重复 count 次，零次返回空串，负数报错。 */
+    String repeat(int64 count) { return __stringTransform(self, "", "", 8, 0, count); }
+
+    /** 按 Unicode 码点反转，保持每个 UTF-8 编码完整。 */
+    String reverse() { return __stringTransform(self, "", "", 9, 0, 0); }
+
+    /** 按字节目标长度向左循环填充；空填充串保持原值。 */
+    String padStart(int64 length, String fill = " ") { return __stringTransform(self, fill, "", 10, length, 0); }
+
+    /** 按字节目标长度向右循环填充；空填充串保持原值。 */
+    String padEnd(int64 length, String fill = " ") { return __stringTransform(self, fill, "", 11, length, 0); }
+
+    /** 仅去除匹配的起始前缀一次。 */
+    String removePrefix(String prefix) { return __stringTransform(self, prefix, "", 12, 0, 0); }
+
+    /** 仅去除匹配的末尾后缀一次。 */
+    String removeSuffix(String suffix) { return __stringTransform(self, suffix, "", 13, 0, 0); }
+
+    /** 在截断到有效范围的字节位置插入文本，返回新值。 */
+    String insert(int64 index, String text) { return __stringTransform(self, text, "", 14, index, 0); }
+
+    /** 移除指定字节段；负长度表示删除余下全部。 */
+    String remove(int64 start, int64 count = 0 - 1) { return __stringTransform(self, "", "", 15, start, count); }
+
+    /** 按 Unicode 码点截取，严格验证 UTF-8，不按字素簇处理。 */
+    String utf8Substring(int64 start, int64 count = 0 - 1) { return __stringTransform(self, "", "", 17, start, count); }
+
+    /** 读取一个完整 Unicode 码点，越界返回 None。 */
+    Option<String> charAt(int64 index) { if (index < 0 || index >= self.charLength()) { return Option<String>::None; } return Option<String>::Value(self.utf8Substring(index, 1)); }
+
+    /** 按精确分隔文本分割，默认保留空项；空分隔符按 UTF-8 码点分割。 */
+    List<String> split(String separator, bool keepEmpty = true) { return __stringSplit(self, separator, 0, keepEmpty); }
+
+    /** 按连续 ASCII 空白分词并忽略空项。 */
+    List<String> splitWhitespace() { return __stringSplit(self, "", 1, false); }
+
+    /** 按 LF、CRLF 或 CR 分行，默认保留空行和末尾空项。 */
+    List<String> lines(bool keepEmpty = true) { return __stringSplit(self, "", 2, keepEmpty); }
+
+    /** 严格按 UTF-8 Unicode 码点拆分，空串产生空列表。 */
+    List<String> unicodeChars() { return __stringSplit(self, "", 3, false); }
+
+    /** 导出独立字节列表，修改列表不影响原字符串。 */
+    List<uint8> bytes() { return __stringBytes(self); }
+
+    /** 以当前字符串为分隔符连接值列表，空列表返回空串。 */
+    String join(List<String> items) { return __stringJoinParts(self, items); }
+
+    /** 返回两段文本的连接，不修改当前值。 */
+    String concat(String text) { return self + text; }
+
+    /** 返回在当前值前添加文本的新字符串。 */
+    String prepend(String text) { return text + self; }
+
+};
+
+opcode BigInteger {
+    new = __std_bint_from_int;
+    drop = __std_bint_drop;
+    copy = __std_bint_copy;
+};
+opcode BigDecimal {
+    new = __std_bfloat_from_int;
+    drop = __std_bfloat_drop;
+    copy = __std_bfloat_copy;
+};
+#NonCopyable
+opcode File {
+    new = __std_file_open;
+    drop = __std_file_drop;
+    /**
+     * @brief 写入文本，格式参数沿用 print 的规则。
+     * @param text 待写入文本，支持由格式化调用生成。
+     * @return 成功写入的字节数，失败沿用文件写入诊断。
+     */
+    int64 print(String text) { return __fileWrite(self, text); }
+    /**
+     * @brief 写入文本并追加一个 LF 换行。
+     * @param text 待写入文本，省略时只写换行。
+     * @return 包括换行的写入字节数。
+     */
+    int64 println(String text = "") {
+        return __fileWrite(self, text + "\n");
+    }
+};
+#NonCopyable
+opcode Process {
+    new = std::process::__processRun;
+    drop = std::process::__processDrop;
+};
+
+/**
+ * @brief 由宿主将已格式化文本写入标准错误流。
+ * @param text 不再解释占位符的文本。
+ * @return 成功返回零，失败报告宿主错误。
+ */
+int64 __std_stderr_write(String text);
+/**
+ * @brief eprint 归一后的内部字符串入口。
+ * @param text 已格式化的文本。
+ * @return 成功返回零。
+ */
+int64 __std_eprint(String text);
+/**
+ * @brief eprintln 归一后的内部字符串入口。
+ * @param text 已格式化的文本。
+ * @return 成功返回零。
+ */
+int64 __std_eprintln(String text);
+
+String __readLine();
+String __readLines(int32 N);
+/** @brief 读取一行标准输入，保留空格，去掉 LF/CRLF；EOF 返回空串，空行也返回空串。
+ * @return 读取的行文本；String 不允许内嵌零字节。 */
+String readLine() { return __readLine(); }
+/** @brief 最多读取 N 行，以 LF 连接，结果不额外追加换行；EOF 提前结束。
+ * @param N 非负行数；零返回空串且不读取输入，负数触发 panic。
+ * @return 拼接后的文本，空行保留；显式 --input 的每个输入项视为一行。 */
+String readLines(int32 N) { assert(N>=0,"readLines requires a nonnegative line count"); return __readLines(N); }
+/** @brief 接受默认整数实参的多行输入重载，检查后转为 int32 行数。
+ * @param N 0 至 2147483647 的行数；超界触发 panic。
+ * @return 最多 N 行，以 LF 连接，EOF 提前结束。 */
+String readLines(int64 N) { assert(N>=0 && N<=2147483647,"readLines requires a nonnegative int32 line count"); return __readLines((int32)N); }
+
+/* 核心转换由胶水完成范围检查，float32 先精确提升至 float64。 */
+int64 __tryToInt32(float64 value);
+int64 __toInt64(float64 value);
+/** 向零截断为 int32；非有限数或截断后越界返回 None。 */
+Option<int32> toInt32(float64 value) {
+    int64 converted = __tryToInt32(value);
+    if (converted == 2147483648) { return Option<int32>::None; }
+    return Option<int32>::Value((int32)converted);
+}
+/** 向零截断为 int32；非有限数或截断后越界返回 None。 */
+Option<int32> toInt32(float32 value) { return toInt32((float64)value); }
+/** 向零截断为 int64，非有限数或截断后越界时报错。 */
+int64 toInt64(float64 value) { return __toInt64(value); }
+/** 向零截断为 int64，非有限数或截断后越界时报错。 */
+int64 toInt64(float32 value) { return __toInt64((float64)value); }
+
+std::lang::List<uint8> __float32ToBytes(float32 value, bool bigEndian);
+float32 __bytesToFloat32(std::lang::List<uint8> bytes, bool bigEndian);
+float32 __arrayToFloat32(uint8 const& bytes, bool bigEndian);
+bool __float32ToArray(float32 value, uint8 mut& bytes, bool bigEndian);
+/** 按 IEEE 754 binary32 输出 4 个字节。 */
+std::lang::List<uint8> float32ToBytes(float32 value, bool bigEndian) { return __float32ToBytes(value, bigEndian); }
+/** 默认小端编码。 */
+std::lang::List<uint8> float32ToBytes(float32 value) { return __float32ToBytes(value, false); }
+/** 读取列表前 4 字节，不足则返回 None。 */
+Option<float32> bytesToFloat32(std::lang::List<uint8> bytes, bool bigEndian) {
+    if (bytes.len() < 4) { return Option<float32>::None; }
+    return Option<float32>::Value(__bytesToFloat32(bytes, bigEndian));
+}
+/** 默认小端列表解码。 */
+Option<float32> bytesToFloat32(std::lang::List<uint8> bytes) { return bytesToFloat32(bytes, false); }
+/** 从固定数组或指针读取前 4 字节；调用者保证 count 为有效长度。 */
+Option<float32> bytesToFloat32(uint8 const& bytes, int64 count, bool bigEndian) {
+    if (count < 4) { return Option<float32>::None; }
+    return Option<float32>::Value(__arrayToFloat32(bytes, bigEndian));
+}
+/** 默认小端固定数组解码。 */
+Option<float32> bytesToFloat32(uint8 const& bytes, int64 count) { return bytesToFloat32(bytes, count, false); }
+/** 从运行时数组读取，自动获取长度。 */
+Option<float32> bytesToFloat32(uint8 bytes[], bool bigEndian) { return bytesToFloat32(bytes, std::lang::len(bytes), bigEndian); }
+/** 默认小端运行时数组解码。 */
+Option<float32> bytesToFloat32(uint8 bytes[]) { return bytesToFloat32(bytes, std::lang::len(bytes), false); }
+/** 写入数组前 4 项；容量不足返回 false，数组保持不变。 */
+bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count, bool bigEndian) {
+    if (count < 4) { return false; }
+    return __float32ToArray(value, bytes, bigEndian);
+}
+/** 默认小端固定数组编码。 */
+bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count) { return float32ToBytes(value, bytes, count, false); }
+/** 编码到运行时数组的可变引用，自动获取容量；调用时传入 &array。 */
+bool float32ToBytes(float32 value, uint8[] mut& bytes, bool bigEndian) {
+    if (std::lang::len(bytes) < 4) { return false; }
+    return float32ToBytes(value, &bytes[0], std::lang::len(bytes), bigEndian);
+}
+/** 默认小端运行时数组编码；调用时传入 &array。 */
+bool float32ToBytes(float32 value, uint8[] mut& bytes) { return float32ToBytes(value, bytes, false); }
+
+std::lang::List<uint8> __float64ToBytes(float64 value, bool bigEndian);
+float64 __bytesToFloat64(std::lang::List<uint8> bytes, bool bigEndian);
+float64 __arrayToFloat64(uint8 const& bytes, bool bigEndian);
+bool __float64ToArray(float64 value, uint8 mut& bytes, bool bigEndian);
+/** 按 IEEE 754 binary64 输出 8 个字节。 */
+std::lang::List<uint8> float64ToBytes(float64 value, bool bigEndian) { return __float64ToBytes(value, bigEndian); }
+/** 默认小端编码。 */
+std::lang::List<uint8> float64ToBytes(float64 value) { return __float64ToBytes(value, false); }
+/** 读取列表前 8 字节，不足则返回 None。 */
+Option<float64> bytesToFloat64(std::lang::List<uint8> bytes, bool bigEndian) {
+    if (bytes.len() < 8) { return Option<float64>::None; }
+    return Option<float64>::Value(__bytesToFloat64(bytes, bigEndian));
+}
+/** 默认小端列表解码。 */
+Option<float64> bytesToFloat64(std::lang::List<uint8> bytes) { return bytesToFloat64(bytes, false); }
+/** 从固定数组或指针读取前 8 字节；调用者保证 count 为有效长度。 */
+Option<float64> bytesToFloat64(uint8 const& bytes, int64 count, bool bigEndian) {
+    if (count < 8) { return Option<float64>::None; }
+    return Option<float64>::Value(__arrayToFloat64(bytes, bigEndian));
+}
+/** 默认小端固定数组解码。 */
+Option<float64> bytesToFloat64(uint8 const& bytes, int64 count) { return bytesToFloat64(bytes, count, false); }
+/** 从运行时数组读取，自动获取长度。 */
+Option<float64> bytesToFloat64(uint8 bytes[], bool bigEndian) { return bytesToFloat64(bytes, std::lang::len(bytes), bigEndian); }
+/** 默认小端运行时数组解码。 */
+Option<float64> bytesToFloat64(uint8 bytes[]) { return bytesToFloat64(bytes, std::lang::len(bytes), false); }
+/** 写入数组前 8 项；容量不足返回 false，数组保持不变。 */
+bool float64ToBytes(float64 value, uint8 mut& bytes, int64 count, bool bigEndian) {
+    if (count < 8) { return false; }
+    return __float64ToArray(value, bytes, bigEndian);
+}
+/** 默认小端固定数组编码。 */
+bool float64ToBytes(float64 value, uint8 mut& bytes, int64 count) { return float64ToBytes(value, bytes, count, false); }
+/** 编码到运行时数组的可变引用，自动获取容量；调用时传入 &array。 */
+bool float64ToBytes(float64 value, uint8[] mut& bytes, bool bigEndian) {
+    if (std::lang::len(bytes) < 8) { return false; }
+    return float64ToBytes(value, &bytes[0], std::lang::len(bytes), bigEndian);
+}
+/** 默认小端运行时数组编码；调用时传入 &array。 */
+bool float64ToBytes(float64 value, uint8[] mut& bytes) { return float64ToBytes(value, bytes, false); }
+
+/* ChaLi 标准库前导模块。这里放可由 ChaLi 自身表达的类型；算法由编译器签名接入 VM 胶水。 */
+
+/*
+ * 中止统一走 std::lang::panic：编译器与虚拟机里只有 `__std_panic` 这一个停机原语，
+ * `exit(n)` 与内建 `assert(x)` 都已删除。需要断言时用下面这几个函数 —— 它们自己
+ * 调 `std::lang::panic`，所以停机清理只有一条入口；带消息的重载让标准库自己的前置检查
+ * 也能给出人话（例如 range 的步长）。
+ *
+ * 带 `int64 line` 的重载给文件末尾的系统宏 `$assert(...)` 用：宏把调用点的 `$line`
+ * 传进来，失败时就地报出**源码行号**，不必每处自己写文案。
+ */
+void assert(bool condition) {
+    if (!condition) { std::lang::panic("assert(x) 的 x 为假"); }
+}
+
+void assert(bool condition, std::lang::String message) {
+    if (!condition) { std::lang::panic(message); }
+}
+
+void assert(bool condition, int64 line) {
+    if (!condition) { std::lang::panic(std::lang::format("断言失败：源码第 {} 行", line)); }
+}
+
+void assert(bool condition, std::lang::String message, int64 line) {
+    if (!condition) { std::lang::panic(std::lang::format("{}（源码第 {} 行）", message, line)); }
+}
+
+/** 成功继续求值，失败携带传播载荷退出当前函数。 */
+enum TryBranch<T, R> { Continue(T value), Break(R residual); };
+/** Result 的错误载荷，保留错误与缺失两类传播的区别。 */
+struct ErrorResidual<E> { E error; };
+/** Option 的无值传播载荷。 */
+enum NoneResidual { None; };
+/** 只读拆分传播值。 */
+interface Try<T, R> { TryBranch<T, R> branch(); };
+/** 移动拥有值后拆分传播值。 */
+interface TryMove<T, R> { TryBranch<T, R> intoBranch(); };
+/** 编译期静态接收协议，F 必须是实现类型自身。 */
+interface FromResidual<F, R> { static F fromResidual(R residual); };
+
+enum Option<T> : Try<T, NoneResidual>, TryMove<T, NoneResidual>, FromResidual<Option<T>, NoneResidual> {
+    Value(T value), None;
+
+    TryBranch<T, NoneResidual> branch() {
+        match (self) {
+            Option<T>::Value(value) => { return TryBranch<T, NoneResidual>::Continue(value); }
+            Option<T>::None => { return TryBranch<T, NoneResidual>::Break(NoneResidual::None); }
+        }
+    }
+    TryBranch<T, NoneResidual> intoBranch() {
+        if (self.isValue()) { return TryBranch<T, NoneResidual>::Continue(self.take()); }
+        return TryBranch<T, NoneResidual>::Break(NoneResidual::None);
+    }
+    static Option<T> fromResidual(NoneResidual residual) { return Option<T>::None; }
+    bool isValue() {
+        bool result = false;
+        match (self) {
+            Option<T>::Value(value) => { result = true; }
+            Option<T>::None => { result = false; }
+        }
+        return result;
+    }
+
+    bool isNone() { return !self.isValue(); }
+
+    /** 转移整个结果并取出成功载荷；源结果随后不可使用。 */
+    T take() {
+        return {
+            match (std::lang::move(&self)) {
+                Option<T>::Value(value) => { yield value; }
+                Option<T>::None => { std::lang::panic("called take() without a value"); }
+            }
+            loop { std::lang::panic("called take() without a value"); };
+        };
+    }
+
+    T unwrap() {
+        T result;
+        match (self) {
+            Option<T>::Value(value) => { result = value; }
+            Option<T>::None => { std::lang::panic("called Option.unwrap() on None"); }
+        }
+        return result;
+    }
+
+    T unwrapOr(T fallback) {
+        T result = fallback;
+        match (self) {
+            Option<T>::Value(value) => { result = value; }
+            Option<T>::None => { }
+        }
+        return result;
+    }
+
+    T expect(std::lang::String message) {
+        T result;
+        match (self) {
+            Option<T>::Value(value) => { result = value; }
+            Option<T>::None => { std::lang::panic(message); }
+        }
+        return result;
+    }
+
+    Option<T> transform(T fn(T) mapper) {
+        Option<T> result = Option<T>::None;
+        match (self) {
+            Option<T>::Value(value) => { result = Option<T>::Value(mapper(value)); }
+            Option<T>::None => { }
+        }
+        return result;
+    }
+
+    Option<T> andThen(Option<T> fn(T) mapper) {
+        Option<T> result = Option<T>::None;
+        match (self) {
+            Option<T>::Value(value) => { result = mapper(value); }
+            Option<T>::None => { }
+        }
+        return result;
+    }
+};
+
+enum Result<T, E> : Try<T, ErrorResidual<E>>, TryMove<T, ErrorResidual<E>>, FromResidual<Result<T, E>, ErrorResidual<E>> {
+    Ok(T value), Err(E error);
+
+    TryBranch<T, ErrorResidual<E>> branch() {
+        match (self) {
+            Result<T,E>::Ok(value) => { return TryBranch<T,ErrorResidual<E>>::Continue(value); }
+            Result<T,E>::Err(error) => {
+                ErrorResidual<E> residual;
+                residual.error = error;
+                return TryBranch<T,ErrorResidual<E>>::Break(residual);
+            }
+        }
+    }
+    TryBranch<T, ErrorResidual<E>> intoBranch() {
+        if (self.isOk()) { return TryBranch<T, ErrorResidual<E>>::Continue(self.take()); }
+        ErrorResidual<E> residual;
+        residual.error = self.takeError();
+        return TryBranch<T, ErrorResidual<E>>::Break(std::lang::move(&residual));
+    }
+    static Result<T,E> fromResidual(ErrorResidual<E> residual) { return Result<T,E>::Err(std::lang::move(&residual.error)); }
+    Option<T> ok() {
+        match (self) {
+            Result<T,E>::Ok(value) => { return Option<T>::Value(value); }
+            Result<T,E>::Err(error) => { return Option<T>::None; }
+        }
+    }
+    bool isOk() {
+        bool result = false;
+        match (self) {
+            Result<T, E>::Ok(value) => { result = true; }
+            Result<T, E>::Err(error) => { result = false; }
+        }
+        return result;
+    }
+
+    bool isErr() { return !self.isOk(); }
+
+    /** 转移整个结果并取出成功载荷；源结果随后不可使用。 */
+    T take() {
+        return {
+            match (std::lang::move(&self)) {
+                Result<T, E>::Ok(value) => { yield value; }
+                Result<T, E>::Err(error) => { std::lang::panic("called take() without a value"); }
+            }
+            loop { std::lang::panic("called take() without a value"); };
+        };
+    }
+
+    T unwrap() {
+        T result;
+        match (self) {
+            Result<T, E>::Ok(value) => { result = value; }
+            Result<T, E>::Err(error) => { std::lang::panic("called Result.unwrap() on Err"); }
+        }
+        return result;
+    }
+
+    T unwrapOr(T fallback) {
+        T result = fallback;
+        match (self) {
+            Result<T, E>::Ok(value) => { result = value; }
+            Result<T, E>::Err(error) => { }
+        }
+        return result;
+    }
+
+    T expect(std::lang::String message) {
+        T result;
+        match (self) {
+            Result<T, E>::Ok(value) => { result = value; }
+            Result<T, E>::Err(error) => { std::lang::panic(message); }
+        }
+        return result;
+    }
+
+    /** 转移整个结果并取出错误载荷；源结果随后不可使用。 */
+    E takeError() {
+        return {
+            match (std::lang::move(&self)) {
+                Result<T, E>::Ok(value) => { std::lang::panic("called takeError() on Ok"); }
+                Result<T, E>::Err(error) => { yield error; }
+            }
+            loop { std::lang::panic("called takeError() on Ok"); };
+        };
+    }
+
+    E error() {
+        E result;
+        match (self) {
+            Result<T, E>::Ok(value) => { std::lang::panic("called Result.error() on Ok"); }
+            Result<T, E>::Err(error) => { result = error; }
+        }
+        return result;
+    }
+
+    Result<T, E> transform(T fn(T) mapper) {
+        Result<T, E> result;
+        match (self) {
+            Result<T, E>::Ok(value) => { result = Result<T, E>::Ok(mapper(value)); }
+            Result<T, E>::Err(error) => { result = Result<T, E>::Err(error); }
+        }
+        return result;
+    }
+
+    Result<T, E> andThen(Result<T, E> fn(T) mapper) {
+        Result<T, E> result;
+        match (self) {
+            Result<T, E>::Ok(value) => { result = mapper(value); }
+            Result<T, E>::Err(error) => { result = Result<T, E>::Err(error); }
+        }
+        return result;
+    }
+};
+
+/**
+ * @brief 自定义区间的有状态前进协议。
+ * @note nextValue 从接收者的游标状态产生下一项并推进状态；到达终点后返回 None。
+ */
+interface NextValue<T> {
+    /**
+     * @brief 取得下一项，由实现判断边界并维护游标状态。
+     * @param end 区间终点。
+     * @param inclusive 是否包含终点。
+     * @return 下一项，或表示遍历结束的 None。
+     */
+    Option<T> nextValue(T end, bool inclusive);
+};
+
+struct __ValueRange<T : NextValue<T>> : Iterator<T> {
+    T cursor;
+    T end;
+    bool inclusive;
+
+    /**
+     * @brief 委托游标对象取得下一项。
+     * @param index 外层迭代位置；游标对象自行保存前进状态。
+     * @return 游标产生的下一项或 None。
+     */
+    Option<T> iterator(int64 index) {
+        return self.cursor.nextValue(self.end, self.inclusive);
+    }
+};
+
+/**
+ * @brief 创建不包含终点的自定义类型区间。
+ * @param start 独立保存的起始游标值。
+ * @param end 交给前进协议判断的终点。
+ * @return 拥有游标状态的区间值。
+ */
+__ValueRange<T> __customRange<T : NextValue<T>>(T start, T end) {
+    __ValueRange<T> result;
+    result.cursor = start;
+    result.end = end;
+    result.inclusive = false;
+    return result;
+}
+
+/**
+ * @brief 创建包含终点的自定义类型区间。
+ * @param start 独立保存的起始游标值。
+ * @param end 交给前进协议判断的终点。
+ * @return 拥有游标状态的区间值。
+ */
+__ValueRange<T> __customRangeEq<T : NextValue<T>>(T start, T end) {
+    __ValueRange<T> result;
+    result.cursor = start;
+    result.end = end;
+    result.inclusive = true;
+    return result;
+}
+
+struct Pair<K, V> {
+    K first;
+    V second;
+
+    /**
+     * @brief 从两个值复制构造键值对。
+     * @param first 键或第一项。
+     * @param second 值或第二项。
+     * @return 拥有独立字段值的 Pair。
+     */
+    static Pair<K, V> create(K first, V second) {
+        self.first = first;
+        self.second = second;
+    }
+
+    /**
+     * @brief 从二元组复制构造键值对。
+     * @param value 提供 first 与 second 的两个值。
+     * @return 拥有独立字段值的 Pair。
+     */
+    static Pair<K, V> create((K, V) value) {
+        self.first = value.0;
+        self.second = value.1;
+    }
+
+    /**
+     * @brief 将键值对的两个字段复制为二元组。
+     * @return 按 first、second 顺序保存独立值的二元组。
+     */
+    (K, V) toTuple() {
+        return (self.first, self.second);
+    }
+};
+
+/*
+ * 系统断言宏：`$assert(condition)` / `$assert(condition, message)` 把**调用点**的行号
+ * 喂给上面带 `int64 line` 的重载。`$line` 在宏展开的位置取值，所以拿到的是调用处那一
+ * 行；限定名 `std::lang::assert` 不会被这个同名宏吃掉（`.name` / `::name` 不当宏调用）。
+ *
+ * 宏体保存完整语句；调用处也写分号，与其他语句宏保持一致。
+ * 定义放在文件末尾：它上面那几行是 `assert` 函数自己的**定义**，不能被动到。
+ */
+$macro assert(condition)
+std::lang::assert(condition, $line);
+$end_macro
+
+$macro assert(condition, message)
+std::lang::assert(condition, message, $line);
+$end_macro
+
+/** @brief 判断盒子是否保存精确的 T 类型，不比较公开整数编号。 */
+bool isType<T>(Any const& value) { return value.__isTypeTag(__typeTag(T)); }
+/** @brief 类型匹配时复制拥有值；不匹配或空盒子返回 None。 */
+Option<T> tryGet<T>(Any const& value) {
+    if (!isType<T>(&value)) { return Option<T>::None; }
+    T result = value.getValue();
+    return Option<T>::Value(result);
+}
+/** @brief 安全借用只读值或兼容接口，引用不得超过盒子的寿命。 */
+Option<T const&> tryGetReference<T>(Any const& value) {
+    Option<T const&> result = value.getOptional();
+    return result;
+}
+/** @brief 安全借用可写值或兼容接口，要求盒子可写。 */
+Option<T mut&> tryGetMut<T>(Any mut& value) {
+    Option<T mut&> result = value.getOptional();
+    return result;
+}
+
+List<uint8> __stringBytes(String text);
+/** 返回字符串的完整 UTF-8 字节副本，不执行字符边界索引。 */
+List<uint8> stringBytes(String text) { return __stringBytes(text); }
+
+
+
+
+
+/** 内部泛型方法标记，仅保留调用点显式给出的错误类型。 */
+interface __chaliMapErr<F> {};
+interface __chaliOkOr<E> {};
+interface __chaliOkOrElse<E> {};
+/** 显式映射失败载荷；成功分支不调用 mapper。 */
+Result<T,F> __mapErrImpl<T,E,F>(Result<T,E> value, F fn(E) mapper) {
+    match(value) {
+        Result<T,E>::Ok(item) => { return Result<T,F>::Ok(item); }
+        Result<T,E>::Err(error) => { return Result<T,F>::Err(mapper(error)); }
+    }
+}
+/** 将缺失转换为指定错误，error 参数按普通调用规则求值。 */
+Result<T,E> __okOrImpl<T,E>(Option<T> value, E error) {
+    match(value) {
+        Option<T>::Value(item) => { return Result<T,E>::Ok(item); }
+        Option<T>::None => { return Result<T,E>::Err(error); }
+    }
+}
+/** 只在缺失时调用错误工厂。 */
+Result<T,E> __okOrElseImpl<T,E>(Option<T> value, E fn() factory) {
+    match(value) {
+        Option<T>::Value(item) => { return Result<T,E>::Ok(item); }
+        Option<T>::None => { return Result<T,E>::Err(factory()); }
+    }
+}

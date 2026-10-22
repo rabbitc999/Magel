@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::cli;
 ```
 
@@ -14,16 +14,16 @@ import std::cli;
 
 ## 参考代码
 
-完整程序：[example/samples/std_cli.mgl](../../example/samples/std_cli.mgl)。
+完整程序：[example/samples/std_cli.chl](../../example/samples/std_cli.chl)。
 
 ```powershell
-magel run example/samples/std_cli.mgl
+chali run example/samples/std_cli.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::cli;
 int64 main(){
     CliParser parser;parser.program="demo";parser.description="sample tool";
@@ -102,7 +102,7 @@ CLI options, defaults and validation OK
 
 **声明**
 
-```magel
+```chali
 Option<String> get(String name);
 ```
 
@@ -128,13 +128,13 @@ Option<String> get(String name);
 
 **调用形式**
 
-```magel
+```chali
 obj.get(name);
 ```
 
-**源码**：[source/std/cli.mgl:12](../../source/std/cli.mgl#L12)。
+**源码**：[source/std/cli.chl:12](../../source/std/cli.chl#L12)。
 
-**完整示例**：[example/samples/std_cli.mgl](../../example/samples/std_cli.mgl)。
+**完整示例**：[example/samples/std_cli.chl](../../example/samples/std_cli.chl)。
 
 <a id="api-1"></a>
 
@@ -142,7 +142,7 @@ obj.get(name);
 
 **声明**
 
-```magel
+```chali
 Result<int64,CliError> getInt(String name);
 ```
 
@@ -166,13 +166,13 @@ Result<int64,CliError> getInt(String name);
 
 **调用形式**
 
-```magel
+```chali
 obj.getInt(name);
 ```
 
-**源码**：[source/std/cli.mgl:17](../../source/std/cli.mgl#L17)。
+**源码**：[source/std/cli.chl:17](../../source/std/cli.chl#L17)。
 
-**完整示例**：[example/samples/std_cli.mgl](../../example/samples/std_cli.mgl)。
+**完整示例**：[example/samples/std_cli.chl](../../example/samples/std_cli.chl)。
 
 <a id="api-2"></a>
 
@@ -180,7 +180,7 @@ obj.getInt(name);
 
 **声明**
 
-```magel
+```chali
 CliError cliError(String argument, String message);
 ```
 
@@ -205,13 +205,13 @@ CliError cliError(String argument, String message);
 
 **调用形式**
 
-```magel
+```chali
 std::cli::cliError(argument, message);
 ```
 
-**源码**：[source/std/cli.mgl:26](../../source/std/cli.mgl#L26)。
+**源码**：[source/std/cli.chl:26](../../source/std/cli.chl#L26)。
 
-**完整示例**：[example/samples/std_cli.mgl](../../example/samples/std_cli.mgl)。
+**完整示例**：[example/samples/std_cli.chl](../../example/samples/std_cli.chl)。
 
 <a id="api-3"></a>
 
@@ -219,7 +219,7 @@ std::cli::cliError(argument, message);
 
 **声明**
 
-```magel
+```chali
 String cliTail(String text,int64 start);
 ```
 
@@ -244,13 +244,13 @@ String cliTail(String text,int64 start);
 
 **调用形式**
 
-```magel
+```chali
 std::cli::cliTail(text, start);
 ```
 
-**源码**：[source/std/cli.mgl:28](../../source/std/cli.mgl#L28)。
+**源码**：[source/std/cli.chl:28](../../source/std/cli.chl#L28)。
 
-**完整示例**：[example/samples/std_cli.mgl](../../example/samples/std_cli.mgl)。
+**完整示例**：[example/samples/std_cli.chl](../../example/samples/std_cli.chl)。
 
 <a id="api-4"></a>
 
@@ -258,7 +258,7 @@ std::cli::cliTail(text, start);
 
 **声明**
 
-```magel
+```chali
 bool add(CliOption option);
 ```
 
@@ -284,13 +284,13 @@ bool add(CliOption option);
 
 **调用形式**
 
-```magel
+```chali
 obj.add(option);
 ```
 
-**源码**：[source/std/cli.mgl:39](../../source/std/cli.mgl#L39)。
+**源码**：[source/std/cli.chl:39](../../source/std/cli.chl#L39)。
 
-**完整示例**：[example/samples/std_cli.mgl](../../example/samples/std_cli.mgl)。
+**完整示例**：[example/samples/std_cli.chl](../../example/samples/std_cli.chl)。
 
 <a id="api-5"></a>
 
@@ -298,7 +298,7 @@ obj.add(option);
 
 **声明**
 
-```magel
+```chali
 String help();
 ```
 
@@ -320,13 +320,13 @@ String help();
 
 **调用形式**
 
-```magel
+```chali
 obj.help();
 ```
 
-**源码**：[source/std/cli.mgl:60](../../source/std/cli.mgl#L60)。
+**源码**：[source/std/cli.chl:60](../../source/std/cli.chl#L60)。
 
-**完整示例**：[example/samples/std_cli.mgl](../../example/samples/std_cli.mgl)。
+**完整示例**：[example/samples/std_cli.chl](../../example/samples/std_cli.chl)。
 
 <a id="api-6"></a>
 
@@ -334,7 +334,7 @@ obj.help();
 
 **声明**
 
-```magel
+```chali
 Result<CliArguments,CliError> parse(List<String> arguments);
 ```
 
@@ -358,10 +358,10 @@ Result<CliArguments,CliError> parse(List<String> arguments);
 
 **调用形式**
 
-```magel
+```chali
 obj.parse(arguments);
 ```
 
-**源码**：[source/std/cli.mgl:74](../../source/std/cli.mgl#L74)。
+**源码**：[source/std/cli.chl:74](../../source/std/cli.chl#L74)。
 
-**完整示例**：[example/samples/std_cli.mgl](../../example/samples/std_cli.mgl)。
+**完整示例**：[example/samples/std_cli.chl](../../example/samples/std_cli.chl)。

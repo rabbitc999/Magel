@@ -1,9 +1,9 @@
 #include "template_binding.hpp"
-#include "../magel_ast.hpp"
+#include "../chali_ast.hpp"
 #include "../literals/string_escape.hpp"
 #include <stdexcept>
 
-namespace magel_macro
+namespace chali_macro
 {
 /**
  * @brief 保存节点池及卫生解析器的引用。
@@ -196,7 +196,7 @@ void TemplateBinding::visit(int id, ScopeId scope, std::size_t depth)
         {
             if (!matcher_ || argument.kind != MNode::MacroArgument) throw std::runtime_error("宏正则匹配缺少原始实参或模式缓存");
             std::string pattern, error;
-            if (!magel_literal::decodeString(std::string_view(node.s2.data(), node.s2.size()), pattern, error)) throw std::runtime_error(error);
+            if (!chali_literal::decodeString(std::string_view(node.s2.data(), node.s2.size()), pattern, error)) throw std::runtime_error(error);
             const auto result = matcher_->match(std::string_view(argument.s.data(), argument.s.size()), pattern, error);
             if (result == RegexResult::Invalid) throw std::runtime_error("宏正则模式非法：" + error);
             selected = node.kids[result == RegexResult::Matched ? 0 : 1];
@@ -305,7 +305,7 @@ void TemplateBinding::visit(int id, ScopeId scope, std::size_t depth)
     if (node.kind == MNode::GenericLambda && node.type2 >= 0) visit(node.type2, scope, depth + 1);
     for (const int annotation : node.annotations) visit(annotation, scope, depth + 1);
     visit(node.guard, scope, depth + 1);
-    const bool indexedChild = node.kind == MNode::Case || node.kind == MNode::NewPtr || ((node.kind == MNode::Declare || node.kind == MNode::Field) && !declarationGroup && node.i >= 0) || (node.kind == MNode::Index && node.s2 == "__magel_bare_index");
+    const bool indexedChild = node.kind == MNode::Case || node.kind == MNode::NewPtr || ((node.kind == MNode::Declare || node.kind == MNode::Field) && !declarationGroup && node.i >= 0) || (node.kind == MNode::Index && node.s2 == "__chali_bare_index");
     if (indexedChild) visit(static_cast<int>(node.i), scope, depth + 1);
     if ((node.kind == MNode::Declare && !declarationGroup) || node.kind == MNode::Params) declare(id, scope);
 }
@@ -348,4 +348,4 @@ std::shared_ptr<MType> TemplateBinding::bindType(const std::shared_ptr<MType> &t
     for (auto &argument : result->genericArguments) argument = bindType(argument, scope, context, depth + 1);
     return result;
 }
-}  // namespace magel_macro
+}  // namespace chali_macro

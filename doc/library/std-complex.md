@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::complex;
 ```
 
@@ -14,16 +14,16 @@ Complex<T> 保存 real/imag；T 应支持所用的四则运算。leftAdd/leftSub
 
 ## 参考代码
 
-完整程序：[example/samples/std_complex_fft.mgl](../../example/samples/std_complex_fft.mgl)。
+完整程序：[example/samples/std_complex_fft.chl](../../example/samples/std_complex_fft.chl)。
 
 ```powershell
-magel run example/samples/std_complex_fft.mgl
+chali run example/samples/std_complex_fft.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::complex;
 import std::signal;
 
@@ -128,7 +128,7 @@ dft 10
 
 **声明**
 
-```magel
+```chali
 static Complex<T> of(T real, T imaginary);
 ```
 
@@ -153,13 +153,13 @@ static Complex<T> of(T real, T imaginary);
 
 **调用形式**
 
-```magel
+```chali
 std::complex::Complex<T>::of(real, imaginary);
 ```
 
-**源码**：[source/std/complex.mgl:12](../../source/std/complex.mgl#L12)。
+**源码**：[source/std/complex.chl:12](../../source/std/complex.chl#L12)。
 
-**完整示例**：[example/samples/std_complex_fft.mgl](../../example/samples/std_complex_fft.mgl)。
+**完整示例**：[example/samples/std_complex_fft.chl](../../example/samples/std_complex_fft.chl)。
 
 <a id="api-1"></a>
 
@@ -167,7 +167,7 @@ std::complex::Complex<T>::of(real, imaginary);
 
 **声明**
 
-```magel
+```chali
 Complex<T> conjugate();
 ```
 
@@ -189,13 +189,13 @@ Complex<T> conjugate();
 
 **调用形式**
 
-```magel
+```chali
 obj.conjugate();
 ```
 
-**源码**：[source/std/complex.mgl:17](../../source/std/complex.mgl#L17)。
+**源码**：[source/std/complex.chl:17](../../source/std/complex.chl#L17)。
 
-**完整示例**：[example/samples/std_complex_fft.mgl](../../example/samples/std_complex_fft.mgl)。
+**完整示例**：[example/samples/std_complex_fft.chl](../../example/samples/std_complex_fft.chl)。
 
 <a id="api-2"></a>
 
@@ -203,7 +203,7 @@ obj.conjugate();
 
 **声明**
 
-```magel
+```chali
 T normSquared();
 ```
 
@@ -225,13 +225,13 @@ T normSquared();
 
 **调用形式**
 
-```magel
+```chali
 obj.normSquared();
 ```
 
-**源码**：[source/std/complex.mgl:18](../../source/std/complex.mgl#L18)。
+**源码**：[source/std/complex.chl:18](../../source/std/complex.chl#L18)。
 
-**完整示例**：[example/samples/std_complex_fft.mgl](../../example/samples/std_complex_fft.mgl)。
+**完整示例**：[example/samples/std_complex_fft.chl](../../example/samples/std_complex_fft.chl)。
 
 <a id="api-3"></a>
 
@@ -239,7 +239,7 @@ obj.normSquared();
 
 **声明**
 
-```magel
+```chali
 Complex<T> scale(T factor);
 ```
 
@@ -263,13 +263,13 @@ Complex<T> scale(T factor);
 
 **调用形式**
 
-```magel
+```chali
 obj.scale(factor);
 ```
 
-**源码**：[source/std/complex.mgl:19](../../source/std/complex.mgl#L19)。
+**源码**：[source/std/complex.chl:19](../../source/std/complex.chl#L19)。
 
-**完整示例**：[example/samples/std_complex_fft.mgl](../../example/samples/std_complex_fft.mgl)。
+**完整示例**：[example/samples/std_complex_fft.chl](../../example/samples/std_complex_fft.chl)。
 
 <a id="api-4"></a>
 
@@ -277,7 +277,7 @@ obj.scale(factor);
 
 **声明**
 
-```magel
+```chali
 Complex<T> leftAdd(Complex<T> right);
 ```
 
@@ -301,13 +301,13 @@ Complex<T> leftAdd(Complex<T> right);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftAdd(right);
 ```
 
-**源码**：[source/std/complex.mgl:20](../../source/std/complex.mgl#L20)。
+**源码**：[source/std/complex.chl:20](../../source/std/complex.chl#L20)。
 
-**完整示例**：[example/samples/std_complex_fft.mgl](../../example/samples/std_complex_fft.mgl)。
+**完整示例**：[example/samples/std_complex_fft.chl](../../example/samples/std_complex_fft.chl)。
 
 <a id="api-5"></a>
 
@@ -315,7 +315,7 @@ obj.leftAdd(right);
 
 **声明**
 
-```magel
+```chali
 Complex<T> leftSub(Complex<T> right);
 ```
 
@@ -339,13 +339,13 @@ Complex<T> leftSub(Complex<T> right);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftSub(right);
 ```
 
-**源码**：[source/std/complex.mgl:23](../../source/std/complex.mgl#L23)。
+**源码**：[source/std/complex.chl:23](../../source/std/complex.chl#L23)。
 
-**完整示例**：[example/samples/std_complex_fft.mgl](../../example/samples/std_complex_fft.mgl)。
+**完整示例**：[example/samples/std_complex_fft.chl](../../example/samples/std_complex_fft.chl)。
 
 <a id="api-6"></a>
 
@@ -353,7 +353,7 @@ obj.leftSub(right);
 
 **声明**
 
-```magel
+```chali
 Complex<T> leftMul(Complex<T> right);
 ```
 
@@ -377,13 +377,13 @@ Complex<T> leftMul(Complex<T> right);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftMul(right);
 ```
 
-**源码**：[source/std/complex.mgl:26](../../source/std/complex.mgl#L26)。
+**源码**：[source/std/complex.chl:26](../../source/std/complex.chl#L26)。
 
-**完整示例**：[example/samples/std_complex_fft.mgl](../../example/samples/std_complex_fft.mgl)。
+**完整示例**：[example/samples/std_complex_fft.chl](../../example/samples/std_complex_fft.chl)。
 
 <a id="api-7"></a>
 
@@ -391,7 +391,7 @@ obj.leftMul(right);
 
 **声明**
 
-```magel
+```chali
 Complex<T> leftDiv(Complex<T> right);
 ```
 
@@ -416,10 +416,10 @@ Complex<T> leftDiv(Complex<T> right);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftDiv(right);
 ```
 
-**源码**：[source/std/complex.mgl:30](../../source/std/complex.mgl#L30)。
+**源码**：[source/std/complex.chl:30](../../source/std/complex.chl#L30)。
 
-**完整示例**：[example/samples/std_complex_fft.mgl](../../example/samples/std_complex_fft.mgl)。
+**完整示例**：[example/samples/std_complex_fft.chl](../../example/samples/std_complex_fft.chl)。

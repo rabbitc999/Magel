@@ -1,5 +1,5 @@
 #include "std_sql_ipage.hpp"
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include "../../library/ipage/source/ipage/sql.hpp"
 #include "../../library/ipage/source/ipage/dialect.hpp"
 #include "../../library/ipage/source/ipage/model.hpp"
@@ -11,7 +11,7 @@
 namespace std_sql_ipage_glue
 {
 /**
- * @brief 为 Magel 内置数据库提供 SQLite SQL 适配，保持 ipage 核心独立于数据库实现。
+ * @brief 为 ChaLi 内置数据库提供 SQLite SQL 适配，保持 ipage 核心独立于数据库实现。
  */
 class SqliteDialect final : public ipage::Dialect
 {
@@ -258,7 +258,7 @@ Memory::String build(Memory::String modelText, Memory::String operation, Memory:
  * @param error 注册失败诊断。
  * @return 注册成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     return registry.bindTyped<Memory::String, Memory::String, Memory::String, Memory::String, Memory::String>("std::sql::__ipageBuild", build, error);
 }

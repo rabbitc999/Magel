@@ -54,27 +54,27 @@ bool StructHasOwnedLeaves(const Memory::String &structName)
 }
 
 /**
- * @brief 递归释放函数名（`__magel_agg_rel_<类型名>`）；用到才生成。
+ * @brief 递归释放函数名（`__chali_agg_rel_<类型名>`）；用到才生成。
  * @param owner 所属对象或类型信息。
  * @retval 生成或读取的结果文本。
  */
 Memory::String AggregateReleaseName(const Memory::String &owner)
 {
-    return "__magel_agg_rel_" + owner;
+    return "__chali_agg_rel_" + owner;
 }
 
 /**
- * @brief 递归深拷贝函数名（`__magel_agg_cpy_<类型名>`）；用到才生成。
+ * @brief 递归深拷贝函数名（`__chali_agg_cpy_<类型名>`）；用到才生成。
  * @param owner 所属对象或类型信息。
  * @retval 生成或读取的结果文本。
  */
 Memory::String AggregateCopyName(const Memory::String &owner)
 {
-    return "__magel_agg_cpy_" + owner;
+    return "__chali_agg_cpy_" + owner;
 }
 
 /**
- * 需要生成 `__magel_agg_rel_*` / `__magel_agg_cpy_*` 的类型（收尾时统一发）。
+ * 需要生成 `__chali_agg_rel_*` / `__chali_agg_cpy_*` 的类型（收尾时统一发）。
  */
 Memory::Set<Memory::String> g_needsAggregateRelease;
 Memory::Set<Memory::String> g_needsAggregateCopy;
@@ -113,16 +113,16 @@ bool ArrayElementNeedsRelease(const std::shared_ptr<MType> &element)
  */
 Memory::String ArrayReleaseName(const std::shared_ptr<MType> &element)
 {
-    return "__magel_arr_rel_" + (element ? Memory::toString(TypeIdOf(element)) : Memory::String("unknown"));
+    return "__chali_arr_rel_" + (element ? Memory::toString(TypeIdOf(element)) : Memory::String("unknown"));
 }
 
 /**
- * 需要生成 `__magel_arr_rel_*` 的元素类型（收尾时统一发）。
+ * 需要生成 `__chali_arr_rel_*` 的元素类型（收尾时统一发）。
  */
 Memory::Map<Memory::String, std::shared_ptr<MType>> g_needsArrayRelease;
 
 /**
- * @brief 生成"释放运行时数组元素"的语句：`__magel_arr_rel_<T>(arr, 数组长度)`。
+ * @brief 生成"释放运行时数组元素"的语句：`__chali_arr_rel_<T>(arr, 数组长度)`。
  * @param name 数组变量名。
  * @param element 元素类型。
  * @param fixedCount 定长数组的编译期元素个数；< 0 表示运行时长度的数组（从对象头读）。
@@ -142,7 +142,7 @@ simple_ast::NodePtr MakeArrayElementRelease(const Memory::String &name,
     const simple_ast::NodePtr count =
         fixedCount >= 0 ? simple_ast::Node::i(fixedCount) : simple_ast::Node::loadInt(simple_ast::Node::binary("-", value, simple_ast::Node::i(8)));
     const auto release = simple_ast::Node::exprStmt(simple_ast::Node::call(
-        ArrayReleaseName(element), { "__magel_arr", "__magel_count" },
+        ArrayReleaseName(element), { "__chali_arr", "__chali_count" },
         { value, count }));
     if (fixedCount >= 0) return release;
     // 借用函数可能已经显式删除该数组；自动收尾不再读取失效块的长度头。
@@ -488,7 +488,7 @@ bool CheckDeclaredType(const std::shared_ptr<MType> &type, const Memory::String 
     }
     if (type->kind == MType::Struct && g_structs.count(type->name) == 0u)
     {
-        return Fail(MAGEL_TEXT("没有声明的类型：") + type->name + "（" + where + "）");
+        return Fail(CHALI_TEXT("没有声明的类型：") + type->name + "（" + where + "）");
     }
     return true;
 }
@@ -540,7 +540,7 @@ bool IsImplicitConversionValue(int valueId, const std::shared_ptr<MType> &target
 /**
  * @brief 十进制整数字面量的取值（含 `-300` 这种「一元负号 + 字面量」的常量形式）。
  *
- * 只认**十进制**。十六进制 / 二进制字面量（`0xFF`、`b1010`）在 Magel 里当
+ * 只认**十进制**。十六进制 / 二进制字面量（`0xFF`、`b1010`）在 ChaLi 里当
  * **位模式**看待（`0xFF` 就是"低 8 位全 1"），所以这里不认它们，交给原来那条
  * "整数字面量放行"的老路，免得 `int8 x = 0xFF;` 这种写法被范围检查拦下。
  *
@@ -786,7 +786,7 @@ simple_ast::NodePtr MaterializeStringValue(int valueId, const std::shared_ptr<MT
     if (!target || !IsStandardOpcode(target, "String")) return value;
     if (valueId < 0) return value;
     if (N(valueId).kind == MNode::Str)
-        return simple_ast::Node::call("__std_str_lit", { "__magel_addr" }, { value });
+        return simple_ast::Node::call("__std_str_lit", { "__chali_addr" }, { value });
     if (IsFreshValue(valueId) || IsImplicitConversionValue(valueId, target)) return TakeExpressionTempValue(value, target);
     /*
      * 借来的值（变量 / 别名 / 字段 / 下标 / 解引用）**复制成自己的堆串**：
@@ -834,7 +834,7 @@ simple_ast::NodePtr MaterializeReturnStringValue(int valueId, const std::shared_
         const MNode &source = N(sourceId);
         const MVar *variable = source.kind == MNode::Var ? FindNodeVar(source) : nullptr;
         if (variable == nullptr || keep.count(variable->emitted) == 0u)
-            return simple_ast::Node::call(ObjectCopyFunction(target), { "__magel_v" }, { value });
+            return simple_ast::Node::call(ObjectCopyFunction(target), { "__chali_v" }, { value });
     }
     if (target && IsObjectLike(target) && IsFreshValue(valueId))
         return TakeExpressionTempValue(value, target);
@@ -844,7 +844,7 @@ simple_ast::NodePtr MaterializeReturnStringValue(int valueId, const std::shared_
     while (N(sourceId).kind == MNode::Cast) sourceId = N(sourceId).kids[0];
     const MNode &expr = N(sourceId);
     if (expr.kind == MNode::Str)
-        return simple_ast::Node::call("__std_str_lit", { "__magel_addr" }, { value });
+        return simple_ast::Node::call("__std_str_lit", { "__chali_addr" }, { value });
     if (expr.kind == MNode::Var)
     {
         const MVar *found = FindNodeVar(expr);
@@ -872,7 +872,7 @@ simple_ast::NodePtr CopyStructValue(const simple_ast::NodePtr &dst, const simple
     g_usesStructCopy = true;
     const int slots = StructStride(type) / 8;
     return simple_ast::Node::block({ simple_ast::Node::exprStmt(simple_ast::Node::call(
-                                         "__magel_copy_struct", { "__magel_dst", "__magel_src", "__magel_slots" },
+                                         "__chali_copy_struct", { "__chali_dst", "__chali_src", "__chali_slots" },
                                          { dst, src, simple_ast::Node::i(slots) })),
                                      BeginAggregateLifetime(dst, slots * 8) });
 }
@@ -890,7 +890,7 @@ bool AggregateNeedsDeepCopy(const std::shared_ptr<MType> &type)
 /**
  * @brief 结构体**深拷贝**：字符串复制成新的堆串、对象复制成新的对象表句柄，标量按位搬。
  *
- * 没有要占有的叶子时退回 `__magel_copy_struct`。要真正"搬走一份"（`return` 交出去、
+ * 没有要占有的叶子时退回 `__chali_copy_struct`。要真正"搬走一份"（`return` 交出去、
  * 函数返回值的接收）时用 `CopyStructValue`（按位搬，等于 move），别用这条。
  */
 simple_ast::NodePtr DeepCopyStructValue(const simple_ast::NodePtr &dst,
@@ -902,7 +902,7 @@ simple_ast::NodePtr DeepCopyStructValue(const simple_ast::NodePtr &dst,
     if (!AggregateNeedsDeepCopy(type)) return CopyStructValue(dst, src, type);
     g_needsAggregateCopy.insert(type->name);
     return simple_ast::Node::block({ simple_ast::Node::exprStmt(simple_ast::Node::call(
-                                         AggregateCopyName(type->name), { "__magel_agg_dst", "__magel_agg_src" }, { dst, src })),
+                                         AggregateCopyName(type->name), { "__chali_agg_dst", "__chali_agg_src" }, { dst, src })),
                                      BeginAggregateLifetime(dst, StructStride(type)) });
 }
 
@@ -918,10 +918,10 @@ simple_ast::NodePtr CopyRuntimeArrayValue(const simple_ast::NodePtr &source, con
     if (HasNonCopyableValue(type))
         return Fail("不可复制的数组元素禁止复制：" + Describe(type) + "（实现 Closeable 或声明了 #NonCopyable），请显式 move 或改用引用"), Bad();
     using simple_ast::Node;
-    const auto input = AllocateName("__magel_array_copy_source");
-    const auto length = AllocateName("__magel_array_copy_length");
-    const auto result = AllocateName("__magel_array_copy_result");
-    const auto index = AllocateName("__magel_array_copy_index");
+    const auto input = AllocateName("__chali_array_copy_source");
+    const auto length = AllocateName("__chali_array_copy_length");
+    const auto result = AllocateName("__chali_array_copy_result");
+    const auto index = AllocateName("__chali_array_copy_index");
     const auto loop = NewBlockLabel("array_copy");
     const auto done = NewBlockLabel("array_copy_done");
     const auto element = type->elem;
@@ -936,7 +936,7 @@ simple_ast::NodePtr CopyRuntimeArrayValue(const simple_ast::NodePtr &source, con
         Node::declare(length, simple_ast::Type::i64()),
         Node::assign(length, countValue),
         Node::declare(result, LowerType(type, result)),
-        Node::assign(result, Node::call("__magel_new_array", { "__magel_len", "__magel_stride" }, { Node::var(length), Node::i(stride) })),
+        Node::assign(result, Node::call("__chali_new_array", { "__chali_len", "__chali_stride" }, { Node::var(length), Node::i(stride) })),
         Node::declare(index, simple_ast::Type::i64()), Node::assign(index, Node::i(0)),
         Node::label(loop), Node::ifThenElse(Node::binary(">=", Node::var(index), Node::var(length)), Node::jump(done), nullptr)
     };
@@ -994,7 +994,7 @@ simple_ast::NodePtr MoveStructValue(const simple_ast::NodePtr &dst, const simple
                                     const std::shared_ptr<MType> &type)
 {
     using simple_ast::Node;
-    const auto source = AllocateName("__magel_move_source");
+    const auto source = AllocateName("__chali_move_source");
     Memory::Vector<simple_ast::NodePtr> out{ Node::declare(source, simple_ast::Type::i64()),
                                              Node::assign(source, src), CopyStructValue(dst, Node::var(source), type) };
     const auto *definition = FindStruct(type->name);
@@ -1076,7 +1076,7 @@ bool IsFreshValue(int exprId)
          * `std::lang::BigInteger(x)` / `std::lang::BigDecimal(x)`（限定名写法）虽然 AST 上是"调用"，语义却与
          * `bint(x)` 一致：**从已有大数转发时不复制**。不特判的话会按"调用一律是当场造出来的
          * 新对象"处理，变量之间共享句柄，一旦其中一个被重新赋值就把旧句柄还了，另一个悬空
-         * （`example/samples/object_copy.mgl` 踩过：打印时说"大整数已经释放过了"）。
+         * （`example/samples/object_copy.chl` 踩过：打印时说"大整数已经释放过了"）。
          */
         if (expr.kids.size() < 2u) return true; /* 有的调用节点只带被调者，别越界 */
         const MNode &calleeNode = N(expr.kids[0]);
@@ -1198,6 +1198,6 @@ simple_ast::NodePtr MaterializeObjectValue(int valueId, const std::shared_ptr<MT
     if (!IsObjectLike(target)) return LowerValueForType(valueId, target);
     if (IsFreshValue(valueId) || IsImplicitConversionValue(valueId, target))
         return TakeExpressionTempValue(LowerValueForType(valueId, target), target);
-    return simple_ast::Node::call(ObjectCopyFunction(target), { "__magel_v" },
+    return simple_ast::Node::call(ObjectCopyFunction(target), { "__chali_v" },
                                   { LowerValueForType(valueId, target) });
 }

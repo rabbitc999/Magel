@@ -1,16 +1,16 @@
-# Magel Documentation
+# ChaLi Documentation
 
 See [current capabilities and limits](17-capabilities.md) for the shared implementation contract and build defaults.
 
 **Write once, run anywhere.** One logic, from embedded Linux to cloud; value semantics, non-null references, no GC.
 
-Magel lets you write business logic once: the same source compiles to bytecode that the shared VM
+ChaLi lets you write business logic once: the same source compiles to bytecode that the shared VM
 runs on desktop, server and embedded Linux hosts, with platform differences handled by host glue.
 There is no garbage collector, and resources are released deterministically when they leave scope.
 
 Read the current language/toolchain version from [`VERSION`](../../VERSION).
 
-For AI-assisted Magel programming, use the repository's [Magel programming skill](../../skills/magel-programming/SKILL.md), covering syntax choices, API lookup, macros and execution checks.
+For AI-assisted ChaLi programming, use the repository's [ChaLi programming skill](../../skills/chali-programming/SKILL.md), covering syntax choices, API lookup, macros and execution checks.
 Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 
 > This is the English edition. The Chinese edition is the default and is the one maintained first —
@@ -23,7 +23,7 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 
 | Who you are | Start here |
 | --- | --- |
-| New to Magel | [Vision](00-vision.md) → [5-minute quickstart](01-quickstart.md) |
+| New to ChaLi | [Vision](00-vision.md) → [5-minute quickstart](01-quickstart.md) |
 | Evaluating it for a project | [Vision](00-vision.md) (includes "who should not use it") → [Cross-platform deployment](06-deployment.md) |
 | Ready to write code | [Language tour](02-language-tour.md) → [Language reference](04-language-reference.md) |
 | Want to understand value semantics and references | [Core concepts](03-core-concepts.md) |
@@ -43,19 +43,19 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 
 | No. | Document | Audience | What it covers |
 | --- | --- | --- | --- |
-| [00](00-vision.md) | Vision | Decision makers, prospective users | The three dilemmas of software delivery, Magel's answers, who it fits / who it does not |
+| [00](00-vision.md) | Vision | Decision makers, prospective users | The three dilemmas of software delivery, ChaLi's answers, who it fits / who it does not |
 | [01](01-quickstart.md) | 5-minute quickstart | First-time users | Install, first program, command cheat-sheet |
-| [02](02-language-tour.md) | Language tour | Experienced developers | Walk through what Magel looks like with runnable snippets |
+| [02](02-language-tour.md) | Language tour | Experienced developers | Walk through what ChaLi looks like with runnable snippets |
 | [03](03-core-concepts.md) | Core concepts | Users going deeper | Value semantics, non-null references, resource management without a GC |
 | [04](04-language-reference.md) | Language reference | Day-to-day writers | Syntax, semantics, examples and common errors by topic, including generic nesting, default types and monomorphisation limits |
 | [05](05-delivery-security.md) | Delivery security | Teams shipping outward | Delivery forms, the four steps, reverse-engineering cost, boundary statement |
 | [06](06-deployment.md) | Cross-platform deployment | People doing deployment | Source execution and bytecode deployment, desktop / embedded Linux, resources and limits |
 | [07](07-stdlib-overview.md) | Standard library overview | Anyone asking "what can it do" | Existing modules and core APIs by capability |
 | [08](08-host-integration.md) | Host integration and C ABI | Integrators | Glue bindings, `abi` blocks, type mapping, nullable references |
-| [09](09-toolchain.md) | Toolchain | Daily `magel` users | Commands, `magel.toml`, compile options, tests, LSP, display language |
+| [09](09-toolchain.md) | Toolchain | Daily `chali` users | Commands, `chali.toml`, compile options, tests, LSP, display language |
 | [10](10-roadmap.md) | Roadmap and ecosystem | Contributors, long-term users | Short/mid/long-term goals and verifiable milestones |
 | [13](13-projects.md) | Example projects | Anyone who wants to run something | Application and capability examples in the repository: location, commands, verification and prerequisites |
-| [14](../14-grammar-ebnf.md) | EBNF grammar reference | Anyone checking grammar details | Every production and token declaration generated from `source/magel.gram`; the readable form of the authoritative grammar |
+| [14](../14-grammar-ebnf.md) | EBNF grammar reference | Anyone checking grammar details | Every production and token declaration generated from `source/chali.gram`; the readable form of the authoritative grammar |
 | [15](../15-svmb-format.md) | `.svmb` binary format | Format analysts and RE assessors | Container and section layout, byte-level decoding, reverse-engineering cost |
 | [16](../16-compact-symbols.md) | Nameless compact symbols | Anyone tracking size and diagnostic privacy | `--compress-symbols` format, tooling and space comparison |
 | [17](17-capabilities.md) | Current capabilities | Evaluation and integration | Language, VM, borrowing, reflection, libraries, embedded Linux and tooling contracts |
@@ -74,7 +74,7 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 - The companion projects under [`doc/examples/`](../examples/) are catalogued in [13 Example projects](13-projects.md).
 - [Project README](../../README.en.md) — build, quick usage, debugging, configuration (English;
   [中文版](../../README.md)).
-- [Full grammar reference (EBNF)](../14-grammar-ebnf.md) — the authoritative form of the grammar, generated from [`source/magel.gram`](../../source/magel.gram).
+- [Full grammar reference (EBNF)](../14-grammar-ebnf.md) — the authoritative form of the grammar, generated from [`source/chali.gram`](../../source/chali.gram).
 
 - [11 Borrow control flow and algorithm validation](11-algorithm-validation.md): independent dataflow checks, heap structures, DFS/BFS and NOIP2015 brute-force comparisons.
 
@@ -91,9 +91,9 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 - [Matching, interpolation, generics and scope cleanup](27-match-interpolation-scope.md)
 
 - [Return expressions, named closures and field derivation](28-declaration-sugars.md)
-- Value breaks and loop traversal: [language reference](04-language-reference.md#block-expressions-and-interpolated-output), [complete sample](../../example/samples/break_values.mgl), [VM regressions](../../tests/magel_block_expression.py).
+- Value breaks and loop traversal: [language reference](04-language-reference.md#block-expressions-and-interpolated-output), [complete sample](../../example/samples/break_values.chl), [VM regressions](../../tests/chali_block_expression.py).
 
-- Implicit moves in value breaks: [semantics and cleanup order](04-language-reference.md#moving-and-cleaning-up-value-breaks), [resource identity and destructor sample](../../example/samples/break_move.mgl).
+- Implicit moves in value breaks: [semantics and cleanup order](04-language-reference.md#moving-and-cleaning-up-value-breaks), [resource identity and destructor sample](../../example/samples/break_move.chl).
 
 - [Threads, channels and explicit events](29-thread-concurrency.md)
 
@@ -106,3 +106,5 @@ The [24-chapter beginner book](../book/README.md) includes exercises with refere
 - [Compiler safety boundaries and focused regression tests](37-compiler-safety.md)
 
 - [Opcode and standard library type migration record](../38-opcode-migration.md)
+
+- [Name freeze: the five letters of ChaLi](40-name-freeze.md)

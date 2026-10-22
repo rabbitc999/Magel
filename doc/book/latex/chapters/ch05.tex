@@ -3,13 +3,13 @@
 
 程序光会「从上往下做」是干不了活的。它得会拐弯（条件）和转圈（循环）。
 
-第 2 章的猜数字已经把这两种都用上了，这一章把它们补全：Magel 一共有三种循环：\texttt{while}、\texttt{loop} 和 \texttt{for-in}，还有一套对「同一个变量在一个表达式里被读写两次」管得很严的规则。
+第 2 章的猜数字已经把这两种都用上了，这一章把它们补全：ChaLi 一共有三种循环：\texttt{while}、\texttt{loop} 和 \texttt{for-in}，还有一套对「同一个变量在一个表达式里被读写两次」管得很严的规则。
 
 \section{条件：\texttt{if} / \texttt{elif} / \texttt{else}}
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 String classify(int64 value)
 {
     if (value < 0)
@@ -61,7 +61,7 @@ else { ... }
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     if (1)
@@ -77,7 +77,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: if 条件必须是 bool，现在给的是 int64（数值条件请显式写成 `(bool)值` 或比较表达式）
+chali: if 条件必须是 bool，现在给的是 int64（数值条件请显式写成 `(bool)值` 或比较表达式）
 \end{lstlisting}
 \par
 \medskip
@@ -89,7 +89,7 @@ magel: if 条件必须是 bool，现在给的是 int64（数值条件请显式�
 3. 花括号不能省。 只写一句 \texttt{if (\allowbreak{}x)\allowbreak{} y =\allowbreak{} 1;} 是编译错误。这条和 C 不一样，但换来的是「这个 \texttt{y =\allowbreak{} 1} 到底属于哪个 if」永远不会有歧义。
 
 \begin{tip}{提示}
-Magel 没有三目运算符。 \texttt{cond ? a :\allowbreak{} b} 是语法错误（第 3 章提过）。简单替换就用 \texttt{if /\allowbreak{} else} 赋值；分支多了，第 10 章的 \texttt{match} 更好读。可以使用 \texttt{if (\allowbreak{}条件)\allowbreak{} \{ 值一 \} else \{ 值二 \}} 条件表达式；只求值命中的分支。
+ChaLi 没有三目运算符。 \texttt{cond ? a :\allowbreak{} b} 是语法错误（第 3 章提过）。简单替换就用 \texttt{if /\allowbreak{} else} 赋值；分支多了，第 10 章的 \texttt{match} 更好读。可以使用 \texttt{if (\allowbreak{}条件)\allowbreak{} \{ 值一 \} else \{ 值二 \}} 条件表达式；只求值命中的分支。
 \end{tip}
 
 \subsection*{条件也能产生值}
@@ -98,7 +98,7 @@ Magel 没有三目运算符。 \texttt{cond ? a :\allowbreak{} b} 是语法错�
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int32 p = 5;
@@ -154,7 +154,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 countdown = 3;
@@ -189,7 +189,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 total = 0;
@@ -220,7 +220,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 found = for (int64 value in std::lang::range(0, 10))
@@ -263,7 +263,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 attempts = 0;
@@ -296,7 +296,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 firstEven = loop
 {
     int64 candidate = nextNumber();
@@ -324,7 +324,7 @@ int64 firstEven = loop
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 count = 0;
@@ -362,7 +362,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     List<int64> scores;
@@ -423,7 +423,7 @@ for ( 元素类型 名字 in 容器 ) { ... }
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     List<int64> scores;
@@ -464,7 +464,7 @@ int64 main()
 
 \texttt{continue} = 「这一轮到此为止，直接进下一轮」；\texttt{break} = 「整个循环到此为止」。
 
-两个都只作用于最内层那一圈循环。想从两层里一次跳出来，得靠 \texttt{loop} 带值或者加个标志变量——Magel 没有「带标签的 break」。
+两个都只作用于最内层那一圈循环。想从两层里一次跳出来，得靠 \texttt{loop} 带值或者加个标志变量——ChaLi 没有「带标签的 break」。
 
 \subsection*{指定退出哪一层循环}
 
@@ -472,7 +472,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 visited = 0;
@@ -531,7 +531,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main() {
     // yield 值;（写在接收结果的值表达式里）
     int64 v = loop { yield 42; };
@@ -567,7 +567,7 @@ break 写法 ok
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 value = 17;
@@ -596,7 +596,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 i = 5;
@@ -620,13 +620,13 @@ int64 main()
 \par
 \medskip
 
-\subsection*{但 Magel 对「一个表达式里读写同一个对象」管得很严}
+\subsection*{但 ChaLi 对「一个表达式里读写同一个对象」管得很严}
 
-这是 Magel 和 C 差异最大的地方之一。同一个完整表达式里，一个自增减的目标不能再被别的操作读写：
+这是 ChaLi 和 C 差异最大的地方之一。同一个完整表达式里，一个自增减的目标不能再被别的操作读写：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 i = 0;
@@ -640,18 +640,18 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: [MGL1301] 同一表达式中，自增减目标与其他读写冲突：i
+chali: [CHL1301] 同一表达式中，自增减目标与其他读写冲突：i
 \end{lstlisting}
 \par
 \medskip
 
-C 程序员会心头一紧——\texttt{i =\allowbreak{} i++} 在 C 里是未定义行为（每个编译器给的结果可能不一样）。Magel 的做法是：干脆不让你写。你可能觉得它啰嗦，但它拦下的是一整类「换个编译器就换结果」的玄学 bug。
+C 程序员会心头一紧——\texttt{i =\allowbreak{} i++} 在 C 里是未定义行为（每个编译器给的结果可能不一样）。ChaLi 的做法是：干脆不让你写。你可能觉得它啰嗦，但它拦下的是一整类「换个编译器就换结果」的玄学 bug。
 
 那什么情况是合法的？目标互不影响就行，比如两个不同的变量：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 i = 0;
@@ -676,7 +676,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     List<int64> store;
@@ -716,7 +716,7 @@ int64 main()
 \end{longtable}
 }
 
-还有一套要记住的规则：同一个表达式里对同一个目标读写两次是被禁止的 （\texttt{MGL1301}），这是 Magel 用来消灭「未定义行为」的手段。
+还有一套要记住的规则：同一个表达式里对同一个目标读写两次是被禁止的 （\texttt{CHL1301}），这是 ChaLi 用来消灭「未定义行为」的手段。
 
 三件本章没讲的事：
 
@@ -736,7 +736,7 @@ int64 main()
 
 但会写程序 \ensuremath{\neq} 会写对的程序。接下来三章是这本书最重要的一段：【第 6 章 值语义】【第 7 章 引用】【第 8 章 资源与作用域】。
 
-读懂了这三章，你会明白 Magel 为什么长成现在这样——以及为什么它愿意让你多写几个字。
+读懂了这三章，你会明白 ChaLi 为什么长成现在这样——以及为什么它愿意让你多写几个字。
 
 翻到\hyperref[ch:06]{第 6 章 值语义}。
 

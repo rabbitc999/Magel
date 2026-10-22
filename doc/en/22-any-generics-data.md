@@ -19,7 +19,7 @@ Map and Set promise neither sorted nor insertion order, including after deletion
 valAt at the same position describe the same entry. Collect into a List and sort explicitly when
 stable presentation is required. Copying, clearing, default field initialization and consuming
 iteration retain the key policy. Active element borrows still prevent moving or removing List
-elements. See the [collection storage regression](../../example/samples/collection_storage.mgl).
+elements. See the [collection storage regression](../../example/samples/collection_storage.chl).
 
 ## Any and type checks
 
@@ -35,7 +35,7 @@ The public boxed type `Object` is now `Any`, available from the automatically lo
 | Checked `getValue()` extraction | Prefer `tryGet<T>(&value)`, returning `None` on a mismatch |
 | Borrowed extraction | `tryGetReference<T>(&value)` or `tryGetMut<T>(&value)` |
 
-```magel
+```chali
 int64 main() {
     Any value;
     assert(value.isEmpty());
@@ -57,14 +57,14 @@ Stable metadata identities, fields, methods and annotations belong to `std::refl
 
 An explicit `Any` target automatically boxes supported concrete values. This applies to arguments, returns, explicit generic instantiations such as `identity<Any>(value)`, generic fields, enum payloads, and container element/key/value positions. Existing Any values copy directly without another boxing layer. A user-defined direct `ImplicitConvert<Any>` takes precedence.
 
-```magel
+```chali
 T identity<T>(T value) { return value; }
 int64 main()
 {
     List<Any> values = [1, "two", true];
     values.push(1.5);
     Any value = identity<Any>("generic");
-    Map<String, Any> record = {"count": 3, "name": "Magel"};
+    Map<String, Any> record = {"count": 3, "name": "ChaLi"};
     Set<Any> unique;
     Any key = "key";
     unique.add(key);
@@ -84,7 +84,7 @@ int64 main()
 
 ## Direct interface reference binding
 
-```magel
+```chali
 interface Readable { int64 read(); };
 struct Counter : Readable
 {
@@ -108,7 +108,7 @@ Interface reference targets accept references to concrete types implementing tha
 
 Missing type arguments no longer default to Any. Function inference and defaults explicitly written in a template declaration remain supported.
 
-```magel
+```chali
 struct Box<T> { T value; };
 struct ExplicitDefault<T = Any> { T value; };
 int64 main() {
@@ -128,16 +128,16 @@ For example, replace `Pair<int64>` with `Pair<int64, String>`, or explicitly cho
 
 | Module | Initial functionality | Errors and platform boundary |
 | --- | --- | --- |
-| [`std::encoding`](../library/std-encoding.md) | Base64, Base64URL, hexadecimal | Strict `Result` decoding; implemented in Magel |
-| [`std::csv`](../library/std-csv.md) | Reading, writing, quoting, delimiters, error positions | Multiline quoted fields; one-based lines and byte columns; implemented in Magel |
+| [`std::encoding`](../library/std-encoding.md) | Base64, Base64URL, hexadecimal | Strict `Result` decoding; implemented in ChaLi |
+| [`std::csv`](../library/std-csv.md) | Reading, writing, quoting, delimiters, error positions | Multiline quoted fields; one-based lines and byte columns; implemented in ChaLi |
 | [`std::datetime`](../library/std-datetime.md) | Unix seconds, UTC dates, formatting and arithmetic | Gregorian years 1..9999; UTC ISO text at second precision; current time needs a host clock |
 | [`std::io`](../library/std-io.md) | Byte streams, whole files, directory listing, metadata, creation and renaming | Stream bytes use FileApi; path operations use the desktop filesystem |
-| [`std::cli`](../library/std-cli.md) | Long/short options, positional values, defaults, help and validation | Returns results without printing or exiting; implemented in Magel |
+| [`std::cli`](../library/std-cli.md) | Long/short options, positional values, defaults, help and validation | Returns results without printing or exiting; implemented in ChaLi |
 | [`std::utf8`](../library/std-utf8.md) | Validation, code points, counts and slicing | Strict UTF-8; code points are not grapheme clusters; byte APIs support U+0000 |
 
 Use short names when unambiguous. Module reference pages link to complete executable examples.
 
-```magel
+```chali
 import std::encoding;
 import std::datetime;
 import std::utf8;
@@ -161,7 +161,7 @@ Embedded filesystems are injected through FileApi. Desktop directory operations 
 
 ## Binary intermediate artifacts and measurements
 
-`emit` now writes `.quad` (MGQI v1), `.layout` (MGLY v1), and `.data.bin`. Quads share a string table and encode counts, positions and references with unsigned LEB128. Layout records retain names, offsets, sizes and strides. Raw `.data.bin` bytes remain unchanged. Duplicate `.data` text and `.data.h` arrays are no longer emitted; rebuilding the same prefix removes old copies.
+`emit` now writes `.quad` (MGQI v1), `.layout` (CHLY v1), and `.data.bin`. Quads share a string table and encode counts, positions and references with unsigned LEB128. Layout records retain names, offsets, sizes and strides. Raw `.data.bin` bytes remain unchanged. Duplicate `.data` text and `.data.h` arrays are no longer emitted; rebuilding the same prefix removes old copies.
 
 The VM exporter detect binary formats automatically and still accept legacy text. Decoders check versions, overflow, truncation, string references and trailing data. This is serialization without encryption.
 
@@ -174,7 +174,7 @@ Measured on Windows / MinGW `-O2`, 2026-10-13, comparing identical content (byte
 
 Old totals include `.quad`, `.layout`, `.data`, `.data.bin`; new totals omit `.data`. The unchanged raw images contain 5,464 and 3,960 bytes respectively. Old `.data.h` arrays are excluded from this comparison.
 
-The `magel-artifact-tests` CMake target benchmarks in-memory decoding for at least 250 ms per format, including structure allocation and destruction, excluding disk and compiler work. For the two samples, quad decoding averaged 19,213.7 → 2,766.85 µs (6.9×) and 16,294.9 → 2,398.31 µs (6.8×). Layout decoding averaged 300.935 → 3.969 µs and 284.044 → 4.734 µs. These are decoding measurements, not whole-compilation speedups. Optional text quad/layout path arguments allow measurements on other inputs. Tests also verify structural, source-location, assembled-instruction and layout equivalence and reject malformed inputs.
+The `chali-artifact-tests` CMake target benchmarks in-memory decoding for at least 250 ms per format, including structure allocation and destruction, excluding disk and compiler work. For the two samples, quad decoding averaged 19,213.7 → 2,766.85 µs (6.9×) and 16,294.9 → 2,398.31 µs (6.8×). Layout decoding averaged 300.935 → 3.969 µs and 284.044 → 4.734 µs. These are decoding measurements, not whole-compilation speedups. Optional text quad/layout path arguments allow measurements on other inputs. Tests also verify structural, source-location, assembled-instruction and layout equivalence and reject malformed inputs.
 
 Map `.iter()` and `.intoIter()` yield only `Pair<K, V>`: `first` is the key and `second` is the value. They do not yield tuples or individual keys/values.
 

@@ -6,42 +6,42 @@
   "java_flags": "-Xbatch; 20 full-loop warmups; runtime long input; volatile result sink",
   "java_interpreter_flags": "-Xint; JIT disabled; 1 full-loop warmup; runtime long input; volatile result sink",
   "register_core_variants": {
-    "Magel register switch": [
+    "ChaLi register switch": [
       "1",
       "0",
       "1",
       "1",
       "1"
     ],
-    "Magel register labels": [
+    "ChaLi register labels": [
       "1",
       "1",
       "1",
       "1",
       "1"
     ],
-    "Magel register no jump folding": [
+    "ChaLi register no jump folding": [
       "1",
       "0",
       "0",
       "1",
       "1"
     ],
-    "Magel register generic opcodes": [
+    "ChaLi register generic opcodes": [
       "1",
       "0",
       "1",
       "0",
       "1"
     ],
-    "Magel register per instruction": [
+    "ChaLi register per instruction": [
       "1",
       "0",
       "1",
       "1",
       "0"
     ],
-    "Magel register compact only": [
+    "ChaLi register compact only": [
       "1",
       "0",
       "0",
@@ -59,9 +59,9 @@
   "compiler": "gcc (x86_64-posix-seh-rev3, Built by MinGW-W64 project) 11.2.0",
   "make": "mingw32-make",
   "machine": "﻿CPU: AMD Ryzen 7 9700X 8-Core Processor             \nCores: 8 / Logical: 16 / MaxMHz: 3800\nOS:  Microsoft Windows 11 专业版 10.0.26200\nRAM_GB: 32",
-  "magel_version": "0.10.2",
-  "magel_commit": "1f3e7f8",
-  "compiler_flags": "Lua -O2; Magel -O2 -DNDEBUG MAGEL_CUSTOM_ALLOCATOR=1",
+  "chali_version": "0.10.2",
+  "chali_commit": "1f3e7f8",
+  "compiler_flags": "Lua -O2; ChaLi -O2 -DNDEBUG CHALI_CUSTOM_ALLOCATOR=1",
   "results": {
     "Python": {
       "median_ms": 287.8238,
@@ -89,7 +89,7 @@
       ],
       "checksum": "49999995000000"
     },
-    "Magel VM optimized": {
+    "ChaLi VM optimized": {
       "median_ms": 84.225,
       "samples_ms": [
         88.4152,
@@ -103,7 +103,7 @@
       "checksum": "49999995000000",
       "logical_steps": 150000035
     },
-    "Magel register switch": {
+    "ChaLi register switch": {
       "median_ms": 79.8329,
       "samples_ms": [
         80.9792,
@@ -117,7 +117,7 @@
       "checksum": "49999995000000",
       "logical_steps": 150000035
     },
-    "Magel register labels": {
+    "ChaLi register labels": {
       "median_ms": 84.4785,
       "samples_ms": [
         85.9163,
@@ -131,7 +131,7 @@
       "checksum": "49999995000000",
       "logical_steps": 150000035
     },
-    "Magel register no jump folding": {
+    "ChaLi register no jump folding": {
       "median_ms": 81.3689,
       "samples_ms": [
         86.8275,
@@ -145,7 +145,7 @@
       "checksum": "49999995000000",
       "logical_steps": 150000035
     },
-    "Magel register generic opcodes": {
+    "ChaLi register generic opcodes": {
       "median_ms": 108.588,
       "samples_ms": [
         106.881,
@@ -159,7 +159,7 @@
       "checksum": "49999995000000",
       "logical_steps": 150000035
     },
-    "Magel register per instruction": {
+    "ChaLi register per instruction": {
       "median_ms": 103.511,
       "samples_ms": [
         103.389,
@@ -173,7 +173,7 @@
       "checksum": "49999995000000",
       "logical_steps": 150000035
     },
-    "Magel register compact only": {
+    "ChaLi register compact only": {
       "median_ms": 156.795,
       "samples_ms": [
         170.513,
@@ -187,7 +187,7 @@
       "checksum": "49999995000000",
       "logical_steps": 150000035
     },
-    "Magel VM legacy optimized": {
+    "ChaLi VM legacy optimized": {
       "median_ms": 1966.78,
       "samples_ms": [
         1911.43,
@@ -201,7 +201,7 @@
       "checksum": "49999995000000",
       "logical_steps": 150000035
     },
-    "Magel VM reference": {
+    "ChaLi VM reference": {
       "median_ms": 6092.97,
       "samples_ms": [
         5904.37,

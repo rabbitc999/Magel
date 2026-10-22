@@ -1,5 +1,5 @@
 #include "std_string_methods.hpp"
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include <algorithm>
 #include <cstdint>
 #include <limits>
@@ -308,7 +308,7 @@ Text join(Text separator, Memory::Vector<Text> items)
  * @param error 接收绑定失败的诊断。
  * @return 所有入口绑定成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     return registry.bindTyped<std::int64_t, Text, Text, std::int64_t, std::int64_t>("std::lang::__stringQuery", query, error)
            && registry.bindTyped<Text, Text, Text, Text, std::int64_t, std::int64_t, std::int64_t>("std::lang::__stringTransform", transform, error)

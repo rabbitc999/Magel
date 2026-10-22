@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""补全关键字与高亮关键字必须一致（都以 `magel.gram` 登记的字面量 token 为准）。
+"""补全关键字与高亮关键字必须一致（都以 `chali.gram` 登记的字面量 token 为准）。
 
 读四处：
   * `tools/native_development.cpp` 的 `keywords` —— 原生语言服务器关键字表；
-  * `tools/mageldev.py` 的 `KEYWORDS` —— 语言服务器 `magel lsp` 补全用的关键字表；
-  * `vscode/syntaxes/magel.tmLanguage.json` —— 编辑器高亮用的关键字正则；
-  * `magel.gram` 里 `%token NAME "字面量"` 登记的词形 token（如 `fn` / `opcode`）。
+  * `tools/chalidev.py` 的 `KEYWORDS` —— 语言服务器 `chali lsp` 补全用的关键字表；
+  * `vscode/syntaxes/chali.tmLanguage.json` —— 编辑器高亮用的关键字正则；
+  * `chali.gram` 里 `%token NAME "字面量"` 登记的词形 token（如 `fn` / `opcode`）。
 
 判据：四处的“词”集合必须相等（运算符、标点不算）。谁加了关键字忘了同步另一处，这里就红。
 
@@ -24,17 +24,17 @@ WORD = re.compile(r"^[A-Za-z_][A-Za-z_0-9]*$")
 
 
 def completion_keywords():
-    """`mageldev.py` 里的 KEYWORDS。"""
-    text = (ROOT / "tools" / "mageldev.py").read_text(encoding="utf-8")
+    """`chalidev.py` 里的 KEYWORDS。"""
+    text = (ROOT / "tools" / "chalidev.py").read_text(encoding="utf-8")
     match = re.search(r'KEYWORDS\s*=\s*"([^"]+)"\.split\(\)', text)
     if not match:
-        raise SystemExit("tools/mageldev.py 里找不到 KEYWORDS")
+        raise SystemExit("tools/chalidev.py 里找不到 KEYWORDS")
     return set(match.group(1).split())
 
 
 def highlight_keywords():
     """高亮里所有关键字 / 类型 / 字面量键的正则里出现的词。"""
-    grammar = json.loads((ROOT / "vscode" / "syntaxes" / "magel.tmLanguage.json")
+    grammar = json.loads((ROOT / "vscode" / "syntaxes" / "chali.tmLanguage.json")
                          .read_text(encoding="utf-8"))
     words = set()
 
@@ -57,12 +57,12 @@ def highlight_keywords():
 
 def grammar_words():
     """文法登记的词形字面量 token。"""
-    text = (ROOT / "source/magel.gram").read_text(encoding="utf-8") + (ROOT / "source/magel_token.gram").read_text(encoding="utf-8")
+    text = (ROOT / "source/chali.gram").read_text(encoding="utf-8") + (ROOT / "source/chali_token.gram").read_text(encoding="utf-8")
     words = {match.group(2) for match in
              re.finditer(r'%(?:token|define)\s+([A-Za-z_][A-Za-z_0-9]*)\s+"([^"]*)"', text)
              if not match.group(1).startswith('MACRO_')}
     # 编译器内部类型标签不是应用语言的补全入口。
-    return {word for word in words if WORD.match(word) and word != "__typeTag" and not word.startswith("__magel_")}
+    return {word for word in words if WORD.match(word) and word != "__typeTag" and not word.startswith("__chali_")}
 
 
 def main():

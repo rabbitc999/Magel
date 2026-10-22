@@ -1,10 +1,10 @@
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include "std_toml.hpp"
 #include "../../library/toml/toml.hpp"
 #include "std_structured_data.hpp"
 
 /**
- * @brief TOML 库与 MAGEL 公共文档胶水的适配。
+ * @brief TOML 库与 CHALI 公共文档胶水的适配。
  */
 namespace std_toml_glue
 {
@@ -22,7 +22,7 @@ struct Traits
      */
     static auto parse(std::string_view text) { return toml::parse(text); }
     /**
-     * @brief 返回 MAGEL 类型编号。
+     * @brief 返回 CHALI 类型编号。
      * @param v 节点。
      * @return 类型编号。
      */
@@ -59,7 +59,7 @@ struct Traits
  * @param error 错误输出。
  * @return 是否成功。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     return structured_data_glue::bind<Traits>(registry, "std::toml::", error);
 }

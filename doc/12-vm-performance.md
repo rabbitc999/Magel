@@ -1,8 +1,8 @@
 # VM 性能对比：VM、JVM、Python、Lua、C++
 
-本页保留 **2026-10-15 同一台机器上的历史实测**，被测 Magel 版本为 **0.18.3 / 0.18.2**，比较五类负载。
+本页保留 **2026-10-15 同一台机器上的历史实测**，被测 ChaLi 版本为 **0.18.3 / 0.18.2**，比较五类负载。
 这些数据不作为当前 VERSION 的重新实测；当前能力见[统一说明](17-capabilities.md)。
-Magel 两版均使用默认最高 IR 与 VM 优化，并编入反射。
+ChaLi 两版均使用默认最高 IR 与 VM 优化，并编入反射。
 
 下面给出实测、完整测试代码及实现证据，不从语言类型预设性能排序。
 
@@ -13,9 +13,9 @@ Magel 两版均使用默认最高 IR 与 VM 优化，并编入反射。
 | 日期 | 2026-10-15，Asia/Shanghai |
 | 系统 | Windows 10 10.0.19045，x64 |
 | CPU / 内存 | AMD Ryzen 5 5600X，6 核 12 线程，32 GB RAM |
-| Magel 0.18.3 | `v0.18.3` / `b5cfc9f2720c149bca7626bbaa5cfd52ad8f5576` |
-| Magel 0.18.2 | `v0.18.2` / `320108bfda7c0b7035ed019a0010a87b43fe0e71` |
-| 两版 Magel 编译器与 VM | GCC/MinGW 11.2.0，`-O2 -DNDEBUG`；默认最高 IR / VM 优化，反射开启；各自编译源码并运行各自字节码 |
+| ChaLi 0.18.3 | `v0.18.3` / `b5cfc9f2720c149bca7626bbaa5cfd52ad8f5576` |
+| ChaLi 0.18.2 | `v0.18.2` / `320108bfda7c0b7035ed019a0010a87b43fe0e71` |
+| 两版 ChaLi 编译器与 VM | GCC/MinGW 11.2.0，`-O2 -DNDEBUG`；默认最高 IR / VM 优化，反射开启；各自编译源码并运行各自字节码 |
 | JVM 不带即时编译 | Oracle Java 22.0.1+8-16，HotSpot 64-Bit Server VM，`java -Xint` |
 | JVM 带即时编译 | 同一 JDK、同一 `.class`，`java -Xbatch`；保留 HotSpot 默认分层编译，测量前完整预热 20 次 |
 | Python | CPython 3.12.3，64 位；默认解释器，未启用 JIT |
@@ -27,7 +27,7 @@ JVM 两列共用 Java 源码和 class 文件，只改变执行模式与对应预
 ## 2. 五类负载、输入与校验值
 
 所有上限 `n` 都来自运行时输入，循环内不打印。整数数据在各语言中均不溢出，
-浮点用例统一使用双精度；本轮不拿 Magel 的 `float32` 与其他语言的双精度作比较。
+浮点用例统一使用双精度；本轮不拿 ChaLi 的 `float32` 与其他语言的双精度作比较。
 
 | 用例 | n | 循环主体 | 期望结果 |
 | --- | ---: | --- | ---: |
@@ -47,8 +47,8 @@ JVM 两种模式独立列出，不合并为一个 JVM 数字。
 
 | 配置 | 整数累加 | 奇偶分支 | float64 累加 | 函数调用 | 数组读取 |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Magel 0.18.3 VM | 135.138 | 33.099 | 353.936 | 609.619 | 85.360 |
-| Magel 0.18.2 VM | 134.522 | 32.659 | 491.668 | 633.749 | 84.069 |
+| ChaLi 0.18.3 VM | 135.138 | 33.099 | 353.936 | 609.619 | 85.360 |
+| ChaLi 0.18.2 VM | 134.522 | 32.659 | 491.668 | 633.749 | 84.069 |
 | JVM 不带即时编译 `-Xint` | 145.578 | 22.043 | 25.071 | 26.915 | 16.734 |
 | JVM 带即时编译 `-Xbatch` | 2.302 | 0.377 | 1.299 | 0.231 | 0.479 |
 | Python | 400.934 | 61.285 | 71.810 | 72.427 | 51.250 |
@@ -62,7 +62,7 @@ JVM 两种模式独立列出，不合并为一个 JVM 数字。
 本页保留两轮数据，不用一个中位数代替稳定性分析。
 其他配置也应结合 JSON 中全部样本解读；尤其是原生/JIT 的亚毫秒用例与 Lua 粗粒度计时。
 
-### 3.1 Magel 0.18.3 相对 0.18.2
+### 3.1 ChaLi 0.18.3 相对 0.18.2
 
 变化为 `(0.18.3 耗时 / 0.18.2 耗时 - 1) × 100%`，负数表示耗时下降。
 本页把低于 5% 的变化作为噪声，5%–10% 作为需要重复支持的弱信号，超过 10% 才记明显变化；
@@ -82,11 +82,11 @@ JVM 两种模式独立列出，不合并为一个 JVM 数字。
 
 ## 4. 实际测试代码示例
 
-下面给出整数累加的完整测试代码；这同一份 Magel 源码分别供 0.18.3 与 0.18.2 使用，
+下面给出整数累加的完整测试代码；这同一份 ChaLi 源码分别供 0.18.3 与 0.18.2 使用，
 同一份 Java 源码分别供 JVM 的两种模式使用。
 [测试代码全集](examples/vm-performance.md)。它们由脚本直接保存自实际执行输入，源码摘要也在 JSON 内。
 
-### 4.1 Magel：0.18.3 与 0.18.2
+### 4.1 ChaLi：0.18.3 与 0.18.2
 
 输入 `10000000`，输出 `49999995000000`。VM 计时由外部 C++ 运行器包围执行过程。
 
@@ -207,7 +207,7 @@ int main() {
 
 函数用例有直接证据：HotSpot 日志显示 `Case_calls::mix (6 bytes) inline (hot)`；
 C++ 的 `calculate(long long)` 汇编没有调用 `mix`，并把乘 17 的序列化为每轮增加 `0x11` 的归纳变量。
-因此 JVM JIT/C++ 的这一行主要剩下紧凑的算术循环，不能用它与 Magel 的耗时比直接换算单次函数调用开销。
+因此 JVM JIT/C++ 的这一行主要剩下紧凑的算术循环，不能用它与 ChaLi 的耗时比直接换算单次函数调用开销。
 
 ### 5.2 为什么 JVM 不带 JIT 与带 JIT 差异很大
 
@@ -216,9 +216,9 @@ C++ 的 `calculate(long long)` 汇编没有调用 `mix`，并把乘 17 的序列
 两列采用相同计算源码和结果，但执行技术不同，这正是本页坚持分列的原因。
 这组数据不能用于推断 Java 冷启动、首请求或短命令行程序的总延迟。
 
-### 5.3 为什么 Magel 的整数与浮点表现不同
+### 5.3 为什么 ChaLi 的整数与浮点表现不同
 
-Magel 的整数循环可以进入[寄存器区域执行核心](../library/stackvm/register_core.hpp)，
+ChaLi 的整数循环可以进入[寄存器区域执行核心](../library/stackvm/register_core.hpp)，
 在一个批次中连续执行多条内部指令；它仍是解释执行，没有把热点编译成原生机器码。
 
 0.18.3 新增的[浮点融合路径](../library/stackvm/vm_execution.cpp)合并了加载、运算、保存以及部分比较跳转，
@@ -230,22 +230,22 @@ Magel 的整数循环可以进入[寄存器区域执行核心](../library/stackv
 
 动态类型不等于每个负载都更慢。本机 CPython 3.12 在预热后的浮点循环中可观察到
 `BINARY_OP_ADD_FLOAT` 自适应专用字节码，避免每次都走最通用的加法路径。
-Magel 的类型是静态的，但本轮测试的执行器仍承担槽位访问、类型归一化与解释器服务成本；
+ChaLi 的类型是静态的，但本轮测试的执行器仍承担槽位访问、类型归一化与解释器服务成本；
 静态类型本身不会自动把这些成本消除。这能解释为什么不能仅凭“C++ 写的静态语言 VM”就预言它必胜 Python。
 本轮未对两套运行时的分配或指令占比做量化剖析。
 
-### 5.5 为什么函数调用和数组仍是 Magel 的改进重点
+### 5.5 为什么函数调用和数组仍是 ChaLi 的改进重点
 
-Magel 的[调用入口](../library/stackvm/vm_execution.cpp)仍需要处理参数队列、参数归一化、
+ChaLi 的[调用入口](../library/stackvm/vm_execution.cpp)仍需要处理参数队列、参数归一化、
 调用帧与局部槽、返回目的地；小帧已有缓存，仍保留这些服务流程。
 Lua 的测试字节码也保留 `CALL`，说明它不是依靠本轮的原生内联取得结果；
 两种解释器调用路径的实际成本差异，需要后续用剖析和开关对照进一步拆分。
 
-数组用例也有语义成本差异：Magel 经过[下标/指针容量检查与内存服务](../library/stackvm/vm_execution.cpp)，
+数组用例也有语义成本差异：ChaLi 经过[下标/指针容量检查与内存服务](../library/stackvm/vm_execution.cpp)，
 Lua 使用 table，Python 使用 list，Java 使用 `long[]`，C++ 使用固定长度原生数组。
 C++ 源码没有逐次运行时数组边界检查；其他实现的表示和检查策略不同。
 因此这行是实际数组写法的端到端表现，不能当成相同底层访存指令的比较，
-更不能把取消 Magel 检查当作默认提速方案。
+更不能把取消 ChaLi 检查当作默认提速方案。
 
 ## 6. 测量口径与复现
 
@@ -253,7 +253,7 @@ C++ 源码没有逐次运行时数组边界检查；其他实现的表示和检�
 
 | 配置 | 计时器 | 计时范围 | 正式测量前预热 |
 | --- | --- | --- | ---: |
-| 两版 Magel VM | `std::chrono::steady_clock` | 已加载字节码的执行准备、执行及最终结果输出 | 1 次 |
+| 两版 ChaLi VM | `std::chrono::steady_clock` | 已加载字节码的执行准备、执行及最终结果输出 | 1 次 |
 | JVM 不带即时编译 | `System.nanoTime` | `calculate` 调用 | 1 次 |
 | JVM 带即时编译 | `System.nanoTime` | `calculate` 调用 | 20 次 |
 | Python | `time.perf_counter_ns` | `calculate` 调用 | 1 次 |
@@ -272,13 +272,13 @@ Windows 上样本常呈整数毫秒台阶。很短的原生/JIT 测量及受调�
 ### 6.2 运行命令
 
 入口脚本：[benchmark_vm_baselines.py](../tests/benchmark_vm_baselines.py)。
-需要同机的 JDK、Python、GCC/MinGW，以及两版 Magel 编译器和对应 VM 运行器。
+需要同机的 JDK、Python、GCC/MinGW，以及两版 ChaLi 编译器和对应 VM 运行器。
 按[工具链文档](09-toolchain.md)分别构建 `v0.18.3` 与 `v0.18.2`；每个运行器必须使用自己版本的头文件与静态库。
 
 在各自版本源码目录编译运行器：
 
 ```sh
-g++ -std=c++17 -O2 -DNDEBUG -DSTACKVM_WITH_REFLECTION=1 -DMAGEL_CUSTOM_ALLOCATOR=1 -Ilibrary -Ilibrary/stackvm tests/benchmark_vm_program.cpp build/magel-stackvm/libstackvm.a -pthread -o build/vm-program-benchmark.exe
+g++ -std=c++17 -O2 -DNDEBUG -DSTACKVM_WITH_REFLECTION=1 -DCHALI_CUSTOM_ALLOCATOR=1 -Ilibrary -Ilibrary/stackvm tests/benchmark_vm_program.cpp build/chali-stackvm/libstackvm.a -pthread -o build/vm-program-benchmark.exe
 ```
 
 Lua 源码沿用[官方 5.5.1 归档](https://www.lua.org/ftp/lua-5.5.1.tar.gz)。

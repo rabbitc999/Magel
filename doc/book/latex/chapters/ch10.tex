@@ -9,13 +9,13 @@
 
 「一个形状」要么是圆（带半径），要么是方形（带边长）。「一次操作的结果」要么成功（带数据），要么失败（带原因）。
 
-这种「多选一」的数据就是枚举。配合 \texttt{match}，它是 Magel 里最漂亮的一块。
+这种「多选一」的数据就是枚举。配合 \texttt{match}，它是 ChaLi 里最漂亮的一块。
 
 \section{定义枚举}
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 enum Message
 {
     Quit,
@@ -48,7 +48,7 @@ enum Message
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 Message first = Message::Quit;
 Message second = Message::Move((int32)3, (int32)7);
 Message third = Message::Text("hello");
@@ -64,7 +64,7 @@ Message third = Message::Text("hello");
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 enum Message
 {
     Quit,
@@ -141,7 +141,7 @@ match (要看的东西) {
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 Message::Move(x, y) =>
 {
     println("move {} {}", x, y);
@@ -158,7 +158,7 @@ Message::Move(x, y) =>
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 enum Color
 {
     Red, Green
@@ -169,7 +169,7 @@ enum Color
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 enum Color
 {
     Red,
@@ -199,7 +199,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: enum match 必须覆盖所有变体或提供 `_` 兜底分支；缺少：Color::Green
+chali: enum match 必须覆盖所有变体或提供 `_` 兜底分支；缺少：Color::Green
 \end{lstlisting}
 \par
 \medskip
@@ -214,7 +214,7 @@ magel: enum match 必须覆盖所有变体或提供 `_` 兜底分支；缺少：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 match (color)
 {
     Color::Red =>
@@ -239,7 +239,7 @@ match (color)
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 enum Shape
 {
     Circle(int64 radius),
@@ -287,7 +287,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 #derive(Equal, Hash, Clone)
 enum BookPacket
 {
@@ -323,7 +323,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 grade(int64 score)
 {
     match (score)
@@ -382,7 +382,7 @@ int64 main()
 
 \subsection*{区间重叠的警告}
 
-整数区间与区间、单值与区间的静态重叠会产生 \texttt{MGL1601} 警告，程序仍可编译。编译器按开闭端点和完整的 int64/uint64 精度判断相交，不会把警告改成类型错误，也不会重排分支；运行时仍按原顺序和守卫选择。重复的无守卫单值模式则沿用错误规则。命令行、JSON 与编辑器使用同一警告级别。
+整数区间与区间、单值与区间的静态重叠会产生 \texttt{CHL1601} 警告，程序仍可编译。编译器按开闭端点和完整的 int64/uint64 精度判断相交，不会把警告改成类型错误，也不会重排分支；运行时仍按原顺序和守卫选择。重复的无守卫单值模式则沿用错误规则。命令行、JSON 与编辑器使用同一警告级别。
 
 \section{守卫：先绑定，再加条件}
 
@@ -390,7 +390,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 enum Choice
 {
     Value(String text)
@@ -460,7 +460,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 enum Packet
 {
     Data(String text), Empty

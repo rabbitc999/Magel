@@ -6,7 +6,7 @@ const { registerSemanticProviders } = require('../src/semanticProviders');
 /** 验证编辑器 provider 的协议转换、版本拒绝和类型提示开关。 */
 async function main() {
   const providers = {}, context = { subscriptions: [] };
-  const uri = { toString: () => 'file:///project/main.mgl' }, document = { uri, version: 4 };
+  const uri = { toString: () => 'file:///project/main.chl' }, document = { uri, version: 4 };
   let enabled = true, requests = 0, response;
   class WorkspaceEdit { constructor() { this.changes = []; } set(target, edits) { this.changes.push({ target, edits }); } }
   class TextEdit { constructor(range, newText) { Object.assign(this, { range, newText }); } }
@@ -56,9 +56,9 @@ async function main() {
   Module._load = function load(name, ...args) { return name === 'vscode' ? vscode : original.call(this, name, ...args); };
   try {
     const { toDiagnostics } = require('../src/providers');
-    const diagnostic = toDiagnostics([{ range, message: '移动后读取', code: 'MGL1205', severity: 1,
+    const diagnostic = toDiagnostics([{ range, message: '移动后读取', code: 'CHL1205', severity: 1,
       relatedInformation: [{ location: { uri: uri.toString(), range }, message: '此处捕获' }] }])[0];
-    assert.equal(diagnostic.code, 'MGL1205'); assert.equal(diagnostic.relatedInformation[0].message, '此处捕获');
+    assert.equal(diagnostic.code, 'CHL1205'); assert.equal(diagnostic.relatedInformation[0].message, '此处捕获');
   } finally { Module._load = original; }
   for (const subscription of context.subscriptions) subscription.dispose();
   console.log('引用与重命名 provider、过期版本拒绝、内联提示开关及关联诊断转换通过。');

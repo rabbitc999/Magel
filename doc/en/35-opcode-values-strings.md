@@ -1,6 +1,6 @@
 # Standard library ownership and string methods
 
-Host storage follows actual ownership. Database connections, arenas and timer sources have one owner; containers and random generators copy values; shared cells retain explicit sharing. See the [API index](../library/README.md) and [targeted regressions](../../tests/magel_opcode_values.py).
+Host storage follows actual ownership. Database connections, arenas and timer sources have one owner; containers and random generators copy values; shared cells retain explicit sharing. See the [API index](../library/README.md) and [targeted regressions](../../tests/chali_opcode_values.py).
 
 ## Ownership and copying
 
@@ -52,4 +52,4 @@ replace aliases replaceAll. Replacements are nonoverlapping; an empty needle lea
 
 split(separator,keepEmpty=true) retains leading, interior and trailing empty fields. Empty separators split UTF-8 code points. splitWhitespace drops empty fields. lines(keepEmpty=true) treats CRLF as one separator and also accepts standalone CR/LF, retaining trailing empty lines by default. join(items) uses the receiver as separator and returns empty for an empty list. Existing chars() remains a lazy std::iter entry point; unicodeChars returns an independent List<String> directly.
 
-See the [string example](../../example/samples/string_methods.mgl), [ownership example](../../example/samples/opcode_value_semantics.mgl) and [red-black deletion example](../../example/samples/std_red_black_delete.mgl). Strings have 1,050 additional deterministic Python differential assertions. Other libraries are sampled with a fixed seed rather than tested in full.
+See the [string example](../../example/samples/string_methods.chl), [ownership example](../../example/samples/opcode_value_semantics.chl) and [red-black deletion example](../../example/samples/std_red_black_delete.chl). Strings have 1,050 additional deterministic Python differential assertions. Other libraries are sampled with a fixed seed rather than tested in full.

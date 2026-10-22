@@ -1,6 +1,6 @@
 
 ==============================================================================
-GCC x64：tmp/vm-9700x-pool/gcc64/magel-stackvm.exe
+GCC x64：tmp/vm-9700x-pool/gcc64/chali-stackvm.exe
 ==============================================================================
   文件大小      1161112 字节
   nm -C --defined-only 行数  3679
@@ -12,7 +12,7 @@ GCC x64：tmp/vm-9700x-pool/gcc64/magel-stackvm.exe
       ['PUSH', 'PUSH', 'LOAD', 'STORE', 'DECLARE', 'ALLOC', 'FREE', 'DROP', 'CHECK', 'CHECKPTR', 'CALLPTR', 'CALLPTR', 'NEG', 'NOT', 'ADD', 'SUB', 'MUL', 'DIV', 'MOD', 'SHL', 'SAR', 'SHR', 'AND', 'OR', 'XOR', 'EQ', 'NE', 'LT', 'LE', 'GT', 'GE', 'LTU', 'LEU', 'GTU', 'GEU', 'I2F', 'F2I', 'MULWIDE', 'DIVWIDE', 'JMP', 'JZ', 'JNZ', 'PRINT', 'PRINT', 'PRINT', 'PRINT', 'PRINT', 'READ', 'GETC', 'PUTC', 'PARAM', 'CALL', 'RET', 'HALT', 'ADDR', 'LOADAT', 'STOREAT']
 
 ==============================================================================
-MSVC x64：tmp/vm-9700x-pool/x64/Release/magel-stackvm.exe
+MSVC x64：tmp/vm-9700x-pool/x64/Release/chali-stackvm.exe
 ==============================================================================
   文件大小      614912 字节
   nm -C --defined-only 行数  1
@@ -45,7 +45,7 @@ GCC 档 Machine::run 的原生反汇编开头（objdump -d）
    14006cb6e:	4d 89 c7             	mov    %r8,%r15
    14006cb71:	c6 01 00             	movb   $0x0,(%rcx)
    14006cb74:	c7 41 04 00 00 00 00 	movl   $0x0,0x4(%rcx)
-   14006cb7b:	48 8d 0d 9e 96 05 00 	lea    0x5969e(%rip),%rcx        # 1400c6220 <__emutls_v._ZZN7magel23currentRuntimeAllocatorEvE9allocator>
+   14006cb7b:	48 8d 0d 9e 96 05 00 	lea    0x5969e(%rip),%rcx        # 1400c6220 <__emutls_v._ZZN7chali23currentRuntimeAllocatorEvE9allocator>
    14006cb82:	4c 89 8c 24 f8 05 00 	mov    %r9,0x5f8(%rsp)
    14006cb89:	00 
    14006cb8a:	e8 81 f5 02 00       	call   14009c110 <__emutls_get_address>

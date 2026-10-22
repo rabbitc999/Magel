@@ -8,7 +8,7 @@ import sys
 from library_reference_data import MODULES, BEHAVIOR, ITER, PARAMETERS, BIG_BEHAVIOR, CONCURRENCY_BEHAVIOR
 
 ROOT = Path(__file__).resolve().parents[1]
-from magel_api import TOKEN, without_comments, parameters, declarations as scan_declarations
+from chali_api import TOKEN, without_comments, parameters, declarations as scan_declarations
 
 def declarations(path, source=None, line_offset=0):
     """以仓库相对路径扫描标准库声明。"""
@@ -17,12 +17,12 @@ def declarations(path, source=None, line_offset=0):
 
 def inventory():
     """枚举工具链内置的全部源码模块。"""
-    paths = sorted((ROOT / 'source/std').glob('*.mgl'))
+    paths = sorted((ROOT / 'source/std').glob('*.chl'))
     data = {re.search(r'\bmodule\s+([\w:]+)\s*;', p.read_text(encoding='utf-8')).group(1): declarations(p)
             for p in paths}
-    path = ROOT / 'source/magel_generic.cpp'
+    path = ROOT / 'source/chali_generic.cpp'
     source = path.read_text(encoding='utf-8')
-    raw = re.search(r'const Memory::String rangeBuiltinRaw = R"MAGEL\((.*?)\)MAGEL";', source, re.S)
+    raw = re.search(r'const Memory::String rangeBuiltinRaw = R"CHALI\((.*?)\)CHALI";', source, re.S)
     chunks = list(re.finditer(r'\bmodule\s+([\w:]+)\s*;', raw.group(1)))
     for i, chunk in enumerate(chunks):
         begin = raw.start(1) + chunk.start()
@@ -35,7 +35,7 @@ def inventory():
             if entry['owner'] in ('List','Set','Map'):
                 entry['source']='source/semantics/aggregate_ownership.cpp'
             elif entry['name'] in ('toReference','toOptional'):
-                entry['source']='source/magel_generic.cpp'
+                entry['source']='source/chali_generic.cpp'
             elif entry['name'] in ('eprint','eprintln'):
                 entry['source']='source/semantics/formatted_output.cpp'
             origin_text=(ROOT/entry['source']).read_text(encoding='utf-8')
@@ -73,7 +73,7 @@ def inventory():
     documented={r['name'] for r in data['std::algorithms'] if r['kind']=='function'}
     if intrinsic_names-documented: raise ValueError('算法内建缺失：'+str(intrinsic_names-documented))
     # 泛型方法由语义层适配到顶层实现，公开签名独立登记为所属容器的方法。
-    adapters = declarations(ROOT/'source/std/lang.mgl', 'module std::lang;\nstruct Result<T,E> { Result<T,F> mapErr<F>(F fn(E) mapper); };\nstruct Option<T> { Result<T,E> okOr<E>(E error); Result<T,E> okOrElse<E>(E fn() factory); };')
+    adapters = declarations(ROOT/'source/std/lang.chl', 'module std::lang;\nstruct Result<T,E> { Result<T,F> mapErr<F>(F fn(E) mapper); };\nstruct Option<T> { Result<T,E> okOr<E>(E error); Result<T,E> okOrElse<E>(E fn() factory); };')
     for row in adapters:
         if row['kind']=='function':
             row['intrinsic']=True
@@ -171,7 +171,7 @@ def render(data):
             examples[path]=dict(id=path,source=path,code=(ROOT/path).read_text(encoding='utf-8'),
                 arguments=['example.txt'] if module=='std::io' else [],flags=[],
                 input=expected.with_suffix('.in').read_text(encoding='utf-8') if expected.with_suffix('.in').exists() else '',
-                expected=expected.with_suffix('.txt').read_text(encoding='utf-8'),language='magel')
+                expected=expected.with_suffix('.txt').read_text(encoding='utf-8'),language='chali')
     module_info={}
     capability={name:group for group,names in {
         'core': ['std','std::lang','std::reflect'],
@@ -182,11 +182,11 @@ def render(data):
         'concurrency': ['std::concurrency','std::thread','std::message','std::event'],
         'system': ['std::memory','std::clock','std::datetime','std::watchdog','std::probe'],
     }.items() for name in names}
-    index=['# 库函数 API 参考手册', '', '采用 C/C++ 参考手册常见的组织方式：模块 → 类型 → 函数/重载，逐项列出声明、参数、返回值、行为、边界及调用形式。语法仍为 Magel，不是 C++。', '',
+    index=['# 库函数 API 参考手册', '', '采用 C/C++ 参考手册常见的组织方式：模块 → 类型 → 函数/重载，逐项列出声明、参数、返回值、行为、边界及调用形式。语法仍为 ChaLi，不是 C++。', '',
            '覆盖工具链自带的 `std::lang`、`std`、`std::*` 与可选 `std::reflect`；编译器注入的算法和核心容器另有来源标记。`__` 前缀胶水是实现细节，不作为应用 API。底层 C++ 依赖库与宿主 C ABI 见[宿主集成](../08-host-integration.md)。', '',
            '## 阅读约定', '', '签名中 `static` 使用 `类型::方法`，实例方法使用 `对象.方法`。重载分别编号；泛型参数必须满足源码接口约束。`T`、`U`、`R` 等为类型参数，不能直接作为完整程序的具体类型。内建函数用等价调用签名表示，其参数检查由编译器完成。', '',
            '参数为值时遵循值语义；`const&` 只读借用，`mut&` 可写借用。修改/释放资源会影响依赖它的借用；`const&` 不能调用 `drop`。显式释放统一使用 `value.drop();`，底层释放非幂等；编译器合并已知重复操作，释放后仍不能读取。', '',
-           '每项的“调用形式”展示如何排列参数，参数名代表调用者已准备的值，不能单独运行。模块页链接的 `.mgl` 是带入口的完整参考代码；有输入、线程、反射或外部服务条件时以示例说明为准。错误条件既包括库显式返回的 Option/Result，也包括断言、宿主检查和借用检查诊断。', '',
+           '每项的“调用形式”展示如何排列参数，参数名代表调用者已准备的值，不能单独运行。模块页链接的 `.chl` 是带入口的完整参考代码；有输入、线程、反射或外部服务条件时以示例说明为准。错误条件既包括库显式返回的 Option/Result，也包括断言、宿主检查和借用检查诊断。', '',
            '## 模块目录', '', '| 模块 | 内容 | 函数重载数 |', '| --- | --- | ---: |']
     for module, records in data.items():
         title, contract=MODULES[module]
@@ -194,7 +194,7 @@ def render(data):
         # 否则 LSP 会把 `__Range` 这类内部类型当成可补全的公开符号。
         functions=[r for r in records if r['kind']=='function' and not r['owner'].startswith('__')]
         index.append(f'| [`{module}`]({filename(module)}) | {title} | {len(functions)} |')
-        lines=[f'# {module} — {title}', '', '[返回库目录](README.md) · [全部符号](symbols.md)', '', '## 引入', '', '```magel', '// std::lang 自动加载' if module=='std::lang' else '// 编译器内建，无需 import std' if module=='std' else 'import '+module+';', '```', '', '## 公共约定与错误边界', '', contract, '']
+        lines=[f'# {module} — {title}', '', '[返回库目录](README.md) · [全部符号](symbols.md)', '', '## 引入', '', '```chali', '// std::lang 自动加载' if module=='std::lang' else '// 编译器内建，无需 import std' if module=='std' else 'import '+module+';', '```', '', '## 公共约定与错误边界', '', contract, '']
         example=EXAMPLES.get(module)
         module_info[module]=dict(name=module,title=title,documentation=contract,capability=capability.get(module,'system'),sourceLanguage='zh',examples=([example] if example else [])+SUPPLEMENTAL.get(module,[]))
         lines+=['## 参考代码', '']
@@ -202,8 +202,8 @@ def render(data):
             expected=ROOT/'example/expected'/Path(example).stem
             flags=' --threads' if expected.with_suffix('.threads').exists() else ' --reflection' if module=='std::reflect' else ''
             if module=='std::io': flags+=' -- build/library-example.txt'
-            lines += [f'完整程序：[{example}](../../{example})。', '', '```powershell', 'magel run '+example+flags, '```', '']
-            if module=='std::net': lines += ['非阻塞与可取消线程配合的完整程序：[std_net_async.mgl](../../example/samples/std_net_async.mgl)。', '']
+            lines += [f'完整程序：[{example}](../../{example})。', '', '```powershell', 'chali run '+example+flags, '```', '']
+            if module=='std::net': lines += ['非阻塞与可取消线程配合的完整程序：[std_net_async.chl](../../example/samples/std_net_async.chl)。', '']
             if module=='std::io': lines+=['先创建 `build` 目录；示例会覆盖给定路径，请使用专用测试文件。','']
             if module=='std::reflect': lines+=['需先用 `make reflection` 构建支持反射的工具链；当前二进制未编入支持时，上述命令会明确报缺失宏。','']
             path=ROOT/example
@@ -212,8 +212,8 @@ def render(data):
                 examples.setdefault(example,dict(id=example,source=example,code=path.read_text(encoding='utf-8'),
                     arguments=expected.with_suffix('.args').read_text(encoding='utf-8').splitlines() if expected.with_suffix('.args').exists() else ['example.txt'] if module=='std::io' else [],
                     flags=example_flags,input=expected.with_suffix('.in').read_text(encoding='utf-8') if expected.with_suffix('.in').exists() else '',
-                    expected=expected.with_suffix('.txt').read_text(encoding='utf-8') if expected.with_suffix('.txt').exists() else '',language='magel'))
-                lines+=['<details>', '<summary>展开完整参考代码</summary>', '', '```magel',path.read_text(encoding='utf-8').rstrip(), '```', '', '</details>', '']
+                    expected=expected.with_suffix('.txt').read_text(encoding='utf-8') if expected.with_suffix('.txt').exists() else '',language='chali'))
+                lines+=['<details>', '<summary>展开完整参考代码</summary>', '', '```chali',path.read_text(encoding='utf-8').rstrip(), '```', '', '</details>', '']
             if expected.with_suffix('.txt').exists():
                 lines+=['<details>','<summary>示例输出</summary>','','```text',expected.with_suffix('.txt').read_text(encoding='utf-8').rstrip(),'```','','</details>','']
         if module=='std::iter':
@@ -260,7 +260,7 @@ def render(data):
             qualified=(r['owner']+'::' if r['owner'] else '')+r['name']
             description=behavior(r)
             params=parameters(r['signature'])
-            lines += [f'<a id="{anchor(r,i)}"></a>', '', f'### {qualified}（{i+1}）', '', '**声明**', '', '```magel',r['signature']+';', '```', '', '**行为**', '', description, '']
+            lines += [f'<a id="{anchor(r,i)}"></a>', '', f'### {qualified}（{i+1}）', '', '**声明**', '', '```chali',r['signature']+';', '```', '', '**行为**', '', description, '']
             comment=comment_text(r['comment'])
             if comment and comment!=description and not any(t in comment for t in ('搬出来','迭代操作','已迁到','从编译器')):
                 lines += [comment, '']
@@ -288,7 +288,7 @@ def render(data):
             for assertion in assertions:
                 lines+=['显式前置检查：`'+re.sub(r'\s+',' ',assertion)+'`。']
             if 'panic(' in r.get('body',''): lines+=['实现包含 panic 分支；调用前应处理空值或失败状态。']
-            lines+=['', '**调用形式**', '', '```magel']
+            lines+=['', '**调用形式**', '', '```chali']
             generic=re.search(r'\b'+re.escape(r['name'])+r'\s*(<.*?>)?\s*\(',r['signature'])
             type_args=generic.group(1) if generic and generic.group(1) else ''
             # 约束不是实参；调用形式只保留泛型参数名。
@@ -308,10 +308,10 @@ def render(data):
                     if re.search(r'\b'+re.escape(r['name'])+r'\s*(?:<[^\n;]*>)?\s*\(',examples.get(program,{}).get('code',''))],
                 sourceLanguage='zh',source=r['source'],line=r['line'],page=filename(module),anchor=anchor(r,i)))
         for extra in SUPPLEMENTAL.get(module,[]):
-            lines+=['## 补充完整示例','','['+extra+'](../../'+extra+')。', '', '```magel',examples[extra]['code'].rstrip(),'```','']
+            lines+=['## 补充完整示例','','['+extra+'](../../'+extra+')。', '', '```chali',examples[extra]['code'].rstrip(),'```','']
         output[filename(module)]='\n'.join(lines)+'\n'
     if missing_parameters: raise ValueError('缺少参数含义：'+', '.join(sorted(missing_parameters)))
-    index += ['', '## 查找与维护', '', '[全部符号索引](symbols.md)按限定名排序，适合浏览器搜索；[API 清单](api-index.json)记录每个重载、源码和锚点。', '', '参考页由 `python tools/library_reference.py` 根据声明和人工说明生成。`python tools/library_reference.py --check` 检查当前源码与入库页面是否一致；新增 API 后须同步补充行为、参数与示例。示例验证见 `python tests/magel_library_reference.py`。', '']
+    index += ['', '## 查找与维护', '', '[全部符号索引](symbols.md)按限定名排序，适合浏览器搜索；[API 清单](api-index.json)记录每个重载、源码和锚点。', '', '参考页由 `python tools/library_reference.py` 根据声明和人工说明生成。`python tools/library_reference.py --check` 检查当前源码与入库页面是否一致；新增 API 后须同步补充行为、参数与示例。示例验证见 `python tests/chali_library_reference.py`。', '']
     index += ['[类型与字段清单](symbol-index.json)记录类型分类、字段类型、说明及源码位置，供编辑器与文档共用。', '']
     output['README.md']='\n'.join(index)
     symbols=['# 全部库函数符号', '', '[返回库目录](README.md)', '', '| 限定名 | 签名 |', '| --- | --- |']
@@ -327,16 +327,16 @@ def render(data):
     # 聚合模块可能没有函数，仍须记录导入关系供独立部署的 LSP 使用。
     dependencies={}
     for module,records in data.items():
-        candidates=[ROOT/r['source'] for r in records if r['source'].endswith('.mgl')]
-        fallback=ROOT/(module.replace('::','/')+'.mgl')
+        candidates=[ROOT/r['source'] for r in records if r['source'].endswith('.chl')]
+        fallback=ROOT/(module.replace('::','/')+'.chl')
         source=candidates[0] if candidates else fallback
         dependencies[module]=re.findall(r'\bimport\s+([\w:]+)\s*;',without_comments(source.read_text(encoding='utf-8'))) if source.exists() else []
-    output['../../tools/magel_stdlib_api.json']=json.dumps(dict(schemaVersion=1,modules=dependencies,types=sorted({r['name'] for records in data.values() for r in records if r['kind'] in ('struct','enum','interface','opcode') and not r['name'].startswith('__')}),functions=api_index,symbols=symbol_index,
+    output['../../tools/chali_stdlib_api.json']=json.dumps(dict(schemaVersion=1,modules=dependencies,types=sorted({r['name'] for records in data.values() for r in records if r['kind'] in ('struct','enum','interface','opcode') and not r['name'].startswith('__')}),functions=api_index,symbols=symbol_index,
         reference=dict(modules=module_info,examples=examples,sourceLanguage='zh')),ensure_ascii=False,separators=(',', ':'))+'\n'
     # 编辑器把本清单当作公开 API 直接补全；`__` 前缀是内部协议，漏进来就等于把它公开了。
     leaked=sorted({row['name'] for row in api_index if row['name'].startswith('__') or row['owner'].startswith('__')} |
                   {row['name'] for row in symbol_index if row['name'].startswith('__') or row['owner'].startswith('__')} |
-                  {name for name in json.loads(output['../../tools/magel_stdlib_api.json'])['types'] if name.startswith('__')})
+                  {name for name in json.loads(output['../../tools/chali_stdlib_api.json'])['types'] if name.startswith('__')})
     if leaked: raise ValueError('编辑器索引泄漏了内部符号：'+', '.join(leaked))
     return {name: text.rstrip()+'\n' if name.endswith('.md') else text for name,text in output.items()}
 

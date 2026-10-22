@@ -1,4 +1,4 @@
-"""从官方源码构建 Lua，串行交替测量 Magel VM 与 Lua 的五类相同工作负载。"""
+"""从官方源码构建 Lua，串行交替测量 ChaLi VM 与 Lua 的五类相同工作负载。"""
 import argparse
 from datetime import datetime, timezone
 import hashlib
@@ -30,16 +30,16 @@ def run(command, **kwargs):
 def main():
     """预热后交替测量并保存所有样本、构建信息和校验和。"""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--magel", type=Path, default=ROOT / "magel.exe")
+    parser.add_argument("--chali", type=Path, default=ROOT / "ChaLi.exe")
     parser.add_argument("--runner", type=Path, required=True)
-    parser.add_argument("--baseline-magel", type=Path)
+    parser.add_argument("--baseline-chali", type=Path)
     parser.add_argument("--baseline-runner", type=Path)
     parser.add_argument("--repeats", type=int, default=7)
     parser.add_argument("--download", action="store_true", help="重新下载官方源码包")
     parser.add_argument("--output", type=Path, default=WORK / "results.json")
     args = parser.parse_args()
     assert args.repeats > 0
-    assert bool(args.baseline_magel) == bool(args.baseline_runner)
+    assert bool(args.baseline_chali) == bool(args.baseline_runner)
     WORK.mkdir(parents=True, exist_ok=True)
     archive = WORK / "lua-5.5.1.tar.gz"
     if args.download or not archive.exists():
@@ -60,32 +60,32 @@ def main():
         ("calls", 1000000, "int64", "total+=mix(i);", "total=total+mix(i)", 17*1000000*999999//2),
         ("array_reads", 1000000, "int64", "total+=values[i%4];", "total=total+values[(i%4)+1]", 2500000),
     ]
-    report = {"magel_version": (ROOT / "VERSION").read_text().strip(),
+    report = {"chali_version": (ROOT / "VERSION").read_text().strip(),
               "measured_at_utc": datetime.now(timezone.utc).isoformat(),
               "base_commit": run(["git", "rev-parse", "HEAD"]).strip(),
               "source_diff_sha256": hashlib.sha256(subprocess.check_output(["git", "diff", "HEAD", "--binary", "--", "library", "source", "tools", "tests", "Makefile", "local.mk", "VERSION", "features.mk"], cwd=ROOT)).hexdigest(),
               "platform": platform.platform(), "machine": platform.processor(),
               "compiler": run(["g++", "--version"]).splitlines()[0],
               "lua_version": run([lua, "-v"]).strip(), "lua_url": URL, "lua_sha256": SHA256,
-              "flags": "Lua official mingw/linux Makefile -O2; Magel VM runner -O2 -DNDEBUG MAGEL_CUSTOM_ALLOCATOR=1; all VM optimizations enabled",
+              "flags": "Lua official mingw/linux Makefile -O2; ChaLi VM runner -O2 -DNDEBUG CHALI_CUSTOM_ALLOCATOR=1; all VM optimizations enabled",
               "warmups_per_process": 1, "repeats": args.repeats,
               "timing": "one measured sample per process, alternate configuration order each round; VM steady_clock includes execution preparation and checksum output, excludes source compilation and bytecode loading; Lua os.clock includes loop function only; both exclude process startup",
               "baseline": "v0.18.2 compiler and VM, each compiler generates its own bytecode" if args.baseline_runner else None,
               "results": {}}
     report["binaries"] = {str(path): hashlib.sha256(path.read_bytes()).hexdigest()
-                          for path in (args.magel, args.runner, lua)}
+                          for path in (args.chali, args.runner, lua)}
     if args.baseline_runner:
         report["baseline_commit"] = run(["git", "rev-parse", "v0.18.2^{commit}"]).strip()
-        for path in (args.baseline_magel, args.baseline_runner):
+        for path in (args.baseline_chali, args.baseline_runner):
             report["binaries"][str(path)] = hashlib.sha256(path.read_bytes()).hexdigest()
     if os.name == "nt":
         report["cpu"] = json.loads(run(["powershell", "-NoProfile", "-Command",
                                         "Get-CimInstance Win32_Processor | Select-Object Name,NumberOfCores,NumberOfLogicalProcessors | ConvertTo-Json -Compress"]))
-    for name, count, value_type, mgl_body, lua_body, expected in cases:
+    for name, count, value_type, chl_body, lua_body, expected in cases:
         declaration = "int64 values[4];values[0]=1;values[1]=2;values[2]=3;values[3]=4;" if name == "array_reads" else ""
-        source = WORK / (name + ".mgl")
+        source = WORK / (name + ".chl")
         source.write_text("int64 mix(int64 x){return x*17;}\nint64 main(){int64 n=std::lang::inputInt(),i=0;"
-                          + value_type + " total=0;" + declaration + "while(i<n){" + mgl_body
+                          + value_type + " total=0;" + declaration + "while(i<n){" + chl_body
                           + "i+=1;}std::lang::println(\"{}\",total);return 0;}\n", encoding="utf-8")
         lua_file = WORK / (name + ".lua")
         lua_file.write_text("local n=tonumber(arg[1])\nlocal function mix(x) return x*17 end\n"
@@ -95,25 +95,25 @@ def main():
                             "local value=calculate()\nprint((os.clock()-start)*1000,value)\n", encoding="utf-8")
         prefix = WORK / name
         started = time.perf_counter()
-        run([args.magel.resolve(), "svmb", source, "out", prefix])
-        compilation = {"Magel 0.18.3": {"single_compile_ms": (time.perf_counter()-started)*1000,
+        run([args.chali.resolve(), "svmb", source, "out", prefix])
+        compilation = {"ChaLi 0.18.3": {"single_compile_ms": (time.perf_counter()-started)*1000,
                                        "bytecode_bytes": prefix.with_suffix(".svmb").stat().st_size}}
-        modes = [("Magel 0.18.3", [args.runner.resolve(), prefix, 1, 1, count]),
+        modes = [("ChaLi 0.18.3", [args.runner.resolve(), prefix, 1, 1, count]),
                  ("Lua 5.5.1", [lua, lua_file, count])]
         if args.baseline_runner:
             old_prefix = WORK / (name + "-baseline")
             started = time.perf_counter()
-            run([args.baseline_magel.resolve(), "svmb", source, "out", old_prefix])
-            compilation["Magel 0.18.2"] = {"single_compile_ms": (time.perf_counter()-started)*1000,
+            run([args.baseline_chali.resolve(), "svmb", source, "out", old_prefix])
+            compilation["ChaLi 0.18.2"] = {"single_compile_ms": (time.perf_counter()-started)*1000,
                                          "bytecode_bytes": old_prefix.with_suffix(".svmb").stat().st_size}
-            modes.insert(0, ("Magel 0.18.2", [args.baseline_runner.resolve(), old_prefix, 1, 1, count]))
+            modes.insert(0, ("ChaLi 0.18.2", [args.baseline_runner.resolve(), old_prefix, 1, 1, count]))
         samples = {mode: {"samples_ms": [], "checksum": str(expected)} for mode, _ in modes}
         for index in range(args.repeats):
             for mode, command in modes if index % 2 == 0 else reversed(modes):
                 fields = run(command).strip().split()
                 assert float(fields[-1]) == expected, (name, mode, fields, expected)
                 samples[mode]["samples_ms"].append(float(fields[0]))
-                if mode.startswith("Magel"):
+                if mode.startswith("ChaLi"):
                     steps = int(fields[1])
                     assert samples[mode].get("logical_steps", steps) == steps
                     samples[mode]["logical_steps"] = steps

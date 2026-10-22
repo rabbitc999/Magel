@@ -369,7 +369,7 @@ struct MReflectionBuilder
             names[top.s] = AnnotationName(top);
             declarations[top.s] = &top;
         }
-        for (const auto &item : magel_generic::session.made)
+        for (const auto &item : chali_generic::session.made)
         {
             const auto &expansion = item.second;
             if (!expansion.generic) continue;

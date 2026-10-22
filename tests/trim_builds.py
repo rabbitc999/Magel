@@ -8,7 +8,7 @@ EXE = '.exe' if os.name == 'nt' else ''
 
 def run(args, succeeds=True, stdin=None):
     """执行真实工具或产物并验证退出状态，保留失败诊断。"""
-    result = subprocess.run(list(map(str, args)), cwd=ROOT, capture_output=True, text=True, encoding='utf-8', errors='replace', input=stdin, timeout=300, env=dict(os.environ, MAGEL_LANG='zh'))
+    result = subprocess.run(list(map(str, args)), cwd=ROOT, capture_output=True, text=True, encoding='utf-8', errors='replace', input=stdin, timeout=300, env=dict(os.environ, CHALI_LANG='zh'))
     if (result.returncode == 0) != succeeds:
         raise AssertionError(f'{args}\n{result.stdout}\n{result.stderr}')
     return result
@@ -16,13 +16,13 @@ def run(args, succeeds=True, stdin=None):
 def main():
     """显式编译裁剪产物，验证功能禁用、基础程序及无默认内存池配置。"""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--magel', type=Path, default=ROOT / ('magel' + EXE))
-    compiler = parser.parse_args().magel.resolve()
+    parser.add_argument('--chali', type=Path, default=ROOT / ('chali' + EXE))
+    compiler = parser.parse_args().chali.resolve()
     work = ROOT / 'build/trim-tests'
     work.mkdir(parents=True, exist_ok=True)
-    flags = ['-DNO_MAGEL_STD', '-DNO_MAGEL_BIG_INT', '-DNO_MAGEL_BIG_FLOAT', '-DNO_MAGEL_DEFAULT_POOL', '-DMAGEL_WITH_REFLECTION=1', '-DSTACKVM_WITH_REFLECTION=1']
+    flags = ['-DNO_CHALI_STD', '-DNO_CHALI_BIG_INT', '-DNO_CHALI_BIG_FLOAT', '-DNO_CHALI_DEFAULT_POOL', '-DCHALI_WITH_REFLECTION=1', '-DSTACKVM_WITH_REFLECTION=1']
     for sample in ('std_math_clock_random', 'bigint', 'bigfloat'):
-        source = ROOT / 'example/samples' / (sample + '.mgl')
+        source = ROOT / 'example/samples' / (sample + '.chl')
         input_path = ROOT / 'example/expected' / (sample + '.in')
         stdin = input_path.read_text(encoding='utf-8') if input_path.exists() else None
         full = run([compiler, 'run', source, '--out', work / (sample + '-vm')], stdin=stdin)
@@ -31,7 +31,7 @@ def main():
         print(f'[通过] {sample}：默认编译器能力保留', flush=True)
     binary = work / ('vm-trim' + EXE)
     run(['g++', '-std=c++17', '-O3', '-pthread', '-ffunction-sections', '-fdata-sections',
-         '-Wl,--gc-sections', '-DMAGEL_CUSTOM_ALLOCATOR=1', '-DSTACKVM_WITH_DEFAULT_HEAP=0',
+         '-Wl,--gc-sections', '-DCHALI_CUSTOM_ALLOCATOR=1', '-DSTACKVM_WITH_DEFAULT_HEAP=0',
          '-DSTACKVM_WITH_THREADS=0', *flags, '-Isource', '-Ilibrary', '-Ilibrary/stackvm',
          ROOT / 'tests/vm_trim.cpp', *[ROOT / 'library/stackvm' / name for name in (ROOT / 'library/stackvm/core_sources.txt').read_text().splitlines()], '-o', binary])
     actual = run([binary])

@@ -13,8 +13,8 @@
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
-String name = "Magel";
+\begin{lstlisting}[style=chali]
+String name = "ChaLi";
 \end{lstlisting}
 \par
 \medskip
@@ -33,10 +33,10 @@ String name = "Magel";
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 char letter = 'M';
 // 一个字符
-String word = "Magel";
+String word = "ChaLi";
 // 一串字符
 \end{lstlisting}
 \par
@@ -46,10 +46,10 @@ String word = "Magel";
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
-    String first = "Magel";
+    String first = "ChaLi";
     String second = " 2026";
     String joined = first + second;
 
@@ -67,9 +67,9 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-Magel 2026
+ChaLi 2026
 len=10 首个字符=M
-切片 [0:5] = Magel
+切片 [0:5] = ChaLi
 切片 [5:]  =  2026
 \end{lstlisting}
 \par
@@ -93,7 +93,7 @@ len=10 首个字符=M
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     String word = "hello";
@@ -134,7 +134,7 @@ copy[0] = (char)72;      // 只改 copy
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 count = 42;
@@ -196,7 +196,7 @@ int64 main()
 结构体的两个字符串字段 & \texttt{\{"one",\allowbreak{} "two"\}} \\
 List 或数组 & \texttt{[\allowbreak{}1,\allowbreak{} "two",\allowbreak{} true]\allowbreak{}} \\
 Set & \texttt{\{3,\allowbreak{} 1,\allowbreak{} 2\}} \\
-Map & \texttt{\{"name":\allowbreak{} "Magel",\allowbreak{} "count":\allowbreak{} 3\}} \\
+Map & \texttt{\{"name":\allowbreak{} "Cha\allowbreak{}Li",\allowbreak{} "count":\allowbreak{} 3\}} \\
 元组 & \texttt{(\allowbreak{}1,\allowbreak{} "two",\allowbreak{} [\allowbreak{}1,\allowbreak{} "two",\allowbreak{} true]\allowbreak{})\allowbreak{}} \\
 \bottomrule
 \end{tabular}
@@ -206,7 +206,7 @@ Map & \texttt{\{"name":\allowbreak{} "Magel",\allowbreak{} "count":\allowbreak{}
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Pair
 {
     String left;
@@ -220,7 +220,7 @@ int64 main()
     pair.right = "two";
     List<Any> list = [1, "two", true];
     Set<int64> set = {3, 1, 2};
-    Map<String, Any> map = {"name": "Magel", "count": 3};
+    Map<String, Any> map = {"name": "ChaLi", "count": 3};
     let tuple = (1, "two", list);
 
     println("{}", pair.toString());
@@ -240,7 +240,7 @@ int64 main()
 {"one", "two"}
 [1, "two", true]
 {3, 1, 2}
-{"name": "Magel", "count": 3}
+{"name": "ChaLi", "count": 3}
 (1, "two", [1, "two", true])
 \end{lstlisting}
 \par
@@ -254,7 +254,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Named
 {
     String name;
@@ -264,7 +264,7 @@ struct Named
 int64 main()
 {
     Named value;
-    value.name = "Magel";
+    value.name = "ChaLi";
     String text = value;
     println("{}", text);
     println("{}", cast<String>(value));
@@ -277,15 +277,15 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-name=Magel
-name=Magel
+name=ChaLi
+name=ChaLi
 \end{lstlisting}
 \par
 \medskip
 
 若三个入口都由用户显式定义，各自实现优先：\texttt{value.\allowbreak{}to\allowbreak{}String(\allowbreak{})\allowbreak{}} 和结构体的 \texttt{\{\}} 格式化使用 \texttt{to\allowbreak{}String}；隐式字符串转换使用 \texttt{implicit\allowbreak{}Convert}；\texttt{cast<\allowbreak{}String>\allowbreak{}} 优先使用 \texttt{explicit\allowbreak{}Convert}。编译器只补缺失的桥接方法，避免互相调用形成递归。
 
-默认转换不消耗源值，也不依赖反射。临时源值在转换完成后正常清理。容器或聚合内部的自定义 \texttt{to\allowbreak{}String} 必须只读；容器遍历通过快照隔离用户回调的重入修改，错误仍保留原始诊断。默认递归展示有深度保护，重复对象路径显示 \texttt{<\allowbreak{}cycle>\allowbreak{}}。这套表示用于阅读和调试，不作为可逆序列化格式。完整验证例见仓库的 \texttt{example/\allowbreak{}samples/\allowbreak{}value\_text.\allowbreak{}mgl}。
+默认转换不消耗源值，也不依赖反射。临时源值在转换完成后正常清理。容器或聚合内部的自定义 \texttt{to\allowbreak{}String} 必须只读；容器遍历通过快照隔离用户回调的重入修改，错误仍保留原始诊断。默认递归展示有深度保护，重复对象路径显示 \texttt{<\allowbreak{}cycle>\allowbreak{}}。这套表示用于阅读和调试，不作为可逆序列化格式。完整验证例见仓库的 \texttt{example/\allowbreak{}samples/\allowbreak{}value\_text.\allowbreak{}chl}。
 
 \section{下标是按字节算的}
 
@@ -293,7 +293,7 @@ name=Magel
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     String s = "中文";
@@ -318,13 +318,13 @@ len(s) = 6
 
 \texttt{"中文"} 明明是两个字，\texttt{len} 却说 6。
 
-原因是 Magel 的字符串在内存里是 UTF-8 字节串，而 UTF-8 里一个汉字占 3 个字节。所以：
+原因是 ChaLi 的字符串在内存里是 UTF-8 字节串，而 UTF-8 里一个汉字占 3 个字节。所以：
 
 \begin{itemize}
 
 \item \texttt{"中文"} = 6 个字节；
 
-\item \texttt{"Magel"} = 5 个字节（和字符数相同，因为都是 ASCII）；
+\item \texttt{"Cha\allowbreak{}Li"} = 5 个字节（和字符数相同，因为都是 ASCII）；
 
 \item \texttt{len}、下标、切片，都按字节算。
 
@@ -339,10 +339,10 @@ len(s) = 6
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 运行期错误：字符串下标落在多字节字符中间（String 按字节算）
-出错位置：hello.mgl:2（main）
+chali: 运行期错误：字符串下标落在多字节字符中间（String 按字节算）
+出错位置：hello.chl:2（main）
 调用栈（外 → 内）：
-  main  hello.mgl:2 [thread 0 ip 41]
+  main  hello.chl:2 [thread 0 ip 41]
 \end{lstlisting}
 \par
 \medskip
@@ -352,7 +352,7 @@ magel: 运行期错误：字符串下标落在多字节字符中间（String 按
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 运行期错误：切片端点落在多字节字符中间（String 的切片按字节算）
+chali: 运行期错误：切片端点落在多字节字符中间（String 的切片按字节算）
 \end{lstlisting}
 \par
 \medskip
@@ -379,7 +379,7 @@ magel: 运行期错误：切片端点落在多字节字符中间（String 的切
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     println("{} {} {}", "abc" == "abd", "abc" < "abd", "abc" > "abd");
@@ -403,7 +403,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 if (name == "")
 {
     println("名字是空的");
@@ -424,12 +424,12 @@ if (name != expected)
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 import std::text;
 
 int64 main()
 {
-    String raw = "  Hello, Magel!  ";
+    String raw = "  Hello, ChaLi!  ";
 
     println("[{}]", std::text::Text::trim(raw));
     println("{} {}", std::text::Text::toUpper("abc"), std::text::Text::toLower("ABC"));
@@ -452,7 +452,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-[Hello, Magel!]
+[Hello, ChaLi!]
 ABC abc
 2 1
 1 1
@@ -496,7 +496,7 @@ ABC abc
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 String text = "";
 for (String line in lines)
 {
@@ -509,11 +509,11 @@ for (String line in lines)
 
 数据量小的时候无所谓。上千行的时候，代价是平方级的。
 
-怎么办？Magel 没有 \texttt{String\allowbreak{}Builder} 这种类，但有更顺手的办法：把要拼的东西先塞进 \texttt{List<\allowbreak{}String>\allowbreak{}}，最后 \texttt{join} 一次。
+怎么办？ChaLi 没有 \texttt{String\allowbreak{}Builder} 这种类，但有更顺手的办法：把要拼的东西先塞进 \texttt{List<\allowbreak{}String>\allowbreak{}}，最后 \texttt{join} 一次。
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 import std::text;
 
 int64 main()
@@ -549,7 +549,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 count = 3;
@@ -577,7 +577,7 @@ count=4, inner=3, {literal}
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     String name = std::lang::readLine();
@@ -593,7 +593,7 @@ int64 main()
 
 导入 \texttt{std:\allowbreak{}:\allowbreak{}io} 后，\texttt{File\allowbreak{}Stream.\allowbreak{}read\allowbreak{}String(\allowbreak{}count)\allowbreak{}} 从当前游标读至多 count 个字节，\texttt{read\allowbreak{}Line(\allowbreak{})\allowbreak{}} 读一行，\texttt{read\allowbreak{}All\allowbreak{}String(\allowbreak{}max\allowbreak{}Bytes)\allowbreak{}} 读到 EOF。三者返回 \texttt{Result<\allowbreak{}String,\allowbreak{}Io\allowbreak{}Error>\allowbreak{}}；全读默认预算 16 MiB，保留文件换行字节，零字节文本报错。已有按路径的 \texttt{read\allowbreak{}All\allowbreak{}Text(\allowbreak{}path)\allowbreak{}} 继续可用。直接持有 File 句柄时有 \texttt{file\allowbreak{}Read\allowbreak{}String}、\texttt{file\allowbreak{}Read\allowbreak{}Line}、\texttt{file\allowbreak{}Read\allowbreak{}All\allowbreak{}String} 包装，错误会 panic。
 
-完整验证程序见 \href{https://gitee.com/rabbitc999/magel/blob/master/example/samples/std_read_lines.mgl}{行输入} 与 \href{https://gitee.com/rabbitc999/magel/blob/master/example/samples/std_file_strings.mgl}{文件读取}。
+完整验证程序见 \href{https://gitee.com/rabbitc999/chali/blob/master/example/samples/std_read_lines.chl}{行输入} 与 \href{https://gitee.com/rabbitc999/chali/blob/master/example/samples/std_file_strings.chl}{文件读取}。
 
 \section{小结}
 

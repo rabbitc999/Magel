@@ -1,6 +1,6 @@
 #include "std_linalg.hpp"
 
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include "std_scalar_buffer.hpp"
 
 #include <cmath>
@@ -11,7 +11,7 @@
 
 /* `std::linalg` 的 LU 求解与顶层分解算法下沉到宿主 C++。
  *
- * 泛型类型定义与基础运算符保留在 MAGEL；Matrix.solve 按内置数值类型注册特化，
+ * 泛型类型定义与基础运算符保留在 CHALI；Matrix.solve 按内置数值类型注册特化，
  * 顶层分解函数采用 float64。求解保留逐步运算顺序与标量精度。
  *
  * 结构体是「摊平槽布局」：值字段（嵌套结构体）内联展开，每个标量/ScalarStorage 字段占一个 8 字节槽。
@@ -25,8 +25,8 @@
 namespace std_linalg_glue
 {
 
-using Context = magel_glue::Context;
-using Value = magel_glue::Value;
+using Context = chali_glue::Context;
+using Value = chali_glue::Value;
 
 struct MatrixTag
 {
@@ -34,8 +34,8 @@ struct MatrixTag
 struct VectorTag
 {
 };
-using Matrix = magel_glue::Record<MatrixTag>;
-using Vector = magel_glue::Record<VectorTag>;
+using Matrix = chali_glue::Record<MatrixTag>;
+using Vector = chali_glue::Record<VectorTag>;
 
 struct MatrixData
 {
@@ -183,7 +183,7 @@ inline void writeVectorInto(Context &ctx, std::int64_t address, std::size_t base
     writeSlot(ctx, address, base, makeListF64(ctx, v.values));
 }
 
-/* ---- 矩阵运算（照抄 MAGEL 的 float64 语义，row-major） ---- */
+/* ---- 矩阵运算（照抄 CHALI 的 float64 语义，row-major） ---- */
 /**
  * @brief 读取已验证行列范围内的矩阵元素。
  * @param m 作为输入或输出的行优先矩阵。
@@ -698,24 +698,24 @@ inline std::int64_t matrixColumn(Context &ctx, Matrix input, std::int64_t key)
 /**
  * @brief 注册指定数值标量的泛型求解胶水。
  * @param registry 宿主函数注册表。
- * @param name MAGEL 标量类型名。
+ * @param name CHALI 标量类型名。
  * @param error 绑定失败时的错误输出。
  * @return 是否注册成功。
  */
 template <typename Scalar>
-inline bool bindMatrixSolve(magel_glue::Registry &registry, const Memory::String &name,
+inline bool bindMatrixSolve(chali_glue::Registry &registry, const Memory::String &name,
                             Memory::String *error)
 {
     return registry.bindTypedWithContext<std::int64_t, Matrix, Vector>(
-               magel_glue::specialize("std::linalg::__matrixSolve", { name }),
+               chali_glue::specialize("std::linalg::__matrixSolve", { name }),
                matrixSolve<Scalar>, error)
            && registry.bindTypedWithContext<std::int64_t, Matrix, std::int64_t>(
-               magel_glue::specialize("std::linalg::__matrixColumn", { name }),
+               chali_glue::specialize("std::linalg::__matrixColumn", { name }),
                matrixColumn<Scalar>, error);
 }
 
 /* ---- 绑定泛型求解与六个顶层分解函数 ---- */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     return scalar_buffer::bind(registry, error) && bindMatrixSolve<float>(registry, "float32", error) && bindMatrixSolve<double>(registry, "float64", error) && bindMatrixSolve<std::int8_t>(registry, "int8", error) && bindMatrixSolve<std::int16_t>(registry, "int16", error) && bindMatrixSolve<std::int32_t>(registry, "int32", error) && bindMatrixSolve<std::int64_t>(registry, "int64", error) && bindMatrixSolve<std::uint8_t>(registry, "uint8", error) && bindMatrixSolve<std::uint16_t>(registry, "uint16", error) && bindMatrixSolve<std::uint32_t>(registry, "uint32", error) && bindMatrixSolve<std::uint64_t>(registry, "uint64", error) && registry.bindTypedWithContext<std::int64_t, Matrix>("std::linalg::luDecompose", [](Context &ctx, Matrix input) -> std::int64_t {
                    const LUResult r = luDecomposeImpl(ctx, readMatrix(ctx, input));

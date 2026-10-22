@@ -1,6 +1,6 @@
 #include "std_parse.hpp"
 
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 
 #include <cerrno>
 #include <charconv>
@@ -12,7 +12,7 @@ namespace std_parse_glue
 {
 
 /* `std::lang::Parse` 的整数 / 浮点 / 布尔解析。从 VM 内部原生表（`kSlotNativeEntries`）
- * 搬到 Registry 胶水，状态码与 MAGEL 侧 `ParseError` 一一对应：
+ * 搬到 Registry 胶水，状态码与 CHALI 侧 `ParseError` 一一对应：
  *   0 = Ok、1 = Empty、2 = Overflow、3 = Invalid。
  * `…Value` 只在 `…Error` 返回 0 之后调用，失败路径是防御性的（照原实现报运行期错误）。 */
 enum class ParseStatus : std::int64_t
@@ -84,9 +84,9 @@ inline ParseStatus parseBoolText(const Memory::String &text, bool *value)
  * @param error 绑定失败时接收原始诊断，可为空。
  * @return 全部入口绑定成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
-    using magel_glue::Context;
+    using chali_glue::Context;
     using Memory::String;
     const auto asInt = [](ParseStatus status) { return static_cast<std::int64_t>(status); };
     return registry.bindTyped<std::int64_t, String>(

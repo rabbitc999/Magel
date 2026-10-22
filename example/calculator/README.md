@@ -1,12 +1,12 @@
-# Magel 计算器工具链示例
+# ChaLi 计算器工具链示例
 
-这里包含两种 AST 表示的同一个表达式解释器：词法分析、递归下降解析、指令生成、栈机执行和逐行错误报告都用 Magel 编写。
+这里包含两种 AST 表示的同一个表达式解释器：词法分析、递归下降解析、指令生成、栈机执行和逐行错误报告都用 ChaLi 编写。
 
 | 文件 | 用途 |
 | --- | --- |
-| [calc.mgl](calc.mgl) | 扁平 AST：`List<Node>` 与子节点索引表，包含泛型接口约束、容器及迭代器组合 |
-| [calc_nested.mgl](calc_nested.mgl) | 嵌套 AST：枚举载荷保存 `List<Expr>`，验证递归拥有值的复制与清理 |
-| [repro_recursion.mgl](repro_recursion.mgl) | 最小递归遍历，子调用返回后父帧仍应保留 `kind`、子节点数量与字符串 |
+| [calc.chl](calc.chl) | 扁平 AST：`List<Node>` 与子节点索引表，包含泛型接口约束、容器及迭代器组合 |
+| [calc_nested.chl](calc_nested.chl) | 嵌套 AST：枚举载荷保存 `List<Expr>`，验证递归拥有值的复制与清理 |
+| [repro_recursion.chl](repro_recursion.chl) | 最小递归遍历，子调用返回后父帧仍应保留 `kind`、子节点数量与字符串 |
 
 从仓库根目录运行：
 

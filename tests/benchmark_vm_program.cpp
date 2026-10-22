@@ -1,6 +1,6 @@
 /**
  * @file benchmark_vm_program.cpp
- * @brief 加载真实 Magel 字节码后测量执行时间，不含前端与文件加载。
+ * @brief 加载真实 ChaLi 字节码后测量执行时间，不含前端与文件加载。
  */
 #include "stackvm.hpp"
 #include <chrono>

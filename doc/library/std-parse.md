@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::parse;
 ```
 
@@ -14,16 +14,16 @@ import std::parse;
 
 ## 参考代码
 
-完整程序：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+完整程序：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。
 
 ```powershell
-magel run example/samples/std_parse_random_path_memory.mgl
+chali run example/samples/std_parse_random_path_memory.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::memory;
 import std::parse;
 import std::path;
@@ -144,8 +144,8 @@ memory=ok
 
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
-| 模块 | <a id="symbol-335"></a>`enum ParseError` | 从 lang.mgl 原样迁出：符号名不变，只换了模块归属（现在必须 `import std::parse;` 才能用）。 |
-| ParseError | `Empty, Invalid, Overflow` | 从 lang.mgl 原样迁出：符号名不变，只换了模块归属（现在必须 `import std::parse;` 才能用）。 变体及载荷见声明。 |
+| 模块 | <a id="symbol-335"></a>`enum ParseError` | 从 lang.chl 原样迁出：符号名不变，只换了模块归属（现在必须 `import std::parse;` 才能用）。 |
+| ParseError | `Empty, Invalid, Overflow` | 从 lang.chl 原样迁出：符号名不变，只换了模块归属（现在必须 `import std::parse;` 才能用）。 变体及载荷见声明。 |
 | 模块 | <a id="symbol-336"></a>`struct Parse` | 文本到数值和布尔值的解析入口。 |
 
 ## 函数索引
@@ -163,7 +163,7 @@ memory=ok
 
 **声明**
 
-```magel
+```chali
 static Result<int64, ParseError> parseInt64(std::lang::String text);
 ```
 
@@ -187,13 +187,13 @@ static Result<int64, ParseError> parseInt64(std::lang::String text);
 
 **调用形式**
 
-```magel
+```chali
 std::parse::Parse::parseInt64(text);
 ```
 
-**源码**：[source/std/parse.mgl:16](../../source/std/parse.mgl#L16)。
+**源码**：[source/std/parse.chl:16](../../source/std/parse.chl#L16)。
 
-**完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+**完整示例**：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。
 
 <a id="api-1"></a>
 
@@ -201,7 +201,7 @@ std::parse::Parse::parseInt64(text);
 
 **声明**
 
-```magel
+```chali
 static Result<uint64, ParseError> parseUInt64(std::lang::String text);
 ```
 
@@ -225,13 +225,13 @@ static Result<uint64, ParseError> parseUInt64(std::lang::String text);
 
 **调用形式**
 
-```magel
+```chali
 std::parse::Parse::parseUInt64(text);
 ```
 
-**源码**：[source/std/parse.mgl:26](../../source/std/parse.mgl#L26)。
+**源码**：[source/std/parse.chl:26](../../source/std/parse.chl#L26)。
 
-**完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+**完整示例**：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。
 
 <a id="api-2"></a>
 
@@ -239,7 +239,7 @@ std::parse::Parse::parseUInt64(text);
 
 **声明**
 
-```magel
+```chali
 static Result<float64, ParseError> parseFloat64(std::lang::String text);
 ```
 
@@ -263,13 +263,13 @@ static Result<float64, ParseError> parseFloat64(std::lang::String text);
 
 **调用形式**
 
-```magel
+```chali
 std::parse::Parse::parseFloat64(text);
 ```
 
-**源码**：[source/std/parse.mgl:36](../../source/std/parse.mgl#L36)。
+**源码**：[source/std/parse.chl:36](../../source/std/parse.chl#L36)。
 
-**完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+**完整示例**：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。
 
 <a id="api-3"></a>
 
@@ -277,7 +277,7 @@ std::parse::Parse::parseFloat64(text);
 
 **声明**
 
-```magel
+```chali
 static Result<bool, ParseError> parseBool(std::lang::String text);
 ```
 
@@ -301,10 +301,10 @@ static Result<bool, ParseError> parseBool(std::lang::String text);
 
 **调用形式**
 
-```magel
+```chali
 std::parse::Parse::parseBool(text);
 ```
 
-**源码**：[source/std/parse.mgl:46](../../source/std/parse.mgl#L46)。
+**源码**：[source/std/parse.chl:46](../../source/std/parse.chl#L46)。
 
-**完整示例**：[example/samples/std_parse_random_path_memory.mgl](../../example/samples/std_parse_random_path_memory.mgl)。
+**完整示例**：[example/samples/std_parse_random_path_memory.chl](../../example/samples/std_parse_random_path_memory.chl)。

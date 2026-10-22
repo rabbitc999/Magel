@@ -17,7 +17,7 @@ Map、Set 不保证键排序、插入顺序或删除前后的遍历顺序；`key
 与默认 `toString()` 使用当前存储的遍历位置。一次未修改的 Map 中，相同位置的 `keyAt`
 和 `valAt` 对应同一个条目。需要固定展示顺序时，应先收集到 List 并显式排序。
 复制、清空、字段默认初始化与消费式迭代保留键策略；元素借用期间仍禁止移动或删除列表元素。
-实现与回归见 [集合存储样例](../example/samples/collection_storage.mgl)。
+实现与回归见 [集合存储样例](../example/samples/collection_storage.chl)。
 
 ## Any 与类型判断
 
@@ -33,7 +33,7 @@ Map、Set 不保证键排序、插入顺序或删除前后的遍历顺序；`key
 | 判断后调用 `getValue()` | 优先 `tryGet<T>(&value)`，失败返回 `None` |
 | 按接口或具体类型借用 | `tryGetReference<T>(&value)` 或 `tryGetMut<T>(&value)` |
 
-```magel
+```chali
 int64 main() {
     Any value;
     assert(value.isEmpty());
@@ -55,14 +55,14 @@ int64 main() {
 
 目标明确为 `Any` 时，编译器自动装箱具体值。这条规则统一用于函数实参与返回值、显式 `Any` 泛型实参、泛型字段、枚举载荷，以及容器的元素／键／值；无须先声明一个 `Any` 中转变量。已有 `Any` 值按值复制，不会再嵌套装箱。用户声明的直接 `ImplicitConvert<Any>` 优先于默认装箱。
 
-```magel
+```chali
 T identity<T>(T value) { return value; }
 int64 main()
 {
     List<Any> values = [1, "two", true];
     values.push(1.5);
     Any value = identity<Any>("generic");
-    Map<String, Any> record = {"count": 3, "name": "Magel"};
+    Map<String, Any> record = {"count": 3, "name": "ChaLi"};
     Set<Any> unique;
     Any key = "key";
     unique.add(key);
@@ -85,7 +85,7 @@ int64 main()
 
 ## 接口引用直接绑定
 
-```magel
+```chali
 interface Readable { int64 read(); };
 struct Counter : Readable
 {
@@ -111,7 +111,7 @@ int64 main()
 
 省略类型实参不再自动补成 Any。允许函数类型推导，也允许模板声明显式给出默认类型。
 
-```magel
+```chali
 struct Box<T> { T value; };
 struct ExplicitDefault<T = Any> { T value; };
 int64 main() {
@@ -131,16 +131,16 @@ int64 main() {
 
 | 模块 | 首批功能 | 错误边界与平台 |
 | --- | --- | --- |
-| [`std::encoding`](library/std-encoding.md) | Base64、Base64URL、十六进制 | 严格解码返回 `Result`，拒绝非法填充与非零尾部位；纯 Magel |
-| [`std::csv`](library/std-csv.md) | 文本读写、转义、分隔符、位置诊断 | 引号字段可含换行；位置为一基行号和字节列；纯 Magel |
-| [`std::datetime`](library/std-datetime.md) | Unix 秒、UTC 日期、解析格式化、日期运算 | 公历年份 1..9999，ISO 秒精度 UTC；换算为纯 Magel，当前时间需要宿主时钟 |
+| [`std::encoding`](library/std-encoding.md) | Base64、Base64URL、十六进制 | 严格解码返回 `Result`，拒绝非法填充与非零尾部位；纯 ChaLi |
+| [`std::csv`](library/std-csv.md) | 文本读写、转义、分隔符、位置诊断 | 引号字段可含换行；位置为一基行号和字节列；纯 ChaLi |
+| [`std::datetime`](library/std-datetime.md) | Unix 秒、UTC 日期、解析格式化、日期运算 | 公历年份 1..9999，ISO 秒精度 UTC；换算为纯 ChaLi，当前时间需要宿主时钟 |
 | [`std::io`](library/std-io.md) | 字节流、整文件、目录、文件信息、创建与重命名 | `FileStream` 字节接口走 FileApi；路径操作使用桌面宿主文件系统 |
-| [`std::cli`](library/std-cli.md) | 长短选项、位置参数、默认值、帮助、校验 | 不自动打印或退出，应用读取解析结果；纯 Magel |
+| [`std::cli`](library/std-cli.md) | 长短选项、位置参数、默认值、帮助、校验 | 不自动打印或退出，应用读取解析结果；纯 ChaLi |
 | [`std::utf8`](library/std-utf8.md) | 校验、码点编解码、数量、截取 | 严格 UTF-8；码点不是字素簇；字节接口完整支持 U+0000 |
 
 没有名称冲突时示例优先使用简写。完整可运行程序和断言见各模块参考页。
 
-```magel
+```chali
 import std::encoding;
 import std::datetime;
 import std::utf8;
@@ -164,7 +164,7 @@ int64 main() {
 
 ## 二进制中间产物与体积实测
 
-默认 `emit` 输出 `.quad`（MGQI v1）、`.layout`（MGLY v1）与 `.data.bin`。四元式的操作符、参数和源文件名使用共享字符串表；数量、索引、位置使用无符号 LEB128。布局只保存运行所需的符号、偏移、容量和步长。`.data.bin` 保留原始内存映像，不再重复写 `.data` 文本或 `.data.h` C 数组；重新生成同前缀产物时会清理旧副本。
+默认 `emit` 输出 `.quad`（MGQI v1）、`.layout`（CHLY v1）与 `.data.bin`。四元式的操作符、参数和源文件名使用共享字符串表；数量、索引、位置使用无符号 LEB128。布局只保存运行所需的符号、偏移、容量和步长。`.data.bin` 保留原始内存映像，不再重复写 `.data` 文本或 `.data.h` C 数组；重新生成同前缀产物时会清理旧副本。
 
 VM 导出器自动识别新格式，并继续接受旧文本四元式和布局。格式带版本号，解码器检查整数溢出、截断、越界字符串引用及尾部数据。二进制编码不包含加密，也不作为保护源码的承诺。
 
@@ -184,7 +184,7 @@ VM 导出器自动识别新格式，并继续接受旧文本四元式和布局�
 | std_io_extended | 19,213.7 / 2,766.85（约 6.9 倍） | 300.935 / 3.969（约 75.8 倍） |
 | std_cli | 16,294.9 / 2,398.31（约 6.8 倍） | 284.044 / 4.734（约 60.0 倍） |
 
-这些数据描述解码环节，不能直接解释为整体编译速度。CMake 的 `magel-artifact-tests` 目标默认检查小型夹具；传入旧文本 `.quad` 和 `.layout` 路径可复测其他内容。测试同时核对四元式、源码位置、组装指令及布局往返等价性。
+这些数据描述解码环节，不能直接解释为整体编译速度。CMake 的 `chali-artifact-tests` 目标默认检查小型夹具；传入旧文本 `.quad` 和 `.layout` 路径可复测其他内容。测试同时核对四元式、源码位置、组装指令及布局往返等价性。
 
 Map 的 `.iter()` 和 `.intoIter()` 只产生 `Pair<K, V>`，`first` 是键、`second` 是值，不产生元组或单独的键/值。
 

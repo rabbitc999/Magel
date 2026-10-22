@@ -25,10 +25,10 @@
 | `INT64_MIN / -1` | 运行期报「整数除法溢出：最小负数除以 -1 的结果超出 int64 范围」（此前静默给出 `-9223372036854775808`） |
 | 移位位数超出位宽 | 运行期报「移位位数超出整数位宽（有效范围 0..63）」（此前 `& 63` 静默回绕，`1 << 64` 算成 `1`） |
 
-定向回归：`python tests/magel_compiler_safety.py`。Linux 可用 `--cxx clang++ --sanitize-native` 对原生边界开启 ASan、UBSan 与浮点转整数检查；`--native-only` 只验证库边界。反射默认同时启用前端与运行时宏，VM 与四元式仍使用默认最高优化。
+定向回归：`python tests/chali_compiler_safety.py`。Linux 可用 `--cxx clang++ --sanitize-native` 对原生边界开启 ASan、UBSan 与浮点转整数检查；`--native-only` 只验证库边界。反射默认同时启用前端与运行时宏，VM 与四元式仍使用默认最高优化。
 
-渗透测试：`python tests/magel_penetration.py`（`--only 子串` 可只跑部分用例）。它对数值转换、字面量、容器边界、所有权传播与规模预算构造攻击用例，把结果归类为 UB / CRASH / TIMEOUT / FAIL / OUTPUT，只收集事实、不做判定。
+渗透测试：`python tests/chali_penetration.py`（`--only 子串` 可只跑部分用例）。它对数值转换、字面量、容器边界、所有权传播与规模预算构造攻击用例，把结果归类为 UB / CRASH / TIMEOUT / FAIL / OUTPUT，只收集事实、不做判定。
 
-传播回归覆盖字符串成功、原始错误和容器载荷的重复清理。数据快照回归在优化转储阻塞时覆盖磁盘数据文件，检查当前 VM 执行不受影响。原生边界入口为 [magel_native_safety.cpp](../tests/magel_native_safety.cpp)。
+传播回归覆盖字符串成功、原始错误和容器载荷的重复清理。数据快照回归在优化转储阻塞时覆盖磁盘数据文件，检查当前 VM 执行不受影响。原生边界入口为 [chali_native_safety.cpp](../tests/chali_native_safety.cpp)。
 
 大数运算仍受宿主内存与时间预算限制；这组保护不承诺任意巨大参数都能完成计算。发布时只报告实际执行的验证，未执行的跨平台或长期压力测试继续保留在任务验收记录中。

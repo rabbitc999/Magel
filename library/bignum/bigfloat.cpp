@@ -1,4 +1,4 @@
-#if !defined(NO_MAGEL_BIG_INT) && !defined(NO_MAGEL_BIG_FLOAT)
+#if !defined(NO_CHALI_BIG_INT) && !defined(NO_CHALI_BIG_FLOAT)
 /**
  * @file bigfloat.cpp
  * @brief `BigFloat` 的实现：尾数 `BigInt` × 10^exp10，解析 / 四则 / 比较 / 舍入。

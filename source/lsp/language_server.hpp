@@ -1,10 +1,10 @@
 #pragma once
-// Magel 宏/块模型的 LSP 服务器：`Content-Length` 帧 + JSON-RPC 分派。
+// ChaLi 宏/块模型的 LSP 服务器：`Content-Length` 帧 + JSON-RPC 分派。
 //
-// 与 `library/lsp`（`.gram` 的服务器）是**两个工程**：那份只认文法，这份只认 Magel 的
+// 与 `library/lsp`（`.gram` 的服务器）是**两个工程**：那份只认文法，这份只认 ChaLi 的
 // 宏模型（`macro_analyzer.hpp` 的 McDocument）。两边传输层的写法相同，各自独立编译、互不依赖。
 #include "macro_analyzer.hpp"
-#include "../../library/json/json.hpp"  // 仓库自己的 JSON（Magel 内置副本，与 std::json 同一份实现）
+#include "../../library/json/json.hpp"  // 仓库自己的 JSON（ChaLi 内置副本，与 std::json 同一份实现）
 
 #include <istream>
 #include <map>
@@ -24,7 +24,7 @@ std::string frameMessage(const std::string &payload);
 bool readMessage(std::istream &in, std::string &payload, std::string &error);
 
 /**
- * Magel 宏模型的最小 LSP 服务器：
+ * ChaLi 宏模型的最小 LSP 服务器：
  * initialize / initialized / shutdown / exit、didOpen / didChange / didClose、hover、
  * completion、definition、documentSymbol、semanticTokens/full、formatting，
  * 以及 didOpen / didChange 后的 publishDiagnostics。
@@ -39,9 +39,9 @@ public:
     bool exitRequested() const { return exitRequested_; }
     int exitCode() const { return exitCode_; }
     /**
-     * 直接校验一份 Magel 文本（`--check` 与测试用），返回 `路径:行:列: 级别: 消息 [码]`。
+     * 直接校验一份 ChaLi 文本（`--check` 与测试用），返回 `路径:行:列: 级别: 消息 [码]`。
      *
-     * @param text Magel 源码。
+     * @param text ChaLi 源码。
      * @param path 报告里显示的文件路径。
      * @return 报告文本；没有诊断时返回空串。
      */

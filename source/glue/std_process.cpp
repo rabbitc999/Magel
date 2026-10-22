@@ -1,6 +1,6 @@
 #include "std_process.hpp"
 
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include "std_native_record.hpp"
 
 #include <cstdint>
@@ -49,9 +49,9 @@ inline const stackvm::NativeRecordType processType{ "Process", nullptr, destroyP
  * @param error 绑定失败的诊断。
  * @return 全部注册成功时为 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
-    using magel_glue::Context;
+    using chali_glue::Context;
     using Memory::String;
     return native_record_glue::bind(registry.native(), "std::process::__processDrop", 1, native_record_glue::drop, error)
            && registry.bindTypedWithContext<std::int64_t, String>(

@@ -4,7 +4,7 @@
 
 ## integer_loop
 
-### Magel VM
+### ChaLi VM
 
 ```cpp
 int64 mix(int64 x){return x*17;}
@@ -100,7 +100,7 @@ int main() {
 
 ## branches
 
-### Magel VM
+### ChaLi VM
 
 ```cpp
 int64 mix(int64 x){return x*17;}
@@ -196,7 +196,7 @@ int main() {
 
 ## float64_loop
 
-### Magel VM
+### ChaLi VM
 
 ```cpp
 int64 mix(int64 x){return x*17;}
@@ -292,7 +292,7 @@ int main() {
 
 ## calls
 
-### Magel VM
+### ChaLi VM
 
 ```cpp
 int64 mix(int64 x){return x*17;}
@@ -388,7 +388,7 @@ int main() {
 
 ## array_reads
 
-### Magel VM
+### ChaLi VM
 
 ```cpp
 int64 mix(int64 x){return x*17;}

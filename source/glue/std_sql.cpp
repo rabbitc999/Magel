@@ -3,7 +3,7 @@
 #include "std_sql_ipage.hpp"
 #include "../../library/json/json.hpp"
 
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include "../../library/sqlite/sqlite3.h"
 
 #include <cerrno>
@@ -28,11 +28,11 @@
 #endif
 
 /*
- * `std::sql` 的宿主胶水：让 MAGEL 语言连接**外部 SQL 数据库**（MySQL / SQLite / PostgreSQL / SQL Server ODBC）。
+ * `std::sql` 的宿主胶水：让 CHALI 语言连接**外部 SQL 数据库**（MySQL / SQLite / PostgreSQL / SQL Server ODBC）。
  *
- * SQL 的解析、执行、事务、索引全部在外部数据库里完成，MAGEL 只做两件事：把语句发过去、
+ * SQL 的解析、执行、事务、索引全部在外部数据库里完成，CHALI 只做两件事：把语句发过去、
  * 把结果搬回来。MySQL 的 C API 全是指针（`MYSQL *`、`MYSQL_RES *`、`MYSQL_ROW`、
- * `MYSQL_FIELD *`），MAGEL 一侧不能持有这类指针，所以这里把指针收进句柄表，对外只暴露
+ * `MYSQL_FIELD *`），CHALI 一侧不能持有这类指针，所以这里把指针收进句柄表，对外只暴露
  * 小整数句柄 + 标量：
  *
  *   __sqlConnect / __sqlClose / __sqlExec / __sqlAffected / __sqlError
@@ -50,7 +50,7 @@
 namespace std_sql_glue
 {
 
-using magel_glue::Registry;
+using chali_glue::Registry;
 using Memory::String;
 
 /* ── MySQL 运行期函数表 ───────────────────────────────────────────────── */
@@ -443,26 +443,26 @@ inline bool initPostgres()
         void *library = openLibrary(path.c_str());
         if (!library) continue;
         PostgresApi table;
-#define MAGEL_PQ_LOAD(member, symbol) table.member = reinterpret_cast<decltype(table.member)>(librarySymbol(library, symbol))
-        MAGEL_PQ_LOAD(connect, "PQconnectdb");
-        MAGEL_PQ_LOAD(status, "PQstatus");
-        MAGEL_PQ_LOAD(finish, "PQfinish");
-        MAGEL_PQ_LOAD(error, "PQerrorMessage");
-        MAGEL_PQ_LOAD(encoding, "PQsetClientEncoding");
-        MAGEL_PQ_LOAD(exec, "PQexec");
-        MAGEL_PQ_LOAD(resultStatus, "PQresultStatus");
-        MAGEL_PQ_LOAD(resultError, "PQresultErrorMessage");
-        MAGEL_PQ_LOAD(clear, "PQclear");
-        MAGEL_PQ_LOAD(rows, "PQntuples");
-        MAGEL_PQ_LOAD(columns, "PQnfields");
-        MAGEL_PQ_LOAD(columnName, "PQfname");
-        MAGEL_PQ_LOAD(columnType, "PQftype");
-        MAGEL_PQ_LOAD(isNull, "PQgetisnull");
-        MAGEL_PQ_LOAD(value, "PQgetvalue");
-        MAGEL_PQ_LOAD(length, "PQgetlength");
-        MAGEL_PQ_LOAD(affected, "PQcmdTuples");
-        MAGEL_PQ_LOAD(command, "PQcmdStatus");
-#undef MAGEL_PQ_LOAD
+#define CHALI_PQ_LOAD(member, symbol) table.member = reinterpret_cast<decltype(table.member)>(librarySymbol(library, symbol))
+        CHALI_PQ_LOAD(connect, "PQconnectdb");
+        CHALI_PQ_LOAD(status, "PQstatus");
+        CHALI_PQ_LOAD(finish, "PQfinish");
+        CHALI_PQ_LOAD(error, "PQerrorMessage");
+        CHALI_PQ_LOAD(encoding, "PQsetClientEncoding");
+        CHALI_PQ_LOAD(exec, "PQexec");
+        CHALI_PQ_LOAD(resultStatus, "PQresultStatus");
+        CHALI_PQ_LOAD(resultError, "PQresultErrorMessage");
+        CHALI_PQ_LOAD(clear, "PQclear");
+        CHALI_PQ_LOAD(rows, "PQntuples");
+        CHALI_PQ_LOAD(columns, "PQnfields");
+        CHALI_PQ_LOAD(columnName, "PQfname");
+        CHALI_PQ_LOAD(columnType, "PQftype");
+        CHALI_PQ_LOAD(isNull, "PQgetisnull");
+        CHALI_PQ_LOAD(value, "PQgetvalue");
+        CHALI_PQ_LOAD(length, "PQgetlength");
+        CHALI_PQ_LOAD(affected, "PQcmdTuples");
+        CHALI_PQ_LOAD(command, "PQcmdStatus");
+#undef CHALI_PQ_LOAD
         if (table.connect && table.status && table.finish && table.error && table.encoding && table.exec && table.resultStatus && table.resultError && table.clear && table.rows && table.columns && table.columnName && table.columnType && table.isNull && table.value && table.length && table.affected && table.command)
         {
             postgresApi() = table;
@@ -476,9 +476,9 @@ inline bool initPostgres()
 }
 
 #if defined(_WIN32)
-#define MAGEL_SQL_ODBC_CALL __stdcall
+#define CHALI_SQL_ODBC_CALL __stdcall
 #else
-#define MAGEL_SQL_ODBC_CALL
+#define CHALI_SQL_ODBC_CALL
 #endif
 
 /**
@@ -486,25 +486,25 @@ inline bool initPostgres()
  */
 struct OdbcApi
 {
-    std::int16_t(MAGEL_SQL_ODBC_CALL *allocate)(std::int16_t, void *, void **) = nullptr;
-    std::int16_t(MAGEL_SQL_ODBC_CALL *freeHandle)(std::int16_t, void *) = nullptr;
-    std::int16_t(MAGEL_SQL_ODBC_CALL *environment)(void *, std::int32_t, void *, std::int32_t) = nullptr;
-    std::int16_t(MAGEL_SQL_ODBC_CALL *connectAttribute)(void *, std::int32_t, void *, std::int32_t) = nullptr;
-    std::int16_t(MAGEL_SQL_ODBC_CALL *connect)(void *, void *, std::uint16_t *, std::int16_t,
+    std::int16_t(CHALI_SQL_ODBC_CALL *allocate)(std::int16_t, void *, void **) = nullptr;
+    std::int16_t(CHALI_SQL_ODBC_CALL *freeHandle)(std::int16_t, void *) = nullptr;
+    std::int16_t(CHALI_SQL_ODBC_CALL *environment)(void *, std::int32_t, void *, std::int32_t) = nullptr;
+    std::int16_t(CHALI_SQL_ODBC_CALL *connectAttribute)(void *, std::int32_t, void *, std::int32_t) = nullptr;
+    std::int16_t(CHALI_SQL_ODBC_CALL *connect)(void *, void *, std::uint16_t *, std::int16_t,
                                                std::uint16_t *, std::int16_t, std::int16_t *, std::uint16_t) = nullptr;
-    std::int16_t(MAGEL_SQL_ODBC_CALL *disconnect)(void *) = nullptr;
-    std::int16_t(MAGEL_SQL_ODBC_CALL *exec)(void *, std::uint16_t *, std::int32_t) = nullptr;
-    std::int16_t(MAGEL_SQL_ODBC_CALL *columns)(void *, std::int16_t *) = nullptr;
-    std::int16_t(MAGEL_SQL_ODBC_CALL *describe)(void *, std::uint16_t, std::uint16_t *, std::int16_t,
+    std::int16_t(CHALI_SQL_ODBC_CALL *disconnect)(void *) = nullptr;
+    std::int16_t(CHALI_SQL_ODBC_CALL *exec)(void *, std::uint16_t *, std::int32_t) = nullptr;
+    std::int16_t(CHALI_SQL_ODBC_CALL *columns)(void *, std::int16_t *) = nullptr;
+    std::int16_t(CHALI_SQL_ODBC_CALL *describe)(void *, std::uint16_t, std::uint16_t *, std::int16_t,
                                                 std::int16_t *, std::int16_t *, std::uintptr_t *, std::int16_t *, std::int16_t *) = nullptr;
-    std::int16_t(MAGEL_SQL_ODBC_CALL *fetch)(void *) = nullptr;
-    std::int16_t(MAGEL_SQL_ODBC_CALL *get)(void *, std::uint16_t, std::int16_t, void *, std::intptr_t, std::intptr_t *) = nullptr;
-    std::int16_t(MAGEL_SQL_ODBC_CALL *rowCount)(void *, std::intptr_t *) = nullptr;
-    std::int16_t(MAGEL_SQL_ODBC_CALL *more)(void *) = nullptr;
-    std::int16_t(MAGEL_SQL_ODBC_CALL *diagnostic)(std::int16_t, void *, std::int16_t,
+    std::int16_t(CHALI_SQL_ODBC_CALL *fetch)(void *) = nullptr;
+    std::int16_t(CHALI_SQL_ODBC_CALL *get)(void *, std::uint16_t, std::int16_t, void *, std::intptr_t, std::intptr_t *) = nullptr;
+    std::int16_t(CHALI_SQL_ODBC_CALL *rowCount)(void *, std::intptr_t *) = nullptr;
+    std::int16_t(CHALI_SQL_ODBC_CALL *more)(void *) = nullptr;
+    std::int16_t(CHALI_SQL_ODBC_CALL *diagnostic)(std::int16_t, void *, std::int16_t,
                                                   std::uint16_t *, std::int32_t *, std::uint16_t *, std::int16_t, std::int16_t *) = nullptr;
 };
-#undef MAGEL_SQL_ODBC_CALL
+#undef CHALI_SQL_ODBC_CALL
 
 /**
  * @brief 返回 ODBC 函数表。
@@ -590,22 +590,22 @@ inline bool initOdbc()
         void *library = openLibrary(path.c_str());
         if (!library) continue;
         OdbcApi table;
-#define MAGEL_ODBC_LOAD(member, symbol) table.member = reinterpret_cast<decltype(table.member)>(librarySymbol(library, symbol))
-        MAGEL_ODBC_LOAD(allocate, "SQLAllocHandle");
-        MAGEL_ODBC_LOAD(freeHandle, "SQLFreeHandle");
-        MAGEL_ODBC_LOAD(environment, "SQLSetEnvAttr");
-        MAGEL_ODBC_LOAD(connectAttribute, "SQLSetConnectAttrW");
-        MAGEL_ODBC_LOAD(connect, "SQLDriverConnectW");
-        MAGEL_ODBC_LOAD(disconnect, "SQLDisconnect");
-        MAGEL_ODBC_LOAD(exec, "SQLExecDirectW");
-        MAGEL_ODBC_LOAD(columns, "SQLNumResultCols");
-        MAGEL_ODBC_LOAD(describe, "SQLDescribeColW");
-        MAGEL_ODBC_LOAD(fetch, "SQLFetch");
-        MAGEL_ODBC_LOAD(get, "SQLGetData");
-        MAGEL_ODBC_LOAD(rowCount, "SQLRowCount");
-        MAGEL_ODBC_LOAD(more, "SQLMoreResults");
-        MAGEL_ODBC_LOAD(diagnostic, "SQLGetDiagRecW");
-#undef MAGEL_ODBC_LOAD
+#define CHALI_ODBC_LOAD(member, symbol) table.member = reinterpret_cast<decltype(table.member)>(librarySymbol(library, symbol))
+        CHALI_ODBC_LOAD(allocate, "SQLAllocHandle");
+        CHALI_ODBC_LOAD(freeHandle, "SQLFreeHandle");
+        CHALI_ODBC_LOAD(environment, "SQLSetEnvAttr");
+        CHALI_ODBC_LOAD(connectAttribute, "SQLSetConnectAttrW");
+        CHALI_ODBC_LOAD(connect, "SQLDriverConnectW");
+        CHALI_ODBC_LOAD(disconnect, "SQLDisconnect");
+        CHALI_ODBC_LOAD(exec, "SQLExecDirectW");
+        CHALI_ODBC_LOAD(columns, "SQLNumResultCols");
+        CHALI_ODBC_LOAD(describe, "SQLDescribeColW");
+        CHALI_ODBC_LOAD(fetch, "SQLFetch");
+        CHALI_ODBC_LOAD(get, "SQLGetData");
+        CHALI_ODBC_LOAD(rowCount, "SQLRowCount");
+        CHALI_ODBC_LOAD(more, "SQLMoreResults");
+        CHALI_ODBC_LOAD(diagnostic, "SQLGetDiagRecW");
+#undef CHALI_ODBC_LOAD
         if (table.allocate && table.freeHandle && table.environment && table.connect && table.disconnect && table.exec && table.columns && table.describe && table.fetch && table.get && table.rowCount && table.more && table.diagnostic)
         {
             odbcApi() = table;
@@ -1717,7 +1717,7 @@ const stackvm::NativeRecordType databaseOwnerType{ "std::sql::Database", nullptr
  * @param handle 所有者记录句柄。
  * @return 对应状态；类型错误或已释放时报告错误并返回空。
  */
-DatabaseOwner *databaseOwner(magel_glue::Context &context, std::int64_t handle)
+DatabaseOwner *databaseOwner(chali_glue::Context &context, std::int64_t handle)
 {
     auto *owner = static_cast<DatabaseOwner *>(context.nativeRecord(handle, databaseOwnerType));
     if (!owner) context.fail("Database 连接所有者已经释放或类型无效");
@@ -1730,7 +1730,7 @@ DatabaseOwner *databaseOwner(magel_glue::Context &context, std::int64_t handle)
  * @param driver 公开数据库驱动编号。
  * @return 新建所有者的原生记录句柄。
  */
-std::int64_t ownDatabase(magel_glue::Context &context, std::int32_t connection, std::int64_t driver)
+std::int64_t ownDatabase(chali_glue::Context &context, std::int32_t connection, std::int64_t driver)
 {
     auto owner = std::make_unique<DatabaseOwner>();
     owner->connection = connection;
@@ -1748,7 +1748,7 @@ std::int64_t ownDatabase(magel_glue::Context &context, std::int32_t connection, 
  * @param context 当前胶水上下文。
  * @return 拥有空连接状态的记录句柄。
  */
-std::int64_t newDatabaseOwner(magel_glue::Context &context)
+std::int64_t newDatabaseOwner(chali_glue::Context &context)
 {
     auto owner = std::make_unique<DatabaseOwner>();
     const auto handle = context.makeNativeRecord(databaseOwnerType, owner.get());
@@ -1766,7 +1766,7 @@ bool bindDatabaseOwner(Registry &registry, String *error)
     return registry.bindTypedWithContext<std::int64_t>("std::sql::__sqlOwnerNew", newDatabaseOwner, error)
            && registry.bindTypedWithContext<std::int64_t, std::int32_t, std::int64_t>("std::sql::__sqlOwn", ownDatabase, error)
            && native_record_glue::bind(registry.native(), "std::sql::__sqlOwnerDrop", 1, native_record_glue::drop, error)
-           && registry.bindTypedWithContext<std::int64_t, std::int64_t, std::int64_t>("std::sql::__sqlOwnerState", [](magel_glue::Context &context, std::int64_t handle, std::int64_t operation) {
+           && registry.bindTypedWithContext<std::int64_t, std::int64_t, std::int64_t>("std::sql::__sqlOwnerState", [](chali_glue::Context &context, std::int64_t handle, std::int64_t operation) {
                 auto *owner = databaseOwner(context, handle);
                 if (!owner) return std::int64_t(0);
                 if (operation == 0) return std::int64_t(owner->connection);
@@ -1778,7 +1778,7 @@ bool bindDatabaseOwner(Registry &registry, String *error)
                 }
                 if (operation == 4) { if (owner->connection >= 0) sqlClose(owner->connection); owner->connection = -1; return std::int64_t(0); }
                 context.fail("Database 状态操作编号无效");
-                return std::int64_t(0); }, error) && registry.bindTypedWithContext<String, std::int64_t>("std::sql::__sqlOwnerError", [](magel_glue::Context &context, std::int64_t handle) { auto *owner = databaseOwner(context, handle); return owner ? owner->error : String(); }, error) && registry.bindTypedWithContext<void, std::int64_t, String, std::int64_t>("std::sql::__sqlOwnerUpdate", [](magel_glue::Context &context, std::int64_t handle, String text, std::int64_t affected) { auto *owner = databaseOwner(context, handle); if (owner) { owner->error = std::move(text); if (affected >= 0) owner->affected = affected; } }, error);
+                return std::int64_t(0); }, error) && registry.bindTypedWithContext<String, std::int64_t>("std::sql::__sqlOwnerError", [](chali_glue::Context &context, std::int64_t handle) { auto *owner = databaseOwner(context, handle); return owner ? owner->error : String(); }, error) && registry.bindTypedWithContext<void, std::int64_t, String, std::int64_t>("std::sql::__sqlOwnerUpdate", [](chali_glue::Context &context, std::int64_t handle, String text, std::int64_t affected) { auto *owner = databaseOwner(context, handle); if (owner) { owner->error = std::move(text); if (affected >= 0) owner->affected = affected; } }, error);
 }
 
 /**

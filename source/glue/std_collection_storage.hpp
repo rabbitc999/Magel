@@ -1,5 +1,5 @@
-#ifndef MAGEL_COLLECTION_STORAGE_HPP
-#define MAGEL_COLLECTION_STORAGE_HPP
+#ifndef CHALI_COLLECTION_STORAGE_HPP
+#define CHALI_COLLECTION_STORAGE_HPP
 #include "stackvm.hpp"
 #include <algorithm>
 #include <functional>

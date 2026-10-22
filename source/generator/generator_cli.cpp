@@ -1,6 +1,6 @@
 #include "core_assets.hpp"
 #include "../../library/caspp/core_assets.hpp"
-#include "../magel_runtime_allocator.hpp"
+#include "../chali_runtime_allocator.hpp"
 #include "../../library/template/engine.hpp"
 
 #include <algorithm>
@@ -22,8 +22,8 @@ namespace fs = std::filesystem;
 namespace
 {
 
-const char *const kManifestName = ".magel-generator-manifest";
-const char *const kManifestHeader = "# Magel generator files v1";
+const char *const kManifestName = ".chali-generator-manifest";
+const char *const kManifestHeader = "# ChaLi generator files v1";
 
 /**
  * @brief 以二进制方式完整读取编译器工程源文件。
@@ -264,7 +264,7 @@ bool writeProject(const fs::path &root,
     fs::create_directories(root, directoryError);
     if (directoryError)
     {
-        *error = MAGEL_TEXT("无法创建输出目录：") + directoryError.message();
+        *error = CHALI_TEXT("无法创建输出目录：") + directoryError.message();
         return false;
     }
     Memory::Set<Memory::String> current;
@@ -326,7 +326,7 @@ Memory::String shellQuote(const Memory::String &text)
 }
 
 /* 把「文件在导出工程里的位置」换算成相对它的 `#include` 写法。
- * 例：文件在 `runtime/`、目标在 `runtime/magel_allocator.hpp` -> `magel_allocator.hpp`；
+ * 例：文件在 `runtime/`、目标在 `runtime/chali_allocator.hpp` -> `chali_allocator.hpp`；
  *     文件在 `glue/`、目标在 `json/json.hpp`            -> `../json/json.hpp`。 */
 /**
  * @brief 按导出文件位置计算其目标头文件的相对引用。
@@ -399,14 +399,14 @@ int run(const Memory::Vector<Memory::String> &arguments)
  */
 void usage(const Memory::String &program)
 {
-    std::cout << MAGEL_TEXT("用法：\n")
+    std::cout << CHALI_TEXT("用法：\n")
               << "  " << program << " compiler --out-dir DIR\n"
               << "  " << program << " clear --out-dir DIR\n";
 }
 
 } // namespace
 
-namespace magel_generator
+namespace chali_generator
 {
 
 /**
@@ -417,20 +417,20 @@ namespace magel_generator
  */
 int runCli(int argc, char **argv)
 {
-    const fs::path self = fs::absolute(argc > 0 ? argv[0] : "magel-generator").lexically_normal();
+    const fs::path self = fs::absolute(argc > 0 ? argv[0] : "chali-generator").lexically_normal();
     fs::path root = self.parent_path().parent_path().parent_path();
     int commandIndex = 1;
-    /* 统一入口在进程内调用时会显式给仓库根：`runCli({"magel-generator","--root",ROOT,"compiler",...})`。
-     * 独立二进制的 argv[0] 在 build/magel-generator/ 下，往上三级正好是仓库根，不用传。 */
+    /* 统一入口在进程内调用时会显式给仓库根：`runCli({"chali-generator","--root",ROOT,"compiler",...})`。
+     * 独立二进制的 argv[0] 在 build/chali-generator/ 下，往上三级正好是仓库根，不用传。 */
     if (argc > 2 && Memory::String(argv[1]) == "--root")
     {
         std::error_code rootError;
         root = fs::absolute(fs::path(argv[2]), rootError).lexically_normal();
         commandIndex = 3;
     }
-    // 独立仓库的 build/magel-generator 位于 Magel 自己的根下。
-    if (fs::exists(root / "source/magel.gram")) root = root.parent_path();
-    const fs::path mc = root / "magel";
+    // 独立仓库的 build/chali-generator 位于 ChaLi 自己的根下。
+    if (fs::exists(root / "source/chali.gram")) root = root.parent_path();
+    const fs::path mc = root / "chali";
     const fs::path templateDir = mc / "source/generator";
     const fs::path parseEngine = root / "build/bin/ParseEngine.exe";
     const fs::path parseEnginePortable = root / "build/bin/ParseEngine";
@@ -482,7 +482,7 @@ int runCli(int argc, char **argv)
         }
         std::error_code removeError;
         fs::remove(output / kManifestName, removeError);
-        std::cout << MAGEL_TEXT("清理完成，共删除 ") << removed << MAGEL_TEXT(" 个编译器文件\n");
+        std::cout << CHALI_TEXT("清理完成，共删除 ") << removed << CHALI_TEXT(" 个编译器文件\n");
         return 0;
     }
     if (command != "compiler")
@@ -512,19 +512,19 @@ int runCli(int argc, char **argv)
         return 2;
     }
     const fs::path stage = root / "tmp" /
-        ("magel-generator-" + Memory::toString(
+        ("chali-generator-" + Memory::toString(
              std::chrono::steady_clock::now().time_since_epoch().count()));
     std::error_code stageError;
     fs::create_directories(stage, stageError);
     Memory::String expandedGrammar, grammarError;
     Memory::Set<fs::path> grammarParents;
-    if (!expandGrammarIncludes(mc / "source/magel.gram", &expandedGrammar, &grammarParents, &grammarError))
+    if (!expandGrammarIncludes(mc / "source/chali.gram", &expandedGrammar, &grammarParents, &grammarError))
     {
         std::cerr << grammarError << '\n';
         fs::remove_all(stage, stageError);
         return 1;
     }
-    const auto grammarPath = stage / "magel.gram";
+    const auto grammarPath = stage / "chali.gram";
     {
         std::ofstream grammar(grammarPath, std::ios::binary);
         grammar << expandedGrammar;
@@ -554,13 +554,13 @@ int runCli(int argc, char **argv)
             {"../../library/ipage/source/ipage/dialect.hpp", "ipage/dialect.hpp"},
             {"../../library/ipage/source/ipage/model.hpp", "ipage/model.hpp"},
             {"../../library/caspp/core_assets.hpp", "caspp/core_assets.hpp"},
-            {"../../library/allocator/magel_allocator.hpp", "runtime/magel_allocator.hpp"},
-            {"../../source/allocator/magel_allocator.hpp", "runtime/magel_allocator.hpp"},
-            {"../library/allocator/magel_allocator.hpp", "runtime/magel_allocator.hpp"},
-            {"../allocator/magel_allocator.hpp", "runtime/magel_allocator.hpp"},
-            {"allocator/magel_allocator.hpp", "runtime/magel_allocator.hpp"},
-            {"../../source/magel_i18n.hpp", "magel_i18n.hpp"},
-            {"../magel_i18n.hpp", "magel_i18n.hpp"},
+            {"../../library/allocator/chali_allocator.hpp", "runtime/chali_allocator.hpp"},
+            {"../../source/allocator/chali_allocator.hpp", "runtime/chali_allocator.hpp"},
+            {"../library/allocator/chali_allocator.hpp", "runtime/chali_allocator.hpp"},
+            {"../allocator/chali_allocator.hpp", "runtime/chali_allocator.hpp"},
+            {"allocator/chali_allocator.hpp", "runtime/chali_allocator.hpp"},
+            {"../../source/chali_i18n.hpp", "chali_i18n.hpp"},
+            {"../chali_i18n.hpp", "chali_i18n.hpp"},
             {"../library/stackvm/value_text.hpp", "runtime/value_text.hpp"},
             {"../../library/stackvm/stackvm.hpp", "runtime/stackvm.hpp"},
             {"../library/stackvm/stackvm.hpp", "runtime/stackvm.hpp"},
@@ -584,8 +584,8 @@ int runCli(int argc, char **argv)
             {"../toml/toml_source.hpp", "toml/toml_source.hpp"},
         };
         for (const Fix &fix : fixes) {
-            /* 只在 `#include "..."` 的引号里匹配：否则裸的 `allocator/magel_allocator.hpp`
-             * 会连带命中 `"../../other/allocator/magel_allocator.hpp"` 的尾巴。 */
+            /* 只在 `#include "..."` 的引号里匹配：否则裸的 `allocator/chali_allocator.hpp`
+             * 会连带命中 `"../../other/allocator/chali_allocator.hpp"` 的尾巴。 */
             const Memory::String needle = Memory::String("\"") + fix.from + "\"";
             const Memory::String value = Memory::String("\"") + relativeInclude(target, fix.to) + "\"";
             if (needle == value) continue;
@@ -604,20 +604,20 @@ int runCli(int argc, char **argv)
         return true;
     };
     bool ok = true;
-    for (const char *name : {"magel_parser.cpp", "magel_parser.hpp",
-                             "magel_parser_user.h", "magel_main.cpp", "RESULT.md"})
+    for (const char *name : {"chali_parser.cpp", "chali_parser.hpp",
+                             "chali_parser_user.h", "chali_main.cpp", "RESULT.md"})
         ok = copy(stage / name, name) && ok;
-    for (const char *name : {"magel_driver.cpp", "magel_i18n.hpp", "magel_diagnostics.hpp", "magel_borrow_checker.hpp", "magel_borrow_flow.hpp", "magel_resource_cleanup.hpp", "magel_resource_cleanup.cpp", "magel_module.hpp",
-                             "magel_incremental.hpp", "magel_package.hpp", "magel_project.hpp", "magel_cli.hpp",
-                             "magel_lambda.hpp", "magel_generic.hpp", "magel_generic_name.hpp", "magel_glue.hpp",
-                             "magel_stdlib_embedded.cpp", "magel_stdlib.hpp", "magel_generic.cpp", "magel_lambda.cpp", "magel_generic_closure.cpp", "magel_package.cpp", "magel_report.cpp", "magel_runtime_allocator.hpp",
-                             "magel_ast.hpp", "magel_semantics.cpp"})
+    for (const char *name : {"chali_driver.cpp", "chali_i18n.hpp", "chali_diagnostics.hpp", "chali_borrow_checker.hpp", "chali_borrow_flow.hpp", "chali_resource_cleanup.hpp", "chali_resource_cleanup.cpp", "chali_module.hpp",
+                             "chali_incremental.hpp", "chali_package.hpp", "chali_project.hpp", "chali_cli.hpp",
+                             "chali_lambda.hpp", "chali_generic.hpp", "chali_generic_name.hpp", "chali_glue.hpp",
+                             "chali_stdlib_embedded.cpp", "chali_stdlib.hpp", "chali_generic.cpp", "chali_lambda.cpp", "chali_generic_closure.cpp", "chali_package.cpp", "chali_report.cpp", "chali_runtime_allocator.hpp",
+                             "chali_ast.hpp", "chali_semantics.cpp"})
         ok = copy(mc / "source" / name, name) && ok;
     /* 控制台 UTF-8 头来自 `library/console/`，导出工程里仍放 `console/` 的目录名：副本站 `console/utf8.hpp`，
-     * `magel_i18n.hpp` 里也是 `#include "console/utf8.hpp"`，导出工程保持同一相对布局。 */
+     * `chali_i18n.hpp` 里也是 `#include "console/utf8.hpp"`，导出工程保持同一相对布局。 */
     ok = copy(mc / "library/console/utf8.hpp", "console/utf8.hpp") && ok;
-    /* `magel_semantics.cpp` 按职责拆成 `semantics/*.cpp`，它用相对 `#include`
-     * 拼回；生成工程必须把分片一起带过去（编译 `magel_parser.cpp` 时按相对路径找到）。 */
+    /* `chali_semantics.cpp` 按职责拆成 `semantics/*.cpp`，它用相对 `#include`
+     * 拼回；生成工程必须把分片一起带过去（编译 `chali_parser.cpp` 时按相对路径找到）。 */
     for (const char *name : {"symbol_table.cpp", "type_ids.cpp", "type_ids_shared.cpp",
                              "lifetime.cpp", "aggregate_ownership.cpp", "resource_lifetime.cpp", "scope.cpp",
                              "return_expression_ast.cpp", "named_function_ast.cpp", "derive_ast.cpp", "derive.cpp",
@@ -626,40 +626,40 @@ int runCli(int argc, char **argv)
                              "symbol_registration.cpp", "program_lowering.cpp", "artifacts.cpp"})
         ok = copy(mc / "source/semantics" / name, Memory::String("semantics/") + name) && ok;
     const Memory::Map<Memory::String, fs::path> runtime{
-        {"magel_allocator.hpp", root / "magel/source/allocator/magel_allocator.hpp"},
-        {"magel_pool.h", root / "magel/source/allocator/magel_pool.h"},
-        {"magel_pool.c", root / "magel/source/allocator/magel_pool.c"},
-        {"simple_ast.cpp", root / "magel/library/simple_ast/simple_ast.cpp"},
-        {"simple_ast.hpp", root / "magel/library/simple_ast/simple_ast.hpp"},
-        {"preprocess.cpp", root / "magel/library/preprocess/preprocess.cpp"},
-        {"preprocess.hpp", root / "magel/library/preprocess/preprocess.hpp"},
-        {"bigint.cpp", root / "magel/library/bignum/bigint.cpp"},
-        {"bigint.hpp", root / "magel/library/bignum/bigint.hpp"},
-        {"bigfloat.cpp", root / "magel/library/bignum/bigfloat.cpp"},
-        {"bigfloat.hpp", root / "magel/library/bignum/bigfloat.hpp"},
-        {"bigfloat_math.hpp", root / "magel/library/bignum/bigfloat_math.hpp"},
-        {"bigfloat_math_detail.hpp", root / "magel/library/bignum/bigfloat_math_detail.hpp"},
-        {"bigfloat_transcendental.cpp", root / "magel/library/bignum/bigfloat_transcendental.cpp"},
-        {"bigfloat_trigonometry.cpp", root / "magel/library/bignum/bigfloat_trigonometry.cpp"},
+        {"chali_allocator.hpp", root / "chali/source/allocator/chali_allocator.hpp"},
+        {"chali_pool.h", root / "chali/source/allocator/chali_pool.h"},
+        {"chali_pool.c", root / "chali/source/allocator/chali_pool.c"},
+        {"simple_ast.cpp", root / "chali/library/simple_ast/simple_ast.cpp"},
+        {"simple_ast.hpp", root / "chali/library/simple_ast/simple_ast.hpp"},
+        {"preprocess.cpp", root / "chali/library/preprocess/preprocess.cpp"},
+        {"preprocess.hpp", root / "chali/library/preprocess/preprocess.hpp"},
+        {"bigint.cpp", root / "chali/library/bignum/bigint.cpp"},
+        {"bigint.hpp", root / "chali/library/bignum/bigint.hpp"},
+        {"bigfloat.cpp", root / "chali/library/bignum/bigfloat.cpp"},
+        {"bigfloat.hpp", root / "chali/library/bignum/bigfloat.hpp"},
+        {"bigfloat_math.hpp", root / "chali/library/bignum/bigfloat_math.hpp"},
+        {"bigfloat_math_detail.hpp", root / "chali/library/bignum/bigfloat_math_detail.hpp"},
+        {"bigfloat_transcendental.cpp", root / "chali/library/bignum/bigfloat_transcendental.cpp"},
+        {"bigfloat_trigonometry.cpp", root / "chali/library/bignum/bigfloat_trigonometry.cpp"},
     };
     for (const char *name : {"ast_type.cpp", "ast_node.cpp", "ast_data.cpp", "ast_storage_detail.hpp"})
-        ok = copy(root / "magel/library/simple_ast" / name, Memory::String("runtime/") + name) && ok;
+        ok = copy(root / "chali/library/simple_ast" / name, Memory::String("runtime/") + name) && ok;
     for (const char *name : {"bigint_multiplication.cpp", "bigfloat_roots.cpp", "bigint_division.cpp", "bigint_number_theory.cpp", "bigint_bits.cpp", "bigint_modular.cpp", "bigint_conversion.cpp"})
-        ok = copy(root / "magel/library/bignum" / name, Memory::String("runtime/") + name) && ok;
+        ok = copy(root / "chali/library/bignum" / name, Memory::String("runtime/") + name) && ok;
     for (const auto &[name, source] : runtime) ok = copy(source, "runtime/" + name) && ok;
     for (const char *name : stackvm::assets::kCoreAssets)
-        ok = copy(root / "magel/library/stackvm" / name, Memory::String("runtime/") + name) && ok;
+        ok = copy(root / "chali/library/stackvm" / name, Memory::String("runtime/") + name) && ok;
     for (const char *name : Cas::Assets::kCoreAssets)
-        ok = copy(root / "magel/library/caspp" / name, Memory::String("caspp/") + name) && ok;
+        ok = copy(root / "chali/library/caspp" / name, Memory::String("caspp/") + name) && ok;
     for (const char *name : {"sql.hpp", "sql.cpp", "dialect.hpp", "dialect.cpp", "model.hpp", "field.hpp"})
-        ok = copy(root / "magel/library/ipage/source/ipage" / name, Memory::String("ipage/") + name) && ok;
-    ok = copy(root / "magel/library/ipage/LICENSE", "ipage/LICENSE") && ok;
+        ok = copy(root / "chali/library/ipage/source/ipage" / name, Memory::String("ipage/") + name) && ok;
+    ok = copy(root / "chali/library/ipage/LICENSE", "ipage/LICENSE") && ok;
     for (const char *name : {"toml_source.hpp", "toml_source.cpp"})
-        ok = copy(root / "magel/library/toml" / name, Memory::String("toml/") + name) && ok;
+        ok = copy(root / "chali/library/toml" / name, Memory::String("toml/") + name) && ok;
     for (const char *format : {"json", "toml"}) {
         for (const char *extension : {"hpp", "cpp"}) {
             const Memory::String relative = Memory::String(format) + "/" + format + "." + extension;
-            ok = copy(root / "magel/library" / relative, relative) && ok;
+            ok = copy(root / "chali/library" / relative, relative) && ok;
         }
     }
     for (const char *name : {"std_math.hpp", "std_random.hpp", "std_regex.hpp",
@@ -667,13 +667,13 @@ int runCli(int argc, char **argv)
                              "std_signal.hpp",
                              "std_structured_data.hpp", "std_json.hpp", "std_toml.hpp", "std_numeric.hpp", "std_binary.hpp", "std_linalg.hpp", "std_parse.hpp",
                              "std_process.hpp", "std_sql.hpp", "std_net.hpp", "std_filesystem.hpp", "std_registry.hpp"})
-        ok = copy(root / "magel/source/glue" / name, Memory::String("glue/") + name) && ok;
+        ok = copy(root / "chali/source/glue" / name, Memory::String("glue/") + name) && ok;
     // 前端头和标准胶水随实现扩展；按受控目录收集，避免固定清单遗漏新依赖。
     for (const auto &entry : fs::directory_iterator(mc / "source"))
     {
         const auto name = entry.path().filename().u8string();
         const auto extension = entry.path().extension().string();
-        if (entry.is_regular_file() && name.rfind("magel_parser", 0) != 0 &&
+        if (entry.is_regular_file() && name.rfind("chali_parser", 0) != 0 &&
             (extension == ".hpp" || extension == ".h" || extension == ".inc"))
             ok = copy(entry.path(), name) && ok;
     }
@@ -684,7 +684,7 @@ int runCli(int argc, char **argv)
             ok = copy(entry.path(), "glue/" + entry.path().filename().u8string()) && ok;
     }
     for (const auto &entry : fs::directory_iterator(mc / "source/std"))
-        if (entry.is_regular_file() && entry.path().extension() == ".mgl")
+        if (entry.is_regular_file() && entry.path().extension() == ".chl")
             ok = copy(entry.path(), "std/" + entry.path().filename().u8string()) && ok;
     for (const auto &entry : fs::directory_iterator(mc / "source/semantics"))
     {
@@ -715,16 +715,16 @@ int runCli(int argc, char **argv)
     Memory::String langTemplate;
     Memory::String cmakeTemplate;
     Memory::String readmeTemplate;
-    if (!readFile(mc / "source/std/lang.mgl", &langSource) ||
-        !readFile(templateDir / "compiler_lang.mgl.tmpl", &langTemplate) ||
+    if (!readFile(mc / "source/std/lang.chl", &langSource) ||
+        !readFile(templateDir / "compiler_lang.chl.tmpl", &langTemplate) ||
         !readFile(templateDir / "compiler_cmake_lists.txt.tmpl", &cmakeTemplate) ||
         !readFile(templateDir / "compiler_readme.md.tmpl", &readmeTemplate))
         ok = false;
     try
     {
         tmpl::SnippetTable snippets;
-        snippets.emplace("magel_lang", langSource);
-        project["std/lang.mgl"] = tmpl::renderValues(
+        snippets.emplace("chali_lang", langSource);
+        project["std/lang.chl"] = tmpl::renderValues(
             langTemplate, {}, snippets);
         project["CMakeLists.txt"] = tmpl::renderValues(
             cmakeTemplate);
@@ -733,31 +733,31 @@ int runCli(int argc, char **argv)
     }
     catch (const std::exception &exception)
     {
-        std::cerr << MAGEL_TEXT("编译器模板渲染失败：") << exception.what() << '\n';
+        std::cerr << CHALI_TEXT("编译器模板渲染失败：") << exception.what() << '\n';
         ok = false;
     }
     fs::remove_all(stage, stageError);
     if (!ok)
     {
-        std::cerr << MAGEL_TEXT("读取编译器源文件失败\n");
+        std::cerr << CHALI_TEXT("读取编译器源文件失败\n");
         return 1;
     }
     Memory::String error;
     if (!writeProject(output, project, &error))
     {
-        std::cerr << MAGEL_TEXT("编译器工程导出失败：") << error << '\n';
+        std::cerr << CHALI_TEXT("编译器工程导出失败：") << error << '\n';
         return 1;
     }
-    std::cout << MAGEL_TEXT("已生成 Magel 编译器工程：") << output.string() << "（"
-              << project.size() << MAGEL_TEXT(" 个文件，lang.mgl 来自引用模板）\n");
+    std::cout << CHALI_TEXT("已生成 ChaLi 编译器工程：") << output.string() << "（"
+              << project.size() << CHALI_TEXT(" 个文件，lang.chl 来自引用模板）\n");
     return 0;
 }
 
-} // namespace magel_generator
+} // namespace chali_generator
 
-/* 独立 `magel-generator` 二进制自带 main；统一入口在进程内调用 `magel_generator::runCli`，
- * 构建时用 `-DMAGEL_GENERATOR_NO_MAIN` 关掉这里。 */
-#ifndef MAGEL_GENERATOR_NO_MAIN
+/* 独立 `chali-generator` 二进制自带 main；统一入口在进程内调用 `chali_generator::runCli`，
+ * 构建时用 `-DCHALI_GENERATOR_NO_MAIN` 关掉这里。 */
+#ifndef CHALI_GENERATOR_NO_MAIN
 /**
  * @brief 配置显示语言并进入独立生成器的命令分派。
  * @param argc 宿主传入的命令行参数个数。
@@ -765,12 +765,12 @@ int runCli(int argc, char **argv)
  * @return 语言配置或生成器命令的执行状态。
  */
 int main(int argc, char **argv) {
-    auto arguments=magel_i18n::processArguments(argc,argv);
+    auto arguments=chali_i18n::processArguments(argc,argv);
     std::string error;
-    if(!magel_i18n::configure(arguments,error)){std::fprintf(stderr,"magel: %s\n",error.c_str());return 2;}
+    if(!chali_i18n::configure(arguments,error)){std::fprintf(stderr,"chali: %s\n",error.c_str());return 2;}
     std::vector<char*> values;
     for(auto &argument:arguments)values.push_back(argument.data());
     values.push_back(nullptr);
-    return magel_generator::runCli(static_cast<int>(arguments.size()),values.data());
+    return chali_generator::runCli(static_cast<int>(arguments.size()),values.data());
 }
 #endif

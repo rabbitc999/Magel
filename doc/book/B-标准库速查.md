@@ -1,17 +1,17 @@
 # 附录 B 标准库速查
 
-Magel 的「标准库」不是一堆函数，而是一组**模块**：除核心 `std::lang` 自动加载外，
+ChaLi 的「标准库」不是一堆函数，而是一组**模块**：除核心 `std::lang` 自动加载外，
 其余都得先 `import`。这份附录按**能力域**把它们列一遍，让你知道「想干这件事，
 该去 `import` 谁」；每个模块的完整签名与错误边界，去[库函数 API 参考](../library/README.md)查。
 
-> 模块名与方法对齐 **Magel 0.21.1**。终端中可以直接用 `magel man` 查模块，用
-> `magel man 模块::符号` 查签名、说明和示例；命令说明见 [doc/man](../man/README.md)。
+> 模块名与方法对齐 **ChaLi 0.21.1**。终端中可以直接用 `chali man` 查模块，用
+> `chali man 模块::符号` 查签名、说明和示例；命令说明见 [doc/man](../man/README.md)。
 
 ---
 
 ## B.0 先看一个例子
 
-```magel
+```chali
 import std::math;
 import std::text;
 import std::iter;
@@ -19,7 +19,7 @@ import std::iter;
 int64 main()
 {
     println("sqrt={}", std::math::sqrt(144.0));
-    println("upper={}", std::text::Text::toUpper("magel"));
+    println("upper={}", std::text::Text::toUpper("chali"));
     int64 sum = 0;
     for (int64 v in std::iter::range(1, 5))
     {
@@ -32,7 +32,7 @@ int64 main()
 
 ```text
 sqrt=12
-upper=MAGEL
+upper=CHALI
 sum=10
 ```
 
@@ -60,7 +60,7 @@ sum=10
 | 整行输入 | `std::lang::readLine()`，保留空格，不含 LF/CRLF |
 | 多行输入 | `std::lang::readLines(int32 N)`，LF 连接，EOF 提前结束 |
 
-> **早年间它们不在 `lang` 里也能用**（靠 `source/std/lang.mgl` 注入正文）。现在除了上面这些，
+> **早年间它们不在 `lang` 里也能用**（靠 `source/std/lang.chl` 注入正文）。现在除了上面这些，
 > 其它能力一律要显式 `import`——这是第 18 章「模块与工程」讲过的变化。
 
 ---
@@ -86,7 +86,7 @@ sum=10
 | `std::text` | `Text::find` `split` `join` `replace` `trim` `toUpper` `padStart` …… |
 | `std::json` | `parse` → `Result<JsonValue, String>`；再 `isInt` `isObject` `len` `asInt` `asString` 取值 |
 | `std::toml` | 与 json 同构的 TOML 文档访问 |
-| `std::regex` | 正则；**模式缓存在宿主侧**，Magel 侧只拿一个整数句柄 |
+| `std::regex` | 正则；**模式缓存在宿主侧**，ChaLi 侧只拿一个整数句柄 |
 | `std::parse` | 字符串 → 整数，失败给 `ParseError` |
 | `std::binary` | 定宽解码、字节序处理与边界检查 |
 | `std::path` | 路径拼接、取文件名、取扩展名、规范化 |
@@ -108,7 +108,7 @@ sum=10
 | 模块 | 能干什么 |
 | --- | --- |
 | `std::io` | 文件读写；错误类型 `IoError`（`OpenFailed` `ReadFailed` `WriteFailed` `SeekFailed` `Closed`） |
-| `std::net` | TCP 与极简 HTTP 客户端；套接字在宿主胶水里，Magel 侧只拿 `int32` 句柄 |
+| `std::net` | TCP 与极简 HTTP 客户端；套接字在宿主胶水里，ChaLi 侧只拿 `int32` 句柄 |
 | `std::sql` | 连 MySQL / SQLite / PostgreSQL / SQL Server；SQL 交给数据库引擎执行 |
 | `std::process` | 进程与系统调用；命令管道由宿主管柄池持有 |
 | `std::clock` | 单调时钟 `steady_clock`，只用来做差值，别当挂钟用 |
@@ -144,11 +144,11 @@ sum=10
 | --- | --- |
 | 某个函数的确切签名、默认值、返回与错误 | [库函数 API 参考](../library/README.md) 与[全部函数索引](../library/symbols.md) |
 | 按能力域通读一遍标准库 | [07 标准库概览](../07-stdlib-overview.md) |
-| 标准库源码（每个模块头部都有能力说明） | [`source/std/`](../../source/std) 下的 `source/std/<名字>.mgl` |
+| 标准库源码（每个模块头部都有能力说明） | [`source/std/`](../../source/std) 下的 `source/std/<名字>.chl` |
 | 宿主侧绑定（`std::*` 的真正实现） | [`source/glue/`](../../source/glue) 下的 `source/glue/std_*.hpp` |
 | 可直接运行的标准库样例 | [`example/samples/`](../../example/samples/) |
 
-> **模块名怎么读**：`std::json` 对应源码 `source/std/json.mgl`、胶水 `source/glue/std_json.hpp`，
+> **模块名怎么读**：`std::json` 对应源码 `source/std/json.chl`、胶水 `source/glue/std_json.hpp`，
 > 三处名字一对就找到了。
 
 ---

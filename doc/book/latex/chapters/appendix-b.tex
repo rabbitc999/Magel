@@ -1,17 +1,17 @@
 \chapter{标准库速查}
 \label{ch:appB}
 
-Magel 的「标准库」不是一堆函数，而是一组模块：除核心 \texttt{std:\allowbreak{}:\allowbreak{}lang} 自动加载外，其余都得先 \texttt{import}。这份附录按能力域把它们列一遍，让你知道「想干这件事，该去 \texttt{import} 谁」；每个模块的完整签名与错误边界，去\href{https://gitee.com/rabbitc999/magel/blob/master/doc/library/README.md}{库函数 API 参考}查。
+ChaLi 的「标准库」不是一堆函数，而是一组模块：除核心 \texttt{std:\allowbreak{}:\allowbreak{}lang} 自动加载外，其余都得先 \texttt{import}。这份附录按能力域把它们列一遍，让你知道「想干这件事，该去 \texttt{import} 谁」；每个模块的完整签名与错误边界，去\href{https://gitee.com/rabbitc999/chali/blob/master/doc/library/README.md}{库函数 API 参考}查。
 
 \begin{tip}{提示}
-模块名与方法对齐 Magel 0.21.1。终端中可以直接用 \texttt{magel man} 查模块，用\texttt{magel man 模块:\allowbreak{}:\allowbreak{}符号} 查签名、说明和示例；命令说明见 \href{https://gitee.com/rabbitc999/magel/blob/master/doc/man/README.md}{doc/man}。
+模块名与方法对齐 ChaLi 0.21.1。终端中可以直接用 \texttt{chali man} 查模块，用\texttt{chali man 模块:\allowbreak{}:\allowbreak{}符号} 查签名、说明和示例；命令说明见 \href{https://gitee.com/rabbitc999/chali/blob/master/doc/man/README.md}{doc/man}。
 \end{tip}
 
 \section{先看一个例子}
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 import std::math;
 import std::text;
 import std::iter;
@@ -19,7 +19,7 @@ import std::iter;
 int64 main()
 {
     println("sqrt={}", std::math::sqrt(144.0));
-    println("upper={}", std::text::Text::toUpper("magel"));
+    println("upper={}", std::text::Text::toUpper("chali"));
     int64 sum = 0;
     for (int64 v in std::iter::range(1, 5))
     {
@@ -36,7 +36,7 @@ int64 main()
 \medskip
 \begin{lstlisting}[style=out]
 sqrt=12
-upper=MAGEL
+upper=CHALI
 sum=10
 \end{lstlisting}
 \par
@@ -69,7 +69,7 @@ sum=10
 \end{center}
 
 \begin{tip}{提示}
-早年间它们不在 \texttt{lang} 里也能用（靠 \texttt{source/\allowbreak{}std/\allowbreak{}lang.\allowbreak{}mgl} 注入正文）。现在除了上面这些，其它能力一律要显式 \texttt{import}——这是第 18 章「模块与工程」讲过的变化。
+早年间它们不在 \texttt{lang} 里也能用（靠 \texttt{source/\allowbreak{}std/\allowbreak{}lang.\allowbreak{}chl} 注入正文）。现在除了上面这些，其它能力一律要显式 \texttt{import}——这是第 18 章「模块与工程」讲过的变化。
 \end{tip}
 
 \section{按能力域速查}
@@ -104,7 +104,7 @@ sum=10
 \texttt{std:\allowbreak{}:\allowbreak{}text} & \texttt{Text:\allowbreak{}:\allowbreak{}find} \texttt{split} \texttt{join} \texttt{replace} \texttt{trim} \texttt{to\allowbreak{}Upper} \texttt{pad\allowbreak{}Start} …… \\
 \texttt{std:\allowbreak{}:\allowbreak{}json} & \texttt{parse} \ensuremath{\rightarrow} \texttt{Result<\allowbreak{}Json\allowbreak{}Value,\allowbreak{} String>\allowbreak{}}；再 \texttt{is\allowbreak{}Int} \texttt{is\allowbreak{}Object} \texttt{len} \texttt{as\allowbreak{}Int} \texttt{as\allowbreak{}String} 取值 \\
 \texttt{std:\allowbreak{}:\allowbreak{}toml} & 与 json 同构的 TOML 文档访问 \\
-\texttt{std:\allowbreak{}:\allowbreak{}regex} & 正则；模式缓存在宿主侧，Magel 侧只拿一个整数句柄 \\
+\texttt{std:\allowbreak{}:\allowbreak{}regex} & 正则；模式缓存在宿主侧，ChaLi 侧只拿一个整数句柄 \\
 \texttt{std:\allowbreak{}:\allowbreak{}parse} & 字符串 \ensuremath{\rightarrow} 整数，失败给 \texttt{Parse\allowbreak{}Error} \\
 \texttt{std:\allowbreak{}:\allowbreak{}binary} & 定宽解码、字节序处理与边界检查 \\
 \texttt{std:\allowbreak{}:\allowbreak{}path} & 路径拼接、取文件名、取扩展名、规范化 \\
@@ -142,7 +142,7 @@ sum=10
 \midrule
 \endhead
 \texttt{std:\allowbreak{}:\allowbreak{}io} & 文件读写；错误类型 \texttt{Io\allowbreak{}Error}（\texttt{Open\allowbreak{}Failed} \texttt{Read\allowbreak{}Failed} \texttt{Write\allowbreak{}Failed} \texttt{Seek\allowbreak{}Failed} \texttt{Closed}） \\
-\texttt{std:\allowbreak{}:\allowbreak{}net} & TCP 与极简 HTTP 客户端；套接字在宿主胶水里，Magel 侧只拿 \texttt{int32} 句柄 \\
+\texttt{std:\allowbreak{}:\allowbreak{}net} & TCP 与极简 HTTP 客户端；套接字在宿主胶水里，ChaLi 侧只拿 \texttt{int32} 句柄 \\
 \texttt{std:\allowbreak{}:\allowbreak{}sql} & 连 MySQL / SQLite / PostgreSQL / SQL Server；SQL 交给数据库引擎执行 \\
 \texttt{std:\allowbreak{}:\allowbreak{}process} & 进程与系统调用；命令管道由宿主管柄池持有 \\
 \texttt{std:\allowbreak{}:\allowbreak{}clock} & 单调时钟 \texttt{steady\_clock}，只用来做差值，别当挂钟用 \\
@@ -184,17 +184,17 @@ sum=10
 你想查 & 去哪 \\
 \midrule
 \endhead
-某个函数的确切签名、默认值、返回与错误 & \href{https://gitee.com/rabbitc999/magel/blob/master/doc/library/README.md}{库函数 API 参考} 与\href{https://gitee.com/rabbitc999/magel/blob/master/doc/library/symbols.md}{全部函数索引} \\
-按能力域通读一遍标准库 & \href{https://gitee.com/rabbitc999/magel/blob/master/doc/07-stdlib-overview.md}{07 标准库概览} \\
-标准库源码（每个模块头部都有能力说明） & \href{https://gitee.com/rabbitc999/magel/tree/master/source/std}{\texttt{source/\allowbreak{}std/\allowbreak{}}} 下的 \texttt{source/\allowbreak{}std/\allowbreak{}<\allowbreak{}名字>\allowbreak{}.\allowbreak{}mgl} \\
-宿主侧绑定（\texttt{std:\allowbreak{}:\allowbreak{}*} 的真正实现） & \href{https://gitee.com/rabbitc999/magel/tree/master/source/glue}{\texttt{source/\allowbreak{}glue/\allowbreak{}}} 下的 \texttt{source/\allowbreak{}glue/\allowbreak{}std\_*.\allowbreak{}hpp} \\
-可直接运行的标准库样例 & \href{https://gitee.com/rabbitc999/magel/tree/master/example/samples}{\texttt{example/\allowbreak{}samples/\allowbreak{}}} \\
+某个函数的确切签名、默认值、返回与错误 & \href{https://gitee.com/rabbitc999/chali/blob/master/doc/library/README.md}{库函数 API 参考} 与\href{https://gitee.com/rabbitc999/chali/blob/master/doc/library/symbols.md}{全部函数索引} \\
+按能力域通读一遍标准库 & \href{https://gitee.com/rabbitc999/chali/blob/master/doc/07-stdlib-overview.md}{07 标准库概览} \\
+标准库源码（每个模块头部都有能力说明） & \href{https://gitee.com/rabbitc999/chali/tree/master/source/std}{\texttt{source/\allowbreak{}std/\allowbreak{}}} 下的 \texttt{source/\allowbreak{}std/\allowbreak{}<\allowbreak{}名字>\allowbreak{}.\allowbreak{}chl} \\
+宿主侧绑定（\texttt{std:\allowbreak{}:\allowbreak{}*} 的真正实现） & \href{https://gitee.com/rabbitc999/chali/tree/master/source/glue}{\texttt{source/\allowbreak{}glue/\allowbreak{}}} 下的 \texttt{source/\allowbreak{}glue/\allowbreak{}std\_*.\allowbreak{}hpp} \\
+可直接运行的标准库样例 & \href{https://gitee.com/rabbitc999/chali/tree/master/example/samples}{\texttt{example/\allowbreak{}samples/\allowbreak{}}} \\
 \bottomrule
 \end{longtable}
 }
 
 \begin{tip}{模块名怎么读}
-\texttt{std:\allowbreak{}:\allowbreak{}json} 对应源码 \texttt{source/\allowbreak{}std/\allowbreak{}json.\allowbreak{}mgl}、胶水 \texttt{source/\allowbreak{}glue/\allowbreak{}std\_json.\allowbreak{}hpp}，三处名字一对就找到了。
+\texttt{std:\allowbreak{}:\allowbreak{}json} 对应源码 \texttt{source/\allowbreak{}std/\allowbreak{}json.\allowbreak{}chl}、胶水 \texttt{source/\allowbreak{}glue/\allowbreak{}std\_json.\allowbreak{}hpp}，三处名字一对就找到了。
 \end{tip}
 
 \section{下一步}
@@ -205,7 +205,7 @@ sum=10
 
 \item 想先复习报错怎么读：翻回\hyperref[ch:appA]{附录 A}；
 
-\item 想练习模型、编解码与参数化查询的组合：\href{https://gitee.com/rabbitc999/magel/blob/master/doc/36-reflection-serialization-sql.md}{反射编解码与动态 SQL}；
+\item 想练习模型、编解码与参数化查询的组合：\href{https://gitee.com/rabbitc999/chali/blob/master/doc/36-reflection-serialization-sql.md}{反射编解码与动态 SQL}；
 
 \item 想把这门语言接到你自己的 C/C++ 代码上：\hyperref[ch:21]{第 21 章 与 C 互操作}。
 

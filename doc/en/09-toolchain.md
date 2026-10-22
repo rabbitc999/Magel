@@ -1,13 +1,13 @@
 # 09 Toolchain and commands
 
-Magel executes programs through the shared VM. The front end preprocesses, parses and checks source, then lowers it to quadruples and VM instructions.
+ChaLi executes programs through the shared VM. The front end preprocesses, parses and checks source, then lowers it to quadruples and VM instructions.
 
 ```sh
-magel run app.mgl
-magel check app.mgl
-magel check app.mgl json
-magel emit app.mgl out build/app
-magel svmb app.mgl out build/app
+chali run app.chl
+chali check app.chl
+chali check app.chl json
+chali emit app.chl out build/app
+chali svmb app.chl out build/app
 ```
 
 A direct source file also runs; following arguments are passed to the program. `emit` writes `.quad`, `.data.bin` and `.layout`; `svmb` additionally writes VM bytecode. The compiler embeds the standard library and its required assets.
@@ -15,14 +15,14 @@ A direct source file also runs; following arguments are passed to the program. `
 ## Development tools
 
 ```sh
-magel new demo name demo
-magel test tests backend interpret
-magel fmt check src
-magel deps lock project . offline
-magel man List
-magel lsp
-magel gen compiler out build/compiler
-magel clear out build/compiler
+chali new demo name demo
+chali test tests backend interpret
+chali fmt check src
+chali deps lock project . offline
+chali man List
+chali lsp
+chali gen compiler out build/compiler
+chali clear out build/compiler
 ```
 
 The generator creates standalone compiler projects. Hosts integrate through bytecode, `stackvm::Machine` and native registries.
@@ -39,21 +39,21 @@ interfaces, while platform adapters, record layouts and algorithms compile in th
 `std_binding.hpp` provides a registry forward declaration. Templates for structured data and value conversion
 remain in headers where their definitions are required. The VM core continues to use generic host protocols.
 
-Generic expansion, closures, project manifests and diagnostics compile through `magel_generic.cpp`,
-`magel_lambda.cpp`, `magel_generic_closure.cpp`, `magel_package.cpp` and `magel_report.cpp`.
+Generic expansion, closures, project manifests and diagnostics compile through `chali_generic.cpp`,
+`chali_lambda.cpp`, `chali_generic_closure.cpp`, `chali_package.cpp` and `chali_report.cpp`.
 `macro/` independently compiles hygienic binding, structural substitution, registration, regex matching,
 original fragments and editor header models. `syntax/` provides ordinary source grouping and constant
-expressions; `editor/` writes real compiler analysis. AST declarations live in `magel_ast.hpp`.
+expressions; `editor/` writes real compiler analysis. AST declarations live in `chali_ast.hpp`.
 The authoritative grammar assembles registration, hygienic expansion, generic closures and lowering
 from `semantics/`. Language services live in `lsp/`; the compiler generator lives in `generator/`.
 
 After grammar changes, run `sh gen.sh`, then `make -j4`. Compiler-generated `.d` files track actual include
 relationships for ordinary C++ changes. `make` automatically checks standard-library, glue and manual inputs;
-`tools/embed_stdlib.py` generates the assets, which compile once as `magel_stdlib_embedded.o`. Public headers
+`tools/embed_stdlib.py` generates the assets, which compile once as `chali_stdlib_embedded.o`. Public headers
 no longer include the compressed data implementation. A generation stamp tracks inputs, and unchanged output
 is not rewritten. Exported compiler projects also link these implementations as separate CMake sources.
 
-A host includes `magel_glue.hpp` and the required `std_xxx.hpp`, then links the matching `.cpp` files or host-record
+A host includes `chali_glue.hpp` and the required `std_xxx.hpp`, then links the matching `.cpp` files or host-record
 library. Registration headers do not implicitly include all implementations. A complete command is provided in
 the [synchronous callback example](../../example/native-callbacks/README.md).
 

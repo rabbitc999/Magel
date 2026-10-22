@@ -25,12 +25,12 @@ def main():
     includes = ["source", "library", "library/preprocess", "library/simple_ast", "library/stackvm",
                 "library/console", "library/lztext", "library/bignum", "library/json"]
     flags = ["g++", "-std=c++17", "-O3", "-Wall", "-Wextra", "-pthread",
-             "-ffunction-sections", "-fdata-sections", "-DMAGEL_CUSTOM_ALLOCATOR=1",
-             "-DMAGEL_WITH_REFLECTION=1", "-DSTACKVM_WITH_REFLECTION=1",
+             "-ffunction-sections", "-fdata-sections", "-DCHALI_CUSTOM_ALLOCATOR=1",
+             "-DCHALI_WITH_REFLECTION=1", "-DSTACKVM_WITH_REFLECTION=1",
              *["-I" + value for value in includes]]
-    libraries = ["build/magel-frontend/libparser.a", "build/magel-runtime/libsimple_ast.a",
-                 "build/magel-stackvm-core/libstackvm.a", "build/magel-host-records/librecords.a",
-                 "build/magel-runtime/libpreprocess.a"]
+    libraries = ["build/chali-frontend/libparser.a", "build/chali-runtime/libsimple_ast.a",
+                 "build/chali-stackvm-core/libstackvm.a", "build/chali-host-records/librecords.a",
+                 "build/chali-runtime/libpreprocess.a"]
     with tempfile.TemporaryDirectory(prefix="foundations-", dir=base) as directory:
         for name, module in (("macro_hygiene", "hygiene"), ("macro_regex", "regex_matcher"),
                              ("macro_source", "source"), ("macro_fragments", "fragments"), ("macro_ast_substitution", "ast_substitution"),

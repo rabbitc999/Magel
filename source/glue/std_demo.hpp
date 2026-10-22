@@ -7,4 +7,4 @@
  * @param error 绑定失败时接收原始诊断。
  * @return 全部绑定成功时返回 true。
  */
-bool bindMagelGlue(magel_glue::Registry &registry, Memory::String *error);
+bool bindChaLiGlue(chali_glue::Registry &registry, Memory::String *error);

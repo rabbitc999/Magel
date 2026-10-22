@@ -1,0 +1,93 @@
+/* tree.chl —— 二叉树重建：**前序 + 中序 → 后序**。
+ *
+ *   ./chali samples/tree.chl
+ *   → 前序 / 中序 / 后序 三个串（每个字符是一个结点）
+ *
+ * 为什么前序 + 中序能唯一确定一棵树：前序的第一个字符是根；在中序里找到它，
+ * 左边是左子树、右边是右子树 —— 两边各自的**结点个数**定下来后，前序里那两段
+ * 边界也就定了，于是递归下去就行。
+ *
+ * 这个样例把这一路要用的东西串在一起：递归、字符串按字节下标读、`format` 把
+ * 字符码变成字符串、`+` 把递归结果拼起来（拼的结果是新串，归变量所有）。
+ * 树的结点用 `new` 显式管理：`T mut&` 是"**手动所有**"，用完自己 `drop`。
+ */
+
+struct Node {
+    int64 value;          /* 字符码（`'A'` ≡ 65） */
+    Option<Node mut&> left;
+    Option<Node mut&> right;
+};
+
+/**
+ * 在前序的第 `preStart` 个字符与中序区间 `[inStart, inStart + count)` 上重建这棵子树。
+ *
+ * @param pre 前序串。
+ * @param preStart 这一段前序的起点。
+ * @param inorder_text 中序串。
+ * @param inStart 这一段中序的起点。
+ * @param count 这一棵子树的结点个数。
+ * @return 子树根；空子树返回 None。
+ */
+Option<Node mut&> rebuild(String pre, int64 preStart, String inorder_text, int64 inStart, int64 count) {
+    if (count <= 0) {
+        return Option<Node mut&>::None;
+    }
+    int64 root = (int64)pre[preStart];          /* char 到 int64 需要显式转换 */
+    int64 offset = 0;                          /* 根在中序里的偏移 = 左子树的结点数 */
+    while (offset < count && (int64)inorder_text[inStart + offset] != root) {
+        offset = offset + 1;
+    }
+    Node mut& node = heap Node;
+    node.value = root;
+    /* 前序：根后面先是整棵左子树（offset 个），再接右子树 */
+    node.left = rebuild(pre, preStart + 1, inorder_text, inStart, offset);
+    node.right = rebuild(pre, preStart + offset + 1, inorder_text, inStart + offset + 1,
+    count - offset - 1);
+    return Option<Node mut&>::Value(node);
+}
+
+/** 后序：左 → 右 → 根，拼成一个字符串返回。 */
+String postorder(Option<Node mut&> optional) {
+    if (optional.isNone()) {
+        return "";
+    }
+    Node mut& node = optional.unwrap();
+    /* 每一段递归结果都是新串（`+` 拼出来的），`format("{}", (char)…)` 把字符码写成字符 */
+    return postorder(node.left) + postorder(node.right) + format("{}", (char)node.value);
+}
+
+/** 用完把整棵树还回去：`T mut&` 归程序自己管，显式递归 drop。 */
+void release(Option<Node mut&> optional) {
+    if (optional.isNone()) {
+        return;
+    }
+    Node mut& node = optional.unwrap();
+    release(node.left);
+    release(node.right);
+    node.drop();
+}
+
+/** 中序（左 → 根 → 右）：顺便验证重建出来的树结构没错。 */
+String inorder(Option<Node mut&> optional) {
+    if (optional.isNone()) {
+        return "";
+    }
+    Node mut& node = optional.unwrap();
+    return inorder(node.left) + format("{}", (char)node.value) + inorder(node.right);
+}
+
+int64 main() {
+    String pre = "ABDECFG";
+    String inorder_text = "DBEAFCG";
+
+    Option<Node mut&> root = rebuild(pre, 0, inorder_text, 0, len(pre));
+    String post = postorder(root);
+
+    println("前序：{}", pre);
+    println("中序：{}", inorder_text);
+    println("重建后的中序：{}", inorder(root));
+    println("后序：{}", post);
+
+    release(root);
+    return 0;
+}

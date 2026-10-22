@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-namespace magel_macro
+namespace chali_macro
 {
 /**
  * @brief 存储词法作用域与语法上下文；上下文只引用已经建立的定义环境。
@@ -124,4 +124,4 @@ BindingId HygieneResolver::resolve(std::string_view name, ScopeId scope, Context
         context = origin.definitionContext;
     }
 }
-}  // namespace magel_macro
+}  // namespace chali_macro

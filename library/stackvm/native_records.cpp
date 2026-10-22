@@ -69,7 +69,7 @@ bool NativeCallContextImpl::releaseMemory(std::int64_t address, bool soft)
     if (context_.objects && context_.heap->capacityAt(target, capacity)) context_.objects->beginStorage(target, capacity, true);
     Memory::String reason;
     if (context_.heap->release(target, &reason)) return true;
-    context_.error = "[MGL1205] free 失败：" + reason;
+    context_.error = "[CHL1205] free 失败：" + reason;
     return false;
 }
 /**

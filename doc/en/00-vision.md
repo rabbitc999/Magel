@@ -3,7 +3,7 @@
 > **Write once, run anywhere.**
 > One logic, from embedded Linux to cloud; value semantics, non-null references, no GC.
 
-> This document is not about syntax. It answers: **why does Magel exist, what does it solve for you,
+> This document is not about syntax. It answers: **why does ChaLi exist, what does it solve for you,
 > and where will it disappoint you.**
 
 ---
@@ -39,11 +39,11 @@ GC don't run on embedded" and "without a GC you will get it wrong" look like a b
 
 ---
 
-## 2. Magel's answers
+## 2. ChaLi's answers
 
 ### Answer 1: write once, run anywhere
 
-Magel source compiles to `.svmb` bytecode, executed by the shared StackVM. The same bytecode loads
+ChaLi source compiles to `.svmb` bytecode, executed by the shared StackVM. The same bytecode loads
 and runs unchanged on any host that provides a compatible VM and the system services the program
 uses; platform-specific parts live in host glue, so business logic is not rewritten per platform.
 
@@ -51,7 +51,7 @@ uses; platform-specific parts live in host glue, so business logic is not rewrit
 
 Desktop and embedded Linux hosts use the same `library/stackvm/` execution core. The target needs a
 C++17 toolchain, sufficient memory and the system libraries required by its program. Build the host
-and native glue for the target architecture and runtime. Magel source describes the business,
+and native glue for the target architecture and runtime. ChaLi source describes the business,
 bytecode carries the program, and the host supplies files, networking, clocks and other services.
 Embedded Linux is a target it can run on, not a promise that one build ships everywhere: each host
 rebuilds the VM and glue and rechecks resource budgets and system services.
@@ -70,7 +70,7 @@ See [core concepts](03-core-concepts.md#3-borrow-provenance-and-control-flow-che
 
 ---
 
-## 3. Who Magel fits
+## 3. Who ChaLi fits
 
 **Embedded Linux and IoT vendors**
 Reuse application logic across Linux devices, deploy bytecode updates and adapt system services through native glue. Resource budgets and process recovery follow the target configuration.
@@ -80,13 +80,13 @@ The customer wants it in their own data center. You can deploy bytecode with com
 happen, while keeping your source files and symbol mapping private.
 
 **Toolchain vendors needing one logic across many ends**
-One set of rules must run in the cloud, on the desktop and inside the device. Magel lets you maintain
+One set of rules must run in the cloud, on the desktop and inside the device. ChaLi lets you maintain
 **one** source, pick the execution mode per target, adapt platform-specific parts through host
 interfaces, and reuse platform-independent parts as-is.
 
 ---
 
-## 4. Who should not use Magel
+## 4. Who should not use ChaLi
 
 Read this section carefully. It matters more than everything above.
 

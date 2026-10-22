@@ -194,12 +194,12 @@ static DWORD WINAPI turtle_main(LPVOID context)
     window_class.lpfnWndProc = turtle_wndproc;
     window_class.hInstance = instance;
     window_class.hCursor = LoadCursorW(NULL, MAKEINTRESOURCEW(32512));
-    window_class.lpszClassName = L"MagelTurtleWinApi";
+    window_class.lpszClassName = L"ChaLiTurtleWinApi";
     RegisterClassW(&window_class);
     RECT bounds = { 0, 0, state.width, state.height };
     AdjustWindowRect(&bounds, WS_OVERLAPPEDWINDOW, FALSE);
     HWND window = CreateWindowExW(0, window_class.lpszClassName,
-                                  L"Magel Turtle / WinAPI", WS_OVERLAPPEDWINDOW,
+                                  L"ChaLi Turtle / WinAPI", WS_OVERLAPPEDWINDOW,
                                   CW_USEDEFAULT, CW_USEDEFAULT,
                                   bounds.right - bounds.left, bounds.bottom - bounds.top,
                                   NULL, NULL, instance, &state);

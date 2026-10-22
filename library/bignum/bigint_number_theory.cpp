@@ -3,7 +3,7 @@
  * @brief 整数幂与公约数。
  */
 
-#if !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_BIG_INT)
 #include "bigint.hpp"
 #include <algorithm>
 #include <limits>

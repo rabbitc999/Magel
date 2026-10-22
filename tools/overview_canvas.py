@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""总览图的画布与主题：Magel 工程自带一份，绘制不依赖外部仓库。
+"""总览图的画布与主题：ChaLi 工程自带一份，绘制不依赖外部仓库。
 
 只用标准库 + Pillow；画的是确定性的示意图，随时可以重新生成：
 
     python tools/make_overview.py
 
 这份文件是 ParseEngine 仓库 `tools/make_overview_image.py` 里"画布 + 字体 + 配色"那段的
-副本（跟 `library/json/`、`library/toml/` 一样：Magel 独立成项目后，引用到的东西各自拷一份）。外面那份
+副本（跟 `library/json/`、`library/toml/` 一样：ChaLi 独立成项目后，引用到的东西各自拷一份）。外面那份
 继续服务别的总览图，改主题时两边各自改。
 
 导出：`Canvas`（圆角块 / 文本 + SVG / PNG 落盘）、`font()` 与整套配色常量。

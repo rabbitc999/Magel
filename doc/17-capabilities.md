@@ -56,15 +56,15 @@ IR 指四元式，默认执行完整优化流程；VM 默认使用最高可用�
 
 ## 宿主与反射
 
-Magel 可通过 `abi` 调用 C 动态库，或调用 Registry 注册的 C++ 胶水。引用、结构体、数组、
+ChaLi 可通过 `abi` 调用 C 动态库，或调用 Registry 注册的 C++ 胶水。引用、结构体、数组、
 可选引用、返回内存释放及有限头文件绑定均按 ABI 契约处理；宿主声明必须匹配真实 C 签名。
-胶水使用 `NativeCallContext::invoke` 或 `magel_glue::Function` 同步调用 Magel 具名函数、
+胶水使用 `NativeCallContext::invoke` 或 `chali_glue::Function` 同步调用 ChaLi 具名函数、
 内联 fn 和闭包，VM 共用接口并检查参数数量、返回值和错误传播。
 函数包装与上下文仅在所属宿主回调期间、同一线程同步使用；资源值仍按 Codec 管理所有权。
 详见[宿主集成](08-host-integration.md)和[回调示例](../example/native-callbacks/README.md)。
 
-**反射是语言的固定组成，不可裁剪**：根目录工具链固定 `MAGEL_WITH_REFLECTION=1` 与
-`STACKVM_WITH_REFLECTION=1`（`features.mk` 里这两项不是裁剪项，与 `NO_MAGEL_*` 那套可选能力
+**反射是语言的固定组成，不可裁剪**：根目录工具链固定 `CHALI_WITH_REFLECTION=1` 与
+`STACKVM_WITH_REFLECTION=1`（`features.mk` 里这两项不是裁剪项，与 `NO_CHALI_*` 那套可选能力
 无关），反射前端与运行时始终编入，编译流程始终执行完整的反射处理。
 `--no-reflection` 与 `--hard-realtime` 只决定**这次编译的程序**能不能用注解与反射、产物里
 写不写反射元数据；它们不改变编译器的组成，也不减少编译期工作量（元数据与查询源码那一轮照跑）。
@@ -94,7 +94,7 @@ HTTP 接口不包含 TLS；外部数据库需要相应客户端和服务。线�
 
 工具界面仅支持中文、英文，其他系统区域回退英文，显式日语选项被拒绝。`man book`、`man keyword` 与 `man skill` 从可执行文件内嵌数据查询书稿、关键字和 AI SKILL；VS Code 包携带同一份 SKILL。
 
-API 手册通过 `magel man api` 查询，省略 `api` 会给出用法错误；`magel man macro` 查看内嵌宏帮助。
+API 手册通过 `chali man api` 查询，省略 `api` 会给出用法错误；`chali man macro` 查看内嵌宏帮助。
 
 `opcode T { new = create; drop = destroy; copy = clone; };` 声明不透明胶水对象。
 复制经声明的胶水函数完成；`#NonCopyable` 类型禁止复制，并省略 copy。

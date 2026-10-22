@@ -48,7 +48,7 @@
 
 | 阶段 | 结果 | 留下的验证 |
 | --- | --- | --- |
-| 数组形参与字节输出 | 完成：三种数组引用进入文法与类型检查，按值形参复用运行时数组复制并登记所有权 | `example/samples/array_parameter_values.mgl`、`tests/magel_array_parameters.py` |
+| 数组形参与字节输出 | 完成：三种数组引用进入文法与类型检查，按值形参复用运行时数组复制并登记所有权 | `example/samples/array_parameter_values.chl`、`tests/chali_array_parameters.py` |
 | String 字面量与隔离 | 完成：字面量合并且只读，UTF-8 长度头生效，运行时副本独立；字面量写入与可变字节借用被拒 | 字面量合并 C++ 回归、String 参数 / 返回值写入专项 |
 | Map / Set / List | 完成：键值记录、Equal/Hash 调用、元素视图、游标借用租约与延迟释放迁入胶水，值语义与结构体键行为保持 | 容器值语义、嵌套容器、迭代中借用生命周期回归 |
 | 大数与 File / Process | 完成：宿主记录与原生操作迁入 `source/glue`，VM 目录中的文件适配器删除，`NativeServices` 通过不透明服务名提供适配器 | 大数递归返回与格式专项、文件 / 进程往返 |

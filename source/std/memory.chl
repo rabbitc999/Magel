@@ -1,0 +1,69 @@
+module std::memory;
+
+/* 从 lang.chl 原样迁出：符号名不变，只换了模块归属（现在必须 `import std::memory;` 才能用）。 */
+/* `Span<T>` 是"指针 + 长度"的视图，所以它的迭代器**返回元素指针**：
+ * `for (T mut& p in span) { *p = …; }` 拿到的是可写元素地址，不复制元素；
+ * 只要值就读 `span[i]` 或先 `T v = *p;`。*/
+struct Span<T>: Iterator<T mut&>, Index<T, int64> {
+    T mut& data;
+    int64 length;
+
+    static Span<T> from(T mut& data, int64 length) {
+        std::lang::assert(length >= 0);
+        Span<T> result;
+        result.data = &data;
+        result.length = length;
+        return result;
+    }
+
+    T index(int64 key) {
+        std::lang::assert(key >= 0 && key < self.length);
+        return std::lang::index(self.data, key);
+    }
+    Option<T mut&> iterator(int64 index) {
+        if (index >= 0 && index < self.length) { return Option<T mut&>::Value(&std::lang::index(self.data, index)); }
+        return Option<T mut&>::None;
+    }
+    int64 len() { return self.length; }
+};
+
+struct MemoryStats {
+    int64 liveBytes;
+    int64 liveBlocks;
+    int64 peakBytes;
+};
+
+int64 __memoryLiveBytes();
+int64 __memoryLiveBlocks();
+int64 __memoryPeakBytes();
+uint64 __arenaCreate();
+char mut& __arenaAllocate(uint64 arena, int64 bytes);
+void __arenaReset(uint64 arena);
+void __arenaDrop(uint64 arena);
+
+struct Memory {
+    static MemoryStats stats() {
+        MemoryStats result;
+        result.liveBytes = __memoryLiveBytes();
+        result.liveBlocks = __memoryLiveBlocks();
+        result.peakBytes = __memoryPeakBytes();
+        return result;
+    }
+};
+
+/** 独占运行时分配区；普通复制被禁止，释放或重置使已分配视图失效。 */
+#NonCopyable
+opcode Arena {
+    new = std::memory::__arenaCreate;
+    drop = std::memory::__arenaDrop;
+
+    static Arena create() { return Arena::new(); }
+
+    Span<char> allocate(int64 bytes) {
+        std::lang::assert(bytes >= 0);
+        char mut& data = __arenaAllocate((uint64)self.opcode, bytes);
+        return Span<char>::from(data, bytes);
+    }
+
+    void reset() { __arenaReset((uint64)self.opcode); }
+};

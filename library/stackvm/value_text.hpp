@@ -1,5 +1,5 @@
 #pragma once
-#include "../../source/allocator/magel_allocator.hpp"
+#include "../../source/allocator/chali_allocator.hpp"
 #include <cstdint>
 #include <limits>
 

@@ -59,16 +59,16 @@ Symbol compression is not encryption or a sandbox. Program updates do not automa
 
 ## Host integration and reflection
 
-Magel calls C libraries through `abi` and C++ through a Registry. References, structs, arrays, optional
+ChaLi calls C libraries through `abi` and C++ through a Registry. References, structs, arrays, optional
 references, returned-memory release and limited header bindings follow explicit ABI contracts; declarations
 must match the actual C signatures. Glue calls named functions, inline fn values and closures through
-`NativeCallContext::invoke` or `magel_glue::Function`. VM share the interface, argument-count checks
+`NativeCallContext::invoke` or `chali_glue::Function`. VM share the interface, argument-count checks
 and error propagation. Wrappers and contexts are valid only synchronously, on the same thread, during
 the enclosing host callback. Resource values retain their Codec ownership requirements.
 See [host integration](08-host-integration.md) and the [callback example](../../example/native-callbacks/README.md).
 
 **Reflection is a fixed part of the language and is not trimmable.** The root toolchain pins
-`MAGEL_WITH_REFLECTION=1` and `STACKVM_WITH_REFLECTION=1` (unlike the `NO_MAGEL_*` trim options these
+`CHALI_WITH_REFLECTION=1` and `STACKVM_WITH_REFLECTION=1` (unlike the `NO_CHALI_*` trim options these
 two are not switches), so the reflection front end and runtime are always built in and compilation
 always runs the full reflection pass. `--no-reflection` and `--hard-realtime` only decide whether
 **the program being compiled** may use annotations/reflection and whether the artifact carries
@@ -104,7 +104,7 @@ long-term production validation are separate claims.
 
 Tool interfaces support Chinese and English; unsupported system locales fall back to English and explicit Japanese selection is rejected. `man book`, `man keyword`, and `man skill` query embedded book, keyword and AI SKILL data. The VS Code package includes the same SKILL.
 
-API manuals require `magel man api`; omitting `api` produces a usage error. `magel man macro` displays embedded macro help.
+API manuals require `chali man api`; omitting `api` produces a usage error. `chali man macro` displays embedded macro help.
 
 `opcode T { new = create; drop = destroy; copy = clone; };` declares an opaque glue object.
 Copies call the declared glue function. `#NonCopyable` disables copying and omits copy.

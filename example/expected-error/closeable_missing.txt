@@ -1,1 +1,1 @@
-magel: example/samples-error/closeable_missing.mgl 第 5 行第 1 列：struct Widget 实现了接口 Closeable，但没有完全实现：close() -> void（接口要求同名、同返回类型、同形参类型；一个都不能少）
+chali: example/samples-error/closeable_missing.chl 第 5 行第 1 列：struct Widget 实现了接口 Closeable，但没有完全实现：close() -> void（接口要求同名、同返回类型、同形参类型；一个都不能少）

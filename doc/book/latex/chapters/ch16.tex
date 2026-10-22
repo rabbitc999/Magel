@@ -1,15 +1,15 @@
 \chapter{错误处理}
 \label{ch:16}
 
-前面十几章，代码都假定「一切顺利」：输入是合法的、列表不是空的、除法不会除以零。真实程序里这些假定经常不成立。这一章讲 Magel 怎么处理「事情没按预期走」。
+前面十几章，代码都假定「一切顺利」：输入是合法的、列表不是空的、除法不会除以零。真实程序里这些假定经常不成立。这一章讲 ChaLi 怎么处理「事情没按预期走」。
 
-先说结论：Magel 没有异常。没有 \texttt{try} / \texttt{catch} / \texttt{throw}。出错有两条路——「可能空」用 \texttt{Option}、「可能失败」用 \texttt{Result}，两者都放在返回值里，由调用者显式处理。
+先说结论：ChaLi 没有异常。没有 \texttt{try} / \texttt{catch} / \texttt{throw}。出错有两条路——「可能空」用 \texttt{Option}、「可能失败」用 \texttt{Result}，两者都放在返回值里，由调用者显式处理。
 
 \section{为什么不用异常}
 
 多数语言用异常：调用一个函数，它可能半路 \texttt{throw}，控制流突然跳到别处。问题是你看不出一个函数会不会抛——签名里没写，得读文档或者读源码。
 
-Magel 把「可能失败」这件事写进类型里：返回 \texttt{Option<\allowbreak{}T>\allowbreak{}} 就表示「可能没有值」，返回 \texttt{Result<\allowbreak{}T,\allowbreak{} E>\allowbreak{}} 就表示「可能失败，且带一个原因 \texttt{E}」。失败变成了一种普通的返回值。
+ChaLi 把「可能失败」这件事写进类型里：返回 \texttt{Option<\allowbreak{}T>\allowbreak{}} 就表示「可能没有值」，返回 \texttt{Result<\allowbreak{}T,\allowbreak{} E>\allowbreak{}} 就表示「可能失败，且带一个原因 \texttt{E}」。失败变成了一种普通的返回值。
 
 好处是你不会忘。函数签名上写着 \texttt{Option<\allowbreak{}…>\allowbreak{}}，你就知道必须处理「没有」的情况，编译器会盯着你。
 
@@ -19,7 +19,7 @@ Magel 把「可能失败」这件事写进类型里：返回 \texttt{Option<\all
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 Option<int64> findFirst(List<int64> xs, int64 target)
 {
     for (int64 x in xs)
@@ -80,7 +80,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 Option<int64> findFirst(List<int64> xs, int64 target)
 {
     for (int64 x in xs)
@@ -129,7 +129,7 @@ found = 3
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 Result<int64, String> safeDiv(int64 a, int64 b)
 {
     if (b == 0)
@@ -176,7 +176,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     Result<int64, String> r = Result<int64, String>::Err("坏了");
@@ -241,7 +241,7 @@ v=3
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     Option<int64> none = Option<int64>::None;
@@ -255,10 +255,10 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 运行期错误：panic：called Option.unwrap() on None
-出错位置：<内建 lang>:122（__magel_match_next_59）
+chali: 运行期错误：panic：called Option.unwrap() on None
+出错位置：<内建 lang>:122（__chali_match_next_59）
 调用栈（外 → 内）：
-  main  hello.mgl:3 [thread 0 ip 40]
+  main  hello.chl:3 [thread 0 ip 40]
 \end{lstlisting}
 \par
 \medskip
@@ -267,7 +267,7 @@ magel: 运行期错误：panic：called Option.unwrap() on None
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     Option<int64> none = Option<int64>::None;
@@ -281,7 +281,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 运行期错误：panic：必须要有值
+chali: 运行期错误：panic：必须要有值
 \end{lstlisting}
 \par
 \medskip
@@ -294,7 +294,7 @@ magel: 运行期错误：panic：必须要有值
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 Option<int64> quarter(int64 n)
 {
     Option<int64> h = half(n);
@@ -319,7 +319,7 @@ Option<int64> quarter(int64 n)
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 Option<int64> half(int64 n)
 {
     if (n % 2 == 0)
@@ -370,7 +370,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 Result<int64, String> safeDiv(int64 a, int64 b)
 {
     if (b == 0)
@@ -409,7 +409,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 Option<int64> half(int64 n)
 {
     if (n % 2 == 0)
@@ -437,7 +437,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 使用 `?` 的函数也必须返回同样的可空枚举，现在返回 int64
+chali: 使用 `?` 的函数也必须返回同样的可空枚举，现在返回 int64
 \end{lstlisting}
 \par
 \medskip
@@ -458,7 +458,7 @@ magel: 使用 `?` 的函数也必须返回同样的可空枚举，现在返回 i
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 mustPositive(int64 n)
 {
     if (n <= 0)
@@ -489,7 +489,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 x = -1;
@@ -504,10 +504,10 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 运行期错误：panic：x 必须为正
+chali: 运行期错误：panic：x 必须为正
 出错位置：<内建 lang>:111（assert$bool$string）
 调用栈（外 → 内）：
-  main  hello.mgl:3 [thread 0 ip 13]
+  main  hello.chl:3 [thread 0 ip 13]
 \end{lstlisting}
 \par
 \medskip
@@ -551,7 +551,7 @@ magel: 运行期错误：panic：x 必须为正
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 enum Step: Try<int64, NoneResidual>
 {
     Value(int64 value), Empty;
@@ -607,7 +607,7 @@ int64 main()
 
 标准库已经让 \texttt{Option<\allowbreak{}T>\allowbreak{}} 实现了 \texttt{From\allowbreak{}Residual<\allowbreak{}Option<\allowbreak{}T>\allowbreak{},\allowbreak{} None\allowbreak{}Residual>\allowbreak{}}，所以它能接住 \texttt{Step} 产生的失败载荷。这里不要求 \texttt{Step} 和 \texttt{Option<\allowbreak{}int64>\allowbreak{}} 是同一种类型；把两端连接起来的是完全匹配的 \texttt{None\allowbreak{}Residual}。
 
-下面用伪代码表示 \texttt{add\allowbreak{}One} 中传播的控制流；它只解释降级含义，不是另一套需要手写的 Magel 语法：
+下面用伪代码表示 \texttt{add\allowbreak{}One} 中传播的控制流；它只解释降级含义，不是另一套需要手写的 ChaLi 语法：
 
 \par
 \medskip
@@ -657,7 +657,7 @@ int64 main()
 
 第五部分讲完了：接口、泛型、函数值、错误处理——你有了写「通用」代码的全套家伙。
 
-接下来的第六部分转向工程与工具链：怎么把程序组织成模块、怎么用 \texttt{magel new} 起工程、怎么跑测试。第一个是迭代器——它会把你第 15 章手写的 \texttt{filter}，变成一条能随意拼的链。
+接下来的第六部分转向工程与工具链：怎么把程序组织成模块、怎么用 \texttt{chali new} 起工程、怎么跑测试。第一个是迭代器——它会把你第 15 章手写的 \texttt{filter}，变成一条能随意拼的链。
 
 翻到\hyperref[ch:17]{第 17 章 迭代器}。
 

@@ -1,13 +1,13 @@
 # 注解与反射
 
 反射针对编译期已存在、显式暴露的具体声明，提供元数据、类型化查询和受限动态调用。
-编译器生成普通 Magel 桥接函数，VM 复用精确类型检查、资源清理和实际接口分派。
+编译器生成普通 ChaLi 桥接函数，VM 复用精确类型检查、资源清理和实际接口分派。
 它不创建新类型、函数或变体，不提供一般字段写入、引用签名调用或任意聚合装箱。
 值语义、非空引用、确定性 Drop 和借用检查继续适用；分配使用现有 Arena，不承诺零分配或硬实时。
 
 ## 注解语法
 
-注解声明仍用规格中的名称在前、类型在后的参数形式；被注解的函数、字段和构造函数遵循 Magel 现行 C 风格语法：
+注解声明仍用规格中的名称在前、类型在后的参数形式；被注解的函数、字段和构造函数遵循 ChaLi 现行 C 风格语法：
 
 ```mc
 @annotation Component
@@ -31,16 +31,16 @@ struct Service {
 
 前置注解的泛型模板尚不支持，会在语法检查时报错；普通泛型声明、单态化类型作为普通函数签名，以及被注解的具体声明可以共存。具体函数签名中已单态化的类型会登记规范身份；目前不能用前置 `@Reflect` 标记泛型模板，也没有独立的具体泛型类型暴露语法。
 
-AST 保留每个声明的 `annotations` 节点列表、每次使用的声明绑定，以及按参数声明顺序补齐的 `annotationValues`。常量保存编译器拥有的值和精确类型身份，不保存运行时句柄或引用。`M_ParsedNode` 是编译器内的只读 AST 接口，不能作为 Magel 反射查询接口使用；运行时元数据从这些 AST 绑定生成，执行语义与原声明一致。
+AST 保留每个声明的 `annotations` 节点列表、每次使用的声明绑定，以及按参数声明顺序补齐的 `annotationValues`。常量保存编译器拥有的值和精确类型身份，不保存运行时句柄或引用。`M_ParsedNode` 是编译器内的只读 AST 接口，不能作为 ChaLi 反射查询接口使用；运行时元数据从这些 AST 绑定生成，执行语义与原声明一致。
 
 语义错误指向注解起始 `@` 的文件、行、列；预处理包含文件映射同样有效。错误位置不是参数字符的单独定位，普通语义错误仍沿用原有整行范围。
 
 ## 默认配置与产物兼容
 
-**反射是语言的固定组成，不可裁剪。** 两个构建宏固定为 `1`，不是可选能力（与 `NO_MAGEL_*`
+**反射是语言的固定组成，不可裁剪。** 两个构建宏固定为 `1`，不是可选能力（与 `NO_CHALI_*`
 那套裁剪项不同）：
 
-- `MAGEL_WITH_REFLECTION`：编译器前端能力。
+- `CHALI_WITH_REFLECTION`：编译器前端能力。
 - `STACKVM_WITH_REFLECTION`：VM 运行时能力。
 
 根目录工具链通过 `features.mk` 把两项钉死为 `1`；独立生成的编译器工程与目标宿主同样固定
@@ -49,8 +49,8 @@ AST 保留每个声明的 `annotations` 节点列表、每次使用的声明绑�
 构建根目录工具链：
 
 ```sh
-make -C magel
-magel/magel run source.mgl --reflection --svmb --emit --out tmp/program
+make -C chali
+chali/chali run source.chl --reflection --svmb --emit --out tmp/program
 ```
 
 源码预处理的 `-D` 不能替代工具链构建宏。单次编译默认给产物写入反射要求；`--no-reflection`
@@ -71,7 +71,7 @@ magel/magel run source.mgl --reflection --svmb --emit --out tmp/program
 
 ## 产物兼容规则
 
-`QuadFile` 与 `Program` 使用 `requiredFeatures` 保存程序要求的能力。当前定义 `0x0002` 为反射位；未知能力位一律拒绝。四元式通过 `# magel-features: reflection` 保存要求，优化保留此字段。未知的 `magel-features` 值报错，不能悄悄降级为普通程序。
+`QuadFile` 与 `Program` 使用 `requiredFeatures` 保存程序要求的能力。当前定义 `0x0002` 为反射位；未知能力位一律拒绝。四元式通过 `# chali-features: reflection` 保存要求，优化保留此字段。未知的 `chali-features` 值报错，不能悄悄降级为普通程序。
 
 普通 `.svmb` 使用既有头部 `flags` 的 `0x0002` 位，`0x0001` 不再受支持，加载器会拒绝该标志。紧凑符号格式使用其 32 位 `flags` 的 `0x0002` 位。没有开启反射的产物保持原有字段值，不添加反射数据，不升级既有格式版本。旧版本格式不可附加新的能力位。
 
@@ -79,13 +79,13 @@ magel/magel run source.mgl --reflection --svmb --emit --out tmp/program
 
 ## 元数据模型与传输
 
-C++ 宿主值模型与 Magel 类型化查询使用同一元数据来源。`StructInfo`、`EnumInfo`、`InterfaceInfo`、`FuncInfo`、`MethodInfo`、`AnnotationInfo` 记录布局、签名和注解；`AnnotationInfo` 保存参数声明与可选默认值，`Annotation` 保存某次使用已按参数顺序补齐的常量值。枚举通过多个具名 `payloads` 保留 Magel 原生语义。方法属性记录实例/静态、构造、只读接收者与接口默认体存在性，不含可调用地址。
+C++ 宿主值模型与 ChaLi 类型化查询使用同一元数据来源。`StructInfo`、`EnumInfo`、`InterfaceInfo`、`FuncInfo`、`MethodInfo`、`AnnotationInfo` 记录布局、签名和注解；`AnnotationInfo` 保存参数声明与可选默认值，`Annotation` 保存某次使用已按参数顺序补齐的常量值。枚举通过多个具名 `payloads` 保留 ChaLi 原生语义。方法属性记录实例/静态、构造、只读接收者与接口默认体存在性，不含可调用地址。
 
-身份由带类别前缀、完整模块名称及具体签名的规范键计算 FNV-1a 64 位编号，表校验拒绝重号或不一致的键。它独立于 Any 与接口的私有运行时分派编号；应用不能读取或持久化这些内部编号。规范键由 Magel 编译器统一生成。查询按编号匹配，按名称查询遇到重载返回空；结果为 `std::optional<std::reference_wrapper<const T>>`，生命周期受表约束，调用者不能通过查询修改记录。
+身份由带类别前缀、完整模块名称及具体签名的规范键计算 FNV-1a 64 位编号，表校验拒绝重号或不一致的键。它独立于 Any 与接口的私有运行时分派编号；应用不能读取或持久化这些内部编号。规范键由 ChaLi 编译器统一生成。查询按编号匹配，按名称查询遇到重载返回空；结果为 `std::optional<std::reference_wrapper<const T>>`，生命周期受表约束，调用者不能通过查询修改记录。
 
 独立段以 `MCRF` 魔数和小端 32 位 schema=1 开始，随后按模型字段顺序编码。编号及数字位模式使用小端 64 位，长度与偏移为小端 32 位，布尔/可选标志仅接受 0/1；字符串保存原始字节，支持内嵌零。段最多 16 MiB，每个列表最多 4096 项，每个字符串最多 1 MiB，读取分配前检查剩余长度。解码后检查身份、类型引用、注解参数精确类型、字段重名和枚举标签重复。编解码失败保留原输出，加载失败保留 Program，保存拒绝保留已有文件。
 
-四元式注释 `# magel-reflection: <十六进制段>` 可携带表，须同时声明 `# magel-features: reflection`，重复段或非法编码报错。优化保留表。VM 导出把编码数据固化为 C++ 静态字节数组，并提供宿主拥有型表工厂 `magel_reflection_metadata()`；每次通过同一 codec 在调用方 Memory 分配域解码，表由 Program 或宿主局部变量持有并按作用域释放，静态只保存编码字节，运行时不读元数据文件。元数据解码不构造被描述的 Magel 对象。紧凑容器里的反射名称仍明确保留，符号压缩不等于隐藏显式暴露的名称。
+四元式注释 `# chali-reflection: <十六进制段>` 可携带表，须同时声明 `# chali-features: reflection`，重复段或非法编码报错。优化保留表。VM 导出把编码数据固化为 C++ 静态字节数组，并提供宿主拥有型表工厂 `chali_reflection_metadata()`；每次通过同一 codec 在调用方 Memory 分配域解码，表由 Program 或宿主局部变量持有并按作用域释放，静态只保存编码字节，运行时不读元数据文件。元数据解码不构造被描述的 ChaLi 对象。紧凑容器里的反射名称仍明确保留，符号压缩不等于隐藏显式暴露的名称。
 
 ## 显式暴露声明
 
@@ -109,17 +109,17 @@ int64 addOne(int64 value) { return value + 1; }
 
 类型的实例方法、静态方法和构造函数均进入表，显式参数不包含 self。构造函数显示为 `new`，记录所属类型为返回类型；方法只读性复用现有编译器方法体分析，不能据此绕过后续调用的接收者校验。接口表保留默认体存在性，具体类型表保留已解析的默认方法和原注解；接口双向关系含继承关系，但元数据本身不执行方法。函数声明中的引用或一般聚合可被描述，不表示调用桥接已支持这些签名。
 
-注解定义独立保留参数和默认值；已暴露声明及成员保留绑定后的实例参数。内建标记使用独立身份域，避免与用户同名注解碰撞。schema=1 的模块注解列表仍是汇总列表，不额外保存所属模块。示例见 `example/reflection/declarations.mgl`。
+注解定义独立保留参数和默认值；已暴露声明及成员保留绑定后的实例参数。内建标记使用独立身份域，避免与用户同名注解碰撞。schema=1 的模块注解列表仍是汇总列表，不额外保存所属模块。示例见 `example/reflection/declarations.chl`。
 
-## Magel 类型化查询
+## ChaLi 类型化查询
 
 在默认启用反射的工具链中使用 `import std::reflect;`；`--reflection` 可显式要求能力。`getStructInfo<T>`、`getEnumInfo<T>`、`getInterfaceInfo<I>`、`getFuncInfo(name)` 和 `getAnnotationInfo(name)` 返回 `Option`，缺失或名称不能唯一选择重载时返回 `None`。具体类型的 `getTypeId<T>` 返回稳定规范身份，`getInterfaceId<I>` 使用同一身份机制；`implementsInterface<T>(id)` 查询已暴露类型的接口关系。
 
 `getAnnotations<T>`、`getFieldAnnotations<T>(name)`、`getFuncAnnotations(name)`、`getMethodAnnotations<T>(name)` 和 `getStaticMemberAnnotations<T>(name)` 返回注解实例列表，缺失为空列表。`AnnotationInfo` 保存定义，`Annotation` 保存定义身份和按声明顺序补齐的实参；默认值与实参使用封闭 `ReflectValue`，其 `asI64/asText` 等读取方法返回精确类型 `Result`。整数位宽和符号必须精确匹配。
 
-编译器在完整布局和单态化后生成普通 Magel 查询函数，再通过权威文法解析和正常降低。三条后端共用值复制与 Drop 规则；查询返回独立拥有型快照，修改快照不改变编译时表。内部编号不作为稳定公开身份。没有用户声明时小写 `string` 在类型位置报普通未知类型错误；字符串规范身份为 `String`。
+编译器在完整布局和单态化后生成普通 ChaLi 查询函数，再通过权威文法解析和正常降低。三条后端共用值复制与 Drop 规则；查询返回独立拥有型快照，修改快照不改变编译时表。内部编号不作为稳定公开身份。没有用户声明时小写 `string` 在类型位置报普通未知类型错误；字符串规范身份为 `String`。
 
-## Magel 调用桥接
+## ChaLi 调用桥接
 
 自由函数使用 `std::reflect::call(name, args)`；结构体实例使用 `callMethod<T>` / `callMethodConst<T>`，静态方法使用 `callStatic<T>`。枚举对应 `callEnumMethod<T>` / `callEnumMethodConst<T>` / `callEnumStatic<T>`。`static T create(...)` 这类具名构造入口登记为构造入口，包含静态标志及具体类型返回身份；构造使用 `construct<T>(args)`；接口使用 `callInterface<I>` / `callInterfaceConst<I>`。除构造返回 `Result<T, ReflectError>` 外，调用均返回 `Result<ReflectValue, ReflectError>`，void 结果包装为 `ReflectValue::Empty`。
 
@@ -129,7 +129,7 @@ int64 addOne(int64 value) { return value + 1; }
 
 `Add`、`RightAdd` 与一般方法相同。一元 `Negate`、`BitNot`、`Positive` 的源码签名保留操作数形参，但反射将唯一操作数归一为隐式接收者，元数据显式参数数为零。编译器分派桩按实际类型同时提供 self 与其值副本，不开放任意聚合装箱；返回仍须是封闭标量或字符串。内部实际身份和一元入口仅允许编译器生成的节点调用，用户源码直接调用报错。
 
-引用、一般聚合、容器、函数指针及变长参数/返回值不在封闭签名范围，返回 `UnsupportedSignature`。显式实例生命周期方法 `drop` / `close` 的动态调用也拒绝（同名自由函数或静态方法仍按普通签名处理），生命周期仍由普通确定性清理负责。未显式声明构造函数的结构体保留普通零参数默认构造，其 new 签名同步进入元数据。构造在全部实参验证后创建实例并通过 Result 接管；参数校验失败不会构造对象。Magel `panic` 沿用普通执行失败语义，不会将任意运行时异常转成 ReflectError。
+引用、一般聚合、容器、函数指针及变长参数/返回值不在封闭签名范围，返回 `UnsupportedSignature`。显式实例生命周期方法 `drop` / `close` 的动态调用也拒绝（同名自由函数或静态方法仍按普通签名处理），生命周期仍由普通确定性清理负责。未显式声明构造函数的结构体保留普通零参数默认构造，其 new 签名同步进入元数据。构造在全部实参验证后创建实例并通过 Result 接管；参数校验失败不会构造对象。ChaLi `panic` 沿用普通执行失败语义，不会将任意运行时异常转成 ReflectError。
 
 `--hard-realtime` 标记整个编译单元不得启用反射，与 `--reflection` 同时出现立即拒绝；这是一项反射使用限制，不表示编译器已经提供完整 WCET 分析或任务调度验证。
 
@@ -139,19 +139,19 @@ int64 addOne(int64 value) { return value + 1; }
 根目录工具链保持前端和运行时反射同时开启，关闭能力配置仅用于交叉加载与裁剪验证。
 
 ```sh
-python tests/magel_reflection_features.py
-python tests/magel_annotations.py
-python tests/magel_reflection_metadata.py
-python tests/magel_reflection_declarations.py
-python tests/magel_reflection_queries.py
-python tests/magel_reflection_calls.py
-python tests/magel_reflection_e2e.py
+python tests/chali_reflection_features.py
+python tests/chali_annotations.py
+python tests/chali_reflection_metadata.py
+python tests/chali_reflection_declarations.py
+python tests/chali_reflection_queries.py
+python tests/chali_reflection_calls.py
+python tests/chali_reflection_e2e.py
 ```
 
-[声明示例](../example/reflection/declarations.mgl)展示标记和元数据；
-[调用示例](../example/reflection/calls.mgl)覆盖函数、方法、静态方法与构造；
-[JSON 示例](../example/reflection/json.mgl)用已知字段构造模型，仍不是通用反序列化器；
-[接口示例](../example/reflection/dispatch.mgl)检查实际接收者、默认实现和只读限制。
+[声明示例](../example/reflection/declarations.chl)展示标记和元数据；
+[调用示例](../example/reflection/calls.chl)覆盖函数、方法、静态方法与构造；
+[JSON 示例](../example/reflection/json.chl)用已知字段构造模型，仍不是通用反序列化器；
+[接口示例](../example/reflection/dispatch.chl)检查实际接收者、默认实现和只读限制。
 调用与查询得到的拥有值遵守普通复制和清理规则，修改查询快照不会修改编译时表。
 
 ## 历史性能测量与限制

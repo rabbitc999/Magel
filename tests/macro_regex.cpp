@@ -7,8 +7,8 @@
  */
 int main()
 {
-    using magel_macro::RegexResult;
-    magel_macro::RegexMatcher matcher;
+    using chali_macro::RegexResult;
+    chali_macro::RegexMatcher matcher;
     std::string error;
     if (matcher.match(" 7\n", "[0-9]", error) != RegexResult::Matched || !error.empty()) return 1;
     if (matcher.match("123", "[0-9]", error) != RegexResult::Unmatched || !error.empty()) return 2;

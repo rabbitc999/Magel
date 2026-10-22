@@ -298,7 +298,7 @@ void Engine::specialize(Instruction &instruction)
         if (operation == Op::Lt) instruction.opcode = (instruction.flags & Literal) ? Opcode::Lt64BranchImm : Opcode::Lt64BranchRR;
         return;
     }
-#define MAGEL_REGISTER_SELECT(name, op)                                                                           \
+#define CHALI_REGISTER_SELECT(name, op)                                                                           \
     if (operation == op)                                                                                          \
     {                                                                                                             \
         instruction.opcode = (instruction.flags & CopyResult) ?                                                   \
@@ -306,10 +306,10 @@ void Engine::specialize(Instruction &instruction)
                                  ((instruction.flags & Literal) ? Opcode::name##Imm : Opcode::name##RR);          \
         return;                                                                                                   \
     }
-    MAGEL_REGISTER_SELECT(Add64, Op::Add)
-    MAGEL_REGISTER_SELECT(Sub64, Op::Sub)
-    MAGEL_REGISTER_SELECT(Mul64, Op::Mul)
-#undef MAGEL_REGISTER_SELECT
+    CHALI_REGISTER_SELECT(Add64, Op::Add)
+    CHALI_REGISTER_SELECT(Sub64, Op::Sub)
+    CHALI_REGISTER_SELECT(Mul64, Op::Mul)
+#undef CHALI_REGISTER_SELECT
 }
 
 /**

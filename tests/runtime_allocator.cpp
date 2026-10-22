@@ -1,4 +1,4 @@
-#include "../source/magel_runtime_allocator.hpp"
+#include "../source/chali_runtime_allocator.hpp"
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
@@ -71,7 +71,7 @@ int main(int argc, char **)
             text << Memory::String(4096, 'z');
             assert(text.str().size() == 4096);
             assert(arena.stats().liveBytes >= 2448);
-            // Ordinary host new is unaffected by the MAGEL allocator.
+            // Ordinary host new is unaffected by the CHALI allocator.
             const auto before = arena.stats().liveBlocks;
             int *host = new int(17);
             assert(*host == 17 && arena.stats().liveBlocks == before);

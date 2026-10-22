@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::math;
 ```
 
@@ -14,16 +14,16 @@ import std::math;
 
 ## 参考代码
 
-完整程序：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+完整程序：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 ```powershell
-magel run example/samples/math_generic.mgl
+chali run example/samples/math_generic.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::math;
 import std::cas;
 
@@ -109,7 +109,7 @@ symbolic = cos(x)
 
 **声明**
 
-```magel
+```chali
 BigDecimal pi(int64 digits = 50);
 ```
 
@@ -133,13 +133,13 @@ BigDecimal pi(int64 digits = 50);
 
 **调用形式**
 
-```magel
+```chali
 std::math::pi(digits);
 ```
 
-**源码**：[source/std/math.mgl:7](../../source/std/math.mgl#L7)。
+**源码**：[source/std/math.chl:7](../../source/std/math.chl#L7)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-1"></a>
 
@@ -147,7 +147,7 @@ std::math::pi(digits);
 
 **声明**
 
-```magel
+```chali
 let sin<T>(T value);
 ```
 
@@ -173,13 +173,13 @@ let sin<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::math::sin<T>(value);
 ```
 
-**源码**：[source/std/math.mgl:10](../../source/std/math.mgl#L10)。
+**源码**：[source/std/math.chl:10](../../source/std/math.chl#L10)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-2"></a>
 
@@ -187,7 +187,7 @@ std::math::sin<T>(value);
 
 **声明**
 
-```magel
+```chali
 let cos<T>(T value);
 ```
 
@@ -213,13 +213,13 @@ let cos<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::math::cos<T>(value);
 ```
 
-**源码**：[source/std/math.mgl:26](../../source/std/math.mgl#L26)。
+**源码**：[source/std/math.chl:26](../../source/std/math.chl#L26)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-3"></a>
 
@@ -227,7 +227,7 @@ std::math::cos<T>(value);
 
 **声明**
 
-```magel
+```chali
 let tan<T>(T value);
 ```
 
@@ -253,13 +253,13 @@ let tan<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::math::tan<T>(value);
 ```
 
-**源码**：[source/std/math.mgl:42](../../source/std/math.mgl#L42)。
+**源码**：[source/std/math.chl:42](../../source/std/math.chl#L42)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-4"></a>
 
@@ -267,7 +267,7 @@ std::math::tan<T>(value);
 
 **声明**
 
-```magel
+```chali
 let asin<T>(T value);
 ```
 
@@ -293,13 +293,13 @@ let asin<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::math::asin<T>(value);
 ```
 
-**源码**：[source/std/math.mgl:58](../../source/std/math.mgl#L58)。
+**源码**：[source/std/math.chl:58](../../source/std/math.chl#L58)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-5"></a>
 
@@ -307,7 +307,7 @@ std::math::asin<T>(value);
 
 **声明**
 
-```magel
+```chali
 let acos<T>(T value);
 ```
 
@@ -333,13 +333,13 @@ let acos<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::math::acos<T>(value);
 ```
 
-**源码**：[source/std/math.mgl:74](../../source/std/math.mgl#L74)。
+**源码**：[source/std/math.chl:74](../../source/std/math.chl#L74)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-6"></a>
 
@@ -347,7 +347,7 @@ std::math::acos<T>(value);
 
 **声明**
 
-```magel
+```chali
 let atan<T>(T value);
 ```
 
@@ -373,13 +373,13 @@ let atan<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::math::atan<T>(value);
 ```
 
-**源码**：[source/std/math.mgl:90](../../source/std/math.mgl#L90)。
+**源码**：[source/std/math.chl:90](../../source/std/math.chl#L90)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-7"></a>
 
@@ -387,7 +387,7 @@ std::math::atan<T>(value);
 
 **声明**
 
-```magel
+```chali
 let exp<T>(T value);
 ```
 
@@ -413,13 +413,13 @@ let exp<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::math::exp<T>(value);
 ```
 
-**源码**：[source/std/math.mgl:106](../../source/std/math.mgl#L106)。
+**源码**：[source/std/math.chl:106](../../source/std/math.chl#L106)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-8"></a>
 
@@ -427,7 +427,7 @@ std::math::exp<T>(value);
 
 **声明**
 
-```magel
+```chali
 let ln<T>(T value);
 ```
 
@@ -453,13 +453,13 @@ let ln<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::math::ln<T>(value);
 ```
 
-**源码**：[source/std/math.mgl:122](../../source/std/math.mgl#L122)。
+**源码**：[source/std/math.chl:122](../../source/std/math.chl#L122)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-9"></a>
 
@@ -467,7 +467,7 @@ std::math::ln<T>(value);
 
 **声明**
 
-```magel
+```chali
 let log10<T>(T value);
 ```
 
@@ -493,13 +493,13 @@ let log10<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::math::log10<T>(value);
 ```
 
-**源码**：[source/std/math.mgl:138](../../source/std/math.mgl#L138)。
+**源码**：[source/std/math.chl:138](../../source/std/math.chl#L138)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-10"></a>
 
@@ -507,7 +507,7 @@ std::math::log10<T>(value);
 
 **声明**
 
-```magel
+```chali
 let sqrt<T>(T value);
 ```
 
@@ -533,13 +533,13 @@ let sqrt<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::math::sqrt<T>(value);
 ```
 
-**源码**：[source/std/math.mgl:154](../../source/std/math.mgl#L154)。
+**源码**：[source/std/math.chl:154](../../source/std/math.chl#L154)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-11"></a>
 
@@ -547,7 +547,7 @@ std::math::sqrt<T>(value);
 
 **声明**
 
-```magel
+```chali
 let floor<T>(T value);
 ```
 
@@ -573,13 +573,13 @@ let floor<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::math::floor<T>(value);
 ```
 
-**源码**：[source/std/math.mgl:170](../../source/std/math.mgl#L170)。
+**源码**：[source/std/math.chl:170](../../source/std/math.chl#L170)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-12"></a>
 
@@ -587,7 +587,7 @@ std::math::floor<T>(value);
 
 **声明**
 
-```magel
+```chali
 let ceil<T>(T value);
 ```
 
@@ -613,13 +613,13 @@ let ceil<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::math::ceil<T>(value);
 ```
 
-**源码**：[source/std/math.mgl:186](../../source/std/math.mgl#L186)。
+**源码**：[source/std/math.chl:186](../../source/std/math.chl#L186)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-13"></a>
 
@@ -627,7 +627,7 @@ std::math::ceil<T>(value);
 
 **声明**
 
-```magel
+```chali
 let round<T>(T value);
 ```
 
@@ -653,13 +653,13 @@ let round<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::math::round<T>(value);
 ```
 
-**源码**：[source/std/math.mgl:202](../../source/std/math.mgl#L202)。
+**源码**：[source/std/math.chl:202](../../source/std/math.chl#L202)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-14"></a>
 
@@ -667,7 +667,7 @@ std::math::round<T>(value);
 
 **声明**
 
-```magel
+```chali
 let trunc<T>(T value);
 ```
 
@@ -693,13 +693,13 @@ let trunc<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::math::trunc<T>(value);
 ```
 
-**源码**：[source/std/math.mgl:218](../../source/std/math.mgl#L218)。
+**源码**：[source/std/math.chl:218](../../source/std/math.chl#L218)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-15"></a>
 
@@ -707,7 +707,7 @@ std::math::trunc<T>(value);
 
 **声明**
 
-```magel
+```chali
 let pow<T, U>(T value, U other);
 ```
 
@@ -734,13 +734,13 @@ let pow<T, U>(T value, U other);
 
 **调用形式**
 
-```magel
+```chali
 std::math::pow<T, U>(value, other);
 ```
 
-**源码**：[source/std/math.mgl:234](../../source/std/math.mgl#L234)。
+**源码**：[source/std/math.chl:234](../../source/std/math.chl#L234)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-16"></a>
 
@@ -748,7 +748,7 @@ std::math::pow<T, U>(value, other);
 
 **声明**
 
-```magel
+```chali
 let fmod<T, U>(T value, U other);
 ```
 
@@ -775,13 +775,13 @@ let fmod<T, U>(T value, U other);
 
 **调用形式**
 
-```magel
+```chali
 std::math::fmod<T, U>(value, other);
 ```
 
-**源码**：[source/std/math.mgl:383](../../source/std/math.mgl#L383)。
+**源码**：[source/std/math.chl:383](../../source/std/math.chl#L383)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-17"></a>
 
@@ -789,7 +789,7 @@ std::math::fmod<T, U>(value, other);
 
 **声明**
 
-```magel
+```chali
 bool isNaN<T>(T value);
 ```
 
@@ -815,13 +815,13 @@ bool isNaN<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::math::isNaN<T>(value);
 ```
 
-**源码**：[source/std/math.mgl:531](../../source/std/math.mgl#L531)。
+**源码**：[source/std/math.chl:531](../../source/std/math.chl#L531)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-18"></a>
 
@@ -829,7 +829,7 @@ std::math::isNaN<T>(value);
 
 **声明**
 
-```magel
+```chali
 bool isInf<T>(T value);
 ```
 
@@ -855,13 +855,13 @@ bool isInf<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::math::isInf<T>(value);
 ```
 
-**源码**：[source/std/math.mgl:546](../../source/std/math.mgl#L546)。
+**源码**：[source/std/math.chl:546](../../source/std/math.chl#L546)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-19"></a>
 
@@ -869,7 +869,7 @@ std::math::isInf<T>(value);
 
 **声明**
 
-```magel
+```chali
 T abs<T>(T value);
 ```
 
@@ -895,13 +895,13 @@ T abs<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::math::abs<T>(value);
 ```
 
-**源码**：[source/std/math.mgl:560](../../source/std/math.mgl#L560)。
+**源码**：[source/std/math.chl:560](../../source/std/math.chl#L560)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-20"></a>
 
@@ -909,7 +909,7 @@ std::math::abs<T>(value);
 
 **声明**
 
-```magel
+```chali
 T min<T>(T... values);
 ```
 
@@ -935,13 +935,13 @@ T min<T>(T... values);
 
 **调用形式**
 
-```magel
+```chali
 std::math::min<T>(values);
 ```
 
-**源码**：[source/std/math.mgl:567](../../source/std/math.mgl#L567)。
+**源码**：[source/std/math.chl:567](../../source/std/math.chl#L567)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-21"></a>
 
@@ -949,7 +949,7 @@ std::math::min<T>(values);
 
 **声明**
 
-```magel
+```chali
 T max<T>(T... values);
 ```
 
@@ -975,13 +975,13 @@ T max<T>(T... values);
 
 **调用形式**
 
-```magel
+```chali
 std::math::max<T>(values);
 ```
 
-**源码**：[source/std/math.mgl:579](../../source/std/math.mgl#L579)。
+**源码**：[source/std/math.chl:579](../../source/std/math.chl#L579)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-22"></a>
 
@@ -989,7 +989,7 @@ std::math::max<T>(values);
 
 **声明**
 
-```magel
+```chali
 int64 clamp(int64 value, int64 low, int64 high);
 ```
 
@@ -1018,13 +1018,13 @@ int64 clamp(int64 value, int64 low, int64 high);
 
 **调用形式**
 
-```magel
+```chali
 std::math::clamp(value, low, high);
 ```
 
-**源码**：[source/std/math.mgl:591](../../source/std/math.mgl#L591)。
+**源码**：[source/std/math.chl:591](../../source/std/math.chl#L591)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。
 
 <a id="api-23"></a>
 
@@ -1032,7 +1032,7 @@ std::math::clamp(value, low, high);
 
 **声明**
 
-```magel
+```chali
 float64 clamp(float64 value, float64 low, float64 high);
 ```
 
@@ -1061,10 +1061,10 @@ float64 clamp(float64 value, float64 low, float64 high);
 
 **调用形式**
 
-```magel
+```chali
 std::math::clamp(value, low, high);
 ```
 
-**源码**：[source/std/math.mgl:603](../../source/std/math.mgl#L603)。
+**源码**：[source/std/math.chl:603](../../source/std/math.chl#L603)。
 
-**完整示例**：[example/samples/math_generic.mgl](../../example/samples/math_generic.mgl)。
+**完整示例**：[example/samples/math_generic.chl](../../example/samples/math_generic.chl)。

@@ -9,7 +9,7 @@ This guide covers integer literals now take their type from context, operator ov
 
 Literals are no longer always `int64`. The target type of an assignment, initialisation, argument, or `return` flows into the expression, and binary arithmetic and bitwise operators take their type from the other operand. Comparisons and logical operators are excluded; with no context a literal is still `int64`.
 
-```magel
+```chali
 int32 twice(int32 value) { return value * 2; }
 int64 main() {
     int32 a = 1;
@@ -26,7 +26,7 @@ int64 main() {
 
 A decimal literal that does not fit the target type falls back to the default type and is rejected by the existing "narrowing requires a cast" diagnostic — **it is never silently truncated**:
 
-```magel
+```chali
 int64 main() {
     int8 x = 200;
     println("{}", x);
@@ -35,7 +35,7 @@ int64 main() {
 ```
 
 ```text
-magel: 整数字面量 200 超出 int8 的取值范围（-128..127）
+chali: 整数字面量 200 超出 int8 的取值范围（-128..127）
 ```
 
 Hexadecimal and binary literals are still read as bit patterns, so `int8 x = 0xFF;` is unaffected.
@@ -46,7 +46,7 @@ Hexadecimal and binary literals are still read as bit patterns, so `int8 x = 0xF
 
 Declaring only `Less` is enough for `5 > a` (dual), `a >= 5` (negated) and `5 <= a` (dual + negated). `a > 5` is not inferred — that would need `int64 < T`, so the type must also declare `Greater`.
 
-```magel
+```chali
 struct Vec : Add<int64, int64>, Less<bool, int64> {
     int64 v;
     int64 leftAdd(int64 other) { return self.v + other; }
@@ -78,7 +78,7 @@ Both commutativity and duality borrow the right operand as the receiver, so a ty
 - Write the compiler directive `#NoRightAdd` before the `struct` (`#NoRight` + the left interface name, no type argument) and the right-hand direction is forbidden outright: `5 + f` fails, while `f + 5` is unaffected.
 - `#NoRightXxx` wins over `RightXxx`, and an explicit right interface wins over commutativity inference.
 
-```magel
+```chali
 struct Money : Add<int64, int64>, RightAdd<int64, int64> {
     int64 cents;
     int64 leftAdd(int64 other) { return self.cents + other; }    /* m + 5 */
@@ -108,14 +108,14 @@ int64 main() {
 Writing `5 + f` instead of `f + 5`:
 
 ```text
-magel: 右向被编译器指令关闭：Forbid 声明了 #NoRightAdd，int64 + Forbid 不再推导；要去掉该指令，或改为实现 RightAdd<R,T>
+chali: 右向被编译器指令关闭：Forbid 声明了 #NoRightAdd，int64 + Forbid 不再推导；要去掉该指令，或改为实现 RightAdd<R,T>
 ```
 
 ## One operand pair, several result types
 
 `Add<int64,int64>` and `Add<Vec,int64>` can now coexist: two `leftAdd(int64)` overloads that differ only in return type, which ordinary method overloading cannot express. The **target type** of the expression picks one:
 
-```magel
+```chali
 struct Vec { int64 v; };
 struct A : Add<int64,int64>, Add<Vec,int64> {
     int64 v;
@@ -143,7 +143,7 @@ int64 main() {
 With no target type (`let z = a + 3;`) the compiler reports the candidates:
 
 ```text
-magel: 运算符 + 有多条声明匹配同一对操作数 A / int64，返回类型分别是 int64、Vec（先强转再算；若它们只是返回类型不同，给表达式一个目标类型就能定）
+chali: 运算符 + 有多条声明匹配同一对操作数 A / int64，返回类型分别是 int64、Vec（先强转再算；若它们只是返回类型不同，给表达式一个目标类型就能定）
 ```
 
 **Swapping operands does not change evaluation order.** When `bump() + makeA()` becomes `makeA().leftAdd(bump())`, both operands are still evaluated left to right as written (the left one is parked in a temporary first), so side effects happen in the same order as they would without the swap.
@@ -152,7 +152,7 @@ magel: 运算符 + 有多条声明匹配同一对操作数 A / int64，返回类
 
 The generated parser builds macro definitions, calls and syntax fragments. Semantic analysis expands hygienic ASTs while resolving type dependencies, before quadruple generation. Expansion does not concatenate source and reparse it. Arguments retain their original spelling, location and caller bindings; ordinary declarations introduced by a template are hygienic, and helper names resolve in the definition module.
 
-```magel
+```chali
 $macro SQUARE(x)
 x * x
 $end_macro
@@ -174,7 +174,7 @@ int64 main() {
 
 `$macro A` requires `$A`; `$macro A()` requires `$A()`. Square, round and curly groups must match in order and shape; repeated groups are allowed. Each group can end with `...rest` or `..rest`, including an empty capture. An applicable fixed signature takes priority over a variadic signature.
 
-```magel
+```chali
 $macro ACCUMULATE(out)[...values]
 $for value in values
 int64 temporary = value;
@@ -196,7 +196,7 @@ This prints `6 100`. Each iteration has distinct declaration identities without 
 
 Angle brackets are reserved for type parameters:
 
-```magel
+```chali
 $macro CONVERT<T:value>(value)
 cast<T>(value)
 $end_macro
@@ -216,7 +216,7 @@ int64 main() {
 
 ## Complete syntax matching
 
-```magel
+```chali
 $macro CLASSIFY(value)
 $match value is ident
 1
@@ -238,7 +238,7 @@ The five categories are exactly `expr`, `ident`, `type`, `block` and `stmt`. The
 
 ## Regular expressions, spelling and origins
 
-```magel
+```chali
 $macro DECIMAL(value)
 $regex value is "[0-9]+"
 value
@@ -254,4 +254,4 @@ $end_macro
 
 `$replace ADD(a, b) a + b` is a single-line definition using the same AST mechanism. Expansion has recursion and size budgets. Diagnostics retain invocation, definition and argument chains. The editor previews hygienic ASTs one graph per macro call; each graph is a self-contained page that can be embedded in a web page. Type hints come from final static types without exposing internal binding identifiers.
 
-See [AST tests](../../tests/magel_ast_macros.py), [groups and origins](../../tests/magel_macro_groups.py), [static types](../../tests/magel_macro_generics.py) and [syntax and regex branches](../../tests/magel_macro_branches.py).
+See [AST tests](../../tests/chali_ast_macros.py), [groups and origins](../../tests/chali_macro_groups.py), [static types](../../tests/chali_macro_generics.py) and [syntax and regex branches](../../tests/chali_macro_branches.py).

@@ -1,31 +1,31 @@
 # 02 语言速览
 
-用 14 段可运行的小代码，走一遍 Magel 长什么样。
+用 14 段可运行的小代码，走一遍 ChaLi 长什么样。
 
-- 每段都真的编译运行过，输出写在代码下面；想自己跑，把代码存成 `x.mgl` 然后 `magel run x.mgl`。
+- 每段都真的编译运行过，输出写在代码下面；想自己跑，把代码存成 `x.chl` 然后 `chali run x.chl`。
 - 本篇只展示**表面语法**。为什么值语义要这样设计、引用什么时候非法、资源什么时候释放，都在[核心概念](03-core-concepts.md)；完整的语法条目在[语言参考](04-language-reference.md)。
 
-如果你写过 C、Java、Go 或 Rust，大部分片段会一眼看懂——这是刻意的。Magel 借用 C 系的表达式与块语法，把学习成本压在你已经会的部分上。
+如果你写过 C、Java、Go 或 Rust，大部分片段会一眼看懂——这是刻意的。ChaLi 借用 C 系的表达式与块语法，把学习成本压在你已经会的部分上。
 
 ---
 
 ## 1. 类型与变量
 
-```magel
+```chali
 int64 main() {
     int8 small = 127;
     int64 count = 0;
     float64 ratio = 3.5;
     bool ready = true;
     char initial = 'M';
-    String name = "Magel";
+    String name = "ChaLi";
     println("{} {} {} {} {} {}", small, count, ratio, ready, initial, name);
     return 0;
 }
 ```
 
 ```text
-127 0 3.5 1 M Magel
+127 0 3.5 1 M ChaLi
 ```
 
 整数显式标宽：`int8` / `int16` / `int32` / `int64`，无符号是 `uint8` … `uint64`；浮点是 `float32` / `float64`。隐式转换只放行**变宽**（`int8 -> int64`、`uint8 -> int16`、整型 → 浮点、`float32 -> float64`）；缩窄和换符号要显式强转 `(int32)x`。
@@ -51,7 +51,7 @@ int64 main() {
 
 ## 2. 控制流
 
-```magel
+```chali
 int64 classify(int64 value) {
     if (value < 0) { return -1; }
     elif (value == 0) { return 0; }
@@ -86,7 +86,7 @@ sum=15 classify(7)=1
 
 ## 3. 枚举与模式匹配
 
-```magel
+```chali
 enum Message {
     Quit,
     Move(int32 x, int32 y),
@@ -119,7 +119,7 @@ text hello
 
 ## 4. 值语义与引用（浅尝）
 
-```magel
+```chali
 int64 main() {
     String original = "hello";
     String copy = original;
@@ -148,7 +148,7 @@ hello Hello
 
 ## 5. 可能没有的值：Option 与 Result
 
-```magel
+```chali
 Option<int64> find_even(int64 value) {
     if (value % 2 == 0) { return Option<int64>::Value(value); }
     return Option<int64>::None;
@@ -170,7 +170,7 @@ none
 
 失败可携带信息的版本是 `Result<T, E>`，配合 `?` 提前返回：
 
-```magel
+```chali
 Result<int64, String> parse_value(bool valid) {
     if (valid) { return Result<int64, String>::Ok(20); }
     return Result<int64, String>::Err("bad input");
@@ -198,7 +198,7 @@ ok=40
 
 ## 6. 结构体、接口与泛型
 
-```magel
+```chali
 interface Shape { int64 area(); };
 struct Circle : Shape {
     int64 r;
@@ -225,7 +225,7 @@ int64 main() {
 
 `T: Shape` 是接口约束。泛型在编译期单态化，调用点静态确定，没有虚表开销。
 
-需要**运行期**多态时，把对象装进 `std::lang::Any` 再按接口取出引用（`Shape mut& view = boxed.getReference();`），具体类型在运行时决定。完整例子见 [`example/samples/interface.mgl`](../example/samples/interface.mgl)。
+需要**运行期**多态时，把对象装进 `std::lang::Any` 再按接口取出引用（`Shape mut& view = boxed.getReference();`），具体类型在运行时决定。完整例子见 [`example/samples/interface.chl`](../example/samples/interface.chl)。
 
 结构体还能写构造器（`T v = new T(...)` 调用）、`Drop` 析构逻辑、运算符重载——见[语言参考](04-language-reference.md)。
 
@@ -233,7 +233,7 @@ int64 main() {
 
 ## 7. 集合与迭代器
 
-```magel
+```chali
 struct Player {
     String name;
     int64 score;
@@ -265,7 +265,7 @@ best=55 count=2
 
 链式迭代需要 `import std::iter;`：
 
-```magel
+```chali
 import std::iter;
 int64 square(int64 value) { return value * value; }
 bool even(int64 value) { return value % 2 == 0; }
@@ -286,7 +286,7 @@ int64 main() {
 
 ## 8. 数组与元组
 
-```magel
+```chali
 int64 main() {
     int64 fixed[3];
     fixed[0] = 1;
@@ -315,7 +315,7 @@ fixed=6 runtime0=10
 
 元组用圆括号，成员按 `.0` / `.1` 读：
 
-```magel
+```chali
 (int64, String) describe(int64 id) {
     return (id, "player");
 }
@@ -334,7 +334,7 @@ int64 main() {
 
 ## 9. 函数类型与 fn 闭包
 
-```magel
+```chali
 int64 main() {
     int64 fn(int64) square = int64 fn(int64 x) { x * x };
     int64 base = 5;
@@ -354,10 +354,10 @@ int64 main() {
 
 ## 10. 字符串
 
-```magel
+```chali
 import std::text;
 int64 main() {
-    String name = "Magel";
+    String name = "ChaLi";
     String joined = name + " " + format("{}", 2026);
     println("{}", joined);
     println("first={} upper={}", name[0], std::text::Text::toUpper(name));
@@ -366,8 +366,8 @@ int64 main() {
 ```
 
 ```text
-Magel 2026
-first=M upper=MAGEL
+ChaLi 2026
+first=M upper=CHALI
 ```
 
 `+` 拼接，`[]` 取字符，`format` 格式化。切分、查找、大小写、去空白等工具在 `std::text::Text` 里（`find` / `split` / `join` / `replace` / `trim` / `padStart` …），需要 `import std::text;`。
@@ -376,7 +376,7 @@ first=M upper=MAGEL
 
 ## 11. 预处理与宏
 
-```magel
+```chali
 %define DETAIL 1
 $macro SQUARE(x)
 ((x) * (x))
@@ -408,25 +408,25 @@ detail square5=25
 编译期抓到的错误会给出行列位置，并在源码下面画出波浪号：
 
 ```text
-语法错误：hello.mgl 第 2 行第 8 列：期望 标识符 / 常量(const) / 可变(mut) / 新建(new) 等 17 个之一，实际是 实现(impl)
+语法错误：hello.chl 第 2 行第 8 列：期望 标识符 / 常量(const) / 可变(mut) / 新建(new) 等 17 个之一，实际是 实现(impl)
  2 | impl Foo { }
    |        ~~~~
 ```
 
-内部记号名会翻译成人话：`分号(;)`、`左圆括号(()`、`右花括号(})`。报错语言跟随环境（`zh` / `en` / `ja`），可用 `MAGEL_LANG` 覆盖，详见[工具链使用](09-toolchain.md)。
+内部记号名会翻译成人话：`分号(;)`、`左圆括号(()`、`右花括号(})`。报错语言跟随环境（`zh` / `en` / `ja`），可用 `CHALI_LANG` 覆盖，详见[工具链使用](09-toolchain.md)。
 
 ---
 
 ## 13. 还没出现的部分
 
-速览到此为止。下面这些是 Magel 的另一半，各有专门文档：
+速览到此为止。下面这些是 ChaLi 的另一半，各有专门文档：
 
 | 特性 | 一句话 | 去哪看 |
 | --- | --- | --- |
 | 值语义与所有权 | 普通赋值复制，`move` 显式转移所有权 | [核心概念](03-core-concepts.md) |
 | 非空引用与逃逸检查 | 引用不能活得比它指的东西久 | [核心概念](03-core-concepts.md) |
 | 无 GC 的资源管理 | `Drop` / `Closeable`，离开作用域确定性释放 | [核心概念](03-core-concepts.md) |
-| `abi` 块与 C ABI | 声明外部函数 / 导出 Magel 函数给 C | [宿主集成与 C ABI](08-host-integration.md) |
+| `abi` 块与 C ABI | 声明外部函数 / 导出 ChaLi 函数给 C | [宿主集成与 C ABI](08-host-integration.md) |
 | 注解与反射 | 编译期元数据，运行期可查询、可按名调用 | [语言参考](04-language-reference.md) |
 | 线程与并发 | `std::thread`、`std::concurrency` | [标准库概览](07-stdlib-overview.md) |
 | 部署字节码 | `.svmb`、符号压缩 | [交付安全](05-delivery-security.md) |
@@ -440,6 +440,6 @@ detail square5=25
 | 弄明白值语义和引用 | [核心概念](03-core-concepts.md) |
 | 查某个语法怎么写 | [语言参考](04-language-reference.md) |
 | 看更多可运行样例 | [`example/samples/`](../example/samples/) |
-| 建一个正式工程 | `magel new my-app`，见[工具链使用](09-toolchain.md) |
+| 建一个正式工程 | `chali new my-app`，见[工具链使用](09-toolchain.md) |
 
 函数类型和匿名函数的返回类型统一前置：`int64 fn(int64, int64) callback`、`int64 fn(int64 x) { x + 1 }`。旧 `fn(int64, int64) -> int64` 与 `fn(int64 x) -> int64 { x + 1 }` 已移除并报错；推导返回类型使用 `fn(int64 x) { x + 1 }`，不写箭头。升级后重新生成泛型宿主胶水并重建旧缓存。

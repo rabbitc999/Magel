@@ -1,13 +1,13 @@
 #include "std_kmp.hpp"
 
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 
 #include <cstdint>
 #include <cstring>
 #include <string>
 
 /**
- * @brief MAGEL KMP 字符串查找胶水：失配表、单次查找与全部匹配位置。
+ * @brief CHALI KMP 字符串查找胶水：失配表、单次查找与全部匹配位置。
  *
  * KmpReply 槽布局与 std::text::KmpReply 一致：
  *   0 error(String)  1 value(下标或 -1)  2 flag  3 table(List<int64>)  4 positions(List<int64>)
@@ -17,14 +17,14 @@
  */
 namespace std_kmp_glue
 {
-using Context = magel_glue::Context;
+using Context = chali_glue::Context;
 using Bytes = Memory::Vector<std::uint8_t>;
 using Ints = Memory::Vector<std::int64_t>;
 
 struct ReplyTag
 {
 };
-using Reply = magel_glue::Record<ReplyTag>;
+using Reply = chali_glue::Record<ReplyTag>;
 
 /**
  * @brief 读取传入的字节列表。
@@ -34,7 +34,7 @@ using Reply = magel_glue::Record<ReplyTag>;
  */
 inline void readBytes(Context &ctx, std::int64_t handle, Bytes &out)
 {
-    Memory::Vector<magel_glue::Value> raw;
+    Memory::Vector<chali_glue::Value> raw;
     if (!collection_glue::readList(ctx, handle, raw))
     {
         ctx.fail("KMP：字节列表参数无效");
@@ -54,7 +54,7 @@ inline void readBytes(Context &ctx, std::int64_t handle, Bytes &out)
 inline void writeInts(Context &ctx, Reply reply, std::size_t slot, const Ints &values)
 {
     const std::int64_t handle = reply.field<std::int64_t>(slot);
-    for (std::int64_t value : values) collection_glue::listPush(ctx, handle, magel_glue::Value::fromInt(value));
+    for (std::int64_t value : values) collection_glue::listPush(ctx, handle, chali_glue::Value::fromInt(value));
 }
 
 /**
@@ -203,7 +203,7 @@ inline void kmpFindAll(const Bytes &hay, const Bytes &needle, Context &ctx, Repl
  * @param error 注册失败时的错误说明。
  * @return 全部注册成功返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     bool ok = true;
     ok = registry.bindTypedWithContext<void, Bytes, Reply>(

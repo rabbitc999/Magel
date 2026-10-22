@@ -1,9 +1,9 @@
-#ifndef MAGEL_LITERAL_STRING_ESCAPE_HPP
-#define MAGEL_LITERAL_STRING_ESCAPE_HPP
+#ifndef CHALI_LITERAL_STRING_ESCAPE_HPP
+#define CHALI_LITERAL_STRING_ESCAPE_HPP
 #include <string>
 #include <string_view>
 
-namespace magel_literal
+namespace chali_literal
 {
 /**
  * @brief 按语言字符串规则解码一次转义，供普通字面量和编译期宏共用。
@@ -13,5 +13,5 @@ namespace magel_literal
  * @return 所有转义合法时返回真。
  */
 bool decodeString(std::string_view raw, std::string &output, std::string &error);
-}  // namespace magel_literal
+}  // namespace chali_literal
 #endif

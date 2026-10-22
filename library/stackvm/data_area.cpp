@@ -51,7 +51,7 @@ bool DataArea::loadFromBytes(const void *bytes, std::size_t size, const Memory::
     symbols.clear();
     sizes.clear();
     strides.clear();
-    if (layoutText.size() >= 4 && layoutText.compare(0, 4, "MGLY") == 0)
+    if (layoutText.size() >= 4 && layoutText.compare(0, 4, "CHLY") == 0)
     {
         Memory::Vector<LayoutRow> rows;
         if (!decodeDataLayout(layoutText, rows))

@@ -1,10 +1,10 @@
-#ifndef MAGEL_GLUE_FILE_API_HPP
-#define MAGEL_GLUE_FILE_API_HPP
-#include "../../source/allocator/magel_allocator.hpp"
+#ifndef CHALI_GLUE_FILE_API_HPP
+#define CHALI_GLUE_FILE_API_HPP
+#include "../../source/allocator/chali_allocator.hpp"
 #include <cstdint>
 #include <memory>
 
-namespace magel_file
+namespace chali_file
 {
 /**
  * @brief 文件胶水私有的宿主句柄协议，VM 不包含或调用此接口。
@@ -92,6 +92,6 @@ public:
  * @return 比当前运行时活得更久的适配器引用。
  */
 FileApi &defaultFileApi();
-inline constexpr const char *serviceName = "magel.file.api";
-}  // namespace magel_file
+inline constexpr const char *serviceName = "chali.file.api";
+}  // namespace chali_file
 #endif

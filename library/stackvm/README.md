@@ -1,10 +1,10 @@
-# 栈式虚拟机（`magel/library/stackvm`）
+# 栈式虚拟机（`chali/library/stackvm`）
 
-本目录是 Magel 桌面与嵌入式 Linux 共用的唯一 VM 核心。目标宿主提供 C++17 标准库、
+本目录是 ChaLi 桌面与嵌入式 Linux 共用的唯一 VM 核心。目标宿主提供 C++17 标准库、
 内存和所需操作系统服务。`STACKVM_WITH_THREADS`、`STACKVM_WITH_DEFAULT_HEAP`、
 `STACKVM_WITH_HOST_IO`、`STACKVM_WITH_HOST_EXCEPTION_GUARD` 控制通用功能裁剪，CMake 提供同名选项。
 
-> **这份是 magel 自带的副本**：源在 `library/stackvm`，Magel 和 VM 宿主使用这里的
+> **这份是 chali 自带的副本**：源在 `library/stackvm`，ChaLi 和 VM 宿主使用这里的
 > 一份；标准对象后端由宿主胶水单独维护。两份是**独立维护**的 —— 改了一边不会自动同步，
 > 要一起改就在两边各改一次。
 
@@ -78,14 +78,14 @@ stackvm::RunResult result = machine.run(program);
 ```
 
 标准集合胶水的 `collection_glue::readList(context, handle, out)` 可解包 List；`NativeCallContext::invoke` 可在宿主回调
-期间同步调用 Magel 函数指针，并复用当前执行的堆、对象表、全局变量与调用栈。由上下文创建的
+期间同步调用 ChaLi 函数指针，并复用当前执行的堆、对象表、全局变量与调用栈。由上下文创建的
 函数、结构体和枚举视图只在本次 Native 回调内有效，不能跨线程或保存到回调结束以后。
 
 核心内建 `__std_*` 名称优先，宿主注册表不能覆盖 VM 运行时。历史集合 `__std_vec_*`、`__std_set_*`、`__std_map_*` 名称仅为标准库胶水的兼容绑定名，不再属于核心内建。注册表只属于宿主进程，`.svmb`
 只保存调用符号；加载二进制后应重新挂接同一组实现。
 `__std_panic` 接受一个指向 VM 长度字符串的地址（8 字节长度 + UTF-8 字节，不带结尾 NUL），
 并通过 `RunResult::error` 立即终止；
-它是 Magel `panic(String)` 的运行时入口，不把错误当成正常 `exitCode`。
+它是 ChaLi `panic(String)` 的运行时入口，不把错误当成正常 `exitCode`。
 
 ### 精确计时、指令钩子与线程上下文
 
@@ -121,9 +121,9 @@ machine.setHostServices(&services);
 `source/glue/std_file_api.hpp` 和 `source/glue/std_desktop_file.hpp`；目标宿主只需替换文件胶水的适配器，
 核心 VM 不包含该接口，也不链接文件或大数后端。
 
-Magel 的 `std::lang::Parse`、`std::lang::PathString` 与 `std::lang::Memory` 由 StackVM 的受控原生函数实现：解析
+ChaLi 的 `std::lang::Parse`、`std::lang::PathString` 与 `std::lang::Memory` 由 StackVM 的受控原生函数实现：解析
 只接受完整文本，路径处理不触碰文件系统，内存层只返回统计值和 Arena 分配出的字节地址。
-Arena 在对象表中只保存所持堆块的地址清单；`reset/drop` 释放这些块，Magel 侧只能经
+Arena 在对象表中只保存所持堆块的地址清单；`reset/drop` 释放这些块，ChaLi 侧只能经
 `std::lang::Span<T>` 使用，拿不到 `RuntimeObject` 布局。`std::lang::Random::fromEntropy` 则刻意不放进
 内建表，由宿主通过 `NativeRegistry` 单独注入；嵌入式环境可换成自己的硬件熵源。
 
@@ -145,7 +145,7 @@ Arena 在对象表中只保存所持堆块的地址清单；`reset/drop` 释放�
 
 要找变量时先看当前帧的局部、再看全局；没有帧（顶层代码）时 `DECLARE` 落到全局槽，
 与"函数外的局部名就是全局"一致。名字仍然是**按名字全程序唯一**的：同一个名字不可能
-既是一层的局部、又是另一层的局部 —— 前端要保证这一点（magel 的重名自动加 `$序号`）。
+既是一层的局部、又是另一层的局部 —— 前端要保证这一点（chali 的重名自动加 `$序号`）。
 
 ### 堆：`(alloc, 字节数, _, 目标)` / `(free, 地址, _, _)`
 
@@ -197,13 +197,13 @@ C++ 调用帧、STL 容器、大整数或运行期对象表的宿主分配。
 默认使用 512 MiB C 内存池；逐次 malloc/free 后备模式已删除，
 共用完全相同的字节码；各模式通过 288 项断言。malloc 模式不提供分配器峰值。
 两台机器按当前分配器版本对照的总览图见
-[magel-stackvm-performance.svg](../../image/magel-stackvm-performance.svg)（9700X 平均 ×1.45）。
-下列 CPU 对照与 `magel-stackvm-performance-preallocator.svg` 那张图为切换显式分配器前的历史记录，
+[chali-stackvm-performance.svg](../../image/chali-stackvm-performance.svg)（9700X 平均 ×1.45）。
+下列 CPU 对照与 `chali-stackvm-performance-preallocator.svg` 那张图为切换显式分配器前的历史记录，
 当前数字以新报告为准。
 
-`benchmark_stackvm.cpp` 测量 VM 的整数循环；`benchmark_magel.cpp` 加载由
-[`benchmarks/loop.mgl`](../benchmarks/loop.mgl) 生成的同一份 `.svmb` 与数据区，
-测量真实 Magel 程序的 VM 执行。两者都在组装与加载之外计时，先预热一次，再报告七次
+`benchmark_stackvm.cpp` 测量 VM 的整数循环；`benchmark_chali.cpp` 加载由
+[`benchmarks/loop.chl`](../benchmarks/loop.chl) 生成的同一份 `.svmb` 与数据区，
+测量真实 ChaLi 程序的 VM 执行。两者都在组装与加载之外计时，先预热一次，再报告七次
 `Machine::run` 的中位数、实际指令数、MIPS 与求值栈峰值。
 
 2026-10-01 在 **AMD Ryzen 5 5600X**、Windows 10（19045）上重新测试，使用 Visual Studio 2022
@@ -213,25 +213,25 @@ C++ 调用帧、STL 容器、大整数或运行期对象表的宿主分配。
 
 | 负载 | 编译器与 VM 位数 | 运行指令 | 七次中位数 | 吞吐量 | 校验 |
 | --- | --- | ---: | ---: | ---: | --- |
-| Magel 源码 `loop.mgl` → 同一份 `.svmb` | MSVC 32 位 | 20,000,035 | 1127.360 ms | 17.741 MIPS | `std::lang::assert` 通过 |
-| Magel 源码 `loop.mgl` → 同一份 `.svmb` | MSVC 64 位 | 20,000,035 | 1013.426 ms | 19.735 MIPS | `std::lang::assert` 通过 |
-| Magel 源码 `loop.mgl` → 同一份 `.svmb` | GCC 64 位 | 20,000,035 | 741.785 ms | 26.962 MIPS | `std::lang::assert` 通过 |
+| ChaLi 源码 `loop.chl` → 同一份 `.svmb` | MSVC 32 位 | 20,000,035 | 1127.360 ms | 17.741 MIPS | `std::lang::assert` 通过 |
+| ChaLi 源码 `loop.chl` → 同一份 `.svmb` | MSVC 64 位 | 20,000,035 | 1013.426 ms | 19.735 MIPS | `std::lang::assert` 通过 |
+| ChaLi 源码 `loop.chl` → 同一份 `.svmb` | GCC 64 位 | 20,000,035 | 741.785 ms | 26.962 MIPS | `std::lang::assert` 通过 |
 | VM 整数循环，100 万次 | MSVC 32 位 | 18,000,007 | 870.200 ms | 20.685 MIPS | 499999500000 |
 | VM 整数循环，100 万次 | MSVC 64 位 | 18,000,007 | 707.195 ms | 25.453 MIPS | 499999500000 |
 | VM 整数循环，100 万次 | GCC 64 位 | 18,000,007 | 521.353 ms | 34.526 MIPS | 499999500000 |
 
-这次运行中，同为 MSVC 构建时，64 位 VM 对 Magel 循环的吞吐量约高 **11.2%**。
+这次运行中，同为 MSVC 构建时，64 位 VM 对 ChaLi 循环的吞吐量约高 **11.2%**。
 GCC 只测了 64 位。这是此机器、这些编译选项和此
-负载的一次测量，不是跨设备的性能承诺；计时不包含 Magel 编译、`.svmb` 加载和进程启动。
+负载的一次测量，不是跨设备的性能承诺；计时不包含 ChaLi 编译、`.svmb` 加载和进程启动。
 
 同一天在 **AMD Ryzen 7 9700X**（8 核 16 线程）、Windows 11（26200）上跑的是同一套脚本、
 同一份负载，编译器为 **MSVC 19.44.35228** 与同一个 **GCC 11.2.0**：
 
 | 负载 | 编译器与 VM 位数 | 运行指令 | 七次中位数 | 吞吐量 | 校验 |
 | --- | --- | ---: | ---: | ---: | --- |
-| Magel 源码 `loop.mgl` → 同一份 `.svmb` | MSVC 32 位 | 20,000,035 | 785.034 ms | 25.477 MIPS | `std::lang::assert` 通过 |
-| Magel 源码 `loop.mgl` → 同一份 `.svmb` | MSVC 64 位 | 20,000,035 | 658.655 ms | 30.365 MIPS | `std::lang::assert` 通过 |
-| Magel 源码 `loop.mgl` → 同一份 `.svmb` | GCC 64 位 | 20,000,035 | 516.148 ms | 38.749 MIPS | `std::lang::assert` 通过 |
+| ChaLi 源码 `loop.chl` → 同一份 `.svmb` | MSVC 32 位 | 20,000,035 | 785.034 ms | 25.477 MIPS | `std::lang::assert` 通过 |
+| ChaLi 源码 `loop.chl` → 同一份 `.svmb` | MSVC 64 位 | 20,000,035 | 658.655 ms | 30.365 MIPS | `std::lang::assert` 通过 |
+| ChaLi 源码 `loop.chl` → 同一份 `.svmb` | GCC 64 位 | 20,000,035 | 516.148 ms | 38.749 MIPS | `std::lang::assert` 通过 |
 | VM 整数循环，100 万次 | MSVC 32 位 | 18,000,007 | 607.876 ms | 29.611 MIPS | 499999500000 |
 | VM 整数循环，100 万次 | MSVC 64 位 | 18,000,007 | 485.245 ms | 37.095 MIPS | 499999500000 |
 | VM 整数循环，100 万次 | GCC 64 位 | 18,000,007 | 350.238 ms | 51.394 MIPS | 499999500000 |
@@ -240,19 +240,19 @@ GCC 只测了 64 位。这是此机器、这些编译选项和此
 
 | 负载 | 构建 | Ryzen 5 5600X | Ryzen 7 9700X | 9700X 吞吐量 |
 | --- | --- | --- | --- | ---: |
-| Magel 源码 `loop.mgl` | MSVC 32 位 | 1127.360 ms / 17.741 MIPS | 785.034 ms / 25.477 MIPS | ×1.44 |
-| Magel 源码 `loop.mgl` | MSVC 64 位 | 1013.426 ms / 19.735 MIPS | 658.655 ms / 30.365 MIPS | ×1.54 |
-| Magel 源码 `loop.mgl` | GCC 64 位 | 741.785 ms / 26.962 MIPS | 516.148 ms / 38.749 MIPS | ×1.44 |
+| ChaLi 源码 `loop.chl` | MSVC 32 位 | 1127.360 ms / 17.741 MIPS | 785.034 ms / 25.477 MIPS | ×1.44 |
+| ChaLi 源码 `loop.chl` | MSVC 64 位 | 1013.426 ms / 19.735 MIPS | 658.655 ms / 30.365 MIPS | ×1.54 |
+| ChaLi 源码 `loop.chl` | GCC 64 位 | 741.785 ms / 26.962 MIPS | 516.148 ms / 38.749 MIPS | ×1.44 |
 | VM 整数循环 | MSVC 32 位 | 870.200 ms / 20.685 MIPS | 607.876 ms / 29.611 MIPS | ×1.43 |
 | VM 整数循环 | MSVC 64 位 | 707.195 ms / 25.453 MIPS | 485.245 ms / 37.095 MIPS | ×1.46 |
 | VM 整数循环 | GCC 64 位 | 521.353 ms / 34.526 MIPS | 350.238 ms / 51.394 MIPS | ×1.49 |
 
-![切换显式分配器前的两台机器 Magel StackVM 性能对照](../../image/magel-stackvm-performance-preallocator.svg)
+![切换显式分配器前的两台机器 ChaLi StackVM 性能对照](../../image/chali-stackvm-performance-preallocator.svg)
 
 换到 9700X 后同一份负载的吞吐量平均约 **×1.46（+46%）**；两台机器的 OS（Windows 10 19045 /
 Windows 11 26200）与 MSVC 补丁号（…329 / …328）并不完全相同，GCC 版本则一致，所以这组差距
 **不是纯粹的 CPU 差异**，只说明"这台机器比那台快四成多"，不能外推成两颗 CPU 的定论。
-9700X 上同为 MSVC 时，64 位 VM 对 Magel 循环的吞吐量约高 **19.2%**（5600X 上同一比值是 11.2%）。
+9700X 上同为 MSVC 时，64 位 VM 对 ChaLi 循环的吞吐量约高 **19.2%**（5600X 上同一比值是 11.2%）。
 
 复现时在仓库根目录运行[集中测试脚本](../benchmarks/compare-vm.ps1)；需安装 Visual Studio
 2022 的 C++ 工具链，以及 64 位 MinGW GCC / GNU Make。脚本会检测 CPU、构建三种 VM、
@@ -260,9 +260,9 @@ Windows 11 26200）与 MSVC 补丁号（…329 / …328）并不完全相同，G
 时可传 `-CMakePath`、`-GccPath`、`-MakePath`：
 
 ```powershell
-./magel/benchmarks/compare-vm.ps1
+./chali/benchmarks/compare-vm.ps1
 # 后续在 Ryzen 9700X 机器上运行，并单独保存结果：
-./magel/benchmarks/compare-vm.ps1 -ExpectedCpu '9700X' -OutputDirectory tmp/vm-9700x
+./chali/benchmarks/compare-vm.ps1 -ExpectedCpu '9700X' -OutputDirectory tmp/vm-9700x
 ```
 
 脚本本身是带 BOM 的 UTF-8，并在开头把控制台捕获编码切到 UTF-8 —— 否则中文代码页（GBK）
@@ -272,7 +272,7 @@ Windows 11 26200）与 MSVC 补丁号（…329 / …328）并不完全相同，G
 `tmp/vm-9700x/`（未入库）。三种构建各通过
 **241 项断言**。MSVC 两版 VM 从同一份
 `13_heap.quad` 生成的 `.svmb` SHA-256 相同；交叉加载后均输出 `42 7 0`，执行
-37 条指令，堆峰值 16 字节。由 Magel 源码生成的 `loop.mgl` 程序也由两版 VM 执行并通过
+37 条指令，堆峰值 16 字节。由 ChaLi 源码生成的 `loop.chl` 程序也由两版 VM 执行并通过
 校验。因此本次测试中 **`.svmb` 可跨 32 / 64 位 VM 使用**；可执行文件本身必须匹配
 宿主系统。**在 32 位 Windows 上运行时，使用 Win32 构建的 32 位 VM**，不能运行 x64
 可执行文件。经 C ABI 加载的动态库还必须与运行它的 VM 进程位数一致。
@@ -341,8 +341,8 @@ VM 核心没有这些能力开关、类型专用字段或原生操作名。独�
 ### 数学库边界
 
 StackVM 不再内建 `__std_sin` / `__std_pow` 等数学指令。语言前端应声明普通宿主函数，
-再通过 `NativeRegistry` 注册平台数学库；Magel 的桌面实现见
-`magel/source/glue/std_math.hpp`。这样嵌入式移植可替换数学库，不需要修改 VM。
+再通过 `NativeRegistry` 注册平台数学库；ChaLi 的桌面实现见
+`chali/source/glue/std_math.hpp`。这样嵌入式移植可替换数学库，不需要修改 VM。
 
 ## 四元式化简
 
@@ -413,7 +413,7 @@ v4 再在 exports 之后追加**调试信息表**（指令下标 → 源码位�
 旧的 v1 固定字段与 v2 变长指令文件，旧文件没有显式可见性，因此兼容地把全部标签视为可见。
 新生成文件统一写 v4。
 裸四元式本身没有模块可见性声明，因此 `assemble` 默认把全部标签放进 exports；具有模块
-语义的前端（例如 Magel）会在组装后清空并按自己的公开 API 重新填写。
+语义的前端（例如 ChaLi）会在组装后清空并按自己的公开 API 重新填写。
 `check` 会报告公开入口数量，`disasm` 会在指令前以 `; export 标签` 列出它们。
 
 `compile --no-debug` 把调试节写成 0 条（v4 里合法，加载器照常接受）：**只丢位置表**，
@@ -429,8 +429,8 @@ v4 再在 exports 之后追加**调试信息表**（指令下标 → 源码位�
 行号是 `.quad` 的文本行，函数名是最近扫过的 `(label …)`。同一条语句产生的几十条指令
 共用一条记录（同一位置不重复登记；标签不产生指令，所以"标签"与"紧跟它的第一条语句"
 落在同一个下标上时，后者胜出），因此这张表是**稀疏**的，比指令数小得多。
-`SourceLocation` 另有 `file`/`line` 两个字段留给**语言源码**：Magel 前端目前只填得出
-四元式行，等前端把 `.mgl` 行号带到四元式上，这两个字段就会自动生效。
+`SourceLocation` 另有 `file`/`line` 两个字段留给**语言源码**：ChaLi 前端目前只填得出
+四元式行，等前端把 `.chl` 行号带到四元式上，这两个字段就会自动生效。
 
 运行时接口（`Machine`）：
 
@@ -505,7 +505,7 @@ std::cout << machine.run(program).steps;                       // 指令条数
 ### 宿主集成
 
 宿主加载字节码与数据，安装 `NativeRegistry` 后由 `Machine` 执行。原生函数通过
-`NativeCallContext::invoke` 同步调用 Magel 函数或闭包，参数、返回值、重入与错误均由 VM 维护。
+`NativeCallContext::invoke` 同步调用 ChaLi 函数或闭包，参数、返回值、重入与错误均由 VM 维护。
 不提供原生程序导出器或独立原生执行桥。
 
 ## 构建与自检
@@ -604,9 +604,9 @@ $ stackvm run out/demo.quad --data out/demo.data.bin --layout out/demo.layout
 
 ## 无名变长符号格式
 
-`compile --compress-symbols` 写 MCVM0004 无名容器；`--symbol-map FILE` 指定 PC 映射。`svmb_symtool` 支持 dump、stats、lookup、compress，Python 转换器在 `magel/tools/svmb_compress.py`。详情见[符号压缩文档](../../doc/16-compact-symbols.md)。
+`compile --compress-symbols` 写 MCVM0004 无名容器；`--symbol-map FILE` 指定 PC 映射。`svmb_symtool` 支持 dump、stats、lookup、compress，Python 转换器在 `chali/tools/svmb_compress.py`。详情见[符号压缩文档](../../doc/16-compact-symbols.md)。
 
-可选 panic 调用栈默认开启，`STACKVM_WITH_PANIC_TRACE=0` 或 `NO_MAGEL_PANIC_TRACE` 可裁剪；压缩符号容器始终不记录失败路径或调用记录。详见 [panic 调用栈](../../doc/18-panic-trace.md)。
+可选 panic 调用栈默认开启，`STACKVM_WITH_PANIC_TRACE=0` 或 `NO_CHALI_PANIC_TRACE` 可裁剪；压缩符号容器始终不记录失败路径或调用记录。详见 [panic 调用栈](../../doc/18-panic-trace.md)。
 
 核心源文件统一记录在 core_sources.txt，每个实现单独编译，自动依赖由编译器维护。公开头保留接口及必要模板；修改实现不会经由拼接文件触发全部核心重编。新增编译单元后运行 python tools/stackvm_sources.py --build-assets 同步导出资产清单。
 

@@ -21,6 +21,6 @@ MSVC 19.44.35228.0 / GCC 11.2.0；MSVC Release /O2 /DNDEBUG; GCC Release -O3 -DN
 
 复现：
 ```powershell
-./magel/benchmarks/compare-vm.ps1 -ExpectedCpu '9700X' -OutputDirectory tmp/vm-9700x-pool
-./magel/benchmarks/compare-vm.ps1 -ExpectedCpu '9700X' -UseMalloc -ProgramPrefix tmp/vm-9700x-pool/magel-loop -OutputDirectory tmp/vm-9700x-malloc
+./chali/benchmarks/compare-vm.ps1 -ExpectedCpu '9700X' -OutputDirectory tmp/vm-9700x-pool
+./chali/benchmarks/compare-vm.ps1 -ExpectedCpu '9700X' -UseMalloc -ProgramPrefix tmp/vm-9700x-pool/chali-loop -OutputDirectory tmp/vm-9700x-malloc
 ```

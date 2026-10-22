@@ -13,7 +13,7 @@
   "lua_url": "https://www.lua.org/ftp/lua-5.5.1.tar.gz",
   "lua_sha256": "1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce",
   "compiler": "gcc (x86_64-posix-seh-rev3, Built by MinGW-W64 project) 11.2.0",
-  "compiler_flags": "Lua -O2; Magel -O2 -DNDEBUG MAGEL_CUSTOM_ALLOCATOR=1",
+  "compiler_flags": "Lua -O2; ChaLi -O2 -DNDEBUG CHALI_CUSTOM_ALLOCATOR=1",
   "results": {
     "Python": {
       "median_ms": 404.1922,
@@ -41,7 +41,7 @@
       ],
       "checksum": "49999995000000"
     },
-    "Magel VM optimized": {
+    "ChaLi VM optimized": {
       "median_ms": 174.186,
       "samples_ms": [
         177.709,
@@ -55,7 +55,7 @@
       "checksum": "49999995000000",
       "logical_steps": 200000034
     },
-    "Magel VM legacy optimized": {
+    "ChaLi VM legacy optimized": {
       "median_ms": 4702.3,
       "samples_ms": [
         4703.77,
@@ -69,7 +69,7 @@
       "checksum": "49999995000000",
       "logical_steps": 200000034
     },
-    "Magel VM before": {
+    "ChaLi VM before": {
       "median_ms": 248.521,
       "samples_ms": [
         248.521,
@@ -112,7 +112,7 @@
   },
   "baseline_commit": "51e3739",
   "change": "Fuse arithmetic temporary store followed by load/store copy; preserve both stores and conversions",
-  "runner_build": "g++ -std=c++17 -O2 -DNDEBUG -DMAGEL_CUSTOM_ALLOCATOR=1 -Istackvm tests/benchmark_vm_program.cpp build/magel-stackvm/libstackvm.a -pthread -o build/copy-core-benchmark.exe",
+  "runner_build": "g++ -std=c++17 -O2 -DNDEBUG -DCHALI_CUSTOM_ALLOCATOR=1 -Istackvm tests/benchmark_vm_program.cpp build/chali-stackvm/libstackvm.a -pthread -o build/copy-core-benchmark.exe",
   "runner_sha256": {
     "build/copy-core-benchmark.exe": "e8068efeab2c692e2a5a0eaf21654a0c6c69a7caa6962e9623b77d3e0c820b52",
     "build/new-core-benchmark.exe": "939e6c3d5539565d8761c3d88d90f700ec71b8abfc1a9d3e8ee052d35ee3d140"

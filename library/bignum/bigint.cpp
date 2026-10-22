@@ -1,4 +1,4 @@
-#if !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_BIG_INT)
 /**
  * @file bigint.cpp
  * @brief 大整数构造、规范化、基础幅值运算、有符号算术与整数方根。

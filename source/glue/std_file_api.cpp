@@ -1,6 +1,6 @@
 #include "std_file_api.hpp"
 
-namespace magel_file
+namespace chali_file
 {
 /**
  * @brief 读取原始字节，未实现的适配器明确报告不支持。
@@ -44,4 +44,4 @@ bool FileHandle::seek(std::int64_t offset, int origin, std::int64_t &position, M
     error = "这个文件后端不支持 seek";
     return false;
 }
-}  // namespace magel_file
+}  // namespace chali_file

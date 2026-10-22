@@ -1,0 +1,18 @@
+/* operator_no_add_replace.chl —— `#NoAddReplace` 关掉 `5 + a` 的换边推导
+ *
+ * 结构体只实现了左接口 `Add`，右操作数那侧没有 `RightAdd`；原先 `5 + a` 会按交换律
+ * 自动换边借 `leftAdd`，写了 `#NoAddReplace` 之后这条推导被关闭，必须显式实现
+ * `RightAdd<int64,int64>`（见 samples/operator_right_direction.chl）。
+ */
+#NoAddReplace
+struct Vec : Add<int64, int64> {
+    int64 v;
+    int64 leftAdd(int64 other) { return self.v + other; }
+};
+
+int64 main() {
+    Vec a;
+    a.v = 10;
+    println("{}", 5 + a);
+    return 0;
+}

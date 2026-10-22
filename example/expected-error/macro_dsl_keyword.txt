@@ -1,1 +1,1 @@
-语法错误：example/samples-error/macro_dsl_keyword.mgl 第 2 行第 8 列：期望 标识符 / MACRO_IS / MACRO_EXPR / MACRO_IDENT 等 8 个之一，实际是 循环(for)
+语法错误：example/samples-error/macro_dsl_keyword.chl 第 2 行第 8 列：期望 标识符 / MACRO_IS / MACRO_EXPR / MACRO_IDENT 等 8 个之一，实际是 循环(for)

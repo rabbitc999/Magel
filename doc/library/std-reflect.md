@@ -4,20 +4,20 @@
 
 ## 引入
 
-```magel
+```chali
 import std::reflect;
 ```
 
 ## 公共约定与错误边界
 
-要求工具链构建时同时启用 MAGEL_WITH_REFLECTION=1 与 STACKVM_WITH_REFLECTION=1，并在编译/运行时启用 --reflection。类型信息在具体类型和布局确定后生成；动态调用只支持 ReflectValue 的封闭载荷集合。Err 区分未找到、歧义、参数数量、类型、接收者和未暴露等错误。
+要求工具链构建时同时启用 CHALI_WITH_REFLECTION=1 与 STACKVM_WITH_REFLECTION=1，并在编译/运行时启用 --reflection。类型信息在具体类型和布局确定后生成；动态调用只支持 ReflectValue 的封闭载荷集合。Err 区分未找到、歧义、参数数量、类型、接收者和未暴露等错误。
 
 ## 参考代码
 
-完整程序：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+完整程序：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 ```powershell
-magel run doc/examples/library/reflect.mgl --reflection
+chali run doc/examples/library/reflect.chl --reflection
 ```
 
 需先用 `make reflection` 构建支持反射的工具链；当前二进制未编入支持时，上述命令会明确报缺失宏。
@@ -25,7 +25,7 @@ magel run doc/examples/library/reflect.mgl --reflection
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::reflect;
 
 /** @brief 供启用反射的工具链演示类型元数据查询。 */
@@ -172,7 +172,7 @@ int64 main() {
 
 **声明**
 
-```magel
+```chali
 void requireReflection();
 ```
 
@@ -197,13 +197,13 @@ void requireReflection();
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::requireReflection();
 ```
 
-**源码**：[source/std/reflect.mgl:5](../../source/std/reflect.mgl#L5)。
+**源码**：[source/std/reflect.chl:5](../../source/std/reflect.chl#L5)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-1"></a>
 
@@ -211,7 +211,7 @@ std::reflect::requireReflection();
 
 **声明**
 
-```magel
+```chali
 uint64 typeId();
 ```
 
@@ -233,13 +233,13 @@ uint64 typeId();
 
 **调用形式**
 
-```magel
+```chali
 obj.typeId();
 ```
 
-**源码**：[source/std/reflect.mgl:28](../../source/std/reflect.mgl#L28)。
+**源码**：[source/std/reflect.chl:28](../../source/std/reflect.chl#L28)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-2"></a>
 
@@ -247,7 +247,7 @@ obj.typeId();
 
 **声明**
 
-```magel
+```chali
 Result<bool,std::reflect::ReflectError> asBool();
 ```
 
@@ -269,13 +269,13 @@ Result<bool,std::reflect::ReflectError> asBool();
 
 **调用形式**
 
-```magel
+```chali
 obj.asBool();
 ```
 
-**源码**：[source/std/reflect.mgl:48](../../source/std/reflect.mgl#L48)。
+**源码**：[source/std/reflect.chl:48](../../source/std/reflect.chl#L48)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-3"></a>
 
@@ -283,7 +283,7 @@ obj.asBool();
 
 **声明**
 
-```magel
+```chali
 Result<char,std::reflect::ReflectError> asChar();
 ```
 
@@ -305,13 +305,13 @@ Result<char,std::reflect::ReflectError> asChar();
 
 **调用形式**
 
-```magel
+```chali
 obj.asChar();
 ```
 
-**源码**：[source/std/reflect.mgl:53](../../source/std/reflect.mgl#L53)。
+**源码**：[source/std/reflect.chl:53](../../source/std/reflect.chl#L53)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-4"></a>
 
@@ -319,7 +319,7 @@ obj.asChar();
 
 **声明**
 
-```magel
+```chali
 Result<int8,std::reflect::ReflectError> asI8();
 ```
 
@@ -341,13 +341,13 @@ Result<int8,std::reflect::ReflectError> asI8();
 
 **调用形式**
 
-```magel
+```chali
 obj.asI8();
 ```
 
-**源码**：[source/std/reflect.mgl:58](../../source/std/reflect.mgl#L58)。
+**源码**：[source/std/reflect.chl:58](../../source/std/reflect.chl#L58)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-5"></a>
 
@@ -355,7 +355,7 @@ obj.asI8();
 
 **声明**
 
-```magel
+```chali
 Result<int16,std::reflect::ReflectError> asI16();
 ```
 
@@ -377,13 +377,13 @@ Result<int16,std::reflect::ReflectError> asI16();
 
 **调用形式**
 
-```magel
+```chali
 obj.asI16();
 ```
 
-**源码**：[source/std/reflect.mgl:63](../../source/std/reflect.mgl#L63)。
+**源码**：[source/std/reflect.chl:63](../../source/std/reflect.chl#L63)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-6"></a>
 
@@ -391,7 +391,7 @@ obj.asI16();
 
 **声明**
 
-```magel
+```chali
 Result<int32,std::reflect::ReflectError> asI32();
 ```
 
@@ -413,13 +413,13 @@ Result<int32,std::reflect::ReflectError> asI32();
 
 **调用形式**
 
-```magel
+```chali
 obj.asI32();
 ```
 
-**源码**：[source/std/reflect.mgl:68](../../source/std/reflect.mgl#L68)。
+**源码**：[source/std/reflect.chl:68](../../source/std/reflect.chl#L68)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-7"></a>
 
@@ -427,7 +427,7 @@ obj.asI32();
 
 **声明**
 
-```magel
+```chali
 Result<int64,std::reflect::ReflectError> asI64();
 ```
 
@@ -449,13 +449,13 @@ Result<int64,std::reflect::ReflectError> asI64();
 
 **调用形式**
 
-```magel
+```chali
 obj.asI64();
 ```
 
-**源码**：[source/std/reflect.mgl:73](../../source/std/reflect.mgl#L73)。
+**源码**：[source/std/reflect.chl:73](../../source/std/reflect.chl#L73)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-8"></a>
 
@@ -463,7 +463,7 @@ obj.asI64();
 
 **声明**
 
-```magel
+```chali
 Result<uint8,std::reflect::ReflectError> asU8();
 ```
 
@@ -485,13 +485,13 @@ Result<uint8,std::reflect::ReflectError> asU8();
 
 **调用形式**
 
-```magel
+```chali
 obj.asU8();
 ```
 
-**源码**：[source/std/reflect.mgl:78](../../source/std/reflect.mgl#L78)。
+**源码**：[source/std/reflect.chl:78](../../source/std/reflect.chl#L78)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-9"></a>
 
@@ -499,7 +499,7 @@ obj.asU8();
 
 **声明**
 
-```magel
+```chali
 Result<uint16,std::reflect::ReflectError> asU16();
 ```
 
@@ -521,13 +521,13 @@ Result<uint16,std::reflect::ReflectError> asU16();
 
 **调用形式**
 
-```magel
+```chali
 obj.asU16();
 ```
 
-**源码**：[source/std/reflect.mgl:83](../../source/std/reflect.mgl#L83)。
+**源码**：[source/std/reflect.chl:83](../../source/std/reflect.chl#L83)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-10"></a>
 
@@ -535,7 +535,7 @@ obj.asU16();
 
 **声明**
 
-```magel
+```chali
 Result<uint32,std::reflect::ReflectError> asU32();
 ```
 
@@ -557,13 +557,13 @@ Result<uint32,std::reflect::ReflectError> asU32();
 
 **调用形式**
 
-```magel
+```chali
 obj.asU32();
 ```
 
-**源码**：[source/std/reflect.mgl:88](../../source/std/reflect.mgl#L88)。
+**源码**：[source/std/reflect.chl:88](../../source/std/reflect.chl#L88)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-11"></a>
 
@@ -571,7 +571,7 @@ obj.asU32();
 
 **声明**
 
-```magel
+```chali
 Result<uint64,std::reflect::ReflectError> asU64();
 ```
 
@@ -593,13 +593,13 @@ Result<uint64,std::reflect::ReflectError> asU64();
 
 **调用形式**
 
-```magel
+```chali
 obj.asU64();
 ```
 
-**源码**：[source/std/reflect.mgl:93](../../source/std/reflect.mgl#L93)。
+**源码**：[source/std/reflect.chl:93](../../source/std/reflect.chl#L93)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-12"></a>
 
@@ -607,7 +607,7 @@ obj.asU64();
 
 **声明**
 
-```magel
+```chali
 Result<float32,std::reflect::ReflectError> asF32();
 ```
 
@@ -629,13 +629,13 @@ Result<float32,std::reflect::ReflectError> asF32();
 
 **调用形式**
 
-```magel
+```chali
 obj.asF32();
 ```
 
-**源码**：[source/std/reflect.mgl:98](../../source/std/reflect.mgl#L98)。
+**源码**：[source/std/reflect.chl:98](../../source/std/reflect.chl#L98)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-13"></a>
 
@@ -643,7 +643,7 @@ obj.asF32();
 
 **声明**
 
-```magel
+```chali
 Result<float64,std::reflect::ReflectError> asF64();
 ```
 
@@ -665,13 +665,13 @@ Result<float64,std::reflect::ReflectError> asF64();
 
 **调用形式**
 
-```magel
+```chali
 obj.asF64();
 ```
 
-**源码**：[source/std/reflect.mgl:103](../../source/std/reflect.mgl#L103)。
+**源码**：[source/std/reflect.chl:103](../../source/std/reflect.chl#L103)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-14"></a>
 
@@ -679,7 +679,7 @@ obj.asF64();
 
 **声明**
 
-```magel
+```chali
 Result<std::lang::String,std::reflect::ReflectError> asText();
 ```
 
@@ -701,13 +701,13 @@ Result<std::lang::String,std::reflect::ReflectError> asText();
 
 **调用形式**
 
-```magel
+```chali
 obj.asText();
 ```
 
-**源码**：[source/std/reflect.mgl:108](../../source/std/reflect.mgl#L108)。
+**源码**：[source/std/reflect.chl:108](../../source/std/reflect.chl#L108)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-15"></a>
 
@@ -715,7 +715,7 @@ obj.asText();
 
 **声明**
 
-```magel
+```chali
 Option<std::reflect::FuncInfo> getFuncInfo(std::lang::String name);
 ```
 
@@ -739,13 +739,13 @@ Option<std::reflect::FuncInfo> getFuncInfo(std::lang::String name);
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::getFuncInfo(name);
 ```
 
-**源码**：[source/std/reflect.mgl:133](../../source/std/reflect.mgl#L133)。
+**源码**：[source/std/reflect.chl:133](../../source/std/reflect.chl#L133)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-16"></a>
 
@@ -753,7 +753,7 @@ std::reflect::getFuncInfo(name);
 
 **声明**
 
-```magel
+```chali
 Option<std::reflect::AnnotationInfo> getAnnotationInfo(std::lang::String name);
 ```
 
@@ -777,13 +777,13 @@ Option<std::reflect::AnnotationInfo> getAnnotationInfo(std::lang::String name);
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::getAnnotationInfo(name);
 ```
 
-**源码**：[source/std/reflect.mgl:134](../../source/std/reflect.mgl#L134)。
+**源码**：[source/std/reflect.chl:134](../../source/std/reflect.chl#L134)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-17"></a>
 
@@ -791,7 +791,7 @@ std::reflect::getAnnotationInfo(name);
 
 **声明**
 
-```magel
+```chali
 uint64 getTypeId<T>();
 ```
 
@@ -813,13 +813,13 @@ uint64 getTypeId<T>();
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::getTypeId<T>();
 ```
 
-**源码**：[source/std/reflect.mgl:136](../../source/std/reflect.mgl#L136)。
+**源码**：[source/std/reflect.chl:136](../../source/std/reflect.chl#L136)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-18"></a>
 
@@ -827,7 +827,7 @@ std::reflect::getTypeId<T>();
 
 **声明**
 
-```magel
+```chali
 uint64 getInterfaceId<I>();
 ```
 
@@ -849,13 +849,13 @@ uint64 getInterfaceId<I>();
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::getInterfaceId<I>();
 ```
 
-**源码**：[source/std/reflect.mgl:137](../../source/std/reflect.mgl#L137)。
+**源码**：[source/std/reflect.chl:137](../../source/std/reflect.chl#L137)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-19"></a>
 
@@ -863,7 +863,7 @@ std::reflect::getInterfaceId<I>();
 
 **声明**
 
-```magel
+```chali
 Option<std::reflect::StructInfo> getStructInfo<T>();
 ```
 
@@ -885,13 +885,13 @@ Option<std::reflect::StructInfo> getStructInfo<T>();
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::getStructInfo<T>();
 ```
 
-**源码**：[source/std/reflect.mgl:138](../../source/std/reflect.mgl#L138)。
+**源码**：[source/std/reflect.chl:138](../../source/std/reflect.chl#L138)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-20"></a>
 
@@ -899,7 +899,7 @@ std::reflect::getStructInfo<T>();
 
 **声明**
 
-```magel
+```chali
 Option<std::reflect::EnumInfo> getEnumInfo<T>();
 ```
 
@@ -921,13 +921,13 @@ Option<std::reflect::EnumInfo> getEnumInfo<T>();
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::getEnumInfo<T>();
 ```
 
-**源码**：[source/std/reflect.mgl:139](../../source/std/reflect.mgl#L139)。
+**源码**：[source/std/reflect.chl:139](../../source/std/reflect.chl#L139)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-21"></a>
 
@@ -935,7 +935,7 @@ std::reflect::getEnumInfo<T>();
 
 **声明**
 
-```magel
+```chali
 Option<std::reflect::InterfaceInfo> getInterfaceInfo<I>();
 ```
 
@@ -957,13 +957,13 @@ Option<std::reflect::InterfaceInfo> getInterfaceInfo<I>();
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::getInterfaceInfo<I>();
 ```
 
-**源码**：[source/std/reflect.mgl:140](../../source/std/reflect.mgl#L140)。
+**源码**：[source/std/reflect.chl:140](../../source/std/reflect.chl#L140)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-22"></a>
 
@@ -971,7 +971,7 @@ std::reflect::getInterfaceInfo<I>();
 
 **声明**
 
-```magel
+```chali
 bool implementsInterface<T>(uint64 interfaceId);
 ```
 
@@ -995,13 +995,13 @@ bool implementsInterface<T>(uint64 interfaceId);
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::implementsInterface<T>(interfaceId);
 ```
 
-**源码**：[source/std/reflect.mgl:141](../../source/std/reflect.mgl#L141)。
+**源码**：[source/std/reflect.chl:141](../../source/std/reflect.chl#L141)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-23"></a>
 
@@ -1009,7 +1009,7 @@ std::reflect::implementsInterface<T>(interfaceId);
 
 **声明**
 
-```magel
+```chali
 List<std::reflect::Annotation> getAnnotations<T>();
 ```
 
@@ -1031,13 +1031,13 @@ List<std::reflect::Annotation> getAnnotations<T>();
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::getAnnotations<T>();
 ```
 
-**源码**：[source/std/reflect.mgl:148](../../source/std/reflect.mgl#L148)。
+**源码**：[source/std/reflect.chl:148](../../source/std/reflect.chl#L148)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-24"></a>
 
@@ -1045,7 +1045,7 @@ std::reflect::getAnnotations<T>();
 
 **声明**
 
-```magel
+```chali
 List<std::reflect::Annotation> getFieldAnnotations<T>(std::lang::String name);
 ```
 
@@ -1069,13 +1069,13 @@ List<std::reflect::Annotation> getFieldAnnotations<T>(std::lang::String name);
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::getFieldAnnotations<T>(name);
 ```
 
-**源码**：[source/std/reflect.mgl:154](../../source/std/reflect.mgl#L154)。
+**源码**：[source/std/reflect.chl:154](../../source/std/reflect.chl#L154)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-25"></a>
 
@@ -1083,7 +1083,7 @@ std::reflect::getFieldAnnotations<T>(name);
 
 **声明**
 
-```magel
+```chali
 List<std::reflect::Annotation> getFuncAnnotations(std::lang::String name);
 ```
 
@@ -1107,13 +1107,13 @@ List<std::reflect::Annotation> getFuncAnnotations(std::lang::String name);
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::getFuncAnnotations(name);
 ```
 
-**源码**：[source/std/reflect.mgl:159](../../source/std/reflect.mgl#L159)。
+**源码**：[source/std/reflect.chl:159](../../source/std/reflect.chl#L159)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-26"></a>
 
@@ -1121,7 +1121,7 @@ std::reflect::getFuncAnnotations(name);
 
 **声明**
 
-```magel
+```chali
 List<std::reflect::Annotation> getMethodAnnotations<T>(std::lang::String name);
 ```
 
@@ -1145,13 +1145,13 @@ List<std::reflect::Annotation> getMethodAnnotations<T>(std::lang::String name);
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::getMethodAnnotations<T>(name);
 ```
 
-**源码**：[source/std/reflect.mgl:169](../../source/std/reflect.mgl#L169)。
+**源码**：[source/std/reflect.chl:169](../../source/std/reflect.chl#L169)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-27"></a>
 
@@ -1159,7 +1159,7 @@ std::reflect::getMethodAnnotations<T>(name);
 
 **声明**
 
-```magel
+```chali
 List<std::reflect::Annotation> getStaticMemberAnnotations<T>(std::lang::String name);
 ```
 
@@ -1183,13 +1183,13 @@ List<std::reflect::Annotation> getStaticMemberAnnotations<T>(std::lang::String n
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::getStaticMemberAnnotations<T>(name);
 ```
 
-**源码**：[source/std/reflect.mgl:173](../../source/std/reflect.mgl#L173)。
+**源码**：[source/std/reflect.chl:173](../../source/std/reflect.chl#L173)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-28"></a>
 
@@ -1197,7 +1197,7 @@ std::reflect::getStaticMemberAnnotations<T>(name);
 
 **声明**
 
-```magel
+```chali
 Result<std::reflect::ReflectValue,std::reflect::ReflectError> call(std::lang::String name, List<std::reflect::ReflectValue> args);
 ```
 
@@ -1222,13 +1222,13 @@ Result<std::reflect::ReflectValue,std::reflect::ReflectError> call(std::lang::St
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::call(name, args);
 ```
 
-**源码**：[source/std/reflect.mgl:182](../../source/std/reflect.mgl#L182)。
+**源码**：[source/std/reflect.chl:182](../../source/std/reflect.chl#L182)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-29"></a>
 
@@ -1236,7 +1236,7 @@ std::reflect::call(name, args);
 
 **声明**
 
-```magel
+```chali
 Result<std::reflect::ReflectValue,std::reflect::ReflectError> callMethod<T>(T mut& obj, std::lang::String name, List<std::reflect::ReflectValue> args);
 ```
 
@@ -1262,13 +1262,13 @@ Result<std::reflect::ReflectValue,std::reflect::ReflectError> callMethod<T>(T mu
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::callMethod<T>(obj, name, args);
 ```
 
-**源码**：[source/std/reflect.mgl:183](../../source/std/reflect.mgl#L183)。
+**源码**：[source/std/reflect.chl:183](../../source/std/reflect.chl#L183)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-30"></a>
 
@@ -1276,7 +1276,7 @@ std::reflect::callMethod<T>(obj, name, args);
 
 **声明**
 
-```magel
+```chali
 Result<std::reflect::ReflectValue,std::reflect::ReflectError> callMethodConst<T>(T const& obj, std::lang::String name, List<std::reflect::ReflectValue> args);
 ```
 
@@ -1302,13 +1302,13 @@ Result<std::reflect::ReflectValue,std::reflect::ReflectError> callMethodConst<T>
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::callMethodConst<T>(obj, name, args);
 ```
 
-**源码**：[source/std/reflect.mgl:184](../../source/std/reflect.mgl#L184)。
+**源码**：[source/std/reflect.chl:184](../../source/std/reflect.chl#L184)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-31"></a>
 
@@ -1316,7 +1316,7 @@ std::reflect::callMethodConst<T>(obj, name, args);
 
 **声明**
 
-```magel
+```chali
 Result<std::reflect::ReflectValue,std::reflect::ReflectError> callStatic<T>(std::lang::String name, List<std::reflect::ReflectValue> args);
 ```
 
@@ -1341,13 +1341,13 @@ Result<std::reflect::ReflectValue,std::reflect::ReflectError> callStatic<T>(std:
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::callStatic<T>(name, args);
 ```
 
-**源码**：[source/std/reflect.mgl:185](../../source/std/reflect.mgl#L185)。
+**源码**：[source/std/reflect.chl:185](../../source/std/reflect.chl#L185)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-32"></a>
 
@@ -1355,7 +1355,7 @@ std::reflect::callStatic<T>(name, args);
 
 **声明**
 
-```magel
+```chali
 Result<std::reflect::ReflectValue,std::reflect::ReflectError> callEnumMethod<T>(T mut& obj, std::lang::String name, List<std::reflect::ReflectValue> args);
 ```
 
@@ -1381,13 +1381,13 @@ Result<std::reflect::ReflectValue,std::reflect::ReflectError> callEnumMethod<T>(
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::callEnumMethod<T>(obj, name, args);
 ```
 
-**源码**：[source/std/reflect.mgl:186](../../source/std/reflect.mgl#L186)。
+**源码**：[source/std/reflect.chl:186](../../source/std/reflect.chl#L186)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-33"></a>
 
@@ -1395,7 +1395,7 @@ std::reflect::callEnumMethod<T>(obj, name, args);
 
 **声明**
 
-```magel
+```chali
 Result<std::reflect::ReflectValue,std::reflect::ReflectError> callEnumMethodConst<T>(T const& obj, std::lang::String name, List<std::reflect::ReflectValue> args);
 ```
 
@@ -1421,13 +1421,13 @@ Result<std::reflect::ReflectValue,std::reflect::ReflectError> callEnumMethodCons
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::callEnumMethodConst<T>(obj, name, args);
 ```
 
-**源码**：[source/std/reflect.mgl:187](../../source/std/reflect.mgl#L187)。
+**源码**：[source/std/reflect.chl:187](../../source/std/reflect.chl#L187)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-34"></a>
 
@@ -1435,7 +1435,7 @@ std::reflect::callEnumMethodConst<T>(obj, name, args);
 
 **声明**
 
-```magel
+```chali
 Result<std::reflect::ReflectValue,std::reflect::ReflectError> callEnumStatic<T>(std::lang::String name, List<std::reflect::ReflectValue> args);
 ```
 
@@ -1460,13 +1460,13 @@ Result<std::reflect::ReflectValue,std::reflect::ReflectError> callEnumStatic<T>(
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::callEnumStatic<T>(name, args);
 ```
 
-**源码**：[source/std/reflect.mgl:188](../../source/std/reflect.mgl#L188)。
+**源码**：[source/std/reflect.chl:188](../../source/std/reflect.chl#L188)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-35"></a>
 
@@ -1474,7 +1474,7 @@ std::reflect::callEnumStatic<T>(name, args);
 
 **声明**
 
-```magel
+```chali
 Result<T,std::reflect::ReflectError> construct<T>(List<std::reflect::ReflectValue> args);
 ```
 
@@ -1498,13 +1498,13 @@ Result<T,std::reflect::ReflectError> construct<T>(List<std::reflect::ReflectValu
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::construct<T>(args);
 ```
 
-**源码**：[source/std/reflect.mgl:189](../../source/std/reflect.mgl#L189)。
+**源码**：[source/std/reflect.chl:189](../../source/std/reflect.chl#L189)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-36"></a>
 
@@ -1512,7 +1512,7 @@ std::reflect::construct<T>(args);
 
 **声明**
 
-```magel
+```chali
 Result<F,std::reflect::ReflectError> getField<T,F>(T const& obj, std::lang::String name);
 ```
 
@@ -1539,13 +1539,13 @@ Result<F,std::reflect::ReflectError> getField<T,F>(T const& obj, std::lang::Stri
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::getField<T,F>(obj, name);
 ```
 
-**源码**：[source/std/reflect.mgl:191](../../source/std/reflect.mgl#L191)。
+**源码**：[source/std/reflect.chl:191](../../source/std/reflect.chl#L191)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-37"></a>
 
@@ -1553,7 +1553,7 @@ std::reflect::getField<T,F>(obj, name);
 
 **声明**
 
-```magel
+```chali
 Result<bool,std::reflect::ReflectError> setField<T,F>(T mut& obj, std::lang::String name, F value);
 ```
 
@@ -1581,13 +1581,13 @@ Result<bool,std::reflect::ReflectError> setField<T,F>(T mut& obj, std::lang::Str
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::setField<T,F>(obj, name, value);
 ```
 
-**源码**：[source/std/reflect.mgl:193](../../source/std/reflect.mgl#L193)。
+**源码**：[source/std/reflect.chl:193](../../source/std/reflect.chl#L193)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-38"></a>
 
@@ -1595,7 +1595,7 @@ std::reflect::setField<T,F>(obj, name, value);
 
 **声明**
 
-```magel
+```chali
 Result<std::reflect::ReflectValue,std::reflect::ReflectError> callInterface<I>(I mut& obj, std::lang::String name, List<std::reflect::ReflectValue> args);
 ```
 
@@ -1621,13 +1621,13 @@ Result<std::reflect::ReflectValue,std::reflect::ReflectError> callInterface<I>(I
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::callInterface<I>(obj, name, args);
 ```
 
-**源码**：[source/std/reflect.mgl:194](../../source/std/reflect.mgl#L194)。
+**源码**：[source/std/reflect.chl:194](../../source/std/reflect.chl#L194)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。
 
 <a id="api-39"></a>
 
@@ -1635,7 +1635,7 @@ std::reflect::callInterface<I>(obj, name, args);
 
 **声明**
 
-```magel
+```chali
 Result<std::reflect::ReflectValue,std::reflect::ReflectError> callInterfaceConst<I>(I const& obj, std::lang::String name, List<std::reflect::ReflectValue> args);
 ```
 
@@ -1661,10 +1661,10 @@ Result<std::reflect::ReflectValue,std::reflect::ReflectError> callInterfaceConst
 
 **调用形式**
 
-```magel
+```chali
 std::reflect::callInterfaceConst<I>(obj, name, args);
 ```
 
-**源码**：[source/std/reflect.mgl:195](../../source/std/reflect.mgl#L195)。
+**源码**：[source/std/reflect.chl:195](../../source/std/reflect.chl#L195)。
 
-**完整示例**：[doc/examples/library/reflect.mgl](../../doc/examples/library/reflect.mgl)。
+**完整示例**：[doc/examples/library/reflect.chl](../../doc/examples/library/reflect.chl)。

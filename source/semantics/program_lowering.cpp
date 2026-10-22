@@ -157,7 +157,7 @@ bool BuildStructTypes(simple_ast::Program &program)
         if (init) g_globalInit.push_back(init);
     }
     /* 运算符重载不用 simple_ast 的 `a.方法(b)` 脱糖：那是"左操作数当 self"的成员形式，
-     * 表达不了 `5 + a` 这种右操作数是 struct 的方向。magel 自己在 LowerBinary 里
+     * 表达不了 `5 + a` 这种右操作数是 struct 的方向。chali 自己在 LowerBinary 里
      * 按左 / 右找出重载方法再发一次普通调用（四元式里同样看不到 `+`）。 */
     return true;
 }
@@ -197,7 +197,7 @@ bool LowerGlobals(simple_ast::Program &program)
             }
             if (!CheckDeclaredType(type, decl.s)) return false;
             if (type->kind == MType::Ptr && decl.kids[0] < 0)
-                return Fail(MAGEL_TEXT("引用声明必须初始化，缺省值请使用 Option<T mut&>"));
+                return Fail(CHALI_TEXT("引用声明必须初始化，缺省值请使用 Option<T mut&>"));
             if (IsRuntimeArray(type) && !InitIsRuntimeArray(decl.kids[0]))
             {
                 Fail("全局的运行时数组只能用 `new [N]` 初始化：" + decl.s);
@@ -263,7 +263,7 @@ bool LowerGlobals(simple_ast::Program &program)
             }
             if (g_addressTakenNames.count(decl.s) && NeedsReferenceStorage(type))
             {
-                const auto storage = AllocateName("__magel_global_reference");
+                const auto storage = AllocateName("__chali_global_reference");
                 program.addVariable(storage, simple_ast::Type::i64());
                 g_globalInit.push_back(simple_ast::Node::assign(storage, simple_ast::Node::arrayNew(
                                                                              LowerType(ArrayType(type, { 1 }), storage), { simple_ast::Node::i(0) })));
@@ -286,11 +286,11 @@ bool LowerGlobals(simple_ast::Program &program)
  * 接口引用是「地址 + 类型号」的**胖引用**（值在运行期对象表里，和 `obj` 同一个表示），
  * 所以分派只要读一下类型号就能挑到具体实现 —— 生成出来的函数长这样（伪码）：
  *
- *     int __magel_iface.Shape.area(胖引用 __magel_self) {
- *         __magel_t = __std_obj_name(__magel_self)            // 读出盒子里那个类型号
- *         if (__magel_t == __typeTag(Circle mut&)) { return Circle.area(__std_obj_addr(__magel_self)) }
- *         if (__magel_t == __typeTag(Square mut&)) { return Square.area(__std_obj_addr(__magel_self)) }
- *         __std_iface_fail(__magel_t, "Shape.area")        // 空引用 / 没实现 → 运行期错误
+ *     int __chali_iface.Shape.area(胖引用 __chali_self) {
+ *         __chali_t = __std_obj_name(__chali_self)            // 读出盒子里那个类型号
+ *         if (__chali_t == __typeTag(Circle mut&)) { return Circle.area(__std_obj_addr(__chali_self)) }
+ *         if (__chali_t == __typeTag(Square mut&)) { return Square.area(__std_obj_addr(__chali_self)) }
+ *         __std_iface_fail(__chali_t, "Shape.area")        // 空引用 / 没实现 → 运行期错误
  *         return 0
  *     }
  *
@@ -318,20 +318,20 @@ simple_ast::Function MakeInterfaceDispatcher(const Memory::String &iface,
     function.name = InterfaceLabel(iface, methodName);
     if (implicitOperand) function.name += "$reflection_unary";
     function.result = LowerType(declaredResult, function.name);
-    function.parameters.emplace_back("__magel_self", Type::i64());
-    function.parameters.emplace_back("__magel_readonly", Type::i64());
+    function.parameters.emplace_back("__chali_self", Type::i64());
+    function.parameters.emplace_back("__chali_readonly", Type::i64());
     Memory::Vector<Memory::String> argNames;
     for (std::size_t index = 0; !implicitOperand && index < declaredParams.size(); ++index)
     {
-        const Memory::String name = "__magel_a" + Memory::toString(index);
+        const Memory::String name = "__chali_a" + Memory::toString(index);
         argNames.push_back(name);
         function.parameters.emplace_back(name, LowerType(declaredParams[index], name));
     }
 
     Memory::Vector<NodePtr> body;
-    body.push_back(Node::declare("__magel_t", Type::i64()));
+    body.push_back(Node::declare("__chali_t", Type::i64()));
     body.push_back(Node::assign(
-        "__magel_t", Node::call("__std_obj_name", { "__magel_o" }, { Node::var("__magel_self") })));
+        "__chali_t", Node::call("__std_obj_name", { "__chali_o" }, { Node::var("__chali_self") })));
     for (const auto &item : g_structs)
     {
         if (!ImplementsInterface(item.first, iface)) continue;
@@ -348,12 +348,12 @@ simple_ast::Function MakeInterfaceDispatcher(const Memory::String &iface,
         /* 调用点：`self` = 胖引用里那个地址，后面按位置传 —— 和方法调用一个规矩。 */
         Memory::Vector<Memory::String> callNames{ "self" };
         Memory::Vector<NodePtr> callValues{
-            Node::call("__std_obj_addr", { "__magel_o" }, { Node::var("__magel_self") })
+            Node::call("__std_obj_addr", { "__chali_o" }, { Node::var("__chali_self") })
         };
         if (implicitOperand)
         {
             callNames.push_back(implementation->params[0].emitted);
-            callValues.push_back(Node::call("__std_obj_addr", { "__magel_o" }, { Node::var("__magel_self") }));
+            callValues.push_back(Node::call("__std_obj_addr", { "__chali_o" }, { Node::var("__chali_self") }));
         }
         for (std::size_t index = 0; index < argNames.size(); ++index)
         {
@@ -362,17 +362,17 @@ simple_ast::Function MakeInterfaceDispatcher(const Memory::String &iface,
         }
         const std::shared_ptr<MType> named = NamedType(item.first);
         /* `const&` 与 `mut&` 两种都认（可写性由接它的变量说了算）。 */
-        NodePtr condition = Node::binary("==", Node::var("__magel_t"),
+        NodePtr condition = Node::binary("==", Node::var("__chali_t"),
                                          Node::i(TypeIdOf(PointerType(named, false))));
         condition = Node::binary(
             "||", condition,
-            Node::binary("==", Node::var("__magel_t"), Node::i(TypeIdOf(PointerType(named, true)))));
+            Node::binary("==", Node::var("__chali_t"), Node::i(TypeIdOf(PointerType(named, true)))));
         Memory::Vector<NodePtr> dispatch;
         Memory::Set<Memory::String> visiting;
         if (methodName == "drop" || MethodMutatesReceiver(item.first, *implementation, &visiting))
         {
-            dispatch.push_back(Node::ifThenElse(Node::var("__magel_readonly"),
-                                                Node::exprStmt(Node::call("__std_panic", { "__magel_message" },
+            dispatch.push_back(Node::ifThenElse(Node::var("__chali_readonly"),
+                                                Node::exprStmt(Node::call("__std_panic", { "__chali_message" },
                                                                           { Node::str("只读接收者不能调用修改方法：" + iface + "." + methodName) })),
                                                 nullptr));
         }
@@ -392,8 +392,8 @@ simple_ast::Function MakeInterfaceDispatcher(const Memory::String &iface,
             Node::block(dispatch),
             nullptr));
     }
-    body.push_back(Node::exprStmt(Node::call("__std_iface_fail", { "__magel_t", "__magel_name" },
-                                             { Node::var("__magel_t"),
+    body.push_back(Node::exprStmt(Node::call("__std_iface_fail", { "__chali_t", "__chali_name" },
+                                             { Node::var("__chali_t"),
                                                Node::str(iface + "." + methodName) })));
     body.push_back(Node::ret(IsFloatType(declaredResult) ? Node::f(0.0) : Node::i(0)));
     function.body = Node::block(body);
@@ -433,10 +433,10 @@ void AppendLeafStore(Memory::Vector<simple_ast::NodePtr> *body,
     using simple_ast::Type;
     if (leaf && (IsStandardOpcode(leaf, "String") || IsObjectLike(leaf)))
     {
-        const Memory::String temp = AllocateName("__magel_agg_leaf");
+        const Memory::String temp = AllocateName("__chali_agg_leaf");
         body->push_back(Node::declare(temp, Type::i64()));
         body->push_back(Node::assign(temp, value));
-        const simple_ast::NodePtr copied = Node::call(ObjectCopyFunction(leaf), { "__magel_v" }, { Node::var(temp) });
+        const simple_ast::NodePtr copied = Node::call(ObjectCopyFunction(leaf), { "__chali_v" }, { Node::var(temp) });
         body->push_back(Node::ifThenElse(
             Node::binary("!=", Node::var(temp), Node::i(0)),
             Node::block({ Node::storeAt(dst, copied, Type::i64()) }),
@@ -470,9 +470,9 @@ void AppendLeafCopy(Memory::Vector<simple_ast::NodePtr> *body,
 }
 
 /**
- * @brief `__magel_agg_rel_<T>(addr)`：按叶子递归软释放聚合槽里归它所有的字符串 / 对象。
+ * @brief `__chali_agg_rel_<T>(addr)`：按叶子递归软释放聚合槽里归它所有的字符串 / 对象。
  * @param owner 所属对象或类型信息。
- * @retval 保存`__magel_agg_rel_<T>(addr)`：按叶子递归软释放聚合槽里归它所有的字符串 / 对象结果的对象。
+ * @retval 保存`__chali_agg_rel_<T>(addr)`：按叶子递归软释放聚合槽里归它所有的字符串 / 对象结果的对象。
  */
 simple_ast::Function MakeAggregateReleaseFunction(const Memory::String &owner)
 {
@@ -481,7 +481,7 @@ simple_ast::Function MakeAggregateReleaseFunction(const Memory::String &owner)
     simple_ast::Function function;
     function.name = AggregateReleaseName(owner);
     function.result = Type::i32();
-    function.parameters = { { "__magel_agg", Type::i64() } };
+    function.parameters = { { "__chali_agg", Type::i64() } };
     Memory::Vector<simple_ast::NodePtr> body;
     const MStructDef *definition = FindStruct(owner);
     if (definition != nullptr)
@@ -491,7 +491,7 @@ simple_ast::Function MakeAggregateReleaseFunction(const Memory::String &owner)
         {
             if (!LeafOwnedByAggregate(definition->leaves[index - 1u].second)) continue;
             const simple_ast::NodePtr address = Node::offset(
-                Node::var("__magel_agg"), Node::i(static_cast<std::int64_t>(index - 1u)), 8);
+                Node::var("__chali_agg"), Node::i(static_cast<std::int64_t>(index - 1u)), 8);
             /* 释放后把槽清 0：同一个静态聚合对象被两次释放（或两个别名指向它）时，
              * 第二次 `drop 0` 是软释放空操作，不会二次释放同一块。 */
             const auto *opcode = FindOpcodeDefinition(definition->leaves[index - 1u].second);
@@ -506,9 +506,9 @@ simple_ast::Function MakeAggregateReleaseFunction(const Memory::String &owner)
 }
 
 /**
- * @brief `__magel_agg_cpy_<T>(dst, src)`：聚合值的深拷贝（字符串 / 对象各复制一份）。
+ * @brief `__chali_agg_cpy_<T>(dst, src)`：聚合值的深拷贝（字符串 / 对象各复制一份）。
  * @param owner 所属对象或类型信息。
- * @retval 保存`__magel_agg_cpy_<T>(dst, src)`：聚合值的深拷贝（字符串 / 对象各复制一份）结果的对象。
+ * @retval 保存`__chali_agg_cpy_<T>(dst, src)`：聚合值的深拷贝（字符串 / 对象各复制一份）结果的对象。
  */
 simple_ast::Function MakeAggregateCopyFunction(const Memory::String &owner)
 {
@@ -517,7 +517,7 @@ simple_ast::Function MakeAggregateCopyFunction(const Memory::String &owner)
     simple_ast::Function function;
     function.name = AggregateCopyName(owner);
     function.result = Type::i32();
-    function.parameters = { { "__magel_agg_dst", Type::i64() }, { "__magel_agg_src", Type::i64() } };
+    function.parameters = { { "__chali_agg_dst", Type::i64() }, { "__chali_agg_src", Type::i64() } };
     Memory::Vector<simple_ast::NodePtr> body;
     const MStructDef *definition = FindStruct(owner);
     if (definition != nullptr)
@@ -525,9 +525,9 @@ simple_ast::Function MakeAggregateCopyFunction(const Memory::String &owner)
         for (std::size_t index = 0; index < definition->leaves.size(); ++index)
         {
             const simple_ast::NodePtr dst = Node::offset(
-                Node::var("__magel_agg_dst"), Node::i(static_cast<std::int64_t>(index)), 8);
+                Node::var("__chali_agg_dst"), Node::i(static_cast<std::int64_t>(index)), 8);
             const simple_ast::NodePtr src = Node::offset(
-                Node::var("__magel_agg_src"), Node::i(static_cast<std::int64_t>(index)), 8);
+                Node::var("__chali_agg_src"), Node::i(static_cast<std::int64_t>(index)), 8);
             AppendLeafCopy(&body, dst, src, definition->leaves[index].second);
         }
     }
@@ -549,15 +549,15 @@ void AppendAggregateHelpers(simple_ast::Program &program)
 }
 
 /**
- * @brief `__magel_arr_rel_<T>(arr, count)`：按元素释放运行时数组里的值。
+ * @brief `__chali_arr_rel_<T>(arr, count)`：按元素释放运行时数组里的值。
  *
  * 数组元素和字段 / 容器元素一样是**值**：字符串、对象句柄逐个还回去，结构体走
- * `__magel_agg_rel_<T>` 递归释放它槽里的叶子。释放后把槽清 0（软释放重入是空操作）。
+ * `__chali_agg_rel_<T>` 递归释放它槽里的叶子。释放后把槽清 0（软释放重入是空操作）。
  * @param element 数组或容器的元素类型。
- * @retval 保存`__magel_arr_rel_<T>(arr, count)`：按元素释放运行时数组里的值。
+ * @retval 保存`__chali_arr_rel_<T>(arr, count)`：按元素释放运行时数组里的值。
  *
  * 数组元素和字段 / 容器元素一样是**值**：字符串、对象句柄逐个还回去，结构体走
- * `__magel_agg_rel_<T>` 递归释放它槽里的叶子。释放后把槽清 0（软释放重入是空操作）结果的对象。
+ * `__chali_agg_rel_<T>` 递归释放它槽里的叶子。释放后把槽清 0（软释放重入是空操作）结果的对象。
  */
 simple_ast::Function MakeArrayReleaseFunction(const std::shared_ptr<MType> &element)
 {
@@ -566,10 +566,10 @@ simple_ast::Function MakeArrayReleaseFunction(const std::shared_ptr<MType> &elem
     simple_ast::Function function;
     function.name = ArrayReleaseName(element);
     function.result = Type::i32();
-    function.parameters = { { "__magel_arr", Type::i64() }, { "__magel_count", Type::i64() } };
+    function.parameters = { { "__chali_arr", Type::i64() }, { "__chali_count", Type::i64() } };
     Memory::Vector<simple_ast::NodePtr> body;
     /* label / 局部变量按类型取名：四元式里的 label 是**全局**名字，两个助手共用
-     * `__magel_arr_loop` 会互相串跳（同一次编译里生成多个数组释放函数时踩过）。 */
+     * `__chali_arr_loop` 会互相串跳（同一次编译里生成多个数组释放函数时踩过）。 */
     const Memory::String stem = ArrayReleaseName(element);
     const Memory::String index = stem + "__i";
     const Memory::String loopLabel = stem + "__loop";
@@ -579,10 +579,10 @@ simple_ast::Function MakeArrayReleaseFunction(const std::shared_ptr<MType> &elem
     body.push_back(Node::assign(index, Node::i(0)));
     body.push_back(Node::label(loopLabel));
     body.push_back(Node::ifThenElse(
-        Node::binary(">=", Node::var(index), Node::var("__magel_count")),
+        Node::binary(">=", Node::var(index), Node::var("__chali_count")),
         Node::block({ Node::jump(doneLabel) }), Node::block({})));
     const simple_ast::NodePtr address =
-        Node::offset(Node::var("__magel_arr"), Node::var(index), stride);
+        Node::offset(Node::var("__chali_arr"), Node::var(index), stride);
     if (element->kind == MType::Struct)
     {
         const auto cleanup = MakeAggregateCleanup(element, address);
@@ -624,7 +624,7 @@ simple_ast::Function MakeEnumConstructor(const Memory::String &enumName,
 {
     using simple_ast::Node;
     simple_ast::Function function;
-    function.name = "__magel_enum_" + enumName + "_" + variant.name;
+    function.name = "__chali_enum_" + enumName + "_" + variant.name;
     function.result = LowerType(NamedType(enumName), function.name);
     Memory::Vector<Memory::String> parameterNames;
     for (std::size_t index = 0; index < variant.payloads.size(); ++index)
@@ -643,7 +643,7 @@ simple_ast::Function MakeEnumConstructor(const Memory::String &enumName,
     const MField *tagField = FindField(enumName, "__tag");
     if (tagField != nullptr)
         values[static_cast<std::size_t>(tagField->slot)] = Node::i(variant.tag);
-    const Memory::String resultName = "__magel_enum_value";
+    const Memory::String resultName = "__chali_enum_value";
     Memory::Vector<simple_ast::NodePtr> body;
     body.push_back(Node::declare(resultName, LowerType(NamedType(enumName), resultName)));
     body.push_back(Node::assign(resultName, Node::structNew(enumName, values)));
@@ -707,7 +707,7 @@ void AppendEnumConstructors(simple_ast::Program &program)
  */
 Memory::String TupleConstructorName(const Memory::String &tupleName)
 {
-    return "__magel_make" + tupleName;
+    return "__chali_make" + tupleName;
 }
 
 /**
@@ -738,7 +738,7 @@ simple_ast::Function MakeTupleConstructor(
     Memory::Vector<simple_ast::NodePtr> zeros;
     for (const auto &leaf : storage->leaves)
         zeros.push_back(IsFloatType(leaf.second) ? Node::f(0.0) : Node::i(0));
-    const Memory::String result = "__magel_tuple_value";
+    const Memory::String result = "__chali_tuple_value";
     Memory::Vector<simple_ast::NodePtr> body{
         Node::declare(result, function.result),
         Node::assign(result, Node::structNew(tupleName, zeros)),
@@ -901,8 +901,8 @@ void AppendArgumentsMain(simple_ast::Program &program)
         wrapper.name = "main";
         const bool voidMain = declaration.signature.result->kind == MType::Void;
         wrapper.result = voidMain ? simple_ast::Type::i64() : LowerType(declaration.signature.result, "main");
-        const Memory::String arguments = "__magel_program_arguments";
-        const Memory::String result = "__magel_program_result";
+        const Memory::String arguments = "__chali_program_arguments";
+        const Memory::String result = "__chali_program_result";
         Memory::Vector<simple_ast::NodePtr> body{
             Node::declare(arguments, LowerType(declaration.signature.params[0].type, arguments)),
             Node::assign(arguments, Node::call("__std_program_arguments", {}, {})),
@@ -915,7 +915,7 @@ void AppendArgumentsMain(simple_ast::Program &program)
             body.push_back(Node::declare(result, wrapper.result));
             body.push_back(Node::assign(result, call));
         }
-        body.push_back(Node::exprStmt(Node::call("__std_object_free", { "__magel_o" }, { Node::var(arguments) })));
+        body.push_back(Node::exprStmt(Node::call("__std_object_free", { "__chali_o" }, { Node::var(arguments) })));
         /* 带参数入口的引导也是"正常停机"的出口；全局清理由之后统一跑一次的
          * `InsertGlobalCleanupBeforeReturns` 补在 `ret` 前面。 */
         body.push_back(Node::ret(voidMain ? Node::i(0) : Node::var(result)));
@@ -1037,7 +1037,7 @@ bool ValidateDefaultArguments(const Memory::Vector<MParam> &params)
         const auto globalCleanup = g_globalCleanupItems;
         const auto cleanupBase = g_cleanupBase;
         const int body = M_Block(M_List1(M_Return(param.defaultExpr)));
-        LowerFunction("__magel_default_check", {}, param.type, {}, body, N(param.defaultExpr).module);
+        LowerFunction("__chali_default_check", {}, param.type, {}, body, N(param.defaultExpr).module);
         g_cleanupItems = cleanup;
         g_globalCleanupItems = globalCleanup;
         g_cleanupBase = cleanupBase;
@@ -1090,9 +1090,9 @@ void AppendOpcodeConstructors(simple_ast::Program &program)
     {
         if (!entry.second.aggregate || entry.second.internal) continue;
         const auto type = NamedType(entry.first);
-        const auto value = AllocateName("__magel_opcode_value");
+        const auto value = AllocateName("__chali_opcode_value");
         simple_ast::Function function;
-        function.name = "__magel_opcode_new_" + entry.first;
+        function.name = "__chali_opcode_new_" + entry.first;
         function.parameters = { { "handle", simple_ast::Type::i64() } };
         function.result = LowerType(type, value);
         function.body = Node::block({ Node::declare(value, LowerType(type, value)),
@@ -1124,7 +1124,7 @@ void CollectLoweredReferences(const simple_ast::NodePtr &node, Memory::Set<Memor
 bool DeferredNonCopyableGeneric(const Memory::String &owner)
 {
     if (!HasNonCopyableValue(NamedType(owner))) return false;
-    for (const auto &entry : magel_generic::session.made)
+    for (const auto &entry : chali_generic::session.made)
     {
         const auto &instance = entry.second;
         if (instance.generic && (instance.name == owner || ModuleSymbol(instance.generic->module, instance.name) == owner)) return true;
@@ -1173,7 +1173,7 @@ bool LowerProgram(simple_ast::Program &program)
         ReductionSourceScope source(topId);
         if (top.kind == MNode::FuncDef)
         {
-            if (top.s.rfind("__magel_lambda_", 0) == 0)
+            if (top.s.rfind("__chali_lambda_", 0) == 0)
             {
                 pendingLambdas.push_back(topId);
                 continue;
@@ -1262,11 +1262,11 @@ bool LowerProgram(simple_ast::Program &program)
     for (const auto &owner : g_needsCaptureDestructor)
     {
         simple_ast::Function function;
-        function.name = "__magel_capture_drop_" + owner;
+        function.name = "__chali_capture_drop_" + owner;
         function.result = simple_ast::Type::i64();
-        function.parameters = { { "__magel_capture_address", simple_ast::Type::i64() } };
+        function.parameters = { { "__chali_capture_address", simple_ast::Type::i64() } };
         Memory::Vector<simple_ast::NodePtr> body;
-        AppendDestruction(&body, simple_ast::Node::var("__magel_capture_address"), owner,
+        AppendDestruction(&body, simple_ast::Node::var("__chali_capture_address"), owner,
                           StructHasInterface(owner, "Drop"), StructHasInterface(owner, "Closeable"));
         body.push_back(simple_ast::Node::ret(simple_ast::Node::i(0)));
         function.body = simple_ast::Node::block(body);

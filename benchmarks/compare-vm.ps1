@@ -1,10 +1,10 @@
 ﻿<#
-在同一台 Windows 机器上构建、验证并比较 MAGEL StackVM：
+在同一台 Windows 机器上构建、验证并比较 CHALI StackVM：
 MSVC Win32、MSVC x64、GCC x64。默认预热一次、正式运行七次。
 
 从仓库根目录运行：
-  ./magel/benchmarks/compare-vm.ps1
-  ./magel/benchmarks/compare-vm.ps1 -ExpectedCpu '9700X'
+  ./chali/benchmarks/compare-vm.ps1
+  ./chali/benchmarks/compare-vm.ps1 -ExpectedCpu '9700X'
 
 结果写入 tmp/vm-bitness/summary.md 和 results.json；不会删除现有文件。
 #>
@@ -108,11 +108,11 @@ try {
     $x64Dir = Join-Path $out 'x64'
     $gccDir = Join-Path $out 'gcc64'
     $allocatorFlags = ''
-    Invoke-Checked $cmake @('-S', 'magel/library/stackvm', '-B', $x86Dir,
+    Invoke-Checked $cmake @('-S', 'chali/library/stackvm', '-B', $x86Dir,
                             '-G', 'Visual Studio 17 2022', '-A', 'Win32', "-DCMAKE_CXX_FLAGS=$allocatorFlags") | Out-Null
-    Invoke-Checked $cmake @('-S', 'magel/library/stackvm', '-B', $x64Dir,
+    Invoke-Checked $cmake @('-S', 'chali/library/stackvm', '-B', $x64Dir,
                             '-G', 'Visual Studio 17 2022', '-A', 'x64', "-DCMAKE_CXX_FLAGS=$allocatorFlags") | Out-Null
-    Invoke-Checked $cmake @('-S', 'magel/library/stackvm', '-B', $gccDir,
+    Invoke-Checked $cmake @('-S', 'chali/library/stackvm', '-B', $gccDir,
                             '-G', 'MinGW Makefiles', "-DCMAKE_CXX_COMPILER=$gcc",
                             "-DCMAKE_MAKE_PROGRAM=$make", '-DCMAKE_BUILD_TYPE=Release', "-DCMAKE_CXX_FLAGS=$allocatorFlags") | Out-Null
     foreach ($dir in @($x86Dir, $x64Dir)) {
@@ -132,33 +132,33 @@ try {
     foreach ($build in $binaries) {
         $release = if ($build.name -like 'MSVC*') { 'Release' } else { '' }
         $build | Add-Member -NotePropertyName bin -NotePropertyValue (Join-Path $build.dir $release)
-        $vm = Join-Path $build.bin 'magel-stackvm.exe'
+        $vm = Join-Path $build.bin 'chali-stackvm.exe'
         if ((Get-PeMachine $vm) -ne $build.machine) {
             throw "$($build.name) PE 位数与预期不符：$vm"
         }
     }
 
-    $parser = Join-Path $root 'magel/magel.exe'
+    $parser = Join-Path $root 'chali/ChaLi.exe'
     if (-not (Test-Path -LiteralPath $parser -PathType Leaf)) {
-        Write-Host '尚无 MAGEL 编译器，先构建根目录工程...'
+        Write-Host '尚无 CHALI 编译器，先构建根目录工程...'
         & (Join-Path $root 'build.ps1') -NoRust -NoExamples -NoProjects
-        if ($LASTEXITCODE -ne 0) { throw 'MAGEL 编译器构建失败' }
+        if ($LASTEXITCODE -ne 0) { throw 'CHALI 编译器构建失败' }
     }
-    $prefix = if ($ProgramPrefix) { [IO.Path]::GetFullPath($ProgramPrefix) } else { Join-Path $out 'magel-loop' }
+    $prefix = if ($ProgramPrefix) { [IO.Path]::GetFullPath($ProgramPrefix) } else { Join-Path $out 'chali-loop' }
     if (-not $ProgramPrefix) {
-        Invoke-Checked $parser @('magel/benchmarks/loop.mgl', '--emit', '--svmb', '--out', $prefix) | Out-Null
+        Invoke-Checked $parser @('chali/benchmarks/loop.chl', '--emit', '--svmb', '--out', $prefix) | Out-Null
     }
     $program = "$prefix.svmb"
     $data = "$prefix.data.bin"
     $layout = "$prefix.layout"
 
-    Write-Host '运行单元测试、同一份 MAGEL 字节码与性能基准...'
+    Write-Host '运行单元测试、同一份 CHALI 字节码与性能基准...'
     $rows = @()
     $expectedAssertions = 0
     foreach ($build in $binaries) {
-        $vm = Join-Path $build.bin 'magel-stackvm.exe'
-        $test = Join-Path $build.bin 'magel-stackvm-tests.exe'
-        $testOutput = Invoke-Checked $test @('magel/library/stackvm/examples')
+        $vm = Join-Path $build.bin 'chali-stackvm.exe'
+        $test = Join-Path $build.bin 'chali-stackvm-tests.exe'
+        $testOutput = Invoke-Checked $test @('chali/library/stackvm/examples')
         $assertions = [regex]::Match($testOutput, '全部通过（(\d+) 项断言）')
         if (-not $assertions.Success) { throw "$($build.name) 单元测试结果异常：$testOutput" }
         $count = [int]$assertions.Groups[1].Value
@@ -170,11 +170,11 @@ try {
                              '--limit', '100000000') | Out-Null
         foreach ($workload in @('mc', 'vm')) {
             if ($workload -eq 'mc') {
-                $exe = Join-Path $build.bin 'magel-stackvm-magel-benchmark.exe'
+                $exe = Join-Path $build.bin 'chali-stackvm-chali-benchmark.exe'
                 $result = Parse-Benchmark (Invoke-Checked $exe @($program, $data, $layout, "$Repeats"))
-                if ($result.checksum -ne 'asserted') { throw "$($build.name) MAGEL 校验异常" }
+                if ($result.checksum -ne 'asserted') { throw "$($build.name) CHALI 校验异常" }
             } else {
-                $exe = Join-Path $build.bin 'magel-stackvm-benchmark.exe'
+                $exe = Join-Path $build.bin 'chali-stackvm-benchmark.exe'
                 $result = Parse-Benchmark (Invoke-Checked $exe @('1000000', "$Repeats"))
                 if ($result.checksum -ne '499999500000') { throw "$($build.name) VM 校验异常" }
             }
@@ -189,9 +189,9 @@ try {
         }
     }
 
-    $vm32 = Join-Path $x86Dir 'Release/magel-stackvm.exe'
-    $vm64 = Join-Path $x64Dir 'Release/magel-stackvm.exe'
-    $quad = 'magel/library/stackvm/examples/13_heap.quad'
+    $vm32 = Join-Path $x86Dir 'Release/chali-stackvm.exe'
+    $vm64 = Join-Path $x64Dir 'Release/chali-stackvm.exe'
+    $quad = 'chali/library/stackvm/examples/13_heap.quad'
     $svmb32 = Join-Path $out 'heap-x86.svmb'
     $svmb64 = Join-Path $out 'heap-x64.svmb'
     Invoke-Checked $vm32 @('compile', $quad, '--out', $svmb32) | Out-Null
@@ -212,7 +212,7 @@ try {
         optimization='MSVC Release /O2 /DNDEBUG; GCC Release -O3 -DNDEBUG; C++17'
         allocator='C pool, explicit STL allocators, no global new/delete override'
         pool_capacity_bytes=536870912
-        magel_program='magel/benchmarks/loop.mgl'
+        chali_program='chali/benchmarks/loop.chl'
         svmb_sha256=(Get-FileHash -LiteralPath $program -Algorithm SHA256).Hash
         cross_bitness_svmb_sha256=$hash32
         unit_assertions_each=$expectedAssertions
@@ -222,24 +222,24 @@ try {
     $report | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $jsonPath -Encoding UTF8
 
     $md = [Collections.Generic.List[string]]::new()
-    $md.add('# MAGEL StackVM 位数与编译器性能对比')
+    $md.add('# CHALI StackVM 位数与编译器性能对比')
     $md.add('')
     $md.add("CPU：$cpu；系统：$($os.Caption) $($os.Version)。")
     $md.add("编译器：MSVC $msvcVersion、GCC $gccVersion；每项预热一次，正式运行 $Repeats 次取中位数。")
     $md.add('MSVC 使用 Release /O2 /DNDEBUG；GCC 使用 Release -O3 -DNDEBUG。')
     $md.add('分配器：C 内存池；默认容量 512 MiB。')
-    $md.add('计时只包含 Machine::run，不含 MAGEL 编译、加载或进程启动。')
+    $md.add('计时只包含 Machine::run，不含 CHALI 编译、加载或进程启动。')
     $md.add('')
     $md.add('| 构建 | 负载 | 指令数 | 中位数（ms） | MIPS | 校验 |')
     $md.add('| --- | --- | ---: | ---: | ---: | --- |')
     foreach ($row in $rows) {
-        $label = if ($row.workload -eq 'mc') { 'MAGEL 源码 loop.mgl' } else { 'VM 整数循环' }
+        $label = if ($row.workload -eq 'mc') { 'CHALI 源码 loop.chl' } else { 'VM 整数循环' }
         $md.add(('| {0} | {1} | {2} | {3:N3} | {4:N3} | {5} |' -f
                  $row.build, $label, $row.steps, $row.median_ms, $row.mips, $row.checksum))
     }
     $md.add('')
     $md.add("三种构建均通过 $expectedAssertions 项断言；x86 / x64 生成的堆示例 .svmb SHA-256 相同：$hash32。")
-    $md.add('x86 / x64 交叉运行均输出 42 7 0；同一份 MAGEL 字节码在三种构建下通过断言。')
+    $md.add('x86 / x64 交叉运行均输出 42 7 0；同一份 CHALI 字节码在三种构建下通过断言。')
     $md.add('32 位 Windows 必须运行 Win32 VM；C ABI 动态库须与 VM 进程位数相同。')
     $md.add('结果只对应当前机器、构建选项和工作负载，不代表其他 CPU 的性能。')
     $mdPath = Join-Path $out 'summary.md'

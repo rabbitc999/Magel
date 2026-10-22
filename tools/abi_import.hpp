@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace magel_abi_import
+namespace chali_abi_import
 {
 /**
  * @brief 去掉声明两端的空白。
@@ -25,7 +25,7 @@ inline std::string trim(const std::string &text)
     return text.substr(first, text.find_last_not_of(" \r\n\t") - first + 1);
 }
 /**
- * @brief 转义生成的 Magel 字符串字面量。
+ * @brief 转义生成的 ChaLi 字符串字面量。
  * @param text 库路径或符号。
  * @return 含引号的字面量。
  */
@@ -43,7 +43,7 @@ inline std::string quoted(const std::string &text)
  * @brief 映射明确支持的 C 类型；未知布局和指针不会被猜测为整数。
  * @param value C 类型文本。
  * @param records 已登记的结构体和枚举类型。
- * @return Magel 类型；不支持时返回空串。
+ * @return ChaLi 类型；不支持时返回空串。
  */
 inline std::string type(std::string value, const std::set<std::string> &records, const std::map<std::string, std::string> &aliases)
 {
@@ -70,7 +70,7 @@ inline int run(int argc, char **argv)
 {
     if (argc < 5)
     {
-        std::cerr << "用法：magel gen abi HEADER --library LIBRARY --out FILE.mgl\n";
+        std::cerr << "用法：chali gen abi HEADER --library LIBRARY --out FILE.chl\n";
         return 2;
     }
     std::string library, output;
@@ -336,4 +336,4 @@ inline int run(int argc, char **argv)
     }
     return 0;
 }
-}  // namespace magel_abi_import
+}  // namespace chali_abi_import

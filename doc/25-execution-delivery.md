@@ -4,10 +4,10 @@
 
 | 场景 | 入口 | 结果 |
 | --- | --- | --- |
-| 直接运行 | `magel run app.mgl` | VM 执行及退出状态 |
-| 检查 | `magel check app.mgl` | 语法、类型、借用与语义诊断 |
-| 四元式 | `magel emit app.mgl out build/app` | `.quad`、数据区及布局 |
-| 字节码 | `magel svmb app.mgl out build/app` | VM 程序及配套数据 |
+| 直接运行 | `chali run app.chl` | VM 执行及退出状态 |
+| 检查 | `chali check app.chl` | 语法、类型、借用与语义诊断 |
+| 四元式 | `chali emit app.chl out build/app` | `.quad`、数据区及布局 |
+| 字节码 | `chali svmb app.chl out build/app` | VM 程序及配套数据 |
 | 宿主嵌入 | `stackvm::Machine` | 同一 VM 在桌面或目标宿主执行 |
 
 四元式与 VM 默认启用最高可用优化。反射、线程及目标宿主预算以实际构建宏和目标宿主为准。

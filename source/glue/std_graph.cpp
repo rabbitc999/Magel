@@ -13,7 +13,7 @@ namespace std_graph_glue
 inline void writeInts(Context &ctx, GraphReply reply, std::size_t slot, const Ints &values)
 {
     const std::int64_t handle = reply.field<std::int64_t>(slot);
-    for (std::int64_t value : values) collection_glue::listPush(ctx, handle, magel_glue::Value::fromInt(value));
+    for (std::int64_t value : values) collection_glue::listPush(ctx, handle, chali_glue::Value::fromInt(value));
 }
 
 /**

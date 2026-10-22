@@ -1,4 +1,4 @@
-"""同机比较 Magel VM、JVM、CPython、官方 Lua 和原生 C++，保留全部样本；可选追加旧版 Magel 两行。"""
+"""同机比较 ChaLi VM、JVM、CPython、官方 Lua 和原生 C++，保留全部样本；可选追加旧版 ChaLi 两行。"""
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
@@ -46,9 +46,9 @@ def prepare(name):
         "array_reads": ("total+=values[i%4];", "total=total+values[(i%4)+1]", "total += values[i%4]"),
     }
     body, lua_body, python_body = bodies[name]
-    mgl_decl = "int64 values[4];values[0]=1;values[1]=2;values[2]=3;values[3]=4;" if name == "array_reads" else ""
-    (WORK / (name+".mgl")).write_text("int64 mix(int64 x){return x*17;}\nint64 main(){int64 n=inputInt(),i=0;"
-        + ("float64" if floating else "int64") + " total=0;"+mgl_decl+"while(i<n){"+body
+    chl_decl = "int64 values[4];values[0]=1;values[1]=2;values[2]=3;values[3]=4;" if name == "array_reads" else ""
+    (WORK / (name+".chl")).write_text("int64 mix(int64 x){return x*17;}\nint64 main(){int64 n=inputInt(),i=0;"
+        + ("float64" if floating else "int64") + " total=0;"+chl_decl+"while(i<n){"+body
         +"i+=1;}println(\"{}\",total);return 0;}\n", encoding="utf-8")
     (WORK / (name+".lua")).write_text("local n=tonumber(arg[1])\nlocal function mix(x) return x*17 end\n"
         "local function calculate(n)\nlocal i,total=0,"+("0.0" if floating else "0")
@@ -112,22 +112,22 @@ public final class Case___NAME__ {
 def main():
     """构建后串行轮转九种配置，按两轮独立样本记录中位耗时。"""
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--magel',type=Path,default=ROOT/'magel.exe')
+    parser.add_argument('--chali',type=Path,default=ROOT/'ChaLi.exe')
     parser.add_argument('--runner',type=Path,required=True)
-    parser.add_argument('--magel-label',default='Magel '+(ROOT/'VERSION').read_text().strip())
-    parser.add_argument('--baseline-magel',type=Path,help='旧版编译器；给出后追加旧版 VM 一行')
+    parser.add_argument('--chali-label',default='ChaLi '+(ROOT/'VERSION').read_text().strip())
+    parser.add_argument('--baseline-chali',type=Path,help='旧版编译器；给出后追加旧版 VM 一行')
     parser.add_argument('--baseline-runner',type=Path)
-    parser.add_argument('--baseline-label',default='Magel baseline')
+    parser.add_argument('--baseline-label',default='ChaLi baseline')
     parser.add_argument('--repeats',type=int,default=7)
     parser.add_argument('--rounds',type=int,default=2)
     parser.add_argument('--reuse-builds',action='store_true',help='源码和构建指纹一致时复用本机已有产物')
     parser.add_argument('--output',type=Path,default=ROOT/'doc/benchmarks/vm-baselines-0.18.3.json')
     args=parser.parse_args()
     assert args.repeats>0 and args.rounds>0
-    assert bool(args.baseline_magel)==bool(args.baseline_runner),'旧版编译器与运行器必须同时给出'
-    targets=[('103',args.magel.resolve(),args.magel_label,args.runner.resolve())]
-    if args.baseline_magel:
-        targets.append(('102',args.baseline_magel.resolve(),args.baseline_label,args.baseline_runner.resolve()))
+    assert bool(args.baseline_chali)==bool(args.baseline_runner),'旧版编译器与运行器必须同时给出'
+    targets=[('103',args.chali.resolve(),args.chali_label,args.runner.resolve())]
+    if args.baseline_chali:
+        targets.append(('102',args.baseline_chali.resolve(),args.baseline_label,args.baseline_runner.resolve()))
     WORK.mkdir(parents=True,exist_ok=True)
     archive=LUA_WORK/'lua-5.5.1.tar.gz'
     assert hashlib.sha256(archive.read_bytes()).hexdigest()==SHA256,'先运行 benchmark_vm_lua.py 下载并构建官方 Lua'
@@ -138,7 +138,7 @@ def main():
         run(['g++','-std=c++17','-O2','-DNDEBUG',WORK/(name+'.cpp'),'-o',WORK/(name+suffix)])
         run(['javac','-encoding','UTF-8',WORK/('Case_'+name+'.java')])
         for label,compiler,_,_ in targets:
-            run([compiler,'svmb',WORK/(name+'.mgl'),'out',WORK/(name+'-'+label)])
+            run([compiler,'svmb',WORK/(name+'.chl'),'out',WORK/(name+'-'+label)])
     report={'measured_at_utc':datetime.now(timezone.utc).isoformat(),'commit':run(['git','rev-parse','HEAD']).strip(),
             'platform':platform.platform(),'python':sys.version,'java':run(['java','--version']).strip(),
             'benchmark_script_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
@@ -146,13 +146,13 @@ def main():
             'lua_url':URL,'lua_source_sha256':SHA256,'repeats':args.repeats,'rounds':args.rounds,
             'warmups':{'JVM JIT':20,'others':1},'flags':{'C++':'-std=c++17 -O2 -DNDEBUG; noinline calculation; volatile result sink; fresh stdin input after warmup',
             'JVM JIT':'-Xbatch; 20 full warmups; volatile result sink; fresh stdin input per invocation',
-            'JVM interpreter':'-Xint; 1 full warmup',            'Magel':'each listed Magel version keeps reflection enabled and all default VM optimizations; runner built -O2 against that version static library',
+            'JVM interpreter':'-Xint; 1 full warmup',            'ChaLi':'each listed ChaLi version keeps reflection enabled and all default VM optimizations; runner built -O2 against that version static library',
             'Lua':'official mingw Makefile -O2; no JIT'},
             'timing':'all exclude startup, source compilation and loading; VM includes execution preparation and checksum output; other runtimes measure calculation only; one measured sample per process; rotate order each repeat; serial; all builds finish before measurements',
             'binaries':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in [*(compiler for _,compiler,_,_ in targets),*(runner for _,_,_,runner in targets),lua]},
             'results':{}}
     report['generated_sources']={p.name:hashlib.sha256(p.read_bytes()).hexdigest()
-                                 for p in WORK.iterdir() if p.suffix in ('.mgl','.lua','.py','.java') or p.suffix=='.cpp'}
+                                 for p in WORK.iterdir() if p.suffix in ('.chl','.lua','.py','.java') or p.suffix=='.cpp'}
     if os.name=='nt':
         report['cpu']=json.loads(run(['powershell','-NoProfile','-Command','Get-CimInstance Win32_Processor | Select-Object Name,NumberOfCores,NumberOfLogicalProcessors | ConvertTo-Json -Compress']))
     for round_index in range(args.rounds):

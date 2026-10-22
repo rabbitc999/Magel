@@ -1,6 +1,6 @@
 #include "std_random.hpp"
 #include "std_native_record.hpp"
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include <cstdint>
 #include <memory>
 #include <random>
@@ -37,7 +37,7 @@ const stackvm::NativeRecordType randomType{ "std::random::Random", cloneRandom, 
  * @param seed 初始序列种子。
  * @return 新状态的原生记录句柄。
  */
-std::uint64_t createRandom(magel_glue::Context &context, std::uint64_t seed)
+std::uint64_t createRandom(chali_glue::Context &context, std::uint64_t seed)
 {
     auto value = std::make_unique<RandomState>();
     value->value = seed;
@@ -50,7 +50,7 @@ std::uint64_t createRandom(magel_glue::Context &context, std::uint64_t seed)
  * @param context 当前运行时上下文。
  * @return 新生成器的记录句柄。
  */
-std::uint64_t entropyRandom(magel_glue::Context &context)
+std::uint64_t entropyRandom(chali_glue::Context &context)
 {
     std::random_device source;
     return createRandom(context, (static_cast<std::uint64_t>(source()) << 32u) ^ source());
@@ -61,7 +61,7 @@ std::uint64_t entropyRandom(magel_glue::Context &context)
  * @param handle 仍存活的随机状态句柄。
  * @return 下一项无符号整数；无效状态报告运行时错误。
  */
-std::uint64_t nextRandom(magel_glue::Context &context, std::uint64_t handle)
+std::uint64_t nextRandom(chali_glue::Context &context, std::uint64_t handle)
 {
     auto *value = static_cast<RandomState *>(context.nativeRecord(static_cast<std::int64_t>(handle), randomType));
     if (!value)
@@ -79,17 +79,17 @@ std::uint64_t nextRandom(magel_glue::Context &context, std::uint64_t handle)
  * @param error 接收注册失败的诊断。
  * @return 所有入口注册成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     bool ok = registry.bindTypedWithContext<std::uint64_t, std::uint64_t>("std::random::randomWithSeed", createRandom, error)
               && registry.bindTypedWithContext<std::uint64_t>("std::random::randomFromEntropy", entropyRandom, error)
               && registry.bindTypedWithContext<std::uint64_t, std::uint64_t>("std::random::randomNextUInt64", nextRandom, error)
-              && registry.bindTypedWithContext<std::int64_t, std::uint64_t, std::int64_t, std::int64_t>("std::random::randomNextInt", [](magel_glue::Context &context, std::uint64_t handle, std::int64_t minimum, std::int64_t maximum) {
+              && registry.bindTypedWithContext<std::int64_t, std::uint64_t, std::int64_t, std::int64_t>("std::random::randomNextInt", [](chali_glue::Context &context, std::uint64_t handle, std::int64_t minimum, std::int64_t maximum) {
                 if (maximum <= minimum) { context.fail("random.nextInt 要求 maximum > minimum"); return std::int64_t(0); }
                 const auto width = static_cast<std::uint64_t>(maximum) - static_cast<std::uint64_t>(minimum);
-                return static_cast<std::int64_t>(static_cast<std::uint64_t>(minimum) + nextRandom(context, handle) % width); }, error) && registry.bindTypedWithContext<double, std::uint64_t>("std::random::randomNextFloat64", [](magel_glue::Context &context, std::uint64_t handle) { return static_cast<double>(nextRandom(context, handle) >> 11u) / 9007199254740992.0; }, error) && registry.bindTypedWithContext<double, std::uint64_t, double, double>("std::random::randomNextRange", [](magel_glue::Context &context, std::uint64_t handle, double minimum, double maximum) {
+                return static_cast<std::int64_t>(static_cast<std::uint64_t>(minimum) + nextRandom(context, handle) % width); }, error) && registry.bindTypedWithContext<double, std::uint64_t>("std::random::randomNextFloat64", [](chali_glue::Context &context, std::uint64_t handle) { return static_cast<double>(nextRandom(context, handle) >> 11u) / 9007199254740992.0; }, error) && registry.bindTypedWithContext<double, std::uint64_t, double, double>("std::random::randomNextRange", [](chali_glue::Context &context, std::uint64_t handle, double minimum, double maximum) {
                 if (!(maximum > minimum)) { context.fail("random.nextRange 要求 maximum > minimum"); return 0.0; }
-                return minimum + static_cast<double>(nextRandom(context, handle) >> 11u) / 9007199254740992.0 * (maximum - minimum); }, error) && registry.bindTypedWithContext<bool, std::uint64_t>("std::random::randomNextBool", [](magel_glue::Context &context, std::uint64_t handle) { return (nextRandom(context, handle) >> 63u) != 0; }, error);
+                return minimum + static_cast<double>(nextRandom(context, handle) >> 11u) / 9007199254740992.0 * (maximum - minimum); }, error) && registry.bindTypedWithContext<bool, std::uint64_t>("std::random::randomNextBool", [](chali_glue::Context &context, std::uint64_t handle) { return (nextRandom(context, handle) >> 63u) != 0; }, error);
     ok = native_record_glue::bind(registry.native(), "std::random::__randomCopy", 1, native_record_glue::copy, error) && ok;
     ok = native_record_glue::bind(registry.native(), "std::random::randomDrop", 1, native_record_glue::drop, error) && ok;
     return ok;

@@ -49,7 +49,7 @@ Memory::String EnsureResourceCloseFlag(const Memory::String &emitted)
     auto &state = g_resourceCloseStates[emitted];
     if (!state.flag.empty() || state.begins.empty()) return state.flag;
     using simple_ast::Node;
-    state.flag = AllocateName("__magel_closed");
+    state.flag = AllocateName("__chali_closed");
     for (const auto &begin : state.begins)
     {
         begin->kids.push_back(Node::declare(state.flag, simple_ast::Type::i64()));
@@ -206,7 +206,7 @@ simple_ast::NodePtr MakeInterfaceMethodCallAt(const Memory::String &structName,
         if (!declares) continue;
         const Memory::String symbol = implementation.methodQualified ? implementation.function + "." + methodName : implementation.function;
         return simple_ast::Node::exprStmt(simple_ast::Node::call(
-            symbol, { "__magel_self" }, { value }));
+            symbol, { "__chali_self" }, { value }));
     }
     return nullptr;
 }
@@ -370,7 +370,7 @@ simple_ast::NodePtr MakeAggregateRelease(const Memory::String &ownerName,
     if (ownerName.empty() || !StructHasOwnedLeaves(ownerName)) return nullptr;
     MarkStructNeedsCleanup(ownerName);
     return simple_ast::Node::exprStmt(simple_ast::Node::call(
-        AggregateReleaseName(ownerName), { "__magel_agg" }, { value }));
+        AggregateReleaseName(ownerName), { "__chali_agg" }, { value }));
 }
 
 /**
@@ -476,7 +476,7 @@ simple_ast::NodePtr FinishExplicitDrop(const Memory::String &ownerName,
 {
     using simple_ast::Node;
     (void)dropCall;
-    const auto address = AllocateName("__magel_explicit_drop");
+    const auto address = AllocateName("__chali_explicit_drop");
     if (!emitted.empty())
     {
         g_resourceCloseAliases[address] = emitted;
@@ -512,7 +512,7 @@ simple_ast::NodePtr MakeDrop(const Memory::String &emitted, bool runtimeArray = 
     const auto ownedType = g_opcodeValueTypes.find(emitted);
     const bool referenceAllocation = std::any_of(g_referenceStorage.begin(), g_referenceStorage.end(), [&](const auto &entry) { return entry.second == emitted; });
     const auto *opcode = referenceAllocation || ownedType == g_opcodeValueTypes.end() ? nullptr : FindOpcodeDefinition(ownedType->second);
-    const auto opcodeRelease = opcode ? simple_ast::Node::exprStmt(simple_ast::Node::call(opcode->destroy, { "__magel_v" }, { value })) : simple_ast::Node::release(value);
+    const auto opcodeRelease = opcode ? simple_ast::Node::exprStmt(simple_ast::Node::call(opcode->destroy, { "__chali_v" }, { value })) : simple_ast::Node::release(value);
     const auto release = simple_ast::Node::ifThenElse(
         simple_ast::Node::binary("!=", handle, simple_ast::Node::i(0)), opcodeRelease, nullptr);
     /* 释放资源后清空拥有槽；引用单元本身保留到其所属作用域退出。

@@ -3,8 +3,8 @@
  * @brief VM 功能裁剪、分配器和宿主基础类型配置。
  */
 #pragma once
-#include "../../source/magel_i18n.hpp"
-#include "../../source/allocator/magel_allocator.hpp"
+#include "../../source/chali_i18n.hpp"
+#include "../../source/allocator/chali_allocator.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -40,10 +40,10 @@
 
 /**
  * @def STACKVM_WITH_PANIC_TRACE
- * @brief 默认记录 panic/运行错误调用栈；设为 0 或定义 NO_MAGEL_PANIC_TRACE 可裁剪。
+ * @brief 默认记录 panic/运行错误调用栈；设为 0 或定义 NO_CHALI_PANIC_TRACE 可裁剪。
  * 关闭后不自动保留错误栈，显式调试回调仍可查看调试帧。
  */
-#ifdef NO_MAGEL_PANIC_TRACE
+#ifdef NO_CHALI_PANIC_TRACE
 #undef STACKVM_WITH_PANIC_TRACE
 #define STACKVM_WITH_PANIC_TRACE 0
 #elif !defined(STACKVM_WITH_PANIC_TRACE)

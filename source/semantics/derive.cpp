@@ -8,11 +8,11 @@
  */
 Memory::String DerivedHashExpression(const std::shared_ptr<MType> &type, const Memory::String &expression)
 {
-    if (type->kind == MType::Struct && (type->name == "std::lang::String" || (type->name == "String" && !magel_generic::coreAliasShadows.count("String"))))
-        return "__magel_derive_hash_string(" + expression + ")";
+    if (type->kind == MType::Struct && (type->name == "std::lang::String" || (type->name == "String" && !chali_generic::coreAliasShadows.count("String"))))
+        return "__chali_derive_hash_string(" + expression + ")";
     if (type->kind == MType::Struct) return expression + ".hash(" + expression + ")";
-    if (IsStandardOpcode(type, "String")) return "__magel_derive_hash_string(" + expression + ")";
-    if (type->kind == MType::Double) return "__magel_derive_hash_float(" + expression + ")";
+    if (IsStandardOpcode(type, "String")) return "__chali_derive_hash_string(" + expression + ")";
+    if (type->kind == MType::Double) return "__chali_derive_hash_float(" + expression + ")";
     return "cast<uint64>(" + expression + ")";
 }
 
@@ -24,7 +24,7 @@ Memory::String DerivedHashExpression(const std::shared_ptr<MType> &type, const M
  */
 Memory::String DerivedCloneExpression(const std::shared_ptr<MType> &type, const Memory::String &expression)
 {
-    if (type->kind == MType::Struct && (type->name == "std::lang::String" || (type->name == "String" && !magel_generic::coreAliasShadows.count("String")))) return expression;
+    if (type->kind == MType::Struct && (type->name == "std::lang::String" || (type->name == "String" && !chali_generic::coreAliasShadows.count("String")))) return expression;
     return type->kind == MType::Struct ? expression + ".clone()" : expression;
 }
 
@@ -72,9 +72,9 @@ bool DerivedMethodSource(const MNode &declaration, const Memory::String &trait, 
             if (trait == "Equal")
                 pieces.push_back(field.s);
             else if (trait == "Hash")
-                pieces.push_back("__magel_hash = (__magel_hash ^ " + DerivedHashExpression(T(field.type), "value." + field.s) + ") * 1099511628211u;");
+                pieces.push_back("__chali_hash = (__chali_hash ^ " + DerivedHashExpression(T(field.type), "value." + field.s) + ") * 1099511628211u;");
             else
-                pieces.push_back("__magel_clone." + field.s + " = " + DerivedCloneExpression(T(field.type), "self." + field.s) + ";");
+                pieces.push_back("__chali_clone." + field.s + " = " + DerivedCloneExpression(T(field.type), "self." + field.s) + ";");
         }
         if (trait == "Equal")
         {
@@ -84,15 +84,15 @@ bool DerivedMethodSource(const MNode &declaration, const Memory::String &trait, 
         }
         else if (trait == "Hash")
         {
-            output += "uint64 hash(" + owner + " value) { uint64 __magel_hash = 14695981039346656037u;\n";
+            output += "uint64 hash(" + owner + " value) { uint64 __chali_hash = 14695981039346656037u;\n";
             for (const auto &piece : pieces) output += piece + "\n";
-            output += "return __magel_hash; }\n";
+            output += "return __chali_hash; }\n";
         }
         else
         {
-            output += owner + " clone() { " + owner + " __magel_clone;\n";
+            output += owner + " clone() { " + owner + " __chali_clone;\n";
             for (const auto &piece : pieces) output += piece + "\n";
-            output += "return __magel_clone; }\n";
+            output += "return __chali_clone; }\n";
         }
         return true;
     }
@@ -101,8 +101,8 @@ bool DerivedMethodSource(const MNode &declaration, const Memory::String &trait, 
     {
         const auto variant = N(variantId);
         Memory::Vector<Memory::String> left, right;
-        const auto pattern = DerivedVariantPattern(owner, variant, "magelDerivedLeft", left);
-        const auto other = DerivedVariantPattern(owner, variant, "magelDerivedRight", right);
+        const auto pattern = DerivedVariantPattern(owner, variant, "chaliDerivedLeft", left);
+        const auto other = DerivedVariantPattern(owner, variant, "chaliDerivedRight", right);
         Memory::String branch = pattern + " => { ";
         if (trait == "Equal")
         {
@@ -112,13 +112,13 @@ bool DerivedMethodSource(const MNode &declaration, const Memory::String &trait, 
         }
         else if (trait == "Hash")
         {
-            branch += "uint64 __magel_hash = " + Memory::toString(++tag) + "u; ";
+            branch += "uint64 __chali_hash = " + Memory::toString(++tag) + "u; ";
             for (std::size_t i = 0; i < left.size(); ++i)
             {
                 const auto type = T(N(N(variant.kids[0]).kids[i]).type);
-                branch += "__magel_hash = (__magel_hash ^ " + DerivedHashExpression(type, left[i]) + ") * 1099511628211u; ";
+                branch += "__chali_hash = (__chali_hash ^ " + DerivedHashExpression(type, left[i]) + ") * 1099511628211u; ";
             }
-            branch += "return __magel_hash;";
+            branch += "return __chali_hash;";
         }
         else
         {
@@ -152,8 +152,8 @@ bool DerivedMethodSource(const MNode &declaration, const Memory::String &trait, 
  */
 Memory::String DerivedHashHelpers()
 {
-    return R"MGL(
-uint64 __magel_derive_hash_string(String value) {
+    return R"CHL(
+uint64 __chali_derive_hash_string(String value) {
     uint64 result = 14695981039346656037u;
     int64 index = 0;
     while (index < std::lang::len(value)) {
@@ -162,7 +162,7 @@ uint64 __magel_derive_hash_string(String value) {
     }
     return result;
 }
-uint64 __magel_derive_hash_float(float64 value) {
+uint64 __chali_derive_hash_float(float64 value) {
     if (value != value || value == 0.0) { return 0u; }
     if (value - value != 0.0) {
         if (value > 0.0) { return 9218868437227405312u; }
@@ -173,7 +173,7 @@ uint64 __magel_derive_hash_float(float64 value) {
     if (magnitude < 0.0) { magnitude = -magnitude; sign = 9223372036854775808u; }
     return cast<uint64>(magnitude % 18446744073709551616.0) ^ sign;
 }
-)MGL";
+)CHL";
 }
 
 /**
@@ -185,7 +185,7 @@ bool ExpandDerivedDeclarations()
 {
     Memory::Set<Memory::String> hashModules;
     for (const auto id : g_top)
-        if (N(id).kind == MNode::FuncDef && N(id).s == "__magel_derive_hash_string") hashModules.insert(N(id).module);
+        if (N(id).kind == MNode::FuncDef && N(id).s == "__chali_derive_hash_string") hashModules.insert(N(id).module);
     for (std::size_t index = 0; index < g_top.size(); ++index)
     {
         const auto id = g_top[index];
@@ -206,9 +206,9 @@ bool ExpandDerivedDeclarations()
                 request += arguments[i];
             }
             request += '>';
-            if (!magel_generic::rewrite(request, magel_generic::session.generics, magel_generic::session.implemented,
-                                        magel_generic::session.made, magel_generic::session.pending, error)
-                || !magel_generic::instantiate(trait, arguments, interfaces, error)) return Fail("#derive 接口实例化失败：" + error);
+            if (!chali_generic::rewrite(request, chali_generic::session.generics, chali_generic::session.implemented,
+                                        chali_generic::session.made, chali_generic::session.pending, error)
+                || !chali_generic::instantiate(trait, arguments, interfaces, error)) return Fail("#derive 接口实例化失败：" + error);
             names.push_back(request);
             if (!DerivedMethodSource(declaration, trait, methods)) return false;
         }
@@ -216,12 +216,12 @@ bool ExpandDerivedDeclarations()
         Memory::String source = interfaces + "\nmodule " + module + ";\n";
         if (std::find(declaration.derives.begin(), declaration.derives.end(), "Hash") != declaration.derives.end() && hashModules.insert(declaration.module).second)
             source += DerivedHashHelpers();
-        const auto wrapper = "__magel_derive_members_" + Memory::toString(id);
+        const auto wrapper = "__chali_derive_members_" + Memory::toString(id);
         source += "\nstruct " + wrapper + " {\n" + methods + "\n}\n";
         const auto savedTop = g_top;
         const auto savedModule = g_parseModule;
         const auto first = g_nodes.size();
-        magel::Engine parser;
+        chali::Engine parser;
         int value = 0;
         g_parseModule.clear();
         const auto status = parser.runText(source, &value);
@@ -234,7 +234,7 @@ bool ExpandDerivedDeclarations()
             g_nodes[i].sourceColumn = declaration.sourceColumn;
             g_nodes[i].generatedDeclaration = true;
         }
-        if (status != magel::Status::Ok) return Fail("#derive 生成的方法无法解析：" + declaration.s);
+        if (status != chali::Status::Ok) return Fail("#derive 生成的方法无法解析：" + declaration.s);
         auto &target = g_nodes[id];
         if (target.kind == MNode::EnumDecl && target.kids.size() == 1)
         {

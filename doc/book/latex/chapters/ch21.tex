@@ -3,13 +3,13 @@
 
 到第 20 章为止，你的程序都活在自己的世界里。可现实中有太多东西是现成的 C 库：压缩、加密、数据库、图形、系统调用……你不可能全都重写一遍。
 
-这一章讲怎么跨过 Magel 和 C 的边界，两个方向：
+这一章讲怎么跨过 ChaLi 和 C 的边界，两个方向：
 
 \begin{itemize}
 
-\item Magel 调 C——用 \texttt{abi} 块调动态库里导出的函数；
+\item ChaLi 调 C——用 \texttt{abi} 块调动态库里导出的函数；
 
-\item C 调 Magel——把你的函数交给 C 的运行时。
+\item C 调 ChaLi——把你的函数交给 C 的运行时。
 
 \end{itemize}
 
@@ -23,8 +23,8 @@
 方式 & 用在哪 & 你要准备什么 \\
 \midrule
 \texttt{abi} 块 & 调动态库里按 C ABI 导出的函数 & 一份 \texttt{.\allowbreak{}dll} / \texttt{.\allowbreak{}so} \\
-宿主胶水绑定 & 把 C++ 函数注册进工具链，Magel 侧当普通函数调 & 写一点 C++ \\
-VM 嵌入 & 宿主加载字节码并运行 Magel 逻辑 & 共享 VM 和配套数据 \\
+宿主胶水绑定 & 把 C++ 函数注册进工具链，ChaLi 侧当普通函数调 & 写一点 C++ \\
+VM 嵌入 & 宿主加载字节码并运行 ChaLi 逻辑 & 共享 VM 和配套数据 \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -41,23 +41,23 @@ VM 嵌入 & 宿主加载字节码并运行 Magel 逻辑 & 共享 VM 和配套数
 #include <stdint.h>
 
 #if defined(_WIN32)
-#define MAGEL_ABI_EXPORT __declspec(dllexport)
+#define CHALI_ABI_EXPORT __declspec(dllexport)
 #else
-#define MAGEL_ABI_EXPORT
+#define CHALI_ABI_EXPORT
 #endif
 
-MAGEL_ABI_EXPORT int32_t abi_add(int32_t left, int32_t right) {
+CHALI_ABI_EXPORT int32_t abi_add(int32_t left, int32_t right) {
     return left + right;
 }
 
-MAGEL_ABI_EXPORT const char *abi_name(void) {
+CHALI_ABI_EXPORT const char *abi_name(void) {
     return "native";
 }
 \end{lstlisting}
 \par
 \medskip
 
-先把它编成动态库（说句实话：「怎么编动态库」是 C 的事，和 Magel 无关）：
+先把它编成动态库（说句实话：「怎么编动态库」是 C 的事，和 ChaLi 无关）：
 
 \par
 \medskip
@@ -67,11 +67,11 @@ gcc -shared -o native.dll native.c
 \par
 \medskip
 
-然后在 Magel 里声明想用的函数：
+然后在 ChaLi 里声明想用的函数：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 abi "./native.dll"
 {
     int32 native_add(int32 left, int32 right) = "abi_add";
@@ -101,13 +101,13 @@ int64 main()
 \medskip
 \begin{lstlisting}[style=out]
 abi "<动态库路径>" {
-    <返回类型> <Magel侧名字>(<形参表>) = "<库里的符号名>";
+    <返回类型> <ChaLi侧名字>(<形参表>) = "<库里的符号名>";
 }
 \end{lstlisting}
 \par
 \medskip
 
-关键就是那个 \texttt{=\allowbreak{}}：等号右边是库里真实导出的符号名，左边是你想用的名字。两者可以不一样——给一批 C 函数起统一风格的 Magel 名，就靠它。
+关键就是那个 \texttt{=\allowbreak{}}：等号右边是库里真实导出的符号名，左边是你想用的名字。两者可以不一样——给一批 C 函数起统一风格的 ChaLi 名，就靠它。
 
 \begin{tip}{提示}
 路径是运行时按当前工作目录找的。所以 \texttt{.\allowbreak{}/\allowbreak{}native.\allowbreak{}dll} 得跟你的程序在同一个目录下跑。
@@ -130,11 +130,11 @@ API const char *greet(void) { return "hello from C"; }
 \par
 \medskip
 
-Magel 侧：
+ChaLi 侧：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Point
 {
     int32 x;
@@ -181,9 +181,9 @@ hello from C
 
 \begin{enumerate}
 
-\item 结构体按值传——C 的 \texttt{Point p} 对应 Magel 的 \texttt{Point p}，布局默认按 C 规则对齐。所以 Magel 这边得声明一个字段顺序、类型都一致的 \texttt{struct}；
+\item 结构体按值传——C 的 \texttt{Point p} 对应 ChaLi 的 \texttt{Point p}，布局默认按 C 规则对齐。所以 ChaLi 这边得声明一个字段顺序、类型都一致的 \texttt{struct}；
 
-\item C 的 \texttt{int32\_t *value} 对应 \texttt{int32 mut\& value}（第 7 章的可变引用），调用处写 \texttt{bump(\allowbreak{}\&n)\allowbreak{}}——取地址用 \texttt{\&}，和 Magel 内部引用是同一套写法；
+\item C 的 \texttt{int32\_t *value} 对应 \texttt{int32 mut\& value}（第 7 章的可变引用），调用处写 \texttt{bump(\allowbreak{}\&n)\allowbreak{}}——取地址用 \texttt{\&}，和 ChaLi 内部引用是同一套写法；
 
 \item C 的 \texttt{const char *} 对应 \texttt{String}。
 
@@ -194,7 +194,7 @@ hello from C
 {\small\setlength{\tabcolsep}{4pt}
 \begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.586\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.394\linewidth-2\tabcolsep\relax}}
 \toprule
-Magel 写法 & 含义 \\
+ChaLi 写法 & 含义 \\
 \midrule
 \endhead
 \texttt{int8}…\texttt{int64}、\texttt{uint8}…\texttt{uint64}、\texttt{float32}、\texttt{float64}、\texttt{bool} & 标量，按值传 \\
@@ -214,7 +214,7 @@ Magel 写法 & 含义 \\
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 abi "./native.dll"
 {
     Packed[] packed_numbers(int32 count) = "packed_numbers" [count];
@@ -224,11 +224,11 @@ abi "./native.dll"
 \par
 \medskip
 
-「空」是这个边界上唯一允许出现空的地方。 Magel 内部的引用永远非空（第 7 章），但 C 函数可能返回空指针。这时候用 \texttt{Option<\allowbreak{}T mut\&>\allowbreak{}} / \texttt{Option<\allowbreak{}T const\&>\allowbreak{}} 接：
+「空」是这个边界上唯一允许出现空的地方。 ChaLi 内部的引用永远非空（第 7 章），但 C 函数可能返回空指针。这时候用 \texttt{Option<\allowbreak{}T mut\&>\allowbreak{}} / \texttt{Option<\allowbreak{}T const\&>\allowbreak{}} 接：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 abi "./native.dll"
 {
     Option<Packed const&> packed_snapshot() = "packed_snapshot";
@@ -243,13 +243,13 @@ abi "./native.dll"
 这是「空」唯一能跨过边界的通道。 跨过边界之后，一切又回到「引用非空」的老规矩。
 \end{tip}
 
-\texttt{packed} 结构体用于对接 C 侧 \texttt{\#pragma pack} 的紧凑布局——C 里用\texttt{\#pragma pack(\allowbreak{}push,\allowbreak{} 1)\allowbreak{}} 压过的地方，Magel 侧就声明成 \texttt{struct X packed \{ … \}}。
+\texttt{packed} 结构体用于对接 C 侧 \texttt{\#pragma pack} 的紧凑布局——C 里用\texttt{\#pragma pack(\allowbreak{}push,\allowbreak{} 1)\allowbreak{}} 压过的地方，ChaLi 侧就声明成 \texttt{struct X packed \{ … \}}。
 
-完整例子见 \href{https://gitee.com/rabbitc999/magel/tree/master/doc/examples/abi_buffers}{\texttt{doc/\allowbreak{}examples/\allowbreak{}abi\_buffers/\allowbreak{}}}——它覆盖了结构体嵌套、紧凑布局、数组读写、可空引用、返回值长度等全部边界情况。
+完整例子见 \href{https://gitee.com/rabbitc999/chali/tree/master/doc/examples/abi_buffers}{\texttt{doc/\allowbreak{}examples/\allowbreak{}abi\_buffers/\allowbreak{}}}——它覆盖了结构体嵌套、紧凑布局、数组读写、可空引用、返回值长度等全部边界情况。
 
 \section{宿主胶水：把 C++ 函数注册进来}
 
-不想走动态库、想让 C++ 函数像普通函数一样调？写一个 \texttt{bind\allowbreak{}Magel\allowbreak{}Glue} 把它注册进工具链：
+不想走动态库、想让 C++ 函数像普通函数一样调？写一个 \texttt{bind\allowbreak{}Cha\allowbreak{}Li\allowbreak{}Glue} 把它注册进工具链：
 
 \par
 \medskip
@@ -258,9 +258,9 @@ abi "./native.dll"
 #include <string>
 
 struct ExportCounterTag;
-using ExportCounter = magel_glue::Handle<ExportCounterTag, std::uint64_t>;
+using ExportCounter = chali_glue::Handle<ExportCounterTag, std::uint64_t>;
 
-bool bindMagelGlue(magel_glue::Registry &registry, Memory::String *error)
+bool bindChaLiGlue(chali_glue::Registry &registry, Memory::String *error)
 {
     return registry.bindTyped<std::uint32_t, Memory::String>(
                "demo_cpp_text_size",
@@ -272,11 +272,11 @@ bool bindMagelGlue(magel_glue::Registry &registry, Memory::String *error)
 \par
 \medskip
 
-Magel 侧就像声明普通函数：
+ChaLi 侧就像声明普通函数：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int32 demo_cpp_text_size(String text);
 
 int64 main()
@@ -292,7 +292,7 @@ int64 main()
 
 \begin{itemize}
 
-\item 复杂宿主对象一律用整数句柄过边界——不要把 C++ 对象本体塞进 Magel 值里，而是用 \texttt{magel\_glue:\allowbreak{}:\allowbreak{}Handle<\allowbreak{}Tag,\allowbreak{} Abi\allowbreak{}Type>\allowbreak{}} 给它一个「名义类型」，Magel 侧拿到的是个整数；
+\item 复杂宿主对象一律用整数句柄过边界——不要把 C++ 对象本体塞进 ChaLi 值里，而是用 \texttt{chali\_glue:\allowbreak{}:\allowbreak{}Handle<\allowbreak{}Tag,\allowbreak{} Abi\allowbreak{}Type>\allowbreak{}} 给它一个「名义类型」，ChaLi 侧拿到的是个整数；
 
 \item 泛型函数实例化后键名带后缀：\texttt{demo\_cpp\_identity<\allowbreak{}int32>\allowbreak{}} 对应键名\texttt{demo\_cpp\_identity\_\_int32}。
 
@@ -308,7 +308,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 type HostHandle<T> = uint64;
 impl uint64 : ExplicitConvert<HostHandle<int32>> = demo_counter_from_uint;
 impl HostHandle<int32> : ExplicitConvert<uint64> = demo_counter_to_uint;
@@ -340,15 +340,15 @@ int64 main()
 \par
 \medskip
 
-接口签名、宿主参数和返回值必须一致。同步回调通过 \texttt{Native\allowbreak{}Call\allowbreak{}Context:\allowbreak{}:\allowbreak{}invoke} 与 \texttt{magel\_glue:\allowbreak{}:\allowbreak{}Function} 使用同一套 VM 规则；不要把函数值中的运行时地址当作宿主机器函数指针。完整胶水约定见\href{https://gitee.com/rabbitc999/magel/blob/master/doc/08-host-integration.md}{宿主集成}。
+接口签名、宿主参数和返回值必须一致。同步回调通过 \texttt{Native\allowbreak{}Call\allowbreak{}Context:\allowbreak{}:\allowbreak{}invoke} 与 \texttt{chali\_glue:\allowbreak{}:\allowbreak{}Function} 使用同一套 VM 规则；不要把函数值中的运行时地址当作宿主机器函数指针。完整胶水约定见\href{https://gitee.com/rabbitc999/chali/blob/master/doc/08-host-integration.md}{宿主集成}。
 
-\section{反方向：宿主调用 Magel}
+\section{反方向：宿主调用 ChaLi}
 
 宿主通过共享 VM 加载 \texttt{.\allowbreak{}svmb} 与数据区，注册原生胶水后调用 \texttt{Machine:\allowbreak{}:\allowbreak{}run}。桌面与 embedded Linux 使用同一份 VM 核心；宿主负责字节码、数据、注册表和所借用资源的生命周期。
 
-在宿主原生函数内，可以通过 \texttt{magel\_glue:\allowbreak{}:\allowbreak{}Function} 或 \texttt{Native\allowbreak{}Call\allowbreak{}Context:\allowbreak{}:\allowbreak{}invoke} 同步调用 Magel 函数和闭包。它们支持高阶函数、引用和同步重入，并保留 VM 的错误传播与所有权约定。函数值中的运行时地址不能转换为宿主机器函数指针。
+在宿主原生函数内，可以通过 \texttt{chali\_glue:\allowbreak{}:\allowbreak{}Function} 或 \texttt{Native\allowbreak{}Call\allowbreak{}Context:\allowbreak{}:\allowbreak{}invoke} 同步调用 ChaLi 函数和闭包。它们支持高阶函数、引用和同步重入，并保留 VM 的错误传播与所有权约定。函数值中的运行时地址不能转换为宿主机器函数指针。
 
-Magel 通过 VM 宿主加载胶水。完整接口和代码见\href{https://gitee.com/rabbitc999/magel/blob/master/doc/08-host-integration.md}{宿主集成}及\href{https://gitee.com/rabbitc999/magel/blob/master/example/native-callbacks/README.md}{VM 回调示例}。
+ChaLi 通过 VM 宿主加载胶水。完整接口和代码见\href{https://gitee.com/rabbitc999/chali/blob/master/doc/08-host-integration.md}{宿主集成}及\href{https://gitee.com/rabbitc999/chali/blob/master/example/native-callbacks/README.md}{VM 回调示例}。
 
 \section{小结}
 
@@ -357,16 +357,16 @@ Magel 通过 VM 宿主加载胶水。完整接口和代码见\href{https://gitee
 \toprule
 你会了 & 关键点 \\
 \midrule
-三种集成 & \texttt{abi} 块（轻）／宿主胶水（要编 C++）／VM 嵌入（宿主运行 Magel） \\
+三种集成 & \texttt{abi} 块（轻）／宿主胶水（要编 C++）／VM 嵌入（宿主运行 ChaLi） \\
 \texttt{abi} 语法 & \texttt{abi ".\allowbreak{}/\allowbreak{}x.\allowbreak{}dll" \{ 返回类型 名字(\allowbreak{}形参)\allowbreak{} =\allowbreak{} "C符号名"; \}} \\
 名字映射 & 等号右边是 C 侧真实符号名，左边随你起 \\
-结构体 & 按值传；Magel 侧声明字段一致的 \texttt{struct} \\
-引用 & C 的 \texttt{T *} \ensuremath{\leftrightarrow} Magel 的 \texttt{T mut\&}，调用处写 \texttt{\&x} \\
-字符串 & C 的 \texttt{const char *} \ensuremath{\leftrightarrow} Magel 的 \texttt{String} \\
+结构体 & 按值传；ChaLi 侧声明字段一致的 \texttt{struct} \\
+引用 & C 的 \texttt{T *} \ensuremath{\leftrightarrow} ChaLi 的 \texttt{T mut\&}，调用处写 \texttt{\&x} \\
+字符串 & C 的 \texttt{const char *} \ensuremath{\leftrightarrow} ChaLi 的 \texttt{String} \\
 数组 & \texttt{T[\allowbreak{}]\allowbreak{}} + 长度另给；返回长度用 \texttt{[\allowbreak{}count]\allowbreak{}} 标注 \\
 「空」 & 只有 \texttt{Option<\allowbreak{}T \&>\allowbreak{}} 能把空送过边界 \\
 紧凑布局 & \texttt{struct X packed \{ … \}} 对接 \texttt{\#pragma pack} \\
-胶水 & \texttt{bind\allowbreak{}Magel\allowbreak{}Glue} 注册 C++ 函数；复杂对象用整数句柄 \\
+胶水 & \texttt{bind\allowbreak{}Cha\allowbreak{}Li\allowbreak{}Glue} 注册 C++ 函数；复杂对象用整数句柄 \\
 反向 & VM 宿主执行，或胶水同步回调 fn \\
 \bottomrule
 \end{tabular}

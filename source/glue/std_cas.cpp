@@ -4,14 +4,14 @@
 #include <limits>
 #include <mutex>
 #include <stdexcept>
-#if !defined(NO_MAGEL_STD) && !defined(NO_MAGEL_STD_CAS) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_STD) && !defined(NO_CHALI_STD_CAS) && !defined(NO_CHALI_BIG_INT)
 #include "cas/allocator.h"
 #include "cas/detail/calculus.h"
 #include "cas/detail/parser.h"
 #include "cas/detail/polynomial.h"
 #include "cas/detail/printer.h"
 #include "cas/detail/trigonometry.h"
-#if !defined(NO_MAGEL_BIG_FLOAT)
+#if !defined(NO_CHALI_BIG_FLOAT)
 #include "bigfloat.hpp"
 #endif
 #endif
@@ -21,7 +21,7 @@ namespace std_cas_glue
 namespace
 {
 using namespace native_record_glue;
-#if !defined(NO_MAGEL_STD) && !defined(NO_MAGEL_STD_CAS) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_STD) && !defined(NO_CHALI_STD_CAS) && !defined(NO_CHALI_BIG_INT)
 using namespace Cas::Detail;
 /**
  * @brief 持有不可变表达式根节点的独立引用。
@@ -343,7 +343,7 @@ Value casDecimal(State &state, const ::Memory::Vector<Value> &arguments)
     if (!value->root->isNumber()) throw std::domain_error("CAS 小数转换要求精确数值节点，请先替换自由变量");
     const auto digits = arguments[1].asInt();
     if (digits < 1 || digits > 100000) throw std::out_of_range("CAS 小数有效位数必须在 1..100000 之间");
-#if !defined(NO_MAGEL_BIG_FLOAT)
+#if !defined(NO_CHALI_BIG_FLOAT)
     const auto numerator = bigfloat::BigFloat::fromInt(value->root->numerator().backend());
     const auto denominator = bigfloat::BigFloat::fromInt(value->root->denominator().backend());
     const auto text = numerator.divide(denominator, static_cast<int>(digits)).toString(0);
@@ -434,72 +434,72 @@ bool bind(stackvm::NativeRegistry &registry, ::Memory::String *error)
         Operation operation;
     };
     const Binding bindings[] = {
-#if !defined(NO_MAGEL_STD) && !defined(NO_MAGEL_STD_CAS) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_STD) && !defined(NO_CHALI_STD_CAS) && !defined(NO_CHALI_BIG_INT)
         { "__std_cas_math", 3, casMath },
 #else
         { "__std_cas_math", 3, casDisabled },
 #endif
-#if !defined(NO_MAGEL_STD) && !defined(NO_MAGEL_STD_CAS) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_STD) && !defined(NO_CHALI_STD_CAS) && !defined(NO_CHALI_BIG_INT)
         { "__std_cas_new", 0, casNew },
 #else
         { "__std_cas_new", 0, casDisabled },
 #endif
-#if !defined(NO_MAGEL_STD) && !defined(NO_MAGEL_STD_CAS) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_STD) && !defined(NO_CHALI_STD_CAS) && !defined(NO_CHALI_BIG_INT)
         { "__std_cas_parse", 1, casParse },
 #else
         { "__std_cas_parse", 1, casDisabled },
 #endif
-#if !defined(NO_MAGEL_STD) && !defined(NO_MAGEL_STD_CAS) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_STD) && !defined(NO_CHALI_STD_CAS) && !defined(NO_CHALI_BIG_INT)
         { "__std_cas_text", 2, casText },
 #else
         { "__std_cas_text", 2, casDisabled },
 #endif
-#if !defined(NO_MAGEL_STD) && !defined(NO_MAGEL_STD_CAS) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_STD) && !defined(NO_CHALI_STD_CAS) && !defined(NO_CHALI_BIG_INT)
         { "__std_cas_kind", 1, casKind },
 #else
         { "__std_cas_kind", 1, casDisabled },
 #endif
-#if !defined(NO_MAGEL_STD) && !defined(NO_MAGEL_STD_CAS) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_STD) && !defined(NO_CHALI_STD_CAS) && !defined(NO_CHALI_BIG_INT)
         { "__std_cas_name", 1, casName },
 #else
         { "__std_cas_name", 1, casDisabled },
 #endif
-#if !defined(NO_MAGEL_STD) && !defined(NO_MAGEL_STD_CAS) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_STD) && !defined(NO_CHALI_STD_CAS) && !defined(NO_CHALI_BIG_INT)
         { "__std_cas_size", 1, casSize },
 #else
         { "__std_cas_size", 1, casDisabled },
 #endif
-#if !defined(NO_MAGEL_STD) && !defined(NO_MAGEL_STD_CAS) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_STD) && !defined(NO_CHALI_STD_CAS) && !defined(NO_CHALI_BIG_INT)
         { "__std_cas_child", 2, casChild },
 #else
         { "__std_cas_child", 2, casDisabled },
 #endif
-#if !defined(NO_MAGEL_STD) && !defined(NO_MAGEL_STD_CAS) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_STD) && !defined(NO_CHALI_STD_CAS) && !defined(NO_CHALI_BIG_INT)
         { "__std_cas_number_part", 2, casNumberPart },
 #else
         { "__std_cas_number_part", 2, casDisabled },
 #endif
-#if !defined(NO_MAGEL_STD) && !defined(NO_MAGEL_STD_CAS) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_STD) && !defined(NO_CHALI_STD_CAS) && !defined(NO_CHALI_BIG_INT)
         { "__std_cas_binary", 3, casBinary },
 #else
         { "__std_cas_binary", 3, casDisabled },
 #endif
-#if !defined(NO_MAGEL_STD) && !defined(NO_MAGEL_STD_CAS) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_STD) && !defined(NO_CHALI_STD_CAS) && !defined(NO_CHALI_BIG_INT)
         { "__std_cas_equal", 2, casEqual },
 #else
         { "__std_cas_equal", 2, casDisabled },
 #endif
-#if !defined(NO_MAGEL_STD) && !defined(NO_MAGEL_STD_CAS) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_STD) && !defined(NO_CHALI_STD_CAS) && !defined(NO_CHALI_BIG_INT)
         { "__std_cas_unary", 4, casUnary },
 #else
         { "__std_cas_unary", 4, casDisabled },
 #endif
-#if !defined(NO_MAGEL_STD) && !defined(NO_MAGEL_STD_CAS) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_STD) && !defined(NO_CHALI_STD_CAS) && !defined(NO_CHALI_BIG_INT)
         { "__std_cas_transform", 6, casTransform },
 #else
         { "__std_cas_transform", 6, casDisabled },
 #endif
-#if !defined(NO_MAGEL_STD) && !defined(NO_MAGEL_STD_CAS) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_STD) && !defined(NO_CHALI_STD_CAS) && !defined(NO_CHALI_BIG_INT)
         { "__std_cas_decimal", 2, casDecimal },
 #else
         { "__std_cas_decimal", 2, casDisabled },
@@ -509,12 +509,12 @@ bool bind(stackvm::NativeRegistry &registry, ::Memory::String *error)
     for (const auto &binding : bindings)
     {
         auto handler = [operation = binding.operation](stackvm::NativeCallContext &context, const ::Memory::Vector<Value> &arguments) {
-#if !defined(NO_MAGEL_STD) && !defined(NO_MAGEL_STD_CAS) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_STD) && !defined(NO_CHALI_STD_CAS) && !defined(NO_CHALI_BIG_INT)
             std::lock_guard<std::recursive_mutex> lock(casMutex());
 #endif
             State state{context, {}};
             try {
-#if !defined(NO_MAGEL_STD) && !defined(NO_MAGEL_STD_CAS) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_STD) && !defined(NO_CHALI_STD_CAS) && !defined(NO_CHALI_BIG_INT)
                 // 不可变子树可跨 VM/线程保留，数值缓冲必须由进程级 arena 持有。
                 ::Memory::AllocationScope allocationScope(::Memory::defaultRuntimeAllocator());
 #endif

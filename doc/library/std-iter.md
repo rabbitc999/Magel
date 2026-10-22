@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::iter;
 ```
 
@@ -14,16 +14,16 @@ next 消费游标，peek 缓存下一项而不丢弃。转换器惰性执行，c
 
 ## 参考代码
 
-完整程序：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+完整程序：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 ```powershell
-magel run example/samples/iter_pipeline.mgl
+chali run example/samples/iter_pipeline.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::iter;
 int64 observed = 0;
 int64 addRefs((int64 const&,int64 const&) value) { return value.0 + value.1; }
@@ -257,7 +257,7 @@ iterator pipelines OK
 | 所属类型 | 声明 | 说明 |
 | --- | --- | --- |
 | 模块 | <a id="symbol-125"></a>`interface IterNext<T>` | 有状态迭代器接口；每次 next 消费一个元素。 |
-| 模块 | <a id="symbol-126"></a>`struct Iter<T> : Iterator<T>` | 持有惰性游标状态，按 Magel 值语义复制时获得独立游标。 |
+| 模块 | <a id="symbol-126"></a>`struct Iter<T> : Iterator<T>` | 持有惰性游标状态，按 ChaLi 值语义复制时获得独立游标。 |
 | Iter | <a id="symbol-127"></a>`std::lang::Any state` | 以 Any 持有的具体迭代游标状态。 |
 | Iter | <a id="symbol-128"></a>`bool buffered` | 是否已缓存 peek 取得的下一项。 |
 | Iter | <a id="symbol-129"></a>`Option<T> pending` | 等待消费的元素或队列。 |
@@ -341,7 +341,7 @@ iterator pipelines OK
 | IterSpanState | <a id="symbol-207"></a>`T const& source` | 被适配的源游标或连续存储。 |
 | IterSpanState | <a id="symbol-208"></a>`int64 length` | 连续存储中可访问的元素数量。 |
 | IterSpanState | <a id="symbol-209"></a>`int64 position` | 下一项在源存储中的位置。 |
-| 模块 | <a id="symbol-210"></a>`struct IterCharsState : IterNext<char>` | 按 Magel 字符模型遍历字符串字节，持有独立字符串副本。 |
+| 模块 | <a id="symbol-210"></a>`struct IterCharsState : IterNext<char>` | 按 ChaLi 字符模型遍历字符串字节，持有独立字符串副本。 |
 | IterCharsState | <a id="symbol-211"></a>`std::lang::String source` | 被适配的源游标或连续存储。 |
 | IterCharsState | <a id="symbol-212"></a>`int64 position` | 下一项在源存储中的位置。 |
 | 模块 | <a id="symbol-213"></a>`struct IterRepeatState<T> : IterNext<T>` | 惰性无限重复一个值，可配合 take 创建有限输出。 |
@@ -467,7 +467,7 @@ iterator pipelines OK
 
 **声明**
 
-```magel
+```chali
 Option<T> next();
 ```
 
@@ -489,13 +489,13 @@ Option<T> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:9](../../source/std/iter.mgl#L9)。
+**源码**：[source/std/iter.chl:9](../../source/std/iter.chl#L9)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-1"></a>
 
@@ -503,7 +503,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -525,13 +525,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:14](../../source/std/iter.mgl#L14)。
+**源码**：[source/std/iter.chl:14](../../source/std/iter.chl#L14)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-2"></a>
 
@@ -539,7 +539,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Option<T> peek();
 ```
 
@@ -561,13 +561,13 @@ Option<T> peek();
 
 **调用形式**
 
-```magel
+```chali
 obj.peek();
 ```
 
-**源码**：[source/std/iter.mgl:26](../../source/std/iter.mgl#L26)。
+**源码**：[source/std/iter.chl:26](../../source/std/iter.chl#L26)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-3"></a>
 
@@ -575,7 +575,7 @@ obj.peek();
 
 **声明**
 
-```magel
+```chali
 Option<T> next();
 ```
 
@@ -597,13 +597,13 @@ Option<T> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:38](../../source/std/iter.mgl#L38)。
+**源码**：[source/std/iter.chl:38](../../source/std/iter.chl#L38)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-4"></a>
 
@@ -611,7 +611,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -633,13 +633,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:52](../../source/std/iter.mgl#L52)。
+**源码**：[source/std/iter.chl:52](../../source/std/iter.chl#L52)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-5"></a>
 
@@ -647,7 +647,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Option<T> iterator(int64 index);
 ```
 
@@ -671,13 +671,13 @@ Option<T> iterator(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.iterator(index);
 ```
 
-**源码**：[source/std/iter.mgl:78](../../source/std/iter.mgl#L78)。
+**源码**：[source/std/iter.chl:78](../../source/std/iter.chl#L78)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-6"></a>
 
@@ -685,7 +685,7 @@ obj.iterator(index);
 
 **声明**
 
-```magel
+```chali
 int64 count();
 ```
 
@@ -708,13 +708,13 @@ int64 count();
 
 **调用形式**
 
-```magel
+```chali
 obj.count();
 ```
 
-**源码**：[source/std/iter.mgl:85](../../source/std/iter.mgl#L85)。
+**源码**：[source/std/iter.chl:85](../../source/std/iter.chl#L85)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-7"></a>
 
@@ -722,7 +722,7 @@ obj.count();
 
 **声明**
 
-```magel
+```chali
 Option<T> nth(int64 index);
 ```
 
@@ -747,13 +747,13 @@ Option<T> nth(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.nth(index);
 ```
 
-**源码**：[source/std/iter.mgl:101](../../source/std/iter.mgl#L101)。
+**源码**：[source/std/iter.chl:101](../../source/std/iter.chl#L101)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-8"></a>
 
@@ -761,7 +761,7 @@ obj.nth(index);
 
 **声明**
 
-```magel
+```chali
 Option<T> last();
 ```
 
@@ -784,13 +784,13 @@ Option<T> last();
 
 **调用形式**
 
-```magel
+```chali
 obj.last();
 ```
 
-**源码**：[source/std/iter.mgl:121](../../source/std/iter.mgl#L121)。
+**源码**：[source/std/iter.chl:121](../../source/std/iter.chl#L121)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-9"></a>
 
@@ -798,7 +798,7 @@ obj.last();
 
 **声明**
 
-```magel
+```chali
 bool all(bool fn(T) predicate);
 ```
 
@@ -823,13 +823,13 @@ bool all(bool fn(T) predicate);
 
 **调用形式**
 
-```magel
+```chali
 obj.all(predicate);
 ```
 
-**源码**：[source/std/iter.mgl:137](../../source/std/iter.mgl#L137)。
+**源码**：[source/std/iter.chl:137](../../source/std/iter.chl#L137)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-10"></a>
 
@@ -837,7 +837,7 @@ obj.all(predicate);
 
 **声明**
 
-```magel
+```chali
 bool any(bool fn(T) predicate);
 ```
 
@@ -862,13 +862,13 @@ bool any(bool fn(T) predicate);
 
 **调用形式**
 
-```magel
+```chali
 obj.any(predicate);
 ```
 
-**源码**：[source/std/iter.mgl:154](../../source/std/iter.mgl#L154)。
+**源码**：[source/std/iter.chl:154](../../source/std/iter.chl#L154)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-11"></a>
 
@@ -876,7 +876,7 @@ obj.any(predicate);
 
 **声明**
 
-```magel
+```chali
 Option<T> find(bool fn(T) predicate);
 ```
 
@@ -901,13 +901,13 @@ Option<T> find(bool fn(T) predicate);
 
 **调用形式**
 
-```magel
+```chali
 obj.find(predicate);
 ```
 
-**源码**：[source/std/iter.mgl:171](../../source/std/iter.mgl#L171)。
+**源码**：[source/std/iter.chl:171](../../source/std/iter.chl#L171)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-12"></a>
 
@@ -915,7 +915,7 @@ obj.find(predicate);
 
 **声明**
 
-```magel
+```chali
 void forEach(void fn(T) action);
 ```
 
@@ -940,13 +940,13 @@ void forEach(void fn(T) action);
 
 **调用形式**
 
-```magel
+```chali
 obj.forEach(action);
 ```
 
-**源码**：[source/std/iter.mgl:188](../../source/std/iter.mgl#L188)。
+**源码**：[source/std/iter.chl:188](../../source/std/iter.chl#L188)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-13"></a>
 
@@ -954,7 +954,7 @@ obj.forEach(action);
 
 **声明**
 
-```magel
+```chali
 Iter<T> fromState<T,S>(S state);
 ```
 
@@ -980,13 +980,13 @@ Iter<T> fromState<T,S>(S state);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::fromState<T,S>(state);
 ```
 
-**源码**：[source/std/iter.mgl:210](../../source/std/iter.mgl#L210)。
+**源码**：[source/std/iter.chl:210](../../source/std/iter.chl#L210)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-14"></a>
 
@@ -994,7 +994,7 @@ std::iter::fromState<T,S>(state);
 
 **声明**
 
-```magel
+```chali
 Option<T> next();
 ```
 
@@ -1018,13 +1018,13 @@ Option<T> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:224](../../source/std/iter.mgl#L224)。
+**源码**：[source/std/iter.chl:224](../../source/std/iter.chl#L224)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-15"></a>
 
@@ -1032,7 +1032,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -1056,13 +1056,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:235](../../source/std/iter.mgl#L235)。
+**源码**：[source/std/iter.chl:235](../../source/std/iter.chl#L235)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-16"></a>
 
@@ -1070,7 +1070,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<T> fromIterator<T,S : Iterator<T>>(S source);
 ```
 
@@ -1096,13 +1096,13 @@ Iter<T> fromIterator<T,S : Iterator<T>>(S source);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::fromIterator<T,S >>(source);
 ```
 
-**源码**：[source/std/iter.mgl:245](../../source/std/iter.mgl#L245)。
+**源码**：[source/std/iter.chl:245](../../source/std/iter.chl#L245)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-17"></a>
 
@@ -1110,7 +1110,7 @@ std::iter::fromIterator<T,S >>(source);
 
 **声明**
 
-```magel
+```chali
 Option<T> next();
 ```
 
@@ -1132,13 +1132,13 @@ Option<T> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:260](../../source/std/iter.mgl#L260)。
+**源码**：[source/std/iter.chl:260](../../source/std/iter.chl#L260)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-18"></a>
 
@@ -1146,7 +1146,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -1168,13 +1168,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:272](../../source/std/iter.mgl#L272)。
+**源码**：[source/std/iter.chl:272](../../source/std/iter.chl#L272)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-19"></a>
 
@@ -1182,7 +1182,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<T> fromList<T>(std::lang::List<T> values);
 ```
 
@@ -1208,13 +1208,13 @@ Iter<T> fromList<T>(std::lang::List<T> values);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::fromList<T>(values);
 ```
 
-**源码**：[source/std/iter.mgl:284](../../source/std/iter.mgl#L284)。
+**源码**：[source/std/iter.chl:284](../../source/std/iter.chl#L284)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-20"></a>
 
@@ -1222,7 +1222,7 @@ std::iter::fromList<T>(values);
 
 **声明**
 
-```magel
+```chali
 Option<int64> next();
 ```
 
@@ -1244,13 +1244,13 @@ Option<int64> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:300](../../source/std/iter.mgl#L300)。
+**源码**：[source/std/iter.chl:300](../../source/std/iter.chl#L300)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-21"></a>
 
@@ -1258,7 +1258,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -1280,13 +1280,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:317](../../source/std/iter.mgl#L317)。
+**源码**：[source/std/iter.chl:317](../../source/std/iter.chl#L317)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-22"></a>
 
@@ -1294,7 +1294,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<int64> range(int64 start, int64 stop, int64 step);
 ```
 
@@ -1321,13 +1321,13 @@ Iter<int64> range(int64 start, int64 stop, int64 step);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::range(start, stop, step);
 ```
 
-**源码**：[source/std/iter.mgl:351](../../source/std/iter.mgl#L351)。
+**源码**：[source/std/iter.chl:351](../../source/std/iter.chl#L351)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-23"></a>
 
@@ -1335,7 +1335,7 @@ std::iter::range(start, stop, step);
 
 **声明**
 
-```magel
+```chali
 Iter<int64> range(int64 start, int64 stop);
 ```
 
@@ -1360,13 +1360,13 @@ Iter<int64> range(int64 start, int64 stop);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::range(start, stop);
 ```
 
-**源码**：[source/std/iter.mgl:366](../../source/std/iter.mgl#L366)。
+**源码**：[source/std/iter.chl:366](../../source/std/iter.chl#L366)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-24"></a>
 
@@ -1374,7 +1374,7 @@ std::iter::range(start, stop);
 
 **声明**
 
-```magel
+```chali
 Option<U> next();
 ```
 
@@ -1396,13 +1396,13 @@ Option<U> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:378](../../source/std/iter.mgl#L378)。
+**源码**：[source/std/iter.chl:378](../../source/std/iter.chl#L378)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-25"></a>
 
@@ -1410,7 +1410,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -1432,13 +1432,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:389](../../source/std/iter.mgl#L389)。
+**源码**：[source/std/iter.chl:389](../../source/std/iter.chl#L389)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-26"></a>
 
@@ -1446,7 +1446,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<U> map<T,U>(Iter<T> source, U fn(T) callback);
 ```
 
@@ -1471,13 +1471,13 @@ Iter<U> map<T,U>(Iter<T> source, U fn(T) callback);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::map<T,U>(source, callback);
 ```
 
-**源码**：[source/std/iter.mgl:401](../../source/std/iter.mgl#L401)。
+**源码**：[source/std/iter.chl:401](../../source/std/iter.chl#L401)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-27"></a>
 
@@ -1485,7 +1485,7 @@ std::iter::map<T,U>(source, callback);
 
 **声明**
 
-```magel
+```chali
 Option<T> next();
 ```
 
@@ -1508,13 +1508,13 @@ Option<T> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:416](../../source/std/iter.mgl#L416)。
+**源码**：[source/std/iter.chl:416](../../source/std/iter.chl#L416)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-28"></a>
 
@@ -1522,7 +1522,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -1544,13 +1544,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:432](../../source/std/iter.mgl#L432)。
+**源码**：[source/std/iter.chl:432](../../source/std/iter.chl#L432)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-29"></a>
 
@@ -1558,7 +1558,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<T> filter<T>(Iter<T> source, bool fn(T) predicate);
 ```
 
@@ -1583,13 +1583,13 @@ Iter<T> filter<T>(Iter<T> source, bool fn(T) predicate);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::filter<T>(source, predicate);
 ```
 
-**源码**：[source/std/iter.mgl:445](../../source/std/iter.mgl#L445)。
+**源码**：[source/std/iter.chl:445](../../source/std/iter.chl#L445)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-30"></a>
 
@@ -1597,7 +1597,7 @@ std::iter::filter<T>(source, predicate);
 
 **声明**
 
-```magel
+```chali
 Option<U> next();
 ```
 
@@ -1620,13 +1620,13 @@ Option<U> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:460](../../source/std/iter.mgl#L460)。
+**源码**：[source/std/iter.chl:460](../../source/std/iter.chl#L460)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-31"></a>
 
@@ -1634,7 +1634,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -1656,13 +1656,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:477](../../source/std/iter.mgl#L477)。
+**源码**：[source/std/iter.chl:477](../../source/std/iter.chl#L477)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-32"></a>
 
@@ -1670,7 +1670,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<U> filterMap<T,U>(Iter<T> source, Option<U> fn(T) callback);
 ```
 
@@ -1695,13 +1695,13 @@ Iter<U> filterMap<T,U>(Iter<T> source, Option<U> fn(T) callback);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::filterMap<T,U>(source, callback);
 ```
 
-**源码**：[source/std/iter.mgl:490](../../source/std/iter.mgl#L490)。
+**源码**：[source/std/iter.chl:490](../../source/std/iter.chl#L490)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-33"></a>
 
@@ -1709,7 +1709,7 @@ std::iter::filterMap<T,U>(source, callback);
 
 **声明**
 
-```magel
+```chali
 Option<U> next();
 ```
 
@@ -1731,13 +1731,13 @@ Option<U> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:506](../../source/std/iter.mgl#L506)。
+**源码**：[source/std/iter.chl:506](../../source/std/iter.chl#L506)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-34"></a>
 
@@ -1745,7 +1745,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -1767,13 +1767,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:525](../../source/std/iter.mgl#L525)。
+**源码**：[source/std/iter.chl:525](../../source/std/iter.chl#L525)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-35"></a>
 
@@ -1781,7 +1781,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<U> mapWhile<T,U>(Iter<T> source, Option<U> fn(T) callback);
 ```
 
@@ -1806,13 +1806,13 @@ Iter<U> mapWhile<T,U>(Iter<T> source, Option<U> fn(T) callback);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::mapWhile<T,U>(source, callback);
 ```
 
-**源码**：[source/std/iter.mgl:538](../../source/std/iter.mgl#L538)。
+**源码**：[source/std/iter.chl:538](../../source/std/iter.chl#L538)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-36"></a>
 
@@ -1820,7 +1820,7 @@ std::iter::mapWhile<T,U>(source, callback);
 
 **声明**
 
-```magel
+```chali
 Option<T> next();
 ```
 
@@ -1842,13 +1842,13 @@ Option<T> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:554](../../source/std/iter.mgl#L554)。
+**源码**：[source/std/iter.chl:554](../../source/std/iter.chl#L554)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-37"></a>
 
@@ -1856,7 +1856,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -1878,13 +1878,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:573](../../source/std/iter.mgl#L573)。
+**源码**：[source/std/iter.chl:573](../../source/std/iter.chl#L573)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-38"></a>
 
@@ -1892,7 +1892,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<T> takeWhile<T>(Iter<T> source, bool fn(T) predicate);
 ```
 
@@ -1917,13 +1917,13 @@ Iter<T> takeWhile<T>(Iter<T> source, bool fn(T) predicate);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::takeWhile<T>(source, predicate);
 ```
 
-**源码**：[source/std/iter.mgl:586](../../source/std/iter.mgl#L586)。
+**源码**：[source/std/iter.chl:586](../../source/std/iter.chl#L586)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-39"></a>
 
@@ -1931,7 +1931,7 @@ std::iter::takeWhile<T>(source, predicate);
 
 **声明**
 
-```magel
+```chali
 Option<T> next();
 ```
 
@@ -1954,13 +1954,13 @@ Option<T> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:602](../../source/std/iter.mgl#L602)。
+**源码**：[source/std/iter.chl:602](../../source/std/iter.chl#L602)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-40"></a>
 
@@ -1968,7 +1968,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -1990,13 +1990,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:619](../../source/std/iter.mgl#L619)。
+**源码**：[source/std/iter.chl:619](../../source/std/iter.chl#L619)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-41"></a>
 
@@ -2004,7 +2004,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<T> skipWhile<T>(Iter<T> source, bool fn(T) predicate);
 ```
 
@@ -2029,13 +2029,13 @@ Iter<T> skipWhile<T>(Iter<T> source, bool fn(T) predicate);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::skipWhile<T>(source, predicate);
 ```
 
-**源码**：[source/std/iter.mgl:632](../../source/std/iter.mgl#L632)。
+**源码**：[source/std/iter.chl:632](../../source/std/iter.chl#L632)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-42"></a>
 
@@ -2043,7 +2043,7 @@ std::iter::skipWhile<T>(source, predicate);
 
 **声明**
 
-```magel
+```chali
 Option<T> next();
 ```
 
@@ -2065,13 +2065,13 @@ Option<T> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:648](../../source/std/iter.mgl#L648)。
+**源码**：[source/std/iter.chl:648](../../source/std/iter.chl#L648)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-43"></a>
 
@@ -2079,7 +2079,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -2101,13 +2101,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:659](../../source/std/iter.mgl#L659)。
+**源码**：[source/std/iter.chl:659](../../source/std/iter.chl#L659)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-44"></a>
 
@@ -2115,7 +2115,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<T> take<T>(Iter<T> source, int64 amount);
 ```
 
@@ -2141,13 +2141,13 @@ Iter<T> take<T>(Iter<T> source, int64 amount);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::take<T>(source, amount);
 ```
 
-**源码**：[source/std/iter.mgl:680](../../source/std/iter.mgl#L680)。
+**源码**：[source/std/iter.chl:680](../../source/std/iter.chl#L680)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-45"></a>
 
@@ -2155,7 +2155,7 @@ std::iter::take<T>(source, amount);
 
 **声明**
 
-```magel
+```chali
 Option<T> next();
 ```
 
@@ -2177,13 +2177,13 @@ Option<T> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:696](../../source/std/iter.mgl#L696)。
+**源码**：[source/std/iter.chl:696](../../source/std/iter.chl#L696)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-46"></a>
 
@@ -2191,7 +2191,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -2213,13 +2213,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:711](../../source/std/iter.mgl#L711)。
+**源码**：[source/std/iter.chl:711](../../source/std/iter.chl#L711)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-47"></a>
 
@@ -2227,7 +2227,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<T> skip<T>(Iter<T> source, int64 amount);
 ```
 
@@ -2253,13 +2253,13 @@ Iter<T> skip<T>(Iter<T> source, int64 amount);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::skip<T>(source, amount);
 ```
 
-**源码**：[source/std/iter.mgl:736](../../source/std/iter.mgl#L736)。
+**源码**：[source/std/iter.chl:736](../../source/std/iter.chl#L736)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-48"></a>
 
@@ -2267,7 +2267,7 @@ std::iter::skip<T>(source, amount);
 
 **声明**
 
-```magel
+```chali
 Option<T> next();
 ```
 
@@ -2289,13 +2289,13 @@ Option<T> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:753](../../source/std/iter.mgl#L753)。
+**源码**：[source/std/iter.chl:753](../../source/std/iter.chl#L753)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-49"></a>
 
@@ -2303,7 +2303,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -2325,13 +2325,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:767](../../source/std/iter.mgl#L767)。
+**源码**：[source/std/iter.chl:767](../../source/std/iter.chl#L767)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-50"></a>
 
@@ -2339,7 +2339,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<T> chain<T>(Iter<T> left, Iter<T> right);
 ```
 
@@ -2364,13 +2364,13 @@ Iter<T> chain<T>(Iter<T> left, Iter<T> right);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::chain<T>(left, right);
 ```
 
-**源码**：[source/std/iter.mgl:779](../../source/std/iter.mgl#L779)。
+**源码**：[source/std/iter.chl:779](../../source/std/iter.chl#L779)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-51"></a>
 
@@ -2378,7 +2378,7 @@ std::iter::chain<T>(left, right);
 
 **声明**
 
-```magel
+```chali
 Option<(T,U)> next();
 ```
 
@@ -2400,13 +2400,13 @@ Option<(T,U)> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:794](../../source/std/iter.mgl#L794)。
+**源码**：[source/std/iter.chl:794](../../source/std/iter.chl#L794)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-52"></a>
 
@@ -2414,7 +2414,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -2436,13 +2436,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:809](../../source/std/iter.mgl#L809)。
+**源码**：[source/std/iter.chl:809](../../source/std/iter.chl#L809)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-53"></a>
 
@@ -2450,7 +2450,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<(T,U)> zip<T,U>(Iter<T> left, Iter<U> right);
 ```
 
@@ -2475,13 +2475,13 @@ Iter<(T,U)> zip<T,U>(Iter<T> left, Iter<U> right);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::zip<T,U>(left, right);
 ```
 
-**源码**：[source/std/iter.mgl:821](../../source/std/iter.mgl#L821)。
+**源码**：[source/std/iter.chl:821](../../source/std/iter.chl#L821)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-54"></a>
 
@@ -2489,7 +2489,7 @@ std::iter::zip<T,U>(left, right);
 
 **声明**
 
-```magel
+```chali
 Option<(int64,T)> next();
 ```
 
@@ -2511,13 +2511,13 @@ Option<(int64,T)> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:836](../../source/std/iter.mgl#L836)。
+**源码**：[source/std/iter.chl:836](../../source/std/iter.chl#L836)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-55"></a>
 
@@ -2525,7 +2525,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -2547,13 +2547,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:849](../../source/std/iter.mgl#L849)。
+**源码**：[source/std/iter.chl:849](../../source/std/iter.chl#L849)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-56"></a>
 
@@ -2561,7 +2561,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<(int64,T)> enumerate<T>(Iter<T> source);
 ```
 
@@ -2585,13 +2585,13 @@ Iter<(int64,T)> enumerate<T>(Iter<T> source);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::enumerate<T>(source);
 ```
 
-**源码**：[source/std/iter.mgl:860](../../source/std/iter.mgl#L860)。
+**源码**：[source/std/iter.chl:860](../../source/std/iter.chl#L860)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-57"></a>
 
@@ -2599,7 +2599,7 @@ std::iter::enumerate<T>(source);
 
 **声明**
 
-```magel
+```chali
 Option<T> next();
 ```
 
@@ -2621,13 +2621,13 @@ Option<T> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:875](../../source/std/iter.mgl#L875)。
+**源码**：[source/std/iter.chl:875](../../source/std/iter.chl#L875)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-58"></a>
 
@@ -2635,7 +2635,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -2657,13 +2657,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:886](../../source/std/iter.mgl#L886)。
+**源码**：[source/std/iter.chl:886](../../source/std/iter.chl#L886)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-59"></a>
 
@@ -2671,7 +2671,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<T> stepBy<T>(Iter<T> source, int64 step);
 ```
 
@@ -2697,13 +2697,13 @@ Iter<T> stepBy<T>(Iter<T> source, int64 step);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::stepBy<T>(source, step);
 ```
 
-**源码**：[source/std/iter.mgl:898](../../source/std/iter.mgl#L898)。
+**源码**：[source/std/iter.chl:898](../../source/std/iter.chl#L898)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-60"></a>
 
@@ -2711,7 +2711,7 @@ std::iter::stepBy<T>(source, step);
 
 **声明**
 
-```magel
+```chali
 Option<T> next();
 ```
 
@@ -2733,13 +2733,13 @@ Option<T> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:914](../../source/std/iter.mgl#L914)。
+**源码**：[source/std/iter.chl:914](../../source/std/iter.chl#L914)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-61"></a>
 
@@ -2747,7 +2747,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -2769,13 +2769,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:928](../../source/std/iter.mgl#L928)。
+**源码**：[source/std/iter.chl:928](../../source/std/iter.chl#L928)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-62"></a>
 
@@ -2783,7 +2783,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<T> fuse<T>(Iter<T> source);
 ```
 
@@ -2807,13 +2807,13 @@ Iter<T> fuse<T>(Iter<T> source);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::fuse<T>(source);
 ```
 
-**源码**：[source/std/iter.mgl:942](../../source/std/iter.mgl#L942)。
+**源码**：[source/std/iter.chl:942](../../source/std/iter.chl#L942)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-63"></a>
 
@@ -2821,7 +2821,7 @@ std::iter::fuse<T>(source);
 
 **声明**
 
-```magel
+```chali
 Option<T> next();
 ```
 
@@ -2843,13 +2843,13 @@ Option<T> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:956](../../source/std/iter.mgl#L956)。
+**源码**：[source/std/iter.chl:956](../../source/std/iter.chl#L956)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-64"></a>
 
@@ -2857,7 +2857,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -2879,13 +2879,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:967](../../source/std/iter.mgl#L967)。
+**源码**：[source/std/iter.chl:967](../../source/std/iter.chl#L967)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-65"></a>
 
@@ -2893,7 +2893,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<T> inspect<T>(Iter<T> source, void fn(T) action);
 ```
 
@@ -2918,13 +2918,13 @@ Iter<T> inspect<T>(Iter<T> source, void fn(T) action);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::inspect<T>(source, action);
 ```
 
-**源码**：[source/std/iter.mgl:979](../../source/std/iter.mgl#L979)。
+**源码**：[source/std/iter.chl:979](../../source/std/iter.chl#L979)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-66"></a>
 
@@ -2932,7 +2932,7 @@ std::iter::inspect<T>(source, action);
 
 **声明**
 
-```magel
+```chali
 Option<T> next();
 ```
 
@@ -2954,13 +2954,13 @@ Option<T> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:995](../../source/std/iter.mgl#L995)。
+**源码**：[source/std/iter.chl:995](../../source/std/iter.chl#L995)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-67"></a>
 
@@ -2968,7 +2968,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -2990,13 +2990,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:1014](../../source/std/iter.mgl#L1014)。
+**源码**：[source/std/iter.chl:1014](../../source/std/iter.chl#L1014)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-68"></a>
 
@@ -3004,7 +3004,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<T> cycle<T>(Iter<T> source);
 ```
 
@@ -3028,13 +3028,13 @@ Iter<T> cycle<T>(Iter<T> source);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::cycle<T>(source);
 ```
 
-**源码**：[source/std/iter.mgl:1025](../../source/std/iter.mgl#L1025)。
+**源码**：[source/std/iter.chl:1025](../../source/std/iter.chl#L1025)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-69"></a>
 
@@ -3042,7 +3042,7 @@ std::iter::cycle<T>(source);
 
 **声明**
 
-```magel
+```chali
 Option<U> next();
 ```
 
@@ -3064,13 +3064,13 @@ Option<U> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:1041](../../source/std/iter.mgl#L1041)。
+**源码**：[source/std/iter.chl:1041](../../source/std/iter.chl#L1041)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-70"></a>
 
@@ -3078,7 +3078,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -3100,13 +3100,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:1052](../../source/std/iter.mgl#L1052)。
+**源码**：[source/std/iter.chl:1052](../../source/std/iter.chl#L1052)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-71"></a>
 
@@ -3114,7 +3114,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<U> scan<T,A,U>(Iter<T> source, A initial, Option<U> fn(A mut&, T) callback);
 ```
 
@@ -3140,13 +3140,13 @@ Iter<U> scan<T,A,U>(Iter<T> source, A initial, Option<U> fn(A mut&, T) callback)
 
 **调用形式**
 
-```magel
+```chali
 std::iter::scan<T,A,U>(source, initial, callback);
 ```
 
-**源码**：[source/std/iter.mgl:1066](../../source/std/iter.mgl#L1066)。
+**源码**：[source/std/iter.chl:1066](../../source/std/iter.chl#L1066)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-72"></a>
 
@@ -3154,7 +3154,7 @@ std::iter::scan<T,A,U>(source, initial, callback);
 
 **声明**
 
-```magel
+```chali
 std::lang::List<T> collect<T>(Iter<T> source);
 ```
 
@@ -3179,13 +3179,13 @@ std::lang::List<T> collect<T>(Iter<T> source);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::collect<T>(source);
 ```
 
-**源码**：[source/std/iter.mgl:1080](../../source/std/iter.mgl#L1080)。
+**源码**：[source/std/iter.chl:1080](../../source/std/iter.chl#L1080)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-73"></a>
 
@@ -3193,7 +3193,7 @@ std::iter::collect<T>(source);
 
 **声明**
 
-```magel
+```chali
 A fold<T,A>(Iter<T> source, A initial, A fn(A, T) callback);
 ```
 
@@ -3220,13 +3220,13 @@ A fold<T,A>(Iter<T> source, A initial, A fn(A, T) callback);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::fold<T,A>(source, initial, callback);
 ```
 
-**源码**：[source/std/iter.mgl:1100](../../source/std/iter.mgl#L1100)。
+**源码**：[source/std/iter.chl:1100](../../source/std/iter.chl#L1100)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-74"></a>
 
@@ -3234,7 +3234,7 @@ std::iter::fold<T,A>(source, initial, callback);
 
 **声明**
 
-```magel
+```chali
 Result<A,E> tryFold<T,A,E>(Iter<T> source, A initial, Result<A,E> fn(A, T) callback);
 ```
 
@@ -3261,13 +3261,13 @@ Result<A,E> tryFold<T,A,E>(Iter<T> source, A initial, Result<A,E> fn(A, T) callb
 
 **调用形式**
 
-```magel
+```chali
 std::iter::tryFold<T,A,E>(source, initial, callback);
 ```
 
-**源码**：[source/std/iter.mgl:1120](../../source/std/iter.mgl#L1120)。
+**源码**：[source/std/iter.chl:1120](../../source/std/iter.chl#L1120)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-75"></a>
 
@@ -3275,7 +3275,7 @@ std::iter::tryFold<T,A,E>(source, initial, callback);
 
 **声明**
 
-```magel
+```chali
 Option<U> findMap<T,U>(Iter<T> source, Option<U> fn(T) callback);
 ```
 
@@ -3301,13 +3301,13 @@ Option<U> findMap<T,U>(Iter<T> source, Option<U> fn(T) callback);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::findMap<T,U>(source, callback);
 ```
 
-**源码**：[source/std/iter.mgl:1143](../../source/std/iter.mgl#L1143)。
+**源码**：[source/std/iter.chl:1143](../../source/std/iter.chl#L1143)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-76"></a>
 
@@ -3315,7 +3315,7 @@ std::iter::findMap<T,U>(source, callback);
 
 **声明**
 
-```magel
+```chali
 bool sameItems<T>(Iter<T> left, Iter<T> right);
 ```
 
@@ -3341,13 +3341,13 @@ bool sameItems<T>(Iter<T> left, Iter<T> right);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::sameItems<T>(left, right);
 ```
 
-**源码**：[source/std/iter.mgl:1164](../../source/std/iter.mgl#L1164)。
+**源码**：[source/std/iter.chl:1164](../../source/std/iter.chl#L1164)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-77"></a>
 
@@ -3355,7 +3355,7 @@ std::iter::sameItems<T>(left, right);
 
 **声明**
 
-```magel
+```chali
 Option<T> next();
 ```
 
@@ -3379,13 +3379,13 @@ Option<T> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:1185](../../source/std/iter.mgl#L1185)。
+**源码**：[source/std/iter.chl:1185](../../source/std/iter.chl#L1185)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-78"></a>
 
@@ -3393,7 +3393,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64,Option<int64>) sizeHint();
 ```
 
@@ -3417,13 +3417,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:1191](../../source/std/iter.mgl#L1191)。
+**源码**：[source/std/iter.chl:1191](../../source/std/iter.chl#L1191)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-79"></a>
 
@@ -3431,7 +3431,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<T> rev<T>(Iter<T> source);
 ```
 
@@ -3455,13 +3455,13 @@ Iter<T> rev<T>(Iter<T> source);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::rev<T>(source);
 ```
 
-**源码**：[source/std/iter.mgl:1202](../../source/std/iter.mgl#L1202)。
+**源码**：[source/std/iter.chl:1202](../../source/std/iter.chl#L1202)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-80"></a>
 
@@ -3469,7 +3469,7 @@ std::iter::rev<T>(source);
 
 **声明**
 
-```magel
+```chali
 (Iter<T>,Iter<T>) peekingTakeWhile<T>(Iter<T> source, bool fn(T) predicate);
 ```
 
@@ -3494,13 +3494,13 @@ std::iter::rev<T>(source);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::peekingTakeWhile<T>(source, predicate);
 ```
 
-**源码**：[source/std/iter.mgl:1225](../../source/std/iter.mgl#L1225)。
+**源码**：[source/std/iter.chl:1225](../../source/std/iter.chl#L1225)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-81"></a>
 
@@ -3508,7 +3508,7 @@ std::iter::peekingTakeWhile<T>(source, predicate);
 
 **声明**
 
-```magel
+```chali
 int64 countIter<T>(Iter<T> mut& source);
 ```
 
@@ -3532,13 +3532,13 @@ int64 countIter<T>(Iter<T> mut& source);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::countIter<T>(source);
 ```
 
-**源码**：[source/std/iter.mgl:1244](../../source/std/iter.mgl#L1244)。
+**源码**：[source/std/iter.chl:1244](../../source/std/iter.chl#L1244)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-82"></a>
 
@@ -3546,7 +3546,7 @@ std::iter::countIter<T>(source);
 
 **声明**
 
-```magel
+```chali
 Option<T> nth<T>(Iter<T> mut& source, int64 index);
 ```
 
@@ -3571,13 +3571,13 @@ Option<T> nth<T>(Iter<T> mut& source, int64 index);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::nth<T>(source, index);
 ```
 
-**源码**：[source/std/iter.mgl:1255](../../source/std/iter.mgl#L1255)。
+**源码**：[source/std/iter.chl:1255](../../source/std/iter.chl#L1255)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-83"></a>
 
@@ -3585,7 +3585,7 @@ std::iter::nth<T>(source, index);
 
 **声明**
 
-```magel
+```chali
 Option<T> last<T>(Iter<T> mut& source);
 ```
 
@@ -3609,13 +3609,13 @@ Option<T> last<T>(Iter<T> mut& source);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::last<T>(source);
 ```
 
-**源码**：[source/std/iter.mgl:1265](../../source/std/iter.mgl#L1265)。
+**源码**：[source/std/iter.chl:1265](../../source/std/iter.chl#L1265)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-84"></a>
 
@@ -3623,7 +3623,7 @@ std::iter::last<T>(source);
 
 **声明**
 
-```magel
+```chali
 bool all<T>(Iter<T> mut& source, bool fn(T) predicate);
 ```
 
@@ -3648,13 +3648,13 @@ bool all<T>(Iter<T> mut& source, bool fn(T) predicate);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::all<T>(source, predicate);
 ```
 
-**源码**：[source/std/iter.mgl:1276](../../source/std/iter.mgl#L1276)。
+**源码**：[source/std/iter.chl:1276](../../source/std/iter.chl#L1276)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-85"></a>
 
@@ -3662,7 +3662,7 @@ std::iter::all<T>(source, predicate);
 
 **声明**
 
-```magel
+```chali
 bool any<T>(Iter<T> mut& source, bool fn(T) predicate);
 ```
 
@@ -3687,13 +3687,13 @@ bool any<T>(Iter<T> mut& source, bool fn(T) predicate);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::any<T>(source, predicate);
 ```
 
-**源码**：[source/std/iter.mgl:1287](../../source/std/iter.mgl#L1287)。
+**源码**：[source/std/iter.chl:1287](../../source/std/iter.chl#L1287)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-86"></a>
 
@@ -3701,7 +3701,7 @@ std::iter::any<T>(source, predicate);
 
 **声明**
 
-```magel
+```chali
 Option<T> find<T>(Iter<T> mut& source, bool fn(T) predicate);
 ```
 
@@ -3726,13 +3726,13 @@ Option<T> find<T>(Iter<T> mut& source, bool fn(T) predicate);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::find<T>(source, predicate);
 ```
 
-**源码**：[source/std/iter.mgl:1298](../../source/std/iter.mgl#L1298)。
+**源码**：[source/std/iter.chl:1298](../../source/std/iter.chl#L1298)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-87"></a>
 
@@ -3740,7 +3740,7 @@ std::iter::find<T>(source, predicate);
 
 **声明**
 
-```magel
+```chali
 void forEach<T>(Iter<T> mut& source, void fn(T) action);
 ```
 
@@ -3765,13 +3765,13 @@ void forEach<T>(Iter<T> mut& source, void fn(T) action);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::forEach<T>(source, action);
 ```
 
-**源码**：[source/std/iter.mgl:1309](../../source/std/iter.mgl#L1309)。
+**源码**：[source/std/iter.chl:1309](../../source/std/iter.chl#L1309)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-88"></a>
 
@@ -3779,7 +3779,7 @@ std::iter::forEach<T>(source, action);
 
 **声明**
 
-```magel
+```chali
 Iter<T> listIntoIter<T>(std::lang::List<T> mut& source);
 ```
 
@@ -3803,13 +3803,13 @@ Iter<T> listIntoIter<T>(std::lang::List<T> mut& source);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::listIntoIter<T>(source);
 ```
 
-**源码**：[source/std/iter.mgl:1319](../../source/std/iter.mgl#L1319)。
+**源码**：[source/std/iter.chl:1319](../../source/std/iter.chl#L1319)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-89"></a>
 
@@ -3817,7 +3817,7 @@ std::iter::listIntoIter<T>(source);
 
 **声明**
 
-```magel
+```chali
 Iter<int64> fromRange(std::lang::__Range source);
 ```
 
@@ -3843,13 +3843,13 @@ Iter<int64> fromRange(std::lang::__Range source);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::fromRange(source);
 ```
 
-**源码**：[source/std/iter.mgl:1331](../../source/std/iter.mgl#L1331)。
+**源码**：[source/std/iter.chl:1331](../../source/std/iter.chl#L1331)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-90"></a>
 
@@ -3857,7 +3857,7 @@ std::iter::fromRange(source);
 
 **声明**
 
-```magel
+```chali
 Option<T const&> next();
 ```
 
@@ -3879,13 +3879,13 @@ Option<T const&> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:1372](../../source/std/iter.mgl#L1372)。
+**源码**：[source/std/iter.chl:1372](../../source/std/iter.chl#L1372)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-91"></a>
 
@@ -3893,7 +3893,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -3915,13 +3915,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:1384](../../source/std/iter.mgl#L1384)。
+**源码**：[source/std/iter.chl:1384](../../source/std/iter.chl#L1384)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-92"></a>
 
@@ -3929,7 +3929,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Option<T mut&> next();
 ```
 
@@ -3951,13 +3951,13 @@ Option<T mut&> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:1396](../../source/std/iter.mgl#L1396)。
+**源码**：[source/std/iter.chl:1396](../../source/std/iter.chl#L1396)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-93"></a>
 
@@ -3965,7 +3965,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -3987,13 +3987,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:1408](../../source/std/iter.mgl#L1408)。
+**源码**：[source/std/iter.chl:1408](../../source/std/iter.chl#L1408)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-94"></a>
 
@@ -4001,7 +4001,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<T const&> listIter<T>(std::lang::List<T> const& source);
 ```
 
@@ -4027,13 +4027,13 @@ Iter<T const&> listIter<T>(std::lang::List<T> const& source);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::listIter<T>(source);
 ```
 
-**源码**：[source/std/iter.mgl:1420](../../source/std/iter.mgl#L1420)。
+**源码**：[source/std/iter.chl:1420](../../source/std/iter.chl#L1420)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-95"></a>
 
@@ -4041,7 +4041,7 @@ std::iter::listIter<T>(source);
 
 **声明**
 
-```magel
+```chali
 Iter<T mut&> listIterMut<T>(std::lang::List<T> mut& source);
 ```
 
@@ -4067,13 +4067,13 @@ Iter<T mut&> listIterMut<T>(std::lang::List<T> mut& source);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::listIterMut<T>(source);
 ```
 
-**源码**：[source/std/iter.mgl:1432](../../source/std/iter.mgl#L1432)。
+**源码**：[source/std/iter.chl:1432](../../source/std/iter.chl#L1432)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-96"></a>
 
@@ -4081,7 +4081,7 @@ std::iter::listIterMut<T>(source);
 
 **声明**
 
-```magel
+```chali
 Iter<T> setIntoIter<T>(std::lang::Set<T> mut& source);
 ```
 
@@ -4105,13 +4105,13 @@ Iter<T> setIntoIter<T>(std::lang::Set<T> mut& source);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::setIntoIter<T>(source);
 ```
 
-**源码**：[source/std/iter.mgl:1465](../../source/std/iter.mgl#L1465)。
+**源码**：[source/std/iter.chl:1465](../../source/std/iter.chl#L1465)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-97"></a>
 
@@ -4119,7 +4119,7 @@ std::iter::setIntoIter<T>(source);
 
 **声明**
 
-```magel
+```chali
 Iter<T> setIter<T>(std::lang::Set<T> const& source);
 ```
 
@@ -4145,13 +4145,13 @@ Iter<T> setIter<T>(std::lang::Set<T> const& source);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::setIter<T>(source);
 ```
 
-**源码**：[source/std/iter.mgl:1485](../../source/std/iter.mgl#L1485)。
+**源码**：[source/std/iter.chl:1485](../../source/std/iter.chl#L1485)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-98"></a>
 
@@ -4159,7 +4159,7 @@ std::iter::setIter<T>(source);
 
 **声明**
 
-```magel
+```chali
 Iter<Pair<K,V>> mapIntoIter<K,V>(std::lang::Map<K,V> mut& source);
 ```
 
@@ -4183,13 +4183,13 @@ Iter<Pair<K,V>> mapIntoIter<K,V>(std::lang::Map<K,V> mut& source);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::mapIntoIter<K,V>(source);
 ```
 
-**源码**：[source/std/iter.mgl:1504](../../source/std/iter.mgl#L1504)。
+**源码**：[source/std/iter.chl:1504](../../source/std/iter.chl#L1504)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-99"></a>
 
@@ -4197,7 +4197,7 @@ std::iter::mapIntoIter<K,V>(source);
 
 **声明**
 
-```magel
+```chali
 Iter<Pair<K,V>> mapIter<K,V>(std::lang::Map<K,V> const& source);
 ```
 
@@ -4223,13 +4223,13 @@ Iter<Pair<K,V>> mapIter<K,V>(std::lang::Map<K,V> const& source);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::mapIter<K,V>(source);
 ```
 
-**源码**：[source/std/iter.mgl:1524](../../source/std/iter.mgl#L1524)。
+**源码**：[source/std/iter.chl:1524](../../source/std/iter.chl#L1524)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-100"></a>
 
@@ -4237,7 +4237,7 @@ std::iter::mapIter<K,V>(source);
 
 **声明**
 
-```magel
+```chali
 Option<T const&> next();
 ```
 
@@ -4259,13 +4259,13 @@ Option<T const&> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:1547](../../source/std/iter.mgl#L1547)。
+**源码**：[source/std/iter.chl:1547](../../source/std/iter.chl#L1547)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-101"></a>
 
@@ -4273,7 +4273,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -4295,13 +4295,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:1559](../../source/std/iter.mgl#L1559)。
+**源码**：[source/std/iter.chl:1559](../../source/std/iter.chl#L1559)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-102"></a>
 
@@ -4309,7 +4309,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<T const&> fromSpan<T>(T const& source, int64 length);
 ```
 
@@ -4335,13 +4335,13 @@ Iter<T const&> fromSpan<T>(T const& source, int64 length);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::fromSpan<T>(source, length);
 ```
 
-**源码**：[source/std/iter.mgl:1571](../../source/std/iter.mgl#L1571)。
+**源码**：[source/std/iter.chl:1571](../../source/std/iter.chl#L1571)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-103"></a>
 
@@ -4349,7 +4349,7 @@ std::iter::fromSpan<T>(source, length);
 
 **声明**
 
-```magel
+```chali
 Option<char> next();
 ```
 
@@ -4371,13 +4371,13 @@ Option<char> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:1587](../../source/std/iter.mgl#L1587)。
+**源码**：[source/std/iter.chl:1587](../../source/std/iter.chl#L1587)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-104"></a>
 
@@ -4385,7 +4385,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -4407,13 +4407,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:1599](../../source/std/iter.mgl#L1599)。
+**源码**：[source/std/iter.chl:1599](../../source/std/iter.chl#L1599)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-105"></a>
 
@@ -4421,7 +4421,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<char> chars(std::lang::String source);
 ```
 
@@ -4445,13 +4445,13 @@ Iter<char> chars(std::lang::String source);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::chars(source);
 ```
 
-**源码**：[source/std/iter.mgl:1610](../../source/std/iter.mgl#L1610)。
+**源码**：[source/std/iter.chl:1610](../../source/std/iter.chl#L1610)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-106"></a>
 
@@ -4459,7 +4459,7 @@ std::iter::chars(source);
 
 **声明**
 
-```magel
+```chali
 Option<T> next();
 ```
 
@@ -4481,13 +4481,13 @@ Option<T> next();
 
 **调用形式**
 
-```magel
+```chali
 obj.next();
 ```
 
-**源码**：[source/std/iter.mgl:1623](../../source/std/iter.mgl#L1623)。
+**源码**：[source/std/iter.chl:1623](../../source/std/iter.chl#L1623)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-107"></a>
 
@@ -4495,7 +4495,7 @@ obj.next();
 
 **声明**
 
-```magel
+```chali
 (int64, Option<int64>) sizeHint();
 ```
 
@@ -4517,13 +4517,13 @@ obj.next();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeHint();
 ```
 
-**源码**：[source/std/iter.mgl:1630](../../source/std/iter.mgl#L1630)。
+**源码**：[source/std/iter.chl:1630](../../source/std/iter.chl#L1630)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。
 
 <a id="api-108"></a>
 
@@ -4531,7 +4531,7 @@ obj.sizeHint();
 
 **声明**
 
-```magel
+```chali
 Iter<T> repeat<T>(T value);
 ```
 
@@ -4555,10 +4555,10 @@ Iter<T> repeat<T>(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::iter::repeat<T>(value);
 ```
 
-**源码**：[source/std/iter.mgl:1640](../../source/std/iter.mgl#L1640)。
+**源码**：[source/std/iter.chl:1640](../../source/std/iter.chl#L1640)。
 
-**完整示例**：[example/samples/iter_pipeline.mgl](../../example/samples/iter_pipeline.mgl)。
+**完整示例**：[example/samples/iter_pipeline.chl](../../example/samples/iter_pipeline.chl)。

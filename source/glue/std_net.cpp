@@ -1,6 +1,6 @@
 #include "std_net.hpp"
 
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include "std_native_record.hpp"
 
 #include <algorithm>
@@ -32,7 +32,7 @@
  * `std::net` 的宿主胶水：TCP 客户端 / 监听器。
  *
  * 与 `std::sql` 同一套做法：宿主侧的套接字（Windows 是 `SOCKET`，POSIX 是 `int fd`）
- * 收进句柄表，MAGEL 一侧只看见 `int32` 句柄 + 标量：
+ * 收进句柄表，CHALI 一侧只看见 `int32` 句柄 + 标量：
  *
  *   __netInit / __netError / __netStatus
  *   __netConnect / __netListen / __netAccept
@@ -40,7 +40,7 @@
  *   __netClose / __netLocalPort / __netPeer
  *
  * **不链接 winsock 导入库**：Windows 下运行期 `LoadLibraryA("ws2_32.dll")` 取符号，
- * 这样Magel VM 与独立 VM 宿主都不用改链接参数；POSIX 平台直接调用 libc
+ * 这样ChaLi VM 与独立 VM 宿主都不用改链接参数；POSIX 平台直接调用 libc
  * 里的同名接口。
  *
  * 地址解析用 `getaddrinfo(name, NULL, NULL, &res)`（hints 传 NULL，避开平台相关的
@@ -51,7 +51,7 @@
 namespace std_net_glue
 {
 
-using magel_glue::Registry;
+using chali_glue::Registry;
 using Memory::String;
 
 /* ── 平台函数表 ───────────────────────────────────────────────────────── */
@@ -446,7 +446,7 @@ constexpr int kFdSetBytes = static_cast<int>(sizeof(fd_set));
 #endif
 constexpr int kAddrBuffer = 32; /* sockaddr_in 16 / sockaddr_in6 28 */
 
-/* 没读到数据的原因（MAGEL 侧用 __netStatus 取）。 */
+/* 没读到数据的原因（CHALI 侧用 __netStatus 取）。 */
 constexpr int kNetOk = 0;
 constexpr int kNetClosed = 1;  /* 对端关闭 */
 constexpr int kNetTimeout = 2; /* 等超时 */
@@ -1160,7 +1160,7 @@ inline const stackvm::NativeRecordType socketType{ "std::net::SocketResource", n
  * @param slot 平台连接表位置，负值表示未连接。
  * @return 独占记录句柄。
  */
-inline std::int64_t makeSocketResource(magel_glue::Context &ctx, std::int32_t slot)
+inline std::int64_t makeSocketResource(chali_glue::Context &ctx, std::int32_t slot)
 {
     auto *resource = new SocketResource;
     resource->slot = slot;
@@ -1175,7 +1175,7 @@ inline std::int64_t makeSocketResource(magel_glue::Context &ctx, std::int32_t sl
  * @param handle 不透明记录句柄。
  * @return 有效资源；已经释放或类型不匹配时报告错误并返回空。
  */
-inline SocketResource *socketResource(magel_glue::Context &ctx, std::int64_t handle)
+inline SocketResource *socketResource(chali_glue::Context &ctx, std::int64_t handle)
 {
     auto *resource = static_cast<SocketResource *>(ctx.nativeRecord(handle, socketType));
     if (!resource) ctx.fail("网络 opcode 已释放或类型不匹配");
@@ -1227,7 +1227,7 @@ inline std::int64_t asyncError(SocketResource &resource, const String &message)
  * @param timeoutMs 正数表示连接超时毫秒数，非正数表示无内建超时。
  * @return 由当前 VM 拥有的连接记录，status 表示完成、进行中或失败。
  */
-inline std::int64_t connectAsync(magel_glue::Context &ctx, String host, std::int32_t port, std::int32_t timeoutMs)
+inline std::int64_t connectAsync(chali_glue::Context &ctx, String host, std::int32_t port, std::int32_t timeoutMs)
 {
     auto handle = makeSocketResource(ctx, -1);
     auto *resource = socketResource(ctx, handle);
@@ -1331,7 +1331,7 @@ inline std::int64_t pollConnect(SocketResource &resource)
  * @param resource 监听器记录。
  * @return 新连接或 pending/错误结果的记录句柄。
  */
-inline std::int64_t acceptAsync(magel_glue::Context &ctx, SocketResource &resource)
+inline std::int64_t acceptAsync(chali_glue::Context &ctx, SocketResource &resource)
 {
     auto *slot = slotAt(resource.slot);
     if (!slot || !slot->listener)
@@ -1494,7 +1494,7 @@ inline String receiveAsync(SocketResource &resource, std::int32_t maxBytes, bool
  */
 bool bind(Registry &registry, String *error)
 {
-    using Context = magel_glue::Context;
+    using Context = chali_glue::Context;
     bool ok = registry.bindTypedWithContext<std::int64_t>("std::net::__std_netNew", [](Context &ctx) { return makeSocketResource(ctx, -1); }, error);
     ok = registry.bindTypedWithContext<void, std::int64_t>("std::net::__std_netDrop", [](Context &ctx, std::int64_t handle) { ctx.releaseNativeRecord(handle); }, error) && ok;
     ok = registry.bindTypedWithContext<std::int64_t, String, std::int32_t, std::int32_t>("std::net::__std_netConnect", [](Context &ctx, String host, std::int32_t port, std::int32_t timeout) { return makeSocketResource(ctx, netConnect(host, port, timeout)); }, error) && ok;

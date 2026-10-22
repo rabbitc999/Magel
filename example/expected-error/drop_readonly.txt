@@ -1,1 +1,1 @@
-magel: example/samples-error/drop_readonly.mgl 第 6 行第 5 列：drop 只能用在可写引用（`T mut&`）或运行时数组（`T[]`）上；只读引用（`T const&`）不持有对象
+chali: example/samples-error/drop_readonly.chl 第 6 行第 5 列：drop 只能用在可写引用（`T mut&`）或运行时数组（`T[]`）上；只读引用（`T const&`）不持有对象

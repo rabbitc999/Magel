@@ -1,1 +1,1 @@
-magel: example/samples-error/legacy_idrop_type.mgl 第 1 行第 1 列：struct Holder 继承的接口没有声明：IDrop
+chali: example/samples-error/legacy_idrop_type.chl 第 1 行第 1 列：struct Holder 继承的接口没有声明：IDrop

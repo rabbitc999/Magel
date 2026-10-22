@@ -5,7 +5,7 @@ import sys
 
 
 def main():
-    """在 build/work 中准备 Magel 源码副本，避免生成和编译修改源码目录。
+    """在 build/work 中准备 ChaLi 源码副本，避免生成和编译修改源码目录。
 
 用法：`python tools/prepare_build.py`（在本项目根目录跑）。它只读本项目自己的
 跟踪文件，因此在仓库外留下一份工作副本也照样成立。"""

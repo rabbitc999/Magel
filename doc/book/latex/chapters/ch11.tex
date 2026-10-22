@@ -3,7 +3,7 @@
 
 前面几章你已经偷偷用过容器了——猜数字里没有，但从第 5 章的 \texttt{List<\allowbreak{}int64>\allowbreak{}} 开始就一直在用。这一章把它讲清楚。
 
-Magel 默认提供三种标准库容器，不用 \texttt{import}：
+ChaLi 默认提供三种标准库容器，不用 \texttt{import}：
 
 \begin{center}
 \begin{tabular}{lll}
@@ -23,7 +23,7 @@ List 使用 ArrayList。Map、Set 对内建哈希键或实现 \texttt{Hash} 的�
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     List<int64> scores;
@@ -87,7 +87,7 @@ clear 后：len=0
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 position = scores.indexOf(99);
 if (position >= 0)
 {
@@ -105,7 +105,7 @@ else
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     List<int64> numbers;
@@ -120,10 +120,10 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 运行期错误：vec 下标越界：5（长度 1）
-出错位置：hello.mgl:4（main）
+chali: 运行期错误：vec 下标越界：5（长度 1）
+出错位置：hello.chl:4（main）
 调用栈（外 → 内）：
-  main  hello.mgl:4 [thread 0 ip 25]
+  main  hello.chl:4 [thread 0 ip 25]
 \end{lstlisting}
 \par
 \medskip
@@ -134,7 +134,7 @@ magel: 运行期错误：vec 下标越界：5（长度 1）
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     Map<String, int64> ages;
@@ -187,7 +187,7 @@ cid -> 33
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     Set<int64> unique;
@@ -233,7 +233,7 @@ remove(5) 拿回 1，现在 len=1
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     List<int64> order =
@@ -288,7 +288,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 集合字面量类型不匹配：map 不能初始化 List<int64>
+chali: 集合字面量类型不匹配：map 不能初始化 List<int64>
 \end{lstlisting}
 \par
 \medskip
@@ -303,7 +303,7 @@ magel: 集合字面量类型不匹配：map 不能初始化 List<int64>
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 fixed[3];
@@ -353,7 +353,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     List<int64> original;
@@ -382,7 +382,7 @@ original=1 copy=2
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 void addOne(List<int64> numbers)
 {
     numbers.push(1);
@@ -396,7 +396,7 @@ void addOne(List<int64> numbers)
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 void addOne(List<int64> mut& numbers)
 {
     numbers.push(1);
@@ -412,7 +412,7 @@ void addOne(List<int64> mut& numbers)
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Player
 {
     String name;
@@ -463,7 +463,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     {
@@ -497,7 +497,7 @@ done
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     List<int64> scores;
@@ -534,7 +534,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 for (int64 i in std::lang::range(0, scores.len()))
 {
     scores[i] = scores[i] + 10;
@@ -554,7 +554,7 @@ for (int64 i in std::lang::range(0, scores.len()))
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     List<Any> values = [1, "two", true];
@@ -575,7 +575,7 @@ int64 main()
     Any saved = mixed[key];
     println("{} {}", mixed.len(), tryGet<String>(&saved).unwrap());
 
-    Map<String, Any> record = {"count": 3, "name": "Magel"};
+    Map<String, Any> record = {"count": 3, "name": "ChaLi"};
     Any count = record["count"];
     println("{}", tryGet<int64>(&count).unwrap());
     saved.clear();

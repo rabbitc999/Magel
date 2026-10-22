@@ -531,7 +531,7 @@ std::optional<Memory::String> cppDefinition(const Table &table)
     Memory::Vector<std::uint8_t> bytes;
     if (!encode(table, bytes)) return std::nullopt;
     Memory::String code = "\n/** @brief 在调用方分配域构造本产物的元数据。 @return 拥有型表，查询返回只读引用。 */\n"
-                          "stackvm::reflection::Table magel_reflection_metadata() {\n"
+                          "stackvm::reflection::Table chali_reflection_metadata() {\n"
                           "        static const std::uint8_t bytes[] = {\n";
     for (std::size_t i = 0; i < bytes.size(); ++i)
     {

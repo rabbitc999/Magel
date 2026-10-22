@@ -1,1 +1,1 @@
-magel: example/samples-error/macro_concat_not_identifier.mgl 第 5 行第 23 列：拼名宏只能生成单个标识符
+chali: example/samples-error/macro_concat_not_identifier.chl 第 5 行第 23 列：拼名宏只能生成单个标识符

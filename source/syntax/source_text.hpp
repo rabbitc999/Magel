@@ -1,8 +1,8 @@
-#ifndef MAGEL_SYNTAX_SOURCE_TEXT_HPP
-#define MAGEL_SYNTAX_SOURCE_TEXT_HPP
-#include "allocator/magel_allocator.hpp"
+#ifndef CHALI_SYNTAX_SOURCE_TEXT_HPP
+#define CHALI_SYNTAX_SOURCE_TEXT_HPP
+#include "allocator/chali_allocator.hpp"
 
-namespace magel_syntax
+namespace chali_syntax
 {
 /**
  * @brief 判断字符能否开始普通标识符。
@@ -47,5 +47,5 @@ char groupClose(char ch);
 bool groupArguments(const Memory::String &text, std::size_t open,
                     Memory::Vector<Memory::String> &parts, std::size_t &end,
                     bool allowIncomplete = false, bool *closed = nullptr);
-}  // namespace magel_syntax
+}  // namespace chali_syntax
 #endif

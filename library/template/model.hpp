@@ -1,4 +1,4 @@
-#include "../../source/allocator/magel_allocator.hpp"
+#include "../../source/allocator/chali_allocator.hpp"
 /**
  * @file model.hpp
  * @brief 模板引擎的"取数"抽象：`Model` / `ModelAdapter` / `ValueModel` / `resolve`。

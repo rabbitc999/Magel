@@ -19,7 +19,7 @@
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     println("我想好了一个 1 到 100 的数，你猜是多少？");
@@ -45,7 +45,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     println("我想好了一个 1 到 100 的数，你猜是多少？");
@@ -62,7 +62,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel run guess.mgl --input "42"
+chali run guess.chl --input "42"
 \end{lstlisting}
 \par
 \medskip
@@ -94,7 +94,7 @@ magel run guess.mgl --input "42"
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 secret = 42;
@@ -137,11 +137,11 @@ int64 main()
 
 \item 条件是写在括号里的，和 C 一样：\texttt{if (\allowbreak{}guess <\allowbreak{} secret)\allowbreak{}}；
 
-\item 「否则如果」在 Magel 里拼作 \texttt{elif}，不是 \texttt{else if}，也不是 \texttt{elsif}。
+\item 「否则如果」在 ChaLi 里拼作 \texttt{elif}，不是 \texttt{else if}，也不是 \texttt{elsif}。
 
 \end{itemize}
 
-每个分支的主体都要用 \texttt{\{ \}} 包起来。哪怕只有一句，也要包——Magel 没有「不写花括号只作用一行」那套规矩，省下的这点字换来的是不会看错的结构。
+每个分支的主体都要用 \texttt{\{ \}} 包起来。哪怕只有一句，也要包——ChaLi 没有「不写花括号只作用一行」那套规矩，省下的这点字换来的是不会看错的结构。
 
 \section{第四步：让它一直问下去}
 
@@ -149,7 +149,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 secret = 42;
@@ -195,7 +195,7 @@ int64 main()
 \texttt{break;} 就是那个出口：猜对时跳出去。
 
 \begin{tip}{提示}
-有没有更贴切的写法？有。当循环的唯一出路是 \texttt{break} 时，Magel 允许你写\texttt{loop \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} \}}，意思和 \texttt{while (\allowbreak{}true)\allowbreak{}} 一样，但一眼就能看出「这是个靠 \texttt{break} 结束的循环」。第 5 章会讲 \texttt{loop} 的另一个用法：带着值跳出来。
+有没有更贴切的写法？有。当循环的唯一出路是 \texttt{break} 时，ChaLi 允许你写\texttt{loop \{ .\allowbreak{}.\allowbreak{}.\allowbreak{} \}}，意思和 \texttt{while (\allowbreak{}true)\allowbreak{}} 一样，但一眼就能看出「这是个靠 \texttt{break} 结束的循环」。第 5 章会讲 \texttt{loop} 的另一个用法：带着值跳出来。
 \end{tip}
 
 顺便说明一个容易踩的点：变量 \texttt{guess} 在每次循环里都是新的。写在 \texttt{while} 里面的声明，每转一圈都会重新做一次。所以它不是「上一轮的 \texttt{guess} 被改掉」，而是「新一轮又创了一个 \texttt{guess}」。第 8 章会讲清这种「出作用域就消失」的规则。
@@ -206,7 +206,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 import std::random;
 
 int64 main()
@@ -236,12 +236,12 @@ int64 main()
 
 \texttt{Random:\allowbreak{}:\allowbreak{}with\allowbreak{}Seed(\allowbreak{}(\allowbreak{}uint64)\allowbreak{}2026)\allowbreak{}} —— \texttt{:\allowbreak{}:\allowbreak{}} 表示调这个类型上的静态方法。\texttt{with\allowbreak{}Seed} 是「用指定种子造一个发生器」。
 
-那个 \texttt{(\allowbreak{}uint64)\allowbreak{}} 强转是必需的，不是装饰。 \texttt{2026} 这个字面量默认是 \texttt{int64}，而 \texttt{with\allowbreak{}Seed} 要的是 \texttt{uint64}；Magel 不做隐式转换，你不写它就编译不过：
+那个 \texttt{(\allowbreak{}uint64)\allowbreak{}} 强转是必需的，不是装饰。 \texttt{2026} 这个字面量默认是 \texttt{int64}，而 \texttt{with\allowbreak{}Seed} 要的是 \texttt{uint64}；ChaLi 不做隐式转换，你不写它就编译不过：
 
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 调用 static 函数 Random::withSeed 找不到匹配的重载：(int64)；没有参数类型能对上的重载（候选：Random.withSeed）
+chali: 调用 static 函数 Random::withSeed 找不到匹配的重载：(int64)；没有参数类型能对上的重载（候选：Random.withSeed）
 \end{lstlisting}
 \par
 \medskip
@@ -254,7 +254,7 @@ magel: 调用 static 函数 Random::withSeed 找不到匹配的重载：(int64)�
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 Random gen = Random::fromEntropy();
 \end{lstlisting}
 \par
@@ -266,7 +266,7 @@ Random gen = Random::fromEntropy();
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 import std::random;
 
 int64 main()
@@ -303,7 +303,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel run guess.mgl --input "50 75 62"
+chali run guess.chl --input "50 75 62"
 \end{lstlisting}
 \par
 \medskip
@@ -321,9 +321,9 @@ magel run guess.mgl --input "50 75 62"
 
 新东西只有一处：\texttt{tries =\allowbreak{} tries + 1;}
 
-这行读作「\texttt{tries} 变成它原来的值加一」。\texttt{=\allowbreak{}} 依然是赋值。Magel 也支持写成 \texttt{tries +=\allowbreak{} 1;}（第 5 章会讲这一串复合赋值），但本书前面会一直用 \texttt{tries =\allowbreak{} tries + 1} 这种最直白的写法——先写清楚，再写短。
+这行读作「\texttt{tries} 变成它原来的值加一」。\texttt{=\allowbreak{}} 依然是赋值。ChaLi 也支持写成 \texttt{tries +=\allowbreak{} 1;}（第 5 章会讲这一串复合赋值），但本书前面会一直用 \texttt{tries =\allowbreak{} tries + 1} 这种最直白的写法——先写清楚，再写短。
 
-顺带一提：\texttt{++tries} 那种自增写法 Magel 也有，但它对「同一个变量在一个表达式里被读写两次」管得很严，用不好会直接报错。第 5 章再说。
+顺带一提：\texttt{++tries} 那种自增写法 ChaLi 也有，但它对「同一个变量在一个表达式里被读写两次」管得很严，用不好会直接报错。第 5 章再说。
 
 \section{出错的时候}
 
@@ -333,7 +333,7 @@ magel run guess.mgl --input "50 75 62"
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 first = inputInt();
@@ -348,10 +348,10 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 运行期错误：输入不够（第 2 项缺失）
-出错位置：guess.mgl:3（main）
+chali: 运行期错误：输入不够（第 2 项缺失）
+出错位置：guess.chl:3（main）
 调用栈（外 → 内）：
-  main  guess.mgl:3 [thread 0 ip 3]
+  main  guess.chl:3 [thread 0 ip 3]
 \end{lstlisting}
 \par
 \medskip
@@ -360,7 +360,7 @@ magel: 运行期错误：输入不够（第 2 项缺失）
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 value = inputInt();
@@ -374,10 +374,10 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 运行期错误：std::lang::inputInt 读到的不是合法 int："abc"
-出错位置：guess.mgl:2（main）
+chali: 运行期错误：std::lang::inputInt 读到的不是合法 int："abc"
+出错位置：guess.chl:2（main）
 调用栈（外 → 内）：
-  main  guess.mgl:2 [thread 0 ip 3]
+  main  guess.chl:2 [thread 0 ip 3]
 \end{lstlisting}
 \par
 \medskip
@@ -390,14 +390,14 @@ magel: 运行期错误：std::lang::inputInt 读到的不是合法 int："abc"
  & 什么时候报 & 谁的问题 \\
 \midrule
 \texttt{语法错误：…} & 编译期，程序一个字符都没跑 & 代码写错了 \\
-\texttt{magel:\allowbreak{} 运行期错误：…} & 运行期，跑到那一句才炸 & 数据不合法 \\
+\texttt{chali:\allowbreak{} 运行期错误：…} & 运行期，跑到那一句才炸 & 数据不合法 \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-Magel 的立场是：代码的错误要尽量在编译期抓干净。所以「类型对不上」是编译期的事，而「用户输入了个 \texttt{abc}」只能运行期知道——这种事它只能诚实地停下来，并告诉你停在哪一行。
+ChaLi 的立场是：代码的错误要尽量在编译期抓干净。所以「类型对不上」是编译期的事，而「用户输入了个 \texttt{abc}」只能运行期知道——这种事它只能诚实地停下来，并告诉你停在哪一行。
 
-程序停下来的位置写成了 \texttt{guess.\allowbreak{}mgl:\allowbreak{}9}，连调用栈都给了；写大程序时这东西能救你。
+程序停下来的位置写成了 \texttt{guess.\allowbreak{}chl:\allowbreak{}9}，连调用栈都给了；写大程序时这东西能救你。
 
 \section{小结}
 
@@ -415,7 +415,7 @@ Magel 的立场是：代码的错误要尽量在编译期抓干净。所以「�
 格式化 & \texttt{\{\}} 是位置占位符，类型由实参推导 \\
 模块 & \texttt{import std:\allowbreak{}:\allowbreak{}random;}；只有 \texttt{lang} 是自动加载的 \\
 静态方法 & \texttt{Random:\allowbreak{}:\allowbreak{}with\allowbreak{}Seed(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}}，\texttt{:\allowbreak{}:\allowbreak{}} 后面是类型级的东西 \\
-强转 & \texttt{(\allowbreak{}uint64)\allowbreak{}2026} —— Magel 不做隐式转换 \\
+强转 & \texttt{(\allowbreak{}uint64)\allowbreak{}2026} —— ChaLi 不做隐式转换 \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -425,7 +425,7 @@ Magel 的立场是：代码的错误要尽量在编译期抓干净。所以「�
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel check guess.mgl    # 只查语法和类型，不执行
+chali check guess.chl    # 只查语法和类型，不执行
 \end{lstlisting}
 \par
 \medskip

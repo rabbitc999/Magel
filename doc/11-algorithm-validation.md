@@ -2,8 +2,8 @@
 
 本文保留历史测试配置及原始数据；执行方式为 VM。
 
-借用检查分为两部分：`source/magel_borrow_checker.hpp` 检查引用逃逸，
-`source/magel_borrow_flow.hpp` 检查函数内的释放后访问和移动后访问。
+借用检查分为两部分：`source/chali_borrow_checker.hpp` 检查引用逃逸，
+`source/chali_borrow_flow.hpp` 检查函数内的释放后访问和移动后访问。
 前端适配层 `source/semantics/borrow_flow.cpp` 记录已绑定的变量身份、字段、下标和控制流；
 所有函数及泛型实例降级完成后，独立检查器才运行，不访问语义分析符号表。
 
@@ -18,9 +18,9 @@
 使资源对象失效；数值的 `move` 仍按语言既有规则将来源清零。
 移动后原绑定禁止读取、写入和重新绑定；只有新声明可以建立可用绑定，不能通过写悬空引用复活被释放的堆对象。
 同一分配点再次执行时采用最近实例与更早实例两个抽象身份，新分配不会复活旧别名。
-多个独立违规均通过 `MGL1205` 报告，并保留源码位置。
+多个独立违规均通过 `CHL1205` 报告，并保留源码位置。
 
-这不是完整的 Rust 借用规则：Magel 仍允许既有的多个可写引用，并未引入独占借用；
+这不是完整的 Rust 借用规则：ChaLi 仍允许既有的多个可写引用，并未引入独占借用；
 逃逸检查仍采用保守的词法作用域规则。控制流检查限于函数内部，普通函数的引用返回
 保守关联到引用实参，可见方法体会提取实际返回的字段、形参或新分配来源；不为回调或外部函数自动推导释放副作用。
 未建立绑定事实的引用字段不会被当成其父对象；这类未知来源交给运行时检查，避免链表前进时误把下一节点判为已释放的上一节点。
@@ -29,7 +29,7 @@
 
 ## 数据结构测试
 
-[`borrow_algorithms.mgl`](../tests/fixtures/borrow_algorithms.mgl) 使用实际堆分配节点，
+[`borrow_algorithms.chl`](../tests/fixtures/borrow_algorithms.chl) 使用实际堆分配节点，
 而非用数组模拟指针：
 
 - 链表使用 `Option<Link mut&>`，执行构建、原地反转、逐项验证及迭代释放。
@@ -45,21 +45,21 @@ Python 独立生成相同随机输入，以 `deque` BFS 核对距离校验和，
 综合测试选用 NOIP 2015 提高组 Day 2 第三题，
 [原始题面镜像](https://huang.lt/download.php?id=15296&type=statement)。
 目标是把树上的一条边权清零，使给定路径的最长长度尽可能小。
-[`noip2015_transport.mgl`](../tests/fixtures/noip2015_transport.mgl) 为独立实现：
+[`noip2015_transport.chl`](../tests/fixtures/noip2015_transport.chl) 为独立实现：
 迭代树遍历、扁平倍增 LCA、树上差分、二分答案。
 图与倍增表使用一块运行时数组，查询使用聚合数组，并与小型泛型容器副本交叉核对，避免深链递归和大表容器扩容的内存峰值。
 时间复杂度为 `O((n+m) log n + (n+m) log W)`，其中 `W` 为最长原始路径长度。
 
-测试驱动 [`magel_algorithm_robustness.py`](../tests/magel_algorithm_robustness.py)
+测试驱动 [`chali_algorithm_robustness.py`](../tests/chali_algorithm_robustness.py)
 在小树上枚举被清零的每一条边，并独立遍历每条查询路径求最优值，
 不复用 LCA、差分或二分算法；覆盖链、星、随机树、零权、等权、反向和重复查询，
 同时核对原题样例答案 `11`。大规模等权深链使用可直接证明的答案 `(n-2)*1000`。
 
 ```sh
-python tests/magel_borrow_flow.py --magel magel.exe
-g++ -std=c++17 -I. tests/magel_borrow_checker.cpp -o build/borrow-checker-test
-python tests/magel_algorithm_robustness.py --magel magel.exe
-python tests/magel_algorithm_robustness.py --magel magel.exe --stress-size 300000
+python tests/chali_borrow_flow.py --chali ChaLi.exe
+g++ -std=c++17 -I. tests/chali_borrow_checker.cpp -o build/borrow-checker-test
+python tests/chali_algorithm_robustness.py --chali ChaLi.exe
+python tests/chali_algorithm_robustness.py --chali ChaLi.exe --stress-size 300000
 ```
 
 局部开发按模块运行门禁，复测保存固定随机种子及独立日志：
@@ -75,7 +75,7 @@ python tools/run_module_gates.py generics tools docs
 
 门禁默认使用最多四个工作线程。`sh ci.sh --jobs 4` 和
 `python tools/run_module_gates.py generics docs --jobs 4` 可指定并行数；
-`--jobs 1` 恢复串行，也可以通过 `MAGEL_GATE_JOBS` 设置默认并行数。
+`--jobs 1` 恢复串行，也可以通过 `CHALI_GATE_JOBS` 设置默认并行数。
 只有明确登记的独立 Python 与 VM 检查并行运行，生成、构建、样例、网络与未知检查形成串行屏障。
 主编译器生成或构建失败时跳过后续检查，避免使用旧可执行文件。普通回归失败不阻断其余检查。
 CI 的逐项日志和有序结果位于 `tmp/ci/logs/`；模块门禁保留独立运行目录及 `results.json`。

@@ -7,8 +7,8 @@
  */
 bool CheckUserName(const Memory::String &name)
 {
-    if (name.rfind("__magel_", 0) == 0u && name.rfind("__magel_lambda_", 0) != 0u)
-        return Fail("`__magel_` 前缀是编译器的运行时保留名：" + name);
+    if (name.rfind("__chali_", 0) == 0u && name.rfind("__chali_lambda_", 0) != 0u)
+        return Fail("`__chali_` 前缀是编译器的运行时保留名：" + name);
     if (name.rfind("__std_", 0) == 0u
         && !(g_reductionLine > 0 && g_reductionLine <= g_sourceFiles.size()
              && g_sourceFiles[g_reductionLine - 1].rfind("<内建 std::", 0) == 0u))
@@ -161,7 +161,7 @@ std::shared_ptr<MType> CAbiUnderlying(std::shared_ptr<MType> type)
 
 /**
  * @brief ABI 可空指针只接受标准 Option 包装的单层引用。
- * @param type MAGEL 类型。
+ * @param type CHALI 类型。
  * @return 引用载荷类型，其他类型返回空。
  */
 std::shared_ptr<MType> CAbiOptionalReference(const std::shared_ptr<MType> &type)
@@ -939,8 +939,8 @@ bool RegisterTop()
             {
                 MParam &param = method.params[slot];
                 if (param.source == "self") return Fail("`self` 是方法接收者的保留名");
-                if (param.source.rfind("__magel_", 0) == 0u)
-                    return Fail("`__magel_` 前缀是编译器的运行时保留名：" + param.source);
+                if (param.source.rfind("__chali_", 0) == 0u)
+                    return Fail("`__chali_` 前缀是编译器的运行时保留名：" + param.source);
                 for (std::size_t before = 0; before < slot; ++before)
                 {
                     if (method.params[before].source == param.source)
@@ -1020,7 +1020,7 @@ bool RegisterTop()
         if (spec->unary)
         {
             /* 一元：接口方法那个唯一的参数**就是接收者**，没有第二个操作数；
-             * MAGEL 实现同时绑定隐式 self 与声明的操作数形参；宿主实现沿用单实参入口。 */
+             * CHALI 实现同时绑定隐式 self 与声明的操作数形参；宿主实现沿用单实参入口。 */
             declaration.left = owner;
             declaration.right = nullptr;
             declaration.callNames = g_funcs.count(label) != 0u ? callNames : Memory::Vector<Memory::String>{ callNames.empty() ? Memory::String("self") : callNames.front() };
@@ -1163,16 +1163,16 @@ bool RegisterTop()
         /* 多方法接口没法用一个符号盖住全部方法：约定方法 `m` 查 `<符号>.m`。
          * 单方法接口沿用原符号名，兼容既有 `impl Owner : Interface = symbol;` 写法
          * （协议接口 Add / ExplicitConvert 等本来就只有一条方法）。
-         * 绑定入口见 `magel_glue.hpp` 的 `Registry::bindTypedMethod`。 */
+         * 绑定入口见 `chali_glue.hpp` 的 `Registry::bindTypedMethod`。 */
         const bool qualified = interfaceIt->second.size() > 1u;
         g_hostInterfaceImpls.push_back(MHostInterfaceImpl{ owner, top.s2, function, qualified });
         for (const MInterfaceMethod &required : interfaceIt->second)
         {
             const Memory::String label =
                 qualified ? function + "." + required.name : function;
-            Memory::Vector<Memory::String> callNames{ "__magel_self" };
+            Memory::Vector<Memory::String> callNames{ "__chali_self" };
             for (std::size_t index = 0; index < required.params.size(); ++index)
-                callNames.push_back("__magel_value" + Memory::toString(index));
+                callNames.push_back("__chali_value" + Memory::toString(index));
             if (!addOperator(owner, top.s2, required, label, callNames)) return false;
             if (!addConversion(owner, top.s2, required, label, callNames)) return false;
             if (!addIndex(owner, top.s2, required, label, callNames)) return false;
@@ -1187,7 +1187,7 @@ bool RegisterTop()
         const MInterfaceMethod *required = nullptr;
         Memory::String label;
         if (FindHostInterfaceImplementation(implementation.owner, "toString", {}, &required, &label) && required && required->result && IsStandardOpcode(required->result, "String"))
-            g_conversions.push_back(MConversionDecl{ implementation.owner, required->result, label, { "__magel_self" }, true });
+            g_conversions.push_back(MConversionDecl{ implementation.owner, required->result, label, { "__chali_self" }, true });
     }
 
     /* ---- 4. 普通函数：先把同名的一起收齐，再按"是不是重载"分配标签 ---- */
@@ -1230,7 +1230,7 @@ bool RegisterTop()
                 }
             }
             declaration.abiRelease = UnescapeText(top.abiRelease);
-            declaration.abiSymbol = top.s2.empty() ? magel_glue::conventionSymbol(ModuleSymbol(top.module, top.s)) : UnescapeText(top.s2);
+            declaration.abiSymbol = top.s2.empty() ? chali_glue::conventionSymbol(ModuleSymbol(top.module, top.s)) : UnescapeText(top.s2);
             if (declaration.abiLibrary.find(static_cast<char>(0)) != Memory::String::npos || declaration.abiSymbol.find(static_cast<char>(0)) != Memory::String::npos || declaration.abiRelease.find(static_cast<char>(0)) != Memory::String::npos)
                 return Fail("abi 库路径和符号不能包含 NUL 字节");
             if (declaration.abiLibrary.empty() || declaration.abiSymbol.empty())
@@ -1292,7 +1292,7 @@ bool RegisterTop()
         const auto registerInferenceSignature = [&](const MFunctionDecl &declaration) {
             const auto key = ModuleSymbol(declaration.module, declaration.source);
             const bool argumentsMain = declaration.source == "main" && !declaration.signature.params.empty();
-            const auto label = declaration.source == "main" ? (argumentsMain ? Memory::String("__magel_main_arguments") : Memory::String("main")) : MangledName(key, declaration.signature.params, overloadCounts[key] > 1u);
+            const auto label = declaration.source == "main" ? (argumentsMain ? Memory::String("__chali_main_arguments") : Memory::String("main")) : MangledName(key, declaration.signature.params, overloadCounts[key] > 1u);
             g_funcs[label] = declaration.signature;
             auto &candidates = g_functionIndex[key];
             if (std::find(candidates.begin(), candidates.end(), label) == candidates.end()) candidates.push_back(label);
@@ -1307,7 +1307,7 @@ bool RegisterTop()
         {
             MFunctionDecl &declaration = g_functionDecls[reverse - 1u];
             if (declaration.signature.result) continue;
-            if (declaration.source.rfind("__magel_lambda_", 0) == 0)
+            if (declaration.source.rfind("__chali_lambda_", 0) == 0)
             {
                 g_lambdaAutoReturns.insert(ModuleSymbol(declaration.module, declaration.source));
                 declaration.signature.result = SimpleType(MType::Int);
@@ -1347,18 +1347,18 @@ bool RegisterTop()
             if (other.source == declaration.source && other.module == declaration.module) ++sameName;
         }
         if (declaration.external && sameName > 1u)
-            return Fail("宿主函数不能重载或与 MAGEL 函数同名（胶水层按名称绑定）：" + declaration.source);
+            return Fail("宿主函数不能重载或与 CHALI 函数同名（胶水层按名称绑定）：" + declaration.source);
         if (declaration.source == "main" && (!declaration.signature.result || (declaration.signature.result->kind != MType::Void && (declaration.signature.result->kind != MType::Int || declaration.signature.result->isUnsigned || declaration.signature.result->bits != 64))))
             return Fail("main 返回类型必须为 int64 或 void");
         const bool argumentsMain = declaration.source == "main" && !declaration.signature.params.empty();
-        declaration.label = declaration.source == "main" ? (argumentsMain ? Memory::String("__magel_main_arguments") : Memory::String("main")) : MangledName(ModuleSymbol(declaration.module, declaration.source), declaration.signature.params, sameName > 1u);
+        declaration.label = declaration.source == "main" ? (argumentsMain ? Memory::String("__chali_main_arguments") : Memory::String("main")) : MangledName(ModuleSymbol(declaration.module, declaration.source), declaration.signature.params, sameName > 1u);
         /* 形参名字全程序唯一（同方法里的那段同理：stackvm 的类型表按名字走）。 */
         for (std::size_t slot = 0; slot < declaration.signature.params.size(); ++slot)
         {
             MParam &param = declaration.signature.params[slot];
             if (param.source == "self") return Fail("`self` 是保留名：" + declaration.source);
-            if (param.source.rfind("__magel_", 0) == 0u)
-                return Fail("`__magel_` 前缀是编译器的运行时保留名：" + param.source);
+            if (param.source.rfind("__chali_", 0) == 0u)
+                return Fail("`__chali_` 前缀是编译器的运行时保留名：" + param.source);
             for (std::size_t before = 0; before < slot; ++before)
             {
                 if (declaration.signature.params[before].source == param.source)
@@ -1395,7 +1395,7 @@ bool RegisterTop()
      * 入口 main 在别的文件里，这里没有是完全正常的。所以 `--check`（只检查，不执行）
      * 不报这条，留给真正编译时报——编辑器里也不会因此一直挂红。 */
     if (g_functionIndex.find("main") == g_functionIndex.end() && !g_checkOnly)
-        return Fail("magel 程序必须有一个 main 函数");
+        return Fail("chali 程序必须有一个 main 函数");
     /* 名字都登记完了，可以给类型发号了：`__typeTag` 与 `obj` 的类型号从此固定下来。 */
     for (const auto &entry : g_structs)
     {

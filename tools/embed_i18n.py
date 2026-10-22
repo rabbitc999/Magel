@@ -1,7 +1,7 @@
 """生成无运行期文件依赖的中英静态消息表；校验重复键与格式参数。
 
-这是 Magel 工程自己的一份（路径都以本项目根为基准）：读 `source/i18n/messages.tsv`，
-写进 `source/magel_i18n.hpp` 的静态表与 `tools/mageldev.py` 的 Python 内嵌表。
+这是 ChaLi 工程自己的一份（路径都以本项目根为基准）：读 `source/i18n/messages.tsv`，
+写进 `source/chali_i18n.hpp` 的静态表与 `tools/chalidev.py` 的 Python 内嵌表。
 ParseEngine 侧另有一份同名脚本，给它的 `source/` 生成消息表，两边各自改。
 """
 from pathlib import Path
@@ -9,7 +9,7 @@ import json
 import re
 ROOT=Path(__file__).resolve().parents[1]
 CATALOG=ROOT/'source/i18n/messages.tsv'
-HEADER=ROOT/'source/magel_i18n.hpp'
+HEADER=ROOT/'source/chali_i18n.hpp'
 
 def load(catalog=CATALOG):
     """读取双语消息；保持 printf 参数顺序和换行原样。"""
@@ -39,12 +39,12 @@ def generate(rows=None):
     quote=lambda x:json.dumps(x,ensure_ascii=False)
     body='inline constexpr Message messages[] = {\n'+''.join('    {'+', '.join(map(quote,[zh,*rows[zh]]))+'},\n' for zh in sorted(rows,key=lambda s:s.encode('utf-8')))+'};\n'
     text=HEADER.read_text(encoding='utf-8')
-    text=re.sub(r'(?<=// MAGEL_CATALOG_BEGIN\n)[\s\S]*?(?=// MAGEL_CATALOG_END)',lambda _:body,text)
+    text=re.sub(r'(?<=// CHALI_CATALOG_BEGIN\n)[\s\S]*?(?=// CHALI_CATALOG_END)',lambda _:body,text)
     write_if_changed(HEADER, text)
-    script=ROOT/'tools/mageldev.py'
+    script=ROOT/'tools/chalidev.py'
     python=script.read_text(encoding='utf-8')
     table='_MESSAGES = '+json.dumps(rows,ensure_ascii=False,indent=2)+'\n'
-    python=re.sub(r'(?<=# MAGEL_CATALOG_BEGIN\n)[\s\S]*?(?=# MAGEL_CATALOG_END)',lambda _:table,python)
+    python=re.sub(r'(?<=# CHALI_CATALOG_BEGIN\n)[\s\S]*?(?=# CHALI_CATALOG_END)',lambda _:table,python)
     write_if_changed(script, python)
-    print(f'Magel: embedded {len(rows)} Chinese / English messages')
+    print(f'ChaLi: embedded {len(rows)} Chinese / English messages')
 if __name__=='__main__':generate()

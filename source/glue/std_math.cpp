@@ -1,6 +1,6 @@
 #include "std_math.hpp"
 
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 
 #include <chrono>
 #include <cmath>
@@ -34,7 +34,7 @@ inline std::int64_t steadyClockNanos()
  * @param error 绑定失败时接收原始诊断，可为空。
  * @return 全部入口绑定成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     if (!registry.bindTyped<double, double>("std::math::sin", [](double x) { return std::sin(x); }, error)) return false;
     if (!registry.bindTyped<double, double>("std::math::__sin64", [](double x) { return std::sin(x); }, error)) return false;

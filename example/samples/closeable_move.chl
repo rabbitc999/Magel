@@ -1,0 +1,36 @@
+/* closeable_move.chl —— Closeable 句柄可以移动，不能复制
+ *
+ *   ./chali run example/samples/closeable_move.chl
+ *
+ *   * `move(&h)` 把所有权交出去，源变量随后不再自动 close；
+ *   * 按值传参同样要求显式 `move`，或把形参写成引用；
+ *   * 返回值返回局部拥有值时不需要额外写 `move`。
+ */
+struct Handle : Closeable {
+    int64 id;
+    void close() { println("close {}", self.id); }
+};
+
+void consume(Handle h) {
+    println("consume {}", h.id);
+}
+
+Handle makeHandle(int64 id) {
+    Handle h;
+    h.id = id;
+    return h;
+}
+
+int64 main() {
+    Handle first;
+    first.id = 1;
+    consume(move(&first));
+
+    Handle second;
+    second.id = 2;
+    Handle third = move(&second);
+    println("third={}", third.id);
+
+    consume(makeHandle(3));
+    return 0;
+}

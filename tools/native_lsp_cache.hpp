@@ -160,7 +160,7 @@ public:
     {
         try
         {
-            magel_incremental::replaceCacheFile(path, [&](std::ostream &out) { out << value.dump(); });
+            chali_incremental::replaceCacheFile(path, [&](std::ostream &out) { out << value.dump(); });
         } catch (...) {}
     }
     /**

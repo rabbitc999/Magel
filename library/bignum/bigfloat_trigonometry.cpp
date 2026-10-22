@@ -1,4 +1,4 @@
-#if !defined(NO_MAGEL_BIG_INT) && !defined(NO_MAGEL_BIG_FLOAT)
+#if !defined(NO_CHALI_BIG_INT) && !defined(NO_CHALI_BIG_FLOAT)
 #include "bigfloat_math.hpp"
 #include "bigfloat_math_detail.hpp"
 #include <algorithm>

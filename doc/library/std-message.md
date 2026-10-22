@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::message;
 ```
 
@@ -14,16 +14,16 @@ import std::message;
 
 ## 参考代码
 
-完整程序：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+完整程序：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 ```powershell
-magel run example/samples/typed_messages_shared.mgl --threads
+chali run example/samples/typed_messages_shared.chl --threads
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::concurrency;
 
 
@@ -96,7 +96,7 @@ int64 main() {
 
 **声明**
 
-```magel
+```chali
 void sendThread<T>(Thread thread, T value);
 ```
 
@@ -123,13 +123,13 @@ void sendThread<T>(Thread thread, T value);
 
 **调用形式**
 
-```magel
+```chali
 std::message::sendThread<T>(thread, value);
 ```
 
-**源码**：[source/std/message.mgl:6](../../source/std/message.mgl#L6)。
+**源码**：[source/std/message.chl:6](../../source/std/message.chl#L6)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-1"></a>
 
@@ -137,7 +137,7 @@ std::message::sendThread<T>(thread, value);
 
 **声明**
 
-```magel
+```chali
 T receiveThread<T>();
 ```
 
@@ -159,13 +159,13 @@ T receiveThread<T>();
 
 **调用形式**
 
-```magel
+```chali
 std::message::receiveThread<T>();
 ```
 
-**源码**：[source/std/message.mgl:7](../../source/std/message.mgl#L7)。
+**源码**：[source/std/message.chl:7](../../source/std/message.chl#L7)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-2"></a>
 
@@ -173,7 +173,7 @@ std::message::receiveThread<T>();
 
 **声明**
 
-```magel
+```chali
 int64 sendFor<T>(Thread thread, T value, int64 millis);
 ```
 
@@ -199,13 +199,13 @@ int64 sendFor<T>(Thread thread, T value, int64 millis);
 
 **调用形式**
 
-```magel
+```chali
 std::message::sendFor<T>(thread, value, millis);
 ```
 
-**源码**：[source/std/message.mgl:9](../../source/std/message.mgl#L9)。
+**源码**：[source/std/message.chl:9](../../source/std/message.chl#L9)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-3"></a>
 
@@ -213,7 +213,7 @@ std::message::sendFor<T>(thread, value, millis);
 
 **声明**
 
-```magel
+```chali
 int64 trySend<T>(Thread thread, T value);
 ```
 
@@ -238,13 +238,13 @@ int64 trySend<T>(Thread thread, T value);
 
 **调用形式**
 
-```magel
+```chali
 std::message::trySend<T>(thread, value);
 ```
 
-**源码**：[source/std/message.mgl:12](../../source/std/message.mgl#L12)。
+**源码**：[source/std/message.chl:12](../../source/std/message.chl#L12)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-4"></a>
 
@@ -252,7 +252,7 @@ std::message::trySend<T>(thread, value);
 
 **声明**
 
-```magel
+```chali
 std::concurrency::Receive<T> receiveFor<T>(int64 millis);
 ```
 
@@ -276,13 +276,13 @@ std::concurrency::Receive<T> receiveFor<T>(int64 millis);
 
 **调用形式**
 
-```magel
+```chali
 std::message::receiveFor<T>(millis);
 ```
 
-**源码**：[source/std/message.mgl:13](../../source/std/message.mgl#L13)。
+**源码**：[source/std/message.chl:13](../../source/std/message.chl#L13)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-5"></a>
 
@@ -290,7 +290,7 @@ std::message::receiveFor<T>(millis);
 
 **声明**
 
-```magel
+```chali
 std::concurrency::Receive<T> tryReceive<T>();
 ```
 
@@ -312,10 +312,10 @@ std::concurrency::Receive<T> tryReceive<T>();
 
 **调用形式**
 
-```magel
+```chali
 std::message::tryReceive<T>();
 ```
 
-**源码**：[source/std/message.mgl:19](../../source/std/message.mgl#L19)。
+**源码**：[source/std/message.chl:19](../../source/std/message.chl#L19)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。

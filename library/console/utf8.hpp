@@ -1,8 +1,8 @@
 /**
  * @file utf8.hpp
- * @brief Magel 的命令行 UTF-8 支持：Windows 实参解析、控制台 UTF-8 输出与代码页恢复。
+ * @brief ChaLi 的命令行 UTF-8 支持：Windows 实参解析、控制台 UTF-8 输出与代码页恢复。
  *
- * 本文件在 Magel 工程独立维护，统一使用 `#include "console/utf8.hpp"`。
+ * 本文件在 ChaLi 工程独立维护，统一使用 `#include "console/utf8.hpp"`。
  *
  * 它最早来自 ParseEngine 仓库的 `library/console/utf8.hpp`。两个项目剥离之后各自独立：
  * 那份继续服务 `source/include/ParseEngine/tool_console.hpp`，改一边不再自动同步另一边。
@@ -205,7 +205,7 @@ public:
  * 恢复代码页。要点：
  *   * 代码页查得到才切，查不到（无控制台 / 被重定向）就原样不动；
  *   * 重定向时的**字节**编码不受影响（`ConsoleBuffer` 直接透传）；
- *   * 顺带把 `PYTHONIOENCODING` 设成 `utf-8`，让开发子进程（`magel test/fmt/lsp`
+ *   * 顺带把 `PYTHONIOENCODING` 设成 `utf-8`，让开发子进程（`chali test/fmt/lsp`
  *     这类 Python 工具）的输出也是 UTF-8。
  */
 class Session

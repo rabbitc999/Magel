@@ -2,7 +2,7 @@
  * @file bigfloat_roots.cpp
  * @brief 十进制浮点的幂、方根与整数取整。
  */
-#if !defined(NO_MAGEL_BIG_FLOAT) && !defined(NO_MAGEL_BIG_INT)
+#if !defined(NO_CHALI_BIG_FLOAT) && !defined(NO_CHALI_BIG_INT)
 #include "bigfloat.hpp"
 #include <algorithm>
 #include <limits>

@@ -1,6 +1,6 @@
 /**
  * @file reflection_calls.cpp
- * @brief 生成精确类型的普通 MAGEL 调用桥接，不保存或转换函数地址。
+ * @brief 生成精确类型的普通 CHALI 调用桥接，不保存或转换函数地址。
  */
 /**
  * @brief 封闭值调用生成器，资源转移与接口分派复用现有语言语义。
@@ -223,7 +223,7 @@ struct MReflectionCalls
         {
             if (!g_structs.count(owner) || (((g_enums.count(owner) != 0) != isEnum) && !constructor))
             {
-                Fail(MAGEL_TEXT("反射调用 API 与具体结构体或枚举类型不匹配"));
+                Fail(CHALI_TEXT("反射调用 API 与具体结构体或枚举类型不匹配"));
                 return;
             }
             for (const auto &method : g_structs.at(owner).methods)
@@ -331,7 +331,7 @@ struct MReflectionCalls
                 generate(decl, "call", {});
                 continue;
             }
-            for (const auto &entry : magel_generic::session.made)
+            for (const auto &entry : chali_generic::session.made)
             {
                 const auto &expansion = entry.second;
                 if (!expansion.generic || expansion.generic->module != "std::reflect" || expansion.name != decl.source || !apis.count(expansion.generic->name)) continue;

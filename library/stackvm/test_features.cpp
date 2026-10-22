@@ -59,14 +59,14 @@ int main(int argc, char **argv)
     CHECK(stackvm::assemble(quads, program));
     CHECK(program.requiredFeatures == 0);
     CHECK(stackvm::Machine().run(program).ok);
-    auto reflection = stackvm::parseQuads("# magel-features: reflection\n(write, 42, _, _)\n(halt, _, _, _)\n", "reflection.quad");
+    auto reflection = stackvm::parseQuads("# chali-features: reflection\n(write, 42, _, _)\n(halt, _, _, _)\n", "reflection.quad");
     CHECK(reflection.ok() && reflection.requiredFeatures == stackvm::kFeatureReflection);
     const auto optimization = stackvm::optimize(reflection);
     (void)optimization;
     CHECK(reflection.requiredFeatures == stackvm::kFeatureReflection);
     stackvm::Program reflected;
     CHECK(stackvm::assemble(reflection, reflected) == enabled);
-    auto unknown = stackvm::parseQuads("# magel-features: unknown\n(halt, _, _, _)\n", "unknown.quad");
+    auto unknown = stackvm::parseQuads("# chali-features: unknown\n(halt, _, _, _)\n", "unknown.quad");
     CHECK(!unknown.ok());
     stackvm::Program rejected;
     CHECK(!stackvm::assemble(unknown, rejected));

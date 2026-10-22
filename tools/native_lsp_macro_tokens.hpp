@@ -38,9 +38,9 @@ std::map<size_t, LspMacroToken> lspMacroTokens(const std::string &text, const st
             if (headerEnd == text.npos) headerEnd = text.size();
             const auto name = i + 1;
             nameOffset = name < tokens.size() && tokens[name].a < headerEnd ? tokens[name].a : std::string::npos;
-            magel_macro::Signature macro;
+            chali_macro::Signature macro;
             Memory::String problem;
-            if (magel_macro::readSignature(text.substr(token.a, headerEnd - token.a).c_str(), macro, problem))
+            if (chali_macro::readSignature(text.substr(token.a, headerEnd - token.a).c_str(), macro, problem))
             {
                 for (const auto &group : macro.groups)
                 {

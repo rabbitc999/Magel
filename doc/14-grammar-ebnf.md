@@ -1,6 +1,6 @@
-# Magel EBNF 语法参考
+# ChaLi EBNF 语法参考
 
-本文说明 Magel 的源码语法，包含词法、声明、类型、表达式、语句、lambda、注解、宿主接口及泛型入口。权威定义为 [magel.gram](../source/magel.gram)，具体类型和生命周期约束由编译器语义层、标准库与测试共同确定。本文使用 **EBNF**（扩展巴科斯范式）记法；不将历史语法作为兼容写法。
+本文说明 ChaLi 的源码语法，包含词法、声明、类型、表达式、语句、lambda、注解、宿主接口及泛型入口。权威定义为 [chali.gram](../source/chali.gram)，具体类型和生命周期约束由编译器语义层、标准库与测试共同确定。本文使用 **EBNF**（扩展巴科斯范式）记法；不将历史语法作为兼容写法。
 
 ## 1 记号与阅读方法
 
@@ -101,11 +101,11 @@ Box<int64 fn(int64)> box;
 
 ## 6 与权威文法同步的完整附录
 
-运行 `python tools/export_magel_ebnf.py` 更新本节，运行 `python tools/export_magel_ebnf.py --check` 检查逐条同步。工具只导出文档，不参与语言解析，也不创建另一套解析实现。
+运行 `python tools/export_chali_ebnf.py` 更新本节，运行 `python tools/export_chali_ebnf.py --check` 检查逐条同步。工具只导出文档，不参与语言解析，也不创建另一套解析实现。
 
-<!-- BEGIN GENERATED MAGEL EBNF -->
+<!-- BEGIN GENERATED CHALI EBNF -->
 
-以下 151 条产生式由 `source/magel.gram` 导出，语义动作及解析优先级指令省略。
+以下 151 条产生式由 `source/chali.gram` 导出，语义动作及解析优先级指令省略。
 
 ### 终结符登记
 
@@ -237,8 +237,8 @@ Box<int64 fn(int64)> box;
 | `SHR` | `>>` |
 | `FATARROW` | `=>` |
 | `QUESTION` | `?` |
-| `FSTRING` | `__magel_fstring` |
-| `TYPECHECK` | `__magel_typecheck` |
+| `FSTRING` | `__chali_fstring` |
+| `TYPECHECK` | `__chali_typecheck` |
 | `TYPE_ARGS_BEGIN` | `@<` |
 | `TYPE_ARGS_END` | `@>` |
 | `CLOSURE_ARGS_BEGIN` | `@!<` |
@@ -781,7 +781,7 @@ primary = name_token
     | FLIT
     | string_literal
     | interpolated_string
-    | "__magel_typecheck", "(", element_type, ",", expr, ")"
+    | "__chali_typecheck", "(", element_type, ",", expr, ")"
     | CHRLIT
     | "true"
     | "false"
@@ -800,7 +800,7 @@ z_match_value = match_stmt ;
 
 z_block_value = "{", nonempty_stmt_list, "}" ;
 
-interpolated_string = "__magel_fstring", "(", call_args, ")" ;
+interpolated_string = "__chali_fstring", "(", call_args, ")" ;
 
 name_token = VARIABLE
     | "copy"
@@ -977,10 +977,10 @@ macro_type_argument = element_type
     | MACRO_FRAGMENT ;
 ```
 
-<!-- END GENERATED MAGEL EBNF -->
+<!-- END GENERATED CHALI EBNF -->
 
 ## 7 验证入口
 
-函数类型组合及旧语法拒绝见 `tests/magel_function_types.py`；lambda、泛型与引用分别见 `tests/magel_lambdas.py`、`tests/magel_generic_inference.py`、`tests/magel_reference_values.py`。正式语言规则还需由 [样例](../example/samples)和[错误样例](../example/samples-error)核对，文档不替代运行验收。
+函数类型组合及旧语法拒绝见 `tests/chali_function_types.py`；lambda、泛型与引用分别见 `tests/chali_lambdas.py`、`tests/chali_generic_inference.py`、`tests/chali_reference_values.py`。正式语言规则还需由 [样例](../example/samples)和[错误样例](../example/samples-error)核对，文档不替代运行验收。
 
 函数类型和匿名函数的返回类型统一前置：`int64 fn(int64, int64) callback`、`int64 fn(int64 x) { x + 1 }`。旧 `fn(int64, int64) -> int64` 与 `fn(int64 x) -> int64 { x + 1 }` 已移除并报错；推导返回类型使用 `fn(int64 x) { x + 1 }`，不写箭头。升级后重新生成泛型宿主胶水并重建旧缓存。

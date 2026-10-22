@@ -2,7 +2,7 @@
 #include <cctype>
 #include <algorithm>
 
-namespace magel_macro
+namespace chali_macro
 {
 /**
  * @brief 屏蔽注释和字面量以定位编译期指令，不把屏蔽结果交给语言解析器。
@@ -306,4 +306,4 @@ bool ProtectedDefinitions::restore(Memory::String &source, std::string &error) c
     }
     return true;
 }
-}  // namespace magel_macro
+}  // namespace chali_macro

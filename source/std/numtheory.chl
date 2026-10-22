@@ -1,0 +1,228 @@
+module std::numtheory;
+
+/* 整数数论。算法全部由本文件用 ChaLi 表达，不再有 `numtheoryGcd` 这类只给胶水用的
+ * 宿主私有名（原实现在 glue/std_numtheory.hpp，已删除）。
+ *
+ * 与原宿主实现的关系：
+ *   - 参数类型从写死的 uint64/int64 放开为任意整数类型 T（含无符号与窄整型）；
+ *   - gcd / lcm 接受任意数量实参，逐个折叠；
+ *   - 模乘仍用逐位加法避免乘法溢出，模幂仍是平方-乘；
+ *   - modInverse 的系数不再依赖有符号负中间量：每步都在 [0, modulus) 内用
+ *     addMod / mulMod 求 `(oldT - quotient * t) mod modulus`，无符号类型同样成立，
+ *     顺带修掉了原实现对接近 int64 上限的模数会静默回绕的问题；
+ *   - isPrime 内部把实参加宽到 uint64 再跑七个底数的确定性 Miller-Rabin，
+ *     窄整型装不下这些底数常量，所以不在 T 上算。
+ *
+ * 前置条件失败统一走 std::lang::panic，文案除 `lcm 超出…` 按类型口径改写外保持原文；
+ * 停机前缀由运行时统一添加。 */
+
+/** 归一化：负数取绝对值，无符号类型下是空操作。`T` 最小值按位宽回绕，与 std::math::abs 同口径。 */
+inline T __numtheoryAbs<T>(T value)
+{
+    if (value < 0) { return (T)0 - value; }
+    return value;
+}
+
+/** 无溢出的模加；调用者保证 `modulus > 0`，实参可为任意整数（内部先归一化到 [0, modulus)）。 */
+inline T __numtheoryAddMod<T>(T left, T right, T modulus)
+{
+    left = left % modulus;
+    if (left < 0) { left = left + modulus; }
+    right = right % modulus;
+    if (right < 0) { right = right + modulus; }
+    if (left >= modulus - right) { return left - (modulus - right); }
+    return left + right;
+}
+
+/** 无溢出的模乘，逐位加法；调用者保证 `modulus > 0`。 */
+inline T __numtheoryMulMod<T>(T left, T right, T modulus)
+{
+    T result = (T)0;
+    left = left % modulus;
+    if (left < 0) { left = left + modulus; }
+    right = right % modulus;
+    if (right < 0) { right = right + modulus; }
+    while (right != (T)0) {
+        if ((right & (T)1) != (T)0) { result = __numtheoryAddMod(result, left, modulus); }
+        right = right >> 1;
+        if (right != (T)0) { left = __numtheoryAddMod(left, left, modulus); }
+    }
+    return result;
+}
+
+/** 快速幂取模，平方-乘；调用者保证 `modulus > 0`。 */
+inline T __numtheoryPowMod<T>(T base, T exponent, T modulus)
+{
+    T result = (T)1 % modulus;
+    base = base % modulus;
+    if (base < 0) { base = base + modulus; }
+    while (exponent != (T)0) {
+        if ((exponent & (T)1) != (T)0) { result = __numtheoryMulMod(result, base, modulus); }
+        exponent = exponent >> 1;
+        if (exponent != (T)0) { base = __numtheoryMulMod(base, base, modulus); }
+    }
+    return result;
+}
+
+/** 两数最大公约数（欧几里得）；先取绝对值，结果非负。 */
+inline T __numtheoryGcd2<T>(T left, T right)
+{
+    left = __numtheoryAbs(left);
+    right = __numtheoryAbs(right);
+    while (right != (T)0) {
+        T next = left % right;
+        left = right;
+        right = next;
+    }
+    return left;
+}
+
+/** 两数最小公倍数；任一为零给零，乘积回绕时停机。 */
+inline T __numtheoryLcm2<T>(T left, T right)
+{
+    left = __numtheoryAbs(left);
+    right = __numtheoryAbs(right);
+    if (left == (T)0 || right == (T)0) { return (T)0; }
+    T quotient = left / __numtheoryGcd2(left, right);
+    T product = quotient * right;
+    if (product / right != quotient) {
+        std::lang::panic("lcm 超出整数类型范围");
+        return (T)0;
+    }
+    return product;
+}
+
+/** 任意数量实参的最大公约数；单个实参给它的绝对值，零实参在编译期报无法推导类型。 */
+T gcd<T>(T... values)
+{
+    T result = __numtheoryAbs(values[0]);
+    int64 index = 1;
+    while (index < values.len()) {
+        result = __numtheoryGcd2(result, values[index]);
+        index = index + 1;
+    }
+    return result;
+}
+
+/** 任意数量实参的最小公倍数；任一实参为零给零，乘积回绕时停机。 */
+T lcm<T>(T... values)
+{
+    T result = __numtheoryAbs(values[0]);
+    int64 index = 1;
+    while (index < values.len()) {
+        result = __numtheoryLcm2(result, values[index]);
+        index = index + 1;
+    }
+    return result;
+}
+
+/** 模加；模数不为正时停机。 */
+T addMod<T>(T left, T right, T modulus)
+{
+    if (!(modulus > (T)0)) {
+        std::lang::panic("模数必须为正");
+        return (T)0;
+    }
+    return __numtheoryAddMod(left, right, modulus);
+}
+
+/** 模乘，逐位加法避免乘法溢出；模数不为正时停机。 */
+T mulMod<T>(T left, T right, T modulus)
+{
+    if (!(modulus > (T)0)) {
+        std::lang::panic("模数必须为正");
+        return (T)0;
+    }
+    return __numtheoryMulMod(left, right, modulus);
+}
+
+/** 模幂，平方-乘；模数不为正时停机。 */
+T powMod<T>(T base, T exponent, T modulus)
+{
+    if (!(modulus > (T)0)) {
+        std::lang::panic("模数必须为正");
+        return (T)0;
+    }
+    return __numtheoryPowMod(base, exponent, modulus);
+}
+
+/** 模逆元，扩展欧几里得；模数不大于 1 或不互素时停机。 */
+T modInverse<T>(T value, T modulus)
+{
+    if (!(modulus > (T)1)) {
+        std::lang::panic("modInverse 模数必须大于 1");
+        return (T)0;
+    }
+    T oldR = modulus;
+    T r = value % modulus;
+    if (r < 0) { r = r + modulus; }
+    T oldT = (T)0;
+    T t = (T)1;
+    while (r != (T)0) {
+        T quotient = oldR / r;
+        T nextR = oldR - quotient * r;
+        T step = __numtheoryMulMod(modulus - (quotient % modulus), t, modulus);
+        T nextT = __numtheoryAddMod(oldT, step, modulus);
+        oldR = r;
+        r = nextR;
+        oldT = t;
+        t = nextT;
+    }
+    if (!(oldR == (T)1)) {
+        std::lang::panic("modInverse 仅适用于互素整数");
+        return (T)0;
+    }
+    return oldT;
+}
+
+/** 确定性 Miller-Rabin 素性判定；七个底数覆盖完整 uint64 范围，窄整型在 uint64 上加宽计算。 */
+bool isPrime<T>(T value)
+{
+    if (!(value >= (T)2)) { return false; }
+    if (value == (T)2) { return true; }
+    if ((value & (T)1) == (T)0) { return false; }
+    uint64 candidate = (uint64)value;
+    uint64 odd = candidate - 1u;
+    int64 powers = 0;
+    while ((odd & 1u) == 0u) {
+        odd = odd >> 1;
+        powers = powers + 1;
+    }
+    List<uint64> bases;
+    bases.push(2u);
+    bases.push(325u);
+    bases.push(9375u);
+    bases.push(28178u);
+    bases.push(450775u);
+    bases.push(9780504u);
+    bases.push(1795265022u);
+    {
+        int64 index = 0;
+        while (index < bases.len()) {
+
+        uint64 base = bases[index] % candidate;
+        if (base == 0u) { { index = index + 1; continue; } }
+        uint64 residue = __numtheoryPowMod<uint64>(base, odd, candidate);
+        if (residue != 1u && residue != candidate - 1u) {
+            bool reachedMinusOne = false;
+            {
+                int64 round = 1;
+                while (round < powers) {
+
+                residue = __numtheoryMulMod<uint64>(residue, residue, candidate);
+                if (residue == candidate - 1u) {
+                    reachedMinusOne = true;
+                    break;
+                }
+            
+                    round = round + 1;
+                }
+            }
+            if (!reachedMinusOne) { return false; }
+        }
+    
+            index = index + 1;
+        }
+    }
+    return true;
+}

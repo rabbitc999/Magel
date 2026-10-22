@@ -155,7 +155,7 @@ void RecordExpressionEffects(int id)
             const int first = std::min(left.node, right.node), second = std::max(left.node, right.node);
             const auto key = Memory::toString(first) + ":" + Memory::toString(second);
             if (g_effectConflicts.insert(key).second)
-                AddDiagnostic("[MGL1301] 同一表达式中，自增减目标与其他读写冲突：" + left.place.label,
+                AddDiagnostic("[CHL1301] 同一表达式中，自增减目标与其他读写冲突：" + left.place.label,
                               N(left.update ? left.node : right.node).sourceLine);
         }
 }

@@ -1,8 +1,8 @@
 #pragma once
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 namespace std_graph_glue
 {
-using Context = magel_glue::Context;
+using Context = chali_glue::Context;
 using Ints = Memory::Vector<std::int64_t>;
 /**
  * @brief 图算法回执的类型标识，槽布局由标准库 GraphReply 定义。
@@ -10,7 +10,7 @@ using Ints = Memory::Vector<std::int64_t>;
 struct GraphReplyTag
 {
 };
-using GraphReply = magel_glue::Record<GraphReplyTag>;
+using GraphReply = chali_glue::Record<GraphReplyTag>;
 /**
  * @brief 广度优先搜索，输出从 start 可达顶点的访问序。
  * @param head 每个顶点的首条边下标。

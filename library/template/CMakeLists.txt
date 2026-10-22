@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # 纯头文件库：include 目录就是本目录（用的是 <> 之外的相对路径写法）。
 add_library(parseengine_template INTERFACE)
-target_compile_definitions(parseengine_template INTERFACE MAGEL_CUSTOM_ALLOCATOR=1)
+target_compile_definitions(parseengine_template INTERFACE CHALI_CUSTOM_ALLOCATOR=1)
 target_include_directories(parseengine_template INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(template-demo main.cpp)

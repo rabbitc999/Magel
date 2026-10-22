@@ -1,7 +1,7 @@
 \chapter{模块与工程}
 \label{ch:18}
 
-前面十七章，程序都写在一个 \texttt{.\allowbreak{}mgl} 文件里。真实项目做不到——几千行塞一个文件，谁也没法读。这一章讲怎么把代码拆开，以及工具链给工程准备的那几个命令。
+前面十七章，程序都写在一个 \texttt{.\allowbreak{}chl} 文件里。真实项目做不到——几千行塞一个文件，谁也没法读。这一章讲怎么把代码拆开，以及工具链给工程准备的那几个命令。
 
 拆开有两条线：
 
@@ -9,7 +9,7 @@
 
 \item 语言层：\texttt{module} 声明一个文件属于哪个模块，\texttt{import} 把别的模块引进来；
 
-\item 工程层：\texttt{magel new} 起一个带目录结构的工程，\texttt{magel test} / \texttt{magel fmt} 管测试和风格。
+\item 工程层：\texttt{chali new} 起一个带目录结构的工程，\texttt{chali test} / \texttt{chali fmt} 管测试和风格。
 
 \end{itemize}
 
@@ -19,7 +19,7 @@
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 module mylib::math;
 \end{lstlisting}
 \par
@@ -33,11 +33,11 @@ module mylib::math;
 
 \section{\texttt{import}：把别的模块接进来}
 
-假设有两个文件。先写一个工具模块 \texttt{util/\allowbreak{}text.\allowbreak{}mgl}：
+假设有两个文件。先写一个工具模块 \texttt{util/\allowbreak{}text.\allowbreak{}chl}：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 module util::text;
 
 String shout(String s)
@@ -52,7 +52,7 @@ String shout(String s)
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 module app;
 import util::text;
 
@@ -65,7 +65,7 @@ int64 main()
 \par
 \medskip
 
-跑 \texttt{magel run app.\allowbreak{}mgl}，输出：
+跑 \texttt{chali run app.\allowbreak{}chl}，输出：
 
 \par
 \medskip
@@ -81,7 +81,7 @@ hi!
 
 \item \texttt{import util:\allowbreak{}:\allowbreak{}text;} 之后，\texttt{util:\allowbreak{}:\allowbreak{}text} 里的公开函数按裸名就能调——直接写 \texttt{shout(\allowbreak{}"hi")\allowbreak{}}，不用写 \texttt{util:\allowbreak{}:\allowbreak{}text:\allowbreak{}:\allowbreak{}shout}；
 
-\item 模块名 \texttt{util:\allowbreak{}:\allowbreak{}text} 对应文件 \texttt{util/\allowbreak{}text.\allowbreak{}mgl}：\texttt{:\allowbreak{}:\allowbreak{}} 换成目录分隔符，末尾加 \texttt{.\allowbreak{}mgl}。文件名和模块名对不上，\texttt{import} 就找不到；
+\item 模块名 \texttt{util:\allowbreak{}:\allowbreak{}text} 对应文件 \texttt{util/\allowbreak{}text.\allowbreak{}chl}：\texttt{:\allowbreak{}:\allowbreak{}} 换成目录分隔符，末尾加 \texttt{.\allowbreak{}chl}。文件名和模块名对不上，\texttt{import} 就找不到；
 
 \item 路径是相对当前文件解析的。
 
@@ -90,17 +90,17 @@ hi!
 文件名 = 模块路径这条对应关系，是把「模块」和「目录结构」绑在一起的关键：看文件树就知道模块树。
 
 \begin{tip}{提示}
-\texttt{import} 后可以写完整限定名，也可使用唯一可见的短名；同名冲突时明确归属。细节见语言参考第 12 节和 \texttt{example/\allowbreak{}samples/\allowbreak{}import\_names.\allowbreak{}mgl}；后者是样例文件名，不是另一种导入关键字。
+\texttt{import} 后可以写完整限定名，也可使用唯一可见的短名；同名冲突时明确归属。细节见语言参考第 12 节和 \texttt{example/\allowbreak{}samples/\allowbreak{}import\_names.\allowbreak{}chl}；后者是样例文件名，不是另一种导入关键字。
 \end{tip}
 
-\section{起一个工程：\texttt{magel new}}
+\section{起一个工程：\texttt{chali new}}
 
-手写目录、手写 \texttt{magel.\allowbreak{}toml} 太麻烦。工具链给了一条命令：
+手写目录、手写 \texttt{chali.\allowbreak{}toml} 太麻烦。工具链给了一条命令：
 
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel new demo
+chali new demo
 \end{lstlisting}
 \par
 \medskip
@@ -113,32 +113,32 @@ magel new demo
 demo/
 ├── .gitignore
 ├── README.md
-├── magel.toml          # 工程配置
+├── chali.toml          # 工程配置
 ├── src/
-│   └── main.mgl        # 应用源码
+│   └── main.chl        # 应用源码
 └── tests/
-    └── test_main.mgl   # 测试
+    └── test_main.chl   # 测试
 \end{lstlisting}
 \par
 \medskip
 
-建完还会顺手 \texttt{git init} 建好仓库。\texttt{src/\allowbreak{}main.\allowbreak{}mgl} 是那个你熟得不能再熟的 hello：
+建完还会顺手 \texttt{git init} 建好仓库。\texttt{src/\allowbreak{}main.\allowbreak{}chl} 是那个你熟得不能再熟的 hello：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
-    println("Hello, Magel!");
+    println("Hello, ChaLi!");
     return 0;
 }
 \end{lstlisting}
 \par
 \medskip
 
-\section{\texttt{magel.\allowbreak{}toml}：工程配置文件}
+\section{\texttt{chali.\allowbreak{}toml}：工程配置文件}
 
-工程靠一个 \texttt{magel.\allowbreak{}toml} 描述自己。默认生成的是：
+工程靠一个 \texttt{chali.\allowbreak{}toml} 描述自己。默认生成的是：
 
 \par
 \medskip
@@ -147,9 +147,9 @@ int64 main()
 name = "hello"
 version = "0.1.0"
 
-[magel]
+[chali]
 run = "interpret"
-main = "src/main.mgl"
+main = "src/main.chl"
 \end{lstlisting}
 \par
 \medskip
@@ -158,11 +158,11 @@ main = "src/main.mgl"
 
 \item \texttt{[\allowbreak{}package]\allowbreak{}} 里是包名和版本；
 
-\item \texttt{[\allowbreak{}magel]\allowbreak{}} 里告诉工具链：入口是哪个文件（\texttt{main}）、默认用什么方式跑（\texttt{run}）。
+\item \texttt{[\allowbreak{}chali]\allowbreak{}} 里告诉工具链：入口是哪个文件（\texttt{main}）、默认用什么方式跑（\texttt{run}）。
 
 \end{itemize}
 
-工程根目录一旦有 \texttt{magel.\allowbreak{}toml}，在这个目录里执行命令就不用反复写路径了。
+工程根目录一旦有 \texttt{chali.\allowbreak{}toml}，在这个目录里执行命令就不用反复写路径了。
 
 \texttt{.\allowbreak{}gitignore} 也一并给好了——构建产物不该进版本库：
 
@@ -170,8 +170,8 @@ main = "src/main.mgl"
 \medskip
 \begin{lstlisting}[style=out]
 /build/
-/.magel/
-/magel_out*
+/.chali/
+/chali_out*
 *.exe
 \end{lstlisting}
 \par
@@ -184,7 +184,7 @@ main = "src/main.mgl"
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel run src/main.mgl     # 运行
+chali run src/main.chl     # 运行
 \end{lstlisting}
 \par
 \medskip
@@ -192,7 +192,7 @@ magel run src/main.mgl     # 运行
 \par
 \medskip
 \begin{lstlisting}[style=out]
-Hello, Magel!
+Hello, ChaLi!
 \end{lstlisting}
 \par
 \medskip
@@ -202,18 +202,18 @@ Hello, Magel!
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel check src/main.mgl   # 只检查，不运行
+chali check src/main.chl   # 只检查，不运行
 \end{lstlisting}
 \par
 \medskip
 
 \texttt{check} 只做编译期检查，一行都不执行——改完代码先 \texttt{check} 一下，比 \texttt{run} 快，也安全（不会真的动到数据）。
 
-测试用 \texttt{test}。工程里的 \texttt{tests/\allowbreak{}test\_main.\allowbreak{}mgl} 是个普通的 \texttt{main}，里面全是 \texttt{assert} （第 16 章）：
+测试用 \texttt{test}。工程里的 \texttt{tests/\allowbreak{}test\_main.\allowbreak{}chl} 是个普通的 \texttt{main}，里面全是 \texttt{assert} （第 16 章）：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     assert(1 + 1 == 2);
@@ -228,7 +228,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel test tests
+chali test tests
 \end{lstlisting}
 \par
 \medskip
@@ -238,7 +238,7 @@ magel test tests
 \par
 \medskip
 \begin{lstlisting}[style=out]
-[passed] tests/test_main.mgl
+[passed] tests/test_main.chl
 通过 1，失败 0，跳过 0
 \end{lstlisting}
 \par
@@ -246,16 +246,16 @@ magel test tests
 
 \texttt{assert} 就是测试的体检项：条件不成立，那个测试文件就判 \texttt{失败}。你不用装任何测试框架——\texttt{main} + \texttt{assert} 就是最小可用的测试。
 
-\section{\texttt{magel fmt}：让风格统一}
+\section{\texttt{chali fmt}：让风格统一}
 
 一个团队里，最没意义的争论是「大括号换行吗」「缩进几格」。工具链直接给了一个格式化器：
 
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel fmt src/main.mgl            # 打印格式化后的源码到屏幕
-magel fmt src/main.mgl --write    # 直接写回文件
-magel fmt src/main.mgl --check    # 只检查「格式对不对」，不修改
+chali fmt src/main.chl            # 打印格式化后的源码到屏幕
+chali fmt src/main.chl --write    # 直接写回文件
+chali fmt src/main.chl --check    # 只检查「格式对不对」，不修改
 \end{lstlisting}
 \par
 \medskip
@@ -265,7 +265,7 @@ magel fmt src/main.mgl --check    # 只检查「格式对不对」，不修改
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel fmt src/messy.mgl --check
+chali fmt src/messy.chl --check
 \end{lstlisting}
 \par
 \medskip
@@ -273,7 +273,7 @@ magel fmt src/messy.mgl --check
 \par
 \medskip
 \begin{lstlisting}[style=out]
-需要格式化：src/messy.mgl
+需要格式化：src/messy.chl
 \end{lstlisting}
 \par
 \medskip
@@ -284,7 +284,7 @@ magel fmt src/messy.mgl --check
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 x = 1;
@@ -298,11 +298,11 @@ int64 main()
 \par
 \medskip
 
-\texttt{magel fmt} 之后：
+\texttt{chali fmt} 之后：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 x = 1;
@@ -320,30 +320,30 @@ int64 main()
 
 \subsection*{终端查手册}
 
-\texttt{magel man} 是终端手册入口，从同一可执行文件中的标准库数据查询。无目标时按能力域列模块，模块目标列符号，类型和方法目标显示签名、参数、返回值、错误边界及已有完整示例。
+\texttt{chali man} 是终端手册入口，从同一可执行文件中的标准库数据查询。无目标时按能力域列模块，模块目标列符号，类型和方法目标显示签名、参数、返回值、错误边界及已有完整示例。
 
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel man
-magel man std::text
-magel man std::text::Text::split
-magel man --search delimiter
-magel man --json std::text::Text::split
-magel man std::text::Text::split --run
+chali man
+chali man std::text
+chali man std::text::Text::split
+chali man --search delimiter
+chali man --json std::text::Text::split
+chali man std::text::Text::split --run
 \end{lstlisting}
 \par
 \medskip
 
 搜索默认忽略大小写，\texttt{--exact} 匹配完整字段；拼错目标会给候选。\texttt{--lang zh|en} 选择界面和诊断语言，库说明仍复用中文原文。\texttt{--run} 在临时目录运行完整示例并附上输出。普通查询不需要 Python、网络或仓库；开发用 \texttt{--update} 运行既有生成脚本，重新构建后才进入内嵌数据。
 
-完整命令和 JSON 结构见 \href{https://gitee.com/rabbitc999/magel/blob/master/doc/man/README.md}{doc/man}，标准库 API 说明仍在 \href{https://gitee.com/rabbitc999/magel/blob/master/doc/library/README.md}{doc/library}。
+完整命令和 JSON 结构见 \href{https://gitee.com/rabbitc999/chali/blob/master/doc/man/README.md}{doc/man}，标准库 API 说明仍在 \href{https://gitee.com/rabbitc999/chali/blob/master/doc/library/README.md}{doc/library}。
 
 \subsection*{编辑器增量提示}
 
 LSP 将补全、悬停、语义着色、工作区查询、宏预览、编译诊断交给不同工作队列。修改按 UTF-16 编辑范围同步，同一源码版本复用索引。诊断延迟 250 毫秒合并连续编辑，保存立即检查；取消过期任务，并且不把旧版本结果写回编辑器。
 
-缓存在 magel 可执行文件旁的 \texttt{build/\allowbreak{}lsp/\allowbreak{}}，与工程目录无关。未保存的依赖修改和关闭会刷新引用者，不写回源文件。缓存自动清理七天未使用的普通文件，超过 256 MiB 时淘汰到 192 MiB，保护最近十分钟的文件；活跃任务可以暂时超过额度。索引内存也有淘汰阈值，缓存损坏或不可写会退回分析。详细策略见 \href{https://gitee.com/rabbitc999/magel/blob/master/doc/man/lsp.md}{LSP 增量提示与缓存}。
+缓存在 chali 可执行文件旁的 \texttt{build/\allowbreak{}lsp/\allowbreak{}}，与工程目录无关。未保存的依赖修改和关闭会刷新引用者，不写回源文件。缓存自动清理七天未使用的普通文件，超过 256 MiB 时淘汰到 192 MiB，保护最近十分钟的文件；活跃任务可以暂时超过额度。索引内存也有淘汰阈值，缓存损坏或不可写会退回分析。详细策略见 \href{https://gitee.com/rabbitc999/chali/blob/master/doc/man/lsp.md}{LSP 增量提示与缓存}。
 
 \subsection*{\texttt{inline}：函数定义的内联属性}
 
@@ -351,7 +351,7 @@ LSP 将补全、悬停、语义着色、工作区查询、宏预览、编译诊�
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 inline int64 square(int64 value)
 {
     return value * value;
@@ -385,40 +385,40 @@ int64 main()
 \midrule
 模块声明 & \texttt{module mylib:\allowbreak{}:\allowbreak{}math;} 放首行 \\
 导入 & \texttt{import util:\allowbreak{}:\allowbreak{}text;}，公开函数按裸名调用 \\
-名字对应文件 & \texttt{util:\allowbreak{}:\allowbreak{}text} \ensuremath{\leftrightarrow} \texttt{util/\allowbreak{}text.\allowbreak{}mgl}，路径相对当前文件 \\
+名字对应文件 & \texttt{util:\allowbreak{}:\allowbreak{}text} \ensuremath{\leftrightarrow} \texttt{util/\allowbreak{}text.\allowbreak{}chl}，路径相对当前文件 \\
 \texttt{std:\allowbreak{}:\allowbreak{}lang} & 核心模块，自动加载，永不 import \\
-起工程 & \texttt{magel new demo}（目标目录不能已存在） \\
-工程配置 & \texttt{magel.\allowbreak{}toml} 写包名、入口、运行方式 \\
+起工程 & \texttt{chali new demo}（目标目录不能已存在） \\
+工程配置 & \texttt{chali.\allowbreak{}toml} 写包名、入口、运行方式 \\
 日常命令 & \texttt{run}（跑）、\texttt{check}（只查）、\texttt{test}（跑 \texttt{tests/\allowbreak{}}） \\
 测试 & 普通 \texttt{main} + \texttt{assert}，无需框架 \\
-格式化 & \texttt{magel fmt … [\allowbreak{}--check|--write]\allowbreak{}}，只动空白不碰代码 \\
+格式化 & \texttt{chali fmt … [\allowbreak{}--check|--write]\allowbreak{}}，只动空白不碰代码 \\
 \bottomrule
 \end{tabular}
 \end{center}
 
 \section{下一步}
 
-工程拆好了、测试挂上了、格式统一了。接下来两章讲工具链里更硬核的部分：接下来会见到 \texttt{\%define} / \texttt{\$macro} 这些带 \texttt{\%} 和 \texttt{\$} 的写法：它们是 Magel 的预处理与宏，能在编译前替你改源码。
+工程拆好了、测试挂上了、格式统一了。接下来两章讲工具链里更硬核的部分：接下来会见到 \texttt{\%define} / \texttt{\$macro} 这些带 \texttt{\%} 和 \texttt{\$} 的写法：它们是 ChaLi 的预处理与宏，能在编译前替你改源码。
 
 翻到\hyperref[ch:19]{第 19 章 预处理与宏}。
 
-书稿与关键字帮助也在程序内部：\texttt{magel man book} 导出书稿与图片到当前目录的 \texttt{book/\allowbreak{}} 并列出章节，\texttt{magel man book 6} 查看第 6 章，\texttt{magel man keyword break} 查看关键字语法与示例。\texttt{magel man skill} 输出 AI SKILL，可保存并交给支持 SKILL 的 AI 工具；VS Code 包也携带同一份 \texttt{skills/\allowbreak{}magel-programming/\allowbreak{}SKILL.\allowbreak{}md}。
+书稿与关键字帮助也在程序内部：\texttt{chali man book} 导出书稿与图片到当前目录的 \texttt{book/\allowbreak{}} 并列出章节，\texttt{chali man book 6} 查看第 6 章，\texttt{chali man keyword break} 查看关键字语法与示例。\texttt{chali man skill} 输出 AI SKILL，可保存并交给支持 SKILL 的 AI 工具；VS Code 包也携带同一份 \texttt{skills/\allowbreak{}chali-programming/\allowbreak{}SKILL.\allowbreak{}md}。
 
 \subsection*{终端手册的入口}
 
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel man api std
-magel man api std::text::Text
-magel man keyword return
-magel man keyword '#derive'
-magel man macro
+chali man api std
+chali man api std::text::Text
+chali man keyword return
+chali man keyword '#derive'
+chali man macro
 \end{lstlisting}
 \par
 \medskip
 
-API 查询必须显式写 \texttt{api}。省略它的 \texttt{magel man std} 或 \texttt{magel man std:\allowbreak{}:\allowbreak{}text:\allowbreak{}:\allowbreak{}Text} 会报错并给出正确命令；\texttt{keyword} 查询语言关键字，\texttt{macro} 查询宏规则，二者不是 API 入口。可以给这些查询加 \texttt{--json} 供工具读取。
+API 查询必须显式写 \texttt{api}。省略它的 \texttt{chali man std} 或 \texttt{chali man std:\allowbreak{}:\allowbreak{}text:\allowbreak{}:\allowbreak{}Text} 会报错并给出正确命令；\texttt{keyword} 查询语言关键字，\texttt{macro} 查询宏规则，二者不是 API 入口。可以给这些查询加 \texttt{--json} 供工具读取。
 
 \section{导入、短名与条件的职责}
 
@@ -430,11 +430,11 @@ API 查询必须显式写 \texttt{api}。省略它的 \texttt{magel man std} 或
 
 下面是两个文件的布局。先建立 util 目录，再把代码分别写入对应文件，不能把它们拼成一个文件运行。
 
-\texttt{util/\allowbreak{}math.\allowbreak{}mgl}：
+\texttt{util/\allowbreak{}math.\allowbreak{}chl}：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 module util::math;
 
 int64 twice(int64 value)
@@ -445,11 +445,11 @@ int64 twice(int64 value)
 \par
 \medskip
 
-\texttt{main.\allowbreak{}mgl}：
+\texttt{main.\allowbreak{}chl}：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 import util::math;
 
 int64 main()
@@ -461,7 +461,7 @@ int64 main()
 \par
 \medskip
 
-在该目录运行 \texttt{magel run main.\allowbreak{}mgl -I .\allowbreak{}}，预期输出 \texttt{42}。若另一个模块也提供 twice，继续使用完整限定名区分。导出和跨模块泛型的更多边界由\href{https://gitee.com/rabbitc999/magel/blob/master/example/samples/import_names.mgl}{名称回归}覆盖。
+在该目录运行 \texttt{chali run main.\allowbreak{}chl -I .\allowbreak{}}，预期输出 \texttt{42}。若另一个模块也提供 twice，继续使用完整限定名区分。导出和跨模块泛型的更多边界由\href{https://gitee.com/rabbitc999/chali/blob/master/example/samples/import_names.chl}{名称回归}覆盖。
 
 \section{边界与验证}
 

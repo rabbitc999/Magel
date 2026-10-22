@@ -2,9 +2,9 @@
 
 逐项查询函数的声明、参数、默认值、返回值、错误边界和完整程序，见 [库函数 API 参考](library/README.md) 与 [全部函数索引](library/symbols.md)。
 
-按能力域列出 Magel 自带的模块。除核心模块 `std::lang` 自动加载外，其余都要 `import`。
+按能力域列出 ChaLi 自带的模块。除核心模块 `std::lang` 自动加载外，其余都要 `import`。
 
-```magel
+```chali
 import std::math;
 import std::json;
 int64 main() {
@@ -64,7 +64,7 @@ isObject=1 len=1
 | `std::text` | `Text::find` `split` `join` `replace` `trim` `toUpper` `padStart` …；`kmpFind` `kmpFindAll` `kmpFailureTable` 是字节级 KMP |
 | `std::json` | `parse` → `Result<JsonValue, String>`；`isInt` `isObject` `len` `asInt` `asString` … |
 | `std::toml` | 与 json 同构的 TOML 文档访问 |
-| `std::regex` | 模式在宿主侧按串缓存，Magel 侧只持整数句柄 |
+| `std::regex` | 模式在宿主侧按串缓存，ChaLi 侧只持整数句柄 |
 | `std::parse` | 字符串 → 整数的解析，带 `ParseError` |
 | `std::binary` | 定宽解码、字节序处理与边界检查 |
 | `std::path` | 路径拼接、文件名、扩展名、规范化 |
@@ -79,7 +79,7 @@ isObject=1 len=1
 | `std::graph` | `Graph` 链式前向星：`bfs` `dfs` `connectedComponents` `topologicalSort` `dijkstra` `hasCycle` `minimumSpanningTreeWeight`；`UnionFind` 路径压缩 + 按大小合并 |
 | `std::linkedlist` | `LinkedList` 双向链表：首尾与游标处 O(1) 插删、`reverse` `toArray` `fromArray` `find`，实现 `Iterator<int64>` 与 `Drop` |
 
-这三个模块的全部算法都在宿主胶水（`glue/std_tree.hpp`、`glue/std_graph.hpp`、`glue/std_linkedlist.hpp`）里，`.mgl` 只做公开 API 壳；`std::text` 的 KMP 同理（`glue/std_kmp.hpp`）。裁剪宏分别是 `NO_MAGEL_STD_TREE` / `NO_MAGEL_STD_GRAPH` / `NO_MAGEL_STD_LINKEDLIST` / `NO_MAGEL_STD_KMP`。
+这三个模块的全部算法都在宿主胶水（`glue/std_tree.hpp`、`glue/std_graph.hpp`、`glue/std_linkedlist.hpp`）里，`.chl` 只做公开 API 壳；`std::text` 的 KMP 同理（`glue/std_kmp.hpp`）。裁剪宏分别是 `NO_CHALI_STD_TREE` / `NO_CHALI_STD_GRAPH` / `NO_CHALI_STD_LINKEDLIST` / `NO_CHALI_STD_KMP`。
 
 ### 并发与协作
 
@@ -97,8 +97,8 @@ isObject=1 len=1
 | 模块 | 内容 |
 | --- | --- |
 | `std::io` | 文件读写，错误类型 `IoError`（`OpenFailed` `ReadFailed` `WriteFailed` `SeekFailed` `Closed`） |
-| `std::net` | TCP + 极简 HTTP 客户端；套接字在宿主胶水里，Magel 侧只拿 `int32` 句柄 |
-| `std::sql` | 连接 MySQL / SQLite / PostgreSQL / SQL Server；SQL 交给数据库引擎，Magel 负责收发 |
+| `std::net` | TCP + 极简 HTTP 客户端；套接字在宿主胶水里，ChaLi 侧只拿 `int32` 句柄 |
+| `std::sql` | 连接 MySQL / SQLite / PostgreSQL / SQL Server；SQL 交给数据库引擎，ChaLi 负责收发 |
 | `std::process` | 进程与系统调用；命令管道由宿主管柄池持有 |
 | `std::clock` | 单调时钟 `steady_clock`，只做差值，不当挂钟用 |
 | `std::memory` | `Span<T>`（引用地址 + 长度视图）；它的迭代器返回**元素引用**，`for (T mut& p in span)` 可直接写 |
@@ -122,7 +122,7 @@ isObject=1 len=1
 
 模块能力由目标宿主提供的胶水、系统库及实际构建配置决定。嵌入式 Linux 使用普通 Linux 宿主，不额外设置模块禁用模式。详见[部署说明](06-deployment.md)。
 
-**模块迁移后必须 import。** 早期这些符号在 `source/std/lang.mgl` 注入正文里自动可见；现在除核心 `std::lang` 外都要显式 `import`。
+**模块迁移后必须 import。** 早期这些符号在 `source/std/lang.chl` 注入正文里自动可见；现在除核心 `std::lang` 外都要显式 `import`。
 
 ---
 
@@ -130,7 +130,7 @@ isObject=1 len=1
 
 标准库源码本身就是最好的参考，每个模块头部都有能力说明：
 
-- [`source/std/`](../source/std) —— 全部模块源码，`source/std/<名字>.mgl`
+- [`source/std/`](../source/std) —— 全部模块源码，`source/std/<名字>.chl`
 - [`source/glue/`](../source/glue) —— 宿主侧 C++ 胶水，`source/glue/std_*.hpp` 是各模块绑定的权威定义
 - [`example/samples/`](../example/samples/) —— 按特性组织的可运行样例
 - 各能力域的 API 参考：[`doc/library/`](library/README.md) 按模块分页（`std-json.md`、`std-toml.md`、`std-regex.md`、`std-linalg.md`、`std-complex.md`、`std-net.md`、`std-sql.md` …）
@@ -141,7 +141,7 @@ isObject=1 len=1
 
 | 你想 | 去哪 |
 | --- | --- |
-| 让 Magel 调你的 C/C++ 代码 | [宿主集成与 C ABI](08-host-integration.md) |
+| 让 ChaLi 调你的 C/C++ 代码 | [宿主集成与 C ABI](08-host-integration.md) |
 | 查标准库之外的能力边界 | [语言参考](04-language-reference.md) |
 | 看某个特性的可运行样例 | [`example/samples/`](../example/samples/) |
 

@@ -1,6 +1,6 @@
 #ifndef PARSE_ENGINE_STRUCTURED_DATA_HPP
 #define PARSE_ENGINE_STRUCTURED_DATA_HPP
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include "std_native_record.hpp"
 #include <memory>
 #include <optional>
@@ -12,7 +12,7 @@
  */
 namespace structured_data_glue
 {
-using Context = magel_glue::Context;
+using Context = chali_glue::Context;
 using String = Memory::String;
 using Bytes = Memory::Vector<std::uint8_t>;
 /**
@@ -133,7 +133,7 @@ const std::string *keyAt(const Value &value, std::int64_t index)
  * @return 全部入口注册成功时返回 true。
  */
 template <class Traits>
-bool bind(magel_glue::Registry &registry, const String &prefix, String *error)
+bool bind(chali_glue::Registry &registry, const String &prefix, String *error)
 {
     using Value = typename Traits::Value;
     bool ok = registry.bindTypedWithContext<std::int64_t>(prefix + "__valueNew", [](Context &context) { return makeValue<Traits>(context); }, error);

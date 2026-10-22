@@ -9,5 +9,5 @@ namespace std_net_glue
  * @param error 注册失败时接收诊断。
  * @return 全部入口注册成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error = nullptr);
+bool bind(chali_glue::Registry &registry, Memory::String *error = nullptr);
 }  // namespace std_net_glue

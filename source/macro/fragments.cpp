@@ -3,7 +3,7 @@
 #include <cctype>
 #include <stdexcept>
 
-namespace magel_macro
+namespace chali_macro
 {
 SourceFragments sourceFragments;
 
@@ -361,4 +361,4 @@ std::size_t SourceFragments::resolveMarker(std::string_view token) const
     }
     return value < invocations_.size() && token.substr(1, marker - 1) == invocations_[value].name ? value : invalid;
 }
-}  // namespace magel_macro
+}  // namespace chali_macro

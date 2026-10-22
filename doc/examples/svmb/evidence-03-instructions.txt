@@ -1,5 +1,5 @@
 指令区起点 = 24（头部）+ 程序名长度 + 4（计数）
-程序名 b'magel'，指令记录从文件偏移 39 开始
+程序名 b'chali'，指令记录从文件偏移 39 开始
 
 前 12 条记录的逐字段解码：
     下标         偏移  解码
@@ -34,4 +34,4 @@
   op  1 = PushDouble         99
 
 指令里出现的用户变量名（带 $ 作用域编号）：
-  共 1002 个，样本：['__magel_new_v$516', '__magel_ret_v$1002', '__magel_ret_v$1003', '__magel_ret_v$1007', '__magel_ret_v$1011', '__magel_ret_v$1015', '__magel_ret_v$1019', '__magel_ret_v$1023', '__magel_ret_v$269', '__magel_ret_v$270', '__magel_ret_v$272', '__magel_ret_v$273', '__magel_ret_v$274', '__magel_ret_v$276', '__magel_ret_v$277', '__magel_ret_v$278', '__magel_ret_v$279', '__magel_ret_v$280', '__magel_ret_v$281', '__magel_ret_v$282']
+  共 1002 个，样本：['__chali_new_v$516', '__chali_ret_v$1002', '__chali_ret_v$1003', '__chali_ret_v$1007', '__chali_ret_v$1011', '__chali_ret_v$1015', '__chali_ret_v$1019', '__chali_ret_v$1023', '__chali_ret_v$269', '__chali_ret_v$270', '__chali_ret_v$272', '__chali_ret_v$273', '__chali_ret_v$274', '__chali_ret_v$276', '__chali_ret_v$277', '__chali_ret_v$278', '__chali_ret_v$279', '__chali_ret_v$280', '__chali_ret_v$281', '__chali_ret_v$282']

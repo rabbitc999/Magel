@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""验证 Python/C++ 输出一致、映射双向反查、异常拒绝和 CLI/magel 接入。"""
+"""验证 Python/C++ 输出一致、映射双向反查、异常拒绝和 CLI/chali 接入。"""
 import argparse
 import json
 import re
@@ -21,11 +21,11 @@ def run(*args, success=True, cwd=None):
         raise AssertionError((args, result.returncode, result.stdout, result.stderr))
     return result.stdout.decode("utf-8", errors="replace")
 
-def verify(build, magel=None):
+def verify(build, chali=None):
     tool = build / "svmb_symtool.exe"
-    vm = build / "magel-stackvm.exe"
+    vm = build / "chali-stackvm.exe"
     if not tool.exists():
-        tool, vm = build / "svmb_symtool", build / "magel-stackvm"
+        tool, vm = build / "svmb_symtool", build / "chali-stackvm"
     folder = build / "symbol-fixtures"
     for value in (0,127,128,16383,16384,2**32-1,2**63-1,2**64-1):
         encoded = varuint(value)
@@ -104,16 +104,16 @@ def verify(build, magel=None):
     assert mapping == json.loads((folder / "control.cpp.map.json").read_text(encoding="utf-8"))
     print("control-stripped:", raw.stat().st_size, "->", len(out))
     (folder / "space-results.json").write_text(json.dumps(rows, indent=2), encoding="utf-8")
-    if magel:
-        project = folder / "magel"; project.mkdir(exist_ok=True)
-        source = project / "main.mgl"
+    if chali:
+        project = folder / "chali"; project.mkdir(exist_ok=True)
+        source = project / "main.chl"
         source.write_text("int64 calculate(int64 x) { return x + 1; }\n"
             'int64 main() { std::lang::println("{}", calculate(41)); return 0; }\n', encoding="utf-8")
-        manifest = project / "magel.toml"
-        manifest.write_text('[package]\nname = "symbols"\nversion = "1"\n[magel]\n'
+        manifest = project / "chali.toml"
+        manifest.write_text('[package]\nname = "symbols"\nversion = "1"\n[chali]\n'
             'run = "svmb"\ncompress_symbols = true\nsymbol_map = "custom.json"\n', encoding="utf-8")
         prefix = project / "output"
-        run(magel, "--out", prefix, source, "--incremental")
+        run(chali, "--out", prefix, source, "--incremental")
         output = project / "output.svmb"
         assert output.read_bytes().startswith(b"MCVM0005")
         assert (project / "custom.json").exists()
@@ -122,20 +122,20 @@ def verify(build, magel=None):
         assert b"calculate" not in output.read_bytes()
         # 缺映射必须触发重建。
         (project / "custom.json").unlink()
-        run(magel, "--out", prefix, source, "--incremental")
+        run(chali, "--out", prefix, source, "--incremental")
         assert (project / "custom.json").exists()
         old_functions = {item["original"]: item["logical_id"] for item in metadata["symbols"] if item["kind"] & 2}
         source.write_text(source.read_text(encoding="utf-8") +
             "int64 calculate_added_function() { return 42; }\n", encoding="utf-8")
-        run(magel, "--out", prefix, source, "--compress-symbols", "--incremental")
+        run(chali, "--out", prefix, source, "--compress-symbols", "--incremental")
         updated = json.loads((project / "custom.json").read_text(encoding="utf-8"))
         current = {item["original"]: item["logical_id"] for item in updated["symbols"]}
         assert all(current.get(name) == value for name, value in old_functions.items())
-        run(magel, "--out", prefix, source, "--no-compress-symbols", "--incremental")
+        run(chali, "--out", prefix, source, "--no-compress-symbols", "--incremental")
         assert output.read_bytes().startswith(b"PESVMB")
         # CLI 开启压缩，并用自己的示例生成真实对比。
-        run(magel, "svmb", ROOT / "example/samples/control.mgl", "--out", folder / "current.raw")
-        run(magel, "svmb", ROOT / "example/samples/control.mgl", "--out", folder / "current",
+        run(chali, "svmb", ROOT / "example/samples/control.chl", "--out", folder / "current.raw")
+        run(chali, "svmb", ROOT / "example/samples/control.chl", "--out", folder / "current",
             "--compress-symbols")
         raw = folder / "current.raw.svmb"; compact = folder / "current.svmb"
         raw_bytes = raw.read_bytes()
@@ -176,8 +176,8 @@ def verify(build, magel=None):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--build", type=Path, required=True)
-    p.add_argument("--magel", type=Path)
+    p.add_argument("--chali", type=Path)
     args = p.parse_args()
-    verify(args.build.resolve(), args.magel.resolve() if args.magel else None)
+    verify(args.build.resolve(), args.chali.resolve() if args.chali else None)
 
 if __name__ == "__main__": main()

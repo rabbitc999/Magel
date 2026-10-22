@@ -1,1 +1,1 @@
-magel: example/samples-error/interface_field.mgl 第 1 行第 1 列：接口不能定义字段：value
+chali: example/samples-error/interface_field.chl 第 1 行第 1 列：接口不能定义字段：value

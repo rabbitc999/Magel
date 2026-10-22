@@ -1,4 +1,4 @@
-#include "../../source/allocator/magel_allocator.hpp"
+#include "../../source/allocator/chali_allocator.hpp"
 /**
  * @file engine.hpp
  * @brief 模板引擎本体：`tmpl::TemplateEngine`（外加便于调用的 `tmpl::render`）。

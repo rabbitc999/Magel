@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::regex;
 ```
 
@@ -14,16 +14,16 @@ Regex 是 opcode；复制共享不可变编译模式，每次匹配使用独立�
 
 ## 参考代码
 
-完整程序：[example/samples/std_glue_edges.mgl](../../example/samples/std_glue_edges.mgl)。
+完整程序：[example/samples/std_glue_edges.chl](../../example/samples/std_glue_edges.chl)。
 
 ```powershell
-magel run example/samples/std_glue_edges.mgl
+chali run example/samples/std_glue_edges.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::text;
 import std::math;
 int64 main() {
@@ -88,7 +88,7 @@ int64 main() {
 
 **声明**
 
-```magel
+```chali
 static Result<Regex, RegexError> compile(std::lang::String pattern);
 ```
 
@@ -112,13 +112,13 @@ static Result<Regex, RegexError> compile(std::lang::String pattern);
 
 **调用形式**
 
-```magel
+```chali
 std::regex::Regex::compile(pattern);
 ```
 
-**源码**：[source/std/regex.mgl:25](../../source/std/regex.mgl#L25)。
+**源码**：[source/std/regex.chl:25](../../source/std/regex.chl#L25)。
 
-**完整示例**：[example/samples/std_glue_edges.mgl](../../example/samples/std_glue_edges.mgl)。
+**完整示例**：[example/samples/std_glue_edges.chl](../../example/samples/std_glue_edges.chl)。
 
 <a id="api-1"></a>
 
@@ -126,7 +126,7 @@ std::regex::Regex::compile(pattern);
 
 **声明**
 
-```magel
+```chali
 bool fullMatch(std::lang::String text);
 ```
 
@@ -150,13 +150,13 @@ bool fullMatch(std::lang::String text);
 
 **调用形式**
 
-```magel
+```chali
 obj.fullMatch(text);
 ```
 
-**源码**：[source/std/regex.mgl:31](../../source/std/regex.mgl#L31)。
+**源码**：[source/std/regex.chl:31](../../source/std/regex.chl#L31)。
 
-**完整示例**：[example/samples/std_glue_edges.mgl](../../example/samples/std_glue_edges.mgl)。
+**完整示例**：[example/samples/std_glue_edges.chl](../../example/samples/std_glue_edges.chl)。
 
 <a id="api-2"></a>
 
@@ -164,7 +164,7 @@ obj.fullMatch(text);
 
 **声明**
 
-```magel
+```chali
 bool contains(std::lang::String text);
 ```
 
@@ -188,13 +188,13 @@ bool contains(std::lang::String text);
 
 **调用形式**
 
-```magel
+```chali
 obj.contains(text);
 ```
 
-**源码**：[source/std/regex.mgl:32](../../source/std/regex.mgl#L32)。
+**源码**：[source/std/regex.chl:32](../../source/std/regex.chl#L32)。
 
-**完整示例**：[example/samples/std_glue_edges.mgl](../../example/samples/std_glue_edges.mgl)。
+**完整示例**：[example/samples/std_glue_edges.chl](../../example/samples/std_glue_edges.chl)。
 
 <a id="api-3"></a>
 
@@ -202,7 +202,7 @@ obj.contains(text);
 
 **声明**
 
-```magel
+```chali
 Option<int64> find(std::lang::String text);
 ```
 
@@ -226,13 +226,13 @@ Option<int64> find(std::lang::String text);
 
 **调用形式**
 
-```magel
+```chali
 obj.find(text);
 ```
 
-**源码**：[source/std/regex.mgl:33](../../source/std/regex.mgl#L33)。
+**源码**：[source/std/regex.chl:33](../../source/std/regex.chl#L33)。
 
-**完整示例**：[example/samples/std_glue_edges.mgl](../../example/samples/std_glue_edges.mgl)。
+**完整示例**：[example/samples/std_glue_edges.chl](../../example/samples/std_glue_edges.chl)。
 
 <a id="api-4"></a>
 
@@ -240,7 +240,7 @@ obj.find(text);
 
 **声明**
 
-```magel
+```chali
 std::lang::String capture(std::lang::String text, int64 group);
 ```
 
@@ -265,13 +265,13 @@ std::lang::String capture(std::lang::String text, int64 group);
 
 **调用形式**
 
-```magel
+```chali
 obj.capture(text, group);
 ```
 
-**源码**：[source/std/regex.mgl:38](../../source/std/regex.mgl#L38)。
+**源码**：[source/std/regex.chl:38](../../source/std/regex.chl#L38)。
 
-**完整示例**：[example/samples/std_glue_edges.mgl](../../example/samples/std_glue_edges.mgl)。
+**完整示例**：[example/samples/std_glue_edges.chl](../../example/samples/std_glue_edges.chl)。
 
 <a id="api-5"></a>
 
@@ -279,7 +279,7 @@ obj.capture(text, group);
 
 **声明**
 
-```magel
+```chali
 std::lang::String replaceFirst(std::lang::String text, std::lang::String replacement);
 ```
 
@@ -304,13 +304,13 @@ std::lang::String replaceFirst(std::lang::String text, std::lang::String replace
 
 **调用形式**
 
-```magel
+```chali
 obj.replaceFirst(text, replacement);
 ```
 
-**源码**：[source/std/regex.mgl:41](../../source/std/regex.mgl#L41)。
+**源码**：[source/std/regex.chl:41](../../source/std/regex.chl#L41)。
 
-**完整示例**：[example/samples/std_glue_edges.mgl](../../example/samples/std_glue_edges.mgl)。
+**完整示例**：[example/samples/std_glue_edges.chl](../../example/samples/std_glue_edges.chl)。
 
 <a id="api-6"></a>
 
@@ -318,7 +318,7 @@ obj.replaceFirst(text, replacement);
 
 **声明**
 
-```magel
+```chali
 std::lang::String replaceAll(std::lang::String text, std::lang::String replacement);
 ```
 
@@ -343,10 +343,10 @@ std::lang::String replaceAll(std::lang::String text, std::lang::String replaceme
 
 **调用形式**
 
-```magel
+```chali
 obj.replaceAll(text, replacement);
 ```
 
-**源码**：[source/std/regex.mgl:44](../../source/std/regex.mgl#L44)。
+**源码**：[source/std/regex.chl:44](../../source/std/regex.chl#L44)。
 
-**完整示例**：[example/samples/std_glue_edges.mgl](../../example/samples/std_glue_edges.mgl)。
+**完整示例**：[example/samples/std_glue_edges.chl](../../example/samples/std_glue_edges.chl)。

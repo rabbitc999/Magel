@@ -46,7 +46,7 @@ bool nativeRead(const NativeContext &ctx, std::size_t address, char *out, std::s
                               ctx.data != nullptr && address <= ctx.data->size() && count <= ctx.data->size() - address;
     if (!valid)
     {
-        if (ctx.memoryFault.empty()) ctx.memoryFault = MAGEL_TEXT("panic：访问未分配内存（读）：地址 ") + Memory::toString(address) + MAGEL_TEXT("，字节数 ") + Memory::toString(count);
+        if (ctx.memoryFault.empty()) ctx.memoryFault = CHALI_TEXT("panic：访问未分配内存（读）：地址 ") + Memory::toString(address) + CHALI_TEXT("，字节数 ") + Memory::toString(count);
         return false;
     }
 #endif
@@ -74,7 +74,7 @@ bool nativeWrite(NativeContext &ctx, std::size_t address, const char *in, std::s
                               ctx.data != nullptr && address <= ctx.data->size() && count <= ctx.data->size() - address;
     if (!valid)
     {
-        if (ctx.memoryFault.empty()) ctx.memoryFault = MAGEL_TEXT("panic：访问未分配内存（写）：地址 ") + Memory::toString(address) + MAGEL_TEXT("，字节数 ") + Memory::toString(count);
+        if (ctx.memoryFault.empty()) ctx.memoryFault = CHALI_TEXT("panic：访问未分配内存（写）：地址 ") + Memory::toString(address) + CHALI_TEXT("，字节数 ") + Memory::toString(count);
         return false;
     }
 #endif

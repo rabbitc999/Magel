@@ -79,7 +79,7 @@ Slot objGetPointer(NativeContext &ctx, const Memory::Vector<Slot> &args);
 Slot objName(NativeContext &ctx, const Memory::Vector<Slot> &args);
 
 /**
- * @brief 验证 MAGEL 引用非空，阻止未绑定存储暴露为有效引用。
+ * @brief 验证 CHALI 引用非空，阻止未绑定存储暴露为有效引用。
  * @param ctx 运行上下文。
  * @param args 单个引用地址或接口句柄。
  * @return 原引用；零地址时设置运行错误。

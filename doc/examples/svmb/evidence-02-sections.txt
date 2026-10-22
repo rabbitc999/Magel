@@ -1,4 +1,4 @@
-$ python svmb_dump.py magel\doc\examples\svmb\control.svmb
+$ python svmb_dump.py chali\doc\examples\svmb\control.svmb
 
 payload 七节的条目数与体积（总 662750 字节）
 节              条目         字节      占比
@@ -75,26 +75,26 @@ payload 七节的条目数与体积（总 662750 字节）
   'JordanDecomposition.drop'                   @6409
 
 类型表前 20 项（变量名 / 类型名 / 位宽 / 标志 / 字节数）：
-  ('__magel_dst', 'i64', 64, 0, 8)
-  ('__magel_enum_arg_IoError_OpenFailed_0', 'i64', 64, 0, 8)
-  ('__magel_enum_arg_IoError_ReadFailed_0', 'i64', 64, 0, 8)
-  ('__magel_enum_arg_IoError_SeekFailed_0', 'i64', 64, 0, 8)
-  ('__magel_enum_arg_IoError_WriteFailed_0', 'i64', 64, 0, 8)
-  ('__magel_enum_arg_Option__char_Value_0', 'u8', 8, 1, 1)
-  ('__magel_enum_arg_Option__int_Value_0', 'i64', 64, 0, 8)
-  ('__magel_enum_arg_Result__FileStream__IoError_Err_0', 'i64', 64, 0, 8)
-  ('__magel_enum_arg_Result__FileStream__IoError_Ok_0', 'i64', 64, 0, 8)
-  ('__magel_enum_arg_Result__Regex__RegexError_Err_0', 'i64', 64, 0, 8)
-  ('__magel_enum_arg_Result__Regex__RegexError_Ok_0', 'i64', 64, 0, 8)
-  ('__magel_enum_arg_Result__bool__ParseError_Err_0', 'i64', 64, 0, 8)
-  ('__magel_enum_arg_Result__bool__ParseError_Ok_0', 'i8', 8, 0, 1)
-  ('__magel_enum_arg_Result__f64__ParseError_Err_0', 'i64', 64, 0, 8)
-  ('__magel_enum_arg_Result__f64__ParseError_Ok_0', 'f64', 64, 2, 8)
-  ('__magel_enum_arg_Result__file__string_Err_0', 'i64', 64, 0, 8)
-  ('__magel_enum_arg_Result__file__string_Ok_0', 'i64', 64, 0, 8)
-  ('__magel_enum_arg_Result__int64__IoError_Err_0', 'i64', 64, 0, 8)
-  ('__magel_enum_arg_Result__int64__IoError_Ok_0', 'i64', 64, 0, 8)
-  ('__magel_enum_arg_Result__int64__ParseError_Err_0', 'i64', 64, 0, 8)
+  ('__chali_dst', 'i64', 64, 0, 8)
+  ('__chali_enum_arg_IoError_OpenFailed_0', 'i64', 64, 0, 8)
+  ('__chali_enum_arg_IoError_ReadFailed_0', 'i64', 64, 0, 8)
+  ('__chali_enum_arg_IoError_SeekFailed_0', 'i64', 64, 0, 8)
+  ('__chali_enum_arg_IoError_WriteFailed_0', 'i64', 64, 0, 8)
+  ('__chali_enum_arg_Option__char_Value_0', 'u8', 8, 1, 1)
+  ('__chali_enum_arg_Option__int_Value_0', 'i64', 64, 0, 8)
+  ('__chali_enum_arg_Result__FileStream__IoError_Err_0', 'i64', 64, 0, 8)
+  ('__chali_enum_arg_Result__FileStream__IoError_Ok_0', 'i64', 64, 0, 8)
+  ('__chali_enum_arg_Result__Regex__RegexError_Err_0', 'i64', 64, 0, 8)
+  ('__chali_enum_arg_Result__Regex__RegexError_Ok_0', 'i64', 64, 0, 8)
+  ('__chali_enum_arg_Result__bool__ParseError_Err_0', 'i64', 64, 0, 8)
+  ('__chali_enum_arg_Result__bool__ParseError_Ok_0', 'i8', 8, 0, 1)
+  ('__chali_enum_arg_Result__f64__ParseError_Err_0', 'i64', 64, 0, 8)
+  ('__chali_enum_arg_Result__f64__ParseError_Ok_0', 'f64', 64, 2, 8)
+  ('__chali_enum_arg_Result__file__string_Err_0', 'i64', 64, 0, 8)
+  ('__chali_enum_arg_Result__file__string_Ok_0', 'i64', 64, 0, 8)
+  ('__chali_enum_arg_Result__int64__IoError_Err_0', 'i64', 64, 0, 8)
+  ('__chali_enum_arg_Result__int64__IoError_Ok_0', 'i64', 64, 0, 8)
+  ('__chali_enum_arg_Result__int64__ParseError_Err_0', 'i64', 64, 0, 8)
 
 类型表里与用户源码同名的条目：
   ('i', 'i64', 64, 0, 8)
@@ -118,8 +118,8 @@ payload 七节的条目数与体积（总 662750 字节）
   (7, 'main', 'tmp/svmb-study/control.quad', 0, 47)
   (8, 'main', 'tmp/svmb-study/control.quad', 0, 48)
   (10, 'main', 'tmp/svmb-study/control.quad', 0, 49)
-  (12, '__magel_loop_101', 'tmp/svmb-study/control.quad', 0, 51)
-  (16, '__magel_loop_101', 'tmp/svmb-study/control.quad', 0, 52)
+  (12, '__chali_loop_101', 'tmp/svmb-study/control.quad', 0, 51)
+  (16, '__chali_loop_101', 'tmp/svmb-study/control.quad', 0, 52)
   file 取值集合：['tmp/svmb-study/control.quad']
   line 取值分布：{0: 8204}（非零共 0 条）
   四元式行范围：40 ~ 10675

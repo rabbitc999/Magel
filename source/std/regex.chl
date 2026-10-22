@@ -1,0 +1,47 @@
+module std::regex;
+
+/* 从 lang.chl 原样迁出：符号名不变，只换了模块归属（现在必须 `import std::regex;` 才能用）。 */
+/* 复制共享不可变编译模式；匹配状态属于每次调用，最后一个值释放时回收模式。 */
+enum RegexError { Invalid; };
+
+Regex __regexCompileHandle(std::lang::String pattern);
+bool __regexFullMatch(int64 handle, std::lang::String text);
+bool __regexContains(int64 handle, std::lang::String text);
+int64 __regexFindByteIndex(int64 handle, std::lang::String text);
+std::lang::String __regexCapture(int64 handle, std::lang::String text, int64 group);
+std::lang::String __regexReplaceFirst(int64 handle, std::lang::String text, std::lang::String replacement);
+std::lang::String __regexReplaceAll(int64 handle, std::lang::String text, std::lang::String replacement);
+
+int64 __regexNew();
+int64 __regexCopy(int64 handle);
+void __regexDrop(int64 handle);
+bool __regexValid(int64 handle);
+
+opcode Regex {
+    new = std::regex::__regexNew;
+    copy = std::regex::__regexCopy;
+    drop = std::regex::__regexDrop;
+
+    static Result<Regex, RegexError> compile(std::lang::String pattern) {
+        Regex value = __regexCompileHandle(pattern);
+        if (!__regexValid(value.opcode)) { return Result<Regex, RegexError>::Err(RegexError::Invalid); }
+        return Result<Regex, RegexError>::Ok(std::lang::move(&value));
+    }
+
+    bool fullMatch(std::lang::String text) { return __regexFullMatch(self.opcode, text); }
+    bool contains(std::lang::String text) { return __regexContains(self.opcode, text); }
+    Option<int64> find(std::lang::String text) {
+        int64 index = __regexFindByteIndex(self.opcode, text);
+        if (index < 0) { return Option<int64>::None; }
+        return Option<int64>::Value(index);
+    }
+    std::lang::String capture(std::lang::String text, int64 group) {
+        return __regexCapture(self.opcode, text, group);
+    }
+    std::lang::String replaceFirst(std::lang::String text, std::lang::String replacement) {
+        return __regexReplaceFirst(self.opcode, text, replacement);
+    }
+    std::lang::String replaceAll(std::lang::String text, std::lang::String replacement) {
+        return __regexReplaceAll(self.opcode, text, replacement);
+    }
+};

@@ -58,13 +58,13 @@ def title(canvas, heading, detail):
 def compilation(english=False):
     """区分条件预处理、语义期宏展开、四元式优化及 VM 装配出口。"""
     c = Canvas()
-    title(c, "Magel · Compilation" if english else "Magel · 编译过程",
+    title(c, "ChaLi · Compilation" if english else "ChaLi · 编译过程",
           "Generated front end → checked and optimized quadruples → shared VM" if english else
           "文法生成前端 → 语义与借用检查 → 四元式生成及优化 → 共享 VM")
     nodes = [
-        (40, 145, "1  Source" if english else "1  源码与模块", [".mgl + imports", "Embedded standard library"] if english else [".mgl 与模块依赖", "内嵌标准库"]),
+        (40, 145, "1  Source" if english else "1  源码与模块", [".chl + imports", "Embedded standard library"] if english else [".chl 与模块依赖", "内嵌标准库"]),
         (560, 145, "2  Preprocessing" if english else "2  条件预处理", ["%define / %if / %ifdef", "Source locations retained"] if english else ["%define / %if / %ifdef", "保留源文件与行号"]),
-        (1080, 145, "3  Lexing and parsing" if english else "3  词法与语法解析", ["Generated from magel.gram", "Build AST, including macro templates"] if english else ["由 magel.gram 生成的前端", "构建 AST 与宏模板"]),
+        (1080, 145, "3  Lexing and parsing" if english else "3  词法与语法解析", ["Generated from chali.gram", "Build AST, including macro templates"] if english else ["由 chali.gram 生成的前端", "构建 AST 与宏模板"]),
         (1080, 315, "4  Semantic analysis" if english else "4  语义分析与宏展开", ["Hygienic expansion + type inference", "Overloads and monomorphisation"] if english else ["卫生 AST 宏展开与类型推导", "名称、重载与泛型单态化"]),
         (560, 315, "5  Borrow checking" if english else "5  独立借用检查", ["Control flow and reference origins", "Ownership and lifetime diagnostics"] if english else ["控制流与引用来源", "拥有关系及生命周期诊断"]),
         (40, 315, "6  Generate quadruples" if english else "6  生成四元式", ["Compiler IR + data + layout", "Source locations retained"] if english else ["四元式 IR、数据区与布局", "保留诊断来源"]),
@@ -83,7 +83,7 @@ def compilation(english=False):
         ["Types, labels, integer and comparison lowering" if english else "类型与标签、整数及比较跳转降低",
          "Keep source / PC mapping; prepare execution" if english else "保留源码 / PC 映射，准备执行"], green=True)
     outputs = [
-        (40, "Quadruple artifacts" if english else "四元式产物", ["Generated IR + data + layout", "Optimized view: MAGEL_DUMP_OPT"] if english else ["生成的四元式、数据区与布局", "优化检查：MAGEL_DUMP_OPT"]),
+        (40, "Quadruple artifacts" if english else "四元式产物", ["Generated IR + data + layout", "Optimized view: CHALI_DUMP_OPT"] if english else ["生成的四元式、数据区与布局", "优化检查：CHALI_DUMP_OPT"]),
         (560, "In-memory execution" if english else "内存执行", ["Program → shared VM", "No bytecode file required"] if english else ["Program → 共享 VM", "无需先写字节码文件"]),
         (1080, ".svmb bytecode" if english else ".svmb 字节码", ["VM code + execution metadata", "Loaded by a compatible VM"] if english else ["VM 指令与执行元数据", "由兼容版本的共享 VM 加载"]),
     ]
@@ -98,10 +98,10 @@ def compilation(english=False):
 def execution(english=False):
     """绘制共享 VM 的执行准备、快速路径和精确回退。"""
     c = Canvas()
-    title(c, "Magel · Execution" if english else "Magel · 运行过程",
+    title(c, "ChaLi · Execution" if english else "ChaLi · 运行过程",
           "Desktop and embedded Linux hosts share the same VM core" if english else
           "桌面与嵌入式 Linux 宿主使用同一份 VM 执行核心")
-    box(c, 40, 145, 440, ".mgl / in-memory Program" if english else ".mgl / 内存 Program",
+    box(c, 40, 145, 440, ".chl / in-memory Program" if english else ".chl / 内存 Program",
         ["Compile source, then enter the VM", "Lower internal instructions in memory"] if english else ["源码先编译，再进入 VM", "在内存中降低内部指令"])
     box(c, 560, 145, 440, ".svmb · format 5" if english else ".svmb · 格式 5",
         ["Read and validate code + metadata", "Use the stored internal sequence"] if english else ["读取并校验指令与元数据", "使用产物携带的内部序列"])
@@ -140,7 +140,7 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     for english in (False, True):
         for name, draw in (("compilation", compilation), ("execution", execution)):
-            path = OUT / f"magel-{name}{'-en' if english else ''}"
+            path = OUT / f"chali-{name}{'-en' if english else ''}"
             draw(english).save(str(path.with_suffix('.png')), str(path.with_suffix('.svg')))
             if not english:
                 book_path = ROOT / 'doc/book/images' / path.with_suffix('.png').name

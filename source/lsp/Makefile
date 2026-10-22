@@ -1,6 +1,6 @@
-# Magel 宏/块的编辑器语言服务器（`magel-lsp`）：构建 + 自检
+# ChaLi 宏/块的编辑器语言服务器（`chali-lsp`）：构建 + 自检
 #
-# 产物在仓库根的 build/magel-lsp：magel-lsp（服务器）与 magel-lsp-tests（单元测试）。
+# 产物在仓库根的 build/chali-lsp：chali-lsp（服务器）与 chali-lsp-tests（单元测试）。
 #   make            # 构建
 #   make check      # 跑单元测试
 #   make clean
@@ -8,8 +8,8 @@
 # 与外面那份文法 LSP（ParseEngine 的 library/lsp）的关系：类型定义与最小 JSON 都是
 # **本项目自带的副本**（`lsp/protocol_types.hpp`、`../../library/json/`），不跨仓库引用——
 #   * `lsp/protocol_types.hpp`（位置 / 区间 / 诊断 / 悬停 … 的头文件级共用类型）；
-#   * `../../library/json/`（JSON 库的 Magel 内置副本，与 `std::json` 同一份实现）。
-# 语言模型各管各的：文法在 ParseEngine 那份，Magel 宏/块在 `macro_analyzer.hpp` / `macro_analyzer.cpp`。
+#   * `../../library/json/`（JSON 库的 ChaLi 内置副本，与 `std::json` 同一份实现）。
+# 语言模型各管各的：文法在 ParseEngine 那份，ChaLi 宏/块在 `macro_analyzer.hpp` / `macro_analyzer.cpp`。
 # 源码是 UTF-8（中文注释与中文诊断）。GCC 下钉住输入/执行字符集，MSVC 用 /utf-8。
 
 CXX      ?= g++
@@ -22,12 +22,12 @@ endif
 
 ROOT_DIR    := ../..
 LSP_LIB_DIR := .
-BUILD_DIR   ?= $(ROOT_DIR)/build/magel-lsp
+BUILD_DIR   ?= $(ROOT_DIR)/build/chali-lsp
 ifeq ($(OS),Windows_NT)
 EXE_SUFFIX := .exe
 endif
-SERVER      := $(BUILD_DIR)/magel-lsp$(EXE_SUFFIX)
-TESTS       := $(BUILD_DIR)/magel-lsp-tests$(EXE_SUFFIX)
+SERVER      := $(BUILD_DIR)/chali-lsp$(EXE_SUFFIX)
+TESTS       := $(BUILD_DIR)/chali-lsp-tests$(EXE_SUFFIX)
 
 SOURCES := macro_analyzer.cpp language_server.cpp ../../library/json/json.cpp
 OBJECTS := $(BUILD_DIR)/macro_signature.o $(BUILD_DIR)/source_text.o  $(BUILD_DIR)/macro_analyzer.o $(BUILD_DIR)/language_server.o $(BUILD_DIR)/json.o

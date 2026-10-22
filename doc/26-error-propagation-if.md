@@ -4,7 +4,7 @@
 
 `if` 可用于初始化、赋值、函数实参、返回值及嵌套表达式。简单分支只包含一个无分号表达式；复杂分支通过 `yield 值;` 给出结果。
 
-```magel
+```chali
 int32 p = 1;
 bool odd = if (p % 2 == 1) { true } else { false };
 int32 value;
@@ -24,7 +24,7 @@ value = if (p % 3 == 1) { 1 } elif (p % 3 == 2) { 2 } else {
 
 核心协议均位于自动导入的 `std::lang`：
 
-```magel
+```chali
 enum TryBranch<T,R> { Continue(T value), Break(R residual); };
 interface Try<T,R> { TryBranch<T,R> branch(); };
 interface TryMove<T,R> { TryBranch<T,R> intoBranch(); };
@@ -37,7 +37,7 @@ interface FromResidual<F,R> { static F fromResidual(R residual); };
 
 标准 `Result<T,E>` 使用 `ErrorResidual<E>`，`Option<T>` 使用 `NoneResidual`，因此不同成功类型可共享失败出口，缺失与错误不会自动混合。
 
-用户类型可返回 `TryBranch<T,ErrorResidual<AppError>>`，直接向标准 `Result<U,AppError>` 传播；自定义返回类型可实现 `FromResidual<F,ErrorResidual<AppError>>` 接收标准 Result。完整程序见 [自定义传播样例](../example/samples/try_custom.mgl)。
+用户类型可返回 `TryBranch<T,ErrorResidual<AppError>>`，直接向标准 `Result<U,AppError>` 传播；自定义返回类型可实现 `FromResidual<F,ErrorResidual<AppError>>` 接收标准 Result。完整程序见 [自定义传播样例](../example/samples/try_custom.chl)。
 
 ## 错误适配
 
@@ -46,12 +46,12 @@ interface FromResidual<F,R> { static F fromResidual(R residual); };
 - `option.okOrElse<E>(factory)`：只在缺失时调用错误工厂。
 - `result.ok()`：明确丢弃错误信息，得到 Option。
 
-```magel
+```chali
 let value = operation().mapErr<AppError>(toAppError)?;
 let user = findUser(id).okOr<AppError>(AppError::UserMissing)?;
 ```
 
-`?` 可以写在 if 分支及条件中，其失败出口仍然是当前函数，不是 if 表达式。完整回归见 [条件表达式](../example/samples/if_expression.mgl) 与 [错误适配](../example/samples/error_adapters.mgl) 两个样例（由 `sh check.sh` 跑 VM 双后端）。
+`?` 可以写在 if 分支及条件中，其失败出口仍然是当前函数，不是 if 表达式。完整回归见 [条件表达式](../example/samples/if_expression.chl) 与 [错误适配](../example/samples/error_adapters.chl) 两个样例（由 `sh check.sh` 跑 VM 双后端）。
 
 ## 迁移与工具
 

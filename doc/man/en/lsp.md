@@ -1,6 +1,6 @@
 # LSP incremental hints and caching
 
-`magel lsp` uses six queues for completion/signatures, hover/definitions, semantic tokens/outlines, workspace queries, macro previews, and compiler diagnostics. The protocol thread continues to receive edits and cancellations. JSON-RPC IDs pair responses with requests, and a mutex protects complete output frames. [中文](../lsp.md)
+`chali lsp` uses six queues for completion/signatures, hover/definitions, semantic tokens/outlines, workspace queries, macro previews, and compiler diagnostics. The protocol thread continues to receive edits and cancellations. JSON-RPC IDs pair responses with requests, and a mutex protects complete output frames. [中文](../lsp.md)
 
 ## Types, macros and safe refactoring
 
@@ -8,7 +8,7 @@ Closures without an explicit result type infer it from their tail expression and
 
 Completion, hover, definitions and refactoring share binding scans and type queries. Original document URIs and declaration offsets distinguish shadowed names. Queries cover `for(let item in values)` element types, generic fields and method results, inference of direct function type parameters, explicit generic arguments, nested `fn` results and contextual anonymous function parameters. Uncertain types do not produce inlay hints; compiler diagnostics remain authoritative.
 
-`let` hover shows the complete inferred type on either the variable or the `let` keyword, including generic arguments and nested function signatures. Function types additionally describe parameters and return types. Unknown inference is reported explicitly. `textDocument/inlayHint` displays inferred types for `let` bindings and contextual parameters; VS Code users can disable `magel.inlayHints.enabled` or use the editor's inlay hint settings.
+`let` hover shows the complete inferred type on either the variable or the `let` keyword, including generic arguments and nested function signatures. Function types additionally describe parameters and return types. Unknown inference is reported explicitly. `textDocument/inlayHint` displays inferred types for `let` bindings and contextual parameters; VS Code users can disable `chali.inlayHints.enabled` or use the editor's inlay hint settings.
 
 Macro signature help reads structured headers with ordered and repeated round, square and curly groups, plus type parameters. Incomplete final groups can receive hints without relaxing compilation. Preview invokes the real compiler and displays hygienic ASTs with invocation navigation, without internal binding identifiers. Macro and higher-order closure let hints use compiler-confirmed static types.
 
@@ -22,13 +22,13 @@ VS Code sends actual document versions and UTF-16 edit ranges. Immutable source 
 
 Diagnostics have a 250 millisecond debounce and retain the newest pending task. Saving starts a check immediately. New checks cancel old ones and terminate obsolete compiler subprocesses. Editor cancellation tokens become `$/cancelRequest` notifications. A new request of the same hint category for the same document cancels its predecessor. Stale responses and diagnostics do not replace current editor content; closing a file clears its diagnostics.
 
-Checks use the original source path and stdin text. Unsaved documents overlay imports and includes without writing source files. Diagnostic caches validate source, dependencies, configuration, and lock file fingerprints. Dependency edits refresh their users; closing an unsaved dependency restores disk content. File watchers report `.mgl`, `.inc`, `.toml`, and `.lock` additions, changes, and removals.
+Checks use the original source path and stdin text. Unsaved documents overlay imports and includes without writing source files. Diagnostic caches validate source, dependencies, configuration, and lock file fingerprints. Dependency edits refresh their users; closing an unsaved dependency restores disk content. File watchers report `.chl`, `.inc`, `.toml`, and `.lock` additions, changes, and removals.
 
-The compiler still performs complete type and borrow checking. Fast hints and final diagnostics can finish at different times. `fn move() { a }` takes ownership of a, so reading a afterwards still produces MGL1205. Capture keywords have contextual hover text, and MGL1205 marks the offending variable on its reported line.
+The compiler still performs complete type and borrow checking. Fast hints and final diagnostics can finish at different times. `fn move() { a }` takes ownership of a, so reading a afterwards still produces CHL1205. Capture keywords have contextual hover text, and CHL1205 marks the offending variable on its reported line.
 
 ## Cache location and cleanup
 
-Caches live in `build/lsp/` beside the magel executable. With the bundled compiler this is the extension's `bin/build/lsp/`; with `magel.path` it is beside the configured compiler. The project directory does not select the cache location.
+Caches live in `build/lsp/` beside the chali executable. With the bundled compiler this is the extension's `bin/build/lsp/`; with `chali.path` it is beside the configured compiler. The project directory does not select the cache location.
 
 | Directory | Contents |
 | --- | --- |
@@ -44,9 +44,9 @@ Binding scans have a separate limit of sixteen entries and sixteen MiB in total;
 
 ## Verification
 
-[tests/magel_lsp_performance.py](../../../tests/magel_lsp_performance.py) covers concurrent hints/diagnostics, UTF-16 edits, unsaved dependencies and close rollback, report reuse, restart recovery, corrupted cache fallback, age cleanup, and quota cleanup. [Capture tests](../../../tests/magel_lsp_lambda_capture.py) verify hover and diagnostic ranges. [Client tests](../../../vscode/test/lspCancellation.js) cover out of order responses and cancellation listener disposal.
+[tests/chali_lsp_performance.py](../../../tests/chali_lsp_performance.py) covers concurrent hints/diagnostics, UTF-16 edits, unsaved dependencies and close rollback, report reuse, restart recovery, corrupted cache fallback, age cleanup, and quota cleanup. [Capture tests](../../../tests/chali_lsp_lambda_capture.py) verify hover and diagnostic ranges. [Client tests](../../../vscode/test/lspCancellation.js) cover out of order responses and cancellation listener disposal.
 
-[Semantic/refactoring tests](../../../tests/magel_lsp_semantic_features.py) cover complete type hover, contextual anonymous functions, repeated macro groups, incomplete calls, integer slot origins, cross-module versioned rename, shadowing and collision rejection, related cleanup locations and a latency gate for two thousand references. [Editor provider tests](../../../vscode/test/semanticProviders.js) check actual API conversion, stale version rejection and the hint setting.
+[Semantic/refactoring tests](../../../tests/chali_lsp_semantic_features.py) cover complete type hover, contextual anonymous functions, repeated macro groups, incomplete calls, integer slot origins, cross-module versioned rename, shadowing and collision rejection, related cleanup locations and a latency gate for two thousand references. [Editor provider tests](../../../vscode/test/semanticProviders.js) check actual API conversion, stale version rejection and the hint setting.
 
 On the same Windows machine with a 600 function file, first hover took approximately 1.52 seconds in 0.17.1 and 0.16 seconds in 0.17.2. Repeated semantic token requests took about 0.70 and 0.02 seconds. These measurements describe language service requests; overall editor responsiveness also depends on project size, extensions, and machine load.
 

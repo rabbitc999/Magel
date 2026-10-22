@@ -214,7 +214,7 @@ struct MReflectionSerialization
         for (const auto &decl : g_functionDecls)
         {
             if (decl.module != "std::reflect" || !decl.external || decl.superseded) continue;
-            for (const auto &entry : magel_generic::session.made)
+            for (const auto &entry : chali_generic::session.made)
             {
                 const auto &expansion = entry.second;
                 if (!expansion.generic || expansion.generic->module != "std::reflect" || expansion.name != decl.source) continue;

@@ -52,7 +52,7 @@ if name == "after":
         with tempfile.TemporaryDirectory() as directory:
             tasks = [dict(title="failed", command=[sys.executable, "-c", "raise SystemExit(7)"], parallel=True),
                      dict(title="passed", command=[sys.executable, "-c", "print('完整日志')"], parallel=True),
-                     dict(title="build", command=["missing-magel-gate-command"], required=True, parallel=True),
+                     dict(title="build", command=["missing-chali-gate-command"], required=True, parallel=True),
                      dict(title="blocked", command=[sys.executable, "-c", "raise SystemExit(9)"])]
             with redirect_stdout(io.StringIO()):
                 results = run_tasks(tasks, Path(directory), 1, directory)
@@ -81,10 +81,10 @@ if name == "after":
             with self.assertRaises(argparse.ArgumentTypeError):
                 positive_jobs(value)
         self.assertEqual(positive_jobs("3"), 3)
-        self.assertTrue(independent([sys.executable, "tests/magel_borrow_flow.py"]))
-        self.assertFalse(independent([sys.executable, "tests/magel_generator.py"]))
+        self.assertTrue(independent([sys.executable, "tests/chali_borrow_flow.py"]))
+        self.assertFalse(independent([sys.executable, "tests/chali_generator.py"]))
         self.assertFalse(independent(["make", "-j4"]))
-        self.assertTrue(independent(["build/magel-symbol-tests.exe", "fixtures"]))
+        self.assertTrue(independent(["build/chali-symbol-tests.exe", "fixtures"]))
 
 
 if __name__ == "__main__":

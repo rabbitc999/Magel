@@ -10,7 +10,7 @@
  *   node tools/package.js --out other-dir
  *
  * `vsce` 优先用 PATH 上的那份；没有就退回 `npx --yes @vscode/vsce`（需要网络）。
- * 产物名与 `package.json` 的 name/version 对齐：`dist/magel-editor-<版本>.vsix`。
+ * 产物名与 `package.json` 的 name/version 对齐：`dist/chali-editor-<版本>.vsix`。
  */
 
 const fs = require('node:fs');

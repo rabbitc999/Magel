@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::signal;
 ```
 
@@ -14,16 +14,16 @@ DFT 接受一般长度，FFT 要求长度为 2 的幂；非法长度由宿主检
 
 ## 参考代码
 
-完整程序：[example/samples/std_complex_fft.mgl](../../example/samples/std_complex_fft.mgl)。
+完整程序：[example/samples/std_complex_fft.chl](../../example/samples/std_complex_fft.chl)。
 
 ```powershell
-magel run example/samples/std_complex_fft.mgl
+chali run example/samples/std_complex_fft.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::complex;
 import std::signal;
 
@@ -118,7 +118,7 @@ dft 10
 
 **声明**
 
-```magel
+```chali
 std::lang::List<Complex<float64>> signalDft(std::lang::List<Complex<float64>> input);
 ```
 
@@ -144,13 +144,13 @@ DFT/FFT 下沉到宿主 C++（glue/std_signal.hpp）。DFT 接受任意长度，
 
 **调用形式**
 
-```magel
+```chali
 std::signal::signalDft(input);
 ```
 
-**源码**：[source/std/signal.mgl:8](../../source/std/signal.mgl#L8)。
+**源码**：[source/std/signal.chl:8](../../source/std/signal.chl#L8)。
 
-**完整示例**：[example/samples/std_complex_fft.mgl](../../example/samples/std_complex_fft.mgl)。
+**完整示例**：[example/samples/std_complex_fft.chl](../../example/samples/std_complex_fft.chl)。
 
 <a id="api-1"></a>
 
@@ -158,7 +158,7 @@ std::signal::signalDft(input);
 
 **声明**
 
-```magel
+```chali
 std::lang::List<Complex<float64>> signalIdft(std::lang::List<Complex<float64>> input);
 ```
 
@@ -182,13 +182,13 @@ std::lang::List<Complex<float64>> signalIdft(std::lang::List<Complex<float64>> i
 
 **调用形式**
 
-```magel
+```chali
 std::signal::signalIdft(input);
 ```
 
-**源码**：[source/std/signal.mgl:9](../../source/std/signal.mgl#L9)。
+**源码**：[source/std/signal.chl:9](../../source/std/signal.chl#L9)。
 
-**完整示例**：[example/samples/std_complex_fft.mgl](../../example/samples/std_complex_fft.mgl)。
+**完整示例**：[example/samples/std_complex_fft.chl](../../example/samples/std_complex_fft.chl)。
 
 <a id="api-2"></a>
 
@@ -196,7 +196,7 @@ std::signal::signalIdft(input);
 
 **声明**
 
-```magel
+```chali
 std::lang::List<Complex<float64>> signalFft(std::lang::List<Complex<float64>> input);
 ```
 
@@ -220,13 +220,13 @@ std::lang::List<Complex<float64>> signalFft(std::lang::List<Complex<float64>> in
 
 **调用形式**
 
-```magel
+```chali
 std::signal::signalFft(input);
 ```
 
-**源码**：[source/std/signal.mgl:10](../../source/std/signal.mgl#L10)。
+**源码**：[source/std/signal.chl:10](../../source/std/signal.chl#L10)。
 
-**完整示例**：[example/samples/std_complex_fft.mgl](../../example/samples/std_complex_fft.mgl)。
+**完整示例**：[example/samples/std_complex_fft.chl](../../example/samples/std_complex_fft.chl)。
 
 <a id="api-3"></a>
 
@@ -234,7 +234,7 @@ std::signal::signalFft(input);
 
 **声明**
 
-```magel
+```chali
 std::lang::List<Complex<float64>> signalIfft(std::lang::List<Complex<float64>> input);
 ```
 
@@ -258,13 +258,13 @@ std::lang::List<Complex<float64>> signalIfft(std::lang::List<Complex<float64>> i
 
 **调用形式**
 
-```magel
+```chali
 std::signal::signalIfft(input);
 ```
 
-**源码**：[source/std/signal.mgl:11](../../source/std/signal.mgl#L11)。
+**源码**：[source/std/signal.chl:11](../../source/std/signal.chl#L11)。
 
-**完整示例**：[example/samples/std_complex_fft.mgl](../../example/samples/std_complex_fft.mgl)。
+**完整示例**：[example/samples/std_complex_fft.chl](../../example/samples/std_complex_fft.chl)。
 
 <a id="api-4"></a>
 
@@ -272,7 +272,7 @@ std::signal::signalIfft(input);
 
 **声明**
 
-```magel
+```chali
 std::lang::List<Complex<float64>> dft(std::lang::List<Complex<float64>> input);
 ```
 
@@ -296,13 +296,13 @@ std::lang::List<Complex<float64>> dft(std::lang::List<Complex<float64>> input);
 
 **调用形式**
 
-```magel
+```chali
 std::signal::dft(input);
 ```
 
-**源码**：[source/std/signal.mgl:13](../../source/std/signal.mgl#L13)。
+**源码**：[source/std/signal.chl:13](../../source/std/signal.chl#L13)。
 
-**完整示例**：[example/samples/std_complex_fft.mgl](../../example/samples/std_complex_fft.mgl)。
+**完整示例**：[example/samples/std_complex_fft.chl](../../example/samples/std_complex_fft.chl)。
 
 <a id="api-5"></a>
 
@@ -310,7 +310,7 @@ std::signal::dft(input);
 
 **声明**
 
-```magel
+```chali
 std::lang::List<Complex<float64>> idft(std::lang::List<Complex<float64>> input);
 ```
 
@@ -334,13 +334,13 @@ std::lang::List<Complex<float64>> idft(std::lang::List<Complex<float64>> input);
 
 **调用形式**
 
-```magel
+```chali
 std::signal::idft(input);
 ```
 
-**源码**：[source/std/signal.mgl:14](../../source/std/signal.mgl#L14)。
+**源码**：[source/std/signal.chl:14](../../source/std/signal.chl#L14)。
 
-**完整示例**：[example/samples/std_complex_fft.mgl](../../example/samples/std_complex_fft.mgl)。
+**完整示例**：[example/samples/std_complex_fft.chl](../../example/samples/std_complex_fft.chl)。
 
 <a id="api-6"></a>
 
@@ -348,7 +348,7 @@ std::signal::idft(input);
 
 **声明**
 
-```magel
+```chali
 std::lang::List<Complex<float64>> fft(std::lang::List<Complex<float64>> input);
 ```
 
@@ -372,13 +372,13 @@ std::lang::List<Complex<float64>> fft(std::lang::List<Complex<float64>> input);
 
 **调用形式**
 
-```magel
+```chali
 std::signal::fft(input);
 ```
 
-**源码**：[source/std/signal.mgl:15](../../source/std/signal.mgl#L15)。
+**源码**：[source/std/signal.chl:15](../../source/std/signal.chl#L15)。
 
-**完整示例**：[example/samples/std_complex_fft.mgl](../../example/samples/std_complex_fft.mgl)。
+**完整示例**：[example/samples/std_complex_fft.chl](../../example/samples/std_complex_fft.chl)。
 
 <a id="api-7"></a>
 
@@ -386,7 +386,7 @@ std::signal::fft(input);
 
 **声明**
 
-```magel
+```chali
 std::lang::List<Complex<float64>> ifft(std::lang::List<Complex<float64>> input);
 ```
 
@@ -410,10 +410,10 @@ std::lang::List<Complex<float64>> ifft(std::lang::List<Complex<float64>> input);
 
 **调用形式**
 
-```magel
+```chali
 std::signal::ifft(input);
 ```
 
-**源码**：[source/std/signal.mgl:16](../../source/std/signal.mgl#L16)。
+**源码**：[source/std/signal.chl:16](../../source/std/signal.chl#L16)。
 
-**完整示例**：[example/samples/std_complex_fft.mgl](../../example/samples/std_complex_fft.mgl)。
+**完整示例**：[example/samples/std_complex_fft.chl](../../example/samples/std_complex_fft.chl)。

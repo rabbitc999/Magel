@@ -459,7 +459,7 @@ void testDisassembly()
         "4: (halt, _, _, _)\n",
         {}, output, &program);
     CHECK(output == Memory::String("5"));
-    /* magel 这份 stackvm 对 `global` 声明也发一条 `DECLARE`：线程从指令 0 跑起，
+    /* chali 这份 stackvm 对 `global` 声明也发一条 `DECLARE`：线程从指令 0 跑起，
      * 全局槽必须在程序开头就建好，否则"先读后写"会报未定义变量（见 assemble 里的注释）。
      * 所以这里是 DECLARE + 8 条 + (:=) 展开 ×2 = 10 条。 */
     CHECK(program.code.size() == 10u);
@@ -1507,13 +1507,13 @@ void testProgramBinary()
     source.exports.insert("entry");
     stackvm::SourceLocation entryLocation;
     entryLocation.function = "entry";
-    entryLocation.file = "demo.mgl";
+    entryLocation.file = "demo.chl";
     entryLocation.line = 12;
     entryLocation.quadLine = 30u;
     source.debug.add(0u, entryLocation);
     stackvm::SourceLocation laterLocation;
     laterLocation.function = "entry";
-    laterLocation.file = "demo.mgl";
+    laterLocation.file = "demo.chl";
     laterLocation.line = 14;
     laterLocation.quadLine = 32u;
     source.debug.add(2u, laterLocation);
@@ -1560,10 +1560,10 @@ void testProgramBinary()
     if (dumpedEntry != nullptr)
     {
         CHECK(dumpedEntry->function == "entry");
-        CHECK(dumpedEntry->file == "demo.mgl");
+        CHECK(dumpedEntry->file == "demo.chl");
         CHECK(dumpedEntry->line == 12);
         CHECK(dumpedEntry->quadLine == 30u);
-        CHECK(dumpedEntry->toString() == "demo.mgl:12");
+        CHECK(dumpedEntry->toString() == "demo.chl:12");
     }
     const stackvm::SourceLocation *dumpedLater = restored.debug.lookup(3u);
     CHECK(dumpedLater != nullptr && dumpedLater->line == 14);
@@ -1714,7 +1714,7 @@ void testDebugger()
         stackvm::DebugInfo external;
         stackvm::SourceLocation location;
         location.function = "外部表";
-        location.file = "override.mgl";
+        location.file = "override.chl";
         location.line = 7;
         external.add(0u, location);
         stackvm::Machine machine;
@@ -1724,7 +1724,7 @@ void testDebugger()
         const stackvm::RunResult result = machine.run(program);
         CHECK(result.ok);
         CHECK(machine.debugInfo() == &external);
-        CHECK(machine.currentLocation().file == "override.mgl");
+        CHECK(machine.currentLocation().file == "override.chl");
         CHECK(external.lookup(1u)->line == 7);
     }
 }
@@ -1732,7 +1732,7 @@ void testDebugger()
 /**
  * @brief `__std_panic`：唯一的中止原语。
  *
- * `__std_exit` 与 `__std_assert` 已删除 —— Magel 侧的中止只有 `std::lang::panic`，
+ * `__std_exit` 与 `__std_assert` 已删除 —— ChaLi 侧的中止只有 `std::lang::panic`，
  * `std::lang::assert` 是标准库对它的包装，虚拟机里不再有第二条停机路径。
  */
 void testPanic()
@@ -1743,7 +1743,7 @@ void testPanic()
     const char message[] = "fatal state";
     CHECK(data.writeBytes(8u, message, sizeof(message)));
     const stackvm::QuadFile panicFile = stackvm::parseQuads(
-        "0: (param, 8, _, __magel_value)\n"
+        "0: (param, 8, _, __chali_value)\n"
         "1: (call, __std_panic, _, t)\n"
         "2: (write, 99, _, _)\n"
         "3: (halt, _, _, _)\n",

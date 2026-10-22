@@ -1,11 +1,11 @@
-#ifndef MAGEL_MACRO_FRAGMENTS_HPP
-#define MAGEL_MACRO_FRAGMENTS_HPP
-#include "allocator/magel_allocator.hpp"
+#ifndef CHALI_MACRO_FRAGMENTS_HPP
+#define CHALI_MACRO_FRAGMENTS_HPP
+#include "allocator/chali_allocator.hpp"
 #include <string>
 #include <vector>
 #include <string_view>
 
-namespace magel_macro
+namespace chali_macro
 {
 /**
  * @brief 保留完整实参原文及其在输入源码中的起点。
@@ -95,5 +95,5 @@ private:
  * @brief 当前前端编译会话的原始片段池，递归片段解析共用同一编号空间。
  */
 extern SourceFragments sourceFragments;
-}  // namespace magel_macro
+}  // namespace chali_macro
 #endif

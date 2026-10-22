@@ -4,7 +4,7 @@
  */
 #pragma once
 #include <filesystem>
-namespace magel_development
+namespace chali_development
 {
 /**
  * @brief 运行原生开发命令。
@@ -14,4 +14,4 @@ namespace magel_development
  * @return 命令退出码。
  */
 int run(int argc, char **argv, const std::filesystem::path &compiler);
-}  // namespace magel_development
+}  // namespace chali_development

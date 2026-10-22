@@ -1,4 +1,4 @@
-#include "../../source/allocator/magel_allocator.hpp"
+#include "../../source/allocator/chali_allocator.hpp"
 /**
  * @file preprocess.hpp
  * @brief 通用文本预处理器：%define / %undefine / %if / %include 与行号映射。

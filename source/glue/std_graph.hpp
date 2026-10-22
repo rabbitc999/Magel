@@ -9,5 +9,5 @@ namespace std_graph_glue
  * @param error 注册失败时的错误说明。
  * @return 全部注册成功返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error);
+bool bind(chali_glue::Registry &registry, Memory::String *error);
 }  // namespace std_graph_glue

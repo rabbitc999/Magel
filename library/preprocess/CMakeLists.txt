@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(parseengine_preprocess STATIC preprocess.cpp)
-target_compile_definitions(parseengine_preprocess PUBLIC MAGEL_CUSTOM_ALLOCATOR=1)
+target_compile_definitions(parseengine_preprocess PUBLIC CHALI_CUSTOM_ALLOCATOR=1)
 target_include_directories(parseengine_preprocess PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 if(MSVC)
   target_compile_options(parseengine_preprocess PRIVATE /W4 /utf-8)

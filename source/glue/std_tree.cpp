@@ -9,7 +9,7 @@ namespace std_tree_glue
  * @param error 接收绑定失败的诊断。
  * @return 所有入口注册成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     return std_tree_storage_glue::bind(registry, error) && std_red_black_tree_glue::bind(registry, error);
 }

@@ -1,0 +1,1652 @@
+module std::iter;
+
+/** @brief 有状态迭代器接口；每次 next 消费一个元素。 */
+interface IterNext<T> {
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<T> next();
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint();
+};
+
+/** @brief 持有惰性游标状态，按 ChaLi 值语义复制时获得独立游标。 */
+struct Iter<T> : Iterator<T> {
+    std::lang::Any state;
+    bool buffered;
+    Option<T> pending;
+    /**
+     * @brief peek 迭代操作。
+     * @return 操作结果。
+     */
+    Option<T> peek() {
+        if (!self.buffered) {
+            IterNext<T> mut& cursor = self.state.getReference();
+            self.pending = cursor.next();
+            self.buffered = true;
+        }
+        return self.pending;
+    }
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<T> next() {
+        if (self.buffered) {
+            self.buffered = false;
+            Option<T> result = self.pending;
+            self.pending = Option<T>::None;
+            return result;
+        }
+        IterNext<T> mut& cursor = self.state.getReference();
+        return cursor.next();
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        IterNext<T> mut& cursor = self.state.getReference();
+        let hint = cursor.sizeHint();
+        if (!self.buffered || self.pending.isNone()) {
+            return hint;
+        }
+        Option<int64> upper = hint.1;
+        if (upper.isValue()) {
+            if (upper.unwrap() == 9223372036854775807) {
+                upper = Option<int64>::None;
+            }
+            else {
+                upper = Option<int64>::Value(upper.unwrap() + 1);
+            }
+        }
+        int64 lower = hint.0;
+        if (lower < 9223372036854775807) {
+            lower = lower + 1;
+        }
+        return (lower, upper);
+    }
+    /**
+     * @brief iterator 迭代操作。
+     * @param index 从零开始的下标。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<T> iterator(int64 index) {
+        return self.next();
+    }
+    /**
+     * @brief count 迭代操作。
+     * @return 操作结果。
+     */
+    int64 count() {
+        int64 result = 0;
+        while (true) {
+            Option<T> item = self.next();
+            if (item.isNone()) {
+                return result;
+            }
+            result = result + 1;
+        }
+        std::lang::panic("迭代器消费循环意外结束");
+    }
+    /**
+     * @brief nth 迭代操作。
+     * @param index 从零开始的下标。
+     * @return 操作结果。
+     */
+    Option<T> nth(int64 index) {
+        std::lang::assert(index >= 0, "nth 下标不能为负数");
+        {
+            int64 i = 0;
+            while (i < index) {
+
+            Option<T> item = self.next();
+            if (item.isNone()) {
+                return Option<T>::None;
+            }
+        
+                i = i + 1;
+            }
+        }
+        return self.next();
+    }
+    /**
+     * @brief last 迭代操作。
+     * @return 操作结果。
+     */
+    Option<T> last() {
+        Option<T> result = Option<T>::None;
+        while (true) {
+            Option<T> item = self.next();
+            if (item.isNone()) {
+                return result;
+            }
+            result = item;
+        }
+        std::lang::panic("迭代器消费循环意外结束");
+    }
+    /**
+     * @brief all 迭代操作。
+     * @param predicate 元素筛选条件。
+     * @return 操作结果。
+     */
+    bool all(bool fn(T) predicate) {
+        while (true) {
+            Option<T> item = self.next();
+            if (item.isNone()) {
+                return true;
+            }
+            if (!predicate(item.unwrap())) {
+                return false;
+            }
+        }
+        std::lang::panic("迭代器消费循环意外结束");
+    }
+    /**
+     * @brief any 迭代操作。
+     * @param predicate 元素筛选条件。
+     * @return 操作结果。
+     */
+    bool any(bool fn(T) predicate) {
+        while (true) {
+            Option<T> item = self.next();
+            if (item.isNone()) {
+                return false;
+            }
+            if (predicate(item.unwrap())) {
+                return true;
+            }
+        }
+        std::lang::panic("迭代器消费循环意外结束");
+    }
+    /**
+     * @brief find 迭代操作。
+     * @param predicate 元素筛选条件。
+     * @return 操作结果。
+     */
+    Option<T> find(bool fn(T) predicate) {
+        while (true) {
+            Option<T> item = self.next();
+            if (item.isNone()) {
+                return Option<T>::None;
+            }
+            if (predicate(item.unwrap())) {
+                return item;
+            }
+        }
+        std::lang::panic("迭代器消费循环意外结束");
+    }
+    /**
+     * @brief forEach 迭代操作。
+     * @param action 元素处理函数。
+     * @return 无返回值。
+     */
+    void forEach(void fn(T) action) {
+        while (true) {
+            Option<T> item = self.next();
+            if (item.isNone()) {
+                return;
+            }
+          /**
+           * @brief action 迭代操作。
+           * @return 操作结果。
+           */
+            action(item.unwrap());
+        }
+        std::lang::panic("迭代器消费循环意外结束");
+    }
+};
+
+
+/**
+ * @brief 将实现 IterNext 的值装入独立游标。
+ * @param state 初始状态值。
+ * @return 操作结果。
+ */
+Iter<T> fromState<T,S>(S state) {
+    Iter<T> result;
+    result.state = __iterBox<S>(state);
+    return result;
+}
+
+/** @brief 将语言 Iterator 值保存为独立的惰性游标。 */
+struct IteratorValueState<T,S : Iterator<T>> : IterNext<T> {
+    S source;
+    int64 position;
+    /**
+     * @brief 从语言迭代协议读取下一项。
+     * @return 本次元素，或表示迭代结束的 None。
+     */
+    Option<T> next() {
+        Option<T> result = self.source.iterator(self.position);
+        if (self.position < 9223372036854775807) {
+            self.position = self.position + 1;
+        }
+        return result;
+    }
+    /**
+     * @brief 提供未知长度的剩余项估计。
+     * @return 下界为零，上界未知。
+     */
+    (int64, Option<int64>) sizeHint() {
+        return (0, Option<int64>::None);
+    }
+};
+
+/**
+ * @brief 复制语言迭代器值，建立可组合的独立游标。
+ * @param source 实现 Iterator<T> 的来源值。
+ * @return 拥有来源副本的惰性迭代器。
+ */
+Iter<T> fromIterator<T,S : Iterator<T>>(S source) {
+    IteratorValueState<T,S> state;
+    state.source = source;
+    state.position = 0;
+    return fromState<T,IteratorValueState<T,S>>(state);
+}
+
+/** @brief 列表值迭代状态，保留未消费的元素。 */
+struct IterListState<T> : IterNext<T> {
+    std::lang::List<T> values;
+    int64 position;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<T> next() {
+        if (self.position >= self.values.len()) {
+            return Option<T>::None;
+        }
+        T value = self.values[self.position];
+        self.position = self.position + 1;
+        return Option<T>::Value(value);
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        int64 remaining = self.values.len() - self.position;
+        return (remaining, Option<int64>::Value(remaining));
+    }
+};
+
+
+/**
+ * @brief 从列表创建独立值迭代器。
+ * @param values 操作参数。
+ * @return 操作结果。
+ */
+Iter<T> fromList<T>(std::lang::List<T> values) {
+    IterListState<T> state;
+    state.values = values;
+    return fromState<T,IterListState<T> >(state);
+}
+
+/** @brief 创建半开整数区间的惰性迭代器。 */
+struct IterRangeState : IterNext<int64> {
+    int64 current;
+    int64 stop;
+    int64 step;
+    bool done;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<int64> next() {
+        if (self.done || (self.step > 0 && self.current >= self.stop) || (self.step < 0 && self.current <= self.stop)) {
+            return Option<int64>::None;
+        }
+        int64 value = self.current;
+        if ((self.step > 0 && value > 9223372036854775807 - self.step) ||             (self.step < 0 && value < (-(int64)9223372036854775807 - (int64)1) - self.step)) {
+            self.done = true;
+        }
+        else {
+            self.current = value + self.step;
+        }
+        return Option<int64>::Value(value);
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        if (self.done || (self.step > 0 && self.current >= self.stop) ||             (self.step < 0 && self.current <= self.stop)) {
+            return (0, Option<int64>::Value(0));
+        }
+        int64 distance = 0;
+        int64 stride = self.step;
+        if (self.step > 0) {
+            if (self.current < 0 && self.stop >= 0 && self.stop > (int64)9223372036854775807 + self.current) {
+                return (0, Option<int64>::None);
+            }
+            distance = self.stop - self.current;
+        }
+        else {
+            if (self.stop < 0 && self.current >= 0 && self.current > (int64)9223372036854775807 + self.stop) {
+                return (0, Option<int64>::None);
+            }
+            if (self.step == -(int64)9223372036854775807 - (int64)1) {
+                return (0, Option<int64>::None);
+            }
+            distance = self.current - self.stop;
+            stride = 0 - self.step;
+        }
+        int64 remaining = (distance - 1) / stride + 1;
+        return (remaining, Option<int64>::Value(remaining));
+    }
+};
+
+/**
+ * @brief range 迭代操作。
+ * @param start 区间起点。
+ * @param stop 区间终点，不包含。
+ * @param step 步长。
+ * @return 操作结果。
+ */
+Iter<int64> range(int64 start, int64 stop, int64 step) {
+    std::lang::assert(step != 0, "迭代器区间步长不能为零");
+    IterRangeState state;
+    state.current = start;
+    state.stop = stop;
+    state.step = step;
+    return fromState<int64,IterRangeState>(state);
+}
+
+/**
+ * @brief range 迭代操作。
+ * @param start 区间起点。
+ * @param stop 区间终点，不包含。
+ * @return 操作结果。
+ */
+Iter<int64> range(int64 start, int64 stop) {
+    return range(start, stop, 1);
+}
+
+/** @brief IterMapState 的惰性状态，仅在 next 时执行回调或消费来源。 */
+struct IterMapState<T,U> : IterNext<U> {
+    Iter<T> source;
+    U fn(T) callback;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<U> next() {
+        Option<T> item = self.source.next();
+        if (item.isNone()) {
+            return Option<U>::None;
+        }
+        return Option<U>::Value(self.callback(item.unwrap()));
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        return self.source.sizeHint();
+    }
+};
+
+
+/**
+ * @brief map 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param callback 处理元素或累加状态的函数。
+ * @return 操作结果。
+ */
+Iter<U> map<T,U>(Iter<T> source, U fn(T) callback) {
+    IterMapState<T,U> stage;
+    stage.source = source;
+    stage.callback = callback;
+    return fromState<U,IterMapState<T,U> >(stage);
+}
+
+/** @brief IterFilterState 的惰性状态，仅在 next 时执行回调或消费来源。 */
+struct IterFilterState<T> : IterNext<T> {
+    Iter<T> source;
+    bool fn(T) predicate;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<T> next() {
+        while (true) {
+            Option<T> item = self.source.next();
+            if (item.isNone()) {
+                return item;
+            }
+            if (self.predicate(item.unwrap())) {
+                return item;
+            }
+        }
+        std::lang::panic("迭代器消费循环意外结束");
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        let hint = self.source.sizeHint();
+        return (0, hint.1);
+    }
+};
+
+
+/**
+ * @brief filter 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param predicate 元素筛选条件。
+ * @return 操作结果。
+ */
+Iter<T> filter<T>(Iter<T> source, bool fn(T) predicate) {
+    IterFilterState<T> stage;
+    stage.source = source;
+    stage.predicate = predicate;
+    return fromState<T,IterFilterState<T> >(stage);
+}
+
+/** @brief IterFilterMapState 的惰性状态，仅在 next 时执行回调或消费来源。 */
+struct IterFilterMapState<T,U> : IterNext<U> {
+    Iter<T> source;
+    Option<U> fn(T) callback;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<U> next() {
+        while (true) {
+            Option<T> item = self.source.next();
+            if (item.isNone()) {
+                return Option<U>::None;
+            }
+            Option<U> result = self.callback(item.unwrap());
+            if (result.isValue()) {
+                return result;
+            }
+        }
+        std::lang::panic("迭代器消费循环意外结束");
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        let hint = self.source.sizeHint();
+        return (0, hint.1);
+    }
+};
+
+
+/**
+ * @brief filterMap 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param callback 处理元素或累加状态的函数。
+ * @return 操作结果。
+ */
+Iter<U> filterMap<T,U>(Iter<T> source, Option<U> fn(T) callback) {
+    IterFilterMapState<T,U> stage;
+    stage.source = source;
+    stage.callback = callback;
+    return fromState<U,IterFilterMapState<T,U> >(stage);
+}
+
+/** @brief IterMapWhileState 的惰性状态，仅在 next 时执行回调或消费来源。 */
+struct IterMapWhileState<T,U> : IterNext<U> {
+    Iter<T> source;
+    bool done;
+    Option<U> fn(T) callback;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<U> next() {
+        if (self.done) {
+            return Option<U>::None;
+        }
+        Option<T> item = self.source.next();
+        if (item.isNone()) {
+            self.done = true;
+            return Option<U>::None;
+        }
+        Option<U> result = self.callback(item.unwrap());
+        if (result.isNone()) {
+            self.done = true;
+        }
+        return result;
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        let hint = self.source.sizeHint();
+        return (0, hint.1);
+    }
+};
+
+
+/**
+ * @brief mapWhile 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param callback 处理元素或累加状态的函数。
+ * @return 操作结果。
+ */
+Iter<U> mapWhile<T,U>(Iter<T> source, Option<U> fn(T) callback) {
+    IterMapWhileState<T,U> stage;
+    stage.source = source;
+    stage.callback = callback;
+    return fromState<U,IterMapWhileState<T,U> >(stage);
+}
+
+/** @brief IterTakeWhileState 的惰性状态，仅在 next 时执行回调或消费来源。 */
+struct IterTakeWhileState<T> : IterNext<T> {
+    Iter<T> source;
+    bool done;
+    bool fn(T) predicate;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<T> next() {
+        if (self.done) {
+            return Option<T>::None;
+        }
+        Option<T> item = self.source.next();
+        if (item.isNone()) {
+            self.done = true;
+            return item;
+        }
+        if (!self.predicate(item.unwrap())) {
+            self.done = true;
+            return Option<T>::None;
+        }
+        return item;
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        let hint = self.source.sizeHint();
+        return (0, hint.1);
+    }
+};
+
+
+/**
+ * @brief takeWhile 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param predicate 元素筛选条件。
+ * @return 操作结果。
+ */
+Iter<T> takeWhile<T>(Iter<T> source, bool fn(T) predicate) {
+    IterTakeWhileState<T> stage;
+    stage.source = source;
+    stage.predicate = predicate;
+    return fromState<T,IterTakeWhileState<T> >(stage);
+}
+
+/** @brief IterSkipWhileState 的惰性状态，仅在 next 时执行回调或消费来源。 */
+struct IterSkipWhileState<T> : IterNext<T> {
+    Iter<T> source;
+    bool skipping;
+    bool fn(T) predicate;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<T> next() {
+        while (true) {
+            Option<T> item = self.source.next();
+            if (item.isNone()) {
+                return item;
+            }
+            if (!self.skipping || !self.predicate(item.unwrap())) {
+                self.skipping = false;
+                return item;
+            }
+        }
+        std::lang::panic("迭代器消费循环意外结束");
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        let hint = self.source.sizeHint();
+        return (0, hint.1);
+    }
+};
+
+
+/**
+ * @brief skipWhile 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param predicate 元素筛选条件。
+ * @return 操作结果。
+ */
+Iter<T> skipWhile<T>(Iter<T> source, bool fn(T) predicate) {
+    IterSkipWhileState<T> stage;
+    stage.source = source;
+    stage.predicate = predicate;
+    stage.skipping = true;
+    return fromState<T,IterSkipWhileState<T> >(stage);
+}
+
+/** @brief IterTakeState 的惰性状态，仅在 next 时执行回调或消费来源。 */
+struct IterTakeState<T> : IterNext<T> {
+    Iter<T> source;
+    int64 remaining;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<T> next() {
+        if (self.remaining <= 0) {
+            return Option<T>::None;
+        }
+        self.remaining = self.remaining - 1;
+        return self.source.next();
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        let hint = self.source.sizeHint();
+        int64 lower = hint.0;
+        if (lower > self.remaining) {
+            lower = self.remaining;
+        }
+        int64 upper = self.remaining;
+        if ((hint.1).isValue() && (hint.1).unwrap() < upper) {
+            upper = (hint.1).unwrap();
+        }
+        return (lower, Option<int64>::Value(upper));
+    }
+};
+
+
+/**
+ * @brief take 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param amount 元素数量，不能为负数。
+ * @return 操作结果。
+ */
+Iter<T> take<T>(Iter<T> source, int64 amount) {
+    IterTakeState<T> stage;
+    std::lang::assert(amount >= 0, "take 数量不能为负数");
+    stage.source = source;
+    stage.remaining = amount;
+    return fromState<T,IterTakeState<T> >(stage);
+}
+
+/** @brief IterSkipState 的惰性状态，仅在 next 时执行回调或消费来源。 */
+struct IterSkipState<T> : IterNext<T> {
+    Iter<T> source;
+    int64 remaining;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<T> next() {
+        while (self.remaining > 0) {
+            self.remaining = self.remaining - 1;
+            Option<T> item = self.source.next();
+            if (item.isNone()) {
+                self.remaining = 0;
+                return item;
+            }
+        }
+        return self.source.next();
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        let hint = self.source.sizeHint();
+        int64 lower = hint.0 - self.remaining;
+        if (lower < 0) {
+            lower = 0;
+        }
+        Option<int64> upper = hint.1;
+        if (upper.isValue()) {
+            int64 value = upper.unwrap() - self.remaining;
+            if (value < 0) {
+                value = 0;
+            }
+            upper = Option<int64>::Value(value);
+        }
+        return (lower, upper);
+    }
+};
+
+
+/**
+ * @brief skip 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param amount 元素数量，不能为负数。
+ * @return 操作结果。
+ */
+Iter<T> skip<T>(Iter<T> source, int64 amount) {
+    IterSkipState<T> stage;
+    std::lang::assert(amount >= 0, "skip 数量不能为负数");
+    stage.source = source;
+    stage.remaining = amount;
+    return fromState<T,IterSkipState<T> >(stage);
+}
+
+/** @brief IterChainState 的惰性状态，仅在 next 时执行回调或消费来源。 */
+struct IterChainState<T> : IterNext<T> {
+    Iter<T> left;
+    Iter<T> right;
+    bool switched;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<T> next() {
+        if (!self.switched) {
+            Option<T> item = self.left.next();
+            if (item.isValue()) {
+                return item;
+            }
+            self.switched = true;
+        }
+        return self.right.next();
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        return (0, Option<int64>::None);
+    }
+};
+
+
+/**
+ * @brief chain 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param left 左侧来源。
+ * @param right 右侧来源。
+ * @return 操作结果。
+ */
+Iter<T> chain<T>(Iter<T> left, Iter<T> right) {
+    IterChainState<T> stage;
+    stage.left = left;
+    stage.right = right;
+    return fromState<T,IterChainState<T> >(stage);
+}
+
+/** @brief IterZipState 的惰性状态，仅在 next 时执行回调或消费来源。 */
+struct IterZipState<T,U> : IterNext<(T,U)> {
+    Iter<T> left;
+    Iter<U> right;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<(T,U)> next() {
+        Option<T> left = self.left.next();
+        if (left.isNone()) {
+            return Option<(T,U)>::None;
+        }
+        Option<U> right = self.right.next();
+        if (right.isNone()) {
+            return Option<(T,U)>::None;
+        }
+        return Option<(T,U)>::Value((left.unwrap(), right.unwrap()));
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        return (0, Option<int64>::None);
+    }
+};
+
+
+/**
+ * @brief zip 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param left 左侧来源。
+ * @param right 右侧来源。
+ * @return 操作结果。
+ */
+Iter<(T,U)> zip<T,U>(Iter<T> left, Iter<U> right) {
+    IterZipState<T,U> stage;
+    stage.left = left;
+    stage.right = right;
+    return fromState<(T,U),IterZipState<T,U> >(stage);
+}
+
+/** @brief IterEnumerateState 的惰性状态，仅在 next 时执行回调或消费来源。 */
+struct IterEnumerateState<T> : IterNext<(int64,T)> {
+    Iter<T> source;
+    int64 index;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<(int64,T)> next() {
+        Option<T> item = self.source.next();
+        if (item.isNone()) {
+            return Option<(int64,T)>::None;
+        }
+        int64 index = self.index;
+        self.index = self.index + 1;
+        return Option<(int64,T)>::Value((index, item.unwrap()));
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        return self.source.sizeHint();
+    }
+};
+
+
+/**
+ * @brief enumerate 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @return 操作结果。
+ */
+Iter<(int64,T)> enumerate<T>(Iter<T> source) {
+    IterEnumerateState<T> stage;
+    stage.source = source;
+    return fromState<(int64,T),IterEnumerateState<T> >(stage);
+}
+
+/** @brief IterStepState 的惰性状态，仅在 next 时执行回调或消费来源。 */
+struct IterStepState<T> : IterNext<T> {
+    Iter<T> source;
+    int64 step;
+    bool started;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<T> next() {
+        if (!self.started) {
+            self.started = true;
+            return self.source.next();
+        }
+        return self.source.nth(self.step - 1);
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        return (0, Option<int64>::None);
+    }
+};
+
+
+/**
+ * @brief stepBy 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param step 步长。
+ * @return 操作结果。
+ */
+Iter<T> stepBy<T>(Iter<T> source, int64 step) {
+    IterStepState<T> stage;
+    std::lang::assert(step > 0, "stepBy 步长必须大于零");
+    stage.source = source;
+    stage.step = step;
+    return fromState<T,IterStepState<T> >(stage);
+}
+
+/** @brief IterFuseState 的惰性状态，仅在 next 时执行回调或消费来源。 */
+struct IterFuseState<T> : IterNext<T> {
+    Iter<T> source;
+    bool done;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<T> next() {
+        if (self.done) {
+            return Option<T>::None;
+        }
+        Option<T> item = self.source.next();
+        if (item.isNone()) {
+            self.done = true;
+        }
+        return item;
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        if (self.done) {
+            return (0, Option<int64>::Value(0));
+        }
+        return self.source.sizeHint();
+    }
+};
+
+
+/**
+ * @brief fuse 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @return 操作结果。
+ */
+Iter<T> fuse<T>(Iter<T> source) {
+    IterFuseState<T> stage;
+    stage.source = source;
+    return fromState<T,IterFuseState<T> >(stage);
+}
+
+/** @brief IterInspectState 的惰性状态，仅在 next 时执行回调或消费来源。 */
+struct IterInspectState<T> : IterNext<T> {
+    Iter<T> source;
+    void fn(T) action;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<T> next() {
+        Option<T> item = self.source.next();
+        if (item.isValue()) {
+            self.action(item.unwrap());
+        }
+        return item;
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        return self.source.sizeHint();
+    }
+};
+
+
+/**
+ * @brief inspect 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param action 元素处理函数。
+ * @return 操作结果。
+ */
+Iter<T> inspect<T>(Iter<T> source, void fn(T) action) {
+    IterInspectState<T> stage;
+    stage.source = source;
+    stage.action = action;
+    return fromState<T,IterInspectState<T> >(stage);
+}
+
+/** @brief IterCycleState 的惰性状态，仅在 next 时执行回调或消费来源。 */
+struct IterCycleState<T> : IterNext<T> {
+    Iter<T> initial;
+    Iter<T> current;
+    bool empty;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<T> next() {
+        if (self.empty) {
+            return Option<T>::None;
+        }
+        Option<T> item = self.current.next();
+        if (item.isValue()) {
+            return item;
+        }
+        self.current = self.initial;
+        Option<T> restarted = self.current.next();
+        if (restarted.isNone()) {
+            self.empty = true;
+        }
+        return restarted;
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        return (0, Option<int64>::None);
+    }
+};
+
+
+/**
+ * @brief cycle 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @return 操作结果。
+ */
+Iter<T> cycle<T>(Iter<T> source) {
+    IterCycleState<T> stage;
+    stage.initial = source;
+    stage.current = source;
+    return fromState<T,IterCycleState<T> >(stage);
+}
+
+/** @brief IterScanState 的惰性状态，仅在 next 时执行回调或消费来源。 */
+struct IterScanState<T,A,U> : IterNext<U> {
+    Iter<T> source;
+    A accumulator;
+    Option<U> fn(A mut&, T) callback;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<U> next() {
+        Option<T> item = self.source.next();
+        if (item.isNone()) {
+            return Option<U>::None;
+        }
+        return self.callback(&self.accumulator, item.unwrap());
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        let hint = self.source.sizeHint();
+        return (0, hint.1);
+    }
+};
+
+
+/**
+ * @brief scan 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param initial 初始值或累加状态。
+ * @param callback 处理元素或累加状态的函数。
+ * @return 操作结果。
+ */
+Iter<U> scan<T,A,U>(Iter<T> source, A initial, Option<U> fn(A mut&, T) callback) {
+    IterScanState<T,A,U> stage;
+    stage.source = source;
+    stage.accumulator = initial;
+    stage.callback = callback;
+    return fromState<U,IterScanState<T,A,U> >(stage);
+}
+
+
+/**
+ * @brief collect 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @return 操作结果。
+ */
+std::lang::List<T> collect<T>(Iter<T> source) {
+    std::lang::List<T> result;
+    while (true) {
+        Option<T> item = source.next();
+        if (item.isNone()) {
+            return result;
+        }
+        result.push(item.unwrap());
+    }
+    std::lang::panic("迭代器消费循环意外结束");
+}
+
+
+/**
+ * @brief fold 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param initial 初始值或累加状态。
+ * @param callback 处理元素或累加状态的函数。
+ * @return 操作结果。
+ */
+A fold<T,A>(Iter<T> source, A initial, A fn(A, T) callback) {
+    A result = initial;
+    while (true) {
+        Option<T> item = source.next();
+        if (item.isNone()) {
+            return result;
+        }
+        result = callback(result, item.unwrap());
+    }
+    std::lang::panic("迭代器消费循环意外结束");
+}
+
+
+/**
+ * @brief tryFold 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param initial 初始值或累加状态。
+ * @param callback 处理元素或累加状态的函数。
+ * @return 操作结果。
+ */
+Result<A,E> tryFold<T,A,E>(Iter<T> source, A initial, Result<A,E> fn(A, T) callback) {
+    A result = initial;
+    while (true) {
+        Option<T> item = source.next();
+        if (item.isNone()) {
+            return Result<A,E>::Ok(result);
+        }
+        Result<A,E> next = callback(result, item.unwrap());
+        if (next.isErr()) {
+            return next;
+        }
+        result = next.unwrap();
+    }
+    std::lang::panic("迭代器消费循环意外结束");
+}
+
+
+/**
+ * @brief findMap 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param callback 处理元素或累加状态的函数。
+ * @return 操作结果。
+ */
+Option<U> findMap<T,U>(Iter<T> source, Option<U> fn(T) callback) {
+    while (true) {
+        Option<T> item = source.next();
+        if (item.isNone()) {
+            return Option<U>::None;
+        }
+        Option<U> result = callback(item.unwrap());
+        if (result.isValue()) {
+            return result;
+        }
+    }
+    std::lang::panic("迭代器消费循环意外结束");
+}
+
+
+/**
+ * @brief sameItems 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param left 左侧来源。
+ * @param right 右侧来源。
+ * @return 操作结果。
+ */
+bool sameItems<T>(Iter<T> left, Iter<T> right) {
+    while (true) {
+        Option<T> a = left.next();
+        Option<T> b = right.next();
+        if (a.isNone() || b.isNone()) {
+            return a.isNone() && b.isNone();
+        }
+        if (!(a.unwrap() == b.unwrap())) {
+            return false;
+        }
+    }
+    std::lang::panic("迭代器消费循环意外结束");
+}
+
+
+/** @brief 缓存有限来源，保留来源状态以延长元素引用的有效期。 */
+struct IterBufferState<T> : IterNext<T> {
+    std::lang::List<T> values;
+    std::lang::Any anchor;
+    int64 position;
+    /** @brief 读取下一项。 @return 下一项，耗尽返回 None。 */
+    Option<T> next() {
+        if (self.position >= self.values.len()) { return Option<T>::None; }
+        T value = self.values[self.position]; self.position = self.position + 1;
+        return Option<T>::Value(value);
+    }
+    /** @brief 返回剩余数量。 @return 相等的下界与上界。 */
+    (int64,Option<int64>) sizeHint() {
+        int64 remaining = self.values.len() - self.position;
+        return (remaining,Option<int64>::Value(remaining));
+    }
+};
+
+/**
+ * @brief rev 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @return 操作结果。
+ */
+Iter<T> rev<T>(Iter<T> source) {
+    std::lang::List<T> values = collect<T>(source);
+    IterBufferState<T> state;
+    state.anchor = source.state;
+    {
+        int64 i = values.len();
+        while (i > 0) {
+
+        state.values.push(values[i - 1]);
+    
+            i = i - 1;
+        }
+    }
+    return fromState<T,IterBufferState<T> >(state);
+}
+
+
+/**
+ * @brief peekingTakeWhile 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param predicate 元素筛选条件。
+ * @return 操作结果。
+ */
+(Iter<T>,Iter<T>) peekingTakeWhile<T>(Iter<T> source, bool fn(T) predicate) {
+    std::lang::List<T> first;
+    while (true) {
+        Option<T> item = source.peek();
+        if (item.isNone() || !predicate(item.unwrap())) {
+            break;
+        }
+        first.push(source.next().unwrap());
+    }
+    IterBufferState<T> prefix; prefix.values = first; prefix.anchor = source.state;
+    return (fromState<T,IterBufferState<T> >(prefix), source);
+}
+
+
+/**
+ * @brief count 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @return 操作结果。
+ */
+int64 countIter<T>(Iter<T> mut& source) {
+    return source.count();
+}
+
+
+/**
+ * @brief nth 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param index 从零开始的下标。
+ * @return 操作结果。
+ */
+Option<T> nth<T>(Iter<T> mut& source, int64 index) {
+    return source.nth(index);
+}
+
+
+/**
+ * @brief last 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @return 操作结果。
+ */
+Option<T> last<T>(Iter<T> mut& source) {
+    return source.last();
+}
+
+
+/**
+ * @brief all 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param predicate 元素筛选条件。
+ * @return 操作结果。
+ */
+bool all<T>(Iter<T> mut& source, bool fn(T) predicate) {
+    return source.all(predicate);
+}
+
+
+/**
+ * @brief any 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param predicate 元素筛选条件。
+ * @return 操作结果。
+ */
+bool any<T>(Iter<T> mut& source, bool fn(T) predicate) {
+    return source.any(predicate);
+}
+
+
+/**
+ * @brief find 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param predicate 元素筛选条件。
+ * @return 操作结果。
+ */
+Option<T> find<T>(Iter<T> mut& source, bool fn(T) predicate) {
+    return source.find(predicate);
+}
+
+
+/**
+ * @brief forEach 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @param action 元素处理函数。
+ * @return 无返回值。
+ */
+void forEach<T>(Iter<T> mut& source, void fn(T) action) {
+    source.forEach(action);
+}
+
+
+/**
+ * @brief listIntoIter 迭代操作，保持 ChaLi 值复制和作用域清理。
+ * @param source 来源游标、容器或连续存储。
+ * @return 操作结果。
+ */
+Iter<T> listIntoIter<T>(std::lang::List<T> mut& source) {
+    IterListState<T> state;
+    state.values = __iterTakeList<T>(source);
+    return fromState<T,IterListState<T> >(state);
+}
+
+
+/**
+ * @brief 将 std::lang::range 转为独立有状态游标。
+ * @param source 来源游标、容器或连续存储。
+ * @return 操作结果。
+ */
+Iter<int64> fromRange(std::lang::__Range source) {
+    return range(source.start, source.stop, source.step);
+}
+
+
+/**
+ * @brief 编译器绑定的引用租约操作，引用单元由租约自动管理。
+ * @param source 来源游标、容器或连续存储。
+ * @return 操作结果。
+ */
+std::lang::Any __iterLease<T>(std::lang::List<T> const& source);
+
+/**
+ * @brief __iterLeaseLen 迭代操作。
+ * @param lease 拥有源存储的租约。
+ * @return 操作结果。
+ */
+int64 __iterLeaseLen(std::lang::Any lease);
+
+/**
+ * @brief __iterConstRef 迭代操作。
+ * @param lease 拥有源存储的租约。
+ * @param position 当前元素下标。
+ * @return 操作结果。
+ */
+T const& __iterConstRef<T>(std::lang::Any lease, int64 position);
+
+/**
+ * @brief __iterMutRef 迭代操作。
+ * @param lease 拥有源存储的租约。
+ * @param position 当前元素下标。
+ * @return 操作结果。
+ */
+T mut& __iterMutRef<T>(std::lang::Any lease, int64 position);
+struct IterConstListState<T> : IterNext<T const&> {
+    std::lang::Any lease;
+    int64 position;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<T const&> next() {
+        if (self.position >= __iterLeaseLen(self.lease)) {
+            return Option<T const&>::None;
+        }
+        T const& value = __iterConstRef<T>(self.lease, self.position);
+        self.position = self.position + 1;
+        return Option<T const&>::Value(&value);
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        int64 remaining = __iterLeaseLen(self.lease) - self.position;
+        return (remaining, Option<int64>::Value(remaining));
+    }
+};
+struct IterMutListState<T> : IterNext<T mut&> {
+    std::lang::Any lease;
+    int64 position;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<T mut&> next() {
+        if (self.position >= __iterLeaseLen(self.lease)) {
+            return Option<T mut&>::None;
+        }
+        T mut& value = __iterMutRef<T>(self.lease, self.position);
+        self.position = self.position + 1;
+        return Option<T mut&>::Value(&value);
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        int64 remaining = __iterLeaseLen(self.lease) - self.position;
+        return (remaining, Option<int64>::Value(remaining));
+    }
+};
+
+
+/**
+ * @brief 借用列表，不复制元素，next 返回只读引用。
+ * @param source 来源游标、容器或连续存储。
+ * @return 操作结果。
+ */
+Iter<T const&> listIter<T>(std::lang::List<T> const& source) {
+    IterConstListState<T> state;
+    state.lease = __iterLease<T>(source);
+    return fromState<T const&,IterConstListState<T> >(state);
+}
+
+
+/**
+ * @brief 借用可写列表，next 返回可写引用。
+ * @param source 来源游标、容器或连续存储。
+ * @return 操作结果。
+ */
+Iter<T mut&> listIterMut<T>(std::lang::List<T> mut& source) {
+    IterMutListState<T> state;
+    state.lease = __iterLease<T>(source);
+    return fromState<T mut&,IterMutListState<T> >(state);
+}
+
+
+/**
+ * @brief 将容器存储交给迭代器，来源立即替换为空容器。
+ * @param source 来源游标、容器或连续存储。
+ * @return 操作结果。
+ */
+std::lang::List<T> __iterTakeList<T>(std::lang::List<T> mut& source);
+
+/**
+ * @brief __iterTakeSet 迭代操作。
+ * @param source 来源游标、容器或连续存储。
+ * @return 操作结果。
+ */
+std::lang::Set<T> __iterTakeSet<T>(std::lang::Set<T> mut& source);
+
+/**
+ * @brief __iterTakeMap 迭代操作。
+ * @param source 来源游标、容器或连续存储。
+ * @return 操作结果。
+ */
+std::lang::Map<K,V> __iterTakeMap<K,V>(std::lang::Map<K,V> mut& source);
+
+/**
+ * @brief setIntoIter 迭代操作。
+ * @param source 来源游标、容器或连续存储。
+ * @return 操作结果。
+ */
+Iter<T> setIntoIter<T>(std::lang::Set<T> mut& source) {
+    std::lang::Set<T> owned = __iterTakeSet<T>(source);
+    IterListState<T> state;
+    {
+        int64 i = 0;
+        while (i < owned.len()) {
+
+        state.values.push(owned.at(i));
+    
+            i = i + 1;
+        }
+    }
+    return fromState<T,IterListState<T> >(state);
+}
+
+/**
+ * @brief 借用集合建立迭代器：把元素快照进迭代器状态，来源集合保持不变。
+ * @param source 来源集合，只读借用。
+ * @return 独立有状态的元素迭代器；迭代器本身仍是一次性消费。
+ */
+Iter<T> setIter<T>(std::lang::Set<T> const& source) {
+    IterListState<T> state;
+    {
+        int64 i = 0;
+        while (i < source.len()) {
+
+        state.values.push(source.at(i));
+    
+            i = i + 1;
+        }
+    }
+    return fromState<T,IterListState<T> >(state);
+}
+
+/**
+ * @brief mapIntoIter 迭代操作。
+ * @param source 来源游标、容器或连续存储。
+ * @return 操作结果。
+ */
+Iter<Pair<K,V>> mapIntoIter<K,V>(std::lang::Map<K,V> mut& source) {
+    std::lang::Map<K,V> owned = __iterTakeMap<K,V>(source);
+    IterListState<Pair<K,V>> state;
+    {
+        int64 i = 0;
+        while (i < owned.len()) {
+
+        state.values.push(Pair<K,V>::create(owned.keyAt(i), owned.valAt(i)));
+    
+            i = i + 1;
+        }
+    }
+    return fromState<Pair<K,V>,IterListState<Pair<K,V>> >(state);
+}
+
+/**
+ * @brief 借用映射建立迭代器：把 Pair<K,V> 键值对快照进迭代器状态，来源映射保持不变。
+ * @param source 来源映射，只读借用。
+ * @return 独立有状态的 Pair<K,V> 迭代器；迭代器本身仍是一次性消费。
+ */
+Iter<Pair<K,V>> mapIter<K,V>(std::lang::Map<K,V> const& source) {
+    IterListState<Pair<K,V>> state;
+    {
+        int64 i = 0;
+        while (i < source.len()) {
+
+        state.values.push(Pair<K,V>::create(source.keyAt(i), source.valAt(i)));
+    
+            i = i + 1;
+        }
+    }
+    return fromState<Pair<K,V>,IterListState<Pair<K,V>> >(state);
+}
+
+/** @brief 读取数组或 Span 的只读引用，来源必须覆盖游标生命周期。 */
+struct IterSpanState<T> : IterNext<T const&> {
+    T const& source;
+    int64 length;
+    int64 position;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<T const&> next() {
+        if (self.position >= self.length) {
+            return Option<T const&>::None;
+        }
+        T const& value = &std::lang::index(self.source, self.position);
+        self.position = self.position + 1;
+        return Option<T const&>::Value(&value);
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        int64 left = self.length - self.position;
+        return (left, Option<int64>::Value(left));
+    }
+};
+
+/**
+ * @brief fromSpan 迭代操作。
+ * @param source 来源游标、容器或连续存储。
+ * @param length 连续存储的有效元素数量。
+ * @return 操作结果。
+ */
+Iter<T const&> fromSpan<T>(T const& source, int64 length) {
+    std::lang::assert(length >= 0, "迭代器长度不能为负数");
+    IterSpanState<T> state;
+    state.source = &source;
+    state.length = length;
+    return fromState<T const&,IterSpanState<T> >(state);
+}
+
+/** @brief 按 ChaLi 字符模型遍历字符串字节，持有独立字符串副本。 */
+struct IterCharsState : IterNext<char> {
+    std::lang::String source;
+    int64 position;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<char> next() {
+        if (self.position >= std::lang::len(self.source)) {
+            return Option<char>::None;
+        }
+        char value = self.source[self.position];
+        self.position = self.position + 1;
+        return Option<char>::Value(value);
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        int64 left = std::lang::len(self.source) - self.position;
+        return (left, Option<int64>::Value(left));
+    }
+};
+
+/**
+ * @brief chars 迭代操作。
+ * @param source 来源游标、容器或连续存储。
+ * @return 操作结果。
+ */
+Iter<char> chars(std::lang::String source) {
+    IterCharsState state;
+    state.source = source;
+    return fromState<char,IterCharsState>(state);
+}
+
+/** @brief 惰性无限重复一个值，可配合 take 创建有限输出。 */
+struct IterRepeatState<T> : IterNext<T> {
+    T value;
+    /**
+     * @brief next 迭代操作。
+     * @return 下一项；耗尽时返回 None。
+     */
+    Option<T> next() {
+        return Option<T>::Value(self.value);
+    }
+    /**
+     * @brief sizeHint 迭代操作。
+     * @return 操作结果。
+     */
+    (int64, Option<int64>) sizeHint() {
+        return (0, Option<int64>::None);
+    }
+};
+
+/**
+ * @brief repeat 迭代操作。
+ * @param value 元素值。
+ * @return 操作结果。
+ */
+Iter<T> repeat<T>(T value) {
+    IterRepeatState<T> state;
+    state.value = value;
+    return fromState<T,IterRepeatState<T> >(state);
+}
+
+
+/**
+ * @brief 复制状态结构体到迭代器专有存储，不保存局部地址。
+ * @param state 初始状态值。
+ * @return 操作结果。
+ */
+std::lang::Any __iterBox<S>(S state);

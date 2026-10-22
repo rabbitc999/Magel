@@ -12,12 +12,12 @@ from parallel_gates import default_jobs, positive_jobs, run_tasks
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULES = {
-    "language": ["magel_entry_signature", "magel_function_types", "magel_lambdas", "magel_ast_macros", "magel_macro_branches", "magel_macro_groups", "magel_macro_generics"],
-    "borrow": ["magel_borrow_flow", "magel_analysis_diagnostics", "magel_reference_values"],
-    "memory": ["magel_memory_guard", "magel_resource_lifetime", "magel_watchdog"],
-    "generics": ["magel_generic_monomorphization", "magel_language_move", "magel_tuple_returns"],
+    "language": ["chali_entry_signature", "chali_function_types", "chali_lambdas", "chali_ast_macros", "chali_macro_branches", "chali_macro_groups", "chali_macro_generics"],
+    "borrow": ["chali_borrow_flow", "chali_analysis_diagnostics", "chali_reference_values"],
+    "memory": ["chali_memory_guard", "chali_resource_lifetime", "chali_watchdog"],
+    "generics": ["chali_generic_monomorphization", "chali_language_move", "chali_tuple_returns"],
     "samples": [],
-    "tools": ["magel_tool", "magel_package", "magel_map_pair_iterator", "magel_generic_constructors"],
+    "tools": ["chali_tool", "chali_package", "chali_map_pair_iterator", "chali_generic_constructors"],
 }
 
 
@@ -25,7 +25,7 @@ def main():
     """运行指定模块，逐项保存日志与结果，失败时返回非零状态。"""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("modules", nargs="+", choices=[*MODULES, "docs"])
-    parser.add_argument("--magel", type=Path, default=ROOT / ("magel.exe" if os.name == "nt" else "magel"))
+    parser.add_argument("--chali", type=Path, default=ROOT / ("ChaLi.exe" if os.name == "nt" else "chali"))
     parser.add_argument("--random-recheck", type=int, default=0, help="从已通过门禁抽样复测的次数")
     parser.add_argument("--seed", type=int, default=20261013)
     parser.add_argument("--jobs", type=positive_jobs, default=None, help="并行工作数，默认最多四个；1 为串行")
@@ -44,14 +44,14 @@ def main():
         if module == "samples":
             commands["samples"] = ["sh", "check.sh"]
         elif module == "docs":
-            for script, flags in (("check_doc_links", []), ("export_magel_ebnf", ["--check"]),
+            for script, flags in (("check_doc_links", []), ("export_chali_ebnf", ["--check"]),
                                   ("library_reference", ["--check"])):
                 commands[script] = [sys.executable, str(ROOT / "tools" / (script + ".py")), *flags]
         else:
             for script in MODULES[module]:
                 commands[script] = [sys.executable, str(ROOT / "tests" / (script + ".py")),
-                                    "--magel", str(args.magel.resolve())]
-    environment = dict(DEMO=args.magel.resolve().as_posix())
+                                    "--chali", str(args.chali.resolve())]
+    environment = dict(DEMO=args.chali.resolve().as_posix())
     tasks = [dict(title=name, name=name, command=command, recheck=False)
              for name, command in commands.items()]
     results = run_tasks(tasks, output, jobs, ROOT, environment, dict(seed=args.seed))

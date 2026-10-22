@@ -10,6 +10,6 @@ field sorting) and `search`, plus validation of id, name, class, age and score, 
 the error paths for malformed JSON, unknown sort fields, bad sort directions and
 missing ids.
 
-Run the source with `magel main.mgl DATABASE COMMAND [ARGS]`. Commands: `add JSON`,
+Run the source with `chali main.chl DATABASE COMMAND [ARGS]`. Commands: `add JSON`,
 `update JSON`, `get ID`, `delete ID`, `list [FIELD [asc|desc]]`, `search NAME`,
 `schema`. Record fields: `id`, `name`, `age`, `className`, `score`.

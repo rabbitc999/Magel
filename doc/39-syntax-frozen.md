@@ -1,8 +1,8 @@
 # 39 语法冻结清单
 
 本页列**已经冻住、可以依赖**的源码写法，以及改语法时必须一起动的地方。
-权威定义始终是 [`source/magel.gram`](../source/magel.gram) 与词法声明
-[`source/magel_token.gram`](../source/magel_token.gram)；语义规则见[语义契约与兼容边界](21-semantics-frozen.md)，
+权威定义始终是 [`source/chali.gram`](../source/chali.gram) 与词法声明
+[`source/chali_token.gram`](../source/chali_token.gram)；语义规则见[语义契约与兼容边界](21-semantics-frozen.md)，
 逐条 EBNF 见[语法参考](14-grammar-ebnf.md)。三者冲突时以文法文件为准，本页只做冻结范围的索引与验收清单。
 
 ## 1 "冻结"指什么
@@ -10,7 +10,7 @@
 - **冻结**：已写进文法、样例、书稿与语言参考的写法，形状与含义不再变。已有程序不用改写就能继续编译；
   新增能力只能加在未被占用的位置（新关键字、新后缀、新指令），不重新解释已有 token。
 - **不冻结**：诊断文案与列号细节（只保证码值与位置）、内部节点名与四元式文本、生成器内部临时名
-  （`__temp_t<n>`、`__magel_*`）、宏展开后的内部名字、优化后的指令序列。依赖这些的输出随时可能变。
+  （`__temp_t<n>`、`__chali_*`）、宏展开后的内部名字、优化后的指令序列。依赖这些的输出随时可能变。
 - **分工**：本页管"字怎么拼、结构长什么样"；[21 语义契约](21-semantics-frozen.md) 管"值怎么流、什么时候释放"。
 
 ## 2 词法层
@@ -25,12 +25,12 @@
 | 字符串 / 字符 | `"..."`（支持转义）、`'x'`；`f"..."` 在词法期归一化为插值标记 | `STRING` `CHRLIT` `FSTRING` |
 | 泛型实参边界 | 源码写 `List<int64>`，词法期由归一化层改写成内部标记 `@<` `@>`；原始 `<` `>` 始终是比较 | `TYPE_ARGS_BEGIN` / `TYPE_ARGS_END` |
 
-内部标记（`@annotation`、`@!macrobody`、`@!macroparse_*`、`@!<`、`__magel_fstring`、`__typeTag`）
+内部标记（`@annotation`、`@!macrobody`、`@!macroparse_*`、`@!<`、`__chali_fstring`、`__typeTag`）
 由预处理与归一化层产生，**不是**用户可以书写的语法。
 
 ## 3 关键字冻结表
 
-关键字逐个登记为 `%token 名字 "字面量"`，共四组同步维护（文法、原生语言服务、`mageldev` 补全、VS Code 高亮）。
+关键字逐个登记为 `%token 名字 "字面量"`，共四组同步维护（文法、原生语言服务、`chalidev` 补全、VS Code 高亮）。
 
 | 组 | 词 |
 | --- | --- |
@@ -114,16 +114,16 @@
 
 按顺序做完，缺一项门禁就会红：
 
-1. 改 `source/magel_token.gram`（词法）或 `source/magel.gram`（产生式），语义动作只调用语义层。
+1. 改 `source/chali_token.gram`（词法）或 `source/chali.gram`（产生式），语义动作只调用语义层。
 2. 重新生成解析器并重建编译器：
    ```sh
    ENGINE=/g/Desktop/ParseEngine/build/bin/ParseEngine.exe sh gen.sh
    make -j4
    ```
-   只改 `magel_semantics.cpp` 而跳过 `gen.sh`，用的仍是旧解析器快照，改动不生效。
-3. 重建 EBNF 附录：`python tools/export_magel_ebnf.py`（`--check` 只比对）。
-4. 关键字四路同步：`python tools/check_keywords.py`（文法、原生语言服务、`mageldev` 补全、VS Code 高亮）。
-5. 编辑器侧：`vscode/syntaxes/magel.tmLanguage.json`、`vscode/src/macros.js`、语言服务的悬停与诊断。
+   只改 `chali_semantics.cpp` 而跳过 `gen.sh`，用的仍是旧解析器快照，改动不生效。
+3. 重建 EBNF 附录：`python tools/export_chali_ebnf.py`（`--check` 只比对）。
+4. 关键字四路同步：`python tools/check_keywords.py`（文法、原生语言服务、`chalidev` 补全、VS Code 高亮）。
+5. 编辑器侧：`vscode/syntaxes/chali.tmLanguage.json`、`vscode/src/macros.js`、语言服务的悬停与诊断。
 6. 样例与期望：`example/samples/`、`example/samples-error/` 及对应 `expected/`、`expected-error/`；
    关键字长度变化会移动诊断列号，期望文件要按实际输出更新。
 7. 文档：本页与[语言参考](04-language-reference.md)、[语法参考](14-grammar-ebnf.md)、书稿对应章节、
@@ -133,7 +133,7 @@
 ## 8 核对命令
 
 ```sh
-python tools/export_magel_ebnf.py --check   # EBNF 附录与文法一致
+python tools/export_chali_ebnf.py --check   # EBNF 附录与文法一致
 python tools/check_keywords.py              # 关键字四处一致
 python tools/check_doc_links.py             # 文档相对链接完整
 python tools/changelog.py --check           # CHANGELOG 与 JSON / VERSION 对齐

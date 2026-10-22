@@ -1,10 +1,10 @@
-# magel/library/template —— 纯头文件模板引擎（`tmpl`）
+# chali/library/template —— 纯头文件模板引擎（`tmpl`）
 
-本副本使用 Magel 显式内存池分配器，不提供逐次 malloc/free 后备模式。
+本副本使用 ChaLi 显式内存池分配器，不提供逐次 malloc/free 后备模式。
 
 给 C++17 项目用的轻量文本模板引擎：`{{ 变量 }}` / `{% if %}` / `{% for %}` /
 `{% include %}` / `{% raw %}` / `{# 注释 #}`，**纯头文件**，不依赖
-`library/json`，容器与字符串统一接入 `../allocator/magel_allocator.hpp`。
+`library/json`，容器与字符串统一接入 `../allocator/chali_allocator.hpp`。
 
 适合这些场景：快速拼一段 DSL、生成代码 / 配置 / 报告文本、把"模型类 → 文本"
 的那一步从手写 `<<` 拼串里拿出来。
@@ -128,15 +128,15 @@ std::cout << tmpl::render("{% include \"whole\" %}", model, snippets);
 ## 构建与自检
 
 ```sh
-make -C magel/library/template          # 编译 demo + 自检，并各跑一遍
-make -C magel/library/template check    # 同上
-make -C magel/library/template clean
+make -C chali/library/template          # 编译 demo + 自检，并各跑一遍
+make -C chali/library/template check    # 同上
+make -C chali/library/template clean
 ```
 
 或者用 CMake：
 
 ```sh
-cmake -S magel/library/template -B build/template
+cmake -S chali/library/template -B build/template
 cmake --build build/template
 ctest --test-dir build/template --output-on-failure
 ```
@@ -166,4 +166,4 @@ include 了 `library/template/engine.hpp`（`-Ilibrary` 提供的搜索路径）
   `__占位符__` + `replaceAll`——那批还没迁。
 
 这个库同时是给**用户**用的：想在别的项目里快速拼一段 DSL、生成配置或报告文本，
-直接把 `include` 路径指到 `magel/library/template/` 即可，不用拉别的依赖。
+直接把 `include` 路径指到 `chali/library/template/` 即可，不用拉别的依赖。

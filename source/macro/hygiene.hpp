@@ -1,11 +1,11 @@
-#ifndef MAGEL_MACRO_HYGIENE_HPP
-#define MAGEL_MACRO_HYGIENE_HPP
+#ifndef CHALI_MACRO_HYGIENE_HPP
+#define CHALI_MACRO_HYGIENE_HPP
 
 #include <cstdint>
 #include <memory>
 #include <string_view>
 
-namespace magel_macro
+namespace chali_macro
 {
 /**
  * @brief 卫生名字的稳定绑定身份，零表示尚未解析到声明。
@@ -81,5 +81,5 @@ private:
     struct Impl;
     std::unique_ptr<Impl> impl_;
 };
-}  // namespace magel_macro
+}  // namespace chali_macro
 #endif

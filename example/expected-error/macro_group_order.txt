@@ -1,1 +1,1 @@
-magel: example/samples-error/macro_group_order.mgl 第 4 行第 15 列：宏调用的参数组与定义不一致：APPLY
+chali: example/samples-error/macro_group_order.chl 第 4 行第 15 列：宏调用的参数组与定义不一致：APPLY

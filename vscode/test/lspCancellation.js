@@ -9,7 +9,7 @@ async function main() {
   const client = new LspClient('unused');
   client.process = { exitCode: null }; client.stopped = false;
   const sent = []; client._send = message => sent.push(message);
-  const params = { textDocument: { uri: 'file:///sample.mgl' } };
+  const params = { textDocument: { uri: 'file:///sample.chl' } };
   const first = client.request('textDocument/hover', params);
   const hoverId = sent.at(-1).id;
   const completion = client.request('textDocument/completion', params);

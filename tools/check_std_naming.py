@@ -11,7 +11,7 @@ DUNDER = re.compile(r'^[ \t]*(inline[ \t]+)?[A-Za-z_][\w \t:<>,]*?(__\w+)[ \t]*\
 def non_inline_bodies():
     """收集顶层带函数体却没有 `inline` 的 `__` 函数：它们在语言层面仍是可跨模块调用的。"""
     errors = []
-    for path in sorted((ROOT / 'source/std').glob('*.mgl')):
+    for path in sorted((ROOT / 'source/std').glob('*.chl')):
         text = path.read_text(encoding='utf-8')
         for match in DUNDER.finditer(text):
             line_start = text.rfind('\n', 0, match.start()) + 1

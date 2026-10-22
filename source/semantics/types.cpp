@@ -665,9 +665,9 @@ bool HasImplicitConversion(const std::shared_ptr<MType> &source,
 
 /* 内存内建 `memcpy` / `memset` 用到哪几个（用到才生成运行时小函数）。
  * `new` / `drop` 现在是语言关键字（走虚拟机的堆），不再是函数式内建。 */
-/* 运行时数组用到才生成 `__magel_new_array`。 */
+/* 运行时数组用到才生成 `__chali_new_array`。 */
 bool g_usesNewArray = false;
-/* 结构体按值拷贝用到才生成 `__magel_copy_struct`。 */
+/* 结构体按值拷贝用到才生成 `__chali_copy_struct`。 */
 bool g_usesStructCopy = false;
 
 /**

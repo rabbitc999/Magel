@@ -1,11 +1,11 @@
-#ifndef MAGEL_MACRO_REGEX_MATCHER_HPP
-#define MAGEL_MACRO_REGEX_MATCHER_HPP
+#ifndef CHALI_MACRO_REGEX_MATCHER_HPP
+#define CHALI_MACRO_REGEX_MATCHER_HPP
 
 #include <memory>
 #include <string>
 #include <string_view>
 
-namespace magel_macro
+namespace chali_macro
 {
 /**
  * @brief 编译期正则检查结果，区分普通不匹配和无效模式。
@@ -64,5 +64,5 @@ private:
     struct Impl;
     std::unique_ptr<Impl> impl_;
 };
-}  // namespace magel_macro
+}  // namespace chali_macro
 #endif

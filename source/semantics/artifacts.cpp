@@ -74,10 +74,10 @@ Memory::String CxxStringLiteral(const Memory::String &value)
 Memory::String CAbiBindingType(const std::shared_ptr<MType> &type)
 {
     if (const auto reference = CAbiOptionalReference(type))
-        return Memory::String("magel_glue::detail::CAbiOptionalReference<") + (reference->readOnly ? "const " : "") + CAbiType(reference->elem) + ">";
+        return Memory::String("chali_glue::detail::CAbiOptionalReference<") + (reference->readOnly ? "const " : "") + CAbiType(reference->elem) + ">";
     if (type && type->kind == MType::Func)
     {
-        Memory::String result = "magel_glue::detail::CAbiCallback<" + CAbiType(type->elem) + "(";
+        Memory::String result = "chali_glue::detail::CAbiCallback<" + CAbiType(type->elem) + "(";
         for (std::size_t i = 0; i < type->paramTypes.size(); ++i)
         {
             if (i) result += ",";
@@ -87,7 +87,7 @@ Memory::String CAbiBindingType(const std::shared_ptr<MType> &type)
     }
     const auto underlying = CAbiUnderlying(type);
     if (underlying && underlying->kind == MType::Array)
-        return "magel_glue::detail::CAbiArray<" + CAbiType(underlying->elem) + ">";
+        return "chali_glue::detail::CAbiArray<" + CAbiType(underlying->elem) + ">";
     return CAbiType(type);
 }
 
@@ -127,7 +127,7 @@ Memory::String AbiGlueSource()
             definitions += "    " + CAbiType(definition.fields[i].type) + " f" + Memory::toString(i) + ";\n";
         definitions += "};\n";
         if (definition.abiPacked) definitions += "#pragma pack(pop)\n";
-        definitions += "namespace magel_glue { namespace detail {\n";
+        definitions += "namespace chali_glue { namespace detail {\n";
         definitions += "template <> struct CAbiStorage<" + name + "> {\nstatic constexpr std::size_t slots = " + Memory::toString(definition.slotCount) + ";\n";
         definitions += "static " + name + " read(Context &c, std::int64_t a) { " + name + " v{};\n";
         for (std::size_t i = 0; i < definition.fields.size(); ++i)
@@ -151,12 +151,12 @@ Memory::String AbiGlueSource()
             emitType(function->signature.result);
             for (const auto &param : function->signature.params) emitType(param.type);
         }
-    Memory::String source = "bool bindMagelAbi(magel_glue::Registry &registry, Memory::String *error) {\n";
+    Memory::String source = "bool bindChaLiAbi(chali_glue::Registry &registry, Memory::String *error) {\n";
     std::size_t index = 0;
     for (const auto &library : libraries)
     {
         const Memory::String local = "abi_library_" + Memory::toString(index++);
-        source += "    magel_glue::DynamicLibrary " + local + ";\n";
+        source += "    chali_glue::DynamicLibrary " + local + ";\n";
         source += "    if (!" + local + ".open(" + CxxStringLiteral(library.first) + ", error)) return false;\n";
         for (const MFunctionDecl *function : library.second)
         {
@@ -185,7 +185,7 @@ Memory::String AbiGlueSource()
  * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
  */
 template <typename Result, typename... Args>
-bool BindRuntimeAbiScalar(const magel_glue::DynamicLibrary &library, magel_glue::Registry &registry,
+bool BindRuntimeAbiScalar(const chali_glue::DynamicLibrary &library, chali_glue::Registry &registry,
                           const MFunctionDecl &function, std::size_t index, Memory::String *error)
 {
     if (index == function.signature.params.size())
@@ -237,7 +237,7 @@ struct RuntimeAbiBlock
  * @param value 待转换、保存或参与计算的值。
  * @param out 接收处理结果的输出对象。
  */
-void RuntimeAbiScalar(const MType &type, const magel_glue::Value &value, char *out)
+void RuntimeAbiScalar(const MType &type, const chali_glue::Value &value, char *out)
 {
     if (type.kind == MType::Double)
     {
@@ -281,9 +281,9 @@ void RuntimeAbiScalar(const MType &type, const magel_glue::Value &value, char *o
  * @param input 程序输入或待解码的字节流。
  * @retval 对应对象的指针。
  */
-magel_glue::Value RuntimeAbiScalarValue(const MType &type, const char *input)
+chali_glue::Value RuntimeAbiScalarValue(const MType &type, const char *input)
 {
-    using Value = magel_glue::Value;
+    using Value = chali_glue::Value;
     if (type.kind == MType::Double)
     {
         if (type.bits == 32)
@@ -327,7 +327,7 @@ magel_glue::Value RuntimeAbiScalarValue(const MType &type, const char *input)
  */
 struct RuntimeAbiCallback
 {
-    magel_glue::Context *context;
+    chali_glue::Context *context;
     std::int64_t function;
     std::shared_ptr<RuntimeAbiType> type;
     std::exception_ptr error;
@@ -344,10 +344,10 @@ void DispatchRuntimeAbiCallback(void *user, void *result, void **arguments) noex
     if (state.error) return;
     try
     {
-        Memory::Vector<magel_glue::Value> values;
+        Memory::Vector<chali_glue::Value> values;
         for (std::size_t i = 0; i < state.type->callbackArgs.size(); ++i)
             values.push_back(RuntimeAbiScalarValue(*state.type->callbackArgs[i]->type, static_cast<const char *>(arguments[i])));
-        magel_glue::Value value;
+        chali_glue::Value value;
         if (!state.context->invoke(state.function, values, value)) throw std::runtime_error("ABI callback invocation failed");
         if (state.type->callbackResult->type->kind != MType::Void)
             RuntimeAbiScalar(*state.type->callbackResult->type, value, static_cast<char *>(result));
@@ -361,7 +361,7 @@ void DispatchRuntimeAbiCallback(void *user, void *result, void **arguments) noex
  * @param address 运行时内存地址。
  * @param out 接收处理结果的输出对象。
  */
-void RuntimeAbiRead(const RuntimeAbiType &type, magel_glue::Context &context, std::int64_t address, char *out)
+void RuntimeAbiRead(const RuntimeAbiType &type, chali_glue::Context &context, std::int64_t address, char *out)
 {
     if (type.type->kind == MType::Struct)
     {
@@ -373,12 +373,12 @@ void RuntimeAbiRead(const RuntimeAbiType &type, magel_glue::Context &context, st
         std::int64_t raw;
         if (!context.readBytes(address, reinterpret_cast<char *>(&raw), 8))
             throw std::runtime_error("ABI read outside VM storage");
-        magel_glue::Value value = magel_glue::Value::fromInt(raw);
+        chali_glue::Value value = chali_glue::Value::fromInt(raw);
         if (type.type->kind == MType::Double)
         {
             double v;
             std::memcpy(&v, &raw, 8);
-            value = magel_glue::Value::fromFloat(v);
+            value = chali_glue::Value::fromFloat(v);
         }
         RuntimeAbiScalar(*type.type, value, out);
     }
@@ -390,7 +390,7 @@ void RuntimeAbiRead(const RuntimeAbiType &type, magel_glue::Context &context, st
  * @param address 运行时内存地址。
  * @param input 程序输入或待解码的字节流。
  */
-void RuntimeAbiWrite(const RuntimeAbiType &type, magel_glue::Context &context, std::int64_t address, const char *input)
+void RuntimeAbiWrite(const RuntimeAbiType &type, chali_glue::Context &context, std::int64_t address, const char *input)
 {
     if (type.type->kind == MType::Struct)
     {
@@ -414,7 +414,7 @@ void RuntimeAbiWrite(const RuntimeAbiType &type, magel_glue::Context &context, s
 struct RuntimeAbiBridge
 {
     std::filesystem::path directory;
-    magel_glue::DynamicLibrary library;
+    chali_glue::DynamicLibrary library;
     /**
      * @brief 释放运行时 ABI 桥接持有的动态资源。
      */
@@ -528,14 +528,14 @@ Memory::String AbiCacheKey(const Memory::String &identity)
  * @param registry 接收函数绑定的宿主注册表。
  * @retval 满足检查条件或操作完成时为 true，检查失败或无法完成时为 false。
  */
-bool BindRuntimeAbi(magel_glue::Registry *registry)
+bool BindRuntimeAbi(chali_glue::Registry *registry)
 {
     using Type = std::shared_ptr<RuntimeAbiType>;
     Memory::Vector<const MFunctionDecl *> functions;
     for (const auto &function : g_functionDecls)
         if (!function.abiLibrary.empty() && !function.superseded) functions.push_back(&function);
     if (functions.empty()) return true;
-    const bool scalarOnly = !g_abiPrepareOnly && g_abiWriteOption.empty() && g_abiBridgeOption.empty() && !std::getenv("MAGEL_ABI_WRITE_BRIDGE") && !std::getenv("MAGEL_ABI_BRIDGE") && std::all_of(functions.begin(), functions.end(), [](const MFunctionDecl *f) {
+    const bool scalarOnly = !g_abiPrepareOnly && g_abiWriteOption.empty() && g_abiBridgeOption.empty() && !std::getenv("CHALI_ABI_WRITE_BRIDGE") && !std::getenv("CHALI_ABI_BRIDGE") && std::all_of(functions.begin(), functions.end(), [](const MFunctionDecl *f) {
         if (!f->abiRelease.empty()) return false;
         const auto result = CAbiType(f->signature.result);
         if (result != "void" && result != "std::int32_t" && result != "double" && result != "const char *") return false;
@@ -550,7 +550,7 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
     {
         for (const auto *function : functions)
         {
-            magel_glue::DynamicLibrary native;
+            chali_glue::DynamicLibrary native;
             Memory::String error;
             if (!native.open(function->abiLibrary, &error)) return Fail(error);
             const auto result = CAbiType(function->signature.result);
@@ -660,11 +660,11 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
             if (resultType != "void") source += "return result;\n";
             source += "}\n";
         }
-    source += "extern \"C\" API void *magel_abi_callback_set(std::size_t id, void (*dispatch)(void*,void*,void**), void *user) { if(id >= " + Memory::toString(callbackCount) + ") return nullptr; auto old=callbacks[id].user; callbacks[id]={user ? dispatch : nullptr,user}; return old; }\n";
-    source += "extern \"C\" API void *magel_abi_callback_address(std::size_t id) { switch(id) {\n";
+    source += "extern \"C\" API void *chali_abi_callback_set(std::size_t id, void (*dispatch)(void*,void*,void**), void *user) { if(id >= " + Memory::toString(callbackCount) + ") return nullptr; auto old=callbacks[id].user; callbacks[id]={user ? dispatch : nullptr,user}; return old; }\n";
+    source += "extern \"C\" API void *chali_abi_callback_address(std::size_t id) { switch(id) {\n";
     for (std::size_t i = 0; i < callbackCount; ++i) source += "case " + Memory::toString(i) + ": return reinterpret_cast<void*>(&callback_" + Memory::toString(i) + ");\n";
     source += "default: return nullptr; } }\n";
-    source += "extern \"C\" API std::size_t magel_abi_layout(std::size_t type, std::size_t field) { switch(type) {\n";
+    source += "extern \"C\" API std::size_t chali_abi_layout(std::size_t type, std::size_t field) { switch(type) {\n";
     for (const auto &type : types)
     {
         source += "case " + Memory::toString(type->id) + ":\n";
@@ -679,7 +679,7 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
             source += "if (field == " + Memory::toString(i + 1) + ") return offsetof(" + CAbiType(type->type) + ", f" + Memory::toString(i) + ");\n";
         source += "return 0;\n";
     }
-    source += "default: return sizeof(void*); } }\nextern \"C\" API void magel_abi_call(std::size_t id, void *function, void *result, void **args) { switch(id) {\n";
+    source += "default: return sizeof(void*); } }\nextern \"C\" API void chali_abi_call(std::size_t id, void *function, void *result, void **args) { switch(id) {\n";
     for (std::size_t i = 0; i < functions.size(); ++i)
     {
         source += "case " + Memory::toString(i) + ": { using Fn = " + CAbiType(results[i]->type) + " (*)(";
@@ -706,14 +706,14 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
         source += "break; }\n";
     }
     source += "} }\n";
-    const Memory::String identity = Memory::String("magel-abi-v1.0.0-collections-2|") + Memory::toString(sizeof(void *)) + "|" + source;
-    source += "extern \"C\" API const char *magel_abi_identity() { return " + CxxStringLiteral(identity) + "; }\n";
+    const Memory::String identity = Memory::String("chali-abi-v1.0.0-collections-2|") + Memory::toString(sizeof(void *)) + "|" + source;
+    source += "extern \"C\" API const char *chali_abi_identity() { return " + CxxStringLiteral(identity) + "; }\n";
     auto bridge = Memory::makeShared<RuntimeAbiBridge>();
     Memory::String error;
     std::filesystem::path cached;
-    const char *explicitBridge = g_abiBridgeOption.empty() ? std::getenv("MAGEL_ABI_BRIDGE") : g_abiBridgeOption.c_str();
-    const char *cacheRoot = g_abiCacheOption.empty() ? std::getenv("MAGEL_ABI_CACHE_DIR") : g_abiCacheOption.c_str();
-    const char *noCache = std::getenv("MAGEL_ABI_NO_CACHE");
+    const char *explicitBridge = g_abiBridgeOption.empty() ? std::getenv("CHALI_ABI_BRIDGE") : g_abiBridgeOption.c_str();
+    const char *cacheRoot = g_abiCacheOption.empty() ? std::getenv("CHALI_ABI_CACHE_DIR") : g_abiCacheOption.c_str();
+    const char *noCache = std::getenv("CHALI_ABI_NO_CACHE");
     if (explicitBridge && *explicitBridge)
         cached = std::filesystem::u8path(explicitBridge);
     else if (!g_abiNoCache && !(noCache && Memory::String(noCache) == "1"))
@@ -724,7 +724,7 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
         if (cacheRoot && *cacheRoot)
             cached = std::filesystem::u8path(cacheRoot);
         else if (base && *base)
-            cached = std::filesystem::u8path(base) / ".magel" / "abi-cache-v1";
+            cached = std::filesystem::u8path(base) / ".chali" / "abi-cache-v1";
         if (!cached.empty()) cached /= AbiCacheKey(identity) + ".dll";
     }
     bool loaded = false;
@@ -732,7 +732,7 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
     {
         if (bridge->library.open(cached.u8string(), &error))
         {
-            const auto describe = reinterpret_cast<const char *(*)()>(bridge->library.resolve("magel_abi_identity", &error));
+            const auto describe = reinterpret_cast<const char *(*)()>(bridge->library.resolve("chali_abi_identity", &error));
             loaded = describe && describe() && identity == describe();
             if (!loaded) bridge->library.close();
         }
@@ -751,7 +751,7 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
         const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         for (int attempt = 0; attempt < 100; ++attempt)
         {
-            const auto directory = root / ("magel-abi-" + Memory::toString(stamp) + "-" + Memory::toString(attempt));
+            const auto directory = root / ("chali-abi-" + Memory::toString(stamp) + "-" + Memory::toString(attempt));
             if (std::filesystem::create_directory(directory, ec))
             {
                 bridge->directory = directory;
@@ -767,7 +767,7 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
             file << source;
             if (!file) return Fail("abi 调用桥源码写入失败");
         }
-        const char *configured = std::getenv("MAGEL_ABI_CXX");
+        const char *configured = std::getenv("CHALI_ABI_CXX");
 #if defined(_MSC_VER)
         const Memory::String compiler = configured && *configured ? configured : "cl.exe";
 #else
@@ -783,7 +783,7 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
         {
             std::ifstream file(log, std::ios::binary);
             Memory::String diagnostics((std::istreambuf_iterator<char>(file)), {});
-            return Fail("abi 调用桥编译失败；需要同位数 C++ 编译器，可用 MAGEL_ABI_CXX 指定：" + diagnostics);
+            return Fail("abi 调用桥编译失败；需要同位数 C++ 编译器，可用 CHALI_ABI_CXX 指定：" + diagnostics);
         }
         if (!bridge->library.open(output.u8string(), &error)) return Fail(error);
         if (!cached.empty())
@@ -798,7 +798,7 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
             std::filesystem::remove(staging, cleanup);
         }
     }
-    const char *writeBridge = g_abiWriteOption.empty() ? std::getenv("MAGEL_ABI_WRITE_BRIDGE") : g_abiWriteOption.c_str();
+    const char *writeBridge = g_abiWriteOption.empty() ? std::getenv("CHALI_ABI_WRITE_BRIDGE") : g_abiWriteOption.c_str();
     if (writeBridge && *writeBridge)
     {
         const auto origin = bridge->directory.empty() ? cached : bridge->directory / "bridge.dll";
@@ -809,12 +809,12 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
     }
     using Layout = std::size_t (*)(std::size_t, std::size_t);
     using Call = void (*)(std::size_t, void *, void *, void **);
-    const auto layout = reinterpret_cast<Layout>(bridge->library.resolve("magel_abi_layout", &error));
-    const auto call = reinterpret_cast<Call>(bridge->library.resolve("magel_abi_call", &error));
+    const auto layout = reinterpret_cast<Layout>(bridge->library.resolve("chali_abi_layout", &error));
+    const auto call = reinterpret_cast<Call>(bridge->library.resolve("chali_abi_call", &error));
     using SetCallback = void *(*)(std::size_t, void (*)(void *, void *, void **), void *);
     using CallbackAddress = void *(*)(std::size_t);
-    const auto setCallback = reinterpret_cast<SetCallback>(bridge->library.resolve("magel_abi_callback_set", &error));
-    const auto callbackAddress = reinterpret_cast<CallbackAddress>(bridge->library.resolve("magel_abi_callback_address", &error));
+    const auto setCallback = reinterpret_cast<SetCallback>(bridge->library.resolve("chali_abi_callback_set", &error));
+    const auto callbackAddress = reinterpret_cast<CallbackAddress>(bridge->library.resolve("chali_abi_callback_address", &error));
     if (!layout || !call || !setCallback || !callbackAddress) return Fail(error);
     if (layout(static_cast<std::size_t>(-1), 0) != sizeof(void *)) return Fail("abi 调用桥与 VM 位数不一致");
     for (const auto &type : types)
@@ -825,7 +825,7 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
     for (const auto &type : types)
     {
         if (type->type->kind == MType::Void) continue;
-        if (!type->bytes || type->bytes > magel_glue::detail::CAbiMaxBufferBytes)
+        if (!type->bytes || type->bytes > chali_glue::detail::CAbiMaxBufferBytes)
             return Fail("ABI 类型布局大小无效");
         const auto alignment = layout(type->id, static_cast<std::size_t>(-1));
         if (!alignment || (alignment & (alignment - 1)) || type->bytes % alignment)
@@ -838,15 +838,15 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
     for (std::size_t index = 0; index < functions.size(); ++index)
     {
         const auto &function = *functions[index];
-        magel_glue::DynamicLibrary native;
+        chali_glue::DynamicLibrary native;
         if (!native.open(function.abiLibrary, &error)) return Fail(error);
         void *symbol = native.resolve(function.abiSymbol, &error);
         if (!symbol) return Fail(error);
         void *release = function.abiRelease.empty() ? nullptr : native.resolve(function.abiRelease, &error);
         if (!function.abiRelease.empty() && !release) return Fail(error);
-        if (!registry->bind(function.label, parameters[index].size(), [bridge, native, symbol, release, call, setCallback, callbackAddress, slots = callbackSlots[index], index, args = parameters[index], result = results[index], countIndex = function.abiResultCountIndex](magel_glue::Context &context, const Memory::Vector<magel_glue::Value> &values) {
-                using Value = magel_glue::Value;
-                const auto copiedCount = countIndex < 0 ? 1u : magel_glue::detail::cAbiCount(values.at(countIndex).asInt(), result->element->slots * 8);
+        if (!registry->bind(function.label, parameters[index].size(), [bridge, native, symbol, release, call, setCallback, callbackAddress, slots = callbackSlots[index], index, args = parameters[index], result = results[index], countIndex = function.abiResultCountIndex](chali_glue::Context &context, const Memory::Vector<chali_glue::Value> &values) {
+                using Value = chali_glue::Value;
+                const auto copiedCount = countIndex < 0 ? 1u : chali_glue::detail::cAbiCount(values.at(countIndex).asInt(), result->element->slots * 8);
                 struct Payload { Type type; std::int64_t address; std::size_t count; bool writable; RuntimeAbiBlock bytes; };
                 Memory::Map<std::tuple<Memory::String, std::int64_t, std::size_t>, std::shared_ptr<Payload>> payloads;
                 Memory::Vector<std::unique_ptr<RuntimeAbiCallback>> callbacks;
@@ -874,18 +874,18 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
                         callbacks.push_back(std::move(state));
                         const auto address = callbackAddress(slots[i]); std::memcpy(data, &address, sizeof(address));
                     } else if (IsStandardOpcode(type->type, "String")) {
-                        strings[i] = magel_glue::Codec<Memory::String>::decode(context, values[i]);
+                        strings[i] = chali_glue::Codec<Memory::String>::decode(context, values[i]);
                         if (strings[i].find(static_cast<char>(0)) != Memory::String::npos) throw std::runtime_error("ABI C string contains NUL; use a byte buffer");
                         const char *text = strings[i].c_str(); std::memcpy(data, &text, sizeof(text));
                     } else if (type->element) {
                         auto address = type->optionalReference
-                            ? magel_glue::detail::decodeOptionalReference(context, values[i]).value_or(0)
+                            ? chali_glue::detail::decodeOptionalReference(context, values[i]).value_or(0)
                             : values[i].asInt();
                         std::size_t count = 1;
                         if (!address && !type->optionalReference && type->type->kind == MType::Ptr) throw std::runtime_error("ABI reference argument is null");
                         if (type->type->kind == MType::Array) {
                             if (!address) throw std::runtime_error("ABI array argument is null");
-                            count = magel_glue::detail::cAbiCount(magel_glue::detail::CAbiStorage<std::int64_t>::read(context, address - 8), type->element->slots * 8);
+                            count = chali_glue::detail::cAbiCount(chali_glue::detail::CAbiStorage<std::int64_t>::read(context, address - 8), type->element->slots * 8);
                         }
                         void *pointer = nullptr;
                         if (address && count) {
@@ -927,20 +927,20 @@ bool BindRuntimeAbi(magel_glue::Registry *registry)
                         if (!pointer && count) throw std::runtime_error("ABI returned null for nonempty buffer");
                         const auto address = context.makeTemporary(count * result->element->slots * 8 + (array ? 8 : 0));
                         if (address) {
-                            if (array) magel_glue::detail::CAbiStorage<std::int64_t>::write(context, address, count);
+                            if (array) chali_glue::detail::CAbiStorage<std::int64_t>::write(context, address, count);
                             for (std::size_t j = 0; j < count; ++j)
                                 RuntimeAbiWrite(*result->element, context, address + (array ? 8 : 0) + j * result->element->slots * 8, pointer + j * result->element->bytes);
                         }
                         value = Value::fromInt(address ? address + (array ? 8 : 0) : 0);
                     }
                     if (result->optionalReference)
-                        value = magel_glue::detail::encodeOptionalReference(context,
+                        value = chali_glue::detail::encodeOptionalReference(context,
                             pointer ? std::optional<std::int64_t>(value.asInt()) : std::nullopt);
                 } else if (result->type->kind == MType::Struct) {
                     const auto address = context.makeTemporary(result->slots * 8);
                     if (address) RuntimeAbiWrite(*result, context, address, returned.data()); value = Value::fromInt(address);
                 } else if (IsStandardOpcode(result->type, "String")) {
-                    const char *text; std::memcpy(&text, returned.data(), sizeof(text)); value = Value::fromInt(context.makeString(magel_glue::detail::copyCAbiString(text)));
+                    const char *text; std::memcpy(&text, returned.data(), sizeof(text)); value = Value::fromInt(context.makeString(chali_glue::detail::copyCAbiString(text)));
                 } else if (result->type->kind != MType::Void) value = RuntimeAbiScalarValue(*result->type, returned.data());
                 for (const auto &entry : payloads) {
                     const auto &payload = *entry.second;
@@ -996,7 +996,7 @@ bool WriteArtifacts(const Memory::String &prefix, const simple_ast::CodegenResul
  */
 void ResetState()
 {
-    magel_editor::compilerAnalysis.resetPass();
+    chali_editor::compilerAnalysis.resetPass();
     g_diagnostics.clear();
     g_warnings.clear();
     g_borrowFacts.clear();
@@ -1031,7 +1031,7 @@ void ResetState()
         for (const int child : node.kids) prepareCaptureStorage(child);
     };
     for (const auto &node : g_nodes)
-        if (node.kind == MNode::FuncDef && node.s.rfind("__magel_lambda_", 0) == 0)
+        if (node.kind == MNode::FuncDef && node.s.rfind("__chali_lambda_", 0) == 0)
             for (const int child : node.kids) prepareCaptureStorage(child);
     // 带值退出在作用域绑定后才选择内部变量移动，提前准备其可能使用的稳定引用槽。
     std::function<void(int)> prepareBreakStorage = [&](int id) {
@@ -1043,7 +1043,7 @@ void ResetState()
     };
     for (const auto &node : g_nodes)
         if (node.kind == MNode::Break && node.type2 != 1 && !node.kids.empty()) prepareBreakStorage(node.kids[0]);
-    for (const auto &specification : magel_lambda::captureSpecifications)
+    for (const auto &specification : chali_lambda::captureSpecifications)
         for (const auto &capture : specification.second) g_addressTakenNames.insert(capture.first);
     /* 迭代器入口隐式借用或转移容器，必须在局部声明降级前准备引用槽。 */
     for (const auto &node : g_nodes)
@@ -1121,9 +1121,9 @@ void ResetState()
     g_resourceCloseAliases.clear();
     g_scope.push_back(Memory::Map<Memory::String, MVar>()); /* 0 号 = 全局作用域 */
     /* 运行时辅助函数的内部名字先占住，免得用户程序撞名 */
-    for (const char *name : { "__magel_p", "__magel_ip", "__magel_fr", "__magel_k", "__magel_d", "__magel_code",
-                              "__magel_num", "__magel_flt", "__magel_addr", "__magel_tgt", "__magel_src", "__magel_n",
-                              "__magel_val", "__magel_l", "__magel_r" })
+    for (const char *name : { "__chali_p", "__chali_ip", "__chali_fr", "__chali_k", "__chali_d", "__chali_code",
+                              "__chali_num", "__chali_flt", "__chali_addr", "__chali_tgt", "__chali_src", "__chali_n",
+                              "__chali_val", "__chali_l", "__chali_r" })
         g_usedNames.insert(name);
 }
 

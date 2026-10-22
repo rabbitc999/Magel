@@ -1,21 +1,21 @@
 # 命令行手册
 
-查询 API 必须显式写 `api` 子命令：`magel man api std` 列出标准库模块，`magel man api std::text::Text` 查看类型。省略 `api` 的 `magel man std` 或 `magel man std::text::Text` 会报参数错误并给出正确命令。
+查询 API 必须显式写 `api` 子命令：`chali man api std` 列出标准库模块，`chali man api std::text::Text` 查看类型。省略 `api` 的 `chali man std` 或 `chali man std::text::Text` 会报参数错误并给出正确命令。
 
-`magel man` 从可执行文件中的标准库索引查询 API，无需网络、Python 或仓库目录。库 API 的完整网页参考仍在 [doc/library](../library/README.md)；本目录记录命令行为、数据结构及 [LSP 增量提示与缓存](lsp.md)。[English](en/README.md)
+`chali man` 从可执行文件中的标准库索引查询 API，无需网络、Python 或仓库目录。库 API 的完整网页参考仍在 [doc/library](../library/README.md)；本目录记录命令行为、数据结构及 [LSP 增量提示与缓存](lsp.md)。[English](en/README.md)
 
 ## 查询
 
 ```sh
-magel man
-magel man api std::text
-magel man api std::text::Text
-magel man api std::text::Text::split
-magel man api --search delimiter
-magel man api --search split --exact
-magel man --json std::text::Text::split
-magel man api std::text::Text::split --run
-magel man --lang en std::text::Text::split
+chali man
+chali man api std::text
+chali man api std::text::Text
+chali man api std::text::Text::split
+chali man api --search delimiter
+chali man api --search split --exact
+chali man --json std::text::Text::split
+chali man api std::text::Text::split --run
+chali man --lang en std::text::Text::split
 ```
 
 | 形式 | 内容 |
@@ -38,9 +38,9 @@ magel man --lang en std::text::Text::split
 
 ## 示例执行
 
-示例来自既有正式样例，附带输入、命令行实参、编译选项和预期输出。`--run` 把完整样例写进临时目录，用当前 magel 编译运行；执行目录和输出文件也在该临时目录，结束后清理。例子可能包含模块的多个 API，不会把网页中的单行调用片段当成独立程序。
+示例来自既有正式样例，附带输入、命令行实参、编译选项和预期输出。`--run` 把完整样例写进临时目录，用当前 chali 编译运行；执行目录和输出文件也在该临时目录，结束后清理。例子可能包含模块的多个 API，不会把网页中的单行调用片段当成独立程序。
 
-没有关联示例时返回 MGL1702；编译、执行失败或超过 60 秒返回 MGL1703。JSON 的 `execution` 包含 `example`、`exitCode`、`stdout`、`stderr`，stdout 保留运行平台的换行形式。目标不存在返回 MGL1701，并在 `candidates` 和诊断 notes 中列候选。无效命令参数以状态码 2 退出。
+没有关联示例时返回 CHL1702；编译、执行失败或超过 60 秒返回 CHL1703。JSON 的 `execution` 包含 `example`、`exitCode`、`stdout`、`stderr`，stdout 保留运行平台的换行形式。目标不存在返回 CHL1701，并在 `candidates` 和诊断 notes 中列候选。无效命令参数以状态码 2 退出。
 
 ## JSON 结构
 
@@ -62,29 +62,29 @@ magel man --lang en std::text::Text::split
 ## 数据维护
 
 ```sh
-magel man --update
+chali man --update
 python tools/library_reference.py --check
 sh gen.sh
 make -j4
 ```
 
-`--update` 是开发路径，需 Magel 源码仓库及 Python，等同于运行 [tools/library_reference.py](../../tools/library_reference.py)。它重新生成 [库参考](../library/README.md)、API 索引和 LSP 共用的声明数据；生成后需重新构建 magel 才会更新内嵌内容。普通 `man` 查询不调用 Python。
+`--update` 是开发路径，需 ChaLi 源码仓库及 Python，等同于运行 [tools/library_reference.py](../../tools/library_reference.py)。它重新生成 [库参考](../library/README.md)、API 索引和 LSP 共用的声明数据；生成后需重新构建 chali 才会更新内嵌内容。普通 `man` 查询不调用 Python。
 
-CI 通过 `--check` 检查生成数据同步，通过 [tests/magel_man.py](../../tests/magel_man.py) 验证模块、类型、方法、全文搜索、JSON、双语界面、候选和示例执行。`magel help` 显示工具链命令用法，`magel man` 查询库 API。
+CI 通过 `--check` 检查生成数据同步，通过 [tests/chali_man.py](../../tests/chali_man.py) 验证模块、类型、方法、全文搜索、JSON、双语界面、候选和示例执行。`chali help` 显示工具链命令用法，`chali man` 查询库 API。
 
 [返回文档索引](../README.md)
 
 ## 内嵌书稿、关键字与 AI SKILL
 
-`magel man book` 将书稿 Markdown 和图片导出到当前调用目录的 `book/`，保留图片相对路径并列出章节，`magel man book 6` 查看章节；也可使用 `A`、`B`、文件名或完整标题。`magel man keyword` 列出关键字，`magel man keyword break` 从权威文法与语言参考显示语法、说明及示例。`magel man skill` 输出完整 AI SKILL，可重定向保存为 `SKILL.md`；VS Code 插件的 `skills/magel-programming/SKILL.md` 与它逐字一致。
+`chali man book` 将书稿 Markdown 和图片导出到当前调用目录的 `book/`，保留图片相对路径并列出章节，`chali man book 6` 查看章节；也可使用 `A`、`B`、文件名或完整标题。`chali man keyword` 列出关键字，`chali man keyword break` 从权威文法与语言参考显示语法、说明及示例。`chali man skill` 输出完整 AI SKILL，可重定向保存为 `SKILL.md`；VS Code 插件的 `skills/chali-programming/SKILL.md` 与它逐字一致。
 
-上述数据均在构建时压缩内嵌，查询不访问仓库或网络。书稿和 SKILL 目前使用中文原文，图片在终端 Markdown 中保留引用；配图版请阅读书稿 PDF。三类查询均支持 `--json`，不支持 `--run` 或 `--exact`。不存在的章节或关键字返回 MGL1701。源文件变更后运行 `python tools/embed_manual.py`，CI 用 `--check` 检查同步，`gen.sh` 的资产生成也会刷新该数据。
+上述数据均在构建时压缩内嵌，查询不访问仓库或网络。书稿和 SKILL 目前使用中文原文，图片在终端 Markdown 中保留引用；配图版请阅读书稿 PDF。三类查询均支持 `--json`，不支持 `--run` 或 `--exact`。不存在的章节或关键字返回 CHL1701。源文件变更后运行 `python tools/embed_manual.py`，CI 用 `--check` 检查同步，`gen.sh` 的资产生成也会刷新该数据。
 
 导出只更新内嵌书稿同名文件，不删除其他文件；目标路径必须保持在调用目录的 book 文件夹内。
 
 单章终端输出将图片转换为 `[图片]\(images/文件名)` 链接；JSON 与导出的 Markdown 保留原始图片语法。
 
-单独执行 `magel man` 与 `magel man help` 均显示用法；`magel man api` 显示 API 分类，`magel man api XXX` 查询内嵌 `doc/library/` 的 API。
+单独执行 `chali man` 与 `chali man help` 均显示用法；`chali man api` 显示 API 分类，`chali man api XXX` 查询内嵌 `doc/library/` 的 API。
 
 
-`magel man macro` 查看宏定义、调用、有序多括号、独立变长参数与跨行大括号帮助；内容内嵌在编译器中，也支持 `--json`。
+`chali man macro` 查看宏定义、调用、有序多括号、独立变长参数与跨行大括号帮助；内容内嵌在编译器中，也支持 `--json`。

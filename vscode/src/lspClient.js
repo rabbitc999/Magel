@@ -162,7 +162,7 @@ class LspClient extends EventEmitter {
   async initialize() {
     const result = await this.request('initialize', {
       processId: process.pid,
-      clientInfo: { name: 'vscode-magel-editor', version: '1.0.0' },
+      clientInfo: { name: 'vscode-chali-editor', version: '1.0.0' },
       rootUri: this.workspaceFolders.length ? this.workspaceFolders[0].uri : null,
       workspaceFolders: this.workspaceFolders,
       capabilities: {

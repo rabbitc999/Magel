@@ -4,7 +4,7 @@
 
 `move(T mut&)` now transfers existing resources instead of copying and destroying the source. Ordinary assignment and ordinary value parameters still copy. Receiving a move result directly transfers strings, containers, Any, closures and owned aggregate fields without deep copies.
 
-```magel
+```chali
 struct Packet { String text; List<int64> values; };
 int64 main() {
     Packet source;
@@ -30,7 +30,7 @@ File and process handles can be transferred. Arrays, interface values without co
 
 External locals are captured by `const&` by default; `fn const(...)` is equivalent. Reads observe later changes in the source, while writes are rejected. `fn mut(...)` captures by `mut&` and writes back to the source. `fn copy(...)` owns mutable independent copies. `fn move(...)` transfers captured values into the closure and forbids reading or writing the old bindings; declare new bindings before reuse. Copying a closure duplicates owned state and preserves references to borrowed sources. Reference captures must not outlive their sources; owned captures may escape only when their contents do not borrow shorter-lived storage. Capture lists use `fn copy[a, b] mut[c] const[d] move[e](int64 x) { ... }`; unlisted external locals use `const&` by default. One trailing default mode may override this: `fn copy[a, b] mut(int64 x)` borrows other locals by `mut&`. Multiple defaults, such as `copy[a, b] mut const(...)`, are rejected.
 
-```magel
+```chali
 int64 n = 1;
 let read = int64 fn() { n };
 let write = int64 fn mut(int64 x) { n += x; return n; };

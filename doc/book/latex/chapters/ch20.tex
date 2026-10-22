@@ -11,7 +11,7 @@
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 @annotation Route(path: String, level: int32 = 2)
 \end{lstlisting}
 \par
@@ -25,7 +25,7 @@
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 @annotation Route(path: String, level: int32 = 2)
 
 @Route("/health", level: 1)
@@ -78,7 +78,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 @Component
 @Route("/read", level: 3)
 int64 read()
@@ -95,7 +95,7 @@ int64 read()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 import std::reflect;
 
 @Reflect
@@ -142,7 +142,7 @@ Point 2
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 import std::reflect;
 
 @annotation Route(path: String, level: int32 = 2)
@@ -194,7 +194,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 import std::reflect;
 
 @Reflect
@@ -229,7 +229,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 import std::reflect;
 
 @Reflect
@@ -273,7 +273,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 @annotation Route(path: String, level: int32 = 2)
 
 @Route("/health", level: 1)
@@ -300,16 +300,16 @@ int64 main()
 \medskip
 
 {\small\setlength{\tabcolsep}{4pt}
-\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.187\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.793\linewidth-2\tabcolsep\relax}}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.151\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.829\linewidth-2\tabcolsep\relax}}
 \toprule
 方式 & 含义 \\
 \midrule
 \endhead
-\texttt{make} & 根目录默认前端 MAGEL\_WITH\_REFLECTION=1、运行时 STACKVM\_WITH\_REFLECTION=1 \\
-\texttt{make reflection} & 保留的显式启用目标，仍须两项同时开启 \\
-不写单次开关 & 支持反射的当前工具链默认启用 \\
-\texttt{--reflection} & 显式要求反射，缺少能力时报错 \\
-\texttt{--no-reflection} & 显式关闭；关闭后使用注解或反射会报错 \\
+\texttt{make} & 根目录把前端 CHALI\_WITH\_REFLECTION=1、运行时 STACKVM\_WITH\_REFLECTION=1 钉死：反射不可裁剪 \\
+\texttt{make reflection} & 同义的显式入口（两项本来就固定为 1） \\
+不写单次开关 & 默认写入反射元数据 \\
+\texttt{--reflection} & 显式要求写入反射元数据（缺省即如此） \\
+\texttt{--no-reflection} & 不写反射元数据；关闭后使用注解或反射会报错。它只影响这次产物，不减少编译期工作量 \\
 \bottomrule
 \end{longtable}
 }
@@ -317,8 +317,8 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel run app.mgl
-magel svmb app.mgl --no-reflection --out build/board-app
+chali run app.chl
+chali svmb app.chl --no-reflection --out build/board-app
 \end{lstlisting}
 \par
 \medskip
@@ -329,20 +329,21 @@ magel svmb app.mgl --no-reflection --out build/board-app
 
 注解与反射提供运行期元数据和受限动态调用，会增加产物、分配和调用开销。默认桌面工具链支持它，裁剪目标需要显式评估能力和预算。
 
-\begin{center}
-\begin{tabular}{ll}
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.384\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.596\linewidth-2\tabcolsep\relax}}
 \toprule
 你的想法 & 该不该用 \\
 \midrule
+\endhead
 「想给函数打点标记，运行时按标记分派」 & \textcolor{green!50!black}{\ding{51}} 典型场景（路由、插件注册） \\
 「想让代码生成器读元数据」 & \textcolor{green!50!black}{\ding{51}} 合理 \\
 「想根据标记做一遍扫描」 & \textcolor{green!50!black}{\ding{51}} 合理 \\
 「想省一个函数参数」 & \textcolor{red!80!black}{\ding{55}} 用参数 \\
 「想实现多态」 & \textcolor{red!80!black}{\ding{55}} 用接口 / 泛型（第 13、14 章） \\
-「目标 VM 关闭反射」 & 移除反射依赖并用 --no-reflection 生成 \\
+「目标 VM 关闭反射」 & 移除反射依赖并用 --no-reflection 生成（反射本身仍不可裁剪） \\
 \bottomrule
-\end{tabular}
-\end{center}
+\end{longtable}
+}
 
 经验法则：注解是「框架和工具用的」，不是「业务逻辑用的」。写业务代码时，几乎总有更直接的办法。
 
@@ -361,7 +362,7 @@ magel svmb app.mgl --no-reflection --out build/board-app
 读注解 & \texttt{get\allowbreak{}Func\allowbreak{}Annotations(\allowbreak{}"名字")\allowbreak{}} / \texttt{get\allowbreak{}Annotations<\allowbreak{}T>\allowbreak{}(\allowbreak{})\allowbreak{}} \\
 取实参 & \texttt{Annotation.\allowbreak{}args} 是 \texttt{Reflect\allowbreak{}Value}，用 \texttt{as\allowbreak{}Text(\allowbreak{})\allowbreak{}} 等取（返回 \texttt{Result}） \\
 按名调用 & \texttt{std:\allowbreak{}:\allowbreak{}reflect:\allowbreak{}:\allowbreak{}call} / \texttt{call\allowbreak{}Method<\allowbreak{}T>\allowbreak{}(\allowbreak{}\&obj,\allowbreak{} …)\allowbreak{}} / \texttt{call\allowbreak{}Interface<\allowbreak{}I>\allowbreak{}} \\
-构建 & 根目录默认同时编入并启用；无反射目标显式 --no-reflection \\
+构建 & 反射为固定组成、不可裁剪；无反射目标显式 --no-reflection（只影响产物） \\
 取舍 & 框架/工具才用；业务逻辑优先接口/泛型 \\
 \bottomrule
 \end{tabular}
@@ -369,9 +370,9 @@ magel svmb app.mgl --no-reflection --out build/board-app
 
 \section{下一步}
 
-到这里，语言本身讲完了——从变量到注解，你能写出完整的、有类型安全、有资源管理、有抽象能力的 Magel 程序。
+到这里，语言本身讲完了——从变量到注解，你能写出完整的、有类型安全、有资源管理、有抽象能力的 ChaLi 程序。
 
-第七部分开始「走出去」：让 Magel 跟外部世界打交道。第一个是与 C 互操作——调用现成的 C 库、把自己的函数交给 C 调用。
+第七部分开始「走出去」：让 ChaLi 跟外部世界打交道。第一个是与 C 互操作——调用现成的 C 库、把自己的函数交给 C 调用。
 
 翻到\hyperref[ch:21]{第 21 章 与 C 互操作}。
 
@@ -381,7 +382,7 @@ magel svmb app.mgl --no-reflection --out build/board-app
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 import std::reflect;
 
 @Reflect
@@ -417,7 +418,7 @@ int64 main()
 
 读取得到字段的独立值，修改模型通过写入接口进行。对容器、嵌套值和资源的支持边界仍须遵守实际接口；反射不会将不可复制资源自动转换成普通可复制值。
 
-本章负责说明元数据及访问规则；模型与 JSON/TOML、字节序列化和动态 SQL 的组合见\href{https://gitee.com/rabbitc999/magel/blob/master/doc/36-reflection-serialization-sql.md}{反射编解码与动态 SQL}。
+本章负责说明元数据及访问规则；模型与 JSON/TOML、字节序列化和动态 SQL 的组合见\href{https://gitee.com/rabbitc999/chali/blob/master/doc/36-reflection-serialization-sql.md}{反射编解码与动态 SQL}。
 
 \section{边界与验证}
 

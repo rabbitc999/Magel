@@ -1,17 +1,17 @@
 'use strict';
 
 /**
- * VS Code 插件入口：把编辑器接到 Magel 自带的语言服务器 `magel lsp`。
+ * VS Code 插件入口：把编辑器接到 ChaLi 自带的语言服务器 `chali lsp`。
  *
  * 设计取舍：
  *   - 不依赖任何 npm 包（`vscode` 由宿主提供），不需要构建步骤，也不需要联网；
- *   - 语言服务器就是编译器本体（`magel lsp`，原生 C++ 实现），
+ *   - 语言服务器就是编译器本体（`chali lsp`，原生 C++ 实现），
  *     所以只用**一个**可执行文件：不需要另外编 lsp-server；开发命令不需要 Python；
  *   - 语言能力全在 `src/providers.js`，协议在 `src/lspClient.js`，定位在 `src/locator.js`；
  *     后两个不引用 `vscode`，可以在纯 Node 下单独测试（见 `test/smoke.js`）。
  *
  * 与根目录 `vscode/`（GramEditor，管 `.gram` / `.metro`）是**两个插件**：
- * `.mgl` 归这里，magel 目录搬家时插件跟着走。
+ * `.chl` 归这里，chali 目录搬家时插件跟着走。
  */
 
 const vscode = require('vscode');
@@ -25,7 +25,7 @@ const { registerMacroPreview } = require('./src/macros');
 const providers = require('./src/providers');
 const { registerDebugger } = require('./src/debugger');
 
-/** @type {LspClient|null} 当前的 `magel lsp` 客户端。 */
+/** @type {LspClient|null} 当前的 `chali lsp` 客户端。 */
 let client = null;
 
 /** 上一次「运行」开的终端（同一时刻只留一个）。 */
@@ -51,11 +51,11 @@ const documentVersions = new Map();
  * @param {vscode.ExtensionContext} context 扩展上下文。
  */
 function activate(context) {
-  outputChannel = vscode.window.createOutputChannel('Magel');
+  outputChannel = vscode.window.createOutputChannel('ChaLi');
   diagnosticCollection = vscode.languages.createDiagnosticCollection(providers.LANGUAGE_ID);
   statusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 90);
-  statusItem.command = 'magel.restartServer';
-  statusItem.tooltip = '点击重启 Magel 语言服务器';
+  statusItem.command = 'chali.restartServer';
+  statusItem.tooltip = '点击重启 ChaLi 语言服务器';
   statusItem.show();
   setStatus('启动中…');
 
@@ -72,15 +72,15 @@ function activate(context) {
   registerDependencies(vscode, context, { readConfig, refresh: () => startServer(context) });
   registerMacroPreview(vscode, context, { getClient: () => client, flushDocument: notifyChange });
 
-  // 3.5 断点调试：把编译器当 DAP 适配器起起来（`magel --dap <文件>`）。
+  // 3.5 断点调试：把编译器当 DAP 适配器起起来（`chali --dap <文件>`）。
   registerDebugger(context, { logLine, workspaceDir, readConfig });
 
   // 4. 设置变化时重启服务器（编译器路径或协议跟踪开关可能变了）。
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (
-        event.affectsConfiguration('magel.path') ||
-        event.affectsConfiguration('magel.traceServer')
+        event.affectsConfiguration('chali.path') ||
+        event.affectsConfiguration('chali.traceServer')
       ) {
         void startServer(context);
       }
@@ -105,12 +105,12 @@ function deactivate() {
 /**
  * 读插件设置。
  *
- * @returns {{magelPath: string, traceServer: string}} 设置快照。
+ * @returns {{chaliPath: string, traceServer: string}} 设置快照。
  */
 function readConfig() {
-  const config = vscode.workspace.getConfiguration('magel');
+  const config = vscode.workspace.getConfiguration('chali');
   return {
-    magelPath: config.get('path', ''),
+    chaliPath: config.get('path', ''),
     traceServer: config.get('traceServer', 'off'),
   };
 }
@@ -141,7 +141,7 @@ function logLine(text) {
  */
 function setStatus(text) {
   if (!statusItem) return;
-  statusItem.text = `Magel: ${text}`;
+  statusItem.text = `ChaLi: ${text}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -149,7 +149,7 @@ function setStatus(text) {
 // ---------------------------------------------------------------------------
 
 /**
- * 运行当前 `.mgl`：先存盘（编译器读的是磁盘上的文件），再在集成终端里跑 `magel run <文件>`。
+ * 运行当前 `.chl`：先存盘（编译器读的是磁盘上的文件），再在集成终端里跑 `chali run <文件>`。
  *
  * @param {vscode.ExtensionContext} context 扩展上下文。
  * @returns {Promise<void>} 完成后返回。
@@ -157,16 +157,16 @@ function setStatus(text) {
 async function runCurrentFile(context) {
   const editor = vscode.window.activeTextEditor;
   if (!editor || editor.document.languageId !== providers.LANGUAGE_ID) {
-    void vscode.window.showWarningMessage('Magel：请先打开一个 .mgl 文件再运行。');
+    void vscode.window.showWarningMessage('ChaLi：请先打开一个 .chl 文件再运行。');
     return;
   }
-  const resolved = locator.resolveMagel(workspaceDir(), readConfig(), context.extensionPath);
-  if (!resolved.magel) {
-    logLine(`运行失败：没找到 magel 编译器（${resolved.source}）`);
-    void vscode.window.showWarningMessage('Magel：没找到编译器，无法运行。', '打开设置')
+  const resolved = locator.resolveChaLi(workspaceDir(), readConfig(), context.extensionPath);
+  if (!resolved.chali) {
+    logLine(`运行失败：没找到 chali 编译器（${resolved.source}）`);
+    void vscode.window.showWarningMessage('ChaLi：没找到编译器，无法运行。', '打开设置')
       .then((choice) => {
         if (choice === '打开设置') {
-          void vscode.commands.executeCommand('workbench.action.openSettings', 'magel.path');
+          void vscode.commands.executeCommand('workbench.action.openSettings', 'chali.path');
         }
       });
     return;
@@ -177,20 +177,20 @@ async function runCurrentFile(context) {
   }
 
   const file = editor.document.uri.fsPath;
-  const command = runner.buildRunCommand(resolved.magel, file);
+  const command = runner.buildRunCommand(resolved.chali, file);
   // 终端带着 cwd 建：命令里就不用 `cd`，Windows PowerShell / cmd / POSIX shell 都一样。
   if (runTerminal) {
     runTerminal.dispose();
     runTerminal = null;
   }
-  runTerminal = vscode.window.createTerminal({ name: 'Magel 运行', cwd: path.dirname(file) });
+  runTerminal = vscode.window.createTerminal({ name: 'ChaLi 运行', cwd: path.dirname(file) });
   runTerminal.show(true);
   runTerminal.sendText(command, true);
   logLine(`运行：${command}（工作目录 ${path.dirname(file)}）`);
 }
 
 /**
- * 启动（或重启）`magel lsp`。
+ * 启动（或重启）`chali lsp`。
  *
  * @param {vscode.ExtensionContext} context 扩展上下文。
  * @returns {Promise<void>} 完成后返回。
@@ -201,25 +201,25 @@ async function startServer(context) {
 
   // 1. 定位编译器。
   const config = readConfig();
-  const resolved = locator.resolveMagel(workspaceDir(), config, context.extensionPath);
-  if (!resolved.magel) {
-    setStatus('未找到 magel');
-    logLine(`没找到 magel 编译器：${resolved.source}`);
-    logLine('（插件包自带 bin/magel；也可以在设置里指定 magel.path，或在项目里先 make）');
+  const resolved = locator.resolveChaLi(workspaceDir(), config, context.extensionPath);
+  if (!resolved.chali) {
+    setStatus('未找到 chali');
+    logLine(`没找到 chali 编译器：${resolved.source}`);
+    logLine('（插件包自带 bin/chali；也可以在设置里指定 chali.path，或在项目里先 make）');
     const choice = await vscode.window.showWarningMessage(
-      'Magel：没找到 magel 编译器，诊断 / 补全等功能暂不可用。',
+      'ChaLi：没找到 chali 编译器，诊断 / 补全等功能暂不可用。',
       '打开设置',
     );
     if (choice === '打开设置') {
-      void vscode.commands.executeCommand('workbench.action.openSettings', 'magel.path');
+      void vscode.commands.executeCommand('workbench.action.openSettings', 'chali.path');
     }
     return;
   }
-  logLine(`magel: ${resolved.magel}（来源：${resolved.source}）`);
+  logLine(`chali: ${resolved.chali}（来源：${resolved.source}）`);
 
-  // 2. 起进程并握手（`magel lsp` 走 stdio，不需要额外参数）。
-  const instance = new LspClient(resolved.magel, ['lsp'], {
-    cwd: workspaceDir() || path.dirname(resolved.magel),
+  // 2. 起进程并握手（`chali lsp` 走 stdio，不需要额外参数）。
+  const instance = new LspClient(resolved.chali, ['lsp'], {
+    cwd: workspaceDir() || path.dirname(resolved.chali),
     workspaceFolders: (vscode.workspace.workspaceFolders || []).map((folder) => ({ uri: folder.uri.toString(), name: folder.name })),
   });
   instance.on('diagnostics', (event) => publishDiagnostics(event));
@@ -247,7 +247,7 @@ async function startServer(context) {
     return;
   }
 
-  // 3. 已经打开的 `.mgl` 文档补一次 didOpen，让诊断立刻出来。
+  // 3. 已经打开的 `.chl` 文档补一次 didOpen，让诊断立刻出来。
   for (const document of vscode.workspace.textDocuments) {
     if (document.languageId === providers.LANGUAGE_ID) notifyOpen(document);
   }
@@ -297,7 +297,7 @@ function publishDiagnostics(event) {
  * @param {vscode.TextDocument} document 文档。
  */
 function notifyOpen(document) {
-  if (!client || !client.running || document.uri.scheme === 'magel-expanded') return;
+  if (!client || !client.running || document.uri.scheme === 'chali-expanded') return;
   const version = typeof document.version === 'number' ? document.version : 1;
   documentVersions.set(document.uri.toString(), version);
   client.notify('textDocument/didOpen', {
@@ -339,7 +339,7 @@ function notifyChange(document, changes) {
  */
 function registerDocumentSync(context) {
   if (vscode.workspace.createFileSystemWatcher) {
-    const watcher = vscode.workspace.createFileSystemWatcher('**/*.{mgl,inc,toml,lock}');
+    const watcher = vscode.workspace.createFileSystemWatcher('**/*.{chl,inc,toml,lock}');
     const changed = (uri, type) => {
       if (client && client.running) client.notify('workspace/didChangeWatchedFiles', { changes: [{ uri: uri.toString(), type }] });
     };
@@ -392,30 +392,30 @@ function registerDocumentSync(context) {
  */
 function registerCommands(context) {
   context.subscriptions.push(
-    vscode.commands.registerCommand('magel.restartServer', () => startServer(context)),
+    vscode.commands.registerCommand('chali.restartServer', () => startServer(context)),
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand('magel.showServerLog', () => {
+    vscode.commands.registerCommand('chali.showServerLog', () => {
       if (outputChannel) outputChannel.show(true);
     }),
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand('magel.openDoc', () => openDoc()),
+    vscode.commands.registerCommand('chali.openDoc', () => openDoc()),
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand('magel.run', () => runCurrentFile(context)),
+    vscode.commands.registerCommand('chali.run', () => runCurrentFile(context)),
   );
 }
 
 /**
- * 打开随仓库的 Magel 语言文档。
+ * 打开随仓库的 ChaLi 语言文档。
  *
  * @returns {Promise<void>} 完成后返回。
  */
 async function openDoc() {
   const dir = workspaceDir();
   const candidates = dir
-    ? [path.join(dir, 'magel', 'doc', '02-language-tour.md'), path.join(dir, 'doc', '02-language-tour.md')]
+    ? [path.join(dir, 'chali', 'doc', '02-language-tour.md'), path.join(dir, 'doc', '02-language-tour.md')]
     : [];
   for (const file of candidates) {
     if (locator.isFile(file)) {
@@ -425,7 +425,7 @@ async function openDoc() {
     }
   }
   void vscode.window.showInformationMessage(
-    '没找到 Magel 语言文档（magel/doc/02-language-tour.md）。',
+    '没找到 ChaLi 语言文档（chali/doc/02-language-tour.md）。',
   );
 }
 

@@ -1,4 +1,4 @@
-#include "magel_parser.hpp"
+#include "chali_parser.hpp"
 #include "macro/source.hpp"
 #include <iostream>
 
@@ -10,9 +10,9 @@
  */
 static bool parse(Memory::String text, int &result)
 {
-    magel_macro::markHeaderBoundaries(text);
-    magel::Engine parser;
-    if (parser.runText(text, &result) == magel::Status::Ok) return true;
+    chali_macro::markHeaderBoundaries(text);
+    chali::Engine parser;
+    if (parser.runText(text, &result) == chali::Status::Ok) return true;
     if (const auto *error = parser.lastError()) std::cerr << error->message() << '\n';
     return false;
 }
@@ -41,8 +41,8 @@ int main()
     if (product.kind != MNode::Bin || product.s != "*") return 8;
     for (const auto child : product.kids)
         if (M_ParsedNode(child).kind != MNode::Var || M_ParsedNode(child).s != "x") return 9;
-    magel::Engine invalid;
-    if (invalid.runText("int32 main() { return $0; }", &root) == magel::Status::Ok) return 10;
+    chali::Engine invalid;
+    if (invalid.runText("int32 main() { return $0; }", &root) == chali::Status::Ok) return 10;
     if (!parse("$macro ADD<T:a>(a, b)\na + b\n$end_macro\nint32 main() { return $ADD<int32>(1, 2); }\n", root)) return 11;
     const auto genericDefinition = M_ParsedNode(M_ParsedNode(root).kids[0]);
     const auto generics = M_ParsedNode(genericDefinition.kids[2]).kids;
@@ -64,9 +64,9 @@ int main()
     const auto &regex = M_ParsedNode(M_ParsedNode(regexTemplate.kids[0]).kids[0]);
     if (regex.kind != MNode::MacroRegex || regex.s != "A" || regex.s2 != "[0-9]+" || regex.kids[1] < 0) return 17;
     Memory::String unknown = "$macro BAD(A)\n$match A is token\n1\n$end_match\n$end_macro\n";
-    magel_macro::markHeaderBoundaries(unknown);
-    magel::Engine unknownCategory;
-    if (unknownCategory.runText(unknown, &root) == magel::Status::Ok) return 18;
+    chali_macro::markHeaderBoundaries(unknown);
+    chali::Engine unknownCategory;
+    if (unknownCategory.runText(unknown, &root) == chali::Status::Ok) return 18;
     if (!parse("$macro RAW(A)\n$regex A is \"[0-9]+\"\n\"digits\"\n$else\nis + 1\n$end_regex\n$end_macro\nint32 main() { return 0; }\n", root)) return 19;
     std::cout << "generated AST macro parser passed\n";
     return 0;

@@ -1,20 +1,20 @@
 #!/bin/sh
-# magel/check.sh —— 跑全部样例：
-#   1) example/samples/*.mgl        必须成功退出，且 stdout 与 example/expected/*.txt 逐行一致；
-#   2) example/samples-error/*.mgl  必须报错退出（非 0），首行与 example/expected-error/*.txt 一致。
+# chali/check.sh —— 跑全部样例：
+#   1) example/samples/*.chl        必须成功退出，且 stdout 与 example/expected/*.txt 逐行一致；
+#   2) example/samples-error/*.chl  必须报错退出（非 0），首行与 example/expected-error/*.txt 一致。
 #
 # 正常样例的 stderr 还会单独挡一道：出现"提示：程序结束…"这种泄漏文案就判失败
 # （否则对象 / 堆没释放只写在 stderr，stdout 比对根本看不见）。确实要留提示的样例，
 # 把整段 stderr 写进 example/expected/<name>.stderr，脚本就会按期望比对。
 #
-# 用法：cd magel && sh check.sh
-#   （路径与 magel_out.* 都相对当前目录，必须在 magel/ 里跑；发布门禁
+# 用法：cd chali && sh check.sh
+#   （路径与 chali_out.* 都相对当前目录，必须在 chali/ 里跑；发布门禁
 #    `ci/run.sh` 就是这么调的。Makefile 里没有 check 目标。）
 #
 # 每个样例使用临时目录中的独立产物前缀，避免与其他模块门禁互相覆盖。
 # 想保留并查看某个样例的四元式，可以单独执行：
 #
-#   ./magel emit example/samples/array2d.mgl out /tmp/array2d
+#   ./chali emit example/samples/array2d.chl out /tmp/array2d
 #
 # 期望文件是"已验证正确"的输出固化下来的：一旦降级 / 四元式 / 栈机改动，
 # 这里会立刻报出是哪个样例、哪一行不同。
@@ -23,30 +23,30 @@
 # 行尾的 \r，这样同一份期望文件在 Windows / Linux 都可用。
 
 # 期望错误文件为中文，显示语言不随执行主机变化。
-export MAGEL_LANG=zh
+export CHALI_LANG=zh
 # 门禁要确定性：样例缺输入时照旧报错，别去等标准输入（调试时才用那份兜底）。
-export MAGEL_NO_STDIN_INPUT=1
+export CHALI_NO_STDIN_INPUT=1
 
 set -u
 
 # 临时文件：`mktemp` 默认往 /tmp 写，而有些环境（Windows 的 Git Bash）里 /tmp 不可写。
-# 所以显式给模板：默认用仓库里的 tmp/（已 gitignore），要换地方就设 MAGEL_TMP。
-CHECK_TMP=${MAGEL_TMP:-tmp}
+# 所以显式给模板：默认用仓库里的 tmp/（已 gitignore），要换地方就设 CHALI_TMP。
+CHECK_TMP=${CHALI_TMP:-tmp}
 mkdir -p "$CHECK_TMP" 2>/dev/null || true
 if [ ! -w "$CHECK_TMP" ]; then
-    echo "临时目录不可写：$CHECK_TMP（用 MAGEL_TMP=… 换一个）" >&2
+    echo "临时目录不可写：$CHECK_TMP（用 CHALI_TMP=… 换一个）" >&2
     exit 2
 fi
 
-# 注意 `./`：Git Bash / MSYS 下 `./magel` 能自动找到 `magel.exe`，
-# 光写 `magel` 会被当成 PATH 查找（找不到）。
-DEMO=${DEMO:-./magel}
+# 注意 `./`：Git Bash / MSYS 下 `./chali` 能自动找到 `ChaLi.exe`，
+# 光写 `chali` 会被当成 PATH 查找（找不到）。
+DEMO=${DEMO:-./chali}
 SAMPLES=${SAMPLES:-example/samples}
 EXPECTED=${EXPECTED:-example/expected}
 ERROR_SAMPLES=${ERROR_SAMPLES:-example/samples-error}
 EXPECTED_ERROR=${EXPECTED_ERROR:-example/expected-error}
 # 可指定空格分隔的样例名，供模块门禁只复测受影响的样例。
-CHECK_NAMES=${MAGEL_SAMPLE_NAMES:-}
+CHECK_NAMES=${CHALI_SAMPLE_NAMES:-}
 
 if [ ! -x "$DEMO" ]; then
     echo "找不到 $DEMO；先跑 make（生成 + 编译）" >&2
@@ -61,14 +61,14 @@ normalize() {
 }
 
 # ---- 正常样例：stdout 与期望逐行一致 ----
-for src in "$SAMPLES"/*.mgl; do
+for src in "$SAMPLES"/*.chl; do
     name=${src##*/}
-    name=${name%.mgl}
+    name=${name%.chl}
     if [ -n "$CHECK_NAMES" ]; then
         case " $CHECK_NAMES " in *" $name "*) ;; *) continue ;; esac
     fi
     expected="$EXPECTED/$name.txt"
-    actual=$(mktemp "$CHECK_TMP/magel_check.XXXXXX") || exit 2
+    actual=$(mktemp "$CHECK_TMP/chali_check.XXXXXX") || exit 2
     count=$((count + 1))
     if [ ! -f "$expected" ]; then
         echo "[FAIL] $name：缺少期望文件 $expected"
@@ -143,17 +143,17 @@ fi
 
 # ---- 错误样例：必须报错退出，且首行文案与期望一致 ----
 errorCount=0
-for src in "$ERROR_SAMPLES"/*.mgl; do
+for src in "$ERROR_SAMPLES"/*.chl; do
     if [ ! -f "$src" ]; then
         break
     fi
     name=${src##*/}
-    name=${name%.mgl}
+    name=${name%.chl}
     expected="$EXPECTED_ERROR/$name.txt"
     if [ -n "$CHECK_NAMES" ]; then
         case " $CHECK_NAMES " in *" $name "*) ;; *) continue ;; esac
     fi
-    actual=$(mktemp "$CHECK_TMP/magel_check.XXXXXX") || exit 2
+    actual=$(mktemp "$CHECK_TMP/chali_check.XXXXXX") || exit 2
     errorCount=$((errorCount + 1))
     if [ ! -f "$expected" ]; then
         echo "[FAIL] $name：缺少期望文件 $expected"

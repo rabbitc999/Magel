@@ -1,9 +1,9 @@
 'use strict';
 
 /**
- * Magel 的调试适配器（Debug Adapter Protocol）。
+ * ChaLi 的调试适配器（Debug Adapter Protocol）。
  *
- * 编译器本体就是适配器：`magel --dap <文件>` 走 stdio 收发 DAP，所以这里不需要
+ * 编译器本体就是适配器：`chali --dap <文件>` 走 stdio 收发 DAP，所以这里不需要
  * 另外写一个 node 版的 debug adapter——只负责**找到编译器并把参数拼出来**，
  * 交给 VS Code 去拉起进程。
  *
@@ -16,15 +16,15 @@ const path = require('node:path');
 
 const locator = require('./locator');
 
-/** 调试类型：`launch.json` 里的 `"type": "magel"`。 */
-const DEBUG_TYPE = 'magel';
+/** 调试类型：`launch.json` 里的 `"type": "chali"`。 */
+const DEBUG_TYPE = 'chali';
 
 /**
  * 注册调试适配器工厂。
  *
  * @param {vscode.ExtensionContext} context 扩展上下文。
  * @param {{logLine: (text: string) => void, workspaceDir: () => string,
- *          readConfig: () => {magelPath: string}}} deps 宿主提供的读设置 / 写日志入口。
+ *          readConfig: () => {chaliPath: string}}} deps 宿主提供的读设置 / 写日志入口。
  * @returns {void}
  */
 function registerDebugger(context, deps) {
@@ -38,15 +38,15 @@ function registerDebugger(context, deps) {
     createDebugAdapterDescriptor(session) {
       const config = deps.readConfig();
       const folder = session.workspaceFolder ? session.workspaceFolder.uri.fsPath : deps.workspaceDir();
-      const resolved = locator.resolveMagel(folder, config, context.extensionPath);
-      if (!resolved.magel) {
-        deps.logLine(`调试启动失败：没找到 magel 编译器（${resolved.source}）`);
+      const resolved = locator.resolveChaLi(folder, config, context.extensionPath);
+      if (!resolved.chali) {
+        deps.logLine(`调试启动失败：没找到 chali 编译器（${resolved.source}）`);
         void vscode.window.showErrorMessage(
-          `Magel：没找到 magel 编译器，无法调试。${resolved.source}`,
+          `ChaLi：没找到 chali 编译器，无法调试。${resolved.source}`,
           '打开设置',
         ).then((choice) => {
           if (choice === '打开设置') {
-            void vscode.commands.executeCommand('workbench.action.openSettings', 'magel.path');
+            void vscode.commands.executeCommand('workbench.action.openSettings', 'chali.path');
           }
         });
         return null;
@@ -54,8 +54,8 @@ function registerDebugger(context, deps) {
 
       const program = resolveProgram(session);
       if (!program) {
-        deps.logLine('调试启动失败：没拿到要调试的 .mgl 文件（先打开一个文件再启动调试）');
-        void vscode.window.showErrorMessage('Magel：请先打开一个 .mgl 文件再启动调试。');
+        deps.logLine('调试启动失败：没拿到要调试的 .chl 文件（先打开一个文件再启动调试）');
+        void vscode.window.showErrorMessage('ChaLi：请先打开一个 .chl 文件再启动调试。');
         return null;
       }
 
@@ -65,8 +65,8 @@ function registerDebugger(context, deps) {
 
       // 工作目录取源文件所在目录：调试表里记的是相对路径，两边一致才对得上断点。
       const cwd = session.configuration.cwd || path.dirname(program);
-      deps.logLine(`调试：${resolved.magel} ${args.join(' ')}（工作目录 ${cwd}）`);
-      return new vscode.DebugAdapterExecutable(resolved.magel, args, { cwd });
+      deps.logLine(`调试：${resolved.chali} ${args.join(' ')}（工作目录 ${cwd}）`);
+      return new vscode.DebugAdapterExecutable(resolved.chali, args, { cwd });
     },
   };
 
@@ -80,7 +80,7 @@ function registerDebugger(context, deps) {
 
 /**
  * 从调试配置里取要调试的文件；`${file}` 这类变量 VS Code 已经展开过了，
- * 没给就退回到当前编辑器里打开的 `.mgl`。
+ * 没给就退回到当前编辑器里打开的 `.chl`。
  *
  * @param {vscode.DebugSession} session 调试会话。
  * @returns {string} 文件绝对路径；拿不到返回空串。
@@ -91,7 +91,7 @@ function resolveProgram(session) {
     return configured.trim();
   }
   const editor = vscode.window.activeTextEditor;
-  if (editor && editor.document.languageId === 'magel') return editor.document.uri.fsPath;
+  if (editor && editor.document.languageId === 'chali') return editor.document.uri.fsPath;
   return '';
 }
 

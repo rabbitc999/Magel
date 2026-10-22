@@ -9,5 +9,5 @@ namespace std_red_black_tree_glue
  * @param error 接收注册失败的诊断。
  * @return 所有入口注册成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error);
+bool bind(chali_glue::Registry &registry, Memory::String *error);
 }  // namespace std_red_black_tree_glue

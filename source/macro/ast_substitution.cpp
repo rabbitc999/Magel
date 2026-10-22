@@ -1,8 +1,8 @@
 #include "ast_substitution.hpp"
-#include "../magel_ast.hpp"
+#include "../chali_ast.hpp"
 #include <stdexcept>
 
-namespace magel_macro
+namespace chali_macro
 {
 /**
  * @brief 保存节点池引用及单次展开节点预算。
@@ -79,7 +79,7 @@ void AstSubstitution::collectNames(int id, std::size_t depth)
     for (const int annotation : node.annotations) collectNames(annotation, depth + 1);
     collectNames(node.guard, depth + 1);
     const bool group = node.kind == MNode::Declare && node.kids.size() == 1 && node.kids[0] >= 0 && nodes_[node.kids[0]].kind == MNode::List;
-    const bool indexed = node.kind == MNode::Block || node.kind == MNode::Case || node.kind == MNode::NewPtr || ((node.kind == MNode::Declare || node.kind == MNode::Field) && !group && node.i >= 0) || (node.kind == MNode::Index && node.s2 == "__magel_bare_index");
+    const bool indexed = node.kind == MNode::Block || node.kind == MNode::Case || node.kind == MNode::NewPtr || ((node.kind == MNode::Declare || node.kind == MNode::Field) && !group && node.i >= 0) || (node.kind == MNode::Index && node.s2 == "__chali_bare_index");
     if (indexed) collectNames(static_cast<int>(node.i), depth + 1);
 }
 
@@ -198,7 +198,7 @@ int AstSubstitution::clone(int id, bool substitute, std::size_t depth)
     for (auto &annotation : nodes_[result].annotations) annotation = clone(annotation, substitute, depth + 1);
     if (nodes_[result].guard >= 0) nodes_[result].guard = clone(original.guard, substitute, depth + 1);
     const bool declarationGroup = original.kind == MNode::Declare && original.kids.size() == 1 && original.kids[0] >= 0 && static_cast<std::size_t>(original.kids[0]) < start_ && nodes_[original.kids[0]].kind == MNode::List;
-    const bool indexedChild = original.kind == MNode::Block || original.kind == MNode::Case || original.kind == MNode::NewPtr || ((original.kind == MNode::Declare || original.kind == MNode::Field) && !declarationGroup && original.i >= 0) || (original.kind == MNode::Index && original.s2 == "__magel_bare_index");
+    const bool indexedChild = original.kind == MNode::Block || original.kind == MNode::Case || original.kind == MNode::NewPtr || ((original.kind == MNode::Declare || original.kind == MNode::Field) && !declarationGroup && original.i >= 0) || (original.kind == MNode::Index && original.s2 == "__chali_bare_index");
     if (indexedChild && original.i >= 0) nodes_[result].i = clone(static_cast<int>(original.i), substitute, depth + 1);
     preserveVariadicGroups_ = previousGroupPolicy;
     return result;
@@ -235,4 +235,4 @@ std::shared_ptr<MType> AstSubstitution::cloneType(const std::shared_ptr<MType> &
     for (auto &argument : result->genericArguments) argument = cloneType(argument, depth + 1);
     return result;
 }
-}  // namespace magel_macro
+}  // namespace chali_macro

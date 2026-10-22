@@ -6,7 +6,7 @@
  */
 
 #include "stackvm.hpp"
-#include "../../source/magel_glue.hpp"
+#include "../../source/chali_glue.hpp"
 #include "../../source/glue/std_records.hpp"
 #include "../../source/glue/std_math.hpp"
 
@@ -26,7 +26,7 @@ namespace
 void printUsage(const Memory::String &program)
 {
     std::cout
-        << MAGEL_TEXT("用法：") << program << " <命令> <file.quad|file.svmb> [选项]\n"
+        << CHALI_TEXT("用法：") << program << " <命令> <file.quad|file.svmb> [选项]\n"
         << "\n"
         << "命令：\n"
         << "  run      组装并执行（默认命令）\n"
@@ -223,7 +223,7 @@ int main(int argc, char **argv)
         }
         if (!argument.empty() && argument[0] == '-')
         {
-            std::cerr << MAGEL_TEXT("不认识的选项：") << argument << "\n";
+            std::cerr << CHALI_TEXT("不认识的选项：") << argument << "\n";
             return 2;
         }
         if (path.empty() && (argument == "run" || argument == "compile" || argument == "disasm" || argument == "check"))
@@ -313,7 +313,7 @@ int main(int argc, char **argv)
         if (outPath.empty()) outPath = path + Memory::String(stackvm::kProgramBinaryExtension);
         if (!compressSymbols && !symbolMap.empty())
         {
-            std::cerr << MAGEL_TEXT("--symbol-map 需要启用 --compress-symbols\n");
+            std::cerr << CHALI_TEXT("--symbol-map 需要启用 --compress-symbols\n");
             return 2;
         }
         if (compressSymbols)
@@ -341,7 +341,7 @@ int main(int argc, char **argv)
             for (const Memory::String &message : diagnostics) std::cerr << message << "\n";
             return 1;
         }
-        std::cout << MAGEL_TEXT("已生成 ") << outPath << "：" << assembled.code.size() << " 条栈指令，"
+        std::cout << CHALI_TEXT("已生成 ") << outPath << "：" << assembled.code.size() << " 条栈指令，"
                   << assembled.labels.size() << " 个标签，" << assembled.types.size()
                   << " 个变量声明，" << assembled.exports.size() << " 个公开入口";
         if (stripDebug) std::cout << "（调试节 0 条，丢弃 " << debugEntries << " 条；--debug 可保留）";
@@ -382,9 +382,9 @@ int main(int argc, char **argv)
         return 2;
     }
 #endif
-    magel_glue::Registry registry;
+    chali_glue::Registry registry;
     Memory::String bindingError;
-    if (!magel_standard_records::bind(registry, &bindingError) || !std_math::bind(registry, &bindingError))
+    if (!chali_standard_records::bind(registry, &bindingError) || !std_math::bind(registry, &bindingError))
     {
         std::cerr << bindingError << "\n";
         return 1;
@@ -436,7 +436,7 @@ int main(int argc, char **argv)
 
     if (!result.ok)
     {
-        std::cerr << MAGEL_TEXT("运行失败：") << result.error << "\n";
+        std::cerr << CHALI_TEXT("运行失败：") << result.error << "\n";
         /* 程序带调试信息（或刚用 --debug 跑过）时，顺手给出源码位置与调用栈。 */
         if (result.failureLocation.known())
         {
@@ -447,7 +447,7 @@ int main(int argc, char **argv)
         }
         if (!result.sourceTrace.empty())
         {
-            std::cerr << MAGEL_TEXT("调用栈（外 → 内）：\n");
+            std::cerr << CHALI_TEXT("调用栈（外 → 内）：\n");
             for (const stackvm::DebugFrame &frame : result.sourceTrace)
             {
                 const Memory::String name = frame.function.empty() ? "(根)" : frame.function;

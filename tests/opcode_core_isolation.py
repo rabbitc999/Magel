@@ -13,13 +13,13 @@ def main():
                            r'\b(?:makeList|readList|listPush|listPushStruct|readListStruct|makeMap|readMap|mapSet|makeSet|readSet|setInsert)\s*\(')
     sources = [*[directory / name for name in (directory / "core_sources.txt").read_text().splitlines()], *sorted(directory.glob("*.hpp"))]
     failures = []
-    frontend = [root / 'source/magel_ast.hpp', root / 'source/magel_semantics.cpp', *sorted((root / 'source/semantics').glob('*.cpp'))]
+    frontend = [root / 'source/chali_ast.hpp', root / 'source/chali_semantics.cpp', *sorted((root / 'source/semantics').glob('*.cpp'))]
     legacy_kinds = re.compile(r'MType::(?:String|BigInt|BigFloat|File|Proc|Container)\b')
     for path in frontend:
         source = path.read_text(encoding='utf-8')
         if legacy_kinds.search(source):
             failures.append(f'前端仍依赖已删除的具体类型 Kind：{path.relative_to(root)}')
-    kinds = (root / 'source/magel_ast.hpp').read_text(encoding='utf-8').split('enum Kind', 1)[1].split('} kind', 1)[0]
+    kinds = (root / 'source/chali_ast.hpp').read_text(encoding='utf-8').split('enum Kind', 1)[1].split('} kind', 1)[0]
     if re.search(r'^\s*(?:String|BigInt|BigFloat|File|Proc|Container)\s*,', kinds, re.M):
         failures.append('MType::Kind 仍声明具体标准对象类型')
     for path in sources:

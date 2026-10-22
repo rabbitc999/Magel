@@ -2,7 +2,7 @@
 #include <map>
 #include <regex>
 
-namespace magel_macro
+namespace chali_macro
 {
 /**
  * @brief 保存编译成功的模式及失败诊断，避免重复构造正则。
@@ -90,4 +90,4 @@ RegexResult RegexMatcher::match(std::string_view text, std::string_view pattern,
         return RegexResult::Invalid;
     }
 }
-}  // namespace magel_macro
+}  // namespace chali_macro

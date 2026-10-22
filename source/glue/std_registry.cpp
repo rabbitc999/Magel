@@ -11,14 +11,14 @@
 #include "std_numeric.hpp"
 #endif
 
-/* 统一的"标准胶水"注册入口：编译器 VM（InstallDemoGlue）与独立 VM 宿主（bindMagelStandardGlue）
+/* 统一的"标准胶水"注册入口：编译器 VM（InstallDemoGlue）与独立 VM 宿主（bindChaLiStandardGlue）
  * 共用这一份。每个模块的注册都用 `#ifndef GLUE_NO_XXX` 包住，定义宏即整段不编进来：
  *
- *   - `import std::xxx;` 决定 MAGEL 侧符号可见性；
+ *   - `import std::xxx;` 决定 CHALI 侧符号可见性；
  *   - `GLUE_NO_STD_XXX` 决定宿主侧注册是否编译进来。
  * 两者互补，同时用才是完整裁剪。默认不定义任何宏 = 现有行为。 */
 
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #ifndef GLUE_NO_STD_FILESYSTEM
 #include "std_filesystem.hpp"
 #endif
@@ -91,7 +91,7 @@ namespace std_registry
  * @param error 绑定失败时接收原始诊断，可为空。
  * @return 全部入口绑定成功时返回 true。
  */
-bool bindStandardGlue(magel_glue::Registry &registry, Memory::String *error)
+bool bindStandardGlue(chali_glue::Registry &registry, Memory::String *error)
 {
     bool ok = lang_numeric_glue::bind(registry, error);
     ok = std_string_methods_glue::bind(registry, error) && ok;

@@ -21,6 +21,6 @@ MSVC 19.44.35229.0 / GCC 11.2.0；MSVC Release /O2 /DNDEBUG; GCC Release -O3 -DN
 
 复现：
 ```powershell
-./magel/benchmarks/compare-vm.ps1 -ExpectedCpu '5600X' -OutputDirectory tmp/vm-pool
-./magel/benchmarks/compare-vm.ps1 -ExpectedCpu '5600X' -UseMalloc -ProgramPrefix tmp/vm-pool/magel-loop -OutputDirectory tmp/vm-malloc
+./chali/benchmarks/compare-vm.ps1 -ExpectedCpu '5600X' -OutputDirectory tmp/vm-pool
+./chali/benchmarks/compare-vm.ps1 -ExpectedCpu '5600X' -UseMalloc -ProgramPrefix tmp/vm-pool/chali-loop -OutputDirectory tmp/vm-malloc
 ```

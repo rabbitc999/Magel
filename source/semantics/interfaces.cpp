@@ -196,7 +196,7 @@ bool AddDefaultToString(const Memory::String &owner, MStructDef &definition, con
             call = M_CallOn(M_Member(self, M_Name(method.c_str())), arguments);
         }
         else
-            call = M_CallOn(M_Var(M_Name("__magel_default_to_string")), M_List1(self));
+            call = M_CallOn(M_Var(M_Name("__chali_default_to_string")), M_List1(self));
         MMethod method;
         method.source = "toString";
         method.defaultValueText = !conversion && !formatted;

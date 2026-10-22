@@ -1,10 +1,10 @@
-#ifndef MAGEL_MACRO_SOURCE_HPP
-#define MAGEL_MACRO_SOURCE_HPP
-#include "allocator/magel_allocator.hpp"
+#ifndef CHALI_MACRO_SOURCE_HPP
+#define CHALI_MACRO_SOURCE_HPP
+#include "allocator/chali_allocator.hpp"
 #include <string>
 #include <vector>
 
-namespace magel_macro
+namespace chali_macro
 {
 /**
  * @brief 为宏声明及匹配分支标记头部换行边界，不展开宏或替换任何实参。
@@ -43,5 +43,5 @@ public:
 private:
     std::vector<std::pair<Memory::String, Memory::String>> definitions_;
 };
-}  // namespace magel_macro
+}  // namespace chali_macro
 #endif

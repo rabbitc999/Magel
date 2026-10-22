@@ -9,22 +9,22 @@ import time
 
 # 已登记测试使用各自的产物路径；网络、打包、生成器和未知测试保持串行。
 PARALLEL_TESTS = frozenset("""
-bigint_arithmetic bigfloat_math magel_cas_math magel_compiler_safety
-magel_print_streams magel_resource_lifetime magel_lsp_closure_types
-magel_array_parameters magel_string_literals magel_opcode_declarations
-magel_range_loop_values magel_opcode_resources magel_opcode_visibility
-opcode_core_isolation magel_collection_glue magel_map_pair_iterator
-magel_generic_constructors magel_borrow_flow magel_generic_closures
-magel_entry_signature magel_function_types magel_analysis_diagnostics
-magel_memory_guard magel_watchdog magel_generic_monomorphization
-magel_language_move magel_tuple_returns magel_thread_wait magel_thread_model
-macro_foundations magel_macro_editor magel_ast_macros magel_macro_branches magel_macro_groups magel_macro_generics
-check_doc_links export_magel_ebnf library_reference check_keywords
+bigint_arithmetic bigfloat_math chali_cas_math chali_compiler_safety
+chali_print_streams chali_resource_lifetime chali_lsp_closure_types
+chali_array_parameters chali_string_literals chali_opcode_declarations
+chali_range_loop_values chali_opcode_resources chali_opcode_visibility
+opcode_core_isolation chali_collection_glue chali_map_pair_iterator
+chali_generic_constructors chali_borrow_flow chali_generic_closures
+chali_entry_signature chali_function_types chali_analysis_diagnostics
+chali_memory_guard chali_watchdog chali_generic_monomorphization
+chali_language_move chali_tuple_returns chali_thread_wait chali_thread_model
+macro_foundations chali_macro_editor chali_ast_macros chali_macro_branches chali_macro_groups chali_macro_generics
+check_doc_links export_chali_ebnf library_reference check_keywords
 check_std_naming embed_manual changelog
 """.split())
 
-PARALLEL_EXECUTABLES = frozenset(("magel-artifact-tests", "magel-stackvm-tests",
-                                  "magel-symbol-tests", "magel-panic-tests", "magel-runtime-event-tests"))
+PARALLEL_EXECUTABLES = frozenset(("chali-artifact-tests", "chali-stackvm-tests",
+                                  "chali-symbol-tests", "chali-panic-tests", "chali-runtime-event-tests"))
 
 
 def positive_jobs(value):
@@ -40,7 +40,7 @@ def positive_jobs(value):
 
 def default_jobs():
     """默认最多四个测试工作线程，环境变量允许显式覆盖。"""
-    return positive_jobs(os.environ.get("MAGEL_GATE_JOBS", min(4, os.cpu_count() or 1)))
+    return positive_jobs(os.environ.get("CHALI_GATE_JOBS", min(4, os.cpu_count() or 1)))
 
 
 def independent(command):

@@ -234,7 +234,7 @@ public:
      */
     [[nodiscard]] virtual bool readString(std::int64_t address, Memory::String &out) const = 0;
     /**
-     * @brief 在当前 VM 运行时中同步调用 Magel 函数或捕获闭包。
+     * @brief 在当前 VM 运行时中同步调用 ChaLi 函数或捕获闭包。
      * @param functionPointer 同一运行时的函数地址或闭包句柄。
      * @param arguments 按声明顺序编码的参数槽，字符串等对象须使用其运行时地址。
      * @param result 成功时接收返回槽；void 函数的返回槽应忽略。

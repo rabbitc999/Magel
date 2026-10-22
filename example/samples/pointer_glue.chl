@@ -1,0 +1,56 @@
+/* pointer_glue.chl —— 胶水侧的类型化引用读写（`chali_glue::Reference<T>`）
+ *
+ *   ./chali samples/pointer_glue.chl
+ *
+ * 宿主函数在 `chali_driver.cpp` 的 `InstallDemoGlue` 里用 `bindTypedWithContext`
+ * 注册。`T mut&` / `T const&` 过边界就是 `Reference<T>`：`read(context)` 按 T 取值，
+ * `write(context, value)` 按 T 写回，`at` / `setAt` / `offset` 按 8 字节槽步进 ——
+ * 宿主侧不用再手算 VM 地址、读裸字节。结构体引用收 `Reference<Record<Tag>>`，
+ * `read` 拿到视图后按字段 `field` 读、`set` 写。
+ *
+ * 数组可以直接喂给 `T mut&`：数组名自动退化成指向首元素的可写引用，不必写
+ * `&a[0]`。下面 `call_bump(cell)` / `call_at(data, …)` / `call_offset(boxes, …)`
+ * 都是整段数组直接过边界。
+ */
+
+struct PointerBox {
+    int64 x;
+    int64 y;
+};
+
+int64 demo_pointer_bump(int64 mut& cell);                            /* 读旧值 + 写新值 */
+int64 demo_pointer_sum(PointerBox const& box);                       /* 读结构体字段 */
+void  demo_pointer_offset(PointerBox mut& box, int64 dx, int64 dy);  /* 写结构体字段 */
+int64 demo_pointer_at(int64 mut& data, int64 index);                 /* 按槽下标读 */
+
+int64 main() {
+    /* 定长数组 → int64 mut&：数组名就是首元素地址。 */
+    int64 cell[2];
+    cell[0] = 41;
+    cell[1] = 100;
+    int64 old = demo_pointer_bump(cell);
+    println("bump: old={} cell={} neighbor={}", old, cell[0], cell[1]);
+
+    /* 结构体变量取地址 → PointerBox const& / PointerBox mut&。 */
+    PointerBox box;
+    box.x = 3;
+    box.y = 4;
+    println("sum(box)={}", demo_pointer_sum(&box));
+    demo_pointer_offset(&box, 10, 20);
+    println("offset(box)={} {}", box.x, box.y);
+
+    /* 数组直接当 T mut& 传，配合宿主侧的类型化槽步进。 */
+    int64 data[4];
+    data[0] = 5; data[1] = 6; data[2] = 7; data[3] = 8;
+    println("at(data)={} {} {}", demo_pointer_at(data, 0),
+    demo_pointer_at(data, 2), demo_pointer_at(data, 3));
+
+    /* 结构体数组也退化成 PointerBox mut&：改的是 boxes[0] 的字段。 */
+    PointerBox boxes[2];
+    boxes[0].x = 1; boxes[0].y = 2;
+    boxes[1].x = 3; boxes[1].y = 4;
+    demo_pointer_offset(boxes, 100, 200);
+    println("offset(boxes)={} {} / {} {}", boxes[0].x, boxes[0].y,
+    boxes[1].x, boxes[1].y);
+    return 0;
+}

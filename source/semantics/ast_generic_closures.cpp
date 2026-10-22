@@ -60,17 +60,17 @@ int LiftAstGenericClosure(int id)
                     return Fail("泛型闭包捕获变量与形参重名：" + reference.s), -1;
         }
     }
-    const auto seed = Memory::String("__magel_lambda_ast_generic_") + Memory::toString(id);
+    const auto seed = Memory::String("__chali_lambda_ast_generic_") + Memory::toString(id);
     const int syntax = static_cast<int>(g_nodes.size());
     g_nodes.push_back(original);
     g_astGenericClosures[seed] = { syntax, AstGenericClosureReferences(syntax) };
-    magel_lambda::GenericClosure definition;
+    chali_lambda::GenericClosure definition;
     definition.seed = definition.sourceSeed = seed;
     definition.primary = seed + "_body";
     definition.module = original.module;
     definition.captureMode = static_cast<int>(original.i);
     for (const int generic : N(original.kids[0]).kids) definition.names.push_back(N(generic).s);
-    magel_lambda::genericClosures[seed] = definition;
+    chali_lambda::genericClosures[seed] = definition;
     const int body = M_Block(M_List1(M_Return(M_Int(0))));
     const int function = M_New(MNode::FuncDef, seed);
     g_nodes[function].type = M_TypeInt();
@@ -123,7 +123,7 @@ bool ResolveAstGenericClosureCall(int id, const Memory::String &seed)
     if (call.type >= 0 && !call.s.empty()) return true;
     const auto definition = g_astGenericClosures.at(seed);
     const auto syntax = N(definition.syntax);
-    const auto &closure = magel_lambda::genericClosures.at(seed);
+    const auto &closure = chali_lambda::genericClosures.at(seed);
     const auto params = N(syntax.kids[1]).kids;
     const auto actuals = N(call.kids[1]).kids;
     if (params.size() != actuals.size()) return Fail("泛型闭包的实参数量不匹配"), true;
@@ -161,13 +161,13 @@ bool ResolveAstGenericClosureCall(int id, const Memory::String &seed)
             if (!ImplementsInterface(bindings.at(key)->name, constraint->name)) return Fail("泛型闭包类型实参不满足接口约束：" + closure.names[index]), true;
         }
     }
-    const auto name = magel_generic::mangle(seed + "_body", arguments);
+    const auto name = chali_generic::mangle(seed + "_body", arguments);
     const bool registered = std::any_of(g_functionDecls.begin(), g_functionDecls.end(), [&](const MFunctionDecl &function) {
         return function.module == closure.module && function.source == name;
     });
     if (!registered)
     {
-        magel_macro::AstSubstitution copy(g_nodes, 1000000, &g_types);
+        chali_macro::AstSubstitution copy(g_nodes, 1000000, &g_types);
         std::string error;
         const int body = copy.instantiate(syntax.kids[2], {}, 0, error);
         const int parameters = copy.instantiate(syntax.kids[1], {}, 0, error);

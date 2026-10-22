@@ -1,4 +1,4 @@
-"""构建、校验并打包 Magel；远端提交和标签推送必须显式启用。"""
+"""构建、校验并打包 ChaLi；远端提交和标签推送必须显式启用。"""
 from pathlib import Path
 import argparse
 import hashlib
@@ -16,11 +16,11 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 SAMPLES = ('return_expression', 'named_function', 'derive', 'macro_groups',
            'break_level', 'macro_gensym', 'foreach_interval', 'any_generics', 'value_text')
-CHECKS = ('tests/magel_release.py', 'tools/changelog.py --check', 'tools/check_doc_links.py',
-          'tools/export_magel_ebnf.py --check', 'tools/library_reference.py --check',
-          'tools/embed_manual.py --check', 'tests/magel_book_updates.py',
-          'tests/magel_man.py', 'tests/magel_macro_groups.py', 'tests/magel_any_generics.py',
-          'tests/magel_value_text.py')
+CHECKS = ('tests/chali_release.py', 'tools/changelog.py --check', 'tools/check_doc_links.py',
+          'tools/export_chali_ebnf.py --check', 'tools/library_reference.py --check',
+          'tools/embed_manual.py --check', 'tests/chali_book_updates.py',
+          'tests/chali_man.py', 'tests/chali_macro_groups.py', 'tests/chali_any_generics.py',
+          'tests/chali_value_text.py')
 
 
 def run(command, cwd=ROOT, capture=False, env=None):
@@ -37,8 +37,8 @@ def version_of(root):
     if not re.fullmatch(r'\d+\.\d+\.\d+', version):
         raise ValueError('VERSION 格式无效：' + version)
     manifest = json.loads((root / 'vscode/package.json').read_text(encoding='utf-8'))
-    if manifest.get('magelCompilerVersion', manifest['version']) != version:
-        raise ValueError('vscode/package.json 的 magelCompilerVersion 必须与 VERSION 一致')
+    if manifest.get('chaliCompilerVersion', manifest['version']) != version:
+        raise ValueError('vscode/package.json 的 chaliCompilerVersion 必须与 VERSION 一致')
     return version
 
 
@@ -84,15 +84,15 @@ def verify_assets(root, binary, vsix, version, windows, env=None):
         embedded = 'extension/bin/' + binary.name
         if manifest['version'] != editor_version_of(root) or identity is None or identity.attrib['Version'] != editor_version_of(root):
             raise ValueError('VSIX 清单版本与扩展包版本不一致')
-        if manifest.get('magelCompilerVersion', manifest['version']) != version:
+        if manifest.get('chaliCompilerVersion', manifest['version']) != version:
             raise ValueError('VSIX 内嵌编译器版本声明与 VERSION 不一致')
         if package.read(embedded) != binary.read_bytes():
             raise ValueError('VSIX 内嵌编译器与本次编译器字节不一致')
     pdf = root / 'doc/book/latex/book.pdf'
     if not pdf.read_bytes().startswith(b'%PDF-'):
         raise ValueError('书本 PDF 无效')
-    config = (root / 'build/magel-runtime/buildConfig.json').read_text(encoding='utf-8')
-    for flag in ('MAGEL_WITH_REFLECTION=1', 'STACKVM_WITH_REFLECTION=1'):
+    config = (root / 'build/chali-runtime/buildConfig.json').read_text(encoding='utf-8')
+    for flag in ('CHALI_WITH_REFLECTION=1', 'STACKVM_WITH_REFLECTION=1'):
         if flag not in config:
             raise ValueError('发布构建必须同时启用前端与运行时反射：' + flag)
     if windows:
@@ -106,7 +106,7 @@ def package_assets(root, output, binary, vsix, version, target, revision, dirty)
     """复制独立产物并原子替换 ZIP，同时生成提交元数据与 SHA256 清单。"""
     output.mkdir(parents=True, exist_ok=True)
     files = [(binary, binary.name), (vsix, vsix.name),
-             (root / 'doc/book/latex/book.pdf', 'Magel-book.pdf')]
+             (root / 'doc/book/latex/book.pdf', 'ChaLi-book.pdf')]
     for source, name in files:
         destination = output / name
         if source.resolve() != destination.resolve():
@@ -114,7 +114,7 @@ def package_assets(root, output, binary, vsix, version, target, revision, dirty)
     metadata = dict(version=version, target=target, commit=revision, workingTreeDirty=dirty,
                     reflection=dict(frontend=True, runtime=True))
     (output / 'release.json').write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    archive = output / f'magel-{version}-{target}.zip'
+    archive = output / f'chali-{version}-{target}.zip'
     temporary = None
     try:
         with tempfile.NamedTemporaryFile(dir=output, suffix='.zip.tmp', delete=False) as stream:
@@ -126,11 +126,11 @@ def package_assets(root, output, binary, vsix, version, target, revision, dirty)
                 package.write(root / name, name)
             package.write(output / 'release.json', 'release.json')
             for name in SAMPLES:
-                package.write(root / f'example/samples/{name}.mgl', f'examples/{name}.mgl')
-            package.writestr('README.txt', f'Magel {version} ({target})\n提交：{revision}\n工作区存在未提交改动：{dirty}\n\n'
-                             f'运行：{binary.name} run examples/any_generics.mgl\n宏帮助：{binary.name} man macro\n'
-                             f'插件：code --install-extension {vsix.name}\n书本：Magel-book.pdf\n'
-                             '源码：https://github.com/rabbitc999/Magel\n')
+                package.write(root / f'example/samples/{name}.chl', f'examples/{name}.chl')
+            package.writestr('README.txt', f'ChaLi {version} ({target})\n提交：{revision}\n工作区存在未提交改动：{dirty}\n\n'
+                             f'运行：{binary.name} run examples/any_generics.chl\n宏帮助：{binary.name} man macro\n'
+                             f'插件：code --install-extension {vsix.name}\n书本：ChaLi-book.pdf\n'
+                             '源码：https://github.com/rabbitc999/ChaLi\n')
         os.replace(temporary, archive)
     finally:
         if temporary is not None:
@@ -161,7 +161,7 @@ def publish_tag(version, replace):
         raise ValueError('本地标签已指向其他提交；确需覆盖时显式增加 --replace-tag')
     run(['git', 'push', 'origin', 'master'])
     if local.returncode or local.stdout.strip() != head:
-        run(['git', 'tag', *(['-f'] if local.returncode == 0 else []), '-a', tag, '-m', '发布 Magel ' + version])
+        run(['git', 'tag', *(['-f'] if local.returncode == 0 else []), '-a', tag, '-m', '发布 ChaLi ' + version])
     run(['git', 'push', '--force-with-lease=refs/tags/' + tag + ':' + old, 'origin', 'refs/tags/' + tag])
 
 
@@ -186,16 +186,16 @@ def main(argv=None):
     windows = sys.platform == 'win32'
     target = {'win32': 'windows', 'darwin': 'macos'}.get(sys.platform, sys.platform) + '-' + {
         'amd64': 'x64', 'x86_64': 'x64', 'aarch64': 'arm64'}.get(platform.machine().lower(), platform.machine().lower())
-    binary = ROOT / ('magel.exe' if windows else 'magel')
-    vsix = ROOT / f'vscode/dist/magel-editor-{editor_version_of(ROOT)}.vsix'
+    binary = ROOT / ('ChaLi.exe' if windows else 'chali')
+    vsix = ROOT / f'vscode/dist/chali-editor-{editor_version_of(ROOT)}.vsix'
     if args.dry_run:
         print(f'版本 {version}，目标 {target}，输出 {args.out_dir.resolve()}')
         print('复用产物 → 版本/字节/反射/依赖验证 → ZIP/SHA256' if args.package_only else
               '生成书稿/手册 → XeLaTeX → 内嵌资产 → 默认优化与双反射构建 → 回归 → npm ci/package → 交付验证 → ZIP/SHA256')
         print('远端操作：' + ('推送 master 与标签' if args.push_tag else '无'))
         return 0
-    env = dict(os.environ, MAGEL_LANG='zh', PARSEENGINE_LANG='zh', MAGEL_BIN=str(binary))
-    env.pop('MAGEL_NO_OPT', None)
+    env = dict(os.environ, CHALI_LANG='zh', PARSEENGINE_LANG='zh', CHALI_BIN=str(binary))
+    env.pop('CHALI_NO_OPT', None)
     if args.toolchain_dir:
         env['PATH'] = str(args.toolchain_dir.resolve(strict=True)) + os.pathsep + env.get('PATH', '')
     if not args.package_only:
@@ -209,11 +209,11 @@ def main(argv=None):
         if args.ci:
             run(['sh', 'ci.sh'], env=env)
         run(['sh', 'gen.sh'], env=env)
-        command = ['make', '-j' + str(args.jobs), '-W', 'source/magel_main.cpp', 'TARGET=' + binary.name,
-                   'MAGEL_WITH_REFLECTION=1', 'STACKVM_WITH_REFLECTION=1']
+        command = ['make', '-j' + str(args.jobs), '-W', 'source/chali_main.cpp', 'TARGET=' + binary.name,
+                   'CHALI_WITH_REFLECTION=1', 'STACKVM_WITH_REFLECTION=1']
         if windows:
             command += ['LDFLAGS=-Wl,--gc-sections -s -static -static-libgcc -static-libstdc++']
-        run(['sh', '-c', 'exec "$@"', 'magel-release', *command] if windows else command, env=env)
+        run(['sh', '-c', 'exec "$@"', 'chali-release', *command] if windows else command, env=env)
         for check in CHECKS:
             run([sys.executable, *check.split()], env=env)
         run(['npm.cmd' if windows else 'npm', 'ci', '--no-audit', '--no-fund'], cwd=ROOT / 'vscode', env=env)

@@ -9,7 +9,7 @@
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Point
 {
     int64 x;
@@ -55,7 +55,7 @@ struct Point {        ← struct 名字 {
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 Point p;
 // 声明
 p.x = 3;
@@ -70,7 +70,7 @@ println("{}", p.x);
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Point
 {
     int64 x;
@@ -95,7 +95,7 @@ int64 main()
 \par
 \medskip
 
-这条和很多 C 系语言不同——那里的未初始化字段是随机值。Magel 帮你清零了。
+这条和很多 C 系语言不同——那里的未初始化字段是随机值。ChaLi 帮你清零了。
 
 \begin{tip}{提示}
 字段没有「声明处的默认值」。 写 \texttt{int64 retries =\allowbreak{} 3;} 在结构体里是语法错误。想要默认值，用构造器（9.4 节）。
@@ -107,7 +107,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Point
 {
     int64 x;
@@ -148,9 +148,9 @@ int64 main()
 
 两条要点：
 
-方法体里用 \texttt{self} 指「这个对象自己」。 字段不能裸写，得写 \texttt{self.\allowbreak{}x}。这条规则比 C++ / Java 严格——那里写 \texttt{x} 就当 \texttt{this->\allowbreak{}x} 了。Magel 要求你写出来，因为一眼能看出哪个名字是字段、哪个是参数或者局部变量。
+方法体里用 \texttt{self} 指「这个对象自己」。 字段不能裸写，得写 \texttt{self.\allowbreak{}x}。这条规则比 C++ / Java 严格——那里写 \texttt{x} 就当 \texttt{this->\allowbreak{}x} 了。ChaLi 要求你写出来，因为一眼能看出哪个名字是字段、哪个是参数或者局部变量。
 
-方法定义在结构体的花括号里，和字段混在一起，不用另开一段。（有些语言要在结构体外面再写一遍 \texttt{impl} 块，Magel 不用。）
+方法定义在结构体的花括号里，和字段混在一起，不用另开一段。（有些语言要在结构体外面再写一遍 \texttt{impl} 块，ChaLi 不用。）
 
 调用的写法是 \texttt{p.\allowbreak{}shift(\allowbreak{}10)\allowbreak{}} —— 用 \texttt{.\allowbreak{}}，因为 \texttt{p} 是一个具体的对象。（\texttt{:\allowbreak{}:\allowbreak{}} 是留给「属于类型、不属于对象」的东西的，下一节。）
 
@@ -160,7 +160,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Counter
 {
     int64 total;
@@ -207,7 +207,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Counter
 {
     static int64 alive;
@@ -266,7 +266,7 @@ value=7 alive=1
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Counter
 {
     int64 value;
@@ -301,7 +301,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 Counter c = new Counter(7);
 // 栈上：跟着作用域走
 Counter mut& p = heap new Counter(7);
@@ -326,7 +326,7 @@ Counter mut& p = heap new Counter(7);
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 Counter mut& p = heap Counter;
 // 等价于 heap new Counter(0)，元素类型由 p 的类型定
 \end{lstlisting}
@@ -338,7 +338,7 @@ Counter mut& p = heap Counter;
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: struct Counter 没有匹配的构造函数：(int64)
+chali: struct Counter 没有匹配的构造函数：(int64)
 \end{lstlisting}
 \par
 \medskip
@@ -349,7 +349,7 @@ magel: struct Counter 没有匹配的构造函数：(int64)
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Point
 {
     int64 x;
@@ -403,7 +403,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Money: Add<Money, Money>
 {
     int64 cents;
@@ -439,7 +439,7 @@ int64 main()
 \par
 \medskip
 
-\texttt{a + b} 被翻译成 \texttt{a.\allowbreak{}left\allowbreak{}Add(\allowbreak{}b)\allowbreak{}}。Magel 里没有 \texttt{operator+} 这种声明——运算符是「实现哪个接口」决定的：
+\texttt{a + b} 被翻译成 \texttt{a.\allowbreak{}left\allowbreak{}Add(\allowbreak{}b)\allowbreak{}}。ChaLi 里没有 \texttt{operator+} 这种声明——运算符是「实现哪个接口」决定的：
 
 \begin{center}
 \begin{tabular}{lll}
@@ -462,7 +462,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Rect
 {
     int64 width;
@@ -498,7 +498,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 area(Rect const& rect)
 {
     ...
@@ -523,7 +523,7 @@ void resize(Rect mut& rect)
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 #derive(Equal, Hash, Clone)
 struct BookKey
 {
@@ -632,7 +632,7 @@ left changed
 
 比如「一个形状」要么是圆（带半径），要么是方形（带边长）；「一次操作结果」要么成功（带数据），要么失败（带原因）。
 
-这种「多选一」的数据，是枚举的活儿——也是 Magel 里最漂亮的一块。
+这种「多选一」的数据，是枚举的活儿——也是 ChaLi 里最漂亮的一块。
 
 翻到\hyperref[ch:10]{第 10 章 枚举与模式匹配}。
 

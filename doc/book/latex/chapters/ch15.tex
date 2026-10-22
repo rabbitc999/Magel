@@ -11,7 +11,7 @@
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 List<int64> filter(List<int64> xs, bool fn(int64) keep)
 {
     List<int64> out;
@@ -67,7 +67,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 fn(int64, int64)  // 吃两个 int64，返回 int64
 bool fn(int64)  // 吃一个 int64，返回 bool
 String fn()  // 不吃参数，返回 String
@@ -83,7 +83,7 @@ String fn()  // 不吃参数，返回 String
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 add(int64 a, int64 b)
 {
     return a + b;
@@ -137,7 +137,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Calculator
 {
     int64 fn(int64, int64) op;
@@ -185,7 +185,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 fn(int64) square = int64 fn(int64 x)
@@ -236,7 +236,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 apply(int64 fn(int64, int64) f, int64 a, int64 b)
 {
     return f(a, b);
@@ -279,7 +279,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 base = 10;
@@ -337,7 +337,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 n = 1;
@@ -371,7 +371,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 base = 10;
@@ -390,7 +390,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 不可变变量（const）不能再赋值：base
+chali: 不可变变量（const）不能再赋值：base
 \end{lstlisting}
 \par
 \medskip
@@ -399,7 +399,7 @@ magel: 不可变变量（const）不能再赋值：base
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 counter = 0;
@@ -431,7 +431,7 @@ outside 2
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 n = 5;
@@ -462,7 +462,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     String text = "old";
@@ -489,7 +489,7 @@ old! / old!! / outside
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     List<int64> values;
@@ -518,7 +518,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     const int64 fixed = 7;
@@ -546,7 +546,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     String moved = "payload";
@@ -576,7 +576,7 @@ payload-in / reset
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     String moved = "payload";
@@ -594,7 +594,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: [MGL1205] 借用来源已移动或销毁，不能继续访问（源对象已经销毁）：moved
+chali: [CHL1205] 借用来源已移动或销毁，不能继续访问（源对象已经销毁）：moved
 \end{lstlisting}
 \par
 \medskip
@@ -605,11 +605,11 @@ magel: [MGL1205] 借用来源已移动或销毁，不能继续访问（源对象
 
 \subsection{同一个变量既借又 \texttt{move}：看最后一次使用}
 
-创建借用闭包之后，可以把来源移进另一个闭包；关键是旧借用闭包不能在来源作废后继续使用。下面的 \texttt{f(\allowbreak{}1)\allowbreak{}} 会被编译器以 \texttt{MGL1205} 拒绝，不会进入 VM 执行：
+创建借用闭包之后，可以把来源移进另一个闭包；关键是旧借用闭包不能在来源作废后继续使用。下面的 \texttt{f(\allowbreak{}1)\allowbreak{}} 会被编译器以 \texttt{CHL1205} 拒绝，不会进入 VM 执行：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 void main()
 {
     int64 n = 1;
@@ -635,7 +635,7 @@ void main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 n = 1;
@@ -669,7 +669,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 n = 1;
@@ -698,7 +698,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 a = 2;
@@ -738,7 +738,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 fn copy[a, b] mut(int64 x)
 {
     ...
@@ -751,7 +751,7 @@ fn copy[a, b] mut(int64 x)
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 left = 1;
@@ -785,7 +785,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 a = 1;
@@ -803,7 +803,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: lambda：lambda 默认捕获方式只能声明一次：mut 与 const
+chali: lambda：lambda 默认捕获方式只能声明一次：mut 与 const
 \end{lstlisting}
 \par
 \medskip
@@ -812,7 +812,7 @@ magel: lambda：lambda 默认捕获方式只能声明一次：mut 与 const
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 bias = 9;
@@ -840,7 +840,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 apply(int64 fn(int64) f, int64 x)
 {
     return f(x);
@@ -877,7 +877,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 n = 5;
@@ -908,7 +908,7 @@ b=8 a=6 b=9
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 n = 0;
@@ -947,7 +947,7 @@ a=1 b=2 outside=2
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 fn() counter()
 {
     int64 n = 4;
@@ -970,7 +970,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: [MGL1204] 返回值中的引用不能超过局部来源的生命周期
+chali: [CHL1204] 返回值中的引用不能超过局部来源的生命周期
 \end{lstlisting}
 \par
 \medskip
@@ -981,7 +981,7 @@ magel: [MGL1204] 返回值中的引用不能超过局部来源的生命周期
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 fn() counter()
 {
     int64 n = 4;
@@ -1013,7 +1013,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 fn() counter()
 {
     int64 n = 8;
@@ -1053,7 +1053,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 drops = 0;
 struct Record: Drop
 {
@@ -1106,7 +1106,7 @@ drops=2 outside=1
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 drops = 0;
 struct Record: Drop
 {
@@ -1178,7 +1178,7 @@ drops=1
 
 \item 借用本次调用局部变量的闭包不能返回；需要自有状态时用 \texttt{copy} / \texttt{move}。借用调用方提供的对象仍须满足来源寿命。
 
-\item 借用闭包的最后一次使用要在来源作废之前：先用完再 \texttt{move} 可以通过；\texttt{move} 后再使用旧借用闭包会报 \texttt{MGL1205}（见 15.7.5）。
+\item 借用闭包的最后一次使用要在来源作废之前：先用完再 \texttt{move} 可以通过；\texttt{move} 后再使用旧借用闭包会报 \texttt{CHL1205}（见 15.7.5）。
 
 \item 复制闭包：拥有的状态各复制一份，借用的线仍指向同一来源。
 
@@ -1190,7 +1190,7 @@ drops=1
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 let f = fn(int64 x)
 {
     x * 2
@@ -1209,7 +1209,7 @@ let g = fn(int64 x)
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     let g = int64 fn(int64 x)
@@ -1226,7 +1226,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 返回类型为 int64 的函数 __magel_lambda_… 不是所有路径都有 return
+chali: 返回类型为 int64 的函数 __chali_lambda_… 不是所有路径都有 return
 \end{lstlisting}
 \par
 \medskip
@@ -1239,7 +1239,7 @@ magel: 返回类型为 int64 的函数 __magel_lambda_… 不是所有路径都�
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 fn(int64) makeAdder(int64 mut& amount)
 {
     return fn(int64 value)
@@ -1274,11 +1274,11 @@ int64 main()
 
 \subsection*{移动后访问诊断}
 
-下面的闭包将 a 的所有权搬进自身，创建之后读取源变量 a 会报 MGL1205：
+下面的闭包将 a 的所有权搬进自身，创建之后读取源变量 a 会报 CHL1205：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     String a = "1";
@@ -1297,7 +1297,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     String a = "1";
@@ -1328,7 +1328,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 fn() makeNamedCounter()
 {
     int64 current = 0;
@@ -1399,7 +1399,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 hello(
     int64 fn(int64 fn(int64 fn(int64 fn(int64 fn(int64))))) pipeline,
     int64 fn(int64) finish)
@@ -1434,7 +1434,7 @@ int64 hello(
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 level1(int64 value)
 {
     return value + 1;
@@ -1499,7 +1499,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 let combine = (int64 fn(int64)) fn(int64 fn(int64) a, int64 fn(int64) b)
 {
     int64 fn copy(int64 x)
@@ -1519,7 +1519,7 @@ let combine = (int64 fn(int64)) fn(int64 fn(int64) a, int64 fn(int64) b)
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     let combine = (int64 fn(int64)) fn(int64 fn(int64) a, int64 fn(int64) b)
@@ -1569,7 +1569,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Mapper
 {
     let transform = fn<T>(T value)
@@ -1615,7 +1615,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 count = 0;
@@ -1733,7 +1733,7 @@ int64 main()
 
 孔乙己睁大眼睛说：“你怎么这样凭空污人清白……”
 
-“什么清白？我前天亲眼见你写了个返回闭包，被编译器报 MGL1204，吊着打。”
+“什么清白？我前天亲眼见你写了个返回闭包，被编译器报 CHL1204，吊着打。”
 
 孔乙己便涨红了脸，额上的青筋条条绽出，争辩道：“借用不能算逃逸……闭包！……程序员的事，能算逃逸么？”
 
@@ -1777,7 +1777,7 @@ int64 main()
 
 孔乙己刚用指甲在柜台上画 fn mut()，见我毫不热心，便又叹一口气，显出极惋惜的样子。
 
-有几回，邻舍孩子听得笑声，也赶热闹，围住了孔乙己。他便给他们一人一段Magel代码。
+有几回，邻舍孩子听得笑声，也赶热闹，围住了孔乙己。他便给他们一人一段ChaLi代码。
 
 孩子跑完示例，仍然不散，眼睛都望着屏幕。
 

@@ -1,4 +1,4 @@
-#include "magel_ast.hpp"
+#include "chali_ast.hpp"
 #include "macro/template_binding.hpp"
 #include "macro/registry.hpp"
 #include <iostream>
@@ -36,9 +36,9 @@ int main()
     const int body = add(MNode::MacroTemplate, "", { statements, tail });
     const int generics = add(MNode::List, "", {});
     const int definition = add(MNode::MacroDefinition, "TEST", { parameters, body, generics });
-    magel_macro::HygieneResolver resolver;
-    magel_macro::TemplateBinding binder(nodes, resolver);
-    magel_macro::BoundTemplate bound;
+    chali_macro::HygieneResolver resolver;
+    chali_macro::TemplateBinding binder(nodes, resolver);
+    chali_macro::BoundTemplate bound;
     std::string error;
     if (!binder.bind(definition, 0, bound, error) || !error.empty()) return 1;
     const auto identity = bound.parameters.at("x");
@@ -55,10 +55,10 @@ int main()
     if (nodes[tail].kind != MNode::Var || nodes[initial].bindingIdentity || nodes[declaration].bindingIdentity) return 6;
     const int value = add(MNode::Int, "", {});
     nodes[value].i = 42;
-    magel_macro::AstSubstitution substitution(nodes);
+    chali_macro::AstSubstitution substitution(nodes);
     const int expanded = substitution.instantiate(nodes[bound.root].kids[1], { { identity, value } }, 1, error);
     if (expanded < 0 || nodes[expanded].kind != MNode::Int) return 7;
-    magel_macro::BoundTemplate second;
+    chali_macro::BoundTemplate second;
     if (!binder.bind(definition, 0, second, error) || second.parameters.at("x") == identity) return 8;
     nodes[parameters].kids.push_back(parameter);
     const auto saved = nodes.size();
@@ -70,7 +70,7 @@ int main()
     const int empty = add(MNode::List, "", {});
     const int expressionBody = add(MNode::MacroTemplate, "", { empty, tail });
     const int expressionDefinition = add(MNode::MacroDefinition, "IDENTITY", { parameters, expressionBody, generics });
-    magel_macro::Registry registry(nodes, resolver);
+    chali_macro::Registry registry(nodes, resolver);
     if (!registry.add(expressionDefinition, 0, error)) return 11;
     const auto registered = nodes.size();
     if (registry.add(expressionDefinition, 0, error) || error.empty() || nodes.size() != registered) return 12;

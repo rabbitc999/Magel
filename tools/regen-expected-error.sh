@@ -8,18 +8,18 @@
 # 用法：sh tmp/regen-expected-error.sh [名字...]   # 不点名就刷新全部报错样例
 set -e
 cd "$(dirname "$0")/.."
-export MAGEL_LANG=zh
+export CHALI_LANG=zh
 if [ "$#" -gt 0 ]; then
     names="$*"
 else
-    names=$(ls example/samples-error/*.mgl | sed -e 's#.*/##' -e 's/\.mgl$//')
+    names=$(ls example/samples-error/*.chl | sed -e 's#.*/##' -e 's/\.chl$//')
 fi
 for name in $names; do
-    src="example/samples-error/$name.mgl"
+    src="example/samples-error/$name.chl"
     [ -f "$src" ] || { echo "跳过 $name（没有 $src）" >&2; continue; }
     set --
     if [ -f "example/expected-error/$name.threads" ]; then set -- --threads; fi
-    ./magel.exe run "$src" "$@" >/dev/null 2>"tmp/regen.$name.err" && {
+    ./ChaLi.exe run "$src" "$@" >/dev/null 2>"tmp/regen.$name.err" && {
         echo "跳过 $name（本应报错却返回 0）" >&2
         rm -f "tmp/regen.$name.err"
         continue

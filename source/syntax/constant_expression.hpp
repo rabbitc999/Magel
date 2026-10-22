@@ -1,8 +1,8 @@
-#ifndef MAGEL_SYNTAX_CONSTANT_EXPRESSION_HPP
-#define MAGEL_SYNTAX_CONSTANT_EXPRESSION_HPP
+#ifndef CHALI_SYNTAX_CONSTANT_EXPRESSION_HPP
+#define CHALI_SYNTAX_CONSTANT_EXPRESSION_HPP
 #include "source_text.hpp"
 
-namespace magel_syntax
+namespace chali_syntax
 {
 /**
  * @brief 普通 const 泛型归一化使用的整数或字符串常量，不执行语言函数。
@@ -28,5 +28,5 @@ struct CompileTimeConstant
 CompileTimeConstant evaluateConstant(const Memory::String &source,
                                      const Memory::Map<Memory::String, Memory::String> &values,
                                      Memory::String &error);
-}  // namespace magel_syntax
+}  // namespace chali_syntax
 #endif

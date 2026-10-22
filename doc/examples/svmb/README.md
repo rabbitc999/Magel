@@ -15,14 +15,14 @@
 | `control.layout` | 数据区布局表（结构体字段与方法名在这里） |
 | `svmb_dump.py` | 最小 `.svmb` 解析器，纯标准库 |
 
-源程序是仓库里的 [`magel/example/samples/control.mgl`](../../../example/samples/control.mgl)（29 行），
+源程序是仓库里的 [`chali/example/samples/control.chl`](../../../example/samples/control.chl)（29 行），
 生成命令（在仓库根目录执行）：
 
 ```sh
-magel/magel run magel/example/samples/control.mgl --emit --svmb --out tmp/svmb-study/control
+chali/chali run chali/example/samples/control.chl --emit --svmb --out tmp/svmb-study/control
 ```
 
-标本是 2026-10-01 用当时构建的 `magel` 生成的。**再次生成不会与原文件逐字节相同**：
+标本是 2026-10-01 用当时构建的 `chali` 生成的。**再次生成不会与原文件逐字节相同**：
 调试节给每条指令都存了一份编译时的 `.quad` 路径字符串，换个目录编译，产物大小就会变
 （实测路径长 33 字节 × 8204 条 = `+270732` 字节），但程序本体逐字节一致。
 `collect.py` 会把这件事验给你看，所以标本不必因为"再生成对不上"而重新入库。
@@ -41,13 +41,13 @@ magel/magel run magel/example/samples/control.mgl --emit --svmb --out tmp/svmb-s
 ## 重新生成
 
 ```sh
-python magel/doc/examples/svmb/collect.py \
-    --parser magel/magel.exe \
-    --vm       tmp/vm-9700x-pool/x64/Release/magel-stackvm.exe \
-    --vm-opcode tmp/vm-9700x-pool/gcc64/magel-stackvm.exe \
+python chali/doc/examples/svmb/collect.py \
+    --parser chali/ChaLi.exe \
+    --vm       tmp/vm-9700x-pool/x64/Release/chali-stackvm.exe \
+    --vm-opcode tmp/vm-9700x-pool/gcc64/chali-stackvm.exe \
     --exported tmp/svmb-strip/exp-full/program.exe \
     --exported-strip tmp/svmb-strip/exp-none/program.exe \
-    --tests tmp/vm-9700x-pool/gcc64/magel-stackvm-tests.exe
+    --tests tmp/vm-9700x-pool/gcc64/chali-stackvm-tests.exe
 ```
 
 ## 生成这批证据时的环境

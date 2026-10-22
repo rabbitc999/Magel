@@ -1,0 +1,69 @@
+import std::regex;
+
+int64 main() {
+    int64 hex = 0xFF;
+    int64 binary = b0010_0011;
+    int64 binaryWithSeparator = b_00100011;
+    uint64 highBit = (uint64)0x8000000000000000;
+    assert(hex == 255);
+    assert(binary == 35 && binaryWithSeparator == 35);
+    assert(highBit == ((uint64)1 << 63));
+
+    Result<std::regex::Regex, std::regex::RegexError> compiled =
+    std::regex::Regex::compile("[a-z]+[0-9]+");
+    assert(compiled.isOk());
+    std::regex::Regex lettersDigits = compiled.unwrap();
+    std::regex::Regex digits = std::regex::Regex::compile("[0-9]+").unwrap();
+    std::regex::Regex oneDigit = std::regex::Regex::compile("[0-9]").unwrap();
+    std::regex::Regex groupsPattern = std::regex::Regex::compile("([a-z]+)([0-9]+)").unwrap();
+    std::regex::Regex oneGroup = std::regex::Regex::compile("([0-9])").unwrap();
+    assert(std::regex::Regex::compile("[").isErr());
+    assert(lettersDigits.fullMatch("ab12"));
+    assert(!lettersDigits.fullMatch("!ab12"));
+    assert(digits.contains("item42!"));
+    Option<int64> firstDigit = digits.find("item42!");
+    Option<int64> missingDigit = digits.find("item");
+    assert(firstDigit.isValue() && firstDigit.unwrapOr(-1) == 4);
+    assert(missingDigit.isNone());
+    String captured = groupsPattern.capture("ab12", 2);
+    String first = oneDigit.replaceFirst("a1 b2", "X");
+    String all = oneDigit.replaceAll("a1 b2", "X");
+    String groups = groupsPattern.replaceAll("ab12", "$2-$1");
+    assert(captured == "12");
+    assert(first == "aX b2");
+    assert(all == "aX bX");
+    assert(groups == "12-ab");
+    assert(groupsPattern.capture("ab12", 2) == "12");
+    assert("aX" == oneDigit.replaceFirst("a1", "X"));
+    if (oneDigit.replaceAll("a1", "X") == "aX") {
+        assert(true);
+    } else {
+        panic("regex condition failed");
+    }
+    while (oneGroup.capture("7", 1) == "7") {
+        break;
+    }
+    int64 iterations = 0;
+    {
+        int64 i = 0;
+        while (oneGroup.capture("7", 1) == "7") {
+
+        iterations = iterations + 1;
+        if (iterations == 2) { break; }
+    
+            i = i + 1;
+        }
+    }
+    { bool chaliLoopFirst1 = true; while (chaliLoopFirst1 || (oneGroup.capture("7", 1) != "7")) { chaliLoopFirst1 = false;
+        iterations = iterations + 1;
+     } }
+    assert(iterations == 3);
+    String radixText = format("{:x}/{:X}/{:b}", hex, hex, binary);
+    assert(radixText == "ff/FF/100011");
+    String highBits = format("{:x}", highBit);
+    assert(highBits == "8000000000000000");
+    assert(format("{:b}", binary) == "100011");
+    println("hex={:x} HEX={:X} bin={:b}", hex, hex, binary);
+    println("radix regex OK");
+    return 0;
+}

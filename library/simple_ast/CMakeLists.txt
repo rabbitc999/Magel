@@ -16,4 +16,4 @@ add_executable(simple_ast-tests test_simple_ast.cpp)
 target_link_libraries(simple_ast-tests PRIVATE parseengine_simple_ast)
 add_test(NAME simple_ast-tests COMMAND simple_ast-tests)
 
-target_compile_definitions(parseengine_simple_ast PUBLIC MAGEL_CUSTOM_ALLOCATOR=1)
+target_compile_definitions(parseengine_simple_ast PUBLIC CHALI_CUSTOM_ALLOCATOR=1)

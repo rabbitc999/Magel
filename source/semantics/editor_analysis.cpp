@@ -67,8 +67,8 @@ Memory::String EditorTypeText(const std::shared_ptr<MType> &type, std::size_t de
     }
     if (type->kind == MType::Struct)
     {
-        const auto instance = magel_generic::session.made.find(BareTypeName(type->name));
-        if (instance != magel_generic::session.made.end())
+        const auto instance = chali_generic::session.made.find(BareTypeName(type->name));
+        if (instance != chali_generic::session.made.end())
         {
             auto text = instance->second.generic->name + "<";
             for (std::size_t index = 0; index < instance->second.args.size(); ++index)
@@ -89,14 +89,14 @@ Memory::String EditorTypeText(const std::shared_ptr<MType> &type, std::size_t de
  */
 void RecordEditorTypeHint(int id, const std::shared_ptr<MType> &type)
 {
-    if (!magel_editor::compilerAnalysis.enabled()) return;
+    if (!chali_editor::compilerAnalysis.enabled()) return;
     const auto &node = N(id);
-    if (node.syntaxContext || node.s.empty() || node.s.rfind("__magel_", 0) == 0) return;
+    if (node.syntaxContext || node.s.empty() || node.s.rfind("__chali_", 0) == 0) return;
     const auto text = EditorTypeText(type);
     if (text.empty()) return;
     const auto file = node.sourceLine && node.sourceLine <= g_sourceFiles.size() ? g_sourceFiles[node.sourceLine - 1] : g_sourceFallback;
     const auto line = node.sourceLine && node.sourceLine <= g_sourceLines.size() && g_sourceLines[node.sourceLine - 1] ? g_sourceLines[node.sourceLine - 1] : node.sourceLine;
-    magel_editor::compilerAnalysis.addType({ std::string(file.data(), file.size()), std::string(node.s.data(), node.s.size()), std::string(text.data(), text.size()), line, node.sourceColumn });
+    chali_editor::compilerAnalysis.addType({ std::string(file.data(), file.size()), std::string(node.s.data(), node.s.size()), std::string(text.data(), text.size()), line, node.sourceColumn });
 }
 
 /**
@@ -140,15 +140,15 @@ std::string EditorMacroTree(int id, std::size_t depth, std::size_t &budget)
     case MNode::TypeQualifiedRef: kind = "qualified_member"; break;
     default: break;
     }
-    const auto name = (node.kind == MNode::Lambda || node.kind == MNode::FuncDef) && node.s.rfind("__magel_lambda_", 0) == 0 ? Memory::String("fn") : node.s;
-    auto result = std::string("{\"kind\":") + magel_editor::jsonString(kind) + ",\"name\":" + magel_editor::jsonString(std::string_view(name.data(), name.size()));
-    result += ",\"origin\":" + magel_editor::jsonString(node.syntaxContext ? "definition" : "argument");
-    if (!node.s2.empty()) result += ",\"member\":" + magel_editor::jsonString(std::string_view(node.s2.data(), node.s2.size()));
+    const auto name = (node.kind == MNode::Lambda || node.kind == MNode::FuncDef) && node.s.rfind("__chali_lambda_", 0) == 0 ? Memory::String("fn") : node.s;
+    auto result = std::string("{\"kind\":") + chali_editor::jsonString(kind) + ",\"name\":" + chali_editor::jsonString(std::string_view(name.data(), name.size()));
+    result += ",\"origin\":" + chali_editor::jsonString(node.syntaxContext ? "definition" : "argument");
+    if (!node.s2.empty()) result += ",\"member\":" + chali_editor::jsonString(std::string_view(node.s2.data(), node.s2.size()));
     if (node.kind == MNode::Int) result += ",\"value\":" + std::to_string(node.i);
     if (node.type >= 0)
     {
         const auto type = EditorTypeText(T(node.type));
-        result += ",\"type\":" + magel_editor::jsonString(std::string_view(type.data(), type.size()));
+        result += ",\"type\":" + chali_editor::jsonString(std::string_view(type.data(), type.size()));
     }
     result += ",\"children\":[";
     bool first = true;
@@ -173,12 +173,12 @@ std::string EditorMacroTree(int id, std::size_t depth, std::size_t &budget)
  */
 void RecordEditorMacro(int call, int root)
 {
-    if (!magel_editor::compilerAnalysis.enabled()) return;
+    if (!chali_editor::compilerAnalysis.enabled()) return;
     const auto &node = N(call);
     const auto sourceLine = node.expansionLine ? node.expansionLine : node.sourceLine;
     const auto column = node.expansionLine ? node.expansionColumn : node.sourceColumn;
     const auto file = sourceLine && sourceLine <= g_sourceFiles.size() ? g_sourceFiles[sourceLine - 1] : g_sourceFallback;
     const auto line = sourceLine && sourceLine <= g_sourceLines.size() && g_sourceLines[sourceLine - 1] ? g_sourceLines[sourceLine - 1] : sourceLine;
     std::size_t budget = 10000;
-    magel_editor::compilerAnalysis.addMacro({ std::string(file.data(), file.size()), std::string(node.s.data(), node.s.size()), EditorMacroTree(root, 0, budget), line, column });
+    chali_editor::compilerAnalysis.addMacro({ std::string(file.data(), file.size()), std::string(node.s.data(), node.s.size()), EditorMacroTree(root, 0, budget), line, column });
 }

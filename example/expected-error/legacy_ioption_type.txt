@@ -1,1 +1,1 @@
-magel: 没有声明的泛型类型：IOption
+chali: 没有声明的泛型类型：IOption

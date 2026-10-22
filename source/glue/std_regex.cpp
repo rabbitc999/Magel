@@ -1,8 +1,8 @@
 #include "std_regex.hpp"
 #include "std_native_record.hpp"
-#include "../allocator/magel_allocator.hpp"
+#include "../allocator/chali_allocator.hpp"
 
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 
 #include <cstdint>
 #include <map>
@@ -46,7 +46,7 @@ const stackvm::NativeRecordType patternType{ "std::regex::Regex", clonePattern, 
  * @param compiled 编译结果，空值表示未初始化或编译失败。
  * @return 原生记录句柄。
  */
-std::int64_t makePattern(magel_glue::Context &ctx, std::shared_ptr<const std::regex> compiled = {})
+std::int64_t makePattern(chali_glue::Context &ctx, std::shared_ptr<const std::regex> compiled = {})
 {
     auto value = std::make_unique<Pattern>();
     value->compiled = std::move(compiled);
@@ -60,7 +60,7 @@ std::int64_t makePattern(magel_glue::Context &ctx, std::shared_ptr<const std::re
  * @param handle 拥有模式引用的原生记录。
  * @return 编译模式；记录无效时报告诊断并返回空。
  */
-std::shared_ptr<const std::regex> get(magel_glue::Context &ctx, std::int64_t handle)
+std::shared_ptr<const std::regex> get(chali_glue::Context &ctx, std::int64_t handle)
 {
     auto *value = static_cast<Pattern *>(ctx.nativeRecord(handle, patternType));
     if (!value || !value->compiled)
@@ -77,9 +77,9 @@ std::shared_ptr<const std::regex> get(magel_glue::Context &ctx, std::int64_t han
  * @param error 绑定失败时接收原始诊断，可为空。
  * @return 全部入口绑定成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
-    using magel_glue::Context;
+    using chali_glue::Context;
     auto &native = registry.native();
     bool hooks = native_record_glue::bind(native, "std::regex::__regexCopy", 1, native_record_glue::copy, error)
                  && native_record_glue::bind(native, "std::regex::__regexDrop", 1, native_record_glue::drop, error);

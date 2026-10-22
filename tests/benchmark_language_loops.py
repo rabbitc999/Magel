@@ -1,4 +1,4 @@
-"""下载并编译官方 Lua，与 CPython 和真实 Magel 字节码执行同一 while 循环。"""
+"""下载并编译官方 Lua，与 CPython 和真实 ChaLi 字节码执行同一 while 循环。"""
 import argparse
 import hashlib
 import json
@@ -43,7 +43,7 @@ def run(command, **kwargs):
 def main():
     """按固定输入、一次预热和重复中位数输出完整可复现报告。"""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--magel", type=Path, default=ROOT / "magel.exe")
+    parser.add_argument("--chali", type=Path, default=ROOT / "ChaLi.exe")
     parser.add_argument("--runner", type=Path, default=ROOT / "build/vm-program-benchmark.exe")
     parser.add_argument("--baseline-runner", type=Path)
     parser.add_argument("--skip-reference", action="store_true", help="跳过未优化逐条执行；仍测旧优化核心")
@@ -99,7 +99,7 @@ for r=1,{repeats} do
     print(elapsed, value)
 end
 """
-    magel_source = f"""int64 calculate(int64 limit) {{
+    chali_source = f"""int64 calculate(int64 limit) {{
     int64 i = 0, total = 0;
     while(i < limit) {{
         total = total + i;
@@ -109,12 +109,12 @@ end
 }}
 int64 main() {{ std::lang::println("{{}}", calculate(std::lang::inputInt())); return 0; }}
 """
-    pyfile, luafile, mglfile = (WORK / ("loop" + ext) for ext in (".py", ".lua", ".mgl"))
+    pyfile, luafile, chlfile = (WORK / ("loop" + ext) for ext in (".py", ".lua", ".chl"))
     pyfile.write_text(python_source, encoding="utf-8")
     luafile.write_text(lua_source, encoding="utf-8")
-    mglfile.write_text(magel_source, encoding="utf-8")
+    chlfile.write_text(chali_source, encoding="utf-8")
     prefix = WORK / "loop-program"
-    run([args.magel.resolve(), "svmb", mglfile, "out", prefix])
+    run([args.chali.resolve(), "svmb", chlfile, "out", prefix])
     results = {}
     def record(name, output, vm=False):
         values = []
@@ -131,24 +131,24 @@ int64 main() {{ std::lang::println("{{}}", calculate(std::lang::inputInt())); re
             results[name]["logical_steps"] = int(output.splitlines()[0].split()[1])
     record("Python", run([sys.executable, pyfile]))
     record("Lua", run([lua, luafile]))
-    record("Magel VM optimized", run([args.runner.resolve(), prefix, repeats, "1", count]), True)
+    record("ChaLi VM optimized", run([args.runner.resolve(), prefix, repeats, "1", count]), True)
     core_variants = {
-        "Magel register switch": ["1", "0", "1", "1", "1"],
-        "Magel register labels": ["1", "1", "1", "1", "1"],
-        "Magel register no jump folding": ["1", "0", "0", "1", "1"],
-        "Magel register generic opcodes": ["1", "0", "1", "0", "1"],
-        "Magel register per instruction": ["1", "0", "1", "1", "0"],
-        "Magel register compact only": ["1", "0", "0", "0", "0"],
+        "ChaLi register switch": ["1", "0", "1", "1", "1"],
+        "ChaLi register labels": ["1", "1", "1", "1", "1"],
+        "ChaLi register no jump folding": ["1", "0", "0", "1", "1"],
+        "ChaLi register generic opcodes": ["1", "0", "1", "0", "1"],
+        "ChaLi register per instruction": ["1", "0", "1", "1", "0"],
+        "ChaLi register compact only": ["1", "0", "0", "0", "0"],
     }
     if args.core_variants:
         for name, switches in core_variants.items():
             record(name, run([args.runner.resolve(), prefix, repeats, "1", count, *switches]), True)
     if not args.skip_legacy:
-        record("Magel VM legacy optimized", run([args.runner.resolve(), prefix, repeats, "1", count, "0"]), True)
+        record("ChaLi VM legacy optimized", run([args.runner.resolve(), prefix, repeats, "1", count, "0"]), True)
     if not args.skip_reference:
-        record("Magel VM reference", run([args.runner.resolve(), prefix, repeats, "0", count]), True)
+        record("ChaLi VM reference", run([args.runner.resolve(), prefix, repeats, "0", count]), True)
     if args.baseline_runner:
-        record("Magel VM before", run([args.baseline_runner.resolve(), prefix, repeats, "1", count]), True)
+        record("ChaLi VM before", run([args.baseline_runner.resolve(), prefix, repeats, "1", count]), True)
     java_file = WORK / "LoopBenchmark.java"
     java_file.write_text("""public final class LoopBenchmark {
     private static volatile long sink;
@@ -190,11 +190,11 @@ int64 main() {{ std::lang::println("{{}}", calculate(std::lang::inputInt())); re
               "compiler": run(["gcc", "--version"]).splitlines()[0],
               "make": MAKE,
               "machine": MACHINE,
-              "magel_version": (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+              "chali_version": (ROOT / "VERSION").read_text(encoding="utf-8").strip()
               if (ROOT / "VERSION").exists() else "",
-              "magel_commit": run(["git", "-C", str(ROOT), "rev-parse", "--short", "HEAD"]).strip(),
-              "compiler_flags": "Lua -O2; Magel -O2 -DNDEBUG MAGEL_CUSTOM_ALLOCATOR=1",
-              "timing": "Java System.nanoTime; Python perf_counter_ns; Lua os.clock; Magel steady_clock; exclude parsing and file loading; Magel includes execution-plan setup and final checksum output",
+              "chali_commit": run(["git", "-C", str(ROOT), "rev-parse", "--short", "HEAD"]).strip(),
+              "compiler_flags": "Lua -O2; ChaLi -O2 -DNDEBUG CHALI_CUSTOM_ALLOCATOR=1",
+              "timing": "Java System.nanoTime; Python perf_counter_ns; Lua os.clock; ChaLi steady_clock; exclude parsing and file loading; ChaLi includes execution-plan setup and final checksum output",
               "results": results}
     (WORK / "results.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False, indent=2))

@@ -1,0 +1,45 @@
+/* try_temp_name_collision.chl —— 局部变量名与生成器内部临时名撞名的回归。
+ *
+ * 生成器给表达式结果分配的临时槽曾经叫 `t1`、`t2`…，用户自己写一个 `t1` 就会顶掉
+ * 那个槽：`?` 传播把源聚合搬进临时槽、并在槽上登记析构，槽被用户变量覆盖以后
+ * 析构登记跟着丢失，函数返回时这块存储就没人回收（运行结束报「还有字节没有 drop」）。
+ *
+ * 现在内部临时名统一取 `__temp_t<n>`，并与程序里出现过的名字做避让，
+ * 所以下面两个函数名的写法不同、结果一样，都不泄漏。
+ */
+
+Result<int32, int32> next(Result<int32, int32> a)
+{
+    int32 val = a?;
+    val += 1;
+    if (val == 38) {
+        return Err(12);
+    }
+    return Ok(val);
+}
+
+Result<int32, int32> fromNamedTemp(Result<int32, int32> a)
+{
+    int32 t1 = next(a)?;
+    return Ok(t1);
+}
+
+Result<int32, int32> fromReservedTemp(Result<int32, int32> a)
+{
+    /* 故意用内部前缀之前的老名字，验证避让（撞上就继续往后取号）。 */
+    int32 __temp_t1 = next(a)?;
+    return Ok(__temp_t1);
+}
+
+void main()
+{
+    let a = Result<int32, int32>::Ok(0);
+    match (fromNamedTemp(a)) {
+        Ok(t) => { println("OK={}", t); }
+        Err(t) => { println("ERR={}", t); }
+    }
+    match (fromReservedTemp(a)) {
+        Ok(t) => { println("OK={}", t); }
+        Err(t) => { println("ERR={}", t); }
+    }
+}

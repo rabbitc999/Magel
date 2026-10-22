@@ -1,7 +1,7 @@
 #include "source_text.hpp"
 #include <cctype>
 
-namespace magel_syntax
+namespace chali_syntax
 {
 /**
  * @brief 判断字符能否开始一个普通标识符。
@@ -149,4 +149,4 @@ bool groupArguments(const Memory::String &text, std::size_t open,
     return false;
 }
 
-}  // namespace magel_syntax
+}  // namespace chali_syntax

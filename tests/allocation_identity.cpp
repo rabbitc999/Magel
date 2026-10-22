@@ -2,7 +2,7 @@
  * @file allocation_identity.cpp
  * @brief 无墓碑分配身份、拆分复用及代次边界回归。
  */
-#include "../source/magel_runtime_allocator.hpp"
+#include "../source/chali_runtime_allocator.hpp"
 #include "../library/stackvm/allocation_index.hpp"
 #include <cassert>
 #include <cstdio>

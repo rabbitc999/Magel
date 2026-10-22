@@ -124,13 +124,13 @@ struct RegisterInstruction
 /**
  * @brief 一条指令对应的源码位置（调试信息）。
  *
- * `file` / `line` 指向**语言源码**，`quadLine` 指向四元式文本的行。MAGEL 前端通过四元式来源元数据填写前者，旧四元式仍保留后者
+ * `file` / `line` 指向**语言源码**，`quadLine` 指向四元式文本的行。CHALI 前端通过四元式来源元数据填写前者，旧四元式仍保留后者
  * （四元式行），所以两个都留着：谁有位置就填谁，`toString()` 按"越接近源码越优先"挑一个显示。
  */
 struct SourceLocation
 {
     Memory::String function;   ///< 所属函数 / 标签；空表示根或未知。
-    Memory::String file;       ///< 源文件名（`.mgl` 或 `.quad`）；空表示不知道。
+    Memory::String file;       ///< 源文件名（`.chl` 或 `.quad`）；空表示不知道。
     std::int32_t line = 0;     ///< 源文件行号（1 基）；0 = 未知。
     std::size_t quadLine = 0;  ///< 四元式文本行号（1 基）；0 = 未知。
 
@@ -227,7 +227,7 @@ struct Program
     Memory::Set<Memory::String> exports;
     /**
      * 调试信息：指令下标 → 源码位置。组装时按"四元式行的来源"自动填，
-     * 前端如果能给出 `.mgl` 的文件与行号，也会一起存进来。
+     * 前端如果能给出 `.chl` 的文件与行号，也会一起存进来。
      */
     DebugInfo debug;
     Memory::Vector<Memory::String> diagnostics;  ///< 组装诊断（不支持的指令等）。

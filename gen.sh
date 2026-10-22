@@ -84,22 +84,22 @@ fi
 
 echo "文法生成器：$ENGINE"
 
-# 先把标准库 .mgl 源码内嵌进编译器（magel_stdlib_embedded.cpp），
-# 这样 exe 自包含，import std::xxx 不依赖磁盘上的 .mgl 文件。
+# 先把标准库 .chl 源码内嵌进编译器（chali_stdlib_embedded.cpp），
+# 这样 exe 自包含，import std::xxx 不依赖磁盘上的 .chl 文件。
 python tools/embed_i18n.py
 python tools/stackvm_sources.py --build-assets
 python tools/cas_sources.py --build-assets
-# 手册数据先于内嵌：embed_stdlib.py 会把 magel_manual.json 一起压进内嵌资产表。
+# 手册数据先于内嵌：embed_stdlib.py 会把 chali_manual.json 一起压进内嵌资产表。
 python tools/embed_manual.py
 python tools/embed_stdlib.py
 
 # --no-build-files：本目录的 Makefile 是手写、纳入版本管理的「生成代码 → 构建」
 # 工程文件（见 Makefile / local.mk），不能让生成器覆盖它，也别删它。
 # 解析器、驱动、报告与生成清单统一写入 source/，不散落在仓库根目录。
-# 词法包含由本项目展开，兼容旧版外置生成器；权威定义仍为 source/magel.gram。
-expanded=source/.magel-build.gram
+# 词法包含由本项目展开，兼容旧版外置生成器；权威定义仍为 source/chali.gram。
+expanded=source/.chali-build.gram
 trap 'rm -f "$expanded"' EXIT HUP INT TERM
-python tools/expand_grammar.py source/magel.gram "$expanded"
+python tools/expand_grammar.py source/chali.gram "$expanded"
 
 # 增量生成：默认复用持久化的文法分析缓存（--cache-dir 同时启用增量生成），
 # 文法没变时省掉 LR/IELR 重算。需要强制全量重算时用 `REBUILD=1 sh gen.sh`。

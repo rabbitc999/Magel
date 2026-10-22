@@ -13,7 +13,7 @@
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 maxOf(int64 a, int64 b)
 {
     if (a > b)
@@ -30,7 +30,7 @@ int64 maxOf(int64 a, int64 b)
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 String maxOf(String a, String b)
 {
     if (a > b)
@@ -51,7 +51,7 @@ String maxOf(String a, String b)
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 T maxOf<T>(T a, T b)
 {
     if (a > b)
@@ -102,7 +102,7 @@ pear
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 T maxOf<T>(T a, T b)
 {
     if (a > b)
@@ -135,7 +135,7 @@ pear
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 T maxOf<T>(T a, T b)
 {
     if (a > b)
@@ -159,13 +159,13 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 泛型函数 maxOf 的类型实参推导冲突，请显式指定类型实参
+chali: 泛型函数 maxOf 的类型实参推导冲突，请显式指定类型实参
 note: 第 2 个实参实际为 float64，形参模式为 ...
 \end{lstlisting}
 \par
 \medskip
 
-\texttt{1} 是 \texttt{int64}、\texttt{2.\allowbreak{}0} 是 \texttt{float64}，编译器推不出 \texttt{T} 该是哪一个——Magel 不做隐式转换（第 3 章），所以它宁可停下来让你说清楚，也不自作主张。想让这个调用成立，就写 \texttt{max\allowbreak{}Of<\allowbreak{}float64>\allowbreak{}(\allowbreak{}1.\allowbreak{}0,\allowbreak{} 2.\allowbreak{}0)\allowbreak{}}（注意 \texttt{1} 也要改成 \texttt{1.\allowbreak{}0}，\texttt{float64} 之间才谈得上比较）。
+\texttt{1} 是 \texttt{int64}、\texttt{2.\allowbreak{}0} 是 \texttt{float64}，编译器推不出 \texttt{T} 该是哪一个——ChaLi 不做隐式转换（第 3 章），所以它宁可停下来让你说清楚，也不自作主张。想让这个调用成立，就写 \texttt{max\allowbreak{}Of<\allowbreak{}float64>\allowbreak{}(\allowbreak{}1.\allowbreak{}0,\allowbreak{} 2.\allowbreak{}0)\allowbreak{}}（注意 \texttt{1} 也要改成 \texttt{1.\allowbreak{}0}，\texttt{float64} 之间才谈得上比较）。
 
 \section{泛型结构体}
 
@@ -173,7 +173,7 @@ note: 第 2 个实参实际为 float64，形参模式为 ...
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Duo<T, U>
 {
     T first;
@@ -210,7 +210,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Box<T>
 {
     T value;
@@ -257,7 +257,7 @@ hi
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 interface Valued
 {
     int64 value();
@@ -302,7 +302,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 interface Valued
 {
     int64 value();
@@ -325,7 +325,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: read_value 的类型实参 int64 未实现接口 Valued
+chali: read_value 的类型实参 int64 未实现接口 Valued
 \end{lstlisting}
 \par
 \medskip
@@ -350,7 +350,7 @@ magel: read_value 的类型实参 int64 未实现接口 Valued
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 T twiceOf<T>(T v)
 {
  return v + v;
@@ -375,7 +375,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 没有匹配的运算符接口实现：P + P（由左操作数实现 Add<R,T> 这类左接口，
+chali: 没有匹配的运算符接口实现：P + P（由左操作数实现 Add<R,T> 这类左接口，
 或由右操作数实现 RightAdd<R,T> 这类右接口）；不会偷偷按数值算
 \end{lstlisting}
 \par
@@ -399,7 +399,7 @@ magel: 没有匹配的运算符接口实现：P + P（由左操作数实现 Add<
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Wrap<T, U = T>
 {
     T a;
@@ -449,7 +449,7 @@ struct Wrap<T, U = T>
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Buffer<T, N: int64>
 {
     T data[N];
@@ -481,7 +481,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Matrix<T, rows: int64, cols: int64>
 {
     T data[rows][cols];
@@ -498,7 +498,7 @@ struct Matrix<T, rows: int64, cols: int64>
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 interface Container
 {
     type Item;
@@ -542,7 +542,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 T fromLocal<T>(T value)
 {
     return

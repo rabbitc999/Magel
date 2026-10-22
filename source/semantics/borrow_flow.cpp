@@ -1,6 +1,6 @@
 /* 语义状态到独立借用控制流的适配层；只提取存储身份和控制流，不检查合法性。 */
-using MBorrowPlace = magel_borrow_checker::Place;
-using MBorrowFlowNode = magel_borrow_checker::FlowNode;
+using MBorrowPlace = chali_borrow_checker::Place;
+using MBorrowFlowNode = chali_borrow_checker::FlowNode;
 /**
  * @brief 单个函数的已绑定源码事实，避免离开作用域后重新查找同名变量。
  */
@@ -23,7 +23,7 @@ struct MBorrowFlowCapture
     Memory::Map<int, std::pair<simple_ast::NodePtr, simple_ast::NodePtr>> releases;  ///< 显式终结及其路径守卫。
     Memory::Set<int> valueLoops;                                                     ///< 实际分配了结果槽的循环，独立语句也可能接收并丢弃结果。
 };
-Memory::Vector<magel_borrow_checker::FlowGraph> g_borrowFlows;
+Memory::Vector<chali_borrow_checker::FlowGraph> g_borrowFlows;
 MBorrowFlowCapture *g_borrowFlowCapture = nullptr;
 /**
  * @brief 保存拥有捕获内部引用的外部来源，结构字段按真实布局逐层展开。
@@ -113,7 +113,7 @@ void CaptureBorrowDeclaration(int id, const MVar *variable)
 struct MBorrowFlowBuilder
 {
     const MBorrowFlowCapture &capture;
-    magel_borrow_checker::FlowGraph graph;
+    chali_borrow_checker::FlowGraph graph;
     mutable Memory::Map<Memory::String, MBorrowOrigins> summaries;
     Memory::Vector<std::size_t> loopStops;   ///< 按词法嵌套登记循环出口，供层级退出选择。
     Memory::Vector<std::size_t> valueStops;  ///< 值表达式出口独立于普通循环出口，带值退出可穿透循环。
@@ -699,10 +699,10 @@ void FinishBorrowFlow(int body, const MBorrowFlowCapture &capture)
     const auto end = builder.add(MBorrowFlowNode::Nop, {}, {}, static_cast<std::size_t>(-1), body);
     const auto entry = builder.statement(body, end, end, end);
     builder.graph.nodes[0].next.push_back(entry);
-    Memory::Vector<magel_borrow_checker::FlowState> states;
+    Memory::Vector<chali_borrow_checker::FlowState> states;
     Memory::Vector<bool> reachable;
-    magel_borrow_checker::checkFlow(builder.graph, &states, &reachable);
-    for (const auto &merge : magel_resource_cleanup::coalesce(builder.graph, states, reachable))
+    chali_borrow_checker::checkFlow(builder.graph, &states, &reachable);
+    for (const auto &merge : chali_resource_cleanup::coalesce(builder.graph, states, reachable))
     {
         const auto found = capture.releases.find(merge.operation);
         if (found == capture.releases.end() || !found->second.first) continue;

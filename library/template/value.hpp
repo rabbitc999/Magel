@@ -1,4 +1,4 @@
-#include "../../source/allocator/magel_allocator.hpp"
+#include "../../source/allocator/chali_allocator.hpp"
 /**
  * @file value.hpp
  * @brief 模板引擎自己的动态值：`tmpl::Value` / `Array` / `Object`。

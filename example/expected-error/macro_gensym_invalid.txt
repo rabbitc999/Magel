@@ -1,1 +1,1 @@
-语法错误：example/samples-error/macro_gensym_invalid.mgl 第 2 行第 7 列：认不出来的字符
+语法错误：example/samples-error/macro_gensym_invalid.chl 第 2 行第 7 列：认不出来的字符

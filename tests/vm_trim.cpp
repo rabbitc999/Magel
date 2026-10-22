@@ -38,7 +38,7 @@ static bool runCase(const char *source, bool expectedSuccess, const char *expect
  */
 int main()
 {
-    static_assert(STACKVM_WITH_REFLECTION == 1 && MAGEL_WITH_REFLECTION == 1);
+    static_assert(STACKVM_WITH_REFLECTION == 1 && CHALI_WITH_REFLECTION == 1);
     static_assert(STACKVM_WITH_DEFAULT_HEAP == 0 && STACKVM_WITH_THREADS == 0);
     static Memory::StaticRuntimeArena<8u * 1024u * 1024u> arena;
     Memory::AllocationScope scope(&arena);

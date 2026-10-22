@@ -7,7 +7,7 @@
 没有垃圾回收，那内存、文件句柄、网络连接这些东西，什么时候释放？谁负责？
 \end{tip}
 
-Magel 的答案很短：离开作用域的时候，自动释放。
+ChaLi 的答案很短：离开作用域的时候，自动释放。
 
 这一章讲这套机制怎么用、为什么它不出错，以及堆对象该怎么管。
 
@@ -19,7 +19,7 @@ Magel 的答案很短：离开作用域的时候，自动释放。
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 outer = 1;
@@ -69,7 +69,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Resource: Drop
 {
     String name;
@@ -115,7 +115,7 @@ after block
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Inner: Drop
 {
     String tag;
@@ -158,14 +158,14 @@ drop inner x
 顺序是：先跑 \texttt{Outer} 自己的 \texttt{drop(\allowbreak{})\allowbreak{}}，再析构它的字段。
 
 \begin{tip}{提示}
-如果你写过 C++，注意这里和 C++ 是反的：C++ 先析构成员再跑析构体。Magel 先跑你自己的 \texttt{drop(\allowbreak{})\allowbreak{}}，之后字段自动清理。\par 这个顺序有个实际后果：\texttt{drop(\allowbreak{})\allowbreak{}} 里还能安全地用字段（\texttt{o.\allowbreak{}field} 那时还活着）。这在「关闭连接时要写日志」「释放前要刷缓冲」这类场景里很有用。
+如果你写过 C++，注意这里和 C++ 是反的：C++ 先析构成员再跑析构体。ChaLi 先跑你自己的 \texttt{drop(\allowbreak{})\allowbreak{}}，之后字段自动清理。\par 这个顺序有个实际后果：\texttt{drop(\allowbreak{})\allowbreak{}} 里还能安全地用字段（\texttt{o.\allowbreak{}field} 那时还活着）。这在「关闭连接时要写日志」「释放前要刷缓冲」这类场景里很有用。
 \end{tip}
 
 \subsection*{一个必须记住的禁忌}
 
 结构体的 \texttt{drop(\allowbreak{})\allowbreak{}} 里不要手写 \texttt{self.\allowbreak{}字段.\allowbreak{}drop(\allowbreak{})\allowbreak{}}。
 
-因为字段本来就会被自动析构，你再手动来一次就是析构两次。这条规则没有例外：只要字段实现了 \texttt{Drop}，Magel 就会负责到底，你插手就是添乱。
+因为字段本来就会被自动析构，你再手动来一次就是析构两次。这条规则没有例外：只要字段实现了 \texttt{Drop}，ChaLi 就会负责到底，你插手就是添乱。
 
 \section{\texttt{Closeable}：用完立刻关，而且不会关两次}
 
@@ -175,7 +175,7 @@ drop inner x
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Handle: Closeable
 {
     int64 id;
@@ -219,7 +219,7 @@ after block
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Handle: Closeable
 {
     void close()
@@ -274,7 +274,7 @@ after
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Point
 {
     int64 x;
@@ -320,7 +320,7 @@ deleted
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 Point mut& a = heap Point;             // 糖：heap T 等价于 new;
 Point mut& b = new Point(3, 4);        // new T(args) 栈/堆由左侧声明决定
 Point mut& c = heap new Point(5, 6);   // 糖：heap new T(args) 等价于 new(5, 6)
@@ -334,7 +334,7 @@ Point mut& c = heap new Point(5, 6);   // 糖：heap new T(args) 等价于 new(5
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Box: Drop
 {
     int64 id;
@@ -366,13 +366,13 @@ twice ok
 \par
 \medskip
 
-输出中的 \texttt{drop} 只出现了一次。编译器能证明两条语句终结同一生命周期时，会合并它们，使析构和释放各执行一次；协议方法 \texttt{drop(\allowbreak{})\allowbreak{}} 使用同一机制。底层释放本身不幂等，跨调用等无法证明的重复释放会报告 MGL1205。
+输出中的 \texttt{drop} 只出现了一次。编译器能证明两条语句终结同一生命周期时，会合并它们，使析构和释放各执行一次；协议方法 \texttt{drop(\allowbreak{})\allowbreak{}} 使用同一机制。底层释放本身不幂等，跨调用等无法证明的重复释放会报告 CHL1205。
 
 但释放之后不能再读：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Point
 {
     int64 x;
@@ -394,16 +394,16 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: [MGL1205] 借用来源已释放，不能继续访问：表达式
+chali: [CHL1205] 借用来源已释放，不能继续访问：表达式
 \end{lstlisting}
 \par
 \medskip
 
-\texttt{MGL1205} 也是第 6 章 \texttt{move} 之后读源值时报的码——同一个意思：「这东西已经不在了，别再碰」。
+\texttt{CHL1205} 也是第 6 章 \texttt{move} 之后读源值时报的码——同一个意思：「这东西已经不在了，别再碰」。
 
 \section{内存模型的边界}
 
-这一节讲 Magel 的「安全」到底覆盖到哪儿。
+这一节讲 ChaLi 的「安全」到底覆盖到哪儿。
 
 会被检查的：
 
@@ -411,7 +411,7 @@ magel: [MGL1205] 借用来源已释放，不能继续访问：表达式
 
 \item 数组越界、整数运算溢出，都会被抓到并给出定位，不是未定义行为；
 
-\item 悬垂引用、释放后访问、移动后访问，编译期或运行期报 \texttt{MGL1204} / \texttt{MGL1205}。
+\item 悬垂引用、释放后访问、移动后访问，编译期或运行期报 \texttt{CHL1204} / \texttt{CHL1205}。
 
 \end{itemize}
 
@@ -427,7 +427,7 @@ magel: [MGL1205] 借用来源已释放，不能继续访问：表达式
 
 长时间运行的服务可以用 \texttt{std:\allowbreak{}:\allowbreak{}watchdog} 开「软重启」：内存申请失败、显式请求重启、越过内存水位、或开启超时后整整一个周期没 \texttt{kick(\allowbreak{})\allowbreak{}} 时，重启自身逻辑而不杀进程。
 
-最后说清它不做什么。 Magel 不试图消除所有错误。它针对性地消除三类：
+最后说清它不做什么。 ChaLi 不试图消除所有错误。它针对性地消除三类：
 
 \begin{enumerate}
 
@@ -447,7 +447,7 @@ magel: [MGL1205] 借用来源已释放，不能继续访问：表达式
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     {
@@ -490,8 +490,8 @@ first
 \texttt{Closeable} & 离开作用域或提前 \texttt{close(\allowbreak{})\allowbreak{}}；关过就不会再关 \\
 两者都有 & 顺序固定：先 \texttt{close(\allowbreak{})\allowbreak{}} 再 \texttt{drop(\allowbreak{})\allowbreak{}} \\
 堆对象 & \texttt{T mut\& p =\allowbreak{} heap T;} 建，\texttt{p.\allowbreak{}drop(\allowbreak{})\allowbreak{};} 释放 \\
-非幂等终结 & 编译器合并已知重复终结；其他重复释放报 MGL1205 \\
-释放后访问 & \texttt{MGL1205} \\
+非幂等终结 & 编译器合并已知重复终结；其他重复释放报 CHL1205 \\
+释放后访问 & \texttt{CHL1205} \\
 被消除的三类错误 & 空指针、悬垂引用、忘记释放 \\
 不保证的 & 逻辑错误——那是你的活儿 \\
 \bottomrule
@@ -500,7 +500,7 @@ first
 
 \section{下一步}
 
-到此为止，「Magel 的骨头」这一部分讲完了：值语义、引用、资源与作用域。你现在理解了这门语言所有的取舍——为什么复制、为什么不给 \texttt{null}、为什么不用 GC。
+到此为止，「ChaLi 的骨头」这一部分讲完了：值语义、引用、资源与作用域。你现在理解了这门语言所有的取舍——为什么复制、为什么不给 \texttt{null}、为什么不用 GC。
 
 接下来是组织代码的工具。第一个是结构体：把一堆字段和一堆方法收进同一个名字下面。
 

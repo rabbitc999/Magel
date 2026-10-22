@@ -9,7 +9,7 @@
 
 字面量不再一律按 `int64` 走：赋值 / 初始化 / 实参 / `return` 的目标类型会传进表达式；二元算术与位运算按另一侧操作数的类型定型。比较与逻辑不参与这层定型，没有上下文时仍是默认 `int64`。
 
-```magel
+```chali
 int32 twice(int32 value) { return value * 2; }
 int64 main() {
     int32 a = 1;
@@ -26,7 +26,7 @@ int64 main() {
 
 十进制字面量超出目标类型范围就退回默认类型，由既有的「缩窄要强转」报错，**不会静默截断**：
 
-```magel
+```chali
 int64 main() {
     int8 x = 200;
     println("{}", x);
@@ -35,7 +35,7 @@ int64 main() {
 ```
 
 ```text
-magel: 整数字面量 200 超出 int8 的取值范围（-128..127）
+chali: 整数字面量 200 超出 int8 的取值范围（-128..127）
 ```
 
 十六进制 / 二进制照旧按位模式看待，`int8 x = 0xFF;` 不受影响。
@@ -46,7 +46,7 @@ magel: 整数字面量 200 超出 int8 的取值范围（-128..127）
 
 只声明 `Less` 时，`5 > a`（对偶）、`a >= 5`（取反）、`5 <= a`（对偶 + 取反）都推得出来；`a > 5` 推不出来——那要 `int64 < T`，得给类型补 `Greater`。
 
-```magel
+```chali
 struct Vec : Add<int64, int64>, Less<bool, int64> {
     int64 v;
     int64 leftAdd(int64 other) { return self.v + other; }
@@ -78,7 +78,7 @@ int64 main() {
 - 在 `struct` 前写编译器指令 `#NoRightAdd`（`#NoRight` + 左接口名，无类型实参）→ 禁止右向，`5 + f` 直接报错，左向 `f + 5` 不受影响；
 - `#NoRightXxx` 优先于 `RightXxx`，显式声明的右接口优先于交换律推断。
 
-```magel
+```chali
 struct Money : Add<int64, int64>, RightAdd<int64, int64> {
     int64 cents;
     int64 leftAdd(int64 other) { return self.cents + other; }    /* m + 5 */
@@ -108,14 +108,14 @@ int64 main() {
 把 `f + 5` 写成 `5 + f`：
 
 ```text
-magel: 右向被编译器指令关闭：Forbid 声明了 #NoRightAdd，int64 + Forbid 不再推导；要去掉该指令，或改为实现 RightAdd<R,T>
+chali: 右向被编译器指令关闭：Forbid 声明了 #NoRightAdd，int64 + Forbid 不再推导；要去掉该指令，或改为实现 RightAdd<R,T>
 ```
 
 ## 同一对操作数、多个返回类型
 
 `Add<int64,int64>` 与 `Add<Vec,int64>` 可以共存——两个 `leftAdd(int64)` 只在返回类型上不同，这是普通方法重载做不到的事。挑哪条由表达式的**目标类型**定：
 
-```magel
+```chali
 struct Vec { int64 v; };
 struct A : Add<int64,int64>, Add<Vec,int64> {
     int64 v;
@@ -143,7 +143,7 @@ int64 main() {
 没有目标类型（`let z = a + 3;`）会报错并列出候选返回类型：
 
 ```text
-magel: 运算符 + 有多条声明匹配同一对操作数 A / int64，返回类型分别是 int64、Vec（先强转再算；若它们只是返回类型不同，给表达式一个目标类型就能定）
+chali: 运算符 + 有多条声明匹配同一对操作数 A / int64，返回类型分别是 int64、Vec（先强转再算；若它们只是返回类型不同，给表达式一个目标类型就能定）
 ```
 
 **换边不改变求值顺序**：`bump() + makeA()` 变成 `makeA().leftAdd(bump())` 时，两个操作数仍按源码从左到右求值（左操作数先钳进临时量），副作用顺序与不换边时一致。
@@ -152,7 +152,7 @@ magel: 运算符 + 有多条声明匹配同一对操作数 A / int64，返回类
 
 `$macro` 定义由生成解析器建立语法树，语义分析按依赖展开，类型推导与展开交错进行，四元式生成前完成。宏不把替换结果拼成源码重新解析。参数保留原文、位置、语法候选及调用处绑定；引入的普通局部声明自动卫生，辅助名称在定义模块查找。
 
-```magel
+```chali
 $macro SQUARE(x)
 x * x
 $end_macro
@@ -175,7 +175,7 @@ int64 main() {
 
 裸定义 `$macro A` 只能用 `$A`；空组定义 `$macro A()` 只能用 `$A()`。`[]`、`()`、`{}` 按声明顺序严格匹配，允许重复组。每组支持固定形参和一个末尾变长形参 `...rest` 或 `..rest`，空捕获合法。固定形态优先于适用的变长形态。
 
-```magel
+```chali
 $macro ACCUMULATE(out)[...values]
 $for value in values
 int64 temporary = value;
@@ -197,7 +197,7 @@ int64 main() {
 
 尖括号仅表示宏类型参数，不能作为任意文本参数组：
 
-```magel
+```chali
 $macro CONVERT<T:value>(value)
 cast<T>(value)
 $end_macro
@@ -217,7 +217,7 @@ int64 main() {
 
 ## 五类完整语法匹配
 
-```magel
+```chali
 $macro CLASSIFY(value)
 $match value is ident
 1
@@ -239,7 +239,7 @@ $end_macro
 
 ## 正则、原文与来源
 
-```magel
+```chali
 $macro DECIMAL(value)
 $regex value is "[0-9]+"
 value
@@ -266,7 +266,7 @@ $end_macro
   受可见性约束：`std::lang` 始终可见，其余模块必须先 `import`。
 - 两种方式展开出的 AST 完全一致，`$line` / `$file` / `$module` 取的都是调用点。
 
-```magel
+```chali
 module qualified;
 
 int64 main() {
@@ -279,4 +279,4 @@ int64 main() {
 
 限定名找不到对应定义时报「未定义宏」，位置指向调用点。
 
-回归见 [宏 AST](../tests/magel_ast_macros.py)、[分组与来源](../tests/magel_macro_groups.py)、[静态类型](../tests/magel_macro_generics.py) 和 [语法及正则](../tests/magel_macro_branches.py)。
+回归见 [宏 AST](../tests/chali_ast_macros.py)、[分组与来源](../tests/chali_macro_groups.py)、[静态类型](../tests/chali_macro_generics.py) 和 [语法及正则](../tests/chali_macro_branches.py)。

@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1560" height="900" viewBox="0 0 1560 900">
+  <rect width="1560" height="900" fill="#f4f7fb"/>
+  <text x="40" y="58" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="33" font-weight="700" fill="#10233f">ChaLi · Compilation</text>
+  <text x="40" y="95" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="19" fill="#4a5b73">Generated front end → checked and optimized quadruples → shared VM</text>
+  <rect x="40" y="145" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
+  <text x="260" y="175" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">1  Source</text>
+  <text x="260" y="205" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">.chl + imports</text>
+  <text x="260" y="235" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Embedded standard library</text>
+  <rect x="560" y="145" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
+  <text x="780" y="175" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">2  Preprocessing</text>
+  <text x="780" y="205" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">%define / %if / %ifdef</text>
+  <text x="780" y="235" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Source locations retained</text>
+  <rect x="1080" y="145" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
+  <text x="1300" y="175" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">3  Lexing and parsing</text>
+  <text x="1300" y="205" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Generated from chali.gram</text>
+  <text x="1300" y="235" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Build AST, including macro templates</text>
+  <rect x="1080" y="315" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
+  <text x="1300" y="345" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">4  Semantic analysis</text>
+  <text x="1300" y="375" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Hygienic expansion + type inference</text>
+  <text x="1300" y="405" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Overloads and monomorphisation</text>
+  <rect x="560" y="315" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
+  <text x="780" y="345" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">5  Borrow checking</text>
+  <text x="780" y="375" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Control flow and reference origins</text>
+  <text x="780" y="405" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Ownership and lifetime diagnostics</text>
+  <rect x="40" y="315" width="440" height="120" rx="15" fill="#ffffff" stroke="#d8e1ee" stroke-width="1"/>
+  <text x="260" y="345" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">6  Generate quadruples</text>
+  <text x="260" y="375" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Compiler IR + data + layout</text>
+  <text x="260" y="405" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Source locations retained</text>
+  <polyline points="480,205 560,205" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="560,205 549,210 549,200" fill="#8ea2bb"/>
+  <polyline points="1000,205 1080,205" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="1080,205 1069,210 1069,200" fill="#8ea2bb"/>
+  <polyline points="1300,265 1300,315" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="1300,315 1295,304 1305,304" fill="#8ea2bb"/>
+  <polyline points="1080,375 1000,375" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="1000,375 1011,370 1011,380" fill="#8ea2bb"/>
+  <polyline points="560,375 480,375" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="480,375 491,370 491,380" fill="#8ea2bb"/>
+  <polyline points="260,435 260,485" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="260,485 255,474 265,474" fill="#8ea2bb"/>
+  <rect x="40" y="485" width="720" height="120" rx="15" fill="#eaf6ef" stroke="#bfe0cc" stroke-width="1"/>
+  <text x="400" y="515" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">7  Optimize quadruples</text>
+  <text x="400" y="545" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Full stackvm::optimize pipeline</text>
+  <text x="400" y="575" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Standard iteration budget before VM assembly</text>
+  <polyline points="760,545 800,545" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="800,545 789,550 789,540" fill="#8ea2bb"/>
+  <rect x="800" y="485" width="720" height="120" rx="15" fill="#eaf6ef" stroke="#bfe0cc" stroke-width="1"/>
+  <text x="1160" y="515" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">8  Assemble VM instructions</text>
+  <text x="1160" y="545" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Types, labels, integer and comparison lowering</text>
+  <text x="1160" y="575" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Keep source / PC mapping; prepare execution</text>
+  <polyline points="40,375 20,375 20,675 260,675 260,720" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="260,720 255,709 265,709" fill="#8ea2bb"/>
+  <polyline points="1100,605 1100,665 780,665 780,720" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="780,720 775,709 785,709" fill="#8ea2bb"/>
+  <polyline points="1300,605 1300,720" fill="none" stroke="#8ea2bb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="1300,720 1295,709 1305,709" fill="#8ea2bb"/>
+  <rect x="40" y="720" width="440" height="120" rx="15" fill="#eaf6ef" stroke="#bfe0cc" stroke-width="1"/>
+  <text x="260" y="750" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">Quadruple artifacts</text>
+  <text x="260" y="780" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Generated IR + data + layout</text>
+  <text x="260" y="810" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Optimized view: CHALI_DUMP_OPT</text>
+  <rect x="560" y="720" width="440" height="120" rx="15" fill="#eaf6ef" stroke="#bfe0cc" stroke-width="1"/>
+  <text x="780" y="750" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">In-memory execution</text>
+  <text x="780" y="780" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Program → shared VM</text>
+  <text x="780" y="810" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">No bytecode file required</text>
+  <rect x="1080" y="720" width="440" height="120" rx="15" fill="#eaf6ef" stroke="#bfe0cc" stroke-width="1"/>
+  <text x="1300" y="750" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="23" font-weight="700" fill="#14507e" text-anchor="middle" dominant-baseline="central">.svmb bytecode</text>
+  <text x="1300" y="780" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">VM code + execution metadata</text>
+  <text x="1300" y="810" font-family="Microsoft YaHei, Segoe UI, Noto Sans SC, sans-serif" font-size="18" fill="#4a5b73" text-anchor="middle" dominant-baseline="central">Loaded by a compatible VM</text>
+</svg>

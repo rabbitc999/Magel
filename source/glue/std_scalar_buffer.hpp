@@ -1,6 +1,6 @@
-#ifndef MAGEL_SCALAR_BUFFER_HPP
-#define MAGEL_SCALAR_BUFFER_HPP
-#include "../magel_glue.hpp"
+#ifndef CHALI_SCALAR_BUFFER_HPP
+#define CHALI_SCALAR_BUFFER_HPP
+#include "../chali_glue.hpp"
 #include "std_native_record.hpp"
 
 /**
@@ -8,8 +8,8 @@
  */
 namespace scalar_buffer
 {
-using Context = magel_glue::Context;
-using Value = magel_glue::Value;
+using Context = chali_glue::Context;
+using Value = chali_glue::Value;
 
 /**
  * @brief 保存整数或浮点标量的连续缓冲。
@@ -51,7 +51,7 @@ Memory::Vector<Scalar> read(Context &ctx, std::int64_t handle)
     auto *storage = get(ctx, handle);
     if (!storage) return values;
     values.reserve(storage->values.size());
-    for (const auto &value : storage->values) values.push_back(magel_glue::Codec<Scalar>::decode(ctx, value));
+    for (const auto &value : storage->values) values.push_back(chali_glue::Codec<Scalar>::decode(ctx, value));
     return values;
 }
 /**
@@ -66,7 +66,7 @@ std::int64_t make(Context &ctx, const Values &values)
 {
     auto *storage = new Storage;
     storage->values.reserve(values.size());
-    for (const auto &value : values) storage->values.push_back(magel_glue::Codec<typename Values::value_type>::encode(ctx, value));
+    for (const auto &value : values) storage->values.push_back(chali_glue::Codec<typename Values::value_type>::encode(ctx, value));
     return ctx.makeNativeRecord(type, storage);
 }
 /**
@@ -78,18 +78,18 @@ std::int64_t make(Context &ctx, const Values &values)
  * @return 三项操作均注册成功时返回 true。
  */
 template <class Scalar>
-bool bindScalar(magel_glue::Registry &registry, const Memory::String &name, Memory::String *error)
+bool bindScalar(chali_glue::Registry &registry, const Memory::String &name, Memory::String *error)
 {
-    bool ok = registry.bindTypedWithContext<Scalar, std::int64_t, std::int64_t>(magel_glue::specialize("std::linalg::__std_scalarAt", { name }), [](Context &ctx, std::int64_t handle, std::int64_t index) {
+    bool ok = registry.bindTypedWithContext<Scalar, std::int64_t, std::int64_t>(chali_glue::specialize("std::linalg::__std_scalarAt", { name }), [](Context &ctx, std::int64_t handle, std::int64_t index) {
         auto *storage = get(ctx, handle);
         if (!storage) return Scalar{};
         if (index < 0 || static_cast<std::uint64_t>(index) >= storage->values.size()) { ctx.fail("线性代数存储下标越界"); return Scalar{}; }
-        return magel_glue::Codec<Scalar>::decode(ctx, storage->values[static_cast<std::size_t>(index)]); }, error);
-    ok = registry.bindTypedWithContext<void, std::int64_t, std::int64_t, Scalar>(magel_glue::specialize("std::linalg::__std_scalarSet", { name }), [](Context &ctx, std::int64_t reference, std::int64_t index, Scalar value) {
+        return chali_glue::Codec<Scalar>::decode(ctx, storage->values[static_cast<std::size_t>(index)]); }, error);
+    ok = registry.bindTypedWithContext<void, std::int64_t, std::int64_t, Scalar>(chali_glue::specialize("std::linalg::__std_scalarSet", { name }), [](Context &ctx, std::int64_t reference, std::int64_t index, Scalar value) {
         auto *storage = get(ctx, native_record_glue::referenceHandle(ctx, reference, type)); if (!storage) return;
         if (index < 0 || static_cast<std::uint64_t>(index) >= storage->values.size()) { ctx.fail("线性代数存储下标越界"); return; }
-        storage->values[static_cast<std::size_t>(index)] = magel_glue::Codec<Scalar>::encode(ctx, value); }, error) && ok;
-    return registry.bindTypedWithContext<void, std::int64_t, Scalar>(magel_glue::specialize("std::linalg::__std_scalarPush", { name }), [](Context &ctx, std::int64_t reference, Scalar value) { auto *storage = get(ctx, native_record_glue::referenceHandle(ctx, reference, type)); if (storage) storage->values.push_back(magel_glue::Codec<Scalar>::encode(ctx, value)); }, error) && ok;
+        storage->values[static_cast<std::size_t>(index)] = chali_glue::Codec<Scalar>::encode(ctx, value); }, error) && ok;
+    return registry.bindTypedWithContext<void, std::int64_t, Scalar>(chali_glue::specialize("std::linalg::__std_scalarPush", { name }), [](Context &ctx, std::int64_t reference, Scalar value) { auto *storage = get(ctx, native_record_glue::referenceHandle(ctx, reference, type)); if (storage) storage->values.push_back(chali_glue::Codec<Scalar>::encode(ctx, value)); }, error) && ok;
 }
 /**
  * @brief 注册数值缓冲生命周期与全部内建数值类型的访问接口。
@@ -97,6 +97,6 @@ bool bindScalar(magel_glue::Registry &registry, const Memory::String &name, Memo
  * @param error 注册失败时接收诊断。
  * @return 所有注册均成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error);
+bool bind(chali_glue::Registry &registry, Memory::String *error);
 }  // namespace scalar_buffer
 #endif

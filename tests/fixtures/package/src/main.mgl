@@ -1,5 +1,0 @@
-int64 main() {
-    std::lang::assert(shared::packageValue() + extra::extraValue() + tools::math::one() == 42);
-    std::lang::println("magel-ok");
-    return 0;
-}

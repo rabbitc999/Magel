@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::event;
 ```
 
@@ -14,16 +14,16 @@ import std::event;
 
 ## 参考代码
 
-完整程序：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
+完整程序：[example/samples/event_timer.chl](../../example/samples/event_timer.chl)。
 
 ```powershell
-magel run example/samples/event_timer.mgl
+chali run example/samples/event_timer.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::event;
 int64 main() {
     assert(std::event::post(7, 19) == 0);
@@ -89,7 +89,7 @@ events ok
 
 **声明**
 
-```magel
+```chali
 std::concurrency::Receive<Event> receiveFor(int64 millis);
 ```
 
@@ -113,13 +113,13 @@ std::concurrency::Receive<Event> receiveFor(int64 millis);
 
 **调用形式**
 
-```magel
+```chali
 std::event::receiveFor(millis);
 ```
 
-**源码**：[source/std/event.mgl:20](../../source/std/event.mgl#L20)。
+**源码**：[source/std/event.chl:20](../../source/std/event.chl#L20)。
 
-**完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
+**完整示例**：[example/samples/event_timer.chl](../../example/samples/event_timer.chl)。
 
 <a id="api-1"></a>
 
@@ -127,7 +127,7 @@ std::event::receiveFor(millis);
 
 **声明**
 
-```magel
+```chali
 std::concurrency::Receive<Event> receive();
 ```
 
@@ -149,13 +149,13 @@ std::concurrency::Receive<Event> receive();
 
 **调用形式**
 
-```magel
+```chali
 std::event::receive();
 ```
 
-**源码**：[source/std/event.mgl:31](../../source/std/event.mgl#L31)。
+**源码**：[source/std/event.chl:31](../../source/std/event.chl#L31)。
 
-**完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
+**完整示例**：[example/samples/event_timer.chl](../../example/samples/event_timer.chl)。
 
 <a id="api-2"></a>
 
@@ -163,7 +163,7 @@ std::event::receive();
 
 **声明**
 
-```magel
+```chali
 std::concurrency::Receive<Event> tryReceive();
 ```
 
@@ -185,13 +185,13 @@ std::concurrency::Receive<Event> tryReceive();
 
 **调用形式**
 
-```magel
+```chali
 std::event::tryReceive();
 ```
 
-**源码**：[source/std/event.mgl:32](../../source/std/event.mgl#L32)。
+**源码**：[source/std/event.chl:32](../../source/std/event.chl#L32)。
 
-**完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
+**完整示例**：[example/samples/event_timer.chl](../../example/samples/event_timer.chl)。
 
 <a id="api-3"></a>
 
@@ -199,7 +199,7 @@ std::event::tryReceive();
 
 **声明**
 
-```magel
+```chali
 int64 post(int64 tag, int64 source);
 ```
 
@@ -224,13 +224,13 @@ int64 post(int64 tag, int64 source);
 
 **调用形式**
 
-```magel
+```chali
 std::event::post(tag, source);
 ```
 
-**源码**：[source/std/event.mgl:33](../../source/std/event.mgl#L33)。
+**源码**：[source/std/event.chl:33](../../source/std/event.chl#L33)。
 
-**完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
+**完整示例**：[example/samples/event_timer.chl](../../example/samples/event_timer.chl)。
 
 <a id="api-4"></a>
 
@@ -238,7 +238,7 @@ std::event::post(tag, source);
 
 **声明**
 
-```magel
+```chali
 void close();
 ```
 
@@ -260,13 +260,13 @@ void close();
 
 **调用形式**
 
-```magel
+```chali
 std::event::close();
 ```
 
-**源码**：[source/std/event.mgl:34](../../source/std/event.mgl#L34)。
+**源码**：[source/std/event.chl:34](../../source/std/event.chl#L34)。
 
-**完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
+**完整示例**：[example/samples/event_timer.chl](../../example/samples/event_timer.chl)。
 
 <a id="api-5"></a>
 
@@ -274,7 +274,7 @@ std::event::close();
 
 **声明**
 
-```magel
+```chali
 static Timer everyNanos(int64 nanos);
 ```
 
@@ -298,13 +298,13 @@ static Timer everyNanos(int64 nanos);
 
 **调用形式**
 
-```magel
+```chali
 std::event::Timer::everyNanos(nanos);
 ```
 
-**源码**：[source/std/event.mgl:45](../../source/std/event.mgl#L45)。
+**源码**：[source/std/event.chl:45](../../source/std/event.chl#L45)。
 
-**完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
+**完整示例**：[example/samples/event_timer.chl](../../example/samples/event_timer.chl)。
 
 <a id="api-6"></a>
 
@@ -312,7 +312,7 @@ std::event::Timer::everyNanos(nanos);
 
 **声明**
 
-```magel
+```chali
 static Timer afterNanos(int64 nanos);
 ```
 
@@ -336,13 +336,13 @@ static Timer afterNanos(int64 nanos);
 
 **调用形式**
 
-```magel
+```chali
 std::event::Timer::afterNanos(nanos);
 ```
 
-**源码**：[source/std/event.mgl:49](../../source/std/event.mgl#L49)。
+**源码**：[source/std/event.chl:49](../../source/std/event.chl#L49)。
 
-**完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
+**完整示例**：[example/samples/event_timer.chl](../../example/samples/event_timer.chl)。
 
 <a id="api-7"></a>
 
@@ -350,7 +350,7 @@ std::event::Timer::afterNanos(nanos);
 
 **声明**
 
-```magel
+```chali
 static Timer everyMillis(int64 millis);
 ```
 
@@ -374,13 +374,13 @@ static Timer everyMillis(int64 millis);
 
 **调用形式**
 
-```magel
+```chali
 std::event::Timer::everyMillis(millis);
 ```
 
-**源码**：[source/std/event.mgl:53](../../source/std/event.mgl#L53)。
+**源码**：[source/std/event.chl:53](../../source/std/event.chl#L53)。
 
-**完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
+**完整示例**：[example/samples/event_timer.chl](../../example/samples/event_timer.chl)。
 
 <a id="api-8"></a>
 
@@ -388,7 +388,7 @@ std::event::Timer::everyMillis(millis);
 
 **声明**
 
-```magel
+```chali
 static Timer afterMillis(int64 millis);
 ```
 
@@ -412,13 +412,13 @@ static Timer afterMillis(int64 millis);
 
 **调用形式**
 
-```magel
+```chali
 std::event::Timer::afterMillis(millis);
 ```
 
-**源码**：[source/std/event.mgl:58](../../source/std/event.mgl#L58)。
+**源码**：[source/std/event.chl:58](../../source/std/event.chl#L58)。
 
-**完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
+**完整示例**：[example/samples/event_timer.chl](../../example/samples/event_timer.chl)。
 
 <a id="api-9"></a>
 
@@ -426,7 +426,7 @@ std::event::Timer::afterMillis(millis);
 
 **声明**
 
-```magel
+```chali
 bool isValid();
 ```
 
@@ -448,13 +448,13 @@ bool isValid();
 
 **调用形式**
 
-```magel
+```chali
 obj.isValid();
 ```
 
-**源码**：[source/std/event.mgl:63](../../source/std/event.mgl#L63)。
+**源码**：[source/std/event.chl:63](../../source/std/event.chl#L63)。
 
-**完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
+**完整示例**：[example/samples/event_timer.chl](../../example/samples/event_timer.chl)。
 
 <a id="api-10"></a>
 
@@ -462,7 +462,7 @@ obj.isValid();
 
 **声明**
 
-```magel
+```chali
 int64 id();
 ```
 
@@ -484,13 +484,13 @@ int64 id();
 
 **调用形式**
 
-```magel
+```chali
 obj.id();
 ```
 
-**源码**：[source/std/event.mgl:65](../../source/std/event.mgl#L65)。
+**源码**：[source/std/event.chl:65](../../source/std/event.chl#L65)。
 
-**完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
+**完整示例**：[example/samples/event_timer.chl](../../example/samples/event_timer.chl)。
 
 <a id="api-11"></a>
 
@@ -498,7 +498,7 @@ obj.id();
 
 **声明**
 
-```magel
+```chali
 void stop();
 ```
 
@@ -520,10 +520,10 @@ void stop();
 
 **调用形式**
 
-```magel
+```chali
 obj.stop();
 ```
 
-**源码**：[source/std/event.mgl:66](../../source/std/event.mgl#L66)。
+**源码**：[source/std/event.chl:66](../../source/std/event.chl#L66)。
 
-**完整示例**：[example/samples/event_timer.mgl](../../example/samples/event_timer.mgl)。
+**完整示例**：[example/samples/event_timer.chl](../../example/samples/event_timer.chl)。

@@ -1,6 +1,6 @@
 # 04 Language reference
 
-Magel syntax and semantics, by topic. For a first impression read the
+ChaLi syntax and semantics, by topic. For a first impression read the
 [Language tour](02-language-tour.md); for the reasoning behind the design read
 [Core concepts](03-core-concepts.md).
 
@@ -73,7 +73,7 @@ its type from context:
 - pinning happens only when the value fits: an out-of-range literal falls back to `int64` and is
   reported by the usual "narrowing needs a cast" rule — never silently truncated.
 
-Runnable check: [`literal_context_type.mgl`](../../example/samples/literal_context_type.mgl).
+Runnable check: [`literal_context_type.chl`](../../example/samples/literal_context_type.chl).
 
 ### Compound types
 
@@ -93,7 +93,7 @@ Runnable check: [`literal_context_type.mgl`](../../example/samples/literal_conte
 
 ## 3. Declarations
 
-```magel
+```chali
 const int64 LIMIT = 100;   // constant
 int64 counter = 0;         // variable
 let inferred = LIMIT;      // inferred type
@@ -107,7 +107,7 @@ let inferred = LIMIT;      // inferred type
 
 ## 4. Functions
 
-```magel
+```chali
 int64 add(int64 a, int64 b) { return a + b; }
 void log(String message) { println("{}", message); }
 ```
@@ -132,7 +132,7 @@ Use a tuple as the return type. `return a, value;` is equivalent to `return (a, 
 Type parameters may occur in any tuple element and are replaced by explicit specialization or argument inference.
 Existing assignment targets also provide context for generic return-type inference.
 
-```magel
+```chali
 (int32, T) func<T>(T value) {
     int32 a = 1;
     return a, value;
@@ -157,7 +157,7 @@ checks apply. Tuple members such as `.0` remain read-only.
 
 The language intrinsic has the signature `T move(T mut& source)`. Its result type is inferred from the reference target; no import is needed.
 
-```magel
+```chali
 struct Message { String text; };
 int64 main() {
     Message source;
@@ -182,10 +182,10 @@ Desktop and embedded Linux hosts share the single `library/stackvm/` core and co
 
 A parameter can have a default expression; calls may omit a trailing sequence of arguments:
 
-```magel
+```chali
 int64 add(int64 a, int64 b = 10) { return a + b; }
-String greet(String name = "Magel") { return "Hello, " + name; }
-// add(2) == 12; add(2, 3) == 5; greet() == "Hello, Magel"
+String greet(String name = "ChaLi") { return "Hello, " + name; }
+// add(2) == 12; add(2, 3) == 5; greet() == "Hello, ChaLi"
 ```
 
 Free functions, instance methods, static methods, and constructors support defaults. Generic functions
@@ -206,7 +206,7 @@ type. Enum payload fields and interface method declarations do not support defau
 
 A struct may define a constructor, called with `new(...)`:
 
-```magel
+```chali
 struct Counter {
     static int64 alive;
     int64 value;
@@ -237,7 +237,7 @@ runs**:
 | `T v = T::create(args);` | **named constructor entry point** `static T create(...)` |
 | `T v = T::otherFactory();` | an ordinary static factory (any name) |
 
-```magel
+```chali
 struct Point {
     int64 x;
     int64 y;
@@ -268,7 +268,7 @@ A generic struct’s `create` entry can infer the owner’s type arguments from 
 
 ## 5. Operators
 
-```magel
+```chali
 int64 main() {
     int64 a = 17;
     int64 b = 5;
@@ -296,7 +296,7 @@ bitwise XOR > bitwise OR > logical AND > logical OR. When in doubt, parenthesise
 Compound assignment `+=` `-=` `*=` `/=` `%=` `&=` `|=` `^=` `<<=` `>>=` all exist.
 
 `++` / `--` check actual storage targets. Within a full expression, an updated target cannot also be read or written by another operation.
-`i = i++`, `i += i++`, `i++ + i`, and `i++ + ++i` report `MGL1301`.
+`i = i++`, `i += i++`, `i++ + i`, and `i++ + ++i` report `CHL1301`.
 Independent targets are allowed in `a = (i++) + (j++)`, `a += i++`, and `f(i++, j++)`.
 Distinct fields and distinct constant indices are independent; dynamic indices conservatively overlap when their separation cannot be proved.
 Direct reference aliases use their source identity. Parentheses, arguments, and short-circuit branches remain part of the enclosing full expression;
@@ -304,7 +304,7 @@ statements, declaration initializers, and the three for clauses are checked sepa
 
 Assignment target locations are evaluated once: `a[f()] += 1` calls `f()` once, and both `a[i++] = 1` and
 `a[i++] += 1` increment `i` once. Compound assignment saves the location before reading, calculating, and writing back.
-The array element and its index variable are different targets. See [`expression_effects.mgl`](../../example/samples/expression_effects.mgl).
+The array element and its index variable are different targets. See [`expression_effects.chl`](../../example/samples/expression_effects.chl).
 
 Structs may overload operators by inheriting the **left interfaces** `Add` / `Subtract` /
 `Multiply` / `Divide` / `Modulo` / `Equal` / `NotEqual` / `Less` / `LessOrEqual` / `Greater` /
@@ -352,16 +352,16 @@ interfaces** such as `RightAdd` (method `rightAdd`). Type arguments are written
   one. With no target type (`let z = a + 3;`) it is an error that asks you to say which —
   the compiler never silently picks one.
 
-Runnable checks: [`operator_symmetry.mgl`](../../example/samples/operator_symmetry.mgl),
-[`operator_right_direction.mgl`](../../example/samples/operator_right_direction.mgl),
-[`operator_result_choice.mgl`](../../example/samples/operator_result_choice.mgl),
-[`operator_swap_eval_order.mgl`](../../example/samples/operator_swap_eval_order.mgl). Rejected
+Runnable checks: [`operator_symmetry.chl`](../../example/samples/operator_symmetry.chl),
+[`operator_right_direction.chl`](../../example/samples/operator_right_direction.chl),
+[`operator_result_choice.chl`](../../example/samples/operator_result_choice.chl),
+[`operator_swap_eval_order.chl`](../../example/samples/operator_swap_eval_order.chl). Rejected
 forms:
-[`operator_asymmetric_reverse.mgl`](../../example/samples-error/operator_asymmetric_reverse.mgl),
-[`operator_right_forbidden.mgl`](../../example/samples-error/operator_right_forbidden.mgl),
-[`operator_right_explicit.mgl`](../../example/samples-error/operator_right_explicit.mgl),
-[`operator_result_ambiguous.mgl`](../../example/samples-error/operator_result_ambiguous.mgl),
-[`logical_operator_overload.mgl`](../../example/samples-error/logical_operator_overload.mgl).
+[`operator_asymmetric_reverse.chl`](../../example/samples-error/operator_asymmetric_reverse.chl),
+[`operator_right_forbidden.chl`](../../example/samples-error/operator_right_forbidden.chl),
+[`operator_right_explicit.chl`](../../example/samples-error/operator_right_explicit.chl),
+[`operator_result_ambiguous.chl`](../../example/samples-error/operator_result_ambiguous.chl),
+[`logical_operator_overload.chl`](../../example/samples-error/logical_operator_overload.chl).
 
 ---
 
@@ -369,7 +369,7 @@ forms:
 
 Declarations of `struct`, `enum`, and `interface` end at the closing `}`. The trailing semicolon is optional, and existing `};` declarations remain valid. Fields, abstract interface methods, and ordinary statements retain their semicolon requirements.
 
-```magel
+```chali
 struct Point {
     int64 x;
     int64 y;
@@ -391,7 +391,7 @@ struct Point {
 
 ## 7. Enums and match
 
-```magel
+```chali
 enum Message {
     Quit,
     Move(int32 x, int32 y),
@@ -401,7 +401,7 @@ enum Message {
 
 Variants may carry fields (algebraic data types). Handle them with `match`:
 
-```magel
+```chali
 void show(Message message) {
     match (message) {
         Message::Quit => { println("quit"); }
@@ -415,7 +415,7 @@ void show(Message message) {
 
 ### Scalar match: constants and ranges
 
-```magel
+```chali
 int64 grade(int64 score) {
     match (score) {
         100 => { return 3; }
@@ -436,7 +436,7 @@ Integer and `char` range patterns use standard calls:
 
 `<T>` may be omitted when the endpoint types can be inferred. Range patterns support integers and `char`; ordered conditions on floats and String use guards. Custom values implementing `Equal<T>` can be match subjects, with branch values compared through that protocol. The subject is evaluated once and branches are tested in source order.
 
-Integer patterns with compile-time bounds are checked for overlapping coverage. `rangeEq(15,25)` and `rangeEq(10,20)`, or `15 =>` and `rangeEq(15,20)`, produce warning `MGL1601`. `range(10,15)` and `rangeEq(15,20)` do not overlap. Empty ranges are ignored. Comparisons preserve full int64/uint64 precision and consider only values representable by the subject. Constant-expression bounds are checked; runtime bounds are not inferred.
+Integer patterns with compile-time bounds are checked for overlapping coverage. `rangeEq(15,25)` and `rangeEq(10,20)`, or `15 =>` and `rangeEq(15,20)`, produce warning `CHL1601`. `range(10,15)` and `rangeEq(15,20)` do not overlap. Empty ranges are ignored. Comparisons preserve full int64/uint64 precision and consider only values representable by the subject. Constant-expression bounds are checked; runtime bounds are not inferred.
 
 Warnings do not prevent compilation or change branch order. Patterns are tested in source order, followed by their guards. Guarded patterns can also receive coverage warnings; this does not prove that a branch is unreachable. Duplicate unguarded single-value patterns remain compilation errors. CLI warnings include source locations, JSON uses `severity: "warning"`, and the editor displays warning severity.
 
@@ -444,7 +444,7 @@ Warnings do not prevent compilation or change branch order. Patterns are tested 
 
 Bind a variable, then add a condition with `if`:
 
-```magel
+```chali
 enum Choice { Value(String text) };
 int64 kind(Choice choice) {
     match (choice) {
@@ -464,7 +464,7 @@ kind(Choice::Value("bad"))  = 0
 
 ## 8. Interfaces and runtime polymorphism
 
-```magel
+```chali
 interface Shape {
     int64 area();
     String describe() { return "shape"; }   // default implementation
@@ -480,7 +480,7 @@ interface Shape {
 
 Interface references bind directly to concrete references whose types implement the interface:
 
-```magel
+```chali
 Circle circle;
 circle.r = 4;
 Shape const& view = &circle;
@@ -488,13 +488,13 @@ Shape const& view = &circle;
 
 The same conversion works in assignments, arguments, and returns without an Any intermediary. A read-only source cannot become mutable. Views borrow their source; copying a view does not extend the concrete object's lifetime. Existing Any values can still expose interface views through checked reference extraction.
 
-See [`example/samples/interface.mgl`](../../example/samples/interface.mgl).
+See [`example/samples/interface.chl`](../../example/samples/interface.chl).
 
 ---
 
 ## 9. Generics
 
-```magel
+```chali
 int64 total<T: Shape>(T shape) { return shape.area(); }
 ```
 
@@ -507,7 +507,7 @@ int64 total<T: Shape>(T shape) { return shape.area(); }
 An outer template can bind some parameters of an inner template while retaining its own parameters.
 Concrete uses recursively generate complete instances:
 
-```magel
+```chali
 struct TypeC { int64 value; };
 struct TypeA<T, V> { T first; V second; };
 struct TypeB<T> { TypeA<T, TypeC> item; };
@@ -538,14 +538,14 @@ nested instances have been generated. Monomorphisation preserves strings, charac
 This is template composition; parameter-pattern partial specialisation with separate implementation bodies
 has no syntax at present. Recursive value fields are rejected, while references to the same instance are allowed.
 Expanding recursion is diagnosed: a compilation allows at most 1024 generic instances and rejects type-expression
-nesting at 128 levels. The regression suite, [`tests/magel_generic_monomorphization.py`](../../tests/magel_generic_monomorphization.py),
+nesting at 128 levels. The regression suite, [`tests/chali_generic_monomorphization.py`](../../tests/chali_generic_monomorphization.py),
 covers VM execution, instance reuse and invalid programs.
 
 ---
 
 ## 10. Control flow
 
-```magel
+```chali
 int64 main() {
     int64 i = 0;
     while (i < 3) { i = i + 1; }
@@ -594,7 +594,7 @@ for=9
 
 ## 11. Containers
 
-```magel
+```chali
 int64 main() {
     List<int64> xs;
     xs.push(1);
@@ -628,7 +628,7 @@ Iterator chains (`map` / `filter` / `collect`) need `import std::iter;` — see
 
 ## 12. Modules and imports
 
-```magel
+```chali
 module mylib::math;      // declare the module this file belongs to
 import std::iter;        // import a module
 import std::text;
@@ -639,25 +639,25 @@ import std::text;
 - The core module `std::lang` (`println` / `format` / `assert` / `len` / `Any` …) is loaded
   automatically and needs no `import`.
 - Visibility, exports and cross-module generics: see
-  [`example/samples/import_names.mgl`](../../example/samples/import_names.mgl).
+  [`example/samples/import_names.chl`](../../example/samples/import_names.chl).
 
 ---
 
 ## 13. Reference cheat-sheet
 
-```magel
+```chali
 int64 value = 7;
 int64 mut& alias = &value;    // writable reference
 int64 const& view = &value;   // read-only reference (same as int64 &)
 alias = 9;                    // writing through it writes value
 ```
 
-```magel
+```chali
 T mut& owned = heap T;         // heap object (element type from owned's type)
 owned.drop();                  // free
 ```
 
-Rules and restrictions (escape checking, `MGL1204`): see
+Rules and restrictions (escape checking, `CHL1204`): see
 [Core concepts](03-core-concepts.md#2-references-non-null-and-never-outliving-their-target).
 
 ---
@@ -670,7 +670,7 @@ Rules and restrictions (escape checking, `MGL1204`): see
 
 Helper names in a macro template must be visible at its definition. A caller local with the same name cannot supply a missing declaration. An undeclared helper reports an undeclared variable instead of being treated as an integer when checking block result types.
 
-```magel
+```chali
 $macro ADD<T:a>(a, b)
 cast<T>(a + b)
 $end_macro
@@ -687,7 +687,7 @@ int64 main() {
 
 ## 15. Annotations and reflection
 
-```magel
+```chali
 @annotation Route(path: String, level: int32 = 2)
 
 @Route("/health", level: 1)
@@ -700,7 +700,7 @@ int64 health() { return 200; }
   through interfaces.
 
 **Build requirement**: reflection is a fixed part of the language and is **not trimmable** — the root
-toolchain pins `MAGEL_WITH_REFLECTION=1` and `STACKVM_WITH_REFLECTION=1`, the reflection front end and
+toolchain pins `CHALI_WITH_REFLECTION=1` and `STACKVM_WITH_REFLECTION=1`, the reflection front end and
 runtime are always present, and compilation always runs the full reflection pass. `--reflection`
 explicitly asks the artifact to carry reflection metadata (it is on by default); `--no-reflection`
 omits that metadata and rejects annotations/reflection use. It affects that artifact only and reduces
@@ -711,8 +711,8 @@ reflection the same way.
 Reflection artifacts require a capable target VM. Compile explicitly with `--no-reflection` for
 a VM built without reflection. Dynamic-call and signature limits are specified in the [reflection document](../19-reflection.md).
 
-Full examples: [`example/reflection/`](../../example/reflection/) (`annotations.mgl`, `calls.mgl`,
-`dispatch.mgl`, `queries.mgl`).
+Full examples: [`example/reflection/`](../../example/reflection/) (`annotations.chl`, `calls.chl`,
+`dispatch.chl`, `queries.chl`).
 
 ---
 
@@ -720,7 +720,7 @@ Full examples: [`example/reflection/`](../../example/reflection/) (`annotations.
 
 `opcode` declares an opaque object owned by ABI or C++ glue:
 
-```magel
+```chali
 opcode Number {
     new = createNumber;
     drop = destroyNumber;
@@ -760,7 +760,7 @@ Strings and arrays retain their value semantics.
 declarations in `std::lang`; the frontend has no separate `Kind` enumerators for
 them. Lowercase `string` is not a type alias for `String`.
 
-```magel
+```chali
 abi "./native.dll" {
     int64 c_function(int64 x) = "c_function";
 }
@@ -798,7 +798,7 @@ More capabilities (`json` / `toml` / `regex` / `sql` / `net` / `linalg` …): se
 
 ### Destruction, release and temporary ownership
 
-Use `value.drop()` for explicit release of heap references, arrays and resource values. There is no standalone release statement; structs implementing Drop keep their protocol method. All forms share cleanup and coalescing; runtime release is not idempotent. The compiler coalesces visible drop operations for one lifecycle using control-flow analysis and still rejects use after release; runtime checks report `MGL1205` for cases that cannot be proven statically. Assignment starts a new lifecycle; `const &` still cannot call `drop()`. Reads and writes after release, and reads after move, produce `MGL1205`; a moved binding cannot be written or rebound; a new declaration is required. The default heap reuses physical memory without reusing logical allocation identities, so deletion through an old reference fails without affecting a new object. Release removes the active record immediately, without tombstones or a sweeping API. Fresh string arguments to printing, formatting and file writes are held by owning temporaries until the full expression completes. Ownership transfer clears the source slot, and releasing on one branch does not cancel cleanup on another branch. See [borrow control flow and algorithm validation](11-algorithm-validation.md).
+Use `value.drop()` for explicit release of heap references, arrays and resource values. There is no standalone release statement; structs implementing Drop keep their protocol method. All forms share cleanup and coalescing; runtime release is not idempotent. The compiler coalesces visible drop operations for one lifecycle using control-flow analysis and still rejects use after release; runtime checks report `CHL1205` for cases that cannot be proven statically. Assignment starts a new lifecycle; `const &` still cannot call `drop()`. Reads and writes after release, and reads after move, produce `CHL1205`; a moved binding cannot be written or rebound; a new declaration is required. The default heap reuses physical memory without reusing logical allocation identities, so deletion through an old reference fails without affecting a new object. Release removes the active record immediately, without tombstones or a sweeping API. Fresh string arguments to printing, formatting and file writes are held by owning temporaries until the full expression completes. Ownership transfer clears the source slot, and releasing on one branch does not cancel cleanup on another branch. See [borrow control flow and algorithm validation](11-algorithm-validation.md).
 
 The program entry `main` must return `int64` or `void`. Function pointers can be array elements: `int64 fn(int64) a[] = new[2];`; assign elements before calling `let callback = a[0]; callback(value);`. Function types compose with arrays, tuples, containers and nested function types. Write an array-returning function type as `(int64[]) fn()` to distinguish it from an array of function pointers.
 
@@ -814,7 +814,7 @@ An anonymous function returning another function may group its return type: `(in
 
 External locals are captured by `const&` by default; `fn const(...)` is equivalent. Reads observe later changes in the source, while writes are rejected. `fn mut(...)` captures by `mut&` and writes back to the source. `fn copy(...)` owns mutable independent copies. `fn move(...)` transfers captured values into the closure and forbids reading or writing the old bindings; declare new bindings before reuse. Copying a closure duplicates owned state and preserves references to borrowed sources. Reference captures must not outlive their sources; owned captures may escape only when their contents do not borrow shorter-lived storage. Capture lists use `fn copy[a, b] mut[c] const[d] move[e](int64 x) { ... }`; unlisted external locals use `const&` by default. One trailing default mode may override this: `fn copy[a, b] mut(int64 x)` borrows other locals by `mut&`. Multiple defaults, such as `copy[a, b] mut const(...)`, are rejected.
 
-```magel
+```chali
 int64 n = 1;
 let read = int64 fn() { n };
 let write = int64 fn mut(int64 x) { n += x; return n; };
@@ -829,7 +829,7 @@ assert(transferred() == 2);
 
 Duplicate names, unknown variables, parameter conflicts, and mut/move captures of read-only sources are rejected. Listed variables are captured even when unused in the body. Capture applies to the whole variable. Copying or moving a reference does not own its referent or extend its lifetime. Direct global access uses global storage; explicitly list a global for a snapshot. Convert array values to containers or explicit references. File and process handles support move capture but cannot be copied, including through closure copies.
 
-Capturing a variable by reference (implicit `const&` or `fn mut`) and later moving it into another closure is allowed when the borrowing closure is last used before the move. Using a borrowing closure after its source has been moved, destroyed or freed is rejected with `MGL1205`; copying the closure preserves its dependency on that source. A closure escaping a source lifetime that is too short is rejected with `MGL1204`. Use `copy` for an independent snapshot when both closures must remain usable. Copying or moving a reference still does not extend its referent's lifetime. These checks cover borrow sources tracked by the compiler; raw memory and opaque host operations retain their interface contracts.
+Capturing a variable by reference (implicit `const&` or `fn mut`) and later moving it into another closure is allowed when the borrowing closure is last used before the move. Using a borrowing closure after its source has been moved, destroyed or freed is rejected with `CHL1205`; copying the closure preserves its dependency on that source. A closure escaping a source lifetime that is too short is rejected with `CHL1204`. Use `copy` for an independent snapshot when both closures must remain usable. Copying or moving a reference still does not extend its referent's lifetime. These checks cover borrow sources tracked by the compiler; raw memory and opaque host operations retain their interface contracts.
 
 ## Generic closures and specialization
 
@@ -837,7 +837,7 @@ Capturing a variable by reference (implicit `const&` or `fn mut`) and later movi
 
 Full and partial specializations use the same closure name. Argument types are determined before selecting the uniquely most specific matching implementation:
 
-```magel
+```chali
 let f = fn<T, U>(T first, U second) { 0 };
 f<T, int64> = fn(T first, int64 second) { 1 };
 f<int64, int64> = fn(int64 first, int64 second) { 2 };
@@ -857,7 +857,7 @@ Both ordinary and generic closure values can serve as a generic type parameter `
 Once the outer type or function binds `T`, `T fn(T, int32)` has a concrete return type and parameter signature.
 Both structure fields and local variables support this form:
 
-```magel
+```chali
 struct CallbackPair<T> {
     T fn(T, int32) a;
     int32 fn(T, int32) b;
@@ -889,7 +889,7 @@ Other value types implement `NextValue<T>`, whose method is `Option<T> nextValue
 
 For-in and while can produce values in initializers, assignments, arguments and return positions. An else result is required. `yield value;` exits the entire value expression with a result. Exhaustion, a false condition or a plain break reaches else if no value has been yielded. Continue starts the next iteration. A single-value branch may use `{ value }`; complex branches use `yield value;`.
 
-```magel
+```chali
 int64 main()
 {
     int64 first = for (let value in std::lang::range(1, 8))
@@ -914,7 +914,7 @@ All reachable results are checked against the receiving type. String, arrays and
 
 Only `loop`, `while` and `for-in` count. Ordinary blocks, value blocks, `if` and `match` do not count. N must be a positive decimal integer literal, not a variable or expression. Zero, negative numbers, excessive depths and use outside a loop are rejected. Exits cannot cross function or `fn` boundaries. These forms carry no result; targeting a loop expression that requires a value is rejected. Use `yield value;` to supply a result.
 
-```magel
+```chali
 loop {
     while (true) {
         {
@@ -932,7 +932,7 @@ loop {
 };
 ```
 
-Scope cleanup runs from inner to outer scopes, including `defer`, `scope(exit)` and resource cleanup. Statements and update expressions bypassed by the exit do not run. See the [nested-loop exit example](../../example/samples/break_level.mgl).
+Scope cleanup runs from inner to outer scopes, including `defer`, `scope(exit)` and resource cleanup. Statements and update expressions bypassed by the exit do not run. See the [nested-loop exit example](../../example/samples/break_level.chl).
 
 ## Block expressions and interpolated output
 
@@ -948,7 +948,7 @@ File functions return the byte count; stream methods return `Result<int64, IoErr
 the LF, and closed/read-only errors retain the existing write behavior. File `println` with no text
 writes one LF; it does not automatically flush or close the file.
 
-```magel
+```chali
 import std::io;
 
 void main() {
@@ -962,7 +962,7 @@ void main() {
 
 A nonempty statement block can produce a value in an initializer, assignment, argument or return. Every normally completing path must exit using `yield value;`. Ordinary statement blocks retain their behavior; empty `{}` remains a collection literal.
 
-```magel
+```chali
 int64 main() {
     int32 a = { int32 b = 3; yield b; };
     a = { int32 b = 4; yield b; };
@@ -976,7 +976,7 @@ A value exit (`yield`) selects the nearest result-receiving expression, crossing
 
 For example, a loop can directly complete an enclosing block assignment, while nested assignment blocks receive their own results:
 
-```magel
+```chali
 (int64, String) found = {
     {
         int64 i = 0;
@@ -992,7 +992,7 @@ For example, a loop can directly complete an enclosing block assignment, while n
 int64 a = { int64 b = { yield 1; }; yield b + 1; }; // a == 2
 ```
 
-See the [value break sample](../../example/samples/break_values.mgl) for nested loops and cleanup checks.
+See the [value break sample](../../example/samples/break_values.chl) for nested loops and cleanup checks.
 
 A standalone brace statement remains an ordinary scope even with a trailing semicolon; it does not create a disposable value receiver. A `yield value;` without an enclosing receiving expression is an error. In nested initializers, `yield 5;` completes the inner loop for z and `yield z + 1;` completes the outer loop for y. A final `yield y + 1;` inside a standalone outer block still has no receiver.
 
@@ -1000,7 +1000,7 @@ A standalone brace statement remains an ordinary scope even with a trailing semi
 
 A hygienic variadic macro can build a list:
 
-```magel
+```chali
 $macro vec(T, ...values)
 {
     List<T> result;
@@ -1012,13 +1012,13 @@ $end_for
 $end_macro
 ```
 
-Use `List<int32> values = $vec(int32, 1, 2, 3);` or `values = $vec(int32, 4, 5);`. Ordinary local declarations are hygienic. Each argument is evaluated once, received using the requested type and appended in order with `push`. No elements produces an empty list. See the runnable [block example](../../example/samples/block_expression.mgl) and [output example](../../example/samples/print_interpolation.mgl).
+Use `List<int32> values = $vec(int32, 1, 2, 3);` or `values = $vec(int32, 4, 5);`. Ordinary local declarations are hygienic. Each argument is evaluated once, received using the requested type and appended in order with `push`. No elements produces an empty list. See the runnable [block example](../../example/samples/block_expression.chl) and [output example](../../example/samples/print_interpolation.chl).
 
 Use `fn` for anonymous functions; the old `lambda` syntax has been removed: `let add = fn(int32 x) { x + 1 };`. An explicit result type precedes `fn`: `let add = int32 fn(int32 x) { return x + 1; };`. Capture modes and lists use `fn`. `int32 fn(int32)` still denotes a function type.
 
 A `fn` expression can be passed directly to a named function or a function value. Each callback is
 checked against its parameter's function type, which also provides context for omitted parameter
-types. See [`fn_inline_arguments.mgl`](../../example/samples/fn_inline_arguments.mgl) for a nested
+types. See [`fn_inline_arguments.chl`](../../example/samples/fn_inline_arguments.chl) for a nested
 function result combined with tuple values.
 
 ## Moving and cleaning up value exits
@@ -1029,7 +1029,7 @@ Expressions such as `yield i + 1;` and `yield makeText();` are evaluated once an
 
 The result is saved before exit callbacks and automatic cleanup. Moving clears the source storage and ends its binding lifetime without invoking close/drop on the source; the final receiver owns cleanup. Types implementing both Closeable and Drop close before dropping. Copies own independent resources, so source and result are cleaned up at their respective lifetime ends. Exits across loops clean up every scope that is left without releasing resources already transferred to the result.
 
-Moving does not extend borrowed lifetimes, including references stored inside aggregates. The [move and cleanup sample](../../example/samples/break_move.mgl) checks evaluation counts, raw resource handle identity, external variable copying, destructor counts, cleanup order and VM behavior. See [ownership transfer](23-ownership-move.md) for general rules.
+Moving does not extend borrowed lifetimes, including references stored inside aggregates. The [move and cleanup sample](../../example/samples/break_move.chl) checks evaluation counts, raw resource handle identity, external variable copying, destructor counts, cleanup order and VM behavior. See [ownership transfer](23-ownership-move.md) for general rules.
 
 ## Default value text and string conversion
 
@@ -1037,7 +1037,7 @@ Every non-void value supports `String toString()` and conversion to String. Numb
 
 A user-defined no-argument `String toString()` supplies an implicit String conversion when no dedicated conversion exists. An existing `ImplicitConvert<String>` supplies a missing no-argument toString. If both are explicit, each retains its own behavior. `cast<String>` first chooses `ExplicitConvert<String>`, then implicit conversion or default value text. When only `toString(String style)` exists, the generated no-argument method supplies an empty style. Standard ToString and ImplicitConvert<String> generic constraints recognize the default capability; unrelated user interfaces with the same name do not.
 
-Struct `{}` formatting reuses the no-argument method; styled overloads retain their behavior. Conversion evaluates its source once, preserves ownership, cleans up temporary sources, and works without reflection. Nested user methods must be read-only. Container snapshots isolate callback reentry and mutation, and callback failures preserve their original diagnostics. See the [value-text sample](../../example/samples/value_text.mgl).
+Struct `{}` formatting reuses the no-argument method; styled overloads retain their behavior. Conversion evaluates its source once, preserves ownership, cleans up temporary sources, and works without reflection. Nested user methods must be read-only. Container snapshots isolate callback reentry and mutation, and callback failures preserve their original diagnostics. See the [value-text sample](../../example/samples/value_text.chl).
 
 ## Returning control expressions
 

@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 // std::lang 自动加载
 ```
 
@@ -14,16 +14,16 @@
 
 ## 参考代码
 
-完整程序：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+完整程序：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 ```powershell
-magel run example/samples/std_collections_algorithms.mgl
+chali run example/samples/std_collections_algorithms.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::collections;
 
 import std::memory;
@@ -475,7 +475,7 @@ int64 main() {
 
 **声明**
 
-```magel
+```chali
 int64 length();
 ```
 
@@ -497,13 +497,13 @@ int64 length();
 
 **调用形式**
 
-```magel
+```chali
 obj.length();
 ```
 
-**源码**：[source/std/lang.mgl:15](../../source/std/lang.mgl#L15)。
+**源码**：[source/std/lang.chl:15](../../source/std/lang.chl#L15)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-1"></a>
 
@@ -511,7 +511,7 @@ obj.length();
 
 **声明**
 
-```magel
+```chali
 int64 size();
 ```
 
@@ -535,13 +535,13 @@ int64 size();
 
 **调用形式**
 
-```magel
+```chali
 obj.size();
 ```
 
-**源码**：[source/std/lang.mgl:17](../../source/std/lang.mgl#L17)。
+**源码**：[source/std/lang.chl:17](../../source/std/lang.chl#L17)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-2"></a>
 
@@ -549,7 +549,7 @@ obj.size();
 
 **声明**
 
-```magel
+```chali
 int64 byteLength();
 ```
 
@@ -571,13 +571,13 @@ int64 byteLength();
 
 **调用形式**
 
-```magel
+```chali
 obj.byteLength();
 ```
 
-**源码**：[source/std/lang.mgl:20](../../source/std/lang.mgl#L20)。
+**源码**：[source/std/lang.chl:20](../../source/std/lang.chl#L20)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-3"></a>
 
@@ -585,7 +585,7 @@ obj.byteLength();
 
 **声明**
 
-```magel
+```chali
 bool isEmpty();
 ```
 
@@ -609,13 +609,13 @@ bool isEmpty();
 
 **调用形式**
 
-```magel
+```chali
 obj.isEmpty();
 ```
 
-**源码**：[source/std/lang.mgl:23](../../source/std/lang.mgl#L23)。
+**源码**：[source/std/lang.chl:23](../../source/std/lang.chl#L23)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-4"></a>
 
@@ -623,7 +623,7 @@ obj.isEmpty();
 
 **声明**
 
-```magel
+```chali
 bool isBlank();
 ```
 
@@ -645,13 +645,13 @@ bool isBlank();
 
 **调用形式**
 
-```magel
+```chali
 obj.isBlank();
 ```
 
-**源码**：[source/std/lang.mgl:26](../../source/std/lang.mgl#L26)。
+**源码**：[source/std/lang.chl:26](../../source/std/lang.chl#L26)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-5"></a>
 
@@ -659,7 +659,7 @@ obj.isBlank();
 
 **声明**
 
-```magel
+```chali
 bool isDigit();
 ```
 
@@ -681,13 +681,13 @@ bool isDigit();
 
 **调用形式**
 
-```magel
+```chali
 obj.isDigit();
 ```
 
-**源码**：[source/std/lang.mgl:29](../../source/std/lang.mgl#L29)。
+**源码**：[source/std/lang.chl:29](../../source/std/lang.chl#L29)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-6"></a>
 
@@ -695,7 +695,7 @@ obj.isDigit();
 
 **声明**
 
-```magel
+```chali
 bool isAlpha();
 ```
 
@@ -717,13 +717,13 @@ bool isAlpha();
 
 **调用形式**
 
-```magel
+```chali
 obj.isAlpha();
 ```
 
-**源码**：[source/std/lang.mgl:32](../../source/std/lang.mgl#L32)。
+**源码**：[source/std/lang.chl:32](../../source/std/lang.chl#L32)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-7"></a>
 
@@ -731,7 +731,7 @@ obj.isAlpha();
 
 **声明**
 
-```magel
+```chali
 bool isAlnum();
 ```
 
@@ -753,13 +753,13 @@ bool isAlnum();
 
 **调用形式**
 
-```magel
+```chali
 obj.isAlnum();
 ```
 
-**源码**：[source/std/lang.mgl:35](../../source/std/lang.mgl#L35)。
+**源码**：[source/std/lang.chl:35](../../source/std/lang.chl#L35)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-8"></a>
 
@@ -767,7 +767,7 @@ obj.isAlnum();
 
 **声明**
 
-```magel
+```chali
 bool isAscii();
 ```
 
@@ -789,13 +789,13 @@ bool isAscii();
 
 **调用形式**
 
-```magel
+```chali
 obj.isAscii();
 ```
 
-**源码**：[source/std/lang.mgl:38](../../source/std/lang.mgl#L38)。
+**源码**：[source/std/lang.chl:38](../../source/std/lang.chl#L38)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-9"></a>
 
@@ -803,7 +803,7 @@ obj.isAscii();
 
 **声明**
 
-```magel
+```chali
 int64 charLength();
 ```
 
@@ -825,13 +825,13 @@ int64 charLength();
 
 **调用形式**
 
-```magel
+```chali
 obj.charLength();
 ```
 
-**源码**：[source/std/lang.mgl:41](../../source/std/lang.mgl#L41)。
+**源码**：[source/std/lang.chl:41](../../source/std/lang.chl#L41)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-10"></a>
 
@@ -839,7 +839,7 @@ obj.charLength();
 
 **声明**
 
-```magel
+```chali
 int64 indexOf(String text, int64 start = 0);
 ```
 
@@ -866,13 +866,13 @@ int64 indexOf(String text, int64 start = 0);
 
 **调用形式**
 
-```magel
+```chali
 obj.indexOf(text, start);
 ```
 
-**源码**：[source/std/lang.mgl:44](../../source/std/lang.mgl#L44)。
+**源码**：[source/std/lang.chl:44](../../source/std/lang.chl#L44)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-11"></a>
 
@@ -880,7 +880,7 @@ obj.indexOf(text, start);
 
 **声明**
 
-```magel
+```chali
 int64 lastIndexOf(String text, int64 start = 0 - 1);
 ```
 
@@ -905,13 +905,13 @@ int64 lastIndexOf(String text, int64 start = 0 - 1);
 
 **调用形式**
 
-```magel
+```chali
 obj.lastIndexOf(text, start);
 ```
 
-**源码**：[source/std/lang.mgl:47](../../source/std/lang.mgl#L47)。
+**源码**：[source/std/lang.chl:47](../../source/std/lang.chl#L47)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-12"></a>
 
@@ -919,7 +919,7 @@ obj.lastIndexOf(text, start);
 
 **声明**
 
-```magel
+```chali
 bool contains(String text);
 ```
 
@@ -945,13 +945,13 @@ bool contains(String text);
 
 **调用形式**
 
-```magel
+```chali
 obj.contains(text);
 ```
 
-**源码**：[source/std/lang.mgl:50](../../source/std/lang.mgl#L50)。
+**源码**：[source/std/lang.chl:50](../../source/std/lang.chl#L50)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-13"></a>
 
@@ -959,7 +959,7 @@ obj.contains(text);
 
 **声明**
 
-```magel
+```chali
 bool startsWith(String text);
 ```
 
@@ -985,13 +985,13 @@ bool startsWith(String text);
 
 **调用形式**
 
-```magel
+```chali
 obj.startsWith(text);
 ```
 
-**源码**：[source/std/lang.mgl:53](../../source/std/lang.mgl#L53)。
+**源码**：[source/std/lang.chl:53](../../source/std/lang.chl#L53)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-14"></a>
 
@@ -999,7 +999,7 @@ obj.startsWith(text);
 
 **声明**
 
-```magel
+```chali
 bool endsWith(String text);
 ```
 
@@ -1025,13 +1025,13 @@ bool endsWith(String text);
 
 **调用形式**
 
-```magel
+```chali
 obj.endsWith(text);
 ```
 
-**源码**：[source/std/lang.mgl:56](../../source/std/lang.mgl#L56)。
+**源码**：[source/std/lang.chl:56](../../source/std/lang.chl#L56)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-15"></a>
 
@@ -1039,7 +1039,7 @@ obj.endsWith(text);
 
 **声明**
 
-```magel
+```chali
 int64 count(String text);
 ```
 
@@ -1065,13 +1065,13 @@ int64 count(String text);
 
 **调用形式**
 
-```magel
+```chali
 obj.count(text);
 ```
 
-**源码**：[source/std/lang.mgl:59](../../source/std/lang.mgl#L59)。
+**源码**：[source/std/lang.chl:59](../../source/std/lang.chl#L59)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-16"></a>
 
@@ -1079,7 +1079,7 @@ obj.count(text);
 
 **声明**
 
-```magel
+```chali
 int64 compare(String text);
 ```
 
@@ -1105,13 +1105,13 @@ int64 compare(String text);
 
 **调用形式**
 
-```magel
+```chali
 obj.compare(text);
 ```
 
-**源码**：[source/std/lang.mgl:62](../../source/std/lang.mgl#L62)。
+**源码**：[source/std/lang.chl:62](../../source/std/lang.chl#L62)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-17"></a>
 
@@ -1119,7 +1119,7 @@ obj.compare(text);
 
 **声明**
 
-```magel
+```chali
 Option<uint8> byteAt(int64 index);
 ```
 
@@ -1143,13 +1143,13 @@ Option<uint8> byteAt(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.byteAt(index);
 ```
 
-**源码**：[source/std/lang.mgl:65](../../source/std/lang.mgl#L65)。
+**源码**：[source/std/lang.chl:65](../../source/std/lang.chl#L65)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-18"></a>
 
@@ -1157,7 +1157,7 @@ obj.byteAt(index);
 
 **声明**
 
-```magel
+```chali
 String substring(int64 start, int64 count = 0 - 1);
 ```
 
@@ -1182,13 +1182,13 @@ String substring(int64 start, int64 count = 0 - 1);
 
 **调用形式**
 
-```magel
+```chali
 obj.substring(start, count);
 ```
 
-**源码**：[source/std/lang.mgl:68](../../source/std/lang.mgl#L68)。
+**源码**：[source/std/lang.chl:68](../../source/std/lang.chl#L68)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-19"></a>
 
@@ -1196,7 +1196,7 @@ obj.substring(start, count);
 
 **声明**
 
-```magel
+```chali
 String slice(int64 start, int64 end);
 ```
 
@@ -1221,13 +1221,13 @@ String slice(int64 start, int64 end);
 
 **调用形式**
 
-```magel
+```chali
 obj.slice(start, end);
 ```
 
-**源码**：[source/std/lang.mgl:71](../../source/std/lang.mgl#L71)。
+**源码**：[source/std/lang.chl:71](../../source/std/lang.chl#L71)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-20"></a>
 
@@ -1235,7 +1235,7 @@ obj.slice(start, end);
 
 **声明**
 
-```magel
+```chali
 String left(int64 count);
 ```
 
@@ -1259,13 +1259,13 @@ String left(int64 count);
 
 **调用形式**
 
-```magel
+```chali
 obj.left(count);
 ```
 
-**源码**：[source/std/lang.mgl:74](../../source/std/lang.mgl#L74)。
+**源码**：[source/std/lang.chl:74](../../source/std/lang.chl#L74)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-21"></a>
 
@@ -1273,7 +1273,7 @@ obj.left(count);
 
 **声明**
 
-```magel
+```chali
 String right(int64 count);
 ```
 
@@ -1297,13 +1297,13 @@ String right(int64 count);
 
 **调用形式**
 
-```magel
+```chali
 obj.right(count);
 ```
 
-**源码**：[source/std/lang.mgl:77](../../source/std/lang.mgl#L77)。
+**源码**：[source/std/lang.chl:77](../../source/std/lang.chl#L77)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-22"></a>
 
@@ -1311,7 +1311,7 @@ obj.right(count);
 
 **声明**
 
-```magel
+```chali
 String trim();
 ```
 
@@ -1335,13 +1335,13 @@ String trim();
 
 **调用形式**
 
-```magel
+```chali
 obj.trim();
 ```
 
-**源码**：[source/std/lang.mgl:80](../../source/std/lang.mgl#L80)。
+**源码**：[source/std/lang.chl:80](../../source/std/lang.chl#L80)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-23"></a>
 
@@ -1349,7 +1349,7 @@ obj.trim();
 
 **声明**
 
-```magel
+```chali
 String trimStart();
 ```
 
@@ -1371,13 +1371,13 @@ String trimStart();
 
 **调用形式**
 
-```magel
+```chali
 obj.trimStart();
 ```
 
-**源码**：[source/std/lang.mgl:83](../../source/std/lang.mgl#L83)。
+**源码**：[source/std/lang.chl:83](../../source/std/lang.chl#L83)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-24"></a>
 
@@ -1385,7 +1385,7 @@ obj.trimStart();
 
 **声明**
 
-```magel
+```chali
 String trimEnd();
 ```
 
@@ -1407,13 +1407,13 @@ String trimEnd();
 
 **调用形式**
 
-```magel
+```chali
 obj.trimEnd();
 ```
 
-**源码**：[source/std/lang.mgl:86](../../source/std/lang.mgl#L86)。
+**源码**：[source/std/lang.chl:86](../../source/std/lang.chl#L86)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-25"></a>
 
@@ -1421,7 +1421,7 @@ obj.trimEnd();
 
 **声明**
 
-```magel
+```chali
 String toLower();
 ```
 
@@ -1445,13 +1445,13 @@ String toLower();
 
 **调用形式**
 
-```magel
+```chali
 obj.toLower();
 ```
 
-**源码**：[source/std/lang.mgl:89](../../source/std/lang.mgl#L89)。
+**源码**：[source/std/lang.chl:89](../../source/std/lang.chl#L89)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-26"></a>
 
@@ -1459,7 +1459,7 @@ obj.toLower();
 
 **声明**
 
-```magel
+```chali
 String toUpper();
 ```
 
@@ -1483,13 +1483,13 @@ String toUpper();
 
 **调用形式**
 
-```magel
+```chali
 obj.toUpper();
 ```
 
-**源码**：[source/std/lang.mgl:92](../../source/std/lang.mgl#L92)。
+**源码**：[source/std/lang.chl:92](../../source/std/lang.chl#L92)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-27"></a>
 
@@ -1497,7 +1497,7 @@ obj.toUpper();
 
 **声明**
 
-```magel
+```chali
 String replaceFirst(String before, String after);
 ```
 
@@ -1524,13 +1524,13 @@ String replaceFirst(String before, String after);
 
 **调用形式**
 
-```magel
+```chali
 obj.replaceFirst(before, after);
 ```
 
-**源码**：[source/std/lang.mgl:95](../../source/std/lang.mgl#L95)。
+**源码**：[source/std/lang.chl:95](../../source/std/lang.chl#L95)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-28"></a>
 
@@ -1538,7 +1538,7 @@ obj.replaceFirst(before, after);
 
 **声明**
 
-```magel
+```chali
 String replaceAll(String before, String after);
 ```
 
@@ -1565,13 +1565,13 @@ String replaceAll(String before, String after);
 
 **调用形式**
 
-```magel
+```chali
 obj.replaceAll(before, after);
 ```
 
-**源码**：[source/std/lang.mgl:98](../../source/std/lang.mgl#L98)。
+**源码**：[source/std/lang.chl:98](../../source/std/lang.chl#L98)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-29"></a>
 
@@ -1579,7 +1579,7 @@ obj.replaceAll(before, after);
 
 **声明**
 
-```magel
+```chali
 String replace(String before, String after);
 ```
 
@@ -1606,13 +1606,13 @@ String replace(String before, String after);
 
 **调用形式**
 
-```magel
+```chali
 obj.replace(before, after);
 ```
 
-**源码**：[source/std/lang.mgl:101](../../source/std/lang.mgl#L101)。
+**源码**：[source/std/lang.chl:101](../../source/std/lang.chl#L101)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-30"></a>
 
@@ -1620,7 +1620,7 @@ obj.replace(before, after);
 
 **声明**
 
-```magel
+```chali
 String repeat(int64 count);
 ```
 
@@ -1646,13 +1646,13 @@ String repeat(int64 count);
 
 **调用形式**
 
-```magel
+```chali
 obj.repeat(count);
 ```
 
-**源码**：[source/std/lang.mgl:104](../../source/std/lang.mgl#L104)。
+**源码**：[source/std/lang.chl:104](../../source/std/lang.chl#L104)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-31"></a>
 
@@ -1660,7 +1660,7 @@ obj.repeat(count);
 
 **声明**
 
-```magel
+```chali
 String reverse();
 ```
 
@@ -1682,13 +1682,13 @@ String reverse();
 
 **调用形式**
 
-```magel
+```chali
 obj.reverse();
 ```
 
-**源码**：[source/std/lang.mgl:107](../../source/std/lang.mgl#L107)。
+**源码**：[source/std/lang.chl:107](../../source/std/lang.chl#L107)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-32"></a>
 
@@ -1696,7 +1696,7 @@ obj.reverse();
 
 **声明**
 
-```magel
+```chali
 String padStart(int64 length, String fill = " ");
 ```
 
@@ -1723,13 +1723,13 @@ String padStart(int64 length, String fill = " ");
 
 **调用形式**
 
-```magel
+```chali
 obj.padStart(length, fill);
 ```
 
-**源码**：[source/std/lang.mgl:110](../../source/std/lang.mgl#L110)。
+**源码**：[source/std/lang.chl:110](../../source/std/lang.chl#L110)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-33"></a>
 
@@ -1737,7 +1737,7 @@ obj.padStart(length, fill);
 
 **声明**
 
-```magel
+```chali
 String padEnd(int64 length, String fill = " ");
 ```
 
@@ -1764,13 +1764,13 @@ String padEnd(int64 length, String fill = " ");
 
 **调用形式**
 
-```magel
+```chali
 obj.padEnd(length, fill);
 ```
 
-**源码**：[source/std/lang.mgl:113](../../source/std/lang.mgl#L113)。
+**源码**：[source/std/lang.chl:113](../../source/std/lang.chl#L113)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-34"></a>
 
@@ -1778,7 +1778,7 @@ obj.padEnd(length, fill);
 
 **声明**
 
-```magel
+```chali
 String removePrefix(String prefix);
 ```
 
@@ -1802,13 +1802,13 @@ String removePrefix(String prefix);
 
 **调用形式**
 
-```magel
+```chali
 obj.removePrefix(prefix);
 ```
 
-**源码**：[source/std/lang.mgl:116](../../source/std/lang.mgl#L116)。
+**源码**：[source/std/lang.chl:116](../../source/std/lang.chl#L116)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-35"></a>
 
@@ -1816,7 +1816,7 @@ obj.removePrefix(prefix);
 
 **声明**
 
-```magel
+```chali
 String removeSuffix(String suffix);
 ```
 
@@ -1840,13 +1840,13 @@ String removeSuffix(String suffix);
 
 **调用形式**
 
-```magel
+```chali
 obj.removeSuffix(suffix);
 ```
 
-**源码**：[source/std/lang.mgl:119](../../source/std/lang.mgl#L119)。
+**源码**：[source/std/lang.chl:119](../../source/std/lang.chl#L119)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-36"></a>
 
@@ -1854,7 +1854,7 @@ obj.removeSuffix(suffix);
 
 **声明**
 
-```magel
+```chali
 String insert(int64 index, String text);
 ```
 
@@ -1881,13 +1881,13 @@ String insert(int64 index, String text);
 
 **调用形式**
 
-```magel
+```chali
 obj.insert(index, text);
 ```
 
-**源码**：[source/std/lang.mgl:122](../../source/std/lang.mgl#L122)。
+**源码**：[source/std/lang.chl:122](../../source/std/lang.chl#L122)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-37"></a>
 
@@ -1895,7 +1895,7 @@ obj.insert(index, text);
 
 **声明**
 
-```magel
+```chali
 String remove(int64 start, int64 count = 0 - 1);
 ```
 
@@ -1922,13 +1922,13 @@ String remove(int64 start, int64 count = 0 - 1);
 
 **调用形式**
 
-```magel
+```chali
 obj.remove(start, count);
 ```
 
-**源码**：[source/std/lang.mgl:125](../../source/std/lang.mgl#L125)。
+**源码**：[source/std/lang.chl:125](../../source/std/lang.chl#L125)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-38"></a>
 
@@ -1936,7 +1936,7 @@ obj.remove(start, count);
 
 **声明**
 
-```magel
+```chali
 String utf8Substring(int64 start, int64 count = 0 - 1);
 ```
 
@@ -1961,13 +1961,13 @@ String utf8Substring(int64 start, int64 count = 0 - 1);
 
 **调用形式**
 
-```magel
+```chali
 obj.utf8Substring(start, count);
 ```
 
-**源码**：[source/std/lang.mgl:128](../../source/std/lang.mgl#L128)。
+**源码**：[source/std/lang.chl:128](../../source/std/lang.chl#L128)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-39"></a>
 
@@ -1975,7 +1975,7 @@ obj.utf8Substring(start, count);
 
 **声明**
 
-```magel
+```chali
 Option<String> charAt(int64 index);
 ```
 
@@ -2001,13 +2001,13 @@ Option<String> charAt(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.charAt(index);
 ```
 
-**源码**：[source/std/lang.mgl:131](../../source/std/lang.mgl#L131)。
+**源码**：[source/std/lang.chl:131](../../source/std/lang.chl#L131)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-40"></a>
 
@@ -2015,7 +2015,7 @@ obj.charAt(index);
 
 **声明**
 
-```magel
+```chali
 List<String> split(String separator, bool keepEmpty = true);
 ```
 
@@ -2042,13 +2042,13 @@ List<String> split(String separator, bool keepEmpty = true);
 
 **调用形式**
 
-```magel
+```chali
 obj.split(separator, keepEmpty);
 ```
 
-**源码**：[source/std/lang.mgl:134](../../source/std/lang.mgl#L134)。
+**源码**：[source/std/lang.chl:134](../../source/std/lang.chl#L134)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-41"></a>
 
@@ -2056,7 +2056,7 @@ obj.split(separator, keepEmpty);
 
 **声明**
 
-```magel
+```chali
 List<String> splitWhitespace();
 ```
 
@@ -2078,13 +2078,13 @@ List<String> splitWhitespace();
 
 **调用形式**
 
-```magel
+```chali
 obj.splitWhitespace();
 ```
 
-**源码**：[source/std/lang.mgl:137](../../source/std/lang.mgl#L137)。
+**源码**：[source/std/lang.chl:137](../../source/std/lang.chl#L137)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-42"></a>
 
@@ -2092,7 +2092,7 @@ obj.splitWhitespace();
 
 **声明**
 
-```magel
+```chali
 List<String> lines(bool keepEmpty = true);
 ```
 
@@ -2116,13 +2116,13 @@ List<String> lines(bool keepEmpty = true);
 
 **调用形式**
 
-```magel
+```chali
 obj.lines(keepEmpty);
 ```
 
-**源码**：[source/std/lang.mgl:140](../../source/std/lang.mgl#L140)。
+**源码**：[source/std/lang.chl:140](../../source/std/lang.chl#L140)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-43"></a>
 
@@ -2130,7 +2130,7 @@ obj.lines(keepEmpty);
 
 **声明**
 
-```magel
+```chali
 List<String> unicodeChars();
 ```
 
@@ -2152,13 +2152,13 @@ List<String> unicodeChars();
 
 **调用形式**
 
-```magel
+```chali
 obj.unicodeChars();
 ```
 
-**源码**：[source/std/lang.mgl:143](../../source/std/lang.mgl#L143)。
+**源码**：[source/std/lang.chl:143](../../source/std/lang.chl#L143)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-44"></a>
 
@@ -2166,7 +2166,7 @@ obj.unicodeChars();
 
 **声明**
 
-```magel
+```chali
 List<uint8> bytes();
 ```
 
@@ -2188,13 +2188,13 @@ List<uint8> bytes();
 
 **调用形式**
 
-```magel
+```chali
 obj.bytes();
 ```
 
-**源码**：[source/std/lang.mgl:146](../../source/std/lang.mgl#L146)。
+**源码**：[source/std/lang.chl:146](../../source/std/lang.chl#L146)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-45"></a>
 
@@ -2202,7 +2202,7 @@ obj.bytes();
 
 **声明**
 
-```magel
+```chali
 String join(List<String> items);
 ```
 
@@ -2228,13 +2228,13 @@ String join(List<String> items);
 
 **调用形式**
 
-```magel
+```chali
 obj.join(items);
 ```
 
-**源码**：[source/std/lang.mgl:149](../../source/std/lang.mgl#L149)。
+**源码**：[source/std/lang.chl:149](../../source/std/lang.chl#L149)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-46"></a>
 
@@ -2242,7 +2242,7 @@ obj.join(items);
 
 **声明**
 
-```magel
+```chali
 String concat(String text);
 ```
 
@@ -2266,13 +2266,13 @@ String concat(String text);
 
 **调用形式**
 
-```magel
+```chali
 obj.concat(text);
 ```
 
-**源码**：[source/std/lang.mgl:152](../../source/std/lang.mgl#L152)。
+**源码**：[source/std/lang.chl:152](../../source/std/lang.chl#L152)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-47"></a>
 
@@ -2280,7 +2280,7 @@ obj.concat(text);
 
 **声明**
 
-```magel
+```chali
 String prepend(String text);
 ```
 
@@ -2304,13 +2304,13 @@ String prepend(String text);
 
 **调用形式**
 
-```magel
+```chali
 obj.prepend(text);
 ```
 
-**源码**：[source/std/lang.mgl:155](../../source/std/lang.mgl#L155)。
+**源码**：[source/std/lang.chl:155](../../source/std/lang.chl#L155)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-48"></a>
 
@@ -2318,7 +2318,7 @@ obj.prepend(text);
 
 **声明**
 
-```magel
+```chali
 int64 print(String text);
 ```
 
@@ -2342,13 +2342,13 @@ int64 print(String text);
 
 **调用形式**
 
-```magel
+```chali
 obj.print(text);
 ```
 
-**源码**：[source/std/lang.mgl:178](../../source/std/lang.mgl#L178)。
+**源码**：[source/std/lang.chl:178](../../source/std/lang.chl#L178)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-49"></a>
 
@@ -2356,7 +2356,7 @@ obj.print(text);
 
 **声明**
 
-```magel
+```chali
 int64 println(String text = "");
 ```
 
@@ -2380,13 +2380,13 @@ int64 println(String text = "");
 
 **调用形式**
 
-```magel
+```chali
 obj.println(text);
 ```
 
-**源码**：[source/std/lang.mgl:184](../../source/std/lang.mgl#L184)。
+**源码**：[source/std/lang.chl:184](../../source/std/lang.chl#L184)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-50"></a>
 
@@ -2394,7 +2394,7 @@ obj.println(text);
 
 **声明**
 
-```magel
+```chali
 String readLine();
 ```
 
@@ -2416,13 +2416,13 @@ String readLine();
 
 **调用形式**
 
-```magel
+```chali
 readLine();
 ```
 
-**源码**：[source/std/lang.mgl:217](../../source/std/lang.mgl#L217)。
+**源码**：[source/std/lang.chl:217](../../source/std/lang.chl#L217)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-51"></a>
 
@@ -2430,7 +2430,7 @@ readLine();
 
 **声明**
 
-```magel
+```chali
 String readLines(int32 N);
 ```
 
@@ -2454,13 +2454,13 @@ String readLines(int32 N);
 
 **调用形式**
 
-```magel
+```chali
 readLines(N);
 ```
 
-**源码**：[source/std/lang.mgl:221](../../source/std/lang.mgl#L221)。
+**源码**：[source/std/lang.chl:221](../../source/std/lang.chl#L221)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-52"></a>
 
@@ -2468,7 +2468,7 @@ readLines(N);
 
 **声明**
 
-```magel
+```chali
 String readLines(int64 N);
 ```
 
@@ -2492,13 +2492,13 @@ String readLines(int64 N);
 
 **调用形式**
 
-```magel
+```chali
 readLines(N);
 ```
 
-**源码**：[source/std/lang.mgl:225](../../source/std/lang.mgl#L225)。
+**源码**：[source/std/lang.chl:225](../../source/std/lang.chl#L225)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-53"></a>
 
@@ -2506,7 +2506,7 @@ readLines(N);
 
 **声明**
 
-```magel
+```chali
 Option<int32> toInt32(float64 value);
 ```
 
@@ -2530,13 +2530,13 @@ Option<int32> toInt32(float64 value);
 
 **调用形式**
 
-```magel
+```chali
 toInt32(value);
 ```
 
-**源码**：[source/std/lang.mgl:231](../../source/std/lang.mgl#L231)。
+**源码**：[source/std/lang.chl:231](../../source/std/lang.chl#L231)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-54"></a>
 
@@ -2544,7 +2544,7 @@ toInt32(value);
 
 **声明**
 
-```magel
+```chali
 Option<int32> toInt32(float32 value);
 ```
 
@@ -2568,13 +2568,13 @@ Option<int32> toInt32(float32 value);
 
 **调用形式**
 
-```magel
+```chali
 toInt32(value);
 ```
 
-**源码**：[source/std/lang.mgl:237](../../source/std/lang.mgl#L237)。
+**源码**：[source/std/lang.chl:237](../../source/std/lang.chl#L237)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-55"></a>
 
@@ -2582,7 +2582,7 @@ toInt32(value);
 
 **声明**
 
-```magel
+```chali
 int64 toInt64(float64 value);
 ```
 
@@ -2606,13 +2606,13 @@ int64 toInt64(float64 value);
 
 **调用形式**
 
-```magel
+```chali
 toInt64(value);
 ```
 
-**源码**：[source/std/lang.mgl:239](../../source/std/lang.mgl#L239)。
+**源码**：[source/std/lang.chl:239](../../source/std/lang.chl#L239)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-56"></a>
 
@@ -2620,7 +2620,7 @@ toInt64(value);
 
 **声明**
 
-```magel
+```chali
 int64 toInt64(float32 value);
 ```
 
@@ -2644,13 +2644,13 @@ int64 toInt64(float32 value);
 
 **调用形式**
 
-```magel
+```chali
 toInt64(value);
 ```
 
-**源码**：[source/std/lang.mgl:241](../../source/std/lang.mgl#L241)。
+**源码**：[source/std/lang.chl:241](../../source/std/lang.chl#L241)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-57"></a>
 
@@ -2658,7 +2658,7 @@ toInt64(value);
 
 **声明**
 
-```magel
+```chali
 std::lang::List<uint8> float32ToBytes(float32 value, bool bigEndian);
 ```
 
@@ -2683,13 +2683,13 @@ std::lang::List<uint8> float32ToBytes(float32 value, bool bigEndian);
 
 **调用形式**
 
-```magel
+```chali
 float32ToBytes(value, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:248](../../source/std/lang.mgl#L248)。
+**源码**：[source/std/lang.chl:248](../../source/std/lang.chl#L248)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-58"></a>
 
@@ -2697,7 +2697,7 @@ float32ToBytes(value, bigEndian);
 
 **声明**
 
-```magel
+```chali
 std::lang::List<uint8> float32ToBytes(float32 value);
 ```
 
@@ -2721,13 +2721,13 @@ std::lang::List<uint8> float32ToBytes(float32 value);
 
 **调用形式**
 
-```magel
+```chali
 float32ToBytes(value);
 ```
 
-**源码**：[source/std/lang.mgl:250](../../source/std/lang.mgl#L250)。
+**源码**：[source/std/lang.chl:250](../../source/std/lang.chl#L250)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-59"></a>
 
@@ -2735,7 +2735,7 @@ float32ToBytes(value);
 
 **声明**
 
-```magel
+```chali
 Option<float32> bytesToFloat32(std::lang::List<uint8> bytes, bool bigEndian);
 ```
 
@@ -2760,13 +2760,13 @@ Option<float32> bytesToFloat32(std::lang::List<uint8> bytes, bool bigEndian);
 
 **调用形式**
 
-```magel
+```chali
 bytesToFloat32(bytes, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:252](../../source/std/lang.mgl#L252)。
+**源码**：[source/std/lang.chl:252](../../source/std/lang.chl#L252)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-60"></a>
 
@@ -2774,7 +2774,7 @@ bytesToFloat32(bytes, bigEndian);
 
 **声明**
 
-```magel
+```chali
 Option<float32> bytesToFloat32(std::lang::List<uint8> bytes);
 ```
 
@@ -2798,13 +2798,13 @@ Option<float32> bytesToFloat32(std::lang::List<uint8> bytes);
 
 **调用形式**
 
-```magel
+```chali
 bytesToFloat32(bytes);
 ```
 
-**源码**：[source/std/lang.mgl:257](../../source/std/lang.mgl#L257)。
+**源码**：[source/std/lang.chl:257](../../source/std/lang.chl#L257)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-61"></a>
 
@@ -2812,7 +2812,7 @@ bytesToFloat32(bytes);
 
 **声明**
 
-```magel
+```chali
 Option<float32> bytesToFloat32(uint8 const& bytes, int64 count, bool bigEndian);
 ```
 
@@ -2838,13 +2838,13 @@ Option<float32> bytesToFloat32(uint8 const& bytes, int64 count, bool bigEndian);
 
 **调用形式**
 
-```magel
+```chali
 bytesToFloat32(bytes, count, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:259](../../source/std/lang.mgl#L259)。
+**源码**：[source/std/lang.chl:259](../../source/std/lang.chl#L259)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-62"></a>
 
@@ -2852,7 +2852,7 @@ bytesToFloat32(bytes, count, bigEndian);
 
 **声明**
 
-```magel
+```chali
 Option<float32> bytesToFloat32(uint8 const& bytes, int64 count);
 ```
 
@@ -2877,13 +2877,13 @@ Option<float32> bytesToFloat32(uint8 const& bytes, int64 count);
 
 **调用形式**
 
-```magel
+```chali
 bytesToFloat32(bytes, count);
 ```
 
-**源码**：[source/std/lang.mgl:264](../../source/std/lang.mgl#L264)。
+**源码**：[source/std/lang.chl:264](../../source/std/lang.chl#L264)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-63"></a>
 
@@ -2891,7 +2891,7 @@ bytesToFloat32(bytes, count);
 
 **声明**
 
-```magel
+```chali
 Option<float32> bytesToFloat32(uint8 bytes[], bool bigEndian);
 ```
 
@@ -2916,13 +2916,13 @@ Option<float32> bytesToFloat32(uint8 bytes[], bool bigEndian);
 
 **调用形式**
 
-```magel
+```chali
 bytesToFloat32(bytes, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:266](../../source/std/lang.mgl#L266)。
+**源码**：[source/std/lang.chl:266](../../source/std/lang.chl#L266)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-64"></a>
 
@@ -2930,7 +2930,7 @@ bytesToFloat32(bytes, bigEndian);
 
 **声明**
 
-```magel
+```chali
 Option<float32> bytesToFloat32(uint8 bytes[]);
 ```
 
@@ -2954,13 +2954,13 @@ Option<float32> bytesToFloat32(uint8 bytes[]);
 
 **调用形式**
 
-```magel
+```chali
 bytesToFloat32(bytes);
 ```
 
-**源码**：[source/std/lang.mgl:268](../../source/std/lang.mgl#L268)。
+**源码**：[source/std/lang.chl:268](../../source/std/lang.chl#L268)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-65"></a>
 
@@ -2968,7 +2968,7 @@ bytesToFloat32(bytes);
 
 **声明**
 
-```magel
+```chali
 bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count, bool bigEndian);
 ```
 
@@ -2995,13 +2995,13 @@ bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count, bool bigEndian
 
 **调用形式**
 
-```magel
+```chali
 float32ToBytes(value, bytes, count, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:270](../../source/std/lang.mgl#L270)。
+**源码**：[source/std/lang.chl:270](../../source/std/lang.chl#L270)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-66"></a>
 
@@ -3009,7 +3009,7 @@ float32ToBytes(value, bytes, count, bigEndian);
 
 **声明**
 
-```magel
+```chali
 bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count);
 ```
 
@@ -3035,13 +3035,13 @@ bool float32ToBytes(float32 value, uint8 mut& bytes, int64 count);
 
 **调用形式**
 
-```magel
+```chali
 float32ToBytes(value, bytes, count);
 ```
 
-**源码**：[source/std/lang.mgl:275](../../source/std/lang.mgl#L275)。
+**源码**：[source/std/lang.chl:275](../../source/std/lang.chl#L275)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-67"></a>
 
@@ -3049,7 +3049,7 @@ float32ToBytes(value, bytes, count);
 
 **声明**
 
-```magel
+```chali
 bool float32ToBytes(float32 value, uint8[] mut& bytes, bool bigEndian);
 ```
 
@@ -3075,13 +3075,13 @@ bool float32ToBytes(float32 value, uint8[] mut& bytes, bool bigEndian);
 
 **调用形式**
 
-```magel
+```chali
 float32ToBytes(value, bytes, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:277](../../source/std/lang.mgl#L277)。
+**源码**：[source/std/lang.chl:277](../../source/std/lang.chl#L277)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-68"></a>
 
@@ -3089,7 +3089,7 @@ float32ToBytes(value, bytes, bigEndian);
 
 **声明**
 
-```magel
+```chali
 bool float32ToBytes(float32 value, uint8[] mut& bytes);
 ```
 
@@ -3114,13 +3114,13 @@ bool float32ToBytes(float32 value, uint8[] mut& bytes);
 
 **调用形式**
 
-```magel
+```chali
 float32ToBytes(value, bytes);
 ```
 
-**源码**：[source/std/lang.mgl:282](../../source/std/lang.mgl#L282)。
+**源码**：[source/std/lang.chl:282](../../source/std/lang.chl#L282)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-69"></a>
 
@@ -3128,7 +3128,7 @@ float32ToBytes(value, bytes);
 
 **声明**
 
-```magel
+```chali
 std::lang::List<uint8> float64ToBytes(float64 value, bool bigEndian);
 ```
 
@@ -3153,13 +3153,13 @@ std::lang::List<uint8> float64ToBytes(float64 value, bool bigEndian);
 
 **调用形式**
 
-```magel
+```chali
 float64ToBytes(value, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:289](../../source/std/lang.mgl#L289)。
+**源码**：[source/std/lang.chl:289](../../source/std/lang.chl#L289)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-70"></a>
 
@@ -3167,7 +3167,7 @@ float64ToBytes(value, bigEndian);
 
 **声明**
 
-```magel
+```chali
 std::lang::List<uint8> float64ToBytes(float64 value);
 ```
 
@@ -3191,13 +3191,13 @@ std::lang::List<uint8> float64ToBytes(float64 value);
 
 **调用形式**
 
-```magel
+```chali
 float64ToBytes(value);
 ```
 
-**源码**：[source/std/lang.mgl:291](../../source/std/lang.mgl#L291)。
+**源码**：[source/std/lang.chl:291](../../source/std/lang.chl#L291)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-71"></a>
 
@@ -3205,7 +3205,7 @@ float64ToBytes(value);
 
 **声明**
 
-```magel
+```chali
 Option<float64> bytesToFloat64(std::lang::List<uint8> bytes, bool bigEndian);
 ```
 
@@ -3230,13 +3230,13 @@ Option<float64> bytesToFloat64(std::lang::List<uint8> bytes, bool bigEndian);
 
 **调用形式**
 
-```magel
+```chali
 bytesToFloat64(bytes, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:293](../../source/std/lang.mgl#L293)。
+**源码**：[source/std/lang.chl:293](../../source/std/lang.chl#L293)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-72"></a>
 
@@ -3244,7 +3244,7 @@ bytesToFloat64(bytes, bigEndian);
 
 **声明**
 
-```magel
+```chali
 Option<float64> bytesToFloat64(std::lang::List<uint8> bytes);
 ```
 
@@ -3268,13 +3268,13 @@ Option<float64> bytesToFloat64(std::lang::List<uint8> bytes);
 
 **调用形式**
 
-```magel
+```chali
 bytesToFloat64(bytes);
 ```
 
-**源码**：[source/std/lang.mgl:298](../../source/std/lang.mgl#L298)。
+**源码**：[source/std/lang.chl:298](../../source/std/lang.chl#L298)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-73"></a>
 
@@ -3282,7 +3282,7 @@ bytesToFloat64(bytes);
 
 **声明**
 
-```magel
+```chali
 Option<float64> bytesToFloat64(uint8 const& bytes, int64 count, bool bigEndian);
 ```
 
@@ -3308,13 +3308,13 @@ Option<float64> bytesToFloat64(uint8 const& bytes, int64 count, bool bigEndian);
 
 **调用形式**
 
-```magel
+```chali
 bytesToFloat64(bytes, count, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:300](../../source/std/lang.mgl#L300)。
+**源码**：[source/std/lang.chl:300](../../source/std/lang.chl#L300)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-74"></a>
 
@@ -3322,7 +3322,7 @@ bytesToFloat64(bytes, count, bigEndian);
 
 **声明**
 
-```magel
+```chali
 Option<float64> bytesToFloat64(uint8 const& bytes, int64 count);
 ```
 
@@ -3347,13 +3347,13 @@ Option<float64> bytesToFloat64(uint8 const& bytes, int64 count);
 
 **调用形式**
 
-```magel
+```chali
 bytesToFloat64(bytes, count);
 ```
 
-**源码**：[source/std/lang.mgl:305](../../source/std/lang.mgl#L305)。
+**源码**：[source/std/lang.chl:305](../../source/std/lang.chl#L305)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-75"></a>
 
@@ -3361,7 +3361,7 @@ bytesToFloat64(bytes, count);
 
 **声明**
 
-```magel
+```chali
 Option<float64> bytesToFloat64(uint8 bytes[], bool bigEndian);
 ```
 
@@ -3386,13 +3386,13 @@ Option<float64> bytesToFloat64(uint8 bytes[], bool bigEndian);
 
 **调用形式**
 
-```magel
+```chali
 bytesToFloat64(bytes, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:307](../../source/std/lang.mgl#L307)。
+**源码**：[source/std/lang.chl:307](../../source/std/lang.chl#L307)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-76"></a>
 
@@ -3400,7 +3400,7 @@ bytesToFloat64(bytes, bigEndian);
 
 **声明**
 
-```magel
+```chali
 Option<float64> bytesToFloat64(uint8 bytes[]);
 ```
 
@@ -3424,13 +3424,13 @@ Option<float64> bytesToFloat64(uint8 bytes[]);
 
 **调用形式**
 
-```magel
+```chali
 bytesToFloat64(bytes);
 ```
 
-**源码**：[source/std/lang.mgl:309](../../source/std/lang.mgl#L309)。
+**源码**：[source/std/lang.chl:309](../../source/std/lang.chl#L309)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-77"></a>
 
@@ -3438,7 +3438,7 @@ bytesToFloat64(bytes);
 
 **声明**
 
-```magel
+```chali
 bool float64ToBytes(float64 value, uint8 mut& bytes, int64 count, bool bigEndian);
 ```
 
@@ -3465,13 +3465,13 @@ bool float64ToBytes(float64 value, uint8 mut& bytes, int64 count, bool bigEndian
 
 **调用形式**
 
-```magel
+```chali
 float64ToBytes(value, bytes, count, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:311](../../source/std/lang.mgl#L311)。
+**源码**：[source/std/lang.chl:311](../../source/std/lang.chl#L311)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-78"></a>
 
@@ -3479,7 +3479,7 @@ float64ToBytes(value, bytes, count, bigEndian);
 
 **声明**
 
-```magel
+```chali
 bool float64ToBytes(float64 value, uint8 mut& bytes, int64 count);
 ```
 
@@ -3505,13 +3505,13 @@ bool float64ToBytes(float64 value, uint8 mut& bytes, int64 count);
 
 **调用形式**
 
-```magel
+```chali
 float64ToBytes(value, bytes, count);
 ```
 
-**源码**：[source/std/lang.mgl:316](../../source/std/lang.mgl#L316)。
+**源码**：[source/std/lang.chl:316](../../source/std/lang.chl#L316)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-79"></a>
 
@@ -3519,7 +3519,7 @@ float64ToBytes(value, bytes, count);
 
 **声明**
 
-```magel
+```chali
 bool float64ToBytes(float64 value, uint8[] mut& bytes, bool bigEndian);
 ```
 
@@ -3545,13 +3545,13 @@ bool float64ToBytes(float64 value, uint8[] mut& bytes, bool bigEndian);
 
 **调用形式**
 
-```magel
+```chali
 float64ToBytes(value, bytes, bigEndian);
 ```
 
-**源码**：[source/std/lang.mgl:318](../../source/std/lang.mgl#L318)。
+**源码**：[source/std/lang.chl:318](../../source/std/lang.chl#L318)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-80"></a>
 
@@ -3559,7 +3559,7 @@ float64ToBytes(value, bytes, bigEndian);
 
 **声明**
 
-```magel
+```chali
 bool float64ToBytes(float64 value, uint8[] mut& bytes);
 ```
 
@@ -3584,13 +3584,13 @@ bool float64ToBytes(float64 value, uint8[] mut& bytes);
 
 **调用形式**
 
-```magel
+```chali
 float64ToBytes(value, bytes);
 ```
 
-**源码**：[source/std/lang.mgl:323](../../source/std/lang.mgl#L323)。
+**源码**：[source/std/lang.chl:323](../../source/std/lang.chl#L323)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-81"></a>
 
@@ -3598,7 +3598,7 @@ float64ToBytes(value, bytes);
 
 **声明**
 
-```magel
+```chali
 void assert(bool condition);
 ```
 
@@ -3625,13 +3625,13 @@ condition 为真时继续，为假时以指定诊断文本和可选行号触发 
 
 **调用形式**
 
-```magel
+```chali
 assert(condition);
 ```
 
-**源码**：[source/std/lang.mgl:336](../../source/std/lang.mgl#L336)。
+**源码**：[source/std/lang.chl:336](../../source/std/lang.chl#L336)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-82"></a>
 
@@ -3639,7 +3639,7 @@ assert(condition);
 
 **声明**
 
-```magel
+```chali
 void assert(bool condition, std::lang::String message);
 ```
 
@@ -3665,13 +3665,13 @@ condition 为真时继续，为假时以指定诊断文本和可选行号触发 
 
 **调用形式**
 
-```magel
+```chali
 assert(condition, message);
 ```
 
-**源码**：[source/std/lang.mgl:340](../../source/std/lang.mgl#L340)。
+**源码**：[source/std/lang.chl:340](../../source/std/lang.chl#L340)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-83"></a>
 
@@ -3679,7 +3679,7 @@ assert(condition, message);
 
 **声明**
 
-```magel
+```chali
 void assert(bool condition, int64 line);
 ```
 
@@ -3705,13 +3705,13 @@ condition 为真时继续，为假时以指定诊断文本和可选行号触发 
 
 **调用形式**
 
-```magel
+```chali
 assert(condition, line);
 ```
 
-**源码**：[source/std/lang.mgl:344](../../source/std/lang.mgl#L344)。
+**源码**：[source/std/lang.chl:344](../../source/std/lang.chl#L344)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-84"></a>
 
@@ -3719,7 +3719,7 @@ assert(condition, line);
 
 **声明**
 
-```magel
+```chali
 void assert(bool condition, std::lang::String message, int64 line);
 ```
 
@@ -3746,13 +3746,13 @@ condition 为真时继续，为假时以指定诊断文本和可选行号触发 
 
 **调用形式**
 
-```magel
+```chali
 assert(condition, message, line);
 ```
 
-**源码**：[source/std/lang.mgl:348](../../source/std/lang.mgl#L348)。
+**源码**：[source/std/lang.chl:348](../../source/std/lang.chl#L348)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-85"></a>
 
@@ -3760,7 +3760,7 @@ assert(condition, message, line);
 
 **声明**
 
-```magel
+```chali
 TryBranch<T, R> branch();
 ```
 
@@ -3782,13 +3782,13 @@ TryBranch<T, R> branch();
 
 **调用形式**
 
-```magel
+```chali
 obj.branch();
 ```
 
-**源码**：[source/std/lang.mgl:359](../../source/std/lang.mgl#L359)。
+**源码**：[source/std/lang.chl:359](../../source/std/lang.chl#L359)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-86"></a>
 
@@ -3796,7 +3796,7 @@ obj.branch();
 
 **声明**
 
-```magel
+```chali
 TryBranch<T, R> intoBranch();
 ```
 
@@ -3818,13 +3818,13 @@ TryBranch<T, R> intoBranch();
 
 **调用形式**
 
-```magel
+```chali
 obj.intoBranch();
 ```
 
-**源码**：[source/std/lang.mgl:361](../../source/std/lang.mgl#L361)。
+**源码**：[source/std/lang.chl:361](../../source/std/lang.chl#L361)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-87"></a>
 
@@ -3832,7 +3832,7 @@ obj.intoBranch();
 
 **声明**
 
-```magel
+```chali
 static F fromResidual(R residual);
 ```
 
@@ -3856,13 +3856,13 @@ static F fromResidual(R residual);
 
 **调用形式**
 
-```magel
+```chali
 FromResidual<F, R>::fromResidual(residual);
 ```
 
-**源码**：[source/std/lang.mgl:363](../../source/std/lang.mgl#L363)。
+**源码**：[source/std/lang.chl:363](../../source/std/lang.chl#L363)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-88"></a>
 
@@ -3870,7 +3870,7 @@ FromResidual<F, R>::fromResidual(residual);
 
 **声明**
 
-```magel
+```chali
 TryBranch<T, NoneResidual> branch();
 ```
 
@@ -3892,13 +3892,13 @@ TryBranch<T, NoneResidual> branch();
 
 **调用形式**
 
-```magel
+```chali
 obj.branch();
 ```
 
-**源码**：[source/std/lang.mgl:368](../../source/std/lang.mgl#L368)。
+**源码**：[source/std/lang.chl:368](../../source/std/lang.chl#L368)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-89"></a>
 
@@ -3906,7 +3906,7 @@ obj.branch();
 
 **声明**
 
-```magel
+```chali
 TryBranch<T, NoneResidual> intoBranch();
 ```
 
@@ -3928,13 +3928,13 @@ TryBranch<T, NoneResidual> intoBranch();
 
 **调用形式**
 
-```magel
+```chali
 obj.intoBranch();
 ```
 
-**源码**：[source/std/lang.mgl:374](../../source/std/lang.mgl#L374)。
+**源码**：[source/std/lang.chl:374](../../source/std/lang.chl#L374)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-90"></a>
 
@@ -3942,7 +3942,7 @@ obj.intoBranch();
 
 **声明**
 
-```magel
+```chali
 static Option<T> fromResidual(NoneResidual residual);
 ```
 
@@ -3966,13 +3966,13 @@ static Option<T> fromResidual(NoneResidual residual);
 
 **调用形式**
 
-```magel
+```chali
 Option<T>::fromResidual(residual);
 ```
 
-**源码**：[source/std/lang.mgl:378](../../source/std/lang.mgl#L378)。
+**源码**：[source/std/lang.chl:378](../../source/std/lang.chl#L378)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-91"></a>
 
@@ -3980,7 +3980,7 @@ Option<T>::fromResidual(residual);
 
 **声明**
 
-```magel
+```chali
 bool isValue();
 ```
 
@@ -4002,13 +4002,13 @@ bool isValue();
 
 **调用形式**
 
-```magel
+```chali
 obj.isValue();
 ```
 
-**源码**：[source/std/lang.mgl:379](../../source/std/lang.mgl#L379)。
+**源码**：[source/std/lang.chl:379](../../source/std/lang.chl#L379)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-92"></a>
 
@@ -4016,7 +4016,7 @@ obj.isValue();
 
 **声明**
 
-```magel
+```chali
 bool isNone();
 ```
 
@@ -4038,13 +4038,13 @@ bool isNone();
 
 **调用形式**
 
-```magel
+```chali
 obj.isNone();
 ```
 
-**源码**：[source/std/lang.mgl:388](../../source/std/lang.mgl#L388)。
+**源码**：[source/std/lang.chl:388](../../source/std/lang.chl#L388)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-93"></a>
 
@@ -4052,7 +4052,7 @@ obj.isNone();
 
 **声明**
 
-```magel
+```chali
 T take();
 ```
 
@@ -4075,13 +4075,13 @@ T take();
 
 **调用形式**
 
-```magel
+```chali
 obj.take();
 ```
 
-**源码**：[source/std/lang.mgl:391](../../source/std/lang.mgl#L391)。
+**源码**：[source/std/lang.chl:391](../../source/std/lang.chl#L391)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-94"></a>
 
@@ -4089,7 +4089,7 @@ obj.take();
 
 **声明**
 
-```magel
+```chali
 T unwrap();
 ```
 
@@ -4112,13 +4112,13 @@ T unwrap();
 
 **调用形式**
 
-```magel
+```chali
 obj.unwrap();
 ```
 
-**源码**：[source/std/lang.mgl:401](../../source/std/lang.mgl#L401)。
+**源码**：[source/std/lang.chl:401](../../source/std/lang.chl#L401)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-95"></a>
 
@@ -4126,7 +4126,7 @@ obj.unwrap();
 
 **声明**
 
-```magel
+```chali
 T unwrapOr(T fallback);
 ```
 
@@ -4150,13 +4150,13 @@ T unwrapOr(T fallback);
 
 **调用形式**
 
-```magel
+```chali
 obj.unwrapOr(fallback);
 ```
 
-**源码**：[source/std/lang.mgl:410](../../source/std/lang.mgl#L410)。
+**源码**：[source/std/lang.chl:410](../../source/std/lang.chl#L410)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-96"></a>
 
@@ -4164,7 +4164,7 @@ obj.unwrapOr(fallback);
 
 **声明**
 
-```magel
+```chali
 T expect(std::lang::String message);
 ```
 
@@ -4189,13 +4189,13 @@ T expect(std::lang::String message);
 
 **调用形式**
 
-```magel
+```chali
 obj.expect(message);
 ```
 
-**源码**：[source/std/lang.mgl:419](../../source/std/lang.mgl#L419)。
+**源码**：[source/std/lang.chl:419](../../source/std/lang.chl#L419)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-97"></a>
 
@@ -4203,7 +4203,7 @@ obj.expect(message);
 
 **声明**
 
-```magel
+```chali
 Option<T> transform(T fn(T) mapper);
 ```
 
@@ -4227,13 +4227,13 @@ Option<T> transform(T fn(T) mapper);
 
 **调用形式**
 
-```magel
+```chali
 obj.transform(mapper);
 ```
 
-**源码**：[source/std/lang.mgl:428](../../source/std/lang.mgl#L428)。
+**源码**：[source/std/lang.chl:428](../../source/std/lang.chl#L428)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-98"></a>
 
@@ -4241,7 +4241,7 @@ obj.transform(mapper);
 
 **声明**
 
-```magel
+```chali
 Option<T> andThen(Option<T> fn(T) mapper);
 ```
 
@@ -4265,13 +4265,13 @@ Option<T> andThen(Option<T> fn(T) mapper);
 
 **调用形式**
 
-```magel
+```chali
 obj.andThen(mapper);
 ```
 
-**源码**：[source/std/lang.mgl:437](../../source/std/lang.mgl#L437)。
+**源码**：[source/std/lang.chl:437](../../source/std/lang.chl#L437)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-99"></a>
 
@@ -4279,7 +4279,7 @@ obj.andThen(mapper);
 
 **声明**
 
-```magel
+```chali
 TryBranch<T, ErrorResidual<E>> branch();
 ```
 
@@ -4301,13 +4301,13 @@ TryBranch<T, ErrorResidual<E>> branch();
 
 **调用形式**
 
-```magel
+```chali
 obj.branch();
 ```
 
-**源码**：[source/std/lang.mgl:450](../../source/std/lang.mgl#L450)。
+**源码**：[source/std/lang.chl:450](../../source/std/lang.chl#L450)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-100"></a>
 
@@ -4315,7 +4315,7 @@ obj.branch();
 
 **声明**
 
-```magel
+```chali
 TryBranch<T, ErrorResidual<E>> intoBranch();
 ```
 
@@ -4337,13 +4337,13 @@ TryBranch<T, ErrorResidual<E>> intoBranch();
 
 **调用形式**
 
-```magel
+```chali
 obj.intoBranch();
 ```
 
-**源码**：[source/std/lang.mgl:460](../../source/std/lang.mgl#L460)。
+**源码**：[source/std/lang.chl:460](../../source/std/lang.chl#L460)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-101"></a>
 
@@ -4351,7 +4351,7 @@ obj.intoBranch();
 
 **声明**
 
-```magel
+```chali
 static Result<T,E> fromResidual(ErrorResidual<E> residual);
 ```
 
@@ -4375,13 +4375,13 @@ static Result<T,E> fromResidual(ErrorResidual<E> residual);
 
 **调用形式**
 
-```magel
+```chali
 Result<T, E>::fromResidual(residual);
 ```
 
-**源码**：[source/std/lang.mgl:466](../../source/std/lang.mgl#L466)。
+**源码**：[source/std/lang.chl:466](../../source/std/lang.chl#L466)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-102"></a>
 
@@ -4389,7 +4389,7 @@ Result<T, E>::fromResidual(residual);
 
 **声明**
 
-```magel
+```chali
 Option<T> ok();
 ```
 
@@ -4411,13 +4411,13 @@ Option<T> ok();
 
 **调用形式**
 
-```magel
+```chali
 obj.ok();
 ```
 
-**源码**：[source/std/lang.mgl:467](../../source/std/lang.mgl#L467)。
+**源码**：[source/std/lang.chl:467](../../source/std/lang.chl#L467)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-103"></a>
 
@@ -4425,7 +4425,7 @@ obj.ok();
 
 **声明**
 
-```magel
+```chali
 bool isOk();
 ```
 
@@ -4447,13 +4447,13 @@ bool isOk();
 
 **调用形式**
 
-```magel
+```chali
 obj.isOk();
 ```
 
-**源码**：[source/std/lang.mgl:473](../../source/std/lang.mgl#L473)。
+**源码**：[source/std/lang.chl:473](../../source/std/lang.chl#L473)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-104"></a>
 
@@ -4461,7 +4461,7 @@ obj.isOk();
 
 **声明**
 
-```magel
+```chali
 bool isErr();
 ```
 
@@ -4483,13 +4483,13 @@ bool isErr();
 
 **调用形式**
 
-```magel
+```chali
 obj.isErr();
 ```
 
-**源码**：[source/std/lang.mgl:482](../../source/std/lang.mgl#L482)。
+**源码**：[source/std/lang.chl:482](../../source/std/lang.chl#L482)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-105"></a>
 
@@ -4497,7 +4497,7 @@ obj.isErr();
 
 **声明**
 
-```magel
+```chali
 T take();
 ```
 
@@ -4520,13 +4520,13 @@ T take();
 
 **调用形式**
 
-```magel
+```chali
 obj.take();
 ```
 
-**源码**：[source/std/lang.mgl:485](../../source/std/lang.mgl#L485)。
+**源码**：[source/std/lang.chl:485](../../source/std/lang.chl#L485)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-106"></a>
 
@@ -4534,7 +4534,7 @@ obj.take();
 
 **声明**
 
-```magel
+```chali
 T unwrap();
 ```
 
@@ -4557,13 +4557,13 @@ T unwrap();
 
 **调用形式**
 
-```magel
+```chali
 obj.unwrap();
 ```
 
-**源码**：[source/std/lang.mgl:495](../../source/std/lang.mgl#L495)。
+**源码**：[source/std/lang.chl:495](../../source/std/lang.chl#L495)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-107"></a>
 
@@ -4571,7 +4571,7 @@ obj.unwrap();
 
 **声明**
 
-```magel
+```chali
 T unwrapOr(T fallback);
 ```
 
@@ -4595,13 +4595,13 @@ T unwrapOr(T fallback);
 
 **调用形式**
 
-```magel
+```chali
 obj.unwrapOr(fallback);
 ```
 
-**源码**：[source/std/lang.mgl:504](../../source/std/lang.mgl#L504)。
+**源码**：[source/std/lang.chl:504](../../source/std/lang.chl#L504)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-108"></a>
 
@@ -4609,7 +4609,7 @@ obj.unwrapOr(fallback);
 
 **声明**
 
-```magel
+```chali
 T expect(std::lang::String message);
 ```
 
@@ -4634,13 +4634,13 @@ T expect(std::lang::String message);
 
 **调用形式**
 
-```magel
+```chali
 obj.expect(message);
 ```
 
-**源码**：[source/std/lang.mgl:513](../../source/std/lang.mgl#L513)。
+**源码**：[source/std/lang.chl:513](../../source/std/lang.chl#L513)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-109"></a>
 
@@ -4648,7 +4648,7 @@ obj.expect(message);
 
 **声明**
 
-```magel
+```chali
 E takeError();
 ```
 
@@ -4671,13 +4671,13 @@ E takeError();
 
 **调用形式**
 
-```magel
+```chali
 obj.takeError();
 ```
 
-**源码**：[source/std/lang.mgl:523](../../source/std/lang.mgl#L523)。
+**源码**：[source/std/lang.chl:523](../../source/std/lang.chl#L523)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-110"></a>
 
@@ -4685,7 +4685,7 @@ obj.takeError();
 
 **声明**
 
-```magel
+```chali
 E error();
 ```
 
@@ -4708,13 +4708,13 @@ E error();
 
 **调用形式**
 
-```magel
+```chali
 obj.error();
 ```
 
-**源码**：[source/std/lang.mgl:533](../../source/std/lang.mgl#L533)。
+**源码**：[source/std/lang.chl:533](../../source/std/lang.chl#L533)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-111"></a>
 
@@ -4722,7 +4722,7 @@ obj.error();
 
 **声明**
 
-```magel
+```chali
 Result<T, E> transform(T fn(T) mapper);
 ```
 
@@ -4746,13 +4746,13 @@ Result<T, E> transform(T fn(T) mapper);
 
 **调用形式**
 
-```magel
+```chali
 obj.transform(mapper);
 ```
 
-**源码**：[source/std/lang.mgl:542](../../source/std/lang.mgl#L542)。
+**源码**：[source/std/lang.chl:542](../../source/std/lang.chl#L542)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-112"></a>
 
@@ -4760,7 +4760,7 @@ obj.transform(mapper);
 
 **声明**
 
-```magel
+```chali
 Result<T, E> andThen(Result<T, E> fn(T) mapper);
 ```
 
@@ -4784,13 +4784,13 @@ Result<T, E> andThen(Result<T, E> fn(T) mapper);
 
 **调用形式**
 
-```magel
+```chali
 obj.andThen(mapper);
 ```
 
-**源码**：[source/std/lang.mgl:551](../../source/std/lang.mgl#L551)。
+**源码**：[source/std/lang.chl:551](../../source/std/lang.chl#L551)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-113"></a>
 
@@ -4798,7 +4798,7 @@ obj.andThen(mapper);
 
 **声明**
 
-```magel
+```chali
 Option<T> nextValue(T end, bool inclusive);
 ```
 
@@ -4825,13 +4825,13 @@ Option<T> nextValue(T end, bool inclusive);
 
 **调用形式**
 
-```magel
+```chali
 obj.nextValue(end, inclusive);
 ```
 
-**源码**：[source/std/lang.mgl:572](../../source/std/lang.mgl#L572)。
+**源码**：[source/std/lang.chl:572](../../source/std/lang.chl#L572)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-114"></a>
 
@@ -4839,7 +4839,7 @@ obj.nextValue(end, inclusive);
 
 **声明**
 
-```magel
+```chali
 static Pair<K, V> create(K first, V second);
 ```
 
@@ -4866,13 +4866,13 @@ static Pair<K, V> create(K first, V second);
 
 **调用形式**
 
-```magel
+```chali
 Pair<K, V>::create(first, second);
 ```
 
-**源码**：[source/std/lang.mgl:628](../../source/std/lang.mgl#L628)。
+**源码**：[source/std/lang.chl:628](../../source/std/lang.chl#L628)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-115"></a>
 
@@ -4880,7 +4880,7 @@ Pair<K, V>::create(first, second);
 
 **声明**
 
-```magel
+```chali
 static Pair<K, V> create((K, V) value);
 ```
 
@@ -4906,13 +4906,13 @@ static Pair<K, V> create((K, V) value);
 
 **调用形式**
 
-```magel
+```chali
 Pair<K, V>::create(value);
 ```
 
-**源码**：[source/std/lang.mgl:638](../../source/std/lang.mgl#L638)。
+**源码**：[source/std/lang.chl:638](../../source/std/lang.chl#L638)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-116"></a>
 
@@ -4920,7 +4920,7 @@ Pair<K, V>::create(value);
 
 **声明**
 
-```magel
+```chali
 (K, V) toTuple();
 ```
 
@@ -4942,13 +4942,13 @@ Pair<K, V>::create(value);
 
 **调用形式**
 
-```magel
+```chali
 obj.toTuple();
 ```
 
-**源码**：[source/std/lang.mgl:647](../../source/std/lang.mgl#L647)。
+**源码**：[source/std/lang.chl:647](../../source/std/lang.chl#L647)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-117"></a>
 
@@ -4956,7 +4956,7 @@ obj.toTuple();
 
 **声明**
 
-```magel
+```chali
 Option<T> tryGet<T>(Any const& value);
 ```
 
@@ -4980,13 +4980,13 @@ Option<T> tryGet<T>(Any const& value);
 
 **调用形式**
 
-```magel
+```chali
 tryGet<T>(value);
 ```
 
-**源码**：[source/std/lang.mgl:671](../../source/std/lang.mgl#L671)。
+**源码**：[source/std/lang.chl:671](../../source/std/lang.chl#L671)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-118"></a>
 
@@ -4994,7 +4994,7 @@ tryGet<T>(value);
 
 **声明**
 
-```magel
+```chali
 Option<T const&> tryGetReference<T>(Any const& value);
 ```
 
@@ -5018,13 +5018,13 @@ Option<T const&> tryGetReference<T>(Any const& value);
 
 **调用形式**
 
-```magel
+```chali
 tryGetReference<T>(value);
 ```
 
-**源码**：[source/std/lang.mgl:677](../../source/std/lang.mgl#L677)。
+**源码**：[source/std/lang.chl:677](../../source/std/lang.chl#L677)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-119"></a>
 
@@ -5032,7 +5032,7 @@ tryGetReference<T>(value);
 
 **声明**
 
-```magel
+```chali
 Option<T mut&> tryGetMut<T>(Any mut& value);
 ```
 
@@ -5056,13 +5056,13 @@ Option<T mut&> tryGetMut<T>(Any mut& value);
 
 **调用形式**
 
-```magel
+```chali
 tryGetMut<T>(value);
 ```
 
-**源码**：[source/std/lang.mgl:682](../../source/std/lang.mgl#L682)。
+**源码**：[source/std/lang.chl:682](../../source/std/lang.chl#L682)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-120"></a>
 
@@ -5070,7 +5070,7 @@ tryGetMut<T>(value);
 
 **声明**
 
-```magel
+```chali
 List<uint8> stringBytes(String text);
 ```
 
@@ -5094,13 +5094,13 @@ List<uint8> stringBytes(String text);
 
 **调用形式**
 
-```magel
+```chali
 stringBytes(text);
 ```
 
-**源码**：[source/std/lang.mgl:689](../../source/std/lang.mgl#L689)。
+**源码**：[source/std/lang.chl:689](../../source/std/lang.chl#L689)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-121"></a>
 
@@ -5108,7 +5108,7 @@ stringBytes(text);
 
 **声明**
 
-```magel
+```chali
 __Range range(int64 start, int64 stop);
 ```
 
@@ -5133,13 +5133,13 @@ __Range range(int64 start, int64 stop);
 
 **调用形式**
 
-```magel
+```chali
 range(start, stop);
 ```
 
-**源码**：[source/magel_generic.cpp:1839](../../source/magel_generic.cpp#L1839)。
+**源码**：[source/chali_generic.cpp:1839](../../source/chali_generic.cpp#L1839)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-122"></a>
 
@@ -5147,7 +5147,7 @@ range(start, stop);
 
 **声明**
 
-```magel
+```chali
 __Range range(int64 start, int64 stop, int64 step);
 ```
 
@@ -5174,13 +5174,13 @@ __Range range(int64 start, int64 stop, int64 step);
 
 **调用形式**
 
-```magel
+```chali
 range(start, stop, step);
 ```
 
-**源码**：[source/magel_generic.cpp:1847](../../source/magel_generic.cpp#L1847)。
+**源码**：[source/chali_generic.cpp:1847](../../source/chali_generic.cpp#L1847)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-123"></a>
 
@@ -5188,7 +5188,7 @@ range(start, stop, step);
 
 **声明**
 
-```magel
+```chali
 __Interval_int64 rangeEq(int64 start, int64 stop);
 ```
 
@@ -5215,13 +5215,13 @@ __Interval_int64 rangeEq(int64 start, int64 stop);
 
 **调用形式**
 
-```magel
+```chali
 rangeEq(start, stop);
 ```
 
-**源码**：[source/magel_generic.cpp:1862](../../source/magel_generic.cpp#L1862)。
+**源码**：[source/chali_generic.cpp:1862](../../source/chali_generic.cpp#L1862)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-124"></a>
 
@@ -5229,7 +5229,7 @@ rangeEq(start, stop);
 
 **声明**
 
-```magel
+```chali
 void drop();
 ```
 
@@ -5251,13 +5251,13 @@ void drop();
 
 **调用形式**
 
-```magel
+```chali
 obj.drop();
 ```
 
-**源码**：[source/magel_generic.cpp:2069](../../source/magel_generic.cpp#L2069)。
+**源码**：[source/chali_generic.cpp:2069](../../source/chali_generic.cpp#L2069)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-125"></a>
 
@@ -5265,7 +5265,7 @@ obj.drop();
 
 **声明**
 
-```magel
+```chali
 void close();
 ```
 
@@ -5287,13 +5287,13 @@ void close();
 
 **调用形式**
 
-```magel
+```chali
 obj.close();
 ```
 
-**源码**：[source/magel_generic.cpp:2077](../../source/magel_generic.cpp#L2077)。
+**源码**：[source/chali_generic.cpp:2077](../../source/chali_generic.cpp#L2077)。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-126"></a>
 
@@ -5301,7 +5301,7 @@ obj.close();
 
 **声明**
 
-```magel
+```chali
 int64 print(String format, Any args...);
 ```
 
@@ -5326,13 +5326,13 @@ int64 print(String format, Any args...);
 
 **调用形式**
 
-```magel
+```chali
 print(format, args);
 ```
 
 **源码**：[source/semantics/boxing.cpp:1281](../../source/semantics/boxing.cpp#L1281)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-127"></a>
 
@@ -5340,7 +5340,7 @@ print(format, args);
 
 **声明**
 
-```magel
+```chali
 int64 println(String format, Any args...);
 ```
 
@@ -5365,13 +5365,13 @@ int64 println(String format, Any args...);
 
 **调用形式**
 
-```magel
+```chali
 println(format, args);
 ```
 
 **源码**：[source/semantics/boxing.cpp:1281](../../source/semantics/boxing.cpp#L1281)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-128"></a>
 
@@ -5379,7 +5379,7 @@ println(format, args);
 
 **声明**
 
-```magel
+```chali
 int64 eprint(String format, Any args...);
 ```
 
@@ -5404,13 +5404,13 @@ int64 eprint(String format, Any args...);
 
 **调用形式**
 
-```magel
+```chali
 eprint(format, args);
 ```
 
 **源码**：[source/semantics/formatted_output.cpp:15](../../source/semantics/formatted_output.cpp#L15)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-129"></a>
 
@@ -5418,7 +5418,7 @@ eprint(format, args);
 
 **声明**
 
-```magel
+```chali
 int64 eprintln(String format, Any args...);
 ```
 
@@ -5443,13 +5443,13 @@ int64 eprintln(String format, Any args...);
 
 **调用形式**
 
-```magel
+```chali
 eprintln(format, args);
 ```
 
 **源码**：[source/semantics/formatted_output.cpp:15](../../source/semantics/formatted_output.cpp#L15)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-130"></a>
 
@@ -5457,7 +5457,7 @@ eprintln(format, args);
 
 **声明**
 
-```magel
+```chali
 String format(String format, Any args...);
 ```
 
@@ -5482,13 +5482,13 @@ String format(String format, Any args...);
 
 **调用形式**
 
-```magel
+```chali
 format(format, args);
 ```
 
 **源码**：[source/semantics/boxing.cpp:1285](../../source/semantics/boxing.cpp#L1285)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-131"></a>
 
@@ -5496,7 +5496,7 @@ format(format, args);
 
 **声明**
 
-```magel
+```chali
 int64 putChar(char value);
 ```
 
@@ -5520,13 +5520,13 @@ int64 putChar(char value);
 
 **调用形式**
 
-```magel
+```chali
 putChar(value);
 ```
 
 **源码**：[source/semantics/boxing.cpp:1331](../../source/semantics/boxing.cpp#L1331)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-132"></a>
 
@@ -5534,7 +5534,7 @@ putChar(value);
 
 **声明**
 
-```magel
+```chali
 int64 pause();
 ```
 
@@ -5556,13 +5556,13 @@ int64 pause();
 
 **调用形式**
 
-```magel
+```chali
 pause();
 ```
 
 **源码**：[source/semantics/boxing.cpp:1292](../../source/semantics/boxing.cpp#L1292)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-133"></a>
 
@@ -5570,7 +5570,7 @@ pause();
 
 **声明**
 
-```magel
+```chali
 String inputLine();
 ```
 
@@ -5592,13 +5592,13 @@ String inputLine();
 
 **调用形式**
 
-```magel
+```chali
 inputLine();
 ```
 
 **源码**：[source/semantics/boxing.cpp:1341](../../source/semantics/boxing.cpp#L1341)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-134"></a>
 
@@ -5606,7 +5606,7 @@ inputLine();
 
 **声明**
 
-```magel
+```chali
 int64 inputInt();
 ```
 
@@ -5628,13 +5628,13 @@ int64 inputInt();
 
 **调用形式**
 
-```magel
+```chali
 inputInt();
 ```
 
 **源码**：[source/semantics/boxing.cpp:1341](../../source/semantics/boxing.cpp#L1341)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-135"></a>
 
@@ -5642,7 +5642,7 @@ inputInt();
 
 **声明**
 
-```magel
+```chali
 uint64 inputUInt();
 ```
 
@@ -5664,13 +5664,13 @@ uint64 inputUInt();
 
 **调用形式**
 
-```magel
+```chali
 inputUInt();
 ```
 
 **源码**：[source/semantics/boxing.cpp:1341](../../source/semantics/boxing.cpp#L1341)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-136"></a>
 
@@ -5678,7 +5678,7 @@ inputUInt();
 
 **声明**
 
-```magel
+```chali
 float64 inputFloat();
 ```
 
@@ -5700,13 +5700,13 @@ float64 inputFloat();
 
 **调用形式**
 
-```magel
+```chali
 inputFloat();
 ```
 
 **源码**：[source/semantics/boxing.cpp:1341](../../source/semantics/boxing.cpp#L1341)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-137"></a>
 
@@ -5714,7 +5714,7 @@ inputFloat();
 
 **声明**
 
-```magel
+```chali
 bool inputBool();
 ```
 
@@ -5736,13 +5736,13 @@ bool inputBool();
 
 **调用形式**
 
-```magel
+```chali
 inputBool();
 ```
 
 **源码**：[source/semantics/boxing.cpp:1341](../../source/semantics/boxing.cpp#L1341)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-138"></a>
 
@@ -5750,7 +5750,7 @@ inputBool();
 
 **声明**
 
-```magel
+```chali
 char inputChar();
 ```
 
@@ -5772,13 +5772,13 @@ char inputChar();
 
 **调用形式**
 
-```magel
+```chali
 inputChar();
 ```
 
 **源码**：[source/semantics/boxing.cpp:1341](../../source/semantics/boxing.cpp#L1341)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-139"></a>
 
@@ -5786,7 +5786,7 @@ inputChar();
 
 **声明**
 
-```magel
+```chali
 BigInteger inputBigInteger();
 ```
 
@@ -5808,13 +5808,13 @@ BigInteger inputBigInteger();
 
 **调用形式**
 
-```magel
+```chali
 inputBigInteger();
 ```
 
 **源码**：[source/semantics/boxing.cpp:1341](../../source/semantics/boxing.cpp#L1341)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-140"></a>
 
@@ -5822,7 +5822,7 @@ inputBigInteger();
 
 **声明**
 
-```magel
+```chali
 BigDecimal inputBigDecimal();
 ```
 
@@ -5844,13 +5844,13 @@ BigDecimal inputBigDecimal();
 
 **调用形式**
 
-```magel
+```chali
 inputBigDecimal();
 ```
 
 **源码**：[source/semantics/boxing.cpp:1341](../../source/semantics/boxing.cpp#L1341)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-141"></a>
 
@@ -5858,7 +5858,7 @@ inputBigDecimal();
 
 **声明**
 
-```magel
+```chali
 int64 panic(String message);
 ```
 
@@ -5882,13 +5882,13 @@ int64 panic(String message);
 
 **调用形式**
 
-```magel
+```chali
 panic(message);
 ```
 
 **源码**：[source/semantics/boxing.cpp:1360](../../source/semantics/boxing.cpp#L1360)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-142"></a>
 
@@ -5896,7 +5896,7 @@ panic(message);
 
 **声明**
 
-```magel
+```chali
 int64 len(Any value);
 ```
 
@@ -5922,13 +5922,13 @@ int64 len(Any value);
 
 **调用形式**
 
-```magel
+```chali
 len(value);
 ```
 
 **源码**：[source/semantics/boxing.cpp:711](../../source/semantics/boxing.cpp#L711)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-143"></a>
 
@@ -5936,7 +5936,7 @@ len(value);
 
 **声明**
 
-```magel
+```chali
 T move<T>(T mut& value);
 ```
 
@@ -5960,13 +5960,13 @@ T move<T>(T mut& value);
 
 **调用形式**
 
-```magel
+```chali
 move<T>(value);
 ```
 
 **源码**：[source/semantics/boxing.cpp:635](../../source/semantics/boxing.cpp#L635)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-144"></a>
 
@@ -5974,7 +5974,7 @@ move<T>(value);
 
 **声明**
 
-```magel
+```chali
 T mut& toReference<T>(Option<T mut&> value);
 ```
 
@@ -5998,13 +5998,13 @@ T mut& toReference<T>(Option<T mut&> value);
 
 **调用形式**
 
-```magel
+```chali
 toReference<T>(value);
 ```
 
-**源码**：[source/magel_generic.cpp:1776](../../source/magel_generic.cpp#L1776)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:1776](../../source/chali_generic.cpp#L1776)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-145"></a>
 
@@ -6012,7 +6012,7 @@ toReference<T>(value);
 
 **声明**
 
-```magel
+```chali
 Option<T mut&> toOptional<T>(T mut& value);
 ```
 
@@ -6036,13 +6036,13 @@ Option<T mut&> toOptional<T>(T mut& value);
 
 **调用形式**
 
-```magel
+```chali
 toOptional<T>(value);
 ```
 
-**源码**：[source/magel_generic.cpp:1782](../../source/magel_generic.cpp#L1782)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:1782](../../source/chali_generic.cpp#L1782)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-146"></a>
 
@@ -6050,7 +6050,7 @@ toOptional<T>(value);
 
 **声明**
 
-```magel
+```chali
 int64 memcpy(char mut& destination, char const& source, int64 bytes);
 ```
 
@@ -6076,13 +6076,13 @@ int64 memcpy(char mut& destination, char const& source, int64 bytes);
 
 **调用形式**
 
-```magel
+```chali
 memcpy(destination, source, bytes);
 ```
 
 **源码**：[source/semantics/boxing.cpp:1377](../../source/semantics/boxing.cpp#L1377)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-147"></a>
 
@@ -6090,7 +6090,7 @@ memcpy(destination, source, bytes);
 
 **声明**
 
-```magel
+```chali
 int64 memset(char mut& destination, int64 value, int64 bytes);
 ```
 
@@ -6116,13 +6116,13 @@ int64 memset(char mut& destination, int64 value, int64 bytes);
 
 **调用形式**
 
-```magel
+```chali
 memset(destination, value, bytes);
 ```
 
 **源码**：[source/semantics/boxing.cpp:1377](../../source/semantics/boxing.cpp#L1377)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-148"></a>
 
@@ -6130,7 +6130,7 @@ memset(destination, value, bytes);
 
 **声明**
 
-```magel
+```chali
 List<T> copy();
 ```
 
@@ -6152,13 +6152,13 @@ List<T> copy();
 
 **调用形式**
 
-```magel
+```chali
 obj.copy();
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:256](../../source/semantics/aggregate_ownership.cpp#L256)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-149"></a>
 
@@ -6166,7 +6166,7 @@ obj.copy();
 
 **声明**
 
-```magel
+```chali
 int64 push(T value);
 ```
 
@@ -6190,13 +6190,13 @@ int64 push(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.push(value);
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:257](../../source/semantics/aggregate_ownership.cpp#L257)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-150"></a>
 
@@ -6204,7 +6204,7 @@ obj.push(value);
 
 **声明**
 
-```magel
+```chali
 int64 insert(int64 index, T value);
 ```
 
@@ -6229,13 +6229,13 @@ int64 insert(int64 index, T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.insert(index, value);
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:258](../../source/semantics/aggregate_ownership.cpp#L258)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-151"></a>
 
@@ -6243,7 +6243,7 @@ obj.insert(index, value);
 
 **声明**
 
-```magel
+```chali
 T at(int64 index);
 ```
 
@@ -6267,13 +6267,13 @@ T at(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.at(index);
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:259](../../source/semantics/aggregate_ownership.cpp#L259)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-152"></a>
 
@@ -6281,7 +6281,7 @@ obj.at(index);
 
 **声明**
 
-```magel
+```chali
 T pop();
 ```
 
@@ -6303,13 +6303,13 @@ T pop();
 
 **调用形式**
 
-```magel
+```chali
 obj.pop();
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:260](../../source/semantics/aggregate_ownership.cpp#L260)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-153"></a>
 
@@ -6317,7 +6317,7 @@ obj.pop();
 
 **声明**
 
-```magel
+```chali
 int64 remove(int64 index);
 ```
 
@@ -6341,13 +6341,13 @@ int64 remove(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.remove(index);
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:261](../../source/semantics/aggregate_ownership.cpp#L261)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-154"></a>
 
@@ -6355,7 +6355,7 @@ obj.remove(index);
 
 **声明**
 
-```magel
+```chali
 int64 indexOf(T value);
 ```
 
@@ -6379,13 +6379,13 @@ int64 indexOf(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.indexOf(value);
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:262](../../source/semantics/aggregate_ownership.cpp#L262)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-155"></a>
 
@@ -6393,7 +6393,7 @@ obj.indexOf(value);
 
 **声明**
 
-```magel
+```chali
 bool contains(T value);
 ```
 
@@ -6417,13 +6417,13 @@ bool contains(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.contains(value);
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:263](../../source/semantics/aggregate_ownership.cpp#L263)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-156"></a>
 
@@ -6431,7 +6431,7 @@ obj.contains(value);
 
 **声明**
 
-```magel
+```chali
 bool has(T value);
 ```
 
@@ -6455,13 +6455,13 @@ bool has(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.has(value);
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:264](../../source/semantics/aggregate_ownership.cpp#L264)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-157"></a>
 
@@ -6469,7 +6469,7 @@ obj.has(value);
 
 **声明**
 
-```magel
+```chali
 int64 clear();
 ```
 
@@ -6491,13 +6491,13 @@ int64 clear();
 
 **调用形式**
 
-```magel
+```chali
 obj.clear();
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:265](../../source/semantics/aggregate_ownership.cpp#L265)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-158"></a>
 
@@ -6505,7 +6505,7 @@ obj.clear();
 
 **声明**
 
-```magel
+```chali
 int64 len();
 ```
 
@@ -6527,13 +6527,13 @@ int64 len();
 
 **调用形式**
 
-```magel
+```chali
 obj.len();
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:266](../../source/semantics/aggregate_ownership.cpp#L266)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-159"></a>
 
@@ -6541,7 +6541,7 @@ obj.len();
 
 **声明**
 
-```magel
+```chali
 Set<T> copy();
 ```
 
@@ -6563,13 +6563,13 @@ Set<T> copy();
 
 **调用形式**
 
-```magel
+```chali
 obj.copy();
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:256](../../source/semantics/aggregate_ownership.cpp#L256)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-160"></a>
 
@@ -6577,7 +6577,7 @@ obj.copy();
 
 **声明**
 
-```magel
+```chali
 int64 add(T value);
 ```
 
@@ -6601,13 +6601,13 @@ int64 add(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.add(value);
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:274](../../source/semantics/aggregate_ownership.cpp#L274)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-161"></a>
 
@@ -6615,7 +6615,7 @@ obj.add(value);
 
 **声明**
 
-```magel
+```chali
 int64 has(T value);
 ```
 
@@ -6639,13 +6639,13 @@ int64 has(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.has(value);
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:264](../../source/semantics/aggregate_ownership.cpp#L264)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-162"></a>
 
@@ -6653,7 +6653,7 @@ obj.has(value);
 
 **声明**
 
-```magel
+```chali
 int64 contains(T value);
 ```
 
@@ -6677,13 +6677,13 @@ int64 contains(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.contains(value);
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:263](../../source/semantics/aggregate_ownership.cpp#L263)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-163"></a>
 
@@ -6691,7 +6691,7 @@ obj.contains(value);
 
 **声明**
 
-```magel
+```chali
 int64 remove(T value);
 ```
 
@@ -6715,13 +6715,13 @@ int64 remove(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.remove(value);
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:261](../../source/semantics/aggregate_ownership.cpp#L261)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-164"></a>
 
@@ -6729,7 +6729,7 @@ obj.remove(value);
 
 **声明**
 
-```magel
+```chali
 T at(int64 index);
 ```
 
@@ -6753,13 +6753,13 @@ T at(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.at(index);
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:259](../../source/semantics/aggregate_ownership.cpp#L259)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-165"></a>
 
@@ -6767,7 +6767,7 @@ obj.at(index);
 
 **声明**
 
-```magel
+```chali
 int64 clear();
 ```
 
@@ -6789,13 +6789,13 @@ int64 clear();
 
 **调用形式**
 
-```magel
+```chali
 obj.clear();
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:265](../../source/semantics/aggregate_ownership.cpp#L265)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-166"></a>
 
@@ -6803,7 +6803,7 @@ obj.clear();
 
 **声明**
 
-```magel
+```chali
 int64 len();
 ```
 
@@ -6825,13 +6825,13 @@ int64 len();
 
 **调用形式**
 
-```magel
+```chali
 obj.len();
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:266](../../source/semantics/aggregate_ownership.cpp#L266)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-167"></a>
 
@@ -6839,7 +6839,7 @@ obj.len();
 
 **声明**
 
-```magel
+```chali
 Map<K,V> copy();
 ```
 
@@ -6861,13 +6861,13 @@ Map<K,V> copy();
 
 **调用形式**
 
-```magel
+```chali
 obj.copy();
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:256](../../source/semantics/aggregate_ownership.cpp#L256)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-168"></a>
 
@@ -6875,7 +6875,7 @@ obj.copy();
 
 **声明**
 
-```magel
+```chali
 int64 put(K key,V value);
 ```
 
@@ -6900,13 +6900,13 @@ int64 put(K key,V value);
 
 **调用形式**
 
-```magel
+```chali
 obj.put(key, value);
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:288](../../source/semantics/aggregate_ownership.cpp#L288)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-169"></a>
 
@@ -6914,7 +6914,7 @@ obj.put(key, value);
 
 **声明**
 
-```magel
+```chali
 int64 has(K key);
 ```
 
@@ -6938,13 +6938,13 @@ int64 has(K key);
 
 **调用形式**
 
-```magel
+```chali
 obj.has(key);
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:264](../../source/semantics/aggregate_ownership.cpp#L264)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-170"></a>
 
@@ -6952,7 +6952,7 @@ obj.has(key);
 
 **声明**
 
-```magel
+```chali
 int64 contains(K key);
 ```
 
@@ -6976,13 +6976,13 @@ int64 contains(K key);
 
 **调用形式**
 
-```magel
+```chali
 obj.contains(key);
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:263](../../source/semantics/aggregate_ownership.cpp#L263)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-171"></a>
 
@@ -6990,7 +6990,7 @@ obj.contains(key);
 
 **声明**
 
-```magel
+```chali
 int64 remove(K key);
 ```
 
@@ -7014,13 +7014,13 @@ int64 remove(K key);
 
 **调用形式**
 
-```magel
+```chali
 obj.remove(key);
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:261](../../source/semantics/aggregate_ownership.cpp#L261)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-172"></a>
 
@@ -7028,7 +7028,7 @@ obj.remove(key);
 
 **声明**
 
-```magel
+```chali
 K keyAt(int64 index);
 ```
 
@@ -7052,13 +7052,13 @@ K keyAt(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.keyAt(index);
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:292](../../source/semantics/aggregate_ownership.cpp#L292)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-173"></a>
 
@@ -7066,7 +7066,7 @@ obj.keyAt(index);
 
 **声明**
 
-```magel
+```chali
 V valAt(int64 index);
 ```
 
@@ -7090,13 +7090,13 @@ V valAt(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.valAt(index);
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:293](../../source/semantics/aggregate_ownership.cpp#L293)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-174"></a>
 
@@ -7104,7 +7104,7 @@ obj.valAt(index);
 
 **声明**
 
-```magel
+```chali
 int64 clear();
 ```
 
@@ -7126,13 +7126,13 @@ int64 clear();
 
 **调用形式**
 
-```magel
+```chali
 obj.clear();
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:265](../../source/semantics/aggregate_ownership.cpp#L265)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-175"></a>
 
@@ -7140,7 +7140,7 @@ obj.clear();
 
 **声明**
 
-```magel
+```chali
 int64 len();
 ```
 
@@ -7162,13 +7162,13 @@ int64 len();
 
 **调用形式**
 
-```magel
+```chali
 obj.len();
 ```
 
 **源码**：[source/semantics/aggregate_ownership.cpp:266](../../source/semantics/aggregate_ownership.cpp#L266)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-176"></a>
 
@@ -7176,7 +7176,7 @@ obj.len();
 
 **声明**
 
-```magel
+```chali
 String str();
 ```
 
@@ -7198,13 +7198,13 @@ String str();
 
 **调用形式**
 
-```magel
+```chali
 obj.str();
 ```
 
 **源码**：[source/semantics/boxing.cpp:814](../../source/semantics/boxing.cpp#L814)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-177"></a>
 
@@ -7212,7 +7212,7 @@ obj.str();
 
 **声明**
 
-```magel
+```chali
 BigInteger copy();
 ```
 
@@ -7234,13 +7234,13 @@ BigInteger copy();
 
 **调用形式**
 
-```magel
+```chali
 obj.copy();
 ```
 
 **源码**：[source/semantics/boxing.cpp:804](../../source/semantics/boxing.cpp#L804)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-178"></a>
 
@@ -7248,7 +7248,7 @@ obj.copy();
 
 **声明**
 
-```magel
+```chali
 BigInteger pow(int64 exponent);
 ```
 
@@ -7274,13 +7274,13 @@ BigInteger pow(int64 exponent);
 
 **调用形式**
 
-```magel
+```chali
 obj.pow(exponent);
 ```
 
 **源码**：[source/semantics/boxing.cpp:829](../../source/semantics/boxing.cpp#L829)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-179"></a>
 
@@ -7288,7 +7288,7 @@ obj.pow(exponent);
 
 **声明**
 
-```magel
+```chali
 BigInteger powmod(BigInteger exponent, BigInteger modulus);
 ```
 
@@ -7315,13 +7315,13 @@ BigInteger powmod(BigInteger exponent, BigInteger modulus);
 
 **调用形式**
 
-```magel
+```chali
 obj.powmod(exponent, modulus);
 ```
 
 **源码**：[source/semantics/boxing.cpp:835](../../source/semantics/boxing.cpp#L835)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-180"></a>
 
@@ -7329,7 +7329,7 @@ obj.powmod(exponent, modulus);
 
 **声明**
 
-```magel
+```chali
 BigInteger gcd(BigInteger other);
 ```
 
@@ -7355,13 +7355,13 @@ BigInteger gcd(BigInteger other);
 
 **调用形式**
 
-```magel
+```chali
 obj.gcd(other);
 ```
 
 **源码**：[source/semantics/boxing.cpp:841](../../source/semantics/boxing.cpp#L841)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-181"></a>
 
@@ -7369,7 +7369,7 @@ obj.gcd(other);
 
 **声明**
 
-```magel
+```chali
 BigInteger lcm(BigInteger other);
 ```
 
@@ -7393,13 +7393,13 @@ BigInteger lcm(BigInteger other);
 
 **调用形式**
 
-```magel
+```chali
 obj.lcm(other);
 ```
 
 **源码**：[source/semantics/boxing.cpp:841](../../source/semantics/boxing.cpp#L841)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-182"></a>
 
@@ -7407,7 +7407,7 @@ obj.lcm(other);
 
 **声明**
 
-```magel
+```chali
 BigInteger mod(BigInteger modulus);
 ```
 
@@ -7433,13 +7433,13 @@ BigInteger mod(BigInteger modulus);
 
 **调用形式**
 
-```magel
+```chali
 obj.mod(modulus);
 ```
 
 **源码**：[source/semantics/boxing.cpp:849](../../source/semantics/boxing.cpp#L849)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-183"></a>
 
@@ -7447,7 +7447,7 @@ obj.mod(modulus);
 
 **声明**
 
-```magel
+```chali
 BigInteger modInverse(BigInteger modulus);
 ```
 
@@ -7473,13 +7473,13 @@ BigInteger modInverse(BigInteger modulus);
 
 **调用形式**
 
-```magel
+```chali
 obj.modInverse(modulus);
 ```
 
 **源码**：[source/semantics/boxing.cpp:855](../../source/semantics/boxing.cpp#L855)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-184"></a>
 
@@ -7487,7 +7487,7 @@ obj.modInverse(modulus);
 
 **声明**
 
-```magel
+```chali
 bool isProbablePrime(int64 rounds);
 ```
 
@@ -7513,13 +7513,13 @@ Miller-Rabin 概率素性测试（固定种子，可复现）。
 
 **调用形式**
 
-```magel
+```chali
 obj.isProbablePrime(rounds);
 ```
 
 **源码**：[source/semantics/boxing.cpp:861](../../source/semantics/boxing.cpp#L861)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-185"></a>
 
@@ -7527,7 +7527,7 @@ obj.isProbablePrime(rounds);
 
 **声明**
 
-```magel
+```chali
 BigInteger nextProbablePrime();
 ```
 
@@ -7551,13 +7551,13 @@ BigInteger nextProbablePrime();
 
 **调用形式**
 
-```magel
+```chali
 obj.nextProbablePrime();
 ```
 
 **源码**：[source/semantics/boxing.cpp:867](../../source/semantics/boxing.cpp#L867)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-186"></a>
 
@@ -7565,7 +7565,7 @@ obj.nextProbablePrime();
 
 **声明**
 
-```magel
+```chali
 int64 bitLength();
 ```
 
@@ -7589,13 +7589,13 @@ int64 bitLength();
 
 **调用形式**
 
-```magel
+```chali
 obj.bitLength();
 ```
 
 **源码**：[source/semantics/boxing.cpp:873](../../source/semantics/boxing.cpp#L873)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-187"></a>
 
@@ -7603,7 +7603,7 @@ obj.bitLength();
 
 **声明**
 
-```magel
+```chali
 BigInteger bitAnd(BigInteger other);
 ```
 
@@ -7629,13 +7629,13 @@ BigInteger bitAnd(BigInteger other);
 
 **调用形式**
 
-```magel
+```chali
 obj.bitAnd(other);
 ```
 
 **源码**：[source/semantics/boxing.cpp:879](../../source/semantics/boxing.cpp#L879)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-188"></a>
 
@@ -7643,7 +7643,7 @@ obj.bitAnd(other);
 
 **声明**
 
-```magel
+```chali
 BigInteger bitOr(BigInteger other);
 ```
 
@@ -7667,13 +7667,13 @@ BigInteger bitOr(BigInteger other);
 
 **调用形式**
 
-```magel
+```chali
 obj.bitOr(other);
 ```
 
 **源码**：[source/semantics/boxing.cpp:879](../../source/semantics/boxing.cpp#L879)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-189"></a>
 
@@ -7681,7 +7681,7 @@ obj.bitOr(other);
 
 **声明**
 
-```magel
+```chali
 BigInteger bitXor(BigInteger other);
 ```
 
@@ -7705,13 +7705,13 @@ BigInteger bitXor(BigInteger other);
 
 **调用形式**
 
-```magel
+```chali
 obj.bitXor(other);
 ```
 
 **源码**：[source/semantics/boxing.cpp:879](../../source/semantics/boxing.cpp#L879)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-190"></a>
 
@@ -7719,7 +7719,7 @@ obj.bitXor(other);
 
 **声明**
 
-```magel
+```chali
 String strRadix(int64 base);
 ```
 
@@ -7745,13 +7745,13 @@ String strRadix(int64 base);
 
 **调用形式**
 
-```magel
+```chali
 obj.strRadix(base);
 ```
 
 **源码**：[source/semantics/boxing.cpp:890](../../source/semantics/boxing.cpp#L890)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-191"></a>
 
@@ -7759,7 +7759,7 @@ obj.strRadix(base);
 
 **声明**
 
-```magel
+```chali
 BigInteger iroot(int64 k);
 ```
 
@@ -7785,13 +7785,13 @@ BigInteger iroot(int64 k);
 
 **调用形式**
 
-```magel
+```chali
 obj.iroot(k);
 ```
 
 **源码**：[source/semantics/boxing.cpp:896](../../source/semantics/boxing.cpp#L896)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-192"></a>
 
@@ -7799,7 +7799,7 @@ obj.iroot(k);
 
 **声明**
 
-```magel
+```chali
 String str();
 ```
 
@@ -7821,13 +7821,13 @@ String str();
 
 **调用形式**
 
-```magel
+```chali
 obj.str();
 ```
 
 **源码**：[source/semantics/boxing.cpp:814](../../source/semantics/boxing.cpp#L814)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-193"></a>
 
@@ -7835,7 +7835,7 @@ obj.str();
 
 **声明**
 
-```magel
+```chali
 BigDecimal copy();
 ```
 
@@ -7857,13 +7857,13 @@ BigDecimal copy();
 
 **调用形式**
 
-```magel
+```chali
 obj.copy();
 ```
 
 **源码**：[source/semantics/boxing.cpp:804](../../source/semantics/boxing.cpp#L804)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-194"></a>
 
@@ -7871,7 +7871,7 @@ obj.copy();
 
 **声明**
 
-```magel
+```chali
 int64 setPrecision(int64 digits);
 ```
 
@@ -7895,13 +7895,13 @@ int64 setPrecision(int64 digits);
 
 **调用形式**
 
-```magel
+```chali
 obj.setPrecision(digits);
 ```
 
 **源码**：[source/semantics/boxing.cpp:793](../../source/semantics/boxing.cpp#L793)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-195"></a>
 
@@ -7909,7 +7909,7 @@ obj.setPrecision(digits);
 
 **声明**
 
-```magel
+```chali
 BigDecimal pow(int64 exponent);
 ```
 
@@ -7935,13 +7935,13 @@ BigDecimal pow(int64 exponent);
 
 **调用形式**
 
-```magel
+```chali
 obj.pow(exponent);
 ```
 
 **源码**：[source/semantics/boxing.cpp:829](../../source/semantics/boxing.cpp#L829)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-196"></a>
 
@@ -7949,7 +7949,7 @@ obj.pow(exponent);
 
 **声明**
 
-```magel
+```chali
 BigDecimal abs();
 ```
 
@@ -7973,13 +7973,13 @@ BigDecimal abs();
 
 **调用形式**
 
-```magel
+```chali
 obj.abs();
 ```
 
 **源码**：[source/semantics/boxing.cpp:912](../../source/semantics/boxing.cpp#L912)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-197"></a>
 
@@ -7987,7 +7987,7 @@ obj.abs();
 
 **声明**
 
-```magel
+```chali
 bool isInteger();
 ```
 
@@ -8011,13 +8011,13 @@ bool isInteger();
 
 **调用形式**
 
-```magel
+```chali
 obj.isInteger();
 ```
 
 **源码**：[source/semantics/boxing.cpp:918](../../source/semantics/boxing.cpp#L918)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-198"></a>
 
@@ -8025,7 +8025,7 @@ obj.isInteger();
 
 **声明**
 
-```magel
+```chali
 BigInteger floor();
 ```
 
@@ -8049,13 +8049,13 @@ BigInteger floor();
 
 **调用形式**
 
-```magel
+```chali
 obj.floor();
 ```
 
 **源码**：[source/semantics/boxing.cpp:924](../../source/semantics/boxing.cpp#L924)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-199"></a>
 
@@ -8063,7 +8063,7 @@ obj.floor();
 
 **声明**
 
-```magel
+```chali
 BigInteger ceil();
 ```
 
@@ -8085,13 +8085,13 @@ BigInteger ceil();
 
 **调用形式**
 
-```magel
+```chali
 obj.ceil();
 ```
 
 **源码**：[source/semantics/boxing.cpp:924](../../source/semantics/boxing.cpp#L924)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-200"></a>
 
@@ -8099,7 +8099,7 @@ obj.ceil();
 
 **声明**
 
-```magel
+```chali
 BigInteger trunc();
 ```
 
@@ -8121,13 +8121,13 @@ BigInteger trunc();
 
 **调用形式**
 
-```magel
+```chali
 obj.trunc();
 ```
 
 **源码**：[source/semantics/boxing.cpp:924](../../source/semantics/boxing.cpp#L924)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-201"></a>
 
@@ -8135,7 +8135,7 @@ obj.trunc();
 
 **声明**
 
-```magel
+```chali
 BigDecimal sqrt(int64 digits);
 ```
 
@@ -8161,13 +8161,13 @@ BigDecimal sqrt(int64 digits);
 
 **调用形式**
 
-```magel
+```chali
 obj.sqrt(digits);
 ```
 
 **源码**：[source/semantics/boxing.cpp:934](../../source/semantics/boxing.cpp#L934)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-202"></a>
 
@@ -8175,7 +8175,7 @@ obj.sqrt(digits);
 
 **声明**
 
-```magel
+```chali
 BigDecimal root(int64 k, int64 digits);
 ```
 
@@ -8202,13 +8202,13 @@ k 次方根，保留 digits 位有效数字。
 
 **调用形式**
 
-```magel
+```chali
 obj.root(k, digits);
 ```
 
 **源码**：[source/semantics/boxing.cpp:940](../../source/semantics/boxing.cpp#L940)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-203"></a>
 
@@ -8216,7 +8216,7 @@ obj.root(k, digits);
 
 **声明**
 
-```magel
+```chali
 Any copy();
 ```
 
@@ -8238,13 +8238,13 @@ Any copy();
 
 **调用形式**
 
-```magel
+```chali
 obj.copy();
 ```
 
 **源码**：[source/semantics/boxing.cpp:804](../../source/semantics/boxing.cpp#L804)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-204"></a>
 
@@ -8252,7 +8252,7 @@ obj.copy();
 
 **声明**
 
-```magel
+```chali
 bool isEmpty();
 ```
 
@@ -8274,13 +8274,13 @@ bool isEmpty();
 
 **调用形式**
 
-```magel
+```chali
 obj.isEmpty();
 ```
 
 **源码**：[source/semantics/boxing.cpp:966](../../source/semantics/boxing.cpp#L966)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-205"></a>
 
@@ -8288,7 +8288,7 @@ obj.isEmpty();
 
 **声明**
 
-```magel
+```chali
 void clear();
 ```
 
@@ -8310,13 +8310,13 @@ void clear();
 
 **调用形式**
 
-```magel
+```chali
 obj.clear();
 ```
 
 **源码**：[source/semantics/boxing.cpp:973](../../source/semantics/boxing.cpp#L973)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-206"></a>
 
@@ -8324,7 +8324,7 @@ obj.clear();
 
 **声明**
 
-```magel
+```chali
 int64 set(T value);
 ```
 
@@ -8348,13 +8348,13 @@ int64 set(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.set(value);
 ```
 
 **源码**：[source/semantics/boxing.cpp:989](../../source/semantics/boxing.cpp#L989)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-207"></a>
 
@@ -8362,7 +8362,7 @@ obj.set(value);
 
 **声明**
 
-```magel
+```chali
 T getValue();
 ```
 
@@ -8384,13 +8384,13 @@ T getValue();
 
 **调用形式**
 
-```magel
+```chali
 obj.getValue();
 ```
 
 **源码**：[source/semantics/boxing.cpp:134](../../source/semantics/boxing.cpp#L134)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-208"></a>
 
@@ -8398,7 +8398,7 @@ obj.getValue();
 
 **声明**
 
-```magel
+```chali
 T mut& getReference();
 ```
 
@@ -8420,13 +8420,13 @@ T mut& getReference();
 
 **调用形式**
 
-```magel
+```chali
 obj.getReference();
 ```
 
 **源码**：[source/semantics/boxing.cpp:134](../../source/semantics/boxing.cpp#L134)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-209"></a>
 
@@ -8434,7 +8434,7 @@ obj.getReference();
 
 **声明**
 
-```magel
+```chali
 Option<T mut&> getOptional();
 ```
 
@@ -8456,13 +8456,13 @@ Option<T mut&> getOptional();
 
 **调用形式**
 
-```magel
+```chali
 obj.getOptional();
 ```
 
 **源码**：[source/semantics/boxing.cpp:134](../../source/semantics/boxing.cpp#L134)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-210"></a>
 
@@ -8470,7 +8470,7 @@ obj.getOptional();
 
 **声明**
 
-```magel
+```chali
 bool eq(T left,T right);
 ```
 
@@ -8495,13 +8495,13 @@ bool eq(T left,T right);
 
 **调用形式**
 
-```magel
+```chali
 eq(left, right);
 ```
 
 **源码**：[source/semantics/boxing.cpp:1](../../source/semantics/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-211"></a>
 
@@ -8509,7 +8509,7 @@ eq(left, right);
 
 **声明**
 
-```magel
+```chali
 bool ne(T left,T right);
 ```
 
@@ -8534,13 +8534,13 @@ bool ne(T left,T right);
 
 **调用形式**
 
-```magel
+```chali
 ne(left, right);
 ```
 
 **源码**：[source/semantics/boxing.cpp:1](../../source/semantics/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-212"></a>
 
@@ -8548,7 +8548,7 @@ ne(left, right);
 
 **声明**
 
-```magel
+```chali
 bool lt(T left,T right);
 ```
 
@@ -8573,13 +8573,13 @@ bool lt(T left,T right);
 
 **调用形式**
 
-```magel
+```chali
 lt(left, right);
 ```
 
 **源码**：[source/semantics/boxing.cpp:1](../../source/semantics/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-213"></a>
 
@@ -8587,7 +8587,7 @@ lt(left, right);
 
 **声明**
 
-```magel
+```chali
 bool le(T left,T right);
 ```
 
@@ -8612,13 +8612,13 @@ bool le(T left,T right);
 
 **调用形式**
 
-```magel
+```chali
 le(left, right);
 ```
 
 **源码**：[source/semantics/boxing.cpp:1](../../source/semantics/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-214"></a>
 
@@ -8626,7 +8626,7 @@ le(left, right);
 
 **声明**
 
-```magel
+```chali
 bool gt(T left,T right);
 ```
 
@@ -8651,13 +8651,13 @@ bool gt(T left,T right);
 
 **调用形式**
 
-```magel
+```chali
 gt(left, right);
 ```
 
 **源码**：[source/semantics/boxing.cpp:1](../../source/semantics/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-215"></a>
 
@@ -8665,7 +8665,7 @@ gt(left, right);
 
 **声明**
 
-```magel
+```chali
 bool ge(T left,T right);
 ```
 
@@ -8690,13 +8690,13 @@ bool ge(T left,T right);
 
 **调用形式**
 
-```magel
+```chali
 ge(left, right);
 ```
 
 **源码**：[source/semantics/boxing.cpp:1](../../source/semantics/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-216"></a>
 
@@ -8704,7 +8704,7 @@ ge(left, right);
 
 **声明**
 
-```magel
+```chali
 R add(T left,U right);
 ```
 
@@ -8731,13 +8731,13 @@ R add(T left,U right);
 
 **调用形式**
 
-```magel
+```chali
 add(left, right);
 ```
 
 **源码**：[source/semantics/boxing.cpp:1146](../../source/semantics/boxing.cpp#L1146)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-217"></a>
 
@@ -8745,7 +8745,7 @@ add(left, right);
 
 **声明**
 
-```magel
+```chali
 R sub(T left,U right);
 ```
 
@@ -8770,13 +8770,13 @@ R sub(T left,U right);
 
 **调用形式**
 
-```magel
+```chali
 sub(left, right);
 ```
 
 **源码**：[source/semantics/boxing.cpp:1](../../source/semantics/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-218"></a>
 
@@ -8784,7 +8784,7 @@ sub(left, right);
 
 **声明**
 
-```magel
+```chali
 R mul(T left,U right);
 ```
 
@@ -8809,13 +8809,13 @@ R mul(T left,U right);
 
 **调用形式**
 
-```magel
+```chali
 mul(left, right);
 ```
 
 **源码**：[source/semantics/boxing.cpp:1](../../source/semantics/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-219"></a>
 
@@ -8823,7 +8823,7 @@ mul(left, right);
 
 **声明**
 
-```magel
+```chali
 R div(T left,U right);
 ```
 
@@ -8848,13 +8848,13 @@ R div(T left,U right);
 
 **调用形式**
 
-```magel
+```chali
 div(left, right);
 ```
 
 **源码**：[source/semantics/boxing.cpp:1](../../source/semantics/boxing.cpp#L1)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-220"></a>
 
@@ -8862,7 +8862,7 @@ div(left, right);
 
 **声明**
 
-```magel
+```chali
 R mod(T left,U right);
 ```
 
@@ -8887,13 +8887,13 @@ R mod(T left,U right);
 
 **调用形式**
 
-```magel
+```chali
 mod(left, right);
 ```
 
 **源码**：[source/semantics/boxing.cpp:849](../../source/semantics/boxing.cpp#L849)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-221"></a>
 
@@ -8901,7 +8901,7 @@ mod(left, right);
 
 **声明**
 
-```magel
+```chali
 T index(T const& data,int64 index);
 ```
 
@@ -8928,13 +8928,13 @@ T index(T const& data,int64 index);
 
 **调用形式**
 
-```magel
+```chali
 index(data, index);
 ```
 
 **源码**：[source/semantics/boxing.cpp:1732](../../source/semantics/boxing.cpp#L1732)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-222"></a>
 
@@ -8942,7 +8942,7 @@ index(data, index);
 
 **声明**
 
-```magel
+```chali
 R leftAdd(T value);
 ```
 
@@ -8966,13 +8966,13 @@ R leftAdd(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftAdd(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-223"></a>
 
@@ -8980,7 +8980,7 @@ obj.leftAdd(value);
 
 **声明**
 
-```magel
+```chali
 R rightAdd(T value);
 ```
 
@@ -9004,13 +9004,13 @@ R rightAdd(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.rightAdd(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-224"></a>
 
@@ -9018,7 +9018,7 @@ obj.rightAdd(value);
 
 **声明**
 
-```magel
+```chali
 R leftSub(T value);
 ```
 
@@ -9042,13 +9042,13 @@ R leftSub(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftSub(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-225"></a>
 
@@ -9056,7 +9056,7 @@ obj.leftSub(value);
 
 **声明**
 
-```magel
+```chali
 R rightSub(T value);
 ```
 
@@ -9080,13 +9080,13 @@ R rightSub(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.rightSub(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-226"></a>
 
@@ -9094,7 +9094,7 @@ obj.rightSub(value);
 
 **声明**
 
-```magel
+```chali
 R leftMul(T value);
 ```
 
@@ -9118,13 +9118,13 @@ R leftMul(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftMul(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-227"></a>
 
@@ -9132,7 +9132,7 @@ obj.leftMul(value);
 
 **声明**
 
-```magel
+```chali
 R rightMul(T value);
 ```
 
@@ -9156,13 +9156,13 @@ R rightMul(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.rightMul(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-228"></a>
 
@@ -9170,7 +9170,7 @@ obj.rightMul(value);
 
 **声明**
 
-```magel
+```chali
 R leftDiv(T value);
 ```
 
@@ -9194,13 +9194,13 @@ R leftDiv(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftDiv(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-229"></a>
 
@@ -9208,7 +9208,7 @@ obj.leftDiv(value);
 
 **声明**
 
-```magel
+```chali
 R rightDiv(T value);
 ```
 
@@ -9232,13 +9232,13 @@ R rightDiv(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.rightDiv(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-230"></a>
 
@@ -9246,7 +9246,7 @@ obj.rightDiv(value);
 
 **声明**
 
-```magel
+```chali
 R leftMod(T value);
 ```
 
@@ -9270,13 +9270,13 @@ R leftMod(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftMod(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-231"></a>
 
@@ -9284,7 +9284,7 @@ obj.leftMod(value);
 
 **声明**
 
-```magel
+```chali
 R rightMod(T value);
 ```
 
@@ -9308,13 +9308,13 @@ R rightMod(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.rightMod(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-232"></a>
 
@@ -9322,7 +9322,7 @@ obj.rightMod(value);
 
 **声明**
 
-```magel
+```chali
 R leftEqual(T value);
 ```
 
@@ -9346,13 +9346,13 @@ R leftEqual(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftEqual(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-233"></a>
 
@@ -9360,7 +9360,7 @@ obj.leftEqual(value);
 
 **声明**
 
-```magel
+```chali
 R rightEqual(T value);
 ```
 
@@ -9384,13 +9384,13 @@ R rightEqual(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.rightEqual(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-234"></a>
 
@@ -9398,7 +9398,7 @@ obj.rightEqual(value);
 
 **声明**
 
-```magel
+```chali
 R leftNotEqual(T value);
 ```
 
@@ -9422,13 +9422,13 @@ R leftNotEqual(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftNotEqual(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-235"></a>
 
@@ -9436,7 +9436,7 @@ obj.leftNotEqual(value);
 
 **声明**
 
-```magel
+```chali
 R rightNotEqual(T value);
 ```
 
@@ -9460,13 +9460,13 @@ R rightNotEqual(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.rightNotEqual(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-236"></a>
 
@@ -9474,7 +9474,7 @@ obj.rightNotEqual(value);
 
 **声明**
 
-```magel
+```chali
 R leftLess(T value);
 ```
 
@@ -9498,13 +9498,13 @@ R leftLess(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftLess(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-237"></a>
 
@@ -9512,7 +9512,7 @@ obj.leftLess(value);
 
 **声明**
 
-```magel
+```chali
 R rightLess(T value);
 ```
 
@@ -9536,13 +9536,13 @@ R rightLess(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.rightLess(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-238"></a>
 
@@ -9550,7 +9550,7 @@ obj.rightLess(value);
 
 **声明**
 
-```magel
+```chali
 R leftLessEqual(T value);
 ```
 
@@ -9574,13 +9574,13 @@ R leftLessEqual(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftLessEqual(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-239"></a>
 
@@ -9588,7 +9588,7 @@ obj.leftLessEqual(value);
 
 **声明**
 
-```magel
+```chali
 R rightLessEqual(T value);
 ```
 
@@ -9612,13 +9612,13 @@ R rightLessEqual(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.rightLessEqual(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-240"></a>
 
@@ -9626,7 +9626,7 @@ obj.rightLessEqual(value);
 
 **声明**
 
-```magel
+```chali
 R leftGreater(T value);
 ```
 
@@ -9650,13 +9650,13 @@ R leftGreater(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftGreater(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-241"></a>
 
@@ -9664,7 +9664,7 @@ obj.leftGreater(value);
 
 **声明**
 
-```magel
+```chali
 R rightGreater(T value);
 ```
 
@@ -9688,13 +9688,13 @@ R rightGreater(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.rightGreater(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-242"></a>
 
@@ -9702,7 +9702,7 @@ obj.rightGreater(value);
 
 **声明**
 
-```magel
+```chali
 R leftGreaterEqual(T value);
 ```
 
@@ -9726,13 +9726,13 @@ R leftGreaterEqual(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftGreaterEqual(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-243"></a>
 
@@ -9740,7 +9740,7 @@ obj.leftGreaterEqual(value);
 
 **声明**
 
-```magel
+```chali
 R rightGreaterEqual(T value);
 ```
 
@@ -9764,13 +9764,13 @@ R rightGreaterEqual(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.rightGreaterEqual(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-244"></a>
 
@@ -9778,7 +9778,7 @@ obj.rightGreaterEqual(value);
 
 **声明**
 
-```magel
+```chali
 R leftBitAnd(T value);
 ```
 
@@ -9802,13 +9802,13 @@ R leftBitAnd(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftBitAnd(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-245"></a>
 
@@ -9816,7 +9816,7 @@ obj.leftBitAnd(value);
 
 **声明**
 
-```magel
+```chali
 R rightBitAnd(T value);
 ```
 
@@ -9840,13 +9840,13 @@ R rightBitAnd(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.rightBitAnd(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-246"></a>
 
@@ -9854,7 +9854,7 @@ obj.rightBitAnd(value);
 
 **声明**
 
-```magel
+```chali
 R leftBitOr(T value);
 ```
 
@@ -9878,13 +9878,13 @@ R leftBitOr(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftBitOr(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-247"></a>
 
@@ -9892,7 +9892,7 @@ obj.leftBitOr(value);
 
 **声明**
 
-```magel
+```chali
 R rightBitOr(T value);
 ```
 
@@ -9916,13 +9916,13 @@ R rightBitOr(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.rightBitOr(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-248"></a>
 
@@ -9930,7 +9930,7 @@ obj.rightBitOr(value);
 
 **声明**
 
-```magel
+```chali
 R leftBitXor(T value);
 ```
 
@@ -9954,13 +9954,13 @@ R leftBitXor(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftBitXor(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-249"></a>
 
@@ -9968,7 +9968,7 @@ obj.leftBitXor(value);
 
 **声明**
 
-```magel
+```chali
 R rightBitXor(T value);
 ```
 
@@ -9992,13 +9992,13 @@ R rightBitXor(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.rightBitXor(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-250"></a>
 
@@ -10006,7 +10006,7 @@ obj.rightBitXor(value);
 
 **声明**
 
-```magel
+```chali
 R leftShiftLeft(T value);
 ```
 
@@ -10030,13 +10030,13 @@ R leftShiftLeft(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftShiftLeft(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-251"></a>
 
@@ -10044,7 +10044,7 @@ obj.leftShiftLeft(value);
 
 **声明**
 
-```magel
+```chali
 R rightShiftLeft(T value);
 ```
 
@@ -10068,13 +10068,13 @@ R rightShiftLeft(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.rightShiftLeft(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-252"></a>
 
@@ -10082,7 +10082,7 @@ obj.rightShiftLeft(value);
 
 **声明**
 
-```magel
+```chali
 R leftShiftRight(T value);
 ```
 
@@ -10106,13 +10106,13 @@ R leftShiftRight(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.leftShiftRight(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-253"></a>
 
@@ -10120,7 +10120,7 @@ obj.leftShiftRight(value);
 
 **声明**
 
-```magel
+```chali
 R rightShiftRight(T value);
 ```
 
@@ -10144,13 +10144,13 @@ R rightShiftRight(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.rightShiftRight(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-254"></a>
 
@@ -10158,7 +10158,7 @@ obj.rightShiftRight(value);
 
 **声明**
 
-```magel
+```chali
 R negate(T value);
 ```
 
@@ -10182,13 +10182,13 @@ R negate(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.negate(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-255"></a>
 
@@ -10196,7 +10196,7 @@ obj.negate(value);
 
 **声明**
 
-```magel
+```chali
 R bitNot(T value);
 ```
 
@@ -10220,13 +10220,13 @@ R bitNot(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.bitNot(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-256"></a>
 
@@ -10234,7 +10234,7 @@ obj.bitNot(value);
 
 **声明**
 
-```magel
+```chali
 R positive(T value);
 ```
 
@@ -10258,13 +10258,13 @@ R positive(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.positive(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-257"></a>
 
@@ -10272,7 +10272,7 @@ obj.positive(value);
 
 **声明**
 
-```magel
+```chali
 uint64 hash(T value);
 ```
 
@@ -10296,13 +10296,13 @@ uint64 hash(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.hash(value);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-258"></a>
 
@@ -10310,7 +10310,7 @@ obj.hash(value);
 
 **声明**
 
-```magel
+```chali
 T explicitConvert();
 ```
 
@@ -10332,13 +10332,13 @@ T explicitConvert();
 
 **调用形式**
 
-```magel
+```chali
 obj.explicitConvert();
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-259"></a>
 
@@ -10346,7 +10346,7 @@ obj.explicitConvert();
 
 **声明**
 
-```magel
+```chali
 T implicitConvert();
 ```
 
@@ -10368,13 +10368,13 @@ T implicitConvert();
 
 **调用形式**
 
-```magel
+```chali
 obj.implicitConvert();
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-260"></a>
 
@@ -10382,7 +10382,7 @@ obj.implicitConvert();
 
 **声明**
 
-```magel
+```chali
 R index(T key);
 ```
 
@@ -10406,13 +10406,13 @@ R index(T key);
 
 **调用形式**
 
-```magel
+```chali
 obj.index(key);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-261"></a>
 
@@ -10420,7 +10420,7 @@ obj.index(key);
 
 **声明**
 
-```magel
+```chali
 Option<R> iterator(int64 index);
 ```
 
@@ -10444,13 +10444,13 @@ Option<R> iterator(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.iterator(index);
 ```
 
-**源码**：[source/magel_generic.cpp:827](../../source/magel_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
+**源码**：[source/chali_generic.cpp:827](../../source/chali_generic.cpp#L827)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-262"></a>
 
@@ -10458,7 +10458,7 @@ obj.iterator(index);
 
 **声明**
 
-```magel
+```chali
 Result<T,F> mapErr<F>(F fn(E) mapper);
 ```
 
@@ -10482,13 +10482,13 @@ Result<T,F> mapErr<F>(F fn(E) mapper);
 
 **调用形式**
 
-```magel
+```chali
 obj.mapErr<F>(mapper);
 ```
 
-**源码**：[source/std/lang.mgl:2](../../source/std/lang.mgl#L2)（编译器内建，签名为等价调用形式）。
+**源码**：[source/std/lang.chl:2](../../source/std/lang.chl#L2)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-263"></a>
 
@@ -10496,7 +10496,7 @@ obj.mapErr<F>(mapper);
 
 **声明**
 
-```magel
+```chali
 Result<T,E> okOr<E>(E error);
 ```
 
@@ -10520,13 +10520,13 @@ Result<T,E> okOr<E>(E error);
 
 **调用形式**
 
-```magel
+```chali
 obj.okOr<E>(error);
 ```
 
-**源码**：[source/std/lang.mgl:3](../../source/std/lang.mgl#L3)（编译器内建，签名为等价调用形式）。
+**源码**：[source/std/lang.chl:3](../../source/std/lang.chl#L3)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 <a id="api-264"></a>
 
@@ -10534,7 +10534,7 @@ obj.okOr<E>(error);
 
 **声明**
 
-```magel
+```chali
 Result<T,E> okOrElse<E>(E fn() factory);
 ```
 
@@ -10558,19 +10558,19 @@ Result<T,E> okOrElse<E>(E fn() factory);
 
 **调用形式**
 
-```magel
+```chali
 obj.okOrElse<E>(factory);
 ```
 
-**源码**：[source/std/lang.mgl:3](../../source/std/lang.mgl#L3)（编译器内建，签名为等价调用形式）。
+**源码**：[source/std/lang.chl:3](../../source/std/lang.chl#L3)（编译器内建，签名为等价调用形式）。
 
-**完整示例**：[example/samples/std_collections_algorithms.mgl](../../example/samples/std_collections_algorithms.mgl)。
+**完整示例**：[example/samples/std_collections_algorithms.chl](../../example/samples/std_collections_algorithms.chl)。
 
 ## 补充完整示例
 
-[example/samples/std_read_lines.mgl](../../example/samples/std_read_lines.mgl)。
+[example/samples/std_read_lines.chl](../../example/samples/std_read_lines.chl)。
 
-```magel
+```chali
 int64 main() {
     String first=std::lang::readLine();
     String rest=std::lang::readLines(3);

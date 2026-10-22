@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     if (!stackvm::loadProgramBinary(path, compact)) return 5;
     stackvm::DebugInfo external;
     stackvm::SourceLocation secret;
-    secret.file = "secret.mgl";
+    secret.file = "secret.chl";
     secret.function = "secret_function";
     secret.line = 7;
     external.add(0, secret);

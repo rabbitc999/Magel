@@ -13,7 +13,7 @@
 
 答案都是同一个东西：引用。
 
-这一章讲它，包括 Magel 引用最特别的一条规矩——引用不能活得比它指的东西久。
+这一章讲它，包括 ChaLi 引用最特别的一条规矩——引用不能活得比它指的东西久。
 
 \section{引用长什么样}
 
@@ -33,7 +33,7 @@ T &         和 T const& 完全等价（简写）
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 value = 7;
@@ -66,7 +66,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 value = 7;
@@ -81,7 +81,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 只读引用（`T const&`）不能写入元素
+chali: 只读引用（`T const&`）不能写入元素
 \end{lstlisting}
 \par
 \medskip
@@ -94,7 +94,7 @@ magel: 只读引用（`T const&`）不能写入元素
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 void bump(int64 mut& counter)
 {
     counter = counter + 1;
@@ -132,7 +132,7 @@ int64 main()
 那个 \texttt{\&} 很关键，它是「签字」：我主动允许这个函数改我的 \texttt{number}。 看到 \texttt{bump(\allowbreak{}\&number)\allowbreak{}} 的人，不用跳进 \texttt{bump} 就知道 \texttt{number} 可能被改。
 
 \begin{tip}{提示}
-这也是 Magel 和「默认就是引用传递」的语言最大的差别：这里改到外面是显式的。一眼扫过去就能数出哪些调用会动数据。
+这也是 ChaLi 和「默认就是引用传递」的语言最大的差别：这里改到外面是显式的。一眼扫过去就能数出哪些调用会动数据。
 \end{tip}
 
 \section{用引用省掉复制}
@@ -141,7 +141,7 @@ int64 main()
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Player
 {
     String name;
@@ -207,12 +207,12 @@ amy 的总分 30
 
 \section{引用必须当场绑定：没有「空引用」}
 
-Magel 没有 \texttt{null}。 没有 \texttt{nullptr}，没有 \texttt{nil}，没有「先声明一个空引用，以后再让它指向什么」：
+ChaLi 没有 \texttt{null}。 没有 \texttt{nullptr}，没有 \texttt{nil}，没有「先声明一个空引用，以后再让它指向什么」：
 
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: 引用声明必须初始化，缺省值请使用 Option<T mut&>
+chali: 引用声明必须初始化，缺省值请使用 Option<T mut&>
 \end{lstlisting}
 \par
 \medskip
@@ -221,7 +221,7 @@ magel: 引用声明必须初始化，缺省值请使用 Option<T mut&>
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 first = 1;
 int64 mut& keep = &first;
 // 声明的同时必须绑定
@@ -233,7 +233,7 @@ int64 mut& keep = &first;
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 value = 1;
@@ -247,26 +247,26 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: `&` 只能取数据区里对象的地址（数组元素 / 结构体字段 / 字符串字节；栈上的标量变量取不了）
+chali: `&` 只能取数据区里对象的地址（数组元素 / 结构体字段 / 字符串字节；栈上的标量变量取不了）
 \end{lstlisting}
 \par
 \medskip
 
 （这条报错的措辞有点绕，别被最后半句带偏：取变量的地址是没问题的，上面第一个例子里 \texttt{\&value} 就是。它真正拒绝的是临时算出来的值——\texttt{value + 1} 这个结果没有存放的地方，自然也没有地址可指。）
 
-这一条消灭了整类崩溃。 空指针解引用这种东西在 Magel 里不存在，因为没有那个「空」的状态。
+这一条消灭了整类崩溃。 空指针解引用这种东西在 ChaLi 里不存在，因为没有那个「空」的状态。
 
 \section{引用不能活得比目标久}
 
-这是 Magel 引用最重要的规矩，也是它最容易被拒的地方。
+这是 ChaLi 引用最重要的规矩，也是它最容易被拒的地方。
 
 想清楚这件事：一个引用只是「指向某处的一个地址」。如果它指的那个对象已经没了，它还留着，那用它的那一刻就会读到一块不属于你的内存——这就是悬垂引用。
 
-Magel 的处理方式是：编译期跟踪每个引用的来源，来源活得不够久就拒绝编译。
+ChaLi 的处理方式是：编译期跟踪每个引用的来源，来源活得不够久就拒绝编译。
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 mut& bad()
 {
     int64 local = 1;
@@ -280,7 +280,7 @@ int64 mut& bad()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: [MGL1204] 返回值中的引用不能超过局部来源的生命周期（int64 mut&，所属类型 ，来源 local）
+chali: [CHL1204] 返回值中的引用不能超过局部来源的生命周期（int64 mut&，所属类型 ，来源 local）
 \end{lstlisting}
 \par
 \medskip
@@ -291,7 +291,7 @@ magel: [MGL1204] 返回值中的引用不能超过局部来源的生命周期（
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 struct Holder
 {
     int64 mut& slot;
@@ -318,7 +318,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-magel: [MGL1204] 返回值中的引用不能超过局部来源的生命周期（Holder，所属类型 ，来源 holder）
+chali: [CHL1204] 返回值中的引用不能超过局部来源的生命周期（Holder，所属类型 ，来源 holder）
 \end{lstlisting}
 \par
 \medskip
@@ -331,7 +331,7 @@ magel: [MGL1204] 返回值中的引用不能超过局部来源的生命周期（
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 mut& larger(int64 mut& a, int64 mut& b)
 {
     if (a >= b)
@@ -368,16 +368,16 @@ int64 main()
 
 \section{借用检查与别名共享}
 
-Magel 有独立的借用检查器。它先追踪引用来源是否活得足够久，再在控制流中检查移动、析构和释放后的访问。分支合流、循环、字段和能够识别的别名都会参与分析。
+ChaLi 有独立的借用检查器。它先追踪引用来源是否活得足够久，再在控制流中检查移动、析构和释放后的访问。分支合流、循环、字段和能够识别的别名都会参与分析。
 
 \begin{center}
 \begin{tabular}{ll}
 \toprule
 检查内容 & 规则 \\
 \midrule
-来源寿命 & 引用不能超出来源，沿聚合传播；常见诊断 MGL1204 \\
+来源寿命 & 引用不能超出来源，沿聚合传播；常见诊断 CHL1204 \\
 move 后访问 & 旧绑定禁止读写或重绑；完整移动后可以二次声明同名变量 \\
-drop 后访问 & 已终结来源不能继续当有效值使用；常见诊断 MGL1205 \\
+drop 后访问 & 已终结来源不能继续当有效值使用；常见诊断 CHL1205 \\
 多个别名 & 可以指向同一对象，通过一个修改，其他有效别名可以观察到 \\
 检查边界 & 不实行全局独占借用规则，不覆盖任意原始宿主内存行为 \\
 \bottomrule
@@ -386,7 +386,7 @@ drop 后访问 & 已终结来源不能继续当有效值使用；常见诊断 MG
 
 这要求同时考虑对象的作用域和生命周期状态。仅把来源移到外层，并不能使已经移动或释放的值重新有效；重新声明的同名变量也不会让旧引用改指向新变量。
 
-复制拥有值可以获得独立数据；复制引用仍共享来源。容器和大对象的深复制有成本，需要省复制时显式选择有效引用。详细边界见\href{https://gitee.com/rabbitc999/magel/blob/master/doc/11-algorithm-validation.md}{借用控制流验证}。
+复制拥有值可以获得独立数据；复制引用仍共享来源。容器和大对象的深复制有成本，需要省复制时显式选择有效引用。详细边界见\href{https://gitee.com/rabbitc999/chali/blob/master/doc/11-algorithm-validation.md}{借用控制流验证}。
 
 \section{小结}
 
@@ -401,7 +401,7 @@ drop 后访问 & 已终结来源不能继续当有效值使用；常见诊断 MG
 省复制 & 大对象（字符串、容器、大结构体）用 \texttt{const\&} 传 \\
 非空 & 引用必须当场绑定，没有 \texttt{null}，没有空引用 \\
 取址边界 & \texttt{\&} 只对「有实体对象」的东西有效，临时值不行 \\
-生命周期 & 引用不能活得比来源久，违反是 \texttt{MGL1204} \\
+生命周期 & 引用不能活得比来源久，违反是 \texttt{CHL1204} \\
 合法返回引用 & 来源是参数、是更外层作用域的对象时可以 \\
 别名 & 允许两个引用指向同一份数据，改一个另一个也变 \\
 借用检查器 & 来源寿命与控制流中的移动、析构和释放检查；允许别名共享 \\

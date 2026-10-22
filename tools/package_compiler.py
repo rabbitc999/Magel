@@ -1,4 +1,4 @@
-"""独立 ZIP 发布脚本：使用 Python 标准库打包 Magel 可执行文件。"""
+"""独立 ZIP 发布脚本：使用 Python 标准库打包 ChaLi 可执行文件。"""
 from pathlib import Path
 import argparse
 import os
@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def display_language(tool):
     """按工具环境、区域和 Windows UI 语言选择双语提示。"""
-    setting = os.environ.get('MAGEL_LANG' if tool == 'magel' else 'PARSEENGINE_LANG', '')
+    setting = os.environ.get('CHALI_LANG' if tool == 'chali' else 'PARSEENGINE_LANG', '')
     if not setting or setting == 'auto':
         setting = next((os.environ[key] for key in ('LC_ALL', 'LC_MESSAGES', 'LANG') if os.environ.get(key)), '')
     if not setting and os.name == 'nt':
@@ -44,7 +44,7 @@ def package(compiler, output, name):
 def main(argv=None):
     """独立发布入口，CLI 包装器也调用相同脚本。"""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('tool', choices=('magel',))
+    parser.add_argument('tool', choices=('chali',))
     parser.add_argument('output_word', nargs='?', choices=('out',))
     parser.add_argument('output_path', nargs='?', type=Path)
     parser.add_argument('--compiler', type=Path)
@@ -60,11 +60,11 @@ def main(argv=None):
         print(text('打包需要 Python 3.11+', 'Packaging requires Python 3.11+'), file=sys.stderr)
         return 2
     executable = '.exe' if os.name == 'nt' else ''
-    compiler = args.compiler or ROOT / ('magel' + executable)
+    compiler = args.compiler or ROOT / ('chali' + executable)
     system = {'win32': 'windows', 'darwin': 'macos'}.get(sys.platform, sys.platform)
     machine = {'amd64': 'x64', 'x86_64': 'x64', 'aarch64': 'arm64'}.get(platform.machine().lower(), platform.machine().lower())
     version = ''
-    if args.tool == 'magel':
+    if args.tool == 'chali':
         version_file = ROOT / 'VERSION'
         if version_file.is_file():
             version = '-' + version_file.read_text(encoding='utf-8').strip()

@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::watchdog;
 ```
 
@@ -14,16 +14,16 @@ import std::watchdog;
 
 ## 参考代码
 
-完整程序：[doc/examples/library/watchdog.mgl](../../doc/examples/library/watchdog.mgl)。
+完整程序：[doc/examples/library/watchdog.chl](../../doc/examples/library/watchdog.chl)。
 
 ```powershell
-magel run doc/examples/library/watchdog.mgl
+chali run doc/examples/library/watchdog.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::watchdog;
 
 /** @brief 验证看门狗默认关闭、启用结果，以及时间维度（超时未喂狗）同样默认关闭；不请求实际重启。 */
@@ -82,7 +82,7 @@ int64 main() {
 
 **声明**
 
-```magel
+```chali
 Result<int64, WatchdogError> enable(int64 watermarkBytes);
 ```
 
@@ -106,13 +106,13 @@ Result<int64, WatchdogError> enable(int64 watermarkBytes);
 
 **调用形式**
 
-```magel
+```chali
 std::watchdog::enable(watermarkBytes);
 ```
 
-**源码**：[source/std/watchdog.mgl:9](../../source/std/watchdog.mgl#L9)。
+**源码**：[source/std/watchdog.chl:9](../../source/std/watchdog.chl#L9)。
 
-**完整示例**：[doc/examples/library/watchdog.mgl](../../doc/examples/library/watchdog.mgl)。
+**完整示例**：[doc/examples/library/watchdog.chl](../../doc/examples/library/watchdog.chl)。
 
 <a id="api-1"></a>
 
@@ -120,7 +120,7 @@ std::watchdog::enable(watermarkBytes);
 
 **声明**
 
-```magel
+```chali
 Result<int64, WatchdogError> requestRestart();
 ```
 
@@ -142,13 +142,13 @@ Result<int64, WatchdogError> requestRestart();
 
 **调用形式**
 
-```magel
+```chali
 std::watchdog::requestRestart();
 ```
 
-**源码**：[source/std/watchdog.mgl:14](../../source/std/watchdog.mgl#L14)。
+**源码**：[source/std/watchdog.chl:14](../../source/std/watchdog.chl#L14)。
 
-**完整示例**：[doc/examples/library/watchdog.mgl](../../doc/examples/library/watchdog.mgl)。
+**完整示例**：[doc/examples/library/watchdog.chl](../../doc/examples/library/watchdog.chl)。
 
 <a id="api-2"></a>
 
@@ -156,7 +156,7 @@ std::watchdog::requestRestart();
 
 **声明**
 
-```magel
+```chali
 Result<int64, WatchdogError> enableTimeout(int64 units);
 ```
 
@@ -180,13 +180,13 @@ Result<int64, WatchdogError> enableTimeout(int64 units);
 
 **调用形式**
 
-```magel
+```chali
 std::watchdog::enableTimeout(units);
 ```
 
-**源码**：[source/std/watchdog.mgl:18](../../source/std/watchdog.mgl#L18)。
+**源码**：[source/std/watchdog.chl:18](../../source/std/watchdog.chl#L18)。
 
-**完整示例**：[doc/examples/library/watchdog.mgl](../../doc/examples/library/watchdog.mgl)。
+**完整示例**：[doc/examples/library/watchdog.chl](../../doc/examples/library/watchdog.chl)。
 
 <a id="api-3"></a>
 
@@ -194,7 +194,7 @@ std::watchdog::enableTimeout(units);
 
 **声明**
 
-```magel
+```chali
 Result<int64, WatchdogError> enableTimeoutMillis(int64 millis);
 ```
 
@@ -218,13 +218,13 @@ Result<int64, WatchdogError> enableTimeoutMillis(int64 millis);
 
 **调用形式**
 
-```magel
+```chali
 std::watchdog::enableTimeoutMillis(millis);
 ```
 
-**源码**：[source/std/watchdog.mgl:24](../../source/std/watchdog.mgl#L24)。
+**源码**：[source/std/watchdog.chl:24](../../source/std/watchdog.chl#L24)。
 
-**完整示例**：[doc/examples/library/watchdog.mgl](../../doc/examples/library/watchdog.mgl)。
+**完整示例**：[doc/examples/library/watchdog.chl](../../doc/examples/library/watchdog.chl)。
 
 <a id="api-4"></a>
 
@@ -232,7 +232,7 @@ std::watchdog::enableTimeoutMillis(millis);
 
 **声明**
 
-```magel
+```chali
 Result<bool, WatchdogError> kick();
 ```
 
@@ -254,13 +254,13 @@ Result<bool, WatchdogError> kick();
 
 **调用形式**
 
-```magel
+```chali
 std::watchdog::kick();
 ```
 
-**源码**：[source/std/watchdog.mgl:28](../../source/std/watchdog.mgl#L28)。
+**源码**：[source/std/watchdog.chl:28](../../source/std/watchdog.chl#L28)。
 
-**完整示例**：[doc/examples/library/watchdog.mgl](../../doc/examples/library/watchdog.mgl)。
+**完整示例**：[doc/examples/library/watchdog.chl](../../doc/examples/library/watchdog.chl)。
 
 <a id="api-5"></a>
 
@@ -268,7 +268,7 @@ std::watchdog::kick();
 
 **声明**
 
-```magel
+```chali
 void disableTimeout();
 ```
 
@@ -290,10 +290,10 @@ void disableTimeout();
 
 **调用形式**
 
-```magel
+```chali
 std::watchdog::disableTimeout();
 ```
 
-**源码**：[source/std/watchdog.mgl:32](../../source/std/watchdog.mgl#L32)。
+**源码**：[source/std/watchdog.chl:32](../../source/std/watchdog.chl#L32)。
 
-**完整示例**：[doc/examples/library/watchdog.mgl](../../doc/examples/library/watchdog.mgl)。
+**完整示例**：[doc/examples/library/watchdog.chl](../../doc/examples/library/watchdog.chl)。

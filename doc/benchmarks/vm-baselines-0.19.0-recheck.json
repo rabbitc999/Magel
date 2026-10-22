@@ -19,21 +19,21 @@
     "C++": "-std=c++17 -O2 -DNDEBUG; noinline calculation; volatile result sink; fresh stdin input after warmup",
     "JVM JIT": "-Xbatch; 20 full warmups; volatile result sink; fresh stdin input per invocation",
     "JVM interpreter": "-Xint; 1 full warmup",
-    "Magel": "each listed Magel version keeps reflection enabled and all default VM optimizations; runner built -O2 against that version static library",
+    "ChaLi": "each listed ChaLi version keeps reflection enabled and all default VM optimizations; runner built -O2 against that version static library",
     "Lua": "official mingw Makefile -O2; no JIT"
   },
   "timing": "all exclude startup, source compilation and loading; VM includes execution preparation and checksum output; other runtimes measure calculation only; one measured sample per process; rotate order each repeat; serial; all builds finish before measurements",
   "binaries": {
-    "D:\\Desktop\\Workspace\\magel\\magel.exe": "d1ffe8ca1f13999b940d66ecaa4a3465391c497f964698ad74bedd70995acc0a",
-    "D:\\Desktop\\Workspace\\magel\\build\\vm-program-benchmark.exe": "971c4dbd0cb5410b30a36000c7841a8dcdb60546faaad2735de5bc1a5329e10b",
-    "D:\\Desktop\\Workspace\\magel\\build\\vm-lua-benchmark\\lua-5.5.1\\src\\lua.exe": "12e647a82e056aea5bf287b3b010e3896ed216c790964a2b0fb6e8d3b6460be0"
+    "D:\\Desktop\\Workspace\\chali\\ChaLi.exe": "d1ffe8ca1f13999b940d66ecaa4a3465391c497f964698ad74bedd70995acc0a",
+    "D:\\Desktop\\Workspace\\chali\\build\\vm-program-benchmark.exe": "971c4dbd0cb5410b30a36000c7841a8dcdb60546faaad2735de5bc1a5329e10b",
+    "D:\\Desktop\\Workspace\\chali\\build\\vm-lua-benchmark\\lua-5.5.1\\src\\lua.exe": "12e647a82e056aea5bf287b3b010e3896ed216c790964a2b0fb6e8d3b6460be0"
   },
   "results": {
     "1": {
       "integer_loop": {
         "iterations": 10000000,
         "configurations": {
-          "Magel 0.19.0": {
+          "ChaLi 0.19.0": {
             "samples_ms": [
               99.9954,
               94.3007,
@@ -117,7 +117,7 @@
       "branches": {
         "iterations": 1000000,
         "configurations": {
-          "Magel 0.19.0": {
+          "ChaLi 0.19.0": {
             "samples_ms": [
               30.5311,
               26.1954,
@@ -201,7 +201,7 @@
       "float64_loop": {
         "iterations": 2000000,
         "configurations": {
-          "Magel 0.19.0": {
+          "ChaLi 0.19.0": {
             "samples_ms": [
               285.472,
               298.827,
@@ -285,7 +285,7 @@
       "calls": {
         "iterations": 1000000,
         "configurations": {
-          "Magel 0.19.0": {
+          "ChaLi 0.19.0": {
             "samples_ms": [
               396.808,
               438.805,
@@ -369,7 +369,7 @@
       "array_reads": {
         "iterations": 1000000,
         "configurations": {
-          "Magel 0.19.0": {
+          "ChaLi 0.19.0": {
             "samples_ms": [
               68.7584,
               59.1766,
@@ -455,7 +455,7 @@
       "integer_loop": {
         "iterations": 10000000,
         "configurations": {
-          "Magel 0.19.0": {
+          "ChaLi 0.19.0": {
             "samples_ms": [
               94.6061,
               93.1368,
@@ -539,7 +539,7 @@
       "branches": {
         "iterations": 1000000,
         "configurations": {
-          "Magel 0.19.0": {
+          "ChaLi 0.19.0": {
             "samples_ms": [
               25.097,
               26.1504,
@@ -623,7 +623,7 @@
       "float64_loop": {
         "iterations": 2000000,
         "configurations": {
-          "Magel 0.19.0": {
+          "ChaLi 0.19.0": {
             "samples_ms": [
               263.274,
               272.757,
@@ -707,7 +707,7 @@
       "calls": {
         "iterations": 1000000,
         "configurations": {
-          "Magel 0.19.0": {
+          "ChaLi 0.19.0": {
             "samples_ms": [
               391.763,
               406.291,
@@ -791,7 +791,7 @@
       "array_reads": {
         "iterations": 1000000,
         "configurations": {
-          "Magel 0.19.0": {
+          "ChaLi 0.19.0": {
             "samples_ms": [
               63.5193,
               60.9021,
@@ -877,15 +877,15 @@
   "generated_sources": {
     "array_reads.cpp": "ffb880fc2f9a17f4f2521ea942541f8ccb6d1bbdbfd1032823b354ad24f13538",
     "array_reads.lua": "e9379fcf34fa613881646db27fd0f03588a6cec95d162e6fabd065a1f79d5cb7",
-    "array_reads.mgl": "170cedf3578eb90e24c58513b5d7a23f6a920d040b69a88b5c257218fdb7b40e",
+    "array_reads.chl": "170cedf3578eb90e24c58513b5d7a23f6a920d040b69a88b5c257218fdb7b40e",
     "array_reads.py": "6b34f0f04968c0bd4b9485341b2fad64fcb08f8919ff480d06cae8e40e6dc6c6",
     "branches.cpp": "5e94f20ca16fc1f3e92efb4dac0f2f2fd364384630a1572ef5fc3b3a57f7d31f",
     "branches.lua": "19ac3ff6ce1a5a6c948455eff4f990862ef293ea9ef81906e74aa54156b3b89c",
-    "branches.mgl": "2519b4a1312277e5c8bb6b2be4b7c7e986880260023a09249e3d821f15683e68",
+    "branches.chl": "2519b4a1312277e5c8bb6b2be4b7c7e986880260023a09249e3d821f15683e68",
     "branches.py": "10599a6736ccb1ccfeeb76f349b684df74e70e6ea1a01e386460305d9ff22522",
     "calls.cpp": "886612ab33b5b4cd06734a131c3d705c72d95928b02a31c673e23193c696a4ed",
     "calls.lua": "fa5172cf4665a7ff15945fd78c30538875bd2b9fddfe2087045e72ea33276e00",
-    "calls.mgl": "e2abec1034e0ab893ea81d94a5b283dc57e5eb1f3640975e2d18ecbe65e01d10",
+    "calls.chl": "e2abec1034e0ab893ea81d94a5b283dc57e5eb1f3640975e2d18ecbe65e01d10",
     "calls.py": "320a4b34e3b7953516a8c3af733a6924ad0a7dd8780c5d2660b3f2c2421d6d36",
     "Case_array_reads.java": "e2465c3877cca859c9c33245b408f22d3b414cb36ef0c74efa52db6dc22dcbc0",
     "Case_branches.java": "c3b723683bfeb102d2c6542563ba91cb7b12cfb4028d6b766490d931745a9179",
@@ -894,11 +894,11 @@
     "Case_integer_loop.java": "ad8738042d1e361f19bce4a51f320c337b3255c6b7ca4f23c9ed17c6ca532e00",
     "float64_loop.cpp": "ac113ce796ae82cc4cd6d03a83b134989eb8bc4079a60b0a5c713bc198b32ec9",
     "float64_loop.lua": "39d536c01220efffb7ebb8dff7d75ecc90d5719a1cde934e545caa4141e16b03",
-    "float64_loop.mgl": "be7cb8dfaf56fc3a655d6ff7d8b5ac8cde84dd88470d933ad4aecba503614930",
+    "float64_loop.chl": "be7cb8dfaf56fc3a655d6ff7d8b5ac8cde84dd88470d933ad4aecba503614930",
     "float64_loop.py": "4b2d70e84482f9c7ce248dda07d7f0c2ff5c54d926de292b0aa2c8eff1dca124",
     "integer_loop.cpp": "d8c8193cda4874784a562be9ba5640d597819c974d13886694822cf3862c9d0f",
     "integer_loop.lua": "f584021db4534d3c545aad31fbc230a3309532c8a18f3617ff5f3acef6e26544",
-    "integer_loop.mgl": "e8a6908155c6314d2b005f2474dd09eb56fa8e72b3eeca2cf606d5f98c9e550a",
+    "integer_loop.chl": "e8a6908155c6314d2b005f2474dd09eb56fa8e72b3eeca2cf606d5f98c9e550a",
     "integer_loop.py": "d64daf9f3808b584c57d0a59dcc9d7ac6ec7d11788eb474691daae04b6deaa14"
   },
   "cpu": {

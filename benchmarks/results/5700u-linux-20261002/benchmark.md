@@ -1,15 +1,15 @@
-# 5700U（Linux + GCC x64）：Magel StackVM 池 / malloc 对照
+# 5700U（Linux + GCC x64）：ChaLi StackVM 池 / malloc 对照
 
 CPU：AMD Ryzen 7 5700U with Radeon Graphics（8 核 16 线程，15 W APU；
 `scaling_governor=powersave`，最高 4.372 GHz）。
 系统：Ubuntu 22.04.3 LTS，Linux 6.8.0-138-generic x86_64。
 编译器：g++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0；CMake `Release`
 （`-O3 -DNDEBUG -std=gnu++17`）。默认池为 512 MiB C 池；malloc 模式在配置时加
-`-DCMAKE_CXX_FLAGS=-DMAGEL_USE_MALLOC=1`。
+`-DCMAKE_CXX_FLAGS=-DCHALI_USE_MALLOC=1`。
 
 测量：`taskset -c 3` 钉住单核；每项进程内先预热一次，再正式运行 7 次取中位数；
-计时只包含 `Machine::run`，不含 Magel 编译、加载或进程启动。两种模式复用同一份
-`loop.mgl` 产物（20000033 条 VM 指令，程序内 `assert(sum == 499999500000)`）。
+计时只包含 `Machine::run`，不含 ChaLi 编译、加载或进程启动。两种模式复用同一份
+`loop.chl` 产物（20000033 条 VM 指令，程序内 `assert(sum == 499999500000)`）。
 
 | 构建 | 负载 | 指令数 | 池中位数 ms | malloc 中位数 ms | malloc 相对池 | 池峰值字节 | 校验 |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
@@ -31,11 +31,11 @@ CPU：AMD Ryzen 7 5700U with Radeon Graphics（8 核 16 线程，15 W APU；
 复现（仓库根目录）：
 
 ```sh
-cmake -S magel/stackvm -B build/mcvm-bench -DCMAKE_BUILD_TYPE=Release
+cmake -S chali/stackvm -B build/mcvm-bench -DCMAKE_BUILD_TYPE=Release
 cmake --build build/mcvm-bench -j
-magel/magel magel/benchmarks/loop.mgl --emit --svmb --out build/mcvm-bench/magel-loop
-taskset -c 3 build/mcvm-bench/magel-stackvm-benchmark 1000000 7
-taskset -c 3 build/mcvm-bench/magel-stackvm-magel-benchmark \
-    build/mcvm-bench/magel-loop.svmb build/mcvm-bench/magel-loop.data.bin build/mcvm-bench/magel-loop.layout 7
-# malloc 模式：配置时加 -DCMAKE_CXX_FLAGS=-DMAGEL_USE_MALLOC=1，再跑同样两条命令
+chali/chali chali/benchmarks/loop.chl --emit --svmb --out build/mcvm-bench/chali-loop
+taskset -c 3 build/mcvm-bench/chali-stackvm-benchmark 1000000 7
+taskset -c 3 build/mcvm-bench/chali-stackvm-chali-benchmark \
+    build/mcvm-bench/chali-loop.svmb build/mcvm-bench/chali-loop.data.bin build/mcvm-bench/chali-loop.layout 7
+# malloc 模式：配置时加 -DCMAKE_CXX_FLAGS=-DCHALI_USE_MALLOC=1，再跑同样两条命令
 ```

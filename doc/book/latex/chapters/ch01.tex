@@ -1,35 +1,39 @@
 \chapter{第一个程序}
 \label{ch:01}
 
+\begin{tip}{提示}
+ChaLi 是哪五个字母 —— 每个字母锁一条契约，记住了后面每章都能对上号：\par - C — Copy（深拷贝值语义）：赋值就是彻底的复制，绝不共享内存。大对象必须显式用引用传。- H — Hygienic（卫生宏）：在编译期做安全的代码替换，绝不意外捕获或污染外部变量。- A — Any（万能盒子 / 类型擦除）：没有泛型约束时，可以装下任何类型的数据。- L — Lifetime（生命周期 / 借用检查器）：引用永远不能活得比它的数据源更久，否则编译直接报错（\texttt{CHL1204}）。- I — Interface（接口 / 运行期多态）：定义一组共同的“契约”，运行期根据对象的实际类型进行分派。\par 每条的判据与「什么算违反」见 \href{https://gitee.com/rabbitc999/chali/blob/master/doc/40-name-freeze.md}{40 名称冻结：ChaLi 五个字母}。
+\end{tip}
+
 万事开头难，但这一章只干三件事：把工具装好、跑出一行字、看懂这行字是怎么来的。
 
-读完这一章，你会有第一个能跑的程序，也会知道「出错」在 Magel 里长什么样——后者比前者重要，因为接下来每一章你都会用到它。
+读完这一章，你会有第一个能跑的程序，也会知道「出错」在 ChaLi 里长什么样——后者比前者重要，因为接下来每一章你都会用到它。
 
 \section{把工具装好}
 
-Magel 只有一个命令行程序，叫 \texttt{magel}，解释、编译、建工程、跑测试全在它里面。装它有两条路。
+ChaLi 只有一个命令行程序，叫 \texttt{chali}，解释、编译、建工程、跑测试全在它里面。装它有两条路。
 
-这条路最短：用发布包。 拿到 \texttt{dist/\allowbreak{}magel-<\allowbreak{}版本>\allowbreak{}-<\allowbreak{}平台>\allowbreak{}-<\allowbreak{}架构>\allowbreak{}.\allowbreak{}tar.\allowbreak{}gz}，解开，把里面的 \texttt{bin/\allowbreak{}} 加进 PATH，就完事了。
+这条路最短：用发布包。 拿到 \texttt{dist/\allowbreak{}chali-<\allowbreak{}版本>\allowbreak{}-<\allowbreak{}平台>\allowbreak{}-<\allowbreak{}架构>\allowbreak{}.\allowbreak{}tar.\allowbreak{}gz}，解开，把里面的 \texttt{bin/\allowbreak{}} 加进 PATH，就完事了。
 
 这条路最全：从源码构建。 适合想改编译器的人，也适合想看清内部的人：
 
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-sh gen.sh      # 用 IELR 从 magel.gram 生成前端
-make           # 构建 magel 与 libparser.a
+sh gen.sh      # 用 IELR 从 chali.gram 生成前端
+make           # 构建 chali 与 libparser.a
 \end{lstlisting}
 \par
 \medskip
 
-\texttt{gen.\allowbreak{}sh} 需要一份 \href{https://github.com/rabbitc999/ParseEngine}{ParseEngine} 文法生成器，细节见\href{https://gitee.com/rabbitc999/magel/blob/master/doc/01-quickstart.md#1-安装}{快速开始}，这里不展开。
+\texttt{gen.\allowbreak{}sh} 需要一份 \href{https://github.com/rabbitc999/ParseEngine}{ParseEngine} 文法生成器，细节见\href{https://gitee.com/rabbitc999/chali/blob/master/doc/01-quickstart.md#1-安装}{快速开始}，这里不展开。
 
 装完了，敲一句：
 
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel help
+chali help
 \end{lstlisting}
 \par
 \medskip
@@ -37,20 +41,19 @@ magel help
 屏幕上滚出一大串用法，就说明装好了。先别急着读完那串帮助——那是给有经验的人查的，跟着这本书走，你会一个个认识里面的选项。
 
 \begin{tip}{Windows 用户注意}
-程序名是 \texttt{magel.\allowbreak{}exe}。在 Git Bash / MSYS 里写 \texttt{.\allowbreak{}/\allowbreak{}magel} 能自动找到 \texttt{magel.\allowbreak{}exe}；光写 \texttt{magel} 会去 PATH 里找，可能找到的不是你当前目录这一份。本书后文一律写 \texttt{magel}，你自己敲的时候按环境补上 \texttt{.\allowbreak{}/\allowbreak{}}。
+程序名是 \texttt{Cha\allowbreak{}Li.\allowbreak{}exe}。在 Git Bash / MSYS 里写 \texttt{.\allowbreak{}/\allowbreak{}chali} 能自动找到 \texttt{Cha\allowbreak{}Li.\allowbreak{}exe}；光写 \texttt{chali} 会去 PATH 里找，可能找到的不是你当前目录这一份。本书后文一律写 \texttt{chali}，你自己敲的时候按环境补上 \texttt{.\allowbreak{}/\allowbreak{}}。
 \end{tip}
 
-\section{Hello, Magel}
+\section{Hello, ChaLi}
 
-新建一个文件 \texttt{hello.\allowbreak{}mgl}，内容如下：
+新建一个文件 \texttt{hello.\allowbreak{}chl}，内容如下：
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
-int64 main()
+\begin{lstlisting}[style=chali]
+void main()
 {
-    println("Hello, Magel!");
-    return 0;
+    println("Hello, ChaLi!");
 }
 \end{lstlisting}
 \par
@@ -59,7 +62,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-Hello, Magel!
+Hello, ChaLi!
 \end{lstlisting}
 \par
 \medskip
@@ -69,48 +72,42 @@ Hello, Magel!
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel run hello.mgl
+chali run hello.chl
 \end{lstlisting}
 \par
 \medskip
 
-屏幕上出现 \texttt{Hello,\allowbreak{} Magel!}，第一个程序就成了。
+屏幕上出现 \texttt{Hello,\allowbreak{} Cha\allowbreak{}Li!}，第一个程序就成了。
 
-\texttt{magel run} 这个写法看着啰嗦，其实 \texttt{run} 是可以省的——直接
+\texttt{chali run} 这个写法看着啰嗦，其实 \texttt{run} 是可以省的——直接
 
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel hello.mgl
+chali hello.chl
 \end{lstlisting}
 \par
 \medskip
 
-效果一样。但本书会一直写 \texttt{magel run}，因为把场景写出来在人多的时候少很多误会：\texttt{magel hello.\allowbreak{}mgl Alice} 和 \texttt{magel run hello.\allowbreak{}mgl Alice} 是同一件事，但 \texttt{magel check hello.\allowbreak{}mgl} 完全是另一件事。
+效果一样。但本书会一直写 \texttt{chali run}，因为把场景写出来在人多的时候少很多误会：\texttt{chali hello.\allowbreak{}chl Alice} 和 \texttt{chali run hello.\allowbreak{}chl Alice} 是同一件事，但 \texttt{chali check hello.\allowbreak{}chl} 完全是另一件事。
 
 \section{逐行看懂它}
 
 就三行，一行一行来。
 
-第一行：\texttt{int64 main(\allowbreak{})\allowbreak{} \{}
+第一行：\texttt{void main(\allowbreak{})\allowbreak{} \{}
 
-程序从哪里开始跑？从 \texttt{main} 开始。这个名字是定死的，不能改成 \texttt{Main}、\texttt{start} 或者别的什么。前面的 \texttt{int64} 是它返回的东西的类型，\texttt{(\allowbreak{})\allowbreak{}} 里现在空着，意思是它不接收参数。
+程序从哪里开始跑？从 \texttt{main} 开始。这个名字是定死的，不能改成 \texttt{Main}、\texttt{start} 或者别的什么。前面的 \texttt{void} 是它返回的东西的类型，\texttt{(\allowbreak{})\allowbreak{}} 里现在空着，意思是它不接收参数。
 
-\texttt{int64} 是一种整数类型：能装 64 位的有符号整数，大概正负九百多万亿。为什么入口要返回一个整数？因为操作系统想看它：返回 \texttt{0} 表示「正常结束」。你在终端里看到的 \texttt{echo \$?}，读的就是这个值。
+第二行：\texttt{println(\allowbreak{}"Hello,\allowbreak{} Cha\allowbreak{}Li!")\allowbreak{};}
 
-第二行：\texttt{println(\allowbreak{}"Hello,\allowbreak{} Magel!")\allowbreak{};}
-
-\texttt{println} 是「打印一行」的意思：把括号里的东西写到屏幕上，末尾自动换行。它是 Magel 核心库里最常用的函数，不用 \texttt{import} 就能用。
+\texttt{println} 是「打印一行」的意思：把括号里的东西写到屏幕上，末尾自动换行。它是 ChaLi 核心库里最常用的函数，不用 \texttt{import} 就能用。
 
 行尾那个 \texttt{;} 是分号，表示这句话说完了。跟 C、Java 一样。
 
-第三行：\texttt{return 0;}
-
-告诉操作系统「我正常结束了」，然后交还控制权。
-
 最后的花括号 \texttt{\}} 是 \texttt{main} 的结尾。
 
-看出来了吗——花括号划范围，分号断句，这和 C 系语言一模一样。这是 Magel 刻意这么做的：你已经会的东西，它不想让你重学一遍。
+看出来了吗——花括号划范围，分号断句，这和 C 系语言一模一样。这是 ChaLi 刻意这么做的：你已经会的东西，它不想让你重学一遍。
 
 \section{\texttt{run} 和 \texttt{check}}
 
@@ -118,7 +115,7 @@ magel hello.mgl
 
 \par
 \medskip
-\begin{lstlisting}[style=magel]
+\begin{lstlisting}[style=chali]
 int64 main()
 {
     int64 x = 1
@@ -133,7 +130,7 @@ int64 main()
 \par
 \medskip
 \begin{lstlisting}[style=out]
-语法错误：hello.mgl 第 3 行第 5 列：期望 条件(if) / 自增(++) / 自减(--) / 加号(+) 等 44 个之一，实际是 返回(return)
+语法错误：hello.chl 第 3 行第 5 列：期望 条件(if) / 自增(++) / 自减(--) / 加号(+) 等 44 个之一，实际是 返回(return)
  3 |     return 0;
    |     ~~~~~~
 \end{lstlisting}
@@ -146,20 +143,20 @@ int64 main()
 
 \item 它告诉你第 3 行第 5 列，还把出问题的那段源码抄给你、底下画上波浪线。第 1 行少了个分号，报的却是第 3 行——这是解析器在往后看：它读完第 2 行还在等一个分号，结果等来了 \texttt{return}，于是「在 \texttt{return} 这里」断了。看到报错位置和你以为的不一致时，先看报错位置的前面。
 
-\item 内部记号名被翻译成了人话：\texttt{条件(\allowbreak{}if)\allowbreak{}}、\texttt{返回(\allowbreak{}return)\allowbreak{}}。你没看错，就是中文。报错语言跟着系统走，可以用 \texttt{magel lang en} 或环境变量 \texttt{MAGEL\_LANG} 换掉。
+\item 内部记号名被翻译成了人话：\texttt{条件(\allowbreak{}if)\allowbreak{}}、\texttt{返回(\allowbreak{}return)\allowbreak{}}。你没看错，就是中文。报错语言跟着系统走，可以用 \texttt{chali lang en} 或环境变量 \texttt{CHALI\_LANG} 换掉。
 
 \item 那句「等 44 个之一」说了它在等什么。这种话现在看不懂没关系，以后你写多了，一眼就知道是「这里少了个东西」。
 
 \end{itemize}
 
-重要：这个错误是编译期就报出来的，程序一个字符都没执行。这就是 Magel 和其他很多语言不同的地方——能编译期拦住的，绝不放到运行期。
+重要：这个错误是编译期就报出来的，程序一个字符都没执行。这就是 ChaLi 和其他很多语言不同的地方——能编译期拦住的，绝不放到运行期。
 
 如果你只想检查代码写没写对、不想真的跑它，用：
 
 \par
 \medskip
 \begin{lstlisting}[style=sh]
-magel check hello.mgl
+chali check hello.chl
 \end{lstlisting}
 \par
 \medskip
@@ -167,12 +164,12 @@ magel check hello.mgl
 \texttt{check} 做前两步（预处理、解析与类型检查），不执行、也不产出文件。写代码的时候这个命令用得比 \texttt{run} 还多：先 check 再 run，能省掉很多「跑到一半才发现写错了」的时间。
 
 \begin{tip}{提示}
-还有个更细的用法：\texttt{magel check hello.\allowbreak{}mgl json}，输出机器可读的 JSON 诊断。这是给编辑器插件用的，平时不用管。
+还有个更细的用法：\texttt{chali check hello.\allowbreak{}chl json}，输出机器可读的 JSON 诊断。这是给编辑器插件用的，平时不用管。
 \end{tip}
 
 \section{那行字背后发生了什么}
 
-\texttt{magel run} 看着像「执行脚本」，其实它在一个进程里做完了四件事：
+\texttt{chali run} 看着像「执行脚本」，其实它在一个进程里做完了四件事：
 
 \begin{enumerate}
 
@@ -193,9 +190,9 @@ magel check hello.mgl
 \toprule
 你想 & 命令 \\
 \midrule
-直接跑起来 & \texttt{magel run src/\allowbreak{}main.\allowbreak{}mgl} \\
-只检查、不跑 & \texttt{magel check src/\allowbreak{}main.\allowbreak{}mgl} \\
-导出字节码 \texttt{.\allowbreak{}svmb} & \texttt{magel svmb src/\allowbreak{}main.\allowbreak{}mgl out build/\allowbreak{}app} \\
+直接跑起来 & \texttt{chali run src/\allowbreak{}main.\allowbreak{}chl} \\
+只检查、不跑 & \texttt{chali check src/\allowbreak{}main.\allowbreak{}chl} \\
+导出字节码 \texttt{.\allowbreak{}svmb} & \texttt{chali svmb src/\allowbreak{}main.\allowbreak{}chl out build/\allowbreak{}app} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -207,8 +204,8 @@ magel check hello.mgl
 先看编译流程。条件预处理决定哪些代码参与编译；文法生成的词法与语法前端建立 AST，宏模板也在其中。卫生宏在语义分析时展开，并与类型推导配合，之后完成名称、类型、泛型和借用检查。
 
 \begin{center}
-\includegraphics[width=\linewidth]{../images/magel-compilation.png}\par
-Magel 编译流程：预处理、解析、语义期宏展开、借用检查、四元式及 VM 装配
+\includegraphics[width=\linewidth]{../images/chali-compilation.png}\par
+ChaLi 编译流程：预处理、解析、语义期宏展开、借用检查、四元式及 VM 装配
 \end{center}
 
 四元式是本书所说的 IR。编译器先生成四元式、数据区和布局，供检查或后续装配；执行路径对四元式进行完整优化，再组装 VM 指令。图中的四元式产物出口位于生成阶段，优化结果可通过调试输出检查，二者不要混淆。
@@ -216,8 +213,8 @@ Magel 编译流程：预处理、解析、语义期宏展开、借用检查、�
 再看运行流程。源码运行和字节码运行最终都进入同一套共享 VM。执行准备绑定入口和宿主服务，运行时按指令操作数据、调用原生服务，并处理预算、错误与资源清理。
 
 \begin{center}
-\includegraphics[width=\linewidth]{../images/magel-execution.png}\par
-Magel 虚拟机流程：程序加载、执行准备、寄存器快速路径、精确路径与运行时服务
+\includegraphics[width=\linewidth]{../images/chali-execution.png}\par
+ChaLi 虚拟机流程：程序加载、执行准备、寄存器快速路径、精确路径与运行时服务
 \end{center}
 
 寄存器核心、融合与其他优化属于 VM 内部实现；调试和精确边界按需要使用相应路径。使用者先关注输入、输出和错误，不必在第一章记住所有实现名词。资源与作用域见第 8 章，实际部署边界见第 22 章。
@@ -236,7 +233,7 @@ Magel 虚拟机流程：程序加载、执行准备、寄存器快速路径、�
 
 \item 分号断句、花括号划范围，和 C 系语言一样；
 
-\item \texttt{magel run} 跑，\texttt{magel check} 只查；
+\item \texttt{chali run} 跑，\texttt{chali check} 只查；
 
 \item 报错会给出行列位置和画了波浪线的源码，而且大多在编译期就报出来了。
 
@@ -246,7 +243,7 @@ Magel 虚拟机流程：程序加载、执行准备、寄存器快速路径、�
 
 \section{下一步}
 
-光看「Hello, Magel」是学不会编程的。下一章我们写一个真的有用的小程序：键盘猜数字。它会用到变量、输入、循环和分支——四个最基础的积木，而且你会看到它们是怎么串在一起的。
+光看「Hello, ChaLi」是学不会编程的。下一章我们写一个真的有用的小程序：键盘猜数字。它会用到变量、输入、循环和分支——四个最基础的积木，而且你会看到它们是怎么串在一起的。
 
 翻到\hyperref[ch:02]{第 2 章 猜数字}。
 
@@ -262,7 +259,7 @@ Magel 虚拟机流程：程序加载、执行准备、寄存器快速路径、�
 
 \item 解释检查成功与运行结果正确之间的区别。
 
-\item 把欢迎程序改为输出两行，分别为自己的名字和 Hello, Magel!。
+\item 把欢迎程序改为输出两行，分别为自己的名字和 Hello, ChaLi!。
 
 \item 删掉语句末尾的分号，检查诊断位置，再修复。
 

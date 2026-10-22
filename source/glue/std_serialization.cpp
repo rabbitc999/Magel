@@ -1,5 +1,5 @@
 #include "std_serialization.hpp"
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include "../../library/json/json.hpp"
 #include "../../library/toml/toml.hpp"
 #include <stdexcept>
@@ -126,7 +126,7 @@ Memory::String unpack(Memory::Vector<std::uint8_t> bytes, std::uint64_t type)
  * @param error 注册失败时的诊断。
  * @return 注册成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     using Memory::String;
     using Bytes = Memory::Vector<std::uint8_t>;

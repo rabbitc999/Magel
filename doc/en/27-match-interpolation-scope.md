@@ -12,7 +12,7 @@ Value payloads are copied in expression matches, including owned strings and str
 
 ## Interpolated strings
 
-```magel
+```chali
 int64 f = 3;
 String text = f"value={f + 1}, nested={f"inner {f}"}, \{literal\}";
 ```
@@ -23,7 +23,7 @@ Ordinary string escapes apply; `\{` and `\}` produce literal braces. Ordinary st
 
 ## Associated types
 
-```magel
+```chali
 interface Container { type Item; Item get(int64 index); };
 struct Numbers : Container {
     type Item = int64;
@@ -36,7 +36,7 @@ An interface declares an associated type with `type Item;`; an implementation su
 
 ## Const generics and fixed array fields
 
-```magel
+```chali
 struct Buffer<T, N: int64> { T data[N]; int64 len() { return N; } };
 struct Matrix<T, rows: int64, cols: int64> { T data[rows][cols]; };
 Buffer<int64, 4> values;
@@ -49,7 +49,7 @@ Fixed array fields are stored inline; two-dimensional arrays use row-major order
 
 ## Defer and scope(exit)
 
-```magel
+```chali
 int64 main() {
     int64 value = 1;
     defer println("last {}", value);

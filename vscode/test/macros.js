@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const { registerMacroPreview, renderPage, renderNode, parsePayload } = require('../src/macros');
 
 /**
- * 构造与编译器 `magel/expandMacro` 返回结构一致的展开结果；两处调用各带一棵树。
+ * 构造与编译器 `chali/expandMacro` 返回结构一致的展开结果；两处调用各带一棵树。
  * @returns {string} 序列化后的 `text` 字段。
  */
 function expansionText() {
@@ -12,7 +12,7 @@ function expansionText() {
     format: 'hygienic-ast',
     expansions: [
       {
-        file: 'file:///project/main.mgl', name: 'PRINT_ALL', line: 32, column: 5,
+        file: 'file:///project/main.chl', name: 'PRINT_ALL', line: 32, column: 5,
         tree: {
           kind: 'template', name: '', origin: 'definition', children: [{
             kind: 'call', name: '', origin: 'definition', children: [
@@ -23,7 +23,7 @@ function expansionText() {
         },
       },
       {
-        file: 'file:///project/main.mgl', name: 'SUM_SQUARES', line: 34, column: 5,
+        file: 'file:///project/main.chl', name: 'SUM_SQUARES', line: 34, column: 5,
         tree: { kind: 'template', name: '', origin: 'definition', children: [
           { kind: 'declaration', name: 'local', origin: 'definition', type: 'int64', children: [] },
         ] },
@@ -38,7 +38,7 @@ async function main() {
   const uri = (value) => ({
     scheme: value.split(':')[0], path: value.replace(/^file:\/\//, ''), toString: () => value,
   });
-  const document = { languageId: 'magel', uri: uri('file:///project/main.mgl'), version: 3 };
+  const document = { languageId: 'chali', uri: uri('file:///project/main.chl'), version: 3 };
   const vscode = {
     ViewColumn: { One: 1, Beside: 2 },
     Position: class { constructor(line, character) { Object.assign(this, { line, character }); } },
@@ -48,7 +48,7 @@ async function main() {
     workspace: { async openTextDocument(value) { opened = value; return { uri: value }; } },
     commands: {
       registerCommand(name, callback) {
-        assert.equal(name, 'magel.previewMacroExpansion');
+        assert.equal(name, 'chali.previewMacroExpansion');
         command = callback;
         return { dispose() {} };
       },
@@ -88,7 +88,7 @@ async function main() {
     getClient: () => ({
       running: true,
       async request(method, params) {
-        assert.ok(flushed); assert.equal(method, 'magel/expandMacro');
+        assert.ok(flushed); assert.equal(method, 'chali/expandMacro');
         assert.equal(params.textDocument.uri, document.uri.toString());
         return result;
       },

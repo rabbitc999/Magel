@@ -109,7 +109,7 @@ Memory::String StandardCallName(const MNode &callee)
     if (callee.kind == MNode::Var && CanUseImplicitLang(callee.module, callee.s))
         return callee.s;
     /* `__` 前缀是**编译器内部名字**（`__fileTryOpen`、`__processRun`、`__stringBytes` …）：
-     * 标准库模块（`magel/source/std/*.mgl`）里也要能直接调，所以不按模块过滤，
+     * 标准库模块（`chali/source/std/*.chl`）里也要能直接调，所以不按模块过滤，
      * 这样"文件/进程包装搬进 std::io / std::process"之后它们仍然认得出来。
      * 用户侧不可能声明 `__` 开头的公开 API，所以放宽这一步不会让用户拿到不该有的名字。 */
     if (callee.kind == MNode::Var && callee.s.compare(0u, 2u, "__") == 0)
@@ -156,8 +156,8 @@ struct MVar
 };
 
 bool g_macroSyntaxFiltering = false;
-std::unique_ptr<magel_macro::HygieneResolver> g_macroResolver;
-std::unique_ptr<magel_macro::Registry> g_macroRegistry;
+std::unique_ptr<chali_macro::HygieneResolver> g_macroResolver;
+std::unique_ptr<chali_macro::Registry> g_macroRegistry;
 int g_macroDiagnosticFrame = -1;
 std::size_t g_macroSemanticDepth = 0;
 Memory::Set<const MNode *> g_macroActiveNodes;
@@ -389,7 +389,7 @@ simple_ast::NodePtr Bad() { return simple_ast::Node::i(0); }
  */
 bool IsTupleType(const std::shared_ptr<MType> &type)
 {
-    return type && type->kind == MType::Struct && type->name.rfind("__magel_tuple_", 0u) == 0u;
+    return type && type->kind == MType::Struct && type->name.rfind("__chali_tuple_", 0u) == 0u;
 }
 
 /**

@@ -4,7 +4,7 @@
 
 `move(T mut&)` 转移原有资源。普通赋值和普通按值参数仍然复制；直接接收移动结果时，字符串、容器、Any、闭包及聚合中的拥有字段不再深拷贝。
 
-```magel
+```chali
 struct Packet { String text; List<int64> values; };
 int64 main() {
     Packet source;
@@ -30,7 +30,7 @@ int64 main() {
 
 外部局部变量默认按 `const&` 捕获，`fn const(...)` 与默认写法等价：能看到来源的新值，但不能修改来源。`fn mut(...)` 按 `mut&` 捕获并允许写回。`fn copy(...)` 捕获可修改的独立副本；`fn move(...)` 把来源的拥有值移入闭包，原绑定禁止读写，须重新声明新的同名变量后使用。复制闭包会复制内部拥有状态，引用捕获仍指向同一来源。按引用捕获不得超出来源寿命；拥有捕获仅在其中不包含短寿命引用时可以返回。捕获列表写作 `fn copy[a, b] mut[c] const[d] move[e](int64 x) { ... }`，未列出的外部局部变量默认按 `const&` 捕获；列表后可追加一个默认方式，如 `fn copy[a, b] mut(int64 x)` 表示其余变量按 `mut&` 捕获。默认方式只能声明一次，`copy[a, b] mut const(...)` 会报错。
 
-```magel
+```chali
 int64 n = 1;
 let read = int64 fn() { n };
 let write = int64 fn mut(int64 x) { n += x; return n; };

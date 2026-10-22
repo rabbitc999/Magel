@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::utf8;
 ```
 
@@ -14,16 +14,16 @@ RFC 3629 严格校验与码点解码，拒绝过长序列、代理项及超范�
 
 ## 参考代码
 
-完整程序：[example/samples/std_utf8.mgl](../../example/samples/std_utf8.mgl)。
+完整程序：[example/samples/std_utf8.chl](../../example/samples/std_utf8.chl)。
 
 ```powershell
-magel run example/samples/std_utf8.mgl
+chali run example/samples/std_utf8.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::utf8;
 int64 main(){
     String text="A中文😀";
@@ -84,7 +84,7 @@ UTF-8 validation and code points OK
 
 **声明**
 
-```magel
+```chali
 Result<List<uint32>,Utf8Error> decodeUtf8Bytes(List<uint8> text);
 ```
 
@@ -108,13 +108,13 @@ Result<List<uint32>,Utf8Error> decodeUtf8Bytes(List<uint8> text);
 
 **调用形式**
 
-```magel
+```chali
 std::utf8::decodeUtf8Bytes(text);
 ```
 
-**源码**：[source/std/utf8.mgl:7](../../source/std/utf8.mgl#L7)。
+**源码**：[source/std/utf8.chl:7](../../source/std/utf8.chl#L7)。
 
-**完整示例**：[example/samples/std_utf8.mgl](../../example/samples/std_utf8.mgl)。
+**完整示例**：[example/samples/std_utf8.chl](../../example/samples/std_utf8.chl)。
 
 <a id="api-1"></a>
 
@@ -122,7 +122,7 @@ std::utf8::decodeUtf8Bytes(text);
 
 **声明**
 
-```magel
+```chali
 Result<List<uint32>,Utf8Error> decodeUtf8(String text);
 ```
 
@@ -146,13 +146,13 @@ Result<List<uint32>,Utf8Error> decodeUtf8(String text);
 
 **调用形式**
 
-```magel
+```chali
 std::utf8::decodeUtf8(text);
 ```
 
-**源码**：[source/std/utf8.mgl:40](../../source/std/utf8.mgl#L40)。
+**源码**：[source/std/utf8.chl:40](../../source/std/utf8.chl#L40)。
 
-**完整示例**：[example/samples/std_utf8.mgl](../../example/samples/std_utf8.mgl)。
+**完整示例**：[example/samples/std_utf8.chl](../../example/samples/std_utf8.chl)。
 
 <a id="api-2"></a>
 
@@ -160,7 +160,7 @@ std::utf8::decodeUtf8(text);
 
 **声明**
 
-```magel
+```chali
 bool isValidUtf8(String text);
 ```
 
@@ -184,13 +184,13 @@ bool isValidUtf8(String text);
 
 **调用形式**
 
-```magel
+```chali
 std::utf8::isValidUtf8(text);
 ```
 
-**源码**：[source/std/utf8.mgl:45](../../source/std/utf8.mgl#L45)。
+**源码**：[source/std/utf8.chl:45](../../source/std/utf8.chl#L45)。
 
-**完整示例**：[example/samples/std_utf8.mgl](../../example/samples/std_utf8.mgl)。
+**完整示例**：[example/samples/std_utf8.chl](../../example/samples/std_utf8.chl)。
 
 <a id="api-3"></a>
 
@@ -198,7 +198,7 @@ std::utf8::isValidUtf8(text);
 
 **声明**
 
-```magel
+```chali
 Result<List<uint8>,Utf8Error> encodeUtf8Bytes(List<uint32> points);
 ```
 
@@ -222,13 +222,13 @@ Result<List<uint8>,Utf8Error> encodeUtf8Bytes(List<uint32> points);
 
 **调用形式**
 
-```magel
+```chali
 std::utf8::encodeUtf8Bytes(points);
 ```
 
-**源码**：[source/std/utf8.mgl:47](../../source/std/utf8.mgl#L47)。
+**源码**：[source/std/utf8.chl:47](../../source/std/utf8.chl#L47)。
 
-**完整示例**：[example/samples/std_utf8.mgl](../../example/samples/std_utf8.mgl)。
+**完整示例**：[example/samples/std_utf8.chl](../../example/samples/std_utf8.chl)。
 
 <a id="api-4"></a>
 
@@ -236,7 +236,7 @@ std::utf8::encodeUtf8Bytes(points);
 
 **声明**
 
-```magel
+```chali
 Result<String,Utf8Error> encodeUtf8(List<uint32> points);
 ```
 
@@ -260,13 +260,13 @@ Result<String,Utf8Error> encodeUtf8(List<uint32> points);
 
 **调用形式**
 
-```magel
+```chali
 std::utf8::encodeUtf8(points);
 ```
 
-**源码**：[source/std/utf8.mgl:66](../../source/std/utf8.mgl#L66)。
+**源码**：[source/std/utf8.chl:66](../../source/std/utf8.chl#L66)。
 
-**完整示例**：[example/samples/std_utf8.mgl](../../example/samples/std_utf8.mgl)。
+**完整示例**：[example/samples/std_utf8.chl](../../example/samples/std_utf8.chl)。
 
 <a id="api-5"></a>
 
@@ -274,7 +274,7 @@ std::utf8::encodeUtf8(points);
 
 **声明**
 
-```magel
+```chali
 Result<int64,Utf8Error> codePointCount(String text);
 ```
 
@@ -298,13 +298,13 @@ Result<int64,Utf8Error> codePointCount(String text);
 
 **调用形式**
 
-```magel
+```chali
 std::utf8::codePointCount(text);
 ```
 
-**源码**：[source/std/utf8.mgl:75](../../source/std/utf8.mgl#L75)。
+**源码**：[source/std/utf8.chl:75](../../source/std/utf8.chl#L75)。
 
-**完整示例**：[example/samples/std_utf8.mgl](../../example/samples/std_utf8.mgl)。
+**完整示例**：[example/samples/std_utf8.chl](../../example/samples/std_utf8.chl)。
 
 <a id="api-6"></a>
 
@@ -312,7 +312,7 @@ std::utf8::codePointCount(text);
 
 **声明**
 
-```magel
+```chali
 Result<String,Utf8Error> sliceCodePoints(String text, int64 start, int64 count);
 ```
 
@@ -338,10 +338,10 @@ Result<String,Utf8Error> sliceCodePoints(String text, int64 start, int64 count);
 
 **调用形式**
 
-```magel
+```chali
 std::utf8::sliceCodePoints(text, start, count);
 ```
 
-**源码**：[source/std/utf8.mgl:80](../../source/std/utf8.mgl#L80)。
+**源码**：[source/std/utf8.chl:80](../../source/std/utf8.chl#L80)。
 
-**完整示例**：[example/samples/std_utf8.mgl](../../example/samples/std_utf8.mgl)。
+**完整示例**：[example/samples/std_utf8.chl](../../example/samples/std_utf8.chl)。

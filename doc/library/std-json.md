@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::json;
 ```
 
@@ -14,18 +14,18 @@ parse 返回 Result<JsonValue,String>。节点由拥有型 opcode 保存独立�
 
 ## 参考代码
 
-完整程序：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+完整程序：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 ```powershell
-magel run example/samples/std_structured_data.mgl
+chali run example/samples/std_structured_data.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 /*
- * std_structured_data.mgl —— `std::json` 与 `std::toml` 的读写样例。
+ * std_structured_data.chl —— `std::json` 与 `std::toml` 的读写样例。
  *
  * 本例将 find / keyAt / asString 的结果分别保存，方便逐层检查 Result/Option。
  * 当前语言也支持 root.find("x").unwrap() 等持资源结果的链式访问；编译器在完整
@@ -110,7 +110,7 @@ int64 main() {
     assert(trailing.isErr());
 
     Result<std::toml::TomlValue, String> parsedConfig = std::toml::parse(
-    "title = \"Magel\"\nreleased = 1979-05-27T07:32:00Z\n[server]\nport = 8080\n"
+    "title = \"ChaLi\"\nreleased = 1979-05-27T07:32:00Z\n[server]\nport = 8080\n"
     "enabled = true\nvalues = [1, 2, 3]\n[[products]]\nname = \"one\"\n"
     "[[products]]\nname = \"two\"\n");
     std::toml::TomlValue config = parsedConfig.unwrap();
@@ -120,7 +120,7 @@ int64 main() {
     Option<std::toml::TomlValue> titleField = config.find("title");
     std::toml::TomlValue titleValue = titleField.unwrap();
     Option<String> titleText = titleValue.asString();
-    assert(titleText.unwrap() == "Magel");
+    assert(titleText.unwrap() == "ChaLi");
     Option<std::toml::TomlValue> serverField = config.find("server");
     std::toml::TomlValue server = serverField.unwrap();
     Option<std::toml::TomlValue> portField = server.find("port");
@@ -244,7 +244,7 @@ JSON and TOML parsing OK
 
 **声明**
 
-```magel
+```chali
 Result<String,String> serialize<T>(T const& value);
 ```
 
@@ -270,13 +270,13 @@ Result<String,String> serialize<T>(T const& value);
 
 **调用形式**
 
-```magel
+```chali
 std::json::serialize<T>(value);
 ```
 
-**源码**：[source/std/json.mgl:7](../../source/std/json.mgl#L7)。
+**源码**：[source/std/json.chl:7](../../source/std/json.chl#L7)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-1"></a>
 
@@ -284,7 +284,7 @@ std::json::serialize<T>(value);
 
 **声明**
 
-```magel
+```chali
 Result<T,String> deserialize<T>(String text);
 ```
 
@@ -310,13 +310,13 @@ Result<T,String> deserialize<T>(String text);
 
 **调用形式**
 
-```magel
+```chali
 std::json::deserialize<T>(text);
 ```
 
-**源码**：[source/std/json.mgl:9](../../source/std/json.mgl#L9)。
+**源码**：[source/std/json.chl:9](../../source/std/json.chl#L9)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-2"></a>
 
@@ -324,7 +324,7 @@ std::json::deserialize<T>(text);
 
 **声明**
 
-```magel
+```chali
 bool isValid();
 ```
 
@@ -348,13 +348,13 @@ bool isValid();
 
 **调用形式**
 
-```magel
+```chali
 obj.isValid();
 ```
 
-**源码**：[source/std/json.mgl:45](../../source/std/json.mgl#L45)。
+**源码**：[source/std/json.chl:45](../../source/std/json.chl#L45)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-3"></a>
 
@@ -362,7 +362,7 @@ obj.isValid();
 
 **声明**
 
-```magel
+```chali
 bool close();
 ```
 
@@ -386,13 +386,13 @@ bool close();
 
 **调用形式**
 
-```magel
+```chali
 obj.close();
 ```
 
-**源码**：[source/std/json.mgl:47](../../source/std/json.mgl#L47)。
+**源码**：[source/std/json.chl:47](../../source/std/json.chl#L47)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-4"></a>
 
@@ -400,7 +400,7 @@ obj.close();
 
 **声明**
 
-```magel
+```chali
 int64 kind();
 ```
 
@@ -422,13 +422,13 @@ int64 kind();
 
 **调用形式**
 
-```magel
+```chali
 obj.kind();
 ```
 
-**源码**：[source/std/json.mgl:48](../../source/std/json.mgl#L48)。
+**源码**：[source/std/json.chl:48](../../source/std/json.chl#L48)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-5"></a>
 
@@ -436,7 +436,7 @@ obj.kind();
 
 **声明**
 
-```magel
+```chali
 bool isNull();
 ```
 
@@ -458,13 +458,13 @@ bool isNull();
 
 **调用形式**
 
-```magel
+```chali
 obj.isNull();
 ```
 
-**源码**：[source/std/json.mgl:49](../../source/std/json.mgl#L49)。
+**源码**：[source/std/json.chl:49](../../source/std/json.chl#L49)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-6"></a>
 
@@ -472,7 +472,7 @@ obj.isNull();
 
 **声明**
 
-```magel
+```chali
 bool isBool();
 ```
 
@@ -494,13 +494,13 @@ bool isBool();
 
 **调用形式**
 
-```magel
+```chali
 obj.isBool();
 ```
 
-**源码**：[source/std/json.mgl:50](../../source/std/json.mgl#L50)。
+**源码**：[source/std/json.chl:50](../../source/std/json.chl#L50)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-7"></a>
 
@@ -508,7 +508,7 @@ obj.isBool();
 
 **声明**
 
-```magel
+```chali
 bool isInt();
 ```
 
@@ -530,13 +530,13 @@ bool isInt();
 
 **调用形式**
 
-```magel
+```chali
 obj.isInt();
 ```
 
-**源码**：[source/std/json.mgl:51](../../source/std/json.mgl#L51)。
+**源码**：[source/std/json.chl:51](../../source/std/json.chl#L51)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-8"></a>
 
@@ -544,7 +544,7 @@ obj.isInt();
 
 **声明**
 
-```magel
+```chali
 bool isFloat();
 ```
 
@@ -566,13 +566,13 @@ bool isFloat();
 
 **调用形式**
 
-```magel
+```chali
 obj.isFloat();
 ```
 
-**源码**：[source/std/json.mgl:52](../../source/std/json.mgl#L52)。
+**源码**：[source/std/json.chl:52](../../source/std/json.chl#L52)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-9"></a>
 
@@ -580,7 +580,7 @@ obj.isFloat();
 
 **声明**
 
-```magel
+```chali
 bool isString();
 ```
 
@@ -602,13 +602,13 @@ bool isString();
 
 **调用形式**
 
-```magel
+```chali
 obj.isString();
 ```
 
-**源码**：[source/std/json.mgl:53](../../source/std/json.mgl#L53)。
+**源码**：[source/std/json.chl:53](../../source/std/json.chl#L53)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-10"></a>
 
@@ -616,7 +616,7 @@ obj.isString();
 
 **声明**
 
-```magel
+```chali
 bool isArray();
 ```
 
@@ -638,13 +638,13 @@ bool isArray();
 
 **调用形式**
 
-```magel
+```chali
 obj.isArray();
 ```
 
-**源码**：[source/std/json.mgl:54](../../source/std/json.mgl#L54)。
+**源码**：[source/std/json.chl:54](../../source/std/json.chl#L54)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-11"></a>
 
@@ -652,7 +652,7 @@ obj.isArray();
 
 **声明**
 
-```magel
+```chali
 bool isObject();
 ```
 
@@ -674,13 +674,13 @@ bool isObject();
 
 **调用形式**
 
-```magel
+```chali
 obj.isObject();
 ```
 
-**源码**：[source/std/json.mgl:55](../../source/std/json.mgl#L55)。
+**源码**：[source/std/json.chl:55](../../source/std/json.chl#L55)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-12"></a>
 
@@ -688,7 +688,7 @@ obj.isObject();
 
 **声明**
 
-```magel
+```chali
 bool isTable();
 ```
 
@@ -710,13 +710,13 @@ bool isTable();
 
 **调用形式**
 
-```magel
+```chali
 obj.isTable();
 ```
 
-**源码**：[source/std/json.mgl:56](../../source/std/json.mgl#L56)。
+**源码**：[source/std/json.chl:56](../../source/std/json.chl#L56)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-13"></a>
 
@@ -724,7 +724,7 @@ obj.isTable();
 
 **声明**
 
-```magel
+```chali
 bool isDateTime();
 ```
 
@@ -746,13 +746,13 @@ bool isDateTime();
 
 **调用形式**
 
-```magel
+```chali
 obj.isDateTime();
 ```
 
-**源码**：[source/std/json.mgl:57](../../source/std/json.mgl#L57)。
+**源码**：[source/std/json.chl:57](../../source/std/json.chl#L57)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-14"></a>
 
@@ -760,7 +760,7 @@ obj.isDateTime();
 
 **声明**
 
-```magel
+```chali
 int64 len();
 ```
 
@@ -784,13 +784,13 @@ int64 len();
 
 **调用形式**
 
-```magel
+```chali
 obj.len();
 ```
 
-**源码**：[source/std/json.mgl:59](../../source/std/json.mgl#L59)。
+**源码**：[source/std/json.chl:59](../../source/std/json.chl#L59)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-15"></a>
 
@@ -798,7 +798,7 @@ obj.len();
 
 **声明**
 
-```magel
+```chali
 Option<int64> asInt();
 ```
 
@@ -820,13 +820,13 @@ Option<int64> asInt();
 
 **调用形式**
 
-```magel
+```chali
 obj.asInt();
 ```
 
-**源码**：[source/std/json.mgl:60](../../source/std/json.mgl#L60)。
+**源码**：[source/std/json.chl:60](../../source/std/json.chl#L60)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-16"></a>
 
@@ -834,7 +834,7 @@ obj.asInt();
 
 **声明**
 
-```magel
+```chali
 Option<float64> asFloat64();
 ```
 
@@ -856,13 +856,13 @@ Option<float64> asFloat64();
 
 **调用形式**
 
-```magel
+```chali
 obj.asFloat64();
 ```
 
-**源码**：[source/std/json.mgl:64](../../source/std/json.mgl#L64)。
+**源码**：[source/std/json.chl:64](../../source/std/json.chl#L64)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-17"></a>
 
@@ -870,7 +870,7 @@ obj.asFloat64();
 
 **声明**
 
-```magel
+```chali
 Option<bool> asBool();
 ```
 
@@ -892,13 +892,13 @@ Option<bool> asBool();
 
 **调用形式**
 
-```magel
+```chali
 obj.asBool();
 ```
 
-**源码**：[source/std/json.mgl:68](../../source/std/json.mgl#L68)。
+**源码**：[source/std/json.chl:68](../../source/std/json.chl#L68)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-18"></a>
 
@@ -906,7 +906,7 @@ obj.asBool();
 
 **声明**
 
-```magel
+```chali
 Option<std::lang::String> asString();
 ```
 
@@ -930,13 +930,13 @@ Option<std::lang::String> asString();
 
 **调用形式**
 
-```magel
+```chali
 obj.asString();
 ```
 
-**源码**：[source/std/json.mgl:73](../../source/std/json.mgl#L73)。
+**源码**：[source/std/json.chl:73](../../source/std/json.chl#L73)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-19"></a>
 
@@ -944,7 +944,7 @@ obj.asString();
 
 **声明**
 
-```magel
+```chali
 Option<std::lang::List<uint8>> asBytes();
 ```
 
@@ -966,13 +966,13 @@ Option<std::lang::List<uint8>> asBytes();
 
 **调用形式**
 
-```magel
+```chali
 obj.asBytes();
 ```
 
-**源码**：[source/std/json.mgl:78](../../source/std/json.mgl#L78)。
+**源码**：[source/std/json.chl:78](../../source/std/json.chl#L78)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-20"></a>
 
@@ -980,7 +980,7 @@ obj.asBytes();
 
 **声明**
 
-```magel
+```chali
 Option<std::lang::String> asDateTime();
 ```
 
@@ -1002,13 +1002,13 @@ Option<std::lang::String> asDateTime();
 
 **调用形式**
 
-```magel
+```chali
 obj.asDateTime();
 ```
 
-**源码**：[source/std/json.mgl:83](../../source/std/json.mgl#L83)。
+**源码**：[source/std/json.chl:83](../../source/std/json.chl#L83)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-21"></a>
 
@@ -1016,7 +1016,7 @@ obj.asDateTime();
 
 **声明**
 
-```magel
+```chali
 Option<JsonValue> find(std::lang::String key);
 ```
 
@@ -1040,13 +1040,13 @@ Option<JsonValue> find(std::lang::String key);
 
 **调用形式**
 
-```magel
+```chali
 obj.find(key);
 ```
 
-**源码**：[source/std/json.mgl:88](../../source/std/json.mgl#L88)。
+**源码**：[source/std/json.chl:88](../../source/std/json.chl#L88)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-22"></a>
 
@@ -1054,7 +1054,7 @@ obj.find(key);
 
 **声明**
 
-```magel
+```chali
 Option<JsonValue> findBytes(std::lang::List<uint8> key);
 ```
 
@@ -1080,13 +1080,13 @@ Option<JsonValue> findBytes(std::lang::List<uint8> key);
 
 **调用形式**
 
-```magel
+```chali
 obj.findBytes(key);
 ```
 
-**源码**：[source/std/json.mgl:95](../../source/std/json.mgl#L95)。
+**源码**：[source/std/json.chl:95](../../source/std/json.chl#L95)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-23"></a>
 
@@ -1094,7 +1094,7 @@ obj.findBytes(key);
 
 **声明**
 
-```magel
+```chali
 Option<JsonValue> at(int64 index);
 ```
 
@@ -1120,13 +1120,13 @@ Option<JsonValue> at(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.at(index);
 ```
 
-**源码**：[source/std/json.mgl:102](../../source/std/json.mgl#L102)。
+**源码**：[source/std/json.chl:102](../../source/std/json.chl#L102)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-24"></a>
 
@@ -1134,7 +1134,7 @@ obj.at(index);
 
 **声明**
 
-```magel
+```chali
 Option<JsonValue> iterator(int64 index);
 ```
 
@@ -1158,13 +1158,13 @@ Option<JsonValue> iterator(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.iterator(index);
 ```
 
-**源码**：[source/std/json.mgl:108](../../source/std/json.mgl#L108)。
+**源码**：[source/std/json.chl:108](../../source/std/json.chl#L108)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-25"></a>
 
@@ -1172,7 +1172,7 @@ obj.iterator(index);
 
 **声明**
 
-```magel
+```chali
 Option<std::lang::String> keyAt(int64 index);
 ```
 
@@ -1198,13 +1198,13 @@ Option<std::lang::String> keyAt(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.keyAt(index);
 ```
 
-**源码**：[source/std/json.mgl:110](../../source/std/json.mgl#L110)。
+**源码**：[source/std/json.chl:110](../../source/std/json.chl#L110)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-26"></a>
 
@@ -1212,7 +1212,7 @@ obj.keyAt(index);
 
 **声明**
 
-```magel
+```chali
 Option<std::lang::List<uint8>> keyBytesAt(int64 index);
 ```
 
@@ -1236,13 +1236,13 @@ Option<std::lang::List<uint8>> keyBytesAt(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.keyBytesAt(index);
 ```
 
-**源码**：[source/std/json.mgl:115](../../source/std/json.mgl#L115)。
+**源码**：[source/std/json.chl:115](../../source/std/json.chl#L115)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-27"></a>
 
@@ -1250,7 +1250,7 @@ obj.keyBytesAt(index);
 
 **声明**
 
-```magel
+```chali
 std::lang::String dump();
 ```
 
@@ -1272,13 +1272,13 @@ std::lang::String dump();
 
 **调用形式**
 
-```magel
+```chali
 obj.dump();
 ```
 
-**源码**：[source/std/json.mgl:120](../../source/std/json.mgl#L120)。
+**源码**：[source/std/json.chl:120](../../source/std/json.chl#L120)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。
 
 <a id="api-28"></a>
 
@@ -1286,7 +1286,7 @@ obj.dump();
 
 **声明**
 
-```magel
+```chali
 Result<JsonValue, std::lang::String> parse(std::lang::String text);
 ```
 
@@ -1312,10 +1312,10 @@ Result<JsonValue, std::lang::String> parse(std::lang::String text);
 
 **调用形式**
 
-```magel
+```chali
 std::json::parse(text);
 ```
 
-**源码**：[source/std/json.mgl:124](../../source/std/json.mgl#L124)。
+**源码**：[source/std/json.chl:124](../../source/std/json.chl#L124)。
 
-**完整示例**：[example/samples/std_structured_data.mgl](../../example/samples/std_structured_data.mgl)。
+**完整示例**：[example/samples/std_structured_data.chl](../../example/samples/std_structured_data.chl)。

@@ -1,0 +1,33 @@
+/* replace_variadic.chl —— 单行 AST 宏的变长尾参。
+ *
+ * 尾参在调用参数列表中按独立表达式展开；表达式本身保留 AST 优先级。
+ * 要把多个尾参组成元组，多行宏正文显式写元组括号，不使用自动括号标注。
+ * 单行宏与多行宏共用卫生绑定、片段替换和严格参数组检查。
+ */
+
+$replace SUM3(...rest) sum3(rest)
+$replace CALL(f, first, ...rest) f(first, rest)
+$replace HEAD(...args) head(args)
+$macro PAIR(first, ...args)
+    (first, args)
+$end_macro
+
+int64 sum3(int64 a, int64 b, int64 c) { return a + b + c; }
+int64 combine(int64 a, int64 b, int64 c) { return a * 100 + b * 10 + c; }
+int64 head(int64 a, int64 b, int64 c) { return a * 100 + b * 10 + c; }
+int64 pairCode((int64, int64) pair) { return (pair.0) * 10 + (pair.1); }
+
+int64 main() {
+    /* 尾参在函数参数列表中展开为三个实参。 */
+    println("{}", $SUM3(1, 2, 3));
+
+    /* 固定形参保留表达式结构，剩下的尾参接着展开。 */
+    println("{}", $CALL(combine, 4, 5, 6));
+
+    /* 每个尾参都是独立表达式，内部加法保持原有优先级。 */
+    println("{}", $HEAD(1 + 1, 2 + 2, 3 + 3));
+
+    /* 宏体显式写元组括号，构造一个元组实参。 */
+    println("{}", pairCode($PAIR(1 + 1, 2 + 2)));
+    return 0;
+}

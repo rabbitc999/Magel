@@ -70,7 +70,7 @@ def load_data():
 
 def render(data):
     """把 JSON 数据渲染成 CHANGELOG.md 的完整文本。"""
-    lines = ["# Magel 变更记录", "", INTRO, ""]
+    lines = ["# ChaLi 变更记录", "", INTRO, ""]
     for ver in data["versions"]:
         lines += ["", f"## {ver['version']} — {ver['title']}", ""]
         for entry in ver.get("entries", []):

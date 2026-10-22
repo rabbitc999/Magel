@@ -93,9 +93,9 @@ struct MConstantContext
  */
 bool ValidateConstantTree(int id, MConstantContext &context, MType::Kind *result = nullptr)
 {
-    if (id < 0) return Fail("[MGL1300] 常量表达式缺少初值");
-    if (!context.budget-- || context.depth >= 128) return Fail("[MGL1300] 常量表达式超过计算限制");
-    if (!context.active.insert(id).second) return Fail("[MGL1300] 常量定义存在循环引用");
+    if (id < 0) return Fail("[CHL1300] 常量表达式缺少初值");
+    if (!context.budget-- || context.depth >= 128) return Fail("[CHL1300] 常量表达式超过计算限制");
+    if (!context.active.insert(id).second) return Fail("[CHL1300] 常量定义存在循环引用");
     struct Scope
     {
         MConstantContext &c;
@@ -125,13 +125,13 @@ bool ValidateConstantTree(int id, MConstantContext &context, MType::Kind *result
         auto bound = g_constantBindings.find(id);
         auto *variable = bound != g_constantBindings.end() ? &bound->second : node.kind == MNode::Var ? (context.globalOnly ? FindConstantGlobal(node.module, node.s) : FindNodeVar(node)) :
                                                                                                         FindQualifiedGlobal(node.s, node.s2);
-        if (!variable || !variable->isConst || variable->constantExpression < 0) return Fail("[MGL1300] 常量表达式不能引用运行时变量：" + node.s);
-        if (!variable->type || (variable->type->kind != MType::Int && variable->type->kind != MType::Double && variable->type->kind != MType::Bool)) return Fail("[MGL1300] 常量表达式仅支持整数、浮点和 bool");
+        if (!variable || !variable->isConst || variable->constantExpression < 0) return Fail("[CHL1300] 常量表达式不能引用运行时变量：" + node.s);
+        if (!variable->type || (variable->type->kind != MType::Int && variable->type->kind != MType::Double && variable->type->kind != MType::Bool)) return Fail("[CHL1300] 常量表达式仅支持整数、浮点和 bool");
         if (result) *result = variable->type->kind;
         context.globalOnly = true;
         return ValidateConstantTree(variable->constantExpression, context);
     }
-    if (node.kind != MNode::Un && node.kind != MNode::Bin && node.kind != MNode::Cast) return Fail("[MGL1300] 常量表达式禁止调用、赋值、自增减或运行时操作");
+    if (node.kind != MNode::Un && node.kind != MNode::Bin && node.kind != MNode::Cast) return Fail("[CHL1300] 常量表达式禁止调用、赋值、自增减或运行时操作");
     Memory::Vector<MType::Kind> kinds;
     for (int child : node.kids)
     {
@@ -144,38 +144,38 @@ bool ValidateConstantTree(int id, MConstantContext &context, MType::Kind *result
     if (node.kind == MNode::Cast)
     {
         type = T(node.type)->kind;
-        if (type != MType::Int && type != MType::Double && type != MType::Bool) return Fail("[MGL1300] 常量转换仅支持标量数值类型");
+        if (type != MType::Int && type != MType::Double && type != MType::Bool) return Fail("[CHL1300] 常量转换仅支持标量数值类型");
     }
     else if (node.kind == MNode::Un)
     {
-        if (node.s != "!" && node.s != "~" && node.s != "-") return Fail("[MGL1300] 常量表达式禁止引用或地址操作");
-        if (node.s == "!" && type != MType::Bool) return Fail("[MGL1300] 常量逻辑运算需要 bool");
-        if (node.s == "~" && type != MType::Int) return Fail("[MGL1300] 常量位运算需要整数");
-        if (node.s == "-" && !numeric(type)) return Fail("[MGL1300] 常量一元运算与类型不兼容");
+        if (node.s != "!" && node.s != "~" && node.s != "-") return Fail("[CHL1300] 常量表达式禁止引用或地址操作");
+        if (node.s == "!" && type != MType::Bool) return Fail("[CHL1300] 常量逻辑运算需要 bool");
+        if (node.s == "~" && type != MType::Int) return Fail("[CHL1300] 常量位运算需要整数");
+        if (node.s == "-" && !numeric(type)) return Fail("[CHL1300] 常量一元运算与类型不兼容");
     }
     else
     {
         const auto right = kinds[1];
         const auto &op = node.s;
-        if (type == MType::Bool && right == MType::Bool && op != "&&" && op != "||" && op != "==" && op != "!=") return Fail("[MGL1300] bool 只支持逻辑运算和相等比较");
+        if (type == MType::Bool && right == MType::Bool && op != "&&" && op != "||" && op != "==" && op != "!=") return Fail("[CHL1300] bool 只支持逻辑运算和相等比较");
         if (op == "&&" || op == "||")
         {
-            if (type != MType::Bool || right != MType::Bool) return Fail("[MGL1300] 常量逻辑运算需要 bool");
+            if (type != MType::Bool || right != MType::Bool) return Fail("[CHL1300] 常量逻辑运算需要 bool");
             type = MType::Bool;
         }
         else if (op == "==" || op == "!=" || op == "<" || op == "<=" || op == ">" || op == ">=")
         {
-            if (!((numeric(type) && numeric(right)) || (type == MType::Bool && right == MType::Bool))) return Fail("[MGL1300] 常量比较类型不兼容");
+            if (!((numeric(type) && numeric(right)) || (type == MType::Bool && right == MType::Bool))) return Fail("[CHL1300] 常量比较类型不兼容");
             type = MType::Bool;
         }
         else if (op == "&" || op == "|" || op == "^" || op == "<<" || op == ">>" || op == "%")
         {
-            if (type != MType::Int || right != MType::Int) return Fail("[MGL1300] 常量位运算或余数运算需要整数");
+            if (type != MType::Int || right != MType::Int) return Fail("[CHL1300] 常量位运算或余数运算需要整数");
             type = MType::Int;
         }
         else
         {
-            if (!numeric(type) || !numeric(right)) return Fail("[MGL1300] bool 常量不能用于算术");
+            if (!numeric(type) || !numeric(right)) return Fail("[CHL1300] bool 常量不能用于算术");
             type = type == MType::Double || right == MType::Double ? MType::Double : MType::Int;
         }
     }
@@ -183,13 +183,13 @@ bool ValidateConstantTree(int id, MConstantContext &context, MType::Kind *result
     return true;
 }
 /**
- * @brief 递归求值常量；不调用 MAGEL 或宿主函数。
+ * @brief 递归求值常量；不调用 CHALI 或宿主函数。
  */
 bool EvaluateConstantImpl(int id, MConstant *out, MConstantContext &context)
 {
-    if (id < 0) return Fail("[MGL1300] 常量表达式缺少初值");
-    if (!context.budget-- || context.depth >= 128) return Fail("[MGL1300] 常量表达式超过计算限制");
-    if (!context.active.insert(id).second) return Fail("[MGL1300] 常量定义存在循环引用");
+    if (id < 0) return Fail("[CHL1300] 常量表达式缺少初值");
+    if (!context.budget-- || context.depth >= 128) return Fail("[CHL1300] 常量表达式超过计算限制");
+    if (!context.active.insert(id).second) return Fail("[CHL1300] 常量定义存在循环引用");
     struct Scope
     {
         MConstantContext &c;
@@ -220,7 +220,7 @@ bool EvaluateConstantImpl(int id, MConstant *out, MConstantContext &context)
             out->isUnsigned = type->isUnsigned;
             NormalizeConstant(out);
         }
-        return out->kind != MConstant::Floating || std::isfinite(out->floating) || Fail("[MGL1300] 常量浮点值必须有限");
+        return out->kind != MConstant::Floating || std::isfinite(out->floating) || Fail("[CHL1300] 常量浮点值必须有限");
     }
     if (node.kind == MNode::Var || node.kind == MNode::EnumCtor)
     {
@@ -228,7 +228,7 @@ bool EvaluateConstantImpl(int id, MConstant *out, MConstantContext &context)
         auto *variable = bound != g_constantBindings.end() ? &bound->second : node.kind == MNode::Var ? (context.globalOnly ? FindConstantGlobal(node.module, node.s) : FindNodeVar(node)) :
                                                                                                         FindQualifiedGlobal(node.s, node.s2);
         if (!variable || !variable->isConst || variable->constantExpression < 0)
-            return Fail("[MGL1300] 常量表达式不能引用运行时变量：" + node.s);
+            return Fail("[CHL1300] 常量表达式不能引用运行时变量：" + node.s);
         const int initializer = variable->constantExpression;
         const auto type = variable->type;
         const bool saved = context.globalOnly;
@@ -251,7 +251,7 @@ bool EvaluateConstantImpl(int id, MConstant *out, MConstantContext &context)
             if (type->bits == 32) out->floating = static_cast<float>(out->floating);
         }
         else if (type->kind != MType::Bool)
-            return Fail("[MGL1300] 常量表达式仅支持整数、浮点和 bool");
+            return Fail("[CHL1300] 常量表达式仅支持整数、浮点和 bool");
         return true;
     }
     if (node.kind == MNode::Cast)
@@ -264,7 +264,7 @@ bool EvaluateConstantImpl(int id, MConstant *out, MConstantContext &context)
             if (out->kind == MConstant::Floating)
             {
                 double value = std::trunc(out->floating);
-                if (!std::isfinite(value) || value < -9223372036854775808.0 || value >= 9223372036854775808.0) return Fail("[MGL1300] 浮点常量转换越界");
+                if (!std::isfinite(value) || value < -9223372036854775808.0 || value >= 9223372036854775808.0) return Fail("[CHL1300] 浮点常量转换越界");
                 out->integer = static_cast<long long>(value);
             }
             out->kind = MConstant::Integer;
@@ -285,12 +285,12 @@ bool EvaluateConstantImpl(int id, MConstant *out, MConstantContext &context)
             out->kind = MConstant::Floating;
             out->bits = type->bits;
             if (type->bits == 32) out->floating = static_cast<float>(out->floating);
-            return std::isfinite(out->floating) || Fail("[MGL1300] 常量浮点转换溢出");
+            return std::isfinite(out->floating) || Fail("[CHL1300] 常量浮点转换溢出");
         }
-        return Fail("[MGL1300] 常量转换仅支持标量数值类型");
+        return Fail("[CHL1300] 常量转换仅支持标量数值类型");
     }
     if (node.kind != MNode::Un && node.kind != MNode::Bin)
-        return Fail("[MGL1300] 常量表达式禁止调用、赋值、自增减或运行时操作");
+        return Fail("[CHL1300] 常量表达式禁止调用、赋值、自增减或运行时操作");
     MConstant left, right;
     if (!EvaluateConstantImpl(node.kids[0], &left, context)) return false;
     *out = left;
@@ -316,13 +316,13 @@ bool EvaluateConstantImpl(int id, MConstant *out, MConstantContext &context)
             NormalizeConstant(out);
             return true;
         }
-        return Fail("[MGL1300] 常量一元运算与类型不兼容");
+        return Fail("[CHL1300] 常量一元运算与类型不兼容");
     }
     if ((node.s == "&&" || node.s == "||") && left.kind == MConstant::Boolean)
     {
         if ((node.s == "&&" && !left.integer) || (node.s == "||" && left.integer)) return true;
         if (!EvaluateConstantImpl(node.kids[1], &right, context)) return false;
-        if (right.kind != MConstant::Boolean) return Fail("[MGL1300] 常量逻辑运算需要 bool");
+        if (right.kind != MConstant::Boolean) return Fail("[CHL1300] 常量逻辑运算需要 bool");
         *out = right;
         return true;
     }
@@ -347,7 +347,7 @@ bool EvaluateConstantImpl(int id, MConstant *out, MConstantContext &context)
         left.floating = static_cast<float>(left.floating);
         right.floating = static_cast<float>(right.floating);
     }
-    if (left.kind != right.kind) return Fail("[MGL1300] 常量二元运算需要相同类型");
+    if (left.kind != right.kind) return Fail("[CHL1300] 常量二元运算需要相同类型");
     if (left.kind == MConstant::Integer)
     {
         unsigned width = std::max(left.bits, right.bits);
@@ -370,12 +370,12 @@ bool EvaluateConstantImpl(int id, MConstant *out, MConstantContext &context)
         out->integer = left.kind == MConstant::Floating ? cmp(left.floating, right.floating) : (left.isUnsigned || right.isUnsigned ? cmp(std::uint64_t(left.integer), std::uint64_t(right.integer)) : cmp(left.integer, right.integer));
         return true;
     }
-    if (left.kind == MConstant::Boolean) return Fail("[MGL1300] bool 常量不能用于算术");
+    if (left.kind == MConstant::Boolean) return Fail("[CHL1300] bool 常量不能用于算术");
     if (left.kind == MConstant::Floating)
     {
         out->bits = floatingBits;
         const double a = left.floating, b = right.floating;
-        if ((op == "/" || op == "%") && b == 0) return Fail("[MGL1300] 常量表达式除零");
+        if ((op == "/" || op == "%") && b == 0) return Fail("[CHL1300] 常量表达式除零");
         if (op == "+")
             out->floating = a + b;
         else if (op == "-")
@@ -385,9 +385,9 @@ bool EvaluateConstantImpl(int id, MConstant *out, MConstantContext &context)
         else if (op == "/")
             out->floating = a / b;
         else
-            return Fail("[MGL1300] 不支持的浮点常量运算：" + op);
+            return Fail("[CHL1300] 不支持的浮点常量运算：" + op);
         if (out->bits == 32) out->floating = static_cast<float>(out->floating);
-        return std::isfinite(out->floating) || Fail("[MGL1300] 常量浮点运算溢出");
+        return std::isfinite(out->floating) || Fail("[CHL1300] 常量浮点运算溢出");
     }
     out->bits = std::max(left.bits, right.bits);
     out->isUnsigned = left.isUnsigned || right.isUnsigned;
@@ -406,12 +406,12 @@ bool EvaluateConstantImpl(int id, MConstant *out, MConstantContext &context)
         out->integer = ConstantBits(a ^ b);
     else if (op == "<<" || op == ">>")
     {
-        if (right.integer < 0 || right.integer >= 64) return Fail("[MGL1300] 常量移位数必须在 0 到 63 之间");
+        if (right.integer < 0 || right.integer >= 64) return Fail("[CHL1300] 常量移位数必须在 0 到 63 之间");
         out->integer = op == "<<" ? ConstantBits(a << b) : (out->isUnsigned ? ConstantBits(a >> b) : left.integer >> b);
     }
     else if (op == "/" || op == "%")
     {
-        if (!b) return Fail("[MGL1300] 常量表达式除零");
+        if (!b) return Fail("[CHL1300] 常量表达式除零");
         if (out->isUnsigned)
             out->integer = ConstantBits(op == "/" ? a / b : a % b);
         else if (left.integer == LLONG_MIN && right.integer == -1)
@@ -420,7 +420,7 @@ bool EvaluateConstantImpl(int id, MConstant *out, MConstantContext &context)
             out->integer = op == "/" ? left.integer / right.integer : left.integer % right.integer;
     }
     else
-        return Fail("[MGL1300] 不支持的整数常量运算：" + op);
+        return Fail("[CHL1300] 不支持的整数常量运算：" + op);
     NormalizeConstant(out);
     return true;
 }

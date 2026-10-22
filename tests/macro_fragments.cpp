@@ -7,7 +7,7 @@
  */
 int main()
 {
-    magel_macro::SourceFragments fragments;
+    chali_macro::SourceFragments fragments;
     Memory::String source = "$macro A(x)\nx\n$end_macro\nint64 main() { return $A(a + /* raw */ b); }\n";
     const auto original = source;
     std::string error;

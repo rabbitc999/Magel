@@ -18,7 +18,7 @@ Slot memoryLiveBytes(NativeContext &ctx, const Memory::Vector<Slot> &);
 /**
  * @brief `__std_watchdog_enable(watermarkBytes) -> int64`：程序侧打开软重启看门狗。
  *
- * 对应 Magel 的 `std::watchdog::enable(watermarkBytes)`。默认关闭：不调它就
+ * 对应 ChaLi 的 `std::watchdog::enable(watermarkBytes)`。默认关闭：不调它就
  * `__std_request_restart()` 只报 `NotEnabled`、不产生重启。水位由宿主每轮量（VM 只记下来）。
  * @param ctx 环境。
  * @param args `[水位字节数]`。
@@ -29,7 +29,7 @@ Slot watchdogEnable(NativeContext &ctx, const Memory::Vector<Slot> &args);
 /**
  * @brief `__std_request_restart() -> int64`：程序显式请求软重启（写标志 + 原因）。
  *
- * 对应 Magel 的 `std::watchdog::requestRestart()`。**未 `enable()` 时不产生重启**，
+ * 对应 ChaLi 的 `std::watchdog::requestRestart()`。**未 `enable()` 时不产生重启**，
  * 返回 1（`NotEnabled`）；已开启则写 `WatchdogReason::ExplicitRequest`，VM 在下一条
  * 指令边界（安全点）以"可恢复终止"结束 `run()`。
  * @param ctx 环境。

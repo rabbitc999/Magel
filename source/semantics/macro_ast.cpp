@@ -150,7 +150,7 @@ int M_MacroCall(int name, int arguments)
     const auto raw = g_rawMacroNames.find(name);
     if (raw != g_rawMacroNames.end())
     {
-        const auto &source = magel_macro::sourceFragments.at(raw->second);
+        const auto &source = chali_macro::sourceFragments.at(raw->second);
         g_nodes[id].i = static_cast<long long>(raw->second + 1);
         g_nodes[id].kids.clear();
         g_nodes[id].sourceLine = source.line;

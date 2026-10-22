@@ -46,7 +46,7 @@ struct TransferPacket;
  *
  * 运行时字符串是“8 字节长度 + UTF-8 字节数据”，不附加结尾 NUL；数据区字面量只是
  * 复制源，仍用生成期哨兵界定。**读字节 / 拼接 / 切片 / 格式化这些活儿全在这层 C++ 里干**，宿主语言
- * （magel）只发一次调用 —— 不用在四元式里手写逐字节的循环，也就能顺手用上
+ * （chali）只发一次调用 —— 不用在四元式里手写逐字节的循环，也就能顺手用上
  * `Memory::String` / `snprintf`。
  *
  * 与数学原生函数（`kNatives`）的两点不同：
@@ -82,7 +82,7 @@ struct NativeContext
     const Memory::Vector<Memory::String> *input = nullptr;             ///< 输入项（按顺序取）。
     std::size_t *inputIndex = nullptr;                                 ///< 已经取到第几项。
     const Memory::Vector<Memory::String> *programArguments = nullptr;  ///< 程序入口参数。
-    NativeInvoker *invoker = nullptr;                                  ///< 同步调用 MAGEL 函数指针。
+    NativeInvoker *invoker = nullptr;                                  ///< 同步调用 CHALI 函数指针。
     struct ObjectStore *objects = nullptr;                             ///< 运行期通用对象表。
     WatchdogRuntime *watchdog = nullptr;                               ///< 当前执行的内部看门狗。
     Machine *machine = nullptr;                                        ///< 正在执行 run() 的虚拟机。

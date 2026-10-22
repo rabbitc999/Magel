@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::net;
 ```
 
@@ -14,21 +14,21 @@ TcpSocket、TcpListener 是不可复制的 opcode，宿主记录独占连接，�
 
 ## 参考代码
 
-完整程序：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+完整程序：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 ```powershell
-magel run example/samples/std_net.mgl
+chali run example/samples/std_net.chl
 ```
 
-非阻塞与可取消线程配合的完整程序：[std_net_async.mgl](../../example/samples/std_net_async.mgl)。
+非阻塞与可取消线程配合的完整程序：[std_net_async.chl](../../example/samples/std_net_async.chl)。
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
-/* std_net.mgl —— `std::net`（TCP + 极简 HTTP 客户端）用法样例。
+```chali
+/* std_net.chl —— `std::net`（TCP + 极简 HTTP 客户端）用法样例。
  *
- *   ./magel samples/std_net.mgl
+ *   ./chali samples/std_net.chl
  *
  * 全程不需要外网、不需要第二个进程：
  *   1. 先在本进程里 listen（端口给 0 让系统分配）→ connect → accept，双向收发；
@@ -175,7 +175,7 @@ response ok=1 status=200 reason=OK len=5 type=text/plain body=hello
 
 **声明**
 
-```magel
+```chali
 static TcpSocket connect(String host, int32 port, int32 timeoutMs);
 ```
 
@@ -201,13 +201,13 @@ static TcpSocket connect(String host, int32 port, int32 timeoutMs);
 
 **调用形式**
 
-```magel
+```chali
 std::net::TcpSocket::connect(host, port, timeoutMs);
 ```
 
-**源码**：[source/std/net.mgl:67](../../source/std/net.mgl#L67)。
+**源码**：[source/std/net.chl:67](../../source/std/net.chl#L67)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-1"></a>
 
@@ -215,7 +215,7 @@ std::net::TcpSocket::connect(host, port, timeoutMs);
 
 **声明**
 
-```magel
+```chali
 static TcpSocket connect(String host, int32 port);
 ```
 
@@ -240,13 +240,13 @@ static TcpSocket connect(String host, int32 port);
 
 **调用形式**
 
-```magel
+```chali
 std::net::TcpSocket::connect(host, port);
 ```
 
-**源码**：[source/std/net.mgl:70](../../source/std/net.mgl#L70)。
+**源码**：[source/std/net.chl:70](../../source/std/net.chl#L70)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-2"></a>
 
@@ -254,7 +254,7 @@ std::net::TcpSocket::connect(host, port);
 
 **声明**
 
-```magel
+```chali
 static TcpSocket connectAsync(String host, int32 port, int32 timeoutMs);
 ```
 
@@ -280,13 +280,13 @@ static TcpSocket connectAsync(String host, int32 port, int32 timeoutMs);
 
 **调用形式**
 
-```magel
+```chali
 std::net::TcpSocket::connectAsync(host, port, timeoutMs);
 ```
 
-**源码**：[source/std/net.mgl:74](../../source/std/net.mgl#L74)。
+**源码**：[source/std/net.chl:74](../../source/std/net.chl#L74)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-3"></a>
 
@@ -294,7 +294,7 @@ std::net::TcpSocket::connectAsync(host, port, timeoutMs);
 
 **声明**
 
-```magel
+```chali
 static TcpSocket connectAsync(String host, int32 port);
 ```
 
@@ -319,13 +319,13 @@ static TcpSocket connectAsync(String host, int32 port);
 
 **调用形式**
 
-```magel
+```chali
 std::net::TcpSocket::connectAsync(host, port);
 ```
 
-**源码**：[source/std/net.mgl:78](../../source/std/net.mgl#L78)。
+**源码**：[source/std/net.chl:78](../../source/std/net.chl#L78)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-4"></a>
 
@@ -333,7 +333,7 @@ std::net::TcpSocket::connectAsync(host, port);
 
 **声明**
 
-```magel
+```chali
 int64 pollConnect();
 ```
 
@@ -355,13 +355,13 @@ int64 pollConnect();
 
 **调用形式**
 
-```magel
+```chali
 obj.pollConnect();
 ```
 
-**源码**：[source/std/net.mgl:82](../../source/std/net.mgl#L82)。
+**源码**：[source/std/net.chl:82](../../source/std/net.chl#L82)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-5"></a>
 
@@ -369,7 +369,7 @@ obj.pollConnect();
 
 **声明**
 
-```magel
+```chali
 int64 sendAsync(String data, int64 offset);
 ```
 
@@ -394,13 +394,13 @@ int64 sendAsync(String data, int64 offset);
 
 **调用形式**
 
-```magel
+```chali
 obj.sendAsync(data, offset);
 ```
 
-**源码**：[source/std/net.mgl:84](../../source/std/net.mgl#L84)。
+**源码**：[source/std/net.chl:84](../../source/std/net.chl#L84)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-6"></a>
 
@@ -408,7 +408,7 @@ obj.sendAsync(data, offset);
 
 **声明**
 
-```magel
+```chali
 int64 sendAsync(String data);
 ```
 
@@ -432,13 +432,13 @@ int64 sendAsync(String data);
 
 **调用形式**
 
-```magel
+```chali
 obj.sendAsync(data);
 ```
 
-**源码**：[source/std/net.mgl:86](../../source/std/net.mgl#L86)。
+**源码**：[source/std/net.chl:86](../../source/std/net.chl#L86)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-7"></a>
 
@@ -446,7 +446,7 @@ obj.sendAsync(data);
 
 **声明**
 
-```magel
+```chali
 String receiveAsync(int32 maxBytes);
 ```
 
@@ -470,13 +470,13 @@ String receiveAsync(int32 maxBytes);
 
 **调用形式**
 
-```magel
+```chali
 obj.receiveAsync(maxBytes);
 ```
 
-**源码**：[source/std/net.mgl:88](../../source/std/net.mgl#L88)。
+**源码**：[source/std/net.chl:88](../../source/std/net.chl#L88)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-8"></a>
 
@@ -484,7 +484,7 @@ obj.receiveAsync(maxBytes);
 
 **声明**
 
-```magel
+```chali
 String receiveLineAsync();
 ```
 
@@ -506,13 +506,13 @@ String receiveLineAsync();
 
 **调用形式**
 
-```magel
+```chali
 obj.receiveLineAsync();
 ```
 
-**源码**：[source/std/net.mgl:90](../../source/std/net.mgl#L90)。
+**源码**：[source/std/net.chl:90](../../source/std/net.chl#L90)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-9"></a>
 
@@ -520,7 +520,7 @@ obj.receiveLineAsync();
 
 **声明**
 
-```magel
+```chali
 bool isOpen();
 ```
 
@@ -542,13 +542,13 @@ bool isOpen();
 
 **调用形式**
 
-```magel
+```chali
 obj.isOpen();
 ```
 
-**源码**：[source/std/net.mgl:91](../../source/std/net.mgl#L91)。
+**源码**：[source/std/net.chl:91](../../source/std/net.chl#L91)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-10"></a>
 
@@ -556,7 +556,7 @@ obj.isOpen();
 
 **声明**
 
-```magel
+```chali
 String lastError();
 ```
 
@@ -578,13 +578,13 @@ String lastError();
 
 **调用形式**
 
-```magel
+```chali
 obj.lastError();
 ```
 
-**源码**：[source/std/net.mgl:92](../../source/std/net.mgl#L92)。
+**源码**：[source/std/net.chl:92](../../source/std/net.chl#L92)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-11"></a>
 
@@ -592,7 +592,7 @@ obj.lastError();
 
 **声明**
 
-```magel
+```chali
 int64 status();
 ```
 
@@ -614,13 +614,13 @@ int64 status();
 
 **调用形式**
 
-```magel
+```chali
 obj.status();
 ```
 
-**源码**：[source/std/net.mgl:93](../../source/std/net.mgl#L93)。
+**源码**：[source/std/net.chl:93](../../source/std/net.chl#L93)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-12"></a>
 
@@ -628,7 +628,7 @@ obj.status();
 
 **声明**
 
-```magel
+```chali
 void close();
 ```
 
@@ -650,13 +650,13 @@ void close();
 
 **调用形式**
 
-```magel
+```chali
 obj.close();
 ```
 
-**源码**：[source/std/net.mgl:94](../../source/std/net.mgl#L94)。
+**源码**：[source/std/net.chl:94](../../source/std/net.chl#L94)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-13"></a>
 
@@ -664,7 +664,7 @@ obj.close();
 
 **声明**
 
-```magel
+```chali
 int64 send(String data);
 ```
 
@@ -688,13 +688,13 @@ int64 send(String data);
 
 **调用形式**
 
-```magel
+```chali
 obj.send(data);
 ```
 
-**源码**：[source/std/net.mgl:95](../../source/std/net.mgl#L95)。
+**源码**：[source/std/net.chl:95](../../source/std/net.chl#L95)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-14"></a>
 
@@ -702,7 +702,7 @@ obj.send(data);
 
 **声明**
 
-```magel
+```chali
 String receive(int32 maxBytes);
 ```
 
@@ -726,13 +726,13 @@ String receive(int32 maxBytes);
 
 **调用形式**
 
-```magel
+```chali
 obj.receive(maxBytes);
 ```
 
-**源码**：[source/std/net.mgl:96](../../source/std/net.mgl#L96)。
+**源码**：[source/std/net.chl:96](../../source/std/net.chl#L96)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-15"></a>
 
@@ -740,7 +740,7 @@ obj.receive(maxBytes);
 
 **声明**
 
-```magel
+```chali
 String receiveLine(int32 timeoutMs);
 ```
 
@@ -764,13 +764,13 @@ String receiveLine(int32 timeoutMs);
 
 **调用形式**
 
-```magel
+```chali
 obj.receiveLine(timeoutMs);
 ```
 
-**源码**：[source/std/net.mgl:97](../../source/std/net.mgl#L97)。
+**源码**：[source/std/net.chl:97](../../source/std/net.chl#L97)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-16"></a>
 
@@ -778,7 +778,7 @@ obj.receiveLine(timeoutMs);
 
 **声明**
 
-```magel
+```chali
 static TcpListener listen(String host, int32 port, int32 backlog);
 ```
 
@@ -804,13 +804,13 @@ static TcpListener listen(String host, int32 port, int32 backlog);
 
 **调用形式**
 
-```magel
+```chali
 std::net::TcpListener::listen(host, port, backlog);
 ```
 
-**源码**：[source/std/net.mgl:105](../../source/std/net.mgl#L105)。
+**源码**：[source/std/net.chl:105](../../source/std/net.chl#L105)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-17"></a>
 
@@ -818,7 +818,7 @@ std::net::TcpListener::listen(host, port, backlog);
 
 **声明**
 
-```magel
+```chali
 static TcpListener listen(String host, int32 port);
 ```
 
@@ -843,13 +843,13 @@ static TcpListener listen(String host, int32 port);
 
 **调用形式**
 
-```magel
+```chali
 std::net::TcpListener::listen(host, port);
 ```
 
-**源码**：[source/std/net.mgl:108](../../source/std/net.mgl#L108)。
+**源码**：[source/std/net.chl:108](../../source/std/net.chl#L108)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-18"></a>
 
@@ -857,7 +857,7 @@ std::net::TcpListener::listen(host, port);
 
 **声明**
 
-```magel
+```chali
 bool isOpen();
 ```
 
@@ -879,13 +879,13 @@ bool isOpen();
 
 **调用形式**
 
-```magel
+```chali
 obj.isOpen();
 ```
 
-**源码**：[source/std/net.mgl:111](../../source/std/net.mgl#L111)。
+**源码**：[source/std/net.chl:111](../../source/std/net.chl#L111)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-19"></a>
 
@@ -893,7 +893,7 @@ obj.isOpen();
 
 **声明**
 
-```magel
+```chali
 String lastError();
 ```
 
@@ -915,13 +915,13 @@ String lastError();
 
 **调用形式**
 
-```magel
+```chali
 obj.lastError();
 ```
 
-**源码**：[source/std/net.mgl:112](../../source/std/net.mgl#L112)。
+**源码**：[source/std/net.chl:112](../../source/std/net.chl#L112)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-20"></a>
 
@@ -929,7 +929,7 @@ obj.lastError();
 
 **声明**
 
-```magel
+```chali
 int64 localPort();
 ```
 
@@ -951,13 +951,13 @@ int64 localPort();
 
 **调用形式**
 
-```magel
+```chali
 obj.localPort();
 ```
 
-**源码**：[source/std/net.mgl:113](../../source/std/net.mgl#L113)。
+**源码**：[source/std/net.chl:113](../../source/std/net.chl#L113)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-21"></a>
 
@@ -965,7 +965,7 @@ obj.localPort();
 
 **声明**
 
-```magel
+```chali
 TcpSocket accept(int32 timeoutMs);
 ```
 
@@ -989,13 +989,13 @@ TcpSocket accept(int32 timeoutMs);
 
 **调用形式**
 
-```magel
+```chali
 obj.accept(timeoutMs);
 ```
 
-**源码**：[source/std/net.mgl:114](../../source/std/net.mgl#L114)。
+**源码**：[source/std/net.chl:114](../../source/std/net.chl#L114)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-22"></a>
 
@@ -1003,7 +1003,7 @@ obj.accept(timeoutMs);
 
 **声明**
 
-```magel
+```chali
 TcpSocket accept();
 ```
 
@@ -1025,13 +1025,13 @@ TcpSocket accept();
 
 **调用形式**
 
-```magel
+```chali
 obj.accept();
 ```
 
-**源码**：[source/std/net.mgl:115](../../source/std/net.mgl#L115)。
+**源码**：[source/std/net.chl:115](../../source/std/net.chl#L115)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-23"></a>
 
@@ -1039,7 +1039,7 @@ obj.accept();
 
 **声明**
 
-```magel
+```chali
 TcpSocket acceptAsync();
 ```
 
@@ -1061,13 +1061,13 @@ TcpSocket acceptAsync();
 
 **调用形式**
 
-```magel
+```chali
 obj.acceptAsync();
 ```
 
-**源码**：[source/std/net.mgl:117](../../source/std/net.mgl#L117)。
+**源码**：[source/std/net.chl:117](../../source/std/net.chl#L117)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-24"></a>
 
@@ -1075,7 +1075,7 @@ obj.acceptAsync();
 
 **声明**
 
-```magel
+```chali
 void close();
 ```
 
@@ -1097,13 +1097,13 @@ void close();
 
 **调用形式**
 
-```magel
+```chali
 obj.close();
 ```
 
-**源码**：[source/std/net.mgl:118](../../source/std/net.mgl#L118)。
+**源码**：[source/std/net.chl:118](../../source/std/net.chl#L118)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-25"></a>
 
@@ -1111,7 +1111,7 @@ obj.close();
 
 **声明**
 
-```magel
+```chali
 bool isSuccess();
 ```
 
@@ -1133,13 +1133,13 @@ bool isSuccess();
 
 **调用形式**
 
-```magel
+```chali
 obj.isSuccess();
 ```
 
-**源码**：[source/std/net.mgl:139](../../source/std/net.mgl#L139)。
+**源码**：[source/std/net.chl:139](../../source/std/net.chl#L139)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-26"></a>
 
@@ -1147,7 +1147,7 @@ obj.isSuccess();
 
 **声明**
 
-```magel
+```chali
 std::lang::String header(std::lang::String name);
 ```
 
@@ -1173,13 +1173,13 @@ std::lang::String header(std::lang::String name);
 
 **调用形式**
 
-```magel
+```chali
 obj.header(name);
 ```
 
-**源码**：[source/std/net.mgl:142](../../source/std/net.mgl#L142)。
+**源码**：[source/std/net.chl:142](../../source/std/net.chl#L142)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-27"></a>
 
@@ -1187,7 +1187,7 @@ obj.header(name);
 
 **声明**
 
-```magel
+```chali
 std::lang::String httpScheme();
 ```
 
@@ -1211,13 +1211,13 @@ std::lang::String httpScheme();
 
 **调用形式**
 
-```magel
+```chali
 std::net::httpScheme();
 ```
 
-**源码**：[source/std/net.mgl:169](../../source/std/net.mgl#L169)。
+**源码**：[source/std/net.chl:169](../../source/std/net.chl#L169)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-28"></a>
 
@@ -1225,7 +1225,7 @@ std::net::httpScheme();
 
 **声明**
 
-```magel
+```chali
 Url parseUrl(std::lang::String url);
 ```
 
@@ -1249,13 +1249,13 @@ Url parseUrl(std::lang::String url);
 
 **调用形式**
 
-```magel
+```chali
 std::net::parseUrl(url);
 ```
 
-**源码**：[source/std/net.mgl:171](../../source/std/net.mgl#L171)。
+**源码**：[source/std/net.chl:171](../../source/std/net.chl#L171)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-29"></a>
 
@@ -1263,7 +1263,7 @@ std::net::parseUrl(url);
 
 **声明**
 
-```magel
+```chali
 std::lang::String buildRequest(std::lang::String method, std::lang::String url, std::lang::String body, std::lang::String contentType);
 ```
 
@@ -1292,13 +1292,13 @@ std::lang::String buildRequest(std::lang::String method, std::lang::String url, 
 
 **调用形式**
 
-```magel
+```chali
 std::net::buildRequest(method, url, body, contentType);
 ```
 
-**源码**：[source/std/net.mgl:211](../../source/std/net.mgl#L211)。
+**源码**：[source/std/net.chl:211](../../source/std/net.chl#L211)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-30"></a>
 
@@ -1306,7 +1306,7 @@ std::net::buildRequest(method, url, body, contentType);
 
 **声明**
 
-```magel
+```chali
 HttpResponse parseResponse(std::lang::String raw);
 ```
 
@@ -1332,13 +1332,13 @@ HttpResponse parseResponse(std::lang::String raw);
 
 **调用形式**
 
-```magel
+```chali
 std::net::parseResponse(raw);
 ```
 
-**源码**：[source/std/net.mgl:237](../../source/std/net.mgl#L237)。
+**源码**：[source/std/net.chl:237](../../source/std/net.chl#L237)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-31"></a>
 
@@ -1346,7 +1346,7 @@ std::net::parseResponse(raw);
 
 **声明**
 
-```magel
+```chali
 bool connect(std::lang::String host, int32 port, int32 timeoutMs);
 ```
 
@@ -1372,13 +1372,13 @@ bool connect(std::lang::String host, int32 port, int32 timeoutMs);
 
 **调用形式**
 
-```magel
+```chali
 obj.connect(host, port, timeoutMs);
 ```
 
-**源码**：[source/std/net.mgl:285](../../source/std/net.mgl#L285)。
+**源码**：[source/std/net.chl:285](../../source/std/net.chl#L285)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-32"></a>
 
@@ -1386,7 +1386,7 @@ obj.connect(host, port, timeoutMs);
 
 **声明**
 
-```magel
+```chali
 std::lang::String readAll();
 ```
 
@@ -1410,13 +1410,13 @@ std::lang::String readAll();
 
 **调用形式**
 
-```magel
+```chali
 obj.readAll();
 ```
 
-**源码**：[source/std/net.mgl:292](../../source/std/net.mgl#L292)。
+**源码**：[source/std/net.chl:292](../../source/std/net.chl#L292)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-33"></a>
 
@@ -1424,7 +1424,7 @@ obj.readAll();
 
 **声明**
 
-```magel
+```chali
 HttpResponse exchange(std::lang::String method, std::lang::String url, std::lang::String body, std::lang::String contentType);
 ```
 
@@ -1453,13 +1453,13 @@ HttpResponse exchange(std::lang::String method, std::lang::String url, std::lang
 
 **调用形式**
 
-```magel
+```chali
 obj.exchange(method, url, body, contentType);
 ```
 
-**源码**：[source/std/net.mgl:304](../../source/std/net.mgl#L304)。
+**源码**：[source/std/net.chl:304](../../source/std/net.chl#L304)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-34"></a>
 
@@ -1467,7 +1467,7 @@ obj.exchange(method, url, body, contentType);
 
 **声明**
 
-```magel
+```chali
 void close();
 ```
 
@@ -1489,13 +1489,13 @@ void close();
 
 **调用形式**
 
-```magel
+```chali
 obj.close();
 ```
 
-**源码**：[source/std/net.mgl:326](../../source/std/net.mgl#L326)。
+**源码**：[source/std/net.chl:326](../../source/std/net.chl#L326)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-35"></a>
 
@@ -1503,7 +1503,7 @@ obj.close();
 
 **声明**
 
-```magel
+```chali
 static HttpResponse fetch(std::lang::String url);
 ```
 
@@ -1529,13 +1529,13 @@ static HttpResponse fetch(std::lang::String url);
 
 **调用形式**
 
-```magel
+```chali
 std::net::HttpClient::fetch(url);
 ```
 
-**源码**：[source/std/net.mgl:332](../../source/std/net.mgl#L332)。
+**源码**：[source/std/net.chl:332](../../source/std/net.chl#L332)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。
 
 <a id="api-36"></a>
 
@@ -1543,7 +1543,7 @@ std::net::HttpClient::fetch(url);
 
 **声明**
 
-```magel
+```chali
 static HttpResponse submit(std::lang::String url, std::lang::String body, std::lang::String contentType);
 ```
 
@@ -1571,10 +1571,10 @@ static HttpResponse submit(std::lang::String url, std::lang::String body, std::l
 
 **调用形式**
 
-```magel
+```chali
 std::net::HttpClient::submit(url, body, contentType);
 ```
 
-**源码**：[source/std/net.mgl:357](../../source/std/net.mgl#L357)。
+**源码**：[source/std/net.chl:357](../../source/std/net.chl#L357)。
 
-**完整示例**：[example/samples/std_net.mgl](../../example/samples/std_net.mgl)。
+**完整示例**：[example/samples/std_net.chl](../../example/samples/std_net.chl)。

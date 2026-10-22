@@ -1,1 +1,1 @@
-magel: example/samples-error/compound_assignment_incompatible.mgl 第 2 行第 42 列：不能隐式转换：float64 -> int64（请显式强转）
+chali: example/samples-error/compound_assignment_incompatible.chl 第 2 行第 42 列：不能隐式转换：float64 -> int64（请显式强转）

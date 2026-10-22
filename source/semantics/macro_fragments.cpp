@@ -99,7 +99,7 @@ bool BindMacroCallerSyntax(int id, Memory::Map<Memory::String, std::uint32_t> &b
     for (const int annotation : node.annotations)
         if (!BindMacroCallerSyntax(annotation, scope, depth + 1, argumentSyntax)) return false;
     if (!BindMacroCallerSyntax(node.guard, scope, depth + 1, argumentSyntax)) return false;
-    const bool indexed = node.kind == MNode::Case || node.kind == MNode::NewPtr || ((node.kind == MNode::Declare || node.kind == MNode::Field) && !declarationGroup && node.i >= 0) || (node.kind == MNode::Index && node.s2 == "__magel_bare_index");
+    const bool indexed = node.kind == MNode::Case || node.kind == MNode::NewPtr || ((node.kind == MNode::Declare || node.kind == MNode::Field) && !declarationGroup && node.i >= 0) || (node.kind == MNode::Index && node.s2 == "__chali_bare_index");
     if (indexed && !BindMacroCallerSyntax(static_cast<int>(node.i), scope, depth + 1, argumentSyntax)) return false;
     if ((node.kind == MNode::Declare && !declarationGroup) || node.kind == MNode::Params)
     {
@@ -116,14 +116,14 @@ bool BindMacroCallerSyntax(int id, Memory::Map<Memory::String, std::uint32_t> &b
  * @param module 调用或定义所在模块。
  * @return 语法成立时返回 AST 根编号，否则返回负一并回滚本次失败解析。
  */
-int ParseMacroFragment(const magel_macro::SourceFragment &source, int category, const Memory::String &module)
+int ParseMacroFragment(const chali_macro::SourceFragment &source, int category, const Memory::String &module)
 {
     static const char *entries[] = { "@!macroparse_expr\n", "@!macroparse_ident\n", "@!macroparse_type\n", "@!macroparse_block\n", "@!macroparse_stmt\n" };
     const auto nodes = g_nodes.size();
     const auto types = g_types.size();
     const auto names = g_names.size();
     const auto diagnostics = g_parseDiagnostics.size();
-    const auto captureSpecifications = magel_lambda::captureSpecifications;
+    const auto captureSpecifications = chali_lambda::captureSpecifications;
     const auto previousModule = g_parseModule;
     const auto previousLine = g_macroFragmentFirstLine;
     const auto previousColumn = g_macroFragmentFirstColumn;
@@ -134,24 +134,24 @@ int ParseMacroFragment(const magel_macro::SourceFragment &source, int category, 
     Memory::String text(source.text.data(), source.text.size());
     std::string error;
     int result = -1;
-    bool success = magel_macro::sourceFragments.capture(text, error, source.line, source.column, true);
+    bool success = chali_macro::sourceFragments.capture(text, error, source.line, source.column, true);
     if (success)
     {
         preprocess::Result normalized;
         normalized.text = text;
         Memory::String problem;
-        success = magel_interpolation::run(normalized, problem);
+        success = chali_interpolation::run(normalized, problem);
         text = normalized.text;
-        magel_lambda::markClosureTypeArguments(text);
-        magel_generic::markContainerTypeArguments(text, category == 2);
-        magel_macro::markHeaderBoundaries(text);
+        chali_lambda::markClosureTypeArguments(text);
+        chali_generic::markContainerTypeArguments(text, category == 2);
+        chali_macro::markHeaderBoundaries(text);
         text = Memory::String(entries[category]) + text;
         g_macroFragmentFirstLine = source.line;
         g_macroFragmentFirstColumn = source.column;
-        magel::Engine parser;
-        success = success && parser.runText(text, &result) == magel::Status::Ok && g_parseDiagnostics.size() == diagnostics;
+        chali::Engine parser;
+        success = success && parser.runText(text, &result) == chali::Status::Ok && g_parseDiagnostics.size() == diagnostics;
     }
-    magel_macro::sourceFragments.finishParsing();
+    chali_macro::sourceFragments.finishParsing();
     g_parseModule = previousModule;
     g_macroFragmentFirstLine = previousLine;
     g_macroFragmentFirstColumn = previousColumn;
@@ -166,7 +166,7 @@ int ParseMacroFragment(const magel_macro::SourceFragment &source, int category, 
         g_names.resize(names);
         g_rawMacroNames.erase(g_rawMacroNames.lower_bound(static_cast<int>(names)), g_rawMacroNames.end());
         g_stringSources.erase(g_stringSources.lower_bound(static_cast<int>(names)), g_stringSources.end());
-        magel_lambda::captureSpecifications = captureSpecifications;
+        chali_lambda::captureSpecifications = captureSpecifications;
         return -1;
     }
     return result;
@@ -220,7 +220,7 @@ bool ApplyMacroFragmentEnvironment(int root, const MacroFragmentEnvironment &env
         if (node.kind == MNode::Var && environment.values.count(node.s))
         {
             const auto line = node.sourceLine, column = node.sourceColumn;
-            magel_macro::AstSubstitution copy(g_nodes, 1000000, &g_types);
+            chali_macro::AstSubstitution copy(g_nodes, 1000000, &g_types);
             std::string error;
             const int value = copy.instantiate(environment.values.at(node.s), {}, 0, error);
             if (value < 0) return Fail(Memory::String(error.data(), error.size()));
@@ -248,7 +248,7 @@ bool ApplyMacroFragmentEnvironment(int root, const MacroFragmentEnvironment &env
             if (!visit(annotation, depth + 1)) return false;
         if (!visit(node.guard, depth + 1)) return false;
         const bool group = node.kind == MNode::Declare && node.kids.size() == 1 && node.kids[0] >= 0 && N(node.kids[0]).kind == MNode::List;
-        const bool indexed = node.kind == MNode::Block || node.kind == MNode::Case || node.kind == MNode::NewPtr || ((node.kind == MNode::Declare || node.kind == MNode::Field) && !group && node.i >= 0) || (node.kind == MNode::Index && node.s2 == "__magel_bare_index");
+        const bool indexed = node.kind == MNode::Block || node.kind == MNode::Case || node.kind == MNode::NewPtr || ((node.kind == MNode::Declare || node.kind == MNode::Field) && !group && node.i >= 0) || (node.kind == MNode::Index && node.s2 == "__chali_bare_index");
         return !indexed || visit(static_cast<int>(node.i), depth + 1);
     };
     return visit(root, 0);
@@ -270,14 +270,14 @@ bool MaterializeMacroFragments(int id, Memory::Set<int> &seen, std::size_t depth
     MacroFragmentEnvironment environment = outer ? *outer : MacroFragmentEnvironment{};
     if (node.kind == MNode::FuncDef || node.kind == MNode::StructDecl || node.kind == MNode::EnumDecl)
     {
-        auto instance = magel_generic::session.made.find(node.s);
-        if (instance == magel_generic::session.made.end()) instance = magel_generic::session.made.find(BareTypeName(node.s));
-        if (instance != magel_generic::session.made.end() && instance->second.generic)
+        auto instance = chali_generic::session.made.find(node.s);
+        if (instance == chali_generic::session.made.end()) instance = chali_generic::session.made.find(BareTypeName(node.s));
+        if (instance != chali_generic::session.made.end() && instance->second.generic)
             for (std::size_t index = 0; index < instance->second.args.size() && index < instance->second.generic->params.size(); ++index)
             {
                 const auto &parameter = instance->second.generic->params[index];
                 const auto &argument = instance->second.args[index];
-                const magel_macro::SourceFragment text{ std::string(argument.data(), argument.size()), 1, 1 };
+                const chali_macro::SourceFragment text{ std::string(argument.data(), argument.size()), 1, 1 };
                 const int parsed = ParseMacroFragment(text, parameter.constant ? 0 : 2, node.module);
                 if (parsed < 0) continue;
                 if (parameter.constant)
@@ -289,7 +289,7 @@ bool MaterializeMacroFragments(int id, Memory::Set<int> &seen, std::size_t depth
     if (node.kind == MNode::MacroCall && node.i > 0 && node.kids.empty())
     {
         g_macroSyntaxFiltering = true;
-        const auto call = magel_macro::sourceFragments.at(static_cast<std::size_t>(node.i - 1));
+        const auto call = chali_macro::sourceFragments.at(static_cast<std::size_t>(node.i - 1));
         node.sourceLine = call.line;
         node.sourceColumn = call.column;
         const auto module = node.module;
@@ -336,7 +336,7 @@ bool MaterializeMacroFragments(int id, Memory::Set<int> &seen, std::size_t depth
         if (!MaterializeMacroFragments(annotation, seen, depth + 1, &environment)) return false;
     if (!MaterializeMacroFragments(original.guard, seen, depth + 1, &environment)) return false;
     const bool group = original.kind == MNode::Declare && original.kids.size() == 1 && original.kids[0] >= 0 && g_nodes[original.kids[0]].kind == MNode::List;
-    const bool indexed = original.kind == MNode::Block || original.kind == MNode::Case || original.kind == MNode::NewPtr || ((original.kind == MNode::Declare || original.kind == MNode::Field) && !group && original.i >= 0) || (original.kind == MNode::Index && original.s2 == "__magel_bare_index");
+    const bool indexed = original.kind == MNode::Block || original.kind == MNode::Case || original.kind == MNode::NewPtr || ((original.kind == MNode::Declare || original.kind == MNode::Field) && !group && original.i >= 0) || (original.kind == MNode::Index && original.s2 == "__chali_bare_index");
     return !indexed || MaterializeMacroFragments(static_cast<int>(original.i), seen, depth + 1, &environment);
 }
 
@@ -372,7 +372,7 @@ void RefreshMacroActiveSyntax()
         for (const int annotation : node.annotations) visit(annotation);
         visit(node.guard);
         const bool group = node.kind == MNode::Declare && node.kids.size() == 1 && node.kids[0] >= 0 && N(node.kids[0]).kind == MNode::List;
-        const bool indexed = node.kind == MNode::Block || node.kind == MNode::Case || node.kind == MNode::NewPtr || ((node.kind == MNode::Declare || node.kind == MNode::Field) && !group && node.i >= 0) || (node.kind == MNode::Index && node.s2 == "__magel_bare_index");
+        const bool indexed = node.kind == MNode::Block || node.kind == MNode::Case || node.kind == MNode::NewPtr || ((node.kind == MNode::Declare || node.kind == MNode::Field) && !group && node.i >= 0) || (node.kind == MNode::Index && node.s2 == "__chali_bare_index");
         if (indexed) visit(static_cast<int>(node.i));
     };
     for (const int id : g_top) visit(id);
@@ -406,8 +406,8 @@ bool LiftReachableAstLambdas()
             node.s = original + "_macro_" + Memory::toString(node.syntaxContext) + "_" + Memory::toString(id);
             g_nodes[function].s = node.s;
             if (node.kids.size() > 1) g_nodes[function].guard = node.kids[1];
-            const auto captures = magel_lambda::captureSpecifications.find(original);
-            if (captures != magel_lambda::captureSpecifications.end()) magel_lambda::captureSpecifications[node.s] = captures->second;
+            const auto captures = chali_lambda::captureSpecifications.find(original);
+            if (captures != chali_lambda::captureSpecifications.end()) chali_lambda::captureSpecifications[node.s] = captures->second;
             functions.push_back(function);
             node.kind = MNode::Var;
             node.kids.clear();
@@ -420,7 +420,7 @@ bool LiftReachableAstLambdas()
             if (!visit(annotation, depth + 1)) return false;
         if (!visit(node.guard, depth + 1)) return false;
         const bool group = node.kind == MNode::Declare && node.kids.size() == 1 && node.kids[0] >= 0 && N(node.kids[0]).kind == MNode::List;
-        const bool indexed = node.kind == MNode::Block || node.kind == MNode::Case || node.kind == MNode::NewPtr || ((node.kind == MNode::Declare || node.kind == MNode::Field) && !group && node.i >= 0) || (node.kind == MNode::Index && node.s2 == "__magel_bare_index");
+        const bool indexed = node.kind == MNode::Block || node.kind == MNode::Case || node.kind == MNode::NewPtr || ((node.kind == MNode::Declare || node.kind == MNode::Field) && !group && node.i >= 0) || (node.kind == MNode::Index && node.s2 == "__chali_bare_index");
         return !indexed || visit(static_cast<int>(node.i), depth + 1);
     };
     const auto roots = g_top;

@@ -1,12 +1,12 @@
 # 05 交付安全
 
-字节码加密功能已删除。`--encrypt` 与 `[magel] encrypt` 不再受支持，历史加密产物须从源码重新导出。
+字节码加密功能已删除。`--encrypt` 与 `[chali] encrypt` 不再受支持，历史加密产物须从源码重新导出。
 
 ## 1. 交付形态
 
 | 形态 | 接收方需要什么 | 适用场景 |
 | --- | --- | --- |
-| `.mgl` 源码 | Magel 编译器 | 开放源码、联合开发 |
+| `.chl` 源码 | ChaLi 编译器 | 开放源码、联合开发 |
 | 普通 `.svmb` | 匹配能力的 StackVM 宿主 | 目标宿主加载、跨平台部署 |
 | 无名变长符号 `.svmb` | 支持紧凑格式的 StackVM 宿主 | 减小文件、去除可读符号名 |
 
@@ -15,13 +15,13 @@
 普通字节码：
 
 ```sh
-magel svmb src/main.mgl out build/app
+chali svmb src/main.chl out build/app
 ```
 
 无名变长符号字节码：
 
 ```sh
-magel svmb src/main.mgl out build/app --compress-symbols
+chali svmb src/main.chl out build/app --compress-symbols
 ```
 
 第二条命令生成 `build/app.svmb` 与 `build/app.symbol_map.json`。映射表由开发方保存；可用 `--symbol-map FILE` 指定路径。不要将其作为用户运行所必需的文件。
@@ -36,7 +36,7 @@ magel svmb src/main.mgl out build/app --compress-symbols
 
 | 文件 | 保存方 | 用途 |
 | --- | --- | --- |
-| `.mgl` | 开发方或协作方 | 源码与重新构建 |
+| `.chl` | 开发方或协作方 | 源码与重新构建 |
 | `.svmb` | 运行方 | VM 加载 |
 | `.symbol_map.json` | 开发方 | 离线诊断映射 |
 | 调试构建与构建记录 | 开发方 | 复现和定位问题 |

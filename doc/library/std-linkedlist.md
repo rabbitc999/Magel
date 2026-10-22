@@ -4,13 +4,13 @@
 
 ## 引入
 
-```magel
+```chali
 import std::linkedlist;
 ```
 
 ## 公共约定与错误边界
 
-LinkedList 以私有拥有型 opcode 保存持久双向节点及游标索引，保留 Iterator<int64>。普通复制深复制节点并在副本内保留对应游标。首尾及按游标插删为平均 O(1)；按值查询和按序迭代 O(n)。游标不重复使用，删除或 clear 后永久失效；toArray 显式导出独立顺序快照。裁剪宏 NO_MAGEL_STD_LINKEDLIST。
+LinkedList 以私有拥有型 opcode 保存持久双向节点及游标索引，保留 Iterator<int64>。普通复制深复制节点并在副本内保留对应游标。首尾及按游标插删为平均 O(1)；按值查询和按序迭代 O(n)。游标不重复使用，删除或 clear 后永久失效；toArray 显式导出独立顺序快照。裁剪宏 NO_CHALI_STD_LINKEDLIST。
 
 ## 参考代码
 
@@ -54,7 +54,7 @@ LinkedList 以私有拥有型 opcode 保存持久双向节点及游标索引，�
 
 **声明**
 
-```magel
+```chali
 static LinkedList create();
 ```
 
@@ -78,11 +78,11 @@ static LinkedList create();
 
 **调用形式**
 
-```magel
+```chali
 std::linkedlist::LinkedList::create();
 ```
 
-**源码**：[source/std/linkedlist.mgl:18](../../source/std/linkedlist.mgl#L18)。
+**源码**：[source/std/linkedlist.chl:18](../../source/std/linkedlist.chl#L18)。
 
 <a id="api-1"></a>
 
@@ -90,7 +90,7 @@ std::linkedlist::LinkedList::create();
 
 **声明**
 
-```magel
+```chali
 int64 pushFront(int64 value);
 ```
 
@@ -116,11 +116,11 @@ int64 pushFront(int64 value);
 
 **调用形式**
 
-```magel
+```chali
 obj.pushFront(value);
 ```
 
-**源码**：[source/std/linkedlist.mgl:20](../../source/std/linkedlist.mgl#L20)。
+**源码**：[source/std/linkedlist.chl:20](../../source/std/linkedlist.chl#L20)。
 
 <a id="api-2"></a>
 
@@ -128,7 +128,7 @@ obj.pushFront(value);
 
 **声明**
 
-```magel
+```chali
 int64 pushBack(int64 value);
 ```
 
@@ -154,11 +154,11 @@ int64 pushBack(int64 value);
 
 **调用形式**
 
-```magel
+```chali
 obj.pushBack(value);
 ```
 
-**源码**：[source/std/linkedlist.mgl:22](../../source/std/linkedlist.mgl#L22)。
+**源码**：[source/std/linkedlist.chl:22](../../source/std/linkedlist.chl#L22)。
 
 <a id="api-3"></a>
 
@@ -166,7 +166,7 @@ obj.pushBack(value);
 
 **声明**
 
-```magel
+```chali
 int64 insertBefore(int64 cursor, int64 value);
 ```
 
@@ -191,11 +191,11 @@ int64 insertBefore(int64 cursor, int64 value);
 
 **调用形式**
 
-```magel
+```chali
 obj.insertBefore(cursor, value);
 ```
 
-**源码**：[source/std/linkedlist.mgl:24](../../source/std/linkedlist.mgl#L24)。
+**源码**：[source/std/linkedlist.chl:24](../../source/std/linkedlist.chl#L24)。
 
 <a id="api-4"></a>
 
@@ -203,7 +203,7 @@ obj.insertBefore(cursor, value);
 
 **声明**
 
-```magel
+```chali
 int64 insertAfter(int64 cursor, int64 value);
 ```
 
@@ -228,11 +228,11 @@ int64 insertAfter(int64 cursor, int64 value);
 
 **调用形式**
 
-```magel
+```chali
 obj.insertAfter(cursor, value);
 ```
 
-**源码**：[source/std/linkedlist.mgl:26](../../source/std/linkedlist.mgl#L26)。
+**源码**：[source/std/linkedlist.chl:26](../../source/std/linkedlist.chl#L26)。
 
 <a id="api-5"></a>
 
@@ -240,7 +240,7 @@ obj.insertAfter(cursor, value);
 
 **声明**
 
-```magel
+```chali
 Option<int64> removeAt(int64 cursor);
 ```
 
@@ -264,11 +264,11 @@ Option<int64> removeAt(int64 cursor);
 
 **调用形式**
 
-```magel
+```chali
 obj.removeAt(cursor);
 ```
 
-**源码**：[source/std/linkedlist.mgl:28](../../source/std/linkedlist.mgl#L28)。
+**源码**：[source/std/linkedlist.chl:28](../../source/std/linkedlist.chl#L28)。
 
 <a id="api-6"></a>
 
@@ -276,7 +276,7 @@ obj.removeAt(cursor);
 
 **声明**
 
-```magel
+```chali
 Option<int64> popFront();
 ```
 
@@ -300,11 +300,11 @@ Option<int64> popFront();
 
 **调用形式**
 
-```magel
+```chali
 obj.popFront();
 ```
 
-**源码**：[source/std/linkedlist.mgl:33](../../source/std/linkedlist.mgl#L33)。
+**源码**：[source/std/linkedlist.chl:33](../../source/std/linkedlist.chl#L33)。
 
 <a id="api-7"></a>
 
@@ -312,7 +312,7 @@ obj.popFront();
 
 **声明**
 
-```magel
+```chali
 Option<int64> popBack();
 ```
 
@@ -336,11 +336,11 @@ Option<int64> popBack();
 
 **调用形式**
 
-```magel
+```chali
 obj.popBack();
 ```
 
-**源码**：[source/std/linkedlist.mgl:35](../../source/std/linkedlist.mgl#L35)。
+**源码**：[source/std/linkedlist.chl:35](../../source/std/linkedlist.chl#L35)。
 
 <a id="api-8"></a>
 
@@ -348,7 +348,7 @@ obj.popBack();
 
 **声明**
 
-```magel
+```chali
 void reverse();
 ```
 
@@ -370,11 +370,11 @@ void reverse();
 
 **调用形式**
 
-```magel
+```chali
 obj.reverse();
 ```
 
-**源码**：[source/std/linkedlist.mgl:37](../../source/std/linkedlist.mgl#L37)。
+**源码**：[source/std/linkedlist.chl:37](../../source/std/linkedlist.chl#L37)。
 
 <a id="api-9"></a>
 
@@ -382,7 +382,7 @@ obj.reverse();
 
 **声明**
 
-```magel
+```chali
 List<int64> toArray();
 ```
 
@@ -406,11 +406,11 @@ List<int64> toArray();
 
 **调用形式**
 
-```magel
+```chali
 obj.toArray();
 ```
 
-**源码**：[source/std/linkedlist.mgl:39](../../source/std/linkedlist.mgl#L39)。
+**源码**：[source/std/linkedlist.chl:39](../../source/std/linkedlist.chl#L39)。
 
 <a id="api-10"></a>
 
@@ -418,7 +418,7 @@ obj.toArray();
 
 **声明**
 
-```magel
+```chali
 static LinkedList fromArray(List<int64> items);
 ```
 
@@ -444,11 +444,11 @@ static LinkedList fromArray(List<int64> items);
 
 **调用形式**
 
-```magel
+```chali
 std::linkedlist::LinkedList::fromArray(items);
 ```
 
-**源码**：[source/std/linkedlist.mgl:41](../../source/std/linkedlist.mgl#L41)。
+**源码**：[source/std/linkedlist.chl:41](../../source/std/linkedlist.chl#L41)。
 
 <a id="api-11"></a>
 
@@ -456,7 +456,7 @@ std::linkedlist::LinkedList::fromArray(items);
 
 **声明**
 
-```magel
+```chali
 int64 find(int64 value);
 ```
 
@@ -482,11 +482,11 @@ int64 find(int64 value);
 
 **调用形式**
 
-```magel
+```chali
 obj.find(value);
 ```
 
-**源码**：[source/std/linkedlist.mgl:48](../../source/std/linkedlist.mgl#L48)。
+**源码**：[source/std/linkedlist.chl:48](../../source/std/linkedlist.chl#L48)。
 
 <a id="api-12"></a>
 
@@ -494,7 +494,7 @@ obj.find(value);
 
 **声明**
 
-```magel
+```chali
 bool contains(int64 value);
 ```
 
@@ -520,11 +520,11 @@ bool contains(int64 value);
 
 **调用形式**
 
-```magel
+```chali
 obj.contains(value);
 ```
 
-**源码**：[source/std/linkedlist.mgl:50](../../source/std/linkedlist.mgl#L50)。
+**源码**：[source/std/linkedlist.chl:50](../../source/std/linkedlist.chl#L50)。
 
 <a id="api-13"></a>
 
@@ -532,7 +532,7 @@ obj.contains(value);
 
 **声明**
 
-```magel
+```chali
 Option<int64> front();
 ```
 
@@ -554,11 +554,11 @@ Option<int64> front();
 
 **调用形式**
 
-```magel
+```chali
 obj.front();
 ```
 
-**源码**：[source/std/linkedlist.mgl:52](../../source/std/linkedlist.mgl#L52)。
+**源码**：[source/std/linkedlist.chl:52](../../source/std/linkedlist.chl#L52)。
 
 <a id="api-14"></a>
 
@@ -566,7 +566,7 @@ obj.front();
 
 **声明**
 
-```magel
+```chali
 Option<int64> back();
 ```
 
@@ -588,11 +588,11 @@ Option<int64> back();
 
 **调用形式**
 
-```magel
+```chali
 obj.back();
 ```
 
-**源码**：[source/std/linkedlist.mgl:54](../../source/std/linkedlist.mgl#L54)。
+**源码**：[source/std/linkedlist.chl:54](../../source/std/linkedlist.chl#L54)。
 
 <a id="api-15"></a>
 
@@ -600,7 +600,7 @@ obj.back();
 
 **声明**
 
-```magel
+```chali
 int64 len();
 ```
 
@@ -624,11 +624,11 @@ int64 len();
 
 **调用形式**
 
-```magel
+```chali
 obj.len();
 ```
 
-**源码**：[source/std/linkedlist.mgl:60](../../source/std/linkedlist.mgl#L60)。
+**源码**：[source/std/linkedlist.chl:60](../../source/std/linkedlist.chl#L60)。
 
 <a id="api-16"></a>
 
@@ -636,7 +636,7 @@ obj.len();
 
 **声明**
 
-```magel
+```chali
 bool isEmpty();
 ```
 
@@ -660,11 +660,11 @@ bool isEmpty();
 
 **调用形式**
 
-```magel
+```chali
 obj.isEmpty();
 ```
 
-**源码**：[source/std/linkedlist.mgl:62](../../source/std/linkedlist.mgl#L62)。
+**源码**：[source/std/linkedlist.chl:62](../../source/std/linkedlist.chl#L62)。
 
 <a id="api-17"></a>
 
@@ -672,7 +672,7 @@ obj.isEmpty();
 
 **声明**
 
-```magel
+```chali
 Option<int64> iterator(int64 index);
 ```
 
@@ -698,11 +698,11 @@ Option<int64> iterator(int64 index);
 
 **调用形式**
 
-```magel
+```chali
 obj.iterator(index);
 ```
 
-**源码**：[source/std/linkedlist.mgl:64](../../source/std/linkedlist.mgl#L64)。
+**源码**：[source/std/linkedlist.chl:64](../../source/std/linkedlist.chl#L64)。
 
 <a id="api-18"></a>
 
@@ -710,7 +710,7 @@ obj.iterator(index);
 
 **声明**
 
-```magel
+```chali
 void clear();
 ```
 
@@ -734,8 +734,8 @@ void clear();
 
 **调用形式**
 
-```magel
+```chali
 obj.clear();
 ```
 
-**源码**：[source/std/linkedlist.mgl:70](../../source/std/linkedlist.mgl#L70)。
+**源码**：[source/std/linkedlist.chl:70](../../source/std/linkedlist.chl#L70)。

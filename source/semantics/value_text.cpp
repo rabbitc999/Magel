@@ -155,7 +155,7 @@ simple_ast::NodePtr LowerDefaultValueText(int valueId)
                                                                                LowerExpr(valueId);
     if (g_freshSink && (type->kind == MType::Array || (IsResourceLike(type) && !IsObjectLike(type))) && IsFreshValue(valueId))
     {
-        const auto temporary = AllocateName("__magel_text_source");
+        const auto temporary = AllocateName("__chali_text_source");
         g_freshSink->push_back(simple_ast::Node::declare(temporary, simple_ast::Type::i64()));
         g_freshSink->push_back(MakeDrop(temporary, type->kind == MType::Array));
         g_freshSink->push_back(simple_ast::Node::assign(temporary, value));

@@ -1,9 +1,9 @@
 # ipage C++ SQL 生成核心
 
-本目录由 Magel 直接维护，只依赖 C++17 标准库。
+本目录由 ChaLi 直接维护，只依赖 C++17 标准库。
 保留模型元数据、字段绑定、条件树、查询、占位符与参数列表，以及标准 SQL 方言接口。
 Java/Maven、重复 SQLite 源码、数据库连接、会话和数据库模式同步层已经移除。
-数据库方言和执行由宿主提供；Magel 的适配位于 `source/glue/std_sql_ipage.cpp`。
+数据库方言和执行由宿主提供；ChaLi 的适配位于 `source/glue/std_sql_ipage.cpp`。
 
 ## 构建与验证
 

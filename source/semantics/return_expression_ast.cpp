@@ -41,7 +41,7 @@ int M_ReturnValue(int value)
         return M_New(MNode::ParseBad, problem);
     }
     g_nodes[value].returnExpression = true;
-    const auto hidden = "__magel_return_expr$" + Memory::toString(g_nodes.size());
+    const auto hidden = "__chali_return_expr$" + Memory::toString(g_nodes.size());
     const int name = M_Name(hidden.c_str());
     const int declaration = M_Decl(name, -1, value);
     g_nodes[declaration].type = -1;

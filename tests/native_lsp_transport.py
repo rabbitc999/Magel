@@ -14,7 +14,7 @@ class Transport:
     def __init__(self, compiler, cwd=None):
         self.child = subprocess.Popen([str(compiler), 'lsp'], cwd=cwd, stdin=subprocess.PIPE,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            env=dict(os.environ, MAGEL_LANG='zh', MAGEL_PYTHON='__missing_python__'))
+            env=dict(os.environ, CHALI_LANG='zh', CHALI_PYTHON='__missing_python__'))
         self.messages = queue.Queue()
         self.responses = {}
         self.notifications = []

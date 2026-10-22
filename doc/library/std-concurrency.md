@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::concurrency;
 ```
 
@@ -14,16 +14,16 @@ Channel<T> 是线程组内的有界多生产者多消费者通道，容量 1..10
 
 ## 参考代码
 
-完整程序：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+完整程序：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 ```powershell
-magel run example/samples/typed_messages_shared.mgl --threads
+chali run example/samples/typed_messages_shared.chl --threads
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::concurrency;
 
 
@@ -123,7 +123,7 @@ int64 main() {
 
 **声明**
 
-```magel
+```chali
 bool isReady();
 ```
 
@@ -145,13 +145,13 @@ bool isReady();
 
 **调用形式**
 
-```magel
+```chali
 obj.isReady();
 ```
 
-**源码**：[source/std/concurrency.mgl:15](../../source/std/concurrency.mgl#L15)。
+**源码**：[source/std/concurrency.chl:15](../../source/std/concurrency.chl#L15)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-1"></a>
 
@@ -159,7 +159,7 @@ obj.isReady();
 
 **声明**
 
-```magel
+```chali
 static Shared<T> create(T value);
 ```
 
@@ -183,13 +183,13 @@ static Shared<T> create(T value);
 
 **调用形式**
 
-```magel
+```chali
 std::concurrency::Shared<T>::create(value);
 ```
 
-**源码**：[source/std/concurrency.mgl:41](../../source/std/concurrency.mgl#L41)。
+**源码**：[source/std/concurrency.chl:41](../../source/std/concurrency.chl#L41)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-2"></a>
 
@@ -197,7 +197,7 @@ std::concurrency::Shared<T>::create(value);
 
 **声明**
 
-```magel
+```chali
 T get();
 ```
 
@@ -219,13 +219,13 @@ T get();
 
 **调用形式**
 
-```magel
+```chali
 obj.get();
 ```
 
-**源码**：[source/std/concurrency.mgl:42](../../source/std/concurrency.mgl#L42)。
+**源码**：[source/std/concurrency.chl:42](../../source/std/concurrency.chl#L42)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-3"></a>
 
@@ -233,7 +233,7 @@ obj.get();
 
 **声明**
 
-```magel
+```chali
 void set(T value);
 ```
 
@@ -257,13 +257,13 @@ void set(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.set(value);
 ```
 
-**源码**：[source/std/concurrency.mgl:43](../../source/std/concurrency.mgl#L43)。
+**源码**：[source/std/concurrency.chl:43](../../source/std/concurrency.chl#L43)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-4"></a>
 
@@ -271,7 +271,7 @@ obj.set(value);
 
 **声明**
 
-```magel
+```chali
 T swap(T value);
 ```
 
@@ -295,13 +295,13 @@ T swap(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.swap(value);
 ```
 
-**源码**：[source/std/concurrency.mgl:44](../../source/std/concurrency.mgl#L44)。
+**源码**：[source/std/concurrency.chl:44](../../source/std/concurrency.chl#L44)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-5"></a>
 
@@ -309,7 +309,7 @@ obj.swap(value);
 
 **声明**
 
-```magel
+```chali
 int64 id();
 ```
 
@@ -331,13 +331,13 @@ int64 id();
 
 **调用形式**
 
-```magel
+```chali
 obj.id();
 ```
 
-**源码**：[source/std/concurrency.mgl:46](../../source/std/concurrency.mgl#L46)。
+**源码**：[source/std/concurrency.chl:46](../../source/std/concurrency.chl#L46)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-6"></a>
 
@@ -345,7 +345,7 @@ obj.id();
 
 **声明**
 
-```magel
+```chali
 static AtomicInt64 create(int64 value);
 ```
 
@@ -369,13 +369,13 @@ static AtomicInt64 create(int64 value);
 
 **调用形式**
 
-```magel
+```chali
 std::concurrency::AtomicInt64::create(value);
 ```
 
-**源码**：[source/std/concurrency.mgl:52](../../source/std/concurrency.mgl#L52)。
+**源码**：[source/std/concurrency.chl:52](../../source/std/concurrency.chl#L52)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-7"></a>
 
@@ -383,7 +383,7 @@ std::concurrency::AtomicInt64::create(value);
 
 **声明**
 
-```magel
+```chali
 int64 get();
 ```
 
@@ -405,13 +405,13 @@ int64 get();
 
 **调用形式**
 
-```magel
+```chali
 obj.get();
 ```
 
-**源码**：[source/std/concurrency.mgl:53](../../source/std/concurrency.mgl#L53)。
+**源码**：[source/std/concurrency.chl:53](../../source/std/concurrency.chl#L53)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-8"></a>
 
@@ -419,7 +419,7 @@ obj.get();
 
 **声明**
 
-```magel
+```chali
 void set(int64 value);
 ```
 
@@ -443,13 +443,13 @@ void set(int64 value);
 
 **调用形式**
 
-```magel
+```chali
 obj.set(value);
 ```
 
-**源码**：[source/std/concurrency.mgl:54](../../source/std/concurrency.mgl#L54)。
+**源码**：[source/std/concurrency.chl:54](../../source/std/concurrency.chl#L54)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-9"></a>
 
@@ -457,7 +457,7 @@ obj.set(value);
 
 **声明**
 
-```magel
+```chali
 int64 fetchAdd(int64 delta);
 ```
 
@@ -481,13 +481,13 @@ int64 fetchAdd(int64 delta);
 
 **调用形式**
 
-```magel
+```chali
 obj.fetchAdd(delta);
 ```
 
-**源码**：[source/std/concurrency.mgl:55](../../source/std/concurrency.mgl#L55)。
+**源码**：[source/std/concurrency.chl:55](../../source/std/concurrency.chl#L55)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-10"></a>
 
@@ -495,7 +495,7 @@ obj.fetchAdd(delta);
 
 **声明**
 
-```magel
+```chali
 static Channel<T> create(int64 capacity);
 ```
 
@@ -519,13 +519,13 @@ static Channel<T> create(int64 capacity);
 
 **调用形式**
 
-```magel
+```chali
 std::concurrency::Channel<T>::create(capacity);
 ```
 
-**源码**：[source/std/concurrency.mgl:61](../../source/std/concurrency.mgl#L61)。
+**源码**：[source/std/concurrency.chl:61](../../source/std/concurrency.chl#L61)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-11"></a>
 
@@ -533,7 +533,7 @@ std::concurrency::Channel<T>::create(capacity);
 
 **声明**
 
-```magel
+```chali
 int64 sendFor(T value, int64 millis);
 ```
 
@@ -558,13 +558,13 @@ int64 sendFor(T value, int64 millis);
 
 **调用形式**
 
-```magel
+```chali
 obj.sendFor(value, millis);
 ```
 
-**源码**：[source/std/concurrency.mgl:62](../../source/std/concurrency.mgl#L62)。
+**源码**：[source/std/concurrency.chl:62](../../source/std/concurrency.chl#L62)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-12"></a>
 
@@ -572,7 +572,7 @@ obj.sendFor(value, millis);
 
 **声明**
 
-```magel
+```chali
 int64 send(T value);
 ```
 
@@ -596,13 +596,13 @@ int64 send(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.send(value);
 ```
 
-**源码**：[source/std/concurrency.mgl:63](../../source/std/concurrency.mgl#L63)。
+**源码**：[source/std/concurrency.chl:63](../../source/std/concurrency.chl#L63)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-13"></a>
 
@@ -610,7 +610,7 @@ obj.send(value);
 
 **声明**
 
-```magel
+```chali
 int64 trySend(T value);
 ```
 
@@ -634,13 +634,13 @@ int64 trySend(T value);
 
 **调用形式**
 
-```magel
+```chali
 obj.trySend(value);
 ```
 
-**源码**：[source/std/concurrency.mgl:64](../../source/std/concurrency.mgl#L64)。
+**源码**：[source/std/concurrency.chl:64](../../source/std/concurrency.chl#L64)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-14"></a>
 
@@ -648,7 +648,7 @@ obj.trySend(value);
 
 **声明**
 
-```magel
+```chali
 Receive<T> receiveFor(int64 millis);
 ```
 
@@ -672,13 +672,13 @@ Receive<T> receiveFor(int64 millis);
 
 **调用形式**
 
-```magel
+```chali
 obj.receiveFor(millis);
 ```
 
-**源码**：[source/std/concurrency.mgl:65](../../source/std/concurrency.mgl#L65)。
+**源码**：[source/std/concurrency.chl:65](../../source/std/concurrency.chl#L65)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-15"></a>
 
@@ -686,7 +686,7 @@ obj.receiveFor(millis);
 
 **声明**
 
-```magel
+```chali
 Receive<T> receive();
 ```
 
@@ -708,13 +708,13 @@ Receive<T> receive();
 
 **调用形式**
 
-```magel
+```chali
 obj.receive();
 ```
 
-**源码**：[source/std/concurrency.mgl:72](../../source/std/concurrency.mgl#L72)。
+**源码**：[source/std/concurrency.chl:72](../../source/std/concurrency.chl#L72)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-16"></a>
 
@@ -722,7 +722,7 @@ obj.receive();
 
 **声明**
 
-```magel
+```chali
 Receive<T> tryReceive();
 ```
 
@@ -744,13 +744,13 @@ Receive<T> tryReceive();
 
 **调用形式**
 
-```magel
+```chali
 obj.tryReceive();
 ```
 
-**源码**：[source/std/concurrency.mgl:73](../../source/std/concurrency.mgl#L73)。
+**源码**：[source/std/concurrency.chl:73](../../source/std/concurrency.chl#L73)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 <a id="api-17"></a>
 
@@ -758,7 +758,7 @@ obj.tryReceive();
 
 **声明**
 
-```magel
+```chali
 void close();
 ```
 
@@ -780,19 +780,19 @@ void close();
 
 **调用形式**
 
-```magel
+```chali
 obj.close();
 ```
 
-**源码**：[source/std/concurrency.mgl:74](../../source/std/concurrency.mgl#L74)。
+**源码**：[source/std/concurrency.chl:74](../../source/std/concurrency.chl#L74)。
 
-**完整示例**：[example/samples/typed_messages_shared.mgl](../../example/samples/typed_messages_shared.mgl)。
+**完整示例**：[example/samples/typed_messages_shared.chl](../../example/samples/typed_messages_shared.chl)。
 
 ## 补充完整示例
 
-[example/samples/thread_channel.mgl](../../example/samples/thread_channel.mgl)。
+[example/samples/thread_channel.chl](../../example/samples/thread_channel.chl)。
 
-```magel
+```chali
 import std::thread;
 import std::concurrency;
 void worker(std::concurrency::Channel<int64> values) {

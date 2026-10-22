@@ -1,4 +1,4 @@
-#include "../../source/allocator/magel_allocator.hpp"
+#include "../../source/allocator/chali_allocator.hpp"
 /**
  * @file bind.hpp
  * @brief 把 C++ 模型类投射成模板引擎的 `tmpl::Value`：`field` / `TEMPLATE_MODEL` / `encode`。

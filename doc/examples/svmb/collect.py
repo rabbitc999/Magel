@@ -7,10 +7,10 @@
 不采信。工具缺失时对应那一节写成“跳过（缺 xxx）”，不伪造内容。
 
 用法（在仓库根目录）：
-    python magel/doc/examples/svmb/collect.py \
-        --parser magel/magel.exe \
-        --vm tmp/vm-9700x-pool/x64/Release/magel-stackvm.exe \
-        --vm-opcode tmp/vm-9700x-pool/gcc64/magel-stackvm.exe \
+    python chali/doc/examples/svmb/collect.py \
+        --parser chali/ChaLi.exe \
+        --vm tmp/vm-9700x-pool/x64/Release/chali-stackvm.exe \
+        --vm-opcode tmp/vm-9700x-pool/gcc64/chali-stackvm.exe \
 """
 
 import argparse
@@ -98,11 +98,11 @@ def evidence_container(specimen, parser):
     if parser and os.path.exists(parser):
         with tempfile.TemporaryDirectory() as work:
             prefix = os.path.join(work, "control")
-            code, output = run([parser, "magel/example/samples/control.mgl", "--emit", "--svmb",
+            code, output = run([parser, "chali/example/samples/control.chl", "--emit", "--svmb",
                                 "--out", prefix])
             rebuilt = prefix + ".svmb"
             lines += ["", f"用 {os.path.relpath(parser, ROOT)} 重新编译 "
-                          "magel/example/samples/control.mgl 的结果："]
+                          "chali/example/samples/control.chl 的结果："]
             if code != 0 or not os.path.exists(rebuilt):
                 lines.append(f"  编译失败（退出码 {code}）：{output.strip()[:400]}")
             else:
@@ -289,7 +289,7 @@ def evidence_instructions(specimen):
 
 def opcode_names():
     """从 stackvm.hpp 的 Op 枚举里读出操作码名（顺序即编号）。"""
-    path = os.path.join(ROOT, "magel", "library", "stackvm", "stackvm.hpp")
+    path = os.path.join(ROOT, "chali", "library", "stackvm", "stackvm.hpp")
     if not os.path.exists(path):
         return []
     source = open(path, encoding="utf-8", newline=None).read()
@@ -311,7 +311,7 @@ def evidence_runtime(vm, specimen, disasm_lines=40):
     layout = prefix + ".layout"
     base = [vm, "run", specimen, "--data", data, "--layout", layout]
 
-    section_header(lines, f"$ magel-stackvm disasm {rel(specimen, ROOT)}")
+    section_header(lines, f"$ chali-stackvm disasm {rel(specimen, ROOT)}")
     code, output = run([vm, "disasm", specimen])
     lines += output.rstrip("\n").splitlines()[:disasm_lines]
     lines.append(f"...（退出码 {code}）")
@@ -320,13 +320,13 @@ def evidence_runtime(vm, specimen, disasm_lines=40):
         hits = [line for line in output.splitlines() if pattern in line]
         lines.append(f"  含 {pattern!r} 的前 3 行：{hits[:3]}")
 
-    section_header(lines, f"$ magel-stackvm run {rel(specimen, ROOT)} --limit 12 --trace")
+    section_header(lines, f"$ chali-stackvm run {rel(specimen, ROOT)} --limit 12 --trace")
     code, trace = run(base + ["--limit", "12", "--trace"])
     lines += trace.rstrip("\n").splitlines()[:12]
-    section_header(lines, f"$ magel-stackvm run {rel(specimen, ROOT)} --limit 12 --debug")
+    section_header(lines, f"$ chali-stackvm run {rel(specimen, ROOT)} --limit 12 --debug")
     code, debug = run(base + ["--limit", "12", "--debug"])
     lines += debug.rstrip("\n").splitlines()[:8]
-    section_header(lines, f"$ magel-stackvm run {rel(specimen, ROOT)}（完整输出）")
+    section_header(lines, f"$ chali-stackvm run {rel(specimen, ROOT)}（完整输出）")
     code, full = run(base + ["--limit", "1000000"])
     lines += full.rstrip("\n").splitlines()[:12]
 
@@ -509,7 +509,7 @@ def evidence_strip(specimen, stripped, parser, vm):
         layout = specimen[:-len(".svmb")] + ".layout"
         code, output = run([vm, "run", stripped, "--data", data, "--layout", layout,
                             "--limit", "6", "--debug"])
-        lines.append(f"  $ magel-stackvm run control-stripped.svmb --limit 6 --debug → 退出码 {code}")
+        lines.append(f"  $ chali-stackvm run control-stripped.svmb --limit 6 --debug → 退出码 {code}")
         for line in output.rstrip("\n").splitlines()[:4]:
             lines.append(f"    {line}")
         code, output = run([vm, "disasm", stripped])
@@ -523,7 +523,7 @@ def evidence_strip(specimen, stripped, parser, vm):
     if parser and os.path.exists(parser):
         with tempfile.TemporaryDirectory() as work:
             prefix = os.path.join(work, "anything-longer-name")
-            code, output = run([parser, "magel/example/samples/control.mgl", "--emit", "--svmb",
+            code, output = run([parser, "chali/example/samples/control.chl", "--emit", "--svmb",
                                 "--no-debug", "--out", prefix])
             rebuilt = prefix + ".svmb"
             if code != 0 or not os.path.exists(rebuilt):
@@ -541,10 +541,10 @@ def main():
     parser = argparse.ArgumentParser(description="重新生成 doc/16 的证据文件")
     parser.add_argument("--svmb", default=os.path.join(HERE, "control.svmb"))
     parser.add_argument("--stripped", default=os.path.join(HERE, "control-stripped.svmb"))
-    parser.add_argument("--parser", default="", help="magel，用来做同源码复现比对")
-    parser.add_argument("--vm", default="", help="magel-stackvm，用来跑 disasm/run/check")
-    parser.add_argument("--vm-opcode", default="", help="第二份 magel-stackvm（GCC 档，带符号）")
-    parser.add_argument("--tests", default="", help="magel-stackvm-tests 可执行文件")
+    parser.add_argument("--parser", default="", help="chali，用来做同源码复现比对")
+    parser.add_argument("--vm", default="", help="chali-stackvm，用来跑 disasm/run/check")
+    parser.add_argument("--vm-opcode", default="", help="第二份 chali-stackvm（GCC 档，带符号）")
+    parser.add_argument("--tests", default="", help="chali-stackvm-tests 可执行文件")
     args = parser.parse_args()
 
     if not os.path.exists(args.svmb):

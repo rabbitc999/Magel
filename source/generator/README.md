@@ -1,10 +1,10 @@
 # 独立编译器工程生成器
 
-工程生成器从权威文法、前端实现和共享 VM 生成可单独构建的 Magel 编译器工程。
+工程生成器从权威文法、前端实现和共享 VM 生成可单独构建的 ChaLi 编译器工程。
 
 ```sh
-magel gen compiler out build/compiler
-magel clear out build/compiler
+chali gen compiler out build/compiler
+chali clear out build/compiler
 ```
 
 生成工程提供语法和语义检查、VM 执行、四元式及 `.svmb` 字节码导出。标准库与运行时资产在构建时内嵌，运行编译器不读取源码仓库。

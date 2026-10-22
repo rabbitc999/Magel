@@ -1,6 +1,6 @@
 # 04 语言参考
 
-按主题查阅 Magel 的语法与语义。想先有个整体印象，看[语言速览](02-language-tour.md)；想理解为什么这样设计，看[核心概念](03-core-concepts.md)。
+按主题查阅 ChaLi 的语法与语义。想先有个整体印象，看[语言速览](02-language-tour.md)；想理解为什么这样设计，看[核心概念](03-core-concepts.md)。
 
 文法的权威形式是 [EBNF 语法参考](14-grammar-ebnf.md)。本篇讲怎么用。
 
@@ -72,7 +72,7 @@
 - 定型只看**装不装得下**：字面量超出目标类型范围就退回默认 `int64`，由「缩窄要强转」
   报错，不会静默截断。
 
-可运行验证见 [`literal_context_type.mgl`](../example/samples/literal_context_type.mgl)。
+可运行验证见 [`literal_context_type.chl`](../example/samples/literal_context_type.chl)。
 
 ### 复合类型
 
@@ -92,7 +92,7 @@
 
 ## 3. 声明
 
-```magel
+```chali
 const int64 LIMIT = 100;   // 常量
 int64 counter = 0;         // 变量
 let inferred = LIMIT;      // 类型推导
@@ -106,7 +106,7 @@ let inferred = LIMIT;      // 类型推导
 
 ## 4. 函数
 
-```magel
+```chali
 int64 add(int64 a, int64 b) { return a + b; }
 void log(String message) { println("{}", message); }
 ```
@@ -127,7 +127,7 @@ void log(String message) { println("{}", message); }
 函数的多值返回类型写成元组。`return a, value;` 等价于 `return (a, value);`，
 类型参数可出现在任意元组元素中，并随函数实例化或实参推导替换；已有赋值目标的类型也可参与返回类型推导。
 
-```magel
+```chali
 (int32, T) func<T>(T value) {
     int32 a = 1;
     return a, value;
@@ -155,7 +155,7 @@ int64 main() {
 
 语言内建 `move` 的签名为 `T move(T mut& source)`，结果类型从引用目标推导，无须导入模块。
 
-```magel
+```chali
 struct Message { String text; };
 int64 main() {
     Message source;
@@ -180,10 +180,10 @@ int64 main() {
 
 形参后可以写 `= 表达式`，调用时省略连续的尾部实参：
 
-```magel
+```chali
 int64 add(int64 a, int64 b = 10) { return a + b; }
-String greet(String name = "Magel") { return "Hello, " + name; }
-// add(2) == 12；add(2, 3) == 5；greet() == "Hello, Magel"
+String greet(String name = "ChaLi") { return "Hello, " + name; }
+// add(2) == 12；add(2, 3) == 5；greet() == "Hello, ChaLi"
 ```
 
 普通函数、实例方法、静态方法和构造器均支持默认参数，泛型函数可从显式实参推导类型。
@@ -202,7 +202,7 @@ String greet(String name = "Magel") { return "Hello, " + name; }
 
 结构体可以定义构造器，调用时用 `new(...)`：
 
-```magel
+```chali
 struct Counter {
     static int64 alive;
     int64 value;
@@ -231,7 +231,7 @@ value=7 alive=1
 | `T v = T::create(实参);` | **具名构造入口** `static T create(...)` |
 | `T v = T::其他工厂();` | 普通静态工厂（名字任取） |
 
-```magel
+```chali
 struct Point {
     int64 x;
     int64 y;
@@ -267,7 +267,7 @@ int64 main() {
 
 旧的裸写法 `T v = new;` / `T v = new(实参);` 已删除，一律按语法错误处理。
 
-```magel
+```chali
 struct Point {
     int64 x;
     int64 y;
@@ -292,7 +292,7 @@ int64 main() {
 
 ## 5. 运算符
 
-```magel
+```chali
 int64 main() {
     int64 a = 17;
     int64 b = 5;
@@ -319,7 +319,7 @@ int64 main() {
 复合赋值 `+=` `-=` `*=` `/=` `%=` `&=` `|=` `^=` `<<=` `>>=` 都有。
 
 `++` / `--` 按实际目标检查冲突：同一完整表达式内，自增减目标不能再被其他操作读取或写入。
-因此 `i = i++`、`i += i++`、`i++ + i`、`i++ + ++i` 会报告 `MGL1301`；
+因此 `i = i++`、`i += i++`、`i++ + i`、`i++ + ++i` 会报告 `CHL1301`；
 `a = (i++) + (j++)`、`a += i++` 和 `f(i++, j++)` 在目标互不影响时合法。
 不同字段和不同常量下标可独立更新；动态下标无法证明不同位置时保守判为可能重叠，直接引用别名按来源判断。
 括号、实参和短路分支都属于所在完整表达式，语句、声明初始化式及 for 三个部分分别检查。
@@ -327,7 +327,7 @@ int64 main() {
 赋值目标的位置只求值一次：`a[f()] += 1` 只调用一次 `f()`，`a[i++] = 1` 和
 `a[i++] += 1` 都只让 `i` 自增一次。复合赋值先保存位置，再读取原值、计算结果并写回。
 数组元素 `a[i]` 与下标变量 `i` 是不同目标，因此下标自增本身合法。
-可运行验证见 [`expression_effects.mgl`](../example/samples/expression_effects.mgl)。
+可运行验证见 [`expression_effects.chl`](../example/samples/expression_effects.chl)。
 
 结构体可以重载运算符：继承 `Add` / `Subtract` / `Multiply` / `Divide` / `Modulo` /
 `Equal` / `NotEqual` / `Less` / `LessOrEqual` / `Greater` / `GreaterOrEqual` / `And` /
@@ -368,18 +368,18 @@ int64 main() {
   `Vec y = a + 3;` 走返回 `Vec` 的。没有目标类型（`let z = a + 3;`）会报错让你指明，
   **不会悄悄挑一条**。
 
-可运行验证见 [`operator_symmetry.mgl`](../example/samples/operator_symmetry.mgl)、
-[`operator_right_direction.mgl`](../example/samples/operator_right_direction.mgl)、
-[`operator_result_choice.mgl`](../example/samples/operator_result_choice.mgl)、
-[`operator_swap_eval_order.mgl`](../example/samples/operator_swap_eval_order.mgl)、
-[`no_replace.mgl`](../example/samples/no_replace.mgl)（`#NoAddReplace` 关推导）；
+可运行验证见 [`operator_symmetry.chl`](../example/samples/operator_symmetry.chl)、
+[`operator_right_direction.chl`](../example/samples/operator_right_direction.chl)、
+[`operator_result_choice.chl`](../example/samples/operator_result_choice.chl)、
+[`operator_swap_eval_order.chl`](../example/samples/operator_swap_eval_order.chl)、
+[`no_replace.chl`](../example/samples/no_replace.chl)（`#NoAddReplace` 关推导）；
 报错例子见
-[`operator_asymmetric_reverse.mgl`](../example/samples-error/operator_asymmetric_reverse.mgl)（只声明左减法）、
-[`operator_right_forbidden.mgl`](../example/samples-error/operator_right_forbidden.mgl)（`#NoRightAdd` 禁止右向）、
-[`operator_right_explicit.mgl`](../example/samples-error/operator_right_explicit.mgl)（`RightAdd` 形参接不住）、
-[`operator_no_add_replace.mgl`](../example/samples-error/operator_no_add_replace.mgl)（`#NoAddReplace` 关掉换边）、
-[`operator_result_ambiguous.mgl`](../example/samples-error/operator_result_ambiguous.mgl)（没有目标类型）、
-[`logical_operator_overload.mgl`](../example/samples-error/logical_operator_overload.mgl)（`&&` 不可重载）。
+[`operator_asymmetric_reverse.chl`](../example/samples-error/operator_asymmetric_reverse.chl)（只声明左减法）、
+[`operator_right_forbidden.chl`](../example/samples-error/operator_right_forbidden.chl)（`#NoRightAdd` 禁止右向）、
+[`operator_right_explicit.chl`](../example/samples-error/operator_right_explicit.chl)（`RightAdd` 形参接不住）、
+[`operator_no_add_replace.chl`](../example/samples-error/operator_no_add_replace.chl)（`#NoAddReplace` 关掉换边）、
+[`operator_result_ambiguous.chl`](../example/samples-error/operator_result_ambiguous.chl)（没有目标类型）、
+[`logical_operator_overload.chl`](../example/samples-error/logical_operator_overload.chl)（`&&` 不可重载）。
 
 ---
 
@@ -387,7 +387,7 @@ int64 main() {
 
 `struct`、`enum` 和 `interface` 声明在右花括号 `}` 处结束，末尾分号可省略，原有 `};` 写法仍然有效。结构体字段、接口抽象方法和普通语句的分号要求不变。
 
-```magel
+```chali
 struct Point {
     int64 x;
     int64 y;
@@ -407,7 +407,7 @@ struct Point {
 
 ## 7. 枚举与 match
 
-```magel
+```chali
 enum Message {
     Quit,
     Move(int32 x, int32 y),
@@ -417,7 +417,7 @@ enum Message {
 
 变体可带字段（代数数据类型）。`match` 处理：
 
-```magel
+```chali
 void show(Message message) {
     match (message) {
         Message::Quit => { println("quit"); }
@@ -431,7 +431,7 @@ match 检查**穷尽性**：漏掉变体是编译错误。`_` 兜底。
 
 ### 标量 match：常量与区间
 
-```magel
+```chali
 int64 grade(int64 score) {
     match (score) {
         100 => { return 3; }
@@ -452,7 +452,7 @@ int64 grade(int64 score) {
 
 端点类型能够推导时可以省略 `<T>`。区间模式只适用于整数与 `char`；浮点和 String 的有序条件使用 `if` 守卫。自定义类型实现 `Equal<T>` 后可以作为 match 主体，分支值通过该协议比较；主体只求值一次，分支仍按源码顺序选择。
 
-整数 match 会对能在编译期确定的模式检查覆盖范围：`rangeEq(15,25)` 与 `rangeEq(10,20)`、`15 =>` 与 `rangeEq(15,20)` 均重叠，报告 `MGL1601` 警告。`range(10,15)` 与 `rangeEq(15,20)` 不重叠，空区间不参与检查。比较保留完整 int64/uint64 精度，并只考虑主体整数类型可表示的值。常量表达式端点参与检查，运行时端点不作静态推断。
+整数 match 会对能在编译期确定的模式检查覆盖范围：`rangeEq(15,25)` 与 `rangeEq(10,20)`、`15 =>` 与 `rangeEq(15,20)` 均重叠，报告 `CHL1601` 警告。`range(10,15)` 与 `rangeEq(15,20)` 不重叠，空区间不参与检查。比较保留完整 int64/uint64 精度，并只考虑主体整数类型可表示的值。常量表达式端点参与检查，运行时端点不作静态推断。
 
 警告不阻止编译或改变分支顺序；模式仍从前到后检查，有守卫时先匹配模式再检查守卫。带守卫的模式也可能收到覆盖范围重叠警告，但这不表示该分支必然不可达。重复的无守卫单值模式仍沿用已有编译错误。命令行显示警告位置，JSON 使用 `severity: "warning"`，编辑器以警告显示。
 
@@ -460,7 +460,7 @@ int64 grade(int64 score) {
 
 绑定变量后再加条件，用 `if`：
 
-```magel
+```chali
 enum Choice { Value(String text) };
 int64 kind(Choice choice) {
     match (choice) {
@@ -480,7 +480,7 @@ kind(Choice::Value("bad"))  = 0
 
 ## 8. 接口与运行期多态
 
-```magel
+```chali
 interface Shape {
     int64 area();
     String describe() { return "shape"; }   // 默认实现
@@ -494,7 +494,7 @@ interface Shape {
 
 接口视图可直接绑定实现类型的引用，声明、赋值、实参及返回值都适用，不需要 Any 中转：
 
-```magel
+```chali
 Circle circle;
 circle.r = 4;
 Shape const& view = &circle;
@@ -502,13 +502,13 @@ Shape const& view = &circle;
 
 只读来源不能绑定可写视图；复制接口视图不延长具体对象的寿命，局部对象的视图不能逃出作用域。已经装箱的 Any 仍可通过 `getReference`／`tryGetReference` 提取接口视图。
 
-完整例子见 [`example/samples/interface.mgl`](../example/samples/interface.mgl)。Any 的安全提取使用 `isType<T>(&box)`、`tryGet<T>(&box)`、`tryGetReference<T>(&box)` 和 `tryGetMut<T>(&box)`；`nameof` 与盒子的 `.name()` 已删除，见 [Any、显式泛型与通用数据工具](22-any-generics-data.md)。
+完整例子见 [`example/samples/interface.chl`](../example/samples/interface.chl)。Any 的安全提取使用 `isType<T>(&box)`、`tryGet<T>(&box)`、`tryGetReference<T>(&box)` 和 `tryGetMut<T>(&box)`；`nameof` 与盒子的 `.name()` 已删除，见 [Any、显式泛型与通用数据工具](22-any-generics-data.md)。
 
 ---
 
 ## 9. 泛型
 
-```magel
+```chali
 int64 total<T: Shape>(T shape) { return shape.area(); }
 ```
 
@@ -520,7 +520,7 @@ int64 total<T: Shape>(T shape) { return shape.area(); }
 
 支持在外层模板内部分绑定内层模板的参数；外层仍保持泛型，使用具体类型时才递归生成完整实例：
 
-```magel
+```chali
 struct TypeC { int64 value; };
 struct TypeA<T, V> { T first; V second; };
 struct TypeB<T> { TypeA<T, TypeC> item; };
@@ -548,14 +548,14 @@ int64 main() {
 此处的部分绑定是模板组合；普通泛型类型和函数目前没有按参数模式另写实现体的模板偏特化语法。泛型闭包的特化见后文。
 值字段不能直接或间接包含自身；同一实例的引用递归允许存在。不断扩大的递归类型会报错，
 每次编译最多生成 1024 个泛型实例，类型表达式嵌套达到 128 层时停止展开并给出诊断。
-综合回归见 [`tests/magel_generic_monomorphization.py`](../tests/magel_generic_monomorphization.py)，
+综合回归见 [`tests/chali_generic_monomorphization.py`](../tests/chali_generic_monomorphization.py)，
 覆盖VM 执行、实例复用及非法代码诊断。
 
 ---
 
 ## 10. 控制流
 
-```magel
+```chali
 int64 main() {
     int64 i = 0;
     while (i < 3) { i = i + 1; }
@@ -603,7 +603,7 @@ for=9
 
 ## 11. 容器
 
-```magel
+```chali
 int64 main() {
     List<int64> xs;
     xs.push(1);
@@ -636,7 +636,7 @@ m=1
 
 ## 12. 模块与导入
 
-```magel
+```chali
 module mylib::math;      // 声明本文件所属模块
 import std::iter;        // 导入模块
 import std::text;
@@ -645,25 +645,25 @@ import std::text;
 - 模块用 `module 名字::子名字;` 声明，通常放在文件首行。
 - `import` 后可写完整限定名，也可使用唯一可见的短名；同名冲突时使用限定名明确归属。
 - 核心模块 `std::lang`（`println` / `format` / `assert` / `len` / `Any` …）自动加载，无需 `import`。
-- 可见性、导出与跨模块泛型见 [`example/samples/import_names.mgl`](../example/samples/import_names.mgl)。
+- 可见性、导出与跨模块泛型见 [`example/samples/import_names.chl`](../example/samples/import_names.chl)。
 
 ---
 
 ## 13. 引用速查
 
-```magel
+```chali
 int64 value = 7;
 int64 mut& alias = &value;    // 可变引用
 int64 const& view = &value;   // 只读引用（等价 int64 &）
 alias = 9;                    // 写引用 = 写 value
 ```
 
-```magel
+```chali
 T mut& owned = heap T;         // 堆对象（元素类型由 owned 的类型定）
 owned.drop();                  // 释放
 ```
 
-规则与限制（逃逸检查、`MGL1204`）见[核心概念](03-core-concepts.md#2-引用非空且不能活得比目标久)。
+规则与限制（逃逸检查、`CHL1204`）见[核心概念](03-core-concepts.md#2-引用非空且不能活得比目标久)。
 
 ---
 
@@ -675,7 +675,7 @@ owned.drop();                  // 释放
 
 宏模板中的辅助名称必须在定义处可见；调用者的同名局部变量不能补足缺失的声明。辅助名称未声明时，编译器报告未声明变量，不将它作为整数参与块表达式结果类型匹配。
 
-```magel
+```chali
 $macro ADD<T:a>(a, b)
 cast<T>(a + b)
 $end_macro
@@ -692,7 +692,7 @@ int64 main() {
 
 ## 15. 注解与反射
 
-```magel
+```chali
 @annotation Route(path: String, level: int32 = 2)
 
 @Route("/health", level: 1)
@@ -704,7 +704,7 @@ int64 health() { return 200; }
 - 运行期可查询声明上的注解、按名调用函数、做接口分派。
 
 **构建要求**：反射是语言的固定组成，**不可裁剪** —— 根目录工具链固定编入
-`MAGEL_WITH_REFLECTION=1` 与 `STACKVM_WITH_REFLECTION=1`，反射前端与运行时始终存在，
+`CHALI_WITH_REFLECTION=1` 与 `STACKVM_WITH_REFLECTION=1`，反射前端与运行时始终存在，
 编译流程也始终执行完整的反射处理。
 
 - `--reflection` 显式要求本次产物写入反射元数据（缺省即开启）。
@@ -714,7 +714,7 @@ int64 health() { return 200; }
 
 反射产物要求目标 VM 编入反射；目标 VM 没有反射支持时，编译源程序须使用 `--no-reflection`。反射当前的签名及动态调用边界见[反射说明](19-reflection.md)。
 
-完整例子见 [`example/reflection/`](../example/reflection/)（`annotations.mgl`、`calls.mgl`、`dispatch.mgl`、`queries.mgl`）。
+完整例子见 [`example/reflection/`](../example/reflection/)（`annotations.chl`、`calls.chl`、`dispatch.chl`、`queries.chl`）。
 
 ---
 
@@ -722,7 +722,7 @@ int64 health() { return 200; }
 
 `opcode` 声明胶水拥有的不透明对象类型，记录布局由 ABI 或 C++ 胶水管理：
 
-```magel
+```chali
 opcode Number {
     new = createNumber;
     drop = destroyNumber;
@@ -753,7 +753,7 @@ opcode FileHandle {
 `String`、`BigInteger`、`BigDecimal`、`File` 和 `Process` 均由 `std::lang` 中的
 `opcode` 声明定义，前端不为它们保留独立的 `Kind` 枚举项。`string` 不是 `String` 的类型别名。
 
-```magel
+```chali
 abi "./native.dll" {
     int64 c_function(int64 x) = "c_function";
 }
@@ -788,7 +788,7 @@ abi "./native.dll" {
 
 ### 销毁、释放与临时所有权
 
-显式释放统一调用 `value.drop()`：堆引用、数组及资源值使用同一调用形式，不提供独立释放语句；实现 Drop 的结构体继续沿用协议方法。它们共用资源终结与合并机制。底层释放是非幂等的操作，不能重复销毁同一生命周期。编译器在控制流图上自动合并可证明属于同一生命周期的重复 drop，释放后读写仍报错；跨调用等无法静态判定且未合并的重复释放由运行时报告 `MGL1205`。重新赋值开始新生命周期；`const &` 仍不能调用 `drop()`。释放后读写以及移动后读取产生 `MGL1205`；已移动的原绑定也禁止写入，只有新的声明可以创建可用绑定。默认堆复用物理内存但不复用逻辑分配身份，未被编译器合并的旧引用再次释放会报错且不影响新对象。释放立即移除活跃记录，不生成墓碑，也没有清扫 API。打印、格式化和文件写入等借用实参的调用会将新建字符串保存在完整表达式的拥有型临时变量中，调用完成后清理；所有权转移则清空源槽。分支上的显式释放不会取消其他路径的自动清理。详见[借用控制流与算法验证](11-algorithm-validation.md)。
+显式释放统一调用 `value.drop()`：堆引用、数组及资源值使用同一调用形式，不提供独立释放语句；实现 Drop 的结构体继续沿用协议方法。它们共用资源终结与合并机制。底层释放是非幂等的操作，不能重复销毁同一生命周期。编译器在控制流图上自动合并可证明属于同一生命周期的重复 drop，释放后读写仍报错；跨调用等无法静态判定且未合并的重复释放由运行时报告 `CHL1205`。重新赋值开始新生命周期；`const &` 仍不能调用 `drop()`。释放后读写以及移动后读取产生 `CHL1205`；已移动的原绑定也禁止写入，只有新的声明可以创建可用绑定。默认堆复用物理内存但不复用逻辑分配身份，未被编译器合并的旧引用再次释放会报错且不影响新对象。释放立即移除活跃记录，不生成墓碑，也没有清扫 API。打印、格式化和文件写入等借用实参的调用会将新建字符串保存在完整表达式的拥有型临时变量中，调用完成后清理；所有权转移则清空源槽。分支上的显式释放不会取消其他路径的自动清理。详见[借用控制流与算法验证](11-algorithm-validation.md)。
 
 函数入口 `main` 的返回类型必须是 `int64` 或 `void`，不接受 `uint64`、较窄整数、浮点数或引用。函数指针可作数组元素：`int64 fn(int64) a[] = new[2];`，赋值后可用 `let callback = a[0]; callback(value);` 调用。固定数组、元组、容器和嵌套函数类型可组合；返回运行时数组的函数类型写作 `(int64[]) fn()`，圆括号将数组返回类型与函数指针数组区分开。
 
@@ -802,7 +802,7 @@ abi "./native.dll" {
 
 外部局部变量默认按 `const&` 捕获，`fn const(...)` 与默认写法等价：能看到来源的新值，但不能修改来源。`fn mut(...)` 按 `mut&` 捕获并允许写回。`fn copy(...)` 捕获可修改的独立副本；`fn move(...)` 把来源的拥有值移入闭包，原绑定禁止读写，须重新声明新的同名变量后使用。复制闭包会复制内部拥有状态，引用捕获仍指向同一来源。按引用捕获不得超出来源寿命；拥有捕获仅在其中不包含短寿命引用时可以返回。捕获列表写作 `fn copy[a, b] mut[c] const[d] move[e](int64 x) { ... }`，未列出的外部局部变量默认按 `const&` 捕获；列表后可追加一个默认方式，如 `fn copy[a, b] mut(int64 x)` 表示其余变量按 `mut&` 捕获。默认方式只能声明一次，`copy[a, b] mut const(...)` 会报错。
 
-```magel
+```chali
 int64 n = 1;
 let read = int64 fn() { n };
 let write = int64 fn mut(int64 x) { n += x; return n; };
@@ -817,7 +817,7 @@ assert(transferred() == 2);
 
 列表中重复的名称、不存在的变量、与形参重名的变量，以及对只读来源的 `mut` / `move` 捕获会被拒绝。显式列表中的变量即使未在函数体使用也会捕获。捕获的是整个变量；copy/move 一个引用值不会取得其所指对象的所有权，也不会延长所指对象的寿命。全局变量的未限定直接访问仍使用全局存储；需要快照时在列表中显式列出。数组值需先转换为容器或显式引用。文件和进程句柄可 move 捕获，无法复制；复制包含这些句柄的闭包会被拒绝。
 
-同一变量先被引用捕获（默认 `const&` 或 `fn mut`）、随后被另一个闭包 `move` 捕获，并不单独构成错误：如果借用闭包的最后一次使用发生在 `move` 之前，可以通过检查。来源已移动、销毁或释放后再使用借用闭包，会报 `MGL1205`；复制闭包不会消除它对来源的借用。来源寿命不足而逃逸的闭包报 `MGL1204`。需要两个闭包继续独立使用时，可用 `copy` 保存快照；复制或移动引用值仍不会延长所指对象的寿命。此检查覆盖编译器可追踪的借用来源，原始内存及不透明宿主操作仍须遵守接口约定。
+同一变量先被引用捕获（默认 `const&` 或 `fn mut`）、随后被另一个闭包 `move` 捕获，并不单独构成错误：如果借用闭包的最后一次使用发生在 `move` 之前，可以通过检查。来源已移动、销毁或释放后再使用借用闭包，会报 `CHL1205`；复制闭包不会消除它对来源的借用。来源寿命不足而逃逸的闭包报 `CHL1204`。需要两个闭包继续独立使用时，可用 `copy` 保存快照；复制或移动引用值仍不会延长所指对象的寿命。此检查覆盖编译器可追踪的借用来源，原始内存及不透明宿主操作仍须遵守接口约定。
 
 ## 泛型闭包与特化
 
@@ -825,7 +825,7 @@ assert(transferred() == 2);
 
 完整特化和偏特化使用同一个闭包名称声明，实参先确定类型，再选择唯一最具体的匹配：
 
-```magel
+```chali
 let f = fn<T, U>(T first, U second) { 0 };
 f<T, int64> = fn(T first, int64 second) { 1 };
 f<int64, int64> = fn(int64 first, int64 second) { 2 };
@@ -845,7 +845,7 @@ assert(f(2, 3) == 2);
 外层类型或函数的 `T` 具体化后，`T fn(T, int32)` 就有确定的返回类型和参数签名。
 结构体字段及函数体内的局部变量都可以这样声明：
 
-```magel
+```chali
 struct CallbackPair<T> {
     T fn(T, int32) a;
     int32 fn(T, int32) b;
@@ -875,7 +875,7 @@ int32 useCallbacks<T>(int32 c) {
 
 `for-in` 与 `while` 可以作为初始化、赋值、实参或返回位置的值表达式，必须提供 `else` 结果。循环体中的 `yield value;` 结束整个值表达式并交出结果；没有交出值时，遍历结束、条件不成立或无值 break 会进入 else。`continue` 开始下一轮。单一值分支可写 `{ value }`，复杂分支用 `yield value;`。
 
-```magel
+```chali
 int64 main()
 {
     int64 first = for (let value in std::lang::range(1, 8))
@@ -900,7 +900,7 @@ int64 main()
 
 只计算 `loop`、`while` 和 `for-in`，普通块、赋值块、`if`、`match` 均不计层数。N 必须是正十进制整数字面量，不能使用变量或表达式；零、负数、超出当前嵌套层数以及在循环外使用均报错。退出不能跨越函数或 `fn` 边界。层级退出不携带值，目标若为需要结果的循环表达式则报错，仍应使用 `yield 值;` 提供结果。
 
-```magel
+```chali
 loop {
     while (true) {
         {
@@ -918,7 +918,7 @@ loop {
 };
 ```
 
-跨层退出沿用作用域清理规则，从内到外执行 `defer`、`scope(exit)` 与资源清理，且不执行被跳过的循环后续语句或更新表达式。完整检查见[层级退出示例](../example/samples/break_level.mgl)。
+跨层退出沿用作用域清理规则，从内到外执行 `defer`、`scope(exit)` 与资源清理，且不执行被跳过的循环后续语句或更新表达式。完整检查见[层级退出示例](../example/samples/break_level.chl)。
 
 ## 块表达式与插值输出
 
@@ -932,7 +932,7 @@ loop {
 写入字节数，流接口返回 `Result<int64, IoError>`；换行计入字节数，关闭或只读错误沿用
 既有写入行为。省略文本时，文件 `println` 只写一个 LF，不自动刷新或关闭文件。
 
-```magel
+```chali
 import std::io;
 
 void main() {
@@ -946,7 +946,7 @@ void main() {
 
 非空语句块可以产生一个值，用于初始化、已有变量赋值、实参或返回值。每条正常完成的路径必须通过 `yield 值;` 退出；普通语句块仍按原有规则执行，空 `{}` 保留集合字面量含义。`yield` 只在该糖里作关键字，作为普通标识符仍可用（如用户自定义的 `yield()`），但不能写成 `yield(参数)` 调用形式。
 
-```magel
+```chali
 int64 main() {
     int32 a = { int32 b = 3; yield b; };
     a = { int32 b = 4; yield b; };
@@ -960,7 +960,7 @@ int64 main() {
 
 例如，循环内可以直接完成外层块的赋值，嵌套赋值块仍各自接收结果：
 
-```magel
+```chali
 (int64, String) found = {
     {
         int64 i = 0;
@@ -978,13 +978,13 @@ int64 a = { int64 b = { yield 1; }; yield b + 1; }; // a == 2
 
 独立花括号语句即使带尾分号也只是普通作用域，不自动建立可丢弃的值接收方；没有外层值表达式接收时，其中的 `yield 值;` 报错。嵌套初始化 `int64 y = loop { int64 z = loop { yield 5; }; yield z + 1; };` 中，内层退出给 z，外层退出给 y；最外层若仅为独立语句块，最后的 `yield y + 1;` 仍没有接收方。
 
-完整的嵌套循环与清理检查见[带值退出示例](../example/samples/break_values.mgl)。
+完整的嵌套循环与清理检查见[带值退出示例](../example/samples/break_values.chl)。
 
 `print`、`println` 接受单个插值字符串或 `String` 表达式，按原文输出结果，不再解释其中的花括号和百分号。传统 `println("{}", value)` 格式保持有效；插值输出不再附加额外格式参数。
 
 卫生变长宏可使用块表达式构造列表：
 
-```magel
+```chali
 $macro vec(T, ...values)
 {
     List<T> result;
@@ -996,13 +996,13 @@ $end_for
 $end_macro
 ```
 
-调用 `List<int32> values = $vec(int32, 1, 2, 3);` 或 `values = $vec(int32, 4, 5);`。普通局部声明自动卫生；局部暂存按指定类型接收实参，每个元素只求值一次，再通过 `push` 顺序追加。省略元素得到空列表。完整可运行测试见 [块表达式样例](../example/samples/block_expression.mgl)与[插值输出样例](../example/samples/print_interpolation.mgl)。
+调用 `List<int32> values = $vec(int32, 1, 2, 3);` 或 `values = $vec(int32, 4, 5);`。普通局部声明自动卫生；局部暂存按指定类型接收实参，每个元素只求值一次，再通过 `push` 顺序追加。省略元素得到空列表。完整可运行测试见 [块表达式样例](../example/samples/block_expression.chl)与[插值输出样例](../example/samples/print_interpolation.chl)。
 
 匿名函数使用 `fn`，旧 `lambda` 语法已移除：`let add = fn(int32 x) { x + 1 };`，显式返回类型写 `let add = int32 fn(int32 x) { return x + 1; };`。`fn const`、`fn mut`、`fn copy`、`fn move` 及显式捕获列表沿用匿名函数规则；`int32 fn(int32)` 仍表示函数类型。
 
 `fn` 表达式可以直接作为普通函数或函数值调用的实参，无须先保存到变量。每个回调按对应形参的
 函数类型检查；省略的参数类型从该形参推导。嵌套函数返回值与元组组合见
-[`fn_inline_arguments.mgl`](../example/samples/fn_inline_arguments.mgl)。
+[`fn_inline_arguments.chl`](../example/samples/fn_inline_arguments.chl)。
 
 ## 默认值文本与字符串协议
 
@@ -1010,7 +1010,7 @@ $end_macro
 
 用户的无参 `String toString()` 自动成为缺少专用实现时的隐式字符串转换；已有 `ImplicitConvert<String>` 则补出转调其实现的无参 `toString()`。两者都显式存在时分别保持自身实现。`cast<String>` 优先专用 `ExplicitConvert<String>`，再复用隐式转换或默认值文本。只有 `toString(String style)` 时，无参版本传入空样式。标准 `ToString` 和 `ImplicitConvert<String>` 泛型约束认可默认能力；同名的用户接口不因此自动满足。
 
-结构体的 `{}` 格式化复用其无参 `toString`；带样式重载保持原有行为。默认转换只求值一次并保留源值所有权，临时源正常清理，无须反射。嵌套的用户方法必须只读；容器快照隔离回调重入修改，回调失败保留原始诊断。完整例见 [默认值文本](../example/samples/value_text.mgl)与[书稿](book/12-字符串与文本.md)。
+结构体的 `{}` 格式化复用其无参 `toString`；带样式重载保持原有行为。默认转换只求值一次并保留源值所有权，临时源正常清理，无须反射。嵌套的用户方法必须只读；容器快照隔离回调重入修改，回调失败保留原始诊断。完整例见 [默认值文本](../example/samples/value_text.chl)与[书稿](book/12-字符串与文本.md)。
 
 ## 带值退出的移动与清理
 
@@ -1020,7 +1020,7 @@ $end_macro
 
 结果先保存，再执行退出路径上的延迟回调和自动清理。移动清空源存储并结束源绑定的生命周期，不调用源值的 close/drop；最终接收方负责资源回收。同时实现 Closeable 与 Drop 时先 close、后 drop。复制产生独立拥有值，来源与结果分别按各自生命周期清理。跨循环退出清理所有离开的作用域，不能释放已交给结果的资源。
 
-移动不延长借用寿命，直接引用及聚合内的引用都不能指向已经退出的局部对象。[移动与清理样例](../example/samples/break_move.mgl)验证求值次数、原始资源句柄身份、外部变量复制、析构次数、清理顺序及 VM 行为；[所有权移动](23-ownership-move.md)给出通用规则。
+移动不延长借用寿命，直接引用及聚合内的引用都不能指向已经退出的局部对象。[移动与清理样例](../example/samples/break_move.chl)验证求值次数、原始资源句柄身份、外部变量复制、析构次数、清理顺序及 VM 行为；[所有权移动](23-ownership-move.md)给出通用规则。
 
 ## 返回控制表达式
 

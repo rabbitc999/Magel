@@ -1,6 +1,6 @@
 #include "std_image.hpp"
 
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include "std_native_record.hpp"
 
 #include <algorithm>
@@ -10,7 +10,7 @@
 #include <vector>
 
 /**
- * @brief MAGEL 图片处理胶水：BMP/PPM/PGM 编解码、卷积、池化、格式转换与大津法。
+ * @brief CHALI 图片处理胶水：BMP/PPM/PGM 编解码、卷积、池化、格式转换与大津法。
  *
  * 槽布局与 std::image::ImageReply 一致（字段顺序即槽序）：
  *   0 error(String)  1 width  2 height  3 pixels(List<uint8>)
@@ -22,7 +22,7 @@
  */
 namespace std_image_glue
 {
-using Context = magel_glue::Context;
+using Context = chali_glue::Context;
 using Bytes = Memory::Vector<std::uint8_t>;
 
 /**
@@ -95,7 +95,7 @@ inline std::int64_t makeImage(Context &ctx, std::int64_t width, std::int64_t hei
 struct ReplyTag
 {
 };
-using Reply = magel_glue::Record<ReplyTag>;
+using Reply = chali_glue::Record<ReplyTag>;
 
 /**
  * @brief 写入可恢复错误并清空结果字段。
@@ -131,7 +131,7 @@ inline std::int64_t listSlot(Reply reply, std::size_t slot)
  */
 inline bool readPixels(Context &ctx, std::int64_t handle, std::size_t expected, Bytes &out)
 {
-    Memory::Vector<magel_glue::Value> raw;
+    Memory::Vector<chali_glue::Value> raw;
     if (!collection_glue::readList(ctx, handle, raw))
     {
         ctx.fail("图片处理：像素缓冲不是有效的 List");
@@ -156,7 +156,7 @@ inline bool readPixels(Context &ctx, std::int64_t handle, std::size_t expected, 
 inline void writePixels(Context &ctx, Reply reply, const Bytes &pixels)
 {
     const std::int64_t handle = listSlot(reply, 3);
-    for (std::uint8_t byte : pixels) collection_glue::listPush(ctx, handle, magel_glue::Value::fromInt(byte));
+    for (std::uint8_t byte : pixels) collection_glue::listPush(ctx, handle, chali_glue::Value::fromInt(byte));
 }
 
 /**
@@ -168,7 +168,7 @@ inline void writePixels(Context &ctx, Reply reply, const Bytes &pixels)
 inline void writeBytes(Context &ctx, Reply reply, const Bytes &bytes)
 {
     const std::int64_t handle = listSlot(reply, 4);
-    for (std::uint8_t byte : bytes) collection_glue::listPush(ctx, handle, magel_glue::Value::fromInt(byte));
+    for (std::uint8_t byte : bytes) collection_glue::listPush(ctx, handle, chali_glue::Value::fromInt(byte));
 }
 
 /**
@@ -180,7 +180,7 @@ inline void writeBytes(Context &ctx, Reply reply, const Bytes &bytes)
 inline void writeGray(Context &ctx, Reply reply, const Bytes &gray)
 {
     const std::int64_t handle = listSlot(reply, 5);
-    for (std::uint8_t byte : gray) collection_glue::listPush(ctx, handle, magel_glue::Value::fromInt(byte));
+    for (std::uint8_t byte : gray) collection_glue::listPush(ctx, handle, chali_glue::Value::fromInt(byte));
 }
 
 /* ---- 编解码辅助 ---- */
@@ -398,7 +398,7 @@ inline Bytes encodeNetpbm(const char *magic, std::int64_t width, std::int64_t he
  * @param error 绑定失败说明。
  * @return 是否全部成功。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     bool records = registry.bindTypedWithContext<std::int64_t>("std::image::__std_imageNew", [](Context &ctx) { return ctx.makeNativeRecord(imageType, new ImageData); }, error);
     records = registry.bindTypedWithContext<void, std::int64_t>("std::image::__std_imageDrop", [](Context &ctx, std::int64_t handle) { ctx.releaseNativeRecord(handle); }, error) && records;
@@ -553,7 +553,7 @@ bool bind(magel_glue::Registry &registry, Memory::String *error)
         {
             const std::uint32_t value = (static_cast<std::uint32_t>(pixels[p * 4 + 3]) << 24) | (static_cast<std::uint32_t>(pixels[p * 4 + 0]) << 16) |
                                         (static_cast<std::uint32_t>(pixels[p * 4 + 1]) << 8) | static_cast<std::uint32_t>(pixels[p * 4 + 2]);
-            collection_glue::listPush(ctx, handle, magel_glue::Value::fromInt(static_cast<std::int64_t>(value)));
+            collection_glue::listPush(ctx, handle, chali_glue::Value::fromInt(static_cast<std::int64_t>(value)));
         } }, error) && ok;
     ok = registry.bindTypedWithContext<void, std::int64_t, std::int64_t, Memory::Vector<std::uint32_t>, Reply>("std::image::__fromARGB", [](Context &ctx, std::int64_t width, std::int64_t height, Memory::Vector<std::uint32_t> argb, Reply reply) {
         if (width <= 0 || height <= 0) { fail(reply, "ARGB 还原：宽高必须为正"); return; }
@@ -580,7 +580,7 @@ bool bind(magel_glue::Registry &registry, Memory::String *error)
         for (std::size_t p = 0; p < static_cast<std::size_t>(width) * static_cast<std::size_t>(height); ++p)
         {
             const std::uint16_t value = static_cast<std::uint16_t>(((pixels[p * 4 + 0] & 0xF8) << 8) | ((pixels[p * 4 + 1] & 0xFC) << 3) | (pixels[p * 4 + 2] >> 3));
-            collection_glue::listPush(ctx, handle, magel_glue::Value::fromInt(value));
+            collection_glue::listPush(ctx, handle, chali_glue::Value::fromInt(value));
         } }, error) && ok;
     ok = registry.bindTypedWithContext<void, std::int64_t, std::int64_t, Memory::Vector<std::uint16_t>, Reply>("std::image::__fromRGB565", [](Context &ctx, std::int64_t width, std::int64_t height, Memory::Vector<std::uint16_t> rgb565, Reply reply) {
         if (width <= 0 || height <= 0) { fail(reply, "RGB565 还原：宽高必须为正"); return; }

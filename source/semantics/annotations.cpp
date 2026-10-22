@@ -55,7 +55,7 @@ bool AnnotationConstant(int expression, int typeId, MAnnotationValue &value, con
     if (node.kind == MNode::Cast)
     {
         if (!SameType(T(node.type), type))
-            return AnnotationFail(origin, MAGEL_TEXT("注解参数类型不匹配：禁止隐式转换"));
+            return AnnotationFail(origin, CHALI_TEXT("注解参数类型不匹配：禁止隐式转换"));
         return AnnotationConstant(node.kids[0], typeId, value, origin);
     }
     if (node.kind == MNode::Bool && type->kind == MType::Bool)
@@ -145,7 +145,7 @@ bool AnnotationConstant(int expression, int typeId, MAnnotationValue &value, con
         return true;
     }
     if (literal->kind == MNode::Int || literal->kind == MNode::Float || node.kind == MNode::Bool || node.kind == MNode::Str || node.kind == MNode::Char)
-        return AnnotationFail(origin, MAGEL_TEXT("注解参数类型不匹配：禁止隐式转换"));
+        return AnnotationFail(origin, CHALI_TEXT("注解参数类型不匹配：禁止隐式转换"));
     return AnnotationFail(origin, "注解参数及默认值必须是编译期常量字面量，首版不支持表达式或变量");
 }
 /**
@@ -223,7 +223,7 @@ bool BindAnnotation(int useId, const Memory::Map<Memory::String, Memory::Set<Mem
             if (named) return AnnotationFail(use, "注解位置参数不能出现在命名参数之后");
             ++position;
         }
-        if (index >= params.size()) return AnnotationFail(use, MAGEL_TEXT("注解参数个数过多：") + use.s);
+        if (index >= params.size()) return AnnotationFail(use, CHALI_TEXT("注解参数个数过多：") + use.s);
         if (supplied[index] >= 0) return AnnotationFail(use, "注解参数重复赋值：" + N(params[index]).s);
         supplied[index] = arg.kids[0];
     }
@@ -257,7 +257,7 @@ bool ValidateAnnotations()
             const auto &node = N(id);
             // 标准库的模型注解声明不妨碍无反射配置使用普通数据库接口。
             if (node.kind == MNode::AnnotationDecl && node.module == "std::sql") return true;
-#if !MAGEL_WITH_REFLECTION || !STACKVM_WITH_REFLECTION
+#if !CHALI_WITH_REFLECTION || !STACKVM_WITH_REFLECTION
             // 裁剪构建不生成元数据；高级入口保留到 VM 执行时统一报告 panic。
             if (node.kind == MNode::AnnotationDecl || !node.annotations.empty()) return true;
 #endif

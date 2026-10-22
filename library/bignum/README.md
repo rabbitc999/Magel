@@ -1,10 +1,10 @@
 # big_number：任意精度大整数 + 十进制浮点（C++17）
 
 > **谁在用**：`library/stackvm` 的 `bint` 类型（虚拟机的任意精度整数）后端就是这个库的
-> `bigint::BigInt` —— 宿主语言（如 `magel` 的 Magel 语言）里的
+> `bigint::BigInt` —— 宿主语言（如 `chali` 的 ChaLi 语言）里的
 > `bint a = bint("…"); a + b;` 走到虚拟机内部就是这边的运算符重载。
 > 那一步是**可选的**：`make -C library/stackvm STACKVM_WITH_BIGINT=0` 能编出不带大整数的
-> 轻量虚拟机。Magel 语言层的 `BigInteger` / `BigDecimal` 方法（`.pow()`、`.strRadix()`、
+> 轻量虚拟机。ChaLi 语言层的 `BigInteger` / `BigDecimal` 方法（`.pow()`、`.strRadix()`、
 > `.sqrt()` 等）也直接落在这些 C++ 成员上。
 
 这是一个**只依赖标准库**的大数库：加 / 减 / 乘 / 除 / 取余 /
@@ -281,7 +281,7 @@ sqrt(2) (30) = 1.41421356237309504880168872421
 
 `bigfloat_math.hpp` 提供 `pi`、`exp`、`ln`、`log10`、`sin`、`cos`、`tan`、`atan`、`asin`、`acos`、实数幂和截断余数。圆周率使用 AGM，指数使用级数与缩放平方，对数使用平方根约化，三角函数使用高精度参数约化与级数；全部复用十进制 `BigFloat`，不转二进制浮点。工作精度增加保护位并检查资源预算，非法实数定义域抛出异常。
 
-Magel 的 `std::math` 使用这些函数计算 `BigDecimal` 分支，有效位数沿用实参设置，未设置时采用 34 位；显式 `pi(digits)` 支持 1..100000 位。独立参考回归为 `python tests/bigfloat_math.py`；参考值由 mpmath 生成并固化，日常测试只需 Python 标准库。更新参考值使用 `python tests/bigfloat_math.py --refresh-reference`，需要 mpmath。
+ChaLi 的 `std::math` 使用这些函数计算 `BigDecimal` 分支，有效位数沿用实参设置，未设置时采用 34 位；显式 `pi(digits)` 支持 1..100000 位。独立参考回归为 `python tests/bigfloat_math.py`；参考值由 mpmath 生成并固化，日常测试只需 Python 标准库。更新参考值使用 `python tests/bigfloat_math.py --refresh-reference`，需要 mpmath。
 
 ## 源码组织
 
@@ -295,4 +295,4 @@ Magel 的 `std::math` 使用这些函数计算 `BigDecimal` 分支，有效位�
 - `bigfloat_roots.cpp`：幂、方根和取整。
 - `bigfloat_transcendental.cpp`、`bigfloat_trigonometry.cpp`：高精度数学。
 
-使用 CMake 静态库目标链接全部实现；不要只编译 `bigint.cpp` 或 `bigfloat.cpp`。Magel 的 Makefile、内嵌资产与导出编译器模板包含相同单元，保留大数裁剪宏。当前修改限于本仓库副本。
+使用 CMake 静态库目标链接全部实现；不要只编译 `bigint.cpp` 或 `bigfloat.cpp`。ChaLi 的 Makefile、内嵌资产与导出编译器模板包含相同单元，保留大数裁剪宏。当前修改限于本仓库副本。

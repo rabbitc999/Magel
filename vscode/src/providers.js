@@ -1,23 +1,23 @@
 'use strict';
 
 /**
- * Magel（`.mgl`）语言能力：把 VS Code 的请求转给 `magel lsp`，把结果翻译回来。
+ * ChaLi（`.chl`）语言能力：把 VS Code 的请求转给 `chali lsp`，把结果翻译回来。
  *
  * 与根目录 `vscode/src/providers.js` 同一套写法（那边管 `.gram` / `.metro`），
- * 这里只留 Magel 需要的部分：悬停、补全、跳转定义、文档大纲、格式化，
- * 以及 Magel 宏块折叠（`src/folding.js`，纯计算，不依赖服务器）。
+ * 这里只留 ChaLi 需要的部分：悬停、补全、跳转定义、文档大纲、格式化，
+ * 以及 ChaLi 宏块折叠（`src/folding.js`，纯计算，不依赖服务器）。
  *
- * 诊断不走这里：它们由 `magel lsp` 主动 `textDocument/publishDiagnostics` 推过来，
+ * 诊断不走这里：它们由 `chali lsp` 主动 `textDocument/publishDiagnostics` 推过来，
  * 入口在 `extension.js` 的 `publishDiagnostics`。
  */
 
 const vscode = require('vscode');
 const folding = require('./folding');
 
-/** Magel 的语言 id（与 `package.json` 的 `contributes.languages` 一致）。 */
-const LANGUAGE_ID = 'magel';
+/** ChaLi 的语言 id（与 `package.json` 的 `contributes.languages` 一致）。 */
+const LANGUAGE_ID = 'chali';
 
-/** 语言选择器：只认 `.mgl`，文件与未命名缓冲区都算。 */
+/** 语言选择器：只认 `.chl`，文件与未命名缓冲区都算。 */
 const SELECTOR = [
   { language: LANGUAGE_ID, scheme: 'file' },
   { language: LANGUAGE_ID, scheme: 'untitled' },
@@ -115,7 +115,7 @@ function toSymbolKind(kind) {
 }
 
 /**
- * 把 `magel lsp` 推送的诊断转成 VS Code 诊断（一次推送即全量）。
+ * 把 `chali lsp` 推送的诊断转成 VS Code 诊断（一次推送即全量）。
  *
  * @param {Array<any>} diagnostics LSP 诊断列表。
  * @returns {vscode.Diagnostic[]} VS Code 诊断列表。
@@ -127,7 +127,7 @@ function toDiagnostics(diagnostics) {
       diagnostic.message || '',
       toDiagnosticSeverity(diagnostic.severity),
     );
-    item.source = diagnostic.source || 'magel-lsp';
+    item.source = diagnostic.source || 'chali-lsp';
     if (diagnostic.code) item.code = diagnostic.code;
     item.relatedInformation = (diagnostic.relatedInformation || []).map((related) =>
       new vscode.DiagnosticRelatedInformation(
@@ -304,7 +304,7 @@ function registerProviders(context, deps) {
           position: { line: position.line, character: position.character },
         }, token, document);
         if (!result) return [];
-        // 协议允许 Location / Location[] / LocationLink[]，`magel lsp` 返回单个 Location。
+        // 协议允许 Location / Location[] / LocationLink[]，`chali lsp` 返回单个 Location。
         const items = Array.isArray(result) ? result : [result];
         return items
           .filter((item) => item && item.uri && item.range)
@@ -314,7 +314,7 @@ function registerProviders(context, deps) {
 
     vscode.languages.registerWorkspaceSymbolProvider({
       /**
-       * 搜索工程所有 Magel 文件中的函数与方法。
+       * 搜索工程所有 ChaLi 文件中的函数与方法。
        * @param {string} query 查询文本。
        * @returns {Promise<vscode.SymbolInformation[]>} 跨文件符号位置。
        */
@@ -380,7 +380,7 @@ function registerProviders(context, deps) {
       },
     }),
 
-    /* Magel 宏块折叠：`$macro` / `$for` 各自成块，
+    /* ChaLi 宏块折叠：`$macro` / `$for` 各自成块，
      * 靠 `src/folding.js` 的栈配对（纯计算，冒烟测试直接测它）。 */
     vscode.languages.registerFoldingRangeProvider(SELECTOR, {
       /**

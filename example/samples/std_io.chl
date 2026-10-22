@@ -1,0 +1,25 @@
+import std::io;
+
+int64 main() {
+    Result<FileStream, IoError> opened =
+    std::io::FileStream::open("tmp/chali_std_io.txt", "w+");
+    assert(opened.isOk(), "open failed");
+    std::io::FileStream stream = opened.take();
+    /* `Result<_, IoError>` 的载荷带字符串（IoError 里有 message）——持资源的临时值
+     * 不许直接链式调用，先落进变量。 */
+    Result<int64, std::io::IoError> writeResult = stream.write("alpha\nbeta\n");
+    int64 written = writeResult.expect("write failed");
+    Result<int64, std::io::IoError> flushResult = stream.flush();
+    int64 flushed = flushResult.expect("flush failed");
+    Result<int64, std::io::IoError> seekResult = stream.seek(0, std::io::SeekOrigin::Begin);
+    int64 position = seekResult.expect("seek failed");
+    Result<String, std::io::IoError> readResult = stream.read();
+    String first = readResult.expect("read failed");
+    println("{} {} {}", written, position, first);
+    stream.close();
+
+    Result<std::io::FileStream, std::io::IoError> missing =
+    std::io::FileStream::open("tmp/no-such-chali-file.txt", "r");
+    println("{}", missing.isErr());
+    return 0;
+}

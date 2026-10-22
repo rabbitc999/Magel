@@ -9,5 +9,5 @@ namespace std_compress_glue
  * @param error 注册失败时写入中文错误信息。
  * @return 全部绑定成功返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error);
+bool bind(chali_glue::Registry &registry, Memory::String *error);
 }  // namespace std_compress_glue

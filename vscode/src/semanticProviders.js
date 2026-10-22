@@ -50,7 +50,7 @@ function registerSemanticProviders(vscode, context, deps) {
     }),
     vscode.languages.registerInlayHintsProvider(selector, {
       async provideInlayHints(document, range, token) {
-        if (!vscode.workspace.getConfiguration('magel', document.uri).get('inlayHints.enabled', true)) return [];
+        if (!vscode.workspace.getConfiguration('chali', document.uri).get('inlayHints.enabled', true)) return [];
         const result = await request('textDocument/inlayHint', {
           textDocument: { uri: document.uri.toString() },
           range: { start: { line: range.start.line, character: range.start.character },

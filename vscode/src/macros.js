@@ -180,22 +180,22 @@ function registerMacroPreview(vscode, context, deps) {
     panels = [];
   };
   context.subscriptions.push({ dispose() { close(); source = null; } });
-  context.subscriptions.push(vscode.commands.registerCommand('magel.previewMacroExpansion', async () => {
+  context.subscriptions.push(vscode.commands.registerCommand('chali.previewMacroExpansion', async () => {
     const editor = vscode.window.activeTextEditor;
-    if (!editor || editor.document.languageId !== 'magel' || editor.document.uri.scheme !== 'file') {
-      await vscode.window.showInformationMessage('Magel：请先打开一个 .mgl 源文件。');
+    if (!editor || editor.document.languageId !== 'chali' || editor.document.uri.scheme !== 'file') {
+      await vscode.window.showInformationMessage('ChaLi：请先打开一个 .chl 源文件。');
       return;
     }
     const client = deps.getClient();
     if (!client || !client.running) {
-      await vscode.window.showErrorMessage('Magel：语言服务器尚未启动。');
+      await vscode.window.showErrorMessage('ChaLi：语言服务器尚未启动。');
       return;
     }
     const document = editor.document;
     try {
       deps.flushDocument(document);
       const version = document.version;
-      const result = await client.request('magel/expandMacro', {
+      const result = await client.request('chali/expandMacro', {
         textDocument: { uri: document.uri.toString() },
       });
       if (document.version !== version) throw new Error('预览期间源码已更新，请重新展开。');
@@ -205,14 +205,14 @@ function registerMacroPreview(vscode, context, deps) {
       const payload = parsePayload(result.text);
       const expansions = Array.isArray(payload.expansions) ? payload.expansions : [];
       if (!expansions.length) {
-        await vscode.window.showInformationMessage('Magel：当前文件没有可展开的宏调用。');
+        await vscode.window.showInformationMessage('ChaLi：当前文件没有可展开的宏调用。');
         return;
       }
       close();
       source = document.uri;
       expansions.forEach((expansion, index) => {
         const panel = vscode.window.createWebviewPanel(
-          'magel.macroExpansion',
+          'chali.macroExpansion',
           `宏展开 · ${expansion.name || '宏'}（第 ${Number(expansion.line) || 1} 行）`,
           vscode.ViewColumn.Beside,
           { enableScripts: true, retainContextWhenHidden: true, localResourceRoots: [], active: index === 0 },
@@ -231,7 +231,7 @@ function registerMacroPreview(vscode, context, deps) {
         panels.push(panel);
       });
     } catch (error) {
-      await vscode.window.showErrorMessage(`Magel：宏展开失败：${error.message}`);
+      await vscode.window.showErrorMessage(`ChaLi：宏展开失败：${error.message}`);
     }
   }));
 }

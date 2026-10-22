@@ -5,7 +5,7 @@ from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / 'tools/magel_manual.json'
+OUTPUT = ROOT / 'tools/chali_manual.json'
 
 
 def generate():
@@ -29,12 +29,12 @@ def generate():
         'for-in 整数': 'for let in', '带值退出': 'break yield',
         '指定层数退出': 'break', '块表达式': 'break',
     }
-    token_source = (ROOT / 'source/magel_token.gram').read_text(encoding='utf-8')
-    grammar = (ROOT / 'source/magel.gram').read_text(encoding='utf-8')
+    token_source = (ROOT / 'source/chali_token.gram').read_text(encoding='utf-8')
+    grammar = (ROOT / 'source/chali.gram').read_text(encoding='utf-8')
     productions = re.findall(r'^\w+\s*:=.*?\s;(?=\s*(?:/\*|\w+\s*:=|$))', grammar, re.M | re.S)
     keywords = {}
     for token, word in re.findall(r'^%(?:token|define)\s+(\w+)\s+"([@#]?[A-Za-z_][A-Za-z_0-9]*)"', token_source, re.M):
-        if word.startswith('__magel_') or word == '__typeTag':
+        if word.startswith('__chali_') or word == '__typeTag':
             continue
         selected = [section for prefix, names in groups.items() if word in names.split()
                     for section in sections if section.startswith('## ' + prefix)]
@@ -66,7 +66,7 @@ def generate():
               for path in sorted((ROOT / 'doc/book/images').glob('*')) if path.is_file()]
     api_pages = {path.name: path.read_text(encoding='utf-8') for path in sorted((ROOT / 'doc/library').glob('*.md'))}
     return json.dumps(dict(schemaVersion=1, sourceLanguage='zh', apiPages=api_pages, book=book, images=images, keywords=keywords,
-                           skill=(ROOT / 'skills/magel-programming/SKILL.md').read_text(encoding='utf-8')),
+                           skill=(ROOT / 'skills/chali-programming/SKILL.md').read_text(encoding='utf-8')),
                       ensure_ascii=False, indent=2) + '\n'
 
 

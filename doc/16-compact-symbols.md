@@ -1,28 +1,28 @@
 # 无名变长符号表与空间对比
 
-同样使用 control.mgl，对比普通字节码和 --compress-symbols 产物。程序行为不变；格式、名字保存位置和诊断隐私发生变化。
+同样使用 control.chl，对比普通字节码和 --compress-symbols 产物。程序行为不变；格式、名字保存位置和诊断隐私发生变化。
 
 ## 从同一源文件生成两种容器
 
 ```sh
 mkdir -p build/doc-example
-./magel svmb example/samples/control.mgl --no-compress-symbols --out build/doc-example/control-raw
-./magel svmb example/samples/control.mgl --compress-symbols --symbol-map build/doc-example/control.symbols.json --out build/doc-example/control-compact
+./chali svmb example/samples/control.chl --no-compress-symbols --out build/doc-example/control-raw
+./chali svmb example/samples/control.chl --compress-symbols --symbol-map build/doc-example/control.symbols.json --out build/doc-example/control-compact
 ```
 
-输入是[control.mgl](../example/samples/control.mgl)，行为基准是[control.txt](../example/expected/control.txt)。普通容器使用 PESVMB v5，压缩容器使用 MCVM0005，加载器识别魔数；无需改 Magel 语法。旧格式字节码须重新编译。
+输入是[control.chl](../example/samples/control.chl)，行为基准是[control.txt](../example/expected/control.txt)。普通容器使用 PESVMB v5，压缩容器使用 MCVM0005，加载器识别魔数；无需改 ChaLi 语法。旧格式字节码须重新编译。
 
 ## 对比什么才能证明压缩正确
 
 比较文件大小只验证空间收益；还要加载运行并比较 stdout，再用 PC 映射核对编号与原名。映射项包含 logical_id、physical_idx、original、kind、line、ref_count；logical_id 用十进制字符串，避免 JSON 浮点丢精度。映射用于 PC 管理，不应与隐藏名字的产物一并分发。
 
-编译器默认为输出前缀追加 .symbol_map.json，命令中 --symbol-map 明确指定位置；magel 配置中的相对映射路径以配置目录为基准，CLI 则以启动目录为基准。增量缓存也跟踪映射内容，丢失或修改映射会使产物缓存失效。
+编译器默认为输出前缀追加 .symbol_map.json，命令中 --symbol-map 明确指定位置；chali 配置中的相对映射路径以配置目录为基准，CLI 则以启动目录为基准。增量缓存也跟踪映射内容，丢失或修改映射会使产物缓存失效。
 
 压缩不隐藏字符串常量，也不加密机器码。panic 仅保留错误消息，隐藏位置与调用记录；具体诊断规则见 [panic 调用栈](18-panic-trace.md)。下文给出格式、工具、实测及严格 LEB128 校验。
 
 ## 数据流与接口
 
-magel.gram 的语法不变；转换发生在组装后的 Program 与二进制序列化层。
+chali.gram 的语法不变；转换发生在组装后的 Program 与二进制序列化层。
 
 ~~~mermaid
 flowchart LR
@@ -62,11 +62,11 @@ saveProgramBinary(program, path, diagnostics, true) 写新格式，saveSymbolMap
 cmake -S library/stackvm -B build/symbols -DSTACKVM_WITH_REFLECTION=ON
 cmake --build build/symbols --parallel
 
-./magel svmb example/samples/control.mgl \
+./chali svmb example/samples/control.chl \
   --out build/symbols/control --compress-symbols \
   --symbol-map build/symbols/control.symbol_map.json
 
-./magel svmb example/samples/control.mgl --no-compress-symbols --out build/symbols/python-raw
+./chali svmb example/samples/control.chl --no-compress-symbols --out build/symbols/python-raw
 python tools/svmb_compress.py --input build/symbols/python-raw.svmb \
   --output compressed.svmb --map symbol_map.json --module NAME --version 1
 
@@ -75,11 +75,11 @@ build/symbols/svmb_symtool stats compressed.svmb
 build/symbols/svmb_symtool lookup 5 --map symbol_map.json
 build/symbols/svmb_symtool lookup calculate --map symbol_map.json
 
-build/symbols/magel-stackvm compile input.quad --out output.svmb \
+build/symbols/chali-stackvm compile input.quad --out output.svmb \
   --compress-symbols --symbol-map output.symbol_map.json
 ~~~
 
-Windows 可执行文件加 .exe；多配置生成器可能把文件放在 Release/。magel 默认映射为 <输出前缀>.symbol_map.json；独立 StackVM CLI 默认为 <输出文件>.symbol_map.json。
+Windows 可执行文件加 .exe；多配置生成器可能把文件放在 Release/。chali 默认映射为 <输出前缀>.symbol_map.json；独立 StackVM CLI 默认为 <输出文件>.symbol_map.json。
 Python 转换器接受普通 v5 输入及已知的反射特性位，保留反射段的原始字节，默认反射配置可直接转换。
 转换前检查反射段的格式版本、字段边界、列表与文本长度以及段尾，不解释或改写类型身份；
 身份、签名及交叉引用的语义校验由原生加载器执行。未知特性和损坏的段结构会被拒绝。
@@ -91,7 +91,7 @@ Python 转换器接受普通 v5 输入及已知的反射特性位，保留反射
 name = "symbols-demo"
 version = "1"
 
-[magel]
+[chali]
 run = "svmb"
 compress_symbols = true
 symbol_map = "symbols.json"
@@ -162,7 +162,7 @@ file_bytes=166481 symbols=5724 references=14081 reference_bytes=24803
 
 合成 1000/100000 符号样本的一字节引用占比为 82.56%/80.0256%。真实模块分布不同，不能普遍保证超过 80%。
 
-当前工具链重新编译 magel/example/samples/control.mgl（按需核心标准库）：
+当前工具链重新编译 chali/example/samples/control.chl（按需核心标准库）：
 **46147 B → 27125 B，减少 41.22%**。加载两个文件并配各自数据区执行，输出完全一致，
 包括 sum 1..5 = 15、循环 classify 和布尔打印；共执行 357 条指令。
 
@@ -190,10 +190,10 @@ LEB128 与重排的解码成本有限，稳定编号还可用于跨版本关联�
 
 ~~~sh
 ctest --test-dir build/symbols --output-on-failure
-python magel/tests/test_svmb_symbols.py --build build/symbols --magel magel/magel
+python chali/tests/test_svmb_symbols.py --build build/symbols --chali chali/chali
 ~~~
 
-Windows 加 .exe。前一条生成 build/symbols/symbol-fixtures/，后一条依赖这些样本。本次独立 VM 构建关闭大数，完整 magel 保留大数。
+Windows 加 .exe。前一条生成 build/symbols/symbol-fixtures/，后一条依赖这些样本。本次独立 VM 构建关闭大数，完整 chali 保留大数。
 
 | 用例 | 输入/预期 | 自动验证 |
 | --- | --- | --- |
@@ -206,6 +206,6 @@ Windows 加 .exe。前一条生成 build/symbols/symbol-fixtures/，后一条依
 | 跨语言 | 合成及真实样本的文件、映射逐项一致 | Python |
 | 元数据边界 | 错误头部/引用/索引/截断/尾部垃圾拒绝 | 重算 CRC 后调用 C++ |
 | 执行等价 | 类型、浮点、乘除、递归、堆、宿主回调输出一致 | C++ 与七个 .quad |
-| magel/CLI | 配置开启、CLI 覆盖、自定义映射、缺映射重建 | 带 --magel 的回归 |
+| chali/CLI | 配置开启、CLI 覆盖、自定义映射、缺映射重建 | 带 --chali 的回归 |
 
 启用符号压缩时，panic 只保留原始错误消息，不输出处理路径或任何函数调用记录；即使提供外部调试表亦然。直接解释运行和 VM 导出继承此策略，见 [panic 调用栈](18-panic-trace.md)。

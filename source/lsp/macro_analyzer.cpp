@@ -172,7 +172,7 @@ void McDocument::setText(std::string text)
                 return item.name == name && item.params.size() == entry.params.size() && item.variadic == entry.variadic && item.groupedShape == entry.groupedShape;
             });
         if (duplicated)
-            diagnostics_.push_back({ declared, Severity::Error, "magel-macro-duplicate",
+            diagnostics_.push_back({ declared, Severity::Error, "chali-macro-duplicate",
                                      "重复定义宏 " + name + "（同参数个数）" });
         macros_.push_back(std::move(entry));
         declarationLine[line] = 1;
@@ -190,15 +190,15 @@ void McDocument::setText(std::string text)
             semanticTokens_.push_back({ range(line, first, length), "keyword" });
             if (active != static_cast<std::size_t>(-1))
             {
-                diagnostics_.push_back({ range(line, first, length), Severity::Error, "magel-nested-macro", "不支持嵌套宏定义" });
+                diagnostics_.push_back({ range(line, first, length), Severity::Error, "chali-nested-macro", "不支持嵌套宏定义" });
                 continue;
             }
-            magel_macro::Signature parsed;
+            chali_macro::Signature parsed;
             Memory::String error;
             const auto &input = replacementHeader ? lines_[line] : code;
-            if (!magel_macro::readSignature(Memory::String(input.c_str()), parsed, error))
+            if (!chali_macro::readSignature(Memory::String(input.c_str()), parsed, error))
             {
-                diagnostics_.push_back({ range(line, first, length), Severity::Error, "magel-macro-header", error.c_str() });
+                diagnostics_.push_back({ range(line, first, length), Severity::Error, "chali-macro-header", error.c_str() });
                 continue;
             }
             std::smatch match;
@@ -212,7 +212,7 @@ void McDocument::setText(std::string text)
                 for (size_t item = 0; item < parsed.generics.size(); ++item)
                 {
                     if (item) signature += ", ";
-                    signature += magel_syntax::trim(parsed.generics[item]).c_str();
+                    signature += chali_syntax::trim(parsed.generics[item]).c_str();
                 }
                 signature += '>';
             }
@@ -236,7 +236,7 @@ void McDocument::setText(std::string text)
                     signature += "..." + std::string(group.rest.c_str());
                     params.emplace_back(group.rest.c_str());
                 }
-                signature += magel_syntax::groupClose(group.opening);
+                signature += chali_syntax::groupClose(group.opening);
             }
             recordMacro(line, match, std::move(params), {}, signature, shape);
             if (!replacementHeader) active = macros_.size() - 1;
@@ -246,7 +246,7 @@ void McDocument::setText(std::string text)
             semanticTokens_.push_back({ range(line, first, 10), "keyword" });
             if (active == static_cast<std::size_t>(-1))
                 diagnostics_.push_back({ range(line, first, 10), Severity::Error,
-                                         "magel-macro-end", "多余的 $end_macro" });
+                                         "chali-macro-end", "多余的 $end_macro" });
             else
                 active = static_cast<std::size_t>(-1);
         }
@@ -255,12 +255,12 @@ void McDocument::setText(std::string text)
             semanticTokens_.push_back({ range(line, first, 8), "keyword" });
             if (active == static_cast<std::size_t>(-1))
                 diagnostics_.push_back({ range(line, first, 8), Severity::Error,
-                                         "magel-end-for", "多余的 $end_for（它只在 `$for` 后面配对）" });
+                                         "chali-end-for", "多余的 $end_for（它只在 `$for` 后面配对）" });
         }
     }
     if (active != static_cast<std::size_t>(-1))
         diagnostics_.push_back({ macros_[active].range, Severity::Error,
-                                 "magel-macro-unclosed", "缺少 $end_macro" });
+                                 "chali-macro-unclosed", "缺少 $end_macro" });
 
     std::string fullMask;
     for (const auto &line : masked) fullMask += line + "\n";
@@ -291,7 +291,7 @@ void McDocument::setText(std::string text)
                 if (next < fullMask.size() && fullMask[next] == '<')
                 {
                     std::size_t end = next;
-                    if (magel_syntax::groupArguments(raw, next, arguments, end, true)) next = end;
+                    if (chali_syntax::groupArguments(raw, next, arguments, end, true)) next = end;
                     skipSpace();
                 }
                 std::vector<std::pair<char, std::size_t>> groups;
@@ -301,7 +301,7 @@ void McDocument::setText(std::string text)
                     arguments.clear();
                     std::size_t end = next;
                     bool closed = false;
-                    if (!magel_syntax::groupArguments(raw, next, arguments, end, true, &closed)) break;
+                    if (!chali_syntax::groupArguments(raw, next, arguments, end, true, &closed)) break;
                     groups.push_back({ fullMask[next], arguments.size() });
                     next = end;
                     if (!closed)
@@ -342,7 +342,7 @@ void McDocument::setText(std::string text)
                 if (picked != static_cast<std::size_t>(-1))
                     occurrences_.push_back({ picked, used });
                 else if (!partial)
-                    diagnostics_.push_back({ used, Severity::Error, "magel-macro-arity", "宏调用的参数组或实参数量不匹配：" + name });
+                    diagnostics_.push_back({ used, Severity::Error, "chali-macro-arity", "宏调用的参数组或实参数量不匹配：" + name });
                 --at;
             }
         lineStart += lines_[line].size() + 1;

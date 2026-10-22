@@ -54,13 +54,13 @@ struct Emitter
         if (sourceLine)
         {
             Memory::OutputStringStream marker;
-            marker << "# magel-source: " << sourceLine << " " << std::quoted(sourceFile) << "\n";
+            marker << "# chali-source: " << sourceLine << " " << std::quoted(sourceFile) << "\n";
             lines.push_back(marker.str() + text);
             hasSourceMarker = true;
         }
         else if (hasSourceMarker)
         {
-            lines.push_back("# magel-source: 0 \"\"\n" + text);
+            lines.push_back("# chali-source: 0 \"\"\n" + text);
             hasSourceMarker = false;
         }
         else
@@ -1057,7 +1057,7 @@ CodegenResult generate(const Program &program, const Memory::String &moduleName)
     std::size_t quadIndex = 0;
     auto flush = [&](Memory::Vector<Memory::String> &lines) {
         for (const Memory::String &line : lines)
-            if (line.rfind("# magel-source:", 0) == 0)
+            if (line.rfind("# chali-source:", 0) == 0)
             {
                 const auto split = line.find('\n');
                 quads << line.substr(0, split + 1) << quadIndex++ << ": " << line.substr(split + 1) << "\n";

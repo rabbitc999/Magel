@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::csv;
 ```
 
@@ -14,16 +14,16 @@ import std::csv;
 
 ## 参考代码
 
-完整程序：[example/samples/std_csv.mgl](../../example/samples/std_csv.mgl)。
+完整程序：[example/samples/std_csv.chl](../../example/samples/std_csv.chl)。
 
 ```powershell
-magel run example/samples/std_csv.mgl
+chali run example/samples/std_csv.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::csv;
 int64 main(){
     String text="name,note,empty\r\n小兔,\"a,b\",\r\n糖糖,\"line1\nline2 \"\"quoted\"\"\",end\n";
@@ -81,7 +81,7 @@ CSV quoting, delimiters and positions OK
 
 **声明**
 
-```magel
+```chali
 CsvError csvError(int64 line, int64 column, String message);
 ```
 
@@ -107,13 +107,13 @@ CsvError csvError(int64 line, int64 column, String message);
 
 **调用形式**
 
-```magel
+```chali
 std::csv::csvError(line, column, message);
 ```
 
-**源码**：[source/std/csv.mgl:6](../../source/std/csv.mgl#L6)。
+**源码**：[source/std/csv.chl:6](../../source/std/csv.chl#L6)。
 
-**完整示例**：[example/samples/std_csv.mgl](../../example/samples/std_csv.mgl)。
+**完整示例**：[example/samples/std_csv.chl](../../example/samples/std_csv.chl)。
 
 <a id="api-1"></a>
 
@@ -121,7 +121,7 @@ std::csv::csvError(line, column, message);
 
 **声明**
 
-```magel
+```chali
 Result<List<List<String>>,CsvError> parseCsv(String text, char delimiter=',');
 ```
 
@@ -146,13 +146,13 @@ Result<List<List<String>>,CsvError> parseCsv(String text, char delimiter=',');
 
 **调用形式**
 
-```magel
+```chali
 std::csv::parseCsv(text, delimiter);
 ```
 
-**源码**：[source/std/csv.mgl:10](../../source/std/csv.mgl#L10)。
+**源码**：[source/std/csv.chl:10](../../source/std/csv.chl#L10)。
 
-**完整示例**：[example/samples/std_csv.mgl](../../example/samples/std_csv.mgl)。
+**完整示例**：[example/samples/std_csv.chl](../../example/samples/std_csv.chl)。
 
 <a id="api-2"></a>
 
@@ -160,7 +160,7 @@ std::csv::parseCsv(text, delimiter);
 
 **声明**
 
-```magel
+```chali
 Result<String,CsvError> writeCsv(List<List<String>> rows, char delimiter=',');
 ```
 
@@ -185,10 +185,10 @@ Result<String,CsvError> writeCsv(List<List<String>> rows, char delimiter=',');
 
 **调用形式**
 
-```magel
+```chali
 std::csv::writeCsv(rows, delimiter);
 ```
 
-**源码**：[source/std/csv.mgl:56](../../source/std/csv.mgl#L56)。
+**源码**：[source/std/csv.chl:56](../../source/std/csv.chl#L56)。
 
-**完整示例**：[example/samples/std_csv.mgl](../../example/samples/std_csv.mgl)。
+**完整示例**：[example/samples/std_csv.chl](../../example/samples/std_csv.chl)。

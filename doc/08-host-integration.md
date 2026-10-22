@@ -1,8 +1,8 @@
 # 08 宿主集成与 C ABI
 
-Magel 与宿主通过共享 VM 和原生函数注册表集成。Magel 可调用宿主 C/C++ 函数，宿主可加载字节码并执行 Magel 程序。
+ChaLi 与宿主通过共享 VM 和原生函数注册表集成。ChaLi 可调用宿主 C/C++ 函数，宿主可加载字节码并执行 ChaLi 程序。
 
-## 宿主运行 Magel
+## 宿主运行 ChaLi
 
 编译源程序得到 `.svmb`、`.data.bin` 和 `.layout`。宿主用 `stackvm::loadProgramBinary` 加载程序，以 `DataArea::load` 加载数据及布局，创建 `stackvm::Machine` 并设置数据区和原生注册表，最后调用 `Machine::run`。
 
@@ -12,18 +12,18 @@ Magel 与宿主通过共享 VM 和原生函数注册表集成。Magel 可调用�
 
 ## C++ 胶水与同步回调
 
-胶水使用 `magel_glue::Registry::bindTyped` 或 `bindTypedWithContext` 绑定函数。
-复杂宿主对象通过类型化句柄或通用 `NativeRecord` 跨越边界，不把 C++ 对象内存伪装为 Magel 结构体。
+胶水使用 `chali_glue::Registry::bindTyped` 或 `bindTypedWithContext` 绑定函数。
+复杂宿主对象通过类型化句柄或通用 `NativeRecord` 跨越边界，不把 C++ 对象内存伪装为 ChaLi 结构体。
 
-Magel 函数和闭包使用 `magel_glue::Function` 或 `NativeCallContext::invoke` 同步调用。运行时检查实参数量、返回值、闭包环境、重入和错误传播；不要把运行时函数地址强转为宿主机器函数指针。
+ChaLi 函数和闭包使用 `chali_glue::Function` 或 `NativeCallContext::invoke` 同步调用。运行时检查实参数量、返回值、闭包环境、重入和错误传播；不要把运行时函数地址强转为宿主机器函数指针。
 函数包装和上下文在所属回调期间、同一线程同步使用；容器与字符串按 Codec 复制、借用和清理。
 
 List 使用 ArrayList。Map、Set 由标准库胶水按键的 Hash 能力选择哈希或数组存储；Map 迭代元素为 `Pair<K,V>`。
 
-## 从 Magel 调用 C 动态库
+## 从 ChaLi 调用 C 动态库
 
 `abi "库路径" { ... }` 为 VM 声明 C 动态库符号。标量、引用、结构体、数组、可选引用、同步回调和返回内存释放按 ABI 契约转换；声明必须符合真实的 C 签名和布局。
-复杂调用可能需要宿主 C++ 工具链准备桥接模块，该模块负责调用外部库，Magel 程序仍在 VM 中运行。
+复杂调用可能需要宿主 C++ 工具链准备桥接模块，该模块负责调用外部库，ChaLi 程序仍在 VM 中运行。
 
 C ABI 导入例子见[ABI 合约目录](examples/abi_contracts/)。
 

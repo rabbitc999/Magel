@@ -1,19 +1,19 @@
 'use strict';
 
 /**
- * Magel 插件冒烟测试（纯 Node，不需要 VS Code）。
+ * ChaLi 插件冒烟测试（纯 Node，不需要 VS Code）。
  *
  * 两部分：
  *   1. 折叠配对：直接用扩展真正调用的 `src/folding.js`（纯计算），结果就是编辑器里
  *      折出来的层次；
- *   2. LSP 往返：真的起一个 `magel lsp`，走 initialize → didOpen → 诊断 / 补全 /
+ *   2. LSP 往返：真的起一个 `chali lsp`，走 initialize → didOpen → 诊断 / 补全 /
  *      悬停 / 跳转 / 大纲 / 格式化 → shutdown，并断言**未保存内容不会写盘**。
  *
  * 用法（在仓库任意目录执行都可以）：
- *   node magel/vscode/test/smoke.js                  # 自动找 magel
- *   node magel/vscode/test/smoke.js --magel <路径>   # 指定编译器
+ *   node chali/vscode/test/smoke.js                  # 自动找 chali
+ *   node chali/vscode/test/smoke.js --chali <路径>   # 指定编译器
  *
- * 没找到编译器时只跳过 LSP 部分（折叠部分照样跑）；显式给了 `--magel` 却找不到则失败。
+ * 没找到编译器时只跳过 LSP 部分（折叠部分照样跑）；显式给了 `--chali` 却找不到则失败。
  */
 
 const fs = require('node:fs');
@@ -24,7 +24,7 @@ const { LspClient } = require('../src/lspClient');
 const locator = require('../src/locator');
 const folding = require('../src/folding');
 
-/** 仓库根（本文件在 <仓库>/magel/vscode/test/ 下）。 */
+/** 仓库根（本文件在 <仓库>/chali/vscode/test/ 下）。 */
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
 
 let checks = 0;
@@ -44,7 +44,7 @@ function check(title, ok, detail) {
 }
 
 /**
- * `.mgl` 折叠的配对（纯计算，不需要 VS Code）。
+ * `.chl` 折叠的配对（纯计算，不需要 VS Code）。
  *
  * 与 `vscode/src/folding.js` 是同一套规则，所以这里过了，编辑器里折出来的层次就是对的。
  */
@@ -55,34 +55,34 @@ function testRunCommand() {
   console.log('\n== 运行命令 ==');
   const runner = require('../src/runner');
   check('普通路径不加引号',
-    runner.buildRunCommand('/usr/bin/magel', '/tmp/demo.mgl') === '/usr/bin/magel run /tmp/demo.mgl');
-  const spaced = runner.buildRunCommand('C:\\Program Files\\magel\\magel.exe', 'C:\\my dir\\demo.mgl');
+    runner.buildRunCommand('/usr/bin/chali', '/tmp/demo.chl') === '/usr/bin/chali run /tmp/demo.chl');
+  const spaced = runner.buildRunCommand('C:\\Program Files\\chali\\ChaLi.exe', 'C:\\my dir\\demo.chl');
   check('带空格的路径加引号',
-    spaced === '"C:\\Program Files\\magel\\magel.exe" run "C:\\my dir\\demo.mgl"', spaced);
+    spaced === '"C:\\Program Files\\chali\\ChaLi.exe" run "C:\\my dir\\demo.chl"', spaced);
   check('命令里带 run 子命令',
-    runner.buildRunCommand('magel', 'a.mgl') === 'magel run a.mgl');
+    runner.buildRunCommand('chali', 'a.chl') === 'chali run a.chl');
 }
 
 /**
- * 真的跑一次 `magel run`：临时写一个小程序，断言退出码与输出。
+ * 真的跑一次 `chali run`：临时写一个小程序，断言退出码与输出。
  *
- * @param {string} magel 编译器路径。
+ * @param {string} chali 编译器路径。
  * @returns {Promise<void>} 完成后返回。
  */
-async function testMagelRun(magel) {
-  console.log('\n== 运行（magel run）==');
+async function testChaLiRun(chali) {
+  console.log('\n== 运行（chali run）==');
   const { spawnSync } = require('node:child_process');
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'magel-run-'));
-  const file = path.join(dir, 'demo.mgl');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'chali-run-'));
+  const file = path.join(dir, 'demo.chl');
   fs.writeFileSync(file, 'int64 main() { std::lang::println("run ok"); return 0; }\n', 'utf-8');
-  const result = spawnSync(magel, ['run', file], { cwd: dir, encoding: 'utf-8' });
-  check('magel run 退出码为 0', result.status === 0, result.stderr);
-  check('magel run 输出正确', (result.stdout || '').trim() === 'run ok', result.stdout);
+  const result = spawnSync(chali, ['run', file], { cwd: dir, encoding: 'utf-8' });
+  check('chali run 退出码为 0', result.status === 0, result.stderr);
+  check('chali run 输出正确', (result.stdout || '').trim() === 'run ok', result.stdout);
   fs.rmSync(dir, { recursive: true, force: true });
 }
 
-function testMagelFolding() {
-  console.log('\n== Magel 折叠 ==');
+function testChaLiFolding() {
+  console.log('\n== ChaLi 折叠 ==');
   const lines = [
     '$macro SHAPE(...items)',       // 0
     '$for v in items',              // 1
@@ -132,20 +132,20 @@ function openAndWait(client, uri, text) {
       resolve([]);
     }, 30000);
     client.notify('textDocument/didOpen', {
-      textDocument: { uri, languageId: 'magel', version: 1, text },
+      textDocument: { uri, languageId: 'chali', version: 1, text },
     });
   });
 }
 
 /**
- * 跑一遍 `magel lsp` 的 LSP 往返。
+ * 跑一遍 `chali lsp` 的 LSP 往返。
  *
- * @param {string} magel magel 编译器路径。
+ * @param {string} chali chali 编译器路径。
  * @returns {Promise<void>} 完成后返回。
  */
-async function testMagelLsp(magel) {
-  console.log('\n== LSP（magel lsp）==');
-  const client = new LspClient(magel, ['lsp'], { cwd: REPO_ROOT });
+async function testChaLiLsp(chali) {
+  console.log('\n== LSP（chali lsp）==');
+  const client = new LspClient(chali, ['lsp'], { cwd: REPO_ROOT });
   client.on('log', () => {});
   await client.start();
   const capabilities = await client.initialize();
@@ -161,8 +161,8 @@ async function testMagelLsp(magel) {
   check('位置编码是 utf-16', capabilities.capabilities.positionEncoding === 'utf-16');
 
   // 1. 干净文件：不该有诊断。
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'magel-vscode-smoke-'));
-  const file = path.join(dir, 'probe.mgl');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'chali-vscode-smoke-'));
+  const file = path.join(dir, 'probe.chl');
   const clean = 'int64 main() {\n    return 0;\n}\n';
   fs.writeFileSync(file, clean, 'utf8');
   const uri = `file:///${file.replace(/\\/g, '/')}`;
@@ -203,7 +203,7 @@ async function testMagelLsp(magel) {
   const definition = await client.request('textDocument/definition', {
     textDocument: { uri }, position: declaration,
   });
-  // `magel lsp` 返回单个 Location（协议允许单个或数组），两种都归一。
+  // `chali lsp` 返回单个 Location（协议允许单个或数组），两种都归一。
   const locations = Array.isArray(definition) ? definition : definition ? [definition] : [];
   check('跳转定义落在声明行',
     locations.length > 0 && locations[0].range.start.line === 1, JSON.stringify(definition));
@@ -217,8 +217,8 @@ async function testMagelLsp(magel) {
 
   // 3. 格式化：服务器只规范缩进与行尾空白。
   const bad = 'int64 main() {\nint64 value=3;\nreturn value;\n}\n';
-  const forFormat = 'file:///' + path.join(dir, 'format.mgl').replace(/\\/g, '/');
-  fs.writeFileSync(path.join(dir, 'format.mgl'), bad, 'utf8');
+  const forFormat = 'file:///' + path.join(dir, 'format.chl').replace(/\\/g, '/');
+  fs.writeFileSync(path.join(dir, 'format.chl'), bad, 'utf8');
   await openAndWait(client, forFormat, bad);
   const edits = await client.request('textDocument/formatting', {
     textDocument: { uri: forFormat }, options: { tabSize: 4, insertSpaces: true },
@@ -230,15 +230,15 @@ async function testMagelLsp(magel) {
 
   // 4. 坏文档：报错，且**不写盘**。
   const broken = 'int64 main(){ int64 value = ; return 0; }\n';
-  const forBroken = 'file:///' + path.join(dir, 'broken.mgl').replace(/\\/g, '/');
-  fs.writeFileSync(path.join(dir, 'broken.mgl'), 'int64 main(){ return 0; }\n', 'utf8');
+  const forBroken = 'file:///' + path.join(dir, 'broken.chl').replace(/\\/g, '/');
+  fs.writeFileSync(path.join(dir, 'broken.chl'), 'int64 main(){ return 0; }\n', 'utf8');
   const diagnostics = await openAndWait(client, forBroken, broken);
   const errors = diagnostics.filter((item) => item.severity === 1);
   check('坏文档报错诊断', errors.length > 0, JSON.stringify(diagnostics));
   check('诊断带稳定错误码', errors.every((item) => !!item.code),
     JSON.stringify(errors.map((item) => item.code)));
   check('未保存内容没有写盘',
-    fs.readFileSync(path.join(dir, 'broken.mgl'), 'utf8') === 'int64 main(){ return 0; }\n');
+    fs.readFileSync(path.join(dir, 'broken.chl'), 'utf8') === 'int64 main(){ return 0; }\n');
 
   await client.stop();
   fs.rmSync(dir, { recursive: true, force: true });
@@ -250,14 +250,14 @@ async function testMagelLsp(magel) {
  * @returns {Promise<void>} 完成后返回。
  */
 async function main() {
-  const index = process.argv.indexOf('--magel');
+  const index = process.argv.indexOf('--chali');
   const given = index >= 0 ? process.argv[index + 1] : '';
   if (index >= 0 && !given) {
-    console.error('--magel 后面要跟编译器路径');
+    console.error('--chali 后面要跟编译器路径');
     process.exit(2);
   }
 
-  testMagelFolding();
+  testChaLiFolding();
   testRunCommand();
 
   if (given) {
@@ -265,15 +265,15 @@ async function main() {
       console.error(`找不到编译器：${given}`);
       process.exit(1);
     }
-    await testMagelLsp(given);
+    await testChaLiLsp(given);
   } else {
-    const resolved = locator.resolveMagel(REPO_ROOT, {}, path.join(__dirname, '..'));
-    if (!resolved.magel) {
-      console.log(`\n[跳过] 没找到 magel（${resolved.source}）：折叠部分已跑，LSP 部分用 --magel 指定后重跑。`);
+    const resolved = locator.resolveChaLi(REPO_ROOT, {}, path.join(__dirname, '..'));
+    if (!resolved.chali) {
+      console.log(`\n[跳过] 没找到 chali（${resolved.source}）：折叠部分已跑，LSP 部分用 --chali 指定后重跑。`);
     } else {
-      console.log(`\n（编译器：${resolved.magel}）`);
-      await testMagelLsp(resolved.magel);
-      await testMagelRun(resolved.magel);
+      console.log(`\n（编译器：${resolved.chali}）`);
+      await testChaLiLsp(resolved.chali);
+      await testChaLiRun(resolved.chali);
     }
   }
 

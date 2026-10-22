@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""生成 README 使用的 Magel 总览图（PNG + SVG，落在 `doc/overview/`）。
+"""生成 README 使用的 ChaLi 总览图（PNG + SVG，落在 `doc/overview/`）。
 
 运行（在本目录或仓库根都行）：
 
     python tools/make_overview.py
 
-版式、字体与配色来自同目录的 `overview_canvas.py`（Magel 自带的一份画布库，绘制不依赖
+版式、字体与配色来自同目录的 `overview_canvas.py`（ChaLi 自带的一份画布库，绘制不依赖
 外部仓库）；改文案后重跑一遍，图与 README 就同步了。
 """
 
@@ -34,14 +34,14 @@ def draw() -> Canvas:
     footer = font(FONT_SANS, 12)
 
     canvas = Canvas()
-    canvas.text(40, 58, "Magel 语言 · 工具链与运行时总览", heading, TITLE)
+    canvas.text(40, 58, "ChaLi 语言 · 工具链与运行时总览", heading, TITLE)
     canvas.text(40, 88,
-                "从 .mgl 源码到四元式、StackVM 与可部署程序 · 语言 / 编译器 / 运行时 / 导出四层",
+                "从 .chl 源码到四元式、StackVM 与可部署程序 · 语言 / 编译器 / 运行时 / 导出四层",
                 subtitle, SUBTITLE)
 
     columns = (
         (
-            "① MAGEL 语言", "magel/source/std/lang.mgl · example/samples/",
+            "① CHALI 语言", "chali/source/std/lang.chl · example/samples/",
             (
                 ("类型与数据", (
                     ("静态类型与值语义", "struct / enum / tuple"),
@@ -60,12 +60,12 @@ def draw() -> Canvas:
             ),
         ),
         (
-            "② MAGEL 编译器", "magel/source/magel.gram · magel",
+            "② CHALI 编译器", "chali/source/chali.gram · chali",
             (
                 ("编译器从哪里来", (
-                    ("MAGEL 文法", "magel.gram 定义语法"),
-                    ("ParseEngine", "IELR(1) 生成 MAGEL 前端"),
-                    ("生成与构建", "gen.sh → magel / libparser.a"),
+                    ("CHALI 文法", "chali.gram 定义语法"),
+                    ("ParseEngine", "IELR(1) 生成 CHALI 前端"),
+                    ("生成与构建", "gen.sh → chali / libparser.a"),
                 )),
                 ("编译源码", (
                     ("预处理与展开", "%if / 宏 / lambda / 泛型"),
@@ -74,12 +74,12 @@ def draw() -> Canvas:
                 ("编译产物", (
                     ("可读中间文件", ".quad / .data.bin / .layout"),
                     ("二进制程序", ".svmb 保存指令与公开符号"),
-                    ("构建入口", "magel gen compiler / clear"),
+                    ("构建入口", "chali gen compiler / clear"),
                 )),
             ),
         ),
         (
-            "③ 运行时与标准库", "magel/library/stackvm · source/glue/",
+            "③ 运行时与标准库", "chali/library/stackvm · source/glue/",
             (
                 ("StackVM", (
                     ("虚拟机执行", "四元式 → 栈指令；调用帧隔离"),
@@ -98,7 +98,7 @@ def draw() -> Canvas:
             ),
         ),
         (
-            "④ VM 交付与宿主", "library/stackvm · source/magel_glue.hpp",
+            "④ VM 交付与宿主", "library/stackvm · source/chali_glue.hpp",
             (
                 ("部署形态", (
                     ("VM 宿主集成", "字节码 · 原生注册表 · 同步回调"),
@@ -112,7 +112,7 @@ def draw() -> Canvas:
                 ("维护与验证", (
                     ("受管产物", "manifest 登记生成文件与 clear"),
                     ("端到端样例", "example/samples/ + check.sh"),
-                    ("导出回归", "tests/magel_generator.py / magel_tool.py"),
+                    ("导出回归", "tests/chali_generator.py / chali_tool.py"),
                 )),
             ),
         ),
@@ -132,7 +132,7 @@ def draw() -> Canvas:
                 canvas.text(x + 29, y + 41, detail, item_detail, NOTE)
 
     canvas.text(40, 859,
-                "构建关系：ParseEngine 从 magel.gram 生成 MAGEL 编译器；编译器将 .mgl 降级为四元式，交给共享 StackVM 执行。",
+                "构建关系：ParseEngine 从 chali.gram 生成 CHALI 编译器；编译器将 .chl 降级为四元式，交给共享 StackVM 执行。",
                 footer, NOTE)
     canvas.text(40, 885,
                 "语言细节与当前支持范围见 README.md；解析器生成器（ParseEngine）总览见它自己的仓库。",
@@ -143,9 +143,9 @@ def draw() -> Canvas:
 def main() -> None:
     image_dir = Path(__file__).resolve().parents[1] / "doc" / "overview"
     canvas = draw()
-    canvas.save(str(image_dir / "Magel-overview.png"),
-                str(image_dir / "Magel-overview.svg"))
-    print("doc/overview/Magel-overview.png + .svg")
+    canvas.save(str(image_dir / "ChaLi-overview.png"),
+                str(image_dir / "ChaLi-overview.svg"))
+    print("doc/overview/ChaLi-overview.png + .svg")
 
 
 if __name__ == "__main__":

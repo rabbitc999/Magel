@@ -270,8 +270,8 @@ struct MPropagationInfo
  */
 bool StandardGeneric(const Memory::String &name, const Memory::String &generic)
 {
-    const auto made = magel_generic::session.made.find(name);
-    return made != magel_generic::session.made.end() && made->second.generic->module == "std::lang" && made->second.generic->name == generic;
+    const auto made = chali_generic::session.made.find(name);
+    return made != chali_generic::session.made.end() && made->second.generic->module == "std::lang" && made->second.generic->name == generic;
 }
 /**
  * @brief 展示传播类型的源码名称，避免诊断泄露实例化符号。
@@ -283,8 +283,8 @@ Memory::String PropagationTypeText(const std::shared_ptr<MType> &type)
     if (!type) return "<未知>";
     std::function<Memory::String(const Memory::String &, int)> render;
     render = [&](const Memory::String &name, int depth) -> Memory::String {
-        const auto instance = magel_generic::session.made.find(name);
-        if (depth > 16 || instance == magel_generic::session.made.end()) return name;
+        const auto instance = chali_generic::session.made.find(name);
+        if (depth > 16 || instance == chali_generic::session.made.end()) return name;
         auto text = instance->second.generic->module;
         if (!text.empty()) text += "::";
         text += instance->second.generic->name + "<";
@@ -714,7 +714,7 @@ void PinLiteralTowards(int literalId, int otherId)
  */
 void ResolveBufferIndexShadowing(int id)
 {
-    if (id < 0 || N(id).kind != MNode::Index || N(id).s2 != "__magel_bare_index") return;
+    if (id < 0 || N(id).kind != MNode::Index || N(id).s2 != "__chali_bare_index") return;
     const MNode node = N(id);
     if (CanUseImplicitLang(node.module, "index")) return;
     const int arguments = M_List();
@@ -868,7 +868,7 @@ std::shared_ptr<MType> RawExprType(int id)
     case MNode::Index:
     {
         auto base = RawExprType(node.kids[0]);
-        if (node.s == "__magel_buffer_index" && base->kind == MType::Ptr) return base->elem;
+        if (node.s == "__chali_buffer_index" && base->kind == MType::Ptr) return base->elem;
         if (base->kind == MType::Ptr && base->elem && (IsStandardOpcode(base->elem, "String") || base->elem->kind == MType::Array || IsContainer(base->elem))) base = base->elem;
         if (const MIndexDecl *index = FindIndex(base, ExprType(node.kids[1])))
             return index->result;
@@ -994,7 +994,7 @@ std::shared_ptr<MType> RawExprType(int id)
         if (IsIntrinsicDropCall(id)) return T(M_TypeVoid());
         if (ResolveGenericClosureCall(id)) return N(id).type >= 0 ? T(N(id).type) : T(M_TypeVoid());
         if (node.type >= 0) return T(node.type);
-        if (!node.kids.empty() && N(node.kids[0]).kind == MNode::Var && N(node.kids[0]).s == "__magel_default_to_string") return T(M_TypeString());
+        if (!node.kids.empty() && N(node.kids[0]).kind == MNode::Var && N(node.kids[0]).s == "__chali_default_to_string") return T(M_TypeString());
         /* 容器方法（`v.push(…)` / `m.valAt(i)`）与 `bint` 的 `.str()`：被调者是成员访问，
          * 但基类型不是结构体 —— 结果类型查方法表。 */
         if (node.kids.size() >= 2u)

@@ -1,4 +1,4 @@
-#include "../magel_glue.hpp"
+#include "../chali_glue.hpp"
 #include "std_glue.hpp"
 #include "std_registry.hpp"
 
@@ -8,7 +8,7 @@
  * @param error 绑定失败时接收原始诊断。
  * @return 全部标准库模块注册成功时返回 true。
  */
-bool bindMagelStandardGlue(magel_glue::Registry &registry, Memory::String *error)
+bool bindChaLiStandardGlue(chali_glue::Registry &registry, Memory::String *error)
 {
     return std_registry::bindStandardGlue(registry, error);
 }

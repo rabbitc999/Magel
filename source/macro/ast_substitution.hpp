@@ -1,6 +1,6 @@
-#ifndef MAGEL_MACRO_AST_SUBSTITUTION_HPP
-#define MAGEL_MACRO_AST_SUBSTITUTION_HPP
-#include "allocator/magel_allocator.hpp"
+#ifndef CHALI_MACRO_AST_SUBSTITUTION_HPP
+#define CHALI_MACRO_AST_SUBSTITUTION_HPP
+#include "allocator/chali_allocator.hpp"
 #include "hygiene.hpp"
 #include <map>
 #include <string>
@@ -9,7 +9,7 @@
 struct MNode;
 struct MType;
 
-namespace magel_macro
+namespace chali_macro
 {
 /**
  * @brief 一次宏调用的真实来源，独立于模板中保留的定义位置。
@@ -79,5 +79,5 @@ private:
     ExpansionSite site_;
     Memory::Vector<std::shared_ptr<MType>> *types_ = nullptr;
 };
-}  // namespace magel_macro
+}  // namespace chali_macro
 #endif

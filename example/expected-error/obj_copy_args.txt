@@ -1,1 +1,1 @@
-magel: example/samples-error/obj_copy_args.mgl 第 3 行第 5 列：obj.copy() 不带参数
+chali: example/samples-error/obj_copy_args.chl 第 3 行第 5 列：obj.copy() 不带参数

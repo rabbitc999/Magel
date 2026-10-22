@@ -1,0 +1,249 @@
+/* nested_result.chl —— 多层嵌套 Result：把"每一层各自失败"建模成一个值
+ *
+ *   ./chali samples/nested_result.chl
+ *
+ * 一条"取回文本 → 解析整数 → 语义校验"的流水线，每层有独立的错误枚举。三层 Result
+ * 嵌套成一个对象（Ok 的载荷又是 Result）：
+ *
+ *   Result< Result< Result<int64, SemanticError>, SyntaxError >, TransportError >
+ *   └ 外层 Err：传输失败    └ 中层 Err：解析失败    └ 内层 Err：校验失败
+ *
+ * 好处是调用者按层 match 就能拿到该层**具体**的错误类型和载荷，不必把三类错误
+ * 压成一个扁平枚举。要汇成一句话，就在边界逐层拆（见 `report`）。
+ *
+ * `?` 只把**同一错误类型**往上送：跨层错误类型不同（TransportError / SyntaxError /
+ * SemanticError），每过一层都要 match 后显式重包；这里只演示同一层内的 `?`
+ * （见 `requireText`）。
+ */
+
+import std::parse;
+
+enum TransportError {
+    Offline(String endpoint),
+    Timeout(String endpoint)
+};
+
+enum SyntaxError {
+    EmptyField(String field),
+    NotANumber(String field, String text)
+};
+
+enum SemanticError {
+    Negative(String field, int64 value),
+    TooLarge(String field, int64 value)
+};
+
+String describeTransport(TransportError error) {
+    String result;
+    match (error) {
+        TransportError::Offline(endpoint) => { result = "offline(" + endpoint + ")"; }
+        TransportError::Timeout(endpoint) => { result = "timeout(" + endpoint + ")"; }
+    }
+    return result;
+}
+
+String describeSyntax(SyntaxError error) {
+    String result;
+    match (error) {
+        SyntaxError::EmptyField(field) => { result = "empty(" + field + ")"; }
+        SyntaxError::NotANumber(field, text) => {
+            result = "not-a-number(" + field + "=" + text + ")";
+        }
+    }
+    return result;
+}
+
+String describeSemantic(SemanticError error) {
+    String result;
+    match (error) {
+        SemanticError::Negative(field, value) => {
+            result = "negative(" + field + "=" + format("{}", value) + ")";
+        }
+        SemanticError::TooLarge(field, value) => {
+            result = "too-large(" + field + "=" + format("{}", value) + ")";
+        }
+    }
+    return result;
+}
+
+/* 第 1 层：取回原始文本；失败给 TransportError。 */
+Result<String, TransportError> fetch(String endpoint, bool online, String text) {
+    if (!online) {
+        return Result<String, TransportError>::Err(TransportError::Offline(endpoint));
+    }
+    if (endpoint == "slow") {
+        return Result<String, TransportError>::Err(TransportError::Timeout(endpoint));
+    }
+    return Result<String, TransportError>::Ok(text);
+}
+
+/* 第 2 层：把文本解析成整数；失败给 SyntaxError。 */
+Result<int64, SyntaxError> parse(String field, String text) {
+    if (text == "") {
+        return Result<int64, SyntaxError>::Err(SyntaxError::EmptyField(field));
+    }
+    Result<int64, std::parse::ParseError> parsed = std::parse::Parse::parseInt64(text);
+    Result<int64, SyntaxError> result;
+    match (parsed) {
+        Result<int64, std::parse::ParseError>::Ok(value) => {
+            result = Result<int64, SyntaxError>::Ok(value);
+        }
+        Result<int64, std::parse::ParseError>::Err(error) => {
+            result = Result<int64, SyntaxError>::Err(SyntaxError::NotANumber(field, text));
+        }
+    }
+    return result;
+}
+
+/* 第 3 层：数值语义校验；失败给 SemanticError。 */
+Result<int64, SemanticError> validate(String field, int64 value) {
+    if (value < 0) {
+        return Result<int64, SemanticError>::Err(SemanticError::Negative(field, value));
+    }
+    if (value > 1000) {
+        return Result<int64, SemanticError>::Err(SemanticError::TooLarge(field, value));
+    }
+    return Result<int64, SemanticError>::Ok(value);
+}
+
+/* 四个小包装，免得每处都把长类型抄一遍。 */
+Result<Result<Result<int64, SemanticError>, SyntaxError>, TransportError>
+badTransport(TransportError error) {
+    return Result<Result<Result<int64, SemanticError>, SyntaxError>, TransportError>::Err(error);
+}
+
+Result<Result<Result<int64, SemanticError>, SyntaxError>, TransportError>
+badSyntax(SyntaxError error) {
+    return Result<Result<Result<int64, SemanticError>, SyntaxError>, TransportError>::Ok(
+    Result<Result<int64, SemanticError>, SyntaxError>::Err(error));
+}
+
+Result<Result<Result<int64, SemanticError>, SyntaxError>, TransportError>
+badSemantic(SemanticError error) {
+    return Result<Result<Result<int64, SemanticError>, SyntaxError>, TransportError>::Ok(
+    Result<Result<int64, SemanticError>, SyntaxError>::Ok(
+    Result<int64, SemanticError>::Err(error)));
+}
+
+Result<Result<Result<int64, SemanticError>, SyntaxError>, TransportError>
+goodValue(int64 value) {
+    return Result<Result<Result<int64, SemanticError>, SyntaxError>, TransportError>::Ok(
+    Result<Result<int64, SemanticError>, SyntaxError>::Ok(
+    Result<int64, SemanticError>::Ok(value)));
+}
+
+/* 三层装载：Ok(Ok(Ok(v))) 全成功；哪层失败就把该层的 Err 放进对应槽。 */
+Result<Result<Result<int64, SemanticError>, SyntaxError>, TransportError>
+loadField(String field, String endpoint, bool online, String text) {
+    Result<Result<Result<int64, SemanticError>, SyntaxError>, TransportError> result;
+    Result<String, TransportError> raw = fetch(endpoint, online, text);
+    match (raw) {
+        Result<String, TransportError>::Err(transportError) => {
+            result = badTransport(transportError);
+        }
+        Result<String, TransportError>::Ok(value) => {
+            Result<int64, SyntaxError> syntax = parse(field, value);
+            match (syntax) {
+                Result<int64, SyntaxError>::Err(syntaxError) => {
+                    result = badSyntax(syntaxError);
+                }
+                Result<int64, SyntaxError>::Ok(parsed) => {
+                    Result<int64, SemanticError> semantic = validate(field, parsed);
+                    match (semantic) {
+                        Result<int64, SemanticError>::Err(semanticError) => {
+                            result = badSemantic(semanticError);
+                        }
+                        Result<int64, SemanticError>::Ok(number) => {
+                            result = goodValue(number);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return result;
+}
+
+/* 逐层拆开这个嵌套对象并汇报（不把它再塞进一个 Result<String>，见下）。 */
+void report(String label,
+Result<Result<Result<int64, SemanticError>, SyntaxError>, TransportError> nested) {
+    match (nested) {
+        Result<Result<Result<int64, SemanticError>, SyntaxError>, TransportError>::Err(error) => {
+            println("{} -> err transport:{}", label, describeTransport(error));
+        }
+        Result<Result<Result<int64, SemanticError>, SyntaxError>, TransportError>::Ok(syntax) => {
+            match (syntax) {
+                Result<Result<int64, SemanticError>, SyntaxError>::Err(error) => {
+                    println("{} -> err syntax:{}", label, describeSyntax(error));
+                }
+                Result<Result<int64, SemanticError>, SyntaxError>::Ok(semantic) => {
+                    match (semantic) {
+                        Result<int64, SemanticError>::Err(error) => {
+                            println("{} -> err semantic:{}", label,
+                            describeSemantic(error));
+                        }
+                        Result<int64, SemanticError>::Ok(value) => {
+                            println("{} -> ok {}", label, value);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* 同一错误类型的单层里 `?` 可以直接把 Err 送上去（这里返回类型也是 TransportError）。 */
+Result<String, TransportError> requireText(String endpoint, bool online, String text) {
+    String value = fetch(endpoint, online, text)?;
+    return Result<String, TransportError>::Ok(value);
+}
+
+int64 main() {
+    report("ok", loadField("count", "fast", true, "42"));
+    report("empty", loadField("count", "fast", true, ""));
+    report("text", loadField("count", "fast", true, "abc"));
+    report("negative", loadField("count", "fast", true, "-7"));
+    report("huge", loadField("count", "fast", true, "999999"));
+    report("offline", loadField("count", "api", false, "42"));
+    report("timeout", loadField("count", "slow", true, "42"));
+
+    /* 也可以自己逐层拆：外层 -> 中层 -> 内层。 */
+    Result<Result<Result<int64, SemanticError>, SyntaxError>, TransportError> nested =
+    loadField("count", "fast", true, "7");
+    match (nested) {
+        Result<Result<Result<int64, SemanticError>, SyntaxError>, TransportError>::Err(error) => {
+            println("layer1 err {}", describeTransport(error));
+        }
+        Result<Result<Result<int64, SemanticError>, SyntaxError>, TransportError>::Ok(syntax) => {
+            match (syntax) {
+                Result<Result<int64, SemanticError>, SyntaxError>::Err(error) => {
+                    println("layer2 err {}", describeSyntax(error));
+                }
+                Result<Result<int64, SemanticError>, SyntaxError>::Ok(semantic) => {
+                    match (semantic) {
+                        Result<int64, SemanticError>::Err(error) => {
+                            println("layer3 err {}", describeSemantic(error));
+                        }
+                        Result<int64, SemanticError>::Ok(value) => {
+                            println("layer3 ok {}", value);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    match (requireText("fast", true, "hello")) {
+        Result<String, TransportError>::Ok(value) => { println("require ok {}", value); }
+        Result<String, TransportError>::Err(error) => {
+            println("require err {}", describeTransport(error));
+        }
+    }
+    match (requireText("api", false, "hello")) {
+        Result<String, TransportError>::Ok(value) => { println("require ok {}", value); }
+        Result<String, TransportError>::Err(error) => {
+            println("require err {}", describeTransport(error));
+        }
+    }
+    return 0;
+}

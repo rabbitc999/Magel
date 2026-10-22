@@ -1,4 +1,4 @@
-"""Magel 总览图回归：`tools/make_overview.py` 能重跑，且两次生成逐字节一致。
+"""ChaLi 总览图回归：`tools/make_overview.py` 能重跑，且两次生成逐字节一致。
 
 用法：`python tests/make_overview.py`（在本项目根目录跑）。
 """
@@ -13,8 +13,8 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     """跑两遍生成器，比对 SVG 字节与 PNG 签名。"""
     script = ROOT / "tools" / "make_overview.py"
-    svg = ROOT / "doc" / "overview" / "Magel-overview.svg"
-    png = ROOT / "doc" / "overview" / "Magel-overview.png"
+    svg = ROOT / "doc" / "overview" / "ChaLi-overview.svg"
+    png = ROOT / "doc" / "overview" / "ChaLi-overview.png"
     first = None
     for round_index in (0, 1):
         subprocess.run([sys.executable, str(script)], cwd=ROOT, check=True)
@@ -28,7 +28,7 @@ def main():
             first = svg.read_bytes()
         elif svg.read_bytes() != first:
             raise SystemExit("总览图不确定：两次生成的 SVG 不一致")
-    print("Magel 总览图回归通过（重复生成逐字节一致）")
+    print("ChaLi 总览图回归通过（重复生成逐字节一致）")
     return 0
 
 

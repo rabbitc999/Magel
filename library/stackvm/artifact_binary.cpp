@@ -175,7 +175,7 @@ QuadFile decodeQuadBinary(std::string_view bytes, Memory::String label)
  */
 Memory::String encodeDataLayout(const Memory::Vector<LayoutRow> &rows)
 {
-    Memory::String out("MGLY\1", 5);
+    Memory::String out("CHLY\1", 5);
     artifact_binary::number(out, rows.size());
     for (const auto &row : rows)
     {
@@ -197,7 +197,7 @@ Memory::String encodeDataLayout(const Memory::Vector<LayoutRow> &rows)
 bool decodeDataLayout(std::string_view bytes, Memory::Vector<LayoutRow> &rows)
 {
     Memory::Vector<LayoutRow> decoded;
-    if (bytes.size() >= 4 && bytes.substr(0, 4) == "MGLY")
+    if (bytes.size() >= 4 && bytes.substr(0, 4) == "CHLY")
     {
         if (bytes.size() < 5 || bytes[4] != 1) return false;
         artifact_binary::Reader r{ bytes, 5 };

@@ -27,4 +27,4 @@ enable_testing()
 add_test(NAME bigint-tests COMMAND bigint-tests)
 add_test(NAME bigfloat-tests COMMAND bigfloat-tests)
 
-target_compile_definitions(big_number PUBLIC MAGEL_CUSTOM_ALLOCATOR=1)
+target_compile_definitions(big_number PUBLIC CHALI_CUSTOM_ALLOCATOR=1)

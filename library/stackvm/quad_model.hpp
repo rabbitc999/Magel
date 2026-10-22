@@ -13,8 +13,8 @@ namespace stackvm
  */
 struct Quad
 {
-    Memory::String sourceFile;            ///< 四元式对应的 MAGEL 源文件。
-    std::int32_t sourceLine = 0;          ///< MAGEL 原始行号，零为未知。
+    Memory::String sourceFile;            ///< 四元式对应的 CHALI 源文件。
+    std::int32_t sourceLine = 0;          ///< CHALI 原始行号，零为未知。
     std::size_t line = 0;                 ///< 源码行号（1 基，诊断用）。
     Memory::String op;                    ///< 操作符，可能带类型后缀（`+:i8`）。
     Memory::Vector<Memory::String> args;  ///< 参数（`_` 表示空位）。

@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::process;
 ```
 
@@ -14,25 +14,25 @@ import std::process;
 
 ## 参考代码
 
-完整程序：[example/samples/std_process_probe.mgl](../../example/samples/std_process_probe.mgl)。
+完整程序：[example/samples/std_process_probe.chl](../../example/samples/std_process_probe.chl)。
 
 ```powershell
-magel run example/samples/std_process_probe.mgl
+chali run example/samples/std_process_probe.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::process;
 import std::probe;
 
 int64 main() {
-    Process process = std::process::processRun("echo magel-process-ok");
+    Process process = std::process::processRun("echo chali-process-ok");
     String output = std::process::processRead(&process);
     int64 status = std::process::processClose(&process);
     assert(status == 0);
-    assert(output == "magel-process-ok");
+    assert(output == "chali-process-ok");
     std::probe::Probe value;
     value.value = std::probe::twice(21);
     println("process={} probe={}", status, value.value);
@@ -68,7 +68,7 @@ process=0 probe=42
 
 **声明**
 
-```magel
+```chali
 Process processRun(std::lang::String command);
 ```
 
@@ -92,13 +92,13 @@ Process processRun(std::lang::String command);
 
 **调用形式**
 
-```magel
+```chali
 std::process::processRun(command);
 ```
 
-**源码**：[source/std/process.mgl:9](../../source/std/process.mgl#L9)。
+**源码**：[source/std/process.chl:9](../../source/std/process.chl#L9)。
 
-**完整示例**：[example/samples/std_process_probe.mgl](../../example/samples/std_process_probe.mgl)。
+**完整示例**：[example/samples/std_process_probe.chl](../../example/samples/std_process_probe.chl)。
 
 <a id="api-1"></a>
 
@@ -106,7 +106,7 @@ std::process::processRun(command);
 
 **声明**
 
-```magel
+```chali
 std::lang::String processRead(Process const& process);
 ```
 
@@ -130,13 +130,13 @@ std::lang::String processRead(Process const& process);
 
 **调用形式**
 
-```magel
+```chali
 std::process::processRead(process);
 ```
 
-**源码**：[source/std/process.mgl:10](../../source/std/process.mgl#L10)。
+**源码**：[source/std/process.chl:10](../../source/std/process.chl#L10)。
 
-**完整示例**：[example/samples/std_process_probe.mgl](../../example/samples/std_process_probe.mgl)。
+**完整示例**：[example/samples/std_process_probe.chl](../../example/samples/std_process_probe.chl)。
 
 <a id="api-2"></a>
 
@@ -144,7 +144,7 @@ std::process::processRead(process);
 
 **声明**
 
-```magel
+```chali
 int64 processClose(Process const& process);
 ```
 
@@ -168,13 +168,13 @@ int64 processClose(Process const& process);
 
 **调用形式**
 
-```magel
+```chali
 std::process::processClose(process);
 ```
 
-**源码**：[source/std/process.mgl:11](../../source/std/process.mgl#L11)。
+**源码**：[source/std/process.chl:11](../../source/std/process.chl#L11)。
 
-**完整示例**：[example/samples/std_process_probe.mgl](../../example/samples/std_process_probe.mgl)。
+**完整示例**：[example/samples/std_process_probe.chl](../../example/samples/std_process_probe.chl)。
 
 <a id="api-3"></a>
 
@@ -182,7 +182,7 @@ std::process::processClose(process);
 
 **声明**
 
-```magel
+```chali
 int64 system(std::lang::String command);
 ```
 
@@ -206,10 +206,10 @@ int64 system(std::lang::String command);
 
 **调用形式**
 
-```magel
+```chali
 std::process::system(command);
 ```
 
-**源码**：[source/std/process.mgl:12](../../source/std/process.mgl#L12)。
+**源码**：[source/std/process.chl:12](../../source/std/process.chl#L12)。
 
-**完整示例**：[example/samples/std_process_probe.mgl](../../example/samples/std_process_probe.mgl)。
+**完整示例**：[example/samples/std_process_probe.chl](../../example/samples/std_process_probe.chl)。

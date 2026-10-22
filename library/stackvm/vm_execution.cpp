@@ -281,7 +281,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
 
     /* ---- 可恢复终止（软重启的两个触发共用一条通道） ---------------------------
      * ① 分配失败：在**失败点只写标志**（`Memory::restartSignal()`，见
-     *    `allocator/magel_allocator.hpp`），当前这次申请由 arena 的应急预留兜住，于是当前
+     *    `allocator/chali_allocator.hpp`），当前这次申请由 arena 的应急预留兜住，于是当前
      *    指令照常跑完、容器保持自洽；
      * ② 显式请求：`std::watchdog::requestRestart()` → `__std_request_restart()` 写同一份标志。
      * VM 在**下一条指令边界（安全点）**看到标志就停在这里，把本轮标成 `recoverable`。
@@ -308,7 +308,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
          * 所以拼字符串本身也要兜住异常 —— 拼不出来就只留结构化标记，宿主照旧能判可恢复。 */
         try
         {
-            result.error = Memory::restartSignal().reason() == Memory::WatchdogReason::ExplicitRequest ? Memory::String("软重启：程序显式请求重启（可恢复终止）") : Memory::String("软重启：Magel 运行内存池用尽（可恢复终止）");
+            result.error = Memory::restartSignal().reason() == Memory::WatchdogReason::ExplicitRequest ? Memory::String("软重启：程序显式请求重启（可恢复终止）") : Memory::String("软重启：ChaLi 运行内存池用尽（可恢复终止）");
         } catch (...)
         {
         }
@@ -728,15 +728,15 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             const NativeValue &argument = arguments[index];
             if (argument.isText())
             {
-                fail("胶水层调用 MAGEL 函数时，文本参数必须先由 Codec<string> 编码");
+                fail("胶水层调用 CHALI 函数时，文本参数必须先由 Codec<string> 编码");
                 break;
             }
-            pending.push_back(PendingArg{ "__magel_p" + Memory::toString(index),
+            pending.push_back(PendingArg{ "__chali_p" + Memory::toString(index),
                                           argument.isFloat() ? Slot::fromDouble(argument.floating) : Slot::fromInt(argument.integer) });
         }
 
-        if (environment) pending.push_back(PendingArg{ "__magel_environment", Slot::fromInt(environment) });
-        const Memory::String destination = "__magel_native_callback_" + Memory::toString(result.steps) + "_" + Memory::toString(callerFrames);
+        if (environment) pending.push_back(PendingArg{ "__chali_environment", Slot::fromInt(environment) });
+        const Memory::String destination = "__chali_native_callback_" + Memory::toString(result.steps) + "_" + Memory::toString(callerFrames);
         ++nativeCallbackDepth;
         bool entered = result.error.empty();
         if (entered && callNative(label, destination))
@@ -752,7 +752,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             }
             if (entered && result.error.empty() && frames.size() != callerFrames)
             {
-                fail("胶水层调用的 MAGEL 函数没有正常 return");
+                fail("胶水层调用的 CHALI 函数没有正常 return");
                 entered = false;
             }
         }
@@ -776,7 +776,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
     };
 
     /**
-     * 调用 VM 内部运行时或宿主注册表；不建普通 MAGEL 调用帧。
+     * 调用 VM 内部运行时或宿主注册表；不建普通 CHALI 调用帧。
      */
     Memory::Vector<Memory::UniquePtr<Memory::Vector<Slot>>> internalArgumentBuffers;
     std::size_t internalArgumentDepth = 0;
@@ -1704,7 +1704,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             const std::int64_t handle = static_cast<std::int64_t>(nativeInt(address));
             if (isObjectHandle(handle))
             {
-                if (!objects.release(handle)) fail("[MGL1205] drop 的对象已经释放或句柄无效");
+                if (!objects.release(handle)) fail("[CHL1205] drop 的对象已经释放或句柄无效");
                 break;
             }
             const std::size_t target = static_cast<std::size_t>(nativeInt(address));
@@ -1712,7 +1712,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             Memory::String reason;
             std::size_t capacity = 0;
             if (heap.capacityAt(target, capacity)) objects.beginStorage(target, capacity, true);
-            if (!heap.release(target, &reason)) fail("[MGL1205] drop 失败：" + reason);
+            if (!heap.release(target, &reason)) fail("[CHL1205] drop 失败：" + reason);
             break;
         }
         case Op::Check:
@@ -1830,7 +1830,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                 pending.clear();
                 break;
             }
-            if (environment) pending.push_back(PendingArg{ "__magel_environment", Slot::fromInt(environment) });
+            if (environment) pending.push_back(PendingArg{ "__chali_environment", Slot::fromInt(environment) });
             if (callNative(label, instruction.name2)) break;
             if (!enterFunction(label, instruction.name2, true)) break;
             break;

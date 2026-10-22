@@ -1,10 +1,10 @@
-# 预处理器（`magel/library/preprocess`）
+# 预处理器（`chali/library/preprocess`）
 
-本副本使用 Magel 显式内存池分配器，不提供逐次 malloc/free 后备模式。
+本副本使用 ChaLi 显式内存池分配器，不提供逐次 malloc/free 后备模式。
 
 把「源码进编译器之前」的那一步独立出来：处理 `%` / `#` 开头的预处理指令——
 符号定义、条件编译、文件包含，**默认用空行占位保证行号不变**，出错一路收诊断。
-这是 Magel 自用副本，容器和字符串使用 `../allocator/magel_allocator.hpp`；通用版本仍位于 `library/preprocess`。
+这是 ChaLi 自用副本，容器和字符串使用 `../allocator/chali_allocator.hpp`；通用版本仍位于 `library/preprocess`。
 
 流程参考 `metro_editor` 的 `MetroLang/Compiler/PreProcessor.cs`（指令语义、包含去重、
 深度保护、逐条收集错误），但做成了**语言无关**的：前缀、注释、字符串、不透明区域
@@ -179,8 +179,8 @@ preprocess <输入文件> [选项]
 ## 构建与自检
 
 ```text
-make -C magel/library/preprocess            # libpreprocess.a + preprocess + preprocess-tests
-make -C magel/library/preprocess check      # 单元测试 + 跑一遍 examples/
+make -C chali/library/preprocess            # libpreprocess.a + preprocess + preprocess-tests
+make -C chali/library/preprocess check      # 单元测试 + 跑一遍 examples/
 ```
 
 产物在 `build/preprocess`。`check` 会跑 102 条断言（单跑测试二进制是 99 条，另外几条来自示例对照）：条件编译、表达式、符号、
@@ -191,7 +191,7 @@ make -C magel/library/preprocess check      # 单元测试 + 跑一遍 examples/
 ## 目录
 
 ```text
-magel/library/preprocess/
+chali/library/preprocess/
 ├── preprocess.hpp / preprocess.cpp   库本体（Options / Preprocessor / Result / Diagnostic）
 ├── main.cpp                          命令行工具
 ├── test_preprocess.cpp               单元测试（含 CSV loader 用例）
@@ -209,4 +209,4 @@ magel/library/preprocess/
 两者行为对齐（表达式语法、变量真假判定一致），但互不依赖——生成器主程序不链接本库，
 本库也不依赖主程序。
 
-现在还有一个真实用户：[`magel`](../../magel/README.md) 把本库当成"源码进解析器之前"的那一步（`%include` 共享定义、`%if` 条件编译、`-D` 预定义），并用 `lineMap` 把解析错误翻回真正写错的那个文件。
+现在还有一个真实用户：[`chali`](../../chali/README.md) 把本库当成"源码进解析器之前"的那一步（`%include` 共享定义、`%if` 条件编译、`-D` 预定义），并用 `lineMap` 把解析错误翻回真正写错的那个文件。

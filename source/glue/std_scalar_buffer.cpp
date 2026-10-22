@@ -43,7 +43,7 @@ void destroy(void *pointer)
  * @param error 注册失败时接收诊断。
  * @return 所有注册均成功时返回 true。
  */
-bool bind(magel_glue::Registry &registry, Memory::String *error)
+bool bind(chali_glue::Registry &registry, Memory::String *error)
 {
     bool ok = registry.bindTypedWithContext<std::int64_t>("std::linalg::__std_scalarNew", [](Context &ctx) { return ctx.makeNativeRecord(type, new Storage); }, error);
     ok = registry.bindTypedWithContext<void, std::int64_t>("std::linalg::__std_scalarDrop", [](Context &ctx, std::int64_t handle) { ctx.releaseNativeRecord(handle); }, error) && ok;

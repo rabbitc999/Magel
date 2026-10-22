@@ -6,7 +6,7 @@
 
 匹配可用于初始化、赋值、实参、返回值和嵌套表达式。简单分支写 `{ value }`，其中的值不加分号；多条语句的分支用 `yield value;` 给出结果。外层声明、赋值和 return 仍以分号结束。
 
-```magel
+```chali
 enum State { Ready(int64 value), Missing };
 State state = State::Ready(3);
 int64 result = match (state) {
@@ -25,7 +25,7 @@ match (state) {
 
 ## f-string 插值
 
-```magel
+```chali
 int64 f = 3;
 String text = f"value={f + 1}, nested={f"inner {f}"}, \{literal\}";
 ```
@@ -36,7 +36,7 @@ String text = f"value={f + 1}, nested={f"inner {f}"}, \{literal\}";
 
 ## 关联类型
 
-```magel
+```chali
 interface Container {
     type Item;
     Item get(int64 index);
@@ -52,7 +52,7 @@ C.Item first<C: Container>(C container) { return container.get(0); }
 
 ## const 泛型与定长数组字段
 
-```magel
+```chali
 struct Buffer<T, N: int64> {
     T data[N];
     int64 len() { return N; }
@@ -72,7 +72,7 @@ N、rows、cols 是编译期整数，不是运行时函数实参。整数表达�
 
 ## defer 与 scope(exit)
 
-```magel
+```chali
 int64 main() {
     int64 value = 1;
     defer println("last {}", value);

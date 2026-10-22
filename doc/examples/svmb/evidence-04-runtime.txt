@@ -1,8 +1,8 @@
 
 ==============================================================================
-$ magel-stackvm disasm magel\doc\examples\svmb\control.svmb
+$ chali-stackvm disasm chali\doc\examples\svmb\control.svmb
 ==============================================================================
-; magel
+; chali
 ; export classify
 ; export std::lang::Math::abs$double
 ; export std::lang::Math::abs$int
@@ -53,7 +53,7 @@ disasm 里与用户代码有关的位置
   含 'DECLARE sum$' 的前 3 行：['7: DECLARE sum$452', '12468: DECLARE sum$759', '12616: DECLARE sum$764']
 
 ==============================================================================
-$ magel-stackvm run magel\doc\examples\svmb\control.svmb --limit 12 --trace
+$ chali-stackvm run chali\doc\examples\svmb\control.svmb --limit 12 --trace
 ==============================================================================
 [0] CALL main
 [2] PUSH 3.1415926535897931
@@ -69,7 +69,7 @@ $ magel-stackvm run magel\doc\examples\svmb\control.svmb --limit 12 --trace
 [12] LOAD i$451
 
 ==============================================================================
-$ magel-stackvm run magel\doc\examples\svmb\control.svmb --limit 12 --debug
+$ chali-stackvm run chali\doc\examples\svmb\control.svmb --limit 12 --debug
 ==============================================================================
 调试[0] tmp/svmb-study/control.quad:40
 调试[1] tmp/svmb-study/control.quad:44
@@ -81,7 +81,7 @@ $ magel-stackvm run magel\doc\examples\svmb\control.svmb --limit 12 --debug
 调试[11] tmp/svmb-study/control.quad:51
 
 ==============================================================================
-$ magel-stackvm run magel\doc\examples\svmb\control.svmb（完整输出）
+$ chali-stackvm run chali\doc\examples\svmb\control.svmb（完整输出）
 ==============================================================================
 sum 1..5 = 15
 loop 0: classify(-0)=0

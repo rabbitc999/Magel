@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::random;
 ```
 
@@ -14,25 +14,25 @@ import std::random;
 
 ## 参考代码
 
-完整程序：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+完整程序：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。
 
 ```powershell
-magel run example/samples/std_math_clock_random.mgl
+chali run example/samples/std_math_clock_random.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
-/* std_math_clock_random.mgl —— 第二档：Math 补齐、Clock、Random 扩展。
+```chali
+/* std_math_clock_random.chl —— 第二档：Math 补齐、Clock、Random 扩展。
  *
  * 三条路线各不相同，改这块前先分清：
  *   * Math 的 float64 取整 / 判定走**宿主胶水**（glue/std_math.hpp 绑 <cmath>）；
- *   * Math 的 int64 版是**Magel 重载转发到宿主胶水**（写在同一模块里，实参完全匹配优先于 int64→float64 放宽）；
+ *   * Math 的 int64 版是**ChaLi 重载转发到宿主胶水**（写在同一模块里，实参完全匹配优先于 int64→float64 放宽）；
  *   * Clock 是宿主胶水（chrono 的 steady_clock）；
  *   * Random 的 nextRange / nextBool 是 宿主胶水的薄封装。
  *
- * `choice` / `shuffle` 不在 `Random::` 下：Magel 没有泛型方法，而 `std::random::Random` 这个
+ * `choice` / `shuffle` 不在 `Random::` 下：ChaLi 没有泛型方法，而 `std::random::Random` 这个
  * 名字已经被同名的 struct 占着（再开同名模块会让 `Random::withSeed` 找不到）。
  * 它们放在 `algorithms`，调用写 `std::algorithms::choiceValue<int64>(表, 种子)`。
  */
@@ -50,14 +50,14 @@ int64 main() {
     std::math::round(2.5), std::math::trunc(-2.7));
     println("{} {}", std::math::fmod(7.5, 2.0), std::math::fmod(-7.5, 2.0));
 
-    /* Magel 里浮点除零是运行期错误，所以 NaN / Inf 从宿主函数拿：
+    /* ChaLi 里浮点除零是运行期错误，所以 NaN / Inf 从宿主函数拿：
      * sqrt(-1) = NaN、ln(0) = -Inf。 */
     float64 notNumber = std::math::sqrt(-1.0);
     float64 infinite = std::math::ln(0.0);
     println("{} {} {} {}", std::math::isNaN(notNumber), std::math::isNaN(1.0),
     std::math::isInf(infinite), std::math::isInf(1.0));
 
-    /* --- Math：int64 版（Magel 重载转发到宿主胶水）+ float64 版 abs 仍然可用 --- */
+    /* --- Math：int64 版（ChaLi 重载转发到宿主胶水）+ float64 版 abs 仍然可用 --- */
     println("{} {} {} {}", std::math::abs(-5), std::math::min(3, 8),
     std::math::max(3, 8), std::math::clamp(12, 0, 10));
     println("{}", std::math::abs(-2.5));
@@ -154,7 +154,7 @@ int64 main() {
 
 **声明**
 
-```magel
+```chali
 Random randomWithSeed(uint64 seed);
 ```
 
@@ -178,13 +178,13 @@ Random randomWithSeed(uint64 seed);
 
 **调用形式**
 
-```magel
+```chali
 std::random::randomWithSeed(seed);
 ```
 
-**源码**：[source/std/random.mgl:3](../../source/std/random.mgl#L3)。
+**源码**：[source/std/random.chl:3](../../source/std/random.chl#L3)。
 
-**完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+**完整示例**：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。
 
 <a id="api-1"></a>
 
@@ -192,7 +192,7 @@ std::random::randomWithSeed(seed);
 
 **声明**
 
-```magel
+```chali
 Random randomFromEntropy();
 ```
 
@@ -214,13 +214,13 @@ Random randomFromEntropy();
 
 **调用形式**
 
-```magel
+```chali
 std::random::randomFromEntropy();
 ```
 
-**源码**：[source/std/random.mgl:4](../../source/std/random.mgl#L4)。
+**源码**：[source/std/random.chl:4](../../source/std/random.chl#L4)。
 
-**完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+**完整示例**：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。
 
 <a id="api-2"></a>
 
@@ -228,7 +228,7 @@ std::random::randomFromEntropy();
 
 **声明**
 
-```magel
+```chali
 uint64 randomNextUInt64(uint64 handle);
 ```
 
@@ -252,13 +252,13 @@ uint64 randomNextUInt64(uint64 handle);
 
 **调用形式**
 
-```magel
+```chali
 std::random::randomNextUInt64(handle);
 ```
 
-**源码**：[source/std/random.mgl:5](../../source/std/random.mgl#L5)。
+**源码**：[source/std/random.chl:5](../../source/std/random.chl#L5)。
 
-**完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+**完整示例**：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。
 
 <a id="api-3"></a>
 
@@ -266,7 +266,7 @@ std::random::randomNextUInt64(handle);
 
 **声明**
 
-```magel
+```chali
 int64 randomNextInt(uint64 handle, int64 minimum, int64 maximum);
 ```
 
@@ -292,13 +292,13 @@ int64 randomNextInt(uint64 handle, int64 minimum, int64 maximum);
 
 **调用形式**
 
-```magel
+```chali
 std::random::randomNextInt(handle, minimum, maximum);
 ```
 
-**源码**：[source/std/random.mgl:6](../../source/std/random.mgl#L6)。
+**源码**：[source/std/random.chl:6](../../source/std/random.chl#L6)。
 
-**完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+**完整示例**：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。
 
 <a id="api-4"></a>
 
@@ -306,7 +306,7 @@ std::random::randomNextInt(handle, minimum, maximum);
 
 **声明**
 
-```magel
+```chali
 float64 randomNextFloat64(uint64 handle);
 ```
 
@@ -330,13 +330,13 @@ float64 randomNextFloat64(uint64 handle);
 
 **调用形式**
 
-```magel
+```chali
 std::random::randomNextFloat64(handle);
 ```
 
-**源码**：[source/std/random.mgl:7](../../source/std/random.mgl#L7)。
+**源码**：[source/std/random.chl:7](../../source/std/random.chl#L7)。
 
-**完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+**完整示例**：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。
 
 <a id="api-5"></a>
 
@@ -344,7 +344,7 @@ std::random::randomNextFloat64(handle);
 
 **声明**
 
-```magel
+```chali
 float64 randomNextRange(uint64 handle, float64 minimum, float64 maximum);
 ```
 
@@ -370,13 +370,13 @@ float64 randomNextRange(uint64 handle, float64 minimum, float64 maximum);
 
 **调用形式**
 
-```magel
+```chali
 std::random::randomNextRange(handle, minimum, maximum);
 ```
 
-**源码**：[source/std/random.mgl:8](../../source/std/random.mgl#L8)。
+**源码**：[source/std/random.chl:8](../../source/std/random.chl#L8)。
 
-**完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+**完整示例**：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。
 
 <a id="api-6"></a>
 
@@ -384,7 +384,7 @@ std::random::randomNextRange(handle, minimum, maximum);
 
 **声明**
 
-```magel
+```chali
 bool randomNextBool(uint64 handle);
 ```
 
@@ -408,13 +408,13 @@ bool randomNextBool(uint64 handle);
 
 **调用形式**
 
-```magel
+```chali
 std::random::randomNextBool(handle);
 ```
 
-**源码**：[source/std/random.mgl:9](../../source/std/random.mgl#L9)。
+**源码**：[source/std/random.chl:9](../../source/std/random.chl#L9)。
 
-**完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+**完整示例**：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。
 
 <a id="api-7"></a>
 
@@ -422,7 +422,7 @@ std::random::randomNextBool(handle);
 
 **声明**
 
-```magel
+```chali
 void randomDrop(uint64 handle);
 ```
 
@@ -446,13 +446,13 @@ void randomDrop(uint64 handle);
 
 **调用形式**
 
-```magel
+```chali
 std::random::randomDrop(handle);
 ```
 
-**源码**：[source/std/random.mgl:10](../../source/std/random.mgl#L10)。
+**源码**：[source/std/random.chl:10](../../source/std/random.chl#L10)。
 
-**完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+**完整示例**：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。
 
 <a id="api-8"></a>
 
@@ -460,7 +460,7 @@ std::random::randomDrop(handle);
 
 **声明**
 
-```magel
+```chali
 static Random withSeed(uint64 seed);
 ```
 
@@ -486,13 +486,13 @@ static Random withSeed(uint64 seed);
 
 **调用形式**
 
-```magel
+```chali
 std::random::Random::withSeed(seed);
 ```
 
-**源码**：[source/std/random.mgl:20](../../source/std/random.mgl#L20)。
+**源码**：[source/std/random.chl:20](../../source/std/random.chl#L20)。
 
-**完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+**完整示例**：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。
 
 <a id="api-9"></a>
 
@@ -500,7 +500,7 @@ std::random::Random::withSeed(seed);
 
 **声明**
 
-```magel
+```chali
 static Random fromEntropy();
 ```
 
@@ -524,13 +524,13 @@ static Random fromEntropy();
 
 **调用形式**
 
-```magel
+```chali
 std::random::Random::fromEntropy();
 ```
 
-**源码**：[source/std/random.mgl:22](../../source/std/random.mgl#L22)。
+**源码**：[source/std/random.chl:22](../../source/std/random.chl#L22)。
 
-**完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+**完整示例**：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。
 
 <a id="api-10"></a>
 
@@ -538,7 +538,7 @@ std::random::Random::fromEntropy();
 
 **声明**
 
-```magel
+```chali
 uint64 nextUInt64();
 ```
 
@@ -560,13 +560,13 @@ uint64 nextUInt64();
 
 **调用形式**
 
-```magel
+```chali
 obj.nextUInt64();
 ```
 
-**源码**：[source/std/random.mgl:23](../../source/std/random.mgl#L23)。
+**源码**：[source/std/random.chl:23](../../source/std/random.chl#L23)。
 
-**完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+**完整示例**：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。
 
 <a id="api-11"></a>
 
@@ -574,7 +574,7 @@ obj.nextUInt64();
 
 **声明**
 
-```magel
+```chali
 int64 nextInt(int64 minimum, int64 maximum);
 ```
 
@@ -599,13 +599,13 @@ int64 nextInt(int64 minimum, int64 maximum);
 
 **调用形式**
 
-```magel
+```chali
 obj.nextInt(minimum, maximum);
 ```
 
-**源码**：[source/std/random.mgl:24](../../source/std/random.mgl#L24)。
+**源码**：[source/std/random.chl:24](../../source/std/random.chl#L24)。
 
-**完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+**完整示例**：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。
 
 <a id="api-12"></a>
 
@@ -613,7 +613,7 @@ obj.nextInt(minimum, maximum);
 
 **声明**
 
-```magel
+```chali
 float64 nextFloat64();
 ```
 
@@ -635,13 +635,13 @@ float64 nextFloat64();
 
 **调用形式**
 
-```magel
+```chali
 obj.nextFloat64();
 ```
 
-**源码**：[source/std/random.mgl:25](../../source/std/random.mgl#L25)。
+**源码**：[source/std/random.chl:25](../../source/std/random.chl#L25)。
 
-**完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+**完整示例**：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。
 
 <a id="api-13"></a>
 
@@ -649,7 +649,7 @@ obj.nextFloat64();
 
 **声明**
 
-```magel
+```chali
 float64 nextRange(float64 minimum, float64 maximum);
 ```
 
@@ -674,13 +674,13 @@ float64 nextRange(float64 minimum, float64 maximum);
 
 **调用形式**
 
-```magel
+```chali
 obj.nextRange(minimum, maximum);
 ```
 
-**源码**：[source/std/random.mgl:26](../../source/std/random.mgl#L26)。
+**源码**：[source/std/random.chl:26](../../source/std/random.chl#L26)。
 
-**完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+**完整示例**：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。
 
 <a id="api-14"></a>
 
@@ -688,7 +688,7 @@ obj.nextRange(minimum, maximum);
 
 **声明**
 
-```magel
+```chali
 bool nextBool();
 ```
 
@@ -710,10 +710,10 @@ bool nextBool();
 
 **调用形式**
 
-```magel
+```chali
 obj.nextBool();
 ```
 
-**源码**：[source/std/random.mgl:27](../../source/std/random.mgl#L27)。
+**源码**：[source/std/random.chl:27](../../source/std/random.chl#L27)。
 
-**完整示例**：[example/samples/std_math_clock_random.mgl](../../example/samples/std_math_clock_random.mgl)。
+**完整示例**：[example/samples/std_math_clock_random.chl](../../example/samples/std_math_clock_random.chl)。

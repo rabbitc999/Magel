@@ -1,12 +1,12 @@
 /*
- * magel-lsp —— Magel 宏/块模型的编辑器语言服务器（`$macro` / `$replace` / `$for` …）。
+ * chali-lsp —— ChaLi 宏/块模型的编辑器语言服务器（`$macro` / `$replace` / `$for` …）。
  *
  * 用法：
- *   magel-lsp --stdio            在标准输入输出上跑 LSP（编辑器默认用法）
- *   magel-lsp --check FILE...    直接校验，输出 FILE:行:列: 级别: 消息 [码]
- *   magel-lsp --version / --help
+ *   chali-lsp --stdio            在标准输入输出上跑 LSP（编辑器默认用法）
+ *   chali-lsp --check FILE...    直接校验，输出 FILE:行:列: 级别: 消息 [码]
+ *   chali-lsp --version / --help
  *
- * 与工具链自带的 `magel lsp`（真前端检查，内嵌在编译器里）**分工不同**：
+ * 与工具链自带的 `chali lsp`（真前端检查，内嵌在编译器里）**分工不同**：
  * 这一份只做宏 / 块的编辑期配对与引用（快、不依赖编译器），另外提供语义高亮。
  */
 
@@ -70,17 +70,17 @@ std::string readFile(const std::string &path, bool &ok)
  */
 void printHelp()
 {
-    std::cout << "magel-lsp 0.26.0 —— Magel 宏 / 块的编辑期语言服务器\n"
+    std::cout << "chali-lsp 0.27.0 —— ChaLi 宏 / 块的编辑期语言服务器\n"
                  "\n"
                  "用法：\n"
-                 "  magel-lsp --stdio            在标准输入输出上跑 LSP（编辑器默认用法）\n"
-                 "  magel-lsp --check FILE...    直接校验宏 / 块，输出 FILE:行:列: 级别: 消息 [码]\n"
-                 "  magel-lsp --version          版本\n"
-                 "  magel-lsp --help             本帮助\n"
+                 "  chali-lsp --stdio            在标准输入输出上跑 LSP（编辑器默认用法）\n"
+                 "  chali-lsp --check FILE...    直接校验宏 / 块，输出 FILE:行:列: 级别: 消息 [码]\n"
+                 "  chali-lsp --version          版本\n"
+                 "  chali-lsp --help             本帮助\n"
                  "\n"
                  "能力：诊断（宏配对 / 参数 / 调用 / 分支）、悬停、补全、跳转定义、文档大纲、\n"
-                 "语义高亮。完整 Magel 前端检查（类型、语义）用编译器自带的 `magel lsp` 或\n"
-                 "`magel --check`。\n";
+                 "语义高亮。完整 ChaLi 前端检查（类型、语义）用编译器自带的 `chali lsp` 或\n"
+                 "`chali --check`。\n";
 }
 
 }  // namespace
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
         }
         if (arg == "--version" || arg == "-v")
         {
-            std::cout << "magel-lsp 0.26.0\n";
+            std::cout << "chali-lsp 0.27.0\n";
             return 0;
         }
         if (arg == "--check")
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
     {
         if (files.empty())
         {
-            std::cerr << "用法：magel-lsp --check FILE...\n";
+            std::cerr << "用法：chali-lsp --check FILE...\n";
             return 2;
         }
         int errors = 0;

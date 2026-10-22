@@ -4,13 +4,13 @@
 
 ## 引入
 
-```magel
+```chali
 import std::graph;
 ```
 
 ## 公共约定与错误边界
 
-Graph 使用链式前向星存储：head 是每顶点首条边，edgeTo/edgeNext/edgeWeight 是边终点、同起点下一条边与边权，顶点编号 0..vertexCount-1，重边与自环都允许。有向 / 无向由 create 的 directed 决定，无向图加边时自动镜像登记。bfs/dfs 输出可达顶点的访问序；topologicalSort 用 Kahn 算法，有环时输出空表；dijkstra 要求边权非负，不可达顶点距离为 -1；hasCycle 有向图用 Kahn 计数、无向图用并查集；minimumSpanningTreeWeight 用 Kruskal，图不连通返回 -1。Graph 与 UnionFind 使用独立拥有型 opcode，普通复制深复制；Graph.snapshot 和 UnionFind.parents/sizes 显式导出独立快照。UnionFind 路径压缩与按大小合并均原地执行，不随每次查询复制容量数组。全部算法由宿主胶水 glue/std_graph.hpp 提供，裁剪宏 NO_MAGEL_STD_GRAPH。
+Graph 使用链式前向星存储：head 是每顶点首条边，edgeTo/edgeNext/edgeWeight 是边终点、同起点下一条边与边权，顶点编号 0..vertexCount-1，重边与自环都允许。有向 / 无向由 create 的 directed 决定，无向图加边时自动镜像登记。bfs/dfs 输出可达顶点的访问序；topologicalSort 用 Kahn 算法，有环时输出空表；dijkstra 要求边权非负，不可达顶点距离为 -1；hasCycle 有向图用 Kahn 计数、无向图用并查集；minimumSpanningTreeWeight 用 Kruskal，图不连通返回 -1。Graph 与 UnionFind 使用独立拥有型 opcode，普通复制深复制；Graph.snapshot 和 UnionFind.parents/sizes 显式导出独立快照。UnionFind 路径压缩与按大小合并均原地执行，不随每次查询复制容量数组。全部算法由宿主胶水 glue/std_graph.hpp 提供，裁剪宏 NO_CHALI_STD_GRAPH。
 
 ## 参考代码
 
@@ -72,7 +72,7 @@ Graph 使用链式前向星存储：head 是每顶点首条边，edgeTo/edgeNext
 
 **声明**
 
-```magel
+```chali
 static Graph create(int64 vertexCount, bool directed);
 ```
 
@@ -99,11 +99,11 @@ static Graph create(int64 vertexCount, bool directed);
 
 **调用形式**
 
-```magel
+```chali
 std::graph::Graph::create(vertexCount, directed);
 ```
 
-**源码**：[source/std/graph.mgl:49](../../source/std/graph.mgl#L49)。
+**源码**：[source/std/graph.chl:49](../../source/std/graph.chl#L49)。
 
 <a id="api-1"></a>
 
@@ -111,7 +111,7 @@ std::graph::Graph::create(vertexCount, directed);
 
 **声明**
 
-```magel
+```chali
 void addEdge(int64 from, int64 to, int64 weight);
 ```
 
@@ -137,11 +137,11 @@ void addEdge(int64 from, int64 to, int64 weight);
 
 **调用形式**
 
-```magel
+```chali
 obj.addEdge(from, to, weight);
 ```
 
-**源码**：[source/std/graph.mgl:51](../../source/std/graph.mgl#L51)。
+**源码**：[source/std/graph.chl:51](../../source/std/graph.chl#L51)。
 
 <a id="api-2"></a>
 
@@ -149,7 +149,7 @@ obj.addEdge(from, to, weight);
 
 **声明**
 
-```magel
+```chali
 int64 vertexCount();
 ```
 
@@ -171,11 +171,11 @@ int64 vertexCount();
 
 **调用形式**
 
-```magel
+```chali
 obj.vertexCount();
 ```
 
-**源码**：[source/std/graph.mgl:53](../../source/std/graph.mgl#L53)。
+**源码**：[source/std/graph.chl:53](../../source/std/graph.chl#L53)。
 
 <a id="api-3"></a>
 
@@ -183,7 +183,7 @@ obj.vertexCount();
 
 **声明**
 
-```magel
+```chali
 bool isDirected();
 ```
 
@@ -205,11 +205,11 @@ bool isDirected();
 
 **调用形式**
 
-```magel
+```chali
 obj.isDirected();
 ```
 
-**源码**：[source/std/graph.mgl:55](../../source/std/graph.mgl#L55)。
+**源码**：[source/std/graph.chl:55](../../source/std/graph.chl#L55)。
 
 <a id="api-4"></a>
 
@@ -217,7 +217,7 @@ obj.isDirected();
 
 **声明**
 
-```magel
+```chali
 int64 len();
 ```
 
@@ -241,11 +241,11 @@ int64 len();
 
 **调用形式**
 
-```magel
+```chali
 obj.len();
 ```
 
-**源码**：[source/std/graph.mgl:57](../../source/std/graph.mgl#L57)。
+**源码**：[source/std/graph.chl:57](../../source/std/graph.chl#L57)。
 
 <a id="api-5"></a>
 
@@ -253,7 +253,7 @@ obj.len();
 
 **声明**
 
-```magel
+```chali
 List<int64> bfs(int64 start);
 ```
 
@@ -277,11 +277,11 @@ List<int64> bfs(int64 start);
 
 **调用形式**
 
-```magel
+```chali
 obj.bfs(start);
 ```
 
-**源码**：[source/std/graph.mgl:59](../../source/std/graph.mgl#L59)。
+**源码**：[source/std/graph.chl:59](../../source/std/graph.chl#L59)。
 
 <a id="api-6"></a>
 
@@ -289,7 +289,7 @@ obj.bfs(start);
 
 **声明**
 
-```magel
+```chali
 List<int64> dfs(int64 start);
 ```
 
@@ -313,11 +313,11 @@ List<int64> dfs(int64 start);
 
 **调用形式**
 
-```magel
+```chali
 obj.dfs(start);
 ```
 
-**源码**：[source/std/graph.mgl:61](../../source/std/graph.mgl#L61)。
+**源码**：[source/std/graph.chl:61](../../source/std/graph.chl#L61)。
 
 <a id="api-7"></a>
 
@@ -325,7 +325,7 @@ obj.dfs(start);
 
 **声明**
 
-```magel
+```chali
 int64 connectedComponents();
 ```
 
@@ -347,11 +347,11 @@ int64 connectedComponents();
 
 **调用形式**
 
-```magel
+```chali
 obj.connectedComponents();
 ```
 
-**源码**：[source/std/graph.mgl:63](../../source/std/graph.mgl#L63)。
+**源码**：[source/std/graph.chl:63](../../source/std/graph.chl#L63)。
 
 <a id="api-8"></a>
 
@@ -359,7 +359,7 @@ obj.connectedComponents();
 
 **声明**
 
-```magel
+```chali
 List<int64> topologicalSort();
 ```
 
@@ -381,11 +381,11 @@ List<int64> topologicalSort();
 
 **调用形式**
 
-```magel
+```chali
 obj.topologicalSort();
 ```
 
-**源码**：[source/std/graph.mgl:65](../../source/std/graph.mgl#L65)。
+**源码**：[source/std/graph.chl:65](../../source/std/graph.chl#L65)。
 
 <a id="api-9"></a>
 
@@ -393,7 +393,7 @@ obj.topologicalSort();
 
 **声明**
 
-```magel
+```chali
 List<int64> dijkstra(int64 start);
 ```
 
@@ -417,11 +417,11 @@ List<int64> dijkstra(int64 start);
 
 **调用形式**
 
-```magel
+```chali
 obj.dijkstra(start);
 ```
 
-**源码**：[source/std/graph.mgl:67](../../source/std/graph.mgl#L67)。
+**源码**：[source/std/graph.chl:67](../../source/std/graph.chl#L67)。
 
 <a id="api-10"></a>
 
@@ -429,7 +429,7 @@ obj.dijkstra(start);
 
 **声明**
 
-```magel
+```chali
 bool hasCycle();
 ```
 
@@ -451,11 +451,11 @@ bool hasCycle();
 
 **调用形式**
 
-```magel
+```chali
 obj.hasCycle();
 ```
 
-**源码**：[source/std/graph.mgl:69](../../source/std/graph.mgl#L69)。
+**源码**：[source/std/graph.chl:69](../../source/std/graph.chl#L69)。
 
 <a id="api-11"></a>
 
@@ -463,7 +463,7 @@ obj.hasCycle();
 
 **声明**
 
-```magel
+```chali
 int64 minimumSpanningTreeWeight();
 ```
 
@@ -485,11 +485,11 @@ int64 minimumSpanningTreeWeight();
 
 **调用形式**
 
-```magel
+```chali
 obj.minimumSpanningTreeWeight();
 ```
 
-**源码**：[source/std/graph.mgl:71](../../source/std/graph.mgl#L71)。
+**源码**：[source/std/graph.chl:71](../../source/std/graph.chl#L71)。
 
 <a id="api-12"></a>
 
@@ -497,7 +497,7 @@ obj.minimumSpanningTreeWeight();
 
 **声明**
 
-```magel
+```chali
 GraphSnapshot snapshot();
 ```
 
@@ -519,11 +519,11 @@ GraphSnapshot snapshot();
 
 **调用形式**
 
-```magel
+```chali
 obj.snapshot();
 ```
 
-**源码**：[source/std/graph.mgl:73](../../source/std/graph.mgl#L73)。
+**源码**：[source/std/graph.chl:73](../../source/std/graph.chl#L73)。
 
 <a id="api-13"></a>
 
@@ -531,7 +531,7 @@ obj.snapshot();
 
 **声明**
 
-```magel
+```chali
 static UnionFind create(int64 n);
 ```
 
@@ -557,11 +557,11 @@ static UnionFind create(int64 n);
 
 **调用形式**
 
-```magel
+```chali
 std::graph::UnionFind::create(n);
 ```
 
-**源码**：[source/std/graph.mgl:96](../../source/std/graph.mgl#L96)。
+**源码**：[source/std/graph.chl:96](../../source/std/graph.chl#L96)。
 
 <a id="api-14"></a>
 
@@ -569,7 +569,7 @@ std::graph::UnionFind::create(n);
 
 **声明**
 
-```magel
+```chali
 int64 find(int64 x);
 ```
 
@@ -595,11 +595,11 @@ int64 find(int64 x);
 
 **调用形式**
 
-```magel
+```chali
 obj.find(x);
 ```
 
-**源码**：[source/std/graph.mgl:98](../../source/std/graph.mgl#L98)。
+**源码**：[source/std/graph.chl:98](../../source/std/graph.chl#L98)。
 
 <a id="api-15"></a>
 
@@ -607,7 +607,7 @@ obj.find(x);
 
 **声明**
 
-```magel
+```chali
 bool unionSets(int64 a, int64 b);
 ```
 
@@ -632,11 +632,11 @@ bool unionSets(int64 a, int64 b);
 
 **调用形式**
 
-```magel
+```chali
 obj.unionSets(a, b);
 ```
 
-**源码**：[source/std/graph.mgl:100](../../source/std/graph.mgl#L100)。
+**源码**：[source/std/graph.chl:100](../../source/std/graph.chl#L100)。
 
 <a id="api-16"></a>
 
@@ -644,7 +644,7 @@ obj.unionSets(a, b);
 
 **声明**
 
-```magel
+```chali
 bool connected(int64 a, int64 b);
 ```
 
@@ -669,11 +669,11 @@ bool connected(int64 a, int64 b);
 
 **调用形式**
 
-```magel
+```chali
 obj.connected(a, b);
 ```
 
-**源码**：[source/std/graph.mgl:102](../../source/std/graph.mgl#L102)。
+**源码**：[source/std/graph.chl:102](../../source/std/graph.chl#L102)。
 
 <a id="api-17"></a>
 
@@ -681,7 +681,7 @@ obj.connected(a, b);
 
 **声明**
 
-```magel
+```chali
 int64 sizeOf(int64 x);
 ```
 
@@ -705,11 +705,11 @@ int64 sizeOf(int64 x);
 
 **调用形式**
 
-```magel
+```chali
 obj.sizeOf(x);
 ```
 
-**源码**：[source/std/graph.mgl:104](../../source/std/graph.mgl#L104)。
+**源码**：[source/std/graph.chl:104](../../source/std/graph.chl#L104)。
 
 <a id="api-18"></a>
 
@@ -717,7 +717,7 @@ obj.sizeOf(x);
 
 **声明**
 
-```magel
+```chali
 int64 count();
 ```
 
@@ -741,11 +741,11 @@ int64 count();
 
 **调用形式**
 
-```magel
+```chali
 obj.count();
 ```
 
-**源码**：[source/std/graph.mgl:106](../../source/std/graph.mgl#L106)。
+**源码**：[source/std/graph.chl:106](../../source/std/graph.chl#L106)。
 
 <a id="api-19"></a>
 
@@ -753,7 +753,7 @@ obj.count();
 
 **声明**
 
-```magel
+```chali
 int64 len();
 ```
 
@@ -777,11 +777,11 @@ int64 len();
 
 **调用形式**
 
-```magel
+```chali
 obj.len();
 ```
 
-**源码**：[source/std/graph.mgl:108](../../source/std/graph.mgl#L108)。
+**源码**：[source/std/graph.chl:108](../../source/std/graph.chl#L108)。
 
 <a id="api-20"></a>
 
@@ -789,7 +789,7 @@ obj.len();
 
 **声明**
 
-```magel
+```chali
 List<int64> parents();
 ```
 
@@ -811,11 +811,11 @@ List<int64> parents();
 
 **调用形式**
 
-```magel
+```chali
 obj.parents();
 ```
 
-**源码**：[source/std/graph.mgl:110](../../source/std/graph.mgl#L110)。
+**源码**：[source/std/graph.chl:110](../../source/std/graph.chl#L110)。
 
 <a id="api-21"></a>
 
@@ -823,7 +823,7 @@ obj.parents();
 
 **声明**
 
-```magel
+```chali
 List<int64> sizes();
 ```
 
@@ -845,8 +845,8 @@ List<int64> sizes();
 
 **调用形式**
 
-```magel
+```chali
 obj.sizes();
 ```
 
-**源码**：[source/std/graph.mgl:112](../../source/std/graph.mgl#L112)。
+**源码**：[source/std/graph.chl:112](../../source/std/graph.chl#L112)。

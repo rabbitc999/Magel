@@ -760,7 +760,7 @@ inline Slot stringBytes(State &ctx, const Memory::Vector<Slot> &args)
 }
 
 /**
- * @brief `__std_vec_pack(isText, isObject, values...) -> vec`：MAGEL 变长参数的调用点打包。
+ * @brief `__std_vec_pack(isText, isObject, values...) -> vec`：CHALI 变长参数的调用点打包。
  * @param ctx 原生调用上下文，提供内存访问与错误报告。
  * @param args 按接口约定顺序传入的实参列表。
  * @retval 封装为原生值的运行时结果。
@@ -1437,7 +1437,7 @@ inline bool nativeCallbackResult(State &ctx, const NativeValue &produced, std::i
         out->isText = true;
         const std::size_t address = static_cast<std::size_t>(produced.asInt());
         const bool read = nativeReadCString(ctx, address, &out->text);
-        /* 回调返回的堆串所有权归调用方（MAGEL 的 `return` 是 move）：内容已经复制进
+        /* 回调返回的堆串所有权归调用方（CHALI 的 `return` 是 move）：内容已经复制进
          * `out->text`，这块堆串就地还掉，否则每个字符串元素漏一块。 */
         if (ctx.heap != nullptr) ctx.heap->release(address);
         if (!read)
@@ -1554,7 +1554,7 @@ inline Slot vecMap(State &ctx, const Memory::Vector<Slot> &args)
         NativeValue produced;
         const bool invoked = (*ctx.invoker)(nativeInt(args[1]), { argument }, produced);
         /* 字符串实参的临时块同时也是回调形参的存储：回调 `return 形参` 时结果
-         * 就是它（MAGEL 的 return 是 move），这时不能先还，交给 `nativeCallbackResult`
+         * 就是它（CHALI 的 return 是 move），这时不能先还，交给 `nativeCallbackResult`
          * 统一释放；结果不是它才在这里还。 */
         if (temporary != 0u && (kind != 2 || produced.asInt() != static_cast<std::int64_t>(temporary)))
             ctx.heap->release(temporary);
@@ -2477,7 +2477,7 @@ bool listPushStruct(stackvm::NativeCallContext &host, std::int64_t listHandle, s
     out.fields.reserve(slotCount);
     for (std::size_t i = 0; i < slotCount; ++i)
     {
-        /* 每个槽按 double 的位模式拷贝：MAGEL 结构体字段都是 8 字节对齐，
+        /* 每个槽按 double 的位模式拷贝：CHALI 结构体字段都是 8 字节对齐，
          * 数值型结构体（如 Complex 的 re/im）这样拷最省事。 */
         double raw = 0.0;
         if (!host.readBytes(structAddress + static_cast<std::int64_t>(i * 8u),
@@ -2992,10 +2992,10 @@ inline bool textRecord(stackvm::NativeCallContext &host, const void *record, sta
  */
 inline const stackvm::NativeRecordType &descriptor(StorageKind kind)
 {
-    static const stackvm::NativeRecordType list{ "ArrayList", cloneRecord, destroyRecord, nullptr, copyRecord, disposeRecord, prepareRecord, requestRelease, visitRecord, textRecord, "magel.std.ArrayList.1" };
-    static const stackvm::NativeRecordType set{ "Set", cloneRecord, destroyRecord, nullptr, copyRecord, disposeRecord, prepareRecord, requestRelease, visitRecord, textRecord, "magel.std.Set.1" };
-    static const stackvm::NativeRecordType map{ "Map", cloneRecord, destroyRecord, nullptr, copyRecord, disposeRecord, prepareRecord, requestRelease, visitRecord, textRecord, "magel.std.Map.1" };
-    static const stackvm::NativeRecordType lease{ "iterator lease", nullptr, destroyRecord, nullptr, copyRecord, disposeRecord, nullptr, nullptr, nullptr, nullptr, "magel.std.ListLease.1" };
+    static const stackvm::NativeRecordType list{ "ArrayList", cloneRecord, destroyRecord, nullptr, copyRecord, disposeRecord, prepareRecord, requestRelease, visitRecord, textRecord, "chali.std.ArrayList.1" };
+    static const stackvm::NativeRecordType set{ "Set", cloneRecord, destroyRecord, nullptr, copyRecord, disposeRecord, prepareRecord, requestRelease, visitRecord, textRecord, "chali.std.Set.1" };
+    static const stackvm::NativeRecordType map{ "Map", cloneRecord, destroyRecord, nullptr, copyRecord, disposeRecord, prepareRecord, requestRelease, visitRecord, textRecord, "chali.std.Map.1" };
+    static const stackvm::NativeRecordType lease{ "iterator lease", nullptr, destroyRecord, nullptr, copyRecord, disposeRecord, nullptr, nullptr, nullptr, nullptr, "chali.std.ListLease.1" };
     return kind == StorageKind::Vector ? list : kind == StorageKind::Set ? set :
                                             kind == StorageKind::Map     ? map :
                                                                            lease;

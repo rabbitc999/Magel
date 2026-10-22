@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::probe;
 ```
 
@@ -14,25 +14,25 @@ import std::probe;
 
 ## 参考代码
 
-完整程序：[example/samples/std_process_probe.mgl](../../example/samples/std_process_probe.mgl)。
+完整程序：[example/samples/std_process_probe.chl](../../example/samples/std_process_probe.chl)。
 
 ```powershell
-magel run example/samples/std_process_probe.mgl
+chali run example/samples/std_process_probe.chl
 ```
 
 <details>
 <summary>展开完整参考代码</summary>
 
-```magel
+```chali
 import std::process;
 import std::probe;
 
 int64 main() {
-    Process process = std::process::processRun("echo magel-process-ok");
+    Process process = std::process::processRun("echo chali-process-ok");
     String output = std::process::processRead(&process);
     int64 status = std::process::processClose(&process);
     assert(status == 0);
-    assert(output == "magel-process-ok");
+    assert(output == "chali-process-ok");
     std::probe::Probe value;
     value.value = std::probe::twice(21);
     println("process={} probe={}", status, value.value);
@@ -74,7 +74,7 @@ process=0 probe=42
 
 **声明**
 
-```magel
+```chali
 int64 twice(int64 x);
 ```
 
@@ -98,10 +98,10 @@ int64 twice(int64 x);
 
 **调用形式**
 
-```magel
+```chali
 std::probe::twice(x);
 ```
 
-**源码**：[source/std/probe.mgl:5](../../source/std/probe.mgl#L5)。
+**源码**：[source/std/probe.chl:5](../../source/std/probe.chl#L5)。
 
-**完整示例**：[example/samples/std_process_probe.mgl](../../example/samples/std_process_probe.mgl)。
+**完整示例**：[example/samples/std_process_probe.chl](../../example/samples/std_process_probe.chl)。

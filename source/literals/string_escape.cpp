@@ -1,6 +1,6 @@
 #include "string_escape.hpp"
 
-namespace magel_literal
+namespace chali_literal
 {
 /**
  * @brief 完整解码语言支持的控制字符、引号及反斜杠转义。
@@ -45,4 +45,4 @@ bool decodeString(std::string_view raw, std::string &output, std::string &error)
     }
     return true;
 }
-}  // namespace magel_literal
+}  // namespace chali_literal

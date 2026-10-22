@@ -4,7 +4,7 @@
 
 ## 引入
 
-```magel
+```chali
 import std::serialization;
 ```
 
@@ -29,7 +29,7 @@ serialize<T> 使用反射生成精确 JSON 载荷，并封装版本、稳定类�
 
 **声明**
 
-```magel
+```chali
 Result<List<uint8>,String> serialize<T>(T const& value);
 ```
 
@@ -55,11 +55,11 @@ Result<List<uint8>,String> serialize<T>(T const& value);
 
 **调用形式**
 
-```magel
+```chali
 std::serialization::serialize<T>(value);
 ```
 
-**源码**：[source/std/serialization.mgl:10](../../source/std/serialization.mgl#L10)。
+**源码**：[source/std/serialization.chl:10](../../source/std/serialization.chl#L10)。
 
 <a id="api-1"></a>
 
@@ -67,7 +67,7 @@ std::serialization::serialize<T>(value);
 
 **声明**
 
-```magel
+```chali
 Result<T,String> deserialize<T>(List<uint8> bytes);
 ```
 
@@ -93,8 +93,8 @@ Result<T,String> deserialize<T>(List<uint8> bytes);
 
 **调用形式**
 
-```magel
+```chali
 std::serialization::deserialize<T>(bytes);
 ```
 
-**源码**：[source/std/serialization.mgl:16](../../source/std/serialization.mgl#L16)。
+**源码**：[source/std/serialization.chl:16](../../source/std/serialization.chl#L16)。

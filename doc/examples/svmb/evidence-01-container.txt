@@ -1,4 +1,4 @@
-标本            magel\doc\examples\svmb\control.svmb
+标本            chali\doc\examples\svmb\control.svmb
 字节数          662750
 SHA-256         CF30A3C8718DFB2C564D347AD35DE2D991F64FB9B983228A5EDBEEE93A757ABE
 
@@ -12,7 +12,7 @@ SHA-256         CF30A3C8718DFB2C564D347AD35DE2D991F64FB9B983228A5EDBEEE93A757ABE
 原始前 32 字节：
   50 45 53 56 4d 42 0d 0a 04 00 00 00 c6 1c 0a 00 00 00 00 00 45 ce 8e f6 07 00 00 00 6d 61 67 69
 
-用 magel\magel.exe 重新编译 magel/example/samples/control.mgl 的结果：
+用 chali\ChaLi.exe 重新编译 chali/example/samples/control.chl 的结果：
   重新生成 933482 字节（标本 662750 字节），SHA-256 不一致
   逐节条目数比对（程序名 / 指令 / 标签 / 类型 / 形参 / 导出 / 调试）：
     程序名          1 →       1

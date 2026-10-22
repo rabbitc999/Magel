@@ -1,12 +1,12 @@
 # 03 Core concepts
 
-Magel combines value semantics, non-null references and deterministic cleanup with independent
+ChaLi combines value semantics, non-null references and deterministic cleanup with independent
 provenance/control-flow checking. See [current capabilities](17-capabilities.md) and the
 [language reference](04-language-reference.md).
 
 ## 1. Value semantics and explicit move
 
-```magel
+```chali
 struct Point { int64 x; int64 y; };
 void shift(Point p) { p.x = p.x + 10; }
 int64 main() {
@@ -36,7 +36,7 @@ a new declaration using the same name, with a new storage identity. See [ownersh
 
 ## 2. Non-null and optional references
 
-```magel
+```chali
 T mut&     // 可变引用
 T const&   // 只读引用
 T &        // 与 T const& 等价
@@ -46,7 +46,7 @@ A reference binds a valid source. To represent an optional reference, use `Optio
 `Option<T mut&>`: Value contains a valid reference; None contains no reference. This does not add
 a nullable reference to the language.
 
-```magel
+```chali
 int64 value = 7;
 int64 mut& alias = &value;
 alias = 9;
@@ -55,13 +55,13 @@ Option<int64 const&> optional = Option<int64 const&>::Value(&value);
 
 Mutability and source lifetime must both be valid. Returning the address of a local, value parameter
 or short-lived temporary, or storing a reference beyond its source, is rejected. Provenance propagates
-through aliases, Option/Result, tuples, structs and containers. Escape diagnostics include MGL1204 and
+through aliases, Option/Result, tuples, structs and containers. Escape diagnostics include CHL1204 and
 the original file position.
 
 ## 3. Borrow provenance and control-flow checking
 
 The independent checker models storage paths, merges branch/loop state and tracks move, drop and drop.
-Access to moved or released sources and repeated moves follows the corresponding rules; MGL1205 is a
+Access to moved or released sources and repeated moves follows the corresponding rules; CHL1205 is a
 common diagnostic. Redeclaration after a complete move creates a new identity and does not redirect old aliases.
 
 Multiple aliases may share an object, and writes through a mutable alias are observable through other
@@ -78,7 +78,7 @@ Implementing both gives close before drop. A struct implementing `Closeable` is 
 reference. Explicit finalization avoids duplicate cleanup according to
 lifecycle state; it does not restore an invalid value. Defer and scope(exit) register scope-exit actions.
 
-```magel
+```chali
 struct Resource : Drop {
     String name;
     void drop() { println("drop {}", self.name); }
@@ -122,8 +122,8 @@ non-idempotent destruction, allocation identities and automatic cleanup.
 
 | Diagnostic | Meaning and action |
 | --- | --- |
-| MGL1204 | Reference outlives its source; return an owned value or borrow caller-owned storage |
-| MGL1205 | Access after move, destruction or release; correct operation order and binding identity |
+| CHL1204 | Reference outlives its source; return an owned value or borrow caller-owned storage |
+| CHL1205 | Access after move, destruction or release; correct operation order and binding identity |
 | Type/overload mismatch | Check values/references, permissions, numeric range and signatures; casts do not bypass resource contracts |
 
 ## 8. Next
