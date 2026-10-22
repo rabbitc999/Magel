@@ -62,7 +62,7 @@ The [library API reference](doc/library/README.md) (Chinese) covers the module l
 | [03 Core concepts](doc/en/03-core-concepts.md) | Users going deeper | Value semantics, non-null references, resource management without a GC |
 | [04 Language reference](doc/en/04-language-reference.md) | Day-to-day writers | Syntax, semantics and common errors by topic |
 | [05 Delivery security](doc/en/05-delivery-security.md) | Teams shipping outward | Four delivery forms, the four steps, reverse-engineering cost, boundary statement |
-| [06 Cross-platform deployment](doc/en/06-deployment.md) | People doing deployment | Source execution and bytecode delivery, desktop / embedded Linux, resources and limits |
+| [06 Cross-platform deployment](doc/en/06-deployment.md) | People doing deployment | Source execution and bytecode deployment, desktop / embedded Linux, resources and limits |
 | [07 Standard library overview](doc/en/07-stdlib-overview.md) | Anyone asking "what can it do" | standard-library modules by capability |
 | [08 Host integration and C ABI](doc/en/08-host-integration.md) | Integrators | `abi` blocks, host glue bindings, type mapping, nullable references |
 | [09 Toolchain](doc/en/09-toolchain.md) | Daily `magel` users | Scenario commands, options, `magel.toml`, diagnostics, debugging |

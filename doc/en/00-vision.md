@@ -1,4 +1,4 @@
-# 00 Vision: Business logic as an independently deliverable asset
+# 00 Vision: Business logic that runs anywhere
 
 > **Write once, run anywhere.**
 > One logic, from embedded Linux to cloud; value semantics, non-null references, no GC.
@@ -41,10 +41,11 @@ GC don't run on embedded" and "without a GC you will get it wrong" look like a b
 
 ## 2. Magel's answers
 
-### Answer 1: from source to bytecode — logic runs without its source
+### Answer 1: write once, run anywhere
 
-Magel source compiles to `.svmb` bytecode, executed by StackVM. **What you deliver is bytecode, not
-source.**
+Magel source compiles to `.svmb` bytecode, executed by the shared StackVM. The same bytecode loads
+and runs unchanged on any host that provides a compatible VM and the system services the program
+uses; platform-specific parts live in host glue, so business logic is not rewritten per platform.
 
 ### Answer 2: from desktop to embedded Linux
 
@@ -52,6 +53,8 @@ Desktop and embedded Linux hosts use the same `library/stackvm/` execution core.
 C++17 toolchain, sufficient memory and the system libraries required by its program. Build the host
 and native glue for the target architecture and runtime. Magel source describes the business,
 bytecode carries the program, and the host supplies files, networking, clocks and other services.
+Embedded Linux is a target it can run on, not a promise that one build ships everywhere: each host
+rebuilds the VM and glue and rechecks resource budgets and system services.
 
 ### Answer 3: value semantics, non-null references and borrow checking
 
@@ -73,7 +76,7 @@ See [core concepts](03-core-concepts.md#3-borrow-provenance-and-control-flow-che
 Reuse application logic across Linux devices, deploy bytecode updates and adapt system services through native glue. Resource budgets and process recovery follow the target configuration.
 
 **SaaS companies that must deliver on-premise**
-The customer wants it in their own data center. You can ship bytecode with compressed symbols, keep the mapping file yourself — locate problems through the mapping when they
+The customer wants it in their own data center. You can deploy bytecode with compressed symbols, keep the mapping file yourself — locate problems through the mapping when they
 happen, while keeping your source files and symbol mapping private.
 
 **Toolchain vendors needing one logic across many ends**
@@ -105,4 +108,4 @@ Read this section carefully. It matters more than everything above.
 
 - Want to run something first → [5-minute quickstart](01-quickstart.md)
 - Want to see what the language looks like → [Language tour](02-language-tour.md)
-- Evaluating delivery and deployment → [Delivery security](05-delivery-security.md) · [Cross-platform deployment](06-deployment.md)
+- Evaluating deployment options → [Delivery security](05-delivery-security.md) · [Cross-platform deployment](06-deployment.md)

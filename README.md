@@ -9,7 +9,7 @@
 
 Magel 是一门静态类型、值语义优先、不带 GC 的通用编程语言，提供借用来源与控制流检查。它借用 C 的表达式与块语法，但类型、所有权与运行时行为由 Magel 自行定义，面向"同一份程序从桌面一直到嵌入式 Linux"的场景。
 
-Magel 编译器由本仓库的 `source/magel.gram` 经 [ParseEngine](https://github.com/rabbitc999/ParseEngine) 生成前端，把 `.mgl` 源码降级为 StackVM 四元式，再组装为 VM 指令。程序可在内存中执行、保存为 `.svmb` 字节码，或导出为可独立部署的 C++ 程序。
+Magel 编译器由本仓库的 `source/magel.gram` 经 [ParseEngine](https://github.com/rabbitc999/ParseEngine) 生成前端，把 `.mgl` 源码降级为 StackVM 四元式，再组装为 VM 指令。程序可在内存中执行，也可以保存为 `.svmb` 字节码，交给共享 VM 在目标宿主上运行。
 
 当前已实现能力、默认配置与平台边界统一见[能力说明](doc/17-capabilities.md)，版本以 [`VERSION`](VERSION) 为准。
 
@@ -43,7 +43,7 @@ Magel 编译器由本仓库的 `source/magel.gram` 经 [ParseEngine](https://git
 | [03 核心概念](doc/03-core-concepts.md) | 准备深入使用的人 | 值语义、非空引用、无 GC 的资源管理 |
 | [04 语言参考](doc/04-language-reference.md) | 日常写代码的人 | 按主题查阅语法、语义与常见错误 |
 | [05 交付安全](doc/05-delivery-security.md) | 需要对外交付的团队 | 四种交付形态、四步法、逆向成本与边界声明 |
-| [06 跨平台部署](doc/06-deployment.md) | 做部署的人 | 源码运行与字节码交付、桌面 / 嵌入式 Linux、资源与边界 |
+| [06 跨平台部署](doc/06-deployment.md) | 做部署的人 | 源码运行与字节码部署、桌面 / 嵌入式 Linux、资源与边界 |
 | [07 标准库概览](doc/07-stdlib-overview.md) | 想知道「能做什么」的人 | 标准库模块按能力域速查 |
 | [库函数 API 参考](doc/library/README.md) | 查阅库 API 的人 | 模块的声明、重载、参数、返回值、错误边界与完整示例 |
 | [08 宿主集成与 C ABI](doc/08-host-integration.md) | 做集成的人 | `abi` 块、宿主胶水绑定、类型映射、可空引用 |
@@ -110,7 +110,7 @@ make reflection     # 保留的显式启用入口
 前端（`MAGEL_WITH_REFLECTION`）与运行时（`STACKVM_WITH_REFLECTION`）必须同时开启，缺一个 `--reflection` 就报缺宏。之后 `--reflection` 生效，`--no-reflection` 可显式关闭。
 
 工具链编入反射能力后，单次源码编译默认生成反射元数据及对应产物特征位。
-交付到未编入反射的目标宿主 VM 时，必须使用 `--no-reflection` 显式关闭。
+部署到未编入反射的目标宿主 VM 时，必须使用 `--no-reflection` 显式关闭。
 验证裁剪配置时可显式执行 `make MAGEL_WITH_REFLECTION=0 STACKVM_WITH_REFLECTION=0`。
 
 ## 快速使用
@@ -193,7 +193,7 @@ main = "src/main.mgl"
 ## Linux 部署
 
 桌面和嵌入式 Linux 共用普通操作系统宿主与 VM 核心。宿主及原生依赖按目标架构构建，
-交付字节码、数据和布局文件。通用 `--memory-size` 设置内存预算，模块能力由宿主注册的胶水决定。
+部署字节码、数据和布局文件。通用 `--memory-size` 设置内存预算，模块能力由宿主注册的胶水决定。
 详细流程见[部署说明](doc/06-deployment.md)。
 
 ## 目录结构

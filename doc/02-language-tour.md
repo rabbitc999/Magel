@@ -429,7 +429,7 @@ detail square5=25
 | `abi` 块与 C ABI | 声明外部函数 / 导出 Magel 函数给 C | [宿主集成与 C ABI](08-host-integration.md) |
 | 注解与反射 | 编译期元数据，运行期可查询、可按名调用 | [语言参考](04-language-reference.md) |
 | 线程与并发 | `std::thread`、`std::concurrency` | [标准库概览](07-stdlib-overview.md) |
-| 字节码交付 | `.svmb`、符号压缩 | [交付安全](05-delivery-security.md) |
+| 部署字节码 | `.svmb`、符号压缩 | [交付安全](05-delivery-security.md) |
 
 ---
 

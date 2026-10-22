@@ -467,7 +467,7 @@ The tour stops here. The other half of Magel has its own documents:
 | `abi` blocks and the C ABI | Declare external functions / export Magel functions to C | [Host integration and C ABI](08-host-integration.md) |
 | Annotations and reflection | Compile-time metadata, queryable and callable at run time | [Language reference](04-language-reference.md) |
 | Threads and concurrency | `std::thread`, `std::concurrency` | [Standard library overview](07-stdlib-overview.md) |
-| Bytecode delivery | `.svmb`, symbol compression | [Delivery security](05-delivery-security.md) |
+| Bytecode deployment | `.svmb`, symbol compression | [Delivery security](05-delivery-security.md) |
 
 ---
 

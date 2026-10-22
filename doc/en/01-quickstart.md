@@ -111,7 +111,7 @@ magel check hello.mgl
 | You want | Where |
 | --- | --- |
 | Learn the language features | [Language tour](02-language-tour.md) |
-| Hand the program to a customer / flash a device | [Delivery security](05-delivery-security.md) → [Cross-platform deployment](06-deployment.md) |
+| Deploy the program to a target host | [Delivery security](05-delivery-security.md) → [Cross-platform deployment](06-deployment.md) |
 | See what the standard library offers | [Standard library overview](07-stdlib-overview.md) |
 | Start a real project | `magel new my-app`; configuration in [Toolchain](09-toolchain.md) |
 

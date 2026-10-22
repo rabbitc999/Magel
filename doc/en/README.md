@@ -4,10 +4,9 @@ See [current capabilities and limits](17-capabilities.md) for the shared impleme
 
 **Write once, run anywhere.** One logic, from embedded Linux to cloud; value semantics, non-null references, no GC.
 
-Magel turns business logic into an asset you can deliver on its own: write it once and run the same
-logic from desktop down to the embedded board; what you hand over is bytecode or a native program,
-not source; there is no garbage collector, and resources are released deterministically when they
-leave scope.
+Magel lets you write business logic once: the same source compiles to bytecode that the shared VM
+runs on desktop, server and embedded Linux hosts, with platform differences handled by host glue.
+There is no garbage collector, and resources are released deterministically when they leave scope.
 
 Read the current language/toolchain version from [`VERSION`](../../VERSION).
 
@@ -28,7 +27,7 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 | Evaluating it for a project | [Vision](00-vision.md) (includes "who should not use it") → [Cross-platform deployment](06-deployment.md) |
 | Ready to write code | [Language tour](02-language-tour.md) → [Language reference](04-language-reference.md) |
 | Want to understand value semantics and references | [Core concepts](03-core-concepts.md) |
-| Handing the program to a customer / flashing a device | [Delivery security](05-delivery-security.md) → [Cross-platform deployment](06-deployment.md) |
+| Deploying the program to a target host | [Delivery security](05-delivery-security.md) → [Cross-platform deployment](06-deployment.md) |
 | Want to know what the standard library has | [Standard library overview](07-stdlib-overview.md) |
 | Looking for something to run right away | [Example projects](13-projects.md) (student records, graphics, host VM…) |
 | Need to talk to a C/C++ host | [Host integration and C ABI](08-host-integration.md) |
@@ -50,7 +49,7 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 | [03](03-core-concepts.md) | Core concepts | Users going deeper | Value semantics, non-null references, resource management without a GC |
 | [04](04-language-reference.md) | Language reference | Day-to-day writers | Syntax, semantics, examples and common errors by topic, including generic nesting, default types and monomorphisation limits |
 | [05](05-delivery-security.md) | Delivery security | Teams shipping outward | Delivery forms, the four steps, reverse-engineering cost, boundary statement |
-| [06](06-deployment.md) | Cross-platform deployment | People doing deployment | Source execution and bytecode delivery, desktop / embedded Linux, resources and limits |
+| [06](06-deployment.md) | Cross-platform deployment | People doing deployment | Source execution and bytecode deployment, desktop / embedded Linux, resources and limits |
 | [07](07-stdlib-overview.md) | Standard library overview | Anyone asking "what can it do" | Existing modules and core APIs by capability |
 | [08](08-host-integration.md) | Host integration and C ABI | Integrators | Glue bindings, `abi` blocks, type mapping, nullable references |
 | [09](09-toolchain.md) | Toolchain | Daily `magel` users | Commands, `magel.toml`, compile options, tests, LSP, display language |
@@ -85,7 +84,7 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 
 - [Context-typed literals, operator inference and macros](24-literals-operators-macros.md)
 
-- [Execution and delivery](25-execution-delivery.md)
+- [Execution and deployment](25-execution-delivery.md)
 
 - [Custom error propagation and if expressions](26-error-propagation-if.md)
 

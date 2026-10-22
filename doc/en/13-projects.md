@@ -18,7 +18,7 @@ is written `magel`).
 | [Annotations and reflection](#53-annotations-and-reflection) | [`example/reflection/`](../../example/reflection/) | Compile-time annotations, runtime metadata queries | reflection build macros |
 | [Standard library companions](#54-standard-library-companions) | [`doc/examples/library/`](../examples/library/) | Four runnable programs: io / sqlite / watchdog / reflect | some need reflection |
 | [C ABI companions](#55-c-abi-companions) | [`doc/examples/abi_buffers/`](../examples/abi_buffers/), [`abi_dynamic/`](../examples/abi_dynamic/) | Static buffers vs. dynamic library bindings | a C compiler |
-| [`.svmb` evidence pack](#6-delivery-and-reverse-engineering-the-svmb-evidence-pack) | [`doc/examples/svmb/`](../examples/svmb/) | A bytecode specimen, section-by-section anatomy, reproducible reversing-cost data | none |
+| [`.svmb` evidence pack](#6-artifacts-and-reverse-engineering-the-svmb-evidence-pack) | [`doc/examples/svmb/`](../examples/svmb/) | A bytecode specimen, section-by-section anatomy, reproducible reversing-cost data | none |
 | [Glue callbacks](../../example/native-callbacks/README.md) | [`example/native-callbacks/`](../../example/native-callbacks/) | Shared VM glue calling named functions, closures, references and higher-order callbacks | a C++ compiler |
 | [Editor language servers](#72-editor-language-servers-and-the-vs-code-extension) | [`source/lsp/`](../../source/lsp), [`vscode/`](../../vscode/) | Macro pairing checks, semantic highlighting, real diagnostics | none / VS Code |
 
@@ -156,7 +156,7 @@ Type mapping and `abi` block syntax are in [Host integration and C ABI](08-host-
 
 ---
 
-## 6. Delivery and reverse engineering: the `.svmb` evidence pack
+## 6. Artifacts and reverse engineering: the `.svmb` evidence pack
 
 **What it demonstrates**: [`doc/examples/svmb/`](../examples/svmb/) is the evidence behind
 [`.svmb` binary format anatomy and reverse-engineering difficulty](../15-svmb-format.md).
@@ -234,7 +234,7 @@ Checks requiring a graphical environment or database are dedicated regressions: 
 
 | You want to | Go to |
 | --- | --- |
-| Ship a program of your own | [Delivery security](05-delivery-security.md) → [Cross-platform deployment](06-deployment.md) |
+| Deploy a program of your own | [Delivery security](05-delivery-security.md) → [Cross-platform deployment](06-deployment.md) |
 | Connect Magel to a C/C++ host | [Host integration and C ABI](08-host-integration.md) |
 | Learn the language from scratch | [《玩转 Magel 语言》](../book/README.md) (Chinese) |
 | Look up a library function | [Library reference](../library/README.md) |

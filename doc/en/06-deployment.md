@@ -1,6 +1,6 @@
 # 06 VM deployment
 
-Magel programs always execute in the shared VM. Deploy source for compilation on the host, or export bytecode in advance.
+Magel programs always execute in the shared VM, **write once, run anywhere**: the same source compiles to bytecode that desktop, server and supported embedded Linux hosts can load. Deploy source for compilation on the host, or export `.svmb` in advance.
 
 ```sh
 magel run app.mgl
@@ -13,7 +13,9 @@ A host application may itself be compiled into a native executable and embed byt
 
 The compiler embeds its standard library and runtime assets. Operating-system services, external libraries, databases and peripherals remain deployment dependencies when used.
 
-The host owns the program, data, registry and borrowed resources. Configure memory and instruction budgets and check execution errors and resource statistics. Embedded Linux hosts use the same VM core with explicit feature and memory budgets.
+The host owns the program, data, registry and borrowed resources. Configure memory and instruction budgets and check execution errors and resource statistics. Embedded Linux hosts use the same VM core with explicit feature and memory budgets. That is a
+runtime capability, not a cross-platform delivery promise: rebuild the VM and glue for each target
+architecture and recheck toolchain and system services.
 
 Symbol compression is not encryption or a sandbox. Updating bytecode does not automatically migrate running stacks, closures or globals.
 

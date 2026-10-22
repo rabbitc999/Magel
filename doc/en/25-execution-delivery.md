@@ -1,4 +1,4 @@
-# 25 Execution and delivery boundaries
+# 25 Execution and deployment boundaries
 
 Programs execute only in the VM. `run` compiles and executes source; `emit` writes quadruples and data; `svmb` writes bytecode for a compatible VM.
 

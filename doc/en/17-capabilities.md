@@ -45,7 +45,7 @@ Explicit Any targets support contextual boxing in generics and heterogeneous Lis
 
 Every non-void value has default `toString()` and String conversion: structs `{...}`, List/arrays `[...]`, Set/Map `{...}`, and tuples `(...)`, with quoted and escaped nested strings. User toString and ImplicitConvert<String> supply missing counterparts; dedicated explicit conversions retain priority. Reflection is not required. See [value-text rules](04-language-reference.md#default-value-text-and-string-conversion).
 
-## Execution, optimization and delivery
+## Execution, optimization and deployment
 
 | Route | Implementation | Host requirements |
 | --- | --- | --- |

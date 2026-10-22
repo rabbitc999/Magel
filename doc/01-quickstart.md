@@ -104,7 +104,7 @@ magel check hello.mgl
 | 你想 | 去哪 |
 | --- | --- |
 | 了解语言特性 | [语言速览](02-language-tour.md) |
-| 把程序交付给客户 / 烧进设备 | [交付安全](05-delivery-security.md) → [跨平台部署](06-deployment.md) |
+| 把程序部署到目标宿主 | [交付安全](05-delivery-security.md) → [跨平台部署](06-deployment.md) |
 | 看看标准库有什么 | [标准库概览](07-stdlib-overview.md) |
 | 建一个正式工程 | `magel new my-app`，配置见[工具链使用](09-toolchain.md) |
 

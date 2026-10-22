@@ -16,7 +16,7 @@
 | [注解与反射](#53-注解与反射) | [`example/reflection/`](../example/reflection/) | 编译期注解、运行期元数据查询 | 需开启反射构建宏 |
 | [标准库配套程序](#54-标准库配套程序) | [`doc/examples/library/`](examples/library/) | io / sqlite / watchdog / reflect 四段可跑程序 | 部分需反射 |
 | [C ABI 配套示例](#55-c-abi-配套示例) | [`doc/examples/abi_buffers/`](examples/abi_buffers/)、[`abi_dynamic/`](examples/abi_dynamic/) | 静态缓冲与动态库两种绑定方式 | C 编译器 |
-| [`.svmb` 证据包](#6-交付与逆向svmb-证据包) | [`doc/examples/svmb/`](examples/svmb/) | 字节码标本、逐节解剖、可复现的逆向成本数据 | 无 |
+| [`.svmb` 证据包](#6-产物与逆向svmb-证据包) | [`doc/examples/svmb/`](examples/svmb/) | 字节码标本、逐节解剖、可复现的逆向成本数据 | 无 |
 | [胶水回调](../example/native-callbacks/README.md) | [`example/native-callbacks/`](../example/native-callbacks/) | 同一胶水在 VM 调用具名函数、闭包、引用及高阶回调 | C++ 编译器 |
 | [编辑器语言服务器](#72-编辑器语言服务器与-vs-code-插件) | [`source/lsp/`](../source/lsp)、[`vscode/`](../vscode/) | 宏配对检查、语义高亮、真诊断 | 无 / VS Code |
 
@@ -147,7 +147,7 @@ magel run doc/examples/library/sqlite.mgl
 
 ---
 
-## 6. 交付与逆向：`.svmb` 证据包
+## 6. 产物与逆向：`.svmb` 证据包
 
 **演示什么**：[`doc/examples/svmb/`](examples/svmb/) 是
 [`.svmb` 二进制格式解剖与逆向难度](15-svmb-format.md)
@@ -177,9 +177,9 @@ python doc/examples/svmb/collect.py --parser ./magel.exe
 
 ### 7.1 嵌入式 Linux 宿主
 
-使用目标 Linux 的 C++17 工具链构建 `library/stackvm/` 和原生胶水，随程序交付
-`.svmb`、数据区及布局文件，并提供宿主使用的系统库。资源预算与执行边界见
-[部署说明](06-deployment.md)及[书稿交付与部署章节](book/22-交付与部署.md)。
+使用目标 Linux 的 C++17 工具链构建 `library/stackvm/` 和原生胶水，把
+`.svmb`、数据区及布局文件随程序部署，并提供宿主使用的系统库。资源预算与执行边界见
+[部署说明](06-deployment.md)及[书稿部署字节码章节](book/22-部署字节码.md)。
 
 ### 7.2 编辑器语言服务器与 VS Code 插件
 
@@ -221,7 +221,7 @@ VS Code 插件在 [`vscode/`](../vscode/)，语法高亮、补全、跳转与断
 
 | 你想 | 去哪 |
 | --- | --- |
-| 自己写一个能交付的程序 | [交付安全](05-delivery-security.md) → [跨平台部署](06-deployment.md) |
+| 自己写一个能部署的程序 | [交付安全](05-delivery-security.md) → [跨平台部署](06-deployment.md) |
 | 把 Magel 接到 C/C++ 宿主 | [宿主集成与 C ABI](08-host-integration.md) |
 | 跟着书从零学语言 | [《玩转 Magel 语言》](book/README.md) |
 | 查某个库函数 | [库函数参考](library/README.md) |
