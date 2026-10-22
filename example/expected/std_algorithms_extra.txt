@@ -4,4 +4,5 @@ filter 4 3 5
 reduce 14 114
 sum    14 7
 count  2 4
+closure 13 15
 float64    3.75

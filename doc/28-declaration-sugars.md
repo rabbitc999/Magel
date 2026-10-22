@@ -158,7 +158,56 @@ ValidateDerivedFields()  // missing nested interface is always a compilation err
 LowerProgram()          // ordinary typed methods -> ordinary quadruples
 ```
 
-## 回归入口
+## Closeable 与运算符推导开关
+
+两个指令式约定：实现 `Closeable` 的结构体自动获得 `#NonCopyable`；声明前写 `#No<接口>Replace`
+关掉该接口的自动推导。
+
+```magel
+struct Handle : Closeable { int64 id; void close() { println("close {}", self.id); } }
+
+#NoAddReplace
+#NoLessReplace
+struct Vec : Add<int64, int64>, Less<bool, Vec> {
+    int64 v;
+    int64 leftAdd(int64 other) { return self.v + other; }
+    bool leftLess(Vec const& other) { return self.v < other.v; }
+}
+```
+
+```text
+replace_directives := NO_REPLACE | replace_directives NO_REPLACE
+top_decl := replace_directives struct_decl type_decl_end
+NO_REPLACE := "#No" [A-Za-z][A-Za-z0-9]* "Replace"
+
+NoOperatorReplace(interface, declaration) => declaration.noReplace += 接口名去掉 #No 与 Replace
+```
+
+`Closeable` 是资源关闭协议，复制一份就是两份所有权、`close()` 会跑两遍，因此凡是实现了它的
+结构体一律按不可复制处理，与 `#NonCopyable opcode` 同一条检查路径：复制初始化、赋值、按值传参
+与返回值复制都报错；`move(&x)`、引用传参、返回局部拥有值照常。诊断文案会同时点出这两条来路
+（“实现 Closeable 或声明了 #NonCopyable”）。
+
+两类指令逐条登记：`#No<接口>Replace` 进 `noReplace` 集合，`#NoRight<接口>` 进 `noRight` 集合。
+语义层核对三件事：接口名确实存在、是二元运算符接口、该接口本来就带有可取消的推导（前者要
+求有换边 / 对偶 / 取反中的任意一条，后者要求存在右向写法）；写错、重复或对着没有推导的接口
+写都直接报错。检查落在 `FindOperator` 的推导分支上：
+
+```text
+FindOperator(op, left, right):
+    direct match               -> 直接用（指令不影响直接写法）
+    right-direction (RightXxx) -> 照旧
+    symmetry swap (交换律)      -> 仅当接收者未被 #No<接口>Replace 关闭
+    duality / negation         -> 仅当 via 接口未被 #No<接口>Replace 关闭
+```
+
+因此 `#NoAddReplace` 与 `#NoRightAdd` 分工明确：后者只堵右向那一条，前者关掉这个接口的全部
+推导，但直接写出的左向 / 右向调用都不受影响。两者都是**编译器指令**（写在声明前、不进继承
+列表），不再提供同名的空标记接口。泛型模板的指令在 `collectGenericDerives` 阶段随 `#derive`
+一起摘走，实例化时贴回展开文本之前。
+
+
 
 - [返回表达式与资源清理](../example/samples/return_expression.mgl)、[具名闭包](../example/samples/named_function.mgl)、[结构体和枚举派生](../example/samples/derive.mgl)。
+- 运算符推导开关：[`no_replace.mgl`](../example/samples/no_replace.mgl) 与报错例 [`operator_no_add_replace.mgl`](../example/samples-error/operator_no_add_replace.mgl)；Closeable 自动不可复制：[`closeable_move.mgl`](../example/samples/closeable_move.mgl) 与报错例 [`closeable_copy.mgl`](../example/samples-error/closeable_copy.mgl)。
 - [语义及生命周期门禁](../tests/magel_declaration_sugars.py)检查分支类型、嵌套返回、层级跳转、只读捕获、引用逃逸、表达式位置声明、Drop 派生和缺失字段协议。

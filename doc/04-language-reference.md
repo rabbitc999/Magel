@@ -346,9 +346,15 @@ int64 main() {
   - **什么都没写**：按上面两条推，`a + 5` 与 `5 + a` 都能用；
   - **写了 `RightAdd`**：右向归你自己，`5 + a` 只认 `rightAdd`；形参接不住就报错，
     **不会**退回借 `Add` 兜底；
-  - **写了 `NoRightAdd`**：明令禁止，`5 + a` 报错。它是**空标记接口**，名字就是
-    `No` + 右接口名（`NoRightAdd` / `NoRightLess` …），没有类型实参；左向 `a + 5`
-    不受影响。`NoRightXxx` 优先于 `RightXxx`。
+  - **写了编译器指令 `#NoRightAdd`**：明令禁止，`5 + a` 报错。它写在 `struct` 前面，
+    名字是 `#NoRight` + 左接口名（`#NoRightAdd` / `#NoRightLess` …），没有类型实参，
+    也不进继承列表；左向 `a + 5` 不受影响。`#NoRightXxx` 优先于 `RightXxx`。
+- **关掉推导**：在 `struct` 前写编译器指令 `#NoAddReplace`，这个类型的 `Add` 就**不再参与
+  任何自动推导** —— `5 + a` 不换边、`a >= 5` 也不由 `Less` 取反推出来。名字是
+  `#No` + 接口名 + `Replace`（`#NoLessReplace` / `#NoMultiplyReplace` …），可以连写多条。
+  接口必须是本类型确实实现、且本来有推导可关的二元接口，写错报错。它只关推导，不动直接
+  写法：左向 `a + 5` 照常调用 `leftAdd`，自己显式实现 `RightAdd` 也照常走。与 `#NoRightAdd`
+  的分工是：`#NoRightAdd` 只关右向那一条路，`#NoAddReplace` 关掉这个接口的所有推导。
 - **求值顺序**：换边只是把两个操作数换个位置**调用**，求值顺序仍按源码从左到右
   （`bump() + makeA()` 先跑 `bump()`，再 `makeA()`）。
 - **同一对操作数、不同返回类型**：一个类型可以同时继承 `Add<int64,int64>` 与
@@ -361,11 +367,13 @@ int64 main() {
 可运行验证见 [`operator_symmetry.mgl`](../example/samples/operator_symmetry.mgl)、
 [`operator_right_direction.mgl`](../example/samples/operator_right_direction.mgl)、
 [`operator_result_choice.mgl`](../example/samples/operator_result_choice.mgl)、
-[`operator_swap_eval_order.mgl`](../example/samples/operator_swap_eval_order.mgl)；
+[`operator_swap_eval_order.mgl`](../example/samples/operator_swap_eval_order.mgl)、
+[`no_replace.mgl`](../example/samples/no_replace.mgl)（`#NoAddReplace` 关推导）；
 报错例子见
 [`operator_asymmetric_reverse.mgl`](../example/samples-error/operator_asymmetric_reverse.mgl)（只声明左减法）、
-[`operator_right_forbidden.mgl`](../example/samples-error/operator_right_forbidden.mgl)（`NoRightAdd` 禁止右向）、
+[`operator_right_forbidden.mgl`](../example/samples-error/operator_right_forbidden.mgl)（`#NoRightAdd` 禁止右向）、
 [`operator_right_explicit.mgl`](../example/samples-error/operator_right_explicit.mgl)（`RightAdd` 形参接不住）、
+[`operator_no_add_replace.mgl`](../example/samples-error/operator_no_add_replace.mgl)（`#NoAddReplace` 关掉换边）、
 [`operator_result_ambiguous.mgl`](../example/samples-error/operator_result_ambiguous.mgl)（没有目标类型）、
 [`logical_operator_overload.mgl`](../example/samples-error/logical_operator_overload.mgl)（`&&` 不可重载）。
 
@@ -728,6 +736,8 @@ opcode FileHandle {
 复制方法须创建独立的宿主记录。`#NonCopyable` 类型省略 `copy`，禁止复制初始化、
 赋值及按值传参、返回时的复制；它仍可通过 `T target = move(&source);` 转移所有权，
 按值传参与返回也可显式使用 `move(&value)`。此规则适用于所有 opcode 类型。
+实现 `Closeable` 的 struct 走同一条检查：复制一份就是两份所有权，`close()` 会跑两遍，
+因此它自动按不可复制处理，无须再写指令（见[声明糖](28-declaration-sugars.md#closeable-与运算符推导开关)）。
 移动不调用 copy，源绑定随后失效，最终接收所有权的一方负责调用 drop。
 `Type::new(...)` 调用创建方法。opcode 是内部保存不透明胶水句柄的特殊结构体，声明体还可包含
 普通成员变量、实例方法及静态方法。普通字段由语言保存、复制和销毁；它们不描述宿主对象的内存布局。

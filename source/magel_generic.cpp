@@ -350,13 +350,48 @@ std::size_t lineOf(const Memory::String &text, std::size_t offset)
 }
 
 /**
+ * @brief 识别编译器指令 `#No<接口>Replace` / `#NoRight<接口>` 的范围。
+ *
+ * 指令本身不带括号，没法套用 `#derive(...)` 的分组解析；这里按「`#No` + 标识符 +
+ * `Replace`」或「`#NoRight` + 标识符」逐段比对，尾后必须是词边界，避免把
+ * `#NoAddReplaceX` 当成指令。
+ *
+ * @param text 代码掩码（注释与字符串已抹白）。
+ * @param at 指令起始偏移。
+ * @param end 输出：指令结束后的偏移。
+ * @return 起点确实是一条运算符开关指令时返回 true。
+ */
+bool operatorSwitchRange(const Memory::String &text, std::size_t at, std::size_t &end)
+{
+    if (text.compare(at, 3, "#No") != 0) return false;
+    if (at > 0 && identPart(text[at - 1])) return false;
+    std::size_t cursor = at + 3u;
+    const std::size_t begin = cursor;
+    while (cursor < text.size() && identPart(text[cursor])) ++cursor;
+    if (cursor == begin) return false;
+    if (text.compare(cursor, 7, "Replace") == 0)
+    {
+        const std::size_t after = cursor + 7u;
+        if (after < text.size() && identPart(text[after])) return false;
+        end = after;
+        return true;
+    }
+    /* `#NoRightXxx`：以 `#NoRight` 开头且后面还有接口名才算（`#NonCopyable` 不匹配）。 */
+    if (text.compare(at, 8, "#NoRight") != 0 || cursor == at + 8u) return false;
+    end = cursor;
+    return true;
+}
+
+/**
  * @brief 暂存泛型类型前的派生指令，在产生具体实例时恢复原文。
  * @param source 待单态化源码；移走的指令以空白占位保持行号。
  * @param directives 输出模板名到派生指令文本的映射。
+ * @param switches 输出模板名到 `#No<接口>Replace` 指令文本的映射（实例声明前必须排在 `#derive` 之前）。
  * @param error 失败时接收非法派生请求的诊断。
  * @return 指令扫描成功返回 true，不执行字段或接口语义检查。
  */
-bool collectGenericDerives(Memory::String &source, Memory::Map<Memory::String, Memory::String> &directives, Memory::String &error)
+bool collectGenericDerives(Memory::String &source, Memory::Map<Memory::String, Memory::String> &directives,
+                           Memory::Map<Memory::String, Memory::String> &switches, Memory::String &error)
 {
     auto mask = magel_lambda::codeMask(source);
     int depth = 0;
@@ -396,6 +431,36 @@ bool collectGenericDerives(Memory::String &source, Memory::Map<Memory::String, M
         for (auto i = at; i < end; ++i)
             if (source[i] != '\n') source[i] = mask[i] = ' ';
         at = end - 1;
+        continue;
+    }
+    /* 编译器指令 `#No<接口>Replace` / `#NoRight<接口>` 同样要在泛型模板收集前摘走：
+     * 它写在 `struct Name<T>` 前面，留着会把声明头搅成 `#NoAddReplace struct`，模板
+     * 识别不到。摘下来的文本按名字记进同一张表，实例化时和 `#derive` 一起贴回实例
+     * 声明前面。 */
+    depth = 0;
+    for (std::size_t at = 0; at < mask.size(); ++at)
+    {
+        if (mask[at] == '{') ++depth;
+        if (mask[at] == '}') --depth;
+        std::size_t switchEnd = 0;
+        if (depth != 0 || !operatorSwitchRange(mask, at, switchEnd)) continue;
+        std::size_t type = switchEnd;
+        skipSpace(mask, type);
+        if (!wordAt(mask, type, "struct")) continue;
+        type += 6u;
+        skipSpace(mask, type);
+        const std::size_t begin = type;
+        while (type < mask.size() && identPart(mask[type])) ++type;
+        const auto name = mask.substr(begin, type - begin);
+        skipSpace(mask, type);
+        if (name.empty() || type >= mask.size() || mask[type] != '<') continue;
+        const auto found = switches.find(name);
+        if (found == switches.end()) switches[name] = source.substr(at, switchEnd - at) + "\n";
+        else
+            found->second = source.substr(at, switchEnd - at) + "\n" + found->second;
+        for (auto i = at; i < switchEnd; ++i)
+            if (source[i] != '\n') source[i] = mask[i] = ' ';
+        at = switchEnd - 1u;
     }
     return true;
 }
@@ -1295,7 +1360,7 @@ Memory::String substitute(const Expansion &expansion)
             result.replace(open, close - open + 1, body);
         }
     }
-    return expansion.generic->derivation + result;
+    return expansion.generic->operatorSwitches + expansion.generic->derivation + result;
 }
 
 /**
@@ -1583,7 +1648,8 @@ bool run(preprocess::Result &result, Memory::String &error)
     session = Session{};
     collectCoreAliasShadows(result.text);
     Memory::Map<Memory::String, Memory::String> derivedGenerics;
-    if (!collectGenericDerives(result.text, derivedGenerics, error)) return false;
+    Memory::Map<Memory::String, Memory::String> operatorSwitches;
+    if (!collectGenericDerives(result.text, derivedGenerics, operatorSwitches, error)) return false;
     // 泛型方法的显式错误类型交给语义层补齐其余参数；跳过注释与字符串。
     for (std::size_t at = 0; at < result.text.size(); ++at)
     {
@@ -2070,20 +2136,6 @@ interface Closeable { void close(); };
     const std::size_t rangeLines = static_cast<std::size_t>(
         std::count(rangeBuiltin.begin(), rangeBuiltin.end(), '\n'));
     result.lineMap.insert(result.lineMap.end(), rangeLines, rangeOrigin);
-    /* 右向禁止标记接口 `NoRightXxx`：空接口、**没有类型实参**，所以永远不会被实例化
-     * （`rewrite` 只在名字后面紧跟 `<` 时才展开）—— 直接当普通声明塞进前置文本。
-     * 实现它表示「这个运算符的右操作数不许当接收者」；名字与 `RightXxx` 一一对应，
-     * 两边同写由 `FindOperator` 判冲突。空接口没有方法，不参与方法登记。 */
-    Memory::String noRightBuiltin("module __root;\n");
-    for (const auto &item : operators)
-    {
-        noRightBuiltin += "interface NoRight" + item.first + " { };\n";
-    }
-    result.text += noRightBuiltin;
-    const std::size_t noRightLines = static_cast<std::size_t>(
-        std::count(noRightBuiltin.begin(), noRightBuiltin.end(), '\n'));
-    result.lineMap.insert(result.lineMap.end(), noRightLines, rangeOrigin);
-
     Memory::Map<Memory::String, Memory::Set<Memory::String>> noImplementations;
     Memory::Map<Memory::String, Expansion> noExpansions;
     Memory::Vector<Memory::String> noPending;
@@ -2093,6 +2145,8 @@ interface Closeable { void close(); };
     if (!collect(result.text, result.lineMap, generics, error)) return false;
     for (const auto &entry : derivedGenerics)
         if (generics.count(entry.first)) generics[entry.first].derivation = entry.second;
+    for (const auto &entry : operatorSwitches)
+        if (generics.count(entry.first)) generics[entry.first].operatorSwitches = entry.second;
     auto &implemented = session.implemented;
     collectInterfaces(result.text, implemented);
     auto &made = session.made;

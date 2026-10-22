@@ -512,7 +512,7 @@ bool AnyAcceptsType(const std::shared_ptr<MType> &type)
     case MType::Struct:
     case MType::Array:
     case MType::Opcode:
-        return !OpcodeNonCopyable(type);
+        return !TypeNonCopyable(type);
     case MType::Obj:
         return true;
     case MType::Ptr:
@@ -672,6 +672,17 @@ std::shared_ptr<MType> NumericResult(const std::shared_ptr<MType> &left,
 }
 
 /**
+ * @brief 操作数类型是否用 `#No<接口>Replace` 关掉了这个接口的自动推导（定义见下）。
+ */
+bool OperatorReplaceForbidden(const std::shared_ptr<MType> &receiver, const MOperatorInterfaceSpec &spec);
+/**
+ * @brief 找出挡住自动推导的编译器指令（定义见下）。
+ */
+Memory::String OperatorReplaceBlocker(const MOperatorInterfaceSpec &spec,
+                                      const std::shared_ptr<MType> &left,
+                                      const std::shared_ptr<MType> &right);
+
+/**
  * @brief "没有匹配的运算符重载"的统一报错（类型查询与降级两处共用同一句话）。
  * @param op 运算符文本或类别。
  * @param left 左操作数。
@@ -693,9 +704,13 @@ bool FailNoOverload(const Memory::String &op, const std::shared_ptr<MType> &left
          * 会以为是漏写了左接口。 */
         const MOperatorRightDirection direction = RightDirectionOf(*spec, right);
         if (direction == MOperatorRightDirection::Forbidden)
-            return Fail("右向被显式禁止：" + Describe(right) + " 实现了 No" + spec->rightInterface + "，" + Describe(left) + " " + op + " " + Describe(right) + " 不再推导；要去掉该标记接口，或改为实现 " + spec->rightInterface + "<R,T>");
+            return Fail("右向被编译器指令关闭：" + Describe(right) + " 声明了 #NoRight" + spec->leftInterface + "，" + Describe(left) + " " + op + " " + Describe(right) + " 不再推导；要去掉该指令，或改为实现 " + spec->rightInterface + "<R,T>");
         if (direction == MOperatorRightDirection::ExplicitRight)
             return Fail("右向归 " + Describe(right) + " 自己实现：它声明了 " + spec->rightInterface + "，" + Describe(left) + " " + op + " " + Describe(right) + " 对不上它的形参，不再借用 " + spec->leftInterface + " 兜底（改成能接住左操作数的形参，或写成显式强转）");
+        /* 编译器指令把推导关掉时，报错要指出是哪一条 —— 否则用户会以为自己漏写了接口。 */
+        const Memory::String blocker = OperatorReplaceBlocker(*spec, left, right);
+        if (!blocker.empty())
+            return Fail("运算符 " + op + " 的自动推导被 " + blocker + " 关闭：" + Describe(left) + " " + op + " " + Describe(right) + "（直接写出与实现匹配的运算符，或显式实现 " + spec->rightInterface + "<R,T> 这类右接口）");
     }
     /* 文案里的接口名跟着运算符走：`-` 该说 Subtract / RightSubtract，不能一律说成 Add。 */
     Memory::String leftInterface("Add"), rightInterface("RightAdd");
@@ -705,6 +720,46 @@ bool FailNoOverload(const Memory::String &op, const std::shared_ptr<MType> &left
         rightInterface = spec->rightInterface;
     }
     return Fail("没有匹配的运算符接口实现：" + Describe(left) + " " + op + " " + Describe(right) + "（由左操作数实现 " + leftInterface + "<R,T> 这类左接口，或由右操作数实现 " + rightInterface + "<R,T> 这类右接口）；不会偷偷按数值算");
+}
+
+/**
+ * @brief 操作数类型是否用编译器指令 `#No<接口>Replace` 关掉了这个接口的自动推导。
+ *
+ * 指令挂在**接收者**身上：换边时接收者是右操作数，只取反的对偶推导接收者是左操作数。
+ * `#NoRight<接口>` 那条只关右向，由 {@link RightDirectionOf} 处理。
+ *
+ * @param receiver 即将被当作 `this` 的操作数类型。
+ * @param spec 本次推导要调用的运算符接口。
+ * @return 该类型的这条指令存在时返回 true。
+ */
+bool OperatorReplaceForbidden(const std::shared_ptr<MType> &receiver, const MOperatorInterfaceSpec &spec)
+{
+    if (!receiver || receiver->kind != MType::Struct) return false;
+    const MStructDef *definition = FindStruct(receiver->name);
+    return definition != nullptr && definition->noReplace.count(spec.leftInterface) != 0u;
+}
+
+/**
+ * @brief 找出挡住"写出来的这个运算符"自动推导的那条编译器指令。
+ * @param spec 写出来的运算符对应的接口规则。
+ * @param left 左操作数类型。
+ * @param right 右操作数类型。
+ * @return 指令文本（如 `#NoAddReplace`）；没有指令挡路时返回空串。
+ */
+Memory::String OperatorReplaceBlocker(const MOperatorInterfaceSpec &spec,
+                                      const std::shared_ptr<MType> &left,
+                                      const std::shared_ptr<MType> &right)
+{
+    if (spec.symmetric && OperatorReplaceForbidden(right, spec))
+        return "#No" + Memory::String(spec.leftInterface) + "Replace";
+    for (const MOperatorDerivation &derivation : OperatorDerivations())
+    {
+        if (derivation.op != spec.op) continue;
+        const MOperatorInterfaceSpec *via = BinaryOperatorSpec(derivation.via);
+        if (via != nullptr && OperatorReplaceForbidden(derivation.swap ? right : left, *via))
+            return "#No" + Memory::String(via->leftInterface) + "Replace";
+    }
+    return Memory::String();
 }
 
 /**
@@ -825,14 +880,16 @@ bool FindOperator(const Memory::String &op, const std::shared_ptr<MType> &left,
     const Outcome direct = search(op, false, false);
     if (direct == Outcome::Found) return true;
     if (direct == Outcome::Ambiguous) return false;
-    /* 右操作数那侧自己表了态就不再兜底：`RightXxx` 表示右向归它，`NoRightXxx` 表示禁止。
-     * 判定的是**用户写出来的这个运算符** —— `5 > a` 看 `NoRightGreater` / `RightGreater`，
+    /* 右操作数那侧自己表了态就不再兜底：`RightXxx` 表示右向归它，`#NoRightXxx` 表示禁止。
+     * 判定的是**用户写出来的这个运算符** —— `5 > a` 看 `#NoRightGreater` / `RightGreater`，
      * 不管这条推导最终借的是哪个运算符的声明。 */
     const MOperatorInterfaceSpec *binary = BinaryOperatorSpec(op);
     const bool rightDirectionOpen = binary == nullptr || RightDirectionOf(*binary, right) == MOperatorRightDirection::Open;
     /* ② 交换律：`a + b` 里只有 b 那侧的类型实现了 `Add` 时，等价于 `b + a`
-     * （`+ * == != & | ^` 才走这步，减法 / 除法 / 比较 / 移位不交换）。 */
-    if (OperatorIsSymmetric(op) && rightDirectionOpen)
+     * （`+ * == != & | ^` 才走这步，减法 / 除法 / 比较 / 移位不交换）。
+     * 接收者用 `#No<接口>Replace` 关掉了这条接口的推导时不再换边。 */
+    if (OperatorIsSymmetric(op) && rightDirectionOpen &&
+        !(binary != nullptr && OperatorReplaceForbidden(right, *binary)))
     {
         const Outcome swapped = search(op, true, false);
         if (swapped == Outcome::Found) return true;
@@ -840,11 +897,14 @@ bool FindOperator(const Memory::String &op, const std::shared_ptr<MType> &left,
     }
     /* ③ 对偶推导：`a > b` 借 `<`、`a >= b` 借 `!(a < b)`、`a != b` 借 `!(a == b)` 等，
      * 表按优先级排（见 OperatorDerivations）。换边的条目同样受右向开关约束，只取反的
-     * （`swap == false`）不换接收者，不受影响。 */
+     * （`swap == false`）不换接收者，不受影响；接收者对借用的接口写了
+     * `#No<接口>Replace` 时跳过这条推导。 */
     for (const MOperatorDerivation &derivation : OperatorDerivations())
     {
         if (op != derivation.op) continue;
         if (derivation.swap && !rightDirectionOpen) continue;
+        const MOperatorInterfaceSpec *via = BinaryOperatorSpec(derivation.via);
+        if (via != nullptr && OperatorReplaceForbidden(derivation.swap ? right : left, *via)) continue;
         const Outcome derived = search(derivation.via, derivation.swap, derivation.negate);
         if (derived == Outcome::Found) return true;
         if (derived == Outcome::Ambiguous) return false;

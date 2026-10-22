@@ -109,6 +109,22 @@ struct MStaticField
 struct MStructDef
 {
     bool abiPacked = false;
+    /**
+     * 值复制被禁用：结构体（含经接口继承）实现了 `Closeable` 时由登记阶段自动置位。
+     * 只影响复制，`move` 与返回局部拥有值照旧。
+     */
+    bool nonCopyable = false;
+    /**
+     * 编译器指令关闭自动推导的运算符接口名（`#NoAddReplace` → `Add`）。`FindOperator` 在
+     * 交换律换边与对偶推导时会查它；直接写出的运算符匹配不受影响。
+     */
+    Memory::Set<Memory::String> noReplace;
+    /**
+     * 编译器指令关闭右向推导的运算符接口名（`#NoRightAdd` → `Add`）。它只掐「右操作数
+     * 当接收者」那一条路（交换律换边、右向推导），`RightDirectionOf` 判定为 Forbidden；
+     * 左向直接调用不受影响。
+     */
+    Memory::Set<Memory::String> noRight;
     Memory::Vector<MField> fields; /* 声明里写的字段（按名字查） */
     /**
      * **摊平后的槽位表**：一个槽一项（`字段名` 或 `外层字段.内层字段`），

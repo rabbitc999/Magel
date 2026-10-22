@@ -27,7 +27,7 @@ bool LeafOwnedByAggregate(const std::shared_ptr<MType> &type)
 bool HasNonCopyableValue(const std::shared_ptr<MType> &type)
 {
     if (!type || type->kind == MType::Ptr) return false;
-    if (OpcodeNonCopyable(type)) return true;
+    if (TypeNonCopyable(type)) return true;
     if (type->kind == MType::Array) return HasNonCopyableValue(type->elem);
     if (type->kind == MType::Struct)
     {
@@ -375,7 +375,7 @@ bool CheckContainerElement(const std::shared_ptr<MType> &type, const Memory::Str
 simple_ast::NodePtr ContainerStorageFlag(const std::shared_ptr<MType> &type, bool allowResources = false)
 {
     if (!allowResources && HasNonCopyableValue(type))
-        return Fail("容器按值存储禁止复制 #NonCopyable opcode，请使用借用或显式移动到拥有变量"), Bad();
+        return Fail("容器按值存储禁止复制不可复制的值（实现 Closeable 或 #NonCopyable），请使用借用或显式移动到拥有变量"), Bad();
     if (type && type->kind == MType::Func) return simple_ast::Node::i(-1);
     if (!type || type->kind != MType::Struct)
         return simple_ast::Node::i(IsObjectLike(type) || (allowResources && IsResourceLike(type)) ? 1 : 0);
@@ -780,7 +780,7 @@ extern bool g_usesNewArray;
 simple_ast::NodePtr MaterializeStringValue(int valueId, const std::shared_ptr<MType> &target)
 {
     if (OpcodeNonCopyable(target) && valueId >= 0 && !IsFreshValue(valueId))
-        return Fail("#NonCopyable opcode 禁止复制初始化或赋值，请显式移动或使用引用"), Bad();
+        return Fail("不可复制的值禁止复制初始化或赋值，请显式 move、传引用或改用临时值"), Bad();
     const simple_ast::NodePtr value = LowerValueForType(valueId, target);
     if (target && target->kind == MType::Array && valueId >= 0 && !IsFreshValue(valueId)) return CopyRuntimeArrayValue(value, target);
     if (!target || !IsStandardOpcode(target, "String")) return value;
@@ -815,7 +815,7 @@ simple_ast::NodePtr MaterializeReturnStringValue(int valueId, const std::shared_
         const auto &source = N(valueId);
         const auto *variable = source.kind == MNode::Var ? FindNodeVar(source) : nullptr;
         if (!variable || keep.count(variable->emitted) == 0u)
-            return Fail("#NonCopyable opcode 禁止复制返回借用值，请显式移动拥有值"), Bad();
+            return Fail("不可复制的值禁止复制返回借用值，请显式 move 拥有值或返回引用"), Bad();
     }
     const simple_ast::NodePtr value = LowerValueForType(valueId, target);
     if (IsImplicitConversionValue(valueId, target)) return TakeExpressionTempValue(value, target);
@@ -898,7 +898,7 @@ simple_ast::NodePtr DeepCopyStructValue(const simple_ast::NodePtr &dst,
                                         const std::shared_ptr<MType> &type)
 {
     if (HasNonCopyableValue(type))
-        return Fail("聚合包含 #NonCopyable opcode，禁止复制，请显式移动或使用引用"), Bad();
+        return Fail("不可复制的值禁止复制：" + Describe(type) + "（实现 Closeable 或声明了 #NonCopyable），请显式 move 或改用引用"), Bad();
     if (!AggregateNeedsDeepCopy(type)) return CopyStructValue(dst, src, type);
     g_needsAggregateCopy.insert(type->name);
     return simple_ast::Node::block({ simple_ast::Node::exprStmt(simple_ast::Node::call(
@@ -916,7 +916,7 @@ simple_ast::NodePtr DeepCopyStructValue(const simple_ast::NodePtr &dst,
 simple_ast::NodePtr CopyRuntimeArrayValue(const simple_ast::NodePtr &source, const std::shared_ptr<MType> &type)
 {
     if (HasNonCopyableValue(type))
-        return Fail("数组包含 #NonCopyable opcode，禁止复制，请显式移动或使用引用"), Bad();
+        return Fail("不可复制的数组元素禁止复制：" + Describe(type) + "（实现 Closeable 或声明了 #NonCopyable），请显式 move 或改用引用"), Bad();
     using simple_ast::Node;
     const auto input = AllocateName("__magel_array_copy_source");
     const auto length = AllocateName("__magel_array_copy_length");
@@ -1194,7 +1194,7 @@ bool IsFreshValue(int exprId)
 simple_ast::NodePtr MaterializeObjectValue(int valueId, const std::shared_ptr<MType> &target)
 {
     if (OpcodeNonCopyable(target) && valueId >= 0 && !IsFreshValue(valueId))
-        return Fail("#NonCopyable opcode 禁止复制初始化或赋值，请显式移动或使用引用"), Bad();
+        return Fail("不可复制的值禁止复制初始化或赋值，请显式 move、传引用或改用临时值"), Bad();
     if (!IsObjectLike(target)) return LowerValueForType(valueId, target);
     if (IsFreshValue(valueId) || IsImplicitConversionValue(valueId, target))
         return TakeExpressionTempValue(LowerValueForType(valueId, target), target);

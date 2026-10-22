@@ -248,6 +248,8 @@ struct MNode
     int macroExpansion = -1;                            ///< 宏展开诊断帧，实参保持原有来源。
     Memory::Vector<int> annotations;                    ///< 附着于本声明的注解使用节点。
     Memory::Vector<Memory::String> derives;             ///< 请求按字段派生的接口名称。
+    Memory::Vector<Memory::String> noReplace;           ///< 编译器指令关闭自动推导的运算符接口名（`#NoAddReplace` → `Add`）。
+    Memory::Vector<Memory::String> noRight;             ///< 编译器指令关闭右向推导的运算符接口名（`#NoRightAdd` → `Add`）。
     bool derivesExpanded = false;                       ///< 已完成宏模板注入，泛型重放时不重复生成。
     Memory::Vector<MAnnotationValue> annotationValues;  ///< 按参数声明顺序归一后的常量。
     Memory::String s, s2;
@@ -263,7 +265,7 @@ struct MNode
     bool moduleLocal = false;
     bool reflectionBridge = false;      ///< 仅编译器生成的反射桥接节点可以读取内部接口身份。
     bool generatedDeclaration = false;  ///< 由编译器自身的派生模板生成，允许内部辅助符号。
-    bool opcodeNonCopyable = false;     ///< opcode 声明显式禁用值复制。
+    bool nonCopyable = false;     ///< 禁用值复制：`#NonCopyable opcode`，或实现 Closeable 的结构体自动获得。
     long long i = 0;
     double d = 0.0;
     int guard = -1;                  ///< match 分支的可选 bool 守卫。
@@ -834,6 +836,20 @@ int M_OpcodeMethod(int operation, int symbol);
  * @return 标记后的节点编号。
  */
 int M_NonCopyableOpcode(int declaration);
+/**
+ * @brief 记录一条编译器指令（`#No<接口>Replace` / `#NoRight<接口>`）。
+ * @param interface 指令词法文本的名字编号。
+ * @param declaration 目标结构体声明。
+ * @return 带指令元数据的声明节点编号。
+ */
+int M_OperatorSwitch(int interface, int declaration);
+/**
+ * @brief 把一串编译器指令依次挂到同一个结构体声明上。
+ * @param switches `NO_REPLACE` / `NO_RIGHT` 词法值组成的列表。
+ * @param declaration 目标结构体声明。
+ * @return 带全部指令元数据的声明节点编号。
+ */
+int M_OperatorSwitchList(int switches, int declaration);
 /**
  * `extern cast Target(Source) = cpp_name;`：声明一条显式宿主转换。
  */

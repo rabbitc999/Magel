@@ -17016,7 +17016,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1773,
+    "line": 1839,
     "page": "std-lang.md",
     "anchor": "api-121"
   },
@@ -17062,7 +17062,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1781,
+    "line": 1847,
     "page": "std-lang.md",
     "anchor": "api-122"
   },
@@ -17100,7 +17100,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1796,
+    "line": 1862,
     "page": "std-lang.md",
     "anchor": "api-123"
   },
@@ -17127,7 +17127,7 @@
     ],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 2003,
+    "line": 2069,
     "page": "std-lang.md",
     "anchor": "api-124"
   },
@@ -17152,7 +17152,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 2011,
+    "line": 2077,
     "page": "std-lang.md",
     "anchor": "api-125"
   },
@@ -17732,7 +17732,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1710,
+    "line": 1776,
     "page": "std-lang.md",
     "anchor": "api-144"
   },
@@ -17764,7 +17764,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1716,
+    "line": 1782,
     "page": "std-lang.md",
     "anchor": "api-145"
   },
@@ -36253,7 +36253,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1824,
+    "line": 1890,
     "page": "std-algorithms.md",
     "anchor": "api-0"
   },
@@ -36291,7 +36291,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1833,
+    "line": 1899,
     "page": "std-algorithms.md",
     "anchor": "api-1"
   },
@@ -36335,7 +36335,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1853,
+    "line": 1919,
     "page": "std-algorithms.md",
     "anchor": "api-2"
   },
@@ -36373,7 +36373,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1867,
+    "line": 1933,
     "page": "std-algorithms.md",
     "anchor": "api-3"
   },
@@ -36411,7 +36411,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1897,
+    "line": 1963,
     "page": "std-algorithms.md",
     "anchor": "api-4"
   },
@@ -36449,7 +36449,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1902,
+    "line": 1968,
     "page": "std-algorithms.md",
     "anchor": "api-5"
   },
@@ -36493,7 +36493,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1915,
+    "line": 1981,
     "page": "std-algorithms.md",
     "anchor": "api-6"
   },
@@ -36537,7 +36537,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1925,
+    "line": 1991,
     "page": "std-algorithms.md",
     "anchor": "api-7"
   },
@@ -36575,7 +36575,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1937,
+    "line": 2003,
     "page": "std-algorithms.md",
     "anchor": "api-8"
   },
@@ -36613,7 +36613,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1949,
+    "line": 2015,
     "page": "std-algorithms.md",
     "anchor": "api-9"
   },
@@ -36657,7 +36657,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1961,
+    "line": 2027,
     "page": "std-algorithms.md",
     "anchor": "api-10"
   },
@@ -36697,7 +36697,7 @@
     "examples": [],
     "sourceLanguage": "zh",
     "source": "source/magel_generic.cpp",
-    "line": 1972,
+    "line": 2038,
     "page": "std-algorithms.md",
     "anchor": "api-11"
   },

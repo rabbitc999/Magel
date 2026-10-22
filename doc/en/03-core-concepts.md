@@ -73,7 +73,9 @@ cross-function side effects and raw host memory have explicit limits. See
 ## 4. No GC and deterministic cleanup
 
 Owned values recursively clean up at lifetime end. Closeable closes a resource; Drop destroys it.
-Implementing both gives close before drop. Explicit finalization avoids duplicate cleanup according to
+Implementing both gives close before drop. A struct implementing `Closeable` is not copyable
+(a copy means two owners and two `close()` calls): transfer with `move(&x)` or share through a
+reference. Explicit finalization avoids duplicate cleanup according to
 lifecycle state; it does not restore an invalid value. Defer and scope(exit) register scope-exit actions.
 
 ```magel

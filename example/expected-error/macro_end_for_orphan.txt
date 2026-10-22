@@ -1,1 +1,1 @@
-语法错误：example/samples-error/macro_end_for_orphan.mgl 第 2 行第 1 列：期望 标识符 / 注解声明(@annotation) / at(@) / MACRO_DEFINE 等 43 个之一，实际是 MACRO_END_FOR
+语法错误：example/samples-error/macro_end_for_orphan.mgl 第 2 行第 1 列：期望 标识符 / 注解声明(@annotation) / at(@) / MACRO_DEFINE 等 45 个之一，实际是 MACRO_END_FOR

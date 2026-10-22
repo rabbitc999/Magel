@@ -70,13 +70,13 @@ int64 main() {
 
 `&&` and `||` are built-in short-circuit operators and **cannot be overloaded**. The diagnostic now says so directly instead of falling through to the generic "cannot find `Add` / `RightAdd`" message: short-circuiting must decide the left operand first, which does not fit the operator-overloading model of evaluating both operands and then calling a method.
 
-## Right-hand switches: `RightXxx` / `NoRightXxx`
+## Right-hand switches: `RightXxx` / `#NoRightXxx`
 
 Both commutativity and duality borrow the right operand as the receiver, so a type can state its intent:
 
 - Implement `RightAdd` and the right-hand side is yours: `5 + m` uses `rightAdd` only; if its parameter does not fit, that is an error and it no longer falls back to `Add`.
-- Implement the empty marker interface `NoRightAdd` (the name is `No` + the right interface name, with no type argument) and the right-hand direction is forbidden outright: `5 + f` fails, while `f + 5` is unaffected.
-- `NoRightXxx` wins over `RightXxx`, and an explicit right interface wins over commutativity inference.
+- Write the compiler directive `#NoRightAdd` before the `struct` (`#NoRight` + the left interface name, no type argument) and the right-hand direction is forbidden outright: `5 + f` fails, while `f + 5` is unaffected.
+- `#NoRightXxx` wins over `RightXxx`, and an explicit right interface wins over commutativity inference.
 
 ```magel
 struct Money : Add<int64, int64>, RightAdd<int64, int64> {
@@ -84,7 +84,8 @@ struct Money : Add<int64, int64>, RightAdd<int64, int64> {
     int64 leftAdd(int64 other) { return self.cents + other; }    /* m + 5 */
     int64 rightAdd(int64 other) { return other - self.cents; }   /* 5 + m */
 };
-struct Forbid : Add<int64, int64>, NoRightAdd {
+#NoRightAdd
+struct Forbid : Add<int64, int64> {
     int64 v;
     int64 leftAdd(int64 other) { return self.v + other; }
 };
@@ -107,7 +108,7 @@ int64 main() {
 Writing `5 + f` instead of `f + 5`:
 
 ```text
-magel: 右向被显式禁止：Forbid 实现了 NoRightAdd，int64 + Forbid 不再推导；要去掉该标记接口，或改为实现 RightAdd<R,T>
+magel: 右向被编译器指令关闭：Forbid 声明了 #NoRightAdd，int64 + Forbid 不再推导；要去掉该指令，或改为实现 RightAdd<R,T>
 ```
 
 ## One operand pair, several result types

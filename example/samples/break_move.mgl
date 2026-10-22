@@ -1,4 +1,5 @@
 // 带值退出移动内部可写局部变量，复制外部变量；临时值直接接管。
+// Closeable 结构体不可复制（`yield` 外部变量也复制不了），要副本就显式调用 `copy()`。
 int64 calls = 0;
 int64 drops = 0;
 int64 closes = 0;
@@ -50,7 +51,7 @@ int64 main() {
     assert(drops == 1 && closes == 1 && trace == 12);
     {
         Packet original; original.text = "copy"; original.values.push(7);
-        Packet result = loop { yield (original); };
+        Packet result = loop { yield (original.copy()); };
         assert(original.text == "copy" && result.text == "copy");
         memcpy(&textHandle, &original.text, 8); memcpy(&received, &result.text, 8);
         assert(received != textHandle);

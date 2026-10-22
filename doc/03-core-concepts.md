@@ -70,7 +70,8 @@ Magel 允许多个别名共享同一对象；通过一个可变引用修改，�
 
 拥有值在生命周期结束时递归清理。`Closeable` 负责关闭，`Drop` 负责析构；同时实现时先 close
 再 drop。显式终结按生命周期状态避免重复清理，不把已终结值恢复成可读写的有效对象。
-`defer`、`scope(exit)` 可登记作用域退出动作。
+实现 `Closeable` 的结构体不可复制（复制即两份所有权、close 跑两遍）：要转移用
+`move(&x)`，要共用传引用。`defer`、`scope(exit)` 可登记作用域退出动作。
 
 ```magel
 struct Resource : Drop {

@@ -302,8 +302,8 @@ struct MOperatorInterfaceSpec
      * 交换律：`a op b` 与 `b op a` 语义等价（`+` / `*` / `==` / `!=` / 位运算）。
      *
      * 类型只实现了左接口时，右操作数把该类型放右边也能算（自动交换两个操作数）；
-     * 显式声明了 `RightXxx` 的类型不再走这层兜底（右向归作者自己负责），声明了
-     * `NoRightXxx` 标记接口的类型则明令禁止 —— 两者都由 {@link RightDirectionOf} 判定。
+     * 显式声明了 `RightXxx` 的类型不再走这层兜底（右向归作者自己负责），写了编译器
+     * 指令 `#NoRightXxx` 的类型则明令禁止 —— 两者都由 {@link RightDirectionOf} 判定。
      * 不对称的运算符（`-` / `/` / `%` / 大小比较 / 移位）不参与这层推导，必须显式写
      * `RightXxx`。
      */
@@ -501,8 +501,8 @@ bool IsOperatorInterfaceMethod(const Memory::String &methodName)
  * @brief 类型 `owner` 是不是实现了接口 `iface`（含经用户接口间接继承来的）。
  *
  * 两类名字走的机制不一样，所以两条都试：
- * - `NoRightAdd` 这类**空标记接口没有类型实参**，不会被实例化，名字就是原名 —— 交给
- *   `StructHasInterface`，它顺着 `g_interfaceBases` 认「`interface MyNo : NoRightAdd`」
+ * - 非泛型接口（例如 `Closeable`）没有类型实参，不会被实例化，名字就是原名 —— 交给
+ *   `StructHasInterface`，它顺着 `g_interfaceBases` 认「`interface MyClose : Closeable`」
  *   这种间接实现。
  * - `RightAdd` 这类**泛型接口**在 `g_structs[X].interfaces` 里存的是实例化后的名字
  *   （`RightAdd__int64__int64`），整串比不出来 —— 按「名字 + `__`」前缀沿继承链找，
@@ -536,7 +536,7 @@ bool TypeImplementsInterface(const Memory::String &owner, const Memory::String &
  * - `Open`：没表态 —— 推导照旧补（保持向后兼容）。
  * - `ExplicitRight`：声明了 `RightXxx` —— 右向由作者自己负责，形参接不上就报错，
  *   不再借左接口兜底。
- * - `Forbidden`：声明了 `NoRightXxx` —— 明令禁止。
+ * - `Forbidden`：写了编译器指令 `#NoRightXxx` —— 明令禁止。
  *
  * 判定的对象是**右操作数的类型**：`a + 5` 里右操作数是 `int64`，它没有运算符接口，
  * 所以照样开放；`5 + a` 里右操作数是那个 struct，它的表态才算数。
@@ -561,8 +561,9 @@ MOperatorRightDirection RightDirectionOf(const MOperatorInterfaceSpec &spec,
         return MOperatorRightDirection::Open;
     const Memory::String &owner = rightType->name;
     if (owner.empty()) return MOperatorRightDirection::Open;
-    /* 标记接口就是「No」+ 右接口名：`RightAdd` → `NoRightAdd`。 */
-    if (TypeImplementsInterface(owner, "No" + Memory::String(spec.rightInterface)))
+    /* 编译器指令 `#NoRightAdd` 挂在结构体定义上，按左接口名登记。 */
+    const MStructDef *definition = FindStruct(owner);
+    if (definition != nullptr && definition->noRight.count(spec.leftInterface) != 0u)
         return MOperatorRightDirection::Forbidden;
     if (TypeImplementsInterface(owner, spec.rightInterface))
         return MOperatorRightDirection::ExplicitRight;

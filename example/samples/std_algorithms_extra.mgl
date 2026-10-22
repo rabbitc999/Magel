@@ -1,16 +1,14 @@
 /* std_algorithms_extra.mgl —— `algorithms` 的 map / filter / reduce / sum / count。
  *
  * 这一批和 `fold` / `all` / `any` 是同一套"回调式内建"：源码里写
- * `std::algorithms::mapValue<T>(表, 函数名)`，泛型预处理器只负责吃掉 `<T>`，
+ * `std::algorithms::mapValue<T>(表, 回调)`，泛型预处理器只负责吃掉 `<T>`，
  * 真正的降级在 `LowerAlgorithmCall`，运行期落到 VM 的 `__std_vec_map` 等等。
  *
- * 两条既有约束（都不是这批新名字引入的，改样例时别当成 bug）：
- *   ① 回调要写成**裸函数名**，而 `module X;` 里传裸函数名当 fptr 实参现在解析不到
- *      （连既有的 `all` / `fold` 也一样）—— 所以这份样例不写 `module` 声明；
- *   ② 顶层函数的总数/排列踩到某个值会让编译器把结构体方法的形参类型判错
- *      （报 `__parseFloat64Error` 找不到 `(int64)` 的重载）。这是**先于本批改动
- *      就存在**的缺陷，最小复现：普通样例 + 11 个未被调用的 `int64 padN(int64,int64)`。
- *      这份样例的回调个数已经避开了那个点位。
+ * 回调有两种写法，效果相同：
+ *   ① 顶层函数名：`mapValue<int64>(values, doubled)`，按 `R fn(T)` 的函数值语义传入，
+ *      写在 `module X;` 的文件里同样可用；
+ *   ② 闭包：`mapValue<int64>(values, fn(int64 v) { v * 2 })`，可以捕获外层局部变量，
+ *      生命周期与借用按函数值规则检查。
  */
 
 import std::algorithms;
@@ -49,11 +47,16 @@ int64 main() {
     /* reduce 两种写法：两参拿第一个元素当初值，三参等同 fold。 */
     println("reduce {} {}", std::algorithms::reduceValue<int64>(values, addInt),
     std::algorithms::reduceValue<int64>(values, 100, addInt));
-    /* sum / count：count 的第二参是 fptr 就按判定数，是值就按相等数。 */
+    /* sum / count：count 的第二参是回调（函数值）就按判定数，是值就按相等数统计。 */
     println("sum    {} {}", std::algorithms::sumValue<int64>(values),
     std::algorithms::sumValue<float64>(halves));
     println("count  {} {}", std::algorithms::countValue<int64>(values, 1),
     std::algorithms::countValue<int64>(values, odd));
+
+    /* 回调也可以是闭包：捕获外层局部变量，借用与生命周期按函数值规则检查。 */
+    int64 offset = 10;
+    List<int64> shifted = std::algorithms::mapValue<int64>(values, fn(int64 value) { value + offset });
+    println("closure {} {}", shifted[0], shifted[4]);
 
     List<float64> reals;
     reals.push(1.5);

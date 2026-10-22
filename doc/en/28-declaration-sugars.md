@@ -142,6 +142,47 @@ ValidateDerivedFields()  // missing nested protocols always fail
 LowerProgram()          // ordinary typed methods -> ordinary quadruples
 ```
 
+## Closeable and operator derivation switches
+
+Two conventions live in compiler directives: a struct that implements `Closeable` is
+automatically `#NonCopyable`, and `#No<Interface>Replace` before a declaration removes that
+interface's automatic derivation.
+
+```magel
+struct Handle : Closeable { int64 id; void close() { println("close {}", self.id); } }
+
+#NoAddReplace
+struct Chain : Add<int64, int64> {
+    int64 v;
+    int64 leftAdd(int64 other) { return self.v + other; }
+}
+```
+
+```text
+switch_directives := NO_REPLACE | NO_RIGHT | switch_directives NO_REPLACE | switch_directives NO_RIGHT
+top_decl := switch_directives struct_decl type_decl_end
+NO_REPLACE := "#No" [A-Za-z][A-Za-z0-9]* "Replace"
+NO_RIGHT   := "#NoRight" [A-Za-z][A-Za-z0-9]*
+```
+
+`#No<Interface>Replace` fills `noReplace`, `#NoRight<Interface>` fills `noRight`. The semantic
+layer checks that the interface exists, is binary, and really has derivation to cancel
+(swap / duality / negation for the first, a right-hand form for the second); a typo, a
+duplicate or an interface without derivation is an error. `FindOperator` consults them:
+
+```text
+FindOperator(op, left, right):
+    direct match               -> use it (directives never affect direct calls)
+    right-direction (RightXxx) -> unchanged
+    symmetry swap              -> only if the receiver has no #No<Interface>Replace
+    duality / negation         -> only if the via interface has no #No<Interface>Replace
+```
+
+`#NoRightXxx` therefore closes only the right-hand direction, while `#NoAddReplace` closes all
+derivation for that interface; both are compiler directives placed before the declaration and
+no longer exist as empty marker interfaces. Generic templates keep their directives during
+`collectGenericDerives` and paste them back in front of every instantiation.
+
 ## Regressions
 
 See [return ownership](../../example/samples/return_expression.mgl), [named closures](../../example/samples/named_function.mgl), [struct and enum derivation](../../example/samples/derive.mgl), and the [semantic/lifetime gate](../../tests/magel_declaration_sugars.py).

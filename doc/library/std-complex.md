@@ -29,7 +29,7 @@ import std::signal;
 
 import std::math;
 
-/** @brief 浮点比较结果通过函数指针仍须保持布尔类型。 */
+/** @brief 浮点比较的函数值仍须保持布尔返回类型。 */
 bool lessFloat(float64 left, float64 right) { return left < right; }
 
 

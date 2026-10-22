@@ -38,6 +38,12 @@
 %token STRUCT "struct"
 %token OPCODE "opcode"
 %token NONCOPYABLE "#NonCopyable"
+/* 编译器指令：`#NoAddReplace` / `#NoLessReplace` … 关掉该结构体对应运算符接口的自动推导。
+ * 接口名由语义层核对（`Add` / `Multiply` / `Less` …），词法只负责整串识别。 */
+%token regex NO_REPLACE "#No[A-Za-z][A-Za-z0-9]*Replace"
+/* 同族指令：`#NoRightAdd` 只关「右操作数当接收者」这一条路（交换律换边 / 右向推导），
+ * 直接写出的左向调用不受影响。接口名同样由语义层核对。 */
+%token regex NO_RIGHT "#NoRight[A-Za-z][A-Za-z0-9]*"
 %token ENUM "enum"
 %token INT8 "int8"
 %token INT16 "int16"

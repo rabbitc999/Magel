@@ -102,6 +102,8 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 - [Standard library ownership and string methods](35-opcode-values-strings.md)
 - [Reflection serialization and dynamic SQL](36-reflection-serialization-sql.md)
 
-The [22-chapter beginner book](../book/README.md) includes exercises with reference answers, literary adaptations and compilation / VM execution diagrams. The Chinese book is the maintained source for this material.
+The [24-chapter beginner book](../book/README.md) includes exercises with reference answers, literary adaptations and compilation / VM execution diagrams. The Chinese book is the maintained source for this material.
 
 - [Compiler safety boundaries and focused regression tests](37-compiler-safety.md)
+
+- [Opcode and standard library type migration record](../38-opcode-migration.md)

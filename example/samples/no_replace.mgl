@@ -1,0 +1,22 @@
+/* no_replace.mgl —— `#NoAddReplace` 只关自动推导，不关直接写法
+ *
+ *   ./magel run example/samples/no_replace.mgl
+ *
+ * 语义：
+ *   * `a + 5` 与实现的 `leftAdd` 完全匹配，照常调用；
+ *   * `5 + a` 原先靠交换律自动换边（借 `leftAdd`），被 `#NoAddReplace` 关掉后
+ *     必须显式实现 `RightAdd<int64,int64>`，否则编译报错；
+ *   * 换边只影响推导，直接写出的运算符和显式右接口都不受这条指令约束。
+ */
+#NoAddReplace
+struct Vec : Add<int64, int64> {
+    int64 v;
+    int64 leftAdd(int64 other) { return self.v + other; }
+};
+
+int64 main() {
+    Vec a;
+    a.v = 10;
+    println("left={}", a + 5);
+    return 0;
+}

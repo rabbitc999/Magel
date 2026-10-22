@@ -1,0 +1,1 @@
+magel: example/samples-error/operator_no_add_replace.mgl 第 16 行第 5 列：运算符 + 的自动推导被 #NoAddReplace 关闭：int64 + Vec（直接写出与实现匹配的运算符，或显式实现 RightAdd<R,T> 这类右接口）

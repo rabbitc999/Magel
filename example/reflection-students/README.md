@@ -11,5 +11,5 @@ JSON 编解码走反射序列化，数据库访问全部是参数化 SQLite。
 `get 学号`、`delete 学号`、`list [字段 [asc|desc]]`、`search 姓名` 和 `schema`。
 JSON 字段为 `id`、`name`、`age`、`className`、`score`。
 
-入门讲解见书稿[第 23 章 学生信息管理系统](../../doc/book/23-学生信息管理系统.md)。
+入门讲解见书稿[第 24 章 学生信息管理系统](../../doc/book/24-学生信息管理系统.md)。
 数据库与反射 SQL 的更多用法见[动态 SQL 说明](../../doc/36-reflection-serialization-sql.md)。

@@ -1896,8 +1896,8 @@ simple_ast::NodePtr StoreOwnedValueAt(const simple_ast::NodePtr &address, int va
                                       const simple_ast::NodePtr &value,
                                       const std::shared_ptr<MType> &type)
 {
-    if (OpcodeNonCopyable(type) && valueId >= 0 && !IsFreshValue(valueId))
-        return Fail("#NonCopyable opcode 禁止复制到字段或数组元素，请显式移动"), Bad();
+    if (TypeNonCopyable(type) && valueId >= 0 && !IsFreshValue(valueId))
+        return Fail("不可复制的值禁止复制到字段或数组元素（实现 Closeable 或声明了 #NonCopyable），请显式 move"), Bad();
     if (IsRuntimeArray(type))
     {
         using simple_ast::Node;
@@ -2099,7 +2099,7 @@ simple_ast::NodePtr LowerArgumentValue(int id, const std::shared_ptr<MType> &typ
         return Fail("#NonCopyable opcode 禁止按值复制实参，请显式移动或使用引用"), Bad();
     if (OpcodeNonCopyable(type)) return TakeExpressionTempValue(LowerValueForType(id, type), type);
     if (HasNonCopyableValue(type) && !IsOwnedAggregateTemporary(id))
-        return Fail("不可复制聚合不能按值复制传参，请显式移动或使用引用"), Bad();
+        return Fail("不可复制的值不能按值复制传参（实现 Closeable 或声明了 #NonCopyable），请显式 move 或改用引用"), Bad();
     if (IsImplicitConversionValue(id, type))
     {
         const auto converted = LowerValueForType(id, type);

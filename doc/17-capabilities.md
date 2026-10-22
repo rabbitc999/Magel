@@ -24,7 +24,8 @@
 | 抽象 | 重载、泛型单态化、接口约束、关联类型、常量泛型、默认类型参数、接口默认方法和运行期接口分派 |
 | 函数值 | 匿名函数只使用 `fn`；支持内联实参、嵌套高阶函数、const/mut/copy/move 捕获 |
 | 控制流 | match 与守卫、整数单值／区间重叠警告、解构、区间迭代、if 表达式、`yield value;` 块表达式、`yield (a, b);` 元组退出、`break level N;` / `break all;` 层级循环退出、直接变量默认移动与带值退出穿透无值循环、宏与条件编译 |
-| 错误与清理 | Option、Result、自定义错误传播、`?`、panic、defer、scope(exit)、Drop 与 Closeable |
+| 错误与清理 | Option、Result、自定义错误传播、`?`、panic、defer、scope(exit)、Drop 与 Closeable；实现 Closeable 的结构体自动不可复制 |
+| 编译器指令 | `#NonCopyable`（opcode 不复制）、`#derive(Equal, Hash, Clone)`（字段派生）、`#No<接口>Replace`（关闭该接口全部自动推导）、`#NoRight<接口>`（只关右向）；写在声明前，泛型模板实例化时随之下发 |
 | 所有权 | 普通拥有值赋值和按值传参复制；`move` 转移资源。移动后的原绑定禁止读写或重绑，完整移动后可重新声明同名变量 |
 | 引用 | 非空的只读/可变引用；`Option<T const&>` / `Option<T mut&>` 表示可能没有的引用，None 不构造空引用 |
 | 检查 | 独立的借用来源与控制流检查跟踪局部变量、字段、别名、移动、释放及闭包捕获；调用前检查捕获来源，复制、解构和聚合传播保持关联；允许别名共享，不实行全局独占借用规则 |

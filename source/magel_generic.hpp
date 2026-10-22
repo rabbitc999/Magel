@@ -36,6 +36,7 @@ struct Generic
     bool intrinsic = false;
     Memory::String requiredQualifier;
     Memory::String derivation;  ///< 保留到具体实例的 #derive 指令，不交给文本宏做语义检查。
+    Memory::String operatorSwitches;  ///< 实例声明前的编译器指令 `#No<接口>Replace` / `#NoRight<接口>`，必须排在 `#derive` 之前。
 };
 /**
  * @brief 可用于整数泛型实参的模块常量原文；求值时仍拒绝运行时初始化式。
@@ -122,13 +123,15 @@ bool parseParameters(const Memory::String &text, Memory::Vector<Parameter> &resu
 std::size_t lineOf(const Memory::String &text, std::size_t offset);
 
 /**
- * @brief 暂存泛型类型前的派生指令，在产生具体实例时恢复原文。
+ * @brief 暂存泛型类型前的派生与运算符开关指令，在产生具体实例时恢复原文。
  * @param source 待单态化源码；移走的指令以空白占位保持行号。
  * @param directives 输出模板名到派生指令文本的映射。
+ * @param switches 输出模板名到 `#No<接口>Replace` / `#NoRight<接口>` 指令文本的映射。
  * @param error 失败时接收非法派生请求的诊断。
  * @return 指令扫描成功返回 true，不执行字段或接口语义检查。
  */
-bool collectGenericDerives(Memory::String &source, Memory::Map<Memory::String, Memory::String> &directives, Memory::String &error);
+bool collectGenericDerives(Memory::String &source, Memory::Map<Memory::String, Memory::String> &directives,
+                           Memory::Map<Memory::String, Memory::String> &switches, Memory::String &error);
 
 /**
  * @brief 归一化顶层声明中名称后置的泛型参数，正文仍由生成解析器处理。

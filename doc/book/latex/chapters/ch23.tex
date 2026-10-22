@@ -1,334 +1,177 @@
-\chapter{学生信息管理系统：让程序认识自己的结构}
+\chapter{编译器指令}
 \label{ch:23}
 
-前面 22 章把语言讲完了。这一章反过来做一件「用」的事：把结构体、注解、反射、JSON、SQL 和 \texttt{Result} / \texttt{?} 拼成一个能真正存数据的命令行程序。
+第 19 章的 \texttt{\%} 改的是源码文本：一段代码要不要参与编译、几个片段怎么拼。第 20 章的 \texttt{@} 贴的是运行期资料：程序自己能把标签读回来。这一章讲第三种编译期手段：编译器指令——以 \texttt{\#} 开头、写在声明前面的那几行。
 
-它只有两百多行，却覆盖了日常业务程序最核心的那几件事：
+一句话概括：编译器指令 = 给声明贴的、只有编译器看的一张便条。
+
+它不改文本，也不留到运行时。它的作用只有一个：让编译器在处理这个声明时多知道一条规矩——这个类型不许复制、这些样板方法由你生成、这个运算符别再自动推导。
+
+\section{三种编译期手段的分工}
+
+三种都以特殊符号开头，很容易记混。差别其实很清楚：谁在读它、什么时候读。
+
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.462\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.080\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.104\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.143\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.191\linewidth-2\tabcolsep\relax}}
+\toprule
+写法 & 名字 & 谁读 & 什么时候 & 典型用途 \\
+\midrule
+\endhead
+\texttt{\%define} / \texttt{\%if} & 预处理 & 预处理器 & 编译前，只认文本 & 条件编译、开关日志 \\
+\texttt{\#derive} / \texttt{\#Non\allowbreak{}Copyable} / \texttt{\#No…Replace} / \texttt{\#No\allowbreak{}Right…} & 编译器指令 & 词法 + 语义层 & 编译期，认声明结构 & 改声明语义、关闭自动推导 \\
+\texttt{@Route(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} & 注解 & 运行期反射 & 运行时 & 框架读的元数据 \\
+\bottomrule
+\end{longtable}
+}
+
+三者的代价也不同：
 
 \begin{itemize}
 
-\item 一份模型（学生有学号、姓名、年龄、班级、成绩）；
+\item 预处理最"脏"——它看不见类型，只看见字；
 
-\item 一张表（模型直接变成 SQLite 的表）；
+\item 编译器指令最"准"——它挂在具体声明上，接口名写错、位置写错都会在编译期报错；
 
-\item 一组命令（增删查改、排序、搜索）；
-
-\item 一条校验规则（学号必须是正整数、年龄在 1 到 150、成绩在 0 到 100）；
-
-\item 一条出错的路（所有失败都变成可读的诊断，而不是崩溃）。
+\item 注解最"轻"——不影响语义，但需要反射能力才能读到。
 
 \end{itemize}
 
-最关键的那一句话是：这个程序从来没有手写过「学生有哪些字段」的清单。 字段列表是它运行期从自己身上读出来的——这就是第 20 章的反射真正派上用场的地方。
-
-示例就在仓库里：\href{https://gitee.com/rabbitc999/magel/blob/master/example/reflection-students/main.mgl}{\texttt{example/\allowbreak{}reflection-students/\allowbreak{}main.\allowbreak{}mgl}}。
-
-\section{先看看它能做什么}
-
-\par
-\medskip
-\begin{lstlisting}[style=sh]
-magel main.mgl students.db schema
-\end{lstlisting}
-\par
-\medskip
-
-\par
-\medskip
-\begin{lstlisting}[style=out]
-Student: id, name, age, className, score
-\end{lstlisting}
-\par
-\medskip
+本章只讲中间那一行。Magel 目前有四个编译器指令：
 
 \begin{center}
 \begin{tabular}{ll}
 \toprule
-命令 & 作用 \\
+指令 & 作用 \\
 \midrule
-\texttt{schema} & 打印模型有哪些字段 \\
-\texttt{add JSON} & 新增一名学生 \\
-\texttt{update JSON} & 按学号更新（JSON 里必须带 \texttt{id}） \\
-\texttt{get 学号} & 按学号查 \\
-\texttt{delete 学号} & 按学号删 \\
-\texttt{list [\allowbreak{}字段 [\allowbreak{}asc 或 desc]\allowbreak{}]\allowbreak{}} & 列出全部，可按字段排序 \\
-\texttt{search 姓名} & 按姓名模糊查 \\
+\texttt{\#Non\allowbreak{}Copyable} & 这个 \texttt{opcode} 类型不许复制 \\
+\texttt{\#derive(\allowbreak{}Equal,\allowbreak{} Hash,\allowbreak{} Clone)\allowbreak{}} & 按字段生成接口方法 \\
+\texttt{\#No<\allowbreak{}接口>\allowbreak{}Replace} & 这个类型的该运算符不再自动推导 \\
+\texttt{\#No\allowbreak{}Right<\allowbreak{}接口>\allowbreak{}} & 只关掉"右操作数当接收者"那一条推导 \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-第一个参数是数据库文件路径（不存在时 SQLite 会自动建），后面才是命令。整个程序是「跑一次做一件事」，没有常驻进程，也没有 HTTP——先把业务逻辑写对，再谈套界面，这是本章刻意的选择。
+\section{\texttt{\#Non\allowbreak{}Copyable}：这个类型不许复制}
 
-\section{模型：一份声明，三处复用}
+有的类型天生不该有第二份。文件句柄、进程、socket、数据库连接——拷贝一个句柄，就是两份所有权、两次 \texttt{close(\allowbreak{})\allowbreak{}}，系统里立刻多出一个悬空资源。
+
+\texttt{opcode} 声明把这种宿主对象交给 C 侧管理，其中"能不能复制"由声明体里有没有绑定\texttt{copy} 决定。不绑定 \texttt{copy}，就写成 \texttt{\#Non\allowbreak{}Copyable}：
 
 \par
 \medskip
 \begin{lstlisting}[style=magel]
-import std::sql;
-import std::reflect;
-import std::json;
-import std::parse;
+opcode Number {
+    new = createNumber;
+    drop = destroyNumber;
+    copy = copyNumber;
+};
 
-@Reflect
-@std::sql::ModelClass("students")
-struct Student
-{
-    @std::sql::ModelField(id: true)
-    int64 id;
-    String name;
-    int64 age;
-    String className;
-    int64 score;
+#NonCopyable
+opcode FileHandle {
+    new = openFile;
+    drop = closeFile;
 };
 \end{lstlisting}
 \par
 \medskip
 
-三个注解各管一件事：
+\texttt{Number} 可以随便复制；\texttt{File\allowbreak{}Handle} 不行——复制初始化、赋值、按值传参、返回时复制全部报错。想转移所有权，用 \texttt{move(\allowbreak{}\&x)\allowbreak{}}：
 
-{\small\setlength{\tabcolsep}{4pt}
-\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.404\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.115\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.461\linewidth-2\tabcolsep\relax}}
-\toprule
-注解 & 谁在读它 & 读了做什么 \\
-\midrule
-\endhead
-\texttt{@Reflect} & 反射运行期 & 让 \texttt{get\allowbreak{}Struct\allowbreak{}Info<\allowbreak{}Student>\allowbreak{}(\allowbreak{})\allowbreak{}} 能列出字段 \\
-\texttt{@std:\allowbreak{}:\allowbreak{}sql:\allowbreak{}:\allowbreak{}Model\allowbreak{}Class(\allowbreak{}"students")\allowbreak{}} & \texttt{std:\allowbreak{}:\allowbreak{}sql} & 决定表名，并据此生成建表 / 增删改查语句 \\
-\texttt{@std:\allowbreak{}:\allowbreak{}sql:\allowbreak{}:\allowbreak{}Model\allowbreak{}Field(\allowbreak{}id:\allowbreak{} true)\allowbreak{}} & \texttt{std:\allowbreak{}:\allowbreak{}sql} & 标出主键，\texttt{update} / \texttt{delete} 用它定位 \\
-\bottomrule
-\end{longtable}
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+FileHandle handle = FileHandle::new("log.txt");
+FileHandle moved = move(&handle);      // 可以：转移
+// FileHandle copied = handle;         // 报错：不可复制的值禁止复制
+\end{lstlisting}
+\par
+\medskip
+
+诊断会说清两种来路："实现 Closeable 或声明了 \#NonCopyable"——因为实现 \texttt{Closeable} 的结构体自动获得这条规则，不需要再写指令。第 8 章说过，\texttt{Closeable} 意味着"出块时自动关闭"；一个值被复制成两份，\texttt{close(\allowbreak{})\allowbreak{}} 就会跑两遍，所以语言直接把复制堵死：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+struct Handle : Closeable
+{
+    int64 id;
+
+    void close()
+    {
+        println("close {}", self.id);
+    }
+};
+
+void consume(Handle handle)
+{
+    println("consume {}", handle.id);
 }
 
-这就是本章最省力的地方：加一个字段只要在这一处加一行，建表语句、查询列、JSON 的键、排序字段的合法性检查，全都跟着变。如果在三个地方各写一遍字段清单，那三处迟早会对不上。
-
-\begin{tip}{提示}
-反射版工具链默认开启。要显式控制，用 \texttt{--reflection} / \texttt{--no-reflection}；\texttt{--hard-realtime} 会整份禁用反射。
-\end{tip}
-
-\section{校验单独写一个函数}
-
-业务规则不要散落在各个分支里，收成一个函数，返回空字符串表示通过：
-
-\par
-\medskip
-\begin{lstlisting}[style=magel]
-String validate(Student const& student)
+int64 main()
 {
-    if (student.id <= 0)
-    {
-        return "学号必须是正整数";
-    }
-    if (student.name.trim().isEmpty() || len(student.name) > 120)
-    {
-        return "姓名必须为 1 到 120 字节的非空文本";
-    }
-    if (student.className.trim().isEmpty() || len(student.className) > 120)
-    {
-        return "班级必须为 1 到 120 字节的非空文本";
-    }
-    if (student.age < 1 || student.age > 150)
-    {
-        return "年龄必须在 1 到 150 之间";
-    }
-    if (student.score < 0 || student.score > 100)
-    {
-        return "成绩必须在 0 到 100 之间";
-    }
-    return "";
-}
-\end{lstlisting}
-\par
-\medskip
+    Handle first;
+    first.id = 1;
+    consume(move(&first));
 
-参数是 \texttt{Student const\&}：引用，不复制（第 7 章），而且只读。本书到第 11 章反复说过容器和结构体都是值，按值传一次就是整份复制；只读的大对象一律写 \texttt{const\&}。
+    Handle second;
+    second.id = 2;
+    Handle third = move(&second);
+    println("third={}", third.id);
 
-注意字节长度：\texttt{len(\allowbreak{})\allowbreak{}} 数的是字节不是字符（第 12 章），所以「120」是 120 个字节，中文姓名大约 40 个字。这个上限要和数据库列长度对得上。
-
-\section{反射：把结果集变成 JSON}
-
-数据库返回的是「行 \ensuremath{\times} 列」的文本网格，而我们要的是 JSON。字段清单从反射里拿，不在代码里再抄一遍：
-
-\par
-\medskip
-\begin{lstlisting}[style=magel]
-Result<String, String> encodeRows(std::sql::ResultSet const& rows)
-{
-    auto fields = std::reflect::getStructInfo<Student>().unwrap().fields;
-    List<String> records;
-    for (int64 row in std::lang::range(0, rows.rowCount()))
-    {
-        List<String> values;
-        for (auto field in fields)
-        {
-            int64 column = rows.columnIndex(field.name);
-            if (column < 0)
-            {
-                return Result<String, String>::Err("数据库缺少字段：" + field.name);
-            }
-            String value = rows.textAt(row, column);
-            if (field.typeId == std::reflect::getTypeId<String>())
-            {
-                value = std::reflect::__serdeQuote(value);
-            }
-            values.push(std::reflect::__serdeQuote(field.name) + ":" + value);
-        }
-        String separator = ",";
-        String text = "{" + separator.join(values) + "}";
-        auto checked = std::json::deserialize<Student>(text);
-        if (checked.isErr())
-        {
-            return Result<String, String>::Err("数据库记录不符合学生模型：" + checked.error());
-        }
-        Student student = checked.unwrap();
-        String error = validate(&student);
-        if (error != "")
-        {
-            return Result<String, String>::Err(error);
-        }
-        String encoded = std::json::serialize<Student>(&student)?;
-        records.push(encoded);
-    }
-    String separator = ",";
-    return Result<String, String>::Ok("[" + separator.join(records) + "]");
-}
-\end{lstlisting}
-\par
-\medskip
-
-这里有三个值得单独看的点：
-
-\begin{enumerate}
-
-\item \texttt{field.\allowbreak{}type\allowbreak{}Id =\allowbreak{}=\allowbreak{} std:\allowbreak{}:\allowbreak{}reflect:\allowbreak{}:\allowbreak{}get\allowbreak{}Type\allowbreak{}Id<\allowbreak{}String>\allowbreak{}(\allowbreak{})\allowbreak{}} —— 运行期判断字段是不是字符串，是才加引号。数字字段加了引号就不是合法 JSON 数字了。
-
-\item 反序列化再序列化 —— 先 \texttt{deserialize<\allowbreak{}Student>\allowbreak{}} 让解析器和模型对一遍，再 \texttt{serialize<\allowbreak{}Student>\allowbreak{}} 输出。这样「数据库里存了什么脏东西」会在这一关被拦住，而不是一路带进输出。同一段文本走 \texttt{validate} 再走一遍，保证读出的数据也合规。
-
-\item \texttt{serialize<\allowbreak{}Student>\allowbreak{}(\allowbreak{}\&student)\allowbreak{}?} —— 这一句返回 \texttt{Result}，用 \texttt{?} 向外传播。第 16 章说过，\texttt{?} 只能用在返回 \texttt{Result} / \texttt{Option} 的函数里；\texttt{encode\allowbreak{}Rows} 的返回类型正好是 \texttt{Result<\allowbreak{}String,\allowbreak{} String>\allowbreak{}}，所以成立。\texttt{?} 的结果先落到局部变量 \texttt{encoded} 再 \texttt{push}，不要嵌在更外层的表达式里——嵌套的 \texttt{?} 会让「哪个 \texttt{?} 在往哪里传」变得难读，也更容易触发编译期的传播规则报错。
-
-\end{enumerate}
-
-返回类型写成 \texttt{Result<\allowbreak{}String,\allowbreak{} String>\allowbreak{}}：成功是 JSON 文本，失败是诊断文本。没有用异常，也没有用返回码——第 16 章那条规则在这里就是全部的出错机制。
-
-\section{命令分派：参数化查询}
-
-\texttt{execute} 负责「读命令 \ensuremath{\rightarrow} 拼查询 \ensuremath{\rightarrow} 执行 \ensuremath{\rightarrow} 返回文本」。看 \texttt{add} / \texttt{update} 这一段：
-
-\par
-\medskip
-\begin{lstlisting}[style=magel]
-if ((command == "add" || command == "update") && args.len() == 3)
-{
-    Student student = std::json::deserialize<Student>(args[2])?;
-    String error = validate(&student);
-    if (error != "")
-    {
-        return Result<String, String>::Err(error);
-    }
-    if (command == "update")
-    {
-        std::sql::filter<int64>(&query, "id", student.id)?;
-    }
-    auto statement = std::sql::insert<Student>(&query, &student);
-    if (command == "update")
-    {
-        statement = std::sql::update<Student>(&query, &student);
-    }
-    auto prepared = statement?;
-    auto rows = database.exec(prepared);
-    if (!rows.ok)
-    {
-        return Result<String, String>::Err(rows.error);
-    }
-    if (rows.affected != 1)
-    {
-        return Result<String, String>::Err("学生不存在");
-    }
-    String encoded = std::json::serialize<Student>(&student)?;
-    return Result<String, String>::Ok(encoded);
-}
-\end{lstlisting}
-\par
-\medskip
-
-所有用户值都交给 \texttt{std:\allowbreak{}:\allowbreak{}sql} 绑成 SQL 参数，没有一处字符串拼接。 \texttt{filter<\allowbreak{}int64>\allowbreak{}(\allowbreak{}\&query,\allowbreak{} "id",\allowbreak{} student.\allowbreak{}id)\allowbreak{}} 里的学号是绑定进去的，不是 \texttt{".\allowbreak{}.\allowbreak{}.\allowbreak{} WHERE id =\allowbreak{} " + 学号}。这是 SQL 注入的唯一正解：不要「转义引号」，而是根本不让用户输入成为 SQL 文本的一部分。
-
-\texttt{insert} / \texttt{update} 的字段和值由生成器按模型产出，同样不经过字符串拼接。\texttt{rows.\allowbreak{}affected !=\allowbreak{} 1} 用来判断「到底有没有改到那一行」——\texttt{update} 一个不存在的学号时，SQLite 不会报错，只会影响 0 行，所以必须自己查。
-
-\texttt{list} 的排序字段也走同一套模型信息：
-
-\par
-\medskip
-\begin{lstlisting}[style=magel]
-query.orderBy(field, descending);
-auto prepared = query.build()?;
-\end{lstlisting}
-\par
-\medskip
-
-字段名不是模型的字段时，\texttt{build(\allowbreak{})\allowbreak{}} 直接拒绝：
-
-\par
-\medskip
-\begin{lstlisting}[style=out]
-错误：模型 Student 没有字段 badfield
-\end{lstlisting}
-\par
-\medskip
-
-排序方向也要自己查：\texttt{asc} / \texttt{desc} 之外的输入会被拒绝，不会静默当成默认排序。
-
-\section{入口：开库、建表、跑一次}
-
-\par
-\medskip
-\begin{lstlisting}[style=magel]
-int64 main(List<String> args)
-{
-    if (args.len() < 2)
-    {
-        println("用法：magel main.mgl 数据库路径 命令 [参数]");
-        return 1;
-    }
-    auto database = std::sql::Database::sqlite(args[0]);
-    if (!database.isOpen())
-    {
-        println("错误：{}", database.lastError());
-        return 1;
-    }
-    auto query = std::sql::query<Student>().unwrap();
-    auto created = database.exec(query.build("create").unwrap());
-    if (!created.ok)
-    {
-        println("错误：{}", created.error);
-        database.close();
-        return 1;
-    }
-    auto result = execute(&database, &args);
-    database.close();
-    if (result.isErr())
-    {
-        println("错误：{}", result.error());
-        return 1;
-    }
-    println("{}", result.unwrap());
     return 0;
 }
 \end{lstlisting}
 \par
 \medskip
 
-结构很直白：先建表，再执行，最后一定 \texttt{close(\allowbreak{})\allowbreak{}}。两条失败路径都各自关库再返回——手工管理资源时，「出错的那条路最容易忘掉清理」，所以要把 \texttt{close(\allowbreak{})\allowbreak{}} 写在每一条退出路径上，而不是只写在正常路径末尾。
+\par
+\medskip
+\begin{lstlisting}[style=out]
+consume 1
+close 1
+third=2
+close 2
+\end{lstlisting}
+\par
+\medskip
 
-\texttt{return 1} / \texttt{return 0} 首先是给读代码的人看的：\texttt{int64 main} 的返回值不会成为进程退出码——\texttt{magel} 只在编译失败或 panic 时才非 0 退出（文档只约定 \texttt{void main} 正常完成时退出码为 0）。所以要在脚本里判断这一步做没做成，得看程序自己给出的信号：本程序把所有失败都打印成 \texttt{错误：…} 开头的一行，成功则打印 JSON 或 \texttt{已删除}。别指望靠 \texttt{\$?} 区分业务成败，这是写外壳脚本时最容易想当然的地方。
+注意输出里没有 \texttt{close 1} 之后的自动关闭：\texttt{first} 已经把所有权交出去了，出块时它不再是拥有者。\texttt{third} 是移动过来的新绑定，它才负责收尾。
 
-\section{跑一遍}
+要不要写 \texttt{move} 的判断很朴素：谁最后拿着这个值，谁负责关。转移写 \texttt{move(\allowbreak{}\&x)\allowbreak{}}，只是借用就传 \texttt{T mut\&} / \texttt{T const\&}，函数内部造出来的局部值直接 \texttt{return}。
 
-从 \texttt{example/\allowbreak{}reflection-students} 目录运行（Windows 上程序名是 \texttt{magel.\allowbreak{}exe}）：
+\section{\texttt{\#derive(\allowbreak{}Equal,\allowbreak{} Hash,\allowbreak{} Clone)\allowbreak{}}：字段级样板交给编译器}
+
+写值语义的类型时，\texttt{=\allowbreak{}=\allowbreak{}}、\texttt{hash(\allowbreak{})\allowbreak{}}、\texttt{clone(\allowbreak{})\allowbreak{}} 三件套几乎是机械劳动：逐字段比较、逐字段混合哈希、逐字段复制。字段一多，漏一个就出 bug，而且很难测出来。
+
+\texttt{\#derive} 让编译器按字段生成：
 
 \par
 \medskip
-\begin{lstlisting}[style=sh]
-magel main.mgl students.db add '{"id":1,"name":"张伟","age":18,"className":"高一(3)班","score":92}'
+\begin{lstlisting}[style=magel]
+#derive(Equal, Hash, Clone)
+struct Point
+{
+    int64 x;
+    int64 y;
+    String label;
+};
+
+int64 main()
+{
+    Point origin;
+    origin.x = 0;
+    origin.y = 0;
+    origin.label = "O";
+
+    Point copy = origin.clone();
+    println("equal={}", origin == copy);
+    println("sameHash={}", origin.hash(origin) == copy.hash(copy));
+
+    copy.label = "O2";
+    println("afterChange={}", origin == copy);
+    println("original={}", origin.label);
+    return 0;
+}
 \end{lstlisting}
 \par
 \medskip
@@ -336,18 +179,71 @@ magel main.mgl students.db add '{"id":1,"name":"张伟","age":18,"className":"�
 \par
 \medskip
 \begin{lstlisting}[style=out]
-{"id":1,"name":"张伟","age":18,"className":"高一(3)班","score":92}
+equal=1
+sameHash=1
+afterChange=0
+original=O
 \end{lstlisting}
 \par
 \medskip
 
-再存一个，然后列出来：
+（布尔值用 \texttt{\{\}} 打印出来是 \texttt{1} / \texttt{0}，与 C 的习惯一致。）
+
+\texttt{clone(\allowbreak{})\allowbreak{}} 是深拷贝：改副本的 \texttt{label} 不影响原件。\texttt{hash(\allowbreak{})\allowbreak{}} 保证"相等的值哈希相同"，所以派生出来的类型可以直接当 \texttt{Map} / \texttt{Set} 的键。
+
+三条硬规矩：
+
+\begin{enumerate}
+
+\item 白名单只有 \texttt{Equal}、\texttt{Hash}、\texttt{Clone}。 写别的名字直接报错。
+
+\item 不能派生 \texttt{Drop} 或 \texttt{Closeable}。 这两个是析构协议，值语义已经按字段自动递归清理了，再派生一次就变成"析构两遍"。
+
+\item 嵌套字段必须自己也有协议。 字段是自定义结构体时，那个结构体得实现对应接口，或者自己也 \texttt{\#derive}。引用、函数值、裸数组这些没有相等 / 哈希语义的字段会被拒绝——编译器不会按内存字节偷偷比较。
+
+\end{enumerate}
+
+派生方法的生成分两步：语义层从字段元数据生成受限的方法源码，交给现有的宏模板与生成解析器，产出的普通方法再走一遍完整的类型、借用与降级检查。也就是说，派生不是特权通道，它生成的方法和手写的一样受检查。
+
+\section{\texttt{\#No\allowbreak{}Add\allowbreak{}Replace}：关掉运算符的自动推导}
+
+第 9 章提过运算符重载：结构体继承 \texttt{Add} 这类左接口，右操作数那侧要自己负责就继承\texttt{Right\allowbreak{}Add}。为了少写代码，编译器还替你做三类推导：
+
+\begin{itemize}
+
+\item 交换律换边：\texttt{+ * =\allowbreak{}=\allowbreak{} !=\allowbreak{} \& | \textasciicircum{}} 只写了左接口时，\texttt{5 + a} 自动换边借 \texttt{a + 5}；
+
+\item 比较对偶：\texttt{5 >\allowbreak{} a} 等价于 \texttt{a <\allowbreak{} 5}；
+
+\item 取反：\texttt{a >\allowbreak{}=\allowbreak{} 5} 就是 \texttt{!(\allowbreak{}a <\allowbreak{} 5)\allowbreak{}}。
+
+\end{itemize}
+
+绝大多数时候这很省事。但有些类型的"自动换边"是错的：比如一个表示"链式追加"的类型，\texttt{a + 5} 是"把 5 接到 a 后面"，而 \texttt{5 + a} 大概该是"把 a 接到 5 后面"——两种语义根本不同，推导出来的那一份只是"看起来能编"。
+
+这时在 \texttt{struct} 前写 \texttt{\#No\allowbreak{}Add\allowbreak{}Replace}：
 
 \par
 \medskip
-\begin{lstlisting}[style=sh]
-magel main.mgl students.db add '{"id":2,"name":"李娜","age":17,"className":"高一(3)班","score":88}'
-magel main.mgl students.db list
+\begin{lstlisting}[style=magel]
+#NoAddReplace
+struct Vec : Add<int64, int64>
+{
+    int64 v;
+
+    int64 leftAdd(int64 other)
+    {
+        return self.v + other;
+    }
+};
+
+int64 main()
+{
+    Vec a;
+    a.v = 10;
+    println("left={}", a + 5);
+    return 0;
+}
 \end{lstlisting}
 \par
 \medskip
@@ -355,20 +251,50 @@ magel main.mgl students.db list
 \par
 \medskip
 \begin{lstlisting}[style=out]
-[{"id":1,"name":"张伟","age":18,"className":"高一(3)班","score":92},{"id":2,"name":"李娜","age":17,"className":"高一(3)班","score":88}]
+left=15
 \end{lstlisting}
 \par
 \medskip
 
-改成绩、按姓名查、按成绩倒序、删除：
+\texttt{\#No\allowbreak{}Add\allowbreak{}Replace} 里的接口名就是左接口名（\texttt{Add} / \texttt{Multiply} / \texttt{Less} / \texttt{Less\allowbreak{}Or\allowbreak{}Equal} …），指令本身不带括号。写完之后，\texttt{a + 5} 照常调用 \texttt{left\allowbreak{}Add}，但 \texttt{5 + a} 不再换边：
 
 \par
 \medskip
-\begin{lstlisting}[style=sh]
-magel main.mgl students.db update '{"id":1,"name":"张伟","age":19,"className":"高一(3)班","score":95}'
-magel main.mgl students.db search 李娜
-magel main.mgl students.db list score desc
-magel main.mgl students.db delete 2
+\begin{lstlisting}[style=out]
+magel: samples-error/operator_no_add_replace.mgl 第 16 行第 5 列：运算符 + 的自动推导被 #NoAddReplace 关闭：int64 + Vec（直接写出与实现匹配的运算符，或显式实现 RightAdd<R,T> 这类右接口）
+\end{lstlisting}
+\par
+\medskip
+
+报错文案会点出是哪一条指令挡的，并给出两条出路：自己实现 \texttt{Right\allowbreak{}Add<\allowbreak{}int64,\allowbreak{}int64>\allowbreak{}}，或者接受"这个方向不支持"。
+
+指令只关推导，不关直接写法：左向 \texttt{a + 5} 与显式实现的 \texttt{Right\allowbreak{}Add} 都不受影响。这条边界很重要——它保证"加一条指令"不会把本来能编的代码弄坏，只会把"靠猜"的那部分收回去。
+
+\section{\texttt{\#No\allowbreak{}Right\allowbreak{}Add}：只关右向}
+
+\texttt{\#No\allowbreak{}Add\allowbreak{}Replace} 是"这个接口的所有推导都别做了"。更多时候你只想关一半：左向的 \texttt{a + 5} 是对的，右向的 \texttt{5 + a} 是错的。这时候用 \texttt{\#No\allowbreak{}Right<\allowbreak{}接口>\allowbreak{}}：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+#NoRightAdd
+struct Chain : Add<int64, int64>
+{
+    int64 v;
+
+    int64 leftAdd(int64 other)
+    {
+        return self.v + other;
+    }
+};
+
+int64 main()
+{
+    Chain chain;
+    chain.v = 7;
+    println("chain + 1 = {}", chain + 1);
+    return 0;
+}
 \end{lstlisting}
 \par
 \medskip
@@ -376,101 +302,148 @@ magel main.mgl students.db delete 2
 \par
 \medskip
 \begin{lstlisting}[style=out]
-{"id":1,"name":"张伟","age":19,"className":"高一(3)班","score":95}
-[{"id":2,"name":"李娜","age":17,"className":"高一(3)班","score":88}]
-[{"id":1,"name":"张伟","age":19,"className":"高一(3)班","score":95},{"id":2,"name":"李娜","age":17,"className":"高一(3)班","score":88}]
-已删除
+chain + 1 = 8
 \end{lstlisting}
 \par
 \medskip
 
-关掉终端再列一次，数据还在——它存在 \texttt{students.\allowbreak{}db} 里，不在内存里。
+而 \texttt{1 + chain} 会报错：
 
-\section{出错时它说什么}
+\par
+\medskip
+\begin{lstlisting}[style=out]
+magel: samples-error/operator_right_forbidden.mgl 第 13 行第 5 列：右向被编译器指令关闭：Vec 声明了 #NoRightAdd，int64 + Vec 不再推导；要去掉该指令，或改为实现 RightAdd<R,T>
+\end{lstlisting}
+\par
+\medskip
 
-这一章最值得模仿的不是「成功路径」，而是每一条失败都有话说：
+两个指令的分工，用一张表说清：
+
+\begin{center}
+\begin{tabular}{llll}
+\toprule
+写法 & 左向 \texttt{a + 5} & 右向 \texttt{5 + a} & 适用场合 \\
+\midrule
+什么都不写 & 直接实现 & 交换律换边 & 两个方向确实等价 \\
+\texttt{Right\allowbreak{}Add} & 直接实现 & 走 \texttt{right\allowbreak{}Add} & 右向语义不同，自己实现 \\
+\texttt{\#No\allowbreak{}Right\allowbreak{}Add} & 直接实现 & 报错 & 右向没有意义，明确拒绝 \\
+\texttt{\#No\allowbreak{}Add\allowbreak{}Replace} & 直接实现 & 报错，对偶 / 取反也不推 & 这个接口的推导整体不可信 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+值得强调一段历史：\texttt{\#No\allowbreak{}Right\allowbreak{}Add} 这类开关早期是空标记接口，写成\texttt{struct Chain :\allowbreak{} Add<\allowbreak{}int64,\allowbreak{}int64>\allowbreak{},\allowbreak{} No\allowbreak{}Right\allowbreak{}Add}。之所以搬成指令，是因为"禁止某条推导" 根本不涉及方法契约——它不需要被实例化、不需要类型实参、也不会被调用，把它混进继承列表会让人误以为它是个能力。声明级的东西就该写在声明前面。
+
+\section{指令会在哪里被检查}
+
+编译器指令看起来只是"贴张条"，但每一条都在语义层被认真核对：
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+检查 & 说明 \\
+\midrule
+只能修饰声明 & \texttt{\#derive} 只能贴 struct / enum；运算符开关只能贴 struct \\
+接口名必须存在 & \texttt{\#No\allowbreak{}Add\allowbreak{}Replac} 这种笔误直接报错，不会静默忽略 \\
+接口必须有可关的东西 & \texttt{\#No\allowbreak{}Subtract\allowbreak{}Replace} 报错——\texttt{-} 本来就没有自动推导 \\
+不能重复 & 同一接口写两遍报错 \\
+泛型模板会带走指令 & 模板声明前的指令随实例化贴回每个具体实例 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+最后一条要展开说一句。写泛型结构体时，指令是写在模板上的：
+
+\par
+\medskip
+\begin{lstlisting}[style=magel]
+#NoAddReplace
+struct Wrapper<T> { T value; };
+\end{lstlisting}
+\par
+\medskip
+
+单态化会在编译期为 \texttt{Wrapper<\allowbreak{}int64>\allowbreak{}}、\texttt{Wrapper<\allowbreak{}String>\allowbreak{}} 各生成一个实例。实例是从模板文本展开出来的——如果指令留在原地，实例就丢了这条规矩。所以收集模板时会把指令先摘走，贴在实例声明的前面，和 \texttt{\#derive} 一样处理。你在源码里写一次，所有实例都守这条规矩。
+
+\section{什么时候该用指令}
+
+指令不是"更高级的语法"，它解决的是声明层面说不清的话。判断标准可以压成两条：
+
+\begin{itemize}
+
+\item 这件事属于类型本身，不属于任何一次调用。 "这个类型不许复制"、"这个类型的方向加法语义不对"——是类型的事实，写在类型上；
+
+\item 编译器不写这一行就会猜错。 派生三件套、运算符推导都属于"编译器替你做决定"，指令的作用就是把这些决定的开关交回你手里。
+
+\end{itemize}
+
+反面例子也说两个：
+
+\begin{enumerate}
+
+\item 用 \texttt{\#derive} 掩盖设计问题。 如果一个类型的相等语义需要"看起来相等就算相等"，派生逐字段比较会给出错误答案——这种情况该手写 \texttt{Equal}，而不是派生。
+
+\item 用 \texttt{\#No\allowbreak{}Add\allowbreak{}Replace} 收拾本该拆开的类型。 如果 \texttt{a + 5} 和 \texttt{5 + a} 语义完全不同，往往说明这不该叫"加法"。先想想是不是该换成具名方法：\texttt{append(\allowbreak{}5)\allowbreak{}} 比 \texttt{operator+} 诚实。
+
+\end{enumerate}
+
+\section{边界与验证}
+
+\begin{itemize}
+
+\item 指令只修饰声明，不能出现在语句或表达式里；写在别处是语法错误。
+
+\item \texttt{\#No<\allowbreak{}接口>\allowbreak{}Replace} 与 \texttt{\#No\allowbreak{}Right<\allowbreak{}接口>\allowbreak{}} 可以连写多条，顺序不影响结果。
+
+\item 运算符开关只影响自动推导：直接写出的运算符、显式声明的 \texttt{Right\allowbreak{}Xxx} 都不受约束。
+
+\item \texttt{Closeable} 自动等价于"不可复制"，无需再写 \texttt{\#Non\allowbreak{}Copyable}；\texttt{opcode} 的不可复制由声明体里有没有 \texttt{copy} 决定，\texttt{\#Non\allowbreak{}Copyable} 是可读性标记。
+
+\item 可运行验证见 \texttt{example/\allowbreak{}samples/\allowbreak{}derive.\allowbreak{}mgl}、\texttt{no\_replace.\allowbreak{}mgl}、\texttt{closeable\_move.\allowbreak{}mgl}、\texttt{operator\_right\_direction.\allowbreak{}mgl}；报错例见 \texttt{example/\allowbreak{}samples-error/\allowbreak{}operator\_no\_add\_replace.\allowbreak{}mgl}、\texttt{operator\_right\_forbidden.\allowbreak{}mgl}、\texttt{closeable\_copy.\allowbreak{}mgl}。
+
+\end{itemize}
+
+\section{小结}
 
 {\small\setlength{\tabcolsep}{4pt}
-\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.247\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.733\linewidth-2\tabcolsep\relax}}
+\begin{longtable}{>{\raggedright\arraybackslash}p{\dimexpr 0.229\linewidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr 0.751\linewidth-2\tabcolsep\relax}}
 \toprule
-输入 & 输出 \\
+你会了 & 关键点 \\
 \midrule
 \endhead
-\texttt{get 999} & \texttt{错误：学生不存在} \\
-\texttt{delete 999} & \texttt{错误：学生不存在} \\
-\texttt{add '\{"id":\allowbreak{}0,\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{}\}'} & \texttt{错误：学号必须是正整数} \\
-\texttt{add '\{"id":\allowbreak{}3,\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{},\allowbreak{}"age":\allowbreak{}200,\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{}\}'} & \texttt{错误：年龄必须在 1 到 150 之间} \\
-\texttt{add '\{"id":\allowbreak{}5,\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{},\allowbreak{}"score":\allowbreak{}101\}'} & \texttt{错误：成绩必须在 0 到 100 之间} \\
-\texttt{add '\{"id":\allowbreak{}4,\allowbreak{}"name":\allowbreak{}"",\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{}\}'} & \texttt{错误：姓名必须为 1 到 120 字节的非空文本} \\
-\texttt{add 'not-json'} & \texttt{错误：1:\allowbreak{}1:\allowbreak{} 这里只认 true /\allowbreak{} false /\allowbreak{} null [\allowbreak{}unexpected-token]\allowbreak{}} \\
-\texttt{list badfield} & \texttt{错误：模型 Student 没有字段 badfield} \\
-\texttt{list id sideways} & \texttt{错误：排序方向必须是 asc 或 desc} \\
-\texttt{bogus} & \texttt{错误：命令或参数错误：add/\allowbreak{}update JSON；get/\allowbreak{}delete 学号；list [\allowbreak{}字段 [\allowbreak{}排序方向]\allowbreak{}]\allowbreak{}；search 姓名；schema} \\
+编译器指令是什么 & \texttt{\#} 开头、写在声明前、只给编译器看，不留到运行时 \\
+\texttt{\#Non\allowbreak{}Copyable} & \texttt{opcode} 不绑定 \texttt{copy} \ensuremath{\rightarrow} 禁止复制，只能 \texttt{move(\allowbreak{}\&x)\allowbreak{}} \\
+\texttt{Closeable} 的连带效果 & 实现即自动不可复制，\texttt{close(\allowbreak{})\allowbreak{}} 不会跑两遍 \\
+\texttt{\#derive(\allowbreak{}.\allowbreak{}.\allowbreak{}.\allowbreak{})\allowbreak{}} & 白名单 Equal / Hash / Clone，嵌套字段要有协议，不能派生 Drop / Closeable \\
+\texttt{\#No<\allowbreak{}接口>\allowbreak{}Replace} & 关掉该接口的全部自动推导（换边 / 对偶 / 取反） \\
+\texttt{\#No\allowbreak{}Right<\allowbreak{}接口>\allowbreak{}} & 只关右向，左向与显式 \texttt{Right\allowbreak{}Xxx} 照旧 \\
+报错怎么读 & 文案直接点出是哪条指令挡的，并给出两条出路 \\
+泛型 & 指令随模板带走，实例化时贴回每个实例 \\
 \bottomrule
 \end{longtable}
 }
 
-四类错误分得清清楚楚：
-
-\begin{itemize}
-
-\item JSON 解析错误来自 \texttt{std:\allowbreak{}:\allowbreak{}json}，带行列位置和期望；
-
-\item 业务校验错误来自 \texttt{validate}，是人话；
-
-\item 模型 / SQL 错误来自 \texttt{std:\allowbreak{}:\allowbreak{}sql}，说明哪个字段不对；
-
-\item 命令用法错误在最后兜底，顺便把用法打出来。
-
-\end{itemize}
-
-没有一种是「崩了」或者「静默什么都没做」。
-
-\section{小结}
-
-\begin{itemize}
-
-\item 一份模型声明，三处复用：建表、查询列、JSON 键、排序字段检查都由它派生；
-
-\item 校验收成一个函数，成功返回空串，失败返回人话；
-
-\item 字段清单从反射读，不要在代码里抄第二遍；
-
-\item 所有用户输入绑成 SQL 参数，不要拼字符串；
-
-\item 每条失败路径都要有诊断，并且都要记得关库；
-
-\item \texttt{?} 的结果先落局部变量，别嵌进更外层的表达式。
-
-\end{itemize}
-
 \section{下一步}
 
-这个程序还只是命令行。要把它变成服务，看\href{https://gitee.com/rabbitc999/magel/blob/master/doc/36-reflection-serialization-sql.md}{动态 SQL 说明}和\href{https://gitee.com/rabbitc999/magel/blob/master/example/sql-magel/README.md}{SQL 示例}；要把它交付出去，翻回\hyperref[ch:22]{第 22 章 交付与部署}。
+到这儿，语言里所有"编译期能替你做的事"都讲完了：宏、注解、编译器指令。你已经知道什么时候该让编译器代劳，什么时候该自己动手。
 
-语言的全部细节在\href{https://gitee.com/rabbitc999/magel/blob/master/doc/04-language-reference.md}{语言参考}，反射的 API 全貌在\hyperref[ch:20]{第 20 章 注解与反射}。
+最后一章是一份完整的实战项目：把结构体、反射、JSON 和 SQL 拼成一个能存数据的小系统。这一章不再介绍新语法，而是把前面二十几章的东西用一遍——你会发现真正花时间的地方，往往不是语法，而是"哪些边界该写进类型、哪些开关该关掉"。
 
-\section{边界与验证}
-
-反射元数据取决于编译期的注解与反射开关；换用 \texttt{--no-reflection} 或 \texttt{--hard-realtime} 构建时，\texttt{get\allowbreak{}Struct\allowbreak{}Info} 一族不可用，本示例需要反射版工具链。
-
-模型字段变化会影响既有数据库：新增字段后旧库缺少该列，\texttt{encode\allowbreak{}Rows} 会报「数据库缺少字段」，需要迁移或重建。文本长度按字节计，与数据库列长度要对齐。
-
-排序与搜索依赖数据库实现；\texttt{search} 使用模糊匹配，匹配规则与排序的稳定性由SQLite 决定，不要把当前排列当成业务上可靠的次序。
+翻到\hyperref[ch:24]{第 24 章 学生信息管理系统}。
 
 \section{习题}
 
-前两题用于理解和基本实现，第三题检查边界，最后一题为综合挑战。先独立完成，再核对参考解答。
+前两题动手验证指令的边界，第三题读报错，最后一题为综合挑战。
 
 \begin{enumerate}
 
-\item 给模型新增一个 \texttt{String phone} 字段，需要改几处代码？
+\item 给一个只实现 \texttt{Add<\allowbreak{}int64,\allowbreak{}int64>\allowbreak{}} 的结构体加上 \texttt{\#No\allowbreak{}Add\allowbreak{}Replace}，写 \texttt{5 + a} 并观察报错；把指令换成 \texttt{\#No\allowbreak{}Right\allowbreak{}Add}，再写一次，比较两条文案的差别。
 
-\item 用 \texttt{add} 连续存两名学生，再用 \texttt{list score desc} 核对顺序。
+\item 写一个 \texttt{\#derive(\allowbreak{}Equal,\allowbreak{} Hash,\allowbreak{} Clone)\allowbreak{}} 的结构体，字段里放一个自己实现 \texttt{Equal} 的嵌套结构体，确认派生能通过检查；把嵌套类型换成一个裸数组，观察报错。
 
-\item \texttt{update} 一个不存在的学号会发生什么？为什么必须检查 \texttt{rows.\allowbreak{}affected}？
+\item 解释为什么 \texttt{\#derive(\allowbreak{}Drop)\allowbreak{}} 会被拒绝，而不是"生成一个空 drop"。
 
-\item 挑战：把 \texttt{search} 改成同时匹配姓名和班级，并保持参数绑定。
+\item 挑战：设计一个"链式文本"类型，使 \texttt{chain + "x"} 合法、\texttt{"x" + chain} 编译报错，并说明为什么这里不需要 \texttt{Right\allowbreak{}Add}。
 
 \end{enumerate}
 
@@ -478,28 +451,26 @@ magel main.mgl students.db delete 2
 
 \begin{enumerate}
 
-\item 只改 \texttt{struct Student} 一处；建表、查询列、JSON 键、\texttt{schema} 输出都由反射派生。旧库会缺列并被「数据库缺少字段」拦下，需要迁移。
+\item 前者文案是"运算符 + 的自动推导被 \#NoAddReplace 关闭"，后者是"右向被编译器指令关闭"；两者都保留了左向可用的行为。
 
-\item 以 \texttt{list} 的 JSON 数组为准核对顺序，不看插入先后。
+\item 嵌套结构体需要自己实现或派生 \texttt{Equal} / \texttt{Hash} / \texttt{Clone}；裸数组没有约定语义，派生阶段会明确拒绝，而不是按字节比较。
 
-\item SQL 不报错但影响 0 行；不检查 \texttt{rows.\allowbreak{}affected} 会把「没改到」误报成成功。
+\item \texttt{Drop} 是析构协议，值语义已经对字段做递归清理；再生成一个 \texttt{drop(\allowbreak{})\allowbreak{}} 会与自动清理叠加，等于析构两次。派生只处理"可以按字段机械推出"的协议。
 
-\item 用 \texttt{std:\allowbreak{}:\allowbreak{}sql:\allowbreak{}:\allowbreak{}filter<\allowbreak{}String>\allowbreak{}} 加两个条件，值始终由生成器绑定，不拼接 SQL 文本；同时覆盖空结果和多条件同时命中的情况。
+\item 用 \texttt{\#No\allowbreak{}Right\allowbreak{}Add} + 左接口 \texttt{Add}；不需要 \texttt{Right\allowbreak{}Add}，因为右向语义根本不该存在。
 
 \end{enumerate}
 
-\section{番外：目无全牛}
+\section{番外：一张便条的权力}
 
-改编自《庄子·养生主》庖丁解牛，以下为编程主题的独立改写。
+改编自《聊斋志异·王者》。
 
-庖丁替文惠君解牛，手碰的地方、肩靠的地方、脚踩的地方、膝顶的地方，都合着节拍。文惠君问他技艺何以至此。庖丁说，他喜欢的不是手法，是条理。
+某县衙门的库房里有一本账簿，凡入库的物件都要先登记。登记簿上原本没有"不得借出"这一栏，差役便自作主张：凡是不好搬的东西，就把借条贴在箱子上，权当它是规矩。
 
-起初他看见的是一整头牛，不知道该从哪里下刀。三年之后，他不再看见整头牛。他说的不是牛消失了，而是眼里换成了骨节与缝隙：该走哪里、哪里要绕，都在下刀之前就清楚了。
+新来的主簿翻开库房，一眼看出问题：借条是写给取东西的人看的，规矩是写给管库房的人 看的。他把借条一张张揭下来，换成簿子上正经的条目——哪几类物件不得出库、哪几类出库要两个人签字、哪几类本来就该就地封存。从此取东西的人不必再猜哪张条子算数。
 
-有人请他改一改刀法。他只问一句：骨节还是那些骨节吗？对方说骨节没变，只是想让刀走得快些。庖丁便照着骨节重新排了一遍下刀的次序，并不去记「第一刀在哪、第二刀在哪」。因为他记的从来不是刀数，是结构。
-
-后来换了牛，骨节的位置也变了。旁人翻出旧次序照着走，刀就卡住了。庖丁说他并没有记次序，他看的是这一头牛的骨节；次序是看清楚之后自己长出来的。
+Magel 的编译器指令就是这簿子上的条目：它写在声明上，交给编译器读，读的人都一样、位置都在同一处。注解才是那张贴给外人看的借条，它不改变库房的规矩，只是告诉来办事的人里面装的是什么。
 
 \subsection*{技术对照}
 
-反射给出的是结构信息：字段有哪些、各是什么类型、主键是谁。建表语句、查询列、JSON 键、排序字段的合法性检查，都应当从这份信息派生，而不是在代码里各抄一份清单。抄来的清单会随模型改动而失效——正如照着旧次序下刀，换一头牛就会卡住。
+指令与注解的关键差别在读取者：指令由词法与语义层读取，参与类型检查；注解由反射在运行期读取，不改变语义。把"禁止某条推导"这类声明级约束写成标记接口，等于把规矩写进借条里。

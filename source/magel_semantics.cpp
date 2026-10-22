@@ -2361,7 +2361,7 @@ int M_OpcodeMethod(int operation, int symbol)
  */
 int M_NonCopyableOpcode(int declaration)
 {
-    g_nodes[declaration].opcodeNonCopyable = true;
+    g_nodes[declaration].nonCopyable = true;
     return declaration;
 }
 

@@ -326,10 +326,16 @@ interfaces** such as `RightAdd` (method `rightAdd`). Type arguments are written
   - **`RightAdd` declared**: the right direction is yours; `5 + a` only uses `rightAdd`, and if
     its parameter cannot take the left operand it is an error — it does **not** fall back to
     borrowing `Add`;
-  - **`NoRightAdd` declared**: explicitly forbidden; `5 + a` is an error. It is an **empty
-    marker interface** named `No` + the right interface name (`NoRightAdd`, `NoRightLess`, …)
-    with no type arguments, and the left direction `a + 5` is unaffected. `NoRightXxx` wins
-    over `RightXxx`.
+  - **compiler directive `#NoRightAdd`**: explicitly forbidden; `5 + a` is an error. It is
+    written before the `struct` and named `#NoRight` + the left interface name
+    (`#NoRightAdd`, `#NoRightLess`, …), with no type arguments and no inheritance-list entry;
+    the left direction `a + 5` is unaffected. `#NoRightXxx` wins over `RightXxx`.
+- **Turning derivation off**: `#NoAddReplace` before the `struct` removes **every** automatic
+  derivation for that interface — `5 + a` no longer swaps and `a >= 5` is no longer negated
+  from `Less`. The name is `#No` + interface + `Replace` (`#NoLessReplace`,
+  `#NoMultiplyReplace`, …) and several may be written in a row. The interface must be one the
+  type really implements and one that has derivation to cancel, otherwise it is an error.
+  Direct calls are untouched, and `#NoRightAdd` only closes the right-hand direction.
 - **Evaluation order**: swapping changes only which operand is the receiver, not when they are
   evaluated — still left to right (`bump() + makeA()` runs `bump()` first, then `makeA()`).
 - **Same operand pair, different result types**: one type may implement both `Add<int64,int64>`
@@ -727,7 +733,10 @@ binding that creates an independent host record. `#NonCopyable` omits `copy` and
 prohibits copying during initialization, assignment, value arguments and value
 returns. It still supports ownership transfer with `T target = move(&source);`,
 including explicit `move(&value)` in value arguments and returns. This applies to
-all opcode types. Moving does not call copy; the source binding becomes invalid
+all opcode types. A struct that implements `Closeable` follows the same rule
+automatically: a copy would mean two owners and two `close()` calls, so copying is
+refused without an extra directive (see [declaration sugars](28-declaration-sugars.md)).
+Moving does not call copy; the source binding becomes invalid
 and the final owner is responsible for drop. `Type::new(...)`
 invokes the creation binding. An opcode is a special struct containing an opaque
 glue handle. Its body may also declare ordinary fields, instance methods and

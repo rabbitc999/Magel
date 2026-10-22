@@ -18,6 +18,58 @@ bool CheckUserName(const Memory::String &name)
 }
 
 /**
+ * @brief 登记结构体声明上的运算符开关（`#No<接口>Replace` / `#NoRight<接口>`）。
+ *
+ * 两类开关都只关闭**自动推导**，直接写出与实现匹配的运算符不受影响：
+ * - `#NoAddReplace`：换边（交换律）与对偶 / 取反（比较与相等）两处全部关掉；
+ * - `#NoRightAdd`：只关「右操作数当接收者」那一条（交换律换边、右向推导）。
+ *
+ * 因此只有当前确实有对应推导可取消的接口才允许出现在指令里 —— 写
+ * `#NoSubtractReplace` 会被拦下，因为 `-` 本来就没有自动推导可取消，
+ * 右向要显式实现 `RightSubtract`；`#NoRightSubtract` 同理。
+ *
+ * @param top 结构体声明节点。
+ * @param definition 正在登记的结构体定义。
+ * @retval 全部指令合法时返回 true；接口名不认识、一元接口、无可取消的推导
+ *         或同一接口重复登记时返回 false 并记下诊断。
+ */
+bool RegisterOperatorSwitches(const MNode &top, MStructDef &definition)
+{
+    const auto findSpec = [](const Memory::String &name) -> const MOperatorInterfaceSpec * {
+        for (const MOperatorInterfaceSpec &candidate : OperatorInterfaceSpecs())
+            if (name == Memory::String(candidate.leftInterface)) return &candidate;
+        return nullptr;
+    };
+    for (const Memory::String &name : top.noReplace)
+    {
+        const MOperatorInterfaceSpec *spec = findSpec(name);
+        if (spec == nullptr)
+            return Fail("不认识的运算符接口：" + name + "（#No<接口>Replace 里的接口名写作 Add、Multiply、Less、LessOrEqual 等）");
+        if (spec->unary)
+            return Fail("一元运算符没有自动推导：#No" + name + "Replace（`-x` / `~x` / `+x` 只能直接实现 " + spec->leftInterface + "）");
+        bool derivable = spec->symmetric;
+        for (const MOperatorDerivation &derivation : OperatorDerivations())
+            if (!derivable && name == Memory::String(derivation.via)) derivable = true;
+        if (!derivable)
+            return Fail("#No" + name + "Replace 没有可取消的自动推导：`" + spec->op + "` 不满足交换律，也没有对偶写法（需要右向请显式实现 " + spec->rightInterface + "）");
+        if (!definition.noReplace.insert(name).second)
+            return Fail("重复声明运算符推导开关：#No" + name + "Replace");
+    }
+    for (const Memory::String &name : top.noRight)
+    {
+        const MOperatorInterfaceSpec *spec = findSpec(name);
+        if (spec == nullptr)
+            return Fail("不认识的运算符接口：" + name + "（#NoRight<接口> 里的接口名写作 Add、Less、LessOrEqual 等）");
+        if (spec->unary || spec->rightInterface == nullptr || spec->rightInterface[0] == '\0')
+            return Fail("#NoRight" + name + " 没有可关闭的右向推导：`" + spec->op + "` 是" +
+                        (spec->unary ? "一元运算符" : "内建运算符") + "，不存在右操作数当接收者的写法");
+        if (!definition.noRight.insert(name).second)
+            return Fail("重复声明运算符开关：#NoRight" + name);
+    }
+    return true;
+}
+
+/**
  * @brief 从函数体返回语句推导自动返回类型。
  * @param statementId 语句在节点池中的编号。
  * @param result 接收处理结果的对象。
@@ -255,7 +307,7 @@ bool ResolveImportedTypeNames(bool registerOpcodes = true)
         ReductionSourceScope source(id);
         if (!CheckUserName(node.s)) return false;
         MOpcodeDefinition definition;
-        definition.nonCopyable = node.opcodeNonCopyable;
+        definition.nonCopyable = node.nonCopyable;
         definition.module = node.module;
         Memory::Set<long long> operations;
         for (const int methodId : N(node.kids[0]).kids)
@@ -769,6 +821,7 @@ bool RegisterTop()
                         list.push_back(iface);
                 }
             }
+            if (!RegisterOperatorSwitches(top, definition)) return false;
             for (const int memberId : N(top.kids[0]).kids)
             {
                 const MNode &member = N(memberId);
@@ -853,6 +906,13 @@ bool RegisterTop()
             continue;
         }
     }
+
+    /* ---- 2.4 实现 Closeable 的结构体自动获得 #NonCopyable ----
+     * 这类值持有外部句柄（文件、连接、宿主资源），复制一份就是两份所有权，`close()` 会跑两遍。
+     * 接口继承（`interface Channel : Closeable`）同样算数，所以等全部接口与结构体登记完再统一判定。 */
+    for (auto &item : g_structs)
+        if (!item.second.nonCopyable && StructHasInterface(item.first, "Closeable"))
+            item.second.nonCopyable = true;
 
     /* 旧 operator+ 自由函数已由左右方向的运算符接口取代。 */
     for (const int topId : g_top)

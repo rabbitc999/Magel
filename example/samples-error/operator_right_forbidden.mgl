@@ -1,6 +1,7 @@
-/* 右向被 `NoRightAdd` 显式禁止：左向 `a + 5` 能用，右向 `5 + a` 报错。 */
+/* 右向被编译器指令 `#NoRightAdd` 禁止：左向 `a + 5` 能用，右向 `5 + a` 报错。 */
 
-struct Vec : Add<int64,int64>, NoRightAdd {
+#NoRightAdd
+struct Vec : Add<int64,int64> {
     int64 v;
 
     int64 leftAdd(int64 other) { return self.v + other; }

@@ -70,13 +70,13 @@ int64 main() {
 
 `&&` / `||` 是内建短路运算符、**不参与重载**。报错不再落到「找不到 `Add` / `RightAdd`」的通用文案，而是直接说明它们不可重载——短路要先决定左边，与运算符重载「先求两个操作数再调方法」的模型对不上。
 
-## 右向开关：`RightXxx` / `NoRightXxx`
+## 右向开关：`RightXxx` / `#NoRightXxx`
 
 交换律与比较对偶都要把右操作数借来当接收者，所以类型可以表态：
 
 - 实现 `RightAdd` → 右向归它自己，`5 + m` 只认 `rightAdd`，形参接不住就报错、不再回落到 `Add`；
-- 实现空标记接口 `NoRightAdd`（名字为 `No` + 右接口名，无类型实参）→ 明令禁止右向，`5 + f` 直接报错，左向 `f + 5` 不受影响；
-- `NoRightXxx` 优先于 `RightXxx`，显式声明的右接口优先于交换律推断。
+- 在 `struct` 前写编译器指令 `#NoRightAdd`（`#NoRight` + 左接口名，无类型实参）→ 禁止右向，`5 + f` 直接报错，左向 `f + 5` 不受影响；
+- `#NoRightXxx` 优先于 `RightXxx`，显式声明的右接口优先于交换律推断。
 
 ```magel
 struct Money : Add<int64, int64>, RightAdd<int64, int64> {
@@ -84,7 +84,8 @@ struct Money : Add<int64, int64>, RightAdd<int64, int64> {
     int64 leftAdd(int64 other) { return self.cents + other; }    /* m + 5 */
     int64 rightAdd(int64 other) { return other - self.cents; }   /* 5 + m */
 };
-struct Forbid : Add<int64, int64>, NoRightAdd {
+#NoRightAdd
+struct Forbid : Add<int64, int64> {
     int64 v;
     int64 leftAdd(int64 other) { return self.v + other; }
 };
@@ -107,7 +108,7 @@ int64 main() {
 把 `f + 5` 写成 `5 + f`：
 
 ```text
-magel: 右向被显式禁止：Forbid 实现了 NoRightAdd，int64 + Forbid 不再推导；要去掉该标记接口，或改为实现 RightAdd<R,T>
+magel: 右向被编译器指令关闭：Forbid 声明了 #NoRightAdd，int64 + Forbid 不再推导；要去掉该指令，或改为实现 RightAdd<R,T>
 ```
 
 ## 同一对操作数、多个返回类型

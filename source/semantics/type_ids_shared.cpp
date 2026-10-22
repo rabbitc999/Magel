@@ -507,6 +507,27 @@ bool OpcodeNonCopyable(const std::shared_ptr<MType> &type)
 }
 
 /**
+ * @brief 查询一个直接对象类型是否禁止值复制。
+ *
+ * 两类来源：`#NonCopyable opcode`（宿主句柄）与实现 `Closeable`（含经接口继承）的
+ * 结构体 —— 后者持有外部句柄，复制一份就等于两份所有权，`close()` 会跑两遍。
+ * `move`、返回局部拥有值与借用不受影响。
+ *
+ * @param type 待检查类型。
+ * @return 禁止按值复制时返回 true。
+ */
+bool TypeNonCopyable(const std::shared_ptr<MType> &type)
+{
+    if (OpcodeNonCopyable(type)) return true;
+    if (type && type->kind == MType::Struct)
+    {
+        const MStructDef *definition = FindStruct(type->name);
+        return definition != nullptr && definition->nonCopyable;
+    }
+    return false;
+}
+
+/**
  * @brief 函数值复制兼容静态标签与拥有型捕获环境，其他对象沿用对象表复制。
  */
 const char *ObjectCopyFunction(const std::shared_ptr<MType> &type)
