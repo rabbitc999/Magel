@@ -43,14 +43,14 @@ Magel 编译器由本仓库的 `source/magel.gram` 经 [ParseEngine](https://git
 | [03 核心概念](doc/03-core-concepts.md) | 准备深入使用的人 | 值语义、非空引用、无 GC 的资源管理 |
 | [04 语言参考](doc/04-language-reference.md) | 日常写代码的人 | 按主题查阅语法、语义与常见错误 |
 | [05 交付安全](doc/05-delivery-security.md) | 需要对外交付的团队 | 四种交付形态、四步法、逆向成本与边界声明 |
-| [06 跨平台部署](doc/06-deployment.md) | 做部署的人 | 三种执行方式、桌面 / 嵌入式 / 服务端、内存与看门狗 |
+| [06 跨平台部署](doc/06-deployment.md) | 做部署的人 | 源码运行与字节码交付、桌面 / 嵌入式 Linux、资源与边界 |
 | [07 标准库概览](doc/07-stdlib-overview.md) | 想知道「能做什么」的人 | 标准库模块按能力域速查 |
 | [库函数 API 参考](doc/library/README.md) | 查阅库 API 的人 | 模块的声明、重载、参数、返回值、错误边界与完整示例 |
 | [08 宿主集成与 C ABI](doc/08-host-integration.md) | 做集成的人 | `abi` 块、宿主胶水绑定、类型映射、可空引用 |
 | [09 工具链使用](doc/09-toolchain.md) | 日常用 `magel` 的人 | 场景指令、选项、`magel.toml`、报错呈现、调试 |
 | [17 当前能力](doc/17-capabilities.md) | 评估与集成人员 | 实现能力、默认配置、宿主/目标宿主及工具边界 |
 | [10 路线图](doc/10-roadmap.md) | 贡献者、长期用户 | 短中长期目标与「明确不做的事」 |
-| [99 Magel 的故事](doc/99-magel-story.md) | 好奇这门语言怎么来的人 | 从 Magic-C 到 Magel：撞过哪几次墙、删掉了什么 |
+| [99 方块里的 Magel 语言](doc/99-magel-in-blocks.md) | 喜欢比喻、想先建立直觉的人 | 用方块世界讲 MC（Magic-C）：值语义、非空引用、无 GC、迭代器、穷尽 match |
 
 **英文版**：[`doc/en/`](doc/en/README.md) 维护对应的功能说明；未提供完整译文的底层规格从英文入口链接中文版。
 

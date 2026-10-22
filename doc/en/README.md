@@ -35,7 +35,6 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 | Looking up commands, config, tests | [Toolchain](09-toolchain.md) |
 | Querying APIs in a terminal or checking editor caches | [Command line manual](../man/en/README.md) → [LSP incremental hints and caching](../man/en/lsp.md) |
 | Looking for the authoritative grammar | [EBNF grammar reference](../14-grammar-ebnf.md) |
-| Wondering how this language came to be | [99 The Magel story](99-magel-story.md) |
 | Comparing VM execution performance | [VM optimization and Lua comparison](12-vm-performance.md) |
 | Want to contribute / see the roadmap | [Roadmap and ecosystem](10-roadmap.md) |
 
@@ -51,7 +50,7 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 | [03](03-core-concepts.md) | Core concepts | Users going deeper | Value semantics, non-null references, resource management without a GC |
 | [04](04-language-reference.md) | Language reference | Day-to-day writers | Syntax, semantics, examples and common errors by topic, including generic nesting, default types and monomorphisation limits |
 | [05](05-delivery-security.md) | Delivery security | Teams shipping outward | Delivery forms, the four steps, reverse-engineering cost, boundary statement |
-| [06](06-deployment.md) | Cross-platform deployment | People doing deployment | Three execution modes, desktop / embedded / server, memory and watchdog |
+| [06](06-deployment.md) | Cross-platform deployment | People doing deployment | Source execution and bytecode delivery, desktop / embedded Linux, resources and limits |
 | [07](07-stdlib-overview.md) | Standard library overview | Anyone asking "what can it do" | Existing modules and core APIs by capability |
 | [08](08-host-integration.md) | Host integration and C ABI | Integrators | Glue bindings, `abi` blocks, type mapping, nullable references |
 | [09](09-toolchain.md) | Toolchain | Daily `magel` users | Commands, `magel.toml`, compile options, tests, LSP, display language |
@@ -65,7 +64,6 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 | [19](../19-reflection.md) | Annotations and reflection | Anyone using annotations / dynamic calls | Declaration metadata, typed queries, closed-value dynamic invocation |
 | [20](../20-memory-allocator.md) | Memory allocator | Anyone wiring host memory | Pool and capacity stats, allocation range checks, external buffers |
 | [22](22-resource-lifetime.md) | Resource lifetimes and borrow control flow | Runtime contributors | Allocation identities, resource cleanup and coalescing, temporary ownership, closure borrowing |
-| [99](99-magel-story.md) | The Magel story | Anyone curious how it got here | From Magic-C to Magel: which walls it hit, what it deleted, what is still unfinished |
 
 ## More entry points
 

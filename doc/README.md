@@ -38,8 +38,7 @@ Magel 让业务逻辑成为一份可以独立交付的资产：写一次，从�
 | 查 `.svmb` 容器与符号压缩 | [15 `.svmb` 二进制格式](15-svmb-format.md) → [16 无名变长符号表](16-compact-symbols.md) |
 | 用注解 / 反射，或接宿主内存 | [19 注解与反射](19-reflection.md)、[20 内存分配器](20-memory-allocator.md) |
 | 查语法的权威写法 | [EBNF 语法参考](14-grammar-ebnf.md) |
-| 想知道这门语言怎么来的 | [99 Magel 的故事](99-magel-story.md) |
-| 想看用"方块世界"讲明白的 Magel | [98 方块里的 Magel 语言](98-magel-in-blocks.md) |
+| 想看用"方块世界"讲明白的 Magel | [99 方块里的 Magel 语言](99-magel-in-blocks.md) |
 | 要升级版本，怕代码突然不编了 | [21 语义冻结清单](21-semantics-frozen.md)（核心契约、兼容性与实现边界） |
 | 想参与贡献 / 看路线 | [路线图与生态愿景](10-roadmap.md) |
 
@@ -55,7 +54,7 @@ Magel 让业务逻辑成为一份可以独立交付的资产：写一次，从�
 | [03](03-core-concepts.md) | 核心概念 | 准备深入使用的人 | 值语义、非空引用、无 GC 的资源管理，为什么这样设计 |
 | [04](04-language-reference.md) | 语言参考 | 日常写代码的人 | 按主题查阅语法、语义、示例与常见错误（含泛型嵌套、默认类型与单态化边界） |
 | [05](05-delivery-security.md) | 交付安全 | 需要对外交付的团队 | 交付形态选择、四步法、逆向成本与边界声明 |
-| [06](06-deployment.md) | 跨平台部署 | 做部署的人 | 三种执行方式、桌面 / 嵌入式 / Web、内存池与看门狗 |
+| [06](06-deployment.md) | 跨平台部署 | 做部署的人 | 源码运行与字节码交付、桌面 / 嵌入式 Linux、资源与边界 |
 | [07](07-stdlib-overview.md) | 标准库概览 | 想知道"能做什么"的人 | 按能力域列出现有模块与核心 API |
 | [08](08-host-integration.md) | 宿主集成与 C ABI | 做集成的人 | 胶水绑定、abi 块、类型映射、可空引用 |
 | [09](09-toolchain.md) | 工具链使用 | 日常用 magel 命令的人 | 命令行、magel.toml、在线依赖与共享缓存、编译选项、测试、LSP、显示语言 |
@@ -68,10 +67,9 @@ Magel 让业务逻辑成为一份可以独立交付的资产：写一次，从�
 | [18](18-panic-trace.md) | panic 与源码行号 | 排查崩溃的人 | 失败输出、函数栈、源码位置与压缩隐藏策略 |
 | [19](19-reflection.md) | 注解与反射 | 用注解 / 动态调用的人 | 声明元数据、类型化查询与封闭值动态调用 |
 | [20](20-memory-allocator.md) | 内存分配器 | 接宿主内存的人 | 池与容量统计、分配范围检查、外部缓冲区接入 |
-| [22](22-resource-lifetime.md) | 资源生命周期与借用控制流 | 修改运行时的人 | 分配身份、资源回收合并、临时所有权与闭包借用参考 |
-| [98](98-magel-in-blocks.md) | 方块里的 Magel 语言 | 喜欢比喻、想先建立直觉的人 | 用方块世界讲 MC（Magic-C）的每条规矩：值语义、非空引用、无 GC、迭代器、穷尽 match，以及删掉了什么 |
-| [99](99-magel-story.md) | Magel 的故事 | 好奇这门语言怎么来的人 | 从 Magic-C 到 Magel：撞过哪几次墙、删掉了什么、还剩什么没做完 |
 | [21](21-semantics-frozen.md) | 语义冻结清单 | 要采用、或要升级的人 | 核心语义、版本规则与仍需完善的实现边界 |
+| [22](22-resource-lifetime.md) | 资源生命周期与借用控制流 | 修改运行时的人 | 分配身份、资源回收合并、临时所有权与闭包借用参考 |
+| [99](99-magel-in-blocks.md) | 方块里的 Magel 语言 | 喜欢比喻、想先建立直觉的人 | 用方块世界讲 MC（Magic-C）的每条规矩：值语义、非空引用、无 GC、迭代器、穷尽 match，以及删掉了什么 |
 
 ---
 
@@ -87,7 +85,7 @@ Magel 让业务逻辑成为一份可以独立交付的资产：写一次，从�
 
 ## 英文文档
 
-[`doc/en/`](en/README.md) 是英文版，与上面各篇一一对应（含项目 README 的英文版，共 15 篇）：
+[`doc/en/`](en/README.md) 是英文版，与上面各篇一一对应（含项目 README 的英文版，共 14 篇）：
 
 | 英文版 | 对应这篇中文 |
 | --- | --- |
@@ -105,7 +103,6 @@ Magel 让业务逻辑成为一份可以独立交付的资产：写一次，从�
 | [en/09-toolchain.md](en/09-toolchain.md) | [09 工具链使用](09-toolchain.md) |
 | [en/10-roadmap.md](en/10-roadmap.md) | [10 路线图与生态愿景](10-roadmap.md) |
 | [en/13-projects.md](en/13-projects.md) | [13 示例项目](13-projects.md) |
-| [en/99-magel-story.md](en/99-magel-story.md) | [99 Magel 的故事](99-magel-story.md) |
 
 几点说明：
 
