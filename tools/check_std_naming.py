@@ -4,15 +4,20 @@ import re
 from library_reference import ROOT, inventory
 
 # `__` 内部函数的声明形态：可选 inline，返回类型里可以有 `::`、`<>`、`,`、空格。
+# 只约束顶格书写（顶层）的声明：文法只允许顶层函数写 `inline`，类型体里的成员方法无从声明。
 DUNDER = re.compile(r'^[ \t]*(inline[ \t]+)?[A-Za-z_][\w \t:<>,]*?(__\w+)[ \t]*\(', re.M)
 
 
 def non_inline_bodies():
-    """收集带函数体却没有 `inline` 的 `__` 函数：它们在语言层面仍是可跨模块调用的。"""
+    """收集顶层带函数体却没有 `inline` 的 `__` 函数：它们在语言层面仍是可跨模块调用的。"""
     errors = []
     for path in sorted((ROOT / 'source/std').glob('*.mgl')):
         text = path.read_text(encoding='utf-8')
         for match in DUNDER.finditer(text):
+            line_start = text.rfind('\n', 0, match.start()) + 1
+            # 缩进的声明是类型体里的成员方法，不在本规则范围内。
+            if text[line_start:line_start + 1] in (' ', '\t'):
+                continue
             if match.group(1):
                 continue
             depth, index = 1, match.end()
@@ -22,7 +27,7 @@ def non_inline_bodies():
             # 形参表之后第一个非空字符为 `{` 说明这是定义而不是宿主声明。
             if text[index:].lstrip().startswith('{'):
                 line = text.count('\n', 0, match.start()) + 1
-                errors.append(f'{path.relative_to(ROOT).as_posix()}:{line}：带函数体的 {match.group(2)} '
+                errors.append(f'{path.relative_to(ROOT).as_posix()}:{line}：顶层带函数体的 {match.group(2)} '
                               '必须声明为 inline（模块私有）；无函数体的宿主声明不受此限')
     return errors
 
