@@ -12,7 +12,7 @@
  * 完整语言范围见 README.md。
  * ============================================================ */
 
-%mode lalr
+%mode ielr
 %cpp_lexer std
 %namespace magel
 %value_type int
