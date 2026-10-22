@@ -1,6 +1,13 @@
 # Magel 变更记录
 
-版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.25.0**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.25.1**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+
+
+## 0.25.1 — 修复局部变量名撞上生成器临时名的内存泄漏
+
+- 四元式生成器的内部临时名由 `t1`、`t2`… 改为 `__temp_t1`、`__temp_t2`…，并与程序里出现过的变量、形参、函数与数据名做避让；此前用户写 `int32 t1 = next(a)?;` 时，`?` 传播搬进临时槽的聚合析构登记会被同名的用户变量顶掉，函数返回后那块存储无人回收，运行结束报「堆上还有字节没有 drop」。
+- 新增样例 `try_temp_name_collision` 与期望输出，覆盖 `t1` 与 `__temp_t1` 两种写法，样例门禁同时校验 stderr 不再出现泄漏提示。
+- 程序版本更新为 0.25.1，VS Code 插件的 `magelCompilerVersion`、语言服务器与 `magel-dev` 版本号同步。
 
 
 ## 0.25.0 — auto 关键字更名为 let

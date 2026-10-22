@@ -32,6 +32,7 @@ struct Emitter
     Memory::Vector<Memory::String> dataLines;
     Memory::Vector<Memory::String> lines;
     Memory::Map<Memory::String, Memory::String> literalNames;  ///< 当前生成单元内按字节内容合并的普通字面量。
+    Memory::Set<Memory::String> reserved;                      ///< 程序里已经用掉的名字，内部临时名要避开。
     std::size_t tempIndex = 0;
     std::size_t labelIndex = 0;
     std::size_t lambdaIndex = 0;
@@ -66,10 +67,24 @@ struct Emitter
             lines.push_back(text);
     }
     /**
-     * @brief 分配一个新的临时变量名称。
-     * @retval 生成或读取的结果文本。
+     * @brief 分配一个不会与用户变量撞名的内部临时变量名称。
+     *
+     * 名字统一取 `__temp_t<n>`：小驼峰 / 下划线之外的写法不会出现在普通变量上，
+     * 基本不会撞。真撞上了（用户偏要写 `__temp_t1`）就往后续号，绝不覆盖用户槽——
+     * 覆盖会让用户变量顶掉传引用临时槽里已经登记好的析构，退出函数时那块存储就漏了。
+     *
+     * @retval 全程序唯一的内部临时名。
      */
-    Memory::String temp() { return "t" + Memory::toString(++tempIndex); }
+    Memory::String temp()
+    {
+        for (;;)
+        {
+            Memory::String name = "__temp_t" + Memory::toString(++tempIndex);
+            if (reserved.count(name) != 0u) continue;
+            reserved.insert(name);
+            return name;
+        }
+    }
     /**
      * @brief 创建带指定提示前缀的跳转标签。
      * @param hint 生成标签使用的名称提示。
@@ -95,6 +110,22 @@ struct Emitter
         result.entries.push_back(CodegenResult::Entry{ name, type, body });
     }
 };
+
+/**
+ * @brief 收集一段语法树里会写进四元式目标操作数的名字。
+ *
+ * `(decl, T, local, 名字)` 与 `(:=, 值, _, 名字)` 的目标名都是用户自己起的，
+ * 生成器的内部临时名必须避开这些名字，否则会把用户变量的存储抢走。
+ *
+ * @param node 待扫描的语法节点，空指针直接返回。
+ * @param names 输出：收集到的名字集合。
+ */
+void collectReservedNames(const NodePtr &node, Memory::Set<Memory::String> &names)
+{
+    if (!node) return;
+    if (node->kind == Node::Kind::Declare || node->kind == Node::Kind::Assign) names.insert(node->text);
+    for (const NodePtr &kid : node->kids) collectReservedNames(kid, names);
+}
 
 /**
  * 字面量的原文；不是字面量返回空串。
@@ -994,6 +1025,17 @@ void Program::addOperator(const Memory::String &typeName, const Memory::String &
 CodegenResult generate(const Program &program, const Memory::String &moduleName)
 {
     Emitter emitter;
+
+    /* 先把用户会占用到的名字收齐，内部临时名（`__temp_t<n>`）据此避让。 */
+    for (const auto &item : program.variables) emitter.reserved.insert(item.first);
+    for (const auto &item : program.constants) emitter.reserved.insert(item.first);
+    for (const Function &function : program.functions)
+    {
+        emitter.reserved.insert(function.name);
+        emitter.reserved.insert(function.quadLabel());
+        for (const auto &parameter : function.parameters) emitter.reserved.insert(parameter.first);
+        collectReservedNames(function.body, emitter.reserved);
+    }
 
     Memory::OutputStringStream quads;
     quads << "# module: " << moduleName << "\n";

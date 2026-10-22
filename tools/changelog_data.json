@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "0.25.1",
+      "title": "修复局部变量名撞上生成器临时名的内存泄漏",
+      "entries": [
+        "四元式生成器的内部临时名由 `t1`、`t2`… 改为 `__temp_t1`、`__temp_t2`…，并与程序里出现过的变量、形参、函数与数据名做避让；此前用户写 `int32 t1 = next(a)?;` 时，`?` 传播搬进临时槽的聚合析构登记会被同名的用户变量顶掉，函数返回后那块存储无人回收，运行结束报「堆上还有字节没有 drop」。",
+        "新增样例 `try_temp_name_collision` 与期望输出，覆盖 `t1` 与 `__temp_t1` 两种写法，样例门禁同时校验 stderr 不再出现泄漏提示。",
+        "程序版本更新为 0.25.1，VS Code 插件的 `magelCompilerVersion`、语言服务器与 `magel-dev` 版本号同步。"
+      ]
+    },
+    {
       "version": "0.25.0",
       "title": "auto 关键字更名为 let",
       "entries": [

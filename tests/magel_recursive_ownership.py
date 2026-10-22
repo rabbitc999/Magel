@@ -7,7 +7,7 @@ import subprocess
 import unittest
 ROOT = Path(__file__).resolve().parents[1]
 EXE = '.exe' if os.name == 'nt' else ''
-SAMPLES = ('recursive_local_ownership', 'nested_enum_ownership', 'recursive_callable_ownership', 'recursive_reference_storage', 'set_key_protocol', 'allocated_default_ownership')
+SAMPLES = ('recursive_local_ownership', 'nested_enum_ownership', 'recursive_callable_ownership', 'recursive_reference_storage', 'set_key_protocol', 'allocated_default_ownership', 'try_temp_name_collision')
 
 def main():
     """真实源码在解释、VM 和可选独立 VM 中运行，成功路径不允许资源诊断。"""
