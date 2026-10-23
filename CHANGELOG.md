@@ -1,6 +1,28 @@
 # ChaLi 变更记录
 
-版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.28.3**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.28.4**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+
+
+## 0.28.4 — 性能：把浮点运算接回寄存器区域核，浮点依赖链快 29 倍
+
+- 把浮点运算接回寄存器区域核（0.28.3 已知问题）：浮点依赖链原来要走通用分派，本机实测 **236.4 ms → 8.14 ms（29 倍）**，现在是 C（gcc `-O2`）的 7.4 倍，不再是 313 倍。对照数据（同一台机器、同一份二进制，只把寄存器核关掉）：整数依赖链 45.7 → 1389.7 ms、浮点 8.1 → 236.4 ms、小函数调用 201.5 → 512.7 ms、固定数组循环读取 199.7 → 2668.1 ms、动态数组 push + 遍历 599.6 → 1001.6 ms。
+- 浮点掉出区域核有三层原因，三层一起改：
+  - `source/stackvm/register_core.cpp` 的指令窗口只收 `IntegerStore` / `IntegerBranch` 两种内部指令，浮点二元运算和浮点立即数一律判成「不可进入区域」，浮点循环因此整条掉回通用分派。
+  - `vm_execution.cpp` 绑定槽位时显式拒绝 `slot->isFloat` 的槽，就算指令进了区域也绑不上。
+  - 帧布局的槽位复用让浮点临时量与整数变量共用同一个槽，同一个槽在整数 / 双精度两种形态之间来回跳，前两处放开也仍然绑不上——这是第一轮改完反而变慢（227.9 → 311.7 ms）的原因。
+- 改动落点：
+  - 区域核新增 `F64Copy` / `F64CopyImm` / `F64Add*` / `F64Sub*` / `F64Mul*` / `F64LtBranch*` 处理器，`Region` 增加与 `operands` 平行的 `reals` 形态表，槽位按「符号 + 形态」登记（`keyOf(symbol, real)`），形态冲突就不进区域。
+  - `register_allocate.cpp` 的线性扫描只在**同形态**之间复用槽位：浮点槽只复用给浮点，整数槽只复用给整数，形参钉槽时记下形态。
+  - `execution_plan.cpp` 新增浮点形态推断：类型表里写浮点的形参与声明局部、带 `isFloat` 的二元 / 比较 / `Neg` 的目标及其前 1~2 条 `Load` 操作数、`PushDouble` 后紧跟 `Store` 的目标算浮点；转换指令不算（转换后的槽是另一种形态）。
+- 浮点语义保持与精确执行器一致（这些地方一律交还精确执行器，不进区域）：
+  - 目标不是 64 位浮点（真有 float32 时）的拷贝按 IEEE-754 收单精度，通用处理器只按整数回绕，这种拷贝不进区域。
+  - 浮点除零与浮点取模要 panic，走精确执行器。
+  - 浮点比较的结果写成整数 0 / 1；浮点值直接当分支条件（`-0.0` 判零的分歧）交还精确执行器。
+  - 按位模式读写双精度槽改走 `__attribute__((__may_alias__))` 的 `RealWord`，不写 `reinterpret_cast<int64_t*>(&slot->real)` 那种踩严格别名的代码。
+- 顺带修掉寄存器核**移位漏归一化**的正确性缺陷：`uint8` 的 `128 << 1` 在寄存器核路径上得到 256 而不是 0（`example/samples/numeric_v101.chl` 能抓到）。区域核的通用整数分支原本只对 `Add` / `Sub` / `Mul` / `Div` / `Mod` 按四元式声明的位宽收口，漏了 `Shl` / `Shr` / `ShrU`，而目标是编译器临时量时静态类型为空（收不了口）；精确执行器一直是对的，所以只有走区域核才错。现在三个移位一并纳入归一化判定——这是既有缺陷（纯 0.28.3 也能复现），不是这次引入的。
+- 补齐回归期望：11 个 `example/expected-error/*.txt`（`extern_cast_forbidden`、`generic_prefix_removed`、`macro_dsl_keyword`、`macro_end_for_orphan`、`macro_old_result_annotation`、`pointer_multi`、`reference_nested_type`、`syntax_extern_function_removed`、`syntax_extern_impl_removed`、`syntax_extern_type_removed`、`syntax_pointer_star_removed`）的错误文案与当前产物不符，按实际首行重写——先前改关键字表 / 宏 token 后留下的 drift，语法错误提示里的 token 计数逐条少一个；0.28.3 新增的 `recursion_mutual` / `recursion_sort` / `recursion_strings` 三个样例此前缺 `example/expected/*.txt`，按实际 stdout 补上。
+- `doc/12-vm-performance.md` 与 `doc/en/12-vm-performance.md` 更新为 0.28.4 实测（浮点一列从 408.1 ms 改为本机重测值，并记下关核对照）。
+- 回归：`sh check.sh` 全部通过（275 个正常样例 + 313 个错误样例）；`sh ci.sh` 快速门禁 49 步中 31 通过、4 失败、14 跳过，4 项失败均与本次改动无关——2 项是本机没有 `make` 命令（`cas_library.py`、`stackvm_module_layout.py` 直接 `FileNotFoundError`），2 项是既有 drift（`chali_opcode_declarations.py` 期望的「只接受可写引用」文案已改为「move 不能作用于只读引用（T const&）」、`chali_opcode_visibility.py` 的 LSP 补全清单没有滤掉内部名），都不经过 VM 执行路径。
 
 
 ## 0.28.3 — 正确性：修复递归计算错误，新增递归样例并重跑跨语言基准

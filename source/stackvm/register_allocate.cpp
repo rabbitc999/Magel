@@ -80,6 +80,12 @@ Layout assign(const Body &body, Stats *stats)
         const std::size_t index = local(symbol);
         if (index != absent) parameters.push_back(index);
     }
+    /* 形态：1 = 浮点，0 = 其余。浮点槽只复用给浮点，避免一个槽在两种形态之间跳。 */
+    Memory::Map<std::size_t, bool> realSymbol;
+    for (const std::size_t symbol : body.reals)
+        if (symbol != absent) realSymbol.emplace(symbol, true);
+    const auto kindOf = [&](std::size_t symbol) { return symbol != absent && realSymbol.find(symbol) != realSymbol.end() ? 1 : 0; };
+    Memory::Vector<int> slotReal;  ///< 每个槽当前主人的形态；-1 表示还没人用过。
     /* 2. 数据流数组按位置建（`body` 已经是位置下标），规模就是本函数的大小。 */
     Memory::Vector<std::size_t> defines(n, absent), uses(n, absent);
     for (std::size_t at = 0; at < n; ++at)
@@ -182,7 +188,9 @@ Layout assign(const Body &body, Stats *stats)
         intervals[parameter].pinned = true;
         intervals[parameter].slot = nextSlot;
         if (taken.size() <= nextSlot) taken.resize(nextSlot + 1u, false);
+        if (slotReal.size() <= nextSlot) slotReal.resize(nextSlot + 1u, -1);
         taken[nextSlot] = true;
+        slotReal[nextSlot] = kindOf(symbolOf[parameter]);
         ++nextSlot;
     }
     for (std::size_t index = 0; index < count; ++index)
@@ -205,10 +213,13 @@ Layout assign(const Body &body, Stats *stats)
             }
             ++index;
         }
+        const int kind = kindOf(interval.symbol);
         std::size_t slot = absent;
         for (std::size_t candidate = 0; candidate < nextSlot; ++candidate)
         {
             if (taken[candidate]) continue;
+            // 形态不同的槽不能接手：接了就是「同一个槽一会儿装整数一会儿装双精度」。
+            if (candidate < slotReal.size() && slotReal[candidate] != -1 && slotReal[candidate] != kind) continue;
             slot = candidate;
             break;
         }
@@ -217,7 +228,9 @@ Layout assign(const Body &body, Stats *stats)
             slot = nextSlot++;
             if (taken.size() <= slot) taken.resize(slot + 1u, false);
         }
+        if (slotReal.size() <= slot) slotReal.resize(slot + 1u, -1);
         taken[slot] = true;
+        slotReal[slot] = kind;
         interval.slot = slot;
         active.push_back({ interval.end, slot });
     }

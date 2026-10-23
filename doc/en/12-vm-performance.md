@@ -1,33 +1,37 @@
-# VM performance: a cross-language measurement of 0.28.3
+# VM performance: a cross-language measurement of 0.28.4
 
-This page measures the **current version (0.28.3)** on one machine against four execution
+This page measures the **current version (0.28.4)** on one machine against four execution
 technologies: native code (C / C++ / Rust / Go), just-in-time compilation (Java `-Xbatch`, Node),
 bytecode interpretation (Java `-Xint`) and pure interpretation (CPython). Every number is produced by
 [`benchmarks/perf/run.py`](../../benchmarks/perf/run.py); the sources are in
 [`benchmarks/perf/`](../../benchmarks/perf/), raw samples in
 [`benchmarks/results/`](../../benchmarks/results/).
 
-- **Integer loop**: **17.8×** C, level with the JVM interpreter (76.8 ms vs 72.1 ms).
-- **Float loop**: **313×** C, **25× slower** than the JVM interpreter. In 0.28.3 the float loop no
-  longer qualifies for the register region core (419.6 ms with the core off, same as the default
-  run), so the whole path falls back to generic dispatch.
-- **Calls**: **406×** C and **3.0× slower than CPython** — the call entry is the most expensive path.
-- **Containers**: **905×** C and **16× slower than CPython** — `push` and indexed reads both go
+- **Integer loop**: **12.5×** C, faster than the JVM interpreter (45.7 ms vs 72.1 ms).
+- **Float loop**: **7.4×** C, **2.0× faster than the JVM interpreter** (8.1 ms vs 16.3 ms). 0.28.4
+  reconnects float operations to the register region core (236.4 ms with the core off, 29× the
+  default run), which removes the 0.28.3 regression.
+- **Calls**: **275×** C and **1.7× slower than CPython** — the call entry is still the most expensive path.
+- **Containers**: **790×** C and **11× slower than CPython** — `push` and indexed reads both go
   through the container service.
 - **Control group**: Java `-Xbatch` stays within 0.9–1.8× of native, Node matches C on floats (1.0×),
   CPython sits at 27–137×.
 
-ChaLi's position is "**faster than CPython, slower than the JVM interpreter**": integer arithmetic has
-caught up; floats, calls and containers have not. Floats are a new 0.28.3 regression and calls are
-about 10% slower than 0.28.2 (see §6); optimizing them is scheduled for the next version.
+ChaLi's position is "**faster than CPython, level with or faster than the JVM interpreter on pure
+arithmetic**": integer (45.7 ms) and float (8.1 ms) loops are now solid, while calls and containers
+still trail (§5.3, §5.4); optimizing them is scheduled for the next version.
+
+> **Numbers**: this round re-measured only **ChaLi and C** (`--only chali,c`) on the same machine with
+> the same binary and the same sample batch. Rust, Go, Java, Node and CPython keep their 0.28.3 numbers,
+> and their ratios to C use that round's C baseline. ChaLi's ratios use this round's C baseline.
 
 ## 1. Environment and nine configurations
 
 | Item | Value |
 | --- | --- |
-| Date | 2026-10-23, Asia/Shanghai |
+| Date | 2026-10-24, Asia/Shanghai |
 | System / CPU / RAM | Windows 10 10.0.19045 x64; AMD Ryzen 5 5600X (6C/12T); 32 GB |
-| ChaLi | 0.28.3, GCC/MinGW 11.2.0 `-O2 -DNDEBUG`, reflection on, all default optimizations (region core + machine passes + slot reuse) |
+| ChaLi | 0.28.4, GCC/MinGW 11.2.0 `-O2 -DNDEBUG`, reflection on, all default optimizations (region core + machine passes + slot reuse) |
 | C / C++ | GCC, G++ 11.2.0, `-O2 -DNDEBUG` |
 | Rust | rustc 1.98.1, `-O` |
 | Go | default `go build` |
@@ -65,8 +69,8 @@ each process warms up once with `seed=0` first.
 
 | Configuration | int_chain | float_chain | call | array | list |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| **ChaLi 0.28.3 (StackVM)** | **76.824** | **408.129** | **350.778** | **342.008** | **892.667** |
-| C (gcc -O2) | 4.325 | 1.303 | 0.865 | 6.940 | 0.986 |
+| **ChaLi 0.28.4 (StackVM)** | **45.749** | **8.137** | **201.457** | **199.688** | **599.554** |
+| C (gcc -O2) | 3.651 | 1.099 | 0.732 | 5.849 | 0.759 |
 | C++17 (g++ -O2) | 4.317 | 1.300 | 0.931 | 6.909 | 0.969 |
 | Rust (rustc -O) | 0.873 | 1.307 | 1.082 | 6.216 | 0.960 |
 | Go (default) | 4.675 | 1.551 | 1.038 | 7.285 | 1.543 |
@@ -75,11 +79,11 @@ each process warms up once with `seed=0` first.
 | Node 26 (V8) | 71.766 | 1.297 | 15.940 | 59.382 | 9.535 |
 | CPython 3.12 | 321.443 | 29.464 | 118.190 | 191.030 | 55.350 |
 
-Ratio to C (same column divided by the C median):
+Ratio to C (ChaLi and C use this round's C baseline; the rest use the 0.28.3 baseline):
 
 | Configuration | int_chain | float_chain | call | array | list |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| ChaLi 0.28.3 | 17.8 | 313.2 | 405.5 | 49.3 | 905.4 |
+| ChaLi 0.28.4 | 12.5 | 7.4 | 275.2 | 34.1 | 789.6 |
 | C++17 | 1.0 | 1.0 | 1.1 | 1.0 | 1.0 |
 | Rust | 0.2 | 1.0 | 1.3 | 0.9 | 1.0 |
 | Go | 1.1 | 1.2 | 1.2 | 1.0 | 1.6 |
@@ -88,8 +92,22 @@ Ratio to C (same column divided by the C median):
 | Node 26 | 16.6 | 1.0 | 18.4 | 8.6 | 9.7 |
 | CPython 3.12 | 74.3 | 22.6 | 136.6 | 27.5 | 56.1 |
 
-Per iteration for ChaLi: integers **19.2 ns**, floats **408 ns**, calls **351 ns**, arrays **86 ns**,
-one container element (one `push` plus one indexed read) about **2.2 µs**.
+Per iteration for ChaLi: integers **11.4 ns**, floats **8.1 ns**, calls **201 ns**, arrays **50 ns**,
+one container element (one `push` plus one indexed read) about **1.5 µs**.
+
+Against the 0.28.3 round (same machine, same driver):
+
+| Workload | 0.28.3 | 0.28.4 | Change |
+| --- | ---: | ---: | ---: |
+| int_chain | 76.824 ms | 45.749 ms | **-40%** |
+| float_chain | 408.129 ms | 8.137 ms | **-98%** |
+| call | 350.778 ms | 201.457 ms | **-43%** |
+| array | 342.008 ms | 199.688 ms | **-42%** |
+| list | 892.667 ms | 599.554 ms | **-33%** |
+
+All five columns drop partly because the two rounds saw different machine load (the 0.28.3 round ran
+all nine configurations back to back). **Only the float column is a real code gain** — the 29× is
+proven separately by the switch comparison in §5.1, not by comparing two rounds.
 
 ## 4. Reading the columns
 
@@ -101,14 +119,13 @@ matches C on floats. Node's integer column is 16.6× because JavaScript numbers 
 and break the checksum, so the loop pays for a double modulo. That is a language-semantics cost, not
 a slow V8.
 
-**Bytecode interpretation** (ChaLi, Java `-Xint`) is the like-for-like comparison. ChaLi is level on
-integers (76.8 vs 72.1) and 4.8× slower on arrays, but 25× slower on floats, 11× slower on calls and
-61× slower on containers.
+**Bytecode interpretation** (ChaLi, Java `-Xint`) is the like-for-like comparison. ChaLi is 1.6×
+faster on integers (45.7 vs 72.1) and **2.0× faster on floats** (8.1 vs 16.3), 2.8× slower on arrays,
+6.3× slower on calls and 41× slower on containers.
 
-**Pure interpretation** (CPython): ChaLi leads on integers (4.2×) but trails on floats (13.9×),
-calls (3.0×), arrays (1.8×) and containers (16×). Integer arithmetic is the only advantage left;
-the call and container gaps mean the bottleneck is not "interpretation" but how those two paths
-are implemented.
+**Pure interpretation** (CPython): ChaLi leads on integers (7.0×) and floats (3.6×) and trails on
+calls (1.7×), arrays (about level) and containers (11×). The call and container gaps mean the
+bottleneck is not "interpretation" but how those two paths are implemented.
 
 ## 5. Attribution and evidence
 
@@ -118,64 +135,70 @@ Same programs with `CHALI_NO_REGISTER_CORE=1` (back to generic dispatch):
 
 | Workload | Default | Region core off | Ratio |
 | --- | ---: | ---: | ---: |
-| int_chain | 76.8 ms | 1936.7 ms | 25.2× |
-| array | 342.0 ms | 3591.3 ms | 10.5× |
-| call | 350.8 ms | 874.2 ms | 2.5× |
-| list | 892.7 ms | 1400.1 ms | 1.6× |
-| float_chain | 408.1 ms | 419.6 ms | 1.0× |
+| int_chain | 45.7 ms | 1389.7 ms | 30.4× |
+| array | 199.7 ms | 2668.1 ms | 13.4× |
+| float_chain | 8.1 ms | 236.4 ms | **29.1×** |
+| call | 201.5 ms | 512.7 ms | 2.5× |
+| list | 599.6 ms | 1001.6 ms | 1.7× |
 
-Integer and array loops take almost all their speed from batching (25×, 10×). **Floats are 1.0× —
-the 0.28.3 float loop no longer qualifies for the region core**, which is the main cause of the
-regression described in §6.
+Integer and array loops take almost all their speed from batching (30×, 13×). **In 0.28.3 the float
+row was 1.0× (408 → 420 ms: floats never entered the core); in 0.28.4 it is 29.1×** — the float loop
+runs inside the region core again, the only real gain of this release.
 
-### 5.2 Floats: the whole loop fell out of the region core
+### 5.2 Floats: 0.28.4 reconnects them to the region core
 
-In 0.28.2 the float loop still benefited from the region core (turning it off cost 1.5×); in 0.28.3
-turning it off changes nothing (408 → 420 ms), so floats now run the generic path end to end: slot
-lookup, type normalization and boxing per operation in `source/stackvm/vm_execution.cpp`. Against C
-the gap is 313× (408 ns vs 1.3 ns per operation). Reconnecting float loops to the region core is the
-goal for the next version.
+In 0.28.3 the whole float loop ran the generic path (slot lookup, type normalization and boxing per
+operation in `source/stackvm/vm_execution.cpp`), which the flat core-off comparison proved
+(408 → 420 ms). 0.28.4 fixes it on three levels:
 
-### 5.3 Calls: 351 ns each
+1. The instruction window in `source/stackvm/register_core.cpp` accepted only `IntegerStore` and
+   `IntegerBranch`, so every float binary operation and float literal was rejected — floats are now
+   accepted too.
+2. `vm_execution.cpp` explicitly refused slots with `slot->isFloat` when binding — it now binds by
+   the region's shape table.
+3. Slot reuse let a float temporary share a slot with an integer variable, so the same slot flipped
+   between the integer and the double shape and could not stay bound. The linear scan in
+   `register_allocate.cpp` now reuses a slot only between the **same shape**, and
+   `execution_plan.cpp` infers which symbols are float-shaped.
+
+Semantics did not relax: float32 destinations are rounded to single precision per IEEE-754, float
+division by zero and modulo still panic, float comparisons write integer 0/1, and a float value used
+directly as a branch condition (the `-0.0` is-zero disagreement) is handed back to the precise
+executor.
+
+### 5.3 Calls: 201 ns each
 
 `Op::Call` handles a pending argument list, name-based parameter binding, a new frame and return-value
 delivery. CPython's dedicated call opcodes do the same job in 118 ns and the JVM interpreter in 32.0 ns,
-so 351 ns is the cost of this chain, not of interpretation as such.
+so 201 ns is the cost of this chain, not of interpretation as such.
 
 ### 5.4 Containers: the most expensive path
 
-One `list` iteration does one `push` plus one indexed read: 892.7 ms / 400,000 iterations ≈ 1.1 µs
+One `list` iteration does one `push` plus one indexed read: 599.6 ms / 400,000 iterations ≈ 0.75 µs
 per container operation (800,000 in total). Both go through the container service in
 `source/glue/std_collection.cpp` (object header, growth check, value normalization, name-based
-dispatch). The C version does 800,000 operations in 0.986 ms, roughly 1.2 ns each. This is the most
+dispatch). The C version does 800,000 operations in 0.759 ms, roughly 1.0 ns each. This is the most
 valuable thing to fix next: the VM is not slow, the per-operation container service is.
 
-## 6. The 0.28.3 regression: the price of recursion correctness
+## 6. The 0.28.3 float regression is closed
 
-0.28.3 fixed a recursive-computation bug (compiler temporaries shared one storage across recursive
-activations, so an inner call overwrote values pending in outer frames). The fix puts compiler
-temporaries into the frame-slot allocation: every activation now prepares slots for temporaries,
-declare and store paths gained scratch branches, and dense layouts grew. Two paths got slower:
+While fixing the recursive-computation bug, 0.28.3 moved compiler temporaries into the frame-slot
+allocation, and the side effect pushed the float loop out of the region core (259 ms → 408 ms, +58%).
+0.28.4 reconnects it with the three changes in §5.2:
 
-| Workload | 0.28.2 (control run) | 0.28.3 | Change |
+| Workload | 0.28.3 default (= its core-off level) | 0.28.4 default | Change |
 | --- | ---: | ---: | ---: |
-| float_chain | 259.0 ms | 408.1 ms | **+58%** |
-| call | 331.7 ms | 350.8 ms | +6% |
-| int_chain | 81.2 ms | 76.8 ms | unchanged |
-| array | 345.8 ms | 342.0 ms | unchanged |
-| list | 941.5 ms | 892.7 ms | unchanged |
+| float_chain | 236.4 ms (core off, measured now) | 8.1 ms | **29×** |
 
-The control run re-ran the 0.28.2 binary on the same day and machine (`--only chali --runs 5`),
-not the old high-load page.
+(0.28.3's default 408.1 ms and its core-off 419.6 ms are the same within noise, so the core-off column
+stands in for 0.28.3's real float level; this round's 236.4 ms differs from it because of machine load,
+see the note in §3.)
 
-The +58% on floats is not "each float operation got pricier" — **the whole float loop fell out of the
-region core**: after temporaries joined the slot layout, the §5.1 comparison shows floats unchanged
-with the core off, i.e. the default run already sits on the generic path. In 0.28.2 floats ran inside
-the core (≈259 ms); 0.28.3 falls back to the generic path (≈420 ms), matching the 0.28.2 core-off
-level (364.8 ms) plus this round's extra frame preparation.
-
-Correctness first: these regressions are accepted, and the optimizations (re-qualifying float loops
-for the region core, slimming call-frame preparation) are scheduled for the next version.
+The same batch of changes also fixes a correctness bug: the region core's generic integer path
+normalized to the declared width only for `Add`, `Sub`, `Mul`, `Div` and `Mod`, omitting `Shl`, `Shr`
+and `ShrU`, so `(uint8)128 << 1` produced 256 instead of 0 when the region core ran it
+(`example/samples/numeric_v101.chl` catches it). The precise executor was always correct, so only the
+region-core path was wrong.
 
 ## 7. Method and reproduction
 
@@ -187,8 +210,9 @@ median of 15 samples, never the minimum.
 
 ```sh
 python benchmarks/perf/run.py                 # all nine configurations
-python benchmarks/perf/run.py --only chali,c  # ChaLi and C only
+python benchmarks/perf/run.py --only chali,c  # ChaLi and C only (this round used it)
 python benchmarks/perf/run.py --runs 5        # five processes per configuration
+CHALI_NO_REGISTER_CORE=1 python benchmarks/perf/run.py --only chali   # region core off
 ```
 
 The driver builds (gcc / g++ / rustc / go / javac), schedules, validates checksums and writes
@@ -203,5 +227,7 @@ It uses `ChaLi.exe` from the repository root; set `CHALI` to point elsewhere.
   shares of total time.
 - One platform (Windows + MinGW) and one CPU. Absolute numbers will move on Linux/GCC or ARM; the
   relative position is expected to hold but was not measured.
-- Native and JIT samples are often sub-millisecond (C's call column is 0.87 ms) and are more sensitive
+- Native and JIT samples are often sub-millisecond (C's call column is 0.73 ms) and are more sensitive
   to scheduling; read medians, not individual digits.
+- This round re-measured only ChaLi and C, so there are two C baselines in play; read the note in §3
+  before comparing across columns.

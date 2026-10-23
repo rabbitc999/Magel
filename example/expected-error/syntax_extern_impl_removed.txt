@@ -1,1 +1,1 @@
-语法错误：example/samples-error/syntax_extern_impl_removed.chl 第 2 行第 8 列：期望 标识符 / MACRO_IS / MACRO_EXPR / MACRO_IDENT 等 27 个之一，实际是 实现(impl)
+语法错误：example/samples-error/syntax_extern_impl_removed.chl 第 2 行第 8 列：期望 标识符 / MACRO_IS / MACRO_EXPR / MACRO_IDENT 等 26 个之一，实际是 实现(impl)

@@ -10,7 +10,7 @@ namespace
 {
 
 const char *kServerName = "chali-lsp";
-const char *kServerVersion = "0.28.3";
+const char *kServerVersion = "0.28.4";
 
 /**
  * 语义 token 的 legend：与 `macro_analyzer.cpp` 里写进 token 的类型名一一对应。

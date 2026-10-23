@@ -1,8 +1,10 @@
 #pragma once
 /**
  * @file register_core.hpp
- * @brief 独立整数核心；紧凑指令、跳转折叠及基本块执行。
+ * @brief 独立执行核心；紧凑指令、跳转折叠及基本块执行（整数与浮点共用一套槽位视图）。
  */
+#include <cstring>
+
 namespace stackvm
 {
 namespace register_core
@@ -30,12 +32,16 @@ enum Flag : std::uint8_t
     Branch = 4,
     Zero = 8,
     CopyResult = 16,
-    End = 32
+    End = 32,
+    Float = 64,       ///< 操作数按 IEEE-754 双精度解释（槽里存的是位模式）。
+    BoolResult = 128  ///< 浮点比较：结果写成整数 0 / 1，与精确执行器一致。
 };
 #define CHALI_REGISTER_OPS(X) \
     X(Generic)                \
     X(Copy64)                 \
     X(CopyImm64)              \
+    X(F64Copy)                \
+    X(F64CopyImm)             \
     X(Jump)                   \
     X(Branch)                 \
     X(Add64RR)                \
@@ -51,7 +57,21 @@ enum Flag : std::uint8_t
     X(Mul64CopyRR)            \
     X(Mul64CopyImm)           \
     X(Lt64BranchRR)           \
-    X(Lt64BranchImm)
+    X(Lt64BranchImm)          \
+    X(F64AddRR)               \
+    X(F64AddImm)              \
+    X(F64AddCopyRR)           \
+    X(F64AddCopyImm)          \
+    X(F64SubRR)               \
+    X(F64SubImm)              \
+    X(F64SubCopyRR)           \
+    X(F64SubCopyImm)          \
+    X(F64MulRR)               \
+    X(F64MulImm)              \
+    X(F64MulCopyRR)           \
+    X(F64MulCopyImm)          \
+    X(F64LtBranchRR)          \
+    X(F64LtBranchImm)
 /**
  * @brief 常见整数操作的专用操作码。
  */
@@ -102,6 +122,7 @@ struct Region
     Memory::Vector<Mapping> mapping;
     Memory::Vector<Block> blocks;
     Memory::Vector<std::size_t> operands;
+    Memory::Vector<std::uint8_t> reals;  ///< 与 operands 平行：该槽按双精度（1）还是整数（0）绑定。
 };
 /**
  * @brief 单批执行进度。
@@ -147,6 +168,76 @@ inline std::int64_t binary(std::int64_t a, std::int64_t b)
     if constexpr (operation == Op::Add) return static_cast<std::int64_t>(left + right);
     if constexpr (operation == Op::Sub) return static_cast<std::int64_t>(left - right);
     return static_cast<std::int64_t>(left * right);
+}
+/**
+ * @brief 可按 64 位字访问的浮点槽视图。
+ *
+ * 直接 `reinterpret_cast<std::int64_t *>(&slot->real)` 会踩严格别名规则：核心在区域里
+ * 按 64 位字写槽，精确执行器在区域外按 `double` 读同一个槽，编译器理论上能据此重排。
+ * `may_alias` 明说这个类型可以和任何类型互为别名，两种访问都不会被优化器挪位。
+ */
+#if defined(__GNUC__)
+struct __attribute__((__may_alias__)) RealWord
+{
+    std::int64_t bits;  ///< 与 `double` 重叠的 64 位字。
+};
+#else
+struct RealWord
+{
+    std::int64_t bits;  ///< 与 `double` 重叠的 64 位字。
+};
+#endif
+/**
+ * @brief 取浮点槽的 64 位字地址，供核心直接读写位模式。
+ * @param value 槽里的双精度值。
+ * @return 64 位字地址。
+ */
+inline std::int64_t *realWord(double &value) { return &reinterpret_cast<RealWord *>(&value)->bits; }
+/**
+ * @brief 把槽里的 64 位字按双精度读出来（位模式重解释，不改动槽）。
+ * @param bits 槽里的 64 位字。
+ * @return 双精度值。
+ */
+inline double asReal(std::int64_t bits)
+{
+    double value = 0.0;
+    std::memcpy(&value, &bits, sizeof value);
+    return value;
+}
+/**
+ * @brief 把双精度写成槽里的 64 位字。
+ * @param value 双精度值。
+ * @return 64 位字。
+ */
+inline std::int64_t realBits(double value)
+{
+    std::int64_t bits = 0;
+    std::memcpy(&bits, &value, sizeof bits);
+    return bits;
+}
+/**
+ * @brief 浮点归一化：只认 32 位（float32 目标按单精度收），其余位宽原样。
+ * @param value 原值。
+ * @param type 紧凑类型编码。
+ * @return 归一化后的 64 位字。
+ */
+inline std::int64_t normalizeReal(double value, std::uint8_t type)
+{
+    return realBits((type & 127) == 32 ? static_cast<double>(static_cast<float>(value)) : value);
+}
+/**
+ * @brief 专用浮点算术，在编译期选择操作。
+ * @tparam operation 加、减或乘。
+ * @param a 左值。
+ * @param b 右值。
+ * @return 双精度结果。
+ */
+template <Op operation>
+inline double realBinary(double a, double b)
+{
+    if constexpr (operation == Op::Add) return a + b;
+    if constexpr (operation == Op::Sub) return a - b;
+    return a * b;
 }
 /**
  * @brief 按入口缓存控制流区域，不缓存调用帧地址。
@@ -287,6 +378,57 @@ private:
                     }
                     else if (instruction->kind == Kind::Arithmetic)
                     {
+                        /* 浮点窗口：槽里存的是双精度位模式，运算与归一化都按 IEEE-754 走；
+                         * 除零、取模这些会陷阱或要 `fmod` 的形态直接交还精确执行器。 */
+                        if (instruction->flags & Float)
+                        {
+                            const double a = asReal(*registers[instruction->left]);
+                            const double b = (instruction->flags & Literal) ? asReal(instruction->immediate) : asReal(*registers[instruction->right]);
+                            const auto operation = static_cast<Op>(instruction->operation);
+                            if (instruction->flags & BoolResult)
+                            {
+                                bool order = false;
+                                switch (operation)
+                                {
+                                case Op::Eq: order = a == b; break;
+                                case Op::Ne: order = a != b; break;
+                                case Op::Lt: order = a < b; break;
+                                case Op::Le: order = a <= b; break;
+                                case Op::Gt: order = a > b; break;
+                                case Op::Ge: order = a >= b; break;
+                                default: goto finished;
+                                }
+                                value = order ? 1 : 0;
+                            }
+                            else
+                            {
+                                double real = 0.0;
+                                switch (operation)
+                                {
+                                case Op::Add: real = a + b; break;
+                                case Op::Sub: real = a - b; break;
+                                case Op::Mul: real = a * b; break;
+                                case Op::Div:
+                                    if (b == 0.0) goto finished;
+                                    real = a / b;
+                                    break;
+                                default: goto finished;
+                                }
+                                value = normalizeReal(real, instruction->operationType);
+                            }
+                            /* 收尾与整数路径同形（写回 + 顺带拷贝 + 取分支），但不跨 goto：
+                             * 这条热循环靠计算跳转分派，插入前向 goto 会让 GCC 重新排布整个函数。 */
+                            if (instruction->flags & Store)
+                            {
+                                *registers[instruction->destination] = (instruction->flags & BoolResult) ?
+                                    value : normalizeReal(asReal(value), instruction->destinationType);
+                            }
+                            if (instruction->flags & CopyResult)
+                                *registers[instruction->copyDestination] = (instruction->flags & BoolResult) ?
+                                    value : normalizeReal(asReal(value), instruction->copyType);
+                            take = instruction->kind == Kind::Jump || ((instruction->flags & Branch) && ((value == 0) == bool(instruction->flags & Zero)));
+                            goto nodeDone;
+                        }
                         const auto a = *registers[instruction->left];
                         const auto b = (instruction->flags & Literal) ? instruction->immediate : *registers[instruction->right];
                         const auto operation = static_cast<Op>(instruction->operation);
@@ -318,7 +460,12 @@ private:
                         case Op::GeU: value = static_cast<std::uint64_t>(a) >= static_cast<std::uint64_t>(b); break;
                         default: value = 0; break;
                         }
-                        if (operation == Op::Add || operation == Op::Sub || operation == Op::Mul || operation == Op::Div || operation == Op::Mod)
+                        /* 加、减、乘、除、取模与三个移位都要按四元式声明的位宽收口：
+                         * 精确执行器（`Op::Shl` 分支）同样用 `intValue / unsignedOp` 归一化，
+                         * 目标槽是编译器临时量时静态类型是空的（`destinationType` 为 0），
+                         * 少了这一步 `uint8` 的 `128 << 1` 会留下 256 而不是 0。 */
+                        if (operation == Op::Add || operation == Op::Sub || operation == Op::Mul || operation == Op::Div ||
+                            operation == Op::Mod || operation == Op::Shl || operation == Op::Shr || operation == Op::ShrU)
                             value = normalize(value, instruction->operationType);
                     }
                     else if (instruction->kind == Kind::Copy)
@@ -337,6 +484,11 @@ private:
                 CHALI_REGISTER_CASE(Copy64) * registers[instruction->destination] = *registers[instruction->left];
                 goto nodeDone;
                 CHALI_REGISTER_CASE(CopyImm64) * registers[instruction->destination] = instruction->immediate;
+                goto nodeDone;
+                /* 浮点拷贝：槽里就是位模式，复制 64 位即可（含 float32 在内的归一化走通用处理器）。 */
+                CHALI_REGISTER_CASE(F64Copy) * registers[instruction->destination] = *registers[instruction->left];
+                goto nodeDone;
+                CHALI_REGISTER_CASE(F64CopyImm) * registers[instruction->destination] = instruction->immediate;
                 goto nodeDone;
                 CHALI_REGISTER_CASE(Jump)
                 take = true;
@@ -365,6 +517,37 @@ private:
                 CHALI_REGISTER_BINARY(Sub64, Op::Sub)
                 CHALI_REGISTER_BINARY(Mul64, Op::Mul)
 #undef CHALI_REGISTER_BINARY
+#define CHALI_REGISTER_REAL(name, operation)                                                                                                        \
+    CHALI_REGISTER_CASE(name##RR)                                                                                                                   \
+    *registers[instruction->destination] = realBits(realBinary<operation>(asReal(*registers[instruction->left]), asReal(*registers[instruction->right]))); \
+    goto nodeDone;                                                                                                                                  \
+    CHALI_REGISTER_CASE(name##Imm)                                                                                                                  \
+    *registers[instruction->destination] = realBits(realBinary<operation>(asReal(*registers[instruction->left]), asReal(instruction->immediate)));   \
+    goto nodeDone;                                                                                                                                  \
+    CHALI_REGISTER_CASE(name##CopyRR)                                                                                                               \
+    value = realBits(realBinary<operation>(asReal(*registers[instruction->left]), asReal(*registers[instruction->right])));                          \
+    *registers[instruction->destination] = value;                                                                                                   \
+    *registers[instruction->copyDestination] = value;                                                                                               \
+    goto nodeDone;                                                                                                                                  \
+    CHALI_REGISTER_CASE(name##CopyImm)                                                                                                              \
+    value = realBits(realBinary<operation>(asReal(*registers[instruction->left]), asReal(instruction->immediate)));                                  \
+    *registers[instruction->destination] = value;                                                                                                   \
+    *registers[instruction->copyDestination] = value;                                                                                               \
+    goto nodeDone;
+                CHALI_REGISTER_REAL(F64Add, Op::Add)
+                CHALI_REGISTER_REAL(F64Sub, Op::Sub)
+                CHALI_REGISTER_REAL(F64Mul, Op::Mul)
+#undef CHALI_REGISTER_REAL
+                CHALI_REGISTER_CASE(F64LtBranchRR)
+                value = asReal(*registers[instruction->left]) < asReal(*registers[instruction->right]) ? 1 : 0;
+                *registers[instruction->destination] = value;
+                take = (value == 0) == bool(instruction->flags & Zero);
+                goto nodeDone;
+                CHALI_REGISTER_CASE(F64LtBranchImm)
+                value = asReal(*registers[instruction->left]) < asReal(instruction->immediate) ? 1 : 0;
+                *registers[instruction->destination] = value;
+                take = (value == 0) == bool(instruction->flags & Zero);
+                goto nodeDone;
                 CHALI_REGISTER_CASE(Lt64BranchRR)
                 value = *registers[instruction->left] < *registers[instruction->right];
                 *registers[instruction->destination] = value;

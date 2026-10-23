@@ -1,0 +1,6 @@
+isEven(10) = 1
+isOdd(7) = 1
+isEven(0) = 1
+isOdd(0) = 0
+evaluate("((((3))))") = 3
+evaluate("(12)(34)") = 1234

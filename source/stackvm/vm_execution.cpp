@@ -1200,15 +1200,19 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                 registerSlots.clear();
                 bound = !region.code.empty() && !Memory::restartSignal().pending();
                 if (bound)
-                    for (const auto operand : region.operands)
+                    for (std::size_t operandIndex = 0; operandIndex < region.operands.size(); ++operandIndex)
                     {
+                        const auto operand = region.operands[operandIndex];
+                        // 区域里每个槽都记着形态：整数取 `integer`，浮点取 `real` 的位模式；
+                        // 运行期实际形态与区域要求的不一致（典型是临时量第一次还没写成浮点）就不进区域。
+                        const bool real = operandIndex < region.reals.size() ? region.reals[operandIndex] != 0 : false;
                         Slot *slot = readPrepared(operand);
-                        if (!slot || slot->isFloat || slot->isText)
+                        if (!slot || slot->isText || slot->isFloat != real)
                         {
                             bound = false;
                             break;
                         }
-                        registerSlots.push_back(&slot->integer);
+                        registerSlots.push_back(real ? register_core::realWord(slot->real) : &slot->integer);
                     }
                 boundRegion = bound ? &region : nullptr;
             }

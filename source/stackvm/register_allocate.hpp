@@ -36,6 +36,11 @@ struct Body
     Memory::Vector<std::size_t> uses;                                ///< 每个位置使用的符号，`absent` 表示没有。
     Memory::Vector<std::size_t> parameters;                          ///< 形参符号，按实参顺序固定占用前面的槽。
     Memory::Vector<std::size_t> declared;                            ///< 本函数里有 `Op::Declare` 的符号（只有它们配帧槽）。
+    /* 按浮点形态用槽的名字：寄存器核是按「槽里现在是整数还是双精度」直接读写的，
+     * 而一个槽只有一份 `Slot::isFloat`。把浮点槽复用给整数（或反过来）会让这块存储
+     * 在两种形态之间来回跳，区域就永远绑不上（浮点循环因此退回逐条执行）。
+     * 所以复用只在同形态之间进行：这份名单里的名字只和名单里的名字共用槽。 */
+    Memory::Vector<std::size_t> reals;
 };
 
 /**

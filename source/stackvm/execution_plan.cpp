@@ -119,6 +119,43 @@ const FrameLayout *ExecutionPlan::layout(std::size_t entry)
         }
     }
 
+    /* 2.5 浮点形态推断：只认"这条指令真按浮点算"的名字。
+     *   判据三条：① 已解析类型写着浮点（形参、声明过的局部）；
+     *   ② 带 `isFloat` 的二元 / 比较运算的目标与它的变量操作数；
+     *   ③ 浮点立即数直接写进的目标（`PushDouble; Store`）。
+     *   转换指令（`ToDouble` 之类）不算——它的操作数还是整数，算进来会把整数槽误标成浮点。 */
+    Memory::Set<std::size_t> realSeen;
+    const auto markReal = [&](std::size_t symbol) {
+        if (symbol != absent) realSeen.insert(symbol);
+    };
+    for (const std::size_t symbol : body.parameters)
+        if (symbol < types.size() && types[symbol].type != nullptr && types[symbol].type->isFloat) markReal(symbol);
+    for (const std::size_t symbol : body.declared)
+        if (symbol < types.size() && types[symbol].type != nullptr && types[symbol].type->isFloat) markReal(symbol);
+    for (const std::size_t index : body.order)
+    {
+        const auto &instruction = program_.code[index];
+        if (instruction.op == Op::PushDouble)
+        {
+            if (index + 1u < program_.code.size() && program_.code[index + 1u].op == Op::Store) markReal(code[index + 1u].symbol);
+            continue;
+        }
+        if (!instruction.isFloat) continue;
+        const bool binary = instruction.op == Op::Add || instruction.op == Op::Sub || instruction.op == Op::Mul ||
+                            instruction.op == Op::Div || instruction.op == Op::Mod || instruction.op == Op::Eq ||
+                            instruction.op == Op::Ne || instruction.op == Op::Lt || instruction.op == Op::Le ||
+                            instruction.op == Op::Gt || instruction.op == Op::Ge;
+        if (!binary && instruction.op != Op::Neg) continue;
+        if (index + 1u < program_.code.size() && program_.code[index + 1u].op == Op::Store) markReal(code[index + 1u].symbol);
+        if (!binary) continue;
+        for (std::size_t back = 1u; back <= 2u; ++back)
+        {
+            if (index < back) break;
+            if (program_.code[index - back].op == Op::Load) markReal(code[index - back].symbol);
+        }
+    }
+    for (const std::size_t symbol : realSeen) body.reals.push_back(symbol);
+
     // 3. 活跃性 + 线性扫描：存活区间不重叠的变量共用槽位。
     allocation::Layout assigned;
     if (const char *reuse = std::getenv("CHALI_NO_SLOT_REUSE"); reuse != nullptr && *reuse != '\0')

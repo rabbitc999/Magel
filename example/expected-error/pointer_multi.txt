@@ -1,1 +1,1 @@
-语法错误：example/samples-error/pointer_multi.chl 第 27 行第 16 列：期望 标识符 / MACRO_IS / MACRO_EXPR / MACRO_IDENT 等 15 个之一，实际是 可变(mut)
+语法错误：example/samples-error/pointer_multi.chl 第 27 行第 16 列：期望 标识符 / MACRO_IS / MACRO_EXPR / MACRO_IDENT 等 14 个之一，实际是 可变(mut)
