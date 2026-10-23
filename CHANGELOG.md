@@ -1,6 +1,13 @@
 # ChaLi 变更记录
 
-版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.27.1**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.27.2**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+
+
+## 0.27.2 — 解析器生成器升到 v1.3.0、流程图重新生成
+
+- 文法生成器升级到 ParseEngine v1.3.0：`gen.sh` 的固定下载地址由 v1.1.0 改为 v1.3.0，解析器与驱动按新版本重新生成（文法未改动，生成的产物行为不变）；下载顺序改为 **GitHub 优先、Gitee 兜底**，`tests/gen_download.py` 跟随钉死该版本，并断言先访问 GitHub 发布地址。
+- 重新生成编译与运行流程图：此前入库的 PNG 还是改名前的旧图（图题写「Magel • 运行过程」、节点写 `.mgl / 内存 Program`），而同一套 SVG 早已是 ChaLi 口径；重跑 `tools/make_pipeline_diagrams.py` 后四张 PNG 与 SVG 一致，`doc/book/images/` 里的两份副本同步更新。图标与总览图重跑后字节不变。
+- 程序版本更新为 0.27.2，VS Code 插件的 `chaliCompilerVersion`、语言服务器 `kServerVersion` 与 `chali-lsp` 版本输出、`chali-dev` 版本号同步（插件 `version` 保持 1.0.0）。
 
 
 ## 0.27.1 — main 只保留 void 一种入口

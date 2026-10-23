@@ -37,9 +37,9 @@ import shutil
 import tempfile
 import urllib.request
 
-# 发行版下载地址：Gitee 与 GitHub 各一份，按顺序尝试，先成功的那个用。
-# 两个远端都发同样的 `latest/ParseEngine.exe`；哪边还没发版就自动落到下一个。解析器生成器只能使用v1.1.0版本的
-SOURCES = ["https://gitee.com/rabbitc999/ParseEngine/releases/download/v1.1.0/ParseEngine.exe", "https://github.com/rabbitc999/ParseEngine/releases/download/v1.1.0/ParseEngine.exe"]
+# 发行版下载地址：GitHub 与 Gitee 各一份，按顺序尝试，先成功的那个用。
+# GitHub 优先，Gitee 兜底；哪边还没发版就自动落到下一个。解析器生成器只能使用v1.3.0版本的
+SOURCES = ["https://github.com/rabbitc999/ParseEngine/releases/download/v1.3.0/ParseEngine.exe", "https://gitee.com/rabbitc999/ParseEngine/releases/download/v1.3.0/ParseEngine.exe"]
 temporary = None
 try:
     failures = []

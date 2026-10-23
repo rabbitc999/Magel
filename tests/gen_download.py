@@ -9,9 +9,10 @@ import urllib.error
 
 ROOT = Path(__file__).resolve().parents[1]
 DOWNLOAD = (ROOT / "gen.sh").read_text(encoding="utf-8").split("python - <<'PY'\n", 1)[1].split("\nPY\n", 1)[0]
-# 固定验证仓库指定的生成器版本，不跟随远端 latest 漂移。
-GITEE = "https://gitee.com/rabbitc999/ParseEngine/releases/download/v1.1.0/ParseEngine.exe"
-SOURCES = [GITEE]
+# 固定验证仓库指定的生成器版本，不跟随远端 latest 漂移；GitHub 优先，Gitee 兜底。
+GITHUB = "https://github.com/rabbitc999/ParseEngine/releases/download/v1.3.0/ParseEngine.exe"
+GITEE = "https://gitee.com/rabbitc999/ParseEngine/releases/download/v1.3.0/ParseEngine.exe"
+SOURCES = [GITHUB, GITEE]
 
 
 class DownloadTests(unittest.TestCase):
@@ -40,8 +41,8 @@ class DownloadTests(unittest.TestCase):
                         with self.assertRaisesRegex(SystemExit, expected):
                             exec(compile(DOWNLOAD, "gen.sh:download", "exec"), {})
                     attempted = [call.args[0] for call in request.call_args_list]
-                    # 只访问指定版本的发布地址。
-                    self.assertEqual(attempted[0], GITEE)
+                    # 只访问指定版本的发布地址，GitHub 排在最前。
+                    self.assertEqual(attempted[0], GITHUB)
                     self.assertEqual(attempted, SOURCES[:attempts])
                     self.assertTrue(all(call.kwargs == {"timeout": 60} for call in request.call_args_list))
                 self.assertEqual(executable.read_bytes(), content if expected is None else b"MZprevious")
