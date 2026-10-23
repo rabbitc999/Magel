@@ -2,6 +2,9 @@ artifact_binary.cpp
 binary_stream.cpp
 data_area.cpp
 event_service.cpp
+execution_plan.cpp
+instruction_select.cpp
+machine_optimize.cpp
 heap_allocator.cpp
 mailbox_service.cpp
 native_arena.cpp
@@ -23,10 +26,12 @@ object_values.cpp
 program_binary.cpp
 quad_assembly.cpp
 quad_flow.cpp
+quad_ir.cpp
 quad_local_optimization.cpp
 quad_optimizer.cpp
 quad_text.cpp
 reflection.cpp
+register_allocate.cpp
 register_core.cpp
 runtime_heap.cpp
 symbol_build.cpp

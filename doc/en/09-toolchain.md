@@ -29,6 +29,31 @@ The generator creates standalone compiler projects. Hosts integrate through byte
 
 Reflection is a fixed, non-trimmable part of the language: the front end and VM always build it in and compilation always runs the full reflection pass; `--no-reflection` only decides whether this artifact carries reflection metadata and reduces no workload. Quadruples and VM execution use the highest supported optimizations by default. `--memory-size`, `--step-limit` and `--threads` configure VM resources and isolated threads.
 
+Back-end debugging switches change diagnostics or the execution path, never program semantics. They come in two groups:
+
+| Switch | Effect |
+| --- | --- |
+| `CHALI_NO_OPT=1` | Skip semantic-level quadruple simplification (`quad_optimizer`) |
+| `CHALI_DUMP_OPT=1` | Print the simplified quadruples to stderr |
+| `CHALI_NO_MACHINE_OPT=1` | Disable the whole machine-level layer (inlining, fold/propagate, GVN, DCE, strength reduction, LICM) |
+| `CHALI_NO_OPT_INLINE` / `_STRENGTH` / `_FOLD` / `_GVN` / `_DCE` / `_LICM` | Disable one pass only — bisect when a pass changes semantics |
+| `CHALI_DUMP_MACHINE=1` | Print the quadruples after machine-level optimization to stderr |
+| `CHALI_DUMP_IR=1` | Print the normalized IR (basic blocks, predecessors and successors, def-use, back edges) |
+| `CHALI_DUMP_FRAME=1` | Print each function's frame layout (symbol → slot) plus the allocator self-check result |
+| `CHALI_NO_SLOT_REUSE=1` | Fall back to "parameters first, then one slot per declaration in order" |
+| `CHALI_ONE_SLOT_PER_SYMBOL=1` | One slot per symbol but still through the allocator — separates aliasing bugs from numbering bugs |
+| `CHALI_NO_REGISTER_CORE=1` | Disable the register execution core in favour of the generic stack interpreter |
+
+All three comparisons (two cores, before/after slot reuse, before/after optimization) must agree byte for byte (text may differ only in CRLF/LF and ignorable whitespace). `tests/vm_differential.py` guards this: it runs the same source under five switch combinations (default, stack interpreter core, no slot reuse, no machine-level optimization, inlining only off) and compares exit code, stdout, diagnostics and call stack. The only relaxation is `ip` inside the call stack, which necessarily shifts when an optimization changes bytecode length.
+
+Quadruple counts, instruction-selection coverage and frame slots before/after reuse are all visible in `--stats`:
+
+```text
+机器级优化：四元式 16810 → 16628（折叠 2，传播 4，合并 1，削减 16，外提 0，内联 6 处（+114 条），删除 296）
+指令选择：目标指令 3062 条，覆盖栈指令 10492/26865（39.1%，通用回退 16373 条）
+帧槽分配：362 个函数，符号 1622 个 → 槽 1346 个（省掉 276 个）
+```
+
 Project execution modes are `interpret` and `svmb`. Native output and native compiler settings are unsupported. See [projects](13-projects.md), [deployment](06-deployment.md) and the [SVMB specification](../15-svmb-format.md).
 
 ## Source modules and incremental builds

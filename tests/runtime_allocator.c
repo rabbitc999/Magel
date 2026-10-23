@@ -13,9 +13,12 @@ int main(void)
     assert(chali_pool_init(&pool, buffer + 1, sizeof(buffer) - 1));
     assert(!chali_pool_allocate(&pool, SIZE_MAX, 16));
     assert(!chali_pool_allocate(&pool, 1, 3));
+#if CHALI_ALLOCATOR_TYPE == CHALI_ALLOCATOR_LINKED
+    assert(!chali_pool_allocate(&pool, 1, 32)); /* TLSF 只保证 16 字节对齐，更宽的对齐直接拒绝 */
+#endif
     for (i = 0; i < 40; ++i)
     {
-        size_t alignment = (size_t)1 << (i % 8);
+        size_t alignment = (size_t)1 << (i % 5); /* 1..16，池的保证范围 */
         blocks[i] = chali_pool_allocate(&pool, 40 + i, alignment);
         assert(blocks[i] && (uintptr_t)blocks[i] % alignment == 0);
         memset(blocks[i], (int)i, 40 + i);
@@ -32,7 +35,7 @@ int main(void)
     assert(!chali_pool_release(&pool, blocks[0]));
     for (i = 0; i < 40; ++i) assert(!chali_pool_release(&pool, blocks[i]));
 #if CHALI_ALLOCATOR_TYPE == CHALI_ALLOCATOR_LINKED
-    blocks[0] = chali_pool_allocate(&pool, 7600, 64);
+    blocks[0] = chali_pool_allocate(&pool, 7600, 16);
     assert(blocks[0] && !chali_pool_finish(&pool, &saved));
     assert(chali_pool_release(&pool, blocks[0]));
     assert(chali_pool_finish(&pool, &saved) && saved.peak_bytes > 0);
@@ -78,7 +81,7 @@ int main(void)
             else
             {
                 lengths[slot] = 1 + random % 511;
-                live[slot] = chali_pool_allocate(&pool, lengths[slot], (size_t)1 << (random % 9));
+                live[slot] = chali_pool_allocate(&pool, lengths[slot], (size_t)1 << (random % 5));
                 if (live[slot]) memset(live[slot], (int)slot, lengths[slot]);
             }
         }

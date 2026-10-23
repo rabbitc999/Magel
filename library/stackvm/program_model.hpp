@@ -101,9 +101,26 @@ namespace execution_detail
 enum class RegisterOp
 {
     None,
-    IntegerStore,
-    IntegerBranch
+    IntegerStore,   ///< 整数二元运算，结果写一个槽。
+    IntegerBranch,  ///< 整数比较（可带结果写回），按结果跳转。
+    FloatStore,     ///< 浮点二元运算，结果写一个槽。
+    FloatBranch,    ///< 浮点比较（可带结果写回），按结果跳转。
+    Wide,           ///< 双结果乘除：`mul` 写 lo / hi，`div` 写 q / r。
+    Unary,          ///< 一元运算（取负、按位取反），结果写一个槽。
+    Copy            ///< 装载或立即数直接写入槽。
 };
+/**
+ * @brief 指令选择的统计，供 `--stats` 与回归断言使用。
+ */
+struct SelectionStats
+{
+    std::size_t instructions = 0;      ///< 选出的目标指令条数。
+    std::size_t covered = 0;           ///< 被目标指令覆盖的栈指令条数。
+    std::size_t total = 0;             ///< 栈指令总条数。
+    std::size_t byKind[7] = {};        ///< 按 `RegisterOp` 分类的条数。
+    std::size_t byOperation[64] = {};  ///< 按基础操作码分类的条数。
+};
+
 /**
  * @brief 一次分派的内部指令，操作数引用预绑定槽位，PC 映射保持原样。
  */
@@ -114,10 +131,14 @@ struct RegisterInstruction
     RegisterOp kind = RegisterOp::None;
     Op operation = Op::Add;
     std::size_t left = static_cast<std::size_t>(-1), right = static_cast<std::size_t>(-1), destination = static_cast<std::size_t>(-1), target = static_cast<std::size_t>(-1);
+    std::size_t destination2 = static_cast<std::size_t>(-1);  ///< 双结果乘除的第二个目的地（hi / r）。
     std::int64_t immediate = 0;
-    int bits = 0;
-    std::size_t span = 4;
+    /* 位宽不超过 64、跨度不超过一个模式窗口（≤ 6 条），用窄类型把这条热结构压回 88 字节：
+     * 一条产物要按指令存两份（选择结果 + 加载时重建的对照），五十万条指令就是几十 MB。 */
+    std::uint8_t bits = 0;
+    std::uint8_t span = 4;
     bool literal = false, unsignedResult = false, jumpOnZero = false, storeResult = true;
+    bool floatOperation = false;  ///< 运算与结果按浮点处理。
 };
 }  // namespace execution_detail
 
@@ -209,6 +230,7 @@ struct Program
     }
     Memory::String name;                                                 ///< 名字（取 `# 名称:`）。
     Memory::Vector<execution_detail::RegisterInstruction> internalCode;  ///< 已校验的内部执行指令。
+    execution_detail::SelectionStats selectionStats;                     ///< 指令选择的覆盖统计。
     bool preparedInternal = false;                                       ///< 从新版产物加载后直接使用内部执行序列。
     Memory::Vector<Instruction> code;                                    ///< 指令序列。
     Memory::Map<Memory::String, std::size_t> labels;                     ///< 标签 → 指令下标。

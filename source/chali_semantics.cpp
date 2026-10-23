@@ -11,6 +11,7 @@
 #include "simple_ast.hpp"
 #include "stackvm.hpp"
 #include "../library/stackvm/value_text.hpp"
+#include "quad_ir.hpp"
 #include "chali_glue.hpp"
 #include "chali_generic.hpp"
 #include "chali_resource_cleanup.hpp"
@@ -3287,6 +3288,15 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
             std::fputs(")\n", stderr);
         }
     }
+    /* 调试用：`CHALI_DUMP_IR=1` 把规范化中间表示（基本块、前驱后继、定义-使用）打到 stderr。
+     * 后端各阶段的输入就是这份结构，排查"某条指令落在哪个块、某个值被谁定义"时先看它。 */
+    if (std::getenv("CHALI_DUMP_IR") != nullptr)
+    {
+        const stackvm::ir::Module module = stackvm::ir::build(file);
+        std::fputs("=== 规范化中间表示 ===\n", stderr);
+        const Memory::String text = stackvm::ir::dump(module);
+        std::fwrite(text.data(), 1u, text.size(), stderr);
+    }
     stackvm::Program assembled;
     const bool assembledOk = stackvm::assemble(file, assembled);
     if (!assembledOk || !assembled.ok())
@@ -3364,6 +3374,11 @@ int M_Compile(const char *moduleName, const char *outPrefix, int run, int emitBi
                     }
                     stackvm::Machine machine;
                     machine.setPanicDetailsEnabled(!g_compressSymbols);
+                    /* 差分回归开关：`CHALI_NO_REGISTER_CORE=1` 关掉寄存器执行核，改走通用栈解释。
+                     * 同一份程序在两条路径下的 stdout、诊断与退出码必须一致——这是后端改造的护栏，
+                     * 新增指令选择或分配策略时先让它两边都跑通。 */
+                    if (std::getenv("CHALI_NO_REGISTER_CORE") != nullptr)
+                        machine.setRegisterExecution(false);
                     machine.setData(&data);
                     chali_glue::Registry abiRegistry;
                     if (!BindRuntimeAbi(&abiRegistry)) return 1;

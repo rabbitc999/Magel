@@ -63,6 +63,13 @@ const Region &Engine::region(std::size_t entry)
         if (plan_.code[pc].internal != absent)
         {
             const auto &internal = plan_.registers[plan_.code[pc].internal];
+            // 区域只执行整数窗口；浮点、宽乘除、拷贝与一元运算留在精确执行器上。
+            const bool integerWindow = internal.kind == execution_detail::RegisterOp::IntegerStore || internal.kind == execution_detail::RegisterOp::IntegerBranch;
+            if (!integerWindow || internal.destination2 != absent)
+            {
+                indices.emplace(pc, absent);
+                continue;
+            }
             if (internal.floatingLiteral)
             {
                 indices.emplace(pc, absent);

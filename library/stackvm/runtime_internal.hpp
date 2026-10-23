@@ -8,6 +8,7 @@
 #include "value_text.hpp"
 #include "allocation_index.hpp"
 #include "execution_plan.hpp"
+#include "machine_optimize.hpp"
 #include "data_capacity_index.hpp"
 #include "register_core.hpp"
 #include <algorithm>

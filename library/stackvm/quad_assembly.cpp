@@ -181,19 +181,26 @@ struct Assembler
 
 /**
  * @brief 把四元式组装成栈指令。
- * @param file 四元式文件。
+ * @param source 四元式文件。
  * @param out 组装结果。
  * @return 成功返回 true（`out.diagnostics` 里给出不支持的原因）。
  */
-bool assemble(const QuadFile &file, Program &out)
+bool assemble(const QuadFile &source, Program &out)
 {
     out = Program{};
-    out.name = file.name;
-    if (!file.ok())
+    out.name = source.name;
+    if (!source.ok())
     {
-        out.diagnostics = file.diagnostics;
+        out.diagnostics = source.diagnostics;
         return false;
     }
+    /* 机器级优化：语义层化简（`quad_optimizer`）已经在前面跑完，这里做"接近目标机"的
+     * 改写。放在 assemble 里是因为 run / emit / svmb 三条路径都要经过它——一次接上，
+     * 四处一致。`CHALI_NO_MACHINE_OPT=1` 整层关掉，`CHALI_NO_OPT_<遍>=1` 单独关某一遍。 */
+    QuadFile optimized;
+    const bool runMachine = machine::enabled();
+    if (runMachine) optimized = machine::optimize(source);
+    const QuadFile &file = runMachine ? optimized : source;
     out.requiredFeatures = file.requiredFeatures;
     out.reflection = file.reflection;
     if (!validateProgramMetadata(out, &out.diagnostics)) return false;
@@ -571,6 +578,9 @@ bool assemble(const QuadFile &file, Program &out)
         (void)ignored;
         out.exports.insert(label);
     }
+    // 后端：指令选择在这里一次性跑完并随程序带走，运行期不再重复匹配窗口。
+    out.internalCode = selection::lower(out, &out.selectionStats);
+    out.preparedInternal = true;
     return out.ok();
 }
 }  // namespace stackvm

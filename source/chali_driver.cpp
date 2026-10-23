@@ -15,6 +15,11 @@
 #include <iostream>
 
 /* 前处理器（仓库里的通用库，只依赖 C++17 标准库）。 */
+/* 后端统计：`--stats` 里要报指令选择覆盖率、帧槽复用与机器级优化前后的数字。 */
+#include "machine_optimize.hpp"
+#include "register_allocate.hpp"
+#include "instruction_select.hpp"
+#include <algorithm>
 #include "preprocess.hpp"
 #include "chali_diagnostics.hpp"
 #include "macro/source.hpp"
@@ -340,7 +345,7 @@ void PrintUsage(std::FILE *out)
              "  --no-stdlib-cache      关闭标准库预编译单元（每次都完整解析标准库）\n",
              "  --threads              启用隔离的宿主线程执行\n",
              "  --no-debug             （兼容别名）显式不带调试信息；现在也是缺省\n",
-             "  --stats                打印运行时及增量文件校验统计\n",
+             "  --stats                打印运行时、增量校验与后端三层（优化 / 指令选择 / 帧槽）统计\n",
              "  --memory-size 字节     运行时堆容量（缺省 512MiB，最小 64）\n",
              "  --watchdog             打开可选软重启看门狗（分配失败 / 显式请求 / 超水位重跑）\n",
              "  --no-watchdog          关闭软重启看门狗（缺省）\n",
@@ -1353,6 +1358,22 @@ int chali_main_entry(int argc, char **argv)
     }
     if (runtimeStats && run && !Memory::runtimeMemoryStatsAvailable) std::fputs("运行时分配器：malloc/free，峰值内存不可用\n", stderr);
     if (runtimeStats && run && Memory::runtimeMemoryStatsAvailable) std::fprintf(stderr, "运行时分配器：峰值 %zu 字节（容量 %zu 字节；运行后已清零）\n", M_RuntimePeakBytes(), memoryBytes);
+    /* 后端三层的统计：指令选择覆盖率、帧槽复用前后、机器级优化前后。
+     * 它们都只在编译期累加，和运行期内存统计一起挂在 `--stats` 下。 */
+    if (runtimeStats)
+    {
+        const stackvm::machine::Stats machineStats = stackvm::machine::lastStats();
+        if (machineStats.before != 0u)
+            std::fprintf(stderr, "%s\n", stackvm::machine::describe(machineStats).c_str());
+        const stackvm::execution_detail::SelectionStats selectionStats = stackvm::selection::lastStats();
+        if (selectionStats.total != 0u)
+            std::fprintf(stderr, "%s\n", stackvm::selection::describe(selectionStats).c_str());
+        const stackvm::allocation::Stats allocationStats = stackvm::allocation::lastStats();
+        if (allocationStats.functions != 0u)
+            std::fprintf(stderr, "帧槽分配：%zu 个函数，符号 %zu 个 → 槽 %zu 个（省掉 %zu 个）\n",
+                         allocationStats.functions, allocationStats.symbols, allocationStats.slots,
+                         allocationStats.symbols - std::min(allocationStats.symbols, allocationStats.slots));
+    }
     if (runtimeStats)
     {
         if (boundary == Memory::String::npos)

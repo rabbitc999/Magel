@@ -41,21 +41,39 @@ chali run app.chl --memory-size 16777216 --stats
 ## C 分配器与 C++ 接入
 
 [`chali_pool.c`](../source/allocator/chali_pool.c) 可独立按 C99 编译，块元数据位于缓冲区内，
-支持二次幂对齐，无固定块数表，也不会调用全局 C++ 分配操作。底层实现由
+无固定块数表，也不会调用全局 C++ 分配操作。底层实现由
 [`source/chali_pool.h`](../source/allocator/chali_pool.h) 的**分配器类型宏** `CHALI_ALLOCATOR_TYPE` 在编译期选择
 （用 `-DCHALI_ALLOCATOR_TYPE=…` 覆盖，必须对所有翻译单元一致）：
 
-- `CHALI_ALLOCATOR_LINKED`（缺省）：块头 + **显式空闲双向链表**首次适配，切块后维护相邻块信息，
-  释放时直接合并相邻空闲块；**释放过的地址可以再分配出去**，长循环的“分配—释放—再分配”
-  不会持续吃内存。
+- `CHALI_ALLOCATOR_LINKED`（缺省）：**TLSF**（两级隔离适配，Two-Level Segregated Fit）。
+  块头 16 字节，只存「物理前邻 + 大小 + 2 位标志」，空闲链指针放在空闲块自己的载荷里；
+  两级位图（32 个一级 × 32 个二级细分）加空闲双向链表定位，**分配与释放都是 O(1)**，
+  不随块数增长；释放时立即合并相邻空闲块，**释放过的地址可以再分配出去**。
+  这是按 TLSF 论文与 TLSF 2.0 的块头压缩思路自己实现的版本，没有引入上游源码。
 - `CHALI_ALLOCATOR_LINEAR`：线性（bump）分配，只向后切块，释放只把块记成墓碑，
   地址到 `reset` 前不复用。适合“地址一旦给出就不再复用”的护栏场景，代价是长循环占用只增不减。
+
+**对齐口径**：池只保证 **16 字节对齐**（块头 16 字节、块大小按 16 取整，所以“块首对齐即载荷对齐”），
+更宽的对齐请求直接返回失败，由上层自行缓冲。常量的 `alignof(max_align_t)` 请求不需要特例路径。
 
 两种实现共用 `McPool` 句柄与 `chali_pool_*` 接口，上层 arena 与容器无需改动。
 `chali_pool` 本身不带锁：它是**单线程/调用方串行化**的；缺省 C++ 侧由
 `BufferRuntimeArena` 与 `StaticRuntimeArena` 各自持 `std::mutex` 加锁（VM 线程共享同一个
 `currentRuntimeAllocator()`，所以锁是必须的）。`CHALI_ALLOCATOR_TYPE` 当前编译进来的名字由
 `Memory::allocatorTypeName` 暴露，便于诊断。
+
+### 小对象按组分配
+
+容器里大量出现 8–120 字节的小对象（指令名、符号名、短字符串）。逐个向池要，光块头与
+向上取整就吃掉一半：一条 23 字节的名字串实际占 48 字节。`Memory::SlabPool`（在
+[`source/chali_allocator.hpp`](../source/allocator/chali_allocator.hpp)）因此按组分配：
+一次向池要 64 KiB，组内切成固定尺寸的片（片头 8 字节标签），小对象从组里取，
+整组都空出来时整块还给池。
+
+标签最低位置 1 用来区分「本层的片」与「池的正常块」——TLSF 的块大小永远是 16 的倍数，
+低 2 位只做空闲标志，不会撞上。分配到的指针仍落在池的地址范围内，`release` 仍然只收一个指针，
+上层容器与字符串无需任何改动。效果：50 万条指令的名字从 50 万块降到几百块，
+符号压缩回归的峰值内存从 520 MiB 降到 319 MiB。
 
 [`source/chali_allocator.hpp`](../source/allocator/chali_allocator.hpp) 提供
 `Memory::Allocator<T>`、`Vector/Map/Set/Deque/String`、`makeShared/makeUnique` 和回调适配器。

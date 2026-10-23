@@ -11,7 +11,7 @@ constexpr std::uint8_t kProgramMagic[] = { 'P', 'E', 'S', 'V', 'M', 'B', '\r', '
 /**
  * @brief 当前写出的版本。
  */
-constexpr std::uint16_t kProgramFormatVersion = 5u;
+constexpr std::uint16_t kProgramFormatVersion = 6u;
 constexpr std::uint8_t kSymbolMagic[] = { 'M', 'C', 'V', 'M', '0', '0', '0', '5' };
 constexpr std::size_t kSymbolHeaderSize = 44u;
 /**

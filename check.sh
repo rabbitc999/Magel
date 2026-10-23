@@ -8,6 +8,7 @@
 # 把整段 stderr 写进 example/expected/<name>.stderr，脚本就会按期望比对。
 #
 # 用法：cd chali && sh check.sh
+#       sh check.sh --sample 5     只跑 5% 的样例（每隔 20 个取一个，确定性的等距抽样）
 #   （路径与 chali_out.* 都相对当前目录，必须在 chali/ 里跑；发布门禁
 #    `ci/run.sh` 就是这么调的。Makefile 里没有 check 目标。）
 #
@@ -28,6 +29,43 @@ export CHALI_LANG=zh
 export CHALI_NO_STDIN_INPUT=1
 
 set -u
+
+# 抽样档位：后端改动只按比例抽前端样例（见 AGENTS.md 门禁分档），默认全跑。
+samplePercent=100
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+    --sample)
+        [ "$#" -ge 2 ] || { echo "--sample 需要 1-100 的百分比" >&2; exit 2; }
+        samplePercent=$2
+        shift 2
+        ;;
+    --sample=*)
+        samplePercent=${1#--sample=}
+        shift
+        ;;
+    -h|--help)
+        sed -n '2,18p' "$0"
+        exit 0
+        ;;
+    *)
+        echo "未知参数：$1（可用 --sample N）" >&2
+        exit 2
+        ;;
+    esac
+done
+case "$samplePercent" in
+''|*[!0-9]*)
+    echo "--sample 需要 1-100 的整数" >&2
+    exit 2
+    ;;
+esac
+if [ "$samplePercent" -lt 1 ] || [ "$samplePercent" -gt 100 ]; then
+    echo "--sample 需要 1-100 的整数" >&2
+    exit 2
+fi
+# 等距抽样：每隔 stride 个取一个，同样的样例集合必然抽到同样的子集。
+stride=$((100 / samplePercent))
+[ "$stride" -lt 1 ] && stride=1
 
 # 临时文件：`mktemp` 默认往 /tmp 写，而有些环境（Windows 的 Git Bash）里 /tmp 不可写。
 # 所以显式给模板：默认用仓库里的 tmp/（已 gitignore），要换地方就设 CHALI_TMP。
@@ -61,9 +99,14 @@ normalize() {
 }
 
 # ---- 正常样例：stdout 与期望逐行一致 ----
+sampleIndex=0
 for src in "$SAMPLES"/*.chl; do
     name=${src##*/}
     name=${name%.chl}
+    sampleIndex=$((sampleIndex + 1))
+    if [ "$stride" -gt 1 ] && [ $(( (sampleIndex - 1) % stride )) -ne 0 ]; then
+        continue
+    fi
     if [ -n "$CHECK_NAMES" ]; then
         case " $CHECK_NAMES " in *" $name "*) ;; *) continue ;; esac
     fi
@@ -138,17 +181,26 @@ for src in "$SAMPLES"/*.chl; do
 done
 
 if [ "$fail" -eq 0 ]; then
-    echo "[ok]   $count 个正常样例"
+    if [ "$stride" -gt 1 ]; then
+        echo "[ok]   $count/$sampleIndex 个正常样例（抽样 $samplePercent%）"
+    else
+        echo "[ok]   $count 个正常样例"
+    fi
 fi
 
 # ---- 错误样例：必须报错退出，且首行文案与期望一致 ----
 errorCount=0
+errorIndex=0
 for src in "$ERROR_SAMPLES"/*.chl; do
     if [ ! -f "$src" ]; then
         break
     fi
     name=${src##*/}
     name=${name%.chl}
+    errorIndex=$((errorIndex + 1))
+    if [ "$stride" -gt 1 ] && [ $(( (errorIndex - 1) % stride )) -ne 0 ]; then
+        continue
+    fi
     expected="$EXPECTED_ERROR/$name.txt"
     if [ -n "$CHECK_NAMES" ]; then
         case " $CHECK_NAMES " in *" $name "*) ;; *) continue ;; esac
@@ -190,6 +242,10 @@ for src in "$ERROR_SAMPLES"/*.chl; do
 done
 
 if [ "$fail" -eq 0 ]; then
-    echo "全部通过（$count 个正常样例 + $errorCount 个错误样例）"
+    if [ "$stride" -gt 1 ]; then
+        echo "全部通过（抽样 $samplePercent%：$count/$sampleIndex 个正常样例 + $errorCount/$errorIndex 个错误样例）"
+    else
+        echo "全部通过（$count 个正常样例 + $errorCount 个错误样例）"
+    fi
 fi
 exit "$fail"

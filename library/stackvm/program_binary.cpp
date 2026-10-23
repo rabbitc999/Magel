@@ -187,8 +187,9 @@ bool saveProgramBinary(const Program &program, const Memory::String &path,
         payload.varUInt(internal.span);
         payload.varInt(internal.immediate);
         payload.varInt(internal.bits);
-        payload.u8((internal.literal ? 1 : 0) | (internal.unsignedResult ? 2 : 0) | (internal.jumpOnZero ? 4 : 0) | (internal.storeResult ? 8 : 0));
+        payload.u8((internal.literal ? 1 : 0) | (internal.unsignedResult ? 2 : 0) | (internal.jumpOnZero ? 4 : 0) | (internal.storeResult ? 8 : 0) | (internal.floatOperation ? 16 : 0));
         payload.varUInt(internal.target == execution_detail::absent ? 0 : internal.target + 1);
+        payload.varUInt(internal.destination2 == execution_detail::absent ? 0 : internal.destination2 + 1);
     }
     if (program.requiredFeatures & kFeatureReflection)
     {
@@ -561,17 +562,17 @@ static bool decodeProgramBinary(const Memory::Vector<std::uint8_t> &fileBytes,
     }
     for (std::size_t index = 0; index < count; ++index)
     {
-        std::uint64_t origin = 0, span = 0, target = 0;
+        std::uint64_t origin = 0, span = 0, target = 0, destination2 = 0;
         std::uint8_t op = 0, kind = 0, flags = 0;
         std::int64_t immediate = 0, bits = 0;
-        if (!reader.varUInt(&origin) || !reader.u8(&op) || !reader.u8(&kind) || !reader.varUInt(&span) || !reader.varInt(&immediate) || !reader.varInt(&bits) || !reader.u8(&flags) || !reader.varUInt(&target))
+        if (!reader.varUInt(&origin) || !reader.u8(&op) || !reader.u8(&kind) || !reader.varUInt(&span) || !reader.varInt(&immediate) || !reader.varInt(&bits) || !reader.u8(&flags) || !reader.varUInt(&target) || !reader.varUInt(&destination2))
         {
             binaryDiagnostic(diagnostics, reader.error);
             return false;
         }
         const auto &internal = expected[index];
-        const auto expectedFlags = (internal.literal ? 1 : 0) | (internal.unsignedResult ? 2 : 0) | (internal.jumpOnZero ? 4 : 0) | (internal.storeResult ? 8 : 0);
-        if (origin != internal.left || op != static_cast<std::uint8_t>(internal.operation) || kind != static_cast<std::uint8_t>(internal.kind) || span != internal.span || immediate != internal.immediate || bits != internal.bits || flags != expectedFlags || target != (internal.target == execution_detail::absent ? 0 : internal.target + 1))
+        const auto expectedFlags = (internal.literal ? 1 : 0) | (internal.unsignedResult ? 2 : 0) | (internal.jumpOnZero ? 4 : 0) | (internal.storeResult ? 8 : 0) | (internal.floatOperation ? 16 : 0);
+        if (origin != internal.left || op != static_cast<std::uint8_t>(internal.operation) || kind != static_cast<std::uint8_t>(internal.kind) || span != internal.span || immediate != internal.immediate || bits != internal.bits || flags != expectedFlags || target != (internal.target == execution_detail::absent ? 0 : internal.target + 1) || destination2 != (internal.destination2 == execution_detail::absent ? 0 : internal.destination2 + 1))
         {
             binaryDiagnostic(diagnostics, "内部指令与基础指令不一致");
             return false;

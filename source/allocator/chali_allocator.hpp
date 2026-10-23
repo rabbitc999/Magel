@@ -100,6 +100,7 @@
 #include <atomic>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <deque>
 #include <filesystem>
 #include <functional>
@@ -311,12 +312,196 @@ inline RestartSignal &restartSignal()
     return signal;
 }
 
+/**
+ * @brief 小对象分组分配：一次向池要一整块，块内按固定尺寸切片。
+ *
+ * 池（TLSF）每块带 16 字节块头并向上取整到 16 字节：一条 23 字节的名字串要占 48
+ * 字节，一半多是头与舍入。指令流、符号表这类结构里这种小对象是十万到百万级的，
+ * 逐条分配除了浪费字节，还会把空闲表切成海量小块，命中率与碎片都变差。
+ *
+ * 所以按组分配：一次向池要 `blockBytes`（64 KiB），组内切成固定尺寸的片，每片的
+ * 头退化成 8 字节标签。TLSF 的块大小永远是 16 的倍数（低 2 位用作空闲标志），
+ * 所以「载荷前一个字的最低位为 1」可以安全地标记成本层的片，正常块不会撞上。
+ * 分配到的指针仍然落在池的地址范围内，`release` 也仍然只收一个指针，上层
+ * （容器、字符串）不需要任何改动。
+ */
+class SlabPool
+{
+public:
+    static constexpr std::size_t blockBytes = 64u * 1024u;          ///< 一次向池要的字节数。
+    static constexpr std::size_t tagBytes = sizeof(std::size_t);    ///< 每片的前缀：指向所属组的标签。
+    static constexpr std::size_t maxPayload = 120u;                 ///< 超过这个字节数就别进小对象组。
+    /// 片尺寸（含 8 字节标签）；覆盖 8/16/24/40/56/72/88/120 字节的载荷。
+    static constexpr std::size_t sizes[] = { 16u, 24u, 32u, 48u, 64u, 80u, 96u, 128u };
+    static constexpr std::size_t noChunk = static_cast<std::size_t>(-1);
+    struct Group
+    {
+        unsigned char *base = nullptr;   ///< 组内切片起点（池块首地址）。
+        std::size_t chunk = 0;           ///< 片尺寸（含标签）。
+        std::size_t count = 0;           ///< 片数。
+        std::size_t freeHead = noChunk;  ///< 空闲片下标链表头。
+        std::size_t live = 0;            ///< 已交出的片数。
+        Group *next = nullptr;           ///< 下一组。
+    };
+    SlabPool() = default;
+    SlabPool(const SlabPool &) = delete;
+    SlabPool &operator=(const SlabPool &) = delete;
+    ~SlabPool() { abandon(); }
+    /**
+     * @brief 试探一次分配：不归本层管时返回 nullptr，交回池处理。
+     * @param pool 底层池。
+     * @param bytes 载荷字节数。
+     * @param alignment 对齐要求（超过指针宽度就交回池）。
+     * @return 载荷指针或 nullptr。
+     */
+    void *allocate(McPool *pool, std::size_t bytes, std::size_t alignment)
+    {
+        if (!pool || bytes == 0u || bytes > maxPayload || alignment > tagBytes) return nullptr;
+        const std::size_t chunk = chunkFor(bytes);
+        if (chunk == 0u) return nullptr;
+        Group *group = groups_;
+        while (group && (group->chunk != chunk || group->freeHead == noChunk)) group = group->next;
+        if (!group && !(group = carve(pool, chunk))) return nullptr;
+        const std::size_t index = group->freeHead;
+        unsigned char *chunkAt = group->base + index * chunk;
+        std::size_t next = noChunk;
+        std::memcpy(&next, chunkAt + tagBytes, sizeof(next));
+        group->freeHead = next;
+        ++group->live;
+        const std::size_t tag = reinterpret_cast<std::size_t>(group) | 1u;
+        std::memcpy(chunkAt, &tag, sizeof(tag));
+        return chunkAt + tagBytes;
+    }
+    /**
+     * @brief 判断一个指针是不是本层的片。
+     * @param pointer 载荷指针。
+     * @return 是则返回 true（此时才该调用 `release`）。
+     */
+    static bool holds(const void *pointer)
+    {
+        std::size_t tag = 0;
+        std::memcpy(&tag, static_cast<const unsigned char *>(pointer) - tagBytes, sizeof(tag));
+        return (tag & 1u) != 0u;
+    }
+    /**
+     * @brief 归还一片；整组都空了出来就顺手把组还给池。
+     * @param pool 底层池。
+     * @param pointer 载荷指针。
+     * @return 标签与片位置都对得上时返回 true。
+     */
+    bool release(McPool *pool, void *pointer)
+    {
+        unsigned char *chunkAt = static_cast<unsigned char *>(pointer) - tagBytes;
+        std::size_t tag = 0;
+        std::memcpy(&tag, chunkAt, sizeof(tag));
+        Group *group = reinterpret_cast<Group *>(tag & ~static_cast<std::size_t>(1u));
+        if (!group || !group->base || group->chunk == 0u) return false;
+        const std::size_t offset = static_cast<std::size_t>(chunkAt - group->base);
+        if (offset % group->chunk != 0u) return false;
+        const std::size_t index = offset / group->chunk;
+        if (index >= group->count || group->live == 0u) return false;
+        std::memcpy(chunkAt + tagBytes, &group->freeHead, sizeof(group->freeHead));
+        group->freeHead = index;
+        if (--group->live == 0u)
+        {
+            detach(group);
+            if (pool) chali_pool_release(pool, group->base);
+            std::free(group);
+        }
+        return true;
+    }
+    /**
+     * @brief 还有没有交出去没收回的片（泄漏检查用）。
+     */
+    bool hasLiveChunks() const
+    {
+        for (const Group *group = groups_; group; group = group->next)
+            if (group->live != 0u) return true;
+        return false;
+    }
+    /**
+     * @brief 把整组还给池；调用前必须确认没有活动片。
+     * @param pool 底层池。
+     */
+    void releaseAll(McPool *pool)
+    {
+        while (groups_)
+        {
+            Group *next = groups_->next;
+            if (pool) chali_pool_release(pool, groups_->base);
+            std::free(groups_);
+            groups_ = next;
+        }
+    }
+    /**
+     * @brief 只丢描述符、不还池（池已销毁时的兜底）。
+     */
+    void abandon()
+    {
+        while (groups_)
+        {
+            Group *next = groups_->next;
+            std::free(groups_);
+            groups_ = next;
+        }
+    }
+
+private:
+    /**
+     * @brief 把一组从链表里摘掉。
+     */
+    void detach(Group *group)
+    {
+        Group **slot = &groups_;
+        while (*slot && *slot != group) slot = &(*slot)->next;
+        if (*slot) *slot = group->next;
+    }
+    /**
+     * @brief 选一个够用的片尺寸。
+     * @param bytes 载荷字节数。
+     * @return 片尺寸；超出上限返回 0。
+     */
+    static std::size_t chunkFor(std::size_t bytes)
+    {
+        for (std::size_t size : sizes)
+            if (bytes + tagBytes <= size) return size;
+        return 0u;
+    }
+    /**
+     * @brief 向池要一整块，切成片并把它们串成空闲链表。
+     * @param pool 底层池。
+     * @param chunk 片尺寸。
+     * @return 新组；池或描述符不够时返回 nullptr。
+     */
+    Group *carve(McPool *pool, std::size_t chunk)
+    {
+        void *raw = chali_pool_allocate(pool, blockBytes, tagBytes);
+        if (!raw) return nullptr;
+        Group *group = static_cast<Group *>(std::malloc(sizeof(Group)));
+        if (!group) return nullptr; /* 池里那块先留着：容量代价一组 64 KiB，比丢掉分配好。 */
+        group->base = static_cast<unsigned char *>(raw);
+        group->chunk = chunk;
+        group->count = blockBytes / chunk;
+        group->live = 0;
+        group->freeHead = 0;
+        for (std::size_t index = 0; index < group->count; ++index)
+        {
+            const std::size_t following = index + 1u < group->count ? index + 1u : noChunk;
+            std::memcpy(group->base + index * chunk + tagBytes, &following, sizeof(following));
+        }
+        group->next = groups_;
+        groups_ = group;
+        return group;
+    }
+    Group *groups_ = nullptr;  ///< 所有已切出的组。
+};
 class BufferRuntimeArena : public RuntimeAllocator
 {
     mutable std::mutex mutex_;
     void *buffer_;
     std::size_t bytes_;
     McPool pool_{};
+    SlabPool slabs_{};  ///< 小对象按组分配，剩下的才逐块进池。
     Stats last_{};
 
 public:
@@ -331,12 +516,13 @@ public:
     void *allocateAligned(std::size_t bytes, std::size_t alignment) override
     {
         std::lock_guard<std::mutex> lock(mutex_);
+        if (void *small = slabs_.allocate(&pool_, bytes, alignment)) return small;
         return chali_pool_allocate(&pool_, bytes, alignment);
     }
     bool release(void *p) override
     {
         std::lock_guard<std::mutex> lock(mutex_);
-
+        if (SlabPool::holds(p)) return slabs_.release(&pool_, p);
         return chali_pool_release(&pool_, p) != 0;
     }
     bool owns(const void *p) const override { return chali_pool_owns(&pool_, p) != 0; }
@@ -351,6 +537,8 @@ public:
     {
         std::lock_guard<std::mutex> lock(mutex_);
         if (!pool_.storage) return;
+        /* 组本身也要还，否则块数归不了零；有片没还就是真泄漏，直接留给下面的检查报错。 */
+        if (!slabs_.hasLiveChunks()) slabs_.releaseAll(&pool_);
         if (pool_.stats.live_blocks)
         {
             std::fputs("运行时分配器：仍有活动块，不能清零\n", stderr);
@@ -437,12 +625,19 @@ class StaticRuntimeArena final : public RuntimeAllocator
     static_assert(Capacity >= 64, "runtime arena capacity must be at least 64 bytes");
     alignas(std::max_align_t) unsigned char storage_[Capacity];
     McPool pool_{};
+    SlabPool slabs_{};     ///< 小对象按组分配，剩下的才逐块进池。
     mutable std::mutex mutex_; /* 静态 arena 可能被并发的 VM 线程共用，和 BufferRuntimeArena 一样加锁 */
 public:
     StaticRuntimeArena() { reset(); }
     void reset()
     {
         std::lock_guard<std::mutex> lock(mutex_);
+        if (slabs_.hasLiveChunks())
+        {
+            std::fputs("运行时分配器：仍有活动块，不能重置\n", stderr);
+            std::abort();
+        }
+        slabs_.releaseAll(&pool_); /* 组本身也占块，先还掉再判泄漏 */
         if (pool_.stats.live_blocks)
         {
             std::fputs("运行时分配器：仍有活动块，不能重置\n", stderr);
@@ -455,12 +650,13 @@ public:
     void *allocateAligned(std::size_t bytes, std::size_t alignment) override
     {
         std::lock_guard<std::mutex> lock(mutex_);
+        if (void *small = slabs_.allocate(&pool_, bytes, alignment)) return small;
         return chali_pool_allocate(&pool_, bytes, alignment);
     }
     bool release(void *p) override
     {
         std::lock_guard<std::mutex> lock(mutex_);
-
+        if (SlabPool::holds(p)) return slabs_.release(&pool_, p);
         return chali_pool_release(&pool_, p) != 0;
     }
     bool owns(const void *p) const override

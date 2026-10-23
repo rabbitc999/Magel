@@ -9,6 +9,147 @@
 namespace stackvm
 {
 using namespace runtimeDetail;
+namespace
+{
+/**
+ * @brief 按精确解释器的口径计算一条已选二元指令。
+ *
+ * 融合路径与逐条执行必须给出**完全相同**的值与**完全相同的报错时机**，所以这里逐条
+ * 复刻解释器的分支：类型混合时按浮点算、整数按声明位宽回绕、除法与移位在会失败时
+ * 直接返回 false —— 调用方不提交任何副作用，交回逐条执行在原地报错。
+ *
+ * @param operation 运算。
+ * @param left 左值。
+ * @param right 右值。
+ * @param bits 结果位宽。
+ * @param unsignedOp 是否无符号。
+ * @param out 结果。
+ * @return 算出结果返回 true；会陷阱返回 false。
+ */
+bool fusedBinary(Op operation, const Slot &left, const Slot &right, int bits, bool unsignedOp, Slot &out)
+{
+    switch (operation)
+    {
+    case Op::Add:
+    case Op::Sub:
+    case Op::Mul:
+    case Op::Div:
+    case Op::Mod:
+    {
+        if (left.isFloat || right.isFloat)
+        {
+            const double a = left.number(), b = right.number();
+            if ((operation == Op::Div || operation == Op::Mod) && b == 0.0) return false;
+            double value = 0.0;
+            switch (operation)
+            {
+            case Op::Add: value = a + b; break;
+            case Op::Sub: value = a - b; break;
+            case Op::Mul: value = a * b; break;
+            case Op::Div: value = a / b; break;
+            default: value = std::fmod(a, b); break;
+            }
+            out = Slot::fromDouble(normalizeFloat(value, bits));
+            return true;
+        }
+        const std::int64_t a = left.integer, b = right.integer;
+        if ((operation == Op::Div || operation == Op::Mod) && b == 0) return false;
+        std::int64_t value = 0;
+        if (unsignedOp && (operation == Op::Div || operation == Op::Mod))
+        {
+            const std::uint64_t ua = static_cast<std::uint64_t>(a), ub = static_cast<std::uint64_t>(b);
+            value = static_cast<std::int64_t>(operation == Op::Div ? ua / ub : ua % ub);
+        }
+        else
+        {
+            if (operation == Op::Div && a == INT64_MIN && b == -1) return false;
+            switch (operation)
+            {
+            case Op::Add: value = static_cast<std::int64_t>(static_cast<std::uint64_t>(a) + static_cast<std::uint64_t>(b)); break;
+            case Op::Sub: value = static_cast<std::int64_t>(static_cast<std::uint64_t>(a) - static_cast<std::uint64_t>(b)); break;
+            case Op::Mul: value = static_cast<std::int64_t>(static_cast<std::uint64_t>(a) * static_cast<std::uint64_t>(b)); break;
+            case Op::Div: value = a / b; break;
+            default: value = (a == INT64_MIN && b == -1) ? 0 : a % b; break;
+            }
+        }
+        TypeInfo type;
+        type.bits = bits;
+        type.isUnsigned = unsignedOp;
+        out = Slot::fromInt(normalizeInt(value, type));
+        return true;
+    }
+    case Op::Shl:
+    case Op::Shr:
+    case Op::ShrU:
+    {
+        if (right.integer < 0 || right.integer >= 64) return false;
+        const int shift = static_cast<int>(right.integer);
+        const auto bitsValue = static_cast<std::uint64_t>(left.integer);
+        const auto value = operation == Op::Shl ? static_cast<std::int64_t>(bitsValue << shift) :
+                           operation == Op::Shr ? (left.integer >> shift) :
+                                                  static_cast<std::int64_t>(bitsValue >> shift);
+        TypeInfo type;
+        type.bits = bits;
+        type.isUnsigned = unsignedOp;
+        out = Slot::fromInt(normalizeInt(value, type));
+        return true;
+    }
+    case Op::BitAnd:
+    case Op::BitOr:
+    case Op::BitXor:
+    {
+        const std::int64_t value = operation == Op::BitAnd ? (left.integer & right.integer) :
+                                   operation == Op::BitOr  ? (left.integer | right.integer) :
+                                                             (left.integer ^ right.integer);
+        out = Slot::fromInt(value);
+        return true;
+    }
+    case Op::Eq:
+    case Op::Ne:
+    case Op::Lt:
+    case Op::Le:
+    case Op::Gt:
+    case Op::Ge:
+    case Op::LtU:
+    case Op::LeU:
+    case Op::GtU:
+    case Op::GeU:
+    {
+        bool value = false;
+        if (operation == Op::Eq || operation == Op::Ne)
+        {
+            const bool equal = (left.isFloat || right.isFloat) ? (left.number() == right.number()) : (left.integer == right.integer);
+            value = operation == Op::Eq ? equal : !equal;
+        }
+        else if (operation == Op::LtU || operation == Op::LeU || operation == Op::GtU || operation == Op::GeU)
+        {
+            const std::uint64_t a = static_cast<std::uint64_t>(left.integer), b = static_cast<std::uint64_t>(right.integer);
+            value = operation == Op::LtU ? a < b : operation == Op::LeU ? a <= b :
+                                               operation == Op::GtU     ? a > b :
+                                                                          a >= b;
+        }
+        else if (left.isFloat || right.isFloat)
+        {
+            const double a = left.number(), b = right.number();
+            value = operation == Op::Lt ? a < b : operation == Op::Le ? a <= b :
+                                              operation == Op::Gt     ? a > b :
+                                                                        a >= b;
+        }
+        else
+        {
+            const std::int64_t a = left.integer, b = right.integer;
+            value = operation == Op::Lt ? a < b : operation == Op::Le ? a <= b :
+                                              operation == Op::Gt     ? a > b :
+                                                                        a >= b;
+        }
+        out = Slot::fromInt(value ? 1 : 0);
+        return true;
+    }
+    default: return false;
+    }
+}
+}  // namespace
+
 /**
  * @brief 建立虚拟机独立的协作停止标志。
  * @param trace 是否记录逐指令执行轨迹。
@@ -316,6 +457,12 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
     };
 
     /**
+     * @brief 判断槽号是否落在当前帧内且已绑定；槽号越界一律视为未绑定。
+     */
+    const auto slotReady = [](const Frame &frame, std::size_t slot) {
+        return slot != execution_detail::absentRegister && slot < frame.bound.size() && frame.bound[slot];
+    };
+    /**
      * @brief 按数字身份找变量；共享汇编入口与动态回调保留名称回退。
      */
     auto findDense = [&](std::size_t symbol) -> Slot * {
@@ -324,7 +471,8 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         {
             auto &frame = *frames.back();
             const auto local = frame.layout->slots.find(symbol);
-            if (local != frame.layout->slots.end() && frame.bound[local->second]) return &frame.slots[local->second];
+            if (local != frame.layout->slots.end() && slotReady(frame, local->second))
+                return &frame.slots[local->second];
         }
         return globalBound[symbol] ? &globalSlots[symbol] : nullptr;
     };
@@ -365,7 +513,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         const auto &prepared = plan.code[index];
         if (!optimizeExecution_ || prepared.shared || (!frames.empty() && !frames.back()->locals.empty()))
             return findSlot(program.code[index].name);
-        if (!frames.empty() && prepared.owner == frames.back()->layout && prepared.local != execution_detail::absentRegister && frames.back()->bound[prepared.local])
+        if (!frames.empty() && prepared.owner == frames.back()->layout && slotReady(*frames.back(), prepared.local))
             return &frames.back()->slots[prepared.local];
         if (!frames.empty() && prepared.owner != frames.back()->layout) return findSlot(program.code[index].name);
         return prepared.symbol != absent && globalBound[prepared.symbol] ? &globalSlots[prepared.symbol] : nullptr;
@@ -409,7 +557,7 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             return;
         }
         const auto stored = normalizeStored(prepared.symbol, value);
-        if (!frames.empty() && prepared.local != execution_detail::absentRegister && frames.back()->bound[prepared.local])
+        if (!frames.empty() && slotReady(*frames.back(), prepared.local))
             frames.back()->slots[prepared.local] = stored;
         else
         {
@@ -423,8 +571,13 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
     const auto prepareFrame = [&](Frame &frame, std::size_t entry) {
         if (!optimizeExecution_) return;
         frame.layout = plan.layout(entry);
-        frame.slots.resize(frame.layout->slots.size());
-        frame.bound.resize(frame.slots.size(), false);
+        /* 帧尺寸取"实际用到的槽数"，不是"本函数符号数"：复用后两者不再相等。 */
+        const std::size_t used = frame.layout->count != 0u ? frame.layout->count : frame.layout->slots.size();
+        frame.slots.resize(used);
+        frame.bound.resize(used, false);
+        /* 复用后一个槽会先后属于几个变量，记下当前占用者：谁换上来谁清零，
+         * 同一个变量重复声明（形参、循环体里的 `decl`）则保留已有值。 */
+        frame.occupant.assign(used, execution_detail::absent);
     };
     /**
      * @brief 绑定参数到稠密槽，动态汇编参数名保留回退。
@@ -432,11 +585,13 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
     const auto bindParameter = [&](Frame &frame, const Memory::String &name, const Slot &value) {
         if (frame.layout)
         {
-            const auto slot = frame.layout->slots.find(plan.find(name));
-            if (slot != frame.layout->slots.end())
+            const auto symbol = plan.find(name);
+            const auto slot = frame.layout->slots.find(symbol);
+            if (slot != frame.layout->slots.end() && slot->second < frame.bound.size())
             {
                 frame.slots[slot->second] = value;
                 frame.bound[slot->second] = true;
+                frame.occupant[slot->second] = symbol;  // 形参先占住这个槽，随后那条 `decl` 不会再清零。
                 return;
             }
         }
@@ -1091,77 +1246,132 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         if (optimizeExecution_ && plan.code[pc].internal != execution_detail::absent && !trace_ && debugHook_ == nullptr && !instructionHook_ && !timeCallback_ && watchdog.period == 0 && (stepLimit == 0 || stepLimit - result.steps >= plan.registers[plan.code[pc].internal].span) && (stackLimit_ == 0 || (stack.size() <= stackLimit_ && stackLimit_ - stack.size() >= 2)))
         {
             const auto &internal = plan.registers[plan.code[pc].internal];
-            const Slot *left = readPrepared(internal.left);
             const Slot immediate = internal.floatingLiteral ? Slot::fromDouble(internal.realImmediate) : Slot::fromInt(internal.immediate);
-            const Slot *right = internal.literal ? &immediate : readPrepared(internal.right);
-            if (left && right && (left->isFloat || right->isFloat) && !left->isText && !right->isText && internal.operation != Op::LtU && internal.operation != Op::LeU && internal.operation != Op::GtU && internal.operation != Op::GeU)
+            const auto kind = internal.kind;
+            const bool branching = kind == execution_detail::RegisterOp::IntegerBranch || kind == execution_detail::RegisterOp::FloatBranch;
+            bool handled = false;
+            bool take = false;
+            std::size_t next = pc + internal.span;
+            if (kind == execution_detail::RegisterOp::Copy)
             {
-                const auto operation = internal.operation;
-                const double a = left->number(), b = right->number();
-                Slot value;
-                switch (operation)
+                const Slot *source = internal.literal ? &immediate : readPrepared(internal.left);
+                if (source != nullptr)
                 {
-                case Op::Add: value = Slot::fromDouble(normalizeFloat(a + b, internal.bits)); break;
-                case Op::Sub: value = Slot::fromDouble(normalizeFloat(a - b, internal.bits)); break;
-                case Op::Mul: value = Slot::fromDouble(normalizeFloat(a * b, internal.bits)); break;
-                case Op::Eq: value = Slot::fromInt(a == b); break;
-                case Op::Ne: value = Slot::fromInt(a != b); break;
-                case Op::Lt:
-                case Op::LtU: value = Slot::fromInt(a < b); break;
-                case Op::Le:
-                case Op::LeU: value = Slot::fromInt(a <= b); break;
-                case Op::Gt:
-                case Op::GtU: value = Slot::fromInt(a > b); break;
-                case Op::Ge:
-                case Op::GeU: value = Slot::fromInt(a >= b); break;
-                default: return false;
+                    storePrepared(internal.destination, *source);
+                    handled = true;
                 }
-                if (internal.storeResult) storePrepared(internal.destination, value);
-                const bool zero = internal.storeResult ? normalizeStored(plan.code[internal.destination].symbol, value).number() == 0.0 : value.number() == 0.0;
-                result.steps += internal.span;
-                ++result.fusedGroups;
-                result.maxStackDepth = std::max(result.maxStackDepth, stack.size() + 2);
-                pc = internal.kind == execution_detail::RegisterOp::IntegerBranch && (zero == internal.jumpOnZero) ? internal.target : pc + internal.span;
-                return pc < program.code.size();
             }
-            if (left && right && !left->isFloat && !right->isFloat && !left->isText && !right->isText)
+            else if (kind == execution_detail::RegisterOp::Unary)
             {
-                const auto operation = internal.operation;
-                const auto a = left->integer, b = right->integer;
-                std::int64_t value = 0;
-                switch (operation)
+                const Slot *source = internal.literal ? &immediate : readPrepared(internal.left);
+                if (source != nullptr && !source->isText)
                 {
-                case Op::Add: value = static_cast<std::int64_t>(static_cast<std::uint64_t>(a) + static_cast<std::uint64_t>(b)); break;
-                case Op::Sub: value = static_cast<std::int64_t>(static_cast<std::uint64_t>(a) - static_cast<std::uint64_t>(b)); break;
-                case Op::Mul: value = static_cast<std::int64_t>(static_cast<std::uint64_t>(a) * static_cast<std::uint64_t>(b)); break;
-                case Op::Eq: value = a == b; break;
-                case Op::Ne: value = a != b; break;
-                case Op::Lt: value = a < b; break;
-                case Op::Le: value = a <= b; break;
-                case Op::Gt: value = a > b; break;
-                case Op::Ge: value = a >= b; break;
-                case Op::LtU: value = static_cast<std::uint64_t>(a) < static_cast<std::uint64_t>(b); break;
-                case Op::LeU: value = static_cast<std::uint64_t>(a) <= static_cast<std::uint64_t>(b); break;
-                case Op::GtU: value = static_cast<std::uint64_t>(a) > static_cast<std::uint64_t>(b); break;
-                case Op::GeU: value = static_cast<std::uint64_t>(a) >= static_cast<std::uint64_t>(b); break;
-                default: break;
+                    Slot value;
+                    if (internal.operation == Op::Neg)
+                    {
+                        if (source->isFloat || internal.floatOperation)
+                            value = Slot::fromDouble(normalizeFloat(-source->number(), internal.bits));
+                        else
+                        {
+                            TypeInfo type;
+                            type.bits = internal.bits;
+                            type.isUnsigned = internal.unsignedResult;
+                            value = Slot::fromInt(normalizeInt(-source->integer, type));
+                        }
+                    }
+                    else
+                    {
+                        TypeInfo type;
+                        type.bits = internal.bits;
+                        type.isUnsigned = internal.unsignedResult;
+                        value = Slot::fromInt(normalizeInt(~source->integer, type));
+                    }
+                    storePrepared(internal.destination, value);
+                    handled = true;
                 }
-                if (operation == Op::Add || operation == Op::Sub || operation == Op::Mul)
+            }
+            else if (kind == execution_detail::RegisterOp::Wide)
+            {
+                const Slot *left = readPrepared(internal.left);
+                const Slot *right = internal.literal ? &immediate : readPrepared(internal.right);
+                if (left != nullptr && right != nullptr && !left->isFloat && !right->isFloat && !left->isText && !right->isText)
                 {
-                    TypeInfo type;
-                    type.bits = internal.bits;
-                    type.isUnsigned = internal.unsignedResult;
-                    value = normalizeInt(value, type);
+                    const int width = (internal.bits > 0 && internal.bits <= 64) ? internal.bits : 32;
+                    const std::uint64_t mask = (width >= 64) ? ~0ULL : ((1ULL << width) - 1ULL);
+                    const std::uint64_t a = static_cast<std::uint64_t>(left->integer) & mask;
+                    const std::uint64_t b = static_cast<std::uint64_t>(right->integer) & mask;
+                    if (internal.operation == Op::MulWide)
+                    {
+                        const std::uint64_t product = a * b;
+                        storePrepared(internal.destination, Slot::fromInt(static_cast<std::int64_t>((product >> width) & mask)));
+                        storePrepared(internal.destination2, Slot::fromInt(static_cast<std::int64_t>(product & mask)));
+                        handled = true;
+                    }
+                    else
+                    {
+                        std::int64_t quotient = 0, remainder = 0;
+                        bool exact = true;
+                        if (internal.unsignedResult)
+                        {
+                            if (b == 0u)
+                                exact = false;
+                            else
+                            {
+                                quotient = static_cast<std::int64_t>(a / b);
+                                remainder = static_cast<std::int64_t>(a % b);
+                            }
+                        }
+                        else
+                        {
+                            TypeInfo signedType;
+                            signedType.bits = width;
+                            signedType.isUnsigned = false;
+                            signedType.isFloat = false;
+                            const std::int64_t sa = normalizeInt(static_cast<std::int64_t>(a), signedType);
+                            const std::int64_t sb = normalizeInt(static_cast<std::int64_t>(b), signedType);
+                            if (sb == 0)
+                                exact = false;
+                            else
+                            {
+                                quotient = sa / sb;
+                                remainder = sa % sb;
+                            }
+                        }
+                        if (exact)
+                        {
+                            storePrepared(internal.destination, Slot::fromInt(remainder));
+                            storePrepared(internal.destination2, Slot::fromInt(quotient));
+                            handled = true;
+                        }
+                    }
                 }
-                if (internal.storeResult)
-                    storePrepared(internal.destination, Slot::fromInt(value));
-                const bool zero = internal.kind == execution_detail::RegisterOp::IntegerBranch && internal.storeResult ?
-                                      normalizeStored(plan.code[internal.destination].symbol, Slot::fromInt(value)).number() == 0.0 :
-                                      value == 0;
+            }
+            else
+            {
+                const Slot *left = readPrepared(internal.left);
+                const Slot *right = internal.literal ? &immediate : readPrepared(internal.right);
+                Slot value;
+                if (left != nullptr && right != nullptr && !left->isText && !right->isText && fusedBinary(internal.operation, *left, *right, internal.bits, internal.unsignedResult, value))
+                {
+                    if (internal.storeResult) storePrepared(internal.destination, value);
+                    // 比较结果常被立刻重装写进另一个槽；写回的是**按目标槽类型归一化后**的值。
+                    if (internal.destination2 != execution_detail::absent)
+                        storePrepared(internal.destination2, internal.storeResult ? normalizeStored(plan.code[internal.destination].symbol, value) : value);
+                    if (branching)
+                    {
+                        const bool zero = internal.storeResult ? normalizeStored(plan.code[internal.destination].symbol, value).number() == 0.0 : value.number() == 0.0;
+                        take = zero == internal.jumpOnZero;
+                        if (take) next = internal.target;
+                    }
+                    handled = true;
+                }
+            }
+            if (handled)
+            {
                 result.steps += internal.span;
                 ++result.fusedGroups;
-                result.maxStackDepth = std::max(result.maxStackDepth, stack.size() + 2);
-                pc = internal.kind == execution_detail::RegisterOp::IntegerBranch && (zero == internal.jumpOnZero) ? internal.target : pc + internal.span;
+                result.maxStackDepth = std::max(result.maxStackDepth, stack.size() + (kind == execution_detail::RegisterOp::Copy ? 1u : 2u));
+                pc = next;
                 return pc < program.code.size();
             }
         }
@@ -1231,9 +1441,17 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                 {
                     auto &frame = *frames.back();
                     const auto slot = frame.layout->slots.find(symbol);
-                    if (slot != frame.layout->slots.end() && !frame.bound[slot->second])
+                    /* 声明就是"这个槽从零开始"：槽位可能与已经结束生命周期的变量共用，
+                     * 所以换了占用者就要重置，否则会读到上一个占用者留下的悬空值。
+                     * 同一个符号自己重复声明时保留已有值——形参的槽在进入函数前就由调用方
+                     * 绑好值了，那儿再清零就等于把实参抹掉。 */
+                    if (slot != frame.layout->slots.end() && slot->second < frame.bound.size())
                     {
-                        frame.slots[slot->second] = zero;
+                        if (frame.occupant[slot->second] != symbol)
+                        {
+                            frame.slots[slot->second] = zero;
+                            frame.occupant[slot->second] = symbol;
+                        }
                         frame.bound[slot->second] = true;
                     }
                 }

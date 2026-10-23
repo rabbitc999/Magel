@@ -152,10 +152,15 @@ void testTypes()
  */
 void testStackLimit()
 {
+    /* 两个操作数都刻意避开常量折叠：折叠 / 内联会把 `1 + 2` 折成一个拷贝，求值深度随之
+     * 变成 1 槽，"上限刚好卡住"的那条错误路径就再也走不到。全局变量不参与常量传播，
+     * 所以 `a + 2` 必然先压两个值。 */
     const stackvm::QuadFile file = stackvm::parseQuads(
-        "0: (+, 1, 2, sum)\n"
-        "1: (write, sum, _, _)\n"
-        "2: (halt, _, _, _)\n",
+        "0: (decl, i64, global, a)\n"
+        "1: (:=, 7, _, a)\n"
+        "2: (+, a, 2, sum)\n"
+        "3: (write, sum, _, _)\n"
+        "4: (halt, _, _, _)\n",
         "<stack-limit>");
     stackvm::Program program;
     CHECK(stackvm::assemble(file, program));
@@ -174,7 +179,7 @@ void testStackLimit()
     enough.setStackLimit(2u);
     const stackvm::RunResult result = enough.run(program);
     CHECK(result.ok);
-    CHECK(result.output == "3");
+    CHECK(result.output == "9");
     CHECK(result.maxStackDepth == 2u);
 }
 
@@ -430,8 +435,9 @@ void testDiagnostics()
     CHECK(program.diagnostics.front().find("不支持") != Memory::String::npos);
 
     // 运行时错误：读未定义变量 / 除零。
+    /* 结果必须被读一次：没人读的纯运算会被死代码消除删掉，错误也就跟着消失了。 */
     Memory::String output;
-    const stackvm::RunResult undefined = runText("0: (+, x, 1, y)\n1: (halt, _, _, _)\n", {}, output);
+    const stackvm::RunResult undefined = runText("0: (+, x, 1, y)\n1: (write, y, _, _)\n2: (halt, _, _, _)\n", {}, output);
     CHECK(!undefined.ok);
     CHECK(undefined.error.find("未定义") != Memory::String::npos);
     const stackvm::RunResult divide = runText(
@@ -1534,7 +1540,7 @@ void testProgramBinary()
     compactInput.close();
     CHECK(compactBytes.size() < 68u); /* 新格式增加四字节内部指令计数。 */
     CHECK(compactBytes.size() > 10u);
-    CHECK(compactBytes[8] == 5u && compactBytes[9] == 0u); /* 小端格式版本 4 */
+    CHECK(compactBytes[8] == 6u && compactBytes[9] == 0u); /* 小端格式版本 6 */
 
     stackvm::Program restored;
     CHECK(stackvm::loadProgramBinary(path, restored, &diagnostics));

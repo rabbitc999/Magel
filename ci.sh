@@ -208,6 +208,8 @@ run_step "检查 opcode 资源所有权与借用" "$PYTHON" tests/chali_opcode_r
 run_step "检查 opcode 反射与语言服务隐藏" "$PYTHON" tests/chali_opcode_visibility.py --chali chali
 run_step "检查 VM 构建与导出清单同步" "$PYTHON" tools/stackvm_sources.py --check
 run_required_step "检查 VM 模块组织与实现增量重编" "$PYTHON" tests/stackvm_module_layout.py
+run_step "运行 VM 双核差分回归" "$PYTHON" tests/vm_differential.py --chali chali
+run_step "检查规范化中间表示结构" "$PYTHON" tests/quad_ir.py --chali chali
 run_required_step "编译 TOML 注释保存回归" g++ -std=c++17 -O2 library/toml/test_toml.cpp library/toml/toml.cpp library/toml/toml_source.cpp -o tmp/ci/toml-comments
 run_step "运行 TOML 注释保存回归" tmp/ci/toml-comments
 run_step "检查标准对象与 VM 核心隔离" "$PYTHON" tests/opcode_core_isolation.py
