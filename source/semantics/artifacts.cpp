@@ -1,4 +1,6 @@
 /* ---------- 产物 ---------- */
+/* AOT 只需要这一份接口：把 `abi` 外部函数交给它时用它的数据结构。 */
+#include "chali_aot.hpp"
 
 /**
  * @brief 将诊断消息列表用中文分号连接为一段文本。
@@ -951,6 +953,55 @@ bool BindRuntimeAbi(chali_glue::Registry *registry)
     }
     return true;
 }
+
+/**
+ * @brief 把 C ABI 类型名换成 AOT 产物（C99）里能用的类型名。
+ * @param abiType `CAbiType` 给出的名字（`std::int64_t` / `double` / `const char *` …）。
+ * @retval C99 类型名；认不出来时按 `long long` 兜底。
+ */
+static Memory::String AotCType(const Memory::String &abiType)
+{
+    if (abiType.empty()) return "long long";
+    if (abiType == "void") return "void";
+    if (abiType == "bool") return "int";
+    if (abiType == "float" || abiType == "double") return abiType;
+    if (abiType == "const char *" || abiType == "char *") return "const char *";
+    const bool unsigned_ = abiType.find("uint") != Memory::String::npos;
+    if (abiType.find("int8_t") != Memory::String::npos) return unsigned_ ? "unsigned char" : "signed char";
+    if (abiType.find("int16_t") != Memory::String::npos) return unsigned_ ? "unsigned short" : "short";
+    if (abiType.find("int32_t") != Memory::String::npos) return unsigned_ ? "unsigned int" : "int";
+    if (abiType.find("int64_t") != Memory::String::npos) return unsigned_ ? "unsigned long long" : "long long";
+    return "long long";
+}
+
+/**
+ * @brief 收集 `abi "库" { ... }` 声明的外部 C 函数，交给 AOT 生成 `extern` 声明。
+ *
+ * 这是"AOT 支持外部 C 调用"的源头：VM 那条路在运行期 `dlopen` 这些符号，
+ * AOT 把它们变成编译期的 `extern` 声明与链接参数，调用不再经过任何虚拟机设施。
+ * @retval 外部函数清单（按声明顺序）。
+ */
+Memory::Vector<::chali_aot::ExternFunction> ChaliAotAbiExterns()
+{
+    Memory::Vector<::chali_aot::ExternFunction> out;
+    for (const MFunctionDecl &function : g_functionDecls)
+    {
+        if (function.abiLibrary.empty() || function.superseded) continue;
+        ::chali_aot::ExternFunction entry;
+        entry.label = function.label;
+        entry.symbol = function.abiSymbol.empty() ? function.label : function.abiSymbol;
+        entry.library = function.abiLibrary;
+        entry.resultType = AotCType(CAbiType(function.signature.result));
+        for (const auto &parameter : function.signature.params)
+            entry.parameterTypes.push_back(AotCType(CAbiType(parameter.type)));
+        out.push_back(std::move(entry));
+    }
+    return out;
+}
+
+/* 把上面这个函数挂给 AOT：它自己是独立模块，不能反向 include 前端，
+ * 所以由前端在静态初始化时注入一次取 abi 声明的办法。 */
+static const bool kChaliAotRegistered = (::chali_aot::setAbiExternProvider(&ChaliAotAbiExterns), true);
 
 /**
  * @brief 写出编译产生的四元式、数据与二进制产物。

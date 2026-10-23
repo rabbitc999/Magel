@@ -1,6 +1,28 @@
 # ChaLi 变更记录
 
-版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.28.4**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.29.0**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+
+
+## 0.29.0 — AOT 后端：四元式编成自包含 C 源码再出原生产物，默认 UNCHECKED
+
+- 新增 `chali aot` 场景（也支持 `--mode aot`）：把机器级优化后的四元式翻译成**自包含 C 源码**，再调 cc 编出原生可执行文件 / 动态库。产物自带几百行 C99 运行时（bump 分配器、堆串、格式化输出、panic），**不链接 stackvm、不带字节码、没有分派循环**——这是对「尽量减少对 VM 的依赖」的直接回答。翻译与调度在 `source/chali_aot.{hpp,cpp}`，`local.mk` 的 `CHALI_FRONTEND_MODULES` 追加 `chali_aot` 参与构建。
+- **默认 UNCHECKED**：`check` / `checkptr` 四元式在默认路径上直接跳过，产物里没有越界与空指针检查（AOT 一般用在部署模式，要的是速度）；`--checked` 才把检查编进去。
+- 前任（被删那一版）的两条互调能力都保住了：
+  - **AOT 调外部 C**：`abi` 块声明的函数在产物里生成 `extern` 声明 + 直接调用（编译期链接，不走 `dlopen`），并把 `abiLibrary` 自动加进链接命令行。
+  - **外部 C 调 AOT**：`--shared --export <名字>` 出动态库与同名 `.h`，头文件里带 `chali_init` / `chali_finish` 与导出函数的**真实形参签名**（上一版只写 `int64_t f_x(void)`，有形参的函数根本调不进来）。
+- 翻译器要点：
+  - 切段按「入口 `label` 到下一个入口」走，并且**往前吞掉标签之前那串 `decl`**——ChaLi 把形参声明排在函数标签之前（跟在上一段 `ret` 后面），不吞就会把形参当成前一个函数的局部变量，生成的代码要么重复定义要么用错值。
+  - 形参表以这串 `decl` 为准，另有一遍「只读不写」推断兜底；`decl` 里写 `global` 的名字（如 `const int64 N`）进文件作用域，不进形参表——否则 `work(N)` 会拿到 0。
+  - 种类（整数 / 浮点 / 字符串）沿 `:=`、`load`、函数返回值多轮扩散；字符串来源只认**确实返回字符串**的内建（`std::lang::String.length` 返回的是整数，按名字里含 `String` 猜会把长度当串打印）。
+  - 打印由**格式串里的转换字符**说了算，不看翻译器猜的种类：`%s` 按地址读串、`%f` / `%g` 按 double 的位模式解释；浮点默认精度跟 `native_format.cpp` 一致写成 `.3`（`%g` 打 3.625 出来是 `3.62`）。
+  - 数据映像里的字面量是 NUL 结尾的裸字节、堆上的串是「8 字节长度 + 字节」，两种按地址分界线区分（VM 那侧靠 `heap->contains`）。
+  - 可达性分析从 `main` 与导出函数沿 `call` 边走一遍，走不到的段只留空壳——标准库绝大多数不用翻译。
+- 本次顺带修掉的既有缺陷：
+  - `splitOperation` 把 `:=` 按 `find(':')` 切成了 base="" / suffix="="，于是赋值目标被当成整数重新标一遍，`float64 fromInt = 2` 这类声明的浮点种类被抹掉（`example/samples/float.chl` 能抓到）。
+  - `cvt` 到窄整数没有截断 / 符号扩展：`(int8)255` 与 `(uint8)258` 在产物里得到的不是 -1 与 2（`example/samples/basic_casts.chl` 能抓到）。
+- 新增 `example/samples/aot_basic.chl` 与 `example/expected/aot_basic.txt`（整数 / 浮点算术、递归、if / else、while、数组、字符串 `length()`、格式化输出），以及回归 `tests/chali_aot.py`：产物与解释执行逐行一致、默认 UNCHECKED / `--checked` 的差别、`--emit-c` 只出源码、AOT 调外部 C、外部 C 调 AOT 五组断言，已接进 `ci.sh`。
+- 性能（`benchmarks/perf/run.py --only chali`，本机，0.29.0 最终二进制）：整数依赖链 46.071 ms、浮点依赖链 8.706 ms、小函数调用 202.724 ms、固定数组循环读取 202.620 ms、动态数组 push + 遍历 567.739 ms——与 0.28.4 实测持平，AOT 不动解释执行路径。同一条 Lehmer 依赖链（400 万轮 × 5 次）另测：解释执行 1007 ms，AOT 产物 30 ms（约 33 倍），两边 `sink` 同为 5789300362。
+- 覆盖面（276 个 `example/samples` 全量扫一遍，AOT 产物 stdout 与解释执行逐行比对）：**51 个一致**，`basic_casts` 这一轮也进来了——比较 / 逻辑运算的结果种类原来会跟着后缀走（`ne:f64` 被推成浮点，`(bool)0.5` 在产物里是 `double 1.0`，按 `%d` 打出来是一串位模式），已改成这些运算的结果恒为整数。另有 202 个被翻译器明确拒掉（容器 / 对象 / 闭包内建、`callptr`、`free` 等，报诊断而不是静默出错），23 个能编出来但语义还没对齐（主要是 `closeable` / 闭包捕获那几组）。
 
 
 ## 0.28.4 — 性能：把浮点运算接回寄存器区域核，浮点依赖链快 29 倍

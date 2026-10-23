@@ -1,0 +1,9 @@
+acc = 273
+fib(10) = 55
+d = 7.25
+half = 3.62
+a = 21 14 196
+total = 238
+s = hello len = 5
+same
+big

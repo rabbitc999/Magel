@@ -1,0 +1,67 @@
+/* aot_basic.chl —— `chali aot` 的冒烟样例。
+ *
+ * AOT 走的是「四元式 → 自包含 C 源码 → cc」这条路，产物不带字节码、不链接虚拟机，
+ * 所以样例只覆盖这一版翻译器真正支持的构造：整数与浮点算术、函数调用与递归、
+ * if / else、while、数组、字符串、格式化输出。
+ *
+ * 解释执行（`chali run`）与 AOT 产物（`chali aot` 编出的 exe）的 stdout 必须逐行一致。
+ */
+
+int64 fib(int64 n) {
+    if (n < 2) {
+        return n;
+    }
+    return fib(n - 1) + fib(n - 2);
+}
+
+int64 mix(int64 x) { return x * 17 + 3; }
+
+float64 half(float64 x) { return x / 2.0; }
+
+void main() {
+    int64 acc = 0;
+    int64 i = 0;
+    while (i < 6) {
+        acc = acc + mix(i);
+        i = i + 1;
+    }
+    println("acc = {}", acc);
+    println("fib(10) = {}", fib(10));
+
+    float64 d = 7.25;
+    println("d = {}", d);
+    println("half = {}", half(d));
+
+    int64 a[4];
+    a[0] = 7;
+    a[1] = a[0] * 3;
+    a[2] = a[1] - a[0];
+    a[3] = a[2] * a[2];
+    println("a = {} {} {}", a[1], a[2], a[3]);
+
+    int64 total = 0;
+    int64 k = 0;
+    while (k < 4) {
+        total = total + a[k];
+        k = k + 1;
+    }
+    println("total = {}", total);
+
+    String s = "hello";
+    println("s = {} len = {}", s, s.length());
+    if (s == "hello") {
+        println("same");
+    } else {
+        println("different");
+    }
+
+    if (acc > 100) {
+        println("big");
+    } else {
+        if (acc > 10) {
+            println("middle");
+        } else {
+            println("small");
+        }
+    }
+}

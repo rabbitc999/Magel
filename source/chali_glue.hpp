@@ -3,6 +3,7 @@
 #define PARSE_ENGINE_CHALI_GLUE_HPP
 
 #include "stackvm.hpp"
+#include "chali_aot.hpp"
 #include "glue/std_collection.hpp"
 #include "chali_generic_name.hpp"
 

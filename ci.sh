@@ -269,6 +269,7 @@ if [ "$full" = 1 ] && [ "$run_python" = 1 ]; then
     run_step "运行数值、数组安全与 float32 后缀回归" "$PYTHON" tests/chali_numeric_v101.py --chali chali
     run_step "运行 match 整数模式重叠警告回归" "$PYTHON" tests/chali_match_overlap.py --chali chali
     run_step "运行 fn 匿名函数与 lambda 兼容回归" "$PYTHON" tests/chali_fn.py --chali chali
+    run_step "运行 AOT 后端（自包含 C 产物与 C 双向互调）回归" "$PYTHON" tests/chali_aot.py --chali chali
     # 软重启看门狗（PC 宿主）：--watchdog 打开前后的行为、输出回滚与重启上限。
     run_step "运行内存访问护栏回归" "$PYTHON" tests/chali_memory_guard.py --chali chali
     run_step "运行软重启看门狗回归" "$PYTHON" tests/chali_watchdog.py --chali chali
