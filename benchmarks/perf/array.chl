@@ -1,0 +1,41 @@
+/* array —— 16 元素固定数组的读取，下标由累加器决定（4,000,000 轮，全部命中缓存）。 */
+
+import std::clock;
+
+const int64 N = 4000000;
+const int64 REPS = 5;
+
+int64 work(int64 seed) {
+    int64 a[16];
+    int64 k = 0;
+    while (k < 16) {
+        a[k] = k * 3;
+        k = k + 1;
+    }
+    int64 acc = seed;
+    int64 i = 0;
+    while (i < N) {
+        acc = (acc + a[acc & 15]) & 2147483647;
+        i = i + 1;
+    }
+    return acc;
+}
+
+void main() {
+    int64 sink = work(0);
+    int64 t[REPS];
+    int64 r = 0;
+    while (r < REPS) {
+        int64 t0 = std::clock::nowNanos();
+        sink = sink + work(r);
+        int64 t1 = std::clock::nowNanos();
+        t[r] = t1 - t0;
+        r = r + 1;
+    }
+    r = 0;
+    while (r < REPS) {
+        println("rep {}", t[r]);
+        r = r + 1;
+    }
+    println("sink {}", sink);
+}

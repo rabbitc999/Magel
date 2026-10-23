@@ -1,0 +1,35 @@
+/* float_chain —— 依赖链式浮点乘加，1,000,000 轮，双精度。 */
+
+import std::clock;
+
+const int64 N = 1000000;
+const int64 REPS = 5;
+
+float64 work(int64 seed) {
+    float64 x = (float64)seed;
+    int64 i = 0;
+    while (i < N) {
+        x = x * 1.0000001 + 0.0000001;
+        i = i + 1;
+    }
+    return x;
+}
+
+void main() {
+    float64 sink = work(0);
+    int64 t[REPS];
+    int64 r = 0;
+    while (r < REPS) {
+        int64 t0 = std::clock::nowNanos();
+        sink = sink * 0.5 + work(r);
+        int64 t1 = std::clock::nowNanos();
+        t[r] = t1 - t0;
+        r = r + 1;
+    }
+    r = 0;
+    while (r < REPS) {
+        println("rep {}", t[r]);
+        r = r + 1;
+    }
+    println("sink {1:9F}", sink);
+}

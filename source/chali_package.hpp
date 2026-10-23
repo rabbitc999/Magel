@@ -140,7 +140,7 @@ Memory::Vector<Memory::String> tomlArray(const toml::Value &value,
 /**
  * @brief 当前工具链版本，参与项目最低版本验证。
  */
-inline constexpr const char *compilerVersion = "0.28.1";
+inline constexpr const char *compilerVersion = "0.28.2";
 
 /**
  * @brief 解析 `1.2.3` 形式的三段版本号。

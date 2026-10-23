@@ -1,0 +1,36 @@
+/* int_chain —— 依赖链式整数乘加（Lehmer 生成器），4,000,000 轮。
+ * 每轮 acc 都参与下一轮，不能化成闭式；seed 让每次调用的结果不同，防止被整体提到计时外。 */
+
+import std::clock;
+
+const int64 N = 4000000;
+const int64 REPS = 5;
+
+int64 work(int64 seed) {
+    int64 acc = seed;
+    int64 i = 0;
+    while (i < N) {
+        acc = (acc * 48271 + i) & 2147483647;
+        i = i + 1;
+    }
+    return acc;
+}
+
+void main() {
+    int64 sink = work(0);
+    int64 t[REPS];
+    int64 r = 0;
+    while (r < REPS) {
+        int64 t0 = std::clock::nowNanos();
+        sink = sink + work(r);
+        int64 t1 = std::clock::nowNanos();
+        t[r] = t1 - t0;
+        r = r + 1;
+    }
+    r = 0;
+    while (r < REPS) {
+        println("rep {}", t[r]);
+        r = r + 1;
+    }
+    println("sink {}", sink);
+}

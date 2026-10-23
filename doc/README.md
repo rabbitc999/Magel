@@ -122,7 +122,7 @@ ChaLi 让业务逻辑只写一次：同一份源码编译出的字节码，由�
 
 - [11 借用控制流与算法验证](11-algorithm-validation.md)：独立数据流检查、链表 / BST / DFS / BFS、NOIP2015 运输计划与暴力对照。
 
-- [12 VM 性能对比](12-vm-performance.md)：ChaLi 0.18.3 / 0.18.2 的 VM、JVM 不带与带即时编译、Python、Lua、原生 C++ 的同机五类实测；包含完整测试代码、性能差异原因、计时口径和两轮原始数据。
+- [12 VM 性能](12-vm-performance.md)：0.28.2 在五种负载上与原生（C / C++ / Rust / Go）、即时编译（Java、Node）、字节码解释（Java `-Xint`）和 CPython 的同机实测；含相对 C 的倍数、寄存器核开关对照、归因、计时口径与复现命令。
 
 - 静态 SQLite 与 MySQL/MariaDB 连接入口：[SQL 接口](../example/sql-chali/doc/01-sql-library.md)、[SQLite 实库回归](../tests/chali_sqlite.py)、[连接 ABI 夹具回归](../tests/chali_sql_connections.py)、[MySQL/PostgreSQL 实库回归](../tests/chali_sql_live.py)。
 

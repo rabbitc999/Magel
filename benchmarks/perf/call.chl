@@ -1,0 +1,39 @@
+/* call —— 小函数调用：mix 很短，各语言都允许内联，量的是"这段带函数的源码实际跑多快"。 */
+
+import std::clock;
+
+const int64 N = 1000000;
+const int64 REPS = 5;
+
+int64 mix(int64 x) {
+    return x * 17 + 3;
+}
+
+int64 work(int64 seed) {
+    int64 acc = seed;
+    int64 i = 0;
+    while (i < N) {
+        acc = (mix(acc) + i) & 2147483647;
+        i = i + 1;
+    }
+    return acc;
+}
+
+void main() {
+    int64 sink = work(0);
+    int64 t[REPS];
+    int64 r = 0;
+    while (r < REPS) {
+        int64 t0 = std::clock::nowNanos();
+        sink = sink + work(r);
+        int64 t1 = std::clock::nowNanos();
+        t[r] = t1 - t0;
+        r = r + 1;
+    }
+    r = 0;
+    while (r < REPS) {
+        println("rep {}", t[r]);
+        r = r + 1;
+    }
+    println("sink {}", sink);
+}

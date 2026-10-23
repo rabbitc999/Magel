@@ -34,7 +34,7 @@ Changes: [`CHANGELOG.md`](../../CHANGELOG.md).
 | Looking up commands, config, tests | [Toolchain](09-toolchain.md) |
 | Querying APIs in a terminal or checking editor caches | [Command line manual](../man/en/README.md) → [LSP incremental hints and caching](../man/en/lsp.md) |
 | Looking for the authoritative grammar | [EBNF grammar reference](../14-grammar-ebnf.md) |
-| Comparing VM execution performance | [VM optimization and Lua comparison](12-vm-performance.md) |
+| Comparing VM execution performance | [Cross-language measurement of 0.28.2](12-vm-performance.md) |
 | Want to contribute / see the roadmap | [Roadmap and ecosystem](10-roadmap.md) |
 
 ---

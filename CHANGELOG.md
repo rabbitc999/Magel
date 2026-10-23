@@ -1,6 +1,16 @@
 # ChaLi 变更记录
 
-版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.28.1**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+版本号写在 [`VERSION`](VERSION) 里，格式 `MAJOR.MINOR.PATCH`。当前语言版本为 **0.28.2**：语言尚未发布，当前使用 0.x.x 开发版本。不兼容变更升主版本，兼容功能新增升次版本，修复升补丁版本；所有变更均须记入本文件（改 [`tools/changelog_data.json`](tools/changelog_data.json) 后跑 `--build`），并同步更新 [`doc/21-semantics-frozen.md`](doc/21-semantics-frozen.md) 与 `AGENTS.md`。VS Code 扩展包独立编号；当前版本之前的历史版本统一采用三段 0.x.x 编号，只保留一行摘要。
+
+
+## 0.28.2 — 性能：新增跨语言基准套件，重写 VM 性能页（0.28.2 实测）
+
+- 新增 `benchmarks/perf/`：五类负载（整数依赖链、浮点依赖链、小函数调用、定长数组读取、动态数组）在九种配置下各写一份——ChaLi、C（gcc -O2）、C++17（g++ -O2）、Rust（rustc -O）、Go、Java 22 `-Xint`、Java 22 `-Xbatch`、Node 26、CPython 3.12。每份程序自带单调时钟（只包住 `work(seed)`）并打印校验值，九种配置的校验值必须逐字节相同，否则驱动直接判失败。`work` 带 `seed` 入参、循环带依赖链、数组下标由累加器决定，三条设计都是为了不让编译器把整段计算折叠或提到计时之外。
+- 新增 `benchmarks/perf/run.py`：负责构建（gcc / g++ / rustc / go / javac）、调度、中位数统计与校验值比对，结果写到 `benchmarks/results/<主机名>-<时间戳>-perf/results.json`（含全部原始样本、最小值、最大值）与 `summary.md`；`--only`、`--runs` 可裁剪配置与进程数。
+- 0.28.2 实测结论（Ryzen 5 5600X / Windows 10 / MinGW 11.2.0）：整数依赖链 75.1 ms，是 C 的 17.4 倍，与 JVM 解释器（80.2 ms）基本持平；浮点依赖链 250.6 ms，192 倍，比 JVM 解释器慢 15 倍；小函数调用 309.9 ms，350 倍，比 CPython 慢 2.7 倍；定长数组 335.8 ms，48.6 倍；动态数组 891.7 ms，917 倍，比 CPython 慢 16 倍。对照组 Java `-Xbatch` 0.9–1.6 倍、Node 浮点 1.0 倍、CPython 23–130 倍。
+- 重写 `doc/12-vm-performance.md` 与英文版：删掉 0.18.3 的历史页与 483 行旧代码附录（`doc/examples/vm-performance.md` 一并删除），改为当前版本的九配置实测表、相对 C 的倍数、分档解读（原生 / 即时编译 / 字节码解释 / 纯解释）、归因证据、计时口径与复现命令。
+- 归因证据进文档：`CHALI_NO_REGISTER_CORE=1` 对照显示整数 22.3 倍、数组 9.9 倍的收益来自寄存器核，调用 2.3 倍、浮点 1.5 倍、容器 1.4 倍——后三条的成本不在分派；容器拆分为「只 push 40 万元素 455 ms」「push 加逐次下标读 903 ms」，约 1.1 µs / 次操作，是最值得下一步优化的路径。
+- 已知问题（本轮未修复）：同一表达式里的两次递归调用（`return f(n-1) + f(n-1);`）第一次的返回值会被第二次调用覆盖，结果错误（`f(n)=f(n-1)+f(n-1)` 在 `n=3` 时得 4，应为 8）；把结果先落到局部变量（`int64 a = f(n-1); return a + f(n-1);`）则正确。关掉寄存器核、机器级优化、槽位复用都不改变现象，判断与前缀临时量在递归激活之间共享存储有关。因此本轮基准套件不含递归用例。
 
 
 ## 0.28.1 — 语言与工具链：`move` 改为运算符、宏补全与普通标识符同口径、库目录并入 source/、一键构建脚本

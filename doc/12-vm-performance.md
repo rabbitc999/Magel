@@ -1,303 +1,192 @@
-# VM 性能对比：VM、JVM、Python、Lua、C++
+# VM 性能：0.28.2 的跨语言实测
 
-本页保留 **2026-10-15 同一台机器上的历史实测**，被测 ChaLi 版本为 **0.18.3 / 0.18.2**，比较五类负载。
-这些数据不作为当前 VERSION 的重新实测；当前能力见[统一说明](17-capabilities.md)。
-ChaLi 两版均使用默认最高 IR 与 VM 优化，并编入反射。
+本页是**当前版本（0.28.2）的实测**：同一台机器、同一批负载，把 ChaLi 的栈式虚拟机与
+4 类执行技术放在一起量——原生机器码（C / C++ / Rust / Go）、即时编译（Java `-Xbatch` / Node）、
+字节码解释（Java `-Xint`）、纯解释（CPython）。全部数字可由
+[`benchmarks/perf/run.py`](../benchmarks/perf/run.py) 一次跑出来，源码在
+[`benchmarks/perf/`](../benchmarks/perf/)，原始样本在
+[`benchmarks/results/`](../benchmarks/results/)。
 
-下面给出实测、完整测试代码及实现证据，不从语言类型预设性能排序。
+结论先摆在这里，证据与归因在后文。
 
-## 1. 测试环境与七个配置
+- **整数循环**：C 的 **17.4 倍**，与 JVM 解释器（80.2 ms）几乎持平（75.1 ms）。
+- **浮点循环**：C 的 **192 倍**，比 JVM 解释器慢 **15 倍**——关掉区域核只慢 1.5 倍，
+  说明成本落在每次运算的槽位与类型归一化上，不在分派次数。
+- **函数调用**：C 的 **350 倍**，比 CPython 还慢 **2.7 倍**——调用入口是当前最贵的一环。
+- **容器**：C 的 **917 倍**，比 CPython 慢 **16 倍**——`push` 与下标读都要过对象服务。
+- **对照组**：Java `-Xbatch` 与原生基本齐平（1.0–1.7 倍），Node 在浮点上与 C 齐平（1.0 倍），
+  CPython 稳定在 23–129 倍。
+
+一句话：ChaLi 现在的位置是"**比 CPython 快，但比 JVM 解释器慢**"——整数追上了，浮点、
+调用、容器三条路径还没追上。
+
+## 1. 测试环境与九个配置
 
 | 项目 | 本轮配置 |
 | --- | --- |
-| 日期 | 2026-10-15，Asia/Shanghai |
-| 系统 | Windows 10 10.0.19045，x64 |
-| CPU / 内存 | AMD Ryzen 5 5600X，6 核 12 线程，32 GB RAM |
-| ChaLi 0.18.3 | `v0.18.3` / `b5cfc9f2720c149bca7626bbaa5cfd52ad8f5576` |
-| ChaLi 0.18.2 | `v0.18.2` / `320108bfda7c0b7035ed019a0010a87b43fe0e71` |
-| 两版 ChaLi 编译器与 VM | GCC/MinGW 11.2.0，`-O2 -DNDEBUG`；默认最高 IR / VM 优化，反射开启；各自编译源码并运行各自字节码 |
-| JVM 不带即时编译 | Oracle Java 22.0.1+8-16，HotSpot 64-Bit Server VM，`java -Xint` |
-| JVM 带即时编译 | 同一 JDK、同一 `.class`，`java -Xbatch`；保留 HotSpot 默认分层编译，测量前完整预热 20 次 |
-| Python | CPython 3.12.3，64 位；默认解释器，未启用 JIT |
-| Lua | 官方 Lua 5.5.1 源码，MinGW 官方构建目标，`-O2`，无 JIT |
-| C++ | 原生 C++17，GCC/MinGW 11.2.0，`-O2 -DNDEBUG`；没有使用 `-ffast-math`、LTO 或手写闭式求和 |
+| 日期 | 2026-10-23，Asia/Shanghai |
+| 系统 / CPU / 内存 | Windows 10 10.0.19045，x64；AMD Ryzen 5 5600X（6 核 12 线程）；32 GB |
+| ChaLi | 0.28.2，GCC/MinGW 11.2.0 `-O2 -DNDEBUG`，反射开启，默认最高优化（寄存器核 + 机器级优化 + 帧槽复用） |
+| C / C++ | GCC、G++ 11.2.0，`-O2 -DNDEBUG` |
+| Rust | rustc 1.98.1，`-O` |
+| Go | 默认 `go build` |
+| Java（两种） | Oracle Java 22.0.1：`-Xint` 纯解释；`-Xbatch` 允许即时编译 |
+| Node | 26.5.0（V8 即时编译） |
+| Python | CPython 3.12.3，默认解释器，无 JIT |
 
-JVM 两列共用 Java 源码和 class 文件，只改变执行模式与对应预热次数。
+九列全部**跑同一份算法**，不是同一份源码：每类负载在七种语言里各写一份，循环次数、
+初值、掩码与运算顺序一致，`work()` 的入参 `seed` 每次不同。
 
-## 2. 五类负载、输入与校验值
+## 2. 五类负载与校验值
 
-所有上限 `n` 都来自运行时输入，循环内不打印。整数数据在各语言中均不溢出，
-浮点用例统一使用双精度；本轮不拿 ChaLi 的 `float32` 与其他语言的双精度作比较。
-
-| 用例 | n | 循环主体 | 期望结果 |
+| 负载 | 轮数 | 循环主体 | 校验值 |
 | --- | ---: | --- | ---: |
-| 整数累加 | 10,000,000 | `total += i` | 49999995000000 |
-| 奇偶分支 | 1,000,000 | 偶数加 `i`，奇数减 `i` | -500000 |
-| float64 累加 | 2,000,000 | `total += 0.5` | 1000000 |
-| 函数调用 | 1,000,000 | `total += mix(i)`，`mix(x) = x * 17` | 8499991500000 |
-| 数组读取 | 1,000,000 | 从 `[1,2,3,4]` 循环取元素并累加 | 2500000 |
+| int_chain | 4,000,000 | `acc = (acc * 48271 + i) & 0x7FFFFFFF` | 6942227210 |
+| float_chain | 1,000,000 | `x = x * 1.0000001 + 0.0000001` | 6.976227074 |
+| call | 1,000,000 | `acc = (mix(acc) + i) & 0x7FFFFFFF`，`mix(x)=x*17+3` | 6040804810 |
+| array | 4,000,000 | `acc = (acc + a[acc & 15]) & 0x7FFFFFFF`，`a[k]=3k` | 112 |
+| list | 400,000 | 先 `push(i*3+seed)`，再 `total = (total*31 + xs[i]) & 0x7FFFFFFF` | 5673410186 |
 
-每次计时结果均与上表独立期望值核对。函数调用用例允许各语言正常内联和优化，
-所以它衡量的是“这段带函数源码最终执行多快”，不是强制保留调用的纯调用开销测试。
+三个设计要点，都是为了"量的确实是计算"而不是编译器的化简：
+
+1. **依赖链**：每轮的 `acc` 都参与下一轮，整数用例里乘法 + 掩码让闭式求和不成立；
+   浮点用例是严格串行的乘加链。
+2. **`seed` 入参**：`work(seed)` 每次调用参数不同。少了这一条，GCC 会把常量参数的纯函数
+   整次提到计时循环外复用结果（本轮最初就踩到了：C 的 array 用例量出 0.000 ms）。
+3. **数组下标由累加器决定**：写成 `a[i & 15]` 时编译器能把整条链折叠成常量；`a[acc & 15]`
+   是数据相关访问，必须真取。
+
+九种配置在五类负载上**校验值逐字节相同**，这是"各语言算的是同一件事"的唯一证据，
+脚本会把不一致当成硬错误退出。
 
 ## 3. 同轮实测结果
 
-以下为**第二轮**各配置七次测量的中位数，单位 **ms，越小越快**。
-JVM 两种模式独立列出，不合并为一个 JVM 数字。
+单位 **ms，越小越快**。每格是 3 次进程 × 5 轮共 15 个样本的中位数；每次进程先跑一次
+`seed=0` 预热（不计时），再对 `seed=0..4` 各计一次。
 
-| 配置 | 整数累加 | 奇偶分支 | float64 累加 | 函数调用 | 数组读取 |
+| 配置 | int_chain | float_chain | call | array | list |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| ChaLi 0.18.3 VM | 135.138 | 33.099 | 353.936 | 609.619 | 85.360 |
-| ChaLi 0.18.2 VM | 134.522 | 32.659 | 491.668 | 633.749 | 84.069 |
-| JVM 不带即时编译 `-Xint` | 145.578 | 22.043 | 25.071 | 26.915 | 16.734 |
-| JVM 带即时编译 `-Xbatch` | 2.302 | 0.377 | 1.299 | 0.231 | 0.479 |
-| Python | 400.934 | 61.285 | 71.810 | 72.427 | 51.250 |
-| Lua | 57.000 | 11.000 | 11.000 | 16.000 | 11.000 |
-| 原生 C++ | 2.200 | 0.431 | 1.295 | 0.218 | 0.433 |
+| **ChaLi 0.28.2（StackVM）** | **75.056** | **250.577** | **309.853** | **335.767** | **891.680** |
+| C（gcc -O2） | 4.316 | 1.305 | 0.886 | 6.906 | 0.972 |
+| C++17（g++ -O2） | 4.330 | 1.299 | 0.876 | 6.908 | 0.956 |
+| Rust（rustc -O） | 0.865 | 1.299 | 1.084 | 6.224 | 0.994 |
+| Go（默认优化） | 4.625 | 1.541 | 1.036 | 7.234 | 1.074 |
+| Java 22 `-Xint` | 80.155 | 16.450 | 31.106 | 86.213 | 14.304 |
+| Java 22 `-Xbatch` | 4.998 | 1.303 | 1.083 | 6.168 | 1.512 |
+| Node 26（V8） | 71.932 | 1.301 | 15.970 | 59.254 | 8.897 |
+| CPython 3.12 | 313.019 | 29.805 | 115.492 | 189.975 | 54.695 |
 
-共 **490 次正式测量**，另有预热；其中保存了版本、参数、校验和、逻辑步骤、生成源码摘要
-和测试二进制 SHA-256。没有从旧报告摘取数字拼接本表。
+相对 C 的倍数（同一列除以 C 的中位数）：
 
-两轮中不带 JIT 的 JVM 整数累加中位值为 **140.335 / 145.578 ms**。
-本页保留两轮数据，不用一个中位数代替稳定性分析。
-其他配置也应结合 JSON 中全部样本解读；尤其是原生/JIT 的亚毫秒用例与 Lua 粗粒度计时。
+| 配置 | int_chain | float_chain | call | array | list |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| ChaLi 0.28.2 | 17.4 | 192.0 | 349.7 | 48.6 | 917.4 |
+| C++17 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
+| Rust | 0.2 | 1.0 | 1.2 | 0.9 | 1.0 |
+| Go | 1.1 | 1.2 | 1.2 | 1.0 | 1.1 |
+| Java `-Xint` | 18.6 | 12.6 | 35.1 | 12.5 | 14.7 |
+| Java `-Xbatch` | 1.2 | 1.0 | 1.2 | 0.9 | 1.6 |
+| Node 26 | 16.7 | 1.0 | 18.0 | 8.6 | 9.2 |
+| CPython 3.12 | 72.5 | 22.8 | 130.4 | 27.5 | 56.3 |
 
-### 3.1 ChaLi 0.18.3 相对 0.18.2
+折算到单次迭代（ChaLi）：整数 **18.8 ns**、浮点 **251 ns**、调用 **310 ns**、
+数组 **84 ns**、容器每个元素（一次 push 加一次下标读）约 **2.2 µs**。
 
-变化为 `(0.18.3 耗时 / 0.18.2 耗时 - 1) × 100%`，负数表示耗时下降。
-本页把低于 5% 的变化作为噪声，5%–10% 作为需要重复支持的弱信号，超过 10% 才记明显变化；
-这是工程判断阈值，不是置信区间或统计显著性检验。
+## 4. 分档解读
 
-| 用例 | 第一轮 VM 变化 | 第二轮 VM 变化 | 结论 |
-| --- | ---: | ---: | --- |
-| 整数累加 | +0.28% | +0.46% | 结合两轮样本判断，不以单次波动宣称收益 |
-| 奇偶分支 | +0.41% | +1.35% | 结合两轮样本判断，不以单次波动宣称收益 |
-| float64 累加 | -28.41% | -28.01% | 两轮均明显下降 |
-| 函数调用 | -4.35% | -3.81% | 结合两轮样本判断，不以单次波动宣称收益 |
-| 数组读取 | +1.82% | +1.54% | 结合两轮样本判断，不以单次波动宣称收益 |
+**原生（C / C++ / Rust / Go）**：同一列彼此差不到 20%，可以当成"这台机器上这件事的下限"。
+Rust 在整数链上快 5 倍，是因为它把 64 位乘加编译成了更紧的循环；其余几列四家齐平。
 
-两版浮点用例的逻辑步骤同为 **30,000,030**，整数、分支与调用用例步骤也相同；
-数组用例仅少了四个初始化步骤。浮点差异因此不能解释为少跑了循环或修改了计算结果。
-本轮不测前端编译耗时，也不根据运行时表格宣称编译速度提升。
+**即时编译（Java `-Xbatch`、Node）**：热起来之后贴住原生——Java 在五列上都落在
+0.9–1.7 倍；Node 在浮点上是 1.0 倍，说明 V8 对这个串行乘加链生成的是标量指令。
+但 Node 的整数列是 16.6 倍：JS 的数字是双精度，`acc * 48271` 超过 2^31 之后没法走 32 位
+整数指令，也无法用位运算（`&` 会把值截成 32 位，校验值就对不上了），只能靠 `%`，
+而双精度取模比机器码里的掩码贵得多。这是 JS 语义的代价，不是 V8 慢。
 
-## 4. 实际测试代码示例
+**字节码解释（ChaLi、Java `-Xint`）**：这一档才是同类比较。ChaLi 在整数列
+（75.1 vs 80.2）已经持平，数组列快 3.9 倍，但浮点慢 15 倍、调用慢 10 倍、容器慢 62 倍。
 
-下面给出整数累加的完整测试代码；这同一份 ChaLi 源码分别供 0.18.3 与 0.18.2 使用，
-同一份 Java 源码分别供 JVM 的两种模式使用。
-[测试代码全集](examples/vm-performance.md)。它们由脚本直接保存自实际执行输入，源码摘要也在 JSON 内。
+**纯解释（CPython）**：ChaLi 在整数（4.2 倍）、浮点（8.4 倍）、数组（1.8 倍）上领先，
+但在调用（0.37 倍，即慢 2.7 倍）和容器（0.06 倍，即慢 16 倍）上落后。
+一个静态类型的栈式 VM 在两个基础操作上输给 CPython，说明瓶颈不在"解释执行"本身，
+而在那两条路径的实现方式。
 
-### 4.1 ChaLi：0.18.3 与 0.18.2
+## 5. 归因与证据
 
-输入 `10000000`，输出 `49999995000000`。VM 计时由外部 C++ 运行器包围执行过程。
+### 5.1 寄存器区域核贡献了多少
 
-```cpp
-int64 mix(int64 x){return x*17;}
-void main(){int64 n=inputInt(),i=0;int64 total=0;while(i<n){total+=i;i+=1;}println("{}",total);}
-```
+关掉寄存器核（`CHALI_NO_REGISTER_CORE=1`，退回通用分派）后同一份程序的耗时：
 
-### 4.2 JVM：同一 Java 代码，分别执行两种模式
+| 负载 | 默认 | 关寄存器核 | 倍数 |
+| --- | ---: | ---: | ---: |
+| int_chain | 75.1 ms | 1674.5 ms | 22.3× |
+| array | 327.0 ms | 3224.4 ms | 9.9× |
+| call | 306.7 ms | 717.5 ms | 2.3× |
+| float_chain | 248.9 ms | 364.8 ms | 1.5× |
+| list | 872.2 ms | 1245.5 ms | 1.4× |
 
-不带即时编译使用 `java -Xint`，传入预热次数 `1`，标准输入提供两次 `10000000`；
-带即时编译使用 `java -Xbatch`，传入预热次数 `20`，标准输入提供二十一次 `10000000`。
-最后一次读取发生在计时前，前面的读取用于预热；`volatile sink` 保留计算结果。
+整数与数组两条路径几乎全部收益来自寄存器核（22 倍、10 倍），说明"多条内部指令一起执行"
+对纯算术有效。浮点与容器只有 1.4–1.5 倍——它们的主要成本在别处，不在分派。
 
-```java
-import java.util.Scanner;
-public final class Case_integer_loop {
-    private static volatile long sink;
-    private static long mix(long x) { return x*17; }
-    private static long calculate(long n) {
-        long i=0; long total=0;
-        while(i<n) { total+=i; ++i; }
-        return total;
-    }
-    public static void main(String[] args) {
-        Scanner input=new Scanner(System.in);
-        int warmups=Integer.parseInt(args[0]);
-        for(int i=0;i<warmups;++i) sink=calculate(input.nextLong());
-        long n=input.nextLong();
-        long start=System.nanoTime();
-        long value=calculate(n);
-        long elapsed=System.nanoTime()-start;
-        sink=value;
-        System.out.println((elapsed/1e6)+" "+value);
-    }
-}
-```
+### 5.2 浮点：分派不是瓶颈，每次运算的服务才是
 
-### 4.3 Python
+浮点也能进入区域核，但关掉它只慢 1.5 倍（248.9 → 364.8 ms），而整数是 22 倍。
+对照 C 的 192 倍差距（ChaLi 251 ns/次 vs C 1.3 ns/次），可以得出：浮点的耗时不在
+"指令分派多少次"上，而在每次运算之前的槽位定位、类型归一化与装箱/拆箱
+（`source/stackvm/vm_execution.cpp` 里浮点走的是带类型检查的通用路径）。
+换句话说，整数已经"批量执行"了，浮点还在"一条一条服务"。
 
-命令行传入 `10000000`。循环上限是函数局部参数，避免把全局变量查找额外混进每次循环条件。
+### 5.3 调用：310 ns 一次，比 CPython 慢
 
-```python
-import sys,time
-n=int(sys.argv[1])
-def mix(x): return x*17
-def calculate(n):
-    i,total=0,0
-    values=[1,2,3,4]
-    while i<n:
-        total += i
-        i+=1
-    return total
-calculate(n)
-start=time.perf_counter_ns()
-result=calculate(n)
-print((time.perf_counter_ns()-start)/1e6,result)
-```
+`call` 用例每次迭代要做一次小函数调用。ChaLi 的调用入口要处理挂起参数表、参数按名绑定、
+新建调用帧、返回目的地投递（`source/stackvm/vm_execution.cpp` 的 `Op::Call`）。
+CPython 的调用路径有专门的调用约定与向量化调用（`CALL` 系列），310 ns 对 115 ns 的差距
+来自这条链上的服务，而不是"解释器天生慢"——JVM 的 `-Xint` 只要 31.1 ns。
 
-### 4.4 Lua
+### 5.4 容器：最贵的一环
 
-命令行传入 `10000000`。循环上限同样作为函数局部参数传递。
+拆开看（同一台机器，40 万次）：
 
-```lua
-local n=tonumber(arg[1])
-local function mix(x) return x*17 end
-local function calculate(n)
-local i,total=0,0
-local values={1,2,3,4}
-while i<n do total=total+i;i=i+1 end
-return total end
-calculate(n)
-local start=os.clock()
-local result=calculate(n)
-print((os.clock()-start)*1000,result)
-```
+| 动作 | 耗时 |
+| --- | ---: |
+| 只 push 40 万个元素 | 455 ms |
+| push + 逐个下标读并累乘 | 903 ms |
 
-### 4.5 原生 C++
+一次 `push` 约 **1.1 µs**，一次下标读约 **1.1 µs**。这两条都走
+`source/glue/std_collection.cpp` 的容器服务：对象头、增长检查、值归一化、按名派发。
+C 的同一段代码 0.95 ms 完成 80 万次操作（约 1.2 ns/次），差距的三个数量级全在这里。
+这是当前最值得动的地方——它不是"虚拟机慢"，而是容器每次操作的服务成本太高。
 
-标准输入提供两次 `10000000`：一次预热，一次正式执行。`calculate` 禁止内联到测量包装层，
-每次重新从标准输入取上限，`volatile sink` 保留结果；内部的 `mix` 仍允许正常内联。
+### 5.5 为什么数字看起来比 0.18.3 那轮"更差"
 
-```cpp
-#include <chrono>
-#include <cstdint>
-#include <iomanip>
-#include <iostream>
-static volatile std::int64_t sink;
-static std::int64_t mix(std::int64_t x) { return x*17; }
-__attribute__((noinline)) static std::int64_t calculate(std::int64_t n) {
-    std::int64_t i=0; std::int64_t total=0;
-    while(i<n) { total+=i; ++i; }
-    return total;
-}
-int main() {
-    std::int64_t n; if(!(std::cin>>n)) return 2;
-    sink=calculate(n);
-    if(!(std::cin>>n)) return 2;
-    const auto start=std::chrono::steady_clock::now();
-    const auto value=calculate(n);
-    const auto end=std::chrono::steady_clock::now();
-    sink=value;
-    std::cout<<std::setprecision(17)<<std::chrono::duration<double,std::milli>(end-start).count()<<' '<<value<<'\n';
-}
-```
-
-## 5. 性能差异的原因与证据
-
-以下区分已确认的实现机制与尚未量化的归因。本轮没有进行采样剖析，
-所以不把某条路径说成占总时间的固定百分比。
-[诊断证据](benchmarks/vm-baselines-evidence-0.18.3.json)来自计时结束后的独立运行，
-包含 JVM 内联日志、C++ 汇编、Python 自适应字节码及 Lua 字节码；诊断开关未用于正式计时。
-
-### 5.1 为什么带 JIT 的 JVM 接近原生 C++
-
-带 JIT 的 JVM 在预热后可以执行热点方法生成的机器码；原生 C++ 在执行前已经编译为机器码。
-这两个配置均不必为源码中的每一步算术重复进行 VM 指令分派，因此在本轮小循环中接近。
-
-函数用例有直接证据：HotSpot 日志显示 `Case_calls::mix (6 bytes) inline (hot)`；
-C++ 的 `calculate(long long)` 汇编没有调用 `mix`，并把乘 17 的序列化为每轮增加 `0x11` 的归纳变量。
-因此 JVM JIT/C++ 的这一行主要剩下紧凑的算术循环，不能用它与 ChaLi 的耗时比直接换算单次函数调用开销。
-
-### 5.2 为什么 JVM 不带 JIT 与带 JIT 差异很大
-
-`-Xint` 让 Java 方法按字节码解释执行，不走上述热点即时编译；每轮仍有解释器工作。
-`-Xbatch` 允许 JIT，并让编译同步完成；20 次完整预热把测量重点放在热执行状态。
-两列采用相同计算源码和结果，但执行技术不同，这正是本页坚持分列的原因。
-这组数据不能用于推断 Java 冷启动、首请求或短命令行程序的总延迟。
-
-### 5.3 为什么 ChaLi 的整数与浮点表现不同
-
-ChaLi 的整数循环可以进入[寄存器区域执行核心](../source/stackvm/register_core.hpp)，
-在一个批次中连续执行多条内部指令；它仍是解释执行，没有把热点编译成原生机器码。
-
-0.18.3 新增的[浮点融合路径](../source/stackvm/vm_execution.cpp)合并了加载、运算、保存以及部分比较跳转，
-减少进入主执行循环的次数，保留原始 PC、逻辑步骤、float32 舍入和观察者回退。
-这是浮点步骤相同而耗时明显下降的实现依据；但浮点仍使用槽位绑定、类型检查与融合后的分派，
-尚未成为与整数相同的完整浮点区域核心，所以离 JIT/原生紧凑循环仍有明显距离。
-
-### 5.4 为什么 Python 在部分用例中反而更快
-
-动态类型不等于每个负载都更慢。本机 CPython 3.12 在预热后的浮点循环中可观察到
-`BINARY_OP_ADD_FLOAT` 自适应专用字节码，避免每次都走最通用的加法路径。
-ChaLi 的类型是静态的，但本轮测试的执行器仍承担槽位访问、类型归一化与解释器服务成本；
-静态类型本身不会自动把这些成本消除。这能解释为什么不能仅凭“C++ 写的静态语言 VM”就预言它必胜 Python。
-本轮未对两套运行时的分配或指令占比做量化剖析。
-
-### 5.5 为什么函数调用和数组仍是 ChaLi 的改进重点
-
-ChaLi 的[调用入口](../source/stackvm/vm_execution.cpp)仍需要处理参数队列、参数归一化、
-调用帧与局部槽、返回目的地；小帧已有缓存，仍保留这些服务流程。
-Lua 的测试字节码也保留 `CALL`，说明它不是依靠本轮的原生内联取得结果；
-两种解释器调用路径的实际成本差异，需要后续用剖析和开关对照进一步拆分。
-
-数组用例也有语义成本差异：ChaLi 经过[下标/指针容量检查与内存服务](../source/stackvm/vm_execution.cpp)，
-Lua 使用 table，Python 使用 list，Java 使用 `long[]`，C++ 使用固定长度原生数组。
-C++ 源码没有逐次运行时数组边界检查；其他实现的表示和检查策略不同。
-因此这行是实际数组写法的端到端表现，不能当成相同底层访存指令的比较，
-更不能把取消 ChaLi 检查当作默认提速方案。
+旧页的整数用例是 `total += i` 的求和循环，编译器和 VM 都能做归纳变量化简；
+本轮的 `acc = (acc * 48271 + i) & mask` 是真实依赖链，谁也不占便宜。用例换了，
+数字就不能跨页比较。本页不保留旧表：不同用例、不同版本、同一台机器的数字放在一起，
+只会给出错误的趋势。
 
 ## 6. 测量口径与复现
 
-### 6.1 计时包含什么
-
-| 配置 | 计时器 | 计时范围 | 正式测量前预热 |
-| --- | --- | --- | ---: |
-| 两版 ChaLi VM | `std::chrono::steady_clock` | 已加载字节码的执行准备、执行及最终结果输出 | 1 次 |
-| JVM 不带即时编译 | `System.nanoTime` | `calculate` 调用 | 1 次 |
-| JVM 带即时编译 | `System.nanoTime` | `calculate` 调用 | 20 次 |
-| Python | `time.perf_counter_ns` | `calculate` 调用 | 1 次 |
-| Lua | `os.clock` | `calculate` 调用 | 1 次 |
-| C++ | `std::chrono::steady_clock` | `calculate` 调用 | 1 次 |
-
-所有配置都排除进程启动、源码编译和程序加载；非 VM 配置的结果输出在计时之后。
-VM 包含一次执行准备与最终输出，其他配置只包围计算函数，边界并非完全相同；
-这里公开这种差异，不用估算值扣除它。Lua 的 `os.clock` 与其余单调计时器来源不同，
-Windows 上样本常呈整数毫秒台阶。很短的原生/JIT 测量及受调度影响的样本应结合原始数据看待。
-
-编译完成后才开始计时。每个进程只记录一个正式样本，每一轮轮转配置顺序；
-所有配置串行执行，正式测量期间没有并行构建、其他测试或诊断剖析。
-两轮各重复七次，取各轮中位数，不用最小值替代中位数，也不合并两轮掩盖波动。
-
-### 6.2 运行命令
-
-入口脚本：[benchmark_vm_baselines.py](../tests/benchmark_vm_baselines.py)。
-需要同机的 JDK、Python、GCC/MinGW，以及两版 ChaLi 编译器和对应 VM 运行器。
-按[工具链文档](09-toolchain.md)分别构建 `v0.18.3` 与 `v0.18.2`；每个运行器必须使用自己版本的头文件与静态库。
-
-在各自版本源码目录编译运行器：
+计时器一律用各语言的单调时钟（`clock_gettime` / `steady_clock` / `Instant` /
+`System.nanoTime` / `process.hrtime.bigint` / `perf_counter_ns` / `std::clock::nowNanos`），
+**只包住 `work(seed)` 调用**，不含进程启动、编译、加载。每次进程 1 次预热 + 5 次计时，
+脚本重复 3 个进程，取 15 个样本的中位数（不用最小值）。
 
 ```sh
-g++ -std=c++17 -O2 -DNDEBUG -DSTACKVM_WITH_REFLECTION=1 -DCHALI_CUSTOM_ALLOCATOR=1 -Ilibrary -Isource/stackvm tests/benchmark_vm_program.cpp build/chali-stackvm/libstackvm.a -pthread -o build/vm-program-benchmark.exe
+python benchmarks/perf/run.py                 # 全部九个配置
+python benchmarks/perf/run.py --only chali,c  # 只跑 ChaLi 与 C
+python benchmarks/perf/run.py --runs 5        # 每个配置 5 个进程
 ```
 
-Lua 源码沿用[官方 5.5.1 归档](https://www.lua.org/ftp/lua-5.5.1.tar.gz)。
-先用 [benchmark_vm_lua.py](../tests/benchmark_vm_lua.py) 完成下载和构建；新脚本再次核对源码包 SHA-256。
+脚本负责构建（gcc / g++ / rustc / go / javac）、调度、中位数统计与校验值比对，结果写到
+`benchmarks/results/<主机名>-<时间戳>-perf/results.json`（含全部原始样本、最小值、最大值）。
+ChaLi 侧用仓库根的 `ChaLi.exe`，可用环境变量 `CHALI` 指定别的路径。
 
-```text
-1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce
-```
+## 7. 局限
 
-运行时应指定自己构建的两版二进制路径。
-
-脚本核对每个输出并保存 JSON。本页不依赖当前仓库中存在这些忽略的二进制；它们需要由对应版本构建获得。
-本次改动只重写报告和补充测试脚本，不改变 `v0.18.3` 的编译器、版本号或历史标签。
-
-## 7. 原始数据与旧轮次
-
-- [本轮内联、汇编与字节码诊断证据](benchmarks/vm-baselines-evidence-0.18.3.json)
-- 旧的仅 Lua 对照：[第一轮](benchmarks/vm-lua-0.18.3.json)、[重复轮](benchmarks/vm-lua-0.18.3-repeat.json)
-- [旧的 switch / 标签分派对照](benchmarks/register-dispatch-0.18.3.json)
-
-旧轮次保留为归档，不混入本页主表。本页结论只针对列出的代码、输入与配置，
-不把这些微基准扩展成语言整体性能排名，也不把桌面宿主结果当作真实 embedded Linux 硬件时延。
+- 微基准只覆盖五类内核（循环算术、依赖链、调用、定长数组、动态数组），
+  不代表字符串、I/O、并发、反射这些路径，也不构成语言整体排名。
+- 没有做采样剖析，所以 5.1–5.4 给的是**机制与开关对照**，不是"某条路径占总时间百分之几"。
+- 单一平台（Windows + MinGW）、单一 CPU（5600X）。换成 Linux/GCC 或 ARM 时绝对数字会变，
+  相对位置（整数持平 JVM 解释器、浮点/调用/容器落后）预计不变，但没有实测。
+- 原生与 JIT 的样本常在亚毫秒量级（C 的 call 列只有 0.87 ms），受调度影响更大；
+  结论应按中位数读，不要逐位比较。
