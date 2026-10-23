@@ -29,11 +29,19 @@ const FrameLayout *ExecutionPlan::layout(std::size_t entry)
     }
 
     /* 2. 只走真实可达边，不跨越调用进入被调函数；顺便记下每个位置的定义、使用与后继。
-     *    槽位只分配给"本函数自己的"符号：形参与声明过的局部，其余走全局路径。
+     *    槽位只分配给"本函数自己的"符号：形参、声明过的局部与编译器临时量，其余走全局路径。
      *    表按**位置**建，不按全局 PC：帧布局是执行期惰性算的，按 PC 建表就是每调用一个新
      *    函数都在运行期 arena 上摊一张"整个程序那么大"的表，会把程序自己的堆挤掉。 */
     Memory::Map<std::size_t, std::size_t> positionOf;                   // PC → 位置
     Memory::Vector<std::pair<std::size_t, std::size_t>> rawSuccessors;  // 位置 → 两个后继 PC
+    /* 编译器临时量（`__temp_*`、`__chali_ret_v$*`）也配帧槽：它们只在本函数一次激活里
+     * 写了再读，共享一份跨激活存储会让递归的内层调用覆写外层挂起的结果
+     * （`return f(n-1) + f(n-1)` 第一趟的返回值会被第二趟递归覆盖，f(3) 算出 4 而不是 8）。 */
+    Memory::Set<std::size_t> scratchSeen;
+    const auto takeScratch = [&](std::size_t symbol) {
+        if (symbol == absent || !scratch(symbol)) return;
+        if (scratchSeen.insert(symbol).second) body.declared.push_back(symbol);
+    };
     Memory::Vector<std::size_t> work{ entry };
     ++generation_;
     while (!work.empty())
@@ -48,9 +56,14 @@ const FrameLayout *ExecutionPlan::layout(std::size_t entry)
         const auto &instruction = program_.code[index];
         if (instruction.op == Op::Declare)
         {
-            /* 只有这里声明过的符号才配帧槽；其余符号是跨帧共享的暂存量，必须留在全局表。 */
+            /* 声明过的局部与形参固定配帧槽；编译器临时量在上面单独收集（也是帧槽），
+             * 其余未声明名字是真正的全局变量，留在全局表。 */
             body.declared.push_back(code[index].symbol);
         }
+        else if (instruction.op == Op::Call || instruction.op == Op::CallIndirect)
+            takeScratch(find(instruction.name2));  // 调用结果临时量：返回值写回的目标。
+        else
+            takeScratch(code[index].symbol);  // Store 的目标、Load 的来源都可能落在临时量上。
         std::pair<std::size_t, std::size_t> successors{ absent, absent };
         const std::size_t next = index + 1u;
         if (instruction.op == Op::Ret || instruction.op == Op::Halt)
@@ -119,7 +132,13 @@ const FrameLayout *ExecutionPlan::layout(std::size_t entry)
         };
         for (const std::size_t symbol : body.parameters) take(symbol);
         for (const std::size_t pc : body.order)
+        {
             if (program_.code[pc].op == Op::Declare) take(code[pc].symbol);
+            else if (code[pc].symbol != absent && scratch(code[pc].symbol)) take(code[pc].symbol);
+            const auto &instruction = program_.code[pc];
+            if (instruction.op == Op::Call || instruction.op == Op::CallIndirect)
+                take(find(instruction.name2));
+        }
     }
     else
     {

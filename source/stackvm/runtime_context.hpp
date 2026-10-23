@@ -21,8 +21,10 @@ struct Frame
     const execution_detail::FrameLayout *layout = nullptr;  ///< 本函数的稠密槽布局。
     Memory::Vector<Slot> slots;                             ///< 不按名称查询的局部存储。
     Memory::Vector<bool> bound;                             ///< 保留声明执行前的未定义与全局回退语义。
+    Memory::Vector<bool> paramBound;                        ///< 形参槽：值由调用方在进入函数前绑好，首个声明不清零。
     Memory::Vector<std::size_t> occupant;                   ///< 每个槽当前属于哪个符号（槽位复用后一个槽会换人）。
     Memory::Map<Memory::String, Slot> locals;               ///< 本帧的局部变量（形参 + 函数体里声明的）。
+    Memory::Map<Memory::String, Slot> scratch;              ///< 本帧的编译器临时量（`__temp_*`）：每次激活一份，递归互不覆盖。
     std::size_t returnIp = 0;                               ///< 返回地址。
 #if STACKVM_WITH_PANIC_TRACE
     Memory::String function;  ///< 实际被调函数的符号；压缩产物中为逻辑编号。

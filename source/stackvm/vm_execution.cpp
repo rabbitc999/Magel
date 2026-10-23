@@ -484,6 +484,8 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         {
             const auto local = frames.back()->locals.find(name);
             if (local != frames.back()->locals.end()) return &local->second;
+            const auto scratch = frames.back()->scratch.find(name);
+            if (scratch != frames.back()->scratch.end()) return &scratch->second;
         }
         if (optimizeExecution_)
         {
@@ -540,8 +542,21 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                 *slot = stored;
                 return;
             }
+            if (plan.scratch(symbol) && !frames.empty())
+            {
+                /* 布局没给这个临时量槽（或槽还没绑定）时退回每帧一份的动态表，
+                 * 绝不能落全局：递归的内层调用会覆写外层挂起的值。 */
+                frames.back()->scratch[name] = stored;
+                return;
+            }
             globalSlots[symbol] = stored;
             globalBound[symbol] = true;
+            return;
+        }
+        /* 动态路径同理：编译器临时量每次激活一份，其余未声明名字仍是全局变量。 */
+        if (!frames.empty() && (name.rfind("__temp_", 0) == 0 || name.rfind("__chali_ret_v$", 0) == 0))
+        {
+            frames.back()->scratch[name] = stored;
             return;
         }
         globals[name] = stored;
@@ -558,7 +573,14 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         }
         const auto stored = normalizeStored(prepared.symbol, value);
         if (!frames.empty() && slotReady(*frames.back(), prepared.local))
+        {
             frames.back()->slots[prepared.local] = stored;
+        }
+        else if (!frames.empty() && plan.scratch(prepared.symbol))
+        {
+            /* 临时量的槽没就绪时退回每帧动态表，不落全局。 */
+            frames.back()->scratch[program.code[index].name] = stored;
+        }
         else
         {
             globalSlots[prepared.symbol] = stored;
@@ -575,9 +597,14 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
         const std::size_t used = frame.layout->count != 0u ? frame.layout->count : frame.layout->slots.size();
         frame.slots.resize(used);
         frame.bound.resize(used, false);
+        frame.paramBound.assign(used, false);
         /* 复用后一个槽会先后属于几个变量，记下当前占用者：谁换上来谁清零，
          * 同一个变量重复声明（形参、循环体里的 `decl`）则保留已有值。 */
         frame.occupant.assign(used, execution_detail::absent);
+        /* 编译器临时量的槽不经过 `decl`，这里直接标成已绑定：每次激活一份，
+         * 读之前一定先写过（前端求值顺序保证），不需要声明清零。 */
+        for (const auto &item : frame.layout->slots)
+            if (item.second < frame.bound.size() && plan.scratch(item.first) && std::getenv("CHALI_BISECT_B") == nullptr) frame.bound[item.second] = true;
     };
     /**
      * @brief 绑定参数到稠密槽，动态汇编参数名保留回退。
@@ -591,7 +618,8 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             {
                 frame.slots[slot->second] = value;
                 frame.bound[slot->second] = true;
-                frame.occupant[slot->second] = symbol;  // 形参先占住这个槽，随后那条 `decl` 不会再清零。
+                frame.occupant[slot->second] = symbol;      // 形参先占住这个槽，随后那条 `decl` 不会再清零。
+                frame.paramBound[slot->second] = true;      // 标记"这槽的值是调用方绑的"，声明保值只认这个标记。
                 return;
             }
         }
@@ -1443,11 +1471,14 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
                     const auto slot = frame.layout->slots.find(symbol);
                     /* 声明就是"这个槽从零开始"：槽位可能与已经结束生命周期的变量共用，
                      * 所以换了占用者就要重置，否则会读到上一个占用者留下的悬空值。
-                     * 同一个符号自己重复声明时保留已有值——形参的槽在进入函数前就由调用方
-                     * 绑好值了，那儿再清零就等于把实参抹掉。 */
+                     * 只有形参槽（调用方在进入函数前绑好值的那个）在重复声明时保值——
+                     * 其余重复声明（循环体里的 `decl`）一律清零：槽位复用后，两轮声明
+                     * 之间可能有临时量写过这个槽，保留旧值会把别人的值当成自己的初始值。 */
                     if (slot != frame.layout->slots.end() && slot->second < frame.bound.size())
                     {
-                        if (frame.occupant[slot->second] != symbol)
+                        const bool prebound = frame.occupant[slot->second] == symbol &&
+                                              slot->second < frame.paramBound.size() && frame.paramBound[slot->second];
+                        if (!prebound)
                         {
                             frame.slots[slot->second] = zero;
                             frame.occupant[slot->second] = symbol;
@@ -2073,8 +2104,10 @@ RunResult Machine::run(const Program &program, const Memory::Vector<Memory::Stri
             {
                 // 清空所有值及声明状态，保留容量；文本等宿主资源仍在函数返回时释放。
                 frame->locals.clear();
+                frame->scratch.clear();
                 frame->slots.clear();
                 frame->bound.clear();
+                frame->paramBound.clear();
                 frame->returnDest.clear();
 #if STACKVM_WITH_PANIC_TRACE
                 frame->function.clear();

@@ -613,8 +613,8 @@ void hoistInvariants(Memory::Vector<Quad> &quads, Stats &stats)
  * @brief 内联展开时给复制过来的符号改名。
  * @param name 原名。
  * @param site 展开点编号。
- * @return 新名：编译器临时量保住 `__temp_` 前缀（这样它仍然走全程序暂存表而不是帧槽），
- *         其余名字换成 `__inl<编号>_<原名>`（`$`、`.`、`<`、`>`、`:` 换成 `_`）。
+ * @return 新名：编译器临时量保住 `__temp_` 前缀（展开点编号保证各调用点的复制品互不同名，
+ *         每份都在调用者激活里拿自己的帧槽），其余名字换成 `__inl<编号>_<原名>`（`$`、`.`、`<`、`>`、`:` 换成 `_`）。
  */
 Memory::String inlineName(const Memory::String &name, std::size_t site)
 {
@@ -640,7 +640,8 @@ Memory::String inlineName(const Memory::String &name, std::size_t site)
  * 展开口径与调用口径逐条对齐：`param` 变成一次拷贝，`call` 的结果临时量由 `ret` 位置的
  * 拷贝写入，多个 `ret` 汇到同一个出口标签。复制过来的符号一律改名：形参与局部换成
  * `__inl<点>_<原名>`（仍然声明成局部，于是在调用者帧里拿到槽位），编译器临时量与
- * `__chali_ret_v$*` 换成 `__temp_inl<点>_<原名>`（仍然留在全程序暂存表）。
+ * `__chali_ret_v$*` 换成 `__temp_inl<点>_<原名>`（保住临时量前缀，展开点编号保证互不同名，
+ * 每份在调用者激活里拿自己的帧槽）。
  *
  * @param quads 四元式。
  * @param stats 统计。

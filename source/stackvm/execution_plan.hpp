@@ -116,6 +116,18 @@ public:
         return found == symbols.end() ? absent : found->second;
     }
     /**
+     * @brief 是不是编译器临时量（`__temp_*`、`__chali_ret_v$*`）。
+     *
+     * 临时量只在本函数的一次激活里写了再读，因此必须每次激活一份：递归时内层调用
+     * 会往同名临时量里写，跨激活共享一份存储就会覆写外层挂起的结果。
+     * @param symbol 整数身份。
+     * @return 临时量返回 true。
+     */
+    bool scratch(std::size_t symbol) const
+    {
+        return symbol != absent && symbol < scratch_.size() && scratch_[symbol];
+    }
+    /**
      * @brief 获取函数的局部槽布局：活跃性 + 线性扫描，槽位在存活区间不重叠时复用。
      * @param entry 入口下标。
      * @return 稳定的布局指针。
@@ -136,12 +148,14 @@ private:
         {
             const auto type = program_.types.find(name);
             types.push_back({ type == program_.types.end() ? nullptr : &type->second });
+            scratch_.push_back(name.rfind("__temp_", 0) == 0 || name.rfind("__chali_ret_v$", 0) == 0);
         }
         return inserted.first->second;
     }
     const Program &program_;
     Memory::Map<std::size_t, Memory::UniquePtr<FrameLayout>> layouts_;
     Memory::Vector<std::size_t> seen_;
+    Memory::Vector<bool> scratch_;  ///< 与 types 平行：这个名字是不是编译器临时量。
     std::size_t generation_ = 0;
 };
 }  // namespace execution_detail

@@ -1,0 +1,45 @@
+/* 递归字符串：每层递归都构造自己的 String——
+ * 上层拼接好的文本要活到下层返回之后，内层产生的
+ * 临时字符串用完就释放。递归深度决定前缀层数。 */
+
+/* 递归数字转字符串：先算高位，再拼低位 */
+String digits(int64 n) {
+    if (n < 0) { return "-" + digits(-n); }
+    if (n < 10) { return format("{}", n); }
+    String head = digits(n / 10);
+    String tail = digits(n % 10);
+    return head + tail;
+}
+
+/* 递归反转字符串：先按 Unicode 码点拆开（String 的下标按字节算，
+ * 直接切会把多字节字符切断），然后"反转其余部分 + 把首码点接到末尾"。 */
+String reverseFrom(List<String> const& points, int64 from) {
+    if (from >= points.len()) { return ""; }
+    return reverseFrom(points, from + 1) + points[from];
+}
+
+String reverse(String text) {
+    List<String> points = text.unicodeChars();
+    return reverseFrom(&points, 0);
+}
+
+/* 递归缩进树状目录：深度决定前缀，子项递归加深一层 */
+String tree(int64 depth, String name) {
+    String line = "";
+    int64 i = 0;
+    while (i < depth) {
+        line = line + "  ";
+        i = i + 1;
+    }
+    line = line + name + "\n";
+    if (depth >= 3) { return line; }
+    return line + tree(depth + 1, "子 " + name);
+}
+
+void main() {
+    println("digits(90210) = {}", digits(90210));
+    println("digits(-1234) = {}", digits(-1234));
+    println("reverse(\"递归字符串\") = {}", reverse("递归字符串"));
+    println("reverse(\"abcde\") = {}", reverse("abcde"));
+    println("目录树：\n{}", tree(0, "根"));
+}

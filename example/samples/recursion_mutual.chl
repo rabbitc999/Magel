@@ -1,0 +1,63 @@
+/* 互递归：两个函数互相调用（isOdd 调 isEven、isEven 调 isOdd），
+ * 每一层激活的返回值都要在对方返回后还能接着用——
+ * 递归调用的结果留在本层，不会被内层的调用覆盖。 */
+
+/* 奇数：n 不是 0，就去问"减一之后是不是偶数" */
+int64 isOdd(int64 n) {
+    if (n == 0) { return 0; }
+    return isEven(n - 1);
+}
+
+/* 偶数：n 是 0 就是偶数，否则问"减一之后是不是奇数" */
+int64 isEven(int64 n) {
+    if (n == 0) { return 1; }
+    return isOdd(n - 1);
+}
+
+/* 递归下降求值：从最内层括号一层层算回来。
+ * 求括号内表达式要递归调用求值器自己——深度嵌套时
+ * 每层括号的局部值都必须活到内层返回之后。 */
+
+/* 表达式只由整数和括号组成：找到最外层括号对，
+ * 把括号内的结果递归求出来替换回去，继续求外层。 */
+int64 evaluate(String text) {
+    int64 openAt = -1;
+    int64 closeAt = -1;
+    int64 depth = 0;
+    int64 i = 0;
+    while (i < text.length()) {
+        if (text[i] == '(') {
+            if (depth == 0) { openAt = i; }
+            depth = depth + 1;
+        } elif (text[i] == ')') {
+            depth = depth - 1;
+            if (depth == 0) { closeAt = i; break; }
+        }
+        i = i + 1;
+    }
+
+    /* 没有括号：剩下的就是纯数字，直接解析 */
+    if (openAt == -1) {
+        int64 value = 0;
+        i = 0;
+        while (i < text.length()) {
+            value = value * 10 + (int64)text[i] - (int64)'0';
+            i = i + 1;
+        }
+        return value;
+    }
+
+    /* 括号内递归求值：内层的临时量再多，也动不了本层拼接好的新文本 */
+    int64 inner = evaluate(text.substring(openAt + 1, closeAt - openAt - 1));
+    String replaced = text.substring(0, openAt) + format("{}", inner) + text.substring(closeAt + 1);
+    return evaluate(replaced);
+}
+
+void main() {
+    println("isEven(10) = {}", isEven(10));
+    println("isOdd(7) = {}", isOdd(7));
+    println("isEven(0) = {}", isEven(0));
+    println("isOdd(0) = {}", isOdd(0));
+    println("evaluate(\"((((3))))\") = {}", evaluate("((((3))))"));
+    println("evaluate(\"(12)(34)\") = {}", evaluate("(12)(34)"));
+}
