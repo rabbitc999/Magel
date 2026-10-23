@@ -1,6 +1,6 @@
 #include "dap_server.hpp"
 
-#include "../../library/json/json.hpp"
+#include "../../source/json/json.hpp"
 
 #ifdef _WIN32
 #include <fcntl.h>

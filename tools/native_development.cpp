@@ -4,8 +4,8 @@
  * @brief 原生 LSP、格式化及开发进程服务，复用编译器诊断和宏展开。
  */
 #include "native_development.hpp"
-#include "../library/console/utf8.hpp"
-#include "../library/json/json.hpp"
+#include "../source/console/utf8.hpp"
+#include "../source/json/json.hpp"
 #include "../source/syntax/source_text.hpp"
 #include "../source/macro/signature.hpp"
 #include <limits>
@@ -14,7 +14,7 @@
 #include "../source/chali_module.hpp"
 #include "../source/chali_diagnostics.hpp"
 #include "../library/miniz/miniz_tinfl.h"
-#include "../library/toml/toml.hpp"
+#include "../source/toml/toml.hpp"
 #include <algorithm>
 #include <array>
 #include <cctype>
@@ -2068,7 +2068,8 @@ public:
             return "";
         }
         auto name = base(value);
-        if ((name == "move" || name == "copy" || name == "std::lang::move" || name == "std::lang::copy") && t.back().word == ")")
+        /* `copy(x)` 还是调用形式，运算符 `move x` 不需要在这里特判：它不改变操作数的类型。 */
+        if ((name == "copy" || name == "std::lang::copy") && t.back().word == ")")
         {
             size_t open = 0;
             while (open < t.size() && t[open].word != "(") ++open;
@@ -4153,10 +4154,13 @@ class Server
                 }
                 else if (!member && !r.owner.empty())
                     continue;
-                auto label =
-                    member || qualifiedName || r.source == u || r.kind == "macro" ? r.name : r.qualified;
-                const auto insertion =
-                    r.kind == "macro" && (starts(r.signature, "$macro") || starts(r.signature, "$replace")) ? (starts(name, "$") ? "" : "$") + r.name : (member || qualifiedName || shortCompletion(r) ? r.name : r.qualified);
+                // 宏在源码里写成 `$名字`：跨模块同名时和普通标识符一样用限定名，
+                // 唯一时用短名；`%define` 那类是文本替换，只能按短名插入。
+                const bool dollarMacro = r.kind == "macro" && (starts(r.signature, "$macro") || starts(r.signature, "$replace"));
+                const bool shorthand = member || qualifiedName || r.source == u || shortCompletion(r) || (r.kind == "macro" && !dollarMacro);
+                const auto plain = shorthand ? r.name : r.qualified;
+                auto label = dollarMacro ? "$" + plain : plain;
+                const auto insertion = dollarMacro ? (starts(name, "$") ? "" : "$") + plain : plain;
                 J item = object({ { "label", label },
                                   { "insertText", insertion },
                                   { "kind", completionKind(r) },

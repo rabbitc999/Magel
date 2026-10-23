@@ -20,7 +20,7 @@ def build_matrix(work, vm_off, vm_on, cxx):
     flags = ['-std=c++17', '-O1', '-pthread', '-DCHALI_CUSTOM_ALLOCATOR=1']
     if os.name == 'nt':
         flags += ['-Wa,-mbig-obj']
-    run([cxx, *flags, '-DCHALI_WITH_REFLECTION=0', '-DSTACKVM_WITH_REFLECTION=0', '-I' + str(mc), '-I' + str(mc / 'source'), '-I' + str(mc / 'library'), '-I' + str(mc / 'library/simple_ast'), '-I' + str(mc / 'library/stackvm'), '-I' + str(mc / 'library/preprocess'), '-c', mc / 'source/chali_parser.cpp', '-o', disabled_parser])
+    run([cxx, *flags, '-DCHALI_WITH_REFLECTION=0', '-DSTACKVM_WITH_REFLECTION=0', '-I' + str(mc), '-I' + str(mc / 'source'), '-I' + str(mc / 'library'), '-I' + str(mc / 'source/simple_ast'), '-I' + str(mc / 'source/stackvm'), '-I' + str(mc / 'source/preprocess'), '-c', mc / 'source/chali_parser.cpp', '-o', disabled_parser])
     entry = work / 'entry.cpp'
     entry.write_text('int chali_main_entry(int, char **);\nint main(int n, char **v) { return chali_main_entry(n, v); }\n', encoding='utf-8')
     binaries = {}

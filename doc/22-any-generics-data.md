@@ -23,15 +23,7 @@ Map、Set 不保证键排序、插入顺序或删除前后的遍历顺序；`key
 
 公开类型 `Object` 改为 `Any`，核心模块自动加载，通常直接写 `Any`。装箱的复制、析构、引用和接口转换继续沿用值语义与借用检查；更名不允许把局部对象地址保存到更长寿命的盒子。
 
-`nameof` 与盒子的 `.name()` 已删除。运行时内部标签不再作为应用 API；它们只在一次编译及其匹配运行时内有意义，不应写入文件、网络协议或数据库。
-
-| 已移除写法 | 当前写法 |
-| --- | --- |
-| `Object value` | `Any value` |
-| `value.name() == nameof(int64)` | `isType<int64>(&value)` |
-| `value.name() == 0` | `value.isEmpty()` |
-| 判断后调用 `getValue()` | 优先 `tryGet<T>(&value)`，失败返回 `None` |
-| 按接口或具体类型借用 | `tryGetReference<T>(&value)` 或 `tryGetMut<T>(&value)` |
+`nameof` 与盒子的 `.name()` 不属于应用 API。运行时内部标签只在一次编译及其匹配运行时内有意义，不应写入文件、网络协议或数据库。
 
 ```chali
 void main() {
@@ -177,7 +169,7 @@ VM 导出器自动识别新格式，并继续接受旧文本四元式和布局�
 
 原总量包括 `.quad`、`.layout`、`.data`、`.data.bin`，新总量包括 `.quad`、`.layout`、`.data.bin`；`.data.bin` 分别为 5,464 / 3,960 字节，未改变。未计入旧 `.data.h`，因此没有夸大删除重复数组带来的收益。
 
-`library/stackvm/test_artifacts.cpp` 在内存中反复解码至少 250 ms，包含结构分配和释放，排除磁盘、源码编译与 C++ 编译。首轮均次结果：
+`source/stackvm/test_artifacts.cpp` 在内存中反复解码至少 250 ms，包含结构分配和释放，排除磁盘、源码编译与 C++ 编译。首轮均次结果：
 
 | 示例 | quad 文本 / 二进制（µs） | layout 文本 / 二进制（µs） |
 | --- | ---: | ---: |

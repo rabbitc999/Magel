@@ -51,7 +51,7 @@ def main():
     subprocess.run(['g++', '-std=c++17', '-O2', '-Wall', '-Wextra', '-D_GLIBCXX_ASSERTIONS',
                     *(['-DBIGINT_FORCE_PORTABLE_MULTIPLY'] if args.portable else []),
                     str(ROOT / 'tests/bigint_arithmetic.cpp'),
-                    str(ROOT / 'library/bignum/bigint.cpp'), str(ROOT / 'library/bignum/bigint_multiplication.cpp'), str(ROOT / 'library/bignum/bigint_division.cpp'), str(ROOT / 'library/bignum/bigint_number_theory.cpp'), str(ROOT / 'library/bignum/bigint_bits.cpp'), str(ROOT / 'library/bignum/bigint_modular.cpp'), str(ROOT / 'library/bignum/bigint_conversion.cpp'), '-o', str(binary)], check=True)
+                    str(ROOT / 'source/bignum/bigint.cpp'), str(ROOT / 'source/bignum/bigint_multiplication.cpp'), str(ROOT / 'source/bignum/bigint_division.cpp'), str(ROOT / 'source/bignum/bigint_number_theory.cpp'), str(ROOT / 'source/bignum/bigint_bits.cpp'), str(ROOT / 'source/bignum/bigint_modular.cpp'), str(ROOT / 'source/bignum/bigint_conversion.cpp'), '-o', str(binary)], check=True)
     inputs = list(cases())
     rows = [(mode, left, right) for mode in range(3) for left, right in inputs]
     text = ''.join(f'{mode} {left:x} {right:x}\n' for mode, left, right in rows)

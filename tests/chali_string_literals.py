@@ -23,8 +23,8 @@ def main():
         isolated_compiler = tools / compiler.name
         shutil.copy2(compiler, isolated_compiler)
         shadow = work / 'chali'
-        (shadow / 'library/stackvm').mkdir(parents=True)
-        (shadow / 'library/stackvm/native_text.cpp').write_text('#error unexpected_external_runtime\n', encoding='utf-8')
+        (shadow / 'source/stackvm').mkdir(parents=True)
+        (shadow / 'source/stackvm/native_text.cpp').write_text('#error unexpected_external_runtime\n', encoding='utf-8')
         for mode in ('run',):
             target = work / (mode + '')
             runner = isolated_compiler

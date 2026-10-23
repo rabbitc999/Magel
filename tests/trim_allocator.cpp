@@ -2,7 +2,7 @@
  * @file trim_allocator.cpp
  * @brief 验证裁剪默认池后的显式区域与大数开关联动。
  */
-#include "../library/stackvm/stackvm.hpp"
+#include "../source/stackvm/stackvm.hpp"
 #include <cassert>
 /**
  * @brief 执行裁剪配置检查。

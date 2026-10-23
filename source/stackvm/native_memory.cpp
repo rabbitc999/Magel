@@ -120,7 +120,7 @@ Slot heapDropLive(NativeContext &ctx, const Memory::Vector<Slot> &args)
     return Slot::fromInt(0);
 }
 /**
- * @brief 查询、结束或重新开始 std::lang::move 管理的存储生命周期。
+ * @brief 查询、结束或重新开始 move 管理的存储生命周期。
  * @param ctx 本次运行的对象表；标记不跨虚拟机实例共享。
  * @param args 存储地址、字节数和子对象类型号（开始生命周期只需前两项）。
  * @return 查询返回存活标志；重复移动报告运行错误。
@@ -137,7 +137,7 @@ Slot moveLifetime(NativeContext &ctx, const Memory::Vector<Slot> &args)
     const bool allocationLive = !ctx.heap->contains(address) || ctx.heap->capacityAt(address, capacity);
     const bool live = !bytes || (allocationLive && ranges.find(key) == ranges.end());
     if (Operation == 0) return Slot::fromInt(live);
-    if (Operation == 1 && !live) ctx.error = "std::lang::move 的源对象已经销毁，必须先重新赋值";
+    if (Operation == 1 && !live) ctx.error = "move 的源对象已经销毁，必须先重新赋值";
     if (Operation == 2) ranges[key] = bytes;
     if (Operation == 3) ctx.objects->beginStorage(address, bytes);
     return Slot::fromInt(0);

@@ -153,14 +153,14 @@ void main() {
 
 ### `move`：转移源值所有权
 
-语言内建 `move` 的签名为 `T move(T mut& source)`，结果类型从引用目标推导，无须导入模块。
+`move` 是**一元前缀运算符**，写成 `move x`；结果类型从操作数推导，无须导入模块。操作数是位置表达式：变量、`self`、成员 `move obj.field`、下标 `move list[i]`，或指针 / 引用本身——指针与引用自动解引用一层，所以写 `move p`，`move *p` 是语法错误。
 
 ```chali
 struct Message { String text; };
 void main() {
     Message source;
     source.text = "hello";
-    Message result = move(&source);
+    Message result = move source;
     println("{}", result.text);
 
 }
@@ -168,7 +168,7 @@ void main() {
 
 执行顺序是：实参求值一次 → 将原有资源句柄及聚合存储槽转移给结果 → 清空源存储并结束源值生命周期 → 返回拥有型结果。移动期间不深拷贝字符串、容器、Any 或闭包，也不调用源值的 `close` / `drop`；接收方最终负责析构。引用字段仍指向原来的借用对象，移动不会延长借用寿命。
 
-仅接受 `T mut&`；普通值、只读引用和 const 来源都会编译报错。标量、字符串、容器、Any、函数值、具体结构体和文件／进程句柄可以移动。数组、无具体布局的接口值和不透明宿主类型仍不支持直接移动；可以移动数组中的具体元素。
+只接受可写位置；字面量、临时值、只读引用和 const 来源都会编译报错。标量、字符串、容器、Any、函数值、具体结构体和文件／进程句柄可以移动。数组、无具体布局的接口值和不透明宿主类型仍不支持直接移动；可以移动数组中的具体元素。
 
 源值在静态可跟踪的控制流与别名路径中不能被读取或再次移动，包括标量；禁止通过重新赋值恢复；须重新声明新的同名绑定后使用。整个变量在所有到达路径上完整移动后，允许重新声明同名变量。部分字段移动后，其他不重叠字段仍可使用，但不能读取完整聚合。
 
@@ -265,7 +265,6 @@ void main() {
 | `new T(实参);` | 显式写出构造类型 `T` 的构造调用 |
 | `heap new T(实参);` | 堆上构造（左值为 `T mut&` 时即堆构造） |
 
-旧的裸写法 `T v = new;` / `T v = new(实参);` 已删除，一律按语法错误处理。
 
 ```chali
 struct Point {
@@ -502,7 +501,7 @@ Shape const& view = &circle;
 
 只读来源不能绑定可写视图；复制接口视图不延长具体对象的寿命，局部对象的视图不能逃出作用域。已经装箱的 Any 仍可通过 `getReference`／`tryGetReference` 提取接口视图。
 
-完整例子见 [`example/samples/interface.chl`](../example/samples/interface.chl)。Any 的安全提取使用 `isType<T>(&box)`、`tryGet<T>(&box)`、`tryGetReference<T>(&box)` 和 `tryGetMut<T>(&box)`；`nameof` 与盒子的 `.name()` 已删除，见 [Any、显式泛型与通用数据工具](22-any-generics-data.md)。
+完整例子见 [`example/samples/interface.chl`](../example/samples/interface.chl)。Any 的安全提取使用 `isType<T>(&box)`、`tryGet<T>(&box)`、`tryGetReference<T>(&box)` 和 `tryGetMut<T>(&box)`；`nameof` 与盒子的 `.name()` 不属于应用 API，见 [Any、显式泛型与通用数据工具](22-any-generics-data.md)。
 
 ---
 
@@ -740,8 +739,8 @@ opcode FileHandle {
 
 声明体必须绑定创建方法 `new` 和销毁方法 `drop`。可复制类型还必须绑定 `copy`，
 复制方法须创建独立的宿主记录。`#NonCopyable` 类型省略 `copy`，禁止复制初始化、
-赋值及按值传参、返回时的复制；它仍可通过 `T target = move(&source);` 转移所有权，
-按值传参与返回也可显式使用 `move(&value)`。此规则适用于所有 opcode 类型。
+赋值及按值传参、返回时的复制；它仍可通过 `T target = move source;` 转移所有权，
+按值传参与返回也可显式使用 `move value`。此规则适用于所有 opcode 类型。
 实现 `Closeable` 的 struct 走同一条检查：复制一份就是两份所有权，`close()` 会跑两遍，
 因此它自动按不可复制处理，无须再写指令（见[声明糖](28-declaration-sugars.md#closeable-与运算符推导开关)）。
 移动不调用 copy，源绑定随后失效，最终接收所有权的一方负责调用 drop。
@@ -792,9 +791,9 @@ abi "./native.dll" {
 
 函数入口 `main` 的返回类型必须是 `int64` 或 `void`，不接受 `uint64`、较窄整数、浮点数或引用。函数指针可作数组元素：`int64 fn(int64) a[] = new[2];`，赋值后可用 `let callback = a[0]; callback(value);` 调用。固定数组、元组、容器和嵌套函数类型可组合；返回运行时数组的函数类型写作 `(int64[]) fn()`，圆括号将数组返回类型与函数指针数组区分开。
 
-函数类型和匿名函数的返回类型统一前置：`int64 fn(int64, int64) callback`、`int64 fn(int64 x) { x + 1 }`。旧 `fn(int64, int64) -> int64` 与 `fn(int64 x) -> int64 { x + 1 }` 已移除并报错；推导返回类型使用 `fn(int64 x) { x + 1 }`，不写箭头。升级后重新生成泛型宿主胶水并重建旧缓存。
+函数类型和匿名函数的返回类型统一前置：`int64 fn(int64, int64) callback`、`int64 fn(int64 x) { x + 1 }`。推导返回类型写 `fn(int64 x) { x + 1 }`，不写箭头。
 
-同一块内，变量完整移动后可以用声明语法重新定义同名变量（也可使用不同类型）：`String a="1"; String b=move(&a); String a="2";`。新声明分配独立存储，旧引用仍指向旧对象，不能访问已移动对象。所有到达新声明的控制流路径都必须已完整移动旧变量；只移动字段或仅部分分支移动时，不允许重复声明。
+同一块内，变量完整移动后可以用声明语法重新定义同名变量（也可使用不同类型）：`String a="1"; String b=move a; String a="2";`。新声明分配独立存储，旧引用仍指向旧对象，不能访问已移动对象。所有到达新声明的控制流路径都必须已完整移动旧变量；只移动字段或仅部分分支移动时，不允许重复声明。
 
 返回函数值的匿名函数也可以将返回类型括起：`(int64 fn(int64)) fn(int64 fn(int64) a, int64 fn(int64) b) { int64 fn copy(int64 x) { a(b(x)) } }`。外层末尾的闭包表达式与内层末尾的调用表达式都不加分号，分别返回函数值与整数；返回的闭包必须拥有 `a`、`b`，不能借用本次调用的局部形参。完整例子见[函数值与闭包](book/15-函数值与闭包.md)。
 
@@ -998,7 +997,7 @@ $end_macro
 
 调用 `List<int32> values = $vec(int32, 1, 2, 3);` 或 `values = $vec(int32, 4, 5);`。普通局部声明自动卫生；局部暂存按指定类型接收实参，每个元素只求值一次，再通过 `push` 顺序追加。省略元素得到空列表。完整可运行测试见 [块表达式样例](../example/samples/block_expression.chl)与[插值输出样例](../example/samples/print_interpolation.chl)。
 
-匿名函数使用 `fn`，旧 `lambda` 语法已移除：`let add = fn(int32 x) { x + 1 };`，显式返回类型写 `let add = int32 fn(int32 x) { return x + 1; };`。`fn const`、`fn mut`、`fn copy`、`fn move` 及显式捕获列表沿用匿名函数规则；`int32 fn(int32)` 仍表示函数类型。
+匿名函数使用 `fn`：`let add = fn(int32 x) { x + 1 };`，显式返回类型写 `let add = int32 fn(int32 x) { return x + 1; };`。`fn const`、`fn mut`、`fn copy`、`fn move` 及显式捕获列表沿用匿名函数规则；`int32 fn(int32)` 仍表示函数类型。
 
 `fn` 表达式可以直接作为普通函数或函数值调用的实参，无须先保存到变量。每个回调按对应形参的
 函数类型检查；省略的参数类型从该形参推导。嵌套函数返回值与元组组合见
@@ -1014,9 +1013,9 @@ $end_macro
 
 ## 带值退出的移动与清理
 
-显式 `yield i;` 优先移动当前值表达式内部的可写局部变量，等价于对该变量使用 `yield std::lang::move(&i);`；外部仍存活的变量按值复制。判断以接收结果的值表达式为边界，跨越循环不会改变边界。元组中的直接变量逐项应用同一规则，嵌套元组同样处理。const、只读来源、引用绑定、字段和下标保留已有值语义；需要显式转移来源时使用 `move(&value)`。存在作用域退出回调时保守保存独立结果，保证回调仍可读取或修改来源。
+显式 `yield i;` 优先移动当前值表达式内部的可写局部变量，等价于对该变量使用 `yield move i;`；外部仍存活的变量按值复制。判断以接收结果的值表达式为边界，跨越循环不会改变边界。元组中的直接变量逐项应用同一规则，嵌套元组同样处理。const、只读来源、引用绑定、字段和下标保留已有值语义；需要显式转移来源时使用 `move value`。存在作用域退出回调时保守保存独立结果，保证回调仍可读取或修改来源。
 
-`yield i + 1;`、`yield makeText();` 等表达式只求值一次，再复制或接管结果临时值，不把表达式本身当作可寻址变量。元组等复合表达式先沿用现有构造与按值传参规则，再由退出接管最终结果。普通分支末尾的 `{ value }` 保留原有值语义。需要强制复制可使用字符串拼接、容器 copy 或类型提供的复制方法；需要强制移动外部变量可显式写 `yield move(&external);`，之后原绑定遵守移动后访问限制。
+`yield i + 1;`、`yield makeText();` 等表达式只求值一次，再复制或接管结果临时值，不把表达式本身当作可寻址变量。元组等复合表达式先沿用现有构造与按值传参规则，再由退出接管最终结果。普通分支末尾的 `{ value }` 保留原有值语义。需要强制复制可使用字符串拼接、容器 copy 或类型提供的复制方法；需要强制移动外部变量可显式写 `yield move external;`，之后原绑定遵守移动后访问限制。
 
 结果先保存，再执行退出路径上的延迟回调和自动清理。移动清空源存储并结束源绑定的生命周期，不调用源值的 close/drop；最终接收方负责资源回收。同时实现 Closeable 与 Drop 时先 close、后 drop。复制产生独立拥有值，来源与结果分别按各自生命周期清理。跨循环退出清理所有离开的作用域，不能释放已交给结果的资源。
 

@@ -62,6 +62,6 @@
 
 `std::watchdog` 直接在 VM 执行检查中维护超时和喂狗，不调用用户事件处理器。提供宿主纳秒时钟时预算单位为纳秒，否则为执行指令数；禁用时保留默认最高优化路径。
 
-协程标准库、协程句柄和调度、旧中断处理器注册及隐式用户回调交付均已删除。语言块表达式的 `yield value;` 与层级 break 保持原有值语义。旧事件回调程序迁移为显式接收循环，网络 NET_PENDING 轮询可用有界等待或 `sleepFor` 避免忙循环。
+宿主事件回调写成显式接收循环，网络 NET_PENDING 轮询可用有界等待或 `sleepFor` 避免忙循环；语言块表达式的 `yield value;` 与层级 break 保持原有值语义。
 
 完整可运行样例见 [通道](../example/samples/thread_channel.chl)、[线程池](../example/samples/thread_pool.chl) 和 [事件](../example/samples/event_timer.chl)，接口清单见 [线程 API](library/std-thread.md)、[通信 API](library/std-concurrency.md) 与 [事件 API](library/std-event.md)。

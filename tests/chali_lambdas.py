@@ -23,7 +23,7 @@ def main():
     compiler = args.chali.resolve()
     WORK.mkdir(parents=True, exist_ok=True)
     unit = WORK / ('lambda-unit' + EXE)
-    result = execute(args.cxx, '-std=c++17', '-I' + str(ROOT), '-I' + str(ROOT / 'source'), '-I' + str(ROOT / 'library'), '-I' + str(ROOT / 'library/preprocess'), ROOT / 'tests/chali_lambda_test.cpp', *[ROOT / 'source' / name for name in ('chali_generic.cpp', 'chali_lambda.cpp', 'chali_generic_closure.cpp', 'syntax/source_text.cpp', 'syntax/constant_expression.cpp')], '-o', unit)
+    result = execute(args.cxx, '-std=c++17', '-I' + str(ROOT), '-I' + str(ROOT / 'source'), '-I' + str(ROOT / 'library'), '-I' + str(ROOT / 'source/preprocess'), ROOT / 'tests/chali_lambda_test.cpp', *[ROOT / 'source' / name for name in ('chali_generic.cpp', 'chali_lambda.cpp', 'chali_generic_closure.cpp', 'syntax/source_text.cpp', 'syntax/constant_expression.cpp')], '-o', unit)
     assert result.returncode == 0, result.stderr
     result = execute(unit)
     assert result.returncode == 0 and result.stdout == 'lambda unit tests OK\n' and (not result.stderr), result

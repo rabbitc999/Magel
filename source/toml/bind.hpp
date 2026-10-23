@@ -2,7 +2,7 @@
  * @file bind.hpp
  * @brief 把 TOML 投射到 C++ 模型类（以及反过来）：`toml::encode` / `toml::decode`。
  *
- * 与同目录 JSON 库（`library/json/bind.hpp`）同一套设计：**C++ 没有内置反射**，
+ * 与同目录 JSON 库（`source/json/bind.hpp`）同一套设计：**C++ 没有内置反射**，
  * 所以"模型类 ↔ TOML"由成员指针表声明字段，C++17 的语法就够：
  *
  * ```cpp

@@ -41,7 +41,7 @@ VM 的线程组共享首次 panic 信号：主线程、忙循环兄弟线程及�
 ## 编译宏
 
 ```sh
-cmake -S chali/library/stackvm -B build/vm-small -DSTACKVM_WITH_PANIC_TRACE=OFF
+cmake -S chali/source/stackvm -B build/vm-small -DSTACKVM_WITH_PANIC_TRACE=OFF
 cmake --build build/vm-small
 # 直接编译库或生成的单文件 C++：库与调用方应使用一致的宏。
 g++ -DSTACKVM_WITH_PANIC_TRACE=0 ...

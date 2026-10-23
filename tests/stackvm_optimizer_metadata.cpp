@@ -1,4 +1,4 @@
-#include "../library/stackvm/stackvm.hpp"
+#include "../source/stackvm/stackvm.hpp"
 #include <cassert>
 
 /**

@@ -4,7 +4,7 @@ Host storage follows actual ownership. Database connections, arenas and timer so
 
 ## Ownership and copying
 
-`std::sql::Database` and `std::memory::Arena` are noncopyable owning opcodes. Transfer ownership with `std::lang::move(&value)`. Database keeps connection state, driver, error and affected rows in one host record, closes automatically and permits repeated close calls. Resetting or destroying an arena invalidates all borrowed spans.
+`std::sql::Database` and `std::memory::Arena` are noncopyable owning opcodes. Transfer ownership with `move value`. Database keeps connection state, driver, error and affected rows in one host record, closes automatically and permits repeated close calls. Resetting or destroying an arena invalidates all borrowed spans.
 
 `std::event::Timer` owns a noncopyable private opcode. Scope exit and stop cancel the source; `id()` and `Event.timer` are source identities and carry no release responsibility. `Random` deeply copies the current sequence position, so copies advance independently while fixed seeds remain reproducible.
 

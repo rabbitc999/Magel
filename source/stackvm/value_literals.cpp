@@ -126,7 +126,7 @@ bool parseNumber(const Memory::String &text, bool &isFloat, std::int64_t &intVal
 }
 
 /**
- * @brief 最短往返的浮点文本（与 library/json 同一套路）。
+ * @brief 最短往返的浮点文本（与 source/json 同一套路）。
  * @param value 浮点。
  * @return 文本。
  */

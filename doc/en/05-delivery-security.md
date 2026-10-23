@@ -1,6 +1,6 @@
 # 05 Delivery security
 
-Bytecode encryption has been removed. `--encrypt` and `[chali] encrypt` are no longer supported. Rebuild historical encrypted artifacts from source.
+Bytecode is never encrypted: `--encrypt` and `[chali] encrypt` are unsupported, so artifacts always come from the source.
 
 ## Delivery forms
 
@@ -43,7 +43,7 @@ Source locations are omitted by default; request debug records with `--debug`. P
 | `.symbol_map.json` | Developer | Offline diagnosis |
 | Debug builds and build records | Developer | Reproduction and troubleshooting |
 
-Rebuild from source when upgrading and verify that the target VM supports the required program capabilities. The loader rejects historical encrypted flags, and the project parser rejects the removed configuration key.
+Rebuild from source when upgrading and verify that the target VM supports the required program capabilities. The loader rejects encrypted flags, and the project parser rejects the `encrypt` configuration key.
 
 ## Next
 

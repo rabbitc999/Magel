@@ -229,7 +229,7 @@ int main(int argc, char **argv)
         }
         if ((key == "-v") || (key == "--version"))
         {
-            std::cout << "preprocess 1.0（ParseEngine library/preprocess）\n";
+            std::cout << "preprocess 1.0（ParseEngine source/preprocess）\n";
             return 0;
         }
         if ((key == "-o") || (key == "--out"))

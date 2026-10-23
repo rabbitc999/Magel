@@ -58,7 +58,7 @@ python tests/chali_algorithm_robustness.py --chali ChaLi.exe
 python tests/chali_algorithm_robustness.py --chali ChaLi.exe --stress-size 300000
 ```
 
-Desktop and embedded Linux builds share the single `library/stackvm/` core and lifecycle native instructions, with host features trimmed by build macros.
+Desktop and embedded Linux builds share the single `source/stackvm/` core and lifecycle native instructions, with host features trimmed by build macros.
 
 Local module gates run after building the compiler with `make`:
 

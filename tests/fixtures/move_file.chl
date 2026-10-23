@@ -3,13 +3,13 @@ import std::io;
 void main() {
     File source = fileOpen("build/move-file.bin", "wb").take();
     int64 before; memcpy(&before, &source, 8);
-    File target = move(&source);
+    File target = move source;
     int64 after; memcpy(&after, &target, 8);
     assert(before == after);
     assert(fileWrite(&target, "moved") == 5);
     fileClose(&target);
     FileStream stream = FileStream::open("build/move-stream.bin", "wb").take();
-    FileStream destination = move(&stream);
+    FileStream destination = move stream;
     assert(destination.write("stream").unwrap() == 6);
     destination.close();
     File captured = fileOpen("build/move-closure-file.bin", "wb").take();

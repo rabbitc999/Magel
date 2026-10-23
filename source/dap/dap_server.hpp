@@ -11,7 +11,7 @@
  * 注意：DAP 用 stdout 传协议，所以 DAP 模式下程序自己的输出不能再写 stdout，
  * 要走 `emitOutput()` 转成 `output` 事件，否则协议流会被冲垮。
  */
-#include "../../library/stackvm/stackvm.hpp"
+#include "../../source/stackvm/stackvm.hpp"
 
 #include <functional>
 #include <string>

@@ -36,8 +36,6 @@ BigDecimal inputBigDecimal();
 int64 panic(String message);
 /** 返回字符串字节长度、数组元素数量或容器长度。 */
 int64 len(Any value);
-/** 转移 value 的资源所有权并清空源槽，不复制资源、不执行源值析构；目标必须是有效可写引用。 */
-T move<T>(T mut& value);
 /** 将可选可写引用转换成可写引用；None 无法转为有效引用。 */
 T mut& toReference<T>(Option<T mut&> value);
 /** 将可写引用封装成可选引用，不复制指向的对象。 */

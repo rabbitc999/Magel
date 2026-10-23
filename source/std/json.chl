@@ -88,22 +88,22 @@ struct JsonValue : Iterator<JsonValue> {
     Option<JsonValue> find(std::lang::String key) {
         __JsonValueStorage child = __find(self.__storage.opcode, 0, key);
         if (!__valid(child.opcode)) { return Option<JsonValue>::None; }
-        JsonValue value; value.__storage = std::lang::move(&child);
-        return Option<JsonValue>::Value(std::lang::move(&value));
+        JsonValue value; value.__storage = move child;
+        return Option<JsonValue>::Value(move value);
     }
     /** 允许包含零字节的 UTF-8 键名。 */
     Option<JsonValue> findBytes(std::lang::List<uint8> key) {
         __JsonValueStorage child = __findBytes(self.__storage.opcode, 0, key);
         if (!__valid(child.opcode)) { return Option<JsonValue>::None; }
-        JsonValue value; value.__storage = std::lang::move(&child);
-        return Option<JsonValue>::Value(std::lang::move(&value));
+        JsonValue value; value.__storage = move child;
+        return Option<JsonValue>::Value(move value);
     }
     /** 数组按索引读取；对象按插入顺序读取成员值。 */
     Option<JsonValue> at(int64 index) {
         __JsonValueStorage child = __at(self.__storage.opcode, 0, index);
         if (!__valid(child.opcode)) { return Option<JsonValue>::None; }
-        JsonValue value; value.__storage = std::lang::move(&child);
-        return Option<JsonValue>::Value(std::lang::move(&value));
+        JsonValue value; value.__storage = move child;
+        return Option<JsonValue>::Value(move value);
     }
     Option<JsonValue> iterator(int64 index) { return self.at(index); }
     /** 对象成员的键名；越界或键中含零字节时返回 None。 */
@@ -124,6 +124,6 @@ struct JsonValue : Iterator<JsonValue> {
 Result<JsonValue, std::lang::String> parse(std::lang::String text) {
     __JsonValueStorage handle = __parse(text);
     if (!__valid(handle.opcode)) { std::lang::String message = __takeError(handle.opcode); return Result<JsonValue, std::lang::String>::Err(message); }
-    JsonValue value; value.__storage = std::lang::move(&handle);
-    return Result<JsonValue, std::lang::String>::Ok(std::lang::move(&value));
+    JsonValue value; value.__storage = move handle;
+    return Result<JsonValue, std::lang::String>::Ok(move value);
 }

@@ -22,12 +22,13 @@
    `chali_parser.cpp` / `chali_parser.hpp` / `chali_parser_user.h` / `chali_main.cpp`
    都是 `sh gen.sh` 生成到 `source/` 的产物，不入库；对象文件和静态库写入 `build/chali-frontend/`；
    `Makefile` 是手写的，`gen.sh` 不会覆盖它。
-3. **引用到的库各自拷一份进本项目**：`library/` 下的库是 ParseEngine 仓库 `library/` 同名目录的副本；
-   控制台头 `library/console/utf8.hpp` 在本仓库独立维护。
-   本项目要能单独克隆、单独构建，**不依赖 `library/`**。
-   **`library/` 副本只在本仓库演进，不同步回 `D:/Desktop/Workspace/ParseEngine/library/`**：
+3. **引用到的库各自拷一份进本项目**：`source/{lztext,preprocess,simple_ast,stackvm,template,toml,json,bignum,console}`
+   是 ParseEngine 仓库 `library/` 同名目录的副本，搬进 `source/` 是为了让「编译器本体」只有一棵目录树；
+   `library/` 只留外部依赖（`sqlite` / `ipage` / `caspp` / `miniz`）。
+   本项目要能单独克隆、单独构建，**不依赖 ParseEngine 的 `library/`**。
+   **改过的副本只在本仓库演进，不同步回 `D:/Desktop/Workspace/ParseEngine/library/`**：
    两个仓库的库已经分叉，往回同步属于多余动作，也不要顺手改外面那份（反之亦然）。
-   只有 `library/console/utf8.hpp` 这类本仓库独立维护的文件例外。
+   只有 `source/console/utf8.hpp` 这类本仓库独立维护的文件例外。
 4. **固化生成资产**：标准库 `.chl` 与生成器运行时资产在构建期内嵌成 C++ 源
    （[`tools/embed_stdlib.py`](tools/embed_stdlib.py) → `source/chali_stdlib_embedded.cpp`），
    运行时不读磁盘，保证单个可执行文件可用。改了任何 `.chl` 或胶水头后必须重跑内嵌、重建编译器，再跑测试。
@@ -37,7 +38,7 @@
    `@return` / `@retval`、`@note` 各占独立一行；无参数时不写空的 `@param`，
    无返回值及构造/析构函数不虚构返回值。注释必须解释实际功能、参数用途与返回含义，
    不能只复述函数名或填占位语句，不使用紧凑形式或 `///` 代替函数文档块。
-6. **统一 VM 核心**：`library/stackvm/` 是桌面与嵌入式 Linux 共用的 VM 核心。
+6. **统一 VM 核心**：`source/stackvm/` 是桌面与嵌入式 Linux 共用的 VM 核心。
    目标平台需具备受支持的 C++17 工具链与操作系统宿主服务；构建宏、资源预算和胶水
    按实际宿主配置维护，不承诺单片机或裸机支持。
 7. 文档索引用 [`doc/README.md`](doc/README.md)；改动完成后 `git add -A` → commit →
@@ -46,7 +47,7 @@
    向它推送任何分支或 tag 之前，**必须先取得用户明确同意**；未经同意不得推送，
    也不要把它当成 `origin` 的自动镜像顺手同步。
 8. **程序与插件分别记录版本**：根目录 [`VERSION`](VERSION) 是 ChaLi 程序版本，当前为
-   `0.28.0`；[`vscode/package.json`](vscode/package.json) 的插件 `version` 独立保持 `1.0.0`，
+   `0.28.1`；[`vscode/package.json`](vscode/package.json) 的插件 `version` 独立保持 `1.0.0`，
    `chaliCompilerVersion` 必须与 `VERSION` 一致。内嵌编译器报告程序版本，VSIX 清单和包名
    使用插件版本。交付前在 `vscode/` 执行 `npm run package`，生成
    `vscode/dist/chali-editor-1.0.0.vsix`，核对两种版本及内嵌编译器字节。
@@ -85,7 +86,7 @@
     仍按代码改动跑完整门禁。
     独立回归默认并行运行，`--jobs 1` 可用于串行复核；新增并行登记前检查临时目录、端口、
     生成资产与构建依赖。共享资源、生成与构建任务保留串行屏障，不为提速省略检查。
-    **前端门禁与后端门禁分开算**：后端（`library/stackvm/` 的优化、指令选择、寄存器分配、
+    **前端门禁与后端门禁分开算**：后端（`source/stackvm/` 的优化、指令选择、寄存器分配、
     执行核、字节码产物与 IR）改动**不必跑整套门禁**——只跑后端门禁
     （`tests/stackvm_module_layout.py`、`tests/vm_differential.py`、`tests/quad_ir.py`、
     `tools/stackvm_sources.py --check`、VM 单测与构建），再抽 **5% 的前端门禁**
@@ -104,7 +105,7 @@
     拆成每帧一份，跨帧读到的会是空/陈旧值，拥有型句柄还会被释放两次（`arena` 报
     "无效或重复释放"）。改分配器时先看这条。分配器另有一条硬不变量自查：
     任何位置上同时活着的两个符号不得共槽，冲突就整体退回"一人一槽"。
-17. **后端优化只允许"更快更小"**：机器级优化（`library/stackvm/machine_optimize.cpp`）
+17. **后端优化只允许"更快更小"**：机器级优化（`source/stackvm/machine_optimize.cpp`）
     不得改变值与陷阱**时机**——会失败的运算（除零、除法溢出、移位越界）不折叠、不外提；
     删除只对"纯且不陷阱、且结果没人读"的运算生效，声明过的局部一律不删。
     语义级化简只归 `quad_optimizer`，机器级这一层不回退去动语义。
@@ -117,6 +118,12 @@
     逐条 `chali_pool_allocate`——那会把空闲表撑成几十万块；
     ③ slab 的组**一空就还给池**，`stats().liveBlocks` 恒等于"真正还活着"的块数，
     泄漏检查与 `arena.stats().liveBlocks == 0` 这类断言都靠这条成立。
+20. **`move` 是运算符，不是函数**：源码只写 `move x`（`move` 是保留字），`source/chali.gram`
+    的产生式是 `MOVE postfix`；**指针与引用自动解引用一层**，写 `move p`，`move *p` 是语法错误。
+    语义层把它降级成内部调用 `std::lang::__move(x)`，借用流、生命周期与降级都只认这一种形状；
+    改这条链路时 `M_Move`、`LowerLanguageMove`、`StandardCallName` 的 `__move` 分支要一起动。
+21. **参考文档只描述当前写法**：语言尚未发布，`doc/` 与 `skills/` 里不写"某个旧写法已删除 /
+    已移除"这类迁移说明（历史留在 `CHANGELOG.md`）。
 
 ## C/C++ 格式与语义要点
 
@@ -219,7 +226,7 @@ Markdown 与 LaTeX/PDF 保持相同的编号意图：不编号的小标题不得
 
 ## CHANGELOG 与版本口径
 
-语言尚未发布，当前开发版本为 **0.28.0**。此前累计的 1.0.0 开发记录细分为
+语言尚未发布，当前开发版本为 **0.28.1**。此前累计的 1.0.0 开发记录细分为
 `0.19.0`–`0.19.15` 与 `0.20.0`–`0.20.16`；更早的 1.x 已重排为 `0.18.0`–`0.18.6`。
 历史版本都使用三段 `0.x.x`；VS Code 扩展包独立使用 `1.0.0`。
 

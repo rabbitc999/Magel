@@ -22,7 +22,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix='chali-generic-monomorphization-') as folder:
         work = Path(folder)
         unit = work / ('unit.exe' if os.name == 'nt' else 'unit')
-        result = run('g++', '-std=c++17', '-I' + str(ROOT / 'source'), '-I' + str(ROOT / 'library'), '-I' + str(ROOT / 'library/preprocess'), '-I' + str(ROOT / 'library/stackvm'), ROOT / 'tests/chali_generic_monomorphization_test.cpp', *[ROOT / 'source' / name for name in ('chali_generic.cpp', 'chali_lambda.cpp', 'chali_generic_closure.cpp', 'syntax/source_text.cpp', 'syntax/constant_expression.cpp')], '-o', unit)
+        result = run('g++', '-std=c++17', '-I' + str(ROOT / 'source'), '-I' + str(ROOT / 'library'), '-I' + str(ROOT / 'source/preprocess'), '-I' + str(ROOT / 'source/stackvm'), ROOT / 'tests/chali_generic_monomorphization_test.cpp', *[ROOT / 'source' / name for name in ('chali_generic.cpp', 'chali_lambda.cpp', 'chali_generic_closure.cpp', 'syntax/source_text.cpp', 'syntax/constant_expression.cpp')], '-o', unit)
         assert result.returncode == 0, result.stderr
         result = run(unit)
         assert (result.returncode, result.stdout, result.stderr) == (0, 'generic monomorphization unit tests OK\n', ''), result

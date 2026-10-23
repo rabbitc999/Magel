@@ -5,7 +5,7 @@ opcode Unique {
 };
 
 Unique relay(Unique value) {
-    return move(&value);
+    return move value;
 }
 
 void consume(Unique value) {}
@@ -14,15 +14,15 @@ void main() {
     Unique original = Unique::new(7);
     int64 before;
     memcpy(&before, &original, 8);
-    Unique target = move(&original);
-    Unique returned = relay(move(&target));
+    Unique target = move original;
+    Unique returned = relay(move target);
     int64 after;
     memcpy(&after, &returned, 8);
     assert(before == after);
-    consume(move(&returned));
+    consume(move returned);
     Unique captured = Unique::new(9);
     let release = void fn move[captured]() {
-        consume(move(&captured));
+        consume(move captured);
     };
     release();
     println("opcode move ok");

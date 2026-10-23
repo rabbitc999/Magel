@@ -5,21 +5,21 @@ endif
 # local.mk —— 生成工程自己的挂载点（生成的 Makefile 末尾有 `-include local.mk`）。
 #
 # chali 自带 ast / vm / bignum 三份源码副本，只有前处理仍用仓库里的库：
-#   * library/simple_ast：C 子集语法树 → 四元式 + .data（降级目标）
-#   * library/stackvm ：四元式 → 栈指令 → 执行（跑出结果；大整数用 library/bignum）
-#   * library/preprocess：`%include` / `%if` / `%define` 那一步（源码进解析器之前）
-# 三份副本各跑 `make -C library/<名字>`（产物仍落在仓库根的 `build/<名字>/`），
+#   * source/simple_ast：C 子集语法树 → 四元式 + .data（降级目标）
+#   * source/stackvm ：四元式 → 栈指令 → 执行（跑出结果；大整数用 source/bignum）
+#   * source/preprocess：`%include` / `%if` / `%define` 那一步（源码进解析器之前）
+# 三份副本各跑 `make -C source/<名字>`（产物仍落在仓库根的 `build/<名字>/`），
 # 所有依赖都使用 CHALI 内部副本。
 #
-# 注意：`library/{simple_ast,stackvm,bignum}` 是从 ParseEngine 的 `library/` 复制进来的**副本**，
+# 注意：`source/{simple_ast,stackvm,bignum}` 是从 ParseEngine 的 `library/` 复制进来的**副本**，
 # 改了这边不会自动同步到 ParseEngine 那份（反之亦然）——动其中一个时想清楚要不要一起改。
 #
 # 生成源码与报告位于 source/，对象文件与静态库位于 build/chali-frontend/。
 # 根目录只保留工具链入口与手写构建文件，重跑 gen.sh 不覆盖 local.mk。
 
-AST_DIR := library/simple_ast
-VM_DIR  := library/stackvm
-PP_DIR  := library/preprocess
+AST_DIR := source/simple_ast
+VM_DIR  := source/stackvm
+PP_DIR  := source/preprocess
 AST_LIB := build/chali-runtime/libsimple_ast.a
 VM_BUILD := build/chali-stackvm-core
 HOST_BUILD := build/chali-host-records
@@ -44,11 +44,12 @@ endif
 
 CHALI_SOURCE_DIR  := source
 CHALI_LIBRARY_DIR := library
-# 搬进 source/ 与 library/ 后，代码里的裸文件名 include 靠这组搜索路径解析。
+# 代码里的裸文件名 include 靠这组搜索路径解析：搬进 source/ 的九个库走 CHALI_SOURCE_DIR，
+# 仍留在 library/ 的外部依赖（sqlite / caspp / ipage / miniz）走 CHALI_LIBRARY_DIR。
 CHALI_INCLUDES := -I$(CHALI_SOURCE_DIR) -I$(CHALI_LIBRARY_DIR) \
     -I$(CHALI_SOURCE_DIR)/allocator -I$(CHALI_SOURCE_DIR)/lsp \
-    -I$(CHALI_LIBRARY_DIR)/bignum -I$(CHALI_LIBRARY_DIR)/json -I$(CHALI_LIBRARY_DIR)/toml \
-    -I$(CHALI_LIBRARY_DIR)/sqlite -I$(CHALI_LIBRARY_DIR)/console -I$(CHALI_LIBRARY_DIR)/lztext
+    -I$(CHALI_SOURCE_DIR)/bignum -I$(CHALI_SOURCE_DIR)/json -I$(CHALI_SOURCE_DIR)/toml \
+    -I$(CHALI_LIBRARY_DIR)/sqlite -I$(CHALI_SOURCE_DIR)/console -I$(CHALI_SOURCE_DIR)/lztext
 override CXXFLAGS += -DCHALI_CUSTOM_ALLOCATOR=1 -pthread $(CHALI_INCLUDES) -I$(AST_DIR) -I$(VM_DIR) -I$(PP_DIR)
 
 # ---- 统一工具链：chali 同时是前端 / VM / 工程生成器 ----
@@ -70,7 +71,7 @@ $(FRONTEND_BUILD)/chali_tool.o: source/chali_tool.cpp source/chali_package.hpp t
 	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
 
 $(FRONTEND_BUILD)/generator_cli.o: source/generator/generator_cli.cpp source/generator/generator_cli.hpp \
-        library/template/engine.hpp source/chali_runtime_allocator.hpp
+        source/template/engine.hpp source/chali_runtime_allocator.hpp
 	$(CXX) $(CXXFLAGS) -MMD -MP -DCHALI_GENERATOR_NO_MAIN=1 -I. -c $< -o $@
 
 # 注意顺序：libparser.a 引用了 simple_ast / stackvm 的符号，必须排在它们前面。
@@ -90,7 +91,7 @@ $(FRONTEND_BUILD)/chali_parser.o: source/chali_ast.hpp source/chali_semantics.cp
 $(TARGET): $(AST_LIB) $(VM_LIB) $(HOST_LIB) $(PP_LIB)
 
 # ChaLi's VM copy includes the std bindings that are intentionally absent from
-# the general-purpose library/stackvm build. Keep its archive separate.
+# the general-purpose source/stackvm build. Keep its archive separate.
 $(VM_BUILD) $(HOST_BUILD):
 	$(CHALI_RUNTIME_MKDIR)
 
@@ -98,19 +99,19 @@ $(VM_BUILD)/%.o: $(VM_DIR)/%.cpp | $(VM_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I$(VM_DIR) -c $< -o $@
 -include $(wildcard $(VM_BUILD)/*.d)
 
-$(HOST_BUILD)/bigint.o: library/bignum/bigint.cpp library/bignum/bigint.hpp | $(HOST_BUILD)
+$(HOST_BUILD)/bigint.o: source/bignum/bigint.cpp source/bignum/bigint.hpp | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I$(CHALI_LIBRARY_DIR)/bignum -c $< -o $@
 
-$(HOST_BUILD)/bigfloat.o: library/bignum/bigfloat.cpp library/bignum/bigfloat.hpp library/bignum/bigint.hpp | $(HOST_BUILD)
+$(HOST_BUILD)/bigfloat.o: source/bignum/bigfloat.cpp source/bignum/bigfloat.hpp source/bignum/bigint.hpp | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I$(CHALI_LIBRARY_DIR)/bignum -c $< -o $@
 
 BIGINT_MODULE_OBJS := $(HOST_BUILD)/bigint_multiplication.o $(HOST_BUILD)/bigint_division.o $(HOST_BUILD)/bigint_number_theory.o $(HOST_BUILD)/bigint_bits.o $(HOST_BUILD)/bigint_modular.o $(HOST_BUILD)/bigint_conversion.o
-$(BIGINT_MODULE_OBJS): $(HOST_BUILD)/%.o: library/bignum/%.cpp build/chali-runtime/buildConfig.json | $(HOST_BUILD)
+$(BIGINT_MODULE_OBJS): $(HOST_BUILD)/%.o: source/bignum/%.cpp build/chali-runtime/buildConfig.json | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I$(CHALI_LIBRARY_DIR)/bignum -c $< -o $@
 -include $(BIGINT_MODULE_OBJS:.o=.d) $(HOST_BUILD)/bigint.d $(HOST_BUILD)/bigfloat.d
 
 BIGFLOAT_MATH_OBJS := $(HOST_BUILD)/bigfloat_roots.o $(HOST_BUILD)/bigfloat_transcendental.o $(HOST_BUILD)/bigfloat_trigonometry.o
-$(BIGFLOAT_MATH_OBJS): $(HOST_BUILD)/%.o: library/bignum/%.cpp build/chali-runtime/buildConfig.json | $(HOST_BUILD)
+$(BIGFLOAT_MATH_OBJS): $(HOST_BUILD)/%.o: source/bignum/%.cpp build/chali-runtime/buildConfig.json | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I$(CHALI_LIBRARY_DIR)/bignum -c $< -o $@
 
 $(HOST_BUILD)/sqlite3.o: library/sqlite/sqlite3.c library/sqlite/sqlite3.h | $(HOST_BUILD)
@@ -126,11 +127,11 @@ CHALI_STANDARD_OBJS := $(patsubst source/glue/%.cpp,$(HOST_BUILD)/%.o,$(CHALI_ST
 $(HOST_BUILD)/std_%.o: source/glue/std_%.cpp | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
 $(HOST_BUILD)/std_cas.o: private CXXFLAGS += -Ilibrary/caspp/include
-$(HOST_BUILD)/json.o: library/json/json.cpp | $(HOST_BUILD)
+$(HOST_BUILD)/json.o: source/json/json.cpp | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
-$(HOST_BUILD)/toml.o: library/toml/toml.cpp | $(HOST_BUILD)
+$(HOST_BUILD)/toml.o: source/toml/toml.cpp | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
-$(HOST_BUILD)/toml_source.o: library/toml/toml_source.cpp | $(HOST_BUILD)
+$(HOST_BUILD)/toml_source.o: source/toml/toml_source.cpp | $(HOST_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
 $(CHALI_STANDARD_OBJS) $(HOST_BUILD)/json.o $(HOST_BUILD)/toml.o $(HOST_BUILD)/toml_source.o: build/chali-runtime/buildConfig.json
 -include $(wildcard $(HOST_BUILD)/*.d)
@@ -192,7 +193,7 @@ $(LIB_OBJS) $(DEMO_OBJS) $(VM_OBJS) $(HOST_BUILD)/bigint.o $(HOST_BUILD)/bigfloa
 
 # ---- ChaLi 宏/块 LSP（source/lsp）：编进编译器本体，不再另发可执行文件 --------------
 # `chali lsp --macros` 在**本进程内**跑它（见 chali_tool.cpp 的分派）；共用件
-# （最小 JSON 与头文件级共用类型）本仓库自带：`library/json/` 与 `source/lsp/protocol_types.hpp`，不再引用外面。
+# （最小 JSON 与头文件级共用类型）本仓库自带：`source/json/` 与 `source/lsp/protocol_types.hpp`，不再引用外面。
 LSP_DIR := source/lsp
 LSP_LIB_DIR := source/lsp
 EMBEDDED_LSP_BUILD := build/chali-embedded-lsp
@@ -201,14 +202,14 @@ $(EMBEDDED_LSP_BUILD):
 	$(CHALI_RUNTIME_MKDIR)
 $(EMBEDDED_LSP_BUILD)/macro_analyzer.o: $(LSP_DIR)/macro_analyzer.cpp $(LSP_DIR)/macro_analyzer.hpp $(LSP_LIB_DIR)/protocol_types.hpp source/macro/signature.hpp source/syntax/source_text.hpp | $(EMBEDDED_LSP_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
-$(EMBEDDED_LSP_BUILD)/language_server.o: $(LSP_DIR)/language_server.cpp $(LSP_DIR)/language_server.hpp $(LSP_DIR)/macro_analyzer.hpp library/json/json.hpp | $(EMBEDDED_LSP_BUILD)
+$(EMBEDDED_LSP_BUILD)/language_server.o: $(LSP_DIR)/language_server.cpp $(LSP_DIR)/language_server.hpp $(LSP_DIR)/macro_analyzer.hpp source/json/json.hpp | $(EMBEDDED_LSP_BUILD)
 	$(CXX) $(CXXFLAGS) -MMD -MP -I. -c $< -o $@
 CHALI_LSP_OBJS := $(EMBEDDED_LSP_BUILD)/macro_analyzer.o $(EMBEDDED_LSP_BUILD)/language_server.o
 DEMO_OBJS += $(CHALI_LSP_OBJS)
 $(TARGET): $(CHALI_LSP_OBJS)
 
 # 静态消息表变更后所有相关翻译单元必须一致，避免旧消息表混入链接。
-$(LIB_OBJS) $(DEMO_OBJS) $(VM_OBJS): source/chali_i18n.hpp library/console/utf8.hpp
+$(LIB_OBJS) $(DEMO_OBJS) $(VM_OBJS): source/chali_i18n.hpp source/console/utf8.hpp
 
 # 单态化符号由前端与宿主胶水共享；更新编码时必须重编相关目标。
 $(FRONTEND_BUILD)/chali_main.o $(FRONTEND_BUILD)/chali_parser.o: source/chali_generic_name.hpp
@@ -226,7 +227,7 @@ build/chali-native:
 	$(CHALI_RUNTIME_MKDIR)
 $(CHALI_NATIVE_DEVELOPMENT): tools/native_development.cpp tools/native_development.hpp source/syntax/source_text.hpp source/chali_module.hpp source/chali_stdlib.hpp | build/chali-native
 	$(CXX) $(CXXFLAGS) -MMD -MP -MF build/chali-native-development.d -I. -c $< -o $@
-$(CHALI_NATIVE_DEVELOPMENT): source/chali_i18n.hpp library/console/utf8.hpp
+$(CHALI_NATIVE_DEVELOPMENT): source/chali_i18n.hpp source/console/utf8.hpp
 $(FRONTEND_BUILD)/chali_tool.o: tools/native_development.hpp
 
 # 内置 ZIP/Gzip 的 Deflate 解压器；仅构建解压部分。

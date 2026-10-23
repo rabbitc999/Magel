@@ -608,6 +608,9 @@ mul_expr2 := unary { $$ = $1; } ;
 unary := INCREMENT unary { $$ = M_Update(1, 1, $2); }
        | DECREMENT unary { $$ = M_Update(-1, 1, $2); }
        | NOT unary        { $$ = M_UnOp(0, $2); }
+       /* 移动语义是运算符：`move x`。操作数限定为后缀表达式（变量 / 成员 / 下标 / 调用结果），
+        * 指针与引用由语义层自动解引用一层，所以写 `move p`（p: T*），`move *p` 在文法上就不成立。 */
+       | MOVE postfix     { $$ = M_Move($2); }
        | MINUS unary      { $$ = M_UnOp(1, $2); }
        | PLUS unary       { $$ = M_UnOp(5, $2); }   /* 一元 `+x`（用户类型可重载） */
        | TILDE unary      { $$ = M_UnOp(3, $2); }   /* 按位取反 `~x` */
@@ -694,7 +697,8 @@ z_block_value := LBRACE nonempty_stmt_list RBRACE { $$ = M_BlockValue(M_Block($2
 interpolated_string := FSTRING LPAREN call_args RPAREN { $$ = M_FString($3); } ;
 
 /* lambda 的块、表达式体、参数及返回签名均由生成解析器识别。 */
-name_token := VARIABLE { $$ = $1; } | COPY { $$ = M_KeywordName(3); } | MOVE { $$ = M_KeywordName(4); }
+/* `move` 已是保留字（`move x` 是移动运算），不再作为标识符名。 */
+name_token := VARIABLE { $$ = $1; } | COPY { $$ = M_KeywordName(3); }
     | MACRO_IS { $$ = $1; } | MACRO_EXPR { $$ = $1; } | MACRO_IDENT { $$ = $1; }
     | MACRO_BLOCK { $$ = $1; } | MACRO_STMT { $$ = $1; } ;
 lambda_capture := %empty { $$ = 0; }

@@ -25,7 +25,7 @@ opcode Regex {
     static Result<Regex, RegexError> compile(std::lang::String pattern) {
         Regex value = __regexCompileHandle(pattern);
         if (!__regexValid(value.opcode)) { return Result<Regex, RegexError>::Err(RegexError::Invalid); }
-        return Result<Regex, RegexError>::Ok(std::lang::move(&value));
+        return Result<Regex, RegexError>::Ok(move value);
     }
 
     bool fullMatch(std::lang::String text) { return __regexFullMatch(self.opcode, text); }

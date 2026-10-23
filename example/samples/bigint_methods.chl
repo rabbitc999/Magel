@@ -3,7 +3,7 @@
  *   ./chali samples/bigint_methods.chl
  *   → 幂 / 模幂 / 数论 / 素性 / 位运算 / 进制 / 开方（整数与十进制浮点）
  *
- * 这些方法在语言层直接落到 `library/bignum` 的 C++ 成员上：
+ * 这些方法在语言层直接落到 `source/bignum` 的 C++ 成员上：
  *   * 幂与数论：`.pow(e)` `.powmod(e, m)` `.mod(m)` `.modInverse(m)` `.gcd(b)` `.lcm(b)`
  *   * 素性：`.isProbablePrime(rounds)`（Miller-Rabin，固定种子可复现）`.nextProbablePrime()`
  *   * 位运算：`.bitLength()` `.bitAnd(b)` `.bitOr(b)` `.bitXor(b)`（仅非负数）

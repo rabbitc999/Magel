@@ -442,4 +442,4 @@ detail square5=25
 | 看更多可运行样例 | [`example/samples/`](../example/samples/) |
 | 建一个正式工程 | `chali new my-app`，见[工具链使用](09-toolchain.md) |
 
-函数类型和匿名函数的返回类型统一前置：`int64 fn(int64, int64) callback`、`int64 fn(int64 x) { x + 1 }`。旧 `fn(int64, int64) -> int64` 与 `fn(int64 x) -> int64 { x + 1 }` 已移除并报错；推导返回类型使用 `fn(int64 x) { x + 1 }`，不写箭头。升级后重新生成泛型宿主胶水并重建旧缓存。
+函数类型和匿名函数的返回类型统一前置：`int64 fn(int64, int64) callback`、`int64 fn(int64 x) { x + 1 }`。推导返回类型写 `fn(int64 x) { x + 1 }`，不写箭头。

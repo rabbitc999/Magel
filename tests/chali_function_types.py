@@ -28,7 +28,7 @@ def main():
     result = execute('g++', '-std=c++17', '-O3', '-pthread', '-ffunction-sections', '-fdata-sections',
                      '-DCHALI_CUSTOM_ALLOCATOR=1', '-DCHALI_WITH_REFLECTION=1', '-DSTACKVM_WITH_REFLECTION=1',
                      '-I' + str(ROOT), '-I' + str(ROOT / 'source'), '-I' + str(ROOT / 'library'),
-                     '-I' + str(ROOT / 'library/preprocess'), ROOT / 'tests/chali_function_types_test.cpp',
+                     '-I' + str(ROOT / 'source/preprocess'), ROOT / 'tests/chali_function_types_test.cpp',
                      '-Wl,--gc-sections', *libraries, *system, '-o', unit)
     assert result.returncode == 0, result.stderr
     result = execute(unit)

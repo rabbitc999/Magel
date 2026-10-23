@@ -87,7 +87,7 @@ values, events and watchdogs. The [API index](../library/README.md) defines the 
 pages do not maintain a separate module count. HTTP excludes TLS; external databases need their
 clients and services. Events use weak host posting and explicit bounded receive; application event handlers run only when called by the receiver.
 
-Desktop and embedded Linux use the same `library/stackvm/` core. The target needs a C++17 toolchain,
+Desktop and embedded Linux use the same `source/stackvm/` core. The target needs a C++17 toolchain,
 sufficient memory and the system services required by its program. Build native glue and dependencies
 for the target architecture. Linux devices use ordinary hosts, with no separate embedded deployment
 mode or front-end module blacklist. Memory and instruction budgets use the general runtime options. See
@@ -110,7 +110,7 @@ API manuals require `chali man api`; omitting `api` produces a usage error. `cha
 Copies call the declared glue function. `#NonCopyable` disables copying and omits copy.
 BigInteger multiplication selects Karatsuba or dual-prime NTT by padded operation cost, reuses forward transforms for squares, and has no schoolbook kernel.
 Division combines Knuth limb division with Burnikel–Ziegler recursion, truncating toward zero with the dividend's remainder sign.
-Algorithm boundaries, tuning interfaces and reproducible benchmarks are described in the [big-number library guide](../../library/bignum/README.md) and [raw measurements](../benchmarks/bigint-arithmetic.json).
+Algorithm boundaries, tuning interfaces and reproducible benchmarks are described in the [big-number library guide](../../source/bignum/README.md) and [raw measurements](../benchmarks/bigint-arithmetic.json).
 A struct may declare multiple opcode fields. BigInteger, BigDecimal, File and Process
 records and operations reside in standard library glue; the VM core manages generic NativeRecord
 shells and a host service table. File and Process are noncopyable. Process is the public type name.
@@ -132,7 +132,7 @@ Threads use `std::thread::Thread` with copied initial arguments, cancellation, c
 
 ## VM modules and TOML saving
 
-The shared VM uses separate compilation units for quadruples, binary containers, execution, native services and concurrent communication. Builds and exports share library/stackvm/core_sources.txt. The stackvm.hpp header aggregates public interfaces; non-template implementations are linked separately.
+The shared VM uses separate compilation units for quadruples, binary containers, execution, native services and concurrent communication. Builds and exports share source/stackvm/core_sources.txt. The stackvm.hpp header aggregates public interfaces; non-template implementations are linked separately.
 
 Saving a parsed std::toml document root retains its original comments and layout. In the underlying C++ value model, edits with the same container shape preserve layout. Structural edits retain all comment content, but may move comments to the beginning of the document. Parsing and saving repeatedly neither loses nor duplicates comments. See the [TOML API](../library/std-toml.md).
 
@@ -142,4 +142,4 @@ Connections, arenas and timer sources have exclusive owners; containers and rand
 
 Reflection provides exact typed field access and generates codecs for JSON, TOML, byte serialization, and annotated std::sql models. Dynamic SQL generation and direct binding currently support SQLite; bound execution on other backends reports an explicit error. See [reflection serialization and dynamic SQL](36-reflection-serialization-sql.md).
 
-The companion book contains 22 chapters, exercises with reference answers, literary adaptations and compilation / VM execution diagrams. The previous GUI example library has been removed. General host callbacks and event APIs retain their documented protocols.
+The companion book contains 22 chapters, exercises with reference answers, literary adaptations and compilation / VM execution diagrams. General host callbacks and event APIs retain their documented protocols.

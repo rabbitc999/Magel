@@ -22,8 +22,8 @@ def main():
     """在独立目录编译模块回归，并使用现有解析器库验证真实宏语法节点。"""
     base = ROOT / "build/macro-hygiene"
     base.mkdir(parents=True, exist_ok=True)
-    includes = ["source", "library", "library/preprocess", "library/simple_ast", "library/stackvm",
-                "library/console", "library/lztext", "library/bignum", "library/json"]
+    includes = ["source", "library", "source/preprocess", "source/simple_ast", "source/stackvm",
+                "source/console", "source/lztext", "source/bignum", "source/json"]
     flags = ["g++", "-std=c++17", "-O3", "-Wall", "-Wextra", "-pthread",
              "-ffunction-sections", "-fdata-sections", "-DCHALI_CUSTOM_ALLOCATOR=1",
              "-DCHALI_WITH_REFLECTION=1", "-DSTACKVM_WITH_REFLECTION=1",

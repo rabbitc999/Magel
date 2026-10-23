@@ -341,7 +341,7 @@ bool ResolvePropagation(int value, bool target, MPropagationInfo *info)
     auto source = ExprType(value);
     if (!source || source->kind != MType::Struct) return Fail("? 的来源类型必须显式实现 Try<T,R> 或 TryMove<T,R>，现在给的是 " + Describe(source));
     const auto node = N(value);
-    const bool explicitMove = node.kind == MNode::Call && !node.kids.empty() && ((N(node.kids[0]).kind == MNode::Var && N(node.kids[0]).s == "move") || (N(node.kids[0]).kind == MNode::EnumCtor && N(node.kids[0]).s2 == "move"));
+    const bool explicitMove = node.kind == MNode::Call && !node.kids.empty() && ((N(node.kids[0]).kind == MNode::Var && N(node.kids[0]).s == "__move") || (N(node.kids[0]).kind == MNode::EnumCtor && N(node.kids[0]).s2 == "__move"));
     info->moving = explicitMove || IsFreshAggregate(value);
     auto protocols = PropagationInterfaces(source->name, info->moving ? "TryMove" : "Try");
     if (protocols.empty() && !explicitMove)
@@ -1122,21 +1122,40 @@ std::shared_ptr<MType> RawExprType(int id)
         if (node.kids.size() >= 2u && !StandardCallName(N(node.kids[0])).empty())
         {
             const Memory::String name = StandardCallName(N(node.kids[0]));
-            if (name == "move")
+            if (name == "__move")
             {
+                /* `move x`：指针 / 引用自动解引用一层，移动的是它指向 / 引用的那个对象。
+                 * 这里只管类型与非只读校验，具体地址由降级阶段算（见 LowerLanguageMove）。 */
                 const auto &args = N(node.kids[1]).kids;
                 if (args.size() != 1u)
                 {
-                    Fail("std::lang::move 需要一个 T mut& 参数");
+                    Fail("move 需要一个操作数");
                     return T(M_TypeInt());
                 }
                 const auto source = RawExprType(args[0]);
-                if (!source || source->kind != MType::Ptr || (!node.implicitExitMove && (source->readOnly || IsReadOnlyAccess(args[0]))))
+                if (source && source->kind == MType::Ptr)
                 {
-                    Fail("std::lang::move 只接受可写引用（T mut&），不能接收值或 const &");
+                    if (!node.implicitExitMove && (source->readOnly || IsReadOnlyAccess(args[0])))
+                    {
+                        Fail("move 不能作用于只读引用（T const&）");
+                        return T(M_TypeInt());
+                    }
+                    return source->elem;
+                }
+                const auto operand = N(args[0]);
+                const bool place = operand.kind == MNode::Var || operand.kind == MNode::Member || operand.kind == MNode::Arrow ||
+                                   operand.kind == MNode::Index;
+                if (!place)
+                {
+                    Fail("move 的目标必须是可写的变量、self、成员、下标或指针目标");
                     return T(M_TypeInt());
                 }
-                return source->elem;
+                if (!node.implicitExitMove && IsReadOnlyAccess(args[0]))
+                {
+                    Fail("move 不能作用于只读绑定（let / T const&）");
+                    return T(M_TypeInt());
+                }
+                return ExprType(args[0]);
             }
             /* `str(x)`：转成字符串（`bint` / 数值 / 字符串本身） */
             if (name == "str") return T(M_TypeString());

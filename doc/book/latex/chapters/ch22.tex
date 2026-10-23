@@ -33,7 +33,7 @@ chali svmb app.chl out build/app
 
 桌面应用和嵌入式 Linux 宿主可以编译共享 VM，内嵌字节码及数据。宿主程序本身由 C/C++ 工具链构建，ChaLi 逻辑仍通过 VM 执行。这是运行方式的一种选择，不构成"编到哪个平台都能直接交付"的承诺：目标宿主的架构、工具链与系统服务仍要逐项核对。
 
-宿主负责程序、数据区、注册表、堆与输出接口的生命周期，检查执行退出状态、错误和活动资源。共享 VM 核心只有 \texttt{library/\allowbreak{}stackvm/\allowbreak{}} 一份，宿主按目标架构构建胶水和系统依赖。
+宿主负责程序、数据区、注册表、堆与输出接口的生命周期，检查执行退出状态、错误和活动资源。共享 VM 核心只有 \texttt{source/\allowbreak{}stackvm/\allowbreak{}} 一份，宿主按目标架构构建胶水和系统依赖。
 
 \section{预算、错误与恢复}
 

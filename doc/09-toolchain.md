@@ -106,4 +106,4 @@ AST 声明位于 `chali_ast.hpp`；`semantics/` 中的符号登记、卫生展�
 
 ## 基础库独立编译单元
 
-`library/simple_ast` 的类型、节点构造、四元式生成和数据导出分别独立编译；`library/bignum` 的整数乘除法、数论、位操作、转换和十进制方根也按职责分离。公开头保留接口，Make 自动依赖记录各单元的实际包含关系。导出编译器和内嵌资产包含全部实现，独立构建使用各库 CMake 目标。具体文件职责见 [AST 库说明](../library/simple_ast/README.md) 与 [大数库说明](../library/bignum/README.md)。
+`source/simple_ast` 的类型、节点构造、四元式生成和数据导出分别独立编译；`source/bignum` 的整数乘除法、数论、位操作、转换和十进制方根也按职责分离。公开头保留接口，Make 自动依赖记录各单元的实际包含关系。导出编译器和内嵌资产包含全部实现，独立构建使用各库 CMake 目标。具体文件职责见 [AST 库说明](../source/simple_ast/README.md) 与 [大数库说明](../source/bignum/README.md)。

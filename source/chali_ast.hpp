@@ -391,6 +391,12 @@ int M_List2(int first, int second);
 void M_ListAdd(int list, int item);
 int M_BinOp(int kind, int left, int right);
 int M_UnOp(int kind, int operand);
+/**
+ * @brief 构造 `move 表达式`：把操作数包成内部移动调用（`std::lang::__move`）。
+ * @param operand 被移动的位置表达式。
+ * @retval 生成的语法节点在节点池中的编号。
+ */
+int M_Move(int operand);
 int M_Name(const char *text);
 int M_YieldName();
 /* 运算符名（OPNAME 用序号取，动作语言里不写字符串字面量） */
@@ -998,7 +1004,7 @@ void M_SetProgram(int topList);
  * 降级 + 生成 + 执行（%main 调）。
  * @param moduleName 模块名（写进 .quad 头）。
  * @param outPrefix  产物前缀：生成 `<前缀>.quad` / `.data` / `.data.bin` / `.data.h` / `.layout`。
- * @param run        非 0 时再用 library/stackvm 组装执行一遍，把输出写到 stdout。
+ * @param run        非 0 时再用 source/stackvm 组装执行一遍，把输出写到 stdout。
  * @param emitBinary 非 0 时把组装结果写成 `<前缀>.svmb`。
  * @param inputText  `input(变量);` 要读的输入项（空白分隔，按顺序取；空 = 没有输入）。
  * @return 0 成功；失败时 M_LastError() 给出原因。

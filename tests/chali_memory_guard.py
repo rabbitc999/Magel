@@ -20,12 +20,12 @@ def main():
     WORK.mkdir(parents=True, exist_ok=True)
     suffix = '.exe' if os.name == 'nt' else ''
     unit = WORK / ('unit' + suffix)
-    result = execute(args.cxx, '-std=c++17', '-pthread', '-DCHALI_CUSTOM_ALLOCATOR=1', '-DCHALI_WITH_REFLECTION=1', '-DSTACKVM_WITH_REFLECTION=1', '-Ilibrary', '-Isource', '-Ilibrary/stackvm', 'tests/chali_memory_guard_test.cpp', 'build/chali-stackvm-core/libstackvm.a', '-lm', '-o', unit)
+    result = execute(args.cxx, '-std=c++17', '-pthread', '-DCHALI_CUSTOM_ALLOCATOR=1', '-DCHALI_WITH_REFLECTION=1', '-DSTACKVM_WITH_REFLECTION=1', '-Ilibrary', '-Isource', '-Isource/stackvm', 'tests/chali_memory_guard_test.cpp', 'build/chali-stackvm-core/libstackvm.a', '-lm', '-o', unit)
     assert result.returncode == 0, result
     result = execute(unit)
     assert result.returncode == 0 and result.stdout == 'custom heap memory guard OK\n', result
     unchecked_unit = WORK / ('unit-unchecked' + suffix)
-    result = execute(args.cxx, '-std=c++17', '-pthread', '-DCHALI_CUSTOM_ALLOCATOR=1', '-DSTACKVM_WITH_BIGINT=0', '-DSTACKVM_WITH_BIGFLOAT=0', '-DSTACKVM_WITH_ALLOCATION_GUARDS=0', '-DCHALI_WITH_REFLECTION=1', '-DSTACKVM_WITH_REFLECTION=1', '-Ilibrary', '-Isource', '-Ilibrary/stackvm', 'tests/chali_memory_guard_test.cpp', *[str(ROOT / 'library/stackvm' / name) for name in (ROOT / 'library/stackvm/core_sources.txt').read_text().splitlines()], '-lm', '-o', unchecked_unit)
+    result = execute(args.cxx, '-std=c++17', '-pthread', '-DCHALI_CUSTOM_ALLOCATOR=1', '-DSTACKVM_WITH_BIGINT=0', '-DSTACKVM_WITH_BIGFLOAT=0', '-DSTACKVM_WITH_ALLOCATION_GUARDS=0', '-DCHALI_WITH_REFLECTION=1', '-DSTACKVM_WITH_REFLECTION=1', '-Ilibrary', '-Isource', '-Isource/stackvm', 'tests/chali_memory_guard_test.cpp', *[str(ROOT / 'source/stackvm' / name) for name in (ROOT / 'source/stackvm/core_sources.txt').read_text().splitlines()], '-lm', '-o', unchecked_unit)
     assert result.returncode == 0, result
     result = execute(unchecked_unit)
     assert result.returncode == 0 and result.stdout == 'custom heap unchecked OK\n', result

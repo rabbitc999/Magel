@@ -1,7 +1,7 @@
 #include "std_serialization.hpp"
 #include "../chali_glue.hpp"
-#include "../../library/json/json.hpp"
-#include "../../library/toml/toml.hpp"
+#include "../../source/json/json.hpp"
+#include "../../source/toml/toml.hpp"
 #include <stdexcept>
 #include <limits>
 

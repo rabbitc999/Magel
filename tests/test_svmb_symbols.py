@@ -78,7 +78,7 @@ def verify(build, chali=None):
         run(tool, "stats", path, success=False)
     # 已有指令示例压缩前后的真实执行输出必须一致。
     for name in ("minimal", "01_types", "03_float", "06_muldiv", "08_call", "10_signed", "13_heap"):
-        source = ROOT / f"library/stackvm/examples/{name}.quad"
+        source = ROOT / f"source/stackvm/examples/{name}.quad"
         raw = folder / f"{name}.raw.svmb"
         compact = folder / f"{name}.compact.svmb"
         run(vm, "compile", source, "--out", raw)

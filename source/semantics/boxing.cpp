@@ -493,29 +493,53 @@ bool IsRegistryHostFunctionLabel(const Memory::String &label)
 }
 
 /**
- * @brief std::lang::move 转移拥有资源，清空源存储但不执行源值的析构。
- * @param args 唯一可写引用实参；只求值一次。
+ * @brief `move x` 转移拥有资源，清空源存储但不执行源值的析构。
+ *
+ * 操作数是**位置表达式**：变量、`self`、成员、下标，或者指针 / 引用本身（自动解引用一层，
+ * 移动的是它指向 / 引用的那个对象，指针与引用变量不受影响）。指针与引用直接写 `move p`，
+ * 不写 `move *p`——解引用节点本身不是位置表达式，会按「目标不可移动」拒绝。
+ * @param args 唯一操作数；只求值一次。
  * @param implicitExit 是否为编译器在内部变量生命周期结束处生成的消费。
  * @return 独立的拥有型值；原绑定禁止读写，须重新声明新绑定。
  */
 simple_ast::NodePtr LowerLanguageMove(const Memory::Vector<int> &args, bool implicitExit = false)
 {
     using simple_ast::Node;
-    if (args.size() != 1u) return Fail("std::lang::move 需要一个 T mut& 参数"), Bad();
-    const auto reference = RawExprType(args[0]);
-    if (!reference || reference->kind != MType::Ptr || (!implicitExit && (reference->readOnly || IsReadOnlyAccess(args[0]))))
-        return Fail("std::lang::move 只接受可写引用（T mut&），不能接收值或 const &"), Bad();
-    const auto type = reference->elem;
+    if (args.size() != 1u) return Fail("move 需要一个操作数"), Bad();
+    const int operand = args[0];
+    const auto reference = RawExprType(operand);
+    std::shared_ptr<MType> type;      /* 被移动对象的类型 */
+    simple_ast::NodePtr source;       /* 被移动对象的存储地址 */
+    if (reference && reference->kind == MType::Ptr)
+    {
+        /* 指针 / 引用：移动目标，指针本身继续可用。 */
+        if (!implicitExit && (reference->readOnly || IsReadOnlyAccess(operand)))
+            return Fail("move 不能作用于只读引用（T const&）"), Bad();
+        type = reference->elem;
+        source = LowerRawExpr(operand);
+    }
+    else
+    {
+        const MNode place = N(operand);
+        const bool movable = place.kind == MNode::Var || place.kind == MNode::Member ||
+                             place.kind == MNode::Arrow || place.kind == MNode::Index;
+        if (!movable)
+            return Fail("move 的目标必须是可写的变量、self、成员、下标或指针目标"), Bad();
+        if (!implicitExit && IsReadOnlyAccess(operand))
+            return Fail("move 不能作用于只读绑定（let / T const&）"), Bad();
+        type = ExprType(operand);
+        source = LowerAddressOf(operand);
+    }
     if (!type || type->kind == MType::Void || (type->kind == MType::Array && !(implicitExit && IsRuntimeArray(type))) || IsInterfaceType(type) || type->kind == MType::Host)
-        return Fail("std::lang::move 的目标必须是具有具体布局的可移动值"), Bad();
+        return Fail("move 的目标必须是具有具体布局的可移动值"), Bad();
     // 内建只借用源槽，移动值的内部借用由结果存储与返回边界继续检查。
-    RecordObjectArgumentBorrow(args[0], reference);
+    RecordObjectArgumentBorrow(operand, type);
     g_usesLanguageMove = true;
     const auto address = AllocateName("__chali_move_address");
     const auto result = AllocateName("__chali_move_result");
     const int bytes = type->kind == MType::Struct ? std::max(8, StructStride(type)) : 8;
     Memory::Vector<simple_ast::NodePtr> out{
-        Node::declare(address, simple_ast::Type::i64()), Node::assign(address, LowerRawExpr(args[0])),
+        Node::declare(address, simple_ast::Type::i64()), Node::assign(address, source),
         Node::exprStmt(Node::call("__std_move_require", { "address", "bytes", "type" },
                                   { Node::var(address), Node::i(type->kind == MType::Struct ? bytes : 0), Node::i(TypeIdOf(type)) })),
         Node::declare(result, LowerType(type, result))
@@ -632,7 +656,7 @@ simple_ast::NodePtr LowerCall(int id)
     const Memory::String standardName = StandardCallName(callee);
     if (!standardName.empty()) callee.s = standardName;
     const Memory::Vector<int> args = N(node.kids[1]).kids;
-    if (standardName == "move") return LowerLanguageMove(args, N(id).implicitExitMove);
+    if (standardName == "__move") return LowerLanguageMove(args, N(id).implicitExitMove);
     // 反射只读取已校验接口胖引用的实际身份，不开放任意对象地址装箱。
     if (g_reflectionEnabled && CallSymbol(callee).find("std::reflect::__reflect_actualType__") == 0)
     {

@@ -4,7 +4,7 @@
  * @brief 把 C++ 模型类投射成模板引擎的 `tmpl::Value`：`field` / `TEMPLATE_MODEL` / `encode`。
  *
  * **C++ 没有内置反射**（静态反射要到 C++26 才进标准），所以"模型类 → 模板值"
- * 必须由某一方声明字段。本库和 `library/json/bind.hpp` 选的是同一套办法：
+ * 必须由某一方声明字段。本库和 `source/json/bind.hpp` 选的是同一套办法：
  * **成员指针表**，既不用代码生成，也不用额外的反射库，C++17 的语法就够：
  *
  * ```cpp
@@ -26,7 +26,7 @@
  *
  * 用到的现代特性：成员指针、`std::apply` + 折叠表达式、`if constexpr`、
  * `std::void_t` 检测、`std::optional`、结构化绑定。风格与 `json/bind.hpp`
- * 对齐，但**不依赖**它——本目录不 include 任何 `library/json` 下的文件。
+ * 对齐，但**不依赖**它——本目录不 include 任何 `source/json` 下的文件。
  *
  * 注意一条 C++ 的硬性规则：`TEMPLATE_MODEL` 展开的是**显式特化**，只能写在
  * **全局作用域**（或者 `tmpl` 命名空间里）。类型本身可以放在命名空间里，

@@ -155,14 +155,14 @@ checks apply. Tuple members such as `.0` remain read-only.
 
 ### `move`: transfer ownership without copying
 
-The language intrinsic has the signature `T move(T mut& source)`. Its result type is inferred from the reference target; no import is needed.
+`move` is a **unary prefix operator**, written `move x`; the result type is inferred from the operand and no import is needed. The operand is a place expression: a variable, `self`, a member (`move obj.field`), an index (`move list[i]`), or a pointer / reference itself — pointers and references dereference one level automatically, so write `move p`, while `move *p` is a syntax error.
 
 ```chali
 struct Message { String text; };
 void main() {
     Message source;
     source.text = "hello";
-    Message result = move(&source);
+    Message result = move source;
     println("{}", result.text);
 
 }
@@ -170,13 +170,13 @@ void main() {
 
 The argument is evaluated once. Existing resource handles and aggregate slots are transferred to the result, then the source storage is cleared and its value lifetime ends. Moving does not clone strings, containers, Any or closures and does not run the source's close/drop methods. The destination owns the transferred resources and eventually destroys them. Borrowed reference fields retain their original lifetime constraints.
 
-Only writable references are accepted. Supported targets include scalars, strings, containers, Any, functions, concrete aggregates, and file/process handles. Arrays, interface values without a concrete layout, and opaque host types cannot be moved directly; concrete array elements can be moved.
+Only writable places are accepted; literals, temporaries, read-only references and const sources are rejected. Supported targets include scalars, strings, containers, Any, functions, concrete aggregates, and file/process handles. Arrays, interface values without a concrete layout, and opaque host types cannot be moved directly; concrete array elements can be moved.
 
 Statically tracked reads and repeated moves after a move are rejected, including scalar reads and aliases. Assignment does not restore usability; a new declaration is required. Redeclaration requires the whole variable to have been moved on every incoming path. Moving one field leaves disjoint fields usable but prevents reading the complete aggregate.
 
 Aggregate lifetime markers prevent duplicate destruction. Moving from manually allocated storage does not free its storage block; drop the original reference when appropriate. Ordinary assignment and ordinary value parameters still copy. Use references for calls that must avoid copying, and move explicitly where the result should take ownership. Initialization, assignment, returns and temporary reception transfer owned fields from the move result. See the [Ownership transfer](23-ownership-move.md).
 
-Desktop and embedded Linux hosts share the single `library/stackvm/` core and configure resources through their host integration.
+Desktop and embedded Linux hosts share the single `source/stackvm/` core and configure resources through their host integration.
 
 ### Default arguments
 
@@ -739,8 +739,8 @@ A `struct` may declare any number of fields of `opcode` types. Each field mainta
 Both `new` and `drop` bindings are required. Copyable types also require a `copy`
 binding that creates an independent host record. `#NonCopyable` omits `copy` and
 prohibits copying during initialization, assignment, value arguments and value
-returns. It still supports ownership transfer with `T target = move(&source);`,
-including explicit `move(&value)` in value arguments and returns. This applies to
+returns. It still supports ownership transfer with `T target = move source;`,
+including explicit `move value` in value arguments and returns. This applies to
 all opcode types. A struct that implements `Closeable` follows the same rule
 automatically: a copy would mean two owners and two `close()` calls, so copying is
 refused without an extra directive (see [declaration sugars](28-declaration-sugars.md)).
@@ -804,9 +804,9 @@ The program entry `main` must return `int64` or `void`. Function pointers can be
 
 Prefer return-first syntax: `int64 fn(int64, int64) callback` and `int64 fn(int64 x) { x + 1 }`. Starting with **0.12.0**, the old arrow forms are rejected. Omit the arrow for inferred results: `fn(int64 x) { x + 1 }`. Regenerate generic host glue and rebuild old caches when upgrading.
 
-Within the same block, a variable can be redeclared after its entire value has been moved, including with a different type: `String a="1"; String b=std::lang::move(&a); String a="2";`. The declaration allocates independent storage; old references still identify the old object. Every path reaching the declaration must have moved the entire previous value. Moving a field, moving on only some branches, or assigning to the old variable after moving does not permit redeclaration.
+Within the same block, a variable can be redeclared after its entire value has been moved, including with a different type: `String a="1"; String b=move a; String a="2";`. The declaration allocates independent storage; old references still identify the old object. Every path reaching the declaration must have moved the entire previous value. Moving a field, moving on only some branches, or assigning to the old variable after moving does not permit redeclaration.
 
-For Any type checks and safe extraction, use `isType<T>`, `tryGet<T>`, `tryGetReference<T>` and `tryGetMut<T>`. `nameof` and the box’s `.name()` have been removed; see the [Any, explicit generics and data utilities](22-any-generics-data.md).
+For Any type checks and safe extraction, use `isType<T>`, `tryGet<T>`, `tryGetReference<T>` and `tryGetMut<T>`. `nameof` and the box’s `.name()` are not application API; see the [Any, explicit generics and data utilities](22-any-generics-data.md).
 
 An anonymous function returning another function may group its return type: `(int64 fn(int64)) fn(int64 fn(int64) a, int64 fn(int64) b) { int64 fn copy(int64 x) { a(b(x)) } }`. Neither trailing expression has a semicolon: the outer expression returns a closure and the inner expression returns an integer. The returned closure must own `a` and `b` rather than borrow parameters from an invocation that has ended. See the [function and closure examples](../book/15-函数值与闭包.md).
 
@@ -1014,7 +1014,7 @@ $end_macro
 
 Use `List<int32> values = $vec(int32, 1, 2, 3);` or `values = $vec(int32, 4, 5);`. Ordinary local declarations are hygienic. Each argument is evaluated once, received using the requested type and appended in order with `push`. No elements produces an empty list. See the runnable [block example](../../example/samples/block_expression.chl) and [output example](../../example/samples/print_interpolation.chl).
 
-Use `fn` for anonymous functions; the old `lambda` syntax has been removed: `let add = fn(int32 x) { x + 1 };`. An explicit result type precedes `fn`: `let add = int32 fn(int32 x) { return x + 1; };`. Capture modes and lists use `fn`. `int32 fn(int32)` still denotes a function type.
+Use `fn` for anonymous functions: `let add = fn(int32 x) { x + 1 };`. An explicit result type precedes `fn`: `let add = int32 fn(int32 x) { return x + 1; };`. Capture modes and lists use `fn`. `int32 fn(int32)` still denotes a function type.
 
 A `fn` expression can be passed directly to a named function or a function value. Each callback is
 checked against its parameter's function type, which also provides context for omitted parameter
@@ -1023,9 +1023,9 @@ function result combined with tuple values.
 
 ## Moving and cleaning up value exits
 
-Explicit `yield i;` prefers moving a writable local variable declared inside the receiving value expression, equivalent to `yield std::lang::move(&i);` for that source. Variables outside that expression remain usable and are copied. Crossing loops does not change this boundary. Direct variables in tuples, including nested tuples, follow the same rule. Const values, read-only sources, reference bindings, fields and indexing retain existing value semantics; use explicit `move(&value)` when a transfer is required. If scope exit callbacks are present, an independent result is conservatively saved so callbacks can still read or modify the source.
+Explicit `yield i;` prefers moving a writable local variable declared inside the receiving value expression, equivalent to `yield move i;` for that source. Variables outside that expression remain usable and are copied. Crossing loops does not change this boundary. Direct variables in tuples, including nested tuples, follow the same rule. Const values, read-only sources, reference bindings, fields and indexing retain existing value semantics; use explicit `move value` when a transfer is required. If scope exit callbacks are present, an independent result is conservatively saved so callbacks can still read or modify the source.
 
-Expressions such as `yield i + 1;` and `yield makeText();` are evaluated once and their result temporaries are copied or adopted; the expression itself is not treated as an addressable variable. Compound expressions such as tuples retain existing construction and value-parameter rules before the exit adopts their final result. Ordinary branch tail expressions `{ value }` retain their existing value semantics. Explicitly construct a copy using string concatenation, container copy or a type-provided copying method when needed. To force a move of an external variable, write `yield move(&external);`; subsequent access follows the existing moved-binding restrictions.
+Expressions such as `yield i + 1;` and `yield makeText();` are evaluated once and their result temporaries are copied or adopted; the expression itself is not treated as an addressable variable. Compound expressions such as tuples retain existing construction and value-parameter rules before the exit adopts their final result. Ordinary branch tail expressions `{ value }` retain their existing value semantics. Explicitly construct a copy using string concatenation, container copy or a type-provided copying method when needed. To force a move of an external variable, write `yield move external;`; subsequent access follows the existing moved-binding restrictions.
 
 The result is saved before exit callbacks and automatic cleanup. Moving clears the source storage and ends its binding lifetime without invoking close/drop on the source; the final receiver owns cleanup. Types implementing both Closeable and Drop close before dropping. Copies own independent resources, so source and result are cleaned up at their respective lifetime ends. Exits across loops clean up every scope that is left without releasing resources already transferred to the result.
 

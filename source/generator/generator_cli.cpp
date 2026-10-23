@@ -1,7 +1,7 @@
 #include "core_assets.hpp"
 #include "../../library/caspp/core_assets.hpp"
 #include "../chali_runtime_allocator.hpp"
-#include "../../library/template/engine.hpp"
+#include "../../source/template/engine.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -561,26 +561,26 @@ int runCli(int argc, char **argv)
             {"allocator/chali_allocator.hpp", "runtime/chali_allocator.hpp"},
             {"../../source/chali_i18n.hpp", "chali_i18n.hpp"},
             {"../chali_i18n.hpp", "chali_i18n.hpp"},
-            {"../library/stackvm/value_text.hpp", "runtime/value_text.hpp"},
-            {"../../library/stackvm/stackvm.hpp", "runtime/stackvm.hpp"},
-            {"../library/stackvm/stackvm.hpp", "runtime/stackvm.hpp"},
+            {"../source/stackvm/value_text.hpp", "runtime/value_text.hpp"},
+            {"../../source/stackvm/stackvm.hpp", "runtime/stackvm.hpp"},
+            {"../source/stackvm/stackvm.hpp", "runtime/stackvm.hpp"},
             {"../../library/sqlite/sqlite3.h", "sqlite/sqlite3.h"},
-            {"../../library/lztext/lztext.hpp", "lztext/lztext.hpp"},
-            {"../../library/template/engine.hpp", "template/engine.hpp"},
-            {"../library/template/engine.hpp", "template/engine.hpp"},
+            {"../../source/lztext/lztext.hpp", "lztext/lztext.hpp"},
+            {"../../source/template/engine.hpp", "template/engine.hpp"},
+            {"../source/template/engine.hpp", "template/engine.hpp"},
             {"../../library/miniz/miniz.h", "miniz/miniz.h"},
             {"../library/miniz/miniz.h", "miniz/miniz.h"},
-            {"../../library/json/json.hpp", "json/json.hpp"},
+            {"../../source/json/json.hpp", "json/json.hpp"},
             {"../json/json.hpp", "json/json.hpp"},
-            {"../../library/json/json.cpp", "json/json.cpp"},
+            {"../../source/json/json.cpp", "json/json.cpp"},
             {"../json/json.cpp", "json/json.cpp"},
-            {"../../library/toml/toml.hpp", "toml/toml.hpp"},
+            {"../../source/toml/toml.hpp", "toml/toml.hpp"},
             {"../toml/toml.hpp", "toml/toml.hpp"},
-            {"../../library/toml/toml.cpp", "toml/toml.cpp"},
+            {"../../source/toml/toml.cpp", "toml/toml.cpp"},
             {"../toml/toml.cpp", "toml/toml.cpp"},
-            {"../../library/toml/toml_source.cpp", "toml/toml_source.cpp"},
+            {"../../source/toml/toml_source.cpp", "toml/toml_source.cpp"},
             {"../toml/toml_source.cpp", "toml/toml_source.cpp"},
-            {"../../library/toml/toml_source.hpp", "toml/toml_source.hpp"},
+            {"../../source/toml/toml_source.hpp", "toml/toml_source.hpp"},
             {"../toml/toml_source.hpp", "toml/toml_source.hpp"},
         };
         for (const Fix &fix : fixes) {
@@ -613,9 +613,9 @@ int runCli(int argc, char **argv)
                              "chali_stdlib_embedded.cpp", "chali_stdlib.hpp", "chali_generic.cpp", "chali_lambda.cpp", "chali_generic_closure.cpp", "chali_package.cpp", "chali_report.cpp", "chali_runtime_allocator.hpp",
                              "chali_ast.hpp", "chali_semantics.cpp"})
         ok = copy(mc / "source" / name, name) && ok;
-    /* 控制台 UTF-8 头来自 `library/console/`，导出工程里仍放 `console/` 的目录名：副本站 `console/utf8.hpp`，
+    /* 控制台 UTF-8 头来自 `source/console/`，导出工程里仍放 `console/` 的目录名：副本站 `console/utf8.hpp`，
      * `chali_i18n.hpp` 里也是 `#include "console/utf8.hpp"`，导出工程保持同一相对布局。 */
-    ok = copy(mc / "library/console/utf8.hpp", "console/utf8.hpp") && ok;
+    ok = copy(mc / "source/console/utf8.hpp", "console/utf8.hpp") && ok;
     /* `chali_semantics.cpp` 按职责拆成 `semantics/*.cpp`，它用相对 `#include`
      * 拼回；生成工程必须把分片一起带过去（编译 `chali_parser.cpp` 时按相对路径找到）。 */
     for (const char *name : {"symbol_table.cpp", "type_ids.cpp", "type_ids_shared.cpp",
@@ -629,33 +629,33 @@ int runCli(int argc, char **argv)
         {"chali_allocator.hpp", root / "chali/source/allocator/chali_allocator.hpp"},
         {"chali_pool.h", root / "chali/source/allocator/chali_pool.h"},
         {"chali_pool.c", root / "chali/source/allocator/chali_pool.c"},
-        {"simple_ast.cpp", root / "chali/library/simple_ast/simple_ast.cpp"},
-        {"simple_ast.hpp", root / "chali/library/simple_ast/simple_ast.hpp"},
-        {"preprocess.cpp", root / "chali/library/preprocess/preprocess.cpp"},
-        {"preprocess.hpp", root / "chali/library/preprocess/preprocess.hpp"},
-        {"bigint.cpp", root / "chali/library/bignum/bigint.cpp"},
-        {"bigint.hpp", root / "chali/library/bignum/bigint.hpp"},
-        {"bigfloat.cpp", root / "chali/library/bignum/bigfloat.cpp"},
-        {"bigfloat.hpp", root / "chali/library/bignum/bigfloat.hpp"},
-        {"bigfloat_math.hpp", root / "chali/library/bignum/bigfloat_math.hpp"},
-        {"bigfloat_math_detail.hpp", root / "chali/library/bignum/bigfloat_math_detail.hpp"},
-        {"bigfloat_transcendental.cpp", root / "chali/library/bignum/bigfloat_transcendental.cpp"},
-        {"bigfloat_trigonometry.cpp", root / "chali/library/bignum/bigfloat_trigonometry.cpp"},
+        {"simple_ast.cpp", root / "chali/source/simple_ast/simple_ast.cpp"},
+        {"simple_ast.hpp", root / "chali/source/simple_ast/simple_ast.hpp"},
+        {"preprocess.cpp", root / "chali/source/preprocess/preprocess.cpp"},
+        {"preprocess.hpp", root / "chali/source/preprocess/preprocess.hpp"},
+        {"bigint.cpp", root / "chali/source/bignum/bigint.cpp"},
+        {"bigint.hpp", root / "chali/source/bignum/bigint.hpp"},
+        {"bigfloat.cpp", root / "chali/source/bignum/bigfloat.cpp"},
+        {"bigfloat.hpp", root / "chali/source/bignum/bigfloat.hpp"},
+        {"bigfloat_math.hpp", root / "chali/source/bignum/bigfloat_math.hpp"},
+        {"bigfloat_math_detail.hpp", root / "chali/source/bignum/bigfloat_math_detail.hpp"},
+        {"bigfloat_transcendental.cpp", root / "chali/source/bignum/bigfloat_transcendental.cpp"},
+        {"bigfloat_trigonometry.cpp", root / "chali/source/bignum/bigfloat_trigonometry.cpp"},
     };
     for (const char *name : {"ast_type.cpp", "ast_node.cpp", "ast_data.cpp", "ast_storage_detail.hpp"})
-        ok = copy(root / "chali/library/simple_ast" / name, Memory::String("runtime/") + name) && ok;
+        ok = copy(root / "chali/source/simple_ast" / name, Memory::String("runtime/") + name) && ok;
     for (const char *name : {"bigint_multiplication.cpp", "bigfloat_roots.cpp", "bigint_division.cpp", "bigint_number_theory.cpp", "bigint_bits.cpp", "bigint_modular.cpp", "bigint_conversion.cpp"})
-        ok = copy(root / "chali/library/bignum" / name, Memory::String("runtime/") + name) && ok;
+        ok = copy(root / "chali/source/bignum" / name, Memory::String("runtime/") + name) && ok;
     for (const auto &[name, source] : runtime) ok = copy(source, "runtime/" + name) && ok;
     for (const char *name : stackvm::assets::kCoreAssets)
-        ok = copy(root / "chali/library/stackvm" / name, Memory::String("runtime/") + name) && ok;
+        ok = copy(root / "chali/source/stackvm" / name, Memory::String("runtime/") + name) && ok;
     for (const char *name : Cas::Assets::kCoreAssets)
         ok = copy(root / "chali/library/caspp" / name, Memory::String("caspp/") + name) && ok;
     for (const char *name : {"sql.hpp", "sql.cpp", "dialect.hpp", "dialect.cpp", "model.hpp", "field.hpp"})
         ok = copy(root / "chali/library/ipage/source/ipage" / name, Memory::String("ipage/") + name) && ok;
     ok = copy(root / "chali/library/ipage/LICENSE", "ipage/LICENSE") && ok;
     for (const char *name : {"toml_source.hpp", "toml_source.cpp"})
-        ok = copy(root / "chali/library/toml" / name, Memory::String("toml/") + name) && ok;
+        ok = copy(root / "chali/source/toml" / name, Memory::String("toml/") + name) && ok;
     for (const char *format : {"json", "toml"}) {
         for (const char *extension : {"hpp", "cpp"}) {
             const Memory::String relative = Memory::String(format) + "/" + format + "." + extension;

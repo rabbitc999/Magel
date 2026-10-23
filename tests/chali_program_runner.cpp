@@ -2,7 +2,7 @@
  * @file chali_program_runner.cpp
  * @brief 使用共享 VM 和标准胶水执行字节码，供持久化应用回归传入真实程序参数。
  */
-#include "../library/stackvm/stackvm.hpp"
+#include "../source/stackvm/stackvm.hpp"
 #include "../source/chali_glue.hpp"
 #include "../source/glue/std_registry.hpp"
 #include "../source/glue/std_math.hpp"

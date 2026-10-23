@@ -38,7 +38,7 @@ void main() {
     client.send("ping\n");
     assert(peer.status() == NET_TIMEOUT);
     assert(peer.receiveLine((int32)2000) == "ping");
-    TcpSocket moved = move(&client);
+    TcpSocket moved = move client;
     moved.close();
     moved.close();
     assert(!moved.isOpen() && peer.status() == NET_OK);

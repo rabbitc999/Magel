@@ -1,6 +1,6 @@
 /**
  * @file test_template.cpp
- * @brief library/template 的自检：变量、条件、循环、注释、空白规则、报错。
+ * @brief source/template 的自检：变量、条件、循环、注释、空白规则、报错。
  *
  * 不用任何测试框架（本库不依赖第三方），就是一个最小的断言器 + 退出码。
  * 编译运行：

@@ -30,7 +30,7 @@ follow value semantics, potentially requiring allocation and traversal. Borrow t
 move to transfer resources. Copying references still refers to the same source; reference fields do
 not clone their targets. Host resources retain their own copyability contracts.
 
-`move(T mut&)` transfers existing handles and owned fields without calling source close/drop.
+`move x` transfers existing handles and owned fields without calling source close/drop.
 The old binding cannot be read, written or rebound. A complete move on every incoming path permits
 a new declaration using the same name, with a new storage identity. See [ownership transfer](23-ownership-move.md).
 
@@ -74,7 +74,7 @@ cross-function side effects and raw host memory have explicit limits. See
 
 Owned values recursively clean up at lifetime end. Closeable closes a resource; Drop destroys it.
 Implementing both gives close before drop. A struct implementing `Closeable` is not copyable
-(a copy means two owners and two `close()` calls): transfer with `move(&x)` or share through a
+(a copy means two owners and two `close()` calls): transfer with `move x` or share through a
 reference. Explicit finalization avoids duplicate cleanup according to
 lifecycle state; it does not restore an invalid value. Defer and scope(exit) register scope-exit actions.
 
@@ -114,7 +114,7 @@ non-idempotent destruction, allocation identities and automatic cleanup.
 | Independent owned value | Ordinary assignment/value argument under the actual type's copy contract |
 | Read-only access without a copy | `T const&` or `T &`, keeping the source alive |
 | Modify the source | `T mut&`, respecting permission and lifetime |
-| Transfer resources | `move(&value)`; the old binding is unusable, with redeclaration after a complete move |
+| Transfer resources | `move value`; the old binding is unusable, with redeclaration after a complete move |
 | Optional value or reference | `Option<T>` or `Option<T &>` |
 | Recoverable application error | `Result<T,E>` and explicit propagation protocols |
 

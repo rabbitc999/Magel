@@ -5,7 +5,7 @@ int64 drops = 0;
 int64 closes = 0;
 int64 trace = 0;
 String makeText() { calls++; return "made"; }
-int64 move(int64 value) { return value + 100; }
+int64 bump(int64 value) { return value + 100; }
 struct Packet : Drop, Closeable {
     String text;
     List<int64> values;
@@ -65,9 +65,9 @@ void main() {
         yield (first, second);
     };
     assert(pair.0 == "first" && pair.1[0] == 7);
-    String explicitMove = loop { String local = "explicit"; yield (std::lang::move(&local)); };
+    String explicitMove = loop { String local = "explicit"; yield (move local); };
     assert(explicitMove == "explicit");
-    assert(move(1) == 101);
+    assert(bump(1) == 101);
     String snapshot = {
         String local = "before";
         defer local = "after";

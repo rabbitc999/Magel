@@ -62,6 +62,6 @@ Timer.afterMillis/afterNanos create one-shot timers; everyMillis/everyNanos crea
 
 std::watchdog checks deadlines and kicks directly at VM execution checks without user event handlers. Budgets use nanoseconds with a host time callback, otherwise executed instructions. Disabled watchdogs preserve the default highest optimization path.
 
-The coroutine module, coroutine handles/scheduling and old interrupt-handler registration/implicit callback delivery are removed. Language block-expression yield and level break keep their value semantics. Migrate callback consumers to explicit receive loops. Retry NET_PENDING with bounded waits or sleepFor instead of busy polling.
+Host event callbacks are written as explicit receive loops; retry NET_PENDING with bounded waits or sleepFor instead of busy polling. Language block-expression yield and level break keep their value semantics.
 
 Runnable samples: [channel](../../example/samples/thread_channel.chl), [pool](../../example/samples/thread_pool.chl), [events](../../example/samples/event_timer.chl). API: [threads](../library/std-thread.md), [communication](../library/std-concurrency.md), [events](../library/std-event.md).

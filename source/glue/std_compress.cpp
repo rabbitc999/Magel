@@ -1,6 +1,6 @@
 #include "std_compress.hpp"
 
-#include "../../library/lztext/lztext.hpp"
+#include "../../source/lztext/lztext.hpp"
 #include "../chali_glue.hpp"
 
 /**

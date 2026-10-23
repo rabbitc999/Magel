@@ -1,4 +1,4 @@
-# 模板引擎（chali/library/template）：构建 + 自检
+# 模板引擎（chali/source/template）：构建 + 自检
 #
 #   make            构建 build/chali-template 下的 template-tests、template-demo 并跑一遍
 #   make check      自检（单元测试）

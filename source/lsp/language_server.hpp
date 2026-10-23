@@ -4,7 +4,7 @@
 // 与 `library/lsp`（`.gram` 的服务器）是**两个工程**：那份只认文法，这份只认 ChaLi 的
 // 宏模型（`macro_analyzer.hpp` 的 McDocument）。两边传输层的写法相同，各自独立编译、互不依赖。
 #include "macro_analyzer.hpp"
-#include "../../library/json/json.hpp"  // 仓库自己的 JSON（ChaLi 内置副本，与 std::json 同一份实现）
+#include "../../source/json/json.hpp"  // 仓库自己的 JSON（ChaLi 内置副本，与 std::json 同一份实现）
 
 #include <istream>
 #include <map>

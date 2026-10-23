@@ -122,7 +122,7 @@ isObject=1 len=1
 
 模块能力由目标宿主提供的胶水、系统库及实际构建配置决定。嵌入式 Linux 使用普通 Linux 宿主，不额外设置模块禁用模式。详见[部署说明](06-deployment.md)。
 
-**模块迁移后必须 import。** 早期这些符号在 `source/std/lang.chl` 注入正文里自动可见；现在除核心 `std::lang` 外都要显式 `import`。
+**除核心 `std::lang` 外，模块都要显式 `import`。**
 
 ---
 

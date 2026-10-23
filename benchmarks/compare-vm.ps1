@@ -108,11 +108,11 @@ try {
     $x64Dir = Join-Path $out 'x64'
     $gccDir = Join-Path $out 'gcc64'
     $allocatorFlags = ''
-    Invoke-Checked $cmake @('-S', 'chali/library/stackvm', '-B', $x86Dir,
+    Invoke-Checked $cmake @('-S', 'chali/source/stackvm', '-B', $x86Dir,
                             '-G', 'Visual Studio 17 2022', '-A', 'Win32', "-DCMAKE_CXX_FLAGS=$allocatorFlags") | Out-Null
-    Invoke-Checked $cmake @('-S', 'chali/library/stackvm', '-B', $x64Dir,
+    Invoke-Checked $cmake @('-S', 'chali/source/stackvm', '-B', $x64Dir,
                             '-G', 'Visual Studio 17 2022', '-A', 'x64', "-DCMAKE_CXX_FLAGS=$allocatorFlags") | Out-Null
-    Invoke-Checked $cmake @('-S', 'chali/library/stackvm', '-B', $gccDir,
+    Invoke-Checked $cmake @('-S', 'chali/source/stackvm', '-B', $gccDir,
                             '-G', 'MinGW Makefiles', "-DCMAKE_CXX_COMPILER=$gcc",
                             "-DCMAKE_MAKE_PROGRAM=$make", '-DCMAKE_BUILD_TYPE=Release', "-DCMAKE_CXX_FLAGS=$allocatorFlags") | Out-Null
     foreach ($dir in @($x86Dir, $x64Dir)) {
@@ -158,7 +158,7 @@ try {
     foreach ($build in $binaries) {
         $vm = Join-Path $build.bin 'chali-stackvm.exe'
         $test = Join-Path $build.bin 'chali-stackvm-tests.exe'
-        $testOutput = Invoke-Checked $test @('chali/library/stackvm/examples')
+        $testOutput = Invoke-Checked $test @('chali/source/stackvm/examples')
         $assertions = [regex]::Match($testOutput, '全部通过（(\d+) 项断言）')
         if (-not $assertions.Success) { throw "$($build.name) 单元测试结果异常：$testOutput" }
         $count = [int]$assertions.Groups[1].Value
@@ -191,7 +191,7 @@ try {
 
     $vm32 = Join-Path $x86Dir 'Release/chali-stackvm.exe'
     $vm64 = Join-Path $x64Dir 'Release/chali-stackvm.exe'
-    $quad = 'chali/library/stackvm/examples/13_heap.quad'
+    $quad = 'chali/source/stackvm/examples/13_heap.quad'
     $svmb32 = Join-Path $out 'heap-x86.svmb'
     $svmb64 = Join-Path $out 'heap-x64.svmb'
     Invoke-Checked $vm32 @('compile', $quad, '--out', $svmb32) | Out-Null

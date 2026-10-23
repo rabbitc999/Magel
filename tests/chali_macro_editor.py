@@ -51,6 +51,22 @@ def main():
             assert {hint["label"] for hint in hints} == {": T fn<T>(T)", ": int64"}, hints
             hover = server.query("textDocument/hover", dict(textDocument=dict(uri=uri), position=position(text, text.index("closure =") + 2)))
             assert "T fn<T>(T) closure" in hover["contents"]["value"], hover
+            # 跨模块同名宏：候选里带模块链接；唯一的宏用短名。`$` 不算词（编辑器 wordPattern
+            # 是 `[A-Za-z_][A-Za-z0-9_]*`），所以输入 `$` 之后 insertText 不再重复带 `$`。
+            (Path(folder) / "demo").mkdir(exist_ok=True)
+            (Path(folder) / "demo/a.chl").write_text(
+                'module demo::a;\n$macro LABEL(x)\n("A")\n$end_macro\n$macro ONLY\n1\n$end_macro\n', encoding='utf-8')
+            (Path(folder) / "demo/b.chl").write_text(
+                'module demo::b;\n$macro LABEL(x)\n("B")\n$end_macro\n', encoding='utf-8')
+            text = "import demo::a;\nimport demo::b;\nvoid main() {\n    String v = $;\n}\n"
+            uri = (Path(folder) / "macro_completion.chl").as_uri()
+            server.send(dict(method="textDocument/didOpen", params=dict(textDocument=dict(uri=uri, text=text, version=1))))
+            completion = server.query("textDocument/completion", dict(textDocument=dict(uri=uri), position=position(text, text.index("$") + 1)))
+            entries = completion.get("items", []) if isinstance(completion, dict) else completion
+            macros = {item["label"]: item["insertText"] for item in entries if item["label"].startswith("$")}
+            assert macros.get("$demo::a::LABEL") == "demo::a::LABEL", macros
+            assert macros.get("$demo::b::LABEL") == "demo::b::LABEL", macros
+            assert macros.get("$ONLY") == "ONLY", macros
         finally:
             server.close()
     print("宏生成的多层闭包和函数返回：悬停、补全、行内类型与卫生 AST 预览通过。", flush=True)

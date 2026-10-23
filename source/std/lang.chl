@@ -390,7 +390,7 @@ enum Option<T> : Try<T, NoneResidual>, TryMove<T, NoneResidual>, FromResidual<Op
     /** 转移整个结果并取出成功载荷；源结果随后不可使用。 */
     T take() {
         return {
-            match (std::lang::move(&self)) {
+            match (move self) {
                 Option<T>::Value(value) => { yield value; }
                 Option<T>::None => { std::lang::panic("called take() without a value"); }
             }
@@ -469,9 +469,9 @@ enum Result<T, E> : Try<T, ErrorResidual<E>>, TryMove<T, ErrorResidual<E>>, From
         if (self.isOk()) { return TryBranch<T, ErrorResidual<E>>::Continue(self.take()); }
         ErrorResidual<E> residual;
         residual.error = self.takeError();
-        return TryBranch<T, ErrorResidual<E>>::Break(std::lang::move(&residual));
+        return TryBranch<T, ErrorResidual<E>>::Break(move residual);
     }
-    static Result<T,E> fromResidual(ErrorResidual<E> residual) { return Result<T,E>::Err(std::lang::move(&residual.error)); }
+    static Result<T,E> fromResidual(ErrorResidual<E> residual) { return Result<T,E>::Err(move residual.error); }
     Option<T> ok() {
         match (self) {
             Result<T,E>::Ok(value) => { return Option<T>::Value(value); }
@@ -492,7 +492,7 @@ enum Result<T, E> : Try<T, ErrorResidual<E>>, TryMove<T, ErrorResidual<E>>, From
     /** 转移整个结果并取出成功载荷；源结果随后不可使用。 */
     T take() {
         return {
-            match (std::lang::move(&self)) {
+            match (move self) {
                 Result<T, E>::Ok(value) => { yield value; }
                 Result<T, E>::Err(error) => { std::lang::panic("called take() without a value"); }
             }
@@ -530,7 +530,7 @@ enum Result<T, E> : Try<T, ErrorResidual<E>>, TryMove<T, ErrorResidual<E>>, From
     /** 转移整个结果并取出错误载荷；源结果随后不可使用。 */
     E takeError() {
         return {
-            match (std::lang::move(&self)) {
+            match (move self) {
                 Result<T, E>::Ok(value) => { std::lang::panic("called takeError() on Ok"); }
                 Result<T, E>::Err(error) => { yield error; }
             }

@@ -235,7 +235,7 @@ struct MBorrowFlowBuilder
         const auto variable = capture.variables.find(id);
         if (variable != capture.variables.end())
             result = variable->second;
-        else if (node.kind == MNode::Call && node.kids.size() > 1 && (StandardCallName(N(node.kids[0])) == "move" || StandardCallName(N(node.kids[0])) == "copy") && N(node.kids[1]).kids.size() == 1u)
+        else if (node.kind == MNode::Call && node.kids.size() > 1 && (StandardCallName(N(node.kids[0])) == "__move" || StandardCallName(N(node.kids[0])) == "copy") && N(node.kids[1]).kids.size() == 1u)
             return place(N(node.kids[1]).kids[0], slot);
         else if (node.kind == MNode::Call && carriesCaptures(id))
             return { "$callvalue:" + Memory::toString(id), {} };
@@ -451,7 +451,7 @@ struct MBorrowFlowBuilder
         {
             const auto callee = N(node.kids[0]);
             const auto arguments = node.kids.size() > 1 ? N(node.kids[1]).kids : Memory::Vector<int>{};
-            if (carriesCaptures(id) && StandardCallName(callee) != "move" && StandardCallName(callee) != "copy")
+            if (carriesCaptures(id) && StandardCallName(callee) != "__move" && StandardCallName(callee) != "copy")
             {
                 // 不透明调用可能返回实参或接收者持有的函数值，保守保留所有外部借用。
                 for (const int argument : arguments)
@@ -488,7 +488,7 @@ struct MBorrowFlowBuilder
                     next = branch;
                 }
             }
-            if (StandardCallName(callee) == "move" && arguments.size() == 1u)
+            if (StandardCallName(callee) == "__move" && arguments.size() == 1u)
                 next = add(capture.managed.count(arguments[0]) && capture.managed.at(arguments[0]) ? MBorrowFlowNode::Move : MBorrowFlowNode::MoveScalar, place(arguments[0]), {}, next, id);
             else if ((callee.kind == MNode::Member || callee.kind == MNode::Arrow) && capture.terminalCalls.count(id) && !callee.kids.empty())
                 next = add(capture.storageReleases.count(id) ? MBorrowFlowNode::Destroy : MBorrowFlowNode::Drop, place(callee.kids[0]), {}, next, id);

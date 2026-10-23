@@ -25,7 +25,7 @@ elements. See the [collection storage regression](../../example/samples/collecti
 
 The public boxed type `Object` is now `Any`, available from the automatically loaded core module. Copying, destruction, interface conversion and borrow checks retain their existing rules. The new name does not permit local addresses to escape through a longer-lived box.
 
-`nameof` and the box's `.name()` method have been removed. Internal dispatch tags are not application identifiers and must not be stored in files, protocols or databases.
+`nameof` and the box's `.name()` method are not application API. Internal dispatch tags are not application identifiers and must not be stored in files, protocols or databases.
 
 | Removed spelling | Current spelling |
 | --- | --- |

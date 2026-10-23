@@ -34,7 +34,7 @@ def main():
         host = work / ('vm-host.exe' if os.name == 'nt' else 'vm-host')
         run(os.environ.get('CXX', 'g++'), '-std=c++17', '-O2', '-pthread',
             '-DCHALI_CUSTOM_ALLOCATOR=1', '-DCHALI_WITH_REFLECTION=1', '-DSTACKVM_WITH_REFLECTION=1',
-            '-Isource', '-Ilibrary', '-Ilibrary/stackvm', host_source,
+            '-Isource', '-Ilibrary', '-Isource/stackvm', host_source,
             root / 'build/chali-stackvm-core/libstackvm.a', root / 'build/chali-host-records/librecords.a', '-o', host)
         prefix = work / 'program'
         run(compiler, 'emit', fixture.with_suffix('.chl'), '--svmb', '--out', prefix)

@@ -1,7 +1,7 @@
 #include "std_sql.hpp"
 #include "std_native_record.hpp"
 #include "std_sql_ipage.hpp"
-#include "../../library/json/json.hpp"
+#include "../../source/json/json.hpp"
 
 #include "../chali_glue.hpp"
 #include "../../library/sqlite/sqlite3.h"

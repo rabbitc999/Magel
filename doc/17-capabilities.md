@@ -78,9 +78,9 @@ ChaLi 可通过 `abi` 调用 C 动态库，或调用 Registry 注册的 C++ 胶�
 TCP/基础 HTTP、SQL 驱动、隔离线程、有界通道、消息、显式共享值、显式事件和看门狗。
 模块与重载清单以[API 索引](library/README.md)为准，不在总览手工维护模块总数。
 HTTP 接口不包含 TLS；外部数据库需要相应客户端和服务。线程使用 `std::thread::Thread`，支持复制初始参数、取消、状态、完成结果、线程组和固定线程池；跨线程通信有容量与等待预算，事件仅显式接收。
-宿主事件投递器使用弱引用，旧协程与中断回调已删除；阻塞宿主调用的取消受其超时约束。详见[并发模型](29-thread-concurrency.md)。
+宿主事件投递器使用弱引用；阻塞宿主调用的取消受其超时约束。详见[并发模型](29-thread-concurrency.md)。
 
-桌面与嵌入式 Linux 共用 `library/stackvm/` VM 核心。目标需具备 C++17 工具链、足够的内存和
+桌面与嵌入式 Linux 共用 `source/stackvm/` VM 核心。目标需具备 C++17 工具链、足够的内存和
 所需系统服务；原生胶水与依赖库必须按目标架构构建。Linux 设备使用普通宿主，
 没有单独的嵌入式部署模式或前端模块禁用配置。内存与指令限制通过通用运行选项设置。
 支持范围见[部署说明](06-deployment.md)。不提供单片机、裸机固件或板级 SDK。
@@ -100,7 +100,7 @@ API 手册通过 `chali man api` 查询，省略 `api` 会给出用法错误；`
 复制经声明的胶水函数完成；`#NonCopyable` 类型禁止复制，并省略 copy。
 BigInteger 乘法在 Karatsuba 与双素数 NTT 之间按补齐成本选择，平方复用正变换，不保留学校乘法内核。
 除法使用 Knuth 分块长除法与 Burnikel–Ziegler 分治，保持向零截断及余数跟随被除数符号。
-算法界限、可调接口及可复现基准见[大数库说明](../library/bignum/README.md)和[原始测量](benchmarks/bigint-arithmetic.json)。
+算法界限、可调接口及可复现基准见[大数库说明](../source/bignum/README.md)和[原始测量](benchmarks/bigint-arithmetic.json)。
 struct 可以拥有多个 opcode 字段。BigInteger、BigDecimal、File、Process 的记录及操作位于
 标准库胶水，VM 核心只管理通用 NativeRecord 壳及宿主服务表。File、Process 不可复制；
 公开进程类型名为 Process。List、Map、Set 使用参数化 opcode 类型和标准库不透明记录，
@@ -118,7 +118,7 @@ Image 使用可深复制的 opcode，宽高与连续 RGBA 像素由胶水拥有�
 
 ## VM 模块与 TOML 保存
 
-共享 VM 按四元式、二进制容器、执行器、原生服务与并发通信组织独立编译单元；构建和导出使用 library/stackvm/core_sources.txt。公开接口由 stackvm.hpp 汇总，非模板实现独立链接。
+共享 VM 按四元式、二进制容器、执行器、原生服务与并发通信组织独立编译单元；构建和导出使用 source/stackvm/core_sources.txt。公开接口由 stackvm.hpp 汇总，非模板实现独立链接。
 
 std::toml 文档根节点保存时保留原文注释。底层 C++ 值模型的等形编辑保留布局；结构编辑保留注释内容并可调整位置。重复解析保存不丢失或重复注释，详见 [TOML 接口](library/std-toml.md)。
 
@@ -128,4 +128,4 @@ std::toml 文档根节点保存时保留原文注释。底层 C++ 值模型的�
 
 反射提供按名称读取、写入精确类型字段，并为 JSON、TOML、字节序列化和 std::sql 模型注解生成具体类型桥接。动态 SQL 生成与直接参数绑定当前支持 SQLite；其他后端的参数化执行返回明确诊断。详见 [反射序列化与动态 SQL](36-reflection-serialization-sql.md)。
 
-配套书稿包含 22 章、分层习题与参考解答、经典作品改编番外及编译和 VM 执行流程图。现有 GUI 示例库已移除；通用宿主回调和事件接口继续按各自协议提供。
+配套书稿包含 22 章、分层习题与参考解答、经典作品改编番外及编译和 VM 执行流程图。通用宿主回调和事件接口按各自协议提供。

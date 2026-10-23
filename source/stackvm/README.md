@@ -1,10 +1,10 @@
-# 栈式虚拟机（`chali/library/stackvm`）
+# 栈式虚拟机（`chali/source/stackvm`）
 
 本目录是 ChaLi 桌面与嵌入式 Linux 共用的唯一 VM 核心。目标宿主提供 C++17 标准库、
 内存和所需操作系统服务。`STACKVM_WITH_THREADS`、`STACKVM_WITH_DEFAULT_HEAP`、
 `STACKVM_WITH_HOST_IO`、`STACKVM_WITH_HOST_EXCEPTION_GUARD` 控制通用功能裁剪，CMake 提供同名选项。
 
-> **这份是 chali 自带的副本**：源在 `library/stackvm`，ChaLi 和 VM 宿主使用这里的
+> **这份是 chali 自带的副本**：源在 `source/stackvm`，ChaLi 和 VM 宿主使用这里的
 > 一份；标准对象后端由宿主胶水单独维护。两份是**独立维护**的 —— 改了一边不会自动同步，
 > 要一起改就在两边各改一次。
 
@@ -545,7 +545,7 @@ std::cout << machine.run(program).steps;                       // 指令条数
 ## 构建与自检
 
 ```text
-cmake -S library/stackvm -B build/stackvm -DCMAKE_BUILD_TYPE=Release
+cmake -S source/stackvm -B build/stackvm -DCMAKE_BUILD_TYPE=Release
 cmake --build build/stackvm --config Release -j4
 ctest --test-dir build/stackvm -C Release --output-on-failure
 ```
@@ -563,7 +563,7 @@ ctest --test-dir build/stackvm -C Release --output-on-failure
 ## 目录
 
 ```text
-library/stackvm/
+source/stackvm/
 ├── stackvm.hpp / vm_machine.hpp   兼容入口与机器公开接口
 ├── quad_*.cpp / quad_*.hpp     四元式模型、解析、组装与优化
 ├── quad_ir.cpp / quad_ir.hpp   规范化 IR：基本块、CFG、定义-使用、循环回边
@@ -587,7 +587,7 @@ library/stackvm/
 
 ## 与 `library/transfer` 的关系
 
-| | `library/transfer` | `library/stackvm`（本库） |
+| | `library/transfer` | `source/stackvm`（本库） |
 | --- | --- | --- |
 | 输入 | 同一套四元式 | **同一套四元式**（示例直接共用） |
 | 后端 | 寄存器型：MIPS / 8086 / ARM | **栈式**：求值栈 + 变量槽 |

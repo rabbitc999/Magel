@@ -1,14 +1,25 @@
 {
   "versions": [
     {
+      "version": "0.28.1",
+      "title": "语言与工具链：`move` 改为运算符、宏补全与普通标识符同口径、库目录并入 source/、一键构建脚本",
+      "entries": [
+        "`std::lang::move` 删除，移动改成语言运算符：写 `move x`，`move` 同时是保留字（不再能当变量名）。操作数是位置表达式——变量、`self`、成员 `move obj.field`、下标 `move list[i]`，或者指针 / 引用本身；指针与引用自动解引用一层，所以写 `move p`，`move *p` 在文法层就是语法错误（产生式收窄为 `MOVE postfix`）。转移语义与原来一致：接收句柄与存储槽、清空源存储、跳过源值析构；移动后源绑定禁止读写与重绑定，读它报 `CHL1205`。编译器自己生成的源码（带值退出的移动、反射序列化）与标准库、样例、测试夹具共 60 余处调用点全部改写。",
+        "编辑器补全里宏与普通标识符走同一套判据：同名宏分布在不同模块时，候选显示 `$模块::宏名` 并插入限定名；只有一个可见定义时显示并插入 `$宏名`。此前宏被单独短路成短名，两个模块有同名宏时候选看起来一模一样，插入后指向哪个模块全看 import 顺序（而短名此时直接报「宏名称存在多个可见定义」）。`$` 已在触发字符里，输入即出候选。",
+        "`source/lztext`、`preprocess`、`simple_ast`、`stackvm`、`template`、`toml`、`json`、`bignum`、`console` 九个目录由 `library/` 并入 `source/`（`library/` 只留 sqlite、ipage、caspp、miniz 这些外部依赖）。构建脚本、内嵌资产映射、CSP 源清单、CI、文档与书稿里的路径同步更新；头文件仍是裸名 include，只换了 `-I` 前缀。",
+        "新增根目录 `build.sh`：`gen.sh` → 构建主程序 → 按环境打包，产物统一进 `dist/`，命名 `chali-<组件>-<平台>-<架构>.<扩展名>`（CLI、`chali-vscode-*.vsix`、`chali-book.pdf`），最后汇总成 `chali-bundle-*.zip` 并 `ls -lh dist/`。`npm` 缺失就跳过插件、`latexmk` / `pdflatex` 缺失就跳过书稿，缺件只提示不中断；`--no-gen`、`--jobs N` 两个开关。",
+        "`skills/chali-programming/SKILL.md` 整篇重写：四段示例（最小程序、值语义与 `move`、`Option` / `Result`、卫生宏）都能直接 `chali run`，输出与正文逐字对齐；补上宏补全的当前行为。书稿第一章的「五个字母」由引用列表改成表格，并删掉文档里所有「某个旧写法已删除 / 已移除」的说明——语言尚未发布，参考文档只描述当前写法（`CHANGELOG.md` 保留历史）。"
+      ]
+    },
+    {
       "version": "0.28.0",
       "title": "编译器后端：规范化 IR、模式表指令选择、槽位复用、机器级优化、TLSF 与小对象按组分配",
       "entries": [
-        "新增规范化中间表示（`library/stackvm/quad_ir.*`）：四元式 → 基本块 → CFG，附值表、定义-使用、回边与循环头、函数划分；`CHALI_DUMP_IR=1` 打出稳定的文本形式。新增 `tests/quad_ir.py` 守结构不变量（块必须覆盖全部可达指令、前驱与后继互为镜像、回边两侧一致、函数划分正确、IR 不改写四元式）。",
-        "指令选择从「4 条固定窗口」改成模式表（`library/stackvm/instruction_select.*`）：整数 11 种二元运算的寄存器-寄存器与立即数两种形态、10 种比较、比较+分支（4/6 条窗）、浮点算术/比较/分支、宽乘除（`MulWide`/`DivWide`）、装载+存储拷贝、一元取负与取反。选出的目标指令带 `span` 指回原始 PC，所以出错位置、逐步观察与源码映射仍指向原栈指令；证明不了等价的窗口一律不选。样例上覆盖 9398/24200 条栈指令（约 39%，`scope` 样例 40.0%），其余回退通用解释路径。",
-        "帧槽分配（`library/stackvm/register_allocate.*` + `execution_plan.cpp`）：位集活跃性分析 + 线性扫描，存活区间不重叠的变量共用一个槽；形参固定占 `0..n-1`（固定 ABI，调用方按位置绑定）。样例上 1600 个符号压到 1338 个槽、基准程序 1480 → 1244（约 -16%），运行时不变。分配器内置自检：任一位置上同时活着的两个符号共槽，就整体退回「一人一槽」，宁可帧大一点也不让两个变量互相踩。",
+        "新增规范化中间表示（`source/stackvm/quad_ir.*`）：四元式 → 基本块 → CFG，附值表、定义-使用、回边与循环头、函数划分；`CHALI_DUMP_IR=1` 打出稳定的文本形式。新增 `tests/quad_ir.py` 守结构不变量（块必须覆盖全部可达指令、前驱与后继互为镜像、回边两侧一致、函数划分正确、IR 不改写四元式）。",
+        "指令选择从「4 条固定窗口」改成模式表（`source/stackvm/instruction_select.*`）：整数 11 种二元运算的寄存器-寄存器与立即数两种形态、10 种比较、比较+分支（4/6 条窗）、浮点算术/比较/分支、宽乘除（`MulWide`/`DivWide`）、装载+存储拷贝、一元取负与取反。选出的目标指令带 `span` 指回原始 PC，所以出错位置、逐步观察与源码映射仍指向原栈指令；证明不了等价的窗口一律不选。样例上覆盖 9398/24200 条栈指令（约 39%，`scope` 样例 40.0%），其余回退通用解释路径。",
+        "帧槽分配（`source/stackvm/register_allocate.*` + `execution_plan.cpp`）：位集活跃性分析 + 线性扫描，存活区间不重叠的变量共用一个槽；形参固定占 `0..n-1`（固定 ABI，调用方按位置绑定）。样例上 1600 个符号压到 1338 个槽、基准程序 1480 → 1244（约 -16%），运行时不变。分配器内置自检：任一位置上同时活着的两个符号共槽，就整体退回「一人一槽」，宁可帧大一点也不让两个变量互相踩。",
         "帧槽分配只覆盖形参与**本函数里 `Op::Declare` 过的局部**，`__temp_*` / `__chali_ret_v$*` 这类跨帧共享的暂存量继续走全程序暂存表。这条边界是语义要求：暂存量按同一份存储在函数之间互相读写，给它配帧槽等于拆成每帧一份，跨帧会读到空值，拥有型句柄还会被释放两次。已写进 `AGENTS.md`。",
-        "机器级优化（`library/stackvm/machine_optimize.*`）：小函数内联、强度削减（乘 2^k 换左移、无符号除/模 2^k 换右移/按位与）、常量折叠与传播、块内公共子表达式消除（版本号失效，O(1)）、死代码消除、循环不变量外提（插前置头 + 重命名）。落在 `assemble` 里，`run` / `emit` / `svmb` 三条路径共用一次接入。只做「更快更小」：会失败的运算（除零、除法溢出、移位越界）不折叠不外提，声明过的局部一律不删，语义级化简仍只归 `quad_optimizer`。样例上四元式 16810 → 16628（`scope`，其中内联 6 处复制了 114 条）、15479 → 15178（`array2d`）。",
+        "机器级优化（`source/stackvm/machine_optimize.*`）：小函数内联、强度削减（乘 2^k 换左移、无符号除/模 2^k 换右移/按位与）、常量折叠与传播、块内公共子表达式消除（版本号失效，O(1)）、死代码消除、循环不变量外提（插前置头 + 重命名）。落在 `assemble` 里，`run` / `emit` / `svmb` 三条路径共用一次接入。只做「更快更小」：会失败的运算（除零、除法溢出、移位越界）不折叠不外提，声明过的局部一律不删，语义级化简仍只归 `quad_optimizer`。样例上四元式 16810 → 16628（`scope`，其中内联 6 处复制了 114 条）、15479 → 15178（`array2d`）。",
         "机器级优化新增「小函数内联」这一遍（`inlineSmallFunctions`）：循环里调用的小函数就地展开成「形参声明 → 传参拷贝 → 函数体 → 出口标签」，省掉调用帧与参数绑定。门槛卡得很死——被调函数要有函数体、不递归、没被取过地址、函数体不超过 24 条四元式，调用点要落在循环区间里，且前面正好是与之对得上的那组 `param`（再往前还有 `param` 说明实参不止这些，属于可变参数或原生函数，一律不动），一个程序最多展开 32 处。复制品里的形参与局部改名成 `__inl<点>_*`（仍声明成局部，于是在调用者帧里拿槽位），编译器临时量与 `__chali_ret_v$*` 改名成 `__temp_inl<点>_*`（仍留在全程序暂存表），多个 `ret` 汇到同一个出口标签。选站点与展开分两步：先按原坐标挑站点、再线性重建一遍，避免展开插入的指令把「被调函数体」的下标冲掉（函数体通常排在调用点后面）。",
         "机器级优化新增六个分遍开关：`CHALI_NO_MACHINE_OPT=1` 关整层，`CHALI_NO_OPT_INLINE` / `_STRENGTH` / `_FOLD` / `_GVN` / `_DCE` / `_LICM` 单独关某一遍——定位「哪一遍改了语义」时逐遍二分，不用改代码重编。`CHALI_DUMP_MACHINE=1` 把这一层跑完的四元式打到 stderr；帧布局另有 `CHALI_DUMP_FRAME=1`（打符号 → 槽号与自检结论）、`CHALI_NO_SLOT_REUSE=1`（退回一人一槽）、`CHALI_ONE_SLOT_PER_SYMBOL=1`（一人一槽但仍走分配器，用来分辨别名问题与编号问题）。",
         "运行时池换成 TLSF（`source/allocator/chali_pool.c`，同接口换内核）：块头从「48 字节块头 + 8 字节回指」压到 16 字节，两级位图（32 个一级 × 32 个二级细分）加空闲双向链表定位，分配与释放都是 O(1)，不再随空闲块数线性扫描；释放时立即合并相邻空闲块，释放过的地址可以再分配。池只保证 16 字节对齐（块大小按 16 取整，块首对齐即载荷对齐），更宽的请求直接拒绝，线性（bump）实现保留作护栏模式。`chali_pool_*` 接口与 `McPool` 句柄不变，arena、容器与导出 exe 零改动；`tests/runtime_allocator.c` 按新口径补了「拒绝 32 字节以上对齐」「重复释放必须失败」「内部指针必须失败」三项。",
@@ -19,7 +30,7 @@
         "`.svmb` 产物格式版本由 5 升到 6：内部目标指令新增浮点运算标志与第二结果槽字段，解码同步校验。旧产物不再兼容，也不提供迁移工具——语言尚未发布，没有用户依赖。",
         "`AGENTS.md` 补三条后端约束：帧槽只给形参与声明过的局部、优化只允许「更快更小」、编译期临时量按本函数规模分配（分析位集若按整个程序的指令数分配，会和语言堆抢同一个 arena，把程序自己的堆挤坏），再加一条分配器的三条硬口径（池只保证 16 字节对齐、8–120 字节走 slab、slab 的组一空就还池）。",
         "程序版本更新为 0.28.0，VS Code 插件的 `chaliCompilerVersion`、语言服务器 `kServerVersion` 与 `chali-lsp` 版本输出、`chali-dev` 版本号同步（插件 `version` 保持 1.0.0）。",
-        "门禁按改动范围分档：改的是编译器后端（`library/stackvm/` 的优化、指令选择、寄存器分配、执行核、字节码产物与 IR）时只跑后端门禁（模块组织、双核差分、IR 结构、导出清单、VM 单测）再加 **5% 的前端样例抽样**，不必跑整套。`check.sh` 新增 `--sample N`（等距抽样、样例集固定、同样的比例必然抽到同样的子集），`AGENTS.md` 同时把「逐字节一致」的口径写清楚：文本除 CRLF/LF 与不承载语义的可忽略空白外必须一致，二进制产物仍按真实字节比较。",
+        "门禁按改动范围分档：改的是编译器后端（`source/stackvm/` 的优化、指令选择、寄存器分配、执行核、字节码产物与 IR）时只跑后端门禁（模块组织、双核差分、IR 结构、导出清单、VM 单测）再加 **5% 的前端样例抽样**，不必跑整套。`check.sh` 新增 `--sample N`（等距抽样、样例集固定、同样的比例必然抽到同样的子集），`AGENTS.md` 同时把「逐字节一致」的口径写清楚：文本除 CRLF/LF 与不承载语义的可忽略空白外必须一致，二进制产物仍按真实字节比较。",
         "`ci.sh` 登记两条新的后端回归：VM 四档差分（`tests/vm_differential.py`）与规范化 IR 结构（`tests/quad_ir.py`）。"
       ]
     },
@@ -68,7 +79,7 @@
         "`--no-reflection` 与 `--hard-realtime` 的口径收敛为「只决定这次产物写不写反射元数据、这次程序能不能用注解与反射」——它们不改变编译器组成，也不减少编译期工作量（实测 `import std::json` 的程序加不加 `--no-reflection` 耗时相同）。中英文文档、书稿第 20 / 24 章、`--reflection` / `--no-reflection` 帮助文案与 i18n 消息同步改为这一口径。",
         "宏定义可以跨模块调用：宏调用名支持限定名（`$std::lang::assert(...)`），`MACRO_NAME` 词法正则、`SourceFragments::capture` 的片段捕获与宏注册表查表三处同步；查表从最长的模块前缀往下试，可见性沿用既有规则（`std::lang` 始终可见，其余模块须先 `import`）。名字被同名的函数 / 变量挡住，或想明确点名某个模块时用。",
         "新增样例 `macro_qualified`（限定名调用 `std::lang` 的断言宏）与错误样例 `macro_qualified_undefined`（限定名找不到定义时报「未定义宏」并指向调用点）。",
-        "`.gitignore` 忽略可生成的产物：`source/chali_stdlib_embedded.cpp`（25 MB 内嵌压缩字节）、`tools/chali_manual.json`、`doc/book/latex/book.pdf`、`library/stackvm/core_assets.hpp`、`library/caspp/core_assets.hpp` 移出版本库；`gen.sh` 补上 `embed_manual.py`、`stackvm_sources.py --build-assets`、`cas_sources.py --build-assets`，新克隆能重建全部忽略项。",
+        "`.gitignore` 忽略可生成的产物：`source/chali_stdlib_embedded.cpp`（25 MB 内嵌压缩字节）、`tools/chali_manual.json`、`doc/book/latex/book.pdf`、`source/stackvm/core_assets.hpp`、`library/caspp/core_assets.hpp` 移出版本库；`gen.sh` 补上 `embed_manual.py`、`stackvm_sources.py --build-assets`、`cas_sources.py --build-assets`，新克隆能重建全部忽略项。",
         "`doc/book/latex/.gitignore` 去掉放行 `book.pdf` 的那条，该目录 README 改为「生成的 `.tex` 章节入库，PDF 与其它 LaTeX 产物不入库」；`doc/09-toolchain.md` 新增「标准库预编译单元」一节，`doc/README.md` 索引同步。",
         "程序版本更新为 0.26.0，VS Code 插件的 `chaliCompilerVersion`、语言服务器与 `chali-dev` 版本号同步（插件 `version` 保持 1.0.0）。"
       ]
@@ -277,7 +288,7 @@
       "version": "0.20.6",
       "title": "大数计算与转换",
       "entries": [
-        "`library/bignum` 任意精度库扩展；ChaLi 语言层对接 `BigInteger` / `BigDecimal` 新方法（VM）；语言转换规则：`int64` 可**隐式**转为 `BigInteger` / `BigDecimal`，`double` 同样隐式转 `BigDecimal`；反向（大数 → `int64` / `double`）必须显式转换，编译期检查；标准库参考文档、符号索引、`chali_stdlib_api.json` 与内嵌手册同步再生成；`tools/library_reference_data.py` 新增 `BIG_BEHAVIOR`（按 `Owner::name` 精确匹配，避免与 `std::numerics` 同名顶层函数说明冲突）。"
+        "`source/bignum` 任意精度库扩展；ChaLi 语言层对接 `BigInteger` / `BigDecimal` 新方法（VM）；语言转换规则：`int64` 可**隐式**转为 `BigInteger` / `BigDecimal`，`double` 同样隐式转 `BigDecimal`；反向（大数 → `int64` / `double`）必须显式转换，编译期检查；标准库参考文档、符号索引、`chali_stdlib_api.json` 与内嵌手册同步再生成；`tools/library_reference_data.py` 新增 `BIG_BEHAVIOR`（按 `Owner::name` 精确匹配，避免与 `std::numerics` 同名顶层函数说明冲突）。"
       ]
     },
     {

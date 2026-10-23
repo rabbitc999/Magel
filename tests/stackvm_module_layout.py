@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     """核对清单、包含位置，并以只读构建计划验证单实现重编。"""
-    directory = ROOT / "library/stackvm"
+    directory = ROOT / "source/stackvm"
     names = (directory / "core_sources.txt").read_text(encoding="utf-8").splitlines()
     for name in names:
         assert re.fullmatch(r"[a-z][a-z0-9_]*\.cpp", name), name
@@ -28,7 +28,7 @@ def main():
         result = subprocess.run([make, "-n", "-o", "build/chali-runtime/buildConfig.json", target], cwd=ROOT, capture_output=True,
                                 text=True, encoding="utf-8", errors="replace", timeout=60)
         assert result.returncode == 0, result
-        units = re.findall(r"\s-c\s+library/stackvm/([a-z0-9_]+\.cpp)\s", result.stdout)
+        units = re.findall(r"\s-c\s+source/stackvm/([a-z0-9_]+\.cpp)\s", result.stdout)
         assert units == ["native_text.cpp"], (units, result.stdout, result.stderr)
         assert "stackvm.o" not in result.stdout, result.stdout
     finally:

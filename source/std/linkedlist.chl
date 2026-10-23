@@ -42,7 +42,7 @@ struct LinkedList : Iterator<int64> {
         LinkedList list = LinkedList::create();
         int64 index = 0;
         while (index < items.len()) { list.pushBack(items[index]); index = index + 1; }
-        return std::lang::move(&list);
+        return move list;
     }
     /** 首个匹配节点游标，不存在时为 -1。 */
     int64 find(int64 value) { return __listOp(self.__storage.opcode, 11, 0, value); }

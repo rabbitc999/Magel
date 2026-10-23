@@ -202,7 +202,7 @@ std::size_t BorrowSourceDepth(int id, bool address)
         const auto callee = N(node.kids[0]);
         const auto arguments = N(node.kids[1]).kids;
         std::size_t depth = 0u;
-        if (StandardCallName(callee) == "move" && arguments.size() == 1u)
+        if (StandardCallName(callee) == "__move" && arguments.size() == 1u)
         {
             // 转移的是值内部已有的借用，而不是源值存储的地址。
             const auto root = BorrowRootVariable(arguments[0]);

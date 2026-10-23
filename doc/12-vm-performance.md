@@ -218,10 +218,10 @@ C++ 的 `calculate(long long)` 汇编没有调用 `mix`，并把乘 17 的序列
 
 ### 5.3 为什么 ChaLi 的整数与浮点表现不同
 
-ChaLi 的整数循环可以进入[寄存器区域执行核心](../library/stackvm/register_core.hpp)，
+ChaLi 的整数循环可以进入[寄存器区域执行核心](../source/stackvm/register_core.hpp)，
 在一个批次中连续执行多条内部指令；它仍是解释执行，没有把热点编译成原生机器码。
 
-0.18.3 新增的[浮点融合路径](../library/stackvm/vm_execution.cpp)合并了加载、运算、保存以及部分比较跳转，
+0.18.3 新增的[浮点融合路径](../source/stackvm/vm_execution.cpp)合并了加载、运算、保存以及部分比较跳转，
 减少进入主执行循环的次数，保留原始 PC、逻辑步骤、float32 舍入和观察者回退。
 这是浮点步骤相同而耗时明显下降的实现依据；但浮点仍使用槽位绑定、类型检查与融合后的分派，
 尚未成为与整数相同的完整浮点区域核心，所以离 JIT/原生紧凑循环仍有明显距离。
@@ -236,12 +236,12 @@ ChaLi 的类型是静态的，但本轮测试的执行器仍承担槽位访问�
 
 ### 5.5 为什么函数调用和数组仍是 ChaLi 的改进重点
 
-ChaLi 的[调用入口](../library/stackvm/vm_execution.cpp)仍需要处理参数队列、参数归一化、
+ChaLi 的[调用入口](../source/stackvm/vm_execution.cpp)仍需要处理参数队列、参数归一化、
 调用帧与局部槽、返回目的地；小帧已有缓存，仍保留这些服务流程。
 Lua 的测试字节码也保留 `CALL`，说明它不是依靠本轮的原生内联取得结果；
 两种解释器调用路径的实际成本差异，需要后续用剖析和开关对照进一步拆分。
 
-数组用例也有语义成本差异：ChaLi 经过[下标/指针容量检查与内存服务](../library/stackvm/vm_execution.cpp)，
+数组用例也有语义成本差异：ChaLi 经过[下标/指针容量检查与内存服务](../source/stackvm/vm_execution.cpp)，
 Lua 使用 table，Python 使用 list，Java 使用 `long[]`，C++ 使用固定长度原生数组。
 C++ 源码没有逐次运行时数组边界检查；其他实现的表示和检查策略不同。
 因此这行是实际数组写法的端到端表现，不能当成相同底层访存指令的比较，
@@ -278,7 +278,7 @@ Windows 上样本常呈整数毫秒台阶。很短的原生/JIT 测量及受调�
 在各自版本源码目录编译运行器：
 
 ```sh
-g++ -std=c++17 -O2 -DNDEBUG -DSTACKVM_WITH_REFLECTION=1 -DCHALI_CUSTOM_ALLOCATOR=1 -Ilibrary -Ilibrary/stackvm tests/benchmark_vm_program.cpp build/chali-stackvm/libstackvm.a -pthread -o build/vm-program-benchmark.exe
+g++ -std=c++17 -O2 -DNDEBUG -DSTACKVM_WITH_REFLECTION=1 -DCHALI_CUSTOM_ALLOCATOR=1 -Ilibrary -Isource/stackvm tests/benchmark_vm_program.cpp build/chali-stackvm/libstackvm.a -pthread -o build/vm-program-benchmark.exe
 ```
 
 Lua 源码沿用[官方 5.5.1 归档](https://www.lua.org/ftp/lua-5.5.1.tar.gz)。

@@ -1,6 +1,6 @@
 /**
  * @file main.cpp
- * @brief library/template 的示例：把 C++ 模型类渲染成任意目标语言的代码。
+ * @brief source/template 的示例：把 C++ 模型类渲染成任意目标语言的代码。
  *
  * 编译运行（只用标准库，C++17）：
  *

@@ -787,7 +787,7 @@ def _text(original):
     return _MESSAGES.get(original, (original, original))[0]
 
 
-VERSION = "0.28.0"
+VERSION = "0.28.1"
 IGNORED = {".git", ".chali", "build", "tmp", "node_modules", "__pycache__"}
 EXTENSIONS = {".chl", ".inc", ".h", ".hpp", ".c", ".cpp", ".toml", ".json"}
 KEYWORDS = "_ abi let bool break cast char const continue copy defer drop elif else enum false float32 float64 fn for heap if impl import in inline int16 int32 int64 int8 interface loop match module move mut new opcode return scope static struct true type uint16 uint32 uint64 uint8 void while yield".split()

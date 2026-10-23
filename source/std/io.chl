@@ -39,7 +39,7 @@ struct FileStream : Reader, Writer, Seek {
         }
         FileStream stream;
         stream.handle = opened.take();
-        result = Result<FileStream, IoError>::Ok(std::lang::move(&stream));
+        result = Result<FileStream, IoError>::Ok(move stream);
         return result;
     }
 
@@ -155,7 +155,7 @@ struct FileStream : Reader, Writer, Seek {
 Result<std::lang::File, std::lang::String> fileOpen(std::lang::String path, std::lang::String mode) {
     file opened = __fileTryOpen(path, mode);
     if (__fileValid(opened)) {
-        return Result<std::lang::File, std::lang::String>::Ok(std::lang::move(&opened));
+        return Result<std::lang::File, std::lang::String>::Ok(move opened);
     }
     return Result<std::lang::File, std::lang::String>::Err("fileOpen failed");
 }

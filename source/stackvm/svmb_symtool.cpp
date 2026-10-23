@@ -3,7 +3,7 @@
  * @brief PC 端符号表查看、反查、转换及引用宽度统计。
  */
 #include "stackvm.hpp"
-#include "../../library/json/json.hpp"
+#include "../../source/json/json.hpp"
 #include <charconv>
 #include <filesystem>
 #include <fstream>

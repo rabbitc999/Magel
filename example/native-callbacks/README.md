@@ -9,7 +9,7 @@ VM 宿主显式安装相同注册表；编译器的 `run` 命令没有加载任�
 下面用仓库共享核心构建最小宿主，再加载编译器输出的程序：
 
 ```sh
-g++ -std=c++17 -O2 -pthread -DCHALI_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 -DSTACKVM_WITH_BIGINT=0 -DSTACKVM_WITH_BIGFLOAT=0 -Isource -Ilibrary -Ilibrary/stackvm example/native-callbacks/vm_host.cpp library/stackvm/stackvm.cpp source/glue/std_collection.cpp source/glue/std_collection_storage.cpp source/glue/std_native_record.cpp -o build/native-callbacks-vm
+g++ -std=c++17 -O2 -pthread -DCHALI_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 -DSTACKVM_WITH_BIGINT=0 -DSTACKVM_WITH_BIGFLOAT=0 -Isource -Ilibrary -Isource/stackvm example/native-callbacks/vm_host.cpp source/stackvm/stackvm.cpp source/glue/std_collection.cpp source/glue/std_collection_storage.cpp source/glue/std_native_record.cpp -o build/native-callbacks-vm
 ./chali emit example/native-callbacks/demo.chl --svmb --out build/native-callbacks-program
 ./build/native-callbacks-vm build/native-callbacks-program.svmb build/native-callbacks-program.data.bin build/native-callbacks-program.layout
 ```

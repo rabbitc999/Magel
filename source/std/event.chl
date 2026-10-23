@@ -44,21 +44,21 @@ struct Timer {
     __TimerSource __source;
     static Timer everyNanos(int64 nanos) {
         Timer result; result.__source = __timer(nanos, true);
-        return std::lang::move(&result);
+        return move result;
     }
     static Timer afterNanos(int64 nanos) {
         Timer result; result.__source = __timer(nanos, false);
-        return std::lang::move(&result);
+        return move result;
     }
     static Timer everyMillis(int64 millis) {
         Timer result;
         if (millis > 0 && millis <= 9223372036854) { result.__source = __timer(millis * 1000000, true); }
-        return std::lang::move(&result);
+        return move result;
     }
     static Timer afterMillis(int64 millis) {
         Timer result;
         if (millis > 0 && millis <= 9223372036854) { result.__source = __timer(millis * 1000000, false); }
-        return std::lang::move(&result);
+        return move result;
     }
     bool isValid() { return self.__source.opcode != 0; }
     /** 只返回来源标识，不转移释放责任。 */

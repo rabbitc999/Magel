@@ -2,7 +2,7 @@
 
 ## 无墓碑的分配身份
 
-`library/stackvm/allocation_index.hpp` 保存活跃逻辑区间，以及每个曾使用物理块首的最新代次和偏移位宽。释放立即移除活跃区间，不保存墓碑或清扫边界。重复释放失败；物理内存复用不会复用逻辑身份，旧引用不能访问或释放新对象。代次耗尽时拒绝回绕，长期复用同一块首只需要一个身份槽。
+`source/stackvm/allocation_index.hpp` 保存活跃逻辑区间，以及每个曾使用物理块首的最新代次和偏移位宽。释放立即移除活跃区间，不保存墓碑或清扫边界。重复释放失败；物理内存复用不会复用逻辑身份，旧引用不能访问或释放新对象。代次耗尽时拒绝回绕，长期复用同一块首只需要一个身份槽。
 
 ## 资源构造与回收模块
 
@@ -10,7 +10,7 @@
 
 `source/semantics/resource_lifetime.cpp` 集中维护资源构造后的登记、Closeable/Drop 调用、聚合析构、拥有槽清理与作用域出口。显式终结、自动清理和移动使用一致的拥有状态；释放执行后清空拥有槽，分支上的释放不会从其他路径的清理清单中删除资源。宿主 close 只关闭操作系统资源；记录壳仍由其拥有值的 drop 回收，不将已释放记录保存为墓碑。
 
-实现 `Closeable` 的结构体自动按不可复制处理（`MStructDef::nonCopyable`，与 `#NonCopyable opcode` 共用 `TypeNonCopyable` 判定）：复制一份就是两份所有权，`close()` 会跑两遍。复制初始化、赋值、按值传参和返回值复制全部拒绝并给出“实现 Closeable 或声明了 #NonCopyable”的诊断；转移用 `move(&x)`，共用改传引用，返回函数内局部拥有值不需要额外 `move`。这条规则沿字段与元素传递：含不可复制字段的聚合整体不可复制，数组按元素复制、容器按值存放同类元素同样被拒（容器请存引用或托管值）。
+实现 `Closeable` 的结构体自动按不可复制处理（`MStructDef::nonCopyable`，与 `#NonCopyable opcode` 共用 `TypeNonCopyable` 判定）：复制一份就是两份所有权，`close()` 会跑两遍。复制初始化、赋值、按值传参和返回值复制全部拒绝并给出“实现 Closeable 或声明了 #NonCopyable”的诊断；转移用 `move x`，共用改传引用，返回函数内局部拥有值不需要额外 `move`。这条规则沿字段与元素传递：含不可复制字段的聚合整体不可复制，数组按元素复制、容器按值存放同类元素同样被拒（容器请存引用或托管值）。
 
 `source/chali_resource_cleanup.cpp` 是独立编译的资源合并模块。它消费借用控制流的来源与初始化事实，按精确存储身份合并 drop：所有到达路径均已终结时移除后续操作，只有部分路径终结时保留执行路径守卫。重新初始化、重绑和分配更新证明条件。动态下标、来源不唯一或不透明的跨调用副作用不作为合并证明。运行时释放保持非幂等，无法合并的重复释放报告 CHL1205；普通读写仍检查释放后使用。
 
@@ -22,7 +22,7 @@
 
 ## VM 与软重启
 
-默认 VM 堆在 `library/stackvm/runtime_heap.cpp` 中首次适配空闲块、拆分余量并在释放时合并相邻空闲区间。watchdog 重启结束全部旧执行上下文，再重置 arena 和分配身份；没有清扫 API，也没有隐式垃圾回收。
+默认 VM 堆在 `source/stackvm/runtime_heap.cpp` 中首次适配空闲块、拆分余量并在释放时合并相邻空闲区间。watchdog 重启结束全部旧执行上下文，再重置 arena 和分配身份；没有清扫 API，也没有隐式垃圾回收。
 
 ## fn 闭包借用规则的参考与实现
 
@@ -49,7 +49,7 @@
 
 ## 闭包后续使用的来源检查
 
-捕获发现和后续使用分别建模。`FlowState::captures` 保存函数值及聚合字段持有的外部借用来源；复制、赋值、元组和枚举载荷传递该集合，拥有捕获中的引用字段仍关联外部对象。调用函数值时读取其存储路径，并检查捕获来源是否在某条可达路径上已释放、移动或销毁。实参求值完成后再次检查闭包本身和捕获来源，避免 `callback(move(&source))` 在调用前使环境失效。返回函数值的调用保守继承接收者和实参已知的外部借用来源。重新赋值替换原有捕获集合，闭包最后一次使用后的销毁允许通过。
+捕获发现和后续使用分别建模。`FlowState::captures` 保存函数值及聚合字段持有的外部借用来源；复制、赋值、元组和枚举载荷传递该集合，拥有捕获中的引用字段仍关联外部对象。调用函数值时读取其存储路径，并检查捕获来源是否在某条可达路径上已释放、移动或销毁。实参求值完成后再次检查闭包本身和捕获来源，避免 `callback(move source)` 在调用前使环境失效。返回函数值的调用保守继承接收者和实参已知的外部借用来源。重新赋值替换原有捕获集合，闭包最后一次使用后的销毁允许通过。
 
 该处理参考 Rust 的 [borrow_set.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/borrow_set.rs) 对借用的显式登记、[upvar.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_hir_typeck/src/upvar.rs) 对捕获方式的区分，以及 [places_conflict.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/places_conflict.rs) 的存储路径重叠分析。实现沿用 ChaLi 的字段路径和控制流检查器，不移植 Rust 源码。
 

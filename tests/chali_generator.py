@@ -57,8 +57,8 @@ def main():
             "runtime/artifact_binary.cpp", "semantics/associated_types.cpp",
             ".chali-generator-manifest",
         ]
-        required += ["runtime/" + name for name in (ROOT / "library/stackvm/core_sources.txt").read_text().splitlines()]
-        required += ["runtime/" + path.name for path in (ROOT / "library/stackvm").glob("*.hpp")]
+        required += ["runtime/" + name for name in (ROOT / "source/stackvm/core_sources.txt").read_text().splitlines()]
+        required += ["runtime/" + path.name for path in (ROOT / "source/stackvm").glob("*.hpp")]
         required += ["runtime/core_sources.txt", "toml/toml_source.cpp", "toml/toml_source.hpp"]
         required += ["runtime/bigfloat_math.hpp", "runtime/bigfloat_math_detail.hpp", "runtime/bigfloat_transcendental.cpp", "runtime/bigfloat_trigonometry.cpp", "std/cas.chl", "glue/std_cas.cpp", "caspp/core_sources.txt"]
         required += ["caspp/" + name for name in (ROOT / "library/caspp/core_sources.txt").read_text().splitlines()]

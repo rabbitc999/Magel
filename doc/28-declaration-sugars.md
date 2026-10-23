@@ -79,7 +79,7 @@ lowerReturnControl(E):
 
 核心代码见 [`M_ReturnValue`](../source/semantics/return_expression_ast.cpp)、[`PrepareBreakValue` 与 `LowerLanguageMove`](../source/semantics/boxing.cpp)、[`LowerLoop`](../source/semantics/lowering.cpp) 和[借用控制流](../source/chali_borrow_flow.hpp)。
 
-运行时数组也沿用该规则：`return { String values[] = new[2]; ... yield values; };` 的内部数组连同长度头一起转移，源句柄清零，清理时跳过源元素。外部运行时数组则重新分配长度相同的存储，字符串、对象和聚合元素逐项深复制。隐藏结果槽接受带长度的块、if、match 与 loop 结果，不再只接受 new 或函数调用。此编译器内部消费不开放为源码中的 `move(&array)`；定长数组仍按原有存储和返回类型约束处理，不透明宿主类型也不会被推断成拥有资源。
+运行时数组也沿用该规则：`return { String values[] = new[2]; ... yield values; };` 的内部数组连同长度头一起转移，源句柄清零，清理时跳过源元素。外部运行时数组则重新分配长度相同的存储，字符串、对象和聚合元素逐项深复制。隐藏结果槽接受带长度的块、if、match 与 loop 结果，不再只接受 new 或函数调用。此编译器内部消费不开放为源码中的 `move array`；定长数组仍按原有存储和返回类型约束处理，不透明宿主类型也不会被推断成拥有资源。
 
 ## 语句级具名函数
 
@@ -185,7 +185,7 @@ NoOperatorReplace(interface, declaration) => declaration.noReplace += 接口名�
 
 `Closeable` 是资源关闭协议，复制一份就是两份所有权、`close()` 会跑两遍，因此凡是实现了它的
 结构体一律按不可复制处理，与 `#NonCopyable opcode` 同一条检查路径：复制初始化、赋值、按值传参
-与返回值复制都报错；`move(&x)`、引用传参、返回局部拥有值照常。诊断文案会同时点出这两条来路
+与返回值复制都报错；`move x`、引用传参、返回局部拥有值照常。诊断文案会同时点出这两条来路
 （“实现 Closeable 或声明了 #NonCopyable”）。
 
 两类指令逐条登记：`#No<接口>Replace` 进 `noReplace` 集合，`#NoRight<接口>` 进 `noRight` 集合。

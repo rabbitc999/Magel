@@ -443,7 +443,7 @@ bool validateDependencies(Project &project, Memory::String &error)
         Memory::OutputStringStream buffer;
         buffer << input.rdbuf();
         project.lockSignature = buffer.str();
-        /* 锁文件与 chali.toml 是同一套 TOML 语法，同样交给 `chali/library/toml` 解析；
+        /* 锁文件与 chali.toml 是同一套 TOML 语法，同样交给 `chali/source/toml` 解析；
          * "允许哪些表和键"仍在这里校验：
          *   [lock]         version = "1"        —— 锁文件格式版本
          *                  compiler = ">=x.y.z" —— 生成它的编译器要求

@@ -15,10 +15,10 @@ def main():
     args = parser.parse_args()
     binary = ROOT / args.binary
     binary.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run(['g++', '-std=c++17', '-O2', '-Ilibrary/bignum',
-                    'tests/bigfloat_math_driver.cpp', 'library/bignum/bigint.cpp', 'library/bignum/bigint_multiplication.cpp', 'library/bignum/bigint_division.cpp', 'library/bignum/bigint_number_theory.cpp', 'library/bignum/bigint_bits.cpp', 'library/bignum/bigint_modular.cpp', 'library/bignum/bigint_conversion.cpp',
-                    'library/bignum/bigfloat.cpp', 'library/bignum/bigfloat_roots.cpp', 'library/bignum/bigfloat_transcendental.cpp',
-                    'library/bignum/bigfloat_trigonometry.cpp', '-o', str(binary)], cwd=ROOT, check=True)
+    subprocess.run(['g++', '-std=c++17', '-O2', '-Isource/bignum',
+                    'tests/bigfloat_math_driver.cpp', 'source/bignum/bigint.cpp', 'source/bignum/bigint_multiplication.cpp', 'source/bignum/bigint_division.cpp', 'source/bignum/bigint_number_theory.cpp', 'source/bignum/bigint_bits.cpp', 'source/bignum/bigint_modular.cpp', 'source/bignum/bigint_conversion.cpp',
+                    'source/bignum/bigfloat.cpp', 'source/bignum/bigfloat_roots.cpp', 'source/bignum/bigfloat_transcendental.cpp',
+                    'source/bignum/bigfloat_trigonometry.cpp', '-o', str(binary)], cwd=ROOT, check=True)
     cases = []
     for digits in [1, 2, 7, 17, 34, 50, 100, 250, 1000]:
         for name, values in {

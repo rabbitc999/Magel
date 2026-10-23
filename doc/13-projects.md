@@ -177,7 +177,7 @@ python doc/examples/svmb/collect.py --parser ./ChaLi.exe
 
 ### 7.1 嵌入式 Linux 宿主
 
-使用目标 Linux 的 C++17 工具链构建 `library/stackvm/` 和原生胶水，把
+使用目标 Linux 的 C++17 工具链构建 `source/stackvm/` 和原生胶水，把
 `.svmb`、数据区及布局文件随程序部署，并提供宿主使用的系统库。资源预算与执行边界见
 [部署说明](06-deployment.md)及[书稿部署字节码章节](book/22-部署字节码.md)。
 

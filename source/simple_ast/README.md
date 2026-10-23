@@ -1,9 +1,9 @@
-# 简单 AST 构建（`chali/library/simple_ast`）
+# 简单 AST 构建（`chali/source/simple_ast`）
 
-> **这份是 chali 自带的副本**：源在 `library/simple_ast`，chali 用这里的一份。
+> **这份是 chali 自带的副本**：源在 `source/simple_ast`，chali 用这里的一份。
 > 两份是**独立维护**的 —— 改了一边不会自动同步。
 
-用 C++ 代码搭一棵 AST，再落成 **四元式**（喂给 `library/transfer` 或 `library/stackvm`）
+用 C++ 代码搭一棵 AST，再落成 **四元式**（喂给 `library/transfer` 或 `source/stackvm`）
 与 **`.data`**（文本 + 二进制 + C 头）。只依赖 C++17 标准库。
 
 ## 覆盖的语法特性
@@ -91,7 +91,7 @@ const CodegenResult result = generate(program, "demo");
 ## 构建与自检
 
 ```text
-cmake -S library/simple_ast -B build/simple-ast
+cmake -S source/simple_ast -B build/simple-ast
 cmake --build build/simple-ast
 ctest --test-dir build/simple-ast --output-on-failure
 ```

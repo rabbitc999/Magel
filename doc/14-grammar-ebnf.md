@@ -48,7 +48,7 @@ int64 const& fn(int64 const&) reader = borrow;
 List<int64 fn(int64)> callbacks;
 ```
 
-函数类型可以嵌套，`bool fn(int64 fn(int64))` 表示接收一个函数值并返回 bool。箭头右侧的引用限定符优先属于返回值：`int64 const& fn()` 返回只读引用。变长参数须放在末尾。`fn` 是关键字；旧函数指针声明和函数指针别名的关键字及产生式已删除，不提供函数类型别名。
+函数类型可以嵌套，`bool fn(int64 fn(int64))` 表示接收一个函数值并返回 bool。箭头右侧的引用限定符优先属于返回值：`int64 const& fn()` 返回只读引用。变长参数须放在末尾。`fn` 是关键字；语言不提供函数类型别名。
 
 引用函数值本身使用完整类型括号：`(int64 fn(int64)) const& ref = &callback;`。`(int64 fn(int64)) mut&` 可以替换被引用的函数值，替换沿用所有权与 Drop 清理规则；`int64 fn(int64) values[] = new[2];` 表示运行时函数值数组。与箭头右侧的引用返回值写法区分后，函数值可以参与枚举载荷、结构体字段、泛型、数组及容器组合。
 
@@ -727,6 +727,7 @@ mul_expr2 = unary ;
 unary = "++", unary
     | "--", unary
     | "!", unary
+    | "move", postfix
     | "-", unary
     | "+", unary
     | "~", unary
@@ -804,7 +805,6 @@ interpolated_string = "__chali_fstring", "(", call_args, ")" ;
 
 name_token = VARIABLE
     | "copy"
-    | "move"
     | "is"
     | "expr"
     | "ident"
@@ -983,4 +983,4 @@ macro_type_argument = element_type
 
 函数类型组合及旧语法拒绝见 `tests/chali_function_types.py`；lambda、泛型与引用分别见 `tests/chali_lambdas.py`、`tests/chali_generic_inference.py`、`tests/chali_reference_values.py`。正式语言规则还需由 [样例](../example/samples)和[错误样例](../example/samples-error)核对，文档不替代运行验收。
 
-函数类型和匿名函数的返回类型统一前置：`int64 fn(int64, int64) callback`、`int64 fn(int64 x) { x + 1 }`。旧 `fn(int64, int64) -> int64` 与 `fn(int64 x) -> int64 { x + 1 }` 已移除并报错；推导返回类型使用 `fn(int64 x) { x + 1 }`，不写箭头。升级后重新生成泛型宿主胶水并重建旧缓存。
+函数类型和匿名函数的返回类型统一前置：`int64 fn(int64, int64) callback`、`int64 fn(int64 x) { x + 1 }`。推导返回类型写 `fn(int64 x) { x + 1 }`，不写箭头。

@@ -22,7 +22,7 @@ Expected types flow from the surrounding initialization, assignment, parameter o
 
 The automatically imported std::lang module defines TryBranch<T,R>, Try<T,R>, TryMove<T,R> and FromResidual<F,R>. The source explicitly declares its unique output T and residual R. The enclosing return type F must accept exactly R through a static fromResidual method. Static interface requirements are checked at compile time and are not dispatched through interface objects.
 
-A named value uses the read-only branch method. Explicit `move(&value)?` uses intoBranch. Owned temporaries prefer the move protocol and may fall back to the read protocol. The source is evaluated once. Propagation performs normal cleanup and exits the current function or lambda.
+A named value uses the read-only branch method. Explicit `move value?` uses intoBranch. Owned temporaries prefer the move protocol and may fall back to the read protocol. The source is evaluated once. Propagation performs normal cleanup and exits the current function or lambda.
 
 Result<T,E> uses ErrorResidual<E>; Option<T> uses NoneResidual. Different success types can share an error exit without confusing errors with absence. Custom sources can produce ErrorResidual<E> to propagate into a standard Result; custom return types can accept the same residual to receive standard errors. See the [custom propagation example](../../example/samples/try_custom.chl).
 
@@ -37,7 +37,7 @@ The propagation operator works in conditional branches and still exits the enclo
 
 ## Migration and tooling
 
-The standard choose and chooseLazy functions are removed. Replace them with `if (condition) { a } else { b }`. The new expression evaluates only the selected branch; review side effects when migrating eager choose calls. User-defined functions with those names remain ordinary functions.
+Take a conditional value with `if (condition) { a } else { b }`; it evaluates only the selected branch. User-defined functions with those names remain ordinary functions.
 
 The LSP infers conditional and propagation results for let hover and member completion. Hover over ? to inspect source, output, residual and the enclosing return type.
 

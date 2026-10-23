@@ -1715,7 +1715,7 @@ bool BodyMutatesReceiver(int id, const Memory::String &owner, Memory::Set<Memory
     {
         const MNode &callee = N(node.kids[0]);
         const auto args = N(node.kids[1]).kids;
-        if (StandardCallName(callee) == "move" && !args.empty() && ReceiverRooted(args[0], roots)) return true;
+        if (StandardCallName(callee) == "__move" && !args.empty() && ReceiverRooted(args[0], roots)) return true;
         if ((callee.kind == MNode::Member || callee.kind == MNode::Arrow) && !callee.kids.empty() && ReceiverRooted(callee.kids[0], roots))
         {
             static const Memory::Set<Memory::String> mutators{

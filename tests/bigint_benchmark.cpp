@@ -2,7 +2,7 @@
  * @file bigint_benchmark.cpp
  * @brief 使用固定输入和五轮中位数测量大整数乘除法及算法交叉区。
  */
-#include "../library/bignum/bigint.hpp"
+#include "../source/bignum/bigint.hpp"
 #include <algorithm>
 #include <chrono>
 #include <iostream>

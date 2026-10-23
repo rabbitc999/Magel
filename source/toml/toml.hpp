@@ -2,7 +2,7 @@
  * @file toml.hpp
  * @brief 现代 C++17 的 TOML v1.0 库：解析、序列化，以及可直接喂给 STL 算法的迭代器。
  *
- * 设计仿照同目录的 JSON 库（`library/json`），把"配置数据"当成一等公民：
+ * 设计仿照同目录的 JSON 库（`source/json`），把"配置数据"当成一等公民：
  *
  *   - **存储**用 `std::variant`：bool / int64 / double / string / datetime / array / table；
  *   - **表保序**：`Object` 是"插入顺序的 vector<Member>"，成员是公开字段，所以

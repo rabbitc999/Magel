@@ -191,7 +191,7 @@ void main() {
 \par
 \medskip
 
-实参 \texttt{1 + 2} 是完整表达式，替换进乘法的两个操作数，结果为 9。无需形参括号保护，也不自动给输出加括号、缓存参数或插入作用域；\texttt{\$SQUARE(\allowbreak{}next(\allowbreak{})\allowbreak{})\allowbreak{}} 仍调用两次 \texttt{next(\allowbreak{})\allowbreak{}}。编号临时变量、宏头 \texttt{expr} 标注及形参保护标注均已删除。语句宏的调用写完整分号；宏体的语句直接插入调用所在列表。需要块表达式时，在模板中显式书写 \texttt{\{ .\allowbreak{}.\allowbreak{}.\allowbreak{} yield value; \}}。
+实参 \texttt{1 + 2} 是完整表达式，替换进乘法的两个操作数，结果为 9。无需形参括号保护，也不自动给输出加括号、缓存参数或插入作用域；\texttt{\$SQUARE(\allowbreak{}next(\allowbreak{})\allowbreak{})\allowbreak{}} 仍调用两次 \texttt{next(\allowbreak{})\allowbreak{}}。语句宏的调用写完整分号；宏体的语句直接插入调用所在列表。需要块表达式时，在模板中显式书写 \texttt{\{ .\allowbreak{}.\allowbreak{}.\allowbreak{} yield value; \}}。
 
 \section{参数组、变长片段及卫生绑定}
 

@@ -1,9 +1,9 @@
 # big_number：任意精度大整数 + 十进制浮点（C++17）
 
-> **谁在用**：`library/stackvm` 的 `bint` 类型（虚拟机的任意精度整数）后端就是这个库的
+> **谁在用**：`source/stackvm` 的 `bint` 类型（虚拟机的任意精度整数）后端就是这个库的
 > `bigint::BigInt` —— 宿主语言（如 `chali` 的 ChaLi 语言）里的
 > `bint a = bint("…"); a + b;` 走到虚拟机内部就是这边的运算符重载。
-> 那一步是**可选的**：`make -C library/stackvm STACKVM_WITH_BIGINT=0` 能编出不带大整数的
+> 那一步是**可选的**：`make -C source/stackvm STACKVM_WITH_BIGINT=0` 能编出不带大整数的
 > 轻量虚拟机。ChaLi 语言层的 `BigInteger` / `BigDecimal` 方法（`.pow()`、`.strRadix()`、
 > `.sqrt()` 等）也直接落在这些 C++ 成员上。
 
@@ -185,7 +185,7 @@ Karatsuba、平方走 NTT；3,072 块普通乘法走 NTT，4,096 块又优先 Ka
 可复现命令（从仓库根目录执行）：
 
 ```sh
-g++ -std=c++17 -O2 tests/bigint_benchmark.cpp library/bignum/bigint*.cpp -o tmp/bigint-benchmark
+g++ -std=c++17 -O2 tests/bigint_benchmark.cpp source/bignum/bigint*.cpp -o tmp/bigint-benchmark
 tmp/bigint-benchmark
 tmp/bigint-benchmark --tune
 tmp/bigint-benchmark --division
@@ -246,7 +246,7 @@ NTT 的细节（与参考实现的思路一致）：
 ## 构建与自检
 
 ```sh
-cmake -S library/bignum -B build/bignum -DCMAKE_BUILD_TYPE=Release
+cmake -S source/bignum -B build/bignum -DCMAKE_BUILD_TYPE=Release
 cmake --build build/bignum --config Release
 ctest --test-dir build/bignum -C Release --output-on-failure
 ```

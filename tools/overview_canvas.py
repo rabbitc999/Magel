@@ -7,7 +7,7 @@
     python tools/make_overview.py
 
 这份文件是 ParseEngine 仓库 `tools/make_overview_image.py` 里"画布 + 字体 + 配色"那段的
-副本（跟 `library/json/`、`library/toml/` 一样：ChaLi 独立成项目后，引用到的东西各自拷一份）。外面那份
+副本（跟 `source/json/`、`source/toml/` 一样：ChaLi 独立成项目后，引用到的东西各自拷一份）。外面那份
 继续服务别的总览图，改主题时两边各自改。
 
 导出：`Canvas`（圆角块 / 文本 + SVG / PNG 落盘）、`font()` 与整套配色常量。

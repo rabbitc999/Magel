@@ -72,7 +72,7 @@ void main()
     assert(Counter::answer() == 42);
     Holder holder;
     holder.a = first;
-    holder.b = move(&second);
+    holder.b = move second;
     assert(holder.a.read() == 19);
     assert(holder.b.read() == 20);
     let holderInfo = std::reflect::getStructInfo<Holder>().unwrap();
@@ -88,9 +88,9 @@ void main()
     UniqueCounter unique = UniqueCounter::new(9);
     unique.count = 12;
     unique.label = "owned";
-    UniqueCounter transferred = move(&unique);
+    UniqueCounter transferred = move unique;
     Resources resources;
-    resources.first = move(&transferred);
+    resources.first = move transferred;
     resources.second = UniqueCounter::new(4);
     resources.second.count = 4;
     assert(resources.first.read() == 12);

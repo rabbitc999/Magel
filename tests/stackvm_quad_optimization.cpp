@@ -2,7 +2,7 @@
  * @file stackvm_quad_optimization.cpp
  * @brief 四元式优化前后差分，覆盖类型、复制与控制流边界。
  */
-#include "../library/stackvm/stackvm.hpp"
+#include "../source/stackvm/stackvm.hpp"
 #include <iostream>
 #include <cstdint>
 

@@ -144,7 +144,7 @@ run_required_step() {
 
 if [ "$full" = 1 ]; then
     run_required_step "配置 stackvm 单测（cmake）" \
-        cmake -S library/stackvm -B tmp/ci/stackvm -DCMAKE_BUILD_TYPE=Release \
+        cmake -S source/stackvm -B tmp/ci/stackvm -DCMAKE_BUILD_TYPE=Release \
               -DSTACKVM_WITH_REFLECTION=ON \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="$root/tmp/ci/stackvm" \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE="$root/tmp/ci/stackvm"
@@ -153,13 +153,13 @@ if [ "$full" = 1 ]; then
     run_step "运行二进制中间产物等价性与损坏输入回归" tmp/ci/stackvm/chali-artifact-tests
     run_step "运行宿主事件、定时合并与取消回归" tmp/ci/stackvm/chali-runtime-event-tests
     run_step "运行 stackvm 单测" \
-        tmp/ci/stackvm/chali-stackvm-tests library/stackvm/examples
+        tmp/ci/stackvm/chali-stackvm-tests source/stackvm/examples
     run_step "运行变长符号与十万符号回归" \
         tmp/ci/stackvm/chali-symbol-tests tmp/ci/stackvm/symbol-fixtures
     run_step "运行 panic 调用栈与压缩隐私回归" \
         tmp/ci/stackvm/chali-panic-tests tmp/ci/stackvm/panic-compact.svmb
     run_required_step "配置无 panic 栈构建" \
-        cmake -S library/stackvm -B tmp/ci/panic-off -DCMAKE_BUILD_TYPE=Release \
+        cmake -S source/stackvm -B tmp/ci/panic-off -DCMAKE_BUILD_TYPE=Release \
               -DSTACKVM_WITH_REFLECTION=ON \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="$root/tmp/ci/panic-off" \
               -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE="$root/tmp/ci/panic-off" \
@@ -198,7 +198,7 @@ run_step "运行闭包自动类型与嵌套返回语言服务回归" "$PYTHON" t
 run_required_step "编译无墓碑分配身份回归" g++ -std=c++17 -O2 -DCHALI_CUSTOM_ALLOCATOR=1 -Isource -Ilibrary -Isource/allocator tests/allocation_identity.cpp -o tmp/ci/allocation-identity
 run_step "运行百万次分配身份回归" tmp/ci/allocation-identity
 run_step "运行数组按值传参与引用回归" "$PYTHON" tests/chali_array_parameters.py --chali chali
-run_required_step "编译字面量数据合并单元测试" g++ -std=c++17 -O2 -DCHALI_CUSTOM_ALLOCATOR=0 -DCHALI_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 library/simple_ast/test_simple_ast.cpp library/simple_ast/simple_ast.cpp library/simple_ast/ast_type.cpp library/simple_ast/ast_node.cpp library/simple_ast/ast_data.cpp -o tmp/ci/simple-ast-literals
+run_required_step "编译字面量数据合并单元测试" g++ -std=c++17 -O2 -DCHALI_CUSTOM_ALLOCATOR=0 -DCHALI_WITH_REFLECTION=1 -DSTACKVM_WITH_REFLECTION=1 source/simple_ast/test_simple_ast.cpp source/simple_ast/simple_ast.cpp source/simple_ast/ast_type.cpp source/simple_ast/ast_node.cpp source/simple_ast/ast_data.cpp -o tmp/ci/simple-ast-literals
 run_step "运行字面量数据合并单元测试" tmp/ci/simple-ast-literals
 run_step "检查诊断摘录与 TOML 注释往返" "$PYTHON" tests/chali_diagnostic_layout.py --chali chali
 run_step "运行字面量合并与字符串副本回归" "$PYTHON" tests/chali_string_literals.py --chali chali
@@ -210,7 +210,7 @@ run_step "检查 VM 构建与导出清单同步" "$PYTHON" tools/stackvm_sources
 run_required_step "检查 VM 模块组织与实现增量重编" "$PYTHON" tests/stackvm_module_layout.py
 run_step "运行 VM 双核差分回归" "$PYTHON" tests/vm_differential.py --chali chali
 run_step "检查规范化中间表示结构" "$PYTHON" tests/quad_ir.py --chali chali
-run_required_step "编译 TOML 注释保存回归" g++ -std=c++17 -O2 library/toml/test_toml.cpp library/toml/toml.cpp library/toml/toml_source.cpp -o tmp/ci/toml-comments
+run_required_step "编译 TOML 注释保存回归" g++ -std=c++17 -O2 source/toml/test_toml.cpp source/toml/toml.cpp source/toml/toml_source.cpp -o tmp/ci/toml-comments
 run_step "运行 TOML 注释保存回归" tmp/ci/toml-comments
 run_step "检查标准对象与 VM 核心隔离" "$PYTHON" tests/opcode_core_isolation.py
 run_step "检查 VM 集合宿主胶水与同步回调" "$PYTHON" tests/chali_collection_glue.py --chali chali
@@ -233,11 +233,11 @@ run_step "验证返回表达式、具名闭包与字段派生" "$PYTHON" tests/c
 
 
 # ---- lztext：内嵌标准库/运行时资产的压缩存储与运行时解压 ----
-# chali/library/lztext 与 ParseEngine 的 library/lztext 是同一份实现，改一个要同步另一个。
+# chali/source/lztext 与 ParseEngine 的 source/lztext 是同一份实现，改一个要同步另一个。
 # 这里既构建构建期要用的 lztext_pack（tools/embed_stdlib.py 通过它压缩），
 # 也跑一遍库自检（往返一致性 + 边界用例 + 随机语料模糊测试）。
-run_required_step "构建 lztext 打包工具" "$MAKE" -C library/lztext pack
-run_required_step "编译 lztext 单元测试" g++ -std=c++17 -O1 -Ilibrary/lztext library/lztext/test_lztext.cpp library/lztext/lztext.cpp -o tmp/ci/lztext
+run_required_step "构建 lztext 打包工具" "$MAKE" -C source/lztext pack
+run_required_step "编译 lztext 单元测试" g++ -std=c++17 -O1 -Isource/lztext source/lztext/test_lztext.cpp source/lztext/lztext.cpp -o tmp/ci/lztext
 run_step "运行 lztext 单元测试" tmp/ci/lztext
 fi
 

@@ -1,7 +1,7 @@
 /* closeable_copy.chl —— 实现 `Closeable` 的结构体自动获得 `#NonCopyable`
  *
  * 句柄类值不能复制：复制一份就是两份所有权，`close()` 会跑两遍。
- * 这里用 `Handle b = a;` 触发复制错误；要用请写 `move(a)` 或传引用。
+ * 这里用 `Handle b = a;` 触发复制错误；要用请写 `move a` 或传引用。
  */
 struct Handle : Closeable {
     int64 id;

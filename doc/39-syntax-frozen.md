@@ -47,7 +47,7 @@
 
 约定：
 
-- `let` 是**唯一**的类型推导声明关键字。`auto` 自 0.25.0 起不再是关键字，写作普通标识符，也没有迁移提示。
+- `let` 是**唯一**的类型推导声明关键字；`auto` 不是关键字，按普通标识符处理。
 - `heap` 只在分配位置有意义，不能当变量名；`_` 只作匹配兜底与占位，不参与命名。
 - 宏调用名保留 `$` 前缀且**只认小写**：`$Macro` 不是宏调用，按语法错误处理。
 - `is` / `expr` / `ident` / `block` / `stmt` 只在 `$macro … $match … is` 结构里是关键字。
@@ -75,7 +75,7 @@
 
 | 结构 | 冻结写法 | 备注 |
 | --- | --- | --- |
-| 入口 | `void main()` / `void main()`，可无参或接收 `List<String>` | 返回 `int64` 时退出码即返回值 |
+| 入口 | `void main()`，可无参或接收 `List<String>` | 返回类型必须是 `void` |
 | 模块与导入 | `module 名字;` / `import 模块::名字;` | 每条独立一行 |
 | 结构体 | `struct 名字 { … }`，尾分号可选 | 定义时写 `struct`，引用类型时只写名字 |
 | 枚举 | `enum 名字 { 变体, 变体(类型) }` | 带载荷变体用括号 |
@@ -92,25 +92,15 @@
 | 数组 | `T[]`（运行时长度，中括号写在类型一侧） | 元素个数由字面量或实参决定 |
 | 函数类型 | `fn(参数) -> 返回` | 不含参数名 |
 | 语句 | 块、`if/elif/else`、`while`、`loop`、`for (x in 源)`、`match`、`return`、`break`、`continue`、`yield`、`defer`、`scope(exit)`、表达式语句 | 表达式语句必须以 `;` 结束 |
-| 层级退出 | `break level N;` / `break all;` / `break level all;` / `yield 值;` | `break 值;` 已删除 |
-| 堆分配 | `heap T;` / `new T(实参);` / `heap new T(实参);` | 裸 `new;` 与 `static T new(…)` 工厂已删除 |
+| 层级退出 | `break level N;` / `break all;` / `break level all;` / `yield 值;` | 层级退出只能这样写 |
+| 堆分配 | `heap T;` / `new T(实参);` / `heap new T(实参);` | 分配一律写出类型 |
 | 集合字面量 | `[a, b]`（List）、`{a, b}`（Set）、`{k: v}`（Map） | 空 `[]` / `{}` 需要上下文 |
 | match 分支 | `模式 => { … }`，`_` 兜底，`|` 连接备选模式 | 不穿透、不写 `break` |
 | 值表达式 | `if` / `match` / `loop` / 块可作表达式，用 `yield` 出值 | `yield (a, b);` 产生元组 |
 | 宏定义 | `$macro 名字(组…) @!macrobody … $end_macro` | 参数组分 `()` `[]` `{}` 三种，组内可写变长片段 |
 | 编译期指令 | `#derive(Equal, Hash, Clone)`、`#NoAddReplace`、`#NoRightAdd` | 写在类型声明前 |
 
-## 6 已删除、不再接受的写法
-
-以下写法在文法里**不存在**，写了就是语法错误（不是警告，也没有兼容分支）：
-
-- `auto` 声明（0.25.0 起由 `let` 取代）。
-- `break 值;`、`break #level(N);`、`break #level(ALL);`（改用 `yield 值;` / `break level N;` / `break all;`）。
-- 裸 `new;`、`new(实参);`、`static T new(形参)` 工厂（改用 `heap T;` / `new T(实参);` / `heap new T(实参);`）。
-- 除 `fn` 之外的匿名函数写法；`fn` 的类型标注一律"返回类型前置"（`fn(int32 x) -> int32` 只用于类型位置）。
-- `$macro` 的大写变体（宏调用只认小写）。
-
-## 7 改语法时必须同步的地方
+## 6 改语法时必须同步的地方
 
 按顺序做完，缺一项门禁就会红：
 

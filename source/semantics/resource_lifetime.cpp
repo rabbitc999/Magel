@@ -109,7 +109,7 @@ bool HasDestructorNow(const Memory::String &emitted)
 bool g_usesLanguageMove = false;  ///< 当前编译单元是否需要引用可见的移动状态。
 
 /**
- * @brief 包装聚合生命周期操作，跳过资源已被 std::lang::move 转移的存储。
+ * @brief 包装聚合生命周期操作，跳过资源已被 move 转移的存储。
  * @param owner 聚合类型名。
  * @param value 存储地址，调用者保证没有求值副作用。
  * @param action 待执行操作。

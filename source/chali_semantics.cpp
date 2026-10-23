@@ -10,7 +10,7 @@
  * ============================================================ */
 #include "simple_ast.hpp"
 #include "stackvm.hpp"
-#include "../library/stackvm/value_text.hpp"
+#include "../source/stackvm/value_text.hpp"
 #include "quad_ir.hpp"
 #include "chali_glue.hpp"
 #include "chali_generic.hpp"
@@ -740,6 +740,20 @@ int M_BinOp(int kind, int left, int right)
     const int id = M_New(MNode::Bin, (kind >= 0 && kind < count) ? table[kind] : "+");
     g_nodes[static_cast<std::size_t>(id)].kids = { left, right };
     return id;
+}
+/**
+ * @brief 构造 `move 表达式` 节点。
+ *
+ * 移动是运算符而不是函数：这里把它包成内部调用 `std::lang::__move(x)`，借用流、生命周期与
+ * 降级只认这一种形状。`__move` 是编译器内部拼写，和 `__fileTryOpen` 那批内建一样不在文档里公开。
+ * @param operand 被移动的位置表达式。
+ * @retval 内部移动调用节点的编号。
+ */
+int M_Move(int operand)
+{
+    const int callee = M_New(MNode::EnumCtor, "std::lang");
+    g_nodes[static_cast<std::size_t>(callee)].s2 = "__move";
+    return M_CallOn(callee, M_List1(operand));
 }
 /**
  * @brief 根据运算符类别创建一元运算节点。
@@ -1943,10 +1957,7 @@ int M_BreakValue(int value)
         return value;
     }
     if (expression.kind != MNode::Var) return value;
-    const int address = M_UnOp(4, value);
-    const int callee = M_New(MNode::EnumCtor, "std::lang");
-    g_nodes[static_cast<std::size_t>(callee)].s2 = "move";
-    return M_CallOn(callee, M_List1(address));
+    return M_Move(value);
 }
 /**
  * @brief 构造带移动退出值的循环或块退出语句。

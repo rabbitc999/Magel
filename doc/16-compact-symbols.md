@@ -36,7 +36,7 @@ flowchart LR
     G --> I["VM 编号寻址：宿主与数据区用同一哈希绑定"]
 ~~~
 
-核心结构与严格 LEB128 API 在 [stackvm.hpp](../library/stackvm/stackvm.hpp) 的 symbols 命名空间：
+核心结构与严格 LEB128 API 在 [stackvm.hpp](../source/stackvm/stackvm.hpp) 的 symbols 命名空间：
 
 ~~~cpp
 enum class Error { Ok, Truncated, Overflow, Overlong, NonCanonical };
@@ -59,7 +59,7 @@ saveProgramBinary(program, path, diagnostics, true) 写新格式，saveSymbolMap
 在仓库根目录：
 
 ~~~sh
-cmake -S library/stackvm -B build/symbols -DSTACKVM_WITH_REFLECTION=ON
+cmake -S source/stackvm -B build/symbols -DSTACKVM_WITH_REFLECTION=ON
 cmake --build build/symbols --parallel
 
 ./chali svmb example/samples/control.chl \
@@ -133,7 +133,7 @@ kind 是可组合位：1 变量/指令名字、2 标签、4 类型名、8 外部
 
 ## 空间实测
 
-2026-10-08 的历史格式测量：[test_symbols.cpp](../library/stackvm/test_symbols.cpp) 当时生成 N 个符号、5N 次引用，最热符号出现 4N+1 次，其余各一次，名字形如 calculate_symbol_12345，无调试节。以下是当时的**完整文件大小**，不代表现行 v5 的重新测量：
+2026-10-08 的历史格式测量：[test_symbols.cpp](../source/stackvm/test_symbols.cpp) 当时生成 N 个符号、5N 次引用，最热符号出现 4N+1 次，其余各一次，名字形如 calculate_symbol_12345，无调试节。以下是当时的**完整文件大小**，不代表现行 v5 的重新测量：
 
 | 符号数 | 引用数 | 原始含名字 .svmb | 无名 LEB128 .svmb | 减少 |
 | ---: | ---: | ---: | ---: | ---: |

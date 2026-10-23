@@ -4,7 +4,7 @@
  * @brief 简单 AST 构建：常用类型 / 运算符 / 数组（带 meta）/ 可空引用 / 复合类型 /
  *        简单泛型 / lambda / 带载荷枚举 / 字符串，并生成四元式与 `.data` 文件。
  *
- * 定位：`library/transfer` 与 `library/stackvm` 吃的都是**四元式**；本模块站在更上层，
+ * 定位：`library/transfer` 与 `source/stackvm` 吃的都是**四元式**；本模块站在更上层，
  * 提供"用 C++ 代码搭一棵 AST，然后把它落成四元式 + 数据文件"的最小前端。
  * 只依赖 C++17 标准库。
  *

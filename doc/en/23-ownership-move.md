@@ -2,7 +2,7 @@
 
 [Documentation index](README.md) · [Ownership transfer](../23-ownership-move.md)
 
-`move(T mut&)` now transfers existing resources instead of copying and destroying the source. Ordinary assignment and ordinary value parameters still copy. Receiving a move result directly transfers strings, containers, Any, closures and owned aggregate fields without deep copies.
+`move x` now transfers existing resources instead of copying and destroying the source. Ordinary assignment and ordinary value parameters still copy. Receiving a move result directly transfers strings, containers, Any, closures and owned aggregate fields without deep copies.
 
 ```chali
 struct Packet { String text; List<int64> values; };
@@ -10,7 +10,7 @@ void main() {
     Packet source;
     source.text = "payload";
     source.values.push(42);
-    Packet result = move(&source);
+    Packet result = move source;
     Packet source;
     source.text = "next";
     println("{} {}", result.text, result.values[0]);
@@ -47,7 +47,7 @@ assert(n == 20);
 
 Duplicate names, unknown variables, parameter conflicts, and mut/move captures of read-only sources are rejected. Listed variables are captured even when unused in the body. Capture applies to the whole variable. Copying or moving a reference does not own its referent or extend its lifetime. Direct global access uses global storage; explicitly list a global for a snapshot. Convert array values to containers or explicit references. File and process handles support move capture but cannot be copied, including through closure copies.
 
-## Match range migration
+## Match range patterns
 
 Match interval patterns use `std::lang::range<T>(a,b)` (half open) and `std::lang::rangeEq<T>(a,b)` (inclusive), and accept only integers and char. Custom types implementing `Equal<T>` can use ordinary value patterns. Use guards or if/elif for floating-point and String bounds. Ordinary tuple expressions retain value semantics.
 

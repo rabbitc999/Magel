@@ -63,4 +63,4 @@ Runnable examples: [fields](../../example/samples/reflect_fields.chl),
 [serialization](../../example/samples/reflect_serialization.chl), and
 [SQL](../../example/samples/sql_ipage.chl).
 
-The ipage copy contains only the C++17 SQL generation core. Java/Maven, duplicate database sources, connections, sessions, and schema synchronization have been removed. SQLite dialect and execution adapters belong to ChaLi std::sql glue.
+The ipage copy contains only the C++17 SQL generation core. SQLite dialect and execution adapters belong to ChaLi std::sql glue.

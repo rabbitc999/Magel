@@ -1,7 +1,7 @@
 """统一 StackVM 独立编译单元与内嵌资产清单。"""
 from pathlib import Path
 import argparse
-DIRECTORY = Path(__file__).resolve().parents[1] / "library/stackvm"
+DIRECTORY = Path(__file__).resolve().parents[1] / "source/stackvm"
 
 def source_names():
     """读取并验证核心源文件清单。"""

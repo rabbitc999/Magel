@@ -102,7 +102,7 @@ Memory::String quote(const Memory::String &s);
  * `chali.toml` 的**格式校验**（与 TOML 语法本身分开）：
  *
  *   * 语法（字符串转义、数组、表头、注释、行尾 …）交给仓库自己的 TOML 库
- *     `chali/library/toml`（`library/toml` 的 ChaLi 内置副本，与 `std::toml` 同一份实现）；
+ *     `chali/source/toml`（`source/toml` 的 ChaLi 内置副本，与 `std::toml` 同一份实现）；
  *   * 这里只回答"**这个格式允许哪些表和键、每个值怎么解释**"：未知表、未知键、
  *     类型不对、该非空却空了一律明确报错，不静默忽略。
  *
@@ -140,7 +140,7 @@ Memory::Vector<Memory::String> tomlArray(const toml::Value &value,
 /**
  * @brief 当前工具链版本，参与项目最低版本验证。
  */
-inline constexpr const char *compilerVersion = "0.28.0";
+inline constexpr const char *compilerVersion = "0.28.1";
 
 /**
  * @brief 解析 `1.2.3` 形式的三段版本号。

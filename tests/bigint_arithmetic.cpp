@@ -2,7 +2,7 @@
  * @file bigint_arithmetic.cpp
  * @brief 供 Python 独立整数参考实现驱动的乘除法差分入口。
  */
-#include "../library/bignum/bigint.hpp"
+#include "../source/bignum/bigint.hpp"
 
 #include <iostream>
 #include <limits>

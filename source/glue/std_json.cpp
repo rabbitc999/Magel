@@ -1,6 +1,6 @@
 #include "../chali_glue.hpp"
 #include "std_json.hpp"
-#include "../../library/json/json.hpp"
+#include "../../source/json/json.hpp"
 #include "std_structured_data.hpp"
 #include "std_serialization.hpp"
 #include <cmath>

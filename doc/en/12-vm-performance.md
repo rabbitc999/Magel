@@ -66,7 +66,7 @@ measurement. Two independent rounds are retained separately, using medians rathe
 Build both version-specific VM runners using their own headers and archives:
 
 ```sh
-g++ -std=c++17 -O2 -DNDEBUG -DSTACKVM_WITH_REFLECTION=1 -DCHALI_CUSTOM_ALLOCATOR=1 -Ilibrary -Ilibrary/stackvm tests/benchmark_vm_program.cpp build/chali-stackvm/libstackvm.a -pthread -o build/vm-program-benchmark.exe
+g++ -std=c++17 -O2 -DNDEBUG -DSTACKVM_WITH_REFLECTION=1 -DCHALI_CUSTOM_ALLOCATOR=1 -Ilibrary -Isource/stackvm tests/benchmark_vm_program.cpp build/chali-stackvm/libstackvm.a -pthread -o build/vm-program-benchmark.exe
 ```
 
 Use [benchmark_vm_lua.py](../../tests/benchmark_vm_lua.py) first to download/build official Lua 5.5.1.

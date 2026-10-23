@@ -2,7 +2,7 @@
  *
  *   ./chali run example/samples/closeable_move.chl
  *
- *   * `move(&h)` 把所有权交出去，源变量随后不再自动 close；
+ *   * `move h` 把所有权交出去，源变量随后不再自动 close；
  *   * 按值传参同样要求显式 `move`，或把形参写成引用；
  *   * 返回值返回局部拥有值时不需要额外写 `move`。
  */
@@ -24,11 +24,11 @@ Handle makeHandle(int64 id) {
 void main() {
     Handle first;
     first.id = 1;
-    consume(move(&first));
+    consume(move first);
 
     Handle second;
     second.id = 2;
-    Handle third = move(&second);
+    Handle third = move second;
     println("third={}", third.id);
 
     consume(makeHandle(3));

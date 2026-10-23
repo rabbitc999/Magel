@@ -49,7 +49,7 @@ uses; platform-specific parts live in host glue, so business logic is not rewrit
 
 ### Answer 2: from desktop to embedded Linux
 
-Desktop and embedded Linux hosts use the same `library/stackvm/` execution core. The target needs a
+Desktop and embedded Linux hosts use the same `source/stackvm/` execution core. The target needs a
 C++17 toolchain, sufficient memory and the system libraries required by its program. Build the host
 and native glue for the target architecture and runtime. ChaLi source describes the business,
 bytecode carries the program, and the host supplies files, networking, clocks and other services.

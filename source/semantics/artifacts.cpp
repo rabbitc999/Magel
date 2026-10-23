@@ -1022,6 +1022,15 @@ void ResetState()
             if (operand.kind == MNode::Var) g_addressTakenNames.insert(operand.s);
             if (operand.kind == MNode::EnumCtor) g_addressTakenNames.insert(operand.s2);
         }
+    /* `move x` 也要取 x 的地址；容器 / 字符串 / 标量的引用槽在声明处就准备好，
+     * 否则 `move list` 会在降级时因为变量没有稳定存储而被拒绝。 */
+    for (const auto &node : g_nodes)
+        if (node.kind == MNode::Call && !node.kids.empty() && StandardCallName(N(node.kids[0])) == "__move")
+            for (const int argument : N(node.kids[1]).kids)
+            {
+                const auto &operand = N(argument);
+                if (operand.kind == MNode::Var) g_addressTakenNames.insert(operand.s);
+            }
     /* 捕获在函数体降级时才解析；提前为 lambda 中的变量准备稳定引用槽。 */
     std::function<void(int)> prepareCaptureStorage = [&](int id) {
         if (id < 0) return;
@@ -1116,7 +1125,7 @@ void ResetState()
     {
         if (node.kind != MNode::Call || node.kids.empty()) continue;
         const auto &callee = N(node.kids[0]);
-        if ((callee.kind == MNode::EnumCtor && callee.s == "std::lang" && callee.s2 == "move") || (callee.kind == MNode::Var && callee.s == "move")) g_usesLanguageMove = true;
+        if ((callee.kind == MNode::EnumCtor && callee.s == "std::lang" && callee.s2 == "__move") || (callee.kind == MNode::Var && callee.s == "__move")) g_usesLanguageMove = true;
     }
     g_needsAggregateRelease.clear();
     g_needsCaptureDestructor.clear();

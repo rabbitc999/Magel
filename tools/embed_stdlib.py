@@ -53,8 +53,8 @@ def pack_tool_path():
     compiler = shutil.which("g++") or shutil.which("c++") or shutil.which("clang++")
     if compiler is None:
         raise RuntimeError("找不到 lztext_pack，也没有可用的 C++ 编译器；"
-                           "先跑 `make -C library/lztext pack`，或设置 LZTEXT_PACK 指向该工具")
-    src_dir = os.path.join(ROOT, "library", "lztext")
+                           "先跑 `make -C source/lztext pack`，或设置 LZTEXT_PACK 指向该工具")
+    src_dir = os.path.join(ROOT, "source", "lztext")
     out_dir = os.path.join(ROOT, "build", "lztext")
     os.makedirs(out_dir, exist_ok=True)
     out_path = os.path.join(out_dir,
@@ -112,19 +112,19 @@ def read(path):
 
 
 # 资产键（生成工程用的逻辑路径）保持原样，只把「真仓库里的磁盘位置」映射过去：
-# 搬进 source/ 与 library/ 之后，键与磁盘目录不再同名，这里显式对上。
+# 九个库已搬进 source/，仍留在 library/ 的只有外部依赖（ipage / caspp / sqlite）。
 ASSET_ROOT = {
     "ipage/": "library/ipage/source/",
-    "stackvm/": "library/",
-    "simple_ast/": "library/",
-    "preprocess/": "library/",
-    "bignum/": "library/",
+    "stackvm/": "source/",
+    "simple_ast/": "source/",
+    "preprocess/": "source/",
+    "bignum/": "source/",
     "caspp/": "library/",
-    "json/": "library/",
-    "toml/": "library/",
-    "lztext/": "library/",
+    "json/": "source/",
+    "toml/": "source/",
+    "lztext/": "source/",
     "sqlite/": "library/",
-    "console/": "library/",
+    "console/": "source/",
     "glue/": "source/",
     "allocator/": "source/",
 }

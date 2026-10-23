@@ -78,5 +78,5 @@ __pycache__/
 # 单独放行）：用该目录 README.md 里的 xelatex 命令构建，属发布产物；跑文档链接门禁前要先构建。
 # 独立程序的资产清单：`python tools/stackvm_sources.py --build-assets` 与
 # `python tools/cas_sources.py --build-assets` 生成（`--check` 卡同步），不入库。
-/library/stackvm/core_assets.hpp
+/source/stackvm/core_assets.hpp
 /library/caspp/core_assets.hpp

@@ -6,7 +6,7 @@ import re
 def main():
     """检查核心源码、公共头和静态库定义不再引用具体宿主对象。"""
     root = Path(__file__).resolve().parents[1]
-    directory = root / 'library/stackvm'
+    directory = root / 'source/stackvm'
     forbidden = re.compile(r'\b(?:FileApi|FileHandle|BigInt|BigFloat|BigInteger|BigDecimal)\b|'
                            r'__std_(?:file|bint|bfloat|vec|set|map)|"__std_str_(?:lit|join|sub|of_int|of_flt|cmp|pos)"|ObjectKind::(?:File|Process|Vector|Set|Map|IteratorLease)|'
                            r'STACKVM_WITH_BIG(?:INT|FLOAT)|\bbignum\b|'

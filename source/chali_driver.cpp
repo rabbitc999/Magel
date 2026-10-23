@@ -3,7 +3,7 @@
  *                           [-I 目录] [-D 符号[=值]] [--raw] [--deps]
  *
  *   ① 读源文件（不给文件也不给 `--stdin` 时显示帮助）；
- *   ② **前处理**：`%if` / `%define` 等指令（library/preprocess，
+ *   ② **前处理**：`%if` / `%define` 等指令（source/preprocess，
  *      语言无关的那一份），默认用空行占位，所以行号与源文件一一对应；
  *   ③ 解析：文法动作在归约的那一刻就把自己的 C 语法树建好；
  *   ④ M_Compile：降级到 simple_ast → 出 .quad / .data → stackvm 组装执行。

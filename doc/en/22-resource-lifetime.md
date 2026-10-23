@@ -2,7 +2,7 @@
 
 ## Allocation identities without tombstones
 
-`library/stackvm/allocation_index.hpp` stores active logical intervals and each physical root's latest generation and displacement width. Release removes the active interval immediately. No retired identities or sweeping boundaries are stored. Repeated release fails; physical reuse never revives an old logical reference. Generation exhaustion refuses reuse instead of wrapping, and repeated reuse of one physical root needs only one identity slot.
+`source/stackvm/allocation_index.hpp` stores active logical intervals and each physical root's latest generation and displacement width. Release removes the active interval immediately. No retired identities or sweeping boundaries are stored. Repeated release fails; physical reuse never revives an old logical reference. Generation exhaustion refuses reuse instead of wrapping, and repeated reuse of one physical root needs only one identity slot.
 
 ## Resource construction and cleanup modules
 
@@ -10,7 +10,7 @@ Explicit release uses `value.drop()` for heap references, arrays and owned resou
 
 `source/semantics/resource_lifetime.cpp` centralizes construction registration, Closeable/Drop calls, aggregate destruction, owner-slot cleanup and scope exits. Explicit termination, automatic cleanup and moves share the ownership contract. Executed release clears the owner slot without removing another branch's cleanup. Host close shuts down the operating-system resource; drop later destroys its still-owned record rather than retaining a released record as a tombstone.
 
-A struct that implements `Closeable` is automatically non-copyable (`MStructDef::nonCopyable`, sharing `TypeNonCopyable` with `#NonCopyable opcode`): a copy would mean two owners and two `close()` calls. Copy initialization, assignment, value arguments and return copies are rejected with a diagnostic naming both origins; transfer with `move(&x)`, share through a reference, and return local owned values directly. The rule follows fields and elements: an aggregate with a non-copyable field is non-copyable, and arrays or containers that copy such elements are rejected.
+A struct that implements `Closeable` is automatically non-copyable (`MStructDef::nonCopyable`, sharing `TypeNonCopyable` with `#NonCopyable opcode`): a copy would mean two owners and two `close()` calls. Copy initialization, assignment, value arguments and return copies are rejected with a diagnostic naming both origins; transfer with `move x`, share through a reference, and return local owned values directly. The rule follows fields and elements: an aggregate with a non-copyable field is non-copyable, and arrays or containers that copy such elements are rejected.
 
 The independently compiled `source/chali_resource_cleanup.cpp` consumes borrow control-flow facts. It merges drop for the same precise storage identity: remove a later operation when all incoming paths have terminated the resource, or guard it when only some paths have. Reinitialization, rebinding and allocation update the proof. Dynamic indices, ambiguous origins and opaque cross-call effects do not prove identity. Runtime release remains non-idempotent and reports CHL1205 for unmerged repeated releases; ordinary reads and writes still reject use after release.
 
@@ -22,7 +22,7 @@ Fresh string arguments borrowed by printing, formatting and file writes are firs
 
 ## VM and restart
 
-The VM heap in `library/stackvm/runtime_heap.cpp` splits free intervals and merges adjacent released intervals. A watchdog restart ends every old execution context before resetting arenas and allocation identities. There is no sweeping API or implicit garbage collection.
+The VM heap in `source/stackvm/runtime_heap.cpp` splits free intervals and merges adjacent released intervals. A watchdog restart ends every old execution context before resetting arenas and allocation identities. There is no sweeping API or implicit garbage collection.
 
 ## fn borrowing research
 
@@ -47,7 +47,7 @@ can borrow the caller's live variables.
 
 ## Checking later closure uses
 
-Capture discovery and later uses are modeled separately. `FlowState::captures` records external borrowed places held by function values and aggregate fields. Copies, assignments, tuples and enum payloads propagate these sets; reference fields inside owned captures still depend on their external referents. Reading a callable checks whether a captured place was freed, moved or dropped on a reachable path. The callable itself and its captured sources are checked again after argument evaluation, preventing `callback(move(&source))` from invalidating its environment before invocation. Callable results conservatively inherit known external borrows from arguments and receivers. Reassignment replaces the previous capture set, and destruction after the closure's final use remains valid.
+Capture discovery and later uses are modeled separately. `FlowState::captures` records external borrowed places held by function values and aggregate fields. Copies, assignments, tuples and enum payloads propagate these sets; reference fields inside owned captures still depend on their external referents. Reading a callable checks whether a captured place was freed, moved or dropped on a reachable path. The callable itself and its captured sources are checked again after argument evaluation, preventing `callback(move source)` from invalidating its environment before invocation. Callable results conservatively inherit known external borrows from arguments and receivers. Reassignment replaces the previous capture set, and destruction after the closure's final use remains valid.
 
 The design follows the explicit loan registration in Rust's [borrow_set.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/borrow_set.rs), capture-mode distinctions in [upvar.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_hir_typeck/src/upvar.rs), and projection conflicts in [places_conflict.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_borrowck/src/places_conflict.rs). It uses ChaLi's own place and control-flow analysis without copying Rust implementation code.
 

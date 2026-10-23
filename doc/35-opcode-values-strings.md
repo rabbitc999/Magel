@@ -6,7 +6,7 @@
 
 | 类型 | 普通复制 | 生命周期及快照 |
 | --- | --- | --- |
-| `std::sql::Database` | 禁止，使用 `std::lang::move(&value)` 转移 | 宿主记录统一保存连接、驱动、错误及影响行数；退出作用域自动关闭，`close()` 可重复调用 |
+| `std::sql::Database` | 禁止，使用 `move value` 转移 | 宿主记录统一保存连接、驱动、错误及影响行数；退出作用域自动关闭，`close()` 可重复调用 |
 | `std::memory::Arena` | 禁止，使用显式移动 | reset 或释放使所有分配出的 Span 失效；Span 本身不拥有存储 |
 | `std::event::Timer` | 禁止，私有 opcode 独占定时源 | stop 及作用域退出取消定时源；`id()` 和 `Event.timer` 只是来源标识，不承担释放责任 |
 | `std::random::Random` | 深复制当前序列状态 | 副本从相同位置开始，后续调用独立推进；固定种子序列保持可复现 |

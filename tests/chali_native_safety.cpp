@@ -2,10 +2,10 @@
  * @file compiler_native_safety.cpp
  * @brief 验证编译器数据导出、大数边界和结构化文档模板的安全回归。
  */
-#include "../library/bignum/bigfloat.hpp"
-#include "../library/simple_ast/simple_ast.hpp"
-#include "../library/json/json.hpp"
-#include "../library/toml/toml.hpp"
+#include "../source/bignum/bigfloat.hpp"
+#include "../source/simple_ast/simple_ast.hpp"
+#include "../source/json/json.hpp"
+#include "../source/toml/toml.hpp"
 #include <cassert>
 #include <cstdint>
 #include <cstring>

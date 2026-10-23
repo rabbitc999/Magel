@@ -71,7 +71,7 @@ Transfer/copy are compiler pseudocode, not new VM opcodes. Existing `LowerLangua
 
 See [`M_ReturnValue`](../../source/semantics/return_expression_ast.cpp), [`PrepareBreakValue` and `LowerLanguageMove`](../../source/semantics/boxing.cpp), [`LowerLoop`](../../source/semantics/lowering.cpp), and [borrow dataflow](../../source/chali_borrow_flow.hpp).
 
-Runtime arrays follow the same rule. An internal array in `return { String values[] = new[2]; ... yield values; };` transfers its length-bearing allocation; the source handle is cleared and source element cleanup is skipped. An external runtime array receives a new allocation and per-element deep copies of strings, objects and aggregates. Hidden result bindings accept length-bearing block, if, match and loop expressions as well as allocations and calls. This compiler-only consumption does not enable source-level `move(&array)`; fixed arrays retain their existing storage/return constraints, and opaque host types are not assumed to own resources.
+Runtime arrays follow the same rule. An internal array in `return { String values[] = new[2]; ... yield values; };` transfers its length-bearing allocation; the source handle is cleared and source element cleanup is skipped. An external runtime array receives a new allocation and per-element deep copies of strings, objects and aggregates. Hidden result bindings accept length-bearing block, if, match and loop expressions as well as allocations and calls. This compiler-only consumption does not enable source-level `move array`; fixed arrays retain their existing storage/return constraints, and opaque host types are not assumed to own resources.
 
 ## Statement-level named functions
 
@@ -179,8 +179,7 @@ FindOperator(op, left, right):
 ```
 
 `#NoRightXxx` therefore closes only the right-hand direction, while `#NoAddReplace` closes all
-derivation for that interface; both are compiler directives placed before the declaration and
-no longer exist as empty marker interfaces. Generic templates keep their directives during
+derivation for that interface; both are compiler directives placed before the declaration. Generic templates keep their directives during
 `collectGenericDerives` and paste them back in front of every instantiation.
 
 ## Regressions

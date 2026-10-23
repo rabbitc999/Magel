@@ -127,13 +127,13 @@ struct MReflectionSerialization
             const auto child = ensure(type->elem);
             const auto item = InferenceTypeText(type->elem);
             encode = "String output=\"[\";int64 index=0;while(index<value.len()){if(index>0){output=output+\",\";}" + item + " entry=value.at(index);output=output+" + child + "Encode(&entry,&error,depth+1);if(error!=\"\"){return \"\";}index=index+1;}return output+\"]\";";
-            decode = "if(!node.isArray()){" + decodeError("需要数组") + "}value.clear();int64 index=0;while(index<node.len()){let part=node.at(index).unwrap();" + item + " entry;if(!" + child + "Decode(&part,&entry,&error,depth+1)){return false;}value." + Memory::String(type->name == "vec" ? "push" : "add") + "(std::lang::move(&entry));index=index+1;}return true;";
+            decode = "if(!node.isArray()){" + decodeError("需要数组") + "}value.clear();int64 index=0;while(index<node.len()){let part=node.at(index).unwrap();" + item + " entry;if(!" + child + "Decode(&part,&entry,&error,depth+1)){return false;}value." + Memory::String(type->name == "vec" ? "push" : "add") + "(move entry);index=index+1;}return true;";
         }
         else if (IsContainer(type) && type->name == "map" && IsStandardOpcode(type->elem, "String"))
         {
             const auto child = ensure(type->elem2), item = InferenceTypeText(type->elem2);
             encode = "String output=\"{\";int64 index=0;while(index<value.len()){if(index>0){output=output+\",\";}String key=value.keyAt(index);" + item + " entry=value.valAt(index);output=output+__serdeQuote(key)+\":\"+" + child + "Encode(&entry,&error,depth+1);if(error!=\"\"){return \"\";}index=index+1;}return output+\"}\";";
-            decode = "if(!node.isObject()){" + decodeError("需要对象") + "}value.clear();int64 index=0;while(index<node.len()){if(node.keyAt(index).isNone()){" + decodeError("对象键无法表示为 String") + "}String key=node.keyAt(index).unwrap();let part=node.at(index).unwrap();" + item + " entry;if(!" + child + "Decode(&part,&entry,&error,depth+1)){return false;}value.put(key,std::lang::move(&entry));index=index+1;}return true;";
+            decode = "if(!node.isObject()){" + decodeError("需要对象") + "}value.clear();int64 index=0;while(index<node.len()){if(node.keyAt(index).isNone()){" + decodeError("对象键无法表示为 String") + "}String key=node.keyAt(index).unwrap();let part=node.at(index).unwrap();" + item + " entry;if(!" + child + "Decode(&part,&entry,&error,depth+1)){return false;}value.put(key,move entry);index=index+1;}return true;";
         }
         else if (type->kind == MType::Struct && exposed(type) && !HasNonCopyableValue(type))
         {
@@ -162,7 +162,7 @@ struct MReflectionSerialization
                             output += "output=output+\",\";";
                         }
                         pattern += variable;
-                        construction += "std::lang::move(&" + variable + ")";
+                        construction += "move " + variable;
                         output += "output=output+" + child + "Encode(&" + variable + ",&error,depth+1);if(error!=\"\"){return \"\";}";
                         decode += InferenceTypeText(variant.payloads[index].type) + " " + variable + ";let part" + Memory::toString(index) + "=parts.at(" + Memory::toString(index) + ").unwrap();if(!" + child + "Decode(&part" + Memory::toString(index) + ",&" + variable + ",&error,depth+1)){return false;}";
                     }
@@ -236,7 +236,7 @@ struct MReflectionSerialization
                 else if (encoding)
                     entries += "String text=" + helper + "Encode(&value,&error,0);if(error!=\"\"){return " + result + "::Err(error);}return " + result + "::Ok(text);}\n";
                 else
-                    entries += "let parsed=std::json::parse(text);if(parsed.isErr()){return " + result + "::Err(parsed.error());}let node=parsed.unwrap();" + InferenceTypeText(type) + " value;if(!" + helper + "Decode(&node,&value,&error,0)){return " + result + "::Err(error);}return " + result + "::Ok(std::lang::move(&value));}\n";
+                    entries += "let parsed=std::json::parse(text);if(parsed.isErr()){return " + result + "::Err(parsed.error());}let node=parsed.unwrap();" + InferenceTypeText(type) + " value;if(!" + helper + "Decode(&node,&value,&error,0)){return " + result + "::Err(error);}return " + result + "::Ok(move value);}\n";
                 queries.replaced.insert(decl.source);
                 break;
             }

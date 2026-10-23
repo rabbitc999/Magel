@@ -4,8 +4,8 @@
  * @brief 模板引擎自己的动态值：`tmpl::Value` / `Array` / `Object`。
  *
  * 模板里的 `{{ path.to.value }}` 需要一个"运行时才知道类型"的值，这就是
- * `Value`。它**完全独立于** `library/json` 里的 `json::Value`：本目录不
- * include 任何 `library/json` 下的文件，两份实现可以各自演化（一份关心
+ * `Value`。它**完全独立于** `source/json` 里的 `json::Value`：本目录不
+ * include 任何 `source/json` 下的文件，两份实现可以各自演化（一份关心
  * JSON 的解析/序列化，一份只关心"模板里能不能取值、真不真、怎么变字符串"）。
  *
  * 设计要点：

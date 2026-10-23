@@ -33,7 +33,7 @@ interface FromResidual<F,R> { static F fromResidual(R residual); };
 
 来源显式实现唯一 `Try<T,R>`，成功分支给出 T；失败分支携带 R。当前函数返回类型 F 必须实现 `FromResidual<F,R>`。协议精确匹配，不搜索隐式转换链。静态接口方法属于编译期契约，不通过接口对象动态分派。
 
-普通变量 `value?` 使用只读 `branch()`；显式 `move(&value)?` 使用 `intoBranch()`；拥有型临时值优先选择移动协议，没有移动协议时可使用读取协议。来源只求值一次，失败时执行正常作用域清理后退出当前函数或 lambda。
+普通变量 `value?` 使用只读 `branch()`；显式 `move value?` 使用 `intoBranch()`；拥有型临时值优先选择移动协议，没有移动协议时可使用读取协议。来源只求值一次，失败时执行正常作用域清理后退出当前函数或 lambda。
 
 标准 `Result<T,E>` 使用 `ErrorResidual<E>`，`Option<T>` 使用 `NoneResidual`，因此不同成功类型可共享失败出口，缺失与错误不会自动混合。
 
@@ -53,9 +53,9 @@ let user = findUser(id).okOr<AppError>(AppError::UserMissing)?;
 
 `?` 可以写在 if 分支及条件中，其失败出口仍然是当前函数，不是 if 表达式。完整回归见 [条件表达式](../example/samples/if_expression.chl) 与 [错误适配](../example/samples/error_adapters.chl) 两个样例（由 `sh check.sh` 跑 VM 双后端）。
 
-## 迁移与工具
+## 取值与工具
 
-移除标准库 `choose` 和 `chooseLazy`，改用 `if (condition) { a } else { b }`。新写法只计算被选中的分支；迁移旧 choose 时，需要确认原来依赖两侧提前执行的副作用。用户自己声明的同名函数仍是普通函数。
+取条件值用 `if (condition) { a } else { b }`，它只计算被选中的分支；用户自己声明的同名函数仍是普通函数。
 
 LSP 显示 if 和传播表达式的成功类型，并支持 let 悬停与成员补全。悬停 `?` 可查看来源、成功类型、失败载荷和当前函数返回出口。
 

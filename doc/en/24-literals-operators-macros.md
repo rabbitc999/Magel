@@ -2,7 +2,7 @@
 
 [文档目录](README.md) · [Context-typed literals, operator inference and macros](../24-literals-operators-macros.md)
 
-This guide covers integer literals now take their type from context, operator overloading infers more on its own (commutativity, comparison duality, right-hand switches, multiple result types), and the macro DSL is tightened by removing `$match` and the legacy `##` / `#param` shorthands. The first two let you write fewer casts and fewer right-hand interfaces; the third leaves exactly one way to write a macro and halves the diagnostic surface.
+This guide covers integer literals now take their type from context, operator overloading infers more on its own (commutativity, comparison duality, right-hand switches, multiple result types), and the macro DSL has exactly one form. The first two let you write fewer casts and fewer right-hand interfaces; the third leaves exactly one way to write a macro and halves the diagnostic surface.
 
 
 ## Integer literals take their type from context
@@ -168,7 +168,7 @@ void main() {
 }
 ```
 
-`1 + 2` remains a complete operand, so the square is 9. Numbered temporary names, the macro-header `expr` annotation and parameter protection annotations are removed. Expansion adds no automatic parentheses, argument cache, closure or scope. `$SQUARE(next())` still evaluates `next()` twice. Write a semicolon after a statement macro invocation. Templates splice statements into the surrounding list; a block expression requires an explicit `{ ... yield value; }` in the template.
+`1 + 2` remains a complete operand, so the square is 9. Expansion adds no automatic parentheses, argument cache, closure or scope. `$SQUARE(next())` still evaluates `next()` twice. Write a semicolon after a statement macro invocation. Templates splice statements into the surrounding list; a block expression requires an explicit `{ ... yield value; }` in the template.
 
 ## Groups, variadic fragments and bindings
 

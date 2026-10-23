@@ -4,7 +4,7 @@
  *
  * 本文件在 ChaLi 工程独立维护，统一使用 `#include "console/utf8.hpp"`。
  *
- * 它最早来自 ParseEngine 仓库的 `library/console/utf8.hpp`。两个项目剥离之后各自独立：
+ * 它最早来自 ParseEngine 仓库的 `source/console/utf8.hpp`。两个项目剥离之后各自独立：
  * 那份继续服务 `source/include/ParseEngine/tool_console.hpp`，改一边不再自动同步另一边。
  *
  * 为什么需要它：Windows 上 `main(int, char**)` 拿到的实参是系统 ANSI 代码页而不是

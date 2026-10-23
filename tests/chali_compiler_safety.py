@@ -13,9 +13,9 @@ def run_native(cxx, work, sanitize):
     """直接编译实际库单元，验证精确数值、溢出拒绝与跨编译器模板兼容。"""
     executable = work / ('native-safety.exe' if os.name == 'nt' else 'native-safety')
     sources = [ROOT / 'tests/chali_native_safety.cpp']
-    for pattern in ['library/bignum/bigint*.cpp', 'library/bignum/bigfloat*.cpp', 'library/simple_ast/ast*.cpp']:
+    for pattern in ['source/bignum/bigint*.cpp', 'source/bignum/bigfloat*.cpp', 'source/simple_ast/ast*.cpp']:
         sources.extend(sorted(ROOT.glob(pattern)))
-    sources += [ROOT / name for name in ['library/simple_ast/simple_ast.cpp', 'library/json/json.cpp', 'library/toml/toml.cpp', 'library/toml/toml_source.cpp']]
+    sources += [ROOT / name for name in ['source/simple_ast/simple_ast.cpp', 'source/json/json.cpp', 'source/toml/toml.cpp', 'source/toml/toml_source.cpp']]
     flags = ['-std=c++17', '-O1' if sanitize else '-O2', '-DCHALI_WITH_REFLECTION=1', '-DSTACKVM_WITH_REFLECTION=1']
     if sanitize:
         flags += ['-g', '-fsanitize=address,undefined,float-cast-overflow', '-fno-omit-frame-pointer', '-no-pie']

@@ -46,7 +46,7 @@ def main():
         equivalents = (('int64', '1'), ('String', '"x"'))
         for type_name, initial in equivalents:
             diagnostics = []
-            for form in ('yield (source,source);', 'yield (std::lang::move(&source),std::lang::move(&source));'):
+            for form in ('yield (source,source);', 'yield (move source,move source);'):
                 source = work / 'equivalent.chl'
                 source.write_text('void main(){let result=loop{' + type_name + ' source=' + initial + ';' + form + '};}', encoding='utf-8')
                 result = invoke([compiler, 'check', source, 'json'])

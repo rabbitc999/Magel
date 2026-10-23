@@ -79,7 +79,7 @@ def draw() -> Canvas:
             ),
         ),
         (
-            "③ 运行时与标准库", "chali/library/stackvm · source/glue/",
+            "③ 运行时与标准库", "chali/source/stackvm · source/glue/",
             (
                 ("StackVM", (
                     ("虚拟机执行", "四元式 → 栈指令；调用帧隔离"),
@@ -98,7 +98,7 @@ def draw() -> Canvas:
             ),
         ),
         (
-            "④ VM 交付与宿主", "library/stackvm · source/chali_glue.hpp",
+            "④ VM 交付与宿主", "source/stackvm · source/chali_glue.hpp",
             (
                 ("部署形态", (
                     ("VM 宿主集成", "字节码 · 原生注册表 · 同步回调"),
